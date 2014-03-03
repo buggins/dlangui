@@ -1,0 +1,2 @@
+IMPORTS
+_DirectInput8Create@20 = dinput8.DirectInput8Create

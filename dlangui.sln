@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dlangui", "dlangui.visualdproj", "{C86D169D-B8C0-4947-8B9D-84F656A87F4C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{C86D169D-B8C0-4947-8B9D-84F656A87F4C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C86D169D-B8C0-4947-8B9D-84F656A87F4C}.Debug|Win32.Build.0 = Debug|Win32
+		{C86D169D-B8C0-4947-8B9D-84F656A87F4C}.Release|Win32.ActiveCfg = Release|Win32
+		{C86D169D-B8C0-4947-8B9D-84F656A87F4C}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
