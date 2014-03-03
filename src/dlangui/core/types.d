@@ -14,6 +14,8 @@ public struct Rect {
     public int top;
     public int right;
     public int bottom;
+    public @property int width() { return right - left; }
+    public @property int height() { return bottom - top; }
     public this(int x0, int y0, int x1, int y1) {
         left = x0;
         top = y0;

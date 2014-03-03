@@ -10,9 +10,142 @@ import std.utf;
 import std.stdio;
 import dlangui.platforms.common.platform;
 import dlangui.graphics.drawbuf;
+import dlangui.graphics.fonts;
 
 pragma(lib, "gdi32.lib");
 pragma(lib, "user32.lib");
+
+class Win32Font : Font {
+    HFONT _hfont;
+    int _size;
+    int _height;
+    int _weight;
+    int _baseline;
+    bool _italic;
+    string _face;
+    FontFamily _family;
+    LOGFONTA _logfont;
+    Win32ColorDrawBuf _drawbuf;
+    public this() {
+        _drawbuf = new Win32ColorDrawBuf(1, 1);
+    }
+    public void clear() {
+        if (_hfont !is null)
+        {
+            DeleteObject(_hfont);
+            _hfont = NULL;
+            _height = 0;
+            _baseline = 0;
+            _size = 0;
+        }
+    }
+    public this(HFONT hfont, int size, int height, int weight, bool italic, string face, FontFamily family, int baseline) {
+        _hfont = hfont;
+        _size = size;
+        _height = height;
+        _weight = weight;
+        _baseline = baseline;
+        _italic = italic;
+        _face = face;
+        _family = family;
+    }
+    public @property override int size() { return _size; }
+    public @property override int height() { return _height; }
+    public @property override int weight() { return _weight; }
+    public @property override int baseline() { return _baseline; }
+    public @property override bool italic() { return _italic; }
+    public @property override string face() { return _face; }
+    public @property override FontFamily family() { return _family; }
+    public @property override bool isNull() { return _hfont !is null; }
+    public bool create(const LOGFONTA * logfont) {
+        if (!isNull())
+            clear();
+        _logfont = *logfont;
+        _hfont = CreateFontIndirectA(logfont);
+        if (!_hfont)
+            return false;
+        //memcpy( &_logfont, &lf, sizeof(LOGFONT) );
+        // get text metrics
+        SelectObject(_drawbuf.dc, _hfont);
+        TEXTMETRICW tm;
+        GetTextMetricsW(_drawbuf.dc, &tm);
+        _logfont.lfHeight = tm.tmHeight;
+        _logfont.lfWeight = tm.tmWeight;
+        _logfont.lfItalic = tm.tmItalic;
+        _logfont.lfCharSet = tm.tmCharSet;
+        GetTextFaceA(_drawbuf.dc, _logfont.lfFaceName.length - 1, _logfont.lfFaceName.ptr);
+        _height = tm.tmHeight;
+        _baseline = _height - tm.tmDescent;
+        return true;
+    }
+}
+
+class Win32FontManager : FontManager {
+    public this() {
+        instance = this;
+        init();
+    }
+    public bool init() {
+        Win32ColorDrawBuf drawbuf = new Win32ColorDrawBuf(1,1);
+        LOGFONTA lf;
+        lf.lfCharSet = ANSI_CHARSET;
+        int res = 
+            EnumFontFamiliesExA(
+                                drawbuf.dc,                  // handle to DC
+                                &lf,                              // font information
+                                &LVWin32FontEnumFontFamExProc, // callback function (FONTENUMPROC)
+                                cast(LPARAM)(cast(void*)this),                    // additional data
+                                0U                     // not used; must be 0
+                                    );
+
+        return res!=0;
+    }
+    public override Font getFont(int size, int weight, bool italic, FontFamily family, string face) {
+        // TODO:
+        return null;
+    }
+    public bool registerFont(const LOGFONTA * logfont) {
+        return true;
+    }
+}
+
+
+// definition
+//extern(Windows) {
+    int LVWin32FontEnumFontFamExProc(
+            const (LOGFONTA) *lf,    // logical-font data
+            const (TEXTMETRICA) *lpntme,  // physical-font data
+            //ENUMLOGFONTEX *lpelfe,    // logical-font data
+            //NEWTEXTMETRICEX *lpntme,  // physical-font data
+            DWORD FontType,           // type of font
+            LPARAM lParam             // application-defined data
+                )
+    {
+        //
+        if (FontType == TRUETYPE_FONTTYPE)
+        {
+            void * p = cast(void*)lParam;
+            Win32FontManager fontman = cast(Win32FontManager)p;
+            Win32Font fnt;
+            //if (strcmp(lf->lfFaceName, "Courier New"))
+            //    return 1;
+            if (fnt.create(lf))
+            {
+                //
+                wchar chars[] = [0, 0xBF, 0xE9, 0x106, 0x410, 0x44F, 0];
+                for (int i=0; chars[i]; i++)
+                {
+                    //LVFont::glyph_info_t glyph;
+                    //if (!fnt.getGlyphInfo( chars[i], &glyph, L' ' )) //def_char
+                    //    return 1;
+                }
+                fontman.registerFont(lf); //&lpelfe->elfLogFont
+            }
+            fnt.clear();
+        }
+        return 1;
+    }
+//}
 
 extern (C) int UIAppMain();
 
@@ -54,15 +187,18 @@ class Win32Window : Window {
         ShowWindow(_hwnd, _cmdShow);
         UpdateWindow(_hwnd);
     }
-    public override string getWindowCaption() {
+    public override @property string windowCaption() {
         return _caption;
     }
-    public override void setWindowCaption(string caption) {
+    public override @property void windowCaption(string caption) {
         _caption = caption;
         SetWindowTextW(_hwnd, toUTF16z(_caption));
     }
     public void onCreate() {
         writeln("Window onCreate");
+    }
+    public void onDestroy() {
+        writeln("Window onDestroy");
     }
 }
 
@@ -265,14 +401,19 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
             //PlaySoundA("hellowin.wav", NULL, SND_FILENAME | SND_ASYNC);
             return 0;
+        case WM_WINDOWPOSCHANGED:
+            {
+                WINDOWPOS * pos = cast(WINDOWPOS*)lParam;
+                window.onResize(pos.cx, pos.cy);
+            }
+            return 0;
 
         case WM_PAINT:
             {
                 hdc = BeginPaint(hwnd, &ps);
                 Win32ColorDrawBuf buf = window.getDrawBuf();
                 buf.clear(0x808080);
-                buf.fillRect(40, 40, 200, 200, 0xFF8000);
-                buf.fillRect(150, 120, 500, 400, 0xFF80FF);
+                window.onDraw(buf);
                 buf.drawTo(hdc, 0, 0);
                 //drawBuf2DC(hdc, 0, 0, buf);
                 scope(exit) EndPaint(hwnd, &ps);
@@ -281,6 +422,7 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             return 0;
 
         case WM_DESTROY:
+            window.onDestroy();
             PostQuitMessage(0);
             return 0;
 

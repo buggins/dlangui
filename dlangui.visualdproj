@@ -248,8 +248,12 @@
     <Folder name="core">
      <File path="src\dlangui\core\types.d" />
     </Folder>
+    <Folder name="widgets">
+     <File path="src\dlangui\widgets\widget.d" />
+    </Folder>
     <Folder name="graphics">
      <File path="src\dlangui\graphics\drawbuf.d" />
+     <File path="src\dlangui\graphics\fonts.d" />
     </Folder>
     <Folder name="platforms">
      <Folder name="common">

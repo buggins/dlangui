@@ -1,6 +1,6 @@
 module dlangui.graphics.drawbuf;
 
-import dlangui.core.types;
+public import dlangui.core.types;
 
 public uint blendARGB(uint dst, uint src, uint alpha) {
     uint srcr = (src >> 16) & 0xFF;
