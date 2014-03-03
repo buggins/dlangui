@@ -1,4 +1,5 @@
 module dlangui.graphics.fonts;
+import dlangui.core.types;
 
 enum FontFamily : int {
     SansSerif,
@@ -6,7 +7,7 @@ enum FontFamily : int {
     MonoSpace
 }
 
-class Font {
+class Font : RefCountedObject {
     abstract public @property int size();
     abstract public @property int height();
     abstract public @property int weight();
@@ -15,7 +16,10 @@ class Font {
     abstract public @property string face();
     abstract public @property FontFamily family();
     abstract public @property bool isNull();
+    public void clear() {}
+    public ~this() { clear(); }
 }
+alias FontRef = Ref!Font;
 
 class FontManager {
     static __gshared FontManager _instance;
@@ -26,4 +30,5 @@ class FontManager {
         return _instance;
     }
     abstract public Font getFont(int size, int weight, bool italic, FontFamily family, string face);
+    public ~this() {}
 }

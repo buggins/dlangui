@@ -15,6 +15,11 @@ import dlangui.graphics.fonts;
 pragma(lib, "gdi32.lib");
 pragma(lib, "user32.lib");
 
+struct FontDef {
+    string _face;
+    FontFamily _family;
+}
+
 class Win32Font : Font {
     HFONT _hfont;
     int _size;
@@ -29,7 +34,7 @@ class Win32Font : Font {
     public this() {
         _drawbuf = new Win32ColorDrawBuf(1, 1);
     }
-    public void clear() {
+    public override void clear() {
         if (_hfont !is null)
         {
             DeleteObject(_hfont);
@@ -69,11 +74,21 @@ class Win32Font : Font {
         SelectObject(_drawbuf.dc, _hfont);
         TEXTMETRICW tm;
         GetTextMetricsW(_drawbuf.dc, &tm);
+        _family = FontFamily.SansSerif;
+        ubyte pitchAndFamily = _logfont.lfPitchAndFamily;
+        if ((pitchAndFamily & (FIXED_PITCH | MONO_FONT | FF_MODERN)) != 0)
+            _family = FontFamily.MonoSpace;
+        else if ((pitchAndFamily & (FF_ROMAN | FF_SCRIPT)) != 0)
+            _family = FontFamily.Serif;
         _logfont.lfHeight = tm.tmHeight;
         _logfont.lfWeight = tm.tmWeight;
         _logfont.lfItalic = tm.tmItalic;
         _logfont.lfCharSet = tm.tmCharSet;
         GetTextFaceA(_drawbuf.dc, _logfont.lfFaceName.length - 1, _logfont.lfFaceName.ptr);
+        int i = 0;
+        for (;_logfont.lfFaceName[i]; i++) {
+        }
+        _face = _logfont.lfFaceName[0..i].dup;
         _height = tm.tmHeight;
         _baseline = _height - tm.tmDescent;
         return true;
@@ -139,7 +154,7 @@ class Win32FontManager : FontManager {
                     //if (!fnt.getGlyphInfo( chars[i], &glyph, L' ' )) //def_char
                     //    return 1;
                 }
-                fontman.registerFont(lf); //&lpelfe->elfLogFont
+                fontman.registerFont(lf);
             }
             fnt.clear();
         }
@@ -301,6 +316,15 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
             return _pixels + _dx * (_dy - 1 - y);
         return null;
     }
+    public override void clear() {
+        if (_drawbmp !is null) {
+            DeleteObject( _drawbmp );
+            DeleteObject( _drawdc );
+            _pixels = null;
+            _dx = 0;
+            _dy = 0;
+        }
+    }
     public override void resize(int width, int height) {
         if (width< 0)
             width = 0;
@@ -308,13 +332,9 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
             height = 0;
         if (_dx == width && _dy == height)
             return;
+        clear();
         _dx = width;
         _dy = height;
-        if (_drawbmp !is null) {
-            DeleteObject( _drawbmp );
-            DeleteObject( _drawdc );
-            _pixels = null;
-        }
         if (_dx > 0 && _dy > 0) {
             BITMAPINFO bmi;
             //memset( &bmi, 0, sizeof(bmi) );
@@ -334,7 +354,7 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
             SelectObject(_drawdc, _drawbmp);
         }
     }
-    public override void clear(uint color) {
+    public override void fill(uint color) {
         int len = _dx * _dy;
         for (int i = 0; i < len; i++)
             _pixels[i] = color;
@@ -412,7 +432,7 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             {
                 hdc = BeginPaint(hwnd, &ps);
                 Win32ColorDrawBuf buf = window.getDrawBuf();
-                buf.clear(0x808080);
+                buf.fill(0x808080);
                 window.onDraw(buf);
                 buf.drawTo(hdc, 0, 0);
                 //drawBuf2DC(hdc, 0, 0, buf);

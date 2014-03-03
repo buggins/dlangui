@@ -37,3 +37,51 @@ public struct Rect {
         return right > left && bottom > top;
     }
 }
+
+public class RefCountedObject {
+    protected int _refCount;
+    public @property int refCount() { return _refCount; }
+    public void addRef() { _refCount++; }
+    public void releaseRef() { if (--_refCount == 0) destroy(this); }
+    public ~this() {}
+}
+
+public struct Ref(T) { // if (T is RefCountedObject)
+    T _data;
+    alias _data this;
+    public @property bool isNull() { return _data is null; }
+    public @property int refCount() { return _data !is null ? _data.refCount : 0; }
+    public this(T data) {
+        _data = data;
+        if (_data !is null)
+            _data.addRef();
+    }
+    public void opAssign(Ref!T data) {
+        if (data._data == _data)
+            return;
+        if (_data !is null)
+            _data.releaseRef();
+        _data = data._data;
+        if (_data !is null)
+            _data.addRef();
+    }
+    public void opAssign(T data) {
+        if (data == _data)
+            return;
+        if (_data !is null)
+            _data.releaseRef();
+        _data = data;
+        if (_data !is null)
+            _data.addRef();
+    }
+    public void clear() { 
+        if (_data !is null) {
+            _data.releaseRef();
+            _data = null;
+        }
+    }
+    public ~this() {
+        if (_data !is null)
+            _data.releaseRef();
+    }
+}

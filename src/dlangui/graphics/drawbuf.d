@@ -16,7 +16,7 @@ public uint blendARGB(uint dst, uint src, uint alpha) {
     return (r << 16) | (g << 8) | b;
 }
 
-class DrawBuf {
+class DrawBuf : RefCountedObject {
     protected Rect _clipRect;
     public @property int width() { return 0; }
     public @property int height() { return 0; }
@@ -42,11 +42,13 @@ class DrawBuf {
     public void afterDrawing() { }
     public uint * scanLine(int y) { return null; }
     abstract public void resize(int width, int height);
-    abstract public void clear(uint color);
+    abstract public void fill(uint color);
     public void fillRect(int left, int top, int right, int bottom, uint color) {
         fillRect(Rect(left, top, right, bottom), color);
     }
     abstract public void fillRect(Rect rc, uint color);
+    public void clear() {}
+    public ~this() { clear(); }
 }
 
 class ColorDrawBufBase : DrawBuf {
@@ -92,7 +94,7 @@ class ColorDrawBuf : ColorDrawBufBase {
         _dy = height;
         _buf.length = _dx * _dy;
     }
-    public override void clear(uint color) {
+    public override void fill(uint color) {
         int len = _dx * _dy;
         uint * p = _buf.ptr;
         for (int i = 0; i < len; i++)
