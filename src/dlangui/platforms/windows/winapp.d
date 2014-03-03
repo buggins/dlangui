@@ -11,6 +11,7 @@ import std.stdio;
 import dlangui.platforms.common.platform;
 import dlangui.graphics.drawbuf;
 import dlangui.graphics.fonts;
+import dlangui.core.logger;
 
 pragma(lib, "gdi32.lib");
 pragma(lib, "user32.lib");
@@ -43,6 +44,10 @@ class Win32Font : Font {
             _baseline = 0;
             _size = 0;
         }
+		if (_drawbuf !is null) {
+			destroy(_drawbuf);
+			_drawbuf = null;
+		}
     }
     public this(HFONT hfont, int size, int height, int weight, bool italic, string face, FontFamily family, int baseline) {
         _hfont = hfont;
@@ -61,7 +66,7 @@ class Win32Font : Font {
     public @property override bool italic() { return _italic; }
     public @property override string face() { return _face; }
     public @property override FontFamily family() { return _family; }
-    public @property override bool isNull() { return _hfont !is null; }
+    public @property override bool isNull() { return _hfont is null; }
     public bool create(const LOGFONTA * logfont) {
         if (!isNull())
             clear();
@@ -88,12 +93,14 @@ class Win32Font : Font {
         int i = 0;
         for (;_logfont.lfFaceName[i]; i++) {
         }
-        _face = _logfont.lfFaceName[0..i].dup;
+        _face = cast(string)(_logfont.lfFaceName[0..i].dup);
         _height = tm.tmHeight;
         _baseline = _height - tm.tmDescent;
         return true;
     }
 }
+
+
 
 class Win32FontManager : FontManager {
     public this() {
@@ -101,47 +108,61 @@ class Win32FontManager : FontManager {
         init();
     }
     public bool init() {
+		Log.i("Win32FontManager.init()");
         Win32ColorDrawBuf drawbuf = new Win32ColorDrawBuf(1,1);
         LOGFONTA lf;
-        lf.lfCharSet = ANSI_CHARSET;
+        lf.lfCharSet = ANSI_CHARSET; //DEFAULT_CHARSET;
+		lf.lfFaceName[0] = 0;
+		HDC dc = drawbuf.dc;
         int res = 
             EnumFontFamiliesExA(
-                                drawbuf.dc,                  // handle to DC
+                                dc,                  // handle to DC
                                 &lf,                              // font information
                                 &LVWin32FontEnumFontFamExProc, // callback function (FONTENUMPROC)
                                 cast(LPARAM)(cast(void*)this),                    // additional data
                                 0U                     // not used; must be 0
                                     );
-
+		destroy(drawbuf);
+		Log.i("EnumFontFamiliesExA returned ", res);
         return res!=0;
     }
     public override Font getFont(int size, int weight, bool italic, FontFamily family, string face) {
         // TODO:
         return null;
     }
-    public bool registerFont(const LOGFONTA * logfont) {
+    public bool registerFont(FontFamily family, string fontFace, const LOGFONTA * logfont) {
+		Log.d("registerFont(", family, ",", fontFace, ")");
         return true;
     }
 }
 
+string fromStringz(const(char[]) s) {
+	int i = 0;
+	while(s[i])
+		i++;
+	return cast(string)(s[0..i].dup);
+}
 
 // definition
-//extern(Windows) {
+extern(Windows) {
     int LVWin32FontEnumFontFamExProc(
             const (LOGFONTA) *lf,    // logical-font data
             const (TEXTMETRICA) *lpntme,  // physical-font data
             //ENUMLOGFONTEX *lpelfe,    // logical-font data
             //NEWTEXTMETRICEX *lpntme,  // physical-font data
-            DWORD FontType,           // type of font
+            DWORD fontType,           // type of font
             LPARAM lParam             // application-defined data
                 )
     {
         //
-        if (FontType == TRUETYPE_FONTTYPE)
+		//Log.d("LVWin32FontEnumFontFamExProc fontType=", fontType);
+        if (fontType == TRUETYPE_FONTTYPE)
         {
             void * p = cast(void*)lParam;
             Win32FontManager fontman = cast(Win32FontManager)p;
-            Win32Font fnt;
+			string face = fromStringz(lf.lfFaceName);
+			Log.d("face:", face);
+            Win32Font fnt = new Win32Font();
             //if (strcmp(lf->lfFaceName, "Courier New"))
             //    return 1;
             if (fnt.create(lf))
@@ -154,13 +175,14 @@ class Win32FontManager : FontManager {
                     //if (!fnt.getGlyphInfo( chars[i], &glyph, L' ' )) //def_char
                     //    return 1;
                 }
-                fontman.registerFont(lf);
+                fontman.registerFont(fnt.family, fnt.face, lf);
             }
             fnt.clear();
+			destroy(fnt);
         }
         return 1;
     }
-//}
+}
 
 extern (C) int UIAppMain();
 
@@ -288,9 +310,12 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int iCmdShow)
 {
+	setFileLogger(std.stdio.File("ui.log", "w"));
+	setLogLevel(LogLevel.Trace);
+
     _cmdShow = iCmdShow;
     _hInstance = hInstance;
-    writeln("Creating window");
+    Log.d("Inside myWinMain");
     string appName = "HelloWin";
 
 
@@ -300,6 +325,8 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
         return 0;
     }
     Platform.setInstance(platform);
+	Win32FontManager fontMan = new Win32FontManager();
+	FontManager.instance = fontMan;
     return UIAppMain();
 }
 
@@ -364,41 +391,41 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
     }
 }
 
-void drawBuf2DC(HDC dc, int x, int y, DrawBuf buf)
-{
-    uint * drawpixels;
-    HDC drawdc;
-    HBITMAP drawbmp;
-
-    int buf_width = buf.width();
-    int bytesPerRow = buf_width * 4;
-    BITMAPINFO bmi;
-    //memset( &bmi, 0, sizeof(bmi) );
-    bmi.bmiHeader.biSize = (bmi.bmiHeader.sizeof);
-    bmi.bmiHeader.biWidth = buf_width;
-    bmi.bmiHeader.biHeight = buf.height;
-    bmi.bmiHeader.biPlanes = 1;
-    bmi.bmiHeader.biBitCount = 32;
-    bmi.bmiHeader.biCompression = BI_RGB;
-    bmi.bmiHeader.biSizeImage = 0;
-    bmi.bmiHeader.biXPelsPerMeter = 1024;
-    bmi.bmiHeader.biYPelsPerMeter = 1024;
-    bmi.bmiHeader.biClrUsed = 0;
-    bmi.bmiHeader.biClrImportant = 0;
-    drawbmp = CreateDIBSection( NULL, &bmi, DIB_RGB_COLORS, cast(void**)(&drawpixels), NULL, 0 );
-    drawdc = CreateCompatibleDC(NULL);
-    SelectObject(drawdc, drawbmp);
-    for (int yy=0; yy < buf.height; yy++)
-    {
-        uint * src = buf.scanLine(yy);
-        uint * dst = drawpixels + (buf.height - 1 - yy) * buf.width;
-        for (int xx = 0; xx < buf_width; xx++)
-            dst[xx] = src[xx];
-    }
-    BitBlt( dc, x, y, buf_width, buf.height, drawdc, 0, 0, SRCCOPY);
-    DeleteObject( drawbmp );
-    DeleteObject( drawdc );
-}
+//void drawBuf2DC(HDC dc, int x, int y, DrawBuf buf)
+//{
+//    uint * drawpixels;
+//    HDC drawdc;
+//    HBITMAP drawbmp;
+//
+//    int buf_width = buf.width();
+//    int bytesPerRow = buf_width * 4;
+//    BITMAPINFO bmi;
+//    //memset( &bmi, 0, sizeof(bmi) );
+//    bmi.bmiHeader.biSize = (bmi.bmiHeader.sizeof);
+//    bmi.bmiHeader.biWidth = buf_width;
+//    bmi.bmiHeader.biHeight = buf.height;
+//    bmi.bmiHeader.biPlanes = 1;
+//    bmi.bmiHeader.biBitCount = 32;
+//    bmi.bmiHeader.biCompression = BI_RGB;
+//    bmi.bmiHeader.biSizeImage = 0;
+//    bmi.bmiHeader.biXPelsPerMeter = 1024;
+//    bmi.bmiHeader.biYPelsPerMeter = 1024;
+//    bmi.bmiHeader.biClrUsed = 0;
+//    bmi.bmiHeader.biClrImportant = 0;
+//    drawbmp = CreateDIBSection( NULL, &bmi, DIB_RGB_COLORS, cast(void**)(&drawpixels), NULL, 0 );
+//    drawdc = CreateCompatibleDC(NULL);
+//    SelectObject(drawdc, drawbmp);
+//    for (int yy=0; yy < buf.height; yy++)
+//    {
+//        uint * src = buf.scanLine(yy);
+//        uint * dst = drawpixels + (buf.height - 1 - yy) * buf.width;
+//        for (int xx = 0; xx < buf_width; xx++)
+//            dst[xx] = src[xx];
+//    }
+//    BitBlt( dc, x, y, buf_width, buf.height, drawdc, 0, 0, SRCCOPY);
+//    DeleteObject( drawbmp );
+//    DeleteObject( drawdc );
+//}
 
 
 extern(Windows)

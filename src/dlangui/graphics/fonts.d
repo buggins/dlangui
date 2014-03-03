@@ -23,10 +23,10 @@ alias FontRef = Ref!Font;
 
 class FontManager {
     static __gshared FontManager _instance;
-    public @property void instance(FontManager manager) {
+    public static @property void instance(FontManager manager) {
         _instance = manager;
     }
-    public @property FontManager instance() {
+    public static @property FontManager instance() {
         return _instance;
     }
     abstract public Font getFont(int size, int weight, bool italic, FontFamily family, string face);
