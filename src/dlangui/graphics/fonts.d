@@ -18,6 +18,7 @@ class Font : RefCountedObject {
     abstract public @property string face();
     abstract public @property FontFamily family();
     abstract public @property bool isNull();
+	abstract public int measureText(const dchar[] text, ref int[] widths, int maxWidth);
     public void clear() {}
     public ~this() { clear(); }
 }

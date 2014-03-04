@@ -3,6 +3,7 @@ module winmain;
 import dlangui.platforms.common.platform;
 import dlangui.widgets.widget;
 import dlangui.core.logger;
+import dlangui.graphics.fonts;
 import std.stdio;
 
 extern (C) int UIAppMain() {
@@ -14,5 +15,13 @@ extern (C) int UIAppMain() {
     window.mainWidget = myWidget;
     window.show();
     window.windowCaption = "New Window Caption";
+	FontRef font = FontManager.instance.getFont(32, 400, false, FontFamily.SansSerif, "Arial");
+	assert(!font.isNull);
+	int[] widths;
+	dchar[] text = cast(dchar[])"Test string"d;
+	int charsMeasured = font.measureText(text, widths, 1000);
+	assert(charsMeasured > 0);
+	int w = widths[charsMeasured - 1];
+	Log.d("Measured string: ", charsMeasured, " chars, width=", w);
     return Platform.instance().enterMessageLoop();
 }

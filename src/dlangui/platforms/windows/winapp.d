@@ -58,6 +58,40 @@ class Win32Font : Font {
 			_drawbuf = null;
 		}
     }
+	public override int measureText(const dchar[] text, ref int[] widths, int maxWidth) {
+		if (_hfont is null || _drawbuf is null || text.length == 0)
+			return 0;
+		wstring utf16text = toUTF16(text);
+		const wchar * pstr = utf16text.ptr;
+		uint len = cast(uint)utf16text.length;
+		GCP_RESULTSW gcpres;
+		gcpres.lStructSize = gcpres.sizeof;
+		if (widths.length < len + 1)
+			widths.length = len + 1;
+		gcpres.lpDx = widths.ptr;
+		gcpres.nMaxFit = len;
+		gcpres.nGlyphs = len;
+		uint res = GetCharacterPlacementW( 
+											 _drawbuf.dc,
+											 pstr,
+											 len,
+											 maxWidth,
+											 &gcpres,
+											 GCP_MAXEXTENT); //|GCP_USEKERNING
+		if (!res) {
+			widths[0] = 0;
+			return 0;
+		}
+		uint measured = gcpres.nMaxFit;
+		int total = 0;
+		for (int i = 0; i < measured; i++) {
+			int w = widths[i];
+			total += w;
+			widths[i] = total;
+		}
+		return measured;
+	}
+
 	public bool create(FontDef * def, int size, int weight, bool italic) {
         if (!isNull())
             clear();
