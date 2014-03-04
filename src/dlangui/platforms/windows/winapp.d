@@ -42,6 +42,8 @@ class Win32Font : Font {
     FontFamily _family;
     LOGFONTA _logfont;
     Win32ColorDrawBuf _drawbuf;
+	GlyphCache _glyphCache;
+
     public this() {
     }
     public override void clear() {
@@ -58,6 +60,120 @@ class Win32Font : Font {
 			_drawbuf = null;
 		}
     }
+
+	uint getGlyphIndex(dchar code)
+	{
+		if (_drawbuf is null)
+			return 0;
+		wchar[2] s;
+		wchar[2] g;
+		s[0] = cast(wchar)code;
+		s[1] = 0;
+		g[0] = 0;
+		GCP_RESULTSW gcp;
+		gcp.lStructSize = GCP_RESULTSW.sizeof;
+		gcp.lpOutString = null;
+		gcp.lpOrder = null;
+		gcp.lpDx = null;
+		gcp.lpCaretPos = null;
+		gcp.lpClass = null;
+		gcp.lpGlyphs = g.ptr;
+		gcp.nGlyphs = 2;
+		gcp.nMaxFit = 2;
+
+		DWORD res = GetCharacterPlacementW(
+						_drawbuf.dc, s.ptr, 1,
+						1000,
+						&gcp,
+						0
+						);
+		if (!res)
+			return 0;
+		return g[0];
+	}
+
+	public override Glyph * getCharGlyph(dchar ch) {
+		uint glyphIndex = getGlyphIndex(ch);
+		if (!glyphIndex)
+			return null;
+		if (glyphIndex >= 0xFFFF)
+			return null;
+		Glyph * found = _glyphCache.find(cast(ushort)glyphIndex);
+		if (found !is null)
+			return found;
+		GLYPHMETRICS metrics;
+
+		MAT2 identity = { {0,1}, {0,0}, {0,0}, {0,1} };
+		uint res;
+		res = GetGlyphOutlineW( _drawbuf.dc, cast(wchar)ch,
+							GGO_METRICS,
+							&metrics,
+							0,
+							null,
+						    &identity );
+		if (res==GDI_ERROR)
+			return null;
+		int gs = GetGlyphOutlineW( _drawbuf.dc, cast(wchar)ch,
+								  GGO_GRAY8_BITMAP, //GGO_METRICS
+								  &metrics,
+								  0,
+								  NULL,
+								  &identity );
+		if (gs >= 0x10000 || gs < 0)
+			return null;
+
+		Glyph g;
+		g.blackBoxX = cast(ubyte)metrics.gmBlackBoxX;
+		g.blackBoxY = cast(ubyte)metrics.gmBlackBoxY;
+		g.originX = cast(byte)metrics.gmptGlyphOrigin.x;
+		g.originY = cast(byte)metrics.gmptGlyphOrigin.y;
+		g.width = cast(ubyte)metrics.gmCellIncX;
+		g.glyphIndex = cast(ushort)glyphIndex;
+
+		if (g.blackBoxX>0 && g.blackBoxY>0)
+		{
+			g.glyph = new ubyte[g.blackBoxX * g.blackBoxY];
+			if (gs>0)
+			{
+				ubyte glyph[] = new ubyte[gs];
+				res = GetGlyphOutlineW( _drawbuf.dc, cast(wchar)ch,
+									   GGO_GRAY8_BITMAP, //GGO_METRICS
+									   &metrics,
+									   gs,
+									   glyph.ptr,
+									   &identity );
+				if (res==GDI_ERROR)
+				{
+					return null;
+				}
+				int glyph_row_size = (g.blackBoxX + 3) / 4 * 4;
+				ubyte * src = glyph.ptr;
+				ubyte * dst = g.glyph.ptr;
+				for (int y = 0; y < g.blackBoxY; y++)
+				{
+					for (int x = 0; x < g.blackBoxX; x++)
+					{
+						ubyte b = src[x];
+						if (b>=64)
+							b = 63;
+						b = (b<<2) & 0xFC;
+						dst[x] = b;
+					}
+					src += glyph_row_size;
+					dst += g.blackBoxX;
+				}
+			}
+			else
+			{
+				// empty glyph
+				for (int i = g.blackBoxX * g.blackBoxY - 1; i >= 0; i--)
+					g.glyph[i] = 0;
+			}
+		}
+		// found!
+		return _glyphCache.put(cast(ushort)glyphIndex, &g);
+	}
+
 	public override int measureText(const dchar[] text, ref int[] widths, int maxWidth) {
 		if (_hfont is null || _drawbuf is null || text.length == 0)
 			return 0;

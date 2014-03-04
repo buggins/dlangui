@@ -23,5 +23,7 @@ extern (C) int UIAppMain() {
 	assert(charsMeasured > 0);
 	int w = widths[charsMeasured - 1];
 	Log.d("Measured string: ", charsMeasured, " chars, width=", w);
+	Glyph * g = font.getCharGlyph('A');
+	Log.d("Char A glyph: ", g.blackBoxX, "x", g.blackBoxY);
     return Platform.instance().enterMessageLoop();
 }
