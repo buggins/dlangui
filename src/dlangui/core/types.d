@@ -80,6 +80,9 @@ public struct Ref(T) { // if (T is RefCountedObject)
             _data = null;
         }
     }
+	public @property T get() {
+		return _data;
+	}
     public ~this() {
         if (_data !is null)
             _data.releaseRef();

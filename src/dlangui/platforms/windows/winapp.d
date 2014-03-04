@@ -8,6 +8,7 @@ import win32.windows;
 import std.string;
 import std.utf;
 import std.stdio;
+import std.algorithm;
 import dlangui.platforms.common.platform;
 import dlangui.graphics.drawbuf;
 import dlangui.graphics.fonts;
@@ -17,8 +18,17 @@ pragma(lib, "gdi32.lib");
 pragma(lib, "user32.lib");
 
 struct FontDef {
-    string _face;
-    FontFamily _family;
+    immutable FontFamily _family;
+    immutable string _face;
+	immutable ubyte _pitchAndFamily;
+	public @property FontFamily family() { return _family; }
+	public @property string face() { return _face; }
+	public @property ubyte pitchAndFamily() { return _pitchAndFamily; }
+	public this(FontFamily family, string face, ubyte putchAndFamily) {
+		_family = family;
+		_face = face;
+		_pitchAndFamily = pitchAndFamily;
+	}
 }
 
 class Win32Font : Font {
@@ -33,7 +43,6 @@ class Win32Font : Font {
     LOGFONTA _logfont;
     Win32ColorDrawBuf _drawbuf;
     public this() {
-        _drawbuf = new Win32ColorDrawBuf(1, 1);
     }
     public override void clear() {
         if (_hfont !is null)
@@ -49,16 +58,36 @@ class Win32Font : Font {
 			_drawbuf = null;
 		}
     }
-    public this(HFONT hfont, int size, int height, int weight, bool italic, string face, FontFamily family, int baseline) {
-        _hfont = hfont;
-        _size = size;
-        _height = height;
+	public bool create(FontDef * def, int size, int weight, bool italic) {
+        if (!isNull())
+            clear();
+		LOGFONTA lf;
+        lf.lfCharSet = ANSI_CHARSET; //DEFAULT_CHARSET;
+		lf.lfFaceName[0..def.face.length] = def.face;
+		lf.lfFaceName[def.face.length] = 0;
+		lf.lfHeight = -size;
+		lf.lfItalic = italic;
+		lf.lfOutPrecision = OUT_TT_ONLY_PRECIS;
+		lf.lfClipPrecision = CLIP_DEFAULT_PRECIS;
+		lf.lfQuality = ANTIALIASED_QUALITY;
+		lf.lfPitchAndFamily = def.pitchAndFamily;
+        _hfont = CreateFontIndirectA(&lf);
+        _drawbuf = new Win32ColorDrawBuf(1, 1);
+        SelectObject(_drawbuf.dc, _hfont);
+
+        TEXTMETRICW tm;
+        GetTextMetricsW(_drawbuf.dc, &tm);
+
+		_size = size;
+        _height = tm.tmHeight;
+        _baseline = _height - tm.tmDescent;
         _weight = weight;
-        _baseline = baseline;
         _italic = italic;
-        _face = face;
-        _family = family;
-    }
+        _face = def.face;
+        _family = def.family;
+		Log.d("Created font ", _face, " ", _size);
+		return true;
+	}
     public @property override int size() { return _size; }
     public @property override int height() { return _height; }
     public @property override int weight() { return _weight; }
@@ -67,42 +96,14 @@ class Win32Font : Font {
     public @property override string face() { return _face; }
     public @property override FontFamily family() { return _family; }
     public @property override bool isNull() { return _hfont is null; }
-    public bool create(const LOGFONTA * logfont) {
-        if (!isNull())
-            clear();
-        _logfont = *logfont;
-        _hfont = CreateFontIndirectA(logfont);
-        if (!_hfont)
-            return false;
-        //memcpy( &_logfont, &lf, sizeof(LOGFONT) );
-        // get text metrics
-        SelectObject(_drawbuf.dc, _hfont);
-        TEXTMETRICW tm;
-        GetTextMetricsW(_drawbuf.dc, &tm);
-        _family = FontFamily.SansSerif;
-        ubyte pitchAndFamily = _logfont.lfPitchAndFamily;
-        if ((pitchAndFamily & (FIXED_PITCH | MONO_FONT | FF_MODERN)) != 0)
-            _family = FontFamily.MonoSpace;
-        else if ((pitchAndFamily & (FF_ROMAN | FF_SCRIPT)) != 0)
-            _family = FontFamily.Serif;
-        _logfont.lfHeight = tm.tmHeight;
-        _logfont.lfWeight = tm.tmWeight;
-        _logfont.lfItalic = tm.tmItalic;
-        _logfont.lfCharSet = tm.tmCharSet;
-        GetTextFaceA(_drawbuf.dc, _logfont.lfFaceName.length - 1, _logfont.lfFaceName.ptr);
-        int i = 0;
-        for (;_logfont.lfFaceName[i]; i++) {
-        }
-        _face = cast(string)(_logfont.lfFaceName[0..i].dup);
-        _height = tm.tmHeight;
-        _baseline = _height - tm.tmDescent;
-        return true;
-    }
 }
 
 
 
 class Win32FontManager : FontManager {
+	FontRef[] _activeFonts;
+	FontDef[] _fontFaces;
+	FontDef*[string] _faceByName;
     public this() {
         instance = this;
         init();
@@ -123,15 +124,98 @@ class Win32FontManager : FontManager {
                                 0U                     // not used; must be 0
                                     );
 		destroy(drawbuf);
-		Log.i("EnumFontFamiliesExA returned ", res);
+		Log.i("Found ", _fontFaces.length, " font faces");
         return res!=0;
     }
-    public override Font getFont(int size, int weight, bool italic, FontFamily family, string face) {
-        // TODO:
-        return null;
+    public override FontRef getFont(int size, int weight, bool italic, FontFamily family, string face) {
+		FontRef res;
+		FontDef * def = findFace(family, face);
+		if (def !is null) {
+			for (int i = 0; i < _activeFonts.length; i++) {
+				Font item = _activeFonts[i].get;
+				if (item.family != def.family)
+					continue;
+				if (item.size != size)
+					continue;
+				if (item.italic != italic || item.weight != weight)
+					continue;
+				if (!equal(item.face, def.face))
+					continue;
+				res = _activeFonts[i];
+				break;
+			}
+			if (res.isNull) {
+				Win32Font item = new Win32Font();
+				if (!item.create(def, size, weight, italic))
+					return res;
+				res = item;
+				_activeFonts ~= res;
+			}
+		}
+        return res;
     }
-    public bool registerFont(FontFamily family, string fontFace, const LOGFONTA * logfont) {
+	FontDef * findFace(FontFamily family) {
+		FontDef * res = null;
+		switch(family) {
+		case FontFamily.SansSerif:
+			res = findFace("Arial"); if (res !is null) return res;
+			res = findFace("Tahoma"); if (res !is null) return res;
+			res = findFace("Calibri"); if (res !is null) return res;
+			res = findFace("Verdana"); if (res !is null) return res;
+			res = findFace("Lucida Sans"); if (res !is null) return res;
+			break;
+		case FontFamily.Serif:
+			res = findFace("Times New Roman"); if (res !is null) return res;
+			res = findFace("Georgia"); if (res !is null) return res;
+			res = findFace("Century Schoolbook"); if (res !is null) return res;
+			res = findFace("Bookman Old Style"); if (res !is null) return res;
+			break;
+		case FontFamily.MonoSpace:
+			res = findFace("Courier New"); if (res !is null) return res;
+			res = findFace("Lucida Console"); if (res !is null) return res;
+			res = findFace("Century Schoolbook"); if (res !is null) return res;
+			res = findFace("Bookman Old Style"); if (res !is null) return res;
+			break;
+		case FontFamily.Cursive:
+			res = findFace("Comic Sans MS"); if (res !is null) return res;
+			res = findFace("Lucida Handwriting"); if (res !is null) return res;
+			res = findFace("Monotype Corsiva"); if (res !is null) return res;
+			break;
+		default:
+			break;
+		}
+		return null;
+	}
+	FontDef * findFace(string face) {
+		if (face.length == 0)
+			return null;
+		if (face in _faceByName)
+			return _faceByName[face];
+		return null;
+	}
+	public FontDef * findFace(FontFamily family, string face) {
+		// by face only
+		FontDef * res = findFace(face);
+		if (res !is null)
+			return res;
+		// best for family
+		res = findFace(family);
+		if (res !is null)
+			return res;
+		for (int i = 0; i < _fontFaces.length; i++) {
+			res = &_fontFaces[i];
+			if (res.family == family)
+				return res;
+		}
+		res = findFace(FontFamily.SansSerif);
+		if (res !is null)
+			return res;
+		return &_fontFaces[0];
+	}
+    public bool registerFont(FontFamily family, string fontFace, ubyte pitchAndFamily) {
 		Log.d("registerFont(", family, ",", fontFace, ")");
+		_fontFaces ~= FontDef(family, fontFace, pitchAndFamily);
+		_faceByName[fontFace] = &_fontFaces[$ - 1];
         return true;
     }
 }
@@ -141,6 +225,18 @@ string fromStringz(const(char[]) s) {
 	while(s[i])
 		i++;
 	return cast(string)(s[0..i].dup);
+}
+
+FontFamily pitchAndFamilyToFontFamily(ubyte flags) {
+	if ((flags & FF_DECORATIVE) == FF_DECORATIVE)
+		return FontFamily.Fantasy;
+	else if ((flags & (FIXED_PITCH)) != 0) // | | MONO_FONT
+		return FontFamily.MonoSpace;
+	else if ((flags & (FF_ROMAN)) != 0)
+		return FontFamily.Serif;
+	else if ((flags & (FF_SCRIPT)) != 0)
+		return FontFamily.Cursive;
+	return FontFamily.SansSerif;
 }
 
 // definition
@@ -161,24 +257,11 @@ extern(Windows) {
             void * p = cast(void*)lParam;
             Win32FontManager fontman = cast(Win32FontManager)p;
 			string face = fromStringz(lf.lfFaceName);
-			Log.d("face:", face);
-            Win32Font fnt = new Win32Font();
-            //if (strcmp(lf->lfFaceName, "Courier New"))
-            //    return 1;
-            if (fnt.create(lf))
-            {
-                //
-                wchar chars[] = [0, 0xBF, 0xE9, 0x106, 0x410, 0x44F, 0];
-                for (int i=0; chars[i]; i++)
-                {
-                    //LVFont::glyph_info_t glyph;
-                    //if (!fnt.getGlyphInfo( chars[i], &glyph, L' ' )) //def_char
-                    //    return 1;
-                }
-                fontman.registerFont(fnt.family, fnt.face, lf);
-            }
-            fnt.clear();
-			destroy(fnt);
+			FontFamily family = pitchAndFamilyToFontFamily(lf.lfPitchAndFamily);
+			if (face.length < 2 || face[0] == '@')
+				return 1;
+			//Log.d("face:", face);
+			fontman.registerFont(family, face, lf.lfPitchAndFamily);
         }
         return 1;
     }

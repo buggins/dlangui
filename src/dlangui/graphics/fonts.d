@@ -4,6 +4,8 @@ import dlangui.core.types;
 enum FontFamily : int {
     SansSerif,
     Serif,
+	Fantasy,
+	Cursive,
     MonoSpace
 }
 
@@ -29,6 +31,6 @@ class FontManager {
     public static @property FontManager instance() {
         return _instance;
     }
-    abstract public Font getFont(int size, int weight, bool italic, FontFamily family, string face);
+    abstract public FontRef getFont(int size, int weight, bool italic, FontFamily family, string face);
     public ~this() {}
 }
