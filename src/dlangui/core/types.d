@@ -41,8 +41,13 @@ public struct Rect {
 public class RefCountedObject {
     protected int _refCount;
     public @property int refCount() { return _refCount; }
-    public void addRef() { _refCount++; }
-    public void releaseRef() { if (--_refCount == 0) destroy(this); }
+    public void addRef() { 
+		_refCount++; 
+	}
+    public void releaseRef() { 
+		if (--_refCount == 0) 
+			destroy(this); 
+	}
     public ~this() {}
 }
 
@@ -56,23 +61,39 @@ public struct Ref(T) { // if (T is RefCountedObject)
         if (_data !is null)
             _data.addRef();
     }
-    public void opAssign(Ref!T data) {
+	public this(this) {
+		if (_data !is null)
+            _data.addRef();
+	}
+    public ref Ref opAssign(ref Ref data) {
         if (data._data == _data)
-            return;
+            return this;
         if (_data !is null)
             _data.releaseRef();
         _data = data._data;
         if (_data !is null)
             _data.addRef();
+		return this;
     }
-    public void opAssign(T data) {
+    public ref Ref opAssign(Ref data) {
+        if (data._data == _data)
+            return this;
+        if (_data !is null)
+            _data.releaseRef();
+        _data = data._data;
+        if (_data !is null)
+            _data.addRef();
+		return this;
+    }
+    public ref Ref opAssign(T data) {
         if (data == _data)
-            return;
+            return this;
         if (_data !is null)
             _data.releaseRef();
         _data = data;
         if (_data !is null)
             _data.addRef();
+		return this;
     }
     public void clear() { 
         if (_data !is null) {

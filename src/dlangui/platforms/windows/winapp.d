@@ -46,6 +46,10 @@ class Win32Font : Font {
 
     public this() {
     }
+	public ~this() {
+		Log.d("Deleting font");
+		clear();
+	}
     public override void clear() {
         if (_hfont !is null)
         {
@@ -174,6 +178,26 @@ class Win32Font : Font {
 		return _glyphCache.put(cast(ushort)glyphIndex, &g);
 	}
 
+	// draw text string to buffer
+	public override void drawText(DrawBuf buf, int x, int y, const dchar[] text, uint color) {
+		int[] widths;
+		int charsMeasured = measureText(text, widths, 3000);
+		for (int i = 0; i < charsMeasured; i++) {
+			int xx = (i > 0) ? widths[i - 1] : 0;
+			Glyph * glyph = getCharGlyph(text[i]);
+			if (glyph is null)
+				continue;
+			if ( glyph.blackBoxX && glyph.blackBoxY ) {
+				buf.drawGlyph( x + xx + glyph.originX,
+						   y + _baseline - glyph.originY,
+						  glyph.glyph,
+						  glyph.blackBoxX,
+						  glyph.blackBoxY,
+						  color);
+			}
+		}
+	}
+
 	public override int measureText(const dchar[] text, ref int[] widths, int maxWidth) {
 		if (_hfont is null || _drawbuf is null || text.length == 0)
 			return 0;
@@ -251,7 +275,7 @@ class Win32Font : Font {
 
 
 class Win32FontManager : FontManager {
-	FontRef[] _activeFonts;
+	FontList _activeFonts;
 	FontDef[] _fontFaces;
 	FontDef*[string] _faceByName;
     public this() {
@@ -277,32 +301,23 @@ class Win32FontManager : FontManager {
 		Log.i("Found ", _fontFaces.length, " font faces");
         return res!=0;
     }
-    public override FontRef getFont(int size, int weight, bool italic, FontFamily family, string face) {
-		FontRef res;
+	FontRef _emptyFontRef;
+    public override ref FontRef getFont(int size, int weight, bool italic, FontFamily family, string face) {
+		Log.i("getFont()");
 		FontDef * def = findFace(family, face);
 		if (def !is null) {
-			for (int i = 0; i < _activeFonts.length; i++) {
-				Font item = _activeFonts[i].get;
-				if (item.family != def.family)
-					continue;
-				if (item.size != size)
-					continue;
-				if (item.italic != italic || item.weight != weight)
-					continue;
-				if (!equal(item.face, def.face))
-					continue;
-				res = _activeFonts[i];
-				break;
-			}
-			if (res.isNull) {
-				Win32Font item = new Win32Font();
-				if (!item.create(def, size, weight, italic))
-					return res;
-				res = item;
-				_activeFonts ~= res;
-			}
+			int index = _activeFonts.find(size, weight, italic, def.family, def.face);
+			if (index >= 0)
+				return _activeFonts.get(index);
+			Log.d("Creating new font");
+			Win32Font item = new Win32Font();
+			if (!item.create(def, size, weight, italic))
+				return _emptyFontRef;
+			Log.d("Adding to list of active fonts");
+			return _activeFonts.add(item);
+		} else {
+			return _emptyFontRef;
 		}
-        return res;
     }
 	FontDef * findFace(FontFamily family) {
 		FontDef * res = null;

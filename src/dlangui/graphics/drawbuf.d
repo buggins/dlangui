@@ -47,6 +47,7 @@ class DrawBuf : RefCountedObject {
         fillRect(Rect(left, top, right, bottom), color);
     }
     abstract public void fillRect(Rect rc, uint color);
+	abstract public void drawGlyph(int x, int y, ubyte[] src, int srcdx, int srcdy, uint color);
     public void clear() {}
     public ~this() { clear(); }
 }
@@ -59,6 +60,35 @@ class ColorDrawBufBase : DrawBuf {
     public override void fillRect(int left, int top, int right, int bottom, uint color) {
         fillRect(Rect(left, top, right, bottom), color);
     }
+	public override void drawGlyph(int x, int y, ubyte[] src, int srcdx, int srcdy, uint color) {
+		bool clipping = !_clipRect.empty();
+		for (int yy = 0; yy < srcdy; yy++) {
+			int liney = y + yy;
+			if (clipping && (liney < _clipRect.top || liney >= _clipRect.bottom))
+				continue;
+			if (liney < 0 || liney >= _dy)
+				continue;
+			uint * row = scanLine(liney);
+			ubyte * srcrow = src.ptr + yy * srcdx;
+			for (int xx = 0; xx < srcdx; xx++) {
+				int colx = xx + x;
+				if (clipping && (colx < _clipRect.left || colx >= _clipRect.right))
+					continue;
+				if (colx < 0 || colx >= _dx)
+					continue;
+				uint alpha1 = srcrow[xx] ^ 255;
+				uint alpha2 = (color >> 24);
+				uint alpha = ((((alpha1 ^ 255) * (alpha2 ^ 255)) >> 8) ^ 255) & 255;
+				uint pixel = row[colx];
+				if (!alpha)
+					row[colx] = pixel;
+				else if (alpha < 255) {
+					// apply blending
+					row[colx] = blendARGB(pixel, color, alpha);
+				}
+			}
+		}
+	}
     public override void fillRect(Rect rc, uint color) {
         if (applyClipping(rc)) {
             for (int y = rc.top; y < rc.bottom; y++) {

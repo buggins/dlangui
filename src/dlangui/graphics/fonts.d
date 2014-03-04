@@ -1,5 +1,8 @@
 module dlangui.graphics.fonts;
-import dlangui.core.types;
+public import dlangui.graphics.drawbuf;
+public import dlangui.core.types;
+public import dlangui.core.logger;
+import std.algorithm;
 
 public enum FontFamily : int {
     SansSerif,
@@ -91,11 +94,52 @@ public class Font : RefCountedObject {
     abstract public @property bool isNull();
 	// measure text string, return accumulated widths[] (distance to end of n-th character), returns number of measured chars.
 	abstract public int measureText(const dchar[] text, ref int[] widths, int maxWidth);
+	// draw text string to buffer
+	abstract public void drawText(DrawBuf buf, int x, int y, const dchar[] text, uint color);
 	abstract public Glyph * getCharGlyph(dchar ch);
     public void clear() {}
     public ~this() { clear(); }
 }
 alias FontRef = Ref!Font;
+
+public struct FontList {
+	FontRef[] _list;
+	uint _len;
+	public ~this() {
+		for (uint i = 0; i < _len; i++) {
+			_list[i].clear();
+		}
+	}
+	// returns item by index
+	public ref FontRef get(int index) {
+		return _list[index];
+	}
+	// returns index of found item, -1 if not found
+	public int find(int size, int weight, bool italic, FontFamily family, string face) {
+		for (int i = 0; i < _list.length; i++) {
+			Font item = _list[i].get;
+			if (item.family != family)
+				continue;
+			if (item.size != size)
+				continue;
+			if (item.italic != italic || item.weight != weight)
+				continue;
+			if (!equal(item.face, face))
+				continue;
+			return i;
+		}
+		return -1;
+	}
+	public ref FontRef add(Font item) {
+		Log.d("FontList.add() enter");
+		if (_len >= _list.length) {
+			_list.length = _len < 16 ? 16 : _list.length * 2;
+		}
+		_list[_len++] = item;
+		Log.d("FontList.add() exit");
+		return _list[_len - 1];
+	}
+}
 
 public class FontManager {
     static __gshared FontManager _instance;
@@ -105,6 +149,6 @@ public class FontManager {
     public static @property FontManager instance() {
         return _instance;
     }
-    abstract public FontRef getFont(int size, int weight, bool italic, FontFamily family, string face);
+    abstract public ref FontRef getFont(int size, int weight, bool italic, FontFamily family, string face);
     public ~this() {}
 }
