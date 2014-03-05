@@ -1,9 +1,9 @@
 <DProject>
- <ProjectGuid>{C86D169D-B8C0-4947-8B9D-84F656A87F4C}</ProjectGuid>
+ <ProjectGuid>{5FF17402-9997-4D0E-8068-6D84B8769D98}</ProjectGuid>
  <Config name="Debug" platform="Win32">
   <obj>0</obj>
   <link>0</link>
-  <lib>0</lib>
+  <lib>1</lib>
   <subsystem>2</subsystem>
   <multiobj>0</multiobj>
   <singleFileCompilation>0</singleFileCompilation>
@@ -42,7 +42,7 @@
   <pic>0</pic>
   <cov>0</cov>
   <nofloat>0</nofloat>
-  <Dversion>2.043</Dversion>
+  <Dversion>2</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
   <compiler>0</compiler>
   <otherDMD>0</otherDMD>
@@ -69,7 +69,7 @@
   <versionids>Unicode</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
-  <createImplib>0</createImplib>
+  <createImplib>1</createImplib>
   <defaultlibname />
   <debuglibname />
   <moduleDepsFile />
@@ -83,11 +83,11 @@
   <cv2pdbOptions />
   <objfiles />
   <linkswitches />
-  <libfiles>ole32.lib kernel32.lib user32.lib comctl32.lib comdlg32.lib</libfiles>
-  <libpaths>3rdparty/libpng/lib</libpaths>
+  <libfiles />
+  <libpaths />
   <deffile />
   <resfile />
-  <exefile>$(OutDir)\$(ProjectName).exe</exefile>
+  <exefile>$(OutDir)\$(ProjectName).lib</exefile>
   <useStdLibPath>1</useStdLibPath>
   <additionalOptions />
   <preBuildCommand />
@@ -97,8 +97,8 @@
  <Config name="Release" platform="Win32">
   <obj>0</obj>
   <link>0</link>
-  <lib>0</lib>
-  <subsystem>2</subsystem>
+  <lib>1</lib>
+  <subsystem>0</subsystem>
   <multiobj>0</multiobj>
   <singleFileCompilation>0</singleFileCompilation>
   <oneobj>0</oneobj>
@@ -160,7 +160,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids />
+  <versionids>Unicode</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -177,11 +177,11 @@
   <cv2pdbOptions />
   <objfiles />
   <linkswitches />
-  <libfiles>ole32.lib kernel32.lib user32.lib comctl32.lib comdlg32.lib</libfiles>
+  <libfiles />
   <libpaths />
   <deffile />
   <resfile />
-  <exefile>$(OutDir)\$(ProjectName).exe</exefile>
+  <exefile>$(OutDir)\$(ProjectName).lib</exefile>
   <useStdLibPath>1</useStdLibPath>
   <additionalOptions />
   <preBuildCommand />
@@ -198,6 +198,7 @@
    <Folder name="win32">
     <File path="3rdparty\win32\basetsd.d" />
     <File path="3rdparty\win32\basetyps.d" />
+    <File path="3rdparty\win32\cderr.d" />
     <File path="3rdparty\win32\cguid.d" />
     <File path="3rdparty\win32\commdlg.d" />
     <File path="3rdparty\win32\core.d" />
@@ -274,7 +275,5 @@
     </Folder>
    </Folder>
   </Folder>
-  <File path="3rdparty\win32\cderr.d" />
-  <File path="winmain.d" />
  </Folder>
 </DProject>

@@ -112,10 +112,9 @@ class Win32Platform : Platform {
     }
 }
 
-extern (Windows)
-int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-            LPSTR lpCmdLine, int nCmdShow)
-{
+extern(Windows)
+int DLANGUIWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+            LPSTR lpCmdLine, int nCmdShow) {
     int result;
 
     void exceptionHandler(Throwable e) {
@@ -131,7 +130,7 @@ int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     catch (Throwable e) // catch any uncaught exceptions
     {
         MessageBox(null, toUTF16z(e.toString()), "Error",
-                   MB_OK | MB_ICONEXCLAMATION);
+                    MB_OK | MB_ICONEXCLAMATION);
         result = 0;     // failed
     }
 
