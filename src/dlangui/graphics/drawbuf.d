@@ -2,7 +2,7 @@ module dlangui.graphics.drawbuf;
 
 public import dlangui.core.types;
 
-public uint blendARGB(uint dst, uint src, uint alpha) {
+uint blendARGB(uint dst, uint src, uint alpha) {
     uint srcr = (src >> 16) & 0xFF;
     uint srcg = (src >> 8) & 0xFF;
     uint srcb = (src >> 0) & 0xFF;
@@ -18,10 +18,10 @@ public uint blendARGB(uint dst, uint src, uint alpha) {
 
 class DrawBuf : RefCountedObject {
     protected Rect _clipRect;
-    public @property int width() { return 0; }
-    public @property int height() { return 0; }
-    public @property ref Rect clipRect() { return _clipRect; }
-    public @property void clipRect(const ref Rect rect) { 
+    @property int width() { return 0; }
+    @property int height() { return 0; }
+    @property ref Rect clipRect() { return _clipRect; }
+    @property void clipRect(const ref Rect rect) { 
         _clipRect = rect; 
         _clipRect.intersect(Rect(0, 0, width, height));
     }
@@ -38,29 +38,29 @@ class DrawBuf : RefCountedObject {
             rc.bottom = height;
         return !rc.empty();
     }
-    public void beforeDrawing() { }
-    public void afterDrawing() { }
-    public uint * scanLine(int y) { return null; }
-    abstract public void resize(int width, int height);
-    abstract public void fill(uint color);
-    public void fillRect(int left, int top, int right, int bottom, uint color) {
+    void beforeDrawing() { }
+    void afterDrawing() { }
+    uint * scanLine(int y) { return null; }
+    abstract void resize(int width, int height);
+    abstract void fill(uint color);
+    void fillRect(int left, int top, int right, int bottom, uint color) {
         fillRect(Rect(left, top, right, bottom), color);
     }
-    abstract public void fillRect(Rect rc, uint color);
-	abstract public void drawGlyph(int x, int y, ubyte[] src, int srcdx, int srcdy, uint color);
-    public void clear() {}
-    public ~this() { clear(); }
+    abstract void fillRect(Rect rc, uint color);
+	abstract void drawGlyph(int x, int y, ubyte[] src, int srcdx, int srcdy, uint color);
+    void clear() {}
+    ~this() { clear(); }
 }
 
 class ColorDrawBufBase : DrawBuf {
     int _dx;
     int _dy;
-    public @property override int width() { return _dx; }
-    public @property override int height() { return _dy; }
-    public override void fillRect(int left, int top, int right, int bottom, uint color) {
+    @property override int width() { return _dx; }
+    @property override int height() { return _dy; }
+    override void fillRect(int left, int top, int right, int bottom, uint color) {
         fillRect(Rect(left, top, right, bottom), color);
     }
-	public override void drawGlyph(int x, int y, ubyte[] src, int srcdx, int srcdy, uint color) {
+	override void drawGlyph(int x, int y, ubyte[] src, int srcdx, int srcdy, uint color) {
 		bool clipping = !_clipRect.empty();
 		for (int yy = 0; yy < srcdy; yy++) {
 			int liney = y + yy;
@@ -89,7 +89,7 @@ class ColorDrawBufBase : DrawBuf {
 			}
 		}
 	}
-    public override void fillRect(Rect rc, uint color) {
+    override void fillRect(Rect rc, uint color) {
         if (applyClipping(rc)) {
             for (int y = rc.top; y < rc.bottom; y++) {
                 uint * row = scanLine(y);
@@ -109,22 +109,22 @@ class ColorDrawBufBase : DrawBuf {
 
 class ColorDrawBuf : ColorDrawBufBase {
     uint[] _buf;
-    public this(int width, int height) {
+    this(int width, int height) {
         resize(width, height);
     }
-    public override uint * scanLine(int y) {
+    override uint * scanLine(int y) {
         if (y >= 0 && y < _dy)
             return _buf.ptr + _dx * y;
         return null;
     }
-    public override void resize(int width, int height) {
+    override void resize(int width, int height) {
         if (_dx == width && _dy == height)
             return;
         _dx = width;
         _dy = height;
         _buf.length = _dx * _dy;
     }
-    public override void fill(uint color) {
+    override void fill(uint color) {
         int len = _dx * _dy;
         uint * p = _buf.ptr;
         for (int i = 0; i < len; i++)

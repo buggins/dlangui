@@ -20,10 +20,10 @@ struct FontDef {
     immutable FontFamily _family;
     immutable string _face;
 	immutable ubyte _pitchAndFamily;
-	public @property FontFamily family() { return _family; }
-	public @property string face() { return _face; }
-	public @property ubyte pitchAndFamily() { return _pitchAndFamily; }
-	public this(FontFamily family, string face, ubyte putchAndFamily) {
+	@property FontFamily family() { return _family; }
+	@property string face() { return _face; }
+	@property ubyte pitchAndFamily() { return _pitchAndFamily; }
+	this(FontFamily family, string face, ubyte putchAndFamily) {
 		_family = family;
 		_face = face;
 		_pitchAndFamily = pitchAndFamily;
@@ -33,7 +33,7 @@ struct FontDef {
 /**
 * Font implementation based on Win32 API system fonts.
 */
-public class Win32Font : Font {
+class Win32Font : Font {
     HFONT _hfont;
     int _size;
     int _height;
@@ -47,16 +47,16 @@ public class Win32Font : Font {
 	GlyphCache _glyphCache;
 
 	/// need to call create() after construction to initialize font
-    public this() {
+    this() {
     }
 
 	/// do cleanup
-	public ~this() {
+	~this() {
 		clear();
 	}
 
 	/// cleanup resources
-    public override void clear() {
+    override void clear() {
         if (_hfont !is null)
         {
             DeleteObject(_hfont);
@@ -102,7 +102,7 @@ public class Win32Font : Font {
 		return g[0];
 	}
 
-	public override Glyph * getCharGlyph(dchar ch) {
+	override Glyph * getCharGlyph(dchar ch) {
 		uint glyphIndex = getGlyphIndex(ch);
 		if (!glyphIndex)
 			return null;
@@ -185,7 +185,7 @@ public class Win32Font : Font {
 	}
 
 	// draw text string to buffer
-	public override void drawText(DrawBuf buf, int x, int y, const dchar[] text, uint color) {
+	override void drawText(DrawBuf buf, int x, int y, const dchar[] text, uint color) {
 		int[] widths;
 		int charsMeasured = measureText(text, widths, 3000);
 		for (int i = 0; i < charsMeasured; i++) {
@@ -204,7 +204,7 @@ public class Win32Font : Font {
 		}
 	}
 
-	public override int measureText(const dchar[] text, ref int[] widths, int maxWidth) {
+	override int measureText(const dchar[] text, ref int[] widths, int maxWidth) {
 		if (_hfont is null || _drawbuf is null || text.length == 0)
 			return 0;
 		wstring utf16text = toUTF16(text);
@@ -238,7 +238,7 @@ public class Win32Font : Font {
 		return measured;
 	}
 
-	public bool create(FontDef * def, int size, int weight, bool italic) {
+	bool create(FontDef * def, int size, int weight, bool italic) {
         if (!isNull())
             clear();
 		LOGFONTA lf;
@@ -279,14 +279,14 @@ public class Win32Font : Font {
 		_glyphCache.cleanup();
 	}
 
-    public @property override int size() { return _size; }
-    public @property override int height() { return _height; }
-    public @property override int weight() { return _weight; }
-    public @property override int baseline() { return _baseline; }
-    public @property override bool italic() { return _italic; }
-    public @property override string face() { return _face; }
-    public @property override FontFamily family() { return _family; }
-    public @property override bool isNull() { return _hfont is null; }
+    @property override int size() { return _size; }
+    @property override int height() { return _height; }
+    @property override int weight() { return _weight; }
+    @property override int baseline() { return _baseline; }
+    @property override bool italic() { return _italic; }
+    @property override string face() { return _face; }
+    @property override FontFamily family() { return _family; }
+    @property override bool isNull() { return _hfont is null; }
 }
 
 
@@ -299,13 +299,13 @@ class Win32FontManager : FontManager {
 	FontDef*[string] _faceByName;
 
 	/// initialize in constructor
-    public this() {
+    this() {
         instance = this;
         init();
     }
 
 	/// initialize font manager by enumerating of system fonts
-    public bool init() {
+    bool init() {
 		Log.i("Win32FontManager.init()");
         Win32ColorDrawBuf drawbuf = new Win32ColorDrawBuf(1,1);
         LOGFONTA lf;
@@ -329,7 +329,7 @@ class Win32FontManager : FontManager {
 	FontRef _emptyFontRef;
 
 	/// get font by properties
-    public override ref FontRef getFont(int size, int weight, bool italic, FontFamily family, string face) {
+    override ref FontRef getFont(int size, int weight, bool italic, FontFamily family, string face) {
 		Log.i("getFont()");
 		FontDef * def = findFace(family, face);
 		if (def !is null) {
@@ -391,7 +391,7 @@ class Win32FontManager : FontManager {
 	}
 
 	/// find font face definition by family and face
-	public FontDef * findFace(FontFamily family, string face) {
+	FontDef * findFace(FontFamily family, string face) {
 		// by face only
 		FontDef * res = findFace(face);
 		if (res !is null)
@@ -412,7 +412,7 @@ class Win32FontManager : FontManager {
 	}
 
 	/// register enumerated font
-    public bool registerFont(FontFamily family, string fontFace, ubyte pitchAndFamily) {
+    bool registerFont(FontFamily family, string fontFace, ubyte pitchAndFamily) {
 		Log.d("registerFont(", family, ",", fontFace, ")");
 		_fontFaces ~= FontDef(family, fontFace, pitchAndFamily);
 		_faceByName[fontFace] = &_fontFaces[$ - 1];
@@ -420,12 +420,12 @@ class Win32FontManager : FontManager {
     }
 
 	/// clear usage flags for all entries
-	public override void checkpoint() {
+	override void checkpoint() {
 		_activeFonts.checkpoint();
 	}
 
 	/// removes entries not used after last call of checkpoint() or cleanup()
-	public override void cleanup() {
+	override void cleanup() {
 		_activeFonts.cleanup();
 		//_list.cleanup();
 	}
@@ -489,7 +489,7 @@ class Win32Window : Window {
     private HWND _hwnd;
     string _caption;
     Win32ColorDrawBuf _drawbuf;
-    public this(string windowCaption, Window parent) {
+    this(string windowCaption, Window parent) {
         _caption = windowCaption;
         _hwnd = CreateWindow(toUTF16z(WIN_CLASS_NAME),      // window class name
                             toUTF16z(windowCaption),  // window caption
@@ -503,7 +503,7 @@ class Win32Window : Window {
                             _hInstance,           // program instance handle
                             cast(void*)this);                // creation parameters
     }
-    public Win32ColorDrawBuf getDrawBuf() {
+    Win32ColorDrawBuf getDrawBuf() {
         RECT rect;
         GetClientRect(_hwnd, &rect);
         int dx = rect.right - rect.left;
@@ -514,29 +514,29 @@ class Win32Window : Window {
             _drawbuf.resize(dx, dy);
         return _drawbuf;
     }
-    public override void show() {
+    override void show() {
         ShowWindow(_hwnd, _cmdShow);
         UpdateWindow(_hwnd);
     }
-    public override @property string windowCaption() {
+    override @property string windowCaption() {
         return _caption;
     }
-    public override @property void windowCaption(string caption) {
+    override @property void windowCaption(string caption) {
         _caption = caption;
         SetWindowTextW(_hwnd, toUTF16z(_caption));
     }
-    public void onCreate() {
+    void onCreate() {
         writeln("Window onCreate");
     }
-    public void onDestroy() {
+    void onDestroy() {
         writeln("Window onDestroy");
     }
 }
 
 class Win32Platform : Platform {
-    public this() {
+    this() {
     }
-    public bool registerWndClass() {
+    bool registerWndClass() {
         //MSG  msg;
         WNDCLASS wndclass;
 
@@ -557,7 +557,7 @@ class Win32Platform : Platform {
         }
         return true;
     }
-    public override int enterMessageLoop() {
+    override int enterMessageLoop() {
         MSG  msg;
         while (GetMessage(&msg, null, 0, 0))
         {
@@ -566,7 +566,7 @@ class Win32Platform : Platform {
         }
         return msg.wParam;
     }
-    public override Window createWindow(string windowCaption, Window parent) {
+    override Window createWindow(string windowCaption, Window parent) {
         return new Win32Window(windowCaption, parent);
     }
 }
@@ -628,16 +628,16 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
     uint * _pixels;
     HDC _drawdc;
     HBITMAP _drawbmp;
-    public @property HDC dc() { return _drawdc; }
-    public this(int width, int height) {
+    @property HDC dc() { return _drawdc; }
+    this(int width, int height) {
         resize(width, height);
     }
-    public override uint * scanLine(int y) {
+    override uint * scanLine(int y) {
         if (y >= 0 && y < _dy)
             return _pixels + _dx * (_dy - 1 - y);
         return null;
     }
-    public override void clear() {
+    override void clear() {
         if (_drawbmp !is null) {
             DeleteObject( _drawbmp );
             DeleteObject( _drawdc );
@@ -646,7 +646,7 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
             _dy = 0;
         }
     }
-    public override void resize(int width, int height) {
+    override void resize(int width, int height) {
         if (width< 0)
             width = 0;
         if (height < 0)
@@ -675,12 +675,12 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
             SelectObject(_drawdc, _drawbmp);
         }
     }
-    public override void fill(uint color) {
+    override void fill(uint color) {
         int len = _dx * _dy;
         for (int i = 0; i < len; i++)
             _pixels[i] = color;
     }
-    public void drawTo(HDC dc, int x, int y) {
+    void drawTo(HDC dc, int x, int y) {
         BitBlt(dc, x, y, _dx, _dx, _drawdc, 0, 0, SRCCOPY);
     }
 }
