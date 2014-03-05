@@ -47,7 +47,7 @@
   <compiler>0</compiler>
   <otherDMD>0</otherDMD>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>../../src ../../3rdparty</imppath>
+  <imppath>$(SolutionDir)/src $(SolutionDir)/3rdparty $(SolutionDir)/3rdparty/libpng/source</imppath>
   <fileImppath />
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
@@ -84,7 +84,7 @@
   <objfiles />
   <linkswitches />
   <libfiles>phobos.lib ole32.lib kernel32.lib user32.lib comctl32.lib comdlg32.lib dlangui.lib</libfiles>
-  <libpaths>../../Debug ../../3rdparty/win32/lib</libpaths>
+  <libpaths>../../Debug ../../3rdparty/libpng/lib</libpaths>
   <deffile />
   <resfile />
   <exefile>$(OutDir)\$(ProjectName).exe</exefile>

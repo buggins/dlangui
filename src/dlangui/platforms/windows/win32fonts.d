@@ -429,13 +429,6 @@ class Win32FontManager : FontManager {
 	}
 }
 
-string fromStringz(const(char[]) s) {
-	int i = 0;
-	while(s[i])
-		i++;
-	return cast(string)(s[0..i].dup);
-}
-
 FontFamily pitchAndFamilyToFontFamily(ubyte flags) {
 	if ((flags & FF_DECORATIVE) == FF_DECORATIVE)
 		return FontFamily.Fantasy;

@@ -8,6 +8,7 @@ import std.string;
 import std.utf;
 import std.stdio;
 import std.algorithm;
+import std.file;
 import dlangui.platforms.common.platform;
 import dlangui.platforms.windows.win32fonts;
 import dlangui.platforms.windows.win32drawbuf;
@@ -19,7 +20,7 @@ pragma(lib, "gdi32.lib");
 pragma(lib, "user32.lib");
 pragma(lib, "libpng15.lib");
 
-extern (C) int UIAppMain();
+extern (C) int UIAppMain(string[] args);
 
 immutable WIN_CLASS_NAME = "DLANGUI_APP";
 
@@ -112,20 +113,26 @@ class Win32Platform : Platform {
     }
 }
 
+/// returns current executable path only, including last path delimiter
+string exePath() {
+    string path = thisExePath();
+    int lastSlash = 0;
+    for (int i = 0; i < path.length; i++)
+        if (path[i] == '\\')
+            lastSlash = i;
+    return path[0 .. lastSlash + 1];
+}
+
 extern(Windows)
 int DLANGUIWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
             LPSTR lpCmdLine, int nCmdShow) {
     int result;
 
-    void exceptionHandler(Throwable e) {
-        throw e;
-    }
-
     try
     {
-        Runtime.initialize(&exceptionHandler);
+        Runtime.initialize();
         result = myWinMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
-        Runtime.terminate(&exceptionHandler);
+        Runtime.terminate();
     }
     catch (Throwable e) // catch any uncaught exceptions
     {
@@ -137,10 +144,44 @@ int DLANGUIWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     return result;
 }
 
+string[] splitCmdLine(string line) {
+    string[] res;
+    int start = 0;
+    bool insideQuotes = false;
+    for (int i = 0; i <= line.length; i++) {
+        char ch = i < line.length ? line[i] : 0;
+        if (ch == '\"') {
+            if (insideQuotes) {
+                if (i > start)
+                    res ~= line[start .. i];
+                start = i + 1;
+                insideQuotes = false;
+            } else {
+                insideQuotes = true;
+                start = i + 1;
+            }
+        } else if (!insideQuotes && (ch == ' ' || ch == '\t' || ch == 0)) {
+            if (i > start) {
+                res ~= line[start .. i];
+            }
+            start = i + 1;
+        }
+    }
+    return res;
+}
+
 int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int iCmdShow)
 {
 	setFileLogger(std.stdio.File("ui.log", "w"));
 	setLogLevel(LogLevel.Trace);
+
+    string basePath = exePath();
+    Log.i("Current executable: ", exePath());
+
+    string cmdline = fromStringz(lpCmdLine);
+    Log.i("Command line: ", cmdline);
+    string[] args = splitCmdLine(cmdline);
+    Log.i("Command line params: ", args);
 
     _cmdShow = iCmdShow;
     _hInstance = hInstance;
@@ -156,7 +197,7 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
     Platform.setInstance(platform);
 	Win32FontManager fontMan = new Win32FontManager();
 	FontManager.instance = fontMan;
-    return UIAppMain();
+    return UIAppMain(args);
 }
 
 

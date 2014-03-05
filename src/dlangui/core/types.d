@@ -10,22 +10,22 @@ public struct Point {
 }
 
 public struct Rect {
-    public int left;
-    public int top;
-    public int right;
-    public int bottom;
-    public @property int width() { return right - left; }
-    public @property int height() { return bottom - top; }
-    public this(int x0, int y0, int x1, int y1) {
+    int left;
+    int top;
+    int right;
+    int bottom;
+    @property int width() { return right - left; }
+    @property int height() { return bottom - top; }
+    this(int x0, int y0, int x1, int y1) {
         left = x0;
         top = y0;
         right = x1;
         bottom = y1;
     }
-    public bool empty() {
+    @property bool empty() {
         return right <= left || bottom <= top;
     }
-    public bool intersect(Rect rc) {
+    bool intersect(Rect rc) {
         if (left < rc.left)
             left = rc.left;
         if (top < rc.top)
@@ -109,3 +109,27 @@ public struct Ref(T) { // if (T is RefCountedObject)
             _data.releaseRef();
     }
 }
+
+
+// some utility functions
+string fromStringz(const(char[]) s) {
+	int i = 0;
+	while(s[i])
+		i++;
+	return cast(string)(s[0..i].dup);
+}
+
+string fromStringz(const(char*) s) {
+	int i = 0;
+	while(s[i])
+		i++;
+	return cast(string)(s[0..i].dup);
+}
+
+wstring fromWStringz(const(wchar[]) s) {
+	int i = 0;
+	while(s[i])
+		i++;
+	return cast(wstring)(s[0..i].dup);
+}
+

@@ -1,7 +1,7 @@
 module winmain;
-pragma(lib, "dlangui.lib");
 
 import dlangui.platforms.common.platform;
+import dlangui.graphics.images;
 import dlangui.widgets.widget;
 import dlangui.core.logger;
 import dlangui.graphics.fonts;
@@ -20,6 +20,9 @@ version(Windows) {
     }
 }
 
+ImageCache imageCache;
+string resourceDir;
+
 class TestWidget : Widget {
 	public override void onDraw(DrawBuf buf) {
 		super.onDraw(buf);
@@ -34,10 +37,20 @@ class TestWidget : Widget {
 		Log.d("Got font, drawing text");
 		font.drawText(buf, _pos.left + 5, _pos.top + 5, "Text"d, 0x0000FF);
 		Log.d("Text is drawn successfully");
+        DrawBufRef img = imageCache.get(resourceDir ~ "exit.png");
+        if (!img.isNull) {
+            Log.d("loaded image ", img.width, "x", img.height);
+            buf.drawImage(200, 200, img);
+            buf.drawImage(250, 250, img);
+        }
 	}
 }
 
-extern (C) int UIAppMain() {
+extern (C) int UIAppMain(string[] args) {
+
+    imageCache = new ImageCache();
+    resourceDir = exePath() ~ "..\\res\\";
+
 	Log.d("Some debug message");
 	Log.e("Sample error #", 22);
 

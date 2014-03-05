@@ -1,5 +1,6 @@
 module dlangui.graphics.images;
 
+import dlangui.core.logger;
 import dlangui.graphics.drawbuf;
 import std.stream;
 import libpng.png;
@@ -66,6 +67,7 @@ class ImageCache {
 
 /// load and decode image from file to ColorDrawBuf, returns null if loading or decoding is failed
 ColorDrawBuf loadImage(string filename) {
+    Log.d("Loading image from file " ~ filename);
     try {
         std.stream.File f = new std.stream.File(filename);
 	    scope(exit) { f.close(); }
@@ -89,13 +91,19 @@ class ImageDecodingException : Exception {
     }
 }
 
-extern (C) void lvpng_error_func (png_structp png, png_const_charp)
+extern (C) void lvpng_error_func (png_structp png, png_const_charp msg)
 {
+    string s = fromStringz(msg);
+    Log.d("Error while reading PNG image: ", s);
+    // todo: exceptions do not work inside C function
     throw new ImageDecodingException("Error while decoding PNG image");
 }
 
-extern (C) void lvpng_warning_func (png_structp png, png_const_charp)
+extern (C) void lvpng_warning_func (png_structp png, png_const_charp msg)
 {
+    string s = fromStringz(msg);
+    Log.d("Warn while reading PNG image: ", s);
+    // todo: exceptions do not work inside C function
     throw new ImageDecodingException("Error while decoding PNG image");
 }
 
@@ -105,6 +113,8 @@ extern (C) void lvpng_read_func(png_structp png, png_bytep buf, png_size_t len)
     ubyte[] localbuf = new ubyte[len];
     if (stream.read(localbuf) != len)
         throw new ImageDecodingException("Error while reading PNG image");
+    for (uint i = 0; i < len; i++)
+        buf[i] = localbuf[i];
 }
 
 /// load and decode PNG image
