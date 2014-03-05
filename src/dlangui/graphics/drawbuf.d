@@ -18,9 +18,13 @@ uint blendARGB(uint dst, uint src, uint alpha) {
 
 class DrawBuf : RefCountedObject {
     protected Rect _clipRect;
+    /// returns current width
     @property int width() { return 0; }
+    /// returns current height
     @property int height() { return 0; }
+    /// returns clipping rectangle, when clipRect.isEmpty == true -- means no clipping.
     @property ref Rect clipRect() { return _clipRect; }
+    /// sets new clipping rectangle, when clipRect.isEmpty == true -- means no clipping.
     @property void clipRect(const ref Rect rect) { 
         _clipRect = rect; 
         _clipRect.intersect(Rect(0, 0, width, height));
@@ -40,6 +44,9 @@ class DrawBuf : RefCountedObject {
     }
     void beforeDrawing() { }
     void afterDrawing() { }
+    /// returns buffer bits per pixel
+    @property int bpp() { return 0; }
+    /// returns pointer to ARGB scanline, null if y is out of range or buffer doesn't provide access to its memory
     uint * scanLine(int y) { return null; }
     abstract void resize(int width, int height);
     abstract void fill(uint color);
@@ -52,9 +59,13 @@ class DrawBuf : RefCountedObject {
     ~this() { clear(); }
 }
 
+alias DrawBufRef = Ref!DrawBuf;
+
 class ColorDrawBufBase : DrawBuf {
     int _dx;
     int _dy;
+    /// returns buffer bits per pixel
+    override @property int bpp() { return 32; }
     @property override int width() { return _dx; }
     @property override int height() { return _dy; }
     override void fillRect(int left, int top, int right, int bottom, uint color) {

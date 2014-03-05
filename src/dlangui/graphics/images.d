@@ -3,7 +3,77 @@ module dlangui.graphics.images;
 import dlangui.graphics.drawbuf;
 import std.stream;
 import libpng.png;
-import core.sys.posix.setjmp;
+
+/// decoded image cache
+class ImageCache {
+
+    static class ImageCacheItem {
+        string _filename;
+        DrawBufRef _drawbuf;
+        bool _error; // flag to avoid loading of file if it has been failed once
+        bool _used;
+        this(string filename) {
+            _filename = filename;
+        }
+        @property ref DrawBufRef get() {
+            if (!_drawbuf.isNull || _error) {
+                _used = true;
+                return _drawbuf;
+            }
+            _drawbuf = loadImage(_filename);
+            _used = true;
+            if (_drawbuf.isNull)
+                _error = true;
+            return _drawbuf;
+        }
+        /// remove from memory, will cause reload on next access
+        void compact() {
+            if (!_drawbuf.isNull)
+                _drawbuf.clear();
+        }
+        /// mark as not used
+        void checkpoint() {
+            _used = false;
+        }
+        /// cleanup if unused since last checkpoint
+        void cleanup() {
+            if (!_used)
+                compact();
+        }
+    }
+    ImageCacheItem[string] _map;
+
+    /// get and cache image
+    ref DrawBufRef get(string filename) {
+        if (filename in _map) {
+            return _map[filename].get;
+        }
+        ImageCacheItem item = new ImageCacheItem(filename);
+        _map[filename] = item;
+        return item.get;
+    }
+	// clear usage flags for all entries
+	void checkpoint() {
+        foreach (item; _map)
+            item.checkpoint();
+    }
+	// removes entries not used after last call of checkpoint() or cleanup()
+	void cleanup() {
+        foreach (item; _map)
+            item.cleanup();
+    }
+}
+
+/// load and decode image from file to ColorDrawBuf, returns null if loading or decoding is failed
+ColorDrawBuf loadImage(string filename) {
+    try {
+        std.stream.File f = new std.stream.File(filename);
+	    scope(exit) { f.close(); }
+        return loadImage(f);
+    } catch (Exception e) {
+        return null;
+    }
+}
 
 /// load and decode image from stream to ColorDrawBuf, returns null if loading or decoding is failed
 ColorDrawBuf loadImage(InputStream stream) {
@@ -37,6 +107,7 @@ extern (C) void lvpng_read_func(png_structp png, png_bytep buf, png_size_t len)
         throw new ImageDecodingException("Error while reading PNG image");
 }
 
+/// load and decode PNG image
 ColorDrawBuf loadPngImage(InputStream stream)
 {
     png_structp png_ptr = null;
