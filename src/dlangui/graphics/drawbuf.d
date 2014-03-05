@@ -104,6 +104,20 @@ class DrawBuf : RefCountedObject {
 
 alias DrawBufRef = Ref!DrawBuf;
 
+/// RAII setting/restoring of clip rectangle
+struct ClipRectSaver {
+    DrawBuf _buf;
+    Rect _oldClipRect;
+    this(DrawBuf buf, Rect newClipRect) {
+        _buf = buf;
+        _oldClipRect = buf.clipRect;
+        buf.clipRect = newClipRect;
+    }
+    ~this() {
+        _buf.clipRect = _oldClipRect;
+    }
+}
+
 class ColorDrawBufBase : DrawBuf {
     int _dx;
     int _dy;

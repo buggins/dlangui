@@ -46,14 +46,14 @@ class Win32Window : Window {
                             cast(void*)this);                // creation parameters
     }
     Win32ColorDrawBuf getDrawBuf() {
-        RECT rect;
-        GetClientRect(_hwnd, &rect);
-        int dx = rect.right - rect.left;
-        int dy = rect.bottom - rect.top;
+        //RECT rect;
+        //GetClientRect(_hwnd, &rect);
+        //int dx = rect.right - rect.left;
+        //int dy = rect.bottom - rect.top;
         if (_drawbuf is null)
-            _drawbuf = new Win32ColorDrawBuf(dx, dy);
+            _drawbuf = new Win32ColorDrawBuf(_dx, _dy);
         else 
-            _drawbuf.resize(dx, dy);
+            _drawbuf.resize(_dx, _dy);
         return _drawbuf;
     }
     override void show() {
@@ -230,12 +230,17 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 int dy = rect.bottom - rect.top;
                 //window.onResize(pos.cx, pos.cy);
                 window.onResize(dx, dy);
+                UpdateWindow(hwnd);
             }
             return 0;
         case WM_ERASEBKGND:
             return 1;
         case WM_PAINT:
             {
+                GetClientRect(hwnd, &rect);
+                int dx = rect.right - rect.left;
+                int dy = rect.bottom - rect.top;
+                window.onResize(dx, dy);
                 hdc = BeginPaint(hwnd, &ps);
                 Win32ColorDrawBuf buf = window.getDrawBuf();
                 buf.fill(0x808080);

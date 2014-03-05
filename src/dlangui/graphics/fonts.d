@@ -4,12 +4,17 @@ public import dlangui.core.types;
 public import dlangui.core.logger;
 import std.algorithm;
 
-enum FontFamily : int {
+enum FontFamily : ubyte {
     SansSerif,
     Serif,
 	Fantasy,
 	Cursive,
     MonoSpace
+}
+
+enum FontWeight : int {
+    Normal = 400,
+    Bold = 800
 }
 
 struct Glyph
@@ -94,6 +99,14 @@ class Font : RefCountedObject {
     abstract @property bool isNull();
 	// measure text string, return accumulated widths[] (distance to end of n-th character), returns number of measured chars.
 	abstract int measureText(const dchar[] text, ref int[] widths, int maxWidth);
+	// measure text string as single line, returns width and height
+	Point textSize(const dchar[] text, int maxWidth = 3000) {
+        int[] widths = new int[text.length + 1];
+        int charsMeasured = measureText(text, widths, maxWidth);
+        if (charsMeasured < 1)
+            return Point(0,0);
+        return Point(widths[charsMeasured - 1], height);
+    }
 	// draw text string to buffer
 	abstract void drawText(DrawBuf buf, int x, int y, const dchar[] text, uint color);
 	abstract Glyph * getCharGlyph(dchar ch);

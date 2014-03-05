@@ -21,6 +21,8 @@ public class Window {
     abstract public @property string windowCaption();
     abstract public @property void windowCaption(string caption);
     public void onResize(int width, int height) {
+        if (_dx == width && _dy == height)
+            return;
         _dx = width;
         _dy = height;
         if (_mainWidget !is null) {

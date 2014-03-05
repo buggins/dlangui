@@ -55,7 +55,9 @@ extern (C) int UIAppMain(string[] args) {
 	Log.e("Sample error #", 22);
 
     Window window = Platform.instance().createWindow("My Window", null);
-    Widget myWidget = new TestWidget();
+    Widget myWidget = new TextWidget();
+    myWidget.text = "Some strange text string. 1234567890";
+    myWidget.alignment = Align.Center;
     window.mainWidget = myWidget;
     window.show();
     window.windowCaption = "New Window Caption";

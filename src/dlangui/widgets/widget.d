@@ -1,39 +1,41 @@
 module dlangui.widgets.widget;
 
-import dlangui.core.types;
-import dlangui.graphics.drawbuf;
+public import dlangui.core.types;
+public import dlangui.widgets.styles;
+public import dlangui.graphics.drawbuf;
+public import dlangui.graphics.fonts;
 import dlangui.platforms.common.platform;
 
-public class Widget {
-    Rect _pos;
-    Rect _margins;
-    Rect _padding;
-    int _measuredWidth;
-    int _measuredHeight;
-    bool _needLayout;
-    bool _needDraw;
-    Widget _parent;
-    Window _window;
+class Widget {
+    protected Rect _pos;
+    protected Rect _margins;
+    protected Rect _padding;
+    protected int _measuredWidth;
+    protected int _measuredHeight;
+    protected bool _needLayout;
+    protected bool _needDraw;
+    protected Widget _parent;
+    protected Window _window;
 
-    uint _backgroundColor = 0xC0C0C0;
+    protected uint _backgroundColor = 0xC0C0C0;
 
-    public this() {
+    this() {
         _needLayout = true;
         _needDraw = true;
     }
-    public @property Rect margins() { return _margins; }
-    public @property void margins(Rect rc) { _margins = rc; }
-    public @property Rect padding() { return _padding; }
-    public @property void padding(Rect rc) { _padding = rc; }
-    public @property uint backgroundColor() { return _backgroundColor; }
-    public @property void backgroundColor(uint color) { _backgroundColor = color; }
-    public @property bool needLayout() { return _needLayout; }
-    public @property bool needDraw() { return _needDraw; }
-    public @property int childCount() { return 0; }
-    public Widget child(int index) { return null; }
-    public @property Widget parent() { return _parent; }
-    public @property void parent(Widget parent) { _parent = parent; }
-    public @property Window window() {
+    @property Rect margins() { return _margins; }
+    @property void margins(Rect rc) { _margins = rc; }
+    @property Rect padding() { return _padding; }
+    @property void padding(Rect rc) { _padding = rc; }
+    @property uint backgroundColor() { return _backgroundColor; }
+    @property void backgroundColor(uint color) { _backgroundColor = color; }
+    @property bool needLayout() { return _needLayout; }
+    @property bool needDraw() { return _needDraw; }
+    @property int childCount() { return 0; }
+    Widget child(int index) { return null; }
+    @property Widget parent() { return _parent; }
+    @property void parent(Widget parent) { _parent = parent; }
+    @property Window window() {
         Widget p = this;
         while (p !is null) {
             if (p._window !is null)
@@ -42,37 +44,97 @@ public class Widget {
         }
         return null;
     }
-    public @property void window(Window window) { _window = window; }
-    public @property measuredWidth() { return _measuredWidth; }
-    public @property measuredHeight() { return _measuredHeight; }
-    public void measure(int width, int height) { 
-        _measuredWidth = _measuredHeight = 0;
-    }
-    public void layout(Rect rc) { 
-        _pos = rc;
-    }
-    public @property int width() { return _pos.width; }
-    public @property int height() { return _pos.height; }
-    public void applyMargins(ref Rect rc) {
+    @property void window(Window window) { _window = window; }
+    @property measuredWidth() { return _measuredWidth; }
+    @property measuredHeight() { return _measuredHeight; }
+    @property int width() { return _pos.width; }
+    @property int height() { return _pos.height; }
+    void applyMargins(ref Rect rc) {
         Rect m = margins;
         rc.left += m.left;
         rc.top += m.top;
         rc.bottom -= m.bottom;
         rc.right -= m.right;
     }
-    public void applyPadding(ref Rect rc) {
+    void applyPadding(ref Rect rc) {
         Rect m = padding;
         rc.left += m.left;
         rc.top += m.top;
         rc.bottom -= m.bottom;
         rc.right -= m.right;
     }
-    public void onDraw(DrawBuf buf) {
+    void measure(int width, int height) { 
+        _measuredWidth = _measuredHeight = 0;
+    }
+    void layout(Rect rc) {
+        _pos = rc;
+        _needLayout = false;
+    }
+    void onDraw(DrawBuf buf) {
         Rect rc = _pos;
         applyMargins(rc);
         buf.fillRect(_pos, _backgroundColor);
         applyPadding(rc);
         buf.fillRect(rc.left + rc.width / 2, rc.top, rc.left + rc.width / 2 + 2, rc.bottom, 0xFF8000);
         buf.fillRect(rc.left, rc.top + rc.height / 2, rc.right, rc.top + rc.height / 2 + 2, 0xFF80FF);
+        _needDraw = false;
+    }
+    ref FontRef getFont() {
+        return FontManager.instance.getFont(24, FontWeight.Normal, false, FontFamily.SansSerif, "Arial");
+    }
+    @property dstring text() { return ""; }
+    @property void text(dstring s) {  }
+    protected uint _textColor = 0x000000;
+    @property uint textColor() { return _textColor; }
+    @property void textColor(uint value) { _textColor = value; }
+    protected ubyte _alignment = Align.Left | Align.Top;
+    @property ubyte alignment() { return _alignment; }
+    @property Align valign() { return cast(Align)(_alignment & Align.VCenter); }
+    @property Align halign() { return cast(Align)(_alignment & Align.HCenter); }
+    @property void alignment(ubyte value) { _alignment = value; }
+    void applyAlign(ref Rect rc, Point sz) {
+        if (valign == Align.Bottom) {
+            rc.top = rc.bottom - sz.y;
+        } else if (valign == Align.VCenter) {
+            int dy = (rc.height - sz.y) / 2;
+            rc.top += dy;
+            rc.bottom = rc.top + sz.y;
+        } else {
+            rc.bottom = rc.top + sz.y;
+        }
+        if (halign == Align.Right) {
+            rc.left = rc.right - sz.x;
+        } else if (halign == Align.HCenter) {
+            int dx = (rc.width - sz.x) / 2;
+            rc.left += dx;
+            rc.right = rc.left + sz.x;
+        } else {
+            rc.right = rc.left + sz.x;
+        }
+    }
+}
+
+class TextWidget : Widget {
+    protected dstring _text;
+    override @property dstring text() { return _text; }
+    override @property void text(dstring s) { _text = s; }
+    override void measure(int width, int height) { 
+        _measuredWidth = _measuredHeight = 0;
+    }
+    override void layout(Rect rc) { 
+        _pos = rc;
+        _needLayout = false;
+    }
+    override void onDraw(DrawBuf buf) {
+        super.onDraw(buf);
+        Rect rc = _pos;
+        applyMargins(rc);
+        buf.fillRect(_pos, _backgroundColor);
+        applyPadding(rc);
+        ClipRectSaver(buf, rc);
+        FontRef font = getFont();
+        Point sz = font.textSize(text);
+        applyAlign(rc, sz);
+        font.drawText(buf, rc.left, rc.top, text, textColor);
     }
 }
