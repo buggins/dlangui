@@ -1,6 +1,5 @@
 module dlangui.platforms.windows.winapp;
 
-
 version (Windows) {
 
 import core.runtime;
@@ -31,7 +30,10 @@ struct FontDef {
 	}
 }
 
-class Win32Font : Font {
+/**
+* Font implementation based on Win32 API system fonts.
+*/
+public class Win32Font : Font {
     HFONT _hfont;
     int _size;
     int _height;
@@ -44,12 +46,16 @@ class Win32Font : Font {
     Win32ColorDrawBuf _drawbuf;
 	GlyphCache _glyphCache;
 
+	/// need to call create() after construction to initialize font
     public this() {
     }
+
+	/// do cleanup
 	public ~this() {
-		Log.d("Deleting font");
 		clear();
 	}
+
+	/// cleanup resources
     public override void clear() {
         if (_hfont !is null)
         {
@@ -262,6 +268,17 @@ class Win32Font : Font {
 		Log.d("Created font ", _face, " ", _size);
 		return true;
 	}
+
+	// clear usage flags for all entries
+	override void checkpoint() {
+		_glyphCache.checkpoint();
+	}
+
+	// removes entries not used after last call of checkpoint() or cleanup()
+	override void cleanup() {
+		_glyphCache.cleanup();
+	}
+
     public @property override int size() { return _size; }
     public @property override int height() { return _height; }
     public @property override int weight() { return _weight; }
@@ -273,15 +290,21 @@ class Win32Font : Font {
 }
 
 
-
+/**
+ * Font manager implementation based on Win32 API system fonts.
+ */
 class Win32FontManager : FontManager {
 	FontList _activeFonts;
 	FontDef[] _fontFaces;
 	FontDef*[string] _faceByName;
+
+	/// initialize in constructor
     public this() {
         instance = this;
         init();
     }
+
+	/// initialize font manager by enumerating of system fonts
     public bool init() {
 		Log.i("Win32FontManager.init()");
         Win32ColorDrawBuf drawbuf = new Win32ColorDrawBuf(1,1);
@@ -301,7 +324,11 @@ class Win32FontManager : FontManager {
 		Log.i("Found ", _fontFaces.length, " font faces");
         return res!=0;
     }
+
+	/// for returning of not found font
 	FontRef _emptyFontRef;
+
+	/// get font by properties
     public override ref FontRef getFont(int size, int weight, bool italic, FontFamily family, string face) {
 		Log.i("getFont()");
 		FontDef * def = findFace(family, face);
@@ -319,6 +346,8 @@ class Win32FontManager : FontManager {
 			return _emptyFontRef;
 		}
     }
+
+	/// find font face definition by family only (try to get one of defaults for family if possible)
 	FontDef * findFace(FontFamily family) {
 		FontDef * res = null;
 		switch(family) {
@@ -351,6 +380,8 @@ class Win32FontManager : FontManager {
 		}
 		return null;
 	}
+
+	/// find font face definition by face only
 	FontDef * findFace(string face) {
 		if (face.length == 0)
 			return null;
@@ -358,6 +389,8 @@ class Win32FontManager : FontManager {
 			return _faceByName[face];
 		return null;
 	}
+
+	/// find font face definition by family and face
 	public FontDef * findFace(FontFamily family, string face) {
 		// by face only
 		FontDef * res = findFace(face);
@@ -377,12 +410,25 @@ class Win32FontManager : FontManager {
 			return res;
 		return &_fontFaces[0];
 	}
+
+	/// register enumerated font
     public bool registerFont(FontFamily family, string fontFace, ubyte pitchAndFamily) {
 		Log.d("registerFont(", family, ",", fontFace, ")");
 		_fontFaces ~= FontDef(family, fontFace, pitchAndFamily);
 		_faceByName[fontFace] = &_fontFaces[$ - 1];
         return true;
     }
+
+	/// clear usage flags for all entries
+	public override void checkpoint() {
+		_activeFonts.checkpoint();
+	}
+
+	/// removes entries not used after last call of checkpoint() or cleanup()
+	public override void cleanup() {
+		_activeFonts.cleanup();
+		//_list.cleanup();
+	}
 }
 
 string fromStringz(const(char[]) s) {

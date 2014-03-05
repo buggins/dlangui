@@ -190,6 +190,11 @@
  </Config>
  <Folder name="dlangui">
   <Folder name="3rdparty">
+   <Folder name="libpng">
+    <File path="3rdparty\libpng\source\libpng\png.d" />
+    <File path="3rdparty\libpng\source\libpng\pngconf.d" />
+    <File path="3rdparty\libpng\source\libpng\pnglibconf.d" />
+   </Folder>
    <Folder name="win32">
     <File path="3rdparty\win32\basetsd.d" />
     <File path="3rdparty\win32\basetyps.d" />
