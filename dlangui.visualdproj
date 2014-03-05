@@ -191,9 +191,6 @@
  <Folder name="dlangui">
   <Folder name="3rdparty">
    <Folder name="libpng">
-    <Folder name="libs">
-     <File path="3rdparty\libpng\lib\libpng15.lib" />
-    </Folder>
     <File path="3rdparty\libpng\source\libpng\png.d" />
     <File path="3rdparty\libpng\source\libpng\pngconf.d" />
     <File path="3rdparty\libpng\source\libpng\pnglibconf.d" />
@@ -266,6 +263,8 @@
       <File path="src\dlangui\platforms\common\platform.d" />
      </Folder>
      <Folder name="windows">
+      <File path="src\dlangui\platforms\windows\win32drawbuf.d" />
+      <File path="src\dlangui\platforms\windows\win32fonts.d" />
       <File path="src\dlangui\platforms\windows\winapp.d" />
      </Folder>
     </Folder>
