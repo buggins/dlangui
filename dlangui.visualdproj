@@ -84,7 +84,7 @@
   <objfiles />
   <linkswitches />
   <libfiles>ole32.lib kernel32.lib user32.lib comctl32.lib comdlg32.lib</libfiles>
-  <libpaths />
+  <libpaths>3rdparty/libpng/lib</libpaths>
   <deffile />
   <resfile />
   <exefile>$(OutDir)\$(ProjectName).exe</exefile>
@@ -191,6 +191,9 @@
  <Folder name="dlangui">
   <Folder name="3rdparty">
    <Folder name="libpng">
+    <Folder name="libs">
+     <File path="3rdparty\libpng\lib\libpng15.lib" />
+    </Folder>
     <File path="3rdparty\libpng\source\libpng\png.d" />
     <File path="3rdparty\libpng\source\libpng\pngconf.d" />
     <File path="3rdparty\libpng\source\libpng\pnglibconf.d" />

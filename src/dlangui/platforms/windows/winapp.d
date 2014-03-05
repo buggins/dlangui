@@ -15,6 +15,7 @@ import dlangui.core.logger;
 
 pragma(lib, "gdi32.lib");
 pragma(lib, "user32.lib");
+pragma(lib, "libpng15.lib");
 
 struct FontDef {
     immutable FontFamily _family;
