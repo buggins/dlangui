@@ -1,0 +1,13 @@
+{
+	"name": "libpng",
+	"description": "D bindings to libpng.",
+	"homepage": "http://libpng.org/",
+	"license": "Boost",
+	"authors": [
+		"Lionello Lunesu"
+	],
+	"targetType": "sourceLibrary",
+	"dependencies": {
+	},
+	"libs": ["png"]
+}
