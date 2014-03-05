@@ -8,6 +8,8 @@ import dlangui.platforms.common.platform;
 
 class Widget {
     protected Rect _pos;
+	protected string _styleId;
+	protected Style _ownStyle;
     protected Rect _margins;
     protected Rect _padding;
     protected int _measuredWidth;
@@ -23,6 +25,21 @@ class Widget {
         _needLayout = true;
         _needDraw = true;
     }
+
+	//@property 
+	const (Style) style() const {
+		if (_ownStyle !is null)
+			return _ownStyle;
+		return currentTheme.get(_styleId);
+	}
+	//@property 
+	Style ownStyle() {
+		if (_ownStyle is null)
+			_ownStyle = currentTheme.modifyStyle(_styleId);
+		return _ownStyle;
+	}
+	@property void styleId(string id) { _styleId = id; }
+	@property string styleId() { return _styleId; }
     @property Rect margins() { return _margins; }
     @property void margins(Rect rc) { _margins = rc; }
     @property Rect padding() { return _padding; }

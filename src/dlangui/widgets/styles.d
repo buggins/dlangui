@@ -1,5 +1,6 @@
 module dlangui.widgets.styles;
 
+import dlangui.core.types;
 import dlangui.graphics.fonts;
 
 immutable ubyte ALIGN_UNSPECIFIED = 0;
@@ -23,11 +24,12 @@ enum Align : ubyte {
 	TopLeft = Left | Top,
 }
 
-
+/// style properties
 class Style {
 	protected string _id;
 	protected Theme _theme;
 	protected Style _parentStyle;
+	protected string _parentId;
 	protected ubyte _stateMask;
 	protected ubyte _stateValue;
 	protected ubyte _align = Align.TopLeft;
@@ -38,12 +40,29 @@ class Style {
 	protected ubyte _fontStyle = FONT_STYLE_UNSPECIFIED;
 	protected string _fontFace;
 	protected FontFamily _fontFamily = FontFamily.Unspecified;
+	protected Rect _padding;
+	protected Rect _margins;
+
 	protected Style[] _substates;
 	protected Style[] _children;
 
 	protected FontRef _font;
 
+	@property const(Theme) theme() {
+		if (_theme !is null)
+			return _theme;
+		return currentTheme;
+	}
+
 	@property string id() { return _id; }
+
+	@property Style parentStyle() {
+		if (_parentStyle !is null)
+			return _parentStyle;
+		if (_parentId !is null && currentTheme !is null)
+			return currentTheme.get(_parentId);
+		return null;
+	}
 
 	@property ref FontRef font() {
 		if (!_font.isNull)
@@ -63,9 +82,9 @@ class Style {
 		while(p !is null) {
 			if (p._fontFamily != FontFamily.Unspecified)
 				return p._fontFamily;
-			p = p._parentStyle;
+			p = p.parentStyle;
 		}
-		return _theme._fontFamily;
+		return theme._fontFamily;
 	}
 	/// font size
 	@property string fontFace() {
@@ -73,9 +92,9 @@ class Style {
 		while(p !is null) {
 			if (p._fontFace !is null)
 				return p._fontFace;
-			p = p._parentStyle;
+			p = p.parentStyle;
 		}
-		return _theme._fontFace;
+		return theme._fontFace;
 	}
 	/// font style - italic
 	@property bool fontItalic() {
@@ -83,9 +102,9 @@ class Style {
 		while(p !is null) {
 			if (p._fontStyle != FONT_STYLE_UNSPECIFIED)
 				return p._fontStyle == FONT_STYLE_ITALIC;
-			p = p._parentStyle;
+			p = p.parentStyle;
 		}
-		return _theme._fontStyle == FONT_STYLE_ITALIC;
+		return theme._fontStyle == FONT_STYLE_ITALIC;
 	}
 	/// font weight
 	@property ushort fontWeight() {
@@ -93,9 +112,9 @@ class Style {
 		while(p !is null) {
 			if (p._fontWeight != FONT_WEIGHT_UNSPECIFIED)
 				return p._fontWeight;
-			p = p._parentStyle;
+			p = p.parentStyle;
 		}
-		return _theme._fontWeight;
+		return theme._fontWeight;
 	}
 	/// font size
 	@property ushort fontSize() {
@@ -103,9 +122,21 @@ class Style {
 		while(p !is null) {
 			if (p._fontSize != FONT_SIZE_UNSPECIFIED)
 				return p._fontSize;
-			p = p._parentStyle;
+			p = p.parentStyle;
 		}
-		return _theme._fontSize;
+		return theme._fontSize;
+	}
+	/// padding
+	@property ref const(Rect) padding() {
+		if (_stateValue != 0)
+			return parentStyle._padding;
+		return _padding;
+	}
+	/// margins
+	@property ref const(Rect) margins() {
+		if (_stateValue != 0)
+			return parentStyle._margins;
+		return _margins;
 	}
 	/// text color
 	@property uint textColor() {
@@ -113,9 +144,9 @@ class Style {
 		while(p !is null) {
 			if (p._textColor != COLOR_UNSPECIFIED)
 				return p._textColor;
-			p = p._parentStyle;
+			p = p.parentStyle;
 		}
-		return _theme._textColor;
+		return theme._textColor;
 	}
 	/// background color
 	@property uint backgroundColor() {
@@ -123,9 +154,9 @@ class Style {
 		while(p !is null) {
 			if (p._backgroundColor != COLOR_UNSPECIFIED)
 				return p._backgroundColor;
-			p = p._parentStyle;
+			p = p.parentStyle;
 		}
-		return _theme._textColor;
+		return theme._textColor;
 	}
 	/// vertical alignment: Top / VCenter / Bottom
 	@property ubyte valign() { return _align & Align.VCenter; }
@@ -134,21 +165,25 @@ class Style {
 
 	@property Style fontFace(string face) {
 		_fontFace = face;
+		_font.clear();
 		return this;
 	}
 
 	@property Style fontStyle(ubyte style) {
 		_fontStyle = style;
+		_font.clear();
 		return this;
 	}
 
 	@property Style fontWeight(ushort weight) {
 		_fontWeight = weight;
+		_font.clear();
 		return this;
 	}
 
 	@property Style fontSize(ushort size) {
 		_fontSize = size;
+		_font.clear();
 		return this;
 	}
 
@@ -162,26 +197,46 @@ class Style {
 		return this;
 	}
 
+	@property Style margins(Rect rc) {
+		_margins = rc;
+		return this;
+	}
+
+	@property Style padding(Rect rc) {
+		_padding = rc;
+		return this;
+	}
+
 	this(Theme theme, string id) {
 		_theme = theme;
 		_parentStyle = theme;
 		_id = id;
 	}
 
-	Style createSubstyle(string id, ubyte stateMask = 0, ubyte stateValue = 0) {
-		Style child = _theme.createSubstyle(id);
+	/// create named substyle of this style
+	Style createSubstyle(string id) {
+		Style child = (_theme !is null ? _theme : currentTheme).createSubstyle(id);
 		child._parentStyle = this;
-		if (stateValue != 0) {
-			child._backgroundColor = COLOR_UNSPECIFIED;
-			_substates ~= child;
-		}
 		_children ~= child;
 		return child;
 	}
 
+	/// create state substyle for this style
+	Style createState(ubyte stateMask = 0, ubyte stateValue = 0) {
+		Style child = createSubstyle(id);
+		child._stateMask = stateMask;
+		child._stateValue = stateValue;
+		child._backgroundColor = COLOR_UNSPECIFIED;
+		_substates ~= child;
+		return child;
+	}
+
+	/// find substyle based on widget state (e.g. focused, pressed, ...)
 	Style forState(ubyte state) {
 		if (state == 0)
 			return this;
+		if (id is null && parentStyle !is null && _substates.length == 0)
+			return parentStyle.forState(state);
 		foreach(item; _substates) {
 			if ((item._stateMask & state) == item._stateValue)
 				return item;
@@ -205,18 +260,31 @@ class Theme : Style {
 		_fontFace = "Arial"; // TODO: from settings
 	}
 
-	override Style createSubstyle(string id, ubyte stateMask = 0, ubyte stateValue = 0) {
+	/// create wrapper style which will have currentTheme.get(id) as parent instead of fixed parent - to modify some base style properties in widget
+	Style modifyStyle(string id) {
+		Style style = new Style(null, null);
+		style._parentId = id;
+		return style;
+	}
+
+	/// create new named style
+	override Style createSubstyle(string id) {
 		Style style = new Style(this, id);
-		style._stateMask = stateMask;
-		style._stateValue = stateValue;
 		if (id !is null)
 			_byId[id] = style;
 		return style;
 	}
 
+	/// find style by id, returns theme if not style with specified ID is not found
 	@property Style get(string id) {
-		if (id in _byId)
+		if (id !is null && id in _byId)
 			return _byId[id];
 		return this;
 	}
+}
+
+__gshared Theme currentTheme;
+
+static this() {
+	currentTheme = new Theme("default");
 }
