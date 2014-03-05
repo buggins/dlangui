@@ -5,6 +5,7 @@ public import dlangui.core.logger;
 import std.algorithm;
 
 enum FontFamily : ubyte {
+    Unspecified,
     SansSerif,
     Serif,
 	Fantasy,
