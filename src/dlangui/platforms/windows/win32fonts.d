@@ -298,8 +298,12 @@ class Win32FontManager : FontManager {
 
 	/// initialize in constructor
     this() {
+        Log.i("Creating Win32FontManager");
         instance = this;
         init();
+    }
+    ~this() {
+        Log.i("Destroying Win32FontManager");
     }
 
 	/// initialize font manager by enumerating of system fonts

@@ -132,7 +132,7 @@ int DLANGUIWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     {
         Runtime.initialize();
         result = myWinMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
-        Runtime.terminate();
+        //Runtime.terminate();
     }
     catch (Throwable e) // catch any uncaught exceptions
     {
@@ -174,10 +174,9 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
 {
 	setFileLogger(std.stdio.File("ui.log", "w"));
 	setLogLevel(LogLevel.Trace);
-
+    Log.d("myWinMain()");
     string basePath = exePath();
     Log.i("Current executable: ", exePath());
-
     string cmdline = fromStringz(lpCmdLine);
     Log.i("Command line: ", cmdline);
     string[] args = splitCmdLine(cmdline);
@@ -185,19 +184,21 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
 
     _cmdShow = iCmdShow;
     _hInstance = hInstance;
-    Log.d("Inside myWinMain");
-    string appName = "HelloWin";
-
 
     Win32Platform platform = new Win32Platform();
     if (!platform.registerWndClass()) {
-        MessageBoxA(null, "This program requires Windows NT!", appName.toStringz, MB_ICONERROR);
+        MessageBoxA(null, "This program requires Windows NT!", "DLANGUI App".toStringz, MB_ICONERROR);
         return 0;
     }
     Platform.setInstance(platform);
+
 	Win32FontManager fontMan = new Win32FontManager();
 	FontManager.instance = fontMan;
-    return UIAppMain(args);
+
+    Log.i("Entering UIAppMain: ", args);
+    int result = UIAppMain(args);
+    Log.i("UIAppMain returned ", result);
+    return result;
 }
 
 
@@ -224,10 +225,15 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_WINDOWPOSCHANGED:
             {
                 WINDOWPOS * pos = cast(WINDOWPOS*)lParam;
-                window.onResize(pos.cx, pos.cy);
+                GetClientRect(hwnd, &rect);
+                int dx = rect.right - rect.left;
+                int dy = rect.bottom - rect.top;
+                //window.onResize(pos.cx, pos.cy);
+                window.onResize(dx, dy);
             }
             return 0;
-
+        case WM_ERASEBKGND:
+            return 1;
         case WM_PAINT:
             {
                 hdc = BeginPaint(hwnd, &ps);

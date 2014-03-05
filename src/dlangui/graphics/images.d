@@ -63,6 +63,13 @@ class ImageCache {
         foreach (item; _map)
             item.cleanup();
     }
+
+    this() {
+        Log.i("Creating ImageCache");
+    }
+    ~this() {
+        Log.i("Destroying ImageCache");
+    }
 }
 
 /// load and decode image from file to ColorDrawBuf, returns null if loading or decoding is failed
