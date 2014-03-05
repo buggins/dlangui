@@ -257,6 +257,7 @@
     <Folder name="graphics">
      <File path="src\dlangui\graphics\drawbuf.d" />
      <File path="src\dlangui\graphics\fonts.d" />
+     <File path="src\dlangui\graphics\images.d" />
     </Folder>
     <Folder name="platforms">
      <Folder name="common">
