@@ -83,8 +83,8 @@
   <cv2pdbOptions />
   <objfiles />
   <linkswitches />
-  <libfiles>phobos.lib ole32.lib kernel32.lib user32.lib comctl32.lib comdlg32.lib dlangui.lib</libfiles>
-  <libpaths>../../Debug ../../3rdparty/libpng/lib</libpaths>
+  <libfiles>dlangui.lib phobos.lib ole32.lib kernel32.lib user32.lib comctl32.lib comdlg32.lib dlangui.lib</libfiles>
+  <libpaths>$(SolutionDir)/Debug $(SolutionDir)/3rdparty/libpng/lib</libpaths>
   <deffile />
   <resfile />
   <exefile>$(OutDir)\$(ProjectName).exe</exefile>
@@ -136,12 +136,12 @@
   <pic>0</pic>
   <cov>0</cov>
   <nofloat>0</nofloat>
-  <Dversion>2.043</Dversion>
+  <Dversion>2</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
   <compiler>0</compiler>
   <otherDMD>0</otherDMD>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath />
+  <imppath>$(SolutionDir)/src $(SolutionDir)/3rdparty $(SolutionDir)/3rdparty/libpng/source</imppath>
   <fileImppath />
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
@@ -177,8 +177,8 @@
   <cv2pdbOptions />
   <objfiles />
   <linkswitches />
-  <libfiles>ole32.lib kernel32.lib user32.lib comctl32.lib comdlg32.lib</libfiles>
-  <libpaths />
+  <libfiles>dlangui.lib phobos.lib ole32.lib kernel32.lib user32.lib comctl32.lib comdlg32.lib</libfiles>
+  <libpaths>$(SolutionDir)/Release $(SolutionDir)/3rdparty/libpng/lib</libpaths>
   <deffile />
   <resfile />
   <exefile>$(OutDir)\$(ProjectName).exe</exefile>
