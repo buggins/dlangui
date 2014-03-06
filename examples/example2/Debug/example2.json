@@ -1,0 +1,73 @@
+[
+ {
+  "name" : "winmain",
+  "kind" : "module",
+  "file" : "winmain.d",
+  "members" : [
+   {
+    "name" : "core.runtime",
+    "kind" : "import",
+    "line" : 3,
+    "protection" : "private"
+   },
+   {
+    "name" : "core.sys.windows.windows",
+    "kind" : "import",
+    "line" : 4,
+    "protection" : "private"
+   },
+   {
+    "name" : "WinMain",
+    "kind" : "function",
+    "line" : 7,
+    "deco" : "WPvPvPaiZi",
+    "originalType" : "extern (Windows) int(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)",
+    "parameters" : [
+     {
+      "name" : "hInstance",
+      "deco" : "Pv"
+     },
+     {
+      "name" : "hPrevInstance",
+      "deco" : "Pv"
+     },
+     {
+      "name" : "lpCmdLine",
+      "deco" : "Pa"
+     },
+     {
+      "name" : "nCmdShow",
+      "deco" : "i"
+     }
+    ],
+    "endline" : 26
+   },
+   {
+    "name" : "myWinMain",
+    "kind" : "function",
+    "line" : 28,
+    "deco" : "FPvPvPaiZi",
+    "originalType" : "int(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)",
+    "parameters" : [
+     {
+      "name" : "hInstance",
+      "deco" : "Pv"
+     },
+     {
+      "name" : "hPrevInstance",
+      "deco" : "Pv"
+     },
+     {
+      "name" : "lpCmdLine",
+      "deco" : "Pa"
+     },
+     {
+      "name" : "nCmdShow",
+      "deco" : "i"
+     }
+    ],
+    "endline" : 33
+   }
+  ]
+ }
+]

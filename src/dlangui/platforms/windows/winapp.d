@@ -113,16 +113,6 @@ class Win32Platform : Platform {
     }
 }
 
-/// returns current executable path only, including last path delimiter
-string exePath() {
-    string path = thisExePath();
-    int lastSlash = 0;
-    for (int i = 0; i < path.length; i++)
-        if (path[i] == '\\')
-            lastSlash = i;
-    return path[0 .. lastSlash + 1];
-}
-
 extern(Windows)
 int DLANGUIWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
             LPSTR lpCmdLine, int nCmdShow) {
@@ -267,3 +257,5 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 // end of version(Windows)
 //===========================================
 } 
+
+

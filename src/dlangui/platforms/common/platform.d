@@ -2,6 +2,7 @@ module dlangui.platforms.common.platform;
 
 import dlangui.widgets.widget;
 import dlangui.graphics.drawbuf;
+import std.file;
 
 public class Window {
     int _dx;
@@ -48,3 +49,19 @@ public class Platform {
     abstract public int enterMessageLoop();
 }
 
+version (Windows) {
+    immutable char PATH_DELIMITER = '\\';
+}
+version (Unix) {
+    immutable char PATH_DELIMITER = '/';
+}
+
+/// returns current executable path only, including last path delimiter
+string exePath() {
+    string path = thisExePath();
+    int lastSlash = 0;
+    for (int i = 0; i < path.length; i++)
+        if (path[i] == PATH_DELIMITER)
+            lastSlash = i;
+    return path[0 .. lastSlash + 1];
+}

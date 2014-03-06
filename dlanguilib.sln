@@ -5,6 +5,8 @@ Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dlangui", "dlanguilib.visua
 EndProject
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "example1", "examples\example1\example1.visualdproj", "{68C78CC1-6176-4C60-B4B6-520475C26D23}"
 EndProject
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "test", "examples\test\test.visualdproj", "{3AA2FFC7-A7A5-4BAC-BED9-2F30E1A893FE}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -19,6 +21,10 @@ Global
 		{68C78CC1-6176-4C60-B4B6-520475C26D23}.Debug|Win32.Build.0 = Debug|Win32
 		{68C78CC1-6176-4C60-B4B6-520475C26D23}.Release|Win32.ActiveCfg = Release|Win32
 		{68C78CC1-6176-4C60-B4B6-520475C26D23}.Release|Win32.Build.0 = Release|Win32
+		{3AA2FFC7-A7A5-4BAC-BED9-2F30E1A893FE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3AA2FFC7-A7A5-4BAC-BED9-2F30E1A893FE}.Debug|Win32.Build.0 = Debug|Win32
+		{3AA2FFC7-A7A5-4BAC-BED9-2F30E1A893FE}.Release|Win32.ActiveCfg = Release|Win32
+		{3AA2FFC7-A7A5-4BAC-BED9-2F30E1A893FE}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

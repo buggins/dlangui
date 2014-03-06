@@ -48,13 +48,27 @@ class Style {
 
 	protected FontRef _font;
 
-	@property const(Theme) theme() {
+	@property const(Theme) theme() const {
+		if (_theme !is null)
+			return _theme;
+		return currentTheme;
+	}
+
+	@property Theme theme() {
 		if (_theme !is null)
 			return _theme;
 		return currentTheme;
 	}
 
 	@property string id() { return _id; }
+
+	@property const(Style) parentStyle() const {
+		if (_parentStyle !is null)
+			return _parentStyle;
+		if (_parentId !is null && currentTheme !is null)
+			return currentTheme.get(_parentId);
+		return null;
+	}
 
 	@property Style parentStyle() {
 		if (_parentStyle !is null)
@@ -64,104 +78,86 @@ class Style {
 		return null;
 	}
 
-	@property ref FontRef font() {
-		if (!_font.isNull)
-			return _font;
-		string face = fontFace();
-		int size = fontSize();
-		ushort weight = fontWeight();
-		bool italic = fontItalic();
-		FontFamily family = fontFamily();
-		_font = FontManager.instance.getFont(size, weight, italic, family, face);
-		return _font;
+	@property ref FontRef font() const {
+		if (!(cast(Style)this)._font.isNull)
+			return (cast(Style)this)._font;
+		string face = fontFace;
+		int size = fontSize;
+		ushort weight = fontWeight;
+		bool italic = fontItalic;
+		FontFamily family = fontFamily;
+		(cast(Style)this)._font = FontManager.instance.getFont(size, weight, italic, family, face);
+		return (cast(Style)this)._font;
 	}
 
 	/// font size
-	@property FontFamily fontFamily() {
-		Style p = this;
-		while(p !is null) {
-			if (p._fontFamily != FontFamily.Unspecified)
-				return p._fontFamily;
-			p = p.parentStyle;
-		}
-		return theme._fontFamily;
+	@property FontFamily fontFamily() const {
+        if (_fontFamily != FontFamily.Unspecified)
+            return _fontFamily;
+        else
+            return parentStyle.fontFamily;
 	}
 	/// font size
-	@property string fontFace() {
-		Style p = this;
-		while(p !is null) {
-			if (p._fontFace !is null)
-				return p._fontFace;
-			p = p.parentStyle;
-		}
-		return theme._fontFace;
+	@property string fontFace() const {
+        if (_fontFace !is null)
+            return _fontFace;
+        else
+            return parentStyle.fontFace;
 	}
 	/// font style - italic
-	@property bool fontItalic() {
-		Style p = this;
-		while(p !is null) {
-			if (p._fontStyle != FONT_STYLE_UNSPECIFIED)
-				return p._fontStyle == FONT_STYLE_ITALIC;
-			p = p.parentStyle;
-		}
-		return theme._fontStyle == FONT_STYLE_ITALIC;
+	@property bool fontItalic() const {
+        if (_fontStyle != FONT_STYLE_UNSPECIFIED)
+            return _fontStyle == FONT_STYLE_ITALIC;
+        else
+            return parentStyle.fontItalic;
 	}
 	/// font weight
-	@property ushort fontWeight() {
-		Style p = this;
-		while(p !is null) {
-			if (p._fontWeight != FONT_WEIGHT_UNSPECIFIED)
-				return p._fontWeight;
-			p = p.parentStyle;
-		}
-		return theme._fontWeight;
+	@property ushort fontWeight() const {
+        if (_fontWeight != FONT_WEIGHT_UNSPECIFIED)
+            return _fontWeight;
+        else
+            return parentStyle.fontWeight;
 	}
 	/// font size
-	@property ushort fontSize() {
-		Style p = this;
-		while(p !is null) {
-			if (p._fontSize != FONT_SIZE_UNSPECIFIED)
-				return p._fontSize;
-			p = p.parentStyle;
-		}
-		return theme._fontSize;
+	@property ushort fontSize() const {
+        if (_fontSize != FONT_SIZE_UNSPECIFIED)
+            return _fontSize;
+        else
+            return parentStyle.fontSize;
 	}
 	/// padding
-	@property ref const(Rect) padding() {
+	@property ref const(Rect) padding() const {
 		if (_stateValue != 0)
 			return parentStyle._padding;
 		return _padding;
 	}
 	/// margins
-	@property ref const(Rect) margins() {
+	@property ref const(Rect) margins() const {
 		if (_stateValue != 0)
 			return parentStyle._margins;
 		return _margins;
 	}
+
 	/// text color
-	@property uint textColor() {
-		Style p = this;
-		while(p !is null) {
-			if (p._textColor != COLOR_UNSPECIFIED)
-				return p._textColor;
-			p = p.parentStyle;
-		}
-		return theme._textColor;
+	@property uint textColor() const {
+        if (_textColor != COLOR_UNSPECIFIED)
+            return _textColor;
+        else
+            return parentStyle.textColor;
 	}
+
 	/// background color
-	@property uint backgroundColor() {
-		Style p = this;
-		while(p !is null) {
-			if (p._backgroundColor != COLOR_UNSPECIFIED)
-				return p._backgroundColor;
-			p = p.parentStyle;
-		}
-		return theme._textColor;
+	@property uint backgroundColor() const {
+        if (_backgroundColor != COLOR_UNSPECIFIED)
+            return _backgroundColor;
+        else
+            return parentStyle.backgroundColor;
 	}
+
 	/// vertical alignment: Top / VCenter / Bottom
-	@property ubyte valign() { return _align & Align.VCenter; }
+	@property ubyte valign() const { return _align & Align.VCenter; }
 	/// horizontal alignment: Left / HCenter / Right
-	@property ubyte halign() { return _align & Align.HCenter; }
+	@property ubyte halign() const { return _align & Align.HCenter; }
 
 	@property Style fontFace(string face) {
 		_fontFace = face;

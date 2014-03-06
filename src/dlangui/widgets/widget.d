@@ -10,16 +10,12 @@ class Widget {
     protected Rect _pos;
 	protected string _styleId;
 	protected Style _ownStyle;
-    protected Rect _margins;
-    protected Rect _padding;
     protected int _measuredWidth;
     protected int _measuredHeight;
     protected bool _needLayout;
     protected bool _needDraw;
     protected Widget _parent;
     protected Window _window;
-
-    protected uint _backgroundColor = 0xC0C0C0;
 
     this() {
         _needLayout = true;
@@ -38,14 +34,14 @@ class Widget {
 			_ownStyle = currentTheme.modifyStyle(_styleId);
 		return _ownStyle;
 	}
-	@property void styleId(string id) { _styleId = id; }
+    @property void styleId(string id) { _styleId = id; }
 	@property string styleId() { return _styleId; }
-    @property Rect margins() { return _margins; }
-    @property void margins(Rect rc) { _margins = rc; }
-    @property Rect padding() { return _padding; }
-    @property void padding(Rect rc) { _padding = rc; }
-    @property uint backgroundColor() { return _backgroundColor; }
-    @property void backgroundColor(uint color) { _backgroundColor = color; }
+    @property Rect margins() { return style.margins; }
+    @property void margins(Rect rc) { ownStyle.margins = rc; }
+    @property Rect padding() { return style.padding; }
+    @property void padding(Rect rc) { ownStyle.padding = rc; }
+    @property uint backgroundColor() { return style.backgroundColor; }
+    @property void backgroundColor(uint color) { ownStyle.backgroundColor = color; }
     @property bool needLayout() { return _needLayout; }
     @property bool needDraw() { return _needDraw; }
     @property int childCount() { return 0; }
@@ -90,7 +86,7 @@ class Widget {
     void onDraw(DrawBuf buf) {
         Rect rc = _pos;
         applyMargins(rc);
-        buf.fillRect(_pos, _backgroundColor);
+        buf.fillRect(_pos, backgroundColor);
         applyPadding(rc);
         buf.fillRect(rc.left + rc.width / 2, rc.top, rc.left + rc.width / 2 + 2, rc.bottom, 0xFF8000);
         buf.fillRect(rc.left, rc.top + rc.height / 2, rc.right, rc.top + rc.height / 2 + 2, 0xFF80FF);
@@ -146,7 +142,7 @@ class TextWidget : Widget {
         super.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
-        buf.fillRect(_pos, _backgroundColor);
+        buf.fillRect(_pos, backgroundColor);
         applyPadding(rc);
         ClipRectSaver(buf, rc);
         FontRef font = getFont();

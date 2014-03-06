@@ -7,21 +7,22 @@ import dlangui.core.logger;
 import dlangui.graphics.fonts;
 import std.stdio;
 
+ImageCache imageCache;
+string resourceDir;
+
 version(Windows) {
     import win32.windows;
     import dlangui.platforms.windows.winapp;
     /// workaround for link issue when WinMain is located in library
     extern (Windows)
-    int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                LPSTR lpCmdLine, int nCmdShow)
-    {
-        return DLANGUIWinMain(hInstance, hPrevInstance,
-                       lpCmdLine, nCmdShow);
-    }
+        int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+                    LPSTR lpCmdLine, int nCmdShow)
+        {
+            return DLANGUIWinMain(hInstance, hPrevInstance,
+                                  lpCmdLine, nCmdShow);
+        }
 }
 
-ImageCache imageCache;
-string resourceDir;
 
 class TestWidget : Widget {
 	public override void onDraw(DrawBuf buf) {
