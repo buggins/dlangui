@@ -92,35 +92,35 @@ class Style {
 
 	/// font size
 	@property FontFamily fontFamily() const {
-        if (_fontFamily != FontFamily.Unspecified)
+        if (_fontFamily != FontFamily.Unspecified || _parentStyle is null)
             return _fontFamily;
         else
             return parentStyle.fontFamily;
 	}
 	/// font size
 	@property string fontFace() const {
-        if (_fontFace !is null)
+        if (_fontFace !is null || _parentStyle is null)
             return _fontFace;
         else
             return parentStyle.fontFace;
 	}
 	/// font style - italic
 	@property bool fontItalic() const {
-        if (_fontStyle != FONT_STYLE_UNSPECIFIED)
+        if (_fontStyle != FONT_STYLE_UNSPECIFIED || _parentStyle is null)
             return _fontStyle == FONT_STYLE_ITALIC;
         else
             return parentStyle.fontItalic;
 	}
 	/// font weight
 	@property ushort fontWeight() const {
-        if (_fontWeight != FONT_WEIGHT_UNSPECIFIED)
+        if (_fontWeight != FONT_WEIGHT_UNSPECIFIED || _parentStyle is null)
             return _fontWeight;
         else
             return parentStyle.fontWeight;
 	}
 	/// font size
 	@property ushort fontSize() const {
-        if (_fontSize != FONT_SIZE_UNSPECIFIED)
+        if (_fontSize != FONT_SIZE_UNSPECIFIED || _parentStyle is null)
             return _fontSize;
         else
             return parentStyle.fontSize;
@@ -140,7 +140,7 @@ class Style {
 
 	/// text color
 	@property uint textColor() const {
-        if (_textColor != COLOR_UNSPECIFIED)
+        if (_textColor != COLOR_UNSPECIFIED || _parentStyle is null)
             return _textColor;
         else
             return parentStyle.textColor;
@@ -148,19 +148,38 @@ class Style {
 
 	/// background color
 	@property uint backgroundColor() const {
-        if (_backgroundColor != COLOR_UNSPECIFIED)
+        if (_backgroundColor != COLOR_UNSPECIFIED || _parentStyle is null)
             return _backgroundColor;
         else
             return parentStyle.backgroundColor;
 	}
 
+	/// get full alignment (both vertical and horizontal)
+	@property ubyte alignment() const { 
+        if (_align != Align.Unspecified || _parentStyle is null)
+            return _align; 
+        else
+            return parentStyle.alignment;
+    }
 	/// vertical alignment: Top / VCenter / Bottom
 	@property ubyte valign() const { return _align & Align.VCenter; }
 	/// horizontal alignment: Left / HCenter / Right
 	@property ubyte halign() const { return _align & Align.HCenter; }
 
+    /// set alignment
+    @property Style alignment(ubyte value) {
+        _align = value;
+        return this;
+    }
+
 	@property Style fontFace(string face) {
 		_fontFace = face;
+		_font.clear();
+		return this;
+	}
+
+	@property Style fontFamily(FontFamily family) {
+		_fontFamily = family;
 		_font.clear();
 		return this;
 	}
@@ -241,6 +260,7 @@ class Style {
 	}
 }
 
+/// Theme - root for style hierarhy.
 class Theme : Style {
 	protected Style[string] _byId;
 
@@ -268,6 +288,7 @@ class Theme : Style {
 		Style style = new Style(this, id);
 		if (id !is null)
 			_byId[id] = style;
+        style._parentStyle = this; // as initial value, use theme as parent
 		return style;
 	}
 
@@ -279,8 +300,10 @@ class Theme : Style {
 	}
 }
 
-__gshared Theme currentTheme;
+/// to access current theme
+private __gshared Theme _currentTheme;
+@property Theme currentTheme() { return _currentTheme; }
 
 static this() {
-	currentTheme = new Theme("default");
+	_currentTheme = new Theme("default");
 }

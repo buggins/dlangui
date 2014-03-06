@@ -4,6 +4,9 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dlangui", "dlanguilib.visualdproj", "{5FF17402-9997-4D0E-8068-6D84B8769D98}"
 EndProject
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "example1", "examples\example1\example1.visualdproj", "{68C78CC1-6176-4C60-B4B6-520475C26D23}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5FF17402-9997-4D0E-8068-6D84B8769D98} = {5FF17402-9997-4D0E-8068-6D84B8769D98}
+	EndProjectSection
 EndProject
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "test", "examples\test\test.visualdproj", "{3AA2FFC7-A7A5-4BAC-BED9-2F30E1A893FE}"
 EndProject
