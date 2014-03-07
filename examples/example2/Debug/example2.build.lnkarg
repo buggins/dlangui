@@ -1,8 +1,0 @@
- 
-"Debug\example2.obj","Debug\example2.exe_cv","Debug\example2.map",ole32.lib+ 
-kernel32.lib+ 
-user32.lib+ 
-comctl32.lib+ 
-comdlg32.lib+ 
-user32.lib+ 
-kernel32.lib/NOMAP/CO/NOI /SUBSYSTEM:WINDOWS 
