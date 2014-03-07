@@ -162,6 +162,20 @@ class Widget {
     /// set max height constraint (0 for no constraint)
     @property Widget minHeight(int value) { ownStyle.minHeight = value; return this; }
 
+    /// returns layout width options (WRAP_CONTENT, FILL_PARENT, or some constant value)
+    @property int layoutWidth() { return style.layoutWidth; }
+    /// returns layout height options (WRAP_CONTENT, FILL_PARENT, or some constant value)
+    @property int layoutHeight() { return style.layoutHeight; }
+    /// returns layout weight (while resizing to fill parent, widget will be resized proportionally to this value)
+    @property int layoutWeight() { return style.layoutWeight; }
+
+    /// sets layout width options (WRAP_CONTENT, FILL_PARENT, or some constant value)
+    @property Widget layoutWidth(int value) { ownStyle.layoutWidth = value; return this; }
+    /// sets layout height options (WRAP_CONTENT, FILL_PARENT, or some constant value)
+    @property Widget layoutHeight(int value) { ownStyle.layoutHeight = value; return this; }
+    /// sets layout weight (while resizing to fill parent, widget will be resized proportionally to this value)
+    @property Widget layoutWeight(int value) { ownStyle.layoutWeight = value; return this; }
+
     /// returns widget visibility (Visible, Invisible, Gone)
     @property Visibility visibility() { return _visibility; }
     /// sets widget visibility (Visible, Invisible, Gone)

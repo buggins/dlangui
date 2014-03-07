@@ -16,6 +16,10 @@ immutable ubyte FONT_STYLE_ITALIC = 0x01;
 /// use as widget.layout() param to avoid applying of parent size
 immutable int SIZE_UNSPECIFIED = int.max;
 
+immutable int FILL_PARENT = int.max - 1;
+immutable int WRAP_CONTENT = int.max - 2;
+immutable int WEIGHT_UNSPECIFIED = -1;
+
 enum Align : ubyte {
     Unspecified = ALIGN_UNSPECIFIED,
     Left = 1,
@@ -51,6 +55,9 @@ class Style {
     protected int _maxWidth = SIZE_UNSPECIFIED;
     protected int _minHeight = SIZE_UNSPECIFIED;
     protected int _maxHeight = SIZE_UNSPECIFIED;
+    protected int _layoutWidth = SIZE_UNSPECIFIED;
+    protected int _layoutHeight = SIZE_UNSPECIFIED;
+    protected int _layoutWeight = WEIGHT_UNSPECIFIED;
 
 	protected Style[] _substates;
 	protected Style[] _children;
@@ -253,6 +260,46 @@ class Style {
     }
 
 
+	/// layout width parameter
+	@property uint layoutWidth() const {
+        if (_layoutWidth != SIZE_UNSPECIFIED)
+            return _layoutWidth;
+        else
+            return parentStyle.layoutWidth;
+	}
+
+	/// layout height parameter
+	@property uint layoutHeight() const {
+        if (_layoutHeight != SIZE_UNSPECIFIED)
+            return _layoutHeight;
+        else
+            return parentStyle.layoutHeight;
+	}
+
+	/// layout weight parameter
+	@property uint layoutWeight() const {
+        if (_layoutWeight != WEIGHT_UNSPECIFIED)
+            return _layoutWeight;
+        else
+            return parentStyle.layoutWeight;
+	}
+
+    /// set layout height
+    @property Style layoutHeight(int value) {
+        _layoutHeight = value;
+        return this;
+    }
+    /// set layout width
+    @property Style layoutWidth(int value) {
+        _layoutWidth = value;
+        return this;
+    }
+    /// set layout weight
+    @property Style layoutWeight(int value) {
+        _layoutWeight = value;
+        return this;
+    }
+
     //===================================================
     // alignment
 
@@ -387,6 +434,9 @@ class Theme : Style {
         _fontFamily = FontFamily.SansSerif;
         _minHeight = 0;
         _minWidth = 0;
+        _layoutWidth = WRAP_CONTENT;
+        _layoutHeight = WRAP_CONTENT;
+        _layoutWeight = 1;
 	}
 
 	/// create wrapper style which will have currentTheme.get(id) as parent instead of fixed parent - to modify some base style properties in widget
