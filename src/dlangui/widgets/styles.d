@@ -97,6 +97,7 @@ class Style {
         else
             return parentStyle.fontFamily;
 	}
+
 	/// font size
 	@property string fontFace() const {
         if (_fontFace !is null || _parentStyle is null)
@@ -104,6 +105,7 @@ class Style {
         else
             return parentStyle.fontFace;
 	}
+
 	/// font style - italic
 	@property bool fontItalic() const {
         if (_fontStyle != FONT_STYLE_UNSPECIFIED || _parentStyle is null)
@@ -111,6 +113,7 @@ class Style {
         else
             return parentStyle.fontItalic;
 	}
+
 	/// font weight
 	@property ushort fontWeight() const {
         if (_fontWeight != FONT_WEIGHT_UNSPECIFIED || _parentStyle is null)
@@ -118,6 +121,7 @@ class Style {
         else
             return parentStyle.fontWeight;
 	}
+
 	/// font size
 	@property ushort fontSize() const {
         if (_fontSize != FONT_SIZE_UNSPECIFIED || _parentStyle is null)
@@ -125,12 +129,14 @@ class Style {
         else
             return parentStyle.fontSize;
 	}
+
 	/// padding
 	@property ref const(Rect) padding() const {
 		if (_stateValue != 0)
 			return parentStyle._padding;
 		return _padding;
 	}
+
 	/// margins
 	@property ref const(Rect) margins() const {
 		if (_stateValue != 0)

@@ -2,6 +2,7 @@ module dlangui.graphics.drawbuf;
 
 public import dlangui.core.types;
 
+/// blend two RGB pixels using alpha
 uint blendARGB(uint dst, uint src, uint alpha) {
     uint srcr = (src >> 16) & 0xFF;
     uint srcg = (src >> 8) & 0xFF;
@@ -16,12 +17,44 @@ uint blendARGB(uint dst, uint src, uint alpha) {
     return (r << 16) | (g << 8) | b;
 }
 
+/**
+ * 9-patch image scaling information (see Android documentation).
+ *
+ * 
+ */
+struct NinePatch {
+    /// frame (non-scalable) part size for left, top, right, bottom edges.
+    Rect frame;
+    /// padding (distance to content area) for left, top, right, bottom edges.
+    Rect padding;
+}
+
+/// drawing buffer - image container which allows to perform some drawing operations
 class DrawBuf : RefCountedObject {
     protected Rect _clipRect;
+    protected NinePatch * _ninePatch;
+
+    // ===================================================
+    // 9-patch functions (image scaling using 9-patch markup - unscaled frame and scaled middle parts).
+    // See Android documentation for details.
+
+    /// get nine patch information pointer, null if this is not a nine patch image buffer
+    @property const (NinePatch) * ninePatch() const { return _ninePatch; }
+    /// set nine patch information pointer, null if this is not a nine patch image buffer
+    @property void ninePatch(NinePatch * ninePatch) { _ninePatch = ninePatch; }
+    /// check whether there is nine-patch information available for drawing buffer
+    @property bool hasNinePatch() { return _ninePatch !is null; }
+    /// override to detect nine patch using image 1-pixel border; returns true if 9-patch markup is found in image.
+    bool detectNinePatch() { return false; }
+
     /// returns current width
     @property int width() { return 0; }
     /// returns current height
     @property int height() { return 0; }
+
+    // ===================================================
+    // clipping rectangle functions
+
     /// returns clipping rectangle, when clipRect.isEmpty == true -- means no clipping.
     @property ref Rect clipRect() { return _clipRect; }
     /// sets new clipping rectangle, when clipRect.isEmpty == true -- means no clipping.
@@ -29,6 +62,7 @@ class DrawBuf : RefCountedObject {
         _clipRect = rect; 
         _clipRect.intersect(Rect(0, 0, width, height));
     }
+    /// apply clipRect and buffer bounds clipping to rectangle
     bool applyClipping(ref Rect rc) {
         if (!_clipRect.empty())
             rc.intersect(_clipRect);
@@ -42,59 +76,112 @@ class DrawBuf : RefCountedObject {
             rc.bottom = height;
         return !rc.empty();
     }
+    /// apply clipRect and buffer bounds clipping to rectangle; if clippinup applied to first rectangle, reduce second rectangle bounds proportionally.
     bool applyClipping(ref Rect rc, ref Rect rc2) {
-        if (!_clipRect.empty()) {
-            if (rc.left < _clipRect.left) {
-                rc2.left += _clipRect.left - rc.left;
-                rc.left = _clipRect.left;
+        if (rc.width == rc2.width && rc.height == rc2.height) {
+            // unscaled
+            if (!_clipRect.empty()) {
+                if (rc.left < _clipRect.left) {
+                    rc2.left += _clipRect.left - rc.left;
+                    rc.left = _clipRect.left;
+                }
+                if (rc.top < _clipRect.top) {
+                    rc2.top += _clipRect.top - rc.top;
+                    rc.top = _clipRect.top;
+                }
+                if (rc.right > _clipRect.left) {
+                    rc2.right -= rc.right - _clipRect.left;
+                    rc.right = _clipRect.right;
+                }
+                if (rc.bottom > _clipRect.bottom) {
+                    rc2.bottom -= rc.bottom - _clipRect.bottom;
+                    rc.bottom = _clipRect.bottom;
+                }
             }
-            if (rc.top < _clipRect.top) {
-                rc2.top += _clipRect.top - rc.top;
-                rc.top = _clipRect.top;
+            if (rc.left < 0) {
+                rc2.left += -rc.left;
+                rc.left = 0;
             }
-            if (rc.right > _clipRect.left) {
-                rc2.right -= rc.right - _clipRect.left;
-                rc.right = _clipRect.right;
+            if (rc.top < 0) {
+                rc2.top += -rc.top;
+                rc.top = 0;
             }
-            if (rc.bottom > _clipRect.bottom) {
-                rc2.bottom -= rc.bottom - _clipRect.bottom;
-                rc.bottom = _clipRect.bottom;
+            if (rc.right > width) {
+                rc2.right -= rc.right - width;
+                rc.right = width;
             }
-        }
-        if (rc.left < 0) {
-            rc2.left += -rc.left;
-            rc.left = 0;
-        }
-        if (rc.top < 0) {
-            rc2.top += -rc.top;
-            rc.top = 0;
-        }
-        if (rc.right > width) {
-            rc2.right -= rc.right - width;
-            rc.right = width;
-        }
-        if (rc.bottom > height) {
-            rc2.bottom -= rc.bottom - height;
-            rc.bottom = height;
+            if (rc.bottom > height) {
+                rc2.bottom -= rc.bottom - height;
+                rc.bottom = height;
+            }
+        } else {
+            // scaled
+            int dstdx = rc.width;
+            int dstdy = rc.height;
+            int srcdx = rc2.width;
+            int srcdy = rc2.height;
+            if (!_clipRect.empty()) {
+                if (rc.left < _clipRect.left) {
+                    rc2.left += (_clipRect.left - rc.left) * srcdx / dstdx;
+                    rc.left = _clipRect.left;
+                }
+                if (rc.top < _clipRect.top) {
+                    rc2.top += (_clipRect.top - rc.top) * srcdy / dstdy;
+                    rc.top = _clipRect.top;
+                }
+                if (rc.right > _clipRect.left) {
+                    rc2.right -= (rc.right - _clipRect.left) * srcdx / dstdx;
+                    rc.right = _clipRect.right;
+                }
+                if (rc.bottom > _clipRect.bottom) {
+                    rc2.bottom -= (rc.bottom - _clipRect.bottom) * srcdy / dstdy;
+                    rc.bottom = _clipRect.bottom;
+                }
+            }
+            if (rc.left < 0) {
+                rc2.left -= (rc.left) * srcdx / dstdx;
+                rc.left = 0;
+            }
+            if (rc.top < 0) {
+                rc2.top -= (rc.top) * srcdy / dstdy;
+                rc.top = 0;
+            }
+            if (rc.right > width) {
+                rc2.right -= (rc.right - width) * srcdx / dstdx;
+                rc.right = width;
+            }
+            if (rc.bottom > height) {
+                rc2.bottom -= (rc.bottom - height) * srcdx / dstdx;
+                rc.bottom = height;
+            }
         }
         return !rc.empty() && !rc2.empty();
     }
+    /// reserved for hardware-accelerated drawing - begins drawing batch
     void beforeDrawing() { }
+    /// reserved for hardware-accelerated drawing - ends drawing batch
     void afterDrawing() { }
     /// returns buffer bits per pixel
     @property int bpp() { return 0; }
     /// returns pointer to ARGB scanline, null if y is out of range or buffer doesn't provide access to its memory
     uint * scanLine(int y) { return null; }
+    /// resize buffer
     abstract void resize(int width, int height);
+
+    //========================================================
+    // Drawing methods.
+
+    /// fill the whole buffer with solid color (no clipping applied)
     abstract void fill(uint color);
-    void fillRect(int left, int top, int right, int bottom, uint color) {
-        fillRect(Rect(left, top, right, bottom), color);
-    }
+    /// fill rectangle with solid color (clipping is applied)
     abstract void fillRect(Rect rc, uint color);
+    /// draw 8bit alpha image - usually font glyph using specified color (clipping is applied)
 	abstract void drawGlyph(int x, int y, ubyte[] src, int srcdx, int srcdy, uint color);
     /// draw source buffer rectangle contents to destination buffer
     abstract void drawFragment(int x, int y, DrawBuf src, Rect srcrect);
-    /// draw whole unscaled image at specified coordinates
+    /// draw source buffer rectangle contents to destination buffer rectangle applying rescaling
+    abstract void drawRescaled(Rect dstrect, DrawBuf src, Rect srcrect);
+    /// draw unscaled image at specified coordinates
     void drawImage(int x, int y, DrawBuf src) {
         drawFragment(x, y, src, Rect(0, 0, src.width, src.height));
     }
@@ -150,8 +237,99 @@ class ColorDrawBufBase : DrawBuf {
             }
         }
     }
-    override void fillRect(int left, int top, int right, int bottom, uint color) {
-        fillRect(Rect(left, top, right, bottom), color);
+
+    /// Create mapping of source coordinates to destination coordinates, for resize.
+    private int[] createMap(int dst0, int dst1, int src0, int src1) {
+        int dd = dst1 - dst0;
+        int sd = src1 - src0;
+        int[] res = new int[dd];
+        for (int i = 0; i < dd; i++)
+            res[i] = src0 + i * dd / sd;
+        return res;
+    }
+    /// draw source buffer rectangle contents to destination buffer rectangle applying rescaling
+    override void drawRescaled(Rect dstrect, DrawBuf src, Rect srcrect) {
+        if (applyClipping(dstrect, srcrect)) {
+            int[] xmap = createMap(dstrect.left, dstrect.right, srcrect.left, srcrect.right);
+            int[] ymap = createMap(dstrect.top, dstrect.bottom, srcrect.top, srcrect.bottom);
+            int dx = dstrect.width;
+            int dy = dstrect.height;
+            for (int y = 0; y < dy; y++) {
+                uint * srcrow = src.scanLine(ymap[y]);
+                uint * dstrow = scanLine(dstrect.top + y) + dstrect.left;
+                for (int x = 0; x < dx; x++) {
+                    uint srcpixel = srcrow[xmap[x]];
+                    uint dstpixel = dstrow[x];
+                    uint alpha = (srcpixel >> 24) & 255;
+                    if (!alpha)
+                        dstrow[x] = srcpixel;
+                    else if (alpha < 255) {
+                        // apply blending
+                        dstrow[x] = blendARGB(dstpixel, srcpixel, alpha);
+                    }
+                }
+            }
+        }
+    }
+
+    /// detect position of black pixels in row for 9-patch markup
+    private bool detectHLine(int y, ref int x0, ref int x1) {
+        uint * line = scanLine(y);
+    	bool foundUsed = false;
+        x0 = 0;
+        x1 = 0;
+    	for (int x = 1; x < _dx - 1; x++) {
+    		if (line[x] == 0x00000000) { // opaque black pixel
+    			if (!foundUsed) {
+    				x0 = x;
+        			foundUsed = true;
+    			}
+    			x1 = x + 1;
+    		}
+    	}
+        return x1 > x0;
+    }
+
+    /// detect position of black pixels in column for 9-patch markup
+    private bool detectVLine(int x, ref int y0, ref int y1) {
+    	bool foundUsed = false;
+        y0 = 0;
+        y1 = 0;
+    	for (int y = 1; y < _dy - 1; y++) {
+            uint * line = scanLine(y);
+    		if (line[x] == 0x00000000) { // opaque black pixel
+    			if (!foundUsed) {
+    				y0 = y;
+        			foundUsed = true;
+    			}
+    			y1 = y + 1;
+    		}
+    	}
+        return y1 > y0;
+    }
+    /// detect nine patch using image 1-pixel border (see Android documentation)
+    override bool detectNinePatch() {
+        if (_dx < 3 || _dy < 3)
+            return false; // image is too small
+        int x00, x01, x10, x11, y00, y01, y10, y11;
+        bool found = true;
+        found = found && detectHLine(0, x00, x01);
+        found = found && detectHLine(_dy - 1, x10, x11);
+        found = found && detectVLine(0, y00, y01);
+        found = found && detectVLine(_dx - 1, y10, y11);
+        if (!found)
+            return false; // no black pixels on 1-pixel frame
+        NinePatch * p = new NinePatch();
+        p.frame.left = x00 - 1;
+        p.frame.right = _dy - y01 - 1;
+        p.frame.top = y00 - 1;
+        p.frame.bottom = _dy - y01 - 1;
+        p.padding.left = x10 - 1;
+        p.padding.right = _dy - y11 - 1;
+        p.padding.top = y10 - 1;
+        p.padding.bottom = _dy - y11 - 1;
+        _ninePatch = p;
+        return true;
     }
 	override void drawGlyph(int x, int y, ubyte[] src, int srcdx, int srcdy, uint color) {
 		bool clipping = !_clipRect.empty();
@@ -222,5 +400,68 @@ class ColorDrawBuf : ColorDrawBufBase {
         uint * p = _buf.ptr;
         for (int i = 0; i < len; i++)
             p[i] = color;
+    }
+}
+
+class Drawable {
+    abstract void drawTo(DrawBuf buf, Rect rc, int tilex0 = 0, int tiley0 = 0);
+    @property abstract int width();
+    @property abstract int height();
+    @property Rect padding() { return Rect(0,0,0,0); }
+}
+
+class SolidFillDrawable : Drawable {
+    protected uint _color;
+    this(uint color) {
+        _color = color;
+    }
+    override void drawTo(DrawBuf buf, Rect rc, int tilex0 = 0, int tiley0 = 0) {
+        if ((_color >> 24) != 0xFF) // not fully transparent
+            buf.fillRect(rc, _color);
+    }
+    @property override int width() { return 1; }
+    @property override int height() { return 1; }
+}
+
+class ImageDrawable : Drawable {
+    protected DrawBufRef _image;
+    protected bool _tiled;
+    this(ref DrawBufRef image, bool tiled = false) {
+        _image = image;
+        _tiled = tiled;
+    }
+    @property override int width() { 
+        if (_image.isNull)
+            return 0;
+        if (_image.hasNinePatch)
+            return _image.width - 2;
+        return _image.width;
+    }
+    @property override int height() { 
+        if (_image.isNull)
+            return 0;
+        if (_image.hasNinePatch)
+            return _image.height - 2;
+        return _image.height;
+    }
+    @property override Rect padding() { 
+        if (!_image.isNull && _image.hasNinePatch)
+            return _image.ninePatch.padding;
+        return Rect(0,0,0,0); 
+    }
+    override void drawTo(DrawBuf buf, Rect rc, int tilex0 = 0, int tiley0 = 0) {
+        if (_image.isNull)
+            return;
+        if (_image.hasNinePatch) {
+            // draw nine patch
+        } else if (_tiled) {
+            // tiled
+        } else {
+            // rescaled or normal
+            if (rc.width != _image.width || rc.height != _image.height)
+                buf.drawRescaled(rc, _image.get, Rect(0, 0, _image.width, _image.height));
+            else
+                buf.drawImage(rc.left, rc.top, _image);
+        }
     }
 }

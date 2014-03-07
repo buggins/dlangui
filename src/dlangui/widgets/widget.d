@@ -149,8 +149,8 @@ class Widget {
         applyMargins(rc);
         buf.fillRect(_pos, backgroundColor);
         applyPadding(rc);
-        buf.fillRect(rc.left + rc.width / 2, rc.top, rc.left + rc.width / 2 + 2, rc.bottom, 0xFF8000);
-        buf.fillRect(rc.left, rc.top + rc.height / 2, rc.right, rc.top + rc.height / 2 + 2, 0xFF80FF);
+        buf.fillRect(Rect(rc.left + rc.width / 2, rc.top, rc.left + rc.width / 2 + 2, rc.bottom), 0xFF8000);
+        buf.fillRect(Rect(rc.left, rc.top + rc.height / 2, rc.right, rc.top + rc.height / 2 + 2), 0xFF80FF);
         _needDraw = false;
     }
     /// Applies alignment for content of size sz - set rectangle rc to aligned value of content inside of initial value of rc.
