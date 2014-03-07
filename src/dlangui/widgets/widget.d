@@ -194,11 +194,6 @@ class Widget {
         _needDraw = true;
     }
 
-    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-    void measure(int parentWidth, int parentHeight) { 
-        measuredContent(parentWidth, parentHeight, 0, 0);
-    }
-
     /// helper function for implement measure() when widget's content dimensions are known
     protected void measuredContent(int parentWidth, int parentHeight, int contentWidth, int contentHeight) {
         if (visibility == Visibility.Gone) {
@@ -232,6 +227,11 @@ class Widget {
         _measuredHeight = dy;
     }
 
+    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+    void measure(int parentWidth, int parentHeight) { 
+        measuredContent(parentWidth, parentHeight, 0, 0);
+    }
+
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     void layout(Rect rc) {
         if (visibility == Visibility.Gone) {
@@ -240,7 +240,19 @@ class Widget {
         _pos = rc;
         _needLayout = false;
     }
-    /// applies margins to rectangle
+    /// Draw widget at its position to buffer
+    void onDraw(DrawBuf buf) {
+        if (visibility != Visibility.Visible)
+            return;
+        Rect rc = _pos;
+        applyMargins(rc);
+        DrawableRef bg = style.backgroundDrawable;
+        bg.drawTo(buf, rc);
+        applyPadding(rc);
+        _needDraw = false;
+    }
+
+    /// Helper function: applies margins to rectangle
     void applyMargins(ref Rect rc) {
         Rect m = margins;
         rc.left += m.left;
@@ -248,25 +260,13 @@ class Widget {
         rc.bottom -= m.bottom;
         rc.right -= m.right;
     }
-    /// applies padding to rectangle
+    /// Helper function: applies padding to rectangle
     void applyPadding(ref Rect rc) {
         Rect m = padding;
         rc.left += m.left;
         rc.top += m.top;
         rc.bottom -= m.bottom;
         rc.right -= m.right;
-    }
-    /// Draw widget at its position to buffer
-    void onDraw(DrawBuf buf) {
-        if (visibility != Visibility.Visible)
-            return;
-        Rect rc = _pos;
-        applyMargins(rc);
-        buf.fillRect(_pos, backgroundColor);
-        DrawableRef bg = style.backgroundDrawable;
-        bg.drawTo(buf, rc);
-        applyPadding(rc);
-        _needDraw = false;
     }
     /// Applies alignment for content of size sz - set rectangle rc to aligned value of content inside of initial value of rc.
     void applyAlign(ref Rect rc, Point sz) {

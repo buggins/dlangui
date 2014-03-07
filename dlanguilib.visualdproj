@@ -272,6 +272,7 @@
     </Folder>
     <Folder name="widgets">
      <File path="src\dlangui\widgets\controls.d" />
+     <File path="src\dlangui\widgets\layouts.d" />
      <File path="src\dlangui\widgets\styles.d" />
      <File path="src\dlangui\widgets\widget.d" />
     </Folder>
