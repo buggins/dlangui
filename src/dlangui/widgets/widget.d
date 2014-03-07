@@ -252,19 +252,6 @@ class Widget {
         DrawableRef bg = style.backgroundDrawable;
         bg.drawTo(buf, rc);
         applyPadding(rc);
-        /*
-        buf.fillRect(Rect(rc.left + rc.width / 2, rc.top, rc.left + rc.width / 2 + 2, rc.bottom), 0xFF8000);
-        buf.fillRect(Rect(rc.left, rc.top + rc.height / 2, rc.right, rc.top + rc.height / 2 + 2), 0xFF80FF);
-        DrawableRef img = drawableCache.get("exit");
-        if (!img.isNull)
-            img.drawTo(buf, Rect(50, 50, 50+64, 50+64));
-        img = drawableCache.get("btn_default_normal");
-        if (!img.isNull) {
-            img.drawTo(buf, Rect(150, 150, 150+100, 150+50));
-            img.drawTo(buf, Rect(250, 250, 250+60, 250+150));
-            img.drawTo(buf, Rect(50, 50, 50+30, 50+30));
-        }
-        */
         _needDraw = false;
     }
     /// Applies alignment for content of size sz - set rectangle rc to aligned value of content inside of initial value of rc.
@@ -298,6 +285,13 @@ class Widget {
     @property int childCount() { return 0; }
     /// returns child by index
     Widget child(int index) { return null; }
+    /// adds child, returns added item
+    Widget addChild(Widget item) { assert(false, "children not suported for this widget type"); }
+    /// removes child, returns added item
+    Widget removeChild(int index) { assert(false, "children not suported for this widget type"); }
+    /// returns index of widget in child list, -1 if passed widget is not a child of this widget
+    int childIndex(Widget item) { return -1; }
+
     /// find child by id, returns null if not found
     Widget childById(string id) { 
         if (compareId(id))
@@ -328,41 +322,68 @@ class Widget {
     /// sets window (to be used for top level widget from Window implementation). TODO: hide it from API?
     @property void window(Window window) { _window = window; }
 
-
-
 }
 
-/// static text widget
-class TextWidget : Widget {
-    protected dstring _text;
-    /// get widget text
-    override @property dstring text() { return _text; }
-    /// set text to show
-    override @property void text(dstring s) { 
-        _text = s; 
-        requestLayout();
+/// widget list holder
+struct WidgetList {
+    protected Widget[] _list;
+    protected int _count;
+    /// returns count of items
+    @property int count() { return _count; }
+    /// get item by index
+    Widget get(int index) {
+        assert(index >= 0 && index < _count, "child index out of range");
+        return _list[index];
     }
-    override void measure(int parentWidth, int parentHeight) { 
-        _measuredWidth = _measuredHeight = 0;
-        FontRef font = font();
-        Point sz = font.textSize(text);
-        measuredContent(parentWidth, parentHeight, sz.x, sz.y);
+    /// add item to list
+    Widget add(Widget item) {
+        if (_list.length <= _count) // resize
+            _list.length = _list.length < 4 ? 4 : _list.length * 2;
+        _list[_count++] = item;
+        return item;
     }
-    override void layout(Rect rc) {
-        super.layout(rc);
+    /// find child index for item, return -1 if not found
+    int indexOf(Widget item) {
+        for (int i = 0; i < _count; i++)
+            if (_list[i] == item)
+                return i;
+        return -1;
     }
-    override void onDraw(DrawBuf buf) {
-        if (visibility != Visibility.Visible)
-            return;
-        super.onDraw(buf);
-        Rect rc = _pos;
-        applyMargins(rc);
-        buf.fillRect(_pos, backgroundColor);
-        applyPadding(rc);
-        ClipRectSaver(buf, rc);
-        FontRef font = font();
-        Point sz = font.textSize(text);
-        applyAlign(rc, sz);
-        font.drawText(buf, rc.left, rc.top, text, textColor);
+    /// remove item from list, return removed item
+    Widget remove(int index) {
+        assert(index >= 0 && index < _count, "child index out of range");
+        Widget item = _list[index];
+        for (int i = index; i < _count - 1; i++)
+            _list[i] = _list[i + 1];
+        _count--;
+        return item;
     }
+    /// remove and destroy all items
+    void clear() {
+        for (int i = 0; i < _count; i++) {
+            destroy(_list[i]);
+            _list[i] = null;
+        }
+        _count = 0;
+    }
+    ~this() {
+        clear();
+    }
+}
+
+/// base class for widgets which have children
+class WidgetGroup : Widget {
+
+    protected WidgetList _children;
+
+    /// returns number of children of this widget
+    @property override int childCount() { return _children.count; }
+    /// returns child by index
+    override Widget child(int index) { return _children.get(index); }
+    /// adds child, returns added item
+    override Widget addChild(Widget item) { return _children.add(item); }
+    /// removes child, returns added item
+    override Widget removeChild(int index) { return _children.remove(index); }
+    /// returns index of widget in child list, -1 if passed widget is not a child of this widget
+    override int childIndex(Widget item) { return _children.indexOf(item); }
 }
