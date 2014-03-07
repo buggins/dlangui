@@ -1,8 +1,10 @@
 module dlangui.graphics.images;
 
 import dlangui.core.logger;
+import dlangui.core.types;
 import dlangui.graphics.drawbuf;
 import std.stream;
+import std.file;
 import libpng.png;
 
 /// decoded image cache
@@ -69,6 +71,130 @@ class ImageCache {
     }
     ~this() {
         Log.i("Destroying ImageCache");
+    }
+}
+
+__gshared ImageCache _imageCache;
+/// image cache singleton
+@property ImageCache imageCache() { return _imageCache; }
+
+__gshared DrawableCache _drawableCache;
+/// drawable cache singleton
+@property DrawableCache drawableCache() { return _drawableCache; }
+
+static this() {
+    _imageCache = new ImageCache();
+    _drawableCache = new DrawableCache();
+}
+
+class DrawableCache {
+    static class DrawableCacheItem {
+        string _id;
+        string _filename;
+        bool _tiled;
+        bool _error;
+        bool _used;
+        DrawableRef _drawable;
+        this(string id, string filename, bool tiled) {
+            _id = id;
+            _filename = filename;
+            _tiled = tiled;
+            _error = filename is null;
+        }
+        /// remove from memory, will cause reload on next access
+        void compact() {
+            if (!_drawable.isNull)
+                _drawable.clear();
+        }
+        /// mark as not used
+        void checkpoint() {
+            _used = false;
+        }
+        /// cleanup if unused since last checkpoint
+        void cleanup() {
+            if (!_used)
+                compact();
+        }
+        @property ref DrawableRef drawable() {
+            _used = true;
+            if (!_drawable.isNull || _error)
+                return _drawable;
+            if (_filename !is null) {
+                // reload from file
+                DrawBufRef image = imageCache.get(_filename);
+                if (!image.isNull)
+                    _drawable = new ImageDrawable(image, _tiled);
+                else
+                    _error = true;
+            }
+            return _drawable;
+        }
+    }
+    void clear() {
+        _idToFileMap.clear();
+        foreach(DrawableCacheItem item; _idToDrawableMap)
+            item.drawable.clear();
+        _idToDrawableMap.clear();
+    }
+	// clear usage flags for all entries
+	void checkpoint() {
+        foreach (item; _idToDrawableMap)
+            item.checkpoint();
+    }
+	// removes entries not used after last call of checkpoint() or cleanup()
+	void cleanup() {
+        foreach (item; _idToDrawableMap)
+            item.cleanup();
+    }
+    string[] _resourcePaths;
+    string[string] _idToFileMap;
+    DrawableCacheItem[string] _idToDrawableMap;
+    ref DrawableRef get(string id) {
+        if (id in _idToDrawableMap)
+            return _idToDrawableMap[id].drawable;
+        string resourceId = id;
+        bool tiled = false;
+        if (id.endsWith(".tiled")) {
+            resourceId = id[0..$-6]; // remove .tiled
+            tiled = true;
+        }
+        string filename = findResource(resourceId);
+        DrawableCacheItem item = new DrawableCacheItem(id, filename, tiled);
+        _idToDrawableMap[id] = item;
+        return item.drawable;
+    }
+    @property string[] resourcePaths() {
+        return _resourcePaths;
+    }
+    @property void resourcePaths(string[] paths) {
+        _resourcePaths = paths;
+        clear();
+    }
+    string findResource(string id) {
+        if (id in _idToFileMap)
+            return _idToFileMap[id];
+        foreach(string path; _resourcePaths) {
+            char[] name = path.dup;
+            name ~= id;
+            name ~= ".png";
+            if (!exists(name)) {
+                name = path.dup;
+                name ~= id;
+                name ~= ".9.png";
+            }
+            if (exists(name) && isFile(name)) {
+                string filename = name.dup;
+                _idToFileMap[id] = filename;
+                return filename;
+            }
+        }
+        return null;
+    }
+    this() {
+        Log.i("Creating DrawableCache");
+    }
+    ~this() {
+        Log.i("Destroying DrawableCache");
     }
 }
 

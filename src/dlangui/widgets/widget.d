@@ -3,6 +3,7 @@ module dlangui.widgets.widget;
 public import dlangui.core.types;
 public import dlangui.widgets.styles;
 public import dlangui.graphics.drawbuf;
+public import dlangui.graphics.images;
 public import dlangui.graphics.fonts;
 import dlangui.platforms.common.platform;
 
@@ -151,6 +152,9 @@ class Widget {
         applyPadding(rc);
         buf.fillRect(Rect(rc.left + rc.width / 2, rc.top, rc.left + rc.width / 2 + 2, rc.bottom), 0xFF8000);
         buf.fillRect(Rect(rc.left, rc.top + rc.height / 2, rc.right, rc.top + rc.height / 2 + 2), 0xFF80FF);
+        DrawableRef img = drawableCache.get("exit");
+        if (!img.isNull)
+            img.drawTo(buf, Rect(50, 50, 50+64, 50+64));
         _needDraw = false;
     }
     /// Applies alignment for content of size sz - set rectangle rc to aligned value of content inside of initial value of rc.

@@ -55,6 +55,10 @@ extern (C) int UIAppMain(string[] args) {
 	Log.d("Some debug message");
 	Log.e("Sample error #", 22);
 
+    string[] imageDirs = [
+        resourceDir
+    ];
+    drawableCache.resourcePaths = imageDirs;
     Window window = Platform.instance().createWindow("My Window", null);
     Widget myWidget = (new TextWidget()).textColor(0x40FF4000);
     myWidget.text = "Some strange text string. 1234567890";

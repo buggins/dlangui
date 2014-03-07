@@ -1,5 +1,7 @@
 module dlangui.core.types;
 
+import std.algorithm;
+
 struct Point {
     int x;
     int y;
@@ -136,3 +138,14 @@ wstring fromWStringz(const(wchar[]) s) {
 	return cast(wstring)(s[0..i].dup);
 }
 
+bool startsWith(string str, string prefix) {
+    if (str.length >= prefix.length)
+        return equal(str[0..prefix.length], prefix);
+    return false;
+}
+
+bool endsWith(string str, string suffix) {
+    if (str.length >= suffix.length)
+        return equal(str[$-suffix.length .. $], suffix);
+    return false;
+}

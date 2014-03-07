@@ -1,6 +1,7 @@
 module dlangui.graphics.drawbuf;
 
 public import dlangui.core.types;
+import dlangui.core.logger;
 
 /// blend two RGB pixels using alpha
 uint blendARGB(uint dst, uint src, uint alpha) {
@@ -244,7 +245,7 @@ class ColorDrawBufBase : DrawBuf {
         int sd = src1 - src0;
         int[] res = new int[dd];
         for (int i = 0; i < dd; i++)
-            res[i] = src0 + i * dd / sd;
+            res[i] = src0 + i * sd / dd;
         return res;
     }
     /// draw source buffer rectangle contents to destination buffer rectangle applying rescaling
@@ -403,7 +404,7 @@ class ColorDrawBuf : ColorDrawBufBase {
     }
 }
 
-class Drawable {
+class Drawable : RefCountedObject {
     abstract void drawTo(DrawBuf buf, Rect rc, int tilex0 = 0, int tiley0 = 0);
     @property abstract int width();
     @property abstract int height();
@@ -465,3 +466,5 @@ class ImageDrawable : Drawable {
         }
     }
 }
+
+alias DrawableRef = Ref!Drawable;
