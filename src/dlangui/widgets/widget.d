@@ -155,6 +155,12 @@ class Widget {
         DrawableRef img = drawableCache.get("exit");
         if (!img.isNull)
             img.drawTo(buf, Rect(50, 50, 50+64, 50+64));
+        img = drawableCache.get("btn_default_normal");
+        if (!img.isNull) {
+            img.drawTo(buf, Rect(150, 150, 150+100, 150+50));
+            img.drawTo(buf, Rect(250, 250, 250+60, 250+150));
+            img.drawTo(buf, Rect(50, 50, 50+30, 50+30));
+        }
         _needDraw = false;
     }
     /// Applies alignment for content of size sz - set rectangle rc to aligned value of content inside of initial value of rc.

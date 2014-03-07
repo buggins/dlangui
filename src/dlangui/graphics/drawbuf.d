@@ -250,6 +250,7 @@ class ColorDrawBufBase : DrawBuf {
     }
     /// draw source buffer rectangle contents to destination buffer rectangle applying rescaling
     override void drawRescaled(Rect dstrect, DrawBuf src, Rect srcrect) {
+        //Log.d("drawRescaled ", dstrect, " <- ", srcrect);
         if (applyClipping(dstrect, srcrect)) {
             int[] xmap = createMap(dstrect.left, dstrect.right, srcrect.left, srcrect.right);
             int[] ymap = createMap(dstrect.top, dstrect.bottom, srcrect.top, srcrect.bottom);
@@ -427,9 +428,11 @@ class SolidFillDrawable : Drawable {
 class ImageDrawable : Drawable {
     protected DrawBufRef _image;
     protected bool _tiled;
-    this(ref DrawBufRef image, bool tiled = false) {
+    this(ref DrawBufRef image, bool tiled = false, bool ninePatch = false) {
         _image = image;
         _tiled = tiled;
+        if (ninePatch)
+            _image.detectNinePatch();
     }
     @property override int width() { 
         if (_image.isNull)
@@ -450,11 +453,74 @@ class ImageDrawable : Drawable {
             return _image.ninePatch.padding;
         return Rect(0,0,0,0); 
     }
+    private static void correctFrameBounds(ref int n1, ref int n2) {
+        if (n1 > n2) {
+            int middle = (n1 + n2) / 2;
+            n1 = n2 = middle;
+        }
+    }
     override void drawTo(DrawBuf buf, Rect rc, int tilex0 = 0, int tiley0 = 0) {
         if (_image.isNull)
             return;
         if (_image.hasNinePatch) {
             // draw nine patch
+            const NinePatch * p = _image.ninePatch;
+            //Log.d("drawing nine patch image with frame ", p.frame, " padding ", p.padding);
+            int w = width;
+            int h = height;
+            Rect dstrect = rc;
+            Rect srcrect = Rect(1, 1, w + 1, h + 1);
+            if (buf.applyClipping(dstrect, srcrect)) {
+                int x0 = srcrect.left;
+                int x1 = 1 + p.frame.left;
+                int x2 = w - p.frame.right;
+                int x3 = srcrect.right;
+                int y0 = srcrect.top;
+                int y1 = 1 + p.frame.top;
+                int y2 = h - p.frame.bottom;
+                int y3 = srcrect.bottom;
+                int dstx0 = rc.left;
+                int dstx1 = rc.left + p.frame.left;
+                int dstx2 = rc.right - p.frame.right;
+                int dstx3 = rc.right;
+                int dsty0 = rc.top;
+                int dsty1 = rc.top + p.frame.top;
+                int dsty2 = rc.bottom - p.frame.bottom;
+                int dsty3 = rc.bottom;
+                //Log.d("src x bounds: ", x0, ", ", x1, ", ", x2, ", ", x3, " dst ", dstx0, ", ", dstx1, ", ", dstx2, ", ", dstx3);
+                //Log.d("src y bounds: ", y0, ", ", y1, ", ", y2, ", ", y3, " dst ", dsty0, ", ", dsty1, ", ", dsty2, ", ", dsty3);
+                correctFrameBounds(x1, x2);
+                correctFrameBounds(y1, y2);
+                correctFrameBounds(dstx1, dstx2);
+                correctFrameBounds(dsty1, dsty2);
+                if (y0 < y1 && dsty0 < dsty1) {
+                    // top row
+                    if (x0 < x1 && dstx0 < dstx1)
+                        buf.drawFragment(dstx0, dsty0, _image.get, Rect(x0, y0, x1, y1)); // top left
+                    if (x1 < x2 && dstx1 < dstx2)
+                        buf.drawRescaled(Rect(dstx1, dsty0, dstx2, dsty1), _image.get, Rect(x1, y0, x2, y1)); // top center
+                    if (x2 < x3 && dstx2 < dstx3)
+                        buf.drawFragment(dstx2, dsty0, _image.get, Rect(x2, y0, x3, y1)); // top right
+                }
+                if (y1 < y2 && dsty1 < dsty2) {
+                    // middle row
+                    if (x0 < x1 && dstx0 < dstx1)
+                        buf.drawRescaled(Rect(dstx0, dsty1, dstx1, dsty2), _image.get, Rect(x0, y1, x1, y2)); // middle center
+                    if (x1 < x2 && dstx1 < dstx2)
+                        buf.drawRescaled(Rect(dstx1, dsty1, dstx2, dsty2), _image.get, Rect(x1, y1, x2, y2)); // center
+                    if (x2 < x3 && dstx2 < dstx3)
+                        buf.drawRescaled(Rect(dstx2, dsty1, dstx3, dsty2), _image.get, Rect(x2, y1, x3, y2)); // middle center
+                }
+                if (y2 < y3 && dsty2 < dsty3) {
+                    // bottom row
+                    if (x0 < x1 && dstx0 < dstx1)
+                        buf.drawFragment(dstx0, dsty2, _image.get, Rect(x0, y2, x1, y3)); // bottom left
+                    if (x1 < x2 && dstx1 < dstx2)
+                        buf.drawRescaled(Rect(dstx1, dsty2, dstx2, dsty3), _image.get, Rect(x1, y2, x2, y3)); // bottom center
+                    if (x2 < x3 && dstx2 < dstx3)
+                        buf.drawFragment(dstx2, dsty2, _image.get, Rect(x2, y2, x3, y3)); // bottom right
+                }
+            }
         } else if (_tiled) {
             // tiled
         } else {

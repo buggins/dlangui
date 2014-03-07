@@ -122,9 +122,10 @@ class DrawableCache {
             if (_filename !is null) {
                 // reload from file
                 DrawBufRef image = imageCache.get(_filename);
-                if (!image.isNull)
-                    _drawable = new ImageDrawable(image, _tiled);
-                else
+                if (!image.isNull) {
+                    bool ninePatch = _filename.endsWith(".9.png");
+                    _drawable = new ImageDrawable(image, _tiled, ninePatch);
+                } else
                     _error = true;
             }
             return _drawable;
