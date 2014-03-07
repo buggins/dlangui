@@ -144,6 +144,23 @@ class Widget {
     @property int width() { return _pos.width; }
     /// returns current height of widget in pixels
     @property int height() { return _pos.height; }
+    /// returns min width constraint
+    @property int minWidth() { return style.minWidth; }
+    /// returns max width constraint (SIZE_UNSPECIFIED if no constraint set)
+    @property int maxWidth() { return style.maxWidth; }
+    /// returns min height constraint
+    @property int minHeight() { return style.minHeight; }
+    /// returns max height constraint (SIZE_UNSPECIFIED if no constraint set)
+    @property int maxHeight() { return style.maxHeight; }
+
+    /// set max width constraint (SIZE_UNSPECIFIED for no constraint)
+    @property Widget maxWidth(int value) { ownStyle.maxWidth = value; return this; }
+    /// set max width constraint (0 for no constraint)
+    @property Widget minWidth(int value) { ownStyle.minWidth = value; return this; }
+    /// set max height constraint (SIZE_UNSPECIFIED for no constraint)
+    @property Widget maxHeight(int value) { ownStyle.maxHeight = value; return this; }
+    /// set max height constraint (0 for no constraint)
+    @property Widget minHeight(int value) { ownStyle.minHeight = value; return this; }
 
     /// returns widget visibility (Visible, Invisible, Gone)
     @property Visibility visibility() { return _visibility; }
@@ -176,9 +193,23 @@ class Widget {
         }
         Rect m = margins;
         Rect p = padding;
+        // summarize margins, padding, and content size
         int dx = m.left + m.right + p.left + p.right + contentWidth;
         int dy = m.top + m.bottom + p.top + p.bottom + contentHeight;
-        // check for margins and padding
+        // apply min/max width and height constraints
+        int minw = minWidth;
+        int maxw = maxWidth;
+        int minh = minHeight;
+        int maxh = maxHeight;
+        if (dx < minw)
+            dx = minw;
+        if (dy < minh)
+            dy = minh;
+        if (maxw != SIZE_UNSPECIFIED && dx > maxw)
+            dx = maxw;
+        if (maxh != SIZE_UNSPECIFIED && dy > maxh)
+            dy = maxh;
+        // apply max parent size constraint
         if (parentWidth != SIZE_UNSPECIFIED && dx > parentWidth)
             dx = parentWidth;
         if (parentHeight != SIZE_UNSPECIFIED && dy > parentHeight)
@@ -301,18 +332,28 @@ class Widget {
 
 }
 
+/// static text widget
 class TextWidget : Widget {
     protected dstring _text;
+    /// get widget text
     override @property dstring text() { return _text; }
-    override @property void text(dstring s) { _text = s; }
-    override void measure(int width, int height) { 
-        _measuredWidth = _measuredHeight = 0;
+    /// set text to show
+    override @property void text(dstring s) { 
+        _text = s; 
+        requestLayout();
     }
-    override void layout(Rect rc) { 
-        _pos = rc;
-        _needLayout = false;
+    override void measure(int parentWidth, int parentHeight) { 
+        _measuredWidth = _measuredHeight = 0;
+        FontRef font = font();
+        Point sz = font.textSize(text);
+        measuredContent(parentWidth, parentHeight, sz.x, sz.y);
+    }
+    override void layout(Rect rc) {
+        super.layout(rc);
     }
     override void onDraw(DrawBuf buf) {
+        if (visibility != Visibility.Visible)
+            return;
         super.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
