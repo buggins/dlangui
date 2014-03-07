@@ -149,7 +149,10 @@ class Widget {
         Rect rc = _pos;
         applyMargins(rc);
         buf.fillRect(_pos, backgroundColor);
+        DrawableRef bg = style.backgroundDrawable;
+        bg.drawTo(buf, rc);
         applyPadding(rc);
+        /*
         buf.fillRect(Rect(rc.left + rc.width / 2, rc.top, rc.left + rc.width / 2 + 2, rc.bottom), 0xFF8000);
         buf.fillRect(Rect(rc.left, rc.top + rc.height / 2, rc.right, rc.top + rc.height / 2 + 2), 0xFF80FF);
         DrawableRef img = drawableCache.get("exit");
@@ -161,6 +164,7 @@ class Widget {
             img.drawTo(buf, Rect(250, 250, 250+60, 250+150));
             img.drawTo(buf, Rect(50, 50, 50+30, 50+30));
         }
+        */
         _needDraw = false;
     }
     /// Applies alignment for content of size sz - set rectangle rc to aligned value of content inside of initial value of rc.

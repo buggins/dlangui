@@ -2,6 +2,8 @@ module dlangui.widgets.styles;
 
 import dlangui.core.types;
 import dlangui.graphics.fonts;
+import dlangui.graphics.drawbuf;
+import dlangui.graphics.images;
 
 immutable ubyte ALIGN_UNSPECIFIED = 0;
 immutable uint COLOR_UNSPECIFIED = 0xFFDEADFF;
@@ -33,13 +35,14 @@ class Style {
 	protected ubyte _stateMask;
 	protected ubyte _stateValue;
 	protected ubyte _align = Align.TopLeft;
-	protected uint _backgroundColor = COLOR_TRANSPARENT;
-	protected uint _textColor = COLOR_UNSPECIFIED;
+	protected ubyte _fontStyle = FONT_STYLE_UNSPECIFIED;
+	protected FontFamily _fontFamily = FontFamily.Unspecified;
 	protected ushort _fontSize = FONT_SIZE_UNSPECIFIED;
 	protected ushort _fontWeight = FONT_WEIGHT_UNSPECIFIED;
-	protected ubyte _fontStyle = FONT_STYLE_UNSPECIFIED;
+	protected uint _backgroundColor = COLOR_TRANSPARENT;
+	protected uint _textColor = COLOR_UNSPECIFIED;
 	protected string _fontFace;
-	protected FontFamily _fontFamily = FontFamily.Unspecified;
+	protected string _backgroundImageId;
 	protected Rect _padding;
 	protected Rect _margins;
 
@@ -47,6 +50,7 @@ class Style {
 	protected Style[] _children;
 
 	protected FontRef _font;
+	protected DrawableRef _backgroundDrawable;
 
 	@property const(Theme) theme() const {
 		if (_theme !is null)
@@ -77,6 +81,19 @@ class Style {
 			return currentTheme.get(_parentId);
 		return currentTheme;
 	}
+
+    @property ref DrawableRef backgroundDrawable() const {
+		if (!(cast(Style)this)._backgroundDrawable.isNull)
+			return (cast(Style)this)._backgroundDrawable;
+        string image = backgroundImageId;
+        if (image !is null) {
+            (cast(Style)this)._backgroundDrawable = drawableCache.get(image);
+        } else {
+            uint color = backgroundColor;
+            (cast(Style)this)._backgroundDrawable = new SolidFillDrawable(color);
+        }
+        return (cast(Style)this)._backgroundDrawable;
+    }
 
 	@property ref FontRef font() const {
 		if (!(cast(Style)this)._font.isNull)
@@ -160,6 +177,14 @@ class Style {
             return parentStyle.backgroundColor;
 	}
 
+	/// font size
+	@property string backgroundImageId() const {
+        if (_backgroundImageId !is null)
+            return _backgroundImageId;
+        else
+            return parentStyle.backgroundImageId;
+	}
+
 	/// get full alignment (both vertical and horizontal)
 	@property ubyte alignment() const { 
         if (_align != Align.Unspecified)
@@ -215,6 +240,14 @@ class Style {
 
 	@property Style backgroundColor(uint color) {
 		_backgroundColor = color;
+        _backgroundImageId = null;
+		_backgroundDrawable.clear();
+		return this;
+	}
+
+	@property Style backgroundImageId(string image) {
+		_backgroundImageId = image;
+		_backgroundDrawable.clear();
 		return this;
 	}
 
@@ -313,4 +346,5 @@ private __gshared Theme _currentTheme;
 
 static this() {
 	_currentTheme = new Theme("default");
+    Style button = _currentTheme.createSubstyle("BUTTON").backgroundImageId("btn_default_normal").alignment(Align.Center);
 }
