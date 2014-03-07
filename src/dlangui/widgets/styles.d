@@ -13,6 +13,8 @@ immutable ushort FONT_WEIGHT_UNSPECIFIED = 0x0000;
 immutable ubyte FONT_STYLE_UNSPECIFIED = 0xFF;
 immutable ubyte FONT_STYLE_NORMAL = 0x00;
 immutable ubyte FONT_STYLE_ITALIC = 0x01;
+/// use as widget.layout() param to avoid applying of parent size
+immutable int SIZE_UNSPECIFIED = int.max;
 
 enum Align : ubyte {
     Unspecified = ALIGN_UNSPECIFIED,
@@ -45,6 +47,10 @@ class Style {
 	protected string _backgroundImageId;
 	protected Rect _padding;
 	protected Rect _margins;
+    protected int _minWidth = SIZE_UNSPECIFIED;
+    protected int _maxWidth = SIZE_UNSPECIFIED;
+    protected int _minHeight = SIZE_UNSPECIFIED;
+    protected int _maxHeight = SIZE_UNSPECIFIED;
 
 	protected Style[] _substates;
 	protected Style[] _children;
@@ -195,6 +201,59 @@ class Style {
 	}
 
     //===================================================
+    // size restrictions
+
+	/// minimal width constraint, 0 if limit is not set
+	@property uint minWidth() const {
+        if (_minWidth != SIZE_UNSPECIFIED)
+            return _minWidth;
+        else
+            return parentStyle.minWidth;
+	}
+	/// max width constraint, returns SIZE_UNSPECIFIED if limit is not set
+	@property uint maxWidth() const {
+        if (_maxWidth != SIZE_UNSPECIFIED)
+            return _maxWidth;
+        else
+            return parentStyle.maxWidth;
+	}
+	/// minimal height constraint, 0 if limit is not set
+	@property uint minHeight() const {
+        if (_minHeight != SIZE_UNSPECIFIED)
+            return _minHeight;
+        else
+            return parentStyle.minHeight;
+	}
+	/// max height constraint, SIZE_UNSPECIFIED if limit is not set
+	@property uint maxHeight() const {
+        if (_maxHeight != SIZE_UNSPECIFIED)
+            return _maxHeight;
+        else
+            return parentStyle.maxHeight;
+	}
+    /// set min width constraint
+    @property Style minWidth(int value) {
+        _minWidth = value;
+        return this;
+    }
+    /// set max width constraint
+    @property Style maxWidth(int value) {
+        _maxWidth = value;
+        return this;
+    }
+    /// set min height constraint
+    @property Style minHeight(int value) {
+        _minHeight = value;
+        return this;
+    }
+    /// set max height constraint
+    @property Style maxHeight(int value) {
+        _maxHeight = value;
+        return this;
+    }
+
+
+    //===================================================
     // alignment
 
 	/// get full alignment (both vertical and horizontal)
@@ -326,6 +385,8 @@ class Theme : Style {
 		_fontWeight = 400;
 		_fontFace = "Arial"; // TODO: from settings
         _fontFamily = FontFamily.SansSerif;
+        _minHeight = 0;
+        _minWidth = 0;
 	}
 
 	/// create wrapper style which will have currentTheme.get(id) as parent instead of fixed parent - to modify some base style properties in widget

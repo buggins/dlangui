@@ -5,11 +5,29 @@ public import dlangui.widgets.styles;
 public import dlangui.graphics.drawbuf;
 public import dlangui.graphics.images;
 public import dlangui.graphics.fonts;
+
 import dlangui.platforms.common.platform;
 
+import std.algorithm;
+
+
+/// Visibility (see Android View Visibility)
+enum Visibility : ubyte {
+    /// Visible on screen (default)
+    Visible,
+    /// Not visible, but occupies a space in layout
+    Invisible,
+    /// Completely hidden, as not has been added
+    Gone
+}
+
 class Widget {
+    /// widget id
+    protected string _id;
     /// current widget position, set by layout()
     protected Rect _pos;
+    /// widget visibility: either Visible, Invisible, Gone
+    protected Visibility _visibility = Visibility.Visible; // visible by default
     /// style id to lookup style in theme
 	protected string _styleId;
     /// own copy of style - to override some of style properties, null of no properties overriden
@@ -45,13 +63,20 @@ class Widget {
 		return _ownStyle;
 	}
 
+    /// returns widget id, null if not set
+	@property string id() const { return _styleId; }
+    /// set widget id
+    @property void id(string id) { _id = id; }
+    /// compare widget id with specified value, returs true if matches
+    bool compareId(string id) { return (_id !is null) && id.equal(_id); }
+
     //======================================================
     // Style related properties
 
     /// returns widget style id, null if not set
-    @property void styleId(string id) { _styleId = id; }
-    /// set widget style id
 	@property string styleId() const { return _styleId; }
+    /// set widget style id
+    @property void styleId(string id) { _styleId = id; }
     /// get margins (between widget bounds and its background)
     @property Rect margins() const { return style.margins; }
     /// set margins for widget - override one from style
@@ -119,12 +144,54 @@ class Widget {
     @property int width() { return _pos.width; }
     /// returns current height of widget in pixels
     @property int height() { return _pos.height; }
-    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-    void measure(int width, int height) { 
-        _measuredWidth = _measuredHeight = 0;
+
+    /// returns widget visibility (Visible, Invisible, Gone)
+    @property Visibility visibility() { return _visibility; }
+    /// sets widget visibility (Visible, Invisible, Gone)
+    @property Widget visibility(Visibility visible) { 
+        _visibility = visible; 
+        requestLayout();
+        return this;
     }
+
+    /// request relayout of widget and its children
+    void requestLayout() {
+        _needLayout = true;
+    }
+    /// request redraw
+    void invalidate() {
+        _needDraw = true;
+    }
+
+    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+    void measure(int parentWidth, int parentHeight) { 
+        measuredContent(parentWidth, parentHeight, 0, 0);
+    }
+
+    /// helper function for implement measure() when widget's content dimensions are known
+    protected void measuredContent(int parentWidth, int parentHeight, int contentWidth, int contentHeight) {
+        if (visibility == Visibility.Gone) {
+            _measuredWidth = _measuredHeight = 0;
+            return;
+        }
+        Rect m = margins;
+        Rect p = padding;
+        int dx = m.left + m.right + p.left + p.right + contentWidth;
+        int dy = m.top + m.bottom + p.top + p.bottom + contentHeight;
+        // check for margins and padding
+        if (parentWidth != SIZE_UNSPECIFIED && dx > parentWidth)
+            dx = parentWidth;
+        if (parentHeight != SIZE_UNSPECIFIED && dy > parentHeight)
+            dy = parentHeight;
+        _measuredWidth = dx;
+        _measuredHeight = dy;
+    }
+
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     void layout(Rect rc) {
+        if (visibility == Visibility.Gone) {
+            return;
+        }
         _pos = rc;
         _needLayout = false;
     }
@@ -146,6 +213,8 @@ class Widget {
     }
     /// Draw widget at its position to buffer
     void onDraw(DrawBuf buf) {
+        if (visibility != Visibility.Visible)
+            return;
         Rect rc = _pos;
         applyMargins(rc);
         buf.fillRect(_pos, backgroundColor);
@@ -198,6 +267,19 @@ class Widget {
     @property int childCount() { return 0; }
     /// returns child by index
     Widget child(int index) { return null; }
+    /// find child by id, returns null if not found
+    Widget childById(string id) { 
+        if (compareId(id))
+            return this;
+        // lookup children
+        for (int i = childCount - 1; i >= 0; i--) {
+            Widget res = child(i).childById(id);
+            if (res !is null)
+                return res;
+        }
+        // not found
+        return null; 
+    }
     /// returns parent widget, null for top level widget
     @property Widget parent() { return _parent; }
     /// sets parent for widget
