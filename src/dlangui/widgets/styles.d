@@ -67,7 +67,7 @@ class Style {
 			return _parentStyle;
 		if (_parentId !is null && currentTheme !is null)
 			return currentTheme.get(_parentId);
-		return null;
+		return currentTheme;
 	}
 
 	@property Style parentStyle() {
@@ -75,7 +75,7 @@ class Style {
 			return _parentStyle;
 		if (_parentId !is null && currentTheme !is null)
 			return currentTheme.get(_parentId);
-		return null;
+		return currentTheme;
 	}
 
 	@property ref FontRef font() const {
@@ -92,7 +92,7 @@ class Style {
 
 	/// font size
 	@property FontFamily fontFamily() const {
-        if (_fontFamily != FontFamily.Unspecified || _parentStyle is null)
+        if (_fontFamily != FontFamily.Unspecified)
             return _fontFamily;
         else
             return parentStyle.fontFamily;
@@ -100,7 +100,7 @@ class Style {
 
 	/// font size
 	@property string fontFace() const {
-        if (_fontFace !is null || _parentStyle is null)
+        if (_fontFace !is null)
             return _fontFace;
         else
             return parentStyle.fontFace;
@@ -108,7 +108,7 @@ class Style {
 
 	/// font style - italic
 	@property bool fontItalic() const {
-        if (_fontStyle != FONT_STYLE_UNSPECIFIED || _parentStyle is null)
+        if (_fontStyle != FONT_STYLE_UNSPECIFIED)
             return _fontStyle == FONT_STYLE_ITALIC;
         else
             return parentStyle.fontItalic;
@@ -116,7 +116,7 @@ class Style {
 
 	/// font weight
 	@property ushort fontWeight() const {
-        if (_fontWeight != FONT_WEIGHT_UNSPECIFIED || _parentStyle is null)
+        if (_fontWeight != FONT_WEIGHT_UNSPECIFIED)
             return _fontWeight;
         else
             return parentStyle.fontWeight;
@@ -124,7 +124,7 @@ class Style {
 
 	/// font size
 	@property ushort fontSize() const {
-        if (_fontSize != FONT_SIZE_UNSPECIFIED || _parentStyle is null)
+        if (_fontSize != FONT_SIZE_UNSPECIFIED)
             return _fontSize;
         else
             return parentStyle.fontSize;
@@ -146,7 +146,7 @@ class Style {
 
 	/// text color
 	@property uint textColor() const {
-        if (_textColor != COLOR_UNSPECIFIED || _parentStyle is null)
+        if (_textColor != COLOR_UNSPECIFIED)
             return _textColor;
         else
             return parentStyle.textColor;
@@ -154,7 +154,7 @@ class Style {
 
 	/// background color
 	@property uint backgroundColor() const {
-        if (_backgroundColor != COLOR_UNSPECIFIED || _parentStyle is null)
+        if (_backgroundColor != COLOR_UNSPECIFIED)
             return _backgroundColor;
         else
             return parentStyle.backgroundColor;
@@ -162,7 +162,7 @@ class Style {
 
 	/// get full alignment (both vertical and horizontal)
 	@property ubyte alignment() const { 
-        if (_align != Align.Unspecified || _parentStyle is null)
+        if (_align != Align.Unspecified)
             return _align; 
         else
             return parentStyle.alignment;
@@ -280,6 +280,7 @@ class Theme : Style {
 		_fontStyle = FONT_STYLE_NORMAL;
 		_fontWeight = 400;
 		_fontFace = "Arial"; // TODO: from settings
+        _fontFamily = FontFamily.SansSerif;
 	}
 
 	/// create wrapper style which will have currentTheme.get(id) as parent instead of fixed parent - to modify some base style properties in widget
