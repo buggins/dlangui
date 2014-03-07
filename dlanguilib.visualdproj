@@ -275,6 +275,7 @@
      <File path="src\dlangui\widgets\styles.d" />
      <File path="src\dlangui\widgets\widget.d" />
     </Folder>
+    <File path="src\dlangui\all.d" />
    </Folder>
   </Folder>
  </Folder>

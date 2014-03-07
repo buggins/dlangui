@@ -52,7 +52,7 @@ class Win32Window : Window {
         //int dy = rect.bottom - rect.top;
         if (_drawbuf is null)
             _drawbuf = new Win32ColorDrawBuf(_dx, _dy);
-        else 
+        else
             _drawbuf.resize(_dx, _dy);
         return _drawbuf;
     }
@@ -220,27 +220,29 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 int dy = rect.bottom - rect.top;
                 //window.onResize(pos.cx, pos.cy);
                 window.onResize(dx, dy);
-                UpdateWindow(hwnd);
+                InvalidateRect(hwnd, null, FALSE);
+                //UpdateWindow(hwnd);
             }
             return 0;
         case WM_ERASEBKGND:
             return 1;
         case WM_PAINT:
             {
-                GetClientRect(hwnd, &rect);
-                int dx = rect.right - rect.left;
-                int dy = rect.bottom - rect.top;
-                window.onResize(dx, dy);
+                //GetClientRect(hwnd, &rect);
+                //int dx = rect.right - rect.left;
+                //int dy = rect.bottom - rect.top;
+                //window.onResize(dx, dy);
+
                 hdc = BeginPaint(hwnd, &ps);
+                scope(exit) EndPaint(hwnd, &ps);
+
                 Win32ColorDrawBuf buf = window.getDrawBuf();
                 buf.fill(0x808080);
                 window.onDraw(buf);
                 buf.drawTo(hdc, 0, 0);
-                //drawBuf2DC(hdc, 0, 0, buf);
-                scope(exit) EndPaint(hwnd, &ps);
+
             }
-            //DrawTextA(hdc, "Hello, Windows!", -1, &rect, DT_SINGLELINE | DT_CENTER | DT_VCENTER);
-            return 0;
+            return 0; // processed
 
         case WM_DESTROY:
             window.onDestroy();

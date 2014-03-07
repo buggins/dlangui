@@ -3,6 +3,7 @@ module dlangui.platforms.windows.win32drawbuf;
 version (Windows) {
 
 import win32.windows;
+import dlangui.core.logger;
 import dlangui.graphics.drawbuf;
 
 class Win32ColorDrawBuf : ColorDrawBufBase {
@@ -18,10 +19,15 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
             return _pixels + _dx * (_dy - 1 - y);
         return null;
     }
+    ~this() {
+        clear();
+    }
     override void clear() {
         if (_drawbmp !is null) {
             DeleteObject( _drawbmp );
             DeleteObject( _drawdc );
+            _drawbmp = null;
+            _drawdc = null;
             _pixels = null;
             _dx = 0;
             _dy = 0;
@@ -62,7 +68,7 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
             _pixels[i] = color;
     }
     void drawTo(HDC dc, int x, int y) {
-        BitBlt(dc, x, y, _dx, _dx, _drawdc, 0, 0, SRCCOPY);
+        BitBlt(dc, x, y, _dx, _dy, _drawdc, 0, 0, SRCCOPY);
     }
 }
 

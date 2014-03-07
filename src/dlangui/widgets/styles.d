@@ -18,10 +18,10 @@ enum Align : ubyte {
     Unspecified = ALIGN_UNSPECIFIED,
     Left = 1,
     Right = 2,
-    HCenter = Left | Right,
+    HCenter = 1 | 2,
     Top = 4,
     Bottom = 8,
-    VCenter = Top | Bottom,
+    VCenter = 4 | 8,
     Center = VCenter | HCenter,
 	TopLeft = Left | Top,
 }
@@ -95,6 +95,9 @@ class Style {
         return (cast(Style)this)._backgroundDrawable;
     }
 
+    //===================================================
+    // font properties
+
 	@property ref FontRef font() const {
 		if (!(cast(Style)this)._font.isNull)
 			return (cast(Style)this)._font;
@@ -147,6 +150,9 @@ class Style {
             return parentStyle.fontSize;
 	}
 
+    //===================================================
+    // layout parameters: margins / padding
+
 	/// padding
 	@property ref const(Rect) padding() const {
 		if (_stateValue != 0)
@@ -169,6 +175,9 @@ class Style {
             return parentStyle.textColor;
 	}
 
+    //===================================================
+    // background
+
 	/// background color
 	@property uint backgroundColor() const {
         if (_backgroundColor != COLOR_UNSPECIFIED)
@@ -185,6 +194,9 @@ class Style {
             return parentStyle.backgroundImageId;
 	}
 
+    //===================================================
+    // alignment
+
 	/// get full alignment (both vertical and horizontal)
 	@property ubyte alignment() const { 
         if (_align != Align.Unspecified)
@@ -193,9 +205,9 @@ class Style {
             return parentStyle.alignment;
     }
 	/// vertical alignment: Top / VCenter / Bottom
-	@property ubyte valign() const { return _align & Align.VCenter; }
+	@property ubyte valign() const { return alignment & Align.VCenter; }
 	/// horizontal alignment: Left / HCenter / Right
-	@property ubyte halign() const { return _align & Align.HCenter; }
+	@property ubyte halign() const { return alignment & Align.HCenter; }
 
     /// set alignment
     @property Style alignment(ubyte value) {
@@ -320,6 +332,7 @@ class Theme : Style {
 	Style modifyStyle(string id) {
 		Style style = new Style(null, null);
 		style._parentId = id;
+        style._align = Align.Unspecified; // inherit
 		return style;
 	}
 
@@ -346,5 +359,6 @@ private __gshared Theme _currentTheme;
 
 static this() {
 	_currentTheme = new Theme("default");
-    Style button = _currentTheme.createSubstyle("BUTTON").backgroundImageId("btn_default_normal").alignment(Align.Center);
+    Style button = _currentTheme.createSubstyle("BUTTON").backgroundImageId("btn_default_normal");
+    button.alignment(Align.Center);
 }

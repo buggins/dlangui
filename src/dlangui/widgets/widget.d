@@ -169,18 +169,20 @@ class Widget {
     }
     /// Applies alignment for content of size sz - set rectangle rc to aligned value of content inside of initial value of rc.
     void applyAlign(ref Rect rc, Point sz) {
-        if (valign == Align.Bottom) {
+        Align va = valign;
+        Align ha = halign;
+        if (va == Align.Bottom) {
             rc.top = rc.bottom - sz.y;
-        } else if (valign == Align.VCenter) {
+        } else if (va == Align.VCenter) {
             int dy = (rc.height - sz.y) / 2;
             rc.top += dy;
             rc.bottom = rc.top + sz.y;
         } else {
             rc.bottom = rc.top + sz.y;
         }
-        if (halign == Align.Right) {
+        if (ha == Align.Right) {
             rc.left = rc.right - sz.x;
-        } else if (halign == Align.HCenter) {
+        } else if (ha == Align.HCenter) {
             int dx = (rc.width - sz.x) / 2;
             rc.left += dx;
             rc.right = rc.left + sz.x;

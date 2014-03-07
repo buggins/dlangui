@@ -32,8 +32,9 @@ public class Window {
         }
     }
     public void onDraw(DrawBuf buf) {
-        if (_mainWidget !is null)
+        if (_mainWidget !is null) {
             _mainWidget.onDraw(buf);
+        }
     }
 }
 
