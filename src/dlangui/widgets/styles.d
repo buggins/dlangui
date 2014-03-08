@@ -447,6 +447,29 @@ class Theme : Style {
 		return style;
 	}
 
+	// ================================================
+	// override to avoid infinite recursion
+	/// font size
+	@property override string backgroundImageId() const {
+        return _backgroundImageId;
+	}
+	/// minimal width constraint, 0 if limit is not set
+	@property override uint minWidth() const {
+        return _minWidth;
+	}
+	/// max width constraint, returns SIZE_UNSPECIFIED if limit is not set
+	@property override uint maxWidth() const {
+        return _maxWidth;
+	}
+	/// minimal height constraint, 0 if limit is not set
+	@property override uint minHeight() const {
+        return _minHeight;
+	}
+	/// max height constraint, SIZE_UNSPECIFIED if limit is not set
+	@property override uint maxHeight() const {
+        return _maxHeight;
+	}
+
 	/// create new named style
 	override Style createSubstyle(string id) {
 		Style style = new Style(this, id);
@@ -470,6 +493,6 @@ private __gshared Theme _currentTheme;
 
 static this() {
 	_currentTheme = new Theme("default");
-    Style button = _currentTheme.createSubstyle("BUTTON").backgroundImageId("btn_default_normal");
-    button.alignment(Align.Center);
+    Style button = _currentTheme.createSubstyle("BUTTON").backgroundImageId("btn_default_normal").alignment(Align.Center);
+    Style text = _currentTheme.createSubstyle("TEXT").margins(Rect(3,3,3,3)).padding(Rect(3,3,3,3));
 }

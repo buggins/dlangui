@@ -4,16 +4,20 @@ import dlangui.widgets.widget;
 
 /// static text widget
 class TextWidget : Widget {
+    this(string ID = null) {
+		super(ID);
+        styleId = "TEXT";
+    }
     protected dstring _text;
     /// get widget text
     override @property dstring text() { return _text; }
     /// set text to show
-    override @property void text(dstring s) { 
+    override @property Widget text(dstring s) { 
         _text = s; 
         requestLayout();
+		return this;
     }
     override void measure(int parentWidth, int parentHeight) { 
-        _measuredWidth = _measuredHeight = 0;
         FontRef font = font();
         Point sz = font.textSize(text);
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
@@ -24,8 +28,8 @@ class TextWidget : Widget {
         super.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
-        applyPadding(rc);
         ClipRectSaver(buf, rc);
+        applyPadding(rc);
         FontRef font = font();
         Point sz = font.textSize(text);
         applyAlign(rc, sz);
@@ -38,6 +42,10 @@ class ImageWidget : Widget {
 
     protected string _drawableId;
     protected DrawableRef _drawable;
+
+    this(string ID = null) {
+		super(ID);
+	}
 
     /// get drawable image id
     @property string drawableId() { return _drawableId; }
@@ -79,8 +87,8 @@ class ImageWidget : Widget {
         super.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
-        applyPadding(rc);
         ClipRectSaver(buf, rc);
+        applyPadding(rc);
         DrawableRef img = drawable;
         if (!img.isNull) {
             Point sz;
@@ -95,16 +103,15 @@ class ImageWidget : Widget {
 class Button : Widget {
     protected dstring _text;
     override @property dstring text() { return _text; }
-    override @property void text(dstring s) { _text = s; }
-    this() {
+    override @property Widget text(dstring s) { _text = s; requestLayout(); return this; }
+    this(string ID = null) {
+		super(ID);
         styleId = "BUTTON";
     }
-    override void measure(int width, int height) { 
-        _measuredWidth = _measuredHeight = 0;
-    }
-    override void layout(Rect rc) { 
-        _pos = rc;
-        _needLayout = false;
+    override void measure(int parentWidth, int parentHeight) { 
+        FontRef font = font();
+        Point sz = font.textSize(text);
+        measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }
     override void onDraw(DrawBuf buf) {
         super.onDraw(buf);

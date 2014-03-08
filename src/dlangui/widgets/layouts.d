@@ -74,7 +74,6 @@ class LinearLayout : WidgetGroup {
         int contentHeight = 0;
         if (orientation == Orientation.Vertical) {
             // Vertical
-            int position = 0;
             int totalSize = 0;
             int delta = 0;
             int resizableSize = 0;
@@ -89,16 +88,17 @@ class LinearLayout : WidgetGroup {
                 if (item.visibility == Visibility.Gone)
                     continue;
                 visibleCount++;
-                totalSize += item.measuredHeight;
+                int weight = item.layoutWeight;
+				int size = item.measuredHeight;
+                totalSize += size;
                 if (maxItem < item.measuredWidth)
                     maxItem = item.measuredWidth;
-                int weight = item.layoutWeight;
                 if (item.layoutHeight == FILL_PARENT) {
                     resizableWeight += weight;
-                    resizableSize += item.measuredHeight;
+                    resizableSize += size * weight;
                 } else {
                     nonresizableWeight += weight;
-                    nonresizableSize += item.measuredHeight;
+                    nonresizableSize += size * weight;
                 }
             }
             if (layoutWidth == WRAP_CONTENT && maxItem < rc.width)
@@ -107,42 +107,59 @@ class LinearLayout : WidgetGroup {
                 contentWidth = rc.width;
             if (layoutHeight == FILL_PARENT || totalSize > rc.height)
                 delta = rc.height - totalSize; // total space to add to fit
+			// calculate resize options and scale
             bool needForceResize = false;
             bool needResize = false;
             int scaleFactor = 10000; // per weight unit
             if (delta != 0 && visibleCount > 0) {
                 // need resize of some children
                 needResize = true;
-                needForceResize = delta < 0 || resizableSize < delta; // do we need resize non-FILL_PARENT items?
+				// resize all if need to shrink or only resizable are too small to correct delta
+                needForceResize = delta < 0 || resizableWeight == 0; // || resizableSize * 2 / 3 < delta; // do we need resize non-FILL_PARENT items?
+				// calculate scale factor: weight / delta * 10000
                 if (needForceResize)
-                    scaleFactor = 10000 * rc.height / (resizableSize + nonresizableSize) / (nonresizableWeight + resizableWeight);
+                    scaleFactor = 10000 * delta / (nonresizableSize + resizableSize);
                 else
-                    scaleFactor = 10000 * rc.height / (rc.height - delta) / resizableWeight;
+                    scaleFactor = 10000 * delta / resizableSize;
             }
+			//Log.d("VerticalLayout delta=", delta, ", nonres=", nonresizableWeight, ", res=", resizableWeight, ", scale=", scaleFactor);
+			// find last resized - to allow fill space 1 pixel accurate
+			Widget lastResized = null;
             for (int i = 0; i < _children.count; i++) {
                 Widget item = _children.get(i);
                 if (item.visibility == Visibility.Gone)
                     continue;
-                int weight = item.layoutWeight;
-                if (item.layoutHeight == FILL_PARENT) {
-                    resizableWeight += weight;
-                    resizableSize += item.measuredHeight;
-                } else {
-                    nonresizableWeight += weight;
-                    nonresizableSize += item.measuredHeight;
+                if (item.layoutHeight == FILL_PARENT || needForceResize) {
+					lastResized = item;
                 }
-            }
+			}
+			// final resize and layout of children
+            int position = 0;
+			int deltaTotal = 0;
             for (int i = 0; i < _children.count; i++) {
                 Widget item = _children.get(i);
                 if (item.visibility == Visibility.Gone)
                     continue;
                 int layoutSize = item.layoutHeight;
-                totalWeight += item.measuredHeight;
                 int weight = item.layoutWeight;
-                if (layoutSize) {
-                    resizableWeight += weight;
-                    resizableSize += item.measuredHeight;
+				int size = item.measuredHeight;
+                if (needResize && (layoutSize == FILL_PARENT || needForceResize)) {
+					// do resize
+					int correction = scaleFactor * weight * size / 10000;
+					deltaTotal += correction;
+					// for last resized, apply additional correction to resolve calculation inaccuracy
+					if (item == lastResized) {
+						correction += delta - deltaTotal;
+					}
+					size += correction;
                 }
+				// apply size
+				Rect childRect = rc;
+				childRect.top += position;
+				childRect.bottom = childRect.top + size;
+				childRect.right = childRect.left + contentWidth;
+				item.layout(childRect);
+				position += size;
             }
         } else {
             // Horizontal
@@ -157,8 +174,13 @@ class LinearLayout : WidgetGroup {
         Rect rc = _pos;
         applyMargins(rc);
         applyPadding(rc);
-        // TODO
-        _needDraw = false;
+        ClipRectSaver(buf, rc);
+		for (int i = 0; i < _children.count; i++) {
+			Widget item = _children.get(i);
+			if (item.visibility != Visibility.Visible)
+				continue;
+			item.onDraw(buf);
+		}
     }
 
 }

@@ -37,17 +37,16 @@ class Widget {
     /// height measured by measure()
     protected int _measuredHeight;
     /// true to force layout
-    protected bool _needLayout;
+    protected bool _needLayout = true;
     /// true to force redraw
-    protected bool _needDraw;
+    protected bool _needDraw = true;
     /// parent widget
     protected Widget _parent;
     /// window (to be used for top level widgets only!)
     protected Window _window;
 
-    this() {
-        _needLayout = true;
-        _needDraw = true;
+    this(string ID = null) {
+		_id = id;
     }
 
     /// accessor to style - by lookup in theme by styleId (if style id is not set, theme base style will be used).
@@ -82,7 +81,20 @@ class Widget {
     /// set margins for widget - override one from style
     @property Widget margins(Rect rc) { ownStyle.margins = rc; return this; }
     /// get padding (between background bounds and content of widget)
-    @property Rect padding() const { return style.padding; }
+    @property Rect padding() const { 
+		// get max padding from style padding and background drawable padding
+		Rect p = style.padding; 
+		Rect dp = style.backgroundDrawable.padding;
+		if (p.left < dp.left)
+			p.left = dp.left;
+		if (p.right < dp.right)
+			p.right = dp.right;
+		if (p.top < dp.top)
+			p.top = dp.top;
+		if (p.bottom < dp.bottom)
+			p.bottom = dp.bottom;
+		return p;
+	}
     /// set padding for widget - override one from style
     @property Widget padding(Rect rc) { ownStyle.padding = rc; return this; }
     /// returns background color
@@ -127,7 +139,7 @@ class Widget {
     /// returns widget content text (override to support this)
     @property dstring text() { return ""; }
     /// sets widget content text (override to support this)
-    @property void text(dstring s) {  }
+    @property Widget text(dstring s) { return this; }
 
     //==================================================================
     // Layout and drawing related methods
