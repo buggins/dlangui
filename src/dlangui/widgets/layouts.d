@@ -7,6 +7,82 @@ enum Orientation : ubyte {
     Horizontal
 }
 
+/// helper for layouts
+struct LayoutItem {
+	Widget _widget;
+	Orientation _orientation;
+	int _measuredSize; // primary size for orientation
+	int _minSize; //  min size for primary dimension
+	int _maxSize; //  max size for primary dimension
+	int _layoutSize; //  layout size for primary dimension
+	int _secondarySize; // other measured size
+	bool _fillParent;
+	// just to help GC
+	void clear() {
+		_widget = null;
+	}
+	/// set item and measure it
+	void measure(Widget widget, Orientation orientation, int parentWidth, int parentHeight) {
+		_widget = widget;
+		_orientation = orientation;
+		_widget.measure(parentWidth, parentHeight);
+		if (orientation == Orientation.Horizontal) {
+			_secondarySize = _widget.measuredHeight;
+			_measuredSize = _widget.measuredWidth;
+			_minSize = _widget.minWidth;
+			_maxSize = _widget.maxWidth;
+			_layoutSize = _widget.layoutWidth;
+		} else {
+			_secondarySize = _widget.measuredWidth;
+			_measuredSize = _widget.measuredHeight;
+			_minSize = _widget.minHeight;
+			_maxSize = _widget.maxHeight;
+			_layoutSize = _widget.layoutHeight;
+		}
+		_fillParent = _layoutSize == FILL_PARENT;
+	}
+}
+
+/// helper class for layouts
+class LayoutItems {
+	Orientation _orientation;
+	LayoutItem[] _list;
+	int _count;
+	int _totalSize;
+	int _maxSecondarySize;
+
+	/// fill widget layout list with Visible or Invisible items, measure them
+	Point measure(Orientation orientation, ref WidgetList widgets, int parentWidth, int parentHeight) {
+		// remove old items, if any
+		clear();
+		_orientation = orientation;
+		// reserve space
+		if (_list.length < widgets.count)
+			_list.length = widgets.count;
+		_totalSize = 0;
+		_maxSecondarySize = 0;
+		// copy and measure
+		for (int i = 0; i < widgets.count; i++) {
+			Widget item = widgets.get(i);
+			if (item.visibility == Visibility.Gone)
+				continue;
+			_list[_count].measure(item, orientation, parentWidth, parentHeight);
+			if (_maxSecondarySize < _list[_count]._secondarySize)
+				_maxSecondarySize = _list[_count]._secondarySize;
+			_totalSize = _list[_count]._measuredSize;
+			_count++;
+		}
+		return _orientation == Orientation.Horizontal ? Point(_totalSize, _maxSecondarySize) : Point(_maxSecondarySize, _totalSize);
+	}
+
+	void clear() {
+		for (int i = 0; i < _count; i++)
+			_list[i].clear();
+		_count = 0;
+	}
+
+}
+
 class LinearLayout : WidgetGroup {
     protected Orientation _orientation = Orientation.Vertical;
     /// returns linear layout orientation (Vertical, Horizontal)
