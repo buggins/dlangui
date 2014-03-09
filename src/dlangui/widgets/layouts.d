@@ -80,7 +80,9 @@ class LayoutItems {
 			_list[i].clear();
 		_count = 0;
 	}
-
+	~this() {
+		clear();
+	}
 }
 
 class LinearLayout : WidgetGroup {
@@ -90,6 +92,12 @@ class LinearLayout : WidgetGroup {
     /// sets linear layout orientation
     @property LinearLayout orientation(Orientation value) { _orientation = value; requestLayout(); return this; }
 
+	this(string ID = null) {
+		super(ID);
+		_layoutItems = new LayoutItems();
+	}
+
+	LayoutItems _layoutItems;
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
     override void measure(int parentWidth, int parentHeight) { 
         Rect m = margins;
@@ -102,6 +110,8 @@ class LinearLayout : WidgetGroup {
         if (parentHeight != SIZE_UNSPECIFIED)
             pheight -= m.top + m.bottom + p.top + p.bottom;
         // measure children
+		Point sz = _layoutItems.measure(orientation, _children, pwidth, pheight);
+		/*
         int contentWidth = 0;
         int contentHeight = 0;
         if (orientation == Orientation.Vertical) {
@@ -136,6 +146,8 @@ class LinearLayout : WidgetGroup {
             contentHeight = max;
         }
         measuredContent(parentWidth, parentHeight, contentWidth, contentHeight);
+		*/
+        measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }
 
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).

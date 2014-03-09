@@ -400,6 +400,10 @@ struct WidgetList {
 /// base class for widgets which have children
 class WidgetGroup : Widget {
 
+	this(string ID = null) {
+		super(ID);
+	}
+
     protected WidgetList _children;
 
     /// returns number of children of this widget
