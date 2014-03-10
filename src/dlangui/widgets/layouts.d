@@ -111,42 +111,6 @@ class LinearLayout : WidgetGroup {
             pheight -= m.top + m.bottom + p.top + p.bottom;
         // measure children
 		Point sz = _layoutItems.measure(orientation, _children, pwidth, pheight);
-		/*
-        int contentWidth = 0;
-        int contentHeight = 0;
-        if (orientation == Orientation.Vertical) {
-            // Vertical
-            int max = 0;
-            int total = 0;
-            for (int i = 0; i < _children.count; i++) {
-                Widget item = _children.get(i);
-                if (item.visibility == Visibility.Gone)
-                    continue;
-                item.measure(pwidth, pheight);
-                if (max < item.measuredWidth)
-                    max = item.measuredWidth;
-                total += item.measuredHeight;
-            }
-            contentWidth = max;
-            contentHeight = total;
-        } else {
-            // Horizontal
-            int max = 0;
-            int total = 0;
-            for (int i = 0; i < _children.count; i++) {
-                Widget item = _children.get(i);
-                if (item.visibility == Visibility.Gone)
-                    continue;
-                item.measure(pwidth, pheight);
-                if (max < item.measuredHeight)
-                    max = item.measuredHeight;
-                total += item.measuredWidth;
-            }
-            contentWidth = total;
-            contentHeight = max;
-        }
-        measuredContent(parentWidth, parentHeight, contentWidth, contentHeight);
-		*/
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }
 

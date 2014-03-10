@@ -167,7 +167,12 @@ class Win32Window : Window {
                             Log.e("Derelict exception", e);
                         }
                     } else {
-                        useOpengl = true;
+						if (initShaders()) {
+							setOpenglEnabled();
+							useOpengl = true;
+						} else {
+							Log.e("Failed to compile shaders");
+						}
                     }
                 }
             } else {
@@ -181,6 +186,7 @@ class Win32Window : Window {
         Log.d("Window destructor");
         import derelict.opengl3.wgl;
         if (_hGLRC) {
+			uninitShaders();
             wglMakeCurrent (null, null) ;
             wglDeleteContext(_hGLRC);
             _hGLRC = null;
@@ -237,6 +243,7 @@ class Win32Window : Window {
             GLDrawBuf buf = new GLDrawBuf(_dx, _dy, false);
             buf.beforeDrawing();
             buf.fillRect(Rect(100, 100, 200, 200), 0x704020);
+            buf.fillRect(Rect(40, 70, 100, 120), 0x000000);
             buf.afterDrawing();
             //Log.d("onPaint() end drawing opengl");
             SwapBuffers(hdc);

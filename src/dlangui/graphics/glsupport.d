@@ -24,13 +24,14 @@ private void LVGLFillColor(uint color, float * buf, int count) {
 private bool checkError(string context, string file = __FILE__, int line = __LINE__) {
     int err = glGetError();
     if (err != GL_NO_ERROR) {
+		//string errorString = fromStringz(gluErrorString());
         Log.e("OpenGL error ", err, " at ", file, ":", line, " -- ", context);
         return true;
     }
     return false;
 }
 
-immutable float Z_2D = -1.0f;
+immutable float Z_2D = -2.0f;
 void drawSolidFillRect(Rect rc, uint color1, uint color2, uint color3, uint color4) {
     float[6 * 4] colors;
     LVGLFillColor(color1, colors.ptr + 4*0, 1);
@@ -57,7 +58,11 @@ void drawSolidFillRect(Rect rc, uint color1, uint color2, uint color3, uint colo
         x0,y0,Z_2D,
         x1,y1,Z_2D,
         x1,y0,Z_2D];
-    _solidFillProgram.execute(vertices, colors);
+	if (_solidFillProgram !is null) {
+		Log.d("solid fill: vertices ", vertices, " colors ", colors);
+		_solidFillProgram.execute(vertices, colors);
+	} else
+		Log.e("No program");
     //drawSolidFillRect(vertices, colors);
 }
 
@@ -282,7 +287,10 @@ void setOrthoProjection(int dx, int dy) {
     bufferDy = dy;
     //myGlOrtho(0, dx, 0, dy, -0.1f, 5.0f);
 
-    m = mat4.orthographic(0, dx, 0, dy, 0.5f, 5.0f);
+	Log.d("Ortho ", dx, "x", dy);
+
+    m = mat4.orthographic(0, dx, 0, dy, 0.5f, 50.0f);
+	Log.d("Matrix: ", m);
     glViewport(0, 0, dx, dy);
     checkError("glViewport");
 }
@@ -290,16 +298,20 @@ void setOrthoProjection(int dx, int dy) {
 class GLProgram {
     @property abstract string vertexSource();
     @property abstract string fragmentSource();
-    GLuint vertexShader;
-    GLuint fragmentShader;
-    GLuint program;
-    bool initialized;
-    bool error;
+    protected GLuint vertexShader;
+    protected GLuint fragmentShader;
+    protected GLuint program;
+    protected bool initialized;
+    protected bool error;
+	protected string glslversion;
     this() {
     }
     private GLuint compileShader(string src, GLuint type) {
         import core.stdc.stdlib;
         import std.string;
+
+		Log.d("compileShader glsl=", glslversion, " code: ", src);
+
         GLuint shader = glCreateShader(type);//GL_VERTEX_SHADER
         const char * psrc = src.toStringz;
         GLuint len = src.length;
@@ -325,6 +337,7 @@ class GLProgram {
         }
     }
     bool compile() {
+		glslversion = fromStringz(glGetString(GL_SHADING_LANGUAGE_VERSION));
         vertexShader = compileShader(vertexSource, GL_VERTEX_SHADER);
         fragmentShader = compileShader(fragmentSource, GL_FRAGMENT_SHADER);
         if (!vertexShader || !fragmentShader) {
@@ -348,8 +361,8 @@ class GLProgram {
             return false;
         }
         Log.d("Program compiled successfully");
-        glDetachShader(program, vertexShader);
-        glDetachShader(program, fragmentShader);
+        //glDetachShader(program, vertexShader);
+        //glDetachShader(program, fragmentShader);
         glUseProgram(program);
         checkError("glUseProgram " ~ to!string(program));
         if (!initLocations()) {
@@ -362,9 +375,11 @@ class GLProgram {
     bool initLocations() {
         return true;
     }
-    bool use() {
+    bool bind() {
         if (!initialized)
             return false;
+		if (!glIsProgram(program))
+			Log.e("!glIsProgram(program)");
         glUseProgram(program);
         checkError("glUseProgram " ~ to!string(program));
         return true;
@@ -389,13 +404,17 @@ class GLProgram {
     }
 }
 
+immutable string HIGHP = "";
+immutable string LOWP = "";
+immutable string MEDIUMP = "";
+
 class SolidFillProgram : GLProgram {
     @property override string vertexSource() {
         return         
-            "attribute highp vec4 vertex;\n"
-            "attribute lowp vec4 colAttr;\n"
-            "varying lowp vec4 col;\n"
-            "uniform mediump mat4 matrix;\n"
+            "attribute " ~ HIGHP ~ " vec4 vertex;\n"
+            "attribute " ~ LOWP ~ " vec4 colAttr;\n"
+            "varying " ~ LOWP ~ " vec4 col;\n"
+            "uniform " ~ MEDIUMP ~ " mat4 matrix;\n"
             "void main(void)\n"
             "{\n"
             "    gl_Position = matrix * vertex;\n"
@@ -405,8 +424,7 @@ class SolidFillProgram : GLProgram {
     }
     @property override string fragmentSource() {
         return
-            "uniform sampler2D texture;\n"
-            "varying lowp vec4 col;\n"
+            "varying " ~ LOWP ~ " vec4 col;\n"
             "void main(void)\n"
             "{\n"
             "    gl_FragColor = col;\n"
@@ -419,9 +437,7 @@ class SolidFillProgram : GLProgram {
         checkError("glDisable(GL_CULL_FACE)");
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         checkError("glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
-        use();
-        glDisable(GL_CULL_FACE);
-        checkError("glDisable(GL_CULL_FACE)");
+        bind();
         glUniformMatrix4fv(matrixLocation,  1, false, m.value_ptr);
         checkError("glUniformMatrix4fv");
     }
@@ -433,11 +449,24 @@ class SolidFillProgram : GLProgram {
     protected GLint matrixLocation;
     protected GLint vertexLocation;
     protected GLint colAttrLocation;
+	protected GLuint vertexBuffer;
+	protected GLuint colAttrBuffer;
     override bool initLocations() {
         bool res = super.initLocations();
+
+		//glGenBuffers(1, &vertexBuffer);
+		//glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
+		//glBufferData(GL_ARRAY_BUFFER, float.sizeof * 3 * 6, null, GL_DYNAMIC_DRAW);
+		//glGenBuffers(1, &colAttrBuffer);
+		//glBindBuffer(GL_ARRAY_BUFFER, colAttrBuffer);
+		//glBufferData(GL_ARRAY_BUFFER, float.sizeof * 4 * 6, null, GL_DYNAMIC_DRAW);
+
         matrixLocation = glGetUniformLocation(program, "matrix");
+		checkError("glGetUniformLocation matrix");
         vertexLocation = glGetAttribLocation(program, "vertex");
+		checkError("glGetAttribLocation vertex");
         colAttrLocation = glGetAttribLocation(program, "colAttr");
+		checkError("glGetAttribLocation colAttr");
         return res && matrixLocation >= 0 && vertexLocation >= 0 && colAttrLocation >= 0;
     }
 
@@ -451,24 +480,23 @@ class SolidFillProgram : GLProgram {
 
         glEnableVertexAttribArray(vertexLocation);
         checkError("glEnableVertexAttribArray");
+        glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, float.sizeof * 3, vertices.ptr);
+        checkError("glVertexAttribPointer");
+
         glEnableVertexAttribArray(colAttrLocation);
         checkError("glEnableVertexAttribArray");
-
-        glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, vertices.ptr);
-        checkError("glVertexAttribPointer");
-        glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, colors.ptr);
+        glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, float.sizeof * 4, colors.ptr);
         checkError("glVertexAttribPointer");
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
         checkError("glDrawArrays");
+
         glDisableVertexAttribArray(vertexLocation);
         checkError("glDisableVertexAttribArray");
         glDisableVertexAttribArray(colAttrLocation);
         checkError("glDisableVertexAttribArray");
 
         afterExecute();
-        glBindTexture(GL_TEXTURE_2D, 0);
-        checkError("glBindTexture");
         return true;
     }
 }
@@ -476,12 +504,12 @@ class SolidFillProgram : GLProgram {
 class TextureProgram : SolidFillProgram {
     @property override string vertexSource() {
         return         
-            "attribute highp vec4 vertex;\n"
-            "attribute lowp vec4 colAttr;\n"
-            "attribute mediump vec4 texCoord;\n"
-            "varying lowp vec4 col;\n"
-            "varying mediump vec4 texc;\n"
-            "uniform mediump mat4 matrix;\n"
+            "attribute " ~ HIGHP ~ " vec4 vertex;\n"
+            "attribute " ~ LOWP ~ " vec4 colAttr;\n"
+            "attribute " ~ MEDIUMP ~ " vec4 texCoord;\n"
+            "varying " ~ LOWP ~ " vec4 col;\n"
+            "varying " ~ MEDIUMP ~ " vec4 texc;\n"
+            "uniform " ~ MEDIUMP ~ " mat4 matrix;\n"
             "void main(void)\n"
             "{\n"
             "    gl_Position = matrix * vertex;\n"
@@ -493,8 +521,8 @@ class TextureProgram : SolidFillProgram {
     @property override string fragmentSource() {
         return
             "uniform sampler2D texture;\n"
-            "varying lowp vec4 col;\n"
-            "varying mediump vec4 texc;\n"
+            "varying " ~ LOWP ~ " vec4 col;\n"
+            "varying " ~ MEDIUMP ~ " vec4 texc;\n"
             "void main(void)\n"
             "{\n"
             "    gl_FragColor = texture2D(texture, texc.st) * col;\n"
@@ -561,5 +589,18 @@ bool initShaders() {
             return false;
     }
     Log.d("Shaders compiled successfully");
+    return true;
+}
+
+bool uninitShaders() {
+    Log.d("Uniniting shaders");
+    if (_textureProgram !is null) {
+        destroy(_textureProgram);
+		_textureProgram = null;
+    }
+    if (_solidFillProgram !is null) {
+        destroy(_solidFillProgram);
+		_solidFillProgram = null;
+    }
     return true;
 }
