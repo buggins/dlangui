@@ -50,6 +50,14 @@ public class Platform {
     abstract public int enterMessageLoop();
 }
 
+private __gshared bool _OPENGL_ENABLED = false;
+/// check if hardware acceleration is enabled
+@property bool openglEnabled() { return _OPENGL_ENABLED; }
+/// call on app initialization if OpenGL support is detected
+void setOpenglEnabled() {
+    _OPENGL_ENABLED = true;
+}
+
 version (Windows) {
     immutable char PATH_DELIMITER = '\\';
 }

@@ -47,7 +47,7 @@
   <compiler>0</compiler>
   <otherDMD>0</otherDMD>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>$(SolutionDir)/src $(SolutionDir)/3rdparty $(SolutionDir)/3rdparty/libpng/source</imppath>
+  <imppath>$(SolutionDir)/src $(SolutionDir)/3rdparty $(SolutionDir)/3rdparty/libpng/source $(SolutionDir)/../DerelictGL3/source  $(SolutionDir)/../DerelictUtil/source  $(SolutionDir)/../gl3n</imppath>
   <fileImppath />
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
@@ -84,7 +84,7 @@
   <objfiles />
   <linkswitches />
   <libfiles>libpng15.lib dlangui.lib phobos.lib ole32.lib kernel32.lib user32.lib comctl32.lib comdlg32.lib dlangui.lib</libfiles>
-  <libpaths>../../Debug ../../3rdparty/libpng/lib 3rdparty/libpng/lib</libpaths>
+  <libpaths>../../Debug ../../3rdparty/libpng/lib 3rdparty/libpng/lib ../../../DerelictOpenGL3/source</libpaths>
   <deffile />
   <resfile />
   <exefile>$(OutDir)\$(ProjectName).exe</exefile>

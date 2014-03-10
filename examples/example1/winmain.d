@@ -5,8 +5,8 @@ import std.stdio;
 
 /// workaround for link issue when WinMain is located in library
 version(Windows) {
-    import win32.windows;
-    import dlangui.platforms.windows.winapp;
+    private import win32.windows;
+    private import dlangui.platforms.windows.winapp;
     extern (Windows)
         int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
                     LPSTR lpCmdLine, int nCmdShow)

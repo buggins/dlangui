@@ -47,7 +47,7 @@
   <compiler>0</compiler>
   <otherDMD>0</otherDMD>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>3rdparty 3rdparty/libpng/source</imppath>
+  <imppath>3rdparty 3rdparty/libpng/source ../DerelictGL3/source  ../DerelictUtil/source</imppath>
   <fileImppath />
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
@@ -141,7 +141,7 @@
   <compiler>0</compiler>
   <otherDMD>0</otherDMD>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>3rdparty 3rdparty/libpng/source</imppath>
+  <imppath>3rdparty 3rdparty/libpng/source  ../DerelictGL3/source</imppath>
   <fileImppath />
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
@@ -190,6 +190,42 @@
  </Config>
  <Folder name="dlangui">
   <Folder name="3rdparty">
+   <Folder name="DerelictUtil">
+    <File path="..\DerelictUtil\source\derelict\util\exception.d" />
+    <File path="..\DerelictUtil\source\derelict\util\loader.d" />
+    <File path="..\DerelictUtil\source\derelict\util\sharedlib.d" />
+    <File path="..\DerelictUtil\source\derelict\util\system.d" />
+    <File path="..\DerelictUtil\source\derelict\util\wintypes.d" />
+    <File path="..\DerelictUtil\source\derelict\util\xtypes.d" />
+   </Folder>
+   <Folder name="DerelictGL3">
+    <File path="..\DerelictGL3\source\derelict\opengl3\arb.d" />
+    <File path="..\DerelictGL3\source\derelict\opengl3\cgl.d" />
+    <File path="..\DerelictGL3\source\derelict\opengl3\constants.d" />
+    <File path="..\DerelictGL3\source\derelict\opengl3\deprecatedConstants.d" />
+    <File path="..\DerelictGL3\source\derelict\opengl3\deprecatedFunctions.d" />
+    <File path="..\DerelictGL3\source\derelict\opengl3\ext.d" />
+    <File path="..\DerelictGL3\source\derelict\opengl3\functions.d" />
+    <File path="..\DerelictGL3\source\derelict\opengl3\gl.d" />
+    <File path="..\DerelictGL3\source\derelict\opengl3\gl3.d" />
+    <File path="..\DerelictGL3\source\derelict\opengl3\glx.d" />
+    <File path="..\DerelictGL3\source\derelict\opengl3\glxext.d" />
+    <File path="..\DerelictGL3\source\derelict\opengl3\internal.d" />
+    <File path="..\DerelictGL3\source\derelict\opengl3\types.d" />
+    <File path="..\DerelictGL3\source\derelict\opengl3\wgl.d" />
+    <File path="..\DerelictGL3\source\derelict\opengl3\wglext.d" />
+   </Folder>
+   <Folder name="gl3n">
+    <File path="..\gl3n\gl3n\aabb.d" />
+    <File path="..\gl3n\gl3n\frustum.d" />
+    <File path="..\gl3n\gl3n\ext\hsv.d" />
+    <File path="..\gl3n\gl3n\interpolate.d" />
+    <File path="..\gl3n\gl3n\linalg.d" />
+    <File path="..\gl3n\gl3n\math.d" />
+    <File path="..\gl3n\gl3n\ext\matrixstack.d" />
+    <File path="..\gl3n\gl3n\plane.d" />
+    <File path="..\gl3n\gl3n\util.d" />
+   </Folder>
    <Folder name="libpng">
     <File path="3rdparty\libpng\source\libpng\png.d" />
     <File path="3rdparty\libpng\source\libpng\pngconf.d" />
@@ -258,6 +294,7 @@
     <Folder name="graphics">
      <File path="src\dlangui\graphics\drawbuf.d" />
      <File path="src\dlangui\graphics\fonts.d" />
+     <File path="src\dlangui\graphics\glsupport.d" />
      <File path="src\dlangui\graphics\images.d" />
     </Folder>
     <Folder name="platforms">

@@ -14,7 +14,9 @@ import dlangui.platforms.windows.win32fonts;
 import dlangui.platforms.windows.win32drawbuf;
 import dlangui.graphics.drawbuf;
 import dlangui.graphics.fonts;
+import dlangui.graphics.glsupport;
 import dlangui.core.logger;
+//import derelict.opengl3.wgl;
 
 pragma(lib, "gdi32.lib");
 pragma(lib, "user32.lib");
@@ -27,11 +29,105 @@ immutable WIN_CLASS_NAME = "DLANGUI_APP";
 __gshared HINSTANCE _hInstance;
 __gshared int _cmdShow;
 
+bool setupPixelFormat(HDC hDC)
+{
+    PIXELFORMATDESCRIPTOR pfd = {
+        PIXELFORMATDESCRIPTOR.sizeof,  /* size */
+        1,                              /* version */
+        PFD_SUPPORT_OPENGL |
+            PFD_DRAW_TO_WINDOW |
+            PFD_DOUBLEBUFFER,               /* support double-buffering */
+        PFD_TYPE_RGBA,                  /* color type */
+        16,                             /* prefered color depth */
+        0, 0, 0, 0, 0, 0,               /* color bits (ignored) */
+        0,                              /* no alpha buffer */
+        0,                              /* alpha bits (ignored) */
+        0,                              /* no accumulation buffer */
+        0, 0, 0, 0,                     /* accum bits (ignored) */
+        16,                             /* depth buffer */
+        0,                              /* no stencil buffer */
+        0,                              /* no auxiliary buffers */
+        0,                              /* main layer PFD_MAIN_PLANE */
+        0,                              /* reserved */
+        0, 0, 0,                        /* no layer, visible, damage masks */
+    };
+    int pixelFormat;
+
+    pixelFormat = ChoosePixelFormat(hDC, &pfd);
+    if (pixelFormat == 0) {
+        Log.e("ChoosePixelFormat failed.");
+        return false;
+    }
+
+    if (SetPixelFormat(hDC, pixelFormat, &pfd) != TRUE) {
+        Log.e("SetPixelFormat failed.");
+        return false;
+    }
+    return true;
+}
+
+HPALETTE setupPalette(HDC hDC)
+{
+    import core.stdc.stdlib;
+    HPALETTE hPalette = NULL;
+    int pixelFormat = GetPixelFormat(hDC);
+    PIXELFORMATDESCRIPTOR pfd;
+    LOGPALETTE* pPal;
+    int paletteSize;
+
+    DescribePixelFormat(hDC, pixelFormat, PIXELFORMATDESCRIPTOR.sizeof, &pfd);
+
+    if (pfd.dwFlags & PFD_NEED_PALETTE) {
+        paletteSize = 1 << pfd.cColorBits;
+    } else {
+        return null;
+    }
+
+    pPal = cast(LOGPALETTE*)
+        malloc(LOGPALETTE.sizeof + paletteSize * PALETTEENTRY.sizeof);
+    pPal.palVersion = 0x300;
+    pPal.palNumEntries = cast(ushort)paletteSize;
+
+    /* build a simple RGB color palette */
+    {
+        int redMask = (1 << pfd.cRedBits) - 1;
+        int greenMask = (1 << pfd.cGreenBits) - 1;
+        int blueMask = (1 << pfd.cBlueBits) - 1;
+        int i;
+
+        for (i=0; i<paletteSize; ++i) {
+            pPal.palPalEntry[i].peRed = cast(ubyte)(
+                (((i >> pfd.cRedShift) & redMask) * 255) / redMask);
+            pPal.palPalEntry[i].peGreen = cast(ubyte)(
+                (((i >> pfd.cGreenShift) & greenMask) * 255) / greenMask);
+            pPal.palPalEntry[i].peBlue = cast(ubyte)(
+                (((i >> pfd.cBlueShift) & blueMask) * 255) / blueMask);
+            pPal.palPalEntry[i].peFlags = 0;
+        }
+    }
+
+    hPalette = CreatePalette(pPal);
+    free(pPal);
+
+    if (hPalette) {
+        SelectPalette(hDC, hPalette, FALSE);
+        RealizePalette(hDC);
+    }
+
+    return hPalette;
+}
+
+private __gshared bool DERELICT_GL3_RELOADED = false;
+
 class Win32Window : Window {
     private HWND _hwnd;
+    HGLRC _hGLRC; // opengl context
+    HPALETTE _hPalette;
     string _caption;
     Win32ColorDrawBuf _drawbuf;
+    bool useOpengl;
     this(string windowCaption, Window parent) {
+        import derelict.opengl3.wgl;
         _caption = windowCaption;
         _hwnd = CreateWindow(toUTF16z(WIN_CLASS_NAME),      // window class name
                             toUTF16z(windowCaption),  // window caption
@@ -44,6 +140,54 @@ class Win32Window : Window {
                             null,                 // window menu handle
                             _hInstance,           // program instance handle
                             cast(void*)this);                // creation parameters
+        /* initialize OpenGL rendering */
+        HDC hDC = GetDC(_hwnd);
+
+        if (!DERELICT_GL3_RELOADED || openglEnabled) {
+            if (setupPixelFormat(hDC)) {
+                _hPalette = setupPalette(hDC);
+                _hGLRC = wglCreateContext(hDC);
+                if (_hGLRC) {
+                    wglMakeCurrent(hDC, _hGLRC);
+
+                    if (!DERELICT_GL3_RELOADED) {
+                        // run this code only once
+                        DERELICT_GL3_RELOADED = true;
+                        try {
+                            import derelict.opengl3.gl3;
+                            DerelictGL3.reload();
+                            // successful
+                            if (initShaders()) {
+                                setOpenglEnabled();
+                                useOpengl = true;
+                            } else {
+                                Log.e("Failed to compile shaders");
+                            }
+                        } catch (Exception e) {
+                            Log.e("Derelict exception", e);
+                        }
+                    } else {
+                        useOpengl = true;
+                    }
+                }
+            } else {
+                Log.e("Pixelformat failed");
+                // disable GL
+                DERELICT_GL3_RELOADED = true;
+            }
+        }
+    }
+    ~this() {
+        Log.d("Window destructor");
+        import derelict.opengl3.wgl;
+        if (_hGLRC) {
+            wglMakeCurrent (null, null) ;
+            wglDeleteContext(_hGLRC);
+            _hGLRC = null;
+        }
+        if (_hwnd)
+            DestroyWindow(_hwnd);
+        _hwnd = null;
     }
     Win32ColorDrawBuf getDrawBuf() {
         //RECT rect;
@@ -68,10 +212,39 @@ class Win32Window : Window {
         SetWindowTextW(_hwnd, toUTF16z(_caption));
     }
     void onCreate() {
-        writeln("Window onCreate");
+        Log.d("Window onCreate");
     }
     void onDestroy() {
-        writeln("Window onDestroy");
+        Log.d("Window onDestroy");
+    }
+    void onPaint() {
+        Log.d("onPaint()");
+        if (useOpengl && _hGLRC) {
+            import derelict.opengl3.gl3;
+            import derelict.opengl3.wgl;
+            //Log.d("onPaint() start drawing opengl viewport: ", _dx, "x", _dy);
+            //PAINTSTRUCT ps;
+            //HDC hdc = BeginPaint(_hwnd, &ps);
+            //scope(exit) EndPaint(_hwnd, &ps);
+            HDC hdc = GetDC(_hwnd);
+            wglMakeCurrent(hdc, _hGLRC);
+            glDisable(GL_DEPTH_TEST);
+            glViewport(0, 0, _dx, _dy);
+            glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+            glClear(GL_COLOR_BUFFER_BIT);
+            //Log.d("onPaint() end drawing opengl");
+            glFlush();
+            SwapBuffers(hdc);
+        } else {
+            PAINTSTRUCT ps;
+            HDC hdc = BeginPaint(_hwnd, &ps);
+            scope(exit) EndPaint(_hwnd, &ps);
+
+            Win32ColorDrawBuf buf = getDrawBuf();
+            buf.fill(0x808080);
+            onDraw(buf);
+            buf.drawTo(hdc, 0, 0);
+        }
     }
 }
 
@@ -185,6 +358,24 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
 	Win32FontManager fontMan = new Win32FontManager();
 	FontManager.instance = fontMan;
 
+    {
+        import derelict.opengl3.gl3;
+        DerelictGL3.load();
+
+        // just to check OpenGL context
+        Log.i("Trying to setup OpenGL context");
+        Win32Window tmpWindow = new Win32Window("", null);
+        destroy(tmpWindow);
+        if (openglEnabled)
+            Log.i("OpenGL support is enabled");
+        else
+            Log.w("OpenGL support is disabled");
+        // process messages
+        platform.enterMessageLoop();
+    }
+
+    // Load versions 1.2+ and all supported ARB and EXT extensions.
+
     Log.i("Entering UIAppMain: ", args);
     int result = UIAppMain(args);
     Log.i("UIAppMain returned ", result);
@@ -196,7 +387,6 @@ extern(Windows)
 LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     HDC hdc;
-    PAINTSTRUCT ps;
     RECT rect;
     void * p = cast(void*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
     Win32Window window = p is null ? null : cast(Win32Window)(p);
@@ -232,14 +422,8 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 //int dx = rect.right - rect.left;
                 //int dy = rect.bottom - rect.top;
                 //window.onResize(dx, dy);
-
-                hdc = BeginPaint(hwnd, &ps);
-                scope(exit) EndPaint(hwnd, &ps);
-
-                Win32ColorDrawBuf buf = window.getDrawBuf();
-                buf.fill(0x808080);
-                window.onDraw(buf);
-                buf.drawTo(hdc, 0, 0);
+                if (window !is null)
+                    window.onPaint();
 
             }
             return 0; // processed
