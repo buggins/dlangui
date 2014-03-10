@@ -222,6 +222,7 @@ class Win32Window : Window {
         if (useOpengl && _hGLRC) {
             import derelict.opengl3.gl3;
             import derelict.opengl3.wgl;
+            import dlangui.graphics.gldrawbuf;
             //Log.d("onPaint() start drawing opengl viewport: ", _dx, "x", _dy);
             //PAINTSTRUCT ps;
             //HDC hdc = BeginPaint(_hwnd, &ps);
@@ -232,8 +233,12 @@ class Win32Window : Window {
             glViewport(0, 0, _dx, _dy);
             glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
+
+            GLDrawBuf buf = new GLDrawBuf(_dx, _dy, false);
+            buf.beforeDrawing();
+            buf.fillRect(Rect(100, 100, 200, 200), 0x704020);
+            buf.afterDrawing();
             //Log.d("onPaint() end drawing opengl");
-            glFlush();
             SwapBuffers(hdc);
         } else {
             PAINTSTRUCT ps;
