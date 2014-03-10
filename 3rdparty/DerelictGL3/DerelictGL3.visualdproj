@@ -1,0 +1,15 @@
+<DProject>
+ <ProjectGuid>2636c1e1-ff8e-4424-b3f9-764da9a4b556</ProjectGuid>
+ <Config name="Debug">
+  <!-- default to defaults -->
+  <exefile>$(OutDir)\$(ProjectName).lib</exefile>
+  <lib>1</lib>
+ </Config>
+ <Config name="Release">
+  <exefile>$(OutDir)\$(ProjectName).lib</exefile>
+  <lib>1</lib>
+ </Config>
+ <Folder name="DerelictGL3">
+  <File path="lib.d" />
+ </Folder>
+</DProject>

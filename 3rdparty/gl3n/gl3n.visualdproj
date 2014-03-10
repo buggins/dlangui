@@ -1,0 +1,15 @@
+<DProject>
+ <ProjectGuid>6ede8e99-6487-4505-94e9-c717112526a4</ProjectGuid>
+ <Config name="Debug">
+  <!-- default to defaults -->
+  <exefile>$(OutDir)\$(ProjectName).lib</exefile>
+  <lib>1</lib>
+ </Config>
+ <Config name="Release">
+  <exefile>$(OutDir)\$(ProjectName).lib</exefile>
+  <lib>1</lib>
+ </Config>
+ <Folder name="gl3n">
+  <File path="lib.d" />
+ </Folder>
+</DProject>

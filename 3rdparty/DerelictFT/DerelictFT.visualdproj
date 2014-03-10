@@ -1,0 +1,15 @@
+<DProject>
+ <ProjectGuid>6e4f189a-d7b0-4abd-8942-20e10c309d01</ProjectGuid>
+ <Config name="Debug">
+  <!-- default to defaults -->
+  <exefile>$(OutDir)\$(ProjectName).lib</exefile>
+  <lib>1</lib>
+ </Config>
+ <Config name="Release">
+  <exefile>$(OutDir)\$(ProjectName).lib</exefile>
+  <lib>1</lib>
+ </Config>
+ <Folder name="DerelictFT">
+  <File path="lib.d" />
+ </Folder>
+</DProject>
