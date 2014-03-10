@@ -189,6 +189,11 @@
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
  </Config>
  <Folder name="DerelictUtil">
-  <File path="lib.d" />
+  <File path="..\..\..\DerelictUtil\source\derelict\util\exception.d" />
+  <File path="..\..\..\DerelictUtil\source\derelict\util\loader.d" />
+  <File path="..\..\..\DerelictUtil\source\derelict\util\sharedlib.d" />
+  <File path="..\..\..\DerelictUtil\source\derelict\util\system.d" />
+  <File path="..\..\..\DerelictUtil\source\derelict\util\wintypes.d" />
+  <File path="..\..\..\DerelictUtil\source\derelict\util\xtypes.d" />
  </Folder>
 </DProject>
