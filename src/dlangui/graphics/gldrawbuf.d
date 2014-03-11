@@ -63,20 +63,26 @@ class GLDrawBuf : DrawBuf {
     /// draw source buffer rectangle contents to destination buffer
     override void drawFragment(int x, int y, DrawBuf src, Rect srcrect) {
         assert(_scene !is null);
-        GLImageCacheItem item = glImageCache.get(src.id);
-        if (item is null)
-            item = glImageCache.set(src);
         Rect dstrect = Rect(x, y, x + srcrect.width, y + srcrect.height);
-        // TODO: clipping
-        _scene.add(new TextureSceneItem(src.id, dstrect, srcrect, 0xFFFFFF, 0, null, 0));
+        //Log.v("GLDrawBuf.frawFragment dst=", dstrect, " src=", srcrect);
+        if (applyClipping(dstrect, srcrect)) {
+            GLImageCacheItem item = glImageCache.get(src.id);
+            if (item is null)
+                item = glImageCache.set(src);
+            // TODO: clipping
+            _scene.add(new TextureSceneItem(src.id, dstrect, srcrect, 0xFFFFFF, 0, null, 0));
+        }
     }
     /// draw source buffer rectangle contents to destination buffer rectangle applying rescaling
     override void drawRescaled(Rect dstrect, DrawBuf src, Rect srcrect) {
         assert(_scene !is null);
-        GLImageCacheItem item = glImageCache.get(src.id);
-        if (item is null)
-            item = glImageCache.set(src);
-        _scene.add(new TextureSceneItem(src.id, dstrect, srcrect, 0xFFFFFF, 0, null, 0));
+        //Log.v("GLDrawBuf.frawRescaled dst=", dstrect, " src=", srcrect);
+        if (applyClipping(dstrect, srcrect)) {
+            GLImageCacheItem item = glImageCache.get(src.id);
+            if (item is null)
+                item = glImageCache.set(src);
+            _scene.add(new TextureSceneItem(src.id, dstrect, srcrect, 0xFFFFFF, 0, null, 0));
+        }
     }
     override void clear() {
     }
@@ -416,7 +422,7 @@ public:
                 dstrc.bottom -= clip.bottom;
             }
             if (!dstrc.empty)
-                drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, false); //srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height()
+                drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height());
             //drawColorAndTextureRect(vertices, texcoords, color, _textureId);
 
             if (rotationAngle) {

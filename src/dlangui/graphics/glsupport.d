@@ -67,7 +67,7 @@ void drawSolidFillRect(Rect rc, uint color1, uint color2, uint color3, uint colo
 }
 
 void drawColorAndTextureRect(uint textureId, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color, bool linear) {
-    Log.v("drawColorAndTextureRect tx=", textureId, " src=", srcrc, " dst=", dstrc);
+    //Log.v("drawColorAndTextureRect tx=", textureId, " src=", srcrc, " dst=", dstrc);
     drawColorAndTextureRect(textureId, tdx, tdy, srcrc.left, srcrc.top, srcrc.width(), srcrc.height(), dstrc.left, dstrc.top, dstrc.width(), dstrc.height(), color, linear);
 }
 
@@ -487,7 +487,7 @@ class SolidFillProgram : GLProgram {
             "varying " ~ LOWP ~ " vec4 col;\n"
             "void main(void)\n"
             "{\n"
-            "    gl_FragColor = col; // vec4(1,0,0,1); \n"
+            "    gl_FragColor = col;\n"
             "}\n";
     }
 

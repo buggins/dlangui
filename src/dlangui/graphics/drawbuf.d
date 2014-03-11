@@ -96,6 +96,11 @@ class DrawBuf : RefCountedObject {
     }
     /// apply clipRect and buffer bounds clipping to rectangle; if clippinup applied to first rectangle, reduce second rectangle bounds proportionally.
     bool applyClipping(ref Rect rc, ref Rect rc2) {
+        if (rc.empty || rc2.empty)
+            return false;
+        if (!_clipRect.empty())
+            if (!rc.intersects(_clipRect))
+                return false;
         if (rc.width == rc2.width && rc.height == rc2.height) {
             // unscaled
             if (!_clipRect.empty()) {
@@ -470,10 +475,12 @@ class ImageDrawable : Drawable {
             return _image.ninePatch.padding;
         return Rect(0,0,0,0); 
     }
-    private static void correctFrameBounds(ref int n1, ref int n2) {
+    private static void correctFrameBounds(ref int n1, ref int n2, ref int n3, ref int n4) {
         if (n1 > n2) {
-            int middle = (n1 + n2) / 2;
-            n1 = n2 = middle;
+            assert(n2 - n1 == n4 - n3);
+            int middledist = (n1 + n2) / 2 - n1;
+            n1 = n2 = n1 + middledist;
+            n3 = n4 = n3 + middledist;
         }
     }
     override void drawTo(DrawBuf buf, Rect rc, int tilex0 = 0, int tiley0 = 0) {
@@ -487,14 +494,14 @@ class ImageDrawable : Drawable {
             int h = height;
             Rect dstrect = rc;
             Rect srcrect = Rect(1, 1, w + 1, h + 1);
-            if (buf.applyClipping(dstrect, srcrect)) {
+            if (true) { //buf.applyClipping(dstrect, srcrect)) {
                 int x0 = srcrect.left;
-                int x1 = 1 + p.frame.left;
-                int x2 = w - p.frame.right;
+                int x1 = srcrect.left + p.frame.left;
+                int x2 = srcrect.right - p.frame.right;
                 int x3 = srcrect.right;
                 int y0 = srcrect.top;
-                int y1 = 1 + p.frame.top;
-                int y2 = h - p.frame.bottom;
+                int y1 = srcrect.top + p.frame.top;
+                int y2 = srcrect.bottom - p.frame.bottom;
                 int y3 = srcrect.bottom;
                 int dstx0 = rc.left;
                 int dstx1 = rc.left + p.frame.left;
@@ -504,12 +511,16 @@ class ImageDrawable : Drawable {
                 int dsty1 = rc.top + p.frame.top;
                 int dsty2 = rc.bottom - p.frame.bottom;
                 int dsty3 = rc.bottom;
-                //Log.d("src x bounds: ", x0, ", ", x1, ", ", x2, ", ", x3, " dst ", dstx0, ", ", dstx1, ", ", dstx2, ", ", dstx3);
-                //Log.d("src y bounds: ", y0, ", ", y1, ", ", y2, ", ", y3, " dst ", dsty0, ", ", dsty1, ", ", dsty2, ", ", dsty3);
-                correctFrameBounds(x1, x2);
-                correctFrameBounds(y1, y2);
-                correctFrameBounds(dstx1, dstx2);
-                correctFrameBounds(dsty1, dsty2);
+                //Log.d("x bounds: ", x0, ", ", x1, ", ", x2, ", ", x3, " dst ", dstx0, ", ", dstx1, ", ", dstx2, ", ", dstx3);
+                //Log.d("y bounds: ", y0, ", ", y1, ", ", y2, ", ", y3, " dst ", dsty0, ", ", dsty1, ", ", dsty2, ", ", dsty3);
+
+                correctFrameBounds(x1, x2, dstx1, dstx2);
+                correctFrameBounds(y1, y2, dsty1, dsty2);
+
+                //correctFrameBounds(x1, x2);
+                //correctFrameBounds(y1, y2);
+                //correctFrameBounds(dstx1, dstx2);
+                //correctFrameBounds(dsty1, dsty2);
                 if (y0 < y1 && dsty0 < dsty1) {
                     // top row
                     if (x0 < x1 && dstx0 < dstx1)

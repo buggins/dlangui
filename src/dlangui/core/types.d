@@ -35,6 +35,7 @@ struct Rect {
     @property bool empty() {
         return right <= left || bottom <= top;
     }
+    /// updates this rect to intersection with rc, returns true if result is non empty
     bool intersect(Rect rc) {
         if (left < rc.left)
             left = rc.left;
@@ -45,6 +46,12 @@ struct Rect {
         if (bottom > rc.bottom)
             bottom = rc.bottom;
         return right > left && bottom > top;
+    }
+    /// returns true if this rect has nonempty intersection with rc
+    bool intersects(Rect rc) {
+        if (rc.left >= right || rc.top >= bottom || rc.right <= left || rc.bottom <= top)
+            return false;
+        return true;
     }
 }
 

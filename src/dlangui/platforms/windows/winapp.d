@@ -244,26 +244,30 @@ class Win32Window : Window {
             wglMakeCurrent(hdc, _hGLRC);
             glDisable(GL_DEPTH_TEST);
             glViewport(0, 0, _dx, _dy);
-            glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+            glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
             GLDrawBuf buf = new GLDrawBuf(_dx, _dy, false);
             buf.beforeDrawing();
-            buf.fillRect(Rect(100, 100, 200, 200), 0x704020);
-            buf.fillRect(Rect(40, 70, 100, 120), 0x000000);
-            buf.fillRect(Rect(80, 80, 150, 150), 0x80008000); // green
-            DrawableRef img = drawableCache.get("exit");
-            if (!img.isNull) {
-                img.drawTo(buf, Rect(300, 100, 364, 164));
-                img.drawTo(buf, Rect(400, 200, 528, 328));
+            if (false) {
+                buf.fillRect(Rect(100, 100, 200, 200), 0x704020);
+                buf.fillRect(Rect(40, 70, 100, 120), 0x000000);
+                buf.fillRect(Rect(80, 80, 150, 150), 0x80008000); // green
+                DrawableRef img = drawableCache.get("exit");
+                if (!img.isNull) {
+                    img.drawTo(buf, Rect(300, 100, 364, 164));
+                    img.drawTo(buf, Rect(400, 200, 528, 328));
+                }
+                DrawableRef img2 = drawableCache.get("btn_default_pressed");
+                if (!img2.isNull) {
+                    img2.drawTo(buf, Rect(300, 200, 564, 264));
+                    img2.drawTo(buf, Rect(600, 200, 628, 328));
+                }
+                drawableCache.get("btn_default_normal").drawTo(buf, Rect(300, 0, 400, 50));
+                drawableCache.get("btn_default_selected").drawTo(buf, Rect(0, 0, 100, 50));
+            } else {
+                onDraw(buf);
             }
-            DrawableRef img2 = drawableCache.get("btn_default_pressed");
-            if (!img2.isNull) {
-                img2.drawTo(buf, Rect(300, 200, 564, 264));
-                img2.drawTo(buf, Rect(600, 200, 628, 328));
-            }
-            drawableCache.get("btn_default_normal").drawTo(buf, Rect(300, 0, 400, 50));;
-            drawableCache.get("btn_default_selected").drawTo(buf, Rect(0, 0, 100, 50));;
             buf.afterDrawing();
             //Log.d("onPaint() end drawing opengl");
             SwapBuffers(hdc);
