@@ -21,6 +21,19 @@ uint blendARGB(uint dst, uint src, uint alpha) {
     return (r << 16) | (g << 8) | b;
 }
 
+ubyte rgbToGray(uint color) {
+    uint srcr = (color >> 16) & 0xFF;
+    uint srcg = (color >> 8) & 0xFF;
+    uint srcb = (color >> 0) & 0xFF;
+    return cast(uint)(((srcr + srcg + srcg + srcb) >> 2) & 0xFF);
+}
+
+/// blend two RGB pixels using alpha
+ubyte blendGray(ubyte dst, ubyte src, uint alpha) {
+    uint ialpha = 256 - alpha;
+    return cast(ubyte)(((src * ialpha + dst * alpha) >> 8) & 0xFF);
+}
+
 /**
  * 9-patch image scaling information (see Android documentation).
  *
@@ -186,8 +199,8 @@ class DrawBuf : RefCountedObject {
     void afterDrawing() { }
     /// returns buffer bits per pixel
     @property int bpp() { return 0; }
-    /// returns pointer to ARGB scanline, null if y is out of range or buffer doesn't provide access to its memory
-    uint * scanLine(int y) { return null; }
+    // returns pointer to ARGB scanline, null if y is out of range or buffer doesn't provide access to its memory
+    //uint * scanLine(int y) { return null; }
     /// resize buffer
     abstract void resize(int width, int height);
 
@@ -199,7 +212,7 @@ class DrawBuf : RefCountedObject {
     /// fill rectangle with solid color (clipping is applied)
     abstract void fillRect(Rect rc, uint color);
     /// draw 8bit alpha image - usually font glyph using specified color (clipping is applied)
-	abstract void drawGlyph(int x, int y, ubyte[] src, int srcdx, int srcdy, uint color);
+	abstract void drawGlyph(int x, int y, Glyph * glyph, uint color);
     /// draw source buffer rectangle contents to destination buffer
     abstract void drawFragment(int x, int y, DrawBuf src, Rect srcrect);
     /// draw source buffer rectangle contents to destination buffer rectangle applying rescaling
@@ -235,6 +248,10 @@ class ColorDrawBufBase : DrawBuf {
     override @property int bpp() { return 32; }
     @property override int width() { return _dx; }
     @property override int height() { return _dy; }
+
+    /// returns pointer to ARGB scanline, null if y is out of range or buffer doesn't provide access to its memory
+    uint * scanLine(int y) { return null; }
+
     /// draw source buffer rectangle contents to destination buffer
     override void drawFragment(int x, int y, DrawBuf src, Rect srcrect) {
         Rect dstrect = Rect(x, y, x + srcrect.width, y + srcrect.height);
@@ -242,20 +259,23 @@ class ColorDrawBufBase : DrawBuf {
             if (src.applyClipping(srcrect, dstrect)) {
                 int dx = srcrect.width;
                 int dy = srcrect.height;
-                for (int yy = 0; yy < dy; yy++) {
-                    uint * srcrow = src.scanLine(srcrect.top + yy) + srcrect.left;
-                    uint * dstrow = scanLine(dstrect.top + yy) + dstrect.left;
-                    for (int i = 0; i < dx; i++) {
-                        uint pixel = srcrow[i];
-                        uint alpha = pixel >> 24;
-                        if (!alpha)
-                            dstrow[i] = pixel;
-                        else if (alpha < 255) {
-                            // apply blending
-                            dstrow[i] = blendARGB(dstrow[i], pixel, alpha);
+                ColorDrawBufBase colorDrawBuf = cast(ColorDrawBufBase) src;
+                if (colorDrawBuf !is null) {
+                    for (int yy = 0; yy < dy; yy++) {
+                        uint * srcrow = colorDrawBuf.scanLine(srcrect.top + yy) + srcrect.left;
+                        uint * dstrow = scanLine(dstrect.top + yy) + dstrect.left;
+                        for (int i = 0; i < dx; i++) {
+                            uint pixel = srcrow[i];
+                            uint alpha = pixel >> 24;
+                            if (!alpha)
+                                dstrow[i] = pixel;
+                            else if (alpha < 255) {
+                                // apply blending
+                                dstrow[i] = blendARGB(dstrow[i], pixel, alpha);
+                            }
                         }
-                    }
 
+                    }
                 }
             }
         }
@@ -278,18 +298,21 @@ class ColorDrawBufBase : DrawBuf {
             int[] ymap = createMap(dstrect.top, dstrect.bottom, srcrect.top, srcrect.bottom);
             int dx = dstrect.width;
             int dy = dstrect.height;
-            for (int y = 0; y < dy; y++) {
-                uint * srcrow = src.scanLine(ymap[y]);
-                uint * dstrow = scanLine(dstrect.top + y) + dstrect.left;
-                for (int x = 0; x < dx; x++) {
-                    uint srcpixel = srcrow[xmap[x]];
-                    uint dstpixel = dstrow[x];
-                    uint alpha = (srcpixel >> 24) & 255;
-                    if (!alpha)
-                        dstrow[x] = srcpixel;
-                    else if (alpha < 255) {
-                        // apply blending
-                        dstrow[x] = blendARGB(dstpixel, srcpixel, alpha);
+            ColorDrawBufBase colorDrawBuf = cast(ColorDrawBufBase) src;
+            if (colorDrawBuf !is null) {
+                for (int y = 0; y < dy; y++) {
+                    uint * srcrow = colorDrawBuf.scanLine(ymap[y]);
+                    uint * dstrow = scanLine(dstrect.top + y) + dstrect.left;
+                    for (int x = 0; x < dx; x++) {
+                        uint srcpixel = srcrow[xmap[x]];
+                        uint dstpixel = dstrow[x];
+                        uint alpha = (srcpixel >> 24) & 255;
+                        if (!alpha)
+                            dstrow[x] = srcpixel;
+                        else if (alpha < 255) {
+                            // apply blending
+                            dstrow[x] = blendARGB(dstpixel, srcpixel, alpha);
+                        }
                     }
                 }
             }
@@ -355,7 +378,10 @@ class ColorDrawBufBase : DrawBuf {
         _ninePatch = p;
         return true;
     }
-	override void drawGlyph(int x, int y, ubyte[] src, int srcdx, int srcdy, uint color) {
+	override void drawGlyph(int x, int y, Glyph * glyph, uint color) {
+        ubyte[] src = glyph.glyph;
+        int srcdx = glyph.blackBoxX;
+        int srcdy = glyph.blackBoxY;
 		bool clipping = !_clipRect.empty();
 		for (int yy = 0; yy < srcdy; yy++) {
 			int liney = y + yy;
@@ -395,6 +421,203 @@ class ColorDrawBufBase : DrawBuf {
                     else if (alpha < 255) {
                         // apply blending
                         row[x] = blendARGB(row[x], color, alpha);
+                    }
+                }
+            }
+        }
+    }
+}
+
+class GrayDrawBuf : DrawBuf {
+    int _dx;
+    int _dy;
+    /// returns buffer bits per pixel
+    override @property int bpp() { return 8; }
+    @property override int width() { return _dx; }
+    @property override int height() { return _dy; }
+
+    ubyte[] _buf;
+    this(int width, int height) {
+        resize(width, height);
+    }
+    ubyte * scanLine(int y) {
+        if (y >= 0 && y < _dy)
+            return _buf.ptr + _dx * y;
+        return null;
+    }
+    override void resize(int width, int height) {
+        if (_dx == width && _dy == height)
+            return;
+        _dx = width;
+        _dy = height;
+        _buf.length = _dx * _dy;
+    }
+    override void fill(uint color) {
+        int len = _dx * _dy;
+        ubyte * p = _buf.ptr;
+        ubyte cl = rgbToGray(color);
+        for (int i = 0; i < len; i++)
+            p[i] = cl;
+    }
+
+    /// draw source buffer rectangle contents to destination buffer
+    override void drawFragment(int x, int y, DrawBuf src, Rect srcrect) {
+        Rect dstrect = Rect(x, y, x + srcrect.width, y + srcrect.height);
+        if (applyClipping(dstrect, srcrect)) {
+            if (src.applyClipping(srcrect, dstrect)) {
+                int dx = srcrect.width;
+                int dy = srcrect.height;
+                GrayDrawBuf grayDrawBuf = cast (GrayDrawBuf) src;
+                if (grayDrawBuf !is null) {
+                    for (int yy = 0; yy < dy; yy++) {
+                        ubyte * srcrow = grayDrawBuf.scanLine(srcrect.top + yy) + srcrect.left;
+                        ubyte * dstrow = scanLine(dstrect.top + yy) + dstrect.left;
+                        for (int i = 0; i < dx; i++) {
+                            ubyte pixel = srcrow[i];
+                            dstrow[i] = pixel;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /// Create mapping of source coordinates to destination coordinates, for resize.
+    private int[] createMap(int dst0, int dst1, int src0, int src1) {
+        int dd = dst1 - dst0;
+        int sd = src1 - src0;
+        int[] res = new int[dd];
+        for (int i = 0; i < dd; i++)
+            res[i] = src0 + i * sd / dd;
+        return res;
+    }
+    /// draw source buffer rectangle contents to destination buffer rectangle applying rescaling
+    override void drawRescaled(Rect dstrect, DrawBuf src, Rect srcrect) {
+        //Log.d("drawRescaled ", dstrect, " <- ", srcrect);
+        if (applyClipping(dstrect, srcrect)) {
+            int[] xmap = createMap(dstrect.left, dstrect.right, srcrect.left, srcrect.right);
+            int[] ymap = createMap(dstrect.top, dstrect.bottom, srcrect.top, srcrect.bottom);
+            int dx = dstrect.width;
+            int dy = dstrect.height;
+            GrayDrawBuf grayDrawBuf = cast (GrayDrawBuf) src;
+            if (grayDrawBuf !is null) {
+                for (int y = 0; y < dy; y++) {
+                    ubyte * srcrow = grayDrawBuf.scanLine(ymap[y]);
+                    ubyte * dstrow = scanLine(dstrect.top + y) + dstrect.left;
+                    for (int x = 0; x < dx; x++) {
+                        ubyte srcpixel = srcrow[xmap[x]];
+                        ubyte dstpixel = dstrow[x];
+                        dstrow[x] = srcpixel;
+                    }
+                }
+            }
+        }
+    }
+
+    /// detect position of black pixels in row for 9-patch markup
+    private bool detectHLine(int y, ref int x0, ref int x1) {
+        ubyte * line = scanLine(y);
+    	bool foundUsed = false;
+        x0 = 0;
+        x1 = 0;
+    	for (int x = 1; x < _dx - 1; x++) {
+    		if (line[x] == 0x00000000) { // opaque black pixel
+    			if (!foundUsed) {
+    				x0 = x;
+        			foundUsed = true;
+    			}
+    			x1 = x + 1;
+    		}
+    	}
+        return x1 > x0;
+    }
+
+    /// detect position of black pixels in column for 9-patch markup
+    private bool detectVLine(int x, ref int y0, ref int y1) {
+    	bool foundUsed = false;
+        y0 = 0;
+        y1 = 0;
+    	for (int y = 1; y < _dy - 1; y++) {
+            ubyte * line = scanLine(y);
+    		if (line[x] == 0x00000000) { // opaque black pixel
+    			if (!foundUsed) {
+    				y0 = y;
+        			foundUsed = true;
+    			}
+    			y1 = y + 1;
+    		}
+    	}
+        return y1 > y0;
+    }
+    /// detect nine patch using image 1-pixel border (see Android documentation)
+    override bool detectNinePatch() {
+        if (_dx < 3 || _dy < 3)
+            return false; // image is too small
+        int x00, x01, x10, x11, y00, y01, y10, y11;
+        bool found = true;
+        found = found && detectHLine(0, x00, x01);
+        found = found && detectHLine(_dy - 1, x10, x11);
+        found = found && detectVLine(0, y00, y01);
+        found = found && detectVLine(_dx - 1, y10, y11);
+        if (!found)
+            return false; // no black pixels on 1-pixel frame
+        NinePatch * p = new NinePatch();
+        p.frame.left = x00 - 1;
+        p.frame.right = _dy - y01 - 1;
+        p.frame.top = y00 - 1;
+        p.frame.bottom = _dy - y01 - 1;
+        p.padding.left = x10 - 1;
+        p.padding.right = _dy - y11 - 1;
+        p.padding.top = y10 - 1;
+        p.padding.bottom = _dy - y11 - 1;
+        _ninePatch = p;
+        return true;
+    }
+	override void drawGlyph(int x, int y, Glyph * glyph, uint color) {
+        ubyte[] src = glyph.glyph;
+        int srcdx = glyph.blackBoxX;
+        int srcdy = glyph.blackBoxY;
+		bool clipping = !_clipRect.empty();
+        ubyte cl = cast(ubyte)(color & 255);
+		for (int yy = 0; yy < srcdy; yy++) {
+			int liney = y + yy;
+			if (clipping && (liney < _clipRect.top || liney >= _clipRect.bottom))
+				continue;
+			if (liney < 0 || liney >= _dy)
+				continue;
+			ubyte * row = scanLine(liney);
+			ubyte * srcrow = src.ptr + yy * srcdx;
+			for (int xx = 0; xx < srcdx; xx++) {
+				int colx = xx + x;
+				if (clipping && (colx < _clipRect.left || colx >= _clipRect.right))
+					continue;
+				if (colx < 0 || colx >= _dx)
+					continue;
+				uint alpha1 = srcrow[xx] ^ 255;
+				uint alpha2 = (color >> 24);
+				uint alpha = ((((alpha1 ^ 255) * (alpha2 ^ 255)) >> 8) ^ 255) & 255;
+				uint pixel = row[colx];
+				if (!alpha)
+					row[colx] = cast(ubyte)pixel;
+				else if (alpha < 255) {
+					// apply blending
+					row[colx] = cast(ubyte)blendARGB(pixel, color, alpha);
+				}
+			}
+		}
+	}
+    override void fillRect(Rect rc, uint color) {
+        ubyte cl = rgbToGray(color);
+        if (applyClipping(rc)) {
+            for (int y = rc.top; y < rc.bottom; y++) {
+                ubyte * row = scanLine(y);
+                uint alpha = color >> 24;
+                for (int x = rc.left; x < rc.right; x++) {
+                    if (!alpha)
+                        row[x] = cl;
+                    else if (alpha < 255) {
+                        // apply blending
+                        row[x] = blendGray(row[x], cl, alpha);
                     }
                 }
             }

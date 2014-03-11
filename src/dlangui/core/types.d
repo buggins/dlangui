@@ -55,6 +55,30 @@ struct Rect {
     }
 }
 
+/// character glyph
+align(1)
+struct Glyph
+{
+    ///< 0: unique id of glyph (for drawing in hardware accelerated scenes)
+    uint    id;
+    ///< 4: width of glyph black box
+    ubyte   blackBoxX;
+    ///< 5: height of glyph black box
+    ubyte   blackBoxY;
+    ///< 6: X origin for glyph
+    byte    originX;
+    ///< 7: Y origin for glyph
+    byte    originY;
+    ///< 8: bytes in glyph array
+    ushort  glyphIndex;
+    ///< 10: full width of glyph
+    ubyte   width;
+    ///< 11: usage flag, to handle cleanup of unused glyphs
+	ubyte   lastUsage;
+    ///< 12: glyph data, arbitrary size
+    ubyte[] glyph;       
+}
+
 class RefCountedObject {
     protected int _refCount;
     @property int refCount() { return _refCount; }

@@ -18,17 +18,14 @@ enum FontWeight : int {
     Bold = 800
 }
 
-struct Glyph
-{
-    ubyte   blackBoxX;   ///< 0: width of glyph
-    ubyte   blackBoxY;   ///< 1: height of glyph black box
-    byte    originX;     ///< 2: X origin for glyph
-    byte    originY;     ///< 3: Y origin for glyph
-    ushort  glyphIndex;  ///< 4: bytes in glyph array
-    ubyte   width;       ///< 6: full width of glyph
-	ubyte   lastUsage;
-    ubyte[] glyph;    ///< 7: glyph data, arbitrary size
-}
+private __gshared void function(uint id) _glyphDestroyCallback;
+/// get glyph destroy callback (to cleanup OpenGL caches)
+@property void function(uint id) glyphDestroyCallback() { return _glyphDestroyCallback; }
+/// set glyph destroy callback (to cleanup OpenGL caches)
+@property void glyphDestroyCallback(void function(uint id) callback) { _glyphDestroyCallback = callback; }
+
+private __gshared uint _nextGlyphId;
+uint nextGlyphId() { return _nextGlyphId++; }
 
 struct GlyphCache
 {
@@ -68,7 +65,12 @@ struct GlyphCache
 	// removes entries not used after last call of checkpoint() or cleanup()
 	void cleanup() {
 		uint dst = 0;
-		for (uint src = 0; src < _len; src++) {
+        // notify about destroyed glyphs
+        if (_glyphDestroyCallback !is null)
+		    for (uint src = 0; src < _len; src++)
+			    if (_data[src].lastUsage == 0)
+                    _glyphDestroyCallback(_data[src].id);
+        for (uint src = 0; src < _len; src++) {
 			if (_data[src].lastUsage != 0) {
 				_data[src].lastUsage = 0;
 				if (src != dst) {
@@ -81,6 +83,9 @@ struct GlyphCache
 
 	// removes all entries
 	void clear() {
+        if (_glyphDestroyCallback !is null)
+            for (uint src = 0; src < _len; src++)
+                _glyphDestroyCallback(_data[src].id);
 		_data = null;
 		_len = 0;
 	}

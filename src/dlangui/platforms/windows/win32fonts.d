@@ -131,6 +131,7 @@ class Win32Font : Font {
 			return null;
 
 		Glyph g;
+        g.id = nextGlyphId();
 		g.blackBoxX = cast(ubyte)metrics.gmBlackBoxX;
 		g.blackBoxY = cast(ubyte)metrics.gmBlackBoxY;
 		g.originX = cast(byte)metrics.gmptGlyphOrigin.x;
@@ -194,9 +195,7 @@ class Win32Font : Font {
 			if ( glyph.blackBoxX && glyph.blackBoxY ) {
 				buf.drawGlyph( x + xx + glyph.originX,
                                y + _baseline - glyph.originY,
-                              glyph.glyph,
-                              glyph.blackBoxX,
-                              glyph.blackBoxY,
+                              glyph,
                               color);
 			}
 		}

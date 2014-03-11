@@ -57,7 +57,7 @@ class GLDrawBuf : DrawBuf {
         _scene.add(new SolidRectSceneItem(rc, color));
     }
     /// draw 8bit alpha image - usually font glyph using specified color (clipping is applied)
-	override void drawGlyph(int x, int y, ubyte[] src, int srcdx, int srcdy, uint color) {
+	override void drawGlyph(int x, int y, Glyph * glyph, uint color) {
         assert(_scene !is null);
     }
     /// draw source buffer rectangle contents to destination buffer
