@@ -30,10 +30,24 @@ struct NinePatch {
     Rect padding;
 }
 
+/// non thread safe
+private __gshared uint drawBufIdGenerator = 0;
+
 /// drawing buffer - image container which allows to perform some drawing operations
 class DrawBuf : RefCountedObject {
+    protected uint _id;
     protected Rect _clipRect;
     protected NinePatch * _ninePatch;
+
+    @property uint id() {
+        return _id;
+    }
+    this() {
+        _id = drawBufIdGenerator++;
+    }
+    protected void function(uint) _onDestroyCallback;
+    @property void onDestroyCallback(void function(uint) callback) { _onDestroyCallback = callback; }
+    @property void function(uint) onDestroyCallback() { return _onDestroyCallback; }
 
     // ===================================================
     // 9-patch functions (image scaling using 9-patch markup - unscaled frame and scaled middle parts).

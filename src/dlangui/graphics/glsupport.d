@@ -665,3 +665,27 @@ bool uninitShaders() {
     }
     return true;
 }
+
+bool isTexture(uint textureId) {
+    return glIsTexture(textureId) == GL_TRUE;
+}
+
+void setRotation(int x, int y, int rotationAngle) {
+    /*
+    this->rotationAngle = rotationAngle;
+    rotationX = x;
+    rotationY = y;
+    if (!currentFramebufferId) {
+        rotationY = bufferDy - rotationY;
+    }
+
+    QMatrix4x4 matrix2;
+    matrix2.ortho(0, bufferDx, 0, bufferDy, 0.5f, 5.0f);
+    if (rotationAngle) {
+		matrix2.translate(rotationX, rotationY, 0);
+		matrix2.rotate(rotationAngle, 0, 0, 1);
+		matrix2.translate(-rotationX, -rotationY, 0);
+    }
+    matrix2.copyDataTo(m);
+    */
+}
