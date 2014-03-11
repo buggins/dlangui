@@ -2,7 +2,7 @@ module dlangui.graphics.glsupport;
 
 import dlangui.core.logger;
 private import derelict.opengl3.gl3;
-private import gl3n.linalg;
+//private import gl3n.linalg;
 private import dlangui.core.types;
 private import std.conv;
 
@@ -275,11 +275,66 @@ bool bindFramebuffer(uint framebufferId) {
 }
 
 /// projection matrix
-private mat4 m;
+//private mat4 m;
 /// current gl buffer width
 private int bufferDx;
 /// current gl buffer height
 private int bufferDy;
+
+//private float[16] matrix;
+private float[16] qtmatrix;
+
+void QMatrix4x4_ortho(float left, float right, float bottom, float top, float nearPlane, float farPlane)
+{
+    // Bail out if the projection volume is zero-sized.
+    if (left == right || bottom == top || nearPlane == farPlane)
+        return;
+
+    // Construct the projection.
+    float width = right - left;
+    float invheight = top - bottom;
+    float clip = farPlane - nearPlane;
+    float[4][4] m;
+    m[0][0] = 2.0f / width;
+    m[1][0] = 0.0f;
+    m[2][0] = 0.0f;
+    m[3][0] = -(left + right) / width;
+    m[0][1] = 0.0f;
+    m[1][1] = 2.0f / invheight;
+    m[2][1] = 0.0f;
+    m[3][1] = -(top + bottom) / invheight;
+    m[0][2] = 0.0f;
+    m[1][2] = 0.0f;
+    m[2][2] = -2.0f / clip;
+    m[3][2] = -(nearPlane + farPlane) / clip;
+    m[0][3] = 0.0f;
+    m[1][3] = 0.0f;
+    m[2][3] = 0.0f;
+    m[3][3] = 1.0f;
+    for (int y = 0; y < 4; y++)
+        for (int x = 0; x < 4; x++)
+            qtmatrix[y * 4 + x] = m[y][x];
+}
+
+/*
+void myGlOrtho(float left, float right, float bottom, float top,
+                                float zNearPlane, float zFarPlane)
+{
+    float r_l = 1.0f / (right - left);
+    float t_b = 1.0f / (top - bottom);
+    float f_n = 1.0f / (zFarPlane - zNearPlane);
+    
+    foreach(ref float item; matrix)
+        item = 0;
+    //memset(m, 0, sizeof(m));
+    matrix[0] = 2.0f * r_l;
+    matrix[5] = 2.0f * t_b;
+    matrix[10] = -2.0f * f_n;
+    matrix[12] = (-(right + left)) * r_l;
+    matrix[13] = (-(top + bottom)) * t_b;
+    matrix[14] = (-(zFarPlane + zNearPlane)) * f_n;
+}
+*/
 
 void setOrthoProjection(int dx, int dy) {
     //myGlOrtho(0, dx, 0, dy, -1.0f, 5.0f);
@@ -287,10 +342,14 @@ void setOrthoProjection(int dx, int dy) {
     bufferDy = dy;
     //myGlOrtho(0, dx, 0, dy, -0.1f, 5.0f);
 
-	Log.d("Ortho ", dx, "x", dy);
+	//Log.d("Ortho ", dx, "x", dy);
 
-    m = mat4.orthographic(0, dx, 0, dy, 0.5f, 50.0f);
-	Log.d("Matrix: ", m);
+    //m = mat4.orthographic(0, dx, 0, dy, 0.5f, 50.0f);
+    //myGlOrtho(0, dx, 0, dy, 0.5f, 50.0f);
+    QMatrix4x4_ortho(0, dx, 0, dy, 0.5f, 50.0f);
+	//Log.d("Matrix: ", m);
+	//Log.d("myMatrix: ", matrix);
+	//Log.d("qtMatrix: ", qtmatrix);
     glViewport(0, 0, dx, dy);
     checkError("glViewport");
 }
@@ -427,7 +486,7 @@ class SolidFillProgram : GLProgram {
             "varying " ~ LOWP ~ " vec4 col;\n"
             "void main(void)\n"
             "{\n"
-            "    gl_FragColor = col;\n"
+            "    gl_FragColor = col; // vec4(1,0,0,1); \n"
             "}\n";
     }
 
@@ -438,7 +497,9 @@ class SolidFillProgram : GLProgram {
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         checkError("glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
         bind();
-        glUniformMatrix4fv(matrixLocation,  1, false, m.value_ptr);
+        //glUniformMatrix4fv(matrixLocation,  1, false, m.value_ptr);
+        //glUniformMatrix4fv(matrixLocation,  1, false, matrix.ptr);
+        glUniformMatrix4fv(matrixLocation,  1, false, qtmatrix.ptr);
         checkError("glUniformMatrix4fv");
     }
 

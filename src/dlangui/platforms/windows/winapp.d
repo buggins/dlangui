@@ -244,6 +244,7 @@ class Win32Window : Window {
             buf.beforeDrawing();
             buf.fillRect(Rect(100, 100, 200, 200), 0x704020);
             buf.fillRect(Rect(40, 70, 100, 120), 0x000000);
+            buf.fillRect(Rect(80, 80, 150, 150), 0x80008000); // green
             buf.afterDrawing();
             //Log.d("onPaint() end drawing opengl");
             SwapBuffers(hdc);
