@@ -13,6 +13,7 @@ import dlangui.platforms.common.platform;
 import dlangui.platforms.windows.win32fonts;
 import dlangui.platforms.windows.win32drawbuf;
 import dlangui.graphics.drawbuf;
+import dlangui.graphics.images;
 import dlangui.graphics.fonts;
 import dlangui.graphics.glsupport;
 import dlangui.core.logger;
@@ -131,7 +132,7 @@ class Win32Window : Window {
         _caption = windowCaption;
         _hwnd = CreateWindow(toUTF16z(WIN_CLASS_NAME),      // window class name
                             toUTF16z(windowCaption),  // window caption
-                            WS_OVERLAPPEDWINDOW,  // window style
+                            WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,  // window style
                             CW_USEDEFAULT,        // initial x position
                             CW_USEDEFAULT,        // initial y position
                             CW_USEDEFAULT,        // initial x size
@@ -226,6 +227,12 @@ class Win32Window : Window {
     void onPaint() {
         Log.d("onPaint()");
         if (useOpengl && _hGLRC) {
+            // hack to stop infinite WM_PAINT loop
+            PAINTSTRUCT ps;
+            HDC hdc2 = BeginPaint(_hwnd, &ps);
+            EndPaint(_hwnd, &ps);
+
+
             import derelict.opengl3.gl3;
             import derelict.opengl3.wgl;
             import dlangui.graphics.gldrawbuf;
@@ -245,9 +252,22 @@ class Win32Window : Window {
             buf.fillRect(Rect(100, 100, 200, 200), 0x704020);
             buf.fillRect(Rect(40, 70, 100, 120), 0x000000);
             buf.fillRect(Rect(80, 80, 150, 150), 0x80008000); // green
+            DrawableRef img = drawableCache.get("exit");
+            if (!img.isNull) {
+                img.drawTo(buf, Rect(300, 100, 364, 164));
+                img.drawTo(buf, Rect(400, 200, 528, 328));
+            }
+            DrawableRef img2 = drawableCache.get("btn_default_pressed");
+            if (!img2.isNull) {
+                img2.drawTo(buf, Rect(300, 200, 564, 264));
+                img2.drawTo(buf, Rect(600, 200, 628, 328));
+            }
+            drawableCache.get("btn_default_normal").drawTo(buf, Rect(300, 0, 400, 50));;
+            drawableCache.get("btn_default_selected").drawTo(buf, Rect(0, 0, 100, 50));;
             buf.afterDrawing();
             //Log.d("onPaint() end drawing opengl");
             SwapBuffers(hdc);
+            wglMakeCurrent(hdc, null);
         } else {
             PAINTSTRUCT ps;
             HDC hdc = BeginPaint(_hwnd, &ps);
@@ -268,14 +288,14 @@ class Win32Platform : Platform {
         //MSG  msg;
         WNDCLASS wndclass;
 
-        wndclass.style         = CS_HREDRAW | CS_VREDRAW;
+        wndclass.style         = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
         wndclass.lpfnWndProc   = &WndProc;
         wndclass.cbClsExtra    = 0;
         wndclass.cbWndExtra    = 0;
         wndclass.hInstance     = _hInstance;
         wndclass.hIcon         = LoadIcon(null, IDI_APPLICATION);
         wndclass.hCursor       = LoadCursor(null, IDC_ARROW);
-        wndclass.hbrBackground = cast(HBRUSH)GetStockObject(WHITE_BRUSH);
+        wndclass.hbrBackground = null; //cast(HBRUSH)GetStockObject(WHITE_BRUSH);
         wndclass.lpszMenuName  = null;
         wndclass.lpszClassName = toUTF16z(WIN_CLASS_NAME);
 

@@ -63,10 +63,20 @@ class GLDrawBuf : DrawBuf {
     /// draw source buffer rectangle contents to destination buffer
     override void drawFragment(int x, int y, DrawBuf src, Rect srcrect) {
         assert(_scene !is null);
+        GLImageCacheItem item = glImageCache.get(src.id);
+        if (item is null)
+            item = glImageCache.set(src);
+        Rect dstrect = Rect(x, y, x + srcrect.width, y + srcrect.height);
+        // TODO: clipping
+        _scene.add(new TextureSceneItem(src.id, dstrect, srcrect, 0xFFFFFF, 0, null, 0));
     }
     /// draw source buffer rectangle contents to destination buffer rectangle applying rescaling
     override void drawRescaled(Rect dstrect, DrawBuf src, Rect srcrect) {
         assert(_scene !is null);
+        GLImageCacheItem item = glImageCache.get(src.id);
+        if (item is null)
+            item = glImageCache.set(src);
+        _scene.add(new TextureSceneItem(src.id, dstrect, srcrect, 0xFFFFFF, 0, null, 0));
     }
     override void clear() {
     }
@@ -80,10 +90,7 @@ public:
     @property GLImageCachePage page() { return _page; }
     uint _objectId;
     // image size
-    int _dx;
-    int _dy;
-    int _x0;
-    int _y0;
+    Rect _rc;
     bool _deleted;
     this(GLImageCachePage page, uint objectId) { _page = page; _objectId = objectId; }
 };
@@ -197,10 +204,10 @@ public:
         _map.clear();
     }
     /// draw cached item
-    void drawItem(uint objectId, int x, int y, int dx, int dy, int srcx, int srcy, int srcwidth, int srcheight, uint color, int options, Rect * clip, int rotationAngle) {
+    void drawItem(uint objectId, Rect dstrc, Rect srcrc, uint color, int options, Rect * clip, int rotationAngle) {
         if (objectId in _map) {
             GLImageCacheItem item = _map[objectId];
-            item.page.drawItem(item, x, y, dx, dy, srcx, srcy, srcwidth, srcheight, color, options, clip, rotationAngle);
+            item.page.drawItem(item, dstrc, srcrc, color, options, clip, rotationAngle);
         }
     }
     /// handle cached object deletion, mark as deleted
@@ -314,13 +321,10 @@ public:
 	    }
 	}
 	void invertAlpha(GLImageCacheItem item) {
-		int x0 = item._x0;
-		int y0 = item._y0;
-		int x1 = x0 + item._dx;
-		int y1 = y0 + item._dy;
-	    for (int y = y0; y < y1; y++) {
+        Rect rc = item._rc;
+	    for (int y = rc.top; y < rc.bottom; y++) {
 	    	uint * row = _drawbuf.scanLine(y);
-	    	for (int x = x0; x < x1; x++) {
+	    	for (int x = rc.left; x < rc.right; x++) {
 	    		uint cl = row[x];
 	    		cl ^= 0xFF000000;
 	    		uint r = (cl & 0x00FF0000) >> 16;
@@ -335,30 +339,27 @@ public:
 			return null;
 
 		// next line if necessary
-		if (_x + width > _tdx) {
+		if (_x + width + 2 > _tdx) {
 			// move to next line
 			_currentLine = _nextLine;
 			_x = 0;
 		}
 		// check if no room left for glyph height
-		if (_currentLine + height > _tdy) {
+		if (_currentLine + height + 2 > _tdy) {
 			_closed = true;
 			return null;
 		}
-		cacheItem._dx = width;
-		cacheItem._dy = height;
-		cacheItem._x0 = _x;
-		cacheItem._y0 = _currentLine;
+        cacheItem._rc = Rect(_x + 1, _currentLine + 1, _x + width + 1, _currentLine + height + 1);
 		if (height && width) {
-			if (_nextLine < _currentLine + height)
-				_nextLine = _currentLine + height;
+			if (_nextLine < _currentLine + height + 2)
+				_nextLine = _currentLine + height + 2;
 			if (!_drawbuf) {
 				_drawbuf = new ColorDrawBuf(_tdx, _tdy);
 				//_drawbuf.SetBackgroundColor(0x000000);
 				//_drawbuf.SetTextColor(0xFFFFFF);
 				_drawbuf.fill(0xFF000000);
 			}
-			_x += width;
+			_x += width + 1;
 			_needUpdateTexture = true;
 		}
 		_itemCount++;
@@ -373,12 +374,12 @@ public:
 		if (cacheItem is null)
 			return null;
 		buf.onDestroyCallback = &onObjectDestroyedCallback;
-        _drawbuf.drawImage(cacheItem._x0, cacheItem._y0, buf);
+        _drawbuf.drawImage(cacheItem._rc.left, cacheItem._rc.top, buf);
 		invertAlpha(cacheItem);
 		_needUpdateTexture = true;
 		return cacheItem;
 	}
-    void drawItem(GLImageCacheItem item, int x, int y, int dx, int dy, int srcx, int srcy, int srcdx, int srcdy, uint color, uint options, Rect * clip, int rotationAngle) {
+    void drawItem(GLImageCacheItem item, Rect dstrc, Rect srcrc, uint color, uint options, Rect * clip, int rotationAngle) {
         //CRLog::trace("drawing item at %d,%d %dx%d <= %d,%d %dx%d ", x, y, dx, dy, srcx, srcy, srcdx, srcdy);
         if (_needUpdateTexture)
 			updateTexture();
@@ -388,15 +389,14 @@ public:
                 return;
             }
             //rotationAngle = 0;
-            int rx = x + dx / 2;
-            int ry = (y + dy / 2);
+            int rx = dstrc.middlex;
+            int ry = dstrc.middley;
             if (rotationAngle) {
                 //rotationAngle = 0;
                 //setRotation(rx, ry, rotationAngle);
             }
-
-            Rect srcrc = Rect(item._x0 + srcx, item._y0 + srcy, item._x0 + srcx+srcdx, item._y0 + srcy+srcdy);
-            Rect dstrc = Rect(x, y, x + dx, y+dy);
+            // convert coordinates to cached texture
+            srcrc.offset(item._rc.left, item._rc.top);
             if (clip) {
                 int srcw = srcrc.width();
                 int srch = srcrc.height();
@@ -416,7 +416,7 @@ public:
                 dstrc.bottom -= clip.bottom;
             }
             if (!dstrc.empty)
-                drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height());
+                drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, false); //srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height()
             //drawColorAndTextureRect(vertices, texcoords, color, _textureId);
 
             if (rotationAngle) {
@@ -436,4 +436,32 @@ public:
 	}
 };
 
+
+private class TextureSceneItem : SceneItem {
+	uint objectId;
+    //CacheableObject * img;
+    Rect dstrc;
+    Rect srcrc;
+	uint color;
+	uint options;
+	Rect * clip;
+    int rotationAngle;
+public:
+	override void draw() {
+		if (glImageCache)
+            glImageCache.drawItem(objectId, dstrc, srcrc, color, options, clip, rotationAngle);
+	}
+    this(uint _objectId, Rect _dstrc, Rect _srcrc, uint _color, uint _options, Rect * _clip, int _rotationAngle)
+	{
+        objectId = _objectId;
+        dstrc = _dstrc;
+        srcrc = _srcrc;
+        color = _color;
+        options = _options;
+        clip = _clip;
+        rotationAngle = _rotationAngle;
+	}
+	~this() {
+	}
+};
 

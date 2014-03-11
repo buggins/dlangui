@@ -5,6 +5,9 @@ import dlangui.core.logger;
 
 /// blend two RGB pixels using alpha
 uint blendARGB(uint dst, uint src, uint alpha) {
+    uint dstalpha = dst >> 24;
+    if (dstalpha > 0x80)
+        return src;
     uint srcr = (src >> 16) & 0xFF;
     uint srcg = (src >> 8) & 0xFF;
     uint srcb = (src >> 0) & 0xFF;

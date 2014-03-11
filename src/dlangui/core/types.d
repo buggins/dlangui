@@ -16,6 +16,14 @@ struct Rect {
     int top;
     int right;
     int bottom;
+    @property int middlex() { return (left + right) / 2; }
+    @property int middley() { return (top + bottom) / 2; }
+    void offset(int dx, int dy) {
+        left += dx;
+        right += dx;
+        top += dy;
+        bottom += dy;
+    }
     @property int width() { return right - left; }
     @property int height() { return bottom - top; }
     this(int x0, int y0, int x1, int y1) {

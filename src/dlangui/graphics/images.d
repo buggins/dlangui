@@ -82,7 +82,7 @@ __gshared DrawableCache _drawableCache;
 /// drawable cache singleton
 @property DrawableCache drawableCache() { return _drawableCache; }
 
-static this() {
+shared static this() {
     _imageCache = new ImageCache();
     _drawableCache = new DrawableCache();
 }

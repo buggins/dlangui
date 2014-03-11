@@ -59,7 +59,7 @@ void drawSolidFillRect(Rect rc, uint color1, uint color2, uint color3, uint colo
         x1,y1,Z_2D,
         x1,y0,Z_2D];
 	if (_solidFillProgram !is null) {
-		Log.d("solid fill: vertices ", vertices, " colors ", colors);
+		//Log.d("solid fill: vertices ", vertices, " colors ", colors);
 		_solidFillProgram.execute(vertices, colors);
 	} else
 		Log.e("No program");
@@ -67,6 +67,7 @@ void drawSolidFillRect(Rect rc, uint color1, uint color2, uint color3, uint colo
 }
 
 void drawColorAndTextureRect(uint textureId, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color, bool linear) {
+    Log.v("drawColorAndTextureRect tx=", textureId, " src=", srcrc, " dst=", dstrc);
     drawColorAndTextureRect(textureId, tdx, tdy, srcrc.left, srcrc.top, srcrc.width(), srcrc.height(), dstrc.left, dstrc.top, dstrc.width(), dstrc.height(), color, linear);
 }
 
