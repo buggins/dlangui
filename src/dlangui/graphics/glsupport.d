@@ -317,40 +317,10 @@ void QMatrix4x4_ortho(float left, float right, float bottom, float top, float ne
             qtmatrix[y * 4 + x] = m[y][x];
 }
 
-/*
-void myGlOrtho(float left, float right, float bottom, float top,
-                                float zNearPlane, float zFarPlane)
-{
-    float r_l = 1.0f / (right - left);
-    float t_b = 1.0f / (top - bottom);
-    float f_n = 1.0f / (zFarPlane - zNearPlane);
-    
-    foreach(ref float item; matrix)
-        item = 0;
-    //memset(m, 0, sizeof(m));
-    matrix[0] = 2.0f * r_l;
-    matrix[5] = 2.0f * t_b;
-    matrix[10] = -2.0f * f_n;
-    matrix[12] = (-(right + left)) * r_l;
-    matrix[13] = (-(top + bottom)) * t_b;
-    matrix[14] = (-(zFarPlane + zNearPlane)) * f_n;
-}
-*/
-
 void setOrthoProjection(int dx, int dy) {
-    //myGlOrtho(0, dx, 0, dy, -1.0f, 5.0f);
     bufferDx = dx;
     bufferDy = dy;
-    //myGlOrtho(0, dx, 0, dy, -0.1f, 5.0f);
-
-	//Log.d("Ortho ", dx, "x", dy);
-
-    //m = mat4.orthographic(0, dx, 0, dy, 0.5f, 50.0f);
-    //myGlOrtho(0, dx, 0, dy, 0.5f, 50.0f);
     QMatrix4x4_ortho(0, dx, 0, dy, 0.5f, 50.0f);
-	//Log.d("Matrix: ", m);
-	//Log.d("myMatrix: ", matrix);
-	//Log.d("qtMatrix: ", qtmatrix);
     glViewport(0, 0, dx, dy);
     checkError("glViewport");
 }

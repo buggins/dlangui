@@ -3,6 +3,7 @@ module dlangui.platforms.common.platform;
 import dlangui.widgets.widget;
 import dlangui.graphics.drawbuf;
 import std.file;
+private import dlangui.graphics.gldrawbuf;
 
 public class Window {
     int _dx;
@@ -56,6 +57,7 @@ private __gshared bool _OPENGL_ENABLED = false;
 /// call on app initialization if OpenGL support is detected
 void setOpenglEnabled() {
     _OPENGL_ENABLED = true;
+	glyphDestroyCallback = &onGlyphDestroyedCallback;
 }
 
 version (Windows) {

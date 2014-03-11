@@ -59,6 +59,16 @@ class GLDrawBuf : DrawBuf {
     /// draw 8bit alpha image - usually font glyph using specified color (clipping is applied)
 	override void drawGlyph(int x, int y, Glyph * glyph, uint color) {
         assert(_scene !is null);
+		Rect dstrect = Rect(x,y, x + glyph.blackBoxX, y + glyph.blackBoxY);
+		Rect srcrect = Rect(0, 0, glyph.blackBoxX, glyph.blackBoxY);
+			//Log.v("GLDrawBuf.frawFragment dst=", dstrect, " src=", srcrect);
+        if (applyClipping(dstrect, srcrect)) {
+            GLGlyphCacheItem item = glGlyphCache.get(glyph.id);
+            if (item is null)
+                item = glGlyphCache.set(glyph);
+            // TODO: clipping
+            _scene.add(new GlyphSceneItem(glyph.id, dstrect, srcrect, color, null));
+        }
     }
     /// draw source buffer rectangle contents to destination buffer
     override void drawFragment(int x, int y, DrawBuf src, Rect srcrect) {
@@ -113,18 +123,6 @@ class Scene {
     }
 }
 
-class SolidRectSceneItem : SceneItem {
-    Rect _rc;
-    uint _color;
-    this(Rect rc, uint color) {
-        _rc = rc;
-        _color = color;
-    }
-    override void draw() {
-        drawSolidFillRect(_rc, _color, _color, _color, _color);
-    }
-}
-
 private __gshared int activeSceneCount = 0;
 bool hasActiveScene() {
     return activeSceneCount > 0;
@@ -147,15 +145,23 @@ void onObjectDestroyedCallback(uint pobject) {
 	glImageCache.onCachedObjectDeleted(pobject);
 }
 
+/// object deletion listener callback function type
+void onGlyphDestroyedCallback(uint pobject) {
+	glGlyphCache.onCachedObjectDeleted(pobject);
+}
 
 private __gshared GLImageCache glImageCache;
 
+private __gshared GLGlyphCache glGlyphCache;
+
 shared static this() {
     glImageCache = new GLImageCache();
+    glGlyphCache = new GLGlyphCache();
 }
 
 void LVGLClearImageCache() {
 	glImageCache.clear();
+	glGlyphCache.clear();
 }
 
 private class GLImageCacheItem {
@@ -549,10 +555,10 @@ public:
         _map.clear();
     }
     /// draw cached item
-    void drawItem(uint objectId, Rect dstrc, Rect srcrc, uint color, int options, Rect * clip, int rotationAngle) {
+    void drawItem(uint objectId, Rect dstrc, Rect srcrc, uint color, Rect * clip) {
         if (objectId in _map) {
             GLGlyphCacheItem item = _map[objectId];
-            item.page.drawItem(item, dstrc, srcrc, color, options, clip, rotationAngle);
+            item.page.drawItem(item, dstrc, srcrc, color, clip);
         }
     }
     /// handle cached object deletion, mark as deleted
@@ -684,7 +690,7 @@ public:
 		_needUpdateTexture = true;
 		return cacheItem;
 	}
-    void drawItem(GLGlyphCacheItem item, Rect dstrc, Rect srcrc, uint color, uint options, Rect * clip, int rotationAngle) {
+    void drawItem(GLGlyphCacheItem item, Rect dstrc, Rect srcrc, uint color, Rect * clip) {
         //CRLog::trace("drawing item at %d,%d %dx%d <= %d,%d %dx%d ", x, y, dx, dy, srcx, srcy, srcdx, srcdy);
         if (_needUpdateTexture)
 			updateTexture();
@@ -692,13 +698,6 @@ public:
             if (!isTexture(_textureId)) {
                 Log.e("Invalid texture ", _textureId);
                 return;
-            }
-            //rotationAngle = 0;
-            int rx = dstrc.middlex;
-            int ry = dstrc.middley;
-            if (rotationAngle) {
-                //rotationAngle = 0;
-                //setRotation(rx, ry, rotationAngle);
             }
             // convert coordinates to cached texture
             srcrc.offset(item._rc.left, item._rc.top);
@@ -721,16 +720,7 @@ public:
                 dstrc.bottom -= clip.bottom;
             }
             if (!dstrc.empty)
-                drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height());
-            //drawColorAndTextureRect(vertices, texcoords, color, _textureId);
-
-            if (rotationAngle) {
-                // unset rotation
-                setRotation(rx, ry, 0);
-                //                glMatrixMode(GL_PROJECTION);
-                //                glPopMatrix();
-                //                checkError("pop matrix");
-            }
+                drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, false);
 
         }
 	}
@@ -740,3 +730,46 @@ public:
 			updateTexture();
 	}
 };
+
+
+
+
+
+
+class SolidRectSceneItem : SceneItem {
+    Rect _rc;
+    uint _color;
+    this(Rect rc, uint color) {
+        _rc = rc;
+        _color = color;
+    }
+    override void draw() {
+        drawSolidFillRect(_rc, _color, _color, _color, _color);
+    }
+}
+
+private class GlyphSceneItem : SceneItem {
+	uint objectId;
+    Rect dstrc;
+    Rect srcrc;
+	uint color;
+	Rect * clip;
+public:
+	override void draw() {
+		if (glGlyphCache)
+            glGlyphCache.drawItem(objectId, dstrc, srcrc, color, clip);
+	}
+    this(uint _objectId, Rect _dstrc, Rect _srcrc, uint _color, Rect * _clip)
+	{
+        objectId = _objectId;
+        dstrc = _dstrc;
+        srcrc = _srcrc;
+        color = _color;
+        clip = _clip;
+	}
+	~this() {
+	}
+};
+
+
+
