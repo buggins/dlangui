@@ -414,10 +414,8 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
     }
     Platform.setInstance(platform);
 
-	Win32FontManager fontMan = new Win32FontManager();
-	FontManager.instance = fontMan;
 
-    {
+    if (true) {
         /// testing freetype font manager
         import dlangui.graphics.ftfonts;
         import win32.shlobj;
@@ -448,6 +446,13 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
         ftfontMan.registerFont(fontsPath ~ "timesbd.ttf", FontFamily.Serif, "Times New Roman", false, FontWeight.Bold);
         ftfontMan.registerFont(fontsPath ~ "timesbi.ttf", FontFamily.Serif, "Times New Roman", true, FontWeight.Bold);
         ftfontMan.registerFont(fontsPath ~ "timesi.ttf", FontFamily.Serif, "Times New Roman", true, FontWeight.Normal);
+        FontManager.instance = ftfontMan;
+    }
+
+    // use Win32 font manager
+    if (FontManager.instance is null) {
+	    Win32FontManager fontMan = new Win32FontManager();
+	    FontManager.instance = fontMan;
     }
 
     version (USE_OPENGL) {

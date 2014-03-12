@@ -222,7 +222,7 @@ private class FreeTypeFontFile {
     }
 
     /// retrieve glyph information, filling glyph struct; returns false if glyph not found
-    bool getGlyphInfo(dchar code, Glyph glyph, dchar def_char, bool withImage = true)
+    bool getGlyphInfo(dchar code, ref Glyph glyph, dchar def_char, bool withImage = true)
     {
         //FONT_GUARD
         int glyph_index = getCharIndex(code, def_char);
