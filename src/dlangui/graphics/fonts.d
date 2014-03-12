@@ -129,7 +129,7 @@ class Font : RefCountedObject {
     }
 	// draw text string to buffer
 	abstract void drawText(DrawBuf buf, int x, int y, const dchar[] text, uint color);
-	abstract Glyph * getCharGlyph(dchar ch);
+	abstract Glyph * getCharGlyph(dchar ch, bool withImage = true);
 
 	// clear usage flags for all entries
 	abstract void checkpoint();
@@ -154,7 +154,7 @@ struct FontList {
 	ref FontRef get(int index) {
 		return _list[index];
 	}
-	// returns index of found item, -1 if not found
+	// find by a set of parameters - returns index of found item, -1 if not found
 	int find(int size, int weight, bool italic, FontFamily family, string face) {
 		for (int i = 0; i < _len; i++) {
 			Font item = _list[i].get;
@@ -165,6 +165,16 @@ struct FontList {
 			if (item.italic != italic || item.weight != weight)
 				continue;
 			if (!equal(item.face, face))
+				continue;
+			return i;
+		}
+		return -1;
+	}
+	// find by size only - returns index of found item, -1 if not found
+	int find(int size) {
+		for (int i = 0; i < _len; i++) {
+			Font item = _list[i].get;
+			if (item.size != size)
 				continue;
 			return i;
 		}

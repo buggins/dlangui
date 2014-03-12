@@ -39,7 +39,8 @@ private struct FontDef {
 }
 
 private class FontFileItem {
-    private FT_Library    _library;
+	private FontList _activeFonts;
+    private FT_Library _library;
     private FontDef _def;
     string[] _filenames;
     @property ref FontDef def() { return _def; }
@@ -56,6 +57,20 @@ private class FontFileItem {
         _library = library;
         _def = def;
     }
+
+    private FontRef _nullFontRef;
+    ref FontRef get(int size) {
+        int index = _activeFonts.find(size);
+        if (index >= 0)
+            return _activeFonts.get(index);
+        FreeTypeFont font = new FreeTypeFont(this, size);
+        if (!font.create()) {
+            destroy(font);
+            return _nullFontRef;
+        }
+        return _activeFonts.add(font);
+    }
+
 }
 
 private class FreeTypeFontFile {
@@ -206,16 +221,16 @@ private class FreeTypeFontFile {
         return ch_glyph_index;
     }
 
-    int myabs(int n) { return n >= 0 ? n : -n; }
-
     /// retrieve glyph information, filling glyph struct; returns false if glyph not found
-    bool getGlyphInfo(dchar code, Glyph glyph, dchar def_char)
+    bool getGlyphInfo(dchar code, Glyph glyph, dchar def_char, bool withImage = true)
     {
         //FONT_GUARD
         int glyph_index = getCharIndex(code, def_char);
         int flags = FT_LOAD_DEFAULT;
         const bool _drawMonochrome = false;
         flags |= (!_drawMonochrome ? FT_LOAD_TARGET_NORMAL : FT_LOAD_TARGET_MONO);
+        if (withImage)
+            flags |= FT_LOAD_RENDER;
         //if (_hintingMode == HINTING_MODE_AUTOHINT)
         //    flags |= FT_LOAD_FORCE_AUTOHINT;
         //else if (_hintingMode == HINTING_MODE_DISABLED)
@@ -226,11 +241,25 @@ private class FreeTypeFontFile {
                                   flags );  /* load flags, see below */
         if ( error )
             return false;
+        glyph.lastUsage = 1;
         glyph.blackBoxX = cast(ubyte)(_slot.metrics.width >> 6);
         glyph.blackBoxY = cast(ubyte)(_slot.metrics.height >> 6);
         glyph.originX =   cast(byte)(_slot.metrics.horiBearingX >> 6);
         glyph.originY =   cast(byte)(_slot.metrics.horiBearingY >> 6);
         glyph.width =     cast(ubyte)(myabs(_slot.metrics.horiAdvance) >> 6);
+        if (withImage) {
+            FT_Bitmap*  bitmap = &_slot.bitmap;
+            ubyte w = cast(ubyte)(bitmap.width);
+            ubyte h = cast(ubyte)(bitmap.rows);
+            glyph.blackBoxX = w;
+            glyph.blackBoxY = h;
+            int sz = w * cast(int)h;
+            if (sz > 0) {
+                glyph.glyph = new ubyte[sz];
+                for (int i = 0; i < sz; i++)
+                    glyph.glyph[i] = bitmap.buffer[i];
+            }
+        }
         return true;
     }
 
@@ -287,44 +316,88 @@ class FreeTypeFont : Font {
         return 0;
 	}
 
-	override Glyph * getCharGlyph(dchar ch) {
-		uint glyphIndex = getGlyphIndex(ch);
-		if (!glyphIndex)
-			return null;
-        return null;
+    /// find glyph index for character
+    bool findGlyph(dchar code, dchar def_char, ref FT_UInt index, ref FreeTypeFontFile file) {
+        foreach(FreeTypeFontFile f; _files) {
+            index = f.getCharIndex(code, def_char);
+            if (index != 0) {
+                file = f;
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private Glyph tmpGlyphInfo;
+	override Glyph * getCharGlyph(dchar ch, bool withImage = true) {
+        if (ch > 0xFFFF) // do not support unicode chars above 0xFFFF - due to cache limitations
+            return null;
+		Glyph * found = _glyphCache.find(cast(ushort)ch);
+		if (found !is null)
+			return found;
+        FT_UInt index;
+        FreeTypeFontFile file;
+        if (!findGlyph(ch, 0, index, file)) {
+            if (!findGlyph(ch, '?', index, file))
+                return null;
+        }
+        if (!file.getGlyphInfo(ch, tmpGlyphInfo, 0, withImage))
+            return null;
+        if (withImage)
+		    return _glyphCache.put(cast(ushort)ch, &tmpGlyphInfo);
+        return &tmpGlyphInfo;
 	}
 
 	// draw text string to buffer
 	override void drawText(DrawBuf buf, int x, int y, const dchar[] text, uint color) {
 		int[] widths;
-		int charsMeasured = measureText(text, widths, 3000);
         int bl = baseline;
-		for (int i = 0; i < charsMeasured; i++) {
-			int xx = (i > 0) ? widths[i - 1] : 0;
-			Glyph * glyph = getCharGlyph(text[i]);
+        int xx = 0;
+		for (int i = 0; i < text.length; i++) {
+			Glyph * glyph = getCharGlyph(text[i], true);
 			if (glyph is null)
 				continue;
 			if ( glyph.blackBoxX && glyph.blackBoxY ) {
-				buf.drawGlyph( x + xx + glyph.originX,
-                               y + bl - glyph.originY,
+                int x0 = x + xx + glyph.originX;
+                int y0 = y + bl - glyph.originY;
+                if (x0 > buf.width)
+                    break; // outside right bound
+                Rect rc = Rect(x0, y0, x0 + glyph.blackBoxX, y0 + glyph.blackBoxY);
+                if (buf.applyClipping(rc))
+				    buf.drawGlyph( x0,
+                               y0,
                               glyph,
                               color);
 			}
+            xx += glyph.width;
 		}
 	}
 
 	override int measureText(const dchar[] text, ref int[] widths, int maxWidth) {
 		if (text.length == 0)
 			return 0;
-		dstring utf32text = toUTF32(text);
-		const dchar * pstr = utf32text.ptr;
-		uint len = cast(uint)utf32text.length;
-        bool res = false;
-		if (!res) {
-			widths[0] = 0;
-			return 0;
-		}
-		return 0;
+		const dchar * pstr = text.ptr;
+		uint len = cast(uint)text.length;
+        int x = 0;
+        int charsMeasured = 0;
+		for (int i = 0; i < len; i++) {
+			Glyph * glyph = getCharGlyph(text[i], true); // TODO: what is better
+			if (glyph is null) {
+                // if no glyph, use previous width - treat as zero width
+                widths[i] = i > 0 ? widths[i-1] : 0;
+				continue;
+            }
+            int w = x + glyph.width; // using advance
+            int w2 = x + glyph.originX + glyph.blackBoxX; // using black box
+            if (w < w2) // choose bigger value
+                w = w2;
+            widths[i] = w;
+            x += glyph.width;
+            charsMeasured = i + 1;
+            if (x > maxWidth)
+                break;
+        }
+		return charsMeasured;
 	}
 
 	bool create() {
@@ -373,6 +446,27 @@ class FreeTypeFontManager : FontManager {
         return null;
     }
 
+    private FontFileItem findBestMatch(int weight, bool italic, FontFamily family, string face) {
+        FontFileItem best = null;
+        int bestScore = 0;
+        foreach(FontFileItem item; _fontFiles) {
+            int score = 0;
+            if (face is null || face.equal(item.def.face))
+                score += 200; // face match
+            if (family == item.def.family)
+                score += 100; // family match
+            if (italic == item.def.italic)
+                score += 50; // italic match
+            int weightDiff = myabs(weight - item.def.weight);
+            score += 30 - weightDiff / 30; // weight match
+            if (score > bestScore) {
+                bestScore = score;
+                best = item;
+            }
+        }
+        return best;
+    }
+
 	private FontList _activeFonts;
 
     private static FontRef _nullFontRef;
@@ -395,7 +489,10 @@ class FreeTypeFontManager : FontManager {
 
     /// get font instance with specified parameters
     override ref FontRef getFont(int size, int weight, bool italic, FontFamily family, string face) {
-        return _nullFontRef;
+        FontFileItem f = findBestMatch(weight, italic, family, face);
+        if (f is null)
+            return _nullFontRef;
+        return f.get(size);
     }
 
 	/// clear usage flags for all entries
@@ -443,3 +540,5 @@ class FreeTypeFontManager : FontManager {
     }
 
 }
+
+private int myabs(int n) { return n >= 0 ? n : -n; }

@@ -100,7 +100,7 @@ class Win32Font : Font {
 		return g[0];
 	}
 
-	override Glyph * getCharGlyph(dchar ch) {
+	override Glyph * getCharGlyph(dchar ch, bool withImage = true) {
 		uint glyphIndex = getGlyphIndex(ch);
 		if (!glyphIndex)
 			return null;
