@@ -7,10 +7,12 @@ private import std.algorithm;
 
 /// drawing buffer - image container which allows to perform some drawing operations
 class GLDrawBuf : DrawBuf {
-
+    // width
     protected int _dx;
+    // height
     protected int _dy;
-    protected bool _framebuffer;
+    protected bool _framebuffer; // not yet supported
+    protected uint _framebufferId; // not yet supported
     protected Scene _scene;
 
     /// get current scene (exists only between beforeDrawing() and afterDrawing() calls
@@ -30,8 +32,7 @@ class GLDrawBuf : DrawBuf {
     /// reserved for hardware-accelerated drawing - begins drawing batch
     override void beforeDrawing() {
         if (_scene !is null) {
-            destroy(_scene);
-            _scene = null;
+            _scene.reset();
         }
         _scene = new Scene();
     }
@@ -79,7 +80,7 @@ class GLDrawBuf : DrawBuf {
         Rect dstrect = Rect(x, y, x + srcrect.width, y + srcrect.height);
         //Log.v("GLDrawBuf.frawFragment dst=", dstrect, " src=", srcrect);
         if (applyClipping(dstrect, srcrect)) {
-            if (glImageCache.get(src.id))
+            if (!glImageCache.get(src.id))
                 glImageCache.put(src);
             _scene.add(new TextureSceneItem(src.id, dstrect, srcrect, 0xFFFFFF, 0, null, 0));
         }
@@ -89,37 +90,52 @@ class GLDrawBuf : DrawBuf {
         assert(_scene !is null);
         //Log.v("GLDrawBuf.frawRescaled dst=", dstrect, " src=", srcrect);
         if (applyClipping(dstrect, srcrect)) {
-            if (glImageCache.get(src.id))
+            if (!glImageCache.get(src.id))
                 glImageCache.put(src);
             _scene.add(new TextureSceneItem(src.id, dstrect, srcrect, 0xFFFFFF, 0, null, 0));
         }
     }
+
+    /// cleanup resources
     override void clear() {
+        if (_framebuffer) {
+            // TODO: delete framebuffer
+        }
     }
     ~this() { clear(); }
 }
 
-
+/// base class for all drawing scene items.
 class SceneItem {
     abstract void draw();
 }
 
-// non thread safe
+/// Drawing scene (operations sheduled for drawing)
 class Scene {
+    private SceneItem[] _items;
     this() {
         activeSceneCount++;
     }
     ~this() {
         activeSceneCount--;
     }
-    SceneItem[] _items;
+    /// add new scene item to scene
     void add(SceneItem item) {
         _items ~= item;
     }
+    /// draws all scene items and removes them from list
     void draw() {
         foreach(SceneItem item; _items)
             item.draw();
-        _items.clear();
+        reset();
+    }
+    /// resets scene for new drawing - deletes all items
+    void reset() {
+        foreach(ref SceneItem item; _items) {
+            destroy(item);
+            item = null;
+        }
+        _items.length = 0;
     }
 }
 
@@ -678,8 +694,8 @@ private class GLGlyphCache {
     /// check if item is in cache
     bool get(uint obj) {
         if (obj in _map)
-            return false;
-        return true;
+            return true;
+        return false;
     }
     /// put new item to cache
     void put(Glyph * glyph) {
