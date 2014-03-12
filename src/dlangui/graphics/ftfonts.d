@@ -30,5 +30,10 @@ class FreeTypeFontManager : FontManager {
 	override void cleanup() {
     }
 
+    /// register freetype font by filename - optinally font properties can be passed if known (e.g. from libfontconfig).
+    bool registerFont(string filename, FontFamily family = FontFamily.SansSerif, string face = null, bool italic = false, int weight = 0) {
+        return false;
+    }
+
 	~this() {}
 }

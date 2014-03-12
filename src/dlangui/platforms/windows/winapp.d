@@ -417,6 +417,10 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
 	Win32FontManager fontMan = new Win32FontManager();
 	FontManager.instance = fontMan;
 
+    /// testing freetype font manager
+    import dlangui.graphics.ftfonts;
+    FreeTypeFontManager ftfontMan = new FreeTypeFontManager();
+
     version (USE_OPENGL) {
         import derelict.opengl3.gl3;
         DerelictGL3.load();
