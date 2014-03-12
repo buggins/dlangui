@@ -8,10 +8,13 @@ private import std.algorithm;
 /// drawing buffer - image container which allows to perform some drawing operations
 class GLDrawBuf : DrawBuf {
 
-    int _dx;
-    int _dy;
-    bool _framebuffer;
-    Scene _scene;
+    protected int _dx;
+    protected int _dy;
+    protected bool _framebuffer;
+    protected Scene _scene;
+
+    /// get current scene (exists only between beforeDrawing() and afterDrawing() calls
+    @property Scene scene() { return _scene; }
 
     this(int dx, int dy, bool framebuffer = false) {
         _dx = dx;
@@ -38,6 +41,8 @@ class GLDrawBuf : DrawBuf {
         setOrthoProjection(_dx, _dy);
         _scene.draw();
         flushGL();
+        destroy(_scene);
+        _scene = null;
     }
 
     /// resize buffer
@@ -61,12 +66,10 @@ class GLDrawBuf : DrawBuf {
         assert(_scene !is null);
 		Rect dstrect = Rect(x,y, x + glyph.blackBoxX, y + glyph.blackBoxY);
 		Rect srcrect = Rect(0, 0, glyph.blackBoxX, glyph.blackBoxY);
-			//Log.v("GLDrawBuf.frawFragment dst=", dstrect, " src=", srcrect);
+		//Log.v("GLDrawBuf.frawFragment dst=", dstrect, " src=", srcrect);
         if (applyClipping(dstrect, srcrect)) {
-            GLGlyphCacheItem item = glGlyphCache.get(glyph.id);
-            if (item is null)
-                item = glGlyphCache.set(glyph);
-            // TODO: clipping
+            if (!glGlyphCache.get(glyph.id))
+                glGlyphCache.put(glyph);
             _scene.add(new GlyphSceneItem(glyph.id, dstrect, srcrect, color, null));
         }
     }
@@ -76,10 +79,8 @@ class GLDrawBuf : DrawBuf {
         Rect dstrect = Rect(x, y, x + srcrect.width, y + srcrect.height);
         //Log.v("GLDrawBuf.frawFragment dst=", dstrect, " src=", srcrect);
         if (applyClipping(dstrect, srcrect)) {
-            GLImageCacheItem item = glImageCache.get(src.id);
-            if (item is null)
-                item = glImageCache.set(src);
-            // TODO: clipping
+            if (glImageCache.get(src.id))
+                glImageCache.put(src);
             _scene.add(new TextureSceneItem(src.id, dstrect, srcrect, 0xFFFFFF, 0, null, 0));
         }
     }
@@ -88,9 +89,8 @@ class GLDrawBuf : DrawBuf {
         assert(_scene !is null);
         //Log.v("GLDrawBuf.frawRescaled dst=", dstrect, " src=", srcrect);
         if (applyClipping(dstrect, srcrect)) {
-            GLImageCacheItem item = glImageCache.get(src.id);
-            if (item is null)
-                item = glImageCache.set(src);
+            if (glImageCache.get(src.id))
+                glImageCache.put(src);
             _scene.add(new TextureSceneItem(src.id, dstrect, srcrect, 0xFFFFFF, 0, null, 0));
         }
     }
@@ -128,11 +128,9 @@ bool hasActiveScene() {
     return activeSceneCount > 0;
 }
 
-
-
 immutable int MIN_TEX_SIZE = 64;
 immutable int MAX_TEX_SIZE  = 4096;
-int nearestPOT(int n) {
+private int nearestPOT(int n) {
     for (int i = MIN_TEX_SIZE; i <= MAX_TEX_SIZE; i *= 2) {
 		if (n <= i)
 			return i;
@@ -164,24 +162,200 @@ void LVGLClearImageCache() {
 	glGlyphCache.clear();
 }
 
-private class GLImageCacheItem {
-    GLImageCachePage _page;
-public:
-    @property GLImageCachePage page() { return _page; }
-    uint _objectId;
-    // image size
-    Rect _rc;
-    bool _deleted;
-    this(GLImageCachePage page, uint objectId) { _page = page; _objectId = objectId; }
-};
-
+/// OpenGL texture cache for ColorDrawBuf objects
 private class GLImageCache {
-    GLImageCacheItem[uint] _map;
-    GLImageCachePage[] _pages;
-    GLImageCachePage _activePage;
-    int tdx;
-    int tdy;
-    void removePage(GLImageCachePage page) {
+
+    static class GLImageCacheItem {
+        private GLImageCachePage _page;
+
+        @property GLImageCachePage page() { return _page; }
+            
+        uint _objectId;
+        Rect _rc;
+        bool _deleted;
+
+        this(GLImageCachePage page, uint objectId) { _page = page; _objectId = objectId; }
+    };
+
+    static class GLImageCachePage {
+        private GLImageCache _cache;
+        private int _tdx;
+        private int _tdy;
+        private ColorDrawBuf _drawbuf;
+        private int _currentLine;
+        private int _nextLine;
+        private int _x;
+        private bool _closed;
+        private bool _needUpdateTexture;
+        private uint _textureId;
+        private int _itemCount;
+
+        this(GLImageCache cache, int dx, int dy) {
+            _cache = cache;
+            Log.v("created image cache page ", dx, "x", dy);
+            _tdx = nearestPOT(dx);
+            _tdy = nearestPOT(dy);
+            _itemCount = 0;
+        }
+
+        ~this() {
+            if (_drawbuf) {
+                destroy(_drawbuf);
+                _drawbuf = null;
+            }
+            if (_textureId != 0) {
+                deleteTexture(_textureId);
+                _textureId = 0;
+            }
+        }
+
+        void updateTexture() {
+            if (_drawbuf is null)
+                return; // no draw buffer!!!
+            if (_textureId == 0) {
+                //CRLog::debug("updateTexture - new texture");
+                _textureId = genTexture();
+                if (!_textureId)
+                    return;
+            }
+            //CRLog::debug("updateTexture - setting image %dx%d", _drawbuf.width, _drawbuf.height);
+            uint * pixels = _drawbuf.scanLine(0);
+            if (!setTextureImage(_textureId, _drawbuf.width, _drawbuf.height, cast(ubyte*)pixels)) {
+                deleteTexture(_textureId);
+                _textureId = 0;
+                return;
+            }
+            _needUpdateTexture = false;
+            if (_closed) {
+                destroy(_drawbuf);
+                _drawbuf = null;
+            }
+        }
+
+        void invertAlpha(GLImageCacheItem item) {
+            Rect rc = item._rc;
+            for (int y = rc.top; y < rc.bottom; y++) {
+                uint * row = _drawbuf.scanLine(y);
+                for (int x = rc.left; x < rc.right; x++) {
+                    uint cl = row[x];
+                    cl ^= 0xFF000000;
+                    uint r = (cl & 0x00FF0000) >> 16;
+                    uint b = (cl & 0x000000FF) << 16;
+                    row[x] = (cl & 0xFF00FF00) | r | b;
+                }
+            }
+        }
+
+        GLImageCacheItem reserveSpace(uint objectId, int width, int height) {
+            GLImageCacheItem cacheItem = new GLImageCacheItem(this, objectId);
+            if (_closed)
+                return null;
+
+            // next line if necessary
+            if (_x + width + 2 > _tdx) {
+                // move to next line
+                _currentLine = _nextLine;
+                _x = 0;
+            }
+            // check if no room left for glyph height
+            if (_currentLine + height + 2 > _tdy) {
+                _closed = true;
+                return null;
+            }
+            cacheItem._rc = Rect(_x + 1, _currentLine + 1, _x + width + 1, _currentLine + height + 1);
+            if (height && width) {
+                if (_nextLine < _currentLine + height + 2)
+                    _nextLine = _currentLine + height + 2;
+                if (!_drawbuf) {
+                    _drawbuf = new ColorDrawBuf(_tdx, _tdy);
+                    //_drawbuf.SetBackgroundColor(0x000000);
+                    //_drawbuf.SetTextColor(0xFFFFFF);
+                    _drawbuf.fill(0xFF000000);
+                }
+                _x += width + 1;
+                _needUpdateTexture = true;
+            }
+            _itemCount++;
+            return cacheItem;
+        }
+        int deleteItem(GLImageCacheItem item) {
+            _itemCount--;
+            return _itemCount;
+        }
+        GLImageCacheItem addItem(DrawBuf buf) {
+            GLImageCacheItem cacheItem = reserveSpace(buf.id, buf.width, buf.height);
+            if (cacheItem is null)
+                return null;
+            buf.onDestroyCallback = &onObjectDestroyedCallback;
+            _drawbuf.drawImage(cacheItem._rc.left, cacheItem._rc.top, buf);
+            invertAlpha(cacheItem);
+            _needUpdateTexture = true;
+            return cacheItem;
+        }
+        void drawItem(GLImageCacheItem item, Rect dstrc, Rect srcrc, uint color, uint options, Rect * clip, int rotationAngle) {
+            //CRLog::trace("drawing item at %d,%d %dx%d <= %d,%d %dx%d ", x, y, dx, dy, srcx, srcy, srcdx, srcdy);
+            if (_needUpdateTexture)
+                updateTexture();
+            if (_textureId != 0) {
+                if (!isTexture(_textureId)) {
+                    Log.e("Invalid texture ", _textureId);
+                    return;
+                }
+                //rotationAngle = 0;
+                int rx = dstrc.middlex;
+                int ry = dstrc.middley;
+                if (rotationAngle) {
+                    //rotationAngle = 0;
+                    //setRotation(rx, ry, rotationAngle);
+                }
+                // convert coordinates to cached texture
+                srcrc.offset(item._rc.left, item._rc.top);
+                if (clip) {
+                    int srcw = srcrc.width();
+                    int srch = srcrc.height();
+                    int dstw = dstrc.width();
+                    int dsth = dstrc.height();
+                    if (dstw) {
+                        srcrc.left += clip.left * srcw / dstw;
+                        srcrc.right -= clip.right * srcw / dstw;
+                    }
+                    if (dsth) {
+                        srcrc.top += clip.top * srch / dsth;
+                        srcrc.bottom -= clip.bottom * srch / dsth;
+                    }
+                    dstrc.left += clip.left;
+                    dstrc.right -= clip.right;
+                    dstrc.top += clip.top;
+                    dstrc.bottom -= clip.bottom;
+                }
+                if (!dstrc.empty)
+                    drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height());
+                //drawColorAndTextureRect(vertices, texcoords, color, _textureId);
+
+                if (rotationAngle) {
+                    // unset rotation
+                    setRotation(rx, ry, 0);
+                    //                glMatrixMode(GL_PROJECTION);
+                    //                glPopMatrix();
+                    //                checkError("pop matrix");
+                }
+
+            }
+        }
+        void close() {
+            _closed = true;
+            if (_needUpdateTexture)
+                updateTexture();
+        }
+    }
+
+    private GLImageCacheItem[uint] _map;
+    private GLImageCachePage[] _pages;
+    private GLImageCachePage _activePage;
+    private int tdx;
+    private int tdy;
+
+    private void removePage(GLImageCachePage page) {
         if (_activePage == page)
             _activePage = null;
         for (int i = 0; i < _pages.length; i++)
@@ -191,7 +365,8 @@ private class GLImageCache {
             }
         destroy(page);
     }
-    void updateTextureSize() {
+
+    private void updateTextureSize() {
         if (!tdx) {
             // TODO
             tdx = tdy = 1024; //getMaxTextureSize(); 
@@ -199,18 +374,20 @@ private class GLImageCache {
                 tdx = tdy = 1024;
         }
     }
-public:
+
     this() {
     }
     ~this() {
         clear();
     }
-    GLImageCacheItem get(uint obj) {
+    /// returns true if object exists in cache
+    bool get(uint obj) {
         if (obj in _map)
-            return _map[obj];
-        return null;
+            return true;
+        return false;
     }
-    GLImageCacheItem set(DrawBuf img) {
+    /// put new object to cache
+    void put(DrawBuf img) {
         updateTextureSize();
         GLImageCacheItem res = null;
         if (img.width <= tdx / 3 && img.height < tdy / 3) {
@@ -233,8 +410,8 @@ public:
             page.close();
         }
         _map[img.id] = res;
-        return res;
     }
+    /// clears cache
     void clear() {
         for (int i = 0; i < _pages.length; i++) {
             destroy(_pages[i]);
@@ -281,191 +458,23 @@ public:
     }
 };
 
-private class GLImageCachePage {
-	GLImageCache _cache;
-	int _tdx;
-	int _tdy;
-	ColorDrawBuf _drawbuf;
-	int _currentLine;
-	int _nextLine;
-	int _x;
-	bool _closed;
-	bool _needUpdateTexture;
-    uint _textureId;
-	int _itemCount;
-public:
-	this(GLImageCache cache, int dx, int dy) {
-        _cache = cache;
-        Log.v("created image cache page ", dx, "x", dy);
-		_tdx = nearestPOT(dx);
-		_tdy = nearestPOT(dy);
-		_itemCount = 0;
-    }
-
-	~this() {
-		if (_drawbuf) {
-			destroy(_drawbuf);
-            _drawbuf = null;
-        }
-        if (_textureId != 0) {
-            deleteTexture(_textureId);
-            _textureId = 0;
-        }
-	}
-
-    void updateTexture() {
-		if (_drawbuf is null)
-			return; // no draw buffer!!!
-	    if (_textureId == 0) {
-	    	//CRLog::debug("updateTexture - new texture");
-            _textureId = genTexture();
-            if (!_textureId)
-                return;
-	    }
-    	//CRLog::debug("updateTexture - setting image %dx%d", _drawbuf.width, _drawbuf.height);
-        uint * pixels = _drawbuf.scanLine(0);
-        if (!setTextureImage(_textureId, _drawbuf.width, _drawbuf.height, cast(ubyte*)pixels)) {
-            deleteTexture(_textureId);
-            _textureId = 0;
-            return;
-        }
-	    _needUpdateTexture = false;
-	    if (_closed) {
-	    	destroy(_drawbuf);
-	    	_drawbuf = null;
-	    }
-	}
-	void invertAlpha(GLImageCacheItem item) {
-        Rect rc = item._rc;
-	    for (int y = rc.top; y < rc.bottom; y++) {
-	    	uint * row = _drawbuf.scanLine(y);
-	    	for (int x = rc.left; x < rc.right; x++) {
-	    		uint cl = row[x];
-	    		cl ^= 0xFF000000;
-	    		uint r = (cl & 0x00FF0000) >> 16;
-	    		uint b = (cl & 0x000000FF) << 16;
-	    		row[x] = (cl & 0xFF00FF00) | r | b;
-	    	}
-	    }
-	}
-	GLImageCacheItem reserveSpace(uint objectId, int width, int height) {
-		GLImageCacheItem cacheItem = new GLImageCacheItem(this, objectId);
-		if (_closed)
-			return null;
-
-		// next line if necessary
-		if (_x + width + 2 > _tdx) {
-			// move to next line
-			_currentLine = _nextLine;
-			_x = 0;
-		}
-		// check if no room left for glyph height
-		if (_currentLine + height + 2 > _tdy) {
-			_closed = true;
-			return null;
-		}
-        cacheItem._rc = Rect(_x + 1, _currentLine + 1, _x + width + 1, _currentLine + height + 1);
-		if (height && width) {
-			if (_nextLine < _currentLine + height + 2)
-				_nextLine = _currentLine + height + 2;
-			if (!_drawbuf) {
-				_drawbuf = new ColorDrawBuf(_tdx, _tdy);
-				//_drawbuf.SetBackgroundColor(0x000000);
-				//_drawbuf.SetTextColor(0xFFFFFF);
-				_drawbuf.fill(0xFF000000);
-			}
-			_x += width + 1;
-			_needUpdateTexture = true;
-		}
-		_itemCount++;
-		return cacheItem;
-	}
-	int deleteItem(GLImageCacheItem item) {
-        _itemCount--;
-		return _itemCount;
-	}
-	GLImageCacheItem addItem(DrawBuf buf) {
-		GLImageCacheItem cacheItem = reserveSpace(buf.id, buf.width, buf.height);
-		if (cacheItem is null)
-			return null;
-		buf.onDestroyCallback = &onObjectDestroyedCallback;
-        _drawbuf.drawImage(cacheItem._rc.left, cacheItem._rc.top, buf);
-		invertAlpha(cacheItem);
-		_needUpdateTexture = true;
-		return cacheItem;
-	}
-    void drawItem(GLImageCacheItem item, Rect dstrc, Rect srcrc, uint color, uint options, Rect * clip, int rotationAngle) {
-        //CRLog::trace("drawing item at %d,%d %dx%d <= %d,%d %dx%d ", x, y, dx, dy, srcx, srcy, srcdx, srcdy);
-        if (_needUpdateTexture)
-			updateTexture();
-		if (_textureId != 0) {
-            if (!isTexture(_textureId)) {
-            Log.e("Invalid texture ", _textureId);
-                return;
-            }
-            //rotationAngle = 0;
-            int rx = dstrc.middlex;
-            int ry = dstrc.middley;
-            if (rotationAngle) {
-                //rotationAngle = 0;
-                //setRotation(rx, ry, rotationAngle);
-            }
-            // convert coordinates to cached texture
-            srcrc.offset(item._rc.left, item._rc.top);
-            if (clip) {
-                int srcw = srcrc.width();
-                int srch = srcrc.height();
-                int dstw = dstrc.width();
-                int dsth = dstrc.height();
-                if (dstw) {
-                    srcrc.left += clip.left * srcw / dstw;
-                    srcrc.right -= clip.right * srcw / dstw;
-                }
-                if (dsth) {
-                    srcrc.top += clip.top * srch / dsth;
-                    srcrc.bottom -= clip.bottom * srch / dsth;
-                }
-                dstrc.left += clip.left;
-                dstrc.right -= clip.right;
-                dstrc.top += clip.top;
-                dstrc.bottom -= clip.bottom;
-            }
-            if (!dstrc.empty)
-                drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height());
-            //drawColorAndTextureRect(vertices, texcoords, color, _textureId);
-
-            if (rotationAngle) {
-                // unset rotation
-                setRotation(rx, ry, 0);
-                //                glMatrixMode(GL_PROJECTION);
-                //                glPopMatrix();
-                //                checkError("pop matrix");
-            }
-
-        }
-	}
-	void close() {
-		_closed = true;
-		if (_needUpdateTexture)
-			updateTexture();
-	}
-};
 
 
 private class TextureSceneItem : SceneItem {
-	uint objectId;
+	private uint objectId;
     //CacheableObject * img;
-    Rect dstrc;
-    Rect srcrc;
-	uint color;
-	uint options;
-	Rect * clip;
-    int rotationAngle;
-public:
+    private Rect dstrc;
+    private Rect srcrc;
+	private uint color;
+	private uint options;
+	private Rect * clip;
+    private int rotationAngle;
+
 	override void draw() {
 		if (glImageCache)
             glImageCache.drawItem(objectId, dstrc, srcrc, color, options, clip, rotationAngle);
 	}
+
     this(uint _objectId, Rect _dstrc, Rect _srcrc, uint _color, uint _options, Rect * _clip, int _rotationAngle)
 	{
         objectId = _objectId;
@@ -476,6 +485,7 @@ public:
         clip = _clip;
         rotationAngle = _rotationAngle;
 	}
+
 	~this() {
 	}
 };
@@ -484,18 +494,158 @@ public:
 
 
 
-private class GLGlyphCacheItem {
-    GLGlyphCachePage _page;
-public:
-    @property GLGlyphCachePage page() { return _page; }
-    uint _objectId;
-    // image size
-    Rect _rc;
-    bool _deleted;
-    this(GLGlyphCachePage page, uint objectId) { _page = page; _objectId = objectId; }
-};
-
 private class GLGlyphCache {
+
+    static class GLGlyphCacheItem {
+        GLGlyphCachePage _page;
+    public:
+        @property GLGlyphCachePage page() { return _page; }
+        uint _objectId;
+        // image size
+        Rect _rc;
+        bool _deleted;
+        this(GLGlyphCachePage page, uint objectId) { _page = page; _objectId = objectId; }
+    };
+
+    static class GLGlyphCachePage {
+        private GLGlyphCache _cache;
+        private int _tdx;
+        private int _tdy;
+        private GrayDrawBuf _drawbuf;
+        private int _currentLine;
+        private int _nextLine;
+        private int _x;
+        private bool _closed;
+        private bool _needUpdateTexture;
+        private uint _textureId;
+        private int _itemCount;
+
+        this(GLGlyphCache cache, int dx, int dy) {
+            _cache = cache;
+            Log.v("created image cache page ", dx, "x", dy);
+            _tdx = nearestPOT(dx);
+            _tdy = nearestPOT(dy);
+            _itemCount = 0;
+        }
+
+        ~this() {
+            if (_drawbuf) {
+                destroy(_drawbuf);
+                _drawbuf = null;
+            }
+            if (_textureId != 0) {
+                deleteTexture(_textureId);
+                _textureId = 0;
+            }
+        }
+
+        void updateTexture() {
+            if (_drawbuf is null)
+                return; // no draw buffer!!!
+            if (_textureId == 0) {
+                //CRLog::debug("updateTexture - new texture");
+                _textureId = genTexture();
+                if (!_textureId)
+                    return;
+            }
+            //CRLog::debug("updateTexture - setting image %dx%d", _drawbuf.width, _drawbuf.height);
+            ubyte * pixels = _drawbuf.scanLine(0);
+            if (!setTextureImageAlpha(_textureId, _drawbuf.width, _drawbuf.height, pixels)) {
+                deleteTexture(_textureId);
+                _textureId = 0;
+                return;
+            }
+            _needUpdateTexture = false;
+            if (_closed) {
+                destroy(_drawbuf);
+                _drawbuf = null;
+            }
+        }
+        GLGlyphCacheItem reserveSpace(uint objectId, int width, int height) {
+            GLGlyphCacheItem cacheItem = new GLGlyphCacheItem(this, objectId);
+            if (_closed)
+                return null;
+
+            // next line if necessary
+            if (_x + width + 2 > _tdx) {
+                // move to next line
+                _currentLine = _nextLine;
+                _x = 0;
+            }
+            // check if no room left for glyph height
+            if (_currentLine + height + 2 > _tdy) {
+                _closed = true;
+                return null;
+            }
+            cacheItem._rc = Rect(_x + 1, _currentLine + 1, _x + width + 1, _currentLine + height + 1);
+            if (height && width) {
+                if (_nextLine < _currentLine + height + 2)
+                    _nextLine = _currentLine + height + 2;
+                if (!_drawbuf) {
+                    _drawbuf = new GrayDrawBuf(_tdx, _tdy);
+                    //_drawbuf.SetBackgroundColor(0x000000);
+                    //_drawbuf.SetTextColor(0xFFFFFF);
+                    _drawbuf.fill(0x00000000);
+                }
+                _x += width + 1;
+                _needUpdateTexture = true;
+            }
+            _itemCount++;
+            return cacheItem;
+        }
+        int deleteItem(GLGlyphCacheItem item) {
+            _itemCount--;
+            return _itemCount;
+        }
+        GLGlyphCacheItem addItem(Glyph * glyph) {
+            GLGlyphCacheItem cacheItem = reserveSpace(glyph.id, glyph.blackBoxX, glyph.blackBoxY);
+            if (cacheItem is null)
+                return null;
+            _drawbuf.drawGlyph(cacheItem._rc.left, cacheItem._rc.top, glyph, 0xFFFFFF);
+            _needUpdateTexture = true;
+            return cacheItem;
+        }
+        void drawItem(GLGlyphCacheItem item, Rect dstrc, Rect srcrc, uint color, Rect * clip) {
+            //CRLog::trace("drawing item at %d,%d %dx%d <= %d,%d %dx%d ", x, y, dx, dy, srcx, srcy, srcdx, srcdy);
+            if (_needUpdateTexture)
+                updateTexture();
+            if (_textureId != 0) {
+                if (!isTexture(_textureId)) {
+                    Log.e("Invalid texture ", _textureId);
+                    return;
+                }
+                // convert coordinates to cached texture
+                srcrc.offset(item._rc.left, item._rc.top);
+                if (clip) {
+                    int srcw = srcrc.width();
+                    int srch = srcrc.height();
+                    int dstw = dstrc.width();
+                    int dsth = dstrc.height();
+                    if (dstw) {
+                        srcrc.left += clip.left * srcw / dstw;
+                        srcrc.right -= clip.right * srcw / dstw;
+                    }
+                    if (dsth) {
+                        srcrc.top += clip.top * srch / dsth;
+                        srcrc.bottom -= clip.bottom * srch / dsth;
+                    }
+                    dstrc.left += clip.left;
+                    dstrc.right -= clip.right;
+                    dstrc.top += clip.top;
+                    dstrc.bottom -= clip.bottom;
+                }
+                if (!dstrc.empty)
+                    drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, false);
+
+            }
+        }
+        void close() {
+            _closed = true;
+            if (_needUpdateTexture)
+                updateTexture();
+        }
+    }
+
     GLGlyphCacheItem[uint] _map;
     GLGlyphCachePage[] _pages;
     GLGlyphCachePage _activePage;
@@ -511,7 +661,7 @@ private class GLGlyphCache {
             }
         destroy(page);
     }
-    void updateTextureSize() {
+    private void updateTextureSize() {
         if (!tdx) {
             // TODO
             tdx = tdy = 1024; //getMaxTextureSize(); 
@@ -519,18 +669,20 @@ private class GLGlyphCache {
                 tdx = tdy = 1024;
         }
     }
-public:
+
     this() {
     }
     ~this() {
         clear();
     }
-    GLGlyphCacheItem get(uint obj) {
+    /// check if item is in cache
+    bool get(uint obj) {
         if (obj in _map)
-            return _map[obj];
-        return null;
+            return false;
+        return true;
     }
-    GLGlyphCacheItem set(Glyph * glyph) {
+    /// put new item to cache
+    void put(Glyph * glyph) {
         updateTextureSize();
         GLGlyphCacheItem res = null;
 		if (_activePage is null) {
@@ -544,7 +696,6 @@ public:
 			res = _activePage.addItem(glyph);
 		}
         _map[glyph.id] = res;
-        return res;
     }
     void clear() {
         for (int i = 0; i < _pages.length; i++) {
@@ -592,144 +743,6 @@ public:
     }
 };
 
-private class GLGlyphCachePage {
-	GLGlyphCache _cache;
-	int _tdx;
-	int _tdy;
-	GrayDrawBuf _drawbuf;
-	int _currentLine;
-	int _nextLine;
-	int _x;
-	bool _closed;
-	bool _needUpdateTexture;
-    uint _textureId;
-	int _itemCount;
-public:
-	this(GLGlyphCache cache, int dx, int dy) {
-        _cache = cache;
-        Log.v("created image cache page ", dx, "x", dy);
-		_tdx = nearestPOT(dx);
-		_tdy = nearestPOT(dy);
-		_itemCount = 0;
-    }
-
-	~this() {
-		if (_drawbuf) {
-			destroy(_drawbuf);
-            _drawbuf = null;
-        }
-        if (_textureId != 0) {
-            deleteTexture(_textureId);
-            _textureId = 0;
-        }
-	}
-
-    void updateTexture() {
-		if (_drawbuf is null)
-			return; // no draw buffer!!!
-	    if (_textureId == 0) {
-	    	//CRLog::debug("updateTexture - new texture");
-            _textureId = genTexture();
-            if (!_textureId)
-                return;
-	    }
-    	//CRLog::debug("updateTexture - setting image %dx%d", _drawbuf.width, _drawbuf.height);
-        ubyte * pixels = _drawbuf.scanLine(0);
-        if (!setTextureImageAlpha(_textureId, _drawbuf.width, _drawbuf.height, pixels)) {
-            deleteTexture(_textureId);
-            _textureId = 0;
-            return;
-        }
-	    _needUpdateTexture = false;
-	    if (_closed) {
-	    	destroy(_drawbuf);
-	    	_drawbuf = null;
-	    }
-	}
-	GLGlyphCacheItem reserveSpace(uint objectId, int width, int height) {
-		GLGlyphCacheItem cacheItem = new GLGlyphCacheItem(this, objectId);
-		if (_closed)
-			return null;
-
-		// next line if necessary
-		if (_x + width + 2 > _tdx) {
-			// move to next line
-			_currentLine = _nextLine;
-			_x = 0;
-		}
-		// check if no room left for glyph height
-		if (_currentLine + height + 2 > _tdy) {
-			_closed = true;
-			return null;
-		}
-        cacheItem._rc = Rect(_x + 1, _currentLine + 1, _x + width + 1, _currentLine + height + 1);
-		if (height && width) {
-			if (_nextLine < _currentLine + height + 2)
-				_nextLine = _currentLine + height + 2;
-			if (!_drawbuf) {
-				_drawbuf = new GrayDrawBuf(_tdx, _tdy);
-				//_drawbuf.SetBackgroundColor(0x000000);
-				//_drawbuf.SetTextColor(0xFFFFFF);
-				_drawbuf.fill(0x00000000);
-			}
-			_x += width + 1;
-			_needUpdateTexture = true;
-		}
-		_itemCount++;
-		return cacheItem;
-	}
-	int deleteItem(GLGlyphCacheItem item) {
-        _itemCount--;
-		return _itemCount;
-	}
-	GLGlyphCacheItem addItem(Glyph * glyph) {
-		GLGlyphCacheItem cacheItem = reserveSpace(glyph.id, glyph.blackBoxX, glyph.blackBoxY);
-		if (cacheItem is null)
-			return null;
-        _drawbuf.drawGlyph(cacheItem._rc.left, cacheItem._rc.top, glyph, 0xFFFFFF);
-		_needUpdateTexture = true;
-		return cacheItem;
-	}
-    void drawItem(GLGlyphCacheItem item, Rect dstrc, Rect srcrc, uint color, Rect * clip) {
-        //CRLog::trace("drawing item at %d,%d %dx%d <= %d,%d %dx%d ", x, y, dx, dy, srcx, srcy, srcdx, srcdy);
-        if (_needUpdateTexture)
-			updateTexture();
-		if (_textureId != 0) {
-            if (!isTexture(_textureId)) {
-                Log.e("Invalid texture ", _textureId);
-                return;
-            }
-            // convert coordinates to cached texture
-            srcrc.offset(item._rc.left, item._rc.top);
-            if (clip) {
-                int srcw = srcrc.width();
-                int srch = srcrc.height();
-                int dstw = dstrc.width();
-                int dsth = dstrc.height();
-                if (dstw) {
-                    srcrc.left += clip.left * srcw / dstw;
-                    srcrc.right -= clip.right * srcw / dstw;
-                }
-                if (dsth) {
-                    srcrc.top += clip.top * srch / dsth;
-                    srcrc.bottom -= clip.bottom * srch / dsth;
-                }
-                dstrc.left += clip.left;
-                dstrc.right -= clip.right;
-                dstrc.top += clip.top;
-                dstrc.bottom -= clip.bottom;
-            }
-            if (!dstrc.empty)
-                drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, false);
-
-        }
-	}
-	void close() {
-		_closed = true;
-		if (_needUpdateTexture)
-			updateTexture();
-	}
-};
 
 
 
