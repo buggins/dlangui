@@ -63,7 +63,6 @@ void drawSolidFillRect(Rect rc, uint color1, uint color2, uint color3, uint colo
 		_solidFillProgram.execute(vertices, colors);
 	} else
 		Log.e("No program");
-    //drawSolidFillRect(vertices, colors);
 }
 
 void drawColorAndTextureRect(uint textureId, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color, bool linear) {
@@ -72,9 +71,6 @@ void drawColorAndTextureRect(uint textureId, int tdx, int tdy, Rect srcrc, Rect 
 }
 
 void drawColorAndTextureRect(uint textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, uint color, bool linear) {
-    //if (crconfig.getTextureFormat() == TEXTURE_ALPHA) {
-    //    color = 0x000000;
-    //}
     float colors[6*4];
     LVGLFillColor(color, colors.ptr, 6);
     float dstx0 = cast(float)xx;
@@ -466,6 +462,7 @@ class SolidFillProgram : GLProgram {
         glDisable(GL_CULL_FACE);
         checkError("glDisable(GL_CULL_FACE)");
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); 
         checkError("glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
         bind();
         //glUniformMatrix4fv(matrixLocation,  1, false, m.value_ptr);

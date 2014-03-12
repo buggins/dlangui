@@ -67,7 +67,7 @@ class GLDrawBuf : DrawBuf {
         assert(_scene !is null);
 		Rect dstrect = Rect(x,y, x + glyph.blackBoxX, y + glyph.blackBoxY);
 		Rect srcrect = Rect(0, 0, glyph.blackBoxX, glyph.blackBoxY);
-		//Log.v("GLDrawBuf.frawFragment dst=", dstrect, " src=", srcrect);
+		Log.v("GLDrawBuf.drawGlyph dst=", dstrect, " src=", srcrect, " color=", color);
         if (applyClipping(dstrect, srcrect)) {
             if (!glGlyphCache.get(glyph.id))
                 glGlyphCache.put(glyph);
@@ -248,13 +248,15 @@ private class GLImageCache {
             }
         }
 
-        void invertAlpha(GLImageCacheItem item) {
+        void convertPixelFormat(GLImageCacheItem item) {
             Rect rc = item._rc;
-            for (int y = rc.top; y < rc.bottom; y++) {
+            for (int y = rc.top - 1; y <= rc.bottom; y++) {
                 uint * row = _drawbuf.scanLine(y);
-                for (int x = rc.left; x < rc.right; x++) {
+                for (int x = rc.left - 1; x <= rc.right; x++) {
                     uint cl = row[x];
+                    // invert A
                     cl ^= 0xFF000000;
+                    // swap R and B
                     uint r = (cl & 0x00FF0000) >> 16;
                     uint b = (cl & 0x000000FF) << 16;
                     row[x] = (cl & 0xFF00FF00) | r | b;
@@ -304,7 +306,7 @@ private class GLImageCache {
                 return null;
             buf.onDestroyCallback = &onObjectDestroyedCallback;
             _drawbuf.drawImage(cacheItem._rc.left, cacheItem._rc.top, buf);
-            invertAlpha(cacheItem);
+            convertPixelFormat(cacheItem);
             _needUpdateTexture = true;
             return cacheItem;
         }
@@ -507,8 +509,8 @@ private class TextureSceneItem : SceneItem {
 };
 
 
-
-
+/// by some reason ALPHA texture does not work as expected
+private immutable USE_RGBA_TEXTURE_FOR_GLYPHS = true;
 
 private class GLGlyphCache {
 
@@ -555,6 +557,9 @@ private class GLGlyphCache {
             }
         }
 
+        static if (USE_RGBA_TEXTURE_FOR_GLYPHS) {
+            uint[] _rgbaBuffer;
+        }
         void updateTexture() {
             if (_drawbuf is null)
                 return; // no draw buffer!!!
@@ -566,10 +571,22 @@ private class GLGlyphCache {
             }
             //CRLog::debug("updateTexture - setting image %dx%d", _drawbuf.width, _drawbuf.height);
             ubyte * pixels = _drawbuf.scanLine(0);
-            if (!setTextureImageAlpha(_textureId, _drawbuf.width, _drawbuf.height, pixels)) {
-                deleteTexture(_textureId);
-                _textureId = 0;
-                return;
+            static if (USE_RGBA_TEXTURE_FOR_GLYPHS) {
+                int len = _drawbuf.width * _drawbuf.height;
+                _rgbaBuffer.length = len;
+                for (int i = 0; i < len; i++)
+                    _rgbaBuffer[i] = ((cast(uint)pixels[i]) << 24) | 0x00FFFFFF;
+                if (!setTextureImage(_textureId, _drawbuf.width, _drawbuf.height, cast(ubyte*)_rgbaBuffer.ptr)) {
+                    deleteTexture(_textureId);
+                    _textureId = 0;
+                    return;
+                }
+            } else {
+                if (!setTextureImageAlpha(_textureId, _drawbuf.width, _drawbuf.height, pixels)) {
+                    deleteTexture(_textureId);
+                    _textureId = 0;
+                    return;
+                }
             }
             _needUpdateTexture = false;
             if (_closed) {
@@ -650,8 +667,10 @@ private class GLGlyphCache {
                     dstrc.top += clip.top;
                     dstrc.bottom -= clip.bottom;
                 }
-                if (!dstrc.empty)
+                if (!dstrc.empty) {
+                    Log.d("drawing glyph with color ", color);
                     drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, false);
+                }
 
             }
         }
@@ -659,6 +678,9 @@ private class GLGlyphCache {
             _closed = true;
             if (_needUpdateTexture)
                 updateTexture();
+            static if (USE_RGBA_TEXTURE_FOR_GLYPHS) {
+                _rgbaBuffer = null;
+            }
         }
     }
 
@@ -723,10 +745,9 @@ private class GLGlyphCache {
     }
     /// draw cached item
     void drawItem(uint objectId, Rect dstrc, Rect srcrc, uint color, Rect * clip) {
-        if (objectId in _map) {
-            GLGlyphCacheItem item = _map[objectId];
-            item.page.drawItem(item, dstrc, srcrc, color, clip);
-        }
+        GLGlyphCacheItem * item = objectId in _map;
+        if (item)
+            item.page.drawItem(*item, dstrc, srcrc, color, clip);
     }
     /// handle cached object deletion, mark as deleted
     void onCachedObjectDeleted(uint objectId) {
