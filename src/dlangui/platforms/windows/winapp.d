@@ -417,9 +417,38 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
 	Win32FontManager fontMan = new Win32FontManager();
 	FontManager.instance = fontMan;
 
-    /// testing freetype font manager
-    import dlangui.graphics.ftfonts;
-    FreeTypeFontManager ftfontMan = new FreeTypeFontManager();
+    {
+        /// testing freetype font manager
+        import dlangui.graphics.ftfonts;
+        import win32.shlobj;
+        FreeTypeFontManager ftfontMan = new FreeTypeFontManager();
+        string fontsPath = "c:\\Windows\\Fonts\\";
+        static if (false) { // SHGetFolderPathW not found in shell32.lib
+            WCHAR szPath[MAX_PATH];
+            const CSIDL_FLAG_NO_ALIAS = 0x1000;
+            const CSIDL_FLAG_DONT_UNEXPAND = 0x2000;
+            if(SUCCEEDED(SHGetFolderPathW(NULL,
+                                          CSIDL_FONTS|CSIDL_FLAG_NO_ALIAS|CSIDL_FLAG_DONT_UNEXPAND,
+                                          NULL,
+                                          0,
+                                          szPath.ptr)))
+            {
+                fontsPath = toUTF8(fromWStringz(szPath));
+            }
+        }
+        ftfontMan.registerFont(fontsPath ~ "arial.ttf", FontFamily.SansSerif, "Arial", false, FontWeight.Normal);
+        ftfontMan.registerFont(fontsPath ~ "arialbd.ttf", FontFamily.SansSerif, "Arial", false, FontWeight.Bold);
+        ftfontMan.registerFont(fontsPath ~ "arialbi.ttf", FontFamily.SansSerif, "Arial", true, FontWeight.Bold);
+        ftfontMan.registerFont(fontsPath ~ "ariali.ttf", FontFamily.SansSerif, "Arial", true, FontWeight.Normal);
+        ftfontMan.registerFont(fontsPath ~ "cour.ttf", FontFamily.MonoSpace, "Courier New", false, FontWeight.Normal);
+        ftfontMan.registerFont(fontsPath ~ "courbd.ttf", FontFamily.MonoSpace, "Courier New", false, FontWeight.Bold);
+        ftfontMan.registerFont(fontsPath ~ "courbi.ttf", FontFamily.MonoSpace, "Courier New", true, FontWeight.Bold);
+        ftfontMan.registerFont(fontsPath ~ "couri.ttf", FontFamily.MonoSpace, "Courier New", true, FontWeight.Normal);
+        ftfontMan.registerFont(fontsPath ~ "times.ttf", FontFamily.Serif, "Times New Roman", false, FontWeight.Normal);
+        ftfontMan.registerFont(fontsPath ~ "timesbd.ttf", FontFamily.Serif, "Times New Roman", false, FontWeight.Bold);
+        ftfontMan.registerFont(fontsPath ~ "timesbi.ttf", FontFamily.Serif, "Times New Roman", true, FontWeight.Bold);
+        ftfontMan.registerFont(fontsPath ~ "timesi.ttf", FontFamily.Serif, "Times New Roman", true, FontWeight.Normal);
+    }
 
     version (USE_OPENGL) {
         import derelict.opengl3.gl3;

@@ -83,7 +83,7 @@
   <cv2pdbOptions />
   <objfiles />
   <linkswitches />
-  <libfiles>libpng15.lib dlangui.lib phobos.lib ole32.lib kernel32.lib user32.lib comctl32.lib comdlg32.lib dlangui.lib</libfiles>
+  <libfiles>libpng15.lib dlangui.lib phobos.lib ole32.lib kernel32.lib user32.lib comctl32.lib comdlg32.lib shell32.lib dlangui.lib</libfiles>
   <libpaths>../../Debug ../../3rdparty/libpng/lib 3rdparty/libpng/lib ../../../DerelictOpenGL3/source</libpaths>
   <deffile />
   <resfile />

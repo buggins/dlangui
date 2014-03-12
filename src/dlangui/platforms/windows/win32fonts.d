@@ -13,7 +13,7 @@ import std.utf;
     //return toUTFz!(const(wchar)*)(s);
 //}
 
-struct FontDef {
+private struct FontDef {
     immutable FontFamily _family;
     immutable string _face;
 	immutable ubyte _pitchAndFamily;

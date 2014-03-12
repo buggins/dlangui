@@ -268,6 +268,7 @@
     <File path="3rdparty\win32\rpcnsip.d" />
     <File path="3rdparty\win32\rpcnterr.d" />
     <File path="3rdparty\win32\shellapi.d" />
+    <File path="3rdparty\win32\shlobj.d" />
     <File path="3rdparty\win32\unknwn.d" />
     <File path="3rdparty\win32\uuid.d" />
     <File path="3rdparty\win32\w32api.d" />

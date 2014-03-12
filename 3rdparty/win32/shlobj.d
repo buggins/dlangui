@@ -1226,7 +1226,9 @@ static if (_WIN32_IE >= 0x400) {
 }
 
 /* SHGetFolderPath in shfolder.dll on W9x, NT4, also in shell32.dll on W2K */
+extern (Windows)
 HRESULT SHGetFolderPathA(HWND, int, HANDLE, DWORD, LPSTR);
+extern (Windows)
 HRESULT SHGetFolderPathW(HWND, int, HANDLE, DWORD, LPWSTR);
 
 static if (_WIN32_WINNT >= 0x500) {
