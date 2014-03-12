@@ -5,6 +5,7 @@ import dlangui.core.types;
 import dlangui.graphics.drawbuf;
 import std.stream;
 import std.file;
+import std.algorithm;
 import libpng.png;
 
 /// decoded image cache

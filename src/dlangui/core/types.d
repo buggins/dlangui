@@ -159,6 +159,8 @@ struct Ref(T) { // if (T is RefCountedObject)
 
 // some utility functions
 string fromStringz(const(char[]) s) {
+    if (s is null)
+        return null;
 	int i = 0;
 	while(s[i])
 		i++;
@@ -166,6 +168,8 @@ string fromStringz(const(char[]) s) {
 }
 
 string fromStringz(const(char*) s) {
+    if (s is null)
+        return null;
 	int i = 0;
 	while(s[i])
 		i++;
@@ -173,20 +177,11 @@ string fromStringz(const(char*) s) {
 }
 
 wstring fromWStringz(const(wchar[]) s) {
+    if (s is null)
+        return null;
 	int i = 0;
 	while(s[i])
 		i++;
 	return cast(wstring)(s[0..i].dup);
 }
 
-bool startsWith(string str, string prefix) {
-    if (str.length >= prefix.length)
-        return equal(str[0..prefix.length], prefix);
-    return false;
-}
-
-bool endsWith(string str, string suffix) {
-    if (str.length >= suffix.length)
-        return equal(str[$-suffix.length .. $], suffix);
-    return false;
-}
