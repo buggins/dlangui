@@ -1,5 +1,7 @@
 module dlangui.graphics.gldrawbuf;
 
+version (USE_OPENGL) {
+
 import dlangui.graphics.drawbuf;
 import dlangui.core.logger;
 private import dlangui.graphics.glsupport;
@@ -819,7 +821,7 @@ public:
 	}
 	~this() {
 	}
-};
+}
 
 
-
+}

@@ -18,14 +18,16 @@ enum FontWeight : int {
     Bold = 800
 }
 
-private __gshared void function(uint id) _glyphDestroyCallback;
-/// get glyph destroy callback (to cleanup OpenGL caches)
-@property void function(uint id) glyphDestroyCallback() { return _glyphDestroyCallback; }
-/// set glyph destroy callback (to cleanup OpenGL caches)
-@property void glyphDestroyCallback(void function(uint id) callback) { _glyphDestroyCallback = callback; }
+version (USE_OPENGL) {
+    private __gshared void function(uint id) _glyphDestroyCallback;
+    /// get glyph destroy callback (to cleanup OpenGL caches)
+    @property void function(uint id) glyphDestroyCallback() { return _glyphDestroyCallback; }
+    /// set glyph destroy callback (to cleanup OpenGL caches)
+    @property void glyphDestroyCallback(void function(uint id) callback) { _glyphDestroyCallback = callback; }
 
-private __gshared uint _nextGlyphId;
-uint nextGlyphId() { return _nextGlyphId++; }
+    private __gshared uint _nextGlyphId;
+    uint nextGlyphId() { return _nextGlyphId++; }
+}
 
 struct GlyphCache
 {
@@ -66,10 +68,12 @@ struct GlyphCache
 	void cleanup() {
 		uint dst = 0;
         // notify about destroyed glyphs
-        if (_glyphDestroyCallback !is null)
-		    for (uint src = 0; src < _len; src++)
-			    if (_data[src].lastUsage == 0)
-                    _glyphDestroyCallback(_data[src].id);
+        version (USE_OPENGL) {
+            if (_glyphDestroyCallback !is null)
+		        for (uint src = 0; src < _len; src++)
+			        if (_data[src].lastUsage == 0)
+                        _glyphDestroyCallback(_data[src].id);
+        }
         for (uint src = 0; src < _len; src++) {
 			if (_data[src].lastUsage != 0) {
 				_data[src].lastUsage = 0;
@@ -83,9 +87,11 @@ struct GlyphCache
 
 	// removes all entries
 	void clear() {
-        if (_glyphDestroyCallback !is null)
-            for (uint src = 0; src < _len; src++)
-                _glyphDestroyCallback(_data[src].id);
+        version (USE_OPENGL) {
+            if (_glyphDestroyCallback !is null)
+                for (uint src = 0; src < _len; src++)
+                    _glyphDestroyCallback(_data[src].id);
+        }
 		_data = null;
 		_len = 0;
 	}

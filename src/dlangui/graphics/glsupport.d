@@ -1,5 +1,7 @@
 module dlangui.graphics.glsupport;
 
+version(USE_OPENGL) {
+
 import dlangui.core.logger;
 private import derelict.opengl3.gl3;
 //private import gl3n.linalg;
@@ -656,4 +658,7 @@ void setRotation(int x, int y, int rotationAngle) {
     }
     matrix2.copyDataTo(m);
     */
+}
+
+
 }

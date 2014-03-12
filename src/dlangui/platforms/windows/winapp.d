@@ -18,7 +18,6 @@ import dlangui.graphics.images;
 import dlangui.graphics.fonts;
 import dlangui.graphics.glsupport;
 import dlangui.core.logger;
-//import derelict.opengl3.wgl;
 
 pragma(lib, "gdi32.lib");
 pragma(lib, "user32.lib");
@@ -31,95 +30,97 @@ immutable WIN_CLASS_NAME = "DLANGUI_APP";
 __gshared HINSTANCE _hInstance;
 __gshared int _cmdShow;
 
-bool setupPixelFormat(HDC hDC)
-{
-    PIXELFORMATDESCRIPTOR pfd = {
-        PIXELFORMATDESCRIPTOR.sizeof,  /* size */
-        1,                              /* version */
-        PFD_SUPPORT_OPENGL |
-            PFD_DRAW_TO_WINDOW |
-            PFD_DOUBLEBUFFER,               /* support double-buffering */
-        PFD_TYPE_RGBA,                  /* color type */
-        16,                             /* prefered color depth */
-        0, 0, 0, 0, 0, 0,               /* color bits (ignored) */
-        0,                              /* no alpha buffer */
-        0,                              /* alpha bits (ignored) */
-        0,                              /* no accumulation buffer */
-        0, 0, 0, 0,                     /* accum bits (ignored) */
-        16,                             /* depth buffer */
-        0,                              /* no stencil buffer */
-        0,                              /* no auxiliary buffers */
-        0,                              /* main layer PFD_MAIN_PLANE */
-        0,                              /* reserved */
-        0, 0, 0,                        /* no layer, visible, damage masks */
-    };
-    int pixelFormat;
-
-    pixelFormat = ChoosePixelFormat(hDC, &pfd);
-    if (pixelFormat == 0) {
-        Log.e("ChoosePixelFormat failed.");
-        return false;
-    }
-
-    if (SetPixelFormat(hDC, pixelFormat, &pfd) != TRUE) {
-        Log.e("SetPixelFormat failed.");
-        return false;
-    }
-    return true;
-}
-
-HPALETTE setupPalette(HDC hDC)
-{
-    import core.stdc.stdlib;
-    HPALETTE hPalette = NULL;
-    int pixelFormat = GetPixelFormat(hDC);
-    PIXELFORMATDESCRIPTOR pfd;
-    LOGPALETTE* pPal;
-    int paletteSize;
-
-    DescribePixelFormat(hDC, pixelFormat, PIXELFORMATDESCRIPTOR.sizeof, &pfd);
-
-    if (pfd.dwFlags & PFD_NEED_PALETTE) {
-        paletteSize = 1 << pfd.cColorBits;
-    } else {
-        return null;
-    }
-
-    pPal = cast(LOGPALETTE*)
-        malloc(LOGPALETTE.sizeof + paletteSize * PALETTEENTRY.sizeof);
-    pPal.palVersion = 0x300;
-    pPal.palNumEntries = cast(ushort)paletteSize;
-
-    /* build a simple RGB color palette */
+version (USE_OPENGL) {
+    bool setupPixelFormat(HDC hDC)
     {
-        int redMask = (1 << pfd.cRedBits) - 1;
-        int greenMask = (1 << pfd.cGreenBits) - 1;
-        int blueMask = (1 << pfd.cBlueBits) - 1;
-        int i;
+        PIXELFORMATDESCRIPTOR pfd = {
+            PIXELFORMATDESCRIPTOR.sizeof,  /* size */
+            1,                              /* version */
+            PFD_SUPPORT_OPENGL |
+                PFD_DRAW_TO_WINDOW |
+                PFD_DOUBLEBUFFER,               /* support double-buffering */
+            PFD_TYPE_RGBA,                  /* color type */
+            16,                             /* prefered color depth */
+            0, 0, 0, 0, 0, 0,               /* color bits (ignored) */
+            0,                              /* no alpha buffer */
+            0,                              /* alpha bits (ignored) */
+            0,                              /* no accumulation buffer */
+            0, 0, 0, 0,                     /* accum bits (ignored) */
+            16,                             /* depth buffer */
+            0,                              /* no stencil buffer */
+            0,                              /* no auxiliary buffers */
+            0,                              /* main layer PFD_MAIN_PLANE */
+            0,                              /* reserved */
+            0, 0, 0,                        /* no layer, visible, damage masks */
+        };
+        int pixelFormat;
 
-        for (i=0; i<paletteSize; ++i) {
-            pPal.palPalEntry[i].peRed = cast(ubyte)(
-                (((i >> pfd.cRedShift) & redMask) * 255) / redMask);
-            pPal.palPalEntry[i].peGreen = cast(ubyte)(
-                (((i >> pfd.cGreenShift) & greenMask) * 255) / greenMask);
-            pPal.palPalEntry[i].peBlue = cast(ubyte)(
-                (((i >> pfd.cBlueShift) & blueMask) * 255) / blueMask);
-            pPal.palPalEntry[i].peFlags = 0;
+        pixelFormat = ChoosePixelFormat(hDC, &pfd);
+        if (pixelFormat == 0) {
+            Log.e("ChoosePixelFormat failed.");
+            return false;
         }
+
+        if (SetPixelFormat(hDC, pixelFormat, &pfd) != TRUE) {
+            Log.e("SetPixelFormat failed.");
+            return false;
+        }
+        return true;
     }
 
-    hPalette = CreatePalette(pPal);
-    free(pPal);
+    HPALETTE setupPalette(HDC hDC)
+    {
+        import core.stdc.stdlib;
+        HPALETTE hPalette = NULL;
+        int pixelFormat = GetPixelFormat(hDC);
+        PIXELFORMATDESCRIPTOR pfd;
+        LOGPALETTE* pPal;
+        int paletteSize;
 
-    if (hPalette) {
-        SelectPalette(hDC, hPalette, FALSE);
-        RealizePalette(hDC);
+        DescribePixelFormat(hDC, pixelFormat, PIXELFORMATDESCRIPTOR.sizeof, &pfd);
+
+        if (pfd.dwFlags & PFD_NEED_PALETTE) {
+            paletteSize = 1 << pfd.cColorBits;
+        } else {
+            return null;
+        }
+
+        pPal = cast(LOGPALETTE*)
+            malloc(LOGPALETTE.sizeof + paletteSize * PALETTEENTRY.sizeof);
+        pPal.palVersion = 0x300;
+        pPal.palNumEntries = cast(ushort)paletteSize;
+
+        /* build a simple RGB color palette */
+        {
+            int redMask = (1 << pfd.cRedBits) - 1;
+            int greenMask = (1 << pfd.cGreenBits) - 1;
+            int blueMask = (1 << pfd.cBlueBits) - 1;
+            int i;
+
+            for (i=0; i<paletteSize; ++i) {
+                pPal.palPalEntry[i].peRed = cast(ubyte)(
+                    (((i >> pfd.cRedShift) & redMask) * 255) / redMask);
+                pPal.palPalEntry[i].peGreen = cast(ubyte)(
+                    (((i >> pfd.cGreenShift) & greenMask) * 255) / greenMask);
+                pPal.palPalEntry[i].peBlue = cast(ubyte)(
+                    (((i >> pfd.cBlueShift) & blueMask) * 255) / blueMask);
+                pPal.palPalEntry[i].peFlags = 0;
+            }
+        }
+
+        hPalette = CreatePalette(pPal);
+        free(pPal);
+
+        if (hPalette) {
+            SelectPalette(hDC, hPalette, FALSE);
+            RealizePalette(hDC);
+        }
+
+        return hPalette;
     }
 
-    return hPalette;
+    private __gshared bool DERELICT_GL3_RELOADED = false;
 }
-
-private __gshared bool DERELICT_GL3_RELOADED = false;
 
 class Win32Window : Window {
     private HWND _hwnd;
@@ -142,56 +143,62 @@ class Win32Window : Window {
                             null,                 // window menu handle
                             _hInstance,           // program instance handle
                             cast(void*)this);                // creation parameters
-        /* initialize OpenGL rendering */
-        HDC hDC = GetDC(_hwnd);
 
-        if (!DERELICT_GL3_RELOADED || openglEnabled) {
-            if (setupPixelFormat(hDC)) {
-                _hPalette = setupPalette(hDC);
-                _hGLRC = wglCreateContext(hDC);
-                if (_hGLRC) {
-                    wglMakeCurrent(hDC, _hGLRC);
+        version (USE_OPENGL) {
 
-                    if (!DERELICT_GL3_RELOADED) {
-                        // run this code only once
-                        DERELICT_GL3_RELOADED = true;
-                        try {
-                            import derelict.opengl3.gl3;
-                            DerelictGL3.reload();
-                            // successful
-                            if (initShaders()) {
-                                setOpenglEnabled();
-                                useOpengl = true;
-                            } else {
-                                Log.e("Failed to compile shaders");
+            /* initialize OpenGL rendering */
+            HDC hDC = GetDC(_hwnd);
+
+            if (!DERELICT_GL3_RELOADED || openglEnabled) {
+                if (setupPixelFormat(hDC)) {
+                    _hPalette = setupPalette(hDC);
+                    _hGLRC = wglCreateContext(hDC);
+                    if (_hGLRC) {
+                        wglMakeCurrent(hDC, _hGLRC);
+
+                        if (!DERELICT_GL3_RELOADED) {
+                            // run this code only once
+                            DERELICT_GL3_RELOADED = true;
+                            try {
+                                import derelict.opengl3.gl3;
+                                DerelictGL3.reload();
+                                // successful
+                                if (initShaders()) {
+                                    setOpenglEnabled();
+                                    useOpengl = true;
+                                } else {
+                                    Log.e("Failed to compile shaders");
+                                }
+                            } catch (Exception e) {
+                                Log.e("Derelict exception", e);
                             }
-                        } catch (Exception e) {
-                            Log.e("Derelict exception", e);
+                        } else {
+						    if (initShaders()) {
+							    setOpenglEnabled();
+							    useOpengl = true;
+						    } else {
+							    Log.e("Failed to compile shaders");
+						    }
                         }
-                    } else {
-						if (initShaders()) {
-							setOpenglEnabled();
-							useOpengl = true;
-						} else {
-							Log.e("Failed to compile shaders");
-						}
                     }
+                } else {
+                    Log.e("Pixelformat failed");
+                    // disable GL
+                    DERELICT_GL3_RELOADED = true;
                 }
-            } else {
-                Log.e("Pixelformat failed");
-                // disable GL
-                DERELICT_GL3_RELOADED = true;
             }
         }
     }
     ~this() {
         Log.d("Window destructor");
-        import derelict.opengl3.wgl;
-        if (_hGLRC) {
-			uninitShaders();
-            wglMakeCurrent (null, null) ;
-            wglDeleteContext(_hGLRC);
-            _hGLRC = null;
+        version (USE_OPENGL) {
+            import derelict.opengl3.wgl;
+            if (_hGLRC) {
+			    uninitShaders();
+                wglMakeCurrent (null, null) ;
+                wglDeleteContext(_hGLRC);
+                _hGLRC = null;
+            }
         }
         if (_hwnd)
             DestroyWindow(_hwnd);
@@ -225,9 +232,20 @@ class Win32Window : Window {
     void onDestroy() {
         Log.d("Window onDestroy");
     }
-    void onPaint() {
-        Log.d("onPaint()");
-        if (useOpengl && _hGLRC) {
+
+    private void paintUsingGDI() {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(_hwnd, &ps);
+        scope(exit) EndPaint(_hwnd, &ps);
+
+        Win32ColorDrawBuf buf = getDrawBuf();
+        buf.fill(0x808080);
+        onDraw(buf);
+        buf.drawTo(hdc, 0, 0);
+    }
+
+    version (USE_OPENGL) {
+        private void paintUsingOpenGL() {
             // hack to stop infinite WM_PAINT loop
             PAINTSTRUCT ps;
             HDC hdc2 = BeginPaint(_hwnd, &ps);
@@ -268,15 +286,19 @@ class Win32Window : Window {
             //Log.d("onPaint() end drawing opengl");
             SwapBuffers(hdc);
             wglMakeCurrent(hdc, null);
-        } else {
-            PAINTSTRUCT ps;
-            HDC hdc = BeginPaint(_hwnd, &ps);
-            scope(exit) EndPaint(_hwnd, &ps);
+        }
+    }
 
-            Win32ColorDrawBuf buf = getDrawBuf();
-            buf.fill(0x808080);
-            onDraw(buf);
-            buf.drawTo(hdc, 0, 0);
+    void onPaint() {
+        Log.d("onPaint()");
+        version (USE_OPENGL) {
+            if (useOpengl && _hGLRC) {
+                paintUsingOpenGL();
+            } else {
+                paintUsingGDI();
+            }
+        } else {
+            paintUsingGDI();
         }
     }
 }
@@ -391,7 +413,7 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
 	Win32FontManager fontMan = new Win32FontManager();
 	FontManager.instance = fontMan;
 
-    {
+    version (USE_OPENGL) {
         import derelict.opengl3.gl3;
         DerelictGL3.load();
 

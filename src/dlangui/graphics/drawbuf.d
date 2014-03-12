@@ -46,20 +46,26 @@ struct NinePatch {
     Rect padding;
 }
 
-/// non thread safe
-private __gshared uint drawBufIdGenerator = 0;
+version (USE_OPENGL) {
+    /// non thread safe
+    private __gshared uint drawBufIdGenerator = 0;
+}
 
 /// drawing buffer - image container which allows to perform some drawing operations
 class DrawBuf : RefCountedObject {
-    protected uint _id;
     protected Rect _clipRect;
     protected NinePatch * _ninePatch;
 
-    @property uint id() {
-        return _id;
+    version (USE_OPENGL) {
+        protected uint _id;
+        /// unique ID of drawbug instance, for using with hardware accelerated rendering for caching
+        @property uint id() { return _id; }
     }
+
     this() {
-        _id = drawBufIdGenerator++;
+        version (USE_OPENGL) {
+            _id = drawBufIdGenerator++;
+        }
     }
     protected void function(uint) _onDestroyCallback;
     @property void onDestroyCallback(void function(uint) callback) { _onDestroyCallback = callback; }

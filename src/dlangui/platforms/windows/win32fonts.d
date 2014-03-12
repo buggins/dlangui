@@ -131,7 +131,9 @@ class Win32Font : Font {
 			return null;
 
 		Glyph g;
-        g.id = nextGlyphId();
+        version (USE_OPENGL) {
+            g.id = nextGlyphId();
+        }
 		g.blackBoxX = cast(ubyte)metrics.gmBlackBoxX;
 		g.blackBoxY = cast(ubyte)metrics.gmBlackBoxY;
 		g.originX = cast(byte)metrics.gmptGlyphOrigin.x;

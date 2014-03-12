@@ -59,8 +59,10 @@ struct Rect {
 align(1)
 struct Glyph
 {
-    ///< 0: unique id of glyph (for drawing in hardware accelerated scenes)
-    uint    id;
+    version (USE_OPENGL) {
+        ///< 0: unique id of glyph (for drawing in hardware accelerated scenes)
+        uint    id;
+    }
     ///< 4: width of glyph black box
     ubyte   blackBoxX;
     ///< 5: height of glyph black box
