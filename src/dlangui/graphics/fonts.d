@@ -20,6 +20,12 @@ enum FontWeight : int {
     Bold = 800
 }
 
+const dchar UNICODE_SOFT_HYPHEN_CODE = 0x00ad;
+const dchar UNICODE_ZERO_WIDTH_SPACE = 0x200b;
+const dchar UNICODE_NO_BREAK_SPACE = 0x00a0;
+const dchar UNICODE_HYPHEN = 0x2010;
+const dchar UNICODE_NB_HYPHEN = 0x2011;
+
 version (USE_OPENGL) {
     private __gshared void function(uint id) _glyphDestroyCallback;
     /// get glyph destroy callback (to cleanup OpenGL caches)

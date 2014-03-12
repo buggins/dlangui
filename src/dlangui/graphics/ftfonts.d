@@ -8,6 +8,7 @@ private import dlangui.core.logger;
 private import std.algorithm;
 private import std.file;
 private import std.string;
+private import std.utf;
 
 private struct FontDef {
     immutable FontFamily _family;
@@ -38,10 +39,12 @@ private struct FontDef {
 }
 
 private class FontFileItem {
-    FontDef _def;
+    private FT_Library    _library;
+    private FontDef _def;
     string[] _filenames;
-    string[] _faceName;
     @property ref FontDef def() { return _def; }
+    @property string[] filenames() { return _filenames; }
+    @property FT_Library library() { return _library; }
     void addFile(string fn) {
         // check for duplicate entry
         foreach (ref string existing; _filenames)
@@ -49,7 +52,8 @@ private class FontFileItem {
                 return;
         _filenames ~= fn;
     }
-    this(FontDef def) {
+    this(FT_Library library, ref FontDef def) {
+        _library = library;
         _def = def;
     }
 }
@@ -61,6 +65,8 @@ private class FreeTypeFontFile {
     private FT_Face       _face;
     private FT_GlyphSlot  _slot;
     private FT_Matrix     _matrix;                 /* transformation matrix */
+
+    @property FT_Library library() { return _library; }
 
     private int _height;
     private int _size;
@@ -135,6 +141,99 @@ private class FreeTypeFontFile {
         return true; // successfully opened
     }
 
+    static static dchar getReplacementChar(dchar code) {
+        switch (code) {
+            case UNICODE_SOFT_HYPHEN_CODE:
+                return '-';
+            case 0x0401: // CYRILLIC CAPITAL LETTER IO
+                return 0x0415; //CYRILLIC CAPITAL LETTER IE
+            case 0x0451: // CYRILLIC SMALL LETTER IO
+                return 0x0435; // CYRILLIC SMALL LETTER IE
+            case UNICODE_NO_BREAK_SPACE:
+                return ' ';
+            case 0x2010:
+            case 0x2011:
+            case 0x2012:
+            case 0x2013:
+            case 0x2014:
+            case 0x2015:
+                return '-';
+            case 0x2018:
+            case 0x2019:
+            case 0x201a:
+            case 0x201b:
+                return '\'';
+            case 0x201c:
+            case 0x201d:
+            case 0x201e:
+            case 0x201f:
+            case 0x00ab:
+            case 0x00bb:
+                return '\"';
+            case 0x2039:
+                return '<';
+            case 0x203A:
+                return '>';
+            case 0x2044:
+                return '/';
+            case 0x2022: // css_lst_disc:
+                return '*';
+            case 0x26AA: // css_lst_disc:
+            case 0x25E6: // css_lst_disc:
+            case 0x25CF: // css_lst_disc:
+                return 'o';
+            case 0x25CB: // css_lst_circle:
+                return '*';
+            case 0x25A0: // css_lst_square:
+                return '-';
+            default:
+                return 0;
+        }
+    }
+
+    /// find glyph index for character
+    FT_UInt getCharIndex(dchar code, dchar def_char = 0) {
+        if ( code=='\t' )
+            code = ' ';
+        FT_UInt ch_glyph_index = FT_Get_Char_Index(_face, code);
+        if (ch_glyph_index == 0) {
+            dchar replacement = getReplacementChar(code);
+            if (replacement)
+                ch_glyph_index = FT_Get_Char_Index(_face, replacement);
+            if (ch_glyph_index == 0 && def_char)
+                ch_glyph_index = FT_Get_Char_Index( _face, def_char );
+        }
+        return ch_glyph_index;
+    }
+
+    int myabs(int n) { return n >= 0 ? n : -n; }
+
+    /// retrieve glyph information, filling glyph struct; returns false if glyph not found
+    bool getGlyphInfo(dchar code, Glyph glyph, dchar def_char)
+    {
+        //FONT_GUARD
+        int glyph_index = getCharIndex(code, def_char);
+        int flags = FT_LOAD_DEFAULT;
+        const bool _drawMonochrome = false;
+        flags |= (!_drawMonochrome ? FT_LOAD_TARGET_NORMAL : FT_LOAD_TARGET_MONO);
+        //if (_hintingMode == HINTING_MODE_AUTOHINT)
+        //    flags |= FT_LOAD_FORCE_AUTOHINT;
+        //else if (_hintingMode == HINTING_MODE_DISABLED)
+        //    flags |= FT_LOAD_NO_AUTOHINT | FT_LOAD_NO_HINTING;
+        int error = FT_Load_Glyph(
+                                  _face,          /* handle to face object */
+                                  glyph_index,   /* glyph index           */
+                                  flags );  /* load flags, see below */
+        if ( error )
+            return false;
+        glyph.blackBoxX = cast(ubyte)(_slot.metrics.width >> 6);
+        glyph.blackBoxY = cast(ubyte)(_slot.metrics.height >> 6);
+        glyph.originX =   cast(byte)(_slot.metrics.horiBearingX >> 6);
+        glyph.originY =   cast(byte)(_slot.metrics.horiBearingY >> 6);
+        glyph.width =     cast(ubyte)(myabs(_slot.metrics.horiAdvance) >> 6);
+        return true;
+    }
+
     @property bool isNull() {
         return (_face is null);
     }
@@ -149,6 +248,117 @@ private class FreeTypeFontFile {
         clear();
     }
 }
+
+/**
+* Font implementation based on Win32 API system fonts.
+*/
+class FreeTypeFont : Font {
+    private FontFileItem _fontItem;
+    private FreeTypeFontFile[] _files;
+
+	/// need to call create() after construction to initialize font
+    this(FontFileItem item, int size) {
+        _fontItem = item;
+        _size = size;
+        _height = size;
+    }
+
+    private int _size;
+    private int _height;
+
+	private GlyphCache _glyphCache;
+
+	/// do cleanup
+	~this() {
+		clear();
+	}
+
+	/// cleanup resources
+    override void clear() {
+        foreach(ref FreeTypeFontFile file; _files) {
+            destroy(file);
+            file = null;
+        }
+        _files.clear();
+    }
+
+	uint getGlyphIndex(dchar code)
+	{
+        return 0;
+	}
+
+	override Glyph * getCharGlyph(dchar ch) {
+		uint glyphIndex = getGlyphIndex(ch);
+		if (!glyphIndex)
+			return null;
+        return null;
+	}
+
+	// draw text string to buffer
+	override void drawText(DrawBuf buf, int x, int y, const dchar[] text, uint color) {
+		int[] widths;
+		int charsMeasured = measureText(text, widths, 3000);
+        int bl = baseline;
+		for (int i = 0; i < charsMeasured; i++) {
+			int xx = (i > 0) ? widths[i - 1] : 0;
+			Glyph * glyph = getCharGlyph(text[i]);
+			if (glyph is null)
+				continue;
+			if ( glyph.blackBoxX && glyph.blackBoxY ) {
+				buf.drawGlyph( x + xx + glyph.originX,
+                               y + bl - glyph.originY,
+                              glyph,
+                              color);
+			}
+		}
+	}
+
+	override int measureText(const dchar[] text, ref int[] widths, int maxWidth) {
+		if (text.length == 0)
+			return 0;
+		dstring utf32text = toUTF32(text);
+		const dchar * pstr = utf32text.ptr;
+		uint len = cast(uint)utf32text.length;
+        bool res = false;
+		if (!res) {
+			widths[0] = 0;
+			return 0;
+		}
+		return 0;
+	}
+
+	bool create() {
+        if (!isNull())
+            clear();
+        foreach (string filename; _fontItem.filenames) {
+            FreeTypeFontFile file = new FreeTypeFontFile(_fontItem.library, filename);
+            if (file.open(_size, 0)) {
+                _files ~= file;
+            }
+        }
+		return _files.length > 0;
+	}
+
+	// clear usage flags for all entries
+	override void checkpoint() {
+		_glyphCache.checkpoint();
+	}
+
+	// removes entries not used after last call of checkpoint() or cleanup()
+	override void cleanup() {
+		_glyphCache.cleanup();
+	}
+
+    @property override int size() { return _size; }
+    @property override int height() { return _files.length > 0 ? _files[0].height : _size; }
+    @property override int weight() { return _fontItem.def.weight; }
+    @property override int baseline() { return _files.length > 0 ? _files[0].baseline : 0; }
+    @property override bool italic() { return _fontItem.def.italic; }
+    @property override string face() { return _fontItem.def.face; }
+    @property override FontFamily family() { return _fontItem.def.family; }
+    @property override bool isNull() { return _files.length == 0; }
+}
+
 
 /// FreeType based font manager.
 class FreeTypeFontManager : FontManager {
@@ -198,6 +408,8 @@ class FreeTypeFontManager : FontManager {
 
     /// register freetype font by filename - optinally font properties can be passed if known (e.g. from libfontconfig).
     bool registerFont(string filename, FontFamily family = FontFamily.SansSerif, string face = null, bool italic = false, int weight = 0) {
+        if (_library is null)
+            return false;
         Log.d("FreeTypeFontManager.registerFont ", filename, " ", family, " ", face, " italic=", italic, " weight=", weight);
         if (!exists(filename) || !isFile(filename))
             return false;
@@ -221,7 +433,7 @@ class FreeTypeFontManager : FontManager {
         FontDef def = FontDef(family, face, italic, weight);
         FontFileItem item = findFileItem(def);
         if (item is null) {
-            item = new FontFileItem(def);
+            item = new FontFileItem(_library, def);
             _fontFiles ~= item;
         }
         item.addFile(filename);
