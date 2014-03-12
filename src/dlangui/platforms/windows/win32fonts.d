@@ -293,9 +293,9 @@ class Win32Font : Font {
 * Font manager implementation based on Win32 API system fonts.
 */
 class Win32FontManager : FontManager {
-	FontList _activeFonts;
-	FontDef[] _fontFaces;
-	FontDef*[string] _faceByName;
+	private FontList _activeFonts;
+	private FontDef[] _fontFaces;
+	private FontDef*[string] _faceByName;
 
 	/// initialize in constructor
     this() {

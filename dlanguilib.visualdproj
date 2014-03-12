@@ -47,7 +47,7 @@
   <compiler>0</compiler>
   <otherDMD>0</otherDMD>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>3rdparty 3rdparty/libpng/source ../DerelictGL3/source  ../DerelictUtil/source</imppath>
+  <imppath>3rdparty 3rdparty/libpng/source ../DerelictGL3/source  ../DerelictUtil/source  ../DerelictFT/source</imppath>
   <fileImppath />
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
@@ -215,6 +215,11 @@
     <File path="..\DerelictGL3\source\derelict\opengl3\wgl.d" />
     <File path="..\DerelictGL3\source\derelict\opengl3\wglext.d" />
    </Folder>
+   <Folder name="DerelictFT">
+    <File path="..\DerelictFT\source\derelict\freetype\ft.d" />
+    <File path="..\DerelictFT\source\derelict\freetype\functions.d" />
+    <File path="..\DerelictFT\source\derelict\freetype\types.d" />
+   </Folder>
    <Folder name="gl3n">
     <File path="..\gl3n\gl3n\aabb.d" />
     <File path="..\gl3n\gl3n\frustum.d" />
@@ -294,6 +299,7 @@
     <Folder name="graphics">
      <File path="src\dlangui\graphics\drawbuf.d" />
      <File path="src\dlangui\graphics\fonts.d" />
+     <File path="src\dlangui\graphics\ftfonts.d" />
      <File path="src\dlangui\graphics\gldrawbuf.d" />
      <File path="src\dlangui\graphics\glsupport.d" />
      <File path="src\dlangui\graphics\images.d" />

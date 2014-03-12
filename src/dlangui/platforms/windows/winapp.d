@@ -16,13 +16,17 @@ import dlangui.widgets.styles;
 import dlangui.graphics.drawbuf;
 import dlangui.graphics.images;
 import dlangui.graphics.fonts;
-import dlangui.graphics.glsupport;
 import dlangui.core.logger;
+
+version (USE_OPENGL) {
+    import dlangui.graphics.glsupport;
+}
 
 pragma(lib, "gdi32.lib");
 pragma(lib, "user32.lib");
 pragma(lib, "libpng15.lib");
 
+/// this function should be defined in user application!
 extern (C) int UIAppMain(string[] args);
 
 immutable WIN_CLASS_NAME = "DLANGUI_APP";

@@ -4,6 +4,7 @@ public import dlangui.core.types;
 public import dlangui.core.logger;
 import std.algorithm;
 
+/// font family
 enum FontFamily : ubyte {
     Unspecified,
     SansSerif,
@@ -13,6 +14,7 @@ enum FontFamily : ubyte {
     MonoSpace
 }
 
+/// useful font weight constants
 enum FontWeight : int {
     Normal = 400,
     Bold = 800
@@ -192,21 +194,26 @@ struct FontList {
 	}
 }
 
+
+/// Access points to fonts.
 class FontManager {
     static __gshared FontManager _instance;
+    /// sets new font manager singleton instance
     static @property void instance(FontManager manager) {
         _instance = manager;
     }
+    /// returns font manager singleton instance
     static @property FontManager instance() {
         return _instance;
     }
 
+    /// get font instance best matched specified parameters
     abstract ref FontRef getFont(int size, int weight, bool italic, FontFamily family, string face);
 
-	// clear usage flags for all entries
+	/// clear usage flags for all entries -- for cleanup of unused fonts
 	abstract void checkpoint();
 
-	// removes entries not used after last call of checkpoint() or cleanup()
+	/// removes entries not used after last call of checkpoint() or cleanup()
 	abstract void cleanup();
 
 	~this() {}
