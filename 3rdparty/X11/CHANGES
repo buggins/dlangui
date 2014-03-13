@@ -1,0 +1,31 @@
+Release 0.12:
+==========
+Fixed:
+  X11/Xlib.h: functions which were macros in C now are D templates
+Overview:
+  It is not necessary to compile&link with the bindings anymore,
+  just include them
+
+Release 0.11.1: (Alex Herrmann)
+==========
+Fixed:
+  X11/Xlib.d: all typedefs changed to Aliases
+  example/simple.d: updated to work
+Added:
+  Makefiles to build, tested, all work
+Overview:
+  General Updates to multiple Items
+
+Release 0.11 ALPHA:
+==========
+Added:
+  Full xcb bindings
+	
+Release 0.1 ALPHA:
+==========
+First release of binding
+Full bindings of X11/Xlib.h and X11/X.h 
+Todo:
+  More tests
+  Other X11 bindings
+	
