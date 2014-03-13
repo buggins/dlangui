@@ -1,0 +1,2 @@
+-run "sh xcbbuild.sh" to automaticaly generate headers from xcb xml description
+-you can read example.d to understand how to use this binding and how to compile the file  

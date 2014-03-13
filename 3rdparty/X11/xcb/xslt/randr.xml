@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2005 Jeremy Kolb.
+All Rights Reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the names of the authors or their
+institutions shall not be used in advertising or otherwise to promote the
+sale, use or other dealings in this Software without prior written
+authorization from the authors.
+-->
+
+<xcb header="randr" extension-xname="RANDR" extension-name="RandR"
+    major-version="1" minor-version="1">
+	<!-- Implements version 1.1 of RANDR -->	
+
+	<import>xproto</import>
+
+	<enum name="Rotation">
+		<item name="Rotate_0"><value>1</value></item>
+		<item name="Rotate_90"><value>2</value></item>
+		<item name="Rotate_180"><value>4</value></item>
+		<item name="Rotate_270"><value>8</value></item>
+		<item name="Reflect_X"><value>16</value></item>
+		<item name="Reflect_Y"><value>32</value></item>
+	</enum>
+
+	<struct name="ScreenSize">
+		<field type="INT16" name="width" />
+		<field type="INT16" name="height" />
+		<field type="INT16" name="mwidth" />
+		<field type="INT16" name="mheight" />
+	</struct>
+	
+	<struct name="RefreshRates">
+		<field type="CARD16" name="nRates" />
+		<list type="CARD16" name="rates">
+			<fieldref>nRates</fieldref>
+		</list>
+	</struct>
+
+	<request name="QueryVersion" opcode="0">
+		<field type="CARD32" name="major_version" />
+		<field type="CARD32" name="minor_version" />
+		<reply>
+			<pad bytes="1" />
+			<field type="CARD32" name="major_version" />
+			<field type="CARD32" name="minor_version" />
+			<pad bytes="16" />
+		</reply>
+	</request>
+
+	<!-- This is for the 1.1 version request.  I don't believe we need to specify a 1.0 request
+	as few things used randr 1.0.  The only difference is the removal of refresh and padding I think.
+	BEWARE: the docs lie!
+	-->
+	<request name="SetScreenConfig" opcode="2">
+		<field type="DRAWABLE" name="drawable" />
+		<field type="TIMESTAMP" name="timestamp" />
+		<field type="TIMESTAMP" name="config_timestamp" />
+		<field type="CARD16" name="sizeID" />
+		<field type="INT16" name="rotation" />
+		<field type="CARD16" name="rate" />
+		<pad bytes="2" />
+		<reply>
+			<field type="CARD8" name="status" />
+			<field type="TIMESTAMP" name="new_timestamp" />
+			<field type="TIMESTAMP" name="config_timestamp" />
+			<field type="WINDOW" name="root" />
+			<field type="CARD16" name="subpixel_order" />
+			<pad bytes="10" />
+		</reply>
+	</request>
+
+	<enum name="SetConfig">
+		<item name="Success"><value>0</value></item>
+		<item name="InvalidConfigTime"><value>1</value></item>
+		<item name="InvalidTime"><value>2</value></item>
+		<item name="Failed"><value>3</value></item>
+	</enum>
+
+	<request name="SelectInput" opcode="4">	
+		<field type="WINDOW" name="window" />
+		<field type="CARD16" name="enable" />
+		<pad bytes="2" />
+	</request>
+
+	<!--
+	I think this is correct.  It works. though I believe nInfo is a bit high...
+	-->
+	<request name="GetScreenInfo" opcode="5">
+		<field type="WINDOW" name="window" />
+		<reply>
+			<field type="CARD8" name="rotations" />
+			<field type="WINDOW" name="root" />
+			<field type="TIMESTAMP" name="timestamp" />
+			<field type="TIMESTAMP" name="config_timestamp" />
+			<field type="CARD16" name="nSizes" />
+			<field type="CARD16" name="sizeID" />
+			<field type="INT16" name="rotation" />
+			<field type="CARD16" name="rate" />
+			<field type="CARD16" name="nInfo" />
+			<pad bytes="2" />
+			<list type="ScreenSize" name="sizes">
+			    <fieldref>nSizes</fieldref>
+			</list>
+			<list type="RefreshRates" name="rates">
+				<op op="-">
+					<fieldref>nInfo</fieldref>
+					<fieldref>nSizes</fieldref>
+				</op>
+			</list>
+		</reply>
+	</request>
+
+	<enum name="SM" >
+		<item name="ScreenChangeNotify"><value>1</value></item>
+	</enum>
+	
+	<event name="ScreenChangeNotify" number="0">
+		<field type="CARD8" name="rotation" />
+		<field type="TIMESTAMP" name="timestamp" />
+		<field type="TIMESTAMP" name="config_timestamp" />
+		<field type="WINDOW" name="root" />
+		<field type="WINDOW" name="request_window" />
+		<field type="CARD16" name="sizeID" />
+		<field type="CARD16" name="subpixel_order" />
+		<field type="INT16" name="width" />
+		<field type="INT16" name="height" />
+		<field type="INT16" name="mwidth" />
+		<field type="INT16" name="mheight" />
+	</event>
+		
+</xcb>

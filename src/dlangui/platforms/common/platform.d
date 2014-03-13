@@ -64,8 +64,7 @@ version (USE_OPENGL) {
 
 version (Windows) {
     immutable char PATH_DELIMITER = '\\';
-}
-version (Unix) {
+} else {
     immutable char PATH_DELIMITER = '/';
 }
 

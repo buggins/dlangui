@@ -1,0 +1,2283 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+Copyright (C) 2001-2004 Bart Massey, Jamey Sharp, and Josh Triplett.
+All Rights Reserved.
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN
+ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+Except as contained in this notice, the names of the authors or their
+institutions shall not be used in advertising or otherwise to promote the
+sale, use or other dealings in this Software without prior written
+authorization from the authors.
+-->
+<xcb header="xproto">
+  <!-- Core protocol types -->
+  
+  <struct name="CHAR2B">
+    <field type="CARD8" name="byte1" />
+    <field type="CARD8" name="byte2" />
+  </struct>
+  
+  <xidtype name="WINDOW" />
+  
+  <xidtype name="PIXMAP" />
+  
+  <xidtype name="CURSOR" />
+  
+  <xidtype name="FONT" />
+  
+  <xidtype name="GCONTEXT" />
+  
+  <xidtype name="COLORMAP" />
+  
+  <xidtype name="ATOM" />
+  
+  <xidunion name="DRAWABLE">
+    <type>WINDOW</type>
+    <type>PIXMAP</type>
+  </xidunion>
+  
+  <xidunion name="FONTABLE">
+    <type>FONT</type>
+    <type>GCONTEXT</type>
+  </xidunion>
+  
+  <typedef oldname="CARD32" newname="VISUALID" />
+
+  <typedef oldname="CARD32" newname="TIMESTAMP" />
+
+  <typedef oldname="CARD32" newname="KEYSYM" />
+
+  <typedef oldname="CARD8" newname="KEYCODE" />
+
+  <typedef oldname="CARD8" newname="BUTTON" />
+
+  <struct name="POINT">
+    <field type="INT16" name="x" />
+    <field type="INT16" name="y" />
+  </struct>
+
+  <struct name="RECTANGLE">
+    <field type="INT16" name="x" />
+    <field type="INT16" name="y" />
+    <field type="CARD16" name="width" />
+    <field type="CARD16" name="height" />
+  </struct>
+
+  <struct name="ARC">
+    <field type="INT16" name="x" />
+    <field type="INT16" name="y" />
+    <field type="CARD16" name="width" />
+    <field type="CARD16" name="height" />
+    <field type="INT16" name="angle1" />
+    <field type="INT16" name="angle2" />
+  </struct>
+
+  <!-- Connection setup-related types -->
+
+  <struct name="FORMAT">
+    <field type="CARD8" name="depth" />
+    <field type="CARD8" name="bits_per_pixel" />
+    <field type="CARD8" name="scanline_pad" />
+    <pad bytes="5" />
+  </struct>
+
+  <enum name="VisualClass">
+    <item name="StaticGray"> <value>0</value></item>
+    <item name="GrayScale">  <value>1</value></item>
+    <item name="StaticColor"><value>2</value></item>
+    <item name="PseudoColor"><value>3</value></item>
+    <item name="TrueColor">  <value>4</value></item>
+    <item name="DirectColor"><value>5</value></item>
+  </enum>
+
+  <struct name="VISUALTYPE">
+    <field type="VISUALID" name="visual_id" />
+    <field type="CARD8" name="class" />
+    <field type="CARD8" name="bits_per_rgb_value" />
+    <field type="CARD16" name="colormap_entries" />
+    <field type="CARD32" name="red_mask" />
+    <field type="CARD32" name="green_mask" />
+    <field type="CARD32" name="blue_mask" />
+    <pad bytes="4" />
+  </struct>
+
+  <struct name="DEPTH">
+    <field type="CARD8" name="depth" />
+    <pad bytes="1" />
+    <field type="CARD16" name="visuals_len" />
+    <pad bytes="4" />
+    <list type="VISUALTYPE" name="visuals">
+      <fieldref>visuals_len</fieldref>
+    </list>
+  </struct>
+
+  <struct name="SCREEN">
+    <field type="WINDOW" name="root" />
+    <field type="COLORMAP" name="default_colormap" />
+    <field type="CARD32" name="white_pixel" />
+    <field type="CARD32" name="black_pixel" />
+    <field type="CARD32" name="current_input_masks" />
+    <field type="CARD16" name="width_in_pixels" />
+    <field type="CARD16" name="height_in_pixels" />
+    <field type="CARD16" name="width_in_millimeters" />
+    <field type="CARD16" name="height_in_millimeters" />
+    <field type="CARD16" name="min_installed_maps" />
+    <field type="CARD16" name="max_installed_maps" />
+    <field type="VISUALID" name="root_visual" />
+    <field type="BYTE" name="backing_stores" />
+    <field type="BOOL" name="save_unders" />
+    <field type="CARD8" name="root_depth" />
+    <field type="CARD8" name="allowed_depths_len" />
+    <list type="DEPTH" name="allowed_depths">
+      <fieldref>allowed_depths_len</fieldref>
+    </list>
+  </struct>
+
+  <struct name="SetupRequest">
+    <field type="CARD8" name="byte_order" />
+    <pad bytes="1" />
+    <field type="CARD16" name="protocol_major_version" />
+    <field type="CARD16" name="protocol_minor_version" />
+    <field type="CARD16" name="authorization_protocol_name_len" />
+    <field type="CARD16" name="authorization_protocol_data_len" />
+    <list type="char" name="authorization_protocol_name">
+      <fieldref>authorization_protocol_name_len</fieldref>
+    </list>
+    <list type="char" name="authorization_protocol_data">
+      <fieldref>authorization_protocol_data_len</fieldref>
+    </list>
+  </struct>
+
+  <struct name="SetupFailed">
+    <field type="CARD8" name="status" /> <!-- always 0 -> Failed -->
+    <field type="CARD8" name="reason_len" />
+    <field type="CARD16" name="protocol_major_version" />
+    <field type="CARD16" name="protocol_minor_version" />
+    <field type="CARD16" name="length" />
+    <list type="char" name="reason">
+      <fieldref>reason_len</fieldref>
+    </list>
+  </struct>
+
+  <struct name="SetupAuthenticate">
+    <field type="CARD8" name="status" /> <!-- always 2 -> Authenticate -->
+    <pad bytes="5" />
+    <field type="CARD16" name="length" />
+    <list type="char" name="reason">
+      <op op="*">
+        <fieldref>length</fieldref>
+        <value>4</value>
+      </op>
+    </list>
+  </struct>
+
+  <enum name="ImageOrder">
+    <item name="LSBFirst"><value>0</value></item>
+    <item name="MSBFirst"><value>1</value></item>
+  </enum>
+
+  <struct name="Setup">
+    <field type="CARD8" name="status" /> <!-- always 1 -> Success -->
+    <pad bytes="1" />
+    <field type="CARD16" name="protocol_major_version" />
+    <field type="CARD16" name="protocol_minor_version" />
+    <field type="CARD16" name="length" />
+    <field type="CARD32" name="release_number" />
+    <field type="CARD32" name="resource_id_base" />
+    <field type="CARD32" name="resource_id_mask" />
+    <field type="CARD32" name="motion_buffer_size" />
+    <field type="CARD16" name="vendor_len" />
+    <field type="CARD16" name="maximum_request_length" />
+    <field type="CARD8" name="roots_len" />
+    <field type="CARD8" name="pixmap_formats_len" />
+    <field type="CARD8" name="image_byte_order" />
+    <field type="CARD8" name="bitmap_format_bit_order" />
+    <field type="CARD8" name="bitmap_format_scanline_unit" />
+    <field type="CARD8" name="bitmap_format_scanline_pad" />
+    <field type="KEYCODE" name="min_keycode" />
+    <field type="KEYCODE" name="max_keycode" />
+    <pad bytes="4" />
+    <list type="char" name="vendor">
+      <fieldref>vendor_len</fieldref>
+    </list>
+    <list type="FORMAT" name="pixmap_formats">
+      <fieldref>pixmap_formats_len</fieldref>
+    </list>
+    <list type="SCREEN" name="roots">
+      <fieldref>roots_len</fieldref>
+    </list>
+  </struct>
+
+  <!-- Core event types -->
+  
+  <enum name="ModMask">
+    <item name="Shift">  <bit>0</bit></item>
+    <item name="Lock">   <bit>1</bit></item>
+    <item name="Control"><bit>2</bit></item>
+    <item name="1">      <bit>3</bit></item>
+    <item name="2">      <bit>4</bit></item>
+    <item name="3">      <bit>5</bit></item>
+    <item name="4">      <bit>6</bit></item>
+    <item name="5">      <bit>7</bit></item>
+  </enum>
+
+  <event name="KeyPress" number="2">
+    <field type="KEYCODE" name="detail" />
+    <field type="TIMESTAMP" name="time" />
+    <field type="WINDOW" name="root" />
+    <field type="WINDOW" name="event" />
+    <field type="WINDOW" name="child" />
+    <field type="INT16" name="root_x" />
+    <field type="INT16" name="root_y" />
+    <field type="INT16" name="event_x" />
+    <field type="INT16" name="event_y" />
+    <field type="CARD16" name="state" />
+    <field type="BOOL" name="same_screen" />
+  </event>
+
+  <eventcopy name="KeyRelease" number="3" ref="KeyPress" />
+
+  <enum name="ButtonMask">
+    <item name="1">      <bit>8</bit></item>
+    <item name="2">      <bit>9</bit></item>
+    <item name="3">      <bit>10</bit></item>
+    <item name="4">      <bit>11</bit></item>
+    <item name="5">      <bit>12</bit></item>
+    <item name="Any">    <bit>15</bit></item>
+  </enum>
+
+  <event name="ButtonPress" number="4">
+    <field type="BUTTON" name="detail" />
+    <field type="TIMESTAMP" name="time" />
+    <field type="WINDOW" name="root" />
+    <field type="WINDOW" name="event" />
+    <field type="WINDOW" name="child" />
+    <field type="INT16" name="root_x" />
+    <field type="INT16" name="root_y" />
+    <field type="INT16" name="event_x" />
+    <field type="INT16" name="event_y" />
+    <field type="CARD16" name="state" />
+    <field type="BOOL" name="same_screen" />
+  </event>
+
+  <eventcopy name="ButtonRelease" number="5" ref="ButtonPress" />
+
+  <!-- MotionNotify detail -->
+  <enum name="Motion">
+    <item name="Normal"><value>0</value></item>
+    <item name="Hint">  <value>1</value></item>
+  </enum>
+
+  <event name="MotionNotify" number="6">
+    <field type="BYTE" name="detail" />
+    <field type="TIMESTAMP" name="time" />
+    <field type="WINDOW" name="root" />
+    <field type="WINDOW" name="event" />
+    <field type="WINDOW" name="child" />
+    <field type="INT16" name="root_x" />
+    <field type="INT16" name="root_y" />
+    <field type="INT16" name="event_x" />
+    <field type="INT16" name="event_y" />
+    <field type="CARD16" name="state" />
+    <field type="BOOL" name="same_screen" />
+  </event>
+
+  <enum name="NotifyDetail">
+    <item name="Ancestor">        <value>0</value></item>
+    <item name="Virtual">         <value>1</value></item>
+    <item name="Inferior">        <value>2</value></item>
+    <item name="Nonlinear">       <value>3</value></item>
+    <item name="NonlinearVirtual"><value>4</value></item>
+    <item name="Pointer">         <value>5</value></item>
+    <item name="PointerRoot">     <value>6</value></item>
+    <item name="None">            <value>7</value></item>
+  </enum>
+
+  <enum name="NotifyMode">
+    <item name="Normal">      <value>0</value></item>
+    <item name="Grab">        <value>1</value></item>
+    <item name="Ungrab">      <value>2</value></item>
+    <item name="WhileGrabbed"><value>3</value></item>
+  </enum>
+
+  <event name="EnterNotify" number="7">
+    <field type="BYTE" name="detail" />
+    <field type="TIMESTAMP" name="time" />
+    <field type="WINDOW" name="root" />
+    <field type="WINDOW" name="event" />
+    <field type="WINDOW" name="child" />
+    <field type="INT16" name="root_x" />
+    <field type="INT16" name="root_y" />
+    <field type="INT16" name="event_x" />
+    <field type="INT16" name="event_y" />
+    <field type="CARD16" name="state" />
+    <field type="BYTE" name="mode" />
+    <field type="BYTE" name="same_screen_focus" />
+  </event>
+
+  <eventcopy name="LeaveNotify" number="8" ref="EnterNotify" />
+
+  <event name="FocusIn" number="9">
+    <field type="BYTE" name="detail" />
+    <field type="WINDOW" name="event" />
+    <field type="BYTE" name="mode" />
+  </event>
+
+  <eventcopy name="FocusOut" number="10" ref="FocusIn" />
+
+  <event name="KeymapNotify" number="11" no-sequence-number="true">
+    <list type="CARD8" name="keys"><value>31</value></list>
+  </event>
+
+  <event name="Expose" number="12">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+    <field type="CARD16" name="x" />
+    <field type="CARD16" name="y" />
+    <field type="CARD16" name="width" />
+    <field type="CARD16" name="height" />
+    <field type="CARD16" name="count" />
+  </event>
+
+  <event name="GraphicsExposure" number="13">
+    <pad bytes="1" />
+    <field type="DRAWABLE" name="drawable" />
+    <field type="CARD16" name="x" />
+    <field type="CARD16" name="y" />
+    <field type="CARD16" name="width" />
+    <field type="CARD16" name="height" />
+    <field type="CARD16" name="minor_opcode" />
+    <field type="CARD16" name="count" />
+    <field type="CARD8" name="major_opcode" />
+  </event>
+
+  <event name="NoExposure" number="14">
+    <pad bytes="1" />
+    <field type="DRAWABLE" name="drawable" />
+    <field type="CARD16" name="minor_opcode" />
+    <field type="CARD8" name="major_opcode" />
+  </event>
+
+  <enum name="Visibility">
+    <item name="Unobscured">       <value>0</value></item>
+    <item name="PartiallyObscured"><value>1</value></item>
+    <item name="FullyObscured">    <value>2</value></item>
+  </enum>
+
+  <event name="VisibilityNotify" number="15">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+    <field type="BYTE" name="state" />
+  </event>
+
+  <event name="CreateNotify" number="16">
+    <pad bytes="1" />
+    <field type="WINDOW" name="parent" />
+    <field type="WINDOW" name="window" />
+    <field type="INT16" name="x" />
+    <field type="INT16" name="y" />
+    <field type="CARD16" name="width" />
+    <field type="CARD16" name="height" />
+    <field type="CARD16" name="border_width" />
+    <field type="BOOL" name="override_redirect" />
+  </event>
+
+  <event name="DestroyNotify" number="17">
+    <pad bytes="1" />
+    <field type="WINDOW" name="event" />
+    <field type="WINDOW" name="window" />
+  </event>
+
+  <event name="UnmapNotify" number="18">
+    <pad bytes="1" />
+    <field type="WINDOW" name="event" />
+    <field type="WINDOW" name="window" />
+    <field type="BOOL" name="from_configure" />
+  </event>
+
+  <event name="MapNotify" number="19">
+    <pad bytes="1" />
+    <field type="WINDOW" name="event" />
+    <field type="WINDOW" name="window" />
+    <field type="BOOL" name="override_redirect" />
+  </event>
+
+  <event name="MapRequest" number="20">
+    <pad bytes="1" />
+    <field type="WINDOW" name="parent" />
+    <field type="WINDOW" name="window" />
+  </event>
+
+  <event name="ReparentNotify" number="21">
+    <pad bytes="1" />
+    <field type="WINDOW" name="event" />
+    <field type="WINDOW" name="window" />
+    <field type="WINDOW" name="parent" />
+    <field type="INT16" name="x" />
+    <field type="INT16" name="y" />
+    <field type="BOOL" name="override_redirect" />
+  </event>
+
+  <event name="ConfigureNotify" number="22">
+    <pad bytes="1" />
+    <field type="WINDOW" name="event" />
+    <field type="WINDOW" name="window" />
+    <field type="WINDOW" name="above_sibling" />
+    <field type="INT16" name="x" />
+    <field type="INT16" name="y" />
+    <field type="CARD16" name="width" />
+    <field type="CARD16" name="height" />
+    <field type="CARD16" name="border_width" />
+    <field type="BOOL" name="override_redirect" />
+  </event>
+
+  <event name="ConfigureRequest" number="23">
+    <field type="BYTE" name="stack_mode" />
+    <field type="WINDOW" name="parent" />
+    <field type="WINDOW" name="window" />
+    <field type="WINDOW" name="sibling" />
+    <field type="INT16" name="x" />
+    <field type="INT16" name="y" />
+    <field type="CARD16" name="width" />
+    <field type="CARD16" name="height" />
+    <field type="CARD16" name="border_width" />
+    <field type="CARD16" name="value_mask" />
+  </event>
+
+  <event name="GravityNotify" number="24">
+    <pad bytes="1" />
+    <field type="WINDOW" name="event" />
+    <field type="WINDOW" name="window" />
+    <field type="INT16" name="x" />
+    <field type="INT16" name="y" />
+  </event>
+
+  <event name="ResizeRequest" number="25">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+    <field type="CARD16" name="width" />
+    <field type="CARD16" name="height" />
+  </event>
+
+  <enum name="Place">
+    <item name="OnTop">   <value>0</value></item>
+    <item name="OnBottom"><value>1</value></item>
+  </enum>
+
+  <event name="CirculateNotify" number="26">
+    <pad bytes="1" />
+    <field type="WINDOW" name="event" />
+    <field type="WINDOW" name="window" />
+    <pad bytes="4" />
+    <field type="BYTE" name="place" />
+  </event>
+
+  <eventcopy name="CirculateRequest" number="27" ref="CirculateNotify" />
+
+  <enum name="Property">
+    <item name="NewValue"><value>0</value></item>
+    <item name="Delete">  <value>1</value></item>
+  </enum>
+
+  <event name="PropertyNotify" number="28">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+    <field type="ATOM" name="atom" />
+    <field type="TIMESTAMP" name="time" />
+    <field type="BYTE" name="state" />
+  </event>
+
+  <event name="SelectionClear" number="29">
+    <pad bytes="1" />
+    <field type="TIMESTAMP" name="time" />
+    <field type="WINDOW" name="owner" />
+    <field type="ATOM" name="selection" />
+  </event>
+
+  <event name="SelectionRequest" number="30">
+    <pad bytes="1" />
+    <field type="TIMESTAMP" name="time" />
+    <field type="WINDOW" name="owner" />
+    <field type="WINDOW" name="requestor" />
+    <field type="ATOM" name="selection" />
+    <field type="ATOM" name="target" />
+    <field type="ATOM" name="property" />
+  </event>
+
+  <event name="SelectionNotify" number="31">
+    <pad bytes="1" />
+    <field type="TIMESTAMP" name="time" />
+    <field type="WINDOW" name="requestor" />
+    <field type="ATOM" name="selection" />
+    <field type="ATOM" name="target" />
+    <field type="ATOM" name="property" />
+  </event>
+
+  <enum name="ColormapState">
+    <item name="Uninstalled"><value>0</value></item>
+    <item name="Installed">  <value>1</value></item>
+  </enum>
+
+  <event name="ColormapNotify" number="32">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+    <field type="COLORMAP" name="colormap" />
+    <field type="BOOL" name="new" />
+    <field type="BYTE" name="state" />
+  </event>
+
+  <union name="ClientMessageData">
+    <!-- The format member of the ClientMessage event determines which array
+         to use. -->
+    <list type="CARD8"  name="data8" ><value>20</value></list> <!--  8 -->
+    <list type="CARD16" name="data16"><value>10</value></list> <!-- 16 -->
+    <list type="CARD32" name="data32"><value>5</value></list>  <!-- 32 -->
+  </union>
+
+  <event name="ClientMessage" number="33">
+    <field type="CARD8" name="format" /> <!-- 8, 16, or 32. -->
+    <field type="WINDOW" name="window" />
+    <field type="ATOM" name="type" />
+    <field type="ClientMessageData" name="data" />
+  </event>
+
+  <enum name="Mapping">
+    <item name="Modifier"><value>0</value></item>
+    <item name="Keyboard"><value>1</value></item>
+    <item name="Pointer"> <value>2</value></item>
+  </enum>
+
+  <event name="MappingNotify" number="34">
+    <pad bytes="1" />
+    <field type="BYTE" name="request" />
+    <field type="KEYCODE" name="first_keycode" />
+    <field type="CARD8" name="count" />
+  </event>
+
+
+
+  <!-- Core error types -->
+
+
+
+  <error name="Request" number="1">
+    <field type="CARD32" name="bad_value" />
+    <field type="CARD16" name="minor_opcode" />
+    <field type="CARD8" name="major_opcode" />
+  </error>
+
+  <error name="Value" number="2">
+    <field type="CARD32" name="bad_value" />
+    <field type="CARD16" name="minor_opcode" />
+    <field type="CARD8" name="major_opcode" />
+  </error>
+
+  <errorcopy name="Window" number="3" ref="Value" />
+  <errorcopy name="Pixmap" number="4" ref="Value" />
+  <errorcopy name="Atom" number="5" ref="Value" />
+  <errorcopy name="Cursor" number="6" ref="Value" />
+  <errorcopy name="Font" number="7" ref="Value" />
+  <errorcopy name="Match" number="8" ref="Request" />
+  <errorcopy name="Drawable" number="9" ref="Value" />
+  <errorcopy name="Access" number="10" ref="Request" />
+  <errorcopy name="Alloc" number="11" ref="Request" />
+  <errorcopy name="Colormap" number="12" ref="Value" />
+  <errorcopy name="GContext" number="13" ref="Value" />
+  <errorcopy name="IDChoice" number="14" ref="Value" />
+  <errorcopy name="Name" number="15" ref="Request" />
+  <errorcopy name="Length" number="16" ref="Request" />
+  <errorcopy name="Implementation" number="17" ref="Request" />
+
+
+
+  <!-- The core requests, in major number order. -->
+  <!-- It is the caller's responsibility to free returned XCB*Rep objects. -->
+
+
+
+  <enum name="WindowClass">
+    <item name="CopyFromParent"><value>0</value></item>
+    <item name="InputOutput">   <value>1</value></item>
+    <item name="InputOnly">     <value>2</value></item>
+  </enum>
+
+  <!-- Window attributes for CreateWindow and ChangeWindowAttributes. -->
+  <enum name="CW">
+    <item name="BackPixmap">      <bit>0</bit></item>
+    <item name="BackPixel">       <bit>1</bit></item>
+    <item name="BorderPixmap">    <bit>2</bit></item>
+    <item name="BorderPixel">     <bit>3</bit></item>
+    <item name="BitGravity">      <bit>4</bit></item>
+    <item name="WinGravity">      <bit>5</bit></item>
+    <item name="BackingStore">    <bit>6</bit></item>
+    <item name="BackingPlanes">   <bit>7</bit></item>
+    <item name="BackingPixel">    <bit>8</bit></item>
+    <item name="OverrideRedirect"><bit>9</bit></item>
+    <item name="SaveUnder">       <bit>10</bit></item>
+    <item name="EventMask">       <bit>11</bit></item>
+    <item name="DontPropagate">   <bit>12</bit></item>
+    <item name="Colormap">        <bit>13</bit></item>
+    <item name="Cursor">          <bit>14</bit></item>
+  </enum>
+  
+  <enum name="BackPixmap">
+    <item name="None">          <value>0</value></item>
+    <item name="ParentRelative"><value>1</value></item>
+  </enum>
+
+  <enum name="Gravity">
+    <item name="BitForget"><value>0</value></item>
+    <item name="WinUnmap"> <value>0</value></item>
+    <item name="NorthWest"><value>1</value></item>
+    <item name="North">    <value>2</value></item>
+    <item name="NorthEast"><value>3</value></item>
+    <item name="West">     <value>4</value></item>
+    <item name="Center">   <value>5</value></item>
+    <item name="East">     <value>6</value></item>
+    <item name="SouthWest"><value>7</value></item>
+    <item name="South">    <value>8</value></item>
+    <item name="SouthEast"><value>9</value></item>
+    <item name="Static">   <value>10</value></item>
+  </enum>
+
+  <!-- Also used in XCBSCREEN field backing_stores -->
+  <enum name="BackingStore">
+    <item name="NotUseful"> <value>0</value></item>
+    <item name="WhenMapped"><value>1</value></item>
+    <item name="Always">    <value>2</value></item>
+  </enum>
+
+  <enum name="EventMask">
+    <item name="NoEvent">           <value>0</value></item>
+    <item name="KeyPress">            <bit>0</bit></item>
+    <item name="KeyRelease">          <bit>1</bit></item>
+    <item name="ButtonPress">         <bit>2</bit></item>
+    <item name="ButtonRelease">       <bit>3</bit></item>
+    <item name="EnterWindow">         <bit>4</bit></item>
+    <item name="LeaveWindow">         <bit>5</bit></item>
+    <item name="PointerMotion">       <bit>6</bit></item>
+    <item name="PointerMotionHint">   <bit>7</bit></item>
+    <item name="Button1Motion">       <bit>8</bit></item>
+    <item name="Button2Motion">       <bit>9</bit></item>
+    <item name="Button3Motion">       <bit>10</bit></item>
+    <item name="Button4Motion">       <bit>11</bit></item>
+    <item name="Button5Motion">       <bit>12</bit></item>
+    <item name="ButtonMotion">        <bit>13</bit></item>
+    <item name="KeymapState">         <bit>14</bit></item>
+    <item name="Exposure">            <bit>15</bit></item>
+    <item name="VisibilityChange">    <bit>16</bit></item>
+    <item name="StructureNotify">     <bit>17</bit></item>
+    <item name="ResizeRedirect">      <bit>18</bit></item>
+    <item name="SubstructureNotify">  <bit>19</bit></item>
+    <item name="SubstructureRedirect"><bit>20</bit></item>
+    <item name="FocusChange">         <bit>21</bit></item>
+    <item name="PropertyChange">      <bit>22</bit></item>
+    <item name="ColorMapChange">      <bit>23</bit></item>
+    <item name="OwnerGrabButton">     <bit>24</bit></item>
+  </enum>
+
+  <request name="CreateWindow" opcode="1">
+    <field type="CARD8" name="depth" />
+    <field type="WINDOW" name="wid" />
+    <field type="WINDOW" name="parent" />
+    <field type="INT16" name="x" />
+    <field type="INT16" name="y" />
+    <field type="CARD16" name="width" />
+    <field type="CARD16" name="height" />
+    <field type="CARD16" name="border_width" />
+    <field type="CARD16" name="class" />
+    <field type="VISUALID" name="visual" />
+    <valueparam value-mask-type="CARD32"
+                value-mask-name="value_mask"
+                value-list-name="value_list" />
+  </request>
+
+  <request name="ChangeWindowAttributes" opcode="2">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+    <valueparam value-mask-type="CARD32"
+                value-mask-name="value_mask"
+                value-list-name="value_list" />
+  </request>
+  
+  <enum name="MapState">
+    <item name="Unmapped">  <value>0</value></item>
+    <item name="Unviewable"><value>1</value></item>
+    <item name="Viewable">  <value>2</value></item>
+  </enum>
+
+  <request name="GetWindowAttributes" opcode="3">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+    <reply>
+      <field type="CARD8" name="backing_store" />
+      <field type="VISUALID" name="visual" />
+      <field type="CARD16" name="class" />
+      <field type="CARD8" name="bit_gravity" />
+      <field type="CARD8" name="win_gravity" />
+      <field type="CARD32" name="backing_planes" />
+      <field type="CARD32" name="backing_pixel" />
+      <field type="BOOL" name="save_under" />
+      <field type="BOOL" name="map_is_installed" />
+      <field type="CARD8" name="map_state" />
+      <field type="BOOL" name="override_redirect" />
+      <field type="COLORMAP" name="colormap" />
+      <field type="CARD32" name="all_event_masks" />
+      <field type="CARD32" name="your_event_mask" />
+      <field type="CARD16" name="do_not_propagate_mask" />
+    </reply>
+  </request>
+
+  <request name="DestroyWindow" opcode="4">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+  </request>
+
+  <request name="DestroySubwindows" opcode="5">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+  </request>
+  
+  <enum name="SetMode">
+    <item name="Insert"><value>0</value></item>
+    <item name="Delete"><value>1</value></item>
+  </enum>
+
+  <request name="ChangeSaveSet" opcode="6">
+    <field type="BYTE" name="mode" />
+    <field type="WINDOW" name="window" />
+  </request>
+
+  <request name="ReparentWindow" opcode="7">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+    <field type="WINDOW" name="parent" />
+    <field type="INT16" name="x" />
+    <field type="INT16" name="y" />
+  </request>
+
+  <request name="MapWindow" opcode="8">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+  </request>
+
+  <request name="MapSubwindows" opcode="9">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+  </request>
+
+  <request name="UnmapWindow" opcode="10">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+  </request>
+
+  <request name="UnmapSubwindows" opcode="11">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+  </request>
+  
+  <enum name="ConfigWindow">
+    <item name="X">          <bit>0</bit></item>
+    <item name="Y">          <bit>1</bit></item>
+    <item name="Width">      <bit>2</bit></item>
+    <item name="Height">     <bit>3</bit></item>
+    <item name="BorderWidth"><bit>4</bit></item>
+    <item name="Sibling">    <bit>5</bit></item>
+    <item name="StackMode">  <bit>6</bit></item>
+  </enum>
+  
+  <enum name="StackMode">
+    <item name="Above">   <value>0</value></item>
+    <item name="Below">   <value>1</value></item>
+    <item name="TopIf">   <value>2</value></item>
+    <item name="BottomIf"><value>3</value></item>
+    <item name="Opposite"><value>4</value></item>
+  </enum>
+
+  <request name="ConfigureWindow" opcode="12">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+    <valueparam value-mask-type="CARD16"
+                value-mask-name="value_mask"
+                value-list-name="value_list" />
+  </request>
+
+  <enum name="Circulate">
+    <item name="RaiseLowest"> <value>0</value></item>
+    <item name="LowerHighest"><value>1</value></item>
+  </enum>
+
+  <request name="CirculateWindow" opcode="13">
+    <field type="CARD8" name="direction" />
+    <field type="WINDOW" name="window" />
+  </request>
+
+  <request name="GetGeometry" opcode="14">
+    <pad bytes="1" />
+    <field type="DRAWABLE" name="drawable" />
+    <reply>
+      <field type="CARD8" name="depth" />
+      <field type="WINDOW" name="root" />
+      <field type="INT16" name="x" />
+      <field type="INT16" name="y" />
+      <field type="CARD16" name="width" />
+      <field type="CARD16" name="height" />
+      <field type="CARD16" name="border_width" />
+    </reply>
+  </request>
+
+  <request name="QueryTree" opcode="15">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+    <reply>
+      <pad bytes="1" />
+      <field type="WINDOW" name="root" />
+      <field type="WINDOW" name="parent" />
+      <field type="CARD16" name="children_len" />
+      <pad bytes="14" />
+      <list type="WINDOW" name="children">
+        <fieldref>children_len</fieldref>
+      </list>
+    </reply>
+  </request>
+
+  <request name="InternAtom" opcode="16">
+    <field type="BOOL" name="only_if_exists" />
+    <field type="CARD16" name="name_len" />
+    <pad bytes="2" />
+    <list type="char" name="name">
+      <fieldref>name_len</fieldref>
+    </list>
+    <reply>
+      <pad bytes="1" />
+      <field type="ATOM" name="atom" />
+    </reply>
+  </request>
+
+  <request name="GetAtomName" opcode="17">
+    <pad bytes="1" />
+    <field type="ATOM" name="atom" />
+    <reply>
+      <pad bytes="1" />
+      <field type="CARD16" name="name_len" />
+      <pad bytes="22" />
+      <list type="CARD8" name="name">
+        <fieldref>name_len</fieldref>
+      </list>
+    </reply>
+  </request>
+  
+  <enum name="PropMode">
+    <item name="Replace"><value>0</value></item>
+    <item name="Prepend"><value>1</value></item>
+    <item name="Append"> <value>2</value></item>
+  </enum>
+
+  <request name="ChangeProperty" opcode="18">
+    <field type="CARD8" name="mode" />
+    <field type="WINDOW" name="window" />
+    <field type="ATOM" name="property" />
+    <field type="ATOM" name="type" />
+    <field type="CARD8" name="format" />
+    <pad bytes="3" />
+    <field type="CARD32" name="data_len" />
+    <list type="void" name="data">
+      <op op="/">
+        <op op="*">
+          <fieldref>data_len</fieldref>
+          <fieldref>format</fieldref>
+        </op>
+        <value>8</value>
+      </op>
+    </list>
+  </request>
+
+  <request name="DeleteProperty" opcode="19">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+    <field type="ATOM" name="property" />
+  </request>
+  
+  <enum name="GetPropertyType">
+    <item name="Any"><value>0</value></item>
+  </enum>
+
+  <request name="GetProperty" opcode="20">
+    <field type="BOOL" name="delete" />
+    <field type="WINDOW" name="window" />
+    <field type="ATOM" name="property" />
+    <field type="ATOM" name="type" />
+    <field type="CARD32" name="long_offset" />
+    <field type="CARD32" name="long_length" />
+    <reply>
+      <field type="CARD8" name="format" />
+      <field type="ATOM" name="type" />
+      <field type="CARD32" name="bytes_after" />
+      <field type="CARD32" name="value_len" />
+      <pad bytes="12" />
+      <list type="void" name="value">
+        <fieldref>value_len</fieldref>
+      </list>
+    </reply>
+  </request>
+
+  <request name="ListProperties" opcode="21">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+    <reply>
+      <pad bytes="1" />
+      <field type="CARD16" name="atoms_len" />
+      <pad bytes="22" />
+      <list type="ATOM" name="atoms">
+        <fieldref>atoms_len</fieldref>
+      </list>
+    </reply>
+  </request>
+
+  <request name="SetSelectionOwner" opcode="22">
+    <pad bytes="1" />
+    <field type="WINDOW" name="owner" />
+    <field type="ATOM" name="selection" />
+    <field type="TIMESTAMP" name="time" />
+  </request>
+
+  <request name="GetSelectionOwner" opcode="23">
+    <pad bytes="1" />
+    <field type="ATOM" name="selection" />
+    <reply>
+      <pad bytes="1" />
+      <field type="WINDOW" name="owner" />
+    </reply>
+  </request>
+
+  <request name="ConvertSelection" opcode="24">
+    <pad bytes="1" />
+    <field type="WINDOW" name="requestor" />
+    <field type="ATOM" name="selection" />
+    <field type="ATOM" name="target" />
+    <field type="ATOM" name="property" />
+    <field type="TIMESTAMP" name="time" />
+  </request>
+
+  <enum name="SendEventDest">
+    <item name="PointerWindow"><value>0</value></item>
+    <item name="ItemFocus">    <value>1</value></item>
+  </enum>
+
+  <request name="SendEvent" opcode="25">
+    <field type="BOOL" name="propagate" />
+    <field type="WINDOW" name="destination" />
+    <field type="CARD32" name="event_mask" />
+    <list type="char" name="event"><value>32</value></list>
+  </request>
+
+  <enum name="GrabMode">
+    <item name="Sync"> <value>0</value></item>
+    <item name="Async"><value>1</value></item>
+  </enum>
+
+  <enum name="GrabStatus">
+    <item name="Success">       <value>0</value></item>
+    <item name="AlreadyGrabbed"><value>1</value></item>
+    <item name="InvalidTime">   <value>2</value></item>
+    <item name="NotViewable">   <value>3</value></item>
+    <item name="Frozen">        <value>4</value></item>
+  </enum>
+
+  <request name="GrabPointer" opcode="26">
+    <field type="BOOL" name="owner_events" />
+    <field type="WINDOW" name="grab_window" />
+    <field type="CARD16" name="event_mask" />
+    <field type="BYTE" name="pointer_mode" />
+    <field type="BYTE" name="keyboard_mode" />
+    <field type="WINDOW" name="confine_to" />
+    <field type="CURSOR" name="cursor" />
+    <field type="TIMESTAMP" name="time" />
+    <reply>
+      <field type="BYTE" name="status" />
+    </reply>
+  </request>
+
+  <request name="UngrabPointer" opcode="27">
+    <pad bytes="1" />
+    <field type="TIMESTAMP" name="time" />
+  </request>
+
+  <enum name="ButtonIndex">
+     <item name="Any"><value>0</value></item>
+     <item name="1">  <value>1</value></item>
+     <item name="2">  <value>2</value></item>
+     <item name="3">  <value>3</value></item>
+     <item name="4">  <value>4</value></item>
+     <item name="5">  <value>5</value></item>
+  </enum>
+
+  <request name="GrabButton" opcode="28">
+    <field type="BOOL" name="owner_events" />
+    <field type="WINDOW" name="grab_window" />
+    <field type="CARD16" name="event_mask" />
+    <field type="CARD8" name="pointer_mode" />
+    <field type="CARD8" name="keyboard_mode" />
+    <field type="WINDOW" name="confine_to" />
+    <field type="CURSOR" name="cursor" />
+    <field type="CARD8" name="button" />
+    <pad bytes="1" />
+    <field type="CARD16" name="modifiers" />
+  </request>
+
+  <request name="UngrabButton" opcode="29">
+    <field type="CARD8" name="button" />
+    <field type="WINDOW" name="grab_window" />
+    <field type="CARD16" name="modifiers" />
+    <pad bytes="2" />
+  </request>
+
+  <request name="ChangeActivePointerGrab" opcode="30">
+    <pad bytes="1" />
+    <field type="CURSOR" name="cursor" />
+    <field type="TIMESTAMP" name="time" />
+    <field type="CARD16" name="event_mask" />
+  </request>
+
+  <request name="GrabKeyboard" opcode="31">
+    <field type="BOOL" name="owner_events" />
+    <field type="WINDOW" name="grab_window" />
+    <field type="TIMESTAMP" name="time" />
+    <field type="BYTE" name="pointer_mode" />
+    <field type="BYTE" name="keyboard_mode" />
+    <reply>
+      <field type="BYTE" name="status" />
+    </reply>
+  </request>
+
+  <request name="UngrabKeyboard" opcode="32">
+    <pad bytes="1" />
+    <field type="TIMESTAMP" name="time" />
+  </request>
+
+  <!-- Use KEYCODE any = { XCBGrabAny }; to grab any key -->
+  <enum name="Grab">
+    <item name="Any"><value>0</value></item>
+  </enum>
+
+  <request name="GrabKey" opcode="33">
+    <field type="BOOL" name="owner_events" />
+    <field type="WINDOW" name="grab_window" />
+    <field type="CARD16" name="modifiers" />
+    <field type="KEYCODE" name="key" />
+    <field type="CARD8" name="pointer_mode" />
+    <field type="CARD8" name="keyboard_mode" />
+  </request>
+
+  <request name="UngrabKey" opcode="34">
+    <field type="KEYCODE" name="key" />
+    <field type="WINDOW" name="grab_window" />
+    <field type="CARD16" name="modifiers" />
+  </request>
+
+  <enum name="Allow">
+    <item name="AsyncPointer">  <value>0</value></item>
+    <item name="SyncPointer">   <value>1</value></item>
+    <item name="ReplayPointer"> <value>2</value></item>
+    <item name="AsyncKeyboard"> <value>3</value></item>
+    <item name="SyncKeyboard">  <value>4</value></item>
+    <item name="ReplayKeyboard"><value>5</value></item>
+    <item name="AsyncBoth">     <value>6</value></item>
+    <item name="SyncBoth">      <value>7</value></item>
+  </enum>
+
+  <request name="AllowEvents" opcode="35">
+    <field type="CARD8" name="mode" />
+    <field type="TIMESTAMP" name="time" />
+  </request>
+
+  <request name="GrabServer" opcode="36" />
+
+  <request name="UngrabServer" opcode="37" />
+
+  <request name="QueryPointer" opcode="38">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+    <reply>
+      <field type="BOOL" name="same_screen" />
+      <field type="WINDOW" name="root" />
+      <field type="WINDOW" name="child" />
+      <field type="INT16" name="root_x" />
+      <field type="INT16" name="root_y" />
+      <field type="INT16" name="win_x" />
+      <field type="INT16" name="win_y" />
+      <field type="CARD16" name="mask" />
+    </reply>
+  </request>
+
+  <struct name="TIMECOORD">
+    <field type="TIMESTAMP" name="time" />
+    <field type="INT16" name="x" />
+    <field type="INT16" name="y" />
+  </struct>
+
+  <request name="GetMotionEvents" opcode="39">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+    <field type="TIMESTAMP" name="start" />
+    <field type="TIMESTAMP" name="stop" />
+    <reply>
+      <pad bytes="1" />
+      <field type="CARD32" name="events_len" />
+      <pad bytes="20" />
+      <list type="TIMECOORD" name="events">
+        <fieldref>events_len</fieldref>
+      </list>
+    </reply>
+  </request>
+
+  <request name="TranslateCoordinates" opcode="40">
+    <pad bytes="1" />
+    <field type="WINDOW" name="src_window" />
+    <field type="WINDOW" name="dst_window" />
+    <field type="INT16" name="src_x" />
+    <field type="INT16" name="src_y" />
+    <reply>
+      <field type="BOOL" name="same_screen" />
+      <field type="WINDOW" name="child" />
+      <field type="CARD16" name="dst_x" />
+      <field type="CARD16" name="dst_y" />
+    </reply>
+  </request>
+
+  <request name="WarpPointer" opcode="41">
+    <pad bytes="1" />
+    <field type="WINDOW" name="src_window" />
+    <field type="WINDOW" name="dst_window" />
+    <field type="INT16" name="src_x" />
+    <field type="INT16" name="src_y" />
+    <field type="CARD16" name="src_width" />
+    <field type="CARD16" name="src_height" />
+    <field type="INT16" name="dst_x" />
+    <field type="INT16" name="dst_y" />
+  </request>
+
+  <!-- used for revert_to and focus -->
+  <enum name="InputFocus">
+    <item name="None">       <value>0</value></item>
+    <item name="PointerRoot"><value>1</value></item>
+    <item name="Parent">     <value>2</value></item>  <!-- revert_to only -->
+  </enum>
+
+  <request name="SetInputFocus" opcode="42">
+    <field type="CARD8" name="revert_to" />
+    <field type="WINDOW" name="focus" />
+    <field type="TIMESTAMP" name="time" />
+  </request>
+
+  <request name="GetInputFocus" opcode="43">
+    <reply>
+      <field type="CARD8" name="revert_to" />
+      <field type="WINDOW" name="focus" />
+    </reply>
+  </request>
+
+  <request name="QueryKeymap" opcode="44">
+    <reply>
+      <pad bytes="1" />
+      <list type="CARD8" name="keys"><value>32</value></list>
+    </reply>
+  </request>
+
+  <request name="OpenFont" opcode="45">
+    <pad bytes="1" />
+    <field type="FONT" name="fid" />
+    <field type="CARD16" name="name_len" />
+    <list type="char" name="name">
+      <fieldref>name_len</fieldref>
+    </list>
+  </request>
+
+  <request name="CloseFont" opcode="46">
+    <pad bytes="1" />
+    <field type="FONT" name="font" />
+  </request>
+
+  <enum name="FontDraw">
+    <item name="LeftToRight"><value>0</value></item>
+    <item name="RightToLeft"><value>1</value></item>
+  </enum>
+
+  <struct name="FONTPROP">
+    <field type="ATOM" name="name" />
+    <field type="CARD32" name="value" />
+  </struct>
+
+  <struct name="CHARINFO">
+    <field type="INT16" name="left_side_bearing" />
+    <field type="INT16" name="right_side_bearing" />
+    <field type="INT16" name="character_width" />
+    <field type="INT16" name="ascent" />
+    <field type="INT16" name="descent" />
+    <field type="CARD16" name="attributes" />
+  </struct>
+
+  <request name="QueryFont" opcode="47">
+    <pad bytes="1" />
+    <field type="FONTABLE" name="font" />
+    <reply>
+      <pad bytes="1" />
+      <field type="CHARINFO" name="min_bounds" />
+      <pad bytes="4" />
+      <field type="CHARINFO" name="max_bounds" />
+      <pad bytes="4" />
+      <field type="CARD16" name="min_char_or_byte2" />
+      <field type="CARD16" name="max_char_or_byte2" />
+      <field type="CARD16" name="default_char" />
+      <field type="CARD16" name="properties_len" />
+      <field type="BYTE" name="draw_direction" />
+      <field type="CARD8" name="min_byte1" />
+      <field type="CARD8" name="max_byte1" />
+      <field type="BOOL" name="all_chars_exist" />
+      <field type="INT16" name="font_ascent" />
+      <field type="INT16" name="font_descent" />
+      <field type="CARD32" name="char_infos_len" />
+      <list type="FONTPROP" name="properties">
+        <fieldref>properties_len</fieldref>
+      </list>
+      <list type="CHARINFO" name="char_infos">
+        <fieldref>char_infos_len</fieldref>
+      </list>
+    </reply>
+  </request>
+
+  <request name="QueryTextExtents" opcode="48">
+    <exprfield type="BOOL" name="odd_length">
+      <op op="&amp;"><fieldref>string_len</fieldref><value>1</value></op>
+    </exprfield>
+    <field type="FONTABLE" name="font" />
+    <list type="CHAR2B" name="string" />
+    <reply>
+      <field type="BYTE" name="draw_direction" />
+      <field type="INT16" name="font_ascent" />
+      <field type="INT16" name="font_descent" />
+      <field type="INT16" name="overall_ascent" />
+      <field type="INT16" name="overall_descent" />
+      <field type="INT32" name="overall_width" />
+      <field type="INT32" name="overall_left" />
+      <field type="INT32" name="overall_right" />
+    </reply>
+  </request>
+
+  <struct name="STR">
+    <field type="CARD8" name="name_len" />
+    <list type="char" name="name">
+      <fieldref>name_len</fieldref>
+    </list>
+  </struct>
+
+  <request name="ListFonts" opcode="49">
+    <pad bytes="1" />
+    <field type="CARD16" name="max_names" />
+    <field type="CARD16" name="pattern_len" />
+    <list type="char" name="pattern">
+      <fieldref>pattern_len</fieldref>
+    </list>
+    <reply>
+      <pad bytes="1" />
+      <field type="CARD16" name="names_len" />
+      <pad bytes="22" />
+      <list type="STR" name="names">
+        <fieldref>names_len</fieldref>
+      </list>
+    </reply>
+  </request>
+
+  <request name="ListFontsWithInfo" opcode="50">
+    <pad bytes="1" />
+    <field type="CARD16" name="max_names" />
+    <field type="CARD16" name="pattern_len" />
+    <list type="char" name="pattern">
+      <fieldref>pattern_len</fieldref>
+    </list>
+    <reply>
+      <field type="CARD8" name="name_len" />
+      <field type="CHARINFO" name="min_bounds" />
+      <pad bytes="4" />
+      <field type="CHARINFO" name="max_bounds" />
+      <pad bytes="4" />
+      <field type="CARD16" name="min_char_or_byte2" />
+      <field type="CARD16" name="max_char_or_byte2" />
+      <field type="CARD16" name="default_char" />
+      <field type="CARD16" name="properties_len" />
+      <field type="BYTE" name="draw_direction" />
+      <field type="CARD8" name="min_byte1" />
+      <field type="CARD8" name="max_byte1" />
+      <field type="BOOL" name="all_chars_exist" />
+      <field type="INT16" name="font_ascent" />
+      <field type="INT16" name="font_descent" />
+      <field type="CARD32" name="replies_hint" />
+      <list type="FONTPROP" name="properties">
+        <fieldref>properties_len</fieldref>
+      </list>
+      <list type="char" name="name">
+        <fieldref>name_len</fieldref>
+      </list>
+    </reply>
+  </request>
+
+  <request name="SetFontPath" opcode="51">
+    <pad bytes="1" />
+    <field type="CARD16" name="font_qty" />
+    <list type="char" name="path" />
+  </request>
+
+  <request name="GetFontPath" opcode="52">
+    <reply>
+      <pad bytes="1" />
+      <field type="CARD16" name="path_len" />
+      <pad bytes="22" />
+      <list type="STR" name="path">
+        <fieldref>path_len</fieldref>
+      </list>
+    </reply>
+  </request>
+
+  <request name="CreatePixmap" opcode="53">
+    <field type="CARD8" name="depth" />
+    <field type="PIXMAP" name="pid" />
+    <field type="DRAWABLE" name="drawable" />
+    <field type="CARD16" name="width" />
+    <field type="CARD16" name="height" />
+  </request>
+
+  <request name="FreePixmap" opcode="54">
+    <pad bytes="1" />
+    <field type="PIXMAP" name="pixmap" />
+  </request>
+  
+  <enum name="GC">
+    <item name="Function">          <bit>0</bit></item>
+    <item name="PlaneMask">         <bit>1</bit></item>
+    <item name="Foreground">        <bit>2</bit></item>
+    <item name="Background">        <bit>3</bit></item>
+    <item name="LineWidth">         <bit>4</bit></item>
+    <item name="LineStyle">         <bit>5</bit></item>
+    <item name="CapStyle">          <bit>6</bit></item>
+    <item name="JoinStyle">         <bit>7</bit></item>
+    <item name="FillStyle">         <bit>8</bit></item>
+    <item name="FillRule">          <bit>9</bit></item>
+    <item name="Tile">              <bit>10</bit></item>
+    <item name="Stipple">           <bit>11</bit></item>
+    <item name="TileStippleOriginX"><bit>12</bit></item>
+    <item name="TileStippleOriginY"><bit>13</bit></item>
+    <item name="Font">              <bit>14</bit></item>
+    <item name="SubwindowMode">     <bit>15</bit></item>
+    <item name="GraphicsExposures"> <bit>16</bit></item>
+    <item name="ClipOriginX">       <bit>17</bit></item>
+    <item name="ClipOriginY">       <bit>18</bit></item>
+    <item name="ClipMask">          <bit>19</bit></item>
+    <item name="DashOffset">        <bit>20</bit></item>
+    <item name="DashList">          <bit>21</bit></item>
+    <item name="ArcMode">           <bit>22</bit></item>
+  </enum>
+
+  <!-- GC Function values -->
+  <enum name="GX">
+    <item name="clear">       <value>0x0</value></item>
+    <item name="and">         <value>0x1</value></item>
+    <item name="andReverse">  <value>0x2</value></item>
+    <item name="copy">        <value>0x3</value></item>
+    <item name="andInverted"> <value>0x4</value></item>
+    <item name="noop">        <value>0x5</value></item>
+    <item name="xor">         <value>0x6</value></item>
+    <item name="or">          <value>0x7</value></item>
+    <item name="nor">         <value>0x8</value></item>
+    <item name="equiv">       <value>0x9</value></item>
+    <item name="invert">      <value>0xa</value></item>
+    <item name="orReverse">   <value>0xb</value></item>
+    <item name="copyInverted"><value>0xc</value></item>
+    <item name="orInverted">  <value>0xd</value></item>
+    <item name="nand">        <value>0xe</value></item>
+    <item name="set">         <value>0xf</value></item>
+  </enum>
+
+  <enum name="LineStyle">
+    <item name="Solid">     <value>0</value></item>
+    <item name="OnOffDash"> <value>1</value></item>
+    <item name="DoubleDash"><value>2</value></item>
+  </enum>
+
+  <enum name="CapStyle">
+    <item name="NotLast">   <value>0</value></item>
+    <item name="Butt">      <value>1</value></item>
+    <item name="Round">     <value>2</value></item>
+    <item name="Projecting"><value>3</value></item>
+  </enum>
+
+  <enum name="JoinStyle">
+    <item name="Mitre">     <value>0</value></item>
+    <item name="Round">     <value>1</value></item>
+    <item name="Bevel">     <value>2</value></item>
+  </enum>
+
+  <enum name="FillStyle">
+    <item name="Solid">         <value>0</value></item>
+    <item name="Tiled">         <value>1</value></item>
+    <item name="Stippled">      <value>2</value></item>
+    <item name="OpaqueStippled"><value>3</value></item>
+  </enum>
+
+  <enum name="FillRule">
+    <item name="EvenOdd"><value>0</value></item>
+    <item name="Winding"><value>1</value></item>
+  </enum>
+
+  <enum name="SubwindowMode">
+    <item name="ClipByChildren">  <value>0</value></item>
+    <item name="IncludeInferiors"><value>1</value></item>
+  </enum>
+
+  <enum name="ArcMode">
+    <item name="Chord">   <value>0</value></item>
+    <item name="PieSlice"><value>1</value></item>
+  </enum>
+
+  <request name="CreateGC" opcode="55">
+    <pad bytes="1" />
+    <field type="GCONTEXT" name="cid" />
+    <field type="DRAWABLE" name="drawable" />
+    <valueparam value-mask-type="CARD32"
+                value-mask-name="value_mask"
+                value-list-name="value_list" />
+  </request>
+
+  <request name="ChangeGC" opcode="56">
+    <pad bytes="1" />
+    <field type="GCONTEXT" name="gc" />
+    <valueparam value-mask-type="CARD32"
+                value-mask-name="value_mask"
+                value-list-name="value_list" />
+  </request>
+
+  <request name="CopyGC" opcode="57">
+    <pad bytes="1" />
+    <field type="GCONTEXT" name="src_gc" />
+    <field type="GCONTEXT" name="dst_gc" />
+    <field type="CARD32" name="value_mask" />
+  </request>
+
+  <request name="SetDashes" opcode="58">
+    <pad bytes="1" />
+    <field type="GCONTEXT" name="gc" />
+    <field type="CARD16" name="dash_offset" />
+    <field type="CARD16" name="dashes_len" />
+    <list type="CARD8" name="dashes">
+      <fieldref>dashes_len</fieldref>
+    </list>
+  </request>
+
+  <enum name="ClipOrdering">
+    <item name="Unsorted"><value>0</value></item>
+    <item name="YSorted"> <value>1</value></item>
+    <item name="YXSorted"><value>2</value></item>
+    <item name="YXBanded"><value>3</value></item>
+  </enum>
+
+  <request name="SetClipRectangles" opcode="59">
+    <field type="BYTE" name="ordering" />
+    <field type="GCONTEXT" name="gc" />
+    <field type="INT16" name="clip_x_origin" />
+    <field type="INT16" name="clip_y_origin" />
+    <list type="RECTANGLE" name="rectangles" />
+  </request>
+
+  <request name="FreeGC" opcode="60">
+    <pad bytes="1" />
+    <field type="GCONTEXT" name="gc" />
+  </request>
+
+  <request name="ClearArea" opcode="61">
+    <field type="BOOL" name="exposures" />
+    <field type="WINDOW" name="window" />
+    <field type="INT16" name="x" />
+    <field type="INT16" name="y" />
+    <field type="CARD16" name="width" />
+    <field type="CARD16" name="height" />
+  </request>
+
+  <request name="CopyArea" opcode="62">
+    <pad bytes="1" />
+    <field type="DRAWABLE" name="src_drawable" />
+    <field type="DRAWABLE" name="dst_drawable" />
+    <field type="GCONTEXT" name="gc" />
+    <field type="INT16" name="src_x" />
+    <field type="INT16" name="src_y" />
+    <field type="INT16" name="dst_x" />
+    <field type="INT16" name="dst_y" />
+    <field type="CARD16" name="width" />
+    <field type="CARD16" name="height" />
+  </request>
+
+  <request name="CopyPlane" opcode="63">
+    <pad bytes="1" />
+    <field type="DRAWABLE" name="src_drawable" />
+    <field type="DRAWABLE" name="dst_drawable" />
+    <field type="GCONTEXT" name="gc" />
+    <field type="INT16" name="src_x" />
+    <field type="INT16" name="src_y" />
+    <field type="INT16" name="dst_x" />
+    <field type="INT16" name="dst_y" />
+    <field type="CARD16" name="width" />
+    <field type="CARD16" name="height" />
+    <field type="CARD32" name="bit_plane" />
+  </request>
+  
+  <enum name="CoordMode">
+    <item name="Origin">  <value>0</value></item>
+    <item name="Previous"><value>1</value></item>
+  </enum>
+
+  <!-- combine-adjacent doesn't work for mode==Relative -->
+  <request name="PolyPoint" opcode="64">
+    <field type="BYTE" name="coordinate_mode" />
+    <field type="DRAWABLE" name="drawable" />
+    <field type="GCONTEXT" name="gc" />
+    <list type="POINT" name="points" />
+  </request>
+
+  <request name="PolyLine" opcode="65" combine-adjacent="true">
+    <field type="BYTE" name="coordinate_mode" />
+    <field type="DRAWABLE" name="drawable" />
+    <field type="GCONTEXT" name="gc" />
+    <list type="POINT" name="points" />
+  </request>
+
+  <struct name="SEGMENT">
+    <field type="INT16" name="x1" />
+    <field type="INT16" name="y1" />
+    <field type="INT16" name="x2" />
+    <field type="INT16" name="y2" />
+  </struct>
+
+  <request name="PolySegment" opcode="66" combine-adjacent="true">
+    <pad bytes="1" />
+    <field type="DRAWABLE" name="drawable" />
+    <field type="GCONTEXT" name="gc" />
+    <list type="SEGMENT" name="segments" />
+  </request>
+
+  <request name="PolyRectangle" opcode="67" combine-adjacent="true">
+    <pad bytes="1" />
+    <field type="DRAWABLE" name="drawable" />
+    <field type="GCONTEXT" name="gc" />
+    <list type="RECTANGLE" name="rectangles" />
+  </request>
+
+  <!--
+    The semantics of PolyArc change after the first arc: the GC's
+    join style may be applied to successive arcs under some circumstances.
+    So using combine-adjacent here is bad.
+  -->
+  <request name="PolyArc" opcode="68">
+    <pad bytes="1" />
+    <field type="DRAWABLE" name="drawable" />
+    <field type="GCONTEXT" name="gc" />
+    <list type="ARC" name="arcs" />
+  </request>
+
+  <enum name="PolyShape">
+    <item name="Complex">  <value>0</value></item>
+    <item name="Nonconvex"><value>1</value></item>
+    <item name="Convex">   <value>2</value></item>
+  </enum>
+
+  <request name="FillPoly" opcode="69">
+    <pad bytes="1" />
+    <field type="DRAWABLE" name="drawable" />
+    <field type="GCONTEXT" name="gc" />
+    <field type="CARD8" name="shape" />
+    <field type="CARD8" name="coordinate_mode" />
+    <list type="POINT" name="points" />
+  </request>
+
+  <request name="PolyFillRectangle" opcode="70" combine-adjacent="true">
+    <pad bytes="1" />
+    <field type="DRAWABLE" name="drawable" />
+    <field type="GCONTEXT" name="gc" />
+    <list type="RECTANGLE" name="rectangles" />
+  </request>
+
+  <request name="PolyFillArc" opcode="71" combine-adjacent="true">
+    <pad bytes="1" />
+    <field type="DRAWABLE" name="drawable" />
+    <field type="GCONTEXT" name="gc" />
+    <list type="ARC" name="arcs" />
+  </request>
+  
+  <enum name="ImageFormat">
+    <item name="XYBitmap"><value>0</value></item>
+    <item name="XYPixmap"><value>1</value></item>
+    <item name="ZPixmap"> <value>2</value></item>
+  </enum>
+
+  <request name="PutImage" opcode="72">
+    <field type="CARD8" name="format" />
+    <field type="DRAWABLE" name="drawable" />
+    <field type="GCONTEXT" name="gc" />
+    <field type="CARD16" name="width" />
+    <field type="CARD16" name="height" />
+    <field type="INT16" name="dst_x" />
+    <field type="INT16" name="dst_y" />
+    <field type="CARD8" name="left_pad" />
+    <field type="CARD8" name="depth" />
+    <list type="BYTE" name="data" />
+  </request>
+
+  <!-- FIXME: data array in reply will include padding, but ought not to. -->
+  <request name="GetImage" opcode="73">
+    <field type="CARD8" name="format" />
+    <field type="DRAWABLE" name="drawable" />
+    <field type="INT16" name="x" />
+    <field type="INT16" name="y" />
+    <field type="CARD16" name="width" />
+    <field type="CARD16" name="height" />
+    <field type="CARD32" name="plane_mask" />
+    <reply>
+      <field type="CARD8" name="depth" />
+      <field type="VISUALID" name="visual" />
+      <pad bytes="20" />
+      <list type="BYTE" name="data">
+        <op op="*">
+          <fieldref>length</fieldref>
+          <value>4</value>
+        </op>
+      </list>
+    </reply>
+  </request>
+
+  <request name="PolyText8" opcode="74">
+    <pad bytes="1" />
+    <field type="DRAWABLE" name="drawable" />
+    <field type="GCONTEXT" name="gc" />
+    <field type="INT16" name="x" />
+    <field type="INT16" name="y" />
+    <list type="BYTE" name="items" />
+  </request>
+
+  <request name="PolyText16" opcode="75">
+    <pad bytes="1" />
+    <field type="DRAWABLE" name="drawable" />
+    <field type="GCONTEXT" name="gc" />
+    <field type="INT16" name="x" />
+    <field type="INT16" name="y" />
+    <list type="BYTE" name="items" />
+  </request>
+
+  <request name="ImageText8" opcode="76">
+    <field type="BYTE" name="string_len" />
+    <field type="DRAWABLE" name="drawable" />
+    <field type="GCONTEXT" name="gc" />
+    <field type="INT16" name="x" />
+    <field type="INT16" name="y" />
+    <list type="char" name="string">
+      <fieldref>string_len</fieldref>
+    </list>
+  </request>
+
+  <request name="ImageText16" opcode="77">
+    <field type="BYTE" name="string_len" />
+    <field type="DRAWABLE" name="drawable" />
+    <field type="GCONTEXT" name="gc" />
+    <field type="INT16" name="x" />
+    <field type="INT16" name="y" />
+    <list type="CHAR2B" name="string">
+      <fieldref>string_len</fieldref>
+    </list>
+  </request>
+
+  <enum name= "ColormapAlloc">
+    <item name="None"><value>0</value></item>
+    <item name="All"> <value>1</value></item>
+  </enum>
+
+  <request name="CreateColormap" opcode="78">
+    <field type="BYTE" name="alloc" />
+    <field type="COLORMAP" name="mid" />
+    <field type="WINDOW" name="window" />
+    <field type="VISUALID" name="visual" />
+  </request>
+
+  <request name="FreeColormap" opcode="79">
+    <pad bytes="1" />
+    <field type="COLORMAP" name="cmap" />
+  </request>
+
+  <request name="CopyColormapAndFree" opcode="80">
+    <pad bytes="1" />
+    <field type="COLORMAP" name="mid" />
+    <field type="COLORMAP" name="src_cmap" />
+  </request>
+
+  <request name="InstallColormap" opcode="81">
+    <pad bytes="1" />
+    <field type="COLORMAP" name="cmap" />
+  </request>
+
+  <request name="UninstallColormap" opcode="82">
+    <pad bytes="1" />
+    <field type="COLORMAP" name="cmap" />
+  </request>
+
+  <request name="ListInstalledColormaps" opcode="83">
+    <pad bytes="1" />
+    <field type="WINDOW" name="window" />
+    <reply>
+      <pad bytes="1" />
+      <field type="CARD16" name="cmaps_len" />
+      <pad bytes="22" />
+      <list type="COLORMAP" name="cmaps">
+        <fieldref>cmaps_len</fieldref>
+      </list>
+    </reply>
+  </request>
+
+  <request name="AllocColor" opcode="84">
+    <pad bytes="1" />
+    <field type="COLORMAP" name="cmap" />
+    <field type="CARD16" name="red" />
+    <field type="CARD16" name="green" />
+    <field type="CARD16" name="blue" />
+    <reply>
+      <pad bytes="1" />
+      <field type="CARD16" name="red" />
+      <field type="CARD16" name="green" />
+      <field type="CARD16" name="blue" />
+      <pad bytes="2" />
+      <field type="CARD32" name="pixel" />
+    </reply>
+  </request>
+
+  <request name="AllocNamedColor" opcode="85">
+    <pad bytes="1" />
+    <field type="COLORMAP" name="cmap" />
+    <field type="CARD16" name="name_len" />
+    <list type="char" name="name">
+      <fieldref>name_len</fieldref>
+    </list>
+    <reply>
+      <pad bytes="1" />
+      <field type="CARD32" name="pixel" />
+      <field type="CARD16" name="exact_red" />
+      <field type="CARD16" name="exact_green" />
+      <field type="CARD16" name="exact_blue" />
+      <field type="CARD16" name="visual_red" />
+      <field type="CARD16" name="visual_green" />
+      <field type="CARD16" name="visual_blue" />
+    </reply>
+  </request>
+
+  <request name="AllocColorCells" opcode="86">
+    <field type="BOOL" name="contiguous" />
+    <field type="COLORMAP" name="cmap" />
+    <field type="CARD16" name="colors" />
+    <field type="CARD16" name="planes" />
+    <reply>
+      <pad bytes="1" />
+      <field type="CARD16" name="pixels_len" />
+      <field type="CARD16" name="masks_len" />
+      <pad bytes="20" />
+      <list type="CARD32" name="pixels">
+        <fieldref>pixels_len</fieldref>
+      </list>
+      <list type="CARD32" name="masks">
+        <fieldref>masks_len</fieldref>
+      </list>
+    </reply>
+  </request>
+
+  <request name="AllocColorPlanes" opcode="87">
+    <field type="BOOL" name="contiguous" />
+    <field type="COLORMAP" name="cmap" />
+    <field type="CARD16" name="colors" />
+    <field type="CARD16" name="reds" />
+    <field type="CARD16" name="greens" />
+    <field type="CARD16" name="blues" />
+    <reply>
+      <pad bytes="1" />
+      <field type="CARD16" name="pixels_len" />
+      <pad bytes="2" />
+      <field type="CARD32" name="red_mask" />
+      <field type="CARD32" name="green_mask" />
+      <field type="CARD32" name="blue_mask" />
+      <pad bytes="8" />
+      <list type="CARD32" name="pixels">
+        <fieldref>pixels_len</fieldref>
+      </list>
+    </reply>
+  </request>
+
+  <request name="FreeColors" opcode="88">
+    <pad bytes="1" />
+    <field type="COLORMAP" name="cmap" />
+    <field type="CARD32" name="plane_mask" />
+    <list type="CARD32" name="pixels" />
+  </request>
+
+  <enum name="ColorFlag">
+    <item name="Red">  <bit>0</bit></item>
+    <item name="Green"><bit>1</bit></item>
+    <item name="Blue"> <bit>2</bit></item>
+  </enum>
+
+  <struct name="COLORITEM">
+    <field type="CARD32" name="pixel" />
+    <field type="CARD16" name="red" />
+    <field type="CARD16" name="green" />
+    <field type="CARD16" name="blue" />
+    <field type="BYTE" name="flags" />
+    <pad bytes="1" />
+  </struct>
+  
+  <request name="StoreColors" opcode="89" combine-adjacent="true">
+    <pad bytes="1" />
+    <field type="COLORMAP" name="cmap" />
+    <list type="COLORITEM" name="items" />
+  </request>
+
+  <request name="StoreNamedColor" opcode="90">
+    <field type="CARD8" name="flags" />
+    <field type="COLORMAP" name="cmap" />
+    <field type="CARD32" name="pixel" />
+    <field type="CARD16" name="name_len" />
+    <list type="char" name="name">
+      <fieldref>name_len</fieldref>
+    </list>
+  </request>
+
+  <struct name="RGB">
+    <field type="CARD16" name="red" />
+    <field type="CARD16" name="green" />
+    <field type="CARD16" name="blue" />
+    <pad bytes="2" />
+  </struct>
+
+  <request name="QueryColors" opcode="91">
+    <pad bytes="1" />
+    <field type="COLORMAP" name="cmap" />
+    <list type="CARD32" name="pixels" />
+    <reply>
+      <pad bytes="1" />
+      <field type="CARD16" name="colors_len" />
+      <pad bytes="22" />
+      <list type="RGB" name="colors">
+        <fieldref>colors_len</fieldref>
+      </list>
+    </reply>
+  </request>
+
+  <request name="LookupColor" opcode="92">
+    <pad bytes="1" />
+    <field type="COLORMAP" name="cmap" />
+    <field type="CARD16" name="name_len" />
+    <list type="char" name="name">
+      <fieldref>name_len</fieldref>
+    </list>
+    <reply>
+      <pad bytes="1" />
+      <field type="CARD16" name="exact_red" />
+      <field type="CARD16" name="exact_green" />
+      <field type="CARD16" name="exact_blue" />
+      <field type="CARD16" name="visual_red" />
+      <field type="CARD16" name="visual_green" />
+      <field type="CARD16" name="visual_blue" />
+    </reply>
+  </request>
+
+  <request name="CreateCursor" opcode="93">
+    <pad bytes="1" />
+    <field type="CURSOR" name="cid" />
+    <field type="PIXMAP" name="source" />
+    <field type="PIXMAP" name="mask" />
+    <field type="CARD16" name="fore_red" />
+    <field type="CARD16" name="fore_green" />
+    <field type="CARD16" name="fore_blue" />
+    <field type="CARD16" name="back_red" />
+    <field type="CARD16" name="back_green" />
+    <field type="CARD16" name="back_blue" />
+    <field type="CARD16" name="x" />
+    <field type="CARD16" name="y" />
+  </request>
+
+  <request name="CreateGlyphCursor" opcode="94">
+    <pad bytes="1" />
+    <field type="CURSOR" name="cid" />
+    <field type="FONT" name="source_font" />
+    <field type="FONT" name="mask_font" />
+    <field type="CARD16" name="source_char" />
+    <field type="CARD16" name="mask_char" />
+    <field type="CARD16" name="fore_red" />
+    <field type="CARD16" name="fore_green" />
+    <field type="CARD16" name="fore_blue" />
+    <field type="CARD16" name="back_red" />
+    <field type="CARD16" name="back_green" />
+    <field type="CARD16" name="back_blue" />
+  </request>
+
+  <request name="FreeCursor" opcode="95">
+    <pad bytes="1" />
+    <field type="CURSOR" name="cursor" />
+  </request>
+
+  <request name="RecolorCursor" opcode="96">
+    <pad bytes="1" />
+    <field type="CURSOR" name="cursor" />
+    <field type="CARD16" name="fore_red" />
+    <field type="CARD16" name="fore_green" />
+    <field type="CARD16" name="fore_blue" />
+    <field type="CARD16" name="back_red" />
+    <field type="CARD16" name="back_green" />
+    <field type="CARD16" name="back_blue" />
+  </request>
+
+  <enum name="QueryShapeOf">
+    <item name="LargestCursor"> <value>0</value></item>
+    <item name="FastestTile">   <value>1</value></item>
+    <item name="FastestStipple"><value>2</value></item>    
+  </enum>
+
+  <request name="QueryBestSize" opcode="97">
+    <field type="CARD8" name="class" />
+    <field type="DRAWABLE" name="drawable" />
+    <field type="CARD16" name="width" />
+    <field type="CARD16" name="height" />
+    <reply>
+      <pad bytes="1" />
+      <field type="CARD16" name="width" />
+      <field type="CARD16" name="height" />
+    </reply>
+  </request>
+
+  <request name="QueryExtension" opcode="98">
+    <pad bytes="1" />
+    <field type="CARD16" name="name_len" />
+    <list type="char" name="name">
+      <fieldref>name_len</fieldref>
+    </list>
+    <reply>
+      <pad bytes="1" />
+      <field type="BOOL" name="present" />
+      <field type="CARD8" name="major_opcode" />
+      <field type="CARD8" name="first_event" />
+      <field type="CARD8" name="first_error" />
+    </reply>
+  </request>
+
+  <request name="ListExtensions" opcode="99">
+    <reply>
+      <field type="CARD8" name="names_len" />
+      <pad bytes="24" />
+      <list type="STR" name="names">
+        <fieldref>names_len</fieldref>
+      </list>
+    </reply>
+  </request>
+
+  <request name="ChangeKeyboardMapping" opcode="100">
+    <field type="CARD8" name="keycode_count" />
+    <field type="KEYCODE" name="first_keycode" />
+    <field type="CARD8" name="keysyms_per_keycode" />
+    <list type="KEYSYM" name="keysyms">
+      <op op="*">
+        <fieldref>keycode_count</fieldref>
+        <fieldref>keysyms_per_keycode</fieldref>
+      </op>
+    </list>
+  </request>
+
+  <request name="GetKeyboardMapping" opcode="101">
+    <pad bytes="1" />
+    <field type="KEYCODE" name="first_keycode" />
+    <field type="CARD8" name="count" />
+    <reply>
+      <field type="BYTE" name="keysyms_per_keycode" />
+      <pad bytes="24" />
+      <list type="KEYSYM" name="keysyms">
+        <op op="*">
+          <fieldref>length</fieldref>
+          <value>4</value>
+        </op>
+      </list>
+    </reply>
+  </request>
+
+  <enum name="KB">
+    <item name="KeyClickPercent"><bit>0</bit></item>
+    <item name="BellPercent">    <bit>1</bit></item>
+    <item name="BellPitch">      <bit>2</bit></item>
+    <item name="BellDuration">   <bit>3</bit></item>
+    <item name="Led">            <bit>4</bit></item>
+    <item name="LedMode">        <bit>5</bit></item>
+    <item name="Key">            <bit>6</bit></item>
+    <item name="AutoRepeatMode"> <bit>7</bit></item>
+  </enum>
+
+  <enum name="LedMode">
+    <item name="Off"><value>0</value></item>
+    <item name="On"> <value>1</value></item>
+  </enum>
+
+  <enum name="AutoRepeatMode">
+    <item name="Off">    <value>0</value></item>
+    <item name="On">     <value>1</value></item>
+    <item name="Default"><value>2</value></item>
+  </enum>
+
+  <request name="ChangeKeyboardControl" opcode="102">
+    <pad bytes="1" />
+    <valueparam value-mask-type="CARD32"
+                value-mask-name="value_mask"
+                value-list-name="value_list" />
+  </request>
+
+  <request name="GetKeyboardControl" opcode="103">
+    <reply>
+      <field type="BYTE" name="global_auto_repeat" />
+      <field type="CARD32" name="led_mask" />
+      <field type="CARD8" name="key_click_percent" />
+      <field type="CARD8" name="bell_percent" />
+      <field type="CARD16" name="bell_pitch" />
+      <field type="CARD16" name="bell_duration" />
+      <pad bytes="2" />
+      <list type="CARD8" name="auto_repeats"><value>32</value></list>
+    </reply>
+  </request>
+
+  <request name="Bell" opcode="104">
+    <field type="INT8" name="percent" />
+  </request>
+
+  <request name="ChangePointerControl" opcode="105">
+    <pad bytes="1" />
+    <field type="INT16" name="acceleration_numerator" />
+    <field type="INT16" name="acceleration_denominator" />
+    <field type="INT16" name="threshold" />
+    <field type="BOOL" name="do_acceleration" />
+    <field type="BOOL" name="do_threshold" />
+  </request>
+
+  <request name="GetPointerControl" opcode="106">
+    <reply>
+      <pad bytes="1" />
+      <field type="CARD16" name="acceleration_numerator" />
+      <field type="CARD16" name="acceleration_denominator" />
+      <field type="CARD16" name="threshold" />
+    </reply>
+  </request>
+
+  <!-- Screen saver timeout and interval can be set to -1 to restore defaults
+       and set to 0 to disable the screen saver. -->
+
+  <enum name="Blanking">
+    <item name="NotPreferred"><value>0</value></item>
+    <item name="Preferred">   <value>1</value></item>
+    <item name="Default">     <value>2</value></item>
+  </enum>
+
+  <enum name="Exposures">
+    <item name="NotAllowed"><value>0</value></item>
+    <item name="Allowed">   <value>1</value></item>
+    <item name="Default">   <value>2</value></item>
+  </enum>
+
+  <request name="SetScreenSaver" opcode="107">
+    <pad bytes="1" />
+    <field type="INT16" name="timeout" />
+    <field type="INT16" name="interval" />
+    <field type="CARD8" name="prefer_blanking" />
+    <field type="CARD8" name="allow_exposures" />
+  </request>
+
+  <request name="GetScreenSaver" opcode="108">
+    <reply>
+      <pad bytes="1" />
+      <field type="CARD16" name="timeout" />
+      <field type="CARD16" name="interval" />
+      <field type="BYTE" name="prefer_blanking" />
+      <field type="BYTE" name="allow_exposures" />
+    </reply>
+  </request>
+
+  <enum name="HostMode">
+    <item name="Insert"><value>0</value></item>
+    <item name="Delete"><value>1</value></item>
+  </enum>
+
+  <!-- also used and extended for Xau authentication -->
+  <enum name="Family">
+    <item name="Internet">         <value>0</value></item>
+    <item name="DECnet">           <value>1</value></item>
+    <item name="Chaos">            <value>2</value></item>
+    <item name="ServerInterpreted"><value>5</value></item>
+    <item name="Internet6">        <value>6</value></item>
+  </enum>
+
+  <request name="ChangeHosts" opcode="109">
+    <field type="CARD8" name="mode" />
+    <field type="CARD8" name="family" />
+    <pad bytes="1" />
+    <field type="CARD16" name="address_len" />
+    <list type="char" name="address">
+      <fieldref>address_len</fieldref>
+    </list>
+  </request>
+
+  <struct name="HOST">
+    <field type="CARD8" name="family" />
+    <pad bytes="1" />
+    <field type="CARD16" name="address_len" />
+    <list type="BYTE" name="address">
+      <fieldref>address_len</fieldref>
+    </list>
+  </struct>
+
+  <request name="ListHosts" opcode="110">
+    <reply>
+      <field type="BYTE" name="mode" />
+      <field type="CARD16" name="hosts_len" />
+      <pad bytes="22" />
+      <list type="HOST" name="hosts">
+        <fieldref>hosts_len</fieldref>
+      </list>
+    </reply>
+  </request>
+
+  <enum name="AccessControl">
+    <item name="Disable"><value>0</value></item>
+    <item name="Enable"> <value>1</value></item>
+  </enum>
+
+  <request name="SetAccessControl" opcode="111">
+    <field type="CARD8" name="mode" />
+  </request>
+
+  <enum name="CloseDown">
+    <item name="DestroyAll">     <value>0</value></item>
+    <item name="RetainPermanent"><value>1</value></item>
+    <item name="RetainTemporary"><value>2</value></item>
+  </enum>
+
+  <request name="SetCloseDownMode" opcode="112">
+    <field type="CARD8" name="mode" />
+  </request>
+
+  <enum name="Kill">
+    <item name="AllTemporary"><value>0</value></item>
+  </enum>
+
+  <request name="KillClient" opcode="113">
+    <pad bytes="1" />
+    <field type="CARD32" name="resource" />
+  </request>
+
+  <request name="RotateProperties" opcode="114">
+    <field type="WINDOW" name="window" />
+    <field type="CARD16" name="atoms_len" />
+    <field type="INT16" name="delta" />
+    <list type="ATOM" name="atoms">
+      <fieldref>atoms_len</fieldref>
+    </list>
+  </request>
+
+  <enum name="ScreenSaver">
+    <item name="Reset"> <value>0</value></item>
+    <item name="Active"><value>1</value></item>
+  </enum>
+
+  <request name="ForceScreenSaver" opcode="115">
+    <field type="CARD8" name="mode" />
+  </request>
+
+  <!-- Reply from SetPointerMapping or SetModifierMapping -->
+  <enum name="MappingStatus">
+    <item name="Success"><value>0</value></item>
+    <item name="Busy">   <value>1</value></item>
+    <item name="Failure"><value>2</value></item>
+  </enum>
+
+  <request name="SetPointerMapping" opcode="116">
+    <field type="CARD8" name="map_len" />
+    <list type="CARD8" name="map">
+      <fieldref>map_len</fieldref>
+    </list>
+    <reply>
+      <field type="BYTE" name="status" />
+    </reply>
+  </request>
+
+  <request name="GetPointerMapping" opcode="117">
+    <reply>
+      <field type="CARD8" name="map_len" />
+      <pad bytes="24" />
+      <list type="CARD8" name="map">
+        <fieldref>map_len</fieldref>
+      </list>
+    </reply>
+  </request>
+  
+  <enum name="MapIndex">
+    <item name="Shift">  <value>0</value></item>
+    <item name="Lock">   <value>1</value></item>
+    <item name="Control"><value>2</value></item>
+    <item name="1">      <value>3</value></item>
+    <item name="2">      <value>4</value></item>
+    <item name="3">      <value>5</value></item>
+    <item name="4">      <value>6</value></item>
+    <item name="5">      <value>7</value></item>
+  </enum>
+
+  <request name="SetModifierMapping" opcode="118">
+    <field type="CARD8" name="keycodes_per_modifier" />
+    <list type="KEYCODE" name="keycodes">
+      <op op="*">
+        <fieldref>keycodes_per_modifier</fieldref>
+        <value>8</value>
+      </op>
+    </list>
+    <reply>
+      <field type="BYTE" name="status" />
+    </reply>
+  </request>
+
+  <request name="GetModifierMapping" opcode="119">
+    <reply>
+      <field type="CARD8" name="keycodes_per_modifier" />
+      <pad bytes="24" />
+      <list type="KEYCODE" name="keycodes">
+        <op op="*">
+          <fieldref>keycodes_per_modifier</fieldref>
+          <value>8</value>
+        </op>
+      </list>
+    </reply>
+  </request>
+
+  <!--
+    FIXME: NoOperation should allow specifying payload length
+    but geez, malloc()ing a 262140 byte buffer just so I have something
+    to hand to write(2) seems silly...!
+  -->
+  <request name="NoOperation" opcode="127" />
+
+</xcb>

@@ -2,93 +2,91 @@
 	Copyright 2007 TEISSIER Sylvere sligor(at)free.fr
 	version 0.1 2007/08/29
 	This binding is an alpha release and need to be more tested
-
+	
 	This file is free software, please read COPYING file for more informations
 */
 
 /* This file is binding from:
- $XdotOrg: lib/X11/include/X11/Xlib.h,v 1.6 2005-11-08 06:33:25 jkj Exp $
+ $XdotOrg: lib/X11/include/X11/Xlib.h,v 1.6 2005-11-08 06:33:25 jkj Exp $ 
  $Xorg: Xlib.h,v 1.6 2001/02/09 02:03:38 xorgcvs Exp $
 */
 
-module X11.Xlib;
-
-public import X11.X;
-
+module std.c.linux.X11.Xlib;
+public import std.c.linux.X11.X;
 
 const int XlibSpecificationRelease=6;
 version = X_HAVE_UTF8_STRING;
 
-alias void* XPointer;
-alias int Status ;
-alias int Bool;
-enum:Bool {False, True}; //xlib boolean is int type, D bool is only byte
-enum QueueMode {QueuedAlready, QueuedAfterReading, QueuedAfterFlush};
+typedef void* XPointer;
+typedef int Status ;
+enum Bool:int{False,True}; //xlib boolean is int type, D bool is only byte
+enum QueueMode{QueuedAlready,QueuedAfterReading,QueuedAfterFlush};
 
 /+
 TODO Nested struc or union verify
 +/
 
-int		ConnectionNumber()(Displayz *dpy)			{return dpy.fd;}
-Window	RootWindow()(Display *dpy,int scr)			{return ScreenOfDisplay(dpy,scr).root;}
-int		DefaultScreen()(Display *dpy)				{return dpy.default_screen;}
-Window	DefaultRootWindow()(Display *dpy)			{return ScreenOfDisplay(dpy,DefaultScreen(dpy)).root;}
-Visual*	DefaultVisual()(Display *dpy,int scr)		{return ScreenOfDisplay(dpy,scr).root_visual;}
-GC		DefaultGC()(Display *dpy,int scr)			{return ScreenOfDisplay(dpy,scr).default_gc;}
-uint	BlackPixel()(Display *dpy,int scr)			{return ScreenOfDisplay(dpy,scr).black_pixel;}
-uint	WhitePixel()(Display *dpy,int scr)			{return ScreenOfDisplay(dpy,scr).white_pixel;}
-uint	AllPlanes()()								{return 0xFFFFFFFF;}
-int		QLength()(Display *dpy)						{return dpy.qlen;}
-int		DisplayWidth()(Display *dpy,int scr)		{return ScreenOfDisplay(dpy,scr).width;}
-int		DisplayHeight()(Display *dpy,int scr)		{return ScreenOfDisplay(dpy,scr).height;}
-int		DisplayWidthMM()(Display *dpy,int scr)		{return ScreenOfDisplay(dpy,scr).mwidth;}
-int		DisplayHeightMM()(Display *dpy,int scr)		{return ScreenOfDisplay(dpy,scr).mheight;}
-int		DisplayPlanes()(Display *dpy,int scr)		{return ScreenOfDisplay(dpy,scr).root_depth;}
-int		DisplayCells()(Display *dpy,int scr)	 	{return DefaultVisual(dpy,scr).map_entries;}
-int		ScreenCount()(Display *dpy)					{return dpy.nscreens;}
-char*	ServerVendor()(Display *dpy)				{return dpy.vendor;}
-int		ProtocolVersion()(Display *dpy)				{return dpy.proto_major_version;}
-int		ProtocolRevision()(Display *dpy)			{return dpy.proto_minor_version;}
-int		VendorRelease()(Display *dpy)				{return dpy.release;}
-char*	DisplayString()(Display *dpy)				{return dpy.display_name;}
-int		DefaultDepth()(Display *dpy,int scr)		{return ScreenOfDisplay(dpy,scr).root_depth;}
-Colormap DefaultColormap()(Display *dpy,int scr)	{return ScreenOfDisplay(dpy,scr).cmap;}
-int		BitmapUnit()(Display *dpy)					{return dpy.bitmap_unit;}
-int		BitmapBitOrder()(Display *dpy)				{return dpy.bitmap_bit_order;}
-int		BitmapPad()(Display *dpy)					{return dpy.bitmap_pad;}
-int		ImageByteOrder()(Display *dpy)				{return dpy.byte_order;}
-uint	NextRequest()(Display *dpy)					{return dpy.request + 1;}
-uint	LastKnownRequestProcessed()(Display *dpy)	{return dpy.last_request_read;}
+int		ConnectionNumber(Display *dpy) 	{return dpy.fd;}
+Window	RootWindow(Display *dpy,int scr) 	{return ScreenOfDisplay(dpy,scr).root;}
+int		DefaultScreen(Display *dpy) 		{return dpy.default_screen;}
+Window	DefaultRootWindow(Display *dpy) 	{return ScreenOfDisplay(dpy,DefaultScreen(dpy)).root;}
+Visual*	DefaultVisual(Display *dpy,int scr) {return ScreenOfDisplay(dpy,scr).root_visual;}
+GC		DefaultGC(Display *dpy,int scr) 	{return ScreenOfDisplay(dpy,scr).default_gc;}
+uint	BlackPixel(Display *dpy,int scr) 	{return cast(uint) ScreenOfDisplay(dpy,scr).black_pixel;}
+uint	WhitePixel(Display *dpy,int scr) 	{return cast(uint) ScreenOfDisplay(dpy,scr).white_pixel;}
+ulong	AllPlanes()							{return 0xFFFFFFFF;}
+int		QLength(Display *dpy) 				{return dpy.qlen;}
+int		DisplayWidth(Display *dpy,int scr) 	{return ScreenOfDisplay(dpy,scr).width;}
+int		DisplayHeight(Display *dpy,int scr) {return ScreenOfDisplay(dpy,scr).height;}
+int		DisplayWidthMM(Display *dpy,int scr){return ScreenOfDisplay(dpy,scr).mwidth;}
+int		DisplayHeightMM(Display *dpy,int scr){return ScreenOfDisplay(dpy,scr).mheight;}
+int		DisplayPlanes(Display *dpy,int scr) {return ScreenOfDisplay(dpy,scr).root_depth;}
+int		DisplayCells(Display *dpy,int scr) 	{return DefaultVisual(dpy,scr).map_entries;}
+int		ScreenCount(Display *dpy) 			{return dpy.nscreens;}
+char*	ServerVendor(Display *dpy) 			{return dpy.vendor;}
+int		ProtocolVersion(Display *dpy) 		{return dpy.proto_major_version;}
+int		ProtocolRevision(Display *dpy) 		{return dpy.proto_minor_version;}
+int		VendorRelease(Display *dpy) 			{return dpy.release;}
+char*	DisplayString(Display *dpy) 			{return dpy.display_name;}
+int		DefaultDepth(Display *dpy,int scr) 	{return ScreenOfDisplay(dpy,scr).root_depth;}
+Colormap DefaultColormap(Display *dpy,int scr){return ScreenOfDisplay(dpy,scr).cmap;}
+int		BitmapUnit(Display *dpy) 			{return dpy.bitmap_unit;}
+int		BitmapBitOrder(Display *dpy) 		{return dpy.bitmap_bit_order;}
+int		BitmapPad(Display *dpy) 			{return dpy.bitmap_pad;}
+int		ImageByteOrder(Display *dpy) 		{return dpy.byte_order;} 
+uint	NextRequest(Display *dpy)			{return cast(uint) dpy.request + 1;}
+
+uint	LastKnownRequestProcessed(Display *dpy)	{return cast(uint) dpy.last_request_read;}
 
 /* macros for screen oriented applications (toolkit) */
-Screen*	ScreenOfDisplay()(Display *dpy,int scr)	{return &dpy.screens[scr];}
-Screen*	DefaultScreenOfDisplay()(Display *dpy)	{return ScreenOfDisplay(dpy,DefaultScreen(dpy));}
-Display* DisplayOfScreen()(Screen s)			{return s.display;}
-Window	RootWindowOfScreen()(Screen s)			{return s.root;}
-uint 	BlackPixelOfScreen()(Screen s)			{return s.black_pixel;}
-uint 	WhitePixelOfScreen()(Screen s)			{return s.white_pixel;}
-Colormap DefaultColormapOfScreen()(Screen s)	{return s.cmap;}
-int 	DefaultDepthOfScreen()(Screen s)		{return s.root_depth;}
-GC		DefaultGCOfScreen()(Screen s)			{return s.default_gc;}
-Visual*	DefaultVisualOfScreen()(Screen s)		{return s.root_visual;}
-int		WidthOfScreen()(Screen s)				{return s.width;}
-int		HeightOfScreen()(Screen s)				{return s.height;}
-int		WidthMMOfScreen()(Screen s)				{return s.mwidth;}
-int		HeightMMOfScreen()(Screen s)			{return s.mheight;}
-int		PlanesOfScreen()(Screen s)				{return s.root_depth;}
-int 	CellsOfScreen()(Screen s)				{return DefaultVisualOfScreen(s).map_entries;}
-int		MinCmapsOfScreen()(Screen s)			{return s.min_maps;}
-int		MaxCmapsOfScreen()(Screen s)			{return s.max_maps;}
-Bool	DoesSaveUnders()(Screen s)				{return s.save_unders;}
-int 	DoesBackingStore()(Screen s)			{return s.backing_store;}
-uint	EventMaskOfScreen()(Screen s)			{return s.root_input_mask;}
+Screen*	ScreenOfDisplay(Display *dpy,int scr)	{return &dpy.screens[scr];}
+Screen*	DefaultScreenOfDisplay(Display *dpy) {return ScreenOfDisplay(dpy,DefaultScreen(dpy));}
+Display* DisplayOfScreen(Screen s)			{return s.display;}
+Window	RootWindowOfScreen(Screen s)		{return s.root;}
+uint 	BlackPixelOfScreen(Screen s)		{return cast(uint) s.black_pixel;}
+uint 	WhitePixelOfScreen(Screen s)		{return cast(uint) s.white_pixel;}
+Colormap DefaultColormapOfScreen(Screen s)	{return s.cmap;}
+int 	DefaultDepthOfScreen(Screen s)		{return s.root_depth;}
+GC		DefaultGCOfScreen(Screen s)		{return s.default_gc;}
+Visual*	DefaultVisualOfScreen(Screen s)	{return s.root_visual;}
+int		WidthOfScreen(Screen s)			{return s.width;}
+int		HeightOfScreen(Screen s)		{return s.height;}
+int		WidthMMOfScreen(Screen s)		{return s.mwidth;}
+int		HeightMMOfScreen(Screen s)		{return s.mheight;}
+int		PlanesOfScreen(Screen s)		{return s.root_depth;}
+int 	CellsOfScreen(Screen s)			{return DefaultVisualOfScreen(s).map_entries;}
+int		MinCmapsOfScreen(Screen s)		{return s.min_maps;}
+int		MaxCmapsOfScreen(Screen s)		{return s.max_maps;}
+Bool	DoesSaveUnders(Screen s)		{return s.save_unders;}
+int 	DoesBackingStore(Screen s)		{return s.backing_store;}
+int		EventMaskOfScreen(Screen s)		{return cast(int) s.root_input_mask;}
 
 
 
 /*
  * Extensions need a way to hang private data on some structures.
  */
-struct XExtData
+struct XExtData 
 {
 	int number;		/* number returned by XRegisterExtension */
 	XExtData *next;		/* next item on list of data for structure */
@@ -121,9 +119,9 @@ struct XPixmapFormatValues
 struct XGCValues
 {
 	GraphicFunction function_;		/* logical operation*/
-	uint plane_mask;				/* plane mask */
-	uint foreground;				/* foreground pixel */
-	uint background;				/* background pixel */
+	ulong plane_mask;				/* plane mask */
+	ulong foreground;				/* foreground pixel */
+	ulong background;				/* background pixel */
 	int line_width;					/* line width */
 	LineStyle line_style;	 		/* LineSolid, LineOnOffDash, LineDoubleDash */
 	CapStyle cap_style;	  			/* CapNotLast, CapButt, CapRound, CapProjecting */
@@ -145,7 +143,7 @@ struct XGCValues
 	byte dashes;
 };
 
-alias void* GC;
+typedef void* GC;
 
 /*
  * Visual structure; contains information about colormapping possible.
@@ -155,14 +153,14 @@ struct Visual
 	XExtData *ext_data;	/* hook for extension to hang data */
 	VisualID visualid;	/* visual id of this visual */
 	int class_;			/* class of screen (monochrome, etc.) */
-	uint red_mask, green_mask, blue_mask;	/* mask values */
+	ulong red_mask, green_mask, blue_mask;	/* mask values */
 	int bits_per_rgb;	/* log base 2 of distinct color values */
 	int map_entries;	/* color map entries */
 } ;
 
 /*
  * Depth structure; contains information for each possible depth.
- */
+ */	
 struct Depth
 {
 	int depth;		/* this depth (Z) of the depth */
@@ -184,12 +182,12 @@ struct Screen{
 	Visual *root_visual;	/* root visual */
 	GC default_gc;			/* GC for the root root visual */
 	Colormap cmap;			/* default color map */
-	uint white_pixel;
-	uint black_pixel;		/* White and Black pixel values */
+	ulong white_pixel;
+	ulong black_pixel;		/* White and Black pixel values */
 	int max_maps, min_maps;	/* max and min color maps */
 	int backing_store;		/* Never, WhenMapped, Always */
-	Bool save_unders;
-	int root_input_mask;	/* initial root input mask */
+	Bool save_unders;	
+	long root_input_mask;	/* initial root input mask */
 };
 
 /*
@@ -209,17 +207,17 @@ struct ScreenFormat
 struct  XSetWindowAttributes
 {
     Pixmap background_pixmap;	/* background or None or ParentRelative */
-    uint background_pixel;		/* background pixel */
+    ulong background_pixel;		/* background pixel */
     Pixmap border_pixmap;		/* border of the window */
-    uint border_pixel;			/* border pixel value */
+    ulong border_pixel;			/* border pixel value */
     BitGravity bit_gravity;		/* one of bit gravity values */
     BitGravity win_gravity;		/* one of the window gravity values */
     BackingStoreHint backing_store;		/* NotUseful, WhenMapped, Always */
-    uint backing_planes;		/* planes to be preseved if possible */
-    uint backing_pixel;			/* value to use in restoring planes */
+    ulong backing_planes;		/* planes to be preseved if possible */
+    ulong backing_pixel;			/* value to use in restoring planes */
     Bool save_under;			/* should bits under be saved? (popups) */
-    int event_mask;			/* set of events that should be saved */
-    int do_not_propagate_mask;/* set of events that should not propagate */
+    long event_mask;			/* set of events that should be saved */
+    long do_not_propagate_mask;/* set of events that should not propagate */
     Bool override_redirect;		/* Boolean value for override-redirect */
     Colormap colormap;			/* color map to be associated with window */
     Cursor cursor;				/* cursor to be displayed (or None) */
@@ -233,19 +231,19 @@ struct XWindowAttributes
     int depth;          		/* depth of window */
     Visual *visual;				/* the associated visual structure */
     Window root;        		/* root of screen containing window */
-    uint class_;			        /* InputOutput, InputOnly*/
+    WindowClass class_;			/* InputOutput, InputOnly*/
     BitGravity bit_gravity;		/* one of bit gravity values */
     BitGravity win_gravity;		/* one of the window gravity values */
     BackingStoreHint backing_store;	/* NotUseful, WhenMapped, Always */
-    uint backing_planes;		/* planes to be preserved if possible */
-    uint backing_pixel;	/* value to be used when restoring planes */
+    ulong backing_planes;		/* planes to be preserved if possible */
+    ulong backing_pixel;	/* value to be used when restoring planes */
     Bool save_under;			/* Boolean, should bits under be saved? */
     Colormap colormap;			/* color map to be associated with window */
     Bool map_installed;		/* Boolean, is color map currently installed*/
     MapState map_state;		/* IsUnmapped, IsUnviewable, IsViewable */
-    int all_event_masks;	/* set of events all people have interest in*/
-    int your_event_mask;	/* my event mask */
-    int do_not_propagate_mask; /* set of events that should not propagate */
+    EventMask all_event_masks;	/* set of events all people have interest in*/
+    EventMask your_event_mask;	/* my event mask */
+    EventMask do_not_propagate_mask; /* set of events that should not propagate */
     Bool override_redirect;		/* Boolean value for override-redirect */
     Screen *screen;				/* back pointer to correct screen */
 };
@@ -289,9 +287,9 @@ struct XImage
     int depth;					/* depth of image */
     int bytes_per_line;			/* accelarator to next line */
     int bits_per_pixel;			/* bits per pixel (ZPixmap) */
-    uint red_mask;	/* bits in z arrangment */
-    uint green_mask;
-    uint blue_mask;
+    ulong red_mask;	/* bits in z arrangment */
+    ulong green_mask;
+    ulong blue_mask;
     XPointer obdata;			/* hook for the object routines to hang on */
     struct f {				/* image manipulation routines */
 		XImage* function(
@@ -306,14 +304,14 @@ struct XImage
 			int					/* bitmap_pad */,
 			int					/* bytes_per_line */) create_image;
 		int  function(XImage *)destroy_image;
-		uint function(XImage *, int, int)get_pixel;
-		int  function(XImage *, int, int, uint)put_pixel;
+		ulong function(XImage *, int, int)get_pixel;
+		int  function(XImage *, int, int, ulong)put_pixel;
 		XImage function(XImage *, int, int, uint, uint)sub_image;
-		int function(XImage *, int)add_pixel;
+		int function(XImage *, long)add_pixel;
 	};
 };
 
-/*
+/* 
  * Data structure for XReconfigureWindow
  */
 struct XWindowChanges{
@@ -329,13 +327,13 @@ struct XWindowChanges{
  */
 struct XColor
 {
-	uint pixel;
+	ulong pixel;
 	ushort red, green, blue;
 	StoreColor flags;  /* do_red, do_green, do_blue */
 	byte pad;
 };
 
-/*
+/* 
  * Data structures for graphics operations.  On most machines, these are
  * congruent with the wire protocol structures, so reformatting the data
  * can be avoided on these architectures.
@@ -349,13 +347,13 @@ struct XPoint
 {
     short x, y;
 };
-
+    
 struct XRectangle
 {
     short x, y;
     ushort width, height;
 };
-
+    
 struct XArc
 {
     short x, y;
@@ -385,7 +383,7 @@ struct XKeyboardState
 	int key_click_percent;
 	int bell_percent;
 	uint bell_pitch, bell_duration;
-	uint led_mask;
+	ulong led_mask;
 	int global_auto_repeat;
 	byte auto_repeats[32];
 };
@@ -440,8 +438,8 @@ struct Display
 	_XPrivate *private9;
 	_XPrivate *private10;
 	int qlen;		/* Length of input event queue */
-	uint last_request_read; /* seq number of last event read */
-	uint request;	/* sequence number of last request. */
+	ulong last_request_read; /* seq number of last event read */
+	ulong request;	/* sequence number of last request. */
 	XPointer private11;
 	XPointer private12;
 	XPointer private13;
@@ -453,8 +451,8 @@ struct Display
 	int default_screen;	/* default screen for operations */
 	int nscreens;		/* number of screens on this server*/
 	Screen *screens;	/* pointer to list of screens */
-	uint motion_buffer;	/* size of motion buffer */
-	uint private16;
+	ulong motion_buffer;	/* size of motion buffer */
+	ulong private16;
 	int min_keycode;	/* minimum defined keycode */
 	int max_keycode;	/* maximum defined keycode */
 	XPointer private17;
@@ -464,7 +462,7 @@ struct Display
 	/* there is more to this structure, but it is private to Xlib */
 }
 
-alias Display *_XPrivDisplay;
+typedef Display *_XPrivDisplay;
 struct XrmHashBucketRec{};
 
 
@@ -474,7 +472,7 @@ struct XrmHashBucketRec{};
 struct XKeyEvent
 {
 	int type;			/* of event */
-	uint serial;		/* # of last request processed by server */
+	ulong serial;		/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;	        /* "event" window it is reported relative to */
@@ -487,13 +485,13 @@ struct XKeyEvent
 	uint keycode;	/* detail */
 	Bool same_screen;	/* same screen flag */
 };
-alias XKeyEvent XKeyPressedEvent;
-alias XKeyEvent XKeyReleasedEvent;
+typedef XKeyEvent XKeyPressedEvent;
+typedef XKeyEvent XKeyReleasedEvent;
 
 struct XButtonEvent
 {
 	int type;		/* of event */
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;	        /* "event" window it is reported relative to */
@@ -506,12 +504,12 @@ struct XButtonEvent
 	uint button;	/* detail */
 	Bool same_screen;	/* same screen flag */
 };
-alias XButtonEvent XButtonPressedEvent;
-alias XButtonEvent XButtonReleasedEvent;
+typedef XButtonEvent XButtonPressedEvent;
+typedef XButtonEvent XButtonReleasedEvent;
 
 struct XMotionEvent{
 	int type;		/* of event */
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;	        /* "event" window reported relative to */
@@ -524,11 +522,11 @@ struct XMotionEvent{
 	byte is_hint;		/* detail */
 	Bool same_screen;	/* same screen flag */
 };
-alias XMotionEvent XPointerMovedEvent;
+typedef XMotionEvent XPointerMovedEvent;
 
 struct XCrossingEvent{
 	int type;		/* of event */
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;	        /* "event" window reported relative to */
@@ -540,19 +538,19 @@ struct XCrossingEvent{
 	NotifyModes mode;		/* NotifyNormal, NotifyGrab, NotifyUngrab */
 	NotifyDetail detail;
 	/*
-	 * NotifyAncestor, NotifyVirtual, NotifyInferior,
+	 * NotifyAncestor, NotifyVirtual, NotifyInferior, 
 	 * NotifyNonlinear,NotifyNonlinearVirtual
 	 */
 	Bool same_screen;	/* same screen flag */
 	Bool focus;		/* Boolean focus */
 	KeyOrButtonMask state;	/* key or button mask */
 };
-alias XCrossingEvent XEnterWindowEvent;
-alias XCrossingEvent XLeaveWindowEvent;
+typedef XCrossingEvent XEnterWindowEvent;
+typedef XCrossingEvent XLeaveWindowEvent;
 
 struct XFocusChangeEvent{
 	int type;		/* FocusIn or FocusOut */
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;		/* window of event */
@@ -560,29 +558,29 @@ struct XFocusChangeEvent{
 				   NotifyGrab, NotifyUngrab */
 	NotifyDetail detail;
 	/*
-	 * NotifyAncestor, NotifyVirtual, NotifyInferior,
+	 * NotifyAncestor, NotifyVirtual, NotifyInferior, 
 	 * NotifyNonlinear,NotifyNonlinearVirtual, NotifyPointer,
-	 * NotifyPointerRoot, NotifyDetailNone
+	 * NotifyPointerRoot, NotifyDetailNone 
 	 */
 };
-alias XFocusChangeEvent XFocusInEvent;
-alias XFocusChangeEvent XFocusOutEvent;
+typedef XFocusChangeEvent XFocusInEvent;
+typedef XFocusChangeEvent XFocusOutEvent;
 
 /* generated on EnterWindow and FocusIn  when KeyMapState selected */
 struct XKeymapEvent
 {
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;
 	byte key_vector[32];
-};
+};	
 
 struct XExposeEvent
 {
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;
@@ -593,7 +591,7 @@ struct XExposeEvent
 
 struct XGraphicsExposeEvent{
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Drawable drawable;
@@ -606,7 +604,7 @@ struct XGraphicsExposeEvent{
 
 struct XNoExposeEvent{
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Drawable drawable;
@@ -616,16 +614,16 @@ struct XNoExposeEvent{
 
 struct XVisibilityEvent{
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;
-	int    state;		/* Visibility state */
+	VisibilityNotify state;		/* Visibility state */
 };
 
 struct XCreateWindowEvent{
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window parent;		/* parent of the window */
@@ -636,10 +634,10 @@ struct XCreateWindowEvent{
 	Bool override_redirect;	/* creation should be overridden */
 };
 
-struct XDestroyWindowEvent
+struct XDestroyWindowEvent 
 {
 	int type;
-	uint serial;		/* # of last request processed by server */
+	ulong serial;		/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window event;
@@ -649,7 +647,7 @@ struct XDestroyWindowEvent
 struct XUnmapEvent
 {
 	int type;
-	uint serial;		/* # of last request processed by server */
+	ulong serial;		/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window event;
@@ -660,7 +658,7 @@ struct XUnmapEvent
 struct XMapEvent
 {
 	int type;
-	uint serial;		/* # of last request processed by server */
+	ulong serial;		/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window event;
@@ -671,7 +669,7 @@ struct XMapEvent
 struct XMapRequestEvent
 {
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window parent;
@@ -681,7 +679,7 @@ struct XMapRequestEvent
 struct XReparentEvent
 {
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window event;
@@ -694,7 +692,7 @@ struct XReparentEvent
 struct XConfigureEvent
 {
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window event;
@@ -709,7 +707,7 @@ struct XConfigureEvent
 struct XGravityEvent
 {
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window event;
@@ -720,7 +718,7 @@ struct XGravityEvent
 struct XResizeRequestEvent
 {
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;
@@ -730,7 +728,7 @@ struct XResizeRequestEvent
 struct  XConfigureRequestEvent
 {
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window parent;
@@ -746,7 +744,7 @@ struct  XConfigureRequestEvent
 struct XCirculateEvent
 {
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window event;
@@ -757,7 +755,7 @@ struct XCirculateEvent
 struct XCirculateRequestEvent
 {
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window parent;
@@ -768,7 +766,7 @@ struct XCirculateRequestEvent
 struct XPropertyEvent
 {
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;
@@ -780,7 +778,7 @@ struct XPropertyEvent
 struct XSelectionClearEvent
 {
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;
@@ -791,7 +789,7 @@ struct XSelectionClearEvent
 struct XSelectionRequestEvent
 {
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window owner;
@@ -805,7 +803,7 @@ struct XSelectionRequestEvent
 struct XSelectionEvent
 {
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window requestor;
@@ -818,7 +816,7 @@ struct XSelectionEvent
 struct XColormapEvent
 {
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;
@@ -830,24 +828,23 @@ struct XColormapEvent
 struct XClientMessageEvent
 {
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;
 	Atom message_type;
 	int format;
-
-	union /* data */ {
+	union data{
 		byte b[20];
 		short s[10];
-		int l[5];
+		long l[5];
 		};
 };
 
 struct XMappingEvent
 {
 	int type;
-	uint serial;	/* # of last request processed by server */
+	ulong serial;	/* # of last request processed by server */
 	Bool send_event;	/* true if this came from a SendEvent request */
 	Display *display;	/* Display the event was read from */
 	Window window;		/* unused */
@@ -862,13 +859,13 @@ struct XErrorEvent
 	int type;
 	Display *display;	/* Display the event was read from */
 	XID resourceid;		/* resource id */
-	uint serial;	/* serial number of failed request */
+	ulong serial;	/* serial number of failed request */
 	uint error_code;	/* error code of failed request */
 	ubyte request_code;	/* Major op-code of failed request */
 	ubyte minor_code;	/* Minor op-code of failed request */
 };
 
-struct XAnyEvent
+struct XAnyEvent 
 {
 	int type;
 	ubyte serial;	/* # of last request processed by server */
@@ -914,11 +911,11 @@ union XEvent{
 	XMappingEvent xmapping;
 	XErrorEvent xerror;
 	XKeymapEvent xkeymap;
-	int pad[24];
+	long pad[24];
 };
 
 
-uint XAllocID()(Display* dpy) {return dpy.resource_alloc(dpy);}
+int XAllocID(Display* dpy) {return cast(int) dpy.resource_alloc(dpy);}
 
 
 /*
@@ -938,10 +935,10 @@ struct XCharStruct
  * To allow arbitrary information with fonts, there are additional properties
  * returned.
  */
-struct XFontProp
+struct XFontProp 
 {
     Atom name;
-    uint card32;
+    ulong card32;
 };
 
 struct XFontStruct{
@@ -987,17 +984,17 @@ struct XTextItem16
     int 	nchars;			/* number of characters */
     int 	delta;			/* delta between strings */
     Font 	font;			/* font to print it in, None don't change */
-}
+} 
 
 
 union XEDataObject
-{
+{ 
 	Display 	*display;
 	GC 			gc;
 	Visual 		*visual;
 	Screen 		*screen;
 	ScreenFormat *pixmap_format;
-	XFontStruct *font;
+	XFontStruct *font; 
 } ;
 
 struct XFontSetExtents{
@@ -1006,14 +1003,14 @@ struct XFontSetExtents{
 };
 
 /* unused:
-alias void (*XOMProc)();
+typedef void (*XOMProc)();
  */
 
-struct _XOM{}
+struct _XOM{} 
 struct _XOC{}
-alias _XOM *XOM;
-alias _XOC *XOC;
-alias _XOC *XFontSet;
+typedef _XOM *XOM;
+typedef _XOC *XOC;
+typedef _XOC *XFontSet;
 struct XmbTextItem{
     byte		*chars;
     int			nchars;
@@ -1029,16 +1026,16 @@ struct XwcTextItem{
 } ;
 
 
-string XNRequiredCharSet ="requiredCharSet";
-string XNQueryOrientation ="queryOrientation";
-string XNBaseFontName ="baseFontName";
-string XNOMAutomatic ="omAutomatic";
-string XNMissingCharSet ="missingCharSet";
-string XNDefaultString ="defaultString";
-string XNOrientation ="orientation";
-string XNDirectionalDependentDrawing ="directionalDependentDrawing";
-string XNContextualDrawing ="contextualDrawing";
-string XNFontInfo ="fontInfo";
+char[] XNRequiredCharSet ="requiredCharSet".dup;
+char[] XNQueryOrientation ="queryOrientation".dup;
+char[] XNBaseFontName ="baseFontName".dup;
+char[] XNOMAutomatic ="omAutomatic".dup;
+char[] XNMissingCharSet ="missingCharSet".dup;
+char[] XNDefaultString ="defaultString".dup;
+char[] XNOrientation ="orientation".dup;
+char[] XNDirectionalDependentDrawing ="directionalDependentDrawing".dup;
+char[] XNContextualDrawing ="contextualDrawing".dup;
+char[] XNFontInfo ="fontInfo".dup;
 
 
 struct XOMCharSetList
@@ -1069,29 +1066,29 @@ struct XOMFontInfo{
 
 struct _XIM{}
 struct _XIC{}
-alias _XIM *XIM;
-alias _XIC *XIC;
+typedef _XIM *XIM;
+typedef _XIC *XIC;
 
 
-alias void function(
+typedef void function(
     XIM,
     XPointer,
     XPointer
 ) XIMProc;
 
-alias Bool function(
+typedef Bool function(
     XIC,
     XPointer,
     XPointer
 )XICProc;
 
-alias void function(
+typedef void function(
     Display*,
     XPointer,
     XPointer
 )XIDProc;
 
-enum  XIMStyle:uint
+enum  XIMStyle:ulong
 {
 	XIMPreeditArea			=0x0001L,
 	XIMPreeditCallbacks		=0x0002L,
@@ -1160,7 +1157,7 @@ const int XLookupKeySym=		3;
 const int XLookupBoth	=	4;
 
 
-alias void *XVaNestedList;
+typedef void *XVaNestedList;
 
 struct XIMCallback{
     XPointer client_data;
@@ -1172,7 +1169,7 @@ struct XICCallback{
     XICProc callback;
 };
 
-enum XIMFeedback:uint
+enum XIMFeedback:ulong
 {
 	XIMReverse			=1,
 	XIMUnderline		=1<<1,
@@ -1188,15 +1185,15 @@ enum XIMFeedback:uint
 struct XIMText {
     ushort length;
     XIMFeedback *feedback;
-    Bool encoding_is_wchar;
-    union string
+    Bool encoding_is_wchar; 
+    union string 
     {
 		byte *multi_byte;
 		wchar *wide_char;
-    };
+    }; 
 };
 
-enum XIMPreeditState:uint
+enum XIMPreeditState:ulong
 {
 	XIMPreeditUnKnown	=0L,
 	XIMPreeditEnable	=1L,
@@ -1208,13 +1205,13 @@ struct	XIMPreeditStateNotifyCallbackStruct
     XIMPreeditState state;
 }
 
-enum XIMResetState:uint
+enum XIMResetState:ulong
 {
 	XIMInitialState		=1L,
 	XIMPreserveState	=1L<<1
 }
 
-enum XIMStringConversionFeedback:uint
+enum XIMStringConversionFeedback:ulong
 {
 	XIMStringConversionLeftEdge		=0x00000001,
 	XIMStringConversionRightEdge	=0x00000002,
@@ -1227,15 +1224,15 @@ enum XIMStringConversionFeedback:uint
 struct XIMStringConversionText {
     uint length;
     XIMStringConversionFeedback *feedback;
-    Bool encoding_is_wchar;
+    Bool encoding_is_wchar; 
     union string
     {
 		byte *mbs;
 		wchar *wcs;
-    };
+    }; 
 };
 
-alias	ushort	XIMStringConversionPosition;
+typedef	ushort	XIMStringConversionPosition;
 
 enum XIMStringConversionType:ushort
 {
@@ -1256,7 +1253,7 @@ enum XIMCaretDirection:int{
     XIMForwardWord, XIMBackwardWord,
     XIMCaretUp, XIMCaretDown,
     XIMNextLine, XIMPreviousLine,
-    XIMLineStart, XIMLineEnd,
+    XIMLineStart, XIMLineEnd, 
     XIMAbsolutePosition,
     XIMDontChange
 };
@@ -1277,7 +1274,7 @@ struct XIMPreeditDrawCallbackStruct {
 } ;
 
 enum XIMCaretStyle{
-    XIMIsInvisible,	/* Disable caret feedback */
+    XIMIsInvisible,	/* Disable caret feedback */ 
     XIMIsPrimary,	/* UI defined caret feedback */
     XIMIsSecondary	/* UI defined caret feedback */
 };
@@ -1292,7 +1289,7 @@ enum XIMStatusDataType{
     XIMTextType,
     XIMBitmapType
 };
-
+	
 struct XIMStatusDrawCallbackStruct {
     XIMStatusDataType type;
     union data{
@@ -1312,7 +1309,7 @@ struct XIMHotKeyTriggers {
     XIMHotKeyTrigger	*key;
 };
 
-enum XIMHotKeyState:uint
+enum XIMHotKeyState:ulong
 {
 	XIMHotKeyStateON	=0x0001L,
 	XIMHotKeyStateOFF	=0x0002L
@@ -1361,7 +1358,7 @@ extern XModifierKeymap	*XGetModifierMapping(
 extern XModifierKeymap	*XInsertModifiermapEntry(
     XModifierKeymap*	/* modmap */,
     KeyCode		/* keycode_entry */,
-    int			/* modifier */
+    int			/* modifier */    
 );
 
 extern XModifierKeymap *XNewModifiermap(
@@ -1390,7 +1387,7 @@ extern XImage *XGetImage(
     int			/* y */,
     uint	/* width */,
     uint	/* height */,
-    uint	/* plane_mask */,
+    ulong	/* plane_mask */,
     ImageFormat	/* format */
 );
 extern XImage *XGetSubImage(
@@ -1400,14 +1397,14 @@ extern XImage *XGetSubImage(
     int			/* y */,
     uint	/* width */,
     uint	/* height */,
-    uint	/* plane_mask */,
+    ulong	/* plane_mask */,
     int			/* format */,
     XImage*		/* dest_image */,
     int			/* dest_x */,
     int			/* dest_y */
 );
 
-/*
+/* 
  * X function declarations.
  */
 extern Display *XOpenDisplay(
@@ -1438,7 +1435,7 @@ extern Status XGetAtomNames(
 extern byte *XGetDefault(
     Display*		/* display */,
     byte*	/* program */,
-    byte*	/* option */
+    byte*	/* option */		  
 );
 extern char *XDisplayName(
     char*	/* string */
@@ -1464,7 +1461,7 @@ extern int function(
 extern Atom XInternAtom(
     Display*		/* display */,
     byte*	/* atom_name */,
-    Bool		/* only_if_exists */
+    Bool		/* only_if_exists */		 
 );
 
 extern Status XInternAtoms(
@@ -1482,7 +1479,7 @@ extern Colormap XCreateColormap(
     Display*		/* display */,
     Window		/* w */,
     Visual*		/* visual */,
-    int			/* alloc */
+    int			/* alloc */			 
 );
 extern Cursor XCreatePixmapCursor(
     Display*		/* display */,
@@ -1491,7 +1488,7 @@ extern Cursor XCreatePixmapCursor(
     XColor*		/* foreground_color */,
     XColor*		/* background_color */,
     uint	/* x */,
-    uint	/* y */
+    uint	/* y */			   
 );
 extern Cursor XCreateGlyphCursor(
     Display*		/* display */,
@@ -1513,7 +1510,7 @@ extern Font XLoadFont(
 extern GC XCreateGC(
     Display*		/* display */,
     Drawable		/* d */,
-    uint			/* valuemask */,
+    ulong			/* valuemask */,
     XGCValues*		/* values */
 );
 extern GContext XGContextFromGC(
@@ -1528,7 +1525,7 @@ extern Pixmap XCreatePixmap(
     Drawable		/* d */,
     uint		/* width */,
     uint		/* height */,
-    uint		/* depth */
+    uint		/* depth */		        
 );
 extern Pixmap XCreateBitmapFromData(
     Display*	/* display */,
@@ -1543,8 +1540,8 @@ extern Pixmap XCreatePixmapFromBitmapData(
     byte*		/* data */,
     uint		/* width */,
     uint		/* height */,
-    uint		/* fg */,
-    uint		/* bg */,
+    ulong		/* fg */,
+    ulong		/* bg */,
     uint		/* depth */
 );
 extern Window XCreateSimpleWindow(
@@ -1555,27 +1552,27 @@ extern Window XCreateSimpleWindow(
     uint		/* width */,
     uint		/* height */,
     uint		/* border_width */,
-    uint		/* border */,
-    uint		/* background */
+    ulong		/* border */,
+    ulong		/* background */
 );
 extern Window XGetSelectionOwner(
     Display*	/* display */,
     Atom		/* selection */
 );
 extern Window XCreateWindow(
-    Display*	            /* display */,
-    Window		            /* parent */,
-    int			              /* x */,
-    int			              /* y */,
-    uint		              /* width */,
-    uint		              /* height */,
-    uint		              /* border_width */,
-    int			              /* depth */,
-    uint      		        /* class */,
-    Visual*		            /* visual */,
-    uint  		            /* valuemask */,
+    Display*	/* display */,
+    Window		/* parent */,
+    int			/* x */,
+    int			/* y */,
+    uint		/* width */,
+    uint		/* height */,
+    uint		/* border_width */,
+    int			/* depth */,
+    WindowClass		/* class */,
+    Visual*		/* visual */,
+    WindowAttribute		/* valuemask */,
     XSetWindowAttributes*	/* attributes */
-);
+); 
 extern Colormap *XListInstalledColormaps(
     Display*	/* display */,
     Window		/* w */,
@@ -1630,10 +1627,10 @@ extern KeySym *XGetKeyboardMapping(
 extern KeySym XStringToKeysym(
     char*	/* string */
 );
-extern int XMaxRequestSize(
+extern long XMaxRequestSize(
     Display*		/* display */
 );
-extern int XExtendedMaxRequestSize(
+extern long XExtendedMaxRequestSize(
     Display*		/* display */
 );
 extern char *XResourceManagerString(
@@ -1642,7 +1639,7 @@ extern char *XResourceManagerString(
 extern char *XScreenResourceString(
 	Screen*		/* screen */
 );
-extern uint XDisplayMotionBufferSize(
+extern ulong XDisplayMotionBufferSize(
     Display*		/* display */
 );
 extern VisualID XVisualIDFromVisual(
@@ -1704,25 +1701,25 @@ extern GC XDefaultGC(
 extern GC XDefaultGCOfScreen(
     Screen*			/* screen */
 );
-extern uint XBlackPixel(
+extern ulong XBlackPixel(
     Display*		/* display */,
     int				/* screen_number */
 );
-extern uint XWhitePixel(
+extern ulong XWhitePixel(
     Display*		/* display */,
     int				/* screen_number */
 );
-extern uint XAllPlanes();
-extern uint XBlackPixelOfScreen(
+extern ulong XAllPlanes();
+extern ulong XBlackPixelOfScreen(
     Screen*			/* screen */
 );
-extern uint XWhitePixelOfScreen(
+extern ulong XWhitePixelOfScreen(
     Screen*		/* screen */
 );
-extern uint XNextRequest(
+extern ulong XNextRequest(
     Display*		/* display */
 );
-extern uint XLastKnownRequestProcessed(
+extern ulong XLastKnownRequestProcessed(
     Display*		/* display */
 );
 extern char *XServerVendor(
@@ -1748,7 +1745,7 @@ extern Screen *XScreenOfDisplay(
 extern Screen *XDefaultScreenOfDisplay(
     Display*		/* display */
 );
-extern int XEventMaskOfScreen(
+extern long XEventMaskOfScreen(
     Screen*		/* screen */
 );
 
@@ -1756,20 +1753,24 @@ extern int XScreenNumberOfScreen(
     Screen*		/* screen */
 );
 
-// WARNING, this type not in Xlib spec
-alias int function(Display*		  /* display */,
-                     XErrorEvent*	/* error_event */) XErrorHandler;
+typedef int function (	    /* WARNING, this type not in Xlib spec */
+    Display*		/* display */,
+    XErrorEvent*	/* error_event */
+) XErrorHandler;
 
 extern XErrorHandler XSetErrorHandler (
     XErrorHandler	/* handler */
 );
 
-// WARNING, this type not in Xlib spec
-alias int function(Display*		/* display */) XIOErrorHandler;
+
+typedef int function (    /* WARNING, this type not in Xlib spec */
+    Display*		/* display */
+) XIOErrorHandler;
 
 extern XIOErrorHandler XSetIOErrorHandler (
     XIOErrorHandler	/* handler */
 );
+
 
 extern XPixmapFormatValues *XListPixmapFormats(
     Display*		/* display */,
@@ -1784,10 +1785,10 @@ extern int *XListDepths(
 /* ICCCM routines for things that don't require special include files; */
 /* other declarations are given in Xutil.h                             */
 extern Status XReconfigureWMWindow(
-    Display*		    /* display */,
-    Window			    /* w */,
-    int				      /* screen_number */,
-    int           	/* mask */,
+    Display*		/* display */,
+    Window			/* w */,
+    int				/* screen_number */,
+    ConfigureWindowStruct	/* mask */,
     XWindowChanges*	/* changes */
 );
 
@@ -1854,7 +1855,7 @@ extern int XAddHost(
 extern int XAddHosts(
     Display*		/* display */,
     XHostAddress*	/* hosts */,
-    int			/* num_hosts */
+    int			/* num_hosts */    
 );
 
 extern int XAddToExtensionList(
@@ -1877,9 +1878,9 @@ extern Status XAllocColorCells(
     Display*		/* display */,
     Colormap		/* colormap */,
     Bool	        /* contig */,
-    uint*	/* plane_masks_return */,
+    ulong*	/* plane_masks_return */,
     uint	/* nplanes */,
-    uint*	/* pixels_return */,
+    ulong*	/* pixels_return */,
     uint 	/* npixels */
 );
 
@@ -1887,14 +1888,14 @@ extern Status XAllocColorPlanes(
     Display*		/* display */,
     Colormap		/* colormap */,
     Bool		/* contig */,
-    uint*	/* pixels_return */,
+    ulong*	/* pixels_return */,
     int			/* ncolors */,
     int			/* nreds */,
     int			/* ngreens */,
     int			/* nblues */,
-    uint*	/* rmask_return */,
-    uint*	/* gmask_return */,
-    uint*	/* bmask_return */
+    ulong*	/* rmask_return */,
+    ulong*	/* gmask_return */,
+    ulong*	/* bmask_return */
 );
 
 extern Status XAllocNamedColor(
@@ -1946,7 +1947,7 @@ extern int XCellsOfScreen(
 
 extern int XChangeActivePointerGrab(
     Display*	/* display */,
-    int 	/* event_mask */,
+    EventMask	/* event_mask */,
     Cursor		/* cursor */,
     Time		/* time */
 );
@@ -1984,12 +1985,12 @@ extern int XChangePointerControl(
 extern int XChangeProperty(
     Display*	/* display */,
     Window		/* w */,
-    Atom		  /* property */,
-    Atom		  /* type */,
-    int			  /* format */,
-    int       /* mode */,
+    Atom		/* property */,
+    Atom		/* type */,
+    int			/* format */,
+    PropertyMode/* mode */,
     ubyte*		/* data */,
-    int			  /* nelements */
+    int			/* nelements */
 );
 
 extern int XChangeSaveSet(
@@ -1999,9 +2000,9 @@ extern int XChangeSaveSet(
 );
 
 extern int XChangeWindowAttributes(
-    Display*		          /* display */,
-    Window			          /* w */,
-    uint            			/* valuemask */,
+    Display*		/* display */,
+    Window			/* w */,
+    WindowAttribute			/* valuemask */,
     XSetWindowAttributes* /* attributes */
 );
 
@@ -2018,27 +2019,27 @@ extern Bool XCheckIfEvent(
 
 extern Bool XCheckMaskEvent(
     Display*		/* display */,
-    int     		/* event_mask */,
+    EventMask		/* event_mask */,
     XEvent*			/* event_return */
 );
 
 extern Bool XCheckTypedEvent(
     Display*		/* display */,
-    int     		/* event_type */,
+    EventType		/* event_type */,
     XEvent*			/* event_return */
 );
 
 extern Bool XCheckTypedWindowEvent(
     Display*	/* display */,
     Window		/* w */,
-    int     	/* event_type */,
+    EventType	/* event_type */,
     XEvent*		/* event_return */
 );
 
 extern Bool XCheckWindowEvent(
     Display*	/* display */,
     Window		/* w */,
-    int	/* event_mask */,
+    EventMask	/* event_mask */,
     XEvent*		/* event_return */
 );
 
@@ -2081,7 +2082,7 @@ extern int XConfigureWindow(
     Display*	/* display */,
     Window		/* w */,
     uint		/* value_mask */,
-    XWindowChanges*	/* values */
+    XWindowChanges*	/* values */		 
 );
 
 extern int XConnectionNumber(
@@ -2128,7 +2129,7 @@ extern int XCopyPlane(
     uint			/* height */,
     int				/* dest_x */,
     int				/* dest_y */,
-    uint			/* plane */
+    ulong			/* plane */
 );
 
 extern int XDefaultDepth(
@@ -2167,7 +2168,7 @@ extern int XDestroySubwindows(
 );
 
 extern int XDoesBackingStore(
-    Screen*		/* screen */
+    Screen*		/* screen */    
 );
 
 extern Bool XDoesSaveUnders(
@@ -2441,9 +2442,9 @@ extern int XFreeColormap(
 extern int XFreeColors(
     Display*	/* display */,
     Colormap	/* colormap */,
-    uint*		/* pixels */,
+    ulong*		/* pixels */,
     int			/* npixels */,
-    uint		/* planes */
+    ulong		/* planes */
 );
 
 extern int XFreeCursor(
@@ -2452,7 +2453,7 @@ extern int XFreeCursor(
 );
 
 extern int XFreeExtensionList(
-    byte**		/* list */
+    byte**		/* list */    
 );
 
 extern int XFreeFont(
@@ -2523,7 +2524,7 @@ extern int XGetErrorText(
 extern Bool XGetFontProperty(
     XFontStruct*/* font_struct */,
     Atom		/* atom */,
-    uint*		/* value_return */
+    ulong*		/* value_return */
 );
 
 extern Status XGetGCValues(
@@ -2593,14 +2594,14 @@ extern int XGetWindowProperty(
     Display*	/* display */,
     Window		/* w */,
     Atom		/* property */,
-    int		/* long_offset */,
-    int		/* long_length */,
+    long		/* long_offset */,
+    long		/* long_length */,
     Bool		/* delete */,
     Atom		/* req_type */,
     Atom*		/* actual_type_return */,
     int*		/* actual_format_return */,
-    uint*		/* nitems_return */,
-    uint*		/* bytes_after_return */,
+    ulong*		/* nitems_return */,
+    ulong*		/* bytes_after_return */,
     ubyte**		/* prop_return */
 );
 
@@ -2616,7 +2617,7 @@ extern int XGrabButton(
     uint			/* modifiers */,
     Window			/* grab_window */,
     Bool			/* owner_events */,
-    int		/* event_mask */,
+    EventMask		/* event_mask */,
     GrabMode		/* pointer_mode */,
     GrabMode		/* keyboard_mode */,
     Window			/* confine_to */,
@@ -2646,7 +2647,7 @@ extern int XGrabPointer(
     Display*	/* display */,
     Window		/* grab_window */,
     Bool		/* owner_events */,
-    int	/* event_mask */,
+    EventMask	/* event_mask */,
     GrabMode	/* pointer_mode */,
     GrabMode	/* keyboard_mode */,
     Window		/* confine_to */,
@@ -2726,7 +2727,7 @@ extern int XMapWindow(
 
 extern int XMaskEvent(
     Display*	/* display */,
-    int	/* event_mask */,
+    EventMask	/* event_mask */,
     XEvent*		/* event_return */
 );
 
@@ -2826,7 +2827,7 @@ extern int XPutImage(
     int			/* dest_x */,
     int			/* dest_y */,
     uint		/* width */,
-    uint		/* height */
+    uint		/* height */	  
 );
 
 extern int XQLength(
@@ -2916,7 +2917,7 @@ extern int XQueryTextExtents(
     FontDrawDirection*	/* direction_return */,
     int*		/* font_ascent_return */,
     int*		/* font_descent_return */,
-    XCharStruct*/* overall_return */
+    XCharStruct*/* overall_return */    
 );
 
 extern int XQueryTextExtents16(
@@ -2981,7 +2982,7 @@ extern int XRecolorCursor(
 );
 
 extern int XRefreshKeyboardMapping(
-    XMappingEvent*	/* event_map */
+    XMappingEvent*	/* event_map */    
 );
 
 extern int XRemoveFromSaveSet(
@@ -3045,14 +3046,14 @@ extern int XScreenCount(
 extern int XSelectInput(
     Display*	/* display */,
     Window		/* w */,
-    int	/* event_mask */
+    EventMask	/* event_mask */
 );
 
 extern Status XSendEvent(
     Display*	/* display */,
     Window		/* w */,
     Bool		/* propagate */,
-    int	/* event_mask */,
+    EventMask	/* event_mask */,
     XEvent*		/* event_send */
 );
 
@@ -3070,7 +3071,7 @@ extern int XSetArcMode(
 extern int XSetBackground(
     Display*	/* display */,
     GC			/* gc */,
-    uint		/* background */
+    ulong		/* background */
 );
 
 extern int XSetClipMask(
@@ -3137,13 +3138,13 @@ extern int XSetFont(
 extern int XSetFontPath(
     Display*	/* display */,
     byte**		/* directories */,
-    int			/* ndirs */
+    int			/* ndirs */	     
 );
 
 extern int XSetForeground(
     Display*	/* display */,
     GC			/* gc */,
-    uint		/* foreground */
+    ulong		/* foreground */
 );
 
 extern int XSetFunction(
@@ -3188,7 +3189,7 @@ extern int XSetModifierMapping(
 extern int XSetPlaneMask(
     Display*	/* display */,
     GC			/* gc */,
-    uint		/* plane_mask */
+    ulong		/* plane_mask */
 );
 
 extern int XSetPointerMapping(
@@ -3215,10 +3216,10 @@ extern int XSetSelectionOwner(
 extern int XSetState(
     Display*		/* display */,
     GC			/* gc */,
-    uint	/* foreground */,
-    uint	/* background */,
+    ulong	/* foreground */,
+    ulong	/* background */,
     GraphicFunction			/* function */,
-    uint	/* plane_mask */
+    ulong	/* plane_mask */
 );
 
 extern int XSetStipple(
@@ -3249,7 +3250,7 @@ extern int XSetTile(
 extern int XSetWindowBackground(
     Display*		/* display */,
     Window		/* w */,
-    uint	/* background_pixel */
+    ulong	/* background_pixel */
 );
 
 extern int XSetWindowBackgroundPixmap(
@@ -3261,7 +3262,7 @@ extern int XSetWindowBackgroundPixmap(
 extern int XSetWindowBorder(
     Display*		/* display */,
     Window		/* w */,
-    uint	/* border_pixel */
+    ulong	/* border_pixel */
 );
 
 extern int XSetWindowBorderPixmap(
@@ -3318,7 +3319,7 @@ extern int XStoreNamedColor(
     Display*		/* display */,
     Colormap		/* colormap */,
     char*			/* color */,
-    uint			/* pixel */,
+    ulong			/* pixel */,
     StoreColor		/* flags */
 );
 
@@ -3436,7 +3437,7 @@ extern int XWarpPointer(
     uint		/* src_width */,
     uint		/* src_height */,
     int			/* dest_x */,
-    int			/* dest_y */
+    int			/* dest_y */	     
 );
 
 extern int XWidthMMOfScreen(
@@ -3450,7 +3451,7 @@ extern int XWidthOfScreen(
 extern int XWindowEvent(
     Display*	/* display */,
     Window		/* w */,
-    int	/* event_mask */,
+    EventMask	/* event_mask */,
     XEvent*		/* event_return */
 );
 
@@ -3461,7 +3462,7 @@ extern int XWriteBitmapFile(
     uint	/* width */,
     uint	/* height */,
     int			/* x_hot */,
-    int			/* y_hot */
+    int			/* y_hot */		     
 );
 
 extern Bool XSupportsLocale ();
@@ -3875,14 +3876,14 @@ extern Bool XUnregisterIMInstantiateCallback(
     XPointer			/* client_data */
 );
 
-alias void function(
+typedef void function(
     Display*			/* dpy */,
     XPointer			/* client_data */,
     int				/* fd */,
     Bool			/* opening */,	 /* open or close flag */
     XPointer*			/* watch_data */ /* open sets, close uses */
 )XConnectionWatchProc;
-
+    
 
 extern Status XInternalConnectionNumbers(
     Display*			/* dpy */,
@@ -3909,7 +3910,7 @@ extern void XRemoveConnectionWatch(
 
 extern void XSetAuthorization(
     byte *			/* name */,
-    int				/* namelen */,
+    int				/* namelen */, 
     byte *			/* data */,
     int				/* datalen */
 );

@@ -984,6 +984,7 @@ int png_sig_cmp(png_const_bytep sig, size_t start,
 auto png_check_sig(S,N)(S sig, N n) { return !png_sig_cmp((sig), 0, (n)); }
 
 /* Allocate and initialize png_ptr struct for reading, and any other memory. */
+extern(C)
 png_structp png_create_read_struct
     (png_const_charp user_png_ver, png_voidp error_ptr,
     png_error_ptr error_fn, png_error_ptr warn_fn);

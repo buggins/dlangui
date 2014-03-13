@@ -2,22 +2,20 @@
 	Copyright 2007 TEISSIER Sylvere sligor(at)free.fr
 	version 0.1 2007/08/29
 	This binding is an alpha release and need to be more tested
-
+	
 	This file is free software, please read licence.txt for more informations
 */
 
-module X11.X;
-
-pragma(lib, "X11");
+module std.c.linux.X11.X;
 
 const uint X_PROTOCOL=11;		/* current protocol version */
 const uint X_PROTOCOL_REVISION=0;		/* current minor version */
 
 /* Resources */
-alias uint XID;
-alias uint Mask;
-alias uint VisualID;
-alias uint Time;
+alias ulong XID;
+alias ulong Mask;
+alias ulong VisualID;
+alias ulong Time;
 alias XID Atom; //alias needed because of None invariant shared for Atom and XID
 alias XID Window;
 alias XID Drawable;
@@ -45,18 +43,18 @@ const XID AllTemporary=0;		/* special Resource ID passed to KillClient */
 const Time CurrentTime=0;		/* special Time */
 const KeySym NoSymbol=0;		/* special KeySym */
 
-/*****************************************************************
- * EVENT DEFINITIONS
+/***************************************************************** 
+ * EVENT DEFINITIONS 
  *****************************************************************/
-
+ 
  /* Input Event Masks. Used as event-mask window attribute and as arguments
    to Grab requests.  Not to be confused with event names.  */
-
-enum:int
-{
+ 
+enum EventMask:long
+{ 
 	NoEventMask				=0,
 	KeyPressMask			=1<<0,
-	KeyReleaseMask			=1<<1,
+	KeyReleaseMask			=1<<1, 
 	ButtonPressMask			=1<<2,
 	ButtonReleaseMask		=1<<3,
 	EnterWindowMask			=1<<4,
@@ -86,42 +84,42 @@ enum:int
 confused with event masks above.  They start from 2 because 0 and 1
 are reserved in the protocol for errors and replies. */
 
-enum:int
+enum EventType:int
 {
-	KeyPress			   = 2,
-	KeyRelease			 = 3,
-	ButtonPress			 = 4,
-	ButtonRelease		 = 5,
-	MotionNotify		 = 6,
-	EnterNotify			 = 7,
-	LeaveNotify			 = 8,
-	FocusIn				   = 9,
-	FocusOut			   = 10,
-	KeymapNotify		 = 11,
-	Expose				   = 12,
-	GraphicsExpose	 = 13,
-	NoExpose			   = 14,
-	VisibilityNotify = 15,
-	CreateNotify		 = 16,
-	DestroyNotify		 = 17,
-	UnmapNotify		   = 18,
-	MapNotify			   = 19,
-	MapRequest			 = 20,
-	ReparentNotify	 = 21,
-	ConfigureNotify	 = 22,
-	ConfigureRequest = 23,
-	GravityNotify		 = 24,
-	ResizeRequest		 = 25,
-	CirculateNotify	 = 26,
-	CirculateRequest = 27,
-	PropertyNotify	 = 28,
-	SelectionClear	 = 29,
-	SelectionRequest = 30,
-	SelectionNotify	 = 31,
-	ColormapNotify	 = 32,
-	ClientMessage		 = 33,
-	MappingNotify		 = 34,
-	LASTEvent			   = 35	/* must be bigger than any event # */
+	KeyPress			=2,
+	KeyRelease			=3,
+	ButtonPress			=4,
+	ButtonRelease		=5,
+	MotionNotify		=6,
+	EnterNotify			=7,
+	LeaveNotify			=8,
+	FocusIn				=9,
+	FocusOut			=10,
+	KeymapNotify		=11,
+	Expose				=12,
+	GraphicsExpose		=13,
+	NoExpose			=14,
+	VisibilityNotify	=15,
+	CreateNotify		=16,
+	DestroyNotify		=17,
+	UnmapNotify		=18,
+	MapNotify			=19,
+	MapRequest			=20,
+	ReparentNotify		=21,
+	ConfigureNotify		=22,
+	ConfigureRequest	=23,
+	GravityNotify		=24,
+	ResizeRequest		=25,
+	CirculateNotify		=26,
+	CirculateRequest	=27,
+	PropertyNotify		=28,
+	SelectionClear		=29,
+	SelectionRequest	=30,
+	SelectionNotify		=31,
+	ColormapNotify		=32,
+	ClientMessage		=33,
+	MappingNotify		=34,
+	LASTEvent			=35	/* must be bigger than any event # */
 };
 
 /* Key masks. Used as modifiers to GrabButton and GrabKey, results of QueryPointer,
@@ -205,7 +203,7 @@ enum NotifyModes:int
 	NotifyWhileGrabbed	=3
 };
 const int NotifyHint	=1;	/* for MotionNotify events */
-
+		       
 /* Notify detail */
 enum NotifyDetail:int
 {
@@ -221,11 +219,11 @@ enum NotifyDetail:int
 
 /* Visibility notify */
 
-enum:int
+enum VisibilityNotify:int
 {
-  VisibilityUnobscured		    = 0,
-  VisibilityPartiallyObscured	= 1,
-  VisibilityFullyObscured		  = 2
+VisibilityUnobscured		=0,
+VisibilityPartiallyObscured	=1,
+VisibilityFullyObscured		=2
 };
 
 /* Circulation request */
@@ -299,7 +297,7 @@ RevertToParent		=2
 };
 
 /*****************************************************************
- * ERROR CODES
+ * ERROR CODES 
  *****************************************************************/
 
 enum XErrorCode:int
@@ -316,9 +314,9 @@ enum XErrorCode:int
 	BadDrawable	   	=9,		/* parameter not a Pixmap or Window */
 	BadAccess	  	=10,	/* depending on context:
 				 			- key/button already grabbed
-				 			- attempt to free an illegal
-				   				cmap entry
-							- attempt to store into a read-only
+				 			- attempt to free an illegal 
+				   				cmap entry 
+							- attempt to store into a read-only 
 				   				color map entry.
  							- attempt to modify the access control
 				   				list from other than the local host.
@@ -336,20 +334,21 @@ enum XErrorCode:int
 };
 
 /*****************************************************************
- * WINDOW DEFINITIONS
+ * WINDOW DEFINITIONS 
  *****************************************************************/
 
 /* Window classes used by CreateWindow */
 /* Note that CopyFromParent is already defined as 0 above */
-enum:uint
+enum WindowClass:int
 {
-	InputOutput		 = 1,
-	InputOnly		   = 2
+	CopyFromParent	=0,
+	InputOutput		=1,
+	InputOnly		=2
 };
 
 /* Window attributes for CreateWindow and ChangeWindowAttributes */
 
-enum:uint
+enum WindowAttribute:ulong
 {
 	CWBackPixmap		=1<<0,
 	CWBackPixel			=1<<1,
@@ -368,14 +367,14 @@ enum:uint
 	CWCursor			=1<<14
 };
 /* ConfigureWindow structure */
-enum:int
+enum ConfigureWindowStruct:int
 {
-	CWX	    			=1<<0,
-	CWY			    	=1<<1,
-	CWWidth			  =1<<2,
-	CWHeight		  =1<<3,
+	CWX				=1<<0,
+	CWY				=1<<1,
+	CWWidth			=1<<2,
+	CWHeight		=1<<3,
 	CWBorderWidth	=1<<4,
-	CWSibling		  =1<<5,
+	CWSibling		=1<<5,
 	CWStackMode		=1<<6
 };
 
@@ -445,7 +444,7 @@ LowerHighest	=1
 };
 
 /* Property modes */
-enum:int
+enum PropertyMode:int
 {
 PropModeReplace	=0,
 PropModePrepend	=1,
@@ -549,7 +548,7 @@ enum ArcMode:int
 };
 /* GC components: masks used in CreateGC, CopyGC, ChangeGC, OR'ed into
    GC.stateChanges */
-enum GCMask:uint
+enum GCMask:ulong
 {
 	GCFunction			=1<<0,
 	GCPlaneMask			=1<<1,
@@ -577,7 +576,7 @@ enum GCMask:uint
 };
 const uint GCLastBit=22;
 /*****************************************************************
- * FONTS
+ * FONTS 
  *****************************************************************/
 
 /* used in QueryFont -- draw direction */
@@ -588,7 +587,7 @@ enum FontDrawDirection:int
 	FontChange			=255
 }
 /*****************************************************************
- *  IMAGING
+ *  IMAGING 
  *****************************************************************/
 
 /* ImageFormat -- PutImage, GetImage */
@@ -600,14 +599,14 @@ enum ImageFormat:int
 };
 
 /*****************************************************************
- *  COLOR MAP STUFF
+ *  COLOR MAP STUFF 
  *****************************************************************/
 
 /* For CreateColormap */
-enum:int
+enum AllocType:int
 {
-	AllocNone	= 0,	/* create map with no entries */
-	AllocAll	= 1	/* allocate entire map writeable */
+	AllocNone	=0,	/* create map with no entries */
+	AllocAll	=1	/* allocate entire map writeable */
 };
 
 /* Flags used in StoreNamedColor, StoreColors */
@@ -630,7 +629,7 @@ enum QueryBestSizeClass:int
 	StippleShape	=2	/* size stippled fastest */
 };
 
-/*****************************************************************
+/***************************************************************** 
  * KEYBOARD/POINTER STUFF
  *****************************************************************/
 
@@ -648,7 +647,7 @@ enum LedMode:int
 };
 /* masks for ChangeKeyboardControl */
 
-enum KBMask:uint
+enum KBMask:ulong
 {
 	KBKeyClickPercent	=1<<0,
 	KBBellPercent		=1<<1,
@@ -675,7 +674,7 @@ enum MappingType:int
 };
 
 /*****************************************************************
- * SCREEN SAVER STUFF
+ * SCREEN SAVER STUFF 
  *****************************************************************/
 
 enum ScreenSaverBlancking:int
@@ -722,11 +721,11 @@ enum HostChange:int
 
 enum HostAccess:int
 {
-	EnableAccess	=1,
+	EnableAccess	=1,     
 	DisableAccess	=0
 };
 
-/* Display classes  used in opening the connection
+/* Display classes  used in opening the connection 
  * Note that the statically allocated ones are even numbered and the
  * dynamically changeable ones are odd numbered */
 

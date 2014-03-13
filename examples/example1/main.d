@@ -3,6 +3,12 @@ module winmain;
 import dlangui.all;
 import std.stdio;
 
+version (linux) {
+	pragma(lib, "png");
+	pragma(lib, "xcb");
+	pragma(lib, "X11");
+}
+
 /// workaround for link issue when WinMain is located in library
 version(Windows) {
     private import win32.windows;

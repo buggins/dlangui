@@ -147,9 +147,9 @@ private class FreeTypeFontFile {
             clear();
             return false;
         }
-        _height = _face.size.metrics.height >> 6;
+        _height = cast(int)(_face.size.metrics.height >> 6);
         _size = size;
-        _baseline = _height + (_face.size.metrics.descender >> 6);
+        _baseline = _height + cast(int)(_face.size.metrics.descender >> 6);
         _weight = _face.style_flags & FT_STYLE_FLAG_BOLD ? FontWeight.Bold : FontWeight.Normal;
         _italic = _face.style_flags & FT_STYLE_FLAG_ITALIC ? true : false;
         Log.d("Opened font face=", _faceName, " height=", _height, " size=", size, " weight=", weight, " italic=", italic);
@@ -246,7 +246,7 @@ private class FreeTypeFontFile {
         glyph.blackBoxY = cast(ubyte)(_slot.metrics.height >> 6);
         glyph.originX =   cast(byte)(_slot.metrics.horiBearingX >> 6);
         glyph.originY =   cast(byte)(_slot.metrics.horiBearingY >> 6);
-        glyph.width =     cast(ubyte)(myabs(_slot.metrics.horiAdvance) >> 6);
+        glyph.width =     cast(ubyte)(myabs(cast(int)(_slot.metrics.horiAdvance)) >> 6);
         if (withImage) {
             FT_Bitmap*  bitmap = &_slot.bitmap;
             ubyte w = cast(ubyte)(bitmap.width);
