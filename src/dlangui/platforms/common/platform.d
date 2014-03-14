@@ -5,24 +5,24 @@ import dlangui.graphics.drawbuf;
 import std.file;
 private import dlangui.graphics.gldrawbuf;
 
-public class Window {
+class Window {
     int _dx;
     int _dy;
     Widget _mainWidget;
-    public @property int width() { return _dx; }
-    public @property int height() { return _dy; }
-    public @property Widget mainWidget() { return _mainWidget; }
-    public @property void mainWidget(Widget widget) { 
+    @property int width() { return _dx; }
+    @property int height() { return _dy; }
+    @property Widget mainWidget() { return _mainWidget; }
+    @property void mainWidget(Widget widget) { 
         if (_mainWidget !is null)
             _mainWidget.window = null;
         _mainWidget = widget; 
         if (_mainWidget !is null)
             _mainWidget.window = this;
     }
-    abstract public void show();
-    abstract public @property string windowCaption();
-    abstract public @property void windowCaption(string caption);
-    public void onResize(int width, int height) {
+    abstract void show();
+    abstract @property string windowCaption();
+    abstract @property void windowCaption(string caption);
+    void onResize(int width, int height) {
         if (_dx == width && _dy == height)
             return;
         _dx = width;
@@ -32,23 +32,23 @@ public class Window {
             _mainWidget.layout(Rect(0, 0, _dx, _dy));
         }
     }
-    public void onDraw(DrawBuf buf) {
+    void onDraw(DrawBuf buf) {
         if (_mainWidget !is null) {
             _mainWidget.onDraw(buf);
         }
     }
 }
 
-public class Platform {
+class Platform {
     static __gshared Platform _instance;
-    public static void setInstance(Platform instance) {
+    static void setInstance(Platform instance) {
         _instance = instance;
     }
-    public static Platform instance() {
+    static Platform instance() {
         return _instance;
     }
-    abstract public Window createWindow(string windowCaption, Window parent);
-    abstract public int enterMessageLoop();
+    abstract Window createWindow(string windowCaption, Window parent);
+    abstract int enterMessageLoop();
 }
 
 version (USE_OPENGL) {
