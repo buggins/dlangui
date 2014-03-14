@@ -17,7 +17,7 @@ public import std.c.linux.X11.X;
 const int XlibSpecificationRelease=6;
 version = X_HAVE_UTF8_STRING;
 
-typedef void* XPointer;
+alias XPointer = void*;
 typedef int Status ;
 enum Bool:int{False,True}; //xlib boolean is int type, D bool is only byte
 enum QueueMode{QueuedAlready,QueuedAfterReading,QueuedAfterFlush};

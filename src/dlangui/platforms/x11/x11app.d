@@ -1,6 +1,8 @@
 module src.dlangui.platforms.x11.x11app;
 
-import std.stdio;
+version(linux) {
+
+import std.string;
 import std.c.linux.X11.xcb.xcb;
 import std.c.linux.X11.xcb.xproto;
 import std.c.linux.X11.keysymdef;
@@ -43,12 +45,14 @@ class XCBWindow : Window {
 		values[1] = XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE 
 			| XCB_EVENT_MASK_POINTER_MOTION | XCB_EVENT_MASK_BUTTON_MOTION 
 			| XCB_EVENT_MASK_ENTER_WINDOW   | XCB_EVENT_MASK_LEAVE_WINDOW
-			| XCB_EVENT_MASK_KEY_PRESS      | XCB_EVENT_MASK_KEY_RELEASE;
+			| XCB_EVENT_MASK_KEY_PRESS      | XCB_EVENT_MASK_KEY_RELEASE
+			| XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_VISIBILITY_CHANGE;
 		xcb_create_window(_xcbconnection, _xcbscreen.root_depth, _w, _xcbscreen.root,
-	          10, 10, 100, 100, 1,
+	          50, 50, 500, 400, 1,
 	          XCB_WINDOW_CLASS_INPUT_OUTPUT, _xcbscreen.root_visual,
 	          mask, &values[0]);
 	  	xcb_flush(_xcbconnection);
+		windowCaption = _caption;
 		return true;
 	}
 	override void show() {
@@ -63,6 +67,15 @@ class XCBWindow : Window {
 	}
 	override @property void windowCaption(string caption) {
 		_caption = caption;
+		const char * title = _caption.toStringz;
+        xcb_change_property (_xcbconnection,
+                             XCB_PROP_MODE_REPLACE,
+                             _w,
+                             XCB_ATOM_WM_NAME,
+                             XCB_ATOM_STRING,
+                             8,
+                             cast(uint)_caption.length,
+                             cast(void*)title);
 	}
 	void processExpose(xcb_expose_event_t * event) {
 		static xcb_rectangle_t      r = { 20, 20, 60, 60 };
@@ -95,7 +108,7 @@ class XCBPlatform : Platform {
 			_xcbconnection = null;
 	        return false;
 	    }
-		
+		//XSetEventQueueOwner(display, XCBOwnsEventQueue);
 		Log.d("Getting first screen");
 	    /* get the first screen */
 	  	_xcbscreen = xcb_setup_roots_iterator( xcb_get_setup(_xcbconnection) ).data;
@@ -118,16 +131,87 @@ class XCBPlatform : Platform {
 		xcb_generic_event_t *e;
 	    /* event loop */
 	  	do {
-			Log.v("waiting for event");			
 	  		e = xcb_wait_for_event(_xcbconnection);
 			if (e is null) {
 				Log.w("NULL event received. Exiting message loop");
 				break;
 			}
 	    	switch (e.response_type & ~0x80) {
+				case XCB_CREATE_NOTIFY: {
+						xcb_create_notify_event_t *event = cast(xcb_create_notify_event_t *)e;
+						Log.i("XCB_CREATE_NOTIFY");
+						XCBWindow window = getWindow(event.window);
+						if (window !is null) {
+							//
+						} else {
+							Log.w("Received message for unknown window", event.window);
+						}
+						break;
+					}
+				case XCB_DESTROY_NOTIFY: {
+						xcb_destroy_notify_event_t *event = cast(xcb_destroy_notify_event_t *)e;
+						Log.i("XCB_DESTROY_NOTIFY");
+						XCBWindow window = getWindow(event.window);
+						if (window !is null) {
+							//
+						} else {
+							Log.w("Received message for unknown window", event.window);
+						}
+						break;
+					}
+				case XCB_MAP_NOTIFY: {
+						xcb_map_notify_event_t *event = cast(xcb_map_notify_event_t *)e;
+						Log.i("XCB_MAP_NOTIFY");
+						XCBWindow window = getWindow(event.window);
+						if (window !is null) {
+							//
+						} else {
+							Log.w("Received message for unknown window", event.window);
+						}
+						break;
+					}
+				case XCB_UNMAP_NOTIFY: {
+						xcb_unmap_notify_event_t *event = cast(xcb_unmap_notify_event_t *)e;
+						Log.i("XCB_UNMAP_NOTIFY");
+						XCBWindow window = getWindow(event.window);
+						if (window !is null) {
+							//
+						} else {
+							Log.w("Received message for unknown window", event.window);
+						}
+						break;
+					}
+				case XCB_VISIBILITY_NOTIFY: {
+						xcb_visibility_notify_event_t *event = cast(xcb_visibility_notify_event_t *)e;
+						Log.i("XCB_VISIBILITY_NOTIFY ", event.state);
+						XCBWindow window = getWindow(event.window);
+						if (window !is null) {
+							//
+						} else {
+							Log.w("Received message for unknown window", event.window);
+						}
+						break;
+					}
+				case XCB_REPARENT_NOTIFY: {
+						xcb_reparent_notify_event_t *event = cast(xcb_reparent_notify_event_t *)e;
+						Log.i("XCB_REPARENT_NOTIFY");
+						break;
+					}
+				case XCB_CONFIGURE_NOTIFY: {
+						xcb_configure_notify_event_t *event = cast(xcb_configure_notify_event_t *)e;
+						Log.i("XCB_CONFIGURE_NOTIFY ", event.width, "x", event.height);
+						XCBWindow window = getWindow(event.window);
+						if (window !is null) {
+							//
+							window.onResize(event.width, event.height);
+						} else {
+							Log.w("Received message for unknown window", event.window);
+						}
+						break;
+					}
 				case XCB_EXPOSE: {   /* draw or redraw the window */
 						xcb_expose_event_t *expose = cast(xcb_expose_event_t *)e;
-						Log.i("expose event");
+						Log.i("XCB_EXPOSE");
 						XCBWindow window = getWindow(expose.window);
 						if (window !is null) {
 							window.processExpose(expose);
@@ -177,6 +261,7 @@ class XCBPlatform : Platform {
 		                break;
 		            }			
 				default:
+					Log.v("unknown event: ", e.response_type & ~0x80);	
 					break;
 	      	}
 	    	free(e);
@@ -209,4 +294,6 @@ int main(string[] args)
 	
 
   	return res;
+}
+
 }
