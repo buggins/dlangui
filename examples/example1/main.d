@@ -9,6 +9,7 @@ version (linux) {
 	pragma(lib, "xcb-shm");
 	pragma(lib, "xcb-image");
 	pragma(lib, "X11");
+	pragma(lib, "dl");
 }
 
 /// workaround for link issue when WinMain is located in library
@@ -27,7 +28,11 @@ version(Windows) {
 /// entry point for dlangui based application
 extern (C) int UIAppMain(string[] args) {
     // setup resource dir
-    string resourceDir = exePath() ~ "..\\res\\";
+	version (Windows) {
+    	string resourceDir = exePath() ~ "..\\res\\";
+	} else {
+    	string resourceDir = exePath() ~ "../../res/";
+	}
     string[] imageDirs = [
         resourceDir
     ];

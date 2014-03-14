@@ -160,6 +160,7 @@
     <Compile Include="3rdparty\X11\xcb\xv.d" />
     <Compile Include="3rdparty\X11\xcb\xvmc.d" />
     <Compile Include="3rdparty\X11\keysymdef.d" />
+    <Compile Include="3rdparty\X11\xcb\image.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\dlangui\platforms\x11\" />
