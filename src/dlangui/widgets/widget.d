@@ -84,15 +84,18 @@ class Widget {
     @property Rect padding() const { 
 		// get max padding from style padding and background drawable padding
 		Rect p = style.padding; 
-		Rect dp = style.backgroundDrawable.padding;
-		if (p.left < dp.left)
-			p.left = dp.left;
-		if (p.right < dp.right)
-			p.right = dp.right;
-		if (p.top < dp.top)
-			p.top = dp.top;
-		if (p.bottom < dp.bottom)
-			p.bottom = dp.bottom;
+		DrawableRef d = style.backgroundDrawable;
+		if (!d.isNull) {
+			Rect dp = style.backgroundDrawable.padding;
+			if (p.left < dp.left)
+				p.left = dp.left;
+			if (p.right < dp.right)
+				p.right = dp.right;
+			if (p.top < dp.top)
+				p.top = dp.top;
+			if (p.bottom < dp.bottom)
+				p.bottom = dp.bottom;
+		}
 		return p;
 	}
     /// set padding for widget - override one from style
@@ -259,8 +262,10 @@ class Widget {
         Rect rc = _pos;
         applyMargins(rc);
         DrawableRef bg = style.backgroundDrawable;
-        bg.drawTo(buf, rc);
-        applyPadding(rc);
+		if (!bg.isNull) {
+	        bg.drawTo(buf, rc);
+		}
+	    applyPadding(rc);
         _needDraw = false;
     }
 
