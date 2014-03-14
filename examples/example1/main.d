@@ -6,6 +6,8 @@ import std.stdio;
 version (linux) {
 	pragma(lib, "png");
 	pragma(lib, "xcb");
+	pragma(lib, "xcb-shm");
+	pragma(lib, "xcb-image");
 	pragma(lib, "X11");
 }
 

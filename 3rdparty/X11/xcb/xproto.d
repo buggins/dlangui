@@ -475,6 +475,7 @@ struct xcb_setup_authenticate_iterator_t {
     int                       index; /**<  */
 } ;
 
+alias xcb_image_order_t = int;
 enum :int{
     XCB_IMAGE_ORDER_LSB_FIRST = 0,
     XCB_IMAGE_ORDER_MSB_FIRST = 1
@@ -3046,6 +3047,7 @@ struct xcb_poly_fill_arc_request_t {
     xcb_gcontext_t gc; /**<  */
 } ;
 
+alias xcb_image_format_t = int;
 enum :int{
     XCB_IMAGE_FORMAT_XY_BITMAP = 0,
     XCB_IMAGE_FORMAT_XY_PIXMAP = 1,
