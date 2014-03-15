@@ -305,6 +305,11 @@ class Win32Window : Window {
             paintUsingGDI();
         }
     }
+
+	override bool onMouseEvent(MouseEvent event) {
+		Log.d("MouseEvent ", event.action, " flags=", event.flags, " x=", event.x, " y=", event.y);
+		return true;
+	}
 }
 
 class Win32Platform : Platform {
@@ -515,16 +520,38 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             return 1;
         case WM_PAINT:
             {
-                //GetClientRect(hwnd, &rect);
-                //int dx = rect.right - rect.left;
-                //int dy = rect.bottom - rect.top;
-                //window.onResize(dx, dy);
                 if (window !is null)
                     window.onPaint();
-
             }
             return 0; // processed
-
+		case WM_MOUSEMOVE:
+			if (window !is null)
+				window.onMouseEvent(new MouseEvent(MouseAction.Move, cast(ushort)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF)));
+			return 0; // processed
+		case WM_LBUTTONDOWN:
+			if (window !is null)
+				window.onMouseEvent(new MouseEvent(MouseAction.LButtonDown, cast(ushort)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF)));
+			return 0; // processed
+		case WM_MBUTTONDOWN:
+			if (window !is null)
+				window.onMouseEvent(new MouseEvent(MouseAction.MButtonDown, cast(ushort)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF)));
+			return 0; // processed
+		case WM_RBUTTONDOWN:
+			if (window !is null)
+				window.onMouseEvent(new MouseEvent(MouseAction.RButtonDown, cast(ushort)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF)));
+			return 0; // processed
+		case WM_LBUTTONUP:
+			if (window !is null)
+				window.onMouseEvent(new MouseEvent(MouseAction.LButtonUp, cast(ushort)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF)));
+			return 0; // processed
+		case WM_MBUTTONUP:
+			if (window !is null)
+				window.onMouseEvent(new MouseEvent(MouseAction.MButtonUp, cast(ushort)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF)));
+			return 0; // processed
+		case WM_RBUTTONUP:
+			if (window !is null)
+				window.onMouseEvent(new MouseEvent(MouseAction.RButtonUp, cast(ushort)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF)));
+			return 0; // processed
         case WM_DESTROY:
             window.onDestroy();
             PostQuitMessage(0);

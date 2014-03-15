@@ -299,6 +299,7 @@
   <Folder name="src">
    <Folder name="dlangui">
     <Folder name="core">
+     <File path="src\dlangui\core\events.d" />
      <File path="src\dlangui\core\logger.d" />
      <File path="src\dlangui\core\types.d" />
     </Folder>

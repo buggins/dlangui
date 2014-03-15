@@ -1,5 +1,6 @@
 module dlangui.platforms.common.platform;
 
+public import dlangui.core.events;
 import dlangui.widgets.widget;
 import dlangui.graphics.drawbuf;
 import std.file;
@@ -37,6 +38,7 @@ class Window {
             _mainWidget.onDraw(buf);
         }
     }
+	abstract bool onMouseEvent(MouseEvent event);
 }
 
 class Platform {
