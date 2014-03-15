@@ -190,13 +190,10 @@
  </Config>
  <Folder name="dlangui">
   <Folder name="3rdparty">
-   <Folder name="DerelictUtil">
-    <File path="..\DerelictUtil\source\derelict\util\exception.d" />
-    <File path="..\DerelictUtil\source\derelict\util\loader.d" />
-    <File path="..\DerelictUtil\source\derelict\util\sharedlib.d" />
-    <File path="..\DerelictUtil\source\derelict\util\system.d" />
-    <File path="..\DerelictUtil\source\derelict\util\wintypes.d" />
-    <File path="..\DerelictUtil\source\derelict\util\xtypes.d" />
+   <Folder name="DerelictFT">
+    <File path="..\DerelictFT\source\derelict\freetype\ft.d" />
+    <File path="..\DerelictFT\source\derelict\freetype\functions.d" />
+    <File path="..\DerelictFT\source\derelict\freetype\types.d" />
    </Folder>
    <Folder name="DerelictGL3">
     <File path="..\DerelictGL3\source\derelict\opengl3\arb.d" />
@@ -215,10 +212,18 @@
     <File path="..\DerelictGL3\source\derelict\opengl3\wgl.d" />
     <File path="..\DerelictGL3\source\derelict\opengl3\wglext.d" />
    </Folder>
-   <Folder name="DerelictFT">
-    <File path="..\DerelictFT\source\derelict\freetype\ft.d" />
-    <File path="..\DerelictFT\source\derelict\freetype\functions.d" />
-    <File path="..\DerelictFT\source\derelict\freetype\types.d" />
+   <Folder name="DerelictUtil">
+    <File path="..\DerelictUtil\source\derelict\util\exception.d" />
+    <File path="..\DerelictUtil\source\derelict\util\loader.d" />
+    <File path="..\DerelictUtil\source\derelict\util\sharedlib.d" />
+    <File path="..\DerelictUtil\source\derelict\util\system.d" />
+    <File path="..\DerelictUtil\source\derelict\util\wintypes.d" />
+    <File path="..\DerelictUtil\source\derelict\util\xtypes.d" />
+   </Folder>
+   <Folder name="DerelictFI">
+    <File path="..\DerelictFI\source\derelict\freeimage\freeimage.d" />
+    <File path="..\DerelictFI\source\derelict\freeimage\functions.d" />
+    <File path="..\DerelictFI\source\derelict\freeimage\types.d" />
    </Folder>
    <Folder name="gl3n">
     <File path="..\gl3n\gl3n\aabb.d" />
