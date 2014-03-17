@@ -145,6 +145,14 @@ class Button : Widget {
             Log.d("Button state: ", state);
             return true;
         }
+        if (event.action == MouseAction.FocusOut) {
+            resetState(State.Pressed);
+            return true;
+        }
+        if (event.action == MouseAction.FocusIn) {
+            setState(State.Pressed);
+            return true;
+        }
         return false;
     }
 

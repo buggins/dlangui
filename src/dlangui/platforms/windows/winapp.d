@@ -318,67 +318,15 @@ class Win32Window : Window {
 	protected ButtonDetails _mbutton;
 	protected ButtonDetails _rbutton;
 
-	override bool onMouseEvent(MouseEvent event) {
-		return false;
-	}
 
-    protected bool dispatchMouseEvent(Widget root, MouseEvent event) {
-        // only route mouse events to visible widgets
-        if (root.visibility != Visibility.Visible)
-            return false;
-        // offer event to children first
-        for (int i = 0; i < root.childCount; i++) {
-            Widget child = root.child(i);
-            if (dispatchMouseEvent(child, event))
-                return true;
-        }
-        // if not processed by children, offer event to root
-        if (root.onMouseEvent(event)) {
-            Log.d("MouseEvent is processed");
-            if (event.action == MouseAction.ButtonDown && _mouseCaptureWidget is null) {
-                Log.d("Setting active widget");
-                _mouseCaptureWidget = root;
-            }
-            return true;
-        }
-        return false;
-    }
 
-    protected Widget _mouseCaptureWidget;
-    bool dispatchMouseEvent(MouseEvent event) {
-        // ignore events if there is no root
-        if (_mainWidget is null)
-            return false;
-        // check if _mouseCaptureWidget still exists in child of root widget
-        if (_mouseCaptureWidget !is null && !_mainWidget.isChild(_mouseCaptureWidget))
-            _mouseCaptureWidget = null;
-        bool res = false;
-        if (_mouseCaptureWidget !is null) {
-            // try to forward message directly to active widget
-            res = _mouseCaptureWidget.onMouseEvent(event);
-        }
-        if (_mouseCaptureWidget !is null && (event.flags & (MouseFlag.LButton | MouseFlag.MButton | MouseFlag.RButton)) == 0) {
-            // usable capturing - no more buttons pressed
-            Log.d("unsetting active widget");
-            _mouseCaptureWidget = null;
-        }
-        if (res)
-            return res;
-        if (!res) {
-            res = dispatchMouseEvent(_mainWidget, event);
-        }
-        return res;
-    }
-
-    void requestUpdate() {
-        InvalidateRect(_hwnd, null, FALSE);
-    }
-
-	bool onMouse(uint message, ushort flags, short x, short y) {
+    bool _mouseTracking;
+	bool onMouse(uint message, uint flags, short x, short y) {
 		Log.d("Win32 Mouse Message ", message, " flags=", flags, " x=", x, " y=", y);
         MouseButton button = MouseButton.None;
         MouseAction action = MouseAction.ButtonDown;
         ButtonDetails * pbuttonDetails = null;
+        short wheelDelta = 0;
         switch (message) {
             case WM_MOUSEMOVE:
                 action = MouseAction.Move;
@@ -413,24 +361,59 @@ class Win32Window : Window {
                 button = MouseButton.Middle;
                 pbuttonDetails = &_mbutton;
                 break;
+            case WM_MOUSELEAVE:
+                action = MouseAction.Leave;
+                if (_mouseTracking) {
+                    _mouseTracking = false;
+                    ReleaseCapture();
+                }
+            case WM_MOUSEWHEEL:
+                {
+                    action = MouseAction.Wheel;
+                    wheelDelta = (cast(short)(flags >> 16)) / 120;
+                    POINT pt;
+                    pt.x = x;
+                    pt.y = y;
+                    ScreenToClient(_hwnd, &pt);
+                    x = cast(short)pt.x;
+                    y = cast(short)pt.y;
+                }
+                break;
             default:
                 // unsupported event
                 return false;
         }
         if (action == MouseAction.ButtonDown) {
-            pbuttonDetails.down(x, y, flags);
+            pbuttonDetails.down(x, y, cast(ushort)flags);
         } else if (action == MouseAction.ButtonDown) {
-            pbuttonDetails.up(x, y, flags);
+            pbuttonDetails.up(x, y, cast(ushort)flags);
         }
-        MouseEvent event = new MouseEvent(action, button, flags, x, y);
+        if (message != WM_MOUSELEAVE && !_mouseTracking) {
+            _mouseTracking = true;
+            SetCapture(_hwnd);
+        }
+        MouseEvent event = new MouseEvent(action, button, cast(ushort)flags, x, y, wheelDelta);
         event.lbutton = _lbutton;
         event.rbutton = _rbutton;
         event.mbutton = _mbutton;
 		bool res = dispatchMouseEvent(event);
-        if (res)
-            requestUpdate();
+        if (res) {
+            Log.d("Calling update() after mouse event");
+            update();
+        }
         return res;
 	}
+
+    /// request window redraw
+    override void invalidate() {
+        InvalidateRect(_hwnd, null, FALSE);
+    }
+
+    /// after drawing, call to schedule redraw if animation is active
+    override void scheduleAnimation() {
+        invalidate();
+    }
+
 }
 
 class Win32Platform : Platform {
@@ -687,6 +670,7 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                     window.onPaint();
             }
             return 0; // processed
+        case WM_MOUSELEAVE:
 		case WM_MOUSEMOVE:
 		case WM_LBUTTONDOWN:
 		case WM_MBUTTONDOWN:
@@ -694,6 +678,7 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_LBUTTONUP:
 		case WM_MBUTTONUP:
 		case WM_RBUTTONUP:
+        case WM_MOUSEWHEEL:
 			if (window !is null)
 				window.onMouse(message, cast(ushort)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF));
 			return 0; // processed

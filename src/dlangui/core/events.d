@@ -3,13 +3,14 @@ module dlangui.core.events;
 import std.conv;
 
 enum MouseAction : ubyte {
-    Cancel,
+    Cancel,   // button down handling is cancelled
 	ButtonDown, // button is down
 	ButtonUp, // button is up
-	Move, // mouse pointer is moving
-	Wheel,
-	FocusIn,
-	FocusOut
+	Move,     // mouse pointer is moving
+	FocusIn,  // pointer moved outside of widget while button was down
+	FocusOut, // pointer is back inside widget while button is down after FocusIn
+    Wheel,    // scroll wheel movement
+    Leave     // pointer left widget which has before processed Move message, while button was not down
 }
 
 enum MouseFlag : ushort {
@@ -77,6 +78,7 @@ class MouseEvent {
 	protected short _x;
 	protected short _y;
 	protected ushort _flags;
+	protected short _wheelDelta;
 	protected ButtonDetails _lbutton;
 	protected ButtonDetails _mbutton;
 	protected ButtonDetails _rbutton;
@@ -85,15 +87,30 @@ class MouseEvent {
     @property ref ButtonDetails mbutton() { return _mbutton; }
     @property MouseButton button() { return _button; }
 	@property MouseAction action() { return _action; }
+	void changeAction(MouseAction a) { _action = a; }
 	@property ushort flags() { return _flags; }
+	@property short wheelDelta() { return _wheelDelta; }
 	@property short x() { return _x; }
 	@property short y() { return _y; }
-	this (MouseAction a, MouseButton b, ushort f, short x, short y) {
+    this (MouseEvent e) {
+        _eventTimestamp = e._eventTimestamp;
+		_action = e._action;
+        _button = e._button;
+		_flags = e._flags;
+		_x = e._x;
+		_y = e._y;
+        _lbutton = e._lbutton;
+        _rbutton = e._rbutton;
+        _mbutton = e._mbutton;
+        _wheelDelta = e._wheelDelta;
+    }
+	this (MouseAction a, MouseButton b, ushort f, short x, short y, short wheelDelta = 0) {
         _eventTimestamp = std.datetime.Clock.currStdTime;
 		_action = a;
         _button = b;
 		_flags = f;
 		_x = x;
 		_y = y;
+        _wheelDelta = wheelDelta;
 	}
 }

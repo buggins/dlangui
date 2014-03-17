@@ -119,6 +119,7 @@ class Widget {
     }
 
 
+
     //======================================================
     // Style related properties
 
@@ -201,6 +202,11 @@ class Widget {
     @property bool needLayout() { return _needLayout; }
     /// returns true if redraw is required for widget and its children
     @property bool needDraw() { return _needDraw; }
+    /// returns true is widget is being animated - need to call animate() and redraw
+    @property bool animating() { return false; }
+    /// animates window; interval is time left from previous draw, in hnsecs (1/10000 of second)
+    void animate(long interval) {
+    }
     /// returns measured width (calculated during measure() call)
     @property measuredWidth() { return _measuredWidth; }
     /// returns measured height (calculated during measure() call)
