@@ -46,15 +46,21 @@ extern (C) int UIAppMain(string[] args) {
 	layout.addChild((new Button()).text("Button1")); //.textColor(0x40FF4000)
 
     LinearLayout hlayout = new HorizontalLayout();
-	hlayout.addChild((new Button()).text("<<")); //.textColor(0x40FF4000)
-    hlayout.addChild((new TextWidget()).text("Several"));
-	hlayout.addChild((new ImageWidget()).drawableId("exit").padding(Rect(5,5,5,5)));
-    hlayout.addChild((new TextWidget()).text("items"));
-	hlayout.addChild((new ImageWidget()).drawableId("exit").padding(Rect(5,5,5,5)));
+	//hlayout.addChild((new Button()).text("<<")); //.textColor(0x40FF4000)
+    hlayout.addChild((new TextWidget()).text("Several").alignment(Align.Center));
+	hlayout.addChild((new ImageWidget()).drawableId("exit").padding(Rect(5,5,5,5)).alignment(Align.Center));
+    hlayout.addChild((new TextWidget()).text("items").alignment(Align.Center));
+	hlayout.addChild((new ImageWidget()).drawableId("exit").padding(Rect(5,5,5,5)).alignment(Align.Center));
     hlayout.addChild((new TextWidget()).text("in horizontal layout"));
-	hlayout.addChild((new Button()).text(">>")); //.textColor(0x40FF4000)
-    hlayout.backgroundColor = 0x8080C0;
+	hlayout.addChild((new ImageWidget()).drawableId("exit").padding(Rect(5,5,5,5)).alignment(Align.Center));
+	//hlayout.addChild((new Button()).text(">>")); //.textColor(0x40FF4000)
+    //hlayout.backgroundColor = 0x8080C0;
     layout.addChild(hlayout);
+
+    LinearLayout vlayout = new VerticalLayout();
+	vlayout.addChild((new TextWidget()).text("VLayout line 1").textColor(0x40FF4000)); //
+    vlayout.addChild((new TextWidget()).text("VLayout line 2").textColor(0x40FFFF00));
+    layout.addChild(vlayout);
 
 	layout.addChild((new Button()).textColor(0x000000FF).text("Button2"));
 	layout.addChild((new TextWidget()).textColor(0x40FF4000).text("Text widget"));
