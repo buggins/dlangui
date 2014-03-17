@@ -218,7 +218,11 @@ class Win32Window : Window {
             wglMakeCurrent(hdc, _hGLRC);
             glDisable(GL_DEPTH_TEST);
             glViewport(0, 0, _dx, _dy);
-            glClearColor(0.9f, 0.9f, 0.9f, 1.0f);
+			float a = 1.0f;
+			float r = ((_backgroundColor >> 16) & 255) / 255.0f;
+			float g = ((_backgroundColor >> 8) & 255) / 255.0f;
+			float b = ((_backgroundColor >> 0) & 255) / 255.0f;
+            glClearColor(r, g, b, a);
             glClear(GL_COLOR_BUFFER_BIT);
 
             GLDrawBuf buf = new GLDrawBuf(_dx, _dy, false);
@@ -296,7 +300,7 @@ class Win32Window : Window {
         scope(exit) EndPaint(_hwnd, &ps);
 
         Win32ColorDrawBuf buf = getDrawBuf();
-        buf.fill(0x808080);
+        buf.fill(_backgroundColor);
         onDraw(buf);
         buf.drawTo(hdc, 0, 0);
     }
@@ -318,10 +322,8 @@ class Win32Window : Window {
 	protected ButtonDetails _mbutton;
 	protected ButtonDetails _rbutton;
 
-
-
-    bool _mouseTracking;
-	bool onMouse(uint message, uint flags, short x, short y) {
+    private bool _mouseTracking;
+	private bool onMouse(uint message, uint flags, short x, short y) {
 		Log.d("Win32 Mouse Message ", message, " flags=", flags, " x=", x, " y=", y);
         MouseButton button = MouseButton.None;
         MouseAction action = MouseAction.ButtonDown;
@@ -437,7 +439,7 @@ class Win32Platform : Platform {
         wndclass.hInstance     = _hInstance;
         wndclass.hIcon         = LoadIcon(null, IDI_APPLICATION);
         wndclass.hCursor       = LoadCursor(null, IDC_ARROW);
-        wndclass.hbrBackground = null; //cast(HBRUSH)GetStockObject(WHITE_BRUSH);
+        wndclass.hbrBackground = cast(HBRUSH)GetStockObject(WHITE_BRUSH);
         wndclass.lpszMenuName  = null;
         wndclass.lpszClassName = toUTF16z(WIN_CLASS_NAME);
 

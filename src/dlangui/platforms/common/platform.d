@@ -9,7 +9,10 @@ private import dlangui.graphics.gldrawbuf;
 class Window {
     protected int _dx;
     protected int _dy;
+	protected uint _backgroundColor;
     protected Widget _mainWidget;
+	@property uint backgroundColor() { return _backgroundColor; }
+	@property void backgroundColor(uint color) { _backgroundColor = color; }
     @property int width() { return _dx; }
     @property int height() { return _dy; }
     @property Widget mainWidget() { return _mainWidget; }
@@ -35,6 +38,10 @@ class Window {
     }
 
     long lastDrawTs;
+
+	this() {
+		_backgroundColor = 0xFFFFFF;
+	}
 
     private void animate(Widget root, long interval) {
         if (root.visibility != Visibility.Visible)

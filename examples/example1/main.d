@@ -54,7 +54,7 @@ extern (C) int UIAppMain(string[] args) {
     hlayout.addChild((new TextWidget()).text("in horizontal layout"));
 	hlayout.addChild((new ImageWidget()).drawableId("exit").padding(Rect(5,5,5,5)).alignment(Align.Center));
 	//hlayout.addChild((new Button()).text(">>")); //.textColor(0x40FF4000)
-    //hlayout.backgroundColor = 0x8080C0;
+    hlayout.backgroundColor = 0x8080C0;
     layout.addChild(hlayout);
 
     LinearLayout vlayout = new VerticalLayout();

@@ -433,7 +433,7 @@ class Theme : Style {
 	this(string id) {
 		super(this, id);
 		_parentStyle = null;
-		_backgroundColor = 0xE0E0E0; // light gray
+		_backgroundColor = 0xFFFFFFFF; // transparent
 		_textColor = 0x000000; // black
 		_align = Align.TopLeft;
 		_fontSize = 24; // TODO: from settings or screen properties / DPI
