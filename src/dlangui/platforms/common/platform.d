@@ -7,9 +7,9 @@ import std.file;
 private import dlangui.graphics.gldrawbuf;
 
 class Window {
-    int _dx;
-    int _dy;
-    Widget _mainWidget;
+    protected int _dx;
+    protected int _dy;
+    protected Widget _mainWidget;
     @property int width() { return _dx; }
     @property int height() { return _dy; }
     @property Widget mainWidget() { return _mainWidget; }

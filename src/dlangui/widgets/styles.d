@@ -20,6 +20,13 @@ immutable int FILL_PARENT = int.max - 1;
 immutable int WRAP_CONTENT = int.max - 2;
 immutable int WEIGHT_UNSPECIFIED = -1;
 
+enum State : uint {
+    Normal = 0,
+    Pressed = 1,
+    Focused = 2,
+    Disabled = 4,
+}
+
 enum Align : ubyte {
     Unspecified = ALIGN_UNSPECIFIED,
     Left = 1,
@@ -38,8 +45,8 @@ class Style {
 	protected Theme _theme;
 	protected Style _parentStyle;
 	protected string _parentId;
-	protected ubyte _stateMask;
-	protected ubyte _stateValue;
+	protected uint _stateMask;
+	protected uint _stateValue;
 	protected ubyte _align = Align.TopLeft;
 	protected ubyte _fontStyle = FONT_STYLE_UNSPECIFIED;
 	protected FontFamily _fontFamily = FontFamily.Unspecified;
@@ -77,7 +84,7 @@ class Style {
 		return currentTheme;
 	}
 
-	@property string id() { return _id; }
+	@property string id() const { return _id; }
 
 	@property const(Style) parentStyle() const {
 		if (_parentStyle !is null)
@@ -394,7 +401,7 @@ class Style {
 	}
 
 	/// create state substyle for this style
-	Style createState(ubyte stateMask = 0, ubyte stateValue = 0) {
+	Style createState(uint stateMask = 0, uint stateValue = 0) {
 		Style child = createSubstyle(id);
 		child._stateMask = stateMask;
 		child._stateValue = stateValue;
@@ -404,7 +411,7 @@ class Style {
 	}
 
 	/// find substyle based on widget state (e.g. focused, pressed, ...)
-	Style forState(ubyte state) {
+	const(Style) forState(uint state) const {
 		if (state == 0)
 			return this;
 		if (id is null && parentStyle !is null && _substates.length == 0)

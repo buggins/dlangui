@@ -2,17 +2,14 @@ module dlangui.core.events;
 
 import std.conv;
 
-enum MouseAction : ushort {
-	LButtonDown,
-	LButtonUp,
-	MButtonDown,
-	MButtonUp,
-	RButtonDown,
-	RButtonUp,
+enum MouseAction : ubyte {
+    Cancel,
+	ButtonDown, // button is down
+	ButtonUp, // button is up
+	Move, // mouse pointer is moving
 	Wheel,
-	Move,
-	Leave,
-	Hover
+	FocusIn,
+	FocusOut
 }
 
 enum MouseFlag : ushort {
@@ -26,9 +23,11 @@ enum MouseFlag : ushort {
 }
 
 /// mouse button state details
-struct ButtondDetails {
+struct ButtonDetails {
 	/// Clock.currStdTime() for down event of this button (0 if button is up).
 	long  _downTs;
+	/// Clock.currStdTime() for up event of this button (0 if button is still down).
+	long  _upTs;
 	/// x coordinates of down event
 	short _downX;
 	/// y coordinates of down event
@@ -40,32 +39,59 @@ struct ButtondDetails {
 		_downX = x;
 		_downY = y;
 		_downFlags = flags;
+        _upTs = 0;
 		_downTs = std.datetime.Clock.currStdTime;
 	}
 	/// update for button up
-	void up() {
-		_downTs = 0;
-		_downX = 0;
-		_downY = 0;
-		_downFlags = 0;
+	void up(short x, short y, ushort flags) {
+        _upTs = std.datetime.Clock.currStdTime;
 	}
-	@property bool isDown() { return downTs != 0; }
+	@property bool isDown() { return _downTs != 0 && _upTs == 0; }
+    /// returns button down state duration in hnsecs (1/10000 of second).
+    @property int downDuration() {
+        if (_downTs == 0)
+            return 0;
+        if (_downTs != 0 && _upTs != 0)
+            return cast(int)(_upTs - _downTs);
+        long ts = std.datetime.Clock.currStdTime;
+        return cast(int)(ts - _downTs);
+    }
+    @property short downX() { return _downX; }
+    @property short downY() { return _downY; }
+    @property ushort downFlags() { return _downFlags; }
+}
+
+enum MouseButton : ubyte {
+    None,
+    Left,
+    Right,
+    Middle
+    //XButton1, // additional button
+    //XButton2, // additional button
 }
 
 class MouseEvent {
+    protected long _eventTimestamp;
 	protected MouseAction _action;
-	protected ushort _flags;
+	protected MouseButton _button;
 	protected short _x;
 	protected short _y;
-	protected ButonDetails _lbutton;
-	protected ButonDetails _mbutton;
-	protected ButonDetails _rbutton;
+	protected ushort _flags;
+	protected ButtonDetails _lbutton;
+	protected ButtonDetails _mbutton;
+	protected ButtonDetails _rbutton;
+    @property ref ButtonDetails lbutton() { return _lbutton; }
+    @property ref ButtonDetails rbutton() { return _rbutton; }
+    @property ref ButtonDetails mbutton() { return _mbutton; }
+    @property MouseButton button() { return _button; }
 	@property MouseAction action() { return _action; }
 	@property ushort flags() { return _flags; }
 	@property short x() { return _x; }
 	@property short y() { return _y; }
-	this (MouseAction a, ushort f, short x, short y) {
+	this (MouseAction a, MouseButton b, ushort f, short x, short y) {
+        _eventTimestamp = std.datetime.Clock.currStdTime;
 		_action = a;
+        _button = b;
 		_flags = f;
 		_x = x;
 		_y = y;

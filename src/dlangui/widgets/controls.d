@@ -17,11 +17,33 @@ class TextWidget : Widget {
         requestLayout();
 		return this;
     }
+
     override void measure(int parentWidth, int parentHeight) { 
         FontRef font = font();
         Point sz = font.textSize(text);
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }
+
+    bool onClick() {
+        // override it
+        Log.d("Button.onClick ", id);
+        return false;
+    }
+
+    override bool onMouseEvent(MouseEvent event) {
+        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
+            setState(State.Pressed);
+            Log.d("Button state: ", state);
+            return true;
+        }
+        if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
+            resetState(State.Pressed);
+            Log.d("Button state: ", state);
+            return true;
+        }
+        return false;
+    }
+
     override void onDraw(DrawBuf buf) {
         if (visibility != Visibility.Visible)
             return;

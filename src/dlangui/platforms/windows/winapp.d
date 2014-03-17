@@ -13,6 +13,7 @@ import dlangui.platforms.common.platform;
 import dlangui.platforms.windows.win32fonts;
 import dlangui.platforms.windows.win32drawbuf;
 import dlangui.widgets.styles;
+import dlangui.widgets.widget;
 import dlangui.graphics.drawbuf;
 import dlangui.graphics.images;
 import dlangui.graphics.fonts;
@@ -127,14 +128,17 @@ version (USE_OPENGL) {
 }
 
 class Win32Window : Window {
-    private HWND _hwnd;
-    HGLRC _hGLRC; // opengl context
-    HPALETTE _hPalette;
+    Win32Platform _platform;
+    HWND _hwnd;
+    version (USE_OPENGL) {
+        HGLRC _hGLRC; // opengl context
+        HPALETTE _hPalette;
+    }
     string _caption;
     Win32ColorDrawBuf _drawbuf;
     bool useOpengl;
-    this(string windowCaption, Window parent) {
-        import derelict.opengl3.wgl;
+    this(Win32Platform platform, string windowCaption, Window parent) {
+        _platform = platform;
         _caption = windowCaption;
         _hwnd = CreateWindow(toUTF16z(WIN_CLASS_NAME),      // window class name
                             toUTF16z(windowCaption),  // window caption
@@ -149,6 +153,7 @@ class Win32Window : Window {
                             cast(void*)this);                // creation parameters
 
         version (USE_OPENGL) {
+            import derelict.opengl3.wgl;
 
             /* initialize OpenGL rendering */
             HDC hDC = GetDC(_hwnd);
@@ -192,60 +197,6 @@ class Win32Window : Window {
                 }
             }
         }
-    }
-    ~this() {
-        Log.d("Window destructor");
-        version (USE_OPENGL) {
-            import derelict.opengl3.wgl;
-            if (_hGLRC) {
-			    uninitShaders();
-                wglMakeCurrent (null, null) ;
-                wglDeleteContext(_hGLRC);
-                _hGLRC = null;
-            }
-        }
-        if (_hwnd)
-            DestroyWindow(_hwnd);
-        _hwnd = null;
-    }
-    Win32ColorDrawBuf getDrawBuf() {
-        //RECT rect;
-        //GetClientRect(_hwnd, &rect);
-        //int dx = rect.right - rect.left;
-        //int dy = rect.bottom - rect.top;
-        if (_drawbuf is null)
-            _drawbuf = new Win32ColorDrawBuf(_dx, _dy);
-        else
-            _drawbuf.resize(_dx, _dy);
-        return _drawbuf;
-    }
-    override void show() {
-        ShowWindow(_hwnd, _cmdShow);
-        UpdateWindow(_hwnd);
-    }
-    override @property string windowCaption() {
-        return _caption;
-    }
-    override @property void windowCaption(string caption) {
-        _caption = caption;
-        SetWindowTextW(_hwnd, toUTF16z(_caption));
-    }
-    void onCreate() {
-        Log.d("Window onCreate");
-    }
-    void onDestroy() {
-        Log.d("Window onDestroy");
-    }
-
-    private void paintUsingGDI() {
-        PAINTSTRUCT ps;
-        HDC hdc = BeginPaint(_hwnd, &ps);
-        scope(exit) EndPaint(_hwnd, &ps);
-
-        Win32ColorDrawBuf buf = getDrawBuf();
-        buf.fill(0x808080);
-        onDraw(buf);
-        buf.drawTo(hdc, 0, 0);
     }
 
     version (USE_OPENGL) {
@@ -293,6 +244,63 @@ class Win32Window : Window {
         }
     }
 
+    ~this() {
+        Log.d("Window destructor");
+        version (USE_OPENGL) {
+            import derelict.opengl3.wgl;
+            if (_hGLRC) {
+			    uninitShaders();
+                wglMakeCurrent (null, null) ;
+                wglDeleteContext(_hGLRC);
+                _hGLRC = null;
+            }
+        }
+        if (_hwnd)
+            DestroyWindow(_hwnd);
+        _hwnd = null;
+    }
+    Win32ColorDrawBuf getDrawBuf() {
+        //RECT rect;
+        //GetClientRect(_hwnd, &rect);
+        //int dx = rect.right - rect.left;
+        //int dy = rect.bottom - rect.top;
+        if (_drawbuf is null)
+            _drawbuf = new Win32ColorDrawBuf(_dx, _dy);
+        else
+            _drawbuf.resize(_dx, _dy);
+        return _drawbuf;
+    }
+    override void show() {
+        ShowWindow(_hwnd, _cmdShow);
+        UpdateWindow(_hwnd);
+    }
+    override @property string windowCaption() {
+        return _caption;
+    }
+    override @property void windowCaption(string caption) {
+        _caption = caption;
+        SetWindowTextW(_hwnd, toUTF16z(_caption));
+    }
+    void onCreate() {
+        Log.d("Window onCreate");
+        _platform.onWindowCreated(_hwnd, this);
+    }
+    void onDestroy() {
+        Log.d("Window onDestroy");
+        _platform.onWindowDestroyed(_hwnd, this);
+    }
+
+    private void paintUsingGDI() {
+        PAINTSTRUCT ps;
+        HDC hdc = BeginPaint(_hwnd, &ps);
+        scope(exit) EndPaint(_hwnd, &ps);
+
+        Win32ColorDrawBuf buf = getDrawBuf();
+        buf.fill(0x808080);
+        onDraw(buf);
+        buf.drawTo(hdc, 0, 0);
+    }
+
     void onPaint() {
         Log.d("onPaint()");
         version (USE_OPENGL) {
@@ -306,18 +314,115 @@ class Win32Window : Window {
         }
     }
 
-	protected ButonDetails _lbutton;
-	protected ButonDetails _mbutton;
-	protected ButonDetails _rbutton;
+	protected ButtonDetails _lbutton;
+	protected ButtonDetails _mbutton;
+	protected ButtonDetails _rbutton;
 
 	override bool onMouseEvent(MouseEvent event) {
 		return false;
 	}
 
-	bool onMouse(MouseEvent event) {
-		Log.d("MouseEvent ", event.action, " flags=", event.flags, " x=", event.x, " y=", event.y);
-		if (event.action == MouseAction.LButtonDown)
-		return true;
+    protected bool dispatchMouseEvent(Widget root, MouseEvent event) {
+        // only route mouse events to visible widgets
+        if (root.visibility != Visibility.Visible)
+            return false;
+        // offer event to children first
+        for (int i = 0; i < root.childCount; i++) {
+            Widget child = root.child(i);
+            if (dispatchMouseEvent(child, event))
+                return true;
+        }
+        // if not processed by children, offer event to root
+        if (root.onMouseEvent(event)) {
+            Log.d("MouseEvent is processed");
+            if (event.action == MouseAction.ButtonDown && _mouseCaptureWidget is null) {
+                Log.d("Setting active widget");
+                _mouseCaptureWidget = root;
+            }
+            return true;
+        }
+        return false;
+    }
+
+    protected Widget _mouseCaptureWidget;
+    bool dispatchMouseEvent(MouseEvent event) {
+        // ignore events if there is no root
+        if (_mainWidget is null)
+            return false;
+        // check if _mouseCaptureWidget still exists in child of root widget
+        if (_mouseCaptureWidget !is null && !_mainWidget.isChild(_mouseCaptureWidget))
+            _mouseCaptureWidget = null;
+        bool res = false;
+        if (_mouseCaptureWidget !is null) {
+            // try to forward message directly to active widget
+            res = _mouseCaptureWidget.onMouseEvent(event);
+        }
+        if (_mouseCaptureWidget !is null && (event.flags & (MouseFlag.LButton | MouseFlag.MButton | MouseFlag.RButton)) == 0) {
+            // usable capturing - no more buttons pressed
+            Log.d("unsetting active widget");
+            _mouseCaptureWidget = null;
+        }
+        if (res)
+            return res;
+        if (!res) {
+            res = dispatchMouseEvent(_mainWidget, event);
+        }
+        return res;
+    }
+
+	bool onMouse(uint message, ushort flags, short x, short y) {
+		Log.d("Win32 Mouse Message ", message, " flags=", flags, " x=", x, " y=", y);
+        MouseButton button = MouseButton.None;
+        MouseAction action = MouseAction.ButtonDown;
+        ButtonDetails * pbuttonDetails = null;
+        switch (message) {
+            case WM_MOUSEMOVE:
+                action = MouseAction.Move;
+                break;
+            case WM_LBUTTONDOWN:
+                action = MouseAction.ButtonDown;
+                button = MouseButton.Left;
+                pbuttonDetails = &_lbutton;
+                break;
+            case WM_RBUTTONDOWN:
+                action = MouseAction.ButtonDown;
+                button = MouseButton.Right;
+                pbuttonDetails = &_rbutton;
+                break;
+            case WM_MBUTTONDOWN:
+                action = MouseAction.ButtonDown;
+                button = MouseButton.Middle;
+                pbuttonDetails = &_mbutton;
+                break;
+            case WM_LBUTTONUP:
+                action = MouseAction.ButtonUp;
+                button = MouseButton.Left;
+                pbuttonDetails = &_lbutton;
+                break;
+            case WM_RBUTTONUP:
+                action = MouseAction.ButtonUp;
+                button = MouseButton.Right;
+                pbuttonDetails = &_rbutton;
+                break;
+            case WM_MBUTTONUP:
+                action = MouseAction.ButtonUp;
+                button = MouseButton.Middle;
+                pbuttonDetails = &_mbutton;
+                break;
+            default:
+                // unsupported event
+                return false;
+        }
+        if (action == MouseAction.ButtonDown) {
+            pbuttonDetails.down(x, y, flags);
+        } else if (action == MouseAction.ButtonDown) {
+            pbuttonDetails.up(x, y, flags);
+        }
+        MouseEvent event = new MouseEvent(action, button, flags, x, y);
+        event.lbutton = _lbutton;
+        event.rbutton = _rbutton;
+        event.mbutton = _mbutton;
+		return dispatchMouseEvent(event);
 	}
 }
 
@@ -354,8 +459,32 @@ class Win32Platform : Platform {
         }
         return msg.wParam;
     }
+    private Win32Window[ulong] _windowMap;
+    /// add window to window map
+    void onWindowCreated(HWND hwnd, Win32Window window) {
+        _windowMap[cast(ulong)hwnd] = window;
+    }
+    /// remove window from window map, returns true if there are some more windows left in map
+    bool onWindowDestroyed(HWND hwnd, Win32Window window) {
+        Win32Window wnd = getWindow(hwnd);
+        if (wnd) {
+            _windowMap.remove(cast(ulong)hwnd);
+            destroy(window);
+        }
+        return _windowMap.length > 0;
+    }
+    /// returns number of currently active windows
+    @property int windowCount() {
+        return cast(int)_windowMap.length;
+    }
+    /// returns window instance by HWND
+    Win32Window getWindow(HWND hwnd) {
+        if ((cast(ulong)hwnd) in _windowMap)
+            return _windowMap[cast(ulong)hwnd];
+        return null;
+    }
     override Window createWindow(string windowCaption, Window parent) {
-        return new Win32Window(windowCaption, parent);
+        return new Win32Window(this, windowCaption, parent);
     }
 }
 
@@ -406,6 +535,8 @@ string[] splitCmdLine(string line) {
     return res;
 }
 
+private __gshared Win32Platform platform;
+
 int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int iCmdShow)
 {
 	setFileLogger(std.stdio.File("ui.log", "w"));
@@ -421,7 +552,7 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
     _cmdShow = iCmdShow;
     _hInstance = hInstance;
 
-    Win32Platform platform = new Win32Platform();
+    platform = new Win32Platform();
     if (!platform.registerWndClass()) {
         MessageBoxA(null, "This program requires Windows NT!", "DLANGUI App".toStringz, MB_ICONERROR);
         return 0;
@@ -499,8 +630,16 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     HDC hdc;
     RECT rect;
+
     void * p = cast(void*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
-    Win32Window window = p is null ? null : cast(Win32Window)(p);
+    Win32Window windowParam = p is null ? null : cast(Win32Window)(p);
+    Win32Window window = platform.getWindow(hwnd);
+    if (windowParam !is null && window !is null)
+        assert(window is windowParam);
+    if (window is null && windowParam !is null) {
+        Log.e("Cannot find window in map by HWND");
+    }
+
     switch (message)
     {
         case WM_CREATE:
@@ -509,23 +648,31 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 window = cast(Win32Window)pcreateStruct.lpCreateParams;
                 void * ptr = cast(void*) window;
                 SetWindowLongPtr(hwnd, GWLP_USERDATA, cast(LONG_PTR)ptr);
+                window._hwnd = hwnd;
                 window.onCreate();
             }
-            //PlaySoundA("hellowin.wav", NULL, SND_FILENAME | SND_ASYNC);
+            return 0;
+        case WM_DESTROY:
+            if (window !is null)
+                window.onDestroy();
+            if (platform.windowCount == 0)
+                PostQuitMessage(0);
             return 0;
         case WM_WINDOWPOSCHANGED:
             {
-                WINDOWPOS * pos = cast(WINDOWPOS*)lParam;
-                GetClientRect(hwnd, &rect);
-                int dx = rect.right - rect.left;
-                int dy = rect.bottom - rect.top;
-                //window.onResize(pos.cx, pos.cy);
-                window.onResize(dx, dy);
-                InvalidateRect(hwnd, null, FALSE);
-                //UpdateWindow(hwnd);
+                if (window !is null) {
+                    WINDOWPOS * pos = cast(WINDOWPOS*)lParam;
+                    GetClientRect(hwnd, &rect);
+                    int dx = rect.right - rect.left;
+                    int dy = rect.bottom - rect.top;
+                    //window.onResize(pos.cx, pos.cy);
+                    window.onResize(dx, dy);
+                    InvalidateRect(hwnd, null, FALSE);
+                }
             }
             return 0;
         case WM_ERASEBKGND:
+            // processed
             return 1;
         case WM_PAINT:
             {
@@ -534,39 +681,21 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
             return 0; // processed
 		case WM_MOUSEMOVE:
-			if (window !is null)
-				window.onMouseEvent(new MouseEvent(MouseAction.Move, cast(ushort)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF)));
-			return 0; // processed
 		case WM_LBUTTONDOWN:
-			if (window !is null)
-				window.onMouseEvent(new MouseEvent(MouseAction.LButtonDown, cast(ushort)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF)));
-			return 0; // processed
 		case WM_MBUTTONDOWN:
-			if (window !is null)
-				window.onMouseEvent(new MouseEvent(MouseAction.MButtonDown, cast(ushort)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF)));
-			return 0; // processed
 		case WM_RBUTTONDOWN:
-			if (window !is null)
-				window.onMouseEvent(new MouseEvent(MouseAction.RButtonDown, cast(ushort)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF)));
-			return 0; // processed
 		case WM_LBUTTONUP:
-			if (window !is null)
-				window.onMouseEvent(new MouseEvent(MouseAction.LButtonUp, cast(ushort)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF)));
-			return 0; // processed
 		case WM_MBUTTONUP:
-			if (window !is null)
-				window.onMouseEvent(new MouseEvent(MouseAction.MButtonUp, cast(ushort)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF)));
-			return 0; // processed
 		case WM_RBUTTONUP:
 			if (window !is null)
-				window.onMouseEvent(new MouseEvent(MouseAction.RButtonUp, cast(ushort)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF)));
+				window.onMouse(message, cast(ushort)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF));
 			return 0; // processed
-        case WM_DESTROY:
-            window.onDestroy();
-            PostQuitMessage(0);
-            return 0;
-
+        case WM_GETMINMAXINFO:
+        case WM_NCCREATE:
+        case WM_NCCALCSIZE:
         default:
+            //Log.d("Unhandled message ", message);
+            break;
     }
 
     return DefWindowProc(hwnd, message, wParam, lParam);

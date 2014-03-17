@@ -1,6 +1,7 @@
 module dlangui.widgets.widget;
 
 public import dlangui.core.types;
+public import dlangui.core.events;
 public import dlangui.widgets.styles;
 public import dlangui.graphics.drawbuf;
 public import dlangui.graphics.images;
@@ -32,6 +33,10 @@ class Widget {
 	protected string _styleId;
     /// own copy of style - to override some of style properties, null of no properties overriden
 	protected Style _ownStyle;
+
+    /// widget state (set of flags from State enum)
+    protected uint _state;
+
     /// width measured by measure()
     protected int _measuredWidth;
     /// height measured by measure()
@@ -55,6 +60,28 @@ class Widget {
 			return _ownStyle;
 		return currentTheme.get(_styleId);
 	}
+    /// accessor to style - by lookup in theme by styleId (if style id is not set, theme base style will be used).
+	protected @property const (Style) style(uint stateFlags) const {
+        const (Style) normalStyle = style();
+        if (!stateFlags) // state is normal
+            return normalStyle;
+        const (Style) stateStyle = normalStyle.forState(stateFlags);
+        if (stateStyle !is normalStyle)
+            return stateStyle; // found style for state in current style
+        // lookup state style in parent (one level max)
+        const (Style) parentStyle = normalStyle.parentStyle;
+        if (parentStyle is normalStyle)
+            return normalStyle; // no parent
+        const (Style) parentStateStyle = parentStyle.forState(stateFlags);
+        if (parentStateStyle !is parentStyle)
+            return parentStateStyle; // found style for state in parent
+		return normalStyle; // fallback to current style
+	}
+    /// returns style for current widget state
+    protected @property const(Style) stateStyle() const {
+        return style(state);
+    }
+
     /// enforces widget's own style - allows override some of style properties
 	protected @property Style ownStyle() {
 		if (_ownStyle is null)
@@ -67,7 +94,30 @@ class Widget {
     /// set widget id
     @property void id(string id) { _id = id; }
     /// compare widget id with specified value, returs true if matches
-    bool compareId(string id) { return (_id !is null) && id.equal(_id); }
+    bool compareId(string id) const { return (_id !is null) && id.equal(_id); }
+
+    /// widget state (set of flags from State enum)
+    @property uint state() const {
+        return _state;
+    }
+    /// set new widget state (set of flags from State enum)
+    @property Widget state(uint newState) {
+        if (newState != _state) {
+            _state = newState;
+            // need to redraw
+            invalidate();
+        }
+        return this;
+    }
+    /// add state flags (set of flags from State enum)
+    @property Widget setState(uint stateFlagsToSet) {
+        return state(state | stateFlagsToSet);
+    }
+    /// remove state flags (set of flags from State enum)
+    @property Widget resetState(uint stateFlagsToUnset) {
+        return state(state & ~stateFlagsToUnset);
+    }
+
 
     //======================================================
     // Style related properties
@@ -101,7 +151,7 @@ class Widget {
     /// set padding for widget - override one from style
     @property Widget padding(Rect rc) { ownStyle.padding = rc; return this; }
     /// returns background color
-    @property uint backgroundColor() const { return style.backgroundColor; }
+    @property uint backgroundColor() const { return stateStyle.backgroundColor; }
     /// set background color for widget - override one from style
     @property Widget backgroundColor(uint color) { ownStyle.backgroundColor = color; return this; }
     /// get text color (ARGB 32 bit value)
@@ -109,23 +159,23 @@ class Widget {
     /// set text color (ARGB 32 bit value)
     @property Widget textColor(uint value) { ownStyle.textColor = value; return this; }
     /// returns font face
-    @property string fontFace() const { return style.fontFace; }
+    @property string fontFace() const { return stateStyle.fontFace; }
     /// set font face for widget - override one from style
 	@property Widget fontFace(string face) { ownStyle.fontFace = face; return this; }
     /// returns font style (italic/normal)
-    @property bool fontItalic() const { return style.fontItalic; }
+    @property bool fontItalic() const { return stateStyle.fontItalic; }
     /// set font style (italic/normal) for widget - override one from style
 	@property Widget fontItalic(bool italic) { ownStyle.fontStyle = italic ? FONT_STYLE_ITALIC : FONT_STYLE_NORMAL; return this; }
     /// returns font weight
-    @property ushort fontWeight() const { return style.fontWeight; }
+    @property ushort fontWeight() const { return stateStyle.fontWeight; }
     /// set font weight for widget - override one from style
 	@property Widget fontWeight(ushort weight) { ownStyle.fontWeight = weight; return this; }
     /// returns font size in pixels
-    @property ushort fontSize() const { return style.fontSize; }
+    @property ushort fontSize() const { return stateStyle.fontSize; }
     /// set font size for widget - override one from style
 	@property Widget fontSize(ushort size) { ownStyle.fontSize = size; return this; }
     /// returns font family
-    @property FontFamily fontFamily() const { return style.fontFamily; }
+    @property FontFamily fontFamily() const { return stateStyle.fontFamily; }
     /// set font family for widget - override one from style
     @property Widget fontFamily(FontFamily family) { ownStyle.fontFamily = family; return this; }
     /// returns alignment (combined vertical and horizontal)
@@ -137,7 +187,7 @@ class Widget {
     /// returns vertical alignment
     @property Align halign() { return cast(Align)(alignment & Align.HCenter); }
     /// returns font set for widget using style or set manually
-    @property FontRef font() const { return style.font; }
+    @property FontRef font() const { return stateStyle.font; }
 
     /// returns widget content text (override to support this)
     @property dstring text() { return ""; }
@@ -199,6 +249,22 @@ class Widget {
         requestLayout();
         return this;
     }
+
+    /// returns true if point is inside of this widget
+    bool isPointInside(int x, int y) {
+        return _pos.isPointInside(x, y);
+    }
+
+    // =======================================================
+    // Events
+
+    /// process mouse event; return true if event is processed by widget.
+    bool onMouseEvent(MouseEvent event) {
+        return false;
+    }
+
+    // =======================================================
+    // Layout and measurement methods
 
     /// request relayout of widget and its children
     void requestLayout() {
@@ -323,19 +389,49 @@ class Widget {
     /// returns index of widget in child list, -1 if passed widget is not a child of this widget
     int childIndex(Widget item) { return -1; }
 
+
+    /// returns true if item is child of this widget (when deepSearch == true - returns true if item is this widget or one of children inside children tree).
+    bool isChild(Widget item, bool deepSearch = true) {
+        if (deepSearch) {
+            // this widget or some widget inside children tree
+            if (item is this)
+                return true;
+            for (int i = 0; i < childCount; i++) {
+                if (child(i).isChild(item))
+                    return true;
+            }
+        } else {
+            // only one of children
+            for (int i = 0; i < childCount; i++) {
+                if (item is child(i))
+                    return true;
+            }
+        }
+        return false;
+    }
+
     /// find child by id, returns null if not found
-    Widget childById(string id) { 
-        if (compareId(id))
-            return this;
-        // lookup children
-        for (int i = childCount - 1; i >= 0; i--) {
-            Widget res = child(i).childById(id);
-            if (res !is null)
-                return res;
+    Widget childById(string id, bool deepSearch = true) { 
+        if (deepSearch) {
+            // search everywhere inside child tree
+            if (compareId(id))
+                return this;
+            // lookup children
+            for (int i = childCount - 1; i >= 0; i--) {
+                Widget res = child(i).childById(id);
+                if (res !is null)
+                    return res;
+            }
+        } else {
+            // search only across children of this widget
+            for (int i = childCount - 1; i >= 0; i--)
+                if (id.equal(child(i).id))
+                    return child(i);
         }
         // not found
         return null; 
     }
+
     /// returns parent widget, null for top level widget
     @property Widget parent() { return _parent; }
     /// sets parent for widget

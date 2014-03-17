@@ -53,6 +53,14 @@ struct Rect {
             return false;
         return true;
     }
+    /// returns true if point is inside of this rectangle
+    bool isPointInside(Point pt) {
+        return pt.x >= left && pt.x < right && pt.y >= top && pt.y < bottom;
+    }
+    /// returns true if point is inside of this rectangle
+    bool isPointInside(int x, int y) {
+        return x >= left && x < right && y >= top && y < bottom;
+    }
 }
 
 /// character glyph
