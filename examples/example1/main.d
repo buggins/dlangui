@@ -43,7 +43,7 @@ extern (C) int UIAppMain(string[] args) {
 	LinearLayout layout = new LinearLayout();
 	layout.addChild((new TextWidget()).textColor(0x00802000).text("Text widget 0"));
 	layout.addChild((new TextWidget()).textColor(0x40FF4000).text("Text widget"));
-	layout.addChild((new Button()).textColor(0x40FF4000).text("Button1"));
+	layout.addChild((new Button()).text("Button1")); //.textColor(0x40FF4000)
 	layout.addChild((new Button()).textColor(0x000000FF).text("Button2"));
 	layout.addChild((new TextWidget()).textColor(0x40FF4000).text("Text widget"));
 	layout.addChild((new ImageWidget()).drawableId("exit").padding(Rect(5,5,5,5)));

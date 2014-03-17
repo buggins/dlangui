@@ -68,13 +68,13 @@ class Widget {
         const (Style) stateStyle = normalStyle.forState(stateFlags);
         if (stateStyle !is normalStyle)
             return stateStyle; // found style for state in current style
-        // lookup state style in parent (one level max)
-        const (Style) parentStyle = normalStyle.parentStyle;
-        if (parentStyle is normalStyle)
-            return normalStyle; // no parent
-        const (Style) parentStateStyle = parentStyle.forState(stateFlags);
-        if (parentStateStyle !is parentStyle)
-            return parentStateStyle; // found style for state in parent
+        //// lookup state style in parent (one level max)
+        //const (Style) parentStyle = normalStyle.parentStyle;
+        //if (parentStyle is normalStyle)
+        //    return normalStyle; // no parent
+        //const (Style) parentStateStyle = parentStyle.forState(stateFlags);
+        //if (parentStateStyle !is parentStyle)
+        //    return parentStateStyle; // found style for state in parent
 		return normalStyle; // fallback to current style
 	}
     /// returns style for current widget state
@@ -327,7 +327,7 @@ class Widget {
             return;
         Rect rc = _pos;
         applyMargins(rc);
-        DrawableRef bg = style.backgroundDrawable;
+        DrawableRef bg = stateStyle.backgroundDrawable;
 		if (!bg.isNull) {
 	        bg.drawTo(buf, rc);
 		}

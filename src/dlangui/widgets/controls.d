@@ -30,20 +30,6 @@ class TextWidget : Widget {
         return false;
     }
 
-    override bool onMouseEvent(MouseEvent event) {
-        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
-            setState(State.Pressed);
-            Log.d("Button state: ", state);
-            return true;
-        }
-        if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
-            resetState(State.Pressed);
-            Log.d("Button state: ", state);
-            return true;
-        }
-        return false;
-    }
-
     override void onDraw(DrawBuf buf) {
         if (visibility != Visibility.Visible)
             return;
@@ -147,4 +133,19 @@ class Button : Widget {
         applyAlign(rc, sz);
         font.drawText(buf, rc.left, rc.top, text, textColor);
     }
+
+    override bool onMouseEvent(MouseEvent event) {
+        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
+            setState(State.Pressed);
+            Log.d("Button state: ", state);
+            return true;
+        }
+        if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
+            resetState(State.Pressed);
+            Log.d("Button state: ", state);
+            return true;
+        }
+        return false;
+    }
+
 }

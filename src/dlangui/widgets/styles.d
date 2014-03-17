@@ -402,7 +402,8 @@ class Style {
 
 	/// create state substyle for this style
 	Style createState(uint stateMask = 0, uint stateValue = 0) {
-		Style child = createSubstyle(id);
+        assert(stateMask != 0);
+		Style child = createSubstyle(null);
 		child._stateMask = stateMask;
 		child._stateValue = stateValue;
 		child._backgroundColor = COLOR_UNSPECIFIED;
@@ -414,6 +415,7 @@ class Style {
 	const(Style) forState(uint state) const {
 		if (state == 0)
 			return this;
+        Log.d("forState ", state, " styleId=", _id, " substates=", _substates.length);
 		if (id is null && parentStyle !is null && _substates.length == 0)
 			return parentStyle.forState(state);
 		foreach(item; _substates) {
@@ -502,4 +504,6 @@ static this() {
 	_currentTheme = new Theme("default");
     Style button = _currentTheme.createSubstyle("BUTTON").backgroundImageId("btn_default_normal").alignment(Align.Center);
     Style text = _currentTheme.createSubstyle("TEXT").margins(Rect(3,3,3,3)).padding(Rect(3,3,3,3));
+    button.createState(State.Pressed, State.Pressed).backgroundImageId("btn_default_pressed");
+    button.createState(State.Focused, State.Focused).backgroundImageId("btn_default_selected");
 }

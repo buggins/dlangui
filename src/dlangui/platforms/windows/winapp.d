@@ -370,6 +370,10 @@ class Win32Window : Window {
         return res;
     }
 
+    void requestUpdate() {
+        InvalidateRect(_hwnd, null, FALSE);
+    }
+
 	bool onMouse(uint message, ushort flags, short x, short y) {
 		Log.d("Win32 Mouse Message ", message, " flags=", flags, " x=", x, " y=", y);
         MouseButton button = MouseButton.None;
@@ -422,7 +426,10 @@ class Win32Window : Window {
         event.lbutton = _lbutton;
         event.rbutton = _rbutton;
         event.mbutton = _mbutton;
-		return dispatchMouseEvent(event);
+		bool res = dispatchMouseEvent(event);
+        if (res)
+            requestUpdate();
+        return res;
 	}
 }
 
