@@ -306,8 +306,17 @@ class Win32Window : Window {
         }
     }
 
+	protected ButonDetails _lbutton;
+	protected ButonDetails _mbutton;
+	protected ButonDetails _rbutton;
+
 	override bool onMouseEvent(MouseEvent event) {
+		return false;
+	}
+
+	bool onMouse(MouseEvent event) {
 		Log.d("MouseEvent ", event.action, " flags=", event.flags, " x=", event.x, " y=", event.y);
+		if (event.action == MouseAction.LButtonDown)
 		return true;
 	}
 }

@@ -25,11 +25,41 @@ enum MouseFlag : ushort {
 	XButton2= 0x0040
 }
 
+/// mouse button state details
+struct ButtondDetails {
+	/// Clock.currStdTime() for down event of this button (0 if button is up).
+	long  _downTs;
+	/// x coordinates of down event
+	short _downX;
+	/// y coordinates of down event
+	short _downY;
+	/// mouse button flags when down event occured
+	ushort _downFlags;
+	/// update for button down
+	void down(short x, short y, ushort flags) {
+		_downX = x;
+		_downY = y;
+		_downFlags = flags;
+		_downTs = std.datetime.Clock.currStdTime;
+	}
+	/// update for button up
+	void up() {
+		_downTs = 0;
+		_downX = 0;
+		_downY = 0;
+		_downFlags = 0;
+	}
+	@property bool isDown() { return downTs != 0; }
+}
+
 class MouseEvent {
 	protected MouseAction _action;
 	protected ushort _flags;
 	protected short _x;
 	protected short _y;
+	protected ButonDetails _lbutton;
+	protected ButonDetails _mbutton;
+	protected ButonDetails _rbutton;
 	@property MouseAction action() { return _action; }
 	@property ushort flags() { return _flags; }
 	@property short x() { return _x; }
