@@ -362,11 +362,9 @@ class Win32Window : Window {
                 pbuttonDetails = &_mbutton;
                 break;
             case WM_MOUSELEAVE:
+                Log.d("WM_MOUSELEAVE");
                 action = MouseAction.Leave;
-                if (_mouseTracking) {
-                    _mouseTracking = false;
-                    ReleaseCapture();
-                }
+                break;
             case WM_MOUSEWHEEL:
                 {
                     action = MouseAction.Wheel;
@@ -388,9 +386,18 @@ class Win32Window : Window {
         } else if (action == MouseAction.ButtonDown) {
             pbuttonDetails.up(x, y, cast(ushort)flags);
         }
+        if (((message == WM_MOUSELEAVE) || (x < 0 || y < 0 || x > _dx || y > _dy)) && _mouseTracking) {
+            action = MouseAction.Leave;
+            Log.d("WM_MOUSELEAVE - releasing capture");
+            _mouseTracking = false;
+            ReleaseCapture();
+        }
         if (message != WM_MOUSELEAVE && !_mouseTracking) {
-            _mouseTracking = true;
-            SetCapture(_hwnd);
+            if (x >=0 && y >= 0 && x < _dx && y < _dy) {
+                Log.d("Setting capture");
+                _mouseTracking = true;
+                SetCapture(_hwnd);
+            }
         }
         MouseEvent event = new MouseEvent(action, button, cast(ushort)flags, x, y, wheelDelta);
         event.lbutton = _lbutton;
@@ -679,9 +686,12 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_MBUTTONUP:
 		case WM_RBUTTONUP:
         case WM_MOUSEWHEEL:
-			if (window !is null)
-				window.onMouse(message, cast(ushort)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF));
-			return 0; // processed
+			if (window !is null) {
+				if (window.onMouse(message, cast(ushort)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF)))
+                    return 0; // processed
+            }
+            // not processed - default handling
+            return DefWindowProc(hwnd, message, wParam, lParam);
         case WM_GETMINMAXINFO:
         case WM_NCCREATE:
         case WM_NCCALCSIZE:

@@ -12,21 +12,33 @@ struct LayoutItem {
 	Widget _widget;
 	Orientation _orientation;
 	int _measuredSize; // primary size for orientation
+	int _secondarySize; // other measured size
+	int _layoutSize; //  layout size for primary dimension
 	int _minSize; //  min size for primary dimension
 	int _maxSize; //  max size for primary dimension
-	int _layoutSize; //  layout size for primary dimension
-	int _secondarySize; // other measured size
+	int _weight; // weight
 	bool _fillParent;
+    @property int measuredSize() { return _measuredSize; }
+    @property int minSize() { return _measuredSize; }
+    @property int maxSize() { return _maxSize; }
+    @property int layoutSize() { return _layoutSize; }
+    @property int secondarySize() { return _layoutSize; }
+    @property bool fillParent() { return _fillParent; }
+    @property int weight() { return _weight; }
 	// just to help GC
 	void clear() {
 		_widget = null;
 	}
-	/// set item and measure it
-	void measure(Widget widget, Orientation orientation, int parentWidth, int parentHeight) {
+    /// sets item for widget
+    void set(Widget widget, Orientation orientation) {
 		_widget = widget;
 		_orientation = orientation;
+    }
+	/// set item and measure it
+	void measure(int parentWidth, int parentHeight) {
 		_widget.measure(parentWidth, parentHeight);
-		if (orientation == Orientation.Horizontal) {
+        _weight = _widget.layoutWeight;
+		if (_orientation == Orientation.Horizontal) {
 			_secondarySize = _widget.measuredHeight;
 			_measuredSize = _widget.measuredWidth;
 			_minSize = _widget.minWidth;
@@ -41,6 +53,9 @@ struct LayoutItem {
 		}
 		_fillParent = _layoutSize == FILL_PARENT;
 	}
+    void layout(ref Rect rc) {
+        _widget.layout(rc);
+    }
 }
 
 /// helper class for layouts
@@ -50,30 +65,155 @@ class LayoutItems {
 	int _count;
 	int _totalSize;
 	int _maxSecondarySize;
+    Point _measureParentSize;
+
+    int _layoutWidth;
+    int _layoutHeight;
+
+    void setLayoutParams(Orientation orientation, int layoutWidth, int layoutHeight) {
+        _orientation = orientation;
+        _layoutWidth = layoutWidth;
+        _layoutHeight = layoutHeight;
+    }
 
 	/// fill widget layout list with Visible or Invisible items, measure them
-	Point measure(Orientation orientation, ref WidgetList widgets, int parentWidth, int parentHeight) {
+	Point measure(int parentWidth, int parentHeight) {
+		_totalSize = 0;
+		_maxSecondarySize = 0;
+        _measureParentSize.x = parentWidth;
+        _measureParentSize.y = parentHeight;
+		// measure
+		for (int i = 0; i < _count; i++) {
+			LayoutItem * item = &_list[i];
+			item.measure(parentWidth, parentHeight);
+			if (_maxSecondarySize < item._secondarySize)
+				_maxSecondarySize = item._secondarySize;
+			_totalSize += item._measuredSize;
+		}
+		return _orientation == Orientation.Horizontal ? Point(_totalSize, _maxSecondarySize) : Point(_maxSecondarySize, _totalSize);
+	}
+
+	/// fill widget layout list with Visible or Invisible items, measure them
+	void setWidgets(ref WidgetList widgets) {
 		// remove old items, if any
 		clear();
-		_orientation = orientation;
 		// reserve space
 		if (_list.length < widgets.count)
 			_list.length = widgets.count;
-		_totalSize = 0;
-		_maxSecondarySize = 0;
-		// copy and measure
+		// copy
 		for (int i = 0; i < widgets.count; i++) {
 			Widget item = widgets.get(i);
 			if (item.visibility == Visibility.Gone)
 				continue;
-			_list[_count].measure(item, orientation, parentWidth, parentHeight);
-			if (_maxSecondarySize < _list[_count]._secondarySize)
-				_maxSecondarySize = _list[_count]._secondarySize;
-			_totalSize = _list[_count]._measuredSize;
-			_count++;
+			_list[_count++].set(item, _orientation);
 		}
-		return _orientation == Orientation.Horizontal ? Point(_totalSize, _maxSecondarySize) : Point(_maxSecondarySize, _totalSize);
 	}
+
+    void layout(Rect rc) {
+        // measure again - available area could be changed
+        if (_measureParentSize.x != rc.width || _measureParentSize.y != rc.height)
+            measure(rc.width, rc.height);
+        int contentSecondarySize = 0;
+        int contentHeight = 0;
+        int totalSize = 0;
+        int delta = 0;
+        int resizableSize = 0;
+        int resizableWeight = 0;
+        int nonresizableSize = 0;
+        int nonresizableWeight = 0;
+        int maxItem = 0; // max item dimention
+        // calc total size
+        int visibleCount = cast(int)_list.length;
+        for (int i = 0; i < _count; i++) {
+			LayoutItem * item = &_list[i];
+            int weight = item.weight;
+			int size = item.measuredSize;
+            totalSize += size;
+            if (maxItem < item.secondarySize)
+                maxItem = item.secondarySize;
+            if (item.fillParent) {
+                resizableWeight += weight;
+                resizableSize += size * weight;
+            } else {
+                nonresizableWeight += weight;
+                nonresizableSize += size * weight;
+            }
+        }
+        if (_orientation == Orientation.Vertical) {
+            if (_layoutWidth == WRAP_CONTENT && maxItem < rc.width)
+                contentSecondarySize = maxItem;
+            else
+                contentSecondarySize = rc.width;
+            if (_layoutHeight == FILL_PARENT || totalSize > rc.height)
+                delta = rc.height - totalSize; // total space to add to fit
+        } else {
+            if (_layoutHeight == WRAP_CONTENT && maxItem < rc.height)
+                contentSecondarySize = maxItem;
+            else
+                contentSecondarySize = rc.height;
+            if (_layoutWidth == FILL_PARENT || totalSize > rc.width)
+                delta = rc.width - totalSize; // total space to add to fit
+        }
+		// calculate resize options and scale
+        bool needForceResize = false;
+        bool needResize = false;
+        int scaleFactor = 10000; // per weight unit
+        if (delta != 0 && visibleCount > 0) {
+            // need resize of some children
+            needResize = true;
+			// resize all if need to shrink or only resizable are too small to correct delta
+            needForceResize = delta < 0 || resizableWeight == 0; // || resizableSize * 2 / 3 < delta; // do we need resize non-FILL_PARENT items?
+			// calculate scale factor: weight / delta * 10000
+            if (needForceResize)
+                scaleFactor = 10000 * delta / (nonresizableSize + resizableSize);
+            else
+                scaleFactor = 10000 * delta / resizableSize;
+        }
+		//Log.d("VerticalLayout delta=", delta, ", nonres=", nonresizableWeight, ", res=", resizableWeight, ", scale=", scaleFactor);
+		// find last resized - to allow fill space 1 pixel accurate
+		int lastResized = -1;
+        for (int i = 0; i < _count; i++) {
+			LayoutItem * item = &_list[i];
+            if (item.fillParent || needForceResize) {
+				lastResized = i;
+            }
+		}
+		// final resize and layout of children
+        int position = 0;
+		int deltaTotal = 0;
+        for (int i = 0; i < _count; i++) {
+			LayoutItem * item = &_list[i];
+            int layoutSize = item.layoutSize;
+            int weight = item.weight;
+			int size = item.measuredSize;
+            if (needResize && (layoutSize == FILL_PARENT || needForceResize)) {
+				// do resize
+				int correction = scaleFactor * weight * size / 10000;
+				deltaTotal += correction;
+				// for last resized, apply additional correction to resolve calculation inaccuracy
+				if (i == lastResized) {
+					correction += delta - deltaTotal;
+				}
+				size += correction;
+            }
+			// apply size
+			Rect childRect = rc;
+            if (_orientation == Orientation.Vertical) {
+                // Vertical
+                childRect.top += position;
+			    childRect.bottom = childRect.top + size;
+			    childRect.right = childRect.left + contentSecondarySize;
+			    item.layout(childRect);
+            } else {
+                // Horizontal
+                childRect.left += position;
+			    childRect.right = childRect.left + size;
+			    childRect.bottom = childRect.top + contentSecondarySize;
+			    item.layout(childRect);
+            }
+			position += size;
+        }
+    }
 
 	void clear() {
 		for (int i = 0; i < _count; i++)
@@ -110,7 +250,9 @@ class LinearLayout : WidgetGroup {
         if (parentHeight != SIZE_UNSPECIFIED)
             pheight -= m.top + m.bottom + p.top + p.bottom;
         // measure children
-		Point sz = _layoutItems.measure(orientation, _children, pwidth, pheight);
+        _layoutItems.setLayoutParams(orientation, layoutWidth, layoutHeight);
+        _layoutItems.setWidgets(_children);
+		Point sz = _layoutItems.measure(pwidth, pheight);
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }
 
@@ -122,100 +264,7 @@ class LinearLayout : WidgetGroup {
         _pos = rc;
         applyMargins(rc);
         applyPadding(rc);
-        int contentWidth = 0;
-        int contentHeight = 0;
-        if (orientation == Orientation.Vertical) {
-            // Vertical
-            int totalSize = 0;
-            int delta = 0;
-            int resizableSize = 0;
-            int resizableWeight = 0;
-            int nonresizableSize = 0;
-            int nonresizableWeight = 0;
-            int maxItem = 0; // max item dimention
-            // calc total size
-            int visibleCount = 0;
-            for (int i = 0; i < _children.count; i++) {
-                Widget item = _children.get(i);
-                if (item.visibility == Visibility.Gone)
-                    continue;
-                visibleCount++;
-                int weight = item.layoutWeight;
-				int size = item.measuredHeight;
-                totalSize += size;
-                if (maxItem < item.measuredWidth)
-                    maxItem = item.measuredWidth;
-                if (item.layoutHeight == FILL_PARENT) {
-                    resizableWeight += weight;
-                    resizableSize += size * weight;
-                } else {
-                    nonresizableWeight += weight;
-                    nonresizableSize += size * weight;
-                }
-            }
-            if (layoutWidth == WRAP_CONTENT && maxItem < rc.width)
-                contentWidth = maxItem;
-            else
-                contentWidth = rc.width;
-            if (layoutHeight == FILL_PARENT || totalSize > rc.height)
-                delta = rc.height - totalSize; // total space to add to fit
-			// calculate resize options and scale
-            bool needForceResize = false;
-            bool needResize = false;
-            int scaleFactor = 10000; // per weight unit
-            if (delta != 0 && visibleCount > 0) {
-                // need resize of some children
-                needResize = true;
-				// resize all if need to shrink or only resizable are too small to correct delta
-                needForceResize = delta < 0 || resizableWeight == 0; // || resizableSize * 2 / 3 < delta; // do we need resize non-FILL_PARENT items?
-				// calculate scale factor: weight / delta * 10000
-                if (needForceResize)
-                    scaleFactor = 10000 * delta / (nonresizableSize + resizableSize);
-                else
-                    scaleFactor = 10000 * delta / resizableSize;
-            }
-			//Log.d("VerticalLayout delta=", delta, ", nonres=", nonresizableWeight, ", res=", resizableWeight, ", scale=", scaleFactor);
-			// find last resized - to allow fill space 1 pixel accurate
-			Widget lastResized = null;
-            for (int i = 0; i < _children.count; i++) {
-                Widget item = _children.get(i);
-                if (item.visibility == Visibility.Gone)
-                    continue;
-                if (item.layoutHeight == FILL_PARENT || needForceResize) {
-					lastResized = item;
-                }
-			}
-			// final resize and layout of children
-            int position = 0;
-			int deltaTotal = 0;
-            for (int i = 0; i < _children.count; i++) {
-                Widget item = _children.get(i);
-                if (item.visibility == Visibility.Gone)
-                    continue;
-                int layoutSize = item.layoutHeight;
-                int weight = item.layoutWeight;
-				int size = item.measuredHeight;
-                if (needResize && (layoutSize == FILL_PARENT || needForceResize)) {
-					// do resize
-					int correction = scaleFactor * weight * size / 10000;
-					deltaTotal += correction;
-					// for last resized, apply additional correction to resolve calculation inaccuracy
-					if (item == lastResized) {
-						correction += delta - deltaTotal;
-					}
-					size += correction;
-                }
-				// apply size
-				Rect childRect = rc;
-				childRect.top += position;
-				childRect.bottom = childRect.top + size;
-				childRect.right = childRect.left + contentWidth;
-				item.layout(childRect);
-				position += size;
-            }
-        } else {
-            // Horizontal
-        }
+        _layoutItems.layout(rc);
         _needLayout = false;
     }
     /// Draw widget at its position to buffer
@@ -236,3 +285,18 @@ class LinearLayout : WidgetGroup {
     }
 
 }
+
+class VerticalLayout : LinearLayout {
+    this(string ID = null) {
+        super(ID);
+        orientation = Orientation.Vertical;
+    }
+}
+
+class HorizontalLayout : LinearLayout {
+    this(string ID = null) {
+        super(ID);
+        orientation = Orientation.Horizontal;
+    }
+}
+
