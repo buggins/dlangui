@@ -502,8 +502,10 @@ private __gshared Theme _currentTheme;
 
 static this() {
 	_currentTheme = new Theme("default");
-    Style button = _currentTheme.createSubstyle("BUTTON").backgroundImageId("btn_default_normal").alignment(Align.Center);
+    Style button = _currentTheme.createSubstyle("BUTTON").backgroundImageId("btn_default_small_normal").alignment(Align.Center);
     Style text = _currentTheme.createSubstyle("TEXT").margins(Rect(3,3,3,3)).padding(Rect(3,3,3,3));
-    button.createState(State.Pressed, State.Pressed).backgroundImageId("btn_default_pressed");
-    button.createState(State.Focused, State.Focused).backgroundImageId("btn_default_selected");
+    button.createState(State.Disabled | State.Focused, State.Disabled | State.Focused).backgroundImageId("btn_default_small_normal_disable_focused");
+    button.createState(State.Disabled, State.Disabled).backgroundImageId("btn_default_small_normal_disable");
+    button.createState(State.Pressed, State.Pressed).backgroundImageId("btn_default_small_pressed");
+    button.createState(State.Focused, State.Focused).backgroundImageId("btn_default_small_selected");
 }

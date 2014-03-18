@@ -161,11 +161,22 @@
     <Compile Include="3rdparty\X11\xcb\xvmc.d" />
     <Compile Include="3rdparty\X11\keysymdef.d" />
     <Compile Include="3rdparty\X11\xcb\image.d" />
+    <Compile Include="src\dlangui\core\events.d" />
+    <Compile Include="..\DerelictFI\source\derelict\freeimage\freeimage.d">
+      <Link>3rdparty\DerelictFI\freeimage.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictFI\source\derelict\freeimage\functions.d">
+      <Link>3rdparty\DerelictFI\functions.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictFI\source\derelict\freeimage\types.d">
+      <Link>3rdparty\DerelictFI\types.d</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\dlangui\platforms\x11\" />
     <Folder Include="3rdparty\DerelictUtil\" />
     <Folder Include="3rdparty\DerelictGL3\" />
     <Folder Include="3rdparty\DerelictFT\" />
+    <Folder Include="3rdparty\DerelictFI\" />
   </ItemGroup>
 </Project>
