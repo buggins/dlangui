@@ -72,6 +72,11 @@ class ImageCache {
     }
     ~this() {
         Log.i("Destroying ImageCache");
+		foreach (ref item; _map) {
+			destroy(item);
+            item = null;
+		}
+		_map.clear();
     }
 }
 
@@ -108,14 +113,17 @@ class DrawableCache {
         bool _error;
         bool _used;
         DrawableRef _drawable;
+		private int _instanceCount;
         this(string id, string filename, bool tiled) {
             _id = id;
             _filename = filename;
             _tiled = tiled;
             _error = filename is null;
+			Log.d("Created DrawableCacheItem, count=", ++_instanceCount);
         }
 		~this() {
 			_drawable.clear();
+			Log.d("Destroyed DrawableCacheItem, count=", --_instanceCount);
 		}
         /// remove from memory, will cause reload on next access
         void compact() {
@@ -213,6 +221,11 @@ class DrawableCache {
     }
     ~this() {
         Log.i("Destroying DrawableCache");
+		foreach (ref item; _idToDrawableMap) {
+			destroy(item);
+			item = null;
+		}
+		_idToDrawableMap.clear();
     }
 }
 

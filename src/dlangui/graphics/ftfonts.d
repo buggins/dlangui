@@ -475,7 +475,7 @@ class FreeTypeFontManager : FontManager {
         return best;
     }
 
-	private FontList _activeFonts;
+	//private FontList _activeFonts;
 
     private static FontRef _nullFontRef;
 
@@ -490,13 +490,14 @@ class FreeTypeFontManager : FontManager {
         }
     }
     ~this() {
-		Log.d("FreeTypeFontManager ~this() active fonts: ", _activeFonts.length);
-		_activeFonts.clear();
+		Log.d("FreeTypeFontManager ~this()");
+		//_activeFonts.clear();
 		foreach(ref FontFileItem item; _fontFiles) {
 			destroy(item);
 			item = null;
 		}
 		_fontFiles.length = 0;
+		Log.d("Destroyed all fonts. Freeing library.");
         // uninit library
         if (_library)
             FT_Done_FreeType(_library);

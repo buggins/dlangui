@@ -472,6 +472,11 @@ class Theme : Style {
 	
 	~this() {
 		Log.d("Theme destructor");
+		foreach(ref Style item; _byId) {
+			destroy(item);
+			item = null;
+		}
+		_byId.clear();
 	}
 
 	/// create wrapper style which will have currentTheme.get(id) as parent instead of fixed parent - to modify some base style properties in widget
@@ -520,6 +525,10 @@ class Theme : Style {
 			return _byId[id];
 		return this;
 	}
+	
+	void dumpStats() {
+		Log.d("Theme ", _id, ": children:", _children.length, ", substates:", _substates.length, ", mapsize:", _byId.length);
+	}
 }
 
 /// to access current theme
@@ -542,6 +551,7 @@ Theme createDefaultTheme() {
     button.createState(State.Disabled, State.Disabled).backgroundImageId("btn_default_small_normal_disable");
     button.createState(State.Pressed, State.Pressed).backgroundImageId("btn_default_small_pressed");
     button.createState(State.Focused, State.Focused).backgroundImageId("btn_default_small_selected");
+	res.dumpStats();
 	return res;
 }
 

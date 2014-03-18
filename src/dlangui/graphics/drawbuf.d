@@ -699,12 +699,18 @@ class SolidFillDrawable : Drawable {
 class ImageDrawable : Drawable {
     protected DrawBufRef _image;
     protected bool _tiled;
+	private int _instanceCount;
     this(ref DrawBufRef image, bool tiled = false, bool ninePatch = false) {
         _image = image;
         _tiled = tiled;
         if (ninePatch)
             _image.detectNinePatch();
+		Log.d("Created ImageDrawable, count=", ++_instanceCount);
     }
+	~this() {
+		_image.clear();
+		Log.d("Destroyed ImageDrawable, count=", --_instanceCount);
+	}
     @property override int width() { 
         if (_image.isNull)
             return 0;
