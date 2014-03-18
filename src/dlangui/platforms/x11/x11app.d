@@ -34,24 +34,6 @@ version(linux) {
 			Log.d("Destroying window");
 		}
 			
-		/// request window redraw
-		override void invalidate() {
-			
-			xcb_expose_event_t * event = cast(xcb_expose_event_t*)std.c.stdlib.malloc(xcb_expose_event_t.sizeof);
-		    event.response_type = XCB_EXPOSE; /* The type of the event, here it is XCB_EXPOSE */
-		    event.sequence = 0;
-		    event.window = _w;        /* The Id of the window that receives the event (in case */
-		                                    /* our application registered for events on several windows */
-		    event.x = 0;             /* The x coordinate of the top-left part of the window that needs to be redrawn */
-		    event.y = 0;             /* The y coordinate of the top-left part of the window that needs to be redrawn */
-		    event.width = cast(ushort)_dx;         /* The width of the part of the window that needs to be redrawn */
-		    event.height = cast(ushort)_dy;        /* The height of the part of the window that needs to be redrawn */
-		    event.count = 1;
-
-			xcb_void_cookie_t res = xcb_send_event(_xcbconnection, false, _w, XCB_EVENT_MASK_EXPOSURE, cast(char *)event);
-		  	xcb_flush(_xcbconnection);
-		}
-
 		bool create() {
 			uint mask;
 			uint values[2];
@@ -209,10 +191,32 @@ version(linux) {
 		}
 		
 		ColorDrawBuf _drawbuf;
+		bool _exposeSent;
 		void processExpose(xcb_expose_event_t * event) {
 			redraw();
+			_exposeSent = false;
 		}
-		
+
+		/// request window redraw
+		override void invalidate() {
+			if (_exposeSent)
+				return;
+			_exposeSent = true;
+			xcb_expose_event_t * event = cast(xcb_expose_event_t*)std.c.stdlib.malloc(xcb_expose_event_t.sizeof);
+		    event.response_type = XCB_EXPOSE; /* The type of the event, here it is XCB_EXPOSE */
+		    event.sequence = 0;
+		    event.window = _w;        /* The Id of the window that receives the event (in case */
+		                                    /* our application registered for events on several windows */
+		    event.x = 0;             /* The x coordinate of the top-left part of the window that needs to be redrawn */
+		    event.y = 0;             /* The y coordinate of the top-left part of the window that needs to be redrawn */
+		    event.width = cast(ushort)_dx;         /* The width of the part of the window that needs to be redrawn */
+		    event.height = cast(ushort)_dy;        /* The height of the part of the window that needs to be redrawn */
+		    event.count = 1;
+
+			xcb_void_cookie_t res = xcb_send_event(_xcbconnection, false, _w, XCB_EVENT_MASK_EXPOSURE, cast(char *)event);
+		  	xcb_flush(_xcbconnection);
+		}
+				
 		protected ButtonDetails _lbutton;
 		protected ButtonDetails _mbutton;
 		protected ButtonDetails _rbutton;
@@ -238,14 +242,20 @@ version(linux) {
 					case 1:
 						button = MouseButton.Left;
 		                pbuttonDetails = &_lbutton;
+						if (action == MouseAction.ButtonDown)
+							flags |= MouseFlag.LButton;
 						break;
 					case 2:
 						button = MouseButton.Middle;
 		                pbuttonDetails = &_mbutton;
+						if (action == MouseAction.ButtonDown)
+							flags |= MouseFlag.MButton;
 						break;
 					case 3:
 						button = MouseButton.Right;
 		                pbuttonDetails = &_rbutton;
+						if (action == MouseAction.ButtonDown)
+							flags |= MouseFlag.RButton;
 						break;
 					case 4:
 						if (action == MouseAction.ButtonUp)
@@ -464,8 +474,14 @@ version(linux) {
 			            }
 		            case XCB_LEAVE_NOTIFY: {
 		                xcb_leave_notify_event_t *leave = cast(xcb_leave_notify_event_t *)e;
-
-			                Log.d("XCB_LEAVE_NOTIFY ", leave.event, " at coords ", leave.event_x, ", ", leave.event_y);
+		                Log.d("XCB_LEAVE_NOTIFY ", leave.event, " at coords ", leave.event_x, ", ", leave.event_y);
+						XCBWindow window = getWindow(leave.event);
+						if (window !is null) {
+							//
+							window.processMouseEvent(MouseAction.Leave, 0, leave.state, leave.event_x, leave.event_y);
+						} else {
+							Log.w("Received message for unknown window", leave.event);
+						}
 		                break;
 		            }
 		            case XCB_KEY_PRESS: {

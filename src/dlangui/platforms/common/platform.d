@@ -113,7 +113,17 @@ class Window {
     protected Widget _mouseTrackingWidget;
     /// widget which tracks all events after processed ButtonDown
     protected Widget _mouseCaptureWidget;
+	protected ushort _mouseCaptureButtons;
     protected bool _mouseCaptureFocusedOut;
+	
+	protected bool dispatchCancel(MouseEvent event) {
+    	event.changeAction(MouseAction.Cancel);
+        bool res = _mouseCaptureWidget.onMouseEvent(event);
+		_mouseCaptureWidget = null;
+		_mouseCaptureFocusedOut = false;
+		return res;
+	}
+	
     /// dispatch mouse event to window content widgets
     bool dispatchMouseEvent(MouseEvent event) {
         // ignore events if there is no root
@@ -127,23 +137,29 @@ class Window {
             _mouseTrackingWidget = null;
 
         bool res = false;
+		ushort currentButtons = event.flags & (MouseFlag.LButton|MouseFlag.RButton|MouseFlag.MButton);
         if (_mouseCaptureWidget !is null) {
             // try to forward message directly to active widget
             if (event.action == MouseAction.Move) {
                 if (!_mouseCaptureWidget.isPointInside(event.x, event.y)) {
+					if (currentButtons != _mouseCaptureButtons)
+						return dispatchCancel(event);
                     // point is no more inside of captured widget
                     if (!_mouseCaptureFocusedOut) {
                         // sending FocusOut message
                         event.changeAction(MouseAction.FocusOut);
                         _mouseCaptureFocusedOut = true;
+						_mouseCaptureButtons = event.flags & (MouseFlag.LButton|MouseFlag.RButton|MouseFlag.MButton);
                         return _mouseCaptureWidget.onMouseEvent(event);
                     }
                     return true;
                 } else {
                     // point is inside widget
                     if (_mouseCaptureFocusedOut) {
-                        event.changeAction(MouseAction.FocusIn); // back in after focus out
                         _mouseCaptureFocusedOut = false;
+						if (currentButtons != _mouseCaptureButtons)
+							return dispatchCancel(event);
+                       	event.changeAction(MouseAction.FocusIn); // back in after focus out
                     }
                     return _mouseCaptureWidget.onMouseEvent(event);
                 }
@@ -152,6 +168,7 @@ class Window {
                     // sending FocusOut message
                     event.changeAction(MouseAction.FocusOut);
                     _mouseCaptureFocusedOut = true;
+					_mouseCaptureButtons = event.flags & (MouseFlag.LButton|MouseFlag.RButton|MouseFlag.MButton);
                     return _mouseCaptureWidget.onMouseEvent(event);
                 }
                 return true;
