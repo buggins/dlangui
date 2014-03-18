@@ -332,7 +332,7 @@ class ColorDrawBufBase : DrawBuf {
         x0 = 0;
         x1 = 0;
     	for (int x = 1; x < _dx - 1; x++) {
-    		if (line[x] == 0x00000000) { // opaque black pixel
+    		if (isBlackPixel(line[x])) { // opaque black pixel
     			if (!foundUsed) {
     				x0 = x;
         			foundUsed = true;
@@ -343,6 +343,18 @@ class ColorDrawBufBase : DrawBuf {
         return x1 > x0;
     }
 
+	static bool isBlackPixel(uint c) {
+		if (((c >> 24) & 255) > 10)
+			return false;
+		if (((c >> 16) & 255) > 10)
+			return false;
+		if (((c >> 8) & 255) > 10)
+			return false;
+		if (((c >> 0) & 255) > 10)
+			return false;
+		return true;
+	}
+	
     /// detect position of black pixels in column for 9-patch markup
     private bool detectVLine(int x, ref int y0, ref int y1) {
     	bool foundUsed = false;
@@ -350,7 +362,7 @@ class ColorDrawBufBase : DrawBuf {
         y1 = 0;
     	for (int y = 1; y < _dy - 1; y++) {
             uint * line = scanLine(y);
-    		if (line[x] == 0x00000000) { // opaque black pixel
+    		if (isBlackPixel(line[x])) { // opaque black pixel
     			if (!foundUsed) {
     				y0 = y;
         			foundUsed = true;
@@ -374,14 +386,15 @@ class ColorDrawBufBase : DrawBuf {
             return false; // no black pixels on 1-pixel frame
         NinePatch * p = new NinePatch();
         p.frame.left = x00 - 1;
-        p.frame.right = _dy - y01 - 1;
+        p.frame.right = _dx - x01 - 1;
         p.frame.top = y00 - 1;
         p.frame.bottom = _dy - y01 - 1;
         p.padding.left = x10 - 1;
-        p.padding.right = _dy - y11 - 1;
+        p.padding.right = _dx - x11 - 1;
         p.padding.top = y10 - 1;
         p.padding.bottom = _dy - y11 - 1;
         _ninePatch = p;
+		//Log.d("NinePatch detected: frame=", p.frame, " padding=", p.padding, " left+right=", p.frame.left + p.frame.right, " dx=", _dx);
         return true;
     }
 	override void drawGlyph(int x, int y, Glyph * glyph, uint color) {
@@ -706,7 +719,7 @@ class ImageDrawable : Drawable {
     }
     private static void correctFrameBounds(ref int n1, ref int n2, ref int n3, ref int n4) {
         if (n1 > n2) {
-            assert(n2 - n1 == n4 - n3);
+            //assert(n2 - n1 == n4 - n3);
             int middledist = (n1 + n2) / 2 - n1;
             n1 = n2 = n1 + middledist;
             n3 = n4 = n3 + middledist;

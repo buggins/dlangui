@@ -415,7 +415,7 @@ class Style {
 	const(Style) forState(uint state) const {
 		if (state == 0)
 			return this;
-        Log.d("forState ", state, " styleId=", _id, " substates=", _substates.length);
+        //Log.d("forState ", state, " styleId=", _id, " substates=", _substates.length);
 		if (id is null && parentStyle !is null && _substates.length == 0)
 			return parentStyle.forState(state);
 		foreach(item; _substates) {

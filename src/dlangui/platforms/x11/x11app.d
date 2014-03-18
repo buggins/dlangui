@@ -13,6 +13,7 @@ version(linux) {
 	import std.conv;
 
 	import dlangui.core.logger;
+	import dlangui.core.events;
 	import dlangui.graphics.drawbuf;
 	import dlangui.graphics.fonts;
 	import dlangui.graphics.ftfonts;
@@ -35,7 +36,20 @@ version(linux) {
 			
 		/// request window redraw
 		override void invalidate() {
-			redraw();
+			
+			xcb_expose_event_t * event = cast(xcb_expose_event_t*)std.c.stdlib.malloc(xcb_expose_event_t.sizeof);
+		    event.response_type = XCB_EXPOSE; /* The type of the event, here it is XCB_EXPOSE */
+		    event.sequence = 0;
+		    event.window = _w;        /* The Id of the window that receives the event (in case */
+		                                    /* our application registered for events on several windows */
+		    event.x = 0;             /* The x coordinate of the top-left part of the window that needs to be redrawn */
+		    event.y = 0;             /* The y coordinate of the top-left part of the window that needs to be redrawn */
+		    event.width = cast(ushort)_dx;         /* The width of the part of the window that needs to be redrawn */
+		    event.height = cast(ushort)_dy;        /* The height of the part of the window that needs to be redrawn */
+		    event.count = 1;
+
+			xcb_void_cookie_t res = xcb_send_event(_xcbconnection, false, _w, XCB_EVENT_MASK_EXPOSURE, cast(char *)event);
+		  	xcb_flush(_xcbconnection);
 		}
 
 		bool create() {
@@ -199,6 +213,74 @@ version(linux) {
 			redraw();
 		}
 		
+		protected ButtonDetails _lbutton;
+		protected ButtonDetails _mbutton;
+		protected ButtonDetails _rbutton;
+		void processMouseEvent(MouseAction action, ubyte detail, ushort state, short x, short y) {
+			MouseButton button = MouseButton.None;
+			short wheelDelta = 0;
+        	ButtonDetails * pbuttonDetails = null;
+			ushort flags = 0;
+			if (state & XCB_BUTTON_MASK_1)
+				flags |= MouseFlag.LButton;
+			if (state & XCB_BUTTON_MASK_2)
+				flags |= MouseFlag.MButton;
+			if (state & XCB_BUTTON_MASK_3)
+				flags |= MouseFlag.RButton;
+			if (state & XCB_MOD_MASK_SHIFT)
+				flags |= MouseFlag.Shift;
+			if (state & XCB_MOD_MASK_CONTROL)
+				flags |= MouseFlag.Control;
+			if (state & XCB_MOD_MASK_LOCK)
+				flags |= MouseFlag.Alt;
+			if (action == MouseAction.ButtonDown || action == MouseAction.ButtonUp) {
+				switch (detail) {
+					case 1:
+						button = MouseButton.Left;
+		                pbuttonDetails = &_lbutton;
+						break;
+					case 2:
+						button = MouseButton.Middle;
+		                pbuttonDetails = &_mbutton;
+						break;
+					case 3:
+						button = MouseButton.Right;
+		                pbuttonDetails = &_rbutton;
+						break;
+					case 4:
+						if (action == MouseAction.ButtonUp)
+							return;
+						wheelDelta = -1;
+						action = MouseAction.Wheel;
+						break;
+					case 5:
+						if (action == MouseAction.ButtonUp)
+							return;
+						wheelDelta = 1;
+						action = MouseAction.Wheel;
+						break;
+					default:
+						// unknown button
+						return;
+				}
+			}
+			Log.d("processMouseEvent ", action, " detail=", detail, " state=", state, " at coords ", x, ", ", y);
+	        if (action == MouseAction.ButtonDown) {
+	            pbuttonDetails.down(x, y, cast(ushort)flags);
+	        } else if (action == MouseAction.ButtonUp) {
+	            pbuttonDetails.up(x, y, cast(ushort)flags);
+	        }
+	        MouseEvent event = new MouseEvent(action, button, cast(ushort)flags, x, y, wheelDelta);
+	        event.lbutton = _lbutton;
+	        event.rbutton = _rbutton;
+	        event.mbutton = _mbutton;
+			bool res = dispatchMouseEvent(event);
+	        if (res) {
+	            Log.d("Calling update() after mouse event");
+	            invalidate();
+	        }
+		}
+		
 	}
 
 	private __gshared xcb_connection_t * _xcbconnection;
@@ -342,16 +424,37 @@ version(linux) {
 					case XCB_BUTTON_PRESS: {
 							xcb_button_press_event_t *bp = cast(xcb_button_press_event_t *)e;
 							Log.d("XCB_BUTTON_PRESS");
+							XCBWindow window = getWindow(bp.event);
+							if (window !is null) {
+								//
+								window.processMouseEvent(MouseAction.ButtonDown, bp.detail, bp.state, bp.event_x, bp.event_y);
+							} else {
+								Log.w("Received message for unknown window", bp.event);
+							}
 							break;
 						}
 					case XCB_BUTTON_RELEASE: {
 							Log.d("XCB_BUTTON_RELEASE");
 							xcb_button_release_event_t *br = cast(xcb_button_release_event_t *)e;
+							XCBWindow window = getWindow(br.event);
+							if (window !is null) {
+								//
+								window.processMouseEvent(MouseAction.ButtonUp, br.detail, br.state, br.event_x, br.event_y);
+							} else {
+								Log.w("Received message for unknown window", br.event);
+							}
 							break;
 						}
 		            case XCB_MOTION_NOTIFY: {
 			                xcb_motion_notify_event_t *motion = cast(xcb_motion_notify_event_t *)e;
 			                Log.d("XCB_MOTION_NOTIFY ", motion.event, " at coords ", motion.event_x, ", ", motion.event_y);
+							XCBWindow window = getWindow(motion.event);
+							if (window !is null) {
+								//
+								window.processMouseEvent(MouseAction.Move, 0, motion.state, motion.event_x, motion.event_y);
+							} else {
+								Log.w("Received message for unknown window", motion.event);
+							}
 			                break;
 			            }
 		            case XCB_ENTER_NOTIFY: {

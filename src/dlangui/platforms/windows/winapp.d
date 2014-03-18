@@ -385,7 +385,7 @@ class Win32Window : Window {
         }
         if (action == MouseAction.ButtonDown) {
             pbuttonDetails.down(x, y, cast(ushort)flags);
-        } else if (action == MouseAction.ButtonDown) {
+        } else if (action == MouseAction.ButtonUp) {
             pbuttonDetails.up(x, y, cast(ushort)flags);
         }
         if (((message == WM_MOUSELEAVE) || (x < 0 || y < 0 || x > _dx || y > _dy)) && _mouseTracking) {

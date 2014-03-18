@@ -20,7 +20,8 @@ enum MouseFlag : ushort {
 	RButton = 0x0002,
 	Shift   = 0x0004,
 	XButton1= 0x0020,
-	XButton2= 0x0040
+	XButton2= 0x0040,
+	Alt     = 0x0080
 }
 
 /// mouse button state details
