@@ -599,6 +599,8 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
 	    FontManager.instance = fontMan;
     }
 
+	currentTheme = createDefaultTheme();
+
     version (USE_OPENGL) {
         import derelict.opengl3.gl3;
         DerelictGL3.load();

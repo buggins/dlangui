@@ -41,7 +41,7 @@ extern (C) int UIAppMain(string[] args) {
     // create window
     Window window = Platform.instance().createWindow("My Window", null);
 	
-	static if (false) {
+	static if (true) {
 		LinearLayout layout = new LinearLayout();
 		layout.addChild((new TextWidget()).textColor(0x00802000).text("Text widget 0"));
 		layout.addChild((new TextWidget()).textColor(0x40FF4000).text("Text widget"));
