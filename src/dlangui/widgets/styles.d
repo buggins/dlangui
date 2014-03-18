@@ -386,10 +386,29 @@ class Style {
 		return this;
 	}
 
+	private static int _instanceCount;
 	this(Theme theme, string id) {
 		_theme = theme;
 		_parentStyle = theme;
 		_id = id;
+		Log.d("Created style ", _id, ", count=", ++_instanceCount);
+	}
+
+	~this() {
+		foreach(ref Style item; _substates) {
+			Log.d("Destroying substate");
+			destroy(item);
+			item = null;
+		}
+		_substates.clear();
+		foreach(ref Style item; _children) {
+			destroy(item);
+			item = null;
+		}
+		_children.clear();
+		_backgroundDrawable.clear();
+		_font.clear();
+		Log.d("Destroyed style ", _id, ", parentId=", _parentId, ", state=", _stateMask, ", count=", --_instanceCount);
 	}
 
 	/// create named substyle of this style
@@ -403,7 +422,9 @@ class Style {
 	/// create state substyle for this style
 	Style createState(uint stateMask = 0, uint stateValue = 0) {
         assert(stateMask != 0);
-		Style child = createSubstyle(null);
+		Log.d("Creating substate ", stateMask);
+		Style child = (_theme !is null ? _theme : currentTheme).createSubstyle(null);
+		child._parentStyle = this;
 		child._stateMask = stateMask;
 		child._stateValue = stateValue;
 		child._backgroundColor = COLOR_UNSPECIFIED;
@@ -424,6 +445,7 @@ class Style {
 		}
 		return this; // fallback to current style
 	}
+	
 }
 
 /// Theme - root for style hierarhy.
@@ -446,6 +468,10 @@ class Theme : Style {
         _layoutWidth = WRAP_CONTENT;
         _layoutHeight = WRAP_CONTENT;
         _layoutWeight = 1;
+	}
+	
+	~this() {
+		Log.d("Theme destructor");
 	}
 
 	/// create wrapper style which will have currentTheme.get(id) as parent instead of fixed parent - to modify some base style properties in widget
@@ -499,13 +525,26 @@ class Theme : Style {
 /// to access current theme
 private __gshared Theme _currentTheme;
 @property Theme currentTheme() { return _currentTheme; }
+@property void currentTheme(Theme theme) { 
+	if (_currentTheme !is null) {
+		destroy(_currentTheme);
+	}
+	_currentTheme = theme; 
+}
 
-static this() {
-	_currentTheme = new Theme("default");
-    Style button = _currentTheme.createSubstyle("BUTTON").backgroundImageId("btn_default_small_normal").alignment(Align.Center);
-    Style text = _currentTheme.createSubstyle("TEXT").margins(Rect(3,3,3,3)).padding(Rect(3,3,3,3));
+
+Theme createDefaultTheme() {
+	Log.d("Creating default theme");
+	Theme res = new Theme("default");
+    Style button = res.createSubstyle("BUTTON").backgroundImageId("btn_default_small_normal").alignment(Align.Center);
+    Style text = res.createSubstyle("TEXT").margins(Rect(3,3,3,3)).padding(Rect(3,3,3,3));
     button.createState(State.Disabled | State.Focused, State.Disabled | State.Focused).backgroundImageId("btn_default_small_normal_disable_focused");
     button.createState(State.Disabled, State.Disabled).backgroundImageId("btn_default_small_normal_disable");
     button.createState(State.Pressed, State.Pressed).backgroundImageId("btn_default_small_pressed");
     button.createState(State.Focused, State.Focused).backgroundImageId("btn_default_small_selected");
+	return res;
+}
+
+shared static ~this() {
+	currentTheme = null;
 }

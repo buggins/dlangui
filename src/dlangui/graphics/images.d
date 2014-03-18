@@ -78,10 +78,22 @@ class ImageCache {
 __gshared ImageCache _imageCache;
 /// image cache singleton
 @property ImageCache imageCache() { return _imageCache; }
+/// image cache singleton
+@property void imageCache(ImageCache cache) { 
+	if (_imageCache !is null)
+		destroy(_imageCache);
+	_imageCache = cache; 
+}
 
 __gshared DrawableCache _drawableCache;
 /// drawable cache singleton
 @property DrawableCache drawableCache() { return _drawableCache; }
+/// drawable cache singleton
+@property void drawableCache(DrawableCache cache) { 
+	if (_drawableCache !is null)
+		destroy(_drawableCache);
+	_drawableCache = cache; 
+}
 
 shared static this() {
     _imageCache = new ImageCache();
@@ -102,6 +114,9 @@ class DrawableCache {
             _tiled = tiled;
             _error = filename is null;
         }
+		~this() {
+			_drawable.clear();
+		}
         /// remove from memory, will cause reload on next access
         void compact() {
             if (!_drawable.isNull)
@@ -133,6 +148,7 @@ class DrawableCache {
         }
     }
     void clear() {
+		Log.d("DrawableCache.clear()");
         _idToFileMap.clear();
         foreach(DrawableCacheItem item; _idToDrawableMap)
             item.drawable.clear();

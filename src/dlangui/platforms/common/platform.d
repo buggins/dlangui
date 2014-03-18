@@ -42,6 +42,12 @@ class Window {
 	this() {
 		_backgroundColor = 0xFFFFFF;
 	}
+	~this() {
+		if (_mainWidget !is null) {
+			destroy(_mainWidget);
+		_mainWidget = null;
+		}
+	}
 
     private void animate(Widget root, long interval) {
         if (root.visibility != Visibility.Visible)

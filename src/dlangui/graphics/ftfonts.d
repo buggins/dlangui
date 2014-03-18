@@ -99,6 +99,7 @@ private class FreeTypeFontFile {
     @property int weight() { return _weight; }
     @property bool italic() { return _italic; }
 
+	private static int _instanceCount;
     this(FT_Library library, string filename) {
         _library = library;
         _filename = filename;
@@ -106,6 +107,12 @@ private class FreeTypeFontFile {
         _matrix.yy = 0x10000;
         _matrix.xy = 0;
         _matrix.yx = 0;
+		Log.d("Created FreeTypeFontFile, count=", ++_instanceCount);
+    }
+
+	~this() {
+        clear();
+		Log.d("Destroyed FreeTypeFontFile, count=", --_instanceCount);
     }
 
     private static string familyName(FT_Face face)
@@ -273,9 +280,6 @@ private class FreeTypeFontFile {
         _face = null;
     }
 
-    ~this() {
-        clear();
-    }
 }
 
 /**
@@ -285,22 +289,26 @@ class FreeTypeFont : Font {
     private FontFileItem _fontItem;
     private FreeTypeFontFile[] _files;
 
+	static int _instanceCount;
 	/// need to call create() after construction to initialize font
     this(FontFileItem item, int size) {
         _fontItem = item;
         _size = size;
         _height = size;
+		Log.d("Created font, count=", ++_instanceCount);
     }
 
+	/// do cleanup
+	~this() {
+		clear();
+		Log.d("Destroyed font, count=", --_instanceCount);
+	}
+	
     private int _size;
     private int _height;
 
 	private GlyphCache _glyphCache;
 
-	/// do cleanup
-	~this() {
-		clear();
-	}
 
 	/// cleanup resources
     override void clear() {
@@ -482,6 +490,13 @@ class FreeTypeFontManager : FontManager {
         }
     }
     ~this() {
+		Log.d("FreeTypeFontManager ~this() active fonts: ", _activeFonts.length);
+		_activeFonts.clear();
+		foreach(ref FontFileItem item; _fontFiles) {
+			destroy(item);
+			item = null;
+		}
+		_fontFiles.length = 0;
         // uninit library
         if (_library)
             FT_Done_FreeType(_library);

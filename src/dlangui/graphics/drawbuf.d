@@ -670,6 +670,13 @@ class ColorDrawBuf : ColorDrawBufBase {
 }
 
 class Drawable : RefCountedObject {
+	private static int _instanceCount;
+	this() {
+		Log.d("Created drawable, count=", ++_instanceCount);
+	}
+	~this() {
+		Log.d("Destroyed drawable, count=", --_instanceCount);
+	}
     abstract void drawTo(DrawBuf buf, Rect rc, int tilex0 = 0, int tiley0 = 0);
     @property abstract int width();
     @property abstract int height();

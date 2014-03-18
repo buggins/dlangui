@@ -43,7 +43,10 @@ extern (C) int UIAppMain(string[] args) {
 	LinearLayout layout = new LinearLayout();
 	layout.addChild((new TextWidget()).textColor(0x00802000).text("Text widget 0"));
 	layout.addChild((new TextWidget()).textColor(0x40FF4000).text("Text widget"));
-	layout.addChild((new Button()).text("Button1")); //.textColor(0x40FF4000)
+	layout.addChild((new Button("BTN1")).text("Button1")); //.textColor(0x40FF4000)
+	
+	
+	
 
     LinearLayout hlayout = new HorizontalLayout();
 	//hlayout.addChild((new Button()).text("<<")); //.textColor(0x40FF4000)
@@ -62,13 +65,16 @@ extern (C) int UIAppMain(string[] args) {
     vlayout.addChild((new TextWidget()).text("VLayout line 2").textColor(0x40FFFF00));
     layout.addChild(vlayout);
 
-	layout.addChild((new Button()).textColor(0x000000FF).text("Button2"));
+	layout.addChild((new Button("BTN2")).textColor(0x000000FF).text("Button2"));
 	layout.addChild((new TextWidget()).textColor(0x40FF4000).text("Text widget"));
 	layout.addChild((new ImageWidget()).drawableId("exit").padding(Rect(5,5,5,5)));
 	layout.addChild((new TextWidget()).textColor(0xFF4000).text("Text widget2").padding(Rect(5,5,5,5)).margins(Rect(5,5,5,5)).backgroundColor(0xA0A0A0));
-	layout.addChild((new Button()).textColor(0x000000FF).text("Button3").layoutHeight(FILL_PARENT));
+	layout.addChild((new Button("BTN3")).textColor(0x000000FF).text("Button3").layoutHeight(FILL_PARENT));
 	layout.addChild((new TextWidget()).textColor(0x004000).text("Text widget3 with very long text"));
 
+	layout.childById("BTN1").onClickListener(delegate (Widget w) { Log.d("onClick ", w.id); return true; });
+	layout.childById("BTN2").onClickListener(delegate (Widget w) { Log.d("onClick ", w.id); return true; });
+	layout.childById("BTN3").onClickListener(delegate (Widget w) { Log.d("onClick ", w.id); return true; });
 
 	layout.layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT);
 

@@ -17,6 +17,8 @@ version(linux) {
 	import dlangui.graphics.drawbuf;
 	import dlangui.graphics.fonts;
 	import dlangui.graphics.ftfonts;
+	import dlangui.graphics.images;
+	import dlangui.widgets.styles;
 	import dlangui.platforms.common.platform;
 
 	class XCBWindow : Window {
@@ -301,6 +303,11 @@ version(linux) {
 		this() {
 		}
 		~this() {
+			foreach(ref XCBWindow wnd; _windowMap) {
+				destroy(wnd);
+				wnd = null;
+			}
+			_windowMap.clear();
 			disconnect();
 		}
 		void disconnect() {
@@ -522,7 +529,9 @@ version(linux) {
 		FreeTypeFontManager ft = new FreeTypeFontManager();
 		ft.registerFont("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", FontFamily.SansSerif, "DejaVu", false, FontWeight.Normal);
 		FontManager.instance = ft;
-		
+
+		currentTheme = createDefaultTheme();
+				
 		XCBPlatform xcb = new XCBPlatform();
 		if (!xcb.connect()) {
 			return 1;
@@ -541,8 +550,15 @@ version(linux) {
 			}
 		
 		Platform.setInstance(null);
+		Log.d("Destroying XCB platform");
 		destroy(xcb);
 		
+		currentTheme = null;
+		drawableCache = null;
+		imageCache = null;
+		FontManager.instance = null;
+		
+		Log.d("Exiting main");
 
 	  	return res;
 	}

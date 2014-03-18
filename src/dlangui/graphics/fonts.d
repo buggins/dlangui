@@ -146,9 +146,19 @@ struct FontList {
 	FontRef[] _list;
 	uint _len;
 	~this() {
+		clear();
+	}
+	
+	@property uint length() {
+		return _len;
+	}
+	
+	void clear() {
 		for (uint i = 0; i < _len; i++) {
 			_list[i].clear();
+			_list[i] = null;
 		}
+		_len = 0;
 	}
 	// returns item by index
 	ref FontRef get(int index) {
@@ -216,6 +226,8 @@ class FontManager {
     static __gshared FontManager _instance;
     /// sets new font manager singleton instance
     static @property void instance(FontManager manager) {
+		if (_instance !is null)
+			destroy(_instance);
         _instance = manager;
     }
     /// returns font manager singleton instance
@@ -232,5 +244,7 @@ class FontManager {
 	/// removes entries not used after last call of checkpoint() or cleanup()
 	abstract void cleanup();
 
-	~this() {}
+	~this() {
+		Log.d("Destroying font manager");
+	}
 }

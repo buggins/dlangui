@@ -7,9 +7,13 @@ public import dlangui.graphics.drawbuf;
 public import dlangui.graphics.images;
 public import dlangui.graphics.fonts;
 
+public import std.signals;
+
 import dlangui.platforms.common.platform;
 
 import std.algorithm;
+
+alias onClick_t = bool delegate(Widget);
 
 
 /// Visibility (see Android View Visibility)
@@ -50,9 +54,18 @@ class Widget {
     /// window (to be used for top level widgets only!)
     protected Window _window;
 
+	private static int _instanceCount = 0;
+	/// create widget, with optional id
     this(string ID = null) {
-		_id = id;
+		_id = ID;
+		Log.d("Created widget, count = ", ++_instanceCount);
     }
+	~this() {
+		if (_ownStyle !is null)
+			destroy(_ownStyle);
+		_ownStyle = null;
+		Log.d("Destroyed widget, count = ", --_instanceCount);
+	}
 
     /// accessor to style - by lookup in theme by styleId (if style id is not set, theme base style will be used).
 	protected @property const (Style) style() const {
@@ -90,7 +103,7 @@ class Widget {
 	}
 
     /// returns widget id, null if not set
-	@property string id() const { return _styleId; }
+	@property string id() const { return _id; }
     /// set widget id
     @property void id(string id) { _id = id; }
     /// compare widget id with specified value, returs true if matches
@@ -266,9 +279,35 @@ class Widget {
 
     /// process mouse event; return true if event is processed by widget.
     bool onMouseEvent(MouseEvent event) {
-        return false;
+		// support onClick
+		if (_onClickListener !is null) {
+	        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
+	            setState(State.Pressed);
+	            return true;
+	        }
+	        if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
+	            resetState(State.Pressed);
+				_onClickListener(this);
+	            return true;
+	        }
+	        if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {
+	            resetState(State.Pressed);
+	            return true;
+	        }
+	        if (event.action == MouseAction.FocusIn) {
+	            setState(State.Pressed);
+	            return true;
+	        }
+		}
+	    return false;
     }
 
+	protected onClick_t _onClickListener;
+	/// on click event listener (bool delegate(Widget))
+	@property onClick_t onClickListener() { return _onClickListener; }
+	/// set on click event listener (bool delegate(Widget))
+	@property Widget onClickListener(onClick_t listener) { _onClickListener = listener; return this; }
+	
     // =======================================================
     // Layout and measurement methods
 
@@ -455,6 +494,7 @@ class Widget {
     /// sets window (to be used for top level widget from Window implementation). TODO: hide it from API?
     @property void window(Window window) { _window = window; }
 
+	
 }
 
 /// widget list holder

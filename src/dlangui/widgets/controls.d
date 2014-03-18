@@ -2,6 +2,8 @@ module dlangui.widgets.controls;
 
 import dlangui.widgets.widget;
 
+
+
 /// static text widget
 class TextWidget : Widget {
     this(string ID = null) {
@@ -121,7 +123,8 @@ class Button : Widget {
         Point sz = font.textSize(text);
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }
-    override void onDraw(DrawBuf buf) {
+
+	override void onDraw(DrawBuf buf) {
         super.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
@@ -132,28 +135,6 @@ class Button : Widget {
         Point sz = font.textSize(text);
         applyAlign(rc, sz);
         font.drawText(buf, rc.left, rc.top, text, textColor);
-    }
-
-    override bool onMouseEvent(MouseEvent event) {
-        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
-            setState(State.Pressed);
-            Log.d("Button state: ", state);
-            return true;
-        }
-        if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
-            resetState(State.Pressed);
-            Log.d("Button state: ", state);
-            return true;
-        }
-        if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {
-            resetState(State.Pressed);
-            return true;
-        }
-        if (event.action == MouseAction.FocusIn) {
-            setState(State.Pressed);
-            return true;
-        }
-        return false;
     }
 
 }
