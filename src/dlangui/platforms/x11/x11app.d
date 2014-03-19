@@ -57,7 +57,7 @@ version(linux) {
 			uint mask;
 			uint values[3];
 
-			_enableOpengl = false;
+			//_enableOpengl = false;
 		    /* create black graphics context */
 			if (!_enableOpengl) {
 				_g = xcb_generate_id(_xcbconnection);
@@ -88,7 +88,8 @@ version(linux) {
 				//values[0] = _xcbscreen.white_pixel;
 				values[0] = eventmask;
 				values[1] = _colormap;
-				visualId = _visualID;
+				visualId = _xcbscreen.root_visual;
+				//visualId = _visualID;
 			} else {
 				mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
 				values[0] = _xcbscreen.white_pixel;
@@ -241,8 +242,11 @@ version(linux) {
 		void redraw() {
 			
 			if (_enableOpengl) {
+				glXMakeContextCurrent(_display, _drawable, _drawable, _context);
 				glClearColor(0.2, 0.4, 0.9, 1.0);
         		glClear(GL_COLOR_BUFFER_BIT);
+				glXSwapBuffers(_display, _drawable);
+				//glXMakeContextCurrent(_display, _drawable, _drawable, null);
 			} else {
 				if (!_drawbuf)
 					_drawbuf = new ColorDrawBuf(_dx, _dy);
