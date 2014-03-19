@@ -1411,6 +1411,21 @@ extern Display *XOpenDisplay(
     char*	/* display_name */
 );
 
+	/*
+struct XVisualInfo {
+	Visual *visual;
+	VisualID visualid;
+	int screen;
+	uint depth;
+	int c_class;
+	uint red_mask;
+	uint green_mask;
+	uint blue_mask;
+	int colormap_size;
+	int bits_per_rgb;
+};
+	 * */
+	
 extern void XrmInitialize();
 
 extern byte *XFetchBytes(

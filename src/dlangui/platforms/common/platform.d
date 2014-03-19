@@ -181,7 +181,7 @@ class Window {
             }
             // other messages
             res = _mouseCaptureWidget.onMouseEvent(event);
-            if ((event.flags & (MouseFlag.LButton | MouseFlag.MButton | MouseFlag.RButton)) == 0) {
+            if (!currentButtons) {
                 // usable capturing - no more buttons pressed
                 Log.d("unsetting active widget");
                 _mouseCaptureWidget = null;

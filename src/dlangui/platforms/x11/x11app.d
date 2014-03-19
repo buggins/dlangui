@@ -39,6 +39,10 @@ version(linux) {
 		xcb_gcontext_t       _g;
 		xcb_image_t * 		_image;
 		xcb_shm_segment_info_t shminfo;
+        /* Create GLX Window */
+        GLXDrawable _drawable;
+		GLXWindow _glxwindow;
+		
 		@property xcb_window_t windowId() { return _w; }
 		this(string caption, Window parent) {
 			_caption = caption;
@@ -51,32 +55,58 @@ version(linux) {
 			
 		bool create() {
 			uint mask;
-			uint values[2];
+			uint values[3];
 
+			_enableOpengl = false;
 		    /* create black graphics context */
-			_g = xcb_generate_id(_xcbconnection);
-			_w = _xcbscreen.root;
-			mask = XCB_GC_FOREGROUND | XCB_GC_GRAPHICS_EXPOSURES;
-			values[0] = _xcbscreen.black_pixel;
-			values[1] = 0;
-			xcb_create_gc(_xcbconnection, _g, _w, mask, &values[0]);
+			if (!_enableOpengl) {
+				_g = xcb_generate_id(_xcbconnection);
+				_w = _xcbscreen.root;
+				mask = XCB_GC_FOREGROUND | XCB_GC_GRAPHICS_EXPOSURES;
+				values[0] = _xcbscreen.black_pixel;
+				values[1] = 0;
+				xcb_create_gc(_xcbconnection, _g, _w, mask, &values[0]);
+			}
 
 		    /* create window */
 			_w = xcb_generate_id(_xcbconnection);
 			
 			Log.d("window=", _w, " gc=", _g);
 			
-			mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
-			values[0] = _xcbscreen.white_pixel;
-			values[1] = XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE 
+			//mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
+			//values[0] = _xcbscreen.white_pixel;
+
+			int visualId;
+			uint eventmask = 
+				  XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE 
 				| XCB_EVENT_MASK_POINTER_MOTION | XCB_EVENT_MASK_BUTTON_MOTION 
 				| XCB_EVENT_MASK_ENTER_WINDOW   | XCB_EVENT_MASK_LEAVE_WINDOW
 				| XCB_EVENT_MASK_KEY_PRESS      | XCB_EVENT_MASK_KEY_RELEASE
 				| XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_VISIBILITY_CHANGE;
-			xcb_create_window(_xcbconnection, _xcbscreen.root_depth, _w, _xcbscreen.root,
-		          50, 50, 500, 400, 1,
-		          XCB_WINDOW_CLASS_INPUT_OUTPUT, _xcbscreen.root_visual,
-		          mask, &values[0]);
+			if (_enableOpengl) {
+				mask = XCB_CW_EVENT_MASK | XCB_CW_COLORMAP;
+				//values[0] = _xcbscreen.white_pixel;
+				values[0] = eventmask;
+				values[1] = _colormap;
+				visualId = _visualID;
+			} else {
+				mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
+				values[0] = _xcbscreen.white_pixel;
+				values[1] = eventmask;
+				visualId = _xcbscreen.root_visual;
+			}
+			Log.d("xcb_create_window - window=", _w, " VisualID=", _visualID);
+			auto res = xcb_create_window(_xcbconnection, 
+				_xcbscreen.root_depth, 
+				//XCB_COPY_FROM_PARENT,//_xcbscreen.root_depth, 
+				_w, 
+			    _xcbscreen.root,
+		        50, 50, 500, 400, 
+				1,
+		        XCB_WINDOW_CLASS_INPUT_OUTPUT, 
+				visualId,
+		        mask, 
+				&values[0]);
 		  	xcb_flush(_xcbconnection);
 			windowCaption = _caption;
 			return true;
@@ -168,6 +198,28 @@ version(linux) {
 		    /* map (show) the window */
 		  	xcb_map_window(_xcbconnection, _w);
 		  	xcb_flush(_xcbconnection);
+			//_enableOpengl = false; // test
+			if (_enableOpengl) {
+				Log.d("Calling glXCreateWindow display=", _display, " fbconfig=", _fb_config, " window=", _w);
+	        	_glxwindow = glXCreateWindow(
+			                _display,
+			                _fb_config,
+			                _w,
+			                null);			
+				if (!_glxwindow) {
+					Log.e("Failed to create GLX window: disabling OpenGL");
+					_enableOpengl = false;
+				} else {
+					_drawable = _glxwindow;
+			        /* make OpenGL context current */
+			        if(!glXMakeContextCurrent(_display, _drawable, _drawable, _context)) {
+						Log.e("Failed to make GL context current");
+						_enableOpengl = false;
+			            glXDestroyContext(_display, _context);
+						_context = null;
+			        }
+				}
+			}
 		}
 		string _caption;
 		override @property string windowCaption() {
@@ -187,22 +239,28 @@ version(linux) {
 		}
 
 		void redraw() {
-			if (!_drawbuf)
-				_drawbuf = new ColorDrawBuf(_dx, _dy);
-			_drawbuf.resize(_dx, _dy);
-			_drawbuf.fill(_backgroundColor);
-			Log.d("calling createImage");
-			createImage();
-			Log.d("done createImage");
-			onDraw(_drawbuf);
-			draw(_drawbuf);
-				/*
-			xcb_rectangle_t r = { 20, 20, 60, 60 };
-			xcb_poly_fill_rectangle(_xcbconnection, _w, _g,  1, &r);
-			r = xcb_rectangle_t(cast(short)(_dx - 20 - 60), cast(short)(_dy - 20 - 60), 60, 60);
-			xcb_poly_fill_rectangle(_xcbconnection, _w, _g,  1, &r);
-				 */
-			xcb_flush(_xcbconnection);
+			
+			if (_enableOpengl) {
+				glClearColor(0.2, 0.4, 0.9, 1.0);
+        		glClear(GL_COLOR_BUFFER_BIT);
+			} else {
+				if (!_drawbuf)
+					_drawbuf = new ColorDrawBuf(_dx, _dy);
+				_drawbuf.resize(_dx, _dy);
+				_drawbuf.fill(_backgroundColor);
+				Log.d("calling createImage");
+				createImage();
+				Log.d("done createImage");
+				onDraw(_drawbuf);
+				draw(_drawbuf);
+					/*
+				xcb_rectangle_t r = { 20, 20, 60, 60 };
+				xcb_poly_fill_rectangle(_xcbconnection, _w, _g,  1, &r);
+				r = xcb_rectangle_t(cast(short)(_dx - 20 - 60), cast(short)(_dy - 20 - 60), 60, 60);
+				xcb_poly_fill_rectangle(_xcbconnection, _w, _g,  1, &r);
+					 */
+				xcb_flush(_xcbconnection);
+			}
 		}
 		
 		ColorDrawBuf _drawbuf;
@@ -259,18 +317,24 @@ version(linux) {
 		                pbuttonDetails = &_lbutton;
 						if (action == MouseAction.ButtonDown)
 							flags |= MouseFlag.LButton;
+						else if (action == MouseAction.ButtonUp)
+							flags &= ~MouseFlag.LButton;
 						break;
 					case 2:
 						button = MouseButton.Middle;
 		                pbuttonDetails = &_mbutton;
 						if (action == MouseAction.ButtonDown)
 							flags |= MouseFlag.MButton;
+						else if (action == MouseAction.ButtonUp)
+							flags &= ~MouseFlag.MButton;
 						break;
 					case 3:
 						button = MouseButton.Right;
 		                pbuttonDetails = &_rbutton;
 						if (action == MouseAction.ButtonDown)
 							flags |= MouseFlag.RButton;
+						else if (action == MouseAction.ButtonUp)
+							flags &= ~MouseFlag.RButton;
 						break;
 					case 4:
 						if (action == MouseAction.ButtonUp)
@@ -313,6 +377,10 @@ version(linux) {
 	private __gshared ubyte _xcbscreendepth;
 	private __gshared bool _enableOpengl;
 	private __gshared std.c.linux.X11.Xlib.Display * _display;
+	private __gshared GLXContext _context;
+	private __gshared int _visualID = 0;
+	private __gshared xcb_colormap_t _colormap;		
+	private __gshared GLXFBConfig _fb_config;
 
 	class XCBPlatform : Platform {
 		this() {
@@ -347,6 +415,7 @@ version(linux) {
 			} catch (Exception e) {
 				Log.e("Cannot load opengl library", e);
 			}
+			//_enableOpengl = false; // test
 			// X
 			import std.c.linux.X11.Xlib;
         	int default_screen;
@@ -406,6 +475,74 @@ version(linux) {
 			  	_xcbscreen = xcb_setup_roots_iterator( xcb_get_setup(_xcbconnection) ).data;
 			}
 		    _xcbscreendepth = xcb_aux_get_depth(_xcbconnection, _xcbscreen);
+
+			if (_enableOpengl) {
+				Log.d("Trying to create OpenGL context");
+				
+				int versionMajor;
+				int versionMinor;
+				if (!glXQueryVersion(_display,
+                     &versionMajor,
+					&versionMinor)) {
+					Log.e("Cannot get GLX version");
+				} else {
+					Log.e("GLX version: ", versionMajor, ".", versionMinor);
+				}
+				
+		        /* Query framebuffer configurations */
+		        GLXFBConfig *fb_configs = null;
+		        int num_fb_configs = 0;
+		        fb_configs = glXGetFBConfigs(_display, default_screen, &num_fb_configs);
+		        if (!fb_configs || num_fb_configs == 0) {
+					_enableOpengl = false;
+					Log.e("glXGetFBConfigs failed");
+				} else {
+
+				    GLXFBConfig *fbc;
+				    //XVisualInfo *vi;
+					int nelements;
+					/* Find a FBConfig that uses RGBA.  Note that no attribute list is */
+   					/* needed since GLX_RGBA_BIT is a default attribute.               */
+					int[] attrib_list =
+                        [GLX_RENDER_TYPE, GLX_RGBA_BIT,
+                        GLX_RED_SIZE, 8,
+                        GLX_GREEN_SIZE, 8,
+                        GLX_BLUE_SIZE, 8,
+                        None];
+   					fbc = glXChooseFBConfig(_display, DefaultScreen(_display), attrib_list.ptr, &nelements);
+   					auto vi = glXGetVisualFromFBConfig(_display, fbc[0]);
+					_fb_config = fbc[0];
+					
+			        /* Select first framebuffer config and query visualID */
+			        //_fb_config = fb_configs[0];
+			        int res = glXGetFBConfigAttrib(_display, _fb_config, GLX_VISUAL_ID , &_visualID);
+					if (res == GLX_NO_EXTENSION) {
+						//
+						Log.e("GLX extension is not supported for display");
+					}
+					Log.d("Selected fbconfig=", _fb_config, " visualId=", _visualID);
+
+			        /* Create OpenGL context */
+			        _context = glXCreateNewContext(_display, _fb_config, GLX_RGBA_TYPE, null, true);
+			        if (!_context) {
+						_enableOpengl = false;
+						Log.e("Failed to create OpenGL context");
+					} else {
+						Log.d("Creating color map");
+						xcb_colormap_t colormap = xcb_generate_id(_xcbconnection);
+				        /* Create colormap */
+				        xcb_create_colormap(
+				            _xcbconnection,
+				            XCB_COLORMAP_ALLOC_NONE,
+				            _colormap,
+				            _xcbscreen.root,
+				            _visualID
+				        );
+					}
+				}
+			}
+			
+			
 			return true;
 		}
 		XCBWindow getWindow(xcb_window_t w) {
