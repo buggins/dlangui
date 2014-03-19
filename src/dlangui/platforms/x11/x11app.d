@@ -20,7 +20,20 @@ version(linux) {
 	import dlangui.graphics.images;
 	import dlangui.widgets.styles;
 	import dlangui.platforms.common.platform;
-
+	
+	version (USE_OPENGL) {
+	    import dlangui.graphics.glsupport;
+	}
+	
+	import derelict.opengl3.gl3;
+	import derelict.opengl3.glx;
+	
+	extern (System)
+	xcb_connection_t *XGetXCBConnection(std.c.linux.X11.Xlib.Display *dpy); 
+	enum XEventQueueOwner { XlibOwnsEventQueue = 0, XCBOwnsEventQueue };
+	extern (System)
+	void XSetEventQueueOwner(std.c.linux.X11.Xlib.Display *dpy, XEventQueueOwner owner);
+	
 	class XCBWindow : Window {
 		xcb_window_t         _w;
 		xcb_gcontext_t       _g;
@@ -298,9 +311,12 @@ version(linux) {
 	private __gshared xcb_connection_t * _xcbconnection;
 	private __gshared xcb_screen_t     * _xcbscreen;
 	private __gshared ubyte _xcbscreendepth;
+	private __gshared bool _enableOpengl;
+	private __gshared std.c.linux.X11.Xlib.Display * _display;
 
 	class XCBPlatform : Platform {
 		this() {
+			
 		}
 		~this() {
 			foreach(ref XCBWindow wnd; _windowMap) {
@@ -311,15 +327,62 @@ version(linux) {
 			disconnect();
 		}
 		void disconnect() {
-			if (_xcbconnection) {
+			/* Cleanup */
+			if (_display) {
+				Log.d("Closing X display");
+        		std.c.linux.X11.Xlib.XCloseDisplay(_display);
+				_display = null;
+			} else if (_xcbconnection) {
+				Log.d("Closing XCB connection");
 			    /* close connection to server */
 	  			xcb_disconnect(_xcbconnection);
+				_xcbconnection = null;
 			}
 		}
 		bool connect() {
-			Log.d("Opening connection");
-		    /* open connection with the server */
-		    _xcbconnection = xcb_connect(null,null);
+			
+			try {
+				DerelictGL3.load();
+				_enableOpengl = true;
+			} catch (Exception e) {
+				Log.e("Cannot load opengl library", e);
+			}
+			// X
+			import std.c.linux.X11.Xlib;
+        	int default_screen;
+			
+			if (_enableOpengl) {
+				Log.d("Opening display via XLib");
+	        	/* Open Xlib Display */ 
+	        	_display = XOpenDisplay(null);
+				if (!_display)
+	        	{
+		            Log.e("Failed to open display using Xlib");
+					_enableOpengl = false;
+				} else {
+					// display is opened
+					default_screen = DefaultScreen(_display);
+					Log.d("Opened display =");
+					/* Get the XCB connection from the display */
+			        _xcbconnection = XGetXCBConnection(_display);
+			        if (!_xcbconnection)
+			        {
+			            XCloseDisplay(_display);
+						_display = null;
+			            Log.e("Failed to get XCB connection from Xlib display");
+						_enableOpengl = false;
+					} else {
+					   /* Acquire event queue ownership */
+				        XSetEventQueueOwner(_display, XEventQueueOwner.XCBOwnsEventQueue);
+					}
+				}
+			}
+
+			if (_xcbconnection is null) {
+				Log.d("Opening XCB connection");
+			    /* open connection with the server */
+			    _xcbconnection = xcb_connect(null,null);
+			}
 		    if (xcb_connection_has_error(_xcbconnection)) {
 		        Log.e("Cannot open display");
 				_xcbconnection = null;
@@ -328,9 +391,21 @@ version(linux) {
 			//XSetEventQueueOwner(display, XCBOwnsEventQueue);
 			Log.d("Getting first screen");
 		    /* get the first screen */
-		  	_xcbscreen = xcb_setup_roots_iterator( xcb_get_setup(_xcbconnection) ).data;
-	        _xcbscreendepth = xcb_aux_get_depth(_xcbconnection, _xcbscreen);
-				
+			
+			if (_enableOpengl) {
+		        /* Find XCB screen */
+		        //xcb_screen_t *screen = null;
+		        xcb_screen_iterator_t screen_iter = 
+		            xcb_setup_roots_iterator(xcb_get_setup(_xcbconnection));
+		        for(int screen_num = default_screen;
+			            screen_iter.rem && screen_num > 0;
+						--screen_num, xcb_screen_next(&screen_iter)) {
+				}
+		        _xcbscreen = screen_iter.data;			
+			} else {
+			  	_xcbscreen = xcb_setup_roots_iterator( xcb_get_setup(_xcbconnection) ).data;
+			}
+		    _xcbscreendepth = xcb_aux_get_depth(_xcbconnection, _xcbscreen);
 			return true;
 		}
 		XCBWindow getWindow(xcb_window_t w) {

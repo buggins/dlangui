@@ -28,6 +28,8 @@
     <ObjectsDirectory>obj/Debug</ObjectsDirectory>
     <Externalconsole>true</Externalconsole>
     <Target>StaticLibrary</Target>
+    <ExtraCompilerArguments>-version=USE_OPENGL
+</ExtraCompilerArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release</OutputPath>
@@ -171,6 +173,8 @@
     <Compile Include="..\DerelictFI\source\derelict\freeimage\types.d">
       <Link>3rdparty\DerelictFI\types.d</Link>
     </Compile>
+    <Compile Include="3rdparty\X11\X.d" />
+    <Compile Include="3rdparty\X11\Xlib.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\dlangui\platforms\x11\" />

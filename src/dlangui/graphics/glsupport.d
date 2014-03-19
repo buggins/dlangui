@@ -342,7 +342,7 @@ class GLProgram {
 
         GLuint shader = glCreateShader(type);//GL_VERTEX_SHADER
         const char * psrc = src.toStringz;
-        GLuint len = src.length;
+        GLuint len = cast(uint)src.length;
         glShaderSource(shader, 1, &psrc, cast(const(int)*)&len);
         glCompileShader(shader);
         GLint compiled;

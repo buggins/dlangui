@@ -8,6 +8,7 @@ version (linux) {
 	pragma(lib, "xcb");
 	pragma(lib, "xcb-shm");
 	pragma(lib, "xcb-image");
+	pragma(lib, "X11-xcb");
 	pragma(lib, "X11");
 	pragma(lib, "dl");
 }
