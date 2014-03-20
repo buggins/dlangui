@@ -670,12 +670,12 @@ class ColorDrawBuf : ColorDrawBufBase {
 }
 
 class Drawable : RefCountedObject {
-	private static int _instanceCount;
+	//private static int _instanceCount;
 	this() {
-		Log.d("Created drawable, count=", ++_instanceCount);
+		//Log.d("Created drawable, count=", ++_instanceCount);
 	}
 	~this() {
-		Log.d("Destroyed drawable, count=", --_instanceCount);
+		//Log.d("Destroyed drawable, count=", --_instanceCount);
 	}
     abstract void drawTo(DrawBuf buf, Rect rc, int tilex0 = 0, int tiley0 = 0);
     @property abstract int width();
@@ -699,17 +699,17 @@ class SolidFillDrawable : Drawable {
 class ImageDrawable : Drawable {
     protected DrawBufRef _image;
     protected bool _tiled;
-	private int _instanceCount;
+	//private int _instanceCount;
     this(ref DrawBufRef image, bool tiled = false, bool ninePatch = false) {
         _image = image;
         _tiled = tiled;
         if (ninePatch)
             _image.detectNinePatch();
-		Log.d("Created ImageDrawable, count=", ++_instanceCount);
+		//Log.d("Created ImageDrawable, count=", ++_instanceCount);
     }
 	~this() {
 		_image.clear();
-		Log.d("Destroyed ImageDrawable, count=", --_instanceCount);
+		//Log.d("Destroyed ImageDrawable, count=", --_instanceCount);
 	}
     @property override int width() { 
         if (_image.isNull)

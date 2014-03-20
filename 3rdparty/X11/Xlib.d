@@ -1913,6 +1913,8 @@ extern Status XAllocColorPlanes(
     ulong*	/* bmask_return */
 );
 
+	const AllocNone = 0;
+	
 extern Status XAllocNamedColor(
     Display*		/* display */,
     Colormap		/* colormap */,

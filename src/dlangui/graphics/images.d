@@ -113,17 +113,17 @@ class DrawableCache {
         bool _error;
         bool _used;
         DrawableRef _drawable;
-		private int _instanceCount;
+		//private int _instanceCount;
         this(string id, string filename, bool tiled) {
             _id = id;
             _filename = filename;
             _tiled = tiled;
             _error = filename is null;
-			Log.d("Created DrawableCacheItem, count=", ++_instanceCount);
+			//Log.d("Created DrawableCacheItem, count=", ++_instanceCount);
         }
 		~this() {
 			_drawable.clear();
-			Log.d("Destroyed DrawableCacheItem, count=", --_instanceCount);
+			//Log.d("Destroyed DrawableCacheItem, count=", --_instanceCount);
 		}
         /// remove from memory, will cause reload on next access
         void compact() {

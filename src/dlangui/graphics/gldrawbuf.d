@@ -69,7 +69,7 @@ class GLDrawBuf : DrawBuf {
         assert(_scene !is null);
 		Rect dstrect = Rect(x,y, x + glyph.blackBoxX, y + glyph.blackBoxY);
 		Rect srcrect = Rect(0, 0, glyph.blackBoxX, glyph.blackBoxY);
-		Log.v("GLDrawBuf.drawGlyph dst=", dstrect, " src=", srcrect, " color=", color);
+		//Log.v("GLDrawBuf.drawGlyph dst=", dstrect, " src=", srcrect, " color=", color);
         if (applyClipping(dstrect, srcrect)) {
             if (!glGlyphCache.get(glyph.id))
                 glGlyphCache.put(glyph);
@@ -670,7 +670,7 @@ private class GLGlyphCache {
                     dstrc.bottom -= clip.bottom;
                 }
                 if (!dstrc.empty) {
-                    Log.d("drawing glyph with color ", color);
+                    //Log.d("drawing glyph with color ", color);
                     drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, false);
                 }
 

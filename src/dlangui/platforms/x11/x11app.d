@@ -54,6 +54,8 @@ version(linux) {
 		}
 			
 		bool create() {
+			import std.c.linux.X11.Xlib;
+			
 			uint mask;
 			uint values[3];
 
@@ -68,11 +70,51 @@ version(linux) {
 				xcb_create_gc(_xcbconnection, _g, _w, mask, &values[0]);
 			}
 
+			ubyte depth = _xcbscreen.root_depth;
 		    /* create window */
 			_w = xcb_generate_id(_xcbconnection);
 			
 			Log.d("window=", _w, " gc=", _g);
 			
+			if (_enableOpengl) {
+				int visual_attribs[] = [
+					        GLX_RENDER_TYPE, GLX_RGBA_BIT,
+					        GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
+					        GLX_DOUBLEBUFFER, 1,
+					        GLX_RED_SIZE, 8,
+					        GLX_GREEN_SIZE, 8,
+					        GLX_BLUE_SIZE, 8,
+							std.c.linux.X11.Xlib.None];
+				
+			    Log.d("Getting framebuffer config");
+			    int fbcount;
+			    GLXFBConfig *fbc = glXChooseFBConfig(_display, DefaultScreen(_display), visual_attribs.ptr, &fbcount);
+			    if (!fbc)
+			    {
+			        Log.d("Failed to retrieve a framebuffer config");
+			        //return 1;
+			    }
+			 
+			    Log.d("Getting XVisualInfo");
+				_fb_config = fbc[0];
+			    auto vi = glXGetVisualFromFBConfig(_display, _fb_config);			
+				
+				//auto vi = glXChooseVisual(_display, std.c.linux.X11.Xlib.DefaultScreen(_display), attributeList.ptr);
+				_visualID = vi.visualid;		
+				//swa.colormap = std.c.linux.X11.Xlib.XCreateColormap(_display, std.c.linux.X11.Xlib.RootWindow(_display, vi.screen), vi.visual, 0); // AllocNone			
+
+				Log.d("Creating color map");
+				_colormap = xcb_generate_id(_xcbconnection);
+		        /* Create colormap */
+		        xcb_create_colormap(
+		            _xcbconnection,
+		            XCB_COLORMAP_ALLOC_NONE,
+		            _colormap,
+		            _xcbscreen.root,
+		            _visualID
+		        );				
+				depth = cast(ubyte)vi.depth;
+			}
 			//mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
 			//values[0] = _xcbscreen.white_pixel;
 
@@ -84,12 +126,12 @@ version(linux) {
 				| XCB_EVENT_MASK_KEY_PRESS      | XCB_EVENT_MASK_KEY_RELEASE
 				| XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_VISIBILITY_CHANGE;
 			if (_enableOpengl) {
-				mask = XCB_CW_EVENT_MASK | XCB_CW_COLORMAP;
-				//values[0] = _xcbscreen.white_pixel;
-				values[0] = eventmask;
-				values[1] = _colormap;
-				visualId = _xcbscreen.root_visual;
-				//visualId = _visualID;
+				mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK | XCB_CW_COLORMAP;
+				values[0] = _xcbscreen.white_pixel;
+				values[1] = eventmask;
+				values[2] = _colormap;
+				//visualId = _xcbscreen.root_visual;
+				visualId = _visualID;
 			} else {
 				mask = XCB_CW_BACK_PIXEL | XCB_CW_EVENT_MASK;
 				values[0] = _xcbscreen.white_pixel;
@@ -98,7 +140,7 @@ version(linux) {
 			}
 			Log.d("xcb_create_window - window=", _w, " VisualID=", _visualID);
 			auto res = xcb_create_window(_xcbconnection, 
-				_xcbscreen.root_depth, 
+				depth, //_xcbscreen.root_depth, 
 				//XCB_COPY_FROM_PARENT,//_xcbscreen.root_depth, 
 				_w, 
 			    _xcbscreen.root,
@@ -193,14 +235,15 @@ version(linux) {
 	                cast(short)rc.left, cast(short)rc.top, cast(short)rc.left, cast(short)rc.top, cast(ushort)rc.width(), cast(ushort)rc.height(), 0);
 	        xcb_flush(_xcbconnection);
 		}
-			
+		
+		bool _derelictgl3Reloaded;
 		override void show() {
 			Log.d("XCBWindow.show()");
 		    /* map (show) the window */
 		  	xcb_map_window(_xcbconnection, _w);
 		  	xcb_flush(_xcbconnection);
 			//_enableOpengl = false; // test
-			if (_enableOpengl) {
+			if (_enableOpengl && !_glxwindow) {
 				Log.d("Calling glXCreateWindow display=", _display, " fbconfig=", _fb_config, " window=", _w);
 	        	_glxwindow = glXCreateWindow(
 			                _display,
@@ -211,14 +254,77 @@ version(linux) {
 					Log.e("Failed to create GLX window: disabling OpenGL");
 					_enableOpengl = false;
 				} else {
+					import derelict.opengl3.glxext;
+					import std.c.linux.X11.Xlib;
+					
 					_drawable = _glxwindow;
+					
+					if (!_derelictgl3Reloaded) {
+						Log.e("Reloading DerelictGL3");
+						_derelictgl3Reloaded = true;
+			        	_context = glXCreateNewContext(_display, _fb_config, GLX_RGBA_TYPE, null, true);
+						if (_context is null) {
+							Log.e("Cannot create temporary context");
+						}
+						glXMakeContextCurrent(_display, _drawable, _drawable, _context);
+						//glXMakeCurrent(_display, _w, _context);
+						DerelictGL3.reload();
+						Log.e("Reloaded DerelictGL3 - removing temporary context");
+						glXMakeCurrent(_display, 0, null);
+						Log.e("Destroying context");
+						glXDestroyContext(_display, _context);
+						Log.e("DerelictGL3 initialized");
+						_context = null;
+					}
+					
+	 
+					// Get the default screen's GLX extension list
+  					const char *glxExts = glXQueryExtensionsString( _display,
+                                                  DefaultScreen( _display ) );
+					Log.d("Extensions: ", fromStringz(glxExts));
+					
+					
+					
+//					da_glXCreateContextAttribsARB glXCreateContextAttribsARB;
+//  					glXCreateContextAttribsARB = cast(da_glXCreateContextAttribsARB)
+//           					glXGetProcAddressARB( cast(const GLubyte *)("glXCreateContextAttribsARB".toStringz));
+					
+					int context_attribs[] =
+				    [
+				        GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
+				        GLX_CONTEXT_MINOR_VERSION_ARB, 0,
+				        None
+				    ];
+					
+    				Log.d("Creating context");
+			        _context = glXCreateNewContext(_display, _fb_config, GLX_RGBA_TYPE, null, true);
+					//if (glXCreateContextAttribsARB is null) {
+					//	Log.e("glXCreateContextAttribsARB function is not found");
+			        //	_context = glXCreateNewContext(_display, _fb_config, GLX_RGBA_TYPE, null, true);
+					//} else {
+					//	Log.e("calling glXCreateContextAttribsARB");
+			    	//	_context = glXCreateContextAttribsARB(_display, _fb_config, null, true, context_attribs.ptr);
+					//}
+    				Log.d("Created context: ", _context);
+					
+			        /* Create OpenGL context */
+			        //auto context = glXCreateNewContext(_display, _fb_config, GLX_RGBA_TYPE, null, true);
+			        if (!_context) {
+						_enableOpengl = false;
+						Log.e("Failed to create OpenGL context");
+					} else {
+
+					}
+					
 			        /* make OpenGL context current */
-			        if(!glXMakeContextCurrent(_display, _drawable, _drawable, _context)) {
+			        if(!glXMakeContextCurrent(_display, _drawable, _drawable, _context) || !initShaders()) {
 						Log.e("Failed to make GL context current");
 						_enableOpengl = false;
 			            glXDestroyContext(_display, _context);
 						_context = null;
-			        }
+					} else {
+						
+					}
 				}
 			}
 		}
@@ -242,9 +348,26 @@ version(linux) {
 		void redraw() {
 			
 			if (_enableOpengl) {
+				Log.d("Drawing using opengl ", _dx, "x", _dy, " context=", _context);
 				glXMakeContextCurrent(_display, _drawable, _drawable, _context);
-				glClearColor(0.2, 0.4, 0.9, 1.0);
+		        glEnable(GL_BLEND);
+		        glDisable(GL_CULL_FACE);
+		        glDisable(GL_DEPTH_TEST);
+		        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			    glViewport(0, 0, _dx, _dy);
+				Log.d("glClearColor");
+				glClearColor(0.2f, 0.4f, 0.9f, 1.0f);
+				Log.d("glClear");
         		glClear(GL_COLOR_BUFFER_BIT);
+				
+				import dlangui.graphics.gldrawbuf;
+				GLDrawBuf buf = new GLDrawBuf(_dx, _dy);
+				buf.beforeDrawing();
+				onDraw(buf);
+				buf.fillRect(Rect(0, 0, 100, 100), 0x805010);
+				buf.afterDrawing();
+				destroy(buf);
+				Log.d("Calling glx swap buffers");
 				glXSwapBuffers(_display, _drawable);
 				//glXMakeContextCurrent(_display, _drawable, _drawable, null);
 			} else {
@@ -514,7 +637,11 @@ version(linux) {
                         GLX_BLUE_SIZE, 8,
                         None];
    					fbc = glXChooseFBConfig(_display, DefaultScreen(_display), attrib_list.ptr, &nelements);
-   					auto vi = glXGetVisualFromFBConfig(_display, fbc[0]);
+					
+					int attributeList[] = [GLX_RGBA, GLX_DOUBLEBUFFER, GLX_RED_SIZE, 1, GLX_GREEN_SIZE, 1, GLX_BLUE_SIZE, 1, None];
+					auto vi = glXChooseVisual(_display, DefaultScreen(_display), attributeList.ptr);
+					//_visualID = vi.visual;
+   					//auto vi = glXGetVisualFromFBConfig(_display, fbc[0]);
 					_fb_config = fbc[0];
 					
 			        /* Select first framebuffer config and query visualID */
@@ -526,23 +653,6 @@ version(linux) {
 					}
 					Log.d("Selected fbconfig=", _fb_config, " visualId=", _visualID);
 
-			        /* Create OpenGL context */
-			        _context = glXCreateNewContext(_display, _fb_config, GLX_RGBA_TYPE, null, true);
-			        if (!_context) {
-						_enableOpengl = false;
-						Log.e("Failed to create OpenGL context");
-					} else {
-						Log.d("Creating color map");
-						xcb_colormap_t colormap = xcb_generate_id(_xcbconnection);
-				        /* Create colormap */
-				        xcb_create_colormap(
-				            _xcbconnection,
-				            XCB_COLORMAP_ALLOC_NONE,
-				            _colormap,
-				            _xcbscreen.root,
-				            _visualID
-				        );
-					}
 				}
 			}
 			
