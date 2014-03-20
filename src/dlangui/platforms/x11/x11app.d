@@ -43,6 +43,11 @@ version(linux) {
         GLXDrawable _drawable;
 		GLXWindow _glxwindow;
 		
+		private GLXContext _context;
+		private int _visualID = 0;
+		private xcb_colormap_t _colormap;		
+		private GLXFBConfig _fb_config;
+		
 		@property xcb_window_t windowId() { return _w; }
 		this(string caption, Window parent) {
 			_caption = caption;
@@ -61,7 +66,7 @@ version(linux) {
 
 			//_enableOpengl = false;
 		    /* create black graphics context */
-			if (!_enableOpengl) {
+			if (true || !_enableOpengl) {
 				_g = xcb_generate_id(_xcbconnection);
 				_w = _xcbscreen.root;
 				mask = XCB_GC_FOREGROUND | XCB_GC_GRAPHICS_EXPOSURES;
@@ -266,7 +271,8 @@ version(linux) {
 						if (_context is null) {
 							Log.e("Cannot create temporary context");
 						}
-						glXMakeContextCurrent(_display, _drawable, _drawable, _context);
+						//glXMakeContextCurrent(_display, _drawable, _drawable, _context);
+						glXMakeContextCurrent(_display, _glxwindow, _glxwindow, _context);
 						//glXMakeCurrent(_display, _w, _context);
 						DerelictGL3.reload();
 						Log.e("Reloaded DerelictGL3 - removing temporary context");
@@ -284,27 +290,31 @@ version(linux) {
 					Log.d("Extensions: ", fromStringz(glxExts));
 					
 					
+					Log.d("GLX_ARB_get_proc_address=", GLX_ARB_get_proc_address);
+					Log.d("GLX_ARB_create_context=", GLX_ARB_create_context);
+						
+					//da_glXCreateContextAttribsARB glXCreateContextAttribsARB;
+					//Log.d("getting address of glXCreateContextAttribsARB");
+  					//glXCreateContextAttribsARB = cast(da_glXCreateContextAttribsARB)
+           			//		glXGetProcAddressARB( cast(const GLubyte *)("glXCreateContextAttribsARB".toStringz));
 					
-//					da_glXCreateContextAttribsARB glXCreateContextAttribsARB;
-//  					glXCreateContextAttribsARB = cast(da_glXCreateContextAttribsARB)
-//           					glXGetProcAddressARB( cast(const GLubyte *)("glXCreateContextAttribsARB".toStringz));
-					
-					int context_attribs[] =
-				    [
-				        GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
-				        GLX_CONTEXT_MINOR_VERSION_ARB, 0,
-				        None
-				    ];
+					//Log.d("glXCreateContextAttribsARB = ", &glXCreateContextAttribsARB);
 					
     				Log.d("Creating context");
-			        _context = glXCreateNewContext(_display, _fb_config, GLX_RGBA_TYPE, null, true);
-					//if (glXCreateContextAttribsARB is null) {
-					//	Log.e("glXCreateContextAttribsARB function is not found");
-			        //	_context = glXCreateNewContext(_display, _fb_config, GLX_RGBA_TYPE, null, true);
-					//} else {
-					//	Log.e("calling glXCreateContextAttribsARB");
-			    	//	_context = glXCreateContextAttribsARB(_display, _fb_config, null, true, context_attribs.ptr);
-					//}
+			        //_context = glXCreateNewContext(_display, _fb_config, GLX_RGBA_TYPE, null, true);
+					if (!GLX_ARB_create_context) {
+						Log.e("glXCreateContextAttribsARB function is not found");
+			        	_context = glXCreateNewContext(_display, _fb_config, GLX_RGBA_TYPE, null, true);
+					} else {
+						int context_attribs[] =
+					    [
+					        GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
+					        GLX_CONTEXT_MINOR_VERSION_ARB, 0,
+					        None
+					    ];
+						Log.e("calling glXCreateContextAttribsARB");
+			    		_context = glXCreateContextAttribsARB(_display, _fb_config, null, true, context_attribs.ptr);
+					}
     				Log.d("Created context: ", _context);
 					
 			        /* Create OpenGL context */
@@ -348,8 +358,10 @@ version(linux) {
 		void redraw() {
 			
 			if (_enableOpengl) {
+				import std.c.linux.X11.Xlib;
 				Log.d("Drawing using opengl ", _dx, "x", _dy, " context=", _context);
-				glXMakeContextCurrent(_display, _drawable, _drawable, _context);
+				//glXMakeContextCurrent(_display, _drawable, _drawable, _context);
+				glXMakeContextCurrent(_display, _glxwindow, _glxwindow, _context);
 		        glEnable(GL_BLEND);
 		        glDisable(GL_CULL_FACE);
 		        glDisable(GL_DEPTH_TEST);
@@ -367,9 +379,12 @@ version(linux) {
 				buf.fillRect(Rect(0, 0, 100, 100), 0x805010);
 				buf.afterDrawing();
 				destroy(buf);
-				Log.d("Calling glx swap buffers");
+				Log.d("Calling glx swap buffers for drawable ", _drawable);
 				glXSwapBuffers(_display, _drawable);
 				//glXMakeContextCurrent(_display, _drawable, _drawable, null);
+				xcb_flush(_xcbconnection);
+				glXMakeContextCurrent (_display, None, None, null);
+				glXWaitGL();
 			} else {
 				if (!_drawbuf)
 					_drawbuf = new ColorDrawBuf(_dx, _dy);
@@ -480,7 +495,7 @@ version(linux) {
 						return;
 				}
 			}
-			Log.d("processMouseEvent ", action, " detail=", detail, " state=", state, " at coords ", x, ", ", y);
+			//Log.d("processMouseEvent ", action, " detail=", detail, " state=", state, " at coords ", x, ", ", y);
 	        if (action == MouseAction.ButtonDown) {
 	            pbuttonDetails.down(x, y, cast(ushort)flags);
 	        } else if (action == MouseAction.ButtonUp) {
@@ -504,10 +519,6 @@ version(linux) {
 	private __gshared ubyte _xcbscreendepth;
 	private __gshared bool _enableOpengl;
 	private __gshared std.c.linux.X11.Xlib.Display * _display;
-	private __gshared GLXContext _context;
-	private __gshared int _visualID = 0;
-	private __gshared xcb_colormap_t _colormap;		
-	private __gshared GLXFBConfig _fb_config;
 
 	class XCBPlatform : Platform {
 		this() {
@@ -604,7 +615,6 @@ version(linux) {
 		    _xcbscreendepth = xcb_aux_get_depth(_xcbconnection, _xcbscreen);
 
 			if (_enableOpengl) {
-				Log.d("Trying to create OpenGL context");
 				
 				int versionMajor;
 				int versionMinor;
@@ -616,44 +626,6 @@ version(linux) {
 					Log.e("GLX version: ", versionMajor, ".", versionMinor);
 				}
 				
-		        /* Query framebuffer configurations */
-		        GLXFBConfig *fb_configs = null;
-		        int num_fb_configs = 0;
-		        fb_configs = glXGetFBConfigs(_display, default_screen, &num_fb_configs);
-		        if (!fb_configs || num_fb_configs == 0) {
-					_enableOpengl = false;
-					Log.e("glXGetFBConfigs failed");
-				} else {
-
-				    GLXFBConfig *fbc;
-				    //XVisualInfo *vi;
-					int nelements;
-					/* Find a FBConfig that uses RGBA.  Note that no attribute list is */
-   					/* needed since GLX_RGBA_BIT is a default attribute.               */
-					int[] attrib_list =
-                        [GLX_RENDER_TYPE, GLX_RGBA_BIT,
-                        GLX_RED_SIZE, 8,
-                        GLX_GREEN_SIZE, 8,
-                        GLX_BLUE_SIZE, 8,
-                        None];
-   					fbc = glXChooseFBConfig(_display, DefaultScreen(_display), attrib_list.ptr, &nelements);
-					
-					int attributeList[] = [GLX_RGBA, GLX_DOUBLEBUFFER, GLX_RED_SIZE, 1, GLX_GREEN_SIZE, 1, GLX_BLUE_SIZE, 1, None];
-					auto vi = glXChooseVisual(_display, DefaultScreen(_display), attributeList.ptr);
-					//_visualID = vi.visual;
-   					//auto vi = glXGetVisualFromFBConfig(_display, fbc[0]);
-					_fb_config = fbc[0];
-					
-			        /* Select first framebuffer config and query visualID */
-			        //_fb_config = fb_configs[0];
-			        int res = glXGetFBConfigAttrib(_display, _fb_config, GLX_VISUAL_ID , &_visualID);
-					if (res == GLX_NO_EXTENSION) {
-						//
-						Log.e("GLX extension is not supported for display");
-					}
-					Log.d("Selected fbconfig=", _fb_config, " visualId=", _visualID);
-
-				}
 			}
 			
 			
@@ -790,7 +762,7 @@ version(linux) {
 						}
 		            case XCB_MOTION_NOTIFY: {
 			                xcb_motion_notify_event_t *motion = cast(xcb_motion_notify_event_t *)e;
-			                Log.d("XCB_MOTION_NOTIFY ", motion.event, " at coords ", motion.event_x, ", ", motion.event_y);
+			                //Log.d("XCB_MOTION_NOTIFY ", motion.event, " at coords ", motion.event_x, ", ", motion.event_y);
 							XCBWindow window = getWindow(motion.event);
 							if (window !is null) {
 								//
