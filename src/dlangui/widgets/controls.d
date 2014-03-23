@@ -53,8 +53,9 @@ class ImageWidget : Widget {
     protected string _drawableId;
     protected DrawableRef _drawable;
 
-    this(string ID = null) {
+    this(string ID = null, string drawableId = null) {
 		super(ID);
+        _drawableId = drawableId;
 	}
 
     /// get drawable image id
@@ -110,6 +111,14 @@ class ImageWidget : Widget {
     }
 }
 
+/// button with image only
+class ImageButton : ImageWidget {
+    this(string ID = null, string drawableId = null) {
+        super(ID);
+        styleId = "BUTTON";
+    }
+}
+
 class Button : Widget {
     protected dstring _text;
     override @property dstring text() { return _text; }
@@ -118,6 +127,7 @@ class Button : Widget {
 		super(ID);
         styleId = "BUTTON";
     }
+
     override void measure(int parentWidth, int parentHeight) { 
         FontRef font = font();
         Point sz = font.textSize(text);
@@ -137,4 +147,45 @@ class Button : Widget {
         font.drawText(buf, rc.left, rc.top, text, textColor);
     }
 
+}
+
+/// scroll bar - either vertical or horizontal
+class ScrollBar : WidgetGroup {
+    protected ImageButton _btnBack;
+    protected ImageButton _btnForward;
+
+    protected Orientation _orientation = Orientation.Vertical;
+    /// returns scrollbar orientation (Vertical, Horizontal)
+    @property Orientation orientation() { return _orientation; }
+    /// sets scrollbar orientation
+    @property ScrollBar orientation(Orientation value) { 
+        if (_orientation != value) {
+            _orientation = value; 
+            _btnBack.drawableId = _orientation == Orientation.Vertical ? "scrollbar_btn_up" : "scrollbar_btn_left";
+            _btnForward.drawableId = _orientation == Orientation.Vertical ? "scrollbar_btn_down" : "scrollbar_btn_right";
+            requestLayout(); 
+        }
+        return this; 
+    }
+
+    this(string ID = null, Orientation orientation = Orientation.Vertical) {
+		super(ID);
+        styleId = "BUTTON";
+        _orientation = orientation;
+        _btnBack = new ImageButton("BACK", _orientation == Orientation.Vertical ? "scrollbar_btn_up" : "scrollbar_btn_left");
+        _btnForward = new ImageButton("FORWARD", _orientation == Orientation.Vertical ? "scrollbar_btn_down" : "scrollbar_btn_right");
+    }
+
+    override void measure(int parentWidth, int parentHeight) { 
+        Point sz;
+        _btnBack.measure(parentWidth, parentHeight);
+        _btnForward.measure(parentWidth, parentHeight);
+        if (_orientation == Orientation.Vertical) {
+            // vertical
+        } else {
+            // horizontal
+
+        }
+        measuredContent(parentWidth, parentHeight, sz.x, sz.y);
+    }
 }

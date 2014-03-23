@@ -2,11 +2,6 @@ module dlangui.widgets.layouts;
 
 import dlangui.widgets.widget;
 
-enum Orientation : ubyte {
-    Vertical,
-    Horizontal
-}
-
 /// helper for layouts
 struct LayoutItem {
 	Widget _widget;

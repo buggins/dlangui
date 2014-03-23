@@ -26,6 +26,11 @@ enum Visibility : ubyte {
     Gone
 }
 
+enum Orientation : ubyte {
+    Vertical,
+    Horizontal
+}
+
 class Widget {
     /// widget id
     protected string _id;
@@ -480,7 +485,7 @@ class Widget {
     /// returns parent widget, null for top level widget
     @property Widget parent() { return _parent; }
     /// sets parent for widget
-    @property void parent(Widget parent) { _parent = parent; }
+    @property Widget parent(Widget parent) { _parent = parent; return this; }
     /// returns window (if widget or its parent is attached to window)
     @property Window window() {
         Widget p = this;
@@ -558,7 +563,7 @@ class WidgetGroup : Widget {
     /// returns child by index
     override Widget child(int index) { return _children.get(index); }
     /// adds child, returns added item
-    override Widget addChild(Widget item) { return _children.add(item); }
+    override Widget addChild(Widget item) { return _children.add(item).parent(this); }
     /// removes child, returns added item
     override Widget removeChild(int index) { return _children.remove(index); }
     /// returns index of widget in child list, -1 if passed widget is not a child of this widget
