@@ -151,10 +151,130 @@ class Button : Widget {
 }
 
 /// scroll bar - either vertical or horizontal
-class ScrollBar : WidgetGroup {
+class ScrollBar : WidgetGroup, OnClickHandler {
     protected ImageButton _btnBack;
     protected ImageButton _btnForward;
+    protected ImageButton _indicator;
+    protected Rect _scrollArea;
     protected int _btnSize;
+    protected int _minIndicatorSize;
+    protected int _minValue = 0;
+    protected int _maxValue = 100;
+    protected int _pageSize = 30;
+    protected int _position = 20;
+
+    class IndicatorButton : ImageButton {
+        Point _dragStart;
+        int _dragStartPosition;
+        bool _dragging;
+        Rect _dragStartRect;
+        this(string resourceId) {
+            super("INDICATOR", resourceId);
+        }
+
+        /// process mouse event; return true if event is processed by widget.
+        override bool onMouseEvent(MouseEvent event) {
+            // support onClick
+            if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
+                setState(State.Pressed);
+                _dragging = true;
+                _dragStart.x = event.x;
+                _dragStart.y = event.y;
+                _dragStartPosition = _position;
+                _dragStartRect = _pos;
+                return true;
+            }
+            if (event.action == MouseAction.Move && _dragging) {
+                int delta = _orientation == Orientation.Vertical ? event.y - _dragStart.y : event.x - _dragStart.x;
+                Rect rc = _dragStartRect;
+                int offset;
+                int space;
+                if (_orientation == Orientation.Vertical) {
+                    rc.top += delta;
+                    rc.bottom += delta;
+                    if (rc.top < _scrollArea.top) {
+                        rc.top = _scrollArea.top;
+                        rc.bottom = _scrollArea.top + _dragStartRect.height;
+                    } else if (rc.bottom > _scrollArea.bottom) {
+                        rc.top = _scrollArea.top - _dragStartRect.height;
+                        rc.bottom = _scrollArea.bottom;
+                    }
+                    offset = rc.top - _scrollArea.top;
+                    space = _scrollArea.height - rc.height;
+                } else {
+                    rc.left += delta;
+                    rc.right += delta;
+                    if (rc.left < _scrollArea.left) {
+                        rc.left = _scrollArea.left;
+                        rc.right = _scrollArea.left + _dragStartRect.width;
+                    } else if (rc.right > _scrollArea.right) {
+                        rc.left = _scrollArea.right - _dragStartRect.width;
+                        rc.right = _scrollArea.right;
+                    }
+                    offset = rc.left - _scrollArea.left;
+                    space = _scrollArea.width - rc.width;
+                }
+                _pos = rc;
+                int position = space > 0 ? _minValue + offset * (_maxValue - _minValue - _pageSize) / space : 0;
+                invalidate();
+                onIndicatorDragging(_dragStartPosition, position);
+                return true;
+            }
+            if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
+                resetState(State.Pressed);
+                if (_dragging) {
+
+                    _dragging = false;
+                }
+                return true;
+            }
+            if (event.action == MouseAction.Cancel) {
+                Log.d("IndicatorButton.onMouseEvent event.action == MouseAction.Cancel");
+                resetState(State.Pressed);
+                _dragging = false;
+                return true;
+            }
+            return false;
+        }
+
+    }
+
+    protected bool onIndicatorDragging(int initialPosition, int currentPosition) {
+        _position = currentPosition;
+        return true;
+    }
+
+    private bool calcButtonSizes(int availableSize, ref int spaceBackSize, ref int spaceForwardSize, ref int indicatorSize) {
+        int dv = _maxValue - _minValue;
+        if (_pageSize >= dv) {
+            // full size
+            spaceBackSize = spaceForwardSize = 0;
+            indicatorSize = availableSize;
+            return false;
+        }
+        if (dv < 0)
+            dv = 0;
+        indicatorSize = _pageSize * availableSize / dv;
+        if (indicatorSize < _minIndicatorSize)
+            indicatorSize = _minIndicatorSize;
+        if (indicatorSize >= availableSize) {
+            // full size
+            spaceBackSize = spaceForwardSize = 0;
+            indicatorSize = availableSize;
+            return false;
+        }
+        int spaceLeft = availableSize - indicatorSize;
+        int topv = _position - _minValue;
+        int bottomv = _position + _pageSize - _minValue;
+        if (topv < 0)
+            topv = 0;
+        if (bottomv > dv)
+            bottomv = dv;
+        bottomv = dv - bottomv;
+        spaceBackSize = spaceLeft * topv / (topv + bottomv);
+        spaceForwardSize = spaceLeft - spaceBackSize;
+        return true;
+    }
 
     protected Orientation _orientation = Orientation.Vertical;
     /// returns scrollbar orientation (Vertical, Horizontal)
@@ -165,6 +285,7 @@ class ScrollBar : WidgetGroup {
             _orientation = value; 
             _btnBack.drawableId = _orientation == Orientation.Vertical ? "scrollbar_btn_up" : "scrollbar_btn_left";
             _btnForward.drawableId = _orientation == Orientation.Vertical ? "scrollbar_btn_down" : "scrollbar_btn_right";
+            _indicator.drawableId = _orientation == Orientation.Vertical ? "scrollbar_indicator_vertical" : "scrollbar_indicator_horizontal";
             requestLayout(); 
         }
         return this; 
@@ -176,15 +297,21 @@ class ScrollBar : WidgetGroup {
         _orientation = orient;
         _btnBack = new ImageButton("BACK", _orientation == Orientation.Vertical ? "scrollbar_btn_up" : "scrollbar_btn_left");
         _btnForward = new ImageButton("FORWARD", _orientation == Orientation.Vertical ? "scrollbar_btn_down" : "scrollbar_btn_right");
+        _indicator = new IndicatorButton(_orientation == Orientation.Vertical ? "scrollbar_indicator_vertical" : "scrollbar_indicator_horizontal");
         addChild(_btnBack);
         addChild(_btnForward);
+        addChild(_indicator);
+        _btnBack.onClickListener = &onClick;
+        _btnForward.onClickListener = &onClick;
     }
 
     override void measure(int parentWidth, int parentHeight) { 
         Point sz;
         _btnBack.measure(parentWidth, parentHeight);
         _btnForward.measure(parentWidth, parentHeight);
+        _indicator.measure(parentWidth, parentHeight);
         _btnSize = _btnBack.measuredWidth;
+        _minIndicatorSize = _orientation == Orientation.Vertical ? _indicator.measuredHeight : _indicator.measuredWidth;
         if (_btnSize < _btnBack.measuredHeight)
             _btnSize = _btnBack.measuredHeight;
         if (_btnSize < 16)
@@ -207,6 +334,7 @@ class ScrollBar : WidgetGroup {
         Rect r;
         if (_orientation == Orientation.Vertical) {
             // vertical
+            // buttons
             int backbtnpos = rc.top + _btnSize;
             int fwdbtnpos = rc.bottom - _btnSize;
             r = rc;
@@ -215,6 +343,17 @@ class ScrollBar : WidgetGroup {
             r = rc;
             r.top = fwdbtnpos;
             _btnForward.layout(r);
+            // indicator
+            r = rc;
+            r.top = backbtnpos;
+            r.bottom = fwdbtnpos;
+            _scrollArea = r;
+            int spaceBackSize, spaceForwardSize, indicatorSize;
+            bool indicatorVisible = calcButtonSizes(r.height, spaceBackSize, spaceForwardSize, indicatorSize);
+            Rect irc = r;
+            irc.top += spaceBackSize;
+            irc.bottom -= spaceForwardSize;
+            _indicator.layout(irc);
         } else {
             // horizontal
             int backbtnpos = rc.left + _btnSize;
@@ -225,9 +364,24 @@ class ScrollBar : WidgetGroup {
             r = rc;
             r.left = fwdbtnpos;
             _btnForward.layout(r);
+            // indicator
+            r = rc;
+            r.left = backbtnpos;
+            r.right = fwdbtnpos;
+            _scrollArea = r;
+            int spaceBackSize, spaceForwardSize, indicatorSize;
+            bool indicatorVisible = calcButtonSizes(r.width, spaceBackSize, spaceForwardSize, indicatorSize);
+            Rect irc = r;
+            irc.left += spaceBackSize;
+            irc.right -= spaceForwardSize;
+            _indicator.layout(irc);
         }
         _pos = rc;
         _needLayout = false;
+    }
+
+    override bool onClick(Widget source) {
+        return true;
     }
 
     /// Draw widget at its position to buffer
@@ -241,5 +395,6 @@ class ScrollBar : WidgetGroup {
         ClipRectSaver(buf, rc);
         _btnForward.onDraw(buf);
         _btnBack.onDraw(buf);
+        _indicator.onDraw(buf);
     }
 }

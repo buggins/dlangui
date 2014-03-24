@@ -31,6 +31,10 @@ enum Orientation : ubyte {
     Horizontal
 }
 
+interface OnClickHandler {
+    bool onClick(Widget source);
+}
+
 class Widget {
     /// widget id
     protected string _id;

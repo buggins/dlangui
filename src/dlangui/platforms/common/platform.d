@@ -106,6 +106,7 @@ class Window {
             if (event.action == MouseAction.ButtonDown && _mouseCaptureWidget is null) {
                 Log.d("Setting active widget");
                 _mouseCaptureWidget = root;
+                _mouseCaptureButtons = event.flags & (MouseFlag.LButton|MouseFlag.RButton|MouseFlag.MButton);
             } else if (event.action == MouseAction.Move && _mouseTrackingWidget is null) {
                 Log.d("Setting tracking widget");
                 _mouseTrackingWidget = root;
