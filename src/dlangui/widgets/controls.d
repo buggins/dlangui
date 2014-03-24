@@ -116,6 +116,7 @@ class ImageButton : ImageWidget {
     this(string ID = null, string drawableId = null) {
         super(ID);
         styleId = "BUTTON";
+        _drawableId = drawableId;
     }
 }
 
@@ -153,6 +154,7 @@ class Button : Widget {
 class ScrollBar : WidgetGroup {
     protected ImageButton _btnBack;
     protected ImageButton _btnForward;
+    protected int _btnSize;
 
     protected Orientation _orientation = Orientation.Vertical;
     /// returns scrollbar orientation (Vertical, Horizontal)
@@ -168,24 +170,76 @@ class ScrollBar : WidgetGroup {
         return this; 
     }
 
-    this(string ID = null, Orientation orientation = Orientation.Vertical) {
+    this(string ID = null, Orientation orient = Orientation.Vertical) {
 		super(ID);
         styleId = "BUTTON";
-        _orientation = orientation;
+        _orientation = orient;
         _btnBack = new ImageButton("BACK", _orientation == Orientation.Vertical ? "scrollbar_btn_up" : "scrollbar_btn_left");
         _btnForward = new ImageButton("FORWARD", _orientation == Orientation.Vertical ? "scrollbar_btn_down" : "scrollbar_btn_right");
+        addChild(_btnBack);
+        addChild(_btnForward);
     }
 
     override void measure(int parentWidth, int parentHeight) { 
         Point sz;
         _btnBack.measure(parentWidth, parentHeight);
         _btnForward.measure(parentWidth, parentHeight);
+        _btnSize = _btnBack.measuredWidth;
+        if (_btnSize < _btnBack.measuredHeight)
+            _btnSize = _btnBack.measuredHeight;
+        if (_btnSize < 16)
+            _btnSize = 16;
         if (_orientation == Orientation.Vertical) {
             // vertical
+            sz.x = _btnSize;
+            sz.y = _btnSize * 5; // min height
         } else {
             // horizontal
-
+            sz.y = _btnSize;
+            sz.x = _btnSize * 5; // min height
         }
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
+    }
+
+    override void layout(Rect rc) {
+        applyMargins(rc);
+        applyPadding(rc);
+        Rect r;
+        if (_orientation == Orientation.Vertical) {
+            // vertical
+            int backbtnpos = rc.top + _btnSize;
+            int fwdbtnpos = rc.bottom - _btnSize;
+            r = rc;
+            r.bottom = backbtnpos;
+            _btnBack.layout(r);
+            r = rc;
+            r.top = fwdbtnpos;
+            _btnForward.layout(r);
+        } else {
+            // horizontal
+            int backbtnpos = rc.left + _btnSize;
+            int fwdbtnpos = rc.right - _btnSize;
+            r = rc;
+            r.right = backbtnpos;
+            _btnBack.layout(r);
+            r = rc;
+            r.left = fwdbtnpos;
+            _btnForward.layout(r);
+        }
+        _pos = rc;
+        _needLayout = false;
+    }
+
+    /// Draw widget at its position to buffer
+    override void onDraw(DrawBuf buf) {
+        if (visibility != Visibility.Visible)
+            return;
+        super.onDraw(buf);
+        Rect rc = _pos;
+        applyMargins(rc);
+        applyPadding(rc);
+        ClipRectSaver(buf, rc);
+        _btnForward.onDraw(buf);
+        _btnBack.onDraw(buf);
     }
 }

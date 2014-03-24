@@ -68,6 +68,9 @@ extern (C) int UIAppMain(string[] args) {
 	    vlayout.addChild((new TextWidget()).text("VLayout line 2").textColor(0x40FFFF00));
 	    layout.addChild(vlayout);
 
+        ScrollBar sb = new ScrollBar("hscroll", Orientation.Horizontal);
+        layout.addChild(sb.layoutHeight(WRAP_CONTENT).layoutWidth(FILL_PARENT));
+
 		layout.addChild((new Button("BTN2")).textColor(0x000000FF).text("Button2"));
 		layout.addChild((new TextWidget()).textColor(0x40FF4000).text("Text widget"));
 		layout.addChild((new ImageWidget()).drawableId("exit").padding(Rect(5,5,5,5)));
