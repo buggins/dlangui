@@ -91,7 +91,7 @@ struct Glyph
 
 class RefCountedObject {
     protected int _refCount;
-    @property int refCount() { return _refCount; }
+    @property int refCount() const { return _refCount; }
     void addRef() { 
 		_refCount++; 
 	}
@@ -105,8 +105,8 @@ class RefCountedObject {
 struct Ref(T) { // if (T is RefCountedObject)
     private T _data;
     alias get this;
-    @property bool isNull() { return _data is null; }
-    @property int refCount() { return _data !is null ? _data.refCount : 0; }
+    @property bool isNull() const { return _data is null; }
+    @property int refCount() const { return _data !is null ? _data.refCount : 0; }
     this(T data) {
         _data = data;
         if (_data !is null)

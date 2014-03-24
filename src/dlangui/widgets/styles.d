@@ -39,6 +39,31 @@ enum Align : ubyte {
 	TopLeft = Left | Top,
 }
 
+class DrawableAttribute {
+    protected string _id;
+    protected string _drawableId;
+    protected DrawableRef _drawable;
+    protected bool _initialized;
+    this(string id, string drawableId) {
+        _id = id;
+        _drawableId = drawableId;
+    }
+    @property string id() const { return _id; }
+    @property string drawableId() const { return _drawableId; }
+    @property void drawableId(string newDrawable) { _drawableId = newDrawable; clear(); }
+    @property ref DrawableRef drawable() const {
+        if (!_drawable.isNull)
+            return (cast(DrawableAttribute)this)._drawable;
+        (cast(DrawableAttribute)this)._drawable = drawableCache.get(_id);
+        (cast(DrawableAttribute)this)._initialized = true;
+        return (cast(DrawableAttribute)this)._drawable;
+    }
+    void clear() {
+        _drawable.clear();
+        _initialized = false;
+    }
+}
+
 /// style properties
 class Style {
 	protected string _id;
@@ -68,6 +93,8 @@ class Style {
 
 	protected Style[] _substates;
 	protected Style[] _children;
+
+    protected DrawableAttribute[string] _customDrawables;
 
 	protected FontRef _font;
 	protected DrawableRef _backgroundDrawable;
@@ -114,6 +141,30 @@ class Style {
         }
         return (cast(Style)this)._backgroundDrawable;
     }
+
+    /// get custom drawable attribute
+    @property ref DrawableRef customDrawable(string id) {
+        if (id in _customDrawables)
+            return _customDrawables[id].drawable;
+        return parentStyle.customDrawable(id);
+    }
+
+    /// get custom drawable attribute
+    @property string customDrawableId(string id) const {
+        if (id in _customDrawables)
+            return _customDrawables[id].drawableId;
+        return parentStyle.customDrawableId(id);
+    }
+
+    /// sets custom drawable attribute for style
+    Style setCustomDrawable(string id, string resourceId) {
+        if (id in _customDrawables)
+            _customDrawables[id].drawableId = resourceId;
+        else
+            _customDrawables[id] = new DrawableAttribute(id, resourceId);
+        return this;
+    }
+
 
     //===================================================
     // font properties
@@ -510,6 +561,19 @@ class Theme : Style {
         return _maxHeight;
 	}
 
+    private DrawableRef _emptyDrawable;
+    @property override ref DrawableRef customDrawable(string id) const {
+        if (id in _customDrawables)
+            return _customDrawables[id].drawable;
+        return (cast(Theme)this)._emptyDrawable;
+    }
+
+    @property override string customDrawableId(string id) const {
+        if (id in _customDrawables)
+            return _customDrawables[id].drawableId;
+        return null;
+    }
+
 	/// create new named style
 	override Style createSubstyle(string id) {
 		Style style = new Style(this, id);
@@ -541,6 +605,12 @@ private __gshared Theme _currentTheme;
 	_currentTheme = theme; 
 }
 
+immutable ATTR_SCROLLBAR_BUTTON_UP = "scrollbar_button_up";
+immutable ATTR_SCROLLBAR_BUTTON_DOWN = "scrollbar_button_down";
+immutable ATTR_SCROLLBAR_BUTTON_LEFT = "scrollbar_button_left";
+immutable ATTR_SCROLLBAR_BUTTON_RIGHT = "scrollbar_button_right";
+immutable ATTR_SCROLLBAR_INDICATOR_VERTICAL = "scrollbar_indicator_vertical";
+immutable ATTR_SCROLLBAR_INDICATOR_HORIZONTAL = "scrollbar_indicator_horizontal";
 
 Theme createDefaultTheme() {
 	Log.d("Creating default theme");
@@ -551,6 +621,12 @@ Theme createDefaultTheme() {
     button.createState(State.Disabled, State.Disabled).backgroundImageId("btn_default_small_normal_disable");
     button.createState(State.Pressed, State.Pressed).backgroundImageId("btn_default_small_pressed");
     button.createState(State.Focused, State.Focused).backgroundImageId("btn_default_small_selected");
+    res.setCustomDrawable(ATTR_SCROLLBAR_BUTTON_UP, "scrollbar_btn_up");
+    res.setCustomDrawable(ATTR_SCROLLBAR_BUTTON_DOWN, "scrollbar_btn_down");
+    res.setCustomDrawable(ATTR_SCROLLBAR_BUTTON_LEFT, "scrollbar_btn_left");
+    res.setCustomDrawable(ATTR_SCROLLBAR_BUTTON_RIGHT, "scrollbar_btn_right");
+    res.setCustomDrawable(ATTR_SCROLLBAR_INDICATOR_VERTICAL, "scrollbar_indicator_vertical");
+    res.setCustomDrawable(ATTR_SCROLLBAR_INDICATOR_HORIZONTAL, "scrollbar_indicator_horizontal");
 	res.dumpStats();
 	return res;
 }

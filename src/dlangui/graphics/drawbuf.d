@@ -683,6 +683,13 @@ class Drawable : RefCountedObject {
     @property Rect padding() { return Rect(0,0,0,0); }
 }
 
+class EmptyDrawable : Drawable {
+    override void drawTo(DrawBuf buf, Rect rc, int tilex0 = 0, int tiley0 = 0) {
+    }
+    @property override int width() { return 0; }
+    @property override int height() { return 0; }
+}
+
 class SolidFillDrawable : Drawable {
     protected uint _color;
     this(uint color) {

@@ -283,9 +283,9 @@ class ScrollBar : WidgetGroup, OnClickHandler {
     @property ScrollBar orientation(Orientation value) { 
         if (_orientation != value) {
             _orientation = value; 
-            _btnBack.drawableId = _orientation == Orientation.Vertical ? "scrollbar_btn_up" : "scrollbar_btn_left";
-            _btnForward.drawableId = _orientation == Orientation.Vertical ? "scrollbar_btn_down" : "scrollbar_btn_right";
-            _indicator.drawableId = _orientation == Orientation.Vertical ? "scrollbar_indicator_vertical" : "scrollbar_indicator_horizontal";
+            _btnBack.drawableId = style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_BUTTON_UP : ATTR_SCROLLBAR_BUTTON_LEFT);
+            _btnForward.drawableId = style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_BUTTON_DOWN : ATTR_SCROLLBAR_BUTTON_RIGHT);
+            _indicator.drawableId = style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_INDICATOR_VERTICAL : ATTR_SCROLLBAR_INDICATOR_HORIZONTAL);
             requestLayout(); 
         }
         return this; 
@@ -295,9 +295,9 @@ class ScrollBar : WidgetGroup, OnClickHandler {
 		super(ID);
         styleId = "BUTTON";
         _orientation = orient;
-        _btnBack = new ImageButton("BACK", _orientation == Orientation.Vertical ? "scrollbar_btn_up" : "scrollbar_btn_left");
-        _btnForward = new ImageButton("FORWARD", _orientation == Orientation.Vertical ? "scrollbar_btn_down" : "scrollbar_btn_right");
-        _indicator = new IndicatorButton(_orientation == Orientation.Vertical ? "scrollbar_indicator_vertical" : "scrollbar_indicator_horizontal");
+        _btnBack = new ImageButton("BACK", style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_BUTTON_UP : ATTR_SCROLLBAR_BUTTON_LEFT));
+        _btnForward = new ImageButton("FORWARD", style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_BUTTON_DOWN : ATTR_SCROLLBAR_BUTTON_RIGHT));
+        _indicator = new IndicatorButton(style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_INDICATOR_VERTICAL : ATTR_SCROLLBAR_INDICATOR_HORIZONTAL));
         addChild(_btnBack);
         addChild(_btnForward);
         addChild(_indicator);
