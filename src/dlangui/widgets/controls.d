@@ -117,6 +117,7 @@ class ImageButton : ImageWidget {
         super(ID);
         styleId = "BUTTON";
         _drawableId = drawableId;
+        trackHover = true;
     }
 }
 
@@ -127,6 +128,7 @@ class Button : Widget {
     this(string ID = null) {
 		super(ID);
         styleId = "BUTTON";
+        trackHover = true;
     }
 
     override void measure(int parentWidth, int parentHeight) { 
@@ -169,6 +171,7 @@ class ScrollBar : WidgetGroup, OnClickHandler {
         this(string ID) {
             super(ID);
             styleId = "PAGE_SCROLL";
+            trackHover = true;
         }
     }
 
@@ -177,8 +180,10 @@ class ScrollBar : WidgetGroup, OnClickHandler {
         int _dragStartPosition;
         bool _dragging;
         Rect _dragStartRect;
+
         this(string resourceId) {
             super("SLIDER", resourceId);
+            trackHover = true;
         }
 
         /// process mouse event; return true if event is processed by widget.
@@ -193,6 +198,9 @@ class ScrollBar : WidgetGroup, OnClickHandler {
                 _dragStartRect = _pos;
                 return true;
             }
+            if (event.action == MouseAction.FocusOut && _dragging) {
+                return true;
+            }
             if (event.action == MouseAction.Move && _dragging) {
                 int delta = _orientation == Orientation.Vertical ? event.y - _dragStart.y : event.x - _dragStart.x;
                 Rect rc = _dragStartRect;
@@ -205,7 +213,7 @@ class ScrollBar : WidgetGroup, OnClickHandler {
                         rc.top = _scrollArea.top;
                         rc.bottom = _scrollArea.top + _dragStartRect.height;
                     } else if (rc.bottom > _scrollArea.bottom) {
-                        rc.top = _scrollArea.top - _dragStartRect.height;
+                        rc.top = _scrollArea.bottom - _dragStartRect.height;
                         rc.bottom = _scrollArea.bottom;
                     }
                     offset = rc.top - _scrollArea.top;
@@ -223,7 +231,8 @@ class ScrollBar : WidgetGroup, OnClickHandler {
                     offset = rc.left - _scrollArea.left;
                     space = _scrollArea.width - rc.width;
                 }
-                _pos = rc;
+                layoutButtons(rc);
+                //_pos = rc;
                 int position = space > 0 ? _minValue + offset * (_maxValue - _minValue - _pageSize) / space : 0;
                 invalidate();
                 onIndicatorDragging(_dragStartPosition, position);
@@ -236,6 +245,18 @@ class ScrollBar : WidgetGroup, OnClickHandler {
                     _dragging = false;
                 }
                 return true;
+            }
+            if (event.action == MouseAction.Move && trackHover) {
+                if (!(state & State.Hover)) {
+                    Log.d("Hover ", id);
+                    setState(State.Hover);
+                }
+	            return true;
+            }
+            if ((event.action == MouseAction.Leave || event.action == MouseAction.Cancel) && trackHover) {
+                Log.d("Leave ", id);
+	            resetState(State.Hover);
+	            return true;
             }
             if (event.action == MouseAction.Cancel) {
                 Log.d("SliderButton.onMouseEvent event.action == MouseAction.Cancel");
@@ -347,6 +368,47 @@ class ScrollBar : WidgetGroup, OnClickHandler {
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }
 
+    protected void layoutButtons(Rect irc) {
+        Rect r;
+        if (_orientation == Orientation.Vertical) {
+            _indicator.layout(irc);
+            if (_scrollArea.top < irc.top) {
+                r = _scrollArea;
+                r.bottom = irc.top;
+                _pageUp.layout(r);
+                _pageUp.visibility = Visibility.Visible;
+            } else {
+                _pageUp.visibility = Visibility.Invisible;
+            }
+            if (_scrollArea.bottom > irc.bottom) {
+                r = _scrollArea;
+                r.top = irc.bottom;
+                _pageDown.layout(r);
+                _pageDown.visibility = Visibility.Visible;
+            } else {
+                _pageDown.visibility = Visibility.Invisible;
+            }
+        } else {
+            _indicator.layout(irc);
+            if (_scrollArea.left < irc.left) {
+                r = _scrollArea;
+                r.right = irc.left;
+                _pageUp.layout(r);
+                _pageUp.visibility = Visibility.Visible;
+            } else {
+                _pageUp.visibility = Visibility.Invisible;
+            }
+            if (_scrollArea.right > irc.right) {
+                r = _scrollArea;
+                r.left = irc.right;
+                _pageDown.layout(r);
+                _pageDown.visibility = Visibility.Visible;
+            } else {
+                _pageDown.visibility = Visibility.Invisible;
+            }
+        }
+    }
+
     override void layout(Rect rc) {
         applyMargins(rc);
         applyPadding(rc);
@@ -372,23 +434,7 @@ class ScrollBar : WidgetGroup, OnClickHandler {
             Rect irc = r;
             irc.top += spaceBackSize;
             irc.bottom -= spaceForwardSize;
-            _indicator.layout(irc);
-            if (_scrollArea.top < irc.top) {
-                r = _scrollArea;
-                r.bottom = irc.top;
-                _pageUp.layout(r);
-                _pageUp.visibility = Visibility.Visible;
-            } else {
-                _pageUp.visibility = Visibility.Invisible;
-            }
-            if (_scrollArea.bottom > irc.bottom) {
-                r = _scrollArea;
-                r.top = irc.bottom;
-                _pageDown.layout(r);
-                _pageDown.visibility = Visibility.Visible;
-            } else {
-                _pageDown.visibility = Visibility.Invisible;
-            }
+            layoutButtons(irc);
         } else {
             // horizontal
             int backbtnpos = rc.left + _btnSize;
@@ -409,23 +455,7 @@ class ScrollBar : WidgetGroup, OnClickHandler {
             Rect irc = r;
             irc.left += spaceBackSize;
             irc.right -= spaceForwardSize;
-            _indicator.layout(irc);
-            if (_scrollArea.left < irc.left) {
-                r = _scrollArea;
-                r.right = irc.left;
-                _pageUp.layout(r);
-                _pageUp.visibility = Visibility.Visible;
-            } else {
-                _pageUp.visibility = Visibility.Invisible;
-            }
-            if (_scrollArea.right > irc.right) {
-                r = _scrollArea;
-                r.left = irc.right;
-                _pageDown.layout(r);
-                _pageDown.visibility = Visibility.Visible;
-            } else {
-                _pageDown.visibility = Visibility.Invisible;
-            }
+            layoutButtons(irc);
         }
         _pos = rc;
         _needLayout = false;

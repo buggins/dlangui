@@ -67,6 +67,14 @@ class Widget {
     /// window (to be used for top level widgets only!)
     protected Window _window;
 
+    /// does widget need to track mouse Hover
+    protected bool _trackHover;
+
+    /// mouse movement processing flag (when true, widget will change Hover state while mouse is moving)
+    @property bool trackHover() const { return _trackHover; }
+    /// set new trackHover flag value (when true, widget will change Hover state while mouse is moving)
+    @property Widget trackHover(bool v) { _trackHover = v; return this; }
+
 	//private static int _instanceCount = 0;
 	/// create widget, with optional id
     this(string ID = null) {
@@ -277,8 +285,11 @@ class Widget {
     @property Visibility visibility() { return _visibility; }
     /// sets widget visibility (Visible, Invisible, Gone)
     @property Widget visibility(Visibility visible) { 
-        _visibility = visible; 
-        requestLayout();
+        if (_visibility != visible) {
+            if ((_visibility == Visibility.Gone) || (visible == Visibility.Gone))
+                _visibility = visible; 
+            requestLayout();
+        }
         return this;
     }
 
@@ -305,12 +316,25 @@ class Widget {
 	        }
 	        if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {
 	            resetState(State.Pressed);
+	            resetState(State.Hover);
 	            return true;
 	        }
 	        if (event.action == MouseAction.FocusIn) {
 	            setState(State.Pressed);
 	            return true;
 	        }
+            if (event.action == MouseAction.Move && trackHover) {
+                if (!(state & State.Hover)) {
+                    Log.d("Hover ", id);
+                    setState(State.Hover);
+                }
+	            return true;
+            }
+            if (event.action == MouseAction.Leave && trackHover) {
+                Log.d("Leave ", id);
+	            resetState(State.Hover);
+	            return true;
+            }
 		}
 	    return false;
     }

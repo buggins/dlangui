@@ -7,9 +7,10 @@ enum MouseAction : ubyte {
 	ButtonDown, // button is down
 	ButtonUp, // button is up
 	Move,     // mouse pointer is moving
-	FocusIn,  // pointer moved outside of widget while button was down
-	FocusOut, // pointer is back inside widget while button is down after FocusIn
+	FocusIn,  // pointer is back inside widget while button is down after FocusOut
+	FocusOut, // pointer moved outside of widget while button was down (if handler returns true, Move events will be sent even while pointer is outside widget)
     Wheel,    // scroll wheel movement
+    //Hover,    // pointer entered widget which while button was not down (return true to track Hover state)
     Leave     // pointer left widget which has before processed Move message, while button was not down
 }
 

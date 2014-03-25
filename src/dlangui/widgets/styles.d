@@ -25,6 +25,7 @@ enum State : uint {
     Pressed = 1,
     Focused = 2,
     Disabled = 4,
+    Hover = 8, // mouse pointer is over control, buttons not pressed
 }
 
 enum Align : ubyte {
@@ -77,7 +78,7 @@ class Style {
 	protected FontFamily _fontFamily = FontFamily.Unspecified;
 	protected ushort _fontSize = FONT_SIZE_UNSPECIFIED;
 	protected ushort _fontWeight = FONT_WEIGHT_UNSPECIFIED;
-	protected uint _backgroundColor = COLOR_TRANSPARENT;
+	protected uint _backgroundColor = COLOR_UNSPECIFIED;
 	protected uint _textColor = COLOR_UNSPECIFIED;
 	protected string _fontFace;
 	protected string _backgroundImageId;
@@ -621,6 +622,7 @@ Theme createDefaultTheme() {
     button.createState(State.Disabled, State.Disabled).backgroundImageId("btn_default_small_normal_disable");
     button.createState(State.Pressed, State.Pressed).backgroundImageId("btn_default_small_pressed");
     button.createState(State.Focused, State.Focused).backgroundImageId("btn_default_small_selected");
+    button.createState(State.Hover, State.Hover).backgroundImageId("btn_default_small_normal_hover");
     res.setCustomDrawable(ATTR_SCROLLBAR_BUTTON_UP, "scrollbar_btn_up");
     res.setCustomDrawable(ATTR_SCROLLBAR_BUTTON_DOWN, "scrollbar_btn_down");
     res.setCustomDrawable(ATTR_SCROLLBAR_BUTTON_LEFT, "scrollbar_btn_left");
@@ -629,11 +631,12 @@ Theme createDefaultTheme() {
     res.setCustomDrawable(ATTR_SCROLLBAR_INDICATOR_HORIZONTAL, "scrollbar_indicator_horizontal");
 
     Style scrollbar = res.createSubstyle("SCROLLBAR");
+    scrollbar.backgroundColor(0xC0808080);
     Style scrollbarButton = button.createSubstyle("SCROLLBAR_BUTTON");
-    scrollbar.backgroundColor(0xC0C0C0C0);
     Style scrollbarSlider = res.createSubstyle("SLIDER");
-    Style scrollbarPage = res.createSubstyle("PAGE_SCROLL").backgroundColor(0xFFFFFFFF); // transparent
-    scrollbarPage.createState(State.Pressed, State.Pressed).backgroundColor(0xC0404040);
+    Style scrollbarPage = res.createSubstyle("PAGE_SCROLL").backgroundColor(0xFFFFFFFF);
+    scrollbarPage.createState(State.Pressed, State.Pressed).backgroundColor(0xC0404080);
+    scrollbarPage.createState(State.Hover, State.Hover).backgroundColor(0xF0404080);
 
 	//res.dumpStats();
 	return res;

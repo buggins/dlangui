@@ -63,10 +63,17 @@ extern (C) int UIAppMain(string[] args) {
 	    hlayout.backgroundColor = 0x8080C0;
 	    layout.addChild(hlayout);
 
+	    LinearLayout vlayoutgroup = new HorizontalLayout();
 	    LinearLayout vlayout = new VerticalLayout();
 		vlayout.addChild((new TextWidget()).text("VLayout line 1").textColor(0x40FF4000)); //
-	    vlayout.addChild((new TextWidget()).text("VLayout line 2").textColor(0x40FFFF00));
-	    layout.addChild(vlayout);
+	    vlayout.addChild((new TextWidget()).text("VLayout line 2").textColor(0x40FF8000));
+	    vlayout.addChild((new TextWidget()).text("VLayout line 2").textColor(0x40008000));
+        vlayout.layoutWidth(FILL_PARENT);
+	    vlayoutgroup.addChild(vlayout);
+        vlayoutgroup.layoutWidth(FILL_PARENT);
+        ScrollBar vsb = new ScrollBar("vscroll", Orientation.Vertical);
+	    vlayoutgroup.addChild(vsb);
+	    layout.addChild(vlayoutgroup);
 
         ScrollBar sb = new ScrollBar("hscroll", Orientation.Horizontal);
         layout.addChild(sb.layoutHeight(WRAP_CONTENT).layoutWidth(FILL_PARENT));

@@ -122,6 +122,7 @@ class Window {
     protected Widget _mouseCaptureWidget;
 	protected ushort _mouseCaptureButtons;
     protected bool _mouseCaptureFocusedOut;
+    protected bool _mouseCaptureFocusedOutTrackMovements;
 	
 	protected bool dispatchCancel(MouseEvent event) {
     	event.changeAction(MouseAction.Cancel);
@@ -157,6 +158,9 @@ class Window {
                         event.changeAction(MouseAction.FocusOut);
                         _mouseCaptureFocusedOut = true;
 						_mouseCaptureButtons = event.flags & (MouseFlag.LButton|MouseFlag.RButton|MouseFlag.MButton);
+                        _mouseCaptureFocusedOutTrackMovements = _mouseCaptureWidget.onMouseEvent(event);
+                        return true;
+                    } else if (_mouseCaptureFocusedOutTrackMovements) {
                         return _mouseCaptureWidget.onMouseEvent(event);
                     }
                     return true;
@@ -189,27 +193,35 @@ class Window {
             }
             return res;
         }
+        bool processed = false;
         if (event.action == MouseAction.Move && _mouseTrackingWidget !is null) {
             if (!_mouseTrackingWidget.isPointInside(event.x, event.y)) {
                 // send Leave message
                 MouseEvent leaveEvent = new MouseEvent(event);
                 leaveEvent.changeAction(MouseAction.Leave);
-                _mouseCaptureWidget.onMouseEvent(event);
+                _mouseTrackingWidget.onMouseEvent(leaveEvent);
                 // stop tracking
                 _mouseTrackingWidget = null;
+                processed = true;
             }
         }
         if (!res) {
             res = dispatchMouseEvent(_mainWidget, event);
         }
-        return res;
+        return res || processed;
     }
+
     /// checks content widgets for necessary redraw and/or layout
     protected void checkUpdateNeeded(Widget root, ref bool needDraw, ref bool needLayout, ref bool animationActive) {
         if (!root.visibility == Visibility.Visible)
             return;
         needDraw = root.needDraw || needDraw;
-        needLayout = root.needLayout || needLayout;
+        if (!needLayout) {
+            needLayout = root.needLayout || needLayout;
+            if (needLayout) {
+                Log.d("need layout: ", root.id);
+            }
+        }
         animationActive = root.animating || animationActive;
         for (int i = 0; i < root.childCount; i++)
             checkUpdateNeeded(root.child(i), needDraw, needLayout, animationActive);
