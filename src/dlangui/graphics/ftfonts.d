@@ -266,6 +266,9 @@ private class FreeTypeFontFile {
                 for (int i = 0; i < sz; i++)
                     glyph.glyph[i] = bitmap.buffer[i];
             }
+            version (USE_OPENGL) {
+                glyph.id = nextGlyphId();
+            }
         }
         return true;
     }

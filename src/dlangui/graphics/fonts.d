@@ -226,8 +226,10 @@ class FontManager {
     static __gshared FontManager _instance;
     /// sets new font manager singleton instance
     static @property void instance(FontManager manager) {
-		if (_instance !is null)
+		if (_instance !is null) {
 			destroy(_instance);
+            _instance = null;
+        }
         _instance = manager;
     }
     /// returns font manager singleton instance

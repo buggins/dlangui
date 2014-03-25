@@ -203,39 +203,71 @@ class Win32Font : Font {
 		}
 	}
 
-	override int measureText(const dchar[] text, ref int[] widths, int maxWidth) {
-		if (_hfont is null || _drawbuf is null || text.length == 0)
-			return 0;
-		wstring utf16text = toUTF16(text);
-		const wchar * pstr = utf16text.ptr;
-		uint len = cast(uint)utf16text.length;
-		GCP_RESULTSW gcpres;
-		gcpres.lStructSize = gcpres.sizeof;
-		if (widths.length < len + 1)
-			widths.length = len + 1;
-		gcpres.lpDx = widths.ptr;
-		gcpres.nMaxFit = len;
-		gcpres.nGlyphs = len;
-		uint res = GetCharacterPlacementW( 
-                                          _drawbuf.dc,
-                                          pstr,
-                                          len,
-                                          maxWidth,
-                                          &gcpres,
-                                          GCP_MAXEXTENT); //|GCP_USEKERNING
-		if (!res) {
-			widths[0] = 0;
-			return 0;
-		}
-		uint measured = gcpres.nMaxFit;
-		int total = 0;
-		for (int i = 0; i < measured; i++) {
-			int w = widths[i];
-			total += w;
-			widths[i] = total;
-		}
-		return measured;
-	}
+    static if (true) {
+	    override int measureText(const dchar[] text, ref int[] widths, int maxWidth) {
+		    if (text.length == 0)
+			    return 0;
+		    const dchar * pstr = text.ptr;
+		    uint len = cast(uint)text.length;
+            if (widths.length < len)
+                widths.length = len;
+            int x = 0;
+            int charsMeasured = 0;
+		    for (int i = 0; i < len; i++) {
+			    Glyph * glyph = getCharGlyph(text[i], true); // TODO: what is better
+			    if (glyph is null) {
+                    // if no glyph, use previous width - treat as zero width
+                    widths[i] = i > 0 ? widths[i-1] : 0;
+				    continue;
+                }
+                int w = x + glyph.width; // using advance
+                int w2 = x + glyph.originX + glyph.blackBoxX; // using black box
+                if (w < w2) // choose bigger value
+                    w = w2;
+                widths[i] = w;
+                x += glyph.width;
+                charsMeasured = i + 1;
+                if (x > maxWidth)
+                    break;
+            }
+		    return charsMeasured;
+	    }
+    } else {
+
+	    override int measureText(const dchar[] text, ref int[] widths, int maxWidth) {
+		    if (_hfont is null || _drawbuf is null || text.length == 0)
+			    return 0;
+		    wstring utf16text = toUTF16(text);
+		    const wchar * pstr = utf16text.ptr;
+		    uint len = cast(uint)utf16text.length;
+		    GCP_RESULTSW gcpres;
+		    gcpres.lStructSize = gcpres.sizeof;
+		    if (widths.length < len + 1)
+			    widths.length = len + 1;
+		    gcpres.lpDx = widths.ptr;
+		    gcpres.nMaxFit = len;
+		    gcpres.nGlyphs = len;
+		    uint res = GetCharacterPlacementW( 
+                                              _drawbuf.dc,
+                                              pstr,
+                                              len,
+                                              maxWidth,
+                                              &gcpres,
+                                              GCP_MAXEXTENT); //|GCP_USEKERNING
+		    if (!res) {
+			    widths[0] = 0;
+			    return 0;
+		    }
+		    uint measured = gcpres.nMaxFit;
+		    int total = 0;
+		    for (int i = 0; i < measured; i++) {
+			    int w = widths[i];
+			    total += w;
+			    widths[i] = total;
+		    }
+		    return measured;
+	    }
+    }
 
 	bool create(FontDef * def, int size, int weight, bool italic) {
         if (!isNull())
@@ -300,7 +332,7 @@ class Win32FontManager : FontManager {
 	/// initialize in constructor
     this() {
         Log.i("Creating Win32FontManager");
-        instance = this;
+        //instance = this;
         init();
     }
     ~this() {

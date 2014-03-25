@@ -201,6 +201,7 @@ class Win32Window : Window {
 
     version (USE_OPENGL) {
         private void paintUsingOpenGL() {
+            Log.d("paintUsingOpenGL()");
             // hack to stop infinite WM_PAINT loop
             PAINTSTRUCT ps;
             HDC hdc2 = BeginPaint(_hwnd, &ps);
@@ -222,12 +223,14 @@ class Win32Window : Window {
 			float r = ((_backgroundColor >> 16) & 255) / 255.0f;
 			float g = ((_backgroundColor >> 8) & 255) / 255.0f;
 			float b = ((_backgroundColor >> 0) & 255) / 255.0f;
+            Log.d("paintUsingOpenGL() - clearing buffer");
             glClearColor(r, g, b, a);
             glClear(GL_COLOR_BUFFER_BIT);
 
+            Log.d("paintUsingOpenGL() - creating drawbuf");
             GLDrawBuf buf = new GLDrawBuf(_dx, _dy, false);
             buf.beforeDrawing();
-            if (false) {
+            static if (false) {
                 // for testing for render
                 buf.fillRect(Rect(100, 100, 200, 200), 0x704020);
                 buf.fillRect(Rect(40, 70, 100, 120), 0x000000);
@@ -241,8 +244,9 @@ class Win32Window : Window {
             } else {
                 onDraw(buf);
             }
+            Log.d("paintUsingOpenGL() - calling buf.afterDrawing");
             buf.afterDrawing();
-            //Log.d("onPaint() end drawing opengl");
+            Log.d("onPaint() end drawing opengl");
             SwapBuffers(hdc);
             wglMakeCurrent(hdc, null);
         }
@@ -595,8 +599,8 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
 
     // use Win32 font manager
     if (FontManager.instance is null) {
-	    Win32FontManager fontMan = new Win32FontManager();
-	    FontManager.instance = fontMan;
+	    //Win32FontManager fontMan = new Win32FontManager();
+	    FontManager.instance = new Win32FontManager();
     }
 
 	currentTheme = createDefaultTheme();
