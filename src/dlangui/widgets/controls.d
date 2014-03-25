@@ -370,6 +370,7 @@ class ScrollBar : WidgetGroup, OnClickHandler {
 
     protected void layoutButtons(Rect irc) {
         Rect r;
+        _indicator.visibility = Visibility.Visible;
         if (_orientation == Orientation.Vertical) {
             _indicator.layout(irc);
             if (_scrollArea.top < irc.top) {
