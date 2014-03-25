@@ -154,7 +154,9 @@ class Button : Widget {
 class ScrollBar : WidgetGroup, OnClickHandler {
     protected ImageButton _btnBack;
     protected ImageButton _btnForward;
-    protected ImageButton _indicator;
+    protected SliderButton _indicator;
+    protected PageScrollButton _pageUp;
+    protected PageScrollButton _pageDown;
     protected Rect _scrollArea;
     protected int _btnSize;
     protected int _minIndicatorSize;
@@ -163,13 +165,20 @@ class ScrollBar : WidgetGroup, OnClickHandler {
     protected int _pageSize = 30;
     protected int _position = 20;
 
-    class IndicatorButton : ImageButton {
+    class PageScrollButton : Widget {
+        this(string ID) {
+            super(ID);
+            styleId = "PAGE_SCROLL";
+        }
+    }
+
+    class SliderButton : ImageButton {
         Point _dragStart;
         int _dragStartPosition;
         bool _dragging;
         Rect _dragStartRect;
         this(string resourceId) {
-            super("INDICATOR", resourceId);
+            super("SLIDER", resourceId);
         }
 
         /// process mouse event; return true if event is processed by widget.
@@ -229,7 +238,7 @@ class ScrollBar : WidgetGroup, OnClickHandler {
                 return true;
             }
             if (event.action == MouseAction.Cancel) {
-                Log.d("IndicatorButton.onMouseEvent event.action == MouseAction.Cancel");
+                Log.d("SliderButton.onMouseEvent event.action == MouseAction.Cancel");
                 resetState(State.Pressed);
                 _dragging = false;
                 return true;
@@ -293,16 +302,24 @@ class ScrollBar : WidgetGroup, OnClickHandler {
 
     this(string ID = null, Orientation orient = Orientation.Vertical) {
 		super(ID);
-        styleId = "BUTTON";
+        styleId = "SCROLLBAR";
         _orientation = orient;
         _btnBack = new ImageButton("BACK", style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_BUTTON_UP : ATTR_SCROLLBAR_BUTTON_LEFT));
         _btnForward = new ImageButton("FORWARD", style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_BUTTON_DOWN : ATTR_SCROLLBAR_BUTTON_RIGHT));
-        _indicator = new IndicatorButton(style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_INDICATOR_VERTICAL : ATTR_SCROLLBAR_INDICATOR_HORIZONTAL));
+        _pageUp = new PageScrollButton("PAGE_UP");
+        _pageDown = new PageScrollButton("PAGE_DOWN");
+        _btnBack.styleId("SCROLLBAR_BUTTON");
+        _btnForward.styleId("SCROLLBAR_BUTTON");
+        _indicator = new SliderButton(style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_INDICATOR_VERTICAL : ATTR_SCROLLBAR_INDICATOR_HORIZONTAL));
         addChild(_btnBack);
         addChild(_btnForward);
         addChild(_indicator);
+        addChild(_pageUp);
+        addChild(_pageDown);
         _btnBack.onClickListener = &onClick;
         _btnForward.onClickListener = &onClick;
+        _pageUp.onClickListener = &onClick;
+        _pageDown.onClickListener = &onClick;
     }
 
     override void measure(int parentWidth, int parentHeight) { 
@@ -310,6 +327,8 @@ class ScrollBar : WidgetGroup, OnClickHandler {
         _btnBack.measure(parentWidth, parentHeight);
         _btnForward.measure(parentWidth, parentHeight);
         _indicator.measure(parentWidth, parentHeight);
+        _pageUp.measure(parentWidth, parentHeight);
+        _pageDown.measure(parentWidth, parentHeight);
         _btnSize = _btnBack.measuredWidth;
         _minIndicatorSize = _orientation == Orientation.Vertical ? _indicator.measuredHeight : _indicator.measuredWidth;
         if (_btnSize < _btnBack.measuredHeight)
@@ -354,6 +373,22 @@ class ScrollBar : WidgetGroup, OnClickHandler {
             irc.top += spaceBackSize;
             irc.bottom -= spaceForwardSize;
             _indicator.layout(irc);
+            if (_scrollArea.top < irc.top) {
+                r = _scrollArea;
+                r.bottom = irc.top;
+                _pageUp.layout(r);
+                _pageUp.visibility = Visibility.Visible;
+            } else {
+                _pageUp.visibility = Visibility.Invisible;
+            }
+            if (_scrollArea.bottom > irc.bottom) {
+                r = _scrollArea;
+                r.top = irc.bottom;
+                _pageDown.layout(r);
+                _pageDown.visibility = Visibility.Visible;
+            } else {
+                _pageDown.visibility = Visibility.Invisible;
+            }
         } else {
             // horizontal
             int backbtnpos = rc.left + _btnSize;
@@ -375,12 +410,29 @@ class ScrollBar : WidgetGroup, OnClickHandler {
             irc.left += spaceBackSize;
             irc.right -= spaceForwardSize;
             _indicator.layout(irc);
+            if (_scrollArea.left < irc.left) {
+                r = _scrollArea;
+                r.right = irc.left;
+                _pageUp.layout(r);
+                _pageUp.visibility = Visibility.Visible;
+            } else {
+                _pageUp.visibility = Visibility.Invisible;
+            }
+            if (_scrollArea.right > irc.right) {
+                r = _scrollArea;
+                r.left = irc.right;
+                _pageDown.layout(r);
+                _pageDown.visibility = Visibility.Visible;
+            } else {
+                _pageDown.visibility = Visibility.Invisible;
+            }
         }
         _pos = rc;
         _needLayout = false;
     }
 
     override bool onClick(Widget source) {
+        Log.d("Scrollbar.onClick ", source.id);
         return true;
     }
 
@@ -395,6 +447,8 @@ class ScrollBar : WidgetGroup, OnClickHandler {
         ClipRectSaver(buf, rc);
         _btnForward.onDraw(buf);
         _btnBack.onDraw(buf);
+        _pageUp.onDraw(buf);
+        _pageDown.onDraw(buf);
         _indicator.onDraw(buf);
     }
 }

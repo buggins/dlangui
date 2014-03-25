@@ -488,7 +488,7 @@ class Style {
 		if (state == 0)
 			return this;
         //Log.d("forState ", state, " styleId=", _id, " substates=", _substates.length);
-		if (id is null && parentStyle !is null && _substates.length == 0)
+		if (parentStyle !is null && _substates.length == 0) //id is null && 
 			return parentStyle.forState(state);
 		foreach(item; _substates) {
 			if ((item._stateMask & state) == item._stateValue)
@@ -616,7 +616,7 @@ Theme createDefaultTheme() {
 	Log.d("Creating default theme");
 	Theme res = new Theme("default");
     Style button = res.createSubstyle("BUTTON").backgroundImageId("btn_default_small_normal").alignment(Align.Center);
-    Style text = res.createSubstyle("TEXT").margins(Rect(3,3,3,3)).padding(Rect(3,3,3,3));
+    Style text = res.createSubstyle("TEXT").margins(Rect(2,2,2,2)).padding(Rect(1,1,1,1));
     button.createState(State.Disabled | State.Focused, State.Disabled | State.Focused).backgroundImageId("btn_default_small_normal_disable_focused");
     button.createState(State.Disabled, State.Disabled).backgroundImageId("btn_default_small_normal_disable");
     button.createState(State.Pressed, State.Pressed).backgroundImageId("btn_default_small_pressed");
@@ -627,7 +627,15 @@ Theme createDefaultTheme() {
     res.setCustomDrawable(ATTR_SCROLLBAR_BUTTON_RIGHT, "scrollbar_btn_right");
     res.setCustomDrawable(ATTR_SCROLLBAR_INDICATOR_VERTICAL, "scrollbar_indicator_vertical");
     res.setCustomDrawable(ATTR_SCROLLBAR_INDICATOR_HORIZONTAL, "scrollbar_indicator_horizontal");
-	res.dumpStats();
+
+    Style scrollbar = res.createSubstyle("SCROLLBAR");
+    Style scrollbarButton = button.createSubstyle("SCROLLBAR_BUTTON");
+    scrollbar.backgroundColor(0xC0C0C0C0);
+    Style scrollbarSlider = res.createSubstyle("SLIDER");
+    Style scrollbarPage = res.createSubstyle("PAGE_SCROLL").backgroundColor(0xFFFFFFFF); // transparent
+    scrollbarPage.createState(State.Pressed, State.Pressed).backgroundColor(0xC0404040);
+
+	//res.dumpStats();
 	return res;
 }
 

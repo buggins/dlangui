@@ -35,6 +35,10 @@ interface OnClickHandler {
     bool onClick(Widget source);
 }
 
+interface OnScrollHandler {
+    bool onScrollEvent(Widget source, ScrollEvent event);
+}
+
 class Widget {
     /// widget id
     protected string _id;
@@ -63,17 +67,17 @@ class Widget {
     /// window (to be used for top level widgets only!)
     protected Window _window;
 
-	private static int _instanceCount = 0;
+	//private static int _instanceCount = 0;
 	/// create widget, with optional id
     this(string ID = null) {
 		_id = ID;
-		Log.d("Created widget, count = ", ++_instanceCount);
+		//Log.d("Created widget, count = ", ++_instanceCount);
     }
 	~this() {
 		if (_ownStyle !is null)
 			destroy(_ownStyle);
 		_ownStyle = null;
-		Log.d("Destroyed widget, count = ", --_instanceCount);
+		//Log.d("Destroyed widget, count = ", --_instanceCount);
 	}
 
     /// accessor to style - by lookup in theme by styleId (if style id is not set, theme base style will be used).

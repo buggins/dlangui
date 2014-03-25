@@ -115,3 +115,42 @@ class MouseEvent {
         _wheelDelta = wheelDelta;
 	}
 }
+
+
+enum ScrollAction : ubyte {
+    /// space above indicator pressed
+    PageUp,
+    /// space below indicator pressed
+    PageDown, 
+    /// up/left button pressed
+    LineUp,
+    /// down/right button pressed
+    LineDown,
+    /// slider pressed
+    SliderPressed,
+    /// dragging in progress
+    SliderMoved,
+    /// dragging finished
+    SliderReleased
+}
+
+/// slider/scrollbar event
+class ScrollEvent {
+    private ScrollAction _action;
+    private int _minValue;
+    private int _maxValue;
+    private int _pageSize;
+    private int _position;
+    @property ScrollAction action() { return _action; }
+    @property int minValue() { return _minValue; }
+    @property int maxValue() { return _maxValue; }
+    @property int pageSize() { return _pageSize; }
+    @property int position() { return _position; }
+    this(ScrollAction action, int minValue, int maxValue, int pageSize, int position) {
+        _action = action;
+        _minValue = minValue;
+        _maxValue = minValue;
+        _pageSize = pageSize;
+        _position = position;
+    }
+}

@@ -324,7 +324,7 @@ class Win32Window : Window {
 
     private bool _mouseTracking;
 	private bool onMouse(uint message, uint flags, short x, short y) {
-		Log.d("Win32 Mouse Message ", message, " flags=", flags, " x=", x, " y=", y);
+		//Log.d("Win32 Mouse Message ", message, " flags=", flags, " x=", x, " y=", y);
         MouseButton button = MouseButton.None;
         MouseAction action = MouseAction.ButtonDown;
         ButtonDetails * pbuttonDetails = null;
@@ -559,7 +559,7 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
     Platform.setInstance(platform);
 
 
-    if (true) {
+    if (false) {
         /// testing freetype font manager
         import dlangui.graphics.ftfonts;
         import win32.shlobj;
@@ -607,7 +607,7 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
 
         // just to check OpenGL context
         Log.i("Trying to setup OpenGL context");
-        Win32Window tmpWindow = new Win32Window("", null);
+        Win32Window tmpWindow = new Win32Window(platform, "", null);
         destroy(tmpWindow);
         if (openglEnabled)
             Log.i("OpenGL support is enabled");

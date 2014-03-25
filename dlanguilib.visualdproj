@@ -66,7 +66,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>Unicode</versionids>
+  <versionids>Unicode USE_OPENGL</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>1</createImplib>
@@ -190,6 +190,11 @@
  </Config>
  <Folder name="dlangui">
   <Folder name="3rdparty">
+   <Folder name="DerelictFI">
+    <File path="..\DerelictFI\source\derelict\freeimage\freeimage.d" />
+    <File path="..\DerelictFI\source\derelict\freeimage\functions.d" />
+    <File path="..\DerelictFI\source\derelict\freeimage\types.d" />
+   </Folder>
    <Folder name="DerelictFT">
     <File path="..\DerelictFT\source\derelict\freetype\ft.d" />
     <File path="..\DerelictFT\source\derelict\freetype\functions.d" />
@@ -219,11 +224,6 @@
     <File path="..\DerelictUtil\source\derelict\util\system.d" />
     <File path="..\DerelictUtil\source\derelict\util\wintypes.d" />
     <File path="..\DerelictUtil\source\derelict\util\xtypes.d" />
-   </Folder>
-   <Folder name="DerelictFI">
-    <File path="..\DerelictFI\source\derelict\freeimage\freeimage.d" />
-    <File path="..\DerelictFI\source\derelict\freeimage\functions.d" />
-    <File path="..\DerelictFI\source\derelict\freeimage\types.d" />
    </Folder>
    <Folder name="gl3n">
     <File path="..\gl3n\gl3n\aabb.d" />
