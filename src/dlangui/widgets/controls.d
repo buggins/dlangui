@@ -167,6 +167,33 @@ class ScrollBar : WidgetGroup, OnClickHandler {
     protected int _pageSize = 30;
     protected int _position = 20;
 
+    @property int position() { return _position; }
+    @property ScrollBar position(int newPosition) { 
+        if (_position != newPosition) {
+            _position = newPosition;
+            requestLayout();
+        }
+        return this;
+    }
+    @property int minValue() { return _minValue; }
+    @property int maxValue() { return _maxValue; }
+    @property int pageSize() { return _pageSize; }
+    @property ScrollBar pageSize(int size) {
+        if (_pageSize != size) {
+            _pageSize = size;
+            requestLayout();
+        }
+        return this;
+    }
+    ScrollBar setRange(int min, int max) {
+        if (_minValue != min || _maxValue != max) {
+            _minValue = min;
+            _maxValue = max;
+            requestLayout();
+        }
+        return this;
+    }
+
     class PageScrollButton : Widget {
         this(string ID) {
             super(ID);

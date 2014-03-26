@@ -89,6 +89,18 @@ extern (C) int UIAppMain(string[] args) {
 		layout.childById("BTN2").onClickListener(delegate (Widget w) { Log.d("onClick ", w.id); return true; });
 		layout.childById("BTN3").onClickListener(delegate (Widget w) { Log.d("onClick ", w.id); return true; });
 
+        ListWidget list = new ListWidget("mylist", Orientation.Horizontal);
+        WidgetListAdapter listAdapter = new WidgetListAdapter();
+        listAdapter.widgets.add((new TextWidget()).text("List item 1"));
+        listAdapter.widgets.add((new TextWidget()).text("List item 2"));
+        listAdapter.widgets.add((new TextWidget()).text("List item 3"));
+        listAdapter.widgets.add((new TextWidget()).text("List item 4"));
+        listAdapter.widgets.add((new TextWidget()).text("List item 5"));
+        listAdapter.widgets.add((new TextWidget()).text("List item 6"));
+        list.ownAdapter = listAdapter;
+        list.layoutWidth(FILL_PARENT);
+        layout.addChild(list);
+
 		layout.layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT);
 
 	    window.mainWidget = layout;

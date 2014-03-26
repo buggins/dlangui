@@ -11,6 +11,21 @@ interface ListAdapter {
     Widget itemWidget(int index);
 }
 
+/// List adapter for simple list of widget instances
+class WidgetListAdapter : ListAdapter {
+    WidgetList _widgets;
+    /// list of widgets to display
+    @property ref WidgetList widgets() { return _widgets; }
+    /// returns number of widgets in list
+    @property override int itemCount() {
+        return _widgets.count;
+    }
+    /// return list item widget by item index
+    override Widget itemWidget(int index) {
+        return _widgets.get(index);
+    }
+}
+
 class ListWidget : WidgetGroup {
     protected Orientation _orientation = Orientation.Vertical;
     /// returns linear layout orientation (Vertical, Horizontal)
@@ -32,11 +47,26 @@ class ListWidget : WidgetGroup {
     protected int _lastMeasureHeight;
 
     protected ListAdapter _adapter;
+    /// when true, need to destroy adapter on list destroy
+    protected bool _ownAdapter;
+
     /// get adapter
     @property ListAdapter adapter() { return _adapter; }
     /// set adapter
     @property ListWidget adapter(ListAdapter adapter) { 
+        if (_adapter !is null && _ownAdapter)
+            destroy(_adapter);
         _adapter = adapter; 
+        _ownAdapter = false;
+        onAdapterChanged();
+        return this; 
+    }
+    /// set adapter
+    @property ListWidget ownAdapter(ListAdapter adapter) { 
+        if (_adapter !is null && _ownAdapter)
+            destroy(_adapter);
+        _adapter = adapter; 
+        _ownAdapter = true;
         onAdapterChanged();
         return this; 
     }
@@ -66,6 +96,12 @@ class ListWidget : WidgetGroup {
         _scrollbar.visibility = Visibility.Gone;
         addChild(_scrollbar);
 	}
+
+    ~this() {
+        if (_adapter !is null && _ownAdapter)
+            destroy(_adapter);
+        _adapter = null;
+    }
 
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
     override void measure(int parentWidth, int parentHeight) {
@@ -220,6 +256,17 @@ class ListWidget : WidgetGroup {
                 r.right = p + w;
                 _itemRects[i] = r;
                 p += w;
+            }
+        }
+        if (_needScrollbar) {
+            if (_orientation == Orientation.Vertical) {
+                _scrollbar.setRange(0, p);
+                _scrollbar.pageSize = rc.height;
+                _scrollbar.position = 0;
+            } else {
+                _scrollbar.setRange(0, p);
+                _scrollbar.pageSize = rc.width;
+                _scrollbar.position = 0;
             }
         }
 
