@@ -152,8 +152,73 @@ class Button : Widget {
 
 }
 
+/// scroll event handler interface
+interface OnScrollHandler {
+    /// handle scroll event
+    bool onScrollEvent(AbstractSlider source, ScrollEvent event);
+}
+
+/// base class for widgets like scrollbars and sliders
+class AbstractSlider : WidgetGroup {
+    protected int _minValue = 0;
+    protected int _maxValue = 100;
+    protected int _pageSize = 30;
+    protected int _position = 20;
+
+    this(string ID) {
+        super(ID);
+    }
+
+    protected bool delegate(AbstractSlider source, ScrollEvent event) _onScrollEventListener;
+    /// scroll event listener
+    @property bool delegate(AbstractSlider source, ScrollEvent event) onScrollEventListener() const { return _onScrollEventListener; }
+    /// sets new scroll event listener
+    @property AbstractSlider onScrollEventListener(bool delegate(AbstractSlider source, ScrollEvent event) listener) { _onScrollEventListener = listener; return this; }
+
+    /// returns slider position
+    @property int position() const { return _position; }
+    /// sets new slider position
+    @property AbstractSlider position(int newPosition) { 
+        if (_position != newPosition) {
+            _position = newPosition;
+            requestLayout();
+        }
+        return this;
+    }
+    /// returns slider range min value
+    @property int minValue() const { return _minValue; }
+    /// returns slider range max value
+    @property int maxValue() const { return _maxValue; }
+    /// page size (visible area size)
+    @property int pageSize() const { return _pageSize; }
+    /// set page size (visible area size)
+    @property AbstractSlider pageSize(int size) {
+        if (_pageSize != size) {
+            _pageSize = size;
+            requestLayout();
+        }
+        return this;
+    }
+    /// set new range (min and max values for slider)
+    AbstractSlider setRange(int min, int max) {
+        if (_minValue != min || _maxValue != max) {
+            _minValue = min;
+            _maxValue = max;
+            requestLayout();
+        }
+        return this;
+    }
+
+    protected bool sendScrollEvent(ScrollAction action, int position) {
+        if (_onScrollEventListener is null)
+            return false;
+        ScrollEvent event = new ScrollEvent(action, _minValue, _maxValue, _pageSize, position);
+        return _onScrollEventListener(this, event);
+    }
+}
+
 /// scroll bar - either vertical or horizontal
-class ScrollBar : WidgetGroup, OnClickHandler {
+class ScrollBar : AbstractSlider, OnClickHandler {
     protected ImageButton _btnBack;
     protected ImageButton _btnForward;
     protected SliderButton _indicator;
@@ -162,37 +227,8 @@ class ScrollBar : WidgetGroup, OnClickHandler {
     protected Rect _scrollArea;
     protected int _btnSize;
     protected int _minIndicatorSize;
-    protected int _minValue = 0;
-    protected int _maxValue = 100;
-    protected int _pageSize = 30;
-    protected int _position = 20;
 
-    @property int position() { return _position; }
-    @property ScrollBar position(int newPosition) { 
-        if (_position != newPosition) {
-            _position = newPosition;
-            requestLayout();
-        }
-        return this;
-    }
-    @property int minValue() { return _minValue; }
-    @property int maxValue() { return _maxValue; }
-    @property int pageSize() { return _pageSize; }
-    @property ScrollBar pageSize(int size) {
-        if (_pageSize != size) {
-            _pageSize = size;
-            requestLayout();
-        }
-        return this;
-    }
-    ScrollBar setRange(int min, int max) {
-        if (_minValue != min || _maxValue != max) {
-            _minValue = min;
-            _maxValue = max;
-            requestLayout();
-        }
-        return this;
-    }
+
 
     class PageScrollButton : Widget {
         this(string ID) {

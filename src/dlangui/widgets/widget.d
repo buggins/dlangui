@@ -35,10 +35,6 @@ interface OnClickHandler {
     bool onClick(Widget source);
 }
 
-interface OnScrollHandler {
-    bool onScrollEvent(Widget source, ScrollEvent event);
-}
-
 class Widget {
     /// widget id
     protected string _id;
