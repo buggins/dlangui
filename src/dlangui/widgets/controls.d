@@ -10,11 +10,17 @@ class TextWidget : Widget {
 		super(ID);
         styleId = "TEXT";
     }
-    protected dstring _text;
+    protected UIString _text;
     /// get widget text
     override @property dstring text() { return _text; }
     /// set text to show
     override @property Widget text(dstring s) { 
+        _text = s; 
+        requestLayout();
+		return this;
+    }
+    /// set text resource ID to show
+    @property Widget textResource(string s) { 
         _text = s; 
         requestLayout();
 		return this;
@@ -122,9 +128,10 @@ class ImageButton : ImageWidget {
 }
 
 class Button : Widget {
-    protected dstring _text;
+    protected UIString _text;
     override @property dstring text() { return _text; }
     override @property Widget text(dstring s) { _text = s; requestLayout(); return this; }
+    @property Widget textResource(string s) { _text = s; requestLayout(); return this; }
     this(string ID = null) {
 		super(ID);
         styleId = "BUTTON";
@@ -566,4 +573,11 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         _pageDown.onDraw(buf);
         _indicator.onDraw(buf);
     }
+}
+
+class TabItem {
+}
+
+class TabWidget {
+
 }

@@ -31,13 +31,17 @@ extern (C) int UIAppMain(string[] args) {
     // setup resource dir
 	version (Windows) {
     	string resourceDir = exePath() ~ "..\\res\\";
+    	string i18nDir = exePath() ~ "..\\res\\i18n\\";
 	} else {
     	string resourceDir = exePath() ~ "../../res/";
+    	string i18nDir = exePath() ~ "../res/i18n/";
 	}
     string[] imageDirs = [
         resourceDir
     ];
     drawableCache.resourcePaths = imageDirs;
+    i18n.resourceDir = i18nDir;
+    i18n.load("ru.ini", "en.ini");
 
     // create window
     Window window = Platform.instance().createWindow("My Window", null);
@@ -46,7 +50,7 @@ extern (C) int UIAppMain(string[] args) {
 		LinearLayout layout = new LinearLayout();
 		layout.addChild((new TextWidget()).textColor(0x00802000).text("Text widget 0"));
 		layout.addChild((new TextWidget()).textColor(0x40FF4000).text("Text widget"));
-		layout.addChild((new Button("BTN1")).text("Button1")); //.textColor(0x40FF4000)
+		layout.addChild((new Button("BTN1")).textResource("EXIT")); //.textColor(0x40FF4000)
 		
 		
 		

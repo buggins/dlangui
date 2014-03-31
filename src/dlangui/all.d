@@ -9,3 +9,4 @@ public import dlangui.widgets.controls;
 public import dlangui.widgets.layouts;
 public import dlangui.widgets.lists;
 public import dlangui.graphics.fonts;
+public import dlangui.core.i18n;
