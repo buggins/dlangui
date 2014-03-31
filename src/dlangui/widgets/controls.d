@@ -19,6 +19,12 @@ class TextWidget : Widget {
         requestLayout();
 		return this;
     }
+    /// set text to show
+    @property Widget text(ref UIString s) { 
+        _text = s; 
+        requestLayout();
+		return this;
+    }
     /// set text resource ID to show
     @property Widget textResource(string s) { 
         _text = s; 
@@ -575,9 +581,3 @@ class ScrollBar : AbstractSlider, OnClickHandler {
     }
 }
 
-class TabItem {
-}
-
-class TabWidget {
-
-}

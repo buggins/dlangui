@@ -1,6 +1,6 @@
 module dlangui.widgets.layouts;
 
-import dlangui.widgets.widget;
+public import dlangui.widgets.widget;
 
 /// helper for layouts
 struct LayoutItem {

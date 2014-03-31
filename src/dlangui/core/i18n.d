@@ -6,9 +6,21 @@ import std.utf;
 /// container for UI string - either raw value or string resource ID
 struct UIString {
     /// if not null, use it, otherwise lookup by id
-    dstring _value;
+    private dstring _value;
     /// id to find value in translator
-    string _id;
+    private string _id;
+
+    /// create string with i18n resource id
+    this(string id) {
+        _id = id;
+    }
+    /// create string with raw value
+    this(dstring value) {
+        _value = value;
+    }
+
+
+
     @property string id() const { return _id; }
     @property void id(string ID) {
         _id = ID;
@@ -145,13 +157,14 @@ class UIStringList {
         }
         return count > 0;
     }
+
     /// load strings from file (utf8, id=value lines)
     bool load(string filename) {
         import std.stream;
         import std.file;
         try {
             Log.d("Loading string resources from file ", filename);
-            if (!exists(filename) && isFile(filename)) {
+            if (!exists(filename) || !isFile(filename)) {
                 Log.e("File does not exist: ", filename);
                 return false;
             }

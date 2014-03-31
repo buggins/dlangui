@@ -536,7 +536,7 @@ struct WidgetList {
     protected Widget[] _list;
     protected int _count;
     /// returns count of items
-    @property int count() { return _count; }
+    @property int count() const { return _count; }
     /// get item by index
     Widget get(int index) {
         assert(index >= 0 && index < _count, "child index out of range");
@@ -547,6 +547,18 @@ struct WidgetList {
         if (_list.length <= _count) // resize
             _list.length = _list.length < 4 ? 4 : _list.length * 2;
         _list[_count++] = item;
+        return item;
+    }
+    /// add item to list
+    Widget insert(Widget item, int index = -1) {
+        if (index > _count || index < 0)
+            index = _count;
+        if (_list.length <= _count) // resize
+            _list.length = _list.length < 4 ? 4 : _list.length * 2;
+        for (int i = _count; i > index; i--)
+            _list[i] = _list[i - 1];
+        _list[index] = item;
+        _count++;
         return item;
     }
     /// find child index for item, return -1 if not found

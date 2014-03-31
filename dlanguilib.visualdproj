@@ -328,6 +328,7 @@
      <File path="src\dlangui\widgets\layouts.d" />
      <File path="src\dlangui\widgets\lists.d" />
      <File path="src\dlangui\widgets\styles.d" />
+     <File path="src\dlangui\widgets\tabs.d" />
      <File path="src\dlangui\widgets\widget.d" />
     </Folder>
     <File path="src\dlangui\all.d" />

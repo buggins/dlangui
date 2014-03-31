@@ -48,6 +48,18 @@ extern (C) int UIAppMain(string[] args) {
 	
 	static if (true) {
 		LinearLayout layout = new LinearLayout();
+
+        TabWidget tabs = new TabWidget("TABS");
+        tabs.addTab("id1", "Tab 1"d);
+        tabs.addTab("id2", "Tab 2 label"d);
+        tabs.addTab("id3", "Tab 3 label"d);
+        tabs.addTab("id4", "Tab 4 label"d);
+        tabs.addTab("id5", "Tab 5 label"d);
+        tabs.addTab("id6", "Tab 6 label"d);
+        tabs.addTab("id7", "Tab 7 label"d);
+        tabs.addTab("id8", "Tab 8 label"d);
+        layout.addChild(tabs);
+
 		layout.addChild((new TextWidget()).textColor(0x00802000).text("Text widget 0"));
 		layout.addChild((new TextWidget()).textColor(0x40FF4000).text("Text widget"));
 		layout.addChild((new Button("BTN1")).textResource("EXIT")); //.textColor(0x40FF4000)
