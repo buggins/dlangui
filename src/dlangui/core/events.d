@@ -142,16 +142,58 @@ class ScrollEvent {
     private int _maxValue;
     private int _pageSize;
     private int _position;
+    private bool _positionChanged;
     @property ScrollAction action() { return _action; }
     @property int minValue() { return _minValue; }
     @property int maxValue() { return _maxValue; }
     @property int pageSize() { return _pageSize; }
     @property int position() { return _position; }
+    @property bool positionChanged() { return _positionChanged; }
+    /// change position in event handler to update slider position
+    @property void position(int newPosition) { _position = newPosition; _positionChanged = true; }
     this(ScrollAction action, int minValue, int maxValue, int pageSize, int position) {
         _action = action;
         _minValue = minValue;
-        _maxValue = minValue;
+        _maxValue = maxValue;
         _pageSize = pageSize;
         _position = position;
+    }
+    /// default update position for actions like PageUp/PageDown, LineUp/LineDown
+    int defaultUpdatePosition() {
+        int delta = 0;
+        switch (_action) {
+            case ScrollAction.LineUp:
+                delta = _pageSize / 20;
+                if (delta < 1)
+                    delta = 1;
+                delta = -delta;
+                break;
+            case ScrollAction.LineDown:
+                delta = _pageSize / 20;
+                if (delta < 1)
+                    delta = 1;
+                break;
+            case ScrollAction.PageUp:
+                delta = _pageSize * 3 / 4;
+                if (delta < 1)
+                    delta = 1;
+                delta = -delta;
+                break;
+            case ScrollAction.PageDown:
+                delta = _pageSize * 3 / 4;
+                if (delta < 1)
+                    delta = 1;
+                break;
+            default:
+                return position;
+        }
+        int newPosition = _position + delta;
+        if (newPosition > _maxValue - _pageSize)
+            newPosition = _maxValue - _pageSize;
+        if (newPosition < _minValue)
+            newPosition = _minValue;
+        if (_position != newPosition)
+            position = newPosition;
+        return position;
     }
 }

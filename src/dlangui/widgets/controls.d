@@ -181,9 +181,12 @@ class AbstractSlider : WidgetGroup {
     @property AbstractSlider position(int newPosition) { 
         if (_position != newPosition) {
             _position = newPosition;
-            requestLayout();
+            onPositionChanged();
         }
         return this;
+    }
+    protected void onPositionChanged() {
+        requestLayout();
     }
     /// returns slider range min value
     @property int minValue() const { return _minValue; }
@@ -213,7 +216,16 @@ class AbstractSlider : WidgetGroup {
         if (_onScrollEventListener is null)
             return false;
         ScrollEvent event = new ScrollEvent(action, _minValue, _maxValue, _pageSize, position);
-        return _onScrollEventListener(this, event);
+        bool res = _onScrollEventListener(this, event);
+        if (event.positionChanged) {
+            _position = event.position;
+            if (_position > _maxValue)
+                _position = _maxValue;
+            if (_position < _minValue)
+                _position = _minValue;
+            onPositionChanged();
+        }
+        return true;
     }
 }
 
@@ -259,6 +271,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
                 _dragStart.y = event.y;
                 _dragStartPosition = _position;
                 _dragStartRect = _pos;
+                sendScrollEvent(ScrollAction.SliderPressed, _position);
                 return true;
             }
             if (event.action == MouseAction.FocusOut && _dragging) {
@@ -304,7 +317,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
             if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
                 resetState(State.Pressed);
                 if (_dragging) {
-
+                    sendScrollEvent(ScrollAction.SliderReleased, _position);
                     _dragging = false;
                 }
                 return true;
@@ -334,7 +347,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
 
     protected bool onIndicatorDragging(int initialPosition, int currentPosition) {
         _position = currentPosition;
-        return true;
+        return sendScrollEvent(ScrollAction.SliderMoved, currentPosition);
     }
 
     private bool calcButtonSizes(int availableSize, ref int spaceBackSize, ref int spaceForwardSize, ref int indicatorSize) {
@@ -527,6 +540,14 @@ class ScrollBar : AbstractSlider, OnClickHandler {
 
     override bool onClick(Widget source) {
         Log.d("Scrollbar.onClick ", source.id);
+        if (source.compareId("BACK"))
+            return sendScrollEvent(ScrollAction.LineUp, position);
+        if (source.compareId("FORWARD"))
+            return sendScrollEvent(ScrollAction.LineDown, position);
+        if (source.compareId("PAGE_UP"))
+            return sendScrollEvent(ScrollAction.PageUp, position);
+        if (source.compareId("PAGE_DOWN"))
+            return sendScrollEvent(ScrollAction.PageDown, position);
         return true;
     }
 

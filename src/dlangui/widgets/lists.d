@@ -26,7 +26,8 @@ class WidgetListAdapter : ListAdapter {
     }
 }
 
-class ListWidget : WidgetGroup {
+/// List
+class ListWidget : WidgetGroup, OnScrollHandler {
     protected Orientation _orientation = Orientation.Vertical;
     /// returns linear layout orientation (Vertical, Horizontal)
     @property Orientation orientation() { return _orientation; }
@@ -45,6 +46,42 @@ class ListWidget : WidgetGroup {
     protected ScrollBar _scrollbar;
     protected int _lastMeasureWidth;
     protected int _lastMeasureHeight;
+
+    /// first visible item index
+    protected int _firstVisibleItem;
+    /// scroll position - offset of scroll area
+    protected int _scrollPosition;
+    /// maximum scroll position
+    protected int _maxScrollPosition;
+    /// client area rectangle (counting padding, margins, and scrollbar)
+    protected Rect _clientRc;
+    /// total height of all items for Vertical orientation, or width for Horizontal
+    protected int _totalSize;
+
+    /// returns rectangle for item (not scrolled, first item starts at 0,0)
+    Rect itemRectNoScroll(int index) {
+        Rect res;
+        res = _itemRects[index];
+        return res;
+    }
+
+    /// returns rectangle for item (scrolled)
+    Rect itemRect(int index) {
+        Rect res = itemRectNoScroll(index);
+        if (_orientation == Orientation.Horizontal) {
+            res.left += _scrollPosition;
+            res.right += _scrollPosition;
+        } else {
+            res.top += _scrollPosition;
+            res.bottom += _scrollPosition;
+        }
+        return res;
+    }
+
+    /// returns item index by 0-based offset from top/left of list content
+    int itemByPosition(int pos) {
+        return 0;
+    }
 
     protected ListAdapter _adapter;
     /// when true, need to destroy adapter on list destroy
@@ -94,6 +131,7 @@ class ListWidget : WidgetGroup {
         _orientation = orientation;
         _scrollbar = new ScrollBar("listscroll", orientation);
         _scrollbar.visibility = Visibility.Gone;
+        _scrollbar.onScrollEventListener = &onScrollEvent;
         addChild(_scrollbar);
 	}
 
@@ -101,6 +139,27 @@ class ListWidget : WidgetGroup {
         if (_adapter !is null && _ownAdapter)
             destroy(_adapter);
         _adapter = null;
+    }
+
+    /// handle scroll event
+    override bool onScrollEvent(AbstractSlider source, ScrollEvent event) {
+        int newPosition = _scrollPosition;
+        if (event.action == ScrollAction.SliderMoved) {
+            // scroll
+            newPosition = event.position;
+        } else {
+            // use default handler for page/line up/down events
+            newPosition = event.defaultUpdatePosition();
+        }
+        if (_scrollPosition != newPosition) {
+            _scrollPosition = newPosition;
+            if (_scrollPosition > _maxScrollPosition)
+                _scrollPosition = _maxScrollPosition;
+            if (_scrollPosition < 0)
+                _scrollPosition = 0;
+            invalidate();
+        }
+        return true;
     }
 
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
@@ -198,6 +257,70 @@ class ListWidget : WidgetGroup {
         measuredContent(parentWidth, parentHeight, sz.x + _sbsz.x, sz.y + _sbsz.y);
     }
 
+
+    protected void updateItemPositions() {
+        Rect r;
+        int p = 0;
+        for (int i = 0; i < itemCount; i++) {
+            if (_itemSizes[i].x == 0 && _itemSizes[i].y == 0)
+                continue;
+            if (_orientation == Orientation.Vertical) {
+                // Vertical
+                int w = _clientRc.width;
+                int h = _itemSizes[i].y;
+                r.top = p;
+                r.bottom = p + h;
+                r.left = 0;
+                r.right = w;
+                _itemRects[i] = r;
+                p += h;
+            } else {
+                // Horizontal
+                int h = _clientRc.height;
+                int w = _itemSizes[i].x;
+                r.top = 0;
+                r.bottom = h;
+                r.left = p;
+                r.right = p + w;
+                _itemRects[i] = r;
+                p += w;
+            }
+        }
+        _totalSize = p;
+        if (_needScrollbar) {
+            if (_orientation == Orientation.Vertical) {
+                _scrollbar.setRange(0, p);
+                _scrollbar.pageSize = _clientRc.height;
+                _scrollbar.position = _scrollPosition;
+            } else {
+                _scrollbar.setRange(0, p);
+                _scrollbar.pageSize = _clientRc.width;
+                _scrollbar.position = _scrollPosition;
+            }
+        }
+        /// maximum scroll position
+        if (_orientation == Orientation.Vertical) {
+            _maxScrollPosition = _totalSize - _clientRc.height;
+            if (_maxScrollPosition < 0)
+                _maxScrollPosition = 0;
+        } else {
+            _maxScrollPosition = _totalSize - _clientRc.width;
+            if (_maxScrollPosition < 0)
+                _maxScrollPosition = 0;
+        }
+        if (_scrollPosition > _maxScrollPosition)
+            _scrollPosition = _maxScrollPosition;
+        if (_scrollPosition < 0)
+            _scrollPosition = 0;
+        if (_needScrollbar) {
+            if (_orientation == Orientation.Vertical) {
+                _scrollbar.position = _scrollPosition;
+            } else {
+                _scrollbar.position = _scrollPosition;
+            }
+        }
+    }
+
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     override void layout(Rect rc) {
         if (visibility == Visibility.Gone) {
@@ -230,45 +353,10 @@ class ListWidget : WidgetGroup {
             _scrollbar.visibility = Visibility.Gone;
         }
 
+        _clientRc = rc;
+
         // calc item rectangles
-        Rect r;
-        int p = 0;
-        for (int i = 0; i < itemCount; i++) {
-            if (_itemSizes[i].x == 0 && _itemSizes[i].y == 0)
-                continue;
-            if (_orientation == Orientation.Vertical) {
-                // Vertical
-                int w = rc.width;
-                int h = _itemSizes[i].y;
-                r.top = p;
-                r.bottom = p + h;
-                r.left = 0;
-                r.right = w;
-                _itemRects[i] = r;
-                p += h;
-            } else {
-                // Horizontal
-                int h = rc.height;
-                int w = _itemSizes[i].x;
-                r.top = 0;
-                r.bottom = h;
-                r.left = p;
-                r.right = p + w;
-                _itemRects[i] = r;
-                p += w;
-            }
-        }
-        if (_needScrollbar) {
-            if (_orientation == Orientation.Vertical) {
-                _scrollbar.setRange(0, p);
-                _scrollbar.pageSize = rc.height;
-                _scrollbar.position = 0;
-            } else {
-                _scrollbar.setRange(0, p);
-                _scrollbar.pageSize = rc.width;
-                _scrollbar.position = 0;
-            }
-        }
+        updateItemPositions();
 
         _needLayout = false;
     }
@@ -287,6 +375,11 @@ class ListWidget : WidgetGroup {
             _scrollbar.onDraw(buf);
 
         Point scrollOffset;
+        if (_orientation == Orientation.Vertical) {
+            scrollOffset.y = _scrollPosition;
+        } else {
+            scrollOffset.x = _scrollPosition;
+        }
         // todo: scrollOffset
         // draw items
         for (int i = 0; i < itemCount; i++) {
