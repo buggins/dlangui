@@ -73,10 +73,18 @@ class Window {
                 checkUpdateNeeded(needDraw, needLayout, animationActive);
             }
             if (needLayout) {
+                long measureStart = currentTimeMillis;
                 _mainWidget.measure(_dx, _dy);
+                long measureEnd = currentTimeMillis;
+                Log.d("measure took ", measureEnd - measureStart, " ms");
                 _mainWidget.layout(Rect(0, 0, _dx, _dy));
+                long layoutEnd = currentTimeMillis;
+                Log.d("layout took ", layoutEnd - measureEnd, " ms");
             }
+            long drawStart = currentTimeMillis;
             _mainWidget.onDraw(buf);
+            long drawEnd = currentTimeMillis;
+            Log.d("draw took ", drawEnd - drawStart, " ms");
             lastDrawTs = ts;
             if (animationActive)
                 scheduleAnimation();

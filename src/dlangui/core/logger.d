@@ -19,6 +19,10 @@ void setLogLevel(LogLevel level) {
 	logLevel = level;
 }
 
+long currentTimeMillis() {
+    return std.datetime.Clock.currStdTime / 10000;
+}
+
 void setStdoutLogger() {
 	logFile = stdout;
 }

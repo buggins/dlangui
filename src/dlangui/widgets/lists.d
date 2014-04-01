@@ -383,17 +383,19 @@ class ListWidget : WidgetGroup, OnScrollHandler {
         // todo: scrollOffset
         // draw items
         for (int i = 0; i < itemCount; i++) {
-            Widget w = itemWidget(i);
-            if (w is null || w.visibility != Visibility.Visible)
-                continue;
             Rect itemrc = _itemRects[i];
             itemrc.left += rc.left - scrollOffset.x;
             itemrc.right += rc.left - scrollOffset.x;
             itemrc.top += rc.top - scrollOffset.y;
             itemrc.bottom += rc.top - scrollOffset.y;
-            w.measure(itemrc.width, itemrc.height);
-            w.layout(itemrc);
-			w.onDraw(buf);
+            if (itemrc.intersects(rc)) {
+                Widget w = itemWidget(i);
+                if (w is null || w.visibility != Visibility.Visible)
+                    continue;
+                w.measure(itemrc.width, itemrc.height);
+                w.layout(itemrc);
+			    w.onDraw(buf);
+            }
 		}
     }
 

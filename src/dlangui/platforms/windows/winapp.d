@@ -306,6 +306,7 @@ class Win32Window : Window {
 
     void onPaint() {
         Log.d("onPaint()");
+        long paintStart = currentTimeMillis;
         version (USE_OPENGL) {
             if (useOpengl && _hGLRC) {
                 paintUsingOpenGL();
@@ -315,6 +316,8 @@ class Win32Window : Window {
         } else {
             paintUsingGDI();
         }
+        long paintEnd = currentTimeMillis;
+        Log.d("WM_PAINT handling took ", paintEnd - paintStart, " ms");
     }
 
 	protected ButtonDetails _lbutton;
