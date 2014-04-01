@@ -94,9 +94,19 @@ class DrawBuf : RefCountedObject {
 
     /// returns clipping rectangle, when clipRect.isEmpty == true -- means no clipping.
     @property ref Rect clipRect() { return _clipRect; }
+    /// returns clipping rectangle, or (0,0,dx,dy) when no clipping.
+    @property Rect clipOrFullRect() { return _clipRect.empty ? Rect(0,0,width,height) : _clipRect; }
     /// sets new clipping rectangle, when clipRect.isEmpty == true -- means no clipping.
     @property void clipRect(const ref Rect rect) { 
-        _clipRect = rect; 
+        _clipRect = rect;
+        _clipRect.intersect(Rect(0, 0, width, height));
+    }
+    /// sets new clipping rectangle, when clipRect.isEmpty == true -- means no clipping.
+    @property void intersectClipRect(const ref Rect rect) {
+		if (_clipRect.empty)
+			_clipRect = rect;
+		else
+			_clipRect.intersect(rect);
         _clipRect.intersect(Rect(0, 0, width, height));
     }
     /// apply clipRect and buffer bounds clipping to rectangle
@@ -131,8 +141,8 @@ class DrawBuf : RefCountedObject {
                     rc2.top += _clipRect.top - rc.top;
                     rc.top = _clipRect.top;
                 }
-                if (rc.right > _clipRect.left) {
-                    rc2.right -= rc.right - _clipRect.left;
+                if (rc.right > _clipRect.right) {
+                    rc2.right -= rc.right - _clipRect.right;
                     rc.right = _clipRect.right;
                 }
                 if (rc.bottom > _clipRect.bottom) {
@@ -171,8 +181,8 @@ class DrawBuf : RefCountedObject {
                     rc2.top += (_clipRect.top - rc.top) * srcdy / dstdy;
                     rc.top = _clipRect.top;
                 }
-                if (rc.right > _clipRect.left) {
-                    rc2.right -= (rc.right - _clipRect.left) * srcdx / dstdx;
+                if (rc.right > _clipRect.right) {
+                    rc2.right -= (rc.right - _clipRect.right) * srcdx / dstdx;
                     rc.right = _clipRect.right;
                 }
                 if (rc.bottom > _clipRect.bottom) {
@@ -235,12 +245,12 @@ alias DrawBufRef = Ref!DrawBuf;
 
 /// RAII setting/restoring of clip rectangle
 struct ClipRectSaver {
-    DrawBuf _buf;
-    Rect _oldClipRect;
-    this(DrawBuf buf, Rect newClipRect) {
+    private DrawBuf _buf;
+    private Rect _oldClipRect;
+    this(DrawBuf buf, ref Rect newClipRect) {
         _buf = buf;
         _oldClipRect = buf.clipRect;
-        buf.clipRect = newClipRect;
+        buf.intersectClipRect(newClipRect);
     }
     ~this() {
         _buf.clipRect = _oldClipRect;

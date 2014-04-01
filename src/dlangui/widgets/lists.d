@@ -369,7 +369,7 @@ class ListWidget : WidgetGroup, OnScrollHandler {
         Rect rc = _pos;
         applyMargins(rc);
         applyPadding(rc);
-        ClipRectSaver(buf, rc);
+        auto saver = ClipRectSaver(buf, rc);
         // draw scrollbar
         if (_needScrollbar)
             _scrollbar.onDraw(buf);

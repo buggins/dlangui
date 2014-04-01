@@ -189,13 +189,21 @@ class Win32Font : Font {
 	override void drawText(DrawBuf buf, int x, int y, const dchar[] text, uint color) {
 		int[] widths;
 		int charsMeasured = measureText(text, widths, 3000);
+		Rect clip = buf.clipOrFullRect;
+		if (y + height < clip.top || y >= clip.bottom)
+			return;
 		for (int i = 0; i < charsMeasured; i++) {
 			int xx = (i > 0) ? widths[i - 1] : 0;
+			if (x + xx > clip.right)
+				break;
 			Glyph * glyph = getCharGlyph(text[i]);
 			if (glyph is null)
 				continue;
 			if ( glyph.blackBoxX && glyph.blackBoxY ) {
-				buf.drawGlyph( x + xx + glyph.originX,
+				int gx = x + xx + glyph.originX;
+				if (gx + glyph.blackBoxX < clip.left)
+					continue;
+				buf.drawGlyph( gx,
                                y + _baseline - glyph.originY,
                               glyph,
                               color);

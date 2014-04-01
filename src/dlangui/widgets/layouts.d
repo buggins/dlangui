@@ -271,7 +271,7 @@ class LinearLayout : WidgetGroup {
         Rect rc = _pos;
         applyMargins(rc);
         applyPadding(rc);
-        ClipRectSaver(buf, rc);
+		auto saver = ClipRectSaver(buf, rc);
 		for (int i = 0; i < _children.count; i++) {
 			Widget item = _children.get(i);
 			if (item.visibility != Visibility.Visible)
@@ -352,7 +352,7 @@ class FrameLayout : WidgetGroup {
         Rect rc = _pos;
         applyMargins(rc);
         applyPadding(rc);
-        ClipRectSaver(buf, rc);
+        auto saver = ClipRectSaver(buf, rc);
 		for (int i = 0; i < _children.count; i++) {
 			Widget item = _children.get(i);
 			if (item.visibility != Visibility.Visible)

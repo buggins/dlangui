@@ -50,7 +50,7 @@ class TextWidget : Widget {
         super.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
-        ClipRectSaver(buf, rc);
+        auto saver = ClipRectSaver(buf, rc);
         applyPadding(rc);
         FontRef font = font();
         Point sz = font.textSize(text);
@@ -110,7 +110,7 @@ class ImageWidget : Widget {
         super.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
-        ClipRectSaver(buf, rc);
+        auto saver = ClipRectSaver(buf, rc);
         applyPadding(rc);
         DrawableRef img = drawable;
         if (!img.isNull) {
@@ -156,7 +156,7 @@ class Button : Widget {
         applyMargins(rc);
         buf.fillRect(_pos, backgroundColor);
         applyPadding(rc);
-        ClipRectSaver(buf, rc);
+        auto saver = ClipRectSaver(buf, rc);
         FontRef font = font();
         Point sz = font.textSize(text);
         applyAlign(rc, sz);
@@ -572,7 +572,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         Rect rc = _pos;
         applyMargins(rc);
         applyPadding(rc);
-        ClipRectSaver(buf, rc);
+        auto saver = ClipRectSaver(buf, rc);
         _btnForward.onDraw(buf);
         _btnBack.onDraw(buf);
         _pageUp.onDraw(buf);
