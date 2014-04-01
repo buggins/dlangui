@@ -37,77 +37,70 @@ version (USE_OPENGL) {
     uint nextGlyphId() { return _nextGlyphId++; }
 }
 
+/// font glyph cache
 struct GlyphCache
 {
-	Glyph[] _data;
-	uint _len;
+	Glyph[ushort] _map;
 
 	// find glyph in cache
 	Glyph * find(ushort glyphIndex) {
-		for (uint i = 0; i < _len; i++) {
-			Glyph * item = &_data[i];
-			if (item.glyphIndex == glyphIndex) {
-				item.lastUsage = 1;
-				return item;
-			}
-		}
-		return null;
+		Glyph * res = (glyphIndex in _map);
+		if (res !is null)
+			res.lastUsage = 1;
+		return res;
 	}
 
+	/// put glyph to cache
 	Glyph * put(ushort glyphIndex, Glyph * glyph) {
-		if (_len >= _data.length) {
-			uint newsize = (_len < 32) ? 32 : _len * 2;
-			_data.length = newsize;
-		}
-		_data[_len++] = *glyph;
-		Glyph * res = &_data[_len - 1];
+		_map[glyphIndex] = *glyph;
+		Glyph * res = glyphIndex in _map;
 		res.lastUsage = 1;
 		return res;
 	}
 
 	// clear usage flags for all entries
 	void checkpoint() {
-		for (uint src = 0; src < _len; src++) {
-			_data[src].lastUsage = 0;
+		foreach(ref Glyph item; _map) {
+			item.lastUsage = 0;
 		}
 	}
 
-	// removes entries not used after last call of checkpoint() or cleanup()
+	/// removes entries not used after last call of checkpoint() or cleanup()
 	void cleanup() {
 		uint dst = 0;
         // notify about destroyed glyphs
         version (USE_OPENGL) {
             if (_glyphDestroyCallback !is null)
-		        for (uint src = 0; src < _len; src++)
-			        if (_data[src].lastUsage == 0)
-                        _glyphDestroyCallback(_data[src].id);
-        }
-        for (uint src = 0; src < _len; src++) {
-			if (_data[src].lastUsage != 0) {
-				_data[src].lastUsage = 0;
-				if (src != dst) {
-					_data[dst++] = _data[src];
+				foreach(ref Glyph item; _map) {
+					if (item.lastUsage == 0)
+                        _glyphDestroyCallback(item.id);
 				}
-			}
-		}
-		_len = dst;
+        }
+		ushort[] forDelete;
+		foreach(ref Glyph item; _map)
+			if (item.lastUsage == 0)
+				forDelete ~= item.glyphIndex;
+		foreach(ushort index; forDelete)
+			_map.remove(index);
 	}
 
-	// removes all entries
+	/// removes all entries
 	void clear() {
         version (USE_OPENGL) {
             if (_glyphDestroyCallback !is null)
-                for (uint src = 0; src < _len; src++)
-                    _glyphDestroyCallback(_data[src].id);
+				foreach(ref Glyph item; _map) {
+					if (item.lastUsage == 0)
+                        _glyphDestroyCallback(item.id);
+				}
         }
-		_data = null;
-		_len = 0;
+		_map.clear();
 	}
 	~this() {
 		clear();
 	}
 }
 
+/// Font object
 class Font : RefCountedObject {
     abstract @property int size();
     abstract @property int height();
@@ -127,13 +120,14 @@ class Font : RefCountedObject {
             return Point(0,0);
         return Point(widths[charsMeasured - 1], height);
     }
-	// draw text string to buffer
+	/// draw text string to buffer
 	abstract void drawText(DrawBuf buf, int x, int y, const dchar[] text, uint color);
+	/// get character glyph information
 	abstract Glyph * getCharGlyph(dchar ch, bool withImage = true);
 
-	// clear usage flags for all entries
+	/// clear usage flags for all entries
 	abstract void checkpoint();
-	// removes entries not used after last call of checkpoint() or cleanup()
+	/// removes entries not used after last call of checkpoint() or cleanup()
 	abstract void cleanup();
 
     void clear() {}
@@ -142,6 +136,7 @@ class Font : RefCountedObject {
 }
 alias FontRef = Ref!Font;
 
+/// font instance collection - utility class, for font manager implementations
 struct FontList {
 	FontRef[] _list;
 	uint _len;
@@ -223,7 +218,8 @@ struct FontList {
 
 /// Access points to fonts.
 class FontManager {
-    static __gshared FontManager _instance;
+    protected static __gshared FontManager _instance;
+
     /// sets new font manager singleton instance
     static @property void instance(FontManager manager) {
 		if (_instance !is null) {
@@ -232,6 +228,7 @@ class FontManager {
         }
         _instance = manager;
     }
+
     /// returns font manager singleton instance
     static @property FontManager instance() {
         return _instance;

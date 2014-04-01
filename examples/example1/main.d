@@ -105,7 +105,7 @@ extern (C) int UIAppMain(string[] args) {
 
         ListWidget list = new ListWidget("tab2", Orientation.Vertical);
         WidgetListAdapter listAdapter = new WidgetListAdapter();
-        for (int i = 0; i < 30; i++)
+        for (int i = 0; i < 3000; i++)
             listAdapter.widgets.add((new TextWidget()).text("List item "d ~ to!dstring(i)));
         list.ownAdapter = listAdapter;
         list.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
