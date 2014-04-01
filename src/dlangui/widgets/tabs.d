@@ -3,6 +3,10 @@ module dlangui.widgets.tabs;
 import dlangui.widgets.layouts;
 import dlangui.widgets.controls;
 
+interface TabHandler {
+    void onTabChanged(string newActiveTabId, string previousTabId);
+}
+
 class TabItem {
     private string _iconRes;
     private string _id;
@@ -139,6 +143,10 @@ class TabControl : WidgetGroup {
     protected ImageButton _moreButton;
     protected bool _enableCloseButton;
     protected TabItemWidget[] _sortedItems;
+
+    protected void delegate(string newActiveTabId, string previousTabId) _onTabChanged;
+    @property void delegate(string newActiveTabId, string previousTabId) onTabChangedListener() { return _onTabChanged; }
+    @property TabControl onTabChangedListener(void delegate(string newActiveTabId, string previousTabId) listener) { _onTabChanged = listener; return this; }
 
     this(string ID) {
         super(ID);
@@ -307,29 +315,56 @@ class TabControl : WidgetGroup {
 		}
     }
 
+    protected string _selectedTabId;
+
     void selectTab(int index) {
+        if (_children.get(index + 1).compareId(_selectedTabId))
+            return; // already selected
+        string previousSelectedTab = _selectedTabId;
 		for (int i = 1; i < _children.count; i++) {
             if (index == i - 1) {
                 _children.get(i).state = State.Selected;
+                _selectedTabId = _children.get(i).id;
             } else {
                 _children.get(i).state = State.Normal;
             }
         }
+        if (_onTabChanged !is null)
+            _onTabChanged(_selectedTabId, previousSelectedTab);
     }
 }
 
 /// container for widgets controlled by TabControl
-class TabHost : FrameLayout {
-    this(string ID, TabControl tabControl) {
+class TabHost : FrameLayout, TabHandler {
+    this(string ID, TabControl tabControl = null) {
         super(ID);
         _tabControl = tabControl;
+        if (_tabControl !is null)
+            _tabControl.onTabChangedListener = &onTabChanged;
         styleId = "TAB_HOST";
     }
     protected TabControl _tabControl;
     /// get currently set control widget
     @property TabControl tabControl() { return _tabControl; }
     /// set new control widget
-    @property TabHost tabControl(TabControl newWidget) { _tabControl = newWidget; return this; }
+    @property TabHost tabControl(TabControl newWidget) { 
+        _tabControl = newWidget; 
+        if (_tabControl !is null)
+            _tabControl.onTabChangedListener = &onTabChanged;
+        return this;
+    }
+
+    protected void delegate(string newActiveTabId, string previousTabId) _onTabChanged;
+    @property void delegate(string newActiveTabId, string previousTabId) onTabChangedListener() { return _onTabChanged; }
+    @property TabHost onTabChangedListener(void delegate(string newActiveTabId, string previousTabId) listener) { _onTabChanged = listener; return this; }
+
+    protected override void onTabChanged(string newActiveTabId, string previousTabId) {
+        if (newActiveTabId !is null) {
+            showChild(newActiveTabId);
+        }
+        if (_onTabChanged !is null)
+            _onTabChanged(newActiveTabId, previousTabId);
+    }
 
     /// remove tab
     TabHost removeTab(string id) {
@@ -348,6 +383,7 @@ class TabHost : FrameLayout {
         assert(widget.id !is null, "ID for tab host page is mandatory");
         assert(_children.indexOf(id) == -1, "duplicate ID for tab host page");
         _tabControl.addTab(widget.id, label, iconId, enableCloseButton);
+        addChild(widget);
         return this;
     }
     /// add new tab by id and label string resource id
@@ -356,7 +392,7 @@ class TabHost : FrameLayout {
         assert(widget.id !is null, "ID for tab host page is mandatory");
         assert(_children.indexOf(id) == -1, "duplicate ID for tab host page");
         _tabControl.addTab(widget.id, labelResourceId, iconId, enableCloseButton);
-        TabItem item = new TabItem(id, labelResourceId);
+        addChild(widget);
         return this;
     }
     /// select tab
@@ -369,16 +405,28 @@ class TabHost : FrameLayout {
 }
 
 /// compound widget - contains from TabControl widget (tabs header) and TabHost (content pages)
-class TabWidget : VerticalLayout {
+class TabWidget : VerticalLayout, TabHandler {
     protected TabControl _tabControl;
     protected TabHost _tabHost;
     this(string ID) {
         super(ID);
         _tabControl = new TabControl("TAB_CONTROL");
         _tabHost = new TabHost("TAB_HOST", _tabControl);
+        styleId = "TAB_WIDGET";
         addChild(_tabControl);
         addChild(_tabHost);
     }
+
+    protected void delegate(string newActiveTabId, string previousTabId) _onTabChanged;
+    @property void delegate(string newActiveTabId, string previousTabId) onTabChangedListener() { return _onTabChanged; }
+    @property TabWidget onTabChangedListener(void delegate(string newActiveTabId, string previousTabId) listener) { _onTabChanged = listener; return this; }
+
+    protected override void onTabChanged(string newActiveTabId, string previousTabId) {
+        // forward to listener
+        if (_onTabChanged !is null)
+            _onTabChanged(newActiveTabId, previousTabId);
+    }
+
     /// add new tab by id and label string resource id
     TabWidget addTab(Widget widget, string labelResourceId, string iconId = null, bool enableCloseButton = false) {
         _tabHost.addTab(widget, labelResourceId, iconId, enableCloseButton);

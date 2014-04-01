@@ -47,16 +47,10 @@ extern (C) int UIAppMain(string[] args) {
     Window window = Platform.instance().createWindow("My Window", null);
 	
 	static if (true) {
-		LinearLayout layout = new LinearLayout();
-
         TabWidget tabs = new TabWidget("TABS");
-        tabs.addTab((new TextWidget()).id("tab1").textColor(0x00802000).text("Tab 1 contents"), "Tab 1"d);
-        tabs.addTab((new TextWidget()).id("tab2").textColor(0x00802000).text("Tab 2 contents"), "Tab 2"d);
-        tabs.addTab((new TextWidget()).id("tab3").textColor(0x00802000).text("Tab 3 contents"), "Tab 3"d);
-        tabs.addTab((new TextWidget()).id("tab4").textColor(0x00802000).text("Tab 4 contents"), "Tab 4"d);
-        tabs.addTab((new TextWidget()).id("tab5").textColor(0x00802000).text("Tab 5 contents"), "Tab 5"d);
-        tabs.selectTab("tab1");
-        layout.addChild(tabs);
+        tabs.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+
+		LinearLayout layout = new LinearLayout("tab1");
 
 		layout.addChild((new TextWidget()).textColor(0x00802000).text("Text widget 0"));
 		layout.addChild((new TextWidget()).textColor(0x40FF4000).text("Text widget"));
@@ -117,7 +111,15 @@ extern (C) int UIAppMain(string[] args) {
 
 		layout.layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT);
 
-	    window.mainWidget = layout;
+        tabs.addTab(layout, "Tab 1"d);
+        tabs.addTab((new TextWidget()).id("tab2").textColor(0x00802000).text("Tab 2 contents bla bla bla"), "Tab 2"d);
+        tabs.addTab((new TextWidget()).id("tab3").textColor(0x00802000).text("Tab 3 contents"), "Tab 3"d);
+        tabs.addTab((new TextWidget()).id("tab4").textColor(0x00802000).text("Tab 4 contents some long string"), "Tab 4"d);
+        tabs.addTab((new TextWidget()).id("tab5").textColor(0x00802000).text("Tab 5 contents"), "Tab 5"d);
+
+        tabs.selectTab("tab1");
+
+	    window.mainWidget = tabs;
 	} else {
 	    window.mainWidget = (new Button()).text("sample button");
 	}

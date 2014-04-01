@@ -283,11 +283,13 @@ class Widget {
     /// returns widget visibility (Visible, Invisible, Gone)
     @property Visibility visibility() { return _visibility; }
     /// sets widget visibility (Visible, Invisible, Gone)
-    @property Widget visibility(Visibility visible) { 
+    @property Widget visibility(Visibility visible) {
         if (_visibility != visible) {
             if ((_visibility == Visibility.Gone) || (visible == Visibility.Gone))
-                _visibility = visible; 
-            requestLayout();
+                requestLayout();
+            else
+                invalidate();
+            _visibility = visible;
         }
         return this;
     }
