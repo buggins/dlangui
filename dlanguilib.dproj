@@ -175,6 +175,10 @@
     </Compile>
     <Compile Include="3rdparty\X11\X.d" />
     <Compile Include="3rdparty\X11\Xlib.d" />
+    <Compile Include="src\dlangui\core\i18n.d" />
+    <Compile Include="src\dlangui\core\linestream.d" />
+    <Compile Include="src\dlangui\widgets\lists.d" />
+    <Compile Include="src\dlangui\widgets\tabs.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\dlangui\platforms\x11\" />

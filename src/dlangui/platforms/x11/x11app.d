@@ -64,7 +64,8 @@ version(linux) {
 			uint mask;
 			uint values[3];
 
-			//_enableOpengl = false;
+			// disable opengl for testing
+			_enableOpengl = false;
 		    /* create black graphics context */
 			if (true || !_enableOpengl) {
 				_g = xcb_generate_id(_xcbconnection);
@@ -265,6 +266,16 @@ version(linux) {
 					_drawable = _glxwindow;
 					
 					if (!_derelictgl3Reloaded) {
+						
+						int count;
+                		glGetIntegerv( GL_NUM_EXTENSIONS, &count );
+						Log.d("Number of extensions: ", count);
+                		for( int i=0; i<count; ++i ) {
+							auto e = glGetStringi( GL_EXTENSIONS, i );
+							Log.d("Extension: ", fromStringz(e));
+                		}
+
+						
 						Log.e("Reloading DerelictGL3");
 						_derelictgl3Reloaded = true;
 			        	_context = glXCreateNewContext(_display, _fb_config, GLX_RGBA_TYPE, null, true);
@@ -287,7 +298,9 @@ version(linux) {
 					// Get the default screen's GLX extension list
   					const char *glxExts = glXQueryExtensionsString( _display,
                                                   DefaultScreen( _display ) );
-					Log.d("Extensions: ", fromStringz(glxExts));
+					Log.d("GLX Extensions: ", fromStringz(glxExts));
+					const char * exts = glGetString( GL_EXTENSIONS );
+					Log.d("Extensions: ", fromStringz(exts));
 					
 					
 					Log.d("GLX_ARB_get_proc_address=", GLX_ARB_get_proc_address);
