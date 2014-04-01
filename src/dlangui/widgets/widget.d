@@ -123,12 +123,14 @@ class Widget {
     /// returns widget id, null if not set
 	@property string id() const { return _id; }
     /// set widget id
-    @property void id(string id) { _id = id; }
+    @property Widget id(string id) { _id = id; return this; }
     /// compare widget id with specified value, returs true if matches
     bool compareId(string id) const { return (_id !is null) && id.equal(_id); }
 
     /// widget state (set of flags from State enum)
     @property uint state() const {
+        if ((_state & State.Parent) != 0 && _parent !is null)
+            return _parent.state;
         return _state;
     }
     /// set new widget state (set of flags from State enum)
@@ -187,7 +189,7 @@ class Widget {
     /// set background color for widget - override one from style
     @property Widget backgroundColor(uint color) { ownStyle.backgroundColor = color; return this; }
     /// get text color (ARGB 32 bit value)
-    @property uint textColor() const { return style.textColor; }
+    @property uint textColor() const { return stateStyle.textColor; }
     /// set text color (ARGB 32 bit value)
     @property Widget textColor(uint value) { ownStyle.textColor = value; return this; }
     /// returns font face
@@ -462,9 +464,11 @@ class Widget {
     /// returns child by index
     Widget child(int index) { return null; }
     /// adds child, returns added item
-    Widget addChild(Widget item) { assert(false, "children not suported for this widget type"); }
-    /// removes child, returns added item
-    Widget removeChild(int index) { assert(false, "children not suported for this widget type"); }
+    Widget addChild(Widget item) { assert(false, "addChild: children not suported for this widget type"); }
+    /// removes child, returns removed item
+    Widget removeChild(int index) { assert(false, "removeChild: children not suported for this widget type"); }
+    /// removes child by ID, returns removed item
+    Widget removeChild(string id) { assert(false, "removeChild: children not suported for this widget type"); }
     /// returns index of widget in child list, -1 if passed widget is not a child of this widget
     int childIndex(Widget item) { return -1; }
 
@@ -568,6 +572,13 @@ struct WidgetList {
                 return i;
         return -1;
     }
+    /// find child index for item by id, return -1 if not found
+    int indexOf(string id) {
+        for (int i = 0; i < _count; i++)
+            if (_list[i].compareId(id))
+                return i;
+        return -1;
+    }
     /// remove item from list, return removed item
     Widget remove(int index) {
         assert(index >= 0 && index < _count, "child index out of range");
@@ -605,8 +616,24 @@ class WidgetGroup : Widget {
     override Widget child(int index) { return _children.get(index); }
     /// adds child, returns added item
     override Widget addChild(Widget item) { return _children.add(item).parent(this); }
-    /// removes child, returns added item
-    override Widget removeChild(int index) { return _children.remove(index); }
+    /// removes child, returns removed item
+    override Widget removeChild(int index) { 
+        Widget res = _children.remove(index);
+        if (res !is null)
+            res.parent = null;
+        return res;
+    }
+    /// removes child by ID, returns removed item
+    override Widget removeChild(string ID) {
+        Widget res = null;
+        int index = _children.indexOf(ID);
+        if (index < 0)
+            return null;
+        res = _children.remove(index); 
+        if (res !is null)
+            res.parent = null;
+        return res;
+    }
     /// returns index of widget in child list, -1 if passed widget is not a child of this widget
     override int childIndex(Widget item) { return _children.indexOf(item); }
 }

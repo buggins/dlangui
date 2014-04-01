@@ -26,6 +26,8 @@ enum State : uint {
     Focused = 2,
     Disabled = 4,
     Hover = 8, // mouse pointer is over control, buttons not pressed
+    Selected = 16,
+    Parent = 128, // use parent's state
 }
 
 enum Align : ubyte {
@@ -616,6 +618,7 @@ immutable ATTR_SCROLLBAR_INDICATOR_HORIZONTAL = "scrollbar_indicator_horizontal"
 Theme createDefaultTheme() {
 	Log.d("Creating default theme");
 	Theme res = new Theme("default");
+    res.fontSize(14);
     Style button = res.createSubstyle("BUTTON").backgroundImageId("btn_default_small_normal").alignment(Align.Center);
     Style text = res.createSubstyle("TEXT").margins(Rect(2,2,2,2)).padding(Rect(1,1,1,1));
     button.createState(State.Disabled | State.Focused, State.Disabled | State.Focused).backgroundImageId("btn_default_small_normal_disable_focused");
@@ -638,6 +641,24 @@ Theme createDefaultTheme() {
     scrollbarPage.createState(State.Pressed, State.Pressed).backgroundColor(0xC0404080);
     scrollbarPage.createState(State.Hover, State.Hover).backgroundColor(0xF0404080);
 
+    Style tabUp = res.createSubstyle("TAB_UP");
+    tabUp.backgroundImageId("tab_up_background");
+    tabUp.layoutWidth(FILL_PARENT);
+    tabUp.createState(State.Selected, State.Selected).backgroundImageId("tab_up_backgrond_selected");
+    Style tabUpButtonText = res.createSubstyle("TAB_UP_BUTTON_TEXT");
+    tabUpButtonText.textColor(0xFFFFFF).fontSize(12);
+    tabUpButtonText.createState(State.Selected, State.Selected).textColor(0x000000);
+    tabUpButtonText.createState(State.Selected|State.Focused, State.Selected|State.Focused).textColor(0x000000);
+    tabUpButtonText.createState(State.Focused, State.Focused).textColor(0x000000);
+    tabUpButtonText.createState(State.Hover, State.Hover).textColor(0x404000);
+    Style tabUpButton = res.createSubstyle("TAB_UP_BUTTON");
+    tabUpButton.backgroundImageId("tab_btn_up_normal");
+    tabUpButton.createState(State.Selected, State.Selected).backgroundImageId("tab_btn_up_selected");
+    tabUpButton.createState(State.Selected|State.Focused, State.Selected|State.Focused).backgroundImageId("tab_btn_up_focused_selected");
+    tabUpButton.createState(State.Focused, State.Focused).backgroundImageId("tab_btn_up_focused");
+    tabUpButton.createState(State.Hover, State.Hover).backgroundImageId("tab_btn_up_hover");
+    Style tabHost = res.createSubstyle("TAB_HOST");
+    tabHost.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
 	//res.dumpStats();
 	return res;
 }

@@ -50,14 +50,12 @@ extern (C) int UIAppMain(string[] args) {
 		LinearLayout layout = new LinearLayout();
 
         TabWidget tabs = new TabWidget("TABS");
-        tabs.addTab("id1", "Tab 1"d);
-        tabs.addTab("id2", "Tab 2 label"d);
-        tabs.addTab("id3", "Tab 3 label"d);
-        tabs.addTab("id4", "Tab 4 label"d);
-        tabs.addTab("id5", "Tab 5 label"d);
-        tabs.addTab("id6", "Tab 6 label"d);
-        tabs.addTab("id7", "Tab 7 label"d);
-        tabs.addTab("id8", "Tab 8 label"d);
+        tabs.addTab((new TextWidget()).id("tab1").textColor(0x00802000).text("Tab 1 contents"), "Tab 1"d);
+        tabs.addTab((new TextWidget()).id("tab2").textColor(0x00802000).text("Tab 2 contents"), "Tab 2"d);
+        tabs.addTab((new TextWidget()).id("tab3").textColor(0x00802000).text("Tab 3 contents"), "Tab 3"d);
+        tabs.addTab((new TextWidget()).id("tab4").textColor(0x00802000).text("Tab 4 contents"), "Tab 4"d);
+        tabs.addTab((new TextWidget()).id("tab5").textColor(0x00802000).text("Tab 5 contents"), "Tab 5"d);
+        tabs.selectTab("tab1");
         layout.addChild(tabs);
 
 		layout.addChild((new TextWidget()).textColor(0x00802000).text("Text widget 0"));

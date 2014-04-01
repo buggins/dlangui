@@ -254,6 +254,7 @@ class LinearLayout : WidgetGroup {
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     override void layout(Rect rc) {
         if (visibility == Visibility.Gone) {
+            _needLayout = false;
             return;
         }
         _pos = rc;
@@ -295,3 +296,83 @@ class HorizontalLayout : LinearLayout {
     }
 }
 
+/// place all children into same place (usually, only one child should be visible at a time)
+class FrameLayout : WidgetGroup {
+    this(string ID) {
+        super(ID);
+    }
+    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+    override void measure(int parentWidth, int parentHeight) { 
+        Rect m = margins;
+        Rect p = padding;
+        // calc size constraints for children
+        int pwidth = parentWidth;
+        int pheight = parentHeight;
+        if (parentWidth != SIZE_UNSPECIFIED)
+            pwidth -= m.left + m.right + p.left + p.right;
+        if (parentHeight != SIZE_UNSPECIFIED)
+            pheight -= m.top + m.bottom + p.top + p.bottom;
+        // measure children
+        Point sz;
+        for (int i = 0; i < _children.count; i++) {
+            Widget item = _children.get(i);
+            if (item.visibility != Visibility.Gone) {
+                item.measure(pwidth, pheight);
+                if (sz.x < item.measuredWidth)
+                    sz.x = item.measuredWidth;
+                if (sz.y < item.measuredHeight)
+                    sz.y = item.measuredHeight;
+            }
+        }
+        measuredContent(parentWidth, parentHeight, sz.x, sz.y);
+    }
+
+    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+    override void layout(Rect rc) {
+        if (visibility == Visibility.Gone) {
+            _needLayout = false;
+            return;
+        }
+        _pos = rc;
+        applyMargins(rc);
+        applyPadding(rc);
+        for (int i = 0; i < _children.count; i++) {
+            Widget item = _children.get(i);
+            if (item.visibility != Visibility.Gone) {
+                item.layout(rc);
+            }
+        }
+    }
+
+    /// Draw widget at its position to buffer
+    override void onDraw(DrawBuf buf) {
+        if (visibility != Visibility.Visible)
+            return;
+        super.onDraw(buf);
+        Rect rc = _pos;
+        applyMargins(rc);
+        applyPadding(rc);
+        ClipRectSaver(buf, rc);
+		for (int i = 0; i < _children.count; i++) {
+			Widget item = _children.get(i);
+			if (item.visibility != Visibility.Visible)
+				continue;
+			item.onDraw(buf);
+		}
+    }
+
+    /// make one of children (with specified ID) visible, for the rest, set visibility to otherChildrenVisibility
+    bool showChild(string ID, Visibility otherChildrenVisibility = Visibility.Invisible) {
+        bool found = false;
+		for (int i = 0; i < _children.count; i++) {
+			Widget item = _children.get(i);
+            if (item.compareId(ID)) {
+                item.visibility = Visibility.Visible;
+                found = true;
+            } else {
+                item.visibility = otherChildrenVisibility;
+            }
+		}
+        return found;
+    }
+}
