@@ -41,21 +41,29 @@ version (USE_OPENGL) {
 struct GlyphCache
 {
 	Glyph[ushort] _map;
+	Glyph[0x10000] _array;
 
 	// find glyph in cache
 	Glyph * find(ushort glyphIndex) {
-		Glyph * res = (glyphIndex in _map);
-		if (res !is null)
-			res.lastUsage = 1;
-		return res;
+        if (_array[glyphIndex].glyphIndex)
+            return &_array[glyphIndex];
+        return null;
+		
+        //Glyph * res = (glyphIndex in _map);
+        //if (res !is null)
+        //    res.lastUsage = 1;
+        //return res;
 	}
 
 	/// put glyph to cache
 	Glyph * put(ushort glyphIndex, Glyph * glyph) {
-		_map[glyphIndex] = *glyph;
-		Glyph * res = glyphIndex in _map;
-		res.lastUsage = 1;
-		return res;
+        _array[glyphIndex] = *glyph;
+        return &_array[glyphIndex];
+
+        //_map[glyphIndex] = *glyph;
+        //Glyph * res = glyphIndex in _map;
+        //res.lastUsage = 1;
+        //return res;
 	}
 
 	// clear usage flags for all entries
@@ -112,13 +120,16 @@ class Font : RefCountedObject {
     abstract @property bool isNull();
 	// measure text string, return accumulated widths[] (distance to end of n-th character), returns number of measured chars.
 	abstract int measureText(const dchar[] text, ref int[] widths, int maxWidth);
+    private int[] _textSizeBuffer; // to avoid GC
 	// measure text string as single line, returns width and height
 	Point textSize(const dchar[] text, int maxWidth = 3000) {
-        int[] widths = new int[text.length + 1];
-        int charsMeasured = measureText(text, widths, maxWidth);
+        if (_textSizeBuffer.length < text.length + 1)
+            _textSizeBuffer.length = text.length + 1;
+        //int[] widths = new int[text.length + 1];
+        int charsMeasured = measureText(text, _textSizeBuffer, maxWidth);
         if (charsMeasured < 1)
             return Point(0,0);
-        return Point(widths[charsMeasured - 1], height);
+        return Point(_textSizeBuffer[charsMeasured - 1], height);
     }
 	/// draw text string to buffer
 	abstract void drawText(DrawBuf buf, int x, int y, const dchar[] text, uint color);

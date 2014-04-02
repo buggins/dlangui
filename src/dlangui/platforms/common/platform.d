@@ -32,8 +32,14 @@ class Window {
         _dx = width;
         _dy = height;
         if (_mainWidget !is null) {
+            Log.d("onResize ", _dx, "x", _dy);
+            long measureStart = currentTimeMillis;
             _mainWidget.measure(_dx, _dy);
+            long measureEnd = currentTimeMillis;
+            Log.d("measure took ", measureEnd - measureStart, " ms");
             _mainWidget.layout(Rect(0, 0, _dx, _dy));
+            long layoutEnd = currentTimeMillis;
+            Log.d("layout took ", layoutEnd - measureEnd, " ms");
         }
     }
 
@@ -80,7 +86,7 @@ class Window {
                 _mainWidget.layout(Rect(0, 0, _dx, _dy));
                 long layoutEnd = currentTimeMillis;
                 Log.d("layout took ", layoutEnd - measureEnd, " ms");
-                checkUpdateNeeded(needDraw, needLayout, animationActive);
+                //checkUpdateNeeded(needDraw, needLayout, animationActive);
             }
             long drawStart = currentTimeMillis;
             _mainWidget.onDraw(buf);

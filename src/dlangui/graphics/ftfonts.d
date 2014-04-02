@@ -343,9 +343,16 @@ class FreeTypeFont : Font {
 	override Glyph * getCharGlyph(dchar ch, bool withImage = true) {
         if (ch > 0xFFFF) // do not support unicode chars above 0xFFFF - due to cache limitations
             return null;
+        long measureStart = std.datetime.Clock.currStdTime;
 		Glyph * found = _glyphCache.find(cast(ushort)ch);
+        long measureEnd = std.datetime.Clock.currStdTime;
+        long duration = measureEnd - measureStart;
+        //if (duration > 10000)
+        if (duration > 10000)
+            Log.d("ft _glyphCache.find took ", duration / 10, " ns");
 		if (found !is null)
 			return found;
+        Log.v("Glyph ", ch, " is not found in cache, getting from font");
         FT_UInt index;
         FreeTypeFontFile file;
         if (!findGlyph(ch, 0, index, file)) {
@@ -391,18 +398,24 @@ class FreeTypeFont : Font {
 		uint len = cast(uint)text.length;
         int x = 0;
         int charsMeasured = 0;
+        int * pwidths = widths.ptr;
 		for (int i = 0; i < len; i++) {
-			Glyph * glyph = getCharGlyph(text[i], true); // TODO: what is better
+            //auto measureStart = std.datetime.Clock.currAppTick;
+			Glyph * glyph = getCharGlyph(pstr[i], true); // TODO: what is better
+            //auto measureEnd = std.datetime.Clock.currAppTick;
+            //auto duration = measureEnd - measureStart;
+            //if (duration.length > 10)
+            //    Log.d("ft measureText took ", duration.length, " ticks");
 			if (glyph is null) {
                 // if no glyph, use previous width - treat as zero width
-                widths[i] = i > 0 ? widths[i-1] : 0;
+                pwidths[i] = i > 0 ? pwidths[i-1] : 0;
 				continue;
             }
             int w = x + glyph.width; // using advance
             int w2 = x + glyph.originX + glyph.blackBoxX; // using black box
             if (w < w2) // choose bigger value
                 w = w2;
-            widths[i] = w;
+            pwidths[i] = w;
             x += glyph.width;
             charsMeasured = i + 1;
             if (x > maxWidth)
