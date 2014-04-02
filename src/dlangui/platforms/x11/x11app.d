@@ -27,7 +27,14 @@ version(linux) {
 	
 	import derelict.opengl3.gl3;
 	import derelict.opengl3.glx;
-	
+
+//	pragma(lib, "xcb");
+//	pragma(lib, "xcb-shm");
+//	pragma(lib, "xcb-image");
+//	pragma(lib, "X11-xcb");
+//	pragma(lib, "X11");
+//	pragma(lib, "dl");	
+		
 	extern (System)
 	xcb_connection_t *XGetXCBConnection(std.c.linux.X11.Xlib.Display *dpy); 
 	enum XEventQueueOwner { XlibOwnsEventQueue = 0, XCBOwnsEventQueue };
@@ -160,12 +167,20 @@ version(linux) {
 			windowCaption = _caption;
 			return true;
 		}
-			
+		
+		private int _imageDx;
+		private int _imageDy;
 		void createImage() {
-	        Log.i("CRXCBScreen::createImage ", _dx, "x", _dy);
-	        if (_image)
+			if (_image) {
+				if (_imageDx == _imageDx && _imageDy == _dy)
+					return; // already have image of proper size
+	        	Log.i("CRXCBScreen::createImage - destroying existing image");
 	            xcb_image_destroy(_image);
-			_image = null;
+				_image = null;
+			}
+			_imageDx = _dx;
+			_imageDy = _dy;
+	        Log.i("CRXCBScreen::createImage ", _dx, "x", _dy);
 	        xcb_shm_query_version_reply_t * rep_shm;
 	        rep_shm = xcb_shm_query_version_reply (_xcbconnection,
 	                xcb_shm_query_version(_xcbconnection),
@@ -403,9 +418,9 @@ version(linux) {
 					_drawbuf = new ColorDrawBuf(_dx, _dy);
 				_drawbuf.resize(_dx, _dy);
 				_drawbuf.fill(_backgroundColor);
-				Log.d("calling createImage");
+				//Log.d("calling createImage");
 				createImage();
-				Log.d("done createImage");
+				//Log.d("done createImage");
 				onDraw(_drawbuf);
 				draw(_drawbuf);
 					/*

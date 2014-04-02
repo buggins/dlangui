@@ -5,7 +5,7 @@ import std.stdio;
 import std.conv;
 
 version (linux) {
-	pragma(lib, "png");
+	//pragma(lib, "png");
 	pragma(lib, "xcb");
 	pragma(lib, "xcb-shm");
 	pragma(lib, "xcb-image");

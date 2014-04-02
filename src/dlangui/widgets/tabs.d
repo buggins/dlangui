@@ -402,6 +402,19 @@ class TabHost : FrameLayout, TabHandler {
             _tabControl.selectTab(index);
         }
     }
+//    /// request relayout of widget and its children
+//    override void requestLayout() {
+//		Log.d("TabHost.requestLayout called");
+//		super.requestLayout();
+//        //_needLayout = true;
+//    }
+//    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+//    override void layout(Rect rc) {
+//		Log.d("TabHost.layout() called");
+//		super.layout(rc);
+//		Log.d("after layout(): needLayout = ", needLayout);
+//	}
+
 }
 
 /// compound widget - contains from TabControl widget (tabs header) and TabHost (content pages)
@@ -447,4 +460,10 @@ class TabWidget : VerticalLayout, TabHandler {
     void selectTab(string ID) {
         _tabHost.selectTab(ID);
     }
+//    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+//    override void layout(Rect rc) {
+//		Log.d("TabWidget.layout() called");
+//		super.layout(rc);
+//		Log.d("after layout(): tabhost.needLayout = ", _tabHost.needLayout);
+//	}
 }

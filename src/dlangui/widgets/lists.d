@@ -323,6 +323,7 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     override void layout(Rect rc) {
+        _needLayout = false;
         if (visibility == Visibility.Gone) {
             return;
         }
@@ -357,8 +358,6 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 
         // calc item rectangles
         updateItemPositions();
-
-        _needLayout = false;
     }
 
     /// Draw widget at its position to buffer

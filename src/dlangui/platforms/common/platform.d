@@ -80,6 +80,7 @@ class Window {
                 _mainWidget.layout(Rect(0, 0, _dx, _dy));
                 long layoutEnd = currentTimeMillis;
                 Log.d("layout took ", layoutEnd - measureEnd, " ms");
+                checkUpdateNeeded(needDraw, needLayout, animationActive);
             }
             long drawStart = currentTimeMillis;
             _mainWidget.onDraw(buf);

@@ -457,7 +457,31 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }
 
-    protected void layoutButtons(Rect irc) {
+	override protected void onPositionChanged() {
+		if (!needLayout)
+        	layoutButtons();
+    }
+
+    protected void layoutButtons() {
+        Rect irc = _scrollArea;
+        if (_orientation == Orientation.Vertical) {
+            // vertical
+            int spaceBackSize, spaceForwardSize, indicatorSize;
+            bool indicatorVisible = calcButtonSizes(_scrollArea.height, spaceBackSize, spaceForwardSize, indicatorSize);
+            irc.top += spaceBackSize;
+            irc.bottom -= spaceForwardSize;
+            layoutButtons(irc);
+        } else {
+            // horizontal
+            int spaceBackSize, spaceForwardSize, indicatorSize;
+            bool indicatorVisible = calcButtonSizes(_scrollArea.width, spaceBackSize, spaceForwardSize, indicatorSize);
+            irc.left += spaceBackSize;
+            irc.right -= spaceForwardSize;
+            layoutButtons(irc);
+        }
+	}
+
+	protected void layoutButtons(Rect irc) {
         Rect r;
         _indicator.visibility = Visibility.Visible;
         if (_orientation == Orientation.Vertical) {
@@ -500,6 +524,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
     }
 
     override void layout(Rect rc) {
+        _needLayout = false;
         applyMargins(rc);
         applyPadding(rc);
         Rect r;
@@ -519,12 +544,6 @@ class ScrollBar : AbstractSlider, OnClickHandler {
             r.top = backbtnpos;
             r.bottom = fwdbtnpos;
             _scrollArea = r;
-            int spaceBackSize, spaceForwardSize, indicatorSize;
-            bool indicatorVisible = calcButtonSizes(r.height, spaceBackSize, spaceForwardSize, indicatorSize);
-            Rect irc = r;
-            irc.top += spaceBackSize;
-            irc.bottom -= spaceForwardSize;
-            layoutButtons(irc);
         } else {
             // horizontal
             int backbtnpos = rc.left + _btnSize;
@@ -540,15 +559,9 @@ class ScrollBar : AbstractSlider, OnClickHandler {
             r.left = backbtnpos;
             r.right = fwdbtnpos;
             _scrollArea = r;
-            int spaceBackSize, spaceForwardSize, indicatorSize;
-            bool indicatorVisible = calcButtonSizes(r.width, spaceBackSize, spaceForwardSize, indicatorSize);
-            Rect irc = r;
-            irc.left += spaceBackSize;
-            irc.right -= spaceForwardSize;
-            layoutButtons(irc);
         }
+		layoutButtons();
         _pos = rc;
-        _needLayout = false;
     }
 
     override bool onClick(Widget source) {

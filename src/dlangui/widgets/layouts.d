@@ -253,15 +253,14 @@ class LinearLayout : WidgetGroup {
 
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     override void layout(Rect rc) {
+        _needLayout = false;
         if (visibility == Visibility.Gone) {
-            _needLayout = false;
             return;
         }
         _pos = rc;
         applyMargins(rc);
         applyPadding(rc);
         _layoutItems.layout(rc);
-        _needLayout = false;
     }
     /// Draw widget at its position to buffer
     override void onDraw(DrawBuf buf) {
@@ -329,8 +328,8 @@ class FrameLayout : WidgetGroup {
 
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     override void layout(Rect rc) {
+        _needLayout = false;
         if (visibility == Visibility.Gone) {
-            _needLayout = false;
             return;
         }
         _pos = rc;

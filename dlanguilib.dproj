@@ -36,7 +36,8 @@
     <OutputName>dlanguilib</OutputName>
     <ObjectsDirectory>obj/Release</ObjectsDirectory>
     <Externalconsole>true</Externalconsole>
-    <Target>Executable</Target>
+    <Target>StaticLibrary</Target>
+    <ExtraCompilerArguments>-version=USE_OPENGL</ExtraCompilerArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -45,7 +46,7 @@
     <ObjectsDirectory>obj/Unittest</ObjectsDirectory>
     <OutputName>dlanguilib</OutputName>
     <Externalconsole>true</Externalconsole>
-    <Target>Executable</Target>
+    <Target>StaticLibrary</Target>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\dlangui\core\logger.d" />
@@ -61,9 +62,6 @@
     <Compile Include="src\dlangui\widgets\layouts.d" />
     <Compile Include="src\dlangui\widgets\styles.d" />
     <Compile Include="src\dlangui\widgets\widget.d" />
-    <Compile Include="3rdparty\libpng\source\libpng\png.d" />
-    <Compile Include="3rdparty\libpng\source\libpng\pngconf.d" />
-    <Compile Include="3rdparty\libpng\source\libpng\pnglibconf.d" />
     <Compile Include="src\dlangui\platforms\x11\x11app.d" />
     <Compile Include="..\DerelictFT\source\derelict\freetype\ft.d">
       <Link>3rdparty\DerelictFT\ft.d</Link>
