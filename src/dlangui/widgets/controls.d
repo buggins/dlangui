@@ -34,13 +34,12 @@ class TextWidget : Widget {
 
     override void measure(int parentWidth, int parentHeight) { 
         FontRef font = font();
-        auto measureStart = std.datetime.Clock.currAppTick;
+        //auto measureStart = std.datetime.Clock.currAppTick;
         Point sz = font.textSize(text);
-        auto measureEnd = std.datetime.Clock.currAppTick;
-        auto duration = measureEnd - measureStart;
-        //if (duration > 10000)
-        if (duration.length > 10)
-            Log.d("TextWidget measureText took ", duration.length, " ticks");
+        //auto measureEnd = std.datetime.Clock.currAppTick;
+        //auto duration = measureEnd - measureStart;
+        //if (duration.length > 10)
+        //    Log.d("TextWidget measureText took ", duration.length, " ticks");
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }
 
