@@ -1,38 +1,24 @@
 module main;
 
-import std.stdio;
+struct Foo // must be struct to reproduce
+{
+    uint foo; // any data can be here
+}
 
-//class Foo {
-//    int _data;
-//    this(int v) {
-//        _data = v;
-//    }
-//    @property int data() const { return _data; }
-//}
-//
-//struct Bar {
-//    int _data;
-//    @property int data() const { return _data; }
-//}
-//
-//class Foo2 {
-//}
+struct Bar // must be struct to reproduce
+{
+    // DMD 2.065 hang with 100% CPU load
+    // works ok if array size is reduced
+	//Foo[0x20000] _array;
+    //  0x4000 - < 1 second
+    //  0x8000 - 5 seconds
+    //  0xC000 - 15 seconds
+    //  0xE000 - 20 seconds
+    //  0x10000 - 25 seconds
+    //  0x20000 - 1:45 
+}
 
 int main(string[] argv)
 {
-    //Foo2 foo2 = new Foo2();
-    //Foo2 foo22 = new Foo2();
-    //const(Foo2) cfoo2 = foo2;
-    //cfoo2 = foo22;
-    //Foo obj = new Foo(1);
-    //Foo obj2 = new Foo(2);
-    //const Bar bar1;
-    //writeln("bar1.data=", bar1.data);
-    //const(Foo) constptr;
-    //constptr = obj;
-    //writeln("data=", obj.data);
-    //writeln("data=", constptr.data);
-    //constptr = obj2;
-    //writeln("data=", constptr.data);
     return 0;
 }

@@ -8,7 +8,7 @@
   <multiobj>0</multiobj>
   <singleFileCompilation>0</singleFileCompilation>
   <oneobj>0</oneobj>
-  <trace>1</trace>
+  <trace>0</trace>
   <quiet>0</quiet>
   <verbose>0</verbose>
   <vtls>0</vtls>
@@ -32,7 +32,7 @@
   <noboundscheck>1</noboundscheck>
   <useSwitchError>0</useSwitchError>
   <useUnitTests>0</useUnitTests>
-  <useInline>1</useInline>
+  <useInline>0</useInline>
   <release>0</release>
   <preservePaths>0</preservePaths>
   <warnings>0</warnings>

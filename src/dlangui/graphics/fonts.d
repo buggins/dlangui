@@ -40,14 +40,22 @@ version (USE_OPENGL) {
 /// font glyph cache
 struct GlyphCache
 {
-	Glyph[ushort] _map;
-	Glyph[0x10000] _array;
+	//Glyph[ushort] _map;
+    Glyph[][256] _glyphs;
+
+	//Glyph[] _array;
 
 	// find glyph in cache
 	Glyph * find(ushort glyphIndex) {
-        if (_array[glyphIndex].glyphIndex)
-            return &_array[glyphIndex];
-        return null;
+        //if (_array is null)
+        //    _array = new Glyph[0x10000];
+        ushort p = glyphIndex >> 8;
+        if (_glyphs[p] is null)
+            return null;
+        return &_glyphs[p][glyphIndex & 0xFF];
+        //if (_array[glyphIndex].glyphIndex)
+        //    return &_array[glyphIndex];
+        //return null;
 		
         //Glyph * res = (glyphIndex in _map);
         //if (res !is null)
@@ -57,8 +65,15 @@ struct GlyphCache
 
 	/// put glyph to cache
 	Glyph * put(ushort glyphIndex, Glyph * glyph) {
-        _array[glyphIndex] = *glyph;
-        return &_array[glyphIndex];
+        ushort p = glyphIndex >> 8;
+        ushort i = glyphIndex & 0xFF;
+        if (_glyphs[p] is null)
+            _glyphs[p] = new Glyph[256];
+        _glyphs[p][i] = *glyph;
+        return &_glyphs[p][i]; // = *glyph;
+
+        //_array[glyphIndex] = *glyph;
+        //return &_array[glyphIndex];
 
         //_map[glyphIndex] = *glyph;
         //Glyph * res = glyphIndex in _map;
@@ -68,40 +83,113 @@ struct GlyphCache
 
 	// clear usage flags for all entries
 	void checkpoint() {
-		foreach(ref Glyph item; _map) {
-			item.lastUsage = 0;
+        //foreach(ref Glyph item; _map) {
+        //    item.lastUsage = 0;
+        //}
+        foreach(ref Glyph[] part; _glyphs) {
+            if (part !is null)
+                foreach(ref Glyph item; part) {
+                    item.lastUsage = 0;
+                }
 		}
+        //foreach(ref Glyph item; _array) {
+        //    item.lastUsage = 0;
+        //}
 	}
 
 	/// removes entries not used after last call of checkpoint() or cleanup()
 	void cleanup() {
-		uint dst = 0;
+		//uint dst = 0;
         // notify about destroyed glyphs
         version (USE_OPENGL) {
-            if (_glyphDestroyCallback !is null)
-				foreach(ref Glyph item; _map) {
-					if (item.lastUsage == 0)
-                        _glyphDestroyCallback(item.id);
-				}
+            if (_glyphDestroyCallback !is null) {
+                foreach(ref Glyph[] part; _glyphs) {
+                    if (part !is null)
+                        foreach(ref Glyph item; part) {
+                            if (item.lastUsage == 0 && item.glyphIndex)
+                                _glyphDestroyCallback(item.id);
+                        }
+                }
+                //foreach(ref Glyph item; _map) {
+                //    if (item.lastUsage == 0)
+                //        _glyphDestroyCallback(item.id);
+                //}
+            }
         }
-		ushort[] forDelete;
-		foreach(ref Glyph item; _map)
-			if (item.lastUsage == 0)
-				forDelete ~= item.glyphIndex;
-		foreach(ushort index; forDelete)
-			_map.remove(index);
+        //ushort[] forDelete;
+        //foreach(ref Glyph item; _map)
+        //    if (item.lastUsage == 0)
+        //        forDelete ~= item.glyphIndex;
+        //foreach(ushort index; forDelete)
+        //    _map.remove(index);
+        foreach(ref Glyph[] part; _glyphs) {
+            if (part !is null)
+                foreach(ref Glyph item; part) {
+                    if (item.lastUsage == 0 && item.glyphIndex) {
+                        item.glyphIndex = 0;
+                        item.glyph = null;
+                        version (USE_OPENGL) {
+                            item.id = 0;
+                        }
+                    }
+                }
+        }
+        //foreach(ref Glyph item; _array) {
+        //    if (item.lastUsage == 0 && item.glyphIndex) {
+        //        item.glyphIndex = 0;
+        //        item.glyph = null;
+        //        item.id = 0;
+        //    }
+        //}
 	}
 
 	/// removes all entries
 	void clear() {
+        // notify about destroyed glyphs
         version (USE_OPENGL) {
-            if (_glyphDestroyCallback !is null)
-				foreach(ref Glyph item; _map) {
-					if (item.lastUsage == 0)
-                        _glyphDestroyCallback(item.id);
-				}
+            if (_glyphDestroyCallback !is null) {
+                foreach(ref Glyph[] part; _glyphs) {
+                    if (part !is null)
+                        foreach(ref Glyph item; part) {
+                            if (item.glyphIndex)
+                                _glyphDestroyCallback(item.id);
+                        }
+                }
+            }
         }
-		_map.clear();
+        foreach(ref Glyph[] part; _glyphs) {
+            if (part !is null)
+                foreach(ref Glyph item; part) {
+                    if (item.glyphIndex) {
+                        item.glyphIndex = 0;
+                        item.glyph = null;
+                        version (USE_OPENGL) {
+                            item.id = 0;
+                        }
+                    }
+                }
+        }
+
+        //version (USE_OPENGL) {
+        //    if (_glyphDestroyCallback !is null) {
+        //        foreach(ref Glyph item; _array) {
+        //            if (item.glyphIndex)
+        //                _glyphDestroyCallback(item.id);
+        //        }
+        //        //foreach(ref Glyph item; _map) {
+        //        //    if (item.lastUsage == 0)
+        //        //        _glyphDestroyCallback(item.id);
+        //        //}
+        //    }
+        //}
+        ////_map.clear();
+        //foreach(ref Glyph item; _array) {
+        //    if (item.glyphIndex) {
+        //        item.glyphIndex = 0;
+        //        item.glyph = null;
+        //        item.id = 0;
+        //    }
+        //}
 	}
 	~this() {
 		clear();
