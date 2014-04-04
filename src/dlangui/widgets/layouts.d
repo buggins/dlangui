@@ -159,10 +159,12 @@ class LayoutItems {
 			// resize all if need to shrink or only resizable are too small to correct delta
             needForceResize = delta < 0 || resizableWeight == 0; // || resizableSize * 2 / 3 < delta; // do we need resize non-FILL_PARENT items?
 			// calculate scale factor: weight / delta * 10000
-            if (needForceResize)
+            if (needForceResize && nonresizableSize + resizableSize > 0)
                 scaleFactor = 10000 * delta / (nonresizableSize + resizableSize);
-            else
+            else if (resizableSize > 0)
                 scaleFactor = 10000 * delta / resizableSize;
+			else
+				scaleFactor = 0;
         }
 		//Log.d("VerticalLayout delta=", delta, ", nonres=", nonresizableWeight, ", res=", resizableWeight, ", scale=", scaleFactor);
 		// find last resized - to allow fill space 1 pixel accurate

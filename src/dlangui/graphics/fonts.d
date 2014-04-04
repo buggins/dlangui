@@ -52,7 +52,10 @@ struct GlyphCache
         ushort p = glyphIndex >> 8;
         if (_glyphs[p] is null)
             return null;
-        return &_glyphs[p][glyphIndex & 0xFF];
+        ushort i = glyphIndex & 0xFF;
+        if (_glyphs[p][i].glyphIndex == 0)
+			return null;
+        return &_glyphs[p][i];
         //if (_array[glyphIndex].glyphIndex)
         //    return &_array[glyphIndex];
         //return null;
