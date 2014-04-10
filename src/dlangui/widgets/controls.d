@@ -341,15 +341,15 @@ class ScrollBar : AbstractSlider, OnClickHandler {
                 return true;
             }
             if (event.action == MouseAction.Move && trackHover) {
-                if (!(state & State.Hover)) {
+                if (!(state & State.Hovered)) {
                     Log.d("Hover ", id);
-                    setState(State.Hover);
+                    setState(State.Hovered);
                 }
 	            return true;
             }
             if ((event.action == MouseAction.Leave || event.action == MouseAction.Cancel) && trackHover) {
                 Log.d("Leave ", id);
-	            resetState(State.Hover);
+	            resetState(State.Hovered);
 	            return true;
             }
             if (event.action == MouseAction.Cancel) {

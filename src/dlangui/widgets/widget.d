@@ -317,7 +317,7 @@ class Widget {
 	        }
 	        if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {
 	            resetState(State.Pressed);
-	            resetState(State.Hover);
+	            resetState(State.Hovered);
 	            return true;
 	        }
 	        if (event.action == MouseAction.FocusIn) {
@@ -325,15 +325,15 @@ class Widget {
 	            return true;
 	        }
             if (event.action == MouseAction.Move && trackHover) {
-                if (!(state & State.Hover)) {
+                if (!(state & State.Hovered)) {
                     Log.d("Hover ", id);
-                    setState(State.Hover);
+                    setState(State.Hovered);
                 }
 	            return true;
             }
             if (event.action == MouseAction.Leave && trackHover) {
                 Log.d("Leave ", id);
-	            resetState(State.Hover);
+	            resetState(State.Hovered);
 	            return true;
             }
 		}

@@ -687,14 +687,14 @@ class Drawable : RefCountedObject {
 	~this() {
 		//Log.d("Destroyed drawable, count=", --_instanceCount);
 	}
-    abstract void drawTo(DrawBuf buf, Rect rc, int tilex0 = 0, int tiley0 = 0);
+    abstract void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0);
     @property abstract int width();
     @property abstract int height();
     @property Rect padding() { return Rect(0,0,0,0); }
 }
 
 class EmptyDrawable : Drawable {
-    override void drawTo(DrawBuf buf, Rect rc, int tilex0 = 0, int tiley0 = 0) {
+    override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
     }
     @property override int width() { return 0; }
     @property override int height() { return 0; }
@@ -705,7 +705,7 @@ class SolidFillDrawable : Drawable {
     this(uint color) {
         _color = color;
     }
-    override void drawTo(DrawBuf buf, Rect rc, int tilex0 = 0, int tiley0 = 0) {
+    override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
         if ((_color >> 24) != 0xFF) // not fully transparent
             buf.fillRect(rc, _color);
     }
@@ -755,7 +755,7 @@ class ImageDrawable : Drawable {
             n3 = n4 = n3 + middledist;
         }
     }
-    override void drawTo(DrawBuf buf, Rect rc, int tilex0 = 0, int tiley0 = 0) {
+    override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
         if (_image.isNull)
             return;
         if (_image.hasNinePatch) {
@@ -830,6 +830,140 @@ class ImageDrawable : Drawable {
             else
                 buf.drawImage(rc.left, rc.top, _image);
         }
+    }
+}
+
+import std.xml;
+import std.algorithm;
+import dlangui.widgets.styles;
+
+void extractStateFlag(ref string[string] attr, string attrName, State state, ref uint stateMask, ref uint stateValue) {
+    if (attrName in attr) {
+        string value = attr[attrName];
+        if (value.equal("true"))
+            stateValue |= state;
+        stateMask |= state;
+    }
+}
+
+/// converts XML attribute name to State (see http://developer.android.com/guide/topics/resources/drawable-resource.html#StateList)
+void extractStateFlags(ref string[string] attr, ref uint stateMask, ref uint stateValue) {
+    extractStateFlag(attr, "state_pressed", State.Pressed, stateMask, stateValue);
+    extractStateFlag(attr, "state_focused", State.Focused, stateMask, stateValue);
+    extractStateFlag(attr, "state_hovered", State.Hovered, stateMask, stateValue);
+    extractStateFlag(attr, "state_selected", State.Selected, stateMask, stateValue);
+    extractStateFlag(attr, "state_checkable", State.Checkable, stateMask, stateValue);
+    extractStateFlag(attr, "state_checked", State.Checked, stateMask, stateValue);
+    extractStateFlag(attr, "state_enabled", State.Enabled, stateMask, stateValue);
+    extractStateFlag(attr, "state_activated", State.Activated, stateMask, stateValue);
+    extractStateFlag(attr, "state_window_focused", State.WindowFocused, stateMask, stateValue);
+}
+
+/*
+sample:
+(prefix android: is optional)
+
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android"
+android:constantSize=["true" | "false"]
+android:dither=["true" | "false"]
+android:variablePadding=["true" | "false"] >
+<item
+android:drawable="@[package:]drawable/drawable_resource"
+android:state_pressed=["true" | "false"]
+android:state_focused=["true" | "false"]
+android:state_hovered=["true" | "false"]
+android:state_selected=["true" | "false"]
+android:state_checkable=["true" | "false"]
+android:state_checked=["true" | "false"]
+android:state_enabled=["true" | "false"]
+android:state_activated=["true" | "false"]
+android:state_window_focused=["true" | "false"] />
+</selector>
+*/
+
+/// Drawable which is drawn depending on state (see http://developer.android.com/guide/topics/resources/drawable-resource.html#StateList)
+class StateDrawable : Drawable {
+
+    static struct StateItem {
+        uint stateMask;
+        uint stateValue;
+        DrawableRef drawable;
+        @property bool matchState(uint state) {
+            return (stateMask & state) == stateValue;
+        }
+    }
+    protected StateItem[] _stateList;
+
+    void addState(uint stateMask, uint stateValue, string resourceId) {
+        StateItem item;
+        item.stateMask = stateMask;
+        item.stateValue = stateValue;
+        item.drawable = dlangui.graphics.images.drawableCache.get(resourceId);
+        _stateList ~= item;
+    }
+
+    void addState(uint stateMask, uint stateValue, DrawableRef drawable) {
+        StateItem item;
+        item.stateMask = stateMask;
+        item.stateValue = stateValue;
+        item.drawable = drawable;
+        _stateList ~= item;
+    }
+
+    bool load(Element element) {
+        foreach(item; element.elements) {
+            if (item.tag.name.equal("item")) {
+                if ("drawable" in item.tag.attr) {
+                    string drawableId = item.tag.attr["drawable"];
+                    uint stateMask, stateValue;
+                    extractStateFlags(item.tag.attr, stateMask, stateValue);
+                    if (drawableId !is null) {
+                        addState(stateMask, stateValue, drawableId);
+                    }
+                }
+            }
+        }
+        return _stateList.length > 0;
+    }
+
+    /// load from XML file
+    bool load(string filename) {
+        import std.file;
+        import std.string;
+
+        try {
+            string s = cast(string)std.file.read(filename);
+
+            // Check for well-formedness
+            check(s);
+
+            // Make a DOM tree
+            auto doc = new Document(s);
+            
+            return load(doc);
+        } catch (Exception e) {
+            Log.e("Cannot read drawable resource from file ", filename);
+            return false;
+        }
+    }
+
+    override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
+        foreach(ref item; _stateList)
+            if (item.matchState(state)) {
+                item.drawable.drawTo(buf, rc, state, tilex0, tiley0);
+                return;
+            }
+    }
+
+    @property override int width() {
+        return (_stateList.length > 0) ? _stateList[0].drawable.width : 0;
+    }
+    @property override int height() {
+        return (_stateList.length > 0) ? _stateList[0].drawable.height : 0;
+    }
+    @property override Rect padding() { 
+        return (_stateList.length > 0) ? _stateList[0].drawable.padding : Rect(0,0,0,0);
     }
 }
 
