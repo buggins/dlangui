@@ -646,7 +646,7 @@ Theme createDefaultTheme() {
     tabUp.layoutWidth(FILL_PARENT);
     tabUp.createState(State.Selected, State.Selected).backgroundImageId("tab_up_backgrond_selected");
     Style tabUpButtonText = res.createSubstyle("TAB_UP_BUTTON_TEXT");
-    tabUpButtonText.textColor(0xFFFFFF).fontSize(12).alignment(Align.Center);
+    tabUpButtonText.textColor(0x000000).fontSize(12).alignment(Align.Center);
     tabUpButtonText.createState(State.Selected, State.Selected).textColor(0x000000);
     tabUpButtonText.createState(State.Selected|State.Focused, State.Selected|State.Focused).textColor(0x000000);
     tabUpButtonText.createState(State.Focused, State.Focused).textColor(0x000000);
@@ -661,7 +661,8 @@ Theme createDefaultTheme() {
     tabHost.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
     tabHost.backgroundColor(0xF0F0F0);
     Style tabWidget = res.createSubstyle("TAB_WIDGET");
-    tabWidget.backgroundImageId("frame_blue");
+	tabWidget.padding(Rect(3,3,3,3)).backgroundColor(0xEEEEEE);
+    //tabWidget.backgroundImageId("frame_blue");
 	//res.dumpStats();
 	return res;
 }
