@@ -123,7 +123,7 @@ class ImageWidget : Widget {
             sz.x = img.width;
             sz.y = img.height;
             applyAlign(rc, sz);
-            img.drawTo(buf, rc);
+            img.drawTo(buf, rc, state);
         }
     }
 }

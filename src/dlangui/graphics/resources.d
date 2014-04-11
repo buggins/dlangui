@@ -235,14 +235,19 @@ class StateDrawable : Drawable {
             return (stateMask & state) == stateValue;
         }
     }
+    // list of states
     protected StateItem[] _stateList;
+    // max paddings for all states
+    protected Rect _paddings;
+    // max drawable size for all states
+    protected Point _size;
 
     void addState(uint stateMask, uint stateValue, string resourceId) {
         StateItem item;
         item.stateMask = stateMask;
         item.stateValue = stateValue;
         item.drawable = drawableCache.get(resourceId);
-        _stateList ~= item;
+        itemAdded(item);
     }
 
     void addState(uint stateMask, uint stateValue, DrawableRef drawable) {
@@ -250,7 +255,18 @@ class StateDrawable : Drawable {
         item.stateMask = stateMask;
         item.stateValue = stateValue;
         item.drawable = drawable;
+        itemAdded(item);
+    }
+
+    private void itemAdded(ref StateItem item) {
         _stateList ~= item;
+        if (!item.drawable.isNull) {
+            if (_size.x < item.drawable.width)
+                _size.x = item.drawable.width;
+            if (_size.y < item.drawable.height)
+                _size.y = item.drawable.height;
+            _paddings.setMax(item.drawable.padding);
+        }
     }
 
     bool load(Element element) {
@@ -296,19 +312,20 @@ class StateDrawable : Drawable {
     override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
         foreach(ref item; _stateList)
             if (item.matchState(state)) {
-                item.drawable.drawTo(buf, rc, state, tilex0, tiley0);
+                if (!item.drawable.isNull)
+                    item.drawable.drawTo(buf, rc, state, tilex0, tiley0);
                 return;
             }
     }
 
     @property override int width() {
-        return (_stateList.length > 0) ? _stateList[0].drawable.width : 0;
+        return _size.x;
     }
     @property override int height() {
-        return (_stateList.length > 0) ? _stateList[0].drawable.height : 0;
+        return _size.y;
     }
     @property override Rect padding() { 
-        return (_stateList.length > 0) ? _stateList[0].drawable.padding : Rect(0,0,0,0);
+        return _paddings;
     }
 }
 
@@ -498,7 +515,10 @@ class DrawableCache {
     string[] _resourcePaths;
     string[string] _idToFileMap;
     DrawableCacheItem[string] _idToDrawableMap;
+    DrawableRef _nullDrawable;
     ref DrawableRef get(string id) {
+        if (id.equal("@null"))
+            return _nullDrawable;
         if (id in _idToDrawableMap)
             return _idToDrawableMap[id].drawable;
         string resourceId = id;

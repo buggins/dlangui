@@ -24,6 +24,17 @@ struct Rect {
         top += dy;
         bottom += dy;
     }
+    /// for all fields, sets this.field to rc.field if rc.field > this.field
+    void setMax(Rect rc) {
+        if (left < rc.left)
+            left = rc.left;
+        if (right < rc.right)
+            right = rc.right;
+        if (top < rc.top)
+            top = rc.top;
+        if (bottom < rc.bottom)
+            bottom = rc.bottom;
+    }
     @property int width() { return right - left; }
     @property int height() { return bottom - top; }
     this(int x0, int y0, int x1, int y1) {

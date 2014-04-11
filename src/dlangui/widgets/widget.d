@@ -77,6 +77,7 @@ class Widget {
 	/// create widget, with optional id
     this(string ID = null) {
 		_id = ID;
+        _state = State.Enabled;
 		//Log.d("Created widget, count = ", ++_instanceCount);
     }
 	~this() {
@@ -413,7 +414,7 @@ class Widget {
         applyMargins(rc);
         DrawableRef bg = stateStyle.backgroundDrawable;
 		if (!bg.isNull) {
-	        bg.drawTo(buf, rc);
+	        bg.drawTo(buf, rc, state);
 		}
 	    applyPadding(rc);
         _needDraw = false;

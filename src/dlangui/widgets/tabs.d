@@ -49,6 +49,7 @@ class TabItemWidget : HorizontalLayout {
         _label.styleId = "TAB_UP_BUTTON_TEXT";
         _label.state = State.Parent;
         _closeButton = new ImageButton("CLOSE");
+        _closeButton.styleId = "BUTTON_TRANSPARENT";
         _closeButton.drawableId = "close";
         _closeButton.onClickListener = &onClick;
         if (_enableCloseButton) {
@@ -152,6 +153,7 @@ class TabControl : WidgetGroup {
         super(ID);
         _items = new TabItemList();
         _moreButton = new ImageButton("MORE", "tab_more");
+        _moreButton.styleId = "BUTTON_TRANSPARENT";
         _moreButton.onClickListener = &onClick;
         _enableCloseButton = true;
         styleId = "TAB_UP";
@@ -231,6 +233,7 @@ class TabControl : WidgetGroup {
     }
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
     override void measure(int parentWidth, int parentHeight) { 
+        //Log.d("tabControl.measure enter");
         Rect m = margins;
         Rect p = padding;
         // calc size constraints for children
@@ -257,9 +260,11 @@ class TabControl : WidgetGroup {
             sz.x += tab.measuredWidth;
         }
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
+        //Log.d("tabControl.measure exit");
     }
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     override void layout(Rect rc) {
+        //Log.d("tabControl.layout enter");
         _needLayout = false;
         if (visibility == Visibility.Gone) {
             return;
@@ -297,9 +302,11 @@ class TabControl : WidgetGroup {
             widget.layout(rc);
             rc.left += w;
         }
+        //Log.d("tabControl.layout exit");
     }
     /// Draw widget at its position to buffer
     override void onDraw(DrawBuf buf) {
+        //Log.d("tabControl.onDraw enter");
         if (visibility != Visibility.Visible)
             return;
         super.onDraw(buf);
@@ -313,6 +320,7 @@ class TabControl : WidgetGroup {
 				continue;
 			item.onDraw(buf);
 		}
+        //Log.d("tabControl.onDraw exit");
     }
 
     protected string _selectedTabId;

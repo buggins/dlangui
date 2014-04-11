@@ -482,7 +482,7 @@ class Style {
 		if (state == 0)
 			return this;
         //Log.d("forState ", state, " styleId=", _id, " substates=", _substates.length);
-		if (parentStyle !is null && _substates.length == 0) //id is null && 
+		if (parentStyle !is null && _substates.length == 0 && parentStyle._substates.length > 0) //id is null && 
 			return parentStyle.forState(state);
 		foreach(item; _substates) {
 			if ((item._stateMask & state) == item._stateValue)
@@ -584,6 +584,11 @@ class Theme : Style {
 		return this;
 	}
 	
+	/// find substyle based on widget state (e.g. focused, pressed, ...)
+	override const(Style) forState(uint state) const {
+		return this;
+	}
+
 	void dumpStats() {
 		Log.d("Theme ", _id, ": children:", _children.length, ", substates:", _substates.length, ", mapsize:", _byId.length);
 	}
@@ -610,13 +615,14 @@ Theme createDefaultTheme() {
 	Log.d("Creating default theme");
 	Theme res = new Theme("default");
     res.fontSize(14);
-    Style button = res.createSubstyle("BUTTON").backgroundImageId("btn_default_small_normal").alignment(Align.Center);
+    Style button = res.createSubstyle("BUTTON").backgroundImageId("btn_default_small").alignment(Align.Center);
+    Style buttonTransparent = res.createSubstyle("BUTTON_TRANSPARENT").backgroundImageId("btn_default_small_transparent").alignment(Align.Center);
     Style text = res.createSubstyle("TEXT").margins(Rect(2,2,2,2)).padding(Rect(1,1,1,1));
-    button.createState(State.Enabled | State.Focused, State.Focused).backgroundImageId("btn_default_small_normal_disable_focused");
-    button.createState(State.Enabled, 0).backgroundImageId("btn_default_small_normal_disable");
-    button.createState(State.Pressed, State.Pressed).backgroundImageId("btn_default_small_pressed");
-    button.createState(State.Focused, State.Focused).backgroundImageId("btn_default_small_selected");
-    button.createState(State.Hovered, State.Hovered).backgroundImageId("btn_default_small_normal_hover");
+    //button.createState(State.Enabled | State.Focused, State.Focused).backgroundImageId("btn_default_small_normal_disable_focused");
+    //button.createState(State.Enabled, 0).backgroundImageId("btn_default_small_normal_disable");
+    //button.createState(State.Pressed, State.Pressed).backgroundImageId("btn_default_small_pressed");
+    //button.createState(State.Focused, State.Focused).backgroundImageId("btn_default_small_selected");
+    //button.createState(State.Hovered, State.Hovered).backgroundImageId("btn_default_small_normal_hover");
     res.setCustomDrawable(ATTR_SCROLLBAR_BUTTON_UP, "scrollbar_btn_up");
     res.setCustomDrawable(ATTR_SCROLLBAR_BUTTON_DOWN, "scrollbar_btn_down");
     res.setCustomDrawable(ATTR_SCROLLBAR_BUTTON_LEFT, "scrollbar_btn_left");

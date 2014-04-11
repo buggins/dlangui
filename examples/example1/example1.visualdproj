@@ -13,7 +13,7 @@
   <verbose>0</verbose>
   <vtls>0</vtls>
   <symdebug>1</symdebug>
-  <optimize>1</optimize>
+  <optimize>0</optimize>
   <cpu>0</cpu>
   <isX86_64>0</isX86_64>
   <isLinux>0</isLinux>
@@ -29,7 +29,7 @@
   <useIn>0</useIn>
   <useOut>0</useOut>
   <useArrayBounds>0</useArrayBounds>
-  <noboundscheck>1</noboundscheck>
+  <noboundscheck>0</noboundscheck>
   <useSwitchError>0</useSwitchError>
   <useUnitTests>0</useUnitTests>
   <useInline>0</useInline>
