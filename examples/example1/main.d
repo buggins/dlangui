@@ -48,6 +48,15 @@ extern (C) int UIAppMain(string[] args) {
     Window window = Platform.instance().createWindow("My Window", null);
 	
 	static if (true) {
+        VerticalLayout contentLayout = new VerticalLayout();
+        MenuItem mainMenuItems = new MenuItem();
+        mainMenuItems.add(new Action(1, "File"d));
+        mainMenuItems.add(new Action(2, "Edit"d));
+        mainMenuItems.add(new Action(3, "Window"d));
+        mainMenuItems.add(new Action(4, "Help"d));
+        MainMenu mainMenu = new MainMenu(mainMenuItems);
+        contentLayout.addChild(mainMenu);
+
         TabWidget tabs = new TabWidget("TABS");
         tabs.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
 
@@ -117,7 +126,8 @@ extern (C) int UIAppMain(string[] args) {
 
         tabs.selectTab("tab1");
 
-	    window.mainWidget = tabs;
+        contentLayout.addChild(tabs);
+	    window.mainWidget = contentLayout;
 	} else {
 	    window.mainWidget = (new Button()).text("sample button");
 	}

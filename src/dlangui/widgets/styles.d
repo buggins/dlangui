@@ -662,6 +662,11 @@ Theme createDefaultTheme() {
 	tabWidget.padding(Rect(3,3,3,3)).backgroundColor(0xEEEEEE);
     //tabWidget.backgroundImageId("frame_blue");
 	//res.dumpStats();
+
+    Style mainMenu = res.createSubstyle("MAIN_MENU").backgroundColor(0xE0E0E0).layoutWidth(FILL_PARENT);
+    Style menuItem = res.createSubstyle("MENU_ITEM").padding(Rect(4,2,4,2)).backgroundColor(0xE0E0E0)   ;
+    menuItem.createState(State.Hovered, State.Hovered).backgroundColor(0x80E0E000);
+
 	return res;
 }
 

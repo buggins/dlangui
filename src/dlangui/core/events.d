@@ -1,6 +1,54 @@
 module dlangui.core.events;
 
+import dlangui.core.i18n;
+
 import std.conv;
+
+/// UI action
+class Action {
+    protected int _id;
+    protected UIString _label;
+    protected string _iconId;
+    this(int id, string labelResourceId, string iconResourceId = null) {
+        _id = id;
+        _label = labelResourceId;
+        _iconId = iconResourceId;
+    }
+    this(int id, dstring label, string iconResourceId = null) {
+        _id = id;
+        _label = label;
+        _iconId = iconResourceId;
+    }
+    @property int id() const {
+        return _id;
+    }
+    @property Action id(int newId) {
+        _id = newId;
+        return this;
+    }
+    @property Action label(string resourceId) {
+        _label = resourceId;
+        return this;
+    }
+    @property Action label(dstring text) {
+        _label = text;
+        return this;
+    }
+    @property dstring label() const {
+        return _label.value;
+    }
+    @property ref const (UIString) labelValue() const {
+        return _label;
+    }
+    @property string iconId() const {
+        return _iconId;
+    }
+    @property Action iconId(string id) {
+        _iconId = id;
+        return this;
+    }
+}
+
 
 enum MouseAction : ubyte {
     Cancel,   // button down handling is cancelled
