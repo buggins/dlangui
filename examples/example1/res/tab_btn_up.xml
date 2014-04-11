@@ -2,7 +2,7 @@
 <selector xmlns:android="http://schemas.android.com/apk/res/android"
   android:constantSize="true"
   android:dither="false"
-  android:variablePadding="false"
+  android:variablePadding="false" >
   <item
     android:drawable="tab_btn_up_hover"
     android:state_hovered="true" />

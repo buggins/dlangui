@@ -3,7 +3,8 @@ module dlangui.widgets.styles;
 import dlangui.core.types;
 import dlangui.graphics.fonts;
 import dlangui.graphics.drawbuf;
-import dlangui.graphics.images;
+//import dlangui.graphics.images;
+import dlangui.graphics.resources;
 
 immutable ubyte ALIGN_UNSPECIFIED = 0;
 immutable uint COLOR_UNSPECIFIED = 0xFFDEADFF;
@@ -19,22 +20,6 @@ immutable int SIZE_UNSPECIFIED = int.max;
 immutable int FILL_PARENT = int.max - 1;
 immutable int WRAP_CONTENT = int.max - 2;
 immutable int WEIGHT_UNSPECIFIED = -1;
-
-/// widget state flags - bits
-enum State : uint {
-    /// state not specified / normal
-    Normal = 0,
-    Pressed = 1,
-    Focused = 2,
-    Enabled = 4,
-    Hovered = 8, // mouse pointer is over control, buttons not pressed
-    Selected = 16,
-    Checkable = 32,
-    Checked = 64,
-    Activated = 128,
-    WindowFocused = 256,
-    Parent = 0x10000, // use parent's state
-}
 
 enum Align : ubyte {
     Unspecified = ALIGN_UNSPECIFIED,
@@ -658,11 +643,12 @@ Theme createDefaultTheme() {
     tabUpButtonText.createState(State.Focused, State.Focused).textColor(0x000000);
     tabUpButtonText.createState(State.Hovered, State.Hovered).textColor(0xFFE0E0);
     Style tabUpButton = res.createSubstyle("TAB_UP_BUTTON");
-    tabUpButton.backgroundImageId("tab_btn_up_normal");
-    tabUpButton.createState(State.Selected, State.Selected).backgroundImageId("tab_btn_up_selected");
-    tabUpButton.createState(State.Selected|State.Focused, State.Selected|State.Focused).backgroundImageId("tab_btn_up_focused_selected");
-    tabUpButton.createState(State.Focused, State.Focused).backgroundImageId("tab_btn_up_focused");
-    tabUpButton.createState(State.Hovered, State.Hovered).backgroundImageId("tab_btn_up_hover");
+    tabUpButton.backgroundImageId("tab_btn_up");
+    //tabUpButton.backgroundImageId("tab_btn_up_normal");
+    //tabUpButton.createState(State.Selected, State.Selected).backgroundImageId("tab_btn_up_selected");
+    //tabUpButton.createState(State.Selected|State.Focused, State.Selected|State.Focused).backgroundImageId("tab_btn_up_focused_selected");
+    //tabUpButton.createState(State.Focused, State.Focused).backgroundImageId("tab_btn_up_focused");
+    //tabUpButton.createState(State.Hovered, State.Hovered).backgroundImageId("tab_btn_up_hover");
     Style tabHost = res.createSubstyle("TAB_HOST");
     tabHost.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
     tabHost.backgroundColor(0xF0F0F0);

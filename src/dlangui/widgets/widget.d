@@ -4,7 +4,8 @@ public import dlangui.core.types;
 public import dlangui.core.events;
 public import dlangui.widgets.styles;
 public import dlangui.graphics.drawbuf;
-public import dlangui.graphics.images;
+//public import dlangui.graphics.images;
+public import dlangui.graphics.resources;
 public import dlangui.graphics.fonts;
 public import dlangui.core.i18n;
 

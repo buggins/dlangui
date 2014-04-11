@@ -312,6 +312,7 @@
      <File path="src\dlangui\graphics\gldrawbuf.d" />
      <File path="src\dlangui\graphics\glsupport.d" />
      <File path="src\dlangui\graphics\images.d" />
+     <File path="src\dlangui\graphics\resources.d" />
     </Folder>
     <Folder name="platforms">
      <Folder name="common">

@@ -193,3 +193,20 @@ wstring fromWStringz(const(wchar[]) s) {
 	return cast(wstring)(s[0..i].dup);
 }
 
+
+/// widget state flags - bits
+enum State : uint {
+    /// state not specified / normal
+    Normal = 0,
+    Pressed = 1,
+    Focused = 2,
+    Enabled = 4,
+    Hovered = 8, // mouse pointer is over control, buttons not pressed
+    Selected = 16,
+    Checkable = 32,
+    Checked = 64,
+    Activated = 128,
+    WindowFocused = 256,
+    Parent = 0x10000, // use parent's state
+}
+
