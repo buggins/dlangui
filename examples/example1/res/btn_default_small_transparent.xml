@@ -5,19 +5,24 @@
   android:variablePadding="false" >
   <item
     android:drawable="btn_default_small_normal_disable_focused"
-    android:state_enabled="false" />
+    color_transform_add1="100,0,0,0"
+    android:state_enabled="false"
     android:state_focused="true" />
   <item
     android:drawable="btn_default_small_normal_disable"
+    color_transform_add1="100,0,0,0"
     android:state_focused="true" />
   <item
     android:drawable="btn_default_small_pressed"
+    color_transform_add1="100,0,0,0"
     android:state_pressed="true" />
   <item
     android:drawable="btn_default_small_selected"
+    color_transform_add1="100,0,0,0"
     android:state_selected="true" />
   <item
     android:drawable="btn_default_small_normal_hover"
+    color_transform_add1="100,0,0,0"
     android:state_hovered="true" />
   <item
     android:drawable="@null" />

@@ -155,6 +155,7 @@ class TabControl : WidgetGroup {
         _moreButton = new ImageButton("MORE", "tab_more");
         _moreButton.styleId = "BUTTON_TRANSPARENT";
         _moreButton.onClickListener = &onClick;
+        _moreButton.margins(Rect(3,3,3,6));
         _enableCloseButton = true;
         styleId = "TAB_UP";
         addChild(_moreButton); // first child is always MORE button, the rest corresponds to tab list

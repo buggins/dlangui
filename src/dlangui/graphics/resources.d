@@ -7,6 +7,7 @@ import std.file;
 import std.algorithm;
 import std.xml;
 import std.algorithm;
+import std.conv;
 
 
 class Drawable : RefCountedObject {
@@ -230,6 +231,7 @@ class StateDrawable : Drawable {
     static struct StateItem {
         uint stateMask;
         uint stateValue;
+        ColorTransform transform;
         DrawableRef drawable;
         @property bool matchState(uint state) {
             return (stateMask & state) == stateValue;
@@ -242,11 +244,11 @@ class StateDrawable : Drawable {
     // max drawable size for all states
     protected Point _size;
 
-    void addState(uint stateMask, uint stateValue, string resourceId) {
+    void addState(uint stateMask, uint stateValue, string resourceId, ref ColorTransform transform) {
         StateItem item;
         item.stateMask = stateMask;
         item.stateValue = stateValue;
-        item.drawable = drawableCache.get(resourceId);
+        item.drawable = drawableCache.get(resourceId, transform);
         itemAdded(item);
     }
 
@@ -269,15 +271,69 @@ class StateDrawable : Drawable {
         }
     }
 
+    /// parse 4 comma delimited integers
+    static bool parseList4(T)(string value, ref T[4] items) {
+        int index = 0;
+        int p = 0;
+        int start = 0;
+        for (;p < value.length && index < 4; p++) {
+            while (p < value.length && value[p] != ',')
+                p++;
+            if (p > start) {
+                int end = p;
+                string s = value[start .. end];
+                items[index++] = to!T(s);
+                start = p + 1;
+            }
+        }
+        return index == 4;
+    }
+    private static uint colorTransformFromStringAdd(string value) {
+        if (value is null)
+            return COLOR_TRANSFORM_OFFSET_NONE;
+        int n[4];
+        if (!parseList4(value, n))
+            return COLOR_TRANSFORM_OFFSET_NONE;
+        foreach (ref item; n) {
+            item = item / 2 + 0x80;
+            if (item < 0)
+                item = 0;
+            if (item > 0xFF)
+                item = 0xFF;
+        }
+        return (n[0] << 24) | (n[1] << 16) | (n[2] << 8) | (n[3] << 0);
+    }
+    private static uint colorTransformFromStringMult(string value) {
+        if (value is null)
+            return COLOR_TRANSFORM_MULTIPLY_NONE;
+        float n[4];
+        uint nn[4];
+        if (!parseList4!float(value, n))
+            return COLOR_TRANSFORM_MULTIPLY_NONE;
+        for(int i = 0; i < 4; i++) {
+            int res = cast(int)(n[i] * 0x40);
+            if (res < 0)
+                res = 0;
+            if (res > 0xFF)
+                res = 0xFF;
+            nn[i] = res;
+        }
+        return (nn[0] << 24) | (nn[1] << 16) | (nn[2] << 8) | (nn[3] << 0);
+    }
+
     bool load(Element element) {
         foreach(item; element.elements) {
             if (item.tag.name.equal("item")) {
                 string drawableId = attrValue(item, "drawable", "android:drawable");
+                ColorTransform transform;
+                transform.addBefore = colorTransformFromStringAdd(attrValue(item, "color_transform_add1", "android:transform_color_add1"));
+                transform.multiply = colorTransformFromStringMult(attrValue(item, "color_transform_mul", "android:transform_color_mul"));
+                transform.addAfter = colorTransformFromStringAdd(attrValue(item, "color_transform_add2", "android:transform_color_add2"));
                 if (drawableId !is null) {
                     uint stateMask, stateValue;
                     extractStateFlags(item.tag.attr, stateMask, stateValue);
                     if (drawableId !is null) {
-                        addState(stateMask, stateValue, drawableId);
+                        addState(stateMask, stateValue, drawableId, transform);
                     }
                 }
             }
@@ -341,21 +397,41 @@ class ImageCache {
     static class ImageCacheItem {
         string _filename;
         DrawBufRef _drawbuf;
+        DrawBufRef[ColorTransform] _transformMap;
+
         bool _error; // flag to avoid loading of file if it has been failed once
         bool _used;
         this(string filename) {
             _filename = filename;
         }
+        /// get normal image
         @property ref DrawBufRef get() {
             if (!_drawbuf.isNull || _error) {
                 _used = true;
                 return _drawbuf;
             }
             _drawbuf = loadImage(_filename);
+            if (_filename.endsWith(".9.png"))
+                _drawbuf.detectNinePatch();
             _used = true;
             if (_drawbuf.isNull)
                 _error = true;
             return _drawbuf;
+        }
+        /// get color transformed image
+        @property ref DrawBufRef get(ref ColorTransform transform) {
+            if (transform.empty)
+                return get();
+            if (transform in _transformMap)
+                return _transformMap[transform];
+            DrawBufRef src = get();
+            if (src.isNull)
+                _transformMap[transform] = src;
+            else {            
+                DrawBufRef t = src.transformColors(transform);
+                _transformMap[transform] = t;
+            }
+            return _transformMap[transform];
         }
         /// remove from memory, will cause reload on next access
         void compact() {
@@ -382,6 +458,17 @@ class ImageCache {
         ImageCacheItem item = new ImageCacheItem(filename);
         _map[filename] = item;
         return item.get;
+    }
+    /// get and cache color transformed image
+    ref DrawBufRef get(string filename, ref ColorTransform transform) {
+        if (transform.empty)
+            return get(filename);
+        if (filename in _map) {
+            return _map[filename].get(transform);
+        }
+        ImageCacheItem item = new ImageCacheItem(filename);
+        _map[filename] = item;
+        return item.get(transform);
     }
 	// clear usage flags for all entries
 	void checkpoint() {
@@ -424,7 +511,7 @@ __gshared DrawableCache _drawableCache;
 @property void drawableCache(DrawableCache cache) { 
 	if (_drawableCache !is null)
 		destroy(_drawableCache);
-	_drawableCache = cache; 
+	_drawableCache = cache;
 }
 
 shared static this() {
@@ -440,6 +527,8 @@ class DrawableCache {
         bool _error;
         bool _used;
         DrawableRef _drawable;
+        DrawableRef[ColorTransform] _transformed;
+
 		//private int _instanceCount;
         this(string id, string filename, bool tiled) {
             _id = id;
@@ -494,6 +583,39 @@ class DrawableCache {
             }
             return _drawable;
         }
+        /// returns drawable (loads from file if necessary)
+        @property ref DrawableRef drawable(ref ColorTransform transform) {
+            if (transform.empty)
+                return drawable();
+            if (transform in _transformed)
+                return _transformed[transform];
+            _used = true;
+            if (!_drawable.isNull || _error)
+                return _drawable;
+            if (_filename !is null) {
+                // reload from file
+                if (_filename.endsWith(".xml")) {
+                    // XML drawables support
+                    StateDrawable d = new StateDrawable();
+                    if (!d.load(_filename)) {
+                        destroy(d);
+                        _error = true;
+                    } else {
+                        _drawable = d;
+                    }
+                } else {
+                    // PNG/JPEG drawables support
+                    DrawBufRef image = imageCache.get(_filename, transform);
+                    if (!image.isNull) {
+                        bool ninePatch = _filename.endsWith(".9.png");
+                        _transformed[transform] = new ImageDrawable(image, _tiled, ninePatch);
+                        return _transformed[transform];
+                    } else
+                        _error = true;
+                }
+            }
+            return _drawable;
+        }
     }
     void clear() {
 		Log.d("DrawableCache.clear()");
@@ -531,6 +653,24 @@ class DrawableCache {
         DrawableCacheItem item = new DrawableCacheItem(id, filename, tiled);
         _idToDrawableMap[id] = item;
         return item.drawable;
+    }
+    ref DrawableRef get(string id, ref ColorTransform transform) {
+        if (transform.empty)
+            return get(id);
+        if (id.equal("@null"))
+            return _nullDrawable;
+        if (id in _idToDrawableMap)
+            return _idToDrawableMap[id].drawable(transform);
+        string resourceId = id;
+        bool tiled = false;
+        if (id.endsWith(".tiled")) {
+            resourceId = id[0..$-6]; // remove .tiled
+            tiled = true;
+        }
+        string filename = findResource(resourceId);
+        DrawableCacheItem item = new DrawableCacheItem(id, filename, tiled);
+        _idToDrawableMap[id] = item;
+        return item.drawable(transform);
     }
     @property string[] resourcePaths() {
         return _resourcePaths;

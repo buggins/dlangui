@@ -20,5 +20,6 @@
     android:drawable="btn_default_small_normal_hover"
     android:state_hovered="true" />
   <item
-    android:drawable="btn_default_small_normal" />
+    android:drawable="btn_default_small_normal" 
+   />
 </selector>

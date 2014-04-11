@@ -4,7 +4,7 @@ public import dlangui.core.types;
 import dlangui.core.logger;
 
 immutable uint COLOR_TRANSFORM_OFFSET_NONE = 0x80808080;
-immutable uint COLOR_TRANSFORM_MULTIPLY_NONE = 0x80808080;
+immutable uint COLOR_TRANSFORM_MULTIPLY_NONE = 0x40404040;
 
 /// blend two RGB pixels using alpha
 uint blendARGB(uint dst, uint src, uint alpha) {
@@ -31,6 +31,16 @@ ubyte rgbToGray(uint color) {
     return cast(uint)(((srcr + srcg + srcg + srcb) >> 2) & 0xFF);
 }
 
+// todo
+struct ColorTransformHandler {
+    void init(ref ColorTransform transform) {
+
+    }
+    uint transform(uint color) {
+        return color;
+    }
+}
+
 uint transformComponent(int src, int addBefore, int multiply, int addAfter) {
     int add1 = (cast(int)(addBefore << 1)) - 0x100;
     int add2 = (cast(int)(addAfter << 1)) - 0x100;
@@ -50,6 +60,21 @@ uint transformRGBA(uint src, uint addBefore, uint multiply, uint addAfter) {
     uint b = transformComponent(src & 0xFF, addBefore & 0xFF, multiply & 0xFF, addAfter & 0xFF);
     return (a << 24) | (r << 16) | (g << 8) | b;
 }
+
+struct ColorTransform {
+    uint addBefore = COLOR_TRANSFORM_OFFSET_NONE;
+    uint multiply = COLOR_TRANSFORM_MULTIPLY_NONE;
+    uint addAfter = COLOR_TRANSFORM_OFFSET_NONE;
+    @property bool empty() const {
+        return addBefore == COLOR_TRANSFORM_OFFSET_NONE 
+            && multiply == COLOR_TRANSFORM_MULTIPLY_NONE
+            && addAfter == COLOR_TRANSFORM_OFFSET_NONE;
+    }
+    uint transform(uint color) {
+        return transformRGBA(color, addBefore, multiply, addAfter);
+    }
+}
+
 
 /// blend two RGB pixels using alpha
 ubyte blendGray(ubyte dst, ubyte src, uint alpha) {
@@ -262,7 +287,7 @@ class DrawBuf : RefCountedObject {
     }
 
     /// create drawbuf with copy of current buffer with changed colors (returns this if not supported)
-    DrawBuf transformColors(uint addBefore, uint multiply, uint addAfter) {
+    DrawBuf transformColors(ref ColorTransform transform) {
         return this;
     }
 
@@ -706,15 +731,27 @@ class ColorDrawBuf : ColorDrawBufBase {
         for (int i = 0; i < len; i++)
             p[i] = color;
     }
-    override DrawBuf transformColors(uint addBefore, uint multiply, uint addAfter) {
-        if (addBefore == COLOR_TRANSFORM_OFFSET_NONE && addAfter == COLOR_TRANSFORM_OFFSET_NONE && multiply == COLOR_TRANSFORM_MULTIPLY_NONE)
+    override DrawBuf transformColors(ref ColorTransform transform) {
+        if (transform.empty)
             return this;
+        bool skipFrame = hasNinePatch;
         ColorDrawBuf res = new ColorDrawBuf(_dx, _dy);
+        if (hasNinePatch) {
+            NinePatch * p = new NinePatch;
+            *p = *_ninePatch;
+            res.ninePatch = p;
+        }
         for (int y = 0; y < _dy; y++) {
             uint * srcline = scanLine(y);
             uint * dstline = res.scanLine(y);
-            for (int x = 0; x < _dx; x++)
-                dstline[x] = transformRGBA(srcline[x], addBefore, multiply, addAfter);
+            bool allowTransformY = !skipFrame || (y !=0 && y != _dy - 1);
+            for (int x = 0; x < _dx; x++) {
+                bool allowTransformX = !skipFrame || (x !=0 && x != _dx - 1);
+                if (!allowTransformX || !allowTransformY)
+                    dstline[x] = srcline[x];
+                else
+                    dstline[x] = transform.transform(srcline[x]);
+            }
         }
         return res;
     }
