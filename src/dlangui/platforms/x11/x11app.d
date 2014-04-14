@@ -17,7 +17,7 @@ version(linux) {
 	import dlangui.graphics.drawbuf;
 	import dlangui.graphics.fonts;
 	import dlangui.graphics.ftfonts;
-	import dlangui.graphics.images;
+	import dlangui.graphics.resources;
 	import dlangui.widgets.styles;
 	import dlangui.platforms.common.platform;
 	

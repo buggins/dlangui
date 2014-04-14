@@ -177,6 +177,8 @@
     <Compile Include="src\dlangui\core\linestream.d" />
     <Compile Include="src\dlangui\widgets\lists.d" />
     <Compile Include="src\dlangui\widgets\tabs.d" />
+    <Compile Include="src\dlangui\graphics\resources.d" />
+    <Compile Include="src\dlangui\widgets\menu.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\dlangui\platforms\x11\" />
