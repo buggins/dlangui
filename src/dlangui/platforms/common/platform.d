@@ -61,9 +61,10 @@ class Window {
 
     protected PopupWidget[] _popups;
     /// show new popup
-    PopupWidget showPopup(Widget content) {
+    PopupWidget showPopup(Widget content, Widget anchor = null, uint alignment = PopupAlign.Center) {
         PopupWidget res = new PopupWidget(content, this);
-        res.anchor.widget = _mainWidget;
+        res.anchor.widget = anchor !is null ? anchor : _mainWidget;
+        res.anchor.alignment = alignment;
         _popups ~= res;
         if (_mainWidget !is null)
             _mainWidget.requestLayout();
@@ -169,6 +170,12 @@ class Window {
         // override if necessary
     }
 
+
+    protected void setCaptureWidget(Widget w, MouseEvent event) {
+        _mouseCaptureWidget = w;
+        _mouseCaptureButtons = event.flags & (MouseFlag.LButton|MouseFlag.RButton|MouseFlag.MButton);
+    }
+
     protected bool dispatchMouseEvent(Widget root, MouseEvent event) {
         // only route mouse events to visible widgets
         if (root.visibility != Visibility.Visible)
@@ -182,12 +189,11 @@ class Window {
                 return true;
         }
         // if not processed by children, offer event to root
-        if (root.onMouseEvent(event)) {
+        if (sendAndCheckOverride(root, event)) {
             Log.d("MouseEvent is processed");
             if (event.action == MouseAction.ButtonDown && _mouseCaptureWidget is null) {
                 Log.d("Setting active widget");
-                _mouseCaptureWidget = root;
-                _mouseCaptureButtons = event.flags & (MouseFlag.LButton|MouseFlag.RButton|MouseFlag.MButton);
+                setCaptureWidget(root, event);
             } else if (event.action == MouseAction.Move) {
                 addTracking(root);
             }
@@ -256,6 +262,14 @@ class Window {
 		return res;
 	}
 	
+    protected bool sendAndCheckOverride(Widget widget, MouseEvent event) {
+        bool res = widget.onMouseEvent(event);
+        if (event.trackingWidget !is null && _mouseCaptureWidget !is event.trackingWidget) {
+            setCaptureWidget(event.trackingWidget, event);
+        }
+        return res;
+    }
+
     /// dispatch mouse event to window content widgets
     bool dispatchMouseEvent(MouseEvent event) {
         // ignore events if there is no root
@@ -282,11 +296,11 @@ class Window {
                         event.changeAction(MouseAction.FocusOut);
                         _mouseCaptureFocusedOut = true;
 						_mouseCaptureButtons = currentButtons;
-                        _mouseCaptureFocusedOutTrackMovements = _mouseCaptureWidget.onMouseEvent(event);
+                        _mouseCaptureFocusedOutTrackMovements = sendAndCheckOverride(_mouseCaptureWidget, event);
                         return true;
                     } else if (_mouseCaptureFocusedOutTrackMovements) {
 						// pointer is outside, but we still need to track pointer
-                        return _mouseCaptureWidget.onMouseEvent(event);
+                        return sendAndCheckOverride(_mouseCaptureWidget, event);
                     }
 					// don't forward message
                     return true;
@@ -298,7 +312,7 @@ class Window {
 							return dispatchCancel(event);
                        	event.changeAction(MouseAction.FocusIn); // back in after focus out
                     }
-                    return _mouseCaptureWidget.onMouseEvent(event);
+                    return sendAndCheckOverride(_mouseCaptureWidget, event);
                 }
             } else if (event.action == MouseAction.Leave) {
                 if (!_mouseCaptureFocusedOut) {
@@ -306,12 +320,12 @@ class Window {
                     event.changeAction(MouseAction.FocusOut);
                     _mouseCaptureFocusedOut = true;
 					_mouseCaptureButtons = event.flags & (MouseFlag.LButton|MouseFlag.RButton|MouseFlag.MButton);
-                    return _mouseCaptureWidget.onMouseEvent(event);
+                    return sendAndCheckOverride(_mouseCaptureWidget, event);
                 }
                 return true;
             }
             // other messages
-            res = _mouseCaptureWidget.onMouseEvent(event);
+            res = sendAndCheckOverride(_mouseCaptureWidget, event);
             if (!currentButtons) {
                 // usable capturing - no more buttons pressed
                 Log.d("unsetting active widget");
@@ -324,6 +338,10 @@ class Window {
             processed = checkRemoveTracking(event);
         }
         if (!res) {
+            foreach(p; _popups) {
+                if (dispatchMouseEvent(p, event))
+                    return true;
+            }
             res = dispatchMouseEvent(_mainWidget, event);
         }
         return res || processed;

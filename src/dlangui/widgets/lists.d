@@ -211,6 +211,7 @@ class ListWidget : WidgetGroup, OnScrollHandler {
                 sz.x += w.measuredWidth;
             }
         }
+        _needScrollbar = false;
         if (_orientation == Orientation.Vertical) {
             if (pheight != SIZE_UNSPECIFIED && sz.y > pheight) {
                 // need scrollbar
@@ -329,6 +330,7 @@ class ListWidget : WidgetGroup, OnScrollHandler {
         }
         _pos = rc;
 
+        Rect parentrc = rc;
         applyMargins(rc);
         applyPadding(rc);
 
@@ -337,7 +339,7 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 
         // measure again if client size has been changed
         if (_lastMeasureWidth != rc.width || _lastMeasureHeight != rc.height)
-            measure(rc.width, rc.height);
+            measure(parentrc.width, parentrc.height);
 
         // layout scrollbar
         if (_needScrollbar) {

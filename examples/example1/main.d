@@ -50,7 +50,11 @@ extern (C) int UIAppMain(string[] args) {
 	static if (true) {
         VerticalLayout contentLayout = new VerticalLayout();
         MenuItem mainMenuItems = new MenuItem();
-        mainMenuItems.add(new Action(1, "File"d));
+        MenuItem fileItem = new MenuItem(new Action(1, "File"d));
+        fileItem.add(new Action(10, "Open..."d));
+        fileItem.add(new Action(11, "Save..."d));
+        fileItem.add(new Action(12, "Exit"d));
+        mainMenuItems.add(fileItem);
         mainMenuItems.add(new Action(2, "Edit"d));
         mainMenuItems.add(new Action(3, "Window"d));
         mainMenuItems.add(new Action(4, "Help"d));
@@ -66,7 +70,7 @@ extern (C) int UIAppMain(string[] args) {
 		layout.addChild((new TextWidget()).textColor(0x40FF4000).text("Text widget"));
 		layout.addChild((new Button("BTN1")).textResource("EXIT")); //.textColor(0x40FF4000)
 		
-		
+		static if (false) {
 		
 
 	    LinearLayout hlayout = new HorizontalLayout();
@@ -107,18 +111,21 @@ extern (C) int UIAppMain(string[] args) {
 		layout.childById("BTN2").onClickListener(delegate (Widget w) { Log.d("onClick ", w.id); return true; });
 		layout.childById("BTN3").onClickListener(delegate (Widget w) { Log.d("onClick ", w.id); return true; });
 
+        }
 
 		layout.layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT);
 
         tabs.addTab(layout, "Tab 1"d);
 
-        ListWidget list = new ListWidget("tab2", Orientation.Vertical);
-        WidgetListAdapter listAdapter = new WidgetListAdapter();
-        for (int i = 0; i < 3000; i++)
-            listAdapter.widgets.add((new TextWidget()).text("List item "d ~ to!dstring(i)));
-        list.ownAdapter = listAdapter;
-        list.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
-        tabs.addTab(list, "Lists"d);
+        static if (false) {
+            ListWidget list = new ListWidget("tab2", Orientation.Vertical);
+            WidgetListAdapter listAdapter = new WidgetListAdapter();
+            for (int i = 0; i < 3000; i++)
+                listAdapter.widgets.add((new TextWidget()).text("List item "d ~ to!dstring(i)));
+            list.ownAdapter = listAdapter;
+            list.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+            tabs.addTab(list, "Lists"d);
+        }
 
         tabs.addTab((new TextWidget()).id("tab3").textColor(0x00802000).text("Tab 3 contents"), "Tab 3"d);
         tabs.addTab((new TextWidget()).id("tab4").textColor(0x00802000).text("Tab 4 contents some long string"), "Tab 4"d);

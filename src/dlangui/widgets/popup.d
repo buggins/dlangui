@@ -4,9 +4,17 @@ import dlangui.widgets.widget;
 import dlangui.widgets.layouts;
 import dlangui.platforms.common.platform;
 
+/// popup alignment option flags
+enum PopupAlign : uint {
+    /// center popup around anchor widget center
+    Center = 1,
+    /// place popup below anchor widget close to lower bound
+    Below = 2,
+}
+
 struct PopupAnchor {
     Widget widget;
-    Align  alignment;
+    uint  alignment = PopupAlign.Center;
 }
 
 /// popup widget container
@@ -36,24 +44,33 @@ class PopupWidget : LinearLayout {
             w = rc.width;
         if (h > rc.height)
             h = rc.height;
-        int extraw = rc.width - w;
-        int extrah = rc.height - h;
+
+        Rect anchorrc;
+        if (anchor.widget !is null)
+            anchorrc = anchor.widget.pos;
+        else
+            anchorrc = rc;
 
         Rect r;
-        if (anchor.widget !is null)
-            r = anchor.widget.pos;
-        else
-            r = rc;
-        r.left += extraw / 2;
-        r.top += extrah / 2;
-        r.right -= extraw / 2;
-        r.bottom -= extrah / 2;
+        Point anchorPt;
+
+        if (anchor.alignment & PopupAlign.Center) {
+            // center around center of anchor widget
+            r.left = anchorrc.middlex - w / 2;
+            r.top = anchorrc.middley - h / 2;
+        } else if (anchor.alignment & PopupAlign.Below) {
+            r.left = anchorrc.left;
+            r.top = anchorrc.bottom;
+        }
+        r.right = r.left + w;
+        r.bottom = r.top + h;
+        r.moveToFit(rc);
         super.layout(r);
     }
 
     this(Widget content, Window window) {
         _window = window;
-        styleId = "POPUP_MENU";
+        //styleId = "POPUP_MENU";
         addChild(content);
     }
 }

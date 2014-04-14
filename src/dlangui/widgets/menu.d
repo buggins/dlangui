@@ -4,6 +4,7 @@ import dlangui.core.events;
 import dlangui.widgets.controls;
 import dlangui.widgets.layouts;
 import dlangui.widgets.lists;
+import dlangui.widgets.popup;
 
 class MenuItem {
     protected bool _checkable;
@@ -55,9 +56,18 @@ class MenuItem {
     }
 }
 
+interface MenuItemWidgetHandler {
+    bool onItemMouseDown(MenuItemWidget itemWidget, MouseEvent ev);
+    bool onItemMouseUp(MenuItemWidget itemWidget, MouseEvent ev);
+}
+
 class MenuItemWidget : HorizontalLayout {
     protected MenuItem _item;
     protected TextWidget _label;
+    protected MenuItemWidgetHandler _handler;
+    @property MenuItemWidgetHandler handler() { return _handler; }
+    @property MenuItemWidget handler(MenuItemWidgetHandler h) { _handler = h; return this; }
+    @property MenuItem item() { return _item; }
     this(MenuItem item) {
         id="menuitem";
         _item = item;
@@ -67,21 +77,73 @@ class MenuItemWidget : HorizontalLayout {
         addChild(_label);
         trackHover = true;
     }
+
+    /// process mouse event; return true if event is processed by widget.
+    override bool onMouseEvent(MouseEvent event) {
+        Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
+		// support onClick
+		if (_handler !is null) {
+	        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
+	            setState(State.Pressed);
+                _handler.onItemMouseDown(this, event);
+	            return true;
+	        }
+	        if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
+	            resetState(State.Pressed);
+                _handler.onItemMouseDown(this, event);
+	            return true;
+	        }
+            /*
+	        if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
+	            resetState(State.Pressed);
+				_onClickListener(this);
+	            return true;
+	        }
+	        if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {
+	            resetState(State.Pressed);
+	            resetState(State.Hovered);
+	            return true;
+	        }
+	        if (event.action == MouseAction.FocusIn) {
+	            setState(State.Pressed);
+	            return true;
+	        }
+            */
+		}
+        return super.onMouseEvent(event);
+    }
+
 }
 
-class MainMenu : HorizontalLayout {
+class MainMenu : HorizontalLayout, MenuItemWidgetHandler {
     protected MenuItem _item;
-    protected bool onItemClick(Widget w) {
-        Log.d("onItemClick ", w.id);
+
+    override protected bool onItemMouseDown(MenuItemWidget itemWidget, MouseEvent ev) {
+        PopupMenu popupMenu = new PopupMenu(itemWidget.item);
+        PopupWidget popup = window.showPopup(popupMenu, itemWidget, PopupAlign.Below);
+        ev.track(popupMenu);
         return true;
     }
+    override protected bool onItemMouseUp(MenuItemWidget itemWidget, MouseEvent ev) {
+        return true;
+    }
+
+    /*
+    protected bool onItemClick(Widget w) {
+        MenuItemWidget itemWidget = cast(MenuItemWidget)w;
+        Log.d("onItemClick ", w.id);
+        window.showPopup(new PopupMenu(itemWidget.item), itemWidget, PopupAlign.Below);
+        return true;
+    }
+    */
     this(MenuItem item) {
         id = "MAIN_MENU";
         styleId = "MAIN_MENU";
         _item = item;
         for (int i = 0; i < item.subitemCount; i++) {
 			MenuItemWidget subitem = new MenuItemWidget(item.subitem(i));
-            subitem.onClickListener = &onItemClick;
+            //subitem.onClickListener = &onItemClick;
+            subitem.handler = this;
             addChild(subitem);
         }
         addChild((new Widget()).layoutWidth(FILL_PARENT));

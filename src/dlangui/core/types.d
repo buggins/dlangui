@@ -46,6 +46,24 @@ struct Rect {
     @property bool empty() {
         return right <= left || bottom <= top;
     }
+    void moveBy(int deltax, int deltay) {
+        left += deltax;
+        right += deltax;
+        top += deltay;
+        bottom += deltay;
+    }
+    /// moves this rect to fit rc bounds, retaining the same size
+    void moveToFit(ref Rect rc) {
+        if (right > rc.right)
+            moveBy(rc.right - right, 0);
+        if (bottom > rc.bottom)
+            moveBy(0, rc.bottom - bottom);
+        if (left < rc.left)
+            moveBy(rc.left - left, 0);
+        if (top < rc.top)
+            moveBy(0, rc.top - top);
+
+    }
     /// updates this rect to intersection with rc, returns true if result is non empty
     bool intersect(Rect rc) {
         if (left < rc.left)

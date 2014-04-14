@@ -1,6 +1,7 @@
 module dlangui.core.events;
 
 import dlangui.core.i18n;
+private import dlangui.widgets.widget;
 
 import std.conv;
 
@@ -129,6 +130,7 @@ class MouseEvent {
 	protected short _y;
 	protected ushort _flags;
 	protected short _wheelDelta;
+    protected Widget _trackingWidget;
 	protected ButtonDetails _lbutton;
 	protected ButtonDetails _mbutton;
 	protected ButtonDetails _rbutton;
@@ -142,6 +144,12 @@ class MouseEvent {
 	@property short wheelDelta() { return _wheelDelta; }
 	@property short x() { return _x; }
 	@property short y() { return _y; }
+    /// get event tracking widget to override
+	@property Widget trackingWidget() { return _trackingWidget; }
+    /// override mouse tracking widget
+    void track(Widget w) {
+        _trackingWidget = w;
+    }
     this (MouseEvent e) {
         _eventTimestamp = e._eventTimestamp;
 		_action = e._action;
