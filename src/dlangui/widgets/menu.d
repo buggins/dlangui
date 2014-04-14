@@ -48,6 +48,7 @@ class MenuItemWidget : HorizontalLayout {
     protected MenuItem _item;
     protected TextWidget _label;
     this(MenuItem item) {
+        id="menuitem";
         _item = item;
         styleId = "MENU_ITEM";
         _label = new TextWidget("MENU_LABEL");
@@ -65,10 +66,6 @@ class MainMenu : HorizontalLayout {
         _item = item;
         for (int i = 0; i < item.subitemCount; i++) {
 			MenuItemWidget subitem = new MenuItemWidget(item.subitem(i));
-			if (i == 1)
-				subitem.setState(State.Focused);
-			else if (i == 2)
-				subitem.setState(State.Pressed);
             addChild(subitem);
 			
         }

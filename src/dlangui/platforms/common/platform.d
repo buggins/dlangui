@@ -123,7 +123,6 @@ class Window {
                 _mouseCaptureWidget = root;
                 _mouseCaptureButtons = event.flags & (MouseFlag.LButton|MouseFlag.RButton|MouseFlag.MButton);
             } else if (event.action == MouseAction.Move) {
-                Log.d("Setting tracking widget");
                 addTracking(root);
             }
             return true;
@@ -135,10 +134,15 @@ class Window {
     //protected Widget _mouseTrackingWidget;
     protected Widget[] _mouseTrackingWidgets;
     private void addTracking(Widget w) {
-        foreach(widget; _mouseTrackingWidgets)
-            if (widget is w)
+        for(int i = 0; i < _mouseTrackingWidgets.length; i++)
+            if (w is _mouseTrackingWidgets[i])
                 return;
+        //foreach(widget; _mouseTrackingWidgets)
+        //    if (widget is w)
+        //       return;
+        //Log.d("addTracking ", w.id, " items before: ", _mouseTrackingWidgets.length);
         _mouseTrackingWidgets ~= w;
+        //Log.d("addTracking ", w.id, " items after: ", _mouseTrackingWidgets.length);
     }
     private bool checkRemoveTracking(MouseEvent event) {
         import std.algorithm;
@@ -146,7 +150,11 @@ class Window {
         for(int i = _mouseTrackingWidgets.length - 1; i >=0; i--) {
             Widget w = _mouseTrackingWidgets[i];
             if (!_mainWidget.isChild(w)) {
-                _mouseTrackingWidgets.remove(i);
+                // std.algorithm.remove does not work for me
+                //_mouseTrackingWidgets.remove(i);
+                for (int j = i; j < _mouseTrackingWidgets.length - 1; j++)
+                    _mouseTrackingWidgets[j] = _mouseTrackingWidgets[j + 1];
+                _mouseTrackingWidgets.length--;
                 continue;
             }
             if (!w.isPointInside(event.x, event.y)) {
@@ -154,7 +162,14 @@ class Window {
                 MouseEvent leaveEvent = new MouseEvent(event);
                 leaveEvent.changeAction(MouseAction.Leave);
                 res = w.onMouseEvent(leaveEvent) || res;
-                _mouseTrackingWidgets.remove(i);
+                // std.algorithm.remove does not work for me
+                //Log.d("removeTracking ", w.id, " items before: ", _mouseTrackingWidgets.length);
+                //_mouseTrackingWidgets.remove(i);
+                //_mouseTrackingWidgets.length--;
+                for (int j = i; j < _mouseTrackingWidgets.length - 1; j++)
+                    _mouseTrackingWidgets[j] = _mouseTrackingWidgets[j + 1];
+                _mouseTrackingWidgets.length--;
+                //Log.d("removeTracking ", w.id, " items after: ", _mouseTrackingWidgets.length);
             }
         }
         return res;

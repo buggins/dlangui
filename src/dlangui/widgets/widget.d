@@ -306,7 +306,7 @@ class Widget {
 
     /// process mouse event; return true if event is processed by widget.
     bool onMouseEvent(MouseEvent event) {
-        //Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
+        Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
 		// support onClick
 		if (_onClickListener !is null) {
 	        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
