@@ -250,6 +250,12 @@ class Widget {
     @property int width() { return _pos.width; }
     /// returns current height of widget in pixels
     @property int height() { return _pos.height; }
+    /// returns widget rectangle top position
+    @property int top() { return _pos.top; }
+    /// returns widget rectangle left position
+    @property int left() { return _pos.left; }
+    /// returns widget rectangle
+    @property Rect pos() { return _pos; }
     /// returns min width constraint
     @property int minWidth() { return style.minWidth; }
     /// returns max width constraint (SIZE_UNSPECIFIED if no constraint set)

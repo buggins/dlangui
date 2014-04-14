@@ -2,8 +2,9 @@ module dlangui.platforms.common.platform;
 
 public import dlangui.core.events;
 import dlangui.widgets.widget;
+import dlangui.widgets.popup;
 import dlangui.graphics.drawbuf;
-import std.file;
+
 private import dlangui.graphics.gldrawbuf;
 
 class Window {
@@ -26,6 +27,21 @@ class Window {
     abstract void show();
     abstract @property string windowCaption();
     abstract @property void windowCaption(string caption);
+    void measure() {
+        if (_mainWidget !is null) {
+            _mainWidget.measure(_dx, _dy);
+        }
+        foreach(p; _popups)
+            p.measure(_dx, _dy);
+    }
+    void layout() {
+        Rect rc = Rect(0, 0, _dx, _dy);
+        if (_mainWidget !is null) {
+            _mainWidget.layout(rc);
+        }
+        foreach(p; _popups)
+            p.layout(rc);
+    }
     void onResize(int width, int height) {
         if (_dx == width && _dy == height)
             return;
@@ -34,16 +50,53 @@ class Window {
         if (_mainWidget !is null) {
             Log.d("onResize ", _dx, "x", _dy);
             long measureStart = currentTimeMillis;
-            _mainWidget.measure(_dx, _dy);
+            measure();
             long measureEnd = currentTimeMillis;
             Log.d("measure took ", measureEnd - measureStart, " ms");
-            _mainWidget.layout(Rect(0, 0, _dx, _dy));
+            layout();
             long layoutEnd = currentTimeMillis;
             Log.d("layout took ", layoutEnd - measureEnd, " ms");
         }
     }
 
-    long lastDrawTs;
+    protected PopupWidget[] _popups;
+    /// show new popup
+    PopupWidget showPopup(Widget content) {
+        PopupWidget res = new PopupWidget(content, this);
+        res.anchor.widget = _mainWidget;
+        _popups ~= res;
+        if (_mainWidget !is null)
+            _mainWidget.requestLayout();
+        return res;
+    }
+    /// remove popup
+    bool removePopup(PopupWidget popup) {
+        for (int i = 0; i < _popups.length; i++) {
+            PopupWidget p = _popups[i];
+            if (p is popup) {
+                for (int j = i; j < _popups.length - 1; j++)
+                    _popups[j] = _popups[j + 1];
+                _popups.length--;
+                destroy(p);
+                // force redraw
+                _mainWidget.invalidate();
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// returns true if widget is child of either main widget or one of popups
+    bool isChild(Widget w) {
+        if (_mainWidget !is null && _mainWidget.isChild(w))
+            return true;
+        foreach(p; _popups)
+            if (p.isChild(w))
+                return true;
+        return false;
+    }
+
+    private long lastDrawTs;
 
 	this() {
 		_backgroundColor = 0xFFFFFF;
@@ -51,11 +104,16 @@ class Window {
 	~this() {
 		if (_mainWidget !is null) {
 			destroy(_mainWidget);
-		_mainWidget = null;
+		    _mainWidget = null;
 		}
+        foreach(p; _popups)
+            destroy(p);
+        _popups = null;
 	}
 
     private void animate(Widget root, long interval) {
+        if (root is null)
+            return;
         if (root.visibility != Visibility.Visible)
             return;
         for (int i = 0; i < root.childCount; i++)
@@ -64,38 +122,46 @@ class Window {
             root.animate(interval);
     }
 
+    private void animate(long interval) {
+        animate(_mainWidget, interval);
+        foreach(p; _popups)
+            p.animate(interval);
+    }
+
     void onDraw(DrawBuf buf) {
-        if (_mainWidget !is null) {
-            bool needDraw = false;
-            bool needLayout = false;
-            bool animationActive = false;
+        bool needDraw = false;
+        bool needLayout = false;
+        bool animationActive = false;
+        checkUpdateNeeded(needDraw, needLayout, animationActive);
+        if (needLayout || animationActive)
+            needDraw = true;
+        long ts = std.datetime.Clock.currStdTime;
+        if (animationActive && lastDrawTs != 0) {
+            animate(ts - lastDrawTs);
+            // layout required flag could be changed during animate - check again
             checkUpdateNeeded(needDraw, needLayout, animationActive);
-            if (needLayout || animationActive)
-                needDraw = true;
-            long ts = std.datetime.Clock.currStdTime;
-            if (animationActive && lastDrawTs != 0) {
-                animate(_mainWidget, ts - lastDrawTs);
-                // layout required flag could be changed during animate - check again
-                checkUpdateNeeded(needDraw, needLayout, animationActive);
-            }
-            if (needLayout) {
-                long measureStart = currentTimeMillis;
-                _mainWidget.measure(_dx, _dy);
-                long measureEnd = currentTimeMillis;
-                Log.d("measure took ", measureEnd - measureStart, " ms");
-                _mainWidget.layout(Rect(0, 0, _dx, _dy));
-                long layoutEnd = currentTimeMillis;
-                Log.d("layout took ", layoutEnd - measureEnd, " ms");
-                //checkUpdateNeeded(needDraw, needLayout, animationActive);
-            }
-            long drawStart = currentTimeMillis;
-            _mainWidget.onDraw(buf);
-            long drawEnd = currentTimeMillis;
-            Log.d("draw took ", drawEnd - drawStart, " ms");
-            lastDrawTs = ts;
-            if (animationActive)
-                scheduleAnimation();
         }
+        if (needLayout) {
+            long measureStart = currentTimeMillis;
+            measure();
+            long measureEnd = currentTimeMillis;
+            Log.d("measure took ", measureEnd - measureStart, " ms");
+            layout();
+            long layoutEnd = currentTimeMillis;
+            Log.d("layout took ", layoutEnd - measureEnd, " ms");
+            //checkUpdateNeeded(needDraw, needLayout, animationActive);
+        }
+        long drawStart = currentTimeMillis;
+        // draw main widget
+        _mainWidget.onDraw(buf);
+        // draw popups
+        foreach(p; _popups)
+            p.onDraw(buf);
+        long drawEnd = currentTimeMillis;
+        Log.d("draw took ", drawEnd - drawStart, " ms");
+        lastDrawTs = ts;
+        if (animationActive)
+            scheduleAnimation();
     }
 
     /// after drawing, call to schedule redraw if animation is active
@@ -149,7 +215,7 @@ class Window {
         bool res = false;
         for(int i = _mouseTrackingWidgets.length - 1; i >=0; i--) {
             Widget w = _mouseTrackingWidgets[i];
-            if (!_mainWidget.isChild(w)) {
+            if (!isChild(w)) {
                 // std.algorithm.remove does not work for me
                 //_mouseTrackingWidgets.remove(i);
                 for (int j = i; j < _mouseTrackingWidgets.length - 1; j++)
@@ -197,7 +263,7 @@ class Window {
             return false;
 
         // check if _mouseCaptureWidget and _mouseTrackingWidget still exist in child of root widget
-        if (_mouseCaptureWidget !is null && !_mainWidget.isChild(_mouseCaptureWidget))
+        if (_mouseCaptureWidget !is null && !isChild(_mouseCaptureWidget))
             _mouseCaptureWidget = null;
 
         //Log.d("dispatchMouseEvent ", event.action, "  (", event.x, ",", event.y, ")");
@@ -265,6 +331,8 @@ class Window {
 
     /// checks content widgets for necessary redraw and/or layout
     protected void checkUpdateNeeded(Widget root, ref bool needDraw, ref bool needLayout, ref bool animationActive) {
+        if (root is null)
+            return;
         if (!root.visibility == Visibility.Visible)
             return;
         needDraw = root.needDraw || needDraw;
@@ -284,6 +352,8 @@ class Window {
         if (_mainWidget is null)
             return false;
         checkUpdateNeeded(_mainWidget, needDraw, needLayout, animationActive);
+        foreach(p; _popups)
+            checkUpdateNeeded(p, needDraw, needLayout, animationActive);
         return needDraw || needLayout || animationActive;
     }
     /// requests update for window (unless force is true, update will be performed only if layout, redraw or animation is required).
@@ -334,6 +404,7 @@ version (Windows) {
 
 /// returns current executable path only, including last path delimiter
 string exePath() {
+    import std.file;
     string path = thisExePath();
     int lastSlash = 0;
     for (int i = 0; i < path.length; i++)

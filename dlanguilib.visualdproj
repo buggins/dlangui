@@ -329,6 +329,7 @@
      <File path="src\dlangui\widgets\layouts.d" />
      <File path="src\dlangui\widgets\lists.d" />
      <File path="src\dlangui\widgets\menu.d" />
+     <File path="src\dlangui\widgets\popup.d" />
      <File path="src\dlangui\widgets\styles.d" />
      <File path="src\dlangui\widgets\tabs.d" />
      <File path="src\dlangui\widgets\widget.d" />
