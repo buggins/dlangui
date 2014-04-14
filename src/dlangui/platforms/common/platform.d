@@ -338,7 +338,8 @@ class Window {
             processed = checkRemoveTracking(event);
         }
         if (!res) {
-            foreach(p; _popups) {
+            for (int i = cast(int)_popups.length - 1; i >= 0; i--) {
+				auto p = _popups[i];
                 if (dispatchMouseEvent(p, event))
                     return true;
             }

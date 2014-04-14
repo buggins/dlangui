@@ -9,6 +9,12 @@ interface ListAdapter {
     @property int itemCount();
     /// return list item widget by item index
     Widget itemWidget(int index);
+	/// return list item's state flags
+	uint itemState(int index);
+	/// set one or more list item's state flags, returns updated state
+	uint setItemState(int index, uint flags);
+	/// reset one or more list item's state flags, returns updated state
+	uint resetItemState(int index, uint flags);
 }
 
 /// List adapter for simple list of widget instances
@@ -24,6 +30,18 @@ class WidgetListAdapter : ListAdapter {
     override Widget itemWidget(int index) {
         return _widgets.get(index);
     }
+	/// return list item's state flags
+	override uint itemState(int index) {
+		return _widgets.get(index).state;
+	}
+	/// set one or more list item's state flags, returns updated state
+	override uint setItemState(int index, uint flags) {
+		return _widgets.get(index).setState(flags).state;
+	}
+	/// reset one or more list item's state flags, returns updated state
+	override uint resetItemState(int index, uint flags) {
+		return _widgets.get(index).resetState(flags).state;
+	}
 }
 
 /// List
@@ -57,6 +75,10 @@ class ListWidget : WidgetGroup, OnScrollHandler {
     protected Rect _clientRc;
     /// total height of all items for Vertical orientation, or width for Horizontal
     protected int _totalSize;
+	/// item with Hover state, -1 if no such item
+	protected int _hoverItemIndex;
+	/// item with Selected state, -1 if no such item
+	protected int _selectedItemIndex;
 
     /// returns rectangle for item (not scrolled, first item starts at 0,0)
     Rect itemRectNoScroll(int index) {
@@ -129,10 +151,40 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 	this(string ID = null, Orientation orientation = Orientation.Vertical) {
 		super(ID);
         _orientation = orientation;
+		_hoverItemIndex = -1;
+		_selectedItemIndex = -1;
         _scrollbar = new ScrollBar("listscroll", orientation);
         _scrollbar.visibility = Visibility.Gone;
         _scrollbar.onScrollEventListener = &onScrollEvent;
         addChild(_scrollbar);
+	}
+
+	protected void setHoverItem(int index) {
+		if (_hoverItemIndex == index)
+			return;
+		if (_hoverItemIndex != -1) {
+			_adapter.resetItemState(_hoverItemIndex, State.Hovered);
+			invalidate();
+		}
+		_hoverItemIndex = index;
+		if (_hoverItemIndex != -1) {
+			_adapter.setItemState(_hoverItemIndex, State.Hovered);
+			invalidate();
+		}
+	}
+
+	protected void selectItem(int index) {
+		if (_selectedItemIndex == index)
+			return;
+		if (_selectedItemIndex != -1) {
+			_adapter.resetItemState(_selectedItemIndex, State.Selected);
+			invalidate();
+		}
+		_selectedItemIndex = index;
+		if (_selectedItemIndex != -1) {
+			_adapter.setItemState(_selectedItemIndex, State.Selected);
+			invalidate();
+		}
 	}
 
     ~this() {
@@ -402,6 +454,10 @@ class ListWidget : WidgetGroup, OnScrollHandler {
     /// process mouse event; return true if event is processed by widget.
     override bool onMouseEvent(MouseEvent event) {
         Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
+		if (event.action == MouseAction.Leave || event.action == MouseAction.Cancel) {
+			setHoverItem(-1);
+			return true;
+		}
 		// support onClick
         Rect rc = _pos;
         applyMargins(rc);
@@ -419,13 +475,14 @@ class ListWidget : WidgetGroup, OnScrollHandler {
             itemrc.top += rc.top - scrollOffset.y;
             itemrc.bottom += rc.top - scrollOffset.y;
             if (itemrc.isPointInside(Point(event.x, event.y))) {
-                Widget w = itemWidget(i);
-                if (w.onMouseEvent(event)) {
-                    return true;
-                }
+				if (event.flags & (MouseFlag.LButton || MouseFlag.RButton)) {
+					selectItem(i);
+					setHoverItem(-1);
+				} else
+					setHoverItem(i);
             }
 		}
-        return super.onMouseEvent(event);
+        return true;
     }
 
 }

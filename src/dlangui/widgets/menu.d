@@ -84,12 +84,12 @@ class MenuItemWidget : HorizontalLayout {
 		// support onClick
 		if (_handler !is null) {
 	        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
-	            setState(State.Pressed);
+	            setState(State.Selected);
                 _handler.onItemMouseDown(this, event);
 	            return true;
 	        }
 	        if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
-	            resetState(State.Pressed);
+	            resetState(State.Selected);
                 _handler.onItemMouseDown(this, event);
 	            return true;
 	        }
@@ -117,6 +117,10 @@ class MenuItemWidget : HorizontalLayout {
 
 class MainMenu : HorizontalLayout, MenuItemWidgetHandler {
     protected MenuItem _item;
+	protected PopupWidget _openedPopup;
+	protected MenuItemWidget _openedMenu;
+
+
 
     override protected bool onItemMouseDown(MenuItemWidget itemWidget, MouseEvent ev) {
         PopupMenu popupMenu = new PopupMenu(itemWidget.item);

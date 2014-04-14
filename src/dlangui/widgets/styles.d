@@ -668,7 +668,8 @@ Theme createDefaultTheme() {
     Style menuItem = res.createSubstyle("MENU_ITEM").padding(Rect(4,2,4,2)); //.backgroundColor(0xE0E080)   ;
     menuItem.createState(State.Focused, State.Focused).backgroundColor(0x40C0C000);
     menuItem.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
-    menuItem.createState(State.Hovered, State.Hovered).backgroundColor(0x80FFFF00);
+    menuItem.createState(State.Selected, State.Selected).backgroundColor(0x40FFFF00);
+    menuItem.createState(State.Hovered, State.Hovered).backgroundColor(0xC0FFFF00);
 
     Style poopupMenu = res.createSubstyle("POPUP_MENU").backgroundImageId("btn_default_small");
 
