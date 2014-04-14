@@ -326,19 +326,25 @@ class Widget {
 	            setState(State.Pressed);
 	            return true;
 	        }
-            if (event.action == MouseAction.Move && trackHover) {
+		}
+        if (trackHover) {
+	        if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {
+	            resetState(State.Hovered);
+	            return true;
+	        }
+            if (event.action == MouseAction.Move) {
                 if (!(state & State.Hovered)) {
                     Log.d("Hover ", id);
                     setState(State.Hovered);
                 }
 	            return true;
             }
-            if (event.action == MouseAction.Leave && trackHover) {
+            if (event.action == MouseAction.Leave) {
                 Log.d("Leave ", id);
 	            resetState(State.Hovered);
 	            return true;
             }
-		}
+        }
 	    return false;
     }
 
