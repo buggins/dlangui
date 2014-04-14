@@ -64,7 +64,13 @@ class MainMenu : HorizontalLayout {
         styleId = "MAIN_MENU";
         _item = item;
         for (int i = 0; i < item.subitemCount; i++) {
-            addChild(new MenuItemWidget(item.subitem(i)));
+			MenuItemWidget subitem = new MenuItemWidget(item.subitem(i));
+			if (i == 1)
+				subitem.setState(State.Focused);
+			else if (i == 2)
+				subitem.setState(State.Pressed);
+            addChild(subitem);
+			
         }
         addChild((new Widget()).layoutWidth(FILL_PARENT));
     }

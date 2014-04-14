@@ -614,7 +614,8 @@ immutable ATTR_SCROLLBAR_INDICATOR_HORIZONTAL = "scrollbar_indicator_horizontal"
 Theme createDefaultTheme() {
 	Log.d("Creating default theme");
 	Theme res = new Theme("default");
-    res.fontSize(14);
+    //res.fontSize(14);
+    res.fontSize(24);
     Style button = res.createSubstyle("BUTTON").backgroundImageId("btn_default_small").alignment(Align.Center);
     Style buttonTransparent = res.createSubstyle("BUTTON_TRANSPARENT").backgroundImageId("btn_default_small_transparent").alignment(Align.Center);
     Style text = res.createSubstyle("TEXT").margins(Rect(2,2,2,2)).padding(Rect(1,1,1,1));
@@ -664,7 +665,9 @@ Theme createDefaultTheme() {
 	//res.dumpStats();
 
     Style mainMenu = res.createSubstyle("MAIN_MENU").backgroundColor(0xE0E0E0).layoutWidth(FILL_PARENT);
-    Style menuItem = res.createSubstyle("MENU_ITEM").padding(Rect(4,2,4,2)).backgroundColor(0xE0E0E0)   ;
+    Style menuItem = res.createSubstyle("MENU_ITEM").padding(Rect(4,2,4,2)).backgroundColor(0xE0E080)   ;
+    menuItem.createState(State.Focused, State.Focused).backgroundColor(0x40C0C000);
+    menuItem.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
     menuItem.createState(State.Hovered, State.Hovered).backgroundColor(0x80E0E000);
 
 	return res;

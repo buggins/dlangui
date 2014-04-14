@@ -51,6 +51,7 @@ class TabItemWidget : HorizontalLayout {
         _closeButton = new ImageButton("CLOSE");
         _closeButton.styleId = "BUTTON_TRANSPARENT";
         _closeButton.drawableId = "close";
+		_closeButton.trackHover = true;
         _closeButton.onClickListener = &onClick;
         if (_enableCloseButton) {
             _closeButton.visibility = Visibility.Gone;

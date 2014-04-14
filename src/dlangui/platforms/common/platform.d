@@ -137,6 +137,7 @@ class Window {
     protected Widget _mouseCaptureWidget;
 	protected ushort _mouseCaptureButtons;
     protected bool _mouseCaptureFocusedOut;
+	/// does current capture widget want to receive move events even if pointer left it
     protected bool _mouseCaptureFocusedOutTrackMovements;
 	
 	protected bool dispatchCancel(MouseEvent event) {
@@ -172,12 +173,14 @@ class Window {
                         // sending FocusOut message
                         event.changeAction(MouseAction.FocusOut);
                         _mouseCaptureFocusedOut = true;
-						_mouseCaptureButtons = event.flags & (MouseFlag.LButton|MouseFlag.RButton|MouseFlag.MButton);
+						_mouseCaptureButtons = currentButtons;
                         _mouseCaptureFocusedOutTrackMovements = _mouseCaptureWidget.onMouseEvent(event);
                         return true;
                     } else if (_mouseCaptureFocusedOutTrackMovements) {
+						// pointer is outside, but we still need to track pointer
                         return _mouseCaptureWidget.onMouseEvent(event);
                     }
+					// don't forward message
                     return true;
                 } else {
                     // point is inside widget
