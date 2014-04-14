@@ -77,117 +77,64 @@ class MenuItemWidget : HorizontalLayout {
         addChild(_label);
         trackHover = true;
     }
-
-    /// process mouse event; return true if event is processed by widget.
-    override bool onMouseEvent(MouseEvent event) {
-        Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
-		// support onClick
-		if (_handler !is null) {
-	        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
-	            setState(State.Selected);
-                _handler.onItemMouseDown(this, event);
-	            return true;
-	        }
-	        if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
-	            resetState(State.Selected);
-                _handler.onItemMouseDown(this, event);
-	            return true;
-	        }
-            /*
-	        if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
-	            resetState(State.Pressed);
-				_onClickListener(this);
-	            return true;
-	        }
-	        if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {
-	            resetState(State.Pressed);
-	            resetState(State.Hovered);
-	            return true;
-	        }
-	        if (event.action == MouseAction.FocusIn) {
-	            setState(State.Pressed);
-	            return true;
-	        }
-            */
-		}
-        return super.onMouseEvent(event);
-    }
-
 }
 
-class MainMenu : HorizontalLayout, MenuItemWidgetHandler {
+class MenuWidgetBase : ListWidget {
     protected MenuItem _item;
+	protected PopupMenu _openedMenu;
 	protected PopupWidget _openedPopup;
-	protected MenuItemWidget _openedMenu;
 
-
-
-    override protected bool onItemMouseDown(MenuItemWidget itemWidget, MouseEvent ev) {
-        PopupMenu popupMenu = new PopupMenu(itemWidget.item);
-        PopupWidget popup = window.showPopup(popupMenu, itemWidget, PopupAlign.Below);
-        ev.track(popupMenu);
-        return true;
-    }
-    override protected bool onItemMouseUp(MenuItemWidget itemWidget, MouseEvent ev) {
-        return true;
-    }
-
-    /*
-    protected bool onItemClick(Widget w) {
-        MenuItemWidget itemWidget = cast(MenuItemWidget)w;
-        Log.d("onItemClick ", w.id);
-        window.showPopup(new PopupMenu(itemWidget.item), itemWidget, PopupAlign.Below);
-        return true;
-    }
-    */
-    this(MenuItem item) {
-        id = "MAIN_MENU";
-        styleId = "MAIN_MENU";
+    this(MenuItem item, Orientation orientation) {
         _item = item;
-        for (int i = 0; i < item.subitemCount; i++) {
-			MenuItemWidget subitem = new MenuItemWidget(item.subitem(i));
-            //subitem.onClickListener = &onItemClick;
-            subitem.handler = this;
-            addChild(subitem);
-        }
-        addChild((new Widget()).layoutWidth(FILL_PARENT));
-    }
-}
-
-class PopupMenu : ListWidget, MenuItemWidgetHandler {
-    protected MenuItem _item;
-    this(MenuItem item) {
+		this.orientation = orientation;
         id = "popup_menu";
         styleId = "POPUP_MENU";
-        _item = item;
         WidgetListAdapter adapter = new WidgetListAdapter();
         for (int i=0; i < _item.subitemCount; i++) {
             MenuItem subitem = _item.subitem(i);
             MenuItemWidget widget = new MenuItemWidget(subitem);
-            widget.handler = this;
+            //widget.handler = this;
             adapter.widgets.add(widget);
         }
         ownAdapter = adapter;
     }
 
-    override protected bool onItemMouseDown(MenuItemWidget itemWidget, MouseEvent ev) {
+	/// override to handle change of selection
+	override protected void selectionChanged(int index, int previouslySelectedItem = -1, MouseEvent event = null) {
+		MenuItemWidget itemWidget = index >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(index) : null;
         if (itemWidget.item.isSubmenu()) {
+			if (_openedPopup !is null)
+				_openedPopup.close();
             PopupMenu popupMenu = new PopupMenu(itemWidget.item);
             PopupWidget popup = window.showPopup(popupMenu, itemWidget, PopupAlign.Below);
-            ev.track(popupMenu);
+			if (event !is null && (event.flags & (MouseFlag.LButton || MouseFlag.RButton)))
+				event.track(popupMenu);
+			_openedPopup = popup;
+			_openedMenu = popupMenu;
+			selectOnHover = true;
         } else {
             // normal item
         }
-        return true;
-    }
-
-    override protected bool onItemMouseUp(MenuItemWidget itemWidget, MouseEvent ev) {
-        if (itemWidget.item.isSubmenu()) {
-        } else {
-            // normal item
-            // TODO: action
-        }
-        return true;
-    }
+	}
 
 }
+
+class MainMenu : MenuWidgetBase {
+
+    this(MenuItem item) {
+		super(item, Orientation.Horizontal);
+        id = "MAIN_MENU";
+        styleId = "MAIN_MENU";
+    }
+}
+
+class PopupMenu : MenuWidgetBase {
+
+    this(MenuItem item) {
+		super(item, Orientation.Vertical);
+        id = "POPUP_MENU";
+        styleId = "POPUP_MENU";
+		selectOnHover = true;
+    }
+}
+

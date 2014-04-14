@@ -80,6 +80,13 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 	/// item with Selected state, -1 if no such item
 	protected int _selectedItemIndex;
 
+	/// when true, mouse hover selects underlying item
+	protected bool _selectOnHover;
+	/// when true, mouse hover selects underlying item
+	@property bool selectOnHover() { return _selectOnHover; }
+	/// when true, mouse hover selects underlying item
+	@property ListWidget selectOnHover(bool select) { _selectOnHover = select; return this; }
+
     /// returns rectangle for item (not scrolled, first item starts at 0,0)
     Rect itemRectNoScroll(int index) {
         Rect res;
@@ -171,6 +178,10 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 			_adapter.setItemState(_hoverItemIndex, State.Hovered);
 			invalidate();
 		}
+	}
+
+	/// override to handle change of selection
+	protected void selectionChanged(int index, int previouslySelectedItem = -1, MouseEvent event = null) {
 	}
 
 	protected void selectItem(int index) {
@@ -475,9 +486,13 @@ class ListWidget : WidgetGroup, OnScrollHandler {
             itemrc.top += rc.top - scrollOffset.y;
             itemrc.bottom += rc.top - scrollOffset.y;
             if (itemrc.isPointInside(Point(event.x, event.y))) {
-				if (event.flags & (MouseFlag.LButton || MouseFlag.RButton)) {
+				if ((event.flags & (MouseFlag.LButton || MouseFlag.RButton)) || _selectOnHover) {
+					if (_selectedItemIndex == i)
+						return true;
+					int prevSelection = _selectedItemIndex;
 					selectItem(i);
 					setHoverItem(-1);
+					selectionChanged(_selectedItemIndex, prevSelection, event);
 				} else
 					setHoverItem(i);
             }

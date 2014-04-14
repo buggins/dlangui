@@ -54,10 +54,19 @@ extern (C) int UIAppMain(string[] args) {
         fileItem.add(new Action(10, "Open..."d));
         fileItem.add(new Action(11, "Save..."d));
         fileItem.add(new Action(12, "Exit"d));
+        MenuItem editItem = new MenuItem(new Action(2, "Edit"d));
+        editItem.add(new Action(20, "Copy"d));
+        editItem.add(new Action(21, "Paste"d));
+        editItem.add(new Action(22, "Cut"d));
+        MenuItem windowItem = new MenuItem(new Action(3, "Window"d));
+        windowItem.add(new Action(30, "Preferences"d));
+        MenuItem helpItem = new MenuItem(new Action(4, "Help"d));
+        helpItem.add(new Action(40, "View Help"d));
+        helpItem.add(new Action(41, "About"d));
         mainMenuItems.add(fileItem);
-        mainMenuItems.add(new Action(2, "Edit"d));
-        mainMenuItems.add(new Action(3, "Window"d));
-        mainMenuItems.add(new Action(4, "Help"d));
+        mainMenuItems.add(editItem);
+        mainMenuItems.add(windowItem);
+        mainMenuItems.add(helpItem);
         MainMenu mainMenu = new MainMenu(mainMenuItems);
         contentLayout.addChild(mainMenu);
 

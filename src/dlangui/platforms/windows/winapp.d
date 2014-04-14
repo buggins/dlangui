@@ -418,6 +418,7 @@ class Win32Window : Window {
     /// request window redraw
     override void invalidate() {
         InvalidateRect(_hwnd, null, FALSE);
+		UpdateWindow(_hwnd);
     }
 
     /// after drawing, call to schedule redraw if animation is active

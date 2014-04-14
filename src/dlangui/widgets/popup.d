@@ -32,6 +32,10 @@ class PopupWidget : LinearLayout {
     override void measure(int parentWidth, int parentHeight) { 
         super.measure(parentWidth, parentHeight);
     }
+	/// close and destroy popup
+	void close() {
+		window.removePopup(this);
+	}
 
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     override void layout(Rect rc) {
