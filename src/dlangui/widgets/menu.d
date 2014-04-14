@@ -80,11 +80,13 @@ class MenuItemWidget : HorizontalLayout {
 }
 
 class MenuWidgetBase : ListWidget {
+	protected MenuWidgetBase _parentMenu;
     protected MenuItem _item;
 	protected PopupMenu _openedMenu;
 	protected PopupWidget _openedPopup;
 
-    this(MenuItem item, Orientation orientation) {
+    this(MenuWidgetBase parentMenu, MenuItem item, Orientation orientation) {
+		_parentMenu = parentMenu;
         _item = item;
 		this.orientation = orientation;
         id = "popup_menu";
@@ -99,39 +101,98 @@ class MenuWidgetBase : ListWidget {
         ownAdapter = adapter;
     }
 
+	protected void openSubmenu(MenuItemWidget itemWidget) {
+		if (_openedPopup !is null)
+			_openedPopup.close();
+		PopupMenu popupMenu = new PopupMenu(itemWidget.item, this);
+		PopupWidget popup = window.showPopup(popupMenu, itemWidget, PopupAlign.Below);
+		//if (event !is null && (event.flags & (MouseFlag.LButton || MouseFlag.RButton)))
+		//	event.track(popupMenu);
+		_openedPopup = popup;
+		_openedMenu = popupMenu;
+	}
+
 	/// override to handle change of selection
 	override protected void selectionChanged(int index, int previouslySelectedItem = -1, MouseEvent event = null) {
 		MenuItemWidget itemWidget = index >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(index) : null;
-        if (itemWidget.item.isSubmenu()) {
-			if (_openedPopup !is null)
-				_openedPopup.close();
-            PopupMenu popupMenu = new PopupMenu(itemWidget.item);
-            PopupWidget popup = window.showPopup(popupMenu, itemWidget, PopupAlign.Below);
-			if (event !is null && (event.flags & (MouseFlag.LButton || MouseFlag.RButton)))
-				event.track(popupMenu);
-			_openedPopup = popup;
-			_openedMenu = popupMenu;
-			selectOnHover = true;
-        } else {
-            // normal item
-        }
+		if (itemWidget !is null) {
+			if (itemWidget.item.isSubmenu()) {
+				if (_selectOnHover) {
+					openSubmenu(itemWidget);
+				}
+
+			} else {
+				// normal item
+			}
+		}
 	}
 
+
+	protected bool delegate(MenuItem item) _onMenuItemClickListener;
+	@property bool delegate(MenuItem item) onMenuItemListener() { return  _onMenuItemClickListener; }
+	@property MenuWidgetBase onMenuItemListener(bool delegate(MenuItem item) listener) { _onMenuItemClickListener = listener; return this; }
+
+	protected void onMenuItem(MenuItem item) {
+		if (_openedPopup !is null) {
+			_openedPopup.close();
+			_openedPopup = null;
+		}
+		if (_parentMenu !is null)
+			_parentMenu.onMenuItem(item);
+		else {
+			// top level handling
+			Log.d("onMenuItem ", item.id);
+			selectItem(-1);
+			selectOnHover = false;
+			bool delegate(MenuItem item) listener = _onMenuItemClickListener;
+			PopupWidget popup = cast(PopupWidget)parent;
+			if (popup)
+				popup.close();
+			// this pointer now can be invalid - if popup removed
+			if (listener !is null)
+				listener(item);
+		}
+	}
+
+	/// override to handle mouse up on item
+	override protected void itemClicked(int index) {
+		MenuItemWidget itemWidget = index >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(index) : null;
+		if (itemWidget !is null) {
+			Log.d("Menu Item clicked ", itemWidget.item.action.id);
+			if (itemWidget.item.isSubmenu()) {
+				// submenu clicked
+				if (_clickOnButtonDown && _openedPopup !is null && _openedMenu._item is itemWidget.item) {
+					// second click on main menu opened item
+					_openedPopup.close();
+					_openedPopup = null;
+					selectItem(-1);
+					selectOnHover = false;
+				} else {
+					openSubmenu(itemWidget);
+					selectOnHover = true;
+				}
+			} else {
+				// normal item
+				onMenuItem(itemWidget.item);
+			}
+		}
+	}
 }
 
 class MainMenu : MenuWidgetBase {
 
     this(MenuItem item) {
-		super(item, Orientation.Horizontal);
+		super(null, item, Orientation.Horizontal);
         id = "MAIN_MENU";
         styleId = "MAIN_MENU";
+		_clickOnButtonDown = true;
     }
 }
 
 class PopupMenu : MenuWidgetBase {
 
-    this(MenuItem item) {
-		super(item, Orientation.Vertical);
+    this(MenuItem item, MenuWidgetBase parentMenu = null) {
+		super(parentMenu, item, Orientation.Vertical);
         id = "POPUP_MENU";
         styleId = "POPUP_MENU";
 		selectOnHover = true;

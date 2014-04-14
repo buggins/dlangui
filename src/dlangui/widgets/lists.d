@@ -87,6 +87,9 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 	/// when true, mouse hover selects underlying item
 	@property ListWidget selectOnHover(bool select) { _selectOnHover = select; return this; }
 
+	/// if true, generate itemClicked on mouse down instead mouse up event
+	protected bool _clickOnButtonDown;
+
     /// returns rectangle for item (not scrolled, first item starts at 0,0)
     Rect itemRectNoScroll(int index) {
         Rect res;
@@ -182,6 +185,9 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 
 	/// override to handle change of selection
 	protected void selectionChanged(int index, int previouslySelectedItem = -1, MouseEvent event = null) {
+	}
+	/// override to handle mouse up on item
+	protected void itemClicked(int index) {
 	}
 
 	protected void selectItem(int index) {
@@ -487,14 +493,22 @@ class ListWidget : WidgetGroup, OnScrollHandler {
             itemrc.bottom += rc.top - scrollOffset.y;
             if (itemrc.isPointInside(Point(event.x, event.y))) {
 				if ((event.flags & (MouseFlag.LButton || MouseFlag.RButton)) || _selectOnHover) {
-					if (_selectedItemIndex == i)
-						return true;
-					int prevSelection = _selectedItemIndex;
-					selectItem(i);
-					setHoverItem(-1);
-					selectionChanged(_selectedItemIndex, prevSelection, event);
+					if (_selectedItemIndex != i) {
+						int prevSelection = _selectedItemIndex;
+						selectItem(i);
+						setHoverItem(-1);
+						selectionChanged(_selectedItemIndex, prevSelection, event);
+					}
 				} else
 					setHoverItem(i);
+				if ((event.button == MouseFlag.LButton || event.button == MouseFlag.RButton)) {
+					if ((_clickOnButtonDown && event.action == MouseAction.ButtonDown) || (!_clickOnButtonDown && event.action == MouseAction.ButtonUp)) {
+						itemClicked(i);
+						if (_clickOnButtonDown)
+							event.doNotTrackButtonDown = true;
+					}
+				}
+				return true;
             }
 		}
         return true;

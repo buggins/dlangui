@@ -191,7 +191,7 @@ class Window {
         // if not processed by children, offer event to root
         if (sendAndCheckOverride(root, event)) {
             Log.d("MouseEvent is processed");
-            if (event.action == MouseAction.ButtonDown && _mouseCaptureWidget is null) {
+            if (event.action == MouseAction.ButtonDown && _mouseCaptureWidget is null && !event.doNotTrackButtonDown) {
                 Log.d("Setting active widget");
                 setCaptureWidget(root, event);
             } else if (event.action == MouseAction.Move) {
@@ -263,6 +263,8 @@ class Window {
 	}
 	
     protected bool sendAndCheckOverride(Widget widget, MouseEvent event) {
+		if (!isChild(widget))
+			return false;
         bool res = widget.onMouseEvent(event);
         if (event.trackingWidget !is null && _mouseCaptureWidget !is event.trackingWidget) {
             setCaptureWidget(event.trackingWidget, event);

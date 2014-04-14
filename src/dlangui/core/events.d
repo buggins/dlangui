@@ -134,6 +134,7 @@ class MouseEvent {
 	protected ButtonDetails _lbutton;
 	protected ButtonDetails _mbutton;
 	protected ButtonDetails _rbutton;
+	protected bool _doNotTrackButtonDown;
     @property ref ButtonDetails lbutton() { return _lbutton; }
     @property ref ButtonDetails rbutton() { return _rbutton; }
     @property ref ButtonDetails mbutton() { return _mbutton; }
@@ -146,6 +147,8 @@ class MouseEvent {
 	@property short y() { return _y; }
     /// get event tracking widget to override
 	@property Widget trackingWidget() { return _trackingWidget; }
+	@property bool doNotTrackButtonDown() { return _doNotTrackButtonDown; }
+	@property void doNotTrackButtonDown(bool flg) { _doNotTrackButtonDown = flg; }
     /// override mouse tracking widget
     void track(Widget w) {
         _trackingWidget = w;
