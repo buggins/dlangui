@@ -122,9 +122,9 @@ class Window {
                 Log.d("Setting active widget");
                 _mouseCaptureWidget = root;
                 _mouseCaptureButtons = event.flags & (MouseFlag.LButton|MouseFlag.RButton|MouseFlag.MButton);
-            } else if (event.action == MouseAction.Move && _mouseTrackingWidget is null) {
+            } else if (event.action == MouseAction.Move) {
                 Log.d("Setting tracking widget");
-                _mouseTrackingWidget = root;
+                addTracking(root);
             }
             return true;
         }
@@ -132,7 +132,34 @@ class Window {
     }
 
     /// widget which tracks Move events
-    protected Widget _mouseTrackingWidget;
+    //protected Widget _mouseTrackingWidget;
+    protected Widget[] _mouseTrackingWidgets;
+    private void addTracking(Widget w) {
+        foreach(widget; _mouseTrackingWidgets)
+            if (widget is w)
+                return;
+        _mouseTrackingWidgets ~= w;
+    }
+    private bool checkRemoveTracking(MouseEvent event) {
+        import std.algorithm;
+        bool res = false;
+        for(int i = _mouseTrackingWidgets.length - 1; i >=0; i--) {
+            Widget w = _mouseTrackingWidgets[i];
+            if (!_mainWidget.isChild(w)) {
+                _mouseTrackingWidgets.remove(i);
+                continue;
+            }
+            if (!w.isPointInside(event.x, event.y)) {
+                // send Leave message
+                MouseEvent leaveEvent = new MouseEvent(event);
+                leaveEvent.changeAction(MouseAction.Leave);
+                res = w.onMouseEvent(leaveEvent) || res;
+                _mouseTrackingWidgets.remove(i);
+            }
+        }
+        return res;
+    }
+
     /// widget which tracks all events after processed ButtonDown
     protected Widget _mouseCaptureWidget;
 	protected ushort _mouseCaptureButtons;
@@ -157,8 +184,8 @@ class Window {
         // check if _mouseCaptureWidget and _mouseTrackingWidget still exist in child of root widget
         if (_mouseCaptureWidget !is null && !_mainWidget.isChild(_mouseCaptureWidget))
             _mouseCaptureWidget = null;
-        if (_mouseTrackingWidget !is null && !_mainWidget.isChild(_mouseTrackingWidget))
-            _mouseTrackingWidget = null;
+
+        //Log.d("dispatchMouseEvent ", event.action, "  (", event.x, ",", event.y, ")");
 
         bool res = false;
 		ushort currentButtons = event.flags & (MouseFlag.LButton|MouseFlag.RButton|MouseFlag.MButton);
@@ -212,16 +239,8 @@ class Window {
             return res;
         }
         bool processed = false;
-        if (event.action == MouseAction.Move && _mouseTrackingWidget !is null) {
-            if (!_mouseTrackingWidget.isPointInside(event.x, event.y)) {
-                // send Leave message
-                MouseEvent leaveEvent = new MouseEvent(event);
-                leaveEvent.changeAction(MouseAction.Leave);
-                _mouseTrackingWidget.onMouseEvent(leaveEvent);
-                // stop tracking
-                _mouseTrackingWidget = null;
-                processed = true;
-            }
+        if (event.action == MouseAction.Move) {
+            processed = checkRemoveTracking(event);
         }
         if (!res) {
             res = dispatchMouseEvent(_mainWidget, event);

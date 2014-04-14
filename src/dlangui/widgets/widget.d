@@ -306,6 +306,7 @@ class Widget {
 
     /// process mouse event; return true if event is processed by widget.
     bool onMouseEvent(MouseEvent event) {
+        //Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
 		// support onClick
 		if (_onClickListener !is null) {
 	        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
@@ -329,7 +330,10 @@ class Widget {
 		}
         if (trackHover) {
 	        if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {
-	            resetState(State.Hovered);
+                if ((state & State.Hovered)) {
+                    Log.d("Hover off ", id);
+                    resetState(State.Hovered);
+                }
 	            return true;
 	        }
             if (event.action == MouseAction.Move) {

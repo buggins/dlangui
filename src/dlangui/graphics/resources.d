@@ -350,7 +350,7 @@ class StateDrawable : Drawable {
             string s = cast(string)std.file.read(filename);
 
             // Check for well-formedness
-            check(s);
+            //check(s);
 
             // Make a DOM tree
             auto doc = new Document(s);
