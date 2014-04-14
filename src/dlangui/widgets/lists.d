@@ -381,7 +381,6 @@ class ListWidget : WidgetGroup, OnScrollHandler {
         } else {
             scrollOffset.x = _scrollPosition;
         }
-        // todo: scrollOffset
         // draw items
         for (int i = 0; i < itemCount; i++) {
             Rect itemrc = _itemRects[i];
@@ -398,6 +397,35 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 			    w.onDraw(buf);
             }
 		}
+    }
+
+    /// process mouse event; return true if event is processed by widget.
+    override bool onMouseEvent(MouseEvent event) {
+        Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
+		// support onClick
+        Rect rc = _pos;
+        applyMargins(rc);
+        applyPadding(rc);
+        Point scrollOffset;
+        if (_orientation == Orientation.Vertical) {
+            scrollOffset.y = _scrollPosition;
+        } else {
+            scrollOffset.x = _scrollPosition;
+        }
+        for (int i = 0; i < itemCount; i++) {
+            Rect itemrc = _itemRects[i];
+            itemrc.left += rc.left - scrollOffset.x;
+            itemrc.right += rc.left - scrollOffset.x;
+            itemrc.top += rc.top - scrollOffset.y;
+            itemrc.bottom += rc.top - scrollOffset.y;
+            if (itemrc.isPointInside(Point(event.x, event.y))) {
+                Widget w = itemWidget(i);
+                if (w.onMouseEvent(event)) {
+                    return true;
+                }
+            }
+		}
+        return super.onMouseEvent(event);
     }
 
 }

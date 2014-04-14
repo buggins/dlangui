@@ -150,7 +150,7 @@ class MainMenu : HorizontalLayout, MenuItemWidgetHandler {
     }
 }
 
-class PopupMenu : ListWidget {
+class PopupMenu : ListWidget, MenuItemWidgetHandler {
     protected MenuItem _item;
     this(MenuItem item) {
         id = "popup_menu";
@@ -160,8 +160,30 @@ class PopupMenu : ListWidget {
         for (int i=0; i < _item.subitemCount; i++) {
             MenuItem subitem = _item.subitem(i);
             MenuItemWidget widget = new MenuItemWidget(subitem);
+            widget.handler = this;
             adapter.widgets.add(widget);
         }
         ownAdapter = adapter;
     }
+
+    override protected bool onItemMouseDown(MenuItemWidget itemWidget, MouseEvent ev) {
+        if (itemWidget.item.isSubmenu()) {
+            PopupMenu popupMenu = new PopupMenu(itemWidget.item);
+            PopupWidget popup = window.showPopup(popupMenu, itemWidget, PopupAlign.Below);
+            ev.track(popupMenu);
+        } else {
+            // normal item
+        }
+        return true;
+    }
+
+    override protected bool onItemMouseUp(MenuItemWidget itemWidget, MouseEvent ev) {
+        if (itemWidget.item.isSubmenu()) {
+        } else {
+            // normal item
+            // TODO: action
+        }
+        return true;
+    }
+
 }
