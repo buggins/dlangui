@@ -98,7 +98,7 @@ class ListWidget : WidgetGroup, OnScrollHandler {
         onAdapterChanged();
         return this; 
     }
-    /// set adapter
+    /// set adapter, which will be owned by list (destroy will be called for adapter on widget destroy)
     @property ListWidget ownAdapter(ListAdapter adapter) { 
         if (_adapter !is null && _ownAdapter)
             destroy(_adapter);

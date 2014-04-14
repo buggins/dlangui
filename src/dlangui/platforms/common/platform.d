@@ -157,7 +157,7 @@ class Window {
                 _mouseTrackingWidgets.length--;
                 continue;
             }
-            if (!w.isPointInside(event.x, event.y)) {
+            if (event.action == MouseAction.Leave || !w.isPointInside(event.x, event.y)) {
                 // send Leave message
                 MouseEvent leaveEvent = new MouseEvent(event);
                 leaveEvent.changeAction(MouseAction.Leave);
@@ -254,7 +254,7 @@ class Window {
             return res;
         }
         bool processed = false;
-        if (event.action == MouseAction.Move) {
+        if (event.action == MouseAction.Move || event.action == MouseAction.Leave) {
             processed = checkRemoveTracking(event);
         }
         if (!res) {

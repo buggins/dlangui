@@ -670,6 +670,8 @@ Theme createDefaultTheme() {
     menuItem.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
     menuItem.createState(State.Hovered, State.Hovered).backgroundColor(0x80FFFF00);
 
+    Style poopupMenu = res.createSubstyle("POPUP_MENU").backgroundImageId("btn_default_small");
+
 	return res;
 }
 
