@@ -102,11 +102,20 @@ class MenuWidgetBase : ListWidget {
         ownAdapter = adapter;
     }
 
+    protected void onPopupClosed(PopupWidget p) {
+        _openedPopup = null;
+        _openedMenu = null;
+        selectItem(-1);
+    }
+
 	protected void openSubmenu(MenuItemWidget itemWidget) {
-		if (_openedPopup !is null)
+		if (_openedPopup !is null) {
 			_openedPopup.close();
+        }
 		PopupMenu popupMenu = new PopupMenu(itemWidget.item, this);
 		PopupWidget popup = window.showPopup(popupMenu, itemWidget, PopupAlign.Below);
+        popup.onPopupCloseListener = &onPopupClosed;
+        popup.flags = PopupFlags.CloseOnClickOutside;
 		_openedPopup = popup;
 		_openedMenu = popupMenu;
 	}

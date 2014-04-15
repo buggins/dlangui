@@ -78,6 +78,7 @@ class Window {
                 for (int j = i; j < _popups.length - 1; j++)
                     _popups[j] = _popups[j + 1];
                 _popups.length--;
+                p.onClose();
                 destroy(p);
                 // force redraw
                 _mainWidget.invalidate();
@@ -340,14 +341,25 @@ class Window {
             processed = checkRemoveTracking(event);
         }
         if (!res) {
+            bool insideOneOfPopups = false;
             for (int i = cast(int)_popups.length - 1; i >= 0; i--) {
 				auto p = _popups[i];
-                if (dispatchMouseEvent(p, event))
-                    return true;
+                if (p.isPointInside(event.x, event.y))
+                    insideOneOfPopups = true;
+            }
+            for (int i = cast(int)_popups.length - 1; i >= 0; i--) {
+				auto p = _popups[i];
+                if (!insideOneOfPopups) {
+                    if (p.onMouseEventOutside(event)) // stop loop when true is returned, but allow other main widget to handle event
+                        break;
+                } else {
+                    if (dispatchMouseEvent(p, event))
+                        return true;
+                }
             }
             res = dispatchMouseEvent(_mainWidget, event);
         }
-        return res || processed;
+        return res || processed || _mainWidget.needDraw;
     }
 
     /// checks content widgets for necessary redraw and/or layout

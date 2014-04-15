@@ -17,10 +17,29 @@ struct PopupAnchor {
     uint  alignment = PopupAlign.Center;
 }
 
+/// popup behavior flags - for PopupWidget.flags property
+enum PopupFlags : uint {
+    /// close popup when mouse button clicked outside of its bounds
+    CloseOnClickOutside = 1,
+}
+
 /// popup widget container
 class PopupWidget : LinearLayout {
     protected PopupAnchor _anchor;
     protected bool _modal;
+
+    protected uint _flags;
+    protected void delegate(PopupWidget popup) _onPopupCloseListener;
+    /// popup close listener (called right before closing)
+    @property void delegate(PopupWidget popup) onPopupCloseListener() { return _onPopupCloseListener; }
+    /// set popup close listener (to call right before closing)
+    @property PopupWidget onPopupCloseListener(void delegate(PopupWidget popup) listener) { _onPopupCloseListener = listener; return this; }
+
+    /// returns popup behavior flags (combination of PopupFlags)
+    @property uint flags() { return _flags; }
+    /// set popup behavior flags (combination of PopupFlags)
+    @property PopupWidget flags(uint flags) { _flags = flags; return this; }
+
     /// access to popup anchor
     @property ref PopupAnchor anchor() { return _anchor; }
     /// returns true if popup is modal
@@ -36,6 +55,12 @@ class PopupWidget : LinearLayout {
 	void close() {
 		window.removePopup(this);
 	}
+
+    /// just call on close listener
+    void onClose() {
+        if (_onPopupCloseListener !is null)
+            _onPopupCloseListener(this);
+    }
 
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     override void layout(Rect rc) {
@@ -76,5 +101,19 @@ class PopupWidget : LinearLayout {
         _window = window;
         //styleId = "POPUP_MENU";
         addChild(content);
+    }
+
+    /// called for mouse activity outside shown popup bounds
+    bool onMouseEventOutside(MouseEvent event) {
+        if (visibility != Visibility.Visible)
+            return false;
+        if (_flags & PopupFlags.CloseOnClickOutside) {
+            if (event.action == MouseAction.ButtonDown) {
+                // clicked outside - close popup
+                close();
+                return false;
+            }
+        }
+        return false;
     }
 }
