@@ -6,6 +6,7 @@ import dlangui.widgets.layouts;
 import dlangui.widgets.lists;
 import dlangui.widgets.popup;
 
+/// menu item properties
 class MenuItem {
     protected bool _checkable;
     protected bool _checked;
@@ -56,17 +57,10 @@ class MenuItem {
     }
 }
 
-interface MenuItemWidgetHandler {
-    bool onItemMouseDown(MenuItemWidget itemWidget, MouseEvent ev);
-    bool onItemMouseUp(MenuItemWidget itemWidget, MouseEvent ev);
-}
-
+/// widget to draw menu item
 class MenuItemWidget : HorizontalLayout {
     protected MenuItem _item;
     protected TextWidget _label;
-    protected MenuItemWidgetHandler _handler;
-    @property MenuItemWidgetHandler handler() { return _handler; }
-    @property MenuItemWidget handler(MenuItemWidgetHandler h) { _handler = h; return this; }
     @property MenuItem item() { return _item; }
     this(MenuItem item) {
         id="menuitem";
@@ -79,11 +73,17 @@ class MenuItemWidget : HorizontalLayout {
     }
 }
 
+/// base class for menus
 class MenuWidgetBase : ListWidget {
 	protected MenuWidgetBase _parentMenu;
     protected MenuItem _item;
 	protected PopupMenu _openedMenu;
 	protected PopupWidget _openedPopup;
+	protected bool delegate(MenuItem item) _onMenuItemClickListener;
+    /// menu item click listener
+	@property bool delegate(MenuItem item) onMenuItemListener() { return  _onMenuItemClickListener; }
+    /// menu item click listener
+	@property MenuWidgetBase onMenuItemListener(bool delegate(MenuItem item) listener) { _onMenuItemClickListener = listener; return this; }
 
     this(MenuWidgetBase parentMenu, MenuItem item, Orientation orientation) {
 		_parentMenu = parentMenu;
@@ -97,7 +97,6 @@ class MenuWidgetBase : ListWidget {
             MenuItemWidget widget = new MenuItemWidget(subitem);
 			if (orientation == Orientation.Horizontal)
 				widget.styleId = "MAIN_MENU_ITEM";
-            //widget.handler = this;
             adapter.widgets.add(widget);
         }
         ownAdapter = adapter;
@@ -108,31 +107,23 @@ class MenuWidgetBase : ListWidget {
 			_openedPopup.close();
 		PopupMenu popupMenu = new PopupMenu(itemWidget.item, this);
 		PopupWidget popup = window.showPopup(popupMenu, itemWidget, PopupAlign.Below);
-		//if (event !is null && (event.flags & (MouseFlag.LButton || MouseFlag.RButton)))
-		//	event.track(popupMenu);
 		_openedPopup = popup;
 		_openedMenu = popupMenu;
 	}
 
 	/// override to handle change of selection
-	override protected void selectionChanged(int index, int previouslySelectedItem = -1, MouseEvent event = null) {
+	override protected void selectionChanged(int index, int previouslySelectedItem = -1) {
 		MenuItemWidget itemWidget = index >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(index) : null;
 		if (itemWidget !is null) {
 			if (itemWidget.item.isSubmenu()) {
 				if (_selectOnHover) {
 					openSubmenu(itemWidget);
 				}
-
 			} else {
 				// normal item
 			}
 		}
 	}
-
-
-	protected bool delegate(MenuItem item) _onMenuItemClickListener;
-	@property bool delegate(MenuItem item) onMenuItemListener() { return  _onMenuItemClickListener; }
-	@property MenuWidgetBase onMenuItemListener(bool delegate(MenuItem item) listener) { _onMenuItemClickListener = listener; return this; }
 
 	protected void onMenuItem(MenuItem item) {
 		if (_openedPopup !is null) {
@@ -181,6 +172,7 @@ class MenuWidgetBase : ListWidget {
 	}
 }
 
+/// main menu (horizontal)
 class MainMenu : MenuWidgetBase {
 
     this(MenuItem item) {
@@ -191,6 +183,7 @@ class MainMenu : MenuWidgetBase {
     }
 }
 
+/// popup menu widget (vertical layout of items)
 class PopupMenu : MenuWidgetBase {
 
     this(MenuItem item, MenuWidgetBase parentMenu = null) {
@@ -200,4 +193,3 @@ class PopupMenu : MenuWidgetBase {
 		selectOnHover = true;
     }
 }
-

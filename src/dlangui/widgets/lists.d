@@ -122,7 +122,7 @@ class ListWidget : WidgetGroup, OnScrollHandler {
     /// get adapter
     @property ListAdapter adapter() { return _adapter; }
     /// set adapter
-    @property ListWidget adapter(ListAdapter adapter) { 
+    @property ListWidget adapter(ListAdapter adapter) {
         if (_adapter !is null && _ownAdapter)
             destroy(_adapter);
         _adapter = adapter; 
@@ -184,8 +184,9 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 	}
 
 	/// override to handle change of selection
-	protected void selectionChanged(int index, int previouslySelectedItem = -1, MouseEvent event = null) {
+	protected void selectionChanged(int index, int previouslySelectedItem = -1) {
 	}
+
 	/// override to handle mouse up on item
 	protected void itemClicked(int index) {
 	}
@@ -470,7 +471,7 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 
     /// process mouse event; return true if event is processed by widget.
     override bool onMouseEvent(MouseEvent event) {
-        Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
+        //Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
 		if (event.action == MouseAction.Leave || event.action == MouseAction.Cancel) {
 			setHoverItem(-1);
 			return true;
@@ -497,7 +498,7 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 						int prevSelection = _selectedItemIndex;
 						selectItem(i);
 						setHoverItem(-1);
-						selectionChanged(_selectedItemIndex, prevSelection, event);
+						selectionChanged(_selectedItemIndex, prevSelection);
 					}
 				} else
 					setHoverItem(i);
