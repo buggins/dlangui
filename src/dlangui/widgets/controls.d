@@ -134,6 +134,7 @@ class ImageButton : ImageWidget {
         super(ID);
         styleId = "BUTTON";
         _drawableId = drawableId;
+        focusable = true;
         trackHover = true;
     }
 }
@@ -146,6 +147,7 @@ class Button : Widget {
     this(string ID = null) {
 		super(ID);
         styleId = "BUTTON";
+        focusable = true;
         trackHover = true;
     }
 

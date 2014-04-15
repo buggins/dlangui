@@ -307,11 +307,42 @@ class Widget {
         return _pos.isPointInside(x, y);
     }
 
+    protected bool _focusable;
+    @property bool focusable() { return _focusable; }
+    @property Widget focusable(bool flg) { _focusable = flg; return this; }
+    @property bool focused() {
+        return (window !is null && window.focusedWidget is this && (state & State.Focused));
+    }
+    /// sets focus to this widget, returns previously focused widget
+    Widget setFocus() {
+        if (window is null)
+            return null;
+        if (!_focusable)
+            return window.focusedWidget;
+        return window.setFocus(this);
+    }
+
     // =======================================================
     // Events
 
     /// process key event, return true if event is processed.
     bool onKeyEvent(KeyEvent event) {
+		if (_onClickListener !is null) {
+            // support onClick event initiated by Space or Return keys
+            if (event.action == KeyAction.KeyDown) {
+                if (event.keyCode == KeyCode.SPACE || event.keyCode == KeyCode.RETURN) {
+                    setState(State.Pressed);
+                    return true;
+                }
+            }
+            if (event.action == KeyAction.KeyUp) {
+                if (event.keyCode == KeyCode.SPACE || event.keyCode == KeyCode.RETURN) {
+                    resetState(State.Pressed);
+                    _onClickListener(this);
+                    return true;
+                }
+            }
+        }
         return false;
     }
 
@@ -322,6 +353,8 @@ class Widget {
 		if (_onClickListener !is null) {
 	        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
 	            setState(State.Pressed);
+                if (focusable)
+                    setFocus();
 	            return true;
 	        }
 	        if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
@@ -339,6 +372,9 @@ class Widget {
 	            return true;
 	        }
 		}
+        if (focusable && event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
+            setFocus();
+        }
         if (trackHover) {
 	        if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {
                 if ((state & State.Hovered)) {

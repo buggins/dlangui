@@ -177,12 +177,44 @@ class Window {
         _mouseCaptureButtons = event.flags & (MouseFlag.LButton|MouseFlag.RButton|MouseFlag.MButton);
     }
 
+    protected Widget _focusedWidget;
+    /// returns current focused widget
+    @property Widget focusedWidget() { 
+        if (!isChild(_focusedWidget))
+            _focusedWidget = null;
+        return _focusedWidget; 
+    }
+
+    /// change focus to widget
+    Widget setFocus(Widget newFocus) {
+        if (!isChild(_focusedWidget))
+            _focusedWidget = null;
+        Widget oldFocus = _focusedWidget;
+        if (oldFocus is newFocus)
+            return oldFocus;
+        if (oldFocus !is null)
+            oldFocus.resetState(State.Focused);
+        if (newFocus is null || isChild(newFocus)) {
+            _focusedWidget = newFocus;
+            if (_focusedWidget !is null) {
+                Log.d("new focus: ", _focusedWidget.id);
+                _focusedWidget.setState(State.Focused);
+            }
+        }
+        return _focusedWidget;
+    }
+
     protected bool dispatchKeyEvent(Widget root, KeyEvent event) {
         return false;
     }
 
     /// dispatch keyboard event
     bool dispatchKeyEvent(KeyEvent event) {
+        Widget focus = focusedWidget;
+        if (focus !is null) {
+            if (focus.onKeyEvent(event))
+                return true; // processed by focused widget
+        }
         return false;
     }
 

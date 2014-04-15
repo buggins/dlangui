@@ -445,7 +445,7 @@ class Win32Window : Window {
         } else if (action == KeyAction.Text && character != 0) {
             dchar[] text;
             text ~= character;
-            event = new KeyEvent(action, 0, _keyFlags, text);
+            event = new KeyEvent(action, 0, _keyFlags, cast(dstring)text);
         }
         bool res = false;
         if (event !is null) {
@@ -746,7 +746,7 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_KEYUP:
 			if (window !is null) {
                 int repeatCount = lParam & 0xFFFF;
-				if (window.onKey(message == WM_KEYDOWN ? KeyAction.KeyDown : KeyAction.KeyDown, wParam, repeatCount))
+				if (window.onKey(message == WM_KEYDOWN ? KeyAction.KeyDown : KeyAction.KeyUp, wParam, repeatCount))
                     return 0; // processed
                 return 0;
             }

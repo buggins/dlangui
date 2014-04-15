@@ -161,6 +161,7 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 	this(string ID = null, Orientation orientation = Orientation.Vertical) {
 		super(ID);
         _orientation = orientation;
+        focusable = true;
 		_hoverItemIndex = -1;
 		_selectedItemIndex = -1;
         _scrollbar = new ScrollBar("listscroll", orientation);
@@ -469,6 +470,48 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 		}
     }
 
+    /// list navigation using keys
+    override bool onKeyEvent(KeyEvent event) {
+        if (itemCount == 0)
+            return false;
+        int navigationDelta = 0;
+        if (event.action == KeyAction.KeyDown) {
+            if (orientation == Orientation.Vertical) {
+                if (event.keyCode == KeyCode.DOWN)
+                    navigationDelta = 1;
+                else if (event.keyCode == KeyCode.UP)
+                    navigationDelta = -1;
+            } else {
+                if (event.keyCode == KeyCode.RIGHT)
+                    navigationDelta = 1;
+                else if (event.keyCode == KeyCode.LEFT)
+                    navigationDelta = -1;
+            }
+        }
+        if (_selectedItemIndex != -1 && event.action == KeyAction.KeyUp && (event.keyCode == KeyCode.SPACE || event.keyCode == KeyCode.RETURN)) {
+            itemClicked(_selectedItemIndex);
+            return true;
+        }
+        if (navigationDelta != 0) {
+            int p = _selectedItemIndex;
+            if (p < 0) {
+                if (navigationDelta < 0)
+                    p = itemCount - 1;
+                else
+                    p = 0;
+            } else {
+                p += navigationDelta;
+                if (p < 0)
+                    p = itemCount - 1;
+                else if (p >= itemCount)
+                    p = 0;
+            }
+            selectItem(p);
+            return true;
+        }
+        return false;
+    }
+
     /// process mouse event; return true if event is processed by widget.
     override bool onMouseEvent(MouseEvent event) {
         //Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
@@ -486,6 +529,8 @@ class ListWidget : WidgetGroup, OnScrollHandler {
         } else {
             scrollOffset.x = _scrollPosition;
         }
+        if (event.action == MouseAction.ButtonDown && (event.flags & (MouseFlag.LButton || MouseFlag.RButton)))
+            setFocus();
         for (int i = 0; i < itemCount; i++) {
             Rect itemrc = _itemRects[i];
             itemrc.left += rc.left - scrollOffset.x;

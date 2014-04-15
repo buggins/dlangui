@@ -106,9 +106,10 @@ class MenuWidgetBase : ListWidget {
         _openedPopup = null;
         _openedMenu = null;
         selectItem(-1);
+        window.setFocus(this);
     }
 
-	protected void openSubmenu(MenuItemWidget itemWidget) {
+	protected void openSubmenu(MenuItemWidget itemWidget, bool selectFirstItem) {
 		if (_openedPopup !is null) {
 			_openedPopup.close();
         }
@@ -118,6 +119,9 @@ class MenuWidgetBase : ListWidget {
         popup.flags = PopupFlags.CloseOnClickOutside;
 		_openedPopup = popup;
 		_openedMenu = popupMenu;
+        window.setFocus(popupMenu);
+        if (selectFirstItem)
+            _openedMenu.selectItem(0);
 	}
 
 	/// override to handle change of selection
@@ -131,7 +135,7 @@ class MenuWidgetBase : ListWidget {
 		if (itemWidget !is null) {
 			if (itemWidget.item.isSubmenu()) {
 				if (_selectOnHover) {
-					openSubmenu(itemWidget);
+					openSubmenu(itemWidget, false);
 				}
 			} else {
 				// normal item
@@ -161,6 +165,10 @@ class MenuWidgetBase : ListWidget {
 		}
 	}
 
+    @property MenuItemWidget selectedMenuItemWidget() {
+        return _selectedItemIndex >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(_selectedItemIndex) : null;
+    }
+
 	/// override to handle mouse up on item
 	override protected void itemClicked(int index) {
 		MenuItemWidget itemWidget = index >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(index) : null;
@@ -175,7 +183,7 @@ class MenuWidgetBase : ListWidget {
 					selectItem(-1);
 					selectOnHover = false;
 				} else {
-					openSubmenu(itemWidget);
+					openSubmenu(itemWidget, false);
 					selectOnHover = true;
 				}
 			} else {
@@ -184,6 +192,46 @@ class MenuWidgetBase : ListWidget {
 			}
 		}
 	}
+
+    /// returns popup this menu is located in
+    @property PopupWidget thisPopup() {
+        return cast(PopupWidget)parent;
+    }
+
+    /// list navigation using keys
+    override bool onKeyEvent(KeyEvent event) {
+        // TODO:
+        if (orientation == Orientation.Horizontal) {
+            if (event.action == KeyAction.KeyDown) {
+            }
+        } else {
+            if (event.action == KeyAction.KeyDown) {
+                if (event.keyCode == KeyCode.LEFT) {
+                    if (_parentMenu !is null && _parentMenu.orientation == Orientation.Vertical) {
+                        if (thisPopup !is null) {
+                            // back to parent menu on Left key
+                            thisPopup.close();
+                            return true;
+                        }
+                    }
+                    return true;
+                } else if (event.keyCode == KeyCode.RIGHT) {
+                    MenuItemWidget thisItem = selectedMenuItemWidget();
+                    if (thisItem !is null && thisItem.item.isSubmenu) {
+                        openSubmenu(thisItem, true);
+                        return true;
+                    }
+                    return true;
+                }
+            } else if (event.action == KeyAction.KeyUp) {
+                if (event.keyCode == KeyCode.LEFT || event.keyCode == KeyCode.RIGHT) {
+                    return true;
+                }
+            }
+        }
+        return super.onKeyEvent(event);
+    }
+
 }
 
 /// main menu (horizontal)
