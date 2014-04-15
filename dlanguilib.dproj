@@ -179,6 +179,7 @@
     <Compile Include="src\dlangui\widgets\tabs.d" />
     <Compile Include="src\dlangui\graphics\resources.d" />
     <Compile Include="src\dlangui\widgets\menu.d" />
+    <Compile Include="src\dlangui\widgets\popup.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\dlangui\platforms\x11\" />

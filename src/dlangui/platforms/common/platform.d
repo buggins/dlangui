@@ -220,7 +220,7 @@ class Window {
     private bool checkRemoveTracking(MouseEvent event) {
         import std.algorithm;
         bool res = false;
-        for(int i = _mouseTrackingWidgets.length - 1; i >=0; i--) {
+        for(int i = cast(int)_mouseTrackingWidgets.length - 1; i >=0; i--) {
             Widget w = _mouseTrackingWidgets[i];
             if (!isChild(w)) {
                 // std.algorithm.remove does not work for me

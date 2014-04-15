@@ -123,6 +123,11 @@ class MenuWidgetBase : ListWidget {
 	/// override to handle change of selection
 	override protected void selectionChanged(int index, int previouslySelectedItem = -1) {
 		MenuItemWidget itemWidget = index >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(index) : null;
+		MenuItemWidget prevWidget = previouslySelectedItem >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(previouslySelectedItem) : null;
+		if (prevWidget !is null) {
+			if (_openedPopup !is null)
+				_openedPopup.close();
+		}
 		if (itemWidget !is null) {
 			if (itemWidget.item.isSubmenu()) {
 				if (_selectOnHover) {
