@@ -95,6 +95,8 @@ class MenuWidgetBase : ListWidget {
         for (int i=0; i < _item.subitemCount; i++) {
             MenuItem subitem = _item.subitem(i);
             MenuItemWidget widget = new MenuItemWidget(subitem);
+			if (orientation == Orientation.Horizontal)
+				widget.styleId = "MAIN_MENU_ITEM";
             //widget.handler = this;
             adapter.widgets.add(widget);
         }

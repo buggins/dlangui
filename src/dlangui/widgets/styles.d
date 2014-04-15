@@ -664,7 +664,8 @@ Theme createDefaultTheme() {
     //tabWidget.backgroundImageId("frame_blue");
 	//res.dumpStats();
 
-    Style mainMenu = res.createSubstyle("MAIN_MENU").backgroundColor(0x00E7E8EC).layoutWidth(FILL_PARENT);
+    Style mainMenu = res.createSubstyle("MAIN_MENU").backgroundColor(0xEFEFF2).layoutWidth(FILL_PARENT);
+    Style mainMenuItem = res.createSubstyle("MAIN_MENU_ITEM").padding(Rect(4,2,4,2)).backgroundImageId("main_menu_item_background");
     Style menuItem = res.createSubstyle("MENU_ITEM").padding(Rect(4,2,4,2)); //.backgroundColor(0xE0E080)   ;
     menuItem.createState(State.Focused, State.Focused).backgroundColor(0x40C0C000);
     menuItem.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
