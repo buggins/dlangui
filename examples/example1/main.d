@@ -53,6 +53,13 @@ extern (C) int UIAppMain(string[] args) {
         MenuItem fileItem = new MenuItem(new Action(1, "File"d));
         fileItem.add(new Action(10, "Open..."d));
         fileItem.add(new Action(11, "Save..."d));
+        MenuItem openRecentItem = new MenuItem(new Action(13, "Open recent..."d));
+        openRecentItem.add(new Action(100, "File 1"d));
+        openRecentItem.add(new Action(101, "File 2"d));
+        openRecentItem.add(new Action(102, "File 3"d));
+        openRecentItem.add(new Action(103, "File 4"d));
+        openRecentItem.add(new Action(104, "File 5"d));
+        fileItem.add(openRecentItem);
         fileItem.add(new Action(12, "Exit"d));
         MenuItem editItem = new MenuItem(new Action(2, "Edit"d));
         editItem.add(new Action(20, "Copy"d));

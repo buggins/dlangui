@@ -10,6 +10,8 @@ enum PopupAlign : uint {
     Center = 1,
     /// place popup below anchor widget close to lower bound
     Below = 2,
+    /// place popup below anchor widget close to right bound (when no space enough, align near left bound)
+    Right = 4,
 }
 
 struct PopupAnchor {
@@ -90,6 +92,9 @@ class PopupWidget : LinearLayout {
         } else if (anchor.alignment & PopupAlign.Below) {
             r.left = anchorrc.left;
             r.top = anchorrc.bottom;
+        } else if (anchor.alignment & PopupAlign.Right) {
+            r.left = anchorrc.right;
+            r.top = anchorrc.top;
         }
         r.right = r.left + w;
         r.bottom = r.top + h;

@@ -113,7 +113,7 @@ class MenuWidgetBase : ListWidget {
 			_openedPopup.close();
         }
 		PopupMenu popupMenu = new PopupMenu(itemWidget.item, this);
-		PopupWidget popup = window.showPopup(popupMenu, itemWidget, PopupAlign.Below);
+		PopupWidget popup = window.showPopup(popupMenu, itemWidget, orientation == Orientation.Horizontal ? PopupAlign.Below :  PopupAlign.Right);
         popup.onPopupCloseListener = &onPopupClosed;
         popup.flags = PopupFlags.CloseOnClickOutside;
 		_openedPopup = popup;
