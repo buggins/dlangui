@@ -310,6 +310,11 @@ class Widget {
     // =======================================================
     // Events
 
+    /// process key event, return true if event is processed.
+    bool onKeyEvent(KeyEvent event) {
+        return false;
+    }
+
     /// process mouse event; return true if event is processed by widget.
     bool onMouseEvent(MouseEvent event) {
         //Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");

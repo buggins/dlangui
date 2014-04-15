@@ -177,6 +177,15 @@ class Window {
         _mouseCaptureButtons = event.flags & (MouseFlag.LButton|MouseFlag.RButton|MouseFlag.MButton);
     }
 
+    protected bool dispatchKeyEvent(Widget root, KeyEvent event) {
+        return false;
+    }
+
+    /// dispatch keyboard event
+    bool dispatchKeyEvent(KeyEvent event) {
+        return false;
+    }
+
     protected bool dispatchMouseEvent(Widget root, MouseEvent event) {
         // only route mouse events to visible widgets
         if (root.visibility != Visibility.Visible)

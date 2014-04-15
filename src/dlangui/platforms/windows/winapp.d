@@ -415,6 +415,49 @@ class Win32Window : Window {
         return res;
 	}
 
+
+    protected uint _keyFlags;
+
+    protected void updateKeyFlags(KeyAction action, KeyFlag flag) {
+        if (action == KeyAction.KeyDown)
+            _keyFlags |= flag;
+        else
+            _keyFlags &= ~flag;
+    }
+
+    bool onKey(KeyAction action, uint keyCode, int repeatCount, dchar character = 0) {
+        KeyEvent event;
+        if (action == KeyAction.KeyDown || action == KeyAction.KeyUp) {
+            switch(keyCode) {
+                case KeyCode.SHIFT:
+                    updateKeyFlags(action, KeyFlag.Shift);
+                    break;
+                case KeyCode.CONTROL:
+                    updateKeyFlags(action, KeyFlag.Control);
+                    break;
+                case KeyCode.ALT:
+                    updateKeyFlags(action, KeyFlag.Alt);
+                    break;
+                default:
+                    break;
+            }
+            event = new KeyEvent(action, keyCode, _keyFlags);
+        } else if (action == KeyAction.Text && character != 0) {
+            dchar[] text;
+            text ~= character;
+            event = new KeyEvent(action, 0, _keyFlags, text);
+        }
+        bool res = false;
+        if (event !is null) {
+            res = dispatchKeyEvent(event);
+        }
+        if (res) {
+            Log.d("Calling update() after key event");
+            update();
+        }
+        return res;
+    }
+
     /// request window redraw
     override void invalidate() {
         InvalidateRect(_hwnd, null, FALSE);
@@ -699,6 +742,23 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
             // not processed - default handling
             return DefWindowProc(hwnd, message, wParam, lParam);
+        case WM_KEYDOWN:
+        case WM_KEYUP:
+			if (window !is null) {
+                int repeatCount = lParam & 0xFFFF;
+				if (window.onKey(message == WM_KEYDOWN ? KeyAction.KeyDown : KeyAction.KeyDown, wParam, repeatCount))
+                    return 0; // processed
+                return 0;
+            }
+            break;
+        case WM_UNICHAR:
+			if (window !is null) {
+                int repeatCount = lParam & 0xFFFF;
+				if (window.onKey(KeyAction.Text, wParam, repeatCount, wParam == UNICODE_NOCHAR ? 0 : wParam))
+                    return 1; // processed
+                return 1;
+            }
+            break;
         case WM_GETMINMAXINFO:
         case WM_NCCREATE:
         case WM_NCCALCSIZE:

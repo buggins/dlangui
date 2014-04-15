@@ -155,7 +155,7 @@ extern (C) int UIAppMain(string[] args) {
 	    window.mainWidget = (new Button()).text("sample button");
 	}
     window.show();
-    window.showPopup((new TextWidget()).text("POPUP"d));
+    //window.showPopup((new TextWidget()).text("POPUP"d));
     window.windowCaption = "New Window Caption";
 
     // run message loop
