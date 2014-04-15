@@ -35,7 +35,7 @@ extern (C) int UIAppMain(string[] args) {
     	string i18nDir = exePath() ~ "..\\res\\i18n\\";
 	} else {
     	string resourceDir = exePath() ~ "../../res/";
-    	string i18nDir = exePath() ~ "../res/i18n/";
+    	string i18nDir = exePath() ~ "../../res/i18n/";
 	}
     string[] imageDirs = [
         resourceDir
@@ -133,14 +133,14 @@ extern (C) int UIAppMain(string[] args) {
 
         tabs.addTab(layout, "Tab 1"d);
 
-        static if (false) {
+        static if (true) {
             ListWidget list = new ListWidget("tab2", Orientation.Vertical);
             WidgetListAdapter listAdapter = new WidgetListAdapter();
-            for (int i = 0; i < 3000; i++)
-                listAdapter.widgets.add((new TextWidget()).text("List item "d ~ to!dstring(i)));
+            for (int i = 0; i < 1000; i++)
+                listAdapter.widgets.add((new TextWidget()).text("List item "d ~ to!dstring(i)).styleId("LIST_ITEM"));
             list.ownAdapter = listAdapter;
             list.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
-            tabs.addTab(list, "Lists"d);
+            tabs.addTab(list, "Long List"d);
         }
 
         tabs.addTab((new TextWidget()).id("tab3").textColor(0x00802000).text("Tab 3 contents"), "Tab 3"d);

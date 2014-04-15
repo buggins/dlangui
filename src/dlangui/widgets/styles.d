@@ -674,6 +674,9 @@ Theme createDefaultTheme() {
 
     Style poopupMenu = res.createSubstyle("POPUP_MENU").backgroundImageId("popup_menu_background_normal");
 
+    Style listItem = res.createSubstyle("LIST_ITEM");
+    listItem.createState(State.Selected, State.Selected).backgroundColor(0xC04040FF).textColor(0x000000);
+
 	return res;
 }
 
