@@ -664,14 +664,14 @@ Theme createDefaultTheme() {
     //tabWidget.backgroundImageId("frame_blue");
 	//res.dumpStats();
 
-    Style mainMenu = res.createSubstyle("MAIN_MENU").backgroundColor(0xE0E0E0).layoutWidth(FILL_PARENT);
+    Style mainMenu = res.createSubstyle("MAIN_MENU").backgroundColor(0x00E7E8EC).layoutWidth(FILL_PARENT);
     Style menuItem = res.createSubstyle("MENU_ITEM").padding(Rect(4,2,4,2)); //.backgroundColor(0xE0E080)   ;
     menuItem.createState(State.Focused, State.Focused).backgroundColor(0x40C0C000);
     menuItem.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
-    menuItem.createState(State.Selected, State.Selected).backgroundColor(0x40FFFF00);
+    menuItem.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
     menuItem.createState(State.Hovered, State.Hovered).backgroundColor(0xC0FFFF00);
 
-    Style poopupMenu = res.createSubstyle("POPUP_MENU").backgroundImageId("btn_default_small");
+    Style poopupMenu = res.createSubstyle("POPUP_MENU").backgroundImageId("popup_menu_background_normal");
 
 	return res;
 }
