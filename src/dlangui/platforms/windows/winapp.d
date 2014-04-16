@@ -737,7 +737,7 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case WM_RBUTTONUP:
         case WM_MOUSEWHEEL:
 			if (window !is null) {
-				if (window.onMouse(message, cast(ushort)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF)))
+				if (window.onMouse(message, cast(uint)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF)))
                     return 0; // processed
             }
             // not processed - default handling

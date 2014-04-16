@@ -584,6 +584,21 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         return true;
     }
 
+    /// handle mouse wheel events
+    override bool onMouseEvent(MouseEvent event) {
+        if (visibility != Visibility.Visible)
+            return false;
+        if (event.action == MouseAction.Wheel) {
+            int delta = event.wheelDelta;
+            if (delta > 0)
+                sendScrollEvent(ScrollAction.LineUp, position);
+            else if (delta < 0)
+                sendScrollEvent(ScrollAction.LineDown, position);
+            return true;
+        }
+        return super.onMouseEvent(event);
+    }
+
     /// Draw widget at its position to buffer
     override void onDraw(DrawBuf buf) {
         if (visibility != Visibility.Visible)

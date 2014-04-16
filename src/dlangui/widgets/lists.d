@@ -519,6 +519,10 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 			setHoverItem(-1);
 			return true;
 		}
+        // delegate processing of mouse wheel to scrollbar widget
+        if (event.action == MouseAction.Wheel && _needScrollbar) {
+            return _scrollbar.onMouseEvent(event);
+        }
 		// support onClick
         Rect rc = _pos;
         applyMargins(rc);
