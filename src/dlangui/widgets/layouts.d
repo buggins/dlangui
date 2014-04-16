@@ -363,17 +363,21 @@ class FrameLayout : WidgetGroup {
     }
 
     /// make one of children (with specified ID) visible, for the rest, set visibility to otherChildrenVisibility
-    bool showChild(string ID, Visibility otherChildrenVisibility = Visibility.Invisible) {
+    bool showChild(string ID, Visibility otherChildrenVisibility = Visibility.Invisible, bool updateFocus = false) {
         bool found = false;
+        Widget foundWidget = null;
 		for (int i = 0; i < _children.count; i++) {
 			Widget item = _children.get(i);
             if (item.compareId(ID)) {
                 item.visibility = Visibility.Visible;
+                foundWidget = item;
                 found = true;
             } else {
                 item.visibility = otherChildrenVisibility;
             }
 		}
+        if (foundWidget !is null && updateFocus)
+            foundWidget.setFocus();
         return found;
     }
 }

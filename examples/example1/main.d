@@ -139,12 +139,14 @@ extern (C) int UIAppMain(string[] args) {
             for (int i = 0; i < 1000; i++)
                 listAdapter.widgets.add((new TextWidget()).text("List item "d ~ to!dstring(i)).styleId("LIST_ITEM"));
             list.ownAdapter = listAdapter;
+            listAdapter.resetItemState(0, State.Enabled);
             listAdapter.resetItemState(5, State.Enabled);
             listAdapter.resetItemState(7, State.Enabled);
             listAdapter.resetItemState(12, State.Enabled);
             assert(list.itemEnabled(5) == false);
             assert(list.itemEnabled(6) == true);
             list.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+            list.selectItem(0);
             tabs.addTab(list, "Long List"d);
         }
 

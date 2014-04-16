@@ -323,13 +323,48 @@ class Widget {
     @property bool focused() {
         return (window !is null && window.focusedWidget is this && (state & State.Focused));
     }
-    /// sets focus to this widget, returns previously focused widget
+    /// returns true if this widget and all its parents are visible
+    @property bool visible() {
+        if (visibility != Visibility.Visible)
+            return false;
+        if (parent is null)
+            return true;
+        return parent.visible;
+    }
+    /// returns true if widget is focusable and visible
+    @property bool canFocus() {
+        return focusable && visible;
+    }
+    /// sets focus to this widget or suitable focusable child, returns previously focused widget
     Widget setFocus() {
         if (window is null)
             return null;
-        if (!_focusable)
+        if (!visible)
             return window.focusedWidget;
+        if (!canFocus) {
+            Widget w = findFocusableChild(true);
+            if (!w)
+                w = findFocusableChild(false);
+            if (w)
+                return window.setFocus(w);
+            // try to find focusable child
+            return window.focusedWidget;
+        }
         return window.setFocus(this);
+    }
+    /// searches children for first focusable item, returns null if not found
+    Widget findFocusableChild(bool defaultOnly) {
+        for(int i = 0; i < childCount; i++) {
+            Widget w = child(i);
+            if (w.canFocus && (!defaultOnly || (w.state & State.Default) != 0))
+                return w;
+            w = w.findFocusableChild(defaultOnly);
+            if (w !is null)
+                return w;
+        }
+        if (canFocus)
+            return this;
+        return null;
     }
 
     // =======================================================

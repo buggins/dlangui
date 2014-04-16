@@ -224,13 +224,19 @@ class ListWidget : WidgetGroup, OnScrollHandler {
     void makeSelectionVisible() {
         if (_selectedItemIndex < 0)
             return; // no selection
+        if (needLayout) {
+            _makeSelectionVisibleOnNextLayout = true;
+            return;
+        }
         makeItemVisible(_selectedItemIndex);
     }
 
+    protected bool _makeSelectionVisibleOnNextLayout;
     /// ensure item is visible
     void makeItemVisible(int itemIndex) {
         if (itemIndex < 0 || itemIndex >= itemCount)
             return; // no selection
+
         Rect viewrc = Rect(0, 0, _clientRc.width, _clientRc.height);
         Rect scrolledrc = itemRect(itemIndex);
         if (scrolledrc.isInsideOf(viewrc)) // completely visible
@@ -284,7 +290,23 @@ class ListWidget : WidgetGroup, OnScrollHandler {
         return true;
     }
 
-	protected bool selectItem(int index) {
+	bool selectItem(int index, int disabledItemsSkipDirection) {
+        if (index == -1 || disabledItemsSkipDirection == 0)
+            return selectItem(index);
+        int maxAttempts = itemCount;
+        for (int i = 0; i < maxAttempts; i++) {
+            if (selectItem(index))
+                return true;
+            index += disabledItemsSkipDirection > 0 ? 1 : -1;
+            if (index < 0)
+                index = itemCount - 1;
+            if (index >= itemCount)
+                index = 0;
+        }
+        return false;
+    }
+
+	bool selectItem(int index) {
 		if (_selectedItemIndex == index) {
             updateSelectedItemFocus();
             makeSelectionVisible();
@@ -530,6 +552,11 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 
         // calc item rectangles
         updateItemPositions();
+
+        if (_makeSelectionVisibleOnNextLayout) {
+            makeSelectionVisible();
+            _makeSelectionVisibleOnNextLayout = false;
+        }
     }
 
     /// Draw widget at its position to buffer
@@ -593,13 +620,17 @@ class ListWidget : WidgetGroup, OnScrollHandler {
         }
         if (event.action == KeyAction.KeyDown) {
             if (event.keyCode == KeyCode.HOME) {
-                // select first item on HOME key
-                selectItem(0);
+                // select first enabled item on HOME key
+                selectItem(0, 1);
                 return true;
             } else if (event.keyCode == KeyCode.END) {
-                // select last item on END key
-                selectItem(itemCount - 1);
+                // select last enabled item on END key
+                selectItem(itemCount - 1, -1);
                 return true;
+            } else if (event.keyCode == KeyCode.PAGEDOWN) {
+                // TODO
+            } else if (event.keyCode == KeyCode.PAGEUP) {
+                // TODO
             }
         }
         return false;

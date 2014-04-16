@@ -240,6 +240,7 @@ enum State : uint {
     Checked = 64,
     Activated = 128,
     WindowFocused = 256,
+    Default = 512, // widget is default for form (e.g. default button will be focused on show)
     Parent = 0x10000, // use parent's state
 }
 

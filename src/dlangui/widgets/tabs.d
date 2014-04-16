@@ -370,7 +370,7 @@ class TabHost : FrameLayout, TabHandler {
 
     protected override void onTabChanged(string newActiveTabId, string previousTabId) {
         if (newActiveTabId !is null) {
-            showChild(newActiveTabId);
+            showChild(newActiveTabId, Visibility.Invisible, true);
         }
         if (_onTabChanged !is null)
             _onTabChanged(newActiveTabId, previousTabId);
