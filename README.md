@@ -8,6 +8,10 @@ GUI for D programming language, written in D.
 * Supports highly customizable UI themes and styles
 * Hardware acceleration using OpenGL (when built with USE_OPENGL)
 * Fallback to Win32 API / XCB when OpenGL is not available
+* Actually it's a port (with major refactoring) of GUI library for cross platform OpenGL based implementation of Cool Reader app prokeject from C++.
+* Almost ready for 2D games development
+* Goal: provide set of widgets suitable for building of IDE.
+
 
 Win32 builds
 ------------
@@ -38,3 +42,6 @@ Third party components used
 * DerelictGL3 - for OpenGL support
 * DerelictFT + FreeType library support under linux and optionally under Windows.
 * DerelictFI + FreeImage library support for decoding of images
+* WindowsAPI bindings from http://www.dsource.org/projects/bindings/wiki/WindowsApi (patched)
+* XCB and X11 bindings (patched) TODO: provide links
+
