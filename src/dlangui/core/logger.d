@@ -1,3 +1,32 @@
+// Written in the D programming language.
+
+/**
+DLANGUI library.
+
+This module contains logger implementation.
+
+
+
+Synopsis:
+
+----
+import dlangui.core.logger;
+
+// use stderror for logging
+setStderrLogger();
+// set log level
+setLogLevel(LogLeve.Debug);
+// log debug message
+Log.d("mouse clicked at ", x, ",", y);
+// log error message
+Log.d("exception while reading file", e);
+
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors:   $(WEB coolreader.org, Vadim Lopatin)
+*/
 module dlangui.core.logger;
 
 import std.stdio;

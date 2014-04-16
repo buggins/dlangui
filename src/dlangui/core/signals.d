@@ -1,3 +1,102 @@
+// Written in the D programming language.
+
+/**
+DLANGUI library.
+
+This module contains definition of signals / listeners.
+
+Similar to std.signals.
+
+Unlike std.signals, supports any types of delegates, and as well interfaces with single method.
+
+Unlike std.signals, can support return types for slots.
+
+Caution: unlike std.signals, does not disconnect signal from slots belonging to destroyed objects.
+
+Listener here stand for holder of single delegate (slot).
+Signal is the same but supports multiple slots.
+
+Can be declared either using list of result value and argument types, or by interface name with single method.
+
+
+Synopsis:
+
+----
+import dlangui.core.signals;
+
+interface SomeInterface {
+    bool someMethod(string s, int n);
+}
+class Foo : SomeInterface {
+	override bool someMethod(string s, int n) {
+		writeln("someMethod called ", s, ", ", n);
+		return n > 10; // can return value
+	}
+}
+
+// Listener! can hold arbitrary number of connected slots
+
+// declare using list of return value and parameter types
+Listener!(bool, string, n) signal1;
+
+Foo f = new Foo();
+// when signal is defined as type list, you can use delegate
+signal1 = bool delegate(string s, int n) { writeln("inside delegate - ", s, n); return false; }
+// or method reference
+signal1 = &f.someMethod;
+
+// declare using interface with single method
+Listener!SomeInterface signal2;
+// you still can use any delegate
+signal2 = bool delegate(string s, int n) { writeln("inside delegate - ", s, n); return false; }
+// but for class method which overrides interface method, you can use simple syntax
+signal2 = f; // it will automatically take &f.someMethod
+
+
+// call listener(s) either by opcall or explicit emit
+signal1("text", 1);
+signal1.emit("text", 2);
+signal2.emit("text", 3);
+
+// check if any slit is connected
+if (signal1.assigned)
+	writeln("has listeners");
+
+// Signal! can hold arbitrary number of connected slots
+
+// declare using list of return value and parameter types
+Signal!(bool, string, n) signal3;
+
+// add listeners via connect call
+signal3.connect(bool delegate(string, int) { return false; });
+// or via ~= operator
+signal3 ~= bool delegate(string, int) { return false; };
+
+// declare using interface with single method
+Signal!SomeInterface signal4;
+
+// you can connect several slots to signal
+signal4 ~= f;
+signal4 ~= bool delegate(string, int) { return true; }
+
+// calling of listeners of Signal! is similar to Listener!
+// using opCall
+bool res = signal4("blah", 5);
+// call listeners using emit
+bool res = signal4.emit("blah", 5);
+
+// you can disconnect individual slots
+// using disconnect()
+signal4.disconnect(f);
+// or -= operator
+signal4 -= f;
+
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors:   $(WEB coolreader.org, Vadim Lopatin)
+*/
 module dlangui.core.signals;
 
 import std.traits;

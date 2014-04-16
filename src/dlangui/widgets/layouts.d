@@ -1,3 +1,27 @@
+// Written in the D programming language.
+
+/**
+DLANGUI library.
+
+This module contains common layouts implementations.
+
+Layouts are similar to the same in Android.
+
+LinearLayout - either VerticalLayout or HorizontalLayout.
+FrameLayout - children occupy the same place, usually one one is visible at a time
+
+
+Synopsis:
+
+----
+import dlangui.widgets.layouts;
+
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors:   $(WEB coolreader.org, Vadim Lopatin)
+*/
 module dlangui.widgets.layouts;
 
 public import dlangui.widgets.widget;

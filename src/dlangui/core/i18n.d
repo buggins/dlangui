@@ -1,3 +1,43 @@
+// Written in the D programming language.
+
+/**
+DLANGUI library.
+
+This module contains internationalization support implementation.
+
+Translation files contain of simple key=value pair lines.
+
+STRING_RESOURCE_ID=Translation text.
+
+Supports fallback to another translation file (e.g. default language).
+
+
+
+Synopsis:
+
+----
+import dlangui.core.i18n;
+
+// use global i18n object to get translation for string ID
+dstring translated = i18n.get("STR_FILE_OPEN");
+
+// UIString type can hold either string resource id or dstring raw value.
+UIString text;
+
+// assign resource id as string
+text = "ID_FILE_EXIT";
+// or assign raw value as dstring
+text = "some text"d;
+
+// i18n.get() will automatically be invoked when getting UIString value (e.g. using alias this).
+dstring translated = text;
+
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors:   $(WEB coolreader.org, Vadim Lopatin)
+*/
 module dlangui.core.i18n;
 
 import dlangui.core.logger;

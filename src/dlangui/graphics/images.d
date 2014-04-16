@@ -1,3 +1,25 @@
+// Written in the D programming language.
+
+/**
+DLANGUI library.
+
+This module contains image loading functions.
+
+Currently uses FreeImage.
+
+Usage of libpng is not feasible under linux due to conflicts of library and binding versions.
+
+Synopsis:
+
+----
+import dlangui.graphics.images;
+
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors:   $(WEB coolreader.org, Vadim Lopatin)
+*/
 module dlangui.graphics.images;
 
 import dlangui.core.logger;

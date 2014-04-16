@@ -1,3 +1,24 @@
+// Written in the D programming language.
+
+/**
+DLANGUI library.
+
+This module contains common Plaform definitions.
+
+Platform is abstraction layer for application.
+
+
+Synopsis:
+
+----
+import dlangui.platforms.common.platform;
+
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors:   $(WEB coolreader.org, Vadim Lopatin)
+*/
 module dlangui.platforms.common.platform;
 
 public import dlangui.core.events;

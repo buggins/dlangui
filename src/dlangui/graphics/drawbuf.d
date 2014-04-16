@@ -1,3 +1,22 @@
+// Written in the D programming language.
+
+/**
+DLANGUI library.
+
+This module contains drawing buffer implementation.
+
+
+Synopsis:
+
+----
+import dlangui.graphics.drawbuf;
+
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors:   $(WEB coolreader.org, Vadim Lopatin)
+*/
 module dlangui.graphics.drawbuf;
 
 public import dlangui.core.types;

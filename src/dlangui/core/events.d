@@ -1,3 +1,22 @@
+// Written in the D programming language.
+
+/**
+DLANGUI library.
+
+This module contains dlangui event types declarations.
+
+
+Synopsis:
+
+----
+import dlangui.core.events;
+
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors:   $(WEB coolreader.org, Vadim Lopatin)
+*/
 module dlangui.core.events;
 
 import dlangui.core.i18n;

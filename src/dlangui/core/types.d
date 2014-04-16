@@ -1,3 +1,44 @@
+// Written in the D programming language.
+
+/**
+DLANGUI library.
+
+This module declares basic data types for usage in dlangui library.
+
+Synopsis:
+
+----
+import dlangui.core.types;
+
+// points 
+Point p(5, 10);
+
+// rectangles
+Rect r(5, 13, 120, 200);
+writeln(r);
+
+// reference counted objects, useful for RAII / resource management.
+class Foo : RefCountedObject {
+	int[] resource;
+	~this() {
+		writeln("freeing Foo resources");
+	}
+}
+{
+	Ref!Foo ref1;
+	{
+		Ref!Foo fooRef = new RefCountedObject();
+		ref1 = fooRef;
+	}
+	// RAII: will destroy object when no more references
+}
+
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors:   $(WEB coolreader.org, Vadim Lopatin)
+*/
 module dlangui.core.types;
 
 import std.algorithm;
@@ -122,6 +163,7 @@ struct Glyph
     ubyte[] glyph;       
 }
 
+/// base class for reference counted objects, maintains reference counter inplace.
 class RefCountedObject {
     protected int _refCount;
     @property int refCount() const { return _refCount; }

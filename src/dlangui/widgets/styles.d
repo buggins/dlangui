@@ -1,3 +1,23 @@
+// Written in the D programming language.
+
+/**
+DLANGUI library.
+
+This module contains declaration of themes and styles implementation.
+
+
+
+Synopsis:
+
+----
+import dlangui.widgets.styles;
+
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors:   $(WEB coolreader.org, Vadim Lopatin)
+*/
 module dlangui.widgets.styles;
 
 import dlangui.core.types;

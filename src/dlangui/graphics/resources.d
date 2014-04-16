@@ -1,3 +1,29 @@
+// Written in the D programming language.
+
+/**
+DLANGUI library.
+
+This module contains resource management and drawables implementation.
+
+imageCache is RAM cache of decoded images (as DrawBuf).
+
+drawableCache is cache of Drawables.
+
+Supports nine-patch PNG images in .9.png files (like in Android).
+
+Supports state drawables using XML files similar to ones in Android).
+
+Synopsis:
+
+----
+import dlangui.graphics.resources;
+
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors:   $(WEB coolreader.org, Vadim Lopatin)
+*/
 module dlangui.graphics.resources;
 
 import dlangui.graphics.images;

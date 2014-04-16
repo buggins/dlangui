@@ -1,3 +1,23 @@
+// Written in the D programming language.
+
+/**
+DLANGUI library.
+
+This module contains opengl based drawing buffer implementation.
+
+To enable OpenGL support, build with version(USE_OPENGL);
+
+Synopsis:
+
+----
+import dlangui.graphics.gldrawbuf;
+
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors:   $(WEB coolreader.org, Vadim Lopatin)
+*/
 module dlangui.graphics.gldrawbuf;
 
 version (USE_OPENGL) {

@@ -1,3 +1,52 @@
+// Written in the D programming language.
+
+/**
+DLANGUI library.
+
+This module contains text file reader implementation.
+
+Support utf8, utf16, utf32 be and le encodings, and line endings - according to D language source file specification.
+
+Low resource consuming. Doesn't flood with GC allocations. Dup line if you want to store it somewhere.
+
+Tracks line number.
+
+
+Synopsis:
+
+----
+import dlangui.core.linestream;
+
+import std.stdio;
+import std.conv;
+import std.utf;
+string fname = "somefile.d";
+writeln("opening file");
+std.stream.File f = new std.stream.File(fname);
+scope(exit) { f.close(); }
+try {
+	LineStream lines = LineStream.create(f, fname);
+	for (;;) {
+		dchar[] s = lines.readLine();
+		if (s is null)
+			break;
+		writeln("line " ~ to!string(lines.line()) ~ ":" ~ toUTF8(s));
+	}
+	if (lines.errorCode != 0) {
+		writeln("Error ", lines.errorCode, " ", lines.errorMessage, " -- at line ", lines.errorLine, " position ", lines.errorPos);
+	} else {
+		writeln("EOF reached");
+	}
+} catch (Exception e) {
+	writeln("Exception " ~ e.toString);
+}
+
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors:   $(WEB coolreader.org, Vadim Lopatin)
+*/
 module dlangui.core.linestream;
 
 import std.stream;

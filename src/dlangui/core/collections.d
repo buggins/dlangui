@@ -1,3 +1,40 @@
+// Written in the D programming language.
+
+/**
+DLANGUI library.
+
+This module implements array based collection.
+
+Synopsis:
+
+----
+import dlangui.core.collections;
+
+// add
+Collection!Widget widgets;
+widgets ~= new Widget("id1");
+widgets ~= new Widget("id2");
+Widget w3 = new Widget("id3");
+widgets ~= w3;
+
+// remove by index
+widgets.remove(1);
+
+// foreach
+foreach(w; widgets)
+    writeln("widget: ", w.id);
+
+// remove by value
+widgets -= w3;
+writeln(widgets[0].id);
+
+
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors:   $(WEB coolreader.org, Vadim Lopatin)
+*/
 module dlangui.core.collections;
 
 import std.algorithm;

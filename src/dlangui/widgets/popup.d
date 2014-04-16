@@ -1,3 +1,23 @@
+// Written in the D programming language.
+
+/**
+DLANGUI library.
+
+This module contains popup widgets implementation.
+
+
+
+Synopsis:
+
+----
+import dlangui.widgets.popup;
+
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
+Authors:   $(WEB coolreader.org, Vadim Lopatin)
+*/
 module dlangui.widgets.popup;
 
 import dlangui.widgets.widget;
