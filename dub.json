@@ -67,8 +67,12 @@
     ],
 
     "versions-windows": ["USE_OPENGL", "Unicode"],
+    "subPackages": [
+        "./examples/example1/"
+    ],
 
     "dependencies": {
+        "dlangui:example1": "~master",
         "derelict-gl3": "~master",
         "derelict-fi": "~master",
         "derelict-ft": "~master"

@@ -189,6 +189,6 @@
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
  </Config>
  <Folder name="example1">
-  <File path="main.d" />
+  <File path="src/main.d" />
  </Folder>
 </DProject>
