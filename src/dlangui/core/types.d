@@ -90,6 +90,10 @@ struct Rect {
     bool isPointInside(int x, int y) {
         return x >= left && x < right && y >= top && y < bottom;
     }
+    /// this rectangle is completely inside rc
+    bool isInsideOf(Rect rc) {
+        return left >= rc.left && right <= rc.right && top >= rc.top && bottom <= rc.bottom;
+    }
 }
 
 /// character glyph

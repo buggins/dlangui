@@ -101,11 +101,11 @@ class ListWidget : WidgetGroup, OnScrollHandler {
     Rect itemRect(int index) {
         Rect res = itemRectNoScroll(index);
         if (_orientation == Orientation.Horizontal) {
-            res.left += _scrollPosition;
-            res.right += _scrollPosition;
+            res.left -= _scrollPosition;
+            res.right -= _scrollPosition;
         } else {
-            res.top += _scrollPosition;
-            res.bottom += _scrollPosition;
+            res.top -= _scrollPosition;
+            res.bottom -= _scrollPosition;
         }
         return res;
     }
@@ -192,16 +192,91 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 	protected void itemClicked(int index) {
 	}
 
-	protected void selectItem(int index) {
-		if (_selectedItemIndex == index)
-			return;
+    protected void updateSelectedItemFocus() {
 		if (_selectedItemIndex != -1) {
-			_adapter.resetItemState(_selectedItemIndex, State.Selected);
+            if ((_adapter.itemState(_selectedItemIndex) & State.Focused) != (state & State.Focused)) {
+                if (state & State.Focused)
+                    _adapter.setItemState(_selectedItemIndex, State.Focused);
+                else
+                    _adapter.resetItemState(_selectedItemIndex, State.Focused);
+                invalidate();
+            }
+        }
+    }
+
+    /// override to handle focus changes
+    override protected void onFocusChange(bool focused) {
+        updateSelectedItemFocus();
+    }
+
+    /// ensure selected item is visible (scroll if necessary)
+    void makeSelectionVisible() {
+        if (_selectedItemIndex < 0)
+            return; // no selection
+        makeItemVisible(_selectedItemIndex);
+    }
+
+    /// ensure item is visible
+    void makeItemVisible(int itemIndex) {
+        if (itemIndex < 0 || itemIndex >= itemCount)
+            return; // no selection
+        Rect viewrc = Rect(0, 0, _clientRc.width, _clientRc.height);
+        Rect scrolledrc = itemRect(itemIndex);
+        if (scrolledrc.isInsideOf(viewrc)) // completely visible
+            return;
+        int delta = 0;
+        if (_orientation == Orientation.Vertical) {
+            if (scrolledrc.top < viewrc.top)
+                delta = scrolledrc.top - viewrc.top;
+            else if (scrolledrc.bottom > viewrc.bottom)
+                delta = scrolledrc.bottom - viewrc.bottom;
+        } else {
+            if (scrolledrc.left < viewrc.left)
+                delta = scrolledrc.left - viewrc.left;
+            else if (scrolledrc.right > viewrc.right)
+                delta = scrolledrc.right - viewrc.right;
+        }
+        int newPosition = _scrollPosition + delta;
+        _scrollbar.position = newPosition;
+        _scrollPosition = newPosition;
+        invalidate();
+    }
+
+    /// move selection
+    void moveSelection(int direction, bool wrapAround = true) {
+        if (itemCount <= 0)
+            return;
+        if (_selectedItemIndex < 0) {
+            // no previous selection
+            if (direction > 0)
+                selectItem(wrapAround ? 0 : itemCount - 1);
+            else
+                selectItem(wrapAround ? itemCount - 1 : 0);
+            return;
+        }
+        int newIndex = _selectedItemIndex + direction;
+        if (newIndex < 0)
+            newIndex = wrapAround ? itemCount - 1 : 0;
+        else if (newIndex >= itemCount)
+            newIndex = wrapAround ? 0 : itemCount - 1;
+        if (newIndex != _selectedItemIndex)
+            selectItem(newIndex);
+    }
+
+	protected void selectItem(int index) {
+		if (_selectedItemIndex == index) {
+            updateSelectedItemFocus();
+            makeSelectionVisible();
+            return;
+        }
+		if (_selectedItemIndex != -1) {
+			_adapter.resetItemState(_selectedItemIndex, State.Selected | State.Focused);
 			invalidate();
 		}
 		_selectedItemIndex = index;
 		if (_selectedItemIndex != -1) {
-			_adapter.setItemState(_selectedItemIndex, State.Selected);
+            makeSelectionVisible();
+			_adapter.setItemState(_selectedItemIndex, State.Selected | (state & State.Focused));
 			invalidate();
 		}
 	}
@@ -488,28 +563,34 @@ class ListWidget : WidgetGroup, OnScrollHandler {
                     navigationDelta = -1;
             }
         }
-        if (_selectedItemIndex != -1 && event.action == KeyAction.KeyUp && (event.keyCode == KeyCode.SPACE || event.keyCode == KeyCode.RETURN)) {
-            itemClicked(_selectedItemIndex);
-            return true;
-        }
         if (navigationDelta != 0) {
-            int p = _selectedItemIndex;
-            if (p < 0) {
-                if (navigationDelta < 0)
-                    p = itemCount - 1;
-                else
-                    p = 0;
-            } else {
-                p += navigationDelta;
-                if (p < 0)
-                    p = itemCount - 1;
-                else if (p >= itemCount)
-                    p = 0;
-            }
-            selectItem(p);
+            moveSelection(navigationDelta);
             return true;
         }
         return false;
+        //if (_selectedItemIndex != -1 && event.action == KeyAction.KeyUp && (event.keyCode == KeyCode.SPACE || event.keyCode == KeyCode.RETURN)) {
+        //    itemClicked(_selectedItemIndex);
+        //    return true;
+        //}
+        //if (navigationDelta != 0) {
+        //    int p = _selectedItemIndex;
+        //    if (p < 0) {
+        //        if (navigationDelta < 0)
+        //            p = itemCount - 1;
+        //        else
+        //            p = 0;
+        //    } else {
+        //        p += navigationDelta;
+        //        if (p < 0)
+        //            p = itemCount - 1;
+        //        else if (p >= itemCount)
+        //            p = 0;
+        //    }
+        //    setHoverItem(-1);
+        //    selectItem(p);
+        //    return true;
+        //}
+        //return false;
     }
 
     /// process mouse event; return true if event is processed by widget.

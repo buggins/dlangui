@@ -3,7 +3,7 @@ module dlangui.core.signals;
 import std.traits;
 import dlangui.core.collections;
 
-/// parameter is interface with single method
+/// Single listener; parameter is interface with single method
 struct Listener(T1) if (is(T1 == interface) && __traits(allMembers, T1).length == 1) {
     alias return_t = ReturnType!(__traits(getMember, T1, __traits(allMembers, T1)[0]));
     alias params_t = ParameterTypeTuple!(__traits(getMember, T1, __traits(allMembers, T1)[0]));
@@ -37,7 +37,7 @@ struct Listener(T1) if (is(T1 == interface) && __traits(allMembers, T1).length =
     alias get this;
 }
 
-/// implicitly specified return and parameter types
+/// Single listener; implicitly specified return and parameter types
 struct Listener(RETURN_T, T1...)
 {
     alias slot_t = RETURN_T delegate(T1);
@@ -65,7 +65,7 @@ struct Listener(RETURN_T, T1...)
     alias get this;
 }
 
-/// implicitly specified return and parameter types
+/// Multiple listeners; implicitly specified return and parameter types
 struct Signal(T1) if (is(T1 == interface) && __traits(allMembers, T1).length == 1) {
     alias return_t = ReturnType!(__traits(getMember, T1, __traits(allMembers, T1)[0]));
     alias params_t = ParameterTypeTuple!(__traits(getMember, T1, __traits(allMembers, T1)[0]));
@@ -75,6 +75,7 @@ struct Signal(T1) if (is(T1 == interface) && __traits(allMembers, T1).length == 
     final bool assigned() {
         return _listeners.length > 0;
     }
+    /// replace all previously assigned listeners with new one (if null passed, remove all listeners)
     final void opAssign(slot_t listener) {
         _listeners.clear();
         _listeners ~= listener;
@@ -116,7 +117,7 @@ struct Signal(T1) if (is(T1 == interface) && __traits(allMembers, T1).length == 
     }
 }
 
-/// implicitly specified return and parameter types
+/// Multiple listeners; implicitly specified return and parameter types
 struct Signal(RETURN_T, T1...)
 {
     alias slot_t = RETURN_T delegate(T1);

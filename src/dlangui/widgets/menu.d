@@ -106,6 +106,7 @@ class MenuWidgetBase : ListWidget {
         _openedPopup = null;
         _openedMenu = null;
         selectItem(-1);
+        setHoverItem(-1);
         window.setFocus(this);
     }
 
@@ -154,6 +155,7 @@ class MenuWidgetBase : ListWidget {
 			// top level handling
 			Log.d("onMenuItem ", item.id);
 			selectItem(-1);
+            setHoverItem(-1);
 			selectOnHover = false;
 			bool delegate(MenuItem item) listener = _onMenuItemClickListener;
 			PopupWidget popup = cast(PopupWidget)parent;
@@ -207,10 +209,16 @@ class MenuWidgetBase : ListWidget {
         } else {
             if (event.action == KeyAction.KeyDown) {
                 if (event.keyCode == KeyCode.LEFT) {
-                    if (_parentMenu !is null && _parentMenu.orientation == Orientation.Vertical) {
-                        if (thisPopup !is null) {
-                            // back to parent menu on Left key
-                            thisPopup.close();
+                    if (_parentMenu !is null) {
+                        if (_parentMenu.orientation == Orientation.Vertical) {
+                            if (thisPopup !is null) {
+                                // back to parent menu on Left key
+                                thisPopup.close();
+                                return true;
+                            }
+                        } else {
+                            // parent is main menu
+                            _parentMenu.moveSelection(-1);
                             return true;
                         }
                     }
@@ -219,6 +227,9 @@ class MenuWidgetBase : ListWidget {
                     MenuItemWidget thisItem = selectedMenuItemWidget();
                     if (thisItem !is null && thisItem.item.isSubmenu) {
                         openSubmenu(thisItem, true);
+                        return true;
+                    } else if (_parentMenu !is null && _parentMenu.orientation == Orientation.Horizontal) {
+                        _parentMenu.moveSelection(1);
                         return true;
                     }
                     return true;

@@ -9,7 +9,8 @@ public import dlangui.graphics.resources;
 public import dlangui.graphics.fonts;
 public import dlangui.core.i18n;
 
-public import std.signals;
+//public import std.signals;
+public import dlangui.core.signals;
 
 import dlangui.platforms.common.platform;
 
@@ -135,12 +136,21 @@ class Widget {
             return _parent.state;
         return _state;
     }
+    /// override to handle focus changes
+    protected void onFocusChange(bool focused) {
+    }
     /// set new widget state (set of flags from State enum)
     @property Widget state(uint newState) {
         if (newState != _state) {
+            uint oldState = _state;
             _state = newState;
             // need to redraw
             invalidate();
+            // notify focus changes
+            if ((oldState & State.Focused) && !(newState & State.Focused))
+                onFocusChange(false);
+            else if (!(oldState & State.Focused) && (newState & State.Focused))
+                onFocusChange(true);
         }
         return this;
     }
@@ -327,7 +337,7 @@ class Widget {
 
     /// process key event, return true if event is processed.
     bool onKeyEvent(KeyEvent event) {
-		if (_onClickListener !is null) {
+		if (onClickListener.assigned) {
             // support onClick event initiated by Space or Return keys
             if (event.action == KeyAction.KeyDown) {
                 if (event.keyCode == KeyCode.SPACE || event.keyCode == KeyCode.RETURN) {
@@ -338,7 +348,7 @@ class Widget {
             if (event.action == KeyAction.KeyUp) {
                 if (event.keyCode == KeyCode.SPACE || event.keyCode == KeyCode.RETURN) {
                     resetState(State.Pressed);
-                    _onClickListener(this);
+                    onClickListener(this);
                     return true;
                 }
             }
@@ -350,7 +360,7 @@ class Widget {
     bool onMouseEvent(MouseEvent event) {
         //Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
 		// support onClick
-		if (_onClickListener !is null) {
+		if (onClickListener.assigned) {
 	        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
 	            setState(State.Pressed);
                 if (focusable)
@@ -359,7 +369,7 @@ class Widget {
 	        }
 	        if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
 	            resetState(State.Pressed);
-				_onClickListener(this);
+				onClickListener(this);
 	            return true;
 	        }
 	        if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {
@@ -399,11 +409,9 @@ class Widget {
 	    return false;
     }
 
-	protected onClick_t _onClickListener;
+
 	/// on click event listener (bool delegate(Widget))
-	@property onClick_t onClickListener() { return _onClickListener; }
-	/// set on click event listener (bool delegate(Widget))
-	@property Widget onClickListener(onClick_t listener) { _onClickListener = listener; return this; }
+    Signal!OnClickHandler onClickListener;
 	
     // =======================================================
     // Layout and measurement methods
