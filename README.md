@@ -6,6 +6,7 @@ GUI for D programming language, written in D.
 * Crossplatform (Win32 and Linux are supported in current version)
 * Mostly inspired by Android UI API (layouts, styles, two phase layout, ...)
 * Supports highly customizable UI themes and styles
+* Supports internationalization
 * Hardware acceleration using OpenGL (when built with USE_OPENGL)
 * Fallback to Win32 API / XCB when OpenGL is not available
 * Actually it's a port (with major refactoring) of GUI library for cross platform OpenGL based implementation of Cool Reader app prokeject from C++.
