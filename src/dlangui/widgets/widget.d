@@ -97,7 +97,7 @@ class Widget {
     /// accessor to style - by lookup in theme by styleId (if style id is not set, theme base style will be used).
 	protected @property const (Style) style(uint stateFlags) const {
         const (Style) normalStyle = style();
-        if (!stateFlags) // state is normal
+        if (stateFlags == State.Normal) // state is normal
             return normalStyle;
         const (Style) stateStyle = normalStyle.forState(stateFlags);
         if (stateStyle !is normalStyle)

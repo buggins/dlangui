@@ -479,7 +479,7 @@ class Style {
 
 	/// find substyle based on widget state (e.g. focused, pressed, ...)
 	const(Style) forState(uint state) const {
-		if (state == 0)
+		if (state == State.Normal)
 			return this;
         //Log.d("forState ", state, " styleId=", _id, " substates=", _substates.length);
 		if (parentStyle !is null && _substates.length == 0 && parentStyle._substates.length > 0) //id is null && 
@@ -676,6 +676,7 @@ Theme createDefaultTheme() {
 
     Style listItem = res.createSubstyle("LIST_ITEM");
     listItem.createState(State.Selected, State.Selected).backgroundColor(0xC04040FF).textColor(0x000000);
+    listItem.createState(State.Enabled, 0).textColor(0x80000000); // half transparent text for disabled item
 
 	return res;
 }

@@ -92,6 +92,8 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 
     /// returns rectangle for item (not scrolled, first item starts at 0,0)
     Rect itemRectNoScroll(int index) {
+        if (index < 0 || index >= _itemRects.length)
+            return Rect.init;
         Rect res;
         res = _itemRects[index];
         return res;
@@ -99,6 +101,8 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 
     /// returns rectangle for item (scrolled)
     Rect itemRect(int index) {
+        if (index < 0 || index >= _itemRects.length)
+            return Rect.init;
         Rect res = itemRectNoScroll(index);
         if (_orientation == Orientation.Horizontal) {
             res.left -= _scrollPosition;
@@ -152,6 +156,13 @@ class ListWidget : WidgetGroup, OnScrollHandler {
         if (_adapter !is null)
             return _adapter.itemWidget(index);
         return null;
+    }
+
+    /// returns true if item with corresponding index is enabled
+    bool itemEnabled(int index) {
+        if (_adapter !is null && index >= 0 && index < itemCount)
+            return (_adapter.itemState(index) & State.Enabled) != 0;
+        return false;
     }
 
     void onAdapterChanged() {
@@ -243,32 +254,44 @@ class ListWidget : WidgetGroup, OnScrollHandler {
     }
 
     /// move selection
-    void moveSelection(int direction, bool wrapAround = true) {
+    bool moveSelection(int direction, bool wrapAround = true) {
         if (itemCount <= 0)
-            return;
-        if (_selectedItemIndex < 0) {
-            // no previous selection
-            if (direction > 0)
-                selectItem(wrapAround ? 0 : itemCount - 1);
-            else
-                selectItem(wrapAround ? itemCount - 1 : 0);
-            return;
+            return false;
+        int maxAttempts = itemCount - 1;
+        int index = _selectedItemIndex;
+        for (int i = 0; i < maxAttempts; i++) {
+            int newIndex = 0;
+            if (index < 0) {
+                // no previous selection
+                if (direction > 0)
+                    newIndex = wrapAround ? 0 : itemCount - 1;
+                else
+                    newIndex = wrapAround ? itemCount - 1 : 0;
+            } else {
+                // step
+                newIndex = index + direction;
+            }
+            if (newIndex < 0)
+                newIndex = wrapAround ? itemCount - 1 : 0;
+            else if (newIndex >= itemCount)
+                newIndex = wrapAround ? 0 : itemCount - 1;
+            if (newIndex != index) {
+                if (selectItem(newIndex))
+                    return true;
+                index = newIndex;
+            }
         }
-        int newIndex = _selectedItemIndex + direction;
-        if (newIndex < 0)
-            newIndex = wrapAround ? itemCount - 1 : 0;
-        else if (newIndex >= itemCount)
-            newIndex = wrapAround ? 0 : itemCount - 1;
-        if (newIndex != _selectedItemIndex)
-            selectItem(newIndex);
+        return true;
     }
 
-	protected void selectItem(int index) {
+	protected bool selectItem(int index) {
 		if (_selectedItemIndex == index) {
             updateSelectedItemFocus();
             makeSelectionVisible();
-            return;
+            return true;
         }
+        if (index != -1 && !itemEnabled(index))
+            return false;
 		if (_selectedItemIndex != -1) {
 			_adapter.resetItemState(_selectedItemIndex, State.Selected | State.Focused);
 			invalidate();
@@ -279,6 +302,7 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 			_adapter.setItemState(_selectedItemIndex, State.Selected | (state & State.Focused));
 			invalidate();
 		}
+        return true;
 	}
 
     ~this() {
@@ -567,6 +591,17 @@ class ListWidget : WidgetGroup, OnScrollHandler {
             moveSelection(navigationDelta);
             return true;
         }
+        if (event.action == KeyAction.KeyDown) {
+            if (event.keyCode == KeyCode.HOME) {
+                // select first item on HOME key
+                selectItem(0);
+                return true;
+            } else if (event.keyCode == KeyCode.END) {
+                // select last item on END key
+                selectItem(itemCount - 1);
+                return true;
+            }
+        }
         return false;
         //if (_selectedItemIndex != -1 && event.action == KeyAction.KeyUp && (event.keyCode == KeyCode.SPACE || event.keyCode == KeyCode.RETURN)) {
         //    itemClicked(_selectedItemIndex);
@@ -624,19 +659,23 @@ class ListWidget : WidgetGroup, OnScrollHandler {
             itemrc.bottom += rc.top - scrollOffset.y;
             if (itemrc.isPointInside(Point(event.x, event.y))) {
 				if ((event.flags & (MouseFlag.LButton || MouseFlag.RButton)) || _selectOnHover) {
-					if (_selectedItemIndex != i) {
+					if (_selectedItemIndex != i && itemEnabled(i)) {
 						int prevSelection = _selectedItemIndex;
 						selectItem(i);
 						setHoverItem(-1);
 						selectionChanged(_selectedItemIndex, prevSelection);
 					}
-				} else
-					setHoverItem(i);
+				} else {
+                    if (itemEnabled(i))
+					    setHoverItem(i);
+                }
 				if ((event.button == MouseFlag.LButton || event.button == MouseFlag.RButton)) {
 					if ((_clickOnButtonDown && event.action == MouseAction.ButtonDown) || (!_clickOnButtonDown && event.action == MouseAction.ButtonUp)) {
-						itemClicked(i);
-						if (_clickOnButtonDown)
-							event.doNotTrackButtonDown = true;
+                        if (itemEnabled(i)) {
+						    itemClicked(i);
+						    if (_clickOnButtonDown)
+							    event.doNotTrackButtonDown = true;
+                        }
 					}
 				}
 				return true;

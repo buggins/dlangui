@@ -230,7 +230,7 @@ wstring fromWStringz(const(wchar[]) s) {
 /// widget state flags - bits
 enum State : uint {
     /// state not specified / normal
-    Normal = 0,
+    Normal = 4, // Normal is Enabled
     Pressed = 1,
     Focused = 2,
     Enabled = 4,
