@@ -28,7 +28,7 @@ private struct FontDef {
     const bool opEquals(ref const FontDef v) {
         return _family == v._family && _italic == v._italic && _weight == v._weight && _face.equal(v._face);
     }
-    const hash_t toHash() {
+    const hash_t toHash() const nothrow @safe {
         hash_t res = 123;
         res = res * 31 + cast(hash_t)_italic;
         res = res * 31 + cast(hash_t)_weight;

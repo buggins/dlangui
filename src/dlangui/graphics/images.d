@@ -22,11 +22,16 @@ Authors:   $(WEB coolreader.org, Vadim Lopatin)
 */
 module dlangui.graphics.images;
 
+immutable bool USE_LIBPNG = false;
+immutable bool USE_FREEIMAGE = true;
+
 import dlangui.core.logger;
 import dlangui.core.types;
 import dlangui.graphics.drawbuf;
 import std.stream;
-import libpng.png;
+static if (USE_LIBPNG) {
+	import libpng.png;
+}
 
 /// load and decode image from file to ColorDrawBuf, returns null if loading or decoding is failed
 ColorDrawBuf loadImage(string filename) {
@@ -56,9 +61,6 @@ class ImageDecodingException : Exception {
         super(msg);
     }
 }
-
-immutable bool USE_LIBPNG = false;
-immutable bool USE_FREEIMAGE = true;
 
 shared static this() {
 	//import derelict.freeimage.freeimage;
@@ -126,6 +128,8 @@ static if (USE_FREEIMAGE) {
 				switch (pixelSize) {
 				case 4:
 					a = src[3] ^ 255;
+					// fall through
+					goto case;
 				case 3:
 					r = src[2];
 					g = src[1];
