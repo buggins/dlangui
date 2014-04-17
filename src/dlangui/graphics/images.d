@@ -41,6 +41,7 @@ ColorDrawBuf loadImage(string filename) {
 	    scope(exit) { f.close(); }
         return loadImage(f);
     } catch (Exception e) {
+        Log.e("exception while loading image from file ", filename);
         return null;
     }
 }
@@ -111,7 +112,17 @@ static if (USE_FREEIMAGE) {
 		//get the image width and height, and size per pixel
 		int width = FreeImage_GetWidth(dib);
 		int height = FreeImage_GetHeight(dib);
-		int pixelSize = FreeImage_GetBPP(dib)/8;
+		int bpp = FreeImage_GetBPP(dib);
+		int pixelSize = (bpp + 7)/8;
+		FREE_IMAGE_COLOR_TYPE colorType = FreeImage_GetColorType(dib);
+        int transparentIndex = 0;
+        int transparencyCount = 0;
+        RGBQUAD * palette = null;
+        if (colorType == FIC_PALETTE) {
+            palette = FreeImage_GetPalette(dib);
+            transparentIndex = FreeImage_GetTransparentIndex(dib);
+            transparencyCount = FreeImage_GetTransparencyCount(dib);
+        }
 		int size = width*height*pixelSize;
 
 		ColorDrawBuf res = new ColorDrawBuf(width, height);
@@ -124,28 +135,42 @@ static if (USE_FREEIMAGE) {
 			dst = res.scanLine(i);
 			src = data + (ii * width) * pixelSize;
 			for( int j = 0; j < width; ++j, ++dst, src += pixelSize ) {
-				a = 0;
-				switch (pixelSize) {
-				case 4:
-					a = src[3] ^ 255;
-					// fall through
-					goto case;
-				case 3:
-					r = src[2];
-					g = src[1];
-					b = src[0];
-					break;
-				case 2:
-					// todo: do something better
-					r = g = src[1];
-					b = src[0];
-					break;
-				default:
-				case 1:
-					r = g = b = src[0];
-					break;
-				}
-				dst[0] = (a << 24) | (r << 16) | (g << 8) | b;
+                if (colorType == FIC_PALETTE) {
+                    ubyte index = src[0];
+                    if (transparentIndex >= 0 && index >= transparentIndex && index < transparentIndex + transparencyCount) {
+                        dst[0] = 0xFFFFFFFF;
+                    } else {
+                        RGBQUAD pcolor = palette[index];
+                        a = pcolor.rgbReserved;
+                        r = pcolor.rgbRed;
+                        g = pcolor.rgbGreen;
+                        b = pcolor.rgbBlue;
+				        dst[0] = (a << 24) | (r << 16) | (g << 8) | b;
+                    }
+                } else {
+				    a = 0;
+				    switch (pixelSize) {
+				    case 4:
+					    a = src[3] ^ 255;
+					    // fall through
+					    goto case;
+				    case 3:
+					    r = src[2];
+					    g = src[1];
+					    b = src[0];
+					    break;
+				    case 2:
+					    // todo: do something better
+					    r = g = src[1];
+					    b = src[0];
+					    break;
+				    default:
+				    case 1:
+				        r = g = b = src[0];
+					    break;
+				    }
+				    dst[0] = (a << 24) | (r << 16) | (g << 8) | b;
+                }
 			}
 		}
 		FreeImage_CloseMemory(hmem);

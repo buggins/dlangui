@@ -702,10 +702,10 @@ Theme createDefaultTheme() {
     menuItem.createState(State.Hovered, State.Hovered).backgroundColor(0xC0FFFF00);
 
     Style transparentButtonBackground = res.createSubstyle("TRANSPARENT_BUTTON_BACKGROUND").padding(Rect(4,2,4,2)); //.backgroundColor(0xE0E080)   ;
-    transparentButtonBackground.createState(State.Focused, State.Focused).backgroundColor(0x40C0C000);
+    transparentButtonBackground.createState(State.Focused, State.Focused).backgroundColor(0xC0C0C000);
     transparentButtonBackground.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
-    transparentButtonBackground.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
-    transparentButtonBackground.createState(State.Hovered, State.Hovered).backgroundColor(0xC0FFFF00);
+    //transparentButtonBackground.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
+    transparentButtonBackground.createState(State.Hovered, State.Hovered).backgroundColor(0xD0FFFF00);
 
     Style poopupMenu = res.createSubstyle("POPUP_MENU").backgroundImageId("popup_menu_background_normal");
 
