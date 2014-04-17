@@ -46,3 +46,33 @@ Third party components used
 * WindowsAPI bindings from http://www.dsource.org/projects/bindings/wiki/WindowsApi (patched)
 * XCB and X11 bindings (patched) TODO: provide links
 
+
+Hello World
+--------------------------------------------------------------
+
+	// main.d
+	import dlangui.all;
+	mixin DLANGUI_ENTRY_POINT;
+
+	/// entry point for dlangui based application
+	extern (C) int UIAppMain(string[] args) {
+	    // resource directory search paths
+	    string[] resourceDirs = [
+	        appendPath(exePath, "../res/"),   // for Visual D and DUB builds
+	        appendPath(exePath, "../../res/") // for Mono-D builds
+	    ];
+
+	    // setup resource directories - will use only existing directories
+	    drawableCache.setResourcePaths(resourceDirs);
+
+	    // setup i18n - look for i18n directory inside one of passed directories
+	    i18n.findTranslationsDir(resourceDirs);
+	    // select translation file - for english language
+	    i18n.load("en.ini"); //"ru.ini", "en.ini"
+	
+	    // create window
+	    Window window = Platform.instance.createWindow("My Window", null);
+	    window.mainWidget = (new Button()).text("Hello world"d);
+	    // run message loop
+	    return Platform.instance.enterMessageLoop();
+	}
