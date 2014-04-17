@@ -22,7 +22,7 @@ extern (C) int UIAppMain(string[] args) {
     i18n.load("en.ini"); //"ru.ini", "en.ini"
 
     // create window
-    Window window = Platform.instance().createWindow("My Window", null);
+    Window window = Platform.instance.createWindow("My Window", null);
 	
 	static if (true) {
         VerticalLayout contentLayout = new VerticalLayout();
@@ -63,7 +63,7 @@ extern (C) int UIAppMain(string[] args) {
 		layout.addChild((new TextWidget()).textColor(0x40FF4000).text("Text widget"));
 		layout.addChild((new Button("BTN1")).textResource("EXIT")); //.textColor(0x40FF4000)
 		
-		static if (false) {
+		static if (true) {
 		
 
 	    LinearLayout hlayout = new HorizontalLayout();
@@ -100,9 +100,9 @@ extern (C) int UIAppMain(string[] args) {
 		layout.addChild((new Button("BTN3")).textColor(0x000000FF).text("Button3").layoutHeight(FILL_PARENT));
 		layout.addChild((new TextWidget()).textColor(0x004000).text("Text widget3 with very long text"));
 
-		layout.childById("BTN1").onClickListener(delegate (Widget w) { Log.d("onClick ", w.id); return true; });
-		layout.childById("BTN2").onClickListener(delegate (Widget w) { Log.d("onClick ", w.id); return true; });
-		layout.childById("BTN3").onClickListener(delegate (Widget w) { Log.d("onClick ", w.id); return true; });
+		layout.childById("BTN1").onClickListener = (delegate (Widget w) { Log.d("onClick ", w.id); return true; });
+		layout.childById("BTN2").onClickListener = (delegate (Widget w) { Log.d("onClick ", w.id); return true; });
+		layout.childById("BTN3").onClickListener = (delegate (Widget w) { Log.d("onClick ", w.id); return true; });
 
         }
 
@@ -141,5 +141,5 @@ extern (C) int UIAppMain(string[] args) {
     window.show();
     //window.windowCaption = "New Window Caption";
     // run message loop
-    return Platform.instance().enterMessageLoop();
+    return Platform.instance.enterMessageLoop();
 }

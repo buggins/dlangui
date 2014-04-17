@@ -473,7 +473,7 @@ class Platform {
     static void setInstance(Platform instance) {
         _instance = instance;
     }
-    static Platform instance() {
+    @property static Platform instance() {
         return _instance;
     }
     abstract Window createWindow(string windowCaption, Window parent);
