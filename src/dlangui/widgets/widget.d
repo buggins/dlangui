@@ -52,8 +52,19 @@ enum Orientation : ubyte {
     Horizontal
 }
 
+/// interface - slot for onClick
 interface OnClickHandler {
     bool onClick(Widget source);
+}
+
+/// interface - slot for onCheckChanged
+interface OnCheckHandler {
+    bool onCheckChanged(Widget source, bool checked);
+}
+
+/// interface - slot for onFocusChanged
+interface OnFocusHandler {
+    bool onFocusChanged(Widget source, bool focused);
 }
 
 class Widget {
@@ -152,10 +163,15 @@ class Widget {
     @property uint state() const {
         if ((_state & State.Parent) != 0 && _parent !is null)
             return _parent.state;
-        return _state;
+        return _state | State.WindowFocused; // TODO:
     }
     /// override to handle focus changes
-    protected void onFocusChange(bool focused) {
+    protected void handleFocusChange(bool focused) {
+		onFocusChangeListener(this, checked);
+    }
+    /// override to handle check changes
+    protected void handleCheckChange(bool checked) {
+		onCheckChangeListener(this, checked);
     }
     /// set new widget state (set of flags from State enum)
     @property Widget state(uint newState) {
@@ -166,9 +182,14 @@ class Widget {
             invalidate();
             // notify focus changes
             if ((oldState & State.Focused) && !(newState & State.Focused))
-                onFocusChange(false);
+                handleFocusChange(false);
             else if (!(oldState & State.Focused) && (newState & State.Focused))
-                onFocusChange(true);
+                handleFocusChange(true);
+            // notify checked changes
+            if ((oldState & State.Checked) && !(newState & State.Checked))
+                handleCheckChange(false);
+            else if (!(oldState & State.Checked) && (newState & State.Checked))
+                handleCheckChange(true);
         }
         return this;
     }
@@ -337,13 +358,23 @@ class Widget {
         return _pos.isPointInside(x, y);
     }
 
+	/// return true if state has State.Enabled flag set
+    @property bool enabled() { return (state & State.Enabled) != 0; }
+	/// change enabled state
+    @property Widget enabled(bool flg) { flg ? setState(State.Enabled) : resetState(State.Enabled); return this; }
+
     protected bool _clickable;
+	/// when true, user can click this control, and get onClick listeners called
     @property bool clickable() { return _clickable; }
     @property Widget clickable(bool flg) { _clickable = flg; return this; }
+    @property bool canClick() { return _clickable && enabled && visible; }
 
     protected bool _checkable;
+	/// when true, control supports Checked state
     @property bool checkable() { return _checkable; }
     @property Widget checkable(bool flg) { _checkable = flg; return this; }
+    @property bool canCheck() { return _checkable && enabled && visible; }
+
 
     protected bool _checked;
     /// get checked state
@@ -425,7 +456,7 @@ class Widget {
 
     /// process key event, return true if event is processed.
     bool onKeyEvent(KeyEvent event) {
-		if (clickable) {
+		if (canClick) {
             // support onClick event initiated by Space or Return keys
             if (event.action == KeyAction.KeyDown) {
                 if (event.keyCode == KeyCode.SPACE || event.keyCode == KeyCode.RETURN) {
@@ -448,7 +479,7 @@ class Widget {
     bool onMouseEvent(MouseEvent event) {
         //Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
 		// support onClick
-		if (clickable) {
+		if (canClick) {
 	        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
 	            setState(State.Pressed);
                 if (focusable)
@@ -497,10 +528,16 @@ class Widget {
 	    return false;
     }
 
+    // =======================================================
+    // Signals
 
 	/// on click event listener (bool delegate(Widget))
     Signal!OnClickHandler onClickListener;
-	
+	/// checked state change event listener (bool delegate(Widget, bool))
+    Signal!OnCheckHandler onCheckChangeListener;
+	/// focus state change event listener (bool delegate(Widget, bool))
+    Signal!OnFocusHandler onFocusChangeListener;
+
     // =======================================================
     // Layout and measurement methods
 

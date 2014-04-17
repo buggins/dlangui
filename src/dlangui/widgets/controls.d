@@ -261,9 +261,26 @@ class RadioButton : ImageTextButton {
         styleId = "TRANSPARENT_BUTTON_BACKGROUND";
         checkable = true;
     }
+
+	void uncheckSiblings() {
+		Widget p = parent;
+		if (!p)
+			return;
+		for (int i = 0; i < p.childCount; i++) {
+			Widget child = p.child(i);
+			if (child is this)
+				continue;
+			RadioButton rb = cast(RadioButton)child;
+			if (rb)
+				rb.checked = false;
+		}
+	}
+
     // called to process click and notify listeners
     override protected bool handleClick() {
+		uncheckSiblings();
         checked = true;
+
         return super.handleClick();
     }
 
@@ -279,6 +296,7 @@ class Button : Widget {
     this(string ID = null) {
 		super(ID);
         styleId = "BUTTON";
+		clickable = true;
         focusable = true;
         trackHover = true;
     }
@@ -399,6 +417,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
             super(ID);
             styleId = "PAGE_SCROLL";
             trackHover = true;
+            clickable = true;
         }
     }
 

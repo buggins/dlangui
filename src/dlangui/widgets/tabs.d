@@ -20,6 +20,7 @@ Authors:   $(WEB coolreader.org, Vadim Lopatin)
 */
 module dlangui.widgets.tabs;
 
+import dlangui.core.signals;
 import dlangui.widgets.layouts;
 import dlangui.widgets.controls;
 
@@ -82,6 +83,7 @@ class TabItemWidget : HorizontalLayout {
         addChild(_label);
         addChild(_closeButton);
         setItem(item);
+		clickable = true;
         trackHover = true;
     }
     protected bool onClick(Widget source) {

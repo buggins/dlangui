@@ -236,7 +236,7 @@ class ListWidget : WidgetGroup, OnScrollHandler {
     }
 
     /// override to handle focus changes
-    override protected void onFocusChange(bool focused) {
+    override protected void handleFocusChange(bool focused) {
         updateSelectedItemFocus();
     }
 

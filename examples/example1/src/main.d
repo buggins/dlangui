@@ -1,4 +1,4 @@
-module winmain;
+module main;
 
 import dlangui.all;
 import std.stdio;
@@ -23,13 +23,6 @@ extern (C) int UIAppMain(string[] args) {
     i18n.findTranslationsDir(resourceDirs);
     // select translation file - for english language
     i18n.load("en.ini"); //"ru.ini", "en.ini"
-
-
-    DrawBufRef img = imageCache.get("C:\\projects\\d\\dlangui\\res\\mdpi\\btn_radio_on_holo_light.png");
-    ColorDrawBuf buf = cast(ColorDrawBuf)img.get;
-    //GrayDrawBuf gbuf = cast(GrayDrawBuf)img.get;
-    uint * row = buf.scanLine(0);
-    Log.d("btn_radio_on_holo_light pixels: ", row[0], row[1], row[2]);
 
     // create window
     Window window = Platform.instance.createWindow("My Window", null);

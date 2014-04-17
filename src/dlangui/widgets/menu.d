@@ -90,6 +90,7 @@ class MenuItemWidget : HorizontalLayout {
         _label.text = _item.label;
         addChild(_label);
         trackHover = true;
+		clickable = true;
     }
 }
 
