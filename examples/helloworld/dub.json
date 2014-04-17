@@ -1,0 +1,93 @@
+{
+    "name": "helloworld",
+    "description": "dlangui library example Hello World",
+    "homepage": "https://github.com/buggins/dlangui",
+    "license": "Boost",
+    "authors": ["Vadim Lopatin"],
+
+    "targetName": "helloworld",
+    "targetPath": "bin",
+    "targetType": "executable",
+
+    "sourcePaths": ["../../src"],
+
+    "sourceFiles-windows": [
+        "../../3rdparty/win32/basetsd.d",
+        "../../3rdparty/win32/basetyps.d",
+        "../../3rdparty/win32/cderr.d",
+        "../../3rdparty/win32/cguid.d",
+        "../../3rdparty/win32/commdlg.d",
+        "../../3rdparty/win32/commctrl.d",
+        "../../3rdparty/win32/core.d",
+        "../../3rdparty/win32/dde.d",
+        "../../3rdparty/win32/ddeml.d",
+        "../../3rdparty/win32/dlgs.d",
+        "../../3rdparty/win32/imm.d",
+        "../../3rdparty/win32/lzexpand.d",
+        "../../3rdparty/win32/mmsystem.d",
+        "../../3rdparty/win32/nb30.d",
+        "../../3rdparty/win32/oaidl.d",
+        "../../3rdparty/win32/objbase.d",
+        "../../3rdparty/win32/objfwd.d",
+        "../../3rdparty/win32/objidl.d",
+        "../../3rdparty/win32/ole.d",
+        "../../3rdparty/win32/ole2.d",
+        "../../3rdparty/win32/oleauto.d",
+        "../../3rdparty/win32/olectlid.d",
+        "../../3rdparty/win32/oleidl.d",
+        "../../3rdparty/win32/prsht.d",
+        "../../3rdparty/win32/rpc.d",
+        "../../3rdparty/win32/rpcdce.d",
+        "../../3rdparty/win32/rpcdcep.d",
+        "../../3rdparty/win32/rpcndr.d",
+        "../../3rdparty/win32/rpcnsi.d",
+        "../../3rdparty/win32/rpcnsip.d",
+        "../../3rdparty/win32/rpcnterr.d",
+        "../../3rdparty/win32/shellapi.d",
+        "../../3rdparty/win32/shlobj.d",
+        "../../3rdparty/win32/shlguid.d",
+        "../../3rdparty/win32/unknwn.d",
+        "../../3rdparty/win32/uuid.d",
+        "../../3rdparty/win32/w32api.d",
+        "../../3rdparty/win32/winbase.d",
+        "../../3rdparty/win32/wincon.d",
+        "../../3rdparty/win32/windef.d",
+        "../../3rdparty/win32/windows.d",
+        "../../3rdparty/win32/winerror.d",
+        "../../3rdparty/win32/wingdi.d",
+        "../../3rdparty/win32/winnetwk.d",
+        "../../3rdparty/win32/winnls.d",
+        "../../3rdparty/win32/winnt.d",
+        "../../3rdparty/win32/winperf.d",
+        "../../3rdparty/win32/winsock2.d",
+        "../../3rdparty/win32/winspool.d",
+        "../../3rdparty/win32/winsvc.d",
+        "../../3rdparty/win32/winuser.d",
+        "../../3rdparty/win32/winver.d",
+        "../../3rdparty/win32/ws2tcpip.d",
+        "../../3rdparty/win32/wtypes.d"
+    ],
+    "sourceFiles": [
+         "src/app.d"
+    ],
+    "copyFiles-windows": [
+        "../../lib/FreeImage.dll",
+        "../../lib/libfreetype-6.dll",
+        "../../lib/libpng15.dll",
+        "../../lib/zlib1.dll"
+    ],
+
+    "mainSourceFile": "src/app.d",
+
+    "libs-windows": ["dlanguilib", "phobos", "ole32", "kernel32", "user32", "comctl32", "comdlg32"],
+
+    "versions-windows": ["USE_OPENGL", "Unicode"],
+
+
+    "dependencies": {
+        "dlangui:dlanguilib": "~master",
+        "derelict-gl3": "~master",
+        "derelict-fi": "~master",
+        "derelict-ft": "~master"
+    }
+}

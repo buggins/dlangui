@@ -9,7 +9,6 @@
     "versions-windows": ["USE_OPENGL", "Unicode"],
 	
     "subPackages": [
-        "./examples/example1/",
         {
 			"versions-windows": ["USE_OPENGL", "Unicode"],
 			"name": "dlanguilib",
@@ -83,11 +82,14 @@
 				"derelict-fi": "~master",
 				"derelict-ft": "~master"
 			}
-        }
+        },
+        "./examples/helloworld/",
+        "./examples/example1/"
     ],
 
     "dependencies": {
         "dlangui:dlanguilib": "~master",
         "dlangui:example1": "~master",
+        "dlangui:helloworld": "~master",
     }
 }
