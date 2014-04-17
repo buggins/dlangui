@@ -30,14 +30,33 @@ Authors:   $(WEB coolreader.org, Vadim Lopatin)
 module dlangui.widgets.controls;
 
 import dlangui.widgets.widget;
+import dlangui.widgets.layouts;
 
+/// vertical spacer to fill empty space in vertical layouts
+class VSpacer : Widget {
+    this() {
+        styleId = "VSpacer";
+    }
+}
 
+/// horizontal spacer to fill empty space in horizontal layouts
+class HSpacer : Widget {
+    this() {
+        styleId = "HSpacer";
+    }
+}
 
 /// static text widget
 class TextWidget : Widget {
-    this(string ID = null) {
+    this(string ID = null, string textResourceId = null) {
 		super(ID);
         styleId = "TEXT";
+        _text = textResourceId;
+    }
+    this(string ID, dstring rawText) {
+		super(ID);
+        styleId = "TEXT";
+        _text = rawText;
     }
     protected UIString _text;
     /// get widget text
@@ -49,7 +68,7 @@ class TextWidget : Widget {
 		return this;
     }
     /// set text to show
-    @property Widget text(ref UIString s) { 
+    override @property Widget text(ref UIString s) { 
         _text = s; 
         requestLayout();
 		return this;
@@ -152,7 +171,11 @@ class ImageWidget : Widget {
             sz.x = img.width;
             sz.y = img.height;
             applyAlign(rc, sz);
-            img.drawTo(buf, rc, state);
+            uint st = state;
+            if (state & State.Checked) {
+                Log.d("Drawing image for checked state");
+            }
+            img.drawTo(buf, rc, st);
         }
     }
 }
@@ -160,18 +183,98 @@ class ImageWidget : Widget {
 /// button with image only
 class ImageButton : ImageWidget {
     this(string ID = null, string drawableId = null) {
-        super(ID);
+        super(ID, drawableId);
         styleId = "BUTTON";
         _drawableId = drawableId;
+        clickable = true;
         focusable = true;
         trackHover = true;
     }
 }
 
+/// button with image and text
+class ImageTextButton : HorizontalLayout {
+    protected ImageWidget _icon;
+    protected TextWidget _label;
+    override @property dstring text() { return _label.text; }
+    override @property Widget text(dstring s) { _label.text = s; requestLayout(); return this; }
+    override @property Widget text(ref UIString s) { _label.text = s; requestLayout(); return this; }
+    this(string ID = null, string drawableId = null, string textResourceId = null) {
+        super(ID);
+        styleId = "BUTTON";
+        _icon = new ImageWidget("icon", drawableId);
+        _label = new TextWidget("label", textResourceId);
+        _label.styleId = "BUTTON_LABEL";
+        _icon.state = State.Parent;
+        _label.state = State.Parent;
+        addChild(_icon);
+        addChild(_label);
+        clickable = true;
+        focusable = true;
+        trackHover = true;
+    }
+    this(string ID, string drawableId, dstring rawText) {
+        super(ID);
+        styleId = "BUTTON";
+        _icon = new ImageWidget("icon", drawableId);
+        _label = new TextWidget("label", rawText);
+        _label.styleId = "BUTTON_LABEL";
+        _icon.styleId = "BUTTON_ICON";
+        _icon.state = State.Parent;
+        _label.state = State.Parent;
+        addChild(_icon);
+        addChild(_label);
+        clickable = true;
+        focusable = true;
+        trackHover = true;
+    }
+}
+
+/// checkbox
+class CheckBox : ImageTextButton {
+    this(string ID = null, string textResourceId = null) {
+        super(ID, "btn_check", textResourceId);
+        styleId = "TRANSPARENT_BUTTON_BACKGROUND";
+        checkable = true;
+    }
+    this(string ID, dstring labelText) {
+        super(ID, "btn_check", labelText);
+        styleId = "TRANSPARENT_BUTTON_BACKGROUND";
+        checkable = true;
+    }
+    // called to process click and notify listeners
+    override protected bool handleClick() {
+        checked = !checked;
+        return super.handleClick();
+    }
+}
+
+/// radio button
+class RadioButton : ImageTextButton {
+    this(string ID = null, string textResourceId = null) {
+        super(ID, "btn_radio", textResourceId);
+        styleId = "TRANSPARENT_BUTTON_BACKGROUND";
+        checkable = true;
+    }
+    this(string ID, dstring labelText) {
+        super(ID, "btn_radio", labelText);
+        styleId = "TRANSPARENT_BUTTON_BACKGROUND";
+        checkable = true;
+    }
+    // called to process click and notify listeners
+    override protected bool handleClick() {
+        checked = true;
+        return super.handleClick();
+    }
+
+}
+
+/// Text only button
 class Button : Widget {
     protected UIString _text;
     override @property dstring text() { return _text; }
     override @property Widget text(dstring s) { _text = s; requestLayout(); return this; }
+    override @property Widget text(ref UIString s) { _text = s; requestLayout(); return this; }
     @property Widget textResource(string s) { _text = s; requestLayout(); return this; }
     this(string ID = null) {
 		super(ID);

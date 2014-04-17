@@ -523,10 +523,11 @@ class Theme : Style {
 		_backgroundColor = 0xFFFFFFFF; // transparent
 		_textColor = 0x000000; // black
 		_align = Align.TopLeft;
-		_fontSize = 24; // TODO: from settings or screen properties / DPI
+		_fontSize = 14; // TODO: from settings or screen properties / DPI
 		_fontStyle = FONT_STYLE_NORMAL;
 		_fontWeight = 400;
-		_fontFace = "Arial"; // TODO: from settings
+		//_fontFace = "Arial"; // TODO: from settings
+		_fontFace = "Verdana"; // TODO: from settings
         _fontFamily = FontFamily.SansSerif;
         _minHeight = 0;
         _minWidth = 0;
@@ -635,10 +636,18 @@ Theme createDefaultTheme() {
 	Log.d("Creating default theme");
 	Theme res = new Theme("default");
     //res.fontSize(14);
-    res.fontSize(24);
+    version (Windows) {
+        res.fontFace = "Verdana";
+    }
+    //res.fontFace = "Arial Narrow";
+    res.fontSize = 13; // TODO: choose based on DPI
     Style button = res.createSubstyle("BUTTON").backgroundImageId("btn_default_small").alignment(Align.Center);
-    Style buttonTransparent = res.createSubstyle("BUTTON_TRANSPARENT").backgroundImageId("btn_default_small_transparent").alignment(Align.Center);
-    Style text = res.createSubstyle("TEXT").margins(Rect(2,2,2,2)).padding(Rect(1,1,1,1));
+    res.createSubstyle("BUTTON_TRANSPARENT").backgroundImageId("btn_default_small_transparent").alignment(Align.Center);
+    res.createSubstyle("BUTTON_LABEL").layoutWidth(FILL_PARENT).alignment(Align.Left|Align.VCenter);
+    res.createSubstyle("BUTTON_ICON").alignment(Align.Center);
+    res.createSubstyle("TEXT").margins(Rect(2,2,2,2)).padding(Rect(1,1,1,1));
+    res.createSubstyle("HSPACER").layoutWidth(FILL_PARENT).layoutWeight(100);
+    res.createSubstyle("VSPACER").layoutHeight(FILL_PARENT).layoutWeight(100);
     //button.createState(State.Enabled | State.Focused, State.Focused).backgroundImageId("btn_default_small_normal_disable_focused");
     //button.createState(State.Enabled, 0).backgroundImageId("btn_default_small_normal_disable");
     //button.createState(State.Pressed, State.Pressed).backgroundImageId("btn_default_small_pressed");
@@ -691,6 +700,12 @@ Theme createDefaultTheme() {
     menuItem.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
     menuItem.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
     menuItem.createState(State.Hovered, State.Hovered).backgroundColor(0xC0FFFF00);
+
+    Style transparentButtonBackground = res.createSubstyle("TRANSPARENT_BUTTON_BACKGROUND").padding(Rect(4,2,4,2)); //.backgroundColor(0xE0E080)   ;
+    transparentButtonBackground.createState(State.Focused, State.Focused).backgroundColor(0x40C0C000);
+    transparentButtonBackground.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
+    transparentButtonBackground.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
+    transparentButtonBackground.createState(State.Hovered, State.Hovered).backgroundColor(0xC0FFFF00);
 
     Style poopupMenu = res.createSubstyle("POPUP_MENU").backgroundImageId("popup_menu_background_normal");
 

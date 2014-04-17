@@ -351,6 +351,8 @@ class StateDrawable : Drawable {
         foreach(item; element.elements) {
             if (item.tag.name.equal("item")) {
                 string drawableId = attrValue(item, "drawable", "android:drawable");
+                if (drawableId.startsWith("@drawable/"))
+                    drawableId = drawableId[10 .. $];
                 ColorTransform transform;
                 transform.addBefore = colorTransformFromStringAdd(attrValue(item, "color_transform_add1", "android:transform_color_add1"));
                 transform.multiply = colorTransformFromStringMult(attrValue(item, "color_transform_mul", "android:transform_color_mul"));
@@ -394,8 +396,12 @@ class StateDrawable : Drawable {
     override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
         foreach(ref item; _stateList)
             if (item.matchState(state)) {
-                if (!item.drawable.isNull)
+                if (!item.drawable.isNull) {
+                    if (state & State.Checked) {
+                        Log.d("Found item for checked state: ", item.stateMask, " ", item.stateValue);
+                    }
                     item.drawable.drawTo(buf, rc, state, tilex0, tiley0);
+                }
                 return;
             }
     }
@@ -620,24 +626,28 @@ class DrawableCache {
                 return _drawable;
             if (_filename !is null) {
                 // reload from file
-                if (_filename.endsWith(".xml")) {
+                if (_filename.endsWith(".xml") || _filename.endsWith(".XML")) {
                     // XML drawables support
                     StateDrawable d = new StateDrawable();
                     if (!d.load(_filename)) {
+                        Log.e("failed to load .xml drawable from ", _filename);
                         destroy(d);
                         _error = true;
                     } else {
+                        Log.d("loaded .xml drawable from ", _filename);
                         _drawable = d;
                     }
                 } else {
                     // PNG/JPEG drawables support
                     DrawBufRef image = imageCache.get(_filename, transform);
                     if (!image.isNull) {
-                        bool ninePatch = _filename.endsWith(".9.png");
+                        bool ninePatch = _filename.endsWith(".9.png") ||  _filename.endsWith(".9.PNG");
                         _transformed[transform] = new ImageDrawable(image, _tiled, ninePatch);
                         return _transformed[transform];
-                    } else
+                    } else {
+                        Log.e("failed to load image from ", _filename);
                         _error = true;
+                    }
                 }
             }
             return _drawable;
@@ -743,6 +753,8 @@ class DrawableCache {
             if (fn !is null) {
                 _idToFileMap[id] = fn;
                 return fn;
+            } else {
+                Log.w("resource ", id, " is not found");
             }
         }
         return null;

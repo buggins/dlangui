@@ -1,5 +1,10 @@
 Debug
 Release
+Unittest
 ui.log
 obj
-
+*.suo
+Thumbs.db
+.dub
+bin
+*.obj

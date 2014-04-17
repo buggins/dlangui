@@ -54,12 +54,12 @@
   <objname />
   <libname />
   <doDocComments>0</doDocComments>
-  <docdir />
-  <docname />
+  <docdir>docs</docdir>
+  <docname>docs/index.html</docname>
   <modules_ddoc />
   <ddocfiles />
   <doHdrGeneration>0</doHdrGeneration>
-  <hdrdir />
+  <hdrdir>include</hdrdir>
   <hdrname />
   <doXGeneration>1</doXGeneration>
   <xfilename>$(IntDir)\$(TargetName).json</xfilename>

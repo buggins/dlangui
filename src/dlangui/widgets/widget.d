@@ -259,6 +259,8 @@ class Widget {
     @property dstring text() { return ""; }
     /// sets widget content text (override to support this)
     @property Widget text(dstring s) { return this; }
+    /// sets widget content text (override to support this)
+    @property Widget text(ref UIString s) { return this; }
 
     //==================================================================
     // Layout and drawing related methods
@@ -337,12 +339,39 @@ class Widget {
         return _pos.isPointInside(x, y);
     }
 
+    protected bool _clickable;
+    @property bool clickable() { return _clickable; }
+    @property Widget clickable(bool flg) { _clickable = flg; return this; }
+
+    protected bool _checkable;
+    @property bool checkable() { return _checkable; }
+    @property Widget checkable(bool flg) { _checkable = flg; return this; }
+
+    protected bool _checked;
+    /// get checked state
+    @property bool checked() { return (state & State.Checked) != 0; }
+    /// set checked state
+    @property Widget checked(bool flg) { 
+        if (flg != checked) {
+            if (flg) 
+                setState(State.Checked); 
+            else 
+                resetState(State.Checked); 
+            invalidate(); 
+        }
+        return this; 
+    }
+
     protected bool _focusable;
     @property bool focusable() { return _focusable; }
     @property Widget focusable(bool flg) { _focusable = flg; return this; }
+
     @property bool focused() {
         return (window !is null && window.focusedWidget is this && (state & State.Focused));
     }
+
+
+
     /// returns true if this widget and all its parents are visible
     @property bool visible() {
         if (visibility != Visibility.Visible)
@@ -390,9 +419,15 @@ class Widget {
     // =======================================================
     // Events
 
+    // called to process click and notify listeners
+    protected bool handleClick() {
+        bool res = onClickListener(this);
+        return res;
+    }
+
     /// process key event, return true if event is processed.
     bool onKeyEvent(KeyEvent event) {
-		if (onClickListener.assigned) {
+		if (clickable) {
             // support onClick event initiated by Space or Return keys
             if (event.action == KeyAction.KeyDown) {
                 if (event.keyCode == KeyCode.SPACE || event.keyCode == KeyCode.RETURN) {
@@ -403,7 +438,7 @@ class Widget {
             if (event.action == KeyAction.KeyUp) {
                 if (event.keyCode == KeyCode.SPACE || event.keyCode == KeyCode.RETURN) {
                     resetState(State.Pressed);
-                    onClickListener(this);
+                    handleClick();
                     return true;
                 }
             }
@@ -415,7 +450,7 @@ class Widget {
     bool onMouseEvent(MouseEvent event) {
         //Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
 		// support onClick
-		if (onClickListener.assigned) {
+		if (clickable) {
 	        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
 	            setState(State.Pressed);
                 if (focusable)
@@ -424,7 +459,7 @@ class Widget {
 	        }
 	        if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
 	            resetState(State.Pressed);
-				onClickListener(this);
+                handleClick();
 	            return true;
 	        }
 	        if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {

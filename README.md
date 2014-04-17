@@ -65,6 +65,7 @@ Hello World
 	    // setup resource directories - will use only existing directories
 	    drawableCache.setResourcePaths(resourceDirs);
 
+            // optinally setup internatilnalization (if used)
 	    // setup i18n - look for i18n directory inside one of passed directories
 	    i18n.findTranslationsDir(resourceDirs);
 	    // select translation file - for english language
@@ -72,7 +73,10 @@ Hello World
 	
 	    // create window
 	    Window window = Platform.instance.createWindow("My Window", null);
+            // create some widget to show in window
 	    window.mainWidget = (new Button()).text("Hello world"d);
+            // show window
+            window.show();
 	    // run message loop
 	    return Platform.instance.enterMessageLoop();
 	}

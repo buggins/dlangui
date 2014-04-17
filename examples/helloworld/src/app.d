@@ -25,10 +25,12 @@ extern (C) int UIAppMain(string[] args) {
     // create window
     Window window = Platform.instance.createWindow("My Window", null);
 	
-    window.mainWidget = (new Button()).text("sample button");
+    // create some widget to show in window
+    window.mainWidget = (new Button()).text("Hello world"d);
 
+    // show window
     window.show();
-    //window.windowCaption = "New Window Caption";
+
     // run message loop
     return Platform.instance.enterMessageLoop();
 }

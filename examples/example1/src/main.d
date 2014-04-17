@@ -12,8 +12,10 @@ extern (C) int UIAppMain(string[] args) {
     // resource directory search paths
     string[] resourceDirs = [
         appendPath(exePath, "../../../res/"),   // for Visual D and DUB builds
+        appendPath(exePath, "../../../res/mdpi/"),   // for Visual D and DUB builds
         appendPath(exePath, "../../../../res/"),// for Mono-D builds
-        appendPath(exePath, "res/") // when res dir is located at the same directory as executable
+        appendPath(exePath, "../../../../res/mdpi/"),// for Mono-D builds
+        appendPath(exePath, "res/mdpi/") // when res dir is located at the same directory as executable
     ];
     // setup resource directories - will use only existing directories
     drawableCache.setResourcePaths(resourceDirs);
@@ -70,9 +72,9 @@ extern (C) int UIAppMain(string[] args) {
 	    LinearLayout hlayout = new HorizontalLayout();
 		//hlayout.addChild((new Button()).text("<<")); //.textColor(0x40FF4000)
 	    hlayout.addChild((new TextWidget()).text("Several").alignment(Align.Center));
-		hlayout.addChild((new ImageWidget()).drawableId("exit").padding(Rect(5,5,5,5)).alignment(Align.Center));
+		hlayout.addChild((new ImageWidget()).drawableId("btn_radio").padding(Rect(5,5,5,5)).alignment(Align.Center));
 	    hlayout.addChild((new TextWidget()).text("items").alignment(Align.Center));
-		hlayout.addChild((new ImageWidget()).drawableId("exit").padding(Rect(5,5,5,5)).alignment(Align.Center));
+		hlayout.addChild((new ImageWidget()).drawableId("btn_check").padding(Rect(5,5,5,5)).alignment(Align.Center));
 	    hlayout.addChild((new TextWidget()).text("in horizontal layout"));
 		hlayout.addChild((new ImageWidget()).drawableId("exit").padding(Rect(5,5,5,5)).alignment(Align.Center));
 		//hlayout.addChild((new Button()).text(">>")); //.textColor(0x40FF4000)
@@ -84,6 +86,9 @@ extern (C) int UIAppMain(string[] args) {
 		vlayout.addChild((new TextWidget()).text("VLayout line 1").textColor(0x40FF4000)); //
 	    vlayout.addChild((new TextWidget()).text("VLayout line 2").textColor(0x40FF8000));
 	    vlayout.addChild((new TextWidget()).text("VLayout line 2").textColor(0x40008000));
+	    vlayout.addChild(new RadioButton("rb1", "Radio button 1"d));
+	    vlayout.addChild(new RadioButton("rb2", "Radio button 2"d));
+	    vlayout.addChild(new RadioButton("rb3", "Radio button 3"d));
         vlayout.layoutWidth(FILL_PARENT);
 	    vlayoutgroup.addChild(vlayout);
         vlayoutgroup.layoutWidth(FILL_PARENT);
@@ -94,12 +99,13 @@ extern (C) int UIAppMain(string[] args) {
         ScrollBar sb = new ScrollBar("hscroll", Orientation.Horizontal);
         layout.addChild(sb.layoutHeight(WRAP_CONTENT).layoutWidth(FILL_PARENT));
 
-		layout.addChild((new Button("BTN2")).textColor(0x000000FF).text("Button2"));
+		layout.addChild((new CheckBox("BTN2", "Some checkbox"d)));
 		layout.addChild((new TextWidget()).textColor(0x40FF4000).text("Text widget"));
 		layout.addChild((new ImageWidget()).drawableId("exit").padding(Rect(5,5,5,5)));
 		layout.addChild((new TextWidget()).textColor(0xFF4000).text("Text widget2").padding(Rect(5,5,5,5)).margins(Rect(5,5,5,5)).backgroundColor(0xA0A0A0));
-		layout.addChild((new Button("BTN3")).textColor(0x000000FF).text("Button3").layoutHeight(FILL_PARENT));
-		layout.addChild((new TextWidget()).textColor(0x004000).text("Text widget3 with very long text"));
+		layout.addChild((new RadioButton("BTN3", "Some radio button"d)));
+		layout.addChild((new TextWidget(null, "Text widget3 with very long text"d)).textColor(0x004000));
+        layout.addChild(new VSpacer()); // vertical spacer to fill extra space
 
 		layout.childById("BTN1").onClickListener = (delegate (Widget w) { Log.d("onClick ", w.id); return true; });
 		layout.childById("BTN2").onClickListener = (delegate (Widget w) { Log.d("onClick ", w.id); return true; });

@@ -21,8 +21,10 @@ extern (C) int UIAppMain(string[] args) {
         appendPath(exePath, "../../../../res/"), // for Mono-D builds
         appendPath(exePath, "res/") // when res dir is located at the same directory as executable
     ];
+
     // setup resource directories - will use only existing directories
     drawableCache.setResourcePaths(resourceDirs);
+
     // setup i18n - look for i18n directory inside one of passed directories
     i18n.findTranslationsDir(resourceDirs);
     // select translation file - for english language
@@ -30,7 +32,10 @@ extern (C) int UIAppMain(string[] args) {
 
     // create window
     Window window = Platform.instance.createWindow("My Window", null);
+    // create some widget to show in window
     window.mainWidget = (new Button()).text("Hello world"d);
+    // show window
+    window.show();
     // run message loop
     return Platform.instance.enterMessageLoop();
 }
