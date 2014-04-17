@@ -286,3 +286,68 @@ enum State : uint {
     Parent = 0x10000, // use parent's state
 }
 
+
+
+version (Windows) {
+    immutable char PATH_DELIMITER = '\\';
+} else {
+    immutable char PATH_DELIMITER = '/';
+}
+
+/// returns true if char ch is / or \ slash
+bool isPathDelimiter(char ch) {
+    return ch == '/' || ch == '\\';
+}
+
+/// returns current executable path only, including last path delimiter
+@property string exePath() {
+    import std.file;
+    string path = thisExePath();
+    int lastSlash = 0;
+    for (int i = 0; i < path.length; i++)
+        if (path[i] == PATH_DELIMITER)
+            lastSlash = i;
+    return path[0 .. lastSlash + 1];
+}
+
+/// converts path delimiters to standard for platform inplace in buffer(e.g. / to \ on windows, \ to / on posix), returns buf
+char[] convertPathDelimiters(char[] buf) {
+    foreach(ref ch; buf) {
+        version (Windows) {
+            if (ch == '/')
+                ch = '\\';
+        } else {
+            if (ch == '\\')
+                ch = '/';
+        }
+    }
+    return buf;
+}
+
+/// converts path delimiters to standard for platform (e.g. / to \ on windows, \ to / on posix)
+string convertPathDelimiters(string src) {
+    char[] buf = src.dup;
+    return cast(string)convertPathDelimiters(buf);
+}
+
+/// appends file path parts with proper delimiters e.g. appendPath("/home/user", ".myapp", "config") => "/home/user/.myapp/config"
+string appendPath(string[] pathItems ...) {
+    char[] buf;
+    foreach (s; pathItems) {
+        if (buf.length && !isPathDelimiter(buf[$-1]))
+            buf ~= PATH_DELIMITER;
+        buf ~= s;
+    }
+    return convertPathDelimiters(buf).dup;
+}
+
+/// appends file path parts with proper delimiters (as well converts delimiters inside path to system) to buffer e.g. appendPath("/home/user", ".myapp", "config") => "/home/user/.myapp/config"
+char[] appendPath(char[] buf, string[] pathItems ...) {
+    foreach (s; pathItems) {
+        if (buf.length && !isPathDelimiter(buf[$-1]))
+            buf ~= PATH_DELIMITER;
+        buf ~= s;
+    }
+    return convertPathDelimiters(buf);
+}
+

@@ -491,19 +491,29 @@ version (USE_OPENGL) {
     }
 }
 
-version (Windows) {
-    immutable char PATH_DELIMITER = '\\';
-} else {
-    immutable char PATH_DELIMITER = '/';
-}
 
-/// returns current executable path only, including last path delimiter
-string exePath() {
-    import std.file;
-    string path = thisExePath();
-    int lastSlash = 0;
-    for (int i = 0; i < path.length; i++)
-        if (path[i] == PATH_DELIMITER)
-            lastSlash = i;
-    return path[0 .. lastSlash + 1];
+/// put "mixin APP_ENTRY_POINT;" to main module of your dlangui based app
+mixin template APP_ENTRY_POINT() {
+    version (linux) {
+	    //pragma(lib, "png");
+	    pragma(lib, "xcb");
+	    pragma(lib, "xcb-shm");
+	    pragma(lib, "xcb-image");
+	    pragma(lib, "X11-xcb");
+	    pragma(lib, "X11");
+	    pragma(lib, "dl");
+    }
+
+    /// workaround for link issue when WinMain is located in library
+    version(Windows) {
+        private import win32.windows;
+        private import dlangui.platforms.windows.winapp;
+        extern (Windows)
+            int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+                        LPSTR lpCmdLine, int nCmdShow)
+            {
+                return DLANGUIWinMain(hInstance, hPrevInstance,
+                                      lpCmdLine, nCmdShow);
+            }
+    }
 }

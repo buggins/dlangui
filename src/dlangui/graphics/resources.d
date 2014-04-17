@@ -701,8 +701,22 @@ class DrawableCache {
     @property string[] resourcePaths() {
         return _resourcePaths;
     }
+    /// set resource directory paths as variable number of parameters
+    void setResourcePaths(string[] paths ...) {
+        resourcePaths(paths);
+    }
+    /// set resource directory paths array (only existing dirs will be added)
     @property void resourcePaths(string[] paths) {
-        _resourcePaths = paths;
+        string[] existingPaths;
+        foreach(path; paths) {
+            if (exists(path) && isDir(path)) {
+                existingPaths ~= path;
+                Log.d("DrawableCache: adding path ", path, " to resource dir list.");
+            } else {
+                Log.d("DrawableCache: path ", path, " does not exist.");
+            }
+        }
+        _resourcePaths = existingPaths;
         clear();
     }
     /// concatenates path with resource id and extension, returns pathname if there is such file, null if file does not exist

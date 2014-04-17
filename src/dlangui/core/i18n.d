@@ -40,6 +40,7 @@ Authors:   $(WEB coolreader.org, Vadim Lopatin)
 */
 module dlangui.core.i18n;
 
+import dlangui.core.types;
 import dlangui.core.logger;
 import std.utf;
 
@@ -108,6 +109,18 @@ class UIStringTranslator {
     @property string resourceDir() { return _resourceDir; }
     /// set i18n resource directory
     @property void resourceDir(string dir) { _resourceDir = dir; }
+    /// looks for i18n directory inside one of passed dirs, and uses first found as directory to read i18n files from
+    string findTranslationsDir(string[] dirs ...) {
+        import std.file;
+        foreach(dir; dirs) {
+            string path = appendPath(dir, "i18n/");
+            if (exists(path) && isDir(path)) {
+                _resourceDir = path;
+                return _resourceDir;
+            }
+        }
+        return null;
+    }
 
     /// convert resource path - зкуpend resource dir if necessary
     string convertResourcePath(string filename) {

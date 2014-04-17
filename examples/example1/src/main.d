@@ -4,45 +4,22 @@ import dlangui.all;
 import std.stdio;
 import std.conv;
 
-version (linux) {
-	//pragma(lib, "png");
-	pragma(lib, "xcb");
-	pragma(lib, "xcb-shm");
-	pragma(lib, "xcb-image");
-	pragma(lib, "X11-xcb");
-	pragma(lib, "X11");
-	pragma(lib, "dl");
-}
 
-/// workaround for link issue when WinMain is located in library
-version(Windows) {
-    private import win32.windows;
-    private import dlangui.platforms.windows.winapp;
-    extern (Windows)
-        int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                    LPSTR lpCmdLine, int nCmdShow)
-        {
-            return DLANGUIWinMain(hInstance, hPrevInstance,
-                                  lpCmdLine, nCmdShow);
-        }
-}
+mixin APP_ENTRY_POINT;
 
 /// entry point for dlangui based application
 extern (C) int UIAppMain(string[] args) {
-    // setup resource dir
-	version (Windows) {
-    	string resourceDir = exePath() ~ "..\\res\\";
-    	string i18nDir = exePath() ~ "..\\res\\i18n\\";
-	} else {
-    	string resourceDir = exePath() ~ "../../res/";
-    	string i18nDir = exePath() ~ "../../res/i18n/";
-	}
-    string[] imageDirs = [
-        resourceDir
+    // resource directory search paths
+    string[] resourceDirs = [
+        appendPath(exePath, "../res/"),   // for Visual D and DUB builds
+        appendPath(exePath, "../../res/") // for Mono-D builds
     ];
-    drawableCache.resourcePaths = imageDirs;
-    i18n.resourceDir = i18nDir;
-    i18n.load("ru.ini", "en.ini");
+    // setup resource directories - will use only existing directories
+    drawableCache.setResourcePaths(resourceDirs);
+    // setup i18n - look for i18n directory inside one of passed directories
+    i18n.findTranslationsDir(resourceDirs);
+    // select translation file - for english language
+    i18n.load("en.ini"); //"ru.ini", "en.ini"
 
     // create window
     Window window = Platform.instance().createWindow("My Window", null);
@@ -162,9 +139,7 @@ extern (C) int UIAppMain(string[] args) {
 	    window.mainWidget = (new Button()).text("sample button");
 	}
     window.show();
-    //window.showPopup((new TextWidget()).text("POPUP"d));
-    window.windowCaption = "New Window Caption";
-
+    //window.windowCaption = "New Window Caption";
     // run message loop
     return Platform.instance().enterMessageLoop();
 }
