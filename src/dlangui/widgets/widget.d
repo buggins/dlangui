@@ -36,8 +36,6 @@ import dlangui.platforms.common.platform;
 
 import std.algorithm;
 
-alias onClick_t = bool delegate(Widget);
-
 
 /// Visibility (see Android View Visibility)
 enum Visibility : ubyte {
