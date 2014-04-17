@@ -118,10 +118,12 @@ static if (USE_FREEIMAGE) {
         int transparentIndex = 0;
         int transparencyCount = 0;
         RGBQUAD * palette = null;
+        ubyte * transparencyTable = null;
         if (colorType == FIC_PALETTE) {
             palette = FreeImage_GetPalette(dib);
             transparentIndex = FreeImage_GetTransparentIndex(dib);
             transparencyCount = FreeImage_GetTransparencyCount(dib);
+            transparencyTable = FreeImage_GetTransparencyTable(dib);
         }
 		int size = width*height*pixelSize;
 
@@ -137,16 +139,17 @@ static if (USE_FREEIMAGE) {
 			for( int j = 0; j < width; ++j, ++dst, src += pixelSize ) {
                 if (colorType == FIC_PALETTE) {
                     ubyte index = src[0];
-                    if (transparentIndex >= 0 && index >= transparentIndex && index < transparentIndex + transparencyCount) {
-                        dst[0] = 0xFFFFFFFF;
-                    } else {
-                        RGBQUAD pcolor = palette[index];
-                        a = pcolor.rgbReserved;
-                        r = pcolor.rgbRed;
-                        g = pcolor.rgbGreen;
-                        b = pcolor.rgbBlue;
-				        dst[0] = (a << 24) | (r << 16) | (g << 8) | b;
+                    a = 0;
+                    if (transparencyTable !is null) {
+                        a = transparencyTable[index] ^ 0xFF;
+                    } else if (transparentIndex >= 0 && index >= transparentIndex && index < transparentIndex + transparencyCount) {
+                        a = 0xFF;
                     }
+                    RGBQUAD pcolor = palette[index];
+                    r = pcolor.rgbRed;
+                    g = pcolor.rgbGreen;
+                    b = pcolor.rgbBlue;
+                    dst[0] = (a << 24) | (r << 16) | (g << 8) | b;
                 } else {
 				    a = 0;
 				    switch (pixelSize) {
