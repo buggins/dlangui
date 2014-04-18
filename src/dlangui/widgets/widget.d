@@ -167,10 +167,12 @@ class Widget {
     }
     /// override to handle focus changes
     protected void handleFocusChange(bool focused) {
+        invalidate();
 		onFocusChangeListener(this, checked);
     }
     /// override to handle check changes
     protected void handleCheckChange(bool checked) {
+        invalidate();
 		onCheckChangeListener(this, checked);
     }
     /// set new widget state (set of flags from State enum)
@@ -419,6 +421,7 @@ class Widget {
             return null;
         if (!visible)
             return window.focusedWidget;
+        invalidate();
         if (!canFocus) {
             Widget w = findFocusableChild(true);
             if (!w)
@@ -482,7 +485,7 @@ class Widget {
 		if (canClick) {
 	        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
 	            setState(State.Pressed);
-                if (focusable)
+                if (canFocus)
                     setFocus();
 	            return true;
 	        }
@@ -501,8 +504,9 @@ class Widget {
 	            return true;
 	        }
 		}
-        if (focusable && event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
+        if (canFocus && event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
             setFocus();
+            return true;
         }
         if (trackHover) {
 	        if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {

@@ -158,6 +158,18 @@ class EditLine : Widget {
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }
 
+    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+    override void layout(Rect rc) {
+        _needLayout = false;
+        if (visibility == Visibility.Gone) {
+            return;
+        }
+        Point sz = Point(rc.width, measuredHeight);
+        applyAlign(rc, sz);
+        _pos = rc;
+    }
+
+    /// draw content
     override void onDraw(DrawBuf buf) {
         if (visibility != Visibility.Visible)
             return;
@@ -169,8 +181,8 @@ class EditLine : Widget {
         FontRef font = font();
         dstring txt = text;
         Point sz = font.textSize(txt);
-        applyAlign(rc, sz);
-        font.drawText(buf, rc.left, rc.top, txt, textColor);
+        //applyAlign(rc, sz);
+        font.drawText(buf, rc.left, rc.top + sz.y / 10, txt, textColor);
     }
 }
 

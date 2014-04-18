@@ -240,14 +240,14 @@ class Style {
 
 	/// padding
 	@property ref const(Rect) padding() const {
-		if (_stateValue != 0)
+		if (_stateValue != State.Enabled)
 			return parentStyle._padding;
 		return _padding;
 	}
 
 	/// margins
 	@property ref const(Rect) margins() const {
-		if (_stateValue != 0)
+		if (_stateValue != State.Enabled)
 			return parentStyle._margins;
 		return _margins;
 	}
@@ -713,7 +713,7 @@ Theme createDefaultTheme() {
     //listItem.createState(State.Selected, State.Selected).backgroundColor(0xC04040FF).textColor(0x000000);
     //listItem.createState(State.Enabled, 0).textColor(0x80000000); // half transparent text for disabled item
 
-    Style editLine = res.createSubstyle("EDIT_LINE").backgroundImageId("editbox_background").padding(Rect(4,2,4,2));
+    Style editLine = res.createSubstyle("EDIT_LINE").backgroundImageId("editbox_background").padding(Rect(5,6,5,6)).margins(Rect(2,2,2,2)).minWidth(40);
 
 	return res;
 }
