@@ -3,6 +3,8 @@ Dlang UI
 
 GUI for D programming language, written in D.
 
+Alpha stage of development.
+
 * Crossplatform (Win32 and Linux are supported in current version)
 * Mostly inspired by Android UI API (layouts, styles, two phase layout, ...)
 * Supports highly customizable UI themes and styles
@@ -13,6 +15,24 @@ GUI for D programming language, written in D.
 * Almost ready for 2D games development
 * Goal: provide set of widgets suitable for building of IDE.
 
+Widgets
+-------
+
+Currently implemented widgets:
+
+* TextWidget - simple static text (TODO: implement multiline formatting)
+* ImageWidget - static image
+* Button - simple button with text label
+* ImageButton - image only button
+* TextImageButton - button with icon and label
+* CheckBox - check button with label
+* RadioButton - radio button with label
+* VSpacer - vertical spacer - just an empty widget with layoutHeight == FILL_PARENT, to fill vertical space in layouts
+* HSpacer - horizontal spacer - just an empty widget with layoutWidth == FILL_PARENT, to fill horizontal space in layouts
+* ScrollBar - scroll bar
+
+Layouts
+-------
 
 Win32 builds
 ------------

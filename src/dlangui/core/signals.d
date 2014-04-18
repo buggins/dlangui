@@ -177,7 +177,8 @@ struct Signal(T1) if (is(T1 == interface) && __traits(allMembers, T1).length == 
     /// replace all previously assigned listeners with new one (if null passed, remove all listeners)
     final void opAssign(slot_t listener) {
         _listeners.clear();
-        _listeners ~= listener;
+		if (listener !is null)
+			_listeners ~= listener;
     }
     /// call all listeners; for signals having non-void return type, stop iterating when first return value is nonzero
     static if (is (return_t == void)) {
@@ -225,9 +226,11 @@ struct Signal(RETURN_T, T1...)
     final bool assigned() {
         return _listeners.length > 0;
     }
+    /// replace all previously assigned listeners with new one (if null passed, remove all listeners)
     final void opAssign(slot_t listener) {
         _listeners.clear();
-        _listeners ~= listener;
+		if (listener !is null)
+			_listeners ~= listener;
     }
     /// call all listeners; for signals having non-void return type, stop iterating when first return value is nonzero
     static if (is (RETURN_T == void)) {

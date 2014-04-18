@@ -112,7 +112,7 @@ class TextWidget : Widget {
     }
 }
 
-/// image widget
+/// static image widget
 class ImageWidget : Widget {
 
     protected string _drawableId;
@@ -339,11 +339,8 @@ class AbstractSlider : WidgetGroup {
         super(ID);
     }
 
-    protected bool delegate(AbstractSlider source, ScrollEvent event) _onScrollEventListener;
-    /// scroll event listener
-    @property bool delegate(AbstractSlider source, ScrollEvent event) onScrollEventListener() const { return _onScrollEventListener; }
-    /// sets new scroll event listener
-    @property AbstractSlider onScrollEventListener(bool delegate(AbstractSlider source, ScrollEvent event) listener) { _onScrollEventListener = listener; return this; }
+    /// scroll event listeners
+    Signal!OnScrollHandler onScrollEventListener;
 
     /// returns slider position
     @property int position() const { return _position; }
@@ -383,10 +380,10 @@ class AbstractSlider : WidgetGroup {
     }
 
     protected bool sendScrollEvent(ScrollAction action, int position) {
-        if (_onScrollEventListener is null)
+        if (!onScrollEventListener.assigned)
             return false;
         ScrollEvent event = new ScrollEvent(action, _minValue, _maxValue, _pageSize, position);
-        bool res = _onScrollEventListener(this, event);
+        bool res = onScrollEventListener(this, event);
         if (event.positionChanged) {
             _position = event.position;
             if (_position > _maxValue)
