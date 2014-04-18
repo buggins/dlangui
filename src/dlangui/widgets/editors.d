@@ -125,7 +125,10 @@ class EditableContent {
 
 /// single line editor
 class EditLine : Widget {
-    EditableContent _content;
+    protected EditableContent _content;
+    protected Rect _clientRc;
+
+
     this(string ID, dstring initialContent = null) {
         super(ID);
         _content = new EditableContent(false);
@@ -151,11 +154,89 @@ class EditLine : Widget {
 		return this;
     }
 
-    /// measure
-    override void measure(int parentWidth, int parentHeight) { 
+    protected dstring _measuredText;
+    protected int[] _measuredTextWidths;
+    protected Point _measuredTextSize;
+
+    protected TextPosition _caretPos;
+    protected TextRange _selectionRange;
+
+    protected Rect textPosToClient(TextPosition p) {
+        Rect res;
+        res.bottom = _clientRc.height;
+        if (p.pos == 0)
+            res.left = 0;
+        else if (p.pos >= _measuredText.length)
+            res.left = _measuredTextSize.x;
+        else
+            res.left = _measuredTextWidths[p.pos - 1];
+        res.right = res.left + 1;
+        return res;
+    }
+
+    protected TextPosition clientToTextPos(Point pt) {
+        TextPosition res;
+        for (int i = 0; i < _measuredText.length; i++) {
+            int x0 = i > 0 ? _measuredTextWidths[i - 1] : 0;
+            int x1 = _measuredTextWidths[i];
+            int mx = (x0 + x1) >> 1;
+            if (pt.x < mx) {
+                res.pos = i;
+                return res;
+            }
+        }
+        res.pos = _measuredText.length;
+        return res;
+    }
+
+    protected void measureText() {
         FontRef font = font();
         Point sz = font.textSize(text);
-        measuredContent(parentWidth, parentHeight, sz.x, sz.y);
+        _measuredText = text;
+        _measuredTextWidths.length = _measuredText.length;
+        int charsMeasured = font.measureText(_measuredText, _measuredTextWidths, int.max);
+        _measuredTextSize.x = charsMeasured > 0 ? _measuredTextWidths[charsMeasured - 1]: 0;
+        _measuredTextSize.y = font.height;
+    }
+
+    /// measure
+    override void measure(int parentWidth, int parentHeight) { 
+        measureText();
+        measuredContent(parentWidth, parentHeight, _measuredTextSize.x, _measuredTextSize.y);
+    }
+
+    protected void updateCaretPositionByMouse(int x, int y) {
+        TextPosition newPos = clientToTextPos(Point(x,y));
+        if (newPos != _caretPos) {
+            _caretPos = newPos;
+            invalidate();
+        }
+    }
+
+    /// process mouse event; return true if event is processed by widget.
+    override bool onMouseEvent(MouseEvent event) {
+        //Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
+		// support onClick
+	    if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
+            setFocus();
+            updateCaretPositionByMouse(event.x - _clientRc.left, event.y - _clientRc.top);
+            invalidate();
+	        return true;
+	    }
+	    if (event.action == MouseAction.Move && (event.flags & MouseButton.Left) != 0) {
+            updateCaretPositionByMouse(event.x - _clientRc.left, event.y - _clientRc.top);
+	        return true;
+	    }
+	    if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
+	        return true;
+	    }
+	    if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {
+	        return true;
+	    }
+	    if (event.action == MouseAction.FocusIn) {
+	        return true;
+	    }
+	    return false;
     }
 
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
@@ -167,6 +248,9 @@ class EditLine : Widget {
         Point sz = Point(rc.width, measuredHeight);
         applyAlign(rc, sz);
         _pos = rc;
+        _clientRc = rc;
+        applyMargins(_clientRc);
+        applyPadding(_clientRc);
     }
 
     /// draw content
@@ -183,6 +267,12 @@ class EditLine : Widget {
         Point sz = font.textSize(txt);
         //applyAlign(rc, sz);
         font.drawText(buf, rc.left, rc.top + sz.y / 10, txt, textColor);
+        if (focused) {
+            // draw caret
+            Rect caretRc = textPosToClient(_caretPos);
+            caretRc.offset(_clientRc.left, _clientRc.top);
+            buf.fillRect(caretRc, 0x000000);
+        }
     }
 }
 
