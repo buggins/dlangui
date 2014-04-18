@@ -709,9 +709,9 @@ Theme createDefaultTheme() {
 
     Style poopupMenu = res.createSubstyle("POPUP_MENU").backgroundImageId("popup_menu_background_normal");
 
-    Style listItem = res.createSubstyle("LIST_ITEM");
-    listItem.createState(State.Selected, State.Selected).backgroundColor(0xC04040FF).textColor(0x000000);
-    listItem.createState(State.Enabled, 0).textColor(0x80000000); // half transparent text for disabled item
+    Style listItem = res.createSubstyle("LIST_ITEM").backgroundImageId("list_item_background");
+    //listItem.createState(State.Selected, State.Selected).backgroundColor(0xC04040FF).textColor(0x000000);
+    //listItem.createState(State.Enabled, 0).textColor(0x80000000); // half transparent text for disabled item
 
 	return res;
 }

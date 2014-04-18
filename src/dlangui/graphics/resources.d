@@ -70,6 +70,102 @@ class SolidFillDrawable : Drawable {
     @property override int height() { return 1; }
 }
 
+/// solid borders (may be of different width) and, optionally, solid inner area
+class FrameDrawable : Drawable {
+    protected uint _frameColor;  // frame color
+    protected Rect _frameWidths; // left, top, right, bottom border widths, in pixels
+    protected uint _middleColor; // middle area color (may be transparent)
+    this(uint frameColor, Rect borderWidths, uint innerAreaColor = 0xFFFFFFFF) {
+        _frameColor = frameColor;
+        _frameWidths = borderWidths;
+        _middleColor = innerAreaColor;
+    }
+    this(uint frameColor, int borderWidth, uint innerAreaColor = 0xFFFFFFFF) {
+        _frameColor = frameColor;
+        _frameWidths = Rect(borderWidth, borderWidth, borderWidth, borderWidth);
+        _middleColor = innerAreaColor;
+    }
+    override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
+        buf.drawFrame(rc, _frameColor, _frameWidths, _middleColor);
+    }
+    @property override int width() { return 1 + _frameWidths.left + _frameWidths.right; }
+    @property override int height() { return 1 + _frameWidths.top + _frameWidths.bottom; }
+    @property override Rect padding() { return _frameWidths; }
+}
+
+/// decode color string #AARRGGBB, e.g. #5599AA
+static uint decodeHexColor(string s) {
+    uint value = 0;
+    foreach(c; s) {
+        int digit = -1;
+        if (c >='0' && c <= '9')
+            digit = c - '0';
+        else if (c >='a' && c <= 'f')
+            digit = c - 'a' + 10;
+        else if (c >='A' && c <= 'F')
+            digit = c - 'A' + 10;
+        if (digit >= 0)
+            value = (value << 4) | digit;
+    }
+    return value;
+}
+/// decode size string, e.g. 1px or 2 or 3pt
+static uint decodeDimension(string s) {
+    uint value = 0;
+    int units = 0;
+    foreach(c; s) {
+        int digit = -1;
+        if (c >='0' && c <= '9')
+            digit = c - '0';
+        if (digit >= 0)
+            value = value * 10 + digit;
+        else if (c == 't') // just test by containing 't' - for NNNpt
+            units = 1; // "pt"
+    }
+    // TODO: convert points to pixels
+    return value;
+}
+
+/// decode solid color / gradient / frame drawable from string like #AARRGGBB, e.g. #5599AA
+/// ---
+/// SolidFillDrawable: #AARRGGBB  - e.g. #8090A0 or #80ffffff
+/// FrameDrawable: #frameColor,frameWidth[,#middleColor]
+///             or #frameColor,leftBorderWidth,topBorderWidth,rightBorderWidth,bottomBorderWidth[,#middleColor]
+///                e.g. #000000,2,#C0FFFFFF - black frame of width 2 with 75% transparent white middle
+///                e.g. #0000FF,2,3,4,5,#FFFFFF - blue frame with left,top,right,bottom borders of width 2,3,4,5 and white inner area
+static Drawable createColorDrawable(string s) {
+    Log.d("creating color drawable ", s);
+    uint[6] values;
+    int valueCount = 0;
+    int start = 0;
+    for (int i = 0; i <= s.length; i++) {
+        if (i == s.length || s[i] == ',') {
+            if (i > start) {
+                string item = s[start .. i];
+                if (item.startsWith("#"))
+                    values[valueCount++] = decodeHexColor(item);
+                else
+                    values[valueCount++] = decodeDimension(item);
+                if (valueCount >= 6)
+                    break;
+            }
+            start = i + 1;
+        }
+    }
+    if (valueCount == 1) // only color #AARRGGBB
+        return new SolidFillDrawable(values[0]);
+    else if (valueCount == 2) // frame color and frame width, with transparent inner area - #AARRGGBB,NN
+        return new FrameDrawable(values[0], values[1]);
+    else if (valueCount == 3) // frame color, frame width, inner area color - #AARRGGBB,NN,#AARRGGBB
+        return new FrameDrawable(values[0], values[1], values[2]);
+    else if (valueCount == 5) // frame color, frame widths for left,top,right,bottom and transparent inner area - #AARRGGBB,NNleft,NNtop,NNright,NNbottom
+        return new FrameDrawable(values[0], Rect(values[1], values[2], values[3], values[4]));
+    else if (valueCount == 6) // frame color, frame widths for left,top,right,bottom, inner area color - #AARRGGBB,NNleft,NNtop,NNright,NNbottom,#AARRGGBB
+        return new FrameDrawable(values[0], Rect(values[1], values[2], values[3], values[4]), values[5]);
+    Log.e("Invalid drawable string format: ", s);
+    return new EmptyDrawable(); // invalid format - just return empty drawable
+}
+
 class ImageDrawable : Drawable {
     protected DrawBufRef _image;
     protected bool _tiled;
@@ -423,7 +519,7 @@ alias DrawableRef = Ref!Drawable;
 
 
 
-/// decoded image cache
+/// decoded raster images cache (png, jpeg) -- access by filenames
 class ImageCache {
 
     static class ImageCacheItem {
@@ -587,6 +683,7 @@ class DrawableCache {
             if (!_used)
                 compact();
         }
+
         /// returns drawable (loads from file if necessary)
         @property ref DrawableRef drawable() {
             _used = true;
@@ -603,6 +700,9 @@ class DrawableCache {
                     } else {
                         _drawable = d;
                     }
+                } else if (_filename.startsWith("#")) {
+                    // color reference #AARRGGBB, e.g. #5599AA, or FrameDrawable description string #frameColor,frameSize,#innerColor
+                    _drawable = createColorDrawable(_filename);
                 } else {
                     // PNG/JPEG drawables support
                     DrawBufRef image = imageCache.get(_filename);
@@ -637,6 +737,9 @@ class DrawableCache {
                         Log.d("loaded .xml drawable from ", _filename);
                         _drawable = d;
                     }
+                } else if (_filename.startsWith("#")) {
+                    // color reference #AARRGGBB, e.g. #5599AA, or FrameDrawable description string #frameColor,frameSize,#innerColor
+                    _drawable = createColorDrawable(_filename);
                 } else {
                     // PNG/JPEG drawables support
                     DrawBufRef image = imageCache.get(_filename, transform);
@@ -739,6 +842,8 @@ class DrawableCache {
         return null;
     }
     string findResource(string id) {
+        if (id.startsWith("#"))
+            return id; // it's not a file name, just a color #AARRGGBB
         if (id in _idToFileMap)
             return _idToFileMap[id];
         foreach(string path; _resourcePaths) {

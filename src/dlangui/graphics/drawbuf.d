@@ -101,6 +101,11 @@ ubyte blendGray(ubyte dst, ubyte src, uint alpha) {
     return cast(ubyte)(((src * ialpha + dst * alpha) >> 8) & 0xFF);
 }
 
+/// returns true if color is #FFxxxxxx (color alpha is 255)
+bool isFullyTransparentColor(uint color) pure nothrow {
+    return (color >> 24) == 0xFF;
+}
+
 /**
  * 9-patch image scaling information (see Android documentation).
  *
@@ -303,6 +308,45 @@ class DrawBuf : RefCountedObject {
     /// draw unscaled image at specified coordinates
     void drawImage(int x, int y, DrawBuf src) {
         drawFragment(x, y, src, Rect(0, 0, src.width, src.height));
+    }
+    /// draws rectangle frame of specified color and widths (per side), and optinally fills inner area
+    void drawFrame(Rect rc, uint frameColor, Rect frameSideWidths, uint innerAreaColor = 0xFFFFFFFF) {
+        // draw frame
+        if (!isFullyTransparentColor(frameColor)) {
+            Rect r;
+            // left side
+            r = rc;
+            r.right = r.left + frameSideWidths.left;
+            if (!r.empty)
+                fillRect(r, frameColor);
+            // right side
+            r = rc;
+            r.left = r.right - frameSideWidths.right;
+            if (!r.empty)
+                fillRect(r, frameColor);
+            // top side
+            r = rc;
+            r.left -= frameSideWidths.left;
+            r.right -= frameSideWidths.right;
+            Rect rc2 = r;
+            rc2.bottom = r.top + frameSideWidths.top;
+            if (!rc2.empty)
+                fillRect(rc2, frameColor);
+            // bottom side
+            rc2 = r;
+            rc2.top = r.bottom - frameSideWidths.bottom;
+            if (!rc2.empty)
+                fillRect(rc2, frameColor);
+        }
+        // draw internal area
+        if (!isFullyTransparentColor(innerAreaColor)) {
+            rc.left += frameSideWidths.left;
+            rc.top += frameSideWidths.top;
+            rc.right -= frameSideWidths.right;
+            rc.bottom -= frameSideWidths.bottom;
+            if (!rc.empty)
+                fillRect(rc, innerAreaColor);
+        }
     }
 
     /// create drawbuf with copy of current buffer with changed colors (returns this if not supported)
