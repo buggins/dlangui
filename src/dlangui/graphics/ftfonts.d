@@ -163,7 +163,8 @@ private class FreeTypeFontFile {
         return true; // successfully opened
     }
 
-    static static dchar getReplacementChar(dchar code) {
+	/// find some suitable replacement for important characters missing in font
+    static dchar getReplacementChar(dchar code) {
         switch (code) {
             case UNICODE_SOFT_HYPHEN_CODE:
                 return '-';
