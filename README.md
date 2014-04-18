@@ -18,6 +18,8 @@ Alpha stage of development.
 Widgets
 -------
 
+* Widget - base class for all widgets and widget containers, similar to Android's View
+
 Currently implemented widgets:
 
 * TextWidget - simple static text (TODO: implement multiline formatting)
@@ -30,9 +32,63 @@ Currently implemented widgets:
 * VSpacer - vertical spacer - just an empty widget with layoutHeight == FILL_PARENT, to fill vertical space in layouts
 * HSpacer - horizontal spacer - just an empty widget with layoutWidth == FILL_PARENT, to fill horizontal space in layouts
 * ScrollBar - scroll bar
+* TabControl - tabs widget, allows to select one of tabs
+* TabHost - container for pages controlled by TabControl
+* TabWidget - combination of TabControl and TabHost
 
 Layouts
 -------
+
+Similar to layouts in Android
+
+* LinearLayout - layout children horizontally or vertically depending on orientation
+* VerticalLayout - just a LinearLayout with vertical orientation
+* HorizontalLayout - just a LinearLayout with vertical orientation
+* FrameLayout - all children occupy the same place; usually onle one of them is visible
+
+TODOs:
+
+* TableLayout - layout children
+
+List Views
+----------
+
+Lists are implemented similar to Android UI API.
+
+* ListWidget - layout dynamic items horizontally or vertically (one in row/column) with automatic scrollbar; can reuse widgets for similar items
+* ListAdapter - interface to provide data and widgets for ListWidget
+* WidgetListAdapter - simple implementation of ListAdapter interface - just a list of widgets (one per list item) to show
+
+TODOs:
+
+* Multicolumn lists
+* Tree view
+
+Resources
+---------
+
+Resources like fonts and images use reference counting. For proper resource freeing, always destroy widgets implicitly.
+
+* FontManager: provides access to fonts
+* Images: .png or .jpg images; if filename ends with .9.png, it's autodetected as nine-patch image (see Android drawables description)
+* StateDrawables: .xml file can describe list of other drawables to choose based on widget's State (.xml files from android themes can be used directly)
+* imageCache allows to cache unpacked images
+* drawableCache provides access by resource id (string, usually filename w/o extension) to drawables located in specified list of resource directories.
+
+Styles and Themes
+-----------------
+
+Styles and themes are a bit similar to ones in Android API.
+
+* Theme is a container for styles. TODO: load themes from XML.
+* Styles are accessible in theme by string ID.
+* Styles can be nested to form hiararchy - when some attribute is missing in style, value from base style will be used.
+* State substyles are supported: allow to change widget appearance dynamically based on its state.
+* Widgets use style attributes directly from assigned style. When some attribute is being changed in widget, it creates its own copy of base style, 
+which allows to modify some of attributes, while getting base style attributes if they are not changed in widget. This trick can minimize memory usage for widget attributes when 
+standard values are used.
+
+
 
 Win32 builds
 ------------
