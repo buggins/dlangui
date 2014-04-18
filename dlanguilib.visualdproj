@@ -328,6 +328,7 @@
     </Folder>
     <Folder name="widgets">
      <File path="src\dlangui\widgets\controls.d" />
+     <File path="src\dlangui\widgets\editors.d" />
      <File path="src\dlangui\widgets\layouts.d" />
      <File path="src\dlangui\widgets\lists.d" />
      <File path="src\dlangui\widgets\menu.d" />
