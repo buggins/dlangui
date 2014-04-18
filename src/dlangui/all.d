@@ -59,5 +59,6 @@ public import dlangui.widgets.layouts;
 public import dlangui.widgets.lists;
 public import dlangui.widgets.tabs;
 public import dlangui.widgets.menu;
+public import dlangui.widgets.editors;
 public import dlangui.graphics.fonts;
 public import dlangui.core.i18n;

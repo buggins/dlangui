@@ -646,8 +646,8 @@ Theme createDefaultTheme() {
     res.createSubstyle("BUTTON_LABEL").layoutWidth(FILL_PARENT).alignment(Align.Left|Align.VCenter);
     res.createSubstyle("BUTTON_ICON").alignment(Align.Center);
     res.createSubstyle("TEXT").margins(Rect(2,2,2,2)).padding(Rect(1,1,1,1));
-    res.createSubstyle("HSPACER").layoutWidth(FILL_PARENT).layoutWeight(100);
-    res.createSubstyle("VSPACER").layoutHeight(FILL_PARENT).layoutWeight(100);
+    res.createSubstyle("HSPACER").layoutWidth(FILL_PARENT).minWidth(5).layoutWeight(100);
+    res.createSubstyle("VSPACER").layoutHeight(FILL_PARENT).minHeight(5).layoutWeight(100);
     //button.createState(State.Enabled | State.Focused, State.Focused).backgroundImageId("btn_default_small_normal_disable_focused");
     //button.createState(State.Enabled, 0).backgroundImageId("btn_default_small_normal_disable");
     //button.createState(State.Pressed, State.Pressed).backgroundImageId("btn_default_small_pressed");
@@ -712,6 +712,8 @@ Theme createDefaultTheme() {
     Style listItem = res.createSubstyle("LIST_ITEM").backgroundImageId("list_item_background");
     //listItem.createState(State.Selected, State.Selected).backgroundColor(0xC04040FF).textColor(0x000000);
     //listItem.createState(State.Enabled, 0).textColor(0x80000000); // half transparent text for disabled item
+
+    Style editLine = res.createSubstyle("EDIT_LINE").backgroundImageId("editbox_background").padding(Rect(4,2,4,2));
 
 	return res;
 }

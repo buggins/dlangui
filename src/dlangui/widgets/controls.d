@@ -91,12 +91,6 @@ class TextWidget : Widget {
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }
 
-    bool onClick() {
-        // override it
-        Log.d("Button.onClick ", id);
-        return false;
-    }
-
     override void onDraw(DrawBuf buf) {
         if (visibility != Visibility.Visible)
             return;
