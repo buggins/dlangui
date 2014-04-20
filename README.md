@@ -29,6 +29,7 @@ Currently implemented widgets:
 * TextImageButton - button with icon and label
 * CheckBox - check button with label
 * RadioButton - radio button with label
+* EditLine - single line edit
 * VSpacer - vertical spacer - just an empty widget with layoutHeight == FILL_PARENT, to fill vertical space in layouts
 * HSpacer - horizontal spacer - just an empty widget with layoutWidth == FILL_PARENT, to fill horizontal space in layouts
 * ScrollBar - scroll bar
