@@ -76,15 +76,38 @@ enum EditAction {
 /// edit operation details for EditableContent
 class EditOperation {
     /// action performed
-    EditAction action;
+    protected EditAction _action;
+	@property EditAction action() { return _action; }
     /// range
-    TextRange range;
+    protected TextRange _range;
+	@property ref TextRange range() { return _range; }
     /// new content for range (if required for this action)
-    dstring[] content;
+    protected dstring[] _content;
+	@property ref dstring[] content() { return _content; }
+
+	this(EditAction action) {
+		_action = action;
+	}
+	this(EditAction action, TextPosition pos, dstring text) {
+		this(action, TextRange(pos, pos), text);
+	}
+	this(EditAction action, TextRange range, dstring text) {
+		_action = action;
+		_range = range;
+		_content.length = 1;
+		_content[0] = text;
+	}
+}
+
+interface EditableContentListener {
+	bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter);
 }
 
 /// editable plain text (multiline)
 class EditableContent {
+	/// listeners for edit operations
+	Signal!EditableContentListener contentChangeListeners;
+
     this(bool multiline) {
         _multiline = multiline;
         _lines.length = 1; // initial state: single empty line
@@ -121,6 +144,31 @@ class EditableContent {
     dstring line(int index) {
         return _lines[index];
     }
+
+	bool handleContentChange(EditOperation op, ref TextRange rangeBefore, ref TextRange rangeAfter) {
+		return contentChangeListeners(this, op, rangeBefore, rangeAfter);
+	}
+
+	bool performOperation(EditOperation op) {
+		if (op.action == EditAction.Insert) {
+			// TODO: multiline
+			TextPosition pos = op.range.start;
+			TextRange rangeBefore = TextRange(pos, pos);
+			dchar[] buf;
+			dstring srcline = _lines[pos.line];
+			dstring newline = op.content[0];
+			buf ~= srcline[0 .. pos.pos];
+			buf ~= newline;
+			buf ~= srcline[pos.pos .. $];
+			_lines[pos.line] = cast(dstring)buf;
+			TextPosition newPos = pos;
+			newPos.pos += newline.length;
+			TextRange rangeAfter = TextRange(pos, newPos);
+			handleContentChange(op, rangeBefore, rangeAfter);
+			return true;
+		}
+		return false;
+	}
 }
 
 enum EditorActions {
@@ -140,14 +188,21 @@ enum EditorActions {
 }
 
 /// single line editor
-class EditLine : Widget {
+class EditLine : Widget, EditableContentListener {
     protected EditableContent _content;
     protected Rect _clientRc;
 
+	override bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter) {
+		measureText();
+		_caretPos = rangeAfter.end;
+		invalidate();
+		return true;
+	}
 
     this(string ID, dstring initialContent = null) {
         super(ID);
         _content = new EditableContent(false);
+		_content.contentChangeListeners = this;
         styleId = "EDIT_LINE";
         focusable = true;
         text = initialContent;
@@ -295,6 +350,11 @@ class EditLine : Widget {
 			//switch(event.keyCode) {
 			//    
 			//}
+		} else if (event.action == KeyAction.Text && event.text.length) {
+			Log.d("text entered: ", event.text);
+			EditOperation op = new EditOperation(EditAction.Insert, _caretPos, event.text);
+			_content.performOperation(op);
+			return true;
 		}
 		return super.onKeyEvent(event);
 	}

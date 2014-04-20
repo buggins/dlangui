@@ -180,6 +180,10 @@ struct Signal(T1) if (is(T1 == interface) && __traits(allMembers, T1).length == 
 		if (listener !is null)
 			_listeners ~= listener;
     }
+    /// replace all previously assigned listeners with new one (if null passed, remove all listeners)
+    final void opAssign(T1 listener) {
+		opAssign(&__traits(getMember, listener, __traits(allMembers, T1)[0]));
+    }
     /// call all listeners; for signals having non-void return type, stop iterating when first return value is nonzero
     static if (is (return_t == void)) {
         // call all listeners

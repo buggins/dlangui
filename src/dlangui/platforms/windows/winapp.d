@@ -748,10 +748,17 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 int repeatCount = lParam & 0xFFFF;
 				if (window.onKey(message == WM_KEYDOWN ? KeyAction.KeyDown : KeyAction.KeyUp, wParam, repeatCount))
                     return 0; // processed
-                return 0;
             }
             break;
         case WM_UNICHAR:
+			if (window !is null) {
+                int repeatCount = lParam & 0xFFFF;
+				if (window.onKey(KeyAction.Text, wParam, repeatCount, wParam == UNICODE_NOCHAR ? 0 : wParam))
+                    return 1; // processed
+                return 1;
+            }
+            break;
+        case WM_CHAR:
 			if (window !is null) {
                 int repeatCount = lParam & 0xFFFF;
 				if (window.onKey(KeyAction.Text, wParam, repeatCount, wParam == UNICODE_NOCHAR ? 0 : wParam))
