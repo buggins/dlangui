@@ -20,15 +20,22 @@ Authors:   $(WEB coolreader.org, Vadim Lopatin)
 module dlangui.core.events;
 
 import dlangui.core.i18n;
+import dlangui.core.collections;
 private import dlangui.widgets.widget;
 
 import std.conv;
+
+struct Accelerator {
+	uint keyCode;
+	uint keyFlags;
+}
 
 /// UI action
 class Action {
     protected int _id;
     protected UIString _label;
     protected string _iconId;
+	protected Accelerator[] _accelerators;
     this(int id, string labelResourceId, string iconResourceId = null) {
         _id = id;
         _label = labelResourceId;
@@ -39,6 +46,22 @@ class Action {
         _label = label;
         _iconId = iconResourceId;
     }
+	/// action with accelerator, w/o label
+    this(int id, uint keyCode, uint keyFlags = 0) {
+        _id = id;
+		_accelerators ~= Accelerator(keyCode, keyFlags);
+    }
+	/// returs array of accelerators
+	@property Accelerator[] accelerators() {
+		return _accelerators;
+	}
+	/// returns true if accelerator matches provided key code and flags
+	bool checkAccelerator(uint keyCode, uint keyFlags) {
+		foreach(a; _accelerators)
+			if (a.keyCode == keyCode && a.keyFlags == keyFlags)
+				return true;
+		return false;
+	}
     @property int id() const {
         return _id;
     }
@@ -69,6 +92,60 @@ class Action {
     }
 }
 
+struct ActionMap {
+	protected Action[Accelerator] _map;
+	/// add from list
+	void add(ActionList items) {
+		foreach(a; items) {
+			foreach(acc; a.accelerators)
+				_map[acc] = a;
+		}
+	}
+	/// add array of actions
+	void add(Action[] items) {
+		foreach(a; items) {
+			foreach(acc; a.accelerators)
+				_map[acc] = a;
+		}
+	}
+	/// add action
+	void add(Action a) {
+		foreach(acc; a.accelerators)
+			_map[acc] = a;
+	}
+	/// find action by key, return null if not found
+	Action findByKey(uint keyCode, uint flags) {
+		Accelerator acc;
+		acc.keyCode = keyCode;
+		acc.keyFlags = flags;
+		if (acc in _map)
+			return _map[acc];
+		return null;
+	}
+}
+
+struct ActionList {
+	private Collection!Action _actions;
+	alias _actions this;
+
+	void add(Action[] items) {
+		foreach(a; items)
+			_actions ~= a;
+	}
+
+	void add(ref ActionList items) {
+		foreach(a; items)
+			_actions ~= a;
+	}
+
+	/// find action by key, return null if not found
+	Action findByKey(uint keyCode, uint flags) {
+		foreach(a; _actions)
+			if (a.checkAccelerator(keyCode, flags))
+				return a;
+		return null;
+	}
+}
 
 enum MouseAction : ubyte {
     Cancel,   // button down handling is cancelled

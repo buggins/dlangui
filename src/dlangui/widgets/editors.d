@@ -123,6 +123,22 @@ class EditableContent {
     }
 }
 
+enum EditorActions {
+	None = 0,
+	Left = 1000,
+	Right,
+	Up,
+	Down,
+	WordLeft,
+	WordRight,
+	PageUp,
+	PageDown,
+	LineBegin,
+	LineEnd,
+	DocumentBegin,
+	DocumentEnd,
+}
+
 /// single line editor
 class EditLine : Widget {
     protected EditableContent _content;
@@ -135,6 +151,18 @@ class EditLine : Widget {
         styleId = "EDIT_LINE";
         focusable = true;
         text = initialContent;
+		acceleratorMap.add( [
+			new Action(EditorActions.Up, KeyCode.UP, 0),
+			new Action(EditorActions.Down, KeyCode.DOWN, 0),
+			new Action(EditorActions.Left, KeyCode.LEFT, 0),
+			new Action(EditorActions.Right, KeyCode.RIGHT, 0),
+			new Action(EditorActions.WordLeft, KeyCode.LEFT, KeyFlag.Control),
+			new Action(EditorActions.WordRight, KeyCode.RIGHT, KeyFlag.Control),
+			new Action(EditorActions.LineBegin, KeyCode.HOME, 0),
+			new Action(EditorActions.LineEnd, KeyCode.END, 0),
+			new Action(EditorActions.DocumentBegin, KeyCode.HOME, KeyFlag.Control),
+			new Action(EditorActions.DocumentEnd, KeyCode.END, KeyFlag.Control),
+		]);
     }
 
     /// get widget text
@@ -212,6 +240,64 @@ class EditLine : Widget {
             invalidate();
         }
     }
+
+	override protected bool handleAction(Action a) {
+		switch (a.id) {
+		case EditorActions.Left:
+			if (_caretPos.pos > 0) {
+				_caretPos.pos--;
+				invalidate();
+			}
+			return true;
+		case EditorActions.Right:
+			if (_caretPos.pos < _measuredText.length) {
+				_caretPos.pos++;
+				invalidate();
+			}
+			return true;
+		case EditorActions.Up:
+			break;
+		case EditorActions.Down:
+			break;
+		case EditorActions.WordLeft:
+			break;
+		case EditorActions.WordRight:
+			break;
+		case EditorActions.PageUp:
+			break;
+		case EditorActions.PageDown:
+			break;
+		case EditorActions.DocumentBegin:
+		case EditorActions.LineBegin:
+			if (_caretPos.pos > 0) {
+				_caretPos.pos = 0;
+				invalidate();
+			}
+			return true;
+		case EditorActions.DocumentEnd:
+		case EditorActions.LineEnd:
+			if (_caretPos.pos < _measuredText.length) {
+				_caretPos.pos = _measuredText.length;
+				invalidate();
+			}
+			return true;
+		default:
+			return false;
+		}
+		return super.handleAction(a);
+	}
+
+	/// handle keys
+	override bool onKeyEvent(KeyEvent event) {
+		//
+		if (event.action == KeyAction.KeyDown) {
+			//EditorAction a = keyToAction(event.keyCode, event.flags & (KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Ctrl));
+			//switch(event.keyCode) {
+			//    
+			//}
+		}
+		return super.onKeyEvent(event);
+	}
 
     /// process mouse event; return true if event is processed by widget.
     override bool onMouseEvent(MouseEvent event) {

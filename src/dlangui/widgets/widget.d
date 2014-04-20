@@ -451,6 +451,17 @@ class Widget {
     // =======================================================
     // Events
 
+	protected ActionMap _acceleratorMap;
+	@property ref ActionMap acceleratorMap() { return _acceleratorMap; }
+
+	/// override to handle specific actions
+	protected bool handleAction(Action a) {
+		if (parent) // by default, pass to parent widget
+			return parent.handleAction(a);
+		return false;
+	}
+
+
     // called to process click and notify listeners
     protected bool handleClick() {
         bool res = onClickListener(this);
@@ -459,6 +470,12 @@ class Widget {
 
     /// process key event, return true if event is processed.
     bool onKeyEvent(KeyEvent event) {
+		if (event.action == KeyAction.KeyDown) {
+			Action action = _acceleratorMap.findByKey(event.keyCode, event.flags & (KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Control));
+			if (action !is null) {
+				return handleAction(action);
+			}
+		}
 		if (canClick) {
             // support onClick event initiated by Space or Return keys
             if (event.action == KeyAction.KeyDown) {
