@@ -150,7 +150,18 @@ class EditableContent {
 	}
 
 	bool performOperation(EditOperation op) {
-		if (op.action == EditAction.Insert) {
+		if (op.action == EditAction.Delete) {
+			TextRange rangeBefore = op.range;
+			dchar[] buf;
+			dstring srcline = _lines[op.range.start.line];
+			buf ~= srcline[0 .. op.range.start.pos];
+			buf ~= srcline[op.range.end.pos .. $];
+			_lines[op.range.start.line] = cast(dstring)buf;
+			TextRange rangeAfter = rangeBefore;
+			rangeAfter.end = rangeAfter.start;
+			handleContentChange(op, rangeBefore, rangeAfter);
+			return true;
+		} else if (op.action == EditAction.Insert) {
 			// TODO: multiline
 			TextPosition pos = op.range.start;
 			TextRange rangeBefore = TextRange(pos, pos);
@@ -185,6 +196,10 @@ enum EditorActions {
 	LineEnd,
 	DocumentBegin,
 	DocumentEnd,
+	DelPrevChar, // backspace
+	DelNextChar, // del key
+	DelPrevWord, // ctrl + backspace
+	DelNextWord, // ctrl + del key
 }
 
 /// single line editor
@@ -217,6 +232,10 @@ class EditLine : Widget, EditableContentListener {
 			new Action(EditorActions.LineEnd, KeyCode.END, 0),
 			new Action(EditorActions.DocumentBegin, KeyCode.HOME, KeyFlag.Control),
 			new Action(EditorActions.DocumentEnd, KeyCode.END, KeyFlag.Control),
+			new Action(EditorActions.DelPrevChar, KeyCode.BACK, 0),
+			new Action(EditorActions.DelNextChar, KeyCode.DEL, 0),
+			new Action(EditorActions.DelPrevWord, KeyCode.BACK, KeyFlag.Control),
+			new Action(EditorActions.DelNextWord, KeyCode.DEL, KeyFlag.Control),
 		]);
     }
 
@@ -310,6 +329,22 @@ class EditLine : Widget, EditableContentListener {
 				invalidate();
 			}
 			return true;
+		case EditorActions.DelPrevChar:
+			if (_caretPos.pos > 0) {
+				TextRange range = TextRange(_caretPos, _caretPos);
+				range.start.pos--;
+				EditOperation op = new EditOperation(EditAction.Delete, range, null);
+				_content.performOperation(op);
+			}
+			return true;
+		case EditorActions.DelNextChar:
+			if (_caretPos.pos < _measuredText.length) {
+				TextRange range = TextRange(_caretPos, _caretPos);
+				range.end.pos++;
+				EditOperation op = new EditOperation(EditAction.Delete, range, null);
+				_content.performOperation(op);
+			}
+			return true;
 		case EditorActions.Up:
 			break;
 		case EditorActions.Down:
@@ -352,9 +387,12 @@ class EditLine : Widget, EditableContentListener {
 			//}
 		} else if (event.action == KeyAction.Text && event.text.length) {
 			Log.d("text entered: ", event.text);
-			EditOperation op = new EditOperation(EditAction.Insert, _caretPos, event.text);
-			_content.performOperation(op);
-			return true;
+			dchar ch = event.text[0];
+			if (ch != 8) { // ignore Backspace
+				EditOperation op = new EditOperation(EditAction.Insert, _caretPos, event.text);
+				_content.performOperation(op);
+				return true;
+			}
 		}
 		return super.onKeyEvent(event);
 	}
