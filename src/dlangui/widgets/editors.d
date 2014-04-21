@@ -202,25 +202,15 @@ enum EditorActions {
 	DelNextWord, // ctrl + del key
 }
 
-/// single line editor
-class EditLine : Widget, EditableContentListener {
+/// base for all editor widgets
+class EditWidgetBase : WidgetGroup, EditableContentListener {
     protected EditableContent _content;
     protected Rect _clientRc;
 
-	override bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter) {
-		measureText();
-		_caretPos = rangeAfter.end;
-		invalidate();
-		return true;
-	}
 
-    this(string ID, dstring initialContent = null) {
+    this(string ID) {
         super(ID);
-        _content = new EditableContent(false);
-		_content.contentChangeListeners = this;
-        styleId = "EDIT_LINE";
         focusable = true;
-        text = initialContent;
 		acceleratorMap.add( [
 			new Action(EditorActions.Up, KeyCode.UP, 0),
 			new Action(EditorActions.Down, KeyCode.DOWN, 0),
@@ -239,6 +229,8 @@ class EditLine : Widget, EditableContentListener {
 		]);
     }
 
+	abstract override bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter);
+
     /// get widget text
     override @property dstring text() { return _content.text; }
 
@@ -256,56 +248,12 @@ class EditLine : Widget, EditableContentListener {
 		return this;
     }
 
-    protected dstring _measuredText;
-    protected int[] _measuredTextWidths;
-    protected Point _measuredTextSize;
-
     protected TextPosition _caretPos;
     protected TextRange _selectionRange;
 
-    protected Rect textPosToClient(TextPosition p) {
-        Rect res;
-        res.bottom = _clientRc.height;
-        if (p.pos == 0)
-            res.left = 0;
-        else if (p.pos >= _measuredText.length)
-            res.left = _measuredTextSize.x;
-        else
-            res.left = _measuredTextWidths[p.pos - 1];
-        res.right = res.left + 1;
-        return res;
-    }
+    abstract protected Rect textPosToClient(TextPosition p);
 
-    protected TextPosition clientToTextPos(Point pt) {
-        TextPosition res;
-        for (int i = 0; i < _measuredText.length; i++) {
-            int x0 = i > 0 ? _measuredTextWidths[i - 1] : 0;
-            int x1 = _measuredTextWidths[i];
-            int mx = (x0 + x1) >> 1;
-            if (pt.x < mx) {
-                res.pos = i;
-                return res;
-            }
-        }
-        res.pos = _measuredText.length;
-        return res;
-    }
-
-    protected void measureText() {
-        FontRef font = font();
-        Point sz = font.textSize(text);
-        _measuredText = text;
-        _measuredTextWidths.length = _measuredText.length;
-        int charsMeasured = font.measureText(_measuredText, _measuredTextWidths, int.max);
-        _measuredTextSize.x = charsMeasured > 0 ? _measuredTextWidths[charsMeasured - 1]: 0;
-        _measuredTextSize.y = font.height;
-    }
-
-    /// measure
-    override void measure(int parentWidth, int parentHeight) { 
-        measureText();
-        measuredContent(parentWidth, parentHeight, _measuredTextSize.x, _measuredTextSize.y);
-    }
+    abstract protected TextPosition clientToTextPos(Point pt);
 
     protected void updateCaretPositionByMouse(int x, int y) {
         TextPosition newPos = clientToTextPos(Point(x,y));
@@ -316,64 +264,7 @@ class EditLine : Widget, EditableContentListener {
     }
 
 	override protected bool handleAction(Action a) {
-		switch (a.id) {
-		case EditorActions.Left:
-			if (_caretPos.pos > 0) {
-				_caretPos.pos--;
-				invalidate();
-			}
-			return true;
-		case EditorActions.Right:
-			if (_caretPos.pos < _measuredText.length) {
-				_caretPos.pos++;
-				invalidate();
-			}
-			return true;
-		case EditorActions.DelPrevChar:
-			if (_caretPos.pos > 0) {
-				TextRange range = TextRange(_caretPos, _caretPos);
-				range.start.pos--;
-				EditOperation op = new EditOperation(EditAction.Delete, range, null);
-				_content.performOperation(op);
-			}
-			return true;
-		case EditorActions.DelNextChar:
-			if (_caretPos.pos < _measuredText.length) {
-				TextRange range = TextRange(_caretPos, _caretPos);
-				range.end.pos++;
-				EditOperation op = new EditOperation(EditAction.Delete, range, null);
-				_content.performOperation(op);
-			}
-			return true;
-		case EditorActions.Up:
-			break;
-		case EditorActions.Down:
-			break;
-		case EditorActions.WordLeft:
-			break;
-		case EditorActions.WordRight:
-			break;
-		case EditorActions.PageUp:
-			break;
-		case EditorActions.PageDown:
-			break;
-		case EditorActions.DocumentBegin:
-		case EditorActions.LineBegin:
-			if (_caretPos.pos > 0) {
-				_caretPos.pos = 0;
-				invalidate();
-			}
-			return true;
-		case EditorActions.DocumentEnd:
-		case EditorActions.LineEnd:
-			if (_caretPos.pos < _measuredText.length) {
-				_caretPos.pos = _measuredText.length;
-				invalidate();
-			}
-			return true;
-		default:
-			return false;
-		}
+        // todo: place some common action handling here
 		return super.handleAction(a);
 	}
 
@@ -421,6 +312,149 @@ class EditLine : Widget, EditableContentListener {
 	        return true;
 	    }
 	    return false;
+    }
+
+
+}
+
+
+/// single line editor
+class EditLine : EditWidgetBase {
+
+    this(string ID, dstring initialContent = null) {
+        super(ID);
+        _content = new EditableContent(false);
+		_content.contentChangeListeners = this;
+        styleId = "EDIT_LINE";
+        text = initialContent;
+    }
+
+	override bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter) {
+		measureText();
+		_caretPos = rangeAfter.end;
+		invalidate();
+		return true;
+	}
+
+    protected dstring _measuredText;
+    protected int[] _measuredTextWidths;
+    protected Point _measuredTextSize;
+
+    override protected Rect textPosToClient(TextPosition p) {
+        Rect res;
+        res.bottom = _clientRc.height;
+        if (p.pos == 0)
+            res.left = 0;
+        else if (p.pos >= _measuredText.length)
+            res.left = _measuredTextSize.x;
+        else
+            res.left = _measuredTextWidths[p.pos - 1];
+        res.right = res.left + 1;
+        return res;
+    }
+
+    override protected TextPosition clientToTextPos(Point pt) {
+        TextPosition res;
+        for (int i = 0; i < _measuredText.length; i++) {
+            int x0 = i > 0 ? _measuredTextWidths[i - 1] : 0;
+            int x1 = _measuredTextWidths[i];
+            int mx = (x0 + x1) >> 1;
+            if (pt.x < mx) {
+                res.pos = i;
+                return res;
+            }
+        }
+        res.pos = _measuredText.length;
+        return res;
+    }
+
+    protected void measureText() {
+        FontRef font = font();
+        Point sz = font.textSize(text);
+        _measuredText = text;
+        _measuredTextWidths.length = _measuredText.length;
+        int charsMeasured = font.measureText(_measuredText, _measuredTextWidths, int.max);
+        _measuredTextSize.x = charsMeasured > 0 ? _measuredTextWidths[charsMeasured - 1]: 0;
+        _measuredTextSize.y = font.height;
+    }
+
+    /// measure
+    override void measure(int parentWidth, int parentHeight) { 
+        measureText();
+        measuredContent(parentWidth, parentHeight, _measuredTextSize.x, _measuredTextSize.y);
+    }
+
+	override protected bool handleAction(Action a) {
+		switch (a.id) {
+            case EditorActions.Left:
+                if (_caretPos.pos > 0) {
+                    _caretPos.pos--;
+                    invalidate();
+                }
+                return true;
+            case EditorActions.Right:
+                if (_caretPos.pos < _measuredText.length) {
+                    _caretPos.pos++;
+                    invalidate();
+                }
+                return true;
+            case EditorActions.DelPrevChar:
+                if (_caretPos.pos > 0) {
+                    TextRange range = TextRange(_caretPos, _caretPos);
+                    range.start.pos--;
+                    EditOperation op = new EditOperation(EditAction.Delete, range, null);
+                    _content.performOperation(op);
+                }
+                return true;
+            case EditorActions.DelNextChar:
+                if (_caretPos.pos < _measuredText.length) {
+                    TextRange range = TextRange(_caretPos, _caretPos);
+                    range.end.pos++;
+                    EditOperation op = new EditOperation(EditAction.Delete, range, null);
+                    _content.performOperation(op);
+                }
+                return true;
+            case EditorActions.Up:
+                break;
+            case EditorActions.Down:
+                break;
+            case EditorActions.WordLeft:
+                break;
+            case EditorActions.WordRight:
+                break;
+            case EditorActions.PageUp:
+                break;
+            case EditorActions.PageDown:
+                break;
+            case EditorActions.DocumentBegin:
+            case EditorActions.LineBegin:
+                if (_caretPos.pos > 0) {
+                    _caretPos.pos = 0;
+                    invalidate();
+                }
+                return true;
+            case EditorActions.DocumentEnd:
+            case EditorActions.LineEnd:
+                if (_caretPos.pos < _measuredText.length) {
+                    _caretPos.pos = _measuredText.length;
+                    invalidate();
+                }
+                return true;
+            default:
+                return false;
+		}
+		return super.handleAction(a);
+	}
+
+
+	/// handle keys
+	override bool onKeyEvent(KeyEvent event) {
+		return super.onKeyEvent(event);
+	}
+
+    /// process mouse event; return true if event is processed by widget.
+    override bool onMouseEvent(MouseEvent event) {
+	    return super.onMouseEvent(event);
     }
 
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
