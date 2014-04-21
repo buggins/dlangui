@@ -139,6 +139,7 @@ extern (C) int UIAppMain(string[] args) {
         tabs.addTab((new TextWidget()).id("tab3").textColor(0x00802000).text("Tab 3 contents"), "Tab 3"d);
         tabs.addTab((new TextWidget()).id("tab4").textColor(0x00802000).text("Tab 4 contents some long string"), "Tab 4"d);
         tabs.addTab((new TextWidget()).id("tab5").textColor(0x00802000).text("Tab 5 contents"), "Tab 5"d);
+        tabs.addTab((new EditBox("editbox1", "Some text\nSecond line\nYet another line"d)).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT), "EditBox"d);
 
         tabs.selectTab("tab1");
 

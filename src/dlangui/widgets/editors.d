@@ -21,6 +21,7 @@ Authors:   $(WEB coolreader.org, Vadim Lopatin)
 module dlangui.widgets.editors;
 
 import dlangui.widgets.widget;
+import dlangui.widgets.controls;
 import dlangui.core.signals;
 
 immutable dchar EOL = '\n';
@@ -494,3 +495,119 @@ class EditLine : EditWidgetBase {
     }
 }
 
+
+
+/// single line editor
+class EditBox : EditWidgetBase {
+    ScrollBar _hscrollbar;
+    ScrollBar _vscrollbar;
+    this(string ID, dstring initialContent = null) {
+        super(ID);
+        _content = new EditableContent(true); // multiline
+		_content.contentChangeListeners = this;
+        styleId = "EDIT_BOX";
+        text = initialContent;
+        _hscrollbar = new ScrollBar("hscrollbar", Orientation.Horizontal);
+        _vscrollbar = new ScrollBar("vscrollbar", Orientation.Vertical);
+        addChild(_hscrollbar);
+        addChild(_vscrollbar);
+    }
+
+	override bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter) {
+		//measureText();
+		_caretPos = rangeAfter.end;
+		invalidate();
+		return true;
+	}
+
+    override protected Rect textPosToClient(TextPosition p) {
+        Rect res;
+        //res.bottom = _clientRc.height;
+        //if (p.pos == 0)
+        //    res.left = 0;
+        //else if (p.pos >= _measuredText.length)
+        //    res.left = _measuredTextSize.x;
+        //else
+        //    res.left = _measuredTextWidths[p.pos - 1];
+        //res.right = res.left + 1;
+        return res;
+    }
+
+    override protected TextPosition clientToTextPos(Point pt) {
+        TextPosition res;
+        //for (int i = 0; i < _measuredText.length; i++) {
+        //    int x0 = i > 0 ? _measuredTextWidths[i - 1] : 0;
+        //    int x1 = _measuredTextWidths[i];
+        //    int mx = (x0 + x1) >> 1;
+        //    if (pt.x < mx) {
+        //        res.pos = i;
+        //        return res;
+        //    }
+        //}
+        //res.pos = _measuredText.length;
+        return res;
+    }
+
+    /// measure
+    override void measure(int parentWidth, int parentHeight) { 
+        if (visibility == Visibility.Gone) {
+            return;
+        }
+        _hscrollbar.measure(parentWidth, parentHeight);
+        _vscrollbar.measure(parentWidth, parentHeight);
+        int hsbheight = _hscrollbar.measuredHeight;
+        int vsbwidth = _vscrollbar.measuredWidth;
+        //measureText();
+        Point textSz = Point(200, 150); // TODO
+        measuredContent(parentWidth, parentHeight, textSz.x + vsbwidth, textSz.y + hsbheight);
+    }
+
+    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+    override void layout(Rect rc) {
+        _needLayout = false;
+        if (visibility == Visibility.Gone) {
+            return;
+        }
+        _pos = rc;
+        applyMargins(rc);
+        applyPadding(rc);
+        int hsbheight = _hscrollbar.measuredHeight;
+        int vsbwidth = _vscrollbar.measuredWidth;
+        Rect sbrc = rc;
+        sbrc.left = sbrc.right - vsbwidth;
+        sbrc.bottom -= hsbheight;
+        _vscrollbar.layout(sbrc);
+        sbrc = rc;
+        sbrc.right -= vsbwidth;
+        sbrc.top = sbrc.bottom - hsbheight;
+        _hscrollbar.layout(sbrc);
+        // calc client rectangle
+        _clientRc = rc;
+        _clientRc.right -= vsbwidth;
+        _clientRc.bottom -= hsbheight;
+    }
+
+    /// draw content
+    override void onDraw(DrawBuf buf) {
+        if (visibility != Visibility.Visible)
+            return;
+        super.onDraw(buf);
+        _hscrollbar.onDraw(buf);
+        _vscrollbar.onDraw(buf);
+        Rect rc = _clientRc;
+        auto saver = ClipRectSaver(buf, rc);
+
+        FontRef font = font();
+        //dstring txt = text;
+        //Point sz = font.textSize(txt);
+        //font.drawText(buf, rc.left, rc.top + sz.y / 10, txt, textColor);
+        buf.fillRect(_clientRc, 0x80E0E0FF);
+        if (focused) {
+            // draw caret
+            Rect caretRc = textPosToClient(_caretPos);
+            caretRc.offset(_clientRc.left, _clientRc.top);
+            buf.fillRect(caretRc, 0x000000);
+        }
+    }
+
+}

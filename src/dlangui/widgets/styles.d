@@ -714,6 +714,7 @@ Theme createDefaultTheme() {
     //listItem.createState(State.Enabled, 0).textColor(0x80000000); // half transparent text for disabled item
 
     Style editLine = res.createSubstyle("EDIT_LINE").backgroundImageId("editbox_background").padding(Rect(5,6,5,6)).margins(Rect(2,2,2,2)).minWidth(40);
+    Style editBox = res.createSubstyle("EDIT_BOX").backgroundImageId("editbox_background").padding(Rect(5,6,5,6)).margins(Rect(2,2,2,2)).minWidth(100).minHeight(60);
 
 	return res;
 }
