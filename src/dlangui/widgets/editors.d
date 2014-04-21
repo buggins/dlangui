@@ -371,7 +371,7 @@ class EditLine : EditWidgetBase {
 
     protected void measureText() {
         FontRef font = font();
-        Point sz = font.textSize(text);
+        //Point sz = font.textSize(text);
         _measuredText = text;
         _measuredTextWidths.length = _measuredText.length;
         int charsMeasured = font.measureText(_measuredText, _measuredTextWidths, int.max);
@@ -499,8 +499,9 @@ class EditLine : EditWidgetBase {
 
 /// single line editor
 class EditBox : EditWidgetBase {
-    ScrollBar _hscrollbar;
-    ScrollBar _vscrollbar;
+    protected ScrollBar _hscrollbar;
+    protected ScrollBar _vscrollbar;
+
     this(string ID, dstring initialContent = null) {
         super(ID);
         _content = new EditableContent(true); // multiline
@@ -511,6 +512,38 @@ class EditBox : EditWidgetBase {
         _vscrollbar = new ScrollBar("vscrollbar", Orientation.Vertical);
         addChild(_hscrollbar);
         addChild(_vscrollbar);
+    }
+
+    protected int _lineHeight;
+
+    protected Point _scrollPos;
+    protected int _firstVisibleLine;
+
+    protected int _numVisibleLines;             // number of lines visible in client area
+    protected dstring[] _visibleLines;          // text for visible lines
+    protected int[][] _visibleLinesMeasurement; // char positions for visible lines
+    protected int[] _visibleLinesWidths; // width (in pixels) of visible lines
+
+    protected Point measureVisibleText() {
+        Point sz;
+        FontRef font = font();
+        _lineHeight = font.height;
+        _numVisibleLines = (_clientRc.height + _lineHeight - 1) / _lineHeight;
+        if (_firstVisibleLine + _numVisibleLines > _content.length)
+            _numVisibleLines = _content.length - _firstVisibleLine;
+        _visibleLines.length = _numVisibleLines;
+        _visibleLinesMeasurement.length = _numVisibleLines;
+        _visibleLinesWidths.length = _numVisibleLines;
+        for (int i = 0; i < _numVisibleLines; i++) {
+            _visibleLines[i] = _content[i];
+            _visibleLinesMeasurement[i].length = _visibleLines[i].length;
+            int charsMeasured = font.measureText(_visibleLines[i], _visibleLinesMeasurement[i], int.max);
+            _visibleLinesWidths[i] = charsMeasured > 0 ? _visibleLinesMeasurement[i][charsMeasured - 1] : 0;
+            if (sz.x < _visibleLinesWidths[i])
+                sz.x = _visibleLinesWidths[i]; // width - max from visible lines
+        }
+        sz.y = _lineHeight * _content.length; // height - for all lines
+        return sz;
     }
 
 	override bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter) {
@@ -558,7 +591,7 @@ class EditBox : EditWidgetBase {
         int hsbheight = _hscrollbar.measuredHeight;
         int vsbwidth = _vscrollbar.measuredWidth;
         //measureText();
-        Point textSz = Point(200, 150); // TODO
+        Point textSz = measureVisibleText();
         measuredContent(parentWidth, parentHeight, textSz.x + vsbwidth, textSz.y + hsbheight);
     }
 
@@ -585,6 +618,7 @@ class EditBox : EditWidgetBase {
         _clientRc = rc;
         _clientRc.right -= vsbwidth;
         _clientRc.bottom -= hsbheight;
+        Point textSz = measureVisibleText();
     }
 
     /// draw content
@@ -601,7 +635,13 @@ class EditBox : EditWidgetBase {
         //dstring txt = text;
         //Point sz = font.textSize(txt);
         //font.drawText(buf, rc.left, rc.top + sz.y / 10, txt, textColor);
-        buf.fillRect(_clientRc, 0x80E0E0FF);
+        for (int i = 0; i < _visibleLines.length; i++) {
+            dstring txt = _visibleLines[i];
+            if (txt.length > 0)
+                font.drawText(buf, rc.left, rc.top + i * _lineHeight, txt, textColor);
+        }
+
+        //buf.fillRect(_clientRc, 0x80E0E0FF); // testing clientRc
         if (focused) {
             // draw caret
             Rect caretRc = textPosToClient(_caretPos);
