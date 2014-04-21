@@ -24,6 +24,8 @@ import dlangui.widgets.widget;
 import dlangui.widgets.controls;
 import dlangui.core.signals;
 
+import std.algorithm;
+
 immutable dchar EOL = '\n';
 
 /// split dstring by delimiters
@@ -141,9 +143,18 @@ class EditableContent {
     dstring opIndex(int index) {
         return line(index);
     }
-    /// returns line text by index
+    /// returns line text by index, "" if index is out of bounds
     dstring line(int index) {
-        return _lines[index];
+        return index >= 0 && index < _lines.length ? _lines[index] : ""d;
+    }
+
+    /// returns maximum length of line
+    int maxLineLength() {
+        int m = 0;
+        foreach(s; _lines)
+            if (m < s.length)
+                m = s.length;
+        return m;
     }
 
 	bool handleContentChange(EditOperation op, ref TextRange rangeBefore, ref TextRange rangeAfter) {
@@ -280,7 +291,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 		} else if (event.action == KeyAction.Text && event.text.length) {
 			Log.d("text entered: ", event.text);
 			dchar ch = event.text[0];
-			if (ch != 8 && ch != '\n') { // ignore Backspace
+			if (ch != 8 && ch != '\n' && ch != '\r') { // ignore Backspace and Return
 				EditOperation op = new EditOperation(EditAction.Insert, _caretPos, event.text);
 				_content.performOperation(op);
 				return true;
@@ -498,7 +509,7 @@ class EditLine : EditWidgetBase {
 
 
 /// single line editor
-class EditBox : EditWidgetBase {
+class EditBox : EditWidgetBase, OnScrollHandler {
     protected ScrollBar _hscrollbar;
     protected ScrollBar _vscrollbar;
 
@@ -510,6 +521,8 @@ class EditBox : EditWidgetBase {
         text = initialContent;
         _hscrollbar = new ScrollBar("hscrollbar", Orientation.Horizontal);
         _vscrollbar = new ScrollBar("vscrollbar", Orientation.Vertical);
+        _hscrollbar.onScrollEventListener = this;
+        _vscrollbar.onScrollEventListener = this;
         addChild(_hscrollbar);
         addChild(_vscrollbar);
     }
@@ -519,6 +532,7 @@ class EditBox : EditWidgetBase {
     protected Point _scrollPos;
     protected int _firstVisibleLine;
 
+    protected int _maxLineWidth;
     protected int _numVisibleLines;             // number of lines visible in client area
     protected dstring[] _visibleLines;          // text for visible lines
     protected int[][] _visibleLinesMeasurement; // char positions for visible lines
@@ -535,15 +549,96 @@ class EditBox : EditWidgetBase {
         _visibleLinesMeasurement.length = _numVisibleLines;
         _visibleLinesWidths.length = _numVisibleLines;
         for (int i = 0; i < _numVisibleLines; i++) {
-            _visibleLines[i] = _content[i];
+            _visibleLines[i] = _content[_firstVisibleLine + i];
             _visibleLinesMeasurement[i].length = _visibleLines[i].length;
             int charsMeasured = font.measureText(_visibleLines[i], _visibleLinesMeasurement[i], int.max);
             _visibleLinesWidths[i] = charsMeasured > 0 ? _visibleLinesMeasurement[i][charsMeasured - 1] : 0;
             if (sz.x < _visibleLinesWidths[i])
                 sz.x = _visibleLinesWidths[i]; // width - max from visible lines
         }
+        // find max line width. TODO: optimize!!!
+        int[] buf;
+        for (int i = 0; i < _content.length; i++) {
+            dstring s = _content[i];
+            if (buf.length < s.length)
+                buf.length = s.length;
+            int charsMeasured = font.measureText(s, buf, int.max);
+            int w = 0;
+            if (charsMeasured > 0)
+                w = buf[charsMeasured - 1];
+            if (sz.x < w)
+                sz.x = w;
+        }
+        _maxLineWidth = sz.x;
         sz.y = _lineHeight * _content.length; // height - for all lines
         return sz;
+    }
+
+    protected void updateScrollbars() {
+        int visibleLines = _clientRc.height / _lineHeight; // fully visible lines
+        if (visibleLines < 1)
+            visibleLines = 1;
+        _vscrollbar.setRange(0, _content.length - 1);
+        _vscrollbar.pageSize = visibleLines;
+        _vscrollbar.position = _firstVisibleLine;
+        _hscrollbar.setRange(0, _maxLineWidth + _clientRc.width / 4);
+        _hscrollbar.pageSize = _clientRc.width;
+        _hscrollbar.position = _scrollPos.x;
+    }
+
+    /// handle scroll event
+    override bool onScrollEvent(AbstractSlider source, ScrollEvent event) {
+        if (source.id.equal("hscrollbar")) {
+            if (_scrollPos.x != event.position) {
+                _scrollPos.x = event.position;
+                invalidate();
+            }
+            return true;
+        } else if (source.id.equal("vscrollbar")) {
+            if (_firstVisibleLine != event.position) {
+                _firstVisibleLine = event.position;
+                measureVisibleText();
+                invalidate();
+            }
+            return true;
+        }
+        return false;
+
+    }
+
+    protected void ensureCaretVisible() {
+        if (_caretPos.line >= _content.length)
+            _caretPos.line = _content.length - 1;
+        if (_caretPos.line < 0)
+            _caretPos.line = 0;
+        int visibleLines = _clientRc.height / _lineHeight; // fully visible lines
+        if (visibleLines < 1)
+            visibleLines = 1;
+        if (_caretPos.line < _firstVisibleLine) {
+            _firstVisibleLine = _caretPos.line;
+            measureVisibleText();
+            invalidate();
+        } else if (_caretPos.line >= _firstVisibleLine + visibleLines) {
+            _firstVisibleLine = _caretPos.line - visibleLines + 1;
+            if (_firstVisibleLine < 0)
+                _firstVisibleLine = 0;
+            measureVisibleText();
+            invalidate();
+        }
+        //_scrollPos
+        Rect rc = textPosToClient(_caretPos);
+        if (rc.left < 0) {
+            // scroll left
+            _scrollPos.x -= -rc.left + _clientRc.width / 4;
+            if (_scrollPos.x < 0)
+                _scrollPos.x = 0;
+            invalidate();
+        } else if (rc.left >= _clientRc.width - 10) {
+            // scroll right
+            _scrollPos.x += (rc.left - _clientRc.width) + _clientRc.width / 4;
+            invalidate();
+        }
+        updateScrollbars();    
     }
 
 	override bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter) {
@@ -566,12 +661,14 @@ class EditBox : EditWidgetBase {
             else
                 res.left = _visibleLinesMeasurement[lineIndex][p.pos - 1];
         }
+        res.left -= _scrollPos.x;
         res.right = res.left + 1;
         return res;
     }
 
     override protected TextPosition clientToTextPos(Point pt) {
         TextPosition res;
+        pt.x += _scrollPos.x;
         int lineIndex = pt.y / _lineHeight;
         if (lineIndex < 0)
             lineIndex = 0;
@@ -613,6 +710,7 @@ class EditBox : EditWidgetBase {
                 correctCaretPos();
                 if (_caretPos.pos > 0) {
                     _caretPos.pos--;
+                    ensureCaretVisible();
                     invalidate();
                 }
                 return true;
@@ -620,6 +718,7 @@ class EditBox : EditWidgetBase {
                 correctCaretPos();
                 if (_caretPos.pos < currentLine.length) {
                     _caretPos.pos++;
+                    ensureCaretVisible();
                     invalidate();
                 }
                 return true;
@@ -630,6 +729,7 @@ class EditBox : EditWidgetBase {
                     range.start.pos--;
                     EditOperation op = new EditOperation(EditAction.Delete, range, null);
                     _content.performOperation(op);
+                    ensureCaretVisible();
                 }
                 return true;
             case EditorActions.DelNextChar:
@@ -639,17 +739,20 @@ class EditBox : EditWidgetBase {
                     range.end.pos++;
                     EditOperation op = new EditOperation(EditAction.Delete, range, null);
                     _content.performOperation(op);
+                    ensureCaretVisible();
                 }
                 return true;
             case EditorActions.Up:
                 if (_caretPos.line > 0) {
                     _caretPos.line--;
+                    ensureCaretVisible();
                     invalidate();
                 }
                 return true;
             case EditorActions.Down:
                 if (_caretPos.line < _content.length - 1) {
                     _caretPos.line++;
+                    ensureCaretVisible();
                     invalidate();
                 }
                 return true;
@@ -665,12 +768,14 @@ class EditBox : EditWidgetBase {
                 if (_caretPos.pos > 0 || _caretPos.line > 0) {
                     _caretPos.line = 0;
                     _caretPos.pos = 0;
+                    ensureCaretVisible();
                     invalidate();
                 }
                 return true;
             case EditorActions.LineBegin:
                 if (_caretPos.pos > 0) {
                     _caretPos.pos = 0;
+                    ensureCaretVisible();
                     invalidate();
                 }
                 return true;
@@ -678,12 +783,14 @@ class EditBox : EditWidgetBase {
                 if (_caretPos.line < _content.length - 1 || _caretPos.pos < _content[_content.length - 1].length) {
                     _caretPos.line = _content.length - 1;
                     _caretPos.pos = _content[_content.length - 1].length;
+                    ensureCaretVisible();
                     invalidate();
                 }
                 return true;
             case EditorActions.LineEnd:
                 if (_caretPos.pos < currentLine.length) {
                     _caretPos.pos = currentLine.length;
+                    ensureCaretVisible();
                     invalidate();
                 }
                 return true;
@@ -732,6 +839,7 @@ class EditBox : EditWidgetBase {
         _clientRc.right -= vsbwidth;
         _clientRc.bottom -= hsbheight;
         Point textSz = measureVisibleText();
+        updateScrollbars();
     }
 
     /// draw content
@@ -751,7 +859,7 @@ class EditBox : EditWidgetBase {
         for (int i = 0; i < _visibleLines.length; i++) {
             dstring txt = _visibleLines[i];
             if (txt.length > 0)
-                font.drawText(buf, rc.left, rc.top + i * _lineHeight, txt, textColor);
+                font.drawText(buf, rc.left - _scrollPos.x, rc.top + i * _lineHeight, txt, textColor);
         }
 
         //buf.fillRect(_clientRc, 0x80E0E0FF); // testing clientRc

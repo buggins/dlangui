@@ -139,7 +139,20 @@ extern (C) int UIAppMain(string[] args) {
         tabs.addTab((new TextWidget()).id("tab3").textColor(0x00802000).text("Tab 3 contents"), "Tab 3"d);
         tabs.addTab((new TextWidget()).id("tab4").textColor(0x00802000).text("Tab 4 contents some long string"), "Tab 4"d);
         tabs.addTab((new TextWidget()).id("tab5").textColor(0x00802000).text("Tab 5 contents"), "Tab 5"d);
-        tabs.addTab((new EditBox("editbox1", "Some text\nSecond line\nYet another line"d)).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT), "EditBox"d);
+        EditBox editBox = new EditBox("editbox1", "Some text\nSecond line\nYet another line"d);
+        editBox.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+        dstring text = editBox.text;
+        for (int i = 0; i < 100; i++) {
+            text ~= "\n Line ";
+            text ~= to!dstring(i + 3);
+            text ~= " Some long long line. Blah blah blah.";
+            for (int j = 0; j <= i % 4; j++)
+                text ~= " The quick brown fox jumps over the lazy dog.";
+            text ~= "End of line ";
+            text ~= to!dstring(i + 3);
+        }
+        editBox.text = text;
+        tabs.addTab(editBox, "EditBox"d);
 
         tabs.selectTab("tab1");
 
