@@ -182,6 +182,7 @@
     <Compile Include="src\dlangui\widgets\popup.d" />
     <Compile Include="src\dlangui\core\collections.d" />
     <Compile Include="src\dlangui\core\signals.d" />
+    <Compile Include="src\dlangui\widgets\editors.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\dlangui\platforms\x11\" />

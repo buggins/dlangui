@@ -153,7 +153,7 @@ class EditableContent {
         int m = 0;
         foreach(s; _lines)
             if (m < s.length)
-                m = s.length;
+                m = cast(int)s.length;
         return m;
     }
 
@@ -376,7 +376,7 @@ class EditLine : EditWidgetBase {
                 return res;
             }
         }
-        res.pos = _measuredText.length;
+        res.pos = cast(int)_measuredText.length;
         return res;
     }
 
@@ -448,7 +448,7 @@ class EditLine : EditWidgetBase {
             case EditorActions.DocumentEnd:
             case EditorActions.LineEnd:
                 if (_caretPos.pos < _measuredText.length) {
-                    _caretPos.pos = _measuredText.length;
+                    _caretPos.pos = cast(int)_measuredText.length;
                     invalidate();
                 }
                 return true;
@@ -712,10 +712,10 @@ class EditBox : EditWidgetBase, OnScrollHandler {
                     return res;
                 }
             }
-            res.pos = _visibleLines[lineIndex].length;
+            res.pos = cast(int)_visibleLines[lineIndex].length;
         } else {
-            res.line = _firstVisibleLine + _visibleLines.length - 1;
-            res.pos = _visibleLines[$ - 1].length;
+            res.line = _firstVisibleLine + cast(int)_visibleLines.length - 1;
+            res.pos = cast(int)_visibleLines[$ - 1].length;
         }
         return res;
     }
@@ -727,7 +727,7 @@ class EditBox : EditWidgetBase, OnScrollHandler {
             _caretPos.line = 0;
         dstring currentLine = _content[_caretPos.line];
         if (_caretPos.pos > currentLine.length)
-            _caretPos.pos = currentLine.length;
+            _caretPos.pos = cast(int)currentLine.length;
         if (_caretPos.pos < 0)
             _caretPos.pos = 0;
     }
@@ -811,14 +811,14 @@ class EditBox : EditWidgetBase, OnScrollHandler {
             case EditorActions.DocumentEnd:
                 if (_caretPos.line < _content.length - 1 || _caretPos.pos < _content[_content.length - 1].length) {
                     _caretPos.line = _content.length - 1;
-                    _caretPos.pos = _content[_content.length - 1].length;
+                    _caretPos.pos = cast(int)_content[_content.length - 1].length;
                     ensureCaretVisible();
                     invalidate();
                 }
                 return true;
             case EditorActions.LineEnd:
                 if (_caretPos.pos < currentLine.length) {
-                    _caretPos.pos = currentLine.length;
+                    _caretPos.pos = cast(int)currentLine.length;
                     ensureCaretVisible();
                     invalidate();
                 }

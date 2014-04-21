@@ -575,6 +575,11 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         addChild(_indicator);
         addChild(_pageUp);
         addChild(_pageDown);
+		_btnBack.focusable = false;
+		_btnForward.focusable = false;
+		_indicator.focusable = false;
+		_pageUp.focusable = false;
+		_pageDown.focusable = false;
         _btnBack.onClickListener = &onClick;
         _btnForward.onClickListener = &onClick;
         _pageUp.onClickListener = &onClick;
