@@ -280,7 +280,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 		} else if (event.action == KeyAction.Text && event.text.length) {
 			Log.d("text entered: ", event.text);
 			dchar ch = event.text[0];
-			if (ch != 8) { // ignore Backspace
+			if (ch != 8 && ch != '\n') { // ignore Backspace
 				EditOperation op = new EditOperation(EditAction.Insert, _caretPos, event.text);
 				_content.performOperation(op);
 				return true;
@@ -547,7 +547,7 @@ class EditBox : EditWidgetBase {
     }
 
 	override bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter) {
-		//measureText();
+		measureVisibleText();
 		_caretPos = rangeAfter.end;
 		invalidate();
 		return true;
@@ -555,31 +555,144 @@ class EditBox : EditWidgetBase {
 
     override protected Rect textPosToClient(TextPosition p) {
         Rect res;
-        //res.bottom = _clientRc.height;
-        //if (p.pos == 0)
-        //    res.left = 0;
-        //else if (p.pos >= _measuredText.length)
-        //    res.left = _measuredTextSize.x;
-        //else
-        //    res.left = _measuredTextWidths[p.pos - 1];
-        //res.right = res.left + 1;
+        int lineIndex = p.line - _firstVisibleLine;
+        res.top = lineIndex * _lineHeight;
+        res.bottom = res.top + _lineHeight;
+        if (lineIndex >=0 && lineIndex < _visibleLines.length) {
+            if (p.pos == 0)
+                res.left = 0;
+            else if (p.pos >= _visibleLinesMeasurement[lineIndex].length)
+                res.left = _visibleLinesWidths[lineIndex];
+            else
+                res.left = _visibleLinesMeasurement[lineIndex][p.pos - 1];
+        }
+        res.right = res.left + 1;
         return res;
     }
 
     override protected TextPosition clientToTextPos(Point pt) {
         TextPosition res;
-        //for (int i = 0; i < _measuredText.length; i++) {
-        //    int x0 = i > 0 ? _measuredTextWidths[i - 1] : 0;
-        //    int x1 = _measuredTextWidths[i];
-        //    int mx = (x0 + x1) >> 1;
-        //    if (pt.x < mx) {
-        //        res.pos = i;
-        //        return res;
-        //    }
-        //}
-        //res.pos = _measuredText.length;
+        int lineIndex = pt.y / _lineHeight;
+        if (lineIndex < 0)
+            lineIndex = 0;
+        if (lineIndex < _visibleLines.length) {
+            res.line = lineIndex + _firstVisibleLine;
+            for (int i = 0; i < _visibleLinesMeasurement[lineIndex].length; i++) {
+                int x0 = i > 0 ? _visibleLinesMeasurement[lineIndex][i - 1] : 0;
+                int x1 = _visibleLinesMeasurement[lineIndex][i];
+                int mx = (x0 + x1) >> 1;
+                if (pt.x < mx) {
+                    res.pos = i;
+                    return res;
+                }
+            }
+            res.pos = _visibleLines[lineIndex].length;
+        } else {
+            res.line = _firstVisibleLine + _visibleLines.length - 1;
+            res.pos = _visibleLines[$ - 1].length;
+        }
         return res;
     }
+
+    protected void correctCaretPos() {
+        if (_caretPos.line >= _content.length)
+            _caretPos.line = _content.length - 1;
+        if (_caretPos.line < 0)
+            _caretPos.line = 0;
+        dstring currentLine = _content[_caretPos.line];
+        if (_caretPos.pos > currentLine.length)
+            _caretPos.pos = currentLine.length;
+        if (_caretPos.pos < 0)
+            _caretPos.pos = 0;
+    }
+
+	override protected bool handleAction(Action a) {
+        dstring currentLine = _content[_caretPos.line];
+		switch (a.id) {
+            case EditorActions.Left:
+                correctCaretPos();
+                if (_caretPos.pos > 0) {
+                    _caretPos.pos--;
+                    invalidate();
+                }
+                return true;
+            case EditorActions.Right:
+                correctCaretPos();
+                if (_caretPos.pos < currentLine.length) {
+                    _caretPos.pos++;
+                    invalidate();
+                }
+                return true;
+            case EditorActions.DelPrevChar:
+                correctCaretPos();
+                if (_caretPos.pos > 0) {
+                    TextRange range = TextRange(_caretPos, _caretPos);
+                    range.start.pos--;
+                    EditOperation op = new EditOperation(EditAction.Delete, range, null);
+                    _content.performOperation(op);
+                }
+                return true;
+            case EditorActions.DelNextChar:
+                correctCaretPos();
+                if (_caretPos.pos < currentLine.length) {
+                    TextRange range = TextRange(_caretPos, _caretPos);
+                    range.end.pos++;
+                    EditOperation op = new EditOperation(EditAction.Delete, range, null);
+                    _content.performOperation(op);
+                }
+                return true;
+            case EditorActions.Up:
+                if (_caretPos.line > 0) {
+                    _caretPos.line--;
+                    invalidate();
+                }
+                return true;
+            case EditorActions.Down:
+                if (_caretPos.line < _content.length - 1) {
+                    _caretPos.line++;
+                    invalidate();
+                }
+                return true;
+            case EditorActions.WordLeft:
+                break;
+            case EditorActions.WordRight:
+                break;
+            case EditorActions.PageUp:
+                break;
+            case EditorActions.PageDown:
+                break;
+            case EditorActions.DocumentBegin:
+                if (_caretPos.pos > 0 || _caretPos.line > 0) {
+                    _caretPos.line = 0;
+                    _caretPos.pos = 0;
+                    invalidate();
+                }
+                return true;
+            case EditorActions.LineBegin:
+                if (_caretPos.pos > 0) {
+                    _caretPos.pos = 0;
+                    invalidate();
+                }
+                return true;
+            case EditorActions.DocumentEnd:
+                if (_caretPos.line < _content.length - 1 || _caretPos.pos < _content[_content.length - 1].length) {
+                    _caretPos.line = _content.length - 1;
+                    _caretPos.pos = _content[_content.length - 1].length;
+                    invalidate();
+                }
+                return true;
+            case EditorActions.LineEnd:
+                if (_caretPos.pos < currentLine.length) {
+                    _caretPos.pos = currentLine.length;
+                    invalidate();
+                }
+                return true;
+            default:
+                return false;
+		}
+		return super.handleAction(a);
+	}
+
 
     /// measure
     override void measure(int parentWidth, int parentHeight) { 
