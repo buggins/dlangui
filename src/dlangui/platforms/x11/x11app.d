@@ -41,6 +41,30 @@ version(linux) {
 	extern (System)
 	void XSetEventQueueOwner(std.c.linux.X11.Xlib.Display *dpy, XEventQueueOwner owner);
 	
+	struct xcb_key_symbols_t {};
+	/* enumeration for col parameter? */
+	enum xcb_lookup_t {
+		xcb_lookup_none_t   = 1,
+		xcb_lookup_chars_t  = 2,
+		xcb_lookup_key_sym_t = 3,
+		xcb_lookup_both_t   = 4
+	};
+	
+	extern(C) xcb_key_symbols_t *xcb_key_symbols_alloc        (xcb_connection_t         *c);
+
+	extern(C) void xcb_key_symbols_free         (xcb_key_symbols_t         *syms);
+
+	extern(C) xcb_keysym_t xcb_key_symbols_get_keysym    (xcb_key_symbols_t         *syms,
+					  xcb_keycode_t             keycode,
+					  int                    col);
+	
+	extern(C) xcb_keysym_t xcb_key_press_lookup_keysym   (xcb_key_symbols_t         *syms,
+						  xcb_key_press_event_t      *event,
+						  int                    col);
+
+	extern(C) xcb_keysym_t xcb_key_release_lookup_keysym (xcb_key_symbols_t         *syms,
+						  xcb_key_release_event_t    *event,
+						  int                    col);	
 	class XCBWindow : Window {
 		xcb_window_t         _w;
 		xcb_gcontext_t       _g;
@@ -539,7 +563,222 @@ version(linux) {
 	            invalidate();
 	        }
 		}
+
+		uint convertKeyCode(uint keyCode) {
+			switch (keyCode) {
+				case XK_BackSpace:
+		    		return KeyCode.BACK;
+				case XK_Tab:
+				    return KeyCode.TAB;
+				case XK_Linefeed:
+				case XK_Return:
+				    return KeyCode.RETURN;
+				    return KeyCode.SHIFT;
+				    return KeyCode.CONTROL;
+				    return KeyCode.ALT;
+				case XK_Shift_L:
+				    return KeyCode.LSHIFT;
+				case XK_Shift_R:
+				    return KeyCode.RSHIFT;
+				case XK_Control_L:
+				    return KeyCode.LCONTROL;
+				case XK_Control_R:
+				    return KeyCode.RCONTROL;
+				case XK_Alt_L:
+				    return KeyCode.LALT;
+				case XK_Alt_R:
+				    return KeyCode.RALT;
+				case XK_Pause:					
+				    return KeyCode.PAUSE;
+				case XK_Caps_Lock:
+				    return KeyCode.CAPS;
+				case XK_Escape:
+				    return KeyCode.ESCAPE;
+				case XK_KP_Space:
+				    return KeyCode.SPACE;
+				case XK_KP_Page_Up:
+				case XK_Page_Up:
+				    return KeyCode.PAGEUP;
+				case XK_KP_Page_Down:
+				case XK_Page_Down:
+				    return KeyCode.PAGEDOWN;
+				case XK_End:
+				case XK_KP_End:
+				    return KeyCode.END;
+				case XK_Home:
+				case XK_KP_Home:
+				    return KeyCode.HOME;
+				case XK_KP_Left:
+				case XK_Left:
+				    return KeyCode.LEFT;
+				case XK_KP_Up:
+				case XK_Up:
+				    return KeyCode.UP;
+				case XK_KP_Right:
+				case XK_Right:
+				    return KeyCode.RIGHT;
+				case XK_KP_Down:
+				case XK_Down:
+				    return KeyCode.DOWN;
+				case XK_Insert:
+				case XK_KP_Insert:
+				    return KeyCode.INS;
+				case XK_KP_Delete:
+				case XK_Delete:
+				    return KeyCode.DEL;
+				case XK_0:
+				    return KeyCode.KEY_0;
+				case XK_1:
+				    return KeyCode.KEY_1;
+				case XK_2:
+				    return KeyCode.KEY_2;
+				case XK_3:
+				    return KeyCode.KEY_3;
+				case XK_4:
+				    return KeyCode.KEY_4;
+				case XK_5:
+				    return KeyCode.KEY_5;
+				case XK_6:
+				    return KeyCode.KEY_6;
+				case XK_7:
+				    return KeyCode.KEY_7;
+				case XK_8:
+				    return KeyCode.KEY_8;
+				case XK_9:
+				    return KeyCode.KEY_9;
+				case XK_A:
+				    return KeyCode.KEY_A;
+				case XK_B:
+				    return KeyCode.KEY_B;
+				case XK_C:
+				    return KeyCode.KEY_C;
+				case XK_D:
+				    return KeyCode.KEY_D;
+				case XK_E:
+				    return KeyCode.KEY_E;
+				case XK_F:
+				    return KeyCode.KEY_F;
+				case XK_G:
+				    return KeyCode.KEY_G;
+				case XK_H:
+				    return KeyCode.KEY_H;
+				case XK_I:
+				    return KeyCode.KEY_I;
+				case XK_J:
+				    return KeyCode.KEY_J;
+				case XK_K:
+				    return KeyCode.KEY_K;
+				case XK_L:
+				    return KeyCode.KEY_L;
+				case XK_M:
+				    return KeyCode.KEY_M;
+				case XK_N:
+				    return KeyCode.KEY_N;
+				case XK_O:
+				    return KeyCode.KEY_O;
+				case XK_P:
+				    return KeyCode.KEY_P;
+				case XK_Q:
+				    return KeyCode.KEY_Q;
+				case XK_R:
+				    return KeyCode.KEY_R;
+				case XK_S:
+				    return KeyCode.KEY_S;
+				case XK_T:
+				    return KeyCode.KEY_T;
+				case XK_U:
+				    return KeyCode.KEY_U;
+				case XK_V:
+				    return KeyCode.KEY_V;
+				case XK_W:
+				    return KeyCode.KEY_W;
+				case XK_X:
+				    return KeyCode.KEY_X;
+				case XK_Y:
+				    return KeyCode.KEY_Y;
+				case XK_Z:
+				    return KeyCode.KEY_Z;
+				    //return KeyCode.LWIN = 0x5b,
+				    //return KeyCode.RWIN = 0x5c,
+				case XK_KP_0:
+				    return KeyCode.NUM_0;
+				case XK_KP_1:
+				    return KeyCode.NUM_1;
+				case XK_KP_2:
+				    return KeyCode.NUM_2;
+				case XK_KP_3:
+				    return KeyCode.NUM_3;
+				case XK_KP_4:
+				    return KeyCode.NUM_4;
+				case XK_KP_5:
+				    return KeyCode.NUM_5;
+				case XK_KP_6:
+				    return KeyCode.NUM_6;
+				case XK_KP_7:
+				    return KeyCode.NUM_7;
+				case XK_KP_8:
+				    return KeyCode.NUM_8;
+				case XK_KP_9:
+				    return KeyCode.NUM_9;
+				case XK_asterisk:
+				    return KeyCode.MUL;
+				case XK_plus:
+				    return KeyCode.ADD;
+				case XK_slash:
+				    return KeyCode.DIV;
+				case XK_minus:
+				    return KeyCode.SUB;
+				case XK_period:
+					return KeyCode.DECIMAL;
+				case XK_F1:
+				    return KeyCode.F1;
+				case XK_F2:
+				    return KeyCode.F2;
+				case XK_F3:
+				    return KeyCode.F3;
+				case XK_F4:
+				    return KeyCode.F4;
+				case XK_F5:
+				    return KeyCode.F5;
+				case XK_F6:
+				    return KeyCode.F6;
+				case XK_F7:
+				    return KeyCode.F7;
+				case XK_F8:
+				    return KeyCode.F8;
+				case XK_F9:
+				    return KeyCode.F9;
+				case XK_F10:
+				    return KeyCode.F10;
+				case XK_F11:
+				    return KeyCode.F11;
+				case XK_F12:
+				    return KeyCode.F12;
+				case XK_Num_Lock:
+				    return KeyCode.NUMLOCK;
+				case XK_Scroll_Lock:
+				    return KeyCode.SCROLL;
+				default:
+					return 0x10000 | keyCode;
+			}
+		}
 		
+		uint convertKeyFlags(uint flags) {
+			return 0;
+		}
+				
+		bool processKeyEvent(KeyAction action, uint keyCode, uint flags) {
+			Log.d("processKeyEvent ", action, " x11 key=", keyCode, " x11 flags=", flags);
+			keyCode = convertKeyCode(keyCode);
+			flags = convertKeyFlags(flags);
+			Log.d("processKeyEvent ", action, " converted key=", keyCode, " converted flags=", flags);
+			bool res = dispatchKeyEvent(new KeyEvent(action, keyCode, flags));
+	        if (res) {
+	            Log.d("Calling update() after key event");
+	            invalidate();
+	        }
+			return res;
+		}
 	}
 
 	private __gshared xcb_connection_t * _xcbconnection;
@@ -673,6 +912,10 @@ version(linux) {
 			Log.i("entering message loop");
 			int done = 0;
 			xcb_generic_event_t *e;
+			xcb_key_symbols_t * keysyms;// = xcb_key_symbols_alloc(_xcbconnection);
+			keysyms = xcb_key_symbols_alloc(_xcbconnection);
+			if (!keysyms)
+				Log.e("xcb_key_symbols_alloc returned null");
 		    /* event loop */
 		  	do {
 		  		e = xcb_wait_for_event(_xcbconnection);
@@ -821,14 +1064,28 @@ version(linux) {
 			                xcb_key_press_event_t *kp = cast(xcb_key_press_event_t *)e;
 			                //print_modifiers(kp.state);
 			                Log.d("XCB_KEY_PRESS ", kp.event, " key=", kp.detail);
-							if (kp.detail == XK_space) // exist by space
-		      					done = 1;
+							XCBWindow window = getWindow(kp.event);
+							if (window !is null) {
+								//xcb_keysym_t keysym = xcb_key_press_lookup_keysym(keysyms, kp, xcb_lookup_t.xcb_lookup_key_sym_t);
+								xcb_keysym_t keysym = xcb_key_press_lookup_keysym(keysyms, kp, 2);
+								Log.d("xcb_key_press_lookup_keysym - key=", kp.detail, " keysym=", keysym);
+								//xcb_keysym_t keysym = xcb_key_symbols_get_keysym(keysyms, kp.detail, xcb_lookup_t.xcb_lookup_key_sym_t);
+								window.processKeyEvent(KeyAction.KeyDown, keysym, kp.state);
+							}
+							//if (kp.detail == XK_space) // exist by space
+		      				//	done = 1;
 			                break;
 			            }
 		            case XCB_KEY_RELEASE: {
 			                xcb_key_release_event_t *kr = cast(xcb_key_release_event_t *)e;
 			                //print_modifiers(kr.state);
 				            Log.d("XCB_KEY_RELEASE ", kr.event, " key=", kr.detail);
+							XCBWindow window = getWindow(kr.event);
+							if (window !is null) {
+								//xcb_keysym_t keysym = xcb_key_symbols_get_keysym(keysyms, kr.detail, xcb_lookup_t.xcb_lookup_key_sym_t);
+								xcb_keysym_t keysym = xcb_key_release_lookup_keysym(keysyms, kr, 2);
+								window.processKeyEvent(KeyAction.KeyUp, keysym, kr.state);
+							}
 			                break;
 			            }			
 					default:
@@ -837,6 +1094,8 @@ version(linux) {
 		      	}
 		    	free(e);
 		  	} while(!done);
+			if (keysyms)
+				xcb_key_symbols_free(keysyms);
 			Log.i("exiting message loop");
 			return 0;
 		}

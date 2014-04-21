@@ -499,6 +499,7 @@ mixin template APP_ENTRY_POINT() {
 	    pragma(lib, "xcb");
 	    pragma(lib, "xcb-shm");
 	    pragma(lib, "xcb-image");
+	    pragma(lib, "xcb-keysyms");
 	    pragma(lib, "X11-xcb");
 	    pragma(lib, "X11");
 	    pragma(lib, "dl");
