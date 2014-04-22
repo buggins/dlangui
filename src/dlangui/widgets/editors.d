@@ -204,6 +204,10 @@ enum EditorActions {
 	WordRight,
 	PageUp,
 	PageDown,
+    /// move cursor to beginning of page
+	PageBegin, 
+    /// move cursor to end of page
+	PageEnd,   
 	LineBegin,
 	LineEnd,
 	DocumentBegin,
@@ -230,6 +234,10 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 			new Action(EditorActions.Right, KeyCode.RIGHT, 0),
 			new Action(EditorActions.WordLeft, KeyCode.LEFT, KeyFlag.Control),
 			new Action(EditorActions.WordRight, KeyCode.RIGHT, KeyFlag.Control),
+			new Action(EditorActions.PageUp, KeyCode.PAGEUP, 0),
+			new Action(EditorActions.PageDown, KeyCode.PAGEDOWN, 0),
+			new Action(EditorActions.PageBegin, KeyCode.PAGEUP, KeyFlag.Control),
+			new Action(EditorActions.PageEnd, KeyCode.PAGEDOWN, KeyFlag.Control),
 			new Action(EditorActions.LineBegin, KeyCode.HOME, 0),
 			new Action(EditorActions.LineEnd, KeyCode.END, 0),
 			new Action(EditorActions.DocumentBegin, KeyCode.HOME, KeyFlag.Control),
@@ -789,9 +797,62 @@ class EditBox : EditWidgetBase, OnScrollHandler {
                 break;
             case EditorActions.WordRight:
                 break;
+            case EditorActions.PageBegin:
+                {
+                    ensureCaretVisible();
+                    _caretPos.line = _firstVisibleLine;
+                    invalidate();
+                    return true;
+                }
+                break;
+            case EditorActions.PageEnd:
+                {
+                    ensureCaretVisible();
+                    int fullLines = _clientRc.height / _lineHeight;
+                    int newpos = _firstVisibleLine + fullLines - 1;
+                    if (newpos >= _content.length)
+                        newpos = _content.length - 1;
+                    _caretPos.line = newpos;
+                    invalidate();
+                    return true;
+                }
+                break;
             case EditorActions.PageUp:
+                {
+                    ensureCaretVisible();
+                    int fullLines = _clientRc.height / _lineHeight;
+                    int newpos = _firstVisibleLine - fullLines;
+                    if (newpos < 0) {
+                        _firstVisibleLine = 0;
+                        _caretPos.line = 0;
+                    } else {
+                        int delta = _firstVisibleLine - newpos;
+                        _firstVisibleLine = newpos;
+                        _caretPos.line -= delta;
+                    }
+                    measureVisibleText();
+                    updateScrollbars();
+                    invalidate();
+                    return true;
+                }
                 break;
             case EditorActions.PageDown:
+                {
+                    ensureCaretVisible();
+                    int fullLines = _clientRc.height / _lineHeight;
+                    int newpos = _firstVisibleLine + fullLines;
+                    if (newpos >= _content.length) {
+                        _caretPos.line = _content.length - 1;
+                    } else {
+                        int delta = newpos - _firstVisibleLine;
+                        _firstVisibleLine = newpos;
+                        _caretPos.line += delta;
+                    }
+                    measureVisibleText();
+                    updateScrollbars();
+                    invalidate();
+                    return true;
+                }
                 break;
             case EditorActions.DocumentBegin:
                 if (_caretPos.pos > 0 || _caretPos.line > 0) {
