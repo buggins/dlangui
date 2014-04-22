@@ -275,7 +275,7 @@ class Win32Window : Window {
     }
     override void show() {
         ShowWindow(_hwnd, _cmdShow);
-        UpdateWindow(_hwnd);
+        //UpdateWindow(_hwnd);
     }
     override @property string windowCaption() {
         return _caption;

@@ -50,6 +50,18 @@ struct TextPosition {
     int line;
     /// character position in line (0 == before first character)
     int pos;
+    /// compares two positions
+    int opCmp(ref const TextPosition v) {
+        if (line < v.line)
+            return -1;
+        if (line > v.line)
+            return 1;
+        if (pos < v.pos)
+            return -1;
+        if (pos > v.pos)
+            return 1;
+        return 0;
+    }
 }
 
 /// text content range
@@ -58,11 +70,7 @@ struct TextRange {
     TextPosition end;
     /// returns true if range is empty
     @property bool empty() {
-        if (start.line > end.line)
-            return true;
-        if (start.line < end.line)
-            return false;
-        return (start.pos >= end.pos);
+        return end <= start;
     }
 }
 
@@ -196,26 +204,70 @@ class EditableContent {
 
 enum EditorActions {
 	None = 0,
+    /// move cursor one char left
 	Left = 1000,
+    /// move cursor one char left with selection
+	SelectLeft,
+    /// move cursor one char right
 	Right,
+    /// move cursor one char right with selection
+	SelectRight,
+    /// move cursor one line up
 	Up,
+    /// move cursor one line up with selection
+	SelectUp,
+    /// move cursor one line down
 	Down,
+    /// move cursor one line down with selection
+	SelectDown,
+    /// move cursor one word left
 	WordLeft,
+    /// move cursor one word left with selection
+	SelectWordLeft,
+    /// move cursor one word right
 	WordRight,
+    /// move cursor one word right with selection
+	SelectWordRight,
+    /// move cursor one page up
 	PageUp,
+    /// move cursor one page up with selection
+	SelectPageUp,
+    /// move cursor one page down
 	PageDown,
-    /// move cursor to beginning of page
+    /// move cursor one page down with selection
+	SelectPageDown,
+    /// move cursor to the beginning of page
 	PageBegin, 
-    /// move cursor to end of page
+    /// move cursor to the beginning of page with selection
+	SelectPageBegin, 
+    /// move cursor to the end of page
 	PageEnd,   
+    /// move cursor to the end of page with selection
+	SelectPageEnd,   
+    /// move cursor to the beginning of line
 	LineBegin,
+    /// move cursor to the beginning of line with selection
+	SelectLineBegin,
+    /// move cursor to the end of line
 	LineEnd,
+    /// move cursor to the end of line with selection
+	SelectLineEnd,
+    /// move cursor to the beginning of document
 	DocumentBegin,
+    /// move cursor to the beginning of document with selection
+	SelectDocumentBegin,
+    /// move cursor to the end of document
 	DocumentEnd,
-	DelPrevChar, // backspace
-	DelNextChar, // del key
-	DelPrevWord, // ctrl + backspace
-	DelNextWord, // ctrl + del key
+    /// move cursor to the end of document with selection
+	SelectDocumentEnd,
+    /// delete char before cursor (backspace)
+	DelPrevChar, 
+    /// delete char after cursor (del key)
+	DelNextChar, 
+    /// delete word before cursor (ctrl + backspace)
+	DelPrevWord, 
+    /// delete char after cursor (ctrl + del key)
+	DelNextWord, 
 }
 
 /// base for all editor widgets
@@ -229,19 +281,34 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
         focusable = true;
 		acceleratorMap.add( [
 			new Action(EditorActions.Up, KeyCode.UP, 0),
+			new Action(EditorActions.SelectUp, KeyCode.UP, KeyFlag.Shift),
 			new Action(EditorActions.Down, KeyCode.DOWN, 0),
+			new Action(EditorActions.SelectDown, KeyCode.DOWN, KeyFlag.Shift),
 			new Action(EditorActions.Left, KeyCode.LEFT, 0),
+			new Action(EditorActions.SelectLeft, KeyCode.LEFT, KeyFlag.Shift),
 			new Action(EditorActions.Right, KeyCode.RIGHT, 0),
+			new Action(EditorActions.SelectRight, KeyCode.RIGHT, KeyFlag.Shift),
 			new Action(EditorActions.WordLeft, KeyCode.LEFT, KeyFlag.Control),
+			new Action(EditorActions.SelectWordLeft, KeyCode.LEFT, KeyFlag.Control | KeyFlag.Shift),
 			new Action(EditorActions.WordRight, KeyCode.RIGHT, KeyFlag.Control),
+			new Action(EditorActions.SelectWordRight, KeyCode.RIGHT, KeyFlag.Control | KeyFlag.Shift),
 			new Action(EditorActions.PageUp, KeyCode.PAGEUP, 0),
+			new Action(EditorActions.SelectPageUp, KeyCode.PAGEUP, KeyFlag.Shift),
 			new Action(EditorActions.PageDown, KeyCode.PAGEDOWN, 0),
+			new Action(EditorActions.SelectPageDown, KeyCode.PAGEDOWN, KeyFlag.Shift),
 			new Action(EditorActions.PageBegin, KeyCode.PAGEUP, KeyFlag.Control),
+			new Action(EditorActions.SelectPageBegin, KeyCode.PAGEUP, KeyFlag.Control | KeyFlag.Shift),
 			new Action(EditorActions.PageEnd, KeyCode.PAGEDOWN, KeyFlag.Control),
+			new Action(EditorActions.SelectPageEnd, KeyCode.PAGEDOWN, KeyFlag.Control | KeyFlag.Shift),
 			new Action(EditorActions.LineBegin, KeyCode.HOME, 0),
+			new Action(EditorActions.SelectLineBegin, KeyCode.HOME, KeyFlag.Shift),
 			new Action(EditorActions.LineEnd, KeyCode.END, 0),
+			new Action(EditorActions.SelectLineEnd, KeyCode.END, KeyFlag.Shift),
 			new Action(EditorActions.DocumentBegin, KeyCode.HOME, KeyFlag.Control),
+			new Action(EditorActions.SelectDocumentBegin, KeyCode.HOME, KeyFlag.Control | KeyFlag.Shift),
 			new Action(EditorActions.DocumentEnd, KeyCode.END, KeyFlag.Control),
+			new Action(EditorActions.SelectDocumentEnd, KeyCode.END, KeyFlag.Control | KeyFlag.Shift),
+
 			new Action(EditorActions.DelPrevChar, KeyCode.BACK, 0),
 			new Action(EditorActions.DelNextChar, KeyCode.DEL, 0),
 			new Action(EditorActions.DelPrevWord, KeyCode.BACK, KeyFlag.Control),
@@ -275,10 +342,39 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 
     abstract protected TextPosition clientToTextPos(Point pt);
 
-    protected void updateCaretPositionByMouse(int x, int y) {
+    protected void updateSelectionAfterCursorMovement(TextPosition oldCaretPos, bool selecting) {
+        if (selecting) {
+            if (oldCaretPos == _selectionRange.start) {
+                if (_caretPos >= _selectionRange.end) {
+                    _selectionRange.start = _selectionRange.end;
+                    _selectionRange.end = _caretPos;
+                } else {
+                    _selectionRange.start = _caretPos;
+                }
+            } else if (oldCaretPos == _selectionRange.end) {
+                if (_caretPos < _selectionRange.start) {
+                    _selectionRange.end = _selectionRange.start;
+                    _selectionRange.start = _caretPos;
+                } else {
+                    _selectionRange.end = _caretPos;
+                }
+            } else {
+                _selectionRange.start = _caretPos;
+                _selectionRange.end = _caretPos;
+            }
+        } else {
+            _selectionRange.start = _caretPos;
+            _selectionRange.end = _caretPos;
+        }
+        invalidate();
+    }
+
+    protected void updateCaretPositionByMouse(int x, int y, bool selecting) {
+        TextPosition oldCaretPos = _caretPos;
         TextPosition newPos = clientToTextPos(Point(x,y));
         if (newPos != _caretPos) {
             _caretPos = newPos;
+            updateSelectionAfterCursorMovement(oldCaretPos, selecting);
             invalidate();
         }
     }
@@ -314,12 +410,12 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 		// support onClick
 	    if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
             setFocus();
-            updateCaretPositionByMouse(event.x - _clientRc.left, event.y - _clientRc.top);
+            updateCaretPositionByMouse(event.x - _clientRc.left, event.y - _clientRc.top, false);
             invalidate();
 	        return true;
 	    }
 	    if (event.action == MouseAction.Move && (event.flags & MouseButton.Left) != 0) {
-            updateCaretPositionByMouse(event.x - _clientRc.left, event.y - _clientRc.top);
+            updateCaretPositionByMouse(event.x - _clientRc.left, event.y - _clientRc.top, true);
 	        return true;
 	    }
 	    if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
@@ -741,22 +837,26 @@ class EditBox : EditWidgetBase, OnScrollHandler {
     }
 
 	override protected bool handleAction(Action a) {
+        TextPosition oldCaretPos = _caretPos;
         dstring currentLine = _content[_caretPos.line];
 		switch (a.id) {
             case EditorActions.Left:
+            case EditorActions.SelectLeft:
                 correctCaretPos();
                 if (_caretPos.pos > 0) {
                     _caretPos.pos--;
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                     ensureCaretVisible();
                     invalidate();
                 }
                 return true;
             case EditorActions.Right:
+            case EditorActions.SelectRight:
                 correctCaretPos();
                 if (_caretPos.pos < currentLine.length) {
                     _caretPos.pos++;
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                     ensureCaretVisible();
-                    invalidate();
                 }
                 return true;
             case EditorActions.DelPrevChar:
@@ -766,6 +866,7 @@ class EditBox : EditWidgetBase, OnScrollHandler {
                     range.start.pos--;
                     EditOperation op = new EditOperation(EditAction.Delete, range, null);
                     _content.performOperation(op);
+                    updateSelectionAfterCursorMovement(oldCaretPos, false);
                     ensureCaretVisible();
                 }
                 return true;
@@ -776,36 +877,43 @@ class EditBox : EditWidgetBase, OnScrollHandler {
                     range.end.pos++;
                     EditOperation op = new EditOperation(EditAction.Delete, range, null);
                     _content.performOperation(op);
+                    updateSelectionAfterCursorMovement(oldCaretPos, false);
                     ensureCaretVisible();
                 }
                 return true;
             case EditorActions.Up:
+            case EditorActions.SelectUp:
                 if (_caretPos.line > 0) {
                     _caretPos.line--;
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                     ensureCaretVisible();
-                    invalidate();
                 }
                 return true;
             case EditorActions.Down:
+            case EditorActions.SelectDown:
                 if (_caretPos.line < _content.length - 1) {
                     _caretPos.line++;
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                     ensureCaretVisible();
-                    invalidate();
                 }
                 return true;
             case EditorActions.WordLeft:
+            case EditorActions.SelectWordLeft:
                 break;
             case EditorActions.WordRight:
+            case EditorActions.SelectWordRight:
                 break;
             case EditorActions.PageBegin:
+            case EditorActions.SelectPageBegin:
                 {
                     ensureCaretVisible();
                     _caretPos.line = _firstVisibleLine;
-                    invalidate();
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                     return true;
                 }
                 break;
             case EditorActions.PageEnd:
+            case EditorActions.SelectPageEnd:
                 {
                     ensureCaretVisible();
                     int fullLines = _clientRc.height / _lineHeight;
@@ -813,11 +921,12 @@ class EditBox : EditWidgetBase, OnScrollHandler {
                     if (newpos >= _content.length)
                         newpos = _content.length - 1;
                     _caretPos.line = newpos;
-                    invalidate();
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                     return true;
                 }
                 break;
             case EditorActions.PageUp:
+            case EditorActions.SelectPageUp:
                 {
                     ensureCaretVisible();
                     int fullLines = _clientRc.height / _lineHeight;
@@ -832,11 +941,12 @@ class EditBox : EditWidgetBase, OnScrollHandler {
                     }
                     measureVisibleText();
                     updateScrollbars();
-                    invalidate();
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                     return true;
                 }
                 break;
             case EditorActions.PageDown:
+            case EditorActions.SelectPageDown:
                 {
                     ensureCaretVisible();
                     int fullLines = _clientRc.height / _lineHeight;
@@ -850,38 +960,42 @@ class EditBox : EditWidgetBase, OnScrollHandler {
                     }
                     measureVisibleText();
                     updateScrollbars();
-                    invalidate();
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                     return true;
                 }
                 break;
             case EditorActions.DocumentBegin:
+            case EditorActions.SelectDocumentBegin:
                 if (_caretPos.pos > 0 || _caretPos.line > 0) {
                     _caretPos.line = 0;
                     _caretPos.pos = 0;
                     ensureCaretVisible();
-                    invalidate();
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                 }
                 return true;
             case EditorActions.LineBegin:
+            case EditorActions.SelectLineBegin:
                 if (_caretPos.pos > 0) {
                     _caretPos.pos = 0;
                     ensureCaretVisible();
-                    invalidate();
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                 }
                 return true;
             case EditorActions.DocumentEnd:
+            case EditorActions.SelectDocumentEnd:
                 if (_caretPos.line < _content.length - 1 || _caretPos.pos < _content[_content.length - 1].length) {
                     _caretPos.line = _content.length - 1;
                     _caretPos.pos = cast(int)_content[_content.length - 1].length;
                     ensureCaretVisible();
-                    invalidate();
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                 }
                 return true;
             case EditorActions.LineEnd:
+            case EditorActions.SelectLineEnd:
                 if (_caretPos.pos < currentLine.length) {
                     _caretPos.pos = cast(int)currentLine.length;
                     ensureCaretVisible();
-                    invalidate();
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                 }
                 return true;
             default:
@@ -949,6 +1063,22 @@ class EditBox : EditWidgetBase, OnScrollHandler {
     protected void drawLineBackground(DrawBuf buf, int lineIndex, Rect lineRect, Rect visibleRect) {
         if (lineIndex & 1)
             buf.fillRect(visibleRect, 0xF4808080);
+
+        if (!_selectionRange.empty && _selectionRange.start.line <= lineIndex && _selectionRange.end.line >= lineIndex) {
+            // line inside selection
+            Rect startrc = textPosToClient(_selectionRange.start);
+            Rect endrc = textPosToClient(_selectionRange.end);
+            int startx = lineIndex == _selectionRange.start.line ? startrc.left + _clientRc.left : lineRect.left;
+            int endx = lineIndex == _selectionRange.end.line ? endrc.left + _clientRc.left : lineRect.right + _spaceWidth;
+            Rect rc = lineRect;
+            rc.left = startx;
+            rc.right = endx;
+            if (!rc.empty) {
+                // draw selection rect for line
+                buf.fillRect(rc, 0xB060A0FF);
+            }
+        }
+
         if (lineIndex == _caretPos.line) {
             buf.drawFrame(visibleRect, 0xA0808080, Rect(1,1,1,1));
         }
