@@ -139,6 +139,16 @@ extern (C) int UIAppMain(string[] args) {
         tabs.addTab((new TextWidget()).id("tab3").textColor(0x00802000).text("Tab 3 contents"), "Tab 3"d);
         tabs.addTab((new TextWidget()).id("tab4").textColor(0x00802000).text("Tab 4 contents some long string"), "Tab 4"d);
         tabs.addTab((new TextWidget()).id("tab5").textColor(0x00802000).text("Tab 5 contents"), "Tab 5"d);
+
+		// create Editors test tab
+
+		VerticalLayout editors = new VerticalLayout("editors");
+
+		editors.addChild(new TextWidget(null, "EditLine(Single line editor)"d));
+		EditLine editLine = new EditLine("editline1", "Single line editor sample text");
+		editors.addChild(editLine);
+		editors.addChild(new TextWidget(null, "EditBox(Multiline editor)"d));
+
         EditBox editBox = new EditBox("editbox1", "Some text\nSecond line\nYet another line"d);
         editBox.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
         dstring text = editBox.text;
@@ -152,7 +162,9 @@ extern (C) int UIAppMain(string[] args) {
             text ~= to!dstring(i + 3);
         }
         editBox.text = text;
-        tabs.addTab(editBox, "EditBox"d);
+		editors.addChild(editBox);
+
+        tabs.addTab(editors, "EditBox"d);
 
         tabs.selectTab("tab1");
 
