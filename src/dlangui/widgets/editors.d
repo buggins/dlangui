@@ -51,7 +51,7 @@ struct TextPosition {
     /// character position in line (0 == before first character)
     int pos;
     /// compares two positions
-    int opCmp(ref const TextPosition v) {
+    int opCmp(ref const TextPosition v) const {
         if (line < v.line)
             return -1;
         if (line > v.line)
@@ -69,17 +69,25 @@ struct TextRange {
     TextPosition start;
     TextPosition end;
     /// returns true if range is empty
-    @property bool empty() {
+    @property bool empty() const {
         return end <= start;
+    }
+    /// returns true if start and end located at the same line
+    @property bool singleLine() const {
+        return end.line == start.line;
+    }
+    /// returns count of lines in range
+    @property int lines() const {
+        return end.line - start.line + 1;
     }
 }
 
 /// action performed with editable contents
 enum EditAction {
     /// insert content into specified position (range.start)
-    Insert,
+    //Insert,
     /// delete content in range
-    Delete,
+    //Delete,
     /// replace range content with new content
     Replace
 }
@@ -107,6 +115,11 @@ class EditOperation {
 		_range = range;
 		_content.length = 1;
 		_content[0] = text;
+	}
+	this(EditAction action, TextRange range, dstring[] text) {
+		_action = action;
+		_range = range;
+		_content = text;
 	}
 }
 
@@ -169,36 +182,133 @@ class EditableContent {
 		return contentChangeListeners(this, op, rangeBefore, rangeAfter);
 	}
 
+    /// return text for specified range
+    dstring[] rangeText(TextRange range) {
+        dstring[] res;
+        if (range.empty) {
+            res ~= ""d;
+            return res;
+        }
+        for (int lineIndex = range.start.line; lineIndex <= range.end.line; lineIndex++) {
+            dstring lineText = line(lineIndex);
+            dstring lineFragment = lineText;
+            int startchar = 0;
+            int endchar = lineText.length;
+            if (lineIndex == range.start.line)
+                startchar = range.start.pos;
+            if (lineIndex == range.end.line)
+                endchar = range.end.pos;
+            if (endchar > lineText.length)
+                endchar = cast(int)lineText.length;
+            if (endchar <= startchar)
+                lineFragment = ""d;
+            else if (startchar != 0 || endchar != lineText.length)
+                lineFragment = lineText[startchar .. endchar].dup;
+            res ~= lineFragment;
+        }
+        return res;
+    }
+
+    /// removes removedCount lines starting from start
+    protected void removeLines(int start, int removedCount) {
+        int end = start + removedCount;
+        assert(removedCount > 0 && start >= 0 && end > 0 && start < _lines.length && end <= _lines.length);
+        for (int i = start; i < _lines.length - removedCount; i++)
+            _lines[i] = _lines[i + removedCount];
+        for (int i = cast(int)_lines.length - removedCount; i < _lines.length; i++)
+            _lines[i] = null; // free unused line references
+        _lines.length -= removedCount;
+    }
+
+    /// inserts count empty lines at specified position
+    protected void insertLines(int start, int count) {
+        assert(count > 0);
+        _lines.length += count;
+        for (int i = cast(int)_lines.length - 1; i >= start + count; i--)
+            _lines[i] = _lines[i - count];
+        for (int i = start; i < start + count; i++)
+            _lines[i] = ""d;
+    }
+
+    /// inserts or removes lines, removes text in range
+    protected void replaceRange(TextRange before, TextRange after, dstring[] newContent) {
+        dstring firstLineBefore = line(before.start.line);
+        dstring lastLineBefore = before.singleLine ? line(before.end.line) : firstLineBefore;
+        dstring firstLineHead = before.start.pos > 0 && before.start.pos < firstLineBefore.length ? firstLineBefore[0..before.start.pos] : ""d;
+        dstring lastLineTail = before.end.pos >= 0 && before.end.pos < lastLineBefore.length ? lastLineBefore[before.end.pos .. $] : ""d;
+
+        int linesBefore = before.lines;
+        int linesAfter = after.lines;
+        if (linesBefore < linesAfter) {
+            // add more lines
+            insertLines(before.start.line + 1, linesAfter - linesBefore);
+        } else if (linesBefore > linesAfter) {
+            // remove extra lines
+            removeLines(before.start.line + 1, linesBefore - linesAfter);
+        }
+        for (int i = after.start.line; i <= after.end.line; i++) {
+            dstring newline = newContent[i - after.start.line];
+            if (i == after.start.line && i == after.end.line)
+                _lines[i] = (firstLineHead ~ newline ~ lastLineTail).dup;
+            else if (i == after.start.line)
+                _lines[i] = (firstLineHead ~ newline).dup;
+            else if (i == after.end.line)
+                _lines[i] = (newline ~ lastLineTail).dup;
+            else
+                _lines[i] = newline; // no dup needed
+        }
+    }
+
 	bool performOperation(EditOperation op) {
-		if (op.action == EditAction.Delete) {
+        //if (op.action == EditAction.Delete) {
+        //    TextRange rangeBefore = op.range;
+        //    dchar[] buf;
+        //    dstring srcline = _lines[op.range.start.line];
+        //    buf ~= srcline[0 .. op.range.start.pos];
+        //    buf ~= srcline[op.range.end.pos .. $];
+        //    _lines[op.range.start.line] = cast(dstring)buf;
+        //    TextRange rangeAfter = rangeBefore;
+        //    rangeAfter.end = rangeAfter.start;
+        //    handleContentChange(op, rangeBefore, rangeAfter);
+        //    return true;
+        //} else if (op.action == EditAction.Insert) {
+        //    // TODO: multiline
+        //    TextPosition pos = op.range.start;
+        //    TextRange rangeBefore = TextRange(pos, pos);
+        //    dchar[] buf;
+        //    dstring srcline = _lines[pos.line];
+        //    dstring newline = op.content[0];
+        //    buf ~= srcline[0 .. pos.pos];
+        //    buf ~= newline;
+        //    buf ~= srcline[pos.pos .. $];
+        //    _lines[pos.line] = cast(dstring)buf;
+        //    TextPosition newPos = pos;
+        //    newPos.pos += newline.length;
+        //    TextRange rangeAfter = TextRange(pos, newPos);
+        //    handleContentChange(op, rangeBefore, rangeAfter);
+        //    return true;
+        //} else 
+        if (op.action == EditAction.Replace) {
 			TextRange rangeBefore = op.range;
-			dchar[] buf;
-			dstring srcline = _lines[op.range.start.line];
-			buf ~= srcline[0 .. op.range.start.pos];
-			buf ~= srcline[op.range.end.pos .. $];
-			_lines[op.range.start.line] = cast(dstring)buf;
-			TextRange rangeAfter = rangeBefore;
-			rangeAfter.end = rangeAfter.start;
+            dstring[] oldcontent = rangeText(rangeBefore);
+            dstring[] newcontent = op.content;
+            if (newcontent.length == 0)
+                newcontent ~= ""d;
+			TextRange rangeAfter = op.range;
+            rangeAfter.end = rangeAfter.start;
+            if (newcontent.length > 1) {
+                // different lines
+                rangeAfter.end.line = rangeAfter.start.line + newcontent.length - 1;
+                rangeAfter.end.pos = newcontent[$ - 1].length;
+            } else {
+                // same line
+                rangeAfter.end.pos = rangeAfter.start.pos + newcontent[0].length;
+            }
+            replaceRange(rangeBefore, rangeAfter, newcontent);
 			handleContentChange(op, rangeBefore, rangeAfter);
 			return true;
-		} else if (op.action == EditAction.Insert) {
-			// TODO: multiline
-			TextPosition pos = op.range.start;
-			TextRange rangeBefore = TextRange(pos, pos);
-			dchar[] buf;
-			dstring srcline = _lines[pos.line];
-			dstring newline = op.content[0];
-			buf ~= srcline[0 .. pos.pos];
-			buf ~= newline;
-			buf ~= srcline[pos.pos .. $];
-			_lines[pos.line] = cast(dstring)buf;
-			TextPosition newPos = pos;
-			newPos.pos += newline.length;
-			TextRange rangeAfter = TextRange(pos, newPos);
-			handleContentChange(op, rangeBefore, rangeAfter);
-			return true;
-		}
-		return false;
+        }
+        return false;
 	}
 }
 
@@ -268,6 +378,8 @@ enum EditorActions {
 	DelPrevWord, 
     /// delete char after cursor (ctrl + del key)
 	DelNextWord, 
+    /// insert new line (Enter)
+	InsertNewLine, 
 }
 
 /// base for all editor widgets
@@ -308,6 +420,8 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 			new Action(EditorActions.SelectDocumentBegin, KeyCode.HOME, KeyFlag.Control | KeyFlag.Shift),
 			new Action(EditorActions.DocumentEnd, KeyCode.END, KeyFlag.Control),
 			new Action(EditorActions.SelectDocumentEnd, KeyCode.END, KeyFlag.Control | KeyFlag.Shift),
+
+			new Action(EditorActions.InsertNewLine, KeyCode.RETURN, 0),
 
 			new Action(EditorActions.DelPrevChar, KeyCode.BACK, 0),
 			new Action(EditorActions.DelNextChar, KeyCode.DEL, 0),
@@ -396,7 +510,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 			Log.d("text entered: ", event.text);
 			dchar ch = event.text[0];
 			if (ch != 8 && ch != '\n' && ch != '\r') { // ignore Backspace and Return
-				EditOperation op = new EditOperation(EditAction.Insert, _caretPos, event.text);
+				EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [event.text]);
 				_content.performOperation(op);
 				return true;
 			}
@@ -518,7 +632,7 @@ class EditLine : EditWidgetBase {
                 if (_caretPos.pos > 0) {
                     TextRange range = TextRange(_caretPos, _caretPos);
                     range.start.pos--;
-                    EditOperation op = new EditOperation(EditAction.Delete, range, null);
+                    EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
                     _content.performOperation(op);
                 }
                 return true;
@@ -526,7 +640,7 @@ class EditLine : EditWidgetBase {
                 if (_caretPos.pos < _measuredText.length) {
                     TextRange range = TextRange(_caretPos, _caretPos);
                     range.end.pos++;
-                    EditOperation op = new EditOperation(EditAction.Delete, range, null);
+                    EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
                     _content.performOperation(op);
                 }
                 return true;
@@ -777,6 +891,9 @@ class EditBox : EditWidgetBase, OnScrollHandler {
         updateMaxLineWidth();
 		measureVisibleText();
 		_caretPos = rangeAfter.end;
+        _selectionRange.start = _caretPos;
+        _selectionRange.end = _caretPos;
+        ensureCaretVisible();
 		invalidate();
 		return true;
 	}
@@ -860,25 +977,39 @@ class EditBox : EditWidgetBase, OnScrollHandler {
                 }
                 return true;
             case EditorActions.DelPrevChar:
+                if (!_selectionRange.empty) {
+                    EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d]);
+                    _content.performOperation(op);
+                    ensureCaretVisible();
+                    return true;
+                }
                 correctCaretPos();
                 if (_caretPos.pos > 0) {
                     TextRange range = TextRange(_caretPos, _caretPos);
                     range.start.pos--;
-                    EditOperation op = new EditOperation(EditAction.Delete, range, null);
+                    EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
                     _content.performOperation(op);
-                    updateSelectionAfterCursorMovement(oldCaretPos, false);
-                    ensureCaretVisible();
                 }
                 return true;
             case EditorActions.DelNextChar:
+                if (!_selectionRange.empty) {
+                    EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d]);
+                    _content.performOperation(op);
+                    return true;
+                }
                 correctCaretPos();
                 if (_caretPos.pos < currentLine.length) {
                     TextRange range = TextRange(_caretPos, _caretPos);
                     range.end.pos++;
-                    EditOperation op = new EditOperation(EditAction.Delete, range, null);
+                    EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
                     _content.performOperation(op);
-                    updateSelectionAfterCursorMovement(oldCaretPos, false);
-                    ensureCaretVisible();
+                }
+                return true;
+            case EditorActions.InsertNewLine:
+                {
+                    correctCaretPos();
+                    EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d, ""d]);
+                    _content.performOperation(op);
                 }
                 return true;
             case EditorActions.Up:
