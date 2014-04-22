@@ -773,6 +773,11 @@ version(linux) {
 			flags = convertKeyFlags(flags);
 			Log.d("processKeyEvent ", action, " converted key=", keyCode, " converted flags=", flags);
 			bool res = dispatchKeyEvent(new KeyEvent(action, keyCode, flags));
+			if (keyCode & 0x10000 && (keyCode & 0xF000) != 0xF000) {
+				dchar[1] text;
+				text[0] = keyCode & 0xFFFF;
+				res = dispatchKeyEvent(new KeyEvent(KeyAction.Text, keyCode, flags, cast(dstring)text)) || res;
+			}
 	        if (res) {
 	            Log.d("Calling update() after key event");
 	            invalidate();
