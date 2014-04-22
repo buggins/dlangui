@@ -169,6 +169,11 @@ class EditableContent {
         return index >= 0 && index < _lines.length ? _lines[index] : ""d;
     }
 
+	/// returns text position for end of line lineIndex
+	TextPosition lineEnd(int lineIndex) {
+        return TextPosition(lineIndex, lineIndex >= 0 && lineIndex < _lines.length ? cast(int)_lines[lineIndex].length : 0);
+	}
+
     /// returns maximum length of line
     int maxLineLength() {
         int m = 0;
@@ -552,8 +557,11 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                     _caretPos.pos--;
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                     ensureCaretVisible();
-                    invalidate();
-                }
+                } else if (_caretPos.line > 0) {
+					_caretPos = _content.lineEnd(_caretPos.line - 1);
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
+                    ensureCaretVisible();
+				}
                 return true;
             case EditorActions.Right:
             case EditorActions.SelectRight:
@@ -562,7 +570,12 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                     _caretPos.pos++;
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                     ensureCaretVisible();
-                }
+                } else if (_caretPos.line < _content.length) {
+                    _caretPos.pos = 0;
+					_caretPos.line++;
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
+                    ensureCaretVisible();
+				}
                 return true;
             case EditorActions.DocumentBegin:
             case EditorActions.SelectDocumentBegin:
@@ -645,6 +658,8 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                     _content.performOperation(op);
                 }
                 return true;
+			default:
+				break;
 		}
 		return super.handleAction(a);
 	}
