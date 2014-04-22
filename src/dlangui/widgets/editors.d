@@ -260,34 +260,6 @@ class EditableContent {
     }
 
 	bool performOperation(EditOperation op) {
-        //if (op.action == EditAction.Delete) {
-        //    TextRange rangeBefore = op.range;
-        //    dchar[] buf;
-        //    dstring srcline = _lines[op.range.start.line];
-        //    buf ~= srcline[0 .. op.range.start.pos];
-        //    buf ~= srcline[op.range.end.pos .. $];
-        //    _lines[op.range.start.line] = cast(dstring)buf;
-        //    TextRange rangeAfter = rangeBefore;
-        //    rangeAfter.end = rangeAfter.start;
-        //    handleContentChange(op, rangeBefore, rangeAfter);
-        //    return true;
-        //} else if (op.action == EditAction.Insert) {
-        //    // TODO: multiline
-        //    TextPosition pos = op.range.start;
-        //    TextRange rangeBefore = TextRange(pos, pos);
-        //    dchar[] buf;
-        //    dstring srcline = _lines[pos.line];
-        //    dstring newline = op.content[0];
-        //    buf ~= srcline[0 .. pos.pos];
-        //    buf ~= newline;
-        //    buf ~= srcline[pos.pos .. $];
-        //    _lines[pos.line] = cast(dstring)buf;
-        //    TextPosition newPos = pos;
-        //    newPos.pos += newline.length;
-        //    TextRange rangeAfter = TextRange(pos, newPos);
-        //    handleContentChange(op, rangeBefore, rangeAfter);
-        //    return true;
-        //} else 
         if (op.action == EditAction.Replace) {
 			TextRange rangeBefore = op.range;
             dstring[] oldcontent = rangeText(rangeBefore);
@@ -312,6 +284,7 @@ class EditableContent {
 	}
 }
 
+/// Editor action codes
 enum EditorActions {
 	None = 0,
     /// move cursor one char left
@@ -569,7 +542,110 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
     }
 
 	override protected bool handleAction(Action a) {
-        // todo: place some common action handling here
+        TextPosition oldCaretPos = _caretPos;
+        dstring currentLine = _content[_caretPos.line];
+		switch (a.id) {
+            case EditorActions.Left:
+            case EditorActions.SelectLeft:
+                correctCaretPos();
+                if (_caretPos.pos > 0) {
+                    _caretPos.pos--;
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
+                    ensureCaretVisible();
+                    invalidate();
+                }
+                return true;
+            case EditorActions.Right:
+            case EditorActions.SelectRight:
+                correctCaretPos();
+                if (_caretPos.pos < currentLine.length) {
+                    _caretPos.pos++;
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
+                    ensureCaretVisible();
+                }
+                return true;
+            case EditorActions.DocumentBegin:
+            case EditorActions.SelectDocumentBegin:
+                if (_caretPos.pos > 0 || _caretPos.line > 0) {
+                    _caretPos.line = 0;
+                    _caretPos.pos = 0;
+                    ensureCaretVisible();
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
+                }
+                return true;
+            case EditorActions.LineBegin:
+            case EditorActions.SelectLineBegin:
+                if (_caretPos.pos > 0) {
+                    _caretPos.pos = 0;
+                    ensureCaretVisible();
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
+                }
+                return true;
+            case EditorActions.DocumentEnd:
+            case EditorActions.SelectDocumentEnd:
+                if (_caretPos.line < _content.length - 1 || _caretPos.pos < _content[_content.length - 1].length) {
+                    _caretPos.line = _content.length - 1;
+                    _caretPos.pos = cast(int)_content[_content.length - 1].length;
+                    ensureCaretVisible();
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
+                }
+                return true;
+            case EditorActions.LineEnd:
+            case EditorActions.SelectLineEnd:
+                if (_caretPos.pos < currentLine.length) {
+                    _caretPos.pos = cast(int)currentLine.length;
+                    ensureCaretVisible();
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
+                }
+                return true;
+            case EditorActions.DelPrevChar:
+                if (!_selectionRange.empty) {
+                    // clear selection
+                    EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d]);
+                    _content.performOperation(op);
+                    ensureCaretVisible();
+                    return true;
+                }
+                correctCaretPos();
+                if (_caretPos.pos > 0) {
+                    // delete prev char in current line
+                    TextRange range = TextRange(_caretPos, _caretPos);
+                    range.start.pos--;
+                    EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
+                    _content.performOperation(op);
+                } else if (_caretPos.line > 0) {
+                    // merge with previous line
+                    TextRange range = TextRange(_caretPos, _caretPos);
+                    range.start.line--;
+                    dstring prevLine = _content[range.start.line];
+                    range.start.pos = cast(int)prevLine.length;
+                    EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
+                    _content.performOperation(op);
+                }
+                return true;
+            case EditorActions.DelNextChar:
+                if (!_selectionRange.empty) {
+                    EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d]);
+                    _content.performOperation(op);
+                    return true;
+                }
+                correctCaretPos();
+                if (_caretPos.pos < currentLine.length) {
+                    // delete char in current line
+                    TextRange range = TextRange(_caretPos, _caretPos);
+                    range.end.pos++;
+                    EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
+                    _content.performOperation(op);
+                } else if (_caretPos.line < _content.length - 1) {
+                    // merge with next line
+                    TextRange range = TextRange(_caretPos, _caretPos);
+                    range.end.line++;
+                    range.end.pos = 0;
+                    EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
+                    _content.performOperation(op);
+                }
+                return true;
+		}
 		return super.handleAction(a);
 	}
 
@@ -703,18 +779,6 @@ class EditLine : EditWidgetBase {
 
 	override protected bool handleAction(Action a) {
 		switch (a.id) {
-            case EditorActions.Left:
-                if (_caretPos.pos > 0) {
-                    _caretPos.pos--;
-                    invalidate();
-                }
-                return true;
-            case EditorActions.Right:
-                if (_caretPos.pos < _measuredText.length) {
-                    _caretPos.pos++;
-                    invalidate();
-                }
-                return true;
             case EditorActions.DelPrevChar:
                 if (_caretPos.pos > 0) {
                     TextRange range = TextRange(_caretPos, _caretPos);
@@ -743,22 +807,8 @@ class EditLine : EditWidgetBase {
                 break;
             case EditorActions.PageDown:
                 break;
-            case EditorActions.DocumentBegin:
-            case EditorActions.LineBegin:
-                if (_caretPos.pos > 0) {
-                    _caretPos.pos = 0;
-                    invalidate();
-                }
-                return true;
-            case EditorActions.DocumentEnd:
-            case EditorActions.LineEnd:
-                if (_caretPos.pos < _measuredText.length) {
-                    _caretPos.pos = cast(int)_measuredText.length;
-                    invalidate();
-                }
-                return true;
             default:
-                return false;
+                break;
 		}
 		return super.handleAction(a);
 	}
@@ -990,72 +1040,6 @@ class EditBox : EditWidgetBase, OnScrollHandler {
         TextPosition oldCaretPos = _caretPos;
         dstring currentLine = _content[_caretPos.line];
 		switch (a.id) {
-            case EditorActions.Left:
-            case EditorActions.SelectLeft:
-                correctCaretPos();
-                if (_caretPos.pos > 0) {
-                    _caretPos.pos--;
-                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
-                    ensureCaretVisible();
-                    invalidate();
-                }
-                return true;
-            case EditorActions.Right:
-            case EditorActions.SelectRight:
-                correctCaretPos();
-                if (_caretPos.pos < currentLine.length) {
-                    _caretPos.pos++;
-                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
-                    ensureCaretVisible();
-                }
-                return true;
-            case EditorActions.DelPrevChar:
-                if (!_selectionRange.empty) {
-                    // clear selection
-                    EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d]);
-                    _content.performOperation(op);
-                    ensureCaretVisible();
-                    return true;
-                }
-                correctCaretPos();
-                if (_caretPos.pos > 0) {
-                    // delete prev char in current line
-                    TextRange range = TextRange(_caretPos, _caretPos);
-                    range.start.pos--;
-                    EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
-                    _content.performOperation(op);
-                } else if (_caretPos.line > 0) {
-                    // merge with previous line
-                    TextRange range = TextRange(_caretPos, _caretPos);
-                    range.start.line--;
-                    dstring prevLine = _content[range.start.line];
-                    range.start.pos = cast(int)prevLine.length;
-                    EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
-                    _content.performOperation(op);
-                }
-                return true;
-            case EditorActions.DelNextChar:
-                if (!_selectionRange.empty) {
-                    EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d]);
-                    _content.performOperation(op);
-                    return true;
-                }
-                correctCaretPos();
-                if (_caretPos.pos < currentLine.length) {
-                    // delete char in current line
-                    TextRange range = TextRange(_caretPos, _caretPos);
-                    range.end.pos++;
-                    EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
-                    _content.performOperation(op);
-                } else if (_caretPos.line < _content.length - 1) {
-                    // merge with next line
-                    TextRange range = TextRange(_caretPos, _caretPos);
-                    range.end.line++;
-                    range.end.pos = 0;
-                    EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
-                    _content.performOperation(op);
-                }
-                return true;
             case EditorActions.InsertNewLine:
                 {
                     correctCaretPos();
@@ -1146,42 +1130,8 @@ class EditBox : EditWidgetBase, OnScrollHandler {
                     return true;
                 }
                 break;
-            case EditorActions.DocumentBegin:
-            case EditorActions.SelectDocumentBegin:
-                if (_caretPos.pos > 0 || _caretPos.line > 0) {
-                    _caretPos.line = 0;
-                    _caretPos.pos = 0;
-                    ensureCaretVisible();
-                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
-                }
-                return true;
-            case EditorActions.LineBegin:
-            case EditorActions.SelectLineBegin:
-                if (_caretPos.pos > 0) {
-                    _caretPos.pos = 0;
-                    ensureCaretVisible();
-                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
-                }
-                return true;
-            case EditorActions.DocumentEnd:
-            case EditorActions.SelectDocumentEnd:
-                if (_caretPos.line < _content.length - 1 || _caretPos.pos < _content[_content.length - 1].length) {
-                    _caretPos.line = _content.length - 1;
-                    _caretPos.pos = cast(int)_content[_content.length - 1].length;
-                    ensureCaretVisible();
-                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
-                }
-                return true;
-            case EditorActions.LineEnd:
-            case EditorActions.SelectLineEnd:
-                if (_caretPos.pos < currentLine.length) {
-                    _caretPos.pos = cast(int)currentLine.length;
-                    ensureCaretVisible();
-                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
-                }
-                return true;
             default:
-                return false;
+                break;
 		}
 		return super.handleAction(a);
 	}
