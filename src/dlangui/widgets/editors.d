@@ -233,8 +233,8 @@ class EditableContent {
     /// inserts or removes lines, removes text in range
     protected void replaceRange(TextRange before, TextRange after, dstring[] newContent) {
         dstring firstLineBefore = line(before.start.line);
-        dstring lastLineBefore = before.singleLine ? line(before.end.line) : firstLineBefore;
-        dstring firstLineHead = before.start.pos > 0 && before.start.pos < firstLineBefore.length ? firstLineBefore[0..before.start.pos] : ""d;
+        dstring lastLineBefore = before.singleLine ? firstLineBefore : line(before.end.line);
+        dstring firstLineHead = before.start.pos > 0 && before.start.pos <= firstLineBefore.length ? firstLineBefore[0..before.start.pos] : ""d;
         dstring lastLineTail = before.end.pos >= 0 && before.end.pos < lastLineBefore.length ? lastLineBefore[before.end.pos .. $] : ""d;
 
         int linesBefore = before.lines;
@@ -978,6 +978,7 @@ class EditBox : EditWidgetBase, OnScrollHandler {
                 return true;
             case EditorActions.DelPrevChar:
                 if (!_selectionRange.empty) {
+                    // clear selection
                     EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d]);
                     _content.performOperation(op);
                     ensureCaretVisible();
@@ -985,8 +986,17 @@ class EditBox : EditWidgetBase, OnScrollHandler {
                 }
                 correctCaretPos();
                 if (_caretPos.pos > 0) {
+                    // delete prev char in current line
                     TextRange range = TextRange(_caretPos, _caretPos);
                     range.start.pos--;
+                    EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
+                    _content.performOperation(op);
+                } else if (_caretPos.line > 0) {
+                    // merge with previous line
+                    TextRange range = TextRange(_caretPos, _caretPos);
+                    range.start.line--;
+                    dstring prevLine = _content[range.start.line];
+                    range.start.pos = cast(int)prevLine.length;
                     EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
                     _content.performOperation(op);
                 }
@@ -999,8 +1009,16 @@ class EditBox : EditWidgetBase, OnScrollHandler {
                 }
                 correctCaretPos();
                 if (_caretPos.pos < currentLine.length) {
+                    // delete char in current line
                     TextRange range = TextRange(_caretPos, _caretPos);
                     range.end.pos++;
+                    EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
+                    _content.performOperation(op);
+                } else if (_caretPos.line < _content.length - 1) {
+                    // merge with next line
+                    TextRange range = TextRange(_caretPos, _caretPos);
+                    range.end.line++;
+                    range.end.pos = 0;
                     EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
                     _content.performOperation(op);
                 }
