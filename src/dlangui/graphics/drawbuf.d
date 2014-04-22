@@ -326,7 +326,7 @@ class DrawBuf : RefCountedObject {
                 fillRect(r, frameColor);
             // top side
             r = rc;
-            r.left -= frameSideWidths.left;
+            r.left += frameSideWidths.left;
             r.right -= frameSideWidths.right;
             Rect rc2 = r;
             rc2.bottom = r.top + frameSideWidths.top;

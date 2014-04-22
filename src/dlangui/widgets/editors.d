@@ -945,6 +945,15 @@ class EditBox : EditWidgetBase, OnScrollHandler {
         updateScrollbars();
     }
 
+    /// override to custom highlight of line background
+    protected void drawLineBackground(DrawBuf buf, int lineIndex, Rect lineRect, Rect visibleRect) {
+        if (lineIndex & 1)
+            buf.fillRect(visibleRect, 0xF4808080);
+        if (lineIndex == _caretPos.line) {
+            buf.drawFrame(visibleRect, 0xA0808080, Rect(1,1,1,1));
+        }
+    }
+
     /// draw content
     override void onDraw(DrawBuf buf) {
         if (visibility != Visibility.Visible)
@@ -961,8 +970,18 @@ class EditBox : EditWidgetBase, OnScrollHandler {
         //font.drawText(buf, rc.left, rc.top + sz.y / 10, txt, textColor);
         for (int i = 0; i < _visibleLines.length; i++) {
             dstring txt = _visibleLines[i];
-            if (txt.length > 0)
+            Rect lineRect = rc;
+            lineRect.left = _clientRc.left - _scrollPos.x;
+            lineRect.right = lineRect.left + calcLineWidth(_content[_firstVisibleLine + i]);
+            lineRect.top = _clientRc.top + i * _lineHeight;
+            lineRect.bottom = lineRect.top + _lineHeight;
+            Rect visibleRect = lineRect;
+            visibleRect.left = _clientRc.left;
+            visibleRect.right = _clientRc.right;
+            drawLineBackground(buf, _firstVisibleLine + i, lineRect, visibleRect);
+            if (txt.length > 0) {
                 font.drawText(buf, rc.left - _scrollPos.x, rc.top + i * _lineHeight, txt, textColor);
+            }
         }
 
         //buf.fillRect(_clientRc, 0x80E0E0FF); // testing clientRc
