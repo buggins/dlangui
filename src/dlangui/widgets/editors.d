@@ -738,11 +738,13 @@ class EditLine : EditWidgetBase {
             res.left = _measuredTextSize.x;
         else
             res.left = _measuredTextWidths[p.pos - 1];
+		res.left -= _scrollPos.x;
         res.right = res.left + 1;
         return res;
     }
 
     override protected TextPosition clientToTextPos(Point pt) {
+		pt.x += _scrollPos.x;
         TextPosition res;
         for (int i = 0; i < _measuredText.length; i++) {
             int x0 = i > 0 ? _measuredTextWidths[i - 1] : 0;
@@ -762,13 +764,13 @@ class EditLine : EditWidgetBase {
         Rect rc = textPosToClient(_caretPos);
         if (rc.left < 0) {
             // scroll left
-            _scrollPos.x -= -rc.left + _clientRc.width / 4;
+            _scrollPos.x -= -rc.left + _clientRc.width / 10;
             if (_scrollPos.x < 0)
                 _scrollPos.x = 0;
             invalidate();
         } else if (rc.left >= _clientRc.width - 10) {
             // scroll right
-            _scrollPos.x += (rc.left - _clientRc.width) + _clientRc.width / 4;
+            _scrollPos.x += (rc.left - _clientRc.width) + _spaceWidth * 4;
             invalidate();
         }
         updateScrollbars();
@@ -866,7 +868,7 @@ class EditLine : EditWidgetBase {
         dstring txt = text;
         Point sz = font.textSize(txt);
         //applyAlign(rc, sz);
-        font.drawText(buf, rc.left, rc.top + sz.y / 10, txt, textColor);
+        font.drawText(buf, rc.left - _scrollPos.x, rc.top + sz.y / 10, txt, textColor);
         if (focused) {
             // draw caret
             Rect caretRc = textPosToClient(_caretPos);
