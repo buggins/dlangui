@@ -435,7 +435,20 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 		]);
     }
 
-	abstract override bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter);
+    protected void updateMaxLineWidth() {
+    }
+
+	override bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter) {
+        updateMaxLineWidth();
+		measureVisibleText();
+		_caretPos = rangeAfter.end;
+        _selectionRange.start = _caretPos;
+        _selectionRange.end = _caretPos;
+        ensureCaretVisible();
+		invalidate();
+		return true;
+	}
+
 
     /// get widget text
     override @property dstring text() { return _content.text; }
@@ -620,13 +633,6 @@ class EditLine : EditWidgetBase {
         styleId = "EDIT_LINE";
         text = initialContent;
     }
-
-	override bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter) {
-		measureVisibleText();
-		_caretPos = rangeAfter.end;
-		invalidate();
-		return true;
-	}
 
     protected dstring _measuredText;
     protected int[] _measuredTextWidths;
@@ -834,7 +840,7 @@ class EditBox : EditWidgetBase, OnScrollHandler {
     protected int[][] _visibleLinesMeasurement; // char positions for visible lines
     protected int[] _visibleLinesWidths; // width (in pixels) of visible lines
 
-    protected void updateMaxLineWidth() {
+    override protected void updateMaxLineWidth() {
         // find max line width. TODO: optimize!!!
         int maxw;
         int[] buf;
@@ -936,17 +942,6 @@ class EditBox : EditWidgetBase, OnScrollHandler {
         }
         updateScrollbars();    
     }
-
-	override bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter) {
-        updateMaxLineWidth();
-		measureVisibleText();
-		_caretPos = rangeAfter.end;
-        _selectionRange.start = _caretPos;
-        _selectionRange.end = _caretPos;
-        ensureCaretVisible();
-		invalidate();
-		return true;
-	}
 
     override protected Rect textPosToClient(TextPosition p) {
         Rect res;
