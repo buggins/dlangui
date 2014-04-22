@@ -387,6 +387,11 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
     protected EditableContent _content;
     protected Rect _clientRc;
 
+    protected int _lineHeight;
+    protected Point _scrollPos;
+    protected bool _fixedFont;
+    protected int _spaceWidth;
+    protected int _tabSize = 4;
 
     this(string ID) {
         super(ID);
@@ -455,6 +460,63 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
     abstract protected Rect textPosToClient(TextPosition p);
 
     abstract protected TextPosition clientToTextPos(Point pt);
+
+    abstract protected void ensureCaretVisible();
+
+    abstract protected Point measureVisibleText();
+
+    protected void updateFontProps() {
+        FontRef font = font();
+        _fixedFont = false;
+        _spaceWidth = font.textSize(" "d).x;
+        int mwidth = font.textSize("M"d).x;
+        int iwidth = font.textSize("i"d).x;
+        if (mwidth == iwidth)
+            _fixedFont = true;
+        _lineHeight = font.height;
+    }
+
+    /// override to update scrollbars - if necessary
+    protected void updateScrollbars() {
+    }
+
+    protected void correctCaretPos() {
+        if (_caretPos.line >= _content.length)
+            _caretPos.line = _content.length - 1;
+        if (_caretPos.line < 0)
+            _caretPos.line = 0;
+        dstring currentLine = _content[_caretPos.line];
+        if (_caretPos.pos > currentLine.length)
+            _caretPos.pos = cast(int)currentLine.length;
+        if (_caretPos.pos < 0)
+            _caretPos.pos = 0;
+    }
+
+
+    private int[] _lineWidthBuf;
+    protected int calcLineWidth(dstring s) {
+        int w = 0;
+        if (_fixedFont) {
+            int tabw = _tabSize * _spaceWidth;
+            // version optimized for fixed font
+            for (int i = 0; i < s.length; i++) {
+                if (s[i] == '\t') {
+                    w += _spaceWidth;
+                    w = (w + tabw - 1) / tabw * tabw;
+                } else {
+                    w += _spaceWidth;
+                }
+            }
+        } else {
+            // variable pitch font
+            if (_lineWidthBuf.length < s.length)
+                _lineWidthBuf.length = s.length;
+            int charsMeasured = font.measureText(s, _lineWidthBuf, int.max);
+            if (charsMeasured > 0)
+                w = _lineWidthBuf[charsMeasured - 1];
+        }
+        return w;
+    }
 
     protected void updateSelectionAfterCursorMovement(TextPosition oldCaretPos, bool selecting) {
         if (selecting) {
@@ -560,7 +622,7 @@ class EditLine : EditWidgetBase {
     }
 
 	override bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter) {
-		measureText();
+		measureVisibleText();
 		_caretPos = rangeAfter.end;
 		invalidate();
 		return true;
@@ -598,7 +660,24 @@ class EditLine : EditWidgetBase {
         return res;
     }
 
-    protected void measureText() {
+    override protected void ensureCaretVisible() {
+        //_scrollPos
+        Rect rc = textPosToClient(_caretPos);
+        if (rc.left < 0) {
+            // scroll left
+            _scrollPos.x -= -rc.left + _clientRc.width / 4;
+            if (_scrollPos.x < 0)
+                _scrollPos.x = 0;
+            invalidate();
+        } else if (rc.left >= _clientRc.width - 10) {
+            // scroll right
+            _scrollPos.x += (rc.left - _clientRc.width) + _clientRc.width / 4;
+            invalidate();
+        }
+        updateScrollbars();
+    }
+
+    override protected Point measureVisibleText() {
         FontRef font = font();
         //Point sz = font.textSize(text);
         _measuredText = text;
@@ -606,11 +685,13 @@ class EditLine : EditWidgetBase {
         int charsMeasured = font.measureText(_measuredText, _measuredTextWidths, int.max);
         _measuredTextSize.x = charsMeasured > 0 ? _measuredTextWidths[charsMeasured - 1]: 0;
         _measuredTextSize.y = font.height;
+        return _measuredTextSize;
     }
 
     /// measure
     override void measure(int parentWidth, int parentHeight) { 
-        measureText();
+        updateFontProps();
+        measureVisibleText();
         measuredContent(parentWidth, parentHeight, _measuredTextSize.x, _measuredTextSize.y);
     }
 
@@ -745,9 +826,6 @@ class EditBox : EditWidgetBase, OnScrollHandler {
         addChild(_vscrollbar);
     }
 
-    protected int _lineHeight;
-
-    protected Point _scrollPos;
     protected int _firstVisibleLine;
 
     protected int _maxLineWidth;
@@ -756,34 +834,6 @@ class EditBox : EditWidgetBase, OnScrollHandler {
     protected int[][] _visibleLinesMeasurement; // char positions for visible lines
     protected int[] _visibleLinesWidths; // width (in pixels) of visible lines
 
-    protected bool _fixedFont;
-    protected int _spaceWidth;
-    protected int _tabSize = 4;
-
-    private int[] _lineWidthBuf;
-    protected int calcLineWidth(dstring s) {
-        int w = 0;
-        if (_fixedFont) {
-            int tabw = _tabSize * _spaceWidth;
-            // version optimized for fixed font
-            for (int i = 0; i < s.length; i++) {
-                if (s[i] == '\t') {
-                    w += _spaceWidth;
-                    w = (w + tabw - 1) / tabw * tabw;
-                } else {
-                    w += _spaceWidth;
-                }
-            }
-        } else {
-            // variable pitch font
-            if (_lineWidthBuf.length < s.length)
-                _lineWidthBuf.length = s.length;
-            int charsMeasured = font.measureText(s, _lineWidthBuf, int.max);
-            if (charsMeasured > 0)
-                w = _lineWidthBuf[charsMeasured - 1];
-        }
-        return w;
-    }
     protected void updateMaxLineWidth() {
         // find max line width. TODO: optimize!!!
         int maxw;
@@ -797,7 +847,7 @@ class EditBox : EditWidgetBase, OnScrollHandler {
         _maxLineWidth = maxw;
     }
 
-    protected Point measureVisibleText() {
+    override protected Point measureVisibleText() {
         Point sz;
         FontRef font = font();
         _lineHeight = font.height;
@@ -820,7 +870,7 @@ class EditBox : EditWidgetBase, OnScrollHandler {
         return sz;
     }
 
-    protected void updateScrollbars() {
+    override protected void updateScrollbars() {
         int visibleLines = _clientRc.height / _lineHeight; // fully visible lines
         if (visibleLines < 1)
             visibleLines = 1;
@@ -852,7 +902,7 @@ class EditBox : EditWidgetBase, OnScrollHandler {
 
     }
 
-    protected void ensureCaretVisible() {
+    override protected void ensureCaretVisible() {
         if (_caretPos.line >= _content.length)
             _caretPos.line = _content.length - 1;
         if (_caretPos.line < 0)
@@ -939,18 +989,6 @@ class EditBox : EditWidgetBase, OnScrollHandler {
             res.pos = cast(int)_visibleLines[$ - 1].length;
         }
         return res;
-    }
-
-    protected void correctCaretPos() {
-        if (_caretPos.line >= _content.length)
-            _caretPos.line = _content.length - 1;
-        if (_caretPos.line < 0)
-            _caretPos.line = 0;
-        dstring currentLine = _content[_caretPos.line];
-        if (_caretPos.pos > currentLine.length)
-            _caretPos.pos = cast(int)currentLine.length;
-        if (_caretPos.pos < 0)
-            _caretPos.pos = 0;
     }
 
 	override protected bool handleAction(Action a) {
@@ -1164,13 +1202,7 @@ class EditBox : EditWidgetBase, OnScrollHandler {
         int hsbheight = _hscrollbar.measuredHeight;
         int vsbwidth = _vscrollbar.measuredWidth;
 
-        FontRef font = font();
-        _fixedFont = false;
-        _spaceWidth = font.textSize(" "d).x;
-        int mwidth = font.textSize("M"d).x;
-        int iwidth = font.textSize("i"d).x;
-        if (mwidth == iwidth)
-            _fixedFont = true;
+        updateFontProps();
 
         updateMaxLineWidth();
 
