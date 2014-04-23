@@ -44,6 +44,8 @@ import std.algorithm;
 struct Collection(T) {
     private T[] _items;
     private size_t _len;
+    /// returns true if there are no items in collection
+    @property bool empty() { return _len == 0; }
     /// returns number of items in collection
     @property size_t length() { return _len; }
     /// returns currently allocated capacity (may be more than length)
@@ -151,6 +153,48 @@ struct Collection(T) {
         _len = 0;
         _items = null;
     }
+
+    //===================================
+    // stack/queue-like ops
+
+    /// remove first item
+    @property T popFront() {
+        if (empty)
+            return T.init; // no items
+        return remove(0);
+    }
+
+    /// insert item at beginning of collection
+    void pushFront(T item) {
+        add(item, 0);
+    }
+
+    /// remove last item
+    @property T popBack() {
+        if (empty)
+            return T.init; // no items
+        return remove(length - 1);
+    }
+
+    /// insert item at end of collection
+    void pushBack(T item) {
+        add(item);
+    }
+
+    /// peek first item
+    @property T front() {
+        if (empty)
+            return T.init; // no items
+        return _items[0];
+    }
+
+    /// peek last item
+    @property T back() {
+        if (empty)
+            return T.init; // no items
+        return _items[_len - 1];
+    }
+
     ~this() {
         clear();
     }

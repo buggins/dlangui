@@ -23,6 +23,7 @@ module dlangui.widgets.editors;
 import dlangui.widgets.widget;
 import dlangui.widgets.controls;
 import dlangui.core.signals;
+import dlangui.core.collections;
 import dlangui.platforms.common.platform;
 
 import std.algorithm;
@@ -135,15 +136,27 @@ enum EditAction {
 
 /// edit operation details for EditableContent
 class EditOperation {
-    /// action performed
     protected EditAction _action;
+    /// action performed
 	@property EditAction action() { return _action; }
-    /// range
     protected TextRange _range;
+
+    /// source range to replace with new content
 	@property ref TextRange range() { return _range; }
+    protected TextRange _newRange;
+
+    /// new range after operation applied
+	@property ref TextRange newRange() { return _newRange; }
+	@property void newRange(TextRange range) { _newRange = range; }
+
     /// new content for range (if required for this action)
     protected dstring[] _content;
 	@property ref dstring[] content() { return _content; }
+
+    /// old content for range
+    protected dstring[] _oldContent;
+	@property ref dstring[] oldContent() { return _oldContent; }
+	@property void oldContent(dstring[] content) { _oldContent = content; }
 
 	this(EditAction action) {
 		_action = action;
@@ -162,21 +175,90 @@ class EditOperation {
 		_range = range;
 		_content = text;
 	}
+    /// try to merge two operations (simple entering of characters in the same line), return true if succeded
+    bool merge(EditOperation op) {
+        if (!_range.empty || !op._range.empty)
+            return false; // only merge simple single character append operations
+        if (_content.length != 1 || op._content.length != 1 || op._content[0].length != 1)
+            return false;
+        if (_range.start.line != op._range.start.line) // both ops whould be on the same line
+            return false;
+        if (_range.start.pos + _content[0].length != op._range.start.pos)
+            return false;
+        _content[0] ~= op._content[0];
+        return true;
+    }
+}
+
+/// Undo/Redo buffer
+class UndoBuffer {
+    protected Collection!EditOperation _undoList;
+    protected Collection!EditOperation _redoList;
+
+    /// returns true if buffer contains any undo items
+    @property bool hasUndo() {
+        return !_undoList.empty;
+    }
+
+    /// returns true if buffer contains any redo items
+    @property bool hasRedo() {
+        return !_redoList.empty;
+    }
+
+    /// adds undo operation
+    void saveForUndo(EditOperation op) {
+        if (!_undoList.empty) {
+            if (_undoList.back.merge(op)) {
+                _redoList.clear();
+                return; // merged - no need to add new operation
+            }
+        }
+        _undoList.pushBack(op);
+    }
+
+    /// returns operation to be undone (put it to redo), null if no undo ops available
+    EditOperation undo() {
+        if (!hasUndo)
+            return null; // no undo operations
+        EditOperation res = _undoList.popBack();
+        _redoList.pushBack(res);
+        return res;
+    }
+
+    /// returns operation to be redone (put it to undo), null if no undo ops available
+    EditOperation redo() {
+        if (!hasRedo)
+            return null; // no undo operations
+        EditOperation res = _redoList.popBack();
+        _undoList.pushBack(res);
+        return res;
+    }
+
+    /// clears both undo and redo buffers
+    void clear() {
+        _undoList.clear();
+        _redoList.clear();
+    }
 }
 
 interface EditableContentListener {
 	bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter);
 }
 
-/// editable plain text (multiline)
+/// editable plain text (singleline/multiline)
 class EditableContent {
-	/// listeners for edit operations
-	Signal!EditableContentListener contentChangeListeners;
 
     this(bool multiline) {
         _multiline = multiline;
         _lines.length = 1; // initial state: single empty line
+        _undoBuffer = new UndoBuffer();
     }
+
+    protected UndoBuffer _undoBuffer;
+
+	/// listeners for edit operations
+	Signal!EditableContentListener contentChangeListeners;
+
     protected bool _multiline;
     /// returns true if miltyline content is supported
     @property bool multiline() { return _multiline; }
@@ -325,12 +407,52 @@ class EditableContent {
                 // same line
                 rangeAfter.end.pos = rangeAfter.start.pos + cast(int)newcontent[0].length;
             }
+            op.newRange = rangeAfter;
+            op.oldContent = oldcontent;
             replaceRange(rangeBefore, rangeAfter, newcontent);
 			handleContentChange(op, rangeBefore, rangeAfter);
+            _undoBuffer.saveForUndo(op);
 			return true;
         }
         return false;
 	}
+
+    /// return true if there is at least one operation in undo buffer
+    @property bool hasUndo() {
+        return _undoBuffer.hasUndo;
+    }
+    /// return true if there is at least one operation in redo buffer
+    @property bool hasRedo() {
+        return _undoBuffer.hasRedo;
+    }
+    /// undoes last change
+    bool undo() {
+        if (!hasUndo)
+            return false;
+        EditOperation op = _undoBuffer.undo();
+        TextRange rangeBefore = op.newRange;
+        dstring[] oldcontent = op.content;
+        dstring[] newcontent = op.oldContent;
+        TextRange rangeAfter = op.range;
+        Log.d("Undoing op rangeBefore=", rangeBefore, " contentBefore=`", oldcontent, "` rangeAfter=", rangeAfter, " contentAfter=`", newcontent, "`");
+        replaceRange(rangeBefore, rangeAfter, newcontent);
+        handleContentChange(op, rangeBefore, rangeAfter);
+        return true;
+    }
+    /// redoes last undone change
+    bool redo() {
+        if (!hasUndo)
+            return false;
+        EditOperation op = _undoBuffer.redo();
+        TextRange rangeBefore = op.range;
+        dstring[] oldcontent = op.oldContent;
+        dstring[] newcontent = op.content;
+        TextRange rangeAfter = op.newRange;
+        Log.d("Redoing op rangeBefore=", rangeBefore, " contentBefore=`", oldcontent, "` rangeAfter=", rangeAfter, " contentAfter=`", newcontent, "`");
+        replaceRange(rangeBefore, rangeAfter, newcontent);
+        handleContentChange(op, rangeBefore, rangeAfter);
+        return true;
+    }
 }
 
 /// Editor action codes
@@ -400,14 +522,22 @@ enum EditorActions {
 	DelPrevWord, 
     /// delete char after cursor (ctrl + del key)
 	DelNextWord, 
+
     /// insert new line (Enter)
-	InsertNewLine, 
+	InsertNewLine,
+    /// insert new line after current position (Ctrl+Enter)
+	PrependNewLine,
+
     /// Copy selection to clipboard
 	Copy, 
     /// Cut selection to clipboard
 	Cut, 
     /// Paste selection from clipboard
 	Paste, 
+    /// Undo last change
+    Undo,
+    /// Redo last undoed change
+    Redo,
 }
 
 /// base for all editor widgets
@@ -455,18 +585,30 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 			new Action(EditorActions.SelectDocumentEnd, KeyCode.END, KeyFlag.Control | KeyFlag.Shift),
 
 			new Action(EditorActions.InsertNewLine, KeyCode.RETURN, 0),
+			new Action(EditorActions.InsertNewLine, KeyCode.RETURN, KeyFlag.Shift),
+			new Action(EditorActions.PrependNewLine, KeyCode.RETURN, KeyFlag.Control),
 
+            // Backspace/Del
 			new Action(EditorActions.DelPrevChar, KeyCode.BACK, 0),
 			new Action(EditorActions.DelNextChar, KeyCode.DEL, 0),
 			new Action(EditorActions.DelPrevWord, KeyCode.BACK, KeyFlag.Control),
 			new Action(EditorActions.DelNextWord, KeyCode.DEL, KeyFlag.Control),
 
+            // Copy/Paste
 			new Action(EditorActions.Copy, KeyCode.KEY_C, KeyFlag.Control),
+			new Action(EditorActions.Copy, KeyCode.KEY_C, KeyFlag.Control|KeyFlag.Shift),
 			new Action(EditorActions.Copy, KeyCode.INS, KeyFlag.Control),
 			new Action(EditorActions.Cut, KeyCode.KEY_X, KeyFlag.Control),
+			new Action(EditorActions.Cut, KeyCode.KEY_X, KeyFlag.Control|KeyFlag.Shift),
 			new Action(EditorActions.Cut, KeyCode.DEL, KeyFlag.Shift),
 			new Action(EditorActions.Paste, KeyCode.KEY_V, KeyFlag.Control),
+			new Action(EditorActions.Paste, KeyCode.KEY_V, KeyFlag.Control|KeyFlag.Shift),
 			new Action(EditorActions.Paste, KeyCode.INS, KeyFlag.Shift),
+
+            // Undo/Redo
+			new Action(EditorActions.Undo, KeyCode.KEY_Z, KeyFlag.Control),
+			new Action(EditorActions.Redo, KeyCode.KEY_Y, KeyFlag.Control),
+			new Action(EditorActions.Redo, KeyCode.KEY_Z, KeyFlag.Control|KeyFlag.Shift),
 
 		]);
     }
@@ -741,6 +883,16 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                     }
                     EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, lines);
                     _content.performOperation(op);
+                }
+                return true;
+            case EditorActions.Undo:
+                {
+                    _content.undo();
+                }
+                return true;
+            case EditorActions.Redo:
+                {
+                    _content.redo();
                 }
                 return true;
 			default:
@@ -1142,6 +1294,14 @@ class EditBox : EditWidgetBase, OnScrollHandler {
         TextPosition oldCaretPos = _caretPos;
         dstring currentLine = _content[_caretPos.line];
 		switch (a.id) {
+            case EditorActions.PrependNewLine:
+                {
+                    correctCaretPos();
+                    _caretPos.pos = 0;
+                    EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d, ""d]);
+                    _content.performOperation(op);
+                }
+                return true;
             case EditorActions.InsertNewLine:
                 {
                     correctCaretPos();
