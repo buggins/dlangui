@@ -531,6 +531,58 @@ class Win32Platform : Platform {
     override Window createWindow(string windowCaption, Window parent) {
         return new Win32Window(this, windowCaption, parent);
     }
+
+    /// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
+    override dstring getClipboardText(bool mouseBuffer = false) {
+        dstring res = null;
+        if (mouseBuffer)
+            return res; // not supporetd under win32
+        if (!IsClipboardFormatAvailable(CF_TEXT))
+            return res; 
+        if (!OpenClipboard(NULL)) 
+            return res; 
+
+        HGLOBAL hglb = GetClipboardData(CF_TEXT); 
+        if (hglb != NULL) 
+        { 
+            LPTSTR lptstr = cast(LPTSTR)GlobalLock(hglb); 
+            if (lptstr != NULL) 
+            { 
+                wstring w = fromWStringz(lptstr);
+                res = toUTF32(w);
+
+                GlobalUnlock(hglb); 
+            } 
+        } 
+
+        CloseClipboard();
+        return res;
+    }
+
+    /// sets text to clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
+    override void setClipboardText(dstring text, bool mouseBuffer = false) {
+        if (text.length < 1 || mouseBuffer)
+            return;
+        if (!OpenClipboard(NULL)) 
+            return; 
+        EmptyClipboard();
+        wstring w = toUTF16(text);
+        HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE, 
+                           (w.length + 1) * TCHAR.sizeof); 
+        if (hglbCopy == NULL) { 
+            CloseClipboard(); 
+            return; 
+        }
+        LPTSTR lptstrCopy = cast(LPTSTR)GlobalLock(hglbCopy);
+        for (int i = 0; i < w.length; i++) {
+            lptstrCopy[i] = w[i];
+        }
+        lptstrCopy[w.length - 1] = 0;
+        GlobalUnlock(hglbCopy);
+        SetClipboardData(CF_TEXT, hglbCopy); 
+        CloseClipboard(); 
+    }
+
 }
 
 extern(Windows)

@@ -268,6 +268,16 @@ wstring fromWStringz(const(wchar[]) s) {
 	return cast(wstring)(s[0..i].dup);
 }
 
+wstring fromWStringz(const(wchar) * s) {
+    if (s is null)
+        return null;
+	int i = 0;
+	while(s[i])
+		i++;
+	return cast(wstring)(s[0..i].dup);
+}
+
+
 
 /// widget state flags - bits
 enum State : uint {

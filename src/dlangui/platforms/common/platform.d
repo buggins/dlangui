@@ -478,6 +478,10 @@ class Platform {
     }
     abstract Window createWindow(string windowCaption, Window parent);
     abstract int enterMessageLoop();
+    /// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
+    abstract dstring getClipboardText(bool mouseBuffer = false);
+    /// sets text to clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
+    abstract void setClipboardText(dstring text, bool mouseBuffer = false);
 }
 
 version (USE_OPENGL) {
