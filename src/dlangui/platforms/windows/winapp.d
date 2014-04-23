@@ -461,7 +461,7 @@ class Win32Window : Window {
     /// request window redraw
     override void invalidate() {
         InvalidateRect(_hwnd, null, FALSE);
-		UpdateWindow(_hwnd);
+		//UpdateWindow(_hwnd);
     }
 
     /// after drawing, call to schedule redraw if animation is active
@@ -596,7 +596,7 @@ int DLANGUIWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     {
         Runtime.initialize();
         result = myWinMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
-        //Runtime.terminate();
+        Runtime.terminate();
     }
     catch (Throwable e) // catch any uncaught exceptions
     {
@@ -659,7 +659,7 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
     Platform.setInstance(platform);
 
 
-    if (true) {
+    if (false) {
         /// testing freetype font manager
         import dlangui.graphics.ftfonts;
         import win32.shlobj;

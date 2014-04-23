@@ -80,7 +80,7 @@
   <cv2pdbPre2043>0</cv2pdbPre2043>
   <cv2pdbNoDemangle>0</cv2pdbNoDemangle>
   <cv2pdbEnumType>0</cv2pdbEnumType>
-  <cv2pdbOptions />
+  <cv2pdbOptions>-profile</cv2pdbOptions>
   <objfiles />
   <linkswitches />
   <libfiles>libpng15.lib dlangui.lib phobos.lib ole32.lib kernel32.lib user32.lib comctl32.lib comdlg32.lib shell32.lib dlangui.lib</libfiles>

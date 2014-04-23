@@ -101,14 +101,14 @@ class Win32Font : Font {
 	}
 
 	override Glyph * getCharGlyph(dchar ch, bool withImage = true) {
+		Glyph * found = _glyphCache.find(ch);
+		if (found !is null)
+			return found;
 		uint glyphIndex = getGlyphIndex(ch);
 		if (!glyphIndex)
 			return null;
 		if (glyphIndex >= 0xFFFF)
 			return null;
-		Glyph * found = _glyphCache.find(cast(ushort)glyphIndex);
-		if (found !is null)
-			return found;
 		GLYPHMETRICS metrics;
 
 		MAT2 identity = { {0,1}, {0,0}, {0,0}, {0,1} };
@@ -130,7 +130,7 @@ class Win32Font : Font {
 		if (gs >= 0x10000 || gs < 0)
 			return null;
 
-		Glyph g;
+		Glyph * g = new Glyph;
         version (USE_OPENGL) {
             g.id = nextGlyphId();
         }
@@ -139,7 +139,7 @@ class Win32Font : Font {
 		g.originX = cast(byte)metrics.gmptGlyphOrigin.x;
 		g.originY = cast(byte)metrics.gmptGlyphOrigin.y;
 		g.width = cast(ubyte)metrics.gmCellIncX;
-		g.glyphIndex = cast(ushort)glyphIndex;
+		//g.glyphIndex = cast(ushort)glyphIndex;
 
 		if (g.blackBoxX>0 && g.blackBoxY>0)
 		{
@@ -182,7 +182,7 @@ class Win32Font : Font {
 			}
 		}
 		// found!
-		return _glyphCache.put(cast(ushort)glyphIndex, &g);
+		return _glyphCache.put(ch, g);
 	}
 
 	// draw text string to buffer

@@ -57,6 +57,76 @@ version (USE_OPENGL) {
     uint nextGlyphId() { return _nextGlyphId++; }
 }
 
+
+struct GlyphCache
+{
+    alias glyph_ptr = Glyph*;
+    private glyph_ptr[][1024] _glyphs;
+
+	Glyph * find(uint ch) {
+        ch = ch & 0xF_FFFF;
+        //if (_array is null)
+        //    _array = new Glyph[0x10000];
+        uint p = ch >> 8;
+        glyph_ptr[] row = _glyphs[p];
+        if (row is null)
+            return null;
+        ushort i = ch & 0xFF;
+        return row[i];
+    }
+	/// put glyph to cache
+	Glyph * put(uint ch, Glyph * glyph) {
+        uint p = ch >> 8;
+        uint i = ch & 0xFF;
+        if (_glyphs[p] is null)
+            _glyphs[p] = new glyph_ptr[256];
+        _glyphs[p][i] = glyph;
+        return glyph;
+	}
+	/// removes entries not used after last call of checkpoint() or cleanup()
+	void cleanup() {
+        // TODO
+	}
+
+	// clear usage flags for all entries
+	void checkpoint() {
+    }
+
+	/// removes all entries
+	void clear() {
+        // notify about destroyed glyphs
+        version (USE_OPENGL) {
+            if (_glyphDestroyCallback !is null) {
+                foreach(part; _glyphs) {
+                    if (part !is null)
+                        foreach(item; part) {
+                            if (item)
+                                _glyphDestroyCallback(item.id);
+                        }
+                }
+            }
+        }
+        /*
+        foreach(ref Glyph[] part; _glyphs) {
+            if (part !is null)
+                foreach(ref Glyph item; part) {
+                    if (item.glyphIndex) {
+                        item.glyphIndex = 0;
+                        item.glyph = null;
+                        version (USE_OPENGL) {
+                            item.id = 0;
+                        }
+                    }
+                }
+        }
+        */
+	}
+	~this() {
+		clear();
+	}
+}
+
+/*
 /// font glyph cache
 struct GlyphCache
 {
@@ -218,6 +288,7 @@ struct GlyphCache
 		clear();
 	}
 }
+*/
 
 /// Font object
 class Font : RefCountedObject {

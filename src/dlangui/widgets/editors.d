@@ -298,8 +298,14 @@ class EditableContent {
     }
     /// replace whole text with another content
     @property EditableContent text(dstring newContent) {
+        clearUndo();
         _lines.length = 0;
-        _lines = splitDString(newContent);
+        if (_multiline)
+            _lines = splitDString(newContent);
+        else {
+            _lines.length = 1;
+            _lines[0] = replaceEolsWithSpaces(newContent);
+        }
         return this;
     }
     /// returns line text
@@ -471,6 +477,10 @@ class EditableContent {
         replaceRange(rangeBefore, rangeAfter, newcontent);
         handleContentChange(op, rangeBefore, rangeAfter);
         return true;
+    }
+    /// clear undo/redp history
+    void clearUndo() {
+        _undoBuffer.clear();
     }
 }
 

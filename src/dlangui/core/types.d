@@ -145,6 +145,10 @@ struct Glyph
         ///< 0: unique id of glyph (for drawing in hardware accelerated scenes)
         uint    id;
     }
+
+    ///< 8: character
+    //uint    glyphIndex;
+
     ///< 4: width of glyph black box
     ubyte   blackBoxX;
     ///< 5: height of glyph black box
@@ -153,8 +157,7 @@ struct Glyph
     byte    originX;
     ///< 7: Y origin for glyph
     byte    originY;
-    ///< 8: bytes in glyph array
-    ushort  glyphIndex;
+
     ///< 10: full width of glyph
     ubyte   width;
     ///< 11: usage flag, to handle cleanup of unused glyphs
