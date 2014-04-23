@@ -1104,7 +1104,17 @@ version(linux) {
 			Log.i("exiting message loop");
 			return 0;
 		}
-		XCBWindow[xcb_window_t] _windowMap;
+		
+    	/// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
+		override dstring getClipboardText(bool mouseBuffer = false) {
+			return ""d;
+		}
+		
+    	/// sets text to clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
+		override void setClipboardText(dstring text, bool mouseBuffer = false) {
+		}
+		
+		protected XCBWindow[xcb_window_t] _windowMap;
 	}
 
 	// entry point

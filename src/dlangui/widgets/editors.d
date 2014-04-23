@@ -242,7 +242,7 @@ class EditableContent {
             dstring lineText = line(lineIndex);
             dstring lineFragment = lineText;
             int startchar = 0;
-            int endchar = lineText.length;
+            int endchar = cast(int)lineText.length;
             if (lineIndex == range.start.line)
                 startchar = range.start.pos;
             if (lineIndex == range.end.line)
@@ -319,11 +319,11 @@ class EditableContent {
             rangeAfter.end = rangeAfter.start;
             if (newcontent.length > 1) {
                 // different lines
-                rangeAfter.end.line = rangeAfter.start.line + newcontent.length - 1;
-                rangeAfter.end.pos = newcontent[$ - 1].length;
+                rangeAfter.end.line = rangeAfter.start.line + cast(int)newcontent.length - 1;
+                rangeAfter.end.pos = cast(int)newcontent[$ - 1].length;
             } else {
                 // same line
-                rangeAfter.end.pos = rangeAfter.start.pos + newcontent[0].length;
+                rangeAfter.end.pos = rangeAfter.start.pos + cast(int)newcontent[0].length;
             }
             replaceRange(rangeBefore, rangeAfter, newcontent);
 			handleContentChange(op, rangeBefore, rangeAfter);
