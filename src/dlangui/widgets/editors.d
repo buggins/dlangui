@@ -177,16 +177,33 @@ class EditOperation {
 	}
     /// try to merge two operations (simple entering of characters in the same line), return true if succeded
     bool merge(EditOperation op) {
-        if (!_range.empty || !op._range.empty)
-            return false; // only merge simple single character append operations
-        if (_content.length != 1 || op._content.length != 1 || op._content[0].length != 1)
-            return false;
         if (_range.start.line != op._range.start.line) // both ops whould be on the same line
             return false;
-        if (_range.start.pos + _content[0].length != op._range.start.pos)
+        if (_content.length != 1 || op._content.length != 1) // both ops should operate the same line
             return false;
-        _content[0] ~= op._content[0];
-        return true;
+        // appending of single character
+        if (_range.empty && op._range.empty && op._content[0].length == 1 && _newRange.end.pos == op._range.start.pos) {
+            _content[0] ~= op._content[0];
+            _newRange.end.pos++;
+            return true;
+        }
+        // removing single character
+        if (_newRange.empty && op._newRange.empty && op._oldContent[0].length == 1) {
+            if (_newRange.end.pos == op.range.end.pos) {
+                // removed char before
+                _range.start.pos--;
+                _newRange.start.pos--;
+                _newRange.end.pos--;
+                _oldContent[0] = (op._oldContent[0] ~ _oldContent[0]).dup;
+                return true;
+            } else if (_newRange.end.pos == op._range.start.pos) {
+                // removed char after
+                _range.end.pos++;
+                _oldContent[0] = (_oldContent[0] ~ op._oldContent[0]).dup;
+                return true;
+            }
+        }
+        return false;
     }
 }
 
@@ -379,9 +396,11 @@ class EditableContent {
         }
         for (int i = after.start.line; i <= after.end.line; i++) {
             dstring newline = newContent[i - after.start.line];
-            if (i == after.start.line && i == after.end.line)
+            if (i == after.start.line && i == after.end.line) {
+                //Log.d("merging lines ", firstLineHead, " ", newline, " ", lastLineTail);
                 _lines[i] = (firstLineHead ~ newline ~ lastLineTail).dup;
-            else if (i == after.start.line)
+                //Log.d("merge result: ", _lines[i]);
+            } else if (i == after.start.line)
                 _lines[i] = (firstLineHead ~ newline).dup;
             else if (i == after.end.line)
                 _lines[i] = (newline ~ lastLineTail).dup;
@@ -434,7 +453,7 @@ class EditableContent {
         dstring[] oldcontent = op.content;
         dstring[] newcontent = op.oldContent;
         TextRange rangeAfter = op.range;
-        Log.d("Undoing op rangeBefore=", rangeBefore, " contentBefore=`", oldcontent, "` rangeAfter=", rangeAfter, " contentAfter=`", newcontent, "`");
+        //Log.d("Undoing op rangeBefore=", rangeBefore, " contentBefore=`", oldcontent, "` rangeAfter=", rangeAfter, " contentAfter=`", newcontent, "`");
         replaceRange(rangeBefore, rangeAfter, newcontent);
         handleContentChange(op, rangeBefore, rangeAfter);
         return true;
@@ -448,7 +467,7 @@ class EditableContent {
         dstring[] oldcontent = op.oldContent;
         dstring[] newcontent = op.content;
         TextRange rangeAfter = op.newRange;
-        Log.d("Redoing op rangeBefore=", rangeBefore, " contentBefore=`", oldcontent, "` rangeAfter=", rangeAfter, " contentAfter=`", newcontent, "`");
+        //Log.d("Redoing op rangeBefore=", rangeBefore, " contentBefore=`", oldcontent, "` rangeAfter=", rangeAfter, " contentAfter=`", newcontent, "`");
         replaceRange(rangeBefore, rangeAfter, newcontent);
         handleContentChange(op, rangeBefore, rangeAfter);
         return true;
@@ -912,7 +931,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 		} else if (event.action == KeyAction.Text && event.text.length) {
 			Log.d("text entered: ", event.text);
 			dchar ch = event.text[0];
-			if (ch != 8 && ch != '\n' && ch != '\r') { // ignore Backspace and Return
+			if (ch >= 32 || ch == '\t') { // ignore Backspace and Return
 				EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [event.text]);
 				_content.performOperation(op);
 				return true;
