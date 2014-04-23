@@ -537,12 +537,12 @@ class Win32Platform : Platform {
         dstring res = null;
         if (mouseBuffer)
             return res; // not supporetd under win32
-        if (!IsClipboardFormatAvailable(CF_TEXT))
+        if (!IsClipboardFormatAvailable(CF_UNICODETEXT))
             return res; 
         if (!OpenClipboard(NULL)) 
             return res; 
 
-        HGLOBAL hglb = GetClipboardData(CF_TEXT); 
+        HGLOBAL hglb = GetClipboardData(CF_UNICODETEXT); 
         if (hglb != NULL) 
         { 
             LPTSTR lptstr = cast(LPTSTR)GlobalLock(hglb); 
@@ -556,11 +556,13 @@ class Win32Platform : Platform {
         } 
 
         CloseClipboard();
+        //Log.d("getClipboardText(", res, ")");
         return res;
     }
 
     /// sets text to clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
     override void setClipboardText(dstring text, bool mouseBuffer = false) {
+        //Log.d("setClipboardText(", text, ")");
         if (text.length < 1 || mouseBuffer)
             return;
         if (!OpenClipboard(NULL))
@@ -577,9 +579,9 @@ class Win32Platform : Platform {
         for (int i = 0; i < w.length; i++) {
             lptstrCopy[i] = w[i];
         }
-        lptstrCopy[w.length - 1] = 0;
+        lptstrCopy[w.length] = 0;
         GlobalUnlock(hglbCopy);
-        SetClipboardData(CF_TEXT, hglbCopy); 
+        SetClipboardData(CF_UNICODETEXT, hglbCopy); 
         CloseClipboard(); 
     }
 
