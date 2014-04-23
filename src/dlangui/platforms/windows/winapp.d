@@ -563,7 +563,7 @@ class Win32Platform : Platform {
     override void setClipboardText(dstring text, bool mouseBuffer = false) {
         if (text.length < 1 || mouseBuffer)
             return;
-        if (!OpenClipboard(NULL)) 
+        if (!OpenClipboard(NULL))
             return; 
         EmptyClipboard();
         wstring w = toUTF16(text);

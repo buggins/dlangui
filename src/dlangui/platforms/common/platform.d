@@ -484,6 +484,11 @@ class Platform {
     abstract void setClipboardText(dstring text, bool mouseBuffer = false);
 }
 
+/// get current platform object instance
+@property Platform platform() {
+    return Platform.instance;
+}
+
 version (USE_OPENGL) {
     private __gshared bool _OPENGL_ENABLED = false;
     /// check if hardware acceleration is enabled

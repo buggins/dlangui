@@ -23,6 +23,7 @@ module dlangui.widgets.editors;
 import dlangui.widgets.widget;
 import dlangui.widgets.controls;
 import dlangui.core.signals;
+import dlangui.platforms.common.platform;
 
 import std.algorithm;
 
@@ -32,16 +33,56 @@ immutable dchar EOL = '\n';
 dstring[] splitDString(dstring source, dchar delimiter = EOL) {
     int start = 0;
     dstring[] res;
+    dchar lastchar;
     for (int i = 0; i <= source.length; i++) {
         if (i == source.length || source[i] == delimiter) {
             if (i >= start) {
-                dstring line = i > start ? cast(dstring)(source[start .. i].dup) : ""d;
+                dchar prevchar = i > 1 && i > start + 1 ? source[i - 1] : 0;
+                int end = i;
+                if (delimiter == EOL && prevchar == '\r') // windows CR/LF
+                    end--;
+                dstring line = i > start ? cast(dstring)(source[start .. end].dup) : ""d;
                 res ~= line;
             }
             start = i + 1;
         }
     }
     return res;
+}
+
+version (Windows) {
+    immutable dstring SYSTEM_DEFAULT_EOL = "\r\n";
+} else {
+    immutable dstring SYSTEM_DEFAULT_EOL = "\n";
+}
+
+/// concat strings from array using delimiter
+dstring concatDStrings(dstring[] lines, dstring delimiter = SYSTEM_DEFAULT_EOL) {
+    dchar[] buf;
+    foreach(line; lines) {
+        if (buf.length)
+            buf ~= delimiter;
+        buf ~= line;
+    }
+    return cast(dstring)buf;
+}
+
+/// replace end of lines with spaces
+dstring replaceEolsWithSpaces(dstring source) {
+    dchar[] buf;
+    dchar lastch;
+    foreach(ch; source) {
+        if (ch == '\r') {
+            buf ~= ' ';
+        } else if (ch == '\n') {
+            if (lastch != '\r')
+                buf ~= ' ';
+        } else {
+            buf ~= ch;
+        }
+        lastch = ch;
+    }
+    return cast(dstring)buf;
 }
 
 /// text content position
@@ -137,6 +178,9 @@ class EditableContent {
         _lines.length = 1; // initial state: single empty line
     }
     protected bool _multiline;
+    /// returns true if miltyline content is supported
+    @property bool multiline() { return _multiline; }
+
     protected dstring[] _lines;
     /// returns all lines concatenated delimited by '\n'
     @property dstring text() {
@@ -358,6 +402,12 @@ enum EditorActions {
 	DelNextWord, 
     /// insert new line (Enter)
 	InsertNewLine, 
+    /// Copy selection to clipboard
+	Copy, 
+    /// Cut selection to clipboard
+	Cut, 
+    /// Paste selection from clipboard
+	Paste, 
 }
 
 /// base for all editor widgets
@@ -410,6 +460,14 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 			new Action(EditorActions.DelNextChar, KeyCode.DEL, 0),
 			new Action(EditorActions.DelPrevWord, KeyCode.BACK, KeyFlag.Control),
 			new Action(EditorActions.DelNextWord, KeyCode.DEL, KeyFlag.Control),
+
+			new Action(EditorActions.Copy, KeyCode.KEY_C, KeyFlag.Control),
+			new Action(EditorActions.Copy, KeyCode.INS, KeyFlag.Control),
+			new Action(EditorActions.Cut, KeyCode.KEY_X, KeyFlag.Control),
+			new Action(EditorActions.Cut, KeyCode.DEL, KeyFlag.Shift),
+			new Action(EditorActions.Paste, KeyCode.KEY_V, KeyFlag.Control),
+			new Action(EditorActions.Paste, KeyCode.INS, KeyFlag.Shift),
+
 		]);
     }
 
@@ -655,6 +713,33 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                     range.end.line++;
                     range.end.pos = 0;
                     EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
+                    _content.performOperation(op);
+                }
+                return true;
+            case EditorActions.Copy:
+                if (!_selectionRange.empty) {
+                    dstring selectionText = concatDStrings(_content.rangeText(_selectionRange));
+                    platform.setClipboardText(selectionText);
+                }
+                return true;
+            case EditorActions.Cut:
+                if (!_selectionRange.empty) {
+                    dstring selectionText = concatDStrings(_content.rangeText(_selectionRange));
+                    platform.setClipboardText(selectionText);
+                    EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d]);
+                    _content.performOperation(op);
+                }
+                return true;
+            case EditorActions.Paste:
+                {
+                    dstring selectionText = platform.getClipboardText();
+                    dstring[] lines;
+                    if (_content.multiline) {
+                        lines = splitDString(selectionText);
+                    } else {
+                        lines = [replaceEolsWithSpaces(selectionText)];
+                    }
+                    EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, lines);
                     _content.performOperation(op);
                 }
                 return true;
