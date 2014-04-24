@@ -99,6 +99,29 @@ Win32 builds
 * Uses Win32 API for font rendering.
 * Optinally can use FreeType for font rendering.
 
+
+
+Build and run using DUB:
+
+	git clone git@github.com:buggins/dlangui.git
+	cd dlangui
+        dub run dlangui:example1
+
+
+
+To develop using Visual-D, download sources for dlabgui and dependencies into some directory:
+
+	git clone git@github.com:buggins/dlangui.git
+	git clone https://github.com/DerelictOrg/DerelictUtil.git
+	git clone https://github.com/DerelictOrg/DerelictFT.git
+	git clone https://github.com/DerelictOrg/DerelictFI.git
+	git clone https://github.com/DerelictOrg/DerelictGL3.git
+
+Then open .sln using Visual D.
+
+
+
+
 Linux builds
 ------------
 
