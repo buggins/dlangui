@@ -189,6 +189,12 @@ extern (C) int UIAppMain(string[] args) {
         editors.addChild(createEditorSettingsControl(editBox));
 		editors.addChild(editBox);
 
+		editors.addChild(new TextWidget(null, "EditBox: additional view for the same content (split view testing)"d));
+        EditBox editBox2 = new EditBox("editbox2", ""d);
+        editBox2.content = editBox.content; // view the same content as first editbox
+		editors.addChild(editBox2);
+        editors.layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT);
+
         tabs.addTab(editors, "Editors"d);
 
         //==========================================================================

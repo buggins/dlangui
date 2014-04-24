@@ -260,7 +260,7 @@ class UndoBuffer {
 
 /// Editable Content change listener
 interface EditableContentListener {
-	bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source);
+	void onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source);
 }
 
 /// editable plain text (singleline/multiline)
@@ -333,8 +333,9 @@ class EditableContent {
         return m;
     }
 
-	bool handleContentChange(EditOperation op, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source) {
-		return contentChangeListeners(this, op, rangeBefore, rangeAfter, source);
+	void handleContentChange(EditOperation op, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source) {
+        // call listeners
+		contentChangeListeners(this, op, rangeBefore, rangeAfter, source);
 	}
 
     /// return text for specified range
@@ -766,20 +767,20 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
     protected void updateMaxLineWidth() {
     }
 
-	override bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source) {
+	override void onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source) {
         updateMaxLineWidth();
 		measureVisibleText();
         if (source is this) {
 		    _caretPos = rangeAfter.end;
             _selectionRange.start = _caretPos;
             _selectionRange.end = _caretPos;
+            ensureCaretVisible();
         } else {
             correctCaretPos();
             // TODO: do something better (e.g. take into account ranges when correcting)
         }
-        ensureCaretVisible();
 		invalidate();
-		return true;
+		return;
 	}
 
 
@@ -1813,8 +1814,10 @@ class EditBox : EditWidgetBase, OnScrollHandler {
 
         updateMaxLineWidth();
 
-        //measureText();
         Point textSz = measureVisibleText();
+        //int maxy = _lineHeight * 10; // limit measured height
+        //if (textSz.y > maxy)
+        //    textSz.y = maxy;
         measuredContent(parentWidth, parentHeight, textSz.x + vsbwidth, textSz.y + hsbheight);
     }
 
@@ -1869,7 +1872,7 @@ class EditBox : EditWidgetBase, OnScrollHandler {
         }
 
         // frame around current line
-        if (lineIndex == _caretPos.line && _selectionRange.singleLine && _selectionRange.start.line == _caretPos.line) {
+        if (focused && lineIndex == _caretPos.line && _selectionRange.singleLine && _selectionRange.start.line == _caretPos.line) {
             buf.drawFrame(visibleRect, 0xA0808080, Rect(1,1,1,1));
         }
     }

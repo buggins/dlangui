@@ -713,10 +713,12 @@ Theme createDefaultTheme() {
     //listItem.createState(State.Selected, State.Selected).backgroundColor(0xC04040FF).textColor(0x000000);
     //listItem.createState(State.Enabled, 0).textColor(0x80000000); // half transparent text for disabled item
 
-    Style editLine = res.createSubstyle("EDIT_LINE").backgroundImageId("editbox_background").padding(Rect(5,6,5,6)).margins(Rect(2,2,2,2)).minWidth(40);
-	editLine.fontFace("Arial").fontFamily(FontFamily.SansSerif).fontSize(16);
-    Style editBox = res.createSubstyle("EDIT_BOX").backgroundImageId("editbox_background").padding(Rect(5,6,5,6)).margins(Rect(2,2,2,2)).minWidth(100).minHeight(60);
-	editBox.fontFace("Courier New").fontFamily(FontFamily.MonoSpace).fontSize(16);
+    Style editLine = res.createSubstyle("EDIT_LINE").backgroundImageId("editbox_background")
+        .padding(Rect(5,6,5,6)).margins(Rect(2,2,2,2)).minWidth(40)
+        .fontFace("Arial").fontFamily(FontFamily.SansSerif).fontSize(16);
+    Style editBox = res.createSubstyle("EDIT_BOX").backgroundImageId("editbox_background")
+        .padding(Rect(5,6,5,6)).margins(Rect(2,2,2,2)).minWidth(100).minHeight(60).layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT)
+        .fontFace("Courier New").fontFamily(FontFamily.MonoSpace).fontSize(16);
 
 	return res;
 }
