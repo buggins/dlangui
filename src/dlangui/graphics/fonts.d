@@ -307,19 +307,55 @@ struct GlyphCache
 
 /// Font object
 class Font : RefCountedObject {
+    /// returns font size (as requested from font engine)
     abstract @property int size();
+    /// returns actual font height including interline space
     abstract @property int height();
+    /// returns font weight
     abstract @property int weight();
+    /// returns baseline offset
     abstract @property int baseline();
+    /// returns true if font is italic
     abstract @property bool italic();
+    /// returns font face name
     abstract @property string face();
+    /// returns font family
     abstract @property FontFamily family();
+    /// returns true if font object is not yet initialized / loaded
     abstract @property bool isNull();
-	// measure text string, return accumulated widths[] (distance to end of n-th character), returns number of measured chars.
+
+    private int _fixedFontDetection = -1;
+
+    /// returns true if font has fixed pitch (all characters have equal width)
+    @property bool isFixed() {
+        if (_fixedFontDetection < 0) {
+            if (charWidth('i') == charWidth(' ') && charWidth('M') == charWidth('i'))
+                _fixedFontDetection = 1;
+            else
+                _fixedFontDetection = 0;
+        }
+        return _fixedFontDetection == 1;
+    }
+
+    private int _spaceWidth = -1;
+    /// returns true if font is fixed
+    @property int spaceWidth() {
+        if (_spaceWidth < 0)
+            _spaceWidth = charWidth(' ');
+        return _spaceWidth;
+    }
+    /// returns character width
+    int charWidth(dchar ch) {
+        Glyph * g = getCharGlyph(ch);
+        return !g ? 0 : g.width;
+    }
+
+	/// measure text string, return accumulated widths[] (distance to end of n-th character), returns number of measured chars.
 	abstract int measureText(const dchar[] text, ref int[] widths, int maxWidth);
-    private int[] _textSizeBuffer; // to avoid GC
-	// measure text string as single line, returns width and height
-	Point textSize(const dchar[] text, int maxWidth = 3000) {
+
+    private int[] _textSizeBuffer; // buffer to reuse while measuring strings - to avoid GC
+	/// measure text string as single line, returns width and height
+	Point textSize(const dchar[] text, int maxWidth = int.max) {
         if (_textSizeBuffer.length < text.length + 1)
             _textSizeBuffer.length = text.length + 1;
         //int[] widths = new int[text.length + 1];
@@ -328,6 +364,7 @@ class Font : RefCountedObject {
             return Point(0,0);
         return Point(_textSizeBuffer[charsMeasured - 1], height);
     }
+
 	/// draw text string to buffer
 	abstract void drawText(DrawBuf buf, int x, int y, const dchar[] text, uint color);
 	/// get character glyph information
