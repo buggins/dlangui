@@ -7,6 +7,27 @@ import std.conv;
 
 mixin APP_ENTRY_POINT;
 
+Widget createEditorSettingsControl(EditWidgetBase editor) {
+    HorizontalLayout res = new HorizontalLayout("editor_options");
+    res.addChild((new CheckBox("wantTabs", "wantTabs"d)).checked(editor.wantTabs).addOnCheckChangeListener(delegate(Widget, bool checked) { editor.wantTabs = checked; return true;}));
+    res.addChild((new CheckBox("useSpacesForTabs", "useSpacesForTabs"d)).checked(editor.useSpacesForTabs).addOnCheckChangeListener(delegate(Widget, bool checked) { editor.useSpacesForTabs = checked; return true;}));
+    res.addChild((new CheckBox("fixedFont", "fixedFont"d)).checked(editor.fontFamily == FontFamily.MonoSpace).addOnCheckChangeListener(delegate(Widget, bool checked) { 
+        if (checked)
+            editor.fontFamily(FontFamily.MonoSpace).fontFace("Courier New");
+        else
+            editor.fontFamily(FontFamily.SansSerif).fontFace("Arial");
+        return true;
+    }));
+    res.addChild((new CheckBox("tabSize", "Tab size 8"d)).checked(editor.tabSize == 8).addOnCheckChangeListener(delegate(Widget, bool checked) { 
+        if (checked)
+            editor.tabSize(8);
+        else
+            editor.tabSize(4);
+        return true;
+    }));
+    return res;
+}
+
 /// entry point for dlangui based application
 extern (C) int UIAppMain(string[] args) {
     // resource directory search paths
@@ -140,31 +161,36 @@ extern (C) int UIAppMain(string[] args) {
         tabs.addTab((new TextWidget()).id("tab4").textColor(0x00802000).text("Tab 4 contents some long string"), "Tab 4"d);
         tabs.addTab((new TextWidget()).id("tab5").textColor(0x00802000).text("Tab 5 contents"), "Tab 5"d);
 
+        //==========================================================================
 		// create Editors test tab
-
 		VerticalLayout editors = new VerticalLayout("editors");
 
-		editors.addChild(new TextWidget(null, "EditLine(Single line editor)"d));
+        // EditLine sample
+		editors.addChild(new TextWidget(null, "EditLine: Single line editor"d));
 		EditLine editLine = new EditLine("editline1", "Single line editor sample text");
+        editors.addChild(createEditorSettingsControl(editLine));
 		editors.addChild(editLine);
-		editors.addChild(new TextWidget(null, "EditBox(Multiline editor)"d));
 
-        EditBox editBox = new EditBox("editbox1", "Some text\nSecond line\nYet another line"d);
+        // EditBox sample
+		editors.addChild(new TextWidget(null, "EditBox: Multiline editor"d));
+
+        EditBox editBox = new EditBox("editbox1", "Some text\nSecond line\nYet another line\n\n\tforeach(s;lines);\n\t\twriteln(s);\n"d);
         editBox.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
         dstring text = editBox.text;
         for (int i = 0; i < 100; i++) {
             text ~= "\n Line ";
-            text ~= to!dstring(i + 3);
+            text ~= to!dstring(i + 5);
             text ~= " Some long long line. Blah blah blah.";
             for (int j = 0; j <= i % 4; j++)
                 text ~= " The quick brown fox jumps over the lazy dog.";
-            text ~= "End of line ";
-            text ~= to!dstring(i + 3);
         }
         editBox.text = text;
+        editors.addChild(createEditorSettingsControl(editBox));
 		editors.addChild(editBox);
 
-        tabs.addTab(editors, "EditBox"d);
+        tabs.addTab(editors, "Editors"d);
+
+        //==========================================================================
 
         tabs.selectTab("tab1");
 

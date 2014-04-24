@@ -739,12 +739,8 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 
     protected void updateFontProps() {
         FontRef font = font();
-        _fixedFont = false;
-        _spaceWidth = font.textSize(" "d).x;
-        int mwidth = font.textSize("M"d).x;
-        int iwidth = font.textSize("i"d).x;
-        if (mwidth == iwidth)
-            _fixedFont = true;
+        _fixedFont = font.isFixed;
+        _spaceWidth = font.spaceWidth;
         _lineHeight = font.height;
     }
 
@@ -1149,6 +1145,14 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
         }
     }
 
+    /// map key to action
+    override protected Action findKeyAction(uint keyCode, uint flags) {
+        // don't handle tabs when disabled
+        if (keyCode == KeyCode.TAB && (flags == 0 || flags == KeyFlag.Shift) && !_wantTabs)
+            return null;
+        return super.findKeyAction(keyCode, flags);
+    }
+
 	/// handle keys
 	override bool onKeyEvent(KeyEvent event) {
 		//
@@ -1267,7 +1271,7 @@ class EditLine : EditWidgetBase {
         //Point sz = font.textSize(text);
         _measuredText = text;
         _measuredTextWidths.length = _measuredText.length;
-        int charsMeasured = font.measureText(_measuredText, _measuredTextWidths, int.max);
+        int charsMeasured = font.measureText(_measuredText, _measuredTextWidths, int.max, tabSize);
         _measuredTextSize.x = charsMeasured > 0 ? _measuredTextWidths[charsMeasured - 1]: 0;
         _measuredTextSize.y = font.height;
         return _measuredTextSize;
@@ -1354,7 +1358,7 @@ class EditLine : EditWidgetBase {
         dstring txt = text;
         Point sz = font.textSize(txt);
         //applyAlign(rc, sz);
-        font.drawText(buf, rc.left - _scrollPos.x, rc.top + sz.y / 10, txt, textColor);
+        font.drawText(buf, rc.left - _scrollPos.x, rc.top + sz.y / 10, txt, textColor, tabSize);
         if (focused) {
             // draw caret
             Rect caretRc = textPosToClient(_caretPos);
@@ -1419,7 +1423,7 @@ class EditBox : EditWidgetBase, OnScrollHandler {
         for (int i = 0; i < _numVisibleLines; i++) {
             _visibleLines[i] = _content[_firstVisibleLine + i];
             _visibleLinesMeasurement[i].length = _visibleLines[i].length;
-            int charsMeasured = font.measureText(_visibleLines[i], _visibleLinesMeasurement[i], int.max);
+            int charsMeasured = font.measureText(_visibleLines[i], _visibleLinesMeasurement[i], int.max, tabSize);
             _visibleLinesWidths[i] = charsMeasured > 0 ? _visibleLinesMeasurement[i][charsMeasured - 1] : 0;
             if (sz.x < _visibleLinesWidths[i])
                 sz.x = _visibleLinesWidths[i]; // width - max from visible lines
@@ -1698,8 +1702,9 @@ class EditBox : EditWidgetBase, OnScrollHandler {
 
     /// override to custom highlight of line background
     protected void drawLineBackground(DrawBuf buf, int lineIndex, Rect lineRect, Rect visibleRect) {
-        if (lineIndex & 1)
-            buf.fillRect(visibleRect, 0xF4808080);
+        // highlight odd lines
+        //if ((lineIndex & 1))
+        //    buf.fillRect(visibleRect, 0xF4808080);
 
         if (!_selectionRange.empty && _selectionRange.start.line <= lineIndex && _selectionRange.end.line >= lineIndex) {
             // line inside selection
@@ -1716,7 +1721,8 @@ class EditBox : EditWidgetBase, OnScrollHandler {
             }
         }
 
-        if (lineIndex == _caretPos.line) {
+        // frame around current line
+        if (lineIndex == _caretPos.line && _selectionRange.singleLine && _selectionRange.start.line == _caretPos.line) {
             buf.drawFrame(visibleRect, 0xA0808080, Rect(1,1,1,1));
         }
     }
@@ -1747,7 +1753,7 @@ class EditBox : EditWidgetBase, OnScrollHandler {
             visibleRect.right = _clientRc.right;
             drawLineBackground(buf, _firstVisibleLine + i, lineRect, visibleRect);
             if (txt.length > 0) {
-                font.drawText(buf, rc.left - _scrollPos.x, rc.top + i * _lineHeight, txt, textColor);
+                font.drawText(buf, rc.left - _scrollPos.x, rc.top + i * _lineHeight, txt, textColor, tabSize);
             }
         }
 

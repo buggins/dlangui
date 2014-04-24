@@ -216,7 +216,11 @@ class Widget {
     /// get margins (between widget bounds and its background)
     @property Rect margins() const { return style.margins; }
     /// set margins for widget - override one from style
-    @property Widget margins(Rect rc) { ownStyle.margins = rc; return this; }
+    @property Widget margins(Rect rc) { 
+        ownStyle.margins = rc; 
+        requestLayout();
+        return this; 
+    }
     /// get padding (between background bounds and content of widget)
     @property Rect padding() const { 
 		// get max padding from style padding and background drawable padding
@@ -236,39 +240,75 @@ class Widget {
 		return p;
 	}
     /// set padding for widget - override one from style
-    @property Widget padding(Rect rc) { ownStyle.padding = rc; return this; }
+    @property Widget padding(Rect rc) { 
+        ownStyle.padding = rc; 
+        requestLayout();
+        return this; 
+    }
     /// returns background color
     @property uint backgroundColor() const { return stateStyle.backgroundColor; }
     /// set background color for widget - override one from style
-    @property Widget backgroundColor(uint color) { ownStyle.backgroundColor = color; return this; }
+    @property Widget backgroundColor(uint color) { 
+        ownStyle.backgroundColor = color; 
+        invalidate();
+        return this; 
+    }
     /// get text color (ARGB 32 bit value)
     @property uint textColor() const { return stateStyle.textColor; }
     /// set text color (ARGB 32 bit value)
-    @property Widget textColor(uint value) { ownStyle.textColor = value; return this; }
+    @property Widget textColor(uint value) { 
+        ownStyle.textColor = value; 
+        invalidate();
+        return this; 
+    }
     /// returns font face
     @property string fontFace() const { return stateStyle.fontFace; }
     /// set font face for widget - override one from style
-	@property Widget fontFace(string face) { ownStyle.fontFace = face; return this; }
+	@property Widget fontFace(string face) { 
+        ownStyle.fontFace = face; 
+        requestLayout();
+        return this; 
+    }
     /// returns font style (italic/normal)
     @property bool fontItalic() const { return stateStyle.fontItalic; }
     /// set font style (italic/normal) for widget - override one from style
-	@property Widget fontItalic(bool italic) { ownStyle.fontStyle = italic ? FONT_STYLE_ITALIC : FONT_STYLE_NORMAL; return this; }
+	@property Widget fontItalic(bool italic) { 
+        ownStyle.fontStyle = italic ? FONT_STYLE_ITALIC : FONT_STYLE_NORMAL; 
+        requestLayout();
+        return this; 
+    }
     /// returns font weight
     @property ushort fontWeight() const { return stateStyle.fontWeight; }
     /// set font weight for widget - override one from style
-	@property Widget fontWeight(ushort weight) { ownStyle.fontWeight = weight; return this; }
+	@property Widget fontWeight(ushort weight) { 
+        ownStyle.fontWeight = weight; 
+        requestLayout();
+        return this; 
+    }
     /// returns font size in pixels
     @property ushort fontSize() const { return stateStyle.fontSize; }
     /// set font size for widget - override one from style
-	@property Widget fontSize(ushort size) { ownStyle.fontSize = size; return this; }
+	@property Widget fontSize(ushort size) { 
+        ownStyle.fontSize = size; 
+        requestLayout();
+        return this; 
+    }
     /// returns font family
     @property FontFamily fontFamily() const { return stateStyle.fontFamily; }
     /// set font family for widget - override one from style
-    @property Widget fontFamily(FontFamily family) { ownStyle.fontFamily = family; return this; }
+    @property Widget fontFamily(FontFamily family) { 
+        ownStyle.fontFamily = family; 
+        requestLayout();
+        return this; 
+    }
     /// returns alignment (combined vertical and horizontal)
     @property ubyte alignment() const { return style.alignment; }
     /// sets alignment (combined vertical and horizontal)
-    @property Widget alignment(ubyte value) { ownStyle.alignment = value; return this; }
+    @property Widget alignment(ubyte value) { 
+        ownStyle.alignment = value; 
+        requestLayout();
+        return this; 
+    }
     /// returns horizontal alignment
     @property Align valign() { return cast(Align)(alignment & Align.VCenter); }
     /// returns vertical alignment
@@ -468,10 +508,16 @@ class Widget {
         return res;
     }
 
+    /// map key to action
+    protected Action findKeyAction(uint keyCode, uint flags) {
+        Action action = _acceleratorMap.findByKey(keyCode, flags);
+        return action;
+    }
+
     /// process key event, return true if event is processed.
     bool onKeyEvent(KeyEvent event) {
 		if (event.action == KeyAction.KeyDown) {
-			Action action = _acceleratorMap.findByKey(event.keyCode, event.flags & (KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Control));
+			Action action = findKeyAction(event.keyCode, event.flags & (KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Control));
 			if (action !is null) {
 				return handleAction(action);
 			}
@@ -558,6 +604,24 @@ class Widget {
     Signal!OnCheckHandler onCheckChangeListener;
 	/// focus state change event listener (bool delegate(Widget, bool))
     Signal!OnFocusHandler onFocusChangeListener;
+
+    /// helper function to add onCheckChangeListener in method chain
+    Widget addOnClickListener(bool delegate(Widget) listener) {
+        onClickListener.connect(listener);
+        return this;
+    }
+
+    /// helper function to add onCheckChangeListener in method chain
+    Widget addOnCheckChangeListener(bool delegate(Widget, bool) listener) {
+        onCheckChangeListener.connect(listener);
+        return this;
+    }
+
+    /// helper function to add onFocusChangeListener in method chain
+    Widget addOnFocusChangeListener(bool delegate(Widget, bool) listener) {
+        onFocusChangeListener.connect(listener);
+        return this;
+    }
 
     // =======================================================
     // Layout and measurement methods
