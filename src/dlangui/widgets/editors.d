@@ -578,6 +578,8 @@ enum EditorActions {
     /// Tab (unindent text, or remove whitespace before cursor, usually Shift+Tab)
     BackTab,
 
+    /// Select whole content (usually, Ctrl+A)
+    SelectAll,
 }
 
 /// base for all editor widgets
@@ -664,7 +666,8 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 			new Action(EditorActions.BackTab, KeyCode.TAB, KeyFlag.Shift),
 
 			new Action(EditorActions.ToggleReplaceMode, KeyCode.INS, 0),
-            
+			new Action(EditorActions.SelectAll, KeyCode.KEY_A, KeyFlag.Control),
+
 		]);
     }
 
@@ -1189,6 +1192,13 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                 return true;
             case EditorActions.ToggleReplaceMode:
                 replaceMode = !replaceMode;
+                return true;
+            case EditorActions.SelectAll:
+                _selectionRange.start.line = 0;
+                _selectionRange.start.pos = 0;
+                _selectionRange.end = _content.lineEnd(_content.length - 1);
+                _caretPos = _selectionRange.end;
+                ensureCaretVisible();
                 return true;
 			default:
 				break;
@@ -1815,9 +1825,9 @@ class EditBox : EditWidgetBase, OnScrollHandler {
         updateMaxLineWidth();
 
         Point textSz = measureVisibleText();
-        //int maxy = _lineHeight * 10; // limit measured height
-        //if (textSz.y > maxy)
-        //    textSz.y = maxy;
+        int maxy = _lineHeight * 5; // limit measured height
+        if (textSz.y > maxy)
+            textSz.y = maxy;
         measuredContent(parentWidth, parentHeight, textSz.x + vsbwidth, textSz.y + hsbheight);
     }
 
