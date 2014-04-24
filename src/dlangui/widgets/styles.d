@@ -640,7 +640,7 @@ Theme createDefaultTheme() {
         res.fontFace = "Verdana";
     }
     //res.fontFace = "Arial Narrow";
-    res.fontSize = 13; // TODO: choose based on DPI
+    res.fontSize = 15; // TODO: choose based on DPI
     Style button = res.createSubstyle("BUTTON").backgroundImageId("btn_default_small").alignment(Align.Center);
     res.createSubstyle("BUTTON_TRANSPARENT").backgroundImageId("btn_default_small_transparent").alignment(Align.Center);
     res.createSubstyle("BUTTON_LABEL").layoutWidth(FILL_PARENT).alignment(Align.Left|Align.VCenter);

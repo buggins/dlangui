@@ -557,6 +557,9 @@ enum EditorActions {
     /// insert new line after current position (Ctrl+Enter)
 	PrependNewLine,
 
+    /// Turn On/Off replace mode
+	ToggleReplaceMode, 
+
     /// Copy selection to clipboard
 	Copy, 
     /// Cut selection to clipboard
@@ -590,8 +593,6 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
     protected bool _useSpacesForTabs = false;
 
     protected bool _replaceMode;
-    protected bool _readOnly;
-
 
     this(string ID) {
         super(ID);
@@ -654,6 +655,9 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 
 			new Action(EditorActions.Tab, KeyCode.TAB, 0),
 			new Action(EditorActions.BackTab, KeyCode.TAB, KeyFlag.Shift),
+
+			new Action(EditorActions.ToggleReplaceMode, KeyCode.INS, 0),
+            
 		]);
     }
 
@@ -670,16 +674,12 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 
     /// readonly flag (when true, user cannot change content of editor)
     @property bool readOnly() {
-        return _readOnly;
+        return !enabled;
     }
 
     /// sets readonly flag
     @property EditWidgetBase readOnly(bool readOnly) {
-        _readOnly = readOnly;
-        if (_readOnly)
-            resetState(State.Enabled);
-        else 
-            setState(State.Enabled);
+        enabled = !readOnly;
         invalidate();
         return this;
     }
@@ -767,6 +767,40 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
     abstract protected void ensureCaretVisible();
 
     abstract protected Point measureVisibleText();
+
+    /// returns cursor rectangle
+    protected Rect caretRect() {
+        Rect caretRc = textPosToClient(_caretPos);
+        if (_replaceMode) {
+            dstring s = _content[_caretPos.line];
+            if (_caretPos.pos < s.length) {
+                TextPosition nextPos = _caretPos;
+                nextPos.pos++;
+                Rect nextRect = textPosToClient(nextPos);
+                caretRc.right = nextRect.right;
+            } else {
+                caretRc.right += _spaceWidth;
+            }
+        }
+        caretRc.offset(_clientRc.left, _clientRc.top);
+        return caretRc;
+    }
+
+    /// draws caret
+    protected void drawCaret(DrawBuf buf) {
+        if (focused) {
+            // draw caret
+            Rect caretRc = caretRect();
+            if (caretRc.intersects(_clientRc)) {
+                Rect rc1 = caretRc;
+                rc1.right = rc1.left + 1;
+                caretRc.left++;
+                if (_replaceMode)
+                    buf.fillRect(caretRc, 0x808080FF);
+                buf.fillRect(rc1, 0x000000);
+            }
+        }
+    }
 
     protected void updateFontProps() {
         FontRef font = font();
@@ -933,7 +967,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                 }
                 return true;
             case EditorActions.DelPrevChar:
-                if (_readOnly)
+                if (readOnly)
                     return true;
                 if (!_selectionRange.empty) {
                     // clear selection
@@ -960,7 +994,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                 }
                 return true;
             case EditorActions.DelNextChar:
-                if (_readOnly)
+                if (readOnly)
                     return true;
                 if (!_selectionRange.empty) {
                     EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d]);
@@ -993,7 +1027,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                 if (!_selectionRange.empty) {
                     dstring selectionText = concatDStrings(_content.rangeText(_selectionRange));
                     platform.setClipboardText(selectionText);
-                    if (_readOnly)
+                    if (readOnly)
                         return true;
                     EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d]);
                     _content.performOperation(op);
@@ -1001,7 +1035,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                 return true;
             case EditorActions.Paste:
                 {
-                    if (_readOnly)
+                    if (readOnly)
                         return true;
                     dstring selectionText = platform.getClipboardText();
                     dstring[] lines;
@@ -1016,21 +1050,21 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                 return true;
             case EditorActions.Undo:
                 {
-                    if (_readOnly)
+                    if (readOnly)
                         return true;
                     _content.undo();
                 }
                 return true;
             case EditorActions.Redo:
                 {
-                    if (_readOnly)
+                    if (readOnly)
                         return true;
                     _content.redo();
                 }
                 return true;
             case EditorActions.Tab:
                 {
-                    if (_readOnly)
+                    if (readOnly)
                         return true;
                     if (_selectionRange.empty) {
                         if (_useSpacesForTabs) {
@@ -1064,7 +1098,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                 return true;
             case EditorActions.BackTab:
                 {
-                    if (_readOnly)
+                    if (readOnly)
                         return true;
                     if (_selectionRange.empty) {
                         // remove spaces before caret
@@ -1098,6 +1132,9 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                         }
                     }
                 }
+                return true;
+            case EditorActions.ToggleReplaceMode:
+                replaceMode = !replaceMode;
                 return true;
 			default:
 				break;
@@ -1195,7 +1232,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
     /// map key to action
     override protected Action findKeyAction(uint keyCode, uint flags) {
         // don't handle tabs when disabled
-        if (keyCode == KeyCode.TAB && (flags == 0 || flags == KeyFlag.Shift) && (!_wantTabs || _readOnly))
+        if (keyCode == KeyCode.TAB && (flags == 0 || flags == KeyFlag.Shift) && (!_wantTabs || readOnly))
             return null;
         return super.findKeyAction(keyCode, flags);
     }
@@ -1204,12 +1241,20 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 	override bool onKeyEvent(KeyEvent event) {
 		if (event.action == KeyAction.Text && event.text.length) {
 			Log.d("text entered: ", event.text);
-            if (_readOnly)
+            if (readOnly)
                 return true;
 			dchar ch = event.text[0];
-			if (ch >= 32) { // ignore Backspace and Return
-				EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [event.text]);
-				_content.performOperation(op);
+			if (ch >= 32) { // ignore Backspace, Tab, Return, etc. chars
+                if (replaceMode && _selectionRange.empty && _content[_caretPos.line].length >= _caretPos.pos + event.text.length) {
+                    // replace next char(s)
+                    TextRange range = _selectionRange;
+                    range.end.pos += cast(int)event.text.length;
+				    EditOperation op = new EditOperation(EditAction.Replace, range, [event.text]);
+				    _content.performOperation(op);
+                } else {
+				    EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [event.text]);
+				    _content.performOperation(op);
+                }
 			}
             return true;
 		}
@@ -1411,12 +1456,8 @@ class EditLine : EditWidgetBase {
         visibleRect.right = _clientRc.right;
         drawLineBackground(buf, lineRect, visibleRect);
         font.drawText(buf, rc.left - _scrollPos.x, rc.top, txt, textColor, tabSize);
-        if (focused) {
-            // draw caret
-            Rect caretRc = textPosToClient(_caretPos);
-            caretRc.offset(_clientRc.left, _clientRc.top);
-            buf.fillRect(caretRc, 0x000000);
-        }
+
+        drawCaret(buf);
     }
 }
 
@@ -1779,6 +1820,7 @@ class EditBox : EditWidgetBase, OnScrollHandler {
         }
     }
 
+
     /// draw content
     override void onDraw(DrawBuf buf) {
         if (visibility != Visibility.Visible)
@@ -1809,13 +1851,7 @@ class EditBox : EditWidgetBase, OnScrollHandler {
             }
         }
 
-        //buf.fillRect(_clientRc, 0x80E0E0FF); // testing clientRc
-        if (focused) {
-            // draw caret
-            Rect caretRc = textPosToClient(_caretPos);
-            caretRc.offset(_clientRc.left, _clientRc.top);
-            buf.fillRect(caretRc, 0x000000);
-        }
+        drawCaret(buf);
     }
 
 }
