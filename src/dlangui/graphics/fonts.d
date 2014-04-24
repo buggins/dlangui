@@ -57,13 +57,13 @@ version (USE_OPENGL) {
     uint nextGlyphId() { return _nextGlyphId++; }
 }
 
-
+/// glyph image cache
 struct GlyphCache
 {
     alias glyph_ptr = Glyph*;
     private glyph_ptr[][1024] _glyphs;
 
-	Glyph * find(uint ch) {
+	Glyph * find(dchar ch) {
         ch = ch & 0xF_FFFF;
         //if (_array is null)
         //    _array = new Glyph[0x10000];
@@ -71,55 +71,70 @@ struct GlyphCache
         glyph_ptr[] row = _glyphs[p];
         if (row is null)
             return null;
-        ushort i = ch & 0xFF;
-        return row[i];
+        uint i = ch & 0xFF;
+        Glyph * res = row[i];
+        if (!res)
+            return null;
+        res.lastUsage = 1;
+        return res;
     }
 	/// put glyph to cache
-	Glyph * put(uint ch, Glyph * glyph) {
+	Glyph * put(dchar ch, Glyph * glyph) {
+        ch = ch & 0xF_FFFF;
         uint p = ch >> 8;
         uint i = ch & 0xFF;
         if (_glyphs[p] is null)
             _glyphs[p] = new glyph_ptr[256];
         _glyphs[p][i] = glyph;
+        glyph.lastUsage = 1;
         return glyph;
 	}
+
 	/// removes entries not used after last call of checkpoint() or cleanup()
 	void cleanup() {
-        // TODO
+        foreach(part; _glyphs) {
+            if (part !is null)
+                foreach(item; part) {
+                    if (item && !item.lastUsage) {
+                        version (USE_OPENGL) {
+                            // notify about destroyed glyphs
+                            if (_glyphDestroyCallback !is null) {
+                                _glyphDestroyCallback(item.id);
+                            }
+                        }
+                        destroy(item);
+                    }
+                }
+        }
 	}
 
 	// clear usage flags for all entries
 	void checkpoint() {
+        foreach(part; _glyphs) {
+            if (part !is null)
+                foreach(item; part) {
+                    if (item)
+                        item.lastUsage = 0;
+                }
+        }
     }
 
 	/// removes all entries
 	void clear() {
-        // notify about destroyed glyphs
-        version (USE_OPENGL) {
-            if (_glyphDestroyCallback !is null) {
-                foreach(part; _glyphs) {
-                    if (part !is null)
-                        foreach(item; part) {
-                            if (item)
-                                _glyphDestroyCallback(item.id);
-                        }
-                }
-            }
-        }
-        /*
-        foreach(ref Glyph[] part; _glyphs) {
+        foreach(part; _glyphs) {
             if (part !is null)
-                foreach(ref Glyph item; part) {
-                    if (item.glyphIndex) {
-                        item.glyphIndex = 0;
-                        item.glyph = null;
+                foreach(item; part) {
+                    if (item) {
                         version (USE_OPENGL) {
-                            item.id = 0;
+                            // notify about destroyed glyphs
+                            if (_glyphDestroyCallback !is null) {
+                                _glyphDestroyCallback(item.id);
+                            }
                         }
+                        destroy(item);
                     }
                 }
         }
-        */
 	}
 	~this() {
 		clear();

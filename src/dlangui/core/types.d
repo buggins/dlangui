@@ -146,9 +146,6 @@ struct Glyph
         uint    id;
     }
 
-    ///< 8: character
-    //uint    glyphIndex;
-
     ///< 4: width of glyph black box
     ubyte   blackBoxX;
     ///< 5: height of glyph black box
@@ -158,9 +155,9 @@ struct Glyph
     ///< 7: Y origin for glyph
     byte    originY;
 
-    ///< 10: full width of glyph
+    ///< 8: full width of glyph
     ubyte   width;
-    ///< 11: usage flag, to handle cleanup of unused glyphs
+    ///< 9: usage flag, to handle cleanup of unused glyphs
 	ubyte   lastUsage;
     ///< 12: glyph data, arbitrary size
     ubyte[] glyph;       

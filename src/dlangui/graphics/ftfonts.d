@@ -341,17 +341,16 @@ class FreeTypeFont : Font {
         return false;
     }
 
-    private Glyph tmpGlyphInfo;
 	override Glyph * getCharGlyph(dchar ch, bool withImage = true) {
         if (ch > 0xFFFF) // do not support unicode chars above 0xFFFF - due to cache limitations
             return null;
-        long measureStart = std.datetime.Clock.currStdTime;
+        //long measureStart = std.datetime.Clock.currStdTime;
 		Glyph * found = _glyphCache.find(cast(ushort)ch);
-        long measureEnd = std.datetime.Clock.currStdTime;
-        long duration = measureEnd - measureStart;
+        //long measureEnd = std.datetime.Clock.currStdTime;
+        //long duration = measureEnd - measureStart;
         //if (duration > 10000)
-        if (duration > 10000)
-            Log.d("ft _glyphCache.find took ", duration / 10, " ns");
+        //if (duration > 10000)
+        //    Log.d("ft _glyphCache.find took ", duration / 10, " ns");
 		if (found !is null)
 			return found;
         Log.v("Glyph ", ch, " is not found in cache, getting from font");
@@ -361,11 +360,12 @@ class FreeTypeFont : Font {
             if (!findGlyph(ch, '?', index, file))
                 return null;
         }
-        if (!file.getGlyphInfo(ch, tmpGlyphInfo, 0, withImage))
+        Glyph * glyph = new Glyph;
+        if (!file.getGlyphInfo(ch, *glyph, 0, withImage))
             return null;
         if (withImage)
-		    return _glyphCache.put(cast(ushort)ch, &tmpGlyphInfo);
-        return &tmpGlyphInfo;
+		    return _glyphCache.put(ch, glyph);
+        return glyph;
 	}
 
 	// draw text string to buffer
