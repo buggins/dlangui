@@ -107,6 +107,27 @@ Linux builds
 * Uses FreeType for font rendering.
 * TODO: Use FontConfig to get font list.
 * TODO: OpenGL initializes ok, but images not visible on screen. Disabled temporary.
+* TODO: entering of unicode characters not implemented
+
+
+To build dlangui apps, development packages for following libraries required:
+
+        xcb, xcb-util, xcb-shm, xcb-image, xcb-keysyms, X11-xcb, X11
+
+In runtime, .so for following libraries are being loaded (binary packages required):
+
+        freetype, opengl, freeimage
+
+
+Build and run on Linux using DUB:
+
+        dub run dlangui:example1
+
+Development using Mono-D: 
+
+* open solution dlangui/dlanguimonod.sln 
+* build and run project example1
+
 
 Other platforms
 ---------------
