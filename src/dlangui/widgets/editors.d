@@ -331,7 +331,30 @@ class EditableContent {
 
 	/// returns text position for end of line lineIndex
 	TextPosition lineEnd(int lineIndex) {
-        return TextPosition(lineIndex, lineIndex >= 0 && lineIndex < _lines.length ? cast(int)_lines[lineIndex].length : 0);
+        return TextPosition(lineIndex, lineLength(lineIndex));
+	}
+
+    /// returns position before first non-space character of line, returns 0 position if no non-space chars
+    TextPosition firstNonSpace(int lineIndex) {
+        dstring s = line(lineIndex);
+        for (int i = 0; i < s.length; i++)
+            if (s[i] != ' ' && s[i] != '\t')
+                return TextPosition(lineIndex, i);
+        return TextPosition(lineIndex, 0);
+    }
+
+    /// returns position after last non-space character of line, returns 0 position if no non-space chars on line
+    TextPosition lastNonSpace(int lineIndex) {
+        dstring s = line(lineIndex);
+        for (int i = cast(int)s.length - 1; i >= 0; i--)
+            if (s[i] != ' ' && s[i] != '\t')
+                return TextPosition(lineIndex, i + 1);
+        return TextPosition(lineIndex, 0);
+    }
+
+	/// returns text position for end of line lineIndex
+	int lineLength(int lineIndex) {
+        return lineIndex >= 0 && lineIndex < _lines.length ? cast(int)_lines[lineIndex].length : 0;
 	}
 
     /// returns maximum length of line
@@ -373,6 +396,29 @@ class EditableContent {
             res ~= lineFragment;
         }
         return res;
+    }
+
+    /// when position is out of content bounds, fix it to nearest valid position
+    void correctPosition(ref TextPosition position) {
+        if (position.line >= length) {
+            position.line = length - 1;
+            position.pos = lineLength(position.line);
+        }
+        if (position.line < 0) {
+            position.line = 0;
+            position.pos = 0;
+        }
+        int currentLineLength = lineLength(position.line);
+        if (position.pos > currentLineLength)
+            position.pos = currentLineLength;
+        if (position.pos < 0)
+            position.pos = 0;
+    }
+
+    /// when range positions is out of content bounds, fix it to nearest valid position
+    void correctRange(ref TextRange range) {
+        correctPosition(range.start);
+        correctPosition(range.end);
     }
 
     /// removes removedCount lines starting from start
@@ -427,12 +473,82 @@ class EditableContent {
         }
     }
 
+    static bool isDigit(dchar ch) pure nothrow {
+        return ch >= '0' && ch <= '9';
+    }
+    static bool isAlpha(dchar ch) pure nothrow {
+        return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch == '_');
+    }
+    static bool isLowerAlpha(dchar ch) pure nothrow {
+        return (ch >= 'a' && ch <= 'z') || (ch == '_');
+    }
+    static bool isUpperAlpha(dchar ch) pure nothrow {
+        return (ch >= 'A' && ch <= 'Z');
+    }
+
+    /// change text position to nearest word bound (direction < 0 - back, > 0 - forward)
+    TextPosition moveByWord(TextPosition p, int direction, bool camelCasePartsAsWords) {
+        correctPosition(p);
+        TextPosition firstns = firstNonSpace(p.line); // before first non space
+        TextPosition lastns = lastNonSpace(p.line); // after last non space
+        int linelen = lineLength(p.line); // line length
+        if (direction < 0) {
+            // back
+            if (p.pos <= 0) {
+                // beginning of line - move to prev line
+                if (p.line > 0)
+                    p = lastNonSpace(p.line - 1);
+            } else if (p.pos <= firstns.pos) { // before first nonspace
+                // to beginning of line
+                p.pos = 0;
+            } else {
+            }
+        } else if (direction > 0) {
+            // forward
+            if (p.pos >= linelen) {
+                // last position of line
+                if (p.line < length)
+                    p = firstNonSpace(p.line + 1);
+            } else if (p.pos >= lastns.pos) { // before first nonspace
+                // to beginning of line
+                p.pos = linelen;
+            } else {
+                dstring txt = line(p.line);
+                int found = -1;
+                for (int i = p.pos; i < linelen; i++) {
+                    // check if position i + 1 is after word end
+                    dchar thischar = txt[i];
+                    if (thischar == '\t')
+                        thischar = ' ';
+                    dchar nextchar = i < linelen ? txt[i + 1] : ' ';
+                    if (nextchar == '\t')
+                        nextchar = ' ';
+                    bool thisalpha = isAlpha(thischar);
+                    bool nextalpha = isAlpha(nextchar);
+                    if ((thisalpha && !nextalpha)
+                            || (camelCasePartsAsWords && isLowerAlpha(thischar) && isUpperAlpha(nextchar))
+                            || (thischar != ' ' && nextchar == ' ')
+                            ) {
+                        found = i + 1;
+                        break;
+                    }
+                }
+                if (found >= 0)
+                    p.pos = found;
+                else
+                    p.pos = linelen;
+            }
+        }
+        return p;
+    }
+
     /// edit content
 	bool performOperation(EditOperation op, Object source) {
         if (_readOnly)
             throw new Exception("content is readonly");
         if (op.action == EditAction.Replace) {
 			TextRange rangeBefore = op.range;
+            correctRange(rangeBefore);
             dstring[] oldcontent = rangeText(rangeBefore);
             dstring[] newcontent = op.content;
             if (newcontent.length == 0)
@@ -903,24 +1019,11 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
     protected void updateScrollbars() {
     }
 
-    /// when position is out of content bounds, fix it to nearest valid position
-    protected void correctPosition(ref TextPosition position) {
-        if (position.line >= _content.length)
-            position.line = _content.length - 1;
-        if (position.line < 0)
-            position.line = 0;
-        dstring currentLine = _content[position.line];
-        if (position.pos > currentLine.length)
-            position.pos = cast(int)currentLine.length;
-        if (position.pos < 0)
-            position.pos = 0;
-    }
-
     /// when cursor position or selection is out of content bounds, fix it to nearest valid position
     protected void correctCaretPos() {
-        correctPosition(_caretPos);
-        correctPosition(_selectionRange.start);
-        correctPosition(_selectionRange.end);
+        _content.correctPosition(_caretPos);
+        _content.correctPosition(_selectionRange.start);
+        _content.correctPosition(_selectionRange.end);
         if (_selectionRange.empty)
             _selectionRange = TextRange(_caretPos, _caretPos);
     }

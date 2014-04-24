@@ -186,14 +186,14 @@ extern (C) int UIAppMain(string[] args) {
                 text ~= " The quick brown fox jumps over the lazy dog.";
         }
         editBox.text = text;
-        editBox.minFontSize(12).maxFontSize(75);
+        editBox.minFontSize(12).maxFontSize(75); // allow font zoom with Ctrl + MouseWheel
         editors.addChild(createEditorSettingsControl(editBox));
 		editors.addChild(editBox);
 
 		editors.addChild(new TextWidget(null, "EditBox: additional view for the same content (split view testing)"d));
         EditBox editBox2 = new EditBox("editbox2", ""d);
         editBox2.content = editBox.content; // view the same content as first editbox
-        editBox2.minFontSize(12).maxFontSize(75);
+        editBox2.minFontSize(12).maxFontSize(75); // allow font zoom with Ctrl + MouseWheel
 		editors.addChild(editBox2);
         editors.layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT);
 
