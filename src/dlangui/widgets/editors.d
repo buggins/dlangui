@@ -1529,7 +1529,6 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                 return "\t"d ~ src;
             }
         }
-        return src;
     }
 
     /// indent / unindent range
@@ -2049,9 +2048,8 @@ class EditBox : EditWidgetBase, OnScrollHandler {
                     ensureCaretVisible();
                     _caretPos.line = _firstVisibleLine;
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
-                    return true;
                 }
-                break;
+                return true;
             case EditorActions.PageEnd:
             case EditorActions.SelectPageEnd:
                 {
@@ -2062,9 +2060,8 @@ class EditBox : EditWidgetBase, OnScrollHandler {
                         newpos = _content.length - 1;
                     _caretPos.line = newpos;
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
-                    return true;
                 }
-                break;
+                return true;
             case EditorActions.PageUp:
             case EditorActions.SelectPageUp:
                 {
@@ -2082,9 +2079,8 @@ class EditBox : EditWidgetBase, OnScrollHandler {
                     measureVisibleText();
                     updateScrollbars();
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
-                    return true;
                 }
-                break;
+                return true;
             case EditorActions.PageDown:
             case EditorActions.SelectPageDown:
                 {
@@ -2101,9 +2097,8 @@ class EditBox : EditWidgetBase, OnScrollHandler {
                     measureVisibleText();
                     updateScrollbars();
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
-                    return true;
                 }
-                break;
+                return true;
             case EditorActions.ScrollLeft:
                 {
                     if (_scrollPos.x > 0) {

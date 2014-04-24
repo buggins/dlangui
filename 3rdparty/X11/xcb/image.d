@@ -159,6 +159,7 @@ xcb_image_create_native (xcb_connection_t *  c,
       if (depth != 1)
 	  return null;
       /* fall through */
+        goto case;
   case XCB_IMAGE_FORMAT_XY_PIXMAP:
       if (depth > 1) {
 	  fmt = find_format_by_depth(setup, depth);
