@@ -274,6 +274,16 @@ class EditableContent {
 
     protected UndoBuffer _undoBuffer;
 
+    protected bool _readOnly;
+
+    @property bool readOnly() {
+        return _readOnly;
+    }
+
+    @property void readOnly(bool readOnly) {
+        _readOnly = readOnly;
+    }
+
 	/// listeners for edit operations
 	Signal!EditableContentListener contentChangeListeners;
 
@@ -417,7 +427,10 @@ class EditableContent {
         }
     }
 
+    /// edit content
 	bool performOperation(EditOperation op, Object source) {
+        if (_readOnly)
+            throw new Exception("content is readonly");
         if (op.action == EditAction.Replace) {
 			TextRange rangeBefore = op.range;
             dstring[] oldcontent = rangeText(rangeBefore);
@@ -456,6 +469,8 @@ class EditableContent {
     bool undo() {
         if (!hasUndo)
             return false;
+        if (_readOnly)
+            throw new Exception("content is readonly");
         EditOperation op = _undoBuffer.undo();
         TextRange rangeBefore = op.newRange;
         dstring[] oldcontent = op.content;
@@ -470,6 +485,8 @@ class EditableContent {
     bool redo() {
         if (!hasUndo)
             return false;
+        if (_readOnly)
+            throw new Exception("content is readonly");
         EditOperation op = _undoBuffer.redo();
         TextRange rangeBefore = op.range;
         dstring[] oldcontent = op.oldContent;
@@ -580,6 +597,27 @@ enum EditorActions {
 
     /// Select whole content (usually, Ctrl+A)
     SelectAll,
+
+    // Scroll operations
+
+    /// Scroll one line up (not changing cursor)
+    ScrollLineUp,
+    /// Scroll one line down (not changing cursor)
+    ScrollLineDown,
+    /// Scroll one page up (not changing cursor)
+    ScrollPageUp,
+    /// Scroll one page down (not changing cursor)
+    ScrollPageDown,
+    /// Scroll window left
+    ScrollLeft,
+    /// Scroll window right
+    ScrollRight,
+
+    /// Zoom in editor font
+    ZoomIn,
+    /// Zoom out editor font
+    ZoomOut,
+
 }
 
 /// base for all editor widgets
@@ -592,6 +630,9 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
     protected bool _fixedFont;
     protected int _spaceWidth;
     protected int _tabSize = 4;
+
+    protected int _minFontSize = -1; // disable zooming
+    protected int _maxFontSize = -1; // disable zooming
 
     protected bool _wantTabs = true;
     protected bool _useSpacesForTabs = false;
@@ -684,7 +725,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 
     /// readonly flag (when true, user cannot change content of editor)
     @property bool readOnly() {
-        return !enabled;
+        return !enabled || _content.readOnly;
     }
 
     /// sets readonly flag
@@ -756,6 +797,8 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
         _content = content;
         _ownContent = false;
         _content.contentChangeListeners.connect(this);
+        if (_content.readOnly)
+            enabled = false;
         return this;
     }
 
@@ -1348,6 +1391,22 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 	    if (event.action == MouseAction.FocusIn) {
 	        return true;
 	    }
+        if (event.action == MouseAction.Wheel) {
+            uint keyFlags = event.flags & (MouseFlag.Shift | MouseFlag.Control | MouseFlag.Alt);
+            if (event.wheelDelta < 0) {
+                if (keyFlags == MouseFlag.Shift)
+                    return handleAction(new Action(EditorActions.ScrollRight));
+                if (keyFlags == MouseFlag.Control)
+                    return handleAction(new Action(EditorActions.ZoomOut));
+                return handleAction(new Action(EditorActions.ScrollLineDown));
+            } else if (event.wheelDelta > 0) {
+                if (keyFlags == MouseFlag.Shift)
+                    return handleAction(new Action(EditorActions.ScrollLeft));
+                if (keyFlags == MouseFlag.Control)
+                    return handleAction(new Action(EditorActions.ZoomIn));
+                return handleAction(new Action(EditorActions.ScrollLineUp));
+            }
+        }
 	    return false;
     }
 
@@ -1568,6 +1627,21 @@ class EditBox : EditWidgetBase, OnScrollHandler {
         _maxLineWidth = maxw;
     }
 
+    @property int minFontSize() {
+        return _minFontSize;
+    }
+    @property EditBox minFontSize(int size) {
+        _minFontSize = size;
+        return this;
+    }
+    @property int maxFontSize() {
+        return _maxFontSize;
+    }
+    @property EditBox maxFontSize(int size) {
+        _maxFontSize = size;
+        return this;
+    }
+
     override protected Point measureVisibleText() {
         Point sz;
         FontRef font = font();
@@ -1606,16 +1680,36 @@ class EditBox : EditWidgetBase, OnScrollHandler {
     /// handle scroll event
     override bool onScrollEvent(AbstractSlider source, ScrollEvent event) {
         if (source.id.equal("hscrollbar")) {
-            if (_scrollPos.x != event.position) {
-                _scrollPos.x = event.position;
-                invalidate();
+            if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased) {
+                if (_scrollPos.x != event.position) {
+                    _scrollPos.x = event.position;
+                    invalidate();
+                }
+            } else if (event.action == ScrollAction.PageUp) {
+                handleAction(new Action(EditorActions.ScrollLeft));
+            } else if (event.action == ScrollAction.PageDown) {
+                handleAction(new Action(EditorActions.ScrollRight));
+            } else if (event.action == ScrollAction.LineUp) {
+                handleAction(new Action(EditorActions.ScrollLeft));
+            } else if (event.action == ScrollAction.LineDown) {
+                handleAction(new Action(EditorActions.ScrollRight));
             }
             return true;
         } else if (source.id.equal("vscrollbar")) {
-            if (_firstVisibleLine != event.position) {
-                _firstVisibleLine = event.position;
-                measureVisibleText();
-                invalidate();
+            if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased) {
+                if (_firstVisibleLine != event.position) {
+                    _firstVisibleLine = event.position;
+                    measureVisibleText();
+                    invalidate();
+                }
+            } else if (event.action == ScrollAction.PageUp) {
+                handleAction(new Action(EditorActions.ScrollPageUp));
+            } else if (event.action == ScrollAction.PageDown) {
+                handleAction(new Action(EditorActions.ScrollPageDown));
+            } else if (event.action == ScrollAction.LineUp) {
+                handleAction(new Action(EditorActions.ScrollLineUp));
+            } else if (event.action == ScrollAction.LineDown) {
+                handleAction(new Action(EditorActions.ScrollLineDown));
             }
             return true;
         }
@@ -1803,6 +1897,115 @@ class EditBox : EditWidgetBase, OnScrollHandler {
                     return true;
                 }
                 break;
+            case EditorActions.ScrollLeft:
+                {
+                    if (_scrollPos.x > 0) {
+                        int newpos = _scrollPos.x - _spaceWidth * 4;
+                        if (newpos < 0)
+                            newpos = 0;
+                        _scrollPos.x = newpos;
+                        updateScrollbars();
+                        invalidate();
+                    }
+                }
+                return true;
+            case EditorActions.ScrollRight:
+                {
+                    if (_scrollPos.x < _maxLineWidth - _clientRc.width) {
+                        int newpos = _scrollPos.x + _spaceWidth * 4;
+                        if (newpos > _maxLineWidth - _clientRc.width)
+                            newpos = _maxLineWidth - _clientRc.width;
+                        _scrollPos.x = newpos;
+                        updateScrollbars();
+                        invalidate();
+                    }
+                }
+                return true;
+            case EditorActions.ScrollLineUp:
+                {
+                    if (_firstVisibleLine > 0) {
+                        _firstVisibleLine -= 3;
+                        if (_firstVisibleLine < 0)
+                            _firstVisibleLine = 0;
+                        measureVisibleText();
+                        updateScrollbars();
+                        invalidate();
+                    }
+                }
+                return true;
+            case EditorActions.ScrollPageUp:
+                {
+                    int fullLines = _clientRc.height / _lineHeight;
+                    if (_firstVisibleLine > 0) {
+                        _firstVisibleLine -= fullLines * 3 / 4;
+                        if (_firstVisibleLine < 0)
+                            _firstVisibleLine = 0;
+                        measureVisibleText();
+                        updateScrollbars();
+                        invalidate();
+                    }
+                }
+                return true;
+            case EditorActions.ScrollLineDown:
+                {
+                    int fullLines = _clientRc.height / _lineHeight;
+                    if (_firstVisibleLine + fullLines < _content.length) {
+                        _firstVisibleLine += 3;
+                        if (_firstVisibleLine > _content.length - fullLines)
+                            _firstVisibleLine = _content.length - fullLines;
+                        if (_firstVisibleLine < 0)
+                            _firstVisibleLine = 0;
+                        measureVisibleText();
+                        updateScrollbars();
+                        invalidate();
+                    }
+                }
+                return true;
+            case EditorActions.ScrollPageDown:
+                {
+                    int fullLines = _clientRc.height / _lineHeight;
+                    if (_firstVisibleLine + fullLines < _content.length) {
+                        _firstVisibleLine += fullLines * 3 / 4;
+                        if (_firstVisibleLine > _content.length - fullLines)
+                            _firstVisibleLine = _content.length - fullLines;
+                        if (_firstVisibleLine < 0)
+                            _firstVisibleLine = 0;
+                        measureVisibleText();
+                        updateScrollbars();
+                        invalidate();
+                    }
+                }
+                return true;
+            case EditorActions.ZoomIn:
+                {
+                    if (_minFontSize < _maxFontSize && _minFontSize > 10 && _maxFontSize > 10) {
+                        int currentFontSize = fontSize;
+                        int newFontSize = currentFontSize * 110 / 100;
+                        if (currentFontSize != newFontSize && newFontSize <= _maxFontSize) {
+                            fontSize = cast(ushort)newFontSize;
+                            updateFontProps();
+                            measureVisibleText();
+                            updateScrollbars();
+                            invalidate();
+                        }
+                    }
+                }
+                return true;
+            case EditorActions.ZoomOut:
+                {
+                    if (_minFontSize < _maxFontSize && _minFontSize > 10 && _maxFontSize > 10) {
+                        int currentFontSize = fontSize;
+                        int newFontSize = currentFontSize * 100 / 110;
+                        if (currentFontSize != newFontSize && newFontSize >= _minFontSize) {
+                            fontSize = cast(ushort)newFontSize;
+                            updateFontProps();
+                            measureVisibleText();
+                            updateScrollbars();
+                            invalidate();
+                        }
+                    }
+                }
+                return true;
             default:
                 break;
 		}

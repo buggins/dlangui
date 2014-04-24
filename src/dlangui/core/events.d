@@ -36,6 +36,9 @@ class Action {
     protected UIString _label;
     protected string _iconId;
 	protected Accelerator[] _accelerators;
+    this(int id) {
+        _id = id;
+    }
     this(int id, string labelResourceId, string iconResourceId = null) {
         _id = id;
         _label = labelResourceId;
