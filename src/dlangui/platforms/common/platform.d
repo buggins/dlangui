@@ -231,6 +231,14 @@ class Window {
 
     /// dispatch keyboard event
     bool dispatchKeyEvent(KeyEvent event) {
+        if (event.action == KeyAction.Text) {
+            // filter text
+            if (event.text.length < 1)
+                return false;
+            dchar ch = event.text[0];
+            if (ch < ' ' || ch == 0x7F) // filter out control symbols
+                return false;
+        }
         Widget focus = focusedWidget;
         if (focus !is null) {
             if (focus.onKeyEvent(event))

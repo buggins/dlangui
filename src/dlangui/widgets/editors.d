@@ -598,7 +598,8 @@ class EditableContent {
             throw new Exception("content is readonly");
         if (op.action == EditAction.Replace) {
 			TextRange rangeBefore = op.range;
-            correctRange(rangeBefore);
+            assert(rangeBefore.start <= rangeBefore.end);
+            //correctRange(rangeBefore);
             dstring[] oldcontent = rangeText(rangeBefore);
             dstring[] newcontent = op.content;
             if (newcontent.length == 0)
@@ -613,6 +614,7 @@ class EditableContent {
                 // same line
                 rangeAfter.end.pos = rangeAfter.start.pos + cast(int)newcontent[0].length;
             }
+            assert(rangeAfter.start <= rangeAfter.end);
             op.newRange = rangeAfter;
             op.oldContent = oldcontent;
             replaceRange(rangeBefore, rangeAfter, newcontent);
@@ -980,6 +982,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
     }
 
 	override void onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source) {
+        Log.d("onContentChange rangeBefore=", rangeBefore, " rangeAfter=", rangeAfter, " text=", operation.content);
         updateMaxLineWidth();
 		measureVisibleText();
         if (source is this) {
@@ -1169,10 +1172,12 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
     protected bool removeRangeText(TextRange range) {
         if (range.empty)
             return false;
-        _selectionRange = range;
-        _caretPos = _selectionRange.end;
+        //_selectionRange = range;
+        //_caretPos = _selectionRange.end;
         EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
         _content.performOperation(op, this);
+        //_selectionRange.start = _caretPos;
+        //_selectionRange.end = _caretPos;
         ensureCaretVisible();
         return true;
     }
@@ -1271,9 +1276,8 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                 if (removeSelectionTextIfSelected()) // clear selection
                     return true;
                 TextPosition newpos = _content.moveByWord(_caretPos, -1, _camelCasePartsAsWords);
-                if (newpos != _caretPos) {
+                if (newpos < _caretPos)
                     removeRangeText(TextRange(newpos, _caretPos));
-                }
                 return true;
             case EditorActions.DelNextWord:
                 if (readOnly)
@@ -1282,9 +1286,8 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                 if (removeSelectionTextIfSelected()) // clear selection
                     return true;
                 TextPosition newpos = _content.moveByWord(_caretPos, 1, _camelCasePartsAsWords);
-                if (newpos != _caretPos) {
+                if (newpos > _caretPos)
                     removeRangeText(TextRange(_caretPos, newpos));
-                }
                 return true;
             case EditorActions.DelPrevChar:
                 if (readOnly)
@@ -1557,18 +1560,16 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
             if (readOnly)
                 return true;
 			dchar ch = event.text[0];
-			if (ch >= 32) { // ignore Backspace, Tab, Return, etc. chars
-                if (replaceMode && _selectionRange.empty && _content[_caretPos.line].length >= _caretPos.pos + event.text.length) {
-                    // replace next char(s)
-                    TextRange range = _selectionRange;
-                    range.end.pos += cast(int)event.text.length;
-				    EditOperation op = new EditOperation(EditAction.Replace, range, [event.text]);
-				    _content.performOperation(op, this);
-                } else {
-				    EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [event.text]);
-				    _content.performOperation(op, this);
-                }
-			}
+            if (replaceMode && _selectionRange.empty && _content[_caretPos.line].length >= _caretPos.pos + event.text.length) {
+                // replace next char(s)
+                TextRange range = _selectionRange;
+                range.end.pos += cast(int)event.text.length;
+				EditOperation op = new EditOperation(EditAction.Replace, range, [event.text]);
+				_content.performOperation(op, this);
+            } else {
+				EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [event.text]);
+				_content.performOperation(op, this);
+            }
             return true;
 		}
 		return super.onKeyEvent(event);
