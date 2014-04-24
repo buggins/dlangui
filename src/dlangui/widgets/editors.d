@@ -258,8 +258,9 @@ class UndoBuffer {
     }
 }
 
+/// Editable Content change listener
 interface EditableContentListener {
-	bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter);
+	bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source);
 }
 
 /// editable plain text (singleline/multiline)
@@ -332,8 +333,8 @@ class EditableContent {
         return m;
     }
 
-	bool handleContentChange(EditOperation op, ref TextRange rangeBefore, ref TextRange rangeAfter) {
-		return contentChangeListeners(this, op, rangeBefore, rangeAfter);
+	bool handleContentChange(EditOperation op, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source) {
+		return contentChangeListeners(this, op, rangeBefore, rangeAfter, source);
 	}
 
     /// return text for specified range
@@ -415,7 +416,7 @@ class EditableContent {
         }
     }
 
-	bool performOperation(EditOperation op) {
+	bool performOperation(EditOperation op, Object source) {
         if (op.action == EditAction.Replace) {
 			TextRange rangeBefore = op.range;
             dstring[] oldcontent = rangeText(rangeBefore);
@@ -435,7 +436,7 @@ class EditableContent {
             op.newRange = rangeAfter;
             op.oldContent = oldcontent;
             replaceRange(rangeBefore, rangeAfter, newcontent);
-			handleContentChange(op, rangeBefore, rangeAfter);
+			handleContentChange(op, rangeBefore, rangeAfter, source);
             _undoBuffer.saveForUndo(op);
 			return true;
         }
@@ -461,7 +462,7 @@ class EditableContent {
         TextRange rangeAfter = op.range;
         //Log.d("Undoing op rangeBefore=", rangeBefore, " contentBefore=`", oldcontent, "` rangeAfter=", rangeAfter, " contentAfter=`", newcontent, "`");
         replaceRange(rangeBefore, rangeAfter, newcontent);
-        handleContentChange(op, rangeBefore, rangeAfter);
+        handleContentChange(op, rangeBefore, rangeAfter, this);
         return true;
     }
     /// redoes last undone change
@@ -475,7 +476,7 @@ class EditableContent {
         TextRange rangeAfter = op.newRange;
         //Log.d("Redoing op rangeBefore=", rangeBefore, " contentBefore=`", oldcontent, "` rangeAfter=", rangeAfter, " contentAfter=`", newcontent, "`");
         replaceRange(rangeBefore, rangeAfter, newcontent);
-        handleContentChange(op, rangeBefore, rangeAfter);
+        handleContentChange(op, rangeBefore, rangeAfter, this);
         return true;
     }
     /// clear undo/redp history
@@ -593,6 +594,11 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
     protected bool _useSpacesForTabs = false;
 
     protected bool _replaceMode;
+
+    // TODO: move to styles
+    protected uint _selectionColorFocused = 0xB060A0FF;
+    protected uint _selectionColorNormal = 0xD060A0FF;
+
 
     this(string ID) {
         super(ID);
@@ -760,12 +766,17 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
     protected void updateMaxLineWidth() {
     }
 
-	override bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter) {
+	override bool onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source) {
         updateMaxLineWidth();
 		measureVisibleText();
-		_caretPos = rangeAfter.end;
-        _selectionRange.start = _caretPos;
-        _selectionRange.end = _caretPos;
+        if (source is this) {
+		    _caretPos = rangeAfter.end;
+            _selectionRange.start = _caretPos;
+            _selectionRange.end = _caretPos;
+        } else {
+            correctCaretPos();
+            // TODO: do something better (e.g. take into account ranges when correcting)
+        }
         ensureCaretVisible();
 		invalidate();
 		return true;
@@ -1014,7 +1025,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                 if (!_selectionRange.empty) {
                     // clear selection
                     EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d]);
-                    _content.performOperation(op);
+                    _content.performOperation(op, this);
                     ensureCaretVisible();
                     return true;
                 }
@@ -1024,7 +1035,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                     TextRange range = TextRange(_caretPos, _caretPos);
                     range.start.pos--;
                     EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
-                    _content.performOperation(op);
+                    _content.performOperation(op, this);
                 } else if (_caretPos.line > 0) {
                     // merge with previous line
                     TextRange range = TextRange(_caretPos, _caretPos);
@@ -1032,7 +1043,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                     dstring prevLine = _content[range.start.line];
                     range.start.pos = cast(int)prevLine.length;
                     EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
-                    _content.performOperation(op);
+                    _content.performOperation(op, this);
                 }
                 return true;
             case EditorActions.DelNextChar:
@@ -1040,7 +1051,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                     return true;
                 if (!_selectionRange.empty) {
                     EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d]);
-                    _content.performOperation(op);
+                    _content.performOperation(op, this);
                     return true;
                 }
                 correctCaretPos();
@@ -1049,14 +1060,14 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                     TextRange range = TextRange(_caretPos, _caretPos);
                     range.end.pos++;
                     EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
-                    _content.performOperation(op);
+                    _content.performOperation(op, this);
                 } else if (_caretPos.line < _content.length - 1) {
                     // merge with next line
                     TextRange range = TextRange(_caretPos, _caretPos);
                     range.end.line++;
                     range.end.pos = 0;
                     EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
-                    _content.performOperation(op);
+                    _content.performOperation(op, this);
                 }
                 return true;
             case EditorActions.Copy:
@@ -1072,7 +1083,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                     if (readOnly)
                         return true;
                     EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d]);
-                    _content.performOperation(op);
+                    _content.performOperation(op, this);
                 }
                 return true;
             case EditorActions.Paste:
@@ -1087,7 +1098,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                         lines = [replaceEolsWithSpaces(selectionText)];
                     }
                     EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, lines);
-                    _content.performOperation(op);
+                    _content.performOperation(op, this);
                 }
                 return true;
             case EditorActions.Undo:
@@ -1112,11 +1123,11 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                         if (_useSpacesForTabs) {
                             // insert one or more spaces to 
                             EditOperation op = new EditOperation(EditAction.Replace, TextRange(_caretPos, _caretPos), [spacesForTab(_caretPos.pos)]);
-                            _content.performOperation(op);
+                            _content.performOperation(op, this);
                         } else {
                             // just insert tab character
                             EditOperation op = new EditOperation(EditAction.Replace, TextRange(_caretPos, _caretPos), ["\t"d]);
-                            _content.performOperation(op);
+                            _content.performOperation(op, this);
                         }
                     } else {
                         if (wholeLinesSelected()) {
@@ -1127,11 +1138,11 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                             if (_useSpacesForTabs) {
                                 // insert one or more spaces to 
                                 EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [spacesForTab(_selectionRange.start.pos)]);
-                                _content.performOperation(op);
+                                _content.performOperation(op, this);
                             } else {
                                 // just insert tab character
                                 EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, ["\t"d]);
-                                _content.performOperation(op);
+                                _content.performOperation(op, this);
                             }
                         }
 
@@ -1147,7 +1158,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                         TextRange r = spaceBefore(_caretPos);
                         if (!r.empty) {
                             EditOperation op = new EditOperation(EditAction.Replace, r, [""d]);
-                            _content.performOperation(op);
+                            _content.performOperation(op, this);
                         }
                     } else {
                         if (wholeLinesSelected()) {
@@ -1161,7 +1172,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                                 TextRange saveRange = _selectionRange;
                                 TextPosition saveCursor = _caretPos;
                                 EditOperation op = new EditOperation(EditAction.Replace, r, [""d]);
-                                _content.performOperation(op);
+                                _content.performOperation(op, this);
                                 if (saveCursor.line == saveRange.start.line)
                                     saveCursor.pos -= nchars;
                                 if (saveRange.end.line == saveRange.start.line)
@@ -1264,7 +1275,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
             TextRange saveRange = _selectionRange;
             TextPosition saveCursor = _caretPos;
             EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, newContent);
-            _content.performOperation(op);
+            _content.performOperation(op, this);
             _selectionRange = saveRange;
             _caretPos = saveCursor;
             ensureCaretVisible();
@@ -1292,10 +1303,10 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                     TextRange range = _selectionRange;
                     range.end.pos += cast(int)event.text.length;
 				    EditOperation op = new EditOperation(EditAction.Replace, range, [event.text]);
-				    _content.performOperation(op);
+				    _content.performOperation(op, this);
                 } else {
 				    EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [event.text]);
-				    _content.performOperation(op);
+				    _content.performOperation(op, this);
                 }
 			}
             return true;
@@ -1459,6 +1470,7 @@ class EditLine : EditWidgetBase {
         applyPadding(_clientRc);
     }
 
+
     /// override to custom highlight of line background
     protected void drawLineBackground(DrawBuf buf, Rect lineRect, Rect visibleRect) {
         if (!_selectionRange.empty) {
@@ -1472,7 +1484,7 @@ class EditLine : EditWidgetBase {
             rc.right = endx;
             if (!rc.empty) {
                 // draw selection rect for line
-                buf.fillRect(rc, 0xB060A0FF);
+                buf.fillRect(rc, focused ? _selectionColorFocused : _selectionColorNormal);
             }
         }
     }
@@ -1687,14 +1699,14 @@ class EditBox : EditWidgetBase, OnScrollHandler {
                     correctCaretPos();
                     _caretPos.pos = 0;
                     EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d, ""d]);
-                    _content.performOperation(op);
+                    _content.performOperation(op, this);
                 }
                 return true;
             case EditorActions.InsertNewLine:
                 {
                     correctCaretPos();
                     EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d, ""d]);
-                    _content.performOperation(op);
+                    _content.performOperation(op, this);
                 }
                 return true;
             case EditorActions.Up:
@@ -1852,7 +1864,7 @@ class EditBox : EditWidgetBase, OnScrollHandler {
             rc.right = endx;
             if (!rc.empty) {
                 // draw selection rect for line
-                buf.fillRect(rc, 0xB060A0FF);
+                buf.fillRect(rc, focused ? _selectionColorFocused : _selectionColorNormal);
             }
         }
 
