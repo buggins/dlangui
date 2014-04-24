@@ -571,7 +571,7 @@ class EditableContent {
             // forward
             if (p.pos >= linelen) {
                 // last position of line
-                if (p.line < length)
+                if (p.line < length - 1)
                     p = firstNonSpace(p.line + 1);
             } else if (p.pos >= lastns.pos) { // before first nonspace
                 // to beginning of line
