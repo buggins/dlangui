@@ -461,14 +461,24 @@ class EditableContent {
         for (int i = after.start.line; i <= after.end.line; i++) {
             dstring newline = newContent[i - after.start.line];
             if (i == after.start.line && i == after.end.line) {
+                dchar[] buf;
+                buf ~= firstLineHead;
+                buf ~= newline;
+                buf ~= lastLineTail;
                 //Log.d("merging lines ", firstLineHead, " ", newline, " ", lastLineTail);
-                _lines[i] = (firstLineHead ~ newline ~ lastLineTail).dup;
+                _lines[i] = cast(dstring)buf;
                 //Log.d("merge result: ", _lines[i]);
-            } else if (i == after.start.line)
-                _lines[i] = (firstLineHead ~ newline).dup;
-            else if (i == after.end.line)
-                _lines[i] = (newline ~ lastLineTail).dup;
-            else
+            } else if (i == after.start.line) {
+                dchar[] buf;
+                buf ~= firstLineHead;
+                buf ~= newline;
+                _lines[i] = cast(dstring)buf;
+            } else if (i == after.end.line) {
+                dchar[] buf;
+                buf ~= newline;
+                buf ~= lastLineTail;
+                _lines[i] = cast(dstring)buf;
+            } else
                 _lines[i] = newline; // no dup needed
         }
     }
@@ -1172,8 +1182,8 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
     protected bool removeRangeText(TextRange range) {
         if (range.empty)
             return false;
-        //_selectionRange = range;
-        //_caretPos = _selectionRange.end;
+        _selectionRange = range;
+        _caretPos = _selectionRange.start;
         EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
         _content.performOperation(op, this);
         //_selectionRange.start = _caretPos;
