@@ -567,6 +567,12 @@ enum EditorActions {
     Undo,
     /// Redo last undoed change
     Redo,
+
+    /// Tab (e.g., Tab key to insert tab character or indent text)
+    Tab,
+    /// Tab (unindent text, or remove whitespace before cursor, usually Shift+Tab)
+    BackTab,
+
 }
 
 /// base for all editor widgets
@@ -579,6 +585,10 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
     protected bool _fixedFont;
     protected int _spaceWidth;
     protected int _tabSize = 4;
+
+    protected bool _wantTabs = true;
+    protected bool _useSpacesForTabs = false;
+
 
     this(string ID) {
         super(ID);
@@ -639,7 +649,49 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 			new Action(EditorActions.Redo, KeyCode.KEY_Y, KeyFlag.Control),
 			new Action(EditorActions.Redo, KeyCode.KEY_Z, KeyFlag.Control|KeyFlag.Shift),
 
+			new Action(EditorActions.Tab, KeyCode.TAB, 0),
+			new Action(EditorActions.BackTab, KeyCode.TAB, KeyFlag.Shift),
 		]);
+    }
+
+    /// when true, Tab / Shift+Tab presses are processed internally in widget (e.g. insert tab character) instead of focus change navigation.
+    @property bool wantTabs() {
+        return _wantTabs;
+    }
+
+    /// sets tab size (in number of spaces)
+    @property EditWidgetBase wantTabs(bool wantTabs) {
+        _wantTabs = wantTabs;
+        return this;
+    }
+
+    /// when true, spaces will be inserted instead of tabs
+    @property bool useSpacesForTabs() {
+        return _useSpacesForTabs;
+    }
+
+    /// set new Tab key behavior flag: when true, spaces will be inserted instead of tabs
+    @property EditWidgetBase useSpacesForTabs(bool useSpacesForTabs) {
+        _useSpacesForTabs = useSpacesForTabs;
+        return this;
+    }
+
+    /// returns tab size (in number of spaces)
+    @property int tabSize() {
+        return _tabSize;
+    }
+
+    /// sets tab size (in number of spaces)
+    @property EditWidgetBase tabSize(int newTabSize) {
+        if (newTabSize < 1)
+            newTabSize = 1;
+        else if (newTabSize > 16)
+            newTabSize = 16;
+        if (newTabSize != _tabSize) {
+            _tabSize = newTabSize;
+            requestLayout();
+        }
+        return this;
     }
 
     protected void updateMaxLineWidth() {
@@ -773,6 +825,19 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
             updateSelectionAfterCursorMovement(oldCaretPos, selecting);
             invalidate();
         }
+    }
+
+    /// generate string of spaces, to reach next tab position
+    protected dstring spacesForTab(int currentPos) {
+        int newPos = (currentPos + tabSize + 1) / tabSize * tabSize;
+        return "                "d[0..(newPos - currentPos)];
+    }
+
+    /// returns true if one or more lines selected fully
+    protected bool wholeLinesSelected() {
+        return _selectionRange.end.line > _selectionRange.start.line 
+            && _selectionRange.end.pos == 0 
+            && _selectionRange.start.pos == 0;
     }
 
 	override protected bool handleAction(Action a) {
@@ -924,11 +989,118 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                     _content.redo();
                 }
                 return true;
+            case EditorActions.Tab:
+                {
+                    if (_selectionRange.empty) {
+                        if (_useSpacesForTabs) {
+                            // insert one or more spaces to 
+                            EditOperation op = new EditOperation(EditAction.Replace, TextRange(_caretPos, _caretPos), [spacesForTab(_caretPos.pos)]);
+                            _content.performOperation(op);
+                        } else {
+                            // just insert tab character
+                            EditOperation op = new EditOperation(EditAction.Replace, TextRange(_caretPos, _caretPos), ["\t"d]);
+                            _content.performOperation(op);
+                        }
+                    } else {
+                        if (wholeLinesSelected()) {
+                            // indent range
+                            indentRange(false);
+                        } else {
+                            // insert tab
+                            if (_useSpacesForTabs) {
+                                // insert one or more spaces to 
+                                EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [spacesForTab(_selectionRange.start.pos)]);
+                                _content.performOperation(op);
+                            } else {
+                                // just insert tab character
+                                EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, ["\t"d]);
+                                _content.performOperation(op);
+                            }
+                        }
+
+                    }
+                }
+                return true;
+            case EditorActions.BackTab:
+                {
+                    if (_selectionRange.empty) {
+                        // remove spaces before caret
+                    } else {
+                        if (wholeLinesSelected()) {
+                            // unindent range
+                            indentRange(true);
+                        } else {
+                            // remove space before selection
+                        }
+                    }
+                }
+                return true;
 			default:
 				break;
 		}
 		return super.handleAction(a);
 	}
+
+    /// change line indent
+    protected dstring indentLine(dstring src, bool back) {
+        int firstNonSpace = -1;
+        int x = 0;
+        int unindentPos = -1;
+        for (int i = 0; i < src.length; i++) {
+            dchar ch = src[i];
+            if (ch == ' ') {
+                x++;
+            } else if (ch == '\t') {
+                x = (x + tabSize + 1) / tabSize * tabSize;
+            } else {
+                firstNonSpace = i;
+                break;
+            }
+            if (x <= tabSize)
+                unindentPos = i + 1;
+        }
+        if (firstNonSpace == -1) // only spaces or empty line -- do not change it
+            return src;
+        if (back) {
+            // unindent
+            if (unindentPos == -1)
+                return src; // no change
+            if (unindentPos == src.length)
+                return ""d;
+            return src[unindentPos .. $].dup;
+        } else {
+            // indent
+            if (_useSpacesForTabs) {
+                return spacesForTab(0) ~ src;
+            } else {
+                return "\t"d ~ src;
+            }
+        }
+        return src;
+    }
+
+    /// indent / unindent range
+    protected void indentRange(bool back) {
+        int lineCount = _selectionRange.end.line - _selectionRange.start.line;
+        dstring[] newContent = new dstring[lineCount + 1];
+        bool changed = false;
+        for (int i = 0; i < lineCount; i++) {
+            dstring srcline = _content.line(_selectionRange.start.line + i);
+            dstring dstline = indentLine(srcline, back);
+            newContent[i] = dstline;
+            if (dstline.length != srcline.length)
+                changed = true;
+        }
+        if (changed) {
+            TextRange saveRange = _selectionRange;
+            TextPosition saveCursor = _caretPos;
+            EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, newContent);
+            _content.performOperation(op);
+            _selectionRange = saveRange;
+            _caretPos = saveCursor;
+            ensureCaretVisible();
+        }
+    }
 
 	/// handle keys
 	override bool onKeyEvent(KeyEvent event) {
@@ -941,7 +1113,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 		} else if (event.action == KeyAction.Text && event.text.length) {
 			Log.d("text entered: ", event.text);
 			dchar ch = event.text[0];
-			if (ch >= 32 || ch == '\t') { // ignore Backspace and Return
+			if (ch >= 32) { // ignore Backspace and Return
 				EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [event.text]);
 				_content.performOperation(op);
 				return true;
@@ -987,6 +1159,7 @@ class EditLine : EditWidgetBase {
         super(ID);
         _content = new EditableContent(false);
 		_content.contentChangeListeners = this;
+        wantTabs = false;
         styleId = "EDIT_LINE";
         text = initialContent;
     }

@@ -194,7 +194,7 @@ class Win32Font : Font {
         lf.lfCharSet = ANSI_CHARSET; //DEFAULT_CHARSET;
 		lf.lfFaceName[0..def.face.length] = def.face;
 		lf.lfFaceName[def.face.length] = 0;
-		lf.lfHeight = -size;
+		lf.lfHeight = size; //-size;
 		lf.lfItalic = italic;
 		lf.lfOutPrecision = OUT_OUTLINE_PRECIS; //OUT_TT_ONLY_PRECIS;
 		lf.lfClipPrecision = CLIP_DEFAULT_PRECIS;
