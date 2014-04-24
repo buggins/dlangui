@@ -1286,6 +1286,7 @@ class EditLine : EditWidgetBase {
 
 	override protected bool handleAction(Action a) {
 		switch (a.id) {
+            /*
             case EditorActions.DelPrevChar:
                 if (_caretPos.pos > 0) {
                     TextRange range = TextRange(_caretPos, _caretPos);
@@ -1302,6 +1303,7 @@ class EditLine : EditWidgetBase {
                     _content.performOperation(op);
                 }
                 return true;
+            */
             case EditorActions.Up:
                 break;
             case EditorActions.Down:
@@ -1345,6 +1347,24 @@ class EditLine : EditWidgetBase {
         applyPadding(_clientRc);
     }
 
+    /// override to custom highlight of line background
+    protected void drawLineBackground(DrawBuf buf, Rect lineRect, Rect visibleRect) {
+        if (!_selectionRange.empty) {
+            // line inside selection
+            Rect startrc = textPosToClient(_selectionRange.start);
+            Rect endrc = textPosToClient(_selectionRange.end);
+            int startx = startrc.left + _clientRc.left;
+            int endx = endrc.left + _clientRc.left;
+            Rect rc = lineRect;
+            rc.left = startx;
+            rc.right = endx;
+            if (!rc.empty) {
+                // draw selection rect for line
+                buf.fillRect(rc, 0xB060A0FF);
+            }
+        }
+    }
+
     /// draw content
     override void onDraw(DrawBuf buf) {
         if (visibility != Visibility.Visible)
@@ -1358,6 +1378,13 @@ class EditLine : EditWidgetBase {
         dstring txt = text;
         Point sz = font.textSize(txt);
         //applyAlign(rc, sz);
+        Rect lineRect = _clientRc;
+        lineRect.left = _clientRc.left - _scrollPos.x;
+        lineRect.right = lineRect.left + calcLineWidth(txt);
+        Rect visibleRect = lineRect;
+        visibleRect.left = _clientRc.left;
+        visibleRect.right = _clientRc.right;
+        drawLineBackground(buf, lineRect, visibleRect);
         font.drawText(buf, rc.left - _scrollPos.x, rc.top + sz.y / 10, txt, textColor, tabSize);
         if (focused) {
             // draw caret
