@@ -368,64 +368,7 @@ class FreeTypeFont : Font {
         return glyph;
 	}
 
-	// draw text string to buffer
-	override void drawText(DrawBuf buf, int x, int y, const dchar[] text, uint color) {
-		int[] widths;
-        int bl = baseline;
-        int xx = 0;
-		for (int i = 0; i < text.length; i++) {
-			Glyph * glyph = getCharGlyph(text[i], true);
-			if (glyph is null)
-				continue;
-			if ( glyph.blackBoxX && glyph.blackBoxY ) {
-                int x0 = x + xx + glyph.originX;
-                int y0 = y + bl - glyph.originY;
-                if (x0 > buf.width)
-                    break; // outside right bound
-                Rect rc = Rect(x0, y0, x0 + glyph.blackBoxX, y0 + glyph.blackBoxY);
-                if (buf.applyClipping(rc))
-				    buf.drawGlyph( x0,
-                               y0,
-                              glyph,
-                              color);
-			}
-            xx += glyph.width;
-		}
-	}
-
-	override int measureText(const dchar[] text, ref int[] widths, int maxWidth) {
-		if (text.length == 0)
-			return 0;
-		const dchar * pstr = text.ptr;
-		uint len = cast(uint)text.length;
-        int x = 0;
-        int charsMeasured = 0;
-        int * pwidths = widths.ptr;
-		for (int i = 0; i < len; i++) {
-            //auto measureStart = std.datetime.Clock.currAppTick;
-			Glyph * glyph = getCharGlyph(pstr[i], true); // TODO: what is better
-            //auto measureEnd = std.datetime.Clock.currAppTick;
-            //auto duration = measureEnd - measureStart;
-            //if (duration.length > 10)
-            //    Log.d("ft measureText took ", duration.length, " ticks");
-			if (glyph is null) {
-                // if no glyph, use previous width - treat as zero width
-                pwidths[i] = i > 0 ? pwidths[i-1] : 0;
-				continue;
-            }
-            int w = x + glyph.width; // using advance
-            int w2 = x + glyph.originX + glyph.blackBoxX; // using black box
-            if (w < w2) // choose bigger value
-                w = w2;
-            pwidths[i] = w;
-            x += glyph.width;
-            charsMeasured = i + 1;
-            if (x > maxWidth)
-                break;
-        }
-		return charsMeasured;
-	}
-
+    /// load font files
 	bool create() {
         if (!isNull())
             clear();
@@ -438,12 +381,12 @@ class FreeTypeFont : Font {
 		return _files.length > 0;
 	}
 
-	// clear usage flags for all entries
+	/// clear usage flags for all entries
 	override void checkpoint() {
 		_glyphCache.checkpoint();
 	}
 
-	// removes entries not used after last call of checkpoint() or cleanup()
+	/// removes entries not used after last call of checkpoint() or cleanup()
 	override void cleanup() {
 		_glyphCache.cleanup();
 	}

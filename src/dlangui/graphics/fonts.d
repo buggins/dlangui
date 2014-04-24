@@ -26,11 +26,17 @@ import std.algorithm;
 
 /// font family
 enum FontFamily : ubyte {
+    /// Unknown / not set / does not matter
     Unspecified,
+    /// Sans Serif font, e.g. Arial
     SansSerif,
+    /// Serif font, e.g. Times New Roman
     Serif,
+    /// Fantasy font
 	Fantasy,
+    /// Cursive font
 	Cursive,
+    /// Monospace font (fixed pitch font), e.g. Courier New
     MonoSpace
 }
 
@@ -40,11 +46,12 @@ enum FontWeight : int {
     Bold = 800
 }
 
-const dchar UNICODE_SOFT_HYPHEN_CODE = 0x00ad;
-const dchar UNICODE_ZERO_WIDTH_SPACE = 0x200b;
-const dchar UNICODE_NO_BREAK_SPACE = 0x00a0;
-const dchar UNICODE_HYPHEN = 0x2010;
-const dchar UNICODE_NB_HYPHEN = 0x2011;
+immutable dchar UNICODE_SOFT_HYPHEN_CODE = 0x00ad;
+immutable dchar UNICODE_ZERO_WIDTH_SPACE = 0x200b;
+immutable dchar UNICODE_NO_BREAK_SPACE = 0x00a0;
+immutable dchar UNICODE_HYPHEN = 0x2010;
+immutable dchar UNICODE_NB_HYPHEN = 0x2011;
+
 
 version (USE_OPENGL) {
     private __gshared void function(uint id) _glyphDestroyCallback;
@@ -54,15 +61,27 @@ version (USE_OPENGL) {
     @property void glyphDestroyCallback(void function(uint id) callback) { _glyphDestroyCallback = callback; }
 
     private __gshared uint _nextGlyphId;
+    /// ID generator for glyphs
     uint nextGlyphId() { return _nextGlyphId++; }
 }
 
-/// glyph image cache
+/***************************************
+ * Glyph image cache
+ *
+ *
+ * Recently used glyphs are marked with glyph.lastUsage = 1
+ * 
+ * checkpoint() call clears usage marks
+ *
+ * cleanup() removes all items not accessed since last checkpoint()
+ *
+ ***************************************/
 struct GlyphCache
 {
     alias glyph_ptr = Glyph*;
     private glyph_ptr[][1024] _glyphs;
 
+    /// try to find glyph for character in cache, returns null if not found
 	Glyph * find(dchar ch) {
         ch = ch & 0xF_FFFF;
         //if (_array is null)
@@ -78,7 +97,8 @@ struct GlyphCache
         res.lastUsage = 1;
         return res;
     }
-	/// put glyph to cache
+
+	/// put character glyph to cache
 	Glyph * put(dchar ch, Glyph * glyph) {
         ch = ch & 0xF_FFFF;
         uint p = ch >> 8;
@@ -108,7 +128,7 @@ struct GlyphCache
         }
 	}
 
-	// clear usage flags for all entries
+	/// clear usage flags for all entries
 	void checkpoint() {
         foreach(part; _glyphs) {
             if (part !is null)
@@ -119,7 +139,7 @@ struct GlyphCache
         }
     }
 
-	/// removes all entries
+	/// removes all entries (notify OpenGL cache about removed glyphs)
 	void clear() {
         foreach(part; _glyphs) {
             if (part !is null)
@@ -136,174 +156,12 @@ struct GlyphCache
                 }
         }
 	}
+    /// on destroy, destroy all items (notify OpenGL cache about removed glyphs)
 	~this() {
 		clear();
 	}
 }
 
-/*
-/// font glyph cache
-struct GlyphCache
-{
-	//Glyph[ushort] _map;
-    Glyph[][256] _glyphs;
-
-	//Glyph[] _array;
-
-	// find glyph in cache
-	Glyph * find(ushort glyphIndex) {
-        //if (_array is null)
-        //    _array = new Glyph[0x10000];
-        ushort p = glyphIndex >> 8;
-        if (_glyphs[p] is null)
-            return null;
-        ushort i = glyphIndex & 0xFF;
-        if (_glyphs[p][i].glyphIndex == 0)
-			return null;
-        return &_glyphs[p][i];
-        //if (_array[glyphIndex].glyphIndex)
-        //    return &_array[glyphIndex];
-        //return null;
-		
-        //Glyph * res = (glyphIndex in _map);
-        //if (res !is null)
-        //    res.lastUsage = 1;
-        //return res;
-	}
-
-	/// put glyph to cache
-	Glyph * put(ushort glyphIndex, Glyph * glyph) {
-        ushort p = glyphIndex >> 8;
-        ushort i = glyphIndex & 0xFF;
-        if (_glyphs[p] is null)
-            _glyphs[p] = new Glyph[256];
-        _glyphs[p][i] = *glyph;
-        return &_glyphs[p][i]; // = *glyph;
-
-        //_array[glyphIndex] = *glyph;
-        //return &_array[glyphIndex];
-
-        //_map[glyphIndex] = *glyph;
-        //Glyph * res = glyphIndex in _map;
-        //res.lastUsage = 1;
-        //return res;
-	}
-
-	// clear usage flags for all entries
-	void checkpoint() {
-        //foreach(ref Glyph item; _map) {
-        //    item.lastUsage = 0;
-        //}
-        foreach(ref Glyph[] part; _glyphs) {
-            if (part !is null)
-                foreach(ref Glyph item; part) {
-                    item.lastUsage = 0;
-                }
-		}
-        //foreach(ref Glyph item; _array) {
-        //    item.lastUsage = 0;
-        //}
-	}
-
-	/// removes entries not used after last call of checkpoint() or cleanup()
-	void cleanup() {
-		//uint dst = 0;
-        // notify about destroyed glyphs
-        version (USE_OPENGL) {
-            if (_glyphDestroyCallback !is null) {
-                foreach(ref Glyph[] part; _glyphs) {
-                    if (part !is null)
-                        foreach(ref Glyph item; part) {
-                            if (item.lastUsage == 0 && item.glyphIndex)
-                                _glyphDestroyCallback(item.id);
-                        }
-                }
-                //foreach(ref Glyph item; _map) {
-                //    if (item.lastUsage == 0)
-                //        _glyphDestroyCallback(item.id);
-                //}
-            }
-        }
-        //ushort[] forDelete;
-        //foreach(ref Glyph item; _map)
-        //    if (item.lastUsage == 0)
-        //        forDelete ~= item.glyphIndex;
-        //foreach(ushort index; forDelete)
-        //    _map.remove(index);
-        foreach(ref Glyph[] part; _glyphs) {
-            if (part !is null)
-                foreach(ref Glyph item; part) {
-                    if (item.lastUsage == 0 && item.glyphIndex) {
-                        item.glyphIndex = 0;
-                        item.glyph = null;
-                        version (USE_OPENGL) {
-                            item.id = 0;
-                        }
-                    }
-                }
-        }
-        //foreach(ref Glyph item; _array) {
-        //    if (item.lastUsage == 0 && item.glyphIndex) {
-        //        item.glyphIndex = 0;
-        //        item.glyph = null;
-        //        item.id = 0;
-        //    }
-        //}
-	}
-
-	/// removes all entries
-	void clear() {
-        // notify about destroyed glyphs
-        version (USE_OPENGL) {
-            if (_glyphDestroyCallback !is null) {
-                foreach(ref Glyph[] part; _glyphs) {
-                    if (part !is null)
-                        foreach(ref Glyph item; part) {
-                            if (item.glyphIndex)
-                                _glyphDestroyCallback(item.id);
-                        }
-                }
-            }
-        }
-        foreach(ref Glyph[] part; _glyphs) {
-            if (part !is null)
-                foreach(ref Glyph item; part) {
-                    if (item.glyphIndex) {
-                        item.glyphIndex = 0;
-                        item.glyph = null;
-                        version (USE_OPENGL) {
-                            item.id = 0;
-                        }
-                    }
-                }
-        }
-
-        //version (USE_OPENGL) {
-        //    if (_glyphDestroyCallback !is null) {
-        //        foreach(ref Glyph item; _array) {
-        //            if (item.glyphIndex)
-        //                _glyphDestroyCallback(item.id);
-        //        }
-        //        //foreach(ref Glyph item; _map) {
-        //        //    if (item.lastUsage == 0)
-        //        //        _glyphDestroyCallback(item.id);
-        //        //}
-        //    }
-        //}
-        ////_map.clear();
-        //foreach(ref Glyph item; _array) {
-        //    if (item.glyphIndex) {
-        //        item.glyphIndex = 0;
-        //        item.glyph = null;
-        //        item.id = 0;
-        //    }
-        //}
-	}
-	~this() {
-		clear();
-	}
-}
-*/
 
 /// Font object
 class Font : RefCountedObject {
@@ -350,23 +208,130 @@ class Font : RefCountedObject {
         return !g ? 0 : g.width;
     }
 
-	/// measure text string, return accumulated widths[] (distance to end of n-th character), returns number of measured chars.
-	abstract int measureText(const dchar[] text, ref int[] widths, int maxWidth);
+	/*******************************************************************************************
+     * Measure text string, return accumulated widths[] (distance to end of n-th character), returns number of measured chars.
+     *
+     * Params:
+     *         text = text string to measure
+     *         widths = output buffer to put measured widths (widths[i] will be set to cumulative widths text[0..i])
+     *          maxWidth = maximum width - measure is stopping if max width is reached
+     *      tabSize = tabulation size, in number of spaces
+     *      tabOffset = when string is drawn not from left position, use to move tab stops left/right
+     ******************************************************************************************/
+	int measureText(const dchar[] text, ref int[] widths, int maxWidth=int.max, int tabSize = 4, int tabOffset = 0) {
+		if (text.length == 0)
+			return 0;
+		const dchar * pstr = text.ptr;
+		uint len = cast(uint)text.length;
+        int x = 0;
+        int charsMeasured = 0;
+        int * pwidths = widths.ptr;
+        int tabWidth = spaceWidth * tabSize; // width of full tab in pixels
+        tabOffset = tabOffset % tabWidth;
+        if (tabOffset < 0)
+            tabOffset += tabWidth;
+		for (int i = 0; i < len; i++) {
+            //auto measureStart = std.datetime.Clock.currAppTick;
+            dchar ch = pstr[i];
+            if (ch == '\t') {
+                // measure tab
+                int tabPosition = (x + tabWidth - tabOffset) / tabWidth * tabWidth + tabOffset;
+                while (tabPosition < x + spaceWidth)
+                    tabPosition += tabWidth;
+                pwidths[i] = tabPosition;
+                charsMeasured = i + 1;
+                x = tabPosition;
+                continue;
+            }
+			Glyph * glyph = getCharGlyph(pstr[i], true); // TODO: what is better
+            //auto measureEnd = std.datetime.Clock.currAppTick;
+            //auto duration = measureEnd - measureStart;
+            //if (duration.length > 10)
+            //    Log.d("ft measureText took ", duration.length, " ticks");
+			if (glyph is null) {
+                // if no glyph, use previous width - treat as zero width
+                pwidths[i] = x;
+				continue;
+            }
+            int w = x + glyph.width; // using advance
+            int w2 = x + glyph.originX + glyph.blackBoxX; // using black box
+            if (w < w2) // choose bigger value
+                w = w2;
+            pwidths[i] = w;
+            x += glyph.width;
+            charsMeasured = i + 1;
+            if (x > maxWidth)
+                break;
+        }
+		return charsMeasured;
+	}
 
     private int[] _textSizeBuffer; // buffer to reuse while measuring strings - to avoid GC
-	/// measure text string as single line, returns width and height
+
+	/*************************************************************************
+     * Measure text string as single line, returns width and height
+     * 
+     * Params:
+     *          text = text string to measure
+     *          maxWidth = maximum width - measure is stopping if max width is reached
+     ************************************************************************/
 	Point textSize(const dchar[] text, int maxWidth = int.max) {
         if (_textSizeBuffer.length < text.length + 1)
             _textSizeBuffer.length = text.length + 1;
-        //int[] widths = new int[text.length + 1];
         int charsMeasured = measureText(text, _textSizeBuffer, maxWidth);
         if (charsMeasured < 1)
             return Point(0,0);
         return Point(_textSizeBuffer[charsMeasured - 1], height);
     }
 
-	/// draw text string to buffer
-	abstract void drawText(DrawBuf buf, int x, int y, const dchar[] text, uint color);
+	/*****************************************************************************************
+     * Draw text string to buffer.
+     *
+     * Params:
+     *      buf =   graphics buffer to draw text to
+     *      x =     x coordinate to draw first character at
+     *      y =     y coordinate to draw first character at
+     *      text =  text string to draw
+     *      color =  color for drawing of glyphs
+     *      tabSize = tabulation size, in number of spaces
+     *      tabOffset = when string is drawn not from left position, use to move tab stops left/right
+     ****************************************************************************************/
+	void drawText(DrawBuf buf, int x, int y, const dchar[] text, uint color, int tabSize = 4, int tabOffset = 0) {
+        if (text.length == 0)
+            return; // nothing to draw - empty text
+        if (_textSizeBuffer.length < text.length)
+            _textSizeBuffer.length = text.length;
+		int charsMeasured = measureText(text, _textSizeBuffer, int.max, tabSize, tabOffset);
+		Rect clip = buf.clipOrFullRect;
+        if (clip.empty)
+            return; // not visible - clipped out
+		if (y + height < clip.top || y >= clip.bottom)
+			return; // not visible - fully above or below clipping rectangle
+        int _baseline = baseline;
+		for (int i = 0; i < charsMeasured; i++) {
+			int xx = (i > 0) ? _textSizeBuffer[i - 1] : 0;
+			if (x + xx > clip.right)
+				break;
+			if (x + xx + 255 < clip.left)
+				continue; // far at left of clipping region
+            dchar ch = text[i];
+            if (ch == ' ' || ch == '\t')
+                continue;
+			Glyph * glyph = getCharGlyph(ch);
+			if (glyph is null)
+				continue;
+			if ( glyph.blackBoxX && glyph.blackBoxY ) {
+				int gx = x + xx + glyph.originX;
+				if (gx + glyph.blackBoxX < clip.left)
+					continue;
+				buf.drawGlyph( gx,
+                               y + _baseline - glyph.originY,
+                              glyph,
+                              color);
+			}
+		}
+	}
+
 	/// get character glyph information
 	abstract Glyph * getCharGlyph(dchar ch, bool withImage = true);
 
