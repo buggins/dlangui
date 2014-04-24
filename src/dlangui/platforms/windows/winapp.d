@@ -659,8 +659,8 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
     Platform.setInstance(platform);
 
 
-    if (true) {
-        /// testing freetype font manager
+    /// testing freetype font manager
+    if (false) {
         import dlangui.graphics.ftfonts;
         import win32.shlobj;
         FreeTypeFontManager ftfontMan = new FreeTypeFontManager();

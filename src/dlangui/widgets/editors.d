@@ -224,9 +224,9 @@ class UndoBuffer {
 
     /// adds undo operation
     void saveForUndo(EditOperation op) {
+        _redoList.clear();
         if (!_undoList.empty) {
             if (_undoList.back.merge(op)) {
-                _redoList.clear();
                 return; // merged - no need to add new operation
             }
         }
@@ -589,6 +589,9 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
     protected bool _wantTabs = true;
     protected bool _useSpacesForTabs = false;
 
+    protected bool _replaceMode;
+    protected bool _readOnly;
+
 
     this(string ID) {
         super(ID);
@@ -662,6 +665,34 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
     /// sets tab size (in number of spaces)
     @property EditWidgetBase wantTabs(bool wantTabs) {
         _wantTabs = wantTabs;
+        return this;
+    }
+
+    /// readonly flag (when true, user cannot change content of editor)
+    @property bool readOnly() {
+        return _readOnly;
+    }
+
+    /// sets readonly flag
+    @property EditWidgetBase readOnly(bool readOnly) {
+        _readOnly = readOnly;
+        if (_readOnly)
+            resetState(State.Enabled);
+        else 
+            setState(State.Enabled);
+        invalidate();
+        return this;
+    }
+
+    /// replace mode flag (when true, entered character replaces character under cursor)
+    @property bool replaceMode() {
+        return _replaceMode;
+    }
+
+    /// sets replace mode flag
+    @property EditWidgetBase replaceMode(bool replaceMode) {
+        _replaceMode = replaceMode;
+        invalidate();
         return this;
     }
 
@@ -902,6 +933,8 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                 }
                 return true;
             case EditorActions.DelPrevChar:
+                if (_readOnly)
+                    return true;
                 if (!_selectionRange.empty) {
                     // clear selection
                     EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d]);
@@ -927,6 +960,8 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                 }
                 return true;
             case EditorActions.DelNextChar:
+                if (_readOnly)
+                    return true;
                 if (!_selectionRange.empty) {
                     EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d]);
                     _content.performOperation(op);
@@ -958,12 +993,16 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                 if (!_selectionRange.empty) {
                     dstring selectionText = concatDStrings(_content.rangeText(_selectionRange));
                     platform.setClipboardText(selectionText);
+                    if (_readOnly)
+                        return true;
                     EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d]);
                     _content.performOperation(op);
                 }
                 return true;
             case EditorActions.Paste:
                 {
+                    if (_readOnly)
+                        return true;
                     dstring selectionText = platform.getClipboardText();
                     dstring[] lines;
                     if (_content.multiline) {
@@ -977,16 +1016,22 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                 return true;
             case EditorActions.Undo:
                 {
+                    if (_readOnly)
+                        return true;
                     _content.undo();
                 }
                 return true;
             case EditorActions.Redo:
                 {
+                    if (_readOnly)
+                        return true;
                     _content.redo();
                 }
                 return true;
             case EditorActions.Tab:
                 {
+                    if (_readOnly)
+                        return true;
                     if (_selectionRange.empty) {
                         if (_useSpacesForTabs) {
                             // insert one or more spaces to 
@@ -1019,6 +1064,8 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                 return true;
             case EditorActions.BackTab:
                 {
+                    if (_readOnly)
+                        return true;
                     if (_selectionRange.empty) {
                         // remove spaces before caret
                         TextRange r = spaceBefore(_caretPos);
@@ -1148,27 +1195,23 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
     /// map key to action
     override protected Action findKeyAction(uint keyCode, uint flags) {
         // don't handle tabs when disabled
-        if (keyCode == KeyCode.TAB && (flags == 0 || flags == KeyFlag.Shift) && !_wantTabs)
+        if (keyCode == KeyCode.TAB && (flags == 0 || flags == KeyFlag.Shift) && (!_wantTabs || _readOnly))
             return null;
         return super.findKeyAction(keyCode, flags);
     }
 
 	/// handle keys
 	override bool onKeyEvent(KeyEvent event) {
-		//
-		if (event.action == KeyAction.KeyDown) {
-			//EditorAction a = keyToAction(event.keyCode, event.flags & (KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Ctrl));
-			//switch(event.keyCode) {
-			//    
-			//}
-		} else if (event.action == KeyAction.Text && event.text.length) {
+		if (event.action == KeyAction.Text && event.text.length) {
 			Log.d("text entered: ", event.text);
+            if (_readOnly)
+                return true;
 			dchar ch = event.text[0];
 			if (ch >= 32) { // ignore Backspace and Return
 				EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [event.text]);
 				_content.performOperation(op);
-				return true;
 			}
+            return true;
 		}
 		return super.onKeyEvent(event);
 	}
@@ -1286,24 +1329,6 @@ class EditLine : EditWidgetBase {
 
 	override protected bool handleAction(Action a) {
 		switch (a.id) {
-            /*
-            case EditorActions.DelPrevChar:
-                if (_caretPos.pos > 0) {
-                    TextRange range = TextRange(_caretPos, _caretPos);
-                    range.start.pos--;
-                    EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
-                    _content.performOperation(op);
-                }
-                return true;
-            case EditorActions.DelNextChar:
-                if (_caretPos.pos < _measuredText.length) {
-                    TextRange range = TextRange(_caretPos, _caretPos);
-                    range.end.pos++;
-                    EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
-                    _content.performOperation(op);
-                }
-                return true;
-            */
             case EditorActions.Up:
                 break;
             case EditorActions.Down:
@@ -1372,8 +1397,8 @@ class EditLine : EditWidgetBase {
         super.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
-        auto saver = ClipRectSaver(buf, rc);
         applyPadding(rc);
+        auto saver = ClipRectSaver(buf, rc);
         FontRef font = font();
         dstring txt = text;
         Point sz = font.textSize(txt);
@@ -1385,7 +1410,7 @@ class EditLine : EditWidgetBase {
         visibleRect.left = _clientRc.left;
         visibleRect.right = _clientRc.right;
         drawLineBackground(buf, lineRect, visibleRect);
-        font.drawText(buf, rc.left - _scrollPos.x, rc.top + sz.y / 10, txt, textColor, tabSize);
+        font.drawText(buf, rc.left - _scrollPos.x, rc.top, txt, textColor, tabSize);
         if (focused) {
             // draw caret
             Rect caretRc = textPosToClient(_caretPos);
