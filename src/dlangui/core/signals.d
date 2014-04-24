@@ -219,6 +219,14 @@ struct Signal(T1) if (is(T1 == interface) && __traits(allMembers, T1).length == 
     final void disconnect(slot_t listener) {
         _listeners -= listener;
     }
+    /// add listener - as interface member
+    final void connect(T1 listener) {
+		connect(&__traits(getMember, listener, __traits(allMembers, T1)[0]));
+    }
+    /// add listener - as interface member
+    final void disconnect(T1 listener) {
+		disconnect(&__traits(getMember, listener, __traits(allMembers, T1)[0]));
+    }
 }
 
 /// Multiple listeners; implicitly specified return and parameter types

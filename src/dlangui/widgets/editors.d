@@ -725,6 +725,38 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
         return this;
     }
 
+    /// editor content object
+    @property EditableContent content() {
+        return _content;
+    }
+
+    /// when _ownContent is false, _content should not be destroyed in editor destructor
+    protected bool _ownContent = true;
+    /// set content object
+    @property EditWidgetBase content(EditableContent content) {
+        if (_content is content)
+            return this; // not changed
+        if (_content !is null) {
+            // disconnect old content
+            _content.contentChangeListeners.disconnect(this);
+            if (_ownContent) {
+                destroy(_content);
+            }
+        }
+        _content = content;
+        _ownContent = false;
+        _content.contentChangeListeners.connect(this);
+        return this;
+    }
+
+    /// free resources
+    ~this() {
+        if (_ownContent) {
+            destroy(_content);
+            _content = null;
+        }
+    }
+
     protected void updateMaxLineWidth() {
     }
 
@@ -813,16 +845,26 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
     protected void updateScrollbars() {
     }
 
+    /// when position is out of content bounds, fix it to nearest valid position
+    protected void correctPosition(ref TextPosition position) {
+        if (position.line >= _content.length)
+            position.line = _content.length - 1;
+        if (position.line < 0)
+            position.line = 0;
+        dstring currentLine = _content[position.line];
+        if (position.pos > currentLine.length)
+            position.pos = cast(int)currentLine.length;
+        if (position.pos < 0)
+            position.pos = 0;
+    }
+
+    /// when cursor position or selection is out of content bounds, fix it to nearest valid position
     protected void correctCaretPos() {
-        if (_caretPos.line >= _content.length)
-            _caretPos.line = _content.length - 1;
-        if (_caretPos.line < 0)
-            _caretPos.line = 0;
-        dstring currentLine = _content[_caretPos.line];
-        if (_caretPos.pos > currentLine.length)
-            _caretPos.pos = cast(int)currentLine.length;
-        if (_caretPos.pos < 0)
-            _caretPos.pos = 0;
+        correctPosition(_caretPos);
+        correctPosition(_selectionRange.start);
+        correctPosition(_selectionRange.end);
+        if (_selectionRange.empty)
+            _selectionRange = TextRange(_caretPos, _caretPos);
     }
 
 
