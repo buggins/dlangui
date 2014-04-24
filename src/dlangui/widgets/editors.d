@@ -1025,12 +1025,33 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                 {
                     if (_selectionRange.empty) {
                         // remove spaces before caret
+                        TextRange r = spaceBefore(_caretPos);
+                        if (!r.empty) {
+                            EditOperation op = new EditOperation(EditAction.Replace, r, [""d]);
+                            _content.performOperation(op);
+                        }
                     } else {
                         if (wholeLinesSelected()) {
                             // unindent range
                             indentRange(true);
                         } else {
                             // remove space before selection
+                            TextRange r = spaceBefore(_selectionRange.start);
+                            if (!r.empty) {
+                                int nchars = r.end.pos - r.start.pos;
+                                TextRange saveRange = _selectionRange;
+                                TextPosition saveCursor = _caretPos;
+                                EditOperation op = new EditOperation(EditAction.Replace, r, [""d]);
+                                _content.performOperation(op);
+                                if (saveCursor.line == saveRange.start.line)
+                                    saveCursor.pos -= nchars;
+                                if (saveRange.end.line == saveRange.start.line)
+                                    saveRange.end.pos -= nchars;
+                                saveRange.start.pos -= nchars;
+                                _selectionRange = saveRange;
+                                _caretPos = saveCursor;
+                                ensureCaretVisible();
+                            }
                         }
                     }
                 }
@@ -1040,6 +1061,32 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 		}
 		return super.handleAction(a);
 	}
+
+    protected TextRange spaceBefore(TextPosition pos) {
+        TextRange res = TextRange(pos, pos);
+        dstring s = _content[pos.line];
+        int x = 0;
+        int start = -1;
+        for (int i = 0; i < pos.pos; i++) {
+            dchar ch = s[i];
+            if (ch == ' ') {
+                if (start == -1 || (x % tabSize) == 0)
+                    start = i;
+                x++;
+            } else if (ch == '\t') {
+                if (start == -1 || (x % tabSize) == 0)
+                    start = i;
+                x = (x + tabSize + 1) / tabSize * tabSize;
+            } else {
+                x++;
+                start = -1;
+            }
+        }
+        if (start != -1) {
+            res.start.pos = start;
+        }
+        return res;
+    }
 
     /// change line indent
     protected dstring indentLine(dstring src, bool back) {
