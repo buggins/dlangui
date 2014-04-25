@@ -492,6 +492,13 @@ class Widget {
             this.tabOrder = widget.thisOrParentTabOrder();
             this.rect = widget.pos;
         }
+        static immutable int NEAR_THRESHOLD = 10;
+        bool nearX(TabOrderInfo v) {
+            return v.rect.left >= rect.left - NEAR_THRESHOLD  && v.rect.left <= rect.left + NEAR_THRESHOLD;
+        }
+        bool nearY(TabOrderInfo v) {
+            return v.rect.top >= rect.top - NEAR_THRESHOLD  && v.rect.top <= rect.top + NEAR_THRESHOLD;
+        }
         override int opCmp(Object obj) {
             TabOrderInfo v = cast(TabOrderInfo)obj;
             if (tabOrder != 0 && v.tabOrder !=0) {
@@ -510,6 +517,20 @@ class Widget {
             if (childOrder > v.childOrder)
                 return 1;
             return 0;
+        }
+        /// less predicat for Left/Right sorting
+        static bool lessHorizontal(TabOrderInfo obj1, TabOrderInfo obj2) {
+            if (obj1.nearY(obj2)) {
+                return obj1.rect.left < obj2.rect.left;
+            }
+            return obj1.rect.top < obj2.rect.top;
+        }
+        /// less predicat for Up/Down sorting
+        static bool lessVertical(TabOrderInfo obj1, TabOrderInfo obj2) {
+            if (obj1.nearX(obj2)) {
+                return obj1.rect.top < obj2.rect.top;
+            }
+            return obj1.rect.left < obj2.rect.left;
         }
     }
 
@@ -588,7 +609,29 @@ class Widget {
             return focusables[index].widget;
         } else {
             // Left, Right, Up, Down
-            return focusables[0].widget;
+            if (direction == FocusMovement.Left || direction == FocusMovement.Right) {
+                sort!(TabOrderInfo.lessHorizontal)(focusables);
+            } else {
+                sort!(TabOrderInfo.lessVertical)(focusables);
+            }
+            myIndex = 0;
+            for (int i = 0; i < focusables.length; i++) {
+                if (focusables[i].widget is this) {
+                    myIndex = i;
+                    break;
+                }
+            }
+            int index = myIndex;
+            if (direction == FocusMovement.Left || direction == FocusMovement.Up) {
+                index--;
+                if (index < 0)
+                    index = cast(int)focusables.length - 1;
+            } else {
+                index++;
+                if (index >= focusables.length)
+                    index = 0;
+            }
+            return focusables[index].widget;
         }
     }
 
