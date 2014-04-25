@@ -482,41 +482,114 @@ class Widget {
         return p;
     }
 
-    private void findFocusableChildren(ref Widget[] results, Widget widgetToExclude) {
+    private static class TabOrderInfo {
+        Widget widget;
+        uint tabOrder;
+        uint childOrder;
+        Rect rect;
+        this(Widget widget, Rect rect) {
+            this.widget = widget;
+            this.tabOrder = widget.thisOrParentTabOrder();
+            this.rect = widget.pos;
+        }
+        override int opCmp(Object obj) {
+            TabOrderInfo v = cast(TabOrderInfo)obj;
+            if (tabOrder != 0 && v.tabOrder !=0) {
+                if (tabOrder < v.tabOrder)
+                    return -1;
+                if (tabOrder > v.tabOrder)
+                    return 1;
+            }
+            // place items with tabOrder 0 after items with tabOrder non-0
+            if (tabOrder != 0)
+                return -1;
+            if (v.tabOrder != 0)
+                return 1;
+            if (childOrder < v.childOrder)
+                return -1;
+            if (childOrder > v.childOrder)
+                return 1;
+            return 0;
+        }
+    }
+
+    private void findFocusableChildren(ref TabOrderInfo[] results, Rect clipRect) {
         if (visibility != Visibility.Visible)
             return;
-        if (widgetToExclude is this)
-            return; // doesn't include
+        Rect rc = _pos;
+        applyMargins(rc);
+        applyPadding(rc);
+        if (!rc.intersects(clipRect))
+            return; // out of clip rectangle
         if (focusable) {
-            results ~= this;
+            TabOrderInfo item = new TabOrderInfo(this, rc);
+            results ~= item;
             return;
         }
+        rc.intersect(clipRect);
         for (int i = 0; i < childCount(); i++) {
-            child(i).findFocusableChildren(results, widgetToExclude);
+            child(i).findFocusableChildren(results, rc);
         }
     }
 
     /// find all focusables belonging to the same focusGroup as this widget (does not include current widget).
     /// usually to be called for focused widget to get possible alternatives to navigate to
-    private Widget[] findFocusables() {
-        Widget[] result;
+    private TabOrderInfo[] findFocusables() {
+        TabOrderInfo[] result;
         Widget group = focusGroupWidget();
-        group.findFocusableChildren(result, this);
+        group.findFocusableChildren(result, group.pos);
+        for (ushort i = 0; i < result.length; i++)
+            result[i].childOrder = i + 1;
+        sort(result);
         return result;
+    }
+
+    protected ushort _tabOrder;
+    /// tab order - hint for focus movement using Tab/Shift+Tab
+    @property ushort tabOrder() { return _tabOrder; }
+    @property Widget tabOrder(ushort tabOrder) { _tabOrder = tabOrder; return this; }
+    private int thisOrParentTabOrder() {
+        if (_tabOrder)
+            return _tabOrder;
+        if (!parent)
+            return 0;
+        return parent.thisOrParentTabOrder;
     }
 
     /// call on focused widget, to find best 
     private Widget findNextFocusWidget(FocusMovement direction) {
         if (direction == FocusMovement.None)
             return this;
-        Widget[] focusables = findFocusables();
+        TabOrderInfo[] focusables = findFocusables();
         if (!focusables.length)
             return null;
+        int myIndex = -1;
+        for (int i = 0; i < focusables.length; i++) {
+            if (focusables[i].widget is this) {
+                myIndex = i;
+                break;
+            }
+        }
+        if (myIndex == -1)
+            return null; // not found myself
         if (focusables.length == 1)
-            return focusables[0]; // single option - use it
-        Rect currentRect = pos;
-        // TODO:
-        return focusables[0];
+            return focusables[0].widget; // single option - use it
+        if (direction == FocusMovement.Next) {
+            // move forward
+            int index = myIndex + 1;
+            if (index >= focusables.length)
+                index = 0;
+            return focusables[index].widget;
+        } else if (direction == FocusMovement.Previous) {
+            // move back
+            int index = myIndex - 1;
+            if (index < 0)
+                index = cast(int)focusables.length - 1;
+            return focusables[index].widget;
+        } else {
+            // Left, Right, Up, Down
+            return focusables[0].widget;
+        }
     }
 
     bool handleMoveFocusUsingKeys(KeyEvent event) {

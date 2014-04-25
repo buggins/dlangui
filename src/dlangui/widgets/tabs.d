@@ -415,6 +415,7 @@ class TabHost : FrameLayout, TabHandler {
         assert(widget.id !is null, "ID for tab host page is mandatory");
         assert(_children.indexOf(id) == -1, "duplicate ID for tab host page");
         _tabControl.addTab(widget.id, label, iconId, enableCloseButton);
+        widget.focusGroup = true; // doesn't allow move focus outside of tab content
         addChild(widget);
         return this;
     }

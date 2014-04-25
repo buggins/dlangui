@@ -857,6 +857,9 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 			new Action(EditorActions.DocumentEnd, KeyCode.END, KeyFlag.Control),
 			new Action(EditorActions.SelectDocumentEnd, KeyCode.END, KeyFlag.Control | KeyFlag.Shift),
 
+			new Action(EditorActions.ScrollLineUp, KeyCode.UP, KeyFlag.Control),
+			new Action(EditorActions.ScrollLineDown, KeyCode.DOWN, KeyFlag.Control),
+
 			new Action(EditorActions.InsertNewLine, KeyCode.RETURN, 0),
 			new Action(EditorActions.InsertNewLine, KeyCode.RETURN, KeyFlag.Shift),
 			new Action(EditorActions.PrependNewLine, KeyCode.RETURN, KeyFlag.Control),
