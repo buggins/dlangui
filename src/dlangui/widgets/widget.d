@@ -67,6 +67,24 @@ interface OnFocusHandler {
     bool onFocusChanged(Widget source, bool focused);
 }
 
+/// focus movement options
+enum FocusMovement {
+    /// no focus movement
+    None,
+    /// next focusable (Tab)
+    Next,
+    /// previous focusable (Shift+Tab)
+    Previous,
+    /// move to nearest above
+    Up,
+    /// move to nearest below
+    Down,
+    /// move to nearest at left
+    Left,
+    /// move to nearest at right
+    Right,
+}
+
 class Widget {
     /// widget id
     protected string _id;
@@ -434,6 +452,7 @@ class Widget {
     }
 
     protected bool _focusable;
+    /// whether widget can be focused
     @property bool focusable() { return _focusable; }
     @property Widget focusable(bool flg) { _focusable = flg; return this; }
 
@@ -441,7 +460,107 @@ class Widget {
         return (window !is null && window.focusedWidget is this && (state & State.Focused));
     }
 
+    protected bool _focusGroup;
+    /*****************************************
+     * When focus group is set for some parent widget, focus from one of containing widgets can be moved using keyboard only to one of other widgets containing in it and cannot bypass bounds of focusGroup.
+     * 
+     * If focused widget doesn't have any parent with focusGroup == true, focus may be moved to any focusable within window.
+     *
+     */
+    @property bool focusGroup() { return _focusGroup; }
+    /// set focus group flag for container widget
+    @property Widget focusGroup(bool flg) { _focusGroup = flg; return this; }
 
+    /// find nearest parent of this widget with focusGroup flag, returns topmost parent if no focusGroup flag set to any of parents.
+    Widget focusGroupWidget() {
+        Widget p = this;
+        while (p) {
+            if (!p.parent || p.focusGroup)
+                break;
+            p = p.parent;
+        }
+        return p;
+    }
+
+    private void findFocusableChildren(ref Widget[] results, Widget widgetToExclude) {
+        if (visibility != Visibility.Visible)
+            return;
+        if (widgetToExclude is this)
+            return; // doesn't include
+        if (focusable) {
+            results ~= this;
+            return;
+        }
+        for (int i = 0; i < childCount(); i++) {
+            child(i).findFocusableChildren(results, widgetToExclude);
+        }
+    }
+
+    /// find all focusables belonging to the same focusGroup as this widget (does not include current widget).
+    /// usually to be called for focused widget to get possible alternatives to navigate to
+    private Widget[] findFocusables() {
+        Widget[] result;
+        Widget group = focusGroupWidget();
+        group.findFocusableChildren(result, this);
+        return result;
+    }
+
+    /// call on focused widget, to find best 
+    private Widget findNextFocusWidget(FocusMovement direction) {
+        if (direction == FocusMovement.None)
+            return this;
+        Widget[] focusables = findFocusables();
+        if (!focusables.length)
+            return null;
+        if (focusables.length == 1)
+            return focusables[0]; // single option - use it
+        Rect currentRect = pos;
+        // TODO:
+        return focusables[0];
+    }
+
+    bool handleMoveFocusUsingKeys(KeyEvent event) {
+        if (!focused || !visible)
+            return false;
+        if (!visible)
+            return false;
+        if (event.action != KeyAction.KeyDown)
+            return false;
+        FocusMovement direction = FocusMovement.None;
+        uint flags = event.flags & (KeyFlag.Shift | KeyFlag.Control | KeyFlag.Alt);
+        switch (event.keyCode) {
+            case KeyCode.LEFT:
+                if (flags == 0)
+                    direction = FocusMovement.Left;
+                break;
+            case KeyCode.RIGHT:
+                if (flags == 0)
+                    direction = FocusMovement.Right;
+                break;
+            case KeyCode.UP:
+                if (flags == 0)
+                    direction = FocusMovement.Up;
+                break;
+            case KeyCode.DOWN:
+                if (flags == 0)
+                    direction = FocusMovement.Down;
+            case KeyCode.TAB:
+                if (flags == 0)
+                    direction = FocusMovement.Next;
+                else if (flags == KeyFlag.Shift)
+                    direction = FocusMovement.Previous;
+                break;
+            default:
+                break;
+        }
+        if (direction == FocusMovement.None)
+            return false;
+        Widget nextWidget = findNextFocusWidget(direction);
+        if (!nextWidget)
+            return false;
+        nextWidget.setFocus();
+        return true;
+    }
 
     /// returns true if this widget and all its parents are visible
     @property bool visible() {
@@ -451,10 +570,12 @@ class Widget {
             return true;
         return parent.visible;
     }
+
     /// returns true if widget is focusable and visible
     @property bool canFocus() {
         return focusable && visible;
     }
+
     /// sets focus to this widget or suitable focusable child, returns previously focused widget
     Widget setFocus() {
         if (window is null)
@@ -522,6 +643,9 @@ class Widget {
 				return handleAction(action);
 			}
 		}
+        // handle focus navigation using keys
+        if (focused && handleMoveFocusUsingKeys(event))
+            return true;
 		if (canClick) {
             // support onClick event initiated by Space or Return keys
             if (event.action == KeyAction.KeyDown) {

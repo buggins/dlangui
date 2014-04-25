@@ -523,6 +523,7 @@ class EditableContent {
                 return false;
         }
     }
+
     static bool isWordBound(dchar thischar, dchar nextchar) {
         return  (isAlNum(thischar) && !isAlNum(nextchar))
             || (isPunct(thischar) && !isPunct(nextchar))
@@ -659,6 +660,7 @@ class EditableContent {
         handleContentChange(op, rangeBefore, rangeAfter, this);
         return true;
     }
+
     /// redoes last undone change
     bool redo() {
         if (!hasUndo)
