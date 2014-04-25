@@ -9,11 +9,13 @@ Alpha stage of development.
 * Mostly inspired by Android UI API (layouts, styles, two phase layout, ...)
 * Supports highly customizable UI themes and styles
 * Supports internationalization
-* Hardware acceleration using OpenGL (when built with USE_OPENGL)
+* Hardware acceleration using OpenGL (when built with version USE_OPENGL)
 * Fallback to Win32 API / XCB when OpenGL is not available
-* Actually it's a port (with major refactoring) of GUI library for cross platform OpenGL based implementation of Cool Reader app prokeject from C++.
+* Actually it's a port (with major refactoring) of GUI library for cross platform OpenGL based implementation of Cool Reader app project from C++.
 * Almost ready for 2D games development
 * Goal: provide set of widgets suitable for building of IDE.
+
+
 
 Widgets
 -------
@@ -30,6 +32,7 @@ Currently implemented widgets:
 * CheckBox - check button with label
 * RadioButton - radio button with label
 * EditLine - single line edit
+* EditBox - multiline editor
 * VSpacer - vertical spacer - just an empty widget with layoutHeight == FILL_PARENT, to fill vertical space in layouts
 * HSpacer - horizontal spacer - just an empty widget with layoutWidth == FILL_PARENT, to fill horizontal space in layouts
 * ScrollBar - scroll bar
@@ -105,7 +108,7 @@ Build and run using DUB:
 
 	git clone git@github.com:buggins/dlangui.git
 	cd dlangui
-        dub run dlangui:example1
+	dub run dlangui:example1
 
 
 
@@ -186,7 +189,7 @@ Hello World
 	    // setup resource directories - will use only existing directories
 	    drawableCache.setResourcePaths(resourceDirs);
 
-            // optinally setup internatilnalization (if used)
+	    // optinally setup internatilnalization (if used)
 	    // setup i18n - look for i18n directory inside one of passed directories
 	    i18n.findTranslationsDir(resourceDirs);
 	    // select translation file - for english language
@@ -194,10 +197,10 @@ Hello World
 	
 	    // create window
 	    Window window = Platform.instance.createWindow("My Window", null);
-            // create some widget to show in window
+	    // create some widget to show in window
 	    window.mainWidget = (new Button()).text("Hello world"d);
-            // show window
-            window.show();
+	    // show window
+	    window.show();
 	    // run message loop
 	    return Platform.instance.enterMessageLoop();
 	}
