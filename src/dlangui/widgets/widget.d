@@ -660,6 +660,7 @@ class Widget {
             case KeyCode.DOWN:
                 if (flags == 0)
                     direction = FocusMovement.Down;
+                break;
             case KeyCode.TAB:
                 if (flags == 0)
                     direction = FocusMovement.Next;
