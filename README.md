@@ -106,19 +106,20 @@ Win32 builds
 
 Build and run using DUB:
 
-	git clone git@github.com:buggins/dlangui.git
-	cd dlangui
-	dub run dlangui:example1
+        git clone https://github.com/buggins/dlangui.git
+        cd dlangui
+        dub run dlangui:example1
 
 
 
 To develop using Visual-D, download sources for dlabgui and dependencies into some directory:
 
-	git clone git@github.com:buggins/dlangui.git
-	git clone https://github.com/DerelictOrg/DerelictUtil.git
-	git clone https://github.com/DerelictOrg/DerelictFT.git
-	git clone https://github.com/DerelictOrg/DerelictFI.git
-	git clone https://github.com/DerelictOrg/DerelictGL3.git
+        git clone https://github.com/buggins/dlangui.git
+        git clone https://github.com/DerelictOrg/DerelictUtil.git
+        git clone https://github.com/DerelictOrg/DerelictGL3.git
+        git clone https://github.com/DerelictOrg/DerelictFI.git
+        git clone https://github.com/DerelictOrg/DerelictFT.git
+        git clone https://github.com/DerelictOrg/DerelictSDL2.git
 
 Then open .sln using Visual D.
 
@@ -139,6 +140,10 @@ Linux builds
 To build dlangui apps, development packages for following libraries required:
 
         xcb, xcb-util, xcb-shm, xcb-image, xcb-keysyms, X11-xcb, X11
+
+E.g. in Ubuntu, you can use:
+
+        sudo apt-get install libxcb-image0-dev libxcb-shm0-dev libxcb-keysyms1-dev libfreeimage-dev
 
 In runtime, .so for following libraries are being loaded (binary packages required):
 

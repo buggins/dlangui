@@ -14,7 +14,7 @@
         <String>{440816C8-DBD6-454C-A0D7-B6E59CA1ED86}</String>
       </DependentProjectIds>
     </DependentProjectIds>
-    <Compiler>DMD</Compiler>
+    <Compiler>DMD2</Compiler>
     <Includes>
       <Includes>
         <Path>/home/lve/src/d/dlangui/src</Path>
@@ -34,6 +34,9 @@
     <ObjectsDirectory>obj/Debug</ObjectsDirectory>
     <Externalconsole>true</Externalconsole>
     <Target>Executable</Target>
+    <UnittestMode>false</UnittestMode>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release</OutputPath>
@@ -41,6 +44,9 @@
     <ObjectsDirectory>obj/Release</ObjectsDirectory>
     <Externalconsole>true</Externalconsole>
     <Target>Executable</Target>
+    <UnittestMode>false</UnittestMode>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -50,6 +56,9 @@
     <OutputName>dlanguilib</OutputName>
     <Externalconsole>true</Externalconsole>
     <Target>Executable</Target>
+    <UnittestMode>false</UnittestMode>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\main.d" />

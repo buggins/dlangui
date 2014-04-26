@@ -9,7 +9,7 @@
     <UseDefaultCompiler>true</UseDefaultCompiler>
     <IncrementalLinking>true</IncrementalLinking>
     <PreferOneStepBuild>true</PreferOneStepBuild>
-    <Compiler>DMD</Compiler>
+    <Compiler>DMD2</Compiler>
     <Includes>
       <Includes>
         <Path>/home/lve/src/d/DerelictFT/source</Path>
@@ -30,6 +30,9 @@
     <Target>StaticLibrary</Target>
     <ExtraCompilerArguments>-version=USE_OPENGL
 </ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release</OutputPath>
@@ -38,6 +41,9 @@
     <Externalconsole>true</Externalconsole>
     <Target>StaticLibrary</Target>
     <ExtraCompilerArguments>-version=USE_OPENGL</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -47,6 +53,9 @@
     <OutputName>dlanguilib</OutputName>
     <Externalconsole>true</Externalconsole>
     <Target>StaticLibrary</Target>
+    <UnittestMode>false</UnittestMode>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\dlangui\core\logger.d" />
