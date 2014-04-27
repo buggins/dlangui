@@ -28,8 +28,6 @@
     <ObjectsDirectory>obj/Debug</ObjectsDirectory>
     <Externalconsole>true</Externalconsole>
     <Target>StaticLibrary</Target>
-    <ExtraCompilerArguments>
-</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
     <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
     <DebugLevel>0</DebugLevel>

@@ -30,7 +30,8 @@ version(USE_SDL) {
 //	pragma(lib, "dl");	
 		
 	class SDLWindow : Window {
-
+		SDL_Window * _win;
+		SDL_Renderer* _renderer;
 		this(string caption, Window parent) {
 			_caption = caption;
 			Log.d("Creating SDL window");
@@ -38,10 +39,24 @@ version(USE_SDL) {
 		}
 		~this() {
 			Log.d("Destroying window");
+			if (_renderer)
+				SDL_DestroyRenderer(_renderer);
+			if (_win)
+				SDL_DestroyWindow(_win);
 		}
 			
 		bool create() {
-			windowCaption = _caption;
+			_win = SDL_CreateWindow(_caption.toStringz, 20, 20, 700, 500, SDL_WINDOW_SHOWN);
+			if (!_win) {
+				Log.e("SDL2: Failed to create window");
+				return false;
+			}
+			_renderer = SDL_CreateRenderer(_win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+			if (!_renderer) {
+				Log.e("SDL2: Failed to create renderer");
+				return false;
+			}
+			//windowCaption = _caption;
 			return true;
 		}
 		
@@ -162,12 +177,6 @@ version(USE_SDL) {
 			} catch (Exception e) {
 				Log.e("Cannot load opengl library", e);
 			}
-			try {
-				// Load the SDL 2 library.
-				DerelictSDL2.load();
-			} catch (Exception e) {
-				Log.e("Cannot load SDL2 library", e);
-			}
 
 			return true;
 		}
@@ -183,6 +192,13 @@ version(USE_SDL) {
 		}
 		override int enterMessageLoop() {
 			Log.i("entering message loop");
+			SDL_Event event;
+			bool quit = false;
+			while(!quit) {
+				while(SDL_PollEvent(&event)) {
+					SDL_PumpEvents();
+				}
+			}
 			Log.i("exiting message loop");
 			return 0;
 		}
@@ -207,6 +223,23 @@ version(USE_SDL) {
 		
 		setStderrLogger();
 		setLogLevel(LogLevel.Trace);
+
+		try {
+			// Load the SDL 2 library.
+			DerelictSDL2.load();
+		} catch (Exception e) {
+			Log.e("Cannot load SDL2 library", e);
+			return 1;
+		}
+
+		SDL_DisplayMode displayMode;
+		if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_EVENTS) != 0) {
+			Log.e("Cannot init SDL2");
+			return 2;
+		}
+		scope(exit)SDL_Quit();
+		int request = SDL_GetDesktopDisplayMode(0,&displayMode);
+
 
 		FreeTypeFontManager ft = new FreeTypeFontManager();
 		// TODO: use FontConfig
