@@ -1,6 +1,6 @@
 module src.dlangui.platforms.x11.x11app;
 
-version(linux) {
+version(USE_XCB) {
 
 	import std.string;
 	import std.c.linux.X11.xcb.xcb;

@@ -28,11 +28,17 @@
     <ObjectsDirectory>obj/Debug</ObjectsDirectory>
     <Externalconsole>true</Externalconsole>
     <Target>StaticLibrary</Target>
-    <ExtraCompilerArguments>-version=USE_OPENGL
+    <ExtraCompilerArguments>
 </ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
     <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
     <DebugLevel>0</DebugLevel>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_OPENGL</String>
+        <String>USE_SDL</String>
+      </VersionIds>
+    </VersionIds>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release</OutputPath>
@@ -192,6 +198,28 @@
     <Compile Include="src\dlangui\core\collections.d" />
     <Compile Include="src\dlangui\core\signals.d" />
     <Compile Include="src\dlangui\widgets\editors.d" />
+    <Compile Include="src\dlangui\platforms\sdl\sdlapp.d" />
+    <Compile Include="..\DerelictSDL2\source\derelict\sdl2\functions.d">
+      <Link>3rdparty\FreetypeSDL2\functions.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictSDL2\source\derelict\sdl2\image.d">
+      <Link>3rdparty\FreetypeSDL2\image.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictSDL2\source\derelict\sdl2\mixer.d">
+      <Link>3rdparty\FreetypeSDL2\mixer.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictSDL2\source\derelict\sdl2\net.d">
+      <Link>3rdparty\FreetypeSDL2\net.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictSDL2\source\derelict\sdl2\sdl.d">
+      <Link>3rdparty\FreetypeSDL2\sdl.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictSDL2\source\derelict\sdl2\ttf.d">
+      <Link>3rdparty\FreetypeSDL2\ttf.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictSDL2\source\derelict\sdl2\types.d">
+      <Link>3rdparty\FreetypeSDL2\types.d</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\dlangui\platforms\x11\" />
@@ -199,5 +227,6 @@
     <Folder Include="3rdparty\DerelictGL3\" />
     <Folder Include="3rdparty\DerelictFT\" />
     <Folder Include="3rdparty\DerelictFI\" />
+    <Folder Include="3rdparty\FreetypeSDL2\" />
   </ItemGroup>
 </Project>

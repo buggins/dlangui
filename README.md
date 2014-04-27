@@ -159,6 +159,12 @@ Development using Mono-D:
 * open solution dlangui/dlanguimonod.sln 
 * build and run project example1
 
+You need fresh version of MonoDevelop to use Mono-D. It can be installed from PPA repository.
+
+        sudo add-apt-repository ppa:ermshiperete/monodevelop
+        sudo apt-get update
+        sudo apt-get install monodevelop-current
+
 
 Other platforms
 ---------------
