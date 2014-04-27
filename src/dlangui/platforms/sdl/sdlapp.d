@@ -46,7 +46,7 @@ version(USE_SDL) {
 		}
 			
 		bool create() {
-			_win = SDL_CreateWindow(_caption.toStringz, 20, 20, 700, 500, SDL_WINDOW_SHOWN);
+			_win = SDL_CreateWindow(_caption.toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 700, 500, SDL_WINDOW_RESIZABLE);
 			if (!_win) {
 				Log.e("SDL2: Failed to create window");
 				return false;
@@ -69,7 +69,8 @@ version(USE_SDL) {
 		
 		bool _derelictgl3Reloaded;
 		override void show() {
-			Log.d("XCBWindow.show()");
+			Log.d("SDLWindow.show()");
+			SDL_ShowWindow(_win);
 		}
 
 		protected string _caption;
@@ -80,11 +81,21 @@ version(USE_SDL) {
 
 		override @property void windowCaption(string caption) {
 			_caption = caption;
-			//TODO
+			SDL_SetWindowTitle(_win, _caption.toStringz);
 		}
 
 		void redraw() {
 			
+			// Select the color for drawing. It is set to red here.
+			SDL_SetRenderDrawColor(_renderer, 255, 0, 0, 255);
+			
+			// Clear the entire screen to our selected color.
+			SDL_RenderClear(_renderer);
+			
+			// Up until now everything was drawn behind the scenes.
+			// This will show the new, red contents of the window.
+			SDL_RenderPresent(_renderer);
+
 			if (_enableOpengl) {
                 version(USE_OPENGL) {
                 }
@@ -190,14 +201,29 @@ version(USE_SDL) {
 			_windowMap[res.windowId] = res;
 			return res;
 		}
+
+		void redrawWindows() {
+			foreach(w; _windowMap)
+				w.redraw();
+		}
+
 		override int enterMessageLoop() {
 			Log.i("entering message loop");
 			SDL_Event event;
 			bool quit = false;
-			while(!quit) {
-				while(SDL_PollEvent(&event)) {
-					SDL_PumpEvents();
+			while(true) {
+				redrawWindows();
+
+				SDL_PollEvent(&event);
+				//Log.d("Event.type = ", event.type);
+				if (event.type == SDL_QUIT) {
+					Log.i("event.type == SDL_QUIT");
+					break;
 				}
+
+
+				//SDL_PumpEvents();
+				SDL_Delay(10);
 			}
 			Log.i("exiting message loop");
 			return 0;
