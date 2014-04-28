@@ -97,10 +97,13 @@
         "../../3rdparty/win32/ws2tcpip.d",
         "../../3rdparty/win32/wtypes.d"
     ],
+
     "sourceFiles": [
          "src/main.d"
     ],
+
     "copyFiles-windows": [
+        "../../lib/SDL2.dll",
         "../../lib/FreeImage.dll",
         "../../lib/libfreetype-6.dll",
         "../../lib/libpng15.dll",

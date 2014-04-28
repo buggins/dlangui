@@ -43,6 +43,7 @@ version(USE_SDL) {
 			Log.d("Creating SDL window");
 			create();
 		}
+
 		~this() {
 			Log.d("Destroying window");
 			if (_renderer)
@@ -219,17 +220,26 @@ version(USE_SDL) {
 			bool quit = false;
 			while(true) {
 				redrawWindows();
-
-				SDL_PollEvent(&event);
-				//Log.d("Event.type = ", event.type);
-				if (event.type == SDL_QUIT) {
-					Log.i("event.type == SDL_QUIT");
-					break;
-				}
-
-
-				//SDL_PumpEvents();
-				SDL_Delay(10);
+				//if (SDL_PollEvent(&event)) {
+				if (SDL_WaitEvent(&event)) {
+				    //Log.d("Event.type = ", event.type);
+				    if (event.type == SDL_QUIT) {
+					    Log.i("event.type == SDL_QUIT");
+					    break;
+				    } else if (event.type == SDL_WINDOWEVENT) {
+                        switch (event.window.event) {
+                            case SDL_WINDOWEVENT_RESIZED:
+                                Log.d("SDL_WINDOWEVENT_RESIZED win=", event.window.windowID, " pos=", event.window.data1,
+                                      ",", event.window.data2);
+                                break;
+                            case SDL_WINDOWEVENT_CLOSE:
+                                Log.d("SDL_WINDOWEVENT_CLOSE win=", event.window.windowID);
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
 			}
 			Log.i("exiting message loop");
 			return 0;
