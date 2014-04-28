@@ -1,7 +1,6 @@
 module dlangui.platforms.windows.win32drawbuf;
 
-version (USE_SDL) { } 
-else version (Windows) {
+version (Windows) {
 
 import win32.windows;
 import dlangui.core.logger;

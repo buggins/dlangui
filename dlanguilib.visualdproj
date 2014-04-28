@@ -66,7 +66,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>Unicode USE_OPENGL</versionids>
+  <versionids>Unicode USE_OPENGL USE_SDL</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>1</createImplib>
@@ -225,6 +225,15 @@
     <File path="..\DerelictUtil\source\derelict\util\wintypes.d" />
     <File path="..\DerelictUtil\source\derelict\util\xtypes.d" />
    </Folder>
+   <Folder name="DerelictSDL2">
+    <File path="..\DerelictSDL2\source\derelict\sdl2\functions.d" />
+    <File path="..\DerelictSDL2\source\derelict\sdl2\image.d" />
+    <File path="..\DerelictSDL2\source\derelict\sdl2\mixer.d" />
+    <File path="..\DerelictSDL2\source\derelict\sdl2\net.d" />
+    <File path="..\DerelictSDL2\source\derelict\sdl2\sdl.d" />
+    <File path="..\DerelictSDL2\source\derelict\sdl2\ttf.d" />
+    <File path="..\DerelictSDL2\source\derelict\sdl2\types.d" />
+   </Folder>
    <Folder name="gl3n">
     <File path="..\gl3n\gl3n\aabb.d" />
     <File path="..\gl3n\gl3n\frustum.d" />
@@ -320,12 +329,14 @@
      <Folder name="common">
       <File path="src\dlangui\platforms\common\platform.d" />
      </Folder>
+     <Folder name="sdl">
+      <File path="src\dlangui\platforms\sdl\sdlapp.d" />
+     </Folder>
      <Folder name="windows">
       <File path="src\dlangui\platforms\windows\win32drawbuf.d" />
       <File path="src\dlangui\platforms\windows\win32fonts.d" />
       <File path="src\dlangui\platforms\windows\winapp.d" />
      </Folder>
-     <File path="src\dlangui\platforms\sdl\sdlapp.d" />
     </Folder>
     <Folder name="widgets">
      <File path="src\dlangui\widgets\controls.d" />

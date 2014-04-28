@@ -1,8 +1,14 @@
 module src.dlangui.platforms.sdl.sdlapp;
 
 version(USE_SDL) {
+    import core.runtime;
 	import std.string;
 	import std.conv;
+    import std.string;
+    import std.utf;
+    import std.stdio;
+    import std.algorithm;
+    import std.file;
 
 	import dlangui.core.logger;
 	import dlangui.core.events;
@@ -243,59 +249,145 @@ version(USE_SDL) {
 
 	// entry point
 	extern(C) int UIAppMain(string[] args);
+
+    version (Windows) {
+        import win32.windows;
+        import dlangui.platforms.windows.win32fonts;
+        pragma(lib, "gdi32.lib");
+        pragma(lib, "user32.lib");
+        extern(Windows)
+            int DLANGUIWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
+                               LPSTR lpCmdLine, int nCmdShow) {
+                                   int result;
+
+                                   try
+                                   {
+                                       Runtime.initialize();
+                                       result = myWinMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+                                       Runtime.terminate();
+                                   }
+                                   catch (Throwable e) // catch any uncaught exceptions
+                                   {
+                                       MessageBox(null, toUTF16z(e.toString()), "Error",
+                                                  MB_OK | MB_ICONEXCLAMATION);
+                                       result = 0;     // failed
+                                   }
+
+                                   return result;
+                               }
+
+        string[] splitCmdLine(string line) {
+            string[] res;
+            int start = 0;
+            bool insideQuotes = false;
+            for (int i = 0; i <= line.length; i++) {
+                char ch = i < line.length ? line[i] : 0;
+                if (ch == '\"') {
+                    if (insideQuotes) {
+                        if (i > start)
+                            res ~= line[start .. i];
+                        start = i + 1;
+                        insideQuotes = false;
+                    } else {
+                        insideQuotes = true;
+                        start = i + 1;
+                    }
+                } else if (!insideQuotes && (ch == ' ' || ch == '\t' || ch == 0)) {
+                    if (i > start) {
+                        res ~= line[start .. i];
+                    }
+                    start = i + 1;
+                }
+            }
+            return res;
+        }
+
+        int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int iCmdShow)
+        {
+            setFileLogger(std.stdio.File("ui.log", "w"));
+            setLogLevel(LogLevel.Trace);
+            Log.d("myWinMain()");
+            string basePath = exePath();
+            Log.i("Current executable: ", exePath());
+            string cmdline = fromStringz(lpCmdLine);
+            Log.i("Command line: ", cmdline);
+            string[] args = splitCmdLine(cmdline);
+            Log.i("Command line params: ", args);
+
+		    try {
+			    // Load the SDL 2 library.
+			    DerelictSDL2.load();
+		    } catch (Exception e) {
+			    Log.e("Cannot load SDL2 library", e);
+			    return 1;
+		    }
+
+            //_cmdShow = iCmdShow;
+            //_hInstance = hInstance;
+
+            FontManager.instance = new Win32FontManager();
+
+            return sdlmain(args);
+        }
+    } else {
+
+	    int main(string[] args)
+	    {
 		
-	int main(string[] args)
-	{
-		
-		setStderrLogger();
-		setLogLevel(LogLevel.Trace);
+		    setStderrLogger();
+		    setLogLevel(LogLevel.Trace);
 
-		try {
-			// Load the SDL 2 library.
-			DerelictSDL2.load();
-		} catch (Exception e) {
-			Log.e("Cannot load SDL2 library", e);
-			return 1;
-		}
+		    try {
+			    // Load the SDL 2 library.
+			    DerelictSDL2.load();
+		    } catch (Exception e) {
+			    Log.e("Cannot load SDL2 library", e);
+			    return 1;
+		    }
 
-		SDL_DisplayMode displayMode;
-		if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_EVENTS) != 0) {
-			Log.e("Cannot init SDL2");
-			return 2;
-		}
-		scope(exit)SDL_Quit();
-		int request = SDL_GetDesktopDisplayMode(0,&displayMode);
+		    SDL_DisplayMode displayMode;
+		    if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_EVENTS) != 0) {
+			    Log.e("Cannot init SDL2");
+			    return 2;
+		    }
+		    scope(exit)SDL_Quit();
+		    int request = SDL_GetDesktopDisplayMode(0,&displayMode);
 
 
-		FreeTypeFontManager ft = new FreeTypeFontManager();
-		// TODO: use FontConfig
-		ft.registerFont("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", FontFamily.SansSerif, "DejaVu", false, FontWeight.Normal);
-		FontManager.instance = ft;
+		    FreeTypeFontManager ft = new FreeTypeFontManager();
+		    // TODO: use FontConfig
+		    ft.registerFont("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", FontFamily.SansSerif, "DejaVu", false, FontWeight.Normal);
+		    FontManager.instance = ft;
 
-		currentTheme = createDefaultTheme();
-				
-		SDLPlatform sdl = new SDLPlatform();
-		if (!sdl.connect()) {
-			return 1;
-		}
-		Platform.setInstance(sdl);
+            return sdlmain(args);
+	    }
+    }
 
-		int res = 0;
-			
-		res = UIAppMain(args);
+    int sdlmain(string[] args) {
+        currentTheme = createDefaultTheme();
 
-		Platform.setInstance(null);
-		Log.d("Destroying SDL platform");
-		destroy(sdl);
-		
-		currentTheme = null;
-		drawableCache = null;
-		imageCache = null;
-		FontManager.instance = null;
-		
-		Log.d("Exiting main");
+        SDLPlatform sdl = new SDLPlatform();
+        if (!sdl.connect()) {
+            return 1;
+        }
+        Platform.setInstance(sdl);
 
-	  	return res;
-	}
+        int res = 0;
+
+        res = UIAppMain(args);
+
+        Platform.setInstance(null);
+        Log.d("Destroying SDL platform");
+        destroy(sdl);
+
+        currentTheme = null;
+        drawableCache = null;
+        imageCache = null;
+        FontManager.instance = null;
+
+        Log.d("Exiting main");
+
+        return res;
+    }
 
 }
