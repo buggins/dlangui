@@ -1,6 +1,6 @@
 module dlangui.platforms.windows.winapp;
-
-version (Windows) {
+version (USE_SDL) { } 
+else version (Windows) {
 
 import core.runtime;
 import win32.windows;

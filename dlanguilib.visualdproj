@@ -325,6 +325,7 @@
       <File path="src\dlangui\platforms\windows\win32fonts.d" />
       <File path="src\dlangui\platforms\windows\winapp.d" />
      </Folder>
+     <File path="src\dlangui\platforms\sdl\sdlapp.d" />
     </Folder>
     <Folder name="widgets">
      <File path="src\dlangui\widgets\controls.d" />
