@@ -68,7 +68,9 @@ version(USE_SDL) {
 		}
 		
 		@property uint windowId() {
-			return 1; // TODO;
+            if (_win)
+			    return SDL_GetWindowID(_win);
+            return 0;
 		}
 
 		void draw(ColorDrawBuf buf) {
@@ -198,46 +200,118 @@ version(USE_SDL) {
 
 			return true;
 		}
-		SDLWindow getWindow(uint w) {
-			if (w in _windowMap)
-				return _windowMap[w];
+
+		SDLWindow getWindow(uint id) {
+			if (id in _windowMap)
+				return _windowMap[id];
 			return null;
 		}
+
 		override Window createWindow(string windowCaption, Window parent) {
 			SDLWindow res = new SDLWindow(windowCaption, parent);
 			_windowMap[res.windowId] = res;
 			return res;
 		}
 
-		void redrawWindows() {
-			foreach(w; _windowMap)
-				w.redraw();
-		}
+        //void redrawWindows() {
+        //    foreach(w; _windowMap)
+        //        w.redraw();
+        //}
 
 		override int enterMessageLoop() {
 			Log.i("entering message loop");
 			SDL_Event event;
 			bool quit = false;
 			while(true) {
-				redrawWindows();
+				//redrawWindows();
+
 				//if (SDL_PollEvent(&event)) {
 				if (SDL_WaitEvent(&event)) {
+
 				    //Log.d("Event.type = ", event.type);
+
 				    if (event.type == SDL_QUIT) {
 					    Log.i("event.type == SDL_QUIT");
 					    break;
-				    } else if (event.type == SDL_WINDOWEVENT) {
-                        switch (event.window.event) {
-                            case SDL_WINDOWEVENT_RESIZED:
-                                Log.d("SDL_WINDOWEVENT_RESIZED win=", event.window.windowID, " pos=", event.window.data1,
-                                      ",", event.window.data2);
+				    } 
+
+                    switch (event.type) {
+                        case SDL_WINDOWEVENT: 
+                        {
+                            // WINDOW EVENTS
+                            uint windowID = event.window.windowID;
+                            SDLWindow w = getWindow(windowID);
+                            if (!w) {
+                                Log.w("SDL_WINDOWEVENT ", event.window.event, " received with unknown id ", windowID);
                                 break;
-                            case SDL_WINDOWEVENT_CLOSE:
-                                Log.d("SDL_WINDOWEVENT_CLOSE win=", event.window.windowID);
-                                break;
-                            default:
-                                break;
+                            }
+                            // found window
+                            switch (event.window.event) {
+                                case SDL_WINDOWEVENT_RESIZED:
+                                    Log.d("SDL_WINDOWEVENT_RESIZED win=", event.window.windowID, " pos=", event.window.data1,
+                                            ",", event.window.data2);
+                                    break;
+                                case SDL_WINDOWEVENT_CLOSE:
+                                    Log.d("SDL_WINDOWEVENT_CLOSE win=", event.window.windowID);
+                                    break;
+                                case SDL_WINDOWEVENT_SHOWN:
+                                    Log.d("SDL_WINDOWEVENT_SHOWN");
+                                    break;
+                                case SDL_WINDOWEVENT_HIDDEN:
+                                    Log.d("SDL_WINDOWEVENT_HIDDEN");
+                                    break;
+                                case SDL_WINDOWEVENT_EXPOSED:
+                                    Log.d("SDL_WINDOWEVENT_EXPOSED");
+                                    w.redraw();
+                                    break;
+                                case SDL_WINDOWEVENT_MOVED:
+                                    Log.d("SDL_WINDOWEVENT_MOVED");
+                                    break;
+                                case SDL_WINDOWEVENT_MINIMIZED:
+                                    Log.d("SDL_WINDOWEVENT_MINIMIZED");
+                                    break;
+                                case SDL_WINDOWEVENT_MAXIMIZED:
+                                    Log.d("SDL_WINDOWEVENT_MAXIMIZED");
+                                    break;
+                                case SDL_WINDOWEVENT_RESTORED:
+                                    Log.d("SDL_WINDOWEVENT_MAXIMIZED");
+                                    break;
+                                case SDL_WINDOWEVENT_ENTER:
+                                    Log.d("SDL_WINDOWEVENT_MAXIMIZED");
+                                    break;
+                                case SDL_WINDOWEVENT_LEAVE:
+                                    Log.d("SDL_WINDOWEVENT_MAXIMIZED");
+                                    break;
+                                case SDL_WINDOWEVENT_FOCUS_GAINED:
+                                    Log.d("SDL_WINDOWEVENT_MAXIMIZED");
+                                    break;
+                                case SDL_WINDOWEVENT_FOCUS_LOST:
+                                    Log.d("SDL_WINDOWEVENT_MAXIMIZED");
+                                    break;
+                                default:
+                                    break;
+                            }
                         }
+                        break;
+                    case SDL_KEYDOWN:
+                        break;
+                    case SDL_KEYUP:
+                        break;
+                    case SDL_TEXTEDITING:
+                        break;
+                    case SDL_TEXTINPUT:
+                        break;
+                    case SDL_MOUSEMOTION:
+                        break;
+                    case SDL_MOUSEBUTTONDOWN:
+                        break;
+                    case SDL_MOUSEBUTTONUP:
+                        break;
+                    case SDL_MOUSEWHEEL:
+                        break;
+                    default:
+                        // not supported event
+                        break;
                     }
                 }
 			}
