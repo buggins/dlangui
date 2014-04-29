@@ -73,8 +73,6 @@ version(USE_SDL) {
             return 0;
 		}
 
-		void draw(ColorDrawBuf buf) {
-		}
 		
 		bool _derelictgl3Reloaded;
 		override void show() {
@@ -93,6 +91,44 @@ version(USE_SDL) {
 			SDL_SetWindowTitle(_win, _caption.toStringz);
 		}
 
+        void handleResize(int w, int h) {
+            _dx = w;
+            _dy = h;
+        }
+
+        SDL_Texture * _texture;
+        int _txw;
+        int _txh;
+        private void updateBufferSize() {
+            if (_texture && (_txw != _dx || _txh != _dy)) {
+                SDL_DestroyTexture(_texture);
+                _texture = null;
+            }
+            if (!_texture) {
+                _texture = SDL_CreateTexture(_renderer,
+                                           SDL_PIXELFORMAT_ARGB8888,
+                                           SDL_TEXTUREACCESS_STATIC, //SDL_TEXTUREACCESS_STREAMING,
+                                           _dx,
+                                           _dy);
+                _txw = _dx;
+                _txh = _dy;
+            }
+        }
+		private void draw(ColorDrawBuf buf) {
+            updateBufferSize();
+            SDL_Rect rect;
+            rect.x = 0;
+            rect.y = 0;
+            rect.w = _dx;
+            rect.h = _dy;
+            uint * pixels = buf.scanLine(0);
+            SDL_UpdateTexture(_texture,
+                              &rect,
+                              cast(const void*)pixels,
+                              _dx * uint.sizeof);
+            SDL_RenderCopy(_renderer, _texture, &rect, &rect);
+		}
+
 		void redraw() {
 			
 			// Select the color for drawing. It is set to red here.
@@ -101,9 +137,6 @@ version(USE_SDL) {
 			// Clear the entire screen to our selected color.
 			SDL_RenderClear(_renderer);
 			
-			// Up until now everything was drawn behind the scenes.
-			// This will show the new, red contents of the window.
-			SDL_RenderPresent(_renderer);
 
 			if (_enableOpengl) {
                 version(USE_OPENGL) {
@@ -116,6 +149,9 @@ version(USE_SDL) {
 				onDraw(_drawbuf);
 				draw(_drawbuf);
 			}
+			// Up until now everything was drawn behind the scenes.
+			// This will show the new, red contents of the window.
+			SDL_RenderPresent(_renderer);
 		}
 		
 		ColorDrawBuf _drawbuf;
