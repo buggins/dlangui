@@ -155,25 +155,50 @@ version(USE_SDL) {
 		
 		ColorDrawBuf _drawbuf;
 
-		bool _exposeSent;
+		//bool _exposeSent;
 		void processExpose() {
 			redraw();
-			_exposeSent = false;
+			//_exposeSent = false;
 		}
 
 		/// request window redraw
 		override void invalidate() {
-			if (_exposeSent)
-				return;
-			_exposeSent = true;
-			//TODO
+			//if (_exposeSent)
+			//	return;
+			//_exposeSent = true;
+			//TODO optimize
+            redraw();
 		}
 				
 		protected ButtonDetails _lbutton;
 		protected ButtonDetails _mbutton;
 		protected ButtonDetails _rbutton;
-		void processMouseEvent(MouseAction action, ubyte detail, ushort state, short x, short y) {
-			bool res = false; //dispatchMouseEvent(event);
+        ushort convertMouseFlags(uint flags) {
+            ushort res = 0;
+            if (flags & SDL_BUTTON_LMASK)
+                res |= MouseFlag.LButton;
+            if (flags & SDL_BUTTON_RMASK)
+                res |= MouseFlag.RButton;
+            if (flags & SDL_BUTTON_MMASK)
+                res |= MouseFlag.MButton;
+            return res;
+        }
+
+        MouseButton convertMouseButton(uint button) {
+            if (button == SDL_BUTTON_LEFT)
+                return MouseButton.Left;
+            if (button == SDL_BUTTON_RIGHT)
+                return MouseButton.Right;
+            if (button == SDL_BUTTON_MIDDLE)
+                return MouseButton.Middle;
+            return MouseButton.None;
+        }
+
+		void processMouseEvent(MouseAction action, uint button, uint state, int x, int y) {
+            ushort flags = convertMouseFlags(state);
+            MouseButton btn = convertMouseButton(button);
+            MouseEvent event = new MouseEvent(action, btn, flags, cast(short)x, cast(short)y);
+			bool res = dispatchMouseEvent(event);
 	        if (res) {
 	            Log.d("Calling update() after mouse event");
 	            invalidate();
@@ -271,7 +296,7 @@ version(USE_SDL) {
 				    } 
 
                     switch (event.type) {
-                        case SDL_WINDOWEVENT: 
+                        case SDL_WINDOWEVENT:
                         {
                             // WINDOW EVENTS
                             uint windowID = event.window.windowID;
@@ -293,6 +318,8 @@ version(USE_SDL) {
                                     break;
                                 case SDL_WINDOWEVENT_CLOSE:
                                     Log.d("SDL_WINDOWEVENT_CLOSE win=", event.window.windowID);
+                                    _windowMap.remove(windowID);
+                                    destroy(w);
                                     break;
                                 case SDL_WINDOWEVENT_SHOWN:
                                     Log.d("SDL_WINDOWEVENT_SHOWN");
@@ -334,6 +361,7 @@ version(USE_SDL) {
                         }
                         break;
                     case SDL_KEYDOWN:
+
                         break;
                     case SDL_KEYUP:
                         break;
@@ -342,10 +370,22 @@ version(USE_SDL) {
                     case SDL_TEXTINPUT:
                         break;
                     case SDL_MOUSEMOTION:
+                        SDLWindow w = getWindow(event.motion.windowID);
+                        if (w) {
+                            w.processMouseEvent(MouseAction.Move, 0, event.motion.state, event.motion.x, event.motion.y);
+                        }
                         break;
                     case SDL_MOUSEBUTTONDOWN:
+                        SDLWindow w = getWindow(event.button.windowID);
+                        if (w) {
+                            w.processMouseEvent(MouseAction.ButtonDown, event.button.button, event.button.state, event.button.x, event.button.y);
+                        }
                         break;
                     case SDL_MOUSEBUTTONUP:
+                        SDLWindow w = getWindow(event.button.windowID);
+                        if (w) {
+                            w.processMouseEvent(MouseAction.ButtonUp, event.button.button, event.button.state, event.button.x, event.button.y);
+                        }
                         break;
                     case SDL_MOUSEWHEEL:
                         break;
@@ -381,24 +421,26 @@ version(USE_SDL) {
         pragma(lib, "user32.lib");
         extern(Windows)
             int DLANGUIWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                               LPSTR lpCmdLine, int nCmdShow) {
-                                   int result;
+                    LPSTR lpCmdLine, int nCmdShow) 
+            {
+                int result;
 
-                                   try
-                                   {
-                                       Runtime.initialize();
-                                       result = myWinMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
-                                       Runtime.terminate();
-                                   }
-                                   catch (Throwable e) // catch any uncaught exceptions
-                                   {
-                                       MessageBox(null, toUTF16z(e.toString()), "Error",
-                                                  MB_OK | MB_ICONEXCLAMATION);
-                                       result = 0;     // failed
-                                   }
+                try
+                {
+                    Runtime.initialize();
+                    result = myWinMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
+                    Log.i("calling Runtime.terminate()");
+                    Runtime.terminate();
+                }
+                catch (Throwable e) // catch any uncaught exceptions
+                {
+                    MessageBox(null, toUTF16z(e.toString()), "Error",
+                                MB_OK | MB_ICONEXCLAMATION);
+                    result = 0;     // failed
+                }
 
-                                   return result;
-                               }
+                return result;
+            }
 
         string[] splitCmdLine(string line) {
             string[] res;
