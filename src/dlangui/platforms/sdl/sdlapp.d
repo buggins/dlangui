@@ -91,11 +91,6 @@ version(USE_SDL) {
 			SDL_SetWindowTitle(_win, _caption.toStringz);
 		}
 
-        void handleResize(int w, int h) {
-            _dx = w;
-            _dy = h;
-        }
-
         SDL_Texture * _texture;
         int _txw;
         int _txh;
@@ -114,44 +109,48 @@ version(USE_SDL) {
                 _txh = _dy;
             }
         }
+
 		private void draw(ColorDrawBuf buf) {
             updateBufferSize();
             SDL_Rect rect;
-            rect.x = 0;
-            rect.y = 0;
-            rect.w = _dx;
-            rect.h = _dy;
-            uint * pixels = buf.scanLine(0);
+            rect.w = buf.width;
+            rect.h = buf.height;
             SDL_UpdateTexture(_texture,
                               &rect,
-                              cast(const void*)pixels,
-                              _dx * uint.sizeof);
+                              cast(const void*)buf.scanLine(0),
+                              buf.width * uint.sizeof);
             SDL_RenderCopy(_renderer, _texture, &rect, &rect);
 		}
 
 		void redraw() {
-			
-			// Select the color for drawing. It is set to red here.
-			SDL_SetRenderDrawColor(_renderer, 255, 0, 0, 255);
-			
-			// Clear the entire screen to our selected color.
-			SDL_RenderClear(_renderer);
-			
+            // check if size has been changed
+            int w, h;
+            SDL_GetWindowSize(_win,
+                              &w,
+                              &h);
+            onResize(w, h);
+
 
 			if (_enableOpengl) {
                 version(USE_OPENGL) {
                 }
 			} else {
+                // Select the color for drawing. It is set to red here.
+                //SDL_SetRenderDrawColor(_renderer, 255, 0, 0, 255);
+                // Clear the entire screen to our selected color.
+                //SDL_RenderClear(_renderer);
+
 				if (!_drawbuf)
 					_drawbuf = new ColorDrawBuf(_dx, _dy);
 				_drawbuf.resize(_dx, _dy);
 				_drawbuf.fill(_backgroundColor);
 				onDraw(_drawbuf);
 				draw(_drawbuf);
+
+                // Up until now everything was drawn behind the scenes.
+                // This will show the new, red contents of the window.
+                SDL_RenderPresent(_renderer);
 			}
-			// Up until now everything was drawn behind the scenes.
-			// This will show the new, red contents of the window.
-			SDL_RenderPresent(_renderer);
 		}
 		
 		ColorDrawBuf _drawbuf;
@@ -228,8 +227,8 @@ version(USE_SDL) {
 		bool connect() {
 			
 			try {
-				DerelictGL3.load();
-				_enableOpengl = true;
+				//DerelictGL3.load();
+				_enableOpengl = false;
 			} catch (Exception e) {
 				Log.e("Cannot load opengl library", e);
 			}
@@ -285,7 +284,12 @@ version(USE_SDL) {
                             switch (event.window.event) {
                                 case SDL_WINDOWEVENT_RESIZED:
                                     Log.d("SDL_WINDOWEVENT_RESIZED win=", event.window.windowID, " pos=", event.window.data1,
+                                          ",", event.window.data2);
+                                    break;
+                                case SDL_WINDOWEVENT_SIZE_CHANGED:
+                                    Log.d("SDL_WINDOWEVENT_SIZE_CHANGED win=", event.window.windowID, " pos=", event.window.data1,
                                             ",", event.window.data2);
+                                    w.onResize(event.window.data1, event.window.data2);
                                     break;
                                 case SDL_WINDOWEVENT_CLOSE:
                                     Log.d("SDL_WINDOWEVENT_CLOSE win=", event.window.windowID);
