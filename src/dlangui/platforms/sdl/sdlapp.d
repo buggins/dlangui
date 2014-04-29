@@ -118,7 +118,7 @@ version(USE_SDL) {
             SDL_UpdateTexture(_texture,
                               &rect,
                               cast(const void*)buf.scanLine(0),
-                              buf.width * uint.sizeof);
+                              buf.width * cast(int)uint.sizeof);
             SDL_RenderCopy(_renderer, _texture, &rect, &rect);
 		}
 
@@ -206,11 +206,193 @@ version(USE_SDL) {
 		}
 
 		uint convertKeyCode(uint keyCode) {
-			return 0x10000 | keyCode;
+            switch(keyCode) {
+                case SDLK_0:
+                    return KeyCode.KEY_0;
+                case SDLK_1:
+                    return KeyCode.KEY_1;
+                case SDLK_2:
+                    return KeyCode.KEY_2;
+                case SDLK_3:
+                    return KeyCode.KEY_3;
+                case SDLK_4:
+                    return KeyCode.KEY_4;
+                case SDLK_5:
+                    return KeyCode.KEY_5;
+                case SDLK_6:
+                    return KeyCode.KEY_6;
+                case SDLK_7:
+                    return KeyCode.KEY_7;
+                case SDLK_8:
+                    return KeyCode.KEY_8;
+                case SDLK_9:
+                    return KeyCode.KEY_9;
+                case SDLK_a:
+                    return KeyCode.KEY_A;
+                case SDLK_b:
+                    return KeyCode.KEY_B;
+                case SDLK_c:
+                    return KeyCode.KEY_C;
+                case SDLK_d:
+                    return KeyCode.KEY_D;
+                case SDLK_e:
+                    return KeyCode.KEY_E;
+                case SDLK_f:
+                    return KeyCode.KEY_F;
+                case SDLK_g:
+                    return KeyCode.KEY_G;
+                case SDLK_h:
+                    return KeyCode.KEY_H;
+                case SDLK_i:
+                    return KeyCode.KEY_I;
+                case SDLK_j:
+                    return KeyCode.KEY_J;
+                case SDLK_k:
+                    return KeyCode.KEY_K;
+                case SDLK_l:
+                    return KeyCode.KEY_L;
+                case SDLK_m:
+                    return KeyCode.KEY_M;
+                case SDLK_n:
+                    return KeyCode.KEY_N;
+                case SDLK_o:
+                    return KeyCode.KEY_O;
+                case SDLK_p:
+                    return KeyCode.KEY_P;
+                case SDLK_q:
+                    return KeyCode.KEY_Q;
+                case SDLK_r:
+                    return KeyCode.KEY_R;
+                case SDLK_s:
+                    return KeyCode.KEY_S;
+                case SDLK_t:
+                    return KeyCode.KEY_T;
+                case SDLK_u:
+                    return KeyCode.KEY_U;
+                case SDLK_v:
+                    return KeyCode.KEY_V;
+                case SDLK_w:
+                    return KeyCode.KEY_W;
+                case SDLK_x:
+                    return KeyCode.KEY_X;
+                case SDLK_y:
+                    return KeyCode.KEY_Y;
+                case SDLK_z:
+                    return KeyCode.KEY_Z;
+                case SDLK_F1:
+                    return KeyCode.F1;
+                case SDLK_F2:
+                    return KeyCode.F2;
+                case SDLK_F3:
+                    return KeyCode.F3;
+                case SDLK_F4:
+                    return KeyCode.F4;
+                case SDLK_F5:
+                    return KeyCode.F5;
+                case SDLK_F6:
+                    return KeyCode.F6;
+                case SDLK_F7:
+                    return KeyCode.F7;
+                case SDLK_F8:
+                    return KeyCode.F8;
+                case SDLK_F9:
+                    return KeyCode.F9;
+                case SDLK_F10:
+                    return KeyCode.F10;
+                case SDLK_F11:
+                    return KeyCode.F11;
+                case SDLK_F12:
+                    return KeyCode.F12;
+                case SDLK_F13:
+                    return KeyCode.F13;
+                case SDLK_F14:
+                    return KeyCode.F14;
+                case SDLK_F15:
+                    return KeyCode.F15;
+                case SDLK_F16:
+                    return KeyCode.F16;
+                case SDLK_F17:
+                    return KeyCode.F17;
+                case SDLK_F18:
+                    return KeyCode.F18;
+                case SDLK_F19:
+                    return KeyCode.F19;
+                case SDLK_F20:
+                    return KeyCode.F20;
+                case SDLK_F21:
+                    return KeyCode.F21;
+                case SDLK_F22:
+                    return KeyCode.F22;
+                case SDLK_F23:
+                    return KeyCode.F23;
+                case SDLK_F24:
+                    return KeyCode.F24;
+                case SDLK_BACKSPACE:
+                    return KeyCode.BACK;
+                case SDLK_TAB:
+                    return KeyCode.TAB;
+                case SDLK_RETURN:
+                    return KeyCode.RETURN;
+                case SDLK_ESCAPE:
+                    return KeyCode.ESCAPE;
+                case SDLK_DELETE:
+                    return KeyCode.DEL;
+                case SDLK_INSERT:
+                    return KeyCode.INS;
+                case SDLK_HOME:
+                    return KeyCode.HOME;
+                case SDLK_PAGEUP:
+                    return KeyCode.PAGEUP;
+                case SDLK_END:
+                    return KeyCode.END;
+                case SDLK_PAGEDOWN:
+                    return KeyCode.PAGEDOWN;
+                case SDLK_LEFT:
+                    return KeyCode.LEFT;
+                case SDLK_RIGHT:
+                    return KeyCode.RIGHT;
+                case SDLK_UP:
+                    return KeyCode.UP;
+                case SDLK_DOWN:
+                    return KeyCode.DOWN;
+                case SDLK_LCTRL:
+                    return KeyCode.LCONTROL;
+                case SDLK_LSHIFT:
+                    return KeyCode.LSHIFT;
+                case SDLK_LALT:
+                    return KeyCode.LALT;
+                case SDLK_RCTRL:
+                    return KeyCode.RCONTROL;
+                case SDLK_RSHIFT:
+                    return KeyCode.RSHIFT;
+                case SDLK_RALT:
+                    return KeyCode.RALT;
+                default:
+                    return 0x10000 | keyCode;
+            }
 		}
 		
 		uint convertKeyFlags(uint flags) {
-			return 0;
+            uint res;
+            if (flags & KMOD_CTRL)
+                res |= KeyFlag.Control;
+            if (flags & KMOD_SHIFT)
+                res |= KeyFlag.Shift;
+            if (flags & KMOD_ALT)
+                res |= KeyFlag.Alt;
+            if (flags & KMOD_RCTRL)
+                res |= KeyFlag.RControl;
+            if (flags & KMOD_RSHIFT)
+                res |= KeyFlag.RShift;
+            if (flags & KMOD_RALT)
+                res |= KeyFlag.RAlt;
+            if (flags & KMOD_LCTRL)
+                res |= KeyFlag.LControl;
+            if (flags & KMOD_LSHIFT)
+                res |= KeyFlag.LShift;
+            if (flags & KMOD_LALT)
+                res |= KeyFlag.LAlt;
+            return 0;
 		}
 				
 		bool processKeyEvent(KeyAction action, uint keyCode, uint flags) {
@@ -219,11 +401,11 @@ version(USE_SDL) {
 			flags = convertKeyFlags(flags);
 			Log.d("processKeyEvent ", action, " converted key=", keyCode, " converted flags=", flags);
 			bool res = dispatchKeyEvent(new KeyEvent(action, keyCode, flags));
-			if (keyCode & 0x10000 && (keyCode & 0xF000) != 0xF000) {
-				dchar[1] text;
-				text[0] = keyCode & 0xFFFF;
-				res = dispatchKeyEvent(new KeyEvent(KeyAction.Text, keyCode, flags, cast(dstring)text)) || res;
-			}
+//			if ((keyCode & 0x10000) && (keyCode & 0xF000) != 0xF000) {
+//				dchar[1] text;
+//				text[0] = keyCode & 0xFFFF;
+//				res = dispatchKeyEvent(new KeyEvent(KeyAction.Text, keyCode, flags, cast(dstring)text)) || res;
+//			}
 	        if (res) {
 	            Log.d("Calling update() after key event");
 	            invalidate();
@@ -358,40 +540,47 @@ version(USE_SDL) {
                                 default:
                                     break;
                             }
+                            break;
                         }
-                        break;
-                    case SDL_KEYDOWN:
-
-                        break;
-                    case SDL_KEYUP:
-                        break;
-                    case SDL_TEXTEDITING:
-                        break;
-                    case SDL_TEXTINPUT:
-                        break;
-                    case SDL_MOUSEMOTION:
-                        SDLWindow w = getWindow(event.motion.windowID);
-                        if (w) {
-                            w.processMouseEvent(MouseAction.Move, 0, event.motion.state, event.motion.x, event.motion.y);
-                        }
-                        break;
-                    case SDL_MOUSEBUTTONDOWN:
-                        SDLWindow w = getWindow(event.button.windowID);
-                        if (w) {
-                            w.processMouseEvent(MouseAction.ButtonDown, event.button.button, event.button.state, event.button.x, event.button.y);
-                        }
-                        break;
-                    case SDL_MOUSEBUTTONUP:
-                        SDLWindow w = getWindow(event.button.windowID);
-                        if (w) {
-                            w.processMouseEvent(MouseAction.ButtonUp, event.button.button, event.button.state, event.button.x, event.button.y);
-                        }
-                        break;
-                    case SDL_MOUSEWHEEL:
-                        break;
-                    default:
-                        // not supported event
-                        break;
+                        case SDL_KEYDOWN:
+                            SDLWindow w = getWindow(event.key.windowID);
+                            if (w) {
+                                w.processKeyEvent(KeyAction.KeyDown, event.key.keysym.sym, event.key.keysym.mod);
+                            }
+                            break;
+                        case SDL_KEYUP:
+                            SDLWindow w = getWindow(event.key.windowID);
+                            if (w) {
+                                w.processKeyEvent(KeyAction.KeyUp, event.key.keysym.sym, event.key.keysym.mod);
+                            }
+                            break;
+                        case SDL_TEXTEDITING:
+                            break;
+                        case SDL_TEXTINPUT:
+                            break;
+                        case SDL_MOUSEMOTION:
+                            SDLWindow w = getWindow(event.motion.windowID);
+                            if (w) {
+                                w.processMouseEvent(MouseAction.Move, 0, event.motion.state, event.motion.x, event.motion.y);
+                            }
+                            break;
+                        case SDL_MOUSEBUTTONDOWN:
+                            SDLWindow w = getWindow(event.button.windowID);
+                            if (w) {
+                                w.processMouseEvent(MouseAction.ButtonDown, event.button.button, event.button.state, event.button.x, event.button.y);
+                            }
+                            break;
+                        case SDL_MOUSEBUTTONUP:
+                            SDLWindow w = getWindow(event.button.windowID);
+                            if (w) {
+                                w.processMouseEvent(MouseAction.ButtonUp, event.button.button, event.button.state, event.button.x, event.button.y);
+                            }
+                            break;
+                        case SDL_MOUSEWHEEL:
+                            break;
+                        default:
+                            // not supported event
+                            break;
                     }
                 }
 			}

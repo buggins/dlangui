@@ -289,7 +289,10 @@ enum KeyFlag : uint {
 	Alt     = 0x0080,
     RControl = 0x0108,
 	RShift   = 0x0104,
-	RAlt     = 0x0180
+	RAlt     = 0x0180,
+    LControl = 0x0208,
+    LShift   = 0x0204,
+    LAlt     = 0x0280
 }
 
 enum KeyCode : uint {
