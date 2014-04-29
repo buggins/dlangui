@@ -392,11 +392,22 @@ version(USE_SDL) {
                 res |= KeyFlag.LShift;
             if (flags & KMOD_LALT)
                 res |= KeyFlag.LAlt;
-            return 0;
+            return res;
 		}
 				
-		bool processKeyEvent(KeyAction action, uint keyCode, uint flags) {
-			Log.d("processKeyEvent ", action, " x11 key=", keyCode, " x11 flags=", flags);
+        bool processTextInput(const char * s) {
+            string str = fromStringz(s);
+            dstring ds = toUTF32(str);
+            uint flags = convertKeyFlags(SDL_GetModState());
+            bool res = dispatchKeyEvent(new KeyEvent(KeyAction.Text, 0, flags, ds));
+            if (res) {
+                Log.d("Calling update() after text event");
+                invalidate();
+            }
+            return res;
+        }
+        bool processKeyEvent(KeyAction action, uint keyCode, uint flags) {
+            Log.d("processKeyEvent ", action, " SDL key=", keyCode, " SDL flags=", flags);
 			keyCode = convertKeyCode(keyCode);
 			flags = convertKeyFlags(flags);
 			Log.d("processKeyEvent ", action, " converted key=", keyCode, " converted flags=", flags);
@@ -464,7 +475,7 @@ version(USE_SDL) {
 			Log.i("entering message loop");
 			SDL_Event event;
 			bool quit = false;
-			while(true) {
+            while(true) {
 				//redrawWindows();
 
 				//if (SDL_PollEvent(&event)) {
@@ -546,6 +557,7 @@ version(USE_SDL) {
                             SDLWindow w = getWindow(event.key.windowID);
                             if (w) {
                                 w.processKeyEvent(KeyAction.KeyDown, event.key.keysym.sym, event.key.keysym.mod);
+                                SDL_StartTextInput();
                             }
                             break;
                         case SDL_KEYUP:
@@ -555,8 +567,14 @@ version(USE_SDL) {
                             }
                             break;
                         case SDL_TEXTEDITING:
+                            Log.d("SDL_TEXTEDITING");
                             break;
                         case SDL_TEXTINPUT:
+                            Log.d("SDL_TEXTINPUT");
+                            SDLWindow w = getWindow(event.text.windowID);
+                            if (w) {
+                                w.processTextInput(event.text.text.ptr);
+                            }
                             break;
                         case SDL_MOUSEMOTION:
                             SDLWindow w = getWindow(event.motion.windowID);
