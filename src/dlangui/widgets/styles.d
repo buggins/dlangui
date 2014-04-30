@@ -456,12 +456,12 @@ class Style {
 		_theme = theme;
 		_parentStyle = theme;
 		_id = id;
-		Log.d("Created style ", _id, ", count=", ++_instanceCount);
+		//Log.d("Created style ", _id, ", count=", ++_instanceCount);
 	}
 
 	~this() {
 		foreach(ref Style item; _substates) {
-			Log.d("Destroying substate");
+			//Log.d("Destroying substate");
 			destroy(item);
 			item = null;
 		}
@@ -473,7 +473,7 @@ class Style {
 		_children.clear();
 		_backgroundDrawable.clear();
 		_font.clear();
-		Log.d("Destroyed style ", _id, ", parentId=", _parentId, ", state=", _stateMask, ", count=", --_instanceCount);
+		//Log.d("Destroyed style ", _id, ", parentId=", _parentId, ", state=", _stateMask, ", count=", --_instanceCount);
 	}
 
 	/// create named substyle of this style
@@ -537,7 +537,7 @@ class Theme : Style {
 	}
 	
 	~this() {
-		Log.d("Theme destructor");
+		//Log.d("Theme destructor");
 		foreach(ref Style item; _byId) {
 			destroy(item);
 			item = null;

@@ -166,9 +166,6 @@ class ImageWidget : Widget {
             sz.y = img.height;
             applyAlign(rc, sz);
             uint st = state;
-            if (state & State.Checked) {
-                Log.d("Drawing image for checked state");
-            }
             img.drawTo(buf, rc, st);
         }
     }

@@ -300,13 +300,13 @@ class FreeTypeFont : Font {
         _fontItem = item;
         _size = size;
         _height = size;
-		Log.d("Created font, count=", ++_instanceCount);
+        debug Log.d("Created font, count=", ++_instanceCount);
     }
 
 	/// do cleanup
 	~this() {
 		clear();
-		Log.d("Destroyed font, count=", --_instanceCount);
+		debug Log.d("Destroyed font, count=", --_instanceCount);
 	}
 	
     private int _size;
@@ -451,14 +451,14 @@ class FreeTypeFontManager : FontManager {
         }
     }
     ~this() {
-		Log.d("FreeTypeFontManager ~this()");
+		debug Log.d("FreeTypeFontManager ~this()");
 		//_activeFonts.clear();
 		foreach(ref FontFileItem item; _fontFiles) {
 			destroy(item);
 			item = null;
 		}
 		_fontFiles.length = 0;
-		Log.d("Destroyed all fonts. Freeing library.");
+		debug Log.d("Destroyed all fonts. Freeing library.");
         // uninit library
         if (_library)
             FT_Done_FreeType(_library);

@@ -493,9 +493,6 @@ class StateDrawable : Drawable {
         foreach(ref item; _stateList)
             if (item.matchState(state)) {
                 if (!item.drawable.isNull) {
-                    if (state & State.Checked) {
-                        Log.d("Found item for checked state: ", item.stateMask, " ", item.stateValue);
-                    }
                     item.drawable.drawTo(buf, rc, state, tilex0, tiley0);
                 }
                 return;
@@ -610,10 +607,10 @@ class ImageCache {
     }
 
     this() {
-        Log.i("Creating ImageCache");
+        debug Log.i("Creating ImageCache");
     }
     ~this() {
-        Log.i("Destroying ImageCache");
+        debug Log.i("Destroying ImageCache");
 		foreach (ref item; _map) {
 			destroy(item);
             item = null;
@@ -858,17 +855,16 @@ class DrawableCache {
             if (fn !is null) {
                 _idToFileMap[id] = fn;
                 return fn;
-            } else {
-                Log.w("resource ", id, " is not found");
             }
         }
+        Log.w("resource ", id, " is not found");
         return null;
     }
     this() {
-        Log.i("Creating DrawableCache");
+        debug Log.i("Creating DrawableCache");
     }
     ~this() {
-        Log.i("Destroying DrawableCache");
+        debug Log.i("Destroying DrawableCache");
 		foreach (ref item; _idToDrawableMap) {
 			destroy(item);
 			item = null;

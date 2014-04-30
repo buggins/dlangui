@@ -41,12 +41,12 @@ version(USE_SDL) {
 		SDL_Renderer* _renderer;
 		this(string caption, Window parent) {
 			_caption = caption;
-			Log.d("Creating SDL window");
+			debug Log.d("Creating SDL window");
 			create();
 		}
 
 		~this() {
-			Log.d("Destroying window");
+			debug Log.d("Destroying SDL window");
 			if (_renderer)
 				SDL_DestroyRenderer(_renderer);
 			if (_win)
@@ -124,7 +124,7 @@ version(USE_SDL) {
 		}
 
 		void redraw() {
-            Log.e("Widget instance count in SDLWindow.redraw: ", Widget.instanceCount());
+            //Log.e("Widget instance count in SDLWindow.redraw: ", Widget.instanceCount());
             // check if size has been changed
             int w, h;
             SDL_GetWindowSize(_win,
@@ -610,11 +610,20 @@ version(USE_SDL) {
 		
     	/// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
 		override dstring getClipboardText(bool mouseBuffer = false) {
-			return ""d;
+            if (!SDL_HasClipboardText())
+			    return ""d;
+            char * txt = SDL_GetClipboardText();
+            if (!txt)
+                return ""d;
+            string s = fromStringz(txt);
+            SDL_free(txt);
+            return toUTF32(s);
 		}
 		
     	/// sets text to clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
 		override void setClipboardText(dstring text, bool mouseBuffer = false) {
+            string s = toUTF8(text);
+            SDL_SetClipboardText(s.toStringz);
 		}
 		
 		protected SDLWindow[uint] _windowMap;
@@ -643,7 +652,7 @@ version(USE_SDL) {
                 }
                 catch (Throwable e) // catch any uncaught exceptions
                 {
-                    MessageBox(null, toUTF16z(e.toString()), "Error",
+                    MessageBox(null, toUTF16z(e.toString ~ "\nStack trace:\n" ~ defaultTraceHandler.toString), "Error",
                                 MB_OK | MB_ICONEXCLAMATION);
                     result = 0;     // failed
                 }

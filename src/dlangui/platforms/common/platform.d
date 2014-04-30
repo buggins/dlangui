@@ -125,13 +125,13 @@ class Window {
 		_backgroundColor = 0xFFFFFF;
 	}
 	~this() {
+        foreach(p; _popups)
+            destroy(p);
+        _popups = null;
 		if (_mainWidget !is null) {
 			destroy(_mainWidget);
 		    _mainWidget = null;
 		}
-        foreach(p; _popups)
-            destroy(p);
-        _popups = null;
 	}
 
     private void animate(Widget root, long interval) {

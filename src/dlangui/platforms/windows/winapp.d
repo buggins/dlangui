@@ -248,7 +248,7 @@ class Win32Window : Window {
     }
 
     ~this() {
-        Log.d("Window destructor");
+        debug Log.d("Window destructor");
         version (USE_OPENGL) {
             import derelict.opengl3.wgl;
             if (_hGLRC) {
