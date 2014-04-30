@@ -49,21 +49,62 @@ version(USE_SDL) {
 			debug Log.d("Destroying SDL window");
 			if (_renderer)
 				SDL_DestroyRenderer(_renderer);
+            if (_context)
+                SDL_GL_DeleteContext(_context);
 			if (_win)
 				SDL_DestroyWindow(_win);
 		}
-			
+
+        static private bool _sdlReloaded = false;
+        SDL_GLContext _context;
+
 		bool create() {
-			_win = SDL_CreateWindow(_caption.toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 700, 500, SDL_WINDOW_RESIZABLE);
+            uint windowFlags = SDL_WINDOW_RESIZABLE;
+            if (_enableOpengl)
+                windowFlags |= SDL_WINDOW_OPENGL;
+			_win = SDL_CreateWindow(_caption.toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
+                                    700, 500, 
+                                    windowFlags);
+            if (!_win) {
+                if (_enableOpengl) {
+                    Log.e("SDL_CreateWindow failed - cannot create OpenGL window: ", fromStringz(SDL_GetError()));
+                    _enableOpengl = false;
+                    // recreate w/o OpenGL
+                    windowFlags &= ~SDL_WINDOW_OPENGL;
+                    _win = SDL_CreateWindow(_caption.toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
+                                            700, 500, 
+                                            windowFlags);
+                }
+            }
 			if (!_win) {
 				Log.e("SDL2: Failed to create window");
 				return false;
 			}
-			_renderer = SDL_CreateRenderer(_win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-			if (!_renderer) {
-				Log.e("SDL2: Failed to create renderer");
-				return false;
-			}
+            if (_enableOpengl) {
+                _context = SDL_GL_CreateContext(_win); // Create the actual context and make it current
+                if (!_context) {
+                    Log.e("SDL_GL_CreateContext failed: ", fromStringz(SDL_GetError()));
+                    _enableOpengl = false;
+                } else if (!_sdlReloaded) {
+                    //if (SDL_GL_MakeCurrent(window, context)) {
+                    //    Log.e("SDL_GL_MakeCurrent failed: ", fromStringz(SDL_GetError()));
+                    //    _enableOpengl = false;
+                    //}
+                    DerelictGL3.reload(); //<-- BOOM SIGSEGV
+                    _sdlReloaded = true;
+                }
+                    //if (context)
+                //    SDL_GL_DeleteContext(context);
+                //if (window)
+                //    SDL_DestroyWindow(window);
+            }
+            if (!_enableOpengl) {
+			    _renderer = SDL_CreateRenderer(_win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+			    if (!_renderer) {
+				    Log.e("SDL2: Failed to create renderer");
+				    return false;
+			    }
+            }
 			//windowCaption = _caption;
 			return true;
 		}
@@ -134,6 +175,10 @@ version(USE_SDL) {
 
 
 			if (_enableOpengl) {
+                // now you can make GL calls.
+                glClearColor(0,0.3f,0.7f,1);
+                glClear(GL_COLOR_BUFFER_BIT);
+                SDL_GL_SwapWindow(_win);
                 version(USE_OPENGL) {
                 }
 			} else {
@@ -446,12 +491,6 @@ version(USE_SDL) {
 		}
 		bool connect() {
 			
-			try {
-				//DerelictGL3.load();
-				_enableOpengl = false;
-			} catch (Exception e) {
-				Log.e("Cannot load opengl library", e);
-			}
 
 			return true;
 		}
@@ -698,13 +737,6 @@ version(USE_SDL) {
             string[] args = splitCmdLine(cmdline);
             Log.i("Command line params: ", args);
 
-		    try {
-			    // Load the SDL 2 library.
-			    DerelictSDL2.load();
-		    } catch (Exception e) {
-			    Log.e("Cannot load SDL2 library", e);
-			    return 1;
-		    }
 
             //_cmdShow = iCmdShow;
             //_hInstance = hInstance;
@@ -721,22 +753,6 @@ version(USE_SDL) {
 		    setStderrLogger();
 		    setLogLevel(LogLevel.Trace);
 
-		    try {
-			    // Load the SDL 2 library.
-			    DerelictSDL2.load();
-		    } catch (Exception e) {
-			    Log.e("Cannot load SDL2 library", e);
-			    return 1;
-		    }
-
-		    SDL_DisplayMode displayMode;
-		    if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_EVENTS) != 0) {
-			    Log.e("Cannot init SDL2");
-			    return 2;
-		    }
-		    scope(exit)SDL_Quit();
-		    int request = SDL_GetDesktopDisplayMode(0,&displayMode);
-
 
 		    FreeTypeFontManager ft = new FreeTypeFontManager();
 		    // TODO: use FontConfig
@@ -749,6 +765,36 @@ version(USE_SDL) {
 
     int sdlmain(string[] args) {
         currentTheme = createDefaultTheme();
+
+        try {
+            // Load the SDL 2 library.
+            DerelictSDL2.load();
+        } catch (Exception e) {
+            Log.e("Cannot load SDL2 library", e);
+            return 1;
+        }
+
+        try {
+            DerelictGL3.load();
+            _enableOpengl = true;
+        } catch (Exception e) {
+            Log.e("Cannot load opengl library", e);
+        }
+
+        SDL_DisplayMode displayMode;
+        if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_EVENTS) != 0) {
+            Log.e("Cannot init SDL2");
+            return 2;
+        }
+        scope(exit)SDL_Quit();
+        int request = SDL_GetDesktopDisplayMode(0,&displayMode);
+
+        // we want OpenGL 3.3
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,3);
+        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,2);
+        // Set OpenGL attributes
+        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 
         SDLPlatform sdl = new SDLPlatform();
         if (!sdl.connect()) {
