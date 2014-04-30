@@ -17,6 +17,7 @@ version(USE_SDL) {
 	import dlangui.graphics.ftfonts;
 	import dlangui.graphics.resources;
 	import dlangui.widgets.styles;
+	import dlangui.widgets.widget;
 	import dlangui.platforms.common.platform;
 
 	import derelict.sdl2.sdl;
@@ -123,6 +124,7 @@ version(USE_SDL) {
 		}
 
 		void redraw() {
+            Log.e("Widget instance count in SDLWindow.redraw: ", Widget.instanceCount());
             // check if size has been changed
             int w, h;
             SDL_GetWindowSize(_win,
@@ -748,16 +750,25 @@ version(USE_SDL) {
         int res = 0;
 
         res = UIAppMain(args);
+        //Log.e("Widget instance count after UIAppMain: ", Widget.instanceCount());
 
-        Platform.setInstance(null);
         Log.d("Destroying SDL platform");
-        destroy(sdl);
+        Platform.setInstance(null);
+
+        //
+        debug {
+            Widget.shuttingDown();
+        }
 
         currentTheme = null;
         drawableCache = null;
         imageCache = null;
         FontManager.instance = null;
-
+        debug {
+            if (Widget.instanceCount() > 0) {
+                Log.e("Non-zero Widget instance count when exiting: ", Widget.instanceCount());
+            }
+        }
         Log.d("Exiting main");
 
         return res;

@@ -121,19 +121,39 @@ class Widget {
     /// set new trackHover flag value (when true, widget will change Hover state while mouse is moving)
     @property Widget trackHover(bool v) { _trackHover = v; return this; }
 
-	//private static int _instanceCount = 0;
+    debug {
+	    private static int _instanceCount = 0;
+        private static bool _appShuttingDown = false;
+    }
 	/// create widget, with optional id
     this(string ID = null) {
 		_id = ID;
         _state = State.Enabled;
+        debug {
+            _instanceCount++;
+        }
 		//Log.d("Created widget, count = ", ++_instanceCount);
     }
 	~this() {
+        debug {
+            //Log.v("destroying widget ", _id);
+            if (_appShuttingDown)
+                Log.e("Destroying widget ", _id, " after app shutdown: probably, resource leak");
+            _instanceCount--;
+        }
 		if (_ownStyle !is null)
 			destroy(_ownStyle);
 		_ownStyle = null;
 		//Log.d("Destroyed widget, count = ", --_instanceCount);
 	}
+    debug {
+        /// for debug purposes - number of created widget objects, not yet destroyed
+        static @property int instanceCount() { return _instanceCount; }
+        /// for debug purposes - sets shutdown flag to log widgets not destroyed in time.
+        static void shuttingDown() {
+            _appShuttingDown = true;
+        }
+    }
 
     /// accessor to style - by lookup in theme by styleId (if style id is not set, theme base style will be used).
 	protected @property const (Style) style() const {

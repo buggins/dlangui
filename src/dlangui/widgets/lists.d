@@ -62,6 +62,9 @@ class WidgetListAdapter : ListAdapter {
 	override uint resetItemState(int index, uint flags) {
 		return _widgets.get(index).resetState(flags).state;
 	}
+    ~this() {
+        //Log.d("Destroying WidgetListAdapter");
+    }
 }
 
 /// List
@@ -348,6 +351,7 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 	}
 
     ~this() {
+        //Log.d("Destroying List ", _id);
         if (_adapter !is null && _ownAdapter)
             destroy(_adapter);
         _adapter = null;

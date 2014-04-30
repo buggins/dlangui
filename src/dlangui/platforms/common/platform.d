@@ -479,6 +479,8 @@ class Window {
 class Platform {
     static __gshared Platform _instance;
     static void setInstance(Platform instance) {
+        if (_instance)
+            destroy(_instance);
         _instance = instance;
     }
     @property static Platform instance() {
