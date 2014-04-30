@@ -179,8 +179,9 @@ Third party components used
 * DerelictGL3 - for OpenGL support
 * DerelictFT + FreeType library support under linux and optionally under Windows.
 * DerelictFI + FreeImage library support for decoding of images
+* DerelictSDL2 + SDL2 for cross platform support
 * WindowsAPI bindings from http://www.dsource.org/projects/bindings/wiki/WindowsApi (patched)
-* XCB and X11 bindings (patched) TODO: provide links
+* XCB and X11 bindings (patched) when SDL2 is not used; TODO: provide links
 
 
 Hello World
