@@ -158,7 +158,95 @@ extern (C) int UIAppMain(string[] args) {
             tabs.addTab(list, "Long List"d);
         }
 
-        tabs.addTab((new TextWidget()).id("tab3").textColor(0x00802000).text("Tab 3 contents"), "Tab 3"d);
+        {
+		    LinearLayout layout3 = new LinearLayout("tab3");
+		    layout3.addChild(new TextWidget(null, "Buttons in HorizontalLayout"d));
+		    WidgetGroup buttons1 = new HorizontalLayout();
+            buttons1.addChild(new Button("btn1", "Button 1"d));
+            buttons1.addChild(new Button("btn2", "Button 2"d));
+            buttons1.addChild(new Button("btn3", "Button 3"d));
+            buttons1.addChild(new Button("btn4", "Button 4"d));
+            layout3.addChild(buttons1);
+            layout3.addChild(new VSpacer());
+		    layout3.addChild(new TextWidget(null, "CheckBoxes in HorizontalLayout"d));
+		    WidgetGroup buttons2 = new HorizontalLayout();
+            buttons2.addChild(new CheckBox("btn1", "CheckBox 1"d));
+            buttons2.addChild(new CheckBox("btn2", "CheckBox 2"d));
+            buttons2.addChild(new CheckBox("btn3", "CheckBox 3"d));
+            buttons2.addChild(new CheckBox("btn4", "CheckBox 4"d));
+            layout3.addChild(buttons2);
+
+            layout3.addChild(new VSpacer());
+		    layout3.addChild(new TextWidget(null, "RadioButtons in HorizontalLayout"d));
+		    WidgetGroup buttons3 = new HorizontalLayout();
+            buttons3.addChild(new RadioButton("btn1", "RadioButton 1"d));
+            buttons3.addChild(new RadioButton("btn2", "RadioButton 2"d));
+            buttons3.addChild(new RadioButton("btn3", "RadioButton 3"d));
+            buttons3.addChild(new RadioButton("btn4", "RadioButton 4"d));
+            layout3.addChild(buttons3);
+
+            layout3.addChild(new VSpacer());
+		    layout3.addChild(new TextWidget(null, "ImageButtons HorizontalLayout"d));
+		    WidgetGroup buttons4 = new HorizontalLayout();
+            buttons4.addChild(new ImageButton("btn1", "fileclose"));
+            buttons4.addChild(new ImageButton("btn2", "fileopen"));
+            buttons4.addChild(new ImageButton("btn3", "exit"));
+            layout3.addChild(buttons4);
+
+            layout3.addChild(new VSpacer());
+		    layout3.addChild(new TextWidget(null, "In vertical layouts:"d));
+		    HorizontalLayout hlayout2 = new HorizontalLayout();
+            hlayout2.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+
+		    buttons1 = new VerticalLayout();
+		    buttons1.addChild(new TextWidget(null, "Buttons"d));
+            buttons1.addChild(new Button("btn1", "Button 1"d));
+            buttons1.addChild(new Button("btn2", "Button 2"d));
+            buttons1.addChild((new Button("btn3", "Button 3 - disabled"d)).enabled(false));
+            buttons1.addChild(new Button("btn4", "Button 4"d));
+            hlayout2.addChild(buttons1);
+            hlayout2.addChild(new HSpacer());
+
+		    buttons2 = new VerticalLayout();
+		    buttons2.addChild(new TextWidget(null, "CheckBoxes"d));
+            buttons2.addChild(new CheckBox("btn1", "CheckBox 1"d));
+            buttons2.addChild(new CheckBox("btn2", "CheckBox 2"d));
+            buttons2.addChild(new CheckBox("btn3", "CheckBox 3"d));
+            buttons2.addChild(new CheckBox("btn4", "CheckBox 4"d));
+            hlayout2.addChild(buttons2);
+            hlayout2.addChild(new HSpacer());
+
+		    buttons3 = new VerticalLayout();
+		    buttons3.addChild(new TextWidget(null, "RadioButtons"d));
+            buttons3.addChild(new RadioButton("btn1", "RadioButton 1"d));
+            buttons3.addChild(new RadioButton("btn2", "RadioButton 2"d));
+            buttons3.addChild(new RadioButton("btn3", "RadioButton 3"d));
+            buttons3.addChild(new RadioButton("btn4", "RadioButton 4"d));
+            hlayout2.addChild(buttons3);
+            hlayout2.addChild(new HSpacer());
+
+		    buttons4 = new VerticalLayout();
+		    buttons4.addChild(new TextWidget(null, "ImageButtons"d));
+            buttons4.addChild(new ImageButton("btn1", "fileclose"));
+            buttons4.addChild(new ImageButton("btn2", "fileopen"));
+            buttons4.addChild(new ImageButton("btn3", "exit"));
+            hlayout2.addChild(buttons4);
+            hlayout2.addChild(new HSpacer());
+
+		    WidgetGroup buttons5 = new VerticalLayout();
+		    buttons5.addChild(new TextWidget(null, "ImageTextButtons"d));
+            buttons5.addChild(new ImageTextButton("btn1", "fileclose", "Close"d));
+            buttons5.addChild(new ImageTextButton("btn2", "fileopen", "Open"d));
+            buttons5.addChild(new ImageTextButton("btn3", "exit", "Exit"d));
+            hlayout2.addChild(buttons5);
+
+
+            layout3.addChild(hlayout2);
+
+            layout3.addChild(new VSpacer());
+            layout3.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+            tabs.addTab(layout3, "Buttons"d);
+        }
         tabs.addTab((new TextWidget()).id("tab4").textColor(0x00802000).text("Tab 4 contents some long string"), "Tab 4"d);
         tabs.addTab((new TextWidget()).id("tab5").textColor(0x00802000).text("Tab 5 contents"), "Tab 5"d);
 
@@ -201,7 +289,7 @@ extern (C) int UIAppMain(string[] args) {
 
         //==========================================================================
 
-        tabs.selectTab("tab1");
+        tabs.selectTab("tab3");
 
         contentLayout.addChild(tabs);
 	    window.mainWidget = contentLayout;
