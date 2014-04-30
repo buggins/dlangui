@@ -48,56 +48,58 @@ version(USE_SDL) {
 			debug Log.d("Destroying SDL window");
 			if (_renderer)
 				SDL_DestroyRenderer(_renderer);
-            if (_context)
-                SDL_GL_DeleteContext(_context);
+            version(USE_OPENGL) {
+                if (_context)
+                    SDL_GL_DeleteContext(_context);
+            }
 			if (_win)
 				SDL_DestroyWindow(_win);
 		}
 
-        static private bool _sdlReloaded = false;
-        SDL_GLContext _context;
+        version(USE_OPENGL) {
+            static private bool _gl3Reloaded = false;
+            private SDL_GLContext _context;
+        }
 
 		bool create() {
             uint windowFlags = SDL_WINDOW_RESIZABLE;
-            if (_enableOpengl)
-                windowFlags |= SDL_WINDOW_OPENGL;
+            version(USE_OPENGL) {
+                if (_enableOpengl)
+                    windowFlags |= SDL_WINDOW_OPENGL;
+            }
 			_win = SDL_CreateWindow(_caption.toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
                                     700, 500, 
                                     windowFlags);
-            if (!_win) {
-                if (_enableOpengl) {
-                    Log.e("SDL_CreateWindow failed - cannot create OpenGL window: ", fromStringz(SDL_GetError()));
-                    _enableOpengl = false;
-                    // recreate w/o OpenGL
-                    windowFlags &= ~SDL_WINDOW_OPENGL;
-                    _win = SDL_CreateWindow(_caption.toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
-                                            700, 500, 
-                                            windowFlags);
+            version(USE_OPENGL) {
+                if (!_win) {
+                    if (_enableOpengl) {
+                        Log.e("SDL_CreateWindow failed - cannot create OpenGL window: ", fromStringz(SDL_GetError()));
+                        _enableOpengl = false;
+                        // recreate w/o OpenGL
+                        windowFlags &= ~SDL_WINDOW_OPENGL;
+                        _win = SDL_CreateWindow(_caption.toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
+                                                700, 500, 
+                                                windowFlags);
+                    }
                 }
             }
 			if (!_win) {
 				Log.e("SDL2: Failed to create window");
 				return false;
 			}
-            if (_enableOpengl) {
-                _context = SDL_GL_CreateContext(_win); // Create the actual context and make it current
-                if (!_context) {
-                    Log.e("SDL_GL_CreateContext failed: ", fromStringz(SDL_GetError()));
-                    _enableOpengl = false;
-                } else if (!_sdlReloaded) {
-                    //if (SDL_GL_MakeCurrent(window, context)) {
-                    //    Log.e("SDL_GL_MakeCurrent failed: ", fromStringz(SDL_GetError()));
-                    //    _enableOpengl = false;
-                    //}
-                    DerelictGL3.reload(); //<-- BOOM SIGSEGV
-                    _sdlReloaded = true;
-                    if (!initShaders())
+            version(USE_OPENGL) {
+                if (_enableOpengl) {
+                    _context = SDL_GL_CreateContext(_win); // Create the actual context and make it current
+                    if (!_context) {
+                        Log.e("SDL_GL_CreateContext failed: ", fromStringz(SDL_GetError()));
                         _enableOpengl = false;
+                    } else if (!_gl3Reloaded) {
+                        DerelictGL3.reload();
+                        _gl3Reloaded = true;
+                        if (!initShaders())
+                            _enableOpengl = false;
+                    }
                 }
-                    //if (context)
-                //    SDL_GL_DeleteContext(context);
-                //if (window)
-                //    SDL_DestroyWindow(window);
             }
             if (!_enableOpengl) {
 			    _renderer = SDL_CreateRenderer(_win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
@@ -106,7 +108,7 @@ version(USE_SDL) {
 				    return false;
 			    }
             }
-			//windowCaption = _caption;
+			windowCaption = _caption;
 			return true;
 		}
 		
@@ -117,7 +119,6 @@ version(USE_SDL) {
 		}
 
 		
-		bool _derelictgl3Reloaded;
 		override void show() {
 			Log.d("SDLWindow.show()");
 			SDL_ShowWindow(_win);
@@ -169,11 +170,8 @@ version(USE_SDL) {
             //Log.e("Widget instance count in SDLWindow.redraw: ", Widget.instanceCount());
             // check if size has been changed
             int w, h;
-            SDL_GetWindowSize(_win,
-                              &w,
-                              &h);
+            SDL_GetWindowSize(_win, &w, &h);
             onResize(w, h);
-
 
 			if (_enableOpengl) {
                 version(USE_OPENGL) {
@@ -194,10 +192,13 @@ version(USE_SDL) {
                     destroy(buf);
                 }
 			} else {
-                // Select the color for drawing. It is set to red here.
-                //SDL_SetRenderDrawColor(_renderer, 255, 0, 0, 255);
+                // Select the color for drawing.
+                ubyte r = cast(ubyte)((_backgroundColor >> 16) & 255);
+                ubyte g = cast(ubyte)((_backgroundColor >> 8) & 255);
+                ubyte b = cast(ubyte)((_backgroundColor >> 0) & 255);
+                SDL_SetRenderDrawColor(_renderer, r, g, b, 255);
                 // Clear the entire screen to our selected color.
-                //SDL_RenderClear(_renderer);
+                SDL_RenderClear(_renderer);
 
 				if (!_drawbuf)
 					_drawbuf = new ColorDrawBuf(_dx, _dy);
@@ -786,11 +787,13 @@ version(USE_SDL) {
             return 1;
         }
 
-        try {
-            DerelictGL3.load();
-            _enableOpengl = true;
-        } catch (Exception e) {
-            Log.e("Cannot load opengl library", e);
+        version(USE_OPENGL) {
+            try {
+                DerelictGL3.load();
+                _enableOpengl = true;
+            } catch (Exception e) {
+                Log.e("Cannot load opengl library", e);
+            }
         }
 
         SDL_DisplayMode displayMode;
@@ -801,12 +804,14 @@ version(USE_SDL) {
         scope(exit)SDL_Quit();
         int request = SDL_GetDesktopDisplayMode(0,&displayMode);
 
-        // we want OpenGL 3.3
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,2);
-        // Set OpenGL attributes
-        SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
-        SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+        version(USE_OPENGL) {
+            // we want OpenGL 3.3
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,3);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,2);
+            // Set OpenGL attributes
+            SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
+            SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+        }
 
         SDLPlatform sdl = new SDLPlatform();
         if (!sdl.connect()) {
