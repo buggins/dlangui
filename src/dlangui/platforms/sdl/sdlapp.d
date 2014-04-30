@@ -2,7 +2,6 @@ module src.dlangui.platforms.sdl.sdlapp;
 
 version(USE_SDL) {
     import core.runtime;
-	import std.string;
 	import std.conv;
     import std.string;
     import std.utf;
@@ -13,7 +12,7 @@ version(USE_SDL) {
 	import dlangui.core.logger;
 	import dlangui.core.events;
 	import dlangui.graphics.drawbuf;
-	import dlangui.graphics.fonts;
+    import dlangui.graphics.fonts;
 	import dlangui.graphics.ftfonts;
 	import dlangui.graphics.resources;
 	import dlangui.widgets.styles;
@@ -21,13 +20,13 @@ version(USE_SDL) {
 	import dlangui.platforms.common.platform;
 
 	import derelict.sdl2.sdl;
+	import derelict.opengl3.gl3;
 
 	version (USE_OPENGL) {
+        import dlangui.graphics.gldrawbuf;
 	    import dlangui.graphics.glsupport;
 	}
 	
-	import derelict.opengl3.gl3;
-	import derelict.opengl3.glx;
 
 //	pragma(lib, "xcb");
 //	pragma(lib, "xcb-shm");
@@ -92,6 +91,8 @@ version(USE_SDL) {
                     //}
                     DerelictGL3.reload(); //<-- BOOM SIGSEGV
                     _sdlReloaded = true;
+                    if (!initShaders())
+                        _enableOpengl = false;
                 }
                     //if (context)
                 //    SDL_GL_DeleteContext(context);
@@ -175,11 +176,22 @@ version(USE_SDL) {
 
 
 			if (_enableOpengl) {
-                // now you can make GL calls.
-                glClearColor(0,0.3f,0.7f,1);
-                glClear(GL_COLOR_BUFFER_BIT);
-                SDL_GL_SwapWindow(_win);
                 version(USE_OPENGL) {
+                    SDL_GL_MakeCurrent(_win, _context);
+                    glDisable(GL_DEPTH_TEST);
+                    glViewport(0, 0, _dx, _dy);
+                    float a = 1.0f;
+                    float r = ((_backgroundColor >> 16) & 255) / 255.0f;
+                    float g = ((_backgroundColor >> 8) & 255) / 255.0f;
+                    float b = ((_backgroundColor >> 0) & 255) / 255.0f;
+                    glClearColor(r, g, b, a);
+                    glClear(GL_COLOR_BUFFER_BIT);
+                    GLDrawBuf buf = new GLDrawBuf(_dx, _dy, false);
+                    buf.beforeDrawing();
+                    onDraw(buf);
+                    buf.afterDrawing();
+                    SDL_GL_SwapWindow(_win);
+                    destroy(buf);
                 }
 			} else {
                 // Select the color for drawing. It is set to red here.
