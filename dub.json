@@ -7,6 +7,7 @@
     "targetType": "none",
 
     "versions-windows": ["USE_OPENGL", "Unicode"],
+    "versions-posix": ["USE_OPENGL", "USE_SDL", "Unicode"],
 	
     "subPackages": [
         {
@@ -21,35 +22,6 @@
 			"targetPath": "lib",
 			"targetType": "staticLibrary",
 
-			"sourceFiles-posix": [
-			    "3rdparty/X11/xcb/bigreq.d",
-			    "3rdparty/X11/xcb/composite.d",
-			    "3rdparty/X11/xcb/damage.d",
-			    "3rdparty/X11/xcb/dpms.d",
-			    "3rdparty/X11/xcb/glx.d",
-			    "3rdparty/X11/xcb/randr.d",
-			    "3rdparty/X11/xcb/record.d",
-			    "3rdparty/X11/xcb/render.d",
-			    "3rdparty/X11/xcb/res.d",
-			    "3rdparty/X11/xcb/screensaver.d",
-			    "3rdparty/X11/xcb/shape.d",
-			    "3rdparty/X11/xcb/shm.d",
-			    "3rdparty/X11/xcb/xcb.d",
-			    "3rdparty/X11/xcb/xc_misc.d",
-			    "3rdparty/X11/xcb/xevie.d",
-			    "3rdparty/X11/xcb/xf86dri.d",
-			    "3rdparty/X11/xcb/xfixes.d",
-			    "3rdparty/X11/xcb/xinerama.d",
-			    "3rdparty/X11/xcb/xprint.d",
-			    "3rdparty/X11/xcb/xproto.d",
-			    "3rdparty/X11/xcb/xtest.d",
-			    "3rdparty/X11/xcb/xv.d",
-			    "3rdparty/X11/xcb/xvmc.d",
-			    "3rdparty/X11/xcb/image.d",
-			    "3rdparty/X11/keysymdef.d",
-			    "3rdparty/X11/X.d",
-			    "3rdparty/X11/Xlib.d"
-			],
 			"sourceFiles-windows": [
 				"3rdparty/win32/basetsd.d",
 				"3rdparty/win32/basetyps.d",
@@ -107,6 +79,7 @@
 				"3rdparty/win32/wtypes.d",
 			],
 			"dependencies": {
+				"derelict-sdl2": "~master",
 				"derelict-gl3": "~master",
 				"derelict-fi": "~master",
 				"derelict-ft": "~master"

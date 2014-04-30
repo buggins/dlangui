@@ -5,7 +5,7 @@ GUI for D programming language, written in D.
 
 Alpha stage of development.
 
-* Crossplatform (Win32 and Linux are supported in current version)
+* Crossplatform (Win32 and Linux are supported in current version); can use SDL2 as a backend.
 * Mostly inspired by Android UI API (layouts, styles, two phase layout, ...)
 * Supports highly customizable UI themes and styles
 * Supports internationalization
@@ -14,6 +14,7 @@ Alpha stage of development.
 * Actually it's a port (with major refactoring) of GUI library for cross platform OpenGL based implementation of Cool Reader app project from C++.
 * Almost ready for 2D games development
 * Goal: provide set of widgets suitable for building of IDE.
+* Non thread safe
 
 
 
