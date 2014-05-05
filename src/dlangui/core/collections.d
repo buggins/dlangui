@@ -41,7 +41,7 @@ import std.algorithm;
 
 /// array based collection of items
 /// retains item order when during add/remove operations
-struct Collection(T) {
+struct Collection(T, bool ownItems = false) {
     private T[] _items;
     private size_t _len;
     /// returns true if there are no items in collection
@@ -62,8 +62,11 @@ struct Collection(T) {
             // shrink
             static if (is(T == class) || is(T == struct)) {
                 // clear items
-                for (size_t i = newSize; i < _len; i++)
+                for (size_t i = newSize; i < _len; i++) {
+					static if (ownItems)
+						destroy(_items[i]);
                     _items[i] = T.init;
+				}
             }
         } else if (newSize > _len) {
             // expand
@@ -130,7 +133,9 @@ struct Collection(T) {
         size_t index = indexOf(value);
         if (index == size_t.max)
             return false;
-        remove(index);
+        T res = remove(index);
+		static if (ownItems)
+			destroy(res);
         return true;
     }
     /// support of foreach with reference
@@ -147,8 +152,11 @@ struct Collection(T) {
     void clear() {
         static if (is(T == class) || is(T == struct)) {
             /// clear references
-            for(size_t i = 0; i < _len; i++)
+            for(size_t i = 0; i < _len; i++) {
+				static if (ownItems)
+					destroy(_items[i]);
                 _items[i] = T.init;
+			}
         }
         _len = 0;
         _items = null;

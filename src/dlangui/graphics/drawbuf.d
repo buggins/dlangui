@@ -138,7 +138,16 @@ class DrawBuf : RefCountedObject {
         version (USE_OPENGL) {
             _id = drawBufIdGenerator++;
         }
+		debug(resalloc) _instanceCount++;
     }
+
+	debug(resalloc) private static int _instanceCount;
+	debug(resalloc) @property static int instanceCount() { return _instanceCount; }
+	~this() {
+		debug(resalloc) _instanceCount--;
+		clear();
+	}
+
     protected void function(uint) _onDestroyCallback;
     @property void onDestroyCallback(void function(uint) callback) { _onDestroyCallback = callback; }
     @property void function(uint) onDestroyCallback() { return _onDestroyCallback; }
@@ -355,7 +364,6 @@ class DrawBuf : RefCountedObject {
     }
 
     void clear() {}
-    ~this() { clear(); }
 }
 
 alias DrawBufRef = Ref!DrawBuf;

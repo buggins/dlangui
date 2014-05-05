@@ -451,13 +451,17 @@ class Style {
 		return this;
 	}
 
-	private static int _instanceCount;
+	debug(resalloc) private static int _instanceCount;
+	debug(resalloc) @property static int instanceCount() { return _instanceCount; }
+
 	this(Theme theme, string id) {
 		_theme = theme;
 		_parentStyle = theme;
 		_id = id;
+		debug(resalloc) _instanceCount++;
 		//Log.d("Created style ", _id, ", count=", ++_instanceCount);
 	}
+
 
 	~this() {
 		foreach(ref Style item; _substates) {
@@ -473,6 +477,7 @@ class Style {
 		_children.clear();
 		_backgroundDrawable.clear();
 		_font.clear();
+		debug(resalloc) _instanceCount--;
 		//Log.d("Destroyed style ", _id, ", parentId=", _parentId, ", state=", _stateMask, ", count=", --_instanceCount);
 	}
 

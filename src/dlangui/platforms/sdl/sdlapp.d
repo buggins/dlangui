@@ -54,6 +54,8 @@ version(USE_SDL) {
             }
 			if (_win)
 				SDL_DestroyWindow(_win);
+			if (_drawbuf)
+				destroy(_drawbuf);
 		}
 
         version(USE_OPENGL) {
@@ -798,7 +800,7 @@ version(USE_SDL) {
 
         SDL_DisplayMode displayMode;
         if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_EVENTS) != 0) {
-            Log.e("Cannot init SDL2");
+            Log.e("Cannot init SDL2");	
             return 2;
         }
         scope(exit)SDL_Quit();
@@ -828,7 +830,7 @@ version(USE_SDL) {
         Platform.setInstance(null);
 
         //
-        debug {
+		debug(resalloc) {
             Widget.shuttingDown();
         }
 
@@ -836,10 +838,19 @@ version(USE_SDL) {
         drawableCache = null;
         imageCache = null;
         FontManager.instance = null;
-        debug {
-            if (Widget.instanceCount() > 0) {
-                Log.e("Non-zero Widget instance count when exiting: ", Widget.instanceCount());
+        debug(resalloc) {
+			if (DrawBuf.instanceCount > 0) {
+				Log.e("Non-zero DrawBuf instance count when exiting: ", DrawBuf.instanceCount);
+			}
+			if (Style.instanceCount > 0) {
+				Log.e("Non-zero Style instance count when exiting: ", Style.instanceCount);
+			}
+			if (Widget.instanceCount() > 0) {
+                Log.e("Non-zero Widget instance count when exiting: ", Widget.instanceCount);
             }
+			if (ImageDrawable.instanceCount > 0) {
+				Log.e("Non-zero ImageDrawable instance count when exiting: ", ImageDrawable.instanceCount);
+			}
         }
         Log.d("Exiting main");
 

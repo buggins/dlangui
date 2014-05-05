@@ -169,17 +169,28 @@ static Drawable createColorDrawable(string s) {
 class ImageDrawable : Drawable {
     protected DrawBufRef _image;
     protected bool _tiled;
-	//private int _instanceCount;
+
+	debug(resalloc) private static int _instanceCount;
+
     this(ref DrawBufRef image, bool tiled = false, bool ninePatch = false) {
         _image = image;
         _tiled = tiled;
         if (ninePatch)
             _image.detectNinePatch();
-		//Log.d("Created ImageDrawable, count=", ++_instanceCount);
+		debug(resalloc) {
+			_instanceCount++;
+			Log.d("Created ImageDrawable, count=", _instanceCount);
+		}
     }
+	debug(resalloc) {
+		@property static int instanceCount() { return _instanceCount; }
+	}
 	~this() {
 		_image.clear();
-		//Log.d("Destroyed ImageDrawable, count=", --_instanceCount);
+		debug(resalloc) {
+			_instanceCount--;
+			Log.d("Destroyed ImageDrawable, count=", _instanceCount);
+		}
 	}
     @property override int width() { 
         if (_image.isNull)
@@ -350,7 +361,7 @@ android:state_window_focused=["true" | "false"] />
 /// Drawable which is drawn depending on state (see http://developer.android.com/guide/topics/resources/drawable-resource.html#StateList)
 class StateDrawable : Drawable {
 
-    static struct StateItem {
+    static class StateItem {
         uint stateMask;
         uint stateValue;
         ColorTransform transform;
@@ -366,8 +377,14 @@ class StateDrawable : Drawable {
     // max drawable size for all states
     protected Point _size;
 
+	~this() {
+		foreach(ref item; _stateList)
+			destroy(item);
+		_stateList = null;
+	}
+
     void addState(uint stateMask, uint stateValue, string resourceId, ref ColorTransform transform) {
-        StateItem item;
+        StateItem item = new StateItem();
         item.stateMask = stateMask;
         item.stateValue = stateValue;
         item.drawable = drawableCache.get(resourceId, transform);
@@ -375,14 +392,14 @@ class StateDrawable : Drawable {
     }
 
     void addState(uint stateMask, uint stateValue, DrawableRef drawable) {
-        StateItem item;
+        StateItem item = new StateItem();
         item.stateMask = stateMask;
         item.stateValue = stateValue;
         item.drawable = drawable;
         itemAdded(item);
     }
 
-    private void itemAdded(ref StateItem item) {
+    private void itemAdded(StateItem item) {
         _stateList ~= item;
         if (!item.drawable.isNull) {
             if (_size.x < item.drawable.width)
@@ -654,23 +671,29 @@ class DrawableCache {
         DrawableRef _drawable;
         DrawableRef[ColorTransform] _transformed;
 
-		//private int _instanceCount;
+		debug(resalloc) private static int _instanceCount;
         this(string id, string filename, bool tiled) {
             _id = id;
             _filename = filename;
             _tiled = tiled;
             _error = filename is null;
-			//Log.d("Created DrawableCacheItem, count=", ++_instanceCount);
+			debug(resalloc) Log.d("Created DrawableCacheItem, count=", ++_instanceCount);
         }
 		~this() {
 			_drawable.clear();
-			//Log.d("Destroyed DrawableCacheItem, count=", --_instanceCount);
+			foreach(ref t; _transformed)
+				t.clear();
+			_transformed.clear();
+			debug(resalloc) Log.d("Destroyed DrawableCacheItem, count=", --_instanceCount);
 		}
         /// remove from memory, will cause reload on next access
         void compact() {
             if (!_drawable.isNull)
                 _drawable.clear();
-        }
+			foreach(t; _transformed)
+				t.clear();
+			_transformed.clear();
+		}
         /// mark as not used
         void checkpoint() {
             _used = false;
@@ -864,12 +887,15 @@ class DrawableCache {
         debug Log.i("Creating DrawableCache");
     }
     ~this() {
-        debug Log.i("Destroying DrawableCache");
+		debug(resalloc) Log.e("Drawable instace count before destroying of DrawableCache: ", ImageDrawable.instanceCount);
+
+		Log.i("Destroying DrawableCache _idToDrawableMap.length=", _idToDrawableMap.length);
 		foreach (ref item; _idToDrawableMap) {
 			destroy(item);
 			item = null;
 		}
 		_idToDrawableMap.clear();
+		debug(resalloc) Log.e("Drawable instace count after destroying of DrawableCache: ", ImageDrawable.instanceCount);
     }
 }
 

@@ -5,6 +5,7 @@ import dlangui.graphics.fonts;
 
 import derelict.freetype.ft;
 private import dlangui.core.logger;
+private import dlangui.core.collections;
 private import std.algorithm;
 private import std.file;
 private import std.string;
@@ -99,7 +100,7 @@ private class FreeTypeFontFile {
     @property int weight() { return _weight; }
     @property bool italic() { return _italic; }
 
-	//private static int _instanceCount;
+	debug private static int _instanceCount;
     this(FT_Library library, string filename) {
         _library = library;
         _filename = filename;
@@ -107,12 +108,12 @@ private class FreeTypeFontFile {
         _matrix.yy = 0x10000;
         _matrix.xy = 0;
         _matrix.yx = 0;
-		//Log.d("Created FreeTypeFontFile, count=", ++_instanceCount);
+		debug Log.d("Created FreeTypeFontFile, count=", ++_instanceCount);
     }
 
 	~this() {
         clear();
-		//Log.d("Destroyed FreeTypeFontFile, count=", --_instanceCount);
+		debug Log.d("Destroyed FreeTypeFontFile, count=", --_instanceCount);
     }
 
     private static string familyName(FT_Face face)
@@ -292,21 +293,21 @@ private class FreeTypeFontFile {
 */
 class FreeTypeFont : Font {
     private FontFileItem _fontItem;
-    private FreeTypeFontFile[] _files;
+    private Collection!(FreeTypeFontFile, true) _files;
 
-	static int _instanceCount;
+	debug(resalloc) static int _instanceCount;
 	/// need to call create() after construction to initialize font
     this(FontFileItem item, int size) {
         _fontItem = item;
         _size = size;
         _height = size;
-        debug Log.d("Created font, count=", ++_instanceCount);
+		debug(resalloc) Log.d("Created font, count=", ++_instanceCount);
     }
 
 	/// do cleanup
 	~this() {
 		clear();
-		debug Log.d("Destroyed font, count=", --_instanceCount);
+		debug(resalloc) Log.d("Destroyed font, count=", --_instanceCount);
 	}
 	
     private int _size;
@@ -317,10 +318,6 @@ class FreeTypeFont : Font {
 
 	/// cleanup resources
     override void clear() {
-        foreach(ref FreeTypeFontFile file; _files) {
-            destroy(file);
-            file = null;
-        }
         _files.clear();
     }
 
@@ -375,8 +372,10 @@ class FreeTypeFont : Font {
         foreach (string filename; _fontItem.filenames) {
             FreeTypeFontFile file = new FreeTypeFontFile(_fontItem.library, filename);
             if (file.open(_size, 0)) {
-                _files ~= file;
-            }
+                _files.add(file);
+			} else {
+				destroy(file);
+			}
         }
 		return _files.length > 0;
 	}
@@ -503,6 +502,7 @@ class FreeTypeFontManager : FontManager {
             weight = font.weight;
             Log.d("Using properties from font file: face=", face, " weight=", weight, " italic=", italic);
         }
+		destroy(font);
 
         FontDef def = FontDef(family, face, italic, weight);
         FontFileItem item = findFileItem(def);

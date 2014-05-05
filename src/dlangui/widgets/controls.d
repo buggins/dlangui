@@ -123,6 +123,10 @@ class ImageWidget : Widget {
         _drawableId = drawableId;
 	}
 
+	~this() {
+		_drawable.clear();
+	}
+
     /// get drawable image id
     @property string drawableId() { return _drawableId; }
     /// set drawable image id

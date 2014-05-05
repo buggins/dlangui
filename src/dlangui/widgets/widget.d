@@ -121,7 +121,7 @@ class Widget {
     /// set new trackHover flag value (when true, widget will change Hover state while mouse is moving)
     @property Widget trackHover(bool v) { _trackHover = v; return this; }
 
-    debug {
+	debug(resalloc) {
 	    private static int _instanceCount = 0;
         private static bool _appShuttingDown = false;
     }
@@ -129,13 +129,12 @@ class Widget {
     this(string ID = null) {
 		_id = ID;
         _state = State.Enabled;
-        debug {
-            _instanceCount++;
-        }
+		debug(resalloc) _instanceCount++;
 		//Log.d("Created widget, count = ", ++_instanceCount);
     }
+
 	~this() {
-        debug {
+		debug(resalloc) {
             //Log.v("destroying widget ", _id);
             if (_appShuttingDown)
                 Log.e("Destroying widget ", _id, " after app shutdown: probably, resource leak");
@@ -146,7 +145,8 @@ class Widget {
 		_ownStyle = null;
 		//Log.d("Destroyed widget, count = ", --_instanceCount);
 	}
-    debug {
+
+	debug(resalloc) {
         /// for debug purposes - number of created widget objects, not yet destroyed
         static @property int instanceCount() { return _instanceCount; }
         /// for debug purposes - sets shutdown flag to log widgets not destroyed in time.
