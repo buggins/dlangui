@@ -66,7 +66,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>Unicode USE_OPENGL USE_SDL</versionids>
+  <versionids>Unicode USE_SDL</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>1</createImplib>
@@ -217,14 +217,6 @@
     <File path="..\DerelictGL3\source\derelict\opengl3\wgl.d" />
     <File path="..\DerelictGL3\source\derelict\opengl3\wglext.d" />
    </Folder>
-   <Folder name="DerelictUtil">
-    <File path="..\DerelictUtil\source\derelict\util\exception.d" />
-    <File path="..\DerelictUtil\source\derelict\util\loader.d" />
-    <File path="..\DerelictUtil\source\derelict\util\sharedlib.d" />
-    <File path="..\DerelictUtil\source\derelict\util\system.d" />
-    <File path="..\DerelictUtil\source\derelict\util\wintypes.d" />
-    <File path="..\DerelictUtil\source\derelict\util\xtypes.d" />
-   </Folder>
    <Folder name="DerelictSDL2">
     <File path="..\DerelictSDL2\source\derelict\sdl2\functions.d" />
     <File path="..\DerelictSDL2\source\derelict\sdl2\image.d" />
@@ -233,6 +225,14 @@
     <File path="..\DerelictSDL2\source\derelict\sdl2\sdl.d" />
     <File path="..\DerelictSDL2\source\derelict\sdl2\ttf.d" />
     <File path="..\DerelictSDL2\source\derelict\sdl2\types.d" />
+   </Folder>
+   <Folder name="DerelictUtil">
+    <File path="..\DerelictUtil\source\derelict\util\exception.d" />
+    <File path="..\DerelictUtil\source\derelict\util\loader.d" />
+    <File path="..\DerelictUtil\source\derelict\util\sharedlib.d" />
+    <File path="..\DerelictUtil\source\derelict\util\system.d" />
+    <File path="..\DerelictUtil\source\derelict\util\wintypes.d" />
+    <File path="..\DerelictUtil\source\derelict\util\xtypes.d" />
    </Folder>
    <Folder name="gl3n">
     <File path="..\gl3n\gl3n\aabb.d" />

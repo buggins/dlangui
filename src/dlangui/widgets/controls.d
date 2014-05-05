@@ -35,15 +35,21 @@ import dlangui.widgets.layouts;
 /// vertical spacer to fill empty space in vertical layouts
 class VSpacer : Widget {
     this() {
-        styleId = "VSpacer";
+        styleId = "VSPACER";
     }
+    //override void measure(int parentWidth, int parentHeight) { 
+    //    measuredContent(parentWidth, parentHeight, 8, 8);
+    //}
 }
 
 /// horizontal spacer to fill empty space in horizontal layouts
 class HSpacer : Widget {
     this() {
-        styleId = "HSpacer";
+        styleId = "HSPACER";
     }
+    //override void measure(int parentWidth, int parentHeight) { 
+    //    measuredContent(parentWidth, parentHeight, 8, 8);
+    //}
 }
 
 /// static text widget
@@ -286,6 +292,22 @@ class Button : Widget {
     @property Widget textResource(string s) { _text = s; requestLayout(); return this; }
     this(string ID = null) {
 		super(ID);
+        styleId = "BUTTON";
+		clickable = true;
+        focusable = true;
+        trackHover = true;
+    }
+    this(string ID, dstring label) {
+		super(ID);
+        _text = label;
+        styleId = "BUTTON";
+		clickable = true;
+        focusable = true;
+        trackHover = true;
+    }
+    this(string ID, string labelResourceId) {
+		super(ID);
+        _text = labelResourceId;
         styleId = "BUTTON";
 		clickable = true;
         focusable = true;
