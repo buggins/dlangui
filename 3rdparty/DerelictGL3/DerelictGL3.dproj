@@ -5,24 +5,19 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>10.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{11EEFA98-AAC1-45BD-8972-C97571D2D196}</ProjectGuid>
+    <ProjectGuid>{5355CB25-5AA9-4738-9A0F-C0673DBBCB07}</ProjectGuid>
     <UseDefaultCompiler>true</UseDefaultCompiler>
     <PreferOneStepBuild>true</PreferOneStepBuild>
     <Compiler>DMD2</Compiler>
     <IncrementalLinking>true</IncrementalLinking>
     <DependentProjectIds>
       <DependentProjectIds>
-        <String>{84FCA922-7BD9-4B9E-A192-A52F0A830AF5}</String>
-        <String>{ED644EF9-A446-4987-873F-B7F3CC28E3B7}</String>
-        <String>{2B088613-C536-4E5C-8B74-7913267D75DA}</String>
-        <String>{5355CB25-5AA9-4738-9A0F-C0673DBBCB07}</String>
         <String>{0B737AB4-0C3B-4250-A133-3AD793E2D322}</String>
-        <String>{87EE4E19-2409-4441-A0C0-2E6D08C555D9}</String>
       </DependentProjectIds>
     </DependentProjectIds>
     <Includes>
       <Includes>
-        <Path>../../src</Path>
+        <Path>../../../DerelictUtil/source</Path>
       </Includes>
     </Includes>
   </PropertyGroup>
@@ -32,8 +27,8 @@
     <ObjectsDirectory>obj/Debug</ObjectsDirectory>
     <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
     <UnittestMode>false</UnittestMode>
-    <OutputName>example1</OutputName>
-    <Target>Executable</Target>
+    <OutputName>DerelictGL3</OutputName>
+    <Target>StaticLibrary</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
@@ -42,7 +37,7 @@
     <ObjectsDirectory>obj/Release</ObjectsDirectory>
     <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
     <UnittestMode>false</UnittestMode>
-    <OutputName>example1</OutputName>
+    <OutputName>DerelictGL3</OutputName>
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
@@ -53,12 +48,56 @@
     <ObjectsDirectory>obj/Unittest</ObjectsDirectory>
     <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
     <UnittestMode>true</UnittestMode>
-    <OutputName>example1</OutputName>
+    <OutputName>DerelictGL3</OutputName>
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="src\main.d" />
+    <Compile Include="..\..\..\DerelictGL3\source\derelict\opengl3\arb.d">
+      <Link>arb.d</Link>
+    </Compile>
+    <Compile Include="..\..\..\DerelictGL3\source\derelict\opengl3\cgl.d">
+      <Link>cgl.d</Link>
+    </Compile>
+    <Compile Include="..\..\..\DerelictGL3\source\derelict\opengl3\constants.d">
+      <Link>constants.d</Link>
+    </Compile>
+    <Compile Include="..\..\..\DerelictGL3\source\derelict\opengl3\deprecatedConstants.d">
+      <Link>deprecatedConstants.d</Link>
+    </Compile>
+    <Compile Include="..\..\..\DerelictGL3\source\derelict\opengl3\deprecatedFunctions.d">
+      <Link>deprecatedFunctions.d</Link>
+    </Compile>
+    <Compile Include="..\..\..\DerelictGL3\source\derelict\opengl3\ext.d">
+      <Link>ext.d</Link>
+    </Compile>
+    <Compile Include="..\..\..\DerelictGL3\source\derelict\opengl3\functions.d">
+      <Link>functions.d</Link>
+    </Compile>
+    <Compile Include="..\..\..\DerelictGL3\source\derelict\opengl3\gl.d">
+      <Link>gl.d</Link>
+    </Compile>
+    <Compile Include="..\..\..\DerelictGL3\source\derelict\opengl3\gl3.d">
+      <Link>gl3.d</Link>
+    </Compile>
+    <Compile Include="..\..\..\DerelictGL3\source\derelict\opengl3\glx.d">
+      <Link>glx.d</Link>
+    </Compile>
+    <Compile Include="..\..\..\DerelictGL3\source\derelict\opengl3\glxext.d">
+      <Link>glxext.d</Link>
+    </Compile>
+    <Compile Include="..\..\..\DerelictGL3\source\derelict\opengl3\internal.d">
+      <Link>internal.d</Link>
+    </Compile>
+    <Compile Include="..\..\..\DerelictGL3\source\derelict\opengl3\types.d">
+      <Link>types.d</Link>
+    </Compile>
+    <Compile Include="..\..\..\DerelictGL3\source\derelict\opengl3\wgl.d">
+      <Link>wgl.d</Link>
+    </Compile>
+    <Compile Include="..\..\..\DerelictGL3\source\derelict\opengl3\wglext.d">
+      <Link>wglext.d</Link>
+    </Compile>
   </ItemGroup>
 </Project>

@@ -138,13 +138,22 @@ Linux builds
 * TODO: entering of unicode characters not implemented
 
 
-To build dlangui apps, development packages for following libraries required:
+To build dlangui apps, development packages for following libraries required for XCB backend build:
 
         xcb, xcb-util, xcb-shm, xcb-image, xcb-keysyms, X11-xcb, X11
+
+For SDL2 backend build:
+
+        libsdl2
 
 E.g. in Ubuntu, you can use:
 
         sudo apt-get install libxcb-image0-dev libxcb-shm0-dev libxcb-keysyms1-dev libfreeimage-dev
+
+or
+
+        sudo apt-get install libsdl2-dev
+
 
 In runtime, .so for following libraries are being loaded (binary packages required):
 

@@ -84,8 +84,6 @@
 
     "libs-windows": ["dlanguilib", "phobos", "ole32", "kernel32", "user32", "comctl32", "comdlg32"],
 
-    "libs-posix": ["xcb", "xcb-util", "xcb-shm", "xcb-image", "xcb-keysyms", "X11-xcb", "X11"],
-
     "versions-windows": ["USE_OPENGL", "Unicode"],
     "versions-posix": ["USE_OPENGL", "USE_SDL", "Unicode"],
 
