@@ -398,25 +398,35 @@ version(USE_SDL) {
                 case SDLK_ESCAPE:
                     return KeyCode.ESCAPE;
                 case SDLK_DELETE:
-                    return KeyCode.DEL;
-                case SDLK_INSERT:
-                    return KeyCode.INS;
+				case 0x40000063: // dirty hack for Linux - key on keypad
+					return KeyCode.DEL;
+				case SDLK_INSERT:
+				case 0x40000062: // dirty hack for Linux - key on keypad
+					return KeyCode.INS;
                 case SDLK_HOME:
-                    return KeyCode.HOME;
+				case 0x4000005f: // dirty hack for Linux - key on keypad
+					return KeyCode.HOME;
                 case SDLK_PAGEUP:
-                    return KeyCode.PAGEUP;
+				case 0x40000061: // dirty hack for Linux - key on keypad
+					return KeyCode.PAGEUP;
                 case SDLK_END:
+				case 0x40000059: // dirty hack for Linux - key on keypad
                     return KeyCode.END;
                 case SDLK_PAGEDOWN:
-                    return KeyCode.PAGEDOWN;
+				case 0x4000005b: // dirty hack for Linux - key on keypad
+					return KeyCode.PAGEDOWN;
                 case SDLK_LEFT:
-                    return KeyCode.LEFT;
+				case 0x4000005c: // dirty hack for Linux - key on keypad
+					return KeyCode.LEFT;
                 case SDLK_RIGHT:
-                    return KeyCode.RIGHT;
+				case 0x4000005e: // dirty hack for Linux - key on keypad
+					return KeyCode.RIGHT;
                 case SDLK_UP:
-                    return KeyCode.UP;
+				case 0x40000060: // dirty hack for Linux - key on keypad
+					return KeyCode.UP;
                 case SDLK_DOWN:
-                    return KeyCode.DOWN;
+				case 0x4000005a: // dirty hack for Linux - key on keypad
+					return KeyCode.DOWN;
                 case SDLK_LCTRL:
                     return KeyCode.LCONTROL;
                 case SDLK_LSHIFT:
@@ -469,10 +479,10 @@ version(USE_SDL) {
             return res;
         }
         bool processKeyEvent(KeyAction action, uint keyCode, uint flags) {
-            Log.d("processKeyEvent ", action, " SDL key=", keyCode, " SDL flags=", flags);
+			Log.d("processKeyEvent ", action, " SDL key=0x", format("%08x", keyCode), " SDL flags=0x", format("%08x", flags));
 			keyCode = convertKeyCode(keyCode);
 			flags = convertKeyFlags(flags);
-			Log.d("processKeyEvent ", action, " converted key=", keyCode, " converted flags=", flags);
+			Log.d("processKeyEvent ", action, " converted key=0x", format("%08x", keyCode), " converted flags=0x", format("%08x", flags));
 			bool res = dispatchKeyEvent(new KeyEvent(action, keyCode, flags));
 //			if ((keyCode & 0x10000) && (keyCode & 0xF000) != 0xF000) {
 //				dchar[1] text;
