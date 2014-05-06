@@ -37,8 +37,13 @@ extern (C) int UIAppMain(string[] args) {
         appendPath(exePath, "../../../res/mdpi/"),   // for Visual D and DUB builds
         appendPath(exePath, "../../../../res/"),// for Mono-D builds
         appendPath(exePath, "../../../../res/mdpi/"),// for Mono-D builds
-        appendPath(exePath, "res/mdpi/") // when res dir is located at the same directory as executable
-    ];
+		appendPath(exePath, "res/"), // when res dir is located at the same directory as executable
+		appendPath(exePath, "../res/"), // when res dir is located at project directory
+		appendPath(exePath, "../../res/"), // when res dir is located at the same directory as executable
+		appendPath(exePath, "res/mdpi/"), // when res dir is located at the same directory as executable
+		appendPath(exePath, "../res/mdpi/"), // when res dir is located at project directory
+		appendPath(exePath, "../../res/mdpi/") // when res dir is located at the same directory as executable
+	];
     // setup resource directories - will use only existing directories
     drawableCache.setResourcePaths(resourceDirs);
     // setup i18n - look for i18n directory inside one of passed directories
@@ -53,21 +58,24 @@ extern (C) int UIAppMain(string[] args) {
         VerticalLayout contentLayout = new VerticalLayout();
         MenuItem mainMenuItems = new MenuItem();
         MenuItem fileItem = new MenuItem(new Action(1, "File"d));
-        fileItem.add(new Action(10, "Open..."d));
-        fileItem.add(new Action(11, "Save..."d));
-        MenuItem openRecentItem = new MenuItem(new Action(13, "Open recent..."d));
+        fileItem.add(new Action(10, "Open..."d, "document-open", KeyCode.KEY_O, KeyFlag.Control));
+		fileItem.add(new Action(11, "Save..."d, "document-save", KeyCode.KEY_S, KeyFlag.Control));
+		MenuItem openRecentItem = new MenuItem(new Action(13, "Open recent..."d, "document-open-recent"));
         openRecentItem.add(new Action(100, "File 1"d));
         openRecentItem.add(new Action(101, "File 2"d));
         openRecentItem.add(new Action(102, "File 3"d));
         openRecentItem.add(new Action(103, "File 4"d));
         openRecentItem.add(new Action(104, "File 5"d));
         fileItem.add(openRecentItem);
-        fileItem.add(new Action(12, "Exit"d));
+		fileItem.add(new Action(12, "Exit"d, "document-close", KeyCode.KEY_X, KeyFlag.Alt));
         MenuItem editItem = new MenuItem(new Action(2, "Edit"d));
-        editItem.add(new Action(20, "Copy"d));
-        editItem.add(new Action(21, "Paste"d));
-        editItem.add(new Action(22, "Cut"d));
-        MenuItem windowItem = new MenuItem(new Action(3, "Window"d));
+		editItem.add(new Action(EditorActions.Copy, "Copy"d, "edit-copy", KeyCode.KEY_C, KeyFlag.Control));
+		editItem.add(new Action(EditorActions.Paste, "Paste"d, "edit-paste", KeyCode.KEY_V, KeyFlag.Control));
+		editItem.add(new Action(EditorActions.Cut, "Cut"d, "edit-cut", KeyCode.KEY_X, KeyFlag.Control));
+		editItem.add(new Action(EditorActions.Undo, "Undo"d, "edit-undo", KeyCode.KEY_Z, KeyFlag.Control));
+		editItem.add(new Action(EditorActions.Redo, "Redo"d, "edit-redo", KeyCode.KEY_Y, KeyFlag.Control));
+		editItem.add(new Action(20, "Preferences..."d));
+		MenuItem windowItem = new MenuItem(new Action(3, "Window"d));
         windowItem.add(new Action(30, "Preferences"d));
         MenuItem helpItem = new MenuItem(new Action(4, "Help"d));
         helpItem.add(new Action(40, "View Help"d));

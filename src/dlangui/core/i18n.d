@@ -115,6 +115,7 @@ class UIStringTranslator {
         foreach(dir; dirs) {
             string path = appendPath(dir, "i18n/");
             if (exists(path) && isDir(path)) {
+				Log.i("Adding i18n dir ", path);
                 _resourceDir = path;
                 return _resourceDir;
             }

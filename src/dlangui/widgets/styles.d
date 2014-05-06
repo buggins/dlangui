@@ -705,6 +705,9 @@ Theme createDefaultTheme() {
     menuItem.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
     menuItem.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
     menuItem.createState(State.Hovered, State.Hovered).backgroundColor(0xC0FFFF00);
+	res.createSubstyle("MENU_ICON").margins(Rect(4,2,4,2)).alignment(Align.VCenter|Align.Left);
+	res.createSubstyle("MENU_LABEL").margins(Rect(8,2,8,2)).alignment(Align.VCenter|Align.Left);
+	res.createSubstyle("MENU_ACCEL").margins(Rect(4,2,4,2)).alignment(Align.VCenter|Align.Left);
 
     Style transparentButtonBackground = res.createSubstyle("TRANSPARENT_BUTTON_BACKGROUND").backgroundImageId("transparent_button_background").padding(Rect(4,2,4,2)); //.backgroundColor(0xE0E080)   ;
     //transparentButtonBackground.createState(State.Focused, State.Focused).backgroundColor(0xC0C0C000);

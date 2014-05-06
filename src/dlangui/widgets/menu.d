@@ -53,7 +53,13 @@ class MenuItem {
         _subitems ~= new MenuItem(subitemAction);
         return this;
     }
-    /// returns true if item is submenu (contains subitems)
+	/// returns text description for first accelerator of action; null if no accelerators
+	@property dstring acceleratorText() {
+		if (!_action)
+			return null;
+		return _action.acceleratorText;
+	}
+	/// returns true if item is submenu (contains subitems)
     @property bool isSubmenu() {
         return _subitems.length > 0;
     }
@@ -80,15 +86,33 @@ class MenuItem {
 /// widget to draw menu item
 class MenuItemWidget : HorizontalLayout {
     protected MenuItem _item;
+	protected ImageWidget _icon;
+	protected TextWidget _accel;
     protected TextWidget _label;
     @property MenuItem item() { return _item; }
     this(MenuItem item) {
         id="menuitem";
         _item = item;
         styleId = "MENU_ITEM";
-        _label = new TextWidget("MENU_LABEL");
+		// icon
+		if (_item.action && _item.action.iconId.length) {
+			_icon = new ImageWidget("MENU_ICON", _item.action.iconId);
+			_icon.styleId = "MENU_ICON";
+			addChild(_icon);
+		}
+		// label
+		_label = new TextWidget("MENU_LABEL");
         _label.text = _item.label;
-        addChild(_label);
+		_label.styleId = "MENU_LABEL";
+		addChild(_label);
+		// accelerator
+		dstring acc = _item.acceleratorText;
+		if (acc !is null) {
+			_accel = new TextWidget("MENU_ACCEL");
+			_accel.styleId = "MENU_ACCEL";
+			_accel.text = acc;
+			addChild(_accel);
+		}
         trackHover = true;
 		clickable = true;
     }

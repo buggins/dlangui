@@ -30,6 +30,125 @@ import std.algorithm;
 
 immutable dchar EOL = '\n';
 
+/// Editor action codes
+enum EditorActions {
+	None = 0,
+	/// move cursor one char left
+	Left = 1000,
+	/// move cursor one char left with selection
+	SelectLeft,
+	/// move cursor one char right
+	Right,
+	/// move cursor one char right with selection
+	SelectRight,
+	/// move cursor one line up
+	Up,
+	/// move cursor one line up with selection
+	SelectUp,
+	/// move cursor one line down
+	Down,
+	/// move cursor one line down with selection
+	SelectDown,
+	/// move cursor one word left
+	WordLeft,
+	/// move cursor one word left with selection
+	SelectWordLeft,
+	/// move cursor one word right
+	WordRight,
+	/// move cursor one word right with selection
+	SelectWordRight,
+	/// move cursor one page up
+	PageUp,
+	/// move cursor one page up with selection
+	SelectPageUp,
+	/// move cursor one page down
+	PageDown,
+	/// move cursor one page down with selection
+	SelectPageDown,
+	/// move cursor to the beginning of page
+	PageBegin, 
+	/// move cursor to the beginning of page with selection
+	SelectPageBegin, 
+	/// move cursor to the end of page
+	PageEnd,   
+	/// move cursor to the end of page with selection
+	SelectPageEnd,   
+	/// move cursor to the beginning of line
+	LineBegin,
+	/// move cursor to the beginning of line with selection
+	SelectLineBegin,
+	/// move cursor to the end of line
+	LineEnd,
+	/// move cursor to the end of line with selection
+	SelectLineEnd,
+	/// move cursor to the beginning of document
+	DocumentBegin,
+	/// move cursor to the beginning of document with selection
+	SelectDocumentBegin,
+	/// move cursor to the end of document
+	DocumentEnd,
+	/// move cursor to the end of document with selection
+	SelectDocumentEnd,
+	/// delete char before cursor (backspace)
+	DelPrevChar, 
+	/// delete char after cursor (del key)
+	DelNextChar, 
+	/// delete word before cursor (ctrl + backspace)
+	DelPrevWord, 
+	/// delete char after cursor (ctrl + del key)
+	DelNextWord, 
+	
+	/// insert new line (Enter)
+	InsertNewLine,
+	/// insert new line after current position (Ctrl+Enter)
+	PrependNewLine,
+	
+	/// Turn On/Off replace mode
+	ToggleReplaceMode, 
+	
+	/// Copy selection to clipboard
+	Copy, 
+	/// Cut selection to clipboard
+	Cut, 
+	/// Paste selection from clipboard
+	Paste, 
+	/// Undo last change
+	Undo,
+	/// Redo last undoed change
+	Redo,
+	
+	/// Tab (e.g., Tab key to insert tab character or indent text)
+	Tab,
+	/// Tab (unindent text, or remove whitespace before cursor, usually Shift+Tab)
+	BackTab,
+	
+	/// Select whole content (usually, Ctrl+A)
+	SelectAll,
+	
+	// Scroll operations
+	
+	/// Scroll one line up (not changing cursor)
+	ScrollLineUp,
+	/// Scroll one line down (not changing cursor)
+	ScrollLineDown,
+	/// Scroll one page up (not changing cursor)
+	ScrollPageUp,
+	/// Scroll one page down (not changing cursor)
+	ScrollPageDown,
+	/// Scroll window left
+	ScrollLeft,
+	/// Scroll window right
+	ScrollRight,
+	
+	/// Zoom in editor font
+	ZoomIn,
+	/// Zoom out editor font
+	ZoomOut,
+	
+}
+
+
+
 /// split dstring by delimiters
 dstring[] splitDString(dstring source, dchar delimiter = EOL) {
     int start = 0;
@@ -681,123 +800,6 @@ class EditableContent {
     void clearUndo() {
         _undoBuffer.clear();
     }
-}
-
-/// Editor action codes
-enum EditorActions {
-	None = 0,
-    /// move cursor one char left
-	Left = 1000,
-    /// move cursor one char left with selection
-	SelectLeft,
-    /// move cursor one char right
-	Right,
-    /// move cursor one char right with selection
-	SelectRight,
-    /// move cursor one line up
-	Up,
-    /// move cursor one line up with selection
-	SelectUp,
-    /// move cursor one line down
-	Down,
-    /// move cursor one line down with selection
-	SelectDown,
-    /// move cursor one word left
-	WordLeft,
-    /// move cursor one word left with selection
-	SelectWordLeft,
-    /// move cursor one word right
-	WordRight,
-    /// move cursor one word right with selection
-	SelectWordRight,
-    /// move cursor one page up
-	PageUp,
-    /// move cursor one page up with selection
-	SelectPageUp,
-    /// move cursor one page down
-	PageDown,
-    /// move cursor one page down with selection
-	SelectPageDown,
-    /// move cursor to the beginning of page
-	PageBegin, 
-    /// move cursor to the beginning of page with selection
-	SelectPageBegin, 
-    /// move cursor to the end of page
-	PageEnd,   
-    /// move cursor to the end of page with selection
-	SelectPageEnd,   
-    /// move cursor to the beginning of line
-	LineBegin,
-    /// move cursor to the beginning of line with selection
-	SelectLineBegin,
-    /// move cursor to the end of line
-	LineEnd,
-    /// move cursor to the end of line with selection
-	SelectLineEnd,
-    /// move cursor to the beginning of document
-	DocumentBegin,
-    /// move cursor to the beginning of document with selection
-	SelectDocumentBegin,
-    /// move cursor to the end of document
-	DocumentEnd,
-    /// move cursor to the end of document with selection
-	SelectDocumentEnd,
-    /// delete char before cursor (backspace)
-	DelPrevChar, 
-    /// delete char after cursor (del key)
-	DelNextChar, 
-    /// delete word before cursor (ctrl + backspace)
-	DelPrevWord, 
-    /// delete char after cursor (ctrl + del key)
-	DelNextWord, 
-
-    /// insert new line (Enter)
-	InsertNewLine,
-    /// insert new line after current position (Ctrl+Enter)
-	PrependNewLine,
-
-    /// Turn On/Off replace mode
-	ToggleReplaceMode, 
-
-    /// Copy selection to clipboard
-	Copy, 
-    /// Cut selection to clipboard
-	Cut, 
-    /// Paste selection from clipboard
-	Paste, 
-    /// Undo last change
-    Undo,
-    /// Redo last undoed change
-    Redo,
-
-    /// Tab (e.g., Tab key to insert tab character or indent text)
-    Tab,
-    /// Tab (unindent text, or remove whitespace before cursor, usually Shift+Tab)
-    BackTab,
-
-    /// Select whole content (usually, Ctrl+A)
-    SelectAll,
-
-    // Scroll operations
-
-    /// Scroll one line up (not changing cursor)
-    ScrollLineUp,
-    /// Scroll one line down (not changing cursor)
-    ScrollLineDown,
-    /// Scroll one page up (not changing cursor)
-    ScrollPageUp,
-    /// Scroll one page down (not changing cursor)
-    ScrollPageDown,
-    /// Scroll window left
-    ScrollLeft,
-    /// Scroll window right
-    ScrollRight,
-
-    /// Zoom in editor font
-    ZoomIn,
-    /// Zoom out editor font
-    ZoomOut,
-
 }
 
 /// base for all editor widgets
