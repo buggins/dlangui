@@ -270,14 +270,21 @@ class MenuWidgetBase : ListWidget {
 	}
 
     protected void onPopupClosed(PopupWidget p) {
-        bool undoSelection = _openedPopupIndex == _selectedItemIndex;
-        _openedPopup = null;
-        _openedMenu = null;
-        if (undoSelection) {
-            selectItem(-1);
-            setHoverItem(-1);
-        }
-        window.setFocus(this);
+		if (_openedPopup) {
+			if (_openedPopup is p) {
+				_openedMenu.onPopupClosed(p);
+				bool undoSelection = _openedPopupIndex == _selectedItemIndex;
+				_openedPopup = null;
+				_openedMenu = null;
+				if (undoSelection) {
+					selectItem(-1);
+					setHoverItem(-1);
+				}
+				window.setFocus(this);
+			} else if (thisPopup is p) {
+				_openedPopup.close();
+			}
+		}
     }
 
 	protected void openSubmenu(int index, MenuItemWidget itemWidget, bool selectFirstItem) {
