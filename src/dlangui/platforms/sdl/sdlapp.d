@@ -36,9 +36,11 @@ version(USE_SDL) {
 //	pragma(lib, "dl");	
 		
 	class SDLWindow : Window {
+		SDLPlatform _platform;
 		SDL_Window * _win;
 		SDL_Renderer* _renderer;
-		this(string caption, Window parent) {
+		this(SDLPlatform platform, string caption, Window parent) {
+			_platform = platform;
 			_caption = caption;
 			debug Log.d("Creating SDL window");
 			create();
@@ -223,15 +225,6 @@ version(USE_SDL) {
 			//_exposeSent = false;
 		}
 
-		/// request window redraw
-		override void invalidate() {
-			//if (_exposeSent)
-			//	return;
-			//_exposeSent = true;
-			//TODO optimize
-            redraw();
-		}
-				
 		protected ButtonDetails _lbutton;
 		protected ButtonDetails _mbutton;
 		protected ButtonDetails _rbutton;
@@ -495,6 +488,17 @@ version(USE_SDL) {
 	        }
 			return res;
 		}
+
+		uint _lastRedrawEventCode;
+		/// request window redraw
+		override void invalidate() {
+			_platform.sendRedrawEvent(windowId, ++_lastRedrawEventCode);
+		}
+		
+		void processRedrawEvent(uint code) {
+			if (code == _lastRedrawEventCode)
+			    redraw();
+		}
 	}
 
 	private __gshared bool _enableOpengl;
@@ -526,8 +530,21 @@ version(USE_SDL) {
 			return null;
 		}
 
+		private uint _redrawEventId;
+
+		void sendRedrawEvent(uint windowId, uint code) {
+			if (!_redrawEventId)
+				_redrawEventId = SDL_RegisterEvents(1);
+			SDL_Event event;
+			event.type = _redrawEventId;
+			event.user.windowID = windowId;
+			event.user.code = code;
+			SDL_PushEvent(&event);
+
+		}
+
 		override Window createWindow(string windowCaption, Window parent) {
-			SDLWindow res = new SDLWindow(windowCaption, parent);
+			SDLWindow res = new SDLWindow(this, windowCaption, parent);
 			_windowMap[res.windowId] = res;
 			return res;
 		}
@@ -553,7 +570,15 @@ version(USE_SDL) {
 					    Log.i("event.type == SDL_QUIT");
 					    break;
 				    } 
-
+					if (_redrawEventId && event.type == _redrawEventId) {
+						// user defined redraw event
+						uint windowID = event.user.windowID;
+						SDLWindow w = getWindow(windowID);
+						if (w) {
+							w.processRedrawEvent(event.user.code);
+						}
+						continue;
+					}
                     switch (event.type) {
                         case SDL_WINDOWEVENT:
                         {
