@@ -358,7 +358,7 @@ class MenuWidgetBase : ListWidget {
 					selectItem(-1);
 					selectOnHover = false;
 				} else {
-					openSubmenu(index, itemWidget, false);
+					openSubmenu(index, itemWidget, _orientation == Orientation.Horizontal); // for main menu, select first item
 					selectOnHover = true;
 				}
 			} else {
@@ -516,6 +516,10 @@ class MainMenu : MenuWidgetBase {
         }
         if (!focused)
             return false;
+        if (_selectedItemIndex >= 0 && event.action == KeyAction.KeyDown && ((event.keyCode == KeyCode.DOWN) || (event.keyCode == KeyCode.SPACE) || (event.keyCode == KeyCode.RETURN))) {
+            itemClicked(_selectedItemIndex);
+            return true;
+        }
         return super.onKeyEvent(event);
     }
 }
