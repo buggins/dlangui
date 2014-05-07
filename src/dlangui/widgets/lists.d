@@ -305,8 +305,10 @@ class ListWidget : WidgetGroup, OnScrollHandler {
             else if (newIndex >= itemCount)
                 newIndex = wrapAround ? 0 : itemCount - 1;
             if (newIndex != index) {
-                if (selectItem(newIndex))
+                if (selectItem(newIndex)) {
+                    selectionChanged(_selectedItemIndex, index);
                     return true;
+                }
                 index = newIndex;
             }
         }
@@ -314,6 +316,7 @@ class ListWidget : WidgetGroup, OnScrollHandler {
     }
 
 	bool selectItem(int index, int disabledItemsSkipDirection) {
+        debug Log.d("selectItem ", index, " skipDirection=", disabledItemsSkipDirection);
         if (index == -1 || disabledItemsSkipDirection == 0)
             return selectItem(index);
         int maxAttempts = itemCount;
@@ -330,6 +333,7 @@ class ListWidget : WidgetGroup, OnScrollHandler {
     }
 
 	bool selectItem(int index) {
+        debug Log.d("selectItem ", index);
 		if (_selectedItemIndex == index) {
             updateSelectedItemFocus();
             makeSelectionVisible();

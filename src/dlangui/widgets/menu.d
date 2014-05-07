@@ -214,6 +214,7 @@ class MenuWidgetBase : ListWidget {
     protected MenuItem _item;
 	protected PopupMenu _openedMenu;
 	protected PopupWidget _openedPopup;
+    protected int _openedPopupIndex;
 	protected bool delegate(MenuItem item) _onMenuItemClickListener;
     /// menu item click listener
 	@property bool delegate(MenuItem item) onMenuItemListener() { return  _onMenuItemClickListener; }
@@ -269,14 +270,17 @@ class MenuWidgetBase : ListWidget {
 	}
 
     protected void onPopupClosed(PopupWidget p) {
+        bool undoSelection = _openedPopupIndex == _selectedItemIndex;
         _openedPopup = null;
         _openedMenu = null;
-        selectItem(-1);
-        setHoverItem(-1);
+        if (undoSelection) {
+            selectItem(-1);
+            setHoverItem(-1);
+        }
         window.setFocus(this);
     }
 
-	protected void openSubmenu(MenuItemWidget itemWidget, bool selectFirstItem) {
+	protected void openSubmenu(int index, MenuItemWidget itemWidget, bool selectFirstItem) {
 		if (_openedPopup !is null) {
 			_openedPopup.close();
         }
@@ -286,6 +290,7 @@ class MenuWidgetBase : ListWidget {
         popup.flags = PopupFlags.CloseOnClickOutside;
 		_openedPopup = popup;
 		_openedMenu = popupMenu;
+        _openedPopupIndex = index;
         window.setFocus(popupMenu);
         if (selectFirstItem)
             _openedMenu.selectItem(0);
@@ -293,6 +298,7 @@ class MenuWidgetBase : ListWidget {
 
 	/// override to handle change of selection
 	override protected void selectionChanged(int index, int previouslySelectedItem = -1) {
+        debug Log.d("menu.selectionChanged ", index, ", ", previouslySelectedItem, " _selectedItemIndex=", _selectedItemIndex);
 		MenuItemWidget itemWidget = index >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(index) : null;
 		MenuItemWidget prevWidget = previouslySelectedItem >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(previouslySelectedItem) : null;
 		if (prevWidget !is null) {
@@ -302,7 +308,7 @@ class MenuWidgetBase : ListWidget {
 		if (itemWidget !is null) {
 			if (itemWidget.item.isSubmenu()) {
 				if (_selectOnHover) {
-					openSubmenu(itemWidget, false);
+					openSubmenu(index, itemWidget, _orientation == Orientation.Horizontal); // for main menu, select first item
 				}
 			} else {
 				// normal item
@@ -311,6 +317,7 @@ class MenuWidgetBase : ListWidget {
 	}
 
 	protected void onMenuItem(MenuItem item) {
+        debug Log.d("onMenuItem ", item.action.label);
 		if (_openedPopup !is null) {
 			_openedPopup.close();
 			_openedPopup = null;
@@ -351,7 +358,7 @@ class MenuWidgetBase : ListWidget {
 					selectItem(-1);
 					selectOnHover = false;
 				} else {
-					openSubmenu(itemWidget, false);
+					openSubmenu(index, itemWidget, false);
 					selectOnHover = true;
 				}
 			} else {
@@ -366,13 +373,17 @@ class MenuWidgetBase : ListWidget {
         return cast(PopupWidget)parent;
     }
 
+    protected int _menuToggleState;
+    protected Widget _menuTogglePreviousFocus;
+
     /// list navigation using keys
     override bool onKeyEvent(KeyEvent event) {
-        // TODO:
         if (orientation == Orientation.Horizontal) {
-            if (event.action == KeyAction.KeyDown) {
-            }
+            // no special processing
         } else {
+            // for vertical (popup) menu
+            if (!focused)
+                return false;
             if (event.action == KeyAction.KeyDown) {
                 if (event.keyCode == KeyCode.LEFT) {
                     if (_parentMenu !is null) {
@@ -392,7 +403,7 @@ class MenuWidgetBase : ListWidget {
                 } else if (event.keyCode == KeyCode.RIGHT) {
                     MenuItemWidget thisItem = selectedMenuItemWidget();
                     if (thisItem !is null && thisItem.item.isSubmenu) {
-                        openSubmenu(thisItem, true);
+                        openSubmenu(_selectedItemIndex, thisItem, true);
                         return true;
                     } else if (_parentMenu !is null && _parentMenu.orientation == Orientation.Horizontal) {
                         _parentMenu.moveSelection(1);
@@ -420,7 +431,95 @@ class MainMenu : MenuWidgetBase {
         styleId = "MAIN_MENU";
 		_clickOnButtonDown = true;
     }
+
+    /// override and return true to track key events even when not focused
+    @property override bool wantsKeyTracking() {
+        return true;
+    }
+
+    protected int _menuToggleState;
+    protected Widget _menuTogglePreviousFocus;
+
+
+    /// return true if main menu is activated (focused or has open submenu)
+    @property bool activated() {
+        return focused || _openedPopup !is null;
+    }
+
+    /// bring focus to main menu, if not yet activated
+    void activate() {
+        debug Log.d("activating main menu");
+        if (activated)
+            return;
+        window.setFocus(this);
+        selectItem(0);
+    }
+
+    /// close and remove focus, if activated
+    void deactivate() {
+        debug Log.d("deactivating main menu");
+        if (!activated)
+            return;
+        if (_openedPopup !is null)
+            _openedPopup.close();
+        selectItem(-1);
+        setHoverItem(-1);
+        window.setFocus(_menuTogglePreviousFocus);
+    }
+
+    /// activate or deactivate main menu, return true if it has been activated
+    bool toggle() {
+        if (activated) {
+            // unfocus
+            deactivate();
+            return false;
+        } else {
+            // focus
+            activate();
+            return true;
+        }
+
+    }
+
+    /// override to handle focus changes
+    override protected void handleFocusChange(bool focused) {
+        if (focused && _openedPopup is null) {
+            // activating!
+            _menuTogglePreviousFocus = window.focusedWidget;
+        }
+        super.handleFocusChange(focused);
+    }
+    /// list navigation using keys
+    override bool onKeyEvent(KeyEvent event) {
+        // handle MainMenu activation / deactivation (Alt, Esc...)
+        bool toggleMenu = false;
+        bool isAlt = event.keyCode == KeyCode.ALT || event.keyCode == KeyCode.LALT || event.keyCode == KeyCode.RALT;
+        bool noOtherModifiers = !(event.flags & (KeyFlag.Shift | KeyFlag.Control));
+
+        if (event.action == KeyAction.KeyDown && event.keyCode == KeyCode.ESCAPE && event.flags == 0 && activated) {
+            deactivate();
+            return true;
+        }
+
+        if (event.action == KeyAction.KeyDown && isAlt && noOtherModifiers) {
+            _menuToggleState = 1;
+        } else if (event.action == KeyAction.KeyUp && isAlt && noOtherModifiers) {
+            if (_menuToggleState == 1)
+                toggleMenu = true;
+            _menuToggleState = 0;
+        } else {
+            _menuToggleState = 0;
+        }
+        if (toggleMenu) {
+            toggle();
+            return true;
+        }
+        if (!focused)
+            return false;
+        return super.onKeyEvent(event);
+    }
 }
+
 
 /// popup menu widget (vertical layout of items)
 class PopupMenu : MenuWidgetBase {

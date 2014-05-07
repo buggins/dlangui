@@ -480,6 +480,11 @@ class Widget {
         return (window !is null && window.focusedWidget is this && (state & State.Focused));
     }
 
+    /// override and return true to track key events even when not focused
+    @property bool wantsKeyTracking() {
+        return false;
+    }
+
     protected bool _focusGroup;
     /*****************************************
      * When focus group is set for some parent widget, focus from one of containing widgets can be moved using keyboard only to one of other widgets containing in it and cannot bypass bounds of focusGroup.

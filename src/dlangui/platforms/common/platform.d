@@ -22,6 +22,7 @@ Authors:   $(WEB coolreader.org, Vadim Lopatin)
 module dlangui.platforms.common.platform;
 
 public import dlangui.core.events;
+import dlangui.core.collections;
 import dlangui.widgets.widget;
 import dlangui.widgets.popup;
 import dlangui.graphics.drawbuf;
@@ -216,16 +217,28 @@ class Window {
         if (oldFocus !is null)
             oldFocus.resetState(State.Focused);
         if (newFocus is null || isChild(newFocus)) {
-            _focusedWidget = newFocus;
-            if (_focusedWidget !is null) {
-                Log.d("new focus: ", _focusedWidget.id);
-                _focusedWidget.setState(State.Focused);
+            if (newFocus !is null) {
+                // when calling, setState(focused), window.focusedWidget is still previously focused widget
+                Log.d("new focus: ", newFocus.id);
+                newFocus.setState(State.Focused);
             }
+            _focusedWidget = newFocus;
         }
         return _focusedWidget;
     }
 
     protected bool dispatchKeyEvent(Widget root, KeyEvent event) {
+        if (root.visibility != Visibility.Visible)
+            return false;
+        if (root.wantsKeyTracking) {
+            if (root.onKeyEvent(event))
+                return true;
+        }
+        for (int i = 0; i < root.childCount; i++) {
+            Widget w = root.child(i);
+            if (dispatchKeyEvent(w, event))
+                return true;
+        }
         return false;
     }
 
@@ -244,6 +257,8 @@ class Window {
             if (focus.onKeyEvent(event))
                 return true; // processed by focused widget
         }
+        if (_mainWidget)
+            return dispatchKeyEvent(_mainWidget, event);
         return false;
     }
 

@@ -1853,9 +1853,11 @@ class EditBox : EditWidgetBase, OnScrollHandler {
         _minFontSize = size;
         return this;
     }
+
     @property int maxFontSize() {
         return _maxFontSize;
     }
+
     @property EditBox maxFontSize(int size) {
         _maxFontSize = size;
         return this;
