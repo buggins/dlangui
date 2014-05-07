@@ -84,13 +84,103 @@ class MenuItem {
 }
 
 /// widget to draw menu item
-class MenuItemWidget : HorizontalLayout {
+class MenuItemWidget : WidgetGroup {
     protected MenuItem _item;
 	protected ImageWidget _icon;
 	protected TextWidget _accel;
     protected TextWidget _label;
+	protected int _labelWidth;
+	protected int _iconWidth;
+	protected int _accelWidth;
+	protected int _height;
     @property MenuItem item() { return _item; }
-    this(MenuItem item) {
+	void setSubitemSizes(int maxLabelWidth, int maxHeight, int maxIconWidth, int maxAccelWidth) {
+		_labelWidth = maxLabelWidth;
+		_height = maxHeight;
+		_iconWidth = maxIconWidth;
+		_accelWidth = maxAccelWidth;
+	}
+	void measureSubitems(ref int maxLabelWidth, ref int maxHeight, ref int maxIconWidth, ref int maxAccelWidth) {
+		_label.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+		if (maxLabelWidth < _label.measuredWidth)
+			maxLabelWidth = _label.measuredWidth;
+		if (maxHeight < _label.measuredHeight)
+			maxHeight = _label.measuredHeight;
+		if (_icon) {
+			_icon.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+			if (maxIconWidth < _icon.measuredWidth)
+				maxIconWidth = _icon.measuredWidth;
+			if (maxHeight < _icon.measuredHeight)
+				maxHeight = _icon.measuredHeight;
+		}
+		if (_accel) {
+			_accel.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+			if (maxAccelWidth < _accel.measuredWidth)
+				maxAccelWidth = _accel.measuredWidth;
+			if (maxHeight < _accel.measuredHeight)
+				maxHeight = _accel.measuredHeight;
+		}
+	}
+	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+	override void measure(int parentWidth, int parentHeight) { 
+		Rect m = margins;
+		Rect p = padding;
+		// calc size constraints for children
+		int pwidth = parentWidth;
+		int pheight = parentHeight;
+		if (parentWidth != SIZE_UNSPECIFIED)
+			pwidth -= m.left + m.right + p.left + p.right;
+		if (parentHeight != SIZE_UNSPECIFIED)
+			pheight -= m.top + m.bottom + p.top + p.bottom;
+		if (_labelWidth)
+			measuredContent(parentWidth, parentHeight, _iconWidth + _labelWidth + _accelWidth, _height); // for vertical (popup menu)
+		else {
+			_label.measure(pwidth, pheight);
+			measuredContent(parentWidth, parentHeight, _label.measuredWidth, _label.measuredHeight); // for horizonral (main) menu
+		}
+	}
+
+	/// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+	override void layout(Rect rc) {
+		_needLayout = false;
+		if (visibility == Visibility.Gone) {
+			return;
+		}
+		_pos = rc;
+		applyMargins(rc);
+		applyPadding(rc);
+		Rect labelRc = rc;
+		Rect iconRc = rc;
+		Rect accelRc = rc;
+		iconRc.right = iconRc.left + _iconWidth;
+		accelRc.left = accelRc.right - _accelWidth;
+		labelRc.left += _iconWidth;
+		labelRc.right -= _accelWidth;
+		if (_icon)
+			_icon.layout(iconRc);
+		if (_accel)
+			_accel.layout(accelRc);
+		_label.layout(labelRc);
+	}
+
+	/// Draw widget at its position to buffer
+	override void onDraw(DrawBuf buf) {
+		if (visibility != Visibility.Visible)
+			return;
+		super.onDraw(buf);
+		Rect rc = _pos;
+		applyMargins(rc);
+		applyPadding(rc);
+		auto saver = ClipRectSaver(buf, rc);
+		for (int i = 0; i < _children.count; i++) {
+			Widget item = _children.get(i);
+			if (item.visibility != Visibility.Visible)
+				continue;
+			item.onDraw(buf);
+		}
+	}
+
+	this(MenuItem item) {
         id="menuitem";
         _item = item;
         styleId = "MENU_ITEM";
@@ -146,6 +236,37 @@ class MenuWidgetBase : ListWidget {
         }
         ownAdapter = adapter;
     }
+
+	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+	override void measure(int parentWidth, int parentHeight) {
+		if (_orientation == Orientation.Horizontal) {
+			// for horizontal (main) menu, don't align items
+			super.measure(parentWidth, parentHeight);
+			return;
+		}
+
+		if (visibility == Visibility.Gone) {
+			_measuredWidth = _measuredHeight = 0;
+			return;
+		}
+		int maxLabelWidth;
+		int maxHeight;
+		int maxIconWidth;
+		int maxAccelWidth;
+		/// find max dimensions for item icon and accelerator sizes
+		for (int i = 0; i < itemCount; i++) {
+			MenuItemWidget w = cast(MenuItemWidget)itemWidget(i);
+			if (w)
+				w.measureSubitems(maxLabelWidth, maxHeight, maxIconWidth, maxAccelWidth);
+		}
+		/// set equal dimensions for item icon and accelerator sizes
+		for (int i = 0; i < itemCount; i++) {
+			MenuItemWidget w = cast(MenuItemWidget)itemWidget(i);
+			if (w)
+				w.setSubitemSizes(maxLabelWidth, maxHeight, maxIconWidth, maxAccelWidth);
+		}
+		super.measure(parentWidth, parentHeight);
+	}
 
     protected void onPopupClosed(PopupWidget p) {
         _openedPopup = null;
