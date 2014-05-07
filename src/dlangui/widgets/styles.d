@@ -240,14 +240,14 @@ class Style {
 
 	/// padding
 	@property ref const(Rect) padding() const {
-		if (_stateValue != State.Enabled)
+		if (_stateMask || _margins.left == SIZE_UNSPECIFIED)
 			return parentStyle._padding;
 		return _padding;
 	}
 
 	/// margins
 	@property ref const(Rect) margins() const {
-		if (_stateValue != State.Enabled)
+		if (_stateMask || _margins.left == SIZE_UNSPECIFIED)
 			return parentStyle._margins;
 		return _margins;
 	}
@@ -446,11 +446,27 @@ class Style {
 		return this;
 	}
 
+	Style setMargins(int left, int top, int right, int bottom) {
+		_margins.left = left;
+		_margins.top = top;
+		_margins.right = right;
+		_margins.bottom = bottom;
+		return this;
+	}
+	
 	@property Style padding(Rect rc) {
 		_padding = rc;
 		return this;
 	}
 
+	Style setPadding(int left, int top, int right, int bottom) {
+		_padding.left = left;
+		_padding.top = top;
+		_padding.right = right;
+		_padding.bottom = bottom;
+		return this;
+	}
+	
 	debug(resalloc) private static int _instanceCount;
 	debug(resalloc) @property static int instanceCount() { return _instanceCount; }
 
@@ -555,6 +571,8 @@ class Theme : Style {
 		Style style = new Style(null, null);
 		style._parentId = id;
         style._align = Align.Unspecified; // inherit
+		style._padding.left = SIZE_UNSPECIFIED; // inherit
+		style._margins.left = SIZE_UNSPECIFIED; // inherit
 		return style;
 	}
 
@@ -646,14 +664,15 @@ Theme createDefaultTheme() {
     }
     //res.fontFace = "Arial Narrow";
     res.fontSize = 15; // TODO: choose based on DPI
-    Style button = res.createSubstyle("BUTTON").backgroundImageId("btn_default_small").alignment(Align.Center);
+	Style button = res.createSubstyle("BUTTON").backgroundImageId("btn_default_small").alignment(Align.Center).setMargins(5,5,5,5);
     res.createSubstyle("BUTTON_TRANSPARENT").backgroundImageId("btn_default_small_transparent").alignment(Align.Center);
     res.createSubstyle("BUTTON_LABEL").layoutWidth(FILL_PARENT).alignment(Align.Left|Align.VCenter);
     res.createSubstyle("BUTTON_ICON").alignment(Align.Center);
-    res.createSubstyle("TEXT").margins(Rect(2,2,2,2)).padding(Rect(1,1,1,1));
+    res.createSubstyle("TEXT").setMargins(2,2,2,2).setPadding(1,1,1,1);
     res.createSubstyle("HSPACER").layoutWidth(FILL_PARENT).minWidth(5).layoutWeight(100);
     res.createSubstyle("VSPACER").layoutHeight(FILL_PARENT).minHeight(5).layoutWeight(100);
-    //button.createState(State.Enabled | State.Focused, State.Focused).backgroundImageId("btn_default_small_normal_disable_focused");
+	res.createSubstyle("BUTTON_NOMARGINS").backgroundImageId("btn_default_small").alignment(Align.Center); // .setMargins(5,5,5,5)
+	//button.createState(State.Enabled | State.Focused, State.Focused).backgroundImageId("btn_default_small_normal_disable_focused");
     //button.createState(State.Enabled, 0).backgroundImageId("btn_default_small_normal_disable");
     //button.createState(State.Pressed, State.Pressed).backgroundImageId("btn_default_small_pressed");
     //button.createState(State.Focused, State.Focused).backgroundImageId("btn_default_small_selected");
@@ -694,22 +713,22 @@ Theme createDefaultTheme() {
     tabHost.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
     tabHost.backgroundColor(0xF0F0F0);
     Style tabWidget = res.createSubstyle("TAB_WIDGET");
-	tabWidget.padding(Rect(3,3,3,3)).backgroundColor(0xEEEEEE);
+	tabWidget.setPadding(3,3,3,3).backgroundColor(0xEEEEEE);
     //tabWidget.backgroundImageId("frame_blue");
 	//res.dumpStats();
 
     Style mainMenu = res.createSubstyle("MAIN_MENU").backgroundColor(0xEFEFF2).layoutWidth(FILL_PARENT);
-    Style mainMenuItem = res.createSubstyle("MAIN_MENU_ITEM").padding(Rect(4,2,4,2)).backgroundImageId("main_menu_item_background");
-    Style menuItem = res.createSubstyle("MENU_ITEM").padding(Rect(4,2,4,2)); //.backgroundColor(0xE0E080)   ;
+    Style mainMenuItem = res.createSubstyle("MAIN_MENU_ITEM").setPadding(4,2,4,2).backgroundImageId("main_menu_item_background");
+    Style menuItem = res.createSubstyle("MENU_ITEM").setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
     menuItem.createState(State.Focused, State.Focused).backgroundColor(0x40C0C000);
     menuItem.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
     menuItem.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
     menuItem.createState(State.Hovered, State.Hovered).backgroundColor(0xC0FFFF00);
-	res.createSubstyle("MENU_ICON").margins(Rect(4,2,4,2)).alignment(Align.VCenter|Align.Left);
-	res.createSubstyle("MENU_LABEL").margins(Rect(8,2,8,2)).alignment(Align.VCenter|Align.Left);
-	res.createSubstyle("MENU_ACCEL").margins(Rect(4,2,4,2)).alignment(Align.VCenter|Align.Left);
+	res.createSubstyle("MENU_ICON").setMargins(2,2,2,2).alignment(Align.VCenter|Align.Left);
+	res.createSubstyle("MENU_LABEL").setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left);
+	res.createSubstyle("MENU_ACCEL").setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left);
 
-    Style transparentButtonBackground = res.createSubstyle("TRANSPARENT_BUTTON_BACKGROUND").backgroundImageId("transparent_button_background").padding(Rect(4,2,4,2)); //.backgroundColor(0xE0E080)   ;
+    Style transparentButtonBackground = res.createSubstyle("TRANSPARENT_BUTTON_BACKGROUND").backgroundImageId("transparent_button_background").setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
     //transparentButtonBackground.createState(State.Focused, State.Focused).backgroundColor(0xC0C0C000);
     //transparentButtonBackground.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
     //transparentButtonBackground.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
@@ -722,10 +741,10 @@ Theme createDefaultTheme() {
     //listItem.createState(State.Enabled, 0).textColor(0x80000000); // half transparent text for disabled item
 
     Style editLine = res.createSubstyle("EDIT_LINE").backgroundImageId("editbox_background")
-        .padding(Rect(5,6,5,6)).margins(Rect(2,2,2,2)).minWidth(40)
+        .setPadding(5,6,5,6).setMargins(2,2,2,2).minWidth(40)
         .fontFace("Arial").fontFamily(FontFamily.SansSerif).fontSize(16);
     Style editBox = res.createSubstyle("EDIT_BOX").backgroundImageId("editbox_background")
-        .padding(Rect(5,6,5,6)).margins(Rect(2,2,2,2)).minWidth(100).minHeight(60).layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT)
+        .setPadding(5,6,5,6).setMargins(2,2,2,2).minWidth(100).minHeight(60).layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT)
         .fontFace("Courier New").fontFamily(FontFamily.MonoSpace).fontSize(16);
 
 	return res;

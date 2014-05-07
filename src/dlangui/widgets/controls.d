@@ -443,6 +443,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
 
         this(string resourceId) {
             super("SLIDER", resourceId);
+			styleId = "BUTTON_NOMARGINS";
             trackHover = true;
         }
 
