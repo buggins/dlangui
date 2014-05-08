@@ -300,12 +300,32 @@ class Widget {
         return this; 
     }
 	/// get text flags (bit set of TextFlag enum values)
-	@property uint textFlags() const { return stateStyle.textFlags; }
+	@property uint textFlags() { 
+		uint res = stateStyle.textFlags;
+		if (res == TEXT_FLAGS_USE_PARENT)
+			if (parent)
+				res = parent.textFlags;
+			else
+				res = 0;
+		if (res & TextFlag.UnderlineHotKeysWhenAltPressed) {
+			uint modifiers = 0;
+			if (window !is null)
+				modifiers = window.keyboardModifiers;
+			bool altPressed = (modifiers & (KeyFlag.Alt | KeyFlag.LAlt | KeyFlag.RAlt)) != 0;
+			if (!altPressed) {
+				res = (res & ~(TextFlag.UnderlineHotKeysWhenAltPressed | TextFlag.UnderlineHotKeys)) | TextFlag.HotKeys;
+			} else {
+				res |= TextFlag.UnderlineHotKeys;
+			}
+		}
+
+		return res; 
+	}
 	/// set text flags (bit set of TextFlag enum values)
 	@property Widget textFlags(uint value) { 
 		ownStyle.textFlags = value;
-		bool oldHotkeys = (ownStyle.textFlags & (TextFlag.HotKeys | TextFlag.UnderlineHotKeys)) != 0;
-		bool newHotkeys = (value & (TextFlag.HotKeys | TextFlag.UnderlineHotKeys)) != 0;
+		bool oldHotkeys = (ownStyle.textFlags & (TextFlag.HotKeys | TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed)) != 0;
+		bool newHotkeys = (value & (TextFlag.HotKeys | TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed)) != 0;
 		if (oldHotkeys != newHotkeys)
 			requestLayout();
 		else

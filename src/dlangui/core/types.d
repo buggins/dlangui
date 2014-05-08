@@ -296,7 +296,13 @@ enum State : uint {
     Parent = 0x10000, // use parent's state
 }
 
-
+/// uppercase unicode character
+dchar dcharToUpper(dchar ch) {
+	// TODO: support non-ascii letters
+	if (ch >= 'a' && ch <= 'z')
+		return ch - 'a' + 'A';
+	return ch;
+}
 
 version (Windows) {
     immutable char PATH_DELIMITER = '\\';

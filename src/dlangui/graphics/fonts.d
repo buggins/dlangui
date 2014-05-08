@@ -244,7 +244,7 @@ class Font : RefCountedObject {
                 charsMeasured = i + 1;
                 x = tabPosition;
                 continue;
-			} else if (ch == '&' && (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.HotKeys))) {
+			} else if (ch == '&' && (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.HotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))) {
 				pwidths[i] = x;
 				continue; // skip '&' in hot key when measuring
 			}
@@ -319,8 +319,8 @@ class Font : RefCountedObject {
 		int underlineY = y + _baseline + underlineHeight * 2;
 		for (int i = 0; i < charsMeasured; i++) {
 			dchar ch = text[i];
-			if (ch == '&' && (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.HotKeys))) {
-				if (textFlags & TextFlag.UnderlineHotKeys)
+			if (ch == '&' && (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.HotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))) {
+				if (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))
 					underline = true; // turn ON underline for hot key
 				continue; // skip '&' in hot key when measuring
 			}

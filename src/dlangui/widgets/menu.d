@@ -43,7 +43,33 @@ class MenuItem {
     MenuItem subitem(int index) {
         return _subitems[index];
     }
-    /// adds submenu item
+
+	/// get hotkey character from label (e.g. 'F' for item labeled "&File"), 0 if no hotkey
+	dchar getHotkey() {
+		dstring s = label;
+		dchar ch = 0;
+		for (int i = 0; i < s.length - 1; i++) {
+			if (s[i] == '&') {
+				ch = s[i + 1];
+				break;
+			}
+		}
+		return dcharToUpper(ch);
+	}
+
+	/// find subitem by hotkey character, returns subitem index, -1 if not found
+	int findSubitemByHotkey(dchar ch) {
+		if (!ch)
+			return -1;
+		ch = dcharToUpper(ch);
+		for (int i = 0; i < _subitems.length; i++) {
+			if (_subitems[i].getHotkey() == ch)
+				return i;
+		}
+		return -1;
+	}
+
+	/// adds submenu item
     MenuItem add(MenuItem subitem) {
         _subitems ~= subitem;
         return this;
@@ -85,6 +111,7 @@ class MenuItem {
 
 /// widget to draw menu item
 class MenuItemWidget : WidgetGroup {
+	protected bool _mainMenu;
     protected MenuItem _item;
 	protected ImageWidget _icon;
 	protected TextWidget _accel;
@@ -180,8 +207,9 @@ class MenuItemWidget : WidgetGroup {
 		}
 	}
 
-	this(MenuItem item) {
+	this(MenuItem item, bool mainMenu) {
         id="menuitem";
+		_mainMenu = mainMenu;
         _item = item;
         styleId = "MENU_ITEM";
 		// icon
@@ -193,7 +221,7 @@ class MenuItemWidget : WidgetGroup {
 		// label
 		_label = new TextWidget("MENU_LABEL");
         _label.text = _item.label;
-		_label.styleId = "MENU_LABEL";
+		_label.styleId = _mainMenu ? "MAIN_MENU_LABEL" : "MENU_LABEL";
 		addChild(_label);
 		// accelerator
 		dstring acc = _item.acceleratorText;
@@ -230,9 +258,10 @@ class MenuWidgetBase : ListWidget {
         WidgetListAdapter adapter = new WidgetListAdapter();
         for (int i=0; i < _item.subitemCount; i++) {
             MenuItem subitem = _item.subitem(i);
-            MenuItemWidget widget = new MenuItemWidget(subitem);
+            MenuItemWidget widget = new MenuItemWidget(subitem, orientation == Orientation.Horizontal);
 			if (orientation == Orientation.Horizontal)
 				widget.styleId = "MAIN_MENU_ITEM";
+			widget.parent = this;
             adapter.widgets.add(widget);
         }
         ownAdapter = adapter;
@@ -444,7 +473,16 @@ class MainMenu : MenuWidgetBase {
         return true;
     }
 
-    protected int _menuToggleState;
+	/// get text flags (bit set of TextFlag enum values)
+	@property override uint textFlags() {
+		// override text flags for main menu
+		if (activated)
+			return TextFlag.UnderlineHotKeys | TextFlag.HotKeys;
+		else
+			return TextFlag.UnderlineHotKeysWhenAltPressed | TextFlag.HotKeys;
+	}
+
+	protected int _menuToggleState;
     protected Widget _menuTogglePreviousFocus;
 
 

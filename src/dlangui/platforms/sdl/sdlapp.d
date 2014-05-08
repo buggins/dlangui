@@ -446,17 +446,17 @@ version(USE_SDL) {
             if (flags & KMOD_ALT)
                 res |= KeyFlag.Alt;
             if (flags & KMOD_RCTRL)
-                res |= KeyFlag.RControl;
+				res |= KeyFlag.RControl | KeyFlag.Control;
             if (flags & KMOD_RSHIFT)
-                res |= KeyFlag.RShift;
+				res |= KeyFlag.RShift | KeyFlag.Shift;
             if (flags & KMOD_RALT)
-                res |= KeyFlag.RAlt;
+				res |= KeyFlag.RAlt | KeyFlag.Alt;
             if (flags & KMOD_LCTRL)
-                res |= KeyFlag.LControl;
+				res |= KeyFlag.LControl | KeyFlag.Control;
             if (flags & KMOD_LSHIFT)
-                res |= KeyFlag.LShift;
+				res |= KeyFlag.LShift | KeyFlag.Shift;
             if (flags & KMOD_LALT)
-                res |= KeyFlag.LAlt;
+				res |= KeyFlag.LAlt | KeyFlag.Alt;
             return res;
 		}
 				
@@ -471,10 +471,45 @@ version(USE_SDL) {
             }
             return res;
         }
-        bool processKeyEvent(KeyAction action, uint keyCode, uint flags) {
+
+		bool processKeyEvent(KeyAction action, uint keyCode, uint flags) {
 			Log.d("processKeyEvent ", action, " SDL key=0x", format("%08x", keyCode), " SDL flags=0x", format("%08x", flags));
 			keyCode = convertKeyCode(keyCode);
 			flags = convertKeyFlags(flags);
+			if (action == KeyAction.KeyDown) {
+				switch(keyCode) {
+					case KeyCode.ALT:
+						flags |= KeyFlag.Alt;
+						break;
+					case KeyCode.RALT:
+						flags |= KeyFlag.Alt | KeyFlag.RAlt;
+						break;
+					case KeyCode.LALT:
+						flags |= KeyFlag.Alt | KeyFlag.LAlt;
+						break;
+					case KeyCode.CONTROL:
+						flags |= KeyFlag.Control;
+						break;
+					case KeyCode.RCONTROL:
+						flags |= KeyFlag.Control | KeyFlag.RControl;
+						break;
+					case KeyCode.LCONTROL:
+						flags |= KeyFlag.Control | KeyFlag.LControl;
+						break;
+					case KeyCode.SHIFT:
+						flags |= KeyFlag.Shift;
+						break;
+					case KeyCode.RSHIFT:
+						flags |= KeyFlag.Shift | KeyFlag.RShift;
+						break;
+					case KeyCode.LSHIFT:
+						flags |= KeyFlag.Shift | KeyFlag.LShift;
+						break;
+					default:
+						break;
+				}
+			}
+
 			Log.d("processKeyEvent ", action, " converted key=0x", format("%08x", keyCode), " converted flags=0x", format("%08x", flags));
 			bool res = dispatchKeyEvent(new KeyEvent(action, keyCode, flags));
 //			if ((keyCode & 0x10000) && (keyCode & 0xF000) != 0xF000) {

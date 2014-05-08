@@ -37,6 +37,7 @@ immutable ubyte FONT_STYLE_ITALIC = 0x01;
 /// use as widget.layout() param to avoid applying of parent size
 immutable int SIZE_UNSPECIFIED = int.max;
 immutable uint TEXT_FLAGS_UNSPECIFIED = uint.max;
+immutable uint TEXT_FLAGS_USE_PARENT = uint.max - 1;
 
 immutable int FILL_PARENT = int.max - 1;
 immutable int WRAP_CONTENT = int.max - 2;
@@ -60,8 +61,10 @@ enum TextFlag : uint {
 	HotKeys = 1,
 	/// underline hot key when drawing
 	UnderlineHotKeys = 2,
+	/// underline hot key when drawing
+	UnderlineHotKeysWhenAltPressed = 4,
 	/// underline text when drawing
-	Underline = 4
+	Underline = 8
 }
 
 class DrawableAttribute {
@@ -747,7 +750,7 @@ Theme createDefaultTheme() {
 	//res.dumpStats();
 
     Style mainMenu = res.createSubstyle("MAIN_MENU").backgroundColor(0xEFEFF2).layoutWidth(FILL_PARENT);
-    Style mainMenuItem = res.createSubstyle("MAIN_MENU_ITEM").setPadding(4,2,4,2).backgroundImageId("main_menu_item_background");
+	Style mainMenuItem = res.createSubstyle("MAIN_MENU_ITEM").setPadding(4,2,4,2).backgroundImageId("main_menu_item_background").textFlags(TEXT_FLAGS_USE_PARENT);
     Style menuItem = res.createSubstyle("MENU_ITEM").setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
     menuItem.createState(State.Focused, State.Focused).backgroundColor(0x40C0C000);
     menuItem.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
@@ -755,6 +758,7 @@ Theme createDefaultTheme() {
     menuItem.createState(State.Hovered, State.Hovered).backgroundColor(0xC0FFFF00);
 	res.createSubstyle("MENU_ICON").setMargins(2,2,2,2).alignment(Align.VCenter|Align.Left);
 	res.createSubstyle("MENU_LABEL").setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TextFlag.UnderlineHotKeys);
+	res.createSubstyle("MAIN_MENU_LABEL").setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TEXT_FLAGS_USE_PARENT);
 	res.createSubstyle("MENU_ACCEL").setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left);
 
     Style transparentButtonBackground = res.createSubstyle("TRANSPARENT_BUTTON_BACKGROUND").backgroundImageId("transparent_button_background").setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;

@@ -32,13 +32,15 @@ private import dlangui.graphics.gldrawbuf;
 class Window {
     protected int _dx;
     protected int _dy;
+	protected uint _keyboardModifiers;
 	protected uint _backgroundColor;
     protected Widget _mainWidget;
-	@property uint backgroundColor() { return _backgroundColor; }
+	@property uint backgroundColor() const { return _backgroundColor; }
 	@property void backgroundColor(uint color) { _backgroundColor = color; }
-    @property int width() { return _dx; }
-    @property int height() { return _dy; }
-    @property Widget mainWidget() { return _mainWidget; }
+	@property int width() const { return _dx; }
+    @property int height() const { return _dy; }
+	@property uint keyboardModifiers() const { return _keyboardModifiers; }
+	@property Widget mainWidget() { return _mainWidget; }
     @property void mainWidget(Widget widget) { 
         if (_mainWidget !is null)
             _mainWidget.window = null;
@@ -244,13 +246,24 @@ class Window {
 
     /// dispatch keyboard event
     bool dispatchKeyEvent(KeyEvent event) {
+		bool res = false;
+		if (event.action == KeyAction.KeyDown || event.action == KeyAction.KeyUp) {
+			_keyboardModifiers = event.flags;
+			if (event.keyCode == KeyCode.ALT || event.keyCode == KeyCode.LALT || event.keyCode == KeyCode.RALT) {
+				Log.d("ALT key: keyboardModifiers = ", _keyboardModifiers);
+				if (_mainWidget) {
+					_mainWidget.invalidate();
+					res = true;
+				}
+			}
+		}
         if (event.action == KeyAction.Text) {
             // filter text
             if (event.text.length < 1)
-                return false;
+                return res;
             dchar ch = event.text[0];
             if (ch < ' ' || ch == 0x7F) // filter out control symbols
-                return false;
+                return res;
         }
         Widget focus = focusedWidget;
         if (focus !is null) {
@@ -258,8 +271,8 @@ class Window {
                 return true; // processed by focused widget
         }
         if (_mainWidget)
-            return dispatchKeyEvent(_mainWidget, event);
-        return false;
+            return dispatchKeyEvent(_mainWidget, event) || res;
+        return res;
     }
 
     protected bool dispatchMouseEvent(Widget root, MouseEvent event) {
