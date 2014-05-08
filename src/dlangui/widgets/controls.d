@@ -89,7 +89,7 @@ class TextWidget : Widget {
     override void measure(int parentWidth, int parentHeight) { 
         FontRef font = font();
         //auto measureStart = std.datetime.Clock.currAppTick;
-        Point sz = font.textSize(text);
+		Point sz = font.textSize(text, MAX_WIDTH_UNSPECIFIED, 4, 0, textFlags);
         //auto measureEnd = std.datetime.Clock.currAppTick;
         //auto duration = measureEnd - measureStart;
         //if (duration.length > 10)
@@ -108,7 +108,7 @@ class TextWidget : Widget {
         FontRef font = font();
         Point sz = font.textSize(text);
         applyAlign(rc, sz);
-        font.drawText(buf, rc.left, rc.top, text, textColor);
+		font.drawText(buf, rc.left, rc.top, text, textColor, 4, 0, textFlags);
     }
 }
 

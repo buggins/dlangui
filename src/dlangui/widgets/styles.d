@@ -36,6 +36,7 @@ immutable ubyte FONT_STYLE_NORMAL = 0x00;
 immutable ubyte FONT_STYLE_ITALIC = 0x01;
 /// use as widget.layout() param to avoid applying of parent size
 immutable int SIZE_UNSPECIFIED = int.max;
+immutable uint TEXT_FLAGS_UNSPECIFIED = uint.max;
 
 immutable int FILL_PARENT = int.max - 1;
 immutable int WRAP_CONTENT = int.max - 2;
@@ -51,6 +52,16 @@ enum Align : ubyte {
     VCenter = 4 | 8,
     Center = VCenter | HCenter,
 	TopLeft = Left | Top,
+}
+
+/// text drawing flag bits
+enum TextFlag : uint {
+	/// text contains hot key prefixed with & char (e.g. "&File")
+	HotKeys = 1,
+	/// underline hot key when drawing
+	UnderlineHotKeys = 2,
+	/// underline text when drawing
+	Underline = 4
 }
 
 class DrawableAttribute {
@@ -93,6 +104,7 @@ class Style {
 	protected ushort _fontWeight = FONT_WEIGHT_UNSPECIFIED;
 	protected uint _backgroundColor = COLOR_UNSPECIFIED;
 	protected uint _textColor = COLOR_UNSPECIFIED;
+	protected uint _textFlags = 0;
 	protected string _fontFace;
 	protected string _backgroundImageId;
 	protected Rect _padding;
@@ -260,7 +272,15 @@ class Style {
             return parentStyle.textColor;
 	}
 
-    //===================================================
+	/// text flags
+	@property uint textFlags() const {
+		if (_textFlags != TEXT_FLAGS_UNSPECIFIED)
+			return _textFlags;
+		else
+			return parentStyle.textFlags;
+	}
+	
+	//===================================================
     // background
 
 	/// background color
@@ -428,6 +448,11 @@ class Style {
 		return this;
 	}
 
+	@property Style textFlags(uint flags) {
+		_textFlags = flags;
+		return this;
+	}
+	
 	@property Style backgroundColor(uint color) {
 		_backgroundColor = color;
         _backgroundImageId = null;
@@ -514,6 +539,8 @@ class Style {
 		child._stateMask = stateMask;
 		child._stateValue = stateValue;
 		child._backgroundColor = COLOR_UNSPECIFIED;
+		child._textColor = COLOR_UNSPECIFIED;
+		child._textFlags = TEXT_FLAGS_UNSPECIFIED;
 		_substates ~= child;
 		return child;
 	}
@@ -573,6 +600,8 @@ class Theme : Style {
         style._align = Align.Unspecified; // inherit
 		style._padding.left = SIZE_UNSPECIFIED; // inherit
 		style._margins.left = SIZE_UNSPECIFIED; // inherit
+		style._textColor = COLOR_UNSPECIFIED; // inherit
+		style._textFlags = TEXT_FLAGS_UNSPECIFIED; // inherit
 		return style;
 	}
 
@@ -725,7 +754,7 @@ Theme createDefaultTheme() {
     menuItem.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
     menuItem.createState(State.Hovered, State.Hovered).backgroundColor(0xC0FFFF00);
 	res.createSubstyle("MENU_ICON").setMargins(2,2,2,2).alignment(Align.VCenter|Align.Left);
-	res.createSubstyle("MENU_LABEL").setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left);
+	res.createSubstyle("MENU_LABEL").setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TextFlag.UnderlineHotKeys);
 	res.createSubstyle("MENU_ACCEL").setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left);
 
     Style transparentButtonBackground = res.createSubstyle("TRANSPARENT_BUTTON_BACKGROUND").backgroundImageId("transparent_button_background").setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;

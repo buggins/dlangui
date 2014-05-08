@@ -299,7 +299,20 @@ class Widget {
         invalidate();
         return this; 
     }
-    /// returns font face
+	/// get text flags (bit set of TextFlag enum values)
+	@property uint textFlags() const { return stateStyle.textFlags; }
+	/// set text flags (bit set of TextFlag enum values)
+	@property Widget textFlags(uint value) { 
+		ownStyle.textFlags = value;
+		bool oldHotkeys = (ownStyle.textFlags & (TextFlag.HotKeys | TextFlag.UnderlineHotKeys)) != 0;
+		bool newHotkeys = (value & (TextFlag.HotKeys | TextFlag.UnderlineHotKeys)) != 0;
+		if (oldHotkeys != newHotkeys)
+			requestLayout();
+		else
+			invalidate();
+		return this; 
+	}
+	/// returns font face
     @property string fontFace() const { return stateStyle.fontFace; }
     /// set font face for widget - override one from style
 	@property Widget fontFace(string face) { 

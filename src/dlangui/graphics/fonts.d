@@ -22,6 +22,7 @@ module dlangui.graphics.fonts;
 public import dlangui.graphics.drawbuf;
 public import dlangui.core.types;
 public import dlangui.core.logger;
+private import dlangui.widgets.styles;
 import std.algorithm;
 
 /// font family
@@ -162,6 +163,7 @@ struct GlyphCache
 	}
 }
 
+immutable int MAX_WIDTH_UNSPECIFIED = int.max;
 
 /// Font object
 class Font : RefCountedObject {
@@ -218,7 +220,7 @@ class Font : RefCountedObject {
      *      tabSize = tabulation size, in number of spaces
      *      tabOffset = when string is drawn not from left position, use to move tab stops left/right
      ******************************************************************************************/
-	int measureText(const dchar[] text, ref int[] widths, int maxWidth=int.max, int tabSize = 4, int tabOffset = 0) {
+	int measureText(const dchar[] text, ref int[] widths, int maxWidth=MAX_WIDTH_UNSPECIFIED, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
 		if (text.length == 0)
 			return 0;
 		const dchar * pstr = text.ptr;
@@ -242,7 +244,10 @@ class Font : RefCountedObject {
                 charsMeasured = i + 1;
                 x = tabPosition;
                 continue;
-            }
+			} else if (ch == '&' && (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.HotKeys))) {
+				pwidths[i] = x;
+				continue; // skip '&' in hot key when measuring
+			}
 			Glyph * glyph = getCharGlyph(pstr[i], true); // TODO: what is better
             //auto measureEnd = std.datetime.Clock.currAppTick;
             //auto duration = measureEnd - measureStart;
@@ -275,10 +280,10 @@ class Font : RefCountedObject {
      *          text = text string to measure
      *          maxWidth = maximum width - measure is stopping if max width is reached
      ************************************************************************/
-	Point textSize(const dchar[] text, int maxWidth = int.max) {
+	Point textSize(const dchar[] text, int maxWidth = MAX_WIDTH_UNSPECIFIED, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
         if (_textSizeBuffer.length < text.length + 1)
             _textSizeBuffer.length = text.length + 1;
-        int charsMeasured = measureText(text, _textSizeBuffer, maxWidth);
+        int charsMeasured = measureText(text, _textSizeBuffer, maxWidth, tabSize, tabOffset, textFlags);
         if (charsMeasured < 1)
             return Point(0,0);
         return Point(_textSizeBuffer[charsMeasured - 1], height);
@@ -295,26 +300,46 @@ class Font : RefCountedObject {
      *      color =  color for drawing of glyphs
      *      tabSize = tabulation size, in number of spaces
      *      tabOffset = when string is drawn not from left position, use to move tab stops left/right
+     *      textFlags = set of TextFlag bit fields
      ****************************************************************************************/
-	void drawText(DrawBuf buf, int x, int y, const dchar[] text, uint color, int tabSize = 4, int tabOffset = 0) {
+	void drawText(DrawBuf buf, int x, int y, const dchar[] text, uint color, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
         if (text.length == 0)
             return; // nothing to draw - empty text
         if (_textSizeBuffer.length < text.length)
             _textSizeBuffer.length = text.length;
-		int charsMeasured = measureText(text, _textSizeBuffer, int.max, tabSize, tabOffset);
+		int charsMeasured = measureText(text, _textSizeBuffer, MAX_WIDTH_UNSPECIFIED, tabSize, tabOffset, textFlags);
 		Rect clip = buf.clipOrFullRect;
         if (clip.empty)
             return; // not visible - clipped out
 		if (y + height < clip.top || y >= clip.bottom)
 			return; // not visible - fully above or below clipping rectangle
         int _baseline = baseline;
+		bool underline = (textFlags & TextFlag.Underline) != 0;
+		int underlineHeight = 1;
+		int underlineY = y + _baseline + underlineHeight * 2;
 		for (int i = 0; i < charsMeasured; i++) {
+			dchar ch = text[i];
+			if (ch == '&' && (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.HotKeys))) {
+				if (textFlags & TextFlag.UnderlineHotKeys)
+					underline = true; // turn ON underline for hot key
+				continue; // skip '&' in hot key when measuring
+			}
 			int xx = (i > 0) ? _textSizeBuffer[i - 1] : 0;
 			if (x + xx > clip.right)
 				break;
 			if (x + xx + 255 < clip.left)
 				continue; // far at left of clipping region
-            dchar ch = text[i];
+
+			if (underline) {
+				int xx2 = _textSizeBuffer[i];
+				// draw underline
+				if (xx2 > xx)
+					buf.fillRect(Rect(x + xx, underlineY, x + xx2, underlineY + underlineHeight), color);
+				// turn off underline after hot key
+				if (!(textFlags & TextFlag.Underline))
+					underline = false; 
+			}
+
             if (ch == ' ' || ch == '\t')
                 continue;
 			Glyph * glyph = getCharGlyph(ch);
