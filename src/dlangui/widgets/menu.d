@@ -267,6 +267,10 @@ class MenuWidgetBase : ListWidget {
         ownAdapter = adapter;
     }
 
+	@property protected bool isMainMenu() {
+		return _orientation == Orientation.Horizontal;
+	}
+
 	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
 	override void measure(int parentWidth, int parentHeight) {
 		if (_orientation == Orientation.Horizontal) {
@@ -298,6 +302,11 @@ class MenuWidgetBase : ListWidget {
 		super.measure(parentWidth, parentHeight);
 	}
 
+	protected void performUndoSelection() {
+		selectItem(-1);
+		setHoverItem(-1);
+	}
+
     protected void onPopupClosed(PopupWidget p) {
 		if (_openedPopup) {
 			if (_openedPopup is p) {
@@ -306,10 +315,10 @@ class MenuWidgetBase : ListWidget {
 				_openedPopup = null;
 				_openedMenu = null;
 				if (undoSelection) {
-					selectItem(-1);
-					setHoverItem(-1);
+					performUndoSelection();
 				}
-				window.setFocus(this);
+				if (!isMainMenu)
+					window.setFocus(this);
 			} else if (thisPopup is p) {
 				_openedPopup.close();
 			}
@@ -476,7 +485,7 @@ class MainMenu : MenuWidgetBase {
 	/// get text flags (bit set of TextFlag enum values)
 	@property override uint textFlags() {
 		// override text flags for main menu
-		if (activated)
+		if (_selectedItemIndex >= 0)
 			return TextFlag.UnderlineHotKeys | TextFlag.HotKeys;
 		else
 			return TextFlag.UnderlineHotKeysWhenAltPressed | TextFlag.HotKeys;
@@ -488,8 +497,12 @@ class MainMenu : MenuWidgetBase {
 
     /// return true if main menu is activated (focused or has open submenu)
     @property bool activated() {
-        return focused || _openedPopup !is null;
+        return focused || _selectedItemIndex >= 0 || _openedPopup !is null;
     }
+
+	override protected void performUndoSelection() {
+		deactivate();
+	}
 
     /// bring focus to main menu, if not yet activated
     void activate() {
@@ -501,14 +514,15 @@ class MainMenu : MenuWidgetBase {
     }
 
     /// close and remove focus, if activated
-    void deactivate() {
+    void deactivate(bool force = false) {
         debug Log.d("deactivating main menu");
-        if (!activated)
+        if (!activated && !force)
             return;
         if (_openedPopup !is null)
             _openedPopup.close();
         selectItem(-1);
         setHoverItem(-1);
+		selectOnHover = false;
         window.setFocus(_menuTogglePreviousFocus);
     }
 
