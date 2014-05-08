@@ -1199,7 +1199,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
         return true;
     }
 
-	override protected bool handleAction(Action a) {
+	override protected bool handleAction(const Action a) {
         TextPosition oldCaretPos = _caretPos;
         dstring currentLine = _content[_caretPos.line];
 		switch (a.id) {
@@ -1571,7 +1571,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 
 	/// handle keys
 	override bool onKeyEvent(KeyEvent event) {
-		if (event.action == KeyAction.Text && event.text.length) {
+		if (event.action == KeyAction.Text && event.text.length && !(event.flags & (KeyFlag.Control | KeyFlag.Alt))) {
 			Log.d("text entered: ", event.text);
             if (readOnly)
                 return true;
@@ -1718,7 +1718,7 @@ class EditLine : EditWidgetBase {
         measuredContent(parentWidth, parentHeight, _measuredTextSize.x, _measuredTextSize.y);
     }
 
-	override protected bool handleAction(Action a) {
+	override protected bool handleAction(const Action a) {
 		switch (a.id) {
             case EditorActions.Up:
                 break;
@@ -2016,7 +2016,7 @@ class EditBox : EditWidgetBase, OnScrollHandler {
         return res;
     }
 
-	override protected bool handleAction(Action a) {
+	override protected bool handleAction(const Action a) {
         TextPosition oldCaretPos = _caretPos;
         dstring currentLine = _content[_caretPos.line];
 		switch (a.id) {

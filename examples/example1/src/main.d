@@ -85,6 +85,17 @@ extern (C) int UIAppMain(string[] args) {
         mainMenuItems.add(windowItem);
         mainMenuItems.add(helpItem);
         MainMenu mainMenu = new MainMenu(mainMenuItems);
+		mainMenu.onMenuItemListener = delegate(MenuItem item) {
+			Log.d("mainMenu.onMenuItemListener", item.label);
+			const Action a = item.action;
+			if (a) {
+				if (window.focusedWidget)
+					return window.focusedWidget.handleAction(a);
+				else
+					return contentLayout.handleAction(a);
+			}
+			return false;
+		};
         contentLayout.addChild(mainMenu);
 
         TabWidget tabs = new TabWidget("TABS");

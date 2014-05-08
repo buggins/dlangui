@@ -460,11 +460,21 @@ class MenuWidgetBase : ListWidget {
                 if (event.keyCode == KeyCode.LEFT || event.keyCode == KeyCode.RIGHT) {
                     return true;
                 }
-            }
+            } else if (event.action == KeyAction.Text && event.flags == 0) {
+				dchar ch = event.text[0];
+				int index = _item.findSubitemByHotkey(ch);
+				if (index >= 0) {
+					itemClicked(index);
+					return true;
+				}
+			}
         }
+		if (_selectedItemIndex >= 0 && event.action == KeyAction.KeyDown && event.flags == 0 && (event.keyCode == KeyCode.RETURN || event.keyCode == KeyCode.SPACE)) {
+			itemClicked(_selectedItemIndex);
+			return true;
+		}
         return super.onKeyEvent(event);
     }
-
 }
 
 /// main menu (horizontal)
@@ -494,6 +504,13 @@ class MainMenu : MenuWidgetBase {
 	protected int _menuToggleState;
     protected Widget _menuTogglePreviousFocus;
 
+	override protected void onMenuItem(MenuItem item) {
+		debug Log.d("MainMenu.onMenuItem ", item.action.label);
+		bool delegate(MenuItem item) listener = _onMenuItemClickListener;
+		deactivate();
+		if (listener !is null)
+			listener(item);
+	}
 
     /// return true if main menu is activated (focused or has open submenu)
     @property bool activated() {
@@ -559,6 +576,18 @@ class MainMenu : MenuWidgetBase {
             deactivate();
             return true;
         }
+		if (event.action == KeyAction.Text && (event.flags & KeyFlag.Alt) && !(event.flags & KeyFlag.Shift) && !(event.flags & KeyFlag.Shift)) {
+			dchar ch = event.text[0];
+			int index = _item.findSubitemByHotkey(ch);
+			if (index >= 0) {
+				activate();
+				//selectItem(index);
+				itemClicked(index);
+				return true;
+			} else {
+				return false;
+			}
+		}
 
         if (event.action == KeyAction.KeyDown && isAlt && noOtherModifiers) {
             _menuToggleState = 1;

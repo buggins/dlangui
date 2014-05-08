@@ -791,7 +791,7 @@ class Widget {
 	@property ref ActionMap acceleratorMap() { return _acceleratorMap; }
 
 	/// override to handle specific actions
-	protected bool handleAction(Action a) {
+	bool handleAction(const Action a) {
 		if (parent) // by default, pass to parent widget
 			return parent.handleAction(a);
 		return false;
