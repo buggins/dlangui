@@ -409,6 +409,10 @@ class FrameLayout : WidgetGroup {
 /// layout children as table with rows and columns
 class TableLayout : WidgetGroup {
 
+	this(string ID) {
+		super(ID);
+	}
+
 	protected static struct TableLayoutItem {
 		int col;
 		int row;
@@ -441,9 +445,10 @@ class TableLayout : WidgetGroup {
 		int measuredHeight;
 		int layoutWidth;
 		int layoutHeight;
+		int size;
 		TableLayoutItem[] _cells;
 		void init(int row, int colCount) {
-			measuredWidth = measuredHeight = layoutWidth = layoutHeight = 0;
+			measuredWidth = measuredHeight = layoutWidth = layoutHeight = size = 0;
 			this.row = row;
 			_cells.length = colCount;
 			for(int i = 0; i < colCount; i++) {
@@ -462,6 +467,7 @@ class TableLayout : WidgetGroup {
 				layoutWidth = FILL_PARENT;
 			if (cell.layoutHeight == FILL_PARENT)
 				layoutHeight = FILL_PARENT;
+			size = measuredHeight;
 		}
 	}
 	protected static struct TableLayoutCol {
@@ -470,9 +476,10 @@ class TableLayout : WidgetGroup {
 		int measuredHeight;
 		int layoutWidth;
 		int layoutHeight;
+		int size;
 		void init(int col) {
 			this.col = col;
-			measuredWidth = measuredHeight = layoutWidth = layoutHeight = 0;
+			measuredWidth = measuredHeight = layoutWidth = layoutHeight = size = 0;
 		}
 		void cellMeasured(ref TableLayoutItem cell) {
 			if (measuredWidth < cell.measuredWidth)
@@ -483,13 +490,16 @@ class TableLayout : WidgetGroup {
 				layoutWidth = FILL_PARENT;
 			if (cell.layoutHeight == FILL_PARENT)
 				layoutHeight = FILL_PARENT;
+			size = measuredWidth;
 		}
 	}
+
 	protected static struct TableLayoutRows {
 		protected TableLayoutCol[] _cols;
 		protected TableLayoutRow[] _rows;
 		protected int colCount;
 		protected int rowCount;
+
 		void init(int cols, int rows) {
 			colCount = cols;
 			rowCount = rows;
@@ -500,6 +510,7 @@ class TableLayout : WidgetGroup {
 			for(int i = 0; i < cols; i++)
 				_cols[i].init(i);
 		}
+
 		ref TableLayoutItem cell(int col, int row) {
 			return _rows[row].cell(col);
 		}
@@ -509,6 +520,7 @@ class TableLayout : WidgetGroup {
 		ref TableLayoutRow row(int r) {
 			return _rows[r];
 		}
+
 		Point measure(Widget parent, int cc, int rc, int pwidth, int pheight) {
 			init(cc, rc);
 			for (int y = 0; y < rc; y++) {
@@ -535,6 +547,32 @@ class TableLayout : WidgetGroup {
 				totalWidth += col(x).measuredWidth;
 			}
 			return Point(totalWidth, totalHeight);
+		}
+
+		void layoutRows() {
+		}
+		void layoutCols() {
+		}
+
+		void layout(Rect rc) {
+			layoutRows();
+			layoutCols();
+			int y0 = 0;
+			for (int y = 0; y < rowCount; y++) {
+				int x0 = 0;
+				for (int x = 0; x < colCount; x++) {
+					int index = y * colCount + x;
+					Rect r;
+					r.left = rc.left + x0;
+					r.top = rc.top + y0;
+					r.right = r.left + col(x).size;
+					r.bottom = r.top + row(y).size;
+					if (cell(x, y).widget)
+						cell(x, y).widget.layout(r);
+					x0 += col(x).size;
+				}
+				y0 += row(y).size;
+			}
 		}
 	}
 	protected TableLayoutRows _cells;
@@ -563,4 +601,34 @@ class TableLayout : WidgetGroup {
 		Point sz = _cells.measure(this, colCount, rc, pwidth, pheight);
 		measuredContent(parentWidth, parentHeight, sz.x, sz.y);
 	}
+
+	/// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+	override void layout(Rect rc) {
+		_needLayout = false;
+		if (visibility == Visibility.Gone) {
+			return;
+		}
+		_pos = rc;
+		applyMargins(rc);
+		applyPadding(rc);
+		_cells.layout(rc);
+	}
+	
+	/// Draw widget at its position to buffer
+	override void onDraw(DrawBuf buf) {
+		if (visibility != Visibility.Visible)
+			return;
+		super.onDraw(buf);
+		Rect rc = _pos;
+		applyMargins(rc);
+		applyPadding(rc);
+		auto saver = ClipRectSaver(buf, rc);
+		for (int i = 0; i < _children.count; i++) {
+			Widget item = _children.get(i);
+			if (item.visibility != Visibility.Visible)
+				continue;
+			item.onDraw(buf);
+		}
+	}
+	
 }

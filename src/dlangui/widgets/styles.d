@@ -256,7 +256,7 @@ class Style {
 
 	/// padding
 	@property ref const(Rect) padding() const {
-		if (_stateMask || _margins.left == SIZE_UNSPECIFIED)
+		if (_stateMask || _padding.left == SIZE_UNSPECIFIED)
 			return parentStyle._padding;
 		return _padding;
 	}

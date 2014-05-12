@@ -274,7 +274,24 @@ extern (C) int UIAppMain(string[] args) {
             layout3.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
             tabs.addTab(layout3, "Buttons"d);
         }
-        tabs.addTab((new TextWidget()).id("tab4").textColor(0x00802000).text("Tab 4 contents some long string"), "Tab 4"d);
+
+		TableLayout table = new TableLayout("TABLE");
+		table.colCount = 2;
+		// headers
+		table.addChild((new TextWidget(null, "Parameter Name"d)).alignment(Align.Right | Align.VCenter));
+		table.addChild((new TextWidget(null, "Edit Box to edit parameter"d)).alignment(Align.Left | Align.VCenter));
+		// row 1
+		table.addChild((new TextWidget(null, "Parameter 1 name"d)).alignment(Align.Right | Align.VCenter));
+		table.addChild((new EditLine("edit1", "Text 1"d)).layoutWidth(FILL_PARENT));
+		// row 2
+		table.addChild((new TextWidget(null, "Parameter 2 name bla bla"d)).alignment(Align.Right | Align.VCenter));
+		table.addChild((new EditLine("edit2", "Some text for parameter 2"d)).layoutWidth(FILL_PARENT));
+		// row 3
+		table.addChild((new TextWidget(null, "Param 3"d)).alignment(Align.Right | Align.VCenter));
+		table.addChild((new EditLine("edit3", "Parameter 3 value"d)).layoutWidth(FILL_PARENT));
+		table.margins(Rect(10,10,10,10)).layoutWidth(FILL_PARENT);
+		tabs.addTab(table, "Table Layout"d);
+
         tabs.addTab((new TextWidget()).id("tab5").textColor(0x00802000).text("Tab 5 contents"), "Tab 5"d);
 
         //==========================================================================
