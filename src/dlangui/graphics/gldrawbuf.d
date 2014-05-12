@@ -53,6 +53,7 @@ class GLDrawBuf : DrawBuf {
 
     /// reserved for hardware-accelerated drawing - begins drawing batch
     override void beforeDrawing() {
+		_alpha = 0;
         if (_scene !is null) {
             _scene.reset();
         }
@@ -77,12 +78,12 @@ class GLDrawBuf : DrawBuf {
     /// fill the whole buffer with solid color (no clipping applied)
     override void fill(uint color) {
         assert(_scene !is null);
-        _scene.add(new SolidRectSceneItem(Rect(0, 0, _dx, _dy), color));
+        _scene.add(new SolidRectSceneItem(Rect(0, 0, _dx, _dy), applyAlpha(color)));
     }
     /// fill rectangle with solid color (clipping is applied)
     override void fillRect(Rect rc, uint color) {
         assert(_scene !is null);
-        _scene.add(new SolidRectSceneItem(rc, color));
+        _scene.add(new SolidRectSceneItem(rc, applyAlpha(color)));
     }
     /// draw 8bit alpha image - usually font glyph using specified color (clipping is applied)
 	override void drawGlyph(int x, int y, Glyph * glyph, uint color) {
@@ -93,7 +94,7 @@ class GLDrawBuf : DrawBuf {
         if (applyClipping(dstrect, srcrect)) {
             if (!glGlyphCache.get(glyph.id))
                 glGlyphCache.put(glyph);
-            _scene.add(new GlyphSceneItem(glyph.id, dstrect, srcrect, color, null));
+            _scene.add(new GlyphSceneItem(glyph.id, dstrect, srcrect, applyAlpha(color), null));
         }
     }
     /// draw source buffer rectangle contents to destination buffer
@@ -104,7 +105,7 @@ class GLDrawBuf : DrawBuf {
         if (applyClipping(dstrect, srcrect)) {
             if (!glImageCache.get(src.id))
                 glImageCache.put(src);
-            _scene.add(new TextureSceneItem(src.id, dstrect, srcrect, 0xFFFFFF, 0, null, 0));
+            _scene.add(new TextureSceneItem(src.id, dstrect, srcrect, applyAlpha(0xFFFFFF), 0, null, 0));
         }
     }
     /// draw source buffer rectangle contents to destination buffer rectangle applying rescaling
@@ -114,7 +115,7 @@ class GLDrawBuf : DrawBuf {
         if (applyClipping(dstrect, srcrect)) {
             if (!glImageCache.get(src.id))
                 glImageCache.put(src);
-            _scene.add(new TextureSceneItem(src.id, dstrect, srcrect, 0xFFFFFF, 0, null, 0));
+            _scene.add(new TextureSceneItem(src.id, dstrect, srcrect, applyAlpha(0xFFFFFF), 0, null, 0));
         }
     }
 

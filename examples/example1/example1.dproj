@@ -23,6 +23,11 @@
     <Includes>
       <Includes>
         <Path>../../src</Path>
+        <Path>../../../DerelictUtil/source</Path>
+        <Path>../../../DerelictFI/source</Path>
+        <Path>../../../DerelictFT/source</Path>
+        <Path>../../../DerelictSDL2/source</Path>
+        <Path>../../../DerelictGL3/source</Path>
       </Includes>
     </Includes>
   </PropertyGroup>
@@ -36,6 +41,12 @@
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_SDL</String>
+        <String>USE_OPENGL</String>
+      </VersionIds>
+    </VersionIds>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release</OutputPath>

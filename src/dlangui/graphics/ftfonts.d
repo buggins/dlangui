@@ -350,7 +350,7 @@ class FreeTypeFont : Font {
         //    Log.d("ft _glyphCache.find took ", duration / 10, " ns");
 		if (found !is null)
 			return found;
-        Log.v("Glyph ", ch, " is not found in cache, getting from font");
+        //Log.v("Glyph ", ch, " is not found in cache, getting from font");
         FT_UInt index;
         FreeTypeFontFile file;
         if (!findGlyph(ch, 0, index, file)) {

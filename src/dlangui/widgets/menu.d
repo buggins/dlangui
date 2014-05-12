@@ -212,7 +212,7 @@ class MenuItemWidget : WidgetGroup {
 		Rect rc = _pos;
 		applyMargins(rc);
 		applyPadding(rc);
-		auto saver = ClipRectSaver(buf, rc);
+		auto saver = ClipRectSaver(buf, rc, alpha);
 		for (int i = 0; i < _children.count; i++) {
 			Widget item = _children.get(i);
 			if (item.visibility != Visibility.Visible)

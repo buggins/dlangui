@@ -291,7 +291,15 @@ class Widget {
         invalidate();
         return this; 
     }
-    /// get text color (ARGB 32 bit value)
+	/// widget drawing alpha value (0=opaque .. 255=transparent)
+	@property uint alpha() const { return stateStyle.alpha; }
+	/// set widget drawing alpha value (0=opaque .. 255=transparent)
+	@property Widget alpha(uint value) { 
+		ownStyle.alpha = value; 
+		invalidate();
+		return this; 
+	}
+	/// get text color (ARGB 32 bit value)
     @property uint textColor() const { return stateStyle.textColor; }
     /// set text color (ARGB 32 bit value)
     @property Widget textColor(uint value) { 
@@ -879,20 +887,20 @@ class Widget {
         if (trackHover) {
 	        if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {
                 if ((state & State.Hovered)) {
-                    Log.d("Hover off ", id);
+                    debug(mouse) Log.d("Hover off ", id);
                     resetState(State.Hovered);
                 }
 	            return true;
 	        }
             if (event.action == MouseAction.Move) {
                 if (!(state & State.Hovered)) {
-                    Log.d("Hover ", id);
+					debug(mouse) Log.d("Hover ", id);
                     setState(State.Hovered);
                 }
 	            return true;
             }
             if (event.action == MouseAction.Leave) {
-                Log.d("Leave ", id);
+				debug(mouse) Log.d("Leave ", id);
 	            resetState(State.Hovered);
 	            return true;
             }
@@ -992,6 +1000,7 @@ class Widget {
             return;
         Rect rc = _pos;
         applyMargins(rc);
+		auto saver = ClipRectSaver(buf, rc, alpha);
         DrawableRef bg = stateStyle.backgroundDrawable;
 		if (!bg.isNull) {
 	        bg.drawTo(buf, rc, state);

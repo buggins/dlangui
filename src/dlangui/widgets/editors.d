@@ -1849,8 +1849,8 @@ class EditLine : EditWidgetBase {
         Rect rc = _pos;
         applyMargins(rc);
         applyPadding(rc);
-        auto saver = ClipRectSaver(buf, rc);
-        FontRef font = font();
+		auto saver = ClipRectSaver(buf, rc, alpha);
+		FontRef font = font();
         dstring txt = text;
         Point sz = font.textSize(txt);
         //applyAlign(rc, sz);
@@ -2373,7 +2373,7 @@ class EditBox : EditWidgetBase, OnScrollHandler {
         _hscrollbar.onDraw(buf);
         _vscrollbar.onDraw(buf);
         Rect rc = _clientRc;
-        auto saver = ClipRectSaver(buf, rc);
+		auto saver = ClipRectSaver(buf, rc, alpha);
 
         FontRef font = font();
         //dstring txt = text;

@@ -255,7 +255,7 @@ version(USE_SDL) {
             MouseEvent event = new MouseEvent(action, btn, flags, cast(short)x, cast(short)y);
 			bool res = dispatchMouseEvent(event);
 	        if (res) {
-	            Log.d("Calling update() after mouse event");
+	            debug(mouse) Log.d("Calling update() after mouse event");
 	            invalidate();
 	        }
 		}
@@ -660,19 +660,19 @@ version(USE_SDL) {
                                     Log.d("SDL_WINDOWEVENT_MAXIMIZED");
                                     break;
                                 case SDL_WINDOWEVENT_RESTORED:
-                                    Log.d("SDL_WINDOWEVENT_MAXIMIZED");
+									Log.d("SDL_WINDOWEVENT_RESTORED");
                                     break;
                                 case SDL_WINDOWEVENT_ENTER:
-                                    Log.d("SDL_WINDOWEVENT_MAXIMIZED");
+									Log.d("SDL_WINDOWEVENT_ENTER");
                                     break;
                                 case SDL_WINDOWEVENT_LEAVE:
                                     Log.d("SDL_WINDOWEVENT_MAXIMIZED");
                                     break;
                                 case SDL_WINDOWEVENT_FOCUS_GAINED:
-                                    Log.d("SDL_WINDOWEVENT_MAXIMIZED");
+									Log.d("SDL_WINDOWEVENT_FOCUS_GAINED");
                                     break;
                                 case SDL_WINDOWEVENT_FOCUS_LOST:
-                                    Log.d("SDL_WINDOWEVENT_MAXIMIZED");
+									Log.d("SDL_WINDOWEVENT_FOCUS_LOST");
                                     break;
                                 default:
                                     break;

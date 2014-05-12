@@ -108,6 +108,7 @@ class Style {
 	protected uint _backgroundColor = COLOR_UNSPECIFIED;
 	protected uint _textColor = COLOR_UNSPECIFIED;
 	protected uint _textFlags = 0;
+	protected uint _alpha;
 	protected string _fontFace;
 	protected string _backgroundImageId;
 	protected Rect _padding;
@@ -267,6 +268,14 @@ class Style {
 		return _margins;
 	}
 
+	/// alpha (0=opaque .. 255=transparent)
+	@property uint alpha() const {
+		if (_alpha != COLOR_UNSPECIFIED)
+			return _alpha;
+		else
+			return parentStyle.alpha;
+	}
+	
 	/// text color
 	@property uint textColor() const {
         if (_textColor != COLOR_UNSPECIFIED)
@@ -451,6 +460,11 @@ class Style {
 		return this;
 	}
 
+	@property Style alpha(uint alpha) {
+		_alpha = alpha;
+		return this;
+	}
+	
 	@property Style textFlags(uint flags) {
 		_textFlags = flags;
 		return this;
@@ -536,7 +550,7 @@ class Style {
 	/// create state substyle for this style
 	Style createState(uint stateMask = 0, uint stateValue = 0) {
         assert(stateMask != 0);
-		Log.d("Creating substate ", stateMask);
+		debug(styles) Log.d("Creating substate ", stateMask);
 		Style child = (_theme !is null ? _theme : currentTheme).createSubstyle(null);
 		child._parentStyle = this;
 		child._stateMask = stateMask;
@@ -756,7 +770,7 @@ Theme createDefaultTheme() {
     menuItem.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
     menuItem.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
     menuItem.createState(State.Hovered, State.Hovered).backgroundColor(0xC0FFFF00);
-	res.createSubstyle("MENU_ICON").setMargins(2,2,2,2).alignment(Align.VCenter|Align.Left);
+	res.createSubstyle("MENU_ICON").setMargins(2,2,2,2).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).alpha(0xA0);
 	res.createSubstyle("MENU_LABEL").setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TextFlag.UnderlineHotKeys).createState(State.Enabled,0).textColor(0x80404040);
 	res.createSubstyle("MAIN_MENU_LABEL").setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TEXT_FLAGS_USE_PARENT).createState(State.Enabled,0).textColor(0x80404040);
 	res.createSubstyle("MENU_ACCEL").setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).textColor(0x80404040);

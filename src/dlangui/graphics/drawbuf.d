@@ -43,6 +43,15 @@ uint blendARGB(uint dst, uint src, uint alpha) {
     return (r << 16) | (g << 8) | b;
 }
 
+/// blend two alpha values 0..255 (255 is fully transparent, 0 is opaque)
+uint blendAlpha(uint a1, uint a2) {
+	if (!a1)
+		return a2;
+	if (!a2)
+		return a1;
+	return (((a1 ^ 0xFF) * (a2 ^ 0xFF)) >> 8) ^ 0xFF;
+}
+
 ubyte rgbToGray(uint color) {
     uint srcr = (color >> 16) & 0xFF;
     uint srcg = (color >> 8) & 0xFF;
@@ -127,6 +136,33 @@ version (USE_OPENGL) {
 class DrawBuf : RefCountedObject {
     protected Rect _clipRect;
     protected NinePatch * _ninePatch;
+	protected uint _alpha;
+
+	/// get current alpha setting (to be applied to all drawing operations)
+	@property uint alpha() { return _alpha; }
+	/// set new alpha setting (to be applied to all drawing operations)
+	@property void alpha(uint alpha) {
+		_alpha = alpha;
+		if (_alpha > 0xFF)
+			_alpha = 0xFF;
+	}
+
+	/// apply additional transparency to current drawbuf alpha value
+	void addAlpha(uint alpha) {
+		_alpha = blendAlpha(_alpha, alpha);
+	}
+
+	/// applies current drawbuf alpha to argb color value
+	uint applyAlpha(uint argb) {
+		if (!_alpha)
+			return argb; // no drawbuf alpha
+		uint a1 = (argb >> 24) & 0xFF;
+		if (a1 == 0xFF)
+			return argb; // fully transparent
+		uint a2 = _alpha & 0xFF;
+		uint a = blendAlpha(a1, a2);
+		return (argb & 0xFFFFFF) | (a << 24);
+	}
 
     version (USE_OPENGL) {
         protected uint _id;
@@ -291,7 +327,7 @@ class DrawBuf : RefCountedObject {
         return !rc.empty() && !rc2.empty();
     }
     /// reserved for hardware-accelerated drawing - begins drawing batch
-    void beforeDrawing() { }
+	void beforeDrawing() { _alpha = 0; }
     /// reserved for hardware-accelerated drawing - ends drawing batch
     void afterDrawing() { }
     /// returns buffer bits per pixel
@@ -372,13 +408,18 @@ alias DrawBufRef = Ref!DrawBuf;
 struct ClipRectSaver {
     private DrawBuf _buf;
     private Rect _oldClipRect;
-    this(DrawBuf buf, ref Rect newClipRect) {
+	private uint _oldAlpha;
+    this(DrawBuf buf, ref Rect newClipRect, uint newAlpha = 0) {
         _buf = buf;
         _oldClipRect = buf.clipRect;
+		_oldAlpha = buf.alpha;
         buf.intersectClipRect(newClipRect);
+		if (newAlpha)
+			buf.addAlpha(newAlpha);
     }
     ~this() {
         _buf.clipRect = _oldClipRect;
+		_buf.alpha = _oldAlpha;
     }
 }
 
@@ -407,7 +448,7 @@ class ColorDrawBufBase : DrawBuf {
                         uint * dstrow = scanLine(dstrect.top + yy) + dstrect.left;
                         for (int i = 0; i < dx; i++) {
                             uint pixel = srcrow[i];
-                            uint alpha = pixel >> 24;
+                            uint alpha = blendAlpha(_alpha, pixel >> 24);
                             if (!alpha)
                                 dstrow[i] = pixel;
                             else if (alpha < 255) {
@@ -447,8 +488,8 @@ class ColorDrawBufBase : DrawBuf {
                     for (int x = 0; x < dx; x++) {
                         uint srcpixel = srcrow[xmap[x]];
                         uint dstpixel = dstrow[x];
-                        uint alpha = (srcpixel >> 24) & 255;
-                        if (!alpha)
+						uint alpha = blendAlpha(_alpha, srcpixel >> 24);
+						if (!alpha)
                             dstrow[x] = srcpixel;
                         else if (alpha < 255) {
                             // apply blending
@@ -537,6 +578,7 @@ class ColorDrawBufBase : DrawBuf {
         int srcdx = glyph.blackBoxX;
         int srcdy = glyph.blackBoxY;
 		bool clipping = !_clipRect.empty();
+		color = applyAlpha(color);
 		for (int yy = 0; yy < srcdy; yy++) {
 			int liney = y + yy;
 			if (clipping && (liney < _clipRect.top || liney >= _clipRect.bottom))

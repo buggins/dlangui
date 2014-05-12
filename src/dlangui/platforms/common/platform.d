@@ -156,6 +156,8 @@ class Window {
             p.animate(interval);
     }
 
+	static immutable int PERFORMANCE_LOGGING_THRESHOLD_MS = 20;
+
     void onDraw(DrawBuf buf) {
         bool needDraw = false;
         bool needLayout = false;
@@ -173,10 +175,12 @@ class Window {
             long measureStart = currentTimeMillis;
             measure();
             long measureEnd = currentTimeMillis;
-            Log.d("measure took ", measureEnd - measureStart, " ms");
+			if (measureEnd - measureStart > PERFORMANCE_LOGGING_THRESHOLD_MS)
+				Log.d("measure took ", measureEnd - measureStart, " ms");
             layout();
             long layoutEnd = currentTimeMillis;
-            Log.d("layout took ", layoutEnd - measureEnd, " ms");
+			if (layoutEnd - measureEnd > PERFORMANCE_LOGGING_THRESHOLD_MS)
+				Log.d("layout took ", layoutEnd - measureEnd, " ms");
             //checkUpdateNeeded(needDraw, needLayout, animationActive);
         }
         long drawStart = currentTimeMillis;
@@ -186,7 +190,8 @@ class Window {
         foreach(p; _popups)
             p.onDraw(buf);
         long drawEnd = currentTimeMillis;
-        Log.d("draw took ", drawEnd - drawStart, " ms");
+		if (drawEnd - drawStart > PERFORMANCE_LOGGING_THRESHOLD_MS)
+        	Log.d("draw took ", drawEnd - drawStart, " ms");
         lastDrawTs = ts;
         if (animationActive)
             scheduleAnimation();
@@ -291,9 +296,9 @@ class Window {
         }
         // if not processed by children, offer event to root
         if (sendAndCheckOverride(root, event)) {
-            Log.d("MouseEvent is processed");
+            debug(mouse) Log.d("MouseEvent is processed");
             if (event.action == MouseAction.ButtonDown && _mouseCaptureWidget is null && !event.doNotTrackButtonDown) {
-                Log.d("Setting active widget");
+				debug(mouse) Log.d("Setting active widget");
                 setCaptureWidget(root, event);
             } else if (event.action == MouseAction.Move) {
                 addTracking(root);
@@ -431,7 +436,7 @@ class Window {
             res = sendAndCheckOverride(_mouseCaptureWidget, event);
             if (!currentButtons) {
                 // usable capturing - no more buttons pressed
-                Log.d("unsetting active widget");
+				debug(mouse) Log.d("unsetting active widget");
                 _mouseCaptureWidget = null;
             }
             return res;
