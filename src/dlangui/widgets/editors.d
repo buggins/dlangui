@@ -805,7 +805,7 @@ class EditableContent {
 }
 
 /// base for all editor widgets
-class EditWidgetBase : WidgetGroup, EditableContentListener {
+class EditWidgetBase : WidgetGroup, EditableContentListener, MenuItemActionHandler {
     protected EditableContent _content;
     protected Rect _clientRc;
 
@@ -905,6 +905,12 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 		_popupMenu = popupMenu;
 		return this;
 	}
+
+	/// 
+	override bool onMenuItemAction(const Action action) {
+		return handleAction(action);
+	}
+
 	/// returns true if widget can show popup (e.g. by mouse right click at point x,y)
 	override bool canShowPopupMenu(int x, int y) {
 		if (_popupMenu is null)
@@ -914,13 +920,38 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 				return false;
 		return true;
 	}
+	/// override to change popup menu items state
+	override bool isActionEnabled(const Action action) {
+		switch (action.id) {
+			case EditorActions.Copy:
+			case EditorActions.Cut:
+				return !_selectionRange.empty;
+			case EditorActions.Paste:
+				return Platform.instance.getClipboardText().length > 0;
+			case EditorActions.Undo:
+				return _content.hasUndo;
+			case EditorActions.Redo:
+				return _content.hasRedo;
+			default:
+				return super.isActionEnabled(action);
+		}
+	}
 	/// shows popup at (x,y)
 	override void showPopupMenu(int x, int y) {
 		/// if preparation signal handler assigned, call it; don't show popup if false is returned from handler
 		if (_popupMenu.onBeforeOpeningSubmenu.assigned)
 			if (!_popupMenu.onBeforeOpeningSubmenu(_popupMenu))
 				return;
+		for (int i = 0; i < _popupMenu.subitemCount; i++) {
+			MenuItem item = _popupMenu.subitem(i);
+			if (item.action && isActionEnabled(item.action)) {
+				item.enabled = true;
+			} else {
+				item.enabled = false;
+			}
+		}
 		PopupMenu popupMenu = new PopupMenu(_popupMenu);
+		popupMenu.onMenuItemActionListener = this;
 		PopupWidget popup = window.showPopup(popupMenu, this, PopupAlign.Point | PopupAlign.Right, x, y);
 		popup.flags = PopupFlags.CloseOnClickOutside;
 	}

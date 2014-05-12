@@ -93,7 +93,7 @@ extern (C) int UIAppMain(string[] args) {
         mainMenuItems.add(windowItem);
         mainMenuItems.add(helpItem);
         MainMenu mainMenu = new MainMenu(mainMenuItems);
-		mainMenu.onMenuItemListener = delegate(MenuItem item) {
+		mainMenu.onMenuItemClickListener = delegate(MenuItem item) {
 			Log.d("mainMenu.onMenuItemListener", item.label);
 			const Action a = item.action;
 			if (a) {

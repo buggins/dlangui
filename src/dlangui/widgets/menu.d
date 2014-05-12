@@ -98,6 +98,14 @@ class MenuItem {
     /// sets item action
     @property MenuItem action(Action a) { _action = a; return this; }
 
+	/// menu item Enabled flag
+	@property bool enabled() { return _enabled; }
+	/// menu item Enabled flag
+	@property MenuItem enabled(bool enabled) {
+		_enabled = enabled;
+		return this;
+	}
+
 	/// handle menu item click
 	Signal!(void, MenuItem) onMenuItem;
 	/// prepare for opening of submenu, return true if opening is allowed
@@ -218,16 +226,20 @@ class MenuItemWidget : WidgetGroup {
 		_mainMenu = mainMenu;
         _item = item;
         styleId = "MENU_ITEM";
+		if (!item.enabled)
+			resetState(State.Enabled);
 		// icon
 		if (_item.action && _item.action.iconId.length) {
 			_icon = new ImageWidget("MENU_ICON", _item.action.iconId);
 			_icon.styleId = "MENU_ICON";
+			_icon.state = State.Parent;
 			addChild(_icon);
 		}
 		// label
 		_label = new TextWidget("MENU_LABEL");
         _label.text = _item.label;
 		_label.styleId = _mainMenu ? "MAIN_MENU_LABEL" : "MENU_LABEL";
+		_label.state = State.Parent;
 		addChild(_label);
 		// accelerator
 		dstring acc = _item.acceleratorText;
@@ -235,11 +247,20 @@ class MenuItemWidget : WidgetGroup {
 			_accel = new TextWidget("MENU_ACCEL");
 			_accel.styleId = "MENU_ACCEL";
 			_accel.text = acc;
+			_accel.state = State.Parent;
 			addChild(_accel);
 		}
         trackHover = true;
 		clickable = true;
     }
+}
+
+interface MenuItemClickHandler {
+	bool onMenuItemClick(MenuItem item);
+}
+
+interface MenuItemActionHandler {
+	bool onMenuItemAction(const Action action);
 }
 
 /// base class for menus
@@ -249,11 +270,11 @@ class MenuWidgetBase : ListWidget {
 	protected PopupMenu _openedMenu;
 	protected PopupWidget _openedPopup;
     protected int _openedPopupIndex;
-	protected bool delegate(MenuItem item) _onMenuItemClickListener;
-    /// menu item click listener
-	@property bool delegate(MenuItem item) onMenuItemListener() { return  _onMenuItemClickListener; }
-    /// menu item click listener
-	@property MenuWidgetBase onMenuItemListener(bool delegate(MenuItem item) listener) { _onMenuItemClickListener = listener; return this; }
+
+	/// menu item click listener
+	Signal!MenuItemClickHandler onMenuItemClickListener;
+	/// menu item action listener
+	Signal!MenuItemActionHandler onMenuItemActionListener;
 
     this(MenuWidgetBase parentMenu, MenuItem item, Orientation orientation) {
 		_parentMenu = parentMenu;
@@ -392,13 +413,22 @@ class MenuWidgetBase : ListWidget {
 			selectItem(-1);
             setHoverItem(-1);
 			selectOnHover = false;
-			bool delegate(MenuItem item) listener = _onMenuItemClickListener;
+
+			// copy menu item click listeners
+			Signal!MenuItemClickHandler onMenuItemClickListenerCopy = onMenuItemClickListener;
+			// copy item action listeners
+			Signal!MenuItemActionHandler onMenuItemActionListenerCopy = onMenuItemActionListener;
+
 			PopupWidget popup = cast(PopupWidget)parent;
 			if (popup)
 				popup.close();
 			// this pointer now can be invalid - if popup removed
-			if (listener !is null)
-				listener(item);
+			if (onMenuItemClickListenerCopy.assigned)
+				if (onMenuItemClickListenerCopy(item))
+					return;
+			// this pointer now can be invalid - if popup removed
+			if (onMenuItemActionListenerCopy.assigned)
+				onMenuItemActionListenerCopy(item.action);
 		}
 	}
 
@@ -526,10 +556,21 @@ class MainMenu : MenuWidgetBase {
 
 	override protected void onMenuItem(MenuItem item) {
 		debug Log.d("MainMenu.onMenuItem ", item.action.label);
-		bool delegate(MenuItem item) listener = _onMenuItemClickListener;
+
+		// copy menu item click listeners
+		Signal!MenuItemClickHandler onMenuItemClickListenerCopy = onMenuItemClickListener;
+		// copy item action listeners
+		Signal!MenuItemActionHandler onMenuItemActionListenerCopy = onMenuItemActionListener;
+		
 		deactivate();
-		if (listener !is null)
-			listener(item);
+
+		// this pointer now can be invalid - if popup removed
+		if (onMenuItemClickListenerCopy.assigned)
+			if (onMenuItemClickListenerCopy(item))
+				return;
+		// this pointer now can be invalid - if popup removed
+		if (onMenuItemActionListenerCopy.assigned)
+			onMenuItemActionListenerCopy(item.action);
 	}
 
     /// return true if main menu is activated (focused or has open submenu)

@@ -97,6 +97,11 @@ struct Collection(T, bool ownItems = false) {
         _items[index] = item;
         _len++;
     }
+	/// add all items from other collection
+	void addAll(ref Collection!(T, ownItems) v) {
+		for (int i = 0; i < v.length; i++)
+			add(v[i]);
+	}
     /// support for appending (~=, +=) and removing by value (-=)
     ref Collection opOpAssign(string op)(T item) {
         static if (op.equal("~") || op.equal("+")) {

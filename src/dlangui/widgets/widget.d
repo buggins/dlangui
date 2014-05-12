@@ -1050,6 +1050,10 @@ class Widget {
 	void showPopupMenu(int x, int y) {
 		// override to show popup
 	}
+	/// override to change popup menu items state
+	bool isActionEnabled(const Action action) {
+		return true;
+	}
 
     // ===========================================================
     // Widget hierarhy methods

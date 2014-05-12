@@ -170,6 +170,11 @@ struct Signal(T1) if (is(T1 == interface) && __traits(allMembers, T1).length == 
     alias params_t = ParameterTypeTuple!(__traits(getMember, T1, __traits(allMembers, T1)[0]));
     alias slot_t = return_t delegate(params_t);
     private Collection!slot_t _listeners;
+
+	this(ref Signal!T1 v) {
+		_listeners.addAll(v._listeners);
+	}
+
     /// returns true if listener is assigned
     final bool assigned() {
         return _listeners.length > 0;
