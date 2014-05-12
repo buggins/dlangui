@@ -405,3 +405,162 @@ class FrameLayout : WidgetGroup {
         return found;
     }
 }
+
+/// layout children as table with rows and columns
+class TableLayout : WidgetGroup {
+
+	protected static struct TableLayoutItem {
+		int col;
+		int row;
+		Widget widget;
+		int measuredWidth;
+		int measuredHeight;
+		int layoutWidth;
+		int layoutHeight;
+		void clear(int col, int row) {
+			this.col = col;
+			this.row = row;
+			widget = null;
+		}
+		void measure(Widget w, int pwidth, int pheight) {
+			widget = w;
+			if (widget) {
+				widget.measure(pwidth, pheight);
+				measuredWidth = widget.measuredWidth;
+				measuredHeight = widget.measuredHeight;
+				layoutWidth = widget.layoutWidth;
+				layoutHeight = widget.layoutHeight;
+			} else {
+				measuredWidth = measuredHeight = layoutWidth = layoutHeight = 0;
+			}
+		}
+	}
+	protected static struct TableLayoutRow {
+		int row;
+		int measuredWidth;
+		int measuredHeight;
+		int layoutWidth;
+		int layoutHeight;
+		TableLayoutItem[] _cells;
+		void init(int row, int colCount) {
+			measuredWidth = measuredHeight = layoutWidth = layoutHeight = 0;
+			this.row = row;
+			_cells.length = colCount;
+			for(int i = 0; i < colCount; i++) {
+				_cells[i].clear(i, row);
+			}
+		}
+		ref TableLayoutItem cell(int col) {
+			return _cells[col];
+		}
+		void cellMeasured(ref TableLayoutItem cell) {
+			if (measuredWidth < cell.measuredWidth)
+				measuredWidth = cell.measuredWidth;
+			if (measuredHeight < cell.measuredHeight)
+				measuredHeight = cell.measuredHeight;
+			if (cell.layoutWidth == FILL_PARENT)
+				layoutWidth = FILL_PARENT;
+			if (cell.layoutHeight == FILL_PARENT)
+				layoutHeight = FILL_PARENT;
+		}
+	}
+	protected static struct TableLayoutCol {
+		int col;
+		int measuredWidth;
+		int measuredHeight;
+		int layoutWidth;
+		int layoutHeight;
+		void init(int col) {
+			this.col = col;
+			measuredWidth = measuredHeight = layoutWidth = layoutHeight = 0;
+		}
+		void cellMeasured(ref TableLayoutItem cell) {
+			if (measuredWidth < cell.measuredWidth)
+				measuredWidth = cell.measuredWidth;
+			if (measuredHeight < cell.measuredHeight)
+				measuredHeight = cell.measuredHeight;
+			if (cell.layoutWidth == FILL_PARENT)
+				layoutWidth = FILL_PARENT;
+			if (cell.layoutHeight == FILL_PARENT)
+				layoutHeight = FILL_PARENT;
+		}
+	}
+	protected static struct TableLayoutRows {
+		protected TableLayoutCol[] _cols;
+		protected TableLayoutRow[] _rows;
+		protected int colCount;
+		protected int rowCount;
+		void init(int cols, int rows) {
+			colCount = cols;
+			rowCount = rows;
+			_rows.length = rows;
+			_cols.length = cols;
+			for(int i = 0; i < rows; i++)
+				_rows[i].init(i, cols);
+			for(int i = 0; i < cols; i++)
+				_cols[i].init(i);
+		}
+		ref TableLayoutItem cell(int col, int row) {
+			return _rows[row].cell(col);
+		}
+		ref TableLayoutCol col(int c) {
+			return _cols[c];
+		}
+		ref TableLayoutRow row(int r) {
+			return _rows[r];
+		}
+		Point measure(Widget parent, int cc, int rc, int pwidth, int pheight) {
+			init(cc, rc);
+			for (int y = 0; y < rc; y++) {
+				for (int x = 0; x < cc; x++) {
+					int index = y * cc + x;
+					Widget child = index < parent.childCount ? parent.child(index) : null;
+					cell(x, y).measure(child, pwidth, pheight);
+				}
+			}
+			// calc total row size
+			int totalHeight = 0;
+			for (int y = 0; y < rc; y++) {
+				for (int x = 0; x < cc; x++) {
+					row(y).cellMeasured(cell(x,y));
+				}
+				totalHeight += row(y).measuredHeight;
+			}
+			// calc total col size
+			int totalWidth = 0;
+			for (int x = 0; x < cc; x++) {
+				for (int y = 0; y < rc; y++) {
+					col(x).cellMeasured(cell(x,y));
+				}
+				totalWidth += col(x).measuredWidth;
+			}
+			return Point(totalWidth, totalHeight);
+		}
+	}
+	protected TableLayoutRows _cells;
+
+	protected int _colCount = 1;
+	/// number of columns
+	@property int colCount() { return _colCount; }
+	@property TableLayout colCount(int count) { if (_colCount != count) requestLayout(); _colCount = count; return this; }
+	@property int rowCount() {
+		return (childCount + (_colCount - 1)) / _colCount * _colCount;
+	}
+
+	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+	override void measure(int parentWidth, int parentHeight) { 
+		Rect m = margins;
+		Rect p = padding;
+		// calc size constraints for children
+		int pwidth = parentWidth;
+		int pheight = parentHeight;
+		if (parentWidth != SIZE_UNSPECIFIED)
+			pwidth -= m.left + m.right + p.left + p.right;
+		if (parentHeight != SIZE_UNSPECIFIED)
+			pheight -= m.top + m.bottom + p.top + p.bottom;
+
+		int rc = rowCount;
+		Point sz = _cells.measure(this, colCount, rc, pwidth, pheight);
+		measuredContent(parentWidth, parentHeight, sz.x, sz.y);
+	}
+}
