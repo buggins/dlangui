@@ -32,10 +32,14 @@ enum PopupAlign : uint {
     Below = 2,
     /// place popup below anchor widget close to right bound (when no space enough, align near left bound)
     Right = 4,
+	/// align to specified point
+	Point = 8,
 }
 
 struct PopupAnchor {
     Widget widget;
+	int x;
+	int y;
     uint  alignment = PopupAlign.Center;
 }
 
@@ -105,17 +109,22 @@ class PopupWidget : LinearLayout {
         Rect r;
         Point anchorPt;
 
-        if (anchor.alignment & PopupAlign.Center) {
-            // center around center of anchor widget
-            r.left = anchorrc.middlex - w / 2;
-            r.top = anchorrc.middley - h / 2;
-        } else if (anchor.alignment & PopupAlign.Below) {
-            r.left = anchorrc.left;
-            r.top = anchorrc.bottom;
-        } else if (anchor.alignment & PopupAlign.Right) {
-            r.left = anchorrc.right;
-            r.top = anchorrc.top;
-        }
+		if (anchor.alignment & PopupAlign.Point) {
+			r.left = anchor.x;
+			r.top = anchor.y;
+		} else {
+			if (anchor.alignment & PopupAlign.Center) {
+	            // center around center of anchor widget
+	            r.left = anchorrc.middlex - w / 2;
+	            r.top = anchorrc.middley - h / 2;
+	        } else if (anchor.alignment & PopupAlign.Below) {
+	            r.left = anchorrc.left;
+	            r.top = anchorrc.bottom;
+	        } else if (anchor.alignment & PopupAlign.Right) {
+	            r.left = anchorrc.right;
+	            r.top = anchorrc.top;
+	        }
+		}
         r.right = r.left + w;
         r.bottom = r.top + h;
         r.moveToFit(rc);

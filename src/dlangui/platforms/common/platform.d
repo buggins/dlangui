@@ -85,10 +85,12 @@ class Window {
 
     protected PopupWidget[] _popups;
     /// show new popup
-    PopupWidget showPopup(Widget content, Widget anchor = null, uint alignment = PopupAlign.Center) {
+    PopupWidget showPopup(Widget content, Widget anchor = null, uint alignment = PopupAlign.Center, int x = 0, int y = 0) {
         PopupWidget res = new PopupWidget(content, this);
         res.anchor.widget = anchor !is null ? anchor : _mainWidget;
         res.anchor.alignment = alignment;
+		res.anchor.x = x;
+		res.anchor.y = y;
         _popups ~= res;
         if (_mainWidget !is null)
             _mainWidget.requestLayout();

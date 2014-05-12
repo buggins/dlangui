@@ -75,6 +75,14 @@ extern (C) int UIAppMain(string[] args) {
 		editItem.add(new Action(EditorActions.Undo, "Undo"d, "edit-undo", KeyCode.KEY_Z, KeyFlag.Control));
 		editItem.add(new Action(EditorActions.Redo, "Redo"d, "edit-redo", KeyCode.KEY_Y, KeyFlag.Control));
 		editItem.add(new Action(20, "Preferences..."d));
+
+		MenuItem editPopupItem = new MenuItem(null);
+		editPopupItem.add(new Action(EditorActions.Copy, "Copy"d, "edit-copy", KeyCode.KEY_C, KeyFlag.Control));
+		editPopupItem.add(new Action(EditorActions.Paste, "Paste"d, "edit-paste", KeyCode.KEY_V, KeyFlag.Control));
+		editPopupItem.add(new Action(EditorActions.Cut, "Cut"d, "edit-cut", KeyCode.KEY_X, KeyFlag.Control));
+		editPopupItem.add(new Action(EditorActions.Undo, "Undo"d, "edit-undo", KeyCode.KEY_Z, KeyFlag.Control));
+		editPopupItem.add(new Action(EditorActions.Redo, "Redo"d, "edit-redo", KeyCode.KEY_Y, KeyFlag.Control));
+
 		MenuItem windowItem = new MenuItem(new Action(3, "&Window"d));
         windowItem.add(new Action(30, "Preferences"d));
         MenuItem helpItem = new MenuItem(new Action(4, "Help"d));
@@ -119,7 +127,7 @@ extern (C) int UIAppMain(string[] args) {
 		hlayout.addChild((new ImageWidget()).drawableId("btn_check").padding(Rect(5,5,5,5)).alignment(Align.Center));
 	    hlayout.addChild((new TextWidget()).text("in horizontal layout"));
 		hlayout.addChild((new ImageWidget()).drawableId("exit").padding(Rect(5,5,5,5)).alignment(Align.Center));
-        hlayout.addChild((new EditLine("editline", "Some text to edit"d)).alignment(Align.Center).layoutWidth(FILL_PARENT));
+		hlayout.addChild((new EditLine("editline", "Some text to edit"d)).popupMenu(editPopupItem).alignment(Align.Center).layoutWidth(FILL_PARENT));
 		//hlayout.addChild((new Button()).text(">>")); //.textColor(0x40FF4000)
 	    hlayout.backgroundColor = 0x8080C0;
 	    layout.addChild(hlayout);
@@ -278,6 +286,7 @@ extern (C) int UIAppMain(string[] args) {
 		EditLine editLine = new EditLine("editline1", "Single line editor sample text");
         editors.addChild(createEditorSettingsControl(editLine));
 		editors.addChild(editLine);
+		editLine.popupMenu = editPopupItem;
 
         // EditBox sample
 		editors.addChild(new TextWidget(null, "EditBox: Multiline editor"d));
@@ -296,6 +305,7 @@ extern (C) int UIAppMain(string[] args) {
         editBox.minFontSize(12).maxFontSize(75); // allow font zoom with Ctrl + MouseWheel
         editors.addChild(createEditorSettingsControl(editBox));
 		editors.addChild(editBox);
+		editBox.popupMenu = editPopupItem;
 
 		editors.addChild(new TextWidget(null, "EditBox: additional view for the same content (split view testing)"d));
         EditBox editBox2 = new EditBox("editbox2", ""d);

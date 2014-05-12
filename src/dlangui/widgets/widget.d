@@ -866,6 +866,12 @@ class Widget {
 	            return true;
 	        }
 		}
+		if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Right) {
+			if (canShowPopupMenu(event.x, event.y)) {
+				showPopupMenu(event.x, event.y);
+				return true;
+			}
+		}
         if (canFocus && event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
             setFocus();
             return true;
@@ -1033,6 +1039,17 @@ class Widget {
             rc.right = rc.left + sz.x;
         }
     }
+
+	// ===========================================================
+	// popup menu support
+	/// returns true if widget can show popup menu (e.g. by mouse right click at point x,y)
+	bool canShowPopupMenu(int x, int y) {
+		return false;
+	}
+	/// shows popup menu at (x,y)
+	void showPopupMenu(int x, int y) {
+		// override to show popup
+	}
 
     // ===========================================================
     // Widget hierarhy methods

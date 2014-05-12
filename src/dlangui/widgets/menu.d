@@ -97,6 +97,12 @@ class MenuItem {
     @property const(Action) action() const { return _action; }
     /// sets item action
     @property MenuItem action(Action a) { _action = a; return this; }
+
+	/// handle menu item click
+	Signal!(void, MenuItem) onMenuItem;
+	/// prepare for opening of submenu, return true if opening is allowed
+	Signal!(bool, MenuItem) onBeforeOpeningSubmenu;
+
     this() {
         _enabled = true;
     }

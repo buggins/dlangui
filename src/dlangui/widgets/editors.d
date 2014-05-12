@@ -25,6 +25,8 @@ import dlangui.widgets.controls;
 import dlangui.core.signals;
 import dlangui.core.collections;
 import dlangui.platforms.common.platform;
+import dlangui.widgets.menu;
+import dlangui.widgets.popup;
 
 import std.algorithm;
 
@@ -897,6 +899,36 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
 		]);
     }
 
+	protected MenuItem _popupMenu;
+	@property MenuItem popupMenu() { return _popupMenu; }
+	@property EditWidgetBase popupMenu(MenuItem popupMenu) {
+		_popupMenu = popupMenu;
+		return this;
+	}
+	/// returns true if widget can show popup (e.g. by mouse right click at point x,y)
+	override bool canShowPopupMenu(int x, int y) {
+		if (_popupMenu is null)
+			return false;
+		if (_popupMenu.onBeforeOpeningSubmenu.assigned)
+			if (!_popupMenu.onBeforeOpeningSubmenu(_popupMenu))
+				return false;
+		return true;
+	}
+	/// shows popup at (x,y)
+	override void showPopupMenu(int x, int y) {
+		/// if preparation signal handler assigned, call it; don't show popup if false is returned from handler
+		if (_popupMenu.onBeforeOpeningSubmenu.assigned)
+			if (!_popupMenu.onBeforeOpeningSubmenu(_popupMenu))
+				return;
+		PopupMenu popupMenu = new PopupMenu(_popupMenu);
+		PopupWidget popup = window.showPopup(popupMenu, this, PopupAlign.Point | PopupAlign.Right, x, y);
+		popup.flags = PopupFlags.CloseOnClickOutside;
+	}
+
+	void onPopupMenuItem(MenuItem item) {
+		// TODO
+	}
+
     /// when true, Tab / Shift+Tab presses are processed internally in widget (e.g. insert tab character) instead of focus change navigation.
     @property bool wantTabs() {
         return _wantTabs;
@@ -1630,7 +1662,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener {
                 return handleAction(new Action(EditorActions.ScrollLineUp));
             }
         }
-	    return false;
+	    return super.onMouseEvent(event);
     }
 
 
