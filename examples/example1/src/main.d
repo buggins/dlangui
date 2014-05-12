@@ -308,10 +308,11 @@ extern (C) int UIAppMain(string[] args) {
 
         //==========================================================================
 
-        tabs.selectTab("tab3");
-
         contentLayout.addChild(tabs);
 	    window.mainWidget = contentLayout;
+
+		tabs.selectTab("tab3");
+
 	} else {
 	    window.mainWidget = (new Button()).text("sample button");
 	}

@@ -311,12 +311,12 @@ class MenuWidgetBase : ListWidget {
 		if (_openedPopup) {
 			if (_openedPopup is p) {
 				_openedMenu.onPopupClosed(p);
-				bool undoSelection = _openedPopupIndex == _selectedItemIndex;
+				//bool undoSelection = _openedPopupIndex == _selectedItemIndex;
 				_openedPopup = null;
 				_openedMenu = null;
-				if (undoSelection) {
-					performUndoSelection();
-				}
+				//if (undoSelection) {
+				//	performUndoSelection();
+				//}
 				if (!isMainMenu)
 					window.setFocus(this);
 			} else if (thisPopup is p) {
@@ -327,7 +327,15 @@ class MenuWidgetBase : ListWidget {
 
 	protected void openSubmenu(int index, MenuItemWidget itemWidget, bool selectFirstItem) {
 		if (_openedPopup !is null) {
-			_openedPopup.close();
+			if (_openedPopupIndex == index) {
+				if (selectFirstItem) {
+					window.setFocus(_openedMenu);
+					_openedMenu.selectItem(0);
+				}
+				return;
+			} else {
+			    _openedPopup.close();
+			}
         }
 		PopupMenu popupMenu = new PopupMenu(itemWidget.item, this);
 		PopupWidget popup = window.showPopup(popupMenu, itemWidget, orientation == Orientation.Horizontal ? PopupAlign.Below :  PopupAlign.Right);
@@ -336,14 +344,17 @@ class MenuWidgetBase : ListWidget {
 		_openedPopup = popup;
 		_openedMenu = popupMenu;
         _openedPopupIndex = index;
-        window.setFocus(popupMenu);
-        if (selectFirstItem)
-            _openedMenu.selectItem(0);
+        if (selectFirstItem) {
+			window.setFocus(popupMenu);
+			_openedMenu.selectItem(0);
+		}
 	}
 
 	/// override to handle change of selection
 	override protected void selectionChanged(int index, int previouslySelectedItem = -1) {
         debug Log.d("menu.selectionChanged ", index, ", ", previouslySelectedItem, " _selectedItemIndex=", _selectedItemIndex);
+		if (index >= 0)
+			setFocus();
 		MenuItemWidget itemWidget = index >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(index) : null;
 		MenuItemWidget prevWidget = previouslySelectedItem >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(previouslySelectedItem) : null;
 		if (prevWidget !is null) {
@@ -400,7 +411,7 @@ class MenuWidgetBase : ListWidget {
 					// second click on main menu opened item
 					_openedPopup.close();
 					_openedPopup = null;
-					selectItem(-1);
+					//selectItem(-1);
 					selectOnHover = false;
 				} else {
 					openSubmenu(index, itemWidget, _orientation == Orientation.Horizontal); // for main menu, select first item
@@ -434,8 +445,11 @@ class MenuWidgetBase : ListWidget {
                     if (_parentMenu !is null) {
                         if (_parentMenu.orientation == Orientation.Vertical) {
                             if (thisPopup !is null) {
+								//int selectedItem = _selectedItemIndex;
                                 // back to parent menu on Left key
                                 thisPopup.close();
+								//if (selectedItem >= 0)
+								//	selectItem(selectedItem);
                                 return true;
                             }
                         } else {
