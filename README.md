@@ -50,6 +50,7 @@ Similar to layouts in Android
 * VerticalLayout - just a LinearLayout with vertical orientation
 * HorizontalLayout - just a LinearLayout with vertical orientation
 * FrameLayout - all children occupy the same place; usually onle one of them is visible
+* TableLayout - children are aligned into rows and columns of table
 
 TODOs:
 
@@ -98,7 +99,7 @@ standard values are used.
 Win32 builds
 ------------
 
-* Under windows, uses Win32 API as backend.
+* Under windows, uses SDL2 or Win32 API as backend.
 * Optionally, may use OpenGL acceleration via DerelictGL3/WGL.
 * Uses Win32 API for font rendering.
 * Optinally can use FreeType for font rendering.
@@ -130,29 +131,29 @@ Then open .sln using Visual D.
 Linux builds
 ------------
 
-* Uses XCB (X C binding) as backend.
+* Uses SDL2 or XCB as a backend (SDL2 is recommended, since has better support now).
 * Uses shared memory images for faster drawing.
 * Uses FreeType for font rendering.
 * TODO: Use FontConfig to get font list.
-* TODO: OpenGL initializes ok, but images not visible on screen. Disabled temporary.
-* TODO: entering of unicode characters not implemented
+* OpenGL is now working under SDL2 only.
+* Entering of unicode characters is now working under SDL2 only.
 
 
-To build dlangui apps, development packages for following libraries required for XCB backend build:
-
-        xcb, xcb-util, xcb-shm, xcb-image, xcb-keysyms, X11-xcb, X11
-
-For SDL2 backend build:
+For linux build with SDL2 backend, following libraries are required:
 
         libsdl2
 
-E.g. in Ubuntu, you can use:
+To build dlangui apps with XCB backend, development packages for following libraries required for XCB backend build:
 
-        sudo apt-get install libxcb-image0-dev libxcb-shm0-dev libxcb-keysyms1-dev libfreeimage-dev
+        xcb, xcb-util, xcb-shm, xcb-image, xcb-keysyms, X11-xcb, X11
 
-or
+E.g. in Ubuntu, you can use following command to enable SDL2 backend builds:
 
         sudo apt-get install libsdl2-dev
+
+or (for XCB backend)
+
+        sudo apt-get install libxcb-image0-dev libxcb-shm0-dev libxcb-keysyms1-dev libfreeimage-dev
 
 
 In runtime, .so for following libraries are being loaded (binary packages required):

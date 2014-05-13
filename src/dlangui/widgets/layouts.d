@@ -8,7 +8,10 @@ This module contains common layouts implementations.
 Layouts are similar to the same in Android.
 
 LinearLayout - either VerticalLayout or HorizontalLayout.
+VerticalLayout - just LinearLayout with orientation=Orientation.Vertical
+HorizontalLayout - just LinearLayout with orientation=Orientation.Vertical
 FrameLayout - children occupy the same place, usually one one is visible at a time
+TableLayout - children aligned into rows and columns
 
 
 Synopsis:
@@ -413,14 +416,18 @@ class TableLayout : WidgetGroup {
 		super(ID);
 	}
 
-	protected static struct TableLayoutItem {
+	protected static struct TableLayoutCell {
 		int col;
 		int row;
 		Widget widget;
-		int measuredWidth;
-		int measuredHeight;
-		int layoutWidth;
-		int layoutHeight;
+		@property int measuredWidth() { return widget ? widget.measuredWidth : 0; }
+		@property int measuredHeight() { return widget ? widget.measuredHeight : 0; }
+		@property int layoutWidth() { return widget ? widget.layoutWidth : 0; }
+		@property int layoutHeight() { return widget ? widget.layoutHeight : 0; }
+		@property int minWidth() { return widget ? widget.minWidth : 0; }
+		@property int maxWidth() { return widget ? widget.maxWidth : 0; }
+		@property int minHeight() { return widget ? widget.minHeight : 0; }
+		@property int maxHeight() { return widget ? widget.maxHeight : 0; }
 		void clear(int col, int row) {
 			this.col = col;
 			this.row = row;
@@ -428,96 +435,75 @@ class TableLayout : WidgetGroup {
 		}
 		void measure(Widget w, int pwidth, int pheight) {
 			widget = w;
-			if (widget) {
+			if (widget)
 				widget.measure(pwidth, pheight);
-				measuredWidth = widget.measuredWidth;
-				measuredHeight = widget.measuredHeight;
-				layoutWidth = widget.layoutWidth;
-				layoutHeight = widget.layoutHeight;
-			} else {
-				measuredWidth = measuredHeight = layoutWidth = layoutHeight = 0;
-			}
-		}
-	}
-	protected static struct TableLayoutRow {
-		int row;
-		int measuredWidth;
-		int measuredHeight;
-		int layoutWidth;
-		int layoutHeight;
-		int size;
-		TableLayoutItem[] _cells;
-		void init(int row, int colCount) {
-			measuredWidth = measuredHeight = layoutWidth = layoutHeight = size = 0;
-			this.row = row;
-			_cells.length = colCount;
-			for(int i = 0; i < colCount; i++) {
-				_cells[i].clear(i, row);
-			}
-		}
-		ref TableLayoutItem cell(int col) {
-			return _cells[col];
-		}
-		void cellMeasured(ref TableLayoutItem cell) {
-			if (measuredWidth < cell.measuredWidth)
-				measuredWidth = cell.measuredWidth;
-			if (measuredHeight < cell.measuredHeight)
-				measuredHeight = cell.measuredHeight;
-			if (cell.layoutWidth == FILL_PARENT)
-				layoutWidth = FILL_PARENT;
-			if (cell.layoutHeight == FILL_PARENT)
-				layoutHeight = FILL_PARENT;
-			size = measuredHeight;
-		}
-	}
-	protected static struct TableLayoutCol {
-		int col;
-		int measuredWidth;
-		int measuredHeight;
-		int layoutWidth;
-		int layoutHeight;
-		int size;
-		void init(int col) {
-			this.col = col;
-			measuredWidth = measuredHeight = layoutWidth = layoutHeight = size = 0;
-		}
-		void cellMeasured(ref TableLayoutItem cell) {
-			if (measuredWidth < cell.measuredWidth)
-				measuredWidth = cell.measuredWidth;
-			if (measuredHeight < cell.measuredHeight)
-				measuredHeight = cell.measuredHeight;
-			if (cell.layoutWidth == FILL_PARENT)
-				layoutWidth = FILL_PARENT;
-			if (cell.layoutHeight == FILL_PARENT)
-				layoutHeight = FILL_PARENT;
-			size = measuredWidth;
 		}
 	}
 
-	protected static struct TableLayoutRows {
-		protected TableLayoutCol[] _cols;
-		protected TableLayoutRow[] _rows;
+	protected static struct TableLayoutGroup {
+		int index;
+		int measuredSize;
+		int layoutSize;
+		int minSize;
+		int maxSize;
+		int size;
+		void init(int index) {
+			measuredSize = minSize = maxSize = layoutSize = size = 0;
+			this.index = index;
+		}
+		void rowCellMeasured(ref TableLayoutCell cell) {
+			if (measuredSize < cell.measuredHeight)
+				measuredSize = cell.measuredHeight;
+			if (minSize < cell.minHeight)
+				minSize = cell.minHeight;
+			if (cell.layoutHeight == FILL_PARENT)
+				layoutSize = FILL_PARENT;
+			size = measuredSize;
+		}
+		void colCellMeasured(ref TableLayoutCell cell) {
+			if (measuredSize < cell.measuredWidth)
+				measuredSize = cell.measuredWidth;
+			if (minSize < cell.minWidth)
+				minSize = cell.minWidth;
+			if (cell.layoutWidth == FILL_PARENT)
+				layoutSize = FILL_PARENT;
+			size = measuredSize;
+		}
+	}
+
+	protected static struct TableLayoutHelper {
+		protected TableLayoutGroup[] _cols;
+		protected TableLayoutGroup[] _rows;
+		protected TableLayoutCell[] _cells;
 		protected int colCount;
 		protected int rowCount;
 
 		void init(int cols, int rows) {
 			colCount = cols;
 			rowCount = rows;
+			_cells.length = cols * rows;
 			_rows.length = rows;
 			_cols.length = cols;
 			for(int i = 0; i < rows; i++)
-				_rows[i].init(i, cols);
+				_rows[i].init(i);
 			for(int i = 0; i < cols; i++)
 				_cols[i].init(i);
+			for (int y = 0; y < rows; y++) {
+				for (int x = 0; x < cols; x++) {
+					cell(x, y).clear(x, y);
+				}
+			}
 		}
 
-		ref TableLayoutItem cell(int col, int row) {
-			return _rows[row].cell(col);
+		ref TableLayoutCell cell(int col, int row) {
+			return _cells[row * colCount + col];
 		}
-		ref TableLayoutCol col(int c) {
+
+		ref TableLayoutGroup col(int c) {
 			return _cols[c];
 		}
-		ref TableLayoutRow row(int r) {
+
+		ref TableLayoutGroup row(int r) {
 			return _rows[r];
 		}
 
@@ -534,17 +520,17 @@ class TableLayout : WidgetGroup {
 			int totalHeight = 0;
 			for (int y = 0; y < rc; y++) {
 				for (int x = 0; x < cc; x++) {
-					row(y).cellMeasured(cell(x,y));
+					row(y).rowCellMeasured(cell(x,y));
 				}
-				totalHeight += row(y).measuredHeight;
+				totalHeight += row(y).measuredSize;
 			}
 			// calc total col size
 			int totalWidth = 0;
 			for (int x = 0; x < cc; x++) {
 				for (int y = 0; y < rc; y++) {
-					col(x).cellMeasured(cell(x,y));
+					col(x).colCellMeasured(cell(x,y));
 				}
-				totalWidth += col(x).measuredWidth;
+				totalWidth += col(x).measuredSize;
 			}
 			return Point(totalWidth, totalHeight);
 		}
@@ -575,7 +561,7 @@ class TableLayout : WidgetGroup {
 			}
 		}
 	}
-	protected TableLayoutRows _cells;
+	protected TableLayoutHelper _cells;
 
 	protected int _colCount = 1;
 	/// number of columns
