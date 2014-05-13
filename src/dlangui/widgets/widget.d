@@ -411,7 +411,7 @@ class Widget {
     @property bool needDraw() { return _needDraw; }
     /// returns true is widget is being animated - need to call animate() and redraw
     @property bool animating() { return false; }
-    /// animates window; interval is time left from previous draw, in hnsecs (1/10000 of second)
+    /// animates window; interval is time left from previous draw, in hnsecs (1/10000000 of second)
     void animate(long interval) {
     }
     /// returns measured width (calculated during measure() call)

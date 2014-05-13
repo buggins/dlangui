@@ -7,6 +7,51 @@ import std.conv;
 
 mixin APP_ENTRY_POINT;
 
+class SampleAnimationWidget : Widget {
+	ulong animationProgress;
+	this(string ID) {
+		super(ID);
+	}
+	/// returns true is widget is being animated - need to call animate() and redraw
+	@property override bool animating() { return true; }
+	/// animates window; interval is time left from previous draw, in hnsecs (1/10000000 of second)
+	override void animate(long interval) {
+		animationProgress += interval;
+		invalidate();
+	}
+	void drawAnimatedRect(DrawBuf buf, uint p, Rect rc, int speedx, int speedy, int sz) {
+		int x = (p * speedx % rc.width);
+		int y = (p * speedy % rc.height);
+		if (x < 0)
+			x += rc.width;
+		if (y < 0)
+			y += rc.height;
+		uint a = 64 + ((p / 2) & 0x7F);
+		uint r = 128 + ((p / 7) & 0x7F);
+		uint g = 128 + ((p / 5) & 0x7F);
+		uint b = 128 + ((p / 3) & 0x7F);
+		uint color = (a << 24) | (r << 16) | (g << 8) | b;
+		buf.fillRect(Rect(rc.left + x, rc.top + y, rc.left + x + sz, rc.top + y + sz), color);
+	}
+	/// Draw widget at its position to buffer
+	override void onDraw(DrawBuf buf) {
+		if (visibility != Visibility.Visible)
+			return;
+		super.onDraw(buf);
+		Rect rc = _pos;
+		applyMargins(rc);
+		auto saver = ClipRectSaver(buf, rc, alpha);
+		applyPadding(rc);
+		drawAnimatedRect(buf, cast(uint)(animationProgress / 295430), rc, 2, 3, 100);
+		drawAnimatedRect(buf, cast(uint)(animationProgress / 312400) + 100, rc, 3, 2, 130);
+		drawAnimatedRect(buf, cast(uint)(animationProgress / 212400) + 200, rc, -2, 1, 290);
+		drawAnimatedRect(buf, cast(uint)(animationProgress / 512400) + 300, rc, 2, -2, 200);
+		drawAnimatedRect(buf, cast(uint)(animationProgress / 214230) + 800, rc, 1, 2, 390);
+		drawAnimatedRect(buf, cast(uint)(animationProgress / 123320) + 900, rc, -1, -3, 150);
+		drawAnimatedRect(buf, cast(uint)(animationProgress / 100000) + 100, rc, -1, -1, 120);
+	}
+}
+
 Widget createEditorSettingsControl(EditWidgetBase editor) {
     HorizontalLayout res = new HorizontalLayout("editor_options");
     res.addChild((new CheckBox("wantTabs", "wantTabs"d)).checked(editor.wantTabs).addOnCheckChangeListener(delegate(Widget, bool checked) { editor.wantTabs = checked; return true;}));
@@ -293,6 +338,8 @@ extern (C) int UIAppMain(string[] args) {
 		tabs.addTab(table, "Table Layout"d);
 
         tabs.addTab((new TextWidget()).id("tab5").textColor(0x00802000).text("Tab 5 contents"), "Tab 5"d);
+
+		tabs.addTab((new SampleAnimationWidget("tab6")).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT), "Animation"d);
 
         //==========================================================================
 		// create Editors test tab

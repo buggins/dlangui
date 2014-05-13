@@ -171,7 +171,8 @@ class Window {
             // layout required flag could be changed during animate - check again
             checkUpdateNeeded(needDraw, needLayout, animationActive);
         }
-        if (needLayout) {
+		lastDrawTs = ts;
+		if (needLayout) {
             long measureStart = currentTimeMillis;
             measure();
             long measureEnd = currentTimeMillis;
@@ -192,7 +193,6 @@ class Window {
         long drawEnd = currentTimeMillis;
 		if (drawEnd - drawStart > PERFORMANCE_LOGGING_THRESHOLD_MS)
         	Log.d("draw took ", drawEnd - drawStart, " ms");
-        lastDrawTs = ts;
         if (animationActive)
             scheduleAnimation();
     }
@@ -471,7 +471,7 @@ class Window {
     protected void checkUpdateNeeded(Widget root, ref bool needDraw, ref bool needLayout, ref bool animationActive) {
         if (root is null)
             return;
-        if (!root.visibility == Visibility.Visible)
+        if (root.visibility != Visibility.Visible)
             return;
         needDraw = root.needDraw || needDraw;
         if (!needLayout) {
@@ -480,7 +480,8 @@ class Window {
                 Log.d("need layout: ", root.id);
             }
         }
-        animationActive = root.animating || animationActive;
+		if (root.animating && root.visible)
+        	animationActive = true; // check animation only for visible widgets
         for (int i = 0; i < root.childCount; i++)
             checkUpdateNeeded(root.child(i), needDraw, needLayout, animationActive);
     }

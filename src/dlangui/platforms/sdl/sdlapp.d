@@ -139,6 +139,11 @@ version(USE_SDL) {
 			SDL_SetWindowTitle(_win, _caption.toStringz);
 		}
 
+		/// after drawing, call to schedule redraw if animation is active
+		override void scheduleAnimation() {
+			invalidate();
+		}
+
         SDL_Texture * _texture;
         int _txw;
         int _txh;
