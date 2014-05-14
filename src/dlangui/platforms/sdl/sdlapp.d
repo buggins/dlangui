@@ -150,19 +150,29 @@ version(USE_SDL) {
 		override protected void setCursorType(uint cursorType) {
 			// override to support different mouse cursors
 			if (_lastCursorType != cursorType) {
-				_lastCursorType = cursorType;
-				if (cursorType in _cursorMap) {
-					Log.d("changing cursor to ", cursorType);
-					SDL_SetCursor(_cursorMap[cursorType]);
+				if (cursorType == CursorType.None) {
+					SDL_ShowCursor(SDL_DISABLE);
 					return;
 				}
+				if (_lastCursorType == CursorType.None)
+					SDL_ShowCursor(SDL_ENABLE);
+				_lastCursorType = cursorType;
 				SDL_Cursor * cursor;
+				// check for existing cursor in map
+				if (cursorType in _cursorMap) {
+					//Log.d("changing cursor to ", cursorType);
+					cursor = _cursorMap[cursorType];
+					if (cursor)
+						SDL_SetCursor(cursor);
+					return;
+				}
+				// create new cursor
 				switch (cursorType) {
 					case CursorType.Arrow:
 						cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
 						break;
 					case CursorType.IBeam:
-						cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+						cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
 						break;
 					case CursorType.Wait:
 						cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
@@ -199,9 +209,9 @@ version(USE_SDL) {
 						cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
 						break;
 				}
+				_cursorMap[cursorType] = cursor;
 				if (cursor) {
 					Log.d("changing cursor to ", cursorType);
-					_cursorMap[cursorType] = cursor;
 					SDL_SetCursor(cursor);
 				}
 			}
