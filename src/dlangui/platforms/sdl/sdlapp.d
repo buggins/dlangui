@@ -144,6 +144,69 @@ version(USE_SDL) {
 			invalidate();
 		}
 
+		protected uint _lastCursorType = CursorType.None;
+		protected SDL_Cursor * [uint] _cursorMap;
+		/// sets cursor type for window
+		override protected void setCursorType(uint cursorType) {
+			// override to support different mouse cursors
+			if (_lastCursorType != cursorType) {
+				_lastCursorType = cursorType;
+				if (cursorType in _cursorMap) {
+					Log.d("changing cursor to ", cursorType);
+					SDL_SetCursor(_cursorMap[cursorType]);
+					return;
+				}
+				SDL_Cursor * cursor;
+				switch (cursorType) {
+					case CursorType.Arrow:
+						cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+						break;
+					case CursorType.IBeam:
+						cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+						break;
+					case CursorType.Wait:
+						cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
+						break;
+					case CursorType.WaitArrow:
+						cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAITARROW);
+						break;
+					case CursorType.Crosshair:
+						cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);
+						break;
+					case CursorType.No:
+						cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO);
+						break;
+					case CursorType.Hand:
+						cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
+						break;
+					case CursorType.SizeNWSE:
+						cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
+						break;
+					case CursorType.SizeNESW:
+						cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW);
+						break;
+					case CursorType.SizeWE:
+						cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE);
+						break;
+					case CursorType.SizeNS:
+						cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS);
+						break;
+					case CursorType.SizeAll:
+						cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
+						break;
+					default:
+						// TODO: support custom cursors
+						cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+						break;
+				}
+				if (cursor) {
+					Log.d("changing cursor to ", cursorType);
+					_cursorMap[cursorType] = cursor;
+					SDL_SetCursor(cursor);
+				}
+			}
+		}
+
         SDL_Texture * _texture;
         int _txw;
         int _txh;

@@ -936,6 +936,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener, MenuItemActionHandl
 				return super.isActionEnabled(action);
 		}
 	}
+
 	/// shows popup at (x,y)
 	override void showPopupMenu(int x, int y) {
 		/// if preparation signal handler assigned, call it; don't show popup if false is returned from handler
@@ -959,6 +960,12 @@ class EditWidgetBase : WidgetGroup, EditableContentListener, MenuItemActionHandl
 	void onPopupMenuItem(MenuItem item) {
 		// TODO
 	}
+
+	/// returns mouse cursor type for widget
+	override uint getCursorType(int x, int y) {
+		return CursorType.IBeam;
+	}
+	
 
     /// when true, Tab / Shift+Tab presses are processed internally in widget (e.g. insert tab character) instead of focus change navigation.
     @property bool wantTabs() {

@@ -85,6 +85,25 @@ enum FocusMovement {
     Right,
 }
 
+/// standard mouse cursor types
+enum CursorType {
+	None,
+	/// use parent's cursor
+	Parent,
+	Arrow,
+	IBeam,
+	Wait,
+	Crosshair,
+	WaitArrow,
+	SizeNWSE,
+	SizeNESW,
+	SizeWE,
+	SizeNS,
+	SizeAll,
+	No,
+	Hand
+}
+
 class Widget {
     /// widget id
     protected string _id;
@@ -120,6 +139,11 @@ class Widget {
     @property bool trackHover() const { return _trackHover; }
     /// set new trackHover flag value (when true, widget will change Hover state while mouse is moving)
     @property Widget trackHover(bool v) { _trackHover = v; return this; }
+
+	/// returns mouse cursor type for widget
+	uint getCursorType(int x, int y) {
+		return CursorType.Arrow;
+	}
 
 	debug(resalloc) {
 	    private static int _instanceCount = 0;

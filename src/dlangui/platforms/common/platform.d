@@ -282,7 +282,7 @@ class Window {
         return res;
     }
 
-    protected bool dispatchMouseEvent(Widget root, MouseEvent event) {
+    protected bool dispatchMouseEvent(Widget root, MouseEvent event, ref bool cursorIsSet) {
         // only route mouse events to visible widgets
         if (root.visibility != Visibility.Visible)
             return false;
@@ -291,9 +291,16 @@ class Window {
         // offer event to children first
         for (int i = 0; i < root.childCount; i++) {
             Widget child = root.child(i);
-            if (dispatchMouseEvent(child, event))
+            if (dispatchMouseEvent(child, event, cursorIsSet))
                 return true;
         }
+		if (event.action == MouseAction.Move && !cursorIsSet) {
+			uint cursorType = root.getCursorType(event.x, event.y);
+			if (cursorType != CursorType.Parent) {
+				setCursorType(cursorType);
+				cursorIsSet = true;
+			}
+		}
         // if not processed by children, offer event to root
         if (sendAndCheckOverride(root, event)) {
             debug(mouse) Log.d("MouseEvent is processed");
@@ -445,6 +452,7 @@ class Window {
         if (event.action == MouseAction.Move || event.action == MouseAction.Leave) {
             processed = checkRemoveTracking(event);
         }
+		bool cursorIsSet = false;
         if (!res) {
             bool insideOneOfPopups = false;
             for (int i = cast(int)_popups.length - 1; i >= 0; i--) {
@@ -458,11 +466,11 @@ class Window {
                     if (p.onMouseEventOutside(event)) // stop loop when true is returned, but allow other main widget to handle event
                         break;
                 } else {
-                    if (dispatchMouseEvent(p, event))
+                    if (dispatchMouseEvent(p, event, cursorIsSet))
                         return true;
                 }
             }
-            res = dispatchMouseEvent(_mainWidget, event);
+            res = dispatchMouseEvent(_mainWidget, event, cursorIsSet);
         }
         return res || processed || _mainWidget.needDraw;
     }
@@ -485,6 +493,10 @@ class Window {
         for (int i = 0; i < root.childCount; i++)
             checkUpdateNeeded(root.child(i), needDraw, needLayout, animationActive);
     }
+	/// sets cursor type for window
+	protected void setCursorType(uint cursorType) {
+		// override to support different mouse cursors
+	}
     /// checks content widgets for necessary redraw and/or layout
     bool checkUpdateNeeded(ref bool needDraw, ref bool needLayout, ref bool animationActive) {
         needDraw = needLayout = animationActive = false;
