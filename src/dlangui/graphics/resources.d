@@ -11,7 +11,7 @@ drawableCache is cache of Drawables.
 
 Supports nine-patch PNG images in .9.png files (like in Android).
 
-Supports state drawables using XML files similar to ones in Android).
+Supports state drawables using XML files similar to ones in Android.
 
 Synopsis:
 
@@ -21,9 +21,11 @@ import dlangui.graphics.resources;
 ----
 
 Copyright: Vadim Lopatin, 2014
-License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
-Authors:   $(WEB coolreader.org, Vadim Lopatin)
+License:   Boost License 1.0
+Authors:   Vadim Lopatin, coolreader.org@gmail.com
+
 */
+
 module dlangui.graphics.resources;
 
 import dlangui.graphics.images;
@@ -127,7 +129,7 @@ static uint decodeDimension(string s) {
 }
 
 /// decode solid color / gradient / frame drawable from string like #AARRGGBB, e.g. #5599AA
-/// ---
+/// 
 /// SolidFillDrawable: #AARRGGBB  - e.g. #8090A0 or #80ffffff
 /// FrameDrawable: #frameColor,frameWidth[,#middleColor]
 ///             or #frameColor,leftBorderWidth,topBorderWidth,rightBorderWidth,bottomBorderWidth[,#middleColor]

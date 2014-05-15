@@ -5,6 +5,10 @@ DLANGUI library.
 
 This module contains declaration of tabbed view controls.
 
+TabItemWidget - single tab header in tab control
+TabWidget
+TabHost
+TabControl
 
 
 Synopsis:
@@ -15,8 +19,8 @@ import dlangui.widgets.tabs;
 ----
 
 Copyright: Vadim Lopatin, 2014
-License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
-Authors:   $(WEB coolreader.org, Vadim Lopatin)
+License:   Boost License 1.0
+Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.widgets.tabs;
 
@@ -28,6 +32,7 @@ interface TabHandler {
     void onTabChanged(string newActiveTabId, string previousTabId);
 }
 
+/// tab item metadata
 class TabItem {
     private string _iconRes;
     private string _id;
@@ -54,6 +59,7 @@ class TabItem {
     void updateAccessTs() { _lastAccessTs = std.datetime.Clock.currStdTime; }
 }
 
+/// tab item widget - to show tab header
 class TabItemWidget : HorizontalLayout {
     private ImageWidget _icon;
     private TextWidget _label;
@@ -162,6 +168,7 @@ class TabItemList {
     }
 }
 
+/// tab header - tab labels, with optional More button
 class TabControl : WidgetGroup {
     protected TabItemList _items;
     protected ImageButton _moreButton;

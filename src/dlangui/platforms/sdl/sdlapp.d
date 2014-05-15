@@ -1,3 +1,22 @@
+// Written in the D programming language.
+
+/**
+DLANGUI library.
+
+This module contains implementation of SDL2 based backend for dlang library.
+
+
+Synopsis:
+
+----
+import dlangui.platforms.sdl.sdlapp;
+
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   Boost License 1.0
+Authors:   Vadim Lopatin, coolreader.org@gmail.com
+*/
 module src.dlangui.platforms.sdl.sdlapp;
 
 version(USE_SDL) {

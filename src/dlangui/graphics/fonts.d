@@ -3,20 +3,45 @@
 /**
 DLANGUI library.
 
-This module contains base fonts access implementation.
+This module contains base fonts access interface and common implementation.
+
+Font - base class for fonts.
+
+FontManager - base class for font managers - provides access to available fonts.
+
+
+Actual implementation is:
+
+dlangui.graphics.ftfonts - FreeType based font manager.
+
+dlangui.platforms.windows.w32fonts - Win32 API based font manager.
+
 
 To enable OpenGL support, build with version(USE_OPENGL);
+
+See_Also: dlangui.graphics.drawbuf, DrawBuf, drawbuf, drawbuf.html
+
+
 
 Synopsis:
 
 ----
-import dlangui.graphics.glsupport;
+import dlangui.graphics.fonts;
+
+// find suitable font of size 25, normal, preferrable Arial, or, if not available, any SansSerif font
+FontRef font = FontManager.instance.getFont(25, FontWeight.Normal, false, FontFamily.SansSerif, "Arial");
+
+dstring sampleText = "Sample text to draw"d;
+// measure text string width and height (one line)
+Point sz = font.textSize(sampleText);
+// draw red text at center of DrawBuf buf
+font.drawText(buf, buf.width / 2 - sz.x/2, buf.height / 2 - sz.y / 2, sampleText, 0xFF0000);
 
 ----
 
 Copyright: Vadim Lopatin, 2014
-License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
-Authors:   $(WEB coolreader.org, Vadim Lopatin)
+License:   Boost License 1.0
+Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.graphics.fonts;
 public import dlangui.graphics.drawbuf;
@@ -25,7 +50,7 @@ public import dlangui.core.logger;
 private import dlangui.widgets.styles;
 import std.algorithm;
 
-/// font family
+/// font families enum
 enum FontFamily : ubyte {
     /// Unknown / not set / does not matter
     Unspecified,
@@ -41,9 +66,11 @@ enum FontFamily : ubyte {
     MonoSpace
 }
 
-/// useful font weight constants
+/// font weight constants (0..1000)
 enum FontWeight : int {
+	/// normal font weight
     Normal = 400,
+	/// bold font
     Bold = 800
 }
 
@@ -55,117 +82,42 @@ immutable dchar UNICODE_NB_HYPHEN = 0x2011;
 
 
 version (USE_OPENGL) {
+
     private __gshared void function(uint id) _glyphDestroyCallback;
-    /// get glyph destroy callback (to cleanup OpenGL caches)
+    /**
+     * get glyph destroy callback (to cleanup OpenGL caches)
+     * 
+     * Used for resource management. Usually you don't have to call it manually.
+     */
     @property void function(uint id) glyphDestroyCallback() { return _glyphDestroyCallback; }
-    /// set glyph destroy callback (to cleanup OpenGL caches)
-    @property void glyphDestroyCallback(void function(uint id) callback) { _glyphDestroyCallback = callback; }
+    /**
+     * Set glyph destroy callback (to cleanup OpenGL caches)
+     * This callback is used to tell OpenGL glyph cache that glyph is not more used - to let OpenGL glyph cache delete texture if all glyphs in it are no longer used.
+     * 
+     * Used for resource management. Usually you don't have to call it manually.
+     */
+	@property void glyphDestroyCallback(void function(uint id) callback) { _glyphDestroyCallback = callback; }
 
     private __gshared uint _nextGlyphId;
-    /// ID generator for glyphs
-    uint nextGlyphId() { return _nextGlyphId++; }
+    /**
+     * ID generator for glyphs
+     * 
+     * Generates next glyph ID. Unique IDs are being used to control OpenGL glyph cache items lifetime.
+     * 
+     * Used for resource management. Usually you don't have to call it manually.
+     */
+	uint nextGlyphId() { return _nextGlyphId++; }
 }
 
-/***************************************
- * Glyph image cache
- *
- *
- * Recently used glyphs are marked with glyph.lastUsage = 1
- * 
- * checkpoint() call clears usage marks
- *
- * cleanup() removes all items not accessed since last checkpoint()
- *
- ***************************************/
-struct GlyphCache
-{
-    alias glyph_ptr = Glyph*;
-    private glyph_ptr[][1024] _glyphs;
-
-    /// try to find glyph for character in cache, returns null if not found
-	Glyph * find(dchar ch) {
-        ch = ch & 0xF_FFFF;
-        //if (_array is null)
-        //    _array = new Glyph[0x10000];
-        uint p = ch >> 8;
-        glyph_ptr[] row = _glyphs[p];
-        if (row is null)
-            return null;
-        uint i = ch & 0xFF;
-        Glyph * res = row[i];
-        if (!res)
-            return null;
-        res.lastUsage = 1;
-        return res;
-    }
-
-	/// put character glyph to cache
-	Glyph * put(dchar ch, Glyph * glyph) {
-        ch = ch & 0xF_FFFF;
-        uint p = ch >> 8;
-        uint i = ch & 0xFF;
-        if (_glyphs[p] is null)
-            _glyphs[p] = new glyph_ptr[256];
-        _glyphs[p][i] = glyph;
-        glyph.lastUsage = 1;
-        return glyph;
-	}
-
-	/// removes entries not used after last call of checkpoint() or cleanup()
-	void cleanup() {
-        foreach(part; _glyphs) {
-            if (part !is null)
-                foreach(item; part) {
-                    if (item && !item.lastUsage) {
-                        version (USE_OPENGL) {
-                            // notify about destroyed glyphs
-                            if (_glyphDestroyCallback !is null) {
-                                _glyphDestroyCallback(item.id);
-                            }
-                        }
-                        destroy(item);
-                    }
-                }
-        }
-	}
-
-	/// clear usage flags for all entries
-	void checkpoint() {
-        foreach(part; _glyphs) {
-            if (part !is null)
-                foreach(item; part) {
-                    if (item)
-                        item.lastUsage = 0;
-                }
-        }
-    }
-
-	/// removes all entries (notify OpenGL cache about removed glyphs)
-	void clear() {
-        foreach(part; _glyphs) {
-            if (part !is null)
-                foreach(item; part) {
-                    if (item) {
-                        version (USE_OPENGL) {
-                            // notify about destroyed glyphs
-                            if (_glyphDestroyCallback !is null) {
-                                _glyphDestroyCallback(item.id);
-                            }
-                        }
-                        destroy(item);
-                    }
-                }
-        }
-	}
-    /// on destroy, destroy all items (notify OpenGL cache about removed glyphs)
-	~this() {
-		clear();
-	}
-}
-
+/// constant for measureText maxWidth paramenter - to tell that all characters of text string should be measured.
 immutable int MAX_WIDTH_UNSPECIFIED = int.max;
 
-/// Font object
+/** Instance of font with specific size, weight, face, etc.
+ *
+ * Allows to measure text string and draw it on DrawBuf
+ *
+ * Use FontManager.instance.getFont() to retrieve font instance.
+ */
 class Font : RefCountedObject {
     /// returns font size (as requested from font engine)
     abstract @property int size();
@@ -198,12 +150,14 @@ class Font : RefCountedObject {
     }
 
     private int _spaceWidth = -1;
+
     /// returns true if font is fixed
     @property int spaceWidth() {
         if (_spaceWidth < 0)
             _spaceWidth = charWidth(' ');
         return _spaceWidth;
     }
+
     /// returns character width
     int charWidth(dchar ch) {
         Glyph * g = getCharGlyph(ch);
@@ -213,14 +167,19 @@ class Font : RefCountedObject {
 	/*******************************************************************************************
      * Measure text string, return accumulated widths[] (distance to end of n-th character), returns number of measured chars.
      *
+     * Supports Tab character processing and processing of menu item labels like '&File'.
+     *
      * Params:
-     *         text = text string to measure
-     *         widths = output buffer to put measured widths (widths[i] will be set to cumulative widths text[0..i])
-     *          maxWidth = maximum width - measure is stopping if max width is reached
-     *      tabSize = tabulation size, in number of spaces
-     *      tabOffset = when string is drawn not from left position, use to move tab stops left/right
+     *          text = text string to measure
+     *          widths = output buffer to put measured widths (widths[i] will be set to cumulative widths text[0..i])
+     *          maxWidth = maximum width to measure - measure is stopping if max width is reached (pass MAX_WIDTH_UNSPECIFIED to measure all characters)
+     *      	tabSize = tabulation size, in number of spaces
+     *      	tabOffset = when string is drawn not from left position, use to move tab stops left/right
+     *      	textFlags = TextFlag bit set - to control underline, hotkey label processing, etc...
+     * Returns:
+     *          number of characters measured (may be less than text.length if maxWidth is reached)
      ******************************************************************************************/
-	int measureText(const dchar[] text, ref int[] widths, int maxWidth=MAX_WIDTH_UNSPECIFIED, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
+	int measureText(const dchar[] text, ref int[] widths, int maxWidth = MAX_WIDTH_UNSPECIFIED, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
 		if (text.length == 0)
 			return 0;
 		const dchar * pstr = text.ptr;
@@ -279,6 +238,9 @@ class Font : RefCountedObject {
      * Params:
      *          text = text string to measure
      *          maxWidth = maximum width - measure is stopping if max width is reached
+     *      	tabSize = tabulation size, in number of spaces
+     *      	tabOffset = when string is drawn not from left position, use to move tab stops left/right
+     *      	textFlags = TextFlag bit set - to control underline, hotkey label processing, etc...
      ************************************************************************/
 	Point textSize(const dchar[] text, int maxWidth = MAX_WIDTH_UNSPECIFIED, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
         if (_textSizeBuffer.length < text.length + 1)
@@ -482,3 +444,103 @@ class FontManager {
 		Log.d("Destroying font manager");
 	}
 }
+
+
+/***************************************
+ * Glyph image cache
+ *
+ *
+ * Recently used glyphs are marked with glyph.lastUsage = 1
+ * 
+ * checkpoint() call clears usage marks
+ *
+ * cleanup() removes all items not accessed since last checkpoint()
+ *
+ ***************************************/
+struct GlyphCache
+{
+	alias glyph_ptr = Glyph*;
+	private glyph_ptr[][1024] _glyphs;
+	
+	/// try to find glyph for character in cache, returns null if not found
+	Glyph * find(dchar ch) {
+		ch = ch & 0xF_FFFF;
+		//if (_array is null)
+		//    _array = new Glyph[0x10000];
+		uint p = ch >> 8;
+		glyph_ptr[] row = _glyphs[p];
+		if (row is null)
+			return null;
+		uint i = ch & 0xFF;
+		Glyph * res = row[i];
+		if (!res)
+			return null;
+		res.lastUsage = 1;
+		return res;
+	}
+	
+	/// put character glyph to cache
+	Glyph * put(dchar ch, Glyph * glyph) {
+		ch = ch & 0xF_FFFF;
+		uint p = ch >> 8;
+		uint i = ch & 0xFF;
+		if (_glyphs[p] is null)
+			_glyphs[p] = new glyph_ptr[256];
+		_glyphs[p][i] = glyph;
+		glyph.lastUsage = 1;
+		return glyph;
+	}
+	
+	/// removes entries not used after last call of checkpoint() or cleanup()
+	void cleanup() {
+		foreach(part; _glyphs) {
+			if (part !is null)
+			foreach(item; part) {
+				if (item && !item.lastUsage) {
+					version (USE_OPENGL) {
+						// notify about destroyed glyphs
+						if (_glyphDestroyCallback !is null) {
+							_glyphDestroyCallback(item.id);
+						}
+					}
+					destroy(item);
+				}
+			}
+		}
+	}
+	
+	/// clear usage flags for all entries
+	void checkpoint() {
+		foreach(part; _glyphs) {
+			if (part !is null)
+			foreach(item; part) {
+				if (item)
+					item.lastUsage = 0;
+			}
+		}
+	}
+	
+	/// removes all entries (when built with USE_OPENGL version, notify OpenGL cache about removed glyphs)
+	void clear() {
+		foreach(part; _glyphs) {
+			if (part !is null)
+			foreach(item; part) {
+				if (item) {
+					version (USE_OPENGL) {
+						// notify about destroyed glyphs
+						if (_glyphDestroyCallback !is null) {
+							_glyphDestroyCallback(item.id);
+						}
+					}
+					destroy(item);
+				}
+			}
+		}
+	}
+	/// on destroy, destroy all items (when built with USE_OPENGL version, notify OpenGL cache about removed glyphs)
+	~this() {
+		clear();
+	}
+}
+
+

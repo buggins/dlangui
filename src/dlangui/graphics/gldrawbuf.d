@@ -15,8 +15,8 @@ import dlangui.graphics.gldrawbuf;
 ----
 
 Copyright: Vadim Lopatin, 2014
-License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
-Authors:   $(WEB coolreader.org, Vadim Lopatin)
+License:   Boost License 1.0
+Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.graphics.gldrawbuf;
 
@@ -37,7 +37,7 @@ class GLDrawBuf : DrawBuf {
     protected uint _framebufferId; // not yet supported
     protected Scene _scene;
 
-    /// get current scene (exists only between beforeDrawing() and afterDrawing() calls
+    /// get current scene (exists only between beforeDrawing() and afterDrawing() calls)
     @property Scene scene() { return _scene; }
 
     this(int dx, int dy, bool framebuffer = false) {

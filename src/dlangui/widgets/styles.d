@@ -5,6 +5,8 @@ DLANGUI library.
 
 This module contains declaration of themes and styles implementation.
 
+Style - style container
+Theme - parent for all styles
 
 
 Synopsis:
@@ -15,43 +17,63 @@ import dlangui.widgets.styles;
 ----
 
 Copyright: Vadim Lopatin, 2014
-License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
-Authors:   $(WEB coolreader.org, Vadim Lopatin)
+License:   Boost License 1.0
+Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.widgets.styles;
 
 import dlangui.core.types;
 import dlangui.graphics.fonts;
 import dlangui.graphics.drawbuf;
-//import dlangui.graphics.images;
 import dlangui.graphics.resources;
 
 immutable ubyte ALIGN_UNSPECIFIED = 0;
 immutable uint COLOR_UNSPECIFIED = 0xFFDEADFF;
+/// transparent color constant
 immutable uint COLOR_TRANSPARENT = 0xFFFFFFFF;
+/// unspecified font size constant - to take parent style property value
 immutable ushort FONT_SIZE_UNSPECIFIED = 0xFFFF;
+/// unspecified font weight constant - to take parent style property value
 immutable ushort FONT_WEIGHT_UNSPECIFIED = 0x0000;
+/// unspecified font style constant - to take parent style property value
 immutable ubyte FONT_STYLE_UNSPECIFIED = 0xFF;
+/// normal font style constant
 immutable ubyte FONT_STYLE_NORMAL = 0x00;
+/// italic font style constant
 immutable ubyte FONT_STYLE_ITALIC = 0x01;
 /// use as widget.layout() param to avoid applying of parent size
 immutable int SIZE_UNSPECIFIED = int.max;
+/// use text flags from parent style
 immutable uint TEXT_FLAGS_UNSPECIFIED = uint.max;
+/// use text flags from parent widget
 immutable uint TEXT_FLAGS_USE_PARENT = uint.max - 1;
 
+/// layout option, to occupy all available place
 immutable int FILL_PARENT = int.max - 1;
+/// layout option, for size based on content
 immutable int WRAP_CONTENT = int.max - 2;
+/// to take layout weight from parent
 immutable int WEIGHT_UNSPECIFIED = -1;
 
+/// Align option bit constants
 enum Align : ubyte {
+	/// alignment is not specified
     Unspecified = ALIGN_UNSPECIFIED,
+	/// horizontally align to the left of box
     Left = 1,
-    Right = 2,
-    HCenter = 1 | 2,
-    Top = 4,
-    Bottom = 8,
-    VCenter = 4 | 8,
-    Center = VCenter | HCenter,
+	/// horizontally align to the right of box
+	Right = 2,
+	/// horizontally align to the center of box
+	HCenter = 1 | 2,
+	/// vertically align to the top of box
+	Top = 4,
+	/// vertically align to the bottom of box
+	Bottom = 8,
+	/// vertically align to the center of box
+	VCenter = 4 | 8,
+	/// align to the center of box (VCenter | HCenter)
+	Center = VCenter | HCenter,
+	/// align to the top left corner of box (Left | Top)
 	TopLeft = Left | Top,
 }
 
@@ -67,6 +89,7 @@ enum TextFlag : uint {
 	Underline = 8
 }
 
+/// custom drawable attribute container for styles
 class DrawableAttribute {
     protected string _id;
     protected string _drawableId;
@@ -143,6 +166,7 @@ class Style {
 
 	@property string id() const { return _id; }
 
+	/// access to parent style for this style
 	@property const(Style) parentStyle() const {
 		if (_parentStyle !is null)
 			return _parentStyle;
@@ -151,6 +175,7 @@ class Style {
 		return currentTheme;
 	}
 
+	/// access to parent style for this style
 	@property Style parentStyle() {
 		if (_parentStyle !is null)
 			return _parentStyle;
@@ -686,7 +711,9 @@ class Theme : Style {
 
 /// to access current theme
 private __gshared Theme _currentTheme;
+/// current theme accessor
 @property Theme currentTheme() { return _currentTheme; }
+/// set new current theme
 @property void currentTheme(Theme theme) { 
 	if (_currentTheme !is null) {
 		destroy(_currentTheme);

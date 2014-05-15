@@ -5,6 +5,13 @@ DLANGUI library.
 
 This module contains declaration of Widget class - base class for all widgets.
 
+Widgets are styleable. Use styleId property to set style to use from current Theme.
+
+When any of styleable attributes is being overriden, widget's own copy of style is being created to hold modified attributes (defaults to parent style).
+
+Two phase layout model (like in Android UI) is used - measure() call is followed by layout() is used to measure and layout widget and its children.abstract
+
+Method onDraw will be called to draw widget on some surface. Widget.onDraw() draws widget background (if any).
 
 
 Synopsis:
@@ -12,11 +19,21 @@ Synopsis:
 ----
 import dlangui.widgets.widget;
 
+// access attributes as properties
+auto w = new Widget("id1");
+w.backgroundColor = 0xFFFF00;
+w.layoutWidth = FILL_PARENT;
+w.layoutHeight = FILL_PARENT;
+w.padding(Rect(10,10,10,10));
+// same, but using chained method call
+auto w = new Widget("id1").backgroundColor(0xFFFF00).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).padding(Rect(10,10,10,10));
+
+
 ----
 
 Copyright: Vadim Lopatin, 2014
-License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
-Authors:   $(WEB coolreader.org, Vadim Lopatin)
+License:   Boost License 1.0
+Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.widgets.widget;
 
@@ -24,12 +41,10 @@ public import dlangui.core.types;
 public import dlangui.core.events;
 public import dlangui.widgets.styles;
 public import dlangui.graphics.drawbuf;
-//public import dlangui.graphics.images;
 public import dlangui.graphics.resources;
 public import dlangui.graphics.fonts;
 public import dlangui.core.i18n;
 
-//public import std.signals;
 public import dlangui.core.signals;
 
 import dlangui.platforms.common.platform;
@@ -334,11 +349,12 @@ class Widget {
 	/// get text flags (bit set of TextFlag enum values)
 	@property uint textFlags() { 
 		uint res = stateStyle.textFlags;
-		if (res == TEXT_FLAGS_USE_PARENT)
+		if (res == TEXT_FLAGS_USE_PARENT) {
 			if (parent)
 				res = parent.textFlags;
 			else
 				res = 0;
+		}
 		if (res & TextFlag.UnderlineHotKeysWhenAltPressed) {
 			uint modifiers = 0;
 			if (window !is null)

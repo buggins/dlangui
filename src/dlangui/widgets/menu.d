@@ -5,7 +5,9 @@ DLANGUI library.
 
 This module contains menu widgets implementation.
 
-
+MenuItem - menu item properties container - to hold hierarchy of menu.
+MainMenu - main menu widget
+PopupMenu - popup menu widget
 
 Synopsis:
 
@@ -15,8 +17,8 @@ import dlangui.widgets.popup;
 ----
 
 Copyright: Vadim Lopatin, 2014
-License:   $(WEB boost.org/LICENSE_1_0.txt, Boost License 1.0).
-Authors:   $(WEB coolreader.org, Vadim Lopatin)
+License:   Boost License 1.0
+Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.widgets.menu;
 
