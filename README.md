@@ -86,7 +86,7 @@ Styles and Themes
 
 Styles and themes are a bit similar to ones in Android API.
 
-* Theme is a container for styles. TODO: load themes from XML.
+* Theme is a container for styles. Can be load from XML theme resource file.
 * Styles are accessible in theme by string ID.
 * Styles can be nested to form hiararchy - when some attribute is missing in style, value from base style will be used.
 * State substyles are supported: allow to change widget appearance dynamically based on its state.
@@ -210,18 +210,16 @@ Hello World
 	    ];
 
 	    // setup resource directories - will use only existing directories
-	    drawableCache.setResourcePaths(resourceDirs);
-
-	    // optinally setup internatilnalization (if used)
-	    // setup i18n - look for i18n directory inside one of passed directories
-	    i18n.findTranslationsDir(resourceDirs);
+	    Platform.instance.resourceDirs = resourceDirs;
 	    // select translation file - for english language
-	    i18n.load("en.ini"); //"ru.ini", "en.ini"
+	    Platform.instance.uiLanguage = "en";
+	    // load theme from file "theme_default.xml"
+	    Platform.instance.uiTheme = "theme_default";
 	
 	    // create window
 	    Window window = Platform.instance.createWindow("My Window", null);
 	    // create some widget to show in window
-	    window.mainWidget = (new Button()).text("Hello world"d);
+	    window.mainWidget = (new Button()).text("Hello world"d).textColor(0xFF0000); // red text
 	    // show window
 	    window.show();
 	    // run message loop
