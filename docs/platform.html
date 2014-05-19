@@ -26,7 +26,157 @@ Boost License 1.0
 <b>Authors:</b><br>
 Vadim Lopatin, coolreader.org@gmail.com<br><br>
 
-<dl><dt><big><a name="platform"></a>@property Platform <u>platform</u>();
+<dl><dt><big><a name="Window"></a>abstract class <u>Window</u>;
+</big></dt>
+<dd><u>Window</u> abstraction layer. Widgets can be shown only inside window.
+<br><br>
+
+<dl><dt><big><a name="Window.windowCaption"></a>abstract @property string <u>windowCaption</u>();
+</big></dt>
+<dd>returns window caption<br><br>
+
+</dd>
+<dt><big><a name="Window.windowCaption"></a>abstract @property void <u>windowCaption</u>(string <i>caption</i>);
+</big></dt>
+<dd>sets window <i>caption</i><br><br>
+
+</dd>
+<dt><big><a name="Window.requestLayout"></a>void <u>requestLayout</u>();
+</big></dt>
+<dd>requests layout for main widget and popups<br><br>
+
+</dd>
+<dt><big><a name="Window.showPopup"></a>PopupWidget <u>showPopup</u>(Widget <i>content</i>, Widget <i>anchor</i> = null, uint <i>alignment</i> = PopupAlign.Center, int <i>x</i> = 0, int <i>y</i> = 0);
+</big></dt>
+<dd>show new popup<br><br>
+
+</dd>
+<dt><big><a name="Window.removePopup"></a>bool <u>removePopup</u>(PopupWidget <i>popup</i>);
+</big></dt>
+<dd>remove <i>popup</i><br><br>
+
+</dd>
+<dt><big><a name="Window.isChild"></a>bool <u>isChild</u>(Widget <i>w</i>);
+</big></dt>
+<dd>returns <b>true</b> if widget is child of either main widget or one of popups<br><br>
+
+</dd>
+<dt><big><a name="Window.scheduleAnimation"></a>void <u>scheduleAnimation</u>();
+</big></dt>
+<dd>after drawing, call to schedule redraw if animation is active<br><br>
+
+</dd>
+<dt><big><a name="Window.focusedWidget"></a>@property Widget <u>focusedWidget</u>();
+</big></dt>
+<dd>returns current focused widget<br><br>
+
+</dd>
+<dt><big><a name="Window.setFocus"></a>Widget <u>setFocus</u>(Widget <i>newFocus</i>);
+</big></dt>
+<dd>change focus to widget<br><br>
+
+</dd>
+<dt><big><a name="Window.dispatchKeyEvent"></a>bool <u>dispatchKeyEvent</u>(KeyEvent <i>event</i>);
+</big></dt>
+<dd>dispatch keyboard <i>event</i><br><br>
+
+</dd>
+<dt><big><a name="Window._mouseTrackingWidgets"></a>protected Widget[] <u>_mouseTrackingWidgets</u>;
+</big></dt>
+<dd>widget which tracks Move events<br><br>
+
+</dd>
+<dt><big><a name="Window._mouseCaptureWidget"></a>protected Widget <u>_mouseCaptureWidget</u>;
+</big></dt>
+<dd>widget which tracks all events after processed ButtonDown<br><br>
+
+</dd>
+<dt><big><a name="Window._mouseCaptureFocusedOutTrackMovements"></a>protected bool <u>_mouseCaptureFocusedOutTrackMovements</u>;
+</big></dt>
+<dd>does current capture widget want to receive move events even if pointer left it<br><br>
+
+</dd>
+<dt><big><a name="Window.dispatchMouseEvent"></a>bool <u>dispatchMouseEvent</u>(MouseEvent <i>event</i>);
+</big></dt>
+<dd>dispatch mouse <i>event</i> to window content widgets<br><br>
+
+</dd>
+<dt><big><a name="Window.checkUpdateNeeded"></a>protected void <u>checkUpdateNeeded</u>(Widget <i>root</i>, ref bool <i>needDraw</i>, ref bool <i>needLayout</i>, ref bool <i>animationActive</i>);
+</big></dt>
+<dd>checks content widgets for necessary redraw and/or layout<br><br>
+
+</dd>
+<dt><big><a name="Window.setCursorType"></a>protected void <u>setCursorType</u>(uint <i>cursorType</i>);
+</big></dt>
+<dd>sets cursor type for window<br><br>
+
+</dd>
+<dt><big><a name="Window.checkUpdateNeeded"></a>bool <u>checkUpdateNeeded</u>(ref bool <i>needDraw</i>, ref bool <i>needLayout</i>, ref bool <i>animationActive</i>);
+</big></dt>
+<dd>checks content widgets for necessary redraw and/or layout<br><br>
+
+</dd>
+<dt><big><a name="Window.update"></a>void <u>update</u>(bool <i>force</i> = false);
+</big></dt>
+<dd>requests <u>update</u> for window (unless <i>force</i> is <b>true</b>, <u>update</u> will be performed only if layout, redraw or animation is required).<br><br>
+
+</dd>
+<dt><big><a name="Window.invalidate"></a>abstract void <u>invalidate</u>();
+</big></dt>
+<dd>request window redraw<br><br>
+
+</dd>
+</dl>
+</dd>
+<dt><big><a name="Platform"></a>abstract class <u>Platform</u>;
+</big></dt>
+<dd><u>Platform</u> abstraction layer.
+<br><br>
+Represents application.<br><br>
+
+<dl><dt><big><a name="Platform.getClipboardText"></a>abstract dstring <u>getClipboardText</u>(bool <i>mouseBuffer</i> = false);
+</big></dt>
+<dd>retrieves text from clipboard (when <i>mouseBuffer</i> == <b>true</b>, use mouse selection clipboard - under linux)<br><br>
+
+</dd>
+<dt><big><a name="Platform.setClipboardText"></a>abstract void <u>setClipboardText</u>(dstring <i>text</i>, bool <i>mouseBuffer</i> = false);
+</big></dt>
+<dd>sets <i>text</i> to clipboard (when <i>mouseBuffer</i> == <b>true</b>, use mouse selection clipboard - under linux)<br><br>
+
+</dd>
+<dt><big><a name="Platform.requestLayout"></a>abstract void <u>requestLayout</u>();
+</big></dt>
+<dd>calls request layout for all windows<br><br>
+
+</dd>
+<dt><big><a name="Platform.uiLanguage"></a>@property string <u>uiLanguage</u>();
+</big></dt>
+<dd>returns currently selected UI language code<br><br>
+
+</dd>
+<dt><big><a name="Platform.uiLanguage"></a>@property Platform <u>uiLanguage</u>(string <i>langCode</i>);
+</big></dt>
+<dd>set UI language (e.g. "en", "fr", "ru")<br><br>
+
+</dd>
+<dt><big><a name="Platform.uiTheme"></a>@property Platform <u>uiTheme</u>(string <i>themeResourceId</i>);
+</big></dt>
+<dd>sets application UI theme<br><br>
+
+</dd>
+<dt><big><a name="Platform.resourceDirs"></a>@property string[] <u>resourceDirs</u>();
+</big></dt>
+<dd>returns list of resource directories<br><br>
+
+</dd>
+<dt><big><a name="Platform.resourceDirs"></a>@property Platform <u>resourceDirs</u>(string[] <i>dirs</i>);
+</big></dt>
+<dd>set list of directories to load resources from<br><br>
+
+</dd>
+</dl>
+</dd>
+<dt><big><a name="platform"></a>@property Platform <u>platform</u>();
 </big></dt>
 <dd>get current <u>platform</u> object instance<br><br>
 

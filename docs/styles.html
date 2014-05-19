@@ -388,7 +388,7 @@ Vadim Lopatin, coolreader.org@gmail.com<br><br>
 </dd>
 <dt><big><a name="Theme.createSubstyle"></a>Style <u>createSubstyle</u>(string <i>id</i>);
 </big></dt>
-<dd>create new named style<br><br>
+<dd>create new named style or get existing<br><br>
 
 </dd>
 <dt><big><a name="Theme.get"></a>@property Style <u>get</u>(string <i>id</i>);
@@ -411,6 +411,62 @@ Vadim Lopatin, coolreader.org@gmail.com<br><br>
 <dt><big><a name="currentTheme"></a>@property void <u>currentTheme</u>(Theme <i>theme</i>);
 </big></dt>
 <dd>set new current <i>theme</i><br><br>
+
+</dd>
+<dt><big><a name="decodeRect"></a>Rect <u>decodeRect</u>(string <i>s</i>);
+</big></dt>
+<dd>decode comma delimited dimension list or single value - and put to Rect<br><br>
+
+</dd>
+<dt><big><a name="decodeAlignment"></a>ubyte <u>decodeAlignment</u>(string <i>s</i>);
+</big></dt>
+<dd>parses string like "Left|VCenter" to bit set of Align flags<br><br>
+
+</dd>
+<dt><big><a name="decodeTextFlags"></a>uint <u>decodeTextFlags</u>(string <i>s</i>);
+</big></dt>
+<dd>parses string like "HotKeys|UnderlineHotKeysWhenAltPressed" to bit set of TextFlag flags<br><br>
+
+</dd>
+<dt><big><a name="decodeFontFamily"></a>FontFamily <u>decodeFontFamily</u>(string <i>s</i>);
+</big></dt>
+<dd>decode FontFamily item name to value<br><br>
+
+</dd>
+<dt><big><a name="decodeLayoutDimension"></a>int <u>decodeLayoutDimension</u>(string <i>s</i>);
+</big></dt>
+<dd>decode layout dimension (FILL_PARENT, WRAP_CONTENT, or just size)<br><br>
+
+</dd>
+<dt><big><a name="loadStyleAttributes"></a>bool <u>loadStyleAttributes</u>(Style <i>style</i>, Element <i>elem</i>, bool <i>allowStates</i>);
+</big></dt>
+<dd>load <i>style</i> attributes from XML element<br><br>
+
+</dd>
+<dt><big><a name="loadTheme"></a>bool <u>loadTheme</u>(Theme <i>theme</i>, Element <i>doc</i>, int <i>level</i> = 0);
+</big></dt>
+<dd>load <i>theme</i> from XML document
+<br><br>
+<b>Sample:</b><br>
+<pre class="d_code">&lt;?xml <font color=blue>version</font>=<font color=red>"1.0"</font> encoding=<font color=red>"utf-8"</font>?&gt;
+&lt;<i>theme</i> id=<font color=red>"theme_custom"</font> parent=<font color=red>"theme_default"</font>&gt;
+  	&lt;style id=<font color=red>"BUTTON"</font>
+			backgroundImageId=<font color=red>"btn_default_small"</font>
+	 	&gt;
+  	&lt;/style&gt;
+&lt;/<i>theme</i>&gt;
+</pre>
+<br><br>
+
+</dd>
+<dt><big><a name="loadTheme"></a>bool <u>loadTheme</u>(Theme <i>theme</i>, string <i>resourceId</i>, int <i>level</i> = 0);
+</big></dt>
+<dd>load <i>theme</i> from file<br><br>
+
+</dd>
+<dt><big><a name="loadTheme"></a>Theme <u>loadTheme</u>(string <i>resourceId</i>);
+</big></dt>
+<dd>load theme from XML file (<b>null</b> if failed)<br><br>
 
 </dd>
 </dl>

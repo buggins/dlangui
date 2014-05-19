@@ -26,11 +26,57 @@ Boost License 1.0
 <b>Authors:</b><br>
 Vadim Lopatin, coolreader.org@gmail.com<br><br>
 
-<dl><dt><big><a name="MenuItem"></a>class <u>MenuItem</u>;
+<dl><dt><big><a name="MenuItemType"></a>enum <u>MenuItemType</u>: int;
+</big></dt>
+<dd>menu item type<br><br>
+
+<dl><dt><big><a name="MenuItemType.Normal"></a><u>Normal</u></big></dt>
+<dd>normal menu item<br><br>
+
+</dd>
+<dt><big><a name="MenuItemType.Check"></a><u>Check</u></big></dt>
+<dd>menu item - checkbox<br><br>
+
+</dd>
+<dt><big><a name="MenuItemType.Radio"></a><u>Radio</u></big></dt>
+<dd>menu item - radio button<br><br>
+
+</dd>
+<dt><big><a name="MenuItemType.Separator"></a><u>Separator</u></big></dt>
+<dd>menu separator (horizontal line)<br><br>
+
+</dd>
+<dt><big><a name="MenuItemType.Submenu"></a><u>Submenu</u></big></dt>
+<dd>submenu - contains child items<br><br>
+
+</dd>
+</dl>
+</dd>
+<dt><big><a name="MenuItemClickHandler"></a>interface <u>MenuItemClickHandler</u>;
+</big></dt>
+<dd>interface to handle menu item click<br><br>
+
+</dd>
+<dt><big><a name="MenuItemActionHandler"></a>interface <u>MenuItemActionHandler</u>;
+</big></dt>
+<dd>interface to handle menu item action<br><br>
+
+</dd>
+<dt><big><a name="MenuItem"></a>class <u>MenuItem</u>;
 </big></dt>
 <dd>menu item properties<br><br>
 
-<dl><dt><big><a name="MenuItem.id"></a>@property int <u>id</u>();
+<dl><dt><big><a name="MenuItem.onMenuItemClick"></a>Signal!MenuItemClickHandler <u>onMenuItemClick</u>;
+</big></dt>
+<dd>handle menu item click (parameter is MenuItem)<br><br>
+
+</dd>
+<dt><big><a name="MenuItem.onMenuItemAction"></a>Signal!MenuItemActionHandler <u>onMenuItemAction</u>;
+</big></dt>
+<dd>handle menu item click action (parameter is Action)<br><br>
+
+</dd>
+<dt><big><a name="MenuItem.id"></a>@property int <u>id</u>();
 </big></dt>
 <dd>item action <u>id</u>, 0 if no action<br><br>
 
@@ -40,9 +86,34 @@ Vadim Lopatin, coolreader.org@gmail.com<br><br>
 <dd>returns count of submenu items<br><br>
 
 </dd>
+<dt><big><a name="MenuItem.subitemIndex"></a>@property int <u>subitemIndex</u>(MenuItem <i>item</i>);
+</big></dt>
+<dd>returns subitem index for <i>item</i>, -1 if <i>item</i> is not direct subitem of this<br><br>
+
+</dd>
 <dt><big><a name="MenuItem.subitem"></a>MenuItem <u>subitem</u>(int <i>index</i>);
 </big></dt>
 <dd>returns submenu item by <i>index</i><br><br>
+
+</dd>
+<dt><big><a name="MenuItem.type"></a>@property MenuItem <u>type</u>(MenuItemType <u>type</u>);
+</big></dt>
+<dd>set new MenuItemType<br><br>
+
+</dd>
+<dt><big><a name="MenuItem.checked"></a>@property bool <u>checked</u>();
+</big></dt>
+<dd>get check for checkbox or radio button item<br><br>
+
+</dd>
+<dt><big><a name="MenuItem.checkRadioButton"></a>protected void <u>checkRadioButton</u>(int <i>index</i>);
+</big></dt>
+<dd>check radio button with specified <i>index</i>, uncheck other radio buttons in group (group consists of sequence of radio button items; other item type - end of group)<br><br>
+
+</dd>
+<dt><big><a name="MenuItem.checked"></a>@property MenuItem <u>checked</u>(bool <i>flg</i>);
+</big></dt>
+<dd>set check for checkbox or radio button item<br><br>
 
 </dd>
 <dt><big><a name="MenuItem.getHotkey"></a>dchar <u>getHotkey</u>();
