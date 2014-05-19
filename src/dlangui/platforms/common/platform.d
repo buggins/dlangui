@@ -30,6 +30,17 @@ import dlangui.graphics.drawbuf;
 private import dlangui.graphics.gldrawbuf;
 private import std.algorithm;
 
+/// window creation flags
+enum WindowFlag : uint {
+	/// window can be resized
+	Resizable = 1,
+	/// window should be shown in fullscreen mode
+	Fullscreen = 2,
+	/// modal window - grabs input focus
+	Modal = 4,
+}
+
+
 /**
  * Window abstraction layer. Widgets can be shown only inside window.
  * 
@@ -536,6 +547,8 @@ class Window {
     }
     /// request window redraw
     abstract void invalidate();
+	/// close window
+	abstract void close();
 }
 
 /**
@@ -556,7 +569,12 @@ class Platform {
     @property static Platform instance() {
         return _instance;
     }
-    abstract Window createWindow(string windowCaption, Window parent);
+
+	/// create window
+	abstract Window createWindow(string windowCaption, Window parent, uint flags = WindowFlag.Resizable);
+	/// close window
+	abstract void closeWindow(Window w);
+
     abstract int enterMessageLoop();
     /// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
     abstract dstring getClipboardText(bool mouseBuffer = false);

@@ -7,6 +7,23 @@ import std.conv;
 
 mixin APP_ENTRY_POINT;
 
+Widget createAboutWidget() 
+{
+	LinearLayout res = new VerticalLayout();
+	res.padding(Rect(10,10,10,10));
+	res.addChild(new TextWidget(null, "DLangUI demo app"d));
+	res.addChild(new TextWidget(null, "(C) Vadim Lopatin, 2014"d));
+	res.addChild(new TextWidget(null, "http://github.com/buggins/dlangui"d));
+	Button closeButton = new Button("close", "Close"d);
+	closeButton.onClickListener = delegate(Widget src) {
+		Log.i("Closing window");
+		res.window.close();
+		return true;
+	};
+	res.addChild(closeButton);
+	return res;
+}
+
 class SampleAnimationWidget : Widget {
 	ulong animationProgress;
 	this(string ID) {
@@ -174,7 +191,14 @@ extern (C) int UIAppMain(string[] args) {
         windowItem.add(new Action(30, "MENU_WINDOW_PREFERENCES"));
         MenuItem helpItem = new MenuItem(new Action(4, "MENU_HELP"c));
         helpItem.add(new Action(40, "MENU_HELP_VIEW_HELP"));
-        helpItem.add(new Action(41, "MENU_HELP_ABOUT"));
+		MenuItem aboutItem = new MenuItem(new Action(41, "MENU_HELP_ABOUT"));
+        helpItem.add(aboutItem);
+		aboutItem.onMenuItemClick = delegate(MenuItem item) {
+			Window wnd = Platform.instance.createWindow("About...", null, WindowFlag.Modal);
+			wnd.mainWidget = createAboutWidget();
+			wnd.show();
+			return true;
+		};
         mainMenuItems.add(fileItem);
         mainMenuItems.add(editItem);
 		mainMenuItems.add(viewItem);
@@ -185,7 +209,10 @@ extern (C) int UIAppMain(string[] args) {
 			Log.d("mainMenu.onMenuItemListener", item.label);
 			const Action a = item.action;
 			if (a) {
-				if (window.focusedWidget)
+				if (a.id == 12) {
+					window.close();
+					return true;
+				} else if (window.focusedWidget)
 					return window.focusedWidget.handleAction(a);
 				else
 					return contentLayout.handleAction(a);

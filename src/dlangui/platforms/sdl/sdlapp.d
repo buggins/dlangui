@@ -58,11 +58,11 @@ version(USE_SDL) {
 		SDLPlatform _platform;
 		SDL_Window * _win;
 		SDL_Renderer* _renderer;
-		this(SDLPlatform platform, string caption, Window parent) {
+		this(SDLPlatform platform, string caption, Window parent, uint flags) {
 			_platform = platform;
 			_caption = caption;
 			debug Log.d("Creating SDL window");
-			create();
+			create(flags);
 		}
 
 		~this() {
@@ -84,9 +84,17 @@ version(USE_SDL) {
             private SDL_GLContext _context;
         }
 
-		bool create() {
-            uint windowFlags = SDL_WINDOW_RESIZABLE;
-            version(USE_OPENGL) {
+		protected uint _flags;
+		bool create(uint flags) {
+			_flags = flags;
+			uint windowFlags = 0;
+			if (flags & WindowFlag.Resizable)
+				windowFlags |= SDL_WINDOW_RESIZABLE;
+			if (flags & WindowFlag.Fullscreen)
+				windowFlags |= SDL_WINDOW_FULLSCREEN;
+			if (flags & WindowFlag.Modal)
+				windowFlags |= SDL_WINDOW_INPUT_GRABBED;
+			version(USE_OPENGL) {
                 if (_enableOpengl)
                     windowFlags |= SDL_WINDOW_OPENGL;
             }
@@ -144,8 +152,19 @@ version(USE_SDL) {
 		
 		override void show() {
 			Log.d("SDLWindow.show()");
+			if (_mainWidget && !(_flags & WindowFlag.Resizable)) {
+				_mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+				SDL_SetWindowSize(_win, _mainWidget.measuredWidth, _mainWidget.measuredHeight);
+			}
 			SDL_ShowWindow(_win);
 		}
+
+		/// close window
+		override void close() {
+			Log.d("SDLWindow.close()");
+			_platform.closeWindow(this);
+		}
+
 
 		protected string _caption;
 
@@ -662,6 +681,14 @@ version(USE_SDL) {
 			return null;
 		}
 
+		SDLWindow _windowToClose;
+
+		/// close window
+		override void closeWindow(Window w) {
+			SDLWindow window = cast(SDLWindow)w;
+			_windowToClose = window;
+		}
+
 		/// calls request layout for all windows
 		override void requestLayout() {
 			foreach(w; _windowMap) {
@@ -684,8 +711,8 @@ version(USE_SDL) {
 
 		}
 
-		override Window createWindow(string windowCaption, Window parent) {
-			SDLWindow res = new SDLWindow(this, windowCaption, parent);
+		override Window createWindow(string windowCaption, Window parent, uint flags = WindowFlag.Resizable) {
+			SDLWindow res = new SDLWindow(this, windowCaption, parent, flags);
 			_windowMap[res.windowId] = res;
 			return res;
 		}
@@ -699,7 +726,7 @@ version(USE_SDL) {
 			Log.i("entering message loop");
 			SDL_Event event;
 			bool quit = false;
-            while(true) {
+            while(!quit) {
 				//redrawWindows();
 
 				//if (SDL_PollEvent(&event)) {
@@ -709,6 +736,7 @@ version(USE_SDL) {
 
 				    if (event.type == SDL_QUIT) {
 					    Log.i("event.type == SDL_QUIT");
+						quit = true;
 					    break;
 				    } 
 					if (_redrawEventId && event.type == _redrawEventId) {
@@ -832,7 +860,23 @@ version(USE_SDL) {
                             // not supported event
                             break;
                     }
-                }
+					if (_windowToClose) {
+						if (_windowToClose.windowId in _windowMap) {
+							Log.i("Platform.closeWindow()");
+							_windowMap.remove(_windowToClose.windowId);
+							SDL_DestroyWindow(_windowToClose._win);
+							Log.i("windowMap.length=", _windowMap.length);
+							destroy(_windowToClose);
+						}
+						_windowToClose = null;
+					}
+					//
+					if (_windowMap.length == 0) {
+						//quit = true;
+						SDL_Quit();
+						quit = true;
+					}
+				}
 			}
 			Log.i("exiting message loop");
 			return 0;
