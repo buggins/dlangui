@@ -28,24 +28,91 @@ import dlangui.widgets.layouts;
 import dlangui.widgets.lists;
 import dlangui.widgets.popup;
 
+/// menu item type
+enum MenuItemType {
+	/// normal menu item
+	Normal,
+	/// menu item - checkbox
+	Check,
+	/// menu item - radio button
+	Radio,
+	/// menu separator (horizontal line)
+	Separator,
+	/// submenu - contains child items
+	Submenu
+}
+
 /// menu item properties
 class MenuItem {
-    protected bool _checkable;
     protected bool _checked;
     protected bool _enabled;
+	protected MenuItemType _type = MenuItemType.Normal;
     protected Action _action;
     protected MenuItem[] _subitems;
+	protected MenuItem _parent;
     /// item action id, 0 if no action
     @property int id() { return _action is null ? 0 : _action.id; }
     /// returns count of submenu items
     @property int subitemCount() {
         return cast(int)_subitems.length;
     }
+	/// returns subitem index for item, -1 if item is not direct subitem of this
+	@property int subitemIndex(MenuItem item) {
+		for (int i = 0; i < _subitems.length; i++)
+			if (_subitems[i] is item)
+				return i;
+		return -1;
+	}
     /// returns submenu item by index
     MenuItem subitem(int index) {
         return _subitems[index];
     }
 
+	@property MenuItemType type() const { 
+		if (_subitems.length > 0) // if there are children, force type to Submenu
+			return MenuItemType.Submenu;
+		return _type; 
+	}
+
+	/// set new MenuItemType
+	@property MenuItem type(MenuItemType type) { 
+		_type = type;
+		return this; 
+	}
+
+	/// get check for checkbox or radio button item
+	@property bool checked() {
+		return _checked;
+	}
+	/// check radio button with specified index, uncheck other radio buttons in group (group consists of sequence of radio button items; other item type - end of group)
+	protected void checkRadioButton(int index) {
+		// find bounds of group
+		int start = index;
+		int end = index;
+		for (; start > 0 && _subitems[start - 1].type == MenuItemType.Radio; start--) {
+			// do nothing
+		}
+		for (; end < _subitems.length - 1 && _subitems[end + 1].type == MenuItemType.Radio; end++) {
+			// do nothing
+		}
+		// check item with specified index, uncheck others
+		for (int i = start; i <= end; i++)
+			_subitems[i]._checked = (i == index);
+	}
+	/// set check for checkbox or radio button item
+	@property MenuItem checked(bool flg) {
+		if (_checked == flg)
+			return this;
+		_checked = flg;
+		if (flg && _parent && type == MenuItemType.Radio) {
+			int index = _parent.subitemIndex(this);
+			if (index >= 0) {
+				_parent.checkRadioButton(index);
+			}
+		}
+		return this;
+	}
+	
 	/// get hotkey character from label (e.g. 'F' for item labeled "&File"), 0 if no hotkey
 	dchar getHotkey() {
 		dstring s = label;
@@ -74,12 +141,12 @@ class MenuItem {
 	/// adds submenu item
     MenuItem add(MenuItem subitem) {
         _subitems ~= subitem;
+		subitem._parent = this;
         return this;
     }
     /// adds submenu item from action
     MenuItem add(Action subitemAction) {
-        _subitems ~= new MenuItem(subitemAction);
-        return this;
+        return add(new MenuItem(subitemAction));
     }
 	/// returns text description for first accelerator of action; null if no accelerators
 	@property dstring acceleratorText() {
@@ -101,7 +168,7 @@ class MenuItem {
     @property MenuItem action(Action a) { _action = a; return this; }
 
 	/// menu item Enabled flag
-	@property bool enabled() { return _enabled; }
+	@property bool enabled() { return _enabled && type != MenuItemType.Separator; }
 	/// menu item Enabled flag
 	@property MenuItem enabled(bool enabled) {
 		_enabled = enabled;
@@ -166,6 +233,7 @@ class MenuItemWidget : WidgetGroup {
 	}
 	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
 	override void measure(int parentWidth, int parentHeight) { 
+		updateState();
 		Rect m = margins;
 		Rect p = padding;
 		// calc size constraints for children
@@ -206,6 +274,17 @@ class MenuItemWidget : WidgetGroup {
 		_label.layout(labelRc);
 	}
 
+	protected void updateState() {
+		if (_item.enabled)
+			setState(State.Enabled);
+		else
+			resetState(State.Enabled);
+		if (_item.checked)
+			setState(State.Checked);
+		else
+			resetState(State.Checked);
+	}
+
 	/// Draw widget at its position to buffer
 	override void onDraw(DrawBuf buf) {
 		if (visibility != Visibility.Visible)
@@ -214,6 +293,7 @@ class MenuItemWidget : WidgetGroup {
 		Rect rc = _pos;
 		applyMargins(rc);
 		applyPadding(rc);
+		updateState();
 		auto saver = ClipRectSaver(buf, rc, alpha);
 		for (int i = 0; i < _children.count; i++) {
 			Widget item = _children.get(i);
@@ -228,11 +308,15 @@ class MenuItemWidget : WidgetGroup {
 		_mainMenu = mainMenu;
         _item = item;
         styleId = "MENU_ITEM";
-		if (!item.enabled)
-			resetState(State.Enabled);
+		updateState();
+		string iconId = _item.action.iconId;
+		if (_item.type == MenuItemType.Check)
+			iconId = "btn_check";
+		else if (_item.type == MenuItemType.Radio)
+			iconId = "btn_radio";
 		// icon
-		if (_item.action && _item.action.iconId.length) {
-			_icon = new ImageWidget("MENU_ICON", _item.action.iconId);
+		if (_item.action && iconId.length) {
+			_icon = new ImageWidget("MENU_ICON", iconId);
 			_icon.styleId = "MENU_ICON";
 			_icon.state = State.Parent;
 			addChild(_icon);
@@ -245,11 +329,15 @@ class MenuItemWidget : WidgetGroup {
 		addChild(_label);
 		// accelerator
 		dstring acc = _item.acceleratorText;
+		if (_item.isSubmenu && !mainMenu)
+			acc = "‣"d;
 		if (acc !is null) {
 			_accel = new TextWidget("MENU_ACCEL");
 			_accel.styleId = "MENU_ACCEL";
 			_accel.text = acc;
 			_accel.state = State.Parent;
+			if (_item.isSubmenu && !mainMenu)
+				_accel.alignment = Align.Right | Align.VCenter;
 			addChild(_accel);
 		}
         trackHover = true;
@@ -401,6 +489,15 @@ class MenuWidgetBase : ListWidget {
 		}
 	}
 
+	protected void handleMenuItemClick(MenuItem item) {
+		// precessing for CheckBox and RadioButton menus
+		if (item.type == MenuItemType.Check) {
+			item.checked = !item.checked;
+		} else if (item.type == MenuItemType.Radio) {
+			item.checked = true;
+		}
+	}
+
 	protected void onMenuItem(MenuItem item) {
         debug Log.d("onMenuItem ", item.action.label);
 		if (_openedPopup !is null) {
@@ -424,6 +521,10 @@ class MenuWidgetBase : ListWidget {
 			PopupWidget popup = cast(PopupWidget)parent;
 			if (popup)
 				popup.close();
+
+			handleMenuItemClick(item);
+
+
 			// this pointer now can be invalid - if popup removed
 			if (onMenuItemClickListenerCopy.assigned)
 				if (onMenuItemClickListenerCopy(item))
@@ -565,6 +666,8 @@ class MainMenu : MenuWidgetBase {
 		Signal!MenuItemActionHandler onMenuItemActionListenerCopy = onMenuItemActionListener;
 		
 		deactivate();
+
+		handleMenuItemClick(item);
 
 		// this pointer now can be invalid - if popup removed
 		if (onMenuItemClickListenerCopy.assigned)

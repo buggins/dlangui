@@ -102,40 +102,52 @@ extern (C) int UIAppMain(string[] args) {
 	static if (true) {
         VerticalLayout contentLayout = new VerticalLayout();
         MenuItem mainMenuItems = new MenuItem();
-        MenuItem fileItem = new MenuItem(new Action(1, "&File"d));
-        fileItem.add(new Action(10, "&Open..."d, "document-open", KeyCode.KEY_O, KeyFlag.Control));
-		fileItem.add(new Action(11, "&Save..."d, "document-save", KeyCode.KEY_S, KeyFlag.Control));
-		MenuItem openRecentItem = new MenuItem(new Action(13, "Open recent..."d, "document-open-recent"));
+        MenuItem fileItem = new MenuItem(new Action(1, "MENU_FILE"));
+        fileItem.add(new Action(10, "MENU_FILE_OPEN"c, "document-open", KeyCode.KEY_O, KeyFlag.Control));
+		fileItem.add(new Action(11, "MENU_FILE_SAVE"c, "document-save", KeyCode.KEY_S, KeyFlag.Control));
+		MenuItem openRecentItem = new MenuItem(new Action(13, "MENU_FILE_OPEN_RECENT", "document-open-recent"));
         openRecentItem.add(new Action(100, "&1: File 1"d));
 		openRecentItem.add(new Action(101, "&2: File 2"d));
 		openRecentItem.add(new Action(102, "&3: File 3"d));
 		openRecentItem.add(new Action(103, "&4: File 4"d));
 		openRecentItem.add(new Action(104, "&5: File 5"d));
         fileItem.add(openRecentItem);
-		fileItem.add(new Action(12, "E&xit"d, "document-close", KeyCode.KEY_X, KeyFlag.Alt));
-        MenuItem editItem = new MenuItem(new Action(2, "&Edit"d));
-		editItem.add(new Action(EditorActions.Copy, "Copy"d, "edit-copy", KeyCode.KEY_C, KeyFlag.Control));
-		editItem.add(new Action(EditorActions.Paste, "Paste"d, "edit-paste", KeyCode.KEY_V, KeyFlag.Control));
-		editItem.add(new Action(EditorActions.Cut, "Cut"d, "edit-cut", KeyCode.KEY_X, KeyFlag.Control));
-		editItem.add(new Action(EditorActions.Undo, "Undo"d, "edit-undo", KeyCode.KEY_Z, KeyFlag.Control));
-		editItem.add(new Action(EditorActions.Redo, "Redo"d, "edit-redo", KeyCode.KEY_Y, KeyFlag.Control));
-		editItem.add(new Action(20, "Preferences..."d));
+		fileItem.add(new Action(12, "MENU_FILE_EXIT"c, "document-close"c, KeyCode.KEY_X, KeyFlag.Alt));
+
+        MenuItem editItem = new MenuItem(new Action(2, "MENU_EDIT"));
+		editItem.add(new Action(EditorActions.Copy, "MENU_EDIT_COPY"c, "edit-copy", KeyCode.KEY_C, KeyFlag.Control));
+		editItem.add(new Action(EditorActions.Paste, "MENU_EDIT_PASTE"c, "edit-paste", KeyCode.KEY_V, KeyFlag.Control));
+		editItem.add(new Action(EditorActions.Cut, "MENU_EDIT_CUT"c, "edit-cut", KeyCode.KEY_X, KeyFlag.Control));
+		editItem.add(new Action(EditorActions.Undo, "MENU_EDIT_UNDO"c, "edit-undo", KeyCode.KEY_Z, KeyFlag.Control));
+		editItem.add(new Action(EditorActions.Redo, "MENU_EDIT_REDO"c, "edit-redo", KeyCode.KEY_Y, KeyFlag.Control));
+		editItem.add(new Action(20, "MENU_EDIT_PREFERENCES"));
 
 		MenuItem editPopupItem = new MenuItem(null);
-		editPopupItem.add(new Action(EditorActions.Copy, "Copy"d, "edit-copy", KeyCode.KEY_C, KeyFlag.Control));
-		editPopupItem.add(new Action(EditorActions.Paste, "Paste"d, "edit-paste", KeyCode.KEY_V, KeyFlag.Control));
-		editPopupItem.add(new Action(EditorActions.Cut, "Cut"d, "edit-cut", KeyCode.KEY_X, KeyFlag.Control));
-		editPopupItem.add(new Action(EditorActions.Undo, "Undo"d, "edit-undo", KeyCode.KEY_Z, KeyFlag.Control));
-		editPopupItem.add(new Action(EditorActions.Redo, "Redo"d, "edit-redo", KeyCode.KEY_Y, KeyFlag.Control));
+		editPopupItem.add(new Action(EditorActions.Copy, "MENU_EDIT_COPY"c, "edit-copy", KeyCode.KEY_C, KeyFlag.Control));
+		editPopupItem.add(new Action(EditorActions.Paste, "MENU_EDIT_PASTE"c, "edit-paste", KeyCode.KEY_V, KeyFlag.Control));
+		editPopupItem.add(new Action(EditorActions.Cut, "MENU_EDIT_CUT"c, "edit-cut", KeyCode.KEY_X, KeyFlag.Control));
+		editPopupItem.add(new Action(EditorActions.Undo, "MENU_EDIT_UNDO"c, "edit-undo", KeyCode.KEY_Z, KeyFlag.Control));
+		editPopupItem.add(new Action(EditorActions.Redo, "MENU_EDIT_REDO"c, "edit-redo", KeyCode.KEY_Y, KeyFlag.Control));
 
-		MenuItem windowItem = new MenuItem(new Action(3, "&Window"d));
-        windowItem.add(new Action(30, "Preferences"d));
-        MenuItem helpItem = new MenuItem(new Action(4, "Help"d));
-        helpItem.add(new Action(40, "View Help"d));
-        helpItem.add(new Action(41, "About"d));
+		MenuItem viewItem = new MenuItem(new Action(60, "MENU_VIEW"));
+		MenuItem langItem = new MenuItem(new Action(61, "MENU_VIEW_LANGUAGE"));
+		langItem.add((new MenuItem(new Action(611, "MENU_VIEW_LANGUAGE_EN"))).type(MenuItemType.Radio).checked(true));
+		langItem.add((new MenuItem(new Action(612, "MENU_VIEW_LANGUAGE_RU"))).type(MenuItemType.Radio));
+		MenuItem themeItem = new MenuItem(new Action(62, "MENU_VIEW_THEME"));
+		themeItem.add((new MenuItem(new Action(621, "MENU_VIEW_THEME_DEFAULT"))).type(MenuItemType.Radio).checked(true));
+		themeItem.add((new MenuItem(new Action(622, "MENU_VIEW_THEME_CUSTOM1"))).type(MenuItemType.Radio));
+		viewItem.add(langItem);
+		viewItem.add(themeItem);
+
+		MenuItem windowItem = new MenuItem(new Action(3, "MENU_WINDOW"));
+        windowItem.add(new Action(30, "MENU_WINDOW_PREFERENCES"));
+        MenuItem helpItem = new MenuItem(new Action(4, "MENU_HELP"));
+        helpItem.add(new Action(40, "MENU_HELP_VIEW_HELP"));
+        helpItem.add(new Action(41, "MENU_HELP_ABOUT"));
         mainMenuItems.add(fileItem);
         mainMenuItems.add(editItem);
-        mainMenuItems.add(windowItem);
+		mainMenuItems.add(viewItem);
+		mainMenuItems.add(windowItem);
         mainMenuItems.add(helpItem);
         MainMenu mainMenu = new MainMenu(mainMenuItems);
 		mainMenu.onMenuItemClickListener = delegate(MenuItem item) {
