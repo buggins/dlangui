@@ -52,9 +52,6 @@ Similar to layouts in Android
 * FrameLayout - all children occupy the same place; usually onle one of them is visible
 * TableLayout - children are aligned into rows and columns of table
 
-TODOs:
-
-* TableLayout - layout children
 
 List Views
 ----------
