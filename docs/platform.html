@@ -26,7 +26,25 @@ Boost License 1.0
 <b>Authors:</b><br>
 Vadim Lopatin, coolreader.org@gmail.com<br><br>
 
-<dl><dt><big><a name="Window"></a>abstract class <u>Window</u>;
+<dl><dt><big><a name="WindowFlag"></a>enum <u>WindowFlag</u>: uint;
+</big></dt>
+<dd>window creation flags<br><br>
+
+<dl><dt><big><a name="WindowFlag.Resizable"></a><u>Resizable</u></big></dt>
+<dd>window can be resized<br><br>
+
+</dd>
+<dt><big><a name="WindowFlag.Fullscreen"></a><u>Fullscreen</u></big></dt>
+<dd>window should be shown in fullscreen mode<br><br>
+
+</dd>
+<dt><big><a name="WindowFlag.Modal"></a><u>Modal</u></big></dt>
+<dd>modal window - grabs input focus<br><br>
+
+</dd>
+</dl>
+</dd>
+<dt><big><a name="Window"></a>abstract class <u>Window</u>;
 </big></dt>
 <dd><u>Window</u> abstraction layer. Widgets can be shown only inside window.
 <br><br>
@@ -126,6 +144,11 @@ Vadim Lopatin, coolreader.org@gmail.com<br><br>
 <dd>request window redraw<br><br>
 
 </dd>
+<dt><big><a name="Window.close"></a>abstract void <u>close</u>();
+</big></dt>
+<dd><u>close</u> window<br><br>
+
+</dd>
 </dl>
 </dd>
 <dt><big><a name="Platform"></a>abstract class <u>Platform</u>;
@@ -134,7 +157,17 @@ Vadim Lopatin, coolreader.org@gmail.com<br><br>
 <br><br>
 Represents application.<br><br>
 
-<dl><dt><big><a name="Platform.getClipboardText"></a>abstract dstring <u>getClipboardText</u>(bool <i>mouseBuffer</i> = false);
+<dl><dt><big><a name="Platform.createWindow"></a>abstract Window <u>createWindow</u>(string <i>windowCaption</i>, Window <i>parent</i>, uint <i>flags</i> = WindowFlag.Resizable);
+</big></dt>
+<dd>create window<br><br>
+
+</dd>
+<dt><big><a name="Platform.closeWindow"></a>abstract void <u>closeWindow</u>(Window <i>w</i>);
+</big></dt>
+<dd>close window<br><br>
+
+</dd>
+<dt><big><a name="Platform.getClipboardText"></a>abstract dstring <u>getClipboardText</u>(bool <i>mouseBuffer</i> = false);
 </big></dt>
 <dd>retrieves text from clipboard (when <i>mouseBuffer</i> == <b>true</b>, use mouse selection clipboard - under linux)<br><br>
 
