@@ -22,6 +22,10 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.widgets.styles;
 
+private import std.xml;
+private import std.string;
+private import std.algorithm;
+
 import dlangui.core.types;
 import dlangui.graphics.fonts;
 import dlangui.graphics.drawbuf;
@@ -165,6 +169,10 @@ class Style {
 	}
 
 	@property string id() const { return _id; }
+	@property Style id(string id) {
+		this._id = id;
+		return this;
+	}
 
 	/// access to parent style for this style
 	@property const(Style) parentStyle() const {
@@ -683,8 +691,10 @@ class Theme : Style {
         return null;
     }
 
-	/// create new named style
+	/// create new named style or get existing
 	override Style createSubstyle(string id) {
+		if (id !is null && id in _byId)
+			return _byId[id]; // already exists
 		Style style = new Style(this, id);
 		if (id !is null)
 			_byId[id] = style;
@@ -822,6 +832,267 @@ Theme createDefaultTheme() {
         .fontFace("Courier New").fontFamily(FontFamily.MonoSpace).fontSize(16);
 
 	return res;
+}
+
+/// decode comma delimited dimension list or single value - and put to Rect
+Rect decodeRect(string s) {
+	uint[6] values;
+	int valueCount = 0;
+	int start = 0;
+	for (int i = 0; i <= s.length; i++) {
+		if (i == s.length || s[i] == ',') {
+			if (i > start) {
+				string item = s[start .. i];
+				values[valueCount++] = decodeDimension(item);
+				if (valueCount >= 6)
+					break;
+			}
+			start = i + 1;
+		}
+	}
+	if (valueCount == 1) // same value for all dimensions
+		return Rect(values[0], values[0], values[0], values[0]);
+	else if (valueCount == 2) // one value of horizontal, and one for vertical
+		return Rect(values[0], values[1], values[0], values[1]);
+	else if (valueCount == 4) // separate left, top, right, bottom
+		return Rect(values[0], values[1], values[2], values[3]);
+	Log.e("Invalid rect attribute value ", s);
+	return Rect(0,0,0,0);
+}
+
+/// parses string like "Left|VCenter" to bit set of Align flags
+ubyte decodeAlignment(string s) {
+	ubyte res = 0;
+	int start = 0;
+	for (int i = 0; i <= s.length; i++) {
+		if (i == s.length || s[i] == '|') {
+			if (i > start) {
+				string item = s[start .. i];
+				if (item.equal("Left"))
+					res |= Align.Left;
+				else if (item.equal("Right"))
+					res |= Align.Right;
+				else if (item.equal("Top"))
+					res |= Align.Top;
+				else if (item.equal("Bottom"))
+					res |= Align.Bottom;
+				else if (item.equal("HCenter"))
+					res |= Align.HCenter;
+				else if (item.equal("VCenter"))
+					res |= Align.VCenter;
+				else if (item.equal("Center"))
+					res |= Align.Center;
+				else if (item.equal("TopLeft"))
+					res |= Align.TopLeft;
+				else
+					Log.e("unknown Align value: ", item);
+			}
+			start = i + 1;
+		}
+	}
+	return res;
+}
+
+/// parses string like "HotKeys|UnderlineHotKeysWhenAltPressed" to bit set of TextFlag flags
+uint decodeTextFlags(string s) {
+	uint res = 0;
+	int start = 0;
+	for (int i = 0; i <= s.length; i++) {
+		if (i == s.length || s[i] == '|') {
+			if (i > start) {
+				string item = s[start .. i];
+				if (item.equal("HotKeys"))
+					res |= TextFlag.HotKeys;
+				else if (item.equal("UnderlineHotKeys"))
+					res |= TextFlag.UnderlineHotKeys;
+				else if (item.equal("UnderlineHotKeysWhenAltPressed"))
+					res |= TextFlag.UnderlineHotKeysWhenAltPressed;
+				else if (item.equal("Underline"))
+					res |= TextFlag.Underline;
+				else if (item.equal("Unspecified"))
+					res = TEXT_FLAGS_UNSPECIFIED;
+				else if (item.equal("Parent"))
+					res = TEXT_FLAGS_USE_PARENT;
+				else
+					Log.e("unknown text flag value: ", item);
+			}
+			start = i + 1;
+		}
+	}
+	return res;
+}
+
+/// decode FontFamily item name to value
+FontFamily decodeFontFamily(string s) {
+	if (s.equal("SansSerif"))
+		return FontFamily.SansSerif;
+	if (s.equal("Serif"))
+		return FontFamily.Serif;
+	if (s.equal("Cursive"))
+		return FontFamily.Cursive;
+	if (s.equal("Fantasy"))
+		return FontFamily.Fantasy;
+	if (s.equal("MonoSpace"))
+		return FontFamily.MonoSpace;
+	if (s.equal("Unspecified"))
+		return FontFamily.Unspecified;
+	Log.e("unknown font family ", s);
+	return FontFamily.SansSerif;
+}
+
+/// decode layout dimension (FILL_PARENT, WRAP_CONTENT, or just size)
+int decodeLayoutDimension(string s) {
+	if (s.equal("FILL_PARENT"))
+		return FILL_PARENT;
+	if (s.equal("WRAP_CONTENT"))
+		return WRAP_CONTENT;
+	return decodeDimension(s);
+}
+
+/// load style attributes from XML element
+bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
+	if ("backgroundImageId" in elem.tag.attr)
+		style.backgroundImageId = elem.tag.attr["backgroundImageId"];
+	if ("backgroundColor" in elem.tag.attr)
+		style.backgroundColor = decodeHexColor(elem.tag.attr["backgroundColor"]);
+	if ("textColor" in elem.tag.attr)
+		style.textColor = decodeHexColor(elem.tag.attr["textColor"]);
+	if ("margins" in elem.tag.attr)
+		style.margins = decodeRect(elem.tag.attr["margins"]);
+	if ("padding" in elem.tag.attr)
+		style.padding = decodeRect(elem.tag.attr["padding"]);
+	if ("align" in elem.tag.attr)
+		style.alignment = decodeAlignment(elem.tag.attr["align"]);
+	if ("minWidth" in elem.tag.attr)
+		style.minWidth = decodeDimension(elem.tag.attr["minWidth"]);
+	if ("maxWidth" in elem.tag.attr)
+		style.maxWidth = decodeDimension(elem.tag.attr["maxWidth"]);
+	if ("minHeight" in elem.tag.attr)
+		style.minHeight = decodeDimension(elem.tag.attr["minHeight"]);
+	if ("maxHeight" in elem.tag.attr)
+		style.maxHeight = decodeDimension(elem.tag.attr["maxHeight"]);
+	if ("fontFace" in elem.tag.attr)
+		style.fontFace = elem.tag.attr["fontFace"];
+	if ("fontFamily" in elem.tag.attr)
+		style.fontFamily = decodeFontFamily(elem.tag.attr["fontFamily"]);
+	if ("fontSize" in elem.tag.attr)
+		style.fontSize = cast(ushort)decodeDimension(elem.tag.attr["fontFace"]);
+	if ("layoutWidth" in elem.tag.attr)
+		style.layoutWidth = decodeLayoutDimension(elem.tag.attr["layoutWidth"]);
+	if ("layoutHeight" in elem.tag.attr)
+		style.layoutHeight = decodeLayoutDimension(elem.tag.attr["layoutHeight"]);
+	if ("alpha" in elem.tag.attr)
+		style.alpha = decodeDimension(elem.tag.attr["alpha"]);
+	if ("textFlags" in elem.tag.attr)
+		style.textFlags = decodeTextFlags(elem.tag.attr["textFlags"]);
+	foreach(item; elem.elements) {
+		if (allowStates && item.tag.name.equal("state")) {
+			uint stateMask = 0;
+			uint stateValue = 0;
+			extractStateFlags(item.tag.attr, stateMask, stateValue);
+			if (stateMask) {
+				Style state = style.createState(stateMask, stateValue);
+				loadStyleAttributes(state, item, false);
+			}
+		} else if (item.tag.name.equal("drawable")) {
+			// <drawable id="scrollbar_button_up" value="scrollbar_btn_up"/>
+			string drawableid = attrValue(item, "id");
+			string drawablevalue = attrValue(item, "value");
+			if (drawableid)
+				style.setCustomDrawable(drawableid, drawablevalue);
+		}
+	}
+	return true;
+}
+
+/** 
+ * load theme from XML document
+ * 
+ * Sample:
+ * ---
+ * <?xml version="1.0" encoding="utf-8"?>
+ * <theme id="theme_custom" parent="theme_default">
+ *   	<style id="BUTTON" 
+ * 			backgroundImageId="btn_default_small"
+ * 	 	>
+ *   	</style>
+ * </theme>
+ * ---
+ * 
+ */
+bool loadTheme(Theme theme, Element doc, int level = 0) {
+	if (doc.tag.name.equal("theme")) {
+		Log.e("<theme> element should be main in theme file!");
+		return false;
+	}
+	// <theme>
+	string id = attrValue(doc, "id");
+	string parent = attrValue(doc, "parent");
+	theme.id = id;
+	if (parent.length > 0) {
+		// load base theme
+		if (level < 3) // to prevent infinite recursion
+			loadTheme(theme, parent, level + 1);
+	}
+	loadStyleAttributes(theme, doc, false);
+	foreach(styleitem; doc.elements) {
+		if (styleitem.tag.name.equal("style")) {
+			// load <style>
+			string styleid = attrValue(styleitem, "id");
+			string styleparent = attrValue(styleitem, "parent");
+			if (styleid !is null) {
+				// create new style
+				Style parentStyle = null;
+				if (styleparent !is null)
+					parentStyle = theme.get(styleparent);
+				Style style = parentStyle.createSubstyle(styleid);
+				loadStyleAttributes(style, styleitem, true);
+			} else {
+				Log.e("style without ID in theme file");
+			}
+		}
+	}
+	return true;
+}
+
+/// load theme from file
+bool loadTheme(Theme theme, string resourceId, int level = 0) {
+
+	import std.file;
+	import std.string;
+
+	string filename;
+	try {
+		filename = drawableCache.findResource(resourceId);
+		if (!filename || !filename.endsWith(".xml"))
+			return false;
+		string s = cast(string)std.file.read(filename);
+		
+		// Check for well-formedness
+		//check(s);
+		
+		// Make a DOM tree
+		auto doc = new Document(s);
+		
+		return loadTheme(theme, doc);
+	} catch (CheckException e) {
+		Log.e("Invalid XML resource ", resourceId);
+		return false;
+	} catch (Throwable e) {
+		Log.e("Cannot read drawable resource ", resourceId, " from file ", filename);
+		return false;
+	}
+}
+
+/// load theme from XML file (null if failed)
+Theme loadTheme(string resourceId) {
+	Theme res = new Theme(resourceId);
+	if (loadTheme(res, resourceId)) {
+		res.id = resourceId;
+		return res;
+	}
+	destroy(res);
+	return null;
 }
 
 shared static ~this() {

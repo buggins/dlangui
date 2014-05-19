@@ -299,18 +299,18 @@ class ImageDrawable : Drawable {
     }
 }
 
-string attrValue(Element item, string attrname, string attrname2) {
+string attrValue(Element item, string attrname, string attrname2 = null) {
     if (attrname in item.tag.attr)
         return item.tag.attr[attrname];
-    if (attrname2 in item.tag.attr)
+	if (attrname2 && attrname2 in item.tag.attr)
         return item.tag.attr[attrname2];
     return null;
 }
 
-string attrValue(ref string[string] attr, string attrname, string attrname2) {
+string attrValue(ref string[string] attr, string attrname, string attrname2 = null) {
     if (attrname in attr)
         return attr[attrname];
-    if (attrname2 in attr)
+    if (attrname2 && attrname2 in attr)
         return attr[attrname2];
     return null;
 }
@@ -863,7 +863,8 @@ class DrawableCache {
             return fn.dup;
         return null;
     }
-    string findResource(string id) {
+	/// get resource file full pathname by resource id, null if not found
+	string findResource(string id) {
         if (id.startsWith("#"))
             return id; // it's not a file name, just a color #AARRGGBB
         if (id in _idToFileMap)

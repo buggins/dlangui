@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<theme id="theme_default" >
+    <style id="BUTTON"
+        backgroundImageId="btn_default_small"
+        align="Center"
+        margins="5,5,5,5"
+        />
+    <style id="BUTTON_TRANSPARENT"
+        backgroundImageId="btn_default_small_transparent"
+        align="Center"
+        />
+    <style id="BUTTON_LABEL"
+        layoutWidth="FILL_PARENT"
+        align="Left|VCenter"
+        />
+    <style id="BUTTON_ICON"
+        align="Center"
+        />
+    <style id="TEXT"
+        margins="2,2,2,2"
+        padding="1,1,1,1"
+        />
+    <style id="HSPACER"
+        layoutWidth="FILL_PARENT"
+        layoutWeight="100"
+        minWidth="5"
+        />
+    <style id="VSPACER"
+        layoutHeight="FILL_PARENT"
+        layoutWeight="100"
+        minHeight="5"
+        />
+    <style id="BUTTON_NOMARGINS"
+        backgroundImageId="btn_default_small"
+        align="Center"
+        />
+    <drawable id="scrollbar_button_up" value="scrollbar_btn_up"/>
+    <drawable id="scrollbar_button_down" value="scrollbar_btn_down"/>
+    <srawable id="scrollbar_button_left" value="scrollbar_btn_left"/>
+    <drawable id="scrollbar_button_right" value="scrollbar_btn_right"/>
+    <drawable id="scrollbar_indicator_vertical" value="scrollbar_indicator_vertical"/>
+    <drawable id="scrollbar_indicator_horizontal" value="scrollbar_indicator_horizontal"/>
+    <style id="SCROLLBAR"
+        backgroundColor="#C0808080"
+        align="Center"
+        />
+    <style id="SCROLLBAR_BUTTON" parent="BUTTON"
+        />
+    <style id="SLIDER"
+        />
+    <style id="PAGE_SCROLL"
+        backgroundColor="#FFFFFFFF"
+        >
+        <state state_pressed="true" backgroundColor="#C0404080"/>
+        <state state_hovered="true" backgroundColor="#F0404080"/>
+    </style>
+    <style id="TAB_UP"
+        backgroundImageId="tab_up_background"
+        layoutWidth="FILL_PARENT"
+        >
+        <state state_selected="true" backgroundImageId="tab_up_backgrond_selected"/>
+    </style>
+    <style id="TAB_UP_BUTTON_TEXT"
+        textColor="#000000"
+        backgroundImageId="tab_up_background"
+        fontSize="12"
+        align="Center"
+        >
+        <state state_selected="true" state_focused="true" textColor="#000000"/>
+        <state state_selected="true" textColor="#000000"/>
+        <state state_focused="true" textColor="#000000"/>
+        <state state_hovered="true" textColor="#FFE0E0"/>
+    </style>
+    <style id="TAB_UP_BUTTON"
+        backgroundImageId="tab_btn_up"
+        />
+    <style id="TAB_HOST"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        backgroundColor="#F0F0F0"
+        />
+    <style id="TAB_WIDGET"
+        padding="3,3,3,3"
+        backgroundColor="#EEEEEE"
+        />
+    <style id="MAIN_MENU"
+        layoutWidth="FILL_PARENT"
+        backgroundColor="#EFEFF2"
+        />
+    <style id="MAIN_MENU_ITEM"
+        padding="4,2,4,2"
+        backgroundImageId="main_menu_item_background"
+        textFlags="Parent"
+        />
+    <style id="MENU_ITEM"
+        padding="4,2,4,2"
+        >
+        <state state_focused="true" backgroundColor="#40C0C000"/>
+        <state state_pressed="true" backgroundColor="#4080C000"/>
+        <state state_selected="true" backgroundColor="#00F8F9Fa"/>
+        <state state_hovered="true" backgroundColor="#C0FFFF00"/>
+    </style>
+    <style id="MENU_ICON"
+        margins="2,2,2,2"
+        align="Left|VCenter"
+        >
+        <state state_enabled="false" alpha="160"/>
+    </style>
+    <style id="MENU_LABEL"
+        margins="4,2,4,2"
+        align="Left|VCenter"
+        textFlags="UnderlineHotKeys"
+        >
+        <state state_enabled="false" textColor="#80404040"/>
+    </style>
+    <style id="MAIN_MENU_LABEL"
+        margins="4,2,4,2"
+        align="Left|VCenter"
+        textFlags="Parent"
+        >
+        <state state_enabled="false" textColor="#80404040"/>
+    </style>
+    <style id="MENU_ACCEL"
+        margins="4,2,4,2"
+        align="Left|VCenter"
+        >
+        <state state_enabled="false" textColor="#80404040"/>
+    </style>
+    <style id="TRANSPARENT_BUTTON_BACKGROUND"
+        backgroundImageId="transparent_button_background"
+        padding="4,2,4,2"
+        />
+    <style id="POPUP_MENU"
+        backgroundImageId="popup_menu_background_normal"
+        />
+    <style id="LIST_ITEM"
+        backgroundImageId="list_item_background"
+        />
+    <style id="EDIT_LINE"
+        backgroundImageId="editbox_background"
+        padding="5,6,5,6"
+        margins="2,2,2,2"
+        minWidth="40"
+        fontFace="Arial"
+        fontFamily="SansSerif"
+        fontSize="16"
+        />
+    <style id="EDIT_BOX"
+        backgroundImageId="editbox_background"
+        padding="5,6,5,6"
+        margins="2,2,2,2"
+        minWidth="100"
+        minHeight="60"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        fontFace="Courier New"
+        fontFamily="MonoSpace"
+        fontSize="16"
+        />
+
+</theme>
+

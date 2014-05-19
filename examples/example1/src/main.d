@@ -96,6 +96,12 @@ extern (C) int UIAppMain(string[] args) {
     // select translation file - for english language
     i18n.load("en.ini"); //"ru.ini", "en.ini"
 
+	Theme theme = loadTheme("theme_default");
+	if (theme) {
+		Log.d("Applying loaded theme ", theme.id);
+		currentTheme = theme;
+	}
+
     // create window
     Window window = Platform.instance.createWindow("My Window", null);
 	
