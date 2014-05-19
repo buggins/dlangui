@@ -440,7 +440,7 @@ class Widget {
     /// sets widget content text (override to support this)
     @property Widget text(dstring s) { return this; }
     /// sets widget content text (override to support this)
-    @property Widget text(ref UIString s) { return this; }
+    @property Widget text(UIString s) { return this; }
 
     //==================================================================
     // Layout and drawing related methods

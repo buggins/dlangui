@@ -1101,7 +1101,7 @@ class EditWidgetBase : WidgetGroup, EditableContentListener, MenuItemActionHandl
     }
 
     /// set text
-    override @property Widget text(ref UIString s) { 
+    override @property Widget text(UIString s) { 
         _content.text = s;
         requestLayout();
 		return this;

@@ -131,17 +131,35 @@ extern (C) int UIAppMain(string[] args) {
 
 		MenuItem viewItem = new MenuItem(new Action(60, "MENU_VIEW"));
 		MenuItem langItem = new MenuItem(new Action(61, "MENU_VIEW_LANGUAGE"));
-		langItem.add((new MenuItem(new Action(611, "MENU_VIEW_LANGUAGE_EN"))).type(MenuItemType.Radio).checked(true));
-		langItem.add((new MenuItem(new Action(612, "MENU_VIEW_LANGUAGE_RU"))).type(MenuItemType.Radio));
+		auto onLangChange = delegate (MenuItem item) {
+			if (!item.checked)
+				return false;
+			if (item.id == 611) {
+				// set interface language to english
+				i18n.load("en.ini");
+				contentLayout.requestLayout();
+			} else if (item.id == 612) {
+				// set interface language to russian
+				i18n.load("ru.ini", "en.ini");
+				contentLayout.requestLayout();
+			}
+			return true;
+		};
+		MenuItem enLang = (new MenuItem(new Action(611, "MENU_VIEW_LANGUAGE_EN"))).type(MenuItemType.Radio).checked(true);
+		MenuItem ruLang = (new MenuItem(new Action(612, "MENU_VIEW_LANGUAGE_RU"))).type(MenuItemType.Radio);
+		enLang.onMenuItemClick = onLangChange;
+		ruLang.onMenuItemClick = onLangChange;
+		langItem.add(enLang);
+		langItem.add(ruLang);
 		MenuItem themeItem = new MenuItem(new Action(62, "MENU_VIEW_THEME"));
 		themeItem.add((new MenuItem(new Action(621, "MENU_VIEW_THEME_DEFAULT"))).type(MenuItemType.Radio).checked(true));
 		themeItem.add((new MenuItem(new Action(622, "MENU_VIEW_THEME_CUSTOM1"))).type(MenuItemType.Radio));
 		viewItem.add(langItem);
 		viewItem.add(themeItem);
 
-		MenuItem windowItem = new MenuItem(new Action(3, "MENU_WINDOW"));
+		MenuItem windowItem = new MenuItem(new Action(3, "MENU_WINDOW"c));
         windowItem.add(new Action(30, "MENU_WINDOW_PREFERENCES"));
-        MenuItem helpItem = new MenuItem(new Action(4, "MENU_HELP"));
+        MenuItem helpItem = new MenuItem(new Action(4, "MENU_HELP"c));
         helpItem.add(new Action(40, "MENU_HELP_VIEW_HELP"));
         helpItem.add(new Action(41, "MENU_HELP_ABOUT"));
         mainMenuItems.add(fileItem);
@@ -239,7 +257,7 @@ extern (C) int UIAppMain(string[] args) {
             assert(list.itemEnabled(6) == true);
             list.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
             list.selectItem(0);
-            tabs.addTab(list, "Long List"d);
+            tabs.addTab(list, "TAB_LONG_LIST"c);
         }
 
         {
@@ -329,7 +347,7 @@ extern (C) int UIAppMain(string[] args) {
 
             layout3.addChild(new VSpacer());
             layout3.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
-            tabs.addTab(layout3, "Buttons"d);
+            tabs.addTab(layout3, "TAB_BUTTONS"c);
         }
 
 		TableLayout table = new TableLayout("TABLE");
@@ -347,11 +365,11 @@ extern (C) int UIAppMain(string[] args) {
 		table.addChild((new TextWidget(null, "Param 3"d)).alignment(Align.Right | Align.VCenter));
 		table.addChild((new EditLine("edit3", "Parameter 3 value"d)).layoutWidth(FILL_PARENT));
 		table.margins(Rect(10,10,10,10)).layoutWidth(FILL_PARENT);
-		tabs.addTab(table, "Table Layout"d);
+		tabs.addTab(table, "TAB_TABLE_LAYOUT"c);
 
         tabs.addTab((new TextWidget()).id("tab5").textColor(0x00802000).text("Tab 5 contents"), "Tab 5"d);
 
-		tabs.addTab((new SampleAnimationWidget("tab6")).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT), "Animation"d);
+		tabs.addTab((new SampleAnimationWidget("tab6")).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT), "TAB_ANIMATION"c);
 
         //==========================================================================
 		// create Editors test tab
@@ -390,7 +408,7 @@ extern (C) int UIAppMain(string[] args) {
 		editors.addChild(editBox2);
         editors.layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT);
 
-        tabs.addTab(editors, "Editors"d);
+        tabs.addTab(editors, "TAB_EDITORS"c);
 
         //==========================================================================
 

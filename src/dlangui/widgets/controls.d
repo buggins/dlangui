@@ -74,8 +74,8 @@ class TextWidget : Widget {
 		return this;
     }
     /// set text to show
-    override @property Widget text(ref UIString s) { 
-        _text = s; 
+    override @property Widget text(UIString s) { 
+        _text = s;
         requestLayout();
 		return this;
     }
@@ -199,7 +199,7 @@ class ImageTextButton : HorizontalLayout {
     protected TextWidget _label;
     override @property dstring text() { return _label.text; }
     override @property Widget text(dstring s) { _label.text = s; requestLayout(); return this; }
-    override @property Widget text(ref UIString s) { _label.text = s; requestLayout(); return this; }
+    override @property Widget text(UIString s) { _label.text = s; requestLayout(); return this; }
     this(string ID = null, string drawableId = null, string textResourceId = null) {
         super(ID);
         styleId = "BUTTON";
@@ -292,7 +292,7 @@ class Button : Widget {
     protected UIString _text;
     override @property dstring text() { return _text; }
     override @property Widget text(dstring s) { _text = s; requestLayout(); return this; }
-    override @property Widget text(ref UIString s) { _text = s; requestLayout(); return this; }
+    override @property Widget text(UIString s) { _text = s; requestLayout(); return this; }
     @property Widget textResource(string s) { _text = s; requestLayout(); return this; }
     this(string ID = null) {
 		super(ID);

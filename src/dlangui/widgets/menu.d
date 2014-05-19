@@ -42,6 +42,17 @@ enum MenuItemType {
 	Submenu
 }
 
+/// interface to handle menu item click
+interface MenuItemClickHandler {
+	bool onMenuItemClick(MenuItem item);
+}
+
+/// interface to handle menu item action
+interface MenuItemActionHandler {
+	bool onMenuItemAction(const Action action);
+}
+
+
 /// menu item properties
 class MenuItem {
     protected bool _checked;
@@ -50,7 +61,11 @@ class MenuItem {
     protected Action _action;
     protected MenuItem[] _subitems;
 	protected MenuItem _parent;
-    /// item action id, 0 if no action
+	/// handle menu item click (parameter is MenuItem)
+	Signal!MenuItemClickHandler onMenuItemClick;
+	/// handle menu item click action (parameter is Action)
+	Signal!MenuItemActionHandler onMenuItemAction;
+	/// item action id, 0 if no action
     @property int id() { return _action is null ? 0 : _action.id; }
     /// returns count of submenu items
     @property int subitemCount() {
@@ -345,14 +360,6 @@ class MenuItemWidget : WidgetGroup {
     }
 }
 
-interface MenuItemClickHandler {
-	bool onMenuItemClick(MenuItem item);
-}
-
-interface MenuItemActionHandler {
-	bool onMenuItemAction(const Action action);
-}
-
 /// base class for menus
 class MenuWidgetBase : ListWidget {
 	protected MenuWidgetBase _parentMenu;
@@ -496,6 +503,10 @@ class MenuWidgetBase : ListWidget {
 		} else if (item.type == MenuItemType.Radio) {
 			item.checked = true;
 		}
+		if (item.onMenuItemClick.assigned)
+			item.onMenuItemClick(item);
+		if (item.onMenuItemAction.assigned && item.action)
+			item.onMenuItemAction(item.action);
 	}
 
 	protected void onMenuItem(MenuItem item) {
