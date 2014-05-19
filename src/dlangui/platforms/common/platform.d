@@ -28,7 +28,12 @@ import dlangui.widgets.popup;
 import dlangui.graphics.drawbuf;
 
 private import dlangui.graphics.gldrawbuf;
+private import std.algorithm;
 
+/**
+ * Window abstraction layer. Widgets can be shown only inside window.
+ * 
+ */
 class Window {
     protected int _dx;
     protected int _dy;
@@ -49,8 +54,17 @@ class Window {
             _mainWidget.window = this;
     }
     abstract void show();
+	/// returns window caption
     abstract @property string windowCaption();
+	/// sets window caption
     abstract @property void windowCaption(string caption);
+	/// requests layout for main widget and popups
+	void requestLayout() {
+		if (_mainWidget)
+			_mainWidget.requestLayout();
+		foreach(p; _popups)
+			p.requestLayout();
+	}
     void measure() {
         if (_mainWidget !is null) {
             _mainWidget.measure(_dx, _dy);
@@ -524,6 +538,14 @@ class Window {
     abstract void invalidate();
 }
 
+/**
+ * Platform abstraction layer.
+ * 
+ * Represents application.
+ * 
+ * 
+ * 
+ */
 class Platform {
     static __gshared Platform _instance;
     static void setInstance(Platform instance) {
@@ -540,6 +562,60 @@ class Platform {
     abstract dstring getClipboardText(bool mouseBuffer = false);
     /// sets text to clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
     abstract void setClipboardText(dstring text, bool mouseBuffer = false);
+
+	/// calls request layout for all windows
+	abstract void requestLayout();
+
+	protected string _uiLanguage;
+	/// returns currently selected UI language code
+	@property string uiLanguage() {
+		return _uiLanguage;
+	}
+	/// set UI language (e.g. "en", "fr", "ru")
+	@property Platform uiLanguage(string langCode) {
+		if (_uiLanguage.equal(langCode))
+			return this;
+		_uiLanguage = langCode;
+		if (langCode.equal("en"))
+			i18n.load("en.ini"); //"ru.ini", "en.ini"
+		else
+			i18n.load(langCode ~ ".ini", "en.ini");
+		requestLayout();
+		return this;
+	}
+	protected string _themeId;
+	@property string uiTheme() {
+		return _themeId;
+	}
+	/// sets application UI theme
+	@property Platform uiTheme(string themeResourceId) {
+		if (_themeId.equal(themeResourceId))
+			return this;
+		_themeId = themeResourceId;
+		Theme theme = loadTheme(themeResourceId);
+		if (!theme) {
+			Log.e("Cannot load theme from resource ", themeResourceId, " - will use default theme");
+			theme = createDefaultTheme();
+		} else {
+			Log.i("Applying loaded theme ", theme.id);
+		}
+		currentTheme = theme;
+		requestLayout();
+		return this;
+	}
+
+	protected string[] _resourceDirs;
+	/// returns list of resource directories
+	@property string[] resourceDirs() { return _resourceDirs; }
+	/// set list of directories to load resources from
+	@property Platform resourceDirs(string[] dirs) {
+		// setup resource directories - will use only existing directories
+		drawableCache.setResourcePaths(dirs);
+		_resourceDirs = drawableCache.resourcePaths;
+		// setup i18n - look for i18n directory inside one of passed directories
+		i18n.findTranslationsDir(dirs);
+		return this;
+	}
 }
 
 /// get current platform object instance

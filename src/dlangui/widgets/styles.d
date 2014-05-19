@@ -976,7 +976,7 @@ bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
 	if ("fontFamily" in elem.tag.attr)
 		style.fontFamily = decodeFontFamily(elem.tag.attr["fontFamily"]);
 	if ("fontSize" in elem.tag.attr)
-		style.fontSize = cast(ushort)decodeDimension(elem.tag.attr["fontFace"]);
+		style.fontSize = cast(ushort)decodeDimension(elem.tag.attr["fontSize"]);
 	if ("layoutWidth" in elem.tag.attr)
 		style.layoutWidth = decodeLayoutDimension(elem.tag.attr["layoutWidth"]);
 	if ("layoutHeight" in elem.tag.attr)
@@ -1021,7 +1021,7 @@ bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
  * 
  */
 bool loadTheme(Theme theme, Element doc, int level = 0) {
-	if (doc.tag.name.equal("theme")) {
+	if (!doc.tag.name.equal("theme")) {
 		Log.e("<theme> element should be main in theme file!");
 		return false;
 	}
@@ -1040,11 +1040,10 @@ bool loadTheme(Theme theme, Element doc, int level = 0) {
 			// load <style>
 			string styleid = attrValue(styleitem, "id");
 			string styleparent = attrValue(styleitem, "parent");
-			if (styleid !is null) {
+			if (styleid.length) {
 				// create new style
 				Style parentStyle = null;
-				if (styleparent !is null)
-					parentStyle = theme.get(styleparent);
+				parentStyle = theme.get(styleparent);
 				Style style = parentStyle.createSubstyle(styleid);
 				loadStyleAttributes(style, styleitem, true);
 			} else {
@@ -1079,7 +1078,7 @@ bool loadTheme(Theme theme, string resourceId, int level = 0) {
 		Log.e("Invalid XML resource ", resourceId);
 		return false;
 	} catch (Throwable e) {
-		Log.e("Cannot read drawable resource ", resourceId, " from file ", filename);
+		Log.e("Cannot read XML resource ", resourceId, " from file ", filename, " exception: ", e);
 		return false;
 	}
 }

@@ -662,6 +662,15 @@ version(USE_SDL) {
 			return null;
 		}
 
+		/// calls request layout for all windows
+		override void requestLayout() {
+			foreach(w; _windowMap) {
+				w.requestLayout();
+				w.invalidate();
+			}
+		}
+
+
 		private uint _redrawEventId;
 
 		void sendRedrawEvent(uint windowId, uint code) {

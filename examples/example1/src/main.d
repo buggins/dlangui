@@ -89,18 +89,13 @@ extern (C) int UIAppMain(string[] args) {
 		appendPath(exePath, "../res/mdpi/"), // when res dir is located at project directory
 		appendPath(exePath, "../../res/mdpi/") // when res dir is located at the same directory as executable
 	];
-    // setup resource directories - will use only existing directories
-    drawableCache.setResourcePaths(resourceDirs);
-    // setup i18n - look for i18n directory inside one of passed directories
-    i18n.findTranslationsDir(resourceDirs);
-    // select translation file - for english language
-    i18n.load("en.ini"); //"ru.ini", "en.ini"
 
-	Theme theme = loadTheme("theme_default");
-	if (theme) {
-		Log.d("Applying loaded theme ", theme.id);
-		currentTheme = theme;
-	}
+    // setup resource directories - will use only existing directories
+	Platform.instance.resourceDirs = resourceDirs;
+    // select translation file - for english language
+	Platform.instance.uiLanguage = "en";
+	// load theme from file "theme_default.xml"
+	Platform.instance.uiTheme = "theme_default";
 
     // create window
     Window window = Platform.instance.createWindow("My Window", null);
@@ -142,12 +137,10 @@ extern (C) int UIAppMain(string[] args) {
 				return false;
 			if (item.id == 611) {
 				// set interface language to english
-				i18n.load("en.ini");
-				contentLayout.requestLayout();
+				platform.instance.uiLanguage = "en";
 			} else if (item.id == 612) {
 				// set interface language to russian
-				i18n.load("ru.ini", "en.ini");
-				contentLayout.requestLayout();
+				platform.instance.uiLanguage = "ru";
 			}
 			return true;
 		};
@@ -157,10 +150,24 @@ extern (C) int UIAppMain(string[] args) {
 		ruLang.onMenuItemClick = onLangChange;
 		langItem.add(enLang);
 		langItem.add(ruLang);
-		MenuItem themeItem = new MenuItem(new Action(62, "MENU_VIEW_THEME"));
-		themeItem.add((new MenuItem(new Action(621, "MENU_VIEW_THEME_DEFAULT"))).type(MenuItemType.Radio).checked(true));
-		themeItem.add((new MenuItem(new Action(622, "MENU_VIEW_THEME_CUSTOM1"))).type(MenuItemType.Radio));
 		viewItem.add(langItem);
+		MenuItem themeItem = new MenuItem(new Action(62, "MENU_VIEW_THEME"));
+		MenuItem theme1 = (new MenuItem(new Action(621, "MENU_VIEW_THEME_DEFAULT"))).type(MenuItemType.Radio).checked(true);
+		MenuItem theme2 = (new MenuItem(new Action(622, "MENU_VIEW_THEME_CUSTOM1"))).type(MenuItemType.Radio);
+		auto onThemeChange = delegate (MenuItem item) {
+			if (!item.checked)
+				return false;
+			if (item.id == 621) {
+				platform.instance.uiTheme = "theme_default";
+			} else if (item.id == 622) {
+				platform.instance.uiTheme = "theme_custom1";
+			}
+			return true;
+		};
+		theme1.onMenuItemClick = onThemeChange;
+		theme2.onMenuItemClick = onThemeChange;
+		themeItem.add(theme1);
+		themeItem.add(theme2);
 		viewItem.add(themeItem);
 
 		MenuItem windowItem = new MenuItem(new Action(3, "MENU_WINDOW"c));

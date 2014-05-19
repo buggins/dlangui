@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<theme id="theme_default" fontSize="15" >
+<theme 
+    id="theme_custom1" 
+    parent="theme_default"
+    fontSize="24"
+    >
     <style id="BUTTON"
         backgroundImageId="btn_default_small"
         align="Center"
@@ -62,7 +66,7 @@
     </style>
     <style id="TAB_UP_BUTTON_TEXT"
         textColor="#000000"
-        fontSize="12"
+        fontSize="16"
         align="Center"
         >
         <state state_selected="true" state_focused="true" textColor="#000000"/>
@@ -84,11 +88,12 @@
         />
     <style id="MAIN_MENU"
         layoutWidth="FILL_PARENT"
-        backgroundColor="#EFEFF2"
+        backgroundColor="#404040"
         />
     <style id="MAIN_MENU_ITEM"
         padding="4,2,4,2"
         backgroundImageId="main_menu_item_background"
+	textColor="#E0E0E0"
         textFlags="Parent"
         />
     <style id="MENU_ITEM"
@@ -142,7 +147,7 @@
         minWidth="40"
         fontFace="Arial"
         fontFamily="SansSerif"
-        fontSize="16"
+        fontSize="20"
         />
     <style id="EDIT_BOX"
         backgroundImageId="editbox_background"
@@ -154,7 +159,7 @@
         layoutHeight="FILL_PARENT"
         fontFace="Courier New"
         fontFamily="MonoSpace"
-        fontSize="16"
+        fontSize="20"
         />
 
 </theme>
