@@ -28,6 +28,7 @@ class SampleAnimationWidget : Widget {
 	ulong animationProgress;
 	this(string ID) {
 		super(ID);
+		backgroundImageId = "tx_fabric.tiled"; // tx_fabric.jpg tiled
 	}
 	/// returns true is widget is being animated - need to call animate() and redraw
 	@property override bool animating() { return true; }

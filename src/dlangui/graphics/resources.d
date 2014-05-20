@@ -289,7 +289,17 @@ class ImageDrawable : Drawable {
             }
         } else if (_tiled) {
             // tiled
-        } else {
+			int imgdx = _image.width;
+			int imgdy = _image.height;
+			tilex0 %= imgdx;
+			if (tilex0 < 0)
+				tilex0 += imgdx;
+			tiley0 %= imgdy;
+			if (tiley0 < 0)
+				tiley0 += imgdy;
+
+			buf.drawRescaled(rc, _image.get, Rect(0, 0, _image.width, _image.height));
+		} else {
             // rescaled or normal
             if (rc.width != _image.width || rc.height != _image.height)
                 buf.drawRescaled(rc, _image.get, Rect(0, 0, _image.width, _image.height));

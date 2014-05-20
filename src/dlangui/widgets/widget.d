@@ -330,6 +330,23 @@ class Widget {
         invalidate();
         return this; 
     }
+
+	/// background image id
+	@property string backgroundImageId() const {
+		return style.backgroundImageId;
+	}
+
+	/// background image id
+	@property Widget backgroundImageId(string imageId) {
+		ownStyle.backgroundImageId = imageId;
+		return this;
+	}
+	
+	/// background drawable
+	@property DrawableRef backgroundDrawable() const {
+		return style.backgroundDrawable;
+	}
+	
 	/// widget drawing alpha value (0=opaque .. 255=transparent)
 	@property uint alpha() const { return stateStyle.alpha; }
 	/// set widget drawing alpha value (0=opaque .. 255=transparent)
