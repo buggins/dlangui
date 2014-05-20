@@ -302,9 +302,9 @@ class Widget {
     @property Rect padding() const { 
 		// get max padding from style padding and background drawable padding
 		Rect p = style.padding; 
-		DrawableRef d = style.backgroundDrawable;
+		DrawableRef d = backgroundDrawable;
 		if (!d.isNull) {
-			Rect dp = style.backgroundDrawable.padding;
+			Rect dp = d.padding;
 			if (p.left < dp.left)
 				p.left = dp.left;
 			if (p.right < dp.right)
@@ -344,7 +344,7 @@ class Widget {
 	
 	/// background drawable
 	@property DrawableRef backgroundDrawable() const {
-		return style.backgroundDrawable;
+		return stateStyle.backgroundDrawable;
 	}
 	
 	/// widget drawing alpha value (0=opaque .. 255=transparent)
@@ -1058,7 +1058,7 @@ class Widget {
         Rect rc = _pos;
         applyMargins(rc);
 		auto saver = ClipRectSaver(buf, rc, alpha);
-        DrawableRef bg = stateStyle.backgroundDrawable;
+        DrawableRef bg = backgroundDrawable;
 		if (!bg.isNull) {
 	        bg.drawTo(buf, rc, state);
 		}
