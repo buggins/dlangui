@@ -66,9 +66,9 @@ class Window {
     }
     abstract void show();
 	/// returns window caption
-    abstract @property string windowCaption();
+    abstract @property dstring windowCaption();
 	/// sets window caption
-    abstract @property void windowCaption(string caption);
+    abstract @property void windowCaption(dstring caption);
 	/// requests layout for main widget and popups
 	void requestLayout() {
 		if (_mainWidget)
@@ -570,11 +570,27 @@ class Platform {
         return _instance;
     }
 
-	/// create window
-	abstract Window createWindow(string windowCaption, Window parent, uint flags = WindowFlag.Resizable);
-	/// close window
+	/**
+	 * create window
+	 * Args:
+	 * 		windowCaption = window caption text
+	 * 		parent = parent Window, or null if no parent
+	 * 		flags = WindowFlag bit set, combination of Resizable, Modal, Fullscreen
+	 * 
+	 * Window w/o Resizable nor Fullscreen will be created with size based on measurement of its content widget
+	 */
+	abstract Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable);
+	/**
+	 * close window
+	 * 
+	 * Closes window earlier created with createWindow()
+	 */
 	abstract void closeWindow(Window w);
-
+	/**
+	 * Starts application message loop.
+	 * 
+	 * When returned from this method, application is shutting down.
+	 */
     abstract int enterMessageLoop();
     /// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
     abstract dstring getClipboardText(bool mouseBuffer = false);
@@ -589,7 +605,7 @@ class Platform {
 	@property string uiLanguage() {
 		return _uiLanguage;
 	}
-	/// set UI language (e.g. "en", "fr", "ru")
+	/// set UI language (e.g. "en", "fr", "ru") - will relayout content of all windows if language has been changed
 	@property Platform uiLanguage(string langCode) {
 		if (_uiLanguage.equal(langCode))
 			return this;
@@ -605,7 +621,7 @@ class Platform {
 	@property string uiTheme() {
 		return _themeId;
 	}
-	/// sets application UI theme
+	/// sets application UI theme - will relayout content of all windows if theme has been changed
 	@property Platform uiTheme(string themeResourceId) {
 		if (_themeId.equal(themeResourceId))
 			return this;

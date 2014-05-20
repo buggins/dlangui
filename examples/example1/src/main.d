@@ -119,6 +119,10 @@ extern (C) int UIAppMain(string[] args) {
 	
 	static if (true) {
         VerticalLayout contentLayout = new VerticalLayout();
+
+		//=========================================================================
+		// create main menu
+
         MenuItem mainMenuItems = new MenuItem();
         MenuItem fileItem = new MenuItem(new Action(1, "MENU_FILE"));
         fileItem.add(new Action(10, "MENU_FILE_OPEN"c, "document-open", KeyCode.KEY_O, KeyFlag.Control));
@@ -221,7 +225,12 @@ extern (C) int UIAppMain(string[] args) {
 		};
         contentLayout.addChild(mainMenu);
 
+		// ========= create tabs ===================
+
         TabWidget tabs = new TabWidget("TABS");
+		tabs.onTabChangedListener = delegate(string newTabId, string oldTabId) {
+			window.windowCaption = tabs.tab(newTabId).text.value ~ " - dlangui example 1"d;
+		};
         tabs.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
 
 		LinearLayout layout = new LinearLayout("tab1");

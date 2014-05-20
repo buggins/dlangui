@@ -175,9 +175,9 @@ class TabControl : WidgetGroup {
     protected bool _enableCloseButton;
     protected TabItemWidget[] _sortedItems;
 
-    protected void delegate(string newActiveTabId, string previousTabId) _onTabChanged;
-    @property void delegate(string newActiveTabId, string previousTabId) onTabChangedListener() { return _onTabChanged; }
-    @property TabControl onTabChangedListener(void delegate(string newActiveTabId, string previousTabId) listener) { _onTabChanged = listener; return this; }
+
+	/// signal of tab change (e.g. by clicking on tab header)
+	Signal!TabHandler onTabChangedListener;
 
     this(string ID) {
         super(ID);
@@ -368,8 +368,8 @@ class TabControl : WidgetGroup {
                 _children.get(i).state = State.Normal;
             }
         }
-        if (_onTabChanged !is null)
-            _onTabChanged(_selectedTabId, previousSelectedTab);
+        if (onTabChangedListener.assigned)
+			onTabChangedListener(_selectedTabId, previousSelectedTab);
     }
 }
 
@@ -393,16 +393,15 @@ class TabHost : FrameLayout, TabHandler {
         return this;
     }
 
-    protected void delegate(string newActiveTabId, string previousTabId) _onTabChanged;
-    @property void delegate(string newActiveTabId, string previousTabId) onTabChangedListener() { return _onTabChanged; }
-    @property TabHost onTabChangedListener(void delegate(string newActiveTabId, string previousTabId) listener) { _onTabChanged = listener; return this; }
+	/// signal of tab change (e.g. by clicking on tab header)
+	Signal!TabHandler onTabChangedListener;
 
     protected override void onTabChanged(string newActiveTabId, string previousTabId) {
         if (newActiveTabId !is null) {
             showChild(newActiveTabId, Visibility.Invisible, true);
         }
-        if (_onTabChanged !is null)
-            _onTabChanged(newActiveTabId, previousTabId);
+        if (onTabChangedListener.assigned)
+            onTabChangedListener(newActiveTabId, previousTabId);
     }
 
     /// remove tab
@@ -465,19 +464,19 @@ class TabWidget : VerticalLayout, TabHandler {
         super(ID);
         _tabControl = new TabControl("TAB_CONTROL");
         _tabHost = new TabHost("TAB_HOST", _tabControl);
+		_tabControl.onTabChangedListener.connect(this);
         styleId = "TAB_WIDGET";
         addChild(_tabControl);
         addChild(_tabHost);
     }
 
-    protected void delegate(string newActiveTabId, string previousTabId) _onTabChanged;
-    @property void delegate(string newActiveTabId, string previousTabId) onTabChangedListener() { return _onTabChanged; }
-    @property TabWidget onTabChangedListener(void delegate(string newActiveTabId, string previousTabId) listener) { _onTabChanged = listener; return this; }
+	/// signal of tab change (e.g. by clicking on tab header)
+	Signal!TabHandler onTabChangedListener;
 
     protected override void onTabChanged(string newActiveTabId, string previousTabId) {
         // forward to listener
-        if (_onTabChanged !is null)
-            _onTabChanged(newActiveTabId, previousTabId);
+        if (onTabChangedListener.assigned)
+            onTabChangedListener(newActiveTabId, previousTabId);
     }
 
     /// add new tab by id and label string resource id
@@ -485,25 +484,35 @@ class TabWidget : VerticalLayout, TabHandler {
         _tabHost.addTab(widget, labelResourceId, iconId, enableCloseButton);
         return this;
     }
-    /// add new tab by id and label (raw value)
+
+	/// add new tab by id and label (raw value)
     TabWidget addTab(Widget widget, dstring label, string iconId = null, bool enableCloseButton = false) {
         _tabHost.addTab(widget, label, iconId, enableCloseButton);
         return this;
     }
-    /// remove tab by id
+
+	/// remove tab by id
     TabWidget removeTab(string id) {
         _tabHost.removeTab(id);
         requestLayout();
         return this;
     }
-    /// select tab
+
+	/// select tab
     void selectTab(string ID) {
         _tabHost.selectTab(ID);
     }
-//    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
-//    override void layout(Rect rc) {
-//		Log.d("TabWidget.layout() called");
-//		super.layout(rc);
-//		Log.d("after layout(): tabhost.needLayout = ", _tabHost.needLayout);
-//	}
+
+	/// returns tab item by id (null if index out of range)
+	TabItem tab(int index) {
+		return _tabControl.tab(index);
+	}
+	/// returns tab item by id (null if not found)
+	TabItem tab(string id) {
+		return _tabControl.tab(id);
+	}
+	/// get tab index by tab id (-1 if not found)
+	int tabIndex(string id) {
+		return _tabControl.tabIndex(id);
+	}
 }

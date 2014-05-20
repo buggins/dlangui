@@ -58,7 +58,7 @@ version(USE_SDL) {
 		SDLPlatform _platform;
 		SDL_Window * _win;
 		SDL_Renderer* _renderer;
-		this(SDLPlatform platform, string caption, Window parent, uint flags) {
+		this(SDLPlatform platform, dstring caption, Window parent, uint flags) {
 			_platform = platform;
 			_caption = caption;
 			debug Log.d("Creating SDL window");
@@ -98,7 +98,7 @@ version(USE_SDL) {
                 if (_enableOpengl)
                     windowFlags |= SDL_WINDOW_OPENGL;
             }
-			_win = SDL_CreateWindow(_caption.toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
+			_win = SDL_CreateWindow(toUTF8(_caption).toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
                                     700, 500, 
                                     windowFlags);
             version(USE_OPENGL) {
@@ -108,7 +108,7 @@ version(USE_SDL) {
                         _enableOpengl = false;
                         // recreate w/o OpenGL
                         windowFlags &= ~SDL_WINDOW_OPENGL;
-                        _win = SDL_CreateWindow(_caption.toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
+						_win = SDL_CreateWindow(toUTF8(_caption).toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
                                                 700, 500, 
                                                 windowFlags);
                     }
@@ -166,15 +166,16 @@ version(USE_SDL) {
 		}
 
 
-		protected string _caption;
+		protected dstring _caption;
 
-		override @property string windowCaption() {
+		override @property dstring windowCaption() {
 			return _caption;
 		}
 
-		override @property void windowCaption(string caption) {
+		override @property void windowCaption(dstring caption) {
 			_caption = caption;
-			SDL_SetWindowTitle(_win, _caption.toStringz);
+			if (_win)
+				SDL_SetWindowTitle(_win, toUTF8(_caption).toStringz);
 		}
 
 		/// after drawing, call to schedule redraw if animation is active
@@ -711,7 +712,7 @@ version(USE_SDL) {
 
 		}
 
-		override Window createWindow(string windowCaption, Window parent, uint flags = WindowFlag.Resizable) {
+		override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable) {
 			SDLWindow res = new SDLWindow(this, windowCaption, parent, flags);
 			_windowMap[res.windowId] = res;
 			return res;
