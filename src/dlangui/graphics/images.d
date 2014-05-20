@@ -112,6 +112,7 @@ static if (USE_FREEIMAGE) {
 		//get the image width and height, and size per pixel
 		int width = FreeImage_GetWidth(dib);
 		int height = FreeImage_GetHeight(dib);
+        int stride = FreeImage_GetLine(dib);
 		int bpp = FreeImage_GetBPP(dib);
 		int pixelSize = (bpp + 7)/8;
 		FREE_IMAGE_COLOR_TYPE colorType = FreeImage_GetColorType(dib);
@@ -125,7 +126,7 @@ static if (USE_FREEIMAGE) {
             transparencyCount = FreeImage_GetTransparencyCount(dib);
             transparencyTable = FreeImage_GetTransparencyTable(dib);
         }
-		int size = width*height*pixelSize;
+		//int size = stride*height;
 
 		ColorDrawBuf res = new ColorDrawBuf(width, height);
 
@@ -135,7 +136,7 @@ static if (USE_FREEIMAGE) {
 		uint r, g, b, a;
 		for( int i = 0, ii = height-1; i < height ; ++i, --ii ) {
 			dst = res.scanLine(i);
-			src = data + (ii * width) * pixelSize;
+			src = data + ii * stride;
 			for( int j = 0; j < width; ++j, ++dst, src += pixelSize ) {
                 if (colorType == FIC_PALETTE) {
                     ubyte index = src[0];

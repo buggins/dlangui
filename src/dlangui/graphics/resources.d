@@ -297,8 +297,22 @@ class ImageDrawable : Drawable {
 			tiley0 %= imgdy;
 			if (tiley0 < 0)
 				tiley0 += imgdy;
-
-			buf.drawRescaled(rc, _image.get, Rect(0, 0, _image.width, _image.height));
+            int xx0 = rc.left;
+            int yy0 = rc.top;
+            if (tilex0)
+                xx0 -= imgdx - tilex0;
+            if (tiley0)
+                yy0 -= imgdy - tiley0;
+            for (int yy = yy0; yy < rc.bottom; yy += imgdy) {
+                for (int xx = xx0; xx < rc.right; xx += imgdx) {
+                    Rect dst = Rect(xx, yy, xx + imgdx, yy + imgdy);
+                    Rect src = Rect(0, 0, imgdx, imgdy);
+                    if (dst.intersects(rc))
+                        buf.drawFragment(dst.left, dst.top, _image.get, src);
+                }
+            }
+            buf.drawImage(rc.left + 30, rc.top + 30, _image);
+            buf.drawFrame(Rect(rc.left + 30, rc.top + 30, rc.left + imgdx + 30, rc.top + imgdy + 30), 0x80800000, Rect(2,2,2,2));
 		} else {
             // rescaled or normal
             if (rc.width != _image.width || rc.height != _image.height)

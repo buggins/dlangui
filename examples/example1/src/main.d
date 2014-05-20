@@ -115,6 +115,8 @@ extern (C) int UIAppMain(string[] args) {
 	// load theme from file "theme_default.xml"
 	Platform.instance.uiTheme = "theme_default";
 
+    //drawableCache.get("tx_fabric.tiled");
+
     // create window
     Window window = Platform.instance.createWindow("My Window", null);
 	
