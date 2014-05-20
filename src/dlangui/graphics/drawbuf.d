@@ -823,9 +823,21 @@ class GrayDrawBuf : DrawBuf {
 
 class ColorDrawBuf : ColorDrawBufBase {
     uint[] _buf;
+	/// create ARGB8888 draw buf of specified width and height
     this(int width, int height) {
         resize(width, height);
     }
+	/// create copy of ColorDrawBuf
+	this(ColorDrawBuf v) {
+		this(v.width, v.height);
+		_buf.length = v._buf.length;
+		for (int i = 0; i < _buf.length; i++)
+			_buf[i] = v._buf[i];
+	}
+	void invertAlpha() {
+		foreach(pixel; _buf)
+			pixel ^= 0xFF000000;
+	}
     override uint * scanLine(int y) {
         if (y >= 0 && y < _dy)
             return _buf.ptr + _dx * y;

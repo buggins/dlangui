@@ -87,13 +87,14 @@ version(USE_SDL) {
 		protected uint _flags;
 		bool create(uint flags) {
 			_flags = flags;
-			uint windowFlags = 0;
+			uint windowFlags = SDL_WINDOW_HIDDEN;
 			if (flags & WindowFlag.Resizable)
 				windowFlags |= SDL_WINDOW_RESIZABLE;
 			if (flags & WindowFlag.Fullscreen)
 				windowFlags |= SDL_WINDOW_FULLSCREEN;
-			if (flags & WindowFlag.Modal)
-				windowFlags |= SDL_WINDOW_INPUT_GRABBED;
+			// TODO: implement modal behavior
+			//if (flags & WindowFlag.Modal)
+			//	windowFlags |= SDL_WINDOW_INPUT_GRABBED;
 			version(USE_OPENGL) {
                 if (_enableOpengl)
                     windowFlags |= SDL_WINDOW_OPENGL;
@@ -176,6 +177,27 @@ version(USE_SDL) {
 			_caption = caption;
 			if (_win)
 				SDL_SetWindowTitle(_win, toUTF8(_caption).toStringz);
+		}
+
+		/// sets window icon
+		@property override void windowIcon(DrawBufRef buf) {
+			ColorDrawBuf icon = cast(ColorDrawBuf)buf.get;
+			if (!icon) {
+				Log.e("Trying to set null icon for window");
+				return;
+			}
+			icon = new ColorDrawBuf(icon);
+			icon.invertAlpha();
+			SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(icon.scanLine(0), icon.width, icon.height, 32, icon.width * 4, 0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
+			if (surface) {
+				// The icon is attached to the window pointer
+				SDL_SetWindowIcon(_win, surface); 
+				// ...and the surface containing the icon pixel data is no longer required.
+				SDL_FreeSurface(surface);
+			} else {
+				Log.e("failed to set window icon");
+			}
+			destroy(icon);
 		}
 
 		/// after drawing, call to schedule redraw if animation is active

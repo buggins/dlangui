@@ -886,6 +886,14 @@ class DrawableCache {
         Log.w("resource ", id, " is not found");
         return null;
     }
+	/// get image (DrawBuf) from imageCache by resource id
+	DrawBufRef getImage(string id) {
+		DrawBufRef res;
+		string fname = findResource(id);
+		if (fname.endsWith(".png") || fname.endsWith(".jpg"))
+			return imageCache.get(fname);
+		return res;
+	}
     this() {
         debug Log.i("Creating DrawableCache");
     }

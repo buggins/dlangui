@@ -469,6 +469,7 @@ extern (C) int UIAppMain(string[] args) {
 	} else {
 	    window.mainWidget = (new Button()).text("sample button");
 	}
+	window.windowIcon = drawableCache.getImage("dlangui-logo1");
     window.show();
     //window.windowCaption = "New Window Caption";
     // run message loop

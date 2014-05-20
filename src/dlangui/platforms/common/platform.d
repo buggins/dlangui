@@ -69,6 +69,9 @@ class Window {
     abstract @property dstring windowCaption();
 	/// sets window caption
     abstract @property void windowCaption(dstring caption);
+	/// sets window icon
+	abstract @property void windowIcon(DrawBufRef icon);
+
 	/// requests layout for main widget and popups
 	void requestLayout() {
 		if (_mainWidget)
