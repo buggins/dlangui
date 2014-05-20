@@ -49,12 +49,12 @@ Vadim Lopatin, coolreader.org@gmail.com<br><br>
 <dd><u>Window</u> abstraction layer. Widgets can be shown only inside window.
 <br><br>
 
-<dl><dt><big><a name="Window.windowCaption"></a>abstract @property string <u>windowCaption</u>();
+<dl><dt><big><a name="Window.windowCaption"></a>abstract @property dstring <u>windowCaption</u>();
 </big></dt>
 <dd>returns window caption<br><br>
 
 </dd>
-<dt><big><a name="Window.windowCaption"></a>abstract @property void <u>windowCaption</u>(string <i>caption</i>);
+<dt><big><a name="Window.windowCaption"></a>abstract @property void <u>windowCaption</u>(dstring <i>caption</i>);
 </big></dt>
 <dd>sets window <i>caption</i><br><br>
 
@@ -157,14 +157,31 @@ Vadim Lopatin, coolreader.org@gmail.com<br><br>
 <br><br>
 Represents application.<br><br>
 
-<dl><dt><big><a name="Platform.createWindow"></a>abstract Window <u>createWindow</u>(string <i>windowCaption</i>, Window <i>parent</i>, uint <i>flags</i> = WindowFlag.Resizable);
+<dl><dt><big><a name="Platform.createWindow"></a>abstract Window <u>createWindow</u>(dstring <i>windowCaption</i>, Window <i>parent</i>, uint <i>flags</i> = WindowFlag.Resizable);
 </big></dt>
-<dd>create window<br><br>
+<dd>create window
+<br><br>
+<b>Args:</b><br>
+<i>windowCaption</i> = window caption text
+ 		<i>parent</i> = <i>parent</i> Window, or <b>null</b> if no <i>parent</i>
+ 		<i>flags</i> = WindowFlag bit set, combination of Resizable, Modal, Fullscreen
+<br><br>
+
+ Window w/o Resizable nor Fullscreen will be created with size based on measurement of its content widget<br><br>
 
 </dd>
 <dt><big><a name="Platform.closeWindow"></a>abstract void <u>closeWindow</u>(Window <i>w</i>);
 </big></dt>
-<dd>close window<br><br>
+<dd>close window
+<br><br>
+Closes window earlier created with createWindow()<br><br>
+
+</dd>
+<dt><big><a name="Platform.enterMessageLoop"></a>abstract int <u>enterMessageLoop</u>();
+</big></dt>
+<dd>Starts application message loop.
+<br><br>
+When returned from this method, application is shutting down.<br><br>
 
 </dd>
 <dt><big><a name="Platform.getClipboardText"></a>abstract dstring <u>getClipboardText</u>(bool <i>mouseBuffer</i> = false);
@@ -189,12 +206,12 @@ Represents application.<br><br>
 </dd>
 <dt><big><a name="Platform.uiLanguage"></a>@property Platform <u>uiLanguage</u>(string <i>langCode</i>);
 </big></dt>
-<dd>set UI language (e.g. "en", "fr", "ru")<br><br>
+<dd>set UI language (e.g. "en", "fr", "ru") - will relayout content of all windows if language has been changed<br><br>
 
 </dd>
 <dt><big><a name="Platform.uiTheme"></a>@property Platform <u>uiTheme</u>(string <i>themeResourceId</i>);
 </big></dt>
-<dd>sets application UI theme<br><br>
+<dd>sets application UI theme - will relayout content of all windows if theme has been changed<br><br>
 
 </dd>
 <dt><big><a name="Platform.resourceDirs"></a>@property string[] <u>resourceDirs</u>();

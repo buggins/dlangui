@@ -79,7 +79,12 @@ Vadim Lopatin, coolreader.org@gmail.com<br><br>
 </big></dt>
 <dd>tab header - tab labels, with optional More button<br><br>
 
-<dl><dt><big><a name="TabControl.tabCount"></a>const @property int <u>tabCount</u>();
+<dl><dt><big><a name="TabControl.onTabChangedListener"></a>Signal!TabHandler <u>onTabChangedListener</u>;
+</big></dt>
+<dd>signal of tab change (e.g. by clicking on tab header)<br><br>
+
+</dd>
+<dt><big><a name="TabControl.tabCount"></a>const @property int <u>tabCount</u>();
 </big></dt>
 <dd>returns tab count<br><br>
 
@@ -150,6 +155,11 @@ Vadim Lopatin, coolreader.org@gmail.com<br><br>
 <dd>set new control widget<br><br>
 
 </dd>
+<dt><big><a name="TabHost.onTabChangedListener"></a>Signal!TabHandler <u>onTabChangedListener</u>;
+</big></dt>
+<dd>signal of tab change (e.g. by clicking on tab header)<br><br>
+
+</dd>
 <dt><big><a name="TabHost.removeTab"></a>TabHost <u>removeTab</u>(string <i>id</i>);
 </big></dt>
 <dd>remove tab<br><br>
@@ -176,7 +186,12 @@ Vadim Lopatin, coolreader.org@gmail.com<br><br>
 </big></dt>
 <dd>compound widget - contains from TabControl widget (tabs header) and TabHost (content pages)<br><br>
 
-<dl><dt><big><a name="TabWidget.addTab"></a>TabWidget <u>addTab</u>(Widget <i>widget</i>, string <i>labelResourceId</i>, string <i>iconId</i> = null, bool <i>enableCloseButton</i> = false);
+<dl><dt><big><a name="TabWidget.onTabChangedListener"></a>Signal!TabHandler <u>onTabChangedListener</u>;
+</big></dt>
+<dd>signal of tab change (e.g. by clicking on tab header)<br><br>
+
+</dd>
+<dt><big><a name="TabWidget.addTab"></a>TabWidget <u>addTab</u>(Widget <i>widget</i>, string <i>labelResourceId</i>, string <i>iconId</i> = null, bool <i>enableCloseButton</i> = false);
 </big></dt>
 <dd>add new tab by id and label string resource id<br><br>
 
@@ -194,6 +209,21 @@ Vadim Lopatin, coolreader.org@gmail.com<br><br>
 <dt><big><a name="TabWidget.selectTab"></a>void <u>selectTab</u>(string <i>ID</i>);
 </big></dt>
 <dd>select tab<br><br>
+
+</dd>
+<dt><big><a name="TabWidget.tab"></a>TabItem <u>tab</u>(int <i>index</i>);
+</big></dt>
+<dd>returns <u>tab</u> item by id (<b>null</b> if <i>index</i> out of range)<br><br>
+
+</dd>
+<dt><big><a name="TabWidget.tab"></a>TabItem <u>tab</u>(string <i>id</i>);
+</big></dt>
+<dd>returns <u>tab</u> item by <i>id</i> (<b>null</b> if not found)<br><br>
+
+</dd>
+<dt><big><a name="TabWidget.tabIndex"></a>int <u>tabIndex</u>(string <i>id</i>);
+</big></dt>
+<dd>get tab index by tab <i>id</i> (-1 if not found)<br><br>
 
 </dd>
 </dl>
