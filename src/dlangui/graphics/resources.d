@@ -311,8 +311,6 @@ class ImageDrawable : Drawable {
                         buf.drawFragment(dst.left, dst.top, _image.get, src);
                 }
             }
-            buf.drawImage(rc.left + 30, rc.top + 30, _image);
-            buf.drawFrame(Rect(rc.left + 30, rc.top + 30, rc.left + imgdx + 30, rc.top + imgdy + 30), 0x80800000, Rect(2,2,2,2));
 		} else {
             // rescaled or normal
             if (rc.width != _image.width || rc.height != _image.height)

@@ -823,7 +823,7 @@ version(USE_SDL) {
 									Log.d("SDL_WINDOWEVENT_ENTER");
                                     break;
                                 case SDL_WINDOWEVENT_LEAVE:
-                                    Log.d("SDL_WINDOWEVENT_MAXIMIZED");
+									Log.d("SDL_WINDOWEVENT_LEAVE");
                                     break;
                                 case SDL_WINDOWEVENT_FOCUS_GAINED:
 									Log.d("SDL_WINDOWEVENT_FOCUS_GAINED");

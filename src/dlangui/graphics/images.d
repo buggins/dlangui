@@ -112,9 +112,10 @@ static if (USE_FREEIMAGE) {
 		//get the image width and height, and size per pixel
 		int width = FreeImage_GetWidth(dib);
 		int height = FreeImage_GetHeight(dib);
-        int stride = FreeImage_GetLine(dib);
+        int stride = FreeImage_GetPitch(dib);
 		int bpp = FreeImage_GetBPP(dib);
 		int pixelSize = (bpp + 7)/8;
+		//Log.d("image ", width, "x", height, " stride ", stride, "(", stride / pixelSize, ") bpp ", bpp, " pixelSize ", pixelSize);
 		FREE_IMAGE_COLOR_TYPE colorType = FreeImage_GetColorType(dib);
         int transparentIndex = 0;
         int transparencyCount = 0;
