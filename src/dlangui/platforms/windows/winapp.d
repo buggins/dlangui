@@ -699,7 +699,11 @@ private __gshared Win32Platform w32platform;
 int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int iCmdShow)
 {
 	setFileLogger(std.stdio.File("ui.log", "w"));
-	setLogLevel(LogLevel.Trace);
+	debug {
+        setLogLevel(LogLevel.Trace);
+    } else {
+        setLogLevel(LogLevel.Info);
+    }
     Log.d("myWinMain()");
     string basePath = exePath();
     Log.i("Current executable: ", exePath());
@@ -720,7 +724,7 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
 
 
     /// testing freetype font manager
-    if (false) {
+    static if (false) {
         import dlangui.graphics.ftfonts;
         import win32.shlobj;
         FreeTypeFontManager ftfontMan = new FreeTypeFontManager();
