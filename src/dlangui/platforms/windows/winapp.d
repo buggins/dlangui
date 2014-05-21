@@ -325,16 +325,38 @@ class Win32Window : Window {
 		_platform.closeWindow(this);
 	}
 
+    HICON _icon;
+
 	/// sets window icon
 	@property override void windowIcon(DrawBufRef buf) {
+        if (_icon)
+            DestroyIcon(_icon);
+        _icon = null;
 		ColorDrawBuf icon = cast(ColorDrawBuf)buf.get;
 		if (!icon) {
 			Log.e("Trying to set null icon for window");
 			return;
 		}
-		//icon = new ColorDrawBuf(icon);
-		//icon.invertAlpha();
-		//destroy(icon);
+        Win32ColorDrawBuf resizedicon = new Win32ColorDrawBuf(icon, 32, 32);
+        resizedicon.invertAlpha();
+        ICONINFO ii;
+        HBITMAP mask = resizedicon.createTransparencyBitmap();
+        HBITMAP color = resizedicon.destoryLeavingBitmap();
+        ii.fIcon = TRUE;
+        ii.xHotspot = 0;
+        ii.yHotspot = 0;
+        ii.hbmMask = mask;
+        ii.hbmColor = color;
+        _icon = CreateIconIndirect(&ii);
+        if (_icon) {
+            SendMessage(_hwnd, WM_SETICON, ICON_SMALL, cast(int)_icon);
+            SendMessage(_hwnd, WM_SETICON, ICON_BIG, cast(int)_icon);
+        } else {
+            Log.e("failed to create icon");
+        }
+        if (mask)
+            DeleteObject(mask);
+        DeleteObject(color);
 	}
 
     private void paintUsingGDI() {

@@ -830,9 +830,15 @@ class ColorDrawBuf : ColorDrawBufBase {
 	/// create copy of ColorDrawBuf
 	this(ColorDrawBuf v) {
 		this(v.width, v.height);
-		_buf.length = v._buf.length;
+		//_buf.length = v._buf.length;
 		for (int i = 0; i < _buf.length; i++)
 			_buf[i] = v._buf[i];
+	}
+	/// create resized copy of ColorDrawBuf
+	this(ColorDrawBuf v, int dx, int dy) {
+		this(dx, dy);
+        fill(0xFFFFFFFF);
+        drawRescaled(Rect(0, 0, dx, dy), v, Rect(0, 0, v.width, v.height));
 	}
 	void invertAlpha() {
 		foreach(pixel; _buf)
