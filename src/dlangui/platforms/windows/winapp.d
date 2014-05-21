@@ -134,10 +134,10 @@ class Win32Window : Window {
         HGLRC _hGLRC; // opengl context
         HPALETTE _hPalette;
     }
-    string _caption;
+    dstring _caption;
     Win32ColorDrawBuf _drawbuf;
     bool useOpengl;
-    this(Win32Platform platform, string windowCaption, Window parent) {
+    this(Win32Platform platform, dstring windowCaption, Window parent, uint flags) {
         _platform = platform;
         _caption = windowCaption;
         _hwnd = CreateWindow(toUTF16z(WIN_CLASS_NAME),      // window class name
@@ -277,13 +277,16 @@ class Win32Window : Window {
         ShowWindow(_hwnd, _cmdShow);
         //UpdateWindow(_hwnd);
     }
-    override @property string windowCaption() {
-        return _caption;
-    }
-    override @property void windowCaption(string caption) {
-        _caption = caption;
-        SetWindowTextW(_hwnd, toUTF16z(_caption));
-    }
+
+	override @property dstring windowCaption() {
+		return _caption;
+	}
+
+	override @property void windowCaption(dstring caption) {
+		_caption = caption;
+		if (_hwnd)
+			SetWindowTextW(_hwnd, toUTF16z(_caption));
+	}
     void onCreate() {
         Log.d("Window onCreate");
         _platform.onWindowCreated(_hwnd, this);
@@ -292,6 +295,24 @@ class Win32Window : Window {
         Log.d("Window onDestroy");
         _platform.onWindowDestroyed(_hwnd, this);
     }
+
+	/// close window
+	override void close() {
+		Log.d("Window.close()");
+		_platform.closeWindow(this);
+	}
+
+	/// sets window icon
+	@property override void windowIcon(DrawBufRef buf) {
+		ColorDrawBuf icon = cast(ColorDrawBuf)buf.get;
+		if (!icon) {
+			Log.e("Trying to set null icon for window");
+			return;
+		}
+		//icon = new ColorDrawBuf(icon);
+		//icon.invertAlpha();
+		//destroy(icon);
+	}
 
     private void paintUsingGDI() {
         PAINTSTRUCT ps;
@@ -528,9 +549,25 @@ class Win32Platform : Platform {
             return _windowMap[cast(ulong)hwnd];
         return null;
     }
-    override Window createWindow(string windowCaption, Window parent) {
-        return new Win32Window(this, windowCaption, parent);
+    override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable) {
+        return new Win32Window(this, windowCaption, parent, flags);
     }
+
+	/// calls request layout for all windows
+	override void requestLayout() {
+		foreach(w; _windowMap) {
+			w.requestLayout();
+			w.invalidate();
+		}
+	}
+
+	Win32Window _windowToClose;
+
+	/// close window
+	override void closeWindow(Window w) {
+		Win32Window window = cast(Win32Window)w;
+		_windowToClose = window;
+	}
 
     /// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
     override dstring getClipboardText(bool mouseBuffer = false) {
@@ -634,7 +671,7 @@ string[] splitCmdLine(string line) {
     return res;
 }
 
-private __gshared Win32Platform platform;
+private __gshared Win32Platform w32platform;
 
 int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int iCmdShow)
 {
@@ -651,12 +688,12 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
     _cmdShow = iCmdShow;
     _hInstance = hInstance;
 
-    platform = new Win32Platform();
-    if (!platform.registerWndClass()) {
+    w32platform = new Win32Platform();
+    if (!w32platform.registerWndClass()) {
         MessageBoxA(null, "This program requires Windows NT!", "DLANGUI App".toStringz, MB_ICONERROR);
         return 0;
     }
-    Platform.setInstance(platform);
+    Platform.setInstance(w32platform);
 
 
     /// testing freetype font manager
@@ -734,7 +771,7 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 
     void * p = cast(void*)GetWindowLongPtr(hwnd, GWLP_USERDATA);
     Win32Window windowParam = p is null ? null : cast(Win32Window)(p);
-    Win32Window window = platform.getWindow(hwnd);
+    Win32Window window = w32platform.getWindow(hwnd);
     if (windowParam !is null && window !is null)
         assert(window is windowParam);
     if (window is null && windowParam !is null) {
@@ -756,7 +793,7 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_DESTROY:
             if (window !is null)
                 window.onDestroy();
-            if (platform.windowCount == 0)
+            if (w32platform.windowCount == 0)
                 PostQuitMessage(0);
             return 0;
         case WM_WINDOWPOSCHANGED:
