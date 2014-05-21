@@ -137,17 +137,28 @@ class Win32Window : Window {
     dstring _caption;
     Win32ColorDrawBuf _drawbuf;
     bool useOpengl;
+    uint _flags;
     this(Win32Platform platform, dstring windowCaption, Window parent, uint flags) {
+        Win32Window w32parent = cast(Win32Window)parent;
+        HWND parenthwnd = w32parent ? w32parent._hwnd : null;
         _platform = platform;
         _caption = windowCaption;
+        _flags = flags;
+        uint ws = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+        if (flags & WindowFlag.Resizable)
+            ws |= WS_OVERLAPPEDWINDOW;
+        else
+            ws |= WS_OVERLAPPED | WS_CAPTION | WS_CAPTION | WS_BORDER | WS_SYSMENU;
+        //if (flags & WindowFlag.Fullscreen)
+        //    ws |= SDL_WINDOW_FULLSCREEN;
         _hwnd = CreateWindow(toUTF16z(WIN_CLASS_NAME),      // window class name
                             toUTF16z(windowCaption),  // window caption
-                            WS_OVERLAPPEDWINDOW | WS_CLIPCHILDREN | WS_CLIPSIBLINGS,  // window style
+                            ws,  // window style
                             CW_USEDEFAULT,        // initial x position
                             CW_USEDEFAULT,        // initial y position
                             CW_USEDEFAULT,        // initial x size
                             CW_USEDEFAULT,        // initial y size
-                            null,                 // parent window handle
+                            parenthwnd,                 // parent window handle
                             null,                 // window menu handle
                             _hInstance,           // program instance handle
                             cast(void*)this);                // creation parameters
@@ -274,7 +285,19 @@ class Win32Window : Window {
         return _drawbuf;
     }
     override void show() {
-        ShowWindow(_hwnd, _cmdShow);
+        ReleaseCapture();
+        if (!(_flags & WindowFlag.Resizable) && _mainWidget) {
+            _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+            int dx = _mainWidget.measuredWidth;
+            int dy = _mainWidget.measuredHeight;
+            dx += 2 * GetSystemMetrics(SM_CXDLGFRAME);
+            dy += GetSystemMetrics(SM_CYCAPTION) + 2 * GetSystemMetrics(SM_CYDLGFRAME);
+            // TODO: ensure size less than screen size
+            SetWindowPos(_hwnd, HWND_TOP, 0, 0, dx, dy, SWP_NOMOVE| SWP_SHOWWINDOW);
+        } else {
+            ShowWindow(_hwnd, SW_SHOWNORMAL);
+        }
+        SetFocus(_hwnd);
         //UpdateWindow(_hwnd);
     }
 
@@ -864,7 +887,13 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             //Log.d("Unhandled message ", message);
             break;
     }
-
+    if (w32platform._windowToClose) {
+        Win32Window wnd = w32platform._windowToClose;
+        w32platform._windowToClose = null;
+        destroy(wnd);
+        //HWND w = w32platform._windowToClose._hwnd;
+        //CloseWindow(w);
+    }
     return DefWindowProc(hwnd, message, wParam, lParam);
 }
 

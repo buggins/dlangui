@@ -235,7 +235,7 @@ extern (C) int UIAppMain(string[] args) {
 		MenuItem aboutItem = new MenuItem(new Action(41, "MENU_HELP_ABOUT"));
         helpItem.add(aboutItem);
 		aboutItem.onMenuItemClick = delegate(MenuItem item) {
-			Window wnd = Platform.instance.createWindow("About...", null, WindowFlag.Modal);
+			Window wnd = Platform.instance.createWindow("About...", window, WindowFlag.Modal);
 			wnd.mainWidget = createAboutWidget();
 			wnd.show();
 			return true;
