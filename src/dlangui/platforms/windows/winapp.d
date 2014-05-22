@@ -793,7 +793,7 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
 
         // just to check OpenGL context
         Log.i("Trying to setup OpenGL context");
-        Win32Window tmpWindow = new Win32Window(platform, "", null);
+        Win32Window tmpWindow = new Win32Window(w32platform, ""d, null, 0);
         destroy(tmpWindow);
         if (openglEnabled)
             Log.i("OpenGL support is enabled");
