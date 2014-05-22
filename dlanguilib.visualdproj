@@ -66,7 +66,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>Unicode USE_SDL USE_OPENGL</versionids>
+  <versionids>Unicode</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>1</createImplib>
@@ -315,6 +315,10 @@
      <File path="src\dlangui\core\logger.d" />
      <File path="src\dlangui\core\signals.d" />
      <File path="src\dlangui\core\types.d" />
+    </Folder>
+    <Folder name="dialogs">
+     <File path="src\dlangui\dialogs\dialog.d" />
+     <File path="src\dlangui\dialogs\filedlg.d" />
     </Folder>
     <Folder name="graphics">
      <File path="src\dlangui\graphics\drawbuf.d" />
