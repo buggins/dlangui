@@ -224,7 +224,7 @@ class UIStringList {
             import std.stream;
             import std.file;
             try {
-                Log.d("Loading string resources from file ", filename);
+                debug Log.d("Loading string resources from file ", filename);
                 if (!exists(filename) || !isFile(filename)) {
                     Log.e("File does not exist: ", filename);
                     continue;
