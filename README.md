@@ -3,6 +3,8 @@ Dlang UI
 
 GUI for D programming language, written in D.
 
+Project page: http://buggins.github.io/dlangui/
+
 Alpha stage of development.
 
 * Crossplatform (Win32 and Linux are supported in current version); can use SDL2 as a backend.
@@ -15,7 +17,6 @@ Alpha stage of development.
 * Almost ready for 2D games development
 * Goal: provide set of widgets suitable for building of IDE.
 * Non thread safe
-
 
 
 Widgets
