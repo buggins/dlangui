@@ -22,6 +22,10 @@
 			"targetPath": "lib",
 			"targetType": "staticLibrary",
 
+			"sourceFiles": [
+				"project.ddoc"
+			],
+
 			"sourceFiles-windows": [
 				"3rdparty/win32/basetsd.d",
 				"3rdparty/win32/basetyps.d",

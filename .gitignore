@@ -1,6 +1,7 @@
 Debug
 Release
 Unittest
+docs
 ui.log
 obj
 *.suo
@@ -8,3 +9,4 @@ Thumbs.db
 .dub
 bin
 *.obj
+*.~*

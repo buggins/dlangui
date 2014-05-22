@@ -1,8 +1,6 @@
 // Written in the D programming language.
 
 /**
-DLANGUI library.
-
 This module declares basic data types for usage in dlangui library.
 
 Synopsis:

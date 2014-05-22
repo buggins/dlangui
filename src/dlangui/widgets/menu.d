@@ -1,8 +1,6 @@
 // Written in the D programming language.
 
 /**
-DLANGUI library.
-
 This module contains menu widgets implementation.
 
 MenuItem - menu item properties container - to hold hierarchy of menu.

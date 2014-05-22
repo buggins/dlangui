@@ -45,6 +45,8 @@
         <String>USE_OPENGL</String>
       </VersionIds>
     </VersionIds>
+    <ExtraCompilerArguments>project.ddoc -c -Dddocs</ExtraCompilerArguments>
+    <DDocDirectory>docs</DDocDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release</OutputPath>
@@ -97,5 +99,7 @@
     <Compile Include="src\dlangui\core\stdaction.d" />
     <Compile Include="src\dlangui\dialogs\dialog.d" />
     <Compile Include="src\dlangui\dialogs\filedlg.d" />
+    <Compile Include="src\index.d" />
+    <Compile Include="src\api.d" />
   </ItemGroup>
 </Project>

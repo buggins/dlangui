@@ -1,8 +1,6 @@
 // Written in the D programming language.
 
 /**
-DLANGUI library.
-
 This module contains declaration of themes and styles implementation.
 
 Style - style container

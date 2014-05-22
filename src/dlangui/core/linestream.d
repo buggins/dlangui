@@ -1,8 +1,6 @@
 // Written in the D programming language.
 
 /**
-DLANGUI library.
-
 This module contains text file reader implementation.
 
 Support utf8, utf16, utf32 be and le encodings, and line endings - according to D language source file specification.

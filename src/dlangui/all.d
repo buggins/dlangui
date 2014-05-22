@@ -1,8 +1,6 @@
 // Written in the D programming language.
 
 /**
-DLANGUI library.
-
 This module is just to simplify import of most useful DLANGUI modules.
 
 Synopsis:
@@ -23,12 +21,11 @@ extern (C) int UIAppMain(string[] args) {
     ];
 
     // setup resource directories - will use only existing directories
-    drawableCache.setResourcePaths(resourceDirs);
-
-    // setup i18n - look for i18n directory inside one of passed directories
-    i18n.findTranslationsDir(resourceDirs);
+	Platform.instance.resourceDirs = resourceDirs;
     // select translation file - for english language
-    i18n.load("en.ini"); //"ru.ini", "en.ini"
+	Platform.instance.uiLanguage = "en";
+	// load theme from file "theme_default.xml"
+	Platform.instance.uiTheme = "theme_default";
 
     // create window
     Window window = Platform.instance.createWindow("My Window", null);

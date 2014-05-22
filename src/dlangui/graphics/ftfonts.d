@@ -1,12 +1,7 @@
 // Written in the D programming language.
 
 /**
-DLANGUI library.
-
 This file contains FontManager implementation based on FreeType library.
-
-
-
 
 Copyright: Vadim Lopatin, 2014
 License:   Boost License 1.0

@@ -1,8 +1,6 @@
 // Written in the D programming language.
 
 /**
-DLANGUI library.
-
 This module contains definition of signals / listeners.
 
 Similar to std.signals.

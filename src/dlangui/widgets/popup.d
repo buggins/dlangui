@@ -1,8 +1,6 @@
 // Written in the D programming language.
 
 /**
-DLANGUI library.
-
 This module contains popup widgets implementation.
 
 Popups appear above other widgets inside window.

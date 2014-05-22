@@ -1,8 +1,6 @@
 // Written in the D programming language.
 
 /**
-DLANGUI library.
-
 This module contains OpenGL access layer.
 
 To enable OpenGL support, build with version(USE_OPENGL);

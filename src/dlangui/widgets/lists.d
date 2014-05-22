@@ -1,8 +1,6 @@
 // Written in the D programming language.
 
 /**
-DLANGUI library.
-
 This module contains list widgets implementation.
 
 Similar to lists implementation in Android UI API.

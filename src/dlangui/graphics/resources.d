@@ -1,8 +1,6 @@
 // Written in the D programming language.
 
 /**
-DLANGUI library.
-
 This module contains resource management and drawables implementation.
 
 imageCache is RAM cache of decoded images (as DrawBuf).
