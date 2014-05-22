@@ -1,8 +1,6 @@
 // Written in the D programming language.
 
 /**
-DLANGUI library.
-
 This module contains FileDialog implementation.
 
 Can show dialog for open / save.

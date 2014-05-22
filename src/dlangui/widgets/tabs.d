@@ -1,8 +1,6 @@
 // Written in the D programming language.
 
 /**
-DLANGUI library.
-
 This module contains declaration of tabbed view controls.
 
 TabItemWidget - single tab header in tab control

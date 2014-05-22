@@ -1,8 +1,6 @@
 // Written in the D programming language.
 
 /**
-DLANGUI library.
-
 This module contains implementation of SDL2 based backend for dlang library.
 
 

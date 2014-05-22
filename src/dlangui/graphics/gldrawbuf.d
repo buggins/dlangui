@@ -1,8 +1,6 @@
 // Written in the D programming language.
 
 /**
-DLANGUI library.
-
 This module contains opengl based drawing buffer implementation.
 
 To enable OpenGL support, build with version(USE_OPENGL);

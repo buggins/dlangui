@@ -1,8 +1,6 @@
 // Written in the D programming language.
 
 /**
-DLANGUI library.
-
 This module contains common layouts implementations.
 
 Layouts are similar to the same in Android.

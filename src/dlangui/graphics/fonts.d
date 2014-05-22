@@ -1,8 +1,6 @@
 // Written in the D programming language.
 
 /**
-DLANGUI library.
-
 This module contains base fonts access interface and common implementation.
 
 Font - base class for fonts.

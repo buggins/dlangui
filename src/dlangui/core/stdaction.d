@@ -1,8 +1,6 @@
 // Written in the D programming language.
 
 /**
-DLANGUI library.
-
 Definition of standard actions commonly used in dialogs and controls.
 
 Synopsis:

@@ -1,8 +1,6 @@
 // Written in the D programming language.
 
 /**
-DLANGUI library.
-
 This module contains internationalization support implementation.
 
 Translation files contain of simple key=value pair lines.

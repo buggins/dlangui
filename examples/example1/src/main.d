@@ -1,3 +1,18 @@
+// Written in the D programming language.
+
+/**
+This app is a demo for most of DlangUI library features.
+
+Synopsis:
+
+----
+	dub run dlangui:example1
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   Boost License 1.0
+Authors:   Vadim Lopatin, coolreader.org@gmail.com
+ */
 module main;
 
 import dlangui.all;

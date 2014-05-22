@@ -1,8 +1,6 @@
 // Written in the D programming language.
 
 /**
-DLANGUI library.
-
 This module contains declaration of Widget class - base class for all widgets.
 
 Widgets are styleable. Use styleId property to set style to use from current Theme.
