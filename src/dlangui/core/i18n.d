@@ -104,36 +104,41 @@ public __gshared UIStringTranslator i18n = new UIStringTranslator();
 class UIStringTranslator {
     private UIStringList _main;
     private UIStringList _fallback;
-    private string _resourceDir;
+    private string[] _resourceDirs;
     /// get i18n resource directory
-    @property string resourceDir() { return _resourceDir; }
+    @property string[] resourceDirs() { return _resourceDirs; }
     /// set i18n resource directory
-    @property void resourceDir(string dir) { _resourceDir = dir; }
+    @property void resourceDirs(string[] dirs) { _resourceDirs = dirs; }
     /// looks for i18n directory inside one of passed dirs, and uses first found as directory to read i18n files from
-    string findTranslationsDir(string[] dirs ...) {
+    string[] findTranslationsDir(string[] dirs ...) {
+        _resourceDirs.length = 0;
         import std.file;
         foreach(dir; dirs) {
             string path = appendPath(dir, "i18n/");
             if (exists(path) && isDir(path)) {
 				Log.i("Adding i18n dir ", path);
-                _resourceDir = path;
-                return _resourceDir;
+                _resourceDirs ~= path;
             }
         }
-        return null;
+        return _resourceDirs;
     }
 
-    /// convert resource path - зкуpend resource dir if necessary
-    string convertResourcePath(string filename) {
+    /// convert resource path - append resource dir if necessary
+    string[] convertResourcePaths(string filename) {
         if (filename is null)
             return null;
         bool hasPathDelimiters = false;
         foreach(char ch; filename)
             if (ch == '/' || ch == '\\')
                 hasPathDelimiters = true;
-        if (!hasPathDelimiters && _resourceDir !is null)
-            return _resourceDir ~ filename;
-        return filename;
+        string[] res;
+        if (!hasPathDelimiters && _resourceDirs.length) {
+            foreach (dir; _resourceDirs)
+                res ~= dir ~ filename;
+        } else {
+            res ~= filename;
+        }
+        return res;
     }
 
     this() {
@@ -144,9 +149,9 @@ class UIStringTranslator {
     bool load(string mainFilename, string fallbackFilename = null) {
         _main.clear();
         _fallback.clear();
-        bool res = _main.load(convertResourcePath(mainFilename));
+        bool res = _main.load(convertResourcePaths(mainFilename));
         if (fallbackFilename !is null) {
-            res = _fallback.load(convertResourcePath(fallbackFilename)) || res;
+            res = _fallback.load(convertResourcePaths(fallbackFilename)) || res;
         }
         return res;
     }
@@ -213,21 +218,24 @@ class UIStringList {
     }
 
     /// load strings from file (utf8, id=value lines)
-    bool load(string filename) {
-        import std.stream;
-        import std.file;
-        try {
-            Log.d("Loading string resources from file ", filename);
-            if (!exists(filename) || !isFile(filename)) {
-                Log.e("File does not exist: ", filename);
-                return false;
+    bool load(string[] filenames) {
+        bool res = false;
+        foreach(filename; filenames) {
+            import std.stream;
+            import std.file;
+            try {
+                Log.d("Loading string resources from file ", filename);
+                if (!exists(filename) || !isFile(filename)) {
+                    Log.e("File does not exist: ", filename);
+                    continue;
+                }
+	            std.stream.File f = new std.stream.File(filename);
+                scope(exit) { f.close(); }
+                res = load(f) || res;
+            } catch (StreamFileException e) {
+                Log.e("Cannot read string resources from file ", filename);
             }
-	        std.stream.File f = new std.stream.File(filename);
-            scope(exit) { f.close(); }
-            return load(f);
-        } catch (StreamFileException e) {
-            Log.e("Cannot read string resources from file ", filename);
         }
-        return false;
+        return res;
     }
 }

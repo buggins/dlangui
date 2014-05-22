@@ -308,6 +308,7 @@
   <Folder name="src">
    <Folder name="dlangui">
     <Folder name="core">
+     <File path="src\dlangui\core\stdaction.d" />
      <File path="src\dlangui\core\collections.d" />
      <File path="src\dlangui\core\events.d" />
      <File path="src\dlangui\core\i18n.d" />
