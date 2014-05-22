@@ -101,5 +101,6 @@
     <Compile Include="src\dlangui\dialogs\filedlg.d" />
     <Compile Include="src\index.d" />
     <Compile Include="src\api.d" />
+    <Compile Include="src\screenshots.d" />
   </ItemGroup>
 </Project>

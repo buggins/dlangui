@@ -5,7 +5,8 @@ GUI for D programming language, written in D.
 
 Project page: http://buggins.github.io/dlangui/
 
-Alpha stage of development.
+Some screenshots: http://buggins.github.io/dlangui/screenshots.html
+
 
 * Crossplatform (Win32 and Linux are supported in current version); can use SDL2 as a backend.
 * Mostly inspired by Android UI API (layouts, styles, two phase layout, ...)
