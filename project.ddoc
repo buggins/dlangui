@@ -25,7 +25,7 @@ DDOC = <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/h
               <a href="index.html" id="home" class="button"><span>Home</span></a>
               <a href="api.html" id="home" class="button"><span>API Docs</span></a>
               <a href="https://github.com/buggins/dlangui/zipball/master" id="download-zip" class="button"><span>Download .zip</span></a>
-              <a href="https://github.com/buggins/dlangui/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a>
+              <!--a href="https://github.com/buggins/dlangui/tarball/master" id="download-tar-gz" class="button"><span>Download .tar.gz</span></a-->
               <a href="https://github.com/buggins/dlangui" id="view-on-github" class="button"><span>View on GitHub</span></a>
             </section>
 
@@ -45,7 +45,7 @@ DDOC = <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/h
     </html>	
 
 MODULE_TREE	= <ul>
-		<li>dlangui.core</li>
+		<li>dlangui.core
 		<ul>
 			<li><a href="types.html">types</a></li>
 			<li><a href="events.html">events</a></li>
@@ -55,8 +55,8 @@ MODULE_TREE	= <ul>
 			<li><a href="stdaction.html">stdaction</a></li>
 			<li><a href="collections.html">collections</a></li>
 			<li><a href="linestream.html">linestream</a></li>
-		</ul>
-		<li>dlangui.graphics</li>
+		</ul></li>
+		<li>dlangui.graphics
 		<ul>
 			<li><a href="drawbuf.html">drawbuf</a></li>
 			<li><a href="fonts.html">fonts</a></li>
@@ -65,8 +65,8 @@ MODULE_TREE	= <ul>
 			<li><a href="ftfonts.html">ftfonts</a></li>
 			<li><a href="gldrawbuf.html">gldrawbuf</a></li>
 			<li><a href="glsupport.html">glsupport</a></li>
-		</ul>
-		<li>dlangui.widgets</li>
+		</ul></li>
+		<li>dlangui.widgets
 		<ul>
 			<li><a href="widget.html">widget</a></li>
 			<li><a href="styles.html">styles</a></li>
@@ -77,18 +77,18 @@ MODULE_TREE	= <ul>
 			<li><a href="menu.html">menu</a></li>
 			<li><a href="popup.html">popup</a></li>
 			<li><a href="tabs.html">tabs</a></li>
-		</ul>
-		<li>dlangui.dialogs</li>
+		</ul></li>
+		<li>dlangui.dialogs
 		<ul>
 			<li><a href="dialog.html">dialog</a></li>
 			<li><a href="filedlg.html">filedlg</a></li>
-		</ul>
-		<li>dlangui.platforms.common</li>
+		</ul></li>
+		<li>dlangui.platforms.common
 		<ul>
 			<li><a href="platform.html">platform</a></li>
-		</ul>
-		<li>dlangui</li>
+		</ul></li>
+		<li>dlangui
 		<ul>
 			<li><a href="all.html">all</a></li>
-		</ul>
+		</ul></li>
 
