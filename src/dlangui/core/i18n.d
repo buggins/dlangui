@@ -188,7 +188,6 @@ class UIStringList {
     }
     /// load strings from stream
     bool load(std.stream.InputStream stream) {
-        clear();
         dlangui.core.linestream.LineStream lines = dlangui.core.linestream.LineStream.create(stream, "");
         int count = 0;
         for (;;) {
@@ -219,6 +218,7 @@ class UIStringList {
 
     /// load strings from file (utf8, id=value lines)
     bool load(string[] filenames) {
+        clear();
         bool res = false;
         foreach(filename; filenames) {
             import std.stream;
