@@ -102,5 +102,6 @@
     <Compile Include="src\index.d" />
     <Compile Include="src\api.d" />
     <Compile Include="src\screenshots.d" />
+    <Compile Include="src\dlangui\widgets\grid.d" />
   </ItemGroup>
 </Project>

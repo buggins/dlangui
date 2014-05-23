@@ -37,15 +37,16 @@ module dlangui.widgets.widget;
 
 public import dlangui.core.types;
 public import dlangui.core.events;
+public import dlangui.core.i18n;
 public import dlangui.widgets.styles;
+
 public import dlangui.graphics.drawbuf;
 public import dlangui.graphics.resources;
 public import dlangui.graphics.fonts;
-public import dlangui.core.i18n;
 
 public import dlangui.core.signals;
 
-import dlangui.platforms.common.platform;
+public import dlangui.platforms.common.platform;
 
 import std.algorithm;
 
@@ -117,6 +118,10 @@ enum CursorType {
 	Hand
 }
 
+/**
+ * Base class for all widgets.
+ * 
+ */
 class Widget {
     /// widget id
     protected string _id;
