@@ -617,9 +617,15 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         _pageDown.measure(parentWidth, parentHeight);
         _btnSize = _btnBack.measuredWidth;
         _minIndicatorSize = _orientation == Orientation.Vertical ? _indicator.measuredHeight : _indicator.measuredWidth;
-        if (_btnSize < _btnBack.measuredHeight)
-            _btnSize = _btnBack.measuredHeight;
-        if (_btnSize < 16)
+		if (_btnSize < _minIndicatorSize)
+			_btnSize = _minIndicatorSize;
+		if (_btnSize < _btnForward.measuredWidth)
+			_btnSize = _btnForward.measuredWidth;
+		if (_btnSize < _btnForward.measuredHeight)
+			_btnSize = _btnForward.measuredHeight;
+		if (_btnSize < _btnBack.measuredHeight)
+			_btnSize = _btnBack.measuredHeight;
+		if (_btnSize < 16)
             _btnSize = 16;
         if (_orientation == Orientation.Vertical) {
             // vertical

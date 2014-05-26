@@ -513,6 +513,11 @@ extern (C) int UIAppMain(string[] args) {
 
         //==========================================================================
 
+		StringGridWidget grid = new StringGridWidget("GRID1");
+		grid.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+		tabs.addTab(grid, "Grid"d);
+
+
         contentLayout.addChild(tabs);
 	    window.mainWidget = contentLayout;
 

@@ -1,6 +1,7 @@
-module src.dlangui.widgets.grid;
+module dlangui.widgets.grid;
 
 import dlangui.widgets.widget;
+import dlangui.widgets.controls;
 
 /**
  * Data provider for GridWidget.
@@ -93,7 +94,7 @@ class GridWidgetBase : WidgetGroup {
 	/// flag to enable row headers
 	@property abstract bool showRowHeaders();
 	@property abstract GridWidgetBase showRowHeaders(bool show);
-	this(string ID) {
+	this(string ID = null) {
 		super(ID);
 	}
 }
@@ -102,6 +103,8 @@ class GridWidgetBase : WidgetGroup {
  * Grid view with string data shown. All rows are of the same height.
  */
 class StringGridWidget : GridWidgetBase {
+	protected ScrollBar _vscrollbar;
+	protected ScrollBar _hscrollbar;
 	protected int _cols;
 	protected int _rows;
 	protected dstring[][] _data;
@@ -109,8 +112,17 @@ class StringGridWidget : GridWidgetBase {
 	protected dstring[] _colTitles;
 	protected bool _showColHeaders;
 	protected bool _showRowHeaders;
-	this(string ID) {
+	protected int[] _colWidths;
+	protected int[] _rowHeights;
+	this(string ID = null) {
 		super(ID);
+		_showColHeaders = true;
+		_showRowHeaders = true;
+		_vscrollbar = new ScrollBar("vscrollbar", Orientation.Vertical);
+		_hscrollbar = new ScrollBar("hscrollbar", Orientation.Horizontal);
+		addChild(_vscrollbar);
+		addChild(_hscrollbar);
+		styleId = "EDIT_BOX";
 	}
 	@property override int cols() {
 		return _cols;
@@ -125,10 +137,6 @@ class StringGridWidget : GridWidgetBase {
 	@property override GridWidgetBase rows(int r) {
 		resize(_cols, r);
 		return this;
-	}
-	/// get cell text
-	dstring cellText(int col, int row) {
-		return _data[row][col];
 	}
 	/// flag to enable column headers
 	@property override bool showColHeaders() {
@@ -146,6 +154,10 @@ class StringGridWidget : GridWidgetBase {
 		_showRowHeaders = show;
 		return this;
 	}
+	/// get cell text
+	dstring cellText(int col, int row) {
+		return _data[row][col];
+	}
 	/// set cell text
 	GridWidgetBase setCellText(int col, int row, dstring text) {
 		_data[row][col] = text;
@@ -157,11 +169,13 @@ class StringGridWidget : GridWidgetBase {
 			return;
 		_cols = cols;
 		_rows = rows;
-		_data.length = _rows;
-		for (int y = 0; y < _rows; y++)
-			_data[y].length = _cols;
-		_colTitles.length = _cols;
-		_rowTitles.length = _rows;
+		_data.length = rows;
+		for (int y = 0; y < rows; y++)
+			_data[y].length = cols;
+		_colTitles.length = cols;
+		_rowTitles.length = rows;
+		_colWidths.length = cols;
+		_rowHeights.length = rows;
 	}
 	/// returns row header title
 	dstring rowTitle(int row) {
@@ -180,6 +194,86 @@ class StringGridWidget : GridWidgetBase {
 	GridWidgetBase setColTitle(int col, dstring title) {
 		_colTitles[col] = title;
 		return this;
+	}
+	/// draw column header
+	void drawColHeader(DrawBuf buf, Rect rc, int index) {
+		FontRef fnt = font;
+		buf.fillRect(rc, 0xE0E0E0);
+		buf.drawFrame(rc, 0x808080, Rect(1,1,1,1));
+		fnt.drawText(buf, rc.left, rc.top, "col"d, 0x000000);
+	}
+	/// draw row header
+	void drawRowHeader(DrawBuf buf, Rect rc, int index) {
+		FontRef fnt = font;
+		buf.fillRect(rc, 0xE0E0E0);
+		buf.drawFrame(rc, 0x808080, Rect(1,1,1,1));
+		fnt.drawText(buf, rc.left, rc.top, "row"d, 0x000000);
+	}
+	/// draw cell header
+	void drawCell(DrawBuf buf, Rect rc, int col, int row) {
+		FontRef fnt = font;
+		fnt.drawText(buf, rc.left, rc.top, "sample"d, 0x000000);
+	}
+	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+	override void measure(int parentWidth, int parentHeight) { 
+		Rect m = margins;
+		Rect p = padding;
+		// calc size constraints for children
+		int pwidth = parentWidth;
+		int pheight = parentHeight;
+		if (parentWidth != SIZE_UNSPECIFIED)
+			pwidth -= m.left + m.right + p.left + p.right;
+		if (parentHeight != SIZE_UNSPECIFIED)
+			pheight -= m.top + m.bottom + p.top + p.bottom;
+		_hscrollbar.measure(pwidth, pheight);
+		_vscrollbar.measure(pwidth, pheight);
+		measuredContent(parentWidth, parentHeight, 100, 100);
+	}
+
+	protected Rect _clientRect;
+
+	/// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+	override void layout(Rect rc) {
+		if (visibility == Visibility.Gone) {
+			return;
+		}
+		_pos = rc;
+		_needLayout = false;
+		applyMargins(rc);
+		applyPadding(rc);
+		// scrollbars
+		Rect vsbrc = rc;
+		vsbrc.left = vsbrc.right - _vscrollbar.measuredWidth;
+		vsbrc.bottom = vsbrc.bottom - _hscrollbar.measuredHeight;
+		Rect hsbrc = rc;
+		hsbrc.right = hsbrc.right - _vscrollbar.measuredWidth;
+		hsbrc.top = hsbrc.bottom - _hscrollbar.measuredHeight;
+		_vscrollbar.layout(vsbrc);
+		_hscrollbar.layout(hsbrc);
+		// client area
+		_clientRect = rc;
+		_clientRect.right = vsbrc.left;
+		_clientRect.bottom = hsbrc.top;
+	}
+	void drawClient(DrawBuf buf) {
+		buf.fillRect(_clientRect, 0x80A08080);
+	}
+	/// Draw widget at its position to buffer
+	override void onDraw(DrawBuf buf) {
+		if (visibility != Visibility.Visible)
+			return;
+		Rect rc = _pos;
+		applyMargins(rc);
+		auto saver = ClipRectSaver(buf, rc, alpha);
+		DrawableRef bg = backgroundDrawable;
+		if (!bg.isNull) {
+			bg.drawTo(buf, rc, state);
+		}
+		applyPadding(rc);
+		_hscrollbar.onDraw(buf);
+		_vscrollbar.onDraw(buf);
+		drawClient(buf);
+		_needDraw = false;
 	}
 }
 
