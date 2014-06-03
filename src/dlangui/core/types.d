@@ -41,8 +41,11 @@ module dlangui.core.types;
 
 import std.algorithm;
 
+/// 2D point
 struct Point {
+    /// x coordinate
     int x;
+    /// y coordinate
     int y;
     this(int x0, int y0) {
         x = x0;
@@ -50,25 +53,35 @@ struct Point {
     }
 }
 
+/// 2D rectangle
 struct Rect {
+    /// x coordinate of top left corner
     int left;
+    /// y coordinate of top left corner
     int top;
+    /// x coordinate of bottom right corner
     int right;
+    /// y coordinate of bottom right corner
     int bottom;
+    /// returns average of left, right
     @property int middlex() { return (left + right) / 2; }
+    /// returns average of top, bottom
     @property int middley() { return (top + bottom) / 2; }
+    /// add offset to horizontal and vertical coordinates
     void offset(int dx, int dy) {
         left += dx;
         right += dx;
         top += dy;
         bottom += dy;
     }
+    /// expand rectangle dimensions
     void expand(int dx, int dy) {
         left -= dx;
         right += dx;
         top -= dy;
         bottom += dy;
     }
+    /// shrink rectangle dimensions
     void shrink(int dx, int dy) {
         left += dx;
         right -= dx;
@@ -97,6 +110,7 @@ struct Rect {
     @property bool empty() {
         return right <= left || bottom <= top;
     }
+    /// translate rectangle coordinates by (x,y) - add deltax to x coordinates, and deltay to y coordinates
     void moveBy(int deltax, int deltay) {
         left += deltax;
         right += deltax;
@@ -187,10 +201,13 @@ class RefCountedObject {
     ~this() {}
 }
 
+/// reference counting
 struct Ref(T) { // if (T is RefCountedObject)
     private T _data;
     alias get this;
+    /// returns true if object is not assigned
     @property bool isNull() const { return _data is null; }
+    /// returns counter of references
     @property int refCount() const { return _data !is null ? _data.refCount : 0; }
     this(T data) {
         _data = data;
@@ -231,15 +248,18 @@ struct Ref(T) { // if (T is RefCountedObject)
             _data.addRef();
 		return this;
     }
+    /// clears reference
     void clear() { 
         if (_data !is null) {
             _data.releaseRef();
             _data = null;
         }
     }
+    /// returns object reference (null if not assigned)
 	@property T get() {
 		return _data;
 	}
+    /// returns const reference from const object
 	@property const(T) get() const {
 		return _data;
 	}
@@ -249,8 +269,10 @@ struct Ref(T) { // if (T is RefCountedObject)
     }
 }
 
-
+//================================================================================
 // some utility functions
+
+
 string fromStringz(const(char[]) s) {
     if (s is null)
         return null;

@@ -125,6 +125,11 @@ class StringGridWidget : GridWidgetBase {
     protected int _scrollCol; 
     /// row scroll offset, relative to last fixed row; 0 = not scrolled
     protected int _scrollRow;
+    /// selected cell column
+    protected int _col;
+    /// selected cell row
+    protected int _row;
+
 	this(string ID = null) {
 		super(ID);
 		_headerCols = 1;
@@ -135,6 +140,13 @@ class StringGridWidget : GridWidgetBase {
 		addChild(_hscrollbar);
 		styleId = "EDIT_BOX";
         resize(20, 30);
+        _col = 3;
+        _row = 4;
+        for (int y = 1; y < _rows; y++) {
+            for (int x = 1; x < _cols; x++) {
+                _data[y][x] = "cell("d ~ to!dstring(x) ~ ","d ~ to!dstring(y) ~ ")"d;
+            }
+        }
 	}
 	@property override int cols() {
 		return _cols;
@@ -202,7 +214,7 @@ class StringGridWidget : GridWidgetBase {
         for (int i = _cols; i < cols; i++) {
             if (i >= _headerCols)
                 _data[0][i] = genColHeader(i - _headerCols);
-            _colWidths[i] = i == 0 ? 20 : 80;
+            _colWidths[i] = i == 0 ? 20 : 100;
         }
 		_rowHeights.length = rows;
         int fontHeight = font.height;
@@ -254,6 +266,82 @@ class StringGridWidget : GridWidgetBase {
         }
         return rc;
     }
+    
+    /// converts client rect relative coordinates to cell coordinates
+    bool pointToCell(int x, int y, ref int col, ref int row, ref Rect cellRect) {
+        col = row = -1;
+        cellRect = Rect();
+        Rect rc;
+        int xx = 0;
+        for (int i = 0; i < _cols; i++) {
+            rc.left = xx;
+            xx += colWidth(i);
+            rc.right = xx;
+            if (rc.left < rc.right && x >= rc.left && x < rc.right) {
+                col = i;
+                break;
+            }
+            if (xx > x)
+                break;
+        }
+        int yy = 0;
+        for (int i = 0; i < _rows; i++) {
+            rc.top = yy;
+            yy += rowHeight(i);
+            rc.bottom = yy;
+            
+            if (rc.top < rc.bottom && y >= rc.top && y < rc.bottom) {
+                row = i;
+                break;
+            }
+            if (yy > y)
+                break;
+        }
+        if (col >= 0 && row >= 0) {
+            cellRect = rc;
+            return true;
+        }
+        return false;
+    }
+
+    /// handle mouse wheel events
+    override bool onMouseEvent(MouseEvent event) {
+        if (visibility != Visibility.Visible)
+            return false;
+        int c, r; // col, row
+        Rect rc;
+        bool cellFound = false;
+        bool normalCell = false;
+        // convert coordinates
+        if (event.action == MouseAction.ButtonUp || event.action == MouseAction.ButtonDown || event.action == MouseAction.Move) {
+            int x = event.x;
+            int y = event.y;
+            x -= _clientRect.left;
+            y -= _clientRect.top;
+            cellFound = pointToCell(x, y, c, r, rc);
+            normalCell = c >= _fixedCols && r >= _fixedRows;
+        }
+        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
+            if (cellFound && normalCell) {
+                _col = c;
+                _row = r;
+                invalidate();
+            }
+            return true;
+        }
+        if (event.action == MouseAction.Move && (event.flags & MouseFlag.LButton)) {
+            // TODO: selection
+            if (cellFound && normalCell) {
+                _col = c;
+                _row = r;
+                invalidate();
+            }
+            return true;
+        }
+        return super.onMouseEvent(event);
+    }
+
+
 	/// returns row header title
 	dstring rowTitle(int row) {
 		return _rowTitles[row];
@@ -331,7 +419,7 @@ class StringGridWidget : GridWidgetBase {
 
 	/// draw cell content
 	void drawCell(DrawBuf buf, Rect rc, int col, int row) {
-        rc.shrink(1, 1);
+        rc.shrink(2, 1);
 		FontRef fnt = font;
         dstring txt = cellText(col, row);
         Point sz = fnt.textSize(txt);
@@ -351,15 +439,23 @@ class StringGridWidget : GridWidgetBase {
         vborder.left = vborder.right - 1;
         hborder.top = hborder.bottom - 1;
         hborder.right--;
+        bool selectedCol = _col == col;
+        bool selectedRow = _row == row;
+        bool selectedCell = selectedCol && selectedRow;
         if (col < _headerCols || row < _headerRows) {
             // draw header cell background
-            buf.fillRect(rc, 0x80808080);
-            buf.fillRect(vborder, 0x80FFFFFF);
-            buf.fillRect(hborder, 0x80FFFFFF);
+            uint cl = 0x80909090;
+            if (selectedCol || selectedRow)
+                cl = 0x80FFC040;
+            buf.fillRect(rc, cl);
+            buf.fillRect(vborder, 0x80202020);
+            buf.fillRect(hborder, 0x80202020);
         } else {
             // normal cell background
             buf.fillRect(vborder, 0x80C0C0C0);
             buf.fillRect(hborder, 0x80C0C0C0);
+            if (selectedCell)
+                buf.drawFrame(rc, 0x404040FF, Rect(1,1,1,1), 0xC0FFFF00);
         }
 	}
 

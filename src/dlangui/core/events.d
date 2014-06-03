@@ -240,23 +240,43 @@ enum MouseAction : ubyte {
 
 /// mouse flag bits
 enum MouseFlag : ushort {
-    /// Ctrl key is down
-	Control = 0x0008,
+    // mouse buttons
     /// Left mouse button is down
 	LButton = 0x0001,
     /// Middle mouse button is down
 	MButton = 0x0010,
     /// Right mouse button is down
 	RButton = 0x0002,
-    /// Shift key is down
-	Shift   = 0x0004,
     /// X1 mouse button is down
 	XButton1= 0x0020,
     /// X2 mouse button is down
 	XButton2= 0x0040,
+
+    // keyboard modifiers
+    /// Ctrl key is down
+	Control = 0x0008,
+    /// Shift key is down
+	Shift   = 0x0004,
     /// Alt key is down
-	Alt     = 0x0080
+	Alt     = 0x0080,
 }
+
+/// mouse button
+enum MouseButton : ubyte {
+    /// no button
+    None,
+    /// left mouse button
+    Left = MouseFlag.LButton,
+    /// right mouse button
+    Right = MouseFlag.RButton,
+    /// right mouse button
+    Middle = MouseFlag.MButton,
+    /// additional mouse button 1
+    XButton1 = MouseFlag.XButton1, // additional button 1
+    /// additional mouse button 2
+    XButton2 = MouseFlag.XButton2, // additional button 2
+}
+
 
 /// mouse button state details
 struct ButtonDetails {
@@ -295,22 +315,6 @@ struct ButtonDetails {
     @property short downX() { return _downX; }
     @property short downY() { return _downY; }
     @property ushort downFlags() { return _downFlags; }
-}
-
-/// mouse button
-enum MouseButton : ubyte {
-    /// no button
-    None,
-    /// left mouse button
-    Left,
-    /// right mouse button
-    Right,
-    /// right mouse button
-    Middle,
-    /// additional mouse button 1
-    XButton1, // additional button
-    /// additional mouse button 2
-    XButton2, // additional button
 }
 
 /// mouse event
