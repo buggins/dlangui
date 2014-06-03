@@ -308,13 +308,13 @@
   <Folder name="src">
    <Folder name="dlangui">
     <Folder name="core">
-     <File path="src\dlangui\core\stdaction.d" />
      <File path="src\dlangui\core\collections.d" />
      <File path="src\dlangui\core\events.d" />
      <File path="src\dlangui\core\i18n.d" />
      <File path="src\dlangui\core\linestream.d" />
      <File path="src\dlangui\core\logger.d" />
      <File path="src\dlangui\core\signals.d" />
+     <File path="src\dlangui\core\stdaction.d" />
      <File path="src\dlangui\core\types.d" />
     </Folder>
     <Folder name="dialogs">
@@ -346,6 +346,7 @@
     <Folder name="widgets">
      <File path="src\dlangui\widgets\controls.d" />
      <File path="src\dlangui\widgets\editors.d" />
+     <File path="src\dlangui\widgets\grid.d" />
      <File path="src\dlangui\widgets\layouts.d" />
      <File path="src\dlangui\widgets\lists.d" />
      <File path="src\dlangui\widgets\menu.d" />
