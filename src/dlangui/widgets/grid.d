@@ -2,6 +2,7 @@ module dlangui.widgets.grid;
 
 import dlangui.widgets.widget;
 import dlangui.widgets.controls;
+import std.conv;
 
 /**
  * Data provider for GridWidget.
@@ -110,14 +111,24 @@ class StringGridWidget : GridWidgetBase {
 	protected dstring[][] _data;
 	protected dstring[] _rowTitles;
 	protected dstring[] _colTitles;
-	protected bool _showColHeaders;
-	protected bool _showRowHeaders;
 	protected int[] _colWidths;
 	protected int[] _rowHeights;
+    /// number of header rows (e.g. like col name A, B, C... in excel; 0 for no header row)
+    protected int _headerRows;
+    /// number of header columns (e.g. like row number in excel; 0 for no header column)
+    protected int _headerCols;
+    /// number of fixed (non-scrollable) columns
+    protected int _fixedCols;
+    /// number of fixed (non-scrollable) rows
+    protected int _fixedRows;
+    /// column scroll offset, relative to last fixed col; 0 = not scrolled
+    protected int _scrollCol; 
+    /// row scroll offset, relative to last fixed row; 0 = not scrolled
+    protected int _scrollRow;
 	this(string ID = null) {
 		super(ID);
-		_showColHeaders = true;
-		_showRowHeaders = true;
+		_headerCols = 1;
+		_headerRows = 1;
 		_vscrollbar = new ScrollBar("vscrollbar", Orientation.Vertical);
 		_hscrollbar = new ScrollBar("hscrollbar", Orientation.Horizontal);
 		addChild(_vscrollbar);
@@ -140,18 +151,18 @@ class StringGridWidget : GridWidgetBase {
 	}
 	/// flag to enable column headers
 	@property override bool showColHeaders() {
-		return _showColHeaders;
+		return _headerRows > 0;
 	}
 	@property override GridWidgetBase showColHeaders(bool show) {
-		_showColHeaders = show;
+		_headerRows = show ? 1 : 0;
 		return this;
 	}
 	/// flag to enable row headers
 	@property override bool showRowHeaders() {
-		return _showRowHeaders;
+		return _headerCols > 0;
 	}
 	@property override GridWidgetBase showRowHeaders(bool show) {
-		_showRowHeaders = show;
+		_headerCols = show ? 1 : 0;
 		return this;
 	}
 	/// get cell text
@@ -167,16 +178,56 @@ class StringGridWidget : GridWidgetBase {
 	void resize(int cols, int rows) {
 		if (cols == _cols && rows == _rows)
 			return;
-		_cols = cols;
-		_rows = rows;
 		_data.length = rows;
 		for (int y = 0; y < rows; y++)
 			_data[y].length = cols;
 		_colTitles.length = cols;
+        for (int i = _cols; i < cols; i++)
+            _colTitles[i] = i > 0 ? ("col "d ~ to!dstring(i)) : ""d;
 		_rowTitles.length = rows;
 		_colWidths.length = cols;
+        for (int i = _cols; i < cols; i++)
+            _colWidths[i] = i == 0 ? 10 : 80;
 		_rowHeights.length = rows;
+        int fontHeight = font.height;
+        for (int i = _rows; i < rows; i++)
+            _rowHeights[i] = fontHeight;
+		_cols = cols;
+		_rows = rows;
 	}
+    /// returns column width (col 0 is row header)
+    int colWidth(int x) {
+        return _colWidths[x];
+    }
+    /// returns row height (row 0 is column header)
+    int rowHeight(int y) {
+        return _rowHeights[y];
+    }
+    /// returns cell rectangle relative to client area; row 0 is col headers row; col 0 is row headers column
+    Rect cellRect(int x, int y) {
+        Rect rc;
+        int xx = 0;
+        for (int i = 0; i <= x; i++) {
+            if (i == x)
+                rc.left = xx;
+            xx += colWidth(i);
+            if (i == x) {
+                rc.right = xx;
+                break;
+            }
+        }
+        int yy = 0;
+        for (int i = 0; i <= y; i++) {
+            if (i == y)
+                rc.top = yy;
+            yy += rowHeight(i);
+            if (i == x) {
+                rc.bottom = yy;
+                break;
+            }
+        }
+        return rc;
+    }
 	/// returns row header title
 	dstring rowTitle(int row) {
 		return _rowTitles[row];
