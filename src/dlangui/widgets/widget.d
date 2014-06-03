@@ -1086,9 +1086,7 @@ class Widget {
         rc.right -= m.right;
     }
     /// Applies alignment for content of size sz - set rectangle rc to aligned value of content inside of initial value of rc.
-    void applyAlign(ref Rect rc, Point sz) {
-        Align va = valign;
-        Align ha = halign;
+    static void applyAlign(ref Rect rc, Point sz, Align ha, Align va) {
         if (va == Align.Bottom) {
             rc.top = rc.bottom - sz.y;
         } else if (va == Align.VCenter) {
@@ -1107,6 +1105,12 @@ class Widget {
         } else {
             rc.right = rc.left + sz.x;
         }
+    }
+    /// Applies alignment for content of size sz - set rectangle rc to aligned value of content inside of initial value of rc.
+    void applyAlign(ref Rect rc, Point sz) {
+        Align va = valign;
+        Align ha = halign;
+        applyAlign(rc, sz, ha, va);
     }
 
 	// ===========================================================

@@ -407,6 +407,7 @@ struct ClipRectSaver {
     private DrawBuf _buf;
     private Rect _oldClipRect;
 	private uint _oldAlpha;
+    /// apply (intersect) new clip rectangle and alpha to draw buf; restore 
     this(DrawBuf buf, ref Rect newClipRect, uint newAlpha = 0) {
         _buf = buf;
         _oldClipRect = buf.clipRect;

@@ -63,6 +63,18 @@ struct Rect {
         top += dy;
         bottom += dy;
     }
+    void expand(int dx, int dy) {
+        left -= dx;
+        right += dx;
+        top -= dy;
+        bottom += dy;
+    }
+    void shrink(int dx, int dy) {
+        left += dx;
+        right -= dx;
+        top += dy;
+        bottom -= dy;
+    }
     /// for all fields, sets this.field to rc.field if rc.field > this.field
     void setMax(Rect rc) {
         if (left < rc.left)

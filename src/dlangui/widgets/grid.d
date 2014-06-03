@@ -134,6 +134,7 @@ class StringGridWidget : GridWidgetBase {
 		addChild(_vscrollbar);
 		addChild(_hscrollbar);
 		styleId = "EDIT_BOX";
+        resize(20, 30);
 	}
 	@property override int cols() {
 		return _cols;
@@ -174,6 +175,18 @@ class StringGridWidget : GridWidgetBase {
 		_data[row][col] = text;
 		return this;
 	}
+
+    /// zero based index generation of column header - like in Excel - for testing
+    dstring genColHeader(int col) {
+        dstring res;
+        int n1 = col / 26;
+        int n2 = col % 26;
+        if (n1)
+            res ~= n1 + 'A';
+        res ~= n2 + 'A';
+        return res;
+    }
+
 	/// set new size
 	void resize(int cols, int rows) {
 		if (cols == _cols && rows == _rows)
@@ -186,23 +199,36 @@ class StringGridWidget : GridWidgetBase {
             _colTitles[i] = i > 0 ? ("col "d ~ to!dstring(i)) : ""d;
 		_rowTitles.length = rows;
 		_colWidths.length = cols;
-        for (int i = _cols; i < cols; i++)
-            _colWidths[i] = i == 0 ? 10 : 80;
+        for (int i = _cols; i < cols; i++) {
+            if (i >= _headerCols)
+                _data[0][i] = genColHeader(i - _headerCols);
+            _colWidths[i] = i == 0 ? 20 : 80;
+        }
 		_rowHeights.length = rows;
         int fontHeight = font.height;
-        for (int i = _rows; i < rows; i++)
-            _rowHeights[i] = fontHeight;
+        for (int i = _rows; i < rows; i++) {
+            if (i >= _headerRows)
+                _data[i][0] = to!dstring(i - _headerRows + 1);
+            _rowHeights[i] = fontHeight + 2;
+        }
 		_cols = cols;
 		_rows = rows;
 	}
-    /// returns column width (col 0 is row header)
+
+    /// returns column width (index includes col/row headers, if any); returns 0 for columns hidden by scroll at the left
     int colWidth(int x) {
+        if (x >= _headerCols + _fixedCols && x < _headerCols + _fixedCols + _scrollCol)
+            return 0;
         return _colWidths[x];
     }
-    /// returns row height (row 0 is column header)
+
+    /// returns row height (index includes col/row headers, if any); returns 0 for riws hidden by scroll at the top
     int rowHeight(int y) {
+        if (y >= _headerRows + _fixedRows && y < _headerRows + _fixedRows + _scrollRow)
+            return 0;
         return _rowHeights[y];
     }
+
     /// returns cell rectangle relative to client area; row 0 is col headers row; col 0 is row headers column
     Rect cellRect(int x, int y) {
         Rect rc;
@@ -248,23 +274,19 @@ class StringGridWidget : GridWidgetBase {
 	}
 	/// draw column header
 	void drawColHeader(DrawBuf buf, Rect rc, int index) {
-		FontRef fnt = font;
-		buf.fillRect(rc, 0xE0E0E0);
-		buf.drawFrame(rc, 0x808080, Rect(1,1,1,1));
-		fnt.drawText(buf, rc.left, rc.top, "col"d, 0x000000);
+        //FontRef fnt = font;
+        //buf.fillRect(rc, 0xE0E0E0);
+        //buf.drawFrame(rc, 0x808080, Rect(1,1,1,1));
+        //fnt.drawText(buf, rc.left, rc.top, "col"d, 0x000000);
 	}
 	/// draw row header
 	void drawRowHeader(DrawBuf buf, Rect rc, int index) {
-		FontRef fnt = font;
-		buf.fillRect(rc, 0xE0E0E0);
-		buf.drawFrame(rc, 0x808080, Rect(1,1,1,1));
-		fnt.drawText(buf, rc.left, rc.top, "row"d, 0x000000);
+        //FontRef fnt = font;
+        //buf.fillRect(rc, 0xE0E0E0);
+        //buf.drawFrame(rc, 0x808080, Rect(1,1,1,1));
+        //fnt.drawText(buf, rc.left, rc.top, "row"d, 0x000000);
 	}
-	/// draw cell header
-	void drawCell(DrawBuf buf, Rect rc, int col, int row) {
-		FontRef fnt = font;
-		fnt.drawText(buf, rc.left, rc.top, "sample"d, 0x000000);
-	}
+
 	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
 	override void measure(int parentWidth, int parentHeight) { 
 		Rect m = margins;
@@ -306,8 +328,77 @@ class StringGridWidget : GridWidgetBase {
 		_clientRect.right = vsbrc.left;
 		_clientRect.bottom = hsbrc.top;
 	}
+
+	/// draw cell content
+	void drawCell(DrawBuf buf, Rect rc, int col, int row) {
+        rc.shrink(1, 1);
+		FontRef fnt = font;
+        dstring txt = cellText(col, row);
+        Point sz = fnt.textSize(txt);
+        Align ha = Align.Left;
+        if (col < _headerCols)
+            ha = Align.Right;
+        if (row < _headerRows)
+            ha = Align.HCenter;
+        applyAlign(rc, sz, ha, Align.VCenter);
+		fnt.drawText(buf, rc.left + 1, rc.top + 1, txt, 0x000000);
+	}
+
+	/// draw cell background
+	void drawCellBackground(DrawBuf buf, Rect rc, int col, int row) {
+        Rect vborder = rc;
+        Rect hborder = rc;
+        vborder.left = vborder.right - 1;
+        hborder.top = hborder.bottom - 1;
+        hborder.right--;
+        if (col < _headerCols || row < _headerRows) {
+            // draw header cell background
+            buf.fillRect(rc, 0x80808080);
+            buf.fillRect(vborder, 0x80FFFFFF);
+            buf.fillRect(hborder, 0x80FFFFFF);
+        } else {
+            // normal cell background
+            buf.fillRect(vborder, 0x80C0C0C0);
+            buf.fillRect(hborder, 0x80C0C0C0);
+        }
+	}
+
 	void drawClient(DrawBuf buf) {
-		buf.fillRect(_clientRect, 0x80A08080);
+		auto saver = ClipRectSaver(buf, _clientRect, 0);
+		//buf.fillRect(_clientRect, 0x80A08080);
+        Rect rc;
+        for (int phase = 0; phase < 2; phase++) {
+            int yy = 0;
+            for (int y = 0; y < _rows; y++) {
+                int rh = rowHeight(y);
+                rc.top = yy;
+                rc.bottom = yy + rh;
+                if (rh == 0)
+                    continue;
+                if (yy > _clientRect.height)
+                    break;
+                yy += rh;
+                int xx = 0;
+                for (int x = 0; x < _cols; x++) {
+                    int cw = colWidth(x);
+                    rc.left = xx;
+                    rc.right = xx + cw;
+                    if (cw == 0)
+                        continue;
+                    if (xx > _clientRect.width)
+                        break;
+                    xx += cw;
+                    // draw cell
+                    Rect cellRect = rc;
+                    cellRect.moveBy(_clientRect.left, _clientRect.top);
+                    auto cellSaver = ClipRectSaver(buf, cellRect, 0);
+                    if (phase == 0)
+                        drawCellBackground(buf, cellRect, x, y);
+                    else
+                        drawCell(buf, cellRect, x, y);
+                }
+            }
+        }
 	}
 	/// Draw widget at its position to buffer
 	override void onDraw(DrawBuf buf) {
