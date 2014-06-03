@@ -36,7 +36,7 @@
         />
     <drawable id="scrollbar_button_up" value="scrollbar_btn_up"/>
     <drawable id="scrollbar_button_down" value="scrollbar_btn_down"/>
-    <srawable id="scrollbar_button_left" value="scrollbar_btn_left"/>
+    <drawable id="scrollbar_button_left" value="scrollbar_btn_left"/>
     <drawable id="scrollbar_button_right" value="scrollbar_btn_right"/>
     <drawable id="scrollbar_indicator_vertical" value="scrollbar_indicator_vertical"/>
     <drawable id="scrollbar_indicator_horizontal" value="scrollbar_indicator_horizontal"/>

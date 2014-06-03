@@ -204,14 +204,14 @@ class Style {
     }
 
     /// get custom drawable attribute
-    @property ref DrawableRef customDrawable(string id) {
+    ref DrawableRef customDrawable(string id) {
         if (id in _customDrawables)
             return _customDrawables[id].drawable;
         return parentStyle.customDrawable(id);
     }
 
     /// get custom drawable attribute
-    @property string customDrawableId(string id) const {
+    string customDrawableId(string id) const {
         if (id in _customDrawables)
             return _customDrawables[id].drawableId;
         return parentStyle.customDrawableId(id);
