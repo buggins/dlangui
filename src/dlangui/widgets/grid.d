@@ -112,6 +112,38 @@ enum GridActions : int {
     Left,
     /// move selection right
     Right,
+	/// move cursor one page up
+	PageUp,
+	/// move cursor one page up with selection
+	SelectPageUp,
+	/// move cursor one page down
+	PageDown,
+	/// move cursor one page down with selection
+	SelectPageDown,
+	/// move cursor to the beginning of page
+	PageBegin, 
+	/// move cursor to the beginning of page with selection
+	SelectPageBegin, 
+	/// move cursor to the end of page
+	PageEnd,   
+	/// move cursor to the end of page with selection
+	SelectPageEnd,   
+	/// move cursor to the beginning of line
+	LineBegin,
+	/// move cursor to the beginning of line with selection
+	SelectLineBegin,
+	/// move cursor to the end of line
+	LineEnd,
+	/// move cursor to the end of line with selection
+	SelectLineEnd,
+	/// move cursor to the beginning of document
+	DocumentBegin,
+	/// move cursor to the beginning of document with selection
+	SelectDocumentBegin,
+	/// move cursor to the end of document
+	DocumentEnd,
+	/// move cursor to the end of document with selection
+	SelectDocumentEnd,
 }
 
 /**
@@ -146,13 +178,16 @@ class StringGridWidget : GridWidgetBase {
 
 	this(string ID = null) {
 		super(ID);
-		_headerCols = 1;
-		_headerRows = 1;
 		_vscrollbar = new ScrollBar("vscrollbar", Orientation.Vertical);
 		_hscrollbar = new ScrollBar("hscrollbar", Orientation.Horizontal);
 		addChild(_vscrollbar);
 		addChild(_hscrollbar);
 		styleId = "EDIT_BOX";
+        // create sample grid content
+		_headerCols = 1;
+		_headerRows = 1;
+        _fixedCols = 2;
+        _fixedRows = 2;
         resize(20, 30);
         _col = 3;
         _row = 4;
@@ -166,6 +201,14 @@ class StringGridWidget : GridWidgetBase {
 			new Action(GridActions.Down, KeyCode.DOWN, 0),
 			new Action(GridActions.Left, KeyCode.LEFT, 0),
 			new Action(GridActions.Right, KeyCode.RIGHT, 0),
+			new Action(GridActions.LineBegin, KeyCode.HOME, 0),
+			new Action(GridActions.LineEnd, KeyCode.END, 0),
+			new Action(GridActions.PageUp, KeyCode.PAGEUP, 0),
+			new Action(GridActions.PageDown, KeyCode.PAGEDOWN, 0),
+			new Action(GridActions.PageBegin, KeyCode.PAGEUP, KeyFlag.Control),
+			new Action(GridActions.PageEnd, KeyCode.PAGEDOWN, KeyFlag.Control),
+			new Action(GridActions.DocumentBegin, KeyCode.HOME, KeyFlag.Control),
+			new Action(GridActions.DocumentEnd, KeyCode.END, KeyFlag.Control),
 		]);
         focusable = true;
 	}
@@ -280,7 +323,7 @@ class StringGridWidget : GridWidgetBase {
             if (i == y)
                 rc.top = yy;
             yy += rowHeight(i);
-            if (i == x) {
+            if (i == y) {
                 rc.bottom = yy;
                 break;
             }
@@ -325,6 +368,56 @@ class StringGridWidget : GridWidgetBase {
         return false;
     }
 
+    /// update scrollbar positions
+    void updateScrollBars() {
+        // TODO
+    }
+
+    /// ensure that cell is visible (scroll if necessary)
+    void makeCellVisible(int col, int row) {
+        bool scrolled = false;
+        Rect rc = cellRect(col, row);
+        if (col >= _headerCols + _fixedCols && col < _headerCols + _fixedCols + _scrollCol) {
+            // scroll to the left
+            _scrollCol = col - _headerCols - _fixedCols;
+            scrolled = true;
+        } else {
+            while (rc.right > _clientRect.width && _scrollCol < _cols - _fixedCols - _headerCols - 1) {
+                _scrollCol++;
+                rc = cellRect(col, row);
+                scrolled = true;
+            }
+        }
+        if (row >= _headerRows + _fixedRows && row < _headerRows + _fixedRows + _scrollRow) {
+            // scroll to the left
+            _scrollRow = row - _headerRows - _fixedRows;
+            scrolled = true;
+        } else {
+            while (rc.bottom > _clientRect.height && _scrollRow < _rows - _fixedRows - _headerRows - 1) {
+                _scrollRow++;
+                rc = cellRect(col, row);
+                scrolled = true;
+            }
+        }
+        if (scrolled) {
+            updateScrollBars();
+            invalidate();
+        }
+    }
+
+    bool selectCell(int col, int row, bool makeVisible = true) {
+        if (_col == col && _row == row)
+            return false; // same position
+        if (col < _headerCols || row < _headerRows || col >= _cols || row >= _rows)
+            return false; // out of range
+        _col = col;
+        _row = row;
+        invalidate();
+        if (makeVisible)
+            makeCellVisible(_col, _row);
+        return true;
+    }
+
     /// handle mouse wheel events
     override bool onMouseEvent(MouseEvent event) {
         if (visibility != Visibility.Visible)
@@ -344,18 +437,14 @@ class StringGridWidget : GridWidgetBase {
         }
         if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
             if (cellFound && normalCell) {
-                _col = c;
-                _row = r;
-                invalidate();
+                selectCell(c, r);
             }
             return true;
         }
         if (event.action == MouseAction.Move && (event.flags & MouseFlag.LButton)) {
             // TODO: selection
             if (cellFound && normalCell) {
-                _col = c;
-                _row = r;
-                invalidate();
+                selectCell(c, r);
             }
             return true;
         }
@@ -365,24 +454,38 @@ class StringGridWidget : GridWidgetBase {
 	override protected bool handleAction(const Action a) {
 		switch (a.id) {
             case GridActions.Left:
-                if (_col > _headerCols)
-                    _col--;
-                invalidate();
+                selectCell(_col - 1, _row);
                 return true;
             case GridActions.Right:
-                if (_col < _cols - 1)
-                    _col++;
-                invalidate();
+                selectCell(_col + 1, _row);
                 return true;
             case GridActions.Up:
-                if (_row > _headerRows)
-                    _row--;
-                invalidate();
+                selectCell(_col, _row - 1);
                 return true;
             case GridActions.Down:
-                if (_row < _rows - 1)
-                    _row++;
-                invalidate();
+                selectCell(_col, _row + 1);
+                return true;
+            case GridActions.LineBegin:
+                if (_scrollCol > 0) {
+                    _scrollCol = 0;
+                    updateScrollBars();
+                    invalidate();
+                }
+                selectCell(_headerCols, _row);
+                return true;
+            case GridActions.LineEnd:
+                selectCell(_cols - 1, _row);
+                return true;
+            case GridActions.DocumentBegin:
+                if (_scrollRow > 0) {
+                    _scrollRow = 0;
+                    updateScrollBars();
+                    invalidate();
+                }
+                selectCell(_col, _headerRows);
+                return true;
+            case GridActions.DocumentEnd:
+                selectCell(_col, _rows - 1);
                 return true;
             default:
                 return super.handleAction(a);
@@ -499,6 +602,10 @@ class StringGridWidget : GridWidgetBase {
             buf.fillRect(hborder, 0x80202020);
         } else {
             // normal cell background
+            if (col < _headerCols + _fixedCols || row < _headerRows + _fixedRows) {
+                // fixed cell background
+                buf.fillRect(rc, 0x80E0E0E0);
+            }
             buf.fillRect(vborder, 0x80C0C0C0);
             buf.fillRect(hborder, 0x80C0C0C0);
             if (selectedCell)
