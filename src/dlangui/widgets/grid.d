@@ -773,6 +773,15 @@ class StringGridWidget : GridWidgetBase, OnScrollHandler {
         //fnt.drawText(buf, rc.left, rc.top, "row"d, 0x000000);
 	}
 
+    Point fullContentSize() {
+        Point sz;
+        for (int i = 0; i < _cols; i++)
+            sz.x += _colWidths[i];
+        for (int i = 0; i < _rows; i++)
+            sz.y += _rowHeights[i];
+        return sz;
+    }
+
 	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
 	override void measure(int parentWidth, int parentHeight) { 
 		Rect m = margins;
@@ -786,7 +795,8 @@ class StringGridWidget : GridWidgetBase, OnScrollHandler {
 			pheight -= m.top + m.bottom + p.top + p.bottom;
 		_hscrollbar.measure(pwidth, pheight);
 		_vscrollbar.measure(pwidth, pheight);
-		measuredContent(parentWidth, parentHeight, 100, 100);
+        Point sz = fullContentSize();
+		measuredContent(parentWidth, parentHeight, sz.x, sz.y);
 	}
 
 	protected Rect _clientRect;
@@ -800,6 +810,15 @@ class StringGridWidget : GridWidgetBase, OnScrollHandler {
 		_needLayout = false;
 		applyMargins(rc);
 		applyPadding(rc);
+        Point sz = fullContentSize();
+        bool needHscroll = sz.x > rc.width;
+        bool needVscroll = sz.y > rc.height;
+        if (needVscroll)
+            needHscroll = sz.x > rc.width - _vscrollbar.measuredWidth;
+        if (needHscroll)
+            needVscroll = sz.y > rc.height - _hscrollbar.measuredHeight;
+        if (needVscroll)
+            needHscroll = sz.x > rc.width - _vscrollbar.measuredWidth;
 		// scrollbars
 		Rect vsbrc = rc;
 		vsbrc.left = vsbrc.right - _vscrollbar.measuredWidth;
@@ -809,10 +828,14 @@ class StringGridWidget : GridWidgetBase, OnScrollHandler {
 		hsbrc.top = hsbrc.bottom - _hscrollbar.measuredHeight;
 		_vscrollbar.layout(vsbrc);
 		_hscrollbar.layout(hsbrc);
+        _vscrollbar.visibility = needVscroll ? Visibility.Visible : Visibility.Gone;
+        _hscrollbar.visibility = needHscroll ? Visibility.Visible : Visibility.Gone;
 		// client area
 		_clientRect = rc;
-		_clientRect.right = vsbrc.left;
-		_clientRect.bottom = hsbrc.top;
+        if (needVscroll)
+		    _clientRect.right = vsbrc.left;
+        if (needHscroll)
+            _clientRect.bottom = hsbrc.top;
         updateScrollBars();
 	}
 

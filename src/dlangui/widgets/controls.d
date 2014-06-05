@@ -644,6 +644,24 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         	layoutButtons();
     }
 
+    /// hide controls when scroll is not possible
+    protected void updateState() {
+        bool canScroll = _maxValue - _minValue > _pageSize;
+        if (canScroll) {
+            _btnBack.setState(State.Enabled);
+            _btnForward.setState(State.Enabled);
+            _indicator.visibility = Visibility.Visible;
+            _pageUp.visibility = Visibility.Visible;
+            _pageDown.visibility = Visibility.Visible;
+        } else {
+            _btnBack.resetState(State.Enabled);
+            _btnForward.resetState(State.Enabled);
+            _indicator.visibility = Visibility.Gone;
+            _pageUp.visibility = Visibility.Gone;
+            _pageDown.visibility = Visibility.Gone;
+        }
+    }
+
     protected void layoutButtons() {
         Rect irc = _scrollArea;
         if (_orientation == Orientation.Vertical) {
@@ -661,6 +679,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
             irc.right -= spaceForwardSize;
             layoutButtons(irc);
         }
+        updateState();
 	}
 
 	protected void layoutButtons(Rect irc) {
