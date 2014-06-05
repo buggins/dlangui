@@ -451,7 +451,38 @@ class StringGridWidget : GridWidgetBase {
         return super.onMouseEvent(event);
     }
 
+    protected void calcScrollableAreaPos(ref Rect fullyVisibleCells, ref Rect fullyVisibleCellsRect) {
+        fullyVisibleCells.left = _headerCols + _fixedCols + _scrollCol;
+        fullyVisibleCells.top = _headerRows + _fixedRows + _scrollRow;
+        Rect rc;
+        int xx = 0;
+        for (int i = 0; i < _cols && xx < _clientRect.width; i++) {
+            if (i == fullyVisibleCells.left)
+                fullyVisibleCellsRect.left = fullyVisibleCellsRect.right = xx;
+            int w = colWidth(i);
+            if (i >= fullyVisibleCells.left && xx + w <= _clientRect.width) {
+                fullyVisibleCellsRect.right = xx + w;
+                fullyVisibleCells.right = i;
+            }
+            xx += w;
+        }
+        int yy = 0;
+        for (int i = 0; i < _rows && yy < _clientRect.height; i++) {
+            if (i == fullyVisibleCells.top)
+                fullyVisibleCellsRect.top = fullyVisibleCellsRect.bottom = yy;
+            int w = rowHeight(i);
+            if (i >= fullyVisibleCells.top && yy + w <= _clientRect.height) {
+                fullyVisibleCellsRect.bottom = yy + w;
+                fullyVisibleCells.bottom = i;
+            }
+            yy += w;
+        }
+    }
+
 	override protected bool handleAction(const Action a) {
+        Rect fullyVisibleCells;
+        Rect fullyVisibleCellsRect;
+        calcScrollableAreaPos(fullyVisibleCells, fullyVisibleCellsRect);
 		switch (a.id) {
             case GridActions.Left:
                 selectCell(_col - 1, _row);
@@ -466,12 +497,16 @@ class StringGridWidget : GridWidgetBase {
                 selectCell(_col, _row + 1);
                 return true;
             case GridActions.LineBegin:
-                if (_scrollCol > 0) {
-                    _scrollCol = 0;
-                    updateScrollBars();
-                    invalidate();
+                if (_scrollCol > 0 && _col > _headerCols + _fixedCols + _scrollCol)
+                    selectCell(_headerCols + _fixedCols + _scrollCol, _row);
+                else {
+                    if (_scrollCol > 0) {
+                        _scrollCol = 0;
+                        updateScrollBars();
+                        invalidate();
+                    }
+                    selectCell(_headerCols, _row);
                 }
-                selectCell(_headerCols, _row);
                 return true;
             case GridActions.LineEnd:
                 selectCell(_cols - 1, _row);
@@ -486,6 +521,62 @@ class StringGridWidget : GridWidgetBase {
                 return true;
             case GridActions.DocumentEnd:
                 selectCell(_col, _rows - 1);
+                return true;
+            case GridActions.PageBegin:
+                if (_scrollRow > 0)
+                    selectCell(_col, _headerRows + _fixedRows + _scrollRow);
+                else
+                    selectCell(_col, _headerRows);
+                return true;
+            case GridActions.PageEnd:
+                int found = -1;
+                for (int i = _fixedRows; i < _rows; i++) {
+                    Rect rc = cellRect(_col, i);
+                    if (rc.bottom <= _clientRect.height)
+                        found = i;
+                    else
+                        break;
+                }
+                if (found >= 0)
+                    selectCell(_col, found);
+                return true;
+            case GridActions.PageUp:
+                if (_row > fullyVisibleCells.top) {
+                    // not at top scrollable cell
+                    selectCell(_col, fullyVisibleCells.top);
+                } else {
+                    // at top of scrollable area
+                    if (_scrollRow > 0) {
+                        // scroll up line by line
+                        int prevRow = _row;
+                        for (int i = prevRow - 1; i >= _headerRows; i--) {
+                            selectCell(_col, i);
+                            calcScrollableAreaPos(fullyVisibleCells, fullyVisibleCellsRect);
+                            if (fullyVisibleCells.bottom <= prevRow)
+                                break;
+                        }
+                    } else {
+                        // scrolled to top - move upper cell
+                        selectCell(_col, _headerRows);
+                    }
+                }
+                return true;
+            case GridActions.PageDown: 
+                if (_row < _rows) {
+                    if (_row < fullyVisibleCells.bottom) {
+                        // not at top scrollable cell
+                        selectCell(_col, fullyVisibleCells.bottom);
+                    } else {
+                        // scroll down
+                        int prevRow = _row;
+                        for (int i = prevRow + 1; i < _rows; i++) {
+                            selectCell(_col, i);
+                            calcScrollableAreaPos(fullyVisibleCells, fullyVisibleCellsRect);
+                            if (fullyVisibleCells.top >= prevRow)
+                                break;
+                        }
+                    }
+                }
                 return true;
             default:
                 return super.handleAction(a);
