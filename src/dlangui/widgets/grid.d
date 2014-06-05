@@ -84,22 +84,6 @@ class StringGridAdapter : GridAdapter {
 	Widget colHeader(int col) { return null; }
 }
 
-class GridWidgetBase : WidgetGroup {
-	@property abstract int cols();
-	@property abstract GridWidgetBase cols(int c);
-	@property abstract int rows();
-	@property abstract GridWidgetBase rows(int r);
-	/// flag to enable column headers
-	@property abstract bool showColHeaders();
-	@property abstract GridWidgetBase showColHeaders(bool show);
-	/// flag to enable row headers
-	@property abstract bool showRowHeaders();
-	@property abstract GridWidgetBase showRowHeaders(bool show);
-	this(string ID = null) {
-		super(ID);
-	}
-}
-
 /// grid control action codes
 enum GridActions : int {
     /// no action
@@ -165,18 +149,14 @@ enum GridActions : int {
 	SelectDocumentEnd,
 }
 
-/**
- * Grid view with string data shown. All rows are of the same height.
- */
-class StringGridWidget : GridWidgetBase, OnScrollHandler {
-	protected ScrollBar _vscrollbar;
-	protected ScrollBar _hscrollbar;
+class GridWidgetBase : WidgetGroup, OnScrollHandler {
+    /// column count (including header columns and fixed columns)
 	protected int _cols;
+    /// row count (including header rows and fixed rows)
 	protected int _rows;
-	protected dstring[][] _data;
-	protected dstring[] _rowTitles;
-	protected dstring[] _colTitles;
+    /// column widths
 	protected int[] _colWidths;
+    /// row heights
 	protected int[] _rowHeights;
     /// number of header rows (e.g. like col name A, B, C... in excel; 0 for no header row)
     protected int _headerRows;
@@ -194,123 +174,59 @@ class StringGridWidget : GridWidgetBase, OnScrollHandler {
     protected int _col;
     /// selected cell row
     protected int _row;
+    /// vertical scrollbar control
+	protected ScrollBar _vscrollbar;
+    /// horizontal scrollbar control
+	protected ScrollBar _hscrollbar;
 
-	this(string ID = null) {
-		super(ID);
-		_vscrollbar = new ScrollBar("vscrollbar", Orientation.Vertical);
-		_hscrollbar = new ScrollBar("hscrollbar", Orientation.Horizontal);
-        _hscrollbar.onScrollEventListener = this;
-        _vscrollbar.onScrollEventListener = this;
-		addChild(_vscrollbar);
-		addChild(_hscrollbar);
-		styleId = "EDIT_BOX";
-        // create sample grid content
-		_headerCols = 1;
-		_headerRows = 1;
-        _fixedCols = 2;
-        _fixedRows = 2;
-        resize(20, 30);
-        _col = 3;
-        _row = 4;
-        for (int y = 1; y < _rows; y++) {
-            for (int x = 1; x < _cols; x++) {
-                _data[y][x] = "cell("d ~ to!dstring(x) ~ ","d ~ to!dstring(y) ~ ")"d;
-            }
-        }
-		acceleratorMap.add( [
-			new Action(GridActions.Up, KeyCode.UP, 0),
-			new Action(GridActions.Down, KeyCode.DOWN, 0),
-			new Action(GridActions.Left, KeyCode.LEFT, 0),
-			new Action(GridActions.Right, KeyCode.RIGHT, 0),
-			new Action(GridActions.LineBegin, KeyCode.HOME, 0),
-			new Action(GridActions.LineEnd, KeyCode.END, 0),
-			new Action(GridActions.PageUp, KeyCode.PAGEUP, 0),
-			new Action(GridActions.PageDown, KeyCode.PAGEDOWN, 0),
-			new Action(GridActions.PageBegin, KeyCode.PAGEUP, KeyFlag.Control),
-			new Action(GridActions.PageEnd, KeyCode.PAGEDOWN, KeyFlag.Control),
-			new Action(GridActions.DocumentBegin, KeyCode.HOME, KeyFlag.Control),
-			new Action(GridActions.DocumentEnd, KeyCode.END, KeyFlag.Control),
-		]);
-        focusable = true;
-	}
-	@property override int cols() {
-		return _cols;
-	}
-	@property override GridWidgetBase cols(int c) {
-		resize(c, _rows);
-		return this;
-	}
-	@property override int rows() {
-		return _rows;
-	}
-	@property override GridWidgetBase rows(int r) {
-		resize(_cols, r);
-		return this;
-	}
-	/// flag to enable column headers
-	@property override bool showColHeaders() {
-		return _headerRows > 0;
-	}
-	@property override GridWidgetBase showColHeaders(bool show) {
-		_headerRows = show ? 1 : 0;
-		return this;
-	}
-	/// flag to enable row headers
-	@property override bool showRowHeaders() {
-		return _headerCols > 0;
-	}
-	@property override GridWidgetBase showRowHeaders(bool show) {
-		_headerCols = show ? 1 : 0;
-		return this;
-	}
-	/// get cell text
-	dstring cellText(int col, int row) {
-		return _data[row][col];
-	}
-	/// set cell text
-	GridWidgetBase setCellText(int col, int row, dstring text) {
-		_data[row][col] = text;
-		return this;
-	}
-
-    /// zero based index generation of column header - like in Excel - for testing
-    dstring genColHeader(int col) {
-        dstring res;
-        int n1 = col / 26;
-        int n2 = col % 26;
-        if (n1)
-            res ~= n1 + 'A';
-        res ~= n2 + 'A';
-        return res;
-    }
-
+    /// selected column
+	@property int col() { return _col; }
+    /// selected row
+	@property int row() { return _row; }
+    /// column count
+	@property int cols() { return _cols; }
+    /// set column count
+	@property GridWidgetBase cols(int c) { resize(c, _rows); return this; }
+    /// row count
+	@property int rows() { return _rows; }
+    /// set row count
+	@property GridWidgetBase rows(int r) { resize(_cols, r); return this; }
 	/// set new size
 	void resize(int cols, int rows) {
 		if (cols == _cols && rows == _rows)
 			return;
-		_data.length = rows;
-		for (int y = 0; y < rows; y++)
-			_data[y].length = cols;
-		_colTitles.length = cols;
-        for (int i = _cols; i < cols; i++)
-            _colTitles[i] = i > 0 ? ("col "d ~ to!dstring(i)) : ""d;
-		_rowTitles.length = rows;
 		_colWidths.length = cols;
         for (int i = _cols; i < cols; i++) {
-            if (i >= _headerCols)
-                _data[0][i] = genColHeader(i - _headerCols);
             _colWidths[i] = i == 0 ? 20 : 100;
         }
 		_rowHeights.length = rows;
         int fontHeight = font.height;
         for (int i = _rows; i < rows; i++) {
-            if (i >= _headerRows)
-                _data[i][0] = to!dstring(i - _headerRows + 1);
             _rowHeights[i] = fontHeight + 2;
         }
 		_cols = cols;
 		_rows = rows;
+    }
+
+	/// flag to enable column headers
+	@property bool showColHeaders() {
+		return _headerRows > 0;
 	}
+	@property GridWidgetBase showColHeaders(bool show) {
+		_headerRows = show ? 1 : 0;
+        invalidate();
+		return this;
+	}
+	/// flag to enable row headers
+	@property bool showRowHeaders() {
+		return _headerCols > 0;
+	}
+	@property GridWidgetBase showRowHeaders(bool show) {
+		_headerCols = show ? 1 : 0;
+        invalidate();
+		return this;
+	}
+
 
     /// returns column width (index includes col/row headers, if any); returns 0 for columns hidden by scroll at the left
     int colWidth(int x) {
@@ -351,7 +267,7 @@ class StringGridWidget : GridWidgetBase, OnScrollHandler {
         }
         return rc;
     }
-    
+
     /// converts client rect relative coordinates to cell coordinates
     bool pointToCell(int x, int y, ref int col, ref int row, ref Rect cellRect) {
         col = row = -1;
@@ -374,7 +290,7 @@ class StringGridWidget : GridWidgetBase, OnScrollHandler {
             rc.top = yy;
             yy += rowHeight(i);
             rc.bottom = yy;
-            
+
             if (rc.top < rc.bottom && y >= rc.top && y < rc.bottom) {
                 row = i;
                 break;
@@ -404,6 +320,7 @@ class StringGridWidget : GridWidgetBase, OnScrollHandler {
         }
     }
 
+    /// column by X, ignoring scroll position
     protected int colByAbsoluteX(int x) {
         int xx = 0;
         for (int i = 0; i < _cols; i++) {
@@ -415,6 +332,7 @@ class StringGridWidget : GridWidgetBase, OnScrollHandler {
         return 0;
     }
 
+    /// row by Y, ignoring scroll position
     protected int rowByAbsoluteY(int y) {
         int yy = 0;
         for (int i = 0; i < _rows; i++) {
@@ -740,39 +658,6 @@ class StringGridWidget : GridWidgetBase, OnScrollHandler {
         }
     }
 
-	/// returns row header title
-	dstring rowTitle(int row) {
-		return _rowTitles[row];
-	}
-	/// set row header title
-	GridWidgetBase setRowTitle(int row, dstring title) {
-		_rowTitles[row] = title;
-		return this;
-	}
-	/// returns row header title
-	dstring colTitle(int col) {
-		return _colTitles[col];
-	}
-	/// set col header title
-	GridWidgetBase setColTitle(int col, dstring title) {
-		_colTitles[col] = title;
-		return this;
-	}
-	/// draw column header
-	void drawColHeader(DrawBuf buf, Rect rc, int index) {
-        //FontRef fnt = font;
-        //buf.fillRect(rc, 0xE0E0E0);
-        //buf.drawFrame(rc, 0x808080, Rect(1,1,1,1));
-        //fnt.drawText(buf, rc.left, rc.top, "col"d, 0x000000);
-	}
-	/// draw row header
-	void drawRowHeader(DrawBuf buf, Rect rc, int index) {
-        //FontRef fnt = font;
-        //buf.fillRect(rc, 0xE0E0E0);
-        //buf.drawFrame(rc, 0x808080, Rect(1,1,1,1));
-        //fnt.drawText(buf, rc.left, rc.top, "row"d, 0x000000);
-	}
-
     Point fullContentSize() {
         Point sz;
         for (int i = 0; i < _cols; i++)
@@ -839,53 +724,7 @@ class StringGridWidget : GridWidgetBase, OnScrollHandler {
         updateScrollBars();
 	}
 
-	/// draw cell content
-	void drawCell(DrawBuf buf, Rect rc, int col, int row) {
-        rc.shrink(2, 1);
-		FontRef fnt = font;
-        dstring txt = cellText(col, row);
-        Point sz = fnt.textSize(txt);
-        Align ha = Align.Left;
-        if (col < _headerCols)
-            ha = Align.Right;
-        if (row < _headerRows)
-            ha = Align.HCenter;
-        applyAlign(rc, sz, ha, Align.VCenter);
-		fnt.drawText(buf, rc.left + 1, rc.top + 1, txt, 0x000000);
-	}
-
-	/// draw cell background
-	void drawCellBackground(DrawBuf buf, Rect rc, int col, int row) {
-        Rect vborder = rc;
-        Rect hborder = rc;
-        vborder.left = vborder.right - 1;
-        hborder.top = hborder.bottom - 1;
-        hborder.right--;
-        bool selectedCol = _col == col;
-        bool selectedRow = _row == row;
-        bool selectedCell = selectedCol && selectedRow;
-        if (col < _headerCols || row < _headerRows) {
-            // draw header cell background
-            uint cl = 0x80909090;
-            if (selectedCol || selectedRow)
-                cl = 0x80FFC040;
-            buf.fillRect(rc, cl);
-            buf.fillRect(vborder, 0x80202020);
-            buf.fillRect(hborder, 0x80202020);
-        } else {
-            // normal cell background
-            if (col < _headerCols + _fixedCols || row < _headerRows + _fixedRows) {
-                // fixed cell background
-                buf.fillRect(rc, 0x80E0E0E0);
-            }
-            buf.fillRect(vborder, 0x80C0C0C0);
-            buf.fillRect(hborder, 0x80C0C0C0);
-            if (selectedCell)
-                buf.drawFrame(rc, 0x404040FF, Rect(1,1,1,1), 0xC0FFFF00);
-        }
-	}
-
-	void drawClient(DrawBuf buf) {
+	protected void drawClient(DrawBuf buf) {
 		auto saver = ClipRectSaver(buf, _clientRect, 0);
 		//buf.fillRect(_clientRect, 0x80A08080);
         Rect rc;
@@ -939,6 +778,198 @@ class StringGridWidget : GridWidgetBase, OnScrollHandler {
 		drawClient(buf);
 		_needDraw = false;
 	}
+
+	/// draw cell content
+	protected void drawCell(DrawBuf buf, Rect rc, int col, int row) {
+        // override it
+	}
+
+	/// draw cell background
+	protected void drawCellBackground(DrawBuf buf, Rect rc, int col, int row) {
+        // override it
+    }
+
+	this(string ID = null) {
+		super(ID);
+		_vscrollbar = new ScrollBar("vscrollbar", Orientation.Vertical);
+		_hscrollbar = new ScrollBar("hscrollbar", Orientation.Horizontal);
+        _hscrollbar.onScrollEventListener = this;
+        _vscrollbar.onScrollEventListener = this;
+		addChild(_vscrollbar);
+		addChild(_hscrollbar);
+		acceleratorMap.add( [
+			new Action(GridActions.Up, KeyCode.UP, 0),
+			new Action(GridActions.Down, KeyCode.DOWN, 0),
+			new Action(GridActions.Left, KeyCode.LEFT, 0),
+			new Action(GridActions.Right, KeyCode.RIGHT, 0),
+			new Action(GridActions.LineBegin, KeyCode.HOME, 0),
+			new Action(GridActions.LineEnd, KeyCode.END, 0),
+			new Action(GridActions.PageUp, KeyCode.PAGEUP, 0),
+			new Action(GridActions.PageDown, KeyCode.PAGEDOWN, 0),
+			new Action(GridActions.PageBegin, KeyCode.PAGEUP, KeyFlag.Control),
+			new Action(GridActions.PageEnd, KeyCode.PAGEDOWN, KeyFlag.Control),
+			new Action(GridActions.DocumentBegin, KeyCode.HOME, KeyFlag.Control),
+			new Action(GridActions.DocumentEnd, KeyCode.END, KeyFlag.Control),
+		]);
+        focusable = true;
+	}
+}
+
+
+/**
+ * Grid view with string data shown. All rows are of the same height.
+ */
+class StringGridWidget : GridWidgetBase {
+
+	protected dstring[][] _data;
+	protected dstring[] _rowTitles;
+	protected dstring[] _colTitles;
+
+	this(string ID = null) {
+		super(ID);
+		styleId = "EDIT_BOX";
+        // create sample grid content
+		_headerCols = 1;
+		_headerRows = 1;
+        _fixedCols = 2;
+        _fixedRows = 2;
+        resize(20, 30);
+        _col = 3;
+        _row = 4;
+        for (int y = 1; y < _rows; y++) {
+            for (int x = 1; x < _cols; x++) {
+                _data[y][x] = "cell("d ~ to!dstring(x) ~ ","d ~ to!dstring(y) ~ ")"d;
+            }
+        }
+	}
+	/// get cell text
+	dstring cellText(int col, int row) {
+		return _data[row][col];
+	}
+	/// set cell text
+	GridWidgetBase setCellText(int col, int row, dstring text) {
+		_data[row][col] = text;
+		return this;
+	}
+
+    /// zero based index generation of column header - like in Excel - for testing
+    dstring genColHeader(int col) {
+        dstring res;
+        int n1 = col / 26;
+        int n2 = col % 26;
+        if (n1)
+            res ~= n1 + 'A';
+        res ~= n2 + 'A';
+        return res;
+    }
+
+	/// set new size
+	override void resize(int cols, int rows) {
+		if (cols == _cols && rows == _rows)
+			return;
+        int oldcols = _cols;
+        int oldrows = _rows;
+        super.resize(cols, rows);
+		_data.length = rows;
+		for (int y = 0; y < rows; y++)
+			_data[y].length = cols;
+		_colTitles.length = cols;
+        for (int i = oldcols; i < cols; i++)
+            _colTitles[i] = i > 0 ? ("col "d ~ to!dstring(i)) : ""d;
+		_rowTitles.length = rows;
+        for (int i = oldcols; i < cols; i++) {
+            if (i >= _headerCols)
+                _data[0][i] = genColHeader(i - _headerCols);
+            _colWidths[i] = i == 0 ? 20 : 100;
+        }
+		_rowHeights.length = rows;
+        int fontHeight = font.height;
+        for (int i = oldrows; i < rows; i++) {
+            if (i >= _headerRows)
+                _data[i][0] = to!dstring(i - _headerRows + 1);
+            _rowHeights[i] = fontHeight + 2;
+        }
+	}
+
+	/// returns row header title
+	dstring rowTitle(int row) {
+		return _rowTitles[row];
+	}
+	/// set row header title
+	GridWidgetBase setRowTitle(int row, dstring title) {
+		_rowTitles[row] = title;
+		return this;
+	}
+	/// returns row header title
+	dstring colTitle(int col) {
+		return _colTitles[col];
+	}
+	/// set col header title
+	GridWidgetBase setColTitle(int col, dstring title) {
+		_colTitles[col] = title;
+		return this;
+	}
+	/// draw column header
+	void drawColHeader(DrawBuf buf, Rect rc, int index) {
+        //FontRef fnt = font;
+        //buf.fillRect(rc, 0xE0E0E0);
+        //buf.drawFrame(rc, 0x808080, Rect(1,1,1,1));
+        //fnt.drawText(buf, rc.left, rc.top, "col"d, 0x000000);
+	}
+	/// draw row header
+	void drawRowHeader(DrawBuf buf, Rect rc, int index) {
+        //FontRef fnt = font;
+        //buf.fillRect(rc, 0xE0E0E0);
+        //buf.drawFrame(rc, 0x808080, Rect(1,1,1,1));
+        //fnt.drawText(buf, rc.left, rc.top, "row"d, 0x000000);
+	}
+
+	/// draw cell content
+	protected override void drawCell(DrawBuf buf, Rect rc, int col, int row) {
+        rc.shrink(2, 1);
+		FontRef fnt = font;
+        dstring txt = cellText(col, row);
+        Point sz = fnt.textSize(txt);
+        Align ha = Align.Left;
+        if (col < _headerCols)
+            ha = Align.Right;
+        if (row < _headerRows)
+            ha = Align.HCenter;
+        applyAlign(rc, sz, ha, Align.VCenter);
+		fnt.drawText(buf, rc.left + 1, rc.top + 1, txt, 0x000000);
+	}
+
+	/// draw cell background
+	protected override void drawCellBackground(DrawBuf buf, Rect rc, int col, int row) {
+        Rect vborder = rc;
+        Rect hborder = rc;
+        vborder.left = vborder.right - 1;
+        hborder.top = hborder.bottom - 1;
+        hborder.right--;
+        bool selectedCol = _col == col;
+        bool selectedRow = _row == row;
+        bool selectedCell = selectedCol && selectedRow;
+        if (col < _headerCols || row < _headerRows) {
+            // draw header cell background
+            uint cl = 0x80909090;
+            if (selectedCol || selectedRow)
+                cl = 0x80FFC040;
+            buf.fillRect(rc, cl);
+            buf.fillRect(vborder, 0x80202020);
+            buf.fillRect(hborder, 0x80202020);
+        } else {
+            // normal cell background
+            if (col < _headerCols + _fixedCols || row < _headerRows + _fixedRows) {
+                // fixed cell background
+                buf.fillRect(rc, 0x80E0E0E0);
+            }
+            buf.fillRect(vborder, 0x80C0C0C0);
+            buf.fillRect(hborder, 0x80C0C0C0);
+            if (selectedCell)
+                buf.drawFrame(rc, 0x404040FF, Rect(1,1,1,1), 0xC0FFFF00);
+        }
+	}
+
 }
 
 /**
