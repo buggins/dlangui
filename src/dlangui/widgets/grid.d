@@ -100,6 +100,20 @@ class GridWidgetBase : WidgetGroup {
 	}
 }
 
+/// grid control action codes
+enum GridActions : int {
+    /// no action
+	None = 0,
+    /// move selection up
+    Up = 2000,
+    /// move selection down
+    Down,
+    /// move selection left
+    Left,
+    /// move selection right
+    Right,
+}
+
 /**
  * Grid view with string data shown. All rows are of the same height.
  */
@@ -147,6 +161,13 @@ class StringGridWidget : GridWidgetBase {
                 _data[y][x] = "cell("d ~ to!dstring(x) ~ ","d ~ to!dstring(y) ~ ")"d;
             }
         }
+		acceleratorMap.add( [
+			new Action(GridActions.Up, KeyCode.UP, 0),
+			new Action(GridActions.Down, KeyCode.DOWN, 0),
+			new Action(GridActions.Left, KeyCode.LEFT, 0),
+			new Action(GridActions.Right, KeyCode.RIGHT, 0),
+		]);
+        focusable = true;
 	}
 	@property override int cols() {
 		return _cols;
@@ -319,7 +340,7 @@ class StringGridWidget : GridWidgetBase {
             x -= _clientRect.left;
             y -= _clientRect.top;
             cellFound = pointToCell(x, y, c, r, rc);
-            normalCell = c >= _fixedCols && r >= _fixedRows;
+            normalCell = c >= _headerCols && r >= _headerRows;
         }
         if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
             if (cellFound && normalCell) {
@@ -341,6 +362,32 @@ class StringGridWidget : GridWidgetBase {
         return super.onMouseEvent(event);
     }
 
+	override protected bool handleAction(const Action a) {
+		switch (a.id) {
+            case GridActions.Left:
+                if (_col > _headerCols)
+                    _col--;
+                invalidate();
+                return true;
+            case GridActions.Right:
+                if (_col < _cols - 1)
+                    _col++;
+                invalidate();
+                return true;
+            case GridActions.Up:
+                if (_row > _headerRows)
+                    _row--;
+                invalidate();
+                return true;
+            case GridActions.Down:
+                if (_row < _rows - 1)
+                    _row++;
+                invalidate();
+                return true;
+            default:
+                return super.handleAction(a);
+        }
+    }
 
 	/// returns row header title
 	dstring rowTitle(int row) {

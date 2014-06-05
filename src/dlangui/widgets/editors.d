@@ -35,7 +35,7 @@ import std.algorithm;
 immutable dchar EOL = '\n';
 
 /// Editor action codes
-enum EditorActions {
+enum EditorActions : int {
 	None = 0,
 	/// move cursor one char left
 	Left = 1000,
