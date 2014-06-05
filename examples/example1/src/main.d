@@ -515,8 +515,22 @@ extern (C) int UIAppMain(string[] args) {
 
 		StringGridWidget grid = new StringGridWidget("GRID1");
 		grid.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+        grid.showColHeaders = true;
+        grid.showRowHeaders = true;
+        grid.resize(30, 50);
+        grid.fixedCols = 3;
+        grid.fixedRows = 2;
+        grid.selectCell(4, 6, false);
+        // create sample grid content
+        for (int y = 1; y < grid.rows; y++) {
+            for (int x = 1; x < grid.cols; x++) {
+                grid.setCellText(x, y, "cell("d ~ to!dstring(x) ~ ","d ~ to!dstring(y) ~ ")"d);
+            }
+        }
+        grid.autoFit();
 		tabs.addTab(grid, "Grid"d);
 
+        //==========================================================================
 
         contentLayout.addChild(tabs);
 	    window.mainWidget = contentLayout;

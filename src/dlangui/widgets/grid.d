@@ -191,6 +191,12 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
 	@property int rows() { return _rows; }
     /// set row count
 	@property GridWidgetBase rows(int r) { resize(_cols, r); return this; }
+    /// fixed (non-scrollable) data column count
+	@property int fixedCols() { return _fixedCols; }
+	@property GridWidgetBase fixedCols(int c) { _fixedCols = c; invalidate(); return this; }
+    /// fixed (non-scrollable) data row count
+	@property int fixedRows() { return _fixedRows; }
+	@property GridWidgetBase fixedRows(int r) { _fixedRows = r; invalidate(); return this; }
 	/// set new size
 	void resize(int cols, int rows) {
 		if (cols == _cols && rows == _rows)
@@ -344,6 +350,7 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
         return 0;
     }
 
+    /// set scroll position to show specified cell as top left in scrollable area
     void scrollTo(int col, int row) {
         int newScrollCol = col - _headerCols - _fixedCols;
         int newScrollRow = row - _headerRows - _fixedRows;
@@ -430,6 +437,7 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
         }
     }
 
+    /// move selection to specified cell
     bool selectCell(int col, int row, bool makeVisible = true) {
         if (_col == col && _row == row)
             return false; // same position
@@ -789,6 +797,50 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
         // override it
     }
 
+    protected Point measureCell(int x, int y) {
+        // override it!
+        return Point(80, 20);
+    }
+
+    protected int measureColWidth(int x) {
+        int m = 0;
+        for (int i = 0; i < _rows; i++) {
+            Point sz = measureCell(x, i);
+            if (m < sz.x)
+                m = sz.x;
+        }
+        if (m < 10)
+            m = 10; // TODO: use min size
+        return m;
+    }
+
+    protected int measureRowHeight(int y) {
+        int m = 0;
+        for (int i = 0; i < _cols; i++) {
+            Point sz = measureCell(i, y);
+            if (m < sz.y)
+                m = sz.y;
+        }
+        if (m < 12)
+            m = 12; // TODO: use min size
+        return m;
+    }
+
+    void autoFitColumnWidths() {
+        for (int i = 0; i < _cols; i++)
+            _colWidths[i] = measureColWidth(i) + 5;
+    }
+
+    void autoFitRowHeights() {
+        for (int i = 0; i < _rows; i++)
+            _rowHeights[i] = measureRowHeight(i) + 2;
+    }
+
+    void autoFit() {
+        autoFitColumnWidths();
+        autoFitRowHeights();
+    }
+
 	this(string ID = null) {
 		super(ID);
 		_vscrollbar = new ScrollBar("vscrollbar", Orientation.Vertical);
@@ -828,19 +880,6 @@ class StringGridWidget : GridWidgetBase {
 	this(string ID = null) {
 		super(ID);
 		styleId = "EDIT_BOX";
-        // create sample grid content
-		_headerCols = 1;
-		_headerRows = 1;
-        _fixedCols = 2;
-        _fixedRows = 2;
-        resize(20, 30);
-        _col = 3;
-        _row = 4;
-        for (int y = 1; y < _rows; y++) {
-            for (int x = 1; x < _cols; x++) {
-                _data[y][x] = "cell("d ~ to!dstring(x) ~ ","d ~ to!dstring(y) ~ ")"d;
-            }
-        }
 	}
 	/// get cell text
 	dstring cellText(int col, int row) {
@@ -853,7 +892,7 @@ class StringGridWidget : GridWidgetBase {
 	}
 
     /// zero based index generation of column header - like in Excel - for testing
-    dstring genColHeader(int col) {
+    static dstring genColHeader(int col) {
         dstring res;
         int n1 = col / 26;
         int n2 = col % 26;
@@ -861,6 +900,10 @@ class StringGridWidget : GridWidgetBase {
             res ~= n1 + 'A';
         res ~= n2 + 'A';
         return res;
+    }
+
+    static dstring genRowHeader(int row) {
+        return to!dstring(row);
     }
 
 	/// set new size
@@ -875,18 +918,23 @@ class StringGridWidget : GridWidgetBase {
 			_data[y].length = cols;
 		_colTitles.length = cols;
         for (int i = oldcols; i < cols; i++)
-            _colTitles[i] = i > 0 ? ("col "d ~ to!dstring(i)) : ""d;
 		_rowTitles.length = rows;
         for (int i = oldcols; i < cols; i++) {
-            if (i >= _headerCols)
-                _data[0][i] = genColHeader(i - _headerCols);
+            if (i >= _headerCols) {
+                dstring txt = genColHeader(i - _headerCols);
+                _data[0][i] = txt;
+                _colTitles[i] = txt;
+            }
             _colWidths[i] = i == 0 ? 20 : 100;
         }
 		_rowHeights.length = rows;
         int fontHeight = font.height;
         for (int i = oldrows; i < rows; i++) {
-            if (i >= _headerRows)
-                _data[i][0] = to!dstring(i - _headerRows + 1);
+            if (i >= _headerRows) {
+                dstring txt = genRowHeader(i - _headerRows + 1);
+                _data[i][0] = txt;
+                _rowTitles[i] = txt;
+            }
             _rowHeights[i] = fontHeight + 2;
         }
 	}
@@ -900,29 +948,27 @@ class StringGridWidget : GridWidgetBase {
 		_rowTitles[row] = title;
 		return this;
 	}
+
 	/// returns row header title
 	dstring colTitle(int col) {
 		return _colTitles[col];
 	}
+
 	/// set col header title
 	GridWidgetBase setColTitle(int col, dstring title) {
 		_colTitles[col] = title;
 		return this;
 	}
-	/// draw column header
-	void drawColHeader(DrawBuf buf, Rect rc, int index) {
-        //FontRef fnt = font;
-        //buf.fillRect(rc, 0xE0E0E0);
-        //buf.drawFrame(rc, 0x808080, Rect(1,1,1,1));
-        //fnt.drawText(buf, rc.left, rc.top, "col"d, 0x000000);
-	}
-	/// draw row header
-	void drawRowHeader(DrawBuf buf, Rect rc, int index) {
-        //FontRef fnt = font;
-        //buf.fillRect(rc, 0xE0E0E0);
-        //buf.drawFrame(rc, 0x808080, Rect(1,1,1,1));
-        //fnt.drawText(buf, rc.left, rc.top, "row"d, 0x000000);
-	}
+
+    protected override Point measureCell(int x, int y) {
+		FontRef fnt = font;
+        dstring txt = cellText(col, row);
+        Point sz = fnt.textSize(txt);
+        if (sz.y < fnt.height)
+            sz.y = fnt.height;
+        return sz;
+    }
+
 
 	/// draw cell content
 	protected override void drawCell(DrawBuf buf, Rect rc, int col, int row) {
@@ -970,38 +1016,5 @@ class StringGridWidget : GridWidgetBase {
         }
 	}
 
-}
-
-/**
- * Multicolumn multirow view.
- */
-class GridWidget : WidgetGroup {
-	protected GridAdapter _adapter;
-	/// when true, widget owns adapter and must destroy it itself.
-	protected bool _ownAdapter;
-	protected int _cols;
-	protected int _rows;
-	/// returns current grid adapter
-	@property GridAdapter adapter() { return _adapter; }
-	/// sets shared adapter (will not be destroyed on widget destroy)
-	@property GridWidget adapter(GridAdapter a) {
-		if (_ownAdapter && _adapter)
-			destroy(_adapter);
-		_ownAdapter = false;
-		_adapter = a;
-		return this;
-	}
-	/// sets own adapter (will be destroyed on widget destroy)
-	@property GridWidget ownAdapter(GridAdapter a) {
-		if (_ownAdapter && _adapter)
-			destroy(_adapter);
-		_adapter = a;
-		return this;
-	}
-	/// destroy own adapter
-	~this() {
-		if (_ownAdapter && _adapter)
-			destroy(_adapter);
-	}
 }
 
