@@ -1972,7 +1972,7 @@ class EditBox : EditWidgetBase, OnScrollHandler {
 
     /// handle scroll event
     override bool onScrollEvent(AbstractSlider source, ScrollEvent event) {
-        if (source.id.equal("hscrollbar")) {
+        if (source.compareId("hscrollbar")) {
             if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased) {
                 if (_scrollPos.x != event.position) {
                     _scrollPos.x = event.position;
@@ -1988,7 +1988,7 @@ class EditBox : EditWidgetBase, OnScrollHandler {
                 handleAction(new Action(EditorActions.ScrollRight));
             }
             return true;
-        } else if (source.id.equal("vscrollbar")) {
+        } else if (source.compareId("vscrollbar")) {
             if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased) {
                 if (_firstVisibleLine != event.position) {
                     _firstVisibleLine = event.position;

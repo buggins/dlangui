@@ -112,6 +112,25 @@ enum GridActions : int {
     Left,
     /// move selection right
     Right,
+
+    /// scroll up, w/o changing selection
+    ScrollUp,
+    /// scroll down, w/o changing selection
+    ScrollDown,
+    /// scroll left, w/o changing selection
+    ScrollLeft,
+    /// scroll right, w/o changing selection
+    ScrollRight,
+
+    /// scroll up, w/o changing selection
+    ScrollPageUp,
+    /// scroll down, w/o changing selection
+    ScrollPageDown,
+    /// scroll left, w/o changing selection
+    ScrollPageLeft,
+    /// scroll right, w/o changing selection
+    ScrollPageRight,
+
 	/// move cursor one page up
 	PageUp,
 	/// move cursor one page up with selection
@@ -149,7 +168,7 @@ enum GridActions : int {
 /**
  * Grid view with string data shown. All rows are of the same height.
  */
-class StringGridWidget : GridWidgetBase {
+class StringGridWidget : GridWidgetBase, OnScrollHandler {
 	protected ScrollBar _vscrollbar;
 	protected ScrollBar _hscrollbar;
 	protected int _cols;
@@ -180,6 +199,8 @@ class StringGridWidget : GridWidgetBase {
 		super(ID);
 		_vscrollbar = new ScrollBar("vscrollbar", Orientation.Vertical);
 		_hscrollbar = new ScrollBar("hscrollbar", Orientation.Horizontal);
+        _hscrollbar.onScrollEventListener = this;
+        _vscrollbar.onScrollEventListener = this;
 		addChild(_vscrollbar);
 		addChild(_hscrollbar);
 		styleId = "EDIT_BOX";
@@ -369,8 +390,94 @@ class StringGridWidget : GridWidgetBase {
     }
 
     /// update scrollbar positions
-    void updateScrollBars() {
-        // TODO
+    protected void updateScrollBars() {
+        calcScrollableAreaPos(_fullyVisibleCells, _fullyVisibleCellsRect, _fullScrollableArea, _visibleScrollableArea);
+        if (_hscrollbar) {
+            _hscrollbar.setRange(0, _fullScrollableArea.width);
+            _hscrollbar.pageSize(_visibleScrollableArea.width);
+            _hscrollbar.position(_visibleScrollableArea.left - _fullScrollableArea.left);
+        }
+        if (_vscrollbar) {
+            _vscrollbar.setRange(0, _fullScrollableArea.height);
+            _vscrollbar.pageSize(_visibleScrollableArea.height);
+            _vscrollbar.position(_visibleScrollableArea.top - _fullScrollableArea.top);
+        }
+    }
+
+    protected int colByAbsoluteX(int x) {
+        int xx = 0;
+        for (int i = 0; i < _cols; i++) {
+            int w = _colWidths[i];
+            if (x < xx + w || i == _cols - 1)
+                return i;
+            xx += w;
+        }
+        return 0;
+    }
+
+    protected int rowByAbsoluteY(int y) {
+        int yy = 0;
+        for (int i = 0; i < _rows; i++) {
+            int w = _rowHeights[i];
+            if (y < yy + w || i == _rows - 1)
+                return i;
+            yy += w;
+        }
+        return 0;
+    }
+
+    void scrollTo(int col, int row) {
+        int newScrollCol = col - _headerCols - _fixedCols;
+        int newScrollRow = row - _headerRows - _fixedRows;
+        bool changed = false;
+        if (newScrollCol >= 0 && newScrollCol + _headerCols + _fixedCols < _cols) {
+            if (_scrollCol != newScrollCol) {
+                _scrollCol = newScrollCol;
+                changed = true;
+            }
+        }
+        if (newScrollRow >= 0 && newScrollRow + _headerRows + _fixedRows < _rows) {
+            if (_scrollRow != newScrollRow) {
+                _scrollRow = newScrollRow;
+                changed = true;
+            }
+        }
+        if (changed)
+            updateScrollBars();
+    }
+
+    /// handle scroll event
+    override bool onScrollEvent(AbstractSlider source, ScrollEvent event) {
+        if (source.compareId("hscrollbar")) {
+            if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased) {
+                int col = colByAbsoluteX(event.position + _fullScrollableArea.left);
+                scrollTo(col, _scrollRow + _headerRows + _fixedRows);
+            } else if (event.action == ScrollAction.PageUp) {
+                handleAction(new Action(GridActions.ScrollPageLeft));
+            } else if (event.action == ScrollAction.PageDown) {
+                handleAction(new Action(GridActions.ScrollPageRight));
+            } else if (event.action == ScrollAction.LineUp) {
+                handleAction(new Action(GridActions.ScrollLeft));
+            } else if (event.action == ScrollAction.LineDown) {
+                handleAction(new Action(GridActions.ScrollRight));
+            }
+            return true;
+        } else if (source.compareId("vscrollbar")) {
+            if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased) {
+                int row = rowByAbsoluteY(event.position + _fullScrollableArea.top);
+                scrollTo(_scrollCol + _headerCols + _fixedCols, row);
+            } else if (event.action == ScrollAction.PageUp) {
+                handleAction(new Action(GridActions.ScrollPageUp));
+            } else if (event.action == ScrollAction.PageDown) {
+                handleAction(new Action(GridActions.ScrollPageDown));
+            } else if (event.action == ScrollAction.LineUp) {
+                handleAction(new Action(GridActions.ScrollUp));
+            } else if (event.action == ScrollAction.LineDown) {
+                handleAction(new Action(GridActions.ScrollDown));
+            }
+            return true;
+        }
+        return true;
     }
 
     /// ensure that cell is visible (scroll if necessary)
@@ -413,6 +520,7 @@ class StringGridWidget : GridWidgetBase {
         _col = col;
         _row = row;
         invalidate();
+        calcScrollableAreaPos(_fullyVisibleCells, _fullyVisibleCellsRect, _fullScrollableArea, _visibleScrollableArea);
         if (makeVisible)
             makeCellVisible(_col, _row);
         return true;
@@ -451,14 +559,15 @@ class StringGridWidget : GridWidgetBase {
         return super.onMouseEvent(event);
     }
 
-    protected void calcScrollableAreaPos(ref Rect fullyVisibleCells, ref Rect fullyVisibleCellsRect) {
+    protected void calcScrollableAreaPos(ref Rect fullyVisibleCells, ref Rect fullyVisibleCellsRect, ref Rect fullScrollableArea, ref Rect visibleScrollableArea) {
         fullyVisibleCells.left = _headerCols + _fixedCols + _scrollCol;
         fullyVisibleCells.top = _headerRows + _fixedRows + _scrollRow;
         Rect rc;
         int xx = 0;
         for (int i = 0; i < _cols && xx < _clientRect.width; i++) {
-            if (i == fullyVisibleCells.left)
+            if (i == fullyVisibleCells.left) {
                 fullyVisibleCellsRect.left = fullyVisibleCellsRect.right = xx;
+            }
             int w = colWidth(i);
             if (i >= fullyVisibleCells.left && xx + w <= _clientRect.width) {
                 fullyVisibleCellsRect.right = xx + w;
@@ -477,12 +586,61 @@ class StringGridWidget : GridWidgetBase {
             }
             yy += w;
         }
+        // calc scroll area in pixels
+        xx = 0;
+        for (int i = 0; i < _cols; i++) {
+            if (i == _headerCols + _fixedCols) {
+                fullScrollableArea.left = xx;
+            }
+            if (i == fullyVisibleCells.left) {
+                visibleScrollableArea.left = xx;
+            }
+            int w = _colWidths[i];
+            xx += w;
+            if (i >= _headerCols + _fixedCols) {
+                fullScrollableArea.right = xx;
+            }
+            if (i >= fullyVisibleCells.left) {
+                visibleScrollableArea.right = xx;
+            }
+        }
+        yy = 0;
+        for (int i = 0; i < _rows; i++) {
+            if (i == _headerRows + _fixedRows) {
+                fullScrollableArea.top = yy;
+            }
+            if (i == fullyVisibleCells.top) {
+                visibleScrollableArea.top = yy;
+            }
+            int w = _rowHeights[i];
+            yy += w;
+            if (i >= _headerRows + _fixedRows) {
+                fullScrollableArea.bottom = yy;
+            }
+            if (i >= fullyVisibleCells.top) {
+                visibleScrollableArea.bottom = yy;
+            }
+        }
+        // crop scroll area by client rect
+        int maxVisibleScrollWidth = _clientRect.width - fullyVisibleCellsRect.left;
+        int maxVisibleScrollHeight = _clientRect.height - fullyVisibleCellsRect.top;
+        if (maxVisibleScrollWidth < 0)
+            maxVisibleScrollWidth = 0;
+        if (maxVisibleScrollHeight < 0)
+            maxVisibleScrollHeight = 0;
+        if (visibleScrollableArea.width > maxVisibleScrollWidth)
+            visibleScrollableArea.right = visibleScrollableArea.left + maxVisibleScrollWidth;
+        if (visibleScrollableArea.height > maxVisibleScrollHeight)
+            visibleScrollableArea.bottom = visibleScrollableArea.top + maxVisibleScrollHeight;
     }
 
+    protected Rect _fullyVisibleCells;
+    protected Rect _fullyVisibleCellsRect;
+    protected Rect _fullScrollableArea;
+    protected Rect _visibleScrollableArea;
+
 	override protected bool handleAction(const Action a) {
-        Rect fullyVisibleCells;
-        Rect fullyVisibleCellsRect;
-        calcScrollableAreaPos(fullyVisibleCells, fullyVisibleCellsRect);
+        calcScrollableAreaPos(_fullyVisibleCells, _fullyVisibleCellsRect, _fullScrollableArea, _visibleScrollableArea);
 		switch (a.id) {
             case GridActions.Left:
                 selectCell(_col - 1, _row);
@@ -541,9 +699,9 @@ class StringGridWidget : GridWidgetBase {
                     selectCell(_col, found);
                 return true;
             case GridActions.PageUp:
-                if (_row > fullyVisibleCells.top) {
+                if (_row > _fullyVisibleCells.top) {
                     // not at top scrollable cell
-                    selectCell(_col, fullyVisibleCells.top);
+                    selectCell(_col, _fullyVisibleCells.top);
                 } else {
                     // at top of scrollable area
                     if (_scrollRow > 0) {
@@ -551,8 +709,7 @@ class StringGridWidget : GridWidgetBase {
                         int prevRow = _row;
                         for (int i = prevRow - 1; i >= _headerRows; i--) {
                             selectCell(_col, i);
-                            calcScrollableAreaPos(fullyVisibleCells, fullyVisibleCellsRect);
-                            if (fullyVisibleCells.bottom <= prevRow)
+                            if (_fullyVisibleCells.bottom <= prevRow)
                                 break;
                         }
                     } else {
@@ -563,16 +720,16 @@ class StringGridWidget : GridWidgetBase {
                 return true;
             case GridActions.PageDown: 
                 if (_row < _rows) {
-                    if (_row < fullyVisibleCells.bottom) {
+                    if (_row < _fullyVisibleCells.bottom) {
                         // not at top scrollable cell
-                        selectCell(_col, fullyVisibleCells.bottom);
+                        selectCell(_col, _fullyVisibleCells.bottom);
                     } else {
                         // scroll down
                         int prevRow = _row;
                         for (int i = prevRow + 1; i < _rows; i++) {
                             selectCell(_col, i);
-                            calcScrollableAreaPos(fullyVisibleCells, fullyVisibleCellsRect);
-                            if (fullyVisibleCells.top >= prevRow)
+                            calcScrollableAreaPos(_fullyVisibleCells, _fullyVisibleCellsRect, _fullScrollableArea, _visibleScrollableArea);
+                            if (_fullyVisibleCells.top >= prevRow)
                                 break;
                         }
                     }
@@ -656,6 +813,7 @@ class StringGridWidget : GridWidgetBase {
 		_clientRect = rc;
 		_clientRect.right = vsbrc.left;
 		_clientRect.bottom = hsbrc.top;
+        updateScrollBars();
 	}
 
 	/// draw cell content
