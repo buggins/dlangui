@@ -962,7 +962,7 @@ class StringGridWidget : GridWidgetBase {
 
     protected override Point measureCell(int x, int y) {
 		FontRef fnt = font;
-        dstring txt = cellText(col, row);
+        dstring txt = cellText(x, y);
         Point sz = fnt.textSize(txt);
         if (sz.y < fnt.height)
             sz.y = fnt.height;
