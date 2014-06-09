@@ -1115,13 +1115,13 @@ class StringGridWidget : StringGridWidgetBase {
 	}
 	/// get cell text
 	override dstring cellText(int col, int row) {
-        if (col >= 0 && col < _cols && row >= 0 && row < _rows)
+        if (col >= 0 && col < cols && row >= 0 && row < rows)
 		    return _data[row][col];
         return ""d;
 	}
 	/// set cell text
 	override StringGridWidgetBase setCellText(int col, int row, dstring text) {
-        if (col >= 0 && col < _cols && row >= 0 && row < _rows)
+        if (col >= 0 && col < cols && row >= 0 && row < rows)
 		    _data[row][col] = text;
 		return this;
 	}
@@ -1148,11 +1148,11 @@ class StringGridWidget : StringGridWidgetBase {
         int oldcols = cols;
         int oldrows = rows;
         super.resize(c, r);
-		_data.length = _rows;
+		_data.length = r;
 		for (int y = 0; y < r; y++)
-			_data[y].length = _cols;
-		_colTitles.length = _cols;
-		_rowTitles.length = _rows;
+			_data[y].length = c;
+		_colTitles.length = c;
+		_rowTitles.length = r;
 	}
 
 	/// returns row header title
@@ -1177,6 +1177,7 @@ class StringGridWidget : StringGridWidgetBase {
 	}
 
     protected override Point measureCell(int x, int y) {
+		//Log.d("measureCell ", x, ", ", y);
 		FontRef fnt = font;
         dstring txt = cellText(x, y);
         Point sz = fnt.textSize(txt);
