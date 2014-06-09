@@ -520,6 +520,7 @@ extern (C) int UIAppMain(string[] args) {
         grid.resize(30, 50);
         grid.fixedCols = 3;
         grid.fixedRows = 2;
+        grid.rowSelect = true;
         grid.selectCell(4, 6, false);
         // create sample grid content
         for (int y = 1; y < grid.rows; y++) {
