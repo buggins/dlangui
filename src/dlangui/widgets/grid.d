@@ -186,28 +186,25 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
 	protected Rect _clientRect;
     /// when true, allows to select only whole row
     protected bool _rowSelect;
+    /// default column width - for newly added columns
+    protected int _defColumnWidth;
+    /// default row height - for newly added rows
+    protected int _defRowHeight;
 
     // properties
 
     /// selected column
-	@property int col() { return _col; }
+	@property int col() { return _col - _headerCols; }
     /// selected row
-	@property int row() { return _row; }
+	@property int row() { return _row - _headerRows; }
     /// column count
-	@property int cols() { return _cols; }
+	@property int cols() { return _cols - _headerCols; }
     /// set column count
-	@property GridWidgetBase cols(int c) { resize(c, _rows); return this; }
+	@property GridWidgetBase cols(int c) { resize(c, rows); return this; }
     /// row count
-	@property int rows() { return _rows; }
+	@property int rows() { return _rows - _headerRows; }
     /// set row count
-	@property GridWidgetBase rows(int r) { resize(_cols, r); return this; }
-
-    /// fixed (non-scrollable) data column count
-	@property int fixedCols() { return _fixedCols; }
-	@property GridWidgetBase fixedCols(int c) { _fixedCols = c; invalidate(); return this; }
-    /// fixed (non-scrollable) data row count
-	@property int fixedRows() { return _fixedRows; }
-	@property GridWidgetBase fixedRows(int r) { _fixedRows = r; invalidate(); return this; }
+	@property GridWidgetBase rows(int r) { resize(cols, r); return this; }
 
     /// row header column count
 	@property int headerCols() { return _headerCols; }
@@ -224,6 +221,29 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
         return this; 
     }
 
+    /// fixed (non-scrollable) data column count
+	@property int fixedCols() { return _fixedCols; }
+	@property GridWidgetBase fixedCols(int c) { _fixedCols = c; invalidate(); return this; }
+    /// fixed (non-scrollable) data row count
+	@property int fixedRows() { return _fixedRows; }
+	@property GridWidgetBase fixedRows(int r) { _fixedRows = r; invalidate(); return this; }
+
+    /// default column width - for newly added columns
+    @property int defColumnWidth() {
+        return _defColumnWidth;
+    }
+    @property GridWidgetBase defColumnWidth(int v) {
+        _defColumnWidth = v;
+        return this;
+    }
+    /// default row height - for newly added rows
+    @property int defRowHeight() {
+        return _defRowHeight;
+    }
+    @property GridWidgetBase defRowHeight(int v) {
+        _defRowHeight = v;
+        return this;
+    }
 
 	/// when true, allows only select the whole row
 	@property bool rowSelect() {
@@ -265,20 +285,19 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
 	}
 
 	/// set new size
-	void resize(int cols, int rows) {
-		if (cols == _cols && rows == _rows)
+	void resize(int c, int r) {
+		if (c == cols && r == rows)
 			return;
-		_colWidths.length = cols;
-        for (int i = _cols; i < cols; i++) {
-            _colWidths[i] = i == 0 ? 20 : 100;
+		_colWidths.length = c + _headerCols;
+        for (int i = _cols; i < c + _headerCols; i++) {
+            _colWidths[i] = _defColumnWidth;
         }
-		_rowHeights.length = rows;
-        int fontHeight = font.height;
-        for (int i = _rows; i < rows; i++) {
-            _rowHeights[i] = fontHeight + 2;
+		_rowHeights.length = r + _headerRows;
+        for (int i = _rows; i < r + _headerRows; i++) {
+            _rowHeights[i] = _defRowHeight;
         }
-		_cols = cols;
-		_rows = rows;
+		_cols = c + _headerCols;
+		_rows = r + _headerRows;
     }
 
 
@@ -1022,6 +1041,8 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
 		addChild(_hscrollbar);
         _headerCols = 1;
         _headerRows = 1;
+        _defRowHeight = 20;
+        _defColumnWidth = 100;
         _showColHeaders = true;
         _showRowHeaders = true;
 		acceleratorMap.add( [
@@ -1059,6 +1080,24 @@ class StringGridWidgetBase : GridWidgetBase {
 	/// set col header title
 	abstract StringGridWidgetBase setColTitle(int col, dstring title);
 
+    ///// selected column
+    //@property override int col() { return _col - _headerCols; }
+    ///// selected row
+    //@property override int row() { return _row - _headerRows; }
+    ///// column count
+    //@property override int cols() { return _cols - _headerCols; }
+    ///// set column count
+    //@property override GridWidgetBase cols(int c) { resize(c, rows); return this; }
+    ///// row count
+    //@property override int rows() { return _rows - _headerRows; }
+    ///// set row count
+    //@property override GridWidgetBase rows(int r) { resize(cols, r); return this; }
+    //
+    ///// set new size
+    //override void resize(int cols, int rows) {
+    //    super.resize(cols + _headerCols, rows + _headerRows);
+    //}
+
 }
 
 /**
@@ -1076,11 +1115,14 @@ class StringGridWidget : StringGridWidgetBase {
 	}
 	/// get cell text
 	override dstring cellText(int col, int row) {
-		return _data[row][col];
+        if (col >= 0 && col < _cols && row >= 0 && row < _rows)
+		    return _data[row][col];
+        return ""d;
 	}
 	/// set cell text
 	override StringGridWidgetBase setCellText(int col, int row, dstring text) {
-		_data[row][col] = text;
+        if (col >= 0 && col < _cols && row >= 0 && row < _rows)
+		    _data[row][col] = text;
 		return this;
 	}
 
@@ -1100,36 +1142,17 @@ class StringGridWidget : StringGridWidgetBase {
     }
 
 	/// set new size
-	override void resize(int cols, int rows) {
-		if (cols == _cols && rows == _rows)
+	override void resize(int c, int r) {
+		if (c == cols && r == rows)
 			return;
-        int oldcols = _cols;
-        int oldrows = _rows;
-        super.resize(cols, rows);
-		_data.length = rows;
-		for (int y = 0; y < rows; y++)
-			_data[y].length = cols;
-		_colTitles.length = cols;
-        for (int i = oldcols; i < cols; i++)
-		_rowTitles.length = rows;
-        for (int i = oldcols; i < cols; i++) {
-            if (i >= _headerCols) {
-                dstring txt = genColHeader(i - _headerCols);
-                _data[0][i] = txt;
-                _colTitles[i] = txt;
-            }
-            _colWidths[i] = i == 0 ? 20 : 100;
-        }
-		_rowHeights.length = rows;
-        int fontHeight = font.height;
-        for (int i = oldrows; i < rows; i++) {
-            if (i >= _headerRows) {
-                dstring txt = genRowHeader(i - _headerRows + 1);
-                _data[i][0] = txt;
-                _rowTitles[i] = txt;
-            }
-            _rowHeights[i] = fontHeight + 2;
-        }
+        int oldcols = cols;
+        int oldrows = rows;
+        super.resize(c, r);
+		_data.length = _rows;
+		for (int y = 0; y < r; y++)
+			_data[y].length = _cols;
+		_colTitles.length = _cols;
+		_rowTitles.length = _rows;
 	}
 
 	/// returns row header title
