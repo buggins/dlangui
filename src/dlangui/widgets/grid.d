@@ -320,7 +320,7 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
 
     /// update scrollbar positions
     protected void updateScrollBars() {
-        calcScrollableAreaPos(_fullyVisibleCells, _fullyVisibleCellsRect, _fullScrollableArea, _visibleScrollableArea);
+        calcScrollableAreaPos();
         if (_hscrollbar) {
             _hscrollbar.setRange(0, _fullScrollableArea.width);
             _hscrollbar.pageSize(_visibleScrollableArea.width);
@@ -357,15 +357,25 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
         return 0;
     }
 
-    /// move scroll position horizontally by dx, and vertically by dy
-    void scrollBy(int dx, int dy) {
-        scrollTo(_headerCols + _fixedCols + _scrollCol + dx, _headerRows + _fixedRows + _scrollRow + dy);
+    /// move scroll position horizontally by dx, and vertically by dy; returns true if scrolled
+    bool scrollBy(int dx, int dy) {
+        return scrollTo(_headerCols + _fixedCols + _scrollCol + dx, _headerRows + _fixedRows + _scrollRow + dy);
     }
 
     /// set scroll position to show specified cell as top left in scrollable area
-    void scrollTo(int col, int row) {
+    bool scrollTo(int col, int row) {
+        int oldx = _scrollCol;
+        int oldy = _scrollRow;
         int newScrollCol = col - _headerCols - _fixedCols;
         int newScrollRow = row - _headerRows - _fixedRows;
+        if (newScrollCol > _maxScrollCol)
+            newScrollCol = _maxScrollCol;
+        if (newScrollCol < 0)
+            newScrollCol = 0;
+        if (newScrollRow > _maxScrollRow)
+            newScrollRow = _maxScrollRow;
+        if (newScrollRow < 0)
+            newScrollRow = 0;
         //bool changed = false;
         if (newScrollCol >= 0 && newScrollCol + _headerCols + _fixedCols < _cols) {
             if (_scrollCol != newScrollCol) {
@@ -381,6 +391,7 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
         }
         //if (changed)
         updateScrollBars();
+        return oldx != _scrollCol || oldy != _scrollRow;
     }
 
     /// handle scroll event
@@ -458,7 +469,7 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
         _col = col;
         _row = row;
         invalidate();
-        calcScrollableAreaPos(_fullyVisibleCells, _fullyVisibleCellsRect, _fullScrollableArea, _visibleScrollableArea);
+        calcScrollableAreaPos();
         if (makeVisible)
             makeCellVisible(_col, _row);
         return true;
@@ -497,37 +508,39 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
         return super.onMouseEvent(event);
     }
 
+
     /// calculate scrollable area info
-    protected void calcScrollableAreaPos(ref Rect fullyVisibleCells, ref Rect fullyVisibleCellsRect, ref Rect fullScrollableArea, ref Rect visibleScrollableArea) {
-        fullyVisibleCells.left = _headerCols + _fixedCols + _scrollCol;
-        fullyVisibleCells.top = _headerRows + _fixedRows + _scrollRow;
+    protected void calcScrollableAreaPos() {
+        _maxScrollCol = _maxScrollRow = 0;
+        _fullyVisibleCells.left = _headerCols + _fixedCols + _scrollCol;
+        _fullyVisibleCells.top = _headerRows + _fixedRows + _scrollRow;
         Rect rc;
         int xx = 0;
         for (int i = 0; i < _cols && xx < _clientRect.width; i++) {
-            if (i == fullyVisibleCells.left) {
-                fullyVisibleCellsRect.left = fullyVisibleCellsRect.right = xx;
+            if (i == _fullyVisibleCells.left) {
+                _fullyVisibleCellsRect.left = _fullyVisibleCellsRect.right = xx;
             }
             int w = colWidth(i);
-            if (i >= fullyVisibleCells.left && xx + w <= _clientRect.width) {
-                fullyVisibleCellsRect.right = xx + w;
-                fullyVisibleCells.right = i;
+            if (i >= _fullyVisibleCells.left && xx + w <= _clientRect.width) {
+                _fullyVisibleCellsRect.right = xx + w;
+                _fullyVisibleCells.right = i;
             }
             xx += w;
         }
         int yy = 0;
         for (int i = 0; i < _rows && yy < _clientRect.height; i++) {
-            if (i == fullyVisibleCells.top)
-                fullyVisibleCellsRect.top = fullyVisibleCellsRect.bottom = yy;
+            if (i == _fullyVisibleCells.top)
+                _fullyVisibleCellsRect.top = _fullyVisibleCellsRect.bottom = yy;
             int w = rowHeight(i);
-            if (i >= fullyVisibleCells.top && yy + w <= _clientRect.height) {
-                fullyVisibleCellsRect.bottom = yy + w;
-                fullyVisibleCells.bottom = i;
+            if (i >= _fullyVisibleCells.top && yy + w <= _clientRect.height) {
+                _fullyVisibleCellsRect.bottom = yy + w;
+                _fullyVisibleCells.bottom = i;
             }
             yy += w;
         }
 
-        int maxVisibleScrollWidth = _clientRect.width - fullyVisibleCellsRect.left;
-        int maxVisibleScrollHeight = _clientRect.height - fullyVisibleCellsRect.top;
+        int maxVisibleScrollWidth = _clientRect.width - _fullyVisibleCellsRect.left;
+        int maxVisibleScrollHeight = _clientRect.height - _fullyVisibleCellsRect.top;
         if (maxVisibleScrollWidth < 0)
             maxVisibleScrollWidth = 0;
         if (maxVisibleScrollHeight < 0)
@@ -538,69 +551,73 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
         xx = 0;
         for (int i = 0; i < _cols; i++) {
             if (i == _headerCols + _fixedCols) {
-                fullScrollableArea.left = xx;
+                _fullScrollableArea.left = xx;
             }
-            if (i == fullyVisibleCells.left) {
-                visibleScrollableArea.left = xx;
+            if (i == _fullyVisibleCells.left) {
+                _visibleScrollableArea.left = xx;
             }
             int w = _colWidths[i];
             xx += w;
             if (i >= _headerCols + _fixedCols) {
-                fullScrollableArea.right = xx;
+                _fullScrollableArea.right = xx;
             }
-            if (i >= fullyVisibleCells.left) {
-                visibleScrollableArea.right = xx;
+            if (i >= _fullyVisibleCells.left) {
+                _visibleScrollableArea.right = xx;
             }
         }
         xx = 0;
         for (int i = _cols - 1; i >= _headerCols + _fixedCols; i--) {
             int w = _colWidths[i];
             if (xx + w > maxVisibleScrollWidth) {
-                fullScrollableArea.right += maxVisibleScrollWidth - xx;
+                _fullScrollableArea.right += maxVisibleScrollWidth - xx;
                 break;
             }
+            _maxScrollCol = i - _headerCols - _fixedCols;
             xx += w;
         }
         yy = 0;
         for (int i = 0; i < _rows; i++) {
             if (i == _headerRows + _fixedRows) {
-                fullScrollableArea.top = yy;
+                _fullScrollableArea.top = yy;
             }
-            if (i == fullyVisibleCells.top) {
-                visibleScrollableArea.top = yy;
+            if (i == _fullyVisibleCells.top) {
+                _visibleScrollableArea.top = yy;
             }
             int w = _rowHeights[i];
             yy += w;
             if (i >= _headerRows + _fixedRows) {
-                fullScrollableArea.bottom = yy;
+                _fullScrollableArea.bottom = yy;
             }
-            if (i >= fullyVisibleCells.top) {
-                visibleScrollableArea.bottom = yy;
+            if (i >= _fullyVisibleCells.top) {
+                _visibleScrollableArea.bottom = yy;
             }
         }
         yy = 0;
         for (int i = _rows - 1; i >= _headerRows + _fixedRows; i--) {
             int w = _rowHeights[i];
             if (yy + w > maxVisibleScrollHeight) {
-                fullScrollableArea.bottom += maxVisibleScrollHeight - yy;
+                _fullScrollableArea.bottom += maxVisibleScrollHeight - yy;
                 break;
             }
+            _maxScrollRow = i - _headerRows - _fixedRows;
             yy += w;
         }
         // crop scroll area by client rect
         //if (visibleScrollableArea.width > maxVisibleScrollWidth)
-        visibleScrollableArea.right = visibleScrollableArea.left + maxVisibleScrollWidth;
+        _visibleScrollableArea.right = _visibleScrollableArea.left + maxVisibleScrollWidth;
         //if (visibleScrollableArea.height > maxVisibleScrollHeight)
-        visibleScrollableArea.bottom = visibleScrollableArea.top + maxVisibleScrollHeight;
+        _visibleScrollableArea.bottom = _visibleScrollableArea.top + maxVisibleScrollHeight;
     }
 
+    protected int _maxScrollCol;
+    protected int _maxScrollRow;
     protected Rect _fullyVisibleCells;
     protected Rect _fullyVisibleCellsRect;
     protected Rect _fullScrollableArea;
     protected Rect _visibleScrollableArea;
 
 	override protected bool handleAction(const Action a) {
-        calcScrollableAreaPos(_fullyVisibleCells, _fullyVisibleCellsRect, _fullScrollableArea, _visibleScrollableArea);
+        calcScrollableAreaPos();
 		switch (a.id) {
             case GridActions.ScrollLeft:
                 if (_scrollCol > 0)
@@ -640,6 +657,11 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
                 }
                 return true;
             case GridActions.ScrollPageRight:
+                int prevCol = _fullyVisibleCells.right;
+                while (_headerCols + _fixedCols + _scrollCol < prevCol) {
+                    if (!scrollBy(1, 0))
+                        break;
+                }
                 return true;
             case GridActions.ScrollPageUp:
                 // scroll up line by line
@@ -651,6 +673,11 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
                 }
                 return true;
             case GridActions.ScrollPageDown:
+                int prevRow = _fullyVisibleCells.bottom;
+                while (_headerRows + _fixedRows + _scrollRow < prevRow) {
+                    if (!scrollBy(0, 1))
+                        break;
+                }
                 return true;
             case GridActions.LineBegin:
                 if (_scrollCol > 0 && _col > _headerCols + _fixedCols + _scrollCol)
@@ -726,7 +753,7 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
                         int prevRow = _row;
                         for (int i = prevRow + 1; i < _rows; i++) {
                             selectCell(_col, i);
-                            calcScrollableAreaPos(_fullyVisibleCells, _fullyVisibleCellsRect, _fullScrollableArea, _visibleScrollableArea);
+                            calcScrollableAreaPos();
                             if (_fullyVisibleCells.top >= prevRow)
                                 break;
                         }
