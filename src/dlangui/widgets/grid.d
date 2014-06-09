@@ -178,6 +178,11 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
 	protected ScrollBar _vscrollbar;
     /// horizontal scrollbar control
 	protected ScrollBar _hscrollbar;
+    /// inner area, excluding additional controls like scrollbars
+	protected Rect _clientRect;
+
+
+    // properties
 
     /// selected column
 	@property int col() { return _col; }
@@ -197,22 +202,7 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
     /// fixed (non-scrollable) data row count
 	@property int fixedRows() { return _fixedRows; }
 	@property GridWidgetBase fixedRows(int r) { _fixedRows = r; invalidate(); return this; }
-	/// set new size
-	void resize(int cols, int rows) {
-		if (cols == _cols && rows == _rows)
-			return;
-		_colWidths.length = cols;
-        for (int i = _cols; i < cols; i++) {
-            _colWidths[i] = i == 0 ? 20 : 100;
-        }
-		_rowHeights.length = rows;
-        int fontHeight = font.height;
-        for (int i = _rows; i < rows; i++) {
-            _rowHeights[i] = fontHeight + 2;
-        }
-		_cols = cols;
-		_rows = rows;
-    }
+
 
 	/// flag to enable column headers
 	@property bool showColHeaders() {
@@ -232,6 +222,23 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
         invalidate();
 		return this;
 	}
+
+	/// set new size
+	void resize(int cols, int rows) {
+		if (cols == _cols && rows == _rows)
+			return;
+		_colWidths.length = cols;
+        for (int i = _cols; i < cols; i++) {
+            _colWidths[i] = i == 0 ? 20 : 100;
+        }
+		_rowHeights.length = rows;
+        int fontHeight = font.height;
+        for (int i = _rows; i < rows; i++) {
+            _rowHeights[i] = fontHeight + 2;
+        }
+		_cols = cols;
+		_rows = rows;
+    }
 
 
     /// returns column width (index includes col/row headers, if any); returns 0 for columns hidden by scroll at the left
@@ -348,6 +355,11 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
             yy += w;
         }
         return 0;
+    }
+
+    /// move scroll position horizontally by dx, and vertically by dy
+    void scrollBy(int dx, int dy) {
+        scrollTo(_headerCols + _fixedCols + _scrollCol + dx, _headerRows + _fixedRows + _scrollRow + dy);
     }
 
     /// set scroll position to show specified cell as top left in scrollable area
@@ -485,6 +497,7 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
         return super.onMouseEvent(event);
     }
 
+    /// calculate scrollable area info
     protected void calcScrollableAreaPos(ref Rect fullyVisibleCells, ref Rect fullyVisibleCellsRect, ref Rect fullScrollableArea, ref Rect visibleScrollableArea) {
         fullyVisibleCells.left = _headerCols + _fixedCols + _scrollCol;
         fullyVisibleCells.top = _headerRows + _fixedRows + _scrollRow;
@@ -568,17 +581,41 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
 	override protected bool handleAction(const Action a) {
         calcScrollableAreaPos(_fullyVisibleCells, _fullyVisibleCellsRect, _fullScrollableArea, _visibleScrollableArea);
 		switch (a.id) {
+            case GridActions.ScrollLeft:
+                if (_scrollCol > 0)
+                    scrollBy(-1, 0);
+                return true;
             case GridActions.Left:
                 selectCell(_col - 1, _row);
+                return true;
+            case GridActions.ScrollRight:
+                if (_fullyVisibleCells.right < _cols - 1)
+                    scrollBy(1, 0);
                 return true;
             case GridActions.Right:
                 selectCell(_col + 1, _row);
                 return true;
+            case GridActions.ScrollUp:
+                if (_scrollRow > 0)
+                    scrollBy(0, -1);
+                return true;
             case GridActions.Up:
                 selectCell(_col, _row - 1);
                 return true;
+            case GridActions.ScrollDown:
+                if (_fullyVisibleCells.bottom < _rows - 1)
+                    scrollBy(0, 1);
+                return true;
             case GridActions.Down:
                 selectCell(_col, _row + 1);
+                return true;
+            case GridActions.ScrollPageLeft:
+                return true;
+            case GridActions.ScrollPageRight:
+                return true;
+            case GridActions.ScrollPageUp:
+                return true;
+            case GridActions.ScrollPageDown:
                 return true;
             case GridActions.LineBegin:
                 if (_scrollCol > 0 && _col > _headerCols + _fixedCols + _scrollCol)
@@ -692,7 +729,6 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
 		measuredContent(parentWidth, parentHeight, sz.x, sz.y);
 	}
 
-	protected Rect _clientRect;
 
 	/// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
 	override void layout(Rect rc) {
