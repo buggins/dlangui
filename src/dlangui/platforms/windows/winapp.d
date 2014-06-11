@@ -25,7 +25,6 @@ version (USE_OPENGL) {
 
 pragma(lib, "gdi32.lib");
 pragma(lib, "user32.lib");
-pragma(lib, "libpng15.lib");
 
 /// this function should be defined in user application!
 extern (C) int UIAppMain(string[] args);
