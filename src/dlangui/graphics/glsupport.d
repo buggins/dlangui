@@ -22,7 +22,6 @@ version(USE_OPENGL) {
 
 import dlangui.core.logger;
 private import derelict.opengl3.gl3;
-//private import gl3n.linalg;
 private import dlangui.core.types;
 private import std.conv;
 
