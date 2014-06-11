@@ -42,6 +42,8 @@ Currently implemented widgets:
 * TabControl - tabs widget, allows to select one of tabs
 * TabHost - container for pages controlled by TabControl
 * TabWidget - combination of TabControl and TabHost
+* GridWidgetBase - abstract Grid widget
+* StringGrid - grid view with strings content
 
 Layouts
 -------
