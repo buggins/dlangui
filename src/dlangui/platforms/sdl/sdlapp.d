@@ -15,7 +15,7 @@ Copyright: Vadim Lopatin, 2014
 License:   Boost License 1.0
 Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
-module src.dlangui.platforms.sdl.sdlapp;
+module dlangui.platforms.sdl.sdlapp;
 
 version(USE_SDL) {
     import core.runtime;
