@@ -1005,7 +1005,7 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
     protected int measureColWidth(int x) {
         int m = 0;
         for (int i = 0; i < _rows; i++) {
-            Point sz = measureCell(x - _headerCols, i);
+            Point sz = measureCell(x - _headerCols, i - _headerRows);
             if (m < sz.x)
                 m = sz.x;
         }
@@ -1017,7 +1017,7 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
     protected int measureRowHeight(int y) {
         int m = 0;
         for (int i = 0; i < _cols; i++) {
-            Point sz = measureCell(i, y - _headerRows);
+            Point sz = measureCell(i - _headerCols, y - _headerRows);
             if (m < sz.y)
                 m = sz.y;
         }
@@ -1203,10 +1203,6 @@ class StringGridWidget : StringGridWidgetBase {
         dstring txt = cellText(col, row);
         Point sz = fnt.textSize(txt);
         Align ha = Align.Left;
-        if (col < _headerCols)
-            ha = Align.Right;
-        if (row < _headerRows)
-            ha = Align.HCenter;
         applyAlign(rc, sz, ha, Align.VCenter);
 		fnt.drawText(buf, rc.left + 1, rc.top + 1, txt, 0x000000);
 	}
@@ -1220,13 +1216,13 @@ class StringGridWidget : StringGridWidgetBase {
             txt = colTitle(col);
         else if (row >= 0 && col < 0)
             txt = rowTitle(row);
-        if (txt)
+        if (!txt.length)
             return;
         Point sz = fnt.textSize(txt);
         Align ha = Align.Left;
-        if (col < _headerCols)
+        if (col < 0)
             ha = Align.Right;
-        if (row < _headerRows)
+        if (row < 0)
             ha = Align.HCenter;
         applyAlign(rc, sz, ha, Align.VCenter);
 		fnt.drawText(buf, rc.left + 1, rc.top + 1, txt, 0x000000);
