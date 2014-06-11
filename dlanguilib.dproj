@@ -16,7 +16,6 @@
         <Path>/home/lve/src/d/DerelictGL3/source</Path>
         <Path>/home/lve/src/d/DerelictUtil/source</Path>
         <Path>/home/lve/src/d/dlangui/3rdparty/X11</Path>
-        <Path>/home/lve/src/d/dlangui/3rdparty/libpng/source</Path>
         <Path>/home/lve/src/d/dlangui/3rdparty/X11/xcb</Path>
       </Includes>
     </Includes>
