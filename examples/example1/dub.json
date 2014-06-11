@@ -75,9 +75,7 @@
     "copyFiles-windows": [
         "../../lib/SDL2.dll",
         "../../lib/FreeImage.dll",
-        "../../lib/libfreetype-6.dll",
-        "../../lib/libpng15.dll",
-        "../../lib/zlib1.dll"
+        "../../lib/libfreetype-6.dll"
     ],
 
     "mainSourceFile": "src/main.d",
