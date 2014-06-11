@@ -234,22 +234,6 @@
     <File path="..\DerelictUtil\source\derelict\util\wintypes.d" />
     <File path="..\DerelictUtil\source\derelict\util\xtypes.d" />
    </Folder>
-   <Folder name="gl3n">
-    <File path="..\gl3n\gl3n\aabb.d" />
-    <File path="..\gl3n\gl3n\frustum.d" />
-    <File path="..\gl3n\gl3n\ext\hsv.d" />
-    <File path="..\gl3n\gl3n\interpolate.d" />
-    <File path="..\gl3n\gl3n\linalg.d" />
-    <File path="..\gl3n\gl3n\math.d" />
-    <File path="..\gl3n\gl3n\ext\matrixstack.d" />
-    <File path="..\gl3n\gl3n\plane.d" />
-    <File path="..\gl3n\gl3n\util.d" />
-   </Folder>
-   <Folder name="libpng">
-    <File path="3rdparty\libpng\source\libpng\png.d" />
-    <File path="3rdparty\libpng\source\libpng\pngconf.d" />
-    <File path="3rdparty\libpng\source\libpng\pnglibconf.d" />
-   </Folder>
    <Folder name="win32">
     <File path="3rdparty\win32\basetsd.d" />
     <File path="3rdparty\win32\basetyps.d" />
