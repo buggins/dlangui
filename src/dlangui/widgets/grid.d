@@ -943,10 +943,18 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
                     Rect cellRect = rc;
                     cellRect.moveBy(_clientRect.left, _clientRect.top);
                     auto cellSaver = ClipRectSaver(buf, cellRect, 0);
-                    if (phase == 0)
-                        drawCellBackground(buf, cellRect, x, y);
-                    else
-                        drawCell(buf, cellRect, x, y);
+                    bool isHeader = x < _headerCols || y < _headerRows;
+                    if (phase == 0) {
+                        if (isHeader)
+                            drawHeaderCellBackground(buf, cellRect, x - _headerCols, y - _headerRows);
+                        else
+                            drawCellBackground(buf, cellRect, x - _headerCols, y - _headerRows);
+                    } else {
+                        if (isHeader)
+                            drawHeaderCell(buf, cellRect, x - _headerCols, y - _headerRows);
+                        else
+                            drawCell(buf, cellRect, x - _headerCols, y - _headerRows);
+                    }
                 }
             }
         }
@@ -969,13 +977,23 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
 		_needDraw = false;
 	}
 
-	/// draw cell content
+	/// draw data cell content
 	protected void drawCell(DrawBuf buf, Rect rc, int col, int row) {
         // override it
 	}
 
-	/// draw cell background
+	/// draw header cell content
+	protected void drawHeaderCell(DrawBuf buf, Rect rc, int col, int row) {
+        // override it
+	}
+
+	/// draw data cell background
 	protected void drawCellBackground(DrawBuf buf, Rect rc, int col, int row) {
+        // override it
+    }
+
+	/// draw header cell background
+	protected void drawHeaderCellBackground(DrawBuf buf, Rect rc, int col, int row) {
         // override it
     }
 
@@ -987,7 +1005,7 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
     protected int measureColWidth(int x) {
         int m = 0;
         for (int i = 0; i < _rows; i++) {
-            Point sz = measureCell(x, i);
+            Point sz = measureCell(x - _headerCols, i);
             if (m < sz.x)
                 m = sz.x;
         }
@@ -999,7 +1017,7 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
     protected int measureRowHeight(int y) {
         int m = 0;
         for (int i = 0; i < _cols; i++) {
-            Point sz = measureCell(i, y);
+            Point sz = measureCell(i, y - _headerRows);
             if (m < sz.y)
                 m = sz.y;
         }
@@ -1126,21 +1144,6 @@ class StringGridWidget : StringGridWidgetBase {
 		return this;
 	}
 
-    /// zero based index generation of column header - like in Excel - for testing
-    static dstring genColHeader(int col) {
-        dstring res;
-        int n1 = col / 26;
-        int n2 = col % 26;
-        if (n1)
-            res ~= n1 + 'A';
-        res ~= n2 + 'A';
-        return res;
-    }
-
-    static dstring genRowHeader(int row) {
-        return to!dstring(row);
-    }
-
 	/// set new size
 	override void resize(int c, int r) {
 		if (c == cols && r == rows)
@@ -1179,7 +1182,13 @@ class StringGridWidget : StringGridWidgetBase {
     protected override Point measureCell(int x, int y) {
 		//Log.d("measureCell ", x, ", ", y);
 		FontRef fnt = font;
-        dstring txt = cellText(x, y);
+        dstring txt;
+        if (x >= 0 && y >= 0)
+            txt = cellText(x, y);
+        else if (y < 0 && x >= 0)
+            txt = colTitle(x);
+        else if (y >= 0 && x < 0)
+            txt = rowTitle(y);
         Point sz = fnt.textSize(txt);
         if (sz.y < fnt.height)
             sz.y = fnt.height;
@@ -1202,42 +1211,74 @@ class StringGridWidget : StringGridWidgetBase {
 		fnt.drawText(buf, rc.left + 1, rc.top + 1, txt, 0x000000);
 	}
 
+	/// draw cell content
+	protected override void drawHeaderCell(DrawBuf buf, Rect rc, int col, int row) {
+        rc.shrink(2, 1);
+		FontRef fnt = font;
+        dstring txt;
+        if (row < 0 && col >= 0)
+            txt = colTitle(col);
+        else if (row >= 0 && col < 0)
+            txt = rowTitle(row);
+        if (txt)
+            return;
+        Point sz = fnt.textSize(txt);
+        Align ha = Align.Left;
+        if (col < _headerCols)
+            ha = Align.Right;
+        if (row < _headerRows)
+            ha = Align.HCenter;
+        applyAlign(rc, sz, ha, Align.VCenter);
+		fnt.drawText(buf, rc.left + 1, rc.top + 1, txt, 0x000000);
+	}
+
 	/// draw cell background
-	protected override void drawCellBackground(DrawBuf buf, Rect rc, int col, int row) {
+	protected override void drawHeaderCellBackground(DrawBuf buf, Rect rc, int c, int r) {
         Rect vborder = rc;
         Rect hborder = rc;
         vborder.left = vborder.right - 1;
         hborder.top = hborder.bottom - 1;
         hborder.right--;
-        bool selectedCol = _col == col;
-        bool selectedRow = _row == row;
+        bool selectedCol = c == col;
+        bool selectedRow = r == row;
         bool selectedCell = selectedCol && selectedRow;
         if (_rowSelect && selectedRow)
             selectedCell = true;
-        if (col < _headerCols || row < _headerRows) {
-            // draw header cell background
-            uint cl = 0x80909090;
-            if (!_rowSelect || col < _headerCols) {
-                if (selectedCol || selectedRow)
-                    cl = 0x80FFC040;
-            }
-            buf.fillRect(rc, cl);
-            buf.fillRect(vborder, 0x80202020);
-            buf.fillRect(hborder, 0x80202020);
-        } else {
-            // normal cell background
-            if (col < _headerCols + _fixedCols || row < _headerRows + _fixedRows) {
-                // fixed cell background
-                buf.fillRect(rc, 0x80E0E0E0);
-            }
-            buf.fillRect(vborder, 0x80C0C0C0);
-            buf.fillRect(hborder, 0x80C0C0C0);
-            if (selectedCell) {
-                if (_rowSelect)
-                    buf.drawFrame(rc, 0x80A0B0FF, Rect(0,1,0,1), 0xC0FFFF00);
-                else
-                    buf.drawFrame(rc, 0x404040FF, Rect(1,1,1,1), 0xC0FFFF00);
-            }
+        // draw header cell background
+        uint cl = 0x80909090;
+        if (!_rowSelect || col < _headerCols) {
+            if (selectedCol || selectedRow)
+                cl = 0x80FFC040;
+        }
+        buf.fillRect(rc, cl);
+        buf.fillRect(vborder, 0x80202020);
+        buf.fillRect(hborder, 0x80202020);
+	}
+
+	/// draw cell background
+	protected override void drawCellBackground(DrawBuf buf, Rect rc, int c, int r) {
+        Rect vborder = rc;
+        Rect hborder = rc;
+        vborder.left = vborder.right - 1;
+        hborder.top = hborder.bottom - 1;
+        hborder.right--;
+        bool selectedCol = c == col;
+        bool selectedRow = r == row;
+        bool selectedCell = selectedCol && selectedRow;
+        if (_rowSelect && selectedRow)
+            selectedCell = true;
+        // normal cell background
+        if (c < _fixedCols || r < _fixedRows) {
+            // fixed cell background
+            buf.fillRect(rc, 0x80E0E0E0);
+        }
+        buf.fillRect(vborder, 0x80C0C0C0);
+        buf.fillRect(hborder, 0x80C0C0C0);
+        if (selectedCell) {
+            if (_rowSelect)
+                buf.drawFrame(rc, 0x80A0B0FF, Rect(0,1,0,1), 0xC0FFFF00);
+            else
+                buf.drawFrame(rc, 0x404040FF, Rect(1,1,1,1), 0xC0FFFF00);
         }
 	}
 
