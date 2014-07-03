@@ -16,6 +16,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 module main;
 
 import dlangui.all;
+import dlangui.dialogs.filedlg;
 import std.stdio;
 import std.conv;
 
@@ -141,6 +142,13 @@ Widget createEditorSettingsControl(EditWidgetBase editor) {
     return res;
 }
 
+enum : int {
+    ACTION_FILE_OPEN = 5500,
+    ACTION_FILE_SAVE,
+    ACTION_FILE_CLOSE,
+    ACTION_FILE_EXIT,
+}
+
 /// entry point for dlangui based application
 extern (C) int UIAppMain(string[] args) {
     // resource directory search paths
@@ -177,8 +185,8 @@ extern (C) int UIAppMain(string[] args) {
 
         MenuItem mainMenuItems = new MenuItem();
         MenuItem fileItem = new MenuItem(new Action(1, "MENU_FILE"));
-        fileItem.add(new Action(10, "MENU_FILE_OPEN"c, "document-open", KeyCode.KEY_O, KeyFlag.Control));
-		fileItem.add(new Action(11, "MENU_FILE_SAVE"c, "document-save", KeyCode.KEY_S, KeyFlag.Control));
+        fileItem.add(new Action(ACTION_FILE_OPEN, "MENU_FILE_OPEN"c, "document-open", KeyCode.KEY_O, KeyFlag.Control));
+		fileItem.add(new Action(ACTION_FILE_SAVE, "MENU_FILE_SAVE"c, "document-save", KeyCode.KEY_S, KeyFlag.Control));
 		MenuItem openRecentItem = new MenuItem(new Action(13, "MENU_FILE_OPEN_RECENT", "document-open-recent"));
         openRecentItem.add(new Action(100, "&1: File 1"d));
 		openRecentItem.add(new Action(101, "&2: File 2"d));
@@ -186,7 +194,7 @@ extern (C) int UIAppMain(string[] args) {
 		openRecentItem.add(new Action(103, "&4: File 4"d));
 		openRecentItem.add(new Action(104, "&5: File 5"d));
         fileItem.add(openRecentItem);
-		fileItem.add(new Action(12, "MENU_FILE_EXIT"c, "document-close"c, KeyCode.KEY_X, KeyFlag.Alt));
+		fileItem.add(new Action(ACTION_FILE_EXIT, "MENU_FILE_EXIT"c, "document-close"c, KeyCode.KEY_X, KeyFlag.Alt));
 
         MenuItem editItem = new MenuItem(new Action(2, "MENU_EDIT"));
 		editItem.add(new Action(EditorActions.Copy, "MENU_EDIT_COPY"c, "edit-copy", KeyCode.KEY_C, KeyFlag.Control));
@@ -265,10 +273,16 @@ extern (C) int UIAppMain(string[] args) {
 			Log.d("mainMenu.onMenuItemListener", item.label);
 			const Action a = item.action;
 			if (a) {
-				if (a.id == 12) {
+				if (a.id == ACTION_FILE_EXIT) {
 					window.close();
 					return true;
-				} else if (window.focusedWidget)
+                } else if (a.id == ACTION_FILE_OPEN) {
+                    UIString caption;
+                    caption = "Open Text File"d;
+                    FileDialog dlg = new FileDialog(caption, window);
+                    dlg.show();
+                    return true;
+                } else if (window.focusedWidget)
 					return window.focusedWidget.handleAction(a);
 				else
 					return contentLayout.handleAction(a);
