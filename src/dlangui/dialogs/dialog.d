@@ -18,9 +18,12 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 module dlangui.dialogs.dialog;
 
 import dlangui.core.i18n;
+import dlangui.core.signals;
 import dlangui.widgets.layouts;
 import dlangui.widgets.controls;
 import dlangui.platforms.common.platform;
+
+import std.conv;
 
 /// dialog flag bits
 enum DialogFlag : uint {
@@ -30,12 +33,18 @@ enum DialogFlag : uint {
     Resizable = 2,
 }
 
+interface DialogResultHandler {
+	public void onDialogResult(Dialog dlg, Action result);
+}
+
 /// base for all dialogs
 class Dialog : VerticalLayout {
     protected Window _window;
     protected Window _parentWindow;
     protected UIString _caption;
     protected uint _flags;
+
+	Signal!DialogResultHandler onDialogResult;
 
     this(UIString caption, Window parentWindow = null, uint flags = DialogFlag.Modal) {
         super("dlg");
@@ -61,8 +70,33 @@ class Dialog : VerticalLayout {
         return this;
 	}
 
+	/// create panel with buttons based on list of actions
+	Widget createButtonsPanel(const Action[] actions, int defaultActionIndex, int splitBeforeIndex) {
+		LinearLayout res = new HorizontalLayout("buttons");
+		res.layoutWidth(FILL_PARENT);
+		for (int i = 0; i < actions.length; i++) {
+			if (splitBeforeIndex == i)
+				res.addChild(new HSpacer());
+			const Action a = actions[i];
+			string id = "btn" ~ to!string(a.id);	
+			ImageTextButton btn = new ImageTextButton(id, a.iconId, a.label);
+			if (defaultActionIndex == i)
+				btn.setState(State.Default);
+			btn.onClickListener = delegate(Widget source) {
+				return handleAction(a);
+			};
+			res.addChild(btn);
+		}
+		return res;
+	}
+
+	/// override to implement creation of dialog controls
+	void init() {
+	}
+
     /// shows dialog
     void show() {
+		init();
         uint wflags = 0;
         if (_flags & DialogFlag.Modal)
             wflags |= WindowFlag.Modal;

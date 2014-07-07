@@ -16,6 +16,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 module main;
 
 import dlangui.all;
+import dlangui.dialogs.dialog;
 import dlangui.dialogs.filedlg;
 import std.stdio;
 import std.conv;
@@ -90,6 +91,17 @@ class AnimatedDrawable : Drawable {
 		animationProgress += interval;
 	}
 
+}
+
+class TextEditorWidget : VerticalLayout {
+	EditBox _edit;
+	this(string ID) {
+		super(ID);
+		_edit = new EditBox("editor");
+		_edit.layoutWidth = FILL_PARENT;
+		_edit.layoutHeight = FILL_PARENT;
+		addChild(_edit);
+	}
 }
 
 class SampleAnimationWidget : VerticalLayout {
@@ -280,6 +292,9 @@ extern (C) int UIAppMain(string[] args) {
                     UIString caption;
                     caption = "Open Text File"d;
                     FileDialog dlg = new FileDialog(caption, window);
+					dlg.onDialogResult = delegate(Dialog dlg, Action result) {
+						//
+					};
                     dlg.show();
                     return true;
                 } else if (window.focusedWidget)
