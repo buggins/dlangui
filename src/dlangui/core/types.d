@@ -399,3 +399,17 @@ char[] appendPath(char[] buf, string[] pathItems ...) {
     return convertPathDelimiters(buf);
 }
 
+/// split path into elements (e.g. /home/user/dir1 -> ["home", "user", "dir1"], "c:\dir1\dir2" -> ["c:", "dir1", "dir2"]
+string[] splitPath(string path) {
+	string[] res;
+	int start = 0;
+	for (int i = 0; i <= path.length; i++) {
+		char ch = i < path.length ? path[i] : 0;
+		if (ch == '\\' || ch == '/' || ch == 0) {
+			if (start < i)
+				res ~= path[start .. i].dup;
+			start = i + 1;
+		}
+	}
+	return res;
+}

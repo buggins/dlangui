@@ -30,6 +30,8 @@ import dlangui.widgets.controls;
 import dlangui.widgets.lists;
 import dlangui.widgets.popup;
 import dlangui.widgets.layouts;
+import dlangui.widgets.grid;
+import dlangui.widgets.editors;
 import dlangui.platforms.common.platform;
 import dlangui.dialogs.dialog;
 
@@ -47,16 +49,51 @@ enum FileDialogFlag : uint {
 
 /// file open / save dialog
 class FileDialog : Dialog {
-    this(UIString caption, Window parent, uint fileDialogFlags = DialogFlag.Modal | FileDialogFlag.FileMustExist) {
+	EditLine path;
+	StringGridWidget list;
+	StringGridWidget places;
+	VerticalLayout leftPanel;
+	VerticalLayout rightPanel;
+	this(UIString caption, Window parent, uint fileDialogFlags = DialogFlag.Modal | FileDialogFlag.FileMustExist) {
         super(caption, parent, fileDialogFlags);
     }
 	/// override to implement creation of dialog controls
 	override void init() {
 		layoutWidth(FILL_PARENT);
 		layoutWidth(FILL_PARENT);
-		LinearLayout content = new LinearLayout("dlgcontent");
+		LinearLayout content = new HorizontalLayout("dlgcontent");
 		content.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).minWidth(400).minHeight(300);
+		leftPanel = new VerticalLayout("places");
+		rightPanel = new VerticalLayout("main");
+		leftPanel.layoutHeight(FILL_PARENT).minWidth(40);
+		rightPanel.layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT);
+		rightPanel.addChild(new TextWidget(null, "Path:"d));
+		content.addChild(leftPanel);
+		content.addChild(rightPanel);
+		path = new EditLine("path");
+		path.layoutWidth(FILL_PARENT);
+
+		rightPanel.addChild(path);
+		list = new StringGridWidget("files");
+		list.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+		list.resize(3, 3);
+		list.setColTitle(0, "Name"d);
+		list.setColTitle(1, "Size"d);
+		list.setColTitle(2, "Modified"d);
+		list.showRowHeaders = false;
+		list.rowSelect = true;
+		rightPanel.addChild(list);
+
+		places = new StringGridWidget("placesList");
+		places.resize(1, 10);
+		places.showRowHeaders(false).showColHeaders(true);
+		places.setColTitle(0, "Places"d);
+		leftPanel.addChild(places);
+
 		addChild(content);
-		addChild(createButtonsPanel([ACTION_OK, ACTION_CANCEL], 0, 1));
+		addChild(createButtonsPanel([ACTION_OPEN, ACTION_CANCEL], 0, 0));
+
+		string[] path = splitPath("/home/lve/src");
+		Log.d("path: ", path);
 	}
 }
