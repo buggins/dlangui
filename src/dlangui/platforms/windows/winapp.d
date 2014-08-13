@@ -721,9 +721,9 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
 {
 	setFileLogger(std.stdio.File("ui.log", "w"));
 	debug {
-        setLogLevel(LogLevel.Trace);
+        Log.setLogLevel(LogLevel.Trace);
     } else {
-        setLogLevel(LogLevel.Info);
+        Log.setLogLevel(LogLevel.Info);
     }
     Log.d("myWinMain()");
     string basePath = exePath();

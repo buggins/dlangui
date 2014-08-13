@@ -984,7 +984,7 @@ version(USE_SDL) {
         int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int iCmdShow)
         {
             setFileLogger(std.stdio.File("ui.log", "w"));
-            setLogLevel(LogLevel.Trace);
+            Log.setLogLevel(LogLevel.Trace);
             Log.d("myWinMain()");
             string basePath = exePath();
             Log.i("Current executable: ", exePath());
@@ -1006,8 +1006,8 @@ version(USE_SDL) {
 	    int main(string[] args)
 	    {
 		
-		    setStderrLogger();
-		    setLogLevel(LogLevel.Trace);
+		    Log.setStderrLogger();
+		    Log.setLogLevel(LogLevel.Warn);
 
 
 		    FreeTypeFontManager ft = new FreeTypeFontManager();

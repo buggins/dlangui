@@ -1131,7 +1131,7 @@ version(USE_XCB) {
 	{
 		
 		setStderrLogger();
-		setLogLevel(LogLevel.Trace);
+		Log.setLogLevel(LogLevel.Trace);
 
 		FreeTypeFontManager ft = new FreeTypeFontManager();
 		ft.registerFont("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", FontFamily.SansSerif, "DejaVu", false, FontWeight.Normal);
