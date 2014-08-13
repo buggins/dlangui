@@ -1054,6 +1054,8 @@ version(USE_SDL) {
             // Set OpenGL attributes
             SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
             SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+            // Share textures between contexts
+            SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
         }
 
         SDLPlatform sdl = new SDLPlatform();
