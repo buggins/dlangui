@@ -94,21 +94,17 @@ struct UIString {
     alias value this;
 }
 
-public __gshared UIStringTranslator i18n = new UIStringTranslator();
-//static shared this() {
-//    i18n = new UIStringTranslator();
-//}
+shared UIStringTranslator i18n;
+shared static this() {
+    i18n = new shared UIStringTranslator();
+}
 
-class UIStringTranslator {
+synchronized class UIStringTranslator {
     private UIStringList _main;
     private UIStringList _fallback;
     private string[] _resourceDirs;
-    /// get i18n resource directory
-    @property string[] resourceDirs() { return _resourceDirs; }
-    /// set i18n resource directory
-    @property void resourceDirs(string[] dirs) { _resourceDirs = dirs; }
     /// looks for i18n directory inside one of passed dirs, and uses first found as directory to read i18n files from
-    string[] findTranslationsDir(string[] dirs ...) {
+    void findTranslationsDir(string[] dirs ...) {
         _resourceDirs.length = 0;
         import std.file;
         foreach(dir; dirs) {
@@ -118,7 +114,6 @@ class UIStringTranslator {
                 _resourceDirs ~= path;
             }
         }
-        return _resourceDirs;
     }
 
     /// convert resource path - append resource dir if necessary
@@ -140,8 +135,8 @@ class UIStringTranslator {
     }
 
     this() {
-        _main = new UIStringList();
-        _fallback = new UIStringList();
+        _main = new shared UIStringList();
+        _fallback = new shared UIStringList();
     }
     /// load translation file(s)
     bool load(string mainFilename, string fallbackFilename = null) {
@@ -168,7 +163,7 @@ class UIStringTranslator {
 }
 
 /// UI string translator
-class UIStringList {
+private shared class UIStringList {
     private dstring[string] _map;
     /// remove all items
     void clear() {
