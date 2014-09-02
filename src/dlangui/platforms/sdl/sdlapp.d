@@ -984,7 +984,7 @@ version(USE_SDL) {
         int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int iCmdShow)
         {
             setFileLogger(std.stdio.File("ui.log", "w"));
-            setLogLevel(LogLevel.Trace);
+            Log.setLogLevel(LogLevel.Trace);
             Log.d("myWinMain()");
             string basePath = exePath();
             Log.i("Current executable: ", exePath());
@@ -1006,8 +1006,8 @@ version(USE_SDL) {
 	    int main(string[] args)
 	    {
 		
-		    setStderrLogger();
-		    setLogLevel(LogLevel.Trace);
+		    Log.setStderrLogger();
+		    Log.setLogLevel(LogLevel.Warn);
 
 
 		    FreeTypeFontManager ft = new FreeTypeFontManager();
@@ -1054,6 +1054,8 @@ version(USE_SDL) {
             // Set OpenGL attributes
             SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
             SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
+            // Share textures between contexts
+            SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
         }
 
         SDLPlatform sdl = new SDLPlatform();

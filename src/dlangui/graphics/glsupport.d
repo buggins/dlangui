@@ -39,12 +39,28 @@ private void LVGLFillColor(uint color, float * buf, int count) {
     }
 }
 
-/// for OpenGL calls diagnostics.
-private bool checkError(string context, string file = __FILE__, int line = __LINE__) {
-    int err = glGetError();
-    if (err != GL_NO_ERROR) {
-		//string errorString = fromStringz(gluErrorString());
-        Log.e("OpenGL error ", err, " at ", file, ":", line, " -- ", context);
+/* For reporting OpenGL errors, it's nicer to get a human-readable symbolic name for the
+ * error instead of the numeric form. Derelict's GLenum is just an alias for uint, so we
+ * can't depend on D's nice toString() for enums.
+ */
+private immutable(string[int]) errors;
+static this() {
+    errors = [
+        0x0500:  "GL_INVALID_ENUM",
+        0x0501:  "GL_INVALID_VALUE",
+        0x0502:  "GL_INVALID_OPERATION",
+        0x0505:  "GL_OUT_OF_MEMORY"
+    ];
+}
+/* Convenient wrapper around glGetError()
+ * TODO use one of the DEBUG extensions instead
+ */
+bool checkError(string context="", string file=__FILE__, int line=__LINE__)
+{
+    GLenum err = glGetError();
+    if (err != GL_NO_ERROR)
+    {
+        Log.e("OpenGL error ", err in errors ? errors[err] : to!string(err), " at ", file, ":", line, " -- ", context);
         return true;
     }
     return false;
@@ -526,14 +542,36 @@ class SolidFillProgram : GLProgram {
                 return false;
         beforeExecute();
 
+        GLuint vao;
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
+
+        GLuint vbo;
+        glGenBuffers(1, &vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            vertices.length * vertices[0].sizeof + colors.length * colors[0].sizeof,
+            null,
+            GL_STREAM_DRAW);
+        glBufferSubData(
+            GL_ARRAY_BUFFER,
+            0,
+            vertices.length * vertices[0].sizeof,
+            vertices.ptr);
+        glBufferSubData(
+            GL_ARRAY_BUFFER,
+            vertices.length * vertices[0].sizeof,
+            colors.length * colors[0].sizeof, colors.ptr);
+
         glEnableVertexAttribArray(vertexLocation);
         checkError("glEnableVertexAttribArray");
-        glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, float.sizeof * 3, vertices.ptr);
+        glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
         checkError("glVertexAttribPointer");
 
         glEnableVertexAttribArray(colAttrLocation);
         checkError("glEnableVertexAttribArray");
-        glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, float.sizeof * 4, colors.ptr);
+        glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, cast(void*) (float.sizeof*3*6));
         checkError("glVertexAttribPointer");
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -545,6 +583,12 @@ class SolidFillProgram : GLProgram {
         checkError("glDisableVertexAttribArray");
 
         afterExecute();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glDeleteBuffers(1, &vbo);
+
+        glBindVertexArray(0);
+        glDeleteVertexArrays(1, &vao);
         return true;
     }
 }
@@ -600,13 +644,43 @@ class TextureProgram : SolidFillProgram {
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
         checkError("drawColorAndTextureRect - glTexParameteri");
 
+        GLuint vao;
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
+
+        GLuint vbo;
+        glGenBuffers(1, &vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            vertices.length * vertices[0].sizeof +
+            colors.length * colors[0].sizeof +
+            texcoords.length * texcoords[0].sizeof,
+            null,
+            GL_STREAM_DRAW);
+        glBufferSubData(
+            GL_ARRAY_BUFFER,
+            0,
+            vertices.length * vertices[0].sizeof,
+            vertices.ptr);
+        glBufferSubData(
+            GL_ARRAY_BUFFER,
+            vertices.length * vertices[0].sizeof,
+            colors.length * colors[0].sizeof,
+            colors.ptr);
+        glBufferSubData(
+            GL_ARRAY_BUFFER,
+            vertices.length * vertices[0].sizeof + colors.length * colors[0].sizeof,
+            texcoords.length * texcoords[0].sizeof,
+            texcoords.ptr);
+
         glEnableVertexAttribArray(vertexLocation);
         glEnableVertexAttribArray(colAttrLocation);
         glEnableVertexAttribArray(texCoordLocation);
 
-        glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, vertices.ptr);
-        glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, colors.ptr);
-        glVertexAttribPointer(texCoordLocation, 2, GL_FLOAT, GL_FALSE, 0, texcoords.ptr);
+        glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
+        glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * vertices[0].sizeof));
+        glVertexAttribPointer(texCoordLocation, 2, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * vertices[0].sizeof + colors.length * colors[0].sizeof));
 
         glDrawArrays(GL_TRIANGLES, 0, 6);
         checkError("glDrawArrays");
@@ -616,6 +690,13 @@ class TextureProgram : SolidFillProgram {
         glDisableVertexAttribArray(texCoordLocation);
 
         afterExecute();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glDeleteBuffers(1, &vbo);
+
+        glBindVertexArray(0);
+        glDeleteVertexArrays(1, &vao);
+
         glBindTexture(GL_TEXTURE_2D, 0);
         checkError("glBindTexture");
         return true;

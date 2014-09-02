@@ -527,12 +527,11 @@ class MenuWidgetBase : ListWidget {
 			// copy item action listeners
 			Signal!MenuItemActionHandler onMenuItemActionListenerCopy = onMenuItemActionListener;
 
+			handleMenuItemClick(item);
+
 			PopupWidget popup = cast(PopupWidget)parent;
 			if (popup)
 				popup.close();
-
-			handleMenuItemClick(item);
-
 
 			// this pointer now can be invalid - if popup removed
 			if (onMenuItemClickListenerCopy.assigned)

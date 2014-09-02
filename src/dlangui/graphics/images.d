@@ -26,6 +26,7 @@ import dlangui.core.logger;
 import dlangui.core.types;
 import dlangui.graphics.drawbuf;
 import std.stream;
+import std.conv : to;
 
 /// load and decode image from file to ColorDrawBuf, returns null if loading or decoding is failed
 ColorDrawBuf loadImage(string filename) {
@@ -36,6 +37,7 @@ ColorDrawBuf loadImage(string filename) {
         return loadImage(f);
     } catch (Exception e) {
         Log.e("exception while loading image from file ", filename);
+        Log.e(to!string(e));
         return null;
     }
 }
