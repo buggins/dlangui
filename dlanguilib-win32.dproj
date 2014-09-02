@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{440816C8-DBD6-454C-A0D7-B6E59CA1ED86}</ProjectGuid>
+    <UseDefaultCompiler>true</UseDefaultCompiler>
+    <IncrementalLinking>true</IncrementalLinking>
+    <PreferOneStepBuild>true</PreferOneStepBuild>
+    <Compiler>DMD2</Compiler>
+    <Includes>
+      <Includes>
+        <Path>\home\lve\src\d\DerelictFT\source</Path>
+        <Path>\home\lve\src\d\DerelictGL3\source</Path>
+        <Path>\home\lve\src\d\DerelictUtil\source</Path>
+        <Path>\home\lve\src\d\dlangui\3rdparty\X11</Path>
+        <Path>\home\lve\src\d\dlangui\3rdparty\X11\xcb</Path>
+      </Includes>
+    </Includes>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug</OutputPath>
+    <OutputName>dlanguilib</OutputName>
+    <ObjectsDirectory>obj/Debug</ObjectsDirectory>
+    <Externalconsole>true</Externalconsole>
+    <Target>StaticLibrary</Target>
+    <UnittestMode>false</UnittestMode>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <DebugLevel>0</DebugLevel>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_OPENGL</String>
+        <String>USE_SDL</String>
+        <String>Unicode</String>
+      </VersionIds>
+    </VersionIds>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release</OutputPath>
+    <OutputName>dlanguilib</OutputName>
+    <ObjectsDirectory>obj/Release</ObjectsDirectory>
+    <Externalconsole>true</Externalconsole>
+    <Target>StaticLibrary</Target>
+    <ExtraCompilerArguments>-version=USE_OPENGL</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Unittest</OutputPath>
+    <ExtraCompilerArguments>-unittest </ExtraCompilerArguments>
+    <ObjectsDirectory>obj/Unittest</ObjectsDirectory>
+    <OutputName>dlanguilib</OutputName>
+    <Externalconsole>true</Externalconsole>
+    <Target>StaticLibrary</Target>
+    <UnittestMode>false</UnittestMode>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="src\dlangui\core\logger.d" />
+    <Compile Include="src\dlangui\core\types.d" />
+    <Compile Include="src\dlangui\graphics\drawbuf.d" />
+    <Compile Include="src\dlangui\graphics\fonts.d" />
+    <Compile Include="src\dlangui\graphics\ftfonts.d" />
+    <Compile Include="src\dlangui\graphics\gldrawbuf.d" />
+    <Compile Include="src\dlangui\graphics\glsupport.d" />
+    <Compile Include="src\dlangui\graphics\images.d" />
+    <Compile Include="src\dlangui\platforms\common\platform.d" />
+    <Compile Include="src\dlangui\widgets\controls.d" />
+    <Compile Include="src\dlangui\widgets\layouts.d" />
+    <Compile Include="src\dlangui\widgets\styles.d" />
+    <Compile Include="src\dlangui\widgets\widget.d" />
+    <Compile Include="..\DerelictFT\source\derelict\freetype\ft.d">
+      <Link>3rdparty\DerelictFT\ft.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictFT\source\derelict\freetype\functions.d">
+      <Link>3rdparty\DerelictFT\functions.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictFT\source\derelict\freetype\types.d">
+      <Link>3rdparty\DerelictFT\types.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictGL3\source\derelict\opengl3\arb.d">
+      <Link>3rdparty\DerelictGL3\arb.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictGL3\source\derelict\opengl3\cgl.d">
+      <Link>3rdparty\DerelictGL3\cgl.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictGL3\source\derelict\opengl3\constants.d">
+      <Link>3rdparty\DerelictGL3\constants.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictGL3\source\derelict\opengl3\deprecatedConstants.d">
+      <Link>3rdparty\DerelictGL3\deprecatedConstants.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictGL3\source\derelict\opengl3\deprecatedFunctions.d">
+      <Link>3rdparty\DerelictGL3\deprecatedFunctions.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictGL3\source\derelict\opengl3\ext.d">
+      <Link>3rdparty\DerelictGL3\ext.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictGL3\source\derelict\opengl3\functions.d">
+      <Link>3rdparty\DerelictGL3\functions.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictGL3\source\derelict\opengl3\gl.d">
+      <Link>3rdparty\DerelictGL3\gl.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictGL3\source\derelict\opengl3\gl3.d">
+      <Link>3rdparty\DerelictGL3\gl3.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictGL3\source\derelict\opengl3\glx.d">
+      <Link>3rdparty\DerelictGL3\glx.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictGL3\source\derelict\opengl3\glxext.d">
+      <Link>3rdparty\DerelictGL3\glxext.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictGL3\source\derelict\opengl3\internal.d">
+      <Link>3rdparty\DerelictGL3\internal.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictGL3\source\derelict\opengl3\types.d">
+      <Link>3rdparty\DerelictGL3\types.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictGL3\source\derelict\opengl3\wgl.d">
+      <Link>3rdparty\DerelictGL3\wgl.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictGL3\source\derelict\opengl3\wglext.d">
+      <Link>3rdparty\DerelictGL3\wglext.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictUtil\source\derelict\util\exception.d">
+      <Link>3rdparty\DerelictUtil\exception.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictUtil\source\derelict\util\loader.d">
+      <Link>3rdparty\DerelictUtil\loader.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictUtil\source\derelict\util\sharedlib.d">
+      <Link>3rdparty\DerelictUtil\sharedlib.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictUtil\source\derelict\util\system.d">
+      <Link>3rdparty\DerelictUtil\system.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictUtil\source\derelict\util\wintypes.d">
+      <Link>3rdparty\DerelictUtil\wintypes.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictUtil\source\derelict\util\xtypes.d">
+      <Link>3rdparty\DerelictUtil\xtypes.d</Link>
+    </Compile>
+    <Compile Include="src\dlangui\all.d" />
+    <Compile Include="src\dlangui\core\events.d" />
+    <Compile Include="..\DerelictFI\source\derelict\freeimage\freeimage.d">
+      <Link>3rdparty\DerelictFI\freeimage.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictFI\source\derelict\freeimage\functions.d">
+      <Link>3rdparty\DerelictFI\functions.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictFI\source\derelict\freeimage\types.d">
+      <Link>3rdparty\DerelictFI\types.d</Link>
+    </Compile>
+    <Compile Include="src\dlangui\core\i18n.d" />
+    <Compile Include="src\dlangui\core\linestream.d" />
+    <Compile Include="src\dlangui\widgets\lists.d" />
+    <Compile Include="src\dlangui\widgets\tabs.d" />
+    <Compile Include="src\dlangui\graphics\resources.d" />
+    <Compile Include="src\dlangui\widgets\menu.d" />
+    <Compile Include="src\dlangui\widgets\popup.d" />
+    <Compile Include="src\dlangui\core\collections.d" />
+    <Compile Include="src\dlangui\core\signals.d" />
+    <Compile Include="src\dlangui\widgets\editors.d" />
+    <Compile Include="src\dlangui\platforms\sdl\sdlapp.d" />
+    <Compile Include="..\DerelictSDL2\source\derelict\sdl2\functions.d">
+      <Link>3rdparty\FreetypeSDL2\functions.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictSDL2\source\derelict\sdl2\image.d">
+      <Link>3rdparty\FreetypeSDL2\image.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictSDL2\source\derelict\sdl2\mixer.d">
+      <Link>3rdparty\FreetypeSDL2\mixer.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictSDL2\source\derelict\sdl2\net.d">
+      <Link>3rdparty\FreetypeSDL2\net.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictSDL2\source\derelict\sdl2\sdl.d">
+      <Link>3rdparty\FreetypeSDL2\sdl.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictSDL2\source\derelict\sdl2\ttf.d">
+      <Link>3rdparty\FreetypeSDL2\ttf.d</Link>
+    </Compile>
+    <Compile Include="..\DerelictSDL2\source\derelict\sdl2\types.d">
+      <Link>3rdparty\FreetypeSDL2\types.d</Link>
+    </Compile>
+    <Compile Include="src\dlangui\widgets\grid.d" />
+    <Compile Include="3rdparty\win32\w32api.d" />
+    <Compile Include="3rdparty\win32\winbase.d" />
+    <Compile Include="3rdparty\win32\windef.d" />
+    <Compile Include="3rdparty\win32\windows.d" />
+    <Compile Include="3rdparty\win32\cderr.d" />
+    <Compile Include="3rdparty\win32\core.d" />
+    <Compile Include="3rdparty\win32\dde.d" />
+    <Compile Include="3rdparty\win32\ddeml.d" />
+    <Compile Include="3rdparty\win32\dlgs.d" />
+    <Compile Include="3rdparty\win32\imm.d" />
+    <Compile Include="3rdparty\win32\lzexpand.d" />
+    <Compile Include="3rdparty\win32\nb30.d" />
+    <Compile Include="3rdparty\win32\winsvc.d" />
+    <Compile Include="3rdparty\win32\commdlg.d" />
+    <Compile Include="3rdparty\win32\ole2.d" />
+    <Compile Include="3rdparty\win32\rpc.d" />
+    <Compile Include="3rdparty\win32\shellapi.d" />
+    <Compile Include="3rdparty\win32\winperf.d" />
+    <Compile Include="3rdparty\win32\winspool.d" />
+    <Compile Include="3rdparty\win32\winnt.d" />
+    <Compile Include="3rdparty\win32\basetsd.d" />
+    <Compile Include="3rdparty\win32\winerror.d" />
+    <Compile Include="3rdparty\win32\basetyps.d" />
+    <Compile Include="3rdparty\win32\wincon.d" />
+    <Compile Include="3rdparty\win32\wingdi.d" />
+    <Compile Include="3rdparty\win32\winnetwk.d" />
+    <Compile Include="3rdparty\win32\winnls.d" />
+    <Compile Include="3rdparty\win32\winuser.d" />
+    <Compile Include="3rdparty\win32\winver.d" />
+    <Compile Include="3rdparty\win32\mmsystem.d" />
+    <Compile Include="3rdparty\win32\unknwn.d" />
+    <Compile Include="3rdparty\win32\rpcdce.d" />
+    <Compile Include="3rdparty\win32\rpcnsi.d" />
+    <Compile Include="3rdparty\win32\rpcnterr.d" />
+    <Compile Include="3rdparty\win32\objfwd.d" />
+    <Compile Include="3rdparty\win32\wtypes.d" />
+    <Compile Include="3rdparty\win32\objidl.d" />
+    <Compile Include="3rdparty\win32\oleidl.d" />
+    <Compile Include="3rdparty\win32\rpcndr.d" />
+    <Compile Include="3rdparty\win32\uuid.d" />
+    <Compile Include="3rdparty\win32\rpcnsip.d" />
+    <Compile Include="3rdparty\win32\rpcdcep.d" />
+    <Compile Include="3rdparty\win32\objbase.d" />
+    <Compile Include="3rdparty\win32\oleauto.d" />
+    <Compile Include="3rdparty\win32\olectlid.d" />
+    <Compile Include="3rdparty\win32\cguid.d" />
+    <Compile Include="3rdparty\win32\oaidl.d" />
+    <Compile Include="3rdparty\win32\winsock2.d" />
+    <Compile Include="3rdparty\win32\ws2tcpip.d" />
+    <Compile Include="src\dlangui\platforms\windows\win32drawbuf.d" />
+    <Compile Include="src\dlangui\platforms\windows\win32fonts.d" />
+    <Compile Include="src\dlangui\platforms\windows\winapp.d" />
+    <Compile Include="3rdparty\win32\prsht.d" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="src\dlangui\platforms\x11\" />
+    <Folder Include="3rdparty\DerelictUtil\" />
+    <Folder Include="3rdparty\DerelictGL3\" />
+    <Folder Include="3rdparty\DerelictFT\" />
+    <Folder Include="3rdparty\DerelictFI\" />
+    <Folder Include="3rdparty\FreetypeSDL2\" />
+  </ItemGroup>
+</Project>

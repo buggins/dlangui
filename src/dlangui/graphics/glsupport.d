@@ -24,6 +24,7 @@ import dlangui.core.logger;
 private import derelict.opengl3.gl3;
 private import dlangui.core.types;
 private import std.conv;
+private import std.string;
 
 // utility function to fill 4-float array of vertex colors with converted CR 32bit color
 private void LVGLFillColor(uint color, float * buf, int count) {
@@ -398,7 +399,7 @@ class GLProgram {
         }
     }
     bool compile() {
-		glslversion = fromStringz(glGetString(GL_SHADING_LANGUAGE_VERSION));
+		glslversion = cast(string)std.string.fromStringz(glGetString(GL_SHADING_LANGUAGE_VERSION));
         vertexShader = compileShader(vertexSource, GL_VERTEX_SHADER);
         fragmentShader = compileShader(fragmentSource, GL_FRAGMENT_SHADER);
         if (!vertexShader || !fragmentShader) {

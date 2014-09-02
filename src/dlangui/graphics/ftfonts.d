@@ -126,8 +126,8 @@ private class FreeTypeFontFile {
 
     private static string familyName(FT_Face face)
     {
-        string faceName = fromStringz(face.family_name);
-        string styleName = fromStringz(face.style_name);
+        string faceName = cast(string)fromStringz(face.family_name);
+		string styleName = cast(string)fromStringz(face.style_name);
         if (faceName.equal("Arial") && styleName.equal("Narrow"))
             faceName ~= " Narrow";
         else if (styleName.equal("Condensed"))

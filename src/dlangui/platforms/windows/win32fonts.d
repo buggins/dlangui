@@ -415,7 +415,7 @@ extern(Windows) {
         {
             void * p = cast(void*)lParam;
             Win32FontManager fontman = cast(Win32FontManager)p;
-			string face = fromStringz(lf.lfFaceName.ptr);
+			string face = cast(string)fromStringz(lf.lfFaceName.ptr);
 			FontFamily family = pitchAndFamilyToFontFamily(lf.lfPitchAndFamily);
 			if (face.length < 2 || face[0] == '@')
 				return 1;

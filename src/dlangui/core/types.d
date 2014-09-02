@@ -272,7 +272,7 @@ struct Ref(T) { // if (T is RefCountedObject)
 //================================================================================
 // some utility functions
 
-
+/*
 string fromStringz(const(char[]) s) {
     if (s is null)
         return null;
@@ -290,6 +290,7 @@ string fromStringz(const(char*) s) {
 		i++;
 	return cast(string)(s[0..i].dup);
 }
+*/
 
 wstring fromWStringz(const(wchar[]) s) {
     if (s is null)

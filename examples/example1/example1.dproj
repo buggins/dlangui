@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{11EEFA98-AAC1-45BD-8972-C97571D2D196}</ProjectGuid>
     <UseDefaultCompiler>true</UseDefaultCompiler>
@@ -22,12 +22,13 @@
     </DependentProjectIds>
     <Includes>
       <Includes>
-        <Path>../../src</Path>
-        <Path>../../../DerelictUtil/source</Path>
-        <Path>../../../DerelictFI/source</Path>
-        <Path>../../../DerelictFT/source</Path>
-        <Path>../../../DerelictSDL2/source</Path>
-        <Path>../../../DerelictGL3/source</Path>
+        <Path>..\..\src</Path>
+        <Path>..\..\..\DerelictUtil\source</Path>
+        <Path>..\..\..\DerelictFI\source</Path>
+        <Path>..\..\..\DerelictFT\source</Path>
+        <Path>..\..\..\DerelictSDL2\source</Path>
+        <Path>..\..\..\DerelictGL3\source</Path>
+        <Path>..\..\3rdparty</Path>
       </Includes>
     </Includes>
   </PropertyGroup>
