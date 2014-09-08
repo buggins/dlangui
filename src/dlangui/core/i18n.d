@@ -167,7 +167,7 @@ private shared class UIStringList {
     private dstring[string] _map;
     /// remove all items
     void clear() {
-        _map.clear();
+        _map.destroy();
     }
     /// set item value
     void set(string id, dstring value) {

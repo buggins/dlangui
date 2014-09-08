@@ -126,8 +126,8 @@ private class FreeTypeFontFile {
 
     private static string familyName(FT_Face face)
     {
-        string faceName = cast(string)fromStringz(face.family_name);
-		string styleName = cast(string)fromStringz(face.style_name);
+        string faceName = fromStringz(face.family_name).dup;
+		string styleName = fromStringz(face.style_name).dup;
         if (faceName.equal("Arial") && styleName.equal("Narrow"))
             faceName ~= " Narrow";
         else if (styleName.equal("Condensed"))
@@ -147,7 +147,7 @@ private class FreeTypeFontFile {
             } else if (exists(kernFile ~ ".pfm" )) {
         		kernFile ~= ".pfm";
         	} else {
-        		kernFile.clear();
+        		kernFile.destroy();
         	}
         	if (kernFile.length > 0)
         		error = FT_Attach_File(_face, kernFile.toStringz);

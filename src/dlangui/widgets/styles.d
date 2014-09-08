@@ -558,12 +558,12 @@ class Style {
 			destroy(item);
 			item = null;
 		}
-		_substates.clear();
+		_substates.destroy();
 		foreach(ref Style item; _children) {
 			destroy(item);
 			item = null;
 		}
-		_children.clear();
+		_children.destroy();
 		_backgroundDrawable.clear();
 		_font.clear();
 		debug(resalloc) _instanceCount--;
@@ -638,7 +638,7 @@ class Theme : Style {
 			destroy(item);
 			item = null;
 		}
-		_byId.clear();
+		_byId.destroy();
 	}
 
 	/// create wrapper style which will have currentTheme.get(id) as parent instead of fixed parent - to modify some base style properties in widget

@@ -719,7 +719,7 @@ private __gshared Win32Platform w32platform;
 
 int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int iCmdShow)
 {
-	setFileLogger(std.stdio.File("ui.log", "w"));
+	Log.setFileLogger(std.stdio.File("ui.log", "w"));
 	debug {
         Log.setLogLevel(LogLevel.Trace);
     } else {
@@ -728,7 +728,7 @@ int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int
     Log.d("myWinMain()");
     string basePath = exePath();
     Log.i("Current executable: ", exePath());
-    string cmdline = fromStringz(lpCmdLine);
+    string cmdline = fromStringz(lpCmdLine).dup;
     Log.i("Command line: ", cmdline);
     string[] args = splitCmdLine(cmdline);
     Log.i("Command line params: ", args);

@@ -119,7 +119,7 @@ class Win32Font : Font {
                                0,
                                null,
                                &identity );
-		if (res==GDI_ERROR)
+		if (res == GDI_ERROR)
 			return null;
 		int gs = GetGlyphOutlineW( _drawbuf.dc, cast(wchar)ch,
                                    GGO_GRAY8_BITMAP, //GGO_METRICS
@@ -287,6 +287,7 @@ class Win32FontManager : FontManager {
     override ref FontRef getFont(int size, int weight, bool italic, FontFamily family, string face) {
 		//Log.i("getFont()");
 		FontDef * def = findFace(family, face);
+		Log.i("getFont() found face ", def.face, " by requested face ", face);
 		if (def !is null) {
 			int index = _activeFonts.find(size, weight, italic, def.family, def.face);
 			if (index >= 0)
@@ -415,7 +416,7 @@ extern(Windows) {
         {
             void * p = cast(void*)lParam;
             Win32FontManager fontman = cast(Win32FontManager)p;
-			string face = cast(string)fromStringz(lf.lfFaceName.ptr);
+			string face = fromStringz(lf.lfFaceName.ptr).dup;
 			FontFamily family = pitchAndFamilyToFontFamily(lf.lfPitchAndFamily);
 			if (face.length < 2 || face[0] == '@')
 				return 1;

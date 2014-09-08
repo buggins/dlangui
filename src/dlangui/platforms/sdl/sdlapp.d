@@ -598,7 +598,7 @@ version(USE_SDL) {
 		}
 				
         bool processTextInput(const char * s) {
-            string str = cast(string)fromStringz(s);
+            string str = fromStringz(s).dup;
             dstring ds = toUTF32(str);
             uint flags = convertKeyFlags(SDL_GetModState());
             bool res = dispatchKeyEvent(new KeyEvent(KeyAction.Text, 0, flags, ds));
@@ -910,7 +910,7 @@ version(USE_SDL) {
             char * txt = SDL_GetClipboardText();
             if (!txt)
                 return ""d;
-            string s = cast(string)fromStringz(txt);
+            string s = fromStringz(txt).dup;
             SDL_free(txt);
             return toUTF32(s);
 		}
@@ -988,7 +988,7 @@ version(USE_SDL) {
             Log.d("myWinMain()");
             string basePath = exePath();
             Log.i("Current executable: ", exePath());
-            string cmdline = cast(string)fromStringz(lpCmdLine);
+            string cmdline = fromStringz(lpCmdLine).dup;
             Log.i("Command line: ", cmdline);
             string[] args = splitCmdLine(cmdline);
             Log.i("Command line params: ", args);

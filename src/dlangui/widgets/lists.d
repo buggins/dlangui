@@ -406,7 +406,7 @@ class ListWidget : WidgetGroup, OnScrollHandler {
         int sbsize = _orientation == Orientation.Vertical ? _scrollbar.measuredWidth : _scrollbar.measuredHeight;
         // measure children
 		Point sz;
-        _sbsz.clear;
+        _sbsz.destroy();
         for (int i = 0; i < itemCount; i++) {
             Widget w = itemWidget(i);
             if (w is null || w.visibility == Visibility.Gone) {

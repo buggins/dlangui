@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{440816C8-DBD6-454C-A0D7-B6E59CA1ED86}</ProjectGuid>
     <UseDefaultCompiler>true</UseDefaultCompiler>
@@ -12,11 +12,11 @@
     <Compiler>DMD2</Compiler>
     <Includes>
       <Includes>
-        <Path>/home/lve/src/d/DerelictFT/source</Path>
-        <Path>/home/lve/src/d/DerelictGL3/source</Path>
-        <Path>/home/lve/src/d/DerelictUtil/source</Path>
-        <Path>/home/lve/src/d/dlangui/3rdparty/X11</Path>
-        <Path>/home/lve/src/d/dlangui/3rdparty/X11/xcb</Path>
+        <Path>\home\lve\src\d\DerelictFT\source</Path>
+        <Path>\home\lve\src\d\DerelictGL3\source</Path>
+        <Path>\home\lve\src\d\DerelictUtil\source</Path>
+        <Path>\home\lve\src\d\dlangui\3rdparty\X11</Path>
+        <Path>\home\lve\src\d\dlangui\3rdparty\X11\xcb</Path>
       </Includes>
     </Includes>
   </PropertyGroup>
@@ -217,6 +217,7 @@
     <Compile Include="..\DerelictSDL2\source\derelict\sdl2\types.d">
       <Link>3rdparty\FreetypeSDL2\types.d</Link>
     </Compile>
+    <Compile Include="src\dlangui\widgets\grid.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\dlangui\platforms\x11\" />

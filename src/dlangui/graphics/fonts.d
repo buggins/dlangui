@@ -151,8 +151,13 @@ class Font : RefCountedObject {
 
     /// returns true if font is fixed
     @property int spaceWidth() {
-        if (_spaceWidth < 0)
+        if (_spaceWidth < 0) {
             _spaceWidth = charWidth(' ');
+			if (_spaceWidth <= 0)
+				_spaceWidth = charWidth('0');
+			if (_spaceWidth <= 0)
+				_spaceWidth = size;
+		}
         return _spaceWidth;
     }
 

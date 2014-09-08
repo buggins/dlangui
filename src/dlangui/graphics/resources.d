@@ -654,7 +654,7 @@ class ImageCache {
 			destroy(item);
             item = null;
 		}
-		_map.clear();
+		_map.destroy();
     }
 }
 
@@ -705,7 +705,7 @@ class DrawableCache {
 			_drawable.clear();
 			foreach(ref t; _transformed)
 				t.clear();
-			_transformed.clear();
+			_transformed.destroy();
 			debug(resalloc) Log.d("Destroyed DrawableCacheItem, count=", --_instanceCount);
 		}
         /// remove from memory, will cause reload on next access
@@ -714,7 +714,7 @@ class DrawableCache {
                 _drawable.clear();
 			foreach(t; _transformed)
 				t.clear();
-			_transformed.clear();
+			_transformed.destroy();
 		}
         /// mark as not used
         void checkpoint() {
@@ -800,10 +800,10 @@ class DrawableCache {
     }
     void clear() {
 		Log.d("DrawableCache.clear()");
-        _idToFileMap.clear();
+        _idToFileMap.destroy();
         foreach(DrawableCacheItem item; _idToDrawableMap)
             item.drawable.clear();
-        _idToDrawableMap.clear();
+        _idToDrawableMap.destroy();
     }
 	// clear usage flags for all entries
 	void checkpoint() {
@@ -925,7 +925,7 @@ class DrawableCache {
 			destroy(item);
 			item = null;
 		}
-		_idToDrawableMap.clear();
+		_idToDrawableMap.destroy();
 		debug(resalloc) Log.e("Drawable instace count after destroying of DrawableCache: ", ImageDrawable.instanceCount);
     }
 }
