@@ -257,6 +257,14 @@ class ScrollWidget :  ScrollWidgetBase {
     }
 
     protected void scrollTo(int x, int y) {
+        if (x > _fullScrollableArea.right - _visibleScrollableArea.width)
+            x = _fullScrollableArea.right - _visibleScrollableArea.width;
+        if (y > _fullScrollableArea.bottom - _visibleScrollableArea.height)
+            y = _fullScrollableArea.bottom - _visibleScrollableArea.height;
+        if (x < 0)
+            x = 0;
+        if (y < 0)
+            y = 0;
         _visibleScrollableArea.left = x;
         _visibleScrollableArea.top = y;
         updateScrollBars();
@@ -268,13 +276,13 @@ class ScrollWidget :  ScrollWidgetBase {
         if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased) {
             scrollTo(event.position, scrollPos.y);
         } else if (event.action == ScrollAction.PageUp) {
-            //handleAction(new Action(GridActions.ScrollPageLeft));
+            scrollTo(scrollPos.x - _clientRect.width * 3 / 4, scrollPos.y);
         } else if (event.action == ScrollAction.PageDown) {
-            //handleAction(new Action(GridActions.ScrollPageRight));
+            scrollTo(scrollPos.x + _clientRect.width * 3 / 4, scrollPos.y);
         } else if (event.action == ScrollAction.LineUp) {
-            //handleAction(new Action(GridActions.ScrollLeft));
+            scrollTo(scrollPos.x - _clientRect.width / 20, scrollPos.y);
         } else if (event.action == ScrollAction.LineDown) {
-            //handleAction(new Action(GridActions.ScrollRight));
+            scrollTo(scrollPos.x + _clientRect.width / 20, scrollPos.y);
         }
         return true;
     }
@@ -284,13 +292,13 @@ class ScrollWidget :  ScrollWidgetBase {
         if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased) {
             scrollTo(scrollPos.x, event.position);
         } else if (event.action == ScrollAction.PageUp) {
-            //handleAction(new Action(GridActions.ScrollPageUp));
+            scrollTo(scrollPos.x, scrollPos.y - _clientRect.height * 3 / 4);
         } else if (event.action == ScrollAction.PageDown) {
-            //handleAction(new Action(GridActions.ScrollPageDown));
+            scrollTo(scrollPos.x, scrollPos.y + _clientRect.height * 3 / 4);
         } else if (event.action == ScrollAction.LineUp) {
-            //handleAction(new Action(GridActions.ScrollUp));
+            scrollTo(scrollPos.x, scrollPos.y - _clientRect.height / 20);
         } else if (event.action == ScrollAction.LineDown) {
-            //handleAction(new Action(GridActions.ScrollDown));
+            scrollTo(scrollPos.x, scrollPos.y + _clientRect.height / 20);
         }
         return true;
     }
