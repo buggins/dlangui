@@ -1210,26 +1210,26 @@ class Widget {
 	
 }
 
-/// widget list holder
-struct WidgetList {
-    protected Widget[] _list;
+/// object list holder, owning its objects - on destroy of holder, all own objects will be destroyed
+struct ObjectList(T) {
+    protected T[] _list;
     protected int _count;
     /// returns count of items
     @property int count() const { return _count; }
     /// get item by index
-    Widget get(int index) {
+    T get(int index) {
         assert(index >= 0 && index < _count, "child index out of range");
         return _list[index];
     }
     /// add item to list
-    Widget add(Widget item) {
+    T add(T item) {
         if (_list.length <= _count) // resize
             _list.length = _list.length < 4 ? 4 : _list.length * 2;
         _list[_count++] = item;
         return item;
     }
     /// add item to list
-    Widget insert(Widget item, int index = -1) {
+    T insert(T item, int index = -1) {
         if (index > _count || index < 0)
             index = _count;
         if (_list.length <= _count) // resize
@@ -1241,23 +1241,25 @@ struct WidgetList {
         return item;
     }
     /// find child index for item, return -1 if not found
-    int indexOf(Widget item) {
+    int indexOf(T item) {
         for (int i = 0; i < _count; i++)
             if (_list[i] == item)
                 return i;
         return -1;
     }
     /// find child index for item by id, return -1 if not found
-    int indexOf(string id) {
-        for (int i = 0; i < _count; i++)
-            if (_list[i].compareId(id))
-                return i;
-        return -1;
+    static if (__traits(hasMember, T, "compareId")) {
+        int indexOf(string id) {
+            for (int i = 0; i < _count; i++)
+                if (_list[i].compareId(id))
+                    return i;
+            return -1;
+        }
     }
     /// remove item from list, return removed item
-    Widget remove(int index) {
+    T remove(int index) {
         assert(index >= 0 && index < _count, "child index out of range");
-        Widget item = _list[index];
+        T item = _list[index];
         for (int i = index; i < _count - 1; i++)
             _list[i] = _list[i + 1];
         _count--;
@@ -1275,6 +1277,9 @@ struct WidgetList {
         clear();
     }
 }
+
+/// widget list holder
+alias WidgetList = ObjectList!Widget;
 
 /// base class for widgets which have children
 class WidgetGroup : Widget {
