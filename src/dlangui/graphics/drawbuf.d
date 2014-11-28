@@ -207,27 +207,36 @@ class DrawBuf : RefCountedObject {
     // ===================================================
     // clipping rectangle functions
 
+    /// init clip rectangle to full buffer size
+    void resetClipping() {
+        _clipRect = Rect(0, 0, width, height);
+    }
     /// returns clipping rectangle, when clipRect.isEmpty == true -- means no clipping.
     @property ref Rect clipRect() { return _clipRect; }
     /// returns clipping rectangle, or (0,0,dx,dy) when no clipping.
-    @property Rect clipOrFullRect() { return _clipRect.empty ? Rect(0,0,width,height) : _clipRect; }
+    //@property Rect clipOrFullRect() { return _clipRect.empty ? Rect(0,0,width,height) : _clipRect; }
     /// sets new clipping rectangle, when clipRect.isEmpty == true -- means no clipping.
     @property void clipRect(const ref Rect rect) { 
         _clipRect = rect;
         _clipRect.intersect(Rect(0, 0, width, height));
     }
-    /// sets new clipping rectangle, when clipRect.isEmpty == true -- means no clipping.
+    /// sets new clipping rectangle, intersect with previous one.
     @property void intersectClipRect(const ref Rect rect) {
-		if (_clipRect.empty)
-			_clipRect = rect;
-		else
-			_clipRect.intersect(rect);
+		//if (_clipRect.empty)
+		//	_clipRect = rect;
+		//else
+		_clipRect.intersect(rect);
         _clipRect.intersect(Rect(0, 0, width, height));
+    }
+    /// returns true if rectangle is completely clipped out and cannot be drawn.
+    @property bool isClippedOut(const ref Rect rect) {
+        //Rect rc = clipOrFullRect();
+        return !_clipRect.intersects(rect);
     }
     /// apply clipRect and buffer bounds clipping to rectangle
     bool applyClipping(ref Rect rc) {
-        if (!_clipRect.empty())
-            rc.intersect(_clipRect);
+        //if (!_clipRect.empty())
+        rc.intersect(_clipRect);
         if (rc.left < 0)
             rc.left = 0;
         if (rc.top < 0)
@@ -242,12 +251,12 @@ class DrawBuf : RefCountedObject {
     bool applyClipping(ref Rect rc, ref Rect rc2) {
         if (rc.empty || rc2.empty)
             return false;
-        if (!_clipRect.empty())
-            if (!rc.intersects(_clipRect))
-                return false;
+        //if (!_clipRect.empty())
+        if (!rc.intersects(_clipRect))
+            return false;
         if (rc.width == rc2.width && rc.height == rc2.height) {
             // unscaled
-            if (!_clipRect.empty()) {
+            //if (!_clipRect.empty) {
                 if (rc.left < _clipRect.left) {
                     rc2.left += _clipRect.left - rc.left;
                     rc.left = _clipRect.left;
@@ -264,7 +273,7 @@ class DrawBuf : RefCountedObject {
                     rc2.bottom -= rc.bottom - _clipRect.bottom;
                     rc.bottom = _clipRect.bottom;
                 }
-            }
+            //}
             if (rc.left < 0) {
                 rc2.left += -rc.left;
                 rc.left = 0;
@@ -287,7 +296,7 @@ class DrawBuf : RefCountedObject {
             int dstdy = rc.height;
             int srcdx = rc2.width;
             int srcdy = rc2.height;
-            if (!_clipRect.empty()) {
+            //if (!_clipRect.empty) {
                 if (rc.left < _clipRect.left) {
                     rc2.left += (_clipRect.left - rc.left) * srcdx / dstdx;
                     rc.left = _clipRect.left;
@@ -304,7 +313,7 @@ class DrawBuf : RefCountedObject {
                     rc2.bottom -= (rc.bottom - _clipRect.bottom) * srcdy / dstdy;
                     rc.bottom = _clipRect.bottom;
                 }
-            }
+            //}
             if (rc.left < 0) {
                 rc2.left -= (rc.left) * srcdx / dstdx;
                 rc.left = 0;
@@ -397,7 +406,9 @@ class DrawBuf : RefCountedObject {
         return this;
     }
 
-    void clear() {}
+    void clear() {
+		resetClipping();
+    }
 }
 
 alias DrawBufRef = Ref!DrawBuf;
@@ -576,7 +587,7 @@ class ColorDrawBufBase : DrawBuf {
         ubyte[] src = glyph.glyph;
         int srcdx = glyph.blackBoxX;
         int srcdy = glyph.blackBoxY;
-		bool clipping = !_clipRect.empty();
+		bool clipping = true; //!_clipRect.empty();
 		color = applyAlpha(color);
 		for (int yy = 0; yy < srcdy; yy++) {
 			int liney = y + yy;
@@ -646,6 +657,7 @@ class GrayDrawBuf : DrawBuf {
         _dx = width;
         _dy = height;
         _buf.length = _dx * _dy;
+        resetClipping();
     }
     override void fill(uint color) {
         int len = _dx * _dy;
@@ -772,7 +784,7 @@ class GrayDrawBuf : DrawBuf {
         ubyte[] src = glyph.glyph;
         int srcdx = glyph.blackBoxX;
         int srcdy = glyph.blackBoxY;
-		bool clipping = !_clipRect.empty();
+		bool clipping = true; //!_clipRect.empty();
         ubyte cl = cast(ubyte)(color & 255);
 		for (int yy = 0; yy < srcdy; yy++) {
 			int liney = y + yy;
@@ -854,6 +866,7 @@ class ColorDrawBuf : ColorDrawBufBase {
         _dx = width;
         _dy = height;
         _buf.length = _dx * _dy;
+        resetClipping();
     }
     override void fill(uint color) {
         int len = _dx * _dy;

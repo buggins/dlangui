@@ -344,6 +344,7 @@ version(USE_SDL) {
 				if (!_drawbuf)
 					_drawbuf = new ColorDrawBuf(_dx, _dy);
 				_drawbuf.resize(_dx, _dy);
+                _drawbuf.resetClipping();
 				_drawbuf.fill(_backgroundColor);
 				onDraw(_drawbuf);
 				draw(_drawbuf);

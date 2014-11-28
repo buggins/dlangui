@@ -71,6 +71,7 @@ class GLDrawBuf : DrawBuf {
     override void resize(int width, int height) {
         _dx = width;
         _dy = height;
+        resetClipping();
     }
 
     /// fill the whole buffer with solid color (no clipping applied)

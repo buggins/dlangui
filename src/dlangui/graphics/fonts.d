@@ -273,7 +273,7 @@ class Font : RefCountedObject {
         if (_textSizeBuffer.length < text.length)
             _textSizeBuffer.length = text.length;
 		int charsMeasured = measureText(text, _textSizeBuffer, MAX_WIDTH_UNSPECIFIED, tabSize, tabOffset, textFlags);
-		Rect clip = buf.clipOrFullRect;
+		Rect clip = buf.clipRect; //clipOrFullRect;
         if (clip.empty)
             return; // not visible - clipped out
 		if (y + height < clip.top || y >= clip.bottom)

@@ -281,6 +281,7 @@ class Win32Window : Window {
             _drawbuf = new Win32ColorDrawBuf(_dx, _dy);
         else
             _drawbuf.resize(_dx, _dy);
+        _drawbuf.resetClipping();
         return _drawbuf;
     }
     override void show() {

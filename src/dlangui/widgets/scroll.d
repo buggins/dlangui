@@ -99,18 +99,24 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
 			return;
 		Rect rc = _pos;
 		applyMargins(rc);
-		auto saver = ClipRectSaver(buf, rc, alpha);
-		DrawableRef bg = backgroundDrawable;
-		if (!bg.isNull) {
-			bg.drawTo(buf, rc, state);
-		}
-		applyPadding(rc);
-        if (_hscrollbar)
-		    _hscrollbar.onDraw(buf);
-        if (_vscrollbar)
-		    _vscrollbar.onDraw(buf);
-		auto saver2 = ClipRectSaver(buf, _clientRect, alpha);
-		drawClient(buf);
+        {
+		    auto saver = ClipRectSaver(buf, rc, alpha);
+		    DrawableRef bg = backgroundDrawable;
+		    if (!bg.isNull) {
+			    bg.drawTo(buf, rc, state);
+		    }
+		    applyPadding(rc);
+            if (_hscrollbar)
+		        _hscrollbar.onDraw(buf);
+            if (_vscrollbar)
+		        _vscrollbar.onDraw(buf);
+            // apply clipping
+            {
+		        auto saver2 = ClipRectSaver(buf, _clientRect, alpha);
+		        drawClient(buf);
+            }
+        }
+
 		_needDraw = false;
 	}
 

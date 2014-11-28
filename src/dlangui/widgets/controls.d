@@ -103,6 +103,7 @@ class TextWidget : Widget {
         applyMargins(rc);
 		auto saver = ClipRectSaver(buf, rc, alpha);
 		applyPadding(rc);
+
         FontRef font = font();
         Point sz = font.textSize(text);
         applyAlign(rc, sz);
@@ -795,7 +796,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
 
     /// Draw widget at its position to buffer
     override void onDraw(DrawBuf buf) {
-        if (visibility != Visibility.Visible)
+        if (visibility != Visibility.Visible && !buf.isClippedOut(_pos))
             return;
         super.onDraw(buf);
         Rect rc = _pos;
