@@ -808,7 +808,7 @@ class EditableContent {
 }
 
 /// base for all editor widgets
-class EditWidgetBase : ScrollWidget, EditableContentListener, MenuItemActionHandler {
+class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemActionHandler {
     protected EditableContent _content;
 
     protected int _lineHeight;
@@ -2344,7 +2344,6 @@ class EditBox : EditWidgetBase {
 
 	override protected void drawClient(DrawBuf buf) {
         Rect rc = _clientRect;
-		auto saver = ClipRectSaver(buf, rc, alpha);
 
         FontRef font = font();
         //dstring txt = text;

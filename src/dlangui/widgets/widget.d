@@ -1041,7 +1041,10 @@ class Widget {
         _measuredHeight = dy;
     }
 
-    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+    /** 
+        Measure widget according to desired width and height constraints. (Step 1 of two phase layout). 
+
+    */
     void measure(int parentWidth, int parentHeight) { 
         measuredContent(parentWidth, parentHeight, 0, 0);
     }

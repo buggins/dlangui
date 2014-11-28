@@ -14,7 +14,7 @@ enum ScrollBarMode {
     Auto
 }
 
-class ScrollWidget :  WidgetGroup, OnScrollHandler {
+class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
     protected ScrollBarMode _vscrollbarMode;
     protected ScrollBarMode _hscrollbarMode;
     /// vertical scrollbar control
@@ -23,6 +23,9 @@ class ScrollWidget :  WidgetGroup, OnScrollHandler {
 	protected ScrollBar _hscrollbar;
     /// inner area, excluding additional controls like scrollbars
 	protected Rect _clientRect;
+
+    protected Rect _fullScrollableArea;
+    protected Rect _visibleScrollableArea;
 
 	this(string ID = null, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
 		super(ID);
@@ -60,16 +63,6 @@ class ScrollWidget :  WidgetGroup, OnScrollHandler {
         return true;
     }
 
-    /// update horizontal scrollbar widget position
-    protected void updateHScrollBar() {
-        // override it
-    }
-
-    /// update verticat scrollbar widget position
-    protected void updateVScrollBar() {
-        // override it
-    }
-
     /// update scrollbar positions
     protected void updateScrollBars() {
         if (_hscrollbar) {
@@ -78,6 +71,22 @@ class ScrollWidget :  WidgetGroup, OnScrollHandler {
         if (_vscrollbar) {
             updateVScrollBar();
         }
+    }
+
+    /// update horizontal scrollbar widget position
+    protected void updateHScrollBar() {
+        // default implementation: use _fullScrollableArea, _visibleScrollableArea: override it if necessary
+        _hscrollbar.setRange(0, _fullScrollableArea.width);
+        _hscrollbar.pageSize(_visibleScrollableArea.width);
+        _hscrollbar.position(_visibleScrollableArea.left - _fullScrollableArea.left);
+    }
+
+    /// update verticat scrollbar widget position
+    protected void updateVScrollBar() {
+        // default implementation: use _fullScrollableArea, _visibleScrollableArea: override it if necessary
+        _vscrollbar.setRange(0, _fullScrollableArea.height);
+        _vscrollbar.pageSize(_visibleScrollableArea.height);
+        _vscrollbar.position(_visibleScrollableArea.top - _fullScrollableArea.top);
     }
 
 	protected void drawClient(DrawBuf buf) {
@@ -100,6 +109,7 @@ class ScrollWidget :  WidgetGroup, OnScrollHandler {
 		    _hscrollbar.onDraw(buf);
         if (_vscrollbar)
 		    _vscrollbar.onDraw(buf);
+		auto saver2 = ClipRectSaver(buf, _clientRect, alpha);
 		drawClient(buf);
 		_needDraw = false;
 	}
@@ -176,5 +186,113 @@ class ScrollWidget :  WidgetGroup, OnScrollHandler {
             _clientRect.bottom = hsbrc.top;
         updateScrollBars();
 	}
+
+}
+
+/**
+    Widget which can show content of widget group with optional scrolling.
+ */
+class ScrollWidget :  ScrollWidgetBase {
+    protected WidgetGroup _contentWidget;
+    @property WidgetGroup contentWidget() { return _contentWidget; }
+    @property ScrollWidget contentWidget(WidgetGroup newContent) { 
+        if (_contentWidget) {
+            removeChild(childIndex(_contentWidget));
+            destroy(_contentWidget);
+        }
+        _contentWidget = newContent;
+        addChild(_contentWidget);
+        requestLayout();
+        return this;
+    }
+	this(string ID = null, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
+		super(ID, hscrollbarMode, vscrollbarMode);
+    }
+
+    /// calculate full content size in pixels
+    override Point fullContentSize() {
+        // override it
+        Point sz;
+        if (_contentWidget) {
+            _contentWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+            sz.x = _contentWidget.measuredWidth;
+            sz.y = _contentWidget.measuredHeight;
+        }
+        _fullScrollableArea.right = sz.x;
+        _fullScrollableArea.bottom = sz.y;
+        return sz;
+    }
+
+    /// update scrollbar positions
+    override protected void updateScrollBars() {
+        Point sz = fullContentSize();
+        _visibleScrollableArea.right = _visibleScrollableArea.left + _clientRect.width;
+        _visibleScrollableArea.bottom = _visibleScrollableArea.top + _clientRect.height;
+        // move back if scroll is too big after window resize
+        int extrax = _visibleScrollableArea.right - _fullScrollableArea.right;
+        int extray = _visibleScrollableArea.bottom - _fullScrollableArea.bottom;
+        if (extrax > _visibleScrollableArea.left)
+            extrax = _visibleScrollableArea.left;
+        if (extray > _visibleScrollableArea.top)
+            extray = _visibleScrollableArea.top;
+        if (extrax < 0)
+            extrax = 0;
+        if (extray < 0)
+            extray = 0;
+        _visibleScrollableArea.offset(-extrax, -extray);
+        super.updateScrollBars();
+    }
+
+	override protected void drawClient(DrawBuf buf) {
+        if (_contentWidget) {
+            Point sz = fullContentSize();
+            Point p = scrollPos;
+            _contentWidget.layout(Rect(_pos.left - p.x, _pos.top - p.y, _pos.left + sz.x - p.x, _pos.top + sz.y - p.y));
+            _contentWidget.onDraw(buf);
+        }
+    }
+
+    @property Point scrollPos() {
+        return Point(_visibleScrollableArea.left - _fullScrollableArea.left, _visibleScrollableArea.top - _fullScrollableArea.top);
+    }
+
+    protected void scrollTo(int x, int y) {
+        _visibleScrollableArea.left = x;
+        _visibleScrollableArea.top = y;
+        updateScrollBars();
+        invalidate();
+    }
+
+    /// process horizontal scrollbar event
+    override bool onHScroll(ScrollEvent event) {
+        if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased) {
+            scrollTo(event.position, scrollPos.y);
+        } else if (event.action == ScrollAction.PageUp) {
+            //handleAction(new Action(GridActions.ScrollPageLeft));
+        } else if (event.action == ScrollAction.PageDown) {
+            //handleAction(new Action(GridActions.ScrollPageRight));
+        } else if (event.action == ScrollAction.LineUp) {
+            //handleAction(new Action(GridActions.ScrollLeft));
+        } else if (event.action == ScrollAction.LineDown) {
+            //handleAction(new Action(GridActions.ScrollRight));
+        }
+        return true;
+    }
+
+    /// process vertical scrollbar event
+    override bool onVScroll(ScrollEvent event) {
+        if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased) {
+            scrollTo(scrollPos.x, event.position);
+        } else if (event.action == ScrollAction.PageUp) {
+            //handleAction(new Action(GridActions.ScrollPageUp));
+        } else if (event.action == ScrollAction.PageDown) {
+            //handleAction(new Action(GridActions.ScrollPageDown));
+        } else if (event.action == ScrollAction.LineUp) {
+            //handleAction(new Action(GridActions.ScrollUp));
+        } else if (event.action == ScrollAction.LineDown) {
+            //handleAction(new Action(GridActions.ScrollDown));
+        }
+        return true;
+    }
 
 }

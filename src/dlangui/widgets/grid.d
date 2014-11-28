@@ -150,7 +150,7 @@ enum GridActions : int {
 	SelectDocumentEnd,
 }
 
-class GridWidgetBase : ScrollWidget {
+class GridWidgetBase : ScrollWidgetBase {
     /// column count (including header columns and fixed columns)
 	protected int _cols;
     /// row count (including header rows and fixed rows)
@@ -371,20 +371,6 @@ class GridWidgetBase : ScrollWidget {
             return true;
         }
         return false;
-    }
-
-    /// update horizontal scrollbar widget position
-    override protected void updateHScrollBar() {
-        _hscrollbar.setRange(0, _fullScrollableArea.width);
-        _hscrollbar.pageSize(_visibleScrollableArea.width);
-        _hscrollbar.position(_visibleScrollableArea.left - _fullScrollableArea.left);
-    }
-
-    /// update verticat scrollbar widget position
-    override protected void updateVScrollBar() {
-        _vscrollbar.setRange(0, _fullScrollableArea.height);
-        _vscrollbar.pageSize(_visibleScrollableArea.height);
-        _vscrollbar.position(_visibleScrollableArea.top - _fullScrollableArea.top);
     }
 
     /// update scrollbar positions

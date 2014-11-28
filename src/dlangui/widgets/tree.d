@@ -5,7 +5,7 @@ import dlangui.widgets.controls;
 import dlangui.widgets.scroll;
 import std.conv;
 
-class TreeWidgetBase :  ScrollWidget {
+class TreeWidgetBase :  ScrollWidgetBase {
 
 	this(string ID = null, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
 		super(ID, hscrollbarMode, vscrollbarMode);
@@ -34,7 +34,7 @@ class TreeWidgetBase :  ScrollWidget {
 
 }
 
-class TreeWidget :  ScrollWidget {
+class TreeWidget :  TreeWidgetBase {
 	this(string ID = null) {
 		super(ID);
     }
