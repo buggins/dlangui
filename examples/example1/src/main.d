@@ -572,6 +572,13 @@ extern (C) int UIAppMain(string[] args) {
 		tabs.addTab(grid, "Grid"d);
 
         //==========================================================================
+        // tree view example
+		TreeWidget tree = new TreeWidget("TREE1");
+		tree.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+		tabs.addTab(tree, "Tree"d);
+
+
+        //==========================================================================
 
         contentLayout.addChild(tabs);
 	    window.mainWidget = contentLayout;

@@ -2,6 +2,7 @@ module dlangui.widgets.grid;
 
 import dlangui.widgets.widget;
 import dlangui.widgets.controls;
+import dlangui.widgets.scroll;
 import std.conv;
 
 /**
@@ -149,7 +150,7 @@ enum GridActions : int {
 	SelectDocumentEnd,
 }
 
-class GridWidgetBase : WidgetGroup, OnScrollHandler {
+class GridWidgetBase : ScrollWidget {
     /// column count (including header columns and fixed columns)
 	protected int _cols;
     /// row count (including header rows and fixed rows)
@@ -178,10 +179,6 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
     protected int _col;
     /// selected cell row
     protected int _row;
-    /// vertical scrollbar control
-	protected ScrollBar _vscrollbar;
-    /// horizontal scrollbar control
-	protected ScrollBar _hscrollbar;
     /// inner area, excluding additional controls like scrollbars
 	protected Rect _clientRect;
     /// when true, allows to select only whole row
@@ -378,19 +375,24 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
         return false;
     }
 
+    /// update horizontal scrollbar widget position
+    override protected void updateHScrollBar() {
+        _hscrollbar.setRange(0, _fullScrollableArea.width);
+        _hscrollbar.pageSize(_visibleScrollableArea.width);
+        _hscrollbar.position(_visibleScrollableArea.left - _fullScrollableArea.left);
+    }
+
+    /// update verticat scrollbar widget position
+    override protected void updateVScrollBar() {
+        _vscrollbar.setRange(0, _fullScrollableArea.height);
+        _vscrollbar.pageSize(_visibleScrollableArea.height);
+        _vscrollbar.position(_visibleScrollableArea.top - _fullScrollableArea.top);
+    }
+
     /// update scrollbar positions
-    protected void updateScrollBars() {
+    override protected void updateScrollBars() {
         calcScrollableAreaPos();
-        if (_hscrollbar) {
-            _hscrollbar.setRange(0, _fullScrollableArea.width);
-            _hscrollbar.pageSize(_visibleScrollableArea.width);
-            _hscrollbar.position(_visibleScrollableArea.left - _fullScrollableArea.left);
-        }
-        if (_vscrollbar) {
-            _vscrollbar.setRange(0, _fullScrollableArea.height);
-            _vscrollbar.pageSize(_visibleScrollableArea.height);
-            _vscrollbar.position(_visibleScrollableArea.top - _fullScrollableArea.top);
-        }
+        super.updateScrollBars();
     }
 
     /// column by X, ignoring scroll position
@@ -455,36 +457,36 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
         return oldx != _scrollCol || oldy != _scrollRow;
     }
 
-    /// handle scroll event
-    override bool onScrollEvent(AbstractSlider source, ScrollEvent event) {
-        if (source.compareId("hscrollbar")) {
-            if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased) {
-                int col = colByAbsoluteX(event.position + _fullScrollableArea.left);
-                scrollTo(col, _scrollRow + _headerRows + _fixedRows);
-            } else if (event.action == ScrollAction.PageUp) {
-                handleAction(new Action(GridActions.ScrollPageLeft));
-            } else if (event.action == ScrollAction.PageDown) {
-                handleAction(new Action(GridActions.ScrollPageRight));
-            } else if (event.action == ScrollAction.LineUp) {
-                handleAction(new Action(GridActions.ScrollLeft));
-            } else if (event.action == ScrollAction.LineDown) {
-                handleAction(new Action(GridActions.ScrollRight));
-            }
-            return true;
-        } else if (source.compareId("vscrollbar")) {
-            if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased) {
-                int row = rowByAbsoluteY(event.position + _fullScrollableArea.top);
-                scrollTo(_scrollCol + _headerCols + _fixedCols, row);
-            } else if (event.action == ScrollAction.PageUp) {
-                handleAction(new Action(GridActions.ScrollPageUp));
-            } else if (event.action == ScrollAction.PageDown) {
-                handleAction(new Action(GridActions.ScrollPageDown));
-            } else if (event.action == ScrollAction.LineUp) {
-                handleAction(new Action(GridActions.ScrollUp));
-            } else if (event.action == ScrollAction.LineDown) {
-                handleAction(new Action(GridActions.ScrollDown));
-            }
-            return true;
+    /// process horizontal scrollbar event
+    override bool onHScroll(ScrollEvent event) {
+        if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased) {
+            int col = colByAbsoluteX(event.position + _fullScrollableArea.left);
+            scrollTo(col, _scrollRow + _headerRows + _fixedRows);
+        } else if (event.action == ScrollAction.PageUp) {
+            handleAction(new Action(GridActions.ScrollPageLeft));
+        } else if (event.action == ScrollAction.PageDown) {
+            handleAction(new Action(GridActions.ScrollPageRight));
+        } else if (event.action == ScrollAction.LineUp) {
+            handleAction(new Action(GridActions.ScrollLeft));
+        } else if (event.action == ScrollAction.LineDown) {
+            handleAction(new Action(GridActions.ScrollRight));
+        }
+        return true;
+    }
+
+    /// process vertical scrollbar event
+    override bool onVScroll(ScrollEvent event) {
+        if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased) {
+            int row = rowByAbsoluteY(event.position + _fullScrollableArea.top);
+            scrollTo(_scrollCol + _headerCols + _fixedCols, row);
+        } else if (event.action == ScrollAction.PageUp) {
+            handleAction(new Action(GridActions.ScrollPageUp));
+        } else if (event.action == ScrollAction.PageDown) {
+            handleAction(new Action(GridActions.ScrollPageDown));
+        } else if (event.action == ScrollAction.LineUp) {
+            handleAction(new Action(GridActions.ScrollUp));
+        } else if (event.action == ScrollAction.LineDown) {
+            handleAction(new Action(GridActions.ScrollDown));
         }
         return true;
     }
@@ -1051,12 +1053,6 @@ class GridWidgetBase : WidgetGroup, OnScrollHandler {
 
 	this(string ID = null) {
 		super(ID);
-		_vscrollbar = new ScrollBar("vscrollbar", Orientation.Vertical);
-		_hscrollbar = new ScrollBar("hscrollbar", Orientation.Horizontal);
-        _hscrollbar.onScrollEventListener = this;
-        _vscrollbar.onScrollEventListener = this;
-		addChild(_vscrollbar);
-		addChild(_hscrollbar);
         _headerCols = 1;
         _headerRows = 1;
         _defRowHeight = 20;

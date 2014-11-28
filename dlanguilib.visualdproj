@@ -89,7 +89,6 @@
   <resfile />
   <exefile>$(OutDir)\$(ProjectName).lib</exefile>
   <useStdLibPath>1</useStdLibPath>
-  <cRuntime>2</cRuntime>
   <additionalOptions />
   <preBuildCommand />
   <postBuildCommand />
@@ -184,7 +183,6 @@
   <resfile />
   <exefile>$(OutDir)\$(ProjectName).lib</exefile>
   <useStdLibPath>1</useStdLibPath>
-  <cRuntime>1</cRuntime>
   <additionalOptions />
   <preBuildCommand />
   <postBuildCommand />
@@ -337,8 +335,10 @@
      <File path="src\dlangui\widgets\lists.d" />
      <File path="src\dlangui\widgets\menu.d" />
      <File path="src\dlangui\widgets\popup.d" />
+     <File path="src\dlangui\widgets\scroll.d" />
      <File path="src\dlangui\widgets\styles.d" />
      <File path="src\dlangui\widgets\tabs.d" />
+     <File path="src\dlangui\widgets\tree.d" />
      <File path="src\dlangui\widgets\widget.d" />
     </Folder>
     <File path="src\dlangui\all.d" />
