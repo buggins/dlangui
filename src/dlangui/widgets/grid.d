@@ -179,8 +179,6 @@ class GridWidgetBase : ScrollWidget {
     protected int _col;
     /// selected cell row
     protected int _row;
-    /// inner area, excluding additional controls like scrollbars
-	protected Rect _clientRect;
     /// when true, allows to select only whole row
     protected bool _rowSelect;
     /// default column width - for newly added columns
@@ -852,7 +850,8 @@ class GridWidgetBase : ScrollWidget {
         }
     }
 
-    Point fullContentSize() {
+    /// calculate full content size in pixels
+    override Point fullContentSize() {
         Point sz;
         for (int i = 0; i < _cols; i++)
             sz.x += _colWidths[i];
@@ -861,62 +860,7 @@ class GridWidgetBase : ScrollWidget {
         return sz;
     }
 
-	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-	override void measure(int parentWidth, int parentHeight) { 
-		Rect m = margins;
-		Rect p = padding;
-		// calc size constraints for children
-		int pwidth = parentWidth;
-		int pheight = parentHeight;
-		if (parentWidth != SIZE_UNSPECIFIED)
-			pwidth -= m.left + m.right + p.left + p.right;
-		if (parentHeight != SIZE_UNSPECIFIED)
-			pheight -= m.top + m.bottom + p.top + p.bottom;
-		_hscrollbar.measure(pwidth, pheight);
-		_vscrollbar.measure(pwidth, pheight);
-        Point sz = fullContentSize();
-		measuredContent(parentWidth, parentHeight, sz.x, sz.y);
-	}
-
-	/// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
-	override void layout(Rect rc) {
-		if (visibility == Visibility.Gone) {
-			return;
-		}
-		_pos = rc;
-		_needLayout = false;
-		applyMargins(rc);
-		applyPadding(rc);
-        Point sz = fullContentSize();
-        bool needHscroll = sz.x > rc.width;
-        bool needVscroll = sz.y > rc.height;
-        if (needVscroll)
-            needHscroll = sz.x > rc.width - _vscrollbar.measuredWidth;
-        if (needHscroll)
-            needVscroll = sz.y > rc.height - _hscrollbar.measuredHeight;
-        if (needVscroll)
-            needHscroll = sz.x > rc.width - _vscrollbar.measuredWidth;
-		// scrollbars
-		Rect vsbrc = rc;
-		vsbrc.left = vsbrc.right - _vscrollbar.measuredWidth;
-		vsbrc.bottom = vsbrc.bottom - _hscrollbar.measuredHeight;
-		Rect hsbrc = rc;
-		hsbrc.right = hsbrc.right - _vscrollbar.measuredWidth;
-		hsbrc.top = hsbrc.bottom - _hscrollbar.measuredHeight;
-		_vscrollbar.layout(vsbrc);
-		_hscrollbar.layout(hsbrc);
-        _vscrollbar.visibility = needVscroll ? Visibility.Visible : Visibility.Gone;
-        _hscrollbar.visibility = needHscroll ? Visibility.Visible : Visibility.Gone;
-		// client area
-		_clientRect = rc;
-        if (needVscroll)
-		    _clientRect.right = vsbrc.left;
-        if (needHscroll)
-            _clientRect.bottom = hsbrc.top;
-        updateScrollBars();
-	}
-
-	protected void drawClient(DrawBuf buf) {
+	override protected void drawClient(DrawBuf buf) {
 		auto saver = ClipRectSaver(buf, _clientRect, 0);
 		//buf.fillRect(_clientRect, 0x80A08080);
         Rect rc;
@@ -960,23 +904,6 @@ class GridWidgetBase : ScrollWidget {
                 }
             }
         }
-	}
-	/// Draw widget at its position to buffer
-	override void onDraw(DrawBuf buf) {
-		if (visibility != Visibility.Visible)
-			return;
-		Rect rc = _pos;
-		applyMargins(rc);
-		auto saver = ClipRectSaver(buf, rc, alpha);
-		DrawableRef bg = backgroundDrawable;
-		if (!bg.isNull) {
-			bg.drawTo(buf, rc, state);
-		}
-		applyPadding(rc);
-		_hscrollbar.onDraw(buf);
-		_vscrollbar.onDraw(buf);
-		drawClient(buf);
-		_needDraw = false;
 	}
 
 	/// draw data cell content
@@ -1051,8 +978,8 @@ class GridWidgetBase : ScrollWidget {
         autoFitRowHeights();
     }
 
-	this(string ID = null) {
-		super(ID);
+	this(string ID = null, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
+		super(ID, hscrollbarMode, vscrollbarMode);
         _headerCols = 1;
         _headerRows = 1;
         _defRowHeight = 20;

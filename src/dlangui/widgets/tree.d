@@ -6,19 +6,9 @@ import dlangui.widgets.scroll;
 import std.conv;
 
 class TreeWidgetBase :  ScrollWidget {
-    /// vertical scrollbar control
-	protected ScrollBar _vscrollbar;
-    /// horizontal scrollbar control
-	protected ScrollBar _hscrollbar;
 
-	this(string ID = null) {
-		super(ID);
-        _vscrollbar = new ScrollBar("vscrollbar", Orientation.Vertical);
-        _hscrollbar = new ScrollBar("hscrollbar", Orientation.Horizontal);
-        _hscrollbar.onScrollEventListener = this;
-        _vscrollbar.onScrollEventListener = this;
-        addChild(_vscrollbar);
-        addChild(_hscrollbar);
+	this(string ID = null, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
+		super(ID, hscrollbarMode, vscrollbarMode);
     }
 
     /// process horizontal scrollbar event
