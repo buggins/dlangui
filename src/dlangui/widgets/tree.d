@@ -3,6 +3,7 @@ module dlangui.widgets.tree;
 import dlangui.widgets.widget;
 import dlangui.widgets.controls;
 import dlangui.widgets.scroll;
+import dlangui.widgets.layouts;
 import std.conv;
 import std.algorithm;
 
@@ -15,6 +16,36 @@ class TreeItem {
     protected UIString _text;
     protected ObjectList!TreeItem _children;
     protected bool _expanded;
+
+    this(string id) {
+        _id = id;
+        _expanded = true;
+    }
+    this(string id, dstring label, string iconRes = null) {
+        _id = id;
+        _expanded = true;
+        _iconRes = iconRes;
+        _text = label;
+    }
+    this(string id, UIString label, string iconRes = null) {
+        _id = id;
+        _expanded = true;
+        _iconRes = iconRes;
+        _text = label;
+    }
+    this(string id, string labelRes, string iconRes = null) {
+        _id = id;
+        _expanded = true;
+        _iconRes = iconRes;
+        _text = labelRes;
+    }
+    /// create and add new child item
+    TreeItem newChild(string id, dstring label, string iconRes = null) {
+        TreeItem res = new TreeItem(id, label, iconRes);
+        addChild(res);
+        return res;
+    }
+
 
     @property TreeItem parent() { return _parent; }
     @property protected TreeItem parent(TreeItem p) { _parent = p; return this; }
@@ -31,11 +62,16 @@ class TreeItem {
     }
     @property bool expanded() { return _expanded; }
     @property protected TreeItem expanded(bool expanded) { _expanded = expanded; return this; }
+    /** Returns true if this item and all parents are expanded. */
     bool isFullyExpanded() {
         if (!_expanded)
             return false;
+        return isVisible();
+    }
+    /** Returns true if all parents are expanded. */
+    bool isVisible() {
         if (_parent)
-            return _parent.isFullyExpanded();
+            return _parent.isVisible();
         return false;
     }
     void expand() {
@@ -72,6 +108,9 @@ class TreeItem {
         return _parent.topParent;
     }
 
+    /// returns true if item has at least one child
+    @property bool hasChildren() { return childCount > 0; }
+
     /// returns number of children of this widget
     @property int childCount() { return _children.count; }
     /// returns child by index
@@ -100,7 +139,11 @@ class TreeItem {
     }
     /// returns index of widget in child list, -1 if passed widget is not a child of this widget
     int childIndex(TreeItem item) { return _children.indexOf(item); }
-
+    /// notify listeners
+    protected void onUpdate(TreeItem item) {
+        if (_parent)
+            _parent.onUpdate(item);
+    }
 }
 
 interface OnTreeContentChangeListener {
@@ -109,36 +152,114 @@ interface OnTreeContentChangeListener {
 
 class TreeItems : TreeItem {
     // signal handler OnTreeContentChangeListener
-    Listener!OnTreeContentChangeListener listener;
+    Signal!OnTreeContentChangeListener listener;
+
+    this() {
+        super("tree");
+    }
+
+    /// notify listeners
+    override protected void onUpdate(TreeItem item) {
+        if (listener.assigned)
+            listener(this);
+    }
 }
 
-class TreeWidgetBase :  ScrollWidgetBase {
+class TreeItemWidget : HorizontalLayout {
+    TreeItem _item;
+    TextWidget _tab;
+    ImageWidget _expander;
+    ImageWidget _icon;
+    TextWidget _label;
+    this(TreeItem item) {
+        super(item.id);
+        _item = item;
+        _tab = new TextWidget("tab");
+        dchar[] tabText;
+        dchar[] singleTab = [' ', ' ', ' ', ' '];
+        for (int i = 1; i < _item.level; i++)
+            tabText ~= singleTab;
+        _tab.text = cast(dstring)tabText;
+        _expander = new ImageWidget("expander", _item.hasChildren && _item.expanded ? "arrow_right_down_black" : "arrow_right_hollow");
+        if (!_item.hasChildren)
+            _expander.visibility = Visibility.Gone;
+        if (_item.iconRes.length > 0)
+            _icon = new ImageWidget("icon", _item.iconRes);
+        _label = new TextWidget("label", _item.text);
+        addChild(_tab);
+        addChild(_expander);
+        if (_icon)
+            addChild(_icon);
+        addChild(_label);
+    }
+}
+
+class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener {
+
+    protected TreeItems _tree;
+
+    @property ref TreeItems items() { return _tree; }
+
+    protected bool _needUpdateWidgets;
 
 	this(string ID = null, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
 		super(ID, hscrollbarMode, vscrollbarMode);
+        contentWidget = new VerticalLayout("TREE_CONTENT");
+        _tree = new TreeItems();
+        _tree.listener.connect(this);
+        _needUpdateWidgets = true;
     }
 
-    /// process horizontal scrollbar event
-    override bool onHScroll(ScrollEvent event) {
-        return true;
+    ~this() {
+        if (_tree) {
+            destroy(_tree);
+            _tree = null;
+        }
     }
 
-    /// process vertical scrollbar event
-    override bool onVScroll(ScrollEvent event) {
-        return true;
+    /** Override to use custom tree item widgets. */
+    protected Widget createItemWidget(TreeItem item) {
+        return new TreeItemWidget(item);
     }
 
-    /// update horizontal scrollbar widget position
-    override protected void updateHScrollBar() {
-        // override it
+    protected void addWidgets(TreeItem item) {
+        if (item.level > 0)
+            _contentWidget.addChild(createItemWidget(item));
+        for (int i = 0; i < item.childCount; i++)
+            addWidgets(item.child(i));
     }
 
-    /// update verticat scrollbar widget position
-    override protected void updateVScrollBar() {
-        // override it
+    protected void updateWidgets() {
+        _contentWidget.removeAllChildren();
+        addWidgets(_tree);
+        _needUpdateWidgets = false;
     }
 
+	/// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+	override void layout(Rect rc) {
+		if (visibility == Visibility.Gone) {
+			return;
+		}
+        if (_needUpdateWidgets)
+            updateWidgets();
+        super.layout(rc);
+    }
 
+	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+	override void measure(int parentWidth, int parentHeight) { 
+        if (visibility == Visibility.Gone) {
+            return;
+        }
+        if (_needUpdateWidgets)
+            updateWidgets();
+        super.measure(parentWidth, parentHeight);
+    }
+
+    /// listener
+    override void onTreeContentChange(TreeItems source) {
+        _needUpdateWidgets = true;
+        requestLayout();
+    }
 }
 
 class TreeWidget :  TreeWidgetBase {

@@ -1207,7 +1207,10 @@ class Widget {
     /// sets window (to be used for top level widget from Window implementation). TODO: hide it from API?
     @property void window(Window window) { _window = window; }
 
-	
+    void removeAllChildren() {
+        // override
+    }
+
 }
 
 /// object list holder, owning its objects - on destroy of holder, all own objects will be destroyed
@@ -1316,4 +1319,9 @@ class WidgetGroup : Widget {
     }
     /// returns index of widget in child list, -1 if passed widget is not a child of this widget
     override int childIndex(Widget item) { return _children.indexOf(item); }
+
+    override void removeAllChildren() {
+        _children.clear();
+    }
+
 }

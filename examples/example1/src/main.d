@@ -623,6 +623,15 @@ extern (C) int UIAppMain(string[] args) {
         // tree view example
 		TreeWidget tree = new TreeWidget("TREE1");
 		tree.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+        TreeItem tree1 = tree.items.newChild("group1", "Group 1"d);
+        tree1.newChild("g1_1", "Group 1 item 1"d);
+        tree1.newChild("g1_2", "Group 1 item 2"d);
+        tree1.newChild("g1_3", "Group 1 item 3"d);
+        TreeItem tree2 = tree.items.newChild("group2", "Group 2"d);
+        tree2.newChild("g2_1", "Group 2 item 1"d);
+        tree2.newChild("g2_2", "Group 2 item 2"d);
+        tree2.newChild("g2_3", "Group 2 item 3"d);
+        tree2.newChild("g2_4", "Group 2 item 4"d);
 		tabs.addTab(tree, "Tree"d);
 
 
