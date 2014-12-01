@@ -632,6 +632,7 @@ extern (C) int UIAppMain(string[] args) {
         tree2.newChild("g2_2", "Group 2 item 2"d);
         tree2.newChild("g2_3", "Group 2 item 3"d);
         tree2.newChild("g2_4", "Group 2 item 4"d);
+        tree.items.selectItem(tree.items.child(0));
 		tabs.addTab(tree, "Tree"d);
 
 

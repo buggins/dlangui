@@ -30,6 +30,8 @@ module dlangui.widgets.controls;
 import dlangui.widgets.widget;
 import dlangui.widgets.layouts;
 
+import std.algorithm;
+
 /// vertical spacer to fill empty space in vertical layouts
 class VSpacer : Widget {
     this() {
@@ -147,6 +149,15 @@ class ImageWidget : Widget {
     @property ImageWidget drawable(DrawableRef img) {
         _drawable = img;
         _drawableId = null;
+        return this;
+    }
+    /// set custom drawable (not one from resources)
+    @property ImageWidget drawable(string drawableId) {
+        if (_drawableId.equal(drawableId))
+            return this;
+        _drawableId = drawableId; 
+        _drawable.clear();
+        requestLayout();
         return this;
     }
 

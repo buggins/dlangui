@@ -66,18 +66,33 @@ class TreeItem {
     bool isFullyExpanded() {
         if (!_expanded)
             return false;
-        return isVisible();
+        if (!_parent)
+            return true;
+        return _parent.isFullyExpanded();
     }
     /** Returns true if all parents are expanded. */
     bool isVisible() {
         if (_parent)
-            return _parent.isVisible();
+            return _parent.isFullyExpanded();
         return false;
     }
     void expand() {
         _expanded = true;
         if (_parent)
             _parent.expand();
+    }
+    void collapse() {
+        _expanded = false;
+    }
+
+    @property TreeItem selectedItem() {
+        if (_parent)
+            return _parent.selectedItem();
+        return null;
+    }
+
+    bool isSelected() {
+        return (selectedItem is this);
     }
 
     /// get widget text
@@ -144,15 +159,32 @@ class TreeItem {
         if (_parent)
             _parent.onUpdate(item);
     }
+
+    protected void toggleExpand(TreeItem item) {
+        
+        if (_parent)
+            _parent.toggleExpand(item);
+    }
+
+    protected void selectItem(TreeItem item) {
+        if (_parent)
+            _parent.selectItem(item);
+    }
 }
 
 interface OnTreeContentChangeListener {
     void onTreeContentChange(TreeItems source);
 }
 
+interface OnTreeStateChangeListener {
+    void onTreeStateChange(TreeItems source);
+}
+
 class TreeItems : TreeItem {
     // signal handler OnTreeContentChangeListener
-    Signal!OnTreeContentChangeListener listener;
+    Signal!OnTreeContentChangeListener contentListener;
+    Signal!OnTreeStateChangeListener stateListener;
+    protected TreeItem _selectedItem;
 
     this() {
         super("tree");
@@ -160,9 +192,31 @@ class TreeItems : TreeItem {
 
     /// notify listeners
     override protected void onUpdate(TreeItem item) {
-        if (listener.assigned)
-            listener(this);
+        if (contentListener.assigned)
+            contentListener(this);
     }
+
+    override void toggleExpand(TreeItem item) {
+        if (item.expanded)
+            item.collapse();
+        else
+            item.expand();
+        if (stateListener.assigned)
+            stateListener(this);
+    }
+
+    override void selectItem(TreeItem item) {
+        if (_selectedItem is item)
+            return;
+        _selectedItem = item;
+        if (stateListener.assigned)
+            stateListener(this);
+    }
+
+    @property override TreeItem selectedItem() {
+        return _selectedItem;
+    }
+
 }
 
 class TreeItemWidget : HorizontalLayout {
@@ -173,6 +227,7 @@ class TreeItemWidget : HorizontalLayout {
     TextWidget _label;
     this(TreeItem item) {
         super(item.id);
+        styleId = "TREE_ITEM";
         _item = item;
         _tab = new TextWidget("tab");
         dchar[] tabText;
@@ -180,34 +235,68 @@ class TreeItemWidget : HorizontalLayout {
         for (int i = 1; i < _item.level; i++)
             tabText ~= singleTab;
         _tab.text = cast(dstring)tabText;
-        _expander = new ImageWidget("expander", _item.hasChildren && _item.expanded ? "arrow_right_down_black" : "arrow_right_hollow");
-        if (!_item.hasChildren)
-            _expander.visibility = Visibility.Gone;
-        if (_item.iconRes.length > 0)
+        if (_item.hasChildren) {
+            _expander = new ImageWidget("expander", _item.hasChildren && _item.expanded ? "arrow_right_down_black" : "arrow_right_hollow");
+            _expander.styleId = "TREE_ITEM_EXPANDER_ICON";
+            //_expander.setState(State.Parent);
+            _expander.onClickListener.connect(delegate(Widget source) {
+                _item.toggleExpand(_item);
+                return true;
+            });
+        }
+        onClickListener.connect(delegate(Widget source) {
+            _item.selectItem(_item);
+            return true;
+        });
+        if (_item.iconRes.length > 0) {
             _icon = new ImageWidget("icon", _item.iconRes);
+            _icon.styleId = "TREE_ITEM_ICON";
+            _icon.setState(State.Parent);
+        }
         _label = new TextWidget("label", _item.text);
+        _label.styleId = "TREE_ITEM_LABEL";
+        _label.setState(State.Parent);
+        // append children
         addChild(_tab);
-        addChild(_expander);
+        if (_expander)
+            addChild(_expander);
         if (_icon)
             addChild(_icon);
         addChild(_label);
     }
+
+    void updateWidget() {
+        if (_expander) {
+            _expander.drawable = _item.expanded ? "arrow_right_down_black" : "arrow_right_hollow";
+        }
+        if (_item.isVisible)
+            visibility = Visibility.Visible;
+        else
+            visibility = Visibility.Gone;
+        if (_item.isSelected)
+            setState(State.Selected);
+        else
+            resetState(State.Selected);
+    }
 }
 
-class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener {
+class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateChangeListener {
 
     protected TreeItems _tree;
 
     @property ref TreeItems items() { return _tree; }
 
     protected bool _needUpdateWidgets;
+    protected bool _needUpdateWidgetStates;
 
 	this(string ID = null, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
 		super(ID, hscrollbarMode, vscrollbarMode);
         contentWidget = new VerticalLayout("TREE_CONTENT");
         _tree = new TreeItems();
-        _tree.listener.connect(this);
+        _tree.contentListener.connect(this);
+        _tree.stateListener.connect(this);
         _needUpdateWidgets = true;
+        _needUpdateWidgetStates = true;
     }
 
     ~this() {
@@ -235,6 +324,15 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener {
         _needUpdateWidgets = false;
     }
 
+    protected void updateWidgetStates() {
+        for (int i = 0; i < _contentWidget.childCount; i++) {
+            TreeItemWidget child = cast(TreeItemWidget)_contentWidget.child(i);
+            if (child)
+                child.updateWidget();
+        }
+        _needUpdateWidgetStates = false;
+    }
+
 	/// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
 	override void layout(Rect rc) {
 		if (visibility == Visibility.Gone) {
@@ -242,6 +340,8 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener {
 		}
         if (_needUpdateWidgets)
             updateWidgets();
+        if (_needUpdateWidgetStates)
+            updateWidgetStates();
         super.layout(rc);
     }
 
@@ -252,6 +352,8 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener {
         }
         if (_needUpdateWidgets)
             updateWidgets();
+        if (_needUpdateWidgetStates)
+            updateWidgetStates();
         super.measure(parentWidth, parentHeight);
     }
 
@@ -260,6 +362,12 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener {
         _needUpdateWidgets = true;
         requestLayout();
     }
+
+    override void onTreeStateChange(TreeItems source) {
+        _needUpdateWidgetStates = true;
+        requestLayout();
+    }
+
 }
 
 class TreeWidget :  TreeWidgetBase {
