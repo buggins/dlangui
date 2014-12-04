@@ -219,15 +219,23 @@ class TreeItems : TreeItem {
 
 }
 
+const int DOUBLE_CLICK_TIME_MS = 250;
+
 class TreeItemWidget : HorizontalLayout {
     TreeItem _item;
     TextWidget _tab;
     ImageWidget _expander;
     ImageWidget _icon;
     TextWidget _label;
+    long lastClickTime;
     this(TreeItem item) {
         super(item.id);
         styleId = "TREE_ITEM";
+
+        clickable = true;
+        focusable = true;
+        trackHover = true;
+
         _item = item;
         _tab = new TextWidget("tab");
         dchar[] tabText;
@@ -238,14 +246,23 @@ class TreeItemWidget : HorizontalLayout {
         if (_item.hasChildren) {
             _expander = new ImageWidget("expander", _item.hasChildren && _item.expanded ? "arrow_right_down_black" : "arrow_right_hollow");
             _expander.styleId = "TREE_ITEM_EXPANDER_ICON";
+            _expander.clickable = true;
+            _expander.trackHover = true;
+
             //_expander.setState(State.Parent);
             _expander.onClickListener.connect(delegate(Widget source) {
+                _item.selectItem(_item);
                 _item.toggleExpand(_item);
                 return true;
             });
         }
         onClickListener.connect(delegate(Widget source) {
+            long ts = currentTimeMillis();
             _item.selectItem(_item);
+            if (_item.hasChildren && ts - lastClickTime < DOUBLE_CLICK_TIME_MS) {
+                _item.toggleExpand(_item);
+            }
+            lastClickTime = ts;
             return true;
         });
         if (_item.iconRes.length > 0) {
