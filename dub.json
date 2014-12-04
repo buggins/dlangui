@@ -6,7 +6,7 @@
     "authors": ["Vadim Lopatin"],
     "targetType": "none",
 
-    "versions-windows": ["USE_OPENGL", "Unicode"],
+    "versions-windows": ["Unicode"],
     "versions-posix": ["USE_OPENGL", "USE_SDL", "Unicode"],
 	
     "subPackages": [

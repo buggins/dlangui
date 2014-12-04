@@ -78,6 +78,9 @@ MODULE_TREE	= <ul>
 			<li><a href="menu.html">menu</a></li>
 			<li><a href="popup.html">popup</a></li>
 			<li><a href="tabs.html">tabs</a></li>
+			<li><a href="tree.html">tree</a></li>
+			<li><a href="scroll.html">scroll</a></li>
+			<li><a href="grid.html">grid</a></li>
 		</ul></li>
 		<li>dlangui.dialogs
 		<ul>
