@@ -38,6 +38,8 @@ struct LayoutItem {
 	int _maxSize; //  max size for primary dimension
 	int _weight; // weight
 	bool _fillParent;
+    bool _isResizer;
+    @property bool canExtend() { return !_isResizer; }
     @property int measuredSize() { return _measuredSize; }
     @property int minSize() { return _measuredSize; }
     @property int maxSize() { return _maxSize; }
@@ -53,6 +55,8 @@ struct LayoutItem {
     void set(Widget widget, Orientation orientation) {
 		_widget = widget;
 		_orientation = orientation;
+        if (cast(ResizerWidget)widget)
+            _isResizer = true;
     }
 	/// set item and measure it
 	void measure(int parentWidth, int parentHeight) {
@@ -144,6 +148,7 @@ class LayoutItems {
         int maxItem = 0; // max item dimention
         // calc total size
         int visibleCount = cast(int)_list.length;
+        int resizersSize = 0;
         for (int i = 0; i < _count; i++) {
 			LayoutItem * item = &_list[i];
             int weight = item.weight;
@@ -151,7 +156,9 @@ class LayoutItems {
             totalSize += size;
             if (maxItem < item.secondarySize)
                 maxItem = item.secondarySize;
-            if (item.fillParent) {
+            if (item._isResizer) {
+                resizersSize += size;
+            } else if (item.fillParent) {
                 resizableWeight += weight;
                 resizableSize += size * weight;
             } else {
@@ -179,6 +186,8 @@ class LayoutItems {
         bool needResize = false;
         int scaleFactor = 10000; // per weight unit
         if (delta != 0 && visibleCount > 0) {
+            if (delta < 0)
+                nonresizableSize += resizersSize; // allow to shrink resizers
             // need resize of some children
             needResize = true;
 			// resize all if need to shrink or only resizable are too small to correct delta
@@ -196,7 +205,7 @@ class LayoutItems {
 		int lastResized = -1;
         for (int i = 0; i < _count; i++) {
 			LayoutItem * item = &_list[i];
-            if (item.fillParent || needForceResize) {
+            if ((item.fillParent || needForceResize) && (delta < 0 || item.canExtend)) {
 				lastResized = i;
             }
 		}
@@ -210,7 +219,7 @@ class LayoutItems {
 			int size = item.measuredSize;
             if (needResize && (layoutSize == FILL_PARENT || needForceResize)) {
 				// do resize
-				int correction = scaleFactor * weight * size / 10000;
+				int correction = (delta < 0 || item.canExtend) ? scaleFactor * weight * size / 10000 : 0;
 				deltaTotal += correction;
 				// for last resized, apply additional correction to resolve calculation inaccuracy
 				if (i == lastResized) {
@@ -274,7 +283,7 @@ class ResizerWidget : Widget {
         }
 	}
 
-    void updateProps() {
+    protected void updateProps() {
         _previousWidget = null;
         _nextWidget = null;
         _orientation = Orientation.Vertical;

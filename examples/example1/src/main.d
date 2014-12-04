@@ -20,6 +20,7 @@ import dlangui.dialogs.dialog;
 import dlangui.dialogs.filedlg;
 import std.stdio;
 import std.conv;
+import std.utf;
 
 
 mixin APP_ENTRY_POINT;
@@ -625,7 +626,7 @@ extern (C) int UIAppMain(string[] args) {
         //==========================================================================
         // tree view example
 		TreeWidget tree = new TreeWidget("TREE1");
-		tree.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+		tree.layoutWidth(WRAP_CONTENT).layoutHeight(FILL_PARENT);
         TreeItem tree1 = tree.items.newChild("group1", "Group 1"d, "document-open");
         tree1.newChild("g1_1", "Group 1 item 1"d);
         tree1.newChild("g1_2", "Group 1 item 2"d);
@@ -648,8 +649,30 @@ extern (C) int UIAppMain(string[] args) {
         tree3.newChild("g3_5", "Group 3 item 5"d);
         tree3.newChild("g3_6", "Group 3 item 6"d);
 
+        LinearLayout treeLayout = new HorizontalLayout("TREE");
+        LinearLayout treeControlledPanel = new VerticalLayout();
+        treeLayout.layoutWidth = FILL_PARENT;
+        treeControlledPanel.layoutWidth = FILL_PARENT;
+        treeControlledPanel.layoutHeight = FILL_PARENT;
+        TextWidget treeItemLabel = new TextWidget("TREE_ITEM_DESC");
+        treeItemLabel.layoutWidth = FILL_PARENT;
+        treeItemLabel.layoutHeight = FILL_PARENT;
+        treeItemLabel.alignment = Align.Center;
+        treeItemLabel.text = "Sample text"d;
+        treeControlledPanel.addChild(treeItemLabel);
+        treeLayout.addChild(tree);
+        treeLayout.addChild(new ResizerWidget());
+        treeLayout.addChild(treeControlledPanel);
+
+        tree.selectionListener = delegate(TreeItems source, TreeItem selectedItem, bool activated) {
+            dstring label = "Selected item: "d ~ toUTF32(selectedItem.id) ~ (activated ? " selected + activated"d : " selected"d);
+            treeItemLabel.text = label;
+        };
+
+
         tree.items.selectItem(tree.items.child(0));
-		tabs.addTab(tree, "Tree"d);
+
+		tabs.addTab(treeLayout, "Tree"d);
 
 
         //==========================================================================
