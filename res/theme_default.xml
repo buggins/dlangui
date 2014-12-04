@@ -62,13 +62,12 @@
     </style>
     <style id="TAB_UP_BUTTON_TEXT"
         textColor="#000000"
-        fontSize="12"
         align="Center"
         >
         <state state_selected="true" state_focused="true" textColor="#000000"/>
         <state state_selected="true" textColor="#000000"/>
         <state state_focused="true" textColor="#000000"/>
-        <state state_hovered="true" textColor="#FFE0E0"/>
+        <state state_hovered="true" textColor="#808000"/>
     </style>
     <style id="TAB_UP_BUTTON"
         backgroundImageId="tab_btn_up"

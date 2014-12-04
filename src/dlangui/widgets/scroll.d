@@ -302,9 +302,9 @@ class ScrollWidget :  ScrollWidgetBase {
         } else if (event.action == ScrollAction.PageDown) {
             scrollTo(scrollPos.x + _clientRect.width * 3 / 4, scrollPos.y);
         } else if (event.action == ScrollAction.LineUp) {
-            scrollTo(scrollPos.x - _clientRect.width / 20, scrollPos.y);
+            scrollTo(scrollPos.x - _clientRect.width / 10, scrollPos.y);
         } else if (event.action == ScrollAction.LineDown) {
-            scrollTo(scrollPos.x + _clientRect.width / 20, scrollPos.y);
+            scrollTo(scrollPos.x + _clientRect.width / 10, scrollPos.y);
         }
         return true;
     }
@@ -318,10 +318,9 @@ class ScrollWidget :  ScrollWidgetBase {
         } else if (event.action == ScrollAction.PageDown) {
             scrollTo(scrollPos.x, scrollPos.y + _clientRect.height * 3 / 4);
         } else if (event.action == ScrollAction.LineUp) {
-            scrollTo(scrollPos.x, scrollPos.y - _clientRect.height / 20);
+            scrollTo(scrollPos.x, scrollPos.y - _clientRect.height / 10);
         } else if (event.action == ScrollAction.LineDown) {
-            scrollTo(scrollPos.x, scrollPos.y + _clientRect.height / 20);
-        }
+            scrollTo(scrollPos.x, scrollPos.y + _clientRect.height / 10);        }
         return true;
     }
 
