@@ -256,6 +256,11 @@ class LayoutItems {
 	}
 }
 
+/**
+ * Resizer control.
+ * Put it between other items in LinearLayout to allow resizing its siblings.
+ * While dragging, it will resize previous and next children in layout.
+ */
 class ResizerWidget : Widget {
     protected Orientation _orientation;
     protected Widget _previousWidget;
@@ -328,6 +333,121 @@ class ResizerWidget : Widget {
         _needLayout = false;
     }
 
+    protected int _delta;
+    protected int _minDragDelta;
+    protected int _maxDragDelta;
+    protected bool _dragging;
+    protected int _dragStartPosition; // drag start delta
+    protected Point _dragStart;
+    protected Rect _dragStartRect;
+    protected Rect _scrollArea;
+
+    @property int delta() { return _delta; }
+
+    /// process mouse event; return true if event is processed by widget.
+    override bool onMouseEvent(MouseEvent event) {
+        // support onClick
+        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
+            setState(State.Pressed);
+            _dragging = true;
+            _dragStart.x = event.x;
+            _dragStart.y = event.y;
+            _dragStartPosition = _delta;
+            _dragStartRect = _pos;
+            _scrollArea = _pos;
+            _minDragDelta = 0;
+            _maxDragDelta = 0;
+            if (validProps) {
+                Rect r1 = _previousWidget.pos;
+                Rect r2 = _nextWidget.pos;
+                _scrollArea.left = r1.left;
+                _scrollArea.right = r2.right;
+                _scrollArea.top = r1.top;
+                _scrollArea.bottom = r2.bottom;
+                if (_orientation == Orientation.Vertical) {
+                    _minDragDelta = _scrollArea.top - _dragStartRect.top;
+                    _maxDragDelta = _scrollArea.bottom - _dragStartRect.bottom;
+                }
+                if (_delta < _minDragDelta)
+                    _delta = _minDragDelta;
+                if (_delta > _maxDragDelta)
+                    _delta = _maxDragDelta;
+            }
+            return true;
+        }
+        if (event.action == MouseAction.FocusOut && _dragging) {
+            return true;
+        }
+        if (event.action == MouseAction.Move && _dragging) {
+            int delta = _orientation == Orientation.Vertical ? event.y - _dragStart.y : event.x - _dragStart.x;
+            _delta = _dragStartPosition + delta;
+            if (_delta < _minDragDelta)
+                _delta = _minDragDelta;
+            if (_delta > _maxDragDelta)
+                _delta = _maxDragDelta;
+            Rect rc = _dragStartRect;
+            int offset;
+            int space;
+            if (_orientation == Orientation.Vertical) {
+                rc.top += delta;
+                rc.bottom += delta;
+                if (rc.top < _scrollArea.top) {
+                    rc.top = _scrollArea.top;
+                    rc.bottom = _scrollArea.top + _dragStartRect.height;
+                } else if (rc.bottom > _scrollArea.bottom) {
+                    rc.top = _scrollArea.bottom - _dragStartRect.height;
+                    rc.bottom = _scrollArea.bottom;
+                }
+                offset = rc.top - _scrollArea.top;
+                space = _scrollArea.height - rc.height;
+            } else {
+                rc.left += delta;
+                rc.right += delta;
+                if (rc.left < _scrollArea.left) {
+                    rc.left = _scrollArea.left;
+                    rc.right = _scrollArea.left + _dragStartRect.width;
+                } else if (rc.right > _scrollArea.right) {
+                    rc.left = _scrollArea.right - _dragStartRect.width;
+                    rc.right = _scrollArea.right;
+                }
+                offset = rc.left - _scrollArea.left;
+                space = _scrollArea.width - rc.width;
+            }
+            //_pos = rc;
+            //int position = space > 0 ? _minValue + offset * (_maxValue - _minValue - _pageSize) / space : 0;
+            requestLayout();
+            invalidate();
+            //onIndicatorDragging(_dragStartPosition, position);
+            return true;
+        }
+        if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
+            resetState(State.Pressed);
+            if (_dragging) {
+                //sendScrollEvent(ScrollAction.SliderReleased, _position);
+                _dragging = false;
+            }
+            return true;
+        }
+        if (event.action == MouseAction.Move && trackHover) {
+            if (!(state & State.Hovered)) {
+                Log.d("Hover ", id);
+                setState(State.Hovered);
+            }
+            return true;
+        }
+        if ((event.action == MouseAction.Leave || event.action == MouseAction.Cancel) && trackHover) {
+            Log.d("Leave ", id);
+            resetState(State.Hovered);
+            return true;
+        }
+        if (event.action == MouseAction.Cancel) {
+            Log.d("SliderButton.onMouseEvent event.action == MouseAction.Cancel");
+            resetState(State.Pressed);
+            _dragging = false;
+            return true;
+        }
+        return false;
+    }
 }
 
 
