@@ -46,6 +46,13 @@ class TreeItem {
         return res;
     }
 
+    /// returns topmost item
+    @property TreeItems root() {
+        TreeItem p = this;
+        while (p._parent)
+            p = p._parent;
+        return cast(TreeItems)p;
+    }
 
     @property TreeItem parent() { return _parent; }
     @property protected TreeItem parent(TreeItem p) { _parent = p; return this; }
@@ -86,9 +93,7 @@ class TreeItem {
     }
 
     @property TreeItem selectedItem() {
-        if (_parent)
-            return _parent.selectedItem();
-        return null;
+        return root.selectedItem();
     }
 
     bool isSelected() {
@@ -156,19 +161,16 @@ class TreeItem {
     int childIndex(TreeItem item) { return _children.indexOf(item); }
     /// notify listeners
     protected void onUpdate(TreeItem item) {
-        if (_parent)
-            _parent.onUpdate(item);
+        root.onUpdate(item);
     }
-
     protected void toggleExpand(TreeItem item) {
-        
-        if (_parent)
-            _parent.toggleExpand(item);
+        root.toggleExpand(item);
     }
-
     protected void selectItem(TreeItem item) {
-        if (_parent)
-            _parent.selectItem(item);
+        root.selectItem(item);
+    }
+    protected void activateItem(TreeItem item) {
+        root.activateItem(item);
     }
 }
 
@@ -180,10 +182,16 @@ interface OnTreeStateChangeListener {
     void onTreeStateChange(TreeItems source);
 }
 
+interface OnTreeSelectionChangeListener {
+    void onTreeItemSelected(TreeItems source, TreeItem selectedItem, bool activated);
+}
+
 class TreeItems : TreeItem {
     // signal handler OnTreeContentChangeListener
-    Signal!OnTreeContentChangeListener contentListener;
-    Signal!OnTreeStateChangeListener stateListener;
+    Listener!OnTreeContentChangeListener contentListener;
+    Listener!OnTreeStateChangeListener stateListener;
+    Listener!OnTreeSelectionChangeListener selectionListener;
+
     protected TreeItem _selectedItem;
 
     this() {
@@ -211,6 +219,18 @@ class TreeItems : TreeItem {
         _selectedItem = item;
         if (stateListener.assigned)
             stateListener(this);
+        if (selectionListener.assigned)
+            selectionListener(this, _selectedItem, false);
+    }
+
+    override void activateItem(TreeItem item) {
+        if (!(_selectedItem is item)) {
+            _selectedItem = item;
+            if (stateListener.assigned)
+                stateListener(this);
+        }
+        if (selectionListener.assigned)
+            selectionListener(this, _selectedItem, true);
     }
 
     @property override TreeItem selectedItem() {
@@ -218,6 +238,77 @@ class TreeItems : TreeItem {
     }
 
 }
+
+/// grid control action codes
+enum TreeActions : int {
+    /// no action
+	None = 0,
+    /// move selection up
+    Up = 2000,
+    /// move selection down
+    Down,
+    /// move selection left
+    Left,
+    /// move selection right
+    Right,
+
+    /// scroll up, w/o changing selection
+    ScrollUp,
+    /// scroll down, w/o changing selection
+    ScrollDown,
+    /// scroll left, w/o changing selection
+    ScrollLeft,
+    /// scroll right, w/o changing selection
+    ScrollRight,
+
+    /// scroll top w/o changing selection
+    ScrollTop,
+    /// scroll bottom, w/o changing selection
+    ScrollBottom,
+
+    /// scroll up, w/o changing selection
+    ScrollPageUp,
+    /// scroll down, w/o changing selection
+    ScrollPageDown,
+    /// scroll left, w/o changing selection
+    ScrollPageLeft,
+    /// scroll right, w/o changing selection
+    ScrollPageRight,
+
+	/// move cursor one page up
+	PageUp,
+	/// move cursor one page up with selection
+	SelectPageUp,
+	/// move cursor one page down
+	PageDown,
+	/// move cursor one page down with selection
+	SelectPageDown,
+	/// move cursor to the beginning of page
+	PageBegin, 
+	/// move cursor to the beginning of page with selection
+	SelectPageBegin, 
+	/// move cursor to the end of page
+	PageEnd,   
+	/// move cursor to the end of page with selection
+	SelectPageEnd,   
+	/// move cursor to the beginning of line
+	LineBegin,
+	/// move cursor to the beginning of line with selection
+	SelectLineBegin,
+	/// move cursor to the end of line
+	LineEnd,
+	/// move cursor to the end of line with selection
+	SelectLineEnd,
+	/// move cursor to the beginning of document
+	DocumentBegin,
+	/// move cursor to the beginning of document with selection
+	SelectDocumentBegin,
+	/// move cursor to the end of document
+	DocumentEnd,
+	/// move cursor to the end of document with selection
+	SelectDocumentEnd,
+}
+
 
 const int DOUBLE_CLICK_TIME_MS = 250;
 
@@ -238,33 +329,40 @@ class TreeItemWidget : HorizontalLayout {
 
         _item = item;
         _tab = new TextWidget("tab");
-        dchar[] tabText;
-        dchar[] singleTab = [' ', ' ', ' ', ' '];
-        for (int i = 1; i < _item.level; i++)
-            tabText ~= singleTab;
-        _tab.text = cast(dstring)tabText;
+        //dchar[] tabText;
+        //dchar[] singleTab = [' ', ' ', ' ', ' '];
+        //for (int i = 1; i < _item.level; i++)
+        //    tabText ~= singleTab;
+        //_tab.text = cast(dstring)tabText;
+        int w = (_item.level - 1) * style.font.size * 2;
+        _tab.minWidth = w;
+        _tab.maxWidth = w;
         if (_item.hasChildren) {
             _expander = new ImageWidget("expander", _item.hasChildren && _item.expanded ? "arrow_right_down_black" : "arrow_right_hollow");
-            _expander.styleId = "TREE_ITEM_EXPANDER_ICON";
+            _expander.styleId = "TREE_ITEM_EXPAND_ICON";
             _expander.clickable = true;
             _expander.trackHover = true;
-
             //_expander.setState(State.Parent);
-            _expander.onClickListener.connect(delegate(Widget source) {
+
+            _expander.onClickListener = delegate(Widget source) {
                 _item.selectItem(_item);
                 _item.toggleExpand(_item);
                 return true;
-            });
+            };
         }
-        onClickListener.connect(delegate(Widget source) {
+        onClickListener = delegate(Widget source) {
             long ts = currentTimeMillis();
             _item.selectItem(_item);
-            if (_item.hasChildren && ts - lastClickTime < DOUBLE_CLICK_TIME_MS) {
-                _item.toggleExpand(_item);
+            if (ts - lastClickTime < DOUBLE_CLICK_TIME_MS) {
+                if (_item.hasChildren) {
+                    _item.toggleExpand(_item);
+                } else {
+                    _item.activateItem(_item);
+                }
             }
             lastClickTime = ts;
             return true;
-        });
+        };
         if (_item.iconRes.length > 0) {
             _icon = new ImageWidget("icon", _item.iconRes);
             _icon.styleId = "TREE_ITEM_ICON";
@@ -282,6 +380,28 @@ class TreeItemWidget : HorizontalLayout {
         addChild(_label);
     }
 
+    override bool onKeyEvent(KeyEvent event) {
+        if (onKeyListener.assigned && onKeyListener(this, event))
+            return true; // processed by external handler
+        if (!focused || !visible)
+            return false;
+        if (event.action != KeyAction.KeyDown)
+            return false;
+        int action = 0;
+        switch (event.keyCode) {
+            case KeyCode.SPACE:
+            case KeyCode.RETURN:
+                if (_item.hasChildren)
+                    _item.toggleExpand(_item);
+                else
+                    _item.activateItem(_item);
+                return true;
+            default:
+                break;
+        }
+        return false;
+    }
+
     void updateWidget() {
         if (_expander) {
             _expander.drawable = _item.expanded ? "arrow_right_down_black" : "arrow_right_hollow";
@@ -297,11 +417,13 @@ class TreeItemWidget : HorizontalLayout {
     }
 }
 
-class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateChangeListener {
+class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateChangeListener, OnTreeSelectionChangeListener, OnKeyHandler {
 
     protected TreeItems _tree;
 
     @property ref TreeItems items() { return _tree; }
+
+    Signal!OnTreeSelectionChangeListener selectionListener;
 
     protected bool _needUpdateWidgets;
     protected bool _needUpdateWidgetStates;
@@ -310,10 +432,30 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
 		super(ID, hscrollbarMode, vscrollbarMode);
         contentWidget = new VerticalLayout("TREE_CONTENT");
         _tree = new TreeItems();
-        _tree.contentListener.connect(this);
-        _tree.stateListener.connect(this);
+        _tree.contentListener = this;
+        _tree.stateListener = this;
         _needUpdateWidgets = true;
         _needUpdateWidgetStates = true;
+		acceleratorMap.add( [
+			new Action(TreeActions.Up, KeyCode.UP, 0),
+			new Action(TreeActions.Down, KeyCode.DOWN, 0),
+			new Action(TreeActions.Left, KeyCode.LEFT, 0),
+			new Action(TreeActions.Right, KeyCode.RIGHT, 0),
+			new Action(TreeActions.LineBegin, KeyCode.HOME, 0),
+			new Action(TreeActions.LineEnd, KeyCode.END, 0),
+			new Action(TreeActions.PageUp, KeyCode.PAGEUP, 0),
+			new Action(TreeActions.PageDown, KeyCode.PAGEDOWN, 0),
+			new Action(TreeActions.PageBegin, KeyCode.PAGEUP, KeyFlag.Control),
+			new Action(TreeActions.PageEnd, KeyCode.PAGEDOWN, KeyFlag.Control),
+			new Action(TreeActions.ScrollTop, KeyCode.HOME, KeyFlag.Control),
+			new Action(TreeActions.ScrollBottom, KeyCode.END, KeyFlag.Control),
+			new Action(TreeActions.ScrollPageUp, KeyCode.PAGEUP, KeyFlag.Control),
+			new Action(TreeActions.ScrollPageDown, KeyCode.PAGEDOWN, KeyFlag.Control),
+			new Action(TreeActions.ScrollUp, KeyCode.UP, KeyFlag.Control),
+			new Action(TreeActions.ScrollDown, KeyCode.DOWN, KeyFlag.Control),
+			new Action(TreeActions.ScrollLeft, KeyCode.LEFT, KeyFlag.Control),
+			new Action(TreeActions.ScrollRight, KeyCode.RIGHT, KeyFlag.Control),
+		]);
     }
 
     ~this() {
@@ -325,7 +467,19 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
 
     /** Override to use custom tree item widgets. */
     protected Widget createItemWidget(TreeItem item) {
-        return new TreeItemWidget(item);
+        Widget res = new TreeItemWidget(item);
+        res.onKeyListener = this;
+        return res;
+    }
+
+    override bool onKey(Widget source, KeyEvent event) {
+		if (event.action == KeyAction.KeyDown) {
+			Action action = findKeyAction(event.keyCode, event.flags & (KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Control));
+			if (action !is null) {
+				return handleAction(action);
+			}
+		}
+        return false;
     }
 
     protected void addWidgets(TreeItem item) {
@@ -385,6 +539,43 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         requestLayout();
     }
 
+    override void onTreeItemSelected(TreeItems source, TreeItem selectedItem, bool activated) {
+        if (selectionListener.assigned)
+            selectionListener(source, selectedItem, activated);
+    }
+
+	override protected bool handleAction(const Action a) {
+        Log.d("tree.handleAction ", a.id);
+        switch (a.id) {
+            case TreeActions.ScrollLeft:
+                if (_hscrollbar)
+                    _hscrollbar.sendScrollEvent(ScrollAction.LineUp);
+                break;
+            case TreeActions.ScrollRight:
+                if (_hscrollbar)
+                    _hscrollbar.sendScrollEvent(ScrollAction.LineDown);
+                break;
+            case TreeActions.ScrollUp:
+                if (_vscrollbar)
+                    _vscrollbar.sendScrollEvent(ScrollAction.LineUp);
+                break;
+            case TreeActions.ScrollPageUp:
+                if (_vscrollbar)
+                    _vscrollbar.sendScrollEvent(ScrollAction.PageUp);
+                break;
+            case TreeActions.ScrollDown:
+                if (_vscrollbar)
+                    _vscrollbar.sendScrollEvent(ScrollAction.LineDown);
+                break;
+            case TreeActions.ScrollPageDown:
+                if (_vscrollbar)
+                    _vscrollbar.sendScrollEvent(ScrollAction.PageDown);
+                break;
+            default:
+                return super.handleAction(a);
+        }
+        return true;
+    }
 }
 
 class TreeWidget :  TreeWidgetBase {

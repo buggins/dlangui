@@ -406,7 +406,11 @@ class AbstractSlider : WidgetGroup {
         return this;
     }
 
-    protected bool sendScrollEvent(ScrollAction action, int position) {
+    bool sendScrollEvent(ScrollAction action) {
+        return sendScrollEvent(action, _position);
+    }
+
+    bool sendScrollEvent(ScrollAction action, int position) {
         if (!onScrollEventListener.assigned)
             return false;
         ScrollEvent event = new ScrollEvent(action, _minValue, _maxValue, _pageSize, position);

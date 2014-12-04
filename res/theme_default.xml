@@ -172,15 +172,19 @@
         <state state_hovered="true" backgroundColor="#C0FFFF00"/>
     </style>
     <style id="TREE_ITEM_EXPAND_ICON"
-        align="Center"
+        margins="2,0,2,0"
+        align="Left|VCenter"
         textFlags="Parent"
     />
     <style id="TREE_ITEM_ICON"
-        align="Center"
+        margins="2,0,2,0"
+        align="Left|VCenter"
         textFlags="Parent"
     />
     <style id="TREE_ITEM_LABEL"
-        align="Center"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="WRAP_CONTENT"
+        align="Left|VCenter"
         textFlags="Parent"
     />
 </theme>

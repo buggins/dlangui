@@ -774,8 +774,6 @@ class Widget {
     bool handleMoveFocusUsingKeys(KeyEvent event) {
         if (!focused || !visible)
             return false;
-        if (!visible)
-            return false;
         if (event.action != KeyAction.KeyDown)
             return false;
         FocusMovement direction = FocusMovement.None;
