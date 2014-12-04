@@ -397,6 +397,7 @@ extern (C) int UIAppMain(string[] args) {
             buttons1.addChild(new Button("btn1", "Button 1"d));
             buttons1.addChild(new Button("btn2", "Button 2"d));
             buttons1.addChild(new Button("btn3", "Button 3"d));
+            buttons1.addChild(new ResizerWidget());
             buttons1.addChild(new Button("btn4", "Button 4"d));
             layout3.addChild(buttons1);
             layout3.addChild(new VSpacer());
@@ -404,6 +405,7 @@ extern (C) int UIAppMain(string[] args) {
 		    WidgetGroup buttons2 = new HorizontalLayout();
             buttons2.addChild(new CheckBox("btn1", "CheckBox 1"d));
             buttons2.addChild(new CheckBox("btn2", "CheckBox 2"d));
+            buttons2.addChild(new ResizerWidget());
             buttons2.addChild(new CheckBox("btn3", "CheckBox 3"d));
             buttons2.addChild(new CheckBox("btn4", "CheckBox 4"d));
             layout3.addChild(buttons2);
@@ -452,6 +454,7 @@ extern (C) int UIAppMain(string[] args) {
 		    buttons3.addChild(new TextWidget(null, "RadioButtons"d));
             buttons3.addChild(new RadioButton("btn1", "RadioButton 1"d));
             buttons3.addChild(new RadioButton("btn2", "RadioButton 2"d));
+            buttons3.addChild(new ResizerWidget());
             buttons3.addChild(new RadioButton("btn3", "RadioButton 3"d));
             buttons3.addChild(new RadioButton("btn4", "RadioButton 4"d));
             hlayout2.addChild(buttons3);

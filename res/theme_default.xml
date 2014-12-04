@@ -186,5 +186,27 @@
         align="Left|VCenter"
         textFlags="Parent"
     />
+    <style id="RESIZER_VERTICAL"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="WRAP_CONTENT"
+	minHeight="7"
+	maxHeight="7"
+	backgroundColor="#E0E0E0">
+        <state state_focused="true" backgroundColor="#40C0C000"/>
+        <state state_pressed="true" backgroundColor="#4080C000"/>
+        <state state_selected="true" backgroundColor="#00F8F9Fa"/>
+        <state state_hovered="true" backgroundColor="#C0FFFF00"/>
+    </style>
+    <style id="RESIZER_HORIZONTAL"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="WRAP_CONTENT"
+	minWidth="7"
+	maxWidth="7"
+	backgroundColor="#E0E0E0">
+        <state state_focused="true" backgroundColor="#40C0C000"/>
+        <state state_pressed="true" backgroundColor="#4080C000"/>
+        <state state_selected="true" backgroundColor="#00F8F9Fa"/>
+        <state state_hovered="true" backgroundColor="#C0FFFF00"/>
+    </style>
 </theme>
 

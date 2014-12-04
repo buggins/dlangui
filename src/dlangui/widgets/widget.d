@@ -1073,6 +1073,7 @@ class Widget {
         _pos = rc;
         _needLayout = false;
     }
+
     /// Draw widget at its position to buffer
     void onDraw(DrawBuf buf) {
         if (visibility != Visibility.Visible)

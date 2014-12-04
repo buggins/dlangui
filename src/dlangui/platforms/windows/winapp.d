@@ -327,6 +327,75 @@ class Win32Window : Window {
 
     HICON _icon;
 
+    uint _cursorType;
+
+    HANDLE[ushort] _cursorCache;
+
+    HANDLE loadCursor(ushort id) {
+        if (id in _cursorCache)
+            return _cursorCache[id];
+        HANDLE h = LoadCursor(null, MAKEINTRESOURCE(id));
+        _cursorCache[id] = h;
+        return h;
+    }
+
+    void onSetCursorType() {
+        HANDLE winCursor = null;
+        switch (_cursorType) {
+            case CursorType.None:
+                winCursor = null;
+                break;
+            case CursorType.Parent:
+                break;
+            case CursorType.Arrow:
+                winCursor = loadCursor(IDC_ARROW);
+                break;
+            case CursorType.IBeam:
+                winCursor = loadCursor(IDC_IBEAM);
+                break;
+            case CursorType.Wait:
+                winCursor = loadCursor(IDC_WAIT);
+                break;
+            case CursorType.Crosshair:
+                winCursor = loadCursor(IDC_CROSS);
+                break;
+            case CursorType.WaitArrow:
+                winCursor = loadCursor(IDC_APPSTARTING);
+                break;
+            case CursorType.SizeNWSE:
+                winCursor = loadCursor(IDC_SIZENWSE);
+                break;
+            case CursorType.SizeNESW:
+                winCursor = loadCursor(IDC_SIZENESW);
+                break;
+            case CursorType.SizeWE:
+                winCursor = loadCursor(IDC_SIZEWE);
+                break;
+            case CursorType.SizeNS:
+                winCursor = loadCursor(IDC_SIZENS);
+                break;
+            case CursorType.SizeAll:
+                winCursor = loadCursor(IDC_SIZEALL);
+                break;
+            case CursorType.No:
+                winCursor = loadCursor(IDC_NO);
+                break;
+            case CursorType.Hand:
+                winCursor = loadCursor(IDC_HAND);
+                break;
+            default:
+                break;
+        }
+        SetCursor(winCursor);
+    }
+
+	/// sets cursor type for window
+	override protected void setCursorType(uint cursorType) {
+		// override to support different mouse cursors
+        _cursorType = cursorType;
+        onSetCursorType();
+	}
+
 	/// sets window icon
 	@property override void windowIcon(DrawBufRef buf) {
         if (_icon)
@@ -867,6 +936,15 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                     window.onPaint();
             }
             return 0; // processed
+        case WM_SETCURSOR:
+            {
+                if (window !is null) {
+                    if (LOWORD(lParam) == HTCLIENT) {
+                        window.onSetCursorType();
+                        return 1;
+                    }
+                }
+            }
         case WM_MOUSELEAVE:
 		case WM_MOUSEMOVE:
 		case WM_LBUTTONDOWN:

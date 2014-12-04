@@ -247,6 +247,82 @@ class LayoutItems {
 	}
 }
 
+class ResizerWidget : Widget {
+    protected Orientation _orientation;
+    protected Widget _previousWidget;
+    protected Widget _nextWidget;
+    protected string _styleVertical;
+    protected string _styleHorizontal;
+
+    this(string ID = null) {
+        super(ID);
+        _styleVertical = "RESIZER_VERTICAL";
+        _styleHorizontal = "RESIZER_HORIZONTAL";
+        trackHover = true;
+    }
+
+    @property bool validProps() {
+        return _previousWidget && _nextWidget;
+    }
+
+	/// returns mouse cursor type for widget
+	override uint getCursorType(int x, int y) {
+        if (_orientation == Orientation.Vertical) {
+            return CursorType.SizeNS;
+        } else {
+            return CursorType.SizeWE;
+        }
+	}
+
+    void updateProps() {
+        _previousWidget = null;
+        _nextWidget = null;
+        _orientation = Orientation.Vertical;
+        LinearLayout parentLayout = cast(LinearLayout)_parent;
+        if (parentLayout) {
+            _orientation = parentLayout.orientation;
+            int index = parentLayout.childIndex(this);
+            _previousWidget = parentLayout.child(index - 1);
+            _nextWidget = parentLayout.child(index + 1);
+        }
+        if (validProps) {
+            if (_orientation == Orientation.Vertical) {
+                styleId = _styleVertical;
+            } else {
+                styleId = _styleHorizontal;
+            }
+        } else {
+            _previousWidget = null;
+            _nextWidget = null;
+        }
+    }
+
+    /** 
+       Measure widget according to desired width and height constraints. (Step 1 of two phase layout). 
+
+    */
+    override void measure(int parentWidth, int parentHeight) { 
+        updateProps();
+        if (_orientation == Orientation.Vertical) {
+
+        }
+        measuredContent(parentWidth, parentHeight, 7, 7);
+    }
+
+    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+    override void layout(Rect rc) {
+        updateProps();
+        if (visibility == Visibility.Gone) {
+            return;
+        }
+        _pos = rc;
+        _needLayout = false;
+    }
+
+}
+
+
+
 class LinearLayout : WidgetGroup {
     protected Orientation _orientation = Orientation.Vertical;
     /// returns linear layout orientation (Vertical, Horizontal)

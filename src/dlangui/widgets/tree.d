@@ -649,8 +649,12 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
                 _tree.selectNext();
                 break;
             case TreeActions.PageUp:
+                // TODO: implement page up
+                _tree.selectPrevious();
                 break;
             case TreeActions.PageDown:
+                // TODO: implement page down
+                _tree.selectPrevious();
                 break;
             default:
                 return super.handleAction(a);
