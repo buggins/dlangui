@@ -159,6 +159,10 @@ struct Rect {
     bool isInsideOf(Rect rc) {
         return left >= rc.left && right <= rc.right && top >= rc.top && bottom <= rc.bottom;
     }
+
+    bool opEquals(Rect rc) {
+        return left == rc.left && right == rc.right && top == rc.top && bottom == rc.bottom;
+    }
 }
 
 /// character glyph

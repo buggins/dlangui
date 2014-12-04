@@ -172,6 +172,32 @@ class TreeItem {
     protected void activateItem(TreeItem item) {
         root.activateItem(item);
     }
+
+    protected TreeItem nextVisible(TreeItem item, ref bool found) {
+        if (this is item)
+            found = true;
+        else if (found && isVisible)
+            return this;
+        for (int i = 0; i < childCount; i++) {
+            TreeItem res = child(i).nextVisible(item, found);
+            if (res)
+                return res;
+        }
+        return null;
+    }
+
+    protected TreeItem prevVisible(TreeItem item, ref TreeItem prevFoundVisible) {
+        if (this is item)
+            return prevFoundVisible;
+        else if (isVisible)
+            prevFoundVisible = this;
+        for (int i = 0; i < childCount; i++) {
+            TreeItem res = child(i).prevVisible(item, prevFoundVisible);
+            if (res)
+                return res;
+        }
+        return null;
+    }
 }
 
 interface OnTreeContentChangeListener {
@@ -237,6 +263,25 @@ class TreeItems : TreeItem {
         return _selectedItem;
     }
 
+    void selectNext() {
+        if (!hasChildren)
+            return;
+        if (!_selectedItem)
+            selectItem(child(0));
+        bool found = false;
+        TreeItem next = nextVisible(_selectedItem, found);
+        if (next)
+            selectItem(next);
+    }
+
+    void selectPrevious() {
+        if (!hasChildren)
+            return;
+        TreeItem found = null;
+        TreeItem prev = prevVisible(_selectedItem, found);
+        if (prev)
+            selectItem(prev);
+    }
 }
 
 /// grid control action codes
@@ -319,6 +364,10 @@ class TreeItemWidget : HorizontalLayout {
     ImageWidget _icon;
     TextWidget _label;
     long lastClickTime;
+
+    @property TreeItem item() { return _item; }
+
+
     this(TreeItem item) {
         super(item.id);
         styleId = "TREE_ITEM";
@@ -434,19 +483,20 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         _tree = new TreeItems();
         _tree.contentListener = this;
         _tree.stateListener = this;
+        _tree.selectionListener = this;
         _needUpdateWidgets = true;
         _needUpdateWidgetStates = true;
 		acceleratorMap.add( [
 			new Action(TreeActions.Up, KeyCode.UP, 0),
 			new Action(TreeActions.Down, KeyCode.DOWN, 0),
-			new Action(TreeActions.Left, KeyCode.LEFT, 0),
-			new Action(TreeActions.Right, KeyCode.RIGHT, 0),
-			new Action(TreeActions.LineBegin, KeyCode.HOME, 0),
-			new Action(TreeActions.LineEnd, KeyCode.END, 0),
+			new Action(TreeActions.ScrollLeft, KeyCode.LEFT, 0),
+			new Action(TreeActions.ScrollRight, KeyCode.RIGHT, 0),
+			//new Action(TreeActions.LineBegin, KeyCode.HOME, 0),
+			//new Action(TreeActions.LineEnd, KeyCode.END, 0),
 			new Action(TreeActions.PageUp, KeyCode.PAGEUP, 0),
 			new Action(TreeActions.PageDown, KeyCode.PAGEDOWN, 0),
-			new Action(TreeActions.PageBegin, KeyCode.PAGEUP, KeyFlag.Control),
-			new Action(TreeActions.PageEnd, KeyCode.PAGEDOWN, KeyFlag.Control),
+			//new Action(TreeActions.PageBegin, KeyCode.PAGEUP, KeyFlag.Control),
+			//new Action(TreeActions.PageEnd, KeyCode.PAGEDOWN, KeyFlag.Control),
 			new Action(TreeActions.ScrollTop, KeyCode.HOME, KeyFlag.Control),
 			new Action(TreeActions.ScrollBottom, KeyCode.END, KeyFlag.Control),
 			new Action(TreeActions.ScrollPageUp, KeyCode.PAGEUP, KeyFlag.Control),
@@ -539,9 +589,30 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         requestLayout();
     }
 
+    TreeItemWidget findItemWidget(TreeItem item) {
+        for (int i = 0; i < _contentWidget.childCount; i++) {
+            TreeItemWidget child = cast(TreeItemWidget) _contentWidget.child(i);
+            if (child && child.item is item)
+                return child;
+        }
+        return null;
+    }
+
     override void onTreeItemSelected(TreeItems source, TreeItem selectedItem, bool activated) {
+        TreeItemWidget selected = findItemWidget(selectedItem);
+        if (selected && selected.visibility == Visibility.Visible) {
+            selected.setFocus();
+            makeWidgetVisible(selected, false, true);
+        }
         if (selectionListener.assigned)
             selectionListener(source, selectedItem, activated);
+    }
+
+    void makeItemVisible(TreeItem item) {
+        TreeItemWidget widget = findItemWidget(item);
+        if (widget && widget.visibility == Visibility.Visible) {
+            makeWidgetVisible(widget, false, true);
+        }
     }
 
 	override protected bool handleAction(const Action a) {
@@ -570,6 +641,16 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
             case TreeActions.ScrollPageDown:
                 if (_vscrollbar)
                     _vscrollbar.sendScrollEvent(ScrollAction.PageDown);
+                break;
+            case TreeActions.Up:
+                _tree.selectPrevious();
+                break;
+            case TreeActions.Down:
+                _tree.selectNext();
+                break;
+            case TreeActions.PageUp:
+                break;
+            case TreeActions.PageDown:
                 break;
             default:
                 return super.handleAction(a);

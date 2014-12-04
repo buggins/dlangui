@@ -193,6 +193,21 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         updateScrollBars();
 	}
 
+    void makeRectVisible(Rect rc, bool alignHorizontally = true, bool alignVertically = true) {
+        if (rc.isInsideOf(_visibleScrollableArea))
+            return;
+        Rect oldRect = _visibleScrollableArea;
+        if (alignHorizontally && rc.right > _visibleScrollableArea.right)
+            _visibleScrollableArea.offset(rc.right - _visibleScrollableArea.right, 0);
+        if (alignVertically && rc.bottom > _visibleScrollableArea.bottom)
+            _visibleScrollableArea.offset(0, rc.bottom - _visibleScrollableArea.bottom);
+        if (alignHorizontally && rc.left < _visibleScrollableArea.left)
+            _visibleScrollableArea.offset(rc.left - _visibleScrollableArea.left, 0);
+        if (alignVertically && rc.top < _visibleScrollableArea.top)
+            _visibleScrollableArea.offset(0, rc.top - _visibleScrollableArea.top);
+        if (_visibleScrollableArea != oldRect)
+            requestLayout();
+    }
 }
 
 /**
@@ -258,6 +273,7 @@ class ScrollWidget :  ScrollWidgetBase {
         }
     }
 
+
     @property Point scrollPos() {
         return Point(_visibleScrollableArea.left - _fullScrollableArea.left, _visibleScrollableArea.top - _fullScrollableArea.top);
     }
@@ -309,4 +325,14 @@ class ScrollWidget :  ScrollWidgetBase {
         return true;
     }
 
+    void makeWidgetVisible(Widget widget, bool alignHorizontally = true, bool alignVertically = true) {
+        if (!widget || !widget.visibility == Visibility.Gone)
+            return;
+        if (!_contentWidget || !_contentWidget.isChild(widget))
+            return;
+        Rect wpos = widget.pos;
+        Rect cpos = _contentWidget.pos;
+        wpos.offset(-cpos.left, -cpos.top);
+        makeRectVisible(wpos, alignHorizontally, alignVertically);
+    }
 }
