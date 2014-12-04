@@ -81,6 +81,16 @@ interface OnFocusHandler {
     bool onFocusChanged(Widget source, bool focused);
 }
 
+/// interface - slot for onKey
+interface OnKeyHandler {
+    bool onKey(Widget source, KeyEvent event);
+}
+
+/// interface - slot for onMouse
+interface OnMouseHandler {
+    bool onMouse(Widget source, MouseEvent event);
+}
+
 /// focus movement options
 enum FocusMovement {
     /// no focus movement
@@ -880,6 +890,8 @@ class Widget {
 
     /// process key event, return true if event is processed.
     bool onKeyEvent(KeyEvent event) {
+        if (onKeyListener.assigned && onKeyListener(this, event))
+            return true; // processed by external handler
 		if (event.action == KeyAction.KeyDown) {
 			Action action = findKeyAction(event.keyCode, event.flags & (KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Control));
 			if (action !is null) {
@@ -910,6 +922,8 @@ class Widget {
 
     /// process mouse event; return true if event is processed by widget.
     bool onMouseEvent(MouseEvent event) {
+        if (onMouseListener.assigned && onMouseListener(this, event))
+            return true; // processed by external handler
         //Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
 		// support onClick
 		if (canClick) {
@@ -977,6 +991,10 @@ class Widget {
     Signal!OnCheckHandler onCheckChangeListener;
 	/// focus state change event listener (bool delegate(Widget, bool))
     Signal!OnFocusHandler onFocusChangeListener;
+	/// key event listener (bool delegate(Widget, KeyEvent)) - return true if event is processed by handler
+    Signal!OnKeyHandler onKeyListener;
+	/// mouse event listener (bool delegate(Widget, MouseEvent)) - return true if event is processed by handler
+    Signal!OnMouseHandler onMouseListener;
 
     /// helper function to add onCheckChangeListener in method chain
     Widget addOnClickListener(bool delegate(Widget) listener) {
