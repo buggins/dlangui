@@ -39,6 +39,7 @@ struct LayoutItem {
 	int _weight; // weight
 	bool _fillParent;
     bool _isResizer;
+    int  _resizerDelta;
     @property bool canExtend() { return !_isResizer; }
     @property int measuredSize() { return _measuredSize; }
     @property int minSize() { return _measuredSize; }
@@ -55,8 +56,10 @@ struct LayoutItem {
     void set(Widget widget, Orientation orientation) {
 		_widget = widget;
 		_orientation = orientation;
-        if (cast(ResizerWidget)widget)
+        if (cast(ResizerWidget)widget) {
             _isResizer = true;
+            _resizerDelta = (cast(ResizerWidget)widget).delta;
+        }
     }
 	/// set item and measure it
 	void measure(int parentWidth, int parentHeight) {
@@ -203,10 +206,17 @@ class LayoutItems {
 		//Log.d("VerticalLayout delta=", delta, ", nonres=", nonresizableWeight, ", res=", resizableWeight, ", scale=", scaleFactor);
 		// find last resized - to allow fill space 1 pixel accurate
 		int lastResized = -1;
+        ResizerWidget resizer = null;
+        int resizerIndex = -1;
+        int resizerDelta = 0;
         for (int i = 0; i < _count; i++) {
 			LayoutItem * item = &_list[i];
             if ((item.fillParent || needForceResize) && (delta < 0 || item.canExtend)) {
 				lastResized = i;
+            }
+            if (item._isResizer) {
+                resizerIndex = i;
+                resizerDelta = item._resizerDelta;
             }
 		}
 		// final resize and layout of children
