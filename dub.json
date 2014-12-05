@@ -21,6 +21,12 @@
 				"project.ddoc"
 			],
 
+			"excludedSourceFiles": [
+		        	"../../src/api.d",
+			        "../../src/index.d",
+			        "../../src/screenshots.d"
+			],
+
 			"sourceFiles-windows": [
 				"3rdparty/win32/basetsd.d",
 				"3rdparty/win32/basetyps.d",

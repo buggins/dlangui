@@ -40,6 +40,7 @@ module dlangui.core.i18n;
 
 import dlangui.core.types;
 import dlangui.core.logger;
+private import dlangui.core.linestream;
 import std.utf;
 
 /// container for UI string - either raw value or string resource ID
