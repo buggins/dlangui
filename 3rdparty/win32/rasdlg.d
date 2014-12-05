@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.rasdlg;
+version(Windows):
 
 import win32.ras;
 private import win32.lmcons, win32.windef;

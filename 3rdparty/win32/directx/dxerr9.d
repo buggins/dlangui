@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.directx.dxerr9;
+version(Windows):
 
 /*
 	dxerr9.h - Header file for the DirectX 9 Error API

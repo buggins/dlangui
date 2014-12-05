@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.unknwn;
+version(Windows):
 
 import win32.objfwd, win32.windef, win32.wtypes;
 private import win32.basetyps;

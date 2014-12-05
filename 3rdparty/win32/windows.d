@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.windows;
+version(Windows):
 
 /*
 	windows.h - main header file for the Win32 API

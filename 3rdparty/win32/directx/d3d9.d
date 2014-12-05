@@ -7,6 +7,7 @@
  *
  ****************************************************************************/
 module win32.directx.d3d9;
+version(Windows):
 
 import win32.windows;
 public import win32.directx.d3d9types;

@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.ntdll;
+version(Windows):
 
 private import win32.w32api;
 

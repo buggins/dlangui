@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.shlwapi;
+version(Windows):
 pragma(lib, "shlwapi");
 
 /* Changes compared to MinGW:

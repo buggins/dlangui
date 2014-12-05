@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.httpext;
+version(Windows):
 
 /* Comment from MinGW
        httpext.h - Header for ISAPI extensions.

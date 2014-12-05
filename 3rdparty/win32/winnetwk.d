@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.winnetwk;
+version(Windows):
 pragma(lib, "mpr");
 
 private import win32.winbase, win32.winerror, win32.winnt;

@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.lmchdev;
+version(Windows):
 
 // COMMENT: This file might be deprecated.
 

@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.sqltypes;
+version(Windows):
 
 /* Conversion notes:
   It's assumed that ODBC >= 0x0300.

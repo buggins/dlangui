@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.imagehlp;
+version(Windows):
 
 /* Comment from MinGW
 	NOTE: This strictly does not belong in the Win32 API since it's

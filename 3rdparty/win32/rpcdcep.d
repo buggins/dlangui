@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.rpcdcep;
+version(Windows):
 
 private import win32.basetyps;
 private import win32.w32api;

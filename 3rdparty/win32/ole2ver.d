@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.ole2ver;
+version(Windows):
 
 // These are apparently not documented on the MSDN site
 const rmm = 23;

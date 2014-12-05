@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.shlobj;
+version(Windows):
 pragma(lib, "shell32");
 
 // TODO: fix bitfields

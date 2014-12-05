@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.oleacc;
+version(Windows):
 pragma(lib, "oleacc");
 
 private import win32.basetyps, win32.oaidl, win32.unknwn, win32.wtypes,

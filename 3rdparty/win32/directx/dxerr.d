@@ -6,6 +6,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.directx.dxerr;
+version(Windows):
 
 import win32.windows;
 

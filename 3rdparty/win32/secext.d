@@ -9,6 +9,7 @@
 \***********************************************************************/
 // Don't include this file directly, use win32.security instead.
 module win32.secext;
+version(Windows):
 pragma(lib, "secur32");
 
 private import win32.w32api, win32.windef;

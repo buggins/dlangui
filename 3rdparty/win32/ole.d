@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.ole;
+version(Windows):
 
 private import win32.windef, win32.wingdi, win32.uuid;
 

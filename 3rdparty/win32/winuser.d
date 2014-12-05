@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.winuser;
+version(Windows):
 pragma(lib, "user32");
 
 // Conversion Notes:

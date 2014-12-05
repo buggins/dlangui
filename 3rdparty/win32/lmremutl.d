@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.lmremutl;
+version(Windows):
 pragma(lib, "netapi32");
 
 // D Conversion Note: DESC_CHAR is defined as TCHAR.

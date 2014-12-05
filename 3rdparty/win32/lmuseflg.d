@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.lmuseflg;
+version(Windows):
 
 enum : uint {
 	USE_NOFORCE = 0,

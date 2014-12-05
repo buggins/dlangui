@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.richedit;
+version(Windows):
 
 private import win32.windef, win32.winuser;
 private import win32.wingdi; // for LF_FACESIZE

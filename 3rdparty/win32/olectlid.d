@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.olectlid;
+version(Windows):
 
 private import win32.basetyps;
 

@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.mcx;
+version(Windows):
 
 private import win32.windef;
 

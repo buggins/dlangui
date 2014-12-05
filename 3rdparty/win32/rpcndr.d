@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.rpcndr;
+version(Windows):
 pragma(lib, "rpcrt4");
 
 /* Translation notes:

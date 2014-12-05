@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.snmp;
+version(Windows):
 
 private import win32.windows;
 

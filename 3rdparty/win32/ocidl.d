@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.ocidl;
+version(Windows):
 
 private import win32.ole2, win32.oleidl, win32.oaidl, win32.objfwd,
   win32.windef, win32.wtypes;

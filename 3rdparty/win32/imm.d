@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.imm;
+version(Windows):
 pragma(lib, "imm32");
 
 import win32.windef, win32.wingdi;

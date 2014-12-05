@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.regstr;
+version(Windows):
 
 // TODO: fix possible conflict with shloj. Sort out NEC_98 issue.
 

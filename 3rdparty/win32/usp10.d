@@ -3,6 +3,7 @@
 
 
 module win32.usp10;
+version(Windows):
 import win32.windows;
 
 

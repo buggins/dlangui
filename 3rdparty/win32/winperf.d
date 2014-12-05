@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.winperf;
+version(Windows):
 
 import win32.windef;
 import win32.winbase; // for SYSTEMTIME

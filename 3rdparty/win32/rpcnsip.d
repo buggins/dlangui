@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.rpcnsip;
+version(Windows):
 
 private import win32.rpcdce, win32.rpcdcep, win32.rpcnsi;
 

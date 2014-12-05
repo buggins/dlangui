@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.lmat;
+version(Windows):
 pragma(lib, "netapi32");
 
 private import win32.lmcons, win32.windef;

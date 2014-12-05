@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.oleidl;
+version(Windows):
 
 // DAC: This is defined in ocidl !!
 // what is it doing in here?

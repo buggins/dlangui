@@ -7,6 +7,7 @@
 *                           by Stewart Gordon                           *
 \***********************************************************************/
 module win32.winsock;
+version(Windows):
 
 /*
   Definitions for winsock 1.1

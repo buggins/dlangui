@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.richole;
+version(Windows):
 
 private import win32.objfwd, win32.objidl, win32.ole2, win32.unknwn,
   win32.windef;

@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.iprtrmib;
+version(Windows):
 
 import win32.ipifcons;
 private import win32.windef;

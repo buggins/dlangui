@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.dde;
+version(Windows):
 pragma(lib, "user32");
 
 private import win32.windef;

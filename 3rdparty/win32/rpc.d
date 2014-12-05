@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.rpc;
+version(Windows):
 
 /* Moved to rpcdecp (duplicate definition).
 	typedef void *I_RPC_HANDLE;

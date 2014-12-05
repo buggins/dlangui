@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.lmerr;
+version(Windows):
 
 import win32.winerror;
 

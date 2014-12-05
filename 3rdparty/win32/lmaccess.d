@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.lmaccess;
+version(Windows):
 pragma(lib, "netapi32");
 
 /**

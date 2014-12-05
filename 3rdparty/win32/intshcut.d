@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.intshcut;
+version(Windows):
 
 private import win32.unknwn, win32.windef;
 

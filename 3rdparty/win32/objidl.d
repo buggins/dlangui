@@ -12,6 +12,7 @@
 // rather than in objfwd ?
 // # do we need the proxies that are defined in this file?
 module win32.objidl;
+version(Windows):
 
 import win32.unknwn;
 import win32.objfwd;

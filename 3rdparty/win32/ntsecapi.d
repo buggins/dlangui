@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.ntsecapi;
+version(Windows):
 
 private import
   win32.basetyps, win32.ntdef, win32.windef, win32.winnt, win32.w32api;

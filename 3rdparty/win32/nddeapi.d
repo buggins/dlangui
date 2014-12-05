@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.nddeapi;
+version(Windows):
 
 private import win32.windef;
 

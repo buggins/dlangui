@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.lmerrlog;
+version(Windows):
 
 // COMMENT: This appears to be only for Win16. All functions are deprecated.
 

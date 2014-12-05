@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.winreg;
+version(Windows):
 pragma(lib, "advapi32");
 
 private import win32.w32api, win32.winbase, win32.windef;

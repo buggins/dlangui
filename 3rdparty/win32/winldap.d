@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.winldap;
+version(Windows):
 
 /* Comment from MinGW
   winldap.h - Header file for the Windows LDAP API

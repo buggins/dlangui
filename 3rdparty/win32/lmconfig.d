@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.lmconfig;
+version(Windows):
 
 // All functions in this file are deprecated!
 

@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.objfwd;
+version(Windows):
 
 private import win32.objidl;
 

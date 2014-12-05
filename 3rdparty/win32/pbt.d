@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.pbt;
+version(Windows):
 
 private import win32.windef;
 

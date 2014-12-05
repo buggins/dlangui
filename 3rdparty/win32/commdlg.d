@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.commdlg;
+version(Windows):
 pragma(lib, "comdlg32");
 
 private import win32.w32api;

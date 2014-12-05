@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.mgmtapi;
+version(Windows):
 
 import win32.snmp;
 private import win32.windef;

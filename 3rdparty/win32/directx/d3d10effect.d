@@ -6,6 +6,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.directx.d3d10effect;
+version(Windows):
 
 private import win32.windows;
 private import win32.directx.d3d10;

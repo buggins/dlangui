@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.wingdi;
+version(Windows):
 pragma(lib, "gdi32");
 
 // FIXME: clean up Windows version support

@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.wtsapi32;
+version(Windows):
 pragma(lib, "wtsapi32");
 private import win32.w32api;
 import win32.windef;

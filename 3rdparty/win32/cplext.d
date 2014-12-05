@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.cplext;
+version(Windows):
 
 enum : uint {
 	CPLPAGE_MOUSE_BUTTONS      = 1,

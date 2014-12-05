@@ -1,4 +1,5 @@
 module win32.directx.dsound8;
+version(Windows):
 
 //import tango.sys.win32.Types;
 import win32.windows;

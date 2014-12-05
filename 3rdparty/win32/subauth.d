@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.subauth;
+version(Windows):
 
 private import win32.ntdef, win32.windef;
 

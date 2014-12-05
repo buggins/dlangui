@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.winver;
+version(Windows):
 pragma(lib, "version");
 
 private import win32.windef;

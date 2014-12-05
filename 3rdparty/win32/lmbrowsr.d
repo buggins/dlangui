@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.lmbrowsr;
+version(Windows):
 
 private import win32.lmcons, win32.windef;
 

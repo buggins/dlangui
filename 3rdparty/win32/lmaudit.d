@@ -9,6 +9,7 @@
 \***********************************************************************/
 // COMMENT: This file may be deprecated.
 module win32.lmaudit;
+version(Windows):
 
 private import win32.lmcons, win32.windef;
 

@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.accctrl;
+version(Windows):
 
 private import win32.basetyps, win32.w32api, win32.winbase, win32.windef;
 

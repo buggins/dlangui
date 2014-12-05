@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.msacm;
+version(Windows):
 
 private import win32.basetsd, win32.mmsystem, win32.windef;
 

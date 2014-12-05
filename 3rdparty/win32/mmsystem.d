@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.mmsystem;
+version(Windows):
 pragma(lib, "winmm");
 
 /*	The #defines MAKEFOURCC, mmioFOURCC, sndAlias are used to define

@@ -6,6 +6,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.core;
+version(Windows):
 
 /**
  The core Windows API functions.

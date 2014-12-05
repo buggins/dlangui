@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.powrprof;
+version(Windows):
 pragma(lib, "powrprof");
 
 private import win32.windef;

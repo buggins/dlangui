@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.iptypes;
+version(Windows):
 
 import win32.windef;
 version(Tango){

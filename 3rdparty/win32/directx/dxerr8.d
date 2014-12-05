@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.directx.dxerr8;
+version(Windows):
 
 /*
 	dxerr8.d - Header file for the DirectX 8 Error API

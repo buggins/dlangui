@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.oleauto;
+version(Windows):
 pragma(lib, "oleaut32");
 
 import win32.oaidl;

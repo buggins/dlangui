@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.oledlg;
+version(Windows):
 
 import win32.commdlg, win32.dlgs, win32.ole2, win32.prsht, win32.shellapi,
   win32.windows;

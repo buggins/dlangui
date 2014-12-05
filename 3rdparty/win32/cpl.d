@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.cpl;
+version(Windows):
 
 private import win32.windef, win32.winuser;
 

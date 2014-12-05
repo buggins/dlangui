@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.rpcdce2;
+version(Windows):
 
 import win32.rpcdce;
 private import win32.basetyps;

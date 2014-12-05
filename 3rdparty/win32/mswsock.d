@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.mswsock;
+version(Windows):
 
 import win32.winbase, win32.windef;
 private import win32.basetyps, win32.w32api;

@@ -1,4 +1,5 @@
 module win32.directx.dinput8;
+version(Windows):
 
 //import tango.sys.win32.Types;
 //alias char CHAR;

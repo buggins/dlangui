@@ -6,6 +6,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.directx.d3dx10math;
+version(Windows):
 
 version(Tango) {
     import tango.math.Math;

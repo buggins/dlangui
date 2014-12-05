@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.schannel;
+version(Windows):
 
 import win32.wincrypt;
 private import win32.windef;

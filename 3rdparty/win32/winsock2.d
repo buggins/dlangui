@@ -7,6 +7,7 @@
 *                             by Daniel Keep                            *
 \***********************************************************************/
 module win32.winsock2;
+version(Windows):
 pragma(lib, "Ws2_32");
 
 /*

@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.winnt;
+version(Windows):
 
 public import win32.basetsd, win32.windef, win32.winerror;
 private import win32.w32api;

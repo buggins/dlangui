@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.sspi;
+version(Windows):
 
 import win32.windef;
 import win32.ntdef;

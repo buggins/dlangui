@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.aclapi;
+version(Windows):
 pragma(lib, "advapi32");
 
 import win32.windows, win32.accctrl;

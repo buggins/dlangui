@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.lmwksta;
+version(Windows):
 pragma(lib, "netapi32");
 
 import win32.lmuseflg;

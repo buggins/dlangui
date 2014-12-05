@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.lmserver;
+version(Windows):
 
 import win32.winsvc;
 private import win32.lmcons, win32.windef;

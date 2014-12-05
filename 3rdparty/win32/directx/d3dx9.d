@@ -1,6 +1,7 @@
 // D3DX Types and Constants ---------------------------------------------------------------------------------------
 
 module win32.directx.d3dx9;
+version(Windows):
 
 public import win32.directx.d3d9;
 public import win32.windows;

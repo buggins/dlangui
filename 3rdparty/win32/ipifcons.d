@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.ipifcons;
+version(Windows):
 
 // FIXME: check types of constants
 

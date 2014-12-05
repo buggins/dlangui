@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.odbcinst;
+version(Windows):
 
 import win32.sql;
 private import win32.windef;

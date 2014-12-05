@@ -9,6 +9,7 @@
 \***********************************************************************/
 
 module win32.ws2tcpip;
+version(Windows):
 
 import win32.w32api;
 //import win32.winbase;

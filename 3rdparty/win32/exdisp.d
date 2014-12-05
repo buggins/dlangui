@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.exdisp;
+version(Windows):
 
 import win32.docobj, win32.oaidl, win32.ocidl;
 private import win32.basetyps, win32.windef, win32.wtypes;

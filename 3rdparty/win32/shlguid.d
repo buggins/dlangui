@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.shlguid;
+version(Windows):
 
 private import win32.basetyps, win32.w32api;
 

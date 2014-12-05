@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.lmsvc;
+version(Windows):
 
 // FIXME: Is this file deprecated? All of the functions are only for Win16.
 /**

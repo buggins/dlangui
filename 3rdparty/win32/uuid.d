@@ -1,4 +1,5 @@
 module win32.uuid;
+version(Windows):
 
 import win32.basetyps;
 

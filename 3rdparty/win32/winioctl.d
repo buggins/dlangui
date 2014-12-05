@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.winioctl;
+version(Windows):
 
 // FIXME: check types of some constants
 

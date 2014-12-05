@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.setupapi;
+version(Windows):
 pragma(lib, "setupapi");
 
 private import win32.basetyps, win32.commctrl, win32.prsht, win32.w32api,

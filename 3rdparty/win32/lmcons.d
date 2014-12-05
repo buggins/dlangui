@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.lmcons;
+version(Windows):
 
 private import win32.windef;
 private import win32.lmerr; // for NERR_BASE

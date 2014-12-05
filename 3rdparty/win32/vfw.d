@@ -8,6 +8,7 @@
 \***********************************************************************/
 
 module win32.vfw;
+version(Windows):
 pragma(lib, "vfw32");
 
 private import

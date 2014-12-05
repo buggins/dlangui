@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.reason;
+version(Windows):
 
 private import win32.w32api, win32.windef;
 

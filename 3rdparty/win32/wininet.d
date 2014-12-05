@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.wininet;
+version(Windows):
 pragma(lib, "wininet");
 
 // FIXME: check types and grouping of constants

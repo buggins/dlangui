@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.shldisp;
+version(Windows):
 
 private import win32.unknwn, win32.windef, win32.wtypes;
 

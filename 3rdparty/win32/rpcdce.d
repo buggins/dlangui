@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.rpcdce;
+version(Windows):
 pragma(lib, "Rpcrt4");
 
 // TODO: I think MinGW got this wrong. RPC_UNICODE_SUPPORTED should be

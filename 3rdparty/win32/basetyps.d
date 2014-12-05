@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.basetyps;
+version(Windows):
 
 private import win32.windef, win32.basetsd;
 

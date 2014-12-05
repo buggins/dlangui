@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.ntsecpkg;
+version(Windows):
 
 import win32.windef, win32.ntsecapi, win32.security, win32.ntdef, win32.sspi;
 import win32.winnt: GUID;

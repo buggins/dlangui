@@ -9,6 +9,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.rassapi;
+version(Windows):
 
 private import win32.lmcons, win32.windef;
 

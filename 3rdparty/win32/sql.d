@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.sql;
+version(Windows):
 
 public import win32.sqltypes;
 private import win32.windef;

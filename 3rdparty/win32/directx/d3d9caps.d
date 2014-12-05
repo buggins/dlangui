@@ -8,6 +8,7 @@
  ***************************************************************************/
 
 module win32.directx.d3d9caps;
+version(Windows):
 
 private import win32.windows,
                win32.directx.d3d9types;

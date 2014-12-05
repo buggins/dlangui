@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.winspool;
+version(Windows):
 pragma(lib, "winspool");
 
 private import win32.w32api, win32.windef, win32.wingdi;

@@ -8,6 +8,7 @@
 *                       Placed into public domain                       *
 \***********************************************************************/
 module win32.wtypes;
+version(Windows):
 
 import win32.rpc, win32.rpcndr;
 private import win32.windef;
