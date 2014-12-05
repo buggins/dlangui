@@ -222,3 +222,14 @@ Hello World
 	    // run message loop
 	    return Platform.instance.enterMessageLoop();
 	}
+
+
+
+Sample project
+------------------------------------------------------------
+
+There is sample project which is using DLangUI.
+
+https://github.com/buggins/dlangide
+
+Attempt to write IDE using DLangUI.

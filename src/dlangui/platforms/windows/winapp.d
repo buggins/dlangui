@@ -733,7 +733,7 @@ class Win32Platform : Platform {
         lptstrCopy[w.length] = 0;
         GlobalUnlock(hglbCopy);
         SetClipboardData(CF_UNICODETEXT, hglbCopy); 
-        CloseClipboard(); 
+        CloseClipboard();
     }
 
 }
