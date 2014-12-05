@@ -7,8 +7,6 @@
     "targetType": "none",
 
     "versions-windows": ["Unicode"],
-    "versions-linux": ["USE_OPENGL", "USE_SDL", "Unicode"],
-    "versions-osx": ["USE_OPENGL", "USE_SDL", "Unicode"],
 	
     "subPackages": [
         {
