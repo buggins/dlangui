@@ -72,16 +72,15 @@
     ],
     "copyFiles-windows": [
         "../../lib/FreeImage.dll",
-        "../../lib/libfreetype-6.dll",
-        "../../lib/libpng15.dll",
-        "../../lib/zlib1.dll"
     ],
 
     "mainSourceFile": "src/app.d",
 
     "libs-windows": ["dlanguilib", "phobos", "ole32", "kernel32", "user32", "comctl32", "comdlg32"],
 
-    "versions-windows": ["USE_OPENGL", "Unicode"],
+    "versions-windows": ["Unicode"],
+    "versions-linux": ["USE_OPENGL", "USE_SDL", "Unicode"],
+    "versions-osx": ["USE_OPENGL", "USE_SDL", "Unicode"],
 
 
     "dependencies": {

@@ -1,17 +1,18 @@
 {
     "name": "dlangui",
-    "description": "D language cross platform GUI library, inspired by Android UI API. Supports OpenGL based hardware acceleration, i18n, styles and themes.",
+    "description": "D language cross platform GUI library. Supports OpenGL based hardware acceleration, i18n, styles and themes.",
     "homepage": "https://github.com/buggins/dlangui",
     "license": "Boost",
     "authors": ["Vadim Lopatin"],
     "targetType": "none",
 
     "versions-windows": ["Unicode"],
-    "versions-posix": ["USE_OPENGL", "USE_SDL", "Unicode"],
+    "versions-linux": ["USE_OPENGL", "USE_SDL", "Unicode"],
+    "versions-osx": ["USE_OPENGL", "USE_SDL", "Unicode"],
 	
     "subPackages": [
         {
-			"versions-windows": ["USE_OPENGL", "Unicode"],
+			"versions-windows": ["Unicode"],
 			"name": "dlanguilib",
 			"description": "D language cross platform GUI library, inspired by Android UI API. Supports OpenGL based hardware acceleration, i18n, styles and themes.",
 			"homepage": "https://github.com/buggins/dlangui",

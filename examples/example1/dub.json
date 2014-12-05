@@ -73,7 +73,6 @@
     ],
 
     "copyFiles-windows": [
-        "../../lib/SDL2.dll",
         "../../lib/FreeImage.dll"
     ],
 
@@ -81,8 +80,9 @@
 
     "libs-windows": ["dlanguilib", "phobos", "ole32", "kernel32", "user32", "comctl32", "comdlg32"],
 
-    "versions-windows": ["USE_OPENGL", "Unicode"],
-    "versions-posix": ["USE_OPENGL", "USE_SDL", "Unicode"],
+    "versions-windows": ["Unicode"],
+    "versions-linux": ["USE_OPENGL", "USE_SDL", "Unicode"],
+    "versions-osx": ["USE_OPENGL", "USE_SDL", "Unicode"],
 
 
     "dependencies": {

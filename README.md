@@ -13,11 +13,10 @@ Some screenshots: http://buggins.github.io/dlangui/screenshots.html
 * Supports highly customizable UI themes and styles
 * Supports internationalization
 * Hardware acceleration using OpenGL (when built with version USE_OPENGL)
-* Fallback to Win32 API / XCB when OpenGL is not available
+* Fallback to Win32 API / XCB when OpenGL is not available (e.g. opengl dynamic library cannot be loaded)
 * Actually it's a port (with major refactoring) of GUI library for cross platform OpenGL based implementation of Cool Reader app project from C++.
 * Almost ready for 2D games development
-* Goal: provide set of widgets suitable for building of IDE.
-* Non thread safe
+* Non thread safe - all UI operations should be preformed in single thread
 
 
 Widgets
@@ -44,6 +43,7 @@ Currently implemented widgets:
 * TabWidget - combination of TabControl and TabHost
 * GridWidgetBase - abstract Grid widget
 * StringGrid - grid view with strings content
+* TreeWidget - tree view
 
 Layouts
 -------
@@ -55,6 +55,7 @@ Similar to layouts in Android
 * HorizontalLayout - just a LinearLayout with vertical orientation
 * FrameLayout - all children occupy the same place; usually onle one of them is visible
 * TableLayout - children are aligned into rows and columns of table
+* ResizerWidget - put into LinearLayout between two other widgets to resize them using mouse
 
 
 List Views
@@ -65,11 +66,6 @@ Lists are implemented similar to Android UI API.
 * ListWidget - layout dynamic items horizontally or vertically (one in row/column) with automatic scrollbar; can reuse widgets for similar items
 * ListAdapter - interface to provide data and widgets for ListWidget
 * WidgetListAdapter - simple implementation of ListAdapter interface - just a list of widgets (one per list item) to show
-
-TODOs:
-
-* Multicolumn lists
-* Tree view
 
 Resources
 ---------
@@ -104,7 +100,8 @@ Win32 builds
 * Optionally, may use OpenGL acceleration via DerelictGL3/WGL.
 * Uses Win32 API for font rendering.
 * Optinally can use FreeType for font rendering.
-
+* For Win32 API based application, only FreeImage.dll is required. 
+* Executable size for release Win32 API based build is 830K.
 
 
 Build and run using DUB:
@@ -112,7 +109,6 @@ Build and run using DUB:
         git clone https://github.com/buggins/dlangui.git
         cd dlangui
         dub run dlangui:example1
-
 
 
 To develop using Visual-D, download sources for dlabgui and dependencies into some directory:
