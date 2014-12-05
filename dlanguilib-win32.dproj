@@ -34,7 +34,6 @@
       <VersionIds>
         <String>USE_OPENGL</String>
         <String>USE_SDL</String>
-        <String>Unicode</String>
       </VersionIds>
     </VersionIds>
   </PropertyGroup>

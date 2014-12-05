@@ -7,7 +7,6 @@
     "targetType": "none",
     "subPackages": [
         {
-			"versions-windows": ["Unicode"],
 			"name": "dlanguilib",
 			"description": "D language cross platform GUI library, inspired by Android UI API. Supports OpenGL based hardware acceleration, i18n, styles and themes.",
 			"homepage": "https://github.com/buggins/dlangui",
