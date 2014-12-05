@@ -11,6 +11,7 @@
 
 
 module std.c.linux.X11.xcb.res;
+version(USE_XCB):
 
 import std.c.linux.X11.xcb.xcb;
 

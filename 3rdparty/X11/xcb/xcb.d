@@ -26,6 +26,7 @@
  */
 
 module std.c.linux.X11.xcb.xcb; 
+version(USE_XCB):
 /* Include the generated xproto module. */
 import std.c.linux.X11.xcb.xproto;
 /*#include <sys/uio.h>

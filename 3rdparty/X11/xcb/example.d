@@ -1,4 +1,5 @@
 module std.c.linux.X11.xcb.examle;
+version(USE_XCB):
 
 /* build with: dmd  xcb.d xproto.d example.d -L-lxcb */
 

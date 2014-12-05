@@ -1,5 +1,6 @@
 // Manually created
 module std.c.linux.X11.xcb.image;
+version(USE_XCB):
 
 import std.c.linux.X11.xcb.xcb;
 import std.c.linux.X11.xcb.shm;

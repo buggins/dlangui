@@ -7,6 +7,7 @@
 */
 
 module std.c.linux.X11.X;
+version(USE_XCB):
 
 const uint X_PROTOCOL=11;		/* current protocol version */
 const uint X_PROTOCOL_REVISION=0;		/* current minor version */

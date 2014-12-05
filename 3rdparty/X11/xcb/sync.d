@@ -11,6 +11,7 @@
 
 
 module std.c.linux.X11.xcb.sync;
+version(USE_XCB):
 
 import std.c.linux.X11.xcb.xcb;
 import std.c.linux.X11.xcb.xproto;

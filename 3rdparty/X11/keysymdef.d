@@ -114,6 +114,7 @@ const XK_([a-zA-Z_0-9]+)\s+0x([0-9a-f]+)\s*\/\*\(U+([0-9A-F]{4,6}) = (.*)\)\*\/\
  */
 
 module std.c.linux.X11.keysymdef;
+version(USE_XCB):
 
 const XK_VoidSymbol             = 0xffffff;	/* Void symbol */
 

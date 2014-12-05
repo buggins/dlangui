@@ -12,6 +12,7 @@
 */
 
 module std.c.linux.X11.Xlib;
+version(USE_XCB):
 public import std.c.linux.X11.X;
 
 const int XlibSpecificationRelease=6;
