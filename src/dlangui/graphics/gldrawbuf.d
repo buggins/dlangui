@@ -42,6 +42,7 @@ class GLDrawBuf : DrawBuf {
         _dx = dx;
         _dy = dy;
         _framebuffer = framebuffer;
+        resetClipping();
     }
 
     /// returns current width
@@ -51,6 +52,7 @@ class GLDrawBuf : DrawBuf {
 
     /// reserved for hardware-accelerated drawing - begins drawing batch
     override void beforeDrawing() {
+        resetClipping();
 		_alpha = 0;
         if (_scene !is null) {
             _scene.reset();
