@@ -685,7 +685,7 @@ version(USE_SDL) {
 				destroy(wnd);
 				wnd = null;
 			}
-			_windowMap.clear();
+			destroy(_windowMap);
 			disconnect();
 		}
 		void disconnect() {
