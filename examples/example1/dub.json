@@ -72,6 +72,12 @@
          "src/main.d"
     ],
 
+    "excludedSourceFiles": [
+         "../../src/api.d",
+         "../../src/index.d",
+         "../../src/screenshots.d"
+    ],
+
     "copyFiles-windows": [
         "../../lib/FreeImage.dll"
     ],

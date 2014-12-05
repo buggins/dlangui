@@ -108,7 +108,7 @@ Build and run using DUB:
 
         git clone https://github.com/buggins/dlangui.git
         cd dlangui
-        dub run dlangui:example1
+        dub run dlangui:example1 --build=release
 
 
 To develop using Visual-D, download sources for dlabgui and dependencies into some directory:
