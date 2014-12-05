@@ -945,6 +945,7 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                     }
                 }
             }
+            return 0;
         case WM_MOUSELEAVE:
 		case WM_MOUSEMOVE:
 		case WM_LBUTTONDOWN:
