@@ -12,3 +12,6 @@ bin
 *.~*
 *.*~
 .*.sw*
+trace.def
+trace.log
+dlanguilib.lib

@@ -13,6 +13,14 @@ EndProject
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "example2", "examples\example2\example2.visualdproj", "{4B9651D1-BF43-47BD-9FA4-B1DAF9E7197D}"
 EndProject
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "helloworld", "examples\helloworld\helloworld.visualdproj", "{66B1B701-6AC9-41F5-8DB4-5CB1611FB977}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5FF17402-9997-4D0E-8068-6D84B8769D98} = {5FF17402-9997-4D0E-8068-6D84B8769D98}
+	EndProjectSection
+EndProject
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dlangide", "..\dlangide\dlangide.visualdproj", "{66B1B701-6AC9-41F5-8DB4-5CB161321977}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5FF17402-9997-4D0E-8068-6D84B8769D98} = {5FF17402-9997-4D0E-8068-6D84B8769D98}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -36,6 +44,10 @@ Global
 		{66B1B701-6AC9-41F5-8DB4-5CB1611FB977}.Debug|Win32.Build.0 = Debug|Win32
 		{66B1B701-6AC9-41F5-8DB4-5CB1611FB977}.Release|Win32.ActiveCfg = Release|Win32
 		{66B1B701-6AC9-41F5-8DB4-5CB1611FB977}.Release|Win32.Build.0 = Release|Win32
+		{66B1B701-6AC9-41F5-8DB4-5CB161321977}.Debug|Win32.ActiveCfg = Debug|Win32
+		{66B1B701-6AC9-41F5-8DB4-5CB161321977}.Debug|Win32.Build.0 = Debug|Win32
+		{66B1B701-6AC9-41F5-8DB4-5CB161321977}.Release|Win32.ActiveCfg = Release|Win32
+		{66B1B701-6AC9-41F5-8DB4-5CB161321977}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
