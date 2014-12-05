@@ -739,8 +739,8 @@ class Win32Platform : Platform {
 }
 
 extern(Windows)
-int DLANGUIWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-            LPSTR lpCmdLine, int nCmdShow) {
+int DLANGUIWinMain(void* hInstance, void* hPrevInstance,
+            char* lpCmdLine, int nCmdShow) {
     int result;
 
     try
@@ -787,7 +787,7 @@ string[] splitCmdLine(string line) {
 
 private __gshared Win32Platform w32platform;
 
-int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int iCmdShow)
+int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdShow)
 {
 	Log.setFileLogger(std.stdio.File("ui.log", "w"));
 	debug {

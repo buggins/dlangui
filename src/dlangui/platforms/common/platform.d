@@ -669,6 +669,8 @@ version (USE_OPENGL) {
     }
 }
 
+//mixin template APP_ENTRY_POINT() {
+//}
 
 /// put "mixin APP_ENTRY_POINT;" to main module of your dlangui based app
 mixin template APP_ENTRY_POINT() {
@@ -685,13 +687,11 @@ mixin template APP_ENTRY_POINT() {
 
     /// workaround for link issue when WinMain is located in library
     version(Windows) {
-        private import win32.windows;
         private import dlangui.platforms.sdl.sdlapp;
         private import dlangui.platforms.windows.winapp;
 
-        extern (Windows)
-        int WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                    LPSTR lpCmdLine, int nCmdShow)
+        extern (Windows) int WinMain(void* hInstance, void* hPrevInstance,
+                    char* lpCmdLine, int nCmdShow)
         {
             return DLANGUIWinMain(hInstance, hPrevInstance,
                                     lpCmdLine, nCmdShow);
