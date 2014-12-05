@@ -5,9 +5,6 @@
     "license": "Boost",
     "authors": ["Vadim Lopatin"],
     "targetType": "none",
-
-    "versions": ["Unicode"],
-	
     "subPackages": [
         {
 			"versions-windows": ["Unicode"],

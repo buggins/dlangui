@@ -150,7 +150,7 @@ class Win32Window : Window {
             ws |= WS_OVERLAPPED | WS_CAPTION | WS_CAPTION | WS_BORDER | WS_SYSMENU;
         //if (flags & WindowFlag.Fullscreen)
         //    ws |= SDL_WINDOW_FULLSCREEN;
-        _hwnd = CreateWindow(toUTF16z(WIN_CLASS_NAME),      // window class name
+        _hwnd = CreateWindowW(toUTF16z(WIN_CLASS_NAME),      // window class name
                             toUTF16z(windowCaption),  // window caption
                             ws,  // window style
                             CW_USEDEFAULT,        // initial x position
@@ -611,7 +611,7 @@ class Win32Platform : Platform {
     }
     bool registerWndClass() {
         //MSG  msg;
-        WNDCLASS wndclass;
+        WNDCLASSW wndclass;
 
         wndclass.style         = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
         wndclass.lpfnWndProc   = &WndProc;
@@ -624,7 +624,7 @@ class Win32Platform : Platform {
         wndclass.lpszMenuName  = null;
         wndclass.lpszClassName = toUTF16z(WIN_CLASS_NAME);
 
-        if(!RegisterClass(&wndclass))
+        if(!RegisterClassW(&wndclass))
         {
             return false;
         }
@@ -696,7 +696,7 @@ class Win32Platform : Platform {
         HGLOBAL hglb = GetClipboardData(CF_UNICODETEXT); 
         if (hglb != NULL) 
         { 
-            LPTSTR lptstr = cast(LPTSTR)GlobalLock(hglb); 
+            LPWSTR lptstr = cast(LPWSTR)GlobalLock(hglb); 
             if (lptstr != NULL) 
             { 
                 wstring w = fromWStringz(lptstr);
@@ -726,7 +726,7 @@ class Win32Platform : Platform {
             CloseClipboard(); 
             return; 
         }
-        LPTSTR lptstrCopy = cast(LPTSTR)GlobalLock(hglbCopy);
+        LPWSTR lptstrCopy = cast(LPWSTR)GlobalLock(hglbCopy);
         for (int i = 0; i < w.length; i++) {
             lptstrCopy[i] = w[i];
         }
@@ -751,7 +751,7 @@ int DLANGUIWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     }
     catch (Throwable e) // catch any uncaught exceptions
     {
-        MessageBox(null, toUTF16z(e.toString()), "Error",
+        MessageBoxW(null, toUTF16z(e.toString()), "Error",
                     MB_OK | MB_ICONEXCLAMATION);
         result = 0;     // failed
     }
@@ -945,7 +945,7 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                     }
                 }
             }
-            return 0;
+            break;
         case WM_MOUSELEAVE:
 		case WM_MOUSEMOVE:
 		case WM_LBUTTONDOWN:
