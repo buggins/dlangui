@@ -457,8 +457,8 @@ private class GLImageCache {
             destroy(_pages[i]);
             _pages[i] = null;
         }
-        _pages.clear();
-        _map.clear();
+        destroy(_pages);
+        destroy(_map);
     }
     /// draw cached item
     void drawItem(uint objectId, Rect dstrc, Rect srcrc, uint color, int options, Rect * clip, int rotationAngle) {
@@ -762,8 +762,8 @@ private class GLGlyphCache {
             destroy(_pages[i]);
             _pages[i] = null;
         }
-        _pages.clear();
-        _map.clear();
+        destroy(_pages);
+        destroy(_map);
     }
     /// draw cached item
     void drawItem(uint objectId, Rect dstrc, Rect srcrc, uint color, Rect * clip) {
