@@ -1,6 +1,6 @@
 module dlangui.platforms.windows.win32drawbuf;
 
-version (Windows) {
+version(Windows):
 
 import win32.windows;
 import dlangui.core.logger;
@@ -126,6 +126,4 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
     void drawTo(HDC dc, int x, int y) {
         BitBlt(dc, x, y, _dx, _dy, _drawdc, 0, 0, SRCCOPY);
     }
-}
-
 }

@@ -1,6 +1,6 @@
 module dlangui.platforms.windows.win32fonts;
 
-version (Windows) {
+version(Windows):
 
 import win32.windows;
 import dlangui.graphics.fonts;
@@ -425,6 +425,4 @@ extern(Windows) {
         }
         return 1;
     }
-}
-
 }
