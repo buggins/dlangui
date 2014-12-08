@@ -667,8 +667,6 @@ class GridWidgetBase : ScrollWidgetBase {
     protected int _maxScrollRow;
     protected Rect _fullyVisibleCells;
     protected Rect _fullyVisibleCellsRect;
-    protected Rect _fullScrollableArea;
-    protected Rect _visibleScrollableArea;
 
 	override protected bool handleAction(const Action a) {
         calcScrollableAreaPos();
