@@ -387,15 +387,30 @@ class SDLWindow : Window {
         return MouseButton.None;
     }
 
+    ushort lastFlags;
+    short lastx;
+    short lasty;
 	void processMouseEvent(MouseAction action, uint button, uint state, int x, int y) {
-        ushort flags = convertMouseFlags(state);
-        MouseButton btn = convertMouseButton(button);
-        MouseEvent event = new MouseEvent(action, btn, flags, cast(short)x, cast(short)y);
-		bool res = dispatchMouseEvent(event);
-	    if (res) {
-	        debug(mouse) Log.d("Calling update() after mouse event");
-	        invalidate();
-	    }
+        MouseEvent event = null;
+        if (action == MouseAction.Wheel) {
+            // handle wheel
+            short wheelDelta = cast(short)y;
+            if (wheelDelta)
+                event = new MouseEvent(action, MouseButton.None, lastFlags, lastx, lasty, wheelDelta);
+        } else {
+            lastFlags = convertMouseFlags(state);
+            lastx = cast(short)x;
+            lasty = cast(short)y;
+            MouseButton btn = convertMouseButton(button);
+            event = new MouseEvent(action, btn, lastFlags, lastx, lasty);
+        }
+        if (event) {
+		    bool res = dispatchMouseEvent(event);
+	        if (res) {
+	            debug(mouse) Log.d("Calling update() after mouse event");
+	            invalidate();
+	        }
+        }
 	}
 
 	uint convertKeyCode(uint keyCode) {
@@ -877,6 +892,11 @@ class SDLPlatform : Platform {
                         }
                         break;
                     case SDL_MOUSEWHEEL:
+                        SDLWindow w = getWindow(event.wheel.windowID);
+                        if (w) {
+                            Log.d("SDL_MOUSEWHEEL x=", event.wheel.x, " y=", event.wheel.y);
+                            w.processMouseEvent(MouseAction.Wheel, 0, 0, event.wheel.x, event.wheel.y);
+                        }
                         break;
                     default:
                         // not supported event
@@ -948,7 +968,7 @@ version (Windows) {
             }
             catch (Throwable e) // catch any uncaught exceptions
             {
-                MessageBox(null, toUTF16z(e.toString ~ "\nStack trace:\n" ~ defaultTraceHandler.toString), "Error",
+                MessageBoxW(null, toUTF16z(e.toString ~ "\nStack trace:\n" ~ defaultTraceHandler.toString), "Error",
                             MB_OK | MB_ICONEXCLAMATION);
                 result = 0;     // failed
             }
