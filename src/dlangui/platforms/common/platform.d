@@ -28,6 +28,10 @@ import dlangui.graphics.drawbuf;
 private import dlangui.graphics.gldrawbuf;
 private import std.algorithm;
 
+// specify debug=DebugMouseEvents for logging mouse handling
+// specify debug=DebugRedraw for logging drawing and layouts handling
+// specify debug=DebugKeys for logging of key events
+
 /// window creation flags
 enum WindowFlag : uint {
 	/// window can be resized
@@ -202,12 +206,14 @@ class Window {
             long measureStart = currentTimeMillis;
             measure();
             long measureEnd = currentTimeMillis;
-			if (measureEnd - measureStart > PERFORMANCE_LOGGING_THRESHOLD_MS)
-				Log.d("measure took ", measureEnd - measureStart, " ms");
+			if (measureEnd - measureStart > PERFORMANCE_LOGGING_THRESHOLD_MS) {
+				debug(DebugRedraw) Log.d("measure took ", measureEnd - measureStart, " ms");
+            }
             layout();
             long layoutEnd = currentTimeMillis;
-			if (layoutEnd - measureEnd > PERFORMANCE_LOGGING_THRESHOLD_MS)
-				Log.d("layout took ", layoutEnd - measureEnd, " ms");
+			if (layoutEnd - measureEnd > PERFORMANCE_LOGGING_THRESHOLD_MS) {
+				debug(DebugRedraw) Log.d("layout took ", layoutEnd - measureEnd, " ms");
+            }
             //checkUpdateNeeded(needDraw, needLayout, animationActive);
         }
         long drawStart = currentTimeMillis;
@@ -217,8 +223,10 @@ class Window {
         foreach(p; _popups)
             p.onDraw(buf);
         long drawEnd = currentTimeMillis;
-		if (drawEnd - drawStart > PERFORMANCE_LOGGING_THRESHOLD_MS)
-        	Log.d("draw took ", drawEnd - drawStart, " ms");
+        debug(DebugRedraw) {
+		    if (drawEnd - drawStart > PERFORMANCE_LOGGING_THRESHOLD_MS)
+        	    Log.d("draw took ", drawEnd - drawStart, " ms");
+        }
         if (animationActive)
             scheduleAnimation();
     }
@@ -254,7 +262,7 @@ class Window {
         if (newFocus is null || isChild(newFocus)) {
             if (newFocus !is null) {
                 // when calling, setState(focused), window.focusedWidget is still previously focused widget
-                Log.d("new focus: ", newFocus.id);
+                debug(DebugFocus) Log.d("new focus: ", newFocus.id);
                 newFocus.setState(State.Focused);
             }
             _focusedWidget = newFocus;
@@ -283,7 +291,7 @@ class Window {
 		if (event.action == KeyAction.KeyDown || event.action == KeyAction.KeyUp) {
 			_keyboardModifiers = event.flags;
 			if (event.keyCode == KeyCode.ALT || event.keyCode == KeyCode.LALT || event.keyCode == KeyCode.RALT) {
-				Log.d("ALT key: keyboardModifiers = ", _keyboardModifiers);
+				debug(DebugKeys) Log.d("ALT key: keyboardModifiers = ", _keyboardModifiers);
 				if (_mainWidget) {
 					_mainWidget.invalidate();
 					res = true;
@@ -329,9 +337,9 @@ class Window {
 		}
         // if not processed by children, offer event to root
         if (sendAndCheckOverride(root, event)) {
-            debug(mouse) Log.d("MouseEvent is processed");
+            debug(DebugMouseEvents) Log.d("MouseEvent is processed");
             if (event.action == MouseAction.ButtonDown && _mouseCaptureWidget is null && !event.doNotTrackButtonDown) {
-				debug(mouse) Log.d("Setting active widget");
+				debug(DebugMouseEvents) Log.d("Setting active widget");
                 setCaptureWidget(root, event);
             } else if (event.action == MouseAction.Move) {
                 addTracking(root);
@@ -393,11 +401,17 @@ class Window {
 	/// does current capture widget want to receive move events even if pointer left it
     protected bool _mouseCaptureFocusedOutTrackMovements;
 	
+    protected void clearMouseCapture() {
+		_mouseCaptureWidget = null;
+		_mouseCaptureFocusedOut = false;
+        _mouseCaptureFocusedOutTrackMovements = false;
+        _mouseCaptureButtons = 0;
+    }
+
 	protected bool dispatchCancel(MouseEvent event) {
     	event.changeAction(MouseAction.Cancel);
         bool res = _mouseCaptureWidget.onMouseEvent(event);
-		_mouseCaptureWidget = null;
-		_mouseCaptureFocusedOut = false;
+        clearMouseCapture();
 		return res;
 	}
 	
@@ -411,6 +425,11 @@ class Window {
         return res;
     }
 
+    /// returns true if mouse is currently captured
+    bool isMouseCaptured() {
+        return (_mouseCaptureWidget !is null && isChild(_mouseCaptureWidget));
+    }
+
     /// dispatch mouse event to window content widgets
     bool dispatchMouseEvent(MouseEvent event) {
         // ignore events if there is no root
@@ -418,19 +437,23 @@ class Window {
             return false;
 
         // check if _mouseCaptureWidget and _mouseTrackingWidget still exist in child of root widget
-        if (_mouseCaptureWidget !is null && !isChild(_mouseCaptureWidget))
-            _mouseCaptureWidget = null;
+        if (_mouseCaptureWidget !is null && !isChild(_mouseCaptureWidget)) {
+            clearMouseCapture();
+        }
 
-        //Log.d("dispatchMouseEvent ", event.action, "  (", event.x, ",", event.y, ")");
+        debug(DebugMouseEvents) Log.d("dispatchMouseEvent ", event.action, "  (", event.x, ",", event.y, ")");
 
         bool res = false;
 		ushort currentButtons = event.flags & (MouseFlag.LButton|MouseFlag.RButton|MouseFlag.MButton);
         if (_mouseCaptureWidget !is null) {
             // try to forward message directly to active widget
             if (event.action == MouseAction.Move) {
+                debug(DebugMouseEvents) Log.d("dispatchMouseEvent: Move; buttons state=", currentButtons);
                 if (!_mouseCaptureWidget.isPointInside(event.x, event.y)) {
-					if (currentButtons != _mouseCaptureButtons)
+					if (currentButtons != _mouseCaptureButtons) {
+                        debug(DebugMouseEvents) Log.d("dispatchMouseEvent: Move; buttons state changed from ", _mouseCaptureButtons, " to ", currentButtons, " - cancelling capture");
 						return dispatchCancel(event);
+                    }
                     // point is no more inside of captured widget
                     if (!_mouseCaptureFocusedOut) {
                         // sending FocusOut message
@@ -462,15 +485,25 @@ class Window {
                     _mouseCaptureFocusedOut = true;
 					_mouseCaptureButtons = event.flags & (MouseFlag.LButton|MouseFlag.RButton|MouseFlag.MButton);
                     return sendAndCheckOverride(_mouseCaptureWidget, event);
+                } else {
+                    debug(DebugMouseEvents) Log.d("dispatchMouseEvent: mouseCaptureFocusedOut + Leave - cancelling capture");
+                    return dispatchCancel(event);
                 }
                 return true;
+            } else if (event.action == MouseAction.ButtonDown || event.action == MouseAction.ButtonUp) {
+                if (!_mouseCaptureWidget.isPointInside(event.x, event.y)) {
+					if (currentButtons != _mouseCaptureButtons) {
+                        debug(DebugMouseEvents) Log.d("dispatchMouseEvent: ButtonUp/ButtonDown; buttons state changed from ", _mouseCaptureButtons, " to ", currentButtons, " - cancelling capture");
+						return dispatchCancel(event);
+                    }
+                }
             }
             // other messages
             res = sendAndCheckOverride(_mouseCaptureWidget, event);
             if (!currentButtons) {
                 // usable capturing - no more buttons pressed
-				debug(mouse) Log.d("unsetting active widget");
-                _mouseCaptureWidget = null;
+				debug(DebugMouseEvents) Log.d("unsetting active widget");
+                clearMouseCapture();
             }
             return res;
         }

@@ -23,6 +23,10 @@ version (USE_OPENGL) {
     import dlangui.graphics.glsupport;
 }
 
+// specify debug=DebugMouseEvents for logging mouse handling
+// specify debug=DebugRedraw for logging drawing and layouts handling
+// specify debug=DebugKeys for logging of key events
+
 pragma(lib, "gdi32.lib");
 pragma(lib, "user32.lib");
 
@@ -461,7 +465,7 @@ class Win32Window : Window {
 
     private bool _mouseTracking;
 	private bool onMouse(uint message, uint flags, short x, short y) {
-		//Log.d("Win32 Mouse Message ", message, " flags=", flags, " x=", x, " y=", y);
+		debug(DebugMouseEvents) Log.d("Win32 Mouse Message ", message, " flags=", flags, " x=", x, " y=", y);
         MouseButton button = MouseButton.None;
         MouseAction action = MouseAction.ButtonDown;
         ButtonDetails * pbuttonDetails = null;
@@ -501,7 +505,7 @@ class Win32Window : Window {
                 pbuttonDetails = &_mbutton;
                 break;
             case WM_MOUSELEAVE:
-                Log.d("WM_MOUSELEAVE");
+                debug(DebugMouseEvents) Log.d("WM_MOUSELEAVE");
                 action = MouseAction.Leave;
                 break;
             case WM_MOUSEWHEEL:
@@ -525,15 +529,17 @@ class Win32Window : Window {
         } else if (action == MouseAction.ButtonUp) {
             pbuttonDetails.up(x, y, cast(ushort)flags);
         }
-        if (((message == WM_MOUSELEAVE) || (x < 0 || y < 0 || x > _dx || y > _dy)) && _mouseTracking) {
-            action = MouseAction.Leave;
-            Log.d("WM_MOUSELEAVE - releasing capture");
-            _mouseTracking = false;
-            ReleaseCapture();
+        if (((message == WM_MOUSELEAVE) || (x < 0 || y < 0 || x >= _dx || y >= _dy)) && _mouseTracking) {
+            if (!isMouseCaptured() || (!_lbutton.isDown && !_rbutton.isDown && !_mbutton.isDown)) {
+                action = MouseAction.Leave;
+                debug(DebugMouseEvents) Log.d("Win32Window.onMouse releasing capture");
+                _mouseTracking = false;
+                ReleaseCapture();
+            }
         }
         if (message != WM_MOUSELEAVE && !_mouseTracking) {
             if (x >=0 && y >= 0 && x < _dx && y < _dy) {
-                Log.d("Setting capture");
+                debug(DebugMouseEvents) Log.d("Win32Window.onMouse Setting capture");
                 _mouseTracking = true;
                 SetCapture(_hwnd);
             }
@@ -544,7 +550,7 @@ class Win32Window : Window {
         event.mbutton = _mbutton;
 		bool res = dispatchMouseEvent(event);
         if (res) {
-            Log.d("Calling update() after mouse event");
+            //Log.v("Calling update() after mouse event");
             update();
         }
         return res;
@@ -587,7 +593,7 @@ class Win32Window : Window {
             res = dispatchKeyEvent(event);
         }
         if (res) {
-            Log.d("Calling update() after key event");
+            debug(DebugRedraw) Log.d("Calling update() after key event");
             update();
         }
         return res;

@@ -475,10 +475,16 @@ class ScrollBar : AbstractSlider, OnClickHandler {
                 return true;
             }
             if (event.action == MouseAction.FocusOut && _dragging) {
+                Log.d("ScrollBar slider dragging - FocusOut");
+                return true;
+            }
+            if (event.action == MouseAction.FocusIn && _dragging) {
+                Log.d("ScrollBar slider dragging - FocusIn");
                 return true;
             }
             if (event.action == MouseAction.Move && _dragging) {
                 int delta = _orientation == Orientation.Vertical ? event.y - _dragStart.y : event.x - _dragStart.x;
+                Log.d("ScrollBar slider dragging - Move delta=", delta);
                 Rect rc = _dragStartRect;
                 int offset;
                 int space;
@@ -529,9 +535,16 @@ class ScrollBar : AbstractSlider, OnClickHandler {
                 }
 	            return true;
             }
-            if ((event.action == MouseAction.Leave || event.action == MouseAction.Cancel) && trackHover) {
+            if (event.action == MouseAction.Leave && trackHover) {
                 Log.d("Leave ", id);
 	            resetState(State.Hovered);
+	            return true;
+            }
+            if (event.action == MouseAction.Cancel && trackHover) {
+                Log.d("Cancel ? trackHover", id);
+	            resetState(State.Hovered);
+                resetState(State.Pressed);
+                _dragging = false;
 	            return true;
             }
             if (event.action == MouseAction.Cancel) {
