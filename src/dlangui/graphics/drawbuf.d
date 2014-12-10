@@ -456,14 +456,29 @@ class ColorDrawBufBase : DrawBuf {
                     for (int yy = 0; yy < dy; yy++) {
                         uint * srcrow = colorDrawBuf.scanLine(srcrect.top + yy) + srcrect.left;
                         uint * dstrow = scanLine(dstrect.top + yy) + dstrect.left;
-                        for (int i = 0; i < dx; i++) {
-                            uint pixel = srcrow[i];
-                            uint alpha = blendAlpha(_alpha, pixel >> 24);
-                            if (!alpha)
-                                dstrow[i] = pixel;
-                            else if (alpha < 255) {
-                                // apply blending
-                                dstrow[i] = blendARGB(dstrow[i], pixel, alpha);
+                        if (!_alpha) {
+                            // simplified version - no alpha blending
+                            for (int i = 0; i < dx; i++) {
+                                uint pixel = srcrow[i];
+                                uint alpha = pixel >> 24;
+                                if (!alpha)
+                                    dstrow[i] = pixel;
+                                else if (alpha < 254) {
+                                    // apply blending
+                                    dstrow[i] = blendARGB(dstrow[i], pixel, alpha);
+                                }
+                            }
+                        } else {
+                            // combine two alphas
+                            for (int i = 0; i < dx; i++) {
+                                uint pixel = srcrow[i];
+                                uint alpha = blendAlpha(_alpha, pixel >> 24);
+                                if (!alpha)
+                                    dstrow[i] = pixel;
+                                else if (alpha < 254) {
+                                    // apply blending
+                                    dstrow[i] = blendARGB(dstrow[i], pixel, alpha);
+                                }
                             }
                         }
 
@@ -482,12 +497,17 @@ class ColorDrawBufBase : DrawBuf {
             res[i] = src0 + i * sd / dd;
         return res;
     }
+
     /// draw source buffer rectangle contents to destination buffer rectangle applying rescaling
     override void drawRescaled(Rect dstrect, DrawBuf src, Rect srcrect) {
         //Log.d("drawRescaled ", dstrect, " <- ", srcrect);
+        if (_alpha >= 254)
+            return; // fully transparent - don't draw
         if (applyClipping(dstrect, srcrect)) {
-            int[] xmap = createMap(dstrect.left, dstrect.right, srcrect.left, srcrect.right);
-            int[] ymap = createMap(dstrect.top, dstrect.bottom, srcrect.top, srcrect.bottom);
+            int[] xmapArray = createMap(dstrect.left, dstrect.right, srcrect.left, srcrect.right);
+            int[] ymapArray = createMap(dstrect.top, dstrect.bottom, srcrect.top, srcrect.bottom);
+            int * xmap = xmapArray.ptr;
+            int * ymap = ymapArray.ptr;
             int dx = dstrect.width;
             int dy = dstrect.height;
             ColorDrawBufBase colorDrawBuf = cast(ColorDrawBufBase) src;
@@ -495,15 +515,32 @@ class ColorDrawBufBase : DrawBuf {
                 for (int y = 0; y < dy; y++) {
                     uint * srcrow = colorDrawBuf.scanLine(ymap[y]);
                     uint * dstrow = scanLine(dstrect.top + y) + dstrect.left;
-                    for (int x = 0; x < dx; x++) {
-                        uint srcpixel = srcrow[xmap[x]];
-                        uint dstpixel = dstrow[x];
-						uint alpha = blendAlpha(_alpha, srcpixel >> 24);
-						if (!alpha)
-                            dstrow[x] = srcpixel;
-                        else if (alpha < 255) {
-                            // apply blending
-                            dstrow[x] = blendARGB(dstpixel, srcpixel, alpha);
+                    if (!_alpha) {
+                        // simplified alpha calculation
+                        for (int x = 0; x < dx; x++) {
+                            uint srcpixel = srcrow[xmap[x]];
+                            uint dstpixel = dstrow[x];
+                            uint alpha = srcpixel >> 24;
+                            if (!alpha)
+                                dstrow[x] = srcpixel;
+                            else if (alpha < 255) {
+                                // apply blending
+                                dstrow[x] = blendARGB(dstpixel, srcpixel, alpha);
+                            }
+                        }
+                    } else {
+                        // blending two alphas
+                        for (int x = 0; x < dx; x++) {
+                            uint srcpixel = srcrow[xmap[x]];
+                            uint dstpixel = dstrow[x];
+                            uint srca = srcpixel >> 24;
+                            uint alpha = !srca ? _alpha : blendAlpha(_alpha, srca);
+                            if (!alpha)
+                                dstrow[x] = srcpixel;
+                            else if (alpha < 255) {
+                                // apply blending
+                                dstrow[x] = blendARGB(dstpixel, srcpixel, alpha);
+                            }
                         }
                     }
                 }
@@ -583,6 +620,7 @@ class ColorDrawBufBase : DrawBuf {
 		//Log.d("NinePatch detected: frame=", p.frame, " padding=", p.padding, " left+right=", p.frame.left + p.frame.right, " dx=", _dx);
         return true;
     }
+
 	override void drawGlyph(int x, int y, Glyph * glyph, uint color) {
         ubyte[] src = glyph.glyph;
         int srcdx = glyph.blackBoxX;
@@ -616,15 +654,16 @@ class ColorDrawBufBase : DrawBuf {
 			}
 		}
 	}
+
     override void fillRect(Rect rc, uint color) {
         if (applyClipping(rc)) {
             for (int y = rc.top; y < rc.bottom; y++) {
                 uint * row = scanLine(y);
                 uint alpha = color >> 24;
-                for (int x = rc.left; x < rc.right; x++) {
-                    if (!alpha)
-                        row[x] = color;
-                    else if (alpha < 255) {
+                if (!alpha) {
+                    row[rc.left .. rc.right] = color;
+                } else if (alpha < 254) {
+                    for (int x = rc.left; x < rc.right; x++) {
                         // apply blending
                         row[x] = blendARGB(row[x], color, alpha);
                     }

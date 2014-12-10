@@ -120,8 +120,9 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
     }
     override void fill(uint color) {
         int len = _dx * _dy;
-        for (int i = 0; i < len; i++)
-            _pixels[i] = color;
+        //for (int i = 0; i < len; i++)
+        //    _pixels[i] = color;
+        _pixels[0 .. len - 1] = color;
     }
     void drawTo(HDC dc, int x, int y) {
         BitBlt(dc, x, y, _dx, _dy, _drawdc, 0, 0, SRCCOPY);

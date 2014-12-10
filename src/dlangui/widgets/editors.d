@@ -357,11 +357,7 @@ class UndoBuffer {
                 return; // merged - no need to add new operation
             }
         }
-        long ts = currentTimeMillis();
         _undoList.pushBack(op);
-        long duration = currentTimeMillis() - ts;
-        if (duration > 3)
-            Log.w("Too long saveForUndo: ", duration, " ms");
     }
 
     /// returns operation to be undone (put it to redo), null if no undo ops available
