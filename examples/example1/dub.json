@@ -17,6 +17,8 @@
         "../../lib/FreeImage.dll"
     ],
 
+    "versions-posix": ["USE_SDL", "USE_OPENGL"],
+
     "mainSourceFile": "src/main.d",
 
     "dependencies": {

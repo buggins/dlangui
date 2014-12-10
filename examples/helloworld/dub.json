@@ -9,6 +9,8 @@
     "targetPath": "bin",
     "targetType": "executable",
 
+    "versions-posix": ["USE_SDL", "USE_OPENGL"],
+
     "sourceFiles": [
          "src/app.d"
     ],

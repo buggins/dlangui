@@ -17,6 +17,8 @@
 			"targetPath": "lib",
 			"targetType": "staticLibrary",
 
+			"versions-posix": ["USE_SDL", "USE_OPENGL"],
+
 			"sourceFiles": [
 				"project.ddoc"
 			],
