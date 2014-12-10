@@ -19,6 +19,12 @@
 
 			"versions-posix": ["USE_SDL", "USE_OPENGL"],
 
+			"copyFiles": ["res"],
+
+    			"copyFiles-windows": [
+			        "lib/FreeImage.dll"
+			],
+
 			"sourceFiles": [
 				"project.ddoc"
 			],

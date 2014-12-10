@@ -13,9 +13,7 @@
          "src/main.d"
     ],
 
-    "copyFiles-windows": [
-        "../../lib/FreeImage.dll"
-    ],
+    "copyFiles": ["res"],
 
     "versions-posix": ["USE_SDL", "USE_OPENGL"],
 
