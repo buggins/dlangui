@@ -1158,10 +1158,6 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         _lineHeight = font.height;
     }
 
-    /// override to update scrollbars - if necessary
-    protected void updateScrollbars() {
-    }
-
     /// when cursor position or selection is out of content bounds, fix it to nearest valid position
     protected void correctCaretPos() {
         _content.correctPosition(_caretPos);
@@ -1770,7 +1766,7 @@ class EditLine : EditWidgetBase {
             _scrollPos.x += (rc.left - _clientRect.width) + _spaceWidth * 4;
             invalidate();
         }
-        updateScrollbars();
+        updateScrollBars();
     }
 
     override protected Point measureVisibleText() {
@@ -2038,7 +2034,7 @@ class EditBox : EditWidgetBase {
             _scrollPos.x += (rc.left - _clientRect.width) + _clientRect.width / 4;
             invalidate();
         }
-        updateScrollbars();    
+        updateScrollBars();
     }
 
     override protected Rect textPosToClient(TextPosition p) {
@@ -2157,7 +2153,7 @@ class EditBox : EditWidgetBase {
                         _caretPos.line -= delta;
                     }
                     measureVisibleText();
-                    updateScrollbars();
+                    updateScrollBars();
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                 }
                 return true;
@@ -2175,7 +2171,7 @@ class EditBox : EditWidgetBase {
                         _caretPos.line += delta;
                     }
                     measureVisibleText();
-                    updateScrollbars();
+                    updateScrollBars();
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                 }
                 return true;
@@ -2186,7 +2182,7 @@ class EditBox : EditWidgetBase {
                         if (newpos < 0)
                             newpos = 0;
                         _scrollPos.x = newpos;
-                        updateScrollbars();
+                        updateScrollBars();
                         invalidate();
                     }
                 }
@@ -2198,7 +2194,7 @@ class EditBox : EditWidgetBase {
                         if (newpos > _maxLineWidth - _clientRect.width)
                             newpos = _maxLineWidth - _clientRect.width;
                         _scrollPos.x = newpos;
-                        updateScrollbars();
+                        updateScrollBars();
                         invalidate();
                     }
                 }
@@ -2210,7 +2206,7 @@ class EditBox : EditWidgetBase {
                         if (_firstVisibleLine < 0)
                             _firstVisibleLine = 0;
                         measureVisibleText();
-                        updateScrollbars();
+                        updateScrollBars();
                         invalidate();
                     }
                 }
@@ -2223,7 +2219,7 @@ class EditBox : EditWidgetBase {
                         if (_firstVisibleLine < 0)
                             _firstVisibleLine = 0;
                         measureVisibleText();
-                        updateScrollbars();
+                        updateScrollBars();
                         invalidate();
                     }
                 }
@@ -2238,7 +2234,7 @@ class EditBox : EditWidgetBase {
                         if (_firstVisibleLine < 0)
                             _firstVisibleLine = 0;
                         measureVisibleText();
-                        updateScrollbars();
+                        updateScrollBars();
                         invalidate();
                     }
                 }
@@ -2253,7 +2249,7 @@ class EditBox : EditWidgetBase {
                         if (_firstVisibleLine < 0)
                             _firstVisibleLine = 0;
                         measureVisibleText();
-                        updateScrollbars();
+                        updateScrollBars();
                         invalidate();
                     }
                 }
@@ -2267,7 +2263,7 @@ class EditBox : EditWidgetBase {
                             fontSize = cast(ushort)newFontSize;
                             updateFontProps();
                             measureVisibleText();
-                            updateScrollbars();
+                            updateScrollBars();
                             invalidate();
                         }
                     }
@@ -2282,7 +2278,7 @@ class EditBox : EditWidgetBase {
                             fontSize = cast(ushort)newFontSize;
                             updateFontProps();
                             measureVisibleText();
-                            updateScrollbars();
+                            updateScrollBars();
                             invalidate();
                         }
                     }
