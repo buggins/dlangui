@@ -18,7 +18,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.graphics.glsupport;
 
-version(USE_OPENGL) {
+version(USE_OPENGL):
 
 import dlangui.core.logger;
 private import derelict.opengl3.gl3;
@@ -757,7 +757,4 @@ void setRotation(int x, int y, int rotationAngle) {
     }
     matrix2.copyDataTo(m);
     */
-}
-
-
 }

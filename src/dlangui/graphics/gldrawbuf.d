@@ -18,7 +18,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.graphics.gldrawbuf;
 
-version (USE_OPENGL) {
+version (USE_OPENGL):
 
 import dlangui.graphics.drawbuf;
 import dlangui.core.logger;
@@ -843,7 +843,4 @@ public:
 	}
 	~this() {
 	}
-}
-
-
 }
