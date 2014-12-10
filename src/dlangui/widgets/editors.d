@@ -292,12 +292,15 @@ class EditOperation {
 		_action = action;
 		_range = range;
 		_content.length = 1;
-		_content[0] = text;
+		_content[0] = text.dup;
 	}
 	this(EditAction action, TextRange range, dstring[] text) {
 		_action = action;
 		_range = range;
-		_content = text;
+        _content.length = text.length;
+        for(int i = 0; i < text.length; i++)
+		    _content[i] = text[i].dup;
+        //_content = text;
 	}
     /// try to merge two operations (simple entering of characters in the same line), return true if succeded
     bool merge(EditOperation op) {
@@ -318,12 +321,12 @@ class EditOperation {
                 _range.start.pos--;
                 _newRange.start.pos--;
                 _newRange.end.pos--;
-                _oldContent[0] = (op._oldContent[0] ~ _oldContent[0]).dup;
+                _oldContent[0] = (op._oldContent[0].dup ~ _oldContent[0].dup).dup;
                 return true;
             } else if (_newRange.end.pos == op._range.start.pos) {
                 // removed char after
                 _range.end.pos++;
-                _oldContent[0] = (_oldContent[0] ~ op._oldContent[0]).dup;
+                _oldContent[0] = (_oldContent[0].dup ~ op._oldContent[0].dup).dup;
                 return true;
             }
         }
@@ -354,7 +357,11 @@ class UndoBuffer {
                 return; // merged - no need to add new operation
             }
         }
+        long ts = currentTimeMillis();
         _undoList.pushBack(op);
+        long duration = currentTimeMillis() - ts;
+        if (duration > 3)
+            Log.w("Too long saveForUndo: ", duration, " ms");
     }
 
     /// returns operation to be undone (put it to redo), null if no undo ops available

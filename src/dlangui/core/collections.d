@@ -82,7 +82,7 @@ struct Collection(T, bool ownItems = false) {
     void add(T item, size_t index = size_t.max) {
         if (index > _len)
             index = _len;
-        if (_items.length >= _len) {
+        if (_items.length <= _len) {
             if (_items.length < 4)
                 _items.length = 4;
             else
