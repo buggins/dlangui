@@ -489,7 +489,6 @@ class Window {
                     debug(DebugMouseEvents) Log.d("dispatchMouseEvent: mouseCaptureFocusedOut + Leave - cancelling capture");
                     return dispatchCancel(event);
                 }
-                return true;
             } else if (event.action == MouseAction.ButtonDown || event.action == MouseAction.ButtonUp) {
                 if (!_mouseCaptureWidget.isPointInside(event.x, event.y)) {
 					if (currentButtons != _mouseCaptureButtons) {
