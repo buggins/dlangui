@@ -44,6 +44,7 @@ Currently implemented widgets:
 * GridWidgetBase - abstract Grid widget
 * StringGrid - grid view with strings content
 * TreeWidget - tree view
+* ComboBox - combo box with text items
 
 Layouts
 -------
@@ -223,6 +224,39 @@ Hello World
 	    return Platform.instance.enterMessageLoop();
 	}
 
+
+Sample dub.json:
+--------------------------------
+
+	{
+	    "name": "myproject",
+	    "description": "sample DLangUI project",
+	    "homepage": "https://github.com/buggins/dlangui",
+	    "license": "Boost",
+	    "authors": ["Vadim Lopatin"],
+	
+	    "targetName": "example",
+	    "targetPath": "bin",
+	    "targetType": "executable",
+	
+	    "sourcePaths": ["src"],
+	
+	    "sourceFiles": [
+	         "src/app.d"
+	    ],
+
+	    "copyFiles-windows": [
+	        "lib/FreeImage.dll"
+	    ],
+
+	    "copyFiles": [
+	        "res"
+	    ],
+
+	    "dependencies": {
+	        "dlangui:dlanguilib": "~master"
+	    }
+	}
 
 
 Sample project

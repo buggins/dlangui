@@ -42,6 +42,10 @@ Ddoc
 <li>TabControl - tabs widget, allows to select one of tabs</li>
 <li>TabHost - container for pages controlled by TabControl</li>
 <li>TabWidget - combination of TabControl and TabHost</li>
+<li>GridWidgetBase - abstract Grid widget</li>
+<li>StringGrid - grid view with strings content</li>
+<li>TreeWidget - tree view</li>
+<li>ComboBox - combo box with text items</li>
 </ul>
 
 <h2><a name="layouts" class="anchor" href="#layouts"><span class="octicon octicon-link"></span></a>Layouts</h2>
@@ -199,6 +203,8 @@ standard values are used.</li>
 </ul><h2>
 <a name="hello-world" class="anchor" href="#hello-world"><span class="octicon octicon-link"></span></a>Hello World</h2>
 
+Sample code:
+
 ------------------------------------------
 // main.d
 import dlangui.all;
@@ -230,3 +236,39 @@ extern (C) int UIAppMain(string[] args) {
 }
 --------------------------------
 
+Sample dub.json:
+--------------------------------
+{
+    "name": "myproject",
+    "description": "sample DLangUI project",
+    "homepage": "https://github.com/buggins/dlangui",
+    "license": "Boost",
+    "authors": ["Vadim Lopatin"],
+
+    "targetName": "example",
+    "targetPath": "bin",
+    "targetType": "executable",
+
+    "sourcePaths": ["src"],
+
+    "sourceFiles": [
+         "src/app.d"
+    ],
+
+    "copyFiles-windows": [
+        "lib/FreeImage.dll"
+    ],
+
+    "copyFiles": [
+        "res"
+    ],
+
+    "dependencies": {
+        "dlangui:dlanguilib": "~master"
+    }
+}
+--------------------------------
+
+There is sample project which is using DLangUI.
+
+<a href="https://github.com/buggins/dlangide">https://github.com/buggins/dlangide</a>
