@@ -20,6 +20,7 @@ module dlangui.widgets.lists;
 
 import dlangui.widgets.widget;
 import dlangui.widgets.controls;
+import dlangui.core.signals;
 
 /// list widget adapter provides items for list widgets
 interface ListAdapter {
@@ -155,8 +156,25 @@ class StringListAdapter : ListAdapter {
     }
 }
 
-/// List
+/** interface - slot for onItemSelectedListener */
+interface OnItemSelectedHandler {
+    bool onItemSelected(Widget source, int itemIndex);
+}
+
+/** interface - slot for onItemClickListener */
+interface OnItemClickHandler {
+    bool onItemClick(Widget source, int itemIndex);
+}
+
+
+/** List widget - shows content as hori*/
 class ListWidget : WidgetGroup, OnScrollHandler {
+
+    /** Handle selection change. */
+    Signal!OnItemSelectedHandler onItemSelectedListener;
+    /** Handle item click. */
+    Signal!OnItemSelectedHandler onItemClickListener;
+
     protected Orientation _orientation = Orientation.Vertical;
     /// returns linear layout orientation (Vertical, Horizontal)
     @property Orientation orientation() { return _orientation; }
@@ -308,10 +326,14 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 
 	/// override to handle change of selection
 	protected void selectionChanged(int index, int previouslySelectedItem = -1) {
+        if (onItemSelectedListener.assigned)
+            onItemSelectedListener(this, index);
 	}
 
 	/// override to handle mouse up on item
 	protected void itemClicked(int index) {
+        if (onItemClickListener.assigned)
+            onItemClickListener(this, index);
 	}
 
     protected void updateSelectedItemFocus() {

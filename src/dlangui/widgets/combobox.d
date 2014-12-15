@@ -1,3 +1,30 @@
+// Written in the D programming language.
+
+/**
+This module contains Combo Box widgets implementation.
+
+
+
+Synopsis:
+
+----
+import dlangui.widgets.combobox;
+
+// creation of simple strings list
+ComboBox box = new ComboBox("combo1", ["value 1"d, "value 2"d, "value 3"d]);
+
+// select first item
+box.selectedItemIndex = 0;
+
+// get selected item text
+println(box.text);
+
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   Boost License 1.0
+Authors:   Vadim Lopatin, coolreader.org@gmail.com
+*/
 module dlangui.widgets.combobox;
 
 import dlangui.widgets.widget;
@@ -5,15 +32,20 @@ import dlangui.widgets.layouts;
 import dlangui.widgets.editors;
 import dlangui.widgets.lists;
 import dlangui.widgets.controls;
+import dlangui.widgets.popup;
 
 private import std.algorithm;
 
+/** Abstract ComboBox. */
 class ComboBoxBase : HorizontalLayout, OnClickHandler {
     protected Widget _body;
     protected ImageButton _button;
     protected ListAdapter _adapter;
     protected bool _ownAdapter;
     protected int _selectedItemIndex;
+
+    /** Handle item click. */
+    Signal!OnItemSelectedHandler onItemClickListener;
 
     protected Widget createSelectedItemWidget() {
         Widget res;
@@ -34,11 +66,15 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
     }
 
     @property void selectedItemIndex(int index) {
+        if (_selectedItemIndex == index)
+            return;
         _selectedItemIndex = index;
+        if (onItemClickListener.assigned)
+            onItemClickListener(this, index);
     }
 
     override bool onClick(Widget source) {
-        // TODO
+        showPopup();
         return true;
     }
 
@@ -48,17 +84,56 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         return res;
     }
 
+    protected ListWidget createPopup() {
+        ListWidget list = new ListWidget("POPUP_LIST");
+        list.adapter = _adapter;
+        list.selectedItemIndex = _selectedItemIndex;
+        return list;
+    }
+
+    protected PopupWidget _popup;
+    protected ListWidget _popupList;
+
+    protected void showPopup() {
+        _popupList = createPopup();
+        _popup = window.showPopup(_popupList, this, PopupAlign.Below | PopupAlign.FitAnchorSize);
+        _popup.flags = PopupFlags.CloseOnClickOutside;
+        _popup.styleId = "POPUP_MENU";
+        _popup.onPopupCloseListener = delegate (PopupWidget source) {
+            _popup = null;
+            _popupList = null;
+        };
+        _popupList.onItemSelectedListener = delegate(Widget source, int index) {
+            selectedItemIndex = index;
+            return true;
+        };
+        _popupList.onItemClickListener = delegate(Widget source, int index) {
+            selectedItemIndex = index;
+            if (_popup !is null)
+                _popup.close();
+            return true;
+        };
+        _popupList.setFocus();
+    }
+
     this(string ID, ListAdapter adapter, bool ownAdapter = true) {
         super(ID);
         _adapter = adapter;
         _ownAdapter = ownAdapter;
         _body = createSelectedItemWidget();
+        _body.onClickListener = this;
         _button = createButton();
+        //_body.state = State.Parent;
+        //focusable = true;
+        _button.focusable = false;
+        _body.focusable = true;
         addChild(_body);
         addChild(_button);
     }
 }
 
+
+/** ComboBox with list of strings. */
 class ComboBox : ComboBoxBase {
     
     protected StringListAdapter _adapter;

@@ -22,6 +22,7 @@ module dlangui.widgets.popup;
 
 import dlangui.widgets.widget;
 import dlangui.widgets.layouts;
+import dlangui.core.signals;
 import dlangui.platforms.common.platform;
 
 /// popup alignment option flags
@@ -34,6 +35,8 @@ enum PopupAlign : uint {
     Right = 4,
 	/// align to specified point
 	Point = 8,
+    /// if popup content size is less than anchor's size, increase it to anchor size
+    FitAnchorSize = 16,
 }
 
 struct PopupAnchor {
@@ -49,17 +52,24 @@ enum PopupFlags : uint {
     CloseOnClickOutside = 1,
 }
 
+/** interface - slot for onPopupCloseListener */
+interface OnPopupCloseHandler {
+    void onPopupClosed(PopupWidget source);
+}
+
 /// popup widget container
 class PopupWidget : LinearLayout {
     protected PopupAnchor _anchor;
     protected bool _modal;
 
     protected uint _flags;
-    protected void delegate(PopupWidget popup) _onPopupCloseListener;
+    /** popup close signal */
+    Signal!OnPopupCloseHandler onPopupCloseListener;
+    //protected void delegate(PopupWidget popup) _onPopupCloseListener;
     /// popup close listener (called right before closing)
-    @property void delegate(PopupWidget popup) onPopupCloseListener() { return _onPopupCloseListener; }
+    //@property void delegate(PopupWidget popup) onPopupCloseListener() { return _onPopupCloseListener; }
     /// set popup close listener (to call right before closing)
-    @property PopupWidget onPopupCloseListener(void delegate(PopupWidget popup) listener) { _onPopupCloseListener = listener; return this; }
+    //@property PopupWidget onPopupCloseListener(void delegate(PopupWidget popup) listener) { _onPopupCloseListener = listener; return this; }
 
     /// returns popup behavior flags (combination of PopupFlags)
     @property uint flags() { return _flags; }
@@ -84,8 +94,8 @@ class PopupWidget : LinearLayout {
 
     /// just call on close listener
     void onClose() {
-        if (_onPopupCloseListener !is null)
-            _onPopupCloseListener(this);
+        if (onPopupCloseListener.assigned)
+            onPopupCloseListener(this);
     }
 
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
@@ -124,6 +134,9 @@ class PopupWidget : LinearLayout {
 	            r.left = anchorrc.right;
 	            r.top = anchorrc.top;
 	        }
+            if (anchor.alignment & PopupAlign.FitAnchorSize)
+                if (w < anchorrc.width)
+                    w = anchorrc.width;
 		}
         r.right = r.left + w;
         r.bottom = r.top + h;
