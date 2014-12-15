@@ -25,7 +25,7 @@ import std.utf;
 
 mixin APP_ENTRY_POINT;
 
-Widget createAboutWidget() 
+Widget createAboutWidget()
 {
 	LinearLayout res = new VerticalLayout();
 	res.padding(Rect(10,10,10,10));
@@ -521,6 +521,12 @@ extern (C) int UIAppMain(string[] args) {
 		// row 3
 		table.addChild((new TextWidget(null, "Param 3"d)).alignment(Align.Right | Align.VCenter));
 		table.addChild((new EditLine("edit3", "Parameter 3 value"d)).layoutWidth(FILL_PARENT));
+
+        ComboBox combo1 = new ComboBox("combo1", ["item value 1"d, "item value 2"d, "item value 3"d, "item value 4"d, "item value 5"d, "item value 6"d]);
+		table.addChild((new TextWidget(null, "Combo box param"d)).alignment(Align.Right | Align.VCenter));
+        combo1.selectedItemIndex(3);
+		table.addChild(combo1).layoutWidth(FILL_PARENT);
+
 		table.margins(Rect(10,10,10,10)).layoutWidth(FILL_PARENT);
 		tabs.addTab(table, "TAB_TABLE_LAYOUT"c);
 
@@ -691,7 +697,6 @@ extern (C) int UIAppMain(string[] args) {
             dstring label = "Selected item: "d ~ toUTF32(selectedItem.id) ~ (activated ? " selected + activated"d : " selected"d);
             treeItemLabel.text = label;
         };
-
 
         tree.items.selectItem(tree.items.child(0));
 

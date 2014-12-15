@@ -420,6 +420,15 @@ class ListWidget : WidgetGroup, OnScrollHandler {
         return false;
     }
 
+    /** Selected item index. */
+    @property int selectedItemIndex() {
+        return _selectedItemIndex;
+    }
+
+    @property void selectedItemIndex(int index) {
+        selectItem(index);
+    }
+
 	bool selectItem(int index) {
         debug Log.d("selectItem ", index);
 		if (_selectedItemIndex == index) {

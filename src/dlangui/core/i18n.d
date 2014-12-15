@@ -41,20 +41,21 @@ module dlangui.core.i18n;
 import dlangui.core.types;
 import dlangui.core.logger;
 private import dlangui.core.linestream;
-import std.utf;
+private import std.utf;
+private import std.algorithm;
 
-/// container for UI string - either raw value or string resource ID
+/** container for UI string - either raw value or string resource ID */
 struct UIString {
-    /// if not null, use it, otherwise lookup by id
+    /** if not null, use it, otherwise lookup by id */
     private dstring _value;
-    /// id to find value in translator
+    /** id to find value in translator */
     private string _id;
 
-    /// create string with i18n resource id
+    /** create string with i18n resource id */
     this(string id) {
         _id = id;
     }
-    /// create string with raw value
+    /** create string with raw value */
     this(dstring value) {
         _value = value;
     }
@@ -66,7 +67,7 @@ struct UIString {
         _id = ID;
         _value = null;
     }
-    /// get value (either raw or translated by id)
+    /** get value (either raw or translated by id) */
     @property dstring value() const { 
         if (_value !is null)
             return _value;
@@ -75,27 +76,27 @@ struct UIString {
         // translate ID to dstring
         return i18n.get(_id); 
     }
-    /// set raw value
+    /** set raw value */
     @property void value(dstring newValue) {
         _value = newValue;
     }
-    /// assign raw value
+    /** assign raw value */
     ref UIString opAssign(dstring rawValue) {
         _value = rawValue;
         _id = null;
         return this;
     }
-    /// assign ID
+    /** assign ID */
     ref UIString opAssign(string ID) {
         _id = ID;
         _value = null;
         return this;
     }
-    /// default conversion to dstring
+    /** default conversion to dstring */
     alias value this;
 }
 
-/** UIString item collection */
+/** UIString item collection. */
 struct UIStringCollection {
     private UIString[] _items;
     private int _length;
@@ -201,13 +202,38 @@ struct UIStringCollection {
             _items[i] = _items[i + 1];
         _length--;
     }
+    /** Return index of first item with specified text or -1 if not found. */
+    int indexOf(dstring str) {
+        for (int i = 0; i < _length; i++) {
+            if (_items[i].value.equal(str))
+                return i;
+        }
+        return -1;
+    }
+    /** Return index of first item with specified string resource id or -1 if not found. */
+    int indexOf(string strId) {
+        for (int i = 0; i < _length; i++) {
+            if (_items[i].id.equal(strId))
+                return i;
+        }
+        return -1;
+    }
+    /** Return index of first item with specified string or -1 if not found. */
+    int indexOf(UIString str) {
+        if (str.id !is null)
+            return indexOf(str.id);
+        return indexOf(str.value);
+    }
 }
 
+/** UI Strings internationalization translator. */
 synchronized class UIStringTranslator {
+
     private UIStringList _main;
     private UIStringList _fallback;
     private string[] _resourceDirs;
-    /// looks for i18n directory inside one of passed dirs, and uses first found as directory to read i18n files from
+
+    /** looks for i18n directory inside one of passed dirs, and uses first found as directory to read i18n files from */
     void findTranslationsDir(string[] dirs ...) {
         _resourceDirs.length = 0;
         import std.file;
@@ -220,7 +246,7 @@ synchronized class UIStringTranslator {
         }
     }
 
-    /// convert resource path - append resource dir if necessary
+    /** convert resource path - append resource dir if necessary */
     string[] convertResourcePaths(string filename) {
         if (filename is null)
             return null;
@@ -242,7 +268,8 @@ synchronized class UIStringTranslator {
         _main = new shared UIStringList();
         _fallback = new shared UIStringList();
     }
-    /// load translation file(s)
+
+    /** load translation file(s) */
     bool load(string mainFilename, string fallbackFilename = null) {
         _main.clear();
         _fallback.clear();
@@ -253,7 +280,7 @@ synchronized class UIStringTranslator {
         return res;
     }
 
-    /// translate string ID to string (returns "UNTRANSLATED: id" for missing values)
+    /** translate string ID to string (returns "UNTRANSLATED: id" for missing values) */
     dstring get(string id) {
         if (id is null)
             return null;
@@ -267,7 +294,7 @@ synchronized class UIStringTranslator {
     }
 }
 
-/// UI string translator
+/** UI string translator */
 private shared class UIStringList {
     private dstring[string] _map;
     /// remove all items
@@ -338,6 +365,7 @@ private shared class UIStringList {
     }
 }
 
+/** Global translator object. */
 shared UIStringTranslator i18n;
 shared static this() {
     i18n = new shared UIStringTranslator();
