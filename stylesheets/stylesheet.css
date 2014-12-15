@@ -165,10 +165,9 @@ pre code {
   padding: 0;
 }
 
-ul, ol, dl {
+ul, ol {
   margin-bottom: 20px;
 }
-
 
 /* COMMON STYLES */
 
@@ -210,7 +209,7 @@ form {
   
 }
 
-dd, .d_decl_dd
+.d_decl_dd
 {
 	padding: 1ex;
 	margin-left: 3em;
@@ -281,10 +280,6 @@ ul li {
 ol li {
   list-style: decimal inside;
   padding-left: 3px;
-}
-
-dl dt {
-  color: #303030;
 }
 
 footer {
@@ -476,7 +471,7 @@ pre
 	word-wrap: break-word;       /* Internet Explorer 5.5+ */
 }
 
-dd, .d_decl_dd
+.d_decl_dd
 {
 	padding: 1ex;
 	margin-left: 3em;
@@ -1181,4 +1176,51 @@ input.runButton:active, input.resetButton:active, input.argsButton:active, input
 { position: relative; top: 1px; }
 input.resetButton{display: none}
 /* Runnable-examples css -end */
+
+
+
+
+
+dl {
+  margin: 10px;
+  border-color: #888;
+  border-width: 1px;
+  border-style: none;
+  padding: 10px;
+}
+
+dl dl {
+  margin: 5px;
+  border-width: 1px;
+  border-style: dashed;
+  border-color: #8888;
+  padding: 10px;
+  background-color: #E0E0E0;
+}
+
+dd {
+  color: #000000;
+}
+
+dl dd {
+  color: #203030;
+  background-color: #EEEEEE;
+  margin-bottom: 0.5em;
+  margin-left: 0px;
+  padding-left: 4em;
+}
+
+dl dt {
+  margin-top: 1.5em;
+  background-color: #CCC;
+  color: #800;
+  font-weight: bold;
+}
+
+dl dl dt {
+  margin-top: 1em;
+  background-color: #FFFFFFFF;
+  color: #008;
+}
+
 
