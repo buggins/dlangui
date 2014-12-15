@@ -65,6 +65,96 @@ class WidgetListAdapter : ListAdapter {
     }
 }
 
+/** List adapter providing strings only. */
+class StringListAdapter : ListAdapter {
+    protected UIStringCollection _items;
+    protected uint[] _states;
+    protected TextWidget _widget;
+    protected int _lastItemIndex;
+
+    /** create empty string list adapter. */
+    this() {
+        _lastItemIndex = -1;
+    }
+
+    /** Init with array of string resource IDs. */
+    this(string[] items) {
+        _items.addAll(items);
+        _lastItemIndex = -1;
+        updateStatesLength();
+    }
+
+    /** Init with array of unicode strings. */
+    this(dstring[] items) {
+        _items.addAll(items);
+        _lastItemIndex = -1;
+        updateStatesLength();
+    }
+
+    /** Access to items collection. */
+    @property ref UIStringCollection items() { return _items; }
+
+    /// returns number of widgets in list
+    @property override int itemCount() {
+        return _items.length;
+    }
+
+    protected void updateStatesLength() {
+        if (_states.length < _items.length) {
+            int oldlen = _states.length;
+            _states.length = _items.length;
+            for (int i = oldlen; i < _items.length; i++)
+                _states[i] = State.Enabled;
+        }
+    }
+
+    /// return list item widget by item index
+    override Widget itemWidget(int index) {
+        updateStatesLength();
+        if (_widget is null) {
+            _widget = new TextWidget("LIST_ITEM");
+            _widget.styleId = "LIST_ITEM";
+        } else {
+            if (index == _lastItemIndex)
+                return _widget;
+        }
+        // update widget
+        _widget.text = _items.get(index);
+        _widget.state = _states[index];
+        _lastItemIndex = index;
+        return _widget;
+    }
+
+	/// return list item's state flags
+	override uint itemState(int index) {
+        updateStatesLength();
+        return _states[index];
+	}
+
+	/// set one or more list item's state flags, returns updated state
+	override uint setItemState(int index, uint flags) {
+        updateStatesLength();
+        _states[index] |= flags;
+        if (_widget !is null && _lastItemIndex == index)
+            _widget.state = _states[index];
+        return _states[index];
+	}
+	/// reset one or more list item's state flags, returns updated state
+	override uint resetItemState(int index, uint flags) {
+        updateStatesLength();
+        _states[index] &= ~flags;
+        if (_widget !is null && _lastItemIndex == index)
+            _widget.state = _states[index];
+		return _states[index];
+	}
+
+    ~this() {
+        //Log.d("Destroying StringListAdapter");
+        if (_widget)
+            destroy(_widget);
+    }
+}
+
 /// List
 class ListWidget : WidgetGroup, OnScrollHandler {
     protected Orientation _orientation = Orientation.Vertical;

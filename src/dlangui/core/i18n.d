@@ -95,9 +95,112 @@ struct UIString {
     alias value this;
 }
 
-shared UIStringTranslator i18n;
-shared static this() {
-    i18n = new shared UIStringTranslator();
+/** UIString item collection */
+struct UIStringCollection {
+    private UIString[] _items;
+    private int _length;
+
+    /** returns number of items */
+    @property int length() { return _length; }
+    /** slice */
+    UIString[] opIndex() {
+        return _items[0 .. _length];
+    }
+    /** slice */
+    UIString[] opSlice() {
+        return _items[0 .. _length];
+    }
+    /** slice */
+    UIString[] opSlice(size_t start, size_t end) {
+        return _items[start .. end];
+    }
+    /** read item by index */
+    UIString opIndex(size_t index) {
+        return _items[index];
+    }
+    /** modify item by index */
+    UIString opIndexAssign(UIString value, size_t index) {
+        _items[index] = value;
+        return _items[index];
+    }
+    /** return unicode string for item by index */
+    dstring get(size_t index) {
+        return _items[index].value;
+    }
+    /** Assign UIStringCollection */
+    void opAssign(ref UIStringCollection items) {
+        clear();
+        addAll(items);
+    }
+    /** Append UIStringCollection */
+    void addAll(ref UIStringCollection items) {
+        foreach (UIString item; items) {
+            add(item);
+        }
+    }
+    /** Assign array of string resource IDs */
+    void opAssign(string[] items) {
+        clear();
+        addAll(items);
+    }
+    /** Append array of string resource IDs */
+    void addAll(string[] items) {
+        foreach (string item; items) {
+            add(item);
+        }
+    }
+    /** Assign array of unicode strings */
+    void opAssign(dstring[] items) {
+        clear();
+        addAll(items);
+    }
+    /** Append array of unicode strings */
+    void addAll(dstring[] items) {
+        foreach (dstring item; items) {
+            add(item);
+        }
+    }
+    /** remove all items */
+    void clear() {
+        _items.length = 0;
+        _length = 0;
+    }
+    /** Insert resource id item into specified position */
+    void add(string item, int index = -1) {
+        UIString s;
+        s = item;
+        add(s, index);
+    }
+    /** Insert unicode string item into specified position */
+    void add(dstring item, int index = -1) {
+        UIString s;
+        s = item;
+        add(s, index);
+    }
+    /** Insert UIString item into specified position */
+    void add(UIString item, int index = -1) {
+        if (index < 0 || index > _length)
+            index = _length;
+        if (_items.length < _length + 1) {
+            if (_items.length < 8)
+                _items.length = 8;
+            else
+                _items.length = _items.length * 2;
+        }
+        for (size_t i = _length; i > index; i--) {
+            _items[i] = _items[i + 1];
+        }
+        _items[index] = item;
+        _length++;
+    }
+    /** Remove item with specified index */
+    void remove(int index) {
+        if (index < 0 || index >= _length)
+            return;
+        for (size_t i = index; i < _length - 1; i++)
+            _items[i] = _items[i + 1];
+        _length--;
+    }
 }
 
 synchronized class UIStringTranslator {
@@ -149,6 +252,7 @@ synchronized class UIStringTranslator {
         }
         return res;
     }
+
     /// translate string ID to string (returns "UNTRANSLATED: id" for missing values)
     dstring get(string id) {
         if (id is null)
@@ -232,4 +336,9 @@ private shared class UIStringList {
         }
         return res;
     }
+}
+
+shared UIStringTranslator i18n;
+shared static this() {
+    i18n = new shared UIStringTranslator();
 }

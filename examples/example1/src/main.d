@@ -375,10 +375,24 @@ extern (C) int UIAppMain(string[] args) {
         tabs.addTab(layout, "Tab 1"d);
 
         static if (true) {
-            ListWidget list = new ListWidget("tab2", Orientation.Vertical);
+            // two long lists
+            // left one is list with widgets as items
+            // right one is list with string list adapter
+            HorizontalLayout longLists = new HorizontalLayout("tab2");
+            longLists.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+
+            ListWidget list = new ListWidget("list1", Orientation.Vertical);
+            list.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+
+            StringListAdapter stringList = new StringListAdapter();
             WidgetListAdapter listAdapter = new WidgetListAdapter();
-            for (int i = 0; i < 1000; i++)
-                listAdapter.widgets.add((new TextWidget()).text("List item "d ~ to!dstring(i)).styleId("LIST_ITEM"));
+            listAdapter.widgets.add((new TextWidget()).text("This is a list of widgets"d).styleId("LIST_ITEM"));
+            stringList.items.add("This is a list of strings from StringListAdapter"d);
+            for (int i = 1; i < 1000; i++) {
+                dstring label = "List item "d ~ to!dstring(i);
+                listAdapter.widgets.add((new TextWidget()).text("Widget list - "d ~ label).styleId("LIST_ITEM"));
+                stringList.items.add("Simple string - "d ~ label);
+            }
             list.ownAdapter = listAdapter;
             listAdapter.resetItemState(0, State.Enabled);
             listAdapter.resetItemState(5, State.Enabled);
@@ -388,7 +402,16 @@ extern (C) int UIAppMain(string[] args) {
             assert(list.itemEnabled(6) == true);
             list.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
             list.selectItem(0);
-            tabs.addTab(list, "TAB_LONG_LIST"c);
+
+            longLists.addChild(list);
+
+            ListWidget list2 = new ListWidget("list2");
+            list2.ownAdapter = stringList;
+            list2.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+            list2.selectItem(0);
+            longLists.addChild(list2);
+
+            tabs.addTab(longLists, "TAB_LONG_LIST"c);
         }
 
         {
