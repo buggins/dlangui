@@ -41,7 +41,7 @@ module dlangui.core.types;
 
 import std.algorithm;
 
-/// 2D point
+/**  2D point */
 struct Point {
     /// x coordinate
     int x;
@@ -53,7 +53,7 @@ struct Point {
     }
 }
 
-/// 2D rectangle
+/**  2D rectangle */
 struct Rect {
     /// x coordinate of top left corner
     int left;
@@ -165,7 +165,7 @@ struct Rect {
     }
 }
 
-/// character glyph
+/** character glyph */
 align(1)
 struct Glyph
 {
@@ -191,7 +191,7 @@ struct Glyph
     ubyte[] glyph;       
 }
 
-/// base class for reference counted objects, maintains reference counter inplace.
+/** base class for reference counted objects, maintains reference counter inplace. */
 class RefCountedObject {
     protected int _refCount;
     @property int refCount() const { return _refCount; }
@@ -205,7 +205,7 @@ class RefCountedObject {
     ~this() {}
 }
 
-/// reference counting
+/** reference counting support */
 struct Ref(T) { // if (T is RefCountedObject)
     private T _data;
     alias get this;
@@ -252,18 +252,18 @@ struct Ref(T) { // if (T is RefCountedObject)
             _data.addRef();
 		return this;
     }
-    /// clears reference
+    /** clears reference */
     void clear() { 
         if (_data !is null) {
             _data.releaseRef();
             _data = null;
         }
     }
-    /// returns object reference (null if not assigned)
+    /** returns object reference (null if not assigned) */
 	@property T get() {
 		return _data;
 	}
-    /// returns const reference from const object
+    /** returns const reference from const object */
 	@property const(T) get() const {
 		return _data;
 	}
@@ -296,6 +296,7 @@ string fromStringz(const(char*) s) {
 }
 */
 
+/** conversion from wchar z-string */
 wstring fromWStringz(const(wchar[]) s) {
     if (s is null)
         return null;
@@ -305,6 +306,7 @@ wstring fromWStringz(const(wchar[]) s) {
 	return cast(wstring)(s[0..i].dup);
 }
 
+/** conversion from wchar z-string */
 wstring fromWStringz(const(wchar) * s) {
     if (s is null)
         return null;
@@ -316,7 +318,7 @@ wstring fromWStringz(const(wchar) * s) {
 
 
 
-/// widget state flags - bits
+/** widget state flags - bits */
 enum State : uint {
     /// state not specified / normal
     Normal = 4, // Normal is Enabled
@@ -333,7 +335,7 @@ enum State : uint {
     Parent = 0x10000, // use parent's state
 }
 
-/// uppercase unicode character
+/** uppercase unicode character */
 dchar dcharToUpper(dchar ch) {
 	// TODO: support non-ascii letters
 	if (ch >= 'a' && ch <= 'z')
@@ -347,12 +349,12 @@ version (Windows) {
     immutable char PATH_DELIMITER = '/';
 }
 
-/// returns true if char ch is / or \ slash
+/** returns true if char ch is / or \ slash */
 bool isPathDelimiter(char ch) {
     return ch == '/' || ch == '\\';
 }
 
-/// returns current executable path only, including last path delimiter
+/** returns current executable path only, including last path delimiter */
 @property string exePath() {
     import std.file;
     string path = thisExePath();
@@ -377,13 +379,13 @@ char[] convertPathDelimiters(char[] buf) {
     return buf;
 }
 
-/// converts path delimiters to standard for platform (e.g. / to \ on windows, \ to / on posix)
+/** converts path delimiters to standard for platform (e.g. / to \ on windows, \ to / on posix) */
 string convertPathDelimiters(string src) {
     char[] buf = src.dup;
     return cast(string)convertPathDelimiters(buf);
 }
 
-/// appends file path parts with proper delimiters e.g. appendPath("/home/user", ".myapp", "config") => "/home/user/.myapp/config"
+/** appends file path parts with proper delimiters e.g. appendPath("/home/user", ".myapp", "config") => "/home/user/.myapp/config" */
 string appendPath(string[] pathItems ...) {
     char[] buf;
     foreach (s; pathItems) {
@@ -394,7 +396,7 @@ string appendPath(string[] pathItems ...) {
     return convertPathDelimiters(buf).dup;
 }
 
-/// appends file path parts with proper delimiters (as well converts delimiters inside path to system) to buffer e.g. appendPath("/home/user", ".myapp", "config") => "/home/user/.myapp/config"
+/**  appends file path parts with proper delimiters (as well converts delimiters inside path to system) to buffer e.g. appendPath("/home/user", ".myapp", "config") => "/home/user/.myapp/config" */
 char[] appendPath(char[] buf, string[] pathItems ...) {
     foreach (s; pathItems) {
         if (buf.length && !isPathDelimiter(buf[$-1]))
@@ -404,7 +406,7 @@ char[] appendPath(char[] buf, string[] pathItems ...) {
     return convertPathDelimiters(buf);
 }
 
-/// split path into elements (e.g. /home/user/dir1 -> ["home", "user", "dir1"], "c:\dir1\dir2" -> ["c:", "dir1", "dir2"]
+/** split path into elements, e.g. /home/user/dir1 -> ["home", "user", "dir1"], "c:\dir1\dir2" -> ["c:", "dir1", "dir2"] */
 string[] splitPath(string path) {
 	string[] res;
 	int start = 0;
