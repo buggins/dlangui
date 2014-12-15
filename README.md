@@ -5,6 +5,8 @@ GUI for D programming language, written in D.
 
 Project page: http://buggins.github.io/dlangui/
 
+Documentation: http://buggins.github.io/dlangui/
+
 Some screenshots: http://buggins.github.io/dlangui/screenshots.html
 
 
