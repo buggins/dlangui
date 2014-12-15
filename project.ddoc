@@ -81,6 +81,8 @@ MODULE_TREE	= <ul>
 			<li><a href="tree.html">tree</a></li>
 			<li><a href="scroll.html">scroll</a></li>
 			<li><a href="grid.html">grid</a></li>
+			<li><a href="tree.html">tree</a></li>
+			<li><a href="combobox.html">combobox</a></li>
 		</ul></li>
 		<li>dlangui.dialogs
 		<ul>
