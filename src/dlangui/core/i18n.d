@@ -1,14 +1,32 @@
 // Written in the D programming language.
 
 /**
-This module contains internationalization support implementation.
+This module contains UI internationalization support implementation.
 
-Translation files contain of simple key=value pair lines.
+UIString struct provides string container which can be either plain unicode string or id of string resource.
 
-STRING_RESOURCE_ID=Translation text.
+Translation strings are being stored in translation files, consisting of simple key=value pair lines:
+---
+STRING_RESOURCE_ID=Translation text 1
+ANOTHER_STRING_RESOURCE_ID=Translation text 2
+---
 
 Supports fallback to another translation file (e.g. default language).
 
+If string resource is not found neither in main nor fallback translation files, UNTRANSLATED: RESOURCE_ID will be returned.
+
+String resources must be placed in i18n subdirectory inside one or more resource directories (set using Platform.instance.resourceDirs 
+property on application initialization).
+
+File names must be language code with extension .ini (e.g. en.ini, fr.ini, es.ini)
+
+If several files for the same language are found in (different directories) their content will be merged. It's useful to merge string resources 
+from DLangUI framework with resources of application.
+
+Set interface language using Platform.instance.uiLanguage in UIAppMain during initialization of application settings:
+---
+Platform.instance.uiLanguage = "en";
+---
 
 
 Synopsis:
@@ -44,7 +62,12 @@ private import dlangui.core.linestream;
 private import std.utf;
 private import std.algorithm;
 
-/** container for UI string - either raw value or string resource ID */
+/** 
+   Container for UI string - either raw value or string resource ID 
+
+   Set resource id (string) or plain unicode text (dstring) to it, and get dstring.
+
+*/
 struct UIString {
     /** if not null, use it, otherwise lookup by id */
     private dstring _value;
@@ -61,13 +84,14 @@ struct UIString {
     }
 
 
-
+    /// Returns string resource id
     @property string id() const { return _id; }
+    /// Sets string resource id
     @property void id(string ID) {
         _id = ID;
         _value = null;
     }
-    /** get value (either raw or translated by id) */
+    /** Get value (either raw or translated by id) */
     @property dstring value() const { 
         if (_value !is null)
             return _value;
@@ -76,55 +100,59 @@ struct UIString {
         // translate ID to dstring
         return i18n.get(_id); 
     }
-    /** set raw value */
+    /** Set raw value using property */
     @property void value(dstring newValue) {
         _value = newValue;
     }
-    /** assign raw value */
+    /** Assign raw value */
     ref UIString opAssign(dstring rawValue) {
         _value = rawValue;
         _id = null;
         return this;
     }
-    /** assign ID */
+    /** Assign string resource id */
     ref UIString opAssign(string ID) {
         _id = ID;
         _value = null;
         return this;
     }
-    /** default conversion to dstring */
+    /** Default conversion to dstring */
     alias value this;
 }
 
-/** UIString item collection. */
+/** 
+    UIString item collection 
+
+    Based on array.
+*/
 struct UIStringCollection {
     private UIString[] _items;
     private int _length;
 
-    /** returns number of items */
+    /** Returns number of items */
     @property int length() { return _length; }
-    /** slice */
+    /** Slice */
     UIString[] opIndex() {
         return _items[0 .. _length];
     }
-    /** slice */
+    /** Slice */
     UIString[] opSlice() {
         return _items[0 .. _length];
     }
-    /** slice */
+    /** Slice */
     UIString[] opSlice(size_t start, size_t end) {
         return _items[start .. end];
     }
-    /** read item by index */
+    /** Read item by index */
     UIString opIndex(size_t index) {
         return _items[index];
     }
-    /** modify item by index */
+    /** Modify item by index */
     UIString opIndexAssign(UIString value, size_t index) {
         _items[index] = value;
         return _items[index];
     }
-    /** return unicode string for item by index */
+    /** Return unicode string for item by index */
     dstring get(size_t index) {
         return _items[index].value;
     }
@@ -161,7 +189,7 @@ struct UIStringCollection {
             add(item);
         }
     }
-    /** remove all items */
+    /** Remove all items */
     void clear() {
         _items.length = 0;
         _length = 0;
@@ -226,14 +254,14 @@ struct UIStringCollection {
     }
 }
 
-/** UI Strings internationalization translator. */
+/** UI Strings internationalization translator */
 synchronized class UIStringTranslator {
 
     private UIStringList _main;
     private UIStringList _fallback;
     private string[] _resourceDirs;
 
-    /** looks for i18n directory inside one of passed dirs, and uses first found as directory to read i18n files from */
+    /** Looks for i18n directory inside one of passed dirs, and uses first found as directory to read i18n files from */
     void findTranslationsDir(string[] dirs ...) {
         _resourceDirs.length = 0;
         import std.file;
@@ -246,7 +274,7 @@ synchronized class UIStringTranslator {
         }
     }
 
-    /** convert resource path - append resource dir if necessary */
+    /** Convert resource path - append resource dir if necessary */
     string[] convertResourcePaths(string filename) {
         if (filename is null)
             return null;
@@ -264,12 +292,13 @@ synchronized class UIStringTranslator {
         return res;
     }
 
+    /// create empty translator
     this() {
         _main = new shared UIStringList();
         _fallback = new shared UIStringList();
     }
 
-    /** load translation file(s) */
+    /** Load translation file(s) */
     bool load(string mainFilename, string fallbackFilename = null) {
         _main.clear();
         _fallback.clear();
@@ -280,7 +309,7 @@ synchronized class UIStringTranslator {
         return res;
     }
 
-    /** translate string ID to string (returns "UNTRANSLATED: id" for missing values) */
+    /** Translate string ID to string (returns "UNTRANSLATED: id" for missing values) */
     dstring get(string id) {
         if (id is null)
             return null;
@@ -365,7 +394,7 @@ private shared class UIStringList {
     }
 }
 
-/** Global translator object. */
+/** Global UI translator object */
 shared UIStringTranslator i18n;
 shared static this() {
     i18n = new shared UIStringTranslator();

@@ -1,7 +1,10 @@
 // Written in the D programming language.
 
 /**
-This module contains text file reader implementation.
+
+This module contains text stream reader implementation
+
+Implements class LineStream for reading of unicode text from stream and returning it by lines.
 
 Support utf8, utf16, utf32 be and le encodings, and line endings - according to D language source file specification.
 
@@ -51,44 +54,74 @@ import std.stream;
 import std.stdio;
 import std.conv;
 
+/** 
+    Support reading of file (or string in memory) by lines
+
+    Support utf8, utf16, utf32 be and le encodings, and line endings - according to D language source file specification.
+
+    Low resource consuming. Doesn't flood with GC allocations. Dup line if you want to store it somewhere.
+
+    Tracks line number.
+*/
 class LineStream {
+    /// File encoding
 	public enum EncodingType {
+        /// plaing ASCII (character codes must be <= 127)
         ASCII,
+        /// utf-8 unicode
         UTF8,
+        /// utf-16 unicode big endian
         UTF16BE,
+        /// utf-16 unicode little endian
         UTF16LE,
+        /// utf-32 unicode big endian
         UTF32BE,
+        /// utf-32 unicode little endian
         UTF32LE
     };
 
-    InputStream _stream;
-	string _filename;
-    ubyte[] _buf;  // stream reading buffer
-    uint _pos; // reading position of stream buffer
-    uint _len; // number of bytes in stream buffer
-	bool _streamEof; // true if input stream is in EOF state
-	uint _line; // current line number
+    /// Error codes
+    public enum ErrorCodes {
+        /// invalid character for current encoding
+        INVALID_CHARACTER
+    };
+
+    private InputStream _stream;
+	private string _filename;
+    private ubyte[] _buf;  // stream reading buffer
+    private uint _pos; // reading position of stream buffer
+    private uint _len; // number of bytes in stream buffer
+	private bool _streamEof; // true if input stream is in EOF state
+	private uint _line; // current line number
 	
-	uint _textPos; // start of text line in text buffer
-	uint _textLen; // position of last filled char in text buffer + 1
-	dchar[] _textBuf; // text buffer
-	bool _eof; // end of file, no more lines
-	
+	private uint _textPos; // start of text line in text buffer
+	private uint _textLen; // position of last filled char in text buffer + 1
+	private dchar[] _textBuf; // text buffer
+	private bool _eof; // end of file, no more lines
+
+    /// Returns file name
 	@property string filename() { return _filename; }
+    /// Returns current line number
 	@property uint line() { return _line; }
+    /// Returns file encoding EncodingType
 	@property EncodingType encoding() { return _encoding; }
+    /// Returns error code
 	@property int errorCode() { return _errorCode; }
+    /// Returns error message
 	@property string errorMessage() { return _errorMessage; }
+    /// Returns line where error is found
 	@property int errorLine() { return _errorLine; }
+    /// Returns line position (number of character in line) where error is found
 	@property int errorPos() { return _errorPos; }
 	
-    immutable EncodingType _encoding;
+    private immutable EncodingType _encoding;
 
-	int _errorCode;
-	string _errorMessage;
-	uint _errorLine;
-	uint _errorPos;
+	private int _errorCode;
+	private string _errorMessage;
+	private uint _errorLine;
+	private uint _errorPos;
 
+    /// Open file with known encoding
 	protected this(InputStream stream, string filename, EncodingType encoding, ubyte[] buf, uint offset, uint len) {
 		_filename = filename;
 		_stream = stream;
@@ -99,8 +132,8 @@ class LineStream {
 		_streamEof = _stream.eof;
 	}
 	
-	// returns slice of bytes available in buffer
-	uint readBytes() {
+	/// returns slice of bytes available in buffer
+	protected uint readBytes() {
 		uint bytesLeft = _len - _pos;
 		if (_streamEof || bytesLeft > QUARTER_BYTE_BUFFER_SIZE)
 			return bytesLeft;
@@ -117,12 +150,12 @@ class LineStream {
 	}
 
 	// when bytes consumed from byte buffer, call this method to update position
-	void consumedBytes(uint count) {
+	protected void consumedBytes(uint count) {
 		_pos += count;
 	}
 
 	// reserve text buffer for specified number of characters, and return pointer to first free character in buffer
-	dchar * reserveTextBuf(uint len) {
+	protected dchar * reserveTextBuf(uint len) {
 		// create new text buffer if necessary
 		if (_textBuf == null) {
 			if (len < TEXT_BUFFER_SIZE)
@@ -153,12 +186,12 @@ class LineStream {
 		return _textBuf.ptr + _textLen;
 	}
 	
-	void appendedText(uint len) {
+	protected void appendedText(uint len) {
 		//writeln("appended ", len, " chars of text"); //:", _textBuf[_textLen .. _textLen + len]);
 		_textLen += len;
 	}
 	
-	void setError(int code, string message, uint errorLine, uint errorPos) {
+	protected void setError(int code, string message, uint errorLine, uint errorPos) {
 		_errorCode = code;
 		_errorMessage = message;
 		_errorLine = errorLine;
@@ -166,9 +199,12 @@ class LineStream {
 	}
 	
 	// override to decode text
-	abstract uint decodeText();
-	
+	protected abstract uint decodeText();
+
+    /// Unknown line position
 	immutable static uint LINE_POSITION_UNDEFINED = uint.max;
+
+    /// Read line from stream
 	public dchar[] readLine() {
 		if (_errorCode != 0) {
 			//writeln("error ", _errorCode, ": ", _errorMessage, " in line ", _errorLine);
@@ -250,11 +286,11 @@ class LineStream {
 		return _textBuf[lineStart .. lineEnd];
 	}
 	
-	immutable static int TEXT_BUFFER_SIZE = 1024;
-	immutable static int BYTE_BUFFER_SIZE = 512;
-	immutable static int QUARTER_BYTE_BUFFER_SIZE = BYTE_BUFFER_SIZE / 4;
+	protected immutable static int TEXT_BUFFER_SIZE = 1024;
+	protected immutable static int BYTE_BUFFER_SIZE = 512;
+	protected immutable static int QUARTER_BYTE_BUFFER_SIZE = BYTE_BUFFER_SIZE / 4;
 	
-	// factory for string parser
+	/// Factory method for string parser
 	public static LineStream create(string code, string filename = "") {
 		uint len = cast(uint)code.length;
 		ubyte[] data = new ubyte[len + 3];
@@ -268,7 +304,7 @@ class LineStream {
 		return create(stream, filename);
 	}
 	
-	// factory
+	/// Factory for InputStream parser
 	public static LineStream create(InputStream stream, string filename) {
 		ubyte[] buf = new ubyte[BYTE_BUFFER_SIZE];
 		buf[0] = buf[1] = buf[2]  = buf[3] = 0;
@@ -293,13 +329,12 @@ class LineStream {
 	protected bool invalidCharFlag;
 	protected void invalidCharError() {
 		uint pos = _textLen - _textPos + 1;
-		setError(1, "Invalid character in line " ~ to!string(_line) ~ ":" ~ to!string(pos), _line, pos);
+		setError(ErrorCodes.INVALID_CHARACTER, "Invalid character in line " ~ to!string(_line) ~ ":" ~ to!string(pos), _line, pos);
 	}
 }
 
 
-
-class AsciiLineStream : LineStream {
+private class AsciiLineStream : LineStream {
 	this(InputStream stream, string filename, ubyte[] buf, uint len) {
 		super(stream, filename, EncodingType.ASCII, buf, 0, len);
 	}	
@@ -332,7 +367,7 @@ class AsciiLineStream : LineStream {
 	
 }
 
-class Utf8LineStream : LineStream {
+private class Utf8LineStream : LineStream {
 	this(InputStream stream, string filename, ubyte[] buf, uint len) {
 		super(stream, filename, EncodingType.UTF8, buf, 3, len);
 	}
@@ -448,7 +483,7 @@ class Utf8LineStream : LineStream {
 	}
 }
 
-class Utf16beLineStream : LineStream {
+private class Utf16beLineStream : LineStream {
 	this(InputStream stream, string filename, ubyte[] buf, uint len) {
 		super(stream, filename, EncodingType.UTF16BE, buf, 2, len);
 	}
@@ -482,7 +517,7 @@ class Utf16beLineStream : LineStream {
 	}
 }
 
-class Utf16leLineStream : LineStream {
+private class Utf16leLineStream : LineStream {
 	this(InputStream stream, string filename, ubyte[] buf, uint len) {
 		super(stream, filename, EncodingType.UTF16LE, buf, 2, len);
 	}	
@@ -516,7 +551,7 @@ class Utf16leLineStream : LineStream {
 	}
 }
 
-class Utf32beLineStream : LineStream {
+private class Utf32beLineStream : LineStream {
 	this(InputStream stream, string filename, ubyte[] buf, uint len) {
 		super(stream, filename, EncodingType.UTF32BE, buf, 4, len);
 	}	
@@ -555,7 +590,7 @@ class Utf32beLineStream : LineStream {
 	}
 }
 
-class Utf32leLineStream : LineStream {
+private class Utf32leLineStream : LineStream {
 	this(InputStream stream, string filename, ubyte[] buf, uint len) {
 		super(stream, filename, EncodingType.UTF32LE, buf, 4, len);
 	}	
