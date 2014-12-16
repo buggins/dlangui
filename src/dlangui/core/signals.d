@@ -1,6 +1,7 @@
 // Written in the D programming language.
 
 /**
+
 This module contains definition of signals / listeners.
 
 Similar to std.signals.
@@ -12,7 +13,11 @@ Unlike std.signals, can support return types for slots.
 Caution: unlike std.signals, does not disconnect signal from slots belonging to destroyed objects.
 
 Listener here stand for holder of single delegate (slot).
+
 Signal is the same but supports multiple slots.
+
+Listener has smaller memory footprint, but allows only single slot.
+
 
 Can be declared either using list of result value and argument types, or by interface name with single method.
 

@@ -1,3 +1,24 @@
+// Written in the D programming language.
+
+/**
+
+This module contains drawing buffer implementation for Win32 platform
+
+Part of Win32 platform support.
+
+Usually you don't need to use this module directly.
+
+
+Synopsis:
+
+----
+import dlangui.platforms.windows.win32drawbuf;
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   Boost License 1.0
+Authors:   Vadim Lopatin, coolreader.org@gmail.com
+*/
 module dlangui.platforms.windows.win32drawbuf;
 
 version(Windows):
@@ -6,11 +27,14 @@ import win32.windows;
 import dlangui.core.logger;
 import dlangui.graphics.drawbuf;
 
+/// Win32 context ARGB drawing buffer
 class Win32ColorDrawBuf : ColorDrawBufBase {
-    uint * _pixels;
-    HDC _drawdc;
-    HBITMAP _drawbmp;
+    private uint * _pixels;
+    private HDC _drawdc;
+    private HBITMAP _drawbmp;
+    /// returns handle of win32 device context
     @property HDC dc() { return _drawdc; }
+    /// returns handle of win32 bitmap
     @property HBITMAP bmp() { return _drawdc; }
     this(int width, int height) {
         resize(width, height);
@@ -24,6 +48,7 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
         else
             drawRescaled(Rect(0, 0, dx, dy), v, Rect(0, 0, v.width, v.height));
 	}
+    /// invert alpha in buffer content
 	void invertAlpha() {
 		for(int i = _dx * _dy - 1; i >= 0; i--)
 			_pixels[i] ^= 0xFF000000;
@@ -68,6 +93,7 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
         destroy(this);
         return res;
     }
+    /// Returns pointer to scan line
     override uint * scanLine(int y) {
         if (y >= 0 && y < _dy)
             return _pixels + _dx * (_dy - 1 - y);
@@ -76,6 +102,7 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
     ~this() {
         clear();
     }
+    /// Clear buffer contents, set dimension to 0, 0
     override void clear() {
         if (_drawbmp !is null || _drawdc !is null) {
             if (_drawbmp)
@@ -89,6 +116,7 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
             _dy = 0;
         }
     }
+    /// Change buffer size
     override void resize(int width, int height) {
         if (width< 0)
             width = 0;
@@ -118,12 +146,14 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
             SelectObject(_drawdc, _drawbmp);
         }
     }
+    /// fill with solid color
     override void fill(uint color) {
         int len = _dx * _dy;
         //for (int i = 0; i < len; i++)
         //    _pixels[i] = color;
         _pixels[0 .. len - 1] = color;
     }
+    /// draw to win32 device context
     void drawTo(HDC dc, int x, int y) {
         BitBlt(dc, x, y, _dx, _dy, _drawdc, 0, 0, SRCCOPY);
     }

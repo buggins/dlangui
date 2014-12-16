@@ -1,3 +1,24 @@
+// Written in the D programming language.
+
+/**
+
+This module contains implementation of Win32 platform support
+
+Provides Win32Window and Win32Platform classes.
+
+Usually you don't need to use this module directly.
+
+
+Synopsis:
+
+----
+import dlangui.platforms.windows.winapp;
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   Boost License 1.0
+Authors:   Vadim Lopatin, coolreader.org@gmail.com
+*/
 module dlangui.platforms.windows.winapp;
 version (USE_SDL) { } 
 else version (Windows) {

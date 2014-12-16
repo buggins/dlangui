@@ -61,7 +61,6 @@ long currentTimeMillis() {
 
 Setup example:
 ----
-// setup:
 // use stderror for logging
 setStderrLogger();
 // set log level

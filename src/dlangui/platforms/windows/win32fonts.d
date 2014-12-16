@@ -1,3 +1,24 @@
+// Written in the D programming language.
+
+/**
+
+This module contains implementation of Win32 fonts support
+
+Part of Win32 platform support.
+
+Usually you don't need to use this module directly.
+
+
+Synopsis:
+
+----
+import dlangui.platforms.windows.win32fonts;
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   Boost License 1.0
+Authors:   Vadim Lopatin, coolreader.org@gmail.com
+*/
 module dlangui.platforms.windows.win32fonts;
 
 version(Windows):
@@ -220,12 +241,12 @@ class Win32Font : Font {
 		return true;
 	}
 
-	// clear usage flags for all entries
+	/// clear usage flags for all entries
 	override void checkpoint() {
 		_glyphCache.checkpoint();
 	}
 
-	// removes entries not used after last call of checkpoint() or cleanup()
+	/// removes entries not used after last call of checkpoint() or cleanup()
 	override void cleanup() {
 		_glyphCache.cleanup();
 	}

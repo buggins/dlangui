@@ -1,3 +1,55 @@
+// Written in the D programming language.
+
+/**
+
+This module contains implementation of grid widgets
+
+
+GridWidgetBase - abstract grid widget
+
+StringGridWidget - grid of strings
+
+
+Synopsis:
+
+----
+import dlangui.widgets.grid;
+
+StringGridWidget grid = new StringGridWidget("GRID1");
+grid.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+grid.showColHeaders = true;
+grid.showRowHeaders = true;
+grid.resize(30, 50);
+grid.fixedCols = 3;
+grid.fixedRows = 2;
+//grid.rowSelect = true; // testing full row selection
+grid.selectCell(4, 6, false);
+// create sample grid content
+for (int y = 0; y < grid.rows; y++) {
+    for (int x = 0; x < grid.cols; x++) {
+        grid.setCellText(x, y, "cell("d ~ to!dstring(x + 1) ~ ","d ~ to!dstring(y + 1) ~ ")"d);
+    }
+    grid.setRowTitle(y, to!dstring(y + 1));
+}
+for (int x = 0; x < grid.cols; x++) {
+    int col = x + 1;
+    dstring res;
+    int n1 = col / 26;
+    int n2 = col % 26;
+    if (n1)
+        res ~= n1 + 'A';
+    res ~= n2 + 'A';
+    grid.setColTitle(x, res);
+}
+grid.autoFit();
+
+
+----
+
+Copyright: Vadim Lopatin, 2014
+License:   Boost License 1.0
+Authors:   Vadim Lopatin, coolreader.org@gmail.com
+*/
 module dlangui.widgets.grid;
 
 import dlangui.widgets.widget;
@@ -150,6 +202,7 @@ enum GridActions : int {
 	SelectDocumentEnd,
 }
 
+/// Abstract grid widget
 class GridWidgetBase : ScrollWidgetBase {
     /// column count (including header columns and fixed columns)
 	protected int _cols;
@@ -1026,7 +1079,7 @@ class StringGridWidgetBase : GridWidgetBase {
 }
 
 /**
- * Grid view with string data shown. All rows are of the same height.
+ * Grid view with string data shown. All rows are of the same height
  */
 class StringGridWidget : StringGridWidgetBase {
 
