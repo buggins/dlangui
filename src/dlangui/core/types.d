@@ -3,6 +3,8 @@
 /**
 This module declares basic data types for usage in dlangui library.
 
+Contains reference counting support, point and rect structures, character glyph structure, misc utility functions.
+
 Synopsis:
 
 ----
@@ -99,14 +101,18 @@ struct Rect {
         if (bottom < rc.bottom)
             bottom = rc.bottom;
     }
+    /// returns width of rectangle (right - left)
     @property int width() { return right - left; }
+    /// returns height of rectangle (bottom - top)
     @property int height() { return bottom - top; }
+    /// constructs rectangle using left, top, right, bottom coordinates
     this(int x0, int y0, int x1, int y1) {
         left = x0;
         top = y0;
         right = x1;
         bottom = y1;
     }
+    /// returns true if rectangle is empty (right <= left || bottom <= top)
     @property bool empty() {
         return right <= left || bottom <= top;
     }
@@ -165,7 +171,11 @@ struct Rect {
     }
 }
 
-/** character glyph */
+/** 
+    Character glyph.
+    
+    Holder for glyph metrics as well as image.
+*/
 align(1)
 struct Glyph
 {
@@ -191,13 +201,21 @@ struct Glyph
     ubyte[] glyph;       
 }
 
-/** base class for reference counted objects, maintains reference counter inplace. */
+/** 
+    Base class for reference counted objects, maintains reference counter inplace.
+
+    If some class is not inherited from RefCountedObject, additional object will be required to hold counters.
+*/
 class RefCountedObject {
+    /// count of references to this object from Ref
     protected int _refCount;
+    /// returns current value of reference counter
     @property int refCount() const { return _refCount; }
+    /// increments reference counter
     void addRef() { 
 		_refCount++; 
 	}
+    /// decrement reference counter, destroy object if no more references left
     void releaseRef() { 
 		if (--_refCount == 0) 
 			destroy(this); 
@@ -205,7 +223,15 @@ class RefCountedObject {
     ~this() {}
 }
 
-/** reference counting support */
+/** 
+    Reference counting support.
+
+    Implemented for case when T is RefCountedObject.
+    Similar to shared_ptr in C++.
+    Allows to share object, destroying it when no more references left.
+
+    Useful for automatic destroy of objects.
+*/
 struct Ref(T) { // if (T is RefCountedObject)
     private T _data;
     alias get this;
@@ -213,15 +239,18 @@ struct Ref(T) { // if (T is RefCountedObject)
     @property bool isNull() const { return _data is null; }
     /// returns counter of references
     @property int refCount() const { return _data !is null ? _data.refCount : 0; }
+    /// init from T
     this(T data) {
         _data = data;
         if (_data !is null)
             _data.addRef();
     }
+    /// after blit
 	this(this) {
 		if (_data !is null)
             _data.addRef();
 	}
+    /// assign from another refcount by reference
     ref Ref opAssign(ref Ref data) {
         if (data._data == _data)
             return this;
@@ -232,6 +261,7 @@ struct Ref(T) { // if (T is RefCountedObject)
             _data.addRef();
 		return this;
     }
+    /// assign from another refcount by value
     ref Ref opAssign(Ref data) {
         if (data._data == _data)
             return this;
@@ -242,6 +272,7 @@ struct Ref(T) { // if (T is RefCountedObject)
             _data.addRef();
 		return this;
     }
+    /// assign object
     ref Ref opAssign(T data) {
         if (data == _data)
             return this;
@@ -252,21 +283,22 @@ struct Ref(T) { // if (T is RefCountedObject)
             _data.addRef();
 		return this;
     }
-    /** clears reference */
+    /// clears reference
     void clear() { 
         if (_data !is null) {
             _data.releaseRef();
             _data = null;
         }
     }
-    /** returns object reference (null if not assigned) */
+    /// returns object reference (null if not assigned)
 	@property T get() {
 		return _data;
 	}
-    /** returns const reference from const object */
+    /// returns const reference from const object
 	@property const(T) get() const {
 		return _data;
 	}
+    /// decreases counter, and destroys object if no more references left
     ~this() {
         if (_data !is null)
             _data.releaseRef();
@@ -322,20 +354,35 @@ wstring fromWStringz(const(wchar) * s) {
 enum State : uint {
     /// state not specified / normal
     Normal = 4, // Normal is Enabled
+    /// pressed (e.g. clicked by mouse)
     Pressed = 1,
+    /// widget has focus
     Focused = 2,
+    /// widget can process mouse and key events
     Enabled = 4,
+    /// mouse pointer is over this widget
     Hovered = 8, // mouse pointer is over control, buttons not pressed
+    /// widget is selected
     Selected = 16,
+    /// widget can be checked
     Checkable = 32,
+    /// widget is checked
     Checked = 64,
+    /// widget is activated
     Activated = 128,
+    /// window is focused
     WindowFocused = 256,
+    /// widget is default control for form (should be focused when window gains focus first time)
     Default = 512, // widget is default for form (e.g. default button will be focused on show)
+    /// return state of parent instead of widget's state when requested
     Parent = 0x10000, // use parent's state
 }
 
-/** uppercase unicode character */
+/** 
+    Uppercase unicode character.
+
+    TODO: support non-ascii.
+*/
 dchar dcharToUpper(dchar ch) {
 	// TODO: support non-ascii letters
 	if (ch >= 'a' && ch <= 'z')
@@ -344,8 +391,10 @@ dchar dcharToUpper(dchar ch) {
 }
 
 version (Windows) {
+    /// path delimiter (\ for windows, / for others)
     immutable char PATH_DELIMITER = '\\';
 } else {
+    /// path delimiter (\ for windows, / for others)
     immutable char PATH_DELIMITER = '/';
 }
 

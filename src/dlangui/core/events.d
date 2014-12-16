@@ -1,15 +1,13 @@
 // Written in the D programming language.
 
 /**
+
 This module contains dlangui event types declarations.
 
+Event types: MouseEvent, KeyEvent, ScrollEvent.
 
-Synopsis:
+Action and Accelerator.
 
-----
-import dlangui.core.events;
-
-----
 
 Copyright: Vadim Lopatin, 2014
 License:   Boost License 1.0
@@ -22,15 +20,17 @@ import dlangui.core.collections;
 
 private import dlangui.widgets.widget;
 
-import std.string;
-import std.conv;
-import std.utf;
+private import std.string;
+private import std.conv;
+private import std.utf;
 
-/// keyboard accelerator (key + modifiers)
+/// Keyboard accelerator (key + modifiers)
 struct Accelerator {
+    /// Key code, usually one of KeyCode enum items
 	uint keyCode;
+    /// Key flags bit set, usually one of KeyFlag enum items
 	uint keyFlags;
-	/// returns accelerator text description
+	/// Returns accelerator text description
 	@property dstring label() {
 		dstring buf;
 		if (keyFlags & KeyFlag.Control)
@@ -44,35 +44,50 @@ struct Accelerator {
 	}
 }
 
-/// UI action
+/** 
+    UI action
+
+    For using in menus, toolbars, etc.
+
+ */
 class Action {
+    /// numerical id
     protected int _id;
+    /// label to show in UI
     protected UIString _label;
+    /// icon resource id
     protected string _iconId;
+    /// accelerator list
 	protected Accelerator[] _accelerators;
+    /// optional string parameter
     protected string _stringParam;
+    /// optional long parameter
     protected long _longParam;
+    /// optional object parameter
     protected Object _objectParam;
-    /// additional string parameter
+    /// returns optional string parameter
     @property string stringParam() {
         return _stringParam;
     }
+    /// sets optional string parameter
     @property Action stringParam(string v) {
         _stringParam = v;
         return this;
     }
-    /// additional long parameter
+    /// sets optional long parameter
     @property long longParam() {
         return _longParam;
     }
+    /// returns optional long parameter
     @property Action longParam(long v) {
         _longParam = v;
         return this;
     }
-    /// additional custom (Object) parameter
+    /// returns additional custom (Object) parameter
     @property Object objectParam() {
         return _objectParam;
     }
+    /// sets additional custom (Object) parameter
     @property Action objectParam(Object v) {
         _objectParam = v;
         return this;
@@ -95,6 +110,7 @@ class Action {
     this(int id) {
         _id = id;
     }
+    /// create action with id, labelResourceId, and optional icon and key accelerator.
 	this(int id, string labelResourceId, string iconResourceId = null, uint keyCode = 0, uint keyFlags = 0) {
         _id = id;
         _label = labelResourceId;
@@ -132,58 +148,67 @@ class Action {
 				return true;
 		return false;
 	}
+    /// returns action id
     @property int id() const {
         return _id;
     }
+    /// sets action id
     @property Action id(int newId) {
         _id = newId;
         return this;
     }
+    /// sets label string resource id
     @property Action label(string resourceId) {
         _label = resourceId;
         return this;
     }
+    /// sets label unicode string
     @property Action label(dstring text) {
         _label = text;
         return this;
     }
+    /// returns label unicode string (translates if resource id is set)
     @property dstring label() const {
         return _label.value;
     }
+    /// access to label UIString
     @property ref const (UIString) labelValue() const {
         return _label;
     }
+    /// returns icon resource id
     @property string iconId() const {
         return _iconId;
     }
+    /// sets icon resource id
     @property Action iconId(string id) {
         _iconId = id;
         return this;
     }
 }
 
+/// Map of Accelerator to Action
 struct ActionMap {
 	protected Action[Accelerator] _map;
-	/// add from list
+	/// Add all actions from list
 	void add(ActionList items) {
 		foreach(a; items) {
 			foreach(acc; a.accelerators)
 				_map[acc] = a;
 		}
 	}
-	/// add array of actions
+	/// Add array of actions
 	void add(Action[] items) {
 		foreach(a; items) {
 			foreach(acc; a.accelerators)
 				_map[acc] = a;
 		}
 	}
-	/// add action
+	/// Add action
 	void add(Action a) {
 		foreach(acc; a.accelerators)
 			_map[acc] = a;
 	}
-	/// find action by key, return null if not found
+	/// Aind action by key, return null if not found
 	Action findByKey(uint keyCode, uint flags) {
 		Accelerator acc;
 		acc.keyCode = keyCode;
@@ -194,21 +219,24 @@ struct ActionMap {
 	}
 }
 
+/// List of Actions, for looking up Action by key
 struct ActionList {
 	private Collection!Action _actions;
 	alias _actions this;
 
+    /// Add several actions from array
 	void add(Action[] items) {
 		foreach(a; items)
 			_actions ~= a;
 	}
 
+    /// Add all items from another list
 	void add(ref ActionList items) {
 		foreach(a; items)
 			_actions ~= a;
 	}
 
-	/// find action by key, return null if not found
+	/// Find action by key, return null if not found
 	Action findByKey(uint keyCode, uint flags) {
 		foreach(a; _actions)
 			if (a.checkAccelerator(keyCode, flags))
@@ -217,7 +245,7 @@ struct ActionList {
 	}
 }
 
-/// mouse action
+/// Mouse action codes for MouseEvent
 enum MouseAction : ubyte {
     /// button down handling is cancelled
     Cancel,   
@@ -238,7 +266,7 @@ enum MouseAction : ubyte {
     Leave     
 }
 
-/// mouse flag bits
+/// Mouse flag bits (mouse buttons and keyboard modifiers) for MouseEvent
 enum MouseFlag : ushort {
     // mouse buttons
     /// Left mouse button is down
@@ -261,7 +289,7 @@ enum MouseFlag : ushort {
 	Alt     = 0x0080,
 }
 
-/// mouse button
+/// Mouse button codes for MouseEvent
 enum MouseButton : ubyte {
     /// no button
     None,
@@ -278,7 +306,7 @@ enum MouseButton : ubyte {
 }
 
 
-/// mouse button state details
+/// Mouse button state details for MouseEvent
 struct ButtonDetails {
 	/// Clock.currStdTime() for down event of this button (0 if button is up).
 	long  _downTs;
@@ -302,6 +330,7 @@ struct ButtonDetails {
 	void up(short x, short y, ushort flags) {
         _upTs = std.datetime.Clock.currStdTime;
 	}
+    /// returns true if button is currently pressed
 	@property bool isDown() { return _downTs != 0 && _upTs == 0; }
     /// returns button down state duration in hnsecs (1/10000 of second).
     @property int downDuration() {
@@ -312,36 +341,57 @@ struct ButtonDetails {
         long ts = std.datetime.Clock.currStdTime;
         return cast(int)(ts - _downTs);
     }
+    /// X coordinate of point where button was pressed Down last time
     @property short downX() { return _downX; }
+    /// Y coordinate of point where button was pressed Down last time
     @property short downY() { return _downY; }
+    /// bit set of mouse flags saved on button down
     @property ushort downFlags() { return _downFlags; }
 }
 
-/// mouse event
+/** 
+    Mouse event
+ */
 class MouseEvent {
+    /// timestamp of event
     protected long _eventTimestamp;
+    /// mouse action code
 	protected MouseAction _action;
+    /// mouse button code for ButtonUp/ButtonDown
 	protected MouseButton _button;
+    /// x coordinate of pointer
 	protected short _x;
+    /// y coordinate of pointer
 	protected short _y;
+    /// flags bit set - usually from MouseFlag enum
 	protected ushort _flags;
+    /// wheel delta
 	protected short _wheelDelta;
+    /// widget which currently tracks mouse events
     protected Widget _trackingWidget;
+    /// left button state details
 	protected ButtonDetails _lbutton;
+    /// middle button state details
 	protected ButtonDetails _mbutton;
+    /// right button state details
 	protected ButtonDetails _rbutton;
+    /// when true, no tracking of mouse on ButtonDown is necessary
 	protected bool _doNotTrackButtonDown;
+    /// left button state details
     @property ref ButtonDetails lbutton() { return _lbutton; }
+    /// right button state details
     @property ref ButtonDetails rbutton() { return _rbutton; }
+    /// middle button state details
     @property ref ButtonDetails mbutton() { return _mbutton; }
     /// button which caused ButtonUp or ButtonDown action
     @property MouseButton button() { return _button; }
     /// action
 	@property MouseAction action() { return _action; }
+    /// override action code (for usage from platform code)
 	void changeAction(MouseAction a) { _action = a; }
-    /// flags (buttons and keys state)
+    /// returns flags (buttons and keys state)
 	@property ushort flags() { return _flags; }
-    /// delta for Wheel event
+    /// returns delta for Wheel event
 	@property short wheelDelta() { return _wheelDelta; }
     /// x coordinate of mouse pointer (relative to window client area)
 	@property short x() { return _x; }
@@ -349,12 +399,15 @@ class MouseEvent {
 	@property short y() { return _y; }
     /// get event tracking widget to override
 	@property Widget trackingWidget() { return _trackingWidget; }
+    /// returns mouse button tracking flag
 	@property bool doNotTrackButtonDown() { return _doNotTrackButtonDown; }
+    /// sets mouse button tracking flag
 	@property void doNotTrackButtonDown(bool flg) { _doNotTrackButtonDown = flg; }
     /// override mouse tracking widget
     void track(Widget w) {
         _trackingWidget = w;
     }
+    /// copy constructor
     this (MouseEvent e) {
         _eventTimestamp = e._eventTimestamp;
 		_action = e._action;
@@ -367,6 +420,7 @@ class MouseEvent {
         _mbutton = e._mbutton;
         _wheelDelta = e._wheelDelta;
     }
+    /// construct mouse event from data
 	this (MouseAction a, MouseButton b, ushort f, short x, short y, short wheelDelta = 0) {
         _eventTimestamp = std.datetime.Clock.currStdTime;
 		_action = a;
@@ -378,7 +432,7 @@ class MouseEvent {
 	}
 }
 
-/// KeyEvent action
+/// Keyboard actions for KeyEvent
 enum KeyAction : uint {
     /// key is pressed
     KeyDown,
@@ -390,7 +444,7 @@ enum KeyAction : uint {
     Repeat,
 }
 
-/// KeyEvent flags
+/// Keyboard flags for KeyEvent
 enum KeyFlag : uint {
     /// Ctrl key is down
 	Control = 0x0008,
@@ -412,126 +466,235 @@ enum KeyFlag : uint {
     LAlt     = 0x0280
 }
 
-/// Key code constants
+/// Key code constants for KeyEvent
 enum KeyCode : uint {
+    /// backspace
     BACK = 8,
+    /// tab
     TAB = 9,
+    /// return / enter key
     RETURN = 0x0D,
+    /// shift
     SHIFT = 0x10,
+    /// ctrl
     CONTROL = 0x11,
+    /// alt
     ALT = 0x12, // VK_MENU
+    /// pause
     PAUSE = 0x13,
+    /// caps lock
     CAPS = 0x14, // VK_CAPITAL, caps lock
+    /// esc
     ESCAPE = 0x1B, // esc
+    /// space
     SPACE = 0x20,
+    /// page up
     PAGEUP = 0x21, // VK_PRIOR
+    /// page down
     PAGEDOWN = 0x22, // VK_NEXT
+    /// end
     END = 0x23, // VK_END
+    /// home
     HOME = 0x24, // VK_HOME
+    /// left arrow
     LEFT = 0x25,
+    /// up arrow
     UP = 0x26,
+    /// right arrow
     RIGHT = 0x27,
+    /// down arrow
     DOWN = 0x28,
+    /// ins
     INS = 0x2D,
+    /// delete
     DEL = 0x2E,
+    /// 0
     KEY_0 = 0x30,
+    /// 1
     KEY_1 = 0x31,
+    /// 2
     KEY_2 = 0x32,
+    /// 3
     KEY_3 = 0x33,
+    /// 4
     KEY_4 = 0x34,
+    /// 5
     KEY_5 = 0x35,
+    /// 6
     KEY_6 = 0x36,
+    /// 7
     KEY_7 = 0x37,
+    /// 8
     KEY_8 = 0x38,
+    /// 9
     KEY_9 = 0x39,
+    /// A
     KEY_A = 0x41,
+    /// B
     KEY_B = 0x42,
+    /// C
     KEY_C = 0x43,
+    /// D
     KEY_D = 0x44,
+    /// E
     KEY_E = 0x45,
+    /// F
     KEY_F = 0x46,
+    /// G
     KEY_G = 0x47,
+    /// H
     KEY_H = 0x48,
+    /// I
     KEY_I = 0x49,
+    /// J
     KEY_J = 0x4a,
+    /// K
     KEY_K = 0x4b,
+    /// L
     KEY_L = 0x4c,
+    /// M
     KEY_M = 0x4d,
+    /// N
     KEY_N = 0x4e,
+    /// O
     KEY_O = 0x4f,
+    /// P
     KEY_P = 0x50,
+    /// Q
     KEY_Q = 0x51,
+    /// R
     KEY_R = 0x52,
+    /// S
     KEY_S = 0x53,
+    /// T
     KEY_T = 0x54,
+    /// U
     KEY_U = 0x55,
+    /// V
     KEY_V = 0x56,
+    /// W
     KEY_W = 0x57,
+    /// X
     KEY_X = 0x58,
+    /// Y
     KEY_Y = 0x59,
+    /// Z
     KEY_Z = 0x5a,
+    /// left win key
     LWIN = 0x5b,
+    /// right win key
     RWIN = 0x5c,
+    /// numpad 0
     NUM_0 = 0x60,
+    /// numpad 1
     NUM_1 = 0x61,
+    /// numpad 2
     NUM_2 = 0x62,
+    /// numpad 3
     NUM_3 = 0x63,
+    /// numpad 4
     NUM_4 = 0x64,
+    /// numpad 5
     NUM_5 = 0x65,
+    /// numpad 6
     NUM_6 = 0x66,
+    /// numpad 7
     NUM_7 = 0x67,
+    /// numpad 8
     NUM_8 = 0x68,
+    /// numpad 9
     NUM_9 = 0x69,
+    /// numpad *
     MUL = 0x6A,
+    /// numpad +
     ADD = 0x6B,
+    /// numpad /
     DIV = 0x6F,
+    /// numpad -
     SUB = 0x6D,
+    /// numpad .
     DECIMAL = 0x6E,
+    /// F1
     F1 = 0x70,
+    /// F2
     F2 = 0x71,
+    /// F3
     F3 = 0x72,
+    /// F4
     F4 = 0x73,
+    /// F5
     F5 = 0x74,
+    /// F6
     F6 = 0x75,
+    /// F7
     F7 = 0x76,
+    /// F8
     F8 = 0x77,
+    /// F9
     F9 = 0x78,
+    /// F10
     F10 = 0x79,
+    /// F11
     F11 = 0x7a,
+    /// F12
     F12 = 0x7b,
+    /// F13
     F13 = 0x7c,
+    /// F14
     F14 = 0x7d,
+    /// F15
     F15 = 0x7e,
+    /// F16
     F16 = 0x7f,
+    /// F17
     F17 = 0x80,
+    /// F18
     F18 = 0x81,
+    /// F19
     F19 = 0x82,
+    /// F20
     F20 = 0x83,
+    /// F21
     F21 = 0x84,
+    /// F22
     F22 = 0x85,
+    /// F23
     F23 = 0x86,
+    /// F24
     F24 = 0x87,
+    /// num lock
     NUMLOCK = 0x90,
+    /// scroll lock
     SCROLL = 0x91, // scroll lock
+    /// left shift
     LSHIFT = 0xA0,
+    /// right shift
     RSHIFT = 0xA1,
+    /// left ctrl
     LCONTROL = 0xA2,
+    /// right ctrl
     RCONTROL = 0xA3,
+    /// left alt
     LALT = 0xA4,
+    /// right alt
     RALT = 0xA5,
 }
 
-/// keyboard event
+/// Keyboard event
 class KeyEvent {
+    /// action
     protected KeyAction _action;
+    /// key code, usually from KeyCode enum
     protected uint _keyCode;
+    /// key flags bit set, usually combined from KeyFlag enum
     protected uint _flags;
+    /// entered text
     protected dstring _text;
     /// key action (KeyDown, KeyUp, Text, Repeat)
     @property KeyAction action() { return _action; }
-    /// key code
+    /// key code (usually from KeyCode enum)
     @property uint keyCode() { return _keyCode; }
-    /// flags (shift, ctrl, alt...)
+    /// flags (shift, ctrl, alt...) - KeyFlag enum
     @property uint flags() { return _flags; }
     /// entered text, for Text action
     @property dstring text() { return _text; }
@@ -544,7 +707,7 @@ class KeyEvent {
     }
 }
 
-/// scroll bar / slider action
+/// Scroll bar / slider action codes for ScrollEvent.
 enum ScrollAction : ubyte {
     /// space above indicator pressed
     PageUp,
@@ -562,7 +725,7 @@ enum ScrollAction : ubyte {
     SliderReleased
 }
 
-/// slider/scrollbar event
+/// Slider/scrollbar event
 class ScrollEvent {
     private ScrollAction _action;
     private int _minValue;
@@ -570,14 +733,21 @@ class ScrollEvent {
     private int _pageSize;
     private int _position;
     private bool _positionChanged;
+    /// action
     @property ScrollAction action() { return _action; }
+    /// min value
     @property int minValue() { return _minValue; }
+    /// max value
     @property int maxValue() { return _maxValue; }
+    /// visible part size
     @property int pageSize() { return _pageSize; }
+    /// current position
     @property int position() { return _position; }
+    /// returns true if position has been changed using position property setter
     @property bool positionChanged() { return _positionChanged; }
     /// change position in event handler to update slider position
     @property void position(int newPosition) { _position = newPosition; _positionChanged = true; }
+    /// create scroll event
     this(ScrollAction action, int minValue, int maxValue, int pageSize, int position) {
         _action = action;
         _minValue = minValue;
@@ -625,7 +795,11 @@ class ScrollEvent {
     }
 }
 
-/// converts key code to key name
+/** 
+    Converts KeyCode enum value to human readable key name 
+
+    For unknown key code, prints its hex value.
+*/
 string keyName(uint keyCode) {
 	switch (keyCode) {
 		case KeyCode.KEY_A:

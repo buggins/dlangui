@@ -1,7 +1,13 @@
 // Written in the D programming language.
 
 /**
-This module implements array based collection.
+
+This module implements object collection.
+
+Wrapper around array of objects, providing a set of useful operations, and handling of object ownership.
+
+Optionally can be owner of its items if instanciated with ownItems=true - will destroy removed items.
+
 
 Synopsis:
 
@@ -25,9 +31,8 @@ foreach(w; widgets)
 // remove by value
 widgets -= w3;
 writeln(widgets[0].id);
-
-
 ----
+
 
 Copyright: Vadim Lopatin, 2014
 License:   Boost License 1.0
@@ -37,8 +42,13 @@ module dlangui.core.collections;
 
 import std.algorithm;
 
-/// array based collection of items
-/// retains item order when during add/remove operations
+/** 
+    Array based collection of items.
+
+    Retains item order when during add/remove operations.
+
+    Optionally destroys removed objects when instanciated with ownItems = true.
+*/
 struct Collection(T, bool ownItems = false) {
     private T[] _items;
     private size_t _len;
@@ -205,7 +215,7 @@ struct Collection(T, bool ownItems = false) {
             return T.init; // no items
         return _items[_len - 1];
     }
-
+    /// removes all items on destroy
     ~this() {
         clear();
     }

@@ -96,7 +96,8 @@
 				"derelict-gl3": "~master",
 				"derelict-fi": "~master",
 				"derelict-ft": "~master"
-			}
+			},
+                        "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.", "--ex", "src.dlangui"]
         },
         "./examples/helloworld/",
         "./examples/example1/"
