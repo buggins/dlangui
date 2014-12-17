@@ -36,6 +36,12 @@ import dlangui.widgets.editors;
 import dlangui.platforms.common.platform;
 import dlangui.dialogs.dialog;
 
+private import std.file;
+private import std.path;
+private import std.utf;
+private import std.conv : to;
+
+
 /// flags for file dialog options
 enum FileDialogFlag : uint {
     /// file must exist (use this for open dialog)
@@ -49,7 +55,7 @@ enum FileDialogFlag : uint {
 }
 
 /// File open / save dialog
-class FileDialog : Dialog {
+class FileDialog : Dialog, CustomGridCellAdapter {
 	protected EditLine path;
 	protected EditLine filename;
 	protected StringGridWidget list;
@@ -58,13 +64,78 @@ class FileDialog : Dialog {
 	protected VerticalLayout rightPanel;
 
     protected RootEntry[] _roots;
+    protected string _path;
+    protected string _filename;
+    protected DirEntry[] _entries;
+    protected bool _isRoot;
 
 	this(UIString caption, Window parent, uint fileDialogFlags = DialogFlag.Modal | FileDialogFlag.FileMustExist) {
         super(caption, parent, fileDialogFlags);
     }
 
-    protected void rootEntrySelected(RootEntry entry) {
-        // TODO
+    protected bool openDirectory(string dir) {
+        list.rows = 0;
+        string[] filters;
+        if (!listDirectory(dir, true, true, filters, _entries))
+            return false;
+        _path = dir;
+        _isRoot = isRoot(dir);
+        path.text = toUTF32(_path);
+        list.rows = _entries.length;
+        for (int i = 0; i < _entries.length; i++) {
+            string fname = baseName(_entries[i].name);
+            string sz;
+            string date;
+            bool d = _entries[i].isDir;
+            list.setCellText(1, i, toUTF32(fname));
+            if (d) {
+                list.setCellText(0, i, "folder");
+            } else {
+                list.setCellText(0, i, "text-plain"d);
+                sz = to!string(_entries[i].size);
+                date = "2014-01-01 00:00:00";
+            }
+            list.setCellText(2, i, toUTF32(sz));
+            list.setCellText(3, i, toUTF32(date));
+        }
+        list.autoFitColumnWidths();
+        return true;
+    }
+
+    /// return true for custom drawn cell
+    override bool isCustomCell(int col, int row) {
+        if (col == 0 && row >= 0)
+            return true;
+        return false;
+    }
+
+    protected DrawableRef rowIcon(int row) {
+        string iconId = toUTF8(list.cellText(0, row));
+        DrawableRef res;
+        if (iconId.length)
+            res = drawableCache.get(iconId);
+        return res;
+    }
+
+    /// return cell size
+    override Point measureCell(int col, int row) {
+        DrawableRef icon = rowIcon(row);
+        if (icon.isNull)
+            return Point(0, 0);
+        return Point(icon.width + 2, icon.height + 2);
+    }
+
+	/// draw data cell content
+	override void drawCell(DrawBuf buf, Rect rc, int col, int row) {
+        DrawableRef img = rowIcon(row);
+        if (!img.isNull) {
+            Point sz;
+            sz.x = img.width;
+            sz.y = img.height;
+            applyAlign(rc, sz, Align.HCenter, Align.VCenter);
+            uint st = state;
+            img.drawTo(buf, rc, st);
+        }
     }
 
     protected Widget createRootsList() {
@@ -76,7 +147,7 @@ class FileDialog : Dialog {
             btn.styleId = "TRANSPARENT_BUTTON_BACKGROUND";
             btn.focusable = false;
             btn.onClickListener = delegate(Widget source) {
-                rootEntrySelected(root);
+                openDirectory(root.path);
                 return true;
             };
             adapter.widgets.add(btn);
@@ -110,10 +181,11 @@ class FileDialog : Dialog {
 		rightPanel.addChild(path);
 		list = new StringGridWidget("files");
 		list.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
-		list.resize(3, 3);
-		list.setColTitle(0, "Name"d);
-		list.setColTitle(1, "Size"d);
-		list.setColTitle(2, "Modified"d);
+		list.resize(4, 3);
+		list.setColTitle(0, " "d);
+		list.setColTitle(1, "Name"d);
+		list.setColTitle(2, "Size"d);
+		list.setColTitle(3, "Modified"d);
 		list.showRowHeaders = false;
 		list.rowSelect = true;
 		rightPanel.addChild(list);
@@ -128,7 +200,11 @@ class FileDialog : Dialog {
 		addChild(content);
 		addChild(createButtonsPanel([ACTION_OPEN, ACTION_CANCEL], 0, 0));
 
-		string[] path = splitPath("/home/lve/src");
-		Log.d("path: ", path);
+		//string[] path = splitPath("/home/lve/src");
+		//Log.d("path: ", path);
+
+        list.customCellAdapter = this;
+
+        openDirectory(currentDir);
 	}
 }

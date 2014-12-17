@@ -202,8 +202,25 @@ enum GridActions : int {
 	SelectDocumentEnd,
 }
 
+interface CustomGridCellAdapter {
+    /// return true for custom drawn cell
+    bool isCustomCell(int col, int row);
+    /// return cell size
+    Point measureCell(int col, int row);
+	/// draw data cell content
+	void drawCell(DrawBuf buf, Rect rc, int col, int row);
+}
+
 /// Abstract grid widget
 class GridWidgetBase : ScrollWidgetBase {
+    protected CustomGridCellAdapter _customCellAdapter;
+
+    /// Get adapter to override drawing of some particular cells
+    @property CustomGridCellAdapter customCellAdapter() { return _customCellAdapter; }
+    /// Set adapter to override drawing of some particular cells
+    @property GridWidgetBase customCellAdapter(CustomGridCellAdapter adapter) { _customCellAdapter = adapter; return this; }
+
+
     /// column count (including header columns and fixed columns)
 	protected int _cols;
     /// row count (including header rows and fixed rows)
@@ -1140,6 +1157,9 @@ class StringGridWidget : StringGridWidgetBase {
 	}
 
     protected override Point measureCell(int x, int y) {
+        if (_customCellAdapter && _customCellAdapter.isCustomCell(x, y)) {
+            return _customCellAdapter.measureCell(x, y);
+        }
 		//Log.d("measureCell ", x, ", ", y);
 		FontRef fnt = font;
         dstring txt;
@@ -1158,6 +1178,9 @@ class StringGridWidget : StringGridWidgetBase {
 
 	/// draw cell content
 	protected override void drawCell(DrawBuf buf, Rect rc, int col, int row) {
+        if (_customCellAdapter && _customCellAdapter.isCustomCell(col, row)) {
+            return _customCellAdapter.drawCell(buf, rc, col, row);
+        }
         rc.shrink(2, 1);
 		FontRef fnt = font;
         dstring txt = cellText(col, row);

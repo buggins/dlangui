@@ -143,9 +143,68 @@ struct RootEntry {
     return res;
 }
 
+/// returns true if directory is root directory (e.g. / or C:\)
+bool isRoot(string path) {
+    string root = rootName(path);
+    if (path.equal(root))
+        return true;
+    return false;
+}
+
+/// Filters file name by pattern list
+bool filterFilename(string filename, string[] filters) {
+    return true;
+}
+
+/** List directory content 
+    
+    Optionally filters file names by filter.
+
+    Result will be placed into entries array.
+
+    Returns true if directory exists and listed successfully, false otherwise.
+*/
+bool listDirectory(string dir, bool includeDirs, bool includeFiles, string[] filters, ref DirEntry[] entries) {
+    entries.length = 0;
+    if (!isDir(dir)) {
+        return false;
+    }
+    if (!isRoot(dir) && includeDirs) {
+        entries ~= DirEntry(appendPath(dir, ".."));
+    }
+
+    try {
+        DirEntry[] dirs;
+        DirEntry[] files;
+        foreach (DirEntry e; dirEntries(dir, SpanMode.shallow)) {
+            if (e.isDir) {
+                dirs ~= e;
+            } else if (e.isFile) {
+                files ~= e;
+            }
+        }
+        if (includeDirs)
+            foreach(DirEntry e; dirs)
+                entries ~= e;
+        if (includeFiles)
+            foreach(DirEntry e; files)
+                if (filterFilename(e.name, filters))
+                    entries ~= e;
+        return true;
+    } catch (FileException e) {
+        return false;
+    }
+
+}
+
 /** Returns true if char ch is / or \ slash */
 bool isPathDelimiter(char ch) {
     return ch == '/' || ch == '\\';
+}
+
+/// Returns current directory
+@property string currentDir() {
+    return getcwd();
 }
 
 /** Returns current executable path only, including last path delimiter - removes executable name from result of std.file.thisExePath() */
