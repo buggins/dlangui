@@ -63,3 +63,4 @@ public import dlangui.widgets.tree;
 public import dlangui.widgets.combobox;
 public import dlangui.graphics.fonts;
 public import dlangui.core.i18n;
+public import dlangui.core.files;

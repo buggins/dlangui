@@ -28,6 +28,7 @@ import std.file;
 
 import dlangui.core.logger;
 import dlangui.core.events;
+import dlangui.core.files;
 import dlangui.graphics.drawbuf;
 import dlangui.graphics.fonts;
 import dlangui.graphics.ftfonts;

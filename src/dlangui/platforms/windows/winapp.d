@@ -39,6 +39,7 @@ import dlangui.graphics.drawbuf;
 import dlangui.graphics.images;
 import dlangui.graphics.fonts;
 import dlangui.core.logger;
+import dlangui.core.files;
 
 version (USE_OPENGL) {
     import dlangui.graphics.glsupport;

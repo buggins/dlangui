@@ -294,6 +294,7 @@
     <Folder name="core">
      <File path="src\dlangui\core\collections.d" />
      <File path="src\dlangui\core\events.d" />
+     <File path="src\dlangui\core\files.d" />
      <File path="src\dlangui\core\i18n.d" />
      <File path="src\dlangui\core\linestream.d" />
      <File path="src\dlangui\core\logger.d" />

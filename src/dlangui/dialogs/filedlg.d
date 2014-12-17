@@ -26,6 +26,7 @@ module dlangui.dialogs.filedlg;
 import dlangui.core.events;
 import dlangui.core.i18n;
 import dlangui.core.stdaction;
+import dlangui.core.files;
 import dlangui.widgets.controls;
 import dlangui.widgets.lists;
 import dlangui.widgets.popup;

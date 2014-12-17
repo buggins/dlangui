@@ -58,6 +58,7 @@ module dlangui.core.i18n;
 
 import dlangui.core.types;
 import dlangui.core.logger;
+import dlangui.core.files;
 private import dlangui.core.linestream;
 private import std.utf;
 private import std.algorithm;
