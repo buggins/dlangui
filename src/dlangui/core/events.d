@@ -309,25 +309,42 @@ enum MouseButton : ubyte {
 /// Mouse button state details for MouseEvent
 struct ButtonDetails {
 	/// Clock.currStdTime() for down event of this button (0 if button is up).
-	long  _downTs;
+	protected long  _downTs;
 	/// Clock.currStdTime() for up event of this button (0 if button is still down).
-	long  _upTs;
+	protected long  _upTs;
 	/// x coordinates of down event
-	short _downX;
+	protected short _downX;
 	/// y coordinates of down event
-	short _downY;
+	protected short _downY;
 	/// mouse button flags when down event occured
-	ushort _downFlags;
+	protected ushort _downFlags;
+    /// true if button is made down shortly after up - valid if button is down
+    protected bool _doubleClick;
+
+    /// Returns true if button is made down shortly after up
+    @property bool doubleClick() {
+        return _doubleClick;
+    }
+
+    static final long DOUBLE_CLICK_THRESHOLD_MS = 200;
+
 	/// update for button down
 	void down(short x, short y, ushort flags) {
+        //Log.d("Button down ", x, ",", y, " _downTs=", _downTs, " _upTs=", _upTs);
+        long oldDownTs = _downTs;
 		_downX = x;
 		_downY = y;
 		_downFlags = flags;
         _upTs = 0;
 		_downTs = std.datetime.Clock.currStdTime;
+        long downIntervalMs = (_downTs - oldDownTs) / 10000;
+        //Log.d("Button down ", x, ",", y, " _downTs=", _downTs, " _upTs=", _upTs, " downInterval=", downIntervalMs);
+        _doubleClick = (oldDownTs && downIntervalMs < DOUBLE_CLICK_THRESHOLD_MS);
 	}
 	/// update for button up
 	void up(short x, short y, ushort flags) {
+        //Log.d("Button up ", x, ",", y, " _downTs=", _downTs, " _upTs=", _upTs);
+        _doubleClick = false;
         _upTs = std.datetime.Clock.currStdTime;
 	}
     /// returns true if button is currently pressed
@@ -383,6 +400,14 @@ class MouseEvent {
     @property ref ButtonDetails rbutton() { return _rbutton; }
     /// middle button state details
     @property ref ButtonDetails mbutton() { return _mbutton; }
+    /// button state details for event's button
+    @property ref ButtonDetails buttonDetails() { 
+        if (_button == MouseButton.Right)
+            return _rbutton; 
+        if (_button == MouseButton.Middle)
+            return _mbutton; 
+        return _lbutton;
+    }
     /// button which caused ButtonUp or ButtonDown action
     @property MouseButton button() { return _button; }
     /// action
@@ -397,6 +422,14 @@ class MouseEvent {
 	@property short x() { return _x; }
     /// y coordinate of mouse pointer (relative to window client area)
 	@property short y() { return _y; }
+
+    /// Returns true for ButtonDown event when button is pressed second time in short interval after pressing first time
+    @property bool doubleClick() {
+        if (_action != MouseAction.ButtonDown)
+            return false;
+        return buttonDetails.doubleClick;
+    }
+
     /// get event tracking widget to override
 	@property Widget trackingWidget() { return _trackingWidget; }
     /// returns mouse button tracking flag

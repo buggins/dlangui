@@ -69,11 +69,13 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     protected DirEntry[] _entries;
     protected bool _isRoot;
 
-	this(UIString caption, Window parent, uint fileDialogFlags = DialogFlag.Modal | FileDialogFlag.FileMustExist) {
+	this(UIString caption, Window parent, uint fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable | FileDialogFlag.FileMustExist) {
         super(caption, parent, fileDialogFlags);
     }
 
     protected bool openDirectory(string dir) {
+        dir = buildNormalizedPath(dir);
+        Log.d("FileDialog.openDirectory(", dir, ")");
         list.rows = 0;
         string[] filters;
         if (!listDirectory(dir, true, true, filters, _entries))
@@ -146,16 +148,25 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             btn.orientation = Orientation.Vertical;
             btn.styleId = "TRANSPARENT_BUTTON_BACKGROUND";
             btn.focusable = false;
-            btn.onClickListener = delegate(Widget source) {
-                openDirectory(root.path);
-                return true;
-            };
             adapter.widgets.add(btn);
         }
         list.ownAdapter = adapter;
         list.layoutWidth = WRAP_CONTENT;
         list.layoutHeight = FILL_PARENT;
+        list.onItemClickListener = delegate(Widget source, int itemIndex) {
+            openDirectory(_roots[itemIndex].path);
+            return true;
+        };
         return list;
+    }
+
+    protected void onItemActivated(int index) {
+        DirEntry e = _entries[index];
+        if (e.isDir) {
+            openDirectory(e.name);
+        } else if (e.isFile) {
+        }
+
     }
 
 	/// override to implement creation of dialog controls
@@ -204,7 +215,15 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 		//Log.d("path: ", path);
 
         list.customCellAdapter = this;
+        list.onCellActivated = delegate(GridWidgetBase source, int col, int row) {
+            onItemActivated(row);
+        };
 
         openDirectory(currentDir);
+        minWidth = 600;
+        minHeight = 400;
+        layoutWidth = FILL_PARENT;
+        list.layoutHeight = FILL_PARENT;
+        layoutHeight = FILL_PARENT;
 	}
 }

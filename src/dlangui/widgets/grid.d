@@ -202,6 +202,7 @@ enum GridActions : int {
 	SelectDocumentEnd,
 }
 
+/// Adapter for custom drawing of some cells in grid widgets
 interface CustomGridCellAdapter {
     /// return true for custom drawn cell
     bool isCustomCell(int col, int row);
@@ -211,8 +212,23 @@ interface CustomGridCellAdapter {
 	void drawCell(DrawBuf buf, Rect rc, int col, int row);
 }
 
+/// Callback for handling of cell selection
+interface CellSelectedHandler {
+    void onCellSelected(GridWidgetBase source, int col, int row);
+}
+
+/// Callback for handling of cell double click or Enter key press
+interface CellActivatedHandler {
+    void onCellActivated(GridWidgetBase source, int col, int row);
+}
+
 /// Abstract grid widget
 class GridWidgetBase : ScrollWidgetBase {
+    /// Callback to handle selection change
+    Listener!CellSelectedHandler onCellSelected;
+    /// Callback to handle cell double click
+    Listener!CellActivatedHandler onCellActivated;
+
     protected CustomGridCellAdapter _customCellAdapter;
 
     /// Get adapter to override drawing of some particular cells
@@ -589,6 +605,18 @@ class GridWidgetBase : ScrollWidgetBase {
         calcScrollableAreaPos();
         if (makeVisible)
             makeCellVisible(_col, _row);
+        if (onCellSelected.assigned)
+            onCellSelected(this, _col, _row);
+        return true;
+    }
+
+    /// Select cell and call onCellActivated handler
+    bool activateCell(int col, int row) {
+        if (_col != col || _row != row) {
+            selectCell(col, row, true);
+        }
+        if (onCellActivated.assigned)
+            onCellActivated(this, this.col, this.row);
         return true;
     }
 
@@ -611,7 +639,11 @@ class GridWidgetBase : ScrollWidgetBase {
         }
         if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
             if (cellFound && normalCell) {
-                selectCell(c, r);
+                if (c == _col && r == _row && event.doubleClick) {
+                    activateCell(c, r);
+                } else {
+                    selectCell(c, r);
+                }
             }
             return true;
         }

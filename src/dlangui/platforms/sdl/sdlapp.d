@@ -406,6 +406,23 @@ class SDLWindow : Window {
             event = new MouseEvent(action, btn, lastFlags, lastx, lasty);
         }
         if (event) {
+            ButtonDetails * pbuttonDetails = null;
+            if (button == MouseButton.Left)
+                pbuttonDetails = &_lbutton;
+            else if (button == MouseButton.Right)
+                pbuttonDetails = &_rbutton;
+            else if (button == MouseButton.Middle)
+                pbuttonDetails = &_mbutton;
+            if (pbuttonDetails) {
+                if (action == MouseAction.ButtonDown) {
+                    pbuttonDetails.down(cast(short)x, cast(short)y, lastFlags);
+                } else if (action == MouseAction.ButtonUp) {
+                    pbuttonDetails.up(cast(short)x, cast(short)y, lastFlags);
+                }
+            }
+            event.lbutton = _lbutton;
+            event.rbutton = _rbutton;
+            event.mbutton = _mbutton;
 		    bool res = dispatchMouseEvent(event);
 	        if (res) {
 	            debug(mouse) Log.d("Calling update() after mouse event");
