@@ -717,5 +717,10 @@ extern (C) int UIAppMain(string[] args) {
     window.show();
     //window.windowCaption = "New Window Caption";
     // run message loop
+
+    Log.i("HOME path: ", homePath);
+    Log.i("APPDATA path: ", appDataPath(".dlangui"));
+    Log.i("Root paths: ", getRootPaths);
+
     return Platform.instance.enterMessageLoop();
 }

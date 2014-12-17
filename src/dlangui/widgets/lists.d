@@ -38,7 +38,7 @@ interface ListAdapter {
 
 /// List adapter for simple list of widget instances
 class WidgetListAdapter : ListAdapter {
-    WidgetList _widgets;
+    private WidgetList _widgets;
     /// list of widgets to display
     @property ref WidgetList widgets() { return _widgets; }
     /// returns number of widgets in list

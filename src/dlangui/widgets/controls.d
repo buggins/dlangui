@@ -207,14 +207,40 @@ class ImageButton : ImageWidget {
 class ImageTextButton : HorizontalLayout {
     protected ImageWidget _icon;
     protected TextWidget _label;
+
+    /// Get label text
     override @property dstring text() { return _label.text; }
+    /// Set label plain unicode string
     override @property Widget text(dstring s) { _label.text = s; requestLayout(); return this; }
+    /// Set label string resource Id
     override @property Widget text(UIString s) { _label.text = s; requestLayout(); return this; }
-    this(string ID = null, string drawableId = null, string textResourceId = null) {
-        super(ID);
+    
+    /// Returns orientation: Vertical - image top, Horizontal - image left"
+    override @property Orientation orientation() {
+        return super.orientation();
+    }
+
+    /// Sets orientation: Vertical - image top, Horizontal - image left"
+    override @property LinearLayout orientation(Orientation value) {
+        if (!_icon || !_label)
+            return super.orientation(value);
+        if (value != orientation) {
+            super.orientation(value);
+            if (value == Orientation.Horizontal) {
+                _icon.alignment = Align.Left | Align.VCenter;
+                _label.alignment = Align.Right | Align.VCenter;
+            } else {
+                _icon.alignment = Align.Top | Align.HCenter;
+                _label.alignment = Align.Bottom | Align.HCenter;
+            }
+        }
+        return this; 
+    }
+
+    protected void init(string drawableId, UIString caption) {
         styleId = "BUTTON";
         _icon = new ImageWidget("icon", drawableId);
-        _label = new TextWidget("label", textResourceId);
+        _label = new TextWidget("label", caption);
         _label.styleId = "BUTTON_LABEL";
         _icon.state = State.Parent;
         _label.state = State.Parent;
@@ -224,20 +250,17 @@ class ImageTextButton : HorizontalLayout {
         focusable = true;
         trackHover = true;
     }
+
+    this(string ID = null, string drawableId = null, string textResourceId = null) {
+        super(ID);
+        UIString caption = textResourceId;
+        init(drawableId, caption);
+    }
+
     this(string ID, string drawableId, dstring rawText) {
         super(ID);
-        styleId = "BUTTON";
-        _icon = new ImageWidget("icon", drawableId);
-        _label = new TextWidget("label", rawText);
-        _label.styleId = "BUTTON_LABEL";
-        _icon.styleId = "BUTTON_ICON";
-        _icon.state = State.Parent;
-        _label.state = State.Parent;
-        addChild(_icon);
-        addChild(_label);
-        clickable = true;
-        focusable = true;
-        trackHover = true;
+        UIString caption = rawText;
+        init(drawableId, caption);
     }
 }
 

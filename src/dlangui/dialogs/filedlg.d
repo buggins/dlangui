@@ -48,23 +48,54 @@ enum FileDialogFlag : uint {
     Save = ConfirmOverwrite,
 }
 
-/// file open / save dialog
+/// File open / save dialog
 class FileDialog : Dialog {
-	EditLine path;
-	StringGridWidget list;
-	StringGridWidget places;
-	VerticalLayout leftPanel;
-	VerticalLayout rightPanel;
+	protected EditLine path;
+	protected EditLine filename;
+	protected StringGridWidget list;
+	//protected StringGridWidget places;
+	protected VerticalLayout leftPanel;
+	protected VerticalLayout rightPanel;
+
+    protected RootEntry[] _roots;
+
 	this(UIString caption, Window parent, uint fileDialogFlags = DialogFlag.Modal | FileDialogFlag.FileMustExist) {
         super(caption, parent, fileDialogFlags);
     }
+
+    protected void rootEntrySelected(RootEntry entry) {
+        // TODO
+    }
+
+    protected Widget createRootsList() {
+        ListWidget list = new ListWidget("ROOTS_LIST");
+        WidgetListAdapter adapter = new WidgetListAdapter();
+        foreach(ref RootEntry root; _roots) {
+            ImageTextButton btn = new ImageTextButton(null, root.icon, root.label);
+            btn.orientation = Orientation.Vertical;
+            btn.styleId = "TRANSPARENT_BUTTON_BACKGROUND";
+            btn.focusable = false;
+            btn.onClickListener = delegate(Widget source) {
+                rootEntrySelected(root);
+                return true;
+            };
+            adapter.widgets.add(btn);
+        }
+        list.ownAdapter = adapter;
+        list.layoutWidth = WRAP_CONTENT;
+        list.layoutHeight = FILL_PARENT;
+        return list;
+    }
+
 	/// override to implement creation of dialog controls
 	override void init() {
+        _roots = getRootPaths;
 		layoutWidth(FILL_PARENT);
 		layoutWidth(FILL_PARENT);
 		LinearLayout content = new HorizontalLayout("dlgcontent");
 		content.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).minWidth(400).minHeight(300);
 		leftPanel = new VerticalLayout("places");
+        leftPanel.addChild(createRootsList());
 		rightPanel = new VerticalLayout("main");
 		leftPanel.layoutHeight(FILL_PARENT).minWidth(40);
 		rightPanel.layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT);
@@ -73,6 +104,8 @@ class FileDialog : Dialog {
 		content.addChild(rightPanel);
 		path = new EditLine("path");
 		path.layoutWidth(FILL_PARENT);
+		filename = new EditLine("path");
+		filename.layoutWidth(FILL_PARENT);
 
 		rightPanel.addChild(path);
 		list = new StringGridWidget("files");
@@ -84,12 +117,13 @@ class FileDialog : Dialog {
 		list.showRowHeaders = false;
 		list.rowSelect = true;
 		rightPanel.addChild(list);
+		rightPanel.addChild(filename);
 
-		places = new StringGridWidget("placesList");
-		places.resize(1, 10);
-		places.showRowHeaders(false).showColHeaders(true);
-		places.setColTitle(0, "Places"d);
-		leftPanel.addChild(places);
+		//places = new StringGridWidget("placesList");
+		//places.resize(1, 10);
+		//places.showRowHeaders(false).showColHeaders(true);
+		//places.setColTitle(0, "Places"d);
+		//leftPanel.addChild(places);
 
 		addChild(content);
 		addChild(createButtonsPanel([ACTION_OPEN, ACTION_CANCEL], 0, 0));
