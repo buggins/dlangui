@@ -1,11 +1,13 @@
 Dlang UI
 ========
 
-GUI for D programming language, written in D.
+Cross platform GUI for D. Layouts, styles, themes, unicode, i18n, OpenGL based acceleration, widget set.
 
-Project page: http://buggins.github.io/dlangui/
+Project page: https://github.com/buggins/dlangui
 
-Documentation: http://buggins.github.io/dlangui/
+Documentation: http://buggins.github.io/dlangui
+
+Wiki: https://github.com/buggins/dlangui/wiki/Home
 
 Some screenshots: http://buggins.github.io/dlangui/screenshots.html
 
@@ -15,9 +17,8 @@ Some screenshots: http://buggins.github.io/dlangui/screenshots.html
 * Supports highly customizable UI themes and styles
 * Supports internationalization
 * Hardware acceleration using OpenGL (when built with version USE_OPENGL)
-* Fallback to Win32 API / XCB when OpenGL is not available (e.g. opengl dynamic library cannot be loaded)
+* Fallback to pure Win32 API / SDL / XCB when OpenGL is not available (e.g. opengl dynamic library cannot be loaded)
 * Actually it's a port (with major refactoring) of GUI library for cross platform OpenGL based implementation of Cool Reader app project from C++.
-* Almost ready for 2D games development
 * Non thread safe - all UI operations should be preformed in single thread
 
 
@@ -268,4 +269,9 @@ There is sample project which is using DLangUI.
 
 https://github.com/buggins/dlangide
 
-Attempt to write IDE using DLangUI.
+How to build and run using DUB:
+	
+	git clone git@github.com:buggins/dlangide.git
+	cd dlang ide
+	dub run
+
