@@ -102,7 +102,7 @@ class StringListAdapter : ListAdapter {
 
     protected void updateStatesLength() {
         if (_states.length < _items.length) {
-            int oldlen = _states.length;
+            int oldlen = cast(int)_states.length;
             _states.length = _items.length;
             for (int i = oldlen; i < _items.length; i++)
                 _states[i] = State.Enabled;

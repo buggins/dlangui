@@ -83,7 +83,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _path = dir;
         _isRoot = isRoot(dir);
         path.text = toUTF32(_path);
-        list.rows = _entries.length;
+        list.rows = cast(int)_entries.length;
         for (int i = 0; i < _entries.length; i++) {
             string fname = baseName(_entries[i].name);
             string sz;
