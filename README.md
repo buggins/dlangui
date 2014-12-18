@@ -271,7 +271,7 @@ https://github.com/buggins/dlangide
 
 How to build and run using DUB:
 	
-	git clone git@github.com:buggins/dlangide.git
-	cd dlang ide
+	git clone https://github.com/buggins/dlangide.git
+	cd dlangide
 	dub run
 
