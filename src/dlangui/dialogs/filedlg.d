@@ -56,9 +56,9 @@ enum FileDialogFlag : uint {
 
 /// File open / save dialog
 class FileDialog : Dialog, CustomGridCellAdapter {
-	protected EditLine path;
-	protected EditLine filename;
-	protected StringGridWidget list;
+	protected EditLine _edPath;
+	protected EditLine _edFilename;
+	protected StringGridWidget _fileList;
 	//protected StringGridWidget places;
 	protected VerticalLayout leftPanel;
 	protected VerticalLayout rightPanel;
@@ -73,34 +73,42 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         super(caption, parent, fileDialogFlags);
     }
 
+    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+    override void layout(Rect rc) {
+        super.layout(rc);
+        _fileList.autoFitColumnWidths();
+        _fileList.fillColumnWidth(1);
+    }
+
     protected bool openDirectory(string dir) {
         dir = buildNormalizedPath(dir);
         Log.d("FileDialog.openDirectory(", dir, ")");
-        list.rows = 0;
+        _fileList.rows = 0;
         string[] filters;
-        if (!listDirectory(dir, true, true, filters, _entries))
+        if (!listDirectory(dir, true, true, false, filters, _entries))
             return false;
         _path = dir;
         _isRoot = isRoot(dir);
-        path.text = toUTF32(_path);
-        list.rows = cast(int)_entries.length;
+        _edPath.text = toUTF32(_path);
+        _fileList.rows = cast(int)_entries.length;
         for (int i = 0; i < _entries.length; i++) {
             string fname = baseName(_entries[i].name);
             string sz;
             string date;
             bool d = _entries[i].isDir;
-            list.setCellText(1, i, toUTF32(fname));
+            _fileList.setCellText(1, i, toUTF32(fname));
             if (d) {
-                list.setCellText(0, i, "folder");
+                _fileList.setCellText(0, i, "folder");
             } else {
-                list.setCellText(0, i, "text-plain"d);
+                _fileList.setCellText(0, i, "text-plain"d);
                 sz = to!string(_entries[i].size);
                 date = "2014-01-01 00:00:00";
             }
-            list.setCellText(2, i, toUTF32(sz));
-            list.setCellText(3, i, toUTF32(date));
+            _fileList.setCellText(2, i, toUTF32(sz));
+            _fileList.setCellText(3, i, toUTF32(date));
         }
-        list.autoFitColumnWidths();
+        _fileList.autoFitColumnWidths();
+        _fileList.fillColumnWidth(1);
         return true;
     }
 
@@ -112,7 +120,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     }
 
     protected DrawableRef rowIcon(int row) {
-        string iconId = toUTF8(list.cellText(0, row));
+        string iconId = toUTF8(_fileList.cellText(0, row));
         DrawableRef res;
         if (iconId.length)
             res = drawableCache.get(iconId);
@@ -141,7 +149,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     }
 
     protected Widget createRootsList() {
-        ListWidget list = new ListWidget("ROOTS_LIST");
+        ListWidget res = new ListWidget("ROOTS_LIST");
         WidgetListAdapter adapter = new WidgetListAdapter();
         foreach(ref RootEntry root; _roots) {
             ImageTextButton btn = new ImageTextButton(null, root.icon, root.label);
@@ -150,14 +158,14 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             btn.focusable = false;
             adapter.widgets.add(btn);
         }
-        list.ownAdapter = adapter;
-        list.layoutWidth = WRAP_CONTENT;
-        list.layoutHeight = FILL_PARENT;
-        list.onItemClickListener = delegate(Widget source, int itemIndex) {
+        res.ownAdapter = adapter;
+        res.layoutWidth = WRAP_CONTENT;
+        res.layoutHeight = FILL_PARENT;
+        res.onItemClickListener = delegate(Widget source, int itemIndex) {
             openDirectory(_roots[itemIndex].path);
             return true;
         };
-        return list;
+        return res;
     }
 
     protected void onItemActivated(int index) {
@@ -172,58 +180,58 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 	/// override to implement creation of dialog controls
 	override void init() {
         _roots = getRootPaths;
+
 		layoutWidth(FILL_PARENT);
 		layoutWidth(FILL_PARENT);
+        minWidth = 600;
+        minHeight = 400;
+
 		LinearLayout content = new HorizontalLayout("dlgcontent");
+
 		content.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).minWidth(400).minHeight(300);
+
 		leftPanel = new VerticalLayout("places");
         leftPanel.addChild(createRootsList());
-		rightPanel = new VerticalLayout("main");
 		leftPanel.layoutHeight(FILL_PARENT).minWidth(40);
+
+		rightPanel = new VerticalLayout("main");
 		rightPanel.layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT);
 		rightPanel.addChild(new TextWidget(null, "Path:"d));
+
 		content.addChild(leftPanel);
 		content.addChild(rightPanel);
-		path = new EditLine("path");
-		path.layoutWidth(FILL_PARENT);
-		filename = new EditLine("path");
-		filename.layoutWidth(FILL_PARENT);
 
-		rightPanel.addChild(path);
-		list = new StringGridWidget("files");
-		list.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
-		list.resize(4, 3);
-		list.setColTitle(0, " "d);
-		list.setColTitle(1, "Name"d);
-		list.setColTitle(2, "Size"d);
-		list.setColTitle(3, "Modified"d);
-		list.showRowHeaders = false;
-		list.rowSelect = true;
-		rightPanel.addChild(list);
-		rightPanel.addChild(filename);
+		_edPath = new EditLine("path");
+		_edPath.layoutWidth(FILL_PARENT);
+        _edPath.layoutWeight = 0;
 
-		//places = new StringGridWidget("placesList");
-		//places.resize(1, 10);
-		//places.showRowHeaders(false).showColHeaders(true);
-		//places.setColTitle(0, "Places"d);
-		//leftPanel.addChild(places);
+		_edFilename = new EditLine("path");
+		_edFilename.layoutWidth(FILL_PARENT);
+        _edFilename.layoutWeight = 0;
+
+		rightPanel.addChild(_edPath);
+		_fileList = new StringGridWidget("files");
+		_fileList.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+		_fileList.resize(4, 3);
+		_fileList.setColTitle(0, " "d);
+		_fileList.setColTitle(1, "Name"d);
+		_fileList.setColTitle(2, "Size"d);
+		_fileList.setColTitle(3, "Modified"d);
+		_fileList.showRowHeaders = false;
+		_fileList.rowSelect = true;
+		rightPanel.addChild(_fileList);
+		rightPanel.addChild(_edFilename);
+
 
 		addChild(content);
 		addChild(createButtonsPanel([ACTION_OPEN, ACTION_CANCEL], 0, 0));
 
-		//string[] path = splitPath("/home/lve/src");
-		//Log.d("path: ", path);
-
-        list.customCellAdapter = this;
-        list.onCellActivated = delegate(GridWidgetBase source, int col, int row) {
+        _fileList.customCellAdapter = this;
+        _fileList.onCellActivated = delegate(GridWidgetBase source, int col, int row) {
             onItemActivated(row);
         };
 
         openDirectory(currentDir);
-        minWidth = 600;
-        minHeight = 400;
-        layoutWidth = FILL_PARENT;
-        list.layoutHeight = FILL_PARENT;
-        layoutHeight = FILL_PARENT;
+        _fileList.layoutHeight = FILL_PARENT;
 	}
 }

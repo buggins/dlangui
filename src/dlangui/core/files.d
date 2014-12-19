@@ -164,11 +164,14 @@ bool filterFilename(string filename, string[] filters) {
 
     Returns true if directory exists and listed successfully, false otherwise.
 */
-bool listDirectory(string dir, bool includeDirs, bool includeFiles, string[] filters, ref DirEntry[] entries) {
+bool listDirectory(string dir, bool includeDirs, bool includeFiles, bool showHiddenFiles, string[] filters, ref DirEntry[] entries) {
+
     entries.length = 0;
+
     if (!isDir(dir)) {
         return false;
     }
+
     if (!isRoot(dir) && includeDirs) {
         entries ~= DirEntry(appendPath(dir, ".."));
     }
@@ -177,6 +180,9 @@ bool listDirectory(string dir, bool includeDirs, bool includeFiles, string[] fil
         DirEntry[] dirs;
         DirEntry[] files;
         foreach (DirEntry e; dirEntries(dir, SpanMode.shallow)) {
+            string fn = baseName(e.name);
+            if (!showHiddenFiles && fn.startsWith("."))
+                continue;
             if (e.isDir) {
                 dirs ~= e;
             } else if (e.isFile) {

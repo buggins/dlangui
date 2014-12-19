@@ -1045,9 +1045,21 @@ class GridWidgetBase : ScrollWidgetBase {
         _colWidths[i] = (i < _headerCols && !_showRowHeaders) ? 0 : measureColWidth(i) + 5;
     }
 
+    /// extend specified column width to fit client area if grid width
+    void fillColumnWidth(int colIndex) {
+        int w = _clientRect.width;
+        int totalw = 0;
+        for (int i = 0; i < _cols; i++)
+            totalw += _colWidths[i];
+        if (w > totalw)
+            _colWidths[colIndex + _headerCols] += w - totalw;
+        invalidate();
+    }
+
     void autoFitColumnWidths() {
         for (int i = 0; i < _cols; i++)
             autoFitColumnWidth(i);
+        invalidate();
     }
 
     void autoFitRowHeight(int i) {
