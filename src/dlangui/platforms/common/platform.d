@@ -430,6 +430,18 @@ class Window {
         return (_mouseCaptureWidget !is null && isChild(_mouseCaptureWidget));
     }
 
+    /// dispatch action to main widget
+    bool dispatchAction(Action action) {
+        Widget focus = focusedWidget;
+        // first, offer action to focused widget
+        if (focus && focus.handleAction(action))
+                return true;
+        // if not processed by focused widget, pass to main widget
+        if (_mainWidget !is null)
+            return _mainWidget.handleAction(action);
+        return false;
+    }
+
     /// dispatch mouse event to window content widgets
     bool dispatchMouseEvent(MouseEvent event) {
         // ignore events if there is no root

@@ -185,9 +185,13 @@ class SDLWindow : Window {
 			Log.e("Trying to set null icon for window");
 			return;
 		}
-		icon = new ColorDrawBuf(icon);
-		icon.invertAlpha();
-		SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(icon.scanLine(0), icon.width, icon.height, 32, icon.width * 4, 0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
+        int iconw = 32;
+        int iconh = 32;
+        ColorDrawBuf iconDraw = new ColorDrawBuf(iconw, iconh);
+        iconDraw.fill(0xE0E0E0);
+        iconDraw.drawRescaled(Rect(0, 0, iconw, iconh), icon, Rect(0, 0, icon.width, icon.height));
+		iconDraw.invertAlpha();
+		SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(iconDraw.scanLine(0), iconDraw.width, iconDraw.height, 32, iconDraw.width * 4, 0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
 		if (surface) {
 			// The icon is attached to the window pointer
 			SDL_SetWindowIcon(_win, surface); 
@@ -196,7 +200,7 @@ class SDLWindow : Window {
 		} else {
 			Log.e("failed to set window icon");
 		}
-		destroy(icon);
+		destroy(iconDraw);
 	}
 
 	/// after drawing, call to schedule redraw if animation is active
@@ -818,11 +822,14 @@ class SDLPlatform : Platform {
                             case SDL_WINDOWEVENT_RESIZED:
                                 Log.d("SDL_WINDOWEVENT_RESIZED win=", event.window.windowID, " pos=", event.window.data1,
                                         ",", event.window.data2);
+                                w.onResize(event.window.data1, event.window.data2);
+                                w.redraw();
                                 break;
                             case SDL_WINDOWEVENT_SIZE_CHANGED:
                                 Log.d("SDL_WINDOWEVENT_SIZE_CHANGED win=", event.window.windowID, " pos=", event.window.data1,
                                         ",", event.window.data2);
                                 w.onResize(event.window.data1, event.window.data2);
+                                w.redraw();
                                 break;
                             case SDL_WINDOWEVENT_CLOSE:
                                 Log.d("SDL_WINDOWEVENT_CLOSE win=", event.window.windowID);

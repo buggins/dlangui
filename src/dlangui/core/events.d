@@ -93,7 +93,7 @@ class Action {
         return this;
     }
     /// deep copy constructor
-    this(Action a) {
+    this(immutable Action a) {
         _id = a._id;
         _label = a._label;
         _iconId = a._iconId;
@@ -102,10 +102,11 @@ class Action {
             _accelerators[i] = a._accelerators[i];
         _stringParam = a._stringParam;
         _longParam = a._longParam;
-        _objectParam = a._objectParam;
+        if (a._objectParam)
+            _objectParam = cast(Object)a._objectParam;
     }
     /// deep copy
-    @property Action clone() { return new Action(this); }
+    @property Action clone() immutable { return new Action(this); }
     /// create action only with ID
     this(int id) {
         _id = id;

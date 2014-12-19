@@ -43,6 +43,7 @@ class Dialog : VerticalLayout {
     protected Window _parentWindow;
     protected UIString _caption;
     protected uint _flags;
+    protected string _icon;
 
 	Signal!DialogResultHandler onDialogResult;
 
@@ -50,12 +51,28 @@ class Dialog : VerticalLayout {
         super("dlg");
         _caption = caption;
         _parentWindow = parentWindow;
+        _flags = flags;
+        _icon = "dlangui-logo1";
+    }
+
+    /// get icon resource id
+    @property string windowIcon() {
+        return _icon;
+    }
+
+    /// set icon resource id
+    @property Dialog windowIcon(string iconResourceId) {
+        _icon = iconResourceId;
+		if (_window && _icon)
+			_window.windowIcon = drawableCache.getImage(_icon);
+        return this;
     }
 
 	@property UIString windowCaption() {
 		return _caption;
 	}
 
+    /// set window caption
 	@property Dialog windowCaption(dstring caption) {
 		_caption = caption;
 		if (_window)
@@ -63,6 +80,7 @@ class Dialog : VerticalLayout {
         return this;
 	}
 
+    /// get window caption
 	@property Dialog windowCaption(UIString caption) {
 		_caption = caption;
 		if (_window)
@@ -74,6 +92,7 @@ class Dialog : VerticalLayout {
 	Widget createButtonsPanel(const Action[] actions, int defaultActionIndex, int splitBeforeIndex) {
 		LinearLayout res = new HorizontalLayout("buttons");
 		res.layoutWidth(FILL_PARENT);
+        res.layoutWeight = 0;
 		for (int i = 0; i < actions.length; i++) {
 			if (splitBeforeIndex == i)
 				res.addChild(new HSpacer());
@@ -94,6 +113,24 @@ class Dialog : VerticalLayout {
 	void init() {
 	}
 
+    /** Notify about dialog result, and then close dialog.
+
+        If onDialogResult listener is assigned, pass action to it.
+
+        If no onDialogResult listener, pass to owner window.
+
+        If action is null, no result dispatching will occur.
+      */
+    void close(Action action) {
+        if (action) {
+            if (onDialogResult.assigned)
+                onDialogResult(this, action);
+            else if (_parentWindow)
+                _parentWindow.dispatchAction(action);
+        }
+        window.close();
+    }
+
     /// shows dialog
     void show() {
 		init();
@@ -103,6 +140,8 @@ class Dialog : VerticalLayout {
         if (_flags & DialogFlag.Resizable)
             wflags |= WindowFlag.Resizable;
         _window = Platform.instance.createWindow(_caption, _parentWindow, wflags);
+		if (_window && _icon)
+			_window.windowIcon = drawableCache.getImage(_icon);
         _window.mainWidget = this;
         _window.show();
     }

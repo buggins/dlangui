@@ -62,6 +62,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 	//protected StringGridWidget places;
 	protected VerticalLayout leftPanel;
 	protected VerticalLayout rightPanel;
+    protected Action _action;
 
     protected RootEntry[] _roots;
     protected string _path;
@@ -69,8 +70,9 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     protected DirEntry[] _entries;
     protected bool _isRoot;
 
-	this(UIString caption, Window parent, uint fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable | FileDialogFlag.FileMustExist) {
+	this(UIString caption, Window parent, Action action = null, uint fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable | FileDialogFlag.FileMustExist) {
         super(caption, parent, fileDialogFlags);
+        _action = action;
     }
 
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
@@ -173,6 +175,10 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         if (e.isDir) {
             openDirectory(e.name);
         } else if (e.isFile) {
+            string fname = e.name;
+            Action result = ACTION_OPEN.clone();
+            result.stringParam = fname;
+            close(result);
         }
 
     }
