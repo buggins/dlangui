@@ -32,20 +32,20 @@ enum StandardAction : int {
     Save,
 }
 
-immutable Action ACTION_OK;
-immutable Action ACTION_CANCEL;
-immutable Action ACTION_YES;
-immutable Action ACTION_NO;
-immutable Action ACTION_CLOSE;
-immutable Action ACTION_ABORT;
-immutable Action ACTION_RETRY;
-immutable Action ACTION_IGNORE;
-immutable Action ACTION_OPEN;
-immutable Action ACTION_SAVE;
+const Action ACTION_OK;
+const Action ACTION_CANCEL;
+const Action ACTION_YES;
+const Action ACTION_NO;
+const Action ACTION_CLOSE;
+const Action ACTION_ABORT;
+const Action ACTION_RETRY;
+const Action ACTION_IGNORE;
+const Action ACTION_OPEN;
+const Action ACTION_SAVE;
 
 static this()
 {
-  ACTION_OK = cast(immutable(Action)) new Action(StandardAction.Ok, "ACTION_OK"c);
+  ACTION_OK = new Action(StandardAction.Ok, "ACTION_OK"c);
   ACTION_CANCEL = cast(immutable(Action)) new Action(StandardAction.Cancel, "ACTION_CANCEL"c);
   ACTION_YES = cast(immutable(Action)) new Action(StandardAction.Yes, "ACTION_YES"c);
   ACTION_NO = cast(immutable(Action)) new Action(StandardAction.No, "ACTION_NO"c);

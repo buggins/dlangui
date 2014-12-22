@@ -24,6 +24,8 @@ import dlangui.core.collections;
 import dlangui.widgets.widget;
 import dlangui.widgets.popup;
 import dlangui.graphics.drawbuf;
+import dlangui.core.stdaction;
+import dlangui.dialogs.msgbox;
 
 private import dlangui.graphics.gldrawbuf;
 private import std.algorithm;
@@ -597,6 +599,13 @@ class Window {
     abstract void invalidate();
 	/// close window
 	abstract void close();
+
+    /// Show message box with specified title and message
+    void showMessageBox(UIString title, UIString message, const (Action)[] actions = [ACTION_OK], int defaultActionIndex = 0, bool delegate(const Action result) handler = null) {
+        MessageBox dlg = new MessageBox(title, message, this, actions, defaultActionIndex, handler);
+        dlg.show();
+    }
+
 }
 
 /**

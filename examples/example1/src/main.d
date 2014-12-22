@@ -18,6 +18,7 @@ module main;
 import dlangui.all;
 import dlangui.dialogs.dialog;
 import dlangui.dialogs.filedlg;
+import dlangui.dialogs.msgbox;
 import std.stdio;
 import std.conv;
 import std.utf;
@@ -295,6 +296,9 @@ extern (C) int UIAppMain(string[] args) {
                     FileDialog dlg = new FileDialog(caption, window, null);
 					dlg.onDialogResult = delegate(Dialog dlg, const Action result) {
 						Log.d("FileDialog.onDialogResult: ", result, " param=", result.stringParam);
+                        window.showMessageBox(UIString("FileOpen result"d), UIString(toUTF32(result.stringParam)));
+                        import dlangui.core.stdaction;
+
 					};
                     dlg.show();
                     return true;

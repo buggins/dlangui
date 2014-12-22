@@ -305,6 +305,7 @@
     <Folder name="dialogs">
      <File path="src\dlangui\dialogs\dialog.d" />
      <File path="src\dlangui\dialogs\filedlg.d" />
+     <File path="src\dlangui\dialogs\msgbox.d" />
     </Folder>
     <Folder name="graphics">
      <File path="src\dlangui\graphics\drawbuf.d" />

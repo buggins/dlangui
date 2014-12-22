@@ -4,10 +4,12 @@
 This module contains common Dialog implementation.
 
 
+Use to create custom dialogs.
+
 Synopsis:
 
 ----
-import dlangui.platforms.common.platform;
+import dlangui.dialogs.dialog;
 
 ----
 
@@ -19,6 +21,7 @@ module dlangui.dialogs.dialog;
 
 import dlangui.core.i18n;
 import dlangui.core.signals;
+import dlangui.core.stdaction;
 import dlangui.widgets.layouts;
 import dlangui.widgets.controls;
 import dlangui.platforms.common.platform;
@@ -33,6 +36,7 @@ enum DialogFlag : uint {
     Resizable = 2,
 }
 
+/// slot to pass dialog result
 interface DialogResultHandler {
 	public void onDialogResult(Dialog dlg, const Action result);
 }
@@ -90,6 +94,7 @@ class Dialog : VerticalLayout {
 
     protected const(Action) [] _buttonActions;
 
+    protected ImageTextButton _defaultButton;
 	/// create panel with buttons based on list of actions
 	Widget createButtonsPanel(const(Action) [] actions, int defaultActionIndex, int splitBeforeIndex) {
         _buttonActions = actions;
@@ -102,8 +107,10 @@ class Dialog : VerticalLayout {
 			const Action a = actions[i];
 			string id = "btn" ~ to!string(a.id);
 			ImageTextButton btn = new ImageTextButton(id, a.iconId, a.label);
-			if (defaultActionIndex == i)
+			if (defaultActionIndex == i) {
 				btn.setState(State.Default);
+                _defaultButton = btn;
+            }
             btn.action = a.clone();
 			res.addChild(btn);
 		}
@@ -161,5 +168,8 @@ class Dialog : VerticalLayout {
     /// called after window with dialog is shown
     void onShow() {
         // override to do something useful
+        if (_defaultButton)
+            _defaultButton.setFocus();
     }
 }
+
