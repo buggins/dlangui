@@ -69,6 +69,8 @@ struct Rect {
     @property int middlex() { return (left + right) / 2; }
     /// returns average of top, bottom
     @property int middley() { return (top + bottom) / 2; }
+    /// returns middle point
+    @property Point middle() { return Point(middlex, middley); }
     /// add offset to horizontal and vertical coordinates
     void offset(int dx, int dy) {
         left += dx;

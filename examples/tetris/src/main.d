@@ -123,32 +123,110 @@ class SampleAnimationWidget : VerticalLayout {
 	}
 }
 
+struct FigureCell {
+    // horizontal offset
+    int dx;
+    // vertical offset
+    int dy;
+    this(int[2] v) {
+        dx = v[0];
+        dy = v[1];
+    }
+}
+
+struct FigureShape {
+    // by cell index 0..3
+    FigureCell[4] cells; 
+    this(int[2] c1, int[2] c2, int[2] c3, int[2] c4) {
+        cells[0] = FigureCell(c1);
+        cells[1] = FigureCell(c2);
+        cells[2] = FigureCell(c3);
+        cells[3] = FigureCell(c4);
+    }
+}
+
+struct Figure {
+    FigureShape[4] shapes; // by orientation
+    this(FigureShape[4] v) {
+        shapes = v;
+    }
+}
+
+const Figure[1] FIGURES = [
+    // FIGURE1
+    //   ##
+    // ####
+    // ##
+    Figure([FigureShape([0, 0], [1, 0], [1, 1],  [0, -1]),
+            FigureShape([0, 0], [0, 1], [-1, -1],[1, 0]),
+            FigureShape([0, 0], [1, 0], [1, 1],  [0, -1]),
+            FigureShape([0, 0], [0, 1], [-1, -1],[1, 0])])
+];
+
 class CupWidget : Widget {
 
     int _cols;
     int _rows;
+    int[] _cup;
+
+    static const int RESERVED_ROWS = 4; // reserved for next figure
+    enum : int {
+        WALL = -1,
+        EMPTY = 0,
+        FIGURE1,
+        FIGURE2,
+        FIGURE3,
+        FIGURE4,
+        FIGURE5,
+        FIGURE6,
+        FIGURE7,
+    }
+
+    static const uint[] _figureColors = [0xFF0000, 0xFFFF00, 0xFF00FF, 0x0000FF, 0x800000, 0x408000, 0x000080];
 
     this() {
         super("CUP");
         layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).layoutWeight(3);
         backgroundColor = 0xC0808080;
-        padding(Rect(10, 10, 10, 10));
+        padding(Rect(20, 20, 20, 20));
         init(10, 15);
+
+        setCell(1, 1, FIGURE1);
+        setCell(3, 3, FIGURE2);
+        setCell(4, 4, FIGURE3);
+        setCell(6, 4, FIGURE4);
+        setCell(7, 4, FIGURE5);
+        setCell(4, 5, FIGURE6);
+        setCell(4, 6, FIGURE7);
     }
 
     void init(int cols, int rows) {
         _cols = cols;
         _rows = rows;
+        _cup = new int[_cols * _rows];
+        for (int i = 0; i < _cup.length; i++)
+            _cup[i] = EMPTY;
+    }
+
+    int cell(int col, int row) {
+        if (col < 0 || row < 0 || col >= _cols || row >= _rows)
+            return WALL;
+        return _cup[row * _cols + col];
+    }
+
+    void setCell(int col, int row, int value) {
+        _cup[row * _cols + col] = value;
+        invalidate();
     }
 
     Rect cellRect(Rect rc, int col, int row) {
         int dx = rc.width / _cols;
-        int dy = rc.height / _rows;
+        int dy = rc.height / (_rows + RESERVED_ROWS);
         int dd = dx;
         if (dd > dy)
             dd = dy;
         int x0 = rc.left + (rc.width - dd * _cols) / 2 + dd * col;
-        int y0 = rc.top + (rc.height - dd * _rows) / 2 + dd * row;
+        int y0 = rc.bottom - (rc.height - dd * (_rows + RESERVED_ROWS)) / 2 - dd * row - dd;
         return Rect(x0, y0, x0 + dd, y0 + dd);
     }
 
@@ -160,11 +238,29 @@ class CupWidget : Widget {
 		auto saver = ClipRectSaver(buf, rc, alpha);
 	    applyPadding(rc);
 
+        Rect topLeft = cellRect(rc, 0, _rows - 1);
+        Rect bottomRight = cellRect(rc, _cols - 1, 0);
+
+        uint fcl = 0x80404080;
+        int fw = 2;
+        buf.fillRect(Rect(topLeft.left - 1 - fw, topLeft.top, topLeft.left - 1, bottomRight.bottom + 1 + fw), 0x000000);
+        buf.fillRect(Rect(bottomRight.right + 2, topLeft.top, bottomRight.right + 2 + fw, bottomRight.bottom + 2 + fw), 0x000000);
+        buf.fillRect(Rect(topLeft.left - 1 - fw, bottomRight.bottom + 2, bottomRight.right + 2 + fw, bottomRight.bottom + 2 + fw), 0x000000);
+
         for (int row = 0; row < _rows; row++) {
             for (int col = 0; col < _cols; col++) {
-                Rect cell = cellRect(rc, col, row);
-                cell.shrink(1, 1);
-                buf.fillRect(cell, 0x800000FF);
+                int value = cell(col, row);
+                Rect cellRc = cellRect(rc, col, row);
+
+                if (value == EMPTY) {
+                    Point middle = cellRc.middle;
+                    buf.fillRect(Rect(middle.x - 1, middle.y - 1, middle.x + 1, middle.y + 1), 0x404040);
+                } else {
+                    uint cl = _figureColors[value - 1];
+                    cellRc.shrink(1, 1);
+                    int w = cellRc.width / 5;
+                    buf.drawFrame(cellRc, cl, Rect(w,w,w,w));
+                }
             }
         }
 
