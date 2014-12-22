@@ -642,6 +642,8 @@ class GridWidgetBase : ScrollWidgetBase {
             normalCell = c >= _headerCols && r >= _headerRows;
         }
         if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
+            if (canFocus && !focused)
+                setFocus();
             if (cellFound && normalCell) {
                 if (c == _col && r == _row && event.doubleClick) {
                     activateCell(c, r);
@@ -1266,15 +1268,17 @@ class StringGridWidget : StringGridWidgetBase {
         vborder.left = vborder.right - 1;
         hborder.top = hborder.bottom - 1;
         hborder.right--;
-        bool selectedCol = c == col;
+        bool selectedCol = (c == col) && !_rowSelect;
         bool selectedRow = r == row;
         bool selectedCell = selectedCol && selectedRow;
         if (_rowSelect && selectedRow)
             selectedCell = true;
         // draw header cell background
         uint cl = 0x80909090;
-        if (!_rowSelect || col < _headerCols) {
-            if (selectedCol || selectedRow)
+        if (c >= _headerCols || r >= _headerRows) {
+            if (c < _headerCols && selectedRow)
+                cl = 0x80FFC040;
+            if (r < _headerRows && selectedCol)
                 cl = 0x80FFC040;
         }
         buf.fillRect(rc, cl);

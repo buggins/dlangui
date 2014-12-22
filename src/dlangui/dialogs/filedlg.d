@@ -239,5 +239,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
         openDirectory(currentDir);
         _fileList.layoutHeight = FILL_PARENT;
+
+        _fileList.setFocus();
 	}
 }
