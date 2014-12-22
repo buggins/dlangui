@@ -125,41 +125,99 @@ class SampleAnimationWidget : VerticalLayout {
 
 class CupWidget : Widget {
 
+    int _cols;
+    int _rows;
+
     this() {
         super("CUP");
+        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).layoutWeight(3);
+        backgroundColor = 0xC0808080;
+        padding(Rect(10, 10, 10, 10));
+        init(10, 15);
+    }
+
+    void init(int cols, int rows) {
+        _cols = cols;
+        _rows = rows;
+    }
+
+    Rect cellRect(Rect rc, int col, int row) {
+        int dx = rc.width / _cols;
+        int dy = rc.height / _rows;
+        int dd = dx;
+        if (dd > dy)
+            dd = dy;
+        int x0 = rc.left + (rc.width - dd * _cols) / 2 + dd * col;
+        int y0 = rc.top + (rc.height - dd * _rows) / 2 + dd * row;
+        return Rect(x0, y0, x0 + dd, y0 + dd);
     }
 
     /// Draw widget at its position to buffer
     override void onDraw(DrawBuf buf) {
         super.onDraw(buf);
+        Rect rc = _pos;
+        applyMargins(rc);
+		auto saver = ClipRectSaver(buf, rc, alpha);
+	    applyPadding(rc);
+
+        for (int row = 0; row < _rows; row++) {
+            for (int col = 0; col < _cols; col++) {
+                Rect cell = cellRect(rc, col, row);
+                cell.shrink(1, 1);
+                buf.fillRect(cell, 0x800000FF);
+            }
+        }
+
+    }
+    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+    override void measure(int parentWidth, int parentHeight) { 
+        measuredContent(parentWidth, parentHeight, 300, 550);
     }
 }
 
 class StatusWidget : VerticalLayout {
-
+    TextWidget _score;
+    TextWidget _lblNext;
+    this() {
+        super("CUP_STATUS");
+        _score = new TextWidget("SCORE", "Score: 0"d);
+        _lblNext = new TextWidget("NEXT", "Next:"d);
+        backgroundColor = 0xC080FF80;
+        addChild(_score);
+        addChild(_lblNext);
+        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).layoutWeight(2);
+        padding(Rect(20, 20, 20, 20));
+    }
 }
 
 class CupPage : HorizontalLayout {
     CupWidget _cup;
+    StatusWidget _status;
     this() {
         super("CUP_PAGE");
+        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
         setState(State.Default);
         _cup = new CupWidget();
+        _status = new StatusWidget();
         addChild(_cup);
+        addChild(_status);
     }
 }
 
-class GameWidget : FrameLayout {
+//FrameLayout
+class GameWidget : HorizontalLayout {
 
     CupPage _cupPage;
     this() {
         super("GAME");
         _cupPage = new CupPage();
-        showChild(_cupPage.id, Visibility.Invisible, true);
+        addChild(_cupPage);
+        //showChild(_cupPage.id, Visibility.Invisible, true);
 		backgroundImageId = "tx_fabric.tiled";
     }
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
+        super.measure(parentWidth, parentHeight);
         measuredContent(parentWidth, parentHeight, 400, 600);
     }
 }
