@@ -596,6 +596,13 @@ class Widget {
         return false;
     }
 
+    protected Action _action;
+    /// action to emit on click
+    @property Action action() { return _action; }
+    /// action to emit on click
+    @property void action(Action action) { _action = action; }
+
+
     protected bool _focusGroup;
     /*****************************************
      * When focus group is set for some parent widget, focus from one of containing widgets can be moved using keyboard only to one of other widgets containing in it and cannot bypass bounds of focusGroup.
@@ -668,6 +675,9 @@ class Widget {
             }
             return obj1.rect.left < obj2.rect.left;
         }
+        override string toString() {
+            return widget.id;
+        }
     }
 
     private void findFocusableChildren(ref TabOrderInfo[] results, Rect clipRect) {
@@ -727,6 +737,7 @@ class Widget {
                 break;
             }
         }
+        debug(DebugFocus) Log.d("findNextFocusWidget myIndex=", myIndex, " of focusables: ", focusables);
         if (myIndex == -1)
             return null; // not found myself
         if (focusables.length == 1)
@@ -876,7 +887,11 @@ class Widget {
 
     // called to process click and notify listeners
     protected bool handleClick() {
-        bool res = onClickListener(this);
+        bool res = false;
+        if (onClickListener.assigned)
+            res = onClickListener(this);
+        else if (_action)
+            res = handleAction(_action);
         return res;
     }
 

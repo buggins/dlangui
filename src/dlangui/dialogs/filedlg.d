@@ -36,6 +36,7 @@ import dlangui.widgets.editors;
 import dlangui.platforms.common.platform;
 import dlangui.dialogs.dialog;
 
+private import std.algorithm;
 private import std.file;
 private import std.path;
 private import std.utf;
@@ -70,8 +71,17 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     protected DirEntry[] _entries;
     protected bool _isRoot;
 
+    protected bool _isOpenDialog;
+
 	this(UIString caption, Window parent, Action action = null, uint fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable | FileDialogFlag.FileMustExist) {
         super(caption, parent, fileDialogFlags);
+        _isOpenDialog = !(_flags & FileDialogFlag.ConfirmOverwrite);
+        if (action is null) {
+            if (_isOpenDialog)
+                action = ACTION_OPEN.clone();
+            else
+                action = ACTION_SAVE.clone();
+        }
         _action = action;
     }
 
@@ -82,7 +92,11 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _fileList.fillColumnWidth(1);
     }
 
-    protected bool openDirectory(string dir) {
+    protected bool upLevel() {
+        return openDirectory(buildNormalizedPath(_path, ".."), _path);
+    }
+
+    protected bool openDirectory(string dir, string selectedItemPath) {
         dir = buildNormalizedPath(dir);
         Log.d("FileDialog.openDirectory(", dir, ")");
         _fileList.rows = 0;
@@ -93,7 +107,10 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _isRoot = isRoot(dir);
         _edPath.text = toUTF32(_path);
         _fileList.rows = cast(int)_entries.length;
+        int selectionIndex = -1;
         for (int i = 0; i < _entries.length; i++) {
+            if (_entries[i].name.equal(selectedItemPath))
+                selectionIndex = i;
             string fname = baseName(_entries[i].name);
             string sz;
             string date;
@@ -111,7 +128,21 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         }
         _fileList.autoFitColumnWidths();
         _fileList.fillColumnWidth(1);
+        if (selectionIndex >= 0)
+            _fileList.selectCell(1, selectionIndex + 1, true);
+        else if (_entries.length > 0)
+            _fileList.selectCell(1, 1, true);
         return true;
+    }
+
+    override bool onKeyEvent(KeyEvent event) {
+        if (event.action == KeyAction.KeyDown) {
+            if (event.keyCode == KeyCode.BACK && event.flags == 0) {
+                upLevel();
+                return true;
+            }
+        }
+        return false;
     }
 
     /// return true for custom drawn cell
@@ -150,8 +181,9 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         }
     }
 
-    protected Widget createRootsList() {
+    protected ListWidget createRootsList() {
         ListWidget res = new ListWidget("ROOTS_LIST");
+        res.styleId = "EDIT_BOX";
         WidgetListAdapter adapter = new WidgetListAdapter();
         foreach(ref RootEntry root; _roots) {
             ImageTextButton btn = new ImageTextButton(null, root.icon, root.label);
@@ -161,27 +193,60 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             adapter.widgets.add(btn);
         }
         res.ownAdapter = adapter;
-        res.layoutWidth = WRAP_CONTENT;
-        res.layoutHeight = FILL_PARENT;
+        res.layoutWidth(WRAP_CONTENT).layoutHeight(FILL_PARENT).layoutWeight(0);
         res.onItemClickListener = delegate(Widget source, int itemIndex) {
-            openDirectory(_roots[itemIndex].path);
+            openDirectory(_roots[itemIndex].path, null);
             return true;
         };
+        res.focusable = true;
+        debug Log.d("root lisk styleId=", res.styleId);
         return res;
     }
 
+    /// file list item activated (double clicked or Enter key pressed)
     protected void onItemActivated(int index) {
         DirEntry e = _entries[index];
         if (e.isDir) {
-            openDirectory(e.name);
+            openDirectory(e.name, _path);
         } else if (e.isFile) {
             string fname = e.name;
-            Action result = ACTION_OPEN.clone();
+            Action result = _action;
             result.stringParam = fname;
             close(result);
         }
 
     }
+
+    /// file list item selected
+    protected void onItemSelected(int index) {
+        DirEntry e = _entries[index];
+        if (e.isDir) {
+            _edFilename.text = ""d;
+            _filename = "";
+        } else if (e.isFile) {
+            string fname = e.name;
+            _edFilename.text = toUTF32(baseName(fname));
+            _filename = fname;
+        }
+    }
+
+    /// Custom handling of actions
+    override bool handleAction(const Action action) {
+        if (action.id == StandardAction.Cancel) {
+            super.handleAction(action);
+            return true;
+        }
+        if (action.id == StandardAction.Open || action.id == StandardAction.Save) {
+            if (_filename.length > 0) {
+                Action result = _action;
+                result.stringParam = _filename;
+                close(result);
+                return true;
+            }
+        }
+        return super.handleAction(action);
+    }
+
 
 	/// override to implement creation of dialog controls
 	override void init() {
@@ -211,7 +276,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 		_edPath.layoutWidth(FILL_PARENT);
         _edPath.layoutWeight = 0;
 
-		_edFilename = new EditLine("path");
+		_edFilename = new EditLine("filename");
 		_edFilename.layoutWidth(FILL_PARENT);
         _edFilename.layoutWeight = 0;
 
@@ -230,16 +295,22 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
 
 		addChild(content);
-		addChild(createButtonsPanel([ACTION_OPEN, ACTION_CANCEL], 0, 0));
+		addChild(createButtonsPanel([cast(immutable)_action, ACTION_CANCEL], 0, 0));
 
         _fileList.customCellAdapter = this;
         _fileList.onCellActivated = delegate(GridWidgetBase source, int col, int row) {
             onItemActivated(row);
         };
+        _fileList.onCellSelected = delegate(GridWidgetBase source, int col, int row) {
+            onItemSelected(row);
+        };
 
-        openDirectory(currentDir);
+        openDirectory(currentDir, null);
         _fileList.layoutHeight = FILL_PARENT;
 
-        _fileList.setFocus();
 	}
+
+    override void onShow() {
+        _fileList.setFocus();
+    }
 }

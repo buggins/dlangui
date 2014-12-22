@@ -34,7 +34,7 @@ enum DialogFlag : uint {
 }
 
 interface DialogResultHandler {
-	public void onDialogResult(Dialog dlg, Action result);
+	public void onDialogResult(Dialog dlg, const Action result);
 }
 
 /// base for all dialogs
@@ -88,8 +88,11 @@ class Dialog : VerticalLayout {
         return this;
 	}
 
+    protected const(Action) [] _buttonActions;
+
 	/// create panel with buttons based on list of actions
-	Widget createButtonsPanel(const Action[] actions, int defaultActionIndex, int splitBeforeIndex) {
+	Widget createButtonsPanel(const(Action) [] actions, int defaultActionIndex, int splitBeforeIndex) {
+        _buttonActions = actions;
 		LinearLayout res = new HorizontalLayout("buttons");
 		res.layoutWidth(FILL_PARENT);
         res.layoutWeight = 0;
@@ -97,17 +100,25 @@ class Dialog : VerticalLayout {
 			if (splitBeforeIndex == i)
 				res.addChild(new HSpacer());
 			const Action a = actions[i];
-			string id = "btn" ~ to!string(a.id);	
+			string id = "btn" ~ to!string(a.id);
 			ImageTextButton btn = new ImageTextButton(id, a.iconId, a.label);
 			if (defaultActionIndex == i)
 				btn.setState(State.Default);
-			btn.onClickListener = delegate(Widget source) {
-				return handleAction(a);
-			};
+            btn.action = a.clone();
 			res.addChild(btn);
 		}
 		return res;
 	}
+
+    /// Custom handling of actions
+    override bool handleAction(const Action action) {
+        foreach(const Action a; _buttonActions)
+            if (a.id == action.id) {
+                close(action);
+                return true;
+            }
+        return false;
+    }
 
 	/// override to implement creation of dialog controls
 	void init() {
@@ -121,7 +132,7 @@ class Dialog : VerticalLayout {
 
         If action is null, no result dispatching will occur.
       */
-    void close(Action action) {
+    void close(const Action action) {
         if (action) {
             if (onDialogResult.assigned)
                 onDialogResult(this, action);
@@ -144,5 +155,11 @@ class Dialog : VerticalLayout {
 			_window.windowIcon = drawableCache.getImage(_icon);
         _window.mainWidget = this;
         _window.show();
+        onShow();
+    }
+
+    /// called after window with dialog is shown
+    void onShow() {
+        // override to do something useful
     }
 }

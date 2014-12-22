@@ -293,8 +293,8 @@ extern (C) int UIAppMain(string[] args) {
                     UIString caption;
                     caption = "Open Text File"d;
                     FileDialog dlg = new FileDialog(caption, window, null);
-					dlg.onDialogResult = delegate(Dialog dlg, Action result) {
-						Log.d("FileDialog.onDialogResult");
+					dlg.onDialogResult = delegate(Dialog dlg, const Action result) {
+						Log.d("FileDialog.onDialogResult: ", result, " param=", result.stringParam);
 					};
                     dlg.show();
                     return true;

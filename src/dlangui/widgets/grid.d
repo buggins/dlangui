@@ -200,6 +200,8 @@ enum GridActions : int {
 	DocumentEnd,
 	/// move cursor to the end of document with selection
 	SelectDocumentEnd,
+    /// Enter key pressed on cell
+    ActivateCell,
 }
 
 /// Adapter for custom drawing of some cells in grid widgets
@@ -610,7 +612,7 @@ class GridWidgetBase : ScrollWidgetBase {
         if (makeVisible)
             makeCellVisible(_col, _row);
         if (onCellSelected.assigned)
-            onCellSelected(this, _col, _row);
+            onCellSelected(this, _col - _headerCols, _row - _headerRows);
         return true;
     }
 
@@ -799,6 +801,12 @@ class GridWidgetBase : ScrollWidgetBase {
         }
 
 		switch (actionId) {
+            case GridActions.ActivateCell:
+                if (onCellActivated.assigned) {
+                    onCellActivated(this, col, row);
+                    return true;
+                }
+                return false;
             case GridActions.ScrollLeft:
                 scrollBy(-1, 0);
                 return true;
@@ -1103,6 +1111,7 @@ class GridWidgetBase : ScrollWidgetBase {
 			new Action(GridActions.PageEnd, KeyCode.PAGEDOWN, KeyFlag.Control),
 			new Action(GridActions.DocumentBegin, KeyCode.HOME, KeyFlag.Control),
 			new Action(GridActions.DocumentEnd, KeyCode.END, KeyFlag.Control),
+            new Action(GridActions.ActivateCell, KeyCode.RETURN, 0),
 		]);
         focusable = true;
 	}

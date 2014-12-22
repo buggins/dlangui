@@ -311,8 +311,11 @@ class Window {
             if (focus.onKeyEvent(event))
                 return true; // processed by focused widget
         }
-        if (_mainWidget)
-            return dispatchKeyEvent(_mainWidget, event) || res;
+        if (_mainWidget) {
+            if (dispatchKeyEvent(_mainWidget, event))
+                return res;
+            return _mainWidget.onKeyEvent(event) || res;
+        }
         return res;
     }
 
@@ -431,7 +434,7 @@ class Window {
     }
 
     /// dispatch action to main widget
-    bool dispatchAction(Action action) {
+    bool dispatchAction(const Action action) {
         Widget focus = focusedWidget;
         // first, offer action to focused widget
         if (focus && focus.handleAction(action))

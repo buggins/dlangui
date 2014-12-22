@@ -66,7 +66,7 @@ class Action {
     /// optional object parameter
     protected Object _objectParam;
     /// returns optional string parameter
-    @property string stringParam() {
+    @property string stringParam() const {
         return _stringParam;
     }
     /// sets optional string parameter
@@ -107,6 +107,10 @@ class Action {
     }
     /// deep copy
     @property Action clone() immutable { return new Action(this); }
+    /// deep copy
+    @property Action clone() const { return new Action(cast(immutable)this); }
+    /// deep copy
+    @property Action clone() { return new Action(cast(immutable)this); }
     /// create action only with ID
     this(int id) {
         _id = id;
@@ -184,6 +188,10 @@ class Action {
     @property Action iconId(string id) {
         _iconId = id;
         return this;
+    }
+
+    override string toString() const {
+        return "Action(" ~ to!string(_id) ~ ")";
     }
 }
 

@@ -780,7 +780,7 @@ class ListWidget : WidgetGroup, OnScrollHandler {
                 // TODO
             }
         }
-        return false;
+        return super.onKeyEvent(event);
         //if (_selectedItemIndex != -1 && event.action == KeyAction.KeyUp && (event.keyCode == KeyCode.SPACE || event.keyCode == KeyCode.RETURN)) {
         //    itemClicked(_selectedItemIndex);
         //    return true;

@@ -64,7 +64,7 @@
   <doXGeneration>1</doXGeneration>
   <xfilename>$(IntDir)\$(TargetName).json</xfilename>
   <debuglevel>0</debuglevel>
-  <debugids />
+  <debugids>DebugFocus</debugids>
   <versionlevel>0</versionlevel>
   <versionids>USE_SDL USE_OPENGL</versionids>
   <dump_source>0</dump_source>
