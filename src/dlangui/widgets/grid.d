@@ -571,8 +571,8 @@ class GridWidgetBase : ScrollWidgetBase {
             scrolled = true;
         } else {
             while (rc.right > _clientRect.width && _scrollCol < _cols - _fixedCols - _headerCols - 1) {
-//                if (_scrollCol == _col)
-//                    break;
+                if (_scrollCol == col - _headerCols - _fixedCols)
+                    break;
                 _scrollCol++;
                 rc = cellRect(col, row);
                 scrolled = true;
@@ -584,6 +584,8 @@ class GridWidgetBase : ScrollWidgetBase {
             scrolled = true;
         } else {
             while (rc.bottom > _clientRect.height && _scrollRow < _rows - _fixedRows - _headerRows - 1) {
+                if (_scrollRow == row - _headerRows - _fixedRows)
+                    break;
                 _scrollRow++;
                 rc = cellRect(col, row);
                 scrolled = true;
