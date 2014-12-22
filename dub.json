@@ -100,12 +100,14 @@
                         "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.", "--ex", "src.dlangui"]
         },
         "./examples/helloworld/",
-        "./examples/example1/"
+        "./examples/example1/",
+        "./examples/tetris/"
     ],
 
     "dependencies": {
         "dlangui:dlanguilib": "~master",
         "dlangui:example1": "~master",
         "dlangui:helloworld": "~master",
+        "dlangui:tetris": "~master",
     }
 }

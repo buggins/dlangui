@@ -22,6 +22,8 @@ Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dlangide", "..\dlangide\dla
 		{5FF17402-9997-4D0E-8068-6D84B8769D98} = {5FF17402-9997-4D0E-8068-6D84B8769D98}
 	EndProjectSection
 EndProject
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "tetris", "examples\tetris\tetris.visualdproj", "{68C78CAD-6176-4C60-B4A5-520475C26D56}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -48,6 +50,10 @@ Global
 		{66B1B701-6AC9-41F5-8DB4-5CB161321977}.Debug|Win32.Build.0 = Debug|Win32
 		{66B1B701-6AC9-41F5-8DB4-5CB161321977}.Release|Win32.ActiveCfg = Release|Win32
 		{66B1B701-6AC9-41F5-8DB4-5CB161321977}.Release|Win32.Build.0 = Release|Win32
+		{68C78CAD-6176-4C60-B4A5-520475C26D56}.Debug|Win32.ActiveCfg = Debug|Win32
+		{68C78CAD-6176-4C60-B4A5-520475C26D56}.Debug|Win32.Build.0 = Debug|Win32
+		{68C78CAD-6176-4C60-B4A5-520475C26D56}.Release|Win32.ActiveCfg = Release|Win32
+		{68C78CAD-6176-4C60-B4A5-520475C26D56}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
