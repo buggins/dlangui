@@ -50,6 +50,12 @@ uint blendAlpha(uint a1, uint a2) {
 	return (((a1 ^ 0xFF) * (a2 ^ 0xFF)) >> 8) ^ 0xFF;
 }
 
+/// applies additional alpha to color
+uint addAlpha(uint color, uint alpha) {
+    alpha = blendAlpha(color >> 24, alpha);
+    return (color & 0xFFFFFF) | (alpha << 24);
+}
+
 ubyte rgbToGray(uint color) {
     uint srcr = (color >> 16) & 0xFF;
     uint srcg = (color >> 8) & 0xFF;

@@ -19,9 +19,11 @@ import dlangui.all;
 import dlangui.dialogs.dialog;
 import dlangui.dialogs.filedlg;
 import dlangui.dialogs.msgbox;
+import dlangui.graphics.drawbuf;
 import std.stdio;
 import std.conv;
 import std.utf;
+import std.random;
 
 
 mixin APP_ENTRY_POINT;
@@ -123,6 +125,7 @@ class SampleAnimationWidget : VerticalLayout {
 	}
 }
 
+/// Cell offset
 struct FigureCell {
     // horizontal offset
     int dx;
@@ -134,20 +137,26 @@ struct FigureCell {
     }
 }
 
+/// Single figure shape for some particular orientation - 4 cells
 struct FigureShape {
-    // by cell index 0..3
+    /// by cell index 0..3
     FigureCell[4] cells; 
-    // number of cells lowest item is below 0,0 cell
+    /// lowest y coordinate - to show next figure above cup
     int extent;
+    /// upper y coordinate - initial Y offset to place figure to cup
+    int y0;
     this(int[2] c1, int[2] c2, int[2] c3, int[2] c4) {
         cells[0] = FigureCell(c1);
         cells[1] = FigureCell(c2);
         cells[2] = FigureCell(c3);
         cells[3] = FigureCell(c4);
-        extent = 0;
-        for (int i = 0; i < 4; i++)
+        extent = y0 = 0;
+        for (int i = 0; i < 4; i++) {
             if (extent > cells[i].dy)
                 extent = cells[i].dy;
+            if (y0 < cells[i].dy)
+                y0 = cells[i].dy;
+        }
     }
 }
 
@@ -209,8 +218,10 @@ class CupWidget : Widget {
     int _cols;
     int _rows;
     int[] _cup;
+    int _currentFigure;
+    int _nextFigure;
 
-    static const int RESERVED_ROWS = 4; // reserved for next figure
+    static const int RESERVED_ROWS = 5; // reserved for next figure
     enum : int {
         WALL = -1,
         EMPTY = 0,
@@ -220,7 +231,6 @@ class CupWidget : Widget {
         FIGURE4,
         FIGURE5,
         FIGURE6,
-        FIGURE7,
     }
 
     enum : int {
@@ -230,7 +240,11 @@ class CupWidget : Widget {
         ORIENTATION270
     }
 
-    static const uint[] _figureColors = [0xFF0000, 0xFFFF00, 0xFF00FF, 0x0000FF, 0x800000, 0x408000, 0x000080];
+    static const uint[6] _figureColors = [0xFF0000, 0xA0A000, 0xA000A0, 0x0000FF, 0x800000, 0x408000];
+
+    void genNextFigure() {
+        _nextFigure = uniform(FIGURE1, FIGURE6);
+    }
 
     this() {
         super("CUP");
@@ -245,7 +259,8 @@ class CupWidget : Widget {
         setCell(6, 4, FIGURE4);
         setCell(7, 4, FIGURE5);
         setCell(4, 5, FIGURE6);
-        setCell(4, 6, FIGURE7);
+
+        genNextFigure();
     }
 
     void init(int cols, int rows) {
@@ -284,19 +299,29 @@ class CupWidget : Widget {
         int w = cellRc.width / 6;
         buf.drawFrame(cellRc, color, Rect(w,w,w,w));
         cellRc.shrink(w, w);
-        color = (color & 0xFFFFFF) | 0xC0000000;
+        color = addAlpha(color, 0xC0);
         buf.fillRect(cellRc, color);
     }
 
-    protected void drawFigure(DrawBuf buf, Rect rc, int figureIndex, int orientation, int x, int y, int dy) {
-        uint color = _figureColors[figureIndex];
-        FigureShape shape = FIGURES[figureIndex].shapes[orientation];
+    protected void drawFigure(DrawBuf buf, Rect rc, int figureIndex, int orientation, int x, int y, int dy, uint alpha = 0) {
+        uint color = addAlpha(_figureColors[figureIndex - 1], alpha);
+        FigureShape shape = FIGURES[figureIndex - 1].shapes[orientation];
         for (int i = 0; i < 4; i++) {
             Rect cellRc = cellRect(rc, x + shape.cells[i].dx, y + shape.cells[i].dy);
             cellRc.top += dy;
             cellRc.bottom += dy;
             drawCell(buf, cellRc, color);
         }
+    }
+
+    protected bool isPositionFree(int figureIndex, int orientation, int x, int y) {
+        FigureShape shape = FIGURES[figureIndex - 1].shapes[orientation];
+        for (int i = 0; i < 4; i++) {
+            int value = cell(x + shape.cells[i].dx, y + shape.cells[i].dy);
+            if (value != 0) // occupied
+                return false;
+        }
+        return true;
     }
 
     /// Draw widget at its position to buffer
@@ -311,20 +336,23 @@ class CupWidget : Widget {
         Rect bottomRight = cellRect(rc, _cols - 1, 0);
         Rect cupRc = Rect(topLeft.left, topLeft.top, bottomRight.right, bottomRight.bottom);
 
-        int fw = 3;
-        uint fcl = 0x80000060;
-        buf.fillRect(cupRc, 0x80A0C0B0);
-        buf.fillRect(Rect(cupRc.left - 1 - fw, cupRc.top, cupRc.left - 1,       cupRc.bottom + 2), fcl);
-        buf.fillRect(Rect(cupRc.right + 2,     cupRc.top, cupRc.right + 2 + fw, cupRc.bottom + 2), fcl);
-        buf.fillRect(Rect(cupRc.left - 1 - fw, cupRc.bottom + 2, cupRc.right + 2 + fw, cupRc.bottom + 2 + fw), fcl);
+        int fw = 7;
+        int dw = 0;
+        uint fcl = 0xA0606090;
+        buf.fillRect(cupRc, 0xC0A0C0B0);
+        buf.fillRect(Rect(cupRc.left - dw - fw, cupRc.top, cupRc.left - dw,       cupRc.bottom + dw), fcl);
+        buf.fillRect(Rect(cupRc.right + dw,     cupRc.top, cupRc.right + dw + fw, cupRc.bottom + dw), fcl);
+        buf.fillRect(Rect(cupRc.left - dw - fw, cupRc.bottom + dw, cupRc.right + dw + fw, cupRc.bottom + dw + fw), fcl);
 
         for (int row = 0; row < _rows; row++) {
             for (int col = 0; col < _cols; col++) {
+
                 int value = cell(col, row);
                 Rect cellRc = cellRect(rc, col, row);
 
                 Point middle = cellRc.middle;
-                buf.fillRect(Rect(middle.x - 1, middle.y - 1, middle.x + 1, middle.y + 1), 0x404040);
+                buf.fillRect(Rect(middle.x - 1, middle.y - 1, middle.x + 1, middle.y + 1), 0x80404040);
+
                 if (value != EMPTY) {
                     uint cl = _figureColors[value - 1];
                     drawCell(buf, cellRc, cl);
@@ -332,13 +360,20 @@ class CupWidget : Widget {
             }
         }
 
-        drawFigure(buf, rc, 0, 0, 2, 9, 0);
-        drawFigure(buf, rc, 2, 1, 6, 8, 0);
+        drawFigure(buf, rc, FIGURE1, ORIENTATION0,   2, 9, 0);
+        drawFigure(buf, rc, FIGURE2, ORIENTATION90,  6, 8, 0);
+        drawFigure(buf, rc, FIGURE3, ORIENTATION270, 4, 12, 0);
+
+        if (_nextFigure != 0) {
+            auto shape = FIGURES[_nextFigure - 1].shapes[0];
+            drawFigure(buf, rc, _nextFigure, ORIENTATION0, _cols / 2 - 1, _rows - shape.extent + 1, 0, 0xA0);
+        }
 
     }
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
     override void measure(int parentWidth, int parentHeight) { 
-        measuredContent(parentWidth, parentHeight, 300, 550);
+        /// fixed size 350 x 550
+        measuredContent(parentWidth, parentHeight, 350, 550);
     }
 }
 
@@ -355,6 +390,12 @@ class StatusWidget : VerticalLayout {
         layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).layoutWeight(2);
         padding(Rect(20, 20, 20, 20));
     }
+    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+    override void measure(int parentWidth, int parentHeight) { 
+        super.measure(parentWidth, parentHeight);
+        /// fixed size 350 x 550
+        measuredContent(parentWidth, parentHeight, 150, 550);
+    }
 }
 
 class CupPage : HorizontalLayout {
@@ -368,6 +409,12 @@ class CupPage : HorizontalLayout {
         _status = new StatusWidget();
         addChild(_cup);
         addChild(_status);
+    }
+    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+    override void measure(int parentWidth, int parentHeight) { 
+        super.measure(parentWidth, parentHeight);
+        /// fixed size 350 x 550
+        measuredContent(parentWidth, parentHeight, 500, 550);
     }
 }
 
@@ -385,7 +432,7 @@ class GameWidget : HorizontalLayout {
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
     override void measure(int parentWidth, int parentHeight) {
         super.measure(parentWidth, parentHeight);
-        measuredContent(parentWidth, parentHeight, 400, 600);
+        measuredContent(parentWidth, parentHeight, 500, 550);
     }
 }
 
