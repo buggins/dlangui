@@ -137,11 +137,17 @@ struct FigureCell {
 struct FigureShape {
     // by cell index 0..3
     FigureCell[4] cells; 
+    // number of cells lowest item is below 0,0 cell
+    int extent;
     this(int[2] c1, int[2] c2, int[2] c3, int[2] c4) {
         cells[0] = FigureCell(c1);
         cells[1] = FigureCell(c2);
         cells[2] = FigureCell(c3);
         cells[3] = FigureCell(c4);
+        extent = 0;
+        for (int i = 0; i < 4; i++)
+            if (extent > cells[i].dy)
+                extent = cells[i].dy;
     }
 }
 
@@ -152,15 +158,50 @@ struct Figure {
     }
 }
 
-const Figure[1] FIGURES = [
-    // FIGURE1
-    //   ##
-    // ####
-    // ##
+const Figure[6] FIGURES = [
+    //   ##     ####
+    // 00##       00##
+    // ##       
     Figure([FigureShape([0, 0], [1, 0], [1, 1],  [0, -1]),
-            FigureShape([0, 0], [0, 1], [-1, -1],[1, 0]),
+            FigureShape([0, 0], [0, 1], [-1, 1], [1, 0]),
             FigureShape([0, 0], [1, 0], [1, 1],  [0, -1]),
-            FigureShape([0, 0], [0, 1], [-1, -1],[1, 0])])
+            FigureShape([0, 0], [0, 1], [-1, 1], [1, 0])]),
+    // ##         ####
+    // 00##     ##00
+    //   ##     
+    Figure([FigureShape([0, 0], [1, 0], [0, 1],  [1, 1]),
+            FigureShape([0, 0], [0, 1], [1, 1],  [-1, 0]),
+            FigureShape([0, 0], [1, 0], [0, 1],  [1, 1]),
+            FigureShape([0, 0], [0, 1], [1, 1],  [-1, 0])]),
+    //            ##        ##      ####
+    // ##00##     00    ##00##        00
+    // ##         ####                ##
+    Figure([FigureShape([0, 0], [1, 0], [-1,0],  [-1,-1]),
+            FigureShape([0, 0], [0, 1], [0,-1],  [ 1,-1]),
+            FigureShape([0, 0], [1, 0], [-1,0],  [1, 1]),
+            FigureShape([0, 0], [0, 1], [-1,1],  [0,-1])]),
+    //            ####  ##            ##
+    // ##00##     00    ##00##        00
+    //     ##     ##                ####    
+    Figure([FigureShape([0, 0], [1, 0], [-1,0],  [ 1, 1]),
+            FigureShape([0, 0], [0, 1], [0,-1],  [ 1, 1]),
+            FigureShape([0, 0], [1, 0], [-1,0],  [-1, 1]),
+            FigureShape([0, 0], [0, 1], [-1,-1], [0, -1])]),
+    //   ####
+    //   00##
+    //       
+    Figure([FigureShape([0, 0], [1, 0], [0, 1],  [ 1, 1]),
+            FigureShape([0, 0], [1, 0], [0, 1],  [ 1, 1]),
+            FigureShape([0, 0], [1, 0], [0, 1],  [ 1, 1]),
+            FigureShape([0, 0], [1, 0], [0, 1],  [ 1, 1])]),
+    //   ##
+    //   ##
+    //   00     ##00####
+    //   ##    
+    Figure([FigureShape([0, 0], [0, 1], [0, 2],  [ 0,-1]),
+            FigureShape([0, 0], [1, 0], [2, 0],  [-1, 0]),
+            FigureShape([0, 0], [0, 1], [0, 2],  [ 0,-1]),
+            FigureShape([0, 0], [1, 0], [2, 0],  [-1, 0])]),
 ];
 
 class CupWidget : Widget {
@@ -180,6 +221,13 @@ class CupWidget : Widget {
         FIGURE5,
         FIGURE6,
         FIGURE7,
+    }
+
+    enum : int {
+        ORIENTATION0,
+        ORIENTATION90,
+        ORIENTATION180,
+        ORIENTATION270
     }
 
     static const uint[] _figureColors = [0xFF0000, 0xFFFF00, 0xFF00FF, 0x0000FF, 0x800000, 0x408000, 0x000080];
@@ -208,18 +256,18 @@ class CupWidget : Widget {
             _cup[i] = EMPTY;
     }
 
-    int cell(int col, int row) {
+    protected int cell(int col, int row) {
         if (col < 0 || row < 0 || col >= _cols || row >= _rows)
             return WALL;
         return _cup[row * _cols + col];
     }
 
-    void setCell(int col, int row, int value) {
+    protected void setCell(int col, int row, int value) {
         _cup[row * _cols + col] = value;
         invalidate();
     }
 
-    Rect cellRect(Rect rc, int col, int row) {
+    protected Rect cellRect(Rect rc, int col, int row) {
         int dx = rc.width / _cols;
         int dy = rc.height / (_rows + RESERVED_ROWS);
         int dd = dx;
@@ -228,6 +276,27 @@ class CupWidget : Widget {
         int x0 = rc.left + (rc.width - dd * _cols) / 2 + dd * col;
         int y0 = rc.bottom - (rc.height - dd * (_rows + RESERVED_ROWS)) / 2 - dd * row - dd;
         return Rect(x0, y0, x0 + dd, y0 + dd);
+    }
+
+    protected void drawCell(DrawBuf buf, Rect cellRc, uint color) {
+        cellRc.right--;
+        cellRc.bottom--;
+        int w = cellRc.width / 6;
+        buf.drawFrame(cellRc, color, Rect(w,w,w,w));
+        cellRc.shrink(w, w);
+        color = (color & 0xFFFFFF) | 0xC0000000;
+        buf.fillRect(cellRc, color);
+    }
+
+    protected void drawFigure(DrawBuf buf, Rect rc, int figureIndex, int orientation, int x, int y, int dy) {
+        uint color = _figureColors[figureIndex];
+        FigureShape shape = FIGURES[figureIndex].shapes[orientation];
+        for (int i = 0; i < 4; i++) {
+            Rect cellRc = cellRect(rc, x + shape.cells[i].dx, y + shape.cells[i].dy);
+            cellRc.top += dy;
+            cellRc.bottom += dy;
+            drawCell(buf, cellRc, color);
+        }
     }
 
     /// Draw widget at its position to buffer
@@ -240,29 +309,31 @@ class CupWidget : Widget {
 
         Rect topLeft = cellRect(rc, 0, _rows - 1);
         Rect bottomRight = cellRect(rc, _cols - 1, 0);
+        Rect cupRc = Rect(topLeft.left, topLeft.top, bottomRight.right, bottomRight.bottom);
 
-        uint fcl = 0x80404080;
-        int fw = 2;
-        buf.fillRect(Rect(topLeft.left - 1 - fw, topLeft.top, topLeft.left - 1, bottomRight.bottom + 1 + fw), 0x000000);
-        buf.fillRect(Rect(bottomRight.right + 2, topLeft.top, bottomRight.right + 2 + fw, bottomRight.bottom + 2 + fw), 0x000000);
-        buf.fillRect(Rect(topLeft.left - 1 - fw, bottomRight.bottom + 2, bottomRight.right + 2 + fw, bottomRight.bottom + 2 + fw), 0x000000);
+        int fw = 3;
+        uint fcl = 0x80000060;
+        buf.fillRect(cupRc, 0x80A0C0B0);
+        buf.fillRect(Rect(cupRc.left - 1 - fw, cupRc.top, cupRc.left - 1,       cupRc.bottom + 2), fcl);
+        buf.fillRect(Rect(cupRc.right + 2,     cupRc.top, cupRc.right + 2 + fw, cupRc.bottom + 2), fcl);
+        buf.fillRect(Rect(cupRc.left - 1 - fw, cupRc.bottom + 2, cupRc.right + 2 + fw, cupRc.bottom + 2 + fw), fcl);
 
         for (int row = 0; row < _rows; row++) {
             for (int col = 0; col < _cols; col++) {
                 int value = cell(col, row);
                 Rect cellRc = cellRect(rc, col, row);
 
-                if (value == EMPTY) {
-                    Point middle = cellRc.middle;
-                    buf.fillRect(Rect(middle.x - 1, middle.y - 1, middle.x + 1, middle.y + 1), 0x404040);
-                } else {
+                Point middle = cellRc.middle;
+                buf.fillRect(Rect(middle.x - 1, middle.y - 1, middle.x + 1, middle.y + 1), 0x404040);
+                if (value != EMPTY) {
                     uint cl = _figureColors[value - 1];
-                    cellRc.shrink(1, 1);
-                    int w = cellRc.width / 5;
-                    buf.drawFrame(cellRc, cl, Rect(w,w,w,w));
+                    drawCell(buf, cellRc, cl);
                 }
             }
         }
+
+        drawFigure(buf, rc, 0, 0, 2, 9, 0);
+        drawFigure(buf, rc, 2, 1, 6, 8, 0);
 
     }
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
