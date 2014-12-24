@@ -213,6 +213,13 @@ const Figure[6] FIGURES = [
             FigureShape([0, 0], [1, 0], [2, 0],  [-1, 0])]),
 ];
 
+enum TetrisAction : int {
+    MoveLeft = 10000,
+    MoveRight,
+    RotateCCW,
+    FastDown,
+}
+
 class CupWidget : Widget {
 
     int _cols;
@@ -387,6 +394,15 @@ class CupWidget : Widget {
 
         setLevel(1);
         dropNextFigure();
+
+        focusable = true;
+
+		acceleratorMap.add( [
+			new Action(TetrisAction.MoveLeft, KeyCode.LEFT, 0),
+			new Action(TetrisAction.MoveRight, KeyCode.RIGHT, 0),
+			new Action(TetrisAction.RotateCCW, KeyCode.UP, 0),
+		]);
+
     }
 
     void init(int cols, int rows) {
@@ -527,6 +543,25 @@ class CupWidget : Widget {
         /// fixed size 350 x 550
         measuredContent(parentWidth, parentHeight, 350, 550);
     }
+
+	/// override to handle specific actions
+	override bool handleAction(const Action a) {
+        switch (a.id) {
+            case TetrisAction.MoveLeft:
+                move(-1);
+                return true;
+            case TetrisAction.MoveRight:
+                move(1);
+                return true;
+            case TetrisAction.RotateCCW:
+                rotate(1);
+                return true;
+            default:
+                if (parent) // by default, pass to parent widget
+                    return parent.handleAction(a);
+                return false;
+        }
+	}
 }
 
 class StatusWidget : VerticalLayout {
@@ -580,6 +615,7 @@ class GameWidget : HorizontalLayout {
         addChild(_cupPage);
         //showChild(_cupPage.id, Visibility.Invisible, true);
 		backgroundImageId = "tx_fabric.tiled";
+        _cupPage.setFocus();
     }
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
     override void measure(int parentWidth, int parentHeight) {
