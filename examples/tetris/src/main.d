@@ -218,8 +218,105 @@ class CupWidget : Widget {
     int _cols;
     int _rows;
     int[] _cup;
+    /// current figure id
     int _currentFigure;
+    /// current figure base point col
+    int _currentFigureX;
+    /// current figure base point row
+    int _currentFigureY;
+    /// current figure base point row
+    int _currentFigureOrientation;
+    /// next figure id
     int _nextFigure;
+    /// Level 1..10
+    int _level;
+    /// Single cell movement duration for current level, in 1/10000000 of seconds
+    long _movementDuration;
+
+    AnimationHelper _animation;
+
+    /// Cup States
+    enum CupState : int {
+        /// New figure appears
+        NewFigure,
+        /// Game is paused
+        Paused,
+        /// Figure is falling
+        FallingFigure,
+        /// Figure is hanging - pause between falling by one row
+        HangingFigure,
+        /// destroying complete rows
+        DestroyingRows,
+        /// Game is over
+        GameOver,
+    }
+
+    protected CupState _state;
+
+    static const int[10] LEVEL_SPEED = [15000000, 10000000, 7000000, 6000000, 5000000, 4000000, 3500000, 3000000, 2500000, 2000000];
+
+    /// set difficulty level 1..10
+    void setLevel(int level) {
+        _level = level;
+        _movementDuration = LEVEL_SPEED[level - 1];
+    }
+
+    void setState(CupState state, int animationIntervalPercent = 100, int maxProgress = 10000) {
+        _state = state;
+        if (animationIntervalPercent)
+            _animation.start(_movementDuration * animationIntervalPercent / 100, maxProgress);
+        invalidate();
+    }
+
+    /// returns true is widget is being animated - need to call animate() and redraw
+    override @property bool animating() {
+        switch (_state) {
+            case CupState.NewFigure:
+            case CupState.FallingFigure:
+            case CupState.HangingFigure:
+            case CupState.DestroyingRows:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    protected void onAnimationFinished() {
+        switch (_state) {
+            case CupState.NewFigure:
+                genNextFigure();
+                setState(CupState.HangingFigure, 75);
+                break;
+            case CupState.FallingFigure:
+                // TODO
+                if (isPositionFreeBelow()) {
+                    _currentFigureY--;
+                    setState(CupState.HangingFigure, 75);
+                } else {
+                    putFigure(_currentFigure, _currentFigureOrientation, _currentFigureX, _currentFigureY);
+                    if (!dropNextFigure()) {
+                        setState(CupState.GameOver);
+                    }
+                }
+                break;
+            case CupState.HangingFigure:
+                // TODO
+                setState(CupState.FallingFigure, 25);
+                break;
+            case CupState.DestroyingRows:
+                break;
+            default:
+                break;
+        }
+    }
+
+    /// animates window; interval is time left from previous draw, in hnsecs (1/10000000 of second)
+    override void animate(long interval) {
+        _animation.animate(interval);
+        if (_animation.finished) {
+            onAnimationFinished();
+        }
+    }
 
     static const int RESERVED_ROWS = 5; // reserved for next figure
     enum : int {
@@ -246,6 +343,17 @@ class CupWidget : Widget {
         _nextFigure = uniform(FIGURE1, FIGURE6);
     }
 
+    bool dropNextFigure() {
+        if (_nextFigure == 0)
+            genNextFigure();
+        _currentFigure = _nextFigure;
+        _currentFigureOrientation = ORIENTATION0;
+        _currentFigureX = _cols / 2 - 1;
+        _currentFigureY = _rows - 1 - FIGURES[_currentFigure].shapes[_currentFigureOrientation].y0;
+        setState(CupState.NewFigure, 100, 255);
+        return isPositionFree();
+    }
+
     this() {
         super("CUP");
         layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).layoutWeight(3);
@@ -253,14 +361,8 @@ class CupWidget : Widget {
         padding(Rect(20, 20, 20, 20));
         init(10, 15);
 
-        setCell(1, 1, FIGURE1);
-        setCell(3, 3, FIGURE2);
-        setCell(4, 4, FIGURE3);
-        setCell(6, 4, FIGURE4);
-        setCell(7, 4, FIGURE5);
-        setCell(4, 5, FIGURE6);
-
-        genNextFigure();
+        setLevel(1);
+        dropNextFigure();
     }
 
     void init(int cols, int rows) {
@@ -314,6 +416,14 @@ class CupWidget : Widget {
         }
     }
 
+    protected bool isPositionFree() {
+        return isPositionFree(_currentFigure, _currentFigureOrientation, _currentFigureX, _currentFigureY);
+    }
+
+    protected bool isPositionFreeBelow() {
+        return isPositionFree(_currentFigure, _currentFigureOrientation, _currentFigureX, _currentFigureY - 1);
+    }
+
     protected bool isPositionFree(int figureIndex, int orientation, int x, int y) {
         FigureShape shape = FIGURES[figureIndex - 1].shapes[orientation];
         for (int i = 0; i < 4; i++) {
@@ -322,6 +432,13 @@ class CupWidget : Widget {
                 return false;
         }
         return true;
+    }
+
+    protected void putFigure(int figureIndex, int orientation, int x, int y) {
+        FigureShape shape = FIGURES[figureIndex - 1].shapes[orientation];
+        for (int i = 0; i < 4; i++) {
+            setCell(x + shape.cells[i].dx, y + shape.cells[i].dy, figureIndex);
+        }
     }
 
     /// Draw widget at its position to buffer
@@ -360,13 +477,24 @@ class CupWidget : Widget {
             }
         }
 
-        drawFigure(buf, rc, FIGURE1, ORIENTATION0,   2, 9, 0);
-        drawFigure(buf, rc, FIGURE2, ORIENTATION90,  6, 8, 0);
-        drawFigure(buf, rc, FIGURE3, ORIENTATION270, 4, 12, 0);
+        // draw current figure falling
+        if (_state == CupState.FallingFigure || _state == CupState.HangingFigure) {
+            int dy = 0;
+            if (_state == CupState.FallingFigure && isPositionFreeBelow()) {
+                dy = _animation.getProgress(topLeft.height);
+            }
+            drawFigure(buf, rc, _currentFigure, _currentFigureOrientation, _currentFigureX, _currentFigureY, dy, 0);
+        }
+
 
         if (_nextFigure != 0) {
             auto shape = FIGURES[_nextFigure - 1].shapes[0];
-            drawFigure(buf, rc, _nextFigure, ORIENTATION0, _cols / 2 - 1, _rows - shape.extent + 1, 0, 0xA0);
+            uint nextFigureAlpha = 0;
+            if (_state == CupState.NewFigure) {
+                nextFigureAlpha = _animation.progress;
+                drawFigure(buf, rc, _currentFigure, _currentFigureOrientation, _currentFigureX, _currentFigureY, 0, 255 - nextFigureAlpha);
+            }
+            drawFigure(buf, rc, _nextFigure, ORIENTATION0, _cols / 2 - 1, _rows - shape.extent + 1, 0, blendAlpha(0xA0, nextFigureAlpha));
         }
 
     }

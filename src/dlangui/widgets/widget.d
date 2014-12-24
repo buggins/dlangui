@@ -1363,3 +1363,43 @@ class WidgetGroup : Widget {
     }
 
 }
+
+/// Helper to handle animation progress
+struct AnimationHelper {
+    long timeElapsed;
+    long maxInterval;
+    int  maxProgress;
+    /// start new animation interval
+    void start(long maxInterval, int maxProgress) {
+        timeElapsed = 0;
+        this.maxInterval = maxInterval;
+        this.maxProgress = maxProgress;
+        assert(maxInterval > 0);
+        assert(maxProgress > 0);
+    }
+    /// Adds elapsed time; returns animation progress in interval 0..maxProgress while timeElapsed is between 0 and maxInterval; when interval exceeded, progress is maxProgress
+    int animate(long time) {
+        timeElapsed += time;
+        return progress();
+    }
+    /// Returns animation progress in interval 0..maxProgress while timeElapsed is between 0 and maxInterval; when interval exceeded, progress is maxProgress
+    @property int progress() {
+        if (finished)
+            return maxProgress;
+        if (timeElapsed <= 0)
+            return 0;
+        return cast(int)(timeElapsed * maxProgress / maxInterval);
+    }
+    /// Returns animation progress in interval 0..maxProgress while timeElapsed is between 0 and maxInterval; when interval exceeded, progress is maxProgress
+    int getProgress(int maxProgress) {
+        if (finished)
+            return maxProgress;
+        if (timeElapsed <= 0)
+            return 0;
+        return cast(int)(timeElapsed * maxProgress / maxInterval);
+    }
+    /// Returns true if animation is finished
+    @property bool finished() {
+        return timeElapsed >= maxInterval; 
+    }
+}
