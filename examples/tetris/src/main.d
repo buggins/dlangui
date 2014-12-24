@@ -281,6 +281,32 @@ class CupWidget : Widget {
         }
     }
 
+    bool rotate(int delta) {
+        int newOrientation = (_currentFigureOrientation + 4 + delta) & 3;
+        if (isPositionFree(_currentFigure, newOrientation, _currentFigureX, _currentFigureY)) {
+            if (_state == CupState.FallingFigure && !isPositionFree(_currentFigure, newOrientation, _currentFigureX, _currentFigureY - 1)) {
+                if (isPositionFreeBelow())
+                    return false;
+            }
+            _currentFigureOrientation = newOrientation;
+            return true;
+        }
+        return false;
+    }
+
+    bool move(int deltaX) {
+        int newx = _currentFigureX + deltaX;
+        if (isPositionFree(_currentFigure, _currentFigureOrientation, newx, _currentFigureY)) {
+            if (_state == CupState.FallingFigure && !isPositionFree(_currentFigure, _currentFigureOrientation, newx, _currentFigureY - 1)) {
+                if (isPositionFreeBelow())
+                    return false;
+            }
+            _currentFigureX = newx;
+            return true;
+        }
+        return false;
+    }
+
     protected void onAnimationFinished() {
         switch (_state) {
             case CupState.NewFigure:
@@ -288,7 +314,6 @@ class CupWidget : Widget {
                 setState(CupState.HangingFigure, 75);
                 break;
             case CupState.FallingFigure:
-                // TODO
                 if (isPositionFreeBelow()) {
                     _currentFigureY--;
                     setState(CupState.HangingFigure, 75);
@@ -300,7 +325,6 @@ class CupWidget : Widget {
                 }
                 break;
             case CupState.HangingFigure:
-                // TODO
                 setState(CupState.FallingFigure, 25);
                 break;
             case CupState.DestroyingRows:

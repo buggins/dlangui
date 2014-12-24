@@ -108,12 +108,15 @@ Win32 builds
 * Executable size for release Win32 API based build is 830K.
 
 
-Build and run using DUB:
+Build and run demo app using DUB:
 
         git clone https://github.com/buggins/dlangui.git
         cd dlangui
         dub run dlangui:example1 --build=release
 
+Run Tetris game example
+
+        dub run dlangui:tetris --build=release
 
 To develop using Visual-D, download sources for dlabgui and dependencies into some directory:
 
