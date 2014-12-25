@@ -561,6 +561,8 @@ class SDLWindow : Window {
                 return KeyCode.F24;
             case SDLK_BACKSPACE:
                 return KeyCode.BACK;
+            case SDLK_SPACE:
+                return KeyCode.SPACE;
             case SDLK_TAB:
                 return KeyCode.TAB;
             case SDLK_RETURN:

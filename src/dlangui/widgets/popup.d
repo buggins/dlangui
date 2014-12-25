@@ -145,6 +145,7 @@ class PopupWidget : LinearLayout {
     }
 
     this(Widget content, Window window) {
+        super("POPUP");
         _window = window;
         //styleId = "POPUP_MENU";
         addChild(content);

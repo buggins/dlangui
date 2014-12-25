@@ -16,9 +16,10 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 module main;
 
 import dlangui.all;
-import dlangui.dialogs.dialog;
-import dlangui.dialogs.filedlg;
-import dlangui.dialogs.msgbox;
+//import dlangui.dialogs.dialog;
+//import dlangui.dialogs.filedlg;
+//import dlangui.dialogs.msgbox;
+import dlangui.widgets.popup;
 import dlangui.graphics.drawbuf;
 import std.stdio;
 import std.conv;
@@ -71,11 +72,11 @@ struct FigureShape {
         cells[2] = FigureCell(c3);
         cells[3] = FigureCell(c4);
         extent = y0 = 0;
-        for (int i = 0; i < 4; i++) {
-            if (extent > cells[i].dy)
-                extent = cells[i].dy;
-            if (y0 < cells[i].dy)
-                y0 = cells[i].dy;
+        foreach (cell; cells) {
+            if (extent > cell.dy)
+                extent = cell.dy;
+            if (y0 < cell.dy)
+                y0 = cell.dy;
         }
     }
 }
@@ -185,6 +186,30 @@ class CupWidget : Widget {
 
     static const int[10] LEVEL_SPEED = [15000000, 10000000, 7000000, 6000000, 5000000, 4000000, 3500000, 3000000, 2500000, 2000000];
 
+
+    static const int RESERVED_ROWS = 5; // reserved for next figure
+
+    enum : int {
+        WALL = -1,
+        EMPTY = 0,
+        FIGURE1,
+        FIGURE2,
+        FIGURE3,
+        FIGURE4,
+        FIGURE5,
+        FIGURE6,
+    }
+
+    enum : int {
+        ORIENTATION0,
+        ORIENTATION90,
+        ORIENTATION180,
+        ORIENTATION270
+    }
+
+    static const uint[6] _figureColors = [0xFF0000, 0xA0A000, 0xA000A0, 0x0000FF, 0x800000, 0x408000];
+
+
     /// set difficulty level 1..10
     void setLevel(int level) {
         _level = level;
@@ -234,11 +259,18 @@ class CupWidget : Widget {
     bool rotate(int delta) {
         int newOrientation = (_currentFigureOrientation + 4 + delta) & 3;
         if (isPositionFree(_currentFigure, newOrientation, _currentFigureX, _currentFigureY)) {
-            if (_state == CupState.FallingFigure && !isPositionFree(_currentFigure, newOrientation, _currentFigureX, _currentFigureY - 1)) {
-                if (isPositionFreeBelow())
-                    return false;
+            if (_state == CupState.FallingFigure) {
+                // special handling for fall animation
+                if (!isPositionFree(_currentFigure, newOrientation, _currentFigureX, _currentFigureY - 1)) {
+                    if (isPositionFreeBelow())
+                        return false;
+                }
             }
             _currentFigureOrientation = newOrientation;
+            return true;
+        } else if (isPositionFree(_currentFigure, newOrientation, _currentFigureX, _currentFigureY - 1)) {
+            _currentFigureOrientation = newOrientation;
+            _currentFigureY = _currentFigureY - 1;
             return true;
         }
         return false;
@@ -256,6 +288,8 @@ class CupWidget : Widget {
         }
         return false;
     }
+
+    private PopupWidget _gameOverPopup;
 
     protected void onAnimationFinished() {
         switch (_state) {
@@ -276,7 +310,11 @@ class CupWidget : Widget {
                     putFigure(_currentFigure, _currentFigureOrientation, _currentFigureX, _currentFigureY);
                     _fastDownFlag = false;
                     if (!dropNextFigure()) {
+                        // Game Over
                         setCupState(CupState.GameOver);
+                        Widget popupWidget = new TextWidget("popup", "Game Over!"d);
+                        popupWidget.padding(Rect(30, 30, 30, 30)).backgroundImageId("popup_background").alpha(0x40).fontWeight(800).fontSize(30);
+                        _gameOverPopup = window.showPopup(popupWidget, this);
                     }
                 }
                 break;
@@ -300,29 +338,8 @@ class CupWidget : Widget {
         }
     }
 
-    static const int RESERVED_ROWS = 5; // reserved for next figure
-    enum : int {
-        WALL = -1,
-        EMPTY = 0,
-        FIGURE1,
-        FIGURE2,
-        FIGURE3,
-        FIGURE4,
-        FIGURE5,
-        FIGURE6,
-    }
-
-    enum : int {
-        ORIENTATION0,
-        ORIENTATION90,
-        ORIENTATION180,
-        ORIENTATION270
-    }
-
-    static const uint[6] _figureColors = [0xFF0000, 0xA0A000, 0xA000A0, 0x0000FF, 0x800000, 0x408000];
-
     void genNextFigure() {
-        _nextFigure = uniform(FIGURE1, FIGURE6);
+        _nextFigure = uniform(FIGURE1, FIGURE6 + 1);
     }
 
     bool dropNextFigure() {
@@ -330,8 +347,8 @@ class CupWidget : Widget {
             genNextFigure();
         _currentFigure = _nextFigure;
         _currentFigureOrientation = ORIENTATION0;
-        _currentFigureX = _cols / 2 - 1;
-        _currentFigureY = _rows - 1 - FIGURES[_currentFigure].shapes[_currentFigureOrientation].y0;
+        _currentFigureX = _cols / 2;
+        _currentFigureY = _rows - 1 - FIGURES[_currentFigure - 1].shapes[_currentFigureOrientation].y0;
         setCupState(CupState.NewFigure, 100, 255);
         return isPositionFree();
     }
@@ -412,7 +429,7 @@ class CupWidget : Widget {
         }
     }
 
-    /// Handle keys.
+    /// Handle keys
     override bool onKeyEvent(KeyEvent event) {
         if (event.action == KeyAction.KeyDown && _state == CupState.GameOver) {
             newGame();
@@ -426,7 +443,8 @@ class CupWidget : Widget {
             }
             return true;
         }
-        handleFastDown(false);
+        if ((event.action == KeyAction.KeyDown || event.action == KeyAction.KeyUp) && event.keyCode != KeyCode.SPACE)
+            handleFastDown(false); // don't stop fast down on Space key KeyUp
         return super.onKeyEvent(event);
     }
 
@@ -483,7 +501,9 @@ class CupWidget : Widget {
                 nextFigureAlpha = _animation.progress;
                 drawFigure(buf, rc, _currentFigure, _currentFigureOrientation, _currentFigureX, _currentFigureY, 0, 255 - nextFigureAlpha);
             }
-            drawFigure(buf, rc, _nextFigure, ORIENTATION0, _cols / 2 - 1, _rows - shape.extent + 1, 0, blendAlpha(0xA0, nextFigureAlpha));
+            if (_state != CupState.GameOver) {
+                drawFigure(buf, rc, _nextFigure, ORIENTATION0, _cols / 2, _rows - shape.extent + 1, 0, blendAlpha(0xA0, nextFigureAlpha));
+            }
         }
 
     }
@@ -519,6 +539,10 @@ class CupWidget : Widget {
         setLevel(1);
         init(_cols, _rows);
         dropNextFigure();
+        if (window && _gameOverPopup) {
+            window.removePopup(_gameOverPopup);
+            _gameOverPopup = null;
+        }
     }
 
     this() {
@@ -611,7 +635,8 @@ enum : int {
 /// entry point for dlangui based application
 extern (C) int UIAppMain(string[] args) {
 
-    auto power2 = delegate(int X) { return X * X; };
+    //auto power2 = delegate(int X) { return X * X; };
+    auto power2 = (int X) => X * X;
 
     // resource directory search paths
     string[] resourceDirs = [

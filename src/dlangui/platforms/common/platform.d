@@ -130,6 +130,8 @@ class Window {
     }
     /// remove popup
     bool removePopup(PopupWidget popup) {
+        if (!popup)
+            return false;
         for (int i = 0; i < _popups.length; i++) {
             PopupWidget p = _popups[i];
             if (p is popup) {
