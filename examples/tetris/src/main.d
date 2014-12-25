@@ -141,22 +141,127 @@ enum TetrisAction : int {
     FastDown,
 }
 
+enum : int {
+    WALL = -1,
+    EMPTY = 0,
+    FIGURE1,
+    FIGURE2,
+    FIGURE3,
+    FIGURE4,
+    FIGURE5,
+    FIGURE6,
+}
+
+enum : int {
+    ORIENTATION0,
+    ORIENTATION90,
+    ORIENTATION180,
+    ORIENTATION270
+}
+
+const uint[6] _figureColors = [0xFF0000, 0xA0A000, 0xA000A0, 0x0000FF, 0x800000, 0x408000];
+
+/// Figure type, orientation and position container
+struct FigurePosition {
+    int index;
+    int orientation;
+    int x;
+    int y;
+    this(int index, int orientation, int x, int y) {
+        this.index = index;
+        this.orientation = orientation;
+        this.x = x;
+        this.y = y;
+    }
+    /// return rotated position CCW for angle=1, CW for angle=-1
+    FigurePosition rotate(int angle) {
+        int newOrientation = (orientation + 4 + angle) & 3;
+        return FigurePosition(index, newOrientation, x, y);
+    }
+    /// return moved position
+    FigurePosition move(int dx, int dy = 0) {
+        return FigurePosition(index, orientation, x + dx, y + dy);
+    }
+    /// return shape for figure orientation
+    @property FigureShape shape() const {
+        return FIGURES[index - 1].shapes[orientation];
+    }
+    /// return color for figure
+    @property uint color() const {
+        return _figureColors[index - 1];
+    }
+}
+
+/** 
+    Cup content
+
+    Coordinates are relative to bottom left corner.
+ */
+struct Cup {
+    private int[] _cup;
+    private int _cols;
+    private int _rows;
+    /// returns number of columns
+    @property int cols() {
+        return _cols;
+    }
+    /// returns number of columns
+    @property int rows() {
+        return _rows;
+    }
+    /// inits empty cup of specified size
+    void init(int cols, int rows) {
+        _cols = cols;
+        _rows = rows;
+        _cup = new int[_cols * _rows];
+        for (int i = 0; i < _cup.length; i++)
+            _cup[i] = EMPTY;
+    }
+    /// returns cell content at specified position
+    int opIndex(int col, int row) {
+        if (col < 0 || row < 0 || col >= _cols || row >= _rows)
+            return WALL;
+        return _cup[row * _cols + col];
+    }
+    /// set cell value
+    void opIndexAssign(int value, int col, int row) {
+        if (col < 0 || row < 0 || col >= _cols || row >= _rows)
+            return; // ignore modification of cells outside cup
+        _cup[row * _cols + col] = value;
+    }
+    /// put figure at specified position
+    void putFigure(FigurePosition pos) {
+        FigureShape shape = pos.shape;
+        foreach(cell; shape.cells) {
+            this[pos.x + cell.dx, pos.y + cell.dy] = pos.index;
+        }
+    }
+    /// check if all cells where figire is located are free
+    bool isPositionFree(in FigurePosition pos) {
+        FigureShape shape = pos.shape;
+        foreach(cell; shape.cells) {
+            int value = this[pos.x + cell.dx, pos.y + cell.dy];
+            if (value != 0) // occupied
+                return false;
+        }
+        return true;
+    }
+}
+
+/// Cup widget
 class CupWidget : Widget {
     /// cup columns count
     int _cols;
     /// cup rows count
     int _rows;
-    int[] _cup;
-    /// current figure id
-    int _currentFigure;
-    /// current figure base point col
-    int _currentFigureX;
-    /// current figure base point row
-    int _currentFigureY;
-    /// current figure base point row
-    int _currentFigureOrientation;
+    /// cup data
+    Cup _cup;
+
+    /// current figure index, orientation, position
+    FigurePosition _currentFigure;
     /// next figure id
-    int _nextFigure;
+    FigurePosition _nextFigure;
+
     /// Level 1..10
     int _level;
     /// Single cell movement duration for current level, in 1/10000000 of seconds
@@ -165,6 +270,7 @@ class CupWidget : Widget {
     bool _fastDownFlag;
 
     AnimationHelper _animation;
+    private PopupWidget _gameOverPopup;
 
     /// Cup States
     enum CupState : int {
@@ -189,25 +295,6 @@ class CupWidget : Widget {
 
     static const int RESERVED_ROWS = 5; // reserved for next figure
 
-    enum : int {
-        WALL = -1,
-        EMPTY = 0,
-        FIGURE1,
-        FIGURE2,
-        FIGURE3,
-        FIGURE4,
-        FIGURE5,
-        FIGURE6,
-    }
-
-    enum : int {
-        ORIENTATION0,
-        ORIENTATION90,
-        ORIENTATION180,
-        ORIENTATION270
-    }
-
-    static const uint[6] _figureColors = [0xFF0000, 0xA0A000, 0xA000A0, 0x0000FF, 0x800000, 0x408000];
 
 
     /// set difficulty level 1..10
@@ -256,40 +343,37 @@ class CupWidget : Widget {
         return true;
     }
 
-    bool rotate(int delta) {
-        int newOrientation = (_currentFigureOrientation + 4 + delta) & 3;
-        if (isPositionFree(_currentFigure, newOrientation, _currentFigureX, _currentFigureY)) {
+    bool rotate(int angle) {
+        FigurePosition newpos = _currentFigure.rotate(angle);
+        if (_cup.isPositionFree(newpos)) {
             if (_state == CupState.FallingFigure) {
                 // special handling for fall animation
-                if (!isPositionFree(_currentFigure, newOrientation, _currentFigureX, _currentFigureY - 1)) {
+                if (!_cup.isPositionFree(newpos.move(0, -1))) {
                     if (isPositionFreeBelow())
                         return false;
                 }
             }
-            _currentFigureOrientation = newOrientation;
+            _currentFigure = newpos;
             return true;
-        } else if (isPositionFree(_currentFigure, newOrientation, _currentFigureX, _currentFigureY - 1)) {
-            _currentFigureOrientation = newOrientation;
-            _currentFigureY = _currentFigureY - 1;
+        } else if (_cup.isPositionFree(newpos.move(0, -1))) {
+            _currentFigure = newpos.move(0, -1);
             return true;
         }
         return false;
     }
 
     bool move(int deltaX) {
-        int newx = _currentFigureX + deltaX;
-        if (isPositionFree(_currentFigure, _currentFigureOrientation, newx, _currentFigureY)) {
-            if (_state == CupState.FallingFigure && !isPositionFree(_currentFigure, _currentFigureOrientation, newx, _currentFigureY - 1)) {
+        FigurePosition newpos = _currentFigure.move(deltaX);
+        if (_cup.isPositionFree(newpos)) {
+            if (_state == CupState.FallingFigure && !_cup.isPositionFree(newpos.move(0, -1))) {
                 if (isPositionFreeBelow())
                     return false;
             }
-            _currentFigureX = newx;
+            _currentFigure = newpos;
             return true;
         }
         return false;
     }
-
-    private PopupWidget _gameOverPopup;
 
     protected void onAnimationFinished() {
         switch (_state) {
@@ -300,14 +384,14 @@ class CupWidget : Widget {
                 break;
             case CupState.FallingFigure:
                 if (isPositionFreeBelow()) {
-                    _currentFigureY--;
+                    _currentFigure.y--;
                     if (_fastDownFlag)
                         setCupState(CupState.FallingFigure, 10);
                     else
                         setCupState(CupState.HangingFigure, 75);
                 } else {
                     // At bottom of cup
-                    putFigure(_currentFigure, _currentFigureOrientation, _currentFigureX, _currentFigureY);
+                    _cup.putFigure(_currentFigure);
                     _fastDownFlag = false;
                     if (!dropNextFigure()) {
                         // Game Over
@@ -339,37 +423,26 @@ class CupWidget : Widget {
     }
 
     void genNextFigure() {
-        _nextFigure = uniform(FIGURE1, FIGURE6 + 1);
+        _nextFigure.index = uniform(FIGURE1, FIGURE6 + 1);
+        _nextFigure.orientation = ORIENTATION0;
+        _nextFigure.x = _cols / 2;
+        _nextFigure.y = _rows - _nextFigure.shape.extent + 1;
     }
 
     bool dropNextFigure() {
-        if (_nextFigure == 0)
+        if (_nextFigure.index == 0)
             genNextFigure();
         _currentFigure = _nextFigure;
-        _currentFigureOrientation = ORIENTATION0;
-        _currentFigureX = _cols / 2;
-        _currentFigureY = _rows - 1 - FIGURES[_currentFigure - 1].shapes[_currentFigureOrientation].y0;
+        _currentFigure.x = _cols / 2;
+        _currentFigure.y = _rows - 1 - _currentFigure.shape.y0;
         setCupState(CupState.NewFigure, 100, 255);
         return isPositionFree();
     }
 
     void init(int cols, int rows) {
+        _cup.init(cols, rows);
         _cols = cols;
         _rows = rows;
-        _cup = new int[_cols * _rows];
-        for (int i = 0; i < _cup.length; i++)
-            _cup[i] = EMPTY;
-    }
-
-    protected int cell(int col, int row) {
-        if (col < 0 || row < 0 || col >= _cols || row >= _rows)
-            return WALL;
-        return _cup[row * _cols + col];
-    }
-
-    protected void setCell(int col, int row, int value) {
-        _cup[row * _cols + col] = value;
-        invalidate();
     }
 
     protected Rect cellRect(Rect rc, int col, int row) {
@@ -383,50 +456,12 @@ class CupWidget : Widget {
         return Rect(x0, y0, x0 + dd, y0 + dd);
     }
 
-    protected void drawCell(DrawBuf buf, Rect cellRc, uint color) {
-        cellRc.right--;
-        cellRc.bottom--;
-        int w = cellRc.width / 6;
-        buf.drawFrame(cellRc, color, Rect(w,w,w,w));
-        cellRc.shrink(w, w);
-        color = addAlpha(color, 0xC0);
-        buf.fillRect(cellRc, color);
-    }
-
-    protected void drawFigure(DrawBuf buf, Rect rc, int figureIndex, int orientation, int x, int y, int dy, uint alpha = 0) {
-        uint color = addAlpha(_figureColors[figureIndex - 1], alpha);
-        FigureShape shape = FIGURES[figureIndex - 1].shapes[orientation];
-        for (int i = 0; i < 4; i++) {
-            Rect cellRc = cellRect(rc, x + shape.cells[i].dx, y + shape.cells[i].dy);
-            cellRc.top += dy;
-            cellRc.bottom += dy;
-            drawCell(buf, cellRc, color);
-        }
-    }
-
     protected bool isPositionFree() {
-        return isPositionFree(_currentFigure, _currentFigureOrientation, _currentFigureX, _currentFigureY);
+        return _cup.isPositionFree(_currentFigure);
     }
 
     protected bool isPositionFreeBelow() {
-        return isPositionFree(_currentFigure, _currentFigureOrientation, _currentFigureX, _currentFigureY - 1);
-    }
-
-    protected bool isPositionFree(int figureIndex, int orientation, int x, int y) {
-        FigureShape shape = FIGURES[figureIndex - 1].shapes[orientation];
-        for (int i = 0; i < 4; i++) {
-            int value = cell(x + shape.cells[i].dx, y + shape.cells[i].dy);
-            if (value != 0) // occupied
-                return false;
-        }
-        return true;
-    }
-
-    protected void putFigure(int figureIndex, int orientation, int x, int y) {
-        FigureShape shape = FIGURES[figureIndex - 1].shapes[orientation];
-        for (int i = 0; i < 4; i++) {
-            setCell(x + shape.cells[i].dx, y + shape.cells[i].dy, figureIndex);
-        }
+        return _cup.isPositionFree(_currentFigure.move(0, -1));
     }
 
     /// Handle keys
@@ -446,6 +481,29 @@ class CupWidget : Widget {
         if ((event.action == KeyAction.KeyDown || event.action == KeyAction.KeyUp) && event.keyCode != KeyCode.SPACE)
             handleFastDown(false); // don't stop fast down on Space key KeyUp
         return super.onKeyEvent(event);
+    }
+
+    /// draw cup cell
+    protected void drawCell(DrawBuf buf, Rect cellRc, uint color) {
+        cellRc.right--;
+        cellRc.bottom--;
+        int w = cellRc.width / 6;
+        buf.drawFrame(cellRc, color, Rect(w,w,w,w));
+        cellRc.shrink(w, w);
+        color = addAlpha(color, 0xC0);
+        buf.fillRect(cellRc, color);
+    }
+
+    /// draw figure
+    protected void drawFigure(DrawBuf buf, Rect rc, FigurePosition figure, int dy, uint alpha = 0) {
+        uint color = addAlpha(_figureColors[figure.index - 1], alpha);
+        FigureShape shape = figure.shape;
+        foreach(cell; shape.cells) {
+            Rect cellRc = cellRect(rc, figure.x + cell.dx, figure.y + cell.dy);
+            cellRc.top += dy;
+            cellRc.bottom += dy;
+            drawCell(buf, cellRc, color);
+        }
     }
 
     /// Draw widget at its position to buffer
@@ -471,7 +529,7 @@ class CupWidget : Widget {
         for (int row = 0; row < _rows; row++) {
             for (int col = 0; col < _cols; col++) {
 
-                int value = cell(col, row);
+                int value = _cup[col, row];
                 Rect cellRc = cellRect(rc, col, row);
 
                 Point middle = cellRc.middle;
@@ -490,19 +548,19 @@ class CupWidget : Widget {
             if (_state == CupState.FallingFigure && isPositionFreeBelow()) {
                 dy = _animation.getProgress(topLeft.height);
             }
-            drawFigure(buf, rc, _currentFigure, _currentFigureOrientation, _currentFigureX, _currentFigureY, dy, 0);
+            drawFigure(buf, rc, _currentFigure, dy, 0);
         }
 
 
-        if (_nextFigure != 0) {
-            auto shape = FIGURES[_nextFigure - 1].shapes[0];
+        if (_nextFigure.index != 0) {
+            //auto shape = _nextFigure.shape;
             uint nextFigureAlpha = 0;
             if (_state == CupState.NewFigure) {
                 nextFigureAlpha = _animation.progress;
-                drawFigure(buf, rc, _currentFigure, _currentFigureOrientation, _currentFigureX, _currentFigureY, 0, 255 - nextFigureAlpha);
+                drawFigure(buf, rc, _currentFigure, 0, 255 - nextFigureAlpha);
             }
             if (_state != CupState.GameOver) {
-                drawFigure(buf, rc, _nextFigure, ORIENTATION0, _cols / 2, _rows - shape.extent + 1, 0, blendAlpha(0xA0, nextFigureAlpha));
+                drawFigure(buf, rc, _nextFigure, 0, blendAlpha(0xA0, nextFigureAlpha));
             }
         }
 
