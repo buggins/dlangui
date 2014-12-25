@@ -45,86 +45,6 @@ Widget createAboutWidget()
 	return res;
 }
 
-class AnimatedDrawable : Drawable {
-	DrawableRef background;
-	this() {
-		background = drawableCache.get("tx_fabric.tiled");
-	}
-	void drawAnimatedRect(DrawBuf buf, uint p, Rect rc, int speedx, int speedy, int sz) {
-		int x = (p * speedx % rc.width);
-		int y = (p * speedy % rc.height);
-		if (x < 0)
-			x += rc.width;
-		if (y < 0)
-			y += rc.height;
-		uint a = 64 + ((p / 2) & 0x7F);
-		uint r = 128 + ((p / 7) & 0x7F);
-		uint g = 128 + ((p / 5) & 0x7F);
-		uint b = 128 + ((p / 3) & 0x7F);
-		uint color = (a << 24) | (r << 16) | (g << 8) | b;
-		buf.fillRect(Rect(rc.left + x, rc.top + y, rc.left + x + sz, rc.top + y + sz), color);
-	}
-	void drawAnimatedIcon(DrawBuf buf, uint p, Rect rc, int speedx, int speedy, string resourceId) {
-		int x = (p * speedx % rc.width);
-		int y = (p * speedy % rc.height);
-		if (x < 0)
-			x += rc.width;
-		if (y < 0)
-			y += rc.height;
-		DrawBufRef image = drawableCache.getImage(resourceId);
-		buf.drawImage(x, y, image.get);
-	}
-	override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
-		background.drawTo(buf, rc, state, cast(int)(animationProgress / 695430), cast(int)(animationProgress / 1500000));
-		drawAnimatedRect(buf, cast(uint)(animationProgress / 295430), rc, 2, 3, 100);
-		drawAnimatedRect(buf, cast(uint)(animationProgress / 312400) + 100, rc, 3, 2, 130);
-		drawAnimatedIcon(buf, cast(uint)(animationProgress / 212400) + 200, rc, -2, 1, "dlangui-logo1");
-		drawAnimatedRect(buf, cast(uint)(animationProgress / 512400) + 300, rc, 2, -2, 200);
-		drawAnimatedRect(buf, cast(uint)(animationProgress / 214230) + 800, rc, 1, 2, 390);
-		drawAnimatedIcon(buf, cast(uint)(animationProgress / 123320) + 900, rc, 1, 2, "cr3_logo");
-		drawAnimatedRect(buf, cast(uint)(animationProgress / 100000) + 100, rc, -1, -1, 120);
-	}
-	@property override int width() {
-		return 1;
-	}
-	@property override int height() {
-		return 1;
-	}
-	ulong animationProgress;
-	void animate(long interval) {
-		animationProgress += interval;
-	}
-
-}
-
-class SampleAnimationWidget : VerticalLayout {
-	AnimatedDrawable drawable;
-	DrawableRef drawableRef;
-	this(string ID) {
-		super(ID);
-		drawable = new AnimatedDrawable();
-		drawableRef = drawable;
-		padding = Rect(20, 20, 20, 20);
-		addChild(new TextWidget(null, "This is TextWidget on top of animated background"d));
-		addChild(new EditLine(null, "This is EditLine on top of animated background"d));
-		addChild(new Button(null, "This is Button on top of animated background"d));
-		addChild(new VSpacer());
-	}
-
-	/// background drawable
-	@property override DrawableRef backgroundDrawable() const {
-		return (cast(SampleAnimationWidget)this).drawableRef;
-	}
-	
-	/// returns true is widget is being animated - need to call animate() and redraw
-	@property override bool animating() { return true; }
-	/// animates window; interval is time left from previous draw, in hnsecs (1/10000000 of second)
-	override void animate(long interval) {
-		drawable.animate(interval);
-		invalidate();
-	}
-}
-
 /// Cell offset
 struct FigureCell {
     // horizontal offset
@@ -221,8 +141,9 @@ enum TetrisAction : int {
 }
 
 class CupWidget : Widget {
-
+    /// cup columns count
     int _cols;
+    /// cup rows count
     int _rows;
     int[] _cup;
     /// current figure id
@@ -268,7 +189,7 @@ class CupWidget : Widget {
         _movementDuration = LEVEL_SPEED[level - 1];
     }
 
-    void setState(CupState state, int animationIntervalPercent = 100, int maxProgress = 10000) {
+    void setCupState(CupState state, int animationIntervalPercent = 100, int maxProgress = 10000) {
         _state = state;
         if (animationIntervalPercent)
             _animation.start(_movementDuration * animationIntervalPercent / 100, maxProgress);
@@ -318,21 +239,21 @@ class CupWidget : Widget {
         switch (_state) {
             case CupState.NewFigure:
                 genNextFigure();
-                setState(CupState.HangingFigure, 75);
+                setCupState(CupState.HangingFigure, 75);
                 break;
             case CupState.FallingFigure:
                 if (isPositionFreeBelow()) {
                     _currentFigureY--;
-                    setState(CupState.HangingFigure, 75);
+                    setCupState(CupState.HangingFigure, 75);
                 } else {
                     putFigure(_currentFigure, _currentFigureOrientation, _currentFigureX, _currentFigureY);
                     if (!dropNextFigure()) {
-                        setState(CupState.GameOver);
+                        setCupState(CupState.GameOver);
                     }
                 }
                 break;
             case CupState.HangingFigure:
-                setState(CupState.FallingFigure, 25);
+                setCupState(CupState.FallingFigure, 25);
                 break;
             case CupState.DestroyingRows:
                 break;
@@ -381,16 +302,17 @@ class CupWidget : Widget {
         _currentFigureOrientation = ORIENTATION0;
         _currentFigureX = _cols / 2 - 1;
         _currentFigureY = _rows - 1 - FIGURES[_currentFigure].shapes[_currentFigureOrientation].y0;
-        setState(CupState.NewFigure, 100, 255);
+        setCupState(CupState.NewFigure, 100, 255);
         return isPositionFree();
     }
 
     this() {
         super("CUP");
         layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).layoutWeight(3);
+        setState(State.Default);
         backgroundColor = 0xC0808080;
         padding(Rect(20, 20, 20, 20));
-        init(10, 15);
+        init(11, 15);
 
         setLevel(1);
         dropNextFigure();
@@ -591,7 +513,6 @@ class CupPage : HorizontalLayout {
     this() {
         super("CUP_PAGE");
         layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
-        setState(State.Default);
         _cup = new CupWidget();
         _status = new StatusWidget();
         addChild(_cup);
@@ -615,7 +536,6 @@ class GameWidget : HorizontalLayout {
         addChild(_cupPage);
         //showChild(_cupPage.id, Visibility.Invisible, true);
 		backgroundImageId = "tx_fabric.tiled";
-        _cupPage.setFocus();
     }
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
     override void measure(int parentWidth, int parentHeight) {
@@ -633,6 +553,9 @@ enum : int {
 
 /// entry point for dlangui based application
 extern (C) int UIAppMain(string[] args) {
+
+    auto power2 = delegate(int X) { return X * X; };
+
     // resource directory search paths
     string[] resourceDirs = [
         	appendPath(exePath, "../../../res/"),   // for Visual D and DUB builds

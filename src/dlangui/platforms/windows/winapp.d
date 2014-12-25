@@ -323,6 +323,8 @@ class Win32Window : Window {
         } else {
             ShowWindow(_hwnd, SW_SHOWNORMAL);
         }
+        if (_mainWidget)
+            _mainWidget.setFocus();
         SetFocus(_hwnd);
         //UpdateWindow(_hwnd);
     }

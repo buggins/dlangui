@@ -157,6 +157,8 @@ class SDLWindow : Window {
 			SDL_SetWindowSize(_win, _mainWidget.measuredWidth, _mainWidget.measuredHeight);
 		}
 		SDL_ShowWindow(_win);
+        if (_mainWidget)
+            _mainWidget.setFocus();
 	}
 
 	/// close window
