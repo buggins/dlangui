@@ -1364,42 +1364,62 @@ class WidgetGroup : Widget {
 
 }
 
+immutable long ONE_SECOND = 10000000L;
+
 /// Helper to handle animation progress
 struct AnimationHelper {
-    long timeElapsed;
-    long maxInterval;
-    int  maxProgress;
+    private long _timeElapsed;
+    private long _maxInterval;
+    private int  _maxProgress;
+
     /// start new animation interval
     void start(long maxInterval, int maxProgress) {
-        timeElapsed = 0;
-        this.maxInterval = maxInterval;
-        this.maxProgress = maxProgress;
-        assert(maxInterval > 0);
-        assert(maxProgress > 0);
+        _timeElapsed = 0;
+        _maxInterval = maxInterval;
+        _maxProgress = maxProgress;
+        assert(_maxInterval > 0);
+        assert(_maxProgress > 0);
     }
     /// Adds elapsed time; returns animation progress in interval 0..maxProgress while timeElapsed is between 0 and maxInterval; when interval exceeded, progress is maxProgress
     int animate(long time) {
-        timeElapsed += time;
+        _timeElapsed += time;
         return progress();
+    }
+    /// restart with same max interval and progress
+    void restart() {
+        if (!_maxInterval) {
+            _maxInterval = ONE_SECOND;
+        }
+        _timeElapsed = 0;
+    }
+    /// returns time elapsed since start
+    @property long elapsed() {
+        return _timeElapsed;
+    }
+    /// get current time interval
+    @property long interval() {
+        return _maxInterval;
+    }
+    /// override current time interval, retaining the same progress %
+    @property void interval(long newInterval) {
+        int p = getProgress(10000);
+        _maxInterval = newInterval;
+        _timeElapsed = p * newInterval / 10000;
     }
     /// Returns animation progress in interval 0..maxProgress while timeElapsed is between 0 and maxInterval; when interval exceeded, progress is maxProgress
     @property int progress() {
-        if (finished)
-            return maxProgress;
-        if (timeElapsed <= 0)
-            return 0;
-        return cast(int)(timeElapsed * maxProgress / maxInterval);
+        return getProgress(_maxProgress);
     }
     /// Returns animation progress in interval 0..maxProgress while timeElapsed is between 0 and maxInterval; when interval exceeded, progress is maxProgress
     int getProgress(int maxProgress) {
         if (finished)
             return maxProgress;
-        if (timeElapsed <= 0)
+        if (_timeElapsed <= 0)
             return 0;
-        return cast(int)(timeElapsed * maxProgress / maxInterval);
+        return cast(int)(_timeElapsed * maxProgress / _maxInterval);
     }
     /// Returns true if animation is finished
     @property bool finished() {
-        return timeElapsed >= maxInterval; 
+        return _timeElapsed >= _maxInterval; 
     }
 }

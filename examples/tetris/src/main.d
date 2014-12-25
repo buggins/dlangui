@@ -160,6 +160,8 @@ class CupWidget : Widget {
     int _level;
     /// Single cell movement duration for current level, in 1/10000000 of seconds
     long _movementDuration;
+    /// When true, figure is falling down fast
+    bool _fastDownFlag;
 
     AnimationHelper _animation;
 
@@ -209,6 +211,26 @@ class CupWidget : Widget {
         }
     }
 
+    /// Turn on / off fast falling down
+    bool handleFastDown(bool fast) {
+        if (fast == true) {
+            // handle turn on fast down
+            if (_state == CupState.FallingFigure) {
+                _fastDownFlag = true;
+                _animation.interval = _movementDuration * 10 / 100; // increase speed
+                return true;
+            } else if (_state == CupState.HangingFigure) {
+                _fastDownFlag = true;
+                setCupState(CupState.FallingFigure, 10);
+                return true;
+            } else {
+                return false;
+            }
+        }
+        _fastDownFlag = fast;
+        return true;
+    }
+
     bool rotate(int delta) {
         int newOrientation = (_currentFigureOrientation + 4 + delta) & 3;
         if (isPositionFree(_currentFigure, newOrientation, _currentFigureX, _currentFigureY)) {
@@ -238,15 +260,21 @@ class CupWidget : Widget {
     protected void onAnimationFinished() {
         switch (_state) {
             case CupState.NewFigure:
+                _fastDownFlag = false;
                 genNextFigure();
                 setCupState(CupState.HangingFigure, 75);
                 break;
             case CupState.FallingFigure:
                 if (isPositionFreeBelow()) {
                     _currentFigureY--;
-                    setCupState(CupState.HangingFigure, 75);
+                    if (_fastDownFlag)
+                        setCupState(CupState.FallingFigure, 10);
+                    else
+                        setCupState(CupState.HangingFigure, 75);
                 } else {
+                    // At bottom of cup
                     putFigure(_currentFigure, _currentFigureOrientation, _currentFigureX, _currentFigureY);
+                    _fastDownFlag = false;
                     if (!dropNextFigure()) {
                         setCupState(CupState.GameOver);
                     }
@@ -256,6 +284,8 @@ class CupWidget : Widget {
                 setCupState(CupState.FallingFigure, 25);
                 break;
             case CupState.DestroyingRows:
+                // TODO
+                _fastDownFlag = false;
                 break;
             default:
                 break;
@@ -304,27 +334,6 @@ class CupWidget : Widget {
         _currentFigureY = _rows - 1 - FIGURES[_currentFigure].shapes[_currentFigureOrientation].y0;
         setCupState(CupState.NewFigure, 100, 255);
         return isPositionFree();
-    }
-
-    this() {
-        super("CUP");
-        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).layoutWeight(3);
-        setState(State.Default);
-        backgroundColor = 0xC0808080;
-        padding(Rect(20, 20, 20, 20));
-        init(11, 15);
-
-        setLevel(1);
-        dropNextFigure();
-
-        focusable = true;
-
-		acceleratorMap.add( [
-			new Action(TetrisAction.MoveLeft, KeyCode.LEFT, 0),
-			new Action(TetrisAction.MoveRight, KeyCode.RIGHT, 0),
-			new Action(TetrisAction.RotateCCW, KeyCode.UP, 0),
-		]);
-
     }
 
     void init(int cols, int rows) {
@@ -403,6 +412,24 @@ class CupWidget : Widget {
         }
     }
 
+    /// Handle keys.
+    override bool onKeyEvent(KeyEvent event) {
+        if (event.action == KeyAction.KeyDown && _state == CupState.GameOver) {
+            newGame();
+            return true;
+        }
+        if (event.keyCode == KeyCode.DOWN) {
+            if (event.action == KeyAction.KeyDown) {
+                handleFastDown(true);
+            } else if (event.action == KeyAction.KeyUp) {
+                handleFastDown(false);
+            }
+            return true;
+        }
+        handleFastDown(false);
+        return super.onKeyEvent(event);
+    }
+
     /// Draw widget at its position to buffer
     override void onDraw(DrawBuf buf) {
         super.onDraw(buf);
@@ -478,12 +505,42 @@ class CupWidget : Widget {
             case TetrisAction.RotateCCW:
                 rotate(1);
                 return true;
+            case TetrisAction.FastDown:
+                handleFastDown(true);
+                return true;
             default:
                 if (parent) // by default, pass to parent widget
                     return parent.handleAction(a);
                 return false;
         }
 	}
+
+    void newGame() {
+        setLevel(1);
+        init(_cols, _rows);
+        dropNextFigure();
+    }
+
+    this() {
+        super("CUP");
+        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).layoutWeight(3);
+        setState(State.Default);
+        backgroundColor = 0xC0808080;
+        padding(Rect(20, 20, 20, 20));
+        _cols = 11;
+        _rows = 15;
+        newGame();
+
+        focusable = true;
+
+		acceleratorMap.add( [
+			new Action(TetrisAction.MoveLeft,  KeyCode.LEFT, 0),
+			new Action(TetrisAction.MoveRight, KeyCode.RIGHT, 0),
+			new Action(TetrisAction.RotateCCW, KeyCode.UP, 0),
+			new Action(TetrisAction.FastDown,  KeyCode.SPACE, 0),
+		]);
+
+    }
 }
 
 class StatusWidget : VerticalLayout {
