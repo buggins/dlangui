@@ -190,6 +190,14 @@ struct FigurePosition {
     @property uint color() const {
         return _figureColors[index - 1];
     }
+    /// return true if figure index is not initialized
+    @property empty() const {
+        return index == 0;
+    }
+    /// clears content
+    void reset() {
+        index = 0;
+    }
 }
 
 /** 
@@ -201,6 +209,15 @@ struct Cup {
     private int[] _cup;
     private int _cols;
     private int _rows;
+
+    private FigurePosition _currentFigure;
+    /// current figure index, orientation, position
+    @property ref FigurePosition currentFigure() { return _currentFigure; }
+
+    private FigurePosition _nextFigure;
+    /// next figure
+    @property ref FigurePosition nextFigure() { return _nextFigure; }
+
     /// returns number of columns
     @property int cols() {
         return _cols;
@@ -229,14 +246,15 @@ struct Cup {
             return; // ignore modification of cells outside cup
         _cup[row * _cols + col] = value;
     }
-    /// put figure at specified position
-    void putFigure(FigurePosition pos) {
-        FigureShape shape = pos.shape;
+    /// put current figure into cup at current position and orientation
+    void putFigure() {
+        FigureShape shape = _currentFigure.shape;
         foreach(cell; shape.cells) {
-            this[pos.x + cell.dx, pos.y + cell.dy] = pos.index;
+            this[_currentFigure.x + cell.dx, _currentFigure.y + cell.dy] = _currentFigure.index;
         }
     }
-    /// check if all cells where figire is located are free
+
+    /// check if all cells where specified figure is located are free
     bool isPositionFree(in FigurePosition pos) {
         FigureShape shape = pos.shape;
         foreach(cell; shape.cells) {
@@ -246,6 +264,67 @@ struct Cup {
         }
         return true;
     }
+
+    /// check if all cells where current figire is located are free
+    bool isPositionFree() {
+        return isPositionFree(_currentFigure);
+    }
+
+    /// check if all cells where current figire is located are free
+    bool isPositionFreeBelow() {
+        return isPositionFree(_currentFigure.move(0, -1));
+    }
+
+    /// try to rotate current figure, returns true if figure rotated
+    bool rotate(int angle, bool falling) {
+        FigurePosition newpos = _currentFigure.rotate(angle);
+        if (isPositionFree(newpos)) {
+            if (falling) {
+                // special handling for fall animation
+                if (!isPositionFree(newpos.move(0, -1))) {
+                    if (isPositionFreeBelow())
+                        return false;
+                }
+            }
+            _currentFigure = newpos;
+            return true;
+        } else if (isPositionFree(newpos.move(0, -1))) {
+            _currentFigure = newpos.move(0, -1);
+            return true;
+        }
+        return false;
+    }
+
+    /// try to move current figure, returns true if figure rotated
+    bool move(int deltaX, int deltaY, bool falling) {
+        FigurePosition newpos = _currentFigure.move(deltaX, deltaY);
+        if (isPositionFree(newpos)) {
+            if (falling && !isPositionFree(newpos.move(0, -1))) {
+                if (isPositionFreeBelow())
+                    return false;
+            }
+            _currentFigure = newpos;
+            return true;
+        }
+        return false;
+    }
+
+    void genNextFigure() {
+        _nextFigure.index = uniform(FIGURE1, FIGURE6 + 1);
+        _nextFigure.orientation = ORIENTATION0;
+        _nextFigure.x = _cols / 2;
+        _nextFigure.y = _rows - _nextFigure.shape.extent + 1;
+    }
+
+    bool dropNextFigure() {
+        if (_nextFigure.empty)
+            genNextFigure();
+        _currentFigure = _nextFigure;
+        _currentFigure.x = _cols / 2;
+        _currentFigure.y = _rows - 1 - _currentFigure.shape.y0;
+        return isPositionFree();
+    }
+
 }
 
 /// Cup widget
@@ -257,10 +336,6 @@ class CupWidget : Widget {
     /// cup data
     Cup _cup;
 
-    /// current figure index, orientation, position
-    FigurePosition _currentFigure;
-    /// next figure id
-    FigurePosition _nextFigure;
 
     /// Level 1..10
     int _level;
@@ -343,62 +418,32 @@ class CupWidget : Widget {
         return true;
     }
 
-    bool rotate(int angle) {
-        FigurePosition newpos = _currentFigure.rotate(angle);
-        if (_cup.isPositionFree(newpos)) {
-            if (_state == CupState.FallingFigure) {
-                // special handling for fall animation
-                if (!_cup.isPositionFree(newpos.move(0, -1))) {
-                    if (isPositionFreeBelow())
-                        return false;
-                }
-            }
-            _currentFigure = newpos;
-            return true;
-        } else if (_cup.isPositionFree(newpos.move(0, -1))) {
-            _currentFigure = newpos.move(0, -1);
-            return true;
-        }
-        return false;
-    }
-
-    bool move(int deltaX) {
-        FigurePosition newpos = _currentFigure.move(deltaX);
-        if (_cup.isPositionFree(newpos)) {
-            if (_state == CupState.FallingFigure && !_cup.isPositionFree(newpos.move(0, -1))) {
-                if (isPositionFreeBelow())
-                    return false;
-            }
-            _currentFigure = newpos;
-            return true;
-        }
-        return false;
-    }
-
     protected void onAnimationFinished() {
         switch (_state) {
             case CupState.NewFigure:
                 _fastDownFlag = false;
-                genNextFigure();
+                _cup.genNextFigure();
                 setCupState(CupState.HangingFigure, 75);
                 break;
             case CupState.FallingFigure:
-                if (isPositionFreeBelow()) {
-                    _currentFigure.y--;
+                if (_cup.isPositionFreeBelow()) {
+                    _cup.move(0, -1, false);
                     if (_fastDownFlag)
                         setCupState(CupState.FallingFigure, 10);
                     else
                         setCupState(CupState.HangingFigure, 75);
                 } else {
                     // At bottom of cup
-                    _cup.putFigure(_currentFigure);
+                    _cup.putFigure();
                     _fastDownFlag = false;
-                    if (!dropNextFigure()) {
+                    if (!_cup.dropNextFigure()) {
                         // Game Over
                         setCupState(CupState.GameOver);
                         Widget popupWidget = new TextWidget("popup", "Game Over!"d);
                         popupWidget.padding(Rect(30, 30, 30, 30)).backgroundImageId("popup_background").alpha(0x40).fontWeight(800).fontSize(30);
                         _gameOverPopup = window.showPopup(popupWidget, this);
+                    } else {
+                        setCupState(CupState.NewFigure, 100, 255);
                     }
                 }
                 break;
@@ -422,23 +467,6 @@ class CupWidget : Widget {
         }
     }
 
-    void genNextFigure() {
-        _nextFigure.index = uniform(FIGURE1, FIGURE6 + 1);
-        _nextFigure.orientation = ORIENTATION0;
-        _nextFigure.x = _cols / 2;
-        _nextFigure.y = _rows - _nextFigure.shape.extent + 1;
-    }
-
-    bool dropNextFigure() {
-        if (_nextFigure.index == 0)
-            genNextFigure();
-        _currentFigure = _nextFigure;
-        _currentFigure.x = _cols / 2;
-        _currentFigure.y = _rows - 1 - _currentFigure.shape.y0;
-        setCupState(CupState.NewFigure, 100, 255);
-        return isPositionFree();
-    }
-
     void init(int cols, int rows) {
         _cup.init(cols, rows);
         _cols = cols;
@@ -454,14 +482,6 @@ class CupWidget : Widget {
         int x0 = rc.left + (rc.width - dd * _cols) / 2 + dd * col;
         int y0 = rc.bottom - (rc.height - dd * (_rows + RESERVED_ROWS)) / 2 - dd * row - dd;
         return Rect(x0, y0, x0 + dd, y0 + dd);
-    }
-
-    protected bool isPositionFree() {
-        return _cup.isPositionFree(_currentFigure);
-    }
-
-    protected bool isPositionFreeBelow() {
-        return _cup.isPositionFree(_currentFigure.move(0, -1));
     }
 
     /// Handle keys
@@ -545,22 +565,21 @@ class CupWidget : Widget {
         // draw current figure falling
         if (_state == CupState.FallingFigure || _state == CupState.HangingFigure) {
             int dy = 0;
-            if (_state == CupState.FallingFigure && isPositionFreeBelow()) {
+            if (falling && _cup.isPositionFreeBelow())
                 dy = _animation.getProgress(topLeft.height);
-            }
-            drawFigure(buf, rc, _currentFigure, dy, 0);
+            drawFigure(buf, rc, _cup.currentFigure, dy, 0);
         }
 
-
-        if (_nextFigure.index != 0) {
+        // draw next figure
+        if (!_cup._nextFigure.empty) {
             //auto shape = _nextFigure.shape;
             uint nextFigureAlpha = 0;
             if (_state == CupState.NewFigure) {
                 nextFigureAlpha = _animation.progress;
-                drawFigure(buf, rc, _currentFigure, 0, 255 - nextFigureAlpha);
+                drawFigure(buf, rc, _cup.currentFigure, 0, 255 - nextFigureAlpha);
             }
             if (_state != CupState.GameOver) {
-                drawFigure(buf, rc, _nextFigure, 0, blendAlpha(0xA0, nextFigureAlpha));
+                drawFigure(buf, rc, _cup.nextFigure, 0, blendAlpha(0xA0, nextFigureAlpha));
             }
         }
 
@@ -571,17 +590,21 @@ class CupWidget : Widget {
         measuredContent(parentWidth, parentHeight, 350, 550);
     }
 
+    @property bool falling() {
+        return _state == CupState.FallingFigure;
+    }
+
 	/// override to handle specific actions
 	override bool handleAction(const Action a) {
         switch (a.id) {
             case TetrisAction.MoveLeft:
-                move(-1);
+                _cup.move(-1, 0, falling);
                 return true;
             case TetrisAction.MoveRight:
-                move(1);
+                _cup.move(1, 0, falling);
                 return true;
             case TetrisAction.RotateCCW:
-                rotate(1);
+                _cup.rotate(1, falling);
                 return true;
             case TetrisAction.FastDown:
                 handleFastDown(true);
@@ -596,7 +619,8 @@ class CupWidget : Widget {
     void newGame() {
         setLevel(1);
         init(_cols, _rows);
-        dropNextFigure();
+        _cup.dropNextFigure();
+        setCupState(CupState.NewFigure, 100, 255);
         if (window && _gameOverPopup) {
             window.removePopup(_gameOverPopup);
             _gameOverPopup = null;
