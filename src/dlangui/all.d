@@ -48,7 +48,8 @@ module dlangui.all;
 
 public import dlangui.core.logger;
 public import dlangui.core.types;
-public import dlangui.platforms.common.platform;
+public import dlangui.core.i18n;
+public import dlangui.core.files;
 public import dlangui.graphics.images;
 public import dlangui.widgets.widget;
 public import dlangui.widgets.controls;
@@ -61,6 +62,11 @@ public import dlangui.widgets.editors;
 public import dlangui.widgets.grid;
 public import dlangui.widgets.tree;
 public import dlangui.widgets.combobox;
+public import dlangui.widgets.popup;
 public import dlangui.graphics.fonts;
-public import dlangui.core.i18n;
-public import dlangui.core.files;
+public import dlangui.graphics.drawbuf;
+public import dlangui.platforms.common.platform;
+
+// some useful imports from Phobos
+public import std.conv : to;
+public import std.utf : toUTF32, toUTF8;

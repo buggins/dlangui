@@ -19,9 +19,8 @@ import dlangui.all;
 import model;
 import gui;
 
-
+/// Required for Windows platform: DMD cannot find WinMain if it's in library
 mixin APP_ENTRY_POINT;
-
 
 /// entry point for dlangui based application
 extern (C) int UIAppMain(string[] args) {
@@ -50,14 +49,10 @@ extern (C) int UIAppMain(string[] args) {
 	// load theme from file "theme_default.xml"
 	Platform.instance.uiTheme = "theme_default";
 
-    //drawableCache.get("tx_fabric.tiled");
-
     // create window
-    Window window = Platform.instance.createWindow("DLangUI: Tetris game example", null, WindowFlag.Modal);
+    Window window = Platform.instance.createWindow("DLangUI: Tetris game example"d, null, WindowFlag.Modal);
 
-    GameWidget game = new GameWidget();
-
-    window.mainWidget = game;
+    window.mainWidget = new GameWidget();
 
     window.windowIcon = drawableCache.getImage("dtetris-logo1");
 

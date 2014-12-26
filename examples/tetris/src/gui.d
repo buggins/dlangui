@@ -1,14 +1,29 @@
 module gui;
 
-import dlangui.all;
-import dlangui.widgets.popup;
-import dlangui.graphics.drawbuf;
-//import std.stdio;
-import std.conv;
-import std.utf;
 import model;
 
+import dlangui.all;
 
+/// game action codes
+enum TetrisAction : int {
+    MoveLeft = 10000,
+    MoveRight,
+    RotateCCW,
+    FastDown,
+    Pause,
+    LevelUp,
+}
+
+const Action ACTION_MOVE_LEFT   = (new Action(TetrisAction.MoveLeft,  KeyCode.LEFT)).addAccelerator(KeyCode.KEY_A);
+const Action ACTION_MOVE_RIGHT  = (new Action(TetrisAction.MoveRight, KeyCode.RIGHT)).addAccelerator(KeyCode.KEY_D);
+const Action ACTION_ROTATE      = (new Action(TetrisAction.RotateCCW, KeyCode.UP)).addAccelerator(KeyCode.KEY_W);
+const Action ACTION_FAST_DOWN   = (new Action(TetrisAction.FastDown,  KeyCode.SPACE)).addAccelerator(KeyCode.KEY_S);
+const Action ACTION_PAUSE       = (new Action(TetrisAction.Pause,     KeyCode.ESCAPE)).addAccelerator(KeyCode.PAUSE);
+const Action ACTION_LEVEL_UP    = (new Action(TetrisAction.LevelUp,   KeyCode.ADD)).addAccelerator(KeyCode.INS);
+
+const Action[] CUP_ACTIONS = [ACTION_MOVE_LEFT, ACTION_MOVE_RIGHT, ACTION_ROTATE, ACTION_FAST_DOWN, ACTION_PAUSE, ACTION_LEVEL_UP];
+
+/// about dialog
 Widget createAboutWidget()
 {
 	LinearLayout res = new VerticalLayout();
@@ -26,15 +41,23 @@ Widget createAboutWidget()
 	return res;
 }
 
-enum TetrisAction : int {
-    MoveLeft = 10000,
-    MoveRight,
-    RotateCCW,
-    FastDown,
-    Pause,
-    LevelUp,
+/// Cup States
+enum CupState : int {
+    /// New figure appears
+    NewFigure,
+    /// Game is paused
+    Paused,
+    /// Figure is falling
+    FallingFigure,
+    /// Figure is hanging - pause between falling by one row
+    HangingFigure,
+    /// destroying complete rows
+    DestroyingRows,
+    /// falling after some rows were destroyed
+    FallingRows,
+    /// Game is over
+    GameOver,
 }
-
 
 /// Cup widget
 class CupWidget : Widget {
@@ -54,36 +77,20 @@ class CupWidget : Widget {
     long _movementDuration;
     /// When true, figure is falling down fast
     bool _fastDownFlag;
-
+    /// animation helper for fade and movement in different states
     AnimationHelper _animation;
+    /// GameOver popup
     private PopupWidget _gameOverPopup;
-
-    /// Cup States
-    enum CupState : int {
-        /// New figure appears
-        NewFigure,
-        /// Game is paused
-        Paused,
-        /// Figure is falling
-        FallingFigure,
-        /// Figure is hanging - pause between falling by one row
-        HangingFigure,
-        /// destroying complete rows
-        DestroyingRows,
-        /// falling after some rows were destroyed
-        FallingRows,
-        /// Game is over
-        GameOver,
-    }
-
+    /// Status widget
+    private StatusWidget _status;
+    /// Current state
     protected CupState _state;
+
+    protected int _totalRowsDestroyed;
 
     static const int[10] LEVEL_SPEED = [15000000, 10000000, 7000000, 6000000, 5000000, 4000000, 3500000, 3000000, 2500000, 2000000];
 
-
     static const int RESERVED_ROWS = 5; // reserved for next figure
-
-
 
     /// set difficulty level 1..10
     void setLevel(int level) {
@@ -93,8 +100,10 @@ class CupWidget : Widget {
     }
 
     static const int MIN_FAST_FALLING_INTERVAL = 600000;
-    static const int ROWS_FALLING_INTERVAL = 600000;
 
+    static const int ROWS_FALLING_INTERVAL = 1200000;
+
+    /// change game state, init state animation when necessary
     void setCupState(CupState state) {
         int animationIntervalPercent = 100;
         switch (state) {
@@ -114,6 +123,8 @@ class CupWidget : Widget {
                 animationIntervalPercent = 50;
                 break;
             default:
+                // no animation for other states
+                animationIntervalPercent = 0;
                 break;
         }
         _state = state;
@@ -128,18 +139,14 @@ class CupWidget : Widget {
         invalidate();
     }
 
-    /// returns true is widget is being animated - need to call animate() and redraw
-    override @property bool animating() {
-        switch (_state) {
-            case CupState.NewFigure:
-            case CupState.FallingFigure:
-            case CupState.HangingFigure:
-            case CupState.DestroyingRows:
-            case CupState.FallingRows:
-                return true;
-            default:
-                return false;
-        }
+    void addScore(int score) {
+        _score += score;
+        _status.setScore(_score);
+    }
+
+    /// returns true if figure is in falling - movement state
+    @property bool falling() {
+        return _state == CupState.FallingFigure;
     }
 
     /// Turn on / off fast falling down
@@ -167,6 +174,8 @@ class CupWidget : Widget {
         return true;
     }
 
+    static const int[] NEXT_LEVEL_SCORE = [0, 20, 50, 100, 200, 350, 500, 750, 1000, 1500, 2000];
+
     /// try start next figure
     protected void nextFigure() {
         if (!_cup.dropNextFigure()) {
@@ -177,6 +186,8 @@ class CupWidget : Widget {
             _gameOverPopup = window.showPopup(popupWidget, this);
         } else {
             setCupState(CupState.NewFigure);
+            if (_level < 10 && _totalRowsDestroyed >= NEXT_LEVEL_SCORE[_level])
+                setLevel(_level + 1); // level up
         }
     }
 
@@ -214,6 +225,8 @@ class CupWidget : Widget {
                 break;
             case CupState.DestroyingRows:
                 int rowsDestroyed = _cup.destroyFullRows();
+                _totalRowsDestroyed += rowsDestroyed;
+                _status.setRowsDestroyed(_totalRowsDestroyed);
                 int scorePerRow = 0;
                 for (int i = 0; i < rowsDestroyed; i++) {
                     scorePerRow += 10;
@@ -245,14 +258,23 @@ class CupWidget : Widget {
         }
     }
 
-    /// animates window; interval is time left from previous draw, in hnsecs (1/10000000 of second)
-    override void animate(long interval) {
-        _animation.animate(interval);
-        if (_animation.finished) {
-            onAnimationFinished();
+    /// start new game
+    void newGame() {
+        setLevel(1);
+        init(_cols, _rows);
+        _cup.dropNextFigure();
+        setCupState(CupState.NewFigure);
+        if (window && _gameOverPopup) {
+            window.removePopup(_gameOverPopup);
+            _gameOverPopup = null;
         }
+        _score = 0;
+        _status.setScore(0);
+        _totalRowsDestroyed = 0;
+        _status.setRowsDestroyed(0);
     }
 
+    /// init cup
     void init(int cols, int rows) {
         _cup.init(cols, rows);
         _cols = cols;
@@ -318,6 +340,31 @@ class CupWidget : Widget {
             cellRc.top += dy;
             cellRc.bottom += dy;
             drawCell(buf, cellRc, color);
+        }
+    }
+
+    //=================================================================================================
+    // Overrides of Widget methods
+
+    /// returns true is widget is being animated - need to call animate() and redraw
+    override @property bool animating() {
+        switch (_state) {
+            case CupState.NewFigure:
+            case CupState.FallingFigure:
+            case CupState.HangingFigure:
+            case CupState.DestroyingRows:
+            case CupState.FallingRows:
+                return true;
+            default:
+                return false;
+        }
+    }
+
+    /// animates window; interval is time left from previous draw, in hnsecs (1/10000000 of second)
+    override void animate(long interval) {
+        _animation.animate(interval);
+        if (_animation.finished) {
+            onAnimationFinished();
         }
     }
 
@@ -388,15 +435,6 @@ class CupWidget : Widget {
         }
 
     }
-    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-    override void measure(int parentWidth, int parentHeight) {
-        /// fixed size 350 x 550
-        measuredContent(parentWidth, parentHeight, 350, 550);
-    }
-
-    @property bool falling() {
-        return _state == CupState.FallingFigure;
-    }
 
 	/// override to handle specific actions
 	override bool handleAction(const Action a) {
@@ -428,54 +466,30 @@ class CupWidget : Widget {
         }
 	}
 
-    void addScore(int score) {
-        _score += score;
-        _status.setScore(_score);
+    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+    override void measure(int parentWidth, int parentHeight) {
+        measuredContent(parentWidth, parentHeight, parentWidth * 3 / 5, parentHeight);
     }
 
-    /// start new game
-    void newGame() {
-        setLevel(1);
-        _score = 0;
-        init(_cols, _rows);
-        _cup.dropNextFigure();
-        setCupState(CupState.NewFigure);
-        if (window && _gameOverPopup) {
-            window.removePopup(_gameOverPopup);
-            _gameOverPopup = null;
-        }
-        _status.setScore(_score);
-    }
-
-    private StatusWidget _status;
     this(StatusWidget status) {
         super("CUP");
         this._status = status;
-        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).layoutWeight(3);
-        setState(State.Default);
-        //backgroundColor = 0xC0808080;
-        padding(Rect(20, 20, 20, 20));
-        _cols = 11;
-        _rows = 15;
+        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).layoutWeight(3).setState(State.Default).focusable(true).padding(Rect(20, 20, 20, 20));
+
+        _cols = 10;
+        _rows = 18;
         newGame();
 
         focusable = true;
 
-		acceleratorMap.add( [
-			(new Action(TetrisAction.MoveLeft,  KeyCode.LEFT)).addAccelerator(KeyCode.KEY_A),
-			(new Action(TetrisAction.MoveRight, KeyCode.RIGHT)).addAccelerator(KeyCode.KEY_D),
-			(new Action(TetrisAction.RotateCCW, KeyCode.UP)).addAccelerator(KeyCode.KEY_W),
-			(new Action(TetrisAction.FastDown,  KeyCode.SPACE)).addAccelerator(KeyCode.KEY_S),
-			(new Action(TetrisAction.Pause,     KeyCode.ESCAPE)).addAccelerator(KeyCode.PAUSE),
-			(new Action(TetrisAction.LevelUp,   KeyCode.ADD)).addAccelerator(KeyCode.INS),
-		]);
-
+		acceleratorMap.add(CUP_ACTIONS);
     }
 }
 
 /// Panel to show game status
 class StatusWidget : VerticalLayout {
     private TextWidget _level;
+    private TextWidget _rowsDestroyed;
     private TextWidget _score;
     private CupWidget _cup;
     void setCup(CupWidget cup) {
@@ -483,26 +497,27 @@ class StatusWidget : VerticalLayout {
     }
     TextWidget createTextWidget(dstring str, uint color) {
         TextWidget res = new TextWidget(null, str);
-        res.layoutWidth(FILL_PARENT).alignment(Align.Center);
-        res.fontSize(30);
-        res.textColor(color);
+        res.layoutWidth(FILL_PARENT).alignment(Align.Center).fontSize(25).textColor(color);
         return res;
     }
     this() {
         super("CUP_STATUS");
-        //backgroundColor = 0xC080FF80;
+
         addChild(new VSpacer());
-        addChild(new ImageWidget(null, "tetris_logo_big"));
+        addChild((new ImageWidget(null, "tetris_logo_big")).layoutWidth(FILL_PARENT).alignment(Align.Center));
         addChild(new VSpacer());
         addChild(createTextWidget("Level:"d, 0x008000));
         addChild((_level = createTextWidget(""d, 0x008000)));
+        addChild(new VSpacer());
+        addChild(createTextWidget("Rows:"d, 0x202080));
+        addChild((_rowsDestroyed = createTextWidget(""d, 0x202080)));
         addChild(new VSpacer());
         addChild(createTextWidget("Score:"d, 0x800000));
         addChild((_score = createTextWidget(""d, 0x800000)));
         addChild(new VSpacer());
         addChild(new VSpacer());
-        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).layoutWeight(2);
-        padding(Rect(20, 20, 20, 20));
+
+        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).layoutWeight(2).padding(Rect(20, 20, 20, 20));
     }
 
     void setLevel(int level) {
@@ -513,17 +528,16 @@ class StatusWidget : VerticalLayout {
         _score.text = toUTF32(to!string(score));
     }
 
-    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-    override void measure(int parentWidth, int parentHeight) { 
-        super.measure(parentWidth, parentHeight);
-        /// fixed size 350 x 550
-        measuredContent(parentWidth, parentHeight, 150, 550);
+    void setRowsDestroyed(int rows) {
+        _rowsDestroyed.text = toUTF32(to!string(rows));
     }
+
     override bool handleAction(const Action a) {
         return _cup.handleAction(a);
     }
 }
 
+/// Cup page: cup widget + status widget
 class CupPage : HorizontalLayout {
     CupWidget _cup;
     StatusWidget _status;
@@ -539,13 +553,13 @@ class CupPage : HorizontalLayout {
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
     override void measure(int parentWidth, int parentHeight) { 
         super.measure(parentWidth, parentHeight);
-        /// fixed size 350 x 550
-        measuredContent(parentWidth, parentHeight, 500, 550);
+        /// fixed size
+        measuredContent(parentWidth, parentHeight, 550, 550);
     }
 }
 
-//FrameLayout
-class GameWidget : HorizontalLayout {
+//
+class GameWidget : FrameLayout {
 
     CupPage _cupPage;
     this() {
@@ -554,10 +568,5 @@ class GameWidget : HorizontalLayout {
         addChild(_cupPage);
         //showChild(_cupPage.id, Visibility.Invisible, true);
 		backgroundImageId = "tx_fabric.tiled";
-    }
-    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-    override void measure(int parentWidth, int parentHeight) {
-        super.measure(parentWidth, parentHeight);
-        measuredContent(parentWidth, parentHeight, 500, 550);
     }
 }

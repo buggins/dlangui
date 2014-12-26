@@ -140,6 +140,10 @@ class Action {
 	@property Accelerator[] accelerators() {
 		return _accelerators;
 	}
+	/// returs const array of accelerators
+	@property const(Accelerator)[] accelerators() const {
+		return _accelerators;
+	}
 	/// returns text description for first accelerator of action; null if no accelerators
 	@property dstring acceleratorText() {
 		if (_accelerators.length < 1)
@@ -215,6 +219,13 @@ struct ActionMap {
 		foreach(a; items) {
 			foreach(acc; a.accelerators)
 				_map[acc] = a;
+		}
+	}
+	/// Add array of actions
+	void add(const Action[] items) {
+		foreach(a; items) {
+			foreach(acc; a.accelerators)
+				_map[acc] = a.clone;
 		}
 	}
 	/// Add action

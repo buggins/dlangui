@@ -2,6 +2,28 @@ module model;
 
 import std.random : uniform;
 
+/// Cell codes
+enum : int {
+    WALL = -1,
+    EMPTY = 0,
+    FIGURE1,
+    FIGURE2,
+    FIGURE3,
+    FIGURE4,
+    FIGURE5,
+    FIGURE6,
+    FIGURE7,
+}
+
+/// Orientations
+enum : int {
+    ORIENTATION0,
+    ORIENTATION90,
+    ORIENTATION180,
+    ORIENTATION270
+}
+
+
 /// Cell offset
 struct FigureCell {
     // horizontal offset
@@ -22,8 +44,9 @@ struct FigureShape {
     int extent;
     /// upper y coordinate - initial Y offset to place figure to cup
     int y0;
-    this(int[2] c1, int[2] c2, int[2] c3, int[2] c4) {
-        cells[0] = FigureCell(c1);
+    /// Init cells (cell 0 is [0,0])
+    this(int[2] c2, int[2] c3, int[2] c4) {
+        cells[0] = FigureCell([0, 0]);
         cells[1] = FigureCell(c2);
         cells[2] = FigureCell(c3);
         cells[3] = FigureCell(c4);
@@ -37,6 +60,7 @@ struct FigureShape {
     }
 }
 
+/// Figure data - shapes for 4 orientations
 struct Figure {
     FigureShape[4] shapes; // by orientation
     this(FigureShape[4] v) {
@@ -44,71 +68,69 @@ struct Figure {
     }
 }
 
-const Figure[6] FIGURES = [
+/// All shapes
+const Figure[7] FIGURES = [
+    // FIGURE1 ===========================================
     //   ##     ####
     // 00##       00##
     // ##       
-    Figure([FigureShape([0, 0], [1, 0], [1, 1],  [0, -1]),
-    FigureShape([0, 0], [0, 1], [-1, 1], [1, 0]),
-    FigureShape([0, 0], [1, 0], [1, 1],  [0, -1]),
-    FigureShape([0, 0], [0, 1], [-1, 1], [1, 0])]),
+    Figure([FigureShape([1, 0], [1, 1],  [0, -1]),
+            FigureShape([0, 1], [-1, 1], [1, 0]),
+            FigureShape([1, 0], [1, 1],  [0, -1]),
+            FigureShape([0, 1], [-1, 1], [1, 0])]),
+    // FIGURE2 ===========================================
     // ##         ####
     // 00##     ##00
     //   ##     
-    Figure([FigureShape([0, 0], [1, 0], [0, 1],  [1, 1]),
-    FigureShape([0, 0], [0, 1], [1, 1],  [-1, 0]),
-    FigureShape([0, 0], [1, 0], [0, 1],  [1, 1]),
-    FigureShape([0, 0], [0, 1], [1, 1],  [-1, 0])]),
+    Figure([FigureShape([1, 0], [0, 1],  [1, 1]),
+            FigureShape([0, 1], [1, 1],  [-1, 0]),
+            FigureShape([1, 0], [0, 1],  [1, 1]),
+            FigureShape([0, 1], [1, 1],  [-1, 0])]),
+    // FIGURE3 ===========================================
     //            ##        ##      ####
     // ##00##     00    ##00##        00
     // ##         ####                ##
-    Figure([FigureShape([0, 0], [1, 0], [-1,0],  [-1,-1]),
-    FigureShape([0, 0], [0, 1], [0,-1],  [ 1,-1]),
-    FigureShape([0, 0], [1, 0], [-1,0],  [1, 1]),
-    FigureShape([0, 0], [0, 1], [-1,1],  [0,-1])]),
+    Figure([FigureShape([1, 0], [-1,0],  [-1,-1]),
+            FigureShape([0, 1], [0,-1],  [ 1,-1]),
+            FigureShape([1, 0], [-1,0],  [1, 1]),
+            FigureShape([0, 1], [-1,1],  [0,-1])]),
+    // FIGURE4 ===========================================
     //            ####  ##            ##
     // ##00##     00    ##00##        00
     //     ##     ##                ####
-    Figure([FigureShape([0, 0], [1, 0], [-1,0],  [ 1, 1]),
-    FigureShape([0, 0], [0, 1], [0,-1],  [ 1, 1]),
-    FigureShape([0, 0], [1, 0], [-1,0],  [-1, 1]),
-    FigureShape([0, 0], [0, 1], [-1,-1], [0, -1])]),
+    Figure([FigureShape([1, 0], [-1,0],  [ 1,-1]),
+            FigureShape([0, 1], [0,-1],  [ 1, 1]),
+            FigureShape([1, 0], [-1,0],  [-1, 1]),
+            FigureShape([0, 1], [-1,-1], [0, -1])]),
+    // FIGURE5 ===========================================
     //   ####
     //   00##
     //       
-    Figure([FigureShape([0, 0], [1, 0], [0, 1],  [ 1, 1]),
-    FigureShape([0, 0], [1, 0], [0, 1],  [ 1, 1]),
-    FigureShape([0, 0], [1, 0], [0, 1],  [ 1, 1]),
-    FigureShape([0, 0], [1, 0], [0, 1],  [ 1, 1])]),
+    Figure([FigureShape([1, 0], [0, 1],  [ 1, 1]),
+            FigureShape([1, 0], [0, 1],  [ 1, 1]),
+            FigureShape([1, 0], [0, 1],  [ 1, 1]),
+            FigureShape([1, 0], [0, 1],  [ 1, 1])]),
+    // FIGURE6 ===========================================
     //   ##
     //   ##
     //   00     ##00####
     //   ##    
-    Figure([FigureShape([0, 0], [0, 1], [0, 2],  [ 0,-1]),
-    FigureShape([0, 0], [1, 0], [2, 0],  [-1, 0]),
-    FigureShape([0, 0], [0, 1], [0, 2],  [ 0,-1]),
-    FigureShape([0, 0], [1, 0], [2, 0],  [-1, 0])]),
+    Figure([FigureShape([0, 1], [0, 2],  [ 0,-1]),
+            FigureShape([1, 0], [2, 0],  [-1, 0]),
+            FigureShape([0, 1], [0, 2],  [ 0,-1]),
+            FigureShape([1, 0], [2, 0],  [-1, 0])]),
+    // FIGURE7 ===========================================
+    //            ##      ##          ##
+    // ##00##     00##  ##00##      ##00
+    //   ##       ##                  ##
+    Figure([FigureShape([1, 0], [-1,0],  [ 0,-1]),
+            FigureShape([0, 1], [0,-1],  [ 1, 0]),
+            FigureShape([1, 0], [-1,0],  [ 0, 1]),
+            FigureShape([0, 1], [0,-1],  [-1, 0])]),
 ];
 
-enum : int {
-    WALL = -1,
-    EMPTY = 0,
-    FIGURE1,
-    FIGURE2,
-    FIGURE3,
-    FIGURE4,
-    FIGURE5,
-    FIGURE6,
-}
-
-enum : int {
-    ORIENTATION0,
-    ORIENTATION90,
-    ORIENTATION180,
-    ORIENTATION270
-}
-
-const uint[6] _figureColors = [0xFF0000, 0xA0A000, 0xA000A0, 0x0000FF, 0x800000, 0x408000];
+/// colors for different figure types
+const uint[7] _figureColors = [0xC00000, 0x80A000, 0xA00080, 0x0000C0, 0x800020, 0x408000, 0x204000];
 
 /// Figure type, orientation and position container
 struct FigurePosition {
@@ -289,13 +311,15 @@ struct Cup {
         return false;
     }
 
+    /// random next figure
     void genNextFigure() {
-        _nextFigure.index = uniform(FIGURE1, FIGURE6 + 1);
+        _nextFigure.index = uniform(FIGURE1, FIGURE7 + 1);
         _nextFigure.orientation = ORIENTATION0;
         _nextFigure.x = _cols / 2;
         _nextFigure.y = _rows - _nextFigure.shape.extent + 1;
     }
 
+    /// New figure: put it on top of cup
     bool dropNextFigure() {
         if (_nextFigure.empty)
             genNextFigure();
@@ -412,6 +436,7 @@ struct Cup {
         return cellGroup(col, row) > 0;
     }
 
+    /// returns true if next figure is generated
     @property bool hasNextFigure() {
         return !_nextFigure.empty;
     }
