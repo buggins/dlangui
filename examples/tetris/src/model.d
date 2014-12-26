@@ -74,59 +74,59 @@ const Figure[7] FIGURES = [
     //   ##     ####
     // 00##       00##
     // ##       
-    Figure([FigureShape([1, 0], [1, 1],  [0, -1]),
+    Figure([FigureShape([1, 0], [ 1, 1], [0,-1]),
             FigureShape([0, 1], [-1, 1], [1, 0]),
-            FigureShape([1, 0], [1, 1],  [0, -1]),
+            FigureShape([1, 0], [ 1, 1], [0,-1]),
             FigureShape([0, 1], [-1, 1], [1, 0])]),
     // FIGURE2 ===========================================
     // ##         ####
     // 00##     ##00
     //   ##     
-    Figure([FigureShape([1, 0], [0, 1],  [1, 1]),
-            FigureShape([0, 1], [1, 1],  [-1, 0]),
-            FigureShape([1, 0], [0, 1],  [1, 1]),
-            FigureShape([0, 1], [1, 1],  [-1, 0])]),
+    Figure([FigureShape([1, 0], [0, 1], [ 1,-1]),
+            FigureShape([0, 1], [1, 1], [-1, 0]),
+            FigureShape([1, 0], [0, 1], [ 1,-1]),
+            FigureShape([0, 1], [1, 1], [-1, 0])]),
     // FIGURE3 ===========================================
     //            ##        ##      ####
     // ##00##     00    ##00##        00
     // ##         ####                ##
-    Figure([FigureShape([1, 0], [-1,0],  [-1,-1]),
-            FigureShape([0, 1], [0,-1],  [ 1,-1]),
-            FigureShape([1, 0], [-1,0],  [1, 1]),
-            FigureShape([0, 1], [-1,1],  [0,-1])]),
+    Figure([FigureShape([1, 0], [-1, 0], [-1,-1]),
+            FigureShape([0, 1], [ 0,-1], [ 1,-1]),
+            FigureShape([1, 0], [-1, 0], [ 1, 1]),
+            FigureShape([0, 1], [-1, 1], [ 0,-1])]),
     // FIGURE4 ===========================================
     //            ####  ##            ##
     // ##00##     00    ##00##        00
     //     ##     ##                ####
-    Figure([FigureShape([1, 0], [-1,0],  [ 1,-1]),
-            FigureShape([0, 1], [0,-1],  [ 1, 1]),
-            FigureShape([1, 0], [-1,0],  [-1, 1]),
-            FigureShape([0, 1], [-1,-1], [0, -1])]),
+    Figure([FigureShape([1, 0], [-1, 0], [ 1,-1]),
+            FigureShape([0, 1], [ 0,-1], [ 1, 1]),
+            FigureShape([1, 0], [-1, 0], [-1, 1]),
+            FigureShape([0, 1], [-1,-1], [ 0,-1])]),
     // FIGURE5 ===========================================
     //   ####
     //   00##
     //       
-    Figure([FigureShape([1, 0], [0, 1],  [ 1, 1]),
-            FigureShape([1, 0], [0, 1],  [ 1, 1]),
-            FigureShape([1, 0], [0, 1],  [ 1, 1]),
-            FigureShape([1, 0], [0, 1],  [ 1, 1])]),
+    Figure([FigureShape([1, 0], [0, 1], [ 1, 1]),
+            FigureShape([1, 0], [0, 1], [ 1, 1]),
+            FigureShape([1, 0], [0, 1], [ 1, 1]),
+            FigureShape([1, 0], [0, 1], [ 1, 1])]),
     // FIGURE6 ===========================================
     //   ##
     //   ##
     //   00     ##00####
     //   ##    
-    Figure([FigureShape([0, 1], [0, 2],  [ 0,-1]),
-            FigureShape([1, 0], [2, 0],  [-1, 0]),
-            FigureShape([0, 1], [0, 2],  [ 0,-1]),
-            FigureShape([1, 0], [2, 0],  [-1, 0])]),
+    Figure([FigureShape([0, 1], [0, 2], [ 0,-1]),
+            FigureShape([1, 0], [2, 0], [-1, 0]),
+            FigureShape([0, 1], [0, 2], [ 0,-1]),
+            FigureShape([1, 0], [2, 0], [-1, 0])]),
     // FIGURE7 ===========================================
     //            ##      ##          ##
     // ##00##     00##  ##00##      ##00
     //   ##       ##                  ##
-    Figure([FigureShape([1, 0], [-1,0],  [ 0,-1]),
-            FigureShape([0, 1], [0,-1],  [ 1, 0]),
-            FigureShape([1, 0], [-1,0],  [ 0, 1]),
-            FigureShape([0, 1], [0,-1],  [-1, 0])]),
+    Figure([FigureShape([1, 0], [-1,0], [ 0,-1]),
+            FigureShape([0, 1], [0,-1], [ 1, 0]),
+            FigureShape([1, 0], [-1,0], [ 0, 1]),
+            FigureShape([0, 1], [0,-1], [-1, 0])]),
 ];
 
 /// colors for different figure types

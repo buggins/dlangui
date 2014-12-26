@@ -14,14 +14,15 @@ enum TetrisAction : int {
     LevelUp,
 }
 
-const Action ACTION_MOVE_LEFT   = (new Action(TetrisAction.MoveLeft,  KeyCode.LEFT)).addAccelerator(KeyCode.KEY_A);
-const Action ACTION_MOVE_RIGHT  = (new Action(TetrisAction.MoveRight, KeyCode.RIGHT)).addAccelerator(KeyCode.KEY_D);
-const Action ACTION_ROTATE      = (new Action(TetrisAction.RotateCCW, KeyCode.UP)).addAccelerator(KeyCode.KEY_W);
-const Action ACTION_FAST_DOWN   = (new Action(TetrisAction.FastDown,  KeyCode.SPACE)).addAccelerator(KeyCode.KEY_S);
-const Action ACTION_PAUSE       = (new Action(TetrisAction.Pause,     KeyCode.ESCAPE)).addAccelerator(KeyCode.PAUSE);
-const Action ACTION_LEVEL_UP    = (new Action(TetrisAction.LevelUp,   KeyCode.ADD)).addAccelerator(KeyCode.INS);
+const Action ACTION_MOVE_LEFT   = (new Action(TetrisAction.MoveLeft,  KeyCode.LEFT)).addAccelerator(KeyCode.KEY_A).iconId("arrow-left");
+const Action ACTION_MOVE_RIGHT  = (new Action(TetrisAction.MoveRight, KeyCode.RIGHT)).addAccelerator(KeyCode.KEY_D).iconId("arrow-right");
+const Action ACTION_ROTATE      = (new Action(TetrisAction.RotateCCW, KeyCode.UP)).addAccelerator(KeyCode.KEY_W).iconId("rotate");
+const Action ACTION_FAST_DOWN   = (new Action(TetrisAction.FastDown,  KeyCode.SPACE)).addAccelerator(KeyCode.KEY_S).iconId("arrow-down");
+const Action ACTION_PAUSE       = (new Action(TetrisAction.Pause,     KeyCode.ESCAPE)).addAccelerator(KeyCode.PAUSE).iconId("pause");
+const Action ACTION_LEVEL_UP    = (new Action(TetrisAction.LevelUp,   KeyCode.ADD)).addAccelerator(KeyCode.INS).iconId("levelup");
 
-const Action[] CUP_ACTIONS = [ACTION_MOVE_LEFT, ACTION_MOVE_RIGHT, ACTION_ROTATE, ACTION_FAST_DOWN, ACTION_PAUSE, ACTION_LEVEL_UP];
+const Action[] CUP_ACTIONS = [ACTION_PAUSE,     ACTION_ROTATE,      ACTION_LEVEL_UP, 
+                              ACTION_MOVE_LEFT, ACTION_FAST_DOWN,   ACTION_MOVE_RIGHT];
 
 /// about dialog
 Widget createAboutWidget()
@@ -88,12 +89,14 @@ class CupWidget : Widget {
 
     protected int _totalRowsDestroyed;
 
-    static const int[10] LEVEL_SPEED = [15000000, 10000000, 7000000, 6000000, 5000000, 4000000, 3500000, 3000000, 2500000, 2000000];
+    static const int[10] LEVEL_SPEED = [15000000, 10000000, 7000000, 6000000, 5000000, 4000000, 300000, 2000000, 1500000, 1000000];
 
     static const int RESERVED_ROWS = 5; // reserved for next figure
 
     /// set difficulty level 1..10
     void setLevel(int level) {
+        if (level > 10)
+            return;
         _level = level;
         _movementDuration = LEVEL_SPEED[level - 1];
         _status.setLevel(_level);
@@ -455,9 +458,7 @@ class CupWidget : Widget {
                 // TODO: implement pause
                 return true;
             case TetrisAction.LevelUp:
-                if (_level < 10)
-                    _level++;
-                // TODO: update state
+                setLevel(_level + 1);
                 return true;
             default:
                 if (parent) // by default, pass to parent widget
@@ -474,7 +475,7 @@ class CupWidget : Widget {
     this(StatusWidget status) {
         super("CUP");
         this._status = status;
-        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).layoutWeight(3).setState(State.Default).focusable(true).padding(Rect(20, 20, 20, 20));
+        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).layoutWeight(2).setState(State.Default).focusable(true).padding(Rect(20, 20, 20, 20));
 
         _cols = 10;
         _rows = 18;
@@ -500,11 +501,36 @@ class StatusWidget : VerticalLayout {
         res.layoutWidth(FILL_PARENT).alignment(Align.Center).fontSize(25).textColor(color);
         return res;
     }
+
+    Widget createControls() {
+        TableLayout res = new TableLayout();
+        res.colCount = 3;
+        foreach(const Action a; CUP_ACTIONS) {
+            ImageButton btn = new ImageButton(a);
+            btn.focusable = false;
+            res.addChild(btn);
+        }
+        res.layoutWidth(WRAP_CONTENT).layoutHeight(WRAP_CONTENT).margins(Rect(10, 10, 10, 10)).alignment(Align.Center);
+        return res;
+    }
+
     this() {
         super("CUP_STATUS");
 
         addChild(new VSpacer());
-        addChild((new ImageWidget(null, "tetris_logo_big")).layoutWidth(FILL_PARENT).alignment(Align.Center));
+
+        ImageWidget image = new ImageWidget(null, "tetris_logo_big");
+        image.layoutWidth(FILL_PARENT).alignment(Align.Center).clickable(true);
+        image.onClickListener = delegate(Widget src) {
+            _cup.handleAction(ACTION_PAUSE);
+            // about dialog when clicking on image
+            Window wnd = Platform.instance.createWindow("About...", window, WindowFlag.Modal);
+            wnd.mainWidget = createAboutWidget();
+            wnd.show();
+            return true; 
+        };
+        addChild(image);
+
         addChild(new VSpacer());
         addChild(createTextWidget("Level:"d, 0x008000));
         addChild((_level = createTextWidget(""d, 0x008000)));
@@ -515,9 +541,10 @@ class StatusWidget : VerticalLayout {
         addChild(createTextWidget("Score:"d, 0x800000));
         addChild((_score = createTextWidget(""d, 0x800000)));
         addChild(new VSpacer());
+        addChild(createControls());
         addChild(new VSpacer());
 
-        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).layoutWeight(2).padding(Rect(20, 20, 20, 20));
+        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).layoutWeight(2).padding(Rect(10, 10, 10, 10));
     }
 
     void setLevel(int level) {
@@ -554,7 +581,7 @@ class CupPage : HorizontalLayout {
     override void measure(int parentWidth, int parentHeight) { 
         super.measure(parentWidth, parentHeight);
         /// fixed size
-        measuredContent(parentWidth, parentHeight, 550, 550);
+        measuredContent(parentWidth, parentHeight, 600, 550);
     }
 }
 

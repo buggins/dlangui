@@ -30,7 +30,8 @@ module dlangui.widgets.controls;
 import dlangui.widgets.widget;
 import dlangui.widgets.layouts;
 
-import std.algorithm;
+private import std.algorithm;
+private import std.conv : to;
 
 /// vertical spacer to fill empty space in vertical layouts
 class VSpacer : Widget {
@@ -171,6 +172,7 @@ class ImageWidget : Widget {
         }
         measuredContent(parentWidth, parentHeight, w, h);
     }
+
     override void onDraw(DrawBuf buf) {
         if (visibility != Visibility.Visible)
             return;
@@ -194,6 +196,7 @@ class ImageWidget : Widget {
 
 /// button with image only
 class ImageButton : ImageWidget {
+    /// constructor by id and icon resource id
     this(string ID = null, string drawableId = null) {
         super(ID, drawableId);
         styleId = "BUTTON";
@@ -202,8 +205,11 @@ class ImageButton : ImageWidget {
         focusable = true;
         trackHover = true;
     }
-
-
+    /// constructor from action
+    this(const Action a) {
+        this("imagebutton-action" ~ to!string(a.id), a.iconId);
+        action = a;
+    }
 }
 
 /// button with image and text
@@ -265,6 +271,14 @@ class ImageTextButton : HorizontalLayout {
         UIString caption = rawText;
         init(drawableId, caption);
     }
+
+    /// constructor from action
+    this(const Action a) {
+        super("imagetextbutton-action" ~ to!string(a.id));
+        init(a.iconId, a.labelValue);
+        action = a;
+    }
+
 }
 
 /// checkbox
@@ -352,6 +366,12 @@ class Button : Widget {
 		clickable = true;
         focusable = true;
         trackHover = true;
+    }
+    /// constructor from action
+    this(const Action a) {
+        this("button-action" ~ to!string(a.id));
+        _text = a.labelValue;
+        action = a;
     }
 
     override void measure(int parentWidth, int parentHeight) { 

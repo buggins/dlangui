@@ -625,7 +625,7 @@ class FrameLayout : WidgetGroup {
 /// layout children as table with rows and columns
 class TableLayout : WidgetGroup {
 
-	this(string ID) {
+	this(string ID = null) {
 		super(ID);
 	}
 

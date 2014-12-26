@@ -598,7 +598,9 @@ class Widget {
 
     protected Action _action;
     /// action to emit on click
-    @property Action action() { return _action; }
+    @property const(Action) action() { return _action; }
+    /// action to emit on click
+    @property void action(const Action action) { _action = action.clone; }
     /// action to emit on click
     @property void action(Action action) { _action = action; }
 
