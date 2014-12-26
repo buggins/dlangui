@@ -189,6 +189,8 @@
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
  </Config>
  <Folder name="tetris">
+  <File path="gui.d" />
   <File path="src\main.d" />
+  <File path="model.d" />
  </Folder>
 </DProject>
