@@ -209,6 +209,8 @@ struct Cup {
     private int[] _cup;
     private int _cols;
     private int _rows;
+    private bool[] _destroyedFullRows;
+    private bool[] _fallingCell;
 
     private FigurePosition _currentFigure;
     /// current figure index, orientation, position
@@ -231,8 +233,8 @@ struct Cup {
         _cols = cols;
         _rows = rows;
         _cup = new int[_cols * _rows];
-        for (int i = 0; i < _cup.length; i++)
-            _cup[i] = EMPTY;
+        _destroyedFullRows = new bool[_rows];
+        _fallingCell = new bool[_cols * _rows];
     }
     /// returns cell content at specified position
     int opIndex(int col, int row) {
@@ -261,6 +263,57 @@ struct Cup {
             int value = this[pos.x + cell.dx, pos.y + cell.dy];
             if (value != 0) // occupied
                 return false;
+        }
+        return true;
+    }
+    /// returns true if specified row is full
+    bool isRowFull(int row) {
+        for (int i = 0; i < _cols; i++)
+            if (this[i, row] == EMPTY)
+                return false;
+        return true;
+    }
+    /// returns true if at least one row is full
+    @property bool hasFullRows() {
+        for (int i = 0; i < _rows; i++)
+            if (isRowFull(i))
+                return true;
+        return false;
+    }
+    /// destroy all full rows, saving flags for destroyed rows; returns true if any rows were destroyed
+    bool destroyFullRows() {
+        bool res = false;
+        for (int i = 0; i < _rows; i++) {
+            if (isRowFull(i)) {
+                _destroyedFullRows[i] = true;
+                res = true;
+                for (int col = 0; col < _cols; col++)
+                    this[col, i] = EMPTY;
+            } else {
+                _destroyedFullRows[i] = false;
+            }
+        }
+        return true;
+    }
+
+    @property int lowestDestroyedRow() {
+        for (int i = 0; i < _rows; i++) {
+            if (_destroyedFullRows[i]) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    bool fallAfterDestroy() {
+        int bottomRow = lowestDestroyedRow;
+        if (bottomRow < 0)
+            return false;
+        for (int i = bottomRow; i < _rows; i++) {
+            _destroyedFullRows[i] = i < _rows - 1 ? _destroyedFullRows[i + 1] : false;
+            for (int col = 0; col < _cols; col++) {
+                this[col, i] = i < _rows - 1 ? this[col, i + 1] : EMPTY;
+            }
         }
         return true;
     }
@@ -359,6 +412,8 @@ class CupWidget : Widget {
         HangingFigure,
         /// destroying complete rows
         DestroyingRows,
+        /// falling after some rows were destroyed
+        FallingRows,
         /// Game is over
         GameOver,
     }
@@ -378,10 +433,39 @@ class CupWidget : Widget {
         _movementDuration = LEVEL_SPEED[level - 1];
     }
 
-    void setCupState(CupState state, int animationIntervalPercent = 100, int maxProgress = 10000) {
+    static const int MIN_FAST_FALLING_INTERVAL = 600000;
+    static const int ROWS_FALLING_INTERVAL = 600000;
+
+    void setCupState(CupState state) {
+        int animationIntervalPercent = 100;
+        switch (state) {
+            case CupState.FallingFigure:
+                animationIntervalPercent = _fastDownFlag ? 10 : 25;
+                break;
+            case CupState.HangingFigure:
+                animationIntervalPercent = 75;
+                break;
+            case CupState.NewFigure:
+                animationIntervalPercent = 100;
+                break;
+            case CupState.FallingRows:
+                animationIntervalPercent = 25;
+                break;
+            case CupState.DestroyingRows:
+                animationIntervalPercent = 50;
+                break;
+            default:
+                break;
+        }
         _state = state;
-        if (animationIntervalPercent)
-            _animation.start(_movementDuration * animationIntervalPercent / 100, maxProgress);
+        if (animationIntervalPercent) {
+            long interval = _movementDuration * animationIntervalPercent / 100;
+            if (_fastDownFlag && falling && interval > MIN_FAST_FALLING_INTERVAL)
+                interval = MIN_FAST_FALLING_INTERVAL;
+            if (_state == CupState.FallingRows)
+                interval = ROWS_FALLING_INTERVAL;
+            _animation.start(interval, 255);
+        }
         invalidate();
     }
 
@@ -392,6 +476,7 @@ class CupWidget : Widget {
             case CupState.FallingFigure:
             case CupState.HangingFigure:
             case CupState.DestroyingRows:
+            case CupState.FallingRows:
                 return true;
             default:
                 return false;
@@ -401,14 +486,19 @@ class CupWidget : Widget {
     /// Turn on / off fast falling down
     bool handleFastDown(bool fast) {
         if (fast == true) {
+            if (_fastDownFlag)
+                return false;
             // handle turn on fast down
-            if (_state == CupState.FallingFigure) {
+            if (falling) {
                 _fastDownFlag = true;
-                _animation.interval = _movementDuration * 10 / 100; // increase speed
+                // if already falling, just increase speed
+                _animation.interval = _movementDuration * 10 / 100;
+                if (_animation.interval > MIN_FAST_FALLING_INTERVAL)
+                    _animation.interval = MIN_FAST_FALLING_INTERVAL;
                 return true;
             } else if (_state == CupState.HangingFigure) {
                 _fastDownFlag = true;
-                setCupState(CupState.FallingFigure, 10);
+                setCupState(CupState.FallingFigure);
                 return true;
             } else {
                 return false;
@@ -418,41 +508,58 @@ class CupWidget : Widget {
         return true;
     }
 
+    /// try start next figure
+    protected void nextFigure() {
+        if (!_cup.dropNextFigure()) {
+            // Game Over
+            setCupState(CupState.GameOver);
+            Widget popupWidget = new TextWidget("popup", "Game Over!"d);
+            popupWidget.padding(Rect(30, 30, 30, 30)).backgroundImageId("popup_background").alpha(0x40).fontWeight(800).fontSize(30);
+            _gameOverPopup = window.showPopup(popupWidget, this);
+        } else {
+            setCupState(CupState.NewFigure);
+        }
+    }
+
+    protected void destroyFullRows() {
+        setCupState(CupState.DestroyingRows);
+    }
+
     protected void onAnimationFinished() {
         switch (_state) {
             case CupState.NewFigure:
                 _fastDownFlag = false;
                 _cup.genNextFigure();
-                setCupState(CupState.HangingFigure, 75);
+                setCupState(CupState.HangingFigure);
                 break;
             case CupState.FallingFigure:
                 if (_cup.isPositionFreeBelow()) {
                     _cup.move(0, -1, false);
                     if (_fastDownFlag)
-                        setCupState(CupState.FallingFigure, 10);
+                        setCupState(CupState.FallingFigure);
                     else
-                        setCupState(CupState.HangingFigure, 75);
+                        setCupState(CupState.HangingFigure);
                 } else {
                     // At bottom of cup
                     _cup.putFigure();
                     _fastDownFlag = false;
-                    if (!_cup.dropNextFigure()) {
-                        // Game Over
-                        setCupState(CupState.GameOver);
-                        Widget popupWidget = new TextWidget("popup", "Game Over!"d);
-                        popupWidget.padding(Rect(30, 30, 30, 30)).backgroundImageId("popup_background").alpha(0x40).fontWeight(800).fontSize(30);
-                        _gameOverPopup = window.showPopup(popupWidget, this);
+                    if (_cup.hasFullRows) {
+                        destroyFullRows();
                     } else {
-                        setCupState(CupState.NewFigure, 100, 255);
+                        nextFigure();
                     }
                 }
                 break;
             case CupState.HangingFigure:
-                setCupState(CupState.FallingFigure, 25);
+                setCupState(CupState.FallingFigure);
                 break;
             case CupState.DestroyingRows:
-                // TODO
-                _fastDownFlag = false;
+                _cup.destroyFullRows();
+                setCupState(CupState.FallingRows);
+                break;
+            case CupState.FallingRows:
+                // TODO: fall more?
+                nextFigure();
                 break;
             default:
                 break;
@@ -489,6 +596,9 @@ class CupWidget : Widget {
         if (event.action == KeyAction.KeyDown && _state == CupState.GameOver) {
             newGame();
             return true;
+        }
+        if (event.action == KeyAction.KeyDown && _state == CupState.NewFigure) {
+            onAnimationFinished();
         }
         if (event.keyCode == KeyCode.DOWN) {
             if (event.action == KeyAction.KeyDown) {
@@ -547,6 +657,9 @@ class CupWidget : Widget {
         buf.fillRect(Rect(cupRc.left - dw - fw, cupRc.bottom + dw, cupRc.right + dw + fw, cupRc.bottom + dw + fw), fcl);
 
         for (int row = 0; row < _rows; row++) {
+            uint cellAlpha = 0;
+            if (_state == CupState.DestroyingRows && _cup.isRowFull(row))
+                cellAlpha = _animation.progress;
             for (int col = 0; col < _cols; col++) {
 
                 int value = _cup[col, row];
@@ -556,7 +669,7 @@ class CupWidget : Widget {
                 buf.fillRect(Rect(middle.x - 1, middle.y - 1, middle.x + 1, middle.y + 1), 0x80404040);
 
                 if (value != EMPTY) {
-                    uint cl = _figureColors[value - 1];
+                    uint cl = addAlpha(_figureColors[value - 1], cellAlpha);
                     drawCell(buf, cellRc, cl);
                 }
             }
@@ -620,7 +733,7 @@ class CupWidget : Widget {
         setLevel(1);
         init(_cols, _rows);
         _cup.dropNextFigure();
-        setCupState(CupState.NewFigure, 100, 255);
+        setCupState(CupState.NewFigure);
         if (window && _gameOverPopup) {
             window.removePopup(_gameOverPopup);
             _gameOverPopup = null;
