@@ -146,6 +146,11 @@ class Action {
 			return null;
 		return _accelerators[0].label;
 	}
+    /// adds one more accelerator
+    Action addAccelerator(uint keyCode, uint keyFlags = 0) {
+        _accelerators ~= Accelerator(keyCode, keyFlags);
+        return this;
+    }
 	/// returns true if accelerator matches provided key code and flags
 	bool checkAccelerator(uint keyCode, uint keyFlags) {
 		foreach(a; _accelerators)

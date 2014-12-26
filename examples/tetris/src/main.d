@@ -139,6 +139,8 @@ enum TetrisAction : int {
     MoveRight,
     RotateCCW,
     FastDown,
+    Pause,
+    LevelUp,
 }
 
 enum : int {
@@ -210,7 +212,7 @@ struct Cup {
     private int _cols;
     private int _rows;
     private bool[] _destroyedFullRows;
-    private bool[] _fallingCell;
+    private int[]  _cellGroups;
 
     private FigurePosition _currentFigure;
     /// current figure index, orientation, position
@@ -234,7 +236,7 @@ struct Cup {
         _rows = rows;
         _cup = new int[_cols * _rows];
         _destroyedFullRows = new bool[_rows];
-        _fallingCell = new bool[_cols * _rows];
+        _cellGroups = new int[_cols * _rows];
     }
     /// returns cell content at specified position
     int opIndex(int col, int row) {
@@ -376,6 +378,113 @@ struct Cup {
         _currentFigure.x = _cols / 2;
         _currentFigure.y = _rows - 1 - _currentFigure.shape.y0;
         return isPositionFree();
+    }
+
+    /// get cell group / falling cell value
+    private int cellGroup(int col, int row) {
+        if (col < 0 || row < 0 || col >= _cols || row >= _rows)
+            return 0;
+        return _cellGroups[col + row * _cols];
+    }
+
+    /// set cell group / falling cells value
+    private void setCellGroup(int value, int col, int row) {
+        _cellGroups[col + row * _cols] = value;
+    }
+
+    /// recursive fill occupied area of cells with group id
+    private void fillCellGroup(int x, int y, int value) {
+        if (x < 0 || y < 0 || x >= _cols || y >= _rows)
+            return;
+        if (this[x, y] != EMPTY && cellGroup(x, y) == 0) {
+            setCellGroup(value, x, y);
+            fillCellGroup(x + 1, y, value);
+            fillCellGroup(x - 1, y, value);
+            fillCellGroup(x, y + 1, value);
+            fillCellGroup(x, y - 1, value);
+        }
+    }
+
+    /// 1 == next cell below is occupied, 2 == one empty cell
+    private int distanceToOccupiedCellBelow(int col, int row) {
+        for (int y = row - 1; y >= -1; y--) {
+            if (this[col, y] != EMPTY)
+                return row - y;
+        }
+        return 1;
+    }
+
+    /// mark cells in _cellGroups[] matrix which can fall down (value > 0 is distance to fall)
+    bool markFallingCells() {
+        _cellGroups = new int[_cols * _rows];
+        int groupId = 1;
+        for (int y = 0; y < _rows; y++) {
+            for (int x = 0; x < _cols; x++) {
+                if (this[x, y] != EMPTY && cellGroup(x, y) == 0) {
+                    fillCellGroup(x, y, groupId);
+                    groupId++;
+                }
+            }
+        }
+        // check space below each group - can it fall down?
+        int[] spaceBelowGroup = new int[groupId];
+        for (int y = 0; y < _rows; y++) {
+            for (int x = 0; x < _cols; x++) {
+                int group = cellGroup(x, y);
+                if (group > 0) {
+                    if (y == 0)
+                        spaceBelowGroup[group] = 1;
+                    else if (this[x, y - 1] != EMPTY && cellGroup(x, y - 1) != group)
+                        spaceBelowGroup[group] = 1;
+                    else if (this[x, y - 1] == EMPTY) {
+                        int dist = distanceToOccupiedCellBelow(x, y);
+                        if (spaceBelowGroup[group] == 0 || spaceBelowGroup[group] > dist)
+                            spaceBelowGroup[group] = dist;
+                    }
+                }
+            }
+        }
+        // replace group IDs with distance to fall (0 == cell cannot fall)
+        for (int y = 0; y < _rows; y++) {
+            for (int x = 0; x < _cols; x++) {
+                int group = cellGroup(x, y);
+                if (group > 0) {
+                    // distance to fall
+                    setCellGroup(spaceBelowGroup[group] - 1, x, y);
+                }
+            }
+        }
+        bool canFall = false;
+        for (int i = 1; i < groupId; i++)
+            if (spaceBelowGroup[i] > 1)
+                canFall = true;
+        return canFall;
+    }
+
+    /// moves all falling cells one cell down
+    /// returns true if there are more cells to fall
+    bool moveFallingCells() {
+        bool res = false;
+        for (int y = 0; y < _rows - 1; y++) {
+            for (int x = 0; x < _cols; x++) {
+                int dist = cellGroup(x, y + 1);
+                if (dist > 0) {
+                    // move cell down, decreasing distance
+                    setCellGroup(dist - 1, x, y);
+                    this[x, y] = this[x, y + 1];
+                    setCellGroup(0, x, y + 1);
+                    this[x, y + 1] = EMPTY;
+                    if (dist > 1)
+                        res = true;
+                }
+            }
+        }
+        return res;
+    }
+
+    /// return true if cell is currently falling
+    bool isCellFalling(int col, int row) {
+        return cellGroup(col, row) > 0;
     }
 
 }
@@ -555,11 +664,20 @@ class CupWidget : Widget {
                 break;
             case CupState.DestroyingRows:
                 _cup.destroyFullRows();
-                setCupState(CupState.FallingRows);
+                if (_cup.markFallingCells()) {
+                    setCupState(CupState.FallingRows);
+                } else {
+                    nextFigure();
+                }
                 break;
             case CupState.FallingRows:
-                // TODO: fall more?
-                nextFigure();
+                if (_cup.moveFallingCells()) {
+                    // more cells to fall
+                    setCupState(CupState.FallingRows);
+                } else {
+                    // no more cells to fall, next figure
+                    nextFigure();
+                }
                 break;
             default:
                 break;
@@ -594,10 +712,12 @@ class CupWidget : Widget {
     /// Handle keys
     override bool onKeyEvent(KeyEvent event) {
         if (event.action == KeyAction.KeyDown && _state == CupState.GameOver) {
+            // restart game
             newGame();
             return true;
         }
         if (event.action == KeyAction.KeyDown && _state == CupState.NewFigure) {
+            // stop new figure fade in if key is pressed
             onAnimationFinished();
         }
         if (event.keyCode == KeyCode.DOWN) {
@@ -614,9 +734,13 @@ class CupWidget : Widget {
     }
 
     /// draw cup cell
-    protected void drawCell(DrawBuf buf, Rect cellRc, uint color) {
+    protected void drawCell(DrawBuf buf, Rect cellRc, uint color, int offset = 0) {
+        cellRc.top += offset;
+        cellRc.bottom += offset;
+
         cellRc.right--;
         cellRc.bottom--;
+
         int w = cellRc.width / 6;
         buf.drawFrame(cellRc, color, Rect(w,w,w,w));
         cellRc.shrink(w, w);
@@ -656,6 +780,11 @@ class CupWidget : Widget {
         buf.fillRect(Rect(cupRc.right + dw,     cupRc.top, cupRc.right + dw + fw, cupRc.bottom + dw), fcl);
         buf.fillRect(Rect(cupRc.left - dw - fw, cupRc.bottom + dw, cupRc.right + dw + fw, cupRc.bottom + dw + fw), fcl);
 
+        int fallingCellOffset = 0;
+        if (_state == CupState.FallingRows) {
+            fallingCellOffset = _animation.getProgress(topLeft.height);
+        }
+
         for (int row = 0; row < _rows; row++) {
             uint cellAlpha = 0;
             if (_state == CupState.DestroyingRows && _cup.isRowFull(row))
@@ -670,7 +799,8 @@ class CupWidget : Widget {
 
                 if (value != EMPTY) {
                     uint cl = addAlpha(_figureColors[value - 1], cellAlpha);
-                    drawCell(buf, cellRc, cl);
+                    int offset = fallingCellOffset > 0 && _cup.isCellFalling(col, row) ? fallingCellOffset : 0;
+                    drawCell(buf, cellRc, cl, offset);
                 }
             }
         }
@@ -698,7 +828,7 @@ class CupWidget : Widget {
 
     }
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         /// fixed size 350 x 550
         measuredContent(parentWidth, parentHeight, 350, 550);
     }
@@ -722,6 +852,14 @@ class CupWidget : Widget {
             case TetrisAction.FastDown:
                 handleFastDown(true);
                 return true;
+            case TetrisAction.Pause:
+                // TODO: implement pause
+                return true;
+            case TetrisAction.LevelUp:
+                if (_level < 10)
+                    _level++;
+                // TODO: update state
+                return true;
             default:
                 if (parent) // by default, pass to parent widget
                     return parent.handleAction(a);
@@ -729,6 +867,7 @@ class CupWidget : Widget {
         }
 	}
 
+    /// start new game
     void newGame() {
         setLevel(1);
         init(_cols, _rows);
@@ -753,10 +892,12 @@ class CupWidget : Widget {
         focusable = true;
 
 		acceleratorMap.add( [
-			new Action(TetrisAction.MoveLeft,  KeyCode.LEFT, 0),
-			new Action(TetrisAction.MoveRight, KeyCode.RIGHT, 0),
-			new Action(TetrisAction.RotateCCW, KeyCode.UP, 0),
-			new Action(TetrisAction.FastDown,  KeyCode.SPACE, 0),
+			(new Action(TetrisAction.MoveLeft,  KeyCode.LEFT)).addAccelerator(KeyCode.KEY_A),
+			(new Action(TetrisAction.MoveRight, KeyCode.RIGHT)).addAccelerator(KeyCode.KEY_D),
+			(new Action(TetrisAction.RotateCCW, KeyCode.UP)).addAccelerator(KeyCode.KEY_W),
+			(new Action(TetrisAction.FastDown,  KeyCode.SPACE)).addAccelerator(KeyCode.KEY_S),
+			(new Action(TetrisAction.Pause,     KeyCode.ESCAPE)).addAccelerator(KeyCode.PAUSE),
+			(new Action(TetrisAction.LevelUp,   KeyCode.ADD)).addAccelerator(KeyCode.INS),
 		]);
 
     }
@@ -818,13 +959,6 @@ class GameWidget : HorizontalLayout {
         super.measure(parentWidth, parentHeight);
         measuredContent(parentWidth, parentHeight, 500, 550);
     }
-}
-
-enum : int {
-    ACTION_FILE_OPEN = 5500,
-    ACTION_FILE_SAVE,
-    ACTION_FILE_CLOSE,
-    ACTION_FILE_EXIT,
 }
 
 /// entry point for dlangui based application
