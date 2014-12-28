@@ -1063,6 +1063,8 @@ version (Windows) {
 		FreeTypeFontManager ft = new FreeTypeFontManager();
 		// TODO: use FontConfig
 		ft.registerFont("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", FontFamily.SansSerif, "DejaVu", false, FontWeight.Normal);
+		ft.registerFont("/usr/share/fonts/TTF/DejaVuSans.ttf", FontFamily.SansSerif, "DejaVu", false, FontWeight.Normal);
+		ft.registerFont("/usr/share/fonts/dejavu/DejaVuSans.ttf", FontFamily.SansSerif, "DejaVu", false, FontWeight.Normal);
 		FontManager.instance = ft;
 
         return sdlmain(args);
