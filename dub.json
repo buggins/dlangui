@@ -96,10 +96,7 @@
 				"derelict-gl3": "~master",
 				"derelict-fi": "~master",
 				"derelict-ft": "~master",
-				"de_image": ">=0.2.3",
-			},
-			"subConfigurations": {
-				"de_image": "png"
+				"de_image": "~master",
 			},
                         "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.", "--ex", "src.dlangui"]
         },
