@@ -47,7 +47,7 @@
   <compiler>0</compiler>
   <otherDMD>0</otherDMD>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>3rdparty ../DerelictGL3/source  ../DerelictUtil/source  ../DerelictFT/source</imppath>
+  <imppath>3rdparty ../DerelictGL3/source  ../DerelictUtil/source  ../DerelictFT/source ../de_image/source/interfaces ../de_image/source/png</imppath>
   <fileImppath />
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
@@ -233,6 +233,22 @@
     <File path="..\DerelictUtil\source\derelict\util\system.d" />
     <File path="..\DerelictUtil\source\derelict\util\wintypes.d" />
     <File path="..\DerelictUtil\source\derelict\util\xtypes.d" />
+   </Folder>
+   <Folder name="de_image">
+    <File path="..\de_image\source\png\devisualization\image\png\chunks.d" />
+    <File path="..\de_image\source\interfaces\devisualization\image\color.d" />
+    <File path="..\de_image\source\interfaces\devisualization\image\creation.d" />
+    <File path="..\de_image\source\png\devisualization\image\png\defs.d" />
+    <File path="..\de_image\source\interfaces\devisualization\image\image.d" />
+    <File path="..\de_image\source\interfaces\devisualization\image\manipulation.d" />
+    <File path="..\de_image\source\interfaces\devisualization\image\package.d" />
+    <File path="..\de_image\source\png\devisualization\image\png\package.d" />
+    <File path="..\de_image\source\png\devisualization\image\png\reader.d" />
+    <File path="..\de_image\source\png\devisualization\image\png\reader_chunks.d" />
+    <File path="..\de_image\source\png\devisualization\image\png\reader_chunks_IDAT.d" />
+    <File path="..\de_image\source\png\devisualization\image\png\writer.d" />
+    <File path="..\de_image\source\png\devisualization\image\png\writer_chunks.d" />
+    <File path="..\de_image\source\png\devisualization\image\png\writer_chunks_IDAT.d" />
    </Folder>
    <Folder name="win32">
     <File path="3rdparty\win32\basetsd.d" />

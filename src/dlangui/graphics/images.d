@@ -22,6 +22,15 @@ module dlangui.graphics.images;
 
 immutable bool USE_FREEIMAGE = true;
 
+//version = USE_DEIMAGE;
+
+
+
+version (USE_DEIMAGE) {
+    import devisualization.image.creation;
+    import devisualization.image.image;
+}
+
 import dlangui.core.logger;
 import dlangui.core.types;
 import dlangui.graphics.drawbuf;
@@ -31,22 +40,39 @@ import std.conv : to;
 /// load and decode image from file to ColorDrawBuf, returns null if loading or decoding is failed
 ColorDrawBuf loadImage(string filename) {
     Log.d("Loading image from file " ~ filename);
-    try {
-        std.stream.File f = new std.stream.File(filename);
-	    scope(exit) { f.close(); }
-        return loadImage(f);
-    } catch (Exception e) {
-        Log.e("exception while loading image from file ", filename);
-        Log.e(to!string(e));
-        return null;
+    version (USE_DEIMAGE) {
+        try {
+            Image image = imageFromFile(filename);
+            ColorDrawBuf buf = new ColorDrawBuf(image.width, image.height);
+            Color_RGBA[] pixels = image.rgba.allPixels;
+            for (int y = 0; y < image.height; y++) {
+                // TODO: convert pixels
+            }
+            return buf;
+        } catch (NotAnImageException e) {
+            Log.e("Failed to load image from file ", filename, " using de_image");
+            Log.e(to!string(e));
+            return null;
+        }
+    } else {
+        try {
+            std.stream.File f = new std.stream.File(filename);
+            scope(exit) { f.close(); }
+            return loadImage(f);
+        } catch (Exception e) {
+            Log.e("exception while loading image from file ", filename);
+            Log.e(to!string(e));
+            return null;
+        }
     }
+
 }
 
 /// load and decode image from stream to ColorDrawBuf, returns null if loading or decoding is failed
 ColorDrawBuf loadImage(InputStream stream) {
     if (stream is null || !stream.isOpen)
         return null;
-	static if (USE_FREEIMAGE) {
+    static if (USE_FREEIMAGE) {
 		return loadFreeImage(stream);
 	}
 }
