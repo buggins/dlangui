@@ -11,6 +11,9 @@ Wiki: https://github.com/buggins/dlangui/wiki/Home
 
 Some screenshots: http://buggins.github.io/dlangui/screenshots.html
 
+[![Gitter](https://badges.gitter.im/Join Chat.svg)](https://gitter.im/buggins/dlangui?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
+Main features:
 
 * Crossplatform (Win32 and Linux are supported in current version); can use SDL2 as a backend.
 * Mostly inspired by Android UI API (layouts, styles, two phase layout, ...)
@@ -104,7 +107,6 @@ Win32 builds
 * Optionally, may use OpenGL acceleration via DerelictGL3/WGL.
 * Uses Win32 API for font rendering.
 * Optinally can use FreeType for font rendering.
-* For Win32 API based application, only FreeImage.dll is required. 
 * Executable size for release Win32 API based build is 830K.
 
 
@@ -157,12 +159,12 @@ E.g. in Ubuntu, you can use following command to enable SDL2 backend builds:
 
 or (for XCB backend)
 
-        sudo apt-get install libxcb-image0-dev libxcb-shm0-dev libxcb-keysyms1-dev libfreeimage-dev
+        sudo apt-get install libxcb-image0-dev libxcb-shm0-dev libxcb-keysyms1-dev
 
 
 In runtime, .so for following libraries are being loaded (binary packages required):
 
-        freetype, opengl, freeimage
+        freetype, opengl
 
 
 Build and run on Linux using DUB:
@@ -192,10 +194,10 @@ Third party components used
 
 * DerelictGL3 - for OpenGL support
 * DerelictFT + FreeType library support under linux and optionally under Windows.
-* DerelictFI + FreeImage library support for decoding of images
 * DerelictSDL2 + SDL2 for cross platform support
 * WindowsAPI bindings from http://www.dsource.org/projects/bindings/wiki/WindowsApi (patched)
 * XCB and X11 bindings (patched) when SDL2 is not used; TODO: provide links
+* DLIB - for loading images (it replaced FreeImage recently)
 
 
 Hello World
@@ -249,10 +251,6 @@ Sample dub.json:
 	
 	    "sourceFiles": [
 	         "src/app.d"
-	    ],
-
-	    "copyFiles-windows": [
-	        "lib/FreeImage.dll"
 	    ],
 
 	    "copyFiles": [
