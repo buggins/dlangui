@@ -46,20 +46,27 @@ import std.conv : to;
 ColorDrawBuf loadImage(string filename) {
     Log.d("Loading image from file " ~ filename);
     version (USE_DLIBIMAGE) {
-        SuperImage image = dlib.image.io.io.loadImage(filename);
-        if (!image)
-            return null;
-        int w = image.width;
-        int h = image.height;
-        ColorDrawBuf buf = new ColorDrawBuf(w, h);
-        for (int y = 0; y < h; y++) {
-            uint * dstLine = buf.scanLine(y);
-            for (int x = 0; x < w; x++) {
-                auto pixel = image[x, h - 1 - y].convert(8);
-                dstLine[x] = makeRGBA(pixel.r, pixel.g, pixel.b, 255 - pixel.a);
+        try {
+            SuperImage image = dlib.image.io.io.loadImage(filename);
+            if (!image)
+                return null;
+            int w = image.width;
+            int h = image.height;
+            ColorDrawBuf buf = new ColorDrawBuf(w, h);
+            for (int y = 0; y < h; y++) {
+                uint * dstLine = buf.scanLine(y);
+                for (int x = 0; x < w; x++) {
+                    auto pixel = image[x, h - 1 - y].convert(8);
+                    dstLine[x] = makeRGBA(pixel.r, pixel.g, pixel.b, 255 - pixel.a);
+                }
             }
+            destroy(image);
+            return buf;
+        } catch (Exception e) {
+            Log.e("Failed to load image from file ", filename, " using dlib image");
+            Log.e(to!string(e));
+            return null;
         }
-        return buf;
     } else version (USE_DEIMAGE) {
         try {
             Image image = imageFromFile(filename);

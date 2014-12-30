@@ -1034,7 +1034,11 @@ version (Windows) {
     int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int iCmdShow)
     {
 		Log.setFileLogger(std.stdio.File("ui.log", "w"));
-        Log.setLogLevel(LogLevel.Trace);
+    	debug {
+            Log.setLogLevel(LogLevel.Trace);
+        } else {
+            Log.setLogLevel(LogLevel.Warn);
+        }
         Log.d("myWinMain()");
         string basePath = exePath();
         Log.i("Current executable: ", exePath());
@@ -1053,18 +1057,37 @@ version (Windows) {
     }
 } else {
 
+    bool registerFonts(FreeTypeFontManager ft, string path) {
+        if (!exists(path) || !isDir(path))
+            return false;
+		ft.registerFont(path ~ "DejaVuSans.ttf", FontFamily.SansSerif, "DejaVuSans", false, FontWeight.Normal);
+		ft.registerFont(path ~ "DejaVuSans-Bold.ttf", FontFamily.SansSerif, "DejaVuSans", false, FontWeight.Bold);
+		ft.registerFont(path ~ "DejaVuSans-Oblique.ttf", FontFamily.SansSerif, "DejaVuSans", true, FontWeight.Normal);
+		ft.registerFont(path ~ "DejaVuSans-BoldOblique.ttf", FontFamily.SansSerif, "DejaVuSans", true, FontWeight.Bold);
+		ft.registerFont(path ~ "DejaVuSansMono.ttf", FontFamily.MonoSpace, "DejaVuSansMono", false, FontWeight.Normal);
+		ft.registerFont(path ~ "DejaVuSansMono-Bold.ttf", FontFamily.MonoSpace, "DejaVuSansMono", false, FontWeight.Bold);
+		ft.registerFont(path ~ "DejaVuSansMono-Oblique.ttf", FontFamily.MonoSpace, "DejaVuSansMono", true, FontWeight.Normal);
+		ft.registerFont(path ~ "DejaVuSansMono-BoldOblique.ttf", FontFamily.MonoSpace, "DejaVuSansMono", true, FontWeight.Bold);
+        return true;
+    }
+
 	int main(string[] args)
 	{
 		
 		Log.setStderrLogger();
-		Log.setLogLevel(LogLevel.Warn);
+    	debug {
+            Log.setLogLevel(LogLevel.Trace);
+        } else {
+            Log.setLogLevel(LogLevel.Warn);
+        }
 
 
 		FreeTypeFontManager ft = new FreeTypeFontManager();
 		// TODO: use FontConfig
-		ft.registerFont("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", FontFamily.SansSerif, "DejaVu", false, FontWeight.Normal);
-		ft.registerFont("/usr/share/fonts/TTF/DejaVuSans.ttf", FontFamily.SansSerif, "DejaVu", false, FontWeight.Normal);
-		ft.registerFont("/usr/share/fonts/dejavu/DejaVuSans.ttf", FontFamily.SansSerif, "DejaVu", false, FontWeight.Normal);
+		Log.w("Only hardcoded paths to TTF fonts are supported under linux so far. TODO: implement fontconfig support.");
+		ft.registerFonts("/usr/share/fonts/truetype/dejavu/");
+		ft.registerFonts("/usr/share/fonts/TTF/");
+		ft.registerFonts("/usr/share/fonts/dejavu/");
 		FontManager.instance = ft;
 
         return sdlmain(args);
