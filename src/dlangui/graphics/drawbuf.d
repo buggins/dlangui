@@ -23,6 +23,10 @@ import dlangui.core.logger;
 immutable uint COLOR_TRANSFORM_OFFSET_NONE = 0x80808080;
 immutable uint COLOR_TRANSFORM_MULTIPLY_NONE = 0x40404040;
 
+uint makeRGBA(T)(T r, T g, T b, T a) {
+    return (cast(uint)a << 24)|(cast(uint)r << 16)|(cast(uint)g << 8)|(cast(uint)b);
+}
+
 /// blend two RGB pixels using alpha
 uint blendARGB(uint dst, uint src, uint alpha) {
     uint dstalpha = dst >> 24;

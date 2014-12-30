@@ -20,15 +20,16 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.graphics.images;
 
-immutable bool USE_FREEIMAGE = true;
+//immutable bool USE_FREEIMAGE = true;
+//version = USE_FREEIMAGE;
 
-//version = USE_DEIMAGE;
+version = USE_DEIMAGE;
 
 
 
 version (USE_DEIMAGE) {
-    import devisualization.image.creation;
-    import devisualization.image.image;
+    import devisualization.image;
+    import devisualization.image.png;
 }
 
 import dlangui.core.logger;
@@ -43,11 +44,20 @@ ColorDrawBuf loadImage(string filename) {
     version (USE_DEIMAGE) {
         try {
             Image image = imageFromFile(filename);
-            ColorDrawBuf buf = new ColorDrawBuf(image.width, image.height);
+            int w = cast(int)image.width;
+            int h = cast(int)image.height;
+            ColorDrawBuf buf = new ColorDrawBuf(w, h);
             Color_RGBA[] pixels = image.rgba.allPixels;
-            for (int y = 0; y < image.height; y++) {
-                // TODO: convert pixels
+            int index = 0;
+            for (int y = 0; y < h; y++) {
+                uint * dstLine = buf.scanLine(y);
+                for (int x = 0; x < w; x++) {
+                    Color_RGBA * pixel = &pixels[index + x];
+                    dstLine[x] = makeRGBA(pixel.r_ubyte, pixel.g_ubyte, pixel.b_ubyte, pixel.a_ubyte);
+                }
+                index += w;
             }
+            //destroy(image);
             return buf;
         } catch (NotAnImageException e) {
             Log.e("Failed to load image from file ", filename, " using de_image");
@@ -68,13 +78,13 @@ ColorDrawBuf loadImage(string filename) {
 
 }
 
-/// load and decode image from stream to ColorDrawBuf, returns null if loading or decoding is failed
-ColorDrawBuf loadImage(InputStream stream) {
-    if (stream is null || !stream.isOpen)
-        return null;
-    static if (USE_FREEIMAGE) {
-		return loadFreeImage(stream);
-	}
+version (USE_FREEIMAGE) {
+    /// load and decode image from stream to ColorDrawBuf, returns null if loading or decoding is failed
+    ColorDrawBuf loadImage(InputStream stream) {
+        if (stream is null || !stream.isOpen)
+            return null;
+        return loadFreeImage(stream);
+    }
 }
 
 class ImageDecodingException : Exception {
@@ -88,7 +98,7 @@ shared static this() {
 	//DerelictFI.load();
 }
 
-static if (USE_FREEIMAGE) {
+version (USE_FREEIMAGE) {
 	ColorDrawBuf loadFreeImage(InputStream stream) {
 		import derelict.freeimage.freeimage;
 
