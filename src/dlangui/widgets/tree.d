@@ -549,7 +549,12 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
     protected bool _needUpdateWidgets;
     protected bool _needUpdateWidgetStates;
 
-	this(string ID = null, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
+	this(string ID, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
 		super(ID, hscrollbarMode, vscrollbarMode);
         contentWidget = new VerticalLayout("TREE_CONTENT");
         _tree = new TreeItems();
@@ -737,7 +742,12 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
 
 /// Tree widget with items which can have icons and labels
 class TreeWidget :  TreeWidgetBase {
-	this(string ID = null) {
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
+	this(string ID) {
 		super(ID);
     }
 }

@@ -139,6 +139,11 @@ class ComboBox : ComboBoxBase {
     protected StringListAdapter _adapter;
     protected EditLine _edit;
 
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
     this(string ID) {
         super(ID, (_adapter = new StringListAdapter()), true);
     }

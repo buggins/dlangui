@@ -1712,6 +1712,11 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 /// single line editor
 class EditLine : EditWidgetBase {
 
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
     this(string ID, dstring initialContent = null) {
         super(ID, ScrollBarMode.Invisible, ScrollBarMode.Invisible);
         _content = new EditableContent(false);
@@ -1880,6 +1885,11 @@ class EditLine : EditWidgetBase {
 
 /// single line editor
 class EditBox : EditWidgetBase {
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
     this(string ID, dstring initialContent = null, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
         super(ID, hscrollbarMode, vscrollbarMode);
         _content = new EditableContent(true); // multiline

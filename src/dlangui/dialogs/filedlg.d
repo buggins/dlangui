@@ -314,3 +314,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _fileList.setFocus();
     }
 }
+
+
+class FilePathPanel : FrameLayout {
+}

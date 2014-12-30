@@ -177,6 +177,11 @@ class TabControl : WidgetGroup {
 	/// signal of tab change (e.g. by clicking on tab header)
 	Signal!TabHandler onTabChangedListener;
 
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
     this(string ID) {
         super(ID);
         _items = new TabItemList();
@@ -373,6 +378,11 @@ class TabControl : WidgetGroup {
 
 /// container for widgets controlled by TabControl
 class TabHost : FrameLayout, TabHandler {
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
     this(string ID, TabControl tabControl = null) {
         super(ID);
         _tabControl = tabControl;
@@ -458,6 +468,11 @@ class TabHost : FrameLayout, TabHandler {
 class TabWidget : VerticalLayout, TabHandler {
     protected TabControl _tabControl;
     protected TabHost _tabHost;
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
     this(string ID) {
         super(ID);
         _tabControl = new TabControl("TAB_CONTROL");

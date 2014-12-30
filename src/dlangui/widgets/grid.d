@@ -1163,7 +1163,12 @@ class StringGridWidget : StringGridWidgetBase {
 	protected dstring[] _rowTitles;
 	protected dstring[] _colTitles;
 
-	this(string ID = null) {
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
+	this(string ID) {
 		super(ID);
 		styleId = "EDIT_BOX";
 	}

@@ -344,33 +344,40 @@ class Button : Widget {
     override @property Widget text(dstring s) { _text = s; requestLayout(); return this; }
     override @property Widget text(UIString s) { _text = s; requestLayout(); return this; }
     @property Widget textResource(string s) { _text = s; requestLayout(); return this; }
-    this(string ID = null) {
-		super(ID);
+    /// empty parameter list constructor - for usage by factory
+    this() {
+		super(null);
+        init(UIString());
+    }
+
+    private void init(UIString label) {
         styleId = "BUTTON";
+        _text = label;
 		clickable = true;
         focusable = true;
         trackHover = true;
+    }
+
+    /// create with ID parameter
+    this(string ID) {
+		super(ID);
+        init(UIString());
+    }
+    this(string ID, UIString label) {
+		super(ID);
+        init(label);
     }
     this(string ID, dstring label) {
 		super(ID);
-        _text = label;
-        styleId = "BUTTON";
-		clickable = true;
-        focusable = true;
-        trackHover = true;
+        init(UIString(label));
     }
     this(string ID, string labelResourceId) {
 		super(ID);
-        _text = labelResourceId;
-        styleId = "BUTTON";
-		clickable = true;
-        focusable = true;
-        trackHover = true;
+        init(UIString(labelResourceId));
     }
     /// constructor from action
     this(const Action a) {
-        this("button-action" ~ to!string(a.id));
-        _text = a.labelValue;
+        this("button-action" ~ to!string(a.id), a.labelValue);
         action = a;
     }
 
@@ -408,6 +415,7 @@ class AbstractSlider : WidgetGroup {
     protected int _pageSize = 30;
     protected int _position = 20;
 
+    /// create with ID parameter
     this(string ID) {
         super(ID);
     }
@@ -656,7 +664,12 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         return this; 
     }
 
-    this(string ID = null, Orientation orient = Orientation.Vertical) {
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null, Orientation.Vertical);
+    }
+    /// create with ID parameter
+    this(string ID, Orientation orient = Orientation.Vertical) {
 		super(ID);
         styleId = "SCROLLBAR";
         _orientation = orient;

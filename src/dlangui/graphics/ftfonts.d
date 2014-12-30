@@ -205,6 +205,8 @@ private class FreeTypeFontFile {
             case 0x2039:
                 return '<';
             case 0x203A:
+            case '‣':
+            case '►':
                 return '>';
             case 0x2044:
                 return '/';
