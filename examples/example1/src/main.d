@@ -376,7 +376,7 @@ extern (C) int UIAppMain(string[] args) {
 
 		layout.layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT);
 
-        tabs.addTab(layout, "Tab 1"d);
+        tabs.addTab(layout, "Misc"d);
 
         static if (true) {
             // two long lists
@@ -534,9 +534,7 @@ extern (C) int UIAppMain(string[] args) {
 		table.margins(Rect(10,10,10,10)).layoutWidth(FILL_PARENT);
 		tabs.addTab(table, "TAB_TABLE_LAYOUT"c);
 
-        tabs.addTab((new TextWidget()).id("tab5").textColor(0x00802000).text("Tab 5 contents"), "Tab 5"d);
-
-		tabs.addTab((new SampleAnimationWidget("tab6")).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT), "TAB_ANIMATION"c);
+        //tabs.addTab((new TextWidget()).id("tab5").textColor(0x00802000).text("Tab 5 contents"), "Tab 5"d);
 
         //==========================================================================
 		// create Editors test tab
@@ -705,6 +703,9 @@ extern (C) int UIAppMain(string[] args) {
         tree.items.selectItem(tree.items.child(0));
 
 		tabs.addTab(treeLayout, "Tree"d);
+
+
+		tabs.addTab((new SampleAnimationWidget("tab6")).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT), "TAB_ANIMATION"c);
 
 
         //==========================================================================

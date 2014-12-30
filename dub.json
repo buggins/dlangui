@@ -5,6 +5,9 @@
     "license": "Boost",
     "authors": ["Vadim Lopatin"],
     "targetType": "none",
+    "buildRequirements":[
+        "allowWarnings"
+    ],
     "subPackages": [
         {
 			"name": "dlanguilib",
@@ -92,7 +95,7 @@
 				"derelict-gl3": "~master",
 				"derelict-ft": "~master",
 				"de_image:png": ">=0.2.3",
-				"dlib": "~master"
+				"dlib": ">=0.4.0"
 			},
                         "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.", "--ex", "src.dlangui"]
         },
