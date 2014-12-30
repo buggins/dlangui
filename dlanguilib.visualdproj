@@ -47,7 +47,7 @@
   <compiler>0</compiler>
   <otherDMD>0</otherDMD>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>3rdparty ../DerelictGL3/source  ../DerelictUtil/source  ../DerelictFT/source ../de_image/source/interfaces ../de_image/source/png</imppath>
+  <imppath>3rdparty ../DerelictGL3/source  ../DerelictUtil/source  ../DerelictFT/source ../de_image/source/interfaces ../de_image/source/png $(SolutionDir)/../dlib</imppath>
   <fileImppath />
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
@@ -249,6 +249,37 @@
     <File path="..\de_image\source\png\devisualization\image\png\writer.d" />
     <File path="..\de_image\source\png\devisualization\image\png\writer_chunks.d" />
     <File path="..\de_image\source\png\devisualization\image\png\writer_chunks_IDAT.d" />
+   </Folder>
+   <Folder name="dlib_image">
+    <File path="..\dlib\dlib\image\io\bitio.d" />
+    <File path="..\dlib\dlib\image\io\bmp.d" />
+    <File path="..\dlib\dlib\image\color.d" />
+    <File path="..\dlib\dlib\filesystem\windows\common.d" />
+    <File path="..\dlib\dlib\core\compound.d" />
+    <File path="..\dlib\dlib\math\decomposition.d" />
+    <File path="..\dlib\dlib\filesystem\delegaterange.d" />
+    <File path="..\dlib\dlib\filesystem\windows\directory.d" />
+    <File path="..\dlib\dlib\filesystem\dirrange.d" />
+    <File path="..\dlib\dlib\filesystem\windows\file.d" />
+    <File path="..\dlib\dlib\filesystem\filesystem.d" />
+    <File path="..\dlib\dlib\image\io\huffman.d" />
+    <File path="..\dlib\dlib\image\io\idct.d" />
+    <File path="..\dlib\dlib\image\image.d" />
+    <File path="..\dlib\dlib\math\interpolation.d" />
+    <File path="..\dlib\dlib\image\io\io.d" />
+    <File path="..\dlib\dlib\image\io\jpeg.d" />
+    <File path="..\dlib\dlib\math\linsolve.d" />
+    <File path="..\dlib\dlib\filesystem\local.d" />
+    <File path="..\dlib\dlib\math\matrix.d" />
+    <File path="..\dlib\dlib\image\io\png.d" />
+    <File path="..\dlib\dlib\functional\range.d" />
+    <File path="..\dlib\dlib\core\stream.d" />
+    <File path="..\dlib\dlib\image\io\tga.d" />
+    <File path="..\dlib\dlib\core\tuple.d" />
+    <File path="..\dlib\dlib\math\utils.d" />
+    <File path="..\dlib\dlib\image\io\utils.d" />
+    <File path="..\dlib\dlib\math\vector.d" />
+    <File path="..\dlib\dlib\image\io\zstream.d" />
    </Folder>
    <Folder name="win32">
     <File path="3rdparty\win32\basetsd.d" />

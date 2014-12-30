@@ -21,15 +21,19 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 module dlangui.graphics.images;
 
 //immutable bool USE_FREEIMAGE = true;
+
 //version = USE_FREEIMAGE;
-
-version = USE_DEIMAGE;
-
-
+//version = USE_DEIMAGE;
+version = USE_DLIBIMAGE;
 
 version (USE_DEIMAGE) {
     import devisualization.image;
     import devisualization.image.png;
+}
+
+version (USE_DLIBIMAGE) {
+    import dlib.image.io.io;
+    import dlib.image.image;
 }
 
 import dlangui.core.logger;
@@ -41,7 +45,22 @@ import std.conv : to;
 /// load and decode image from file to ColorDrawBuf, returns null if loading or decoding is failed
 ColorDrawBuf loadImage(string filename) {
     Log.d("Loading image from file " ~ filename);
-    version (USE_DEIMAGE) {
+    version (USE_DLIBIMAGE) {
+        SuperImage image = dlib.image.io.io.loadImage(filename);
+        if (!image)
+            return null;
+        int w = image.width;
+        int h = image.height;
+        ColorDrawBuf buf = new ColorDrawBuf(w, h);
+        for (int y = 0; y < h; y++) {
+            uint * dstLine = buf.scanLine(y);
+            for (int x = 0; x < w; x++) {
+                auto pixel = image[x, h - 1 - y].convert(8);
+                dstLine[x] = makeRGBA(pixel.r, pixel.g, pixel.b, 255 - pixel.a);
+            }
+        }
+        return buf;
+    } else version (USE_DEIMAGE) {
         try {
             Image image = imageFromFile(filename);
             int w = cast(int)image.width;

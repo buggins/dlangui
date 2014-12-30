@@ -21,10 +21,6 @@
 
 			"copyFiles": ["res"],
 
-    			"copyFiles-windows": [
-			        "lib/FreeImage.dll"
-			],
-
 			"sourceFiles": [
 				"project.ddoc"
 			],
@@ -94,9 +90,9 @@
 			"dependencies": {
 				"derelict-sdl2": "~master",
 				"derelict-gl3": "~master",
-				"derelict-fi": "~master",
 				"derelict-ft": "~master",
 				"de_image:png": ">=0.2.3",
+				"dlib": ">=0.4.0"
 			},
                         "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.", "--ex", "src.dlangui"]
         },
