@@ -13,6 +13,9 @@ Some screenshots: http://buggins.github.io/dlangui/screenshots.html
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/buggins/dlangui?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+[![Build Status](https://travis-ci.org/buggins/dlangui.svg?branch=master)](https://travis-ci.org/buggins/dlangui)
+
+
 Main features:
 
 * Crossplatform (Win32 and Linux are supported in current version); can use SDL2 as a backend.
