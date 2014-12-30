@@ -151,6 +151,11 @@ bool isRoot(string path) {
     return false;
 }
 
+/// returns parent directory for specified path
+string parentDir(string path) {
+    return buildNormalizedPath(path, "..");
+}
+
 /// Filters file name by pattern list
 bool filterFilename(string filename, string[] filters) {
     return true;

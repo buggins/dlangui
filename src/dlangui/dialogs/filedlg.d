@@ -93,7 +93,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     }
 
     protected bool upLevel() {
-        return openDirectory(buildNormalizedPath(_path, ".."), _path);
+        return openDirectory(parentDir(_path), _path);
     }
 
     protected bool openDirectory(string dir, string selectedItemPath) {
@@ -315,6 +315,141 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     }
 }
 
+interface OnPathSelectionHandler {
+    bool onPathSelected(string path);
+}
+
+class FilePathPanelItem : HorizontalLayout {
+    protected string _path;
+    protected TextWidget _text;
+    protected ImageButton _button;
+    Listener!OnPathSelectionHandler onPathSelectionListener;
+    this(string path) {
+        super(null);
+        _path = path;
+        string fname = baseName(path);
+        _text = new TextWidget(null, toUTF32(fname));
+        _text.clickable = true;
+        _text.onClickListener = &onTextClick;
+        _button = new ImageButton(null, "scrollbar_btn_right");
+        _button.focusable = false;
+        _button.onClickListener = &onButtonClick;
+        addChild(_text);
+        addChild(_button);
+        margins(Rect(2,0,2,0));
+    }
+    private bool onTextClick(Widget src) {
+        if (onPathSelectionListener.assigned)
+            return onPathSelectionListener(_path);
+        return false;
+    }
+    private bool onButtonClick(Widget src) {
+        // TODO: show popup menu with subdirs
+        return true;
+    }
+}
+
+class FilePathPanelButtons : WidgetGroup {
+    protected string _path;
+    this() {
+        super(null);
+    }
+    void init(string path) {
+        _path = path;
+        _children.clear();
+        string itemPath = path;
+        for (;;) {
+            FilePathPanelItem item = new FilePathPanelItem(itemPath);
+            addChild(item);
+            if (isRoot(path)) {
+                break;
+            }
+            itemPath = parentDir(itemPath);
+        }
+    }
+    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+    override void measure(int parentWidth, int parentHeight) { 
+        Rect m = margins;
+        Rect p = padding;
+        // calc size constraints for children
+        int pwidth = parentWidth;
+        int pheight = parentHeight;
+        if (parentWidth != SIZE_UNSPECIFIED)
+            pwidth -= m.left + m.right + p.left + p.right;
+        if (parentHeight != SIZE_UNSPECIFIED)
+            pheight -= m.top + m.bottom + p.top + p.bottom;
+        int reservedForEmptySpace = parentWidth / 16;
+        Point sz;
+        sz.x += reservedForEmptySpace;
+        // measure children
+        bool exceeded = false;
+        for (int i = 0; i < _children.count; i++) {
+            Widget item = _children.get(i);
+            item.visibility = Visibility.Visible;
+            item.measure(pwidth, pheight);
+            if (sz.y < item.measuredHeight)
+                sz.y = item.measuredHeight;
+            if (sz.x + item.measuredWidth > pwidth) {
+                exceeded = true;
+            }
+            if (!exceeded || i == 0) // at least one item must be visible
+                sz.x += item.measuredWidth;
+            else
+                item.visibility = Visibility.Gone;
+        }
+        measuredContent(parentWidth, parentHeight, sz.x, sz.y);
+    }
+    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+    override void layout(Rect rc) {
+        //Log.d("tabControl.layout enter");
+        _needLayout = false;
+        if (visibility == Visibility.Gone) {
+            return;
+        }
+        _pos = rc;
+        applyMargins(rc);
+        applyPadding(rc);
+
+        int reservedForEmptySpace = rc.width / 16;
+        int maxw = rc.width - reservedForEmptySpace;
+        int totalw = 0;
+        int visibleItems = 0;
+        bool exceeded = false;
+        // measure and update visibility
+        for (int i = 0; i < _children.count; i++) {
+            Widget item = _children.get(i);
+            item.visibility = Visibility.Visible;
+            item.measure(rc.width, rc.height);
+            if (totalw + item.measuredWidth > rc.width) {
+                exceeded = true;
+            }
+            if (!exceeded || i == 0) { // at least one item must be visible
+                totalw += item.measuredWidth;
+                visibleItems++;
+            } else
+                item.visibility = Visibility.Gone;
+        }
+        // layout visible items
+        // backward order
+        Rect itemRect = rc;
+        for (int i = visibleItems - 1; i >= 0; i--) {
+            Widget item = _children.get(i);
+            int w = item.measuredWidth;
+            if (i == visibleItems - 1 && w > maxw)
+                w = maxw;
+            rc.right = rc.left + w;
+            item.layout(rc);
+            rc.left += w;
+        }
+
+    }
+
+}
 
 class FilePathPanel : FrameLayout {
+    protected HorizontalLayout _segments;
+	protected EditLine _edPath;
+    this(string ID = null) {
+        super(ID);
+    }
 }
