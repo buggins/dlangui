@@ -34,7 +34,7 @@ version (USE_DEIMAGE) {
 version (USE_DLIBIMAGE) {
     import dlib.image.io.io;
     import dlib.image.image;
-    //version = ENABLE_DLIBIMAGE_JPEG;
+    version = ENABLE_DLIBIMAGE_JPEG;
 }
 
 import dlangui.core.logger;

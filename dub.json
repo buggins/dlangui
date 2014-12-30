@@ -21,6 +21,7 @@
 			"targetType": "staticLibrary",
 
 			"versions-posix": ["USE_SDL", "USE_OPENGL"],
+			"versions-windows": ["USE_OPENGL"],
 
 			"copyFiles": ["res"],
 
@@ -94,7 +95,7 @@
 				"derelict-sdl2": "~master",
 				"derelict-gl3": "~master",
 				"derelict-ft": "~master",
-				"dlib": ">=0.4.0"
+				"dlib": "~master"
 			},
                         "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.", "--ex", "src.dlangui"]
         },

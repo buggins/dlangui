@@ -16,6 +16,7 @@
     "copyFiles": ["res"],
 
     "versions-posix": ["USE_SDL", "USE_OPENGL"],
+    "versions-windows": ["USE_OPENGL"],
 
     "mainSourceFile": "src/main.d",
 
