@@ -1,6 +1,8 @@
 Dlang UI
 ========
 
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/buggins/dlangui?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 Cross platform GUI for D. Layouts, styles, themes, unicode, i18n, OpenGL based acceleration, widget set.
 
 Project page: https://github.com/buggins/dlangui
