@@ -277,7 +277,7 @@ class SDLWindow : Window {
 			}
 			_cursorMap[cursorType] = cursor;
 			if (cursor) {
-				Log.d("changing cursor to ", cursorType);
+				debug(DebugSDL) Log.d("changing cursor to ", cursorType);
 				SDL_SetCursor(cursor);
 			}
 		}
@@ -645,14 +645,14 @@ class SDLWindow : Window {
         uint flags = convertKeyFlags(SDL_GetModState());
         bool res = dispatchKeyEvent(new KeyEvent(KeyAction.Text, 0, flags, ds));
         if (res) {
-            Log.d("Calling update() after text event");
+            debug(DebugSDL) Log.d("Calling update() after text event");
             invalidate();
         }
         return res;
     }
 
 	bool processKeyEvent(KeyAction action, uint keyCode, uint flags) {
-		Log.d("processKeyEvent ", action, " SDL key=0x", format("%08x", keyCode), " SDL flags=0x", format("%08x", flags));
+		debug(DebugSDL) Log.d("processKeyEvent ", action, " SDL key=0x", format("%08x", keyCode), " SDL flags=0x", format("%08x", flags));
 		keyCode = convertKeyCode(keyCode);
 		flags = convertKeyFlags(flags);
 		if (action == KeyAction.KeyDown) {
@@ -689,7 +689,7 @@ class SDLWindow : Window {
 			}
 		}
 
-		Log.d("processKeyEvent ", action, " converted key=0x", format("%08x", keyCode), " converted flags=0x", format("%08x", flags));
+		debug(DebugSDL) Log.d("processKeyEvent ", action, " converted key=0x", format("%08x", keyCode), " converted flags=0x", format("%08x", flags));
 		bool res = dispatchKeyEvent(new KeyEvent(action, keyCode, flags));
 //			if ((keyCode & 0x10000) && (keyCode & 0xF000) != 0xF000) {
 //				dchar[1] text;
@@ -697,7 +697,7 @@ class SDLWindow : Window {
 //				res = dispatchKeyEvent(new KeyEvent(KeyAction.Text, keyCode, flags, cast(dstring)text)) || res;
 //			}
 	    if (res) {
-	        Log.d("Calling update() after key event");
+	        debug(DebugSDL) Log.d("Calling update() after key event");
 	        invalidate();
 	    }
 		return res;
@@ -824,55 +824,55 @@ class SDLPlatform : Platform {
                         // found window
                         switch (event.window.event) {
                             case SDL_WINDOWEVENT_RESIZED:
-                                Log.d("SDL_WINDOWEVENT_RESIZED win=", event.window.windowID, " pos=", event.window.data1,
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_RESIZED win=", event.window.windowID, " pos=", event.window.data1,
                                         ",", event.window.data2);
                                 w.onResize(event.window.data1, event.window.data2);
                                 w.redraw();
                                 break;
                             case SDL_WINDOWEVENT_SIZE_CHANGED:
-                                Log.d("SDL_WINDOWEVENT_SIZE_CHANGED win=", event.window.windowID, " pos=", event.window.data1,
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_SIZE_CHANGED win=", event.window.windowID, " pos=", event.window.data1,
                                         ",", event.window.data2);
                                 w.onResize(event.window.data1, event.window.data2);
                                 w.redraw();
                                 break;
                             case SDL_WINDOWEVENT_CLOSE:
-                                Log.d("SDL_WINDOWEVENT_CLOSE win=", event.window.windowID);
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_CLOSE win=", event.window.windowID);
                                 _windowMap.remove(windowID);
                                 destroy(w);
                                 break;
                             case SDL_WINDOWEVENT_SHOWN:
-                                Log.d("SDL_WINDOWEVENT_SHOWN");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_SHOWN");
                                 break;
                             case SDL_WINDOWEVENT_HIDDEN:
-                                Log.d("SDL_WINDOWEVENT_HIDDEN");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_HIDDEN");
                                 break;
                             case SDL_WINDOWEVENT_EXPOSED:
-                                Log.d("SDL_WINDOWEVENT_EXPOSED");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_EXPOSED");
                                 w.redraw();
                                 break;
                             case SDL_WINDOWEVENT_MOVED:
-                                Log.d("SDL_WINDOWEVENT_MOVED");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MOVED");
                                 break;
                             case SDL_WINDOWEVENT_MINIMIZED:
-                                Log.d("SDL_WINDOWEVENT_MINIMIZED");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MINIMIZED");
                                 break;
                             case SDL_WINDOWEVENT_MAXIMIZED:
-                                Log.d("SDL_WINDOWEVENT_MAXIMIZED");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MAXIMIZED");
                                 break;
                             case SDL_WINDOWEVENT_RESTORED:
-								Log.d("SDL_WINDOWEVENT_RESTORED");
+								debug(DebugSDL) Log.d("SDL_WINDOWEVENT_RESTORED");
                                 break;
                             case SDL_WINDOWEVENT_ENTER:
-								Log.d("SDL_WINDOWEVENT_ENTER");
+								debug(DebugSDL) Log.d("SDL_WINDOWEVENT_ENTER");
                                 break;
                             case SDL_WINDOWEVENT_LEAVE:
-								Log.d("SDL_WINDOWEVENT_LEAVE");
+								debug(DebugSDL) Log.d("SDL_WINDOWEVENT_LEAVE");
                                 break;
                             case SDL_WINDOWEVENT_FOCUS_GAINED:
-								Log.d("SDL_WINDOWEVENT_FOCUS_GAINED");
+								debug(DebugSDL) Log.d("SDL_WINDOWEVENT_FOCUS_GAINED");
                                 break;
                             case SDL_WINDOWEVENT_FOCUS_LOST:
-								Log.d("SDL_WINDOWEVENT_FOCUS_LOST");
+								debug(DebugSDL) Log.d("SDL_WINDOWEVENT_FOCUS_LOST");
                                 break;
                             default:
                                 break;
@@ -893,10 +893,10 @@ class SDLPlatform : Platform {
                         }
                         break;
                     case SDL_TEXTEDITING:
-                        Log.d("SDL_TEXTEDITING");
+                        debug(DebugSDL) Log.d("SDL_TEXTEDITING");
                         break;
                     case SDL_TEXTINPUT:
-                        Log.d("SDL_TEXTINPUT");
+                        debug(DebugSDL) Log.d("SDL_TEXTINPUT");
                         SDLWindow w = getWindow(event.text.windowID);
                         if (w) {
                             w.processTextInput(event.text.text.ptr);
@@ -923,7 +923,7 @@ class SDLPlatform : Platform {
                     case SDL_MOUSEWHEEL:
                         SDLWindow w = getWindow(event.wheel.windowID);
                         if (w) {
-                            Log.d("SDL_MOUSEWHEEL x=", event.wheel.x, " y=", event.wheel.y);
+                            debug(DebugSDL) Log.d("SDL_MOUSEWHEEL x=", event.wheel.x, " y=", event.wheel.y);
                             w.processMouseEvent(MouseAction.Wheel, 0, 0, event.wheel.x, event.wheel.y);
                         }
                         break;

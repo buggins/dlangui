@@ -94,7 +94,7 @@
 				"derelict-sdl2": "~master",
 				"derelict-gl3": "~master",
 				"derelict-ft": "~master",
-				"dlib": ">=0.4.0"
+				"dlib": "~master"
 			},
                         "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.", "--ex", "src.dlangui"]
         },
