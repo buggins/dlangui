@@ -24,8 +24,8 @@ struct DIDEVICEINSTANCEA
     GUID    guidInstance;
     GUID    guidProduct;
     DWORD   dwDevType;
-    CHAR    tszInstanceName[MAX_PATH];
-    CHAR    tszProductName[MAX_PATH];
+    CHAR[MAX_PATH] tszInstanceName;
+    CHAR[MAX_PATH] tszProductName;
     GUID    guidFFDriver;
     WORD    wUsagePage;
     WORD    wUsage;
@@ -39,7 +39,7 @@ struct DIDEVICEOBJECTINSTANCEA
     DWORD   dwOfs;
     DWORD   dwType;
     DWORD   dwFlags;
-    CHAR    tszName[MAX_PATH];
+    CHAR[MAX_PATH] tszName;
     DWORD   dwFFMaxForce;
     DWORD   dwFFForceResolution;
     WORD    wCollectionNumber;
@@ -103,7 +103,7 @@ struct DIACTIONFORMATA
 	HINSTANCE   hInstString;
 	FILETIME    ftTimeStamp;
 	DWORD       dwCRC;
-	CHAR        tszActionMap[MAX_PATH];
+	CHAR[MAX_PATH] tszActionMap;
 }
 
 struct DIDEVCAPS
@@ -182,7 +182,7 @@ struct DIEFFECTINFOA
     DWORD   dwEffType;
     DWORD   dwStaticParams;
     DWORD   dwDynamicParams;
-    CHAR    tszName[MAX_PATH];
+    CHAR[MAX_PATH] tszName;
 }
 
 struct DIFILEEFFECT
@@ -190,21 +190,21 @@ struct DIFILEEFFECT
     DWORD       dwSize;
     GUID        GuidEffect;
     DIEFFECT* lpDiEffect;
-    CHAR        szFriendlyName[MAX_PATH];
+    CHAR[MAX_PATH] szFriendlyName;
 }
 
 struct DIDEVICEIMAGEINFOA
 {
-    CHAR        tszImagePath[MAX_PATH];
-    DWORD       dwFlags;
+    CHAR[MAX_PATH] tszImagePath;
+    DWORD          dwFlags;
     // These are valid if DIDIFT_OVERLAY is present in dwFlags.
-    DWORD       dwViewID;
-    RECT        rcOverlay;
-    DWORD       dwObjID;
-    DWORD       dwcValidPts;
-    POINT       rgptCalloutLine[5];
-    RECT        rcCalloutRect;
-    DWORD       dwTextAlign;
+    DWORD          dwViewID;
+    RECT           rcOverlay;
+    DWORD          dwObjID;
+    DWORD          dwcValidPts;
+    POINT[5]       rgptCalloutLine;
+    RECT           rcCalloutRect;
+    DWORD          dwTextAlign;
 }
 
 struct DIDEVICEIMAGEINFOHEADERA
@@ -250,20 +250,20 @@ struct DIMOUSESTATE2
     LONG    lX;
     LONG    lY;
     LONG    lZ;
-    BYTE    rgbButtons[8];
+    BYTE[8] rgbButtons;
 }
 
 struct DIJOYSTATE
 {
-    LONG    lX;                     /* x-axis position              */
-    LONG    lY;                     /* y-axis position              */
-    LONG    lZ;                     /* z-axis position              */
-    LONG    lRx;                    /* x-axis rotation              */
-    LONG    lRy;                    /* y-axis rotation              */
-    LONG    lRz;                    /* z-axis rotation              */
-    LONG    rglSlider[2];           /* extra axes positions         */
-    DWORD   rgdwPOV[4];             /* POV directions               */
-    BYTE    rgbButtons[32];         /* 32 buttons                   */
+    LONG     lX;                     /* x-axis position              */
+    LONG     lY;                     /* y-axis position              */
+    LONG     lZ;                     /* z-axis position              */
+    LONG     lRx;                    /* x-axis rotation              */
+    LONG     lRy;                    /* y-axis rotation              */
+    LONG     lRz;                    /* z-axis rotation              */
+    LONG[2]  rglSlider;           /* extra axes positions         */
+    DWORD[4] rgdwPOV;             /* POV directions               */
+    BYTE[32] rgbButtons;         /* 32 buttons                   */
 }
 
 struct DIPROPRANGE

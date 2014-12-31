@@ -118,7 +118,7 @@ class XCBWindow : Window {
 		import std.c.linux.X11.Xlib;
 			
 		uint mask;
-		uint values[3];
+		uint[3] values;
 
 		// disable opengl for testing
 		_enableOpengl = false;
@@ -139,7 +139,7 @@ class XCBWindow : Window {
 		Log.d("window=", _w, " gc=", _g);
         version (USE_OPENGL) {			
 			if (_enableOpengl) {
-				int visual_attribs[] = [
+				int[] visual_attribs = [
 					        GLX_RENDER_TYPE, GLX_RGBA_BIT,
 					        GLX_DRAWABLE_TYPE, GLX_WINDOW_BIT,
 					        GLX_DOUBLEBUFFER, 1,
@@ -385,7 +385,7 @@ class XCBWindow : Window {
 						Log.e("glXCreateContextAttribsARB function is not found");
 			            _context = glXCreateNewContext(_display, _fb_config, GLX_RGBA_TYPE, null, true);
 					} else {
-						int context_attribs[] =
+						int[] context_attribs =
 					    [
 					        GLX_CONTEXT_MAJOR_VERSION_ARB, 3,
 					        GLX_CONTEXT_MINOR_VERSION_ARB, 0,

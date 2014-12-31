@@ -167,7 +167,7 @@ class Win32Font : Font {
 			g.glyph = new ubyte[g.blackBoxX * g.blackBoxY];
 			if (gs>0)
 			{
-				ubyte glyph[] = new ubyte[gs];
+				ubyte[] glyph = new ubyte[gs];
 				res = GetGlyphOutlineW( _drawbuf.dc, cast(wchar)ch,
                                         GGO_GRAY8_BITMAP, //GGO_METRICS
 									   &metrics,

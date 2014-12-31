@@ -100,8 +100,8 @@ const cbNDRContext=20;
 
 alias void * NDR_CCONTEXT;
 struct tagNDR_SCONTEXT {
-	void *pad[2];
-	void *userContext;
+	void*[2] pad;
+	void* userContext;
 }
 alias tagNDR_SCONTEXT * NDR_SCONTEXT;
 
@@ -211,7 +211,7 @@ struct MIDL_STUB_MESSAGE {
 	uint * SizePtrLengthArray;
 	void* pArgQueue;
 	uint dwStubPhase;
-	uint w2kReserved[5];
+	uint[5] w2kReserved;
 }
 alias MIDL_STUB_MESSAGE * PMIDL_STUB_MESSAGE;
 
@@ -317,7 +317,7 @@ alias void * PMIDL_XMIT_TYPE;
 
 struct MIDL_FORMAT_STRING {
 	short Pad;
-	ubyte Format[1];
+	ubyte[1] Format;
 }
 
 struct MIDL_SERVER_INFO {

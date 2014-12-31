@@ -317,7 +317,7 @@ struct CHARFORMATA {
 	COLORREF crTextColor;
 	BYTE bCharSet;
 	BYTE bPitchAndFamily;
-	char szFaceName[LF_FACESIZE];
+	char[LF_FACESIZE] szFaceName;
 }
 struct CHARFORMATW {
 	UINT cbSize = this.sizeof;
@@ -328,7 +328,7 @@ struct CHARFORMATW {
 	COLORREF crTextColor;
 	BYTE bCharSet;
 	BYTE bPitchAndFamily;
-	WCHAR szFaceName[LF_FACESIZE];
+	WCHAR[LF_FACESIZE] szFaceName;
 }
 
 struct CHARFORMAT2A {
@@ -340,7 +340,7 @@ struct CHARFORMAT2A {
 	COLORREF crTextColor;
 	BYTE bCharSet;
 	BYTE bPitchAndFamily;
-	char szFaceName[LF_FACESIZE];
+	char[LF_FACESIZE] szFaceName;
 	WORD wWeight;
 	SHORT sSpacing;
 	COLORREF crBackColor;
@@ -362,7 +362,7 @@ struct CHARFORMAT2W {
 	COLORREF crTextColor;
 	BYTE bCharSet;
 	BYTE bPitchAndFamily;
-	WCHAR szFaceName[LF_FACESIZE];
+	WCHAR[LF_FACESIZE] szFaceName;
 	WORD wWeight;
 	SHORT sSpacing;
 	COLORREF crBackColor;
@@ -486,7 +486,7 @@ struct PARAFORMAT {
 	LONG dxOffset;
 	WORD wAlignment;
 	SHORT cTabCount;
-	LONG rgxTabs[MAX_TAB_STOPS];
+	LONG[MAX_TAB_STOPS] rgxTabs;
 }
 
 struct PARAFORMAT2 {
@@ -499,7 +499,7 @@ struct PARAFORMAT2 {
 	LONG dxOffset;
 	WORD wAlignment;
 	SHORT cTabCount;
-	LONG rgxTabs[MAX_TAB_STOPS];
+	LONG[MAX_TAB_STOPS] rgxTabs;
 	LONG dySpaceBefore;
 	LONG dySpaceAfter;
 	LONG dyLineSpacing;

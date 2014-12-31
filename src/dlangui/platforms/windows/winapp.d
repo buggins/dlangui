@@ -852,7 +852,7 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
         FreeTypeFontManager ftfontMan = new FreeTypeFontManager();
         string fontsPath = "c:\\Windows\\Fonts\\";
         static if (false) { // SHGetFolderPathW not found in shell32.lib
-            WCHAR szPath[MAX_PATH];
+            WCHAR[MAX_PATH] szPath;
             const CSIDL_FLAG_NO_ALIAS = 0x1000;
             const CSIDL_FLAG_DONT_UNEXPAND = 0x2000;
             if(SUCCEEDED(SHGetFolderPathW(NULL,
