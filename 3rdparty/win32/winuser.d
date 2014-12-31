@@ -3051,7 +3051,7 @@ struct MENUITEMTEMPLATEHEADER {
 struct MENUITEMTEMPLATE {
 	WORD mtOption;
 	WORD mtID;
-	WCHAR mtString[1];
+	WCHAR[1] mtString;
 }
 
 alias void MENUTEMPLATE, MENUTEMPLATEA, MENUTEMPLATEW;
@@ -3309,7 +3309,7 @@ struct WINDOWPOS {
 alias WINDOWPOS* PWINDOWPOS, LPWINDOWPOS;
 
 struct NCCALCSIZE_PARAMS {
-	RECT rgrc[3];
+	RECT[3] rgrc;
 	PWINDOWPOS lppos;
 }
 alias NCCALCSIZE_PARAMS* LPNCCALCSIZE_PARAMS;
@@ -3381,14 +3381,14 @@ alias DWORD HELPPOLY;
 struct MULTIKEYHELPA {
 	DWORD mkSize;
 	CHAR mkKeylist;
-	CHAR szKeyphrase[1];
+	CHAR[1] szKeyphrase;
 }
 alias MULTIKEYHELPA* PMULTIKEYHELPA, LPMULTIKEYHELPA;
 
 struct MULTIKEYHELPW {
 	DWORD mkSize;
 	WCHAR mkKeylist;
-	WCHAR szKeyphrase[1];
+	WCHAR[1] szKeyphrase;
 }
 alias MULTIKEYHELPW* PMULTIKEYHELPW, LPMULTIKEYHELPW;
 
@@ -3399,7 +3399,7 @@ struct HELPWININFOA {
 	int dx;
 	int dy;
 	int wMax;
-	CHAR rgchMember[2];
+	CHAR[2] rgchMember;
 }
 alias HELPWININFOA* PHELPWININFOA, LPHELPWININFOA;
 
@@ -3410,7 +3410,7 @@ struct HELPWININFOW {
 	int dx;
 	int dy;
 	int wMax;
-	WCHAR rgchMember[2];
+	WCHAR[2] rgchMember;
 }
 alias HELPWININFOW* PHELPWININFOW, LPHELPWININFOW;
 
@@ -3489,7 +3489,7 @@ struct SCROLLBARINFO {
 	int   xyThumbTop;
 	int   xyThumbBottom;
 	int   reserved;
-	DWORD rgstate[CCHILDREN_SCROLLBAR+1];
+	DWORD[CCHILDREN_SCROLLBAR+1] rgstate;
 }
 alias SCROLLBARINFO* PSCROLLBARINFO, LPSCROLLBARINFO;
 

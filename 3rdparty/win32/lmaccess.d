@@ -352,13 +352,13 @@ struct USER_INFO_20 {
 alias USER_INFO_20* PUSER_INFO_20, LPUSER_INFO_20;
 
 struct USER_INFO_21 {
-	BYTE usri21_password[ENCRYPTED_PWLEN];
+	BYTE[ENCRYPTED_PWLEN] usri21_password;
 }
 alias USER_INFO_21* PUSER_INFO_21, LPUSER_INFO_21;
 
 struct USER_INFO_22{
 	LPWSTR usri22_name;
-	BYTE usri22_password[ENCRYPTED_PWLEN];
+	BYTE[ENCRYPTED_PWLEN] usri22_password;
 	DWORD usri22_password_age;
 	DWORD usri22_priv;
 	LPWSTR usri22_home_dir;

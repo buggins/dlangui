@@ -302,7 +302,7 @@ interface LPDIRECT3DDEVICE9 : IUnknown
         D3DMATRIX ProjectionMatrix;
         D3DMATRIX ViewMatrix;
         D3DMATRIX WorldMatrix;
-        D3DMATRIX TextureMatrices[8];
+        D3DMATRIX[8] TextureMatrices;
 
         DWORD FVF;
         UINT VertexSize;
@@ -311,8 +311,8 @@ interface LPDIRECT3DDEVICE9 : IUnknown
         BOOL SoftwareVertexProcessing;
 
         D3DMATERIAL9 Material;
-        D3DLIGHT9 Lights[16];
-        BOOL LightsEnabled[16];
+        D3DLIGHT9[16] Lights;
+        BOOL[16] LightsEnabled;
 
         D3DGAMMARAMP GammaRamp;
         RECT ScissorRect;

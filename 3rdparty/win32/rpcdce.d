@@ -118,7 +118,7 @@ alias RPC_BINDING_HANDLE handle_t;
 
 struct RPC_BINDING_VECTOR {
 	uint Count;
-	RPC_BINDING_HANDLE BindingH[1];
+	RPC_BINDING_HANDLE[1] BindingH;
 }
 
 alias RPC_BINDING_HANDLE rpc_binding_handle_t;
@@ -127,7 +127,7 @@ alias RPC_BINDING_VECTOR rpc_binding_vector_t;
 
 struct UUID_VECTOR {
 	uint Count;
-	UUID* Uuid[1];
+	UUID*[1] Uuid;
 }
 
 alias void* RPC_IF_HANDLE;

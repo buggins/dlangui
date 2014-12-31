@@ -142,8 +142,8 @@ version (USE_FREEIMAGE) {
 			FREE_IMAGE_LOADED = true;
 		}
 
-		ubyte imagebuf[];
-		ubyte readbuf[4096];
+		ubyte[] imagebuf;
+		ubyte[4096] readbuf;
 		for (;;) {
 			size_t bytesRead = stream.read(readbuf);
 			if (!bytesRead)

@@ -107,7 +107,7 @@ void drawColorAndTextureRect(uint textureId, int tdx, int tdy, Rect srcrc, Rect 
 }
 
 void drawColorAndTextureRect(uint textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, uint color, bool linear) {
-    float colors[6*4];
+    float[6*4] colors;
     LVGLFillColor(color, colors.ptr, 6);
     float dstx0 = cast(float)xx;
     float dsty0 = cast(float)(bufferDy - (yy));

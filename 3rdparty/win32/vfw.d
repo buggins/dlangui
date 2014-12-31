@@ -181,15 +181,15 @@ struct ICOPEN {
 }
 
 struct ICINFO {
-	DWORD	dwSize;
-	DWORD	fccType;
-	DWORD	fccHandler;
-	DWORD	dwFlags;
-	DWORD	dwVersion;
-	DWORD	dwVersionICM;
-	WCHAR	szName[16];
-	WCHAR	szDescription[128];
-	WCHAR	szDriver[128];
+	DWORD		dwSize;
+	DWORD		fccType;
+	DWORD		fccHandler;
+	DWORD		dwFlags;
+	DWORD		dwVersion;
+	DWORD		dwVersionICM;
+	WCHAR[16]	szName;
+	WCHAR[128]	szDescription;
+	WCHAR[128]	szDriver;
 }
 
 enum {
@@ -819,7 +819,7 @@ struct MainAVIHeader {
 	DWORD dwSuggestedBufferSize;
 	DWORD dwWidth;
 	DWORD dwHeight;
-	DWORD dwReserved[4];
+	DWORD[4] dwReserved;
 }
 
 const AVISF_DISABLED = 0x00000001;
@@ -885,7 +885,7 @@ struct AVISTREAMINFOW {
 	RECT	rcFrame;
 	DWORD	dwEditCount;
 	DWORD	dwFormatChangeCount;
-	WCHAR	szName[64];
+	WCHAR[64]	szName;
 }
 alias AVISTREAMINFOW* LPAVISTREAMINFOW;
 
@@ -907,7 +907,7 @@ struct AVISTREAMINFOA {
 	RECT	rcFrame;
 	DWORD	dwEditCount;
 	DWORD	dwFormatChangeCount;
-	char	szName[64];
+	char[64]	szName;
 }
 alias AVISTREAMINFOA* LPAVISTREAMINFOA;
 
@@ -934,7 +934,7 @@ struct AVIFILEINFOW {
 	DWORD	dwRate;
 	DWORD	dwLength;
 	DWORD	dwEditCount;
-	WCHAR	szFileType[64];
+	WCHAR[64]	szFileType;
 }
 alias AVIFILEINFOW* LPAVIFILEINFOW;
 
@@ -950,7 +950,7 @@ struct AVIFILEINFOA {
 	DWORD	dwRate;
 	DWORD	dwLength;
 	DWORD	dwEditCount;
-	char	szFileType[64];
+	char[64]	szFileType;
 }
 alias AVIFILEINFOA* LPAVIFILEINFOA;
 
@@ -1887,7 +1887,7 @@ struct VIDEOHDR {
 	DWORD		dwTimeCaptured;
 	DWORD_PTR	dwUser;
 	DWORD		dwFlags;
-    DWORD_PTR   dwReserved[4];
+	DWORD_PTR[4]	dwReserved;
 }
 alias VIDEOHDR* PVIDEOHDR, LPVIDEOHDR;
 

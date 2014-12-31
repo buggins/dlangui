@@ -161,7 +161,7 @@ struct _wireSAFEARRAY {
 	ULONG cbElements;
 	ULONG cLocks;
 	SAFEARRAYUNION uArrayStructs;
-	SAFEARRAYBOUND rgsabound[1];
+	SAFEARRAYBOUND[1] rgsabound;
 }
 alias _wireSAFEARRAY* wireSAFEARRAY;
 
@@ -173,7 +173,7 @@ struct SAFEARRAY {
 	ULONG cbElements;
 	ULONG cLocks;
 	PVOID pvData;
-	SAFEARRAYBOUND rgsabound[1];
+	SAFEARRAYBOUND[1] rgsabound;
 }
 alias SAFEARRAY* LPSAFEARRAY;
 
@@ -316,7 +316,7 @@ struct TYPEDESC {
 struct ARRAYDESC {
 	TYPEDESC tdescElem;
 	USHORT cDims;
-	SAFEARRAYBOUND rgbounds[1];
+	SAFEARRAYBOUND[1] rgbounds;
 }
 
 struct PARAMDESCEX {

@@ -91,7 +91,7 @@ struct DVTARGETDEVICE {
 	WORD tdDeviceNameOffset;
 	WORD tdPortNameOffset;
 	WORD tdExtDevmodeOffset;
-	BYTE tdData[1];
+	BYTE[1] tdData;
 }
 
 struct FORMATETC {
@@ -109,7 +109,7 @@ struct RemSTGMEDIUM {
 	ULONG pData;
 	uint pUnkForRelease;
 	uint cbData;
-	BYTE data[1];
+	BYTE[1] data;
 }
 
 struct HLITEM {
@@ -226,7 +226,7 @@ struct  RPCOLEMESSAGE {
 	PVOID Buffer;
 	ULONG cbBuffer;
 	ULONG iMethod;
-	PVOID reserved2[5];
+	PVOID[5] reserved2;
 	ULONG rpcFlags;
 }
 alias RPCOLEMESSAGE* PRPCOLEMESSAGE;
@@ -250,7 +250,7 @@ enum MKREDUCE {
 struct RemSNB {
 	uint ulCntStr;
 	uint ulCntChar;
-	OLECHAR rgString[1];
+	OLECHAR[1] rgString;
 }
 
 enum ADVF {

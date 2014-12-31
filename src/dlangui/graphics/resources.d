@@ -452,7 +452,7 @@ class StateDrawable : Drawable {
     private static uint colorTransformFromStringAdd(string value) {
         if (value is null)
             return COLOR_TRANSFORM_OFFSET_NONE;
-        int n[4];
+        int [4]n;
         if (!parseList4(value, n))
             return COLOR_TRANSFORM_OFFSET_NONE;
         foreach (ref item; n) {
@@ -467,8 +467,8 @@ class StateDrawable : Drawable {
     private static uint colorTransformFromStringMult(string value) {
         if (value is null)
             return COLOR_TRANSFORM_MULTIPLY_NONE;
-        float n[4];
-        uint nn[4];
+        float[4] n;
+        uint[4] nn;
         if (!parseList4!float(value, n))
             return COLOR_TRANSFORM_MULTIPLY_NONE;
         for(int i = 0; i < 4; i++) {

@@ -77,7 +77,7 @@ enum MSHLFLAGS {
 struct FLAGGED_WORD_BLOB {
 	uint fFlags;
 	uint clSize;
-	ushort asData[1];
+	ushort[1] asData;
 }
 
 alias WCHAR OLECHAR;
