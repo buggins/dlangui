@@ -351,8 +351,8 @@ class FilePathPanelItem : HorizontalLayout {
 
 class FilePathPanelButtons : WidgetGroup {
     protected string _path;
-    this() {
-        super(null);
+    this(string ID = null) {
+        super(ID);
     }
     void init(string path) {
         _path = path;
@@ -447,9 +447,25 @@ class FilePathPanelButtons : WidgetGroup {
 }
 
 class FilePathPanel : FrameLayout {
-    protected HorizontalLayout _segments;
+	static const ID_SEGMENTS = "SEGMENTS";
+	static const ID_EDITOR = "ED_PATH";
+    protected FilePathPanelButtons _segments;
 	protected EditLine _edPath;
+	protected string _path;
     this(string ID = null) {
         super(ID);
+		_segments = new FilePathPanelButtons(ID_SEGMENTS);
+		_edPath = new EditLine(ID_EDITOR);
+		addChild(_segments);
+		addChild(_edPath);
+		showChild(ID_SEGMENTS);
     }
+	@property void path(string value) {
+		_segments.init(value);
+		_edPath.text = toUTF32(value);
+		_path = path;
+	}
+	@property string path() {
+		return _path;
+	}
 }

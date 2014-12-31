@@ -123,16 +123,18 @@ Run Tetris game example
 
         dub run dlangui:tetris --build=release
 
-To develop using Visual-D, download sources for dlabgui and dependencies into some directory:
+To develop using Visual-D or MonoD, download sources for dlabgui and dependencies into some directory:
 
         git clone https://github.com/buggins/dlangui.git
         git clone https://github.com/DerelictOrg/DerelictUtil.git
         git clone https://github.com/DerelictOrg/DerelictGL3.git
-        git clone https://github.com/DerelictOrg/DerelictFI.git
         git clone https://github.com/DerelictOrg/DerelictFT.git
         git clone https://github.com/DerelictOrg/DerelictSDL2.git
+        git clone https://github.com/gecko0307/dlib.git
+        git clone https://github.com/Devisualization/image.git de_image
+  
 
-Then open .sln using Visual D.
+Then open dlangui.sln using Visual D (or dlangui-monod.sln for MonoD)
 
 
 
