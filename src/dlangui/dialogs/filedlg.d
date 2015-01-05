@@ -33,6 +33,7 @@ import dlangui.widgets.popup;
 import dlangui.widgets.layouts;
 import dlangui.widgets.grid;
 import dlangui.widgets.editors;
+import dlangui.widgets.menu;
 import dlangui.platforms.common.platform;
 import dlangui.dialogs.dialog;
 
@@ -57,7 +58,7 @@ enum FileDialogFlag : uint {
 
 /// File open / save dialog
 class FileDialog : Dialog, CustomGridCellAdapter {
-	protected EditLine _edPath;
+	protected FilePathPanel _edPath;
 	protected EditLine _edFilename;
 	protected StringGridWidget _fileList;
 	//protected StringGridWidget places;
@@ -105,7 +106,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             return false;
         _path = dir;
         _isRoot = isRoot(dir);
-        _edPath.text = toUTF32(_path);
+        _edPath.path = _path; //toUTF32(_path);
         _fileList.rows = cast(int)_entries.length;
         int selectionIndex = -1;
         for (int i = 0; i < _entries.length; i++) {
@@ -247,6 +248,10 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         return super.handleAction(action);
     }
 
+	bool onPathSelected(string path) {
+		//
+		return openDirectory(path, null);
+	}
 
 	/// override to implement creation of dialog controls
 	override void init() {
@@ -272,9 +277,10 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 		content.addChild(leftPanel);
 		content.addChild(rightPanel);
 
-		_edPath = new EditLine("path");
+		_edPath = new FilePathPanel("path");
 		_edPath.layoutWidth(FILL_PARENT);
         _edPath.layoutWeight = 0;
+		_edPath.onPathSelectionListener = &onPathSelected;
 
 		_edFilename = new EditLine("filename");
 		_edFilename.layoutWidth(FILL_PARENT);
@@ -326,14 +332,22 @@ class FilePathPanelItem : HorizontalLayout {
     Listener!OnPathSelectionHandler onPathSelectionListener;
     this(string path) {
         super(null);
+		styleId = "LIST_ITEM";
         _path = path;
-        string fname = baseName(path);
+        string fname = isRoot(path) ? path : baseName(path);
         _text = new TextWidget(null, toUTF32(fname));
+		_text.styleId = "BUTTON_TRANSPARENT";
         _text.clickable = true;
         _text.onClickListener = &onTextClick;
+		//_text.backgroundColor = 0xC0FFFF;
+		_text.state = State.Parent;
         _button = new ImageButton(null, "scrollbar_btn_right");
+		_button.styleId = "BUTTON_TRANSPARENT";
         _button.focusable = false;
         _button.onClickListener = &onButtonClick;
+		//_button.backgroundColor = 0xC0FFC0;
+		_button.state = State.Parent;
+		trackHover(true);
         addChild(_text);
         addChild(_button);
         margins(Rect(2,0,2,0));
@@ -344,15 +358,48 @@ class FilePathPanelItem : HorizontalLayout {
         return false;
     }
     private bool onButtonClick(Widget src) {
-        // TODO: show popup menu with subdirs
+        // show popup menu with subdirs
+        string[] filters;
+		DirEntry[] entries;
+        if (!listDirectory(_path, true, false, false, filters, entries))
+            return false;
+		if (entries.length == 0)
+			return false;
+		MenuItem dirs = new MenuItem();
+		int itemId = 25000;
+		foreach(ref DirEntry e; entries) {
+			string fullPath = e.name;
+			string d = baseName(fullPath);
+			Action a = new Action(itemId++, toUTF32(d));
+			MenuItem item = new MenuItem(a);
+			item.onMenuItemClick = delegate(MenuItem item) { 
+				if (onPathSelectionListener.assigned)
+					return onPathSelectionListener(fullPath);
+				return false;
+			};
+			dirs.add(item);
+		}
+		PopupMenu menuWidget = new PopupMenu(dirs);
+		PopupWidget popup = window.showPopup(menuWidget, this, PopupAlign.Below);
+		popup.flags = PopupFlags.CloseOnClickOutside;
         return true;
     }
 }
 
+/// Panel with buttons - path segments - for fast navigation to subdirs.
 class FilePathPanelButtons : WidgetGroup {
     protected string _path;
+	Listener!OnPathSelectionHandler onPathSelectionListener;
+	bool onPathSelected(string path) {
+		if (onPathSelectionListener.assigned) {
+			return onPathSelectionListener(path);
+		}
+		return false;
+	}
     this(string ID = null) {
         super(ID);
+		layoutWidth = FILL_PARENT;
+		clickable = true;
     }
     void init(string path) {
         _path = path;
@@ -360,8 +407,9 @@ class FilePathPanelButtons : WidgetGroup {
         string itemPath = path;
         for (;;) {
             FilePathPanelItem item = new FilePathPanelItem(itemPath);
+			item.onPathSelectionListener = &onPathSelected;
             addChild(item);
-            if (isRoot(path)) {
+            if (isRoot(itemPath)) {
                 break;
             }
             itemPath = parentDir(itemPath);
@@ -378,7 +426,10 @@ class FilePathPanelButtons : WidgetGroup {
             pwidth -= m.left + m.right + p.left + p.right;
         if (parentHeight != SIZE_UNSPECIFIED)
             pheight -= m.top + m.bottom + p.top + p.bottom;
-        int reservedForEmptySpace = parentWidth / 16;
+        int reservedForEmptySpace = parentWidth / 20;
+		if (reservedForEmptySpace > 40)
+			reservedForEmptySpace = 40;
+
         Point sz;
         sz.x += reservedForEmptySpace;
         // measure children
@@ -410,7 +461,9 @@ class FilePathPanelButtons : WidgetGroup {
         applyMargins(rc);
         applyPadding(rc);
 
-        int reservedForEmptySpace = rc.width / 16;
+        int reservedForEmptySpace = rc.width / 20;
+		if (reservedForEmptySpace > 40)
+			reservedForEmptySpace = 40;
         int maxw = rc.width - reservedForEmptySpace;
         int totalw = 0;
         int visibleItems = 0;
@@ -437,33 +490,90 @@ class FilePathPanelButtons : WidgetGroup {
             int w = item.measuredWidth;
             if (i == visibleItems - 1 && w > maxw)
                 w = maxw;
-            rc.right = rc.left + w;
-            item.layout(rc);
-            rc.left += w;
+            itemRect.right = itemRect.left + w;
+            item.layout(itemRect);
+            itemRect.left += w;
         }
 
     }
 
+    /// Draw widget at its position to buffer
+    override void onDraw(DrawBuf buf) {
+        if (visibility != Visibility.Visible)
+            return;
+        super.onDraw(buf);
+        Rect rc = _pos;
+        applyMargins(rc);
+        applyPadding(rc);
+		auto saver = ClipRectSaver(buf, rc);
+		for (int i = 0; i < _children.count; i++) {
+			Widget item = _children.get(i);
+			if (item.visibility != Visibility.Visible)
+				continue;
+			item.onDraw(buf);
+		}
+    }
+
+}
+
+interface PathSelectedHandler {
+	bool onPathSelected(string path);
 }
 
 class FilePathPanel : FrameLayout {
+	Listener!OnPathSelectionHandler onPathSelectionListener;
 	static const ID_SEGMENTS = "SEGMENTS";
 	static const ID_EDITOR = "ED_PATH";
     protected FilePathPanelButtons _segments;
 	protected EditLine _edPath;
 	protected string _path;
+	Signal!PathSelectedHandler pathListener;
     this(string ID = null) {
         super(ID);
 		_segments = new FilePathPanelButtons(ID_SEGMENTS);
 		_edPath = new EditLine(ID_EDITOR);
+		_edPath.layoutWidth = FILL_PARENT;
+		_edPath.editorActionListener = &onEditorAction;
+		_edPath.onFocusChangeListener = &onEditorFocusChanged;
+		_segments.onClickListener = &onSegmentsClickOutside;
+		_segments.onPathSelectionListener = &onPathSelected;
 		addChild(_segments);
 		addChild(_edPath);
-		showChild(ID_SEGMENTS);
     }
+	protected bool onEditorFocusChanged(Widget source, bool focused) {
+		if (!focused) {
+			_edPath.text = toUTF32(_path);
+			showChild(ID_SEGMENTS);
+		}
+		return true;
+	}
+	protected bool onPathSelected(string path) {
+		if (onPathSelectionListener.assigned) {
+			if (exists(path))
+				return onPathSelectionListener(path);
+		}
+		return false;
+	}
+	bool onSegmentsClickOutside(Widget w) {
+		// switch to editor
+		showChild(ID_EDITOR);
+		_edPath.setFocus();
+		return true;
+	}
+	bool onEditorAction(const Action action) {
+		if (action.id == EditorActions.InsertNewLine) {
+			string fn = buildNormalizedPath(toUTF8(_edPath.text));
+			if (exists(fn) && isDir(fn))
+				return onPathSelected(fn);
+		}
+		return false;
+	}
+
 	@property void path(string value) {
 		_segments.init(value);
 		_edPath.text = toUTF32(value);
 		_path = path;
+		showChild(ID_SEGMENTS);
 	}
 	@property string path() {
 		return _path;

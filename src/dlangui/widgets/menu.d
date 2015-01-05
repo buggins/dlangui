@@ -88,7 +88,7 @@ class MenuItem {
 	}
 
 	/// set new MenuItemType
-	@property MenuItem type(MenuItemType type) { 
+	@property MenuItem type(MenuItemType type) {
 		_type = type;
 		return this; 
 	}

@@ -1708,9 +1708,14 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
 }
 
+interface EditorActionHandler {
+	bool onEditorAction(const Action action);
+}
 
 /// single line editor
 class EditLine : EditWidgetBase {
+
+	Signal!EditorActionHandler editorActionListener;
 
     /// empty parameter list constructor - for usage by factory
     this() {
@@ -1797,6 +1802,12 @@ class EditLine : EditWidgetBase {
 
 	override protected bool handleAction(const Action a) {
 		switch (a.id) {
+			case EditorActions.InsertNewLine:
+			case EditorActions.PrependNewLine:
+				if (editorActionListener.assigned) {
+					return editorActionListener(a);
+				}
+				break;
             case EditorActions.Up:
                 break;
             case EditorActions.Down:
