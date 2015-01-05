@@ -262,7 +262,7 @@ class Widget {
     /// override to handle focus changes
     protected void handleFocusChange(bool focused) {
         invalidate();
-		onFocusChangeListener(this, checked);
+		onFocusChangeListener(this, focused);
     }
     /// override to handle check changes
     protected void handleCheckChange(bool checked) {

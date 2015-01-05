@@ -573,7 +573,7 @@ class FilePathPanel : FrameLayout {
 	@property void path(string value) {
 		_segments.init(value);
 		_edPath.text = toUTF32(value);
-		_path = path;
+		_path = value;
 		showChild(ID_SEGMENTS);
 	}
 	@property string path() {
