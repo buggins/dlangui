@@ -61,7 +61,6 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 	protected FilePathPanel _edPath;
 	protected EditLine _edFilename;
 	protected StringGridWidget _fileList;
-	//protected StringGridWidget places;
 	protected VerticalLayout leftPanel;
 	protected VerticalLayout rightPanel;
     protected Action _action;
@@ -390,7 +389,7 @@ class FilePathPanelItem : HorizontalLayout {
 class FilePathPanelButtons : WidgetGroup {
     protected string _path;
 	Listener!OnPathSelectionHandler onPathSelectionListener;
-	bool onPathSelected(string path) {
+	protected bool onPathSelected(string path) {
 		if (onPathSelectionListener.assigned) {
 			return onPathSelectionListener(path);
 		}
@@ -401,7 +400,7 @@ class FilePathPanelButtons : WidgetGroup {
 		layoutWidth = FILL_PARENT;
 		clickable = true;
     }
-    void init(string path) {
+    protected void init(string path) {
         _path = path;
         _children.clear();
         string itemPath = path;
@@ -520,6 +519,7 @@ interface PathSelectedHandler {
 	bool onPathSelected(string path);
 }
 
+/// Panel - either path segment buttons or text editor line
 class FilePathPanel : FrameLayout {
 	Listener!OnPathSelectionHandler onPathSelectionListener;
 	static const ID_SEGMENTS = "SEGMENTS";
@@ -554,13 +554,14 @@ class FilePathPanel : FrameLayout {
 		}
 		return false;
 	}
-	bool onSegmentsClickOutside(Widget w) {
+	protected bool onSegmentsClickOutside(Widget w) {
 		// switch to editor
+		_edPath.text = toUTF32(_path);
 		showChild(ID_EDITOR);
 		_edPath.setFocus();
 		return true;
 	}
-	bool onEditorAction(const Action action) {
+	protected bool onEditorAction(const Action action) {
 		if (action.id == EditorActions.InsertNewLine) {
 			string fn = buildNormalizedPath(toUTF8(_edPath.text));
 			if (exists(fn) && isDir(fn))
