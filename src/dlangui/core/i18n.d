@@ -36,14 +36,18 @@ import dlangui.core.i18n;
 
 // use global i18n object to get translation for string ID
 dstring translated = i18n.get("STR_FILE_OPEN");
+// as well, you can specify fallback value - to return if translation is not found
+dstring translated = i18n.get("STR_FILE_OPEN", "Open..."d);
 
 // UIString type can hold either string resource id or dstring raw value.
 UIString text;
 
-// assign resource id as string
+// assign resource id as string (will remove dstring value if it was here)
 text = "ID_FILE_EXIT";
-// or assign raw value as dstring
+// or assign raw value as dstring (will remove id if it was here)
 text = "some text"d;
+// assign both resource id and fallback value - to use if string resource is not found
+text = UIString("ID_FILE_EXIT", "Exit"d);
 
 // i18n.get() will automatically be invoked when getting UIString value (e.g. using alias this).
 dstring translated = text;
