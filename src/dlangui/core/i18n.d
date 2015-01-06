@@ -83,6 +83,11 @@ struct UIString {
     this(dstring value) {
         _value = value;
     }
+    /** create string with resource id and raw value as fallback for missing translations */
+    this(string id, dstring fallbackValue) {
+		_id = id;
+        _value = value;
+    }
 
 
     /// Returns string resource id
@@ -94,12 +99,9 @@ struct UIString {
     }
     /** Get value (either raw or translated by id) */
     @property dstring value() const { 
-        if (_value !is null)
-            return _value;
-        if (_id is null)
-            return null;
-        // translate ID to dstring
-        return i18n.get(_id); 
+        if (_id !is null) // translate ID to dstring
+            return i18n.get(_id, _value); // get from resource, use _value as fallback
+		return _value;
     }
     /** Set raw value using property */
     @property void value(dstring newValue) {
@@ -311,7 +313,7 @@ synchronized class UIStringTranslator {
     }
 
     /** Translate string ID to string (returns "UNTRANSLATED: id" for missing values) */
-    dstring get(string id) {
+    dstring get(string id, dstring fallbackValue = null) {
         if (id is null)
             return null;
         dstring s = _main.get(id);
@@ -320,6 +322,8 @@ synchronized class UIStringTranslator {
         s = _fallback.get(id);
         if (s !is null)
             return s;
+		if (fallbackValue !is null)
+			return fallbackValue;
         return "UNTRANSLATED: "d ~ toUTF32(id);
     }
 }
