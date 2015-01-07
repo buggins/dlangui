@@ -21,7 +21,7 @@
 			"targetType": "staticLibrary",
 
 			"versions-posix": ["USE_SDL", "USE_OPENGL"],
-			"versions-windows": ["USE_OPENGL"],
+			"versions-windows": ["USE_OPENGL", "Unicode"],
 
 			"copyFiles": ["res"],
 

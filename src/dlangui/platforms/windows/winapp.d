@@ -335,8 +335,10 @@ class Win32Window : Window {
 
 	override @property void windowCaption(dstring caption) {
 		_caption = caption;
-		if (_hwnd)
+		if (_hwnd) {
+			Log.d("windowCaption ", caption);
 			SetWindowTextW(_hwnd, toUTF16z(_caption));
+		}
 	}
     void onCreate() {
         Log.d("Window onCreate");
