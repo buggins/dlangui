@@ -90,7 +90,7 @@ struct UIString {
     /** create string with resource id and raw value as fallback for missing translations */
     this(string id, dstring fallbackValue) {
 		_id = id;
-        _value = value;
+        _value = fallbackValue;
     }
 
 
@@ -326,7 +326,7 @@ synchronized class UIStringTranslator {
         s = _fallback.get(id);
         if (s !is null)
             return s;
-		if (fallbackValue !is null)
+		if (fallbackValue.length > 0)
 			return fallbackValue;
         return "UNTRANSLATED: "d ~ toUTF32(id);
     }

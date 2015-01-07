@@ -55,8 +55,16 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         } else {
             res = new Widget("COMBOBOX_BODY");
         }
-        res.layoutWidth = FILL_PARENT;
+        res.layoutWidth = WRAP_CONTENT;
         res.layoutHeight = WRAP_CONTENT;
+		int maxItemWidth = 0;
+		for(int i = 0; i < _adapter.itemCount; i++) {
+			Widget item = _adapter.itemWidget(i);
+			item.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+			if (maxItemWidth < item.measuredWidth)
+				maxItemWidth = item.measuredWidth;
+		}
+		res.minWidth = maxItemWidth;
         return res;
     }
 
@@ -80,6 +88,7 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
 
     protected ImageButton createButton() {
         ImageButton res = new ImageButton("COMBOBOX_BUTTON", "scrollbar_btn_down");
+		res.layoutWeight = 0;
         res.onClickListener = this;
         return res;
     }

@@ -34,6 +34,7 @@ import dlangui.widgets.layouts;
 import dlangui.widgets.grid;
 import dlangui.widgets.editors;
 import dlangui.widgets.menu;
+import dlangui.widgets.combobox;
 import dlangui.platforms.common.platform;
 import dlangui.dialogs.dialog;
 
@@ -68,10 +69,20 @@ struct FileFilterEntry {
 	}
 }
 
+class HorizontalLayoutTest : HorizontalLayout {
+	this() {
+	}
+    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+    override void layout(Rect rc) {
+		super.layout(rc);
+    }
+}
+
 /// File open / save dialog
 class FileDialog : Dialog, CustomGridCellAdapter {
 	protected FilePathPanel _edPath;
 	protected EditLine _edFilename;
+	protected ComboBox _cbFilters;
 	protected StringGridWidget _fileList;
 	protected VerticalLayout leftPanel;
 	protected VerticalLayout rightPanel;
@@ -143,7 +154,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     }
 
 	protected bool reopenDirectory() {
-		return true;
+		return openDirectory(_path, null);
 	}
 
     protected bool openDirectory(string dir, string selectedItemPath) {
@@ -330,11 +341,30 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _edPath.layoutWeight = 0;
 		_edPath.onPathSelectionListener = &onPathSelected;
 
+		HorizontalLayout fnlayout = new HorizontalLayoutTest();
+		fnlayout.layoutWidth(FILL_PARENT);
 		_edFilename = new EditLine("filename");
 		_edFilename.layoutWidth(FILL_PARENT);
-        _edFilename.layoutWeight = 0;
+        //_edFilename.layoutWeight = 0;
+		fnlayout.addChild(_edFilename);
+		if (_filters.length) {
+			dstring[] filterLabels;
+			foreach(f; _filters)
+				filterLabels ~= f.label.value;
+			_cbFilters = new ComboBox("filter", filterLabels);
+			_cbFilters.selectedItemIndex = _filterIndex;
+			_cbFilters.onItemClickListener = delegate(Widget source, int itemIndex) {
+				_filterIndex = itemIndex;
+				reopenDirectory();
+				return true;
+			};
+			_cbFilters.layoutWidth(WRAP_CONTENT);
+			_cbFilters.layoutWeight(0);
+			//_cbFilters.backgroundColor = 0xFFC0FF;
+			fnlayout.addChild(_cbFilters);
+			//fnlayout.backgroundColor = 0xFFFFC0;
+		}
 
-		rightPanel.addChild(_edPath);
 		_fileList = new StringGridWidget("files");
 		_fileList.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
 		_fileList.resize(4, 3);
@@ -344,8 +374,10 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 		_fileList.setColTitle(3, "Modified"d);
 		_fileList.showRowHeaders = false;
 		_fileList.rowSelect = true;
+
+		rightPanel.addChild(_edPath);
 		rightPanel.addChild(_fileList);
-		rightPanel.addChild(_edFilename);
+		rightPanel.addChild(fnlayout);
 
 
 		addChild(content);
