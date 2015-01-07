@@ -42,6 +42,7 @@ private import std.file;
 private import std.path;
 private import std.utf;
 private import std.conv : to;
+private import std.array : split;
 
 
 /// flags for file dialog options
@@ -56,6 +57,17 @@ enum FileDialogFlag : uint {
     Save = ConfirmOverwrite,
 }
 
+/// filetype filter entry for FileDialog
+struct FileFilterEntry {
+	UIString label;
+	string[] filter;
+	this(UIString displayLabel, string filterList) {
+		label = displayLabel;
+		if (filterList.length)
+			filter = split(filterList, ";");
+	}
+}
+
 /// File open / save dialog
 class FileDialog : Dialog, CustomGridCellAdapter {
 	protected FilePathPanel _edPath;
@@ -66,6 +78,8 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     protected Action _action;
 
     protected RootEntry[] _roots;
+	protected FileFilterEntry[] _filters;
+	protected int _filterIndex;
     protected string _path;
     protected string _filename;
     protected DirEntry[] _entries;
@@ -85,6 +99,38 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _action = action;
     }
 
+	/// filter list for file type filter combo box
+	@property FileFilterEntry[] filters() {
+		return _filters;
+	}
+
+	/// filter list for file type filter combo box
+	@property void filters(FileFilterEntry[] values) {
+		_filters = values;
+	}
+
+	/// add new filter entry
+	void addFilter(FileFilterEntry value) {
+		_filters ~= value;
+	}
+
+	/// filter index
+	@property int filterIndex() {
+		return _filterIndex;
+	}
+
+	/// filter index
+	@property void filterIndex(int index) {
+		_filterIndex = index;
+	}
+
+	/// return currently selected filter value - array of patterns like ["*.txt", "*.rtf"]
+	@property string[] selectedFilter() {
+		if (_filterIndex >= 0 && _filterIndex < _filters.length)
+			return _filters[_filterIndex].filter;
+		return null;
+	}
+
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     override void layout(Rect rc) {
         super.layout(rc);
@@ -96,12 +142,15 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         return openDirectory(parentDir(_path), _path);
     }
 
+	protected bool reopenDirectory() {
+		return true;
+	}
+
     protected bool openDirectory(string dir, string selectedItemPath) {
         dir = buildNormalizedPath(dir);
         Log.d("FileDialog.openDirectory(", dir, ")");
         _fileList.rows = 0;
-        string[] filters;
-        if (!listDirectory(dir, true, true, false, filters, _entries))
+        if (!listDirectory(dir, true, true, false, selectedFilter, _entries))
             return false;
         _path = dir;
         _isRoot = isRoot(dir);
