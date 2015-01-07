@@ -50,6 +50,7 @@ public import dlangui.core.logger;
 public import dlangui.core.types;
 public import dlangui.core.i18n;
 public import dlangui.core.files;
+public import dlangui.core.stdaction;
 public import dlangui.graphics.images;
 public import dlangui.widgets.widget;
 public import dlangui.widgets.controls;

@@ -143,6 +143,23 @@
         fontFamily="SansSerif"
         fontSize="16"
         />
+    <style id="COMBO_BOX"
+        backgroundImageId="editbox_background"
+        padding="2,2,2,2"
+        margins="2,2,2,2"
+        minWidth="40"
+        fontFace="Arial"
+        fontFamily="SansSerif"
+        fontSize="16"
+        />
+    <style id="COMBO_BOX_BODY"
+        padding="2,2,2,2"
+        minWidth="40"
+        fontFace="Arial"
+        fontFamily="SansSerif"
+        fontSize="16"
+        align="Left|VCenter"
+        />
     <style id="EDIT_BOX"
         backgroundImageId="editbox_background"
         padding="5,6,5,6"

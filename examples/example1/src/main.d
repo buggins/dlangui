@@ -297,11 +297,12 @@ extern (C) int UIAppMain(string[] args) {
 					dlg.addFilter(FileFilterEntry(UIString("FILTER_ALL_FILES", "All files (*.*)"d), "*.*"));
 					dlg.addFilter(FileFilterEntry(UIString("FILTER_TEXT_FILES", "Text files (*.txt)"d), "*.txt"));
 					dlg.addFilter(FileFilterEntry(UIString("FILTER_SOURCE_FILES", "Source files"d), "*.d;*.dd;*.c;*.cc;*.cpp;*.h;*.hpp"));
-					dlg.filterIndex = 2;
+					//dlg.filterIndex = 2;
 					dlg.onDialogResult = delegate(Dialog dlg, const Action result) {
-						Log.d("FileDialog.onDialogResult: ", result, " param=", result.stringParam);
-                        window.showMessageBox(UIString("FileOpen result"d), UIString(toUTF32(result.stringParam)));
-                        import dlangui.core.stdaction;
+						if (result.id == ACTION_OPEN.id) {
+							Log.d("FileDialog.onDialogResult: ", result, " param=", result.stringParam);
+							window.showMessageBox(UIString("FileOpen result"d), UIString(toUTF32(result.stringParam)));
+						}
 
 					};
                     dlg.show();

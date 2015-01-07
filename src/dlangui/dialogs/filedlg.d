@@ -69,15 +69,6 @@ struct FileFilterEntry {
 	}
 }
 
-class HorizontalLayoutTest : HorizontalLayout {
-	this() {
-	}
-    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
-    override void layout(Rect rc) {
-		super.layout(rc);
-    }
-}
-
 /// File open / save dialog
 class FileDialog : Dialog, CustomGridCellAdapter {
 	protected FilePathPanel _edPath;
@@ -341,7 +332,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _edPath.layoutWeight = 0;
 		_edPath.onPathSelectionListener = &onPathSelected;
 
-		HorizontalLayout fnlayout = new HorizontalLayoutTest();
+		HorizontalLayout fnlayout = new HorizontalLayout();
 		fnlayout.layoutWidth(FILL_PARENT);
 		_edFilename = new EditLine("filename");
 		_edFilename.layoutWidth(FILL_PARENT);
