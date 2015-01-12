@@ -194,7 +194,7 @@ class LayoutItems {
             // need resize of some children
             needResize = true;
 			// resize all if need to shrink or only resizable are too small to correct delta
-            needForceResize = delta < 0 || resizableWeight == 0; // || resizableSize * 2 / 3 < delta; // do we need resize non-FILL_PARENT items?
+            needForceResize = /*delta < 0 || */ resizableWeight == 0; // || resizableSize * 2 / 3 < delta; // do we need resize non-FILL_PARENT items?
 			// calculate scale factor: weight / delta * 10000
             if (needForceResize && nonresizableSize + resizableSize > 0)
                 scaleFactor = 10000 * delta / (nonresizableSize + resizableSize);
