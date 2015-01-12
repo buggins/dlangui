@@ -449,7 +449,7 @@ class Win32Window : Window {
         resizedicon.invertAlpha();
         ICONINFO ii;
         HBITMAP mask = resizedicon.createTransparencyBitmap();
-        HBITMAP color = resizedicon.destoryLeavingBitmap();
+        HBITMAP color = resizedicon.destroyLeavingBitmap();
         ii.fIcon = TRUE;
         ii.xHotspot = 0;
         ii.yHotspot = 0;
@@ -457,8 +457,8 @@ class Win32Window : Window {
         ii.hbmColor = color;
         _icon = CreateIconIndirect(&ii);
         if (_icon) {
-            SendMessage(_hwnd, WM_SETICON, ICON_SMALL, cast(int)_icon);
-            SendMessage(_hwnd, WM_SETICON, ICON_BIG, cast(int)_icon);
+            SendMessageW(_hwnd, WM_SETICON, ICON_SMALL, cast(LPARAM)_icon);
+            SendMessageW(_hwnd, WM_SETICON, ICON_BIG, cast(LPARAM)_icon);
         } else {
             Log.e("failed to create icon");
         }
