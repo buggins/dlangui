@@ -88,7 +88,7 @@ class MenuItem {
 	}
 
 	/// set new MenuItemType
-	@property MenuItem type(MenuItemType type) { 
+	@property MenuItem type(MenuItemType type) {
 		_type = type;
 		return this; 
 	}
@@ -342,8 +342,14 @@ class MenuItemWidget : WidgetGroup {
 		addChild(_label);
 		// accelerator
 		dstring acc = _item.acceleratorText;
-		if (_item.isSubmenu && !mainMenu)
-			acc = "‣"d;
+		if (_item.isSubmenu && !mainMenu) {
+            version (Windows) {
+			    acc = ">"d;
+			    //acc = "►"d;
+            } else {
+			    acc = "‣"d;
+            }
+        }
 		if (acc !is null) {
 			_accel = new TextWidget("MENU_ACCEL");
 			_accel.styleId = "MENU_ACCEL";

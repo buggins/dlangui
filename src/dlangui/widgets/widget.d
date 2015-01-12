@@ -177,8 +177,12 @@ class Widget {
 	    private static int _instanceCount = 0;
         private static bool _appShuttingDown = false;
     }
-	/// create widget, with optional id
-    this(string ID = null) {
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
+    this(string ID) {
 		_id = ID;
         _state = State.Enabled;
 		debug(resalloc) _instanceCount++;
@@ -258,7 +262,7 @@ class Widget {
     /// override to handle focus changes
     protected void handleFocusChange(bool focused) {
         invalidate();
-		onFocusChangeListener(this, checked);
+		onFocusChangeListener(this, focused);
     }
     /// override to handle check changes
     protected void handleCheckChange(bool checked) {
@@ -1327,7 +1331,12 @@ alias WidgetList = ObjectList!Widget;
 /** Base class for widgets which have children. */
 class WidgetGroup : Widget {
 
-	this(string ID = null) {
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
+	this(string ID) {
 		super(ID);
 	}
 

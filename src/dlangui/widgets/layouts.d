@@ -278,7 +278,12 @@ class ResizerWidget : Widget {
     protected string _styleVertical;
     protected string _styleHorizontal;
 
-    this(string ID = null) {
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
+    this(string ID) {
         super(ID);
         _styleVertical = "RESIZER_VERTICAL";
         _styleHorizontal = "RESIZER_HORIZONTAL";
@@ -461,7 +466,7 @@ class ResizerWidget : Widget {
 }
 
 
-
+/// Arranges items either vertically or horizontally
 class LinearLayout : WidgetGroup {
     protected Orientation _orientation = Orientation.Vertical;
     /// returns linear layout orientation (Vertical, Horizontal)
@@ -469,7 +474,12 @@ class LinearLayout : WidgetGroup {
     /// sets linear layout orientation
     @property LinearLayout orientation(Orientation value) { _orientation = value; requestLayout(); return this; }
 
-	this(string ID = null) {
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
+	this(string ID) {
 		super(ID);
 		_layoutItems = new LayoutItems();
 	}
@@ -523,15 +533,27 @@ class LinearLayout : WidgetGroup {
 
 }
 
+/// Arranges children vertically
 class VerticalLayout : LinearLayout {
-    this(string ID = null) {
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
+    this(string ID) {
         super(ID);
         orientation = Orientation.Vertical;
     }
 }
 
+/// Arranges children horizontally
 class HorizontalLayout : LinearLayout {
-    this(string ID = null) {
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
+    this(string ID) {
         super(ID);
         orientation = Orientation.Horizontal;
     }
@@ -539,6 +561,11 @@ class HorizontalLayout : LinearLayout {
 
 /// place all children into same place (usually, only one child should be visible at a time)
 class FrameLayout : WidgetGroup {
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
     this(string ID) {
         super(ID);
     }

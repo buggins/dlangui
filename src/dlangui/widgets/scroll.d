@@ -304,7 +304,12 @@ class ScrollWidget :  ScrollWidgetBase {
         requestLayout();
         return this;
     }
-	this(string ID = null, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
+	this(string ID, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
 		super(ID, hscrollbarMode, vscrollbarMode);
     }
 

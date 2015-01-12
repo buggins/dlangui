@@ -1708,10 +1708,20 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
 }
 
+interface EditorActionHandler {
+	bool onEditorAction(const Action action);
+}
 
 /// single line editor
 class EditLine : EditWidgetBase {
 
+	Signal!EditorActionHandler editorActionListener;
+
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
     this(string ID, dstring initialContent = null) {
         super(ID, ScrollBarMode.Invisible, ScrollBarMode.Invisible);
         _content = new EditableContent(false);
@@ -1792,6 +1802,12 @@ class EditLine : EditWidgetBase {
 
 	override protected bool handleAction(const Action a) {
 		switch (a.id) {
+			case EditorActions.InsertNewLine:
+			case EditorActions.PrependNewLine:
+				if (editorActionListener.assigned) {
+					return editorActionListener(a);
+				}
+				break;
             case EditorActions.Up:
                 break;
             case EditorActions.Down:
@@ -1880,6 +1896,11 @@ class EditLine : EditWidgetBase {
 
 /// single line editor
 class EditBox : EditWidgetBase {
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
     this(string ID, dstring initialContent = null, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
         super(ID, hscrollbarMode, vscrollbarMode);
         _content = new EditableContent(true); // multiline

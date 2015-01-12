@@ -298,7 +298,12 @@ class ListWidget : WidgetGroup, OnScrollHandler {
         requestLayout();
     }
 
-	this(string ID = null, Orientation orientation = Orientation.Vertical) {
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
+	this(string ID, Orientation orientation = Orientation.Vertical) {
 		super(ID);
         _orientation = orientation;
         focusable = true;

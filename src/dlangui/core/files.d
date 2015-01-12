@@ -151,9 +151,31 @@ bool isRoot(string path) {
     return false;
 }
 
+/// returns parent directory for specified path
+string parentDir(string path) {
+    return buildNormalizedPath(path, "..");
+}
+
+/// check filename with pattern (currently only *.ext pattern is supported)
+bool filterFilename(string filename, string pattern) {
+	if (pattern.equal("*.*"))
+		return true; // matches any
+	if (pattern.length < 3)
+		return false;
+	if (pattern[0] != '*' || pattern[1] != '.')
+		return false;
+	return filename.endsWith(pattern[1..$]);
+}
+
 /// Filters file name by pattern list
 bool filterFilename(string filename, string[] filters) {
-    return true;
+	if (filters.length == 0)
+		return true; // no filters - show all
+	foreach(pattern; filters) {
+		if (filterFilename(filename, pattern))
+			return true;
+	}
+    return false;
 }
 
 /** List directory content 

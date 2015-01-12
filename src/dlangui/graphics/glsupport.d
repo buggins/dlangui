@@ -53,7 +53,8 @@ static this() {
         0x0505:  "GL_OUT_OF_MEMORY"
     ];
 }
-/* Convenient wrapper around glGetError()
+/** 
+ * Convenient wrapper around glGetError()
  * TODO use one of the DEBUG extensions instead
  */
 bool checkError(string context="", string file=__FILE__, int line=__LINE__)
@@ -67,295 +68,6 @@ bool checkError(string context="", string file=__FILE__, int line=__LINE__)
     return false;
 }
 
-immutable float Z_2D = -2.0f;
-void drawSolidFillRect(Rect rc, uint color1, uint color2, uint color3, uint color4) {
-    float[6 * 4] colors;
-    LVGLFillColor(color1, colors.ptr + 4*0, 1);
-    LVGLFillColor(color4, colors.ptr + 4*1, 1);
-    LVGLFillColor(color3, colors.ptr + 4*2, 1);
-    LVGLFillColor(color1, colors.ptr + 4*3, 1);
-    LVGLFillColor(color3, colors.ptr + 4*4, 1);
-    LVGLFillColor(color2, colors.ptr + 4*5, 1);
-    float x0 = cast(float)(rc.left);
-    float y0 = cast(float)(bufferDy-rc.top);
-    float x1 = cast(float)(rc.right);
-    float y1 = cast(float)(bufferDy-rc.bottom);
-
-    // don't flip for framebuffer
-    if (currentFramebufferId) {
-        y0 = cast(float)(rc.top);
-        y1 = cast(float)(rc.bottom);
-    }
-
-    float[3 * 6] vertices = [
-        x0,y0,Z_2D,
-        x0,y1,Z_2D,
-        x1,y1,Z_2D,
-        x0,y0,Z_2D,
-        x1,y1,Z_2D,
-        x1,y0,Z_2D];
-	if (_solidFillProgram !is null) {
-		//Log.d("solid fill: vertices ", vertices, " colors ", colors);
-		_solidFillProgram.execute(vertices, colors);
-	} else
-		Log.e("No program");
-}
-
-void drawColorAndTextureRect(uint textureId, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color, bool linear) {
-    //Log.v("drawColorAndTextureRect tx=", textureId, " src=", srcrc, " dst=", dstrc);
-    drawColorAndTextureRect(textureId, tdx, tdy, srcrc.left, srcrc.top, srcrc.width(), srcrc.height(), dstrc.left, dstrc.top, dstrc.width(), dstrc.height(), color, linear);
-}
-
-void drawColorAndTextureRect(uint textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, uint color, bool linear) {
-    float colors[6*4];
-    LVGLFillColor(color, colors.ptr, 6);
-    float dstx0 = cast(float)xx;
-    float dsty0 = cast(float)(bufferDy - (yy));
-    float dstx1 = cast(float)(xx + dx);
-    float dsty1 = cast(float)(bufferDy - (yy + dy));
-
-    // don't flip for framebuffer
-    if (currentFramebufferId) {
-        dsty0 = cast(float)((yy));
-        dsty1 = cast(float)((yy + dy));
-    }
-
-    float srcx0 = srcx / cast(float)tdx;
-    float srcy0 = srcy / cast(float)tdy;
-    float srcx1 = (srcx + srcdx) / cast(float)tdx;
-    float srcy1 = (srcy + srcdy) / cast(float)tdy;
-    float[3 * 6] vertices = [dstx0,dsty0,Z_2D,
-    dstx0,dsty1,Z_2D,
-    dstx1,dsty1,Z_2D,
-    dstx0,dsty0,Z_2D,
-    dstx1,dsty1,Z_2D,
-    dstx1,dsty0,Z_2D];
-    float[2 * 6] texcoords = [srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0];
-    _textureProgram.execute(vertices, texcoords, colors, textureId, linear);
-    //drawColorAndTextureRect(vertices, texcoords, colors, textureId, linear);
-}
-
-/// generate new texture ID
-uint genTexture() {
-    GLuint textureId = 0;
-    glGenTextures(1, &textureId);
-    return textureId;
-}
-
-/// delete OpenGL texture
-void deleteTexture(ref uint textureId) {
-    if (!textureId)
-        return;
-    if (glIsTexture(textureId) != GL_TRUE) {
-        Log.e("Invalid texture ", textureId);
-        return;
-    }
-    GLuint id = textureId;
-    glDeleteTextures(1, &id);
-    checkError("glDeleteTextures");
-    textureId = 0;
-}
-
-/// call glFlush
-void flushGL() {
-    glFlush();
-    checkError("glFlush");
-}
-
-bool setTextureImage(uint textureId, int dx, int dy, ubyte * pixels) {
-    //checkError("before setTextureImage");
-    glActiveTexture(GL_TEXTURE0);
-    checkError("updateTexture - glActiveTexture");
-    glBindTexture(GL_TEXTURE_2D, 0);
-    checkError("updateTexture - glBindTexture(0)");
-    glBindTexture(GL_TEXTURE_2D, textureId);
-    checkError("updateTexture - glBindTexture");
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    checkError("updateTexture - glPixelStorei");
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    checkError("updateTexture - glTexParameteri");
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    checkError("updateTexture - glTexParameteri");
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    checkError("updateTexture - glTexParameteri");
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    checkError("updateTexture - glTexParameteri");
-
-    if (!glIsTexture(textureId))
-        Log.e("second test - invalid texture passed to CRGLSupportImpl::setTextureImage");
-
-    // ORIGINAL: glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dx, dy, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dx, dy, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-    checkError("updateTexture - glTexImage2D");
-    if (glGetError() != GL_NO_ERROR) {
-        Log.e("Cannot set image for texture");
-        return false;
-    }
-    checkError("after setTextureImage");
-    return true;
-}
-
-bool setTextureImageAlpha(uint textureId, int dx, int dy, ubyte * pixels) {
-    checkError("before setTextureImageAlpha");
-    glActiveTexture(GL_TEXTURE0);
-    checkError("updateTexture - glActiveTexture");
-    glBindTexture(GL_TEXTURE_2D, 0);
-    checkError("updateTexture - glBindTexture(0)");
-    glBindTexture(GL_TEXTURE_2D, textureId);
-    checkError("setTextureImageAlpha - glBindTexture");
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    checkError("setTextureImageAlpha - glPixelStorei");
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    checkError("setTextureImageAlpha - glTexParameteri");
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    checkError("setTextureImageAlpha - glTexParameteri");
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    checkError("setTextureImageAlpha - glTexParameteri");
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    checkError("setTextureImageAlpha - glTexParameteri");
-
-    if (!glIsTexture(textureId))
-        Log.e("second test: invalid texture passed to CRGLSupportImpl::setTextureImageAlpha");
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, dx, dy, 0, GL_ALPHA, GL_UNSIGNED_BYTE, pixels);
-    checkError("setTextureImageAlpha - glTexImage2D");
-    if (glGetError() != GL_NO_ERROR) {
-        Log.e("Cannot set image for texture");
-        return false;
-    }
-    glBindTexture(GL_TEXTURE_2D, 0);
-    checkError("updateTexture - glBindTexture(0)");
-    checkError("after setTextureImageAlpha");
-    return true;
-}
-
-private uint currentFramebufferId;
-
-/// returns texture ID for buffer, 0 if failed
-bool createFramebuffer(ref uint textureId, ref uint framebufferId, int dx, int dy) {
-    checkError("before createFramebuffer");
-    bool res = true;
-    textureId = framebufferId = 0;
-    textureId = genTexture();
-    if (!textureId)
-        return false;
-    GLuint fid = 0;
-    glGenFramebuffers(1, &fid);
-    if (checkError("createFramebuffer glGenFramebuffersOES")) return false;
-    framebufferId = fid;
-    glBindFramebuffer(GL_FRAMEBUFFER, framebufferId);
-    if (checkError("createFramebuffer glBindFramebuffer")) return false;
-
-    glBindTexture(GL_TEXTURE_2D, textureId);
-    checkError("glBindTexture(GL_TEXTURE_2D, _textureId)");
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, dx, dy, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, null);
-    checkError("glTexImage2D");
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    checkError("texParameter");
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    checkError("texParameter");
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    checkError("texParameter");
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    checkError("texParameter");
-
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0);
-    checkError("glFramebufferTexture2D");
-    // Always check that our framebuffer is ok
-    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
-        Log.e("glFramebufferTexture2D failed");
-        res = false;
-    }
-    checkError("glCheckFramebufferStatus");
-    //glClearColor(0.5f, 0, 0, 1);
-    glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-    checkError("glClearColor");
-    glClear(GL_COLOR_BUFFER_BIT);
-    checkError("glClear");
-    checkError("after createFramebuffer");
-    //CRLog::trace("CRGLSupportImpl::createFramebuffer %d,%d  texture=%d, buffer=%d", dx, dy, textureId, framebufferId);
-    currentFramebufferId = framebufferId;
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-    checkError("createFramebuffer - glBindTexture(0)");
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
-    checkError("createFramebuffer - glBindFramebuffer(0)");
-
-    return res;
-}
-
-void deleteFramebuffer(ref uint framebufferId) {
-    //CRLog::debug("GLDrawBuf::deleteFramebuffer");
-    if (framebufferId != 0) {
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        checkError("deleteFramebuffer - glBindFramebuffer");
-        GLuint fid = framebufferId;
-        glDeleteFramebuffers(1, &fid);
-        checkError("deleteFramebuffer - glDeleteFramebuffer");
-    }
-    //CRLog::trace("CRGLSupportImpl::deleteFramebuffer(%d)", framebufferId);
-    framebufferId = 0;
-    checkError("after deleteFramebuffer");
-    currentFramebufferId = 0;
-}
-
-bool bindFramebuffer(uint framebufferId) {
-    //CRLog::trace("CRGLSupportImpl::bindFramebuffer(%d)", framebufferId);
-    glBindFramebuffer(GL_FRAMEBUFFER, framebufferId);
-    currentFramebufferId = framebufferId;
-    return !checkError("glBindFramebuffer");
-}
-
-/// projection matrix
-//private mat4 m;
-/// current gl buffer width
-private int bufferDx;
-/// current gl buffer height
-private int bufferDy;
-
-//private float[16] matrix;
-private float[16] qtmatrix;
-
-void QMatrix4x4_ortho(float left, float right, float bottom, float top, float nearPlane, float farPlane)
-{
-    // Bail out if the projection volume is zero-sized.
-    if (left == right || bottom == top || nearPlane == farPlane)
-        return;
-
-    // Construct the projection.
-    float width = right - left;
-    float invheight = top - bottom;
-    float clip = farPlane - nearPlane;
-    float[4][4] m;
-    m[0][0] = 2.0f / width;
-    m[1][0] = 0.0f;
-    m[2][0] = 0.0f;
-    m[3][0] = -(left + right) / width;
-    m[0][1] = 0.0f;
-    m[1][1] = 2.0f / invheight;
-    m[2][1] = 0.0f;
-    m[3][1] = -(top + bottom) / invheight;
-    m[0][2] = 0.0f;
-    m[1][2] = 0.0f;
-    m[2][2] = -2.0f / clip;
-    m[3][2] = -(nearPlane + farPlane) / clip;
-    m[0][3] = 0.0f;
-    m[1][3] = 0.0f;
-    m[2][3] = 0.0f;
-    m[3][3] = 1.0f;
-    for (int y = 0; y < 4; y++)
-        for (int x = 0; x < 4; x++)
-            qtmatrix[y * 4 + x] = m[y][x];
-}
-
-void setOrthoProjection(int dx, int dy) {
-    bufferDx = dx;
-    bufferDy = dy;
-    QMatrix4x4_ortho(0, dx, 0, dy, 0.5f, 50.0f);
-    glViewport(0, 0, dx, dy);
-    checkError("glViewport");
-}
 
 class GLProgram {
     @property abstract string vertexSource();
@@ -503,7 +215,7 @@ class SolidFillProgram : GLProgram {
         bind();
         //glUniformMatrix4fv(matrixLocation,  1, false, m.value_ptr);
         //glUniformMatrix4fv(matrixLocation,  1, false, matrix.ptr);
-        glUniformMatrix4fv(matrixLocation,  1, false, qtmatrix.ptr);
+        glUniformMatrix4fv(matrixLocation,  1, false, glSupport.qtmatrix.ptr);
         checkError("glUniformMatrix4fv");
     }
 
@@ -704,57 +416,366 @@ class TextureProgram : SolidFillProgram {
     }
 }
 
-__gshared TextureProgram _textureProgram;
-__gshared SolidFillProgram _solidFillProgram;
+__gshared GLSupport _glSupport;
+@property GLSupport glSupport() {
+    if (!_glSupport) {
+        Log.f("GLSupport is not initialized");
+        assert(false, "GLSupport is not initialized");
+    }
+    if (!_glSupport.valid) {
+        Log.e("GLSupport programs are not initialized");
+    }
+    return _glSupport;
+}
 
-bool initShaders() {
-    if (_textureProgram is null) {
-        _textureProgram = new TextureProgram();
-        if (!_textureProgram.compile())
+class GLSupport {
+
+    TextureProgram _textureProgram;
+    SolidFillProgram _solidFillProgram;
+
+    @property bool valid() {
+        return _textureProgram && _solidFillProgram;
+    }
+
+    bool initShaders() {
+        if (_textureProgram is null) {
+            _textureProgram = new TextureProgram();
+            if (!_textureProgram.compile())
+                return false;
+        }
+        if (_solidFillProgram is null) {
+            _solidFillProgram = new SolidFillProgram();
+            if (!_solidFillProgram.compile())
+                return false;
+        }
+        Log.d("Shaders compiled successfully");
+        return true;
+    }
+
+    bool uninitShaders() {
+        Log.d("Uniniting shaders");
+        if (_textureProgram !is null) {
+            destroy(_textureProgram);
+		    _textureProgram = null;
+        }
+        if (_solidFillProgram !is null) {
+            destroy(_solidFillProgram);
+		    _solidFillProgram = null;
+        }
+        return true;
+    }
+
+    bool isTexture(uint textureId) {
+        return glIsTexture(textureId) == GL_TRUE;
+    }
+
+    void setRotation(int x, int y, int rotationAngle) {
+        /*
+        this->rotationAngle = rotationAngle;
+        rotationX = x;
+        rotationY = y;
+        if (!currentFramebufferId) {
+            rotationY = bufferDy - rotationY;
+        }
+
+        QMatrix4x4 matrix2;
+        matrix2.ortho(0, bufferDx, 0, bufferDy, 0.5f, 5.0f);
+        if (rotationAngle) {
+		    matrix2.translate(rotationX, rotationY, 0);
+		    matrix2.rotate(rotationAngle, 0, 0, 1);
+		    matrix2.translate(-rotationX, -rotationY, 0);
+        }
+        matrix2.copyDataTo(m);
+        */
+    }
+    static immutable float Z_2D = -2.0f;
+    void drawSolidFillRect(Rect rc, uint color1, uint color2, uint color3, uint color4) {
+        float[6 * 4] colors;
+        LVGLFillColor(color1, colors.ptr + 4*0, 1);
+        LVGLFillColor(color4, colors.ptr + 4*1, 1);
+        LVGLFillColor(color3, colors.ptr + 4*2, 1);
+        LVGLFillColor(color1, colors.ptr + 4*3, 1);
+        LVGLFillColor(color3, colors.ptr + 4*4, 1);
+        LVGLFillColor(color2, colors.ptr + 4*5, 1);
+        float x0 = cast(float)(rc.left);
+        float y0 = cast(float)(bufferDy-rc.top);
+        float x1 = cast(float)(rc.right);
+        float y1 = cast(float)(bufferDy-rc.bottom);
+
+        // don't flip for framebuffer
+        if (currentFramebufferId) {
+            y0 = cast(float)(rc.top);
+            y1 = cast(float)(rc.bottom);
+        }
+
+        float[3 * 6] vertices = [
+            x0,y0,Z_2D,
+            x0,y1,Z_2D,
+            x1,y1,Z_2D,
+            x0,y0,Z_2D,
+            x1,y1,Z_2D,
+            x1,y0,Z_2D];
+        if (_solidFillProgram !is null) {
+            //Log.d("solid fill: vertices ", vertices, " colors ", colors);
+            _solidFillProgram.execute(vertices, colors);
+        } else
+            Log.e("No program");
+    }
+
+    void drawColorAndTextureRect(uint textureId, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color, bool linear) {
+        //Log.v("drawColorAndTextureRect tx=", textureId, " src=", srcrc, " dst=", dstrc);
+        drawColorAndTextureRect(textureId, tdx, tdy, srcrc.left, srcrc.top, srcrc.width(), srcrc.height(), dstrc.left, dstrc.top, dstrc.width(), dstrc.height(), color, linear);
+    }
+
+    void drawColorAndTextureRect(uint textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, uint color, bool linear) {
+        float[6*4] colors;
+        LVGLFillColor(color, colors.ptr, 6);
+        float dstx0 = cast(float)xx;
+        float dsty0 = cast(float)(bufferDy - (yy));
+        float dstx1 = cast(float)(xx + dx);
+        float dsty1 = cast(float)(bufferDy - (yy + dy));
+
+        // don't flip for framebuffer
+        if (currentFramebufferId) {
+            dsty0 = cast(float)((yy));
+            dsty1 = cast(float)((yy + dy));
+        }
+
+        float srcx0 = srcx / cast(float)tdx;
+        float srcy0 = srcy / cast(float)tdy;
+        float srcx1 = (srcx + srcdx) / cast(float)tdx;
+        float srcy1 = (srcy + srcdy) / cast(float)tdy;
+        float[3 * 6] vertices = [dstx0,dsty0,Z_2D,
+        dstx0,dsty1,Z_2D,
+        dstx1,dsty1,Z_2D,
+        dstx0,dsty0,Z_2D,
+        dstx1,dsty1,Z_2D,
+        dstx1,dsty0,Z_2D];
+        float[2 * 6] texcoords = [srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0];
+        _textureProgram.execute(vertices, texcoords, colors, textureId, linear);
+        //drawColorAndTextureRect(vertices, texcoords, colors, textureId, linear);
+    }
+
+    /// generate new texture ID
+    uint genTexture() {
+        GLuint textureId = 0;
+        glGenTextures(1, &textureId);
+        return textureId;
+    }
+
+    /// delete OpenGL texture
+    void deleteTexture(ref uint textureId) {
+        if (!textureId)
+            return;
+        if (glIsTexture(textureId) != GL_TRUE) {
+            Log.e("Invalid texture ", textureId);
+            return;
+        }
+        GLuint id = textureId;
+        glDeleteTextures(1, &id);
+        checkError("glDeleteTextures");
+        textureId = 0;
+    }
+
+    /// call glFlush
+    void flushGL() {
+        glFlush();
+        checkError("glFlush");
+    }
+
+    bool setTextureImage(uint textureId, int dx, int dy, ubyte * pixels) {
+        //checkError("before setTextureImage");
+        glActiveTexture(GL_TEXTURE0);
+        checkError("updateTexture - glActiveTexture");
+        glBindTexture(GL_TEXTURE_2D, 0);
+        checkError("updateTexture - glBindTexture(0)");
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        checkError("updateTexture - glBindTexture");
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        checkError("updateTexture - glPixelStorei");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        checkError("updateTexture - glTexParameteri");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        checkError("updateTexture - glTexParameteri");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        checkError("updateTexture - glTexParameteri");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        checkError("updateTexture - glTexParameteri");
+
+        if (!glIsTexture(textureId))
+            Log.e("second test - invalid texture passed to CRGLSupportImpl::setTextureImage");
+
+        // ORIGINAL: glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dx, dy, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dx, dy, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+        checkError("updateTexture - glTexImage2D");
+        if (glGetError() != GL_NO_ERROR) {
+            Log.e("Cannot set image for texture");
             return false;
+        }
+        checkError("after setTextureImage");
+        return true;
     }
-    if (_solidFillProgram is null) {
-        _solidFillProgram = new SolidFillProgram();
-        if (!_solidFillProgram.compile())
+
+    bool setTextureImageAlpha(uint textureId, int dx, int dy, ubyte * pixels) {
+        checkError("before setTextureImageAlpha");
+        glActiveTexture(GL_TEXTURE0);
+        checkError("updateTexture - glActiveTexture");
+        glBindTexture(GL_TEXTURE_2D, 0);
+        checkError("updateTexture - glBindTexture(0)");
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        checkError("setTextureImageAlpha - glBindTexture");
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+        checkError("setTextureImageAlpha - glPixelStorei");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        checkError("setTextureImageAlpha - glTexParameteri");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        checkError("setTextureImageAlpha - glTexParameteri");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        checkError("setTextureImageAlpha - glTexParameteri");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        checkError("setTextureImageAlpha - glTexParameteri");
+
+        if (!glIsTexture(textureId))
+            Log.e("second test: invalid texture passed to CRGLSupportImpl::setTextureImageAlpha");
+
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, dx, dy, 0, GL_ALPHA, GL_UNSIGNED_BYTE, pixels);
+        checkError("setTextureImageAlpha - glTexImage2D");
+        if (glGetError() != GL_NO_ERROR) {
+            Log.e("Cannot set image for texture");
             return false;
-    }
-    Log.d("Shaders compiled successfully");
-    return true;
-}
-
-bool uninitShaders() {
-    Log.d("Uniniting shaders");
-    if (_textureProgram !is null) {
-        destroy(_textureProgram);
-		_textureProgram = null;
-    }
-    if (_solidFillProgram !is null) {
-        destroy(_solidFillProgram);
-		_solidFillProgram = null;
-    }
-    return true;
-}
-
-bool isTexture(uint textureId) {
-    return glIsTexture(textureId) == GL_TRUE;
-}
-
-void setRotation(int x, int y, int rotationAngle) {
-    /*
-    this->rotationAngle = rotationAngle;
-    rotationX = x;
-    rotationY = y;
-    if (!currentFramebufferId) {
-        rotationY = bufferDy - rotationY;
+        }
+        glBindTexture(GL_TEXTURE_2D, 0);
+        checkError("updateTexture - glBindTexture(0)");
+        checkError("after setTextureImageAlpha");
+        return true;
     }
 
-    QMatrix4x4 matrix2;
-    matrix2.ortho(0, bufferDx, 0, bufferDy, 0.5f, 5.0f);
-    if (rotationAngle) {
-		matrix2.translate(rotationX, rotationY, 0);
-		matrix2.rotate(rotationAngle, 0, 0, 1);
-		matrix2.translate(-rotationX, -rotationY, 0);
+    private uint currentFramebufferId;
+
+    /// returns texture ID for buffer, 0 if failed
+    bool createFramebuffer(ref uint textureId, ref uint framebufferId, int dx, int dy) {
+        checkError("before createFramebuffer");
+        bool res = true;
+        textureId = framebufferId = 0;
+        textureId = genTexture();
+        if (!textureId)
+            return false;
+        GLuint fid = 0;
+        glGenFramebuffers(1, &fid);
+        if (checkError("createFramebuffer glGenFramebuffersOES")) return false;
+        framebufferId = fid;
+        glBindFramebuffer(GL_FRAMEBUFFER, framebufferId);
+        if (checkError("createFramebuffer glBindFramebuffer")) return false;
+
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        checkError("glBindTexture(GL_TEXTURE_2D, _textureId)");
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, dx, dy, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, null);
+        checkError("glTexImage2D");
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        checkError("texParameter");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        checkError("texParameter");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        checkError("texParameter");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        checkError("texParameter");
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0);
+        checkError("glFramebufferTexture2D");
+        // Always check that our framebuffer is ok
+        if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+            Log.e("glFramebufferTexture2D failed");
+            res = false;
+        }
+        checkError("glCheckFramebufferStatus");
+        //glClearColor(0.5f, 0, 0, 1);
+        glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+        checkError("glClearColor");
+        glClear(GL_COLOR_BUFFER_BIT);
+        checkError("glClear");
+        checkError("after createFramebuffer");
+        //CRLog::trace("CRGLSupportImpl::createFramebuffer %d,%d  texture=%d, buffer=%d", dx, dy, textureId, framebufferId);
+        currentFramebufferId = framebufferId;
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+        checkError("createFramebuffer - glBindTexture(0)");
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        checkError("createFramebuffer - glBindFramebuffer(0)");
+
+        return res;
     }
-    matrix2.copyDataTo(m);
-    */
+
+    void deleteFramebuffer(ref uint framebufferId) {
+        //CRLog::debug("GLDrawBuf::deleteFramebuffer");
+        if (framebufferId != 0) {
+            glBindFramebuffer(GL_FRAMEBUFFER, 0);
+            checkError("deleteFramebuffer - glBindFramebuffer");
+            GLuint fid = framebufferId;
+            glDeleteFramebuffers(1, &fid);
+            checkError("deleteFramebuffer - glDeleteFramebuffer");
+        }
+        //CRLog::trace("CRGLSupportImpl::deleteFramebuffer(%d)", framebufferId);
+        framebufferId = 0;
+        checkError("after deleteFramebuffer");
+        currentFramebufferId = 0;
+    }
+
+    bool bindFramebuffer(uint framebufferId) {
+        //CRLog::trace("CRGLSupportImpl::bindFramebuffer(%d)", framebufferId);
+        glBindFramebuffer(GL_FRAMEBUFFER, framebufferId);
+        currentFramebufferId = framebufferId;
+        return !checkError("glBindFramebuffer");
+    }
+
+    /// projection matrix
+    //private mat4 m;
+    /// current gl buffer width
+    private int bufferDx;
+    /// current gl buffer height
+    private int bufferDy;
+    //private float[16] matrix;
+    private float[16] qtmatrix;
+
+    void QMatrix4x4_ortho(float left, float right, float bottom, float top, float nearPlane, float farPlane)
+    {
+        // Bail out if the projection volume is zero-sized.
+        if (left == right || bottom == top || nearPlane == farPlane)
+            return;
+
+        // Construct the projection.
+        float width = right - left;
+        float invheight = top - bottom;
+        float clip = farPlane - nearPlane;
+        float[4][4] m;
+        m[0][0] = 2.0f / width;
+        m[1][0] = 0.0f;
+        m[2][0] = 0.0f;
+        m[3][0] = -(left + right) / width;
+        m[0][1] = 0.0f;
+        m[1][1] = 2.0f / invheight;
+        m[2][1] = 0.0f;
+        m[3][1] = -(top + bottom) / invheight;
+        m[0][2] = 0.0f;
+        m[1][2] = 0.0f;
+        m[2][2] = -2.0f / clip;
+        m[3][2] = -(nearPlane + farPlane) / clip;
+        m[0][3] = 0.0f;
+        m[1][3] = 0.0f;
+        m[2][3] = 0.0f;
+        m[3][3] = 1.0f;
+        for (int y = 0; y < 4; y++)
+            for (int x = 0; x < 4; x++)
+                qtmatrix[y * 4 + x] = m[y][x];
+    }
+
+    void setOrthoProjection(int dx, int dy) {
+        bufferDx = dx;
+        bufferDy = dy;
+        QMatrix4x4_ortho(0, dx, 0, dy, 0.5f, 50.0f);
+        glViewport(0, 0, dx, dy);
+        checkError("glViewport");
+    }
+
 }
+

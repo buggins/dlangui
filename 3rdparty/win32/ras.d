@@ -233,7 +233,7 @@ struct RASCONNW {
 	WCHAR szDeviceType[RAS_MaxDeviceType + 1];
 	WCHAR szDeviceName[RAS_MaxDeviceName + 1];
 	static if (_WIN32_WINNT >= 0x401) {
-		WCHAR szPhonebook[MAX_PATH];
+		WCHAR[MAX_PATH] szPhonebook;
 		DWORD dwSubEntry;
 	}
 	static if (_WIN32_WINNT >= 0x500) {
@@ -253,7 +253,7 @@ struct RASCONNA {
 	CHAR szDeviceType[RAS_MaxDeviceType + 1];
 	CHAR szDeviceName[RAS_MaxDeviceName + 1];
 	static if (_WIN32_WINNT >= 0x401) {
-		CHAR szPhonebook[MAX_PATH];
+		CHAR[MAX_PATH] szPhonebook;
 		DWORD dwSubEntry;
 	}
 	static if (_WIN32_WINNT >= 0x500) {
@@ -451,7 +451,7 @@ struct RASPPPLCPW{
 		BOOL fMultilink;
 		DWORD dwTerminateReason;
 		DWORD dwServerTerminateReason;
-		WCHAR szReplyMessage[RAS_MaxReplyMessage];
+		WCHAR[RAS_MaxReplyMessage] szReplyMessage;
 		DWORD dwOptions;
 		DWORD dwServerOptions;
 	}
@@ -472,7 +472,7 @@ struct RASPPPLCPA{
 		BOOL fMultilink;
 		DWORD dwTerminateReason;
 		DWORD dwServerTerminateReason;
-		CHAR szReplyMessage[RAS_MaxReplyMessage];
+		CHAR[RAS_MaxReplyMessage] szReplyMessage;
 		DWORD dwOptions;
 		DWORD dwServerOptions;
 	}
@@ -542,9 +542,9 @@ struct RASENTRYW {
 	DWORD dwFrameSize;
 	DWORD dwfNetProtocols;
 	DWORD dwFramingProtocol;
-	WCHAR szScript[MAX_PATH];
-	WCHAR szAutodialDll[MAX_PATH];
-	WCHAR szAutodialFunc[MAX_PATH];
+	WCHAR[MAX_PATH] szScript;
+	WCHAR[MAX_PATH] szAutodialDll;
+	WCHAR[MAX_PATH] szAutodialFunc;
 	WCHAR szDeviceType[RAS_MaxDeviceType + 1];
 	WCHAR szDeviceName[RAS_MaxDeviceName + 1];
 	WCHAR szX25PadType[RAS_MaxPadType + 1];
@@ -568,7 +568,7 @@ struct RASENTRYW {
 		DWORD dwEncryptionType;
 		DWORD dwCustomAuthKey;
 		GUID guidId;
-		WCHAR szCustomDialDll[MAX_PATH];
+		WCHAR[MAX_PATH] szCustomDialDll;
 		DWORD dwVpnStrategy;
 	}
 }
@@ -590,9 +590,9 @@ struct RASENTRYA {
 	DWORD dwFrameSize;
 	DWORD dwfNetProtocols;
 	DWORD dwFramingProtocol;
-	CHAR szScript[MAX_PATH];
-	CHAR szAutodialDll[MAX_PATH];
-	CHAR szAutodialFunc[MAX_PATH];
+	CHAR[MAX_PATH] szScript;
+	CHAR[MAX_PATH] szAutodialDll;
+	CHAR[MAX_PATH] szAutodialFunc;
 	CHAR szDeviceType[RAS_MaxDeviceType + 1];
 	CHAR szDeviceName[RAS_MaxDeviceName + 1];
 	CHAR szX25PadType[RAS_MaxPadType + 1];
@@ -616,7 +616,7 @@ struct RASENTRYA {
 		DWORD dwEncryptionType;
 		DWORD dwCustomAuthKey;
 		GUID guidId;
-		CHAR szCustomDialDll[MAX_PATH];
+		CHAR[MAX_PATH] szCustomDialDll;
 		DWORD dwVpnStrategy;
 	}
 }
@@ -702,14 +702,14 @@ static if (_WIN32_WINNT >= 0x500) {
 	struct RASEAPUSERIDENTITYW{
 		WCHAR szUserName[UNLEN + 1];
 		DWORD dwSizeofEapInfo;
-		BYTE pbEapInfo[1];
+		BYTE[1] pbEapInfo;
 	}
 	alias RASEAPUSERIDENTITYW* LPRASEAPUSERIDENTITYW;
 
 	struct RASEAPUSERIDENTITYA{
 		CHAR szUserName[UNLEN + 1];
 		DWORD dwSizeofEapInfo;
-		BYTE pbEapInfo[1];
+		BYTE[1] pbEapInfo;
 	}
 	alias RASEAPUSERIDENTITYA* LPRASEAPUSERIDENTITYA;
 

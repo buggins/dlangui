@@ -36,14 +36,18 @@ import dlangui.core.i18n;
 
 // use global i18n object to get translation for string ID
 dstring translated = i18n.get("STR_FILE_OPEN");
+// as well, you can specify fallback value - to return if translation is not found
+dstring translated = i18n.get("STR_FILE_OPEN", "Open..."d);
 
 // UIString type can hold either string resource id or dstring raw value.
 UIString text;
 
-// assign resource id as string
+// assign resource id as string (will remove dstring value if it was here)
 text = "ID_FILE_EXIT";
-// or assign raw value as dstring
+// or assign raw value as dstring (will remove id if it was here)
 text = "some text"d;
+// assign both resource id and fallback value - to use if string resource is not found
+text = UIString("ID_FILE_EXIT", "Exit"d);
 
 // i18n.get() will automatically be invoked when getting UIString value (e.g. using alias this).
 dstring translated = text;
@@ -83,6 +87,11 @@ struct UIString {
     this(dstring value) {
         _value = value;
     }
+    /** create string with resource id and raw value as fallback for missing translations */
+    this(string id, dstring fallbackValue) {
+		_id = id;
+        _value = fallbackValue;
+    }
 
 
     /// Returns string resource id
@@ -94,12 +103,9 @@ struct UIString {
     }
     /** Get value (either raw or translated by id) */
     @property dstring value() const { 
-        if (_value !is null)
-            return _value;
-        if (_id is null)
-            return null;
-        // translate ID to dstring
-        return i18n.get(_id); 
+        if (_id !is null) // translate ID to dstring
+            return i18n.get(_id, _value); // get from resource, use _value as fallback
+		return _value;
     }
     /** Set raw value using property */
     @property void value(dstring newValue) {
@@ -311,7 +317,7 @@ synchronized class UIStringTranslator {
     }
 
     /** Translate string ID to string (returns "UNTRANSLATED: id" for missing values) */
-    dstring get(string id) {
+    dstring get(string id, dstring fallbackValue = null) {
         if (id is null)
             return null;
         dstring s = _main.get(id);
@@ -320,6 +326,8 @@ synchronized class UIStringTranslator {
         s = _fallback.get(id);
         if (s !is null)
             return s;
+		if (fallbackValue.length > 0)
+			return fallbackValue;
         return "UNTRANSLATED: "d ~ toUTF32(id);
     }
 }

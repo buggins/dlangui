@@ -97,6 +97,8 @@ class SDLWindow : Window {
 		version(USE_OPENGL) {
             if (_enableOpengl)
                 windowFlags |= SDL_WINDOW_OPENGL;
+            if (!_glSupport)
+                _glSupport = new GLSupport();
         }
 		_win = SDL_CreateWindow(toUTF8(_caption).toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
                                 700, 500, 
@@ -127,7 +129,7 @@ class SDLWindow : Window {
                 } else if (!_gl3Reloaded) {
                     DerelictGL3.reload();
                     _gl3Reloaded = true;
-                    if (!initShaders())
+                    if (!glSupport.valid && !glSupport.initShaders())
                         _enableOpengl = false;
                 }
             }

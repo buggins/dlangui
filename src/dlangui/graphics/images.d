@@ -34,7 +34,7 @@ version (USE_DEIMAGE) {
 version (USE_DLIBIMAGE) {
     import dlib.image.io.io;
     import dlib.image.image;
-    //version = ENABLE_DLIBIMAGE_JPEG;
+    version = ENABLE_DLIBIMAGE_JPEG;
 }
 
 import dlangui.core.logger;
@@ -142,8 +142,8 @@ version (USE_FREEIMAGE) {
 			FREE_IMAGE_LOADED = true;
 		}
 
-		ubyte imagebuf[];
-		ubyte readbuf[4096];
+		ubyte[] imagebuf;
+		ubyte[4096] readbuf;
 		for (;;) {
 			size_t bytesRead = stream.read(readbuf);
 			if (!bytesRead)
