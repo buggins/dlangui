@@ -154,10 +154,12 @@ version (USE_OPENGL) {
 
 class Win32Window : Window {
     Win32Platform _platform;
+
     HWND _hwnd;
     version (USE_OPENGL) {
         HGLRC _hGLRC; // opengl context
         HPALETTE _hPalette;
+        GLSupport _gl;
     }
     dstring _caption;
     Win32ColorDrawBuf _drawbuf;
@@ -167,6 +169,7 @@ class Win32Window : Window {
         Win32Window w32parent = cast(Win32Window)parent;
         HWND parenthwnd = w32parent ? w32parent._hwnd : null;
         _platform = platform;
+        _gl = new GLSupport();
         _caption = windowCaption;
         _flags = flags;
         uint ws = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
@@ -199,7 +202,9 @@ class Win32Window : Window {
                     _hPalette = setupPalette(hDC);
                     _hGLRC = wglCreateContext(hDC);
                     if (_hGLRC) {
+
                         wglMakeCurrent(hDC, _hGLRC);
+                        _glSupport = _gl;
 
                         if (!DERELICT_GL3_RELOADED) {
                             // run this code only once
@@ -208,7 +213,7 @@ class Win32Window : Window {
                                 import derelict.opengl3.gl3;
                                 DerelictGL3.reload();
                                 // successful
-                                if (initShaders()) {
+                                if (glSupport.initShaders()) {
                                     setOpenglEnabled();
                                     useOpengl = true;
                                 } else {
@@ -218,7 +223,7 @@ class Win32Window : Window {
                                 Log.e("Derelict exception", e);
                             }
                         } else {
-						    if (initShaders()) {
+						    if (glSupport.initShaders()) {
 							    setOpenglEnabled();
 							    useOpengl = true;
 						    } else {
@@ -252,6 +257,7 @@ class Win32Window : Window {
             //scope(exit) EndPaint(_hwnd, &ps);
             HDC hdc = GetDC(_hwnd);
             wglMakeCurrent(hdc, _hGLRC);
+            _glSupport = _gl;
             glDisable(GL_DEPTH_TEST);
             glViewport(0, 0, _dx, _dy);
 			float a = 1.0f;
@@ -288,7 +294,10 @@ class Win32Window : Window {
         version (USE_OPENGL) {
             import derelict.opengl3.wgl;
             if (_hGLRC) {
-			    uninitShaders();
+			    glSupport.uninitShaders();
+                delete _glSupport;
+                _glSupport = null;
+                _gl = null;
                 wglMakeCurrent (null, null) ;
                 wglDeleteContext(_hGLRC);
                 _hGLRC = null;
@@ -470,7 +479,7 @@ class Win32Window : Window {
     }
 
     void onPaint() {
-        Log.d("onPaint()");
+        debug(DebugRedraw) Log.d("onPaint()");
         long paintStart = currentTimeMillis;
         version (USE_OPENGL) {
             if (useOpengl && _hGLRC) {
@@ -482,7 +491,7 @@ class Win32Window : Window {
             paintUsingGDI();
         }
         long paintEnd = currentTimeMillis;
-        Log.d("WM_PAINT handling took ", paintEnd - paintStart, " ms");
+        debug(DebugRedraw) Log.d("WM_PAINT handling took ", paintEnd - paintStart, " ms");
     }
 
 	protected ButtonDetails _lbutton;
