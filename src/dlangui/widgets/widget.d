@@ -1061,14 +1061,19 @@ class Widget {
         int maxw = maxWidth;
         int minh = minHeight;
         int maxh = maxHeight;
-        if (dx < minw)
+        if (minw != SIZE_UNSPECIFIED && dx < minw)
             dx = minw;
-        if (dy < minh)
+        if (minh != SIZE_UNSPECIFIED && dy < minh)
             dy = minh;
         if (maxw != SIZE_UNSPECIFIED && dx > maxw)
             dx = maxw;
         if (maxh != SIZE_UNSPECIFIED && dy > maxh)
             dy = maxh;
+        // apply FILL_PARENT
+        //if (parentWidth != SIZE_UNSPECIFIED && layoutWidth == FILL_PARENT)
+        //    dx = parentWidth;
+        //if (parentHeight != SIZE_UNSPECIFIED && layoutHeight == FILL_PARENT)
+        //    dy = parentHeight;
         // apply max parent size constraint
         if (parentWidth != SIZE_UNSPECIFIED && dx > parentWidth)
             dx = parentWidth;

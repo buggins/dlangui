@@ -133,13 +133,6 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 		return null;
 	}
 
-    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
-    override void layout(Rect rc) {
-        super.layout(rc);
-        _fileList.autoFitColumnWidths();
-        _fileList.fillColumnWidth(1);
-    }
-
     protected bool upLevel() {
         return openDirectory(parentDir(_path), _path);
     }
@@ -310,11 +303,11 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 		layoutWidth(FILL_PARENT);
 		layoutWidth(FILL_PARENT);
         minWidth = 600;
-        minHeight = 400;
+        //minHeight = 400;
 
 		LinearLayout content = new HorizontalLayout("dlgcontent");
 
-		content.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).minWidth(400).minHeight(300);
+		content.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT); //.minWidth(400).minHeight(300);
 
 		leftPanel = new VerticalLayout("places");
         leftPanel.addChild(createRootsList());
@@ -386,6 +379,28 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _fileList.layoutHeight = FILL_PARENT;
 
 	}
+
+    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+    override void layout(Rect rc) {
+        super.layout(rc);
+        _fileList.autoFitColumnWidths();
+        _fileList.fillColumnWidth(1);
+    }
+
+
+    ///// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+    //override void measure(int parentWidth, int parentHeight) { 
+    //    super.measure(parentWidth, parentHeight);
+    //    for(int i = 0; i < childCount; i++) {
+    //        Widget w = child(i);
+    //        Log.d("id=", w.id, " measuredHeight=", w.measuredHeight );
+    //        for (int j = 0; j < w.childCount; j++) {
+    //            Widget w2 = w.child(j);
+    //            Log.d("    id=", w2.id, " measuredHeight=", w.measuredHeight );
+    //        }
+    //    }
+    //    Log.d("this id=", id, " measuredHeight=", measuredHeight);
+    //}
 
     override void onShow() {
         _fileList.setFocus();

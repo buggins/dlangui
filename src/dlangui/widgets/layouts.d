@@ -174,15 +174,20 @@ class LayoutItems {
                 contentSecondarySize = maxItem;
             else
                 contentSecondarySize = rc.width;
-            if (_layoutHeight == FILL_PARENT || totalSize > rc.height)
+            if (_layoutHeight == FILL_PARENT && totalSize < rc.height && resizableSize > 0) {
                 delta = rc.height - totalSize; // total space to add to fit
+            } else if (totalSize > rc.height) {
+                delta = rc.height - totalSize; // total space to reduce to fit
+            }
         } else {
             if (_layoutHeight == WRAP_CONTENT && maxItem < rc.height)
                 contentSecondarySize = maxItem;
             else
                 contentSecondarySize = rc.height;
-            if (_layoutWidth == FILL_PARENT || totalSize > rc.width)
+            if (_layoutWidth == FILL_PARENT && totalSize < rc.width && resizableSize > 0)
                 delta = rc.width - totalSize; // total space to add to fit
+            else if (totalSize > rc.width)
+                delta = rc.width - totalSize; // total space to reduce to fit
         }
 		// calculate resize options and scale
         bool needForceResize = false;
