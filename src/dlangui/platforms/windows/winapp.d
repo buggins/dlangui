@@ -169,7 +169,9 @@ class Win32Window : Window {
         Win32Window w32parent = cast(Win32Window)parent;
         HWND parenthwnd = w32parent ? w32parent._hwnd : null;
         _platform = platform;
-        _gl = new GLSupport();
+        version (USE_OPENGL) {
+            _gl = new GLSupport();
+        }
         _caption = windowCaption;
         _flags = flags;
         uint ws = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
@@ -295,7 +297,7 @@ class Win32Window : Window {
             import derelict.opengl3.wgl;
             if (_hGLRC) {
 			    glSupport.uninitShaders();
-                delete _glSupport;
+                destroy(_glSupport);
                 _glSupport = null;
                 _gl = null;
                 wglMakeCurrent (null, null) ;
@@ -960,12 +962,17 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             {
                 if (window !is null) {
                     WINDOWPOS * pos = cast(WINDOWPOS*)lParam;
+                    Log.d("WM_WINDOWPOSCHANGED: ", *pos);
                     GetClientRect(hwnd, &rect);
-                    int dx = rect.right - rect.left;
-                    int dy = rect.bottom - rect.top;
                     //window.onResize(pos.cx, pos.cy);
-                    window.onResize(dx, dy);
-                    InvalidateRect(hwnd, null, FALSE);
+                    //if (!(pos.flags & 0x8000)) { //SWP_NOACTIVATE)) {
+                    //if (pos.x > -30000) {
+                        int dx = rect.right - rect.left;
+                        int dy = rect.bottom - rect.top;
+                        window.onResize(dx, dy);
+                        InvalidateRect(hwnd, null, FALSE);
+                    //}
+                    //}
                 }
             }
             return 0;
