@@ -122,6 +122,10 @@ class TreeItem {
             p = p._parent;
         return cast(TreeItems)p;
     }
+    
+    void clear() {
+        _children.clear();
+    }
 
     @property TreeItem parent() { return _parent; }
     @property protected TreeItem parent(TreeItem p) { _parent = p; return this; }
@@ -196,6 +200,29 @@ class TreeItem {
             return this;
         return _parent.topParent;
     }
+
+
+    protected int _intParam;
+    protected Object _objectParam;
+
+    @property int intParam() {
+        return _intParam;
+    }
+
+    @property TreeItem intParam(int value) {
+        _intParam = value;
+        return this;
+    }
+
+    @property Object objectParam() {
+        return _objectParam;
+    }
+
+    @property TreeItem objectParam(Object value) {
+        _objectParam = value;
+        return this;
+    }
+
 
     /// returns true if item has at least one child
     @property bool hasChildren() { return childCount > 0; }
@@ -643,7 +670,7 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         super.layout(rc);
     }
 
-	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
 	override void measure(int parentWidth, int parentHeight) { 
         if (visibility == Visibility.Gone) {
             return;
