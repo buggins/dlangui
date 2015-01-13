@@ -49,13 +49,17 @@ immutable int SIZE_UNSPECIFIED = int.max;
 immutable uint TEXT_FLAGS_UNSPECIFIED = uint.max;
 /// use text flags from parent widget
 immutable uint TEXT_FLAGS_USE_PARENT = uint.max - 1;
-
 /// layout option, to occupy all available place
 immutable int FILL_PARENT = int.max - 1;
 /// layout option, for size based on content
 immutable int WRAP_CONTENT = int.max - 2;
 /// to take layout weight from parent
 immutable int WEIGHT_UNSPECIFIED = -1;
+
+/// returns true for WRAP_CONTENT, WRAP_CONTENT, SIZE_UNSPECIFIED
+bool isSpecialSize(int sz) {
+    return sz >= WRAP_CONTENT;
+}
 
 /// Align option bit constants
 enum Align : ubyte {

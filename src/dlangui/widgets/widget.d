@@ -1056,6 +1056,13 @@ class Widget {
         // summarize margins, padding, and content size
         int dx = m.left + m.right + p.left + p.right + contentWidth;
         int dy = m.top + m.bottom + p.top + p.bottom + contentHeight;
+        // check for fixed size set in layoutWidth, layoutHeight
+        int lh = layoutHeight;
+        int lw = layoutWidth;
+        if (!isSpecialSize(lh))
+            dy = lh;
+        if (!isSpecialSize(lw))
+            dx = lw;
         // apply min/max width and height constraints
         int minw = minWidth;
         int maxw = maxWidth;
