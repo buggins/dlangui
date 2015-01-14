@@ -73,8 +73,18 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
             onItemClickListener(this, index);
     }
 
+	/// change enabled state
+    override @property Widget enabled(bool flg) { 
+        super.enabled(flg);
+        _button.enabled = flg;
+        return this; 
+    }
+	/// return true if state has State.Enabled flag set
+    override @property bool enabled() { return super.enabled; }
+
     override bool onClick(Widget source) {
-        showPopup();
+        if (enabled)
+            showPopup();
         return true;
     }
 

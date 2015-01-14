@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android" >
   <item
-    android:drawable="btn_disabled"
+    android:drawable="@null"
     android:state_enabled="false"/>
   <item
     android:drawable="@null"
@@ -11,7 +11,7 @@
     android:state_pressed="true" />
   <item
     android:drawable="btn_hover"
-    android:state_hovered="true" />
+    android:state_hovered="true" android:state_enabled="true" />
   <item
     android:drawable="@null" />
 </selector>

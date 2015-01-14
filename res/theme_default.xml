@@ -190,6 +190,7 @@
         fontFamily="SansSerif"
         fontSize="16"
         />
+
     <style id="COMBO_BOX"
         backgroundImageId="btn_background"
         padding="2,2,2,2"
@@ -213,6 +214,7 @@
         backgroundImageId="btn_background_transparent"
         align="Center"
         />
+
     <style id="EDIT_BOX"
         backgroundImageId="editbox_background"
         padding="5,6,5,6"
