@@ -181,31 +181,16 @@
     <style id="LIST_ITEM"
         backgroundImageId="list_item_background"
         />
-    <style id="EDIT_LINE"
-        backgroundImageId="editbox_background"
-        padding="5,6,5,6"
-        margins="2,2,2,2"
-        minWidth="40"
-        fontFace="Arial"
-        fontFamily="SansSerif"
-        fontSize="16"
-        />
 
     <style id="COMBO_BOX"
         backgroundImageId="btn_background"
         padding="2,2,2,2"
         margins="2,2,2,2"
         minWidth="40"
-        fontFace="Arial"
-        fontFamily="SansSerif"
-        fontSize="16"
         />
     <style id="COMBO_BOX_BODY"
         padding="2,2,2,2"
         minWidth="40"
-        fontFace="Arial"
-        fontFamily="SansSerif"
-        fontSize="16"
         align="Left|VCenter"
 	focusRectColors="#000"
         />
@@ -215,17 +200,20 @@
         align="Center"
         />
 
+    <style id="EDIT_LINE"
+        backgroundImageId="editbox_background"
+        padding="4,4,4,4"
+        margins="2,2,2,2"
+        minWidth="40"
+        />
     <style id="EDIT_BOX"
         backgroundImageId="editbox_background"
-        padding="5,6,5,6"
+        padding="2,2,2,2"
         margins="2,2,2,2"
         minWidth="100"
         minHeight="60"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
-        fontFace="Courier New"
-        fontFamily="MonoSpace"
-        fontSize="16"
         />
     <style id="TREE_ITEM"
         padding="2,2,2,2"
