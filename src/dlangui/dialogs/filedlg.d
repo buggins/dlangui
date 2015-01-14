@@ -133,13 +133,6 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 		return null;
 	}
 
-    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
-    override void layout(Rect rc) {
-        super.layout(rc);
-        _fileList.autoFitColumnWidths();
-        _fileList.fillColumnWidth(1);
-    }
-
     protected bool upLevel() {
         return openDirectory(parentDir(_path), _path);
     }
@@ -234,12 +227,12 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
     protected ListWidget createRootsList() {
         ListWidget res = new ListWidget("ROOTS_LIST");
-        res.styleId = "EDIT_BOX";
+        res.styleId = STYLE_EDIT_BOX;
         WidgetListAdapter adapter = new WidgetListAdapter();
         foreach(ref RootEntry root; _roots) {
             ImageTextButton btn = new ImageTextButton(null, root.icon, root.label);
             btn.orientation = Orientation.Vertical;
-            btn.styleId = "TRANSPARENT_BUTTON_BACKGROUND";
+            btn.styleId = STYLE_TRANSPARENT_BUTTON_BACKGROUND;
             btn.focusable = false;
             adapter.widgets.add(btn);
         }
@@ -310,11 +303,11 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 		layoutWidth(FILL_PARENT);
 		layoutWidth(FILL_PARENT);
         minWidth = 600;
-        minHeight = 400;
+        //minHeight = 400;
 
 		LinearLayout content = new HorizontalLayout("dlgcontent");
 
-		content.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).minWidth(400).minHeight(300);
+		content.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT); //.minWidth(400).minHeight(300);
 
 		leftPanel = new VerticalLayout("places");
         leftPanel.addChild(createRootsList());
@@ -387,6 +380,28 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
 	}
 
+    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+    override void layout(Rect rc) {
+        super.layout(rc);
+        _fileList.autoFitColumnWidths();
+        _fileList.fillColumnWidth(1);
+    }
+
+
+    ///// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+    //override void measure(int parentWidth, int parentHeight) { 
+    //    super.measure(parentWidth, parentHeight);
+    //    for(int i = 0; i < childCount; i++) {
+    //        Widget w = child(i);
+    //        Log.d("id=", w.id, " measuredHeight=", w.measuredHeight );
+    //        for (int j = 0; j < w.childCount; j++) {
+    //            Widget w2 = w.child(j);
+    //            Log.d("    id=", w2.id, " measuredHeight=", w.measuredHeight );
+    //        }
+    //    }
+    //    Log.d("this id=", id, " measuredHeight=", measuredHeight);
+    //}
+
     override void onShow() {
         _fileList.setFocus();
     }
@@ -403,17 +418,17 @@ class FilePathPanelItem : HorizontalLayout {
     Listener!OnPathSelectionHandler onPathSelectionListener;
     this(string path) {
         super(null);
-		styleId = "LIST_ITEM";
+		styleId = STYLE_LIST_ITEM;
         _path = path;
         string fname = isRoot(path) ? path : baseName(path);
         _text = new TextWidget(null, toUTF32(fname));
-		_text.styleId = "BUTTON_TRANSPARENT";
+		_text.styleId = STYLE_BUTTON_TRANSPARENT;
         _text.clickable = true;
         _text.onClickListener = &onTextClick;
 		//_text.backgroundColor = 0xC0FFFF;
 		_text.state = State.Parent;
         _button = new ImageButton(null, "scrollbar_btn_right");
-		_button.styleId = "BUTTON_TRANSPARENT";
+		_button.styleId = STYLE_BUTTON_TRANSPARENT;
         _button.focusable = false;
         _button.onClickListener = &onButtonClick;
 		//_button.backgroundColor = 0xC0FFC0;
@@ -458,7 +473,7 @@ class FilePathPanelItem : HorizontalLayout {
 }
 
 /// Panel with buttons - path segments - for fast navigation to subdirs.
-class FilePathPanelButtons : WidgetGroup {
+class FilePathPanelButtons : WidgetGroupDefaultDrawing {
     protected string _path;
 	Listener!OnPathSelectionHandler onPathSelectionListener;
 	protected bool onPathSelected(string path) {
@@ -568,22 +583,6 @@ class FilePathPanelButtons : WidgetGroup {
 
     }
 
-    /// Draw widget at its position to buffer
-    override void onDraw(DrawBuf buf) {
-        if (visibility != Visibility.Visible)
-            return;
-        super.onDraw(buf);
-        Rect rc = _pos;
-        applyMargins(rc);
-        applyPadding(rc);
-		auto saver = ClipRectSaver(buf, rc);
-		for (int i = 0; i < _children.count; i++) {
-			Widget item = _children.get(i);
-			if (item.visibility != Visibility.Visible)
-				continue;
-			item.onDraw(buf);
-		}
-    }
 
 }
 

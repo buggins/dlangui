@@ -926,6 +926,13 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 		return true;
 	}
 
+    /// returns true if widget is focusable and visible and enabled
+    override @property bool canFocus() {
+        // allow to focus even if not enabled
+        return focusable && visible;
+    }
+
+
 	/// override to change popup menu items state
 	override bool isActionEnabled(const Action action) {
 		switch (action.id) {
@@ -1727,7 +1734,7 @@ class EditLine : EditWidgetBase {
         _content = new EditableContent(false);
 		_content.contentChangeListeners = this;
         wantTabs = false;
-        styleId = "EDIT_LINE";
+        styleId = STYLE_EDIT_LINE;
         text = initialContent;
     }
 
@@ -1905,7 +1912,7 @@ class EditBox : EditWidgetBase {
         super(ID, hscrollbarMode, vscrollbarMode);
         _content = new EditableContent(true); // multiline
 		_content.contentChangeListeners = this;
-        styleId = "EDIT_BOX";
+        styleId = STYLE_EDIT_BOX;
         text = initialContent;
     }
 

@@ -64,6 +64,7 @@ public import dlangui.widgets.grid;
 public import dlangui.widgets.tree;
 public import dlangui.widgets.combobox;
 public import dlangui.widgets.popup;
+public import dlangui.graphics.colors;
 public import dlangui.graphics.fonts;
 public import dlangui.graphics.drawbuf;
 public import dlangui.platforms.common.platform;

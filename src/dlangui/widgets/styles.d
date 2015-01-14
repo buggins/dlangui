@@ -25,14 +25,110 @@ private import std.string;
 private import std.algorithm;
 
 import dlangui.core.types;
+import dlangui.graphics.colors;
 import dlangui.graphics.fonts;
 import dlangui.graphics.drawbuf;
 import dlangui.graphics.resources;
 
+// Standard style constants
+// Themes should define all of these styles in order to support all controls
+/// standard style id for TextWidget
+immutable string STYLE_TEXT = "TEXT";
+/// standard style id for Button
+immutable string STYLE_BUTTON = "BUTTON";
+/// standard style id for Button label
+immutable string STYLE_BUTTON_LABEL = "BUTTON_LABEL";
+/// standard style id for Button image
+immutable string STYLE_BUTTON_IMAGE = "BUTTON_IMAGE";
+/// style id for transparent Button
+immutable string STYLE_BUTTON_TRANSPARENT = "BUTTON_TRANSPARENT";
+/// style id for Button w/o margins
+immutable string STYLE_BUTTON_NOMARGINS = "BUTTON_NOMARGINS";
+/// standard style id for CheckBox
+immutable string STYLE_CHECKBOX = "CHECKBOX";
+/// standard style id for CheckBox image
+immutable string STYLE_CHECKBOX_IMAGE = "CHECKBOX_IMAGE";
+/// standard style id for CheckBox label
+immutable string STYLE_CHECKBOX_LABEL = "CHECKBOX_LABEL";
+/// standard style id for RadioButton
+immutable string STYLE_RADIOBUTTON = "RADIOBUTTON";
+/// standard style id for RadioButton image
+immutable string STYLE_RADIOBUTTON_IMAGE = "RADIOBUTTON_IMAGE";
+/// standard style id for RadioButton label
+immutable string STYLE_RADIOBUTTON_LABEL = "RADIOBUTTON_LABEL";
+/// standard style id for HSpacer
+immutable string STYLE_HSPACER = "HSPACER";
+/// standard style id for VSpacer
+immutable string STYLE_VSPACER = "VSPACER";
+/// standard style id for ScrollBar
+immutable string STYLE_SCROLLBAR = "SCROLLBAR";
+/// standard style id for ScrollBar button
+immutable string STYLE_SCROLLBAR_BUTTON = "SCROLLBAR_BUTTON";
+/// standard style id for ScrollBar page control
+immutable string STYLE_PAGE_SCROLL = "PAGE_SCROLL";
+/// standard style id for Slider
+immutable string STYLE_SLIDER = "SLIDER";
+/// standard style id for TabWidget
+immutable string STYLE_TAB_WIDGET = "TAB_WIDGET";
+/// standard style id for Tab with Up alignment
+immutable string STYLE_TAB_UP = "TAB_UP";
+/// standard style id for button of Tab with Up alignment
+immutable string STYLE_TAB_UP_BUTTON = "TAB_UP_BUTTON";
+/// standard style id for button of Tab with Up alignment
+immutable string STYLE_TAB_UP_BUTTON_TEXT = "TAB_UP_BUTTON_TEXT";
+/// standard style id for TabHost
+immutable string STYLE_TAB_HOST = "TAB_HOST";
+/// standard style id for PopupMenu
+immutable string STYLE_POPUP_MENU = "POPUP_MENU";
+/// standard style id for menu item
+immutable string STYLE_MENU_ITEM = "MENU_ITEM";
+/// standard style id for menu item label
+immutable string STYLE_MENU_LABEL = "MENU_LABEL";
+/// standard style id for menu item icon
+immutable string STYLE_MENU_ICON = "MENU_ICON";
+/// standard style id for menu item accelerators label
+immutable string STYLE_MENU_ACCEL = "MENU_ACCEL";
+/// standard style id for main menu item
+immutable string STYLE_MAIN_MENU_ITEM = "MAIN_MENU_ITEM";
+/// standard style id for main menu item label
+immutable string STYLE_MAIN_MENU_LABEL = "MAIN_MENU_LABEL";
+/// standard style id for main menu
+immutable string STYLE_MAIN_MENU = "MAIN_MENU";
+/// standard style id for list items
+immutable string STYLE_LIST_ITEM = "LIST_ITEM";
+/// standard style id for EditLine
+immutable string STYLE_EDIT_LINE = "EDIT_LINE";
+/// standard style id for EditBox
+immutable string STYLE_EDIT_BOX = "EDIT_BOX";
+/// standard style id for background similar to transparent button
+immutable string STYLE_TRANSPARENT_BUTTON_BACKGROUND = "TRANSPARENT_BUTTON_BACKGROUND";
+/// standard style id for tree item
+immutable string STYLE_TREE_ITEM = "TREE_ITEM";
+/// standard style id for tree item label
+immutable string STYLE_TREE_ITEM_LABEL = "TREE_ITEM_LABEL";
+/// standard style id for tree item icon
+immutable string STYLE_TREE_ITEM_ICON = "TREE_ITEM_ICON";
+/// standard style id for tree item expand icon
+immutable string STYLE_TREE_ITEM_EXPAND_ICON = "TREE_ITEM_EXPAND_ICON";
+/// standard style id for combo box
+immutable string STYLE_COMBO_BOX = "COMBO_BOX";
+/// standard style id for combo box button
+immutable string STYLE_COMBO_BOX_BUTTON = "COMBO_BOX_BUTTON";
+/// standard style id for combo box body (current item)
+immutable string STYLE_COMBO_BOX_BODY = "COMBO_BOX_BODY";
+
+// Layout size constants
+/// layout option, to occupy all available place
+immutable int FILL_PARENT = int.max - 1;
+/// layout option, for size based on content
+immutable int WRAP_CONTENT = int.max - 2;
+/// use as widget.layout() param to avoid applying of parent size
+immutable int SIZE_UNSPECIFIED = int.max;
+
+// Other style constants
+
+/// unspecified align - to take parent's value instead
 immutable ubyte ALIGN_UNSPECIFIED = 0;
-immutable uint COLOR_UNSPECIFIED = 0xFFDEADFF;
-/// transparent color constant
-immutable uint COLOR_TRANSPARENT = 0xFFFFFFFF;
 /// unspecified font size constant - to take parent style property value
 immutable ushort FONT_SIZE_UNSPECIFIED = 0xFFFF;
 /// unspecified font weight constant - to take parent style property value
@@ -43,19 +139,18 @@ immutable ubyte FONT_STYLE_UNSPECIFIED = 0xFF;
 immutable ubyte FONT_STYLE_NORMAL = 0x00;
 /// italic font style constant
 immutable ubyte FONT_STYLE_ITALIC = 0x01;
-/// use as widget.layout() param to avoid applying of parent size
-immutable int SIZE_UNSPECIFIED = int.max;
 /// use text flags from parent style
 immutable uint TEXT_FLAGS_UNSPECIFIED = uint.max;
 /// use text flags from parent widget
 immutable uint TEXT_FLAGS_USE_PARENT = uint.max - 1;
-
-/// layout option, to occupy all available place
-immutable int FILL_PARENT = int.max - 1;
-/// layout option, for size based on content
-immutable int WRAP_CONTENT = int.max - 2;
 /// to take layout weight from parent
 immutable int WEIGHT_UNSPECIFIED = -1;
+
+/// returns true for WRAP_CONTENT, WRAP_CONTENT, SIZE_UNSPECIFIED
+bool isSpecialSize(int sz) {
+    // don't forget to update if more special constants added
+    return sz >= WRAP_CONTENT;
+}
 
 /// Align option bit constants
 enum Align : ubyte {
@@ -91,32 +186,6 @@ enum TextFlag : uint {
 	Underline = 8
 }
 
-/// custom drawable attribute container for styles
-class DrawableAttribute {
-    protected string _id;
-    protected string _drawableId;
-    protected DrawableRef _drawable;
-    protected bool _initialized;
-    this(string id, string drawableId) {
-        _id = id;
-        _drawableId = drawableId;
-    }
-    @property string id() const { return _id; }
-    @property string drawableId() const { return _drawableId; }
-    @property void drawableId(string newDrawable) { _drawableId = newDrawable; clear(); }
-    @property ref DrawableRef drawable() const {
-        if (!_drawable.isNull)
-            return (cast(DrawableAttribute)this)._drawable;
-        (cast(DrawableAttribute)this)._drawable = drawableCache.get(_id);
-        (cast(DrawableAttribute)this)._initialized = true;
-        return (cast(DrawableAttribute)this)._drawable;
-    }
-    void clear() {
-        _drawable.clear();
-        _initialized = false;
-    }
-}
-
 /// style properties
 class Style {
 	protected string _id;
@@ -146,10 +215,13 @@ class Style {
     protected int _layoutHeight = SIZE_UNSPECIFIED;
     protected int _layoutWeight = WEIGHT_UNSPECIFIED;
 
+    protected uint[] _focusRectColors;
+
 	protected Style[] _substates;
 	protected Style[] _children;
 
     protected DrawableAttribute[string] _customDrawables;
+    protected uint[string] _customColors;
 
 	protected FontRef _font;
 	protected DrawableRef _backgroundDrawable;
@@ -223,6 +295,19 @@ class Style {
             _customDrawables[id].drawableId = resourceId;
         else
             _customDrawables[id] = new DrawableAttribute(id, resourceId);
+        return this;
+    }
+
+    /// get custom color attribute
+    uint customColor(string id) {
+        if (id in _customColors)
+            return _customColors[id];
+        return parentStyle.customColor(id);
+    }
+
+    /// sets custom color attribute for style
+    Style setCustomColor(string id, uint color) {
+        _customColors[id] = color;
         return this;
     }
 
@@ -532,6 +617,22 @@ class Style {
 		return this;
 	}
 
+    /// returns colors to draw focus rectangle (one for solid, two for vertical gradient) or null if no focus rect should be drawn for style
+    @property const(uint[]) focusRectColors() const {
+        if (_focusRectColors) {
+            if (_focusRectColors.length == 1 && _focusRectColors[0] == COLOR_UNSPECIFIED)
+                return null;
+            return cast(const)_focusRectColors;
+        }
+        return parentStyle.focusRectColors;
+    }
+
+    /// sets colors to draw focus rectangle or null if no focus rect should be drawn for style
+    @property Style focusRectColors(uint[] colors) {
+        _focusRectColors = colors;
+        return this;
+    }
+
 	Style setPadding(int left, int top, int right, int bottom) {
 		_padding.left = left;
 		_padding.top = top;
@@ -616,7 +717,7 @@ class Theme : Style {
 	this(string id) {
 		super(this, id);
 		_parentStyle = null;
-		_backgroundColor = 0xFFFFFFFF; // transparent
+		_backgroundColor = COLOR_TRANSPARENT; // transparent
 		_textColor = 0x000000; // black
 		_align = Align.TopLeft;
 		_fontSize = 14; // TODO: from settings or screen properties / DPI
@@ -677,15 +778,29 @@ class Theme : Style {
 	}
 
     private DrawableRef _emptyDrawable;
-    @property override ref DrawableRef customDrawable(string id) const {
+    override ref DrawableRef customDrawable(string id) const {
         if (id in _customDrawables)
             return _customDrawables[id].drawable;
         return (cast(Theme)this)._emptyDrawable;
     }
 
-    @property override string customDrawableId(string id) const {
+    override string customDrawableId(string id) const {
         if (id in _customDrawables)
             return _customDrawables[id].drawableId;
+        return null;
+    }
+
+    /// get custom color attribute - transparent by default
+    override uint customColor(string id) {
+        if (id in _customColors)
+            return _customColors[id];
+        return COLOR_TRANSPARENT;
+    }
+
+    /// returns colors to draw focus rectangle or null if no focus rect should be drawn for style
+    @property override const(uint[]) focusRectColors() const {
+        if (_focusRectColors)
+            return _focusRectColors;
         return null;
     }
 
@@ -745,14 +860,14 @@ Theme createDefaultTheme() {
     }
     //res.fontFace = "Arial Narrow";
     res.fontSize = 15; // TODO: choose based on DPI
-	Style button = res.createSubstyle("BUTTON").backgroundImageId("btn_default_small").alignment(Align.Center).setMargins(5,5,5,5);
-    res.createSubstyle("BUTTON_TRANSPARENT").backgroundImageId("btn_default_small_transparent").alignment(Align.Center);
-    res.createSubstyle("BUTTON_LABEL").layoutWidth(FILL_PARENT).alignment(Align.Left|Align.VCenter);
-    res.createSubstyle("BUTTON_ICON").alignment(Align.Center);
-    res.createSubstyle("TEXT").setMargins(2,2,2,2).setPadding(1,1,1,1);
-    res.createSubstyle("HSPACER").layoutWidth(FILL_PARENT).minWidth(5).layoutWeight(100);
-    res.createSubstyle("VSPACER").layoutHeight(FILL_PARENT).minHeight(5).layoutWeight(100);
-	res.createSubstyle("BUTTON_NOMARGINS").backgroundImageId("btn_default_small").alignment(Align.Center); // .setMargins(5,5,5,5)
+	Style button = res.createSubstyle(STYLE_BUTTON).backgroundImageId("btn_background").alignment(Align.Center).setMargins(5,5,5,5);
+    res.createSubstyle(STYLE_BUTTON_TRANSPARENT).backgroundImageId("btn_background_transparent").alignment(Align.Center);
+    res.createSubstyle(STYLE_BUTTON_LABEL).layoutWidth(FILL_PARENT).alignment(Align.Left|Align.VCenter);
+    res.createSubstyle(STYLE_BUTTON_IMAGE).alignment(Align.Center);
+    res.createSubstyle(STYLE_TEXT).setMargins(2,2,2,2).setPadding(1,1,1,1);
+    res.createSubstyle(STYLE_HSPACER).layoutWidth(FILL_PARENT).minWidth(5).layoutWeight(100);
+    res.createSubstyle(STYLE_VSPACER).layoutHeight(FILL_PARENT).minHeight(5).layoutWeight(100);
+    res.createSubstyle(STYLE_BUTTON_NOMARGINS).backgroundImageId("btn_background").alignment(Align.Center); // .setMargins(5,5,5,5)
 	//button.createState(State.Enabled | State.Focused, State.Focused).backgroundImageId("btn_default_small_normal_disable_focused");
     //button.createState(State.Enabled, 0).backgroundImageId("btn_default_small_normal_disable");
     //button.createState(State.Pressed, State.Pressed).backgroundImageId("btn_default_small_pressed");
@@ -765,67 +880,67 @@ Theme createDefaultTheme() {
     res.setCustomDrawable(ATTR_SCROLLBAR_INDICATOR_VERTICAL, "scrollbar_indicator_vertical");
     res.setCustomDrawable(ATTR_SCROLLBAR_INDICATOR_HORIZONTAL, "scrollbar_indicator_horizontal");
 
-    Style scrollbar = res.createSubstyle("SCROLLBAR");
+    Style scrollbar = res.createSubstyle(STYLE_SCROLLBAR);
     scrollbar.backgroundColor(0xC0808080);
-    Style scrollbarButton = button.createSubstyle("SCROLLBAR_BUTTON");
-    Style scrollbarSlider = res.createSubstyle("SLIDER");
-    Style scrollbarPage = res.createSubstyle("PAGE_SCROLL").backgroundColor(0xFFFFFFFF);
+    Style scrollbarButton = button.createSubstyle(STYLE_SCROLLBAR_BUTTON);
+    Style scrollbarSlider = res.createSubstyle(STYLE_SLIDER);
+    Style scrollbarPage = res.createSubstyle(STYLE_PAGE_SCROLL).backgroundColor(COLOR_TRANSPARENT);
     scrollbarPage.createState(State.Pressed, State.Pressed).backgroundColor(0xC0404080);
     scrollbarPage.createState(State.Hovered, State.Hovered).backgroundColor(0xF0404080);
 
-    Style tabUp = res.createSubstyle("TAB_UP");
+    Style tabUp = res.createSubstyle(STYLE_TAB_UP);
     tabUp.backgroundImageId("tab_up_background");
     tabUp.layoutWidth(FILL_PARENT);
     tabUp.createState(State.Selected, State.Selected).backgroundImageId("tab_up_backgrond_selected");
-    Style tabUpButtonText = res.createSubstyle("TAB_UP_BUTTON_TEXT");
+    Style tabUpButtonText = res.createSubstyle(STYLE_TAB_UP_BUTTON_TEXT);
     tabUpButtonText.textColor(0x000000).fontSize(12).alignment(Align.Center);
     tabUpButtonText.createState(State.Selected, State.Selected).textColor(0x000000);
     tabUpButtonText.createState(State.Selected|State.Focused, State.Selected|State.Focused).textColor(0x000000);
     tabUpButtonText.createState(State.Focused, State.Focused).textColor(0x000000);
     tabUpButtonText.createState(State.Hovered, State.Hovered).textColor(0xFFE0E0);
-    Style tabUpButton = res.createSubstyle("TAB_UP_BUTTON");
+    Style tabUpButton = res.createSubstyle(STYLE_TAB_UP_BUTTON);
     tabUpButton.backgroundImageId("tab_btn_up");
     //tabUpButton.backgroundImageId("tab_btn_up_normal");
     //tabUpButton.createState(State.Selected, State.Selected).backgroundImageId("tab_btn_up_selected");
     //tabUpButton.createState(State.Selected|State.Focused, State.Selected|State.Focused).backgroundImageId("tab_btn_up_focused_selected");
     //tabUpButton.createState(State.Focused, State.Focused).backgroundImageId("tab_btn_up_focused");
     //tabUpButton.createState(State.Hovered, State.Hovered).backgroundImageId("tab_btn_up_hover");
-    Style tabHost = res.createSubstyle("TAB_HOST");
+    Style tabHost = res.createSubstyle(STYLE_TAB_HOST);
     tabHost.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
     tabHost.backgroundColor(0xF0F0F0);
-    Style tabWidget = res.createSubstyle("TAB_WIDGET");
+    Style tabWidget = res.createSubstyle(STYLE_TAB_WIDGET);
 	tabWidget.setPadding(3,3,3,3).backgroundColor(0xEEEEEE);
     //tabWidget.backgroundImageId("frame_blue");
 	//res.dumpStats();
 
-    Style mainMenu = res.createSubstyle("MAIN_MENU").backgroundColor(0xEFEFF2).layoutWidth(FILL_PARENT);
-	Style mainMenuItem = res.createSubstyle("MAIN_MENU_ITEM").setPadding(4,2,4,2).backgroundImageId("main_menu_item_background").textFlags(TEXT_FLAGS_USE_PARENT);
-    Style menuItem = res.createSubstyle("MENU_ITEM").setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
+    Style mainMenu = res.createSubstyle(STYLE_MAIN_MENU).backgroundColor(0xEFEFF2).layoutWidth(FILL_PARENT);
+	Style mainMenuItem = res.createSubstyle(STYLE_MAIN_MENU_ITEM).setPadding(4,2,4,2).backgroundImageId("main_menu_item_background").textFlags(TEXT_FLAGS_USE_PARENT);
+    Style menuItem = res.createSubstyle(STYLE_MENU_ITEM).setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
     menuItem.createState(State.Focused, State.Focused).backgroundColor(0x40C0C000);
     menuItem.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
     menuItem.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
     menuItem.createState(State.Hovered, State.Hovered).backgroundColor(0xC0FFFF00);
-	res.createSubstyle("MENU_ICON").setMargins(2,2,2,2).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).alpha(0xA0);
-	res.createSubstyle("MENU_LABEL").setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TextFlag.UnderlineHotKeys).createState(State.Enabled,0).textColor(0x80404040);
-	res.createSubstyle("MAIN_MENU_LABEL").setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TEXT_FLAGS_USE_PARENT).createState(State.Enabled,0).textColor(0x80404040);
-	res.createSubstyle("MENU_ACCEL").setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).textColor(0x80404040);
+	res.createSubstyle(STYLE_MENU_ICON).setMargins(2,2,2,2).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).alpha(0xA0);
+	res.createSubstyle(STYLE_MENU_LABEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TextFlag.UnderlineHotKeys).createState(State.Enabled,0).textColor(0x80404040);
+	res.createSubstyle(STYLE_MAIN_MENU_LABEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TEXT_FLAGS_USE_PARENT).createState(State.Enabled,0).textColor(0x80404040);
+	res.createSubstyle(STYLE_MENU_ACCEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).textColor(0x80404040);
 
-    Style transparentButtonBackground = res.createSubstyle("TRANSPARENT_BUTTON_BACKGROUND").backgroundImageId("transparent_button_background").setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
+    Style transparentButtonBackground = res.createSubstyle(STYLE_TRANSPARENT_BUTTON_BACKGROUND).backgroundImageId("transparent_button_background").setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
     //transparentButtonBackground.createState(State.Focused, State.Focused).backgroundColor(0xC0C0C000);
     //transparentButtonBackground.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
     //transparentButtonBackground.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
     //transparentButtonBackground.createState(State.Hovered, State.Hovered).backgroundColor(0xD0FFFF00);
 
-    Style poopupMenu = res.createSubstyle("POPUP_MENU").backgroundImageId("popup_menu_background_normal");
+    Style poopupMenu = res.createSubstyle(STYLE_POPUP_MENU).backgroundImageId("popup_menu_background_normal");
 
-    Style listItem = res.createSubstyle("LIST_ITEM").backgroundImageId("list_item_background");
+    Style listItem = res.createSubstyle(STYLE_LIST_ITEM).backgroundImageId("list_item_background");
     //listItem.createState(State.Selected, State.Selected).backgroundColor(0xC04040FF).textColor(0x000000);
     //listItem.createState(State.Enabled, 0).textColor(0x80000000); // half transparent text for disabled item
 
-    Style editLine = res.createSubstyle("EDIT_LINE").backgroundImageId("editbox_background")
+    Style editLine = res.createSubstyle(STYLE_EDIT_LINE).backgroundImageId("editbox_background")
         .setPadding(5,6,5,6).setMargins(2,2,2,2).minWidth(40)
         .fontFace("Arial").fontFamily(FontFamily.SansSerif).fontSize(16);
-    Style editBox = res.createSubstyle("EDIT_BOX").backgroundImageId("editbox_background")
+    Style editBox = res.createSubstyle(STYLE_EDIT_BOX).backgroundImageId("editbox_background")
         .setPadding(5,6,5,6).setMargins(2,2,2,2).minWidth(100).minHeight(60).layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT)
         .fontFace("Courier New").fontFamily(FontFamily.MonoSpace).fontSize(16);
 
@@ -856,6 +971,25 @@ Rect decodeRect(string s) {
 		return Rect(values[0], values[1], values[2], values[3]);
 	Log.e("Invalid rect attribute value ", s);
 	return Rect(0,0,0,0);
+}
+
+private import std.array : split;
+
+/// Decode color list attribute, e.g.: "#84A, #99FFFF" -> [0x8844aa, 0x99ffff]
+uint[] decodeFocusRectColors(string s) {
+    if (s.equal("@null"))
+        return [COLOR_UNSPECIFIED];
+    string[] colors = split(s, ",");
+    if (colors.length < 1)
+        return null;
+    uint[] res = new uint[colors.length];
+    for (int i = 0; i < colors.length; i++) {
+        uint cl = decodeHexColor(colors[i], COLOR_UNSPECIFIED);
+        if (cl == COLOR_UNSPECIFIED)
+            return null;
+        res[i] = cl;
+    }
+    return res;
 }
 
 /// parses string like "Left|VCenter" to bit set of Align flags
@@ -983,6 +1117,8 @@ bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
 		style.alpha = decodeDimension(elem.tag.attr["alpha"]);
 	if ("textFlags" in elem.tag.attr)
 		style.textFlags = decodeTextFlags(elem.tag.attr["textFlags"]);
+	if ("focusRectColors" in elem.tag.attr)
+		style.focusRectColors = decodeFocusRectColors(elem.tag.attr["focusRectColors"]);
 	foreach(item; elem.elements) {
 		if (allowStates && item.tag.name.equal("state")) {
 			uint stateMask = 0;
@@ -998,6 +1134,13 @@ bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
 			string drawablevalue = attrValue(item, "value");
 			if (drawableid)
 				style.setCustomDrawable(drawableid, drawablevalue);
+		} else if (item.tag.name.equal("color")) {
+			// <color id="buttons_panel_color" value="#303080"/>
+			string colorid = attrValue(item, "id");
+			string colorvalue = attrValue(item, "value");
+            uint color = decodeHexColor(colorvalue, COLOR_TRANSPARENT);
+			if (colorid)
+				style.setCustomColor(colorid, color);
 		}
 	}
 	return true;
@@ -1011,7 +1154,7 @@ bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
  * <?xml version="1.0" encoding="utf-8"?>
  * <theme id="theme_custom" parent="theme_default">
  *   	<style id="BUTTON" 
- * 			backgroundImageId="btn_default_small"
+ * 			backgroundImageId="btn_background"
  * 	 	>
  *   	</style>
  * </theme>
@@ -1091,6 +1234,33 @@ Theme loadTheme(string resourceId) {
 	destroy(res);
 	return null;
 }
+
+/// custom drawable attribute container for styles
+class DrawableAttribute {
+    protected string _id;
+    protected string _drawableId;
+    protected DrawableRef _drawable;
+    protected bool _initialized;
+    this(string id, string drawableId) {
+        _id = id;
+        _drawableId = drawableId;
+    }
+    @property string id() const { return _id; }
+    @property string drawableId() const { return _drawableId; }
+    @property void drawableId(string newDrawable) { _drawableId = newDrawable; clear(); }
+    @property ref DrawableRef drawable() const {
+        if (!_drawable.isNull)
+            return (cast(DrawableAttribute)this)._drawable;
+        (cast(DrawableAttribute)this)._drawable = drawableCache.get(_id);
+        (cast(DrawableAttribute)this)._initialized = true;
+        return (cast(DrawableAttribute)this)._drawable;
+    }
+    void clear() {
+        _drawable.clear();
+        _initialized = false;
+    }
+}
+
 
 shared static ~this() {
 	currentTheme = null;

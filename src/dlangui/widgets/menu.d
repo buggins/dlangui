@@ -206,7 +206,7 @@ class MenuItem {
 }
 
 /// widget to draw menu item
-class MenuItemWidget : WidgetGroup {
+class MenuItemWidget : WidgetGroupDefaultDrawing {
 	protected bool _mainMenu;
     protected MenuItem _item;
 	protected ImageWidget _icon;
@@ -298,29 +298,11 @@ class MenuItemWidget : WidgetGroup {
 			resetState(State.Checked);
 	}
 
-	/// Draw widget at its position to buffer
-	override void onDraw(DrawBuf buf) {
-		if (visibility != Visibility.Visible)
-			return;
-		super.onDraw(buf);
-		Rect rc = _pos;
-		applyMargins(rc);
-		applyPadding(rc);
-		updateState();
-		auto saver = ClipRectSaver(buf, rc, alpha);
-		for (int i = 0; i < _children.count; i++) {
-			Widget item = _children.get(i);
-			if (item.visibility != Visibility.Visible)
-				continue;
-			item.onDraw(buf);
-		}
-	}
-
 	this(MenuItem item, bool mainMenu) {
         id="menuitem";
 		_mainMenu = mainMenu;
         _item = item;
-        styleId = "MENU_ITEM";
+        styleId = STYLE_MENU_ITEM;
 		updateState();
 		string iconId = _item.action.iconId;
 		if (_item.type == MenuItemType.Check)
@@ -330,7 +312,7 @@ class MenuItemWidget : WidgetGroup {
 		// icon
 		if (_item.action && iconId.length) {
 			_icon = new ImageWidget("MENU_ICON", iconId);
-			_icon.styleId = "MENU_ICON";
+			_icon.styleId = STYLE_MENU_ICON;
 			_icon.state = State.Parent;
 			addChild(_icon);
 		}
@@ -352,7 +334,7 @@ class MenuItemWidget : WidgetGroup {
         }
 		if (acc !is null) {
 			_accel = new TextWidget("MENU_ACCEL");
-			_accel.styleId = "MENU_ACCEL";
+			_accel.styleId = STYLE_MENU_ACCEL;
 			_accel.text = acc;
 			_accel.state = State.Parent;
 			if (_item.isSubmenu && !mainMenu)
@@ -382,13 +364,13 @@ class MenuWidgetBase : ListWidget {
         _item = item;
 		this.orientation = orientation;
         id = "popup_menu";
-        styleId = "POPUP_MENU";
+        styleId = STYLE_POPUP_MENU;
         WidgetListAdapter adapter = new WidgetListAdapter();
         for (int i=0; i < _item.subitemCount; i++) {
             MenuItem subitem = _item.subitem(i);
             MenuItemWidget widget = new MenuItemWidget(subitem, orientation == Orientation.Horizontal);
 			if (orientation == Orientation.Horizontal)
-				widget.styleId = "MAIN_MENU_ITEM";
+				widget.styleId = STYLE_MAIN_MENU_ITEM;
 			widget.parent = this;
             adapter.widgets.add(widget);
         }
@@ -650,7 +632,7 @@ class MainMenu : MenuWidgetBase {
     this(MenuItem item) {
 		super(null, item, Orientation.Horizontal);
         id = "MAIN_MENU";
-        styleId = "MAIN_MENU";
+        styleId = STYLE_MAIN_MENU;
 		_clickOnButtonDown = true;
     }
 
@@ -799,7 +781,7 @@ class PopupMenu : MenuWidgetBase {
     this(MenuItem item, MenuWidgetBase parentMenu = null) {
 		super(parentMenu, item, Orientation.Vertical);
         id = "POPUP_MENU";
-        styleId = "POPUP_MENU";
+        styleId = STYLE_POPUP_MENU;
 		selectOnHover = true;
     }
 }

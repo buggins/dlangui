@@ -39,6 +39,7 @@ version (USE_DLIBIMAGE) {
 
 import dlangui.core.logger;
 import dlangui.core.types;
+import dlangui.graphics.colors;
 import dlangui.graphics.drawbuf;
 import std.stream;
 import std.conv : to;

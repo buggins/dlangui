@@ -38,6 +38,7 @@ module dlangui.widgets.widget;
 public import dlangui.core.types;
 public import dlangui.core.events;
 public import dlangui.core.i18n;
+public import dlangui.core.collections;
 public import dlangui.widgets.styles;
 
 public import dlangui.graphics.drawbuf;
@@ -315,8 +316,9 @@ class Widget {
         requestLayout();
         return this; 
     }
+    immutable static int FOCUS_RECT_PADDING = 2;
     /// get padding (between background bounds and content of widget)
-    @property Rect padding() const { 
+    @property Rect padding() const {
 		// get max padding from style padding and background drawable padding
 		Rect p = style.padding; 
 		DrawableRef d = backgroundDrawable;
@@ -331,6 +333,10 @@ class Widget {
 			if (p.bottom < dp.bottom)
 				p.bottom = dp.bottom;
 		}
+        if ((focusable || ((state & State.Parent) && parent.focusable)) && focusRectColors) {
+            // add two pixels to padding when focus rect is required - one pixel for focus rect, one for additional space
+            p.offset(FOCUS_RECT_PADDING, FOCUS_RECT_PADDING);
+        }
 		return p;
 	}
     /// set padding for widget - override one from style
@@ -358,7 +364,12 @@ class Widget {
 		ownStyle.backgroundImageId = imageId;
 		return this;
 	}
-	
+
+    /// returns colors to draw focus rectangle (one for solid, two for vertical gradient) or null if no focus rect should be drawn for style
+    @property const(uint[]) focusRectColors() const {
+        return style.focusRectColors;
+    }
+
 	/// background drawable
 	@property DrawableRef backgroundDrawable() const {
 		return stateStyle.backgroundDrawable;
@@ -588,10 +599,10 @@ class Widget {
 
     protected bool _focusable;
     /// whether widget can be focused
-    @property bool focusable() { return _focusable; }
+    @property bool focusable() const { return _focusable; }
     @property Widget focusable(bool flg) { _focusable = flg; return this; }
 
-    @property bool focused() {
+    @property bool focused() const {
         return (window !is null && window.focusedWidget is this && (state & State.Focused));
     }
 
@@ -694,7 +705,7 @@ class Widget {
         applyPadding(rc);
         if (!rc.intersects(clipRect))
             return; // out of clip rectangle
-        if (focusable) {
+        if (canFocus) {
             TabOrderInfo item = new TabOrderInfo(this, rc);
             results ~= item;
             return;
@@ -839,9 +850,9 @@ class Widget {
         return parent.visible;
     }
 
-    /// returns true if widget is focusable and visible
+    /// returns true if widget is focusable and visible and enabled
     @property bool canFocus() {
-        return focusable && visible;
+        return focusable && visible && enabled;
     }
 
     /// sets focus to this widget or suitable focusable child, returns previously focused widget
@@ -1056,19 +1067,31 @@ class Widget {
         // summarize margins, padding, and content size
         int dx = m.left + m.right + p.left + p.right + contentWidth;
         int dy = m.top + m.bottom + p.top + p.bottom + contentHeight;
+        // check for fixed size set in layoutWidth, layoutHeight
+        int lh = layoutHeight;
+        int lw = layoutWidth;
+        if (!isSpecialSize(lh))
+            dy = lh;
+        if (!isSpecialSize(lw))
+            dx = lw;
         // apply min/max width and height constraints
         int minw = minWidth;
         int maxw = maxWidth;
         int minh = minHeight;
         int maxh = maxHeight;
-        if (dx < minw)
+        if (minw != SIZE_UNSPECIFIED && dx < minw)
             dx = minw;
-        if (dy < minh)
+        if (minh != SIZE_UNSPECIFIED && dy < minh)
             dy = minh;
         if (maxw != SIZE_UNSPECIFIED && dx > maxw)
             dx = maxw;
         if (maxh != SIZE_UNSPECIFIED && dy > maxh)
             dy = maxh;
+        // apply FILL_PARENT
+        //if (parentWidth != SIZE_UNSPECIFIED && layoutWidth == FILL_PARENT)
+        //    dx = parentWidth;
+        //if (parentHeight != SIZE_UNSPECIFIED && layoutHeight == FILL_PARENT)
+        //    dy = parentHeight;
         // apply max parent size constraint
         if (parentWidth != SIZE_UNSPECIFIED && dx > parentWidth)
             dx = parentWidth;
@@ -1095,6 +1118,14 @@ class Widget {
         _needLayout = false;
     }
 
+    /// draws focus rectangle, if enabled in styles
+    void drawFocusRect(DrawBuf buf, Rect rc) {
+        const uint[] colors = focusRectColors;
+        if (colors) {
+            buf.drawFocusRect(rc, colors);
+        }
+    }
+
     /// Draw widget at its position to buffer
     void onDraw(DrawBuf buf) {
         if (visibility != Visibility.Visible)
@@ -1107,6 +1138,10 @@ class Widget {
 	        bg.drawTo(buf, rc, state);
 		}
 	    applyPadding(rc);
+        if (state & State.Focused) {
+            rc.expand(FOCUS_RECT_PADDING, FOCUS_RECT_PADDING);
+            drawFocusRect(buf, rc);
+        }
         _needDraw = false;
     }
 
@@ -1229,15 +1264,15 @@ class Widget {
     }
 
     /// returns parent widget, null for top level widget
-    @property Widget parent() { return _parent; }
+    @property Widget parent() const { return cast(Widget)_parent; }
     /// sets parent for widget
     @property Widget parent(Widget parent) { _parent = parent; return this; }
     /// returns window (if widget or its parent is attached to window)
-    @property Window window() {
-        Widget p = this;
+    @property Window window() const {
+        Widget p = cast(Widget)this;
         while (p !is null) {
             if (p._window !is null)
-                return p._window;
+                return cast(Window)p._window;
             p = p.parent;
         }
         return null;
@@ -1249,80 +1284,6 @@ class Widget {
         // override
     }
 
-}
-
-/** object list holder, owning its objects - on destroy of holder, all own objects will be destroyed */
-struct ObjectList(T) {
-    protected T[] _list;
-    protected int _count;
-    /** returns count of items */
-    @property int count() const { return _count; }
-    /** get item by index */
-    T get(int index) {
-        assert(index >= 0 && index < _count, "child index out of range");
-        return _list[index];
-    }
-    /** add item to list */
-    T add(T item) {
-        if (_list.length <= _count) // resize
-            _list.length = _list.length < 4 ? 4 : _list.length * 2;
-        _list[_count++] = item;
-        return item;
-    }
-    /** add item to list */
-    T insert(T item, int index = -1) {
-        if (index > _count || index < 0)
-            index = _count;
-        if (_list.length <= _count) // resize
-            _list.length = _list.length < 4 ? 4 : _list.length * 2;
-        for (int i = _count; i > index; i--)
-            _list[i] = _list[i - 1];
-        _list[index] = item;
-        _count++;
-        return item;
-    }
-    /** find child index for item, return -1 if not found */
-    int indexOf(T item) {
-        for (int i = 0; i < _count; i++)
-            if (_list[i] == item)
-                return i;
-        return -1;
-    }
-    /** find child index for item by id, return -1 if not found */
-    static if (__traits(hasMember, T, "compareId")) {
-        int indexOf(string id) {
-            for (int i = 0; i < _count; i++)
-                if (_list[i].compareId(id))
-                    return i;
-            return -1;
-        }
-    }
-    /** remove item from list, return removed item */
-    T remove(int index) {
-        assert(index >= 0 && index < _count, "child index out of range");
-        T item = _list[index];
-        for (int i = index; i < _count - 1; i++)
-            _list[i] = _list[i + 1];
-        _count--;
-        return item;
-    }
-    /** Replace item with another value, destroy old value. */
-    void replace(T item, int index) {
-        T old = _list[index];
-        _list[index] = item;
-        destroy(old);
-    }
-    /** remove and destroy all items */
-    void clear() {
-        for (int i = 0; i < _count; i++) {
-            destroy(_list[i]);
-            _list[i] = null;
-        }
-        _count = 0;
-    }
-    ~this() {
-        clear();
-    }
 }
 
 /** Widget list holder. */
@@ -1373,6 +1334,34 @@ class WidgetGroup : Widget {
         _children.clear();
     }
 
+}
+
+/** WidgetGroup with default drawing of children (just draw all children) */
+class WidgetGroupDefaultDrawing : WidgetGroup {
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
+	this(string ID) {
+		super(ID);
+	}
+    /// Draw widget at its position to buffer
+    override void onDraw(DrawBuf buf) {
+        if (visibility != Visibility.Visible)
+            return;
+        super.onDraw(buf);
+        Rect rc = _pos;
+        applyMargins(rc);
+        applyPadding(rc);
+		auto saver = ClipRectSaver(buf, rc);
+		for (int i = 0; i < _children.count; i++) {
+			Widget item = _children.get(i);
+			if (item.visibility != Visibility.Visible)
+				continue;
+			item.onDraw(buf);
+		}
+    }
 }
 
 immutable long ONE_SECOND = 10000000L;

@@ -1170,7 +1170,7 @@ class StringGridWidget : StringGridWidgetBase {
     /// create with ID parameter
 	this(string ID) {
 		super(ID);
-		styleId = "EDIT_BOX";
+		styleId = STYLE_EDIT_BOX;
 	}
 	/// get cell text
 	override dstring cellText(int col, int row) {

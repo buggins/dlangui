@@ -67,14 +67,14 @@ class TabItemWidget : HorizontalLayout {
     @property TabItem tabItem() { return _item; }
     @property TabControl tabControl() { return cast(TabControl)parent; }
     this(TabItem item, bool enableCloseButton = true) {
-        styleId = "TAB_UP_BUTTON";
+        styleId = STYLE_TAB_UP_BUTTON;
         _enableCloseButton = enableCloseButton;
         _icon = new ImageWidget();
         _label = new TextWidget();
-        _label.styleId = "TAB_UP_BUTTON_TEXT";
+        _label.styleId = STYLE_TAB_UP_BUTTON_TEXT;
         _label.state = State.Parent;
         _closeButton = new ImageButton("CLOSE");
-        _closeButton.styleId = "BUTTON_TRANSPARENT";
+        _closeButton.styleId = STYLE_BUTTON_TRANSPARENT;
         _closeButton.drawableId = "close";
 		_closeButton.trackHover = true;
         _closeButton.onClickListener = &onClick;
@@ -167,7 +167,7 @@ class TabItemList {
 }
 
 /// tab header - tab labels, with optional More button
-class TabControl : WidgetGroup {
+class TabControl : WidgetGroupDefaultDrawing {
     protected TabItemList _items;
     protected ImageButton _moreButton;
     protected bool _enableCloseButton;
@@ -186,11 +186,11 @@ class TabControl : WidgetGroup {
         super(ID);
         _items = new TabItemList();
         _moreButton = new ImageButton("MORE", "tab_more");
-        _moreButton.styleId = "BUTTON_TRANSPARENT";
+        _moreButton.styleId = STYLE_BUTTON_TRANSPARENT;
         _moreButton.onClickListener = &onClick;
         _moreButton.margins(Rect(3,3,3,6));
         _enableCloseButton = true;
-        styleId = "TAB_UP";
+        styleId = STYLE_TAB_UP;
         addChild(_moreButton); // first child is always MORE button, the rest corresponds to tab list
     }
     /// returns tab count
@@ -338,24 +338,6 @@ class TabControl : WidgetGroup {
         }
         //Log.d("tabControl.layout exit");
     }
-    /// Draw widget at its position to buffer
-    override void onDraw(DrawBuf buf) {
-        //Log.d("tabControl.onDraw enter");
-        if (visibility != Visibility.Visible)
-            return;
-        super.onDraw(buf);
-        Rect rc = _pos;
-        applyMargins(rc);
-        applyPadding(rc);
-        auto saver = ClipRectSaver(buf, rc);
-		for (int i = 0; i < _children.count; i++) {
-			Widget item = _children.get(i);
-			if (item.visibility != Visibility.Visible)
-				continue;
-			item.onDraw(buf);
-		}
-        //Log.d("tabControl.onDraw exit");
-    }
 
     protected string _selectedTabId;
 
@@ -388,7 +370,7 @@ class TabHost : FrameLayout, TabHandler {
         _tabControl = tabControl;
         if (_tabControl !is null)
             _tabControl.onTabChangedListener = &onTabChanged;
-        styleId = "TAB_HOST";
+        styleId = STYLE_TAB_HOST;
     }
     protected TabControl _tabControl;
     /// get currently set control widget
@@ -478,7 +460,7 @@ class TabWidget : VerticalLayout, TabHandler {
         _tabControl = new TabControl("TAB_CONTROL");
         _tabHost = new TabHost("TAB_HOST", _tabControl);
 		_tabControl.onTabChangedListener.connect(this);
-        styleId = "TAB_WIDGET";
+        styleId = STYLE_TAB_WIDGET;
         addChild(_tabControl);
         addChild(_tabHost);
     }

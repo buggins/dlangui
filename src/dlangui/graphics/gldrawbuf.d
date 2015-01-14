@@ -62,9 +62,9 @@ class GLDrawBuf : DrawBuf {
 
     /// reserved for hardware-accelerated drawing - ends drawing batch
     override void afterDrawing() { 
-        setOrthoProjection(_dx, _dy);
+        glSupport.setOrthoProjection(_dx, _dy);
         _scene.draw();
-        flushGL();
+        glSupport.flushGL();
         destroy(_scene);
         _scene = null;
     }
@@ -244,7 +244,7 @@ private class GLImageCache {
                 _drawbuf = null;
             }
             if (_textureId != 0) {
-                deleteTexture(_textureId);
+                glSupport.deleteTexture(_textureId);
                 _textureId = 0;
             }
         }
@@ -254,14 +254,14 @@ private class GLImageCache {
                 return; // no draw buffer!!!
             if (_textureId == 0) {
                 //CRLog::debug("updateTexture - new texture");
-                _textureId = genTexture();
+                _textureId = glSupport.genTexture();
                 if (!_textureId)
                     return;
             }
             //CRLog::debug("updateTexture - setting image %dx%d", _drawbuf.width, _drawbuf.height);
             uint * pixels = _drawbuf.scanLine(0);
-            if (!setTextureImage(_textureId, _drawbuf.width, _drawbuf.height, cast(ubyte*)pixels)) {
-                deleteTexture(_textureId);
+            if (!glSupport.setTextureImage(_textureId, _drawbuf.width, _drawbuf.height, cast(ubyte*)pixels)) {
+                glSupport.deleteTexture(_textureId);
                 _textureId = 0;
                 return;
             }
@@ -339,7 +339,7 @@ private class GLImageCache {
             if (_needUpdateTexture)
                 updateTexture();
             if (_textureId != 0) {
-                if (!isTexture(_textureId)) {
+                if (!glSupport.isTexture(_textureId)) {
                     Log.e("Invalid texture ", _textureId);
                     return;
                 }
@@ -371,12 +371,12 @@ private class GLImageCache {
                     dstrc.bottom -= clip.bottom;
                 }
                 if (!dstrc.empty)
-                    drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height());
+                    glSupport.drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height());
                 //drawColorAndTextureRect(vertices, texcoords, color, _textureId);
 
                 if (rotationAngle) {
                     // unset rotation
-                    setRotation(rx, ry, 0);
+                    glSupport.setRotation(rx, ry, 0);
                     //                glMatrixMode(GL_PROJECTION);
                     //                glPopMatrix();
                     //                checkError("pop matrix");
@@ -576,7 +576,7 @@ private class GLGlyphCache {
                 _drawbuf = null;
             }
             if (_textureId != 0) {
-                deleteTexture(_textureId);
+                glSupport.deleteTexture(_textureId);
                 _textureId = 0;
             }
         }
@@ -589,7 +589,7 @@ private class GLGlyphCache {
                 return; // no draw buffer!!!
             if (_textureId == 0) {
                 //CRLog::debug("updateTexture - new texture");
-                _textureId = genTexture();
+                _textureId = glSupport.genTexture();
                 if (!_textureId)
                     return;
             }
@@ -600,8 +600,8 @@ private class GLGlyphCache {
                 _rgbaBuffer.length = len;
                 for (int i = 0; i < len; i++)
                     _rgbaBuffer[i] = ((cast(uint)pixels[i]) << 24) | 0x00FFFFFF;
-                if (!setTextureImage(_textureId, _drawbuf.width, _drawbuf.height, cast(ubyte*)_rgbaBuffer.ptr)) {
-                    deleteTexture(_textureId);
+                if (!glSupport.setTextureImage(_textureId, _drawbuf.width, _drawbuf.height, cast(ubyte*)_rgbaBuffer.ptr)) {
+                    glSupport.deleteTexture(_textureId);
                     _textureId = 0;
                     return;
                 }
@@ -667,7 +667,7 @@ private class GLGlyphCache {
             if (_needUpdateTexture)
                 updateTexture();
             if (_textureId != 0) {
-                if (!isTexture(_textureId)) {
+                if (!glSupport.isTexture(_textureId)) {
                     Log.e("Invalid texture ", _textureId);
                     return;
                 }
@@ -693,7 +693,7 @@ private class GLGlyphCache {
                 }
                 if (!dstrc.empty) {
                     //Log.d("drawing glyph with color ", color);
-                    drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, false);
+                    glSupport.drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, false);
                 }
 
             }
@@ -818,7 +818,7 @@ class SolidRectSceneItem : SceneItem {
         _color = color;
     }
     override void draw() {
-        drawSolidFillRect(_rc, _color, _color, _color, _color);
+        glSupport.drawSolidFillRect(_rc, _color, _color, _color, _color);
     }
 }
 

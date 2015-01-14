@@ -107,11 +107,13 @@ class Window {
             Log.d("onResize ", _dx, "x", _dy);
             long measureStart = currentTimeMillis;
             measure();
+            //Log.d("measured size: ", _mainWidget.measuredWidth, "x", _mainWidget.measuredHeight);
             long measureEnd = currentTimeMillis;
             Log.d("measure took ", measureEnd - measureStart, " ms");
             layout();
             long layoutEnd = currentTimeMillis;
             Log.d("layout took ", layoutEnd - measureEnd, " ms");
+            //Log.d("layout position: ", _mainWidget.pos);
         }
     }
 

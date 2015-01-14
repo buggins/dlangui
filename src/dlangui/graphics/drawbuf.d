@@ -19,109 +19,8 @@ module dlangui.graphics.drawbuf;
 
 public import dlangui.core.types;
 import dlangui.core.logger;
+import dlangui.graphics.colors;
 
-immutable uint COLOR_TRANSFORM_OFFSET_NONE = 0x80808080;
-immutable uint COLOR_TRANSFORM_MULTIPLY_NONE = 0x40404040;
-
-uint makeRGBA(T)(T r, T g, T b, T a) {
-    return (cast(uint)a << 24)|(cast(uint)r << 16)|(cast(uint)g << 8)|(cast(uint)b);
-}
-
-/// blend two RGB pixels using alpha
-uint blendARGB(uint dst, uint src, uint alpha) {
-    uint dstalpha = dst >> 24;
-    if (dstalpha > 0x80)
-        return src;
-    uint srcr = (src >> 16) & 0xFF;
-    uint srcg = (src >> 8) & 0xFF;
-    uint srcb = (src >> 0) & 0xFF;
-    uint dstr = (dst >> 16) & 0xFF;
-    uint dstg = (dst >> 8) & 0xFF;
-    uint dstb = (dst >> 0) & 0xFF;
-    uint ialpha = 256 - alpha;
-    uint r = ((srcr * ialpha + dstr * alpha) >> 8) & 0xFF;
-    uint g = ((srcg * ialpha + dstg * alpha) >> 8) & 0xFF;
-    uint b = ((srcb * ialpha + dstb * alpha) >> 8) & 0xFF;
-    return (r << 16) | (g << 8) | b;
-}
-
-/// blend two alpha values 0..255 (255 is fully transparent, 0 is opaque)
-uint blendAlpha(uint a1, uint a2) {
-	if (!a1)
-		return a2;
-	if (!a2)
-		return a1;
-	return (((a1 ^ 0xFF) * (a2 ^ 0xFF)) >> 8) ^ 0xFF;
-}
-
-/// applies additional alpha to color
-uint addAlpha(uint color, uint alpha) {
-    alpha = blendAlpha(color >> 24, alpha);
-    return (color & 0xFFFFFF) | (alpha << 24);
-}
-
-ubyte rgbToGray(uint color) {
-    uint srcr = (color >> 16) & 0xFF;
-    uint srcg = (color >> 8) & 0xFF;
-    uint srcb = (color >> 0) & 0xFF;
-    return cast(uint)(((srcr + srcg + srcg + srcb) >> 2) & 0xFF);
-}
-
-// todo
-struct ColorTransformHandler {
-    void init(ref ColorTransform transform) {
-
-    }
-    uint transform(uint color) {
-        return color;
-    }
-}
-
-uint transformComponent(int src, int addBefore, int multiply, int addAfter) {
-    int add1 = (cast(int)(addBefore << 1)) - 0x100;
-    int add2 = (cast(int)(addAfter << 1)) - 0x100;
-    int mul = cast(int)(multiply << 2);
-    int res = (((src + add1) * mul) >> 8) + add2;
-    if (res < 0)
-        res = 0;
-    else if (res > 255)
-        res = 255;
-    return cast(uint)res;
-}
-
-uint transformRGBA(uint src, uint addBefore, uint multiply, uint addAfter) {
-    uint a = transformComponent(src >> 24, addBefore >> 24, multiply >> 24, addAfter >> 24);
-    uint r = transformComponent((src >> 16) & 0xFF, (addBefore >> 16) & 0xFF, (multiply >> 16) & 0xFF, (addAfter >> 16) & 0xFF);
-    uint g = transformComponent((src >> 8) & 0xFF, (addBefore >> 8) & 0xFF, (multiply >> 8) & 0xFF, (addAfter >> 8) & 0xFF);
-    uint b = transformComponent(src & 0xFF, addBefore & 0xFF, multiply & 0xFF, addAfter & 0xFF);
-    return (a << 24) | (r << 16) | (g << 8) | b;
-}
-
-struct ColorTransform {
-    uint addBefore = COLOR_TRANSFORM_OFFSET_NONE;
-    uint multiply = COLOR_TRANSFORM_MULTIPLY_NONE;
-    uint addAfter = COLOR_TRANSFORM_OFFSET_NONE;
-    @property bool empty() const {
-        return addBefore == COLOR_TRANSFORM_OFFSET_NONE 
-            && multiply == COLOR_TRANSFORM_MULTIPLY_NONE
-            && addAfter == COLOR_TRANSFORM_OFFSET_NONE;
-    }
-    uint transform(uint color) {
-        return transformRGBA(color, addBefore, multiply, addAfter);
-    }
-}
-
-
-/// blend two RGB pixels using alpha
-ubyte blendGray(ubyte dst, ubyte src, uint alpha) {
-    uint ialpha = 256 - alpha;
-    return cast(ubyte)(((src * ialpha + dst * alpha) >> 8) & 0xFF);
-}
-
-/// returns true if color is #FFxxxxxx (color alpha is 255)
-bool isFullyTransparentColor(uint color) pure nothrow {
-    return (color >> 24) == 0xFF;
-}
 
 /**
  * 9-patch image scaling information (see Android documentation).
@@ -408,6 +307,32 @@ class DrawBuf : RefCountedObject {
             rc.bottom -= frameSideWidths.bottom;
             if (!rc.empty)
                 fillRect(rc, innerAreaColor);
+        }
+    }
+
+    /// draw focus rectangle; vertical gradient supported - colors[0] is top color, colors[1] is bottom color
+    void drawFocusRect(Rect rc, const uint[] colors) {
+        // override for faster performance when using OpenGL
+        if (colors.length < 1)
+            return;
+        uint color1 = colors[0];
+        uint color2 = colors.length > 1 ? colors[1] : color1;
+        if (isFullyTransparentColor(color1) && isFullyTransparentColor(color2))
+            return;
+        // draw horizontal lines
+        for (int x = rc.left; x < rc.right; x++) {
+            if ((x ^ rc.top) & 1)
+                fillRect(Rect(x, rc.top, x + 1, rc.top + 1), color1);
+            if ((x ^ (rc.bottom - 1)) & 1)
+                fillRect(Rect(x, rc.bottom - 1, x + 1, rc.bottom), color2);
+        }
+        // draw vertical lines
+        for (int y = rc.top + 1; y < rc.bottom - 1; y++) {
+            uint color = color1 == color2 ? color1 : blendARGB(color2, color1, 255 / (rc.bottom - rc.top));
+            if ((y ^ rc.left) & 1)
+                fillRect(Rect(rc.left, y, rc.left + 1, y + 1), color);
+            if ((y ^ (rc.right - 1)) & 1)
+                fillRect(Rect(rc.right - 1, y, rc.right, y + 1), color);
         }
     }
 
