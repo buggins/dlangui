@@ -300,9 +300,9 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
     If size of content widget exceeds available space, allows to scroll it.
  */
 class ScrollWidget :  ScrollWidgetBase {
-    protected WidgetGroup _contentWidget;
-    @property WidgetGroup contentWidget() { return _contentWidget; }
-    @property ScrollWidget contentWidget(WidgetGroup newContent) { 
+    protected Widget _contentWidget;
+    @property Widget contentWidget() { return _contentWidget; }
+    @property ScrollWidget contentWidget(Widget newContent) { 
         if (_contentWidget) {
             removeChild(childIndex(_contentWidget));
             destroy(_contentWidget);

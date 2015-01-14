@@ -1336,6 +1336,34 @@ class WidgetGroup : Widget {
 
 }
 
+/** WidgetGroup with default drawing of children (just draw all children) */
+class WidgetGroupDefaultDrawing : WidgetGroup {
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
+	this(string ID) {
+		super(ID);
+	}
+    /// Draw widget at its position to buffer
+    override void onDraw(DrawBuf buf) {
+        if (visibility != Visibility.Visible)
+            return;
+        super.onDraw(buf);
+        Rect rc = _pos;
+        applyMargins(rc);
+        applyPadding(rc);
+		auto saver = ClipRectSaver(buf, rc);
+		for (int i = 0; i < _children.count; i++) {
+			Widget item = _children.get(i);
+			if (item.visibility != Visibility.Visible)
+				continue;
+			item.onDraw(buf);
+		}
+    }
+}
+
 immutable long ONE_SECOND = 10000000L;
 
 /// Helper to handle animation progress

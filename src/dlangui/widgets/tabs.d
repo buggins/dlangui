@@ -167,7 +167,7 @@ class TabItemList {
 }
 
 /// tab header - tab labels, with optional More button
-class TabControl : WidgetGroup {
+class TabControl : WidgetGroupDefaultDrawing {
     protected TabItemList _items;
     protected ImageButton _moreButton;
     protected bool _enableCloseButton;
@@ -337,24 +337,6 @@ class TabControl : WidgetGroup {
             rc.left += w;
         }
         //Log.d("tabControl.layout exit");
-    }
-    /// Draw widget at its position to buffer
-    override void onDraw(DrawBuf buf) {
-        //Log.d("tabControl.onDraw enter");
-        if (visibility != Visibility.Visible)
-            return;
-        super.onDraw(buf);
-        Rect rc = _pos;
-        applyMargins(rc);
-        applyPadding(rc);
-        auto saver = ClipRectSaver(buf, rc);
-		for (int i = 0; i < _children.count; i++) {
-			Widget item = _children.get(i);
-			if (item.visibility != Visibility.Visible)
-				continue;
-			item.onDraw(buf);
-		}
-        //Log.d("tabControl.onDraw exit");
     }
 
     protected string _selectedTabId;

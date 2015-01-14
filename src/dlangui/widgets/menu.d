@@ -206,7 +206,7 @@ class MenuItem {
 }
 
 /// widget to draw menu item
-class MenuItemWidget : WidgetGroup {
+class MenuItemWidget : WidgetGroupDefaultDrawing {
 	protected bool _mainMenu;
     protected MenuItem _item;
 	protected ImageWidget _icon;
@@ -296,24 +296,6 @@ class MenuItemWidget : WidgetGroup {
 			setState(State.Checked);
 		else
 			resetState(State.Checked);
-	}
-
-	/// Draw widget at its position to buffer
-	override void onDraw(DrawBuf buf) {
-		if (visibility != Visibility.Visible)
-			return;
-		super.onDraw(buf);
-		Rect rc = _pos;
-		applyMargins(rc);
-		applyPadding(rc);
-		updateState();
-		auto saver = ClipRectSaver(buf, rc, alpha);
-		for (int i = 0; i < _children.count; i++) {
-			Widget item = _children.get(i);
-			if (item.visibility != Visibility.Visible)
-				continue;
-			item.onDraw(buf);
-		}
 	}
 
 	this(MenuItem item, bool mainMenu) {
