@@ -705,7 +705,7 @@ class Widget {
         applyPadding(rc);
         if (!rc.intersects(clipRect))
             return; // out of clip rectangle
-        if (focusable) {
+        if (canFocus) {
             TabOrderInfo item = new TabOrderInfo(this, rc);
             results ~= item;
             return;

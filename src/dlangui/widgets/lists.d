@@ -114,7 +114,7 @@ class StringListAdapter : ListAdapter {
         updateStatesLength();
         if (_widget is null) {
             _widget = new TextWidget("LIST_ITEM");
-            _widget.styleId = "LIST_ITEM";
+            _widget.styleId = STYLE_LIST_ITEM;
         } else {
             if (index == _lastItemIndex)
                 return _widget;

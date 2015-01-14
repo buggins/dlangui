@@ -36,7 +36,7 @@ private import std.conv : to;
 /// vertical spacer to fill empty space in vertical layouts
 class VSpacer : Widget {
     this() {
-        styleId = "VSPACER";
+        styleId = STYLE_VSPACER;
     }
     //override void measure(int parentWidth, int parentHeight) { 
     //    measuredContent(parentWidth, parentHeight, 8, 8);
@@ -46,7 +46,7 @@ class VSpacer : Widget {
 /// horizontal spacer to fill empty space in horizontal layouts
 class HSpacer : Widget {
     this() {
-        styleId = "HSPACER";
+        styleId = STYLE_HSPACER;
     }
     //override void measure(int parentWidth, int parentHeight) { 
     //    measuredContent(parentWidth, parentHeight, 8, 8);
@@ -199,7 +199,7 @@ class ImageButton : ImageWidget {
     /// constructor by id and icon resource id
     this(string ID = null, string drawableId = null) {
         super(ID, drawableId);
-        styleId = "BUTTON";
+        styleId = STYLE_BUTTON;
         _drawableId = drawableId;
         clickable = true;
         focusable = true;
@@ -247,11 +247,11 @@ class ImageTextButton : HorizontalLayout {
     }
 
     protected void init(string drawableId, UIString caption) {
-        styleId = "BUTTON";
+        styleId = STYLE_BUTTON;
         _icon = new ImageWidget("icon", drawableId);
-        _icon.styleId = "BUTTON_IMAGE";
+        _icon.styleId = STYLE_BUTTON_IMAGE;
         _label = new TextWidget("label", caption);
-        _label.styleId = "BUTTON_LABEL";
+        _label.styleId = STYLE_BUTTON_LABEL;
         _icon.state = State.Parent;
         _label.state = State.Parent;
         addChild(_icon);
@@ -292,11 +292,11 @@ class CheckBox : ImageTextButton {
     }
     override protected void init(string drawableId, UIString caption) {
         super.init(drawableId, caption);
-        styleId = "CHECKBOX";
+        styleId = STYLE_CHECKBOX;
         if (_icon)
-            _icon.styleId = "CHECKBOX_IMAGE";
+            _icon.styleId = STYLE_CHECKBOX_IMAGE;
         if (_label)
-            _label.styleId = "CHECKBOX_LABEL";
+            _label.styleId = STYLE_CHECKBOX_LABEL;
         checkable = true;
     }
     // called to process click and notify listeners
@@ -508,7 +508,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
     class PageScrollButton : Widget {
         this(string ID) {
             super(ID);
-            styleId = "PAGE_SCROLL";
+            styleId = STYLE_PAGE_SCROLL;
             trackHover = true;
             clickable = true;
         }
@@ -522,7 +522,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
 
         this(string resourceId) {
             super("SLIDER", resourceId);
-			styleId = "BUTTON_NOMARGINS";
+			styleId = STYLE_BUTTON_NOMARGINS;
             trackHover = true;
         }
 
@@ -682,14 +682,14 @@ class ScrollBar : AbstractSlider, OnClickHandler {
     /// create with ID parameter
     this(string ID, Orientation orient = Orientation.Vertical) {
 		super(ID);
-        styleId = "SCROLLBAR";
+        styleId = STYLE_SCROLLBAR;
         _orientation = orient;
         _btnBack = new ImageButton("BACK", style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_BUTTON_UP : ATTR_SCROLLBAR_BUTTON_LEFT));
         _btnForward = new ImageButton("FORWARD", style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_BUTTON_DOWN : ATTR_SCROLLBAR_BUTTON_RIGHT));
         _pageUp = new PageScrollButton("PAGE_UP");
         _pageDown = new PageScrollButton("PAGE_DOWN");
-        _btnBack.styleId("SCROLLBAR_BUTTON");
-        _btnForward.styleId("SCROLLBAR_BUTTON");
+        _btnBack.styleId = STYLE_SCROLLBAR_BUTTON;
+        _btnForward.styleId = STYLE_SCROLLBAR_BUTTON;
         _indicator = new SliderButton(style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_INDICATOR_VERTICAL : ATTR_SCROLLBAR_INDICATOR_HORIZONTAL));
         addChild(_btnBack);
         addChild(_btnForward);

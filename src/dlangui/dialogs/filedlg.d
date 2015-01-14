@@ -227,12 +227,12 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
     protected ListWidget createRootsList() {
         ListWidget res = new ListWidget("ROOTS_LIST");
-        res.styleId = "EDIT_BOX";
+        res.styleId = STYLE_EDIT_BOX;
         WidgetListAdapter adapter = new WidgetListAdapter();
         foreach(ref RootEntry root; _roots) {
             ImageTextButton btn = new ImageTextButton(null, root.icon, root.label);
             btn.orientation = Orientation.Vertical;
-            btn.styleId = "TRANSPARENT_BUTTON_BACKGROUND";
+            btn.styleId = STYLE_TRANSPARENT_BUTTON_BACKGROUND;
             btn.focusable = false;
             adapter.widgets.add(btn);
         }
@@ -418,17 +418,17 @@ class FilePathPanelItem : HorizontalLayout {
     Listener!OnPathSelectionHandler onPathSelectionListener;
     this(string path) {
         super(null);
-		styleId = "LIST_ITEM";
+		styleId = STYLE_LIST_ITEM;
         _path = path;
         string fname = isRoot(path) ? path : baseName(path);
         _text = new TextWidget(null, toUTF32(fname));
-		_text.styleId = "BUTTON_TRANSPARENT";
+		_text.styleId = STYLE_BUTTON_TRANSPARENT;
         _text.clickable = true;
         _text.onClickListener = &onTextClick;
 		//_text.backgroundColor = 0xC0FFFF;
 		_text.state = State.Parent;
         _button = new ImageButton(null, "scrollbar_btn_right");
-		_button.styleId = "BUTTON_TRANSPARENT";
+		_button.styleId = STYLE_BUTTON_TRANSPARENT;
         _button.focusable = false;
         _button.onClickListener = &onButtonClick;
 		//_button.backgroundColor = 0xC0FFC0;

@@ -1727,7 +1727,7 @@ class EditLine : EditWidgetBase {
         _content = new EditableContent(false);
 		_content.contentChangeListeners = this;
         wantTabs = false;
-        styleId = "EDIT_LINE";
+        styleId = STYLE_EDIT_LINE;
         text = initialContent;
     }
 
@@ -1905,7 +1905,7 @@ class EditBox : EditWidgetBase {
         super(ID, hscrollbarMode, vscrollbarMode);
         _content = new EditableContent(true); // multiline
 		_content.contentChangeListeners = this;
-        styleId = "EDIT_BOX";
+        styleId = STYLE_EDIT_BOX;
         text = initialContent;
     }
 

@@ -467,7 +467,7 @@ class TreeItemWidget : HorizontalLayout {
 
     this(TreeItem item) {
         super(item.id);
-        styleId = "TREE_ITEM";
+        styleId = STYLE_TREE_ITEM;
 
         clickable = true;
         focusable = true;
@@ -485,7 +485,7 @@ class TreeItemWidget : HorizontalLayout {
         _tab.maxWidth = w;
         if (_item.hasChildren) {
             _expander = new ImageWidget("expander", _item.hasChildren && _item.expanded ? "arrow_right_down_black" : "arrow_right_hollow");
-            _expander.styleId = "TREE_ITEM_EXPAND_ICON";
+            _expander.styleId = STYLE_TREE_ITEM_EXPAND_ICON;
             _expander.clickable = true;
             _expander.trackHover = true;
             //_expander.setState(State.Parent);
@@ -511,11 +511,11 @@ class TreeItemWidget : HorizontalLayout {
         };
         if (_item.iconRes.length > 0) {
             _icon = new ImageWidget("icon", _item.iconRes);
-            _icon.styleId = "TREE_ITEM_ICON";
+            _icon.styleId = STYLE_TREE_ITEM_ICON;
             _icon.setState(State.Parent);
         }
         _label = new TextWidget("label", _item.text);
-        _label.styleId = "TREE_ITEM_LABEL";
+        _label.styleId = STYLE_TREE_ITEM_LABEL;
         _label.setState(State.Parent);
         // append children
         addChild(_tab);

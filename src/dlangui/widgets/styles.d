@@ -31,10 +31,19 @@ import dlangui.graphics.drawbuf;
 import dlangui.graphics.resources;
 
 // Standard style constants
+// Themes should define all of these styles in order to support all controls
 /// standard style id for TextWidget
 immutable string STYLE_TEXT = "TEXT";
 /// standard style id for Button
 immutable string STYLE_BUTTON = "BUTTON";
+/// standard style id for Button label
+immutable string STYLE_BUTTON_LABEL = "BUTTON_LABEL";
+/// standard style id for Button image
+immutable string STYLE_BUTTON_IMAGE = "BUTTON_IMAGE";
+/// style id for transparent Button
+immutable string STYLE_BUTTON_TRANSPARENT = "BUTTON_TRANSPARENT";
+/// style id for Button w/o margins
+immutable string STYLE_BUTTON_NOMARGINS = "BUTTON_NOMARGINS";
 /// standard style id for CheckBox
 immutable string STYLE_CHECKBOX = "CHECKBOX";
 /// standard style id for CheckBox image
@@ -47,6 +56,66 @@ immutable string STYLE_RADIOBUTTON = "RADIOBUTTON";
 immutable string STYLE_RADIOBUTTON_IMAGE = "RADIOBUTTON_IMAGE";
 /// standard style id for RadioButton label
 immutable string STYLE_RADIOBUTTON_LABEL = "RADIOBUTTON_LABEL";
+/// standard style id for HSpacer
+immutable string STYLE_HSPACER = "HSPACER";
+/// standard style id for VSpacer
+immutable string STYLE_VSPACER = "VSPACER";
+/// standard style id for ScrollBar
+immutable string STYLE_SCROLLBAR = "SCROLLBAR";
+/// standard style id for ScrollBar button
+immutable string STYLE_SCROLLBAR_BUTTON = "SCROLLBAR_BUTTON";
+/// standard style id for ScrollBar page control
+immutable string STYLE_PAGE_SCROLL = "PAGE_SCROLL";
+/// standard style id for Slider
+immutable string STYLE_SLIDER = "SLIDER";
+/// standard style id for TabWidget
+immutable string STYLE_TAB_WIDGET = "TAB_WIDGET";
+/// standard style id for Tab with Up alignment
+immutable string STYLE_TAB_UP = "TAB_UP";
+/// standard style id for button of Tab with Up alignment
+immutable string STYLE_TAB_UP_BUTTON = "TAB_UP_BUTTON";
+/// standard style id for button of Tab with Up alignment
+immutable string STYLE_TAB_UP_BUTTON_TEXT = "TAB_UP_BUTTON_TEXT";
+/// standard style id for TabHost
+immutable string STYLE_TAB_HOST = "TAB_HOST";
+/// standard style id for PopupMenu
+immutable string STYLE_POPUP_MENU = "POPUP_MENU";
+/// standard style id for menu item
+immutable string STYLE_MENU_ITEM = "MENU_ITEM";
+/// standard style id for menu item label
+immutable string STYLE_MENU_LABEL = "MENU_LABEL";
+/// standard style id for menu item icon
+immutable string STYLE_MENU_ICON = "MENU_ICON";
+/// standard style id for menu item accelerators label
+immutable string STYLE_MENU_ACCEL = "MENU_ACCEL";
+/// standard style id for main menu item
+immutable string STYLE_MAIN_MENU_ITEM = "MAIN_MENU_ITEM";
+/// standard style id for main menu item label
+immutable string STYLE_MAIN_MENU_LABEL = "MAIN_MENU_LABEL";
+/// standard style id for main menu
+immutable string STYLE_MAIN_MENU = "MAIN_MENU";
+/// standard style id for list items
+immutable string STYLE_LIST_ITEM = "LIST_ITEM";
+/// standard style id for EditLine
+immutable string STYLE_EDIT_LINE = "EDIT_LINE";
+/// standard style id for EditBox
+immutable string STYLE_EDIT_BOX = "EDIT_BOX";
+/// standard style id for background similar to transparent button
+immutable string STYLE_TRANSPARENT_BUTTON_BACKGROUND = "TRANSPARENT_BUTTON_BACKGROUND";
+/// standard style id for tree item
+immutable string STYLE_TREE_ITEM = "TREE_ITEM";
+/// standard style id for tree item label
+immutable string STYLE_TREE_ITEM_LABEL = "TREE_ITEM_LABEL";
+/// standard style id for tree item icon
+immutable string STYLE_TREE_ITEM_ICON = "TREE_ITEM_ICON";
+/// standard style id for tree item expand icon
+immutable string STYLE_TREE_ITEM_EXPAND_ICON = "TREE_ITEM_EXPAND_ICON";
+/// standard style id for combo box
+immutable string STYLE_COMBO_BOX = "COMBO_BOX";
+/// standard style id for combo box button
+immutable string STYLE_COMBO_BOX_BUTTON = "COMBO_BOX_BUTTON";
+/// standard style id for combo box body (current item)
+immutable string STYLE_COMBO_BOX_BODY = "COMBO_BOX_BODY";
 
 // Layout size constants
 /// layout option, to occupy all available place
@@ -791,14 +860,14 @@ Theme createDefaultTheme() {
     }
     //res.fontFace = "Arial Narrow";
     res.fontSize = 15; // TODO: choose based on DPI
-	Style button = res.createSubstyle("BUTTON").backgroundImageId("btn_background").alignment(Align.Center).setMargins(5,5,5,5);
-    res.createSubstyle("BUTTON_TRANSPARENT").backgroundImageId("btn_background_transparent").alignment(Align.Center);
-    res.createSubstyle("BUTTON_LABEL").layoutWidth(FILL_PARENT).alignment(Align.Left|Align.VCenter);
-    res.createSubstyle("BUTTON_ICON").alignment(Align.Center);
-    res.createSubstyle("TEXT").setMargins(2,2,2,2).setPadding(1,1,1,1);
-    res.createSubstyle("HSPACER").layoutWidth(FILL_PARENT).minWidth(5).layoutWeight(100);
-    res.createSubstyle("VSPACER").layoutHeight(FILL_PARENT).minHeight(5).layoutWeight(100);
-    res.createSubstyle("BUTTON_NOMARGINS").backgroundImageId("btn_background").alignment(Align.Center); // .setMargins(5,5,5,5)
+	Style button = res.createSubstyle(STYLE_BUTTON).backgroundImageId("btn_background").alignment(Align.Center).setMargins(5,5,5,5);
+    res.createSubstyle(STYLE_BUTTON_TRANSPARENT).backgroundImageId("btn_background_transparent").alignment(Align.Center);
+    res.createSubstyle(STYLE_BUTTON_LABEL).layoutWidth(FILL_PARENT).alignment(Align.Left|Align.VCenter);
+    res.createSubstyle(STYLE_BUTTON_IMAGE).alignment(Align.Center);
+    res.createSubstyle(STYLE_TEXT).setMargins(2,2,2,2).setPadding(1,1,1,1);
+    res.createSubstyle(STYLE_HSPACER).layoutWidth(FILL_PARENT).minWidth(5).layoutWeight(100);
+    res.createSubstyle(STYLE_VSPACER).layoutHeight(FILL_PARENT).minHeight(5).layoutWeight(100);
+    res.createSubstyle(STYLE_BUTTON_NOMARGINS).backgroundImageId("btn_background").alignment(Align.Center); // .setMargins(5,5,5,5)
 	//button.createState(State.Enabled | State.Focused, State.Focused).backgroundImageId("btn_default_small_normal_disable_focused");
     //button.createState(State.Enabled, 0).backgroundImageId("btn_default_small_normal_disable");
     //button.createState(State.Pressed, State.Pressed).backgroundImageId("btn_default_small_pressed");
@@ -811,67 +880,67 @@ Theme createDefaultTheme() {
     res.setCustomDrawable(ATTR_SCROLLBAR_INDICATOR_VERTICAL, "scrollbar_indicator_vertical");
     res.setCustomDrawable(ATTR_SCROLLBAR_INDICATOR_HORIZONTAL, "scrollbar_indicator_horizontal");
 
-    Style scrollbar = res.createSubstyle("SCROLLBAR");
+    Style scrollbar = res.createSubstyle(STYLE_SCROLLBAR);
     scrollbar.backgroundColor(0xC0808080);
-    Style scrollbarButton = button.createSubstyle("SCROLLBAR_BUTTON");
-    Style scrollbarSlider = res.createSubstyle("SLIDER");
-    Style scrollbarPage = res.createSubstyle("PAGE_SCROLL").backgroundColor(COLOR_TRANSPARENT);
+    Style scrollbarButton = button.createSubstyle(STYLE_SCROLLBAR_BUTTON);
+    Style scrollbarSlider = res.createSubstyle(STYLE_SLIDER);
+    Style scrollbarPage = res.createSubstyle(STYLE_PAGE_SCROLL).backgroundColor(COLOR_TRANSPARENT);
     scrollbarPage.createState(State.Pressed, State.Pressed).backgroundColor(0xC0404080);
     scrollbarPage.createState(State.Hovered, State.Hovered).backgroundColor(0xF0404080);
 
-    Style tabUp = res.createSubstyle("TAB_UP");
+    Style tabUp = res.createSubstyle(STYLE_TAB_UP);
     tabUp.backgroundImageId("tab_up_background");
     tabUp.layoutWidth(FILL_PARENT);
     tabUp.createState(State.Selected, State.Selected).backgroundImageId("tab_up_backgrond_selected");
-    Style tabUpButtonText = res.createSubstyle("TAB_UP_BUTTON_TEXT");
+    Style tabUpButtonText = res.createSubstyle(STYLE_TAB_UP_BUTTON_TEXT);
     tabUpButtonText.textColor(0x000000).fontSize(12).alignment(Align.Center);
     tabUpButtonText.createState(State.Selected, State.Selected).textColor(0x000000);
     tabUpButtonText.createState(State.Selected|State.Focused, State.Selected|State.Focused).textColor(0x000000);
     tabUpButtonText.createState(State.Focused, State.Focused).textColor(0x000000);
     tabUpButtonText.createState(State.Hovered, State.Hovered).textColor(0xFFE0E0);
-    Style tabUpButton = res.createSubstyle("TAB_UP_BUTTON");
+    Style tabUpButton = res.createSubstyle(STYLE_TAB_UP_BUTTON);
     tabUpButton.backgroundImageId("tab_btn_up");
     //tabUpButton.backgroundImageId("tab_btn_up_normal");
     //tabUpButton.createState(State.Selected, State.Selected).backgroundImageId("tab_btn_up_selected");
     //tabUpButton.createState(State.Selected|State.Focused, State.Selected|State.Focused).backgroundImageId("tab_btn_up_focused_selected");
     //tabUpButton.createState(State.Focused, State.Focused).backgroundImageId("tab_btn_up_focused");
     //tabUpButton.createState(State.Hovered, State.Hovered).backgroundImageId("tab_btn_up_hover");
-    Style tabHost = res.createSubstyle("TAB_HOST");
+    Style tabHost = res.createSubstyle(STYLE_TAB_HOST);
     tabHost.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
     tabHost.backgroundColor(0xF0F0F0);
-    Style tabWidget = res.createSubstyle("TAB_WIDGET");
+    Style tabWidget = res.createSubstyle(STYLE_TAB_WIDGET);
 	tabWidget.setPadding(3,3,3,3).backgroundColor(0xEEEEEE);
     //tabWidget.backgroundImageId("frame_blue");
 	//res.dumpStats();
 
-    Style mainMenu = res.createSubstyle("MAIN_MENU").backgroundColor(0xEFEFF2).layoutWidth(FILL_PARENT);
-	Style mainMenuItem = res.createSubstyle("MAIN_MENU_ITEM").setPadding(4,2,4,2).backgroundImageId("main_menu_item_background").textFlags(TEXT_FLAGS_USE_PARENT);
-    Style menuItem = res.createSubstyle("MENU_ITEM").setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
+    Style mainMenu = res.createSubstyle(STYLE_MAIN_MENU).backgroundColor(0xEFEFF2).layoutWidth(FILL_PARENT);
+	Style mainMenuItem = res.createSubstyle(STYLE_MAIN_MENU_ITEM).setPadding(4,2,4,2).backgroundImageId("main_menu_item_background").textFlags(TEXT_FLAGS_USE_PARENT);
+    Style menuItem = res.createSubstyle(STYLE_MENU_ITEM).setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
     menuItem.createState(State.Focused, State.Focused).backgroundColor(0x40C0C000);
     menuItem.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
     menuItem.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
     menuItem.createState(State.Hovered, State.Hovered).backgroundColor(0xC0FFFF00);
-	res.createSubstyle("MENU_ICON").setMargins(2,2,2,2).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).alpha(0xA0);
-	res.createSubstyle("MENU_LABEL").setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TextFlag.UnderlineHotKeys).createState(State.Enabled,0).textColor(0x80404040);
-	res.createSubstyle("MAIN_MENU_LABEL").setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TEXT_FLAGS_USE_PARENT).createState(State.Enabled,0).textColor(0x80404040);
-	res.createSubstyle("MENU_ACCEL").setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).textColor(0x80404040);
+	res.createSubstyle(STYLE_MENU_ICON).setMargins(2,2,2,2).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).alpha(0xA0);
+	res.createSubstyle(STYLE_MENU_LABEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TextFlag.UnderlineHotKeys).createState(State.Enabled,0).textColor(0x80404040);
+	res.createSubstyle(STYLE_MAIN_MENU_LABEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TEXT_FLAGS_USE_PARENT).createState(State.Enabled,0).textColor(0x80404040);
+	res.createSubstyle(STYLE_MENU_ACCEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).textColor(0x80404040);
 
-    Style transparentButtonBackground = res.createSubstyle("TRANSPARENT_BUTTON_BACKGROUND").backgroundImageId("transparent_button_background").setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
+    Style transparentButtonBackground = res.createSubstyle(STYLE_TRANSPARENT_BUTTON_BACKGROUND).backgroundImageId("transparent_button_background").setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
     //transparentButtonBackground.createState(State.Focused, State.Focused).backgroundColor(0xC0C0C000);
     //transparentButtonBackground.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
     //transparentButtonBackground.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
     //transparentButtonBackground.createState(State.Hovered, State.Hovered).backgroundColor(0xD0FFFF00);
 
-    Style poopupMenu = res.createSubstyle("POPUP_MENU").backgroundImageId("popup_menu_background_normal");
+    Style poopupMenu = res.createSubstyle(STYLE_POPUP_MENU).backgroundImageId("popup_menu_background_normal");
 
-    Style listItem = res.createSubstyle("LIST_ITEM").backgroundImageId("list_item_background");
+    Style listItem = res.createSubstyle(STYLE_LIST_ITEM).backgroundImageId("list_item_background");
     //listItem.createState(State.Selected, State.Selected).backgroundColor(0xC04040FF).textColor(0x000000);
     //listItem.createState(State.Enabled, 0).textColor(0x80000000); // half transparent text for disabled item
 
-    Style editLine = res.createSubstyle("EDIT_LINE").backgroundImageId("editbox_background")
+    Style editLine = res.createSubstyle(STYLE_EDIT_LINE).backgroundImageId("editbox_background")
         .setPadding(5,6,5,6).setMargins(2,2,2,2).minWidth(40)
         .fontFace("Arial").fontFamily(FontFamily.SansSerif).fontSize(16);
-    Style editBox = res.createSubstyle("EDIT_BOX").backgroundImageId("editbox_background")
+    Style editBox = res.createSubstyle(STYLE_EDIT_BOX).backgroundImageId("editbox_background")
         .setPadding(5,6,5,6).setMargins(2,2,2,2).minWidth(100).minHeight(60).layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT)
         .fontFace("Courier New").fontFamily(FontFamily.MonoSpace).fontSize(16);
 

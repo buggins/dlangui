@@ -80,7 +80,7 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
 
     protected ImageButton createButton() {
         ImageButton res = new ImageButton("COMBOBOX_BUTTON", "scrollbar_btn_down");
-        res.styleId = "COMBO_BOX_BUTTON";
+        res.styleId = STYLE_COMBO_BOX_BUTTON;
 		res.layoutWeight = 0;
         res.onClickListener = this;
         return res;
@@ -100,7 +100,7 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         _popupList = createPopup();
         _popup = window.showPopup(_popupList, this, PopupAlign.Below | PopupAlign.FitAnchorSize);
         _popup.flags = PopupFlags.CloseOnClickOutside;
-        _popup.styleId = "POPUP_MENU";
+        _popup.styleId = STYLE_POPUP_MENU;
         _popup.onPopupCloseListener = delegate (PopupWidget source) {
             _popup = null;
             _popupList = null;
@@ -122,7 +122,7 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         super(ID);
         _adapter = adapter;
         _ownAdapter = ownAdapter;
-        styleId = "COMBO_BOX";
+        styleId = STYLE_COMBO_BOX;
         trackHover = true;
 		init();
     }
@@ -201,14 +201,13 @@ class ComboBox : ComboBoxBase {
 		_body.focusable = false;
 		_body.clickable = true;
 		focusable = true;
-		//styleId = "COMBO_BOX";
 		clickable = true;
 		onClickListener = this;
 	}
 
     override protected Widget createSelectedItemWidget() {
         TextWidget res = new TextWidget("COMBO_BOX_BODY");
-		res.styleId = "COMBO_BOX_BODY";
+		res.styleId = STYLE_COMBO_BOX_BODY;
 		res.clickable = true;
         res.layoutWidth = FILL_PARENT;
         res.layoutHeight = WRAP_CONTENT;
