@@ -397,7 +397,7 @@ class Button : Widget {
 		FontRef font = font();
         Point sz = font.textSize(text);
         applyAlign(rc, sz);
-        font.drawText(buf, rc.left, rc.top, text, textColor);
+        font.drawText(buf, rc.left, rc.top, text, textColor, 4, 0, textFlags);
     }
 
 }

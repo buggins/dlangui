@@ -25,14 +25,12 @@ private import std.string;
 private import std.algorithm;
 
 import dlangui.core.types;
+import dlangui.graphics.colors;
 import dlangui.graphics.fonts;
 import dlangui.graphics.drawbuf;
 import dlangui.graphics.resources;
 
 immutable ubyte ALIGN_UNSPECIFIED = 0;
-immutable uint COLOR_UNSPECIFIED = 0xFFDEADFF;
-/// transparent color constant
-immutable uint COLOR_TRANSPARENT = 0xFFFFFFFF;
 /// unspecified font size constant - to take parent style property value
 immutable ushort FONT_SIZE_UNSPECIFIED = 0xFFFF;
 /// unspecified font weight constant - to take parent style property value
@@ -93,32 +91,6 @@ enum TextFlag : uint {
 	UnderlineHotKeysWhenAltPressed = 4,
 	/// underline text when drawing
 	Underline = 8
-}
-
-/// custom drawable attribute container for styles
-class DrawableAttribute {
-    protected string _id;
-    protected string _drawableId;
-    protected DrawableRef _drawable;
-    protected bool _initialized;
-    this(string id, string drawableId) {
-        _id = id;
-        _drawableId = drawableId;
-    }
-    @property string id() const { return _id; }
-    @property string drawableId() const { return _drawableId; }
-    @property void drawableId(string newDrawable) { _drawableId = newDrawable; clear(); }
-    @property ref DrawableRef drawable() const {
-        if (!_drawable.isNull)
-            return (cast(DrawableAttribute)this)._drawable;
-        (cast(DrawableAttribute)this)._drawable = drawableCache.get(_id);
-        (cast(DrawableAttribute)this)._initialized = true;
-        return (cast(DrawableAttribute)this)._drawable;
-    }
-    void clear() {
-        _drawable.clear();
-        _initialized = false;
-    }
 }
 
 /// style properties
@@ -905,58 +877,6 @@ Rect decodeRect(string s) {
 	return Rect(0,0,0,0);
 }
 
-/// decodes hex digit (0..9, a..f, A..F), returns uint.max if invalid
-uint decodeHexDigit(char ch) {
-    if (ch >= '0' && ch <= '9')
-        return ch - '0';
-    else if (ch >= 'a' && ch <= 'f')
-        return ch - 'a' + 10;
-    else if (ch >= 'A' && ch <= 'F')
-        return ch - 'A' + 10;
-    return uint.max;
-}
-
-/// supported formats: #RGB #ARGB #RRGGBB #AARRGGBB
-uint decodeColor(string s, uint defValue) {
-    s = strip(s);
-    switch (s) {
-        case "@null":
-        case "transparent":
-            return COLOR_TRANSPARENT;
-        case "black":
-            return 0x000000;
-        case "white":
-            return 0xFFFFFF;
-        case "red":
-            return 0xFF0000;
-        case "green":
-            return 0x00FF00;
-        case "blue":
-            return 0x0000FF;
-        case "gray":
-            return 0x808080;
-        case "lightgray":
-        case "silver":
-            return 0xC0C0C0;
-        default:
-            break;
-    }
-    if (s.length != 4 && s.length != 5 && s.length != 7 && s.length != 9)
-        return defValue;
-    if (s[0] != '#')
-        return defValue;
-    uint value = 0;
-    for (int i = 1; i < s.length; i++) {
-        uint digit = decodeHexDigit(s[i]);
-        if (digit == uint.max)
-            return defValue;
-        value = (value << 4) | digit;
-        if (s.length < 7) // double the same digit for short forms
-            value = (value << 4) | digit;
-    }
-    return value;
-}
-
 private import std.array : split;
 
 /// Decode color list attribute, e.g.: "#84A, #99FFFF" -> [0x8844aa, 0x99ffff]
@@ -966,7 +886,7 @@ uint[] decodeFocusRectColors(string s) {
         return null;
     uint[] res = new uint[colors.length];
     for (int i = 0; i < colors.length; i++) {
-        uint cl = decodeColor(colors[i], COLOR_UNSPECIFIED);
+        uint cl = decodeHexColor(colors[i], COLOR_UNSPECIFIED);
         if (cl == COLOR_UNSPECIFIED)
             return null;
         res[i] = cl;
@@ -1120,7 +1040,7 @@ bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
 			// <color id="buttons_panel_color" value="#303080"/>
 			string colorid = attrValue(item, "id");
 			string colorvalue = attrValue(item, "value");
-            uint color = decodeColor(colorvalue, COLOR_TRANSPARENT);
+            uint color = decodeHexColor(colorvalue, COLOR_TRANSPARENT);
 			if (colorid)
 				style.setCustomColor(colorid, color);
 		}
@@ -1216,6 +1136,33 @@ Theme loadTheme(string resourceId) {
 	destroy(res);
 	return null;
 }
+
+/// custom drawable attribute container for styles
+class DrawableAttribute {
+    protected string _id;
+    protected string _drawableId;
+    protected DrawableRef _drawable;
+    protected bool _initialized;
+    this(string id, string drawableId) {
+        _id = id;
+        _drawableId = drawableId;
+    }
+    @property string id() const { return _id; }
+    @property string drawableId() const { return _drawableId; }
+    @property void drawableId(string newDrawable) { _drawableId = newDrawable; clear(); }
+    @property ref DrawableRef drawable() const {
+        if (!_drawable.isNull)
+            return (cast(DrawableAttribute)this)._drawable;
+        (cast(DrawableAttribute)this)._drawable = drawableCache.get(_id);
+        (cast(DrawableAttribute)this)._initialized = true;
+        return (cast(DrawableAttribute)this)._drawable;
+    }
+    void clear() {
+        _drawable.clear();
+        _initialized = false;
+    }
+}
+
 
 shared static ~this() {
 	currentTheme = null;

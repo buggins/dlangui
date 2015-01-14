@@ -5,6 +5,7 @@
         align="Center"
         margins="5,5,5,5"
 	focusRectColors="#000"
+        textFlags="UnderlineHotKeys"
         />
     <style id="BUTTON_TRANSPARENT"
         backgroundImageId="btn_background_transparent"
@@ -12,7 +13,9 @@
         />
     <style id="BUTTON_LABEL"
         layoutWidth="FILL_PARENT"
+        margins="2,2,2,2"
         align="Left|VCenter"
+        textFlags="UnderlineHotKeys"
         />
     <style id="BUTTON_ICON"
         align="Center"
@@ -20,7 +23,10 @@
     <style id="TEXT"
         margins="2,2,2,2"
         padding="1,1,1,1"
-        />
+        align="Left|VCenter"
+        >
+        <state state_enabled="false" textColor="#A0000000"/>
+    </style>
     <style id="HSPACER"
         layoutWidth="FILL_PARENT"
         layoutWeight="100"

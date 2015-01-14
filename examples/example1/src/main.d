@@ -424,15 +424,30 @@ extern (C) int UIAppMain(string[] args) {
         }
 
         {
-		    LinearLayout layout3 = new LinearLayout("tab3");
+		    LinearLayout layout3 = new VerticalLayout("tab3");
+            // 3 types of buttons: Button, ImageButton, ImageTextButton
 		    layout3.addChild(new TextWidget(null, "Buttons in HorizontalLayout"d));
 		    WidgetGroup buttons1 = new HorizontalLayout();
-            buttons1.addChild(new Button("btn1", "Button 1"d));
-            buttons1.addChild(new Button("btn2", "Button 2"d));
-            buttons1.addChild(new Button("btn3", "Button 3"d));
-            buttons1.addChild(new ResizerWidget());
-            buttons1.addChild(new Button("btn4", "Button 4"d));
+		    buttons1.addChild(new TextWidget(null, "Button widgets: "d));
+            buttons1.addChild(new Button("btn1", "Button"d));
+            buttons1.addChild((new Button("btn2", "Disabled Button"d)).enabled(false));
+		    buttons1.addChild(new TextWidget(null, "ImageButton widgets: "d));
+            buttons1.addChild(new ImageButton("btn3", "text-plain"));
+		    buttons1.addChild(new TextWidget(null, "disabled: "d));
+            buttons1.addChild((new ImageButton("btn4", "folder")).enabled(false));
+		    buttons1.addChild(new TextWidget(null, "ImageTextButton widgets: "d));
+            buttons1.addChild(new ImageTextButton("btn5", "text-plain", "Enabled"d));
+            buttons1.addChild((new ImageTextButton("btn6", "folder", "Disabled"d)).enabled(false));
             layout3.addChild(buttons1);
+
+		    WidgetGroup buttons11 = new HorizontalLayout();
+		    buttons11.addChild(new TextWidget(null, "Construct buttons by action: "d));
+            Action FILE_OPEN_ACTION = new Action(ACTION_FILE_OPEN, "MENU_FILE_OPEN"c, "document-open", KeyCode.KEY_O, KeyFlag.Control);
+            buttons11.addChild(new Button(FILE_OPEN_ACTION));
+            buttons11.addChild(new ImageButton(FILE_OPEN_ACTION));
+            buttons11.addChild(new ImageTextButton(FILE_OPEN_ACTION));
+            layout3.addChild(buttons11);
+
             layout3.addChild(new VSpacer());
 		    layout3.addChild(new TextWidget(null, "CheckBoxes in HorizontalLayout"d));
 		    WidgetGroup buttons2 = new HorizontalLayout();

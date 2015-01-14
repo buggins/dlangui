@@ -355,6 +355,7 @@
      <File path="src\dlangui\dialogs\msgbox.d" />
     </Folder>
     <Folder name="graphics">
+     <File path="src\dlangui\graphics\colors.d" />
      <File path="src\dlangui\graphics\drawbuf.d" />
      <File path="src\dlangui\graphics\fonts.d" />
      <File path="src\dlangui\graphics\ftfonts.d" />
