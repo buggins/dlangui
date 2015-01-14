@@ -80,6 +80,7 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
 
     protected ImageButton createButton() {
         ImageButton res = new ImageButton("COMBOBOX_BUTTON", "scrollbar_btn_down");
+        res.styleId = "COMBO_BOX_BUTTON";
 		res.layoutWeight = 0;
         res.onClickListener = this;
         return res;
@@ -121,6 +122,8 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         super(ID);
         _adapter = adapter;
         _ownAdapter = ownAdapter;
+        styleId = "COMBO_BOX";
+        trackHover = true;
 		init();
     }
 
@@ -204,8 +207,8 @@ class ComboBox : ComboBoxBase {
 	}
 
     override protected Widget createSelectedItemWidget() {
-        TextWidget res = new TextWidget("COMBOBOX_BODY");
-		res.styleId = "COMBO_BOX";
+        TextWidget res = new TextWidget("COMBO_BOX_BODY");
+		res.styleId = "COMBO_BOX_BODY";
 		res.clickable = true;
         res.layoutWidth = FILL_PARENT;
         res.layoutHeight = WRAP_CONTENT;

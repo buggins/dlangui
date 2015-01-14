@@ -149,7 +149,7 @@
         fontSize="16"
         />
     <style id="COMBO_BOX"
-        backgroundImageId="editbox_background"
+        backgroundImageId="btn_background"
         padding="2,2,2,2"
         margins="2,2,2,2"
         minWidth="40"
@@ -164,6 +164,12 @@
         fontFamily="SansSerif"
         fontSize="16"
         align="Left|VCenter"
+	focusRectColors="#000"
+        />
+    <style id="COMBO_BOX_BUTTON"
+        padding="2,2,2,2"
+        backgroundImageId="btn_background_transparent"
+        align="Center"
         />
     <style id="EDIT_BOX"
         backgroundImageId="editbox_background"

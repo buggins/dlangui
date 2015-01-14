@@ -333,7 +333,7 @@ class Widget {
 			if (p.bottom < dp.bottom)
 				p.bottom = dp.bottom;
 		}
-        if (focusable && focusRectColors) {
+        if ((focusable || ((state & State.Parent) && parent.focusable)) && focusRectColors) {
             // add two pixels to padding when focus rect is required - one pixel for focus rect, one for additional space
             p.offset(FOCUS_RECT_PADDING, FOCUS_RECT_PADDING);
         }
@@ -599,10 +599,10 @@ class Widget {
 
     protected bool _focusable;
     /// whether widget can be focused
-    @property bool focusable() { return _focusable; }
+    @property bool focusable() const { return _focusable; }
     @property Widget focusable(bool flg) { _focusable = flg; return this; }
 
-    @property bool focused() {
+    @property bool focused() const {
         return (window !is null && window.focusedWidget is this && (state & State.Focused));
     }
 
@@ -1264,15 +1264,15 @@ class Widget {
     }
 
     /// returns parent widget, null for top level widget
-    @property Widget parent() { return _parent; }
+    @property Widget parent() const { return cast(Widget)_parent; }
     /// sets parent for widget
     @property Widget parent(Widget parent) { _parent = parent; return this; }
     /// returns window (if widget or its parent is attached to window)
-    @property Window window() {
-        Widget p = this;
+    @property Window window() const {
+        Widget p = cast(Widget)this;
         while (p !is null) {
             if (p._window !is null)
-                return p._window;
+                return cast(Window)p._window;
             p = p.parent;
         }
         return null;
