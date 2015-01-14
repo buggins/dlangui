@@ -144,6 +144,8 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         //_body.state = State.Parent;
         //focusable = true;
         _button.focusable = false;
+        _body.focusable = false;
+        focusable = true;
         //_body.focusable = true;
         addChild(_body);
         addChild(_button);
@@ -276,8 +278,8 @@ class ComboEdit : ComboBox {
 
 	override void init() {
 		super.init();
-		focusable = false;
-		_body.focusable = true;
+		//focusable = false;
+		//_body.focusable = true;
 	}
 
 }

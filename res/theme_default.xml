@@ -183,7 +183,7 @@
         />
 
     <style id="COMBO_BOX"
-        backgroundImageId="btn_background"
+        backgroundImageId="combobox_background"
         padding="2,2,2,2"
         margins="2,2,2,2"
         minWidth="40"

@@ -926,6 +926,13 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 		return true;
 	}
 
+    /// returns true if widget is focusable and visible and enabled
+    override @property bool canFocus() {
+        // allow to focus even if not enabled
+        return focusable && visible;
+    }
+
+
 	/// override to change popup menu items state
 	override bool isActionEnabled(const Action action) {
 		switch (action.id) {
