@@ -348,6 +348,7 @@ void extractStateFlag(ref string[string] attr, string attrName, string attrName2
 void extractStateFlags(ref string[string] attr, ref uint stateMask, ref uint stateValue) {
     extractStateFlag(attr, "state_pressed", "android:state_pressed", State.Pressed, stateMask, stateValue);
     extractStateFlag(attr, "state_focused", "android:state_focused", State.Focused, stateMask, stateValue);
+    extractStateFlag(attr, "state_default", "android:state_default", State.Default, stateMask, stateValue);
     extractStateFlag(attr, "state_hovered", "android:state_hovered", State.Hovered, stateMask, stateValue);
     extractStateFlag(attr, "state_selected", "android:state_selected", State.Selected, stateMask, stateValue);
     extractStateFlag(attr, "state_checkable", "android:state_checkable", State.Checkable, stateMask, stateValue);

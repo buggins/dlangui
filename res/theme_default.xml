@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <theme id="theme_default" fontSize="15" >
     <style id="BUTTON"
-        backgroundImageId="btn_default_small"
+        backgroundImageId="btn_background"
         align="Center"
         margins="5,5,5,5"
         />
     <style id="BUTTON_TRANSPARENT"
-        backgroundImageId="btn_default_small_transparent"
+        backgroundImageId="btn_background_transparent"
         align="Center"
         />
     <style id="BUTTON_LABEL"
@@ -31,7 +31,7 @@
         minHeight="5"
         />
     <style id="BUTTON_NOMARGINS"
-        backgroundImageId="btn_default_small"
+        backgroundImageId="btn_background"
         align="Center"
         />
     <drawable id="scrollbar_button_up" value="scrollbar_btn_up"/>

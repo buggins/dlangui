@@ -749,14 +749,14 @@ Theme createDefaultTheme() {
     }
     //res.fontFace = "Arial Narrow";
     res.fontSize = 15; // TODO: choose based on DPI
-	Style button = res.createSubstyle("BUTTON").backgroundImageId("btn_default_small").alignment(Align.Center).setMargins(5,5,5,5);
-    res.createSubstyle("BUTTON_TRANSPARENT").backgroundImageId("btn_default_small_transparent").alignment(Align.Center);
+	Style button = res.createSubstyle("BUTTON").backgroundImageId("btn_background").alignment(Align.Center).setMargins(5,5,5,5);
+    res.createSubstyle("BUTTON_TRANSPARENT").backgroundImageId("btn_background_transparent").alignment(Align.Center);
     res.createSubstyle("BUTTON_LABEL").layoutWidth(FILL_PARENT).alignment(Align.Left|Align.VCenter);
     res.createSubstyle("BUTTON_ICON").alignment(Align.Center);
     res.createSubstyle("TEXT").setMargins(2,2,2,2).setPadding(1,1,1,1);
     res.createSubstyle("HSPACER").layoutWidth(FILL_PARENT).minWidth(5).layoutWeight(100);
     res.createSubstyle("VSPACER").layoutHeight(FILL_PARENT).minHeight(5).layoutWeight(100);
-	res.createSubstyle("BUTTON_NOMARGINS").backgroundImageId("btn_default_small").alignment(Align.Center); // .setMargins(5,5,5,5)
+    res.createSubstyle("BUTTON_NOMARGINS").backgroundImageId("btn_background").alignment(Align.Center); // .setMargins(5,5,5,5)
 	//button.createState(State.Enabled | State.Focused, State.Focused).backgroundImageId("btn_default_small_normal_disable_focused");
     //button.createState(State.Enabled, 0).backgroundImageId("btn_default_small_normal_disable");
     //button.createState(State.Pressed, State.Pressed).backgroundImageId("btn_default_small_pressed");
@@ -1015,7 +1015,7 @@ bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
  * <?xml version="1.0" encoding="utf-8"?>
  * <theme id="theme_custom" parent="theme_default">
  *   	<style id="BUTTON" 
- * 			backgroundImageId="btn_default_small"
+ * 			backgroundImageId="btn_background"
  * 	 	>
  *   	</style>
  * </theme>
