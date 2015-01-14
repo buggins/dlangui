@@ -850,9 +850,9 @@ class Widget {
         return parent.visible;
     }
 
-    /// returns true if widget is focusable and visible
+    /// returns true if widget is focusable and visible and enabled
     @property bool canFocus() {
-        return focusable && visible;
+        return focusable && visible && enabled;
     }
 
     /// sets focus to this widget or suitable focusable child, returns previously focused widget
@@ -1138,7 +1138,7 @@ class Widget {
 	        bg.drawTo(buf, rc, state);
 		}
 	    applyPadding(rc);
-        if ((state & State.Focused) && focusable) {
+        if (state & State.Focused) {
             rc.expand(FOCUS_RECT_PADDING, FOCUS_RECT_PADDING);
             drawFocusRect(buf, rc);
         }

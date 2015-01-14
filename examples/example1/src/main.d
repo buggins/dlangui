@@ -441,11 +441,15 @@ extern (C) int UIAppMain(string[] args) {
             layout3.addChild(buttons1);
 
 		    WidgetGroup buttons11 = new HorizontalLayout();
-		    buttons11.addChild(new TextWidget(null, "Construct buttons by action: "d));
+		    buttons11.addChild(new TextWidget(null, "Construct buttons by action (Button, ImageButton, ImageTextButton): "d));
             Action FILE_OPEN_ACTION = new Action(ACTION_FILE_OPEN, "MENU_FILE_OPEN"c, "document-open", KeyCode.KEY_O, KeyFlag.Control);
             buttons11.addChild(new Button(FILE_OPEN_ACTION));
             buttons11.addChild(new ImageButton(FILE_OPEN_ACTION));
             buttons11.addChild(new ImageTextButton(FILE_OPEN_ACTION));
+		    buttons11.addChild(new TextWidget(null, "The same in disabled state: "d));
+            buttons11.addChild((new Button(FILE_OPEN_ACTION)).enabled(false));
+            buttons11.addChild((new ImageButton(FILE_OPEN_ACTION)).enabled(false));
+            buttons11.addChild((new ImageTextButton(FILE_OPEN_ACTION)).enabled(false));
             layout3.addChild(buttons11);
 
             layout3.addChild(new VSpacer());
@@ -478,7 +482,7 @@ extern (C) int UIAppMain(string[] args) {
             layout3.addChild(new VSpacer());
 		    layout3.addChild(new TextWidget(null, "In vertical layouts:"d));
 		    HorizontalLayout hlayout2 = new HorizontalLayout();
-            hlayout2.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+            hlayout2.layoutHeight(FILL_PARENT); //layoutWidth(FILL_PARENT).
 
 		    buttons1 = new VerticalLayout();
 		    buttons1.addChild(new TextWidget(null, "Buttons"d));

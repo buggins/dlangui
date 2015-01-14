@@ -6,7 +6,10 @@
         margins="5,5,5,5"
 	focusRectColors="#000"
         textFlags="UnderlineHotKeys"
-        />
+        >
+        <state state_enabled="true" state_hovered="true" textColor="#006080"/>
+        <state state_enabled="false" textColor="#80000000"/>
+    </style>
     <style id="BUTTON_TRANSPARENT"
         backgroundImageId="btn_background_transparent"
         align="Center"
@@ -16,10 +19,43 @@
         margins="2,2,2,2"
         align="Left|VCenter"
         textFlags="UnderlineHotKeys"
-        />
-    <style id="BUTTON_ICON"
+        >
+        <state state_enabled="false" textColor="#80000000"/>
+        <state state_enabled="true" state_hovered="true" textColor="#006080"/>
+    </style>
+    <style id="BUTTON_IMAGE"
+        margins="2,2,2,2"
         align="Center"
         />
+    <style id="CHECKBOX"
+        backgroundImageId="@null"
+        margins="2,2,2,2"
+        padding="2,2,2,2"
+	focusRectColors="@null"
+        />
+    <style id="CHECKBOX_IMAGE" parent="BUTTON_IMAGE"
+        align="Center"
+        margins="2,2,2,2"
+        />
+    <style id="CHECKBOX_LABEL" parent="BUTTON_LABEL"
+        align="Left|VCenter"
+	focusRectColors="#000"
+        >
+        <state state_enabled="true" state_hovered="true" textColor="#006080"/>
+    </style>
+    <style id="RADIOBUTTON" parent="CHECKBOX"
+        margins="2,2,2,2"
+        padding="2,2,2,2"
+        />
+    <style id="RADIOBUTTON_IMAGE" parent="CHECKBOX_IMAGE"
+        align="Center"
+        margins="2,2,2,2"
+        />
+    <style id="RADIOBUTTON_LABEL" parent="CHECKBOX_LABEL"
+        align="Left|VCenter"
+        >
+        <state state_enabled="true" state_hovered="true" textColor="#006080"/>
+    </style>
     <style id="TEXT"
         margins="2,2,2,2"
         padding="1,1,1,1"

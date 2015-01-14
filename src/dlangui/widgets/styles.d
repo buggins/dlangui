@@ -30,6 +30,35 @@ import dlangui.graphics.fonts;
 import dlangui.graphics.drawbuf;
 import dlangui.graphics.resources;
 
+// Standard style constants
+/// standard style id for TextWidget
+immutable string STYLE_TEXT = "TEXT";
+/// standard style id for Button
+immutable string STYLE_BUTTON = "BUTTON";
+/// standard style id for CheckBox
+immutable string STYLE_CHECKBOX = "CHECKBOX";
+/// standard style id for CheckBox image
+immutable string STYLE_CHECKBOX_IMAGE = "CHECKBOX_IMAGE";
+/// standard style id for CheckBox label
+immutable string STYLE_CHECKBOX_LABEL = "CHECKBOX_LABEL";
+/// standard style id for RadioButton
+immutable string STYLE_RADIOBUTTON = "RADIOBUTTON";
+/// standard style id for RadioButton image
+immutable string STYLE_RADIOBUTTON_IMAGE = "RADIOBUTTON_IMAGE";
+/// standard style id for RadioButton label
+immutable string STYLE_RADIOBUTTON_LABEL = "RADIOBUTTON_LABEL";
+
+// Layout size constants
+/// layout option, to occupy all available place
+immutable int FILL_PARENT = int.max - 1;
+/// layout option, for size based on content
+immutable int WRAP_CONTENT = int.max - 2;
+/// use as widget.layout() param to avoid applying of parent size
+immutable int SIZE_UNSPECIFIED = int.max;
+
+// Other style constants
+
+/// unspecified align - to take parent's value instead
 immutable ubyte ALIGN_UNSPECIFIED = 0;
 /// unspecified font size constant - to take parent style property value
 immutable ushort FONT_SIZE_UNSPECIFIED = 0xFFFF;
@@ -41,21 +70,16 @@ immutable ubyte FONT_STYLE_UNSPECIFIED = 0xFF;
 immutable ubyte FONT_STYLE_NORMAL = 0x00;
 /// italic font style constant
 immutable ubyte FONT_STYLE_ITALIC = 0x01;
-/// use as widget.layout() param to avoid applying of parent size
-immutable int SIZE_UNSPECIFIED = int.max;
 /// use text flags from parent style
 immutable uint TEXT_FLAGS_UNSPECIFIED = uint.max;
 /// use text flags from parent widget
 immutable uint TEXT_FLAGS_USE_PARENT = uint.max - 1;
-/// layout option, to occupy all available place
-immutable int FILL_PARENT = int.max - 1;
-/// layout option, for size based on content
-immutable int WRAP_CONTENT = int.max - 2;
 /// to take layout weight from parent
 immutable int WEIGHT_UNSPECIFIED = -1;
 
 /// returns true for WRAP_CONTENT, WRAP_CONTENT, SIZE_UNSPECIFIED
 bool isSpecialSize(int sz) {
+    // don't forget to update if more special constants added
     return sz >= WRAP_CONTENT;
 }
 
@@ -526,8 +550,11 @@ class Style {
 
     /// returns colors to draw focus rectangle (one for solid, two for vertical gradient) or null if no focus rect should be drawn for style
     @property const(uint[]) focusRectColors() const {
-        if (_focusRectColors)
+        if (_focusRectColors) {
+            if (_focusRectColors.length == 1 && _focusRectColors[0] == COLOR_UNSPECIFIED)
+                return null;
             return cast(const)_focusRectColors;
+        }
         return parentStyle.focusRectColors;
     }
 
@@ -881,6 +908,8 @@ private import std.array : split;
 
 /// Decode color list attribute, e.g.: "#84A, #99FFFF" -> [0x8844aa, 0x99ffff]
 uint[] decodeFocusRectColors(string s) {
+    if (s.equal("@null"))
+        return [COLOR_UNSPECIFIED];
     string[] colors = split(s, ",");
     if (colors.length < 1)
         return null;

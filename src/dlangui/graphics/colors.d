@@ -1,3 +1,21 @@
+// Written in the D programming language.
+
+/**
+This module contains declaration of useful color related operations.
+
+In dlangui, colors are represented as 32 bit uint AARRGGBB values.
+
+Synopsis:
+
+----
+import dlangui.graphics.colors;
+
+----
+
+Copyright: Vadim Lopatin, 2015
+License:   Boost License 1.0
+Authors:   Vadim Lopatin, coolreader.org@gmail.com
+*/
 module dlangui.graphics.colors;
 
 private import std.string : strip;

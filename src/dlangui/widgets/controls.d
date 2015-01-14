@@ -57,12 +57,12 @@ class HSpacer : Widget {
 class TextWidget : Widget {
     this(string ID = null, string textResourceId = null) {
 		super(ID);
-        styleId = "TEXT";
+        styleId = STYLE_TEXT;
         _text = textResourceId;
     }
     this(string ID, dstring rawText) {
 		super(ID);
-        styleId = "TEXT";
+        styleId = STYLE_TEXT;
         _text = rawText;
     }
     protected UIString _text;
@@ -249,6 +249,7 @@ class ImageTextButton : HorizontalLayout {
     protected void init(string drawableId, UIString caption) {
         styleId = "BUTTON";
         _icon = new ImageWidget("icon", drawableId);
+        _icon.styleId = "BUTTON_IMAGE";
         _label = new TextWidget("label", caption);
         _label.styleId = "BUTTON_LABEL";
         _icon.state = State.Parent;
@@ -285,12 +286,17 @@ class ImageTextButton : HorizontalLayout {
 class CheckBox : ImageTextButton {
     this(string ID = null, string textResourceId = null) {
         super(ID, "btn_check", textResourceId);
-        styleId = "TRANSPARENT_BUTTON_BACKGROUND";
-        checkable = true;
     }
     this(string ID, dstring labelText) {
         super(ID, "btn_check", labelText);
-        styleId = "TRANSPARENT_BUTTON_BACKGROUND";
+    }
+    override protected void init(string drawableId, UIString caption) {
+        super.init(drawableId, caption);
+        styleId = "CHECKBOX";
+        if (_icon)
+            _icon.styleId = "CHECKBOX_IMAGE";
+        if (_label)
+            _label.styleId = "CHECKBOX_LABEL";
         checkable = true;
     }
     // called to process click and notify listeners
@@ -304,12 +310,17 @@ class CheckBox : ImageTextButton {
 class RadioButton : ImageTextButton {
     this(string ID = null, string textResourceId = null) {
         super(ID, "btn_radio", textResourceId);
-        styleId = "TRANSPARENT_BUTTON_BACKGROUND";
-        checkable = true;
     }
     this(string ID, dstring labelText) {
         super(ID, "btn_radio", labelText);
-        styleId = "TRANSPARENT_BUTTON_BACKGROUND";
+    }
+    override protected void init(string drawableId, UIString caption) {
+        super.init(drawableId, caption);
+        styleId = STYLE_RADIOBUTTON;
+        if (_icon)
+            _icon.styleId = STYLE_RADIOBUTTON_IMAGE;
+        if (_label)
+            _label.styleId = STYLE_RADIOBUTTON_LABEL;
         checkable = true;
     }
 
@@ -351,7 +362,7 @@ class Button : Widget {
     }
 
     private void init(UIString label) {
-        styleId = "BUTTON";
+        styleId = STYLE_BUTTON;
         _text = label;
 		clickable = true;
         focusable = true;
