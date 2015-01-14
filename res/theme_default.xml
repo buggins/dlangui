@@ -34,6 +34,10 @@
         backgroundImageId="btn_background"
         align="Center"
         />
+    <color id="sample_color_rgb" value="#8CF"/>
+    <color id="sample_color_argb" value="#48CF"/>
+    <color id="sample_color_rrggbb" value="#80C0F0"/>
+    <color id="sample_color_aarrggbb" value="#4080C0F0"/>
     <drawable id="scrollbar_button_up" value="scrollbar_btn_up"/>
     <drawable id="scrollbar_button_down" value="scrollbar_btn_down"/>
     <drawable id="scrollbar_button_left" value="scrollbar_btn_left"/>

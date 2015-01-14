@@ -154,6 +154,7 @@ class Style {
 	protected Style[] _children;
 
     protected DrawableAttribute[string] _customDrawables;
+    protected uint[string] _customColors;
 
 	protected FontRef _font;
 	protected DrawableRef _backgroundDrawable;
@@ -227,6 +228,19 @@ class Style {
             _customDrawables[id].drawableId = resourceId;
         else
             _customDrawables[id] = new DrawableAttribute(id, resourceId);
+        return this;
+    }
+
+    /// get custom color attribute
+    uint customColor(string id) {
+        if (id in _customColors)
+            return _customColors[id];
+        return parentStyle.customColor(id);
+    }
+
+    /// sets custom color attribute for style
+    Style setCustomColor(string id, uint color) {
+        _customColors[id] = color;
         return this;
     }
 
@@ -681,16 +695,23 @@ class Theme : Style {
 	}
 
     private DrawableRef _emptyDrawable;
-    @property override ref DrawableRef customDrawable(string id) const {
+    override ref DrawableRef customDrawable(string id) const {
         if (id in _customDrawables)
             return _customDrawables[id].drawable;
         return (cast(Theme)this)._emptyDrawable;
     }
 
-    @property override string customDrawableId(string id) const {
+    override string customDrawableId(string id) const {
         if (id in _customDrawables)
             return _customDrawables[id].drawableId;
         return null;
+    }
+
+    /// get custom color attribute - transparent by default
+    override uint customColor(string id) {
+        if (id in _customColors)
+            return _customColors[id];
+        return 0xFFFFFFFF;
     }
 
 	/// create new named style or get existing
@@ -862,6 +883,35 @@ Rect decodeRect(string s) {
 	return Rect(0,0,0,0);
 }
 
+/// decodes hex digit (0..9, a..f, A..F), returns uint.max if invalid
+uint decodeHexDigit(char ch) {
+    if (ch >= '0' && ch <= '9')
+        return ch - '0';
+    else if (ch >= 'a' && ch <= 'f')
+        return ch - 'a' + 10;
+    else if (ch >= 'A' && ch <= 'F')
+        return ch - 'A' + 10;
+    return uint.max;
+}
+
+/// supported formats: #RGB #ARGB #RRGGBB #AARRGGBB
+uint decodeColor(string s, uint defValue) {
+    if (s.length != 4 && s.length != 5 && s.length != 7 && s.length != 9)
+        return defValue;
+    if (s[0] != '#')
+        return defValue;
+    uint value = 0;
+    for (int i = 1; i < s.length; i++) {
+        uint digit = decodeHexDigit(s[i]);
+        if (digit == uint.max)
+            return defValue;
+        value = (value << 4) | digit;
+        if (s.length < 7) // double the same digit for short forms
+            value = (value << 4) | digit;
+    }
+    return value;
+}
+
 /// parses string like "Left|VCenter" to bit set of Align flags
 ubyte decodeAlignment(string s) {
 	ubyte res = 0;
@@ -1002,6 +1052,13 @@ bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
 			string drawablevalue = attrValue(item, "value");
 			if (drawableid)
 				style.setCustomDrawable(drawableid, drawablevalue);
+		} else if (item.tag.name.equal("color")) {
+			// <color id="buttons_panel_color" value="#303080"/>
+			string colorid = attrValue(item, "id");
+			string colorvalue = attrValue(item, "value");
+            uint color = decodeColor(colorvalue, 0xFFFFFFFF);
+			if (colorid)
+				style.setCustomColor(colorid, color);
 		}
 	}
 	return true;
