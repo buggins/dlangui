@@ -150,6 +150,8 @@ class Style {
     protected int _layoutHeight = SIZE_UNSPECIFIED;
     protected int _layoutWeight = WEIGHT_UNSPECIFIED;
 
+    protected uint[] _focusRectColors;
+
 	protected Style[] _substates;
 	protected Style[] _children;
 
@@ -550,6 +552,19 @@ class Style {
 		return this;
 	}
 
+    /// returns colors to draw focus rectangle (one for solid, two for vertical gradient) or null if no focus rect should be drawn for style
+    @property const(uint[]) focusRectColors() const {
+        if (_focusRectColors)
+            return cast(const)_focusRectColors;
+        return parentStyle.focusRectColors;
+    }
+
+    /// sets colors to draw focus rectangle or null if no focus rect should be drawn for style
+    @property Style focusRectColors(uint[] colors) {
+        _focusRectColors = colors;
+        return this;
+    }
+
 	Style setPadding(int left, int top, int right, int bottom) {
 		_padding.left = left;
 		_padding.top = top;
@@ -634,7 +649,7 @@ class Theme : Style {
 	this(string id) {
 		super(this, id);
 		_parentStyle = null;
-		_backgroundColor = 0xFFFFFFFF; // transparent
+		_backgroundColor = COLOR_TRANSPARENT; // transparent
 		_textColor = 0x000000; // black
 		_align = Align.TopLeft;
 		_fontSize = 14; // TODO: from settings or screen properties / DPI
@@ -711,7 +726,14 @@ class Theme : Style {
     override uint customColor(string id) {
         if (id in _customColors)
             return _customColors[id];
-        return 0xFFFFFFFF;
+        return COLOR_TRANSPARENT;
+    }
+
+    /// returns colors to draw focus rectangle or null if no focus rect should be drawn for style
+    @property override const(uint[]) focusRectColors() const {
+        if (_focusRectColors)
+            return _focusRectColors;
+        return null;
     }
 
 	/// create new named style or get existing
@@ -794,7 +816,7 @@ Theme createDefaultTheme() {
     scrollbar.backgroundColor(0xC0808080);
     Style scrollbarButton = button.createSubstyle("SCROLLBAR_BUTTON");
     Style scrollbarSlider = res.createSubstyle("SLIDER");
-    Style scrollbarPage = res.createSubstyle("PAGE_SCROLL").backgroundColor(0xFFFFFFFF);
+    Style scrollbarPage = res.createSubstyle("PAGE_SCROLL").backgroundColor(COLOR_TRANSPARENT);
     scrollbarPage.createState(State.Pressed, State.Pressed).backgroundColor(0xC0404080);
     scrollbarPage.createState(State.Hovered, State.Hovered).backgroundColor(0xF0404080);
 
@@ -896,6 +918,29 @@ uint decodeHexDigit(char ch) {
 
 /// supported formats: #RGB #ARGB #RRGGBB #AARRGGBB
 uint decodeColor(string s, uint defValue) {
+    s = strip(s);
+    switch (s) {
+        case "@null":
+        case "transparent":
+            return COLOR_TRANSPARENT;
+        case "black":
+            return 0x000000;
+        case "white":
+            return 0xFFFFFF;
+        case "red":
+            return 0xFF0000;
+        case "green":
+            return 0x00FF00;
+        case "blue":
+            return 0x0000FF;
+        case "gray":
+            return 0x808080;
+        case "lightgray":
+        case "silver":
+            return 0xC0C0C0;
+        default:
+            break;
+    }
     if (s.length != 4 && s.length != 5 && s.length != 7 && s.length != 9)
         return defValue;
     if (s[0] != '#')
@@ -910,6 +955,23 @@ uint decodeColor(string s, uint defValue) {
             value = (value << 4) | digit;
     }
     return value;
+}
+
+private import std.array : split;
+
+/// Decode color list attribute, e.g.: "#84A, #99FFFF" -> [0x8844aa, 0x99ffff]
+uint[] decodeFocusRectColors(string s) {
+    string[] colors = split(s, ",");
+    if (colors.length < 1)
+        return null;
+    uint[] res = new uint[colors.length];
+    for (int i = 0; i < colors.length; i++) {
+        uint cl = decodeColor(colors[i], COLOR_UNSPECIFIED);
+        if (cl == COLOR_UNSPECIFIED)
+            return null;
+        res[i] = cl;
+    }
+    return res;
 }
 
 /// parses string like "Left|VCenter" to bit set of Align flags
@@ -1037,6 +1099,8 @@ bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
 		style.alpha = decodeDimension(elem.tag.attr["alpha"]);
 	if ("textFlags" in elem.tag.attr)
 		style.textFlags = decodeTextFlags(elem.tag.attr["textFlags"]);
+	if ("focusRectColors" in elem.tag.attr)
+		style.focusRectColors = decodeFocusRectColors(elem.tag.attr["focusRectColors"]);
 	foreach(item; elem.elements) {
 		if (allowStates && item.tag.name.equal("state")) {
 			uint stateMask = 0;
@@ -1056,7 +1120,7 @@ bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
 			// <color id="buttons_panel_color" value="#303080"/>
 			string colorid = attrValue(item, "id");
 			string colorvalue = attrValue(item, "value");
-            uint color = decodeColor(colorvalue, 0xFFFFFFFF);
+            uint color = decodeColor(colorvalue, COLOR_TRANSPARENT);
 			if (colorid)
 				style.setCustomColor(colorid, color);
 		}

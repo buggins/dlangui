@@ -411,6 +411,32 @@ class DrawBuf : RefCountedObject {
         }
     }
 
+    /// draw focus rectangle; vertical gradient supported - colors[0] is top color, colors[1] is bottom color
+    void drawFocusRect(Rect rc, const uint[] colors) {
+        // override for faster performance when using OpenGL
+        if (colors.length < 1)
+            return;
+        uint color1 = colors[0];
+        uint color2 = colors.length > 1 ? colors[1] : color1;
+        if (isFullyTransparentColor(color1) && isFullyTransparentColor(color2))
+            return;
+        // draw horizontal lines
+        for (int x = rc.left; x < rc.right; x++) {
+            if ((x ^ rc.top) & 1)
+                fillRect(Rect(x, rc.top, x + 1, rc.top + 1), color1);
+            if ((x ^ (rc.bottom - 1)) & 1)
+                fillRect(Rect(x, rc.bottom - 1, x + 1, rc.bottom), color2);
+        }
+        // draw vertical lines
+        for (int y = rc.top + 1; y < rc.bottom - 1; y++) {
+            uint color = color1 == color2 ? color1 : blendARGB(color2, color1, 255 / (rc.bottom - rc.top));
+            if ((y ^ rc.left) & 1)
+                fillRect(Rect(rc.left, y, rc.left + 1, y + 1), color);
+            if ((y ^ (rc.right - 1)) & 1)
+                fillRect(Rect(rc.right - 1, y, rc.right, y + 1), color);
+        }
+    }
+
     /// create drawbuf with copy of current buffer with changed colors (returns this if not supported)
     DrawBuf transformColors(ref ColorTransform transform) {
         return this;

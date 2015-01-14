@@ -316,8 +316,9 @@ class Widget {
         requestLayout();
         return this; 
     }
+    immutable static int FOCUS_RECT_PADDING = 2;
     /// get padding (between background bounds and content of widget)
-    @property Rect padding() const { 
+    @property Rect padding() const {
 		// get max padding from style padding and background drawable padding
 		Rect p = style.padding; 
 		DrawableRef d = backgroundDrawable;
@@ -332,6 +333,10 @@ class Widget {
 			if (p.bottom < dp.bottom)
 				p.bottom = dp.bottom;
 		}
+        if (focusable && focusRectColors) {
+            // add two pixels to padding when focus rect is required - one pixel for focus rect, one for additional space
+            p.offset(FOCUS_RECT_PADDING, FOCUS_RECT_PADDING);
+        }
 		return p;
 	}
     /// set padding for widget - override one from style
@@ -359,7 +364,12 @@ class Widget {
 		ownStyle.backgroundImageId = imageId;
 		return this;
 	}
-	
+
+    /// returns colors to draw focus rectangle (one for solid, two for vertical gradient) or null if no focus rect should be drawn for style
+    @property const(uint[]) focusRectColors() const {
+        return style.focusRectColors;
+    }
+
 	/// background drawable
 	@property DrawableRef backgroundDrawable() const {
 		return stateStyle.backgroundDrawable;
@@ -1108,6 +1118,14 @@ class Widget {
         _needLayout = false;
     }
 
+    /// draws focus rectangle, if enabled in styles
+    void drawFocusRect(DrawBuf buf, Rect rc) {
+        const uint[] colors = focusRectColors;
+        if (colors) {
+            buf.drawFocusRect(rc, colors);
+        }
+    }
+
     /// Draw widget at its position to buffer
     void onDraw(DrawBuf buf) {
         if (visibility != Visibility.Visible)
@@ -1120,6 +1138,10 @@ class Widget {
 	        bg.drawTo(buf, rc, state);
 		}
 	    applyPadding(rc);
+        if ((state & State.Focused) && focusable) {
+            rc.expand(FOCUS_RECT_PADDING, FOCUS_RECT_PADDING);
+            drawFocusRect(buf, rc);
+        }
         _needDraw = false;
     }
 

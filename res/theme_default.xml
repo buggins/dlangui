@@ -4,6 +4,7 @@
         backgroundImageId="btn_background"
         align="Center"
         margins="5,5,5,5"
+	focusRectColors="#000"
         />
     <style id="BUTTON_TRANSPARENT"
         backgroundImageId="btn_background_transparent"
