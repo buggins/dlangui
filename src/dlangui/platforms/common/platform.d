@@ -753,8 +753,13 @@ mixin template APP_ENTRY_POINT() {
         extern (Windows) int WinMain(void* hInstance, void* hPrevInstance,
                     char* lpCmdLine, int nCmdShow)
         {
-            return DLANGUIWinMain(hInstance, hPrevInstance,
+			try {
+				return DLANGUIWinMain(hInstance, hPrevInstance,
                                     lpCmdLine, nCmdShow);
+			} catch (Exception e) {
+				Log.e("Exception: ", e);
+				return 1;
+			}
         }
     }
 }
