@@ -341,10 +341,16 @@ class ListWidget : WidgetGroup, OnScrollHandler {
             onItemClickListener(this, index);
 	}
 
+    /// allow to override state for updating of items
+    // currently used to treat main menu items with opened submenu as focused
+    @property protected uint overrideStateForItem() {
+        return state;
+    }
+
     protected void updateSelectedItemFocus() {
 		if (_selectedItemIndex != -1) {
-            if ((_adapter.itemState(_selectedItemIndex) & State.Focused) != (state & State.Focused)) {
-                if (state & State.Focused)
+            if ((_adapter.itemState(_selectedItemIndex) & State.Focused) != (overrideStateForItem & State.Focused)) {
+                if (overrideStateForItem & State.Focused)
                     _adapter.setItemState(_selectedItemIndex, State.Focused);
                 else
                     _adapter.resetItemState(_selectedItemIndex, State.Focused);
@@ -472,7 +478,7 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 		_selectedItemIndex = index;
 		if (_selectedItemIndex != -1) {
             makeSelectionVisible();
-			_adapter.setItemState(_selectedItemIndex, State.Selected | (state & State.Focused));
+			_adapter.setItemState(_selectedItemIndex, State.Selected | (overrideStateForItem & State.Focused));
 			invalidate();
 		}
         return true;

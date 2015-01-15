@@ -26,6 +26,9 @@ import dlangui.widgets.layouts;
 import dlangui.widgets.lists;
 import dlangui.widgets.popup;
 
+// define DebugMenus for menu debug messages
+//debug = DebugMenus;
+
 /// menu item type
 enum MenuItemType {
 	/// normal menu item
@@ -418,6 +421,7 @@ class MenuWidgetBase : ListWidget {
 	}
 
     protected void onPopupClosed(PopupWidget p) {
+        debug(DebugMenus) Log.d("menu ", id, " onPopupClosed selectionChanging=", _selectionChangingInProgress);
 		if (_openedPopup) {
 			if (_openedPopup is p) {
 				_openedMenu.onPopupClosed(p);
@@ -429,13 +433,19 @@ class MenuWidgetBase : ListWidget {
 				//}
 				if (!isMainMenu)
 					window.setFocus(this);
+                //else
+                //    performUndoSelection();
+                if (isMainMenu && !_selectionChangingInProgress)
+                    close();
 			} else if (thisPopup is p) {
 				_openedPopup.close();
+                _openedPopup = null;
 			}
 		}
     }
 
 	protected void openSubmenu(int index, MenuItemWidget itemWidget, bool selectFirstItem) {
+        debug(DebugMenus) Log.d("menu", id, " open submenu ", index);
 		if (_openedPopup !is null) {
 			if (_openedPopupIndex == index) {
 				if (selectFirstItem) {
@@ -445,6 +455,7 @@ class MenuWidgetBase : ListWidget {
 				return;
 			} else {
 			    _openedPopup.close();
+                _openedPopup = null;
 			}
         }
 		PopupMenu popupMenu = new PopupMenu(itemWidget.item, this);
@@ -454,32 +465,41 @@ class MenuWidgetBase : ListWidget {
 		_openedPopup = popup;
 		_openedMenu = popupMenu;
         _openedPopupIndex = index;
+        _selectedItemIndex = index;
         if (selectFirstItem) {
+            debug(DebugMenus) Log.d("menu: selecting first item");
 			window.setFocus(popupMenu);
 			_openedMenu.selectItem(0);
 		}
 	}
 
+    protected bool _selectionChangingInProgress;
 	/// override to handle change of selection
 	override protected void selectionChanged(int index, int previouslySelectedItem = -1) {
-        debug Log.d("menu.selectionChanged ", index, ", ", previouslySelectedItem, " _selectedItemIndex=", _selectedItemIndex);
+        debug(DebugMenus) Log.d("menu ", id, " selectionChanged ", index, ", ", previouslySelectedItem, " _selectedItemIndex=", _selectedItemIndex);
+        _selectionChangingInProgress = true;
 		if (index >= 0)
 			setFocus();
 		MenuItemWidget itemWidget = index >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(index) : null;
 		MenuItemWidget prevWidget = previouslySelectedItem >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(previouslySelectedItem) : null;
+        bool popupWasOpen = false;
 		if (prevWidget !is null) {
-			if (_openedPopup !is null)
+			if (_openedPopup !is null) {
 				_openedPopup.close();
+                _openedPopup = null;
+                popupWasOpen = true;
+            }
 		}
 		if (itemWidget !is null) {
 			if (itemWidget.item.isSubmenu()) {
-				if (_selectOnHover) {
+				if (_selectOnHover || popupWasOpen) {
 					openSubmenu(index, itemWidget, _orientation == Orientation.Horizontal); // for main menu, select first item
 				}
 			} else {
 				// normal item
 			}
 		}
+        _selectionChangingInProgress = false;
 	}
 
 	protected void handleMenuItemClick(MenuItem item) {
@@ -496,7 +516,7 @@ class MenuWidgetBase : ListWidget {
 	}
 
 	protected void onMenuItem(MenuItem item) {
-        debug Log.d("onMenuItem ", item.action.label);
+        debug(DebugMenus) Log.d("onMenuItem ", item.action.label);
 		if (_openedPopup !is null) {
 			_openedPopup.close();
 			_openedPopup = null;
@@ -539,10 +559,16 @@ class MenuWidgetBase : ListWidget {
 	override protected void itemClicked(int index) {
 		MenuItemWidget itemWidget = index >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(index) : null;
 		if (itemWidget !is null) {
-			Log.d("Menu Item clicked ", itemWidget.item.action.id);
+			debug(DebugMenus) Log.d("Menu ", id, " Item clicked ", itemWidget.item.action.id);
 			if (itemWidget.item.isSubmenu()) {
 				// submenu clicked
 				if (_clickOnButtonDown && _openedPopup !is null && _openedMenu._item is itemWidget.item) {
+
+                    if (_selectedItemIndex == index) {
+                        _openedMenu.setFocus();
+                        return;
+                    }
+
 					// second click on main menu opened item
 					_openedPopup.close();
 					_openedPopup = null;
@@ -571,6 +597,12 @@ class MenuWidgetBase : ListWidget {
     override bool onKeyEvent(KeyEvent event) {
         if (orientation == Orientation.Horizontal) {
             // no special processing
+            if (event.action == KeyAction.KeyDown) {
+                if (event.keyCode == KeyCode.ESCAPE) {
+                    close();
+                    return true;
+                }
+            }
         } else {
             // for vertical (popup) menu
             if (!focused)
@@ -604,6 +636,9 @@ class MenuWidgetBase : ListWidget {
                         return true;
                     }
                     return true;
+                } else if (event.keyCode == KeyCode.ESCAPE) {
+                    close();
+                    return true;
                 }
             } else if (event.action == KeyAction.KeyUp) {
                 if (event.keyCode == KeyCode.LEFT || event.keyCode == KeyCode.RIGHT) {
@@ -622,7 +657,13 @@ class MenuWidgetBase : ListWidget {
 			itemClicked(_selectedItemIndex);
 			return true;
 		}
-        return super.onKeyEvent(event);
+        bool res = super.onKeyEvent(event);
+        return res;
+    }
+    /// closes this menu - handle ESC key
+    void close() {
+        if (thisPopup !is null)
+            thisPopup.close();
     }
 }
 
@@ -634,6 +675,7 @@ class MainMenu : MenuWidgetBase {
         id = "MAIN_MENU";
         styleId = STYLE_MAIN_MENU;
 		_clickOnButtonDown = true;
+        selectOnHover = false;
     }
 
     /// override and return true to track key events even when not focused
@@ -654,7 +696,7 @@ class MainMenu : MenuWidgetBase {
     protected Widget _menuTogglePreviousFocus;
 
 	override protected void onMenuItem(MenuItem item) {
-		debug Log.d("MainMenu.onMenuItem ", item.action.label);
+		debug(DebugMenus) Log.d("MainMenu.onMenuItem ", item.action.label);
 
 		// copy menu item click listeners
 		Signal!MenuItemClickHandler onMenuItemClickListenerCopy = onMenuItemClickListener;
@@ -683,9 +725,19 @@ class MainMenu : MenuWidgetBase {
 		deactivate();
 	}
 
+    /// closes this menu - ESC handling
+    override void close() {
+        debug(DebugMenus) Log.d("menu ", id, " close called");
+        if (_openedPopup !is null) {
+            _openedPopup.close();
+            _openedPopup = null;
+        } else
+            deactivate();
+    }
+
     /// bring focus to main menu, if not yet activated
     void activate() {
-        debug Log.d("activating main menu");
+        debug(DebugMenus) Log.d("activating main menu");
         if (activated)
             return;
         window.setFocus(this);
@@ -694,11 +746,13 @@ class MainMenu : MenuWidgetBase {
 
     /// close and remove focus, if activated
     void deactivate(bool force = false) {
-        debug Log.d("deactivating main menu");
+        debug(DebugMenus) Log.d("deactivating main menu");
         if (!activated && !force)
             return;
-        if (_openedPopup !is null)
+        if (_openedPopup !is null) {
             _openedPopup.close();
+            _openedPopup = null;
+        }
         selectItem(-1);
         setHoverItem(-1);
 		selectOnHover = false;
@@ -721,12 +775,14 @@ class MainMenu : MenuWidgetBase {
 
     /// override to handle focus changes
     override protected void handleFocusChange(bool focused) {
+        debug(DebugMenus) Log.d("menu ", id, "handling focus change to ", focused);
         if (focused && _openedPopup is null) {
             // activating!
             _menuTogglePreviousFocus = window.focusedWidget;
         }
         super.handleFocusChange(focused);
     }
+
     /// list navigation using keys
     override bool onKeyEvent(KeyEvent event) {
         // handle MainMenu activation / deactivation (Alt, Esc...)
@@ -743,7 +799,6 @@ class MainMenu : MenuWidgetBase {
 			int index = _item.findSubitemByHotkey(ch);
 			if (index >= 0) {
 				activate();
-				//selectItem(index);
 				itemClicked(index);
 				return true;
 			} else {
@@ -772,6 +827,14 @@ class MainMenu : MenuWidgetBase {
         }
         return super.onKeyEvent(event);
     }
+
+    override @property protected uint overrideStateForItem() {
+        uint res = state;
+        if (_openedPopup)
+            res |= State.Focused; // main menu with opened popup as focused for items display
+        return res;
+    }
+
 }
 
 

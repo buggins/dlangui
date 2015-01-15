@@ -594,10 +594,10 @@ class Window {
         bool needLayout = false;
         bool animationActive = false;
         if (checkUpdateNeeded(needDraw, needLayout, animationActive) || force) {
-            Log.d("Requesting update");
+            debug(DebugRedraw) Log.d("Requesting update");
             invalidate();
         }
-        Log.d("checkUpdateNeeded returned needDraw=", needDraw, " needLayout=", needLayout, " animationActive=", animationActive);
+        debug(DebugRedraw) Log.d("checkUpdateNeeded returned needDraw=", needDraw, " needLayout=", needLayout, " animationActive=", animationActive);
     }
     /// request window redraw
     abstract void invalidate();
