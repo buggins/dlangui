@@ -1011,10 +1011,12 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             // not processed - default handling
             return DefWindowProc(hwnd, message, wParam, lParam);
         case WM_KEYDOWN:
+        case WM_SYSKEYDOWN:
         case WM_KEYUP:
+        case WM_SYSKEYUP:
 			if (window !is null) {
                 int repeatCount = lParam & 0xFFFF;
-				if (window.onKey(message == WM_KEYDOWN ? KeyAction.KeyDown : KeyAction.KeyUp, wParam, repeatCount))
+				if (window.onKey(message == WM_KEYDOWN || message == WM_SYSKEYDOWN ? KeyAction.KeyDown : KeyAction.KeyUp, wParam, repeatCount))
                     return 0; // processed
             }
             break;
