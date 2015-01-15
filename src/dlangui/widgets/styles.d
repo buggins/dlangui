@@ -119,6 +119,15 @@ immutable string STYLE_COMBO_BOX_BODY = "COMBO_BOX_BODY";
 /// standard style id for app frame status line
 immutable string STYLE_STATUS_LINE = "STATUS_LINE";
 
+/// standard style id for dock window caption
+immutable string STYLE_DOCK_WINDOW_CAPTION = "DOCK_WINDOW_CAPTION";
+/// standard style id for dock window
+immutable string STYLE_DOCK_WINDOW = "DOCK_WINDOW";
+/// standard style id for dock window caption label
+immutable string STYLE_DOCK_WINDOW_CAPTION_LABEL = "DOCK_WINDOW_CAPTION_LABEL";
+/// standard style id for dock window body
+immutable string STYLE_DOCK_WINDOW_BODY = "DOCK_WINDOW_BODY";
+
 // Layout size constants
 /// layout option, to occupy all available place
 immutable int FILL_PARENT = int.max - 1;
@@ -737,6 +746,9 @@ class Theme : Style {
 	
 	~this() {
 		//Log.d("Theme destructor");
+        if (unknownStyleIds.length > 0) {
+            Log.e("Unknown style statistics: ", unknownStyleIds);
+        }
 		foreach(ref Style item; _byId) {
 			destroy(item);
 			item = null;
@@ -817,10 +829,21 @@ class Theme : Style {
 		return style;
 	}
 
+    /// to track unknown styles refernced from code
+    int[string] unknownStyleIds;
 	/// find style by id, returns theme if not style with specified ID is not found
 	@property Style get(string id) {
-		if (id !is null && id in _byId)
+        if (id is null)
+            return this;
+		if (id in _byId)
 			return _byId[id];
+        // track unknown style ID references
+        if (id in unknownStyleIds)
+            unknownStyleIds[id] = unknownStyleIds[id] + 1;
+        else {
+            Log.e("Unknown style ID requested: ", id);
+            unknownStyleIds[id] = 1;
+        }
 		return this;
 	}
 	
@@ -1085,10 +1108,16 @@ int decodeLayoutDimension(string s) {
 
 /// load style attributes from XML element
 bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
+    //Log.d("Theme: loadStyleAttributes ", style.id, " ", elem.tag.attr);
 	if ("backgroundImageId" in elem.tag.attr)
 		style.backgroundImageId = elem.tag.attr["backgroundImageId"];
-	if ("backgroundColor" in elem.tag.attr)
-		style.backgroundColor = decodeHexColor(elem.tag.attr["backgroundColor"]);
+	if ("backgroundColor" in elem.tag.attr) {
+        uint col = decodeHexColor(elem.tag.attr["backgroundColor"]);
+		style.backgroundColor = col;
+        //Log.d("    background color=", col);
+    } else {
+        //Log.d("    no background color attr");
+    }
 	if ("textColor" in elem.tag.attr)
 		style.textColor = decodeHexColor(elem.tag.attr["textColor"]);
 	if ("margins" in elem.tag.attr)

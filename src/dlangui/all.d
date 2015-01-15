@@ -69,6 +69,7 @@ public import dlangui.widgets.combobox;
 public import dlangui.widgets.popup;
 public import dlangui.widgets.appframe;
 public import dlangui.widgets.statusline;
+public import dlangui.widgets.docks;
 public import dlangui.platforms.common.platform;
 
 // some useful imports from Phobos

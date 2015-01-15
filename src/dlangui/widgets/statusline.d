@@ -34,6 +34,7 @@ class StatusLine : HorizontalLayout {
     void init() {
         _defStatus = new TextWidget("STATUS_LINE_TEXT");
         _defStatus.layoutWidth(FILL_PARENT);
+        _defStatus.text = "DLANGUI"d;
         addChild(_defStatus);
     }
     /// set text to show in status line in specific panel
