@@ -116,6 +116,8 @@ immutable string STYLE_COMBO_BOX = "COMBO_BOX";
 immutable string STYLE_COMBO_BOX_BUTTON = "COMBO_BOX_BUTTON";
 /// standard style id for combo box body (current item)
 immutable string STYLE_COMBO_BOX_BODY = "COMBO_BOX_BODY";
+/// standard style id for app frame status line
+immutable string STYLE_STATUS_LINE = "STATUS_LINE";
 
 // Layout size constants
 /// layout option, to occupy all available place

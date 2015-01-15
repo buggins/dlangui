@@ -131,6 +131,7 @@
     <style id="MAIN_MENU"
         layoutWidth="FILL_PARENT"
         backgroundColor="#EFEFF2"
+	layoutWeight="0"
         />
     <style id="MAIN_MENU_ITEM"
         padding="4,2,4,2"
@@ -214,6 +215,13 @@
         minHeight="60"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
+        />
+    <style id="STATUS_LINE"
+        backgroundColor="#D0D0D0"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="WRAP_CONTENT"
+        padding="4,4,4,4"
+	layoutWeight="0"
         />
     <style id="TREE_ITEM"
         padding="2,2,2,2"

@@ -89,7 +89,6 @@
   <resfile />
   <exefile>$(OutDir)\$(ProjectName).lib</exefile>
   <useStdLibPath>1</useStdLibPath>
-  <cRuntime>2</cRuntime>
   <additionalOptions />
   <preBuildCommand />
   <postBuildCommand />
@@ -184,7 +183,6 @@
   <resfile />
   <exefile>$(OutDir)\$(ProjectName).lib</exefile>
   <useStdLibPath>1</useStdLibPath>
-  <cRuntime>1</cRuntime>
   <additionalOptions />
   <preBuildCommand />
   <postBuildCommand />
@@ -380,6 +378,7 @@
      </Folder>
     </Folder>
     <Folder name="widgets">
+     <File path="src\dlangui\widgets\appframe.d" />
      <File path="src\dlangui\widgets\combobox.d" />
      <File path="src\dlangui\widgets\controls.d" />
      <File path="src\dlangui\widgets\editors.d" />
@@ -389,6 +388,7 @@
      <File path="src\dlangui\widgets\menu.d" />
      <File path="src\dlangui\widgets\popup.d" />
      <File path="src\dlangui\widgets\scroll.d" />
+     <File path="src\dlangui\widgets\statusline.d" />
      <File path="src\dlangui\widgets\styles.d" />
      <File path="src\dlangui\widgets\tabs.d" />
      <File path="src\dlangui\widgets\tree.d" />
