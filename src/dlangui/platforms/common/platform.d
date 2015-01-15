@@ -276,6 +276,7 @@ class Window {
         return _focusedWidget;
     }
 
+    /// dispatch key event to widgets which have wantsKeyTracking == true
     protected bool dispatchKeyEvent(Widget root, KeyEvent event) {
         if (root.visibility != Visibility.Visible)
             return false;
@@ -313,9 +314,12 @@ class Window {
                 return res;
         }
         Widget focus = focusedWidget;
-        if (focus !is null) {
+        while (focus) {
             if (focus.onKeyEvent(event))
                 return true; // processed by focused widget
+            if (focus.focusGroup)
+                break;
+            focus = focus.parent;
         }
         if (_mainWidget) {
             if (dispatchKeyEvent(_mainWidget, event))
