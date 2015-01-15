@@ -122,6 +122,10 @@ class TreeItem {
             p = p._parent;
         return cast(TreeItems)p;
     }
+    
+    void clear() {
+        _children.clear();
+    }
 
     @property TreeItem parent() { return _parent; }
     @property protected TreeItem parent(TreeItem p) { _parent = p; return this; }
@@ -196,6 +200,29 @@ class TreeItem {
             return this;
         return _parent.topParent;
     }
+
+
+    protected int _intParam;
+    protected Object _objectParam;
+
+    @property int intParam() {
+        return _intParam;
+    }
+
+    @property TreeItem intParam(int value) {
+        _intParam = value;
+        return this;
+    }
+
+    @property Object objectParam() {
+        return _objectParam;
+    }
+
+    @property TreeItem objectParam(Object value) {
+        _objectParam = value;
+        return this;
+    }
+
 
     /// returns true if item has at least one child
     @property bool hasChildren() { return childCount > 0; }
@@ -440,7 +467,7 @@ class TreeItemWidget : HorizontalLayout {
 
     this(TreeItem item) {
         super(item.id);
-        styleId = "TREE_ITEM";
+        styleId = STYLE_TREE_ITEM;
 
         clickable = true;
         focusable = true;
@@ -458,7 +485,7 @@ class TreeItemWidget : HorizontalLayout {
         _tab.maxWidth = w;
         if (_item.hasChildren) {
             _expander = new ImageWidget("expander", _item.hasChildren && _item.expanded ? "arrow_right_down_black" : "arrow_right_hollow");
-            _expander.styleId = "TREE_ITEM_EXPAND_ICON";
+            _expander.styleId = STYLE_TREE_ITEM_EXPAND_ICON;
             _expander.clickable = true;
             _expander.trackHover = true;
             //_expander.setState(State.Parent);
@@ -484,11 +511,11 @@ class TreeItemWidget : HorizontalLayout {
         };
         if (_item.iconRes.length > 0) {
             _icon = new ImageWidget("icon", _item.iconRes);
-            _icon.styleId = "TREE_ITEM_ICON";
+            _icon.styleId = STYLE_TREE_ITEM_ICON;
             _icon.setState(State.Parent);
         }
         _label = new TextWidget("label", _item.text);
-        _label.styleId = "TREE_ITEM_LABEL";
+        _label.styleId = STYLE_TREE_ITEM_LABEL;
         _label.setState(State.Parent);
         // append children
         addChild(_tab);
@@ -643,7 +670,7 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         super.layout(rc);
     }
 
-	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
 	override void measure(int parentWidth, int parentHeight) { 
         if (visibility == Visibility.Gone) {
             return;

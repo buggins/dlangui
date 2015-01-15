@@ -107,11 +107,13 @@ class Window {
             Log.d("onResize ", _dx, "x", _dy);
             long measureStart = currentTimeMillis;
             measure();
+            //Log.d("measured size: ", _mainWidget.measuredWidth, "x", _mainWidget.measuredHeight);
             long measureEnd = currentTimeMillis;
             Log.d("measure took ", measureEnd - measureStart, " ms");
             layout();
             long layoutEnd = currentTimeMillis;
             Log.d("layout took ", layoutEnd - measureEnd, " ms");
+            //Log.d("layout position: ", _mainWidget.pos);
         }
     }
 
@@ -592,10 +594,10 @@ class Window {
         bool needLayout = false;
         bool animationActive = false;
         if (checkUpdateNeeded(needDraw, needLayout, animationActive) || force) {
-            Log.d("Requesting update");
+            debug(DebugRedraw) Log.d("Requesting update");
             invalidate();
         }
-        Log.d("checkUpdateNeeded returned needDraw=", needDraw, " needLayout=", needLayout, " animationActive=", animationActive);
+        debug(DebugRedraw) Log.d("checkUpdateNeeded returned needDraw=", needDraw, " needLayout=", needLayout, " animationActive=", animationActive);
     }
     /// request window redraw
     abstract void invalidate();
@@ -751,8 +753,13 @@ mixin template APP_ENTRY_POINT() {
         extern (Windows) int WinMain(void* hInstance, void* hPrevInstance,
                     char* lpCmdLine, int nCmdShow)
         {
-            return DLANGUIWinMain(hInstance, hPrevInstance,
+			try {
+				return DLANGUIWinMain(hInstance, hPrevInstance,
                                     lpCmdLine, nCmdShow);
+			} catch (Exception e) {
+				Log.e("Exception: ", e);
+				return 1;
+			}
         }
     }
 }

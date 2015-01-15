@@ -174,15 +174,20 @@ class LayoutItems {
                 contentSecondarySize = maxItem;
             else
                 contentSecondarySize = rc.width;
-            if (_layoutHeight == FILL_PARENT || totalSize > rc.height)
+            if (_layoutHeight == FILL_PARENT && totalSize < rc.height && resizableSize > 0) {
                 delta = rc.height - totalSize; // total space to add to fit
+            } else if (totalSize > rc.height) {
+                delta = rc.height - totalSize; // total space to reduce to fit
+            }
         } else {
             if (_layoutHeight == WRAP_CONTENT && maxItem < rc.height)
                 contentSecondarySize = maxItem;
             else
                 contentSecondarySize = rc.height;
-            if (_layoutWidth == FILL_PARENT || totalSize > rc.width)
+            if (_layoutWidth == FILL_PARENT && totalSize < rc.width && resizableSize > 0)
                 delta = rc.width - totalSize; // total space to add to fit
+            else if (totalSize > rc.width)
+                delta = rc.width - totalSize; // total space to reduce to fit
         }
 		// calculate resize options and scale
         bool needForceResize = false;
@@ -194,7 +199,7 @@ class LayoutItems {
             // need resize of some children
             needResize = true;
 			// resize all if need to shrink or only resizable are too small to correct delta
-            needForceResize = delta < 0 || resizableWeight == 0; // || resizableSize * 2 / 3 < delta; // do we need resize non-FILL_PARENT items?
+            needForceResize = /*delta < 0 || */ resizableWeight == 0; // || resizableSize * 2 / 3 < delta; // do we need resize non-FILL_PARENT items?
 			// calculate scale factor: weight / delta * 10000
             if (needForceResize && nonresizableSize + resizableSize > 0)
                 scaleFactor = 10000 * delta / (nonresizableSize + resizableSize);
@@ -467,7 +472,7 @@ class ResizerWidget : Widget {
 
 
 /// Arranges items either vertically or horizontally
-class LinearLayout : WidgetGroup {
+class LinearLayout : WidgetGroupDefaultDrawing {
     protected Orientation _orientation = Orientation.Vertical;
     /// returns linear layout orientation (Vertical, Horizontal)
     @property Orientation orientation() { return _orientation; }
@@ -514,22 +519,6 @@ class LinearLayout : WidgetGroup {
         applyPadding(rc);
         _layoutItems.layout(rc);
     }
-    /// Draw widget at its position to buffer
-    override void onDraw(DrawBuf buf) {
-        if (visibility != Visibility.Visible)
-            return;
-        super.onDraw(buf);
-        Rect rc = _pos;
-        applyMargins(rc);
-        applyPadding(rc);
-		auto saver = ClipRectSaver(buf, rc);
-		for (int i = 0; i < _children.count; i++) {
-			Widget item = _children.get(i);
-			if (item.visibility != Visibility.Visible)
-				continue;
-			item.onDraw(buf);
-		}
-    }
 
 }
 
@@ -560,7 +549,7 @@ class HorizontalLayout : LinearLayout {
 }
 
 /// place all children into same place (usually, only one child should be visible at a time)
-class FrameLayout : WidgetGroup {
+class FrameLayout : WidgetGroupDefaultDrawing {
     /// empty parameter list constructor - for usage by factory
     this() {
         this(null);
@@ -612,23 +601,6 @@ class FrameLayout : WidgetGroup {
         }
     }
 
-    /// Draw widget at its position to buffer
-    override void onDraw(DrawBuf buf) {
-        if (visibility != Visibility.Visible)
-            return;
-        super.onDraw(buf);
-        Rect rc = _pos;
-        applyMargins(rc);
-        applyPadding(rc);
-        auto saver = ClipRectSaver(buf, rc);
-		for (int i = 0; i < _children.count; i++) {
-			Widget item = _children.get(i);
-			if (item.visibility != Visibility.Visible)
-				continue;
-			item.onDraw(buf);
-		}
-    }
-
     /// make one of children (with specified ID) visible, for the rest, set visibility to otherChildrenVisibility
     bool showChild(string ID, Visibility otherChildrenVisibility = Visibility.Invisible, bool updateFocus = false) {
         bool found = false;
@@ -650,7 +622,7 @@ class FrameLayout : WidgetGroup {
 }
 
 /// layout children as table with rows and columns
-class TableLayout : WidgetGroup {
+class TableLayout : WidgetGroupDefaultDrawing {
 
 	this(string ID = null) {
 		super(ID);
@@ -838,23 +810,6 @@ class TableLayout : WidgetGroup {
 		applyMargins(rc);
 		applyPadding(rc);
 		_cells.layout(rc);
-	}
-	
-	/// Draw widget at its position to buffer
-	override void onDraw(DrawBuf buf) {
-		if (visibility != Visibility.Visible)
-			return;
-		super.onDraw(buf);
-		Rect rc = _pos;
-		applyMargins(rc);
-		applyPadding(rc);
-		auto saver = ClipRectSaver(buf, rc);
-		for (int i = 0; i < _children.count; i++) {
-			Widget item = _children.get(i);
-			if (item.visibility != Visibility.Visible)
-				continue;
-			item.onDraw(buf);
-		}
 	}
 	
 }

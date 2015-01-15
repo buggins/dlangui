@@ -28,6 +28,7 @@ module dlangui.graphics.resources;
 
 import dlangui.graphics.images;
 import dlangui.graphics.drawbuf;
+import dlangui.graphics.colors;
 import dlangui.core.logger;
 import std.file;
 import std.algorithm;
@@ -93,22 +94,7 @@ class FrameDrawable : Drawable {
     @property override Rect padding() { return _frameWidths; }
 }
 
-/// decode color string #AARRGGBB, e.g. #5599AA
-static uint decodeHexColor(string s) {
-    uint value = 0;
-    foreach(c; s) {
-        int digit = -1;
-        if (c >='0' && c <= '9')
-            digit = c - '0';
-        else if (c >='a' && c <= 'f')
-            digit = c - 'a' + 10;
-        else if (c >='A' && c <= 'F')
-            digit = c - 'A' + 10;
-        if (digit >= 0)
-            value = (value << 4) | digit;
-    }
-    return value;
-}
+
 /// decode size string, e.g. 1px or 2 or 3pt
 static uint decodeDimension(string s) {
     uint value = 0;
@@ -348,6 +334,7 @@ void extractStateFlag(ref string[string] attr, string attrName, string attrName2
 void extractStateFlags(ref string[string] attr, ref uint stateMask, ref uint stateValue) {
     extractStateFlag(attr, "state_pressed", "android:state_pressed", State.Pressed, stateMask, stateValue);
     extractStateFlag(attr, "state_focused", "android:state_focused", State.Focused, stateMask, stateValue);
+    extractStateFlag(attr, "state_default", "android:state_default", State.Default, stateMask, stateValue);
     extractStateFlag(attr, "state_hovered", "android:state_hovered", State.Hovered, stateMask, stateValue);
     extractStateFlag(attr, "state_selected", "android:state_selected", State.Selected, stateMask, stateValue);
     extractStateFlag(attr, "state_checkable", "android:state_checkable", State.Checkable, stateMask, stateValue);

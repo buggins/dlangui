@@ -142,7 +142,7 @@
   <compiler>0</compiler>
   <otherDMD>0</otherDMD>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>../../src ../../3rdparty ../../3rdparty/libpng/source</imppath>
+  <imppath>../../src ../../3rdparty ../../3rdparty/libpng/source  $(SolutionDir)/../dlib</imppath>
   <fileImppath />
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>

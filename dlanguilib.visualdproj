@@ -66,7 +66,7 @@
   <debuglevel>0</debuglevel>
   <debugids>DebugFocus</debugids>
   <versionlevel>0</versionlevel>
-  <versionids>USE_OPENGL USE_SDL Unicode</versionids>
+  <versionids>USE_OPENGL Unicode</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>1</createImplib>
@@ -89,6 +89,7 @@
   <resfile />
   <exefile>$(OutDir)\$(ProjectName).lib</exefile>
   <useStdLibPath>1</useStdLibPath>
+  <cRuntime>2</cRuntime>
   <additionalOptions />
   <preBuildCommand />
   <postBuildCommand />
@@ -141,7 +142,7 @@
   <compiler>0</compiler>
   <otherDMD>0</otherDMD>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>3rdparty ../DerelictGL3/source</imppath>
+  <imppath>3rdparty ../DerelictGL3/source  $(SolutionDir)/../dlib</imppath>
   <fileImppath />
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
@@ -160,7 +161,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids />
+  <versionids>Unicode</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -183,6 +184,7 @@
   <resfile />
   <exefile>$(OutDir)\$(ProjectName).lib</exefile>
   <useStdLibPath>1</useStdLibPath>
+  <cRuntime>1</cRuntime>
   <additionalOptions />
   <preBuildCommand />
   <postBuildCommand />
@@ -355,6 +357,7 @@
      <File path="src\dlangui\dialogs\msgbox.d" />
     </Folder>
     <Folder name="graphics">
+     <File path="src\dlangui\graphics\colors.d" />
      <File path="src\dlangui\graphics\drawbuf.d" />
      <File path="src\dlangui\graphics\fonts.d" />
      <File path="src\dlangui\graphics\ftfonts.d" />

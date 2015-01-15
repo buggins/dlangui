@@ -424,15 +424,34 @@ extern (C) int UIAppMain(string[] args) {
         }
 
         {
-		    LinearLayout layout3 = new LinearLayout("tab3");
+		    LinearLayout layout3 = new VerticalLayout("tab3");
+            // 3 types of buttons: Button, ImageButton, ImageTextButton
 		    layout3.addChild(new TextWidget(null, "Buttons in HorizontalLayout"d));
 		    WidgetGroup buttons1 = new HorizontalLayout();
-            buttons1.addChild(new Button("btn1", "Button 1"d));
-            buttons1.addChild(new Button("btn2", "Button 2"d));
-            buttons1.addChild(new Button("btn3", "Button 3"d));
-            buttons1.addChild(new ResizerWidget());
-            buttons1.addChild(new Button("btn4", "Button 4"d));
+		    buttons1.addChild(new TextWidget(null, "Button widgets: "d));
+            buttons1.addChild(new Button("btn1", "Button"d));
+            buttons1.addChild((new Button("btn2", "Disabled Button"d)).enabled(false));
+		    buttons1.addChild(new TextWidget(null, "ImageButton widgets: "d));
+            buttons1.addChild(new ImageButton("btn3", "text-plain"));
+		    buttons1.addChild(new TextWidget(null, "disabled: "d));
+            buttons1.addChild((new ImageButton("btn4", "folder")).enabled(false));
+		    buttons1.addChild(new TextWidget(null, "ImageTextButton widgets: "d));
+            buttons1.addChild(new ImageTextButton("btn5", "text-plain", "Enabled"d));
+            buttons1.addChild((new ImageTextButton("btn6", "folder", "Disabled"d)).enabled(false));
             layout3.addChild(buttons1);
+
+		    WidgetGroup buttons11 = new HorizontalLayout();
+		    buttons11.addChild(new TextWidget(null, "Construct buttons by action (Button, ImageButton, ImageTextButton): "d));
+            Action FILE_OPEN_ACTION = new Action(ACTION_FILE_OPEN, "MENU_FILE_OPEN"c, "document-open", KeyCode.KEY_O, KeyFlag.Control);
+            buttons11.addChild(new Button(FILE_OPEN_ACTION));
+            buttons11.addChild(new ImageButton(FILE_OPEN_ACTION));
+            buttons11.addChild(new ImageTextButton(FILE_OPEN_ACTION));
+		    buttons11.addChild(new TextWidget(null, "The same in disabled state: "d));
+            buttons11.addChild((new Button(FILE_OPEN_ACTION)).enabled(false));
+            buttons11.addChild((new ImageButton(FILE_OPEN_ACTION)).enabled(false));
+            buttons11.addChild((new ImageTextButton(FILE_OPEN_ACTION)).enabled(false));
+            layout3.addChild(buttons11);
+
             layout3.addChild(new VSpacer());
 		    layout3.addChild(new TextWidget(null, "CheckBoxes in HorizontalLayout"d));
 		    WidgetGroup buttons2 = new HorizontalLayout();
@@ -463,7 +482,7 @@ extern (C) int UIAppMain(string[] args) {
             layout3.addChild(new VSpacer());
 		    layout3.addChild(new TextWidget(null, "In vertical layouts:"d));
 		    HorizontalLayout hlayout2 = new HorizontalLayout();
-            hlayout2.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+            hlayout2.layoutHeight(FILL_PARENT); //layoutWidth(FILL_PARENT).
 
 		    buttons1 = new VerticalLayout();
 		    buttons1.addChild(new TextWidget(null, "Buttons"d));
@@ -528,13 +547,19 @@ extern (C) int UIAppMain(string[] args) {
 		table.addChild((new TextWidget(null, "Parameter 2 name bla bla"d)).alignment(Align.Right | Align.VCenter));
 		table.addChild((new EditLine("edit2", "Some text for parameter 2"d)).layoutWidth(FILL_PARENT));
 		// row 3
-		table.addChild((new TextWidget(null, "Param 3"d)).alignment(Align.Right | Align.VCenter));
-		table.addChild((new EditLine("edit3", "Parameter 3 value"d)).layoutWidth(FILL_PARENT));
-
+		table.addChild((new TextWidget(null, "Param 3 is disabled"d)).alignment(Align.Right | Align.VCenter).enabled(false));
+		table.addChild((new EditLine("edit3", "Parameter 3 value"d)).layoutWidth(FILL_PARENT).enabled(false));
+        // normal readonly combo box
         ComboBox combo1 = new ComboBox("combo1", ["item value 1"d, "item value 2"d, "item value 3"d, "item value 4"d, "item value 5"d, "item value 6"d]);
 		table.addChild((new TextWidget(null, "Combo box param"d)).alignment(Align.Right | Align.VCenter));
-        combo1.selectedItemIndex(3);
+        combo1.selectedItemIndex = 3;
 		table.addChild(combo1).layoutWidth(FILL_PARENT);
+        // disabled readonly combo box
+        ComboBox combo2 = new ComboBox("combo2", ["item value 1"d, "item value 2"d, "item value 3"d]);
+		table.addChild((new TextWidget(null, "Disabled combo box"d)).alignment(Align.Right | Align.VCenter));
+        combo2.enabled = false;
+        combo2.selectedItemIndex = 0;
+		table.addChild(combo2).layoutWidth(FILL_PARENT);
 
 		table.margins(Rect(10,10,10,10)).layoutWidth(FILL_PARENT);
 		tabs.addTab(table, "TAB_TABLE_LAYOUT"c);
@@ -639,11 +664,11 @@ extern (C) int UIAppMain(string[] args) {
 		table2.addChild((new TextWidget(null, "Param 5 - edit text here - blah blah blah"d)).alignment(Align.Right | Align.VCenter));
 		table2.addChild((new EditLine("edit3", "Parameter 5 value"d)).layoutWidth(FILL_PARENT));
 		// row 6
-		table2.addChild((new TextWidget(null, "Param 6 - just to fill content widget"d)).alignment(Align.Right | Align.VCenter));
-		table2.addChild((new EditLine("edit3", "Parameter 5 value"d)).layoutWidth(FILL_PARENT));
+		table2.addChild((new TextWidget(null, "Param 6 - just to fill content widget (DISABLED)"d)).alignment(Align.Right | Align.VCenter).enabled(false));
+		table2.addChild((new EditLine("edit3", "Parameter 5 value"d)).layoutWidth(FILL_PARENT).enabled(false));
 		// row 7
-		table2.addChild((new TextWidget(null, "Param 7 - just to fill content widget"d)).alignment(Align.Right | Align.VCenter));
-		table2.addChild((new EditLine("edit3", "Parameter 5 value"d)).layoutWidth(FILL_PARENT));
+		table2.addChild((new TextWidget(null, "Param 7 - just to fill content widget (DISABLED)"d)).alignment(Align.Right | Align.VCenter).enabled(false));
+		table2.addChild((new EditLine("edit3", "Parameter 5 value"d)).layoutWidth(FILL_PARENT).enabled(false));
 		// row 8
 		table2.addChild((new TextWidget(null, "Param 8 - just to fill content widget"d)).alignment(Align.Right | Align.VCenter));
 		table2.addChild((new EditLine("edit3", "Parameter 5 value"d)).layoutWidth(FILL_PARENT));

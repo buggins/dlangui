@@ -217,11 +217,19 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
 			pwidth -= m.left + m.right + p.left + p.right;
 		if (parentHeight != SIZE_UNSPECIFIED)
 			pheight -= m.top + m.bottom + p.top + p.bottom;
-        if (_hscrollbar)
+        if (_hscrollbar) {
 		    _hscrollbar.measure(pwidth, pheight);
-        if (_vscrollbar)
+        }
+        if (_vscrollbar) {
 		    _vscrollbar.measure(pwidth, pheight);
+        }
         Point sz = fullContentSize();
+        if (_hscrollbar) {
+		    sz.y += _hscrollbar.measuredHeight;
+        }
+        if (_vscrollbar) {
+		    sz.x += _vscrollbar.measuredWidth;
+        }
 		measuredContent(parentWidth, parentHeight, sz.x, sz.y);
 	}
 
@@ -292,9 +300,9 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
     If size of content widget exceeds available space, allows to scroll it.
  */
 class ScrollWidget :  ScrollWidgetBase {
-    protected WidgetGroup _contentWidget;
-    @property WidgetGroup contentWidget() { return _contentWidget; }
-    @property ScrollWidget contentWidget(WidgetGroup newContent) { 
+    protected Widget _contentWidget;
+    @property Widget contentWidget() { return _contentWidget; }
+    @property ScrollWidget contentWidget(Widget newContent) { 
         if (_contentWidget) {
             removeChild(childIndex(_contentWidget));
             destroy(_contentWidget);

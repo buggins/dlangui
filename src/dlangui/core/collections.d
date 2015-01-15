@@ -221,3 +221,82 @@ struct Collection(T, bool ownItems = false) {
     }
 }
 
+
+/** object list holder, owning its objects - on destroy of holder, all own objects will be destroyed */
+struct ObjectList(T) {
+    protected T[] _list;
+    protected int _count;
+    /** returns count of items */
+    @property int count() const { return _count; }
+    /** get item by index */
+    T get(int index) {
+        assert(index >= 0 && index < _count, "child index out of range");
+        return _list[index];
+    }
+    /// get item by index
+    T opIndex(int index) {
+        return get(index);
+    }
+    /** add item to list */
+    T add(T item) {
+        if (_list.length <= _count) // resize
+            _list.length = _list.length < 4 ? 4 : _list.length * 2;
+        _list[_count++] = item;
+        return item;
+    }
+    /** add item to list */
+    T insert(T item, int index = -1) {
+        if (index > _count || index < 0)
+            index = _count;
+        if (_list.length <= _count) // resize
+            _list.length = _list.length < 4 ? 4 : _list.length * 2;
+        for (int i = _count; i > index; i--)
+            _list[i] = _list[i - 1];
+        _list[index] = item;
+        _count++;
+        return item;
+    }
+    /** find child index for item, return -1 if not found */
+    int indexOf(T item) {
+        for (int i = 0; i < _count; i++)
+            if (_list[i] == item)
+                return i;
+        return -1;
+    }
+    /** find child index for item by id, return -1 if not found */
+    static if (__traits(hasMember, T, "compareId")) {
+        int indexOf(string id) {
+            for (int i = 0; i < _count; i++)
+                if (_list[i].compareId(id))
+                    return i;
+            return -1;
+        }
+    }
+    /** remove item from list, return removed item */
+    T remove(int index) {
+        assert(index >= 0 && index < _count, "child index out of range");
+        T item = _list[index];
+        for (int i = index; i < _count - 1; i++)
+            _list[i] = _list[i + 1];
+        _count--;
+        return item;
+    }
+    /** Replace item with another value, destroy old value. */
+    void replace(T item, int index) {
+        T old = _list[index];
+        _list[index] = item;
+        destroy(old);
+    }
+    /** remove and destroy all items */
+    void clear() {
+        for (int i = 0; i < _count; i++) {
+            destroy(_list[i]);
+            _list[i] = null;
+        }
+        _count = 0;
+    }
+    ~this() {
+        clear();
+    }
+}
+

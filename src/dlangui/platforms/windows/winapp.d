@@ -169,7 +169,9 @@ class Win32Window : Window {
         Win32Window w32parent = cast(Win32Window)parent;
         HWND parenthwnd = w32parent ? w32parent._hwnd : null;
         _platform = platform;
-        _gl = new GLSupport();
+        version (USE_OPENGL) {
+            _gl = new GLSupport();
+        }
         _caption = windowCaption;
         _flags = flags;
         uint ws = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
@@ -295,7 +297,7 @@ class Win32Window : Window {
             import derelict.opengl3.wgl;
             if (_hGLRC) {
 			    glSupport.uninitShaders();
-                delete _glSupport;
+                destroy(_glSupport);
                 _glSupport = null;
                 _gl = null;
                 wglMakeCurrent (null, null) ;
@@ -449,7 +451,7 @@ class Win32Window : Window {
         resizedicon.invertAlpha();
         ICONINFO ii;
         HBITMAP mask = resizedicon.createTransparencyBitmap();
-        HBITMAP color = resizedicon.destoryLeavingBitmap();
+        HBITMAP color = resizedicon.destroyLeavingBitmap();
         ii.fIcon = TRUE;
         ii.xHotspot = 0;
         ii.yHotspot = 0;
@@ -457,8 +459,8 @@ class Win32Window : Window {
         ii.hbmColor = color;
         _icon = CreateIconIndirect(&ii);
         if (_icon) {
-            SendMessage(_hwnd, WM_SETICON, ICON_SMALL, cast(int)_icon);
-            SendMessage(_hwnd, WM_SETICON, ICON_BIG, cast(int)_icon);
+            SendMessageW(_hwnd, WM_SETICON, ICON_SMALL, cast(LPARAM)_icon);
+            SendMessageW(_hwnd, WM_SETICON, ICON_BIG, cast(LPARAM)_icon);
         } else {
             Log.e("failed to create icon");
         }
@@ -960,12 +962,17 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             {
                 if (window !is null) {
                     WINDOWPOS * pos = cast(WINDOWPOS*)lParam;
+                    Log.d("WM_WINDOWPOSCHANGED: ", *pos);
                     GetClientRect(hwnd, &rect);
-                    int dx = rect.right - rect.left;
-                    int dy = rect.bottom - rect.top;
                     //window.onResize(pos.cx, pos.cy);
-                    window.onResize(dx, dy);
-                    InvalidateRect(hwnd, null, FALSE);
+                    //if (!(pos.flags & 0x8000)) { //SWP_NOACTIVATE)) {
+                    //if (pos.x > -30000) {
+                        int dx = rect.right - rect.left;
+                        int dy = rect.bottom - rect.top;
+                        window.onResize(dx, dy);
+                        InvalidateRect(hwnd, null, FALSE);
+                    //}
+                    //}
                 }
             }
             return 0;
@@ -1004,10 +1011,12 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             // not processed - default handling
             return DefWindowProc(hwnd, message, wParam, lParam);
         case WM_KEYDOWN:
+        case WM_SYSKEYDOWN:
         case WM_KEYUP:
+        case WM_SYSKEYUP:
 			if (window !is null) {
                 int repeatCount = lParam & 0xFFFF;
-				if (window.onKey(message == WM_KEYDOWN ? KeyAction.KeyDown : KeyAction.KeyUp, wParam, repeatCount))
+				if (window.onKey(message == WM_KEYDOWN || message == WM_SYSKEYDOWN ? KeyAction.KeyDown : KeyAction.KeyUp, wParam, repeatCount))
                     return 0; // processed
             }
             break;

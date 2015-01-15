@@ -52,7 +52,7 @@ class Dialog : VerticalLayout {
 	Signal!DialogResultHandler onDialogResult;
 
     this(UIString caption, Window parentWindow = null, uint flags = DialogFlag.Modal) {
-        super("dlg");
+        super("dialog-main-widget");
         _caption = caption;
         _parentWindow = parentWindow;
         _flags = flags;
@@ -155,8 +155,11 @@ class Dialog : VerticalLayout {
         uint wflags = 0;
         if (_flags & DialogFlag.Modal)
             wflags |= WindowFlag.Modal;
-        if (_flags & DialogFlag.Resizable)
+        if (_flags & DialogFlag.Resizable) {
             wflags |= WindowFlag.Resizable;
+            layoutWidth = FILL_PARENT;
+            layoutHeight = FILL_PARENT;
+        }
         _window = Platform.instance.createWindow(_caption, _parentWindow, wflags);
 		if (_window && _icon)
 			_window.windowIcon = drawableCache.getImage(_icon);

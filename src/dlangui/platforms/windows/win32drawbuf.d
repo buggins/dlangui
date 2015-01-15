@@ -42,6 +42,7 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
 	/// create resized copy of ColorDrawBuf
 	this(ColorDrawBuf v, int dx, int dy) {
 		this(dx, dy);
+        resetClipping();
         fill(0xFFFFFFFF);
         if (_dx == dx && _dy == dy)
             drawImage(0, 0, v);
@@ -87,7 +88,7 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
         //return CreateBitmap(_dx, _dy, 1, 1, buf.ptr);
     }
     /// destroy object, but leave bitmap as is
-    HBITMAP destoryLeavingBitmap() {
+    HBITMAP destroyLeavingBitmap() {
         HBITMAP res = _drawbmp;
         _drawbmp = null;
         destroy(this);
