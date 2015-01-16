@@ -307,7 +307,12 @@ class Widget {
     /// returns widget style id, null if not set
 	@property string styleId() const { return _styleId; }
     /// set widget style id
-    @property Widget styleId(string id) { _styleId = id; return this; }
+    @property Widget styleId(string id) { 
+        _styleId = id;
+        if (_ownStyle)
+            _ownStyle.parentStyleId = id;
+        return this; 
+    }
     /// get margins (between widget bounds and its background)
     @property Rect margins() const { return style.margins; }
     /// set margins for widget - override one from style

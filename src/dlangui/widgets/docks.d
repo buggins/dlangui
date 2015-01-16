@@ -4,16 +4,119 @@ import dlangui.widgets.layouts;
 import dlangui.widgets.controls;
 
 class DockHost : WidgetGroupDefaultDrawing {
+
+    protected int _topSpace;
+    protected int _bottomSpace;
+    protected int _rightSpace;
+    protected int _leftSpace;
     protected Widget _bodyWidget;
     @property Widget bodyWidget() { return _bodyWidget; }
     @property void bodyWidget(Widget widget) { 
-        _children.replace(_bodyWidget, widget);
+        _children.replace(widget, _bodyWidget);
         _bodyWidget = widget;
         _bodyWidget.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
     }
 
+    void addDockedWindow(DockWindow dockWin) {
+        addChild(dockWin);
+    }
+
     this() {
         super("DOCK_HOST");
+        styleId = STYLE_DOCK_HOST;
+    }
+
+    protected DockWindow[] getDockedWindowList(DockAlignment alignType) {
+        DockWindow[] list;
+        for (int i = 0; i < _children.count; i++) {
+            DockWindow item = cast(DockWindow)_children.get(i);
+            if (!item)
+                continue; // not a docked window
+            if(item.dockAlignment == alignType && item.visibility == Visibility.Visible) {
+                list ~= item;
+            }
+        }
+        return list;
+    }
+
+    protected void layoutDocked(DockWindow[] list, Rect rc, Orientation orient) {
+        int len = cast(int)list.length;
+        for (int i = 0; i < len; i++) {
+            Rect itemRc = rc;
+            if (len > 1) {
+                if (orient == Orientation.Vertical) {
+                    itemRc.top = rc.top + rc.height * i / len;
+                    if (i != len - 1)
+                        itemRc.bottom = rc.top + rc.height * (i + 1) / len;
+                    else
+                        itemRc.bottom = rc.bottom;
+                } else {
+                    itemRc.left = rc.left + rc.width * i / len;
+                    if (i != len - 1)
+                        itemRc.right = rc.left + rc.width * (i + 1) / len;
+                    else
+                        itemRc.right = rc.right;
+                }
+            }
+            list[i].layout(itemRc);
+        }
+    }
+
+    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+    override void layout(Rect rc) {
+        _needLayout = false;
+        if (visibility == Visibility.Gone) {
+            return;
+        }
+        _pos = rc;
+        applyMargins(rc);
+        applyPadding(rc);
+        DockWindow[] top = getDockedWindowList(DockAlignment.Top);
+        DockWindow[] left = getDockedWindowList(DockAlignment.Left);
+        DockWindow[] right = getDockedWindowList(DockAlignment.Right);
+        DockWindow[] bottom = getDockedWindowList(DockAlignment.Bottom);
+        _topSpace = top.length ? rc.height / 5 : 0;
+        _bottomSpace = bottom.length ? rc.height / 5 : 0;
+        _rightSpace = right.length ? rc.width / 5 : 0;
+        _leftSpace = left.length ? rc.width / 5 : 0;
+        if (_bodyWidget)
+            _bodyWidget.layout(Rect(rc.left + _leftSpace, rc.top + _topSpace, rc.right - _rightSpace, rc.bottom - _bottomSpace));
+        layoutDocked(top, Rect(rc.left + _leftSpace, rc.top, rc.right - _rightSpace, rc.top + _topSpace), Orientation.Horizontal);
+        layoutDocked(bottom, Rect(rc.left + _leftSpace, rc.bottom - _bottomSpace, rc.right - _rightSpace, rc.bottom), Orientation.Horizontal);
+        layoutDocked(left, Rect(rc.left, rc.top, rc.left + _leftSpace, rc.bottom), Orientation.Vertical);
+        layoutDocked(right, Rect(rc.right - _rightSpace, rc.top, rc.right, rc.bottom), Orientation.Vertical);
+    }
+    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+    override void measure(int parentWidth, int parentHeight) { 
+        Rect m = margins;
+        Rect p = padding;
+        // calc size constraints for children
+        int pwidth = parentWidth;
+        int pheight = parentHeight;
+        if (parentWidth != SIZE_UNSPECIFIED)
+            pwidth -= m.left + m.right + p.left + p.right;
+        if (parentHeight != SIZE_UNSPECIFIED)
+            pheight -= m.top + m.bottom + p.top + p.bottom;
+        // measure children
+        Point sz;
+        Point bodySize;
+        if (_bodyWidget) {
+            _bodyWidget.measure(pwidth, pheight);
+            bodySize.x = _bodyWidget.measuredWidth;
+            bodySize.y = _bodyWidget.measuredHeight;
+        }
+        for (int i = 0; i < _children.count; i++) {
+            Widget item = _children.get(i);
+            // TODO: fix
+            if (item.visibility != Visibility.Gone) {
+                item.measure(pwidth, pheight);
+                if (sz.x < item.measuredWidth)
+                    sz.x = item.measuredWidth;
+                if (sz.y < item.measuredHeight)
+                    sz.y = item.measuredHeight;
+            }
+        }
+        measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }
 }
 
@@ -29,17 +132,29 @@ class DockWindow : VerticalLayout {
     protected Widget _bodyWidget;
     @property Widget bodyWidget() { return _bodyWidget; }
     @property void bodyWidget(Widget widget) { 
-        _children.replace(_bodyWidget, widget);
+        _children.replace(widget, _bodyWidget);
         _bodyWidget = widget;
         _bodyWidget.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+        requestLayout();
     }
 
     protected DockAlignment _dockAlignment;
+
+    @property DockAlignment dockAlignment() { return _dockAlignment; }
+    @property DockWindow dockAlignment(DockAlignment a) { 
+        if (_dockAlignment != a) {
+            _dockAlignment = a;
+            requestLayout();
+        }
+        return this; 
+    }
+
     protected HorizontalLayout _captionLayout;
     protected TextWidget _caption;
     protected ImageButton _closeButton;
     this(string ID) {
         super(ID);
+        _dockAlignment = DockAlignment.Right;
         init();
     }
     protected bool onCloseButtonClick(Widget source) {
@@ -52,11 +167,6 @@ class DockWindow : VerticalLayout {
         _captionLayout = new HorizontalLayout("DOCK_WINDOW_CAPTION_PANEL");
         _captionLayout.layoutWidth(FILL_PARENT).layoutHeight(WRAP_CONTENT);
         _captionLayout.styleId = STYLE_DOCK_WINDOW_CAPTION;
-
-        uint bcolor = _captionLayout.backgroundColor;
-        Log.d("caption layout back color=", bcolor);
-
-        //_captionLayout.backgroundColor = 0x204060;
 
         _caption = new TextWidget("DOCK_WINDOW_CAPTION");
         _caption.styleId = STYLE_DOCK_WINDOW_CAPTION_LABEL;
@@ -72,8 +182,6 @@ class DockWindow : VerticalLayout {
 
         _bodyWidget = createBodyWidget();
         _bodyWidget.styleId = STYLE_DOCK_WINDOW_BODY;
-        //_bodyWidget.backgroundColor = 0xFFFFFF;
-        //_bodyWidget.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
 
         addChild(_captionLayout);
         addChild(_bodyWidget);

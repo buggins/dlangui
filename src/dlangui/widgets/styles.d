@@ -119,6 +119,10 @@ immutable string STYLE_COMBO_BOX_BODY = "COMBO_BOX_BODY";
 /// standard style id for app frame status line
 immutable string STYLE_STATUS_LINE = "STATUS_LINE";
 
+/// standard style id for dock host
+immutable string STYLE_DOCK_HOST = "DOCK_HOST";
+/// standard style id for dock host body
+immutable string STYLE_DOCK_HOST_BODY = "DOCK_HOST_BODY";
 /// standard style id for dock window caption
 immutable string STYLE_DOCK_WINDOW_CAPTION = "DOCK_WINDOW_CAPTION";
 /// standard style id for dock window
@@ -272,6 +276,19 @@ class Style {
 			return currentTheme.get(_parentId);
 		return currentTheme;
 	}
+
+    @property string parentStyleId() {
+        return _parentId;
+    }
+
+    @property Style parentStyleId(string id) {
+        _parentId = id;
+        if (_parentStyle)
+            if (currentTheme) {
+                _parentStyle = currentTheme.get(_parentId);
+            }
+        return this;
+    }
 
     @property ref DrawableRef backgroundDrawable() const {
 		if (!(cast(Style)this)._backgroundDrawable.isNull)

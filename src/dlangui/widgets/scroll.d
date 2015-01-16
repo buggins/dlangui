@@ -173,6 +173,7 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
 	override void onDraw(DrawBuf buf) {
 		if (visibility != Visibility.Visible)
 			return;
+        super.onDraw(buf);
 		Rect rc = _pos;
 		applyMargins(rc);
         {
