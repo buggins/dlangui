@@ -1,8 +1,30 @@
+// Written in the D programming language.
+
+/**
+
+This module implements dockable windows UI support.
+
+DockHost is main layout for docking support - contains body widget and optional docked windows.
+
+DockWindow is window to use with DockHost - can be docked on top, left, right or bottom side of DockHost.
+
+Synopsis:
+
+----
+import dlangui.widgets.docks;
+----
+
+
+Copyright: Vadim Lopatin, 2015
+License:   Boost License 1.0
+Authors:   Vadim Lopatin, coolreader.org@gmail.com
+*/
 module dlangui.widgets.docks;
 
 import dlangui.widgets.layouts;
 import dlangui.widgets.controls;
 
+/// Layout for docking support - contains body widget and optional docked windows
 class DockHost : WidgetGroupDefaultDrawing {
 
     protected int _topSpace;
@@ -127,6 +149,7 @@ enum DockAlignment {
     Bottom
 }
 
+/// docked window
 class DockWindow : VerticalLayout {
 
     protected Widget _bodyWidget;

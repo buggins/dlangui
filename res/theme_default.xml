@@ -261,6 +261,28 @@
         layoutHeight="FILL_PARENT"
         padding="1,1,1,1"
         />
+
+    <style id="TOOLBAR_HOST"
+        backgroundColor="#d6dbe9"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="WRAP_CONTENT"
+        padding="1,1,1,1"
+        />
+    <style id="TOOLBAR"
+        backgroundImageId="toolbar_background"
+        layoutWidth="WRAP_CONTENT"
+        layoutHeight="WRAP_CONTENT"
+        margins="2,2,2,2"
+        />
+    <style id="TOOLBAR_BUTTON"
+        backgroundImageId="btn_background_transparent"
+        align="Center"
+        margins="2,2,2,2"
+        />
+    <style id="TOOLBAR_SEPARATOR"
+        align="Center"
+        />
+
     <style id="TREE_ITEM"
         padding="2,2,2,2"
         margins="0,0,0,0"

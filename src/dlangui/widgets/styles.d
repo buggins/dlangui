@@ -132,6 +132,16 @@ immutable string STYLE_DOCK_WINDOW_CAPTION_LABEL = "DOCK_WINDOW_CAPTION_LABEL";
 /// standard style id for dock window body
 immutable string STYLE_DOCK_WINDOW_BODY = "DOCK_WINDOW_BODY";
 
+/// standard style id for toolbars layout
+immutable string STYLE_TOOLBAR_HOST = "TOOLBAR_HOST";
+/// standard style id for toolbars
+immutable string STYLE_TOOLBAR = "TOOLBAR";
+/// standard style id for toolbar button
+immutable string STYLE_TOOLBAR_BUTTON = "TOOLBAR_BUTTON";
+/// standard style id for toolbar separator
+immutable string STYLE_TOOLBAR_SEPARATOR = "TOOLBAR_SEPARATOR";
+
+
 // Layout size constants
 /// layout option, to occupy all available place
 immutable int FILL_PARENT = int.max - 1;
