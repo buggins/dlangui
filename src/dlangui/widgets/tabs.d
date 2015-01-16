@@ -94,6 +94,10 @@ class TabItemWidget : HorizontalLayout {
 		clickable = true;
         trackHover = true;
     }
+    void setStyles(string tabButtonStyle, string tabButtonTextStyle) {
+        styleId = tabButtonStyle;
+        _label.styleId = tabButtonTextStyle;
+    }
     protected bool onClick(Widget source) {
         if (source.compareId("CLOSE")) {
             Log.d("tab close button pressed");
@@ -185,6 +189,9 @@ class TabControl : WidgetGroupDefaultDrawing {
     protected bool _enableCloseButton;
     protected TabItemWidget[] _sortedItems;
 
+    protected string _tabStyle;
+    protected string _tabButtonStyle;
+    protected string _tabButtonTextStyle;
 
 	/// signal of tab change (e.g. by clicking on tab header)
 	Signal!TabHandler onTabChangedListener;
@@ -196,14 +203,27 @@ class TabControl : WidgetGroupDefaultDrawing {
     /// create with ID parameter
     this(string ID) {
         super(ID);
+        setStyles(STYLE_TAB_UP, STYLE_TAB_UP_BUTTON, STYLE_TAB_UP_BUTTON_TEXT);
         _items = new TabItemList();
         _moreButton = new ImageButton("MORE", "tab_more");
         _moreButton.styleId = STYLE_BUTTON_TRANSPARENT;
         _moreButton.onClickListener = &onClick;
         _moreButton.margins(Rect(3,3,3,6));
         _enableCloseButton = true;
-        styleId = STYLE_TAB_UP;
+        styleId = _tabStyle;
         addChild(_moreButton); // first child is always MORE button, the rest corresponds to tab list
+    }
+    void setStyles(string tabStyle, string tabButtonStyle, string tabButtonTextStyle) {
+        _tabStyle = tabStyle;
+        _tabButtonStyle = tabButtonStyle;
+        _tabButtonTextStyle = tabButtonTextStyle;
+        styleId = _tabStyle;
+        for (int i = 1; i < _children.count; i++) {
+            TabItemWidget w = cast(TabItemWidget)_children[i];
+            if (w) {
+                w.setStyles(_tabButtonStyle, _tabButtonTextStyle);
+            }
+        }
     }
     /// returns tab count
     @property int tabCount() const {
@@ -272,6 +292,7 @@ class TabControl : WidgetGroupDefaultDrawing {
         TabItemWidget widget = new TabItemWidget(item, enableCloseButton);
         widget.parent = this;
         widget.onClickListener = &onClick;
+        widget.setStyles(_tabButtonStyle, _tabButtonTextStyle);
         _children.insert(widget, index);
         updateTabs();
         requestLayout();
@@ -559,6 +580,11 @@ class TabWidget : VerticalLayout, TabHandler {
 	int tabIndex(string id) {
 		return _tabControl.tabIndex(id);
 	}
+
+    /// change style ids
+    void setStyles(string tabStyle, string tabButtonStyle, string tabButtonTextStyle) {
+        _tabControl.setStyles(tabStyle, tabButtonStyle, tabButtonTextStyle);
+    }
 
     private bool _tabNavigationInProgress;
 
