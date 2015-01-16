@@ -1283,7 +1283,9 @@ class Widget {
         return null;
     }
     /// sets window (to be used for top level widget from Window implementation). TODO: hide it from API?
-    @property void window(Window window) { _window = window; }
+    @property void window(Window window) { 
+        _window = window; 
+    }
 
     void removeAllChildren() {
         // override

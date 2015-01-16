@@ -101,6 +101,7 @@
         <state state_pressed="true" backgroundColor="#C0404080"/>
         <state state_hovered="true" backgroundColor="#F0404080"/>
     </style>
+
     <style id="TAB_UP"
         backgroundImageId="tab_up_background"
         layoutWidth="FILL_PARENT"
@@ -125,9 +126,9 @@
         backgroundColor="#F0F0F0"
         />
     <style id="TAB_WIDGET"
-        padding="3,3,3,3"
         backgroundColor="#EEEEEE"
         />
+
     <style id="MAIN_MENU"
         layoutWidth="FILL_PARENT"
         backgroundColor="#EFEFF2"
@@ -275,9 +276,10 @@
         margins="2,2,2,2"
         />
     <style id="TOOLBAR_BUTTON"
-        backgroundImageId="btn_background_transparent"
+        backgroundImageId="toolbar_button_background"
         align="Center"
-        margins="2,2,2,2"
+        margins="1,1,1,1"
+        padding="4,4,4,4"
         />
     <style id="TOOLBAR_SEPARATOR"
         align="Center"

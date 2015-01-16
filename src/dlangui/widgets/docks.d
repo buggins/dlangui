@@ -37,6 +37,7 @@ class DockHost : WidgetGroupDefaultDrawing {
         _children.replace(widget, _bodyWidget);
         _bodyWidget = widget;
         _bodyWidget.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+        _bodyWidget.parent = this;
     }
 
     void addDockedWindow(DockWindow dockWin) {
@@ -158,6 +159,7 @@ class DockWindow : VerticalLayout {
         _children.replace(widget, _bodyWidget);
         _bodyWidget = widget;
         _bodyWidget.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+        _bodyWidget.parent = this;
         requestLayout();
     }
 
