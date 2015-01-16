@@ -906,7 +906,6 @@ class Widget {
 		return false;
 	}
 
-
     // called to process click and notify listeners
     protected bool handleClick() {
         bool res = false;

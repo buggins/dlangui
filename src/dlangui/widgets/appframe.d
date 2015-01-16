@@ -24,7 +24,7 @@ import dlangui.widgets.layouts;
 import dlangui.widgets.statusline;
 import dlangui.widgets.toolbars;
 
-class AppFrame : VerticalLayout, MenuItemClickHandler {
+class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
     protected MainMenu _mainMenu;
     protected StatusLine _statusLine;
     protected ToolBarHost _toolbarHost;
@@ -64,7 +64,14 @@ class AppFrame : VerticalLayout, MenuItemClickHandler {
 
     /// override to handle main menu commands
     override bool onMenuItemClick(MenuItem item) {
-        return false;
+        // default handling: call Action handler
+        return onMenuItemAction(item.action);
+    }
+
+    /// override to handle main menu actions
+	bool onMenuItemAction(const Action action) {
+        // default handling: dispatch action using window (first offered to focused control, then to main widget)
+        return window.dispatchAction(action);
     }
 
     /// create main menu
