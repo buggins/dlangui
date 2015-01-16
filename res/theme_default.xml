@@ -111,12 +111,14 @@
         backgroundImageId="tab_btn_dark_up"
         />
     <style id="TAB_UP_BUTTON_DARK_TEXT"
-        textColor="#000000"
+        textColor="#E0E0E0"
         align="Center"
         >
-        <state state_selected="true" state_focused="true" textColor="#000000"/>
-        <state state_selected="true" textColor="#000000"/>
-        <state state_focused="true" textColor="#000000"/>
+        <state state_selected="true" state_window_focused="true" state_hovered="true" textColor="#800000"/>
+        <state state_selected="true" state_window_focused="true" textColor="#000000"/>
+        <state state_selected="true" textColor="#E0E0E0"/>
+        <state state_window_focused="true" state_hovered="true" textColor="#FFE0E0"/>
+        <state state_window_focused="true" textColor="#FFFFFF"/>
         <state state_hovered="true" textColor="#808000"/>
     </style>
     <style id="TAB_UP"
