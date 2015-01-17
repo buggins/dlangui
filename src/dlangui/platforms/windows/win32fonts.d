@@ -362,8 +362,11 @@ class Win32FontManager : FontManager {
 	FontDef * findFace(string face) {
 		if (face.length == 0)
 			return null;
-		if (face in _faceByName)
-			return _faceByName[face];
+		string[] faces = split(face, ",");
+		foreach(f; faces) {
+			if (f in _faceByName)
+				return _faceByName[f];
+		}
 		return null;
 	}
 
