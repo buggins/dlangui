@@ -427,8 +427,18 @@ class FreeTypeFontManager : FontManager {
     private FontFileItem findBestMatch(int weight, bool italic, FontFamily family, string face) {
         FontFileItem best = null;
         int bestScore = 0;
+		string[] faces = face ? split(face, ",") : null;
         foreach(FontFileItem item; _fontFiles) {
             int score = 0;
+			if (faces) {
+				for (int i = 0; i < faces.length; i++) {
+					if (faces[i].equal(item.def.face)) {
+						score += 300 - i;
+						break;
+					}
+				}
+			} else
+				score += 200;
             if (face is null || face.equal(item.def.face))
                 score += 200; // face match
             if (family == item.def.family)
