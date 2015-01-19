@@ -463,22 +463,22 @@ class FontManager {
 	/// removes entries not used after last call of checkpoint() or cleanup()
 	abstract void cleanup();
 
-    /// get min font size for antialiased fonts
+    /// get min font size for antialiased fonts (0 means antialiasing always on, some big value = always off)
     @property int minAnitialiasedFontSize() {
         return _minAnitialiasedFontSize;
     }
 
-    /// set new min font size for antialiased fonts
+    /// set new min font size for antialiased fonts - fonts with size >= specified value will be antialiased (0 means antialiasing always on, some big value = always off)
     @property void minAnitialiasedFontSize(int size) {
         _minAnitialiasedFontSize = size;
     }
 
-    /// get current hinting mode
+    /// get current hinting mode (Normal, AutoHint, Disabled)
     @property HintingMode hintingMode() {
         return _hintingMode;
     }
 
-    /// set hinting mode
+    /// set hinting mode (Normal, AutoHint, Disabled)
     @property void hintingMode(HintingMode mode) {
         _hintingMode = mode;
     }

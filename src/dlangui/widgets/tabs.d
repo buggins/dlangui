@@ -476,6 +476,15 @@ class TabHost : FrameLayout, TabHandler {
             onTabChangedListener(newActiveTabId, previousTabId);
     }
 
+    /// get tab content widget by id
+    Widget tabBody(string id) {
+        for (int i = 0; i < _children.count; i++) {
+            if (_children[i].compareId(id))
+                return _children[i];
+        }
+        return null;
+    }
+
     /// remove tab
     TabHost removeTab(string id) {
         assert(_tabControl !is null, "No TabControl set for TabHost");
@@ -586,6 +595,11 @@ class TabWidget : VerticalLayout, TabHandler {
 	/// select tab
     void selectTab(int index, bool updateAccess = true) {
         _tabControl.selectTab(index, updateAccess);
+    }
+
+    /// get tab content widget by id
+    Widget tabBody(string id) {
+        return _tabHost.tabBody(id);
     }
 
 	/// returns tab item by id (null if index out of range)

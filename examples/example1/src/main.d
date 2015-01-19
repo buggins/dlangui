@@ -22,6 +22,8 @@ import dlangui.dialogs.msgbox;
 import std.stdio;
 import std.conv;
 import std.utf;
+import std.algorithm;
+import std.path;
 
 
 mixin APP_ENTRY_POINT;
@@ -186,9 +188,10 @@ extern (C) int UIAppMain(string[] args) {
 	// load theme from file "theme_default.xml"
 	Platform.instance.uiTheme = "theme_default";
 
-    // you can override default hinting mode here
+    // you can override default hinting mode here (Normal, AutoHint, Disabled)
     FontManager.instance.hintingMode = HintingMode.Normal;
-    // you can override antialiasing setting here
+    // you can override antialiasing setting here (0 means antialiasing always on, some big value = always off)
+    // fonts with size less than specified value will not be antialiased
     FontManager.instance.minAnitialiasedFontSize = 0; // 0 means always antialiased
 
     // create window
@@ -196,6 +199,8 @@ extern (C) int UIAppMain(string[] args) {
 	
 	static if (true) {
         VerticalLayout contentLayout = new VerticalLayout();
+
+        TabWidget tabs = new TabWidget("TABS");
 
 		//=========================================================================
 		// create main menu
@@ -303,8 +308,29 @@ extern (C) int UIAppMain(string[] args) {
 					//dlg.filterIndex = 2;
 					dlg.onDialogResult = delegate(Dialog dlg, const Action result) {
 						if (result.id == ACTION_OPEN.id) {
-							Log.d("FileDialog.onDialogResult: ", result, " param=", result.stringParam);
-							window.showMessageBox(UIString("FileOpen result"d), UIString(toUTF32(result.stringParam)));
+                            string filename = result.stringParam;
+                            if (filename.endsWith(".d") || filename.endsWith(".txt") || filename.endsWith(".cpp") || filename.endsWith(".h") || filename.endsWith(".c")
+                                 || filename.endsWith(".json") || filename.endsWith(".dd") || filename.endsWith(".ddoc") || filename.endsWith(".xml") || filename.endsWith(".html")
+                                 || filename.endsWith(".html") || filename.endsWith(".css") || filename.endsWith(".log") || filename.endsWith(".hpp")) {
+                                // open source file in tab
+                                int index = tabs.tabIndex(filename);
+                                if (index >= 0) {
+                                    // file is already opened in tab
+                                    tabs.selectTab(index, true);
+                                } else {
+                                    SourceEdit editor = new SourceEdit(filename);
+                                    if (editor.load(filename)) {
+                                        tabs.addTab(editor, toUTF32(baseName(filename)));
+                                        tabs.selectTab(filename);
+                                    } else {
+                                        destroy(editor);
+                                        window.showMessageBox(UIString("File open error"d), UIString("Cannot open file "d ~ toUTF32(filename)));
+                                    }
+                                }
+                            } else {
+							    Log.d("FileDialog.onDialogResult: ", result, " param=", result.stringParam);
+							    window.showMessageBox(UIString("FileOpen result"d), UIString("Filename: "d ~ toUTF32(filename)));
+                            }
 						}
 
 					};
@@ -321,7 +347,6 @@ extern (C) int UIAppMain(string[] args) {
 
 		// ========= create tabs ===================
 
-        TabWidget tabs = new TabWidget("TABS");
 		tabs.onTabChangedListener = delegate(string newTabId, string oldTabId) {
 			window.windowCaption = tabs.tab(newTabId).text.value ~ " - dlangui example 1"d;
 		};

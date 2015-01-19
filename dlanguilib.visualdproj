@@ -66,7 +66,7 @@
   <debuglevel>0</debuglevel>
   <debugids>DebugFocus</debugids>
   <versionlevel>0</versionlevel>
-  <versionids>USE_OPENGL Unicode</versionids>
+  <versionids>Unicode</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>1</createImplib>
@@ -389,6 +389,7 @@
      <File path="src\dlangui\widgets\menu.d" />
      <File path="src\dlangui\widgets\popup.d" />
      <File path="src\dlangui\widgets\scroll.d" />
+     <File path="src\dlangui\widgets\srcedit.d" />
      <File path="src\dlangui\widgets\statusline.d" />
      <File path="src\dlangui\widgets\styles.d" />
      <File path="src\dlangui\widgets\tabs.d" />
