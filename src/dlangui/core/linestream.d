@@ -53,6 +53,166 @@ module dlangui.core.linestream;
 import std.stream;
 import std.stdio;
 import std.conv;
+import std.utf;
+
+/// File encoding
+public enum EncodingType : int {
+    /// utf-8 unicode
+    UTF8,
+    /// utf-16 unicode big endian
+    UTF16BE,
+    /// utf-16 unicode little endian
+    UTF16LE,
+    /// utf-32 unicode big endian
+    UTF32BE,
+    /// utf-32 unicode little endian
+    UTF32LE,
+    /// plain ASCII (character codes must be <= 127)
+    ASCII,
+    /// encoding is unknown
+    UNKNOWN
+};
+/// Line ending style
+public enum LineEnding : int {
+    /// LF (0x0A) - unix style
+    LF,
+    /// CR followed by LF (0x0D,0x0A) - windows style
+    CRLF,
+    /// CR (0x0D) - mac style
+    CR,
+    /// unknown line ending
+    UNKNOWN,
+    /// mixed line endings detected
+    MIXED
+}
+
+/// Text file format
+struct TextFileFormat {
+    /// character encoding
+    EncodingType encoding;
+    /// line ending style
+    LineEnding lineEnding;
+    /// byte order mark character flag
+    bool bom;
+}
+
+/// Text file writer which supports different text file formats
+class OutputLineStream {
+    protected OutputStream _stream;
+    protected string _filename;
+    protected TextFileFormat _format;
+    protected bool _firstLine;
+    protected char[] _buf;
+    protected int _len;
+    protected static immutable int MAX_BUFFER_SIZE = 0x10000; // 64K
+    /// create
+    this(OutputStream stream, string filename, TextFileFormat format) {
+        _stream = stream;
+        _filename = filename;
+        _format = format;
+        _firstLine = true;
+        // fix format
+        if (_format.encoding == EncodingType.UNKNOWN || _format.encoding == EncodingType.ASCII)
+            _format.encoding = EncodingType.UTF8;
+        if (_format.lineEnding == LineEnding.UNKNOWN || _format.lineEnding == LineEnding.MIXED) {
+            version (Windows) {
+                _format.lineEnding = LineEnding.CRLF;
+            } else {
+                _format.lineEnding = LineEnding.LF;
+            }
+        }
+    }
+    protected void flush() {
+        if (_len > 0) {
+            _stream.write(_buf[0.._len]);
+            _len = 0;
+        }
+    }
+    /// convert character encoding and write to output stream
+    protected void convertAndWrite(dstring s) {
+        /// reserve buf space
+        if (_buf.length < _len + s.length * 4 + 4)
+            _buf.length = _len + s.length * 4 + 4;
+        switch (_format.encoding) {
+            case EncodingType.UTF8:
+            default:
+                char[4] d;
+                for (int i = 0; i < s.length; i++) {
+                    int bytes = encode(d, s[i]);
+                    for (int j = 0; j < bytes; j++)
+                        _buf[_len++] = d[j];
+                }
+                break;
+            case EncodingType.UTF16BE:
+                wchar[2] d;
+                for (int i = 0; i < s.length; i++) {
+                    int n = encode(d, s[i]);
+                    for (int j = 0; j < n; j++) {
+                        _buf[_len++] = cast(char)(d[j] >> 8);
+                        _buf[_len++] = cast(char)(d[j] & 0xFF);
+                    }
+                }
+                break;
+            case EncodingType.UTF16LE:
+                wchar[2] d;
+                for (int i = 0; i < s.length; i++) {
+                    int n = encode(d, s[i]);
+                    for (int j = 0; j < n; j++) {
+                        _buf[_len++] = cast(char)(d[j] & 0xFF);
+                        _buf[_len++] = cast(char)(d[j] >> 8);
+                    }
+                }
+                break;
+            case EncodingType.UTF32LE:
+                for (int i = 0; i < s.length; i++) {
+                    dchar ch = s[i];
+                    _buf[_len++] = cast(char)((ch >> 0) & 0xFF);
+                    _buf[_len++] = cast(char)((ch >> 8) & 0xFF);
+                    _buf[_len++] = cast(char)((ch >> 16) & 0xFF);
+                    _buf[_len++] = cast(char)((ch >> 24) & 0xFF);
+                }
+                break;
+            case EncodingType.UTF32BE:
+                for (int i = 0; i < s.length; i++) {
+                    dchar ch = s[i];
+                    _buf[_len++] = cast(char)((ch >> 24) & 0xFF);
+                    _buf[_len++] = cast(char)((ch >> 16) & 0xFF);
+                    _buf[_len++] = cast(char)((ch >> 8) & 0xFF);
+                    _buf[_len++] = cast(char)((ch >> 0) & 0xFF);
+                }
+                break;
+        }
+        if (_len > MAX_BUFFER_SIZE)
+            flush();
+    }
+    /// write single line
+    void writeLine(dstring line) {
+        if (_firstLine) {
+            if (_format.bom)
+                convertAndWrite("\uFEFF"d); // write BOM
+            _firstLine = false;
+        }
+        convertAndWrite(line);
+        switch(_format.lineEnding) {
+            case LineEnding.LF:
+                convertAndWrite("\n"d);
+                break;
+            case LineEnding.CR:
+                convertAndWrite("\r"d);
+                break;
+            default:
+            case LineEnding.CRLF:
+                convertAndWrite("\r\n"d);
+                break;
+        }
+    }
+    /// close stream
+    void close() {
+        _stream.close();
+        _buf = null;
+    }
+}
+
 
 /** 
     Support reading of file (or string in memory) by lines
@@ -64,21 +224,6 @@ import std.conv;
     Tracks line number.
 */
 class LineStream {
-    /// File encoding
-	public enum EncodingType {
-        /// plaing ASCII (character codes must be <= 127)
-        ASCII,
-        /// utf-8 unicode
-        UTF8,
-        /// utf-16 unicode big endian
-        UTF16BE,
-        /// utf-16 unicode little endian
-        UTF16LE,
-        /// utf-32 unicode big endian
-        UTF32BE,
-        /// utf-32 unicode little endian
-        UTF32LE
-    };
 
     /// Error codes
     public enum ErrorCodes {
