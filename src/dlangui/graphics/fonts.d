@@ -78,6 +78,11 @@ immutable dchar UNICODE_NO_BREAK_SPACE = 0x00a0;
 immutable dchar UNICODE_HYPHEN = 0x2010;
 immutable dchar UNICODE_NB_HYPHEN = 0x2011;
 
+/// custom character properties - for char-by-char drawing of text string with different character color and style
+struct CustomCharProps {
+    uint color;
+    uint textFlags;
+}
 
 version (USE_OPENGL) {
 
@@ -327,6 +332,78 @@ class Font : RefCountedObject {
 			}
 		}
 	}
+
+	/*****************************************************************************************
+    * Draw text string to buffer.
+    *
+    * Params:
+    *      buf =   graphics buffer to draw text to
+    *      x =     x coordinate to draw first character at
+    *      y =     y coordinate to draw first character at
+    *      text =  text string to draw
+    *      colors =  array of colors, colors[i] is color for character text[i]
+    *      tabSize = tabulation size, in number of spaces
+    *      tabOffset = when string is drawn not from left position, use to move tab stops left/right
+    *      textFlags = set of TextFlag bit fields
+    ****************************************************************************************/
+	void drawColoredText(DrawBuf buf, int x, int y, const dchar[] text, const CustomCharProps[] charProps, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
+        if (text.length == 0)
+            return; // nothing to draw - empty text
+        if (_textSizeBuffer.length < text.length)
+            _textSizeBuffer.length = text.length;
+		int charsMeasured = measureText(text, _textSizeBuffer, MAX_WIDTH_UNSPECIFIED, tabSize, tabOffset, textFlags);
+		Rect clip = buf.clipRect; //clipOrFullRect;
+        if (clip.empty)
+            return; // not visible - clipped out
+		if (y + height < clip.top || y >= clip.bottom)
+			return; // not visible - fully above or below clipping rectangle
+        int _baseline = baseline;
+        uint customizedTextFlags = (charProps.length ? charProps[0].textFlags : 0) | textFlags;
+		bool underline = (customizedTextFlags & TextFlag.Underline) != 0;
+		int underlineHeight = 1;
+		int underlineY = y + _baseline + underlineHeight * 2;
+		for (int i = 0; i < charsMeasured; i++) {
+			dchar ch = text[i];
+            uint color = i < charProps.length ? charProps[i].color : charProps[$ - 1].color;
+            customizedTextFlags = (i < charProps.length ? charProps[i].textFlags : charProps[$ - 1].textFlags) | textFlags;
+			if (ch == '&' && (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.HotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))) {
+				if (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))
+					underline = true; // turn ON underline for hot key
+				continue; // skip '&' in hot key when measuring
+			}
+			int xx = (i > 0) ? _textSizeBuffer[i - 1] : 0;
+			if (x + xx > clip.right)
+				break;
+			if (x + xx + 255 < clip.left)
+				continue; // far at left of clipping region
+
+			if (underline) {
+				int xx2 = _textSizeBuffer[i];
+				// draw underline
+				if (xx2 > xx)
+					buf.fillRect(Rect(x + xx, underlineY, x + xx2, underlineY + underlineHeight), color);
+				// turn off underline after hot key
+				if (!(customizedTextFlags & TextFlag.Underline))
+					underline = false; 
+			}
+
+            if (ch == ' ' || ch == '\t')
+                continue;
+			Glyph * glyph = getCharGlyph(ch);
+			if (glyph is null)
+				continue;
+			if ( glyph.blackBoxX && glyph.blackBoxY ) {
+				int gx = x + xx + glyph.originX;
+				if (gx + glyph.blackBoxX < clip.left)
+					continue;
+				buf.drawGlyph( gx,
+                               y + _baseline - glyph.originY,
+                              glyph,
+                              color);
+			}
+		}
+    }
+
 
 	/// get character glyph information
 	abstract Glyph * getCharGlyph(dchar ch, bool withImage = true);

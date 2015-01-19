@@ -2639,6 +2639,11 @@ class EditBox : EditWidgetBase {
         }
     }
 
+    /// custom text color and style highlight (using text highlight) support
+    protected CustomCharProps[] handleCustomLineHighlight(int line, dstring txt) {
+        return null;
+    }
+
 	override protected void drawClient(DrawBuf buf) {
         Rect rc = _clientRect;
 
@@ -2661,7 +2666,11 @@ class EditBox : EditWidgetBase {
                 drawLeftPane(buf, leftPaneRect, 0);
             }
             if (txt.length > 0) {
-                font.drawText(buf, rc.left - _scrollPos.x, rc.top + i * _lineHeight, txt, textColor, tabSize);
+                CustomCharProps[] highlight = handleCustomLineHighlight(_firstVisibleLine + i);
+                if (highlight)
+                    font.drawColoredText(buf, rc.left - _scrollPos.x, rc.top + i * _lineHeight, txt, highlight, tabSize);
+                else
+                    font.drawText(buf, rc.left - _scrollPos.x, rc.top + i * _lineHeight, txt, textColor, tabSize);
             }
         }
 
