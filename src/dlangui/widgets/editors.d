@@ -391,8 +391,6 @@ class EditOperation {
     }
 }
 
-alias TokenPropString = ubyte[];
-
 /// Undo/Redo buffer
 class UndoBuffer {
     protected Collection!EditOperation _undoList;
@@ -449,6 +447,14 @@ interface EditableContentListener {
 	void onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source);
 }
 
+alias TokenPropString = ubyte[];
+
+/// interface for custom syntax highlight
+interface SyntaxHighlighter {
+    /// categorize characters in content by token types
+    void updateHighlight(dstring[] lines, TokenPropString[] props, int changeStartLine, int changeEndLine);
+}
+
 /// editable plain text (singleline/multiline)
 class EditableContent {
 
@@ -459,6 +465,22 @@ class EditableContent {
     }
 
     protected UndoBuffer _undoBuffer;
+
+    protected SyntaxHighlighter _syntaxHighlighter;
+
+    @property SyntaxHighlighter syntaxHighlighter() {
+        return _syntaxHighlighter;
+    }
+
+    @property EditableContent syntaxHighlighter(SyntaxHighlighter syntaxHighlighter) {
+        _syntaxHighlighter = syntaxHighlighter;
+        updateTokenProps(0, _lines.length);
+    }
+
+    /// returns true if content has syntax highlight handler set
+    @property bool hasSyntaxHighlight() {
+        return _syntaxHighlighter !is null;
+    }
 
     protected bool _readOnly;
 
@@ -501,19 +523,28 @@ class EditableContent {
         TextRange rangeBefore;
         TextRange rangeAfter;
         handleContentChange(new EditOperation(EditAction.ReplaceContent), rangeBefore, rangeAfter, this);
+        // update highlight if necessary
+        updateTokenProps(0, _lines.length);
     }
 
     protected void updateTokenProps(int startLine, int endLine) {
         clearTokenProps(startLine, endLine);
+        if (_syntaxHighlighter) {
+            _syntaxHighlighter.updateHighlight(_lines, _tokenProps, startLine, endLine);
+        }
     }
 
     /// set props arrays size equal to text line sizes, bit fill with unknown token
     protected void clearTokenProps(int startLine, int endLine) {
         for (int i = startLine; i < endLine; i++) {
-            int len = cast(int)_lines[i].length;
-            _tokenProps[i].length = len;
-            for (int j = 0; j < len; j++)
-                _tokenProps[i][j] = TOKEN_UNKNOWN;
+            if (hasSyntaxHighlight) {
+                int len = cast(int)_lines[i].length;
+                _tokenProps[i].length = len;
+                for (int j = 0; j < len; j++)
+                    _tokenProps[i][j] = TOKEN_UNKNOWN;
+            } else {
+                _tokenProps[i] = null; // no token props
+            }
         }
     }
 
@@ -948,6 +979,7 @@ class EditableContent {
                 if (s is null)
                     break;
                 int pos = cast(int)(_lines.length++);
+                _tokenProps.length = _lines.length;
                 _lines[pos] = s.dup;
                 clearTokenProps(pos, pos + 1);
             }
@@ -2740,14 +2772,32 @@ class EditBox : EditWidgetBase {
 
 
     protected CustomCharProps[ubyte] _tokenHighlightColors;
+
     void setTokenHightlightColor(ubyte tokenCategory, uint color, bool underline, bool strikeThrough) {
          _tokenHighlightColors[tokenCategory] = CustomCharProps(color, underline, strikeThrough);
     }
+    void clearTokenHightlightColors() {
+        destroy(_tokenHighlightColors);
+    }
 
-    /// custom text color and style highlight (using text highlight) support
+    /** 
+        Custom text color and style highlight (using text highlight) support.
+
+        Return null if no syntax highlight required for line.
+     */
     protected CustomCharProps[] handleCustomLineHighlight(int line, dstring txt) {
+        if (!_tokenHighlightColors)
+            return null; // no highlight colors set
         TokenPropString tokenProps = _content.lineTokenProps(line);
         if (tokenProps.length > 0) {
+            bool hasNonzeroTokens = false;
+            foreach(t; tokenProps)
+                if (t) {
+                    hasNonzeroTokens = true;
+                    break;
+                }
+            if (!hasNonzeroTokens)
+                return null; // all characters are of unknown token type (or white space)
             CustomCharProps[] colors = new CustomCharProps[tokenProps.length];
             for (int i = 0; i < tokenProps.length; i++) {
                 ubyte p = tokenProps[i];
