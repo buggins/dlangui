@@ -37,6 +37,57 @@ import std.stream;
 
 immutable dchar EOL = '\n';
 
+const ubyte TOKEN_CATEGORY_SHIFT =   4;
+const ubyte TOKEN_CATEGORY_MASK =    0xF0; // token category 0..15
+const ubyte TOKEN_SUBCATEGORY_MASK = 0x0F; // token subcategory 0..15
+const ubyte TOKEN_UNKNOWN = 0;
+
+/*
+    Bit mask:
+    7654 3210
+    cccc ssss
+    |    |
+    |    \ ssss = token subcategory
+    |     
+    \ cccc = token category
+
+ */
+/// token category for syntax highlight
+enum TokenCategory : ubyte {
+    WhiteSpace = (0 << TOKEN_CATEGORY_SHIFT),
+    WhiteSpace_Space = (0 << TOKEN_CATEGORY_SHIFT) | 1,
+    WhiteSpace_Tab = (0 << TOKEN_CATEGORY_SHIFT) | 2,
+
+    Comment = (1 << TOKEN_CATEGORY_SHIFT),
+    Comment_SingleLine = (1 << TOKEN_CATEGORY_SHIFT) | 1,   // single line comment
+    Comment_SingleLineDoc = (1 << TOKEN_CATEGORY_SHIFT) | 2,// documentation in single line comment
+    Comment_MultyLine = (1 << TOKEN_CATEGORY_SHIFT) | 3,    // multiline coment
+    Comment_MultyLineDoc = (1 << TOKEN_CATEGORY_SHIFT) | 4, // documentation in multiline comment
+
+    Identifier = (2 << TOKEN_CATEGORY_SHIFT), // identifier (exact subcategory is unknown)
+    Identifier_Class = (2 << TOKEN_CATEGORY_SHIFT) | 1, // class name
+    Identifier_Struct = (2 << TOKEN_CATEGORY_SHIFT) | 2, // struct name
+    Identifier_Local = (2 << TOKEN_CATEGORY_SHIFT) | 3, // local variable
+    Identifier_Member = (2 << TOKEN_CATEGORY_SHIFT) | 4, // struct or class member
+    Identifier_Deprecated = (2 << TOKEN_CATEGORY_SHIFT) | 15, // usage of this identifier is deprecated
+    /// string literal
+    String = (3 << TOKEN_CATEGORY_SHIFT),
+    /// character literal
+    Character = (4 << TOKEN_CATEGORY_SHIFT),
+    /// integer literal
+    Integer = (5 << TOKEN_CATEGORY_SHIFT),
+    /// floating point number literal
+    Float = (6 << TOKEN_CATEGORY_SHIFT),
+    /// keyword
+    Keyword = (7 << TOKEN_CATEGORY_SHIFT),
+    /// operator
+    Op = (8 << TOKEN_CATEGORY_SHIFT),
+    // add more here
+    //....
+    /// error
+    Error = (15 << TOKEN_CATEGORY_SHIFT)
+}
+
 /// Editor action codes
 enum EditorActions : int {
 	None = 0,
@@ -339,6 +390,8 @@ class EditOperation {
     }
 }
 
+alias TokenPropString = ubyte[];
+
 /// Undo/Redo buffer
 class UndoBuffer {
     protected Collection!EditOperation _undoList;
@@ -424,6 +477,8 @@ class EditableContent {
     @property bool multiline() { return _multiline; }
 
     protected dstring[] _lines;
+    protected TokenPropString[] _tokenProps;
+
     /// returns all lines concatenated delimited by '\n'
     @property dstring text() {
         if (_lines.length == 0)
@@ -447,15 +502,33 @@ class EditableContent {
         handleContentChange(new EditOperation(EditAction.ReplaceContent), rangeBefore, rangeAfter, this);
     }
 
+    protected void updateTokenProps(int startLine, int endLine) {
+        clearTokenProps(startLine, endLine);
+    }
+
+    /// set props arrays size equal to text line sizes, bit fill with unknown token
+    protected void clearTokenProps(int startLine, int endLine) {
+        for (int i = startLine; i < endLine; i++) {
+            int len = cast(int)_lines[i].length;
+            _tokenProps[i].length = len;
+            for (int j = 0; j < len; j++)
+                _tokenProps[i][j] = TOKEN_UNKNOWN;
+        }
+    }
+
     /// replace whole text with another content
     @property EditableContent text(dstring newContent) {
         clearUndo();
         _lines.length = 0;
-        if (_multiline)
+        if (_multiline) {
             _lines = splitDString(newContent);
-        else {
+            _tokenProps.length = _lines.length;
+            updateTokenProps(0, _lines.length);
+        } else {
             _lines.length = 1;
             _lines[0] = replaceEolsWithSpaces(newContent);
+            _tokenProps.length = 1;
+            updateTokenProps(0, _lines.length);
         }
         notifyContentReplaced();
         return this;
@@ -473,9 +546,15 @@ class EditableContent {
     dstring opIndex(int index) {
         return line(index);
     }
+
     /// returns line text by index, "" if index is out of bounds
     dstring line(int index) {
         return index >= 0 && index < _lines.length ? _lines[index] : ""d;
+    }
+
+    /// returns line token properties one item per character
+    TokenPropString lineTokenProps(int index) {
+        return index >= 0 && index < _tokenProps.length ? _tokenProps[index] : null;
     }
 
 	/// returns text position for end of line lineIndex
@@ -574,21 +653,31 @@ class EditableContent {
     protected void removeLines(int start, int removedCount) {
         int end = start + removedCount;
         assert(removedCount > 0 && start >= 0 && end > 0 && start < _lines.length && end <= _lines.length);
-        for (int i = start; i < _lines.length - removedCount; i++)
+        for (int i = start; i < _lines.length - removedCount; i++) {
             _lines[i] = _lines[i + removedCount];
-        for (int i = cast(int)_lines.length - removedCount; i < _lines.length; i++)
+            _tokenProps[i] = _tokenProps[i + removedCount];
+        }
+        for (int i = cast(int)_lines.length - removedCount; i < _lines.length; i++) {
             _lines[i] = null; // free unused line references
+            _tokenProps[i] = null; // free unused line references
+        }
         _lines.length -= removedCount;
+        _tokenProps.length = _lines.length;
     }
 
     /// inserts count empty lines at specified position
     protected void insertLines(int start, int count) {
         assert(count > 0);
         _lines.length += count;
-        for (int i = cast(int)_lines.length - 1; i >= start + count; i--)
+        _tokenProps.length = _lines.length;
+        for (int i = cast(int)_lines.length - 1; i >= start + count; i--) {
             _lines[i] = _lines[i - count];
-        for (int i = start; i < start + count; i++)
+            _tokenProps[i] = _tokenProps[i - count];
+        }
+        for (int i = start; i < start + count; i++) {
             _lines[i] = ""d;
+            _tokenProps[i] = null;
+        }
     }
 
     /// inserts or removes lines, removes text in range
@@ -616,19 +705,24 @@ class EditableContent {
                 buf ~= lastLineTail;
                 //Log.d("merging lines ", firstLineHead, " ", newline, " ", lastLineTail);
                 _lines[i] = cast(dstring)buf;
+                clearTokenProps(i, i + 1);
                 //Log.d("merge result: ", _lines[i]);
             } else if (i == after.start.line) {
                 dchar[] buf;
                 buf ~= firstLineHead;
                 buf ~= newline;
                 _lines[i] = cast(dstring)buf;
+                clearTokenProps(i, i + 1);
             } else if (i == after.end.line) {
                 dchar[] buf;
                 buf ~= newline;
                 buf ~= lastLineTail;
                 _lines[i] = cast(dstring)buf;
-            } else
+                clearTokenProps(i, i + 1);
+            } else {
                 _lines[i] = newline; // no dup needed
+                clearTokenProps(i, i + 1);
+            }
         }
     }
 
@@ -852,7 +946,9 @@ class EditableContent {
                 dchar[] s = lines.readLine();
                 if (s is null)
                     break;
-                _lines[_lines.length++] = s.dup;
+                int pos = cast(int)(_lines.length++);
+                _lines[pos] = s.dup;
+                clearTokenProps(pos, pos + 1);
             }
             if (lines.errorCode != 0) {
                 clear();
@@ -2166,7 +2262,7 @@ class EditBox : EditWidgetBase {
     protected dstring[] _visibleLines;          // text for visible lines
     protected int[][] _visibleLinesMeasurement; // char positions for visible lines
     protected int[] _visibleLinesWidths; // width (in pixels) of visible lines
-
+    protected CustomCharProps[][] _visibleLinesHighlights;
 
     override protected int lineCount() {
         return _content.length;
@@ -2212,9 +2308,11 @@ class EditBox : EditWidgetBase {
         _visibleLines.length = _numVisibleLines;
         _visibleLinesMeasurement.length = _numVisibleLines;
         _visibleLinesWidths.length = _numVisibleLines;
+        _visibleLinesHighlights.length = _numVisibleLines;
         for (int i = 0; i < _numVisibleLines; i++) {
             _visibleLines[i] = _content[_firstVisibleLine + i];
             _visibleLinesMeasurement[i].length = _visibleLines[i].length;
+            _visibleLinesHighlights[i] = handleCustomLineHighlight(_firstVisibleLine + i, _visibleLines[i]);
             int charsMeasured = font.measureText(_visibleLines[i], _visibleLinesMeasurement[i], int.max, tabSize);
             _visibleLinesWidths[i] = charsMeasured > 0 ? _visibleLinesMeasurement[i][charsMeasured - 1] : 0;
             if (sz.x < _visibleLinesWidths[i])
@@ -2666,7 +2764,7 @@ class EditBox : EditWidgetBase {
                 drawLeftPane(buf, leftPaneRect, 0);
             }
             if (txt.length > 0) {
-                CustomCharProps[] highlight = handleCustomLineHighlight(_firstVisibleLine + i);
+                CustomCharProps[] highlight = _visibleLinesHighlights[i];
                 if (highlight)
                     font.drawColoredText(buf, rc.left - _scrollPos.x, rc.top + i * _lineHeight, txt, highlight, tabSize);
                 else
