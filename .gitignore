@@ -15,3 +15,8 @@ bin
 trace.def
 trace.log
 dlanguilib.lib
+dub.selections.json
+index.html
+api.html
+screenshots.html
+*.log
