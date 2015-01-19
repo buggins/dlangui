@@ -488,7 +488,7 @@ class LineStream {
         uint len = cast(uint)stream.read(buf);
         LineStream res = null;
         if (buf[0] == 0xEF && buf[1] == 0xBB && buf[2] == 0xBF) {
-			res = new Utf8LineStream(stream, filename, buf, len);
+			res = new Utf8LineStream(stream, filename, buf, len, 3);
         } else if (buf[0] == 0x00 && buf[1] == 0x00 && buf[2] == 0xFE && buf[3] == 0xFF) {
 			res = new Utf32beLineStream(stream, filename, buf, len);
         } else if (buf[0] == 0xFF && buf[1] == 0xFE && buf[2] == 0x00 && buf[3] == 0x00) {
@@ -502,7 +502,7 @@ class LineStream {
             res._bomDetected = true;
         } else {
             if (autodetectUTFIfNoBOM) {
-                res = new Utf8LineStream(stream, filename, buf, len);
+                res = new Utf8LineStream(stream, filename, buf, len, 0);
             } else {
                 res = new AsciiLineStream(stream, filename, buf, len);
             }
@@ -552,8 +552,8 @@ private class AsciiLineStream : LineStream {
 }
 
 private class Utf8LineStream : LineStream {
-	this(InputStream stream, string filename, ubyte[] buf, uint len) {
-		super(stream, filename, EncodingType.UTF8, buf, 3, len);
+	this(InputStream stream, string filename, ubyte[] buf, uint len, int skip) {
+		super(stream, filename, EncodingType.UTF8, buf, skip, len);
 	}
 	override uint decodeText() {
 		if (invalidCharFlag) {

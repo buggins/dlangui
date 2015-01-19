@@ -115,7 +115,7 @@ class SDLWindow : Window {
                 _glSupport = new GLSupport();
         }
 		_win = SDL_CreateWindow(toUTF8(_caption).toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
-                                700, 500, 
+                                800, 600, 
                                 windowFlags);
         version(USE_OPENGL) {
             if (!_win) {
@@ -125,7 +125,7 @@ class SDLWindow : Window {
                     // recreate w/o OpenGL
                     windowFlags &= ~SDL_WINDOW_OPENGL;
 					_win = SDL_CreateWindow(toUTF8(_caption).toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
-                                            700, 500, 
+                                            800, 600, 
                                             windowFlags);
                 }
             }
