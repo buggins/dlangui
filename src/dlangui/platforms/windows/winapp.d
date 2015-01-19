@@ -859,7 +859,7 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
 
 
     /// testing freetype font manager
-    static if (false) {
+    version(USE_FREETYPE) {
         import dlangui.graphics.ftfonts;
         import win32.shlobj;
         FreeTypeFontManager ftfontMan = new FreeTypeFontManager();
@@ -889,6 +889,14 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
         ftfontMan.registerFont(fontsPath ~ "timesbd.ttf", FontFamily.Serif, "Times New Roman", false, FontWeight.Bold);
         ftfontMan.registerFont(fontsPath ~ "timesbi.ttf", FontFamily.Serif, "Times New Roman", true, FontWeight.Bold);
         ftfontMan.registerFont(fontsPath ~ "timesi.ttf", FontFamily.Serif, "Times New Roman", true, FontWeight.Normal);
+        ftfontMan.registerFont(fontsPath ~ "consola.ttf", FontFamily.MonoSpace, "Consolas", false, FontWeight.Normal);
+        ftfontMan.registerFont(fontsPath ~ "consolab.ttf", FontFamily.MonoSpace, "Consolas", false, FontWeight.Bold);
+        ftfontMan.registerFont(fontsPath ~ "consolai.ttf", FontFamily.MonoSpace, "Consolas", true, FontWeight.Normal);
+        ftfontMan.registerFont(fontsPath ~ "consolaz.ttf", FontFamily.MonoSpace, "Consolas", true, FontWeight.Bold);
+        ftfontMan.registerFont(fontsPath ~ "verdana.ttf", FontFamily.SansSerif, "Verdana", false, FontWeight.Normal);
+        ftfontMan.registerFont(fontsPath ~ "verdanab.ttf", FontFamily.SansSerif, "Verdana", false, FontWeight.Bold);
+        ftfontMan.registerFont(fontsPath ~ "verdanai.ttf", FontFamily.SansSerif, "Verdana", true, FontWeight.Normal);
+        ftfontMan.registerFont(fontsPath ~ "verdanaz.ttf", FontFamily.SansSerif, "Verdana", true, FontWeight.Bold);
         FontManager.instance = ftfontMan;
     }
 

@@ -134,6 +134,12 @@ class Font : RefCountedObject {
     /// returns true if font object is not yet initialized / loaded
     abstract @property bool isNull();
 
+    /// return true if antialiasing is enabled, false if not enabled
+    @property bool antialiased() {
+        return size >= FontManager.instance.minAnitialiasedFontSize;
+    }
+
+
     private int _fixedFontDetection = -1;
 
     /// returns true if font has fixed pitch (all characters have equal width)
@@ -415,10 +421,24 @@ struct FontList {
 	}
 }
 
+/// default min font size for antialiased fonts (e.g. if 16 is set, for 16+ sizes antialiasing will be used, for sizes <=15 - antialiasing will be off)
+const int DEF_MIN_ANTIALIASED_FONT_SIZE = 0; // 0 means always use antialiasing
+
+/// Hinting mode (currently supported for FreeType only)
+enum HintingMode : int {
+    /// based on information from font (using bytecode interpreter)
+    Normal,
+    /// force autohinting algorithm even if font contains hint data
+    AutoHint,
+    /// disable hinting completely
+    Disabled
+}
 
 /// Access points to fonts.
 class FontManager {
     protected static __gshared FontManager _instance;
+    protected static __gshared int _minAnitialiasedFontSize = DEF_MIN_ANTIALIASED_FONT_SIZE;
+    protected static __gshared HintingMode _hintingMode = HintingMode.Normal;
 
     /// sets new font manager singleton instance
     static @property void instance(FontManager manager) {
@@ -442,6 +462,26 @@ class FontManager {
 
 	/// removes entries not used after last call of checkpoint() or cleanup()
 	abstract void cleanup();
+
+    /// get min font size for antialiased fonts
+    @property int minAnitialiasedFontSize() {
+        return _minAnitialiasedFontSize;
+    }
+
+    /// set new min font size for antialiased fonts
+    @property void minAnitialiasedFontSize(int size) {
+        _minAnitialiasedFontSize = size;
+    }
+
+    /// get current hinting mode
+    @property HintingMode hintingMode() {
+        return _hintingMode;
+    }
+
+    /// set hinting mode
+    @property void hintingMode(HintingMode mode) {
+        _hintingMode = mode;
+    }
 
 	~this() {
 		Log.d("Destroying font manager");
