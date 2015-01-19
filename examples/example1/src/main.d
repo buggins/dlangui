@@ -189,7 +189,7 @@ extern (C) int UIAppMain(string[] args) {
     // you can override default hinting mode here
     FontManager.instance.hintingMode = HintingMode.Normal;
     // you can override antialiasing setting here
-    FontManager.instance.minAnitialiasedFontSize = 16;
+    FontManager.instance.minAnitialiasedFontSize = 0; // 0 means always antialiased
 
     // create window
     Window window = Platform.instance.createWindow("My Window", null);
