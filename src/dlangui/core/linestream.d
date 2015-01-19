@@ -208,6 +208,7 @@ class OutputLineStream {
     }
     /// close stream
     void close() {
+        flush();
         _stream.close();
         _buf = null;
     }
@@ -243,6 +244,10 @@ class LineStream {
 	private uint _textLen; // position of last filled char in text buffer + 1
 	private dchar[] _textBuf; // text buffer
 	private bool _eof; // end of file, no more lines
+    protected bool _bomDetected;
+    protected int _crCount;
+    protected int _lfCount;
+    protected int _crlfCount;
 
     /// Returns file name
 	@property string filename() { return _filename; }
@@ -250,6 +255,25 @@ class LineStream {
 	@property uint line() { return _line; }
     /// Returns file encoding EncodingType
 	@property EncodingType encoding() { return _encoding; }
+
+    @property TextFileFormat textFormat() {
+        LineEnding le = LineEnding.CRLF;
+        if (_crlfCount) {
+            if (_crCount == _lfCount)
+                le = LineEnding.CRLF;
+            else
+                le = LineEnding.MIXED;
+        } else if (_crCount > _lfCount) {
+            le = LineEnding.CR;
+        } else if (_lfCount > _crCount) {
+            le = LineEnding.CR;
+        } else {
+            le = LineEnding.MIXED;
+        }
+        return TextFileFormat(_encoding, le, _bomDetected);
+    }
+
+
     /// Returns error code
 	@property int errorCode() { return _errorCode; }
     /// Returns error message
@@ -397,15 +421,21 @@ class LineStream {
 						charsLeft = _textLen - _textPos;
 					}
 					dchar ch2 = (p < charsLeft - 1) ? _textBuf[_textPos + p + 1] : 0;
-					if (ch2 == 0x0A)
+					if (ch2 == 0x0A) {
 						eol = p + 2;
-					else
+                        _lfCount++;
+                        _crCount++;
+                        _crlfCount++;
+                    } else {
 						eol = p + 1;
+                        _lfCount++;
+                    }
 					break;
 				} else if (ch == 0x0A || ch == 0x2028 || ch == 0x2029) {
 					// single char eoln
 					lastchar = p;
 					eol = p + 1;
+                    _crCount++;
 					break;
 				} else if (ch == 0 || ch == 0x001A) {
 					// eof
@@ -450,25 +480,34 @@ class LineStream {
 	}
 	
 	/// Factory for InputStream parser
-	public static LineStream create(InputStream stream, string filename) {
+	public static LineStream create(InputStream stream, string filename, bool autodetectUTFIfNoBOM = true) {
 		ubyte[] buf = new ubyte[BYTE_BUFFER_SIZE];
 		buf[0] = buf[1] = buf[2]  = buf[3] = 0;
 		if (!stream.isOpen)
 			return null;
         uint len = cast(uint)stream.read(buf);
+        LineStream res = null;
         if (buf[0] == 0xEF && buf[1] == 0xBB && buf[2] == 0xBF) {
-			return new Utf8LineStream(stream, filename, buf, len);
+			res = new Utf8LineStream(stream, filename, buf, len);
         } else if (buf[0] == 0x00 && buf[1] == 0x00 && buf[2] == 0xFE && buf[3] == 0xFF) {
-			return new Utf32beLineStream(stream, filename, buf, len);
+			res = new Utf32beLineStream(stream, filename, buf, len);
         } else if (buf[0] == 0xFF && buf[1] == 0xFE && buf[2] == 0x00 && buf[3] == 0x00) {
-			return new Utf32leLineStream(stream, filename, buf, len);
+			res = new Utf32leLineStream(stream, filename, buf, len);
         } else if (buf[0] == 0xFE && buf[1] == 0xFF) {
-			return new Utf16beLineStream(stream, filename, buf, len);
+			res =  new Utf16beLineStream(stream, filename, buf, len);
         } else if (buf[0] == 0xFF && buf[1] == 0xFE) {
-			return new Utf16leLineStream(stream, filename, buf, len);
-		} else {
-			return new AsciiLineStream(stream, filename, buf, len);
+			res = new Utf16leLineStream(stream, filename, buf, len);
 		}
+        if (res) {
+            res._bomDetected = true;
+        } else {
+            if (autodetectUTFIfNoBOM) {
+                res = new Utf8LineStream(stream, filename, buf, len);
+            } else {
+                res = new AsciiLineStream(stream, filename, buf, len);
+            }
+        }
+        return res;
 	}
 	
 	protected bool invalidCharFlag;

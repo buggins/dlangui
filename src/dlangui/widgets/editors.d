@@ -27,6 +27,7 @@ import dlangui.widgets.controls;
 import dlangui.widgets.scroll;
 import dlangui.core.signals;
 import dlangui.core.collections;
+import dlangui.core.linestream;
 import dlangui.platforms.common.platform;
 import dlangui.widgets.menu;
 import dlangui.widgets.popup;
@@ -256,7 +257,10 @@ enum EditAction {
     /// delete content in range
     //Delete,
     /// replace range content with new content
-    Replace
+    Replace,
+
+    /// replace whole content
+    ReplaceContent,
 }
 
 /// edit operation details for EditableContent
@@ -435,6 +439,14 @@ class EditableContent {
         }
         return cast(dstring)buf;
     }
+
+    /// call listener to say that whole content is replaced e.g. by loading from file
+    void notifyContentReplaced() {
+        TextRange rangeBefore;
+        TextRange rangeAfter;
+        handleContentChange(new EditOperation(EditAction.ReplaceContent), rangeBefore, rangeAfter, this);
+    }
+
     /// replace whole text with another content
     @property EditableContent text(dstring newContent) {
         clearUndo();
@@ -445,6 +457,7 @@ class EditableContent {
             _lines.length = 1;
             _lines[0] = replaceEolsWithSpaces(newContent);
         }
+        notifyContentReplaced();
         return this;
     }
 
@@ -817,10 +830,22 @@ class EditableContent {
     void clearUndo() {
         _undoBuffer.clear();
     }
+
+    protected string _filename;
+    protected TextFileFormat _format;
+
+    /// file used to load editor content
+    @property string filename() {
+        return _filename;
+    }
+
+
     /// load content form input stream
     bool load(InputStream f, string fname = null) {
         import dlangui.core.linestream;
         clear();
+        _filename = fname;
+        _format = TextFileFormat.init;
         try {
             LineStream lines = LineStream.create(f, fname);
             for (;;) {
@@ -832,13 +857,17 @@ class EditableContent {
             if (lines.errorCode != 0) {
                 clear();
                 Log.e("Error ", lines.errorCode, " ", lines.errorMessage, " -- at line ", lines.errorLine, " position ", lines.errorPos);
+                notifyContentReplaced();
                 return false;
             }
             // EOF
+            _format = lines.textFormat;
+            notifyContentReplaced();
             return true;
         } catch (Exception e) {
             Log.e("Exception while trying to read file ", fname, " ", e.toString);
             clear();
+            notifyContentReplaced();
             return false;
         }
     }
@@ -854,6 +883,47 @@ class EditableContent {
             clear();
             return false;
         }
+    }
+    /// save to output stream in specified format
+    bool save(OutputStream stream, string filename, TextFileFormat format) {
+        if (!filename)
+            filename = _filename;
+        _format = format;
+        import dlangui.core.linestream;
+        try {
+            OutputLineStream writer = new OutputLineStream(stream, filename, format);
+            scope(exit) { writer.close(); }
+            for (int i = 0; i < _lines.length; i++) {
+                writer.writeLine(_lines[i]);
+            }
+            // EOF
+            return true;
+        } catch (Exception e) {
+            Log.e("Exception while trying to write file ", filename, " ", e.toString);
+            return false;
+        }
+        return false;
+    }
+    /// save to output stream in current format
+    bool save(OutputStream stream, string filename) {
+        return save(stream, filename, _format);
+    }
+    /// save to file in specified format
+    bool save(string filename, TextFileFormat format) {
+        if (!filename)
+            filename = _filename;
+        try {
+            std.stream.File f = new std.stream.File(filename, FileMode.Out);
+            scope(exit) { f.close(); }
+            return save(f, filename, format);
+        } catch (Exception e) {
+            Log.e("Exception while trying to save file ", filename, " ", e.toString);
+            return false;
+        }
+    }
+    /// save to file in current format
+    bool save(string filename) {
+        return save(filename, _format);
     }
 }
 
@@ -1133,10 +1203,20 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         updateMaxLineWidth();
 		measureVisibleText();
         if (source is this) {
-		    _caretPos = rangeAfter.end;
-            _selectionRange.start = _caretPos;
-            _selectionRange.end = _caretPos;
-            ensureCaretVisible();
+            if (operation.action == EditAction.ReplaceContent) {
+                // loaded from file
+		        _caretPos = rangeAfter.end;
+                _selectionRange.start = _caretPos;
+                _selectionRange.end = _caretPos;
+                ensureCaretVisible();
+                correctCaretPos();
+                requestLayout();
+            } else {
+		        _caretPos = rangeAfter.end;
+                _selectionRange.start = _caretPos;
+                _selectionRange.end = _caretPos;
+                ensureCaretVisible();
+            }
         } else {
             correctCaretPos();
             // TODO: do something better (e.g. take into account ranges when correcting)
