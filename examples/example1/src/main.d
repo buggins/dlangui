@@ -581,28 +581,33 @@ extern (C) int UIAppMain(string[] args) {
 		editLine.popupMenu = editPopupItem;
 
         // EditBox sample
-		editors.addChild(new TextWidget(null, "EditBox: Multiline editor"d));
+		editors.addChild(new TextWidget(null, "SourceEdit: multiline editor, for source code editing"d));
 
-        EditBox editBox = new EditBox("editbox1", "Some text\nSecond line\nYet another line\n\n\tforeach(s;lines);\n\t\twriteln(s);\n"d);
-        editBox.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
-        dstring text = editBox.text;
-        for (int i = 0; i < 100; i++) {
-            text ~= "\n Line ";
-            text ~= to!dstring(i + 5);
-            text ~= " Some long long line. Blah blah blah.";
-            for (int j = 0; j <= i % 4; j++)
-                text ~= " The quick brown fox jumps over the lazy dog.";
-        }
-        editBox.text = text;
-        editBox.minFontSize(12).maxFontSize(75); // allow font zoom with Ctrl + MouseWheel
+        SourceEdit editBox = new SourceEdit("editbox1");
+        editBox.text = q{#!/usr/bin/env rdmd
+// Computes average line length for standard input.
+import std.stdio;
+
+void main()
+{
+    ulong lines = 0;
+    double sumLength = 0;
+    foreach (line; stdin.byLine())
+    {
+        ++lines;
+        sumLength += line.length;
+    }
+    writeln("Average line length: ",
+            lines ? sumLength / lines : 0);
+}
+        }d;
         editors.addChild(createEditorSettingsControl(editBox));
 		editors.addChild(editBox);
 		editBox.popupMenu = editPopupItem;
 
 		editors.addChild(new TextWidget(null, "EditBox: additional view for the same content (split view testing)"d));
-        EditBox editBox2 = new EditBox("editbox2", ""d);
+        SourceEdit editBox2 = new SourceEdit("editbox2");
         editBox2.content = editBox.content; // view the same content as first editbox
-        editBox2.minFontSize(12).maxFontSize(75); // allow font zoom with Ctrl + MouseWheel
 		editors.addChild(editBox2);
         editors.layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT);
 
