@@ -82,6 +82,17 @@ immutable dchar UNICODE_NB_HYPHEN = 0x2011;
 struct CustomCharProps {
     uint color;
     uint textFlags;
+    this(uint color) {
+        this.color = color;
+        this.textFlags = 0;
+    }
+    this(uint color, bool underline, bool strikeThrough) {
+        this.color = color;
+        if (underline)
+            this.textFlags |= TextFlag.Underline;
+        if (strikeThrough)
+            this.textFlags |= TextFlag.StrikeThrough;
+    }
 }
 
 version (USE_OPENGL) {

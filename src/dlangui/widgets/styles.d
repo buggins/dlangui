@@ -215,7 +215,9 @@ enum TextFlag : uint {
 	/// underline hot key when drawing
 	UnderlineHotKeysWhenAltPressed = 4,
 	/// underline text when drawing
-	Underline = 8
+	Underline = 8,
+    /// strikethrough text when drawing
+    StrikeThrough = 16 // TODO:
 }
 
 /// style properties

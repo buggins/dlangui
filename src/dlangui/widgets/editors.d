@@ -31,6 +31,7 @@ import dlangui.core.linestream;
 import dlangui.platforms.common.platform;
 import dlangui.widgets.menu;
 import dlangui.widgets.popup;
+private import dlangui.graphics.colors;
 
 import std.algorithm;
 import std.stream;
@@ -2737,8 +2738,30 @@ class EditBox : EditWidgetBase {
         }
     }
 
+
+    protected CustomCharProps[ubyte] _tokenHighlightColors;
+    void setTokenHightlightColor(ubyte tokenCategory, uint color, bool underline, bool strikeThrough) {
+         _tokenHighlightColors[tokenCategory] = CustomCharProps(color, underline, strikeThrough);
+    }
+
     /// custom text color and style highlight (using text highlight) support
     protected CustomCharProps[] handleCustomLineHighlight(int line, dstring txt) {
+        TokenPropString tokenProps = _content.lineTokenProps(line);
+        if (tokenProps.length > 0) {
+            CustomCharProps[] colors = new CustomCharProps[tokenProps.length];
+            for (int i = 0; i < tokenProps.length; i++) {
+                ubyte p = tokenProps[i];
+                if (p in _tokenHighlightColors)
+                    colors[i] = _tokenHighlightColors[p];
+                else if ((p & TOKEN_CATEGORY_MASK) in _tokenHighlightColors)
+                    colors[i] = _tokenHighlightColors[(p & TOKEN_CATEGORY_MASK)];
+                else
+                    colors[i].color = textColor;
+                if (isFullyTransparentColor(colors[i].color))
+                    colors[i].color = textColor;
+            }
+            return colors;
+        }
         return null;
     }
 
