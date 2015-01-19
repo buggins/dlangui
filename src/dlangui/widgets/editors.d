@@ -2774,9 +2774,11 @@ class EditBox : EditWidgetBase {
 
     protected CustomCharProps[ubyte] _tokenHighlightColors;
 
-    void setTokenHightlightColor(ubyte tokenCategory, uint color, bool underline, bool strikeThrough) {
+    /// set highlight options for particular token category
+    void setTokenHightlightColor(ubyte tokenCategory, uint color, bool underline = false, bool strikeThrough = false) {
          _tokenHighlightColors[tokenCategory] = CustomCharProps(color, underline, strikeThrough);
     }
+    /// clear highlight colors
     void clearTokenHightlightColors() {
         destroy(_tokenHighlightColors);
     }
