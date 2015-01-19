@@ -203,17 +203,15 @@ class TreeItem {
 
 
     protected int _intParam;
-    protected Object _objectParam;
-
     @property int intParam() {
         return _intParam;
     }
-
     @property TreeItem intParam(int value) {
         _intParam = value;
         return this;
     }
 
+    protected Object _objectParam;
     @property Object objectParam() {
         return _objectParam;
     }
@@ -289,6 +287,18 @@ class TreeItem {
             prevFoundVisible = this;
         for (int i = 0; i < childCount; i++) {
             TreeItem res = child(i).prevVisible(item, prevFoundVisible);
+            if (res)
+                return res;
+        }
+        return null;
+    }
+
+    /// returns item by id, null if not found
+    TreeItem findItemById(string id) {
+        if (_id.equal(id))
+            return this;
+        for (int i = 0; i < childCount; i++) {
+            TreeItem res = child(i).findItemById(id);
             if (res)
                 return res;
         }
@@ -626,6 +636,11 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         return res;
     }
 
+    /// returns item by id, null if not found
+    TreeItem findItemById(string id) {
+        return _tree.findItemById(id);
+    }
+
     override bool onKey(Widget source, KeyEvent event) {
 		if (event.action == KeyAction.KeyDown) {
 			Action action = findKeyAction(event.keyCode, event.flags & (KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Control));
@@ -717,6 +732,19 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         if (widget && widget.visibility == Visibility.Visible) {
             makeWidgetVisible(widget, false, true);
         }
+    }
+
+    void selectItem(TreeItem item, bool makeVisible = true) {
+        if (!item)
+            return;
+        _tree.selectItem(item);
+        if (makeVisible)
+            makeItemVisible(item);
+    }
+
+    void selectItem(string itemId, bool makeVisible = true) {
+        TreeItem item = findItemById(itemId);
+        selectItem(item, makeVisible);
     }
 
 	override protected bool handleAction(const Action a) {

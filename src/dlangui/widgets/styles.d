@@ -132,6 +132,13 @@ immutable string STYLE_DOCK_WINDOW_CAPTION_LABEL = "DOCK_WINDOW_CAPTION_LABEL";
 /// standard style id for dock window body
 immutable string STYLE_DOCK_WINDOW_BODY = "DOCK_WINDOW_BODY";
 
+/// standard style id for tab control in dock frame
+immutable string STYLE_TAB_UP_DARK = "TAB_UP_DARK";
+/// standard style id for tab control tab button in dock frame
+immutable string STYLE_TAB_UP_BUTTON_DARK = "TAB_UP_BUTTON_DARK";
+/// standard style id for tab control tab button text in dock frame
+immutable string STYLE_TAB_UP_BUTTON_DARK_TEXT = "TAB_UP_BUTTON_DARK_TEXT";
+
 /// standard style id for toolbars layout
 immutable string STYLE_TOOLBAR_HOST = "TOOLBAR_HOST";
 /// standard style id for toolbars

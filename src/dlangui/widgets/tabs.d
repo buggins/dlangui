@@ -59,6 +59,24 @@ class TabItem {
     void updateAccessTs() {
         _lastAccessTs = _lastAccessCounter++; //std.datetime.Clock.currStdTime;
     }
+
+    protected Object _objectParam;
+    @property Object objectParam() {
+        return _objectParam;
+    }
+    @property TabItem objectParam(Object value) {
+        _objectParam = value;
+        return this;
+    }
+
+    protected int _intParam;
+    @property int intParam() {
+        return _intParam;
+    }
+    @property TabItem intParam(int value) {
+        _intParam = value;
+        return this;
+    }
 }
 
 /// tab item widget - to show tab header
@@ -510,6 +528,8 @@ class TabHost : FrameLayout, TabHandler {
 
 }
 
+
+
 /// compound widget - contains from TabControl widget (tabs header) and TabHost (content pages)
 class TabWidget : VerticalLayout, TabHandler {
     protected TabControl _tabControl;
@@ -582,7 +602,8 @@ class TabWidget : VerticalLayout, TabHandler {
 	}
 
     /// change style ids
-    void setStyles(string tabStyle, string tabButtonStyle, string tabButtonTextStyle) {
+    void setStyles(string tabWidgetStyle, string tabStyle, string tabButtonStyle, string tabButtonTextStyle) {
+        styleId = tabWidgetStyle;
         _tabControl.setStyles(tabStyle, tabButtonStyle, tabButtonTextStyle);
     }
 

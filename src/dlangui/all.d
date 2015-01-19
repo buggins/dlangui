@@ -63,6 +63,7 @@ public import dlangui.widgets.tabs;
 public import dlangui.widgets.menu;
 public import dlangui.widgets.scroll;
 public import dlangui.widgets.editors;
+public import dlangui.widgets.srcedit;
 public import dlangui.widgets.grid;
 public import dlangui.widgets.tree;
 public import dlangui.widgets.combobox;

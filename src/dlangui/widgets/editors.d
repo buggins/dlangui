@@ -32,6 +32,7 @@ import dlangui.widgets.menu;
 import dlangui.widgets.popup;
 
 import std.algorithm;
+import std.stream;
 
 immutable dchar EOL = '\n';
 
@@ -446,6 +447,14 @@ class EditableContent {
         }
         return this;
     }
+
+    /// clear content
+    void clear() {
+        clearUndo();
+        _lines.length = 0;
+    }
+
+
     /// returns line text
     @property int length() { return cast(int)_lines.length; }
     dstring opIndex(int index) {
@@ -807,6 +816,44 @@ class EditableContent {
     /// clear undo/redp history
     void clearUndo() {
         _undoBuffer.clear();
+    }
+    /// load content form input stream
+    bool load(InputStream f, string fname = null) {
+        import dlangui.core.linestream;
+        clear();
+        try {
+            LineStream lines = LineStream.create(f, fname);
+            for (;;) {
+                dchar[] s = lines.readLine();
+                if (s is null)
+                    break;
+                _lines[_lines.length++] = s.dup;
+            }
+            if (lines.errorCode != 0) {
+                clear();
+                Log.e("Error ", lines.errorCode, " ", lines.errorMessage, " -- at line ", lines.errorLine, " position ", lines.errorPos);
+                return false;
+            }
+            // EOF
+            return true;
+        } catch (Exception e) {
+            Log.e("Exception while trying to read file ", fname, " ", e.toString);
+            clear();
+            return false;
+        }
+    }
+    /// load content from file
+    bool load(string filename) {
+        clear();
+        try {
+            std.stream.File f = new std.stream.File(filename);
+            scope(exit) { f.close(); }
+            return load(f, filename);
+        } catch (Exception e) {
+            Log.e("Exception while trying to read file ", filename, " ", e.toString);
+            clear();
+            return false;
+        }
     }
 }
 
