@@ -30,6 +30,7 @@ class SourceEdit : EditBox {
 		fontSize = 18;
 		layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
         minFontSize(12).maxFontSize(75); // allow font zoom with Ctrl + MouseWheel
+        _showLineNumbers = true;
 	}
 	this() {
 		this("SRCEDIT");

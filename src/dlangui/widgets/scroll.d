@@ -169,6 +169,9 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         // override it
     }
 
+    protected void drawExtendedArea(DrawBuf buf) {
+    }
+
 	/// Draw widget at its position to buffer
 	override void onDraw(DrawBuf buf) {
 		if (visibility != Visibility.Visible)
@@ -191,6 +194,13 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
             {
 		        auto saver2 = ClipRectSaver(buf, _clientRect, alpha);
 		        drawClient(buf);
+            }
+            {
+                // no clipping for drawing of extended area
+                Rect clipr = rc;
+                clipr.bottom = _clientRect.bottom;
+		        auto saver3 = ClipRectSaver(buf, clipr, alpha);
+                drawExtendedArea(buf);
             }
         }
 
@@ -234,6 +244,10 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
 		measuredContent(parentWidth, parentHeight, sz.x, sz.y);
 	}
 
+    /// override to support modification of client rect after change, e.g. apply offset
+    protected void handleClientRectLayout(ref Rect rc) {
+    }
+
 	/// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
 	override void layout(Rect rc) {
 		if (visibility == Visibility.Gone) {
@@ -271,6 +285,7 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         }
 		// client area
 		_clientRect = rc;
+        handleClientRectLayout(_clientRect);
         if (needVscroll)
 		    _clientRect.right = vsbrc.left;
         if (needHscroll)

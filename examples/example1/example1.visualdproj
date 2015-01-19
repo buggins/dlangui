@@ -66,7 +66,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>Unicode</versionids>
+  <versionids>Unicode USE_SDL USE_OPENGL</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>3</mapverbosity>
   <createImplib>0</createImplib>

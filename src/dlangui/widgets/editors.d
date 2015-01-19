@@ -936,19 +936,114 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected bool _fixedFont;
     protected int _spaceWidth;
     protected int _tabSize = 4;
+    protected int _leftPaneWidth; // left pane - can be used to show line numbers, collapse controls, bookmarks, breakpoints, custom icons
 
     protected int _minFontSize = -1; // disable zooming
     protected int _maxFontSize = -1; // disable zooming
 
     protected bool _wantTabs = true;
     protected bool _useSpacesForTabs = false;
+    protected bool _showLineNumbers = false; // show line numbers in left pane
+    protected bool _showModificationMarks = false; // show modification marks in left pane
+    protected bool _showIcons = false; // show icons in left pane
+    protected bool _showFolding = false; // show folding controls in left pane
+    protected int _lineNumbersWidth = 0;
+    protected int _modificationMarksWidth = 0;
+    protected int _iconsWidth = 0;
+    protected int _foldingWidth = 0;
 
     protected bool _replaceMode;
 
     // TODO: move to styles
     protected uint _selectionColorFocused = 0xB060A0FF;
     protected uint _selectionColorNormal = 0xD060A0FF;
+    protected uint _leftPaneBackgroundColor = 0xE0E0E0;
+    protected uint _leftPaneBackgroundColor2 = 0xFFFFFF;
+    protected uint _leftPaneBackgroundColor3 = 0xC0C0C0;
+    protected uint _leftPaneLineNumberColor = 0x4060D0;
+    protected uint _leftPaneLineNumberBackgroundColor = 0xF0F0F0;
+    protected uint _iconsPaneWidth = 16;
+    protected uint _foldingPaneWidth = 16;
+    protected uint _modificationMarksPaneWidth = 8;
 
+    /// override to support modification of client rect after change, e.g. apply offset
+    override protected void handleClientRectLayout(ref Rect rc) {
+        updateLeftPaneWidth();
+        rc.left += _leftPaneWidth;
+    }
+
+    /// override for multiline editors
+    protected int lineCount() {
+        return 1;
+    }
+
+    /// override to add custom items on left panel
+    protected void updateLeftPaneWidth() {
+        _iconsWidth = _showIcons ? _iconsPaneWidth : 0;
+        _foldingWidth = _showFolding ? _foldingPaneWidth : 0;
+        _modificationMarksWidth = _showModificationMarks ? _modificationMarksPaneWidth : 0;
+        _lineNumbersWidth = 0;
+        if (_showLineNumbers) {
+            dchar[] s = to!(dchar[])(lineCount + 1);
+            foreach(ref ch; s)
+                ch = '9';
+            FontRef fnt = font;
+            Point sz = fnt.textSize(s);
+            _lineNumbersWidth = sz.x;
+        }
+        _leftPaneWidth = _lineNumbersWidth + _modificationMarksWidth + _foldingWidth + _iconsWidth;
+        if (_leftPaneWidth)
+            _leftPaneWidth += 3;
+    }
+
+    protected void drawLeftPaneFolding(DrawBuf buf, Rect rc, int line) {
+    }
+
+    protected void drawLeftPaneIcons(DrawBuf buf, Rect rc, int line) {
+    }
+
+    protected void drawLeftPaneModificationMarks(DrawBuf buf, Rect rc, int line) {
+    }
+
+    protected void drawLeftPaneLineNumbers(DrawBuf buf, Rect rc, int line) {
+        buf.fillRect(rc, _leftPaneLineNumberBackgroundColor);
+        if (line < 0)
+            return;
+        dstring s = to!dstring(line + 1);
+        FontRef fnt = font;
+        Point sz = fnt.textSize(s);
+        int x = rc.right - sz.x;
+        int y = rc.top + (rc.height - sz.y) / 2;
+        fnt.drawText(buf, x, y, s, _leftPaneLineNumberColor);
+    }
+
+    protected void drawLeftPane(DrawBuf buf, Rect rc, int line) {
+        // override for custom drawn left pane
+        buf.fillRect(rc, _leftPaneBackgroundColor);
+        buf.fillRect(Rect(rc.right - 2, rc.top, rc.right - 1, rc.bottom), _leftPaneBackgroundColor2);
+        buf.fillRect(Rect(rc.right - 1, rc.top, rc.right - 0, rc.bottom), _leftPaneBackgroundColor3);
+        rc.right -= 3;
+        if (_foldingWidth) {
+            Rect rc2 = rc;
+            rc.right = rc2.left = rc2.right - _foldingWidth;
+            drawLeftPaneFolding(buf, rc2, line);
+        }
+        if (_lineNumbersWidth) {
+            Rect rc2 = rc;
+            rc.right = rc2.left = rc2.right - _lineNumbersWidth;
+            drawLeftPaneLineNumbers(buf, rc2, line);
+        }
+        if (_modificationMarksWidth) {
+            Rect rc2 = rc;
+            rc.right = rc2.left = rc2.right - _modificationMarksWidth;
+            drawLeftPaneModificationMarks(buf, rc2, line);
+        }
+        if (_iconsWidth) {
+            Rect rc2 = rc;
+            rc.right = rc2.left = rc2.right - _iconsWidth;
+            drawLeftPaneIcons(buf, rc2, line);
+        }
+    }
 
     this(string ID, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
         super(ID, hscrollbarMode, vscrollbarMode);
@@ -1108,6 +1203,21 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return this;
     }
 
+    /// when true, line numbers are shown
+    @property bool showLineNumbers() {
+        return _showLineNumbers;
+    }
+
+    /// when true, line numbers are shown
+    @property EditWidgetBase showLineNumbers(bool flg) {
+        if (_showLineNumbers != flg) {
+            _showLineNumbers = flg;
+            updateLeftPaneWidth();
+            requestLayout();
+        }
+        return this;
+    }
+    
     /// readonly flag (when true, user cannot change content of editor)
     @property bool readOnly() {
         return !enabled || _content.readOnly;
@@ -1931,7 +2041,7 @@ class EditLine : EditWidgetBase {
     override void measure(int parentWidth, int parentHeight) { 
         updateFontProps();
         measureVisibleText();
-        measuredContent(parentWidth, parentHeight, _measuredTextSize.x, _measuredTextSize.y);
+        measuredContent(parentWidth, parentHeight, _measuredTextSize.x + _leftPaneWidth, _measuredTextSize.y);
     }
 
 	override protected bool handleAction(const Action a) {
@@ -1997,6 +2107,12 @@ class EditLine : EditWidgetBase {
                 // draw selection rect for line
                 buf.fillRect(rc, focused ? _selectionColorFocused : _selectionColorNormal);
             }
+            if (_leftPaneWidth > 0) {
+                Rect leftPaneRect = visibleRect;
+                leftPaneRect.right = leftPaneRect.left;
+                leftPaneRect.left -= _leftPaneWidth;
+                drawLeftPane(buf, leftPaneRect, 0);
+            }
         }
     }
 
@@ -2050,6 +2166,11 @@ class EditBox : EditWidgetBase {
     protected dstring[] _visibleLines;          // text for visible lines
     protected int[][] _visibleLinesMeasurement; // char positions for visible lines
     protected int[] _visibleLinesWidths; // width (in pixels) of visible lines
+
+
+    override protected int lineCount() {
+        return _content.length;
+    }
 
     override protected void updateMaxLineWidth() {
         // find max line width. TODO: optimize!!!
@@ -2494,15 +2615,34 @@ class EditBox : EditWidgetBase {
         if (focused && lineIndex == _caretPos.line && _selectionRange.singleLine && _selectionRange.start.line == _caretPos.line) {
             buf.drawFrame(visibleRect, 0xA0808080, Rect(1,1,1,1));
         }
+
+    }
+
+    override protected void drawExtendedArea(DrawBuf buf) {
+        if (_leftPaneWidth <= 0)
+            return;
+        Rect rc = _clientRect;
+
+        FontRef font = font();
+        int i = _firstVisibleLine;
+        int lc = lineCount;
+        for (;;) {
+            Rect lineRect = rc;
+            lineRect.left = _clientRect.left - _leftPaneWidth;
+            lineRect.right = _clientRect.left;
+            lineRect.bottom = lineRect.top + _lineHeight;
+            if (lineRect.top >= _clientRect.bottom)
+                break;
+            drawLeftPane(buf, lineRect, i < lc ? i : -1);
+            i++;
+            rc.top += _lineHeight;
+        }
     }
 
 	override protected void drawClient(DrawBuf buf) {
         Rect rc = _clientRect;
 
         FontRef font = font();
-        //dstring txt = text;
-        //Point sz = font.textSize(txt);
-        //font.drawText(buf, rc.left, rc.top + sz.y / 10, txt, textColor);
         for (int i = 0; i < _visibleLines.length; i++) {
             dstring txt = _visibleLines[i];
             Rect lineRect = rc;
@@ -2514,6 +2654,12 @@ class EditBox : EditWidgetBase {
             visibleRect.left = _clientRect.left;
             visibleRect.right = _clientRect.right;
             drawLineBackground(buf, _firstVisibleLine + i, lineRect, visibleRect);
+            if (_leftPaneWidth > 0) {
+                Rect leftPaneRect = visibleRect;
+                leftPaneRect.right = leftPaneRect.left;
+                leftPaneRect.left -= _leftPaneWidth;
+                drawLeftPane(buf, leftPaneRect, 0);
+            }
             if (txt.length > 0) {
                 font.drawText(buf, rc.left - _scrollPos.x, rc.top + i * _lineHeight, txt, textColor, tabSize);
             }
