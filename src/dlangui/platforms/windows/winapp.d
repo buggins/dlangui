@@ -152,6 +152,8 @@ version (USE_OPENGL) {
     private __gshared bool DERELICT_GL3_RELOADED = false;
 }
 
+const uint CUSTOM_MESSAGE_ID = WM_USER + 1;
+
 class Win32Window : Window {
     Win32Platform _platform;
 
@@ -309,6 +311,13 @@ class Win32Window : Window {
             DestroyWindow(_hwnd);
         _hwnd = null;
     }
+
+    /// post event to handle in UI thread (this method can be used from background thread)
+    override void postEvent(CustomEvent event) {
+        super.postEvent(event);
+        PostMessageW(_hwnd, CUSTOM_MESSAGE_ID, 0, event.uniqueId);
+    }
+
     Win32ColorDrawBuf getDrawBuf() {
         //RECT rect;
         //GetClientRect(_hwnd, &rect);
@@ -984,6 +993,11 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 }
             }
             return 0;
+        case CUSTOM_MESSAGE_ID:
+            if (window !is null) {
+                window.handlePostedEvent(cast(uint)lParam);
+            }
+            return 1;
         case WM_ERASEBKGND:
             // processed
             return 1;

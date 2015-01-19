@@ -954,6 +954,26 @@ class Widget {
         return false;
     }
 
+    /// handle custom event
+    bool onEvent(CustomEvent event) {
+        RunnableEvent runnable = cast(RunnableEvent)event;
+        if (runnable) {
+            // handle runnable
+            runnable.run();
+            return true;
+        }
+        // override to handle more events
+        return false;
+    }
+
+    /// execute delegate later in UI thread if this widget will be still available (can be used to modify UI from background thread, or just to postpone execution of action)
+    void executeInUiThread(void delegate() runnable) {
+        if (!window)
+            return;
+        RunnableEvent event = new RunnableEvent(CUSTOM_RUNNABLE, this, runnable);
+        window.postEvent(event);
+    }
+
     /// process mouse event; return true if event is processed by widget.
     bool onMouseEvent(MouseEvent event) {
         if (onMouseListener.assigned && onMouseListener(this, event))

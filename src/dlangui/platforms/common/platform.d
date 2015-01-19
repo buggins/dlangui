@@ -29,6 +29,7 @@ import dlangui.dialogs.msgbox;
 
 private import dlangui.graphics.gldrawbuf;
 private import std.algorithm;
+private import core.sync.mutex;
 
 // specify debug=DebugMouseEvents for logging mouse handling
 // specify debug=DebugRedraw for logging drawing and layouts handling
@@ -44,6 +45,45 @@ enum WindowFlag : uint {
 	Modal = 4,
 }
 
+/// protected event list
+/// references to posted messages can be stored here at least to keep live reference and avoid GC
+/// as well, on some platforms it's easy to send id to message queue, but not pointer
+class EventList {
+    protected Mutex _mutex;
+    protected Collection!CustomEvent _events;
+    this() {
+        _mutex = new Mutex();
+    }
+    ~this() {
+        destroy(_mutex);
+        _mutex = null;
+    }
+    /// puts event into queue, returns event's unique id
+    long put(CustomEvent event) {
+        _mutex.lock();
+        scope(exit) _mutex.unlock();
+        _events.pushBack(event);
+        return event.uniqueId;
+    }
+    /// return next event
+    CustomEvent get() {
+        _mutex.lock();
+        scope(exit) _mutex.unlock();
+        return _events.popFront();
+    }
+    /// return event by unique id
+    CustomEvent get(uint uniqueId) {
+        _mutex.lock();
+        scope(exit) _mutex.unlock();
+        for (int i = 0; i < _events.length; i++) {
+            if (_events[i].uniqueId == uniqueId) {
+                return _events.remove(i);
+            }
+        }
+        // not found
+        return null;
+    }
+}
 
 /**
  * Window abstraction layer. Widgets can be shown only inside window.
@@ -55,6 +95,8 @@ class Window {
 	protected uint _keyboardModifiers;
 	protected uint _backgroundColor;
     protected Widget _mainWidget;
+    protected EventList _eventList;
+
 	@property uint backgroundColor() const { return _backgroundColor; }
 	@property void backgroundColor(uint color) { _backgroundColor = color; }
 	@property int width() const { return _dx; }
@@ -163,6 +205,7 @@ class Window {
     private long lastDrawTs;
 
 	this() {
+        _eventList = new EventList();
 		_backgroundColor = 0xFFFFFF;
 	}
 	~this() {
@@ -173,6 +216,8 @@ class Window {
 			destroy(_mainWidget);
 		    _mainWidget = null;
 		}
+        destroy(_eventList);
+        _eventList = null;
 	}
 
     private void animate(Widget root, long interval) {
@@ -452,6 +497,64 @@ class Window {
         // if not processed by focused widget, pass to main widget
         if (_mainWidget !is null)
             return _mainWidget.handleAction(action);
+        return false;
+    }
+
+    /// post event to handle in UI thread (this method can be used from background thread)
+    void postEvent(CustomEvent event) {
+        // override to post event into window message queue
+        _eventList.put(event);
+    }
+
+    /// post task to execute in UI thread (this method can be used from background thread)
+    void executeInUiThread(void delegate() runnable) {
+        RunnableEvent event = new RunnableEvent(CUSTOM_RUNNABLE, null, runnable);
+        postEvent(event);
+    }
+
+    /// remove event from queue by unique id if not yet dispatched (this method can be used from background thread)
+    void cancelEvent(uint uniqueId) {
+        CustomEvent ev = _eventList.get(uniqueId);
+        if (ev) {
+            //destroy(ev);
+        }
+    }
+
+    /// remove event from queue by unique id if not yet dispatched and dispatch it
+    void handlePostedEvent(uint uniqueId) {
+        CustomEvent ev = _eventList.get(uniqueId);
+        if (ev) {
+            dispatchCustomEvent(ev);
+        }
+    }
+
+    /// handle all events from queue, if any (call from UI thread only)
+    void handlePostedEvents() {
+        for(;;) {
+            CustomEvent e = _eventList.get();
+            if (!e)
+                break;
+            dispatchCustomEvent(e);
+        }
+    }
+
+    /// dispatch custom event
+    bool dispatchCustomEvent(CustomEvent event) {
+        if (event.destinationWidget) {
+            if (!isChild(event.destinationWidget)) {
+                //Event is sent to widget which does not exist anymore
+                return false;
+            }
+            return event.destinationWidget.onEvent(event);
+        } else {
+            // no destination widget
+            RunnableEvent runnable = cast(RunnableEvent)event;
+            if (runnable) {
+                // handle runnable
+                runnable.run();
+                return true;
+            }
+        }
         return false;
     }
 
