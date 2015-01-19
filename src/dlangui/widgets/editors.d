@@ -475,6 +475,7 @@ class EditableContent {
     @property EditableContent syntaxHighlighter(SyntaxHighlighter syntaxHighlighter) {
         _syntaxHighlighter = syntaxHighlighter;
         updateTokenProps(0, _lines.length);
+        return this;
     }
 
     /// returns true if content has syntax highlight handler set
