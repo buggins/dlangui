@@ -186,7 +186,10 @@ extern (C) int UIAppMain(string[] args) {
 	// load theme from file "theme_default.xml"
 	Platform.instance.uiTheme = "theme_default";
 
-    //drawableCache.get("tx_fabric.tiled");
+    // you can override default hinting mode here
+    FontManager.instance.hintingMode = HintingMode.Normal;
+    // you can override antialiasing setting here
+    FontManager.instance.minAnitialiasedFontSize = 16;
 
     // create window
     Window window = Platform.instance.createWindow("My Window", null);
