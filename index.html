@@ -78,6 +78,9 @@
 <li>StringGrid - grid view with strings content</li>
 <li>TreeWidget - tree view</li>
 <li>ComboBox - combo box with text items</li>
+<li>ToolBar - tool bar with buttons</li>
+<li>StatusLine - control to show misc application statuses</li>
+<li>AppFrame - base class for easy implementation of apps with main menu, toolbars, status bar</li>
 </ul>
 
 <h2><a name="layouts" class="anchor" href="#layouts"><span class="octicon octicon-link"></span></a>Layouts</h2>
@@ -99,12 +102,9 @@ Similar to layouts in Android
 <li>ListWidget - layout dynamic items horizontally or vertically (one in row/column) with automatic scrollbar; can reuse widgets for similar items</li>
 <li>ListAdapter - interface to provide data and widgets for ListWidget</li>
 <li>WidgetListAdapter - simple implementation of ListAdapter interface - just a list of widgets (one per list item) to show</li>
-</ul><p>TODOs:</p>
+</ul>
 
-<ul>
-<li>Multicolumn lists</li>
-<li>Tree view</li>
-</ul><h2>
+<h2>
 <a name="resources" class="anchor" href="#resources"><span class="octicon octicon-link"></span></a>Resources</h2>
 
 <p>Resources like fonts and images use reference counting. For proper resource freeing, always destroy widgets implicitly.</p>
@@ -143,14 +143,15 @@ standard values are used.</li>
     dub run dlangui:example1
 </pre>
 
-<p>To develop using Visual-D, download sources for dlabgui and dependencies into some directory:</p>
+<p>To develop using Visual-D, download sources for dlangui and dependencies into some directory:</p>
 
 <pre class="d_code">    git clone https:<font color=green>//github.com/buggins/dlangui.git
 </font>    git clone https:<font color=green>//github.com/DerelictOrg/DerelictUtil.git
 </font>    git clone https:<font color=green>//github.com/DerelictOrg/DerelictGL3.git
-</font>    git clone https:<font color=green>//github.com/DerelictOrg/DerelictFI.git
 </font>    git clone https:<font color=green>//github.com/DerelictOrg/DerelictFT.git
 </font>    git clone https:<font color=green>//github.com/DerelictOrg/DerelictSDL2.git
+</font>    git clone https:<font color=green>//github.com/gecko0307/dlib.git
+</font>    git clone https:<font color=green>//github.com/Devisualization/image.git de_image
 </font></pre>
 
 <p>Then open .sln using Visual D.</p>
