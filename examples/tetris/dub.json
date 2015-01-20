@@ -78,6 +78,6 @@
 			],
 
     "dependencies": {
-        "dlangui:dlanguilib": "~master"
+        "dlangui:dlanguilib": "*"
     }
 }

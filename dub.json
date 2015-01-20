@@ -92,10 +92,10 @@
 				"3rdparty/win32/wtypes.d",
 			],
 			"dependencies": {
-				"derelict-sdl2": "~master",
-				"derelict-gl3": "~master",
-				"derelict-ft": "~master",
-				"dlib": "~master"
+				"derelict-sdl2": ">=1.9.1",
+				"derelict-gl3": ">=1.0.12",
+				"derelict-ft": ">=1.0.0",
+				"dlib": ">=0.4.1"
 			},
                         "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.", "--ex", "src.dlangui"]
         },
@@ -105,9 +105,9 @@
     ],
 
     "dependencies": {
-        "dlangui:dlanguilib": "~master",
-        "dlangui:example1": "~master",
-        "dlangui:helloworld": "~master",
-        "dlangui:tetris": "~master",
+        "dlangui:dlanguilib": "*",
+        "dlangui:example1": "*",
+        "dlangui:helloworld": "*",
+        "dlangui:tetris": "*",
     }
 }

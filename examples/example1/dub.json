@@ -77,10 +77,6 @@
 				"../../3rdparty/win32/wtypes.d",
 			],
     "dependencies": {
-        "dlangui:dlanguilib": "~master",
-        "derelict-sdl2": "~master",
-        "derelict-gl3": "~master",
-        "derelict-fi": "~master",
-        "derelict-ft": "~master"
+        "dlangui:dlanguilib": "*",
     }
 }

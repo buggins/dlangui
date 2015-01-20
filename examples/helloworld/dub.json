@@ -23,6 +23,6 @@
     "mainSourceFile": "src/app.d",
 
     "dependencies": {
-        "dlangui:dlanguilib": "~master",
+        "dlangui:dlanguilib": "*",
     }
 }
