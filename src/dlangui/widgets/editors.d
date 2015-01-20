@@ -1032,7 +1032,6 @@ class EditableContent {
             Log.e("Exception while trying to write file ", filename, " ", e.toString);
             return false;
         }
-        return false;
     }
     /// save to output stream in current format
     bool save(OutputStream stream, string filename) {
