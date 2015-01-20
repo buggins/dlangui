@@ -3,13 +3,13 @@ Dlang UI
 
 Cross platform GUI for D. Layouts, styles, themes, unicode, i18n, OpenGL based acceleration, widget set.
 
-Project page: https://github.com/buggins/dlangui
+Project page: [https://github.com/buggins/dlangui](https://github.com/buggins/dlangui)
 
-Documentation: http://buggins.github.io/dlangui
+API Documentation: [http://buggins.github.io/dlangui/ddox](http://buggins.github.io/dlangui/ddox)
 
-Wiki: https://github.com/buggins/dlangui/wiki/Home
+Wiki: [https://github.com/buggins/dlangui/wiki/Home](https://github.com/buggins/dlangui/wiki/Home)
 
-Some screenshots: http://buggins.github.io/dlangui/screenshots.html
+Some screenshots: [http://buggins.github.io/dlangui/screenshots.html](http://buggins.github.io/dlangui/screenshots.html)
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/buggins/dlangui?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
@@ -54,6 +54,9 @@ Currently implemented widgets:
 * StringGrid - grid view with strings content
 * TreeWidget - tree view
 * ComboBox - combo box with text items
+* ToolBar - tool bar with buttons
+* StatusLine - control to show misc application statuses
+* AppFrame - base class for easy implementation of apps with main menu, toolbars, status bar
 
 Layouts
 -------
@@ -66,7 +69,9 @@ Similar to layouts in Android
 * FrameLayout - all children occupy the same place; usually onle one of them is visible
 * TableLayout - children are aligned into rows and columns of table
 * ResizerWidget - put into LinearLayout between two other widgets to resize them using mouse
-
+* ScrollWidget - allow to scroll its child if its dimensions are bigger than possible
+* DockHost - layout with main widget and additional dockable panels around it
+* DockWindow - dockable window with caption, usually to be used with DockHost
 
 List Views
 ----------
@@ -100,7 +105,7 @@ Styles and themes are a bit similar to ones in Android API.
 * Widgets use style attributes directly from assigned style. When some attribute is being changed in widget, it creates its own copy of base style, 
 which allows to modify some of attributes, while getting base style attributes if they are not changed in widget. This trick can minimize memory usage for widget attributes when 
 standard values are used.
-
+* Current default theme is similar to one in MS Visual Studio 2013
 
 
 Win32 builds
@@ -268,12 +273,14 @@ Sample dub.json:
 	}
 
 
-Sample project
+DlangIDE project
 ------------------------------------------------------------
 
-There is sample project which is using DLangUI.
+It is a project to build D language IDE using DlangUI library.
 
-https://github.com/buggins/dlangide
+Now it's in early alpha stage, and could be used as a demo for DlangUI.
+
+Project page: [https://github.com/buggins/dlangide](https://github.com/buggins/dlangide)
 
 How to build and run using DUB:
 	

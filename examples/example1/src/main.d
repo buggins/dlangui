@@ -464,10 +464,13 @@ extern (C) int UIAppMain(string[] args) {
             buttons1.addChild(new ImageButton("btn3", "text-plain"));
 		    buttons1.addChild(new TextWidget(null, "disabled: "d));
             buttons1.addChild((new ImageButton("btn4", "folder")).enabled(false));
-		    buttons1.addChild(new TextWidget(null, "ImageTextButton widgets: "d));
-            buttons1.addChild(new ImageTextButton("btn5", "text-plain", "Enabled"d));
-            buttons1.addChild((new ImageTextButton("btn6", "folder", "Disabled"d)).enabled(false));
             layout3.addChild(buttons1);
+
+		    WidgetGroup buttons10 = new HorizontalLayout();
+		    buttons10.addChild(new TextWidget(null, "ImageTextButton widgets: "d));
+            buttons10.addChild(new ImageTextButton("btn5", "text-plain", "Enabled"d));
+            buttons10.addChild((new ImageTextButton("btn6", "folder", "Disabled"d)).enabled(false));
+            layout3.addChild(buttons10);
 
 		    WidgetGroup buttons11 = new HorizontalLayout();
 		    buttons11.addChild(new TextWidget(null, "Construct buttons by action (Button, ImageButton, ImageTextButton): "d));
@@ -475,11 +478,14 @@ extern (C) int UIAppMain(string[] args) {
             buttons11.addChild(new Button(FILE_OPEN_ACTION));
             buttons11.addChild(new ImageButton(FILE_OPEN_ACTION));
             buttons11.addChild(new ImageTextButton(FILE_OPEN_ACTION));
-		    buttons11.addChild(new TextWidget(null, "The same in disabled state: "d));
-            buttons11.addChild((new Button(FILE_OPEN_ACTION)).enabled(false));
-            buttons11.addChild((new ImageButton(FILE_OPEN_ACTION)).enabled(false));
-            buttons11.addChild((new ImageTextButton(FILE_OPEN_ACTION)).enabled(false));
             layout3.addChild(buttons11);
+
+		    WidgetGroup buttons12 = new HorizontalLayout();
+		    buttons12.addChild(new TextWidget(null, "The same in disabled state: "d));
+            buttons12.addChild((new Button(FILE_OPEN_ACTION)).enabled(false));
+            buttons12.addChild((new ImageButton(FILE_OPEN_ACTION)).enabled(false));
+            buttons12.addChild((new ImageTextButton(FILE_OPEN_ACTION)).enabled(false));
+            layout3.addChild(buttons12);
 
             layout3.addChild(new VSpacer());
 		    layout3.addChild(new TextWidget(null, "CheckBoxes in HorizontalLayout"d));

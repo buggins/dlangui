@@ -3,7 +3,7 @@
 /**
 This module contains implementation of source code editor widget.
 
-
+SourceEdit - base class for source code editors, with line numbering, syntax highlight, etc.
 
 Synopsis:
 
