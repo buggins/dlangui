@@ -64,6 +64,7 @@ enum TokenCategory : ubyte {
     Comment_SingleLineDoc = (1 << TOKEN_CATEGORY_SHIFT) | 2,// documentation in single line comment
     Comment_MultyLine = (1 << TOKEN_CATEGORY_SHIFT) | 3,    // multiline coment
     Comment_MultyLineDoc = (1 << TOKEN_CATEGORY_SHIFT) | 4, // documentation in multiline comment
+    Comment_Documentation = (1 << TOKEN_CATEGORY_SHIFT) | 5,// documentation comment
 
     Identifier = (2 << TOKEN_CATEGORY_SHIFT), // identifier (exact subcategory is unknown)
     Identifier_Class = (2 << TOKEN_CATEGORY_SHIFT) | 1, // class name

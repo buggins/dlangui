@@ -25,11 +25,12 @@ import dlangui.widgets.styles;
 class SourceEdit : EditBox {
 	this(string ID) {
 		super(ID);
-		fontFace = "Consolas,Courier New";
+		fontFace = "Consolas,Lucida Console,Courier New";
 		fontFamily = FontFamily.MonoSpace;
-		fontSize = 18;
+		fontSize = 14;
+        fontWeight = 300;
 		layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
-        minFontSize(12).maxFontSize(75); // allow font zoom with Ctrl + MouseWheel
+        minFontSize(10).maxFontSize(75); // allow font zoom with Ctrl + MouseWheel
         _showLineNumbers = true;
 	}
 	this() {

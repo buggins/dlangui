@@ -259,14 +259,14 @@ class Win32Font : Font {
         lf.lfCharSet = ANSI_CHARSET; //DEFAULT_CHARSET;
 		lf.lfFaceName[0..def.face.length] = def.face;
 		lf.lfFaceName[def.face.length] = 0;
-		lf.lfHeight = size; //-size;
+		lf.lfHeight = -size; //size; //-size;
 		lf.lfItalic = italic;
         lf.lfWeight = weight;
-		lf.lfOutPrecision = OUT_OUTLINE_PRECIS; //OUT_TT_ONLY_PRECIS;
+		lf.lfOutPrecision = OUT_TT_ONLY_PRECIS; //OUT_OUTLINE_PRECIS; //OUT_TT_ONLY_PRECIS;
 		lf.lfClipPrecision = CLIP_DEFAULT_PRECIS;
 		//lf.lfQuality = NONANTIALIASED_QUALITY; //ANTIALIASED_QUALITY;
 		//lf.lfQuality = PROOF_QUALITY; //ANTIALIASED_QUALITY;
-		lf.lfQuality = size < 18 ? NONANTIALIASED_QUALITY : PROOF_QUALITY; //ANTIALIASED_QUALITY;
+		lf.lfQuality = antialiased ? NONANTIALIASED_QUALITY : ANTIALIASED_QUALITY; //PROOF_QUALITY; //ANTIALIASED_QUALITY; //size < 18 ? NONANTIALIASED_QUALITY : PROOF_QUALITY; //ANTIALIASED_QUALITY;
 		lf.lfPitchAndFamily = def.pitchAndFamily;
         _hfont = CreateFontIndirectA(&lf);
         _drawbuf = new Win32ColorDrawBuf(1, 1);
