@@ -3,17 +3,17 @@ Dlang UI
 
 Cross platform GUI for D. Layouts, styles, themes, unicode, i18n, OpenGL based acceleration, widget set.
 
-Project page: [https://github.com/buggins/dlangui](https://github.com/buggins/dlangui)
+GitHub page: [https://github.com/buggins/dlangui](https://github.com/buggins/dlangui)
+
+Project site: [http://buggins.github.io/dlangui](http://buggins.github.io/dlangui)
 
 API Documentation: [http://buggins.github.io/dlangui/ddox](http://buggins.github.io/dlangui/ddox)
 
 Wiki: [https://github.com/buggins/dlangui/wiki/Home](https://github.com/buggins/dlangui/wiki/Home)
 
-Some screenshots: [http://buggins.github.io/dlangui/screenshots.html](http://buggins.github.io/dlangui/screenshots.html)
+Screenshots: [http://buggins.github.io/dlangui/screenshots.html](http://buggins.github.io/dlangui/screenshots.html)
 
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/buggins/dlangui?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
-
-[![Build Status](https://travis-ci.org/buggins/dlangui.svg?branch=master)](https://travis-ci.org/buggins/dlangui)
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/buggins/dlangui?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)  [![Build Status](https://travis-ci.org/buggins/dlangui.svg?branch=master)](https://travis-ci.org/buggins/dlangui)
 
 
 Main features:
