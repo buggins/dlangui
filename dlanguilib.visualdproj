@@ -190,11 +190,6 @@
  </Config>
  <Folder name="dlangui">
   <Folder name="3rdparty">
-   <Folder name="DerelictFI">
-    <File path="..\DerelictFI\source\derelict\freeimage\freeimage.d" />
-    <File path="..\DerelictFI\source\derelict\freeimage\functions.d" />
-    <File path="..\DerelictFI\source\derelict\freeimage\types.d" />
-   </Folder>
    <Folder name="DerelictFT">
     <File path="..\DerelictFT\source\derelict\freetype\ft.d" />
     <File path="..\DerelictFT\source\derelict\freetype\functions.d" />
