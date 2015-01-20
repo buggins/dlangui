@@ -1,0 +1,1349 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/><!-- using block title in layout.dt--><!-- using block ddox.defs in ddox.layout.dt--><!-- using block ddox.title in ddox.layout.dt-->
+		<title>Module dlangui.widgets.styles</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav"><!-- using block navigation in layout.dt-->
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dlangui</a>
+						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">core</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/core/collections.html" class=" module">collections</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/events.html" class=" module">events</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/files.html" class=" module">files</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/i18n.html" class=" module">i18n</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/linestream.html" class=" module">linestream</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/logger.html" class=" module">logger</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/signals.html" class=" module">signals</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/stdaction.html" class=" module">stdaction</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/types.html" class=" module">types</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dialogs</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/dialogs/dialog.html" class=" module">dialog</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dialogs/filedlg.html" class=" module">filedlg</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dialogs/msgbox.html" class=" module">msgbox</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">graphics</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/graphics/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/drawbuf.html" class=" module">drawbuf</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/fonts.html" class=" module">fonts</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/ftfonts.html" class=" module">ftfonts</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/gldrawbuf.html" class=" module">gldrawbuf</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/glsupport.html" class=" module">glsupport</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/images.html" class=" module">images</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/resources.html" class=" module">resources</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">platforms</a>
+						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">common</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/common/platform.html" class=" module">platform</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">sdl</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/sdl/sdlapp.html" class=" module">sdlapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">windows</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/windows/win32drawbuf.html" class=" module">win32drawbuf</a>
+							</li>
+							<li>
+								<a href="../../dlangui/platforms/windows/win32fonts.html" class=" module">win32fonts</a>
+							</li>
+							<li>
+								<a href="../../dlangui/platforms/windows/winapp.html" class=" module">winapp</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+							</li>
+							<li class=" tree-view">
+								<a href="#" class="package">widgets</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/widgets/appframe.html" class=" module">appframe</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/combobox.html" class=" module">combobox</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/controls.html" class=" module">controls</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/docks.html" class=" module">docks</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/editors.html" class=" module">editors</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/grid.html" class=" module">grid</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/layouts.html" class=" module">layouts</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/lists.html" class=" module">lists</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/menu.html" class=" module">menu</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/popup.html" class=" module">popup</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/scroll.html" class=" module">scroll</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/srcedit.html" class=" module">srcedit</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/statusline.html" class=" module">statusline</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/styles.html" class="selected module">styles</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/tabs.html" class=" module">tabs</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/toolbars.html" class=" module">toolbars</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/tree.html" class=" module">tree</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/widget.html" class=" module">widget</a>
+							</li>
+						</ul>
+							</li>
+							<li>
+								<a href="../../dlangui/all.html" class=" module">all</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+				<script type="text/javascript" src="../../scripts/mousetrap.js"></script>
+				<script type="text/javascript">
+$(document).ready(function() {
+	Mousetrap.bind('s', function(e) {
+		$("#symbolSearch").focus();
+		return false;
+	});
+});
+				</script>
+		</nav>
+		<div id="main-contents">
+			<h1>Module dlangui.widgets.styles</h1><!-- using block body in layout.dt--><!-- using block ddox.description in ddox.layout.dt-->
+			<p>This module contains declaration of themes and styles implementation.
+</p>
+<section>
+<p><a href="../../dlangui/widgets/styles/Style.html"><code class="prettyprint lang-d">Style</code></a> - style container
+<a href="../../dlangui/widgets/styles/Theme.html"><code class="prettyprint lang-d">Theme</code></a> - parent for all styles
+</p>
+
+</section>
+<!-- using block ddox.sections in ddox.layout.dt-->
+			<section><section><h2>Synopsis</h2>
+
+<pre class="code prettyprint lang-d">import dlangui.widgets.styles;
+
+</pre>
+</section>
+</section><!-- using block ddox.members in ddox.layout.dt-->
+			<section>
+				<h2>Functions</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="createDefaultTheme" class="public" href="../../dlangui/widgets/styles/createDefaultTheme.html">
+								<code>createDefaultTheme</code>
+							</a>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="currentTheme" class="public property" href="../../dlangui/widgets/styles/currentTheme.html">
+								<code>currentTheme</code>
+							</a>
+						</td>
+						<td>current theme accessor
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="currentTheme" class="public property" href="../../dlangui/widgets/styles/currentTheme.html">
+								<code>currentTheme</code>
+							</a>
+						</td>
+						<td>set new current <a href="../../dlangui/widgets/styles/currentTheme.html#theme"><code class="prettyprint lang-d">theme</code></a>
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="decodeAlignment" class="public" href="../../dlangui/widgets/styles/decodeAlignment.html">
+								<code>decodeAlignment</code>
+							</a>
+						</td>
+						<td>parses string like "Left|VCenter" to bit set of <a href="../../dlangui/widgets/styles/Align.html"><code class="prettyprint lang-d">Align</code></a> flags
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="decodeFocusRectColors" class="public" href="../../dlangui/widgets/styles/decodeFocusRectColors.html">
+								<code>decodeFocusRectColors</code>
+							</a>
+						</td>
+						<td>Decode color list attribute, e.g.: "#84A, #99FFFF" -&gt; [0x8844aa, 0x99ffff]
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="decodeFontFamily" class="public" href="../../dlangui/widgets/styles/decodeFontFamily.html">
+								<code>decodeFontFamily</code>
+							</a>
+						</td>
+						<td>decode FontFamily item name to value
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="decodeLayoutDimension" class="public" href="../../dlangui/widgets/styles/decodeLayoutDimension.html">
+								<code>decodeLayoutDimension</code>
+							</a>
+						</td>
+						<td>decode layout dimension (<a href="../../dlangui/widgets/styles/FILL_PARENT.html"><code class="prettyprint lang-d">FILL_PARENT</code></a>, <a href="../../dlangui/widgets/styles/WRAP_CONTENT.html"><code class="prettyprint lang-d">WRAP_CONTENT</code></a>, or just size)
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="decodeRect" class="public" href="../../dlangui/widgets/styles/decodeRect.html">
+								<code>decodeRect</code>
+							</a>
+						</td>
+						<td>decode comma delimited dimension list or single value - and put to Rect
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="decodeTextFlags" class="public" href="../../dlangui/widgets/styles/decodeTextFlags.html">
+								<code>decodeTextFlags</code>
+							</a>
+						</td>
+						<td>parses string like "HotKeys|UnderlineHotKeysWhenAltPressed" to bit set of <a href="../../dlangui/widgets/styles/TextFlag.html"><code class="prettyprint lang-d">TextFlag</code></a> flags
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="isSpecialSize" class="public" href="../../dlangui/widgets/styles/isSpecialSize.html">
+								<code>isSpecialSize</code>
+							</a>
+						</td>
+						<td>returns true for <a href="../../dlangui/widgets/styles/WRAP_CONTENT.html"><code class="prettyprint lang-d">WRAP_CONTENT</code></a>, <a href="../../dlangui/widgets/styles/WRAP_CONTENT.html"><code class="prettyprint lang-d">WRAP_CONTENT</code></a>, <a href="../../dlangui/widgets/styles/SIZE_UNSPECIFIED.html"><code class="prettyprint lang-d">SIZE_UNSPECIFIED</code></a>
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="loadStyleAttributes" class="public" href="../../dlangui/widgets/styles/loadStyleAttributes.html">
+								<code>loadStyleAttributes</code>
+							</a>
+						</td>
+						<td>load <a href="../../dlangui/widgets/styles/loadStyleAttributes.html#style"><code class="prettyprint lang-d">style</code></a> attributes from XML element
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="loadTheme" class="public" href="../../dlangui/widgets/styles/loadTheme.html">
+								<code>loadTheme</code>
+							</a>
+						</td>
+						<td> load <a href="../../dlangui/widgets/styles/loadTheme.html#theme"><code class="prettyprint lang-d">theme</code></a> from XML document
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="loadTheme" class="public" href="../../dlangui/widgets/styles/loadTheme.html">
+								<code>loadTheme</code>
+							</a>
+						</td>
+						<td>load theme from XML file (null if failed)
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="loadTheme" class="public" href="../../dlangui/widgets/styles/loadTheme.html">
+								<code>loadTheme</code>
+							</a>
+						</td>
+						<td>load <a href="../../dlangui/widgets/styles/loadTheme.html#theme"><code class="prettyprint lang-d">theme</code></a> from file
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Classes</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="DrawableAttribute" class="public" href="../../dlangui/widgets/styles/DrawableAttribute.html">
+								<code>DrawableAttribute</code>
+							</a>
+						</td>
+						<td>custom <a href="../../dlangui/widgets/styles/DrawableAttribute.drawable.html"><code class="prettyprint lang-d">drawable</code></a> attribute container for styles
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="Style" class="public" href="../../dlangui/widgets/styles/Style.html">
+								<code>Style</code>
+							</a>
+						</td>
+						<td>style properties
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="Theme" class="public" href="../../dlangui/widgets/styles/Theme.html">
+								<code>Theme</code>
+							</a>
+						</td>
+						<td><code class="prettyprint lang-d">Theme</code> - root for style hierarhy.
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Enums</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="Align" class="public" href="../../dlangui/widgets/styles/Align.html">
+								<code>Align</code>
+							</a>
+						</td>
+						<td><code class="prettyprint lang-d">Align</code> option bit constants
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="TextFlag" class="public" href="../../dlangui/widgets/styles/TextFlag.html">
+								<code>TextFlag</code>
+							</a>
+						</td>
+						<td>text drawing flag bits
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Global variables</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Type</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="ALIGN_UNSPECIFIED" class="public" href="../../dlangui/widgets/styles/ALIGN_UNSPECIFIED.html">
+								<code>ALIGN_UNSPECIFIED</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(ubyte)</code>
+						</td>
+						<td>unspecified align - to take parent's value instead
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="ATTR_SCROLLBAR_BUTTON_DOWN" class="public" href="../../dlangui/widgets/styles/ATTR_SCROLLBAR_BUTTON_DOWN.html">
+								<code>ATTR_SCROLLBAR_BUTTON_DOWN</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="ATTR_SCROLLBAR_BUTTON_LEFT" class="public" href="../../dlangui/widgets/styles/ATTR_SCROLLBAR_BUTTON_LEFT.html">
+								<code>ATTR_SCROLLBAR_BUTTON_LEFT</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="ATTR_SCROLLBAR_BUTTON_RIGHT" class="public" href="../../dlangui/widgets/styles/ATTR_SCROLLBAR_BUTTON_RIGHT.html">
+								<code>ATTR_SCROLLBAR_BUTTON_RIGHT</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="ATTR_SCROLLBAR_BUTTON_UP" class="public" href="../../dlangui/widgets/styles/ATTR_SCROLLBAR_BUTTON_UP.html">
+								<code>ATTR_SCROLLBAR_BUTTON_UP</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="ATTR_SCROLLBAR_INDICATOR_HORIZONTAL" class="public" href="../../dlangui/widgets/styles/ATTR_SCROLLBAR_INDICATOR_HORIZONTAL.html">
+								<code>ATTR_SCROLLBAR_INDICATOR_HORIZONTAL</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="ATTR_SCROLLBAR_INDICATOR_VERTICAL" class="public" href="../../dlangui/widgets/styles/ATTR_SCROLLBAR_INDICATOR_VERTICAL.html">
+								<code>ATTR_SCROLLBAR_INDICATOR_VERTICAL</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="FILL_PARENT" class="public" href="../../dlangui/widgets/styles/FILL_PARENT.html">
+								<code>FILL_PARENT</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(int)</code>
+						</td>
+						<td>layout option, to occupy all available place
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="FONT_SIZE_UNSPECIFIED" class="public" href="../../dlangui/widgets/styles/FONT_SIZE_UNSPECIFIED.html">
+								<code>FONT_SIZE_UNSPECIFIED</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(ushort)</code>
+						</td>
+						<td>unspecified font size constant - to take parent style property value
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="FONT_STYLE_ITALIC" class="public" href="../../dlangui/widgets/styles/FONT_STYLE_ITALIC.html">
+								<code>FONT_STYLE_ITALIC</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(ubyte)</code>
+						</td>
+						<td>italic font style constant
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="FONT_STYLE_NORMAL" class="public" href="../../dlangui/widgets/styles/FONT_STYLE_NORMAL.html">
+								<code>FONT_STYLE_NORMAL</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(ubyte)</code>
+						</td>
+						<td>normal font style constant
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="FONT_STYLE_UNSPECIFIED" class="public" href="../../dlangui/widgets/styles/FONT_STYLE_UNSPECIFIED.html">
+								<code>FONT_STYLE_UNSPECIFIED</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(ubyte)</code>
+						</td>
+						<td>unspecified font style constant - to take parent style property value
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="FONT_WEIGHT_UNSPECIFIED" class="public" href="../../dlangui/widgets/styles/FONT_WEIGHT_UNSPECIFIED.html">
+								<code>FONT_WEIGHT_UNSPECIFIED</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(ushort)</code>
+						</td>
+						<td>unspecified font weight constant - to take parent style property value
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="SIZE_UNSPECIFIED" class="public" href="../../dlangui/widgets/styles/SIZE_UNSPECIFIED.html">
+								<code>SIZE_UNSPECIFIED</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(int)</code>
+						</td>
+						<td>use as widget.layout() param to avoid applying of parent size
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_BUTTON" class="public" href="../../dlangui/widgets/styles/STYLE_BUTTON.html">
+								<code>STYLE_BUTTON</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for Button
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_BUTTON_IMAGE" class="public" href="../../dlangui/widgets/styles/STYLE_BUTTON_IMAGE.html">
+								<code>STYLE_BUTTON_IMAGE</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for Button image
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_BUTTON_LABEL" class="public" href="../../dlangui/widgets/styles/STYLE_BUTTON_LABEL.html">
+								<code>STYLE_BUTTON_LABEL</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for Button label
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_BUTTON_NOMARGINS" class="public" href="../../dlangui/widgets/styles/STYLE_BUTTON_NOMARGINS.html">
+								<code>STYLE_BUTTON_NOMARGINS</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>style id for Button w/o margins
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_BUTTON_TRANSPARENT" class="public" href="../../dlangui/widgets/styles/STYLE_BUTTON_TRANSPARENT.html">
+								<code>STYLE_BUTTON_TRANSPARENT</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>style id for transparent Button
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_CHECKBOX" class="public" href="../../dlangui/widgets/styles/STYLE_CHECKBOX.html">
+								<code>STYLE_CHECKBOX</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for CheckBox
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_CHECKBOX_IMAGE" class="public" href="../../dlangui/widgets/styles/STYLE_CHECKBOX_IMAGE.html">
+								<code>STYLE_CHECKBOX_IMAGE</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for CheckBox image
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_CHECKBOX_LABEL" class="public" href="../../dlangui/widgets/styles/STYLE_CHECKBOX_LABEL.html">
+								<code>STYLE_CHECKBOX_LABEL</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for CheckBox label
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_COMBO_BOX" class="public" href="../../dlangui/widgets/styles/STYLE_COMBO_BOX.html">
+								<code>STYLE_COMBO_BOX</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for combo box
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_COMBO_BOX_BODY" class="public" href="../../dlangui/widgets/styles/STYLE_COMBO_BOX_BODY.html">
+								<code>STYLE_COMBO_BOX_BODY</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for combo box body (current item)
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_COMBO_BOX_BUTTON" class="public" href="../../dlangui/widgets/styles/STYLE_COMBO_BOX_BUTTON.html">
+								<code>STYLE_COMBO_BOX_BUTTON</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for combo box button
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_DOCK_HOST" class="public" href="../../dlangui/widgets/styles/STYLE_DOCK_HOST.html">
+								<code>STYLE_DOCK_HOST</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for dock host
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_DOCK_HOST_BODY" class="public" href="../../dlangui/widgets/styles/STYLE_DOCK_HOST_BODY.html">
+								<code>STYLE_DOCK_HOST_BODY</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for dock host body
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_DOCK_WINDOW" class="public" href="../../dlangui/widgets/styles/STYLE_DOCK_WINDOW.html">
+								<code>STYLE_DOCK_WINDOW</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for dock window
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_DOCK_WINDOW_BODY" class="public" href="../../dlangui/widgets/styles/STYLE_DOCK_WINDOW_BODY.html">
+								<code>STYLE_DOCK_WINDOW_BODY</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for dock window body
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_DOCK_WINDOW_CAPTION" class="public" href="../../dlangui/widgets/styles/STYLE_DOCK_WINDOW_CAPTION.html">
+								<code>STYLE_DOCK_WINDOW_CAPTION</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for dock window caption
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_DOCK_WINDOW_CAPTION_LABEL" class="public" href="../../dlangui/widgets/styles/STYLE_DOCK_WINDOW_CAPTION_LABEL.html">
+								<code>STYLE_DOCK_WINDOW_CAPTION_LABEL</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for dock window caption label
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_EDIT_BOX" class="public" href="../../dlangui/widgets/styles/STYLE_EDIT_BOX.html">
+								<code>STYLE_EDIT_BOX</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for EditBox
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_EDIT_LINE" class="public" href="../../dlangui/widgets/styles/STYLE_EDIT_LINE.html">
+								<code>STYLE_EDIT_LINE</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for EditLine
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_HSPACER" class="public" href="../../dlangui/widgets/styles/STYLE_HSPACER.html">
+								<code>STYLE_HSPACER</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for HSpacer
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_LIST_ITEM" class="public" href="../../dlangui/widgets/styles/STYLE_LIST_ITEM.html">
+								<code>STYLE_LIST_ITEM</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for list items
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_MAIN_MENU" class="public" href="../../dlangui/widgets/styles/STYLE_MAIN_MENU.html">
+								<code>STYLE_MAIN_MENU</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for main menu
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_MAIN_MENU_ITEM" class="public" href="../../dlangui/widgets/styles/STYLE_MAIN_MENU_ITEM.html">
+								<code>STYLE_MAIN_MENU_ITEM</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for main menu item
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_MAIN_MENU_LABEL" class="public" href="../../dlangui/widgets/styles/STYLE_MAIN_MENU_LABEL.html">
+								<code>STYLE_MAIN_MENU_LABEL</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for main menu item label
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_MENU_ACCEL" class="public" href="../../dlangui/widgets/styles/STYLE_MENU_ACCEL.html">
+								<code>STYLE_MENU_ACCEL</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for menu item accelerators label
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_MENU_ICON" class="public" href="../../dlangui/widgets/styles/STYLE_MENU_ICON.html">
+								<code>STYLE_MENU_ICON</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for menu item icon
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_MENU_ITEM" class="public" href="../../dlangui/widgets/styles/STYLE_MENU_ITEM.html">
+								<code>STYLE_MENU_ITEM</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for menu item
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_MENU_LABEL" class="public" href="../../dlangui/widgets/styles/STYLE_MENU_LABEL.html">
+								<code>STYLE_MENU_LABEL</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for menu item label
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_PAGE_SCROLL" class="public" href="../../dlangui/widgets/styles/STYLE_PAGE_SCROLL.html">
+								<code>STYLE_PAGE_SCROLL</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for ScrollBar page control
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_POPUP_MENU" class="public" href="../../dlangui/widgets/styles/STYLE_POPUP_MENU.html">
+								<code>STYLE_POPUP_MENU</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for PopupMenu
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_RADIOBUTTON" class="public" href="../../dlangui/widgets/styles/STYLE_RADIOBUTTON.html">
+								<code>STYLE_RADIOBUTTON</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for RadioButton
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_RADIOBUTTON_IMAGE" class="public" href="../../dlangui/widgets/styles/STYLE_RADIOBUTTON_IMAGE.html">
+								<code>STYLE_RADIOBUTTON_IMAGE</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for RadioButton image
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_RADIOBUTTON_LABEL" class="public" href="../../dlangui/widgets/styles/STYLE_RADIOBUTTON_LABEL.html">
+								<code>STYLE_RADIOBUTTON_LABEL</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for RadioButton label
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_SCROLLBAR" class="public" href="../../dlangui/widgets/styles/STYLE_SCROLLBAR.html">
+								<code>STYLE_SCROLLBAR</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for ScrollBar
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_SCROLLBAR_BUTTON" class="public" href="../../dlangui/widgets/styles/STYLE_SCROLLBAR_BUTTON.html">
+								<code>STYLE_SCROLLBAR_BUTTON</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for ScrollBar button
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_SLIDER" class="public" href="../../dlangui/widgets/styles/STYLE_SLIDER.html">
+								<code>STYLE_SLIDER</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for Slider
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_STATUS_LINE" class="public" href="../../dlangui/widgets/styles/STYLE_STATUS_LINE.html">
+								<code>STYLE_STATUS_LINE</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for app frame status line
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TAB_HOST" class="public" href="../../dlangui/widgets/styles/STYLE_TAB_HOST.html">
+								<code>STYLE_TAB_HOST</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for TabHost
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TAB_UP" class="public" href="../../dlangui/widgets/styles/STYLE_TAB_UP.html">
+								<code>STYLE_TAB_UP</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for Tab with Up alignment
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TAB_UP_BUTTON" class="public" href="../../dlangui/widgets/styles/STYLE_TAB_UP_BUTTON.html">
+								<code>STYLE_TAB_UP_BUTTON</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for button of Tab with Up alignment
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TAB_UP_BUTTON_DARK" class="public" href="../../dlangui/widgets/styles/STYLE_TAB_UP_BUTTON_DARK.html">
+								<code>STYLE_TAB_UP_BUTTON_DARK</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for tab control tab button in dock frame
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TAB_UP_BUTTON_DARK_TEXT" class="public" href="../../dlangui/widgets/styles/STYLE_TAB_UP_BUTTON_DARK_TEXT.html">
+								<code>STYLE_TAB_UP_BUTTON_DARK_TEXT</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for tab control tab button text in dock frame
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TAB_UP_BUTTON_TEXT" class="public" href="../../dlangui/widgets/styles/STYLE_TAB_UP_BUTTON_TEXT.html">
+								<code>STYLE_TAB_UP_BUTTON_TEXT</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for button of Tab with Up alignment
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TAB_UP_DARK" class="public" href="../../dlangui/widgets/styles/STYLE_TAB_UP_DARK.html">
+								<code>STYLE_TAB_UP_DARK</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for tab control in dock frame
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TAB_WIDGET" class="public" href="../../dlangui/widgets/styles/STYLE_TAB_WIDGET.html">
+								<code>STYLE_TAB_WIDGET</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for TabWidget
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TEXT" class="public" href="../../dlangui/widgets/styles/STYLE_TEXT.html">
+								<code>STYLE_TEXT</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for TextWidget
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TOOLBAR" class="public" href="../../dlangui/widgets/styles/STYLE_TOOLBAR.html">
+								<code>STYLE_TOOLBAR</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for toolbars
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TOOLBAR_BUTTON" class="public" href="../../dlangui/widgets/styles/STYLE_TOOLBAR_BUTTON.html">
+								<code>STYLE_TOOLBAR_BUTTON</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for toolbar button
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TOOLBAR_HOST" class="public" href="../../dlangui/widgets/styles/STYLE_TOOLBAR_HOST.html">
+								<code>STYLE_TOOLBAR_HOST</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for toolbars layout
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TOOLBAR_SEPARATOR" class="public" href="../../dlangui/widgets/styles/STYLE_TOOLBAR_SEPARATOR.html">
+								<code>STYLE_TOOLBAR_SEPARATOR</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for toolbar separator
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TRANSPARENT_BUTTON_BACKGROUND" class="public" href="../../dlangui/widgets/styles/STYLE_TRANSPARENT_BUTTON_BACKGROUND.html">
+								<code>STYLE_TRANSPARENT_BUTTON_BACKGROUND</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for background similar to transparent button
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TREE_ITEM" class="public" href="../../dlangui/widgets/styles/STYLE_TREE_ITEM.html">
+								<code>STYLE_TREE_ITEM</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for tree item
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TREE_ITEM_EXPAND_ICON" class="public" href="../../dlangui/widgets/styles/STYLE_TREE_ITEM_EXPAND_ICON.html">
+								<code>STYLE_TREE_ITEM_EXPAND_ICON</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for tree item expand icon
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TREE_ITEM_ICON" class="public" href="../../dlangui/widgets/styles/STYLE_TREE_ITEM_ICON.html">
+								<code>STYLE_TREE_ITEM_ICON</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for tree item icon
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TREE_ITEM_LABEL" class="public" href="../../dlangui/widgets/styles/STYLE_TREE_ITEM_LABEL.html">
+								<code>STYLE_TREE_ITEM_LABEL</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for tree item label
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_VSPACER" class="public" href="../../dlangui/widgets/styles/STYLE_VSPACER.html">
+								<code>STYLE_VSPACER</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(char[])</code>
+						</td>
+						<td>standard style id for VSpacer
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="TEXT_FLAGS_UNSPECIFIED" class="public" href="../../dlangui/widgets/styles/TEXT_FLAGS_UNSPECIFIED.html">
+								<code>TEXT_FLAGS_UNSPECIFIED</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(uint)</code>
+						</td>
+						<td>use text flags from parent style
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="TEXT_FLAGS_USE_PARENT" class="public" href="../../dlangui/widgets/styles/TEXT_FLAGS_USE_PARENT.html">
+								<code>TEXT_FLAGS_USE_PARENT</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(uint)</code>
+						</td>
+						<td>use text flags from parent widget
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="WEIGHT_UNSPECIFIED" class="public" href="../../dlangui/widgets/styles/WEIGHT_UNSPECIFIED.html">
+								<code>WEIGHT_UNSPECIFIED</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(int)</code>
+						</td>
+						<td>to take layout weight from parent
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="WRAP_CONTENT" class="public" href="../../dlangui/widgets/styles/WRAP_CONTENT.html">
+								<code>WRAP_CONTENT</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(int)</code>
+						</td>
+						<td>layout option, for size based on content
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Authors</h2><!-- using block ddox.authors in ddox.layout.dt-->
+<p>Vadim Lopatin, coolreader.org@gmail.com
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2><!-- using block ddox.copyright in ddox.layout.dt-->
+<p>Vadim Lopatin, 2014
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2><!-- using block ddox.license in ddox.layout.dt-->
+<p>Boost License 1.0
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>

@@ -1,0 +1,690 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/><!-- using block title in layout.dt--><!-- using block ddox.defs in ddox.layout.dt--><!-- using block ddox.title in ddox.layout.dt-->
+		<title>Class GrayDrawBuf</title>
+		<link rel="stylesheet" type="text/css" href="../../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../../../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav"><!-- using block navigation in layout.dt-->
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dlangui</a>
+						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">core</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/core/collections.html" class=" module">collections</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/events.html" class=" module">events</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/files.html" class=" module">files</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/i18n.html" class=" module">i18n</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/linestream.html" class=" module">linestream</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/logger.html" class=" module">logger</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/signals.html" class=" module">signals</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/stdaction.html" class=" module">stdaction</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/types.html" class=" module">types</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dialogs</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/dialogs/dialog.html" class=" module">dialog</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/dialogs/filedlg.html" class=" module">filedlg</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/dialogs/msgbox.html" class=" module">msgbox</a>
+							</li>
+						</ul>
+							</li>
+							<li class=" tree-view">
+								<a href="#" class="package">graphics</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/graphics/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/drawbuf.html" class="selected module">drawbuf</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/fonts.html" class=" module">fonts</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/ftfonts.html" class=" module">ftfonts</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/gldrawbuf.html" class=" module">gldrawbuf</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/glsupport.html" class=" module">glsupport</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/images.html" class=" module">images</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/resources.html" class=" module">resources</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">platforms</a>
+						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">common</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/platforms/common/platform.html" class=" module">platform</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">sdl</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/platforms/sdl/sdlapp.html" class=" module">sdlapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">windows</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/platforms/windows/win32drawbuf.html" class=" module">win32drawbuf</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/platforms/windows/win32fonts.html" class=" module">win32fonts</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/platforms/windows/winapp.html" class=" module">winapp</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">widgets</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/widgets/appframe.html" class=" module">appframe</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/combobox.html" class=" module">combobox</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/controls.html" class=" module">controls</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/docks.html" class=" module">docks</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/editors.html" class=" module">editors</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/grid.html" class=" module">grid</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/layouts.html" class=" module">layouts</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/lists.html" class=" module">lists</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/menu.html" class=" module">menu</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/popup.html" class=" module">popup</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/scroll.html" class=" module">scroll</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/srcedit.html" class=" module">srcedit</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/statusline.html" class=" module">statusline</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/styles.html" class=" module">styles</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/tabs.html" class=" module">tabs</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/toolbars.html" class=" module">toolbars</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/tree.html" class=" module">tree</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/widget.html" class=" module">widget</a>
+							</li>
+						</ul>
+							</li>
+							<li>
+								<a href="../../../dlangui/all.html" class=" module">all</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../../../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../../../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+				<script type="text/javascript" src="../../../scripts/mousetrap.js"></script>
+				<script type="text/javascript">
+$(document).ready(function() {
+	Mousetrap.bind('s', function(e) {
+		$("#symbolSearch").focus();
+		return false;
+	});
+});
+				</script>
+		</nav>
+		<div id="main-contents">
+			<h1>Class GrayDrawBuf</h1><!-- using block body in layout.dt--><!-- Default block ddox.description in ddox.layout.dt--><!-- Default block ddox.sections in ddox.layout.dt--><!-- using block ddox.members in ddox.layout.dt-->
+			<section>
+				<p></p>
+
+					<section>
+						<h3>Inherits from</h3>
+						<ul>
+							<li>
+								<code class="prettyprint lang-d"><code class="prettyprint lang-d"><a href="../../../dlangui/graphics/drawbuf/DrawBuf.html">DrawBuf</a></code></code>
+ (base class)
+							</li>
+						</ul>
+					</section>
+					<section>
+						<h3>Constructors</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/GrayDrawBuf.this.html" class="public">
+										<code>this</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Fields</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/GrayDrawBuf._buf.html" class="public"><code>_buf</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">ubyte[]</code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/GrayDrawBuf._dx.html" class="public"><code>_dx</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/GrayDrawBuf._dy.html" class="public"><code>_dy</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf._alpha.html" class="protected inherited"><code>_alpha</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">uint</code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf._clipRect.html" class="protected inherited"><code>_clipRect</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/types/Rect.html">Rect</a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf._ninePatch.html" class="protected inherited"><code>_ninePatch</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/graphics/drawbuf/NinePatch.html">NinePatch</a>*</code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf._onDestroyCallback.html" class="protected inherited"><code>_onDestroyCallback</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">void function(uint)</code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/types/RefCountedObject._refCount.html" class="protected inherited"><code>_refCount</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>count of references to this object from <a href="../../../dlangui/core/types/Ref.html"><code class="prettyprint lang-d">Ref</code></a>
+</td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Properties</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/GrayDrawBuf.bpp.html" class="public property"><code>bpp</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>returns buffer bits per pixel
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/GrayDrawBuf.height.html" class="public property"><code>height</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>returns current <code class="prettyprint lang-d">height</code>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/GrayDrawBuf.width.html" class="public property"><code>width</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>returns current <code class="prettyprint lang-d">width</code>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.alpha.html" class="public inherited property"><code>alpha</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">uint</code></td>
+								<td>get current <a href="../../../dlangui/graphics/drawbuf/DrawBuf.alpha.html"><code class="prettyprint lang-d">alpha</code></a> setting (to be applied to all drawing operations)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.alpha.html" class="public inherited property"><code>alpha</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">uint</code></td>
+								<td>set new <a href="../../../dlangui/graphics/drawbuf/DrawBuf.alpha.html#alpha"><code class="prettyprint lang-d">alpha</code></a> setting (to be applied to all drawing operations)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.clipRect.html" class="public inherited property"><code>clipRect</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/types/Rect.html">Rect</a></code></td>
+								<td>returns clipping rectangle, when clipRect.isEmpty == true -- means no clipping.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.clipRect.html" class="public inherited property"><code>clipRect</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">ref const(<a href="../../../dlangui/core/types/Rect.html">Rect</a>)</code></td>
+								<td>returns clipping rectangle, or (0,0,dx,dy) when no clipping.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.hasNinePatch.html" class="public inherited property"><code>hasNinePatch</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">bool</code></td>
+								<td>check whether there is nine-patch information available for drawing buffer
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.intersectClipRect.html" class="public inherited property"><code>intersectClipRect</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">ref const(<a href="../../../dlangui/core/types/Rect.html">Rect</a>)</code></td>
+								<td>sets new clipping rectangle, intersect with previous one.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.isClippedOut.html" class="public inherited property"><code>isClippedOut</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">bool</code></td>
+								<td>returns true if rectangle is completely clipped out and cannot be drawn.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.ninePatch.html" class="public inherited property"><code>ninePatch</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">const(<a href="../../../dlangui/graphics/drawbuf/NinePatch.html">NinePatch</a>)*</code></td>
+								<td>get nine patch information pointer, null if this is not a nine patch image buffer
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.ninePatch.html" class="public inherited property"><code>ninePatch</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/graphics/drawbuf/NinePatch.html">NinePatch</a>*</code></td>
+								<td>set nine patch information pointer, null if this is not a nine patch image buffer
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.onDestroyCallback.html" class="public inherited property"><code>onDestroyCallback</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">void function(uint)</code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.onDestroyCallback.html" class="public inherited property"><code>onDestroyCallback</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">uint</code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/types/RefCountedObject.refCount.html" class="public inherited property"><code>refCount</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td>returns current value of reference counter
+</td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Methods</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/GrayDrawBuf.detectNinePatch.html" class="public">
+										<code>detectNinePatch</code>
+									</a>
+								</td>
+								<td>detect nine patch using image 1-pixel border (see Android documentation)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/GrayDrawBuf.drawFragment.html" class="public">
+										<code>drawFragment</code>
+									</a>
+								</td>
+								<td>draw source buffer rectangle contents to destination buffer
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/GrayDrawBuf.drawGlyph.html" class="public">
+										<code>drawGlyph</code>
+									</a>
+								</td>
+								<td>draw 8bit <a href="../../../dlangui/graphics/drawbuf/DrawBuf.alpha.html"><code class="prettyprint lang-d">alpha</code></a> image - usually font <a href="../../../dlangui/graphics/drawbuf/GrayDrawBuf.drawGlyph.html#glyph"><code class="prettyprint lang-d">glyph</code></a> using specified <a href="../../../dlangui/graphics/drawbuf/GrayDrawBuf.drawGlyph.html#color"><code class="prettyprint lang-d">color</code></a> (clipping is applied)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/GrayDrawBuf.drawRescaled.html" class="public">
+										<code>drawRescaled</code>
+									</a>
+								</td>
+								<td>draw source buffer rectangle contents to destination buffer rectangle applying rescaling
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/GrayDrawBuf.fill.html" class="public">
+										<code>fill</code>
+									</a>
+								</td>
+								<td><code class="prettyprint lang-d">fill</code> the whole buffer with solid <a href="../../../dlangui/graphics/drawbuf/GrayDrawBuf.fill.html#color"><code class="prettyprint lang-d">color</code></a> (no clipping applied)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/GrayDrawBuf.fillRect.html" class="public">
+										<code>fillRect</code>
+									</a>
+								</td>
+								<td><a href="../../../dlangui/graphics/drawbuf/GrayDrawBuf.fill.html"><code class="prettyprint lang-d">fill</code></a> rectangle with solid <a href="../../../dlangui/graphics/drawbuf/GrayDrawBuf.fillRect.html#color"><code class="prettyprint lang-d">color</code></a> (clipping is applied)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/GrayDrawBuf.resize.html" class="public">
+										<code>resize</code>
+									</a>
+								</td>
+								<td><code class="prettyprint lang-d">resize</code> buffer
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/GrayDrawBuf.scanLine.html" class="public">
+										<code>scanLine</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.addAlpha.html" class="public inherited">
+										<code>addAlpha</code>
+									</a>
+								</td>
+								<td>apply additional transparency to current drawbuf <a href="../../../dlangui/graphics/drawbuf/DrawBuf.addAlpha.html#alpha"><code class="prettyprint lang-d">alpha</code></a> value
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/types/RefCountedObject.addRef.html" class="public inherited">
+										<code>addRef</code>
+									</a>
+								</td>
+								<td>increments reference counter
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.afterDrawing.html" class="public inherited">
+										<code>afterDrawing</code>
+									</a>
+								</td>
+								<td>reserved for hardware-accelerated drawing - ends drawing batch
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.applyAlpha.html" class="public inherited">
+										<code>applyAlpha</code>
+									</a>
+								</td>
+								<td>applies current drawbuf <a href="../../../dlangui/graphics/drawbuf/DrawBuf.alpha.html"><code class="prettyprint lang-d">alpha</code></a> to <a href="../../../dlangui/graphics/drawbuf/DrawBuf.applyAlpha.html#argb"><code class="prettyprint lang-d">argb</code></a> color value
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.applyClipping.html" class="public inherited">
+										<code>applyClipping</code>
+									</a>
+								</td>
+								<td>apply <a href="../../../dlangui/graphics/drawbuf/DrawBuf.clipRect.html"><code class="prettyprint lang-d">clipRect</code></a> and buffer bounds clipping to rectangle
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.applyClipping.html" class="public inherited">
+										<code>applyClipping</code>
+									</a>
+								</td>
+								<td>apply <a href="../../../dlangui/graphics/drawbuf/DrawBuf.clipRect.html"><code class="prettyprint lang-d">clipRect</code></a> and buffer bounds clipping to rectangle; if clippinup applied to first rectangle, reduce second rectangle bounds proportionally.
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.beforeDrawing.html" class="public inherited">
+										<code>beforeDrawing</code>
+									</a>
+								</td>
+								<td>reserved for hardware-accelerated drawing - begins drawing batch
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.clear.html" class="public inherited">
+										<code>clear</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawFocusRect.html" class="public inherited">
+										<code>drawFocusRect</code>
+									</a>
+								</td>
+								<td>draw focus rectangle; vertical gradient supported - <a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawFocusRect.html#colors"><code class="prettyprint lang-d">colors</code></a>[0] is top color, <a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawFocusRect.html#colors"><code class="prettyprint lang-d">colors</code></a>[1] is bottom color
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawFrame.html" class="public inherited">
+										<code>drawFrame</code>
+									</a>
+								</td>
+								<td>draws rectangle frame of specified color and widths (per side), and optinally fills inner area
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawImage.html" class="public inherited">
+										<code>drawImage</code>
+									</a>
+								</td>
+								<td>draw unscaled image at specified coordinates
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/types/RefCountedObject.releaseRef.html" class="public inherited">
+										<code>releaseRef</code>
+									</a>
+								</td>
+								<td>decrement reference counter, destroy object if no more references left
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.resetClipping.html" class="public inherited">
+										<code>resetClipping</code>
+									</a>
+								</td>
+								<td>init clip rectangle to full buffer size
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.transformColors.html" class="public inherited">
+										<code>transformColors</code>
+									</a>
+								</td>
+								<td>create drawbuf with copy of current buffer with changed colors (returns this if not supported)
+</td>
+							</tr>
+						</table>
+					</section>
+
+			</section>
+			<section>
+				<h2>Authors</h2><!-- using block ddox.authors in ddox.layout.dt-->
+<p>Vadim Lopatin, coolreader.org@gmail.com
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2><!-- using block ddox.copyright in ddox.layout.dt-->
+<p>Vadim Lopatin, 2014
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2><!-- using block ddox.license in ddox.layout.dt-->
+<p>Boost License 1.0
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>

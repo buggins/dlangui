@@ -1,0 +1,555 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/><!-- using block title in layout.dt--><!-- using block ddox.defs in ddox.layout.dt--><!-- using block ddox.title in ddox.layout.dt-->
+		<title>Class MouseEvent</title>
+		<link rel="stylesheet" type="text/css" href="../../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../../../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav"><!-- using block navigation in layout.dt-->
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dlangui</a>
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">core</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/core/collections.html" class=" module">collections</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/events.html" class="selected module">events</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/files.html" class=" module">files</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/i18n.html" class=" module">i18n</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/linestream.html" class=" module">linestream</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/logger.html" class=" module">logger</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/signals.html" class=" module">signals</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/stdaction.html" class=" module">stdaction</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/types.html" class=" module">types</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dialogs</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/dialogs/dialog.html" class=" module">dialog</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/dialogs/filedlg.html" class=" module">filedlg</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/dialogs/msgbox.html" class=" module">msgbox</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">graphics</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/graphics/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/drawbuf.html" class=" module">drawbuf</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/fonts.html" class=" module">fonts</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/ftfonts.html" class=" module">ftfonts</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/gldrawbuf.html" class=" module">gldrawbuf</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/glsupport.html" class=" module">glsupport</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/images.html" class=" module">images</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/resources.html" class=" module">resources</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">platforms</a>
+						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">common</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/platforms/common/platform.html" class=" module">platform</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">sdl</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/platforms/sdl/sdlapp.html" class=" module">sdlapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">windows</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/platforms/windows/win32drawbuf.html" class=" module">win32drawbuf</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/platforms/windows/win32fonts.html" class=" module">win32fonts</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/platforms/windows/winapp.html" class=" module">winapp</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">widgets</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/widgets/appframe.html" class=" module">appframe</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/combobox.html" class=" module">combobox</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/controls.html" class=" module">controls</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/docks.html" class=" module">docks</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/editors.html" class=" module">editors</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/grid.html" class=" module">grid</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/layouts.html" class=" module">layouts</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/lists.html" class=" module">lists</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/menu.html" class=" module">menu</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/popup.html" class=" module">popup</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/scroll.html" class=" module">scroll</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/srcedit.html" class=" module">srcedit</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/statusline.html" class=" module">statusline</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/styles.html" class=" module">styles</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/tabs.html" class=" module">tabs</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/toolbars.html" class=" module">toolbars</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/tree.html" class=" module">tree</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/widget.html" class=" module">widget</a>
+							</li>
+						</ul>
+							</li>
+							<li>
+								<a href="../../../dlangui/all.html" class=" module">all</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../../../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../../../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+				<script type="text/javascript" src="../../../scripts/mousetrap.js"></script>
+				<script type="text/javascript">
+$(document).ready(function() {
+	Mousetrap.bind('s', function(e) {
+		$("#symbolSearch").focus();
+		return false;
+	});
+});
+				</script>
+		</nav>
+		<div id="main-contents">
+			<h1>Class MouseEvent</h1><!-- using block body in layout.dt--><!-- Default block ddox.description in ddox.layout.dt--><!-- Default block ddox.sections in ddox.layout.dt--><!-- using block ddox.members in ddox.layout.dt-->
+			<section>
+				<p>    Mouse event
+</p>
+
+					<section>
+						<h3>Inherits from</h3>
+						<ul>
+							<li>
+								<code class="prettyprint lang-d"><code class="prettyprint lang-d">Object</code></code>
+ (base class)
+							</li>
+						</ul>
+					</section>
+					<section>
+						<h3>Constructors</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent.this.html" class="public">
+										<code>this</code>
+									</a>
+								</td>
+								<td>copy constructor
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent.this.html" class="public">
+										<code>this</code>
+									</a>
+								</td>
+								<td>construct mouse event from data
+</td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Fields</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent._action.html" class="protected"><code>_action</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/MouseAction.html">MouseAction</a></code></td>
+								<td>mouse <a href="../../../dlangui/core/events/MouseEvent.action.html"><code class="prettyprint lang-d">action</code></a> code
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent._button.html" class="protected"><code>_button</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/MouseButton.html">MouseButton</a></code></td>
+								<td>mouse <a href="../../../dlangui/core/events/MouseEvent.button.html"><code class="prettyprint lang-d">button</code></a> code for ButtonUp/ButtonDown
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent._doNotTrackButtonDown.html" class="protected"><code>_doNotTrackButtonDown</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">bool</code></td>
+								<td>when true, no tracking of mouse on ButtonDown is necessary
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent._eventTimestamp.html" class="protected"><code>_eventTimestamp</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">long</code></td>
+								<td>timestamp of event
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent._flags.html" class="protected"><code>_flags</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">ushort</code></td>
+								<td><a href="../../../dlangui/core/events/MouseEvent.flags.html"><code class="prettyprint lang-d">flags</code></a> bit set - usually from <a href="../../../dlangui/core/events/MouseFlag.html"><code class="prettyprint lang-d">MouseFlag</code></a> enum
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent._lbutton.html" class="protected"><code>_lbutton</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/ButtonDetails.html">ButtonDetails</a></code></td>
+								<td>left <a href="../../../dlangui/core/events/MouseEvent.button.html"><code class="prettyprint lang-d">button</code></a> state details
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent._mbutton.html" class="protected"><code>_mbutton</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/ButtonDetails.html">ButtonDetails</a></code></td>
+								<td>middle <a href="../../../dlangui/core/events/MouseEvent.button.html"><code class="prettyprint lang-d">button</code></a> state details
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent._rbutton.html" class="protected"><code>_rbutton</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/ButtonDetails.html">ButtonDetails</a></code></td>
+								<td>right <a href="../../../dlangui/core/events/MouseEvent.button.html"><code class="prettyprint lang-d">button</code></a> state details
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent._trackingWidget.html" class="protected"><code>_trackingWidget</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/widgets/widget/Widget.html">Widget</a></code></td>
+								<td>widget which currently tracks mouse events
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent._wheelDelta.html" class="protected"><code>_wheelDelta</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">short</code></td>
+								<td>wheel delta
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent._x.html" class="protected"><code>_x</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">short</code></td>
+								<td><a href="../../../dlangui/core/events/MouseEvent.x.html"><code class="prettyprint lang-d">x</code></a> coordinate of pointer
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent._y.html" class="protected"><code>_y</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">short</code></td>
+								<td><a href="../../../dlangui/core/events/MouseEvent.y.html"><code class="prettyprint lang-d">y</code></a> coordinate of pointer
+</td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Properties</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent.action.html" class="public property"><code>action</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/MouseAction.html">MouseAction</a></code></td>
+								<td><code class="prettyprint lang-d">action</code>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent.button.html" class="public property"><code>button</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/MouseButton.html">MouseButton</a></code></td>
+								<td><code class="prettyprint lang-d">button</code> which caused ButtonUp or ButtonDown <a href="../../../dlangui/core/events/MouseEvent.action.html"><code class="prettyprint lang-d">action</code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent.buttonDetails.html" class="public property"><code>buttonDetails</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/ButtonDetails.html">ButtonDetails</a></code></td>
+								<td><a href="../../../dlangui/core/events/MouseEvent.button.html"><code class="prettyprint lang-d">button</code></a> state details for event's <a href="../../../dlangui/core/events/MouseEvent.button.html"><code class="prettyprint lang-d">button</code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent.doNotTrackButtonDown.html" class="public property"><code>doNotTrackButtonDown</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">bool</code></td>
+								<td>sets mouse <a href="../../../dlangui/core/events/MouseEvent.button.html"><code class="prettyprint lang-d">button</code></a> tracking flag
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent.doNotTrackButtonDown.html" class="public property"><code>doNotTrackButtonDown</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">bool</code></td>
+								<td>returns mouse <a href="../../../dlangui/core/events/MouseEvent.button.html"><code class="prettyprint lang-d">button</code></a> tracking flag
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent.doubleClick.html" class="public property"><code>doubleClick</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">bool</code></td>
+								<td>Returns true for ButtonDown event when <a href="../../../dlangui/core/events/MouseEvent.button.html"><code class="prettyprint lang-d">button</code></a> is pressed second time in short interval after pressing first time
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent.flags.html" class="public property"><code>flags</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">ushort</code></td>
+								<td>returns <code class="prettyprint lang-d">flags</code> (buttons and keys state)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent.lbutton.html" class="public property"><code>lbutton</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/ButtonDetails.html">ButtonDetails</a></code></td>
+								<td>left <a href="../../../dlangui/core/events/MouseEvent.button.html"><code class="prettyprint lang-d">button</code></a> state details
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent.mbutton.html" class="public property"><code>mbutton</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/ButtonDetails.html">ButtonDetails</a></code></td>
+								<td>middle <a href="../../../dlangui/core/events/MouseEvent.button.html"><code class="prettyprint lang-d">button</code></a> state details
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent.rbutton.html" class="public property"><code>rbutton</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/ButtonDetails.html">ButtonDetails</a></code></td>
+								<td>right <a href="../../../dlangui/core/events/MouseEvent.button.html"><code class="prettyprint lang-d">button</code></a> state details
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent.trackingWidget.html" class="public property"><code>trackingWidget</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/widgets/widget/Widget.html">Widget</a></code></td>
+								<td>get event tracking widget to override
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent.wheelDelta.html" class="public property"><code>wheelDelta</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">short</code></td>
+								<td>returns delta for Wheel event
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent.x.html" class="public property"><code>x</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">short</code></td>
+								<td><code class="prettyprint lang-d">x</code> coordinate of mouse pointer (relative to window client area)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent.y.html" class="public property"><code>y</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d">short</code></td>
+								<td><code class="prettyprint lang-d">y</code> coordinate of mouse pointer (relative to window client area)
+</td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Methods</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent.changeAction.html" class="public">
+										<code>changeAction</code>
+									</a>
+								</td>
+								<td>override <a href="../../../dlangui/core/events/MouseEvent.action.html"><code class="prettyprint lang-d">action</code></a> code (for usage from platform code)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/MouseEvent.track.html" class="public">
+										<code>track</code>
+									</a>
+								</td>
+								<td>override mouse tracking widget
+</td>
+							</tr>
+						</table>
+					</section>
+
+			</section>
+			<section>
+				<h2>Authors</h2><!-- using block ddox.authors in ddox.layout.dt-->
+<p>Vadim Lopatin, coolreader.org@gmail.com
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2><!-- using block ddox.copyright in ddox.layout.dt-->
+<p>Vadim Lopatin, 2014
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2><!-- using block ddox.license in ddox.layout.dt-->
+<p>Boost License 1.0
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>

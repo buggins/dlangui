@@ -1,0 +1,500 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/><!-- using block title in layout.dt--><!-- using block ddox.defs in ddox.layout.dt--><!-- using block ddox.title in ddox.layout.dt-->
+		<title>Module dlangui.graphics.fonts</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav"><!-- using block navigation in layout.dt-->
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dlangui</a>
+						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">core</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/core/collections.html" class=" module">collections</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/events.html" class=" module">events</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/files.html" class=" module">files</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/i18n.html" class=" module">i18n</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/linestream.html" class=" module">linestream</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/logger.html" class=" module">logger</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/signals.html" class=" module">signals</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/stdaction.html" class=" module">stdaction</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/types.html" class=" module">types</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dialogs</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/dialogs/dialog.html" class=" module">dialog</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dialogs/filedlg.html" class=" module">filedlg</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dialogs/msgbox.html" class=" module">msgbox</a>
+							</li>
+						</ul>
+							</li>
+							<li class=" tree-view">
+								<a href="#" class="package">graphics</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/graphics/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/drawbuf.html" class=" module">drawbuf</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/fonts.html" class="selected module">fonts</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/ftfonts.html" class=" module">ftfonts</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/gldrawbuf.html" class=" module">gldrawbuf</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/glsupport.html" class=" module">glsupport</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/images.html" class=" module">images</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/resources.html" class=" module">resources</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">platforms</a>
+						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">common</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/common/platform.html" class=" module">platform</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">sdl</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/sdl/sdlapp.html" class=" module">sdlapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">windows</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/windows/win32drawbuf.html" class=" module">win32drawbuf</a>
+							</li>
+							<li>
+								<a href="../../dlangui/platforms/windows/win32fonts.html" class=" module">win32fonts</a>
+							</li>
+							<li>
+								<a href="../../dlangui/platforms/windows/winapp.html" class=" module">winapp</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">widgets</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/widgets/appframe.html" class=" module">appframe</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/combobox.html" class=" module">combobox</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/controls.html" class=" module">controls</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/docks.html" class=" module">docks</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/editors.html" class=" module">editors</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/grid.html" class=" module">grid</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/layouts.html" class=" module">layouts</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/lists.html" class=" module">lists</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/menu.html" class=" module">menu</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/popup.html" class=" module">popup</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/scroll.html" class=" module">scroll</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/srcedit.html" class=" module">srcedit</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/statusline.html" class=" module">statusline</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/styles.html" class=" module">styles</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/tabs.html" class=" module">tabs</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/toolbars.html" class=" module">toolbars</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/tree.html" class=" module">tree</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/widget.html" class=" module">widget</a>
+							</li>
+						</ul>
+							</li>
+							<li>
+								<a href="../../dlangui/all.html" class=" module">all</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+				<script type="text/javascript" src="../../scripts/mousetrap.js"></script>
+				<script type="text/javascript">
+$(document).ready(function() {
+	Mousetrap.bind('s', function(e) {
+		$("#symbolSearch").focus();
+		return false;
+	});
+});
+				</script>
+		</nav>
+		<div id="main-contents">
+			<h1>Module dlangui.graphics.fonts</h1><!-- using block body in layout.dt--><!-- using block ddox.description in ddox.layout.dt-->
+			<p>This module contains base fonts access interface and common implementation.
+</p>
+<section>
+<p><a href="../../dlangui/graphics/fonts/Font.html"><code class="prettyprint lang-d">Font</code></a> - base class for fonts.
+</p>
+
+<p><a href="../../dlangui/graphics/fonts/FontManager.html"><code class="prettyprint lang-d">FontManager</code></a> - base class for font managers - provides access to available fonts.
+</p>
+
+
+<p>Actual implementation is:
+</p>
+
+<p><a href="../../dlangui/graphics/ftfonts.html"><code class="prettyprint lang-d">dlangui.graphics.ftfonts</code></a> - FreeType based font manager.
+</p>
+
+<p>dlangui.platforms.windows.w32fonts - Win32 API based font manager.
+</p>
+
+
+<p>To enable OpenGL support, build with version(USE_OPENGL);
+</p>
+</section>
+<!-- using block ddox.sections in ddox.layout.dt-->
+			<section><section><h2>See Also</h2>
+<p><a href="../../dlangui/graphics/drawbuf.html"><code class="prettyprint lang-d">dlangui.graphics.drawbuf</code></a>, DrawBuf, drawbuf, drawbuf.html
+</p>
+
+
+</section>
+<section><h2>Synopsis</h2>
+
+<pre class="code prettyprint lang-d">import dlangui.graphics.fonts;
+
+// find suitable font of size 25, normal, preferrable Arial, or, if not available, any SansSerif font
+<a href="../../dlangui/graphics/fonts/FontRef.html">FontRef</a> font = FontManager.instance.getFont(25, <a href="../../dlangui/graphics/fonts/FontWeight.Normal.html">FontWeight.Normal</a>, false, <a href="../../dlangui/graphics/fonts/FontFamily.SansSerif.html">FontFamily.SansSerif</a>, "Arial");
+
+dstring sampleText = "Sample text to draw"d;
+// measure text string width and height (one line)
+Point sz = font.textSize(sampleText);
+// draw red text at center of DrawBuf buf
+font.drawText(buf, buf.width / 2 - sz.x/2, buf.height / 2 - sz.y / 2, sampleText, 0xFF0000);
+
+</pre>
+</section>
+</section><!-- using block ddox.members in ddox.layout.dt-->
+			<section>
+				<h2>Classes</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="Font" class="public" href="../../dlangui/graphics/fonts/Font.html">
+								<code>Font</code>
+							</a>
+						</td>
+						<td> Instance of font with specific <a href="../../dlangui/graphics/fonts/Font.size.html"><code class="prettyprint lang-d">size</code></a>, <a href="../../dlangui/graphics/fonts/Font.weight.html"><code class="prettyprint lang-d">weight</code></a>, <a href="../../dlangui/graphics/fonts/Font.face.html"><code class="prettyprint lang-d">face</code></a>, etc.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="FontManager" class="public" href="../../dlangui/graphics/fonts/FontManager.html">
+								<code>FontManager</code>
+							</a>
+						</td>
+						<td>Access points to fonts.
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Structs</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="CustomCharProps" class="public" href="../../dlangui/graphics/fonts/CustomCharProps.html">
+								<code>CustomCharProps</code>
+							</a>
+						</td>
+						<td>custom character properties - for char-by-char drawing of text string with different character <a href="../../dlangui/graphics/fonts/CustomCharProps.color.html"><code class="prettyprint lang-d">color</code></a> and style
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="FontList" class="public" href="../../dlangui/graphics/fonts/FontList.html">
+								<code>FontList</code>
+							</a>
+						</td>
+						<td>font instance collection - utility class, for font manager implementations
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="GlyphCache" class="public" href="../../dlangui/graphics/fonts/GlyphCache.html">
+								<code>GlyphCache</code>
+							</a>
+						</td>
+						<td> Glyph image cache
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Enums</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="FontFamily" class="public" href="../../dlangui/graphics/fonts/FontFamily.html">
+								<code>FontFamily</code>
+							</a>
+						</td>
+						<td>font families enum
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="FontWeight" class="public" href="../../dlangui/graphics/fonts/FontWeight.html">
+								<code>FontWeight</code>
+							</a>
+						</td>
+						<td>font weight constants (0..1000)
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="HintingMode" class="public" href="../../dlangui/graphics/fonts/HintingMode.html">
+								<code>HintingMode</code>
+							</a>
+						</td>
+						<td>Hinting mode (currently supported for FreeType only)
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Global variables</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Type</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="DEF_MIN_ANTIALIASED_FONT_SIZE" class="public" href="../../dlangui/graphics/fonts/DEF_MIN_ANTIALIASED_FONT_SIZE.html">
+								<code>DEF_MIN_ANTIALIASED_FONT_SIZE</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">const(int)</code>
+						</td>
+						<td>default min font size for antialiased fonts (e.g. if 16 is set, for 16+ sizes antialiasing will be used, for sizes &lt;=15 - antialiasing will be off)
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="MAX_WIDTH_UNSPECIFIED" class="public" href="../../dlangui/graphics/fonts/MAX_WIDTH_UNSPECIFIED.html">
+								<code>MAX_WIDTH_UNSPECIFIED</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(int)</code>
+						</td>
+						<td>constant for measureText maxWidth paramenter - to tell that all characters of text string should be measured.
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="UNICODE_HYPHEN" class="public" href="../../dlangui/graphics/fonts/UNICODE_HYPHEN.html">
+								<code>UNICODE_HYPHEN</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(dchar)</code>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="UNICODE_NB_HYPHEN" class="public" href="../../dlangui/graphics/fonts/UNICODE_NB_HYPHEN.html">
+								<code>UNICODE_NB_HYPHEN</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(dchar)</code>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="UNICODE_NO_BREAK_SPACE" class="public" href="../../dlangui/graphics/fonts/UNICODE_NO_BREAK_SPACE.html">
+								<code>UNICODE_NO_BREAK_SPACE</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(dchar)</code>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="UNICODE_SOFT_HYPHEN_CODE" class="public" href="../../dlangui/graphics/fonts/UNICODE_SOFT_HYPHEN_CODE.html">
+								<code>UNICODE_SOFT_HYPHEN_CODE</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(dchar)</code>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="UNICODE_ZERO_WIDTH_SPACE" class="public" href="../../dlangui/graphics/fonts/UNICODE_ZERO_WIDTH_SPACE.html">
+								<code>UNICODE_ZERO_WIDTH_SPACE</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d">immutable(dchar)</code>
+						</td>
+						<td></td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Aliases</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Type</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="FontRef" class="public" href="../../dlangui/graphics/fonts/FontRef.html">
+								<code>FontRef</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><a href="../../dlangui/core/types/Ref.html">Ref</a>!(dlangui.graphics.fonts.Font)</code>
+						</td>
+						<td></td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Authors</h2><!-- using block ddox.authors in ddox.layout.dt-->
+<p>Vadim Lopatin, coolreader.org@gmail.com
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2><!-- using block ddox.copyright in ddox.layout.dt-->
+<p>Vadim Lopatin, 2014
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2><!-- using block ddox.license in ddox.layout.dt-->
+<p>Boost License 1.0
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>

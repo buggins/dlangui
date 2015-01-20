@@ -1,0 +1,382 @@
+
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/><!-- using block title in layout.dt--><!-- using block ddox.defs in ddox.layout.dt--><!-- using block ddox.title in ddox.layout.dt-->
+		<title>Module dlangui.core.signals</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../../prettify/prettify.js">/**/</script>
+		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="prettyPrint(); setupDdox();">
+		<nav id="main-nav"><!-- using block navigation in layout.dt-->
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dlangui</a>
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">core</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/core/collections.html" class=" module">collections</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/events.html" class=" module">events</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/files.html" class=" module">files</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/i18n.html" class=" module">i18n</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/linestream.html" class=" module">linestream</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/logger.html" class=" module">logger</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/signals.html" class="selected module">signals</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/stdaction.html" class=" module">stdaction</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/types.html" class=" module">types</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dialogs</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/dialogs/dialog.html" class=" module">dialog</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dialogs/filedlg.html" class=" module">filedlg</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dialogs/msgbox.html" class=" module">msgbox</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">graphics</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/graphics/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/drawbuf.html" class=" module">drawbuf</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/fonts.html" class=" module">fonts</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/ftfonts.html" class=" module">ftfonts</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/gldrawbuf.html" class=" module">gldrawbuf</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/glsupport.html" class=" module">glsupport</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/images.html" class=" module">images</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/resources.html" class=" module">resources</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">platforms</a>
+						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">common</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/common/platform.html" class=" module">platform</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">sdl</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/sdl/sdlapp.html" class=" module">sdlapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">windows</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/windows/win32drawbuf.html" class=" module">win32drawbuf</a>
+							</li>
+							<li>
+								<a href="../../dlangui/platforms/windows/win32fonts.html" class=" module">win32fonts</a>
+							</li>
+							<li>
+								<a href="../../dlangui/platforms/windows/winapp.html" class=" module">winapp</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">widgets</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/widgets/appframe.html" class=" module">appframe</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/combobox.html" class=" module">combobox</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/controls.html" class=" module">controls</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/docks.html" class=" module">docks</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/editors.html" class=" module">editors</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/grid.html" class=" module">grid</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/layouts.html" class=" module">layouts</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/lists.html" class=" module">lists</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/menu.html" class=" module">menu</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/popup.html" class=" module">popup</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/scroll.html" class=" module">scroll</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/srcedit.html" class=" module">srcedit</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/statusline.html" class=" module">statusline</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/styles.html" class=" module">styles</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/tabs.html" class=" module">tabs</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/toolbars.html" class=" module">toolbars</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/tree.html" class=" module">tree</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/widget.html" class=" module">widget</a>
+							</li>
+						</ul>
+							</li>
+							<li>
+								<a href="../../dlangui/all.html" class=" module">all</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+				<script type="text/javascript" src="../../scripts/mousetrap.js"></script>
+				<script type="text/javascript">
+$(document).ready(function() {
+	Mousetrap.bind('s', function(e) {
+		$("#symbolSearch").focus();
+		return false;
+	});
+});
+				</script>
+		</nav>
+		<div id="main-contents">
+			<h1>Module dlangui.core.signals</h1><!-- using block body in layout.dt--><!-- using block ddox.description in ddox.layout.dt-->
+			<p>This module contains definition of signals / listeners.
+</p>
+<section>
+<p>Similar to std.signals.
+</p>
+
+<p>Unlike std.signals, supports any types of delegates, and as well interfaces with single method.
+</p>
+
+<p>Unlike std.signals, can support return types for slots.
+</p>
+</section>
+<!-- using block ddox.sections in ddox.layout.dt-->
+			<section><section><h2>Caution</h2>
+<p>unlike std.signals, does not disconnect signal from slots belonging to destroyed objects.
+</p>
+
+<p><a href="../../dlangui/core/signals/Listener.html"><code class="prettyprint lang-d">Listener</code></a> here stand for holder of single delegate (slot).
+</p>
+
+<p><a href="../../dlangui/core/signals/Signal.html"><code class="prettyprint lang-d">Signal</code></a> is the same but supports multiple slots.
+</p>
+
+<p><a href="../../dlangui/core/signals/Listener.html"><code class="prettyprint lang-d">Listener</code></a> has smaller memory footprint, but allows only single slot.
+</p>
+
+
+<p>Can be declared either using list of result value and argument types, or by interface name with single method.
+</p>
+
+</section>
+<section><h2>Synopsis</h2>
+
+<pre class="code prettyprint lang-d">import dlangui.core.signals;
+
+interface SomeInterface {
+    bool someMethod(string s, int n);
+}
+class Foo : SomeInterface {
+	override bool someMethod(string s, int n) {
+		writeln("someMethod called ", s, ", ", n);
+		return n > 10; // can return value
+	}
+}
+
+// <a href="../../dlangui/core/signals/Listener.html">Listener</a>! can hold arbitrary number of connected slots
+
+// declare using list of return value and parameter types
+<a href="../../dlangui/core/signals/Listener.html">Listener</a>!(bool, string, n) signal1;
+
+Foo f = new Foo();
+// when signal is defined as type list, you can use delegate
+signal1 = bool delegate(string s, int n) { writeln("inside delegate - ", s, n); return false; }
+// or method reference
+signal1 = &f.someMethod;
+
+// declare using interface with single method
+<a href="../../dlangui/core/signals/Listener.html">Listener</a>!SomeInterface signal2;
+// you still can use any delegate
+signal2 = bool delegate(string s, int n) { writeln("inside delegate - ", s, n); return false; }
+// but for class method which overrides interface method, you can use simple syntax
+signal2 = f; // it will automatically take &f.someMethod
+
+
+// call listener(s) either by opcall or explicit emit
+signal1("text", 1);
+signal1.emit("text", 2);
+signal2.emit("text", 3);
+
+// check if any slit is connected
+if (signal1.assigned)
+	writeln("has listeners");
+
+// <a href="../../dlangui/core/signals/Signal.html">Signal</a>! can hold arbitrary number of connected slots
+
+// declare using list of return value and parameter types
+<a href="../../dlangui/core/signals/Signal.html">Signal</a>!(bool, string, n) signal3;
+
+// add listeners via connect call
+signal3.connect(bool delegate(string, int) { return false; });
+// or via ~= operator
+signal3 ~= bool delegate(string, int) { return false; };
+
+// declare using interface with single method
+<a href="../../dlangui/core/signals/Signal.html">Signal</a>!SomeInterface signal4;
+
+// you can connect several slots to signal
+signal4 ~= f;
+signal4 ~= bool delegate(string, int) { return true; }
+
+// calling of listeners of <a href="../../dlangui/core/signals/Signal.html">Signal</a>! is similar to <a href="../../dlangui/core/signals/Listener.html">Listener</a>!
+// using opCall
+bool res = signal4("blah", 5);
+// call listeners using emit
+bool res = signal4.emit("blah", 5);
+
+// you can disconnect individual slots
+// using disconnect()
+signal4.disconnect(f);
+// or -= operator
+signal4 -= f;
+
+</pre>
+</section>
+</section><!-- using block ddox.members in ddox.layout.dt-->
+			<section>
+				<h2>Structs</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="Listener" class="public" href="../../dlangui/core/signals/Listener.html">
+								<code>Listener</code>
+							</a>
+						</td>
+						<td>Single listener; parameter is interface with single method
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="Listener" class="public" href="../../dlangui/core/signals/Listener.html">
+								<code>Listener</code>
+							</a>
+						</td>
+						<td>Single listener; implicitly specified return and parameter types
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="Signal" class="public" href="../../dlangui/core/signals/Signal.html">
+								<code>Signal</code>
+							</a>
+						</td>
+						<td>Multiple listeners; implicitly specified return and parameter types
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Authors</h2><!-- using block ddox.authors in ddox.layout.dt-->
+<p>Vadim Lopatin, coolreader.org@gmail.com
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2><!-- using block ddox.copyright in ddox.layout.dt-->
+<p>Vadim Lopatin, 2014
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2><!-- using block ddox.license in ddox.layout.dt-->
+<p>Boost License 1.0
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>

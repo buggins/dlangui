@@ -1,0 +1,141 @@
+body {
+	margin: 0;
+	padding: 0;
+	font-family: "Lucida Sans Unicode", "Lucida Grande", "Open Sans", sans-serif;
+	font-size: 0;
+}
+
+h1 { margin-top: 0; }
+
+a {
+	color: #13e;
+	text-decoration: none;
+}
+
+a:hover {
+	color: #24f;
+}
+
+#main-nav {
+	-webkit-box-sizing: border-box;
+	   -moz-box-sizing: border-box;
+	        box-sizing: border-box;
+	display: inline-block;
+	vertical-align: top;
+	font-size: 9.5pt;
+	min-width: 10em;
+	width: 20%;
+	padding: 2em 1em;
+	border-right: 1px solid black;
+	border-bottom: 1px solid black;
+	background-color: #eee;
+}
+
+#main-contents {
+	-webkit-box-sizing: border-box;
+	   -moz-box-sizing: border-box;
+	        box-sizing: border-box;
+	display: inline-block;
+	vertical-align: top;
+	font-size: 9.5pt;
+	width: 80%;
+	padding: 2em;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+th {
+	text-align: left;
+}
+
+td {
+	border-top: 1px dashed #ddd;
+	border-bottom: 1px dashed #ddd;
+	vertical-align: top;
+}
+
+col.caption {
+	width: 150pt;
+}
+
+ul.tree-view a.package {
+	background-image: url(../images/ddox/package.png);
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding-left: 18px;
+	padding-right: 4px;
+}
+
+ul.tree-view a.module {
+	margin-left: 14px;
+	padding: 0 4px;
+}
+
+ul.tree-view a.selected {
+	background-color: #f8f8f8;
+	margin-left: 13px;
+	border: 1px solid #bbb;
+}
+
+ul.tree-view {
+	padding: 0;
+	margin: 0;
+}
+
+ul.tree-view ul {
+	margin: 0;
+	padding: 0;
+	padding-left: 10pt;
+}
+
+ul.tree-view li {
+	list-style-type: none;
+	padding: 0;
+	margin-left: 0;
+}
+
+a.protected {
+	font-style: italic;
+	background-image: url(../images/ddox/protected.png);
+	background-repeat: no-repeat;
+	padding-left: 16px;
+}
+a.package {
+	font-style: italic;
+	background-image: url(../images/ddox/package.png);
+	background-repeat: no-repeat;
+	padding-left: 16px;
+}
+a.private {
+	font-style: italic;
+	background-image: url(../images/ddox/private.png);
+	background-repeat: no-repeat;
+	padding-left: 16px;
+}
+a.inherited:after { content: url(../images/ddox/inherited.png); padding-left: 2pt; }
+
+#symbolSearchResults {
+	list-style: none;
+	padding: 0;
+	overflow: hidden;
+}
+#symbolSearchResults li {
+	background-repeat: no-repeat;
+	background-position: left center;
+	padding-left: 18px;
+}
+
+#symbolSearchResults .deprecated a { color: gray; }
+#symbolSearchResults .module { background-image: url(../images/ddox/module.png); }
+#symbolSearchResults .functiondeclaration { background-image: url(../images/ddox/function.png); }
+#symbolSearchResults .classdeclaration { background-image: url(../images/ddox/class.png); }
+#symbolSearchResults .interfacedeclaration { background-image: url(../images/ddox/interface.png); }
+#symbolSearchResults .structdeclaration { background-image: url(../images/ddox/struct.png); }
+#symbolSearchResults .variabledeclaration { background-image: url(../images/ddox/variable.png); }
+#symbolSearchResults .property { background-image: url(../images/ddox/property.png); }
+#symbolSearchResults .enumdeclaration { background-image: url(../images/ddox/enum.png); }
+#symbolSearchResults .enummemberdeclaration { background-image: url(../images/ddox/enummember.png); }
+#symbolSearchResults .aliasdeclaration { background-image: url(../images/ddox/alias.png); }
+#symbolSearchResults .templatedeclaration { background-image: url(../images/ddox/template.png); }
