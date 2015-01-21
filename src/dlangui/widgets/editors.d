@@ -534,9 +534,8 @@ class EditableContent {
     void notifyContentReplaced() {
         TextRange rangeBefore;
         TextRange rangeAfter;
+        // notify about content change
         handleContentChange(new EditOperation(EditAction.ReplaceContent), rangeBefore, rangeAfter, this);
-        // update highlight if necessary
-        updateTokenProps(0, _lines.length);
     }
 
     protected void updateTokenProps(int startLine, int endLine) {
@@ -639,6 +638,8 @@ class EditableContent {
     }
 
 	void handleContentChange(EditOperation op, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source) {
+        // update highlight if necessary
+        updateTokenProps(rangeAfter.start.line, rangeAfter.end.line + 1);
         // call listeners
 		contentChangeListeners(this, op, rangeBefore, rangeAfter, source);
 	}
