@@ -86,10 +86,18 @@ enum TokenCategory : ubyte {
     Op = (8 << TOKEN_CATEGORY_SHIFT),
     // add more here
     //....
-    /// error
+    /// error - unparsed character sequence
     Error = (15 << TOKEN_CATEGORY_SHIFT),
-    /// invalid token
-    Error_InvalidToken = (15 << TOKEN_CATEGORY_SHIFT) | 1  // invalid token
+    /// invalid token - generic
+    Error_InvalidToken = (15 << TOKEN_CATEGORY_SHIFT) | 1,
+    /// invalid number token - error occured while parsing number
+    Error_InvalidNumber = (15 << TOKEN_CATEGORY_SHIFT) | 2,
+    /// invalid string token - error occured while parsing string
+    Error_InvalidString = (15 << TOKEN_CATEGORY_SHIFT) | 3,
+    /// invalid identifier token - error occured while parsing identifier
+    Error_InvalidIdentifier = (15 << TOKEN_CATEGORY_SHIFT) | 4,
+    /// invalid comment token - error occured while parsing comment
+    Error_InvalidComment = (15 << TOKEN_CATEGORY_SHIFT) | 4,
 }
 
 /// Editor action codes
