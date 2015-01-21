@@ -102,8 +102,11 @@ immutable string STYLE_EDIT_LINE = "EDIT_LINE";
 immutable string STYLE_EDIT_BOX = "EDIT_BOX";
 /// standard style id for background similar to transparent button
 immutable string STYLE_TRANSPARENT_BUTTON_BACKGROUND = "TRANSPARENT_BUTTON_BACKGROUND";
+
 /// standard style id for tree item
 immutable string STYLE_TREE_ITEM = "TREE_ITEM";
+/// standard style id for tree item body (icon + label)
+immutable string STYLE_TREE_ITEM_BODY = "TREE_ITEM_BODY";
 /// standard style id for tree item label
 immutable string STYLE_TREE_ITEM_LABEL = "TREE_ITEM_LABEL";
 /// standard style id for tree item icon

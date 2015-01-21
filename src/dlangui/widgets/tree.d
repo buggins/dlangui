@@ -470,6 +470,7 @@ class TreeItemWidget : HorizontalLayout {
     ImageWidget _expander;
     ImageWidget _icon;
     TextWidget _label;
+    HorizontalLayout _body;
     long lastClickTime;
 
     @property TreeItem item() { return _item; }
@@ -519,21 +520,24 @@ class TreeItemWidget : HorizontalLayout {
             lastClickTime = ts;
             return true;
         };
+        _body = new HorizontalLayout("item_body");
+        _body.styleId = STYLE_TREE_ITEM_BODY;
+        _body.setState(State.Parent);
         if (_item.iconRes.length > 0) {
             _icon = new ImageWidget("icon", _item.iconRes);
             _icon.styleId = STYLE_TREE_ITEM_ICON;
             _icon.setState(State.Parent);
+            _body.addChild(_icon);
         }
         _label = new TextWidget("label", _item.text);
         _label.styleId = STYLE_TREE_ITEM_LABEL;
         _label.setState(State.Parent);
+        _body.addChild(_label);
         // append children
         addChild(_tab);
         if (_expander)
             addChild(_expander);
-        if (_icon)
-            addChild(_icon);
-        addChild(_label);
+        addChild(_body);
     }
 
     override bool onKeyEvent(KeyEvent event) {

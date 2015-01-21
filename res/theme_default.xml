@@ -159,12 +159,9 @@
         textFlags="Parent"
         />
     <style id="MENU_ITEM"
+        backgroundImageId="menu_item_background"
         padding="4,2,4,2"
         >
-        <state state_focused="true" backgroundColor="#40C0C000"/>
-        <state state_pressed="true" backgroundColor="#4080C000"/>
-        <state state_selected="true" backgroundColor="#00F8F9Fa"/>
-        <state state_hovered="true" backgroundColor="#C0FFFF00"/>
     </style>
     <style id="MENU_ICON"
         margins="2,2,2,2"
@@ -314,15 +311,17 @@
         fontFace="Arial"
         fontFamily="SansSerif"
         fontSize="16">
-        <state state_focused="true" backgroundColor="#40C0C000"/>
-        <state state_pressed="true" backgroundColor="#4080C000"/>
-        <state state_selected="true" backgroundColor="#00F8F9Fa"/>
-        <state state_hovered="true" backgroundColor="#C0FFFF00"/>
     </style>
     <style id="TREE_ITEM_EXPAND_ICON"
         margins="2,0,2,0"
         align="Left|VCenter"
         textFlags="Parent"
+    />
+    <style id="TREE_ITEM_BODY"
+        margins="2,0,2,0"
+        align="Left|VCenter"
+        textFlags="Parent"
+        backgroundImageId="list_item_background"
     />
     <style id="TREE_ITEM_ICON"
         margins="2,0,2,0"
