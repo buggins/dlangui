@@ -98,10 +98,10 @@ class DockHost : WidgetGroupDefaultDrawing {
         DockWindow[] left = getDockedWindowList(DockAlignment.Left);
         DockWindow[] right = getDockedWindowList(DockAlignment.Right);
         DockWindow[] bottom = getDockedWindowList(DockAlignment.Bottom);
-        _topSpace = top.length ? rc.height / 5 : 0;
-        _bottomSpace = bottom.length ? rc.height / 5 : 0;
-        _rightSpace = right.length ? rc.width / 5 : 0;
-        _leftSpace = left.length ? rc.width / 5 : 0;
+        _topSpace = top.length ? rc.height / 4 : 0;
+        _bottomSpace = bottom.length ? rc.height / 4 : 0;
+        _rightSpace = right.length ? rc.width / 4 : 0;
+        _leftSpace = left.length ? rc.width / 4 : 0;
         if (_bodyWidget)
             _bodyWidget.layout(Rect(rc.left + _leftSpace, rc.top + _topSpace, rc.right - _rightSpace, rc.bottom - _bottomSpace));
         layoutDocked(top, Rect(rc.left + _leftSpace, rc.top, rc.right - _rightSpace, rc.top + _topSpace), Orientation.Horizontal);
@@ -143,6 +143,7 @@ class DockHost : WidgetGroupDefaultDrawing {
     }
 }
 
+/// dock alignment types
 enum DockAlignment {
     Left,
     Right,
@@ -177,11 +178,13 @@ class DockWindow : VerticalLayout {
     protected HorizontalLayout _captionLayout;
     protected TextWidget _caption;
     protected ImageButton _closeButton;
+
     this(string ID) {
         super(ID);
-        _dockAlignment = DockAlignment.Right;
+        _dockAlignment = DockAlignment.Right; // default alignment is right
         init();
     }
+
     protected bool onCloseButtonClick(Widget source) {
         return true;
     }

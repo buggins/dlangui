@@ -8,6 +8,7 @@ EditLine - single line editor.
 
 EditBox - multiline editor
 
+LogWidget - readonly text box for showing logs
 
 Synopsis:
 
@@ -528,6 +529,14 @@ class EditableContent {
             buf ~= item;
         }
         return cast(dstring)buf;
+    }
+
+    /// append one or more lines at end
+    void appendLines(dstring[] lines...) {
+        TextRange rangeBefore;
+        rangeBefore.start = rangeBefore.end = lineEnd(_lines.length ? _lines.length - 1 : 0);
+        EditOperation op = new EditOperation(EditAction.Replace, rangeBefore, lines);
+        performOperation(op, this);
     }
 
     /// call listener to say that whole content is replaced e.g. by loading from file
@@ -2862,4 +2871,45 @@ class EditBox : EditWidgetBase {
         drawCaret(buf);
     }
 
+}
+
+/// Read only edit box for displaying logs with lines append operation
+class LogWidget : EditBox {
+
+    protected int  _maxLines;
+    /// max lines to show (when appended more than max lines, older lines will be truncated), 0 means no limit
+    @property int maxLines() { return _maxLines; }
+    /// set max lines to show (when appended more than max lines, older lines will be truncated), 0 means no limit
+    @property void maxLines(int n) { _maxLines = n; }
+
+    protected bool _scrollLock;
+    /// when true, automatically scrolls down when new lines are appended (usually being reset by scrollbar interaction)
+    @property bool scrollLock() { return _scrollLock; }
+    /// when true, automatically scrolls down when new lines are appended (usually being reset by scrollbar interaction)
+    @property void scrollLock(bool flg) { _scrollLock = flg; }
+
+    this(string ID) {
+        super(ID);
+        _scrollLock = true;
+        enabled = false;
+        fontSize = 12;
+		fontFace = "Consolas,Lucida Console,Courier New";
+		fontFamily = FontFamily.MonoSpace;
+    }
+    /// append lines to the end of text
+    void appendLines(dstring[] lines...) {
+        lines ~= ""d; // append new line after last line
+        content.appendLines(lines);
+        if (_maxLines > 0 && lineCount > _maxLines) {
+            TextRange range;
+            range.end.line = lineCount - _maxLines;
+            EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
+            _content.performOperation(op, this);
+        }
+        updateScrollBars();
+        if (_scrollLock) {
+            _caretPos = TextPosition(lineCount > 0 ? lineCount - 1 : 0, 0);
+            ensureCaretVisible();
+        }
+    }
 }

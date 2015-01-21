@@ -302,15 +302,14 @@
         />
 
     <style id="TREE_ITEM"
-        padding="2,2,2,2"
-        margins="0,0,0,0"
+        padding="1,1,1,1"
         minWidth="100"
         minHeight="16"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
         fontFace="Arial"
         fontFamily="SansSerif"
-        fontSize="16">
+        fontSize="12">
     </style>
     <style id="TREE_ITEM_EXPAND_ICON"
         margins="2,0,2,0"
@@ -333,6 +332,7 @@
         layoutHeight="WRAP_CONTENT"
         align="Left|VCenter"
         textFlags="Parent"
+	fontSize="12"
     />
     <style id="RESIZER_VERTICAL"
         layoutWidth="FILL_PARENT"
