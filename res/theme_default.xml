@@ -297,6 +297,12 @@
         margins="1,1,1,1"
         padding="4,4,4,4"
         />
+    <style id="TOOLBAR_CONTROL"
+        backgroundImageId="toolbar_control_background"
+        align="Center"
+        margins="1,1,1,1"
+        padding="4,4,4,4"
+        />
     <style id="TOOLBAR_SEPARATOR"
         align="Center"
         />

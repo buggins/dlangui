@@ -24,6 +24,7 @@ module dlangui.widgets.toolbars;
 import dlangui.widgets.widget;
 import dlangui.widgets.layouts;
 import dlangui.widgets.controls;
+import dlangui.widgets.combobox;
 
 /// Layout with several toolbars
 class ToolBarHost : HorizontalLayout {
@@ -76,6 +77,16 @@ class ToolBarSeparator : ImageWidget {
     }
 }
 
+/// separator for toolbars
+class ToolBarComboBox : ComboBox {
+    this(string ID, dstring[] items) {
+        super(ID, items);
+        styleId = STYLE_TOOLBAR_CONTROL;
+        if (items.length > 0)
+            selectedItemIndex = 0;
+    }
+}
+
 /// Layout with buttons
 class ToolBar : HorizontalLayout {
     this(string ID) {
@@ -104,6 +115,10 @@ class ToolBar : HorizontalLayout {
                 addChild(btn);
             }
         }
+    }
+
+    void addControl(Widget widget) {
+        addChild(widget);
     }
 
 }

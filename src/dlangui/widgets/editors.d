@@ -1072,7 +1072,7 @@ class EditableContent {
         }
     }
     /// save to file in current format
-    bool save(string filename) {
+    bool save(string filename = null) {
         return save(filename, _format);
     }
 }

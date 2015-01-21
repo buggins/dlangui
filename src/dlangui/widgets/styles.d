@@ -148,6 +148,8 @@ immutable string STYLE_TOOLBAR_HOST = "TOOLBAR_HOST";
 immutable string STYLE_TOOLBAR = "TOOLBAR";
 /// standard style id for toolbar button
 immutable string STYLE_TOOLBAR_BUTTON = "TOOLBAR_BUTTON";
+/// standard style id for toolbar control, e.g. combobox
+immutable string STYLE_TOOLBAR_CONTROL = "TOOLBAR_CONTROL";
 /// standard style id for toolbar separator
 immutable string STYLE_TOOLBAR_SEPARATOR = "TOOLBAR_SEPARATOR";
 
