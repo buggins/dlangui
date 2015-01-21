@@ -87,7 +87,9 @@ enum TokenCategory : ubyte {
     // add more here
     //....
     /// error
-    Error = (15 << TOKEN_CATEGORY_SHIFT)
+    Error = (15 << TOKEN_CATEGORY_SHIFT),
+    /// invalid token
+    Error_InvalidToken = (15 << TOKEN_CATEGORY_SHIFT) | 1  // invalid token
 }
 
 /// Editor action codes
