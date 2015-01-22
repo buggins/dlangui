@@ -138,7 +138,7 @@ class OutputLineStream {
             default:
                 char[4] d;
                 for (int i = 0; i < s.length; i++) {
-                    int bytes = encode(d, s[i]);
+                    int bytes = cast(int)encode(d, s[i]);
                     for (int j = 0; j < bytes; j++)
                         _buf[_len++] = d[j];
                 }
@@ -146,7 +146,7 @@ class OutputLineStream {
             case EncodingType.UTF16BE:
                 wchar[2] d;
                 for (int i = 0; i < s.length; i++) {
-                    int n = encode(d, s[i]);
+                    int n = cast(int)encode(d, s[i]);
                     for (int j = 0; j < n; j++) {
                         _buf[_len++] = cast(char)(d[j] >> 8);
                         _buf[_len++] = cast(char)(d[j] & 0xFF);
@@ -156,7 +156,7 @@ class OutputLineStream {
             case EncodingType.UTF16LE:
                 wchar[2] d;
                 for (int i = 0; i < s.length; i++) {
-                    int n = encode(d, s[i]);
+                    int n = cast(int)encode(d, s[i]);
                     for (int j = 0; j < n; j++) {
                         _buf[_len++] = cast(char)(d[j] & 0xFF);
                         _buf[_len++] = cast(char)(d[j] >> 8);

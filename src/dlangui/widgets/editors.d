@@ -486,7 +486,7 @@ class EditableContent {
 
     @property EditableContent syntaxHighlighter(SyntaxHighlighter syntaxHighlighter) {
         _syntaxHighlighter = syntaxHighlighter;
-        updateTokenProps(0, _lines.length);
+        updateTokenProps(0, cast(int)_lines.length);
         return this;
     }
 
@@ -534,7 +534,7 @@ class EditableContent {
     /// append one or more lines at end
     void appendLines(dstring[] lines...) {
         TextRange rangeBefore;
-        rangeBefore.start = rangeBefore.end = lineEnd(_lines.length ? _lines.length - 1 : 0);
+        rangeBefore.start = rangeBefore.end = lineEnd(_lines.length ? cast(int)_lines.length - 1 : 0);
         EditOperation op = new EditOperation(EditAction.Replace, rangeBefore, lines);
         performOperation(op, this);
     }
@@ -575,12 +575,12 @@ class EditableContent {
         if (_multiline) {
             _lines = splitDString(newContent);
             _tokenProps.length = _lines.length;
-            updateTokenProps(0, _lines.length);
+            updateTokenProps(0, cast(int)_lines.length);
         } else {
             _lines.length = 1;
             _lines[0] = replaceEolsWithSpaces(newContent);
             _tokenProps.length = 1;
-            updateTokenProps(0, _lines.length);
+            updateTokenProps(0, cast(int)_lines.length);
         }
         notifyContentReplaced();
         return this;
