@@ -489,14 +489,32 @@ class Window {
     }
 
     /// dispatch action to main widget
-    bool dispatchAction(const Action action) {
-        Widget focus = focusedWidget;
-        // first, offer action to focused widget
-        if (focus && focus.handleAction(action))
+    bool dispatchAction(const Action action, Widget sourceWidget = null) {
+        // try to handle by source widget
+        if(sourceWidget && isChild(sourceWidget)) {
+            if (sourceWidget.handleAction(action))
                 return true;
-        // if not processed by focused widget, pass to main widget
-        if (_mainWidget !is null)
-            return _mainWidget.handleAction(action);
+            sourceWidget = sourceWidget.parent;
+        }
+        Widget focus = focusedWidget;
+        // then offer action to focused widget
+        if (focus && isChild(focus)) {
+            if (focus.handleAction(action))
+                return true;
+            focus = focus.parent;
+        }
+        // then offer to parent chain of source widget
+        while (sourceWidget && isChild(sourceWidget)) {
+            if (sourceWidget.handleAction(action))
+                return true;
+            sourceWidget = sourceWidget.parent;
+        }
+        // then offer to parent chain of focused widget
+        while (focus && isChild(focus)) {
+            if (focus.handleAction(action))
+                return true;
+            focus = focus.parent;
+        }
         return false;
     }
 

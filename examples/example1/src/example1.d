@@ -341,10 +341,8 @@ extern (C) int UIAppMain(string[] args) {
 					};
                     dlg.show();
                     return true;
-                } else if (window.focusedWidget)
-					return window.focusedWidget.handleAction(a);
-				else
-					return contentLayout.handleAction(a);
+                } else
+					return contentLayout.dispatchAction(a);
 			}
 			return false;
 		};

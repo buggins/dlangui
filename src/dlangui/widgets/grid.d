@@ -535,13 +535,13 @@ class GridWidgetBase : ScrollWidgetBase {
             int col = colByAbsoluteX(event.position + _fullScrollableArea.left);
             scrollTo(col, _scrollRow + _headerRows + _fixedRows);
         } else if (event.action == ScrollAction.PageUp) {
-            handleAction(new Action(GridActions.ScrollPageLeft));
+            dispatchAction(new Action(GridActions.ScrollPageLeft));
         } else if (event.action == ScrollAction.PageDown) {
-            handleAction(new Action(GridActions.ScrollPageRight));
+            dispatchAction(new Action(GridActions.ScrollPageRight));
         } else if (event.action == ScrollAction.LineUp) {
-            handleAction(new Action(GridActions.ScrollLeft));
+            dispatchAction(new Action(GridActions.ScrollLeft));
         } else if (event.action == ScrollAction.LineDown) {
-            handleAction(new Action(GridActions.ScrollRight));
+            dispatchAction(new Action(GridActions.ScrollRight));
         }
         return true;
     }
@@ -552,13 +552,13 @@ class GridWidgetBase : ScrollWidgetBase {
             int row = rowByAbsoluteY(event.position + _fullScrollableArea.top);
             scrollTo(_scrollCol + _headerCols + _fixedCols, row);
         } else if (event.action == ScrollAction.PageUp) {
-            handleAction(new Action(GridActions.ScrollPageUp));
+            dispatchAction(new Action(GridActions.ScrollPageUp));
         } else if (event.action == ScrollAction.PageDown) {
-            handleAction(new Action(GridActions.ScrollPageDown));
+            dispatchAction(new Action(GridActions.ScrollPageDown));
         } else if (event.action == ScrollAction.LineUp) {
-            handleAction(new Action(GridActions.ScrollUp));
+            dispatchAction(new Action(GridActions.ScrollUp));
         } else if (event.action == ScrollAction.LineDown) {
-            handleAction(new Action(GridActions.ScrollDown));
+            dispatchAction(new Action(GridActions.ScrollDown));
         }
         return true;
     }

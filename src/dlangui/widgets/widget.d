@@ -901,18 +901,25 @@ class Widget {
 
 	/// override to handle specific actions
 	bool handleAction(const Action a) {
-		if (parent) // by default, pass to parent widget
-			return parent.handleAction(a);
 		return false;
 	}
+
+    /// call to dispatch action
+    bool dispatchAction(const Action a) {
+        if (window)
+            return window.dispatchAction(a, this);
+        else
+            return handleAction(a);
+    }
 
     // called to process click and notify listeners
     protected bool handleClick() {
         bool res = false;
         if (onClickListener.assigned)
             res = onClickListener(this);
-        else if (_action)
-            res = handleAction(_action);
+        else if (_action) {
+            return dispatchAction(_action);
+        }
         return res;
     }
 
@@ -929,7 +936,7 @@ class Widget {
 		if (event.action == KeyAction.KeyDown) {
 			Action action = findKeyAction(event.keyCode, event.flags & (KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Control));
 			if (action !is null) {
-				return handleAction(action);
+				return dispatchAction(action);
 			}
 		}
         // handle focus navigation using keys

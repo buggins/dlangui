@@ -1275,7 +1275,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
 	/// 
 	override bool onMenuItemAction(const Action action) {
-		return handleAction(action);
+		return dispatchAction(action);
 	}
 
 	/// returns true if widget can show popup (e.g. by mouse right click at point x,y)
@@ -2084,16 +2084,16 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             uint keyFlags = event.flags & (MouseFlag.Shift | MouseFlag.Control | MouseFlag.Alt);
             if (event.wheelDelta < 0) {
                 if (keyFlags == MouseFlag.Shift)
-                    return handleAction(new Action(EditorActions.ScrollRight));
+                    return dispatchAction(new Action(EditorActions.ScrollRight));
                 if (keyFlags == MouseFlag.Control)
-                    return handleAction(new Action(EditorActions.ZoomOut));
-                return handleAction(new Action(EditorActions.ScrollLineDown));
+                    return dispatchAction(new Action(EditorActions.ZoomOut));
+                return dispatchAction(new Action(EditorActions.ScrollLineDown));
             } else if (event.wheelDelta > 0) {
                 if (keyFlags == MouseFlag.Shift)
-                    return handleAction(new Action(EditorActions.ScrollLeft));
+                    return dispatchAction(new Action(EditorActions.ScrollLeft));
                 if (keyFlags == MouseFlag.Control)
-                    return handleAction(new Action(EditorActions.ZoomIn));
-                return handleAction(new Action(EditorActions.ScrollLineUp));
+                    return dispatchAction(new Action(EditorActions.ZoomIn));
+                return dispatchAction(new Action(EditorActions.ScrollLineUp));
             }
         }
 	    return super.onMouseEvent(event);
@@ -2402,13 +2402,13 @@ class EditBox : EditWidgetBase {
                 invalidate();
             }
         } else if (event.action == ScrollAction.PageUp) {
-            handleAction(new Action(EditorActions.ScrollLeft));
+            dispatchAction(new Action(EditorActions.ScrollLeft));
         } else if (event.action == ScrollAction.PageDown) {
-            handleAction(new Action(EditorActions.ScrollRight));
+            dispatchAction(new Action(EditorActions.ScrollRight));
         } else if (event.action == ScrollAction.LineUp) {
-            handleAction(new Action(EditorActions.ScrollLeft));
+            dispatchAction(new Action(EditorActions.ScrollLeft));
         } else if (event.action == ScrollAction.LineDown) {
-            handleAction(new Action(EditorActions.ScrollRight));
+            dispatchAction(new Action(EditorActions.ScrollRight));
         }
         return true;
     }
@@ -2422,13 +2422,13 @@ class EditBox : EditWidgetBase {
                 invalidate();
             }
         } else if (event.action == ScrollAction.PageUp) {
-            handleAction(new Action(EditorActions.ScrollPageUp));
+            dispatchAction(new Action(EditorActions.ScrollPageUp));
         } else if (event.action == ScrollAction.PageDown) {
-            handleAction(new Action(EditorActions.ScrollPageDown));
+            dispatchAction(new Action(EditorActions.ScrollPageDown));
         } else if (event.action == ScrollAction.LineUp) {
-            handleAction(new Action(EditorActions.ScrollLineUp));
+            dispatchAction(new Action(EditorActions.ScrollLineUp));
         } else if (event.action == ScrollAction.LineDown) {
-            handleAction(new Action(EditorActions.ScrollLineDown));
+            dispatchAction(new Action(EditorActions.ScrollLineDown));
         }
         return true;
     }

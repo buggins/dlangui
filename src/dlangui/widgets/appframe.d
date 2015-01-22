@@ -98,4 +98,10 @@ class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
         res.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
         return res;
     }
+
+    /// override to handle specific actions
+	override bool handleAction(const Action a) {
+        return false;
+    }
+
 }
