@@ -32,6 +32,13 @@
 				"3rdparty", "src"
 			],
 
+			"stringImportPaths": [
+				"views",
+				"views/res",
+				"views/res/mdpi",
+				"views/res/i18n"
+			],
+
 			"dependencies": {
 				"derelict-gl3": ">=1.0.12",
 				"dlib": ">=0.4.1",
