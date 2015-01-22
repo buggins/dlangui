@@ -11,11 +11,75 @@ Supports nine-patch PNG images in .9.png files (like in Android).
 
 Supports state drawables using XML files similar to ones in Android.
 
+
+
+When your application uses custom resources, you can embed resources into executable and/or specify external resource directory(s).
+
+To embed resources, put them into views/res directory, and create file views/resources.list with list of all files to embed.
+
+Use following code to embed resources:
+
+----
+/// entry point for dlangui based application
+extern (C) int UIAppMain(string[] args) {
+
+    // embed non-standard resources listed in views/resources.list into executable
+    embeddedResourceList.addResources(embedResourcesFromList!("resources.list")());
+
+    ...
+----
+
+Resource list resources.list file may look similar to following:
+
+----
+res/i18n/en.ini
+res/i18n/ru.ini
+res/mdpi/cr3_logo.png
+res/mdpi/document-open.png
+res/mdpi/document-properties.png
+res/mdpi/document-save.png
+res/mdpi/edit-copy.png
+res/mdpi/edit-paste.png
+res/mdpi/edit-undo.png
+res/mdpi/tx_fabric.jpg
+res/theme_custom1.xml
+----
+
+As well you can specify list of external directories to get resources from.
+
+----
+
+/// entry point for dlangui based application
+extern (C) int UIAppMain(string[] args) {
+    // resource directory search paths
+    string[] resourceDirs = [
+        appendPath(exePath, "../../../res/"),   // for Visual D and DUB builds
+        appendPath(exePath, "../../../res/mdpi/"),   // for Visual D and DUB builds
+        appendPath(exePath, "../../../../res/"),// for Mono-D builds
+        appendPath(exePath, "../../../../res/mdpi/"),// for Mono-D builds
+        appendPath(exePath, "res/"), // when res dir is located at the same directory as executable
+        appendPath(exePath, "../res/"), // when res dir is located at project directory
+        appendPath(exePath, "../../res/"), // when res dir is located at the same directory as executable
+        appendPath(exePath, "res/mdpi/"), // when res dir is located at the same directory as executable
+        appendPath(exePath, "../res/mdpi/"), // when res dir is located at project directory
+        appendPath(exePath, "../../res/mdpi/") // when res dir is located at the same directory as executable
+    ];
+    // setup resource directories - will use only existing directories
+    Platform.instance.resourceDirs = resourceDirs;
+
+----
+
+When same file exists in both embedded and external resources, one from external resource directory will be used - it's useful for developing 
+and testing of resources.
+
+
 Synopsis:
 
 ----
 import dlangui.graphics.resources;
 
+// embed non-standard resources listed in views/resources.list into executable
+embeddedResourceList.addResources(embedResourcesFromList!("resources.list")());
 ----
 
 Copyright: Vadim Lopatin, 2014
@@ -56,7 +120,8 @@ struct EmbeddedResourceList {
     }
     /// find by exact file name
     EmbeddedResource * find(string name) {
-        for(int i = 0; i < list.length; i++)
+        // search backwards to allow overriding standard resources (which are added first)
+        for (int i = cast(int)list.length - 1; i >= 0; i--)
             if (name.equal(list[i].name))
                 return &list[i];
         return null;
@@ -68,7 +133,8 @@ struct EmbeddedResourceList {
         string png9name = name ~ ".9.png";
         string jpgname = name ~ ".jpg";
         string jpegname = name ~ ".jpeg";
-        for(int i = 0; i < list.length; i++) {
+        // search backwards to allow overriding standard resources (which are added first)
+        for (int i = cast(int)list.length - 1; i >= 0; i--) {
             string s = list[i].name;
             if (s.equal(xmlname) || s.equal(pngname) || s.equal(png9name) 
                     || s.equal(jpgname) || s.equal(jpegname))

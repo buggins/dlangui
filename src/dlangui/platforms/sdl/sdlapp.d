@@ -791,6 +791,7 @@ class SDLPlatform : Platform {
 	}
 
 	override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable) {
+        setDefaultLanguageAndThemeIfNecessary();
 		SDLWindow res = new SDLWindow(this, windowCaption, parent, flags);
 		_windowMap[res.windowId] = res;
 		return res;

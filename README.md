@@ -106,7 +106,7 @@ Styles and themes are a bit similar to ones in Android API.
 which allows to modify some of attributes, while getting base style attributes if they are not changed in widget. This trick can minimize memory usage for widget attributes when 
 standard values are used.
 * Current default theme is similar to one in MS Visual Studio 2013
-
+* Resources can be either embedded into executable or loaded from external resource directory in runtime
 
 Win32 builds
 ------------
@@ -219,19 +219,6 @@ Hello World
 
 	/// entry point for dlangui based application
 	extern (C) int UIAppMain(string[] args) {
-	    // resource directory search paths
-	    string[] resourceDirs = [
-	        appendPath(exePath, "../res/"),   // for Visual D and DUB builds
-	        appendPath(exePath, "../../res/") // for Mono-D builds
-	    ];
-
-	    // setup resource directories - will use only existing directories
-	    Platform.instance.resourceDirs = resourceDirs;
-	    // select translation file - for english language
-	    Platform.instance.uiLanguage = "en";
-	    // load theme from file "theme_default.xml"
-	    Platform.instance.uiTheme = "theme_default";
-	
 	    // create window
 	    Window window = Platform.instance.createWindow("My Window", null);
 	    // create some widget to show in window
@@ -253,10 +240,6 @@ Sample dub.json:
 	    "targetPath": "bin",
 	    "targetType": "executable",
 	
-	    "copyFiles": [
-	        "res"
-	    ],
-
 	    "dependencies": {
 	        "dlangui:dlanguilib": "~master"
 	    }

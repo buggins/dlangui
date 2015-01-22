@@ -806,6 +806,14 @@ class Platform {
 		return this;
 	}
 
+    /// to set uiLanguage and themeId to default (en, theme_default) if not set yet
+    protected void setDefaultLanguageAndThemeIfNecessary() {
+        if (!_uiLanguage)
+            uiLanguage = "en";
+        if (!_themeId)
+            themeId = "theme_default";
+    }
+
 	protected string[] _resourceDirs;
 	/// returns list of resource directories
 	@property string[] resourceDirs() { return _resourceDirs; }
