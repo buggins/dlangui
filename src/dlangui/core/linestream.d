@@ -124,7 +124,7 @@ class OutputLineStream {
     }
     protected void flush() {
         if (_len > 0) {
-            _stream.write(_buf[0.._len]);
+            _stream.writeExact(_buf.ptr, _len);
             _len = 0;
         }
     }

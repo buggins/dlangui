@@ -1063,7 +1063,7 @@ class EditableContent {
         if (!filename)
             filename = _filename;
         try {
-            std.stream.File f = new std.stream.File(filename, FileMode.Out);
+            std.stream.File f = new std.stream.File(filename, FileMode.OutNew);
             scope(exit) { f.close(); }
             return save(f, filename, format);
         } catch (Exception e) {
