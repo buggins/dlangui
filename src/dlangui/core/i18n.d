@@ -63,9 +63,12 @@ module dlangui.core.i18n;
 import dlangui.core.types;
 import dlangui.core.logger;
 import dlangui.core.files;
+import dlangui.graphics.resources;
 private import dlangui.core.linestream;
 private import std.utf;
 private import std.algorithm;
+private import std.string;
+private import std.file;
 
 /** 
    Container for UI string - either raw value or string resource ID 
@@ -290,10 +293,22 @@ synchronized class UIStringTranslator {
             if (ch == '/' || ch == '\\')
                 hasPathDelimiters = true;
         string[] res;
-        if (!hasPathDelimiters && _resourceDirs.length) {
-            foreach (dir; _resourceDirs)
-                res ~= dir ~ filename;
+        if (!hasPathDelimiters) {
+            string fn = EMBEDDED_RESOURCE_PREFIX ~ "std_" ~ filename;
+            string s = cast(string)loadResourceBytes(fn);
+            if (s)
+                res ~= fn;
+            fn = EMBEDDED_RESOURCE_PREFIX ~ filename;
+            s = cast(string)loadResourceBytes(fn);
+            if (s)
+                res ~= fn;
+            foreach (dir; _resourceDirs) {
+                fn = dir ~ filename;
+                if (exists(fn) && isFile(fn))
+                    res ~= fn;
+            }
         } else {
+            // full path
             res ~= filename;
         }
         return res;
@@ -350,13 +365,9 @@ private shared class UIStringList {
         return null;
     }
     /// load strings from stream
-    bool load(std.stream.InputStream stream) {
-        dlangui.core.linestream.LineStream lines = dlangui.core.linestream.LineStream.create(stream, "");
+    bool load(dstring[] lines) {
         int count = 0;
-        for (;;) {
-            dchar[] s = lines.readLine();
-            if (s is null)
-                break;
+        foreach (s; lines) {
             int eqpos = -1;
             int firstNonspace = -1;
             int lastNonspace = -1;
@@ -379,23 +390,33 @@ private shared class UIStringList {
         return count > 0;
     }
 
+    /// convert to utf32 and split by lines (detecting line endings)
+    static dstring[] splitLines(string src) {
+        dstring dsrc = toUTF32(src);
+        dstring[] split1 = split(dsrc, "\r\n");
+        dstring[] split2 = split(dsrc, "\r");
+        dstring[] split3 = split(dsrc, "\n");
+        if (split1.length >= split2.length && split1.length >= split3.length)
+            return split1;
+        if (split2.length > split3.length)
+            return split2;
+        return split3;
+    }
+
     /// load strings from file (utf8, id=value lines)
     bool load(string[] filenames) {
         clear();
         bool res = false;
         foreach(filename; filenames) {
-            import std.stream;
-            import std.file;
             try {
                 debug Log.d("Loading string resources from file ", filename);
-                if (!exists(filename) || !isFile(filename)) {
-                    Log.e("File does not exist: ", filename);
+                string s = cast(string)loadResourceBytes(filename);
+                if (!s) {
+                    Log.e("Cannot load i18n resource from file ", filename);
                     continue;
                 }
-	            std.stream.File f = new std.stream.File(filename);
-                scope(exit) { f.close(); }
-                res = load(f) || res;
-            } catch (StreamFileException e) {
+                res = load(splitLines(s)) || res;
+            } catch (Exception e) {
                 Log.e("Cannot read string resources from file ", filename);
             }
         }

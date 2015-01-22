@@ -169,21 +169,25 @@ enum : int {
 /// entry point for dlangui based application
 extern (C) int UIAppMain(string[] args) {
     // resource directory search paths
-    string[] resourceDirs = [
-        appendPath(exePath, "../../../res/"),   // for Visual D and DUB builds
-        appendPath(exePath, "../../../res/mdpi/"),   // for Visual D and DUB builds
-        appendPath(exePath, "../../../../res/"),// for Mono-D builds
-        appendPath(exePath, "../../../../res/mdpi/"),// for Mono-D builds
-		appendPath(exePath, "res/"), // when res dir is located at the same directory as executable
-		appendPath(exePath, "../res/"), // when res dir is located at project directory
-		appendPath(exePath, "../../res/"), // when res dir is located at the same directory as executable
-		appendPath(exePath, "res/mdpi/"), // when res dir is located at the same directory as executable
-		appendPath(exePath, "../res/mdpi/"), // when res dir is located at project directory
-		appendPath(exePath, "../../res/mdpi/") // when res dir is located at the same directory as executable
-	];
-
+    // not required if only embedded resources are used
+    //string[] resourceDirs = [
+    //    appendPath(exePath, "../../../res/"),   // for Visual D and DUB builds
+    //    appendPath(exePath, "../../../res/mdpi/"),   // for Visual D and DUB builds
+    //    appendPath(exePath, "../../../../res/"),// for Mono-D builds
+    //    appendPath(exePath, "../../../../res/mdpi/"),// for Mono-D builds
+    //    appendPath(exePath, "res/"), // when res dir is located at the same directory as executable
+    //    appendPath(exePath, "../res/"), // when res dir is located at project directory
+    //    appendPath(exePath, "../../res/"), // when res dir is located at the same directory as executable
+    //    appendPath(exePath, "res/mdpi/"), // when res dir is located at the same directory as executable
+    //    appendPath(exePath, "../res/mdpi/"), // when res dir is located at project directory
+    //    appendPath(exePath, "../../res/mdpi/") // when res dir is located at the same directory as executable
+    //];
     // setup resource directories - will use only existing directories
-	Platform.instance.resourceDirs = resourceDirs;
+	//Platform.instance.resourceDirs = resourceDirs;
+
+    // embed resources listed in views/resources.list into executable
+    embeddedResourceList.addResources(embedResourcesFromList!("resources.list")());
+
     // select translation file - for english language
 	Platform.instance.uiLanguage = "en";
 	// load theme from file "theme_default.xml"

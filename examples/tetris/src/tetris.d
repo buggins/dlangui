@@ -28,22 +28,9 @@ extern (C) int UIAppMain(string[] args) {
     //auto power2 = delegate(int X) { return X * X; };
     auto power2 = (int X) => X * X;
 
-    // resource directory search paths
-    string[] resourceDirs = [
-        appendPath(exePath, "../../../res/"),   // for Visual D and DUB builds
-	    appendPath(exePath, "../../../res/mdpi/"),   // for Visual D and DUB builds
-	    appendPath(exePath, "../../../../res/"),// for Mono-D builds
-	    appendPath(exePath, "../../../../res/mdpi/"),// for Mono-D builds
-		appendPath(exePath, "res/"), // when res dir is located at the same directory as executable
-		appendPath(exePath, "../res/"), // when res dir is located at project directory
-		appendPath(exePath, "../../res/"), // when res dir is located at the same directory as executable
-		appendPath(exePath, "res/mdpi/"), // when res dir is located at the same directory as executable
-		appendPath(exePath, "../res/mdpi/"), // when res dir is located at project directory
-		appendPath(exePath, "../../res/mdpi/") // when res dir is located at the same directory as executable
-	];
+    // embed resources listed in views/resources.list into executable
+    embeddedResourceList.addResources(embedResourcesFromList!("resources.list")());
 
-    // setup resource directories - will use only existing directories
-	Platform.instance.resourceDirs = resourceDirs;
     // select translation file - for english language
 	Platform.instance.uiLanguage = "en";
 	// load theme from file "theme_default.xml"
