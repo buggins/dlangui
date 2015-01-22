@@ -152,6 +152,8 @@ version (USE_OPENGL) {
     private __gshared bool DERELICT_GL3_RELOADED = false;
 }
 
+const uint CUSTOM_MESSAGE_ID = WM_USER + 1;
+
 class Win32Window : Window {
     Win32Platform _platform;
 
@@ -309,6 +311,13 @@ class Win32Window : Window {
             DestroyWindow(_hwnd);
         _hwnd = null;
     }
+
+    /// post event to handle in UI thread (this method can be used from background thread)
+    override void postEvent(CustomEvent event) {
+        super.postEvent(event);
+        PostMessageW(_hwnd, CUSTOM_MESSAGE_ID, 0, event.uniqueId);
+    }
+
     Win32ColorDrawBuf getDrawBuf() {
         //RECT rect;
         //GetClientRect(_hwnd, &rect);
@@ -859,7 +868,7 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
 
 
     /// testing freetype font manager
-    static if (false) {
+    version(USE_FREETYPE) {
         import dlangui.graphics.ftfonts;
         import win32.shlobj;
         FreeTypeFontManager ftfontMan = new FreeTypeFontManager();
@@ -889,6 +898,14 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
         ftfontMan.registerFont(fontsPath ~ "timesbd.ttf", FontFamily.Serif, "Times New Roman", false, FontWeight.Bold);
         ftfontMan.registerFont(fontsPath ~ "timesbi.ttf", FontFamily.Serif, "Times New Roman", true, FontWeight.Bold);
         ftfontMan.registerFont(fontsPath ~ "timesi.ttf", FontFamily.Serif, "Times New Roman", true, FontWeight.Normal);
+        ftfontMan.registerFont(fontsPath ~ "consola.ttf", FontFamily.MonoSpace, "Consolas", false, FontWeight.Normal);
+        ftfontMan.registerFont(fontsPath ~ "consolab.ttf", FontFamily.MonoSpace, "Consolas", false, FontWeight.Bold);
+        ftfontMan.registerFont(fontsPath ~ "consolai.ttf", FontFamily.MonoSpace, "Consolas", true, FontWeight.Normal);
+        ftfontMan.registerFont(fontsPath ~ "consolaz.ttf", FontFamily.MonoSpace, "Consolas", true, FontWeight.Bold);
+        ftfontMan.registerFont(fontsPath ~ "verdana.ttf", FontFamily.SansSerif, "Verdana", false, FontWeight.Normal);
+        ftfontMan.registerFont(fontsPath ~ "verdanab.ttf", FontFamily.SansSerif, "Verdana", false, FontWeight.Bold);
+        ftfontMan.registerFont(fontsPath ~ "verdanai.ttf", FontFamily.SansSerif, "Verdana", true, FontWeight.Normal);
+        ftfontMan.registerFont(fontsPath ~ "verdanaz.ttf", FontFamily.SansSerif, "Verdana", true, FontWeight.Bold);
         FontManager.instance = ftfontMan;
     }
 
@@ -976,6 +993,11 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 }
             }
             return 0;
+        case CUSTOM_MESSAGE_ID:
+            if (window !is null) {
+                window.handlePostedEvent(cast(uint)lParam);
+            }
+            return 1;
         case WM_ERASEBKGND:
             // processed
             return 1;

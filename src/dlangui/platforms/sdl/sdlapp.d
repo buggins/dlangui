@@ -53,6 +53,8 @@ version (USE_OPENGL) {
 //	pragma(lib, "X11");
 //	pragma(lib, "dl");	
 		
+private __gshared uint USER_EVENT_ID;
+
 class SDLWindow : Window {
 	SDLPlatform _platform;
 	SDL_Window * _win;
@@ -78,6 +80,18 @@ class SDLWindow : Window {
 			destroy(_drawbuf);
 	}
 
+
+    /// post event to handle in UI thread (this method can be used from background thread)
+    override void postEvent(CustomEvent event) {
+        super.postEvent(event);
+        SDL_Event sdlevent;
+        sdlevent.user.type = USER_EVENT_ID;
+        sdlevent.user.code = cast(int)event.uniqueId;
+        sdlevent.user.windowID = windowId;
+        SDL_PushEvent(&sdlevent);
+    }
+
+
     version(USE_OPENGL) {
         static private bool _gl3Reloaded = false;
         private SDL_GLContext _context;
@@ -101,7 +115,7 @@ class SDLWindow : Window {
                 _glSupport = new GLSupport();
         }
 		_win = SDL_CreateWindow(toUTF8(_caption).toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
-                                700, 500, 
+                                800, 600, 
                                 windowFlags);
         version(USE_OPENGL) {
             if (!_win) {
@@ -111,7 +125,7 @@ class SDLWindow : Window {
                     // recreate w/o OpenGL
                     windowFlags &= ~SDL_WINDOW_OPENGL;
 					_win = SDL_CreateWindow(toUTF8(_caption).toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
-                                            700, 500, 
+                                            800, 600, 
                                             windowFlags);
                 }
             }
@@ -931,6 +945,12 @@ class SDLPlatform : Platform {
                         break;
                     default:
                         // not supported event
+                        if (event.type == USER_EVENT_ID) {
+                            SDLWindow w = getWindow(event.user.windowID);
+                            if (w) {
+                                w.handlePostedEvent(cast(uint)event.user.code);
+                            }
+                        }
                         break;
                 }
 				if (_windowToClose) {
@@ -1122,6 +1142,9 @@ int sdlmain(string[] args) {
         return 2;
     }
     scope(exit)SDL_Quit();
+
+    USER_EVENT_ID = SDL_RegisterEvents(1);
+
     int request = SDL_GetDesktopDisplayMode(0,&displayMode);
 
     version(USE_OPENGL) {

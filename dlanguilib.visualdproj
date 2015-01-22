@@ -66,7 +66,7 @@
   <debuglevel>0</debuglevel>
   <debugids>DebugFocus</debugids>
   <versionlevel>0</versionlevel>
-  <versionids>USE_OPENGL Unicode</versionids>
+  <versionids>Unicode USE_SDL USE_OPENGL</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>1</createImplib>
@@ -89,7 +89,6 @@
   <resfile />
   <exefile>$(OutDir)\$(ProjectName).lib</exefile>
   <useStdLibPath>1</useStdLibPath>
-  <cRuntime>2</cRuntime>
   <additionalOptions />
   <preBuildCommand />
   <postBuildCommand />
@@ -184,7 +183,6 @@
   <resfile />
   <exefile>$(OutDir)\$(ProjectName).lib</exefile>
   <useStdLibPath>1</useStdLibPath>
-  <cRuntime>1</cRuntime>
   <additionalOptions />
   <preBuildCommand />
   <postBuildCommand />
@@ -192,11 +190,6 @@
  </Config>
  <Folder name="dlangui">
   <Folder name="3rdparty">
-   <Folder name="DerelictFI">
-    <File path="..\DerelictFI\source\derelict\freeimage\freeimage.d" />
-    <File path="..\DerelictFI\source\derelict\freeimage\functions.d" />
-    <File path="..\DerelictFI\source\derelict\freeimage\types.d" />
-   </Folder>
    <Folder name="DerelictFT">
     <File path="..\DerelictFT\source\derelict\freetype\ft.d" />
     <File path="..\DerelictFT\source\derelict\freetype\functions.d" />
@@ -380,8 +373,10 @@
      </Folder>
     </Folder>
     <Folder name="widgets">
+     <File path="src\dlangui\widgets\appframe.d" />
      <File path="src\dlangui\widgets\combobox.d" />
      <File path="src\dlangui\widgets\controls.d" />
+     <File path="src\dlangui\widgets\docks.d" />
      <File path="src\dlangui\widgets\editors.d" />
      <File path="src\dlangui\widgets\grid.d" />
      <File path="src\dlangui\widgets\layouts.d" />
@@ -389,8 +384,11 @@
      <File path="src\dlangui\widgets\menu.d" />
      <File path="src\dlangui\widgets\popup.d" />
      <File path="src\dlangui\widgets\scroll.d" />
+     <File path="src\dlangui\widgets\srcedit.d" />
+     <File path="src\dlangui\widgets\statusline.d" />
      <File path="src\dlangui\widgets\styles.d" />
      <File path="src\dlangui\widgets\tabs.d" />
+     <File path="src\dlangui\widgets\toolbars.d" />
      <File path="src\dlangui\widgets\tree.d" />
      <File path="src\dlangui\widgets\widget.d" />
     </Folder>

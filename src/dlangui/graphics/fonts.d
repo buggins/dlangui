@@ -78,6 +78,22 @@ immutable dchar UNICODE_NO_BREAK_SPACE = 0x00a0;
 immutable dchar UNICODE_HYPHEN = 0x2010;
 immutable dchar UNICODE_NB_HYPHEN = 0x2011;
 
+/// custom character properties - for char-by-char drawing of text string with different character color and style
+struct CustomCharProps {
+    uint color;
+    uint textFlags;
+    this(uint color) {
+        this.color = color;
+        this.textFlags = 0;
+    }
+    this(uint color, bool underline, bool strikeThrough) {
+        this.color = color;
+        if (underline)
+            this.textFlags |= TextFlag.Underline;
+        if (strikeThrough)
+            this.textFlags |= TextFlag.StrikeThrough;
+    }
+}
 
 version (USE_OPENGL) {
 
@@ -133,6 +149,12 @@ class Font : RefCountedObject {
     abstract @property FontFamily family();
     /// returns true if font object is not yet initialized / loaded
     abstract @property bool isNull();
+
+    /// return true if antialiasing is enabled, false if not enabled
+    @property bool antialiased() {
+        return size >= FontManager.instance.minAnitialiasedFontSize;
+    }
+
 
     private int _fixedFontDetection = -1;
 
@@ -322,6 +344,78 @@ class Font : RefCountedObject {
 		}
 	}
 
+	/*****************************************************************************************
+    * Draw text string to buffer.
+    *
+    * Params:
+    *      buf =   graphics buffer to draw text to
+    *      x =     x coordinate to draw first character at
+    *      y =     y coordinate to draw first character at
+    *      text =  text string to draw
+    *      colors =  array of colors, colors[i] is color for character text[i]
+    *      tabSize = tabulation size, in number of spaces
+    *      tabOffset = when string is drawn not from left position, use to move tab stops left/right
+    *      textFlags = set of TextFlag bit fields
+    ****************************************************************************************/
+	void drawColoredText(DrawBuf buf, int x, int y, const dchar[] text, const CustomCharProps[] charProps, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
+        if (text.length == 0)
+            return; // nothing to draw - empty text
+        if (_textSizeBuffer.length < text.length)
+            _textSizeBuffer.length = text.length;
+		int charsMeasured = measureText(text, _textSizeBuffer, MAX_WIDTH_UNSPECIFIED, tabSize, tabOffset, textFlags);
+		Rect clip = buf.clipRect; //clipOrFullRect;
+        if (clip.empty)
+            return; // not visible - clipped out
+		if (y + height < clip.top || y >= clip.bottom)
+			return; // not visible - fully above or below clipping rectangle
+        int _baseline = baseline;
+        uint customizedTextFlags = (charProps.length ? charProps[0].textFlags : 0) | textFlags;
+		bool underline = (customizedTextFlags & TextFlag.Underline) != 0;
+		int underlineHeight = 1;
+		int underlineY = y + _baseline + underlineHeight * 2;
+		for (int i = 0; i < charsMeasured; i++) {
+			dchar ch = text[i];
+            uint color = i < charProps.length ? charProps[i].color : charProps[$ - 1].color;
+            customizedTextFlags = (i < charProps.length ? charProps[i].textFlags : charProps[$ - 1].textFlags) | textFlags;
+			if (ch == '&' && (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.HotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))) {
+				if (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))
+					underline = true; // turn ON underline for hot key
+				continue; // skip '&' in hot key when measuring
+			}
+			int xx = (i > 0) ? _textSizeBuffer[i - 1] : 0;
+			if (x + xx > clip.right)
+				break;
+			if (x + xx + 255 < clip.left)
+				continue; // far at left of clipping region
+
+			if (underline) {
+				int xx2 = _textSizeBuffer[i];
+				// draw underline
+				if (xx2 > xx)
+					buf.fillRect(Rect(x + xx, underlineY, x + xx2, underlineY + underlineHeight), color);
+				// turn off underline after hot key
+				if (!(customizedTextFlags & TextFlag.Underline))
+					underline = false; 
+			}
+
+            if (ch == ' ' || ch == '\t')
+                continue;
+			Glyph * glyph = getCharGlyph(ch);
+			if (glyph is null)
+				continue;
+			if ( glyph.blackBoxX && glyph.blackBoxY ) {
+				int gx = x + xx + glyph.originX;
+				if (gx + glyph.blackBoxX < clip.left)
+					continue;
+				buf.drawGlyph( gx,
+                               y + _baseline - glyph.originY,
+                              glyph,
+                              color);
+			}
+		}
+    }
+
+
 	/// get character glyph information
 	abstract Glyph * getCharGlyph(dchar ch, bool withImage = true);
 
@@ -415,10 +509,24 @@ struct FontList {
 	}
 }
 
+/// default min font size for antialiased fonts (e.g. if 16 is set, for 16+ sizes antialiasing will be used, for sizes <=15 - antialiasing will be off)
+const int DEF_MIN_ANTIALIASED_FONT_SIZE = 0; // 0 means always use antialiasing
+
+/// Hinting mode (currently supported for FreeType only)
+enum HintingMode : int {
+    /// based on information from font (using bytecode interpreter)
+    Normal,
+    /// force autohinting algorithm even if font contains hint data
+    AutoHint,
+    /// disable hinting completely
+    Disabled
+}
 
 /// Access points to fonts.
 class FontManager {
     protected static __gshared FontManager _instance;
+    protected static __gshared int _minAnitialiasedFontSize = DEF_MIN_ANTIALIASED_FONT_SIZE;
+    protected static __gshared HintingMode _hintingMode = HintingMode.Normal;
 
     /// sets new font manager singleton instance
     static @property void instance(FontManager manager) {
@@ -442,6 +550,26 @@ class FontManager {
 
 	/// removes entries not used after last call of checkpoint() or cleanup()
 	abstract void cleanup();
+
+    /// get min font size for antialiased fonts (0 means antialiasing always on, some big value = always off)
+    @property int minAnitialiasedFontSize() {
+        return _minAnitialiasedFontSize;
+    }
+
+    /// set new min font size for antialiased fonts - fonts with size >= specified value will be antialiased (0 means antialiasing always on, some big value = always off)
+    @property void minAnitialiasedFontSize(int size) {
+        _minAnitialiasedFontSize = size;
+    }
+
+    /// get current hinting mode (Normal, AutoHint, Disabled)
+    @property HintingMode hintingMode() {
+        return _hintingMode;
+    }
+
+    /// set hinting mode (Normal, AutoHint, Disabled)
+    @property void hintingMode(HintingMode mode) {
+        _hintingMode = mode;
+    }
 
 	~this() {
 		Log.d("Destroying font manager");

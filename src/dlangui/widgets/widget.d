@@ -307,7 +307,12 @@ class Widget {
     /// returns widget style id, null if not set
 	@property string styleId() const { return _styleId; }
     /// set widget style id
-    @property Widget styleId(string id) { _styleId = id; return this; }
+    @property Widget styleId(string id) { 
+        _styleId = id;
+        if (_ownStyle)
+            _ownStyle.parentStyleId = id;
+        return this; 
+    }
     /// get margins (between widget bounds and its background)
     @property Rect margins() const { return style.margins; }
     /// set margins for widget - override one from style
@@ -901,7 +906,6 @@ class Widget {
 		return false;
 	}
 
-
     // called to process click and notify listeners
     protected bool handleClick() {
         bool res = false;
@@ -948,6 +952,26 @@ class Widget {
             }
         }
         return false;
+    }
+
+    /// handle custom event
+    bool onEvent(CustomEvent event) {
+        RunnableEvent runnable = cast(RunnableEvent)event;
+        if (runnable) {
+            // handle runnable
+            runnable.run();
+            return true;
+        }
+        // override to handle more events
+        return false;
+    }
+
+    /// execute delegate later in UI thread if this widget will be still available (can be used to modify UI from background thread, or just to postpone execution of action)
+    void executeInUiThread(void delegate() runnable) {
+        if (!window)
+            return;
+        RunnableEvent event = new RunnableEvent(CUSTOM_RUNNABLE, this, runnable);
+        window.postEvent(event);
     }
 
     /// process mouse event; return true if event is processed by widget.
@@ -1278,7 +1302,9 @@ class Widget {
         return null;
     }
     /// sets window (to be used for top level widget from Window implementation). TODO: hide it from API?
-    @property void window(Window window) { _window = window; }
+    @property void window(Window window) { 
+        _window = window; 
+    }
 
     void removeAllChildren() {
         // override

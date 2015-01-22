@@ -8,6 +8,7 @@ EditLine - single line editor.
 
 EditBox - multiline editor
 
+LogWidget - readonly text box for showing logs
 
 Synopsis:
 
@@ -27,13 +28,78 @@ import dlangui.widgets.controls;
 import dlangui.widgets.scroll;
 import dlangui.core.signals;
 import dlangui.core.collections;
+import dlangui.core.linestream;
 import dlangui.platforms.common.platform;
 import dlangui.widgets.menu;
 import dlangui.widgets.popup;
+private import dlangui.graphics.colors;
 
 import std.algorithm;
+import std.stream;
 
 immutable dchar EOL = '\n';
+
+const ubyte TOKEN_CATEGORY_SHIFT =   4;
+const ubyte TOKEN_CATEGORY_MASK =    0xF0; // token category 0..15
+const ubyte TOKEN_SUBCATEGORY_MASK = 0x0F; // token subcategory 0..15
+const ubyte TOKEN_UNKNOWN = 0;
+
+/*
+    Bit mask:
+    7654 3210
+    cccc ssss
+    |    |
+    |    \ ssss = token subcategory
+    |     
+    \ cccc = token category
+
+ */
+/// token category for syntax highlight
+enum TokenCategory : ubyte {
+    WhiteSpace = (0 << TOKEN_CATEGORY_SHIFT),
+    WhiteSpace_Space = (0 << TOKEN_CATEGORY_SHIFT) | 1,
+    WhiteSpace_Tab = (0 << TOKEN_CATEGORY_SHIFT) | 2,
+
+    Comment = (1 << TOKEN_CATEGORY_SHIFT),
+    Comment_SingleLine = (1 << TOKEN_CATEGORY_SHIFT) | 1,   // single line comment
+    Comment_SingleLineDoc = (1 << TOKEN_CATEGORY_SHIFT) | 2,// documentation in single line comment
+    Comment_MultyLine = (1 << TOKEN_CATEGORY_SHIFT) | 3,    // multiline coment
+    Comment_MultyLineDoc = (1 << TOKEN_CATEGORY_SHIFT) | 4, // documentation in multiline comment
+    Comment_Documentation = (1 << TOKEN_CATEGORY_SHIFT) | 5,// documentation comment
+
+    Identifier = (2 << TOKEN_CATEGORY_SHIFT), // identifier (exact subcategory is unknown)
+    Identifier_Class = (2 << TOKEN_CATEGORY_SHIFT) | 1, // class name
+    Identifier_Struct = (2 << TOKEN_CATEGORY_SHIFT) | 2, // struct name
+    Identifier_Local = (2 << TOKEN_CATEGORY_SHIFT) | 3, // local variable
+    Identifier_Member = (2 << TOKEN_CATEGORY_SHIFT) | 4, // struct or class member
+    Identifier_Deprecated = (2 << TOKEN_CATEGORY_SHIFT) | 15, // usage of this identifier is deprecated
+    /// string literal
+    String = (3 << TOKEN_CATEGORY_SHIFT),
+    /// character literal
+    Character = (4 << TOKEN_CATEGORY_SHIFT),
+    /// integer literal
+    Integer = (5 << TOKEN_CATEGORY_SHIFT),
+    /// floating point number literal
+    Float = (6 << TOKEN_CATEGORY_SHIFT),
+    /// keyword
+    Keyword = (7 << TOKEN_CATEGORY_SHIFT),
+    /// operator
+    Op = (8 << TOKEN_CATEGORY_SHIFT),
+    // add more here
+    //....
+    /// error - unparsed character sequence
+    Error = (15 << TOKEN_CATEGORY_SHIFT),
+    /// invalid token - generic
+    Error_InvalidToken = (15 << TOKEN_CATEGORY_SHIFT) | 1,
+    /// invalid number token - error occured while parsing number
+    Error_InvalidNumber = (15 << TOKEN_CATEGORY_SHIFT) | 2,
+    /// invalid string token - error occured while parsing string
+    Error_InvalidString = (15 << TOKEN_CATEGORY_SHIFT) | 3,
+    /// invalid identifier token - error occured while parsing identifier
+    Error_InvalidIdentifier = (15 << TOKEN_CATEGORY_SHIFT) | 4,
+    /// invalid comment token - error occured while parsing comment
+    Error_InvalidComment = (15 << TOKEN_CATEGORY_SHIFT) | 4,
+}
 
 /// Editor action codes
 enum EditorActions : int {
@@ -255,7 +321,10 @@ enum EditAction {
     /// delete content in range
     //Delete,
     /// replace range content with new content
-    Replace
+    Replace,
+
+    /// replace whole content
+    ReplaceContent,
 }
 
 /// edit operation details for EditableContent
@@ -390,6 +459,14 @@ interface EditableContentListener {
 	void onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source);
 }
 
+alias TokenPropString = ubyte[];
+
+/// interface for custom syntax highlight
+interface SyntaxHighlighter {
+    /// categorize characters in content by token types
+    void updateHighlight(dstring[] lines, TokenPropString[] props, int changeStartLine, int changeEndLine);
+}
+
 /// editable plain text (singleline/multiline)
 class EditableContent {
 
@@ -400,6 +477,23 @@ class EditableContent {
     }
 
     protected UndoBuffer _undoBuffer;
+
+    protected SyntaxHighlighter _syntaxHighlighter;
+
+    @property SyntaxHighlighter syntaxHighlighter() {
+        return _syntaxHighlighter;
+    }
+
+    @property EditableContent syntaxHighlighter(SyntaxHighlighter syntaxHighlighter) {
+        _syntaxHighlighter = syntaxHighlighter;
+        updateTokenProps(0, _lines.length);
+        return this;
+    }
+
+    /// returns true if content has syntax highlight handler set
+    @property bool hasSyntaxHighlight() {
+        return _syntaxHighlighter !is null;
+    }
 
     protected bool _readOnly;
 
@@ -419,6 +513,8 @@ class EditableContent {
     @property bool multiline() { return _multiline; }
 
     protected dstring[] _lines;
+    protected TokenPropString[] _tokenProps;
+
     /// returns all lines concatenated delimited by '\n'
     @property dstring text() {
         if (_lines.length == 0)
@@ -434,26 +530,83 @@ class EditableContent {
         }
         return cast(dstring)buf;
     }
+
+    /// append one or more lines at end
+    void appendLines(dstring[] lines...) {
+        TextRange rangeBefore;
+        rangeBefore.start = rangeBefore.end = lineEnd(_lines.length ? _lines.length - 1 : 0);
+        EditOperation op = new EditOperation(EditAction.Replace, rangeBefore, lines);
+        performOperation(op, this);
+    }
+
+    /// call listener to say that whole content is replaced e.g. by loading from file
+    void notifyContentReplaced() {
+        TextRange rangeBefore;
+        TextRange rangeAfter;
+        // notify about content change
+        handleContentChange(new EditOperation(EditAction.ReplaceContent), rangeBefore, rangeAfter, this);
+    }
+
+    protected void updateTokenProps(int startLine, int endLine) {
+        clearTokenProps(startLine, endLine);
+        if (_syntaxHighlighter) {
+            _syntaxHighlighter.updateHighlight(_lines, _tokenProps, startLine, endLine);
+        }
+    }
+
+    /// set props arrays size equal to text line sizes, bit fill with unknown token
+    protected void clearTokenProps(int startLine, int endLine) {
+        for (int i = startLine; i < endLine; i++) {
+            if (hasSyntaxHighlight) {
+                int len = cast(int)_lines[i].length;
+                _tokenProps[i].length = len;
+                for (int j = 0; j < len; j++)
+                    _tokenProps[i][j] = TOKEN_UNKNOWN;
+            } else {
+                _tokenProps[i] = null; // no token props
+            }
+        }
+    }
+
     /// replace whole text with another content
     @property EditableContent text(dstring newContent) {
         clearUndo();
         _lines.length = 0;
-        if (_multiline)
+        if (_multiline) {
             _lines = splitDString(newContent);
-        else {
+            _tokenProps.length = _lines.length;
+            updateTokenProps(0, _lines.length);
+        } else {
             _lines.length = 1;
             _lines[0] = replaceEolsWithSpaces(newContent);
+            _tokenProps.length = 1;
+            updateTokenProps(0, _lines.length);
         }
+        notifyContentReplaced();
         return this;
     }
+
+    /// clear content
+    void clear() {
+        clearUndo();
+        _lines.length = 0;
+    }
+
+
     /// returns line text
     @property int length() { return cast(int)_lines.length; }
     dstring opIndex(int index) {
         return line(index);
     }
+
     /// returns line text by index, "" if index is out of bounds
     dstring line(int index) {
         return index >= 0 && index < _lines.length ? _lines[index] : ""d;
+    }
+
+    /// returns line token properties one item per character
+    TokenPropString lineTokenProps(int index) {
+        return index >= 0 && index < _tokenProps.length ? _tokenProps[index] : null;
     }
 
 	/// returns text position for end of line lineIndex
@@ -494,6 +647,8 @@ class EditableContent {
     }
 
 	void handleContentChange(EditOperation op, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source) {
+        // update highlight if necessary
+        updateTokenProps(rangeAfter.start.line, rangeAfter.end.line + 1);
         // call listeners
 		contentChangeListeners(this, op, rangeBefore, rangeAfter, source);
 	}
@@ -552,21 +707,31 @@ class EditableContent {
     protected void removeLines(int start, int removedCount) {
         int end = start + removedCount;
         assert(removedCount > 0 && start >= 0 && end > 0 && start < _lines.length && end <= _lines.length);
-        for (int i = start; i < _lines.length - removedCount; i++)
+        for (int i = start; i < _lines.length - removedCount; i++) {
             _lines[i] = _lines[i + removedCount];
-        for (int i = cast(int)_lines.length - removedCount; i < _lines.length; i++)
+            _tokenProps[i] = _tokenProps[i + removedCount];
+        }
+        for (int i = cast(int)_lines.length - removedCount; i < _lines.length; i++) {
             _lines[i] = null; // free unused line references
+            _tokenProps[i] = null; // free unused line references
+        }
         _lines.length -= removedCount;
+        _tokenProps.length = _lines.length;
     }
 
     /// inserts count empty lines at specified position
     protected void insertLines(int start, int count) {
         assert(count > 0);
         _lines.length += count;
-        for (int i = cast(int)_lines.length - 1; i >= start + count; i--)
+        _tokenProps.length = _lines.length;
+        for (int i = cast(int)_lines.length - 1; i >= start + count; i--) {
             _lines[i] = _lines[i - count];
-        for (int i = start; i < start + count; i++)
+            _tokenProps[i] = _tokenProps[i - count];
+        }
+        for (int i = start; i < start + count; i++) {
             _lines[i] = ""d;
+            _tokenProps[i] = null;
+        }
     }
 
     /// inserts or removes lines, removes text in range
@@ -594,19 +759,24 @@ class EditableContent {
                 buf ~= lastLineTail;
                 //Log.d("merging lines ", firstLineHead, " ", newline, " ", lastLineTail);
                 _lines[i] = cast(dstring)buf;
+                clearTokenProps(i, i + 1);
                 //Log.d("merge result: ", _lines[i]);
             } else if (i == after.start.line) {
                 dchar[] buf;
                 buf ~= firstLineHead;
                 buf ~= newline;
                 _lines[i] = cast(dstring)buf;
+                clearTokenProps(i, i + 1);
             } else if (i == after.end.line) {
                 dchar[] buf;
                 buf ~= newline;
                 buf ~= lastLineTail;
                 _lines[i] = cast(dstring)buf;
-            } else
+                clearTokenProps(i, i + 1);
+            } else {
                 _lines[i] = newline; // no dup needed
+                clearTokenProps(i, i + 1);
+            }
         }
     }
 
@@ -808,6 +978,103 @@ class EditableContent {
     void clearUndo() {
         _undoBuffer.clear();
     }
+
+    protected string _filename;
+    protected TextFileFormat _format;
+
+    /// file used to load editor content
+    @property string filename() {
+        return _filename;
+    }
+
+
+    /// load content form input stream
+    bool load(InputStream f, string fname = null) {
+        import dlangui.core.linestream;
+        clear();
+        _filename = fname;
+        _format = TextFileFormat.init;
+        try {
+            LineStream lines = LineStream.create(f, fname);
+            for (;;) {
+                dchar[] s = lines.readLine();
+                if (s is null)
+                    break;
+                int pos = cast(int)(_lines.length++);
+                _tokenProps.length = _lines.length;
+                _lines[pos] = s.dup;
+                clearTokenProps(pos, pos + 1);
+            }
+            if (lines.errorCode != 0) {
+                clear();
+                Log.e("Error ", lines.errorCode, " ", lines.errorMessage, " -- at line ", lines.errorLine, " position ", lines.errorPos);
+                notifyContentReplaced();
+                return false;
+            }
+            // EOF
+            _format = lines.textFormat;
+            notifyContentReplaced();
+            return true;
+        } catch (Exception e) {
+            Log.e("Exception while trying to read file ", fname, " ", e.toString);
+            clear();
+            notifyContentReplaced();
+            return false;
+        }
+    }
+    /// load content from file
+    bool load(string filename) {
+        clear();
+        try {
+            std.stream.File f = new std.stream.File(filename);
+            scope(exit) { f.close(); }
+            return load(f, filename);
+        } catch (Exception e) {
+            Log.e("Exception while trying to read file ", filename, " ", e.toString);
+            clear();
+            return false;
+        }
+    }
+    /// save to output stream in specified format
+    bool save(OutputStream stream, string filename, TextFileFormat format) {
+        if (!filename)
+            filename = _filename;
+        _format = format;
+        import dlangui.core.linestream;
+        try {
+            OutputLineStream writer = new OutputLineStream(stream, filename, format);
+            scope(exit) { writer.close(); }
+            for (int i = 0; i < _lines.length; i++) {
+                writer.writeLine(_lines[i]);
+            }
+            // EOF
+            return true;
+        } catch (Exception e) {
+            Log.e("Exception while trying to write file ", filename, " ", e.toString);
+            return false;
+        }
+    }
+    /// save to output stream in current format
+    bool save(OutputStream stream, string filename) {
+        return save(stream, filename, _format);
+    }
+    /// save to file in specified format
+    bool save(string filename, TextFileFormat format) {
+        if (!filename)
+            filename = _filename;
+        try {
+            std.stream.File f = new std.stream.File(filename, FileMode.Out);
+            scope(exit) { f.close(); }
+            return save(f, filename, format);
+        } catch (Exception e) {
+            Log.e("Exception while trying to save file ", filename, " ", e.toString);
+            return false;
+        }
+    }
+    /// save to file in current format
+    bool save(string filename = null) {
+        return save(filename, _format);
+    }
 }
 
 /// base for all editor widgets
@@ -819,19 +1086,114 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected bool _fixedFont;
     protected int _spaceWidth;
     protected int _tabSize = 4;
+    protected int _leftPaneWidth; // left pane - can be used to show line numbers, collapse controls, bookmarks, breakpoints, custom icons
 
     protected int _minFontSize = -1; // disable zooming
     protected int _maxFontSize = -1; // disable zooming
 
     protected bool _wantTabs = true;
     protected bool _useSpacesForTabs = false;
+    protected bool _showLineNumbers = false; // show line numbers in left pane
+    protected bool _showModificationMarks = false; // show modification marks in left pane
+    protected bool _showIcons = false; // show icons in left pane
+    protected bool _showFolding = false; // show folding controls in left pane
+    protected int _lineNumbersWidth = 0;
+    protected int _modificationMarksWidth = 0;
+    protected int _iconsWidth = 0;
+    protected int _foldingWidth = 0;
 
     protected bool _replaceMode;
 
     // TODO: move to styles
     protected uint _selectionColorFocused = 0xB060A0FF;
     protected uint _selectionColorNormal = 0xD060A0FF;
+    protected uint _leftPaneBackgroundColor = 0xE0E0E0;
+    protected uint _leftPaneBackgroundColor2 = 0xFFFFFF;
+    protected uint _leftPaneBackgroundColor3 = 0xC0C0C0;
+    protected uint _leftPaneLineNumberColor = 0x4060D0;
+    protected uint _leftPaneLineNumberBackgroundColor = 0xF0F0F0;
+    protected uint _iconsPaneWidth = 16;
+    protected uint _foldingPaneWidth = 16;
+    protected uint _modificationMarksPaneWidth = 8;
 
+    /// override to support modification of client rect after change, e.g. apply offset
+    override protected void handleClientRectLayout(ref Rect rc) {
+        updateLeftPaneWidth();
+        rc.left += _leftPaneWidth;
+    }
+
+    /// override for multiline editors
+    protected int lineCount() {
+        return 1;
+    }
+
+    /// override to add custom items on left panel
+    protected void updateLeftPaneWidth() {
+        _iconsWidth = _showIcons ? _iconsPaneWidth : 0;
+        _foldingWidth = _showFolding ? _foldingPaneWidth : 0;
+        _modificationMarksWidth = _showModificationMarks ? _modificationMarksPaneWidth : 0;
+        _lineNumbersWidth = 0;
+        if (_showLineNumbers) {
+            dchar[] s = to!(dchar[])(lineCount + 1);
+            foreach(ref ch; s)
+                ch = '9';
+            FontRef fnt = font;
+            Point sz = fnt.textSize(s);
+            _lineNumbersWidth = sz.x;
+        }
+        _leftPaneWidth = _lineNumbersWidth + _modificationMarksWidth + _foldingWidth + _iconsWidth;
+        if (_leftPaneWidth)
+            _leftPaneWidth += 3;
+    }
+
+    protected void drawLeftPaneFolding(DrawBuf buf, Rect rc, int line) {
+    }
+
+    protected void drawLeftPaneIcons(DrawBuf buf, Rect rc, int line) {
+    }
+
+    protected void drawLeftPaneModificationMarks(DrawBuf buf, Rect rc, int line) {
+    }
+
+    protected void drawLeftPaneLineNumbers(DrawBuf buf, Rect rc, int line) {
+        buf.fillRect(rc, _leftPaneLineNumberBackgroundColor);
+        if (line < 0)
+            return;
+        dstring s = to!dstring(line + 1);
+        FontRef fnt = font;
+        Point sz = fnt.textSize(s);
+        int x = rc.right - sz.x;
+        int y = rc.top + (rc.height - sz.y) / 2;
+        fnt.drawText(buf, x, y, s, _leftPaneLineNumberColor);
+    }
+
+    protected void drawLeftPane(DrawBuf buf, Rect rc, int line) {
+        // override for custom drawn left pane
+        buf.fillRect(rc, _leftPaneBackgroundColor);
+        buf.fillRect(Rect(rc.right - 2, rc.top, rc.right - 1, rc.bottom), _leftPaneBackgroundColor2);
+        buf.fillRect(Rect(rc.right - 1, rc.top, rc.right - 0, rc.bottom), _leftPaneBackgroundColor3);
+        rc.right -= 3;
+        if (_foldingWidth) {
+            Rect rc2 = rc;
+            rc.right = rc2.left = rc2.right - _foldingWidth;
+            drawLeftPaneFolding(buf, rc2, line);
+        }
+        if (_lineNumbersWidth) {
+            Rect rc2 = rc;
+            rc.right = rc2.left = rc2.right - _lineNumbersWidth;
+            drawLeftPaneLineNumbers(buf, rc2, line);
+        }
+        if (_modificationMarksWidth) {
+            Rect rc2 = rc;
+            rc.right = rc2.left = rc2.right - _modificationMarksWidth;
+            drawLeftPaneModificationMarks(buf, rc2, line);
+        }
+        if (_iconsWidth) {
+            Rect rc2 = rc;
+            rc.right = rc2.left = rc2.right - _iconsWidth;
+            drawLeftPaneIcons(buf, rc2, line);
+        }
+    }
 
     this(string ID, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
         super(ID, hscrollbarMode, vscrollbarMode);
@@ -991,6 +1353,21 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return this;
     }
 
+    /// when true, line numbers are shown
+    @property bool showLineNumbers() {
+        return _showLineNumbers;
+    }
+
+    /// when true, line numbers are shown
+    @property EditWidgetBase showLineNumbers(bool flg) {
+        if (_showLineNumbers != flg) {
+            _showLineNumbers = flg;
+            updateLeftPaneWidth();
+            requestLayout();
+        }
+        return this;
+    }
+    
     /// readonly flag (when true, user cannot change content of editor)
     @property bool readOnly() {
         return !enabled || _content.readOnly;
@@ -1086,10 +1463,20 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         updateMaxLineWidth();
 		measureVisibleText();
         if (source is this) {
-		    _caretPos = rangeAfter.end;
-            _selectionRange.start = _caretPos;
-            _selectionRange.end = _caretPos;
-            ensureCaretVisible();
+            if (operation.action == EditAction.ReplaceContent) {
+                // loaded from file
+		        _caretPos = rangeAfter.end;
+                _selectionRange.start = _caretPos;
+                _selectionRange.end = _caretPos;
+                ensureCaretVisible();
+                correctCaretPos();
+                requestLayout();
+            } else {
+		        _caretPos = rangeAfter.end;
+                _selectionRange.start = _caretPos;
+                _selectionRange.end = _caretPos;
+                ensureCaretVisible();
+            }
         } else {
             correctCaretPos();
             // TODO: do something better (e.g. take into account ranges when correcting)
@@ -1804,7 +2191,7 @@ class EditLine : EditWidgetBase {
     override void measure(int parentWidth, int parentHeight) { 
         updateFontProps();
         measureVisibleText();
-        measuredContent(parentWidth, parentHeight, _measuredTextSize.x, _measuredTextSize.y);
+        measuredContent(parentWidth, parentHeight, _measuredTextSize.x + _leftPaneWidth, _measuredTextSize.y);
     }
 
 	override protected bool handleAction(const Action a) {
@@ -1870,6 +2257,12 @@ class EditLine : EditWidgetBase {
                 // draw selection rect for line
                 buf.fillRect(rc, focused ? _selectionColorFocused : _selectionColorNormal);
             }
+            if (_leftPaneWidth > 0) {
+                Rect leftPaneRect = visibleRect;
+                leftPaneRect.right = leftPaneRect.left;
+                leftPaneRect.left -= _leftPaneWidth;
+                drawLeftPane(buf, leftPaneRect, 0);
+            }
         }
     }
 
@@ -1923,6 +2316,11 @@ class EditBox : EditWidgetBase {
     protected dstring[] _visibleLines;          // text for visible lines
     protected int[][] _visibleLinesMeasurement; // char positions for visible lines
     protected int[] _visibleLinesWidths; // width (in pixels) of visible lines
+    protected CustomCharProps[][] _visibleLinesHighlights;
+
+    override protected int lineCount() {
+        return _content.length;
+    }
 
     override protected void updateMaxLineWidth() {
         // find max line width. TODO: optimize!!!
@@ -1964,9 +2362,11 @@ class EditBox : EditWidgetBase {
         _visibleLines.length = _numVisibleLines;
         _visibleLinesMeasurement.length = _numVisibleLines;
         _visibleLinesWidths.length = _numVisibleLines;
+        _visibleLinesHighlights.length = _numVisibleLines;
         for (int i = 0; i < _numVisibleLines; i++) {
             _visibleLines[i] = _content[_firstVisibleLine + i];
             _visibleLinesMeasurement[i].length = _visibleLines[i].length;
+            _visibleLinesHighlights[i] = handleCustomLineHighlight(_firstVisibleLine + i, _visibleLines[i]);
             int charsMeasured = font.measureText(_visibleLines[i], _visibleLinesMeasurement[i], int.max, tabSize);
             _visibleLinesWidths[i] = charsMeasured > 0 ? _visibleLinesMeasurement[i][charsMeasured - 1] : 0;
             if (sz.x < _visibleLinesWidths[i])
@@ -2367,15 +2767,81 @@ class EditBox : EditWidgetBase {
         if (focused && lineIndex == _caretPos.line && _selectionRange.singleLine && _selectionRange.start.line == _caretPos.line) {
             buf.drawFrame(visibleRect, 0xA0808080, Rect(1,1,1,1));
         }
+
+    }
+
+    override protected void drawExtendedArea(DrawBuf buf) {
+        if (_leftPaneWidth <= 0)
+            return;
+        Rect rc = _clientRect;
+
+        FontRef font = font();
+        int i = _firstVisibleLine;
+        int lc = lineCount;
+        for (;;) {
+            Rect lineRect = rc;
+            lineRect.left = _clientRect.left - _leftPaneWidth;
+            lineRect.right = _clientRect.left;
+            lineRect.bottom = lineRect.top + _lineHeight;
+            if (lineRect.top >= _clientRect.bottom)
+                break;
+            drawLeftPane(buf, lineRect, i < lc ? i : -1);
+            i++;
+            rc.top += _lineHeight;
+        }
+    }
+
+
+    protected CustomCharProps[ubyte] _tokenHighlightColors;
+
+    /// set highlight options for particular token category
+    void setTokenHightlightColor(ubyte tokenCategory, uint color, bool underline = false, bool strikeThrough = false) {
+         _tokenHighlightColors[tokenCategory] = CustomCharProps(color, underline, strikeThrough);
+    }
+    /// clear highlight colors
+    void clearTokenHightlightColors() {
+        destroy(_tokenHighlightColors);
+    }
+
+    /** 
+        Custom text color and style highlight (using text highlight) support.
+
+        Return null if no syntax highlight required for line.
+     */
+    protected CustomCharProps[] handleCustomLineHighlight(int line, dstring txt) {
+        if (!_tokenHighlightColors)
+            return null; // no highlight colors set
+        TokenPropString tokenProps = _content.lineTokenProps(line);
+        if (tokenProps.length > 0) {
+            bool hasNonzeroTokens = false;
+            foreach(t; tokenProps)
+                if (t) {
+                    hasNonzeroTokens = true;
+                    break;
+                }
+            if (!hasNonzeroTokens)
+                return null; // all characters are of unknown token type (or white space)
+            CustomCharProps[] colors = new CustomCharProps[tokenProps.length];
+            for (int i = 0; i < tokenProps.length; i++) {
+                ubyte p = tokenProps[i];
+                if (p in _tokenHighlightColors)
+                    colors[i] = _tokenHighlightColors[p];
+                else if ((p & TOKEN_CATEGORY_MASK) in _tokenHighlightColors)
+                    colors[i] = _tokenHighlightColors[(p & TOKEN_CATEGORY_MASK)];
+                else
+                    colors[i].color = textColor;
+                if (isFullyTransparentColor(colors[i].color))
+                    colors[i].color = textColor;
+            }
+            return colors;
+        }
+        return null;
     }
 
 	override protected void drawClient(DrawBuf buf) {
         Rect rc = _clientRect;
 
         FontRef font = font();
-        //dstring txt = text;
-        //Point sz = font.textSize(txt);
-        //font.drawText(buf, rc.left, rc.top + sz.y / 10, txt, textColor);
         for (int i = 0; i < _visibleLines.length; i++) {
             dstring txt = _visibleLines[i];
             Rect lineRect = rc;
@@ -2387,12 +2853,63 @@ class EditBox : EditWidgetBase {
             visibleRect.left = _clientRect.left;
             visibleRect.right = _clientRect.right;
             drawLineBackground(buf, _firstVisibleLine + i, lineRect, visibleRect);
+            if (_leftPaneWidth > 0) {
+                Rect leftPaneRect = visibleRect;
+                leftPaneRect.right = leftPaneRect.left;
+                leftPaneRect.left -= _leftPaneWidth;
+                drawLeftPane(buf, leftPaneRect, 0);
+            }
             if (txt.length > 0) {
-                font.drawText(buf, rc.left - _scrollPos.x, rc.top + i * _lineHeight, txt, textColor, tabSize);
+                CustomCharProps[] highlight = _visibleLinesHighlights[i];
+                if (highlight)
+                    font.drawColoredText(buf, rc.left - _scrollPos.x, rc.top + i * _lineHeight, txt, highlight, tabSize);
+                else
+                    font.drawText(buf, rc.left - _scrollPos.x, rc.top + i * _lineHeight, txt, textColor, tabSize);
             }
         }
 
         drawCaret(buf);
     }
 
+}
+
+/// Read only edit box for displaying logs with lines append operation
+class LogWidget : EditBox {
+
+    protected int  _maxLines;
+    /// max lines to show (when appended more than max lines, older lines will be truncated), 0 means no limit
+    @property int maxLines() { return _maxLines; }
+    /// set max lines to show (when appended more than max lines, older lines will be truncated), 0 means no limit
+    @property void maxLines(int n) { _maxLines = n; }
+
+    protected bool _scrollLock;
+    /// when true, automatically scrolls down when new lines are appended (usually being reset by scrollbar interaction)
+    @property bool scrollLock() { return _scrollLock; }
+    /// when true, automatically scrolls down when new lines are appended (usually being reset by scrollbar interaction)
+    @property void scrollLock(bool flg) { _scrollLock = flg; }
+
+    this(string ID) {
+        super(ID);
+        _scrollLock = true;
+        enabled = false;
+        fontSize = 12;
+		fontFace = "Consolas,Lucida Console,Courier New";
+		fontFamily = FontFamily.MonoSpace;
+    }
+    /// append lines to the end of text
+    void appendLines(dstring[] lines...) {
+        lines ~= ""d; // append new line after last line
+        content.appendLines(lines);
+        if (_maxLines > 0 && lineCount > _maxLines) {
+            TextRange range;
+            range.end.line = lineCount - _maxLines;
+            EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
+            _content.performOperation(op, this);
+        }
+        updateScrollBars();
+        if (_scrollLock) {
+            _caretPos = TextPosition(lineCount > 0 ? lineCount - 1 : 0, 0);
+            ensureCaretVisible();
+        }
+    }
 }

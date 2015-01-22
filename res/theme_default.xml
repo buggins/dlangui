@@ -101,6 +101,26 @@
         <state state_pressed="true" backgroundColor="#C0404080"/>
         <state state_hovered="true" backgroundColor="#F0404080"/>
     </style>
+
+    <style id="TAB_UP_DARK"
+        backgroundImageId="tab_up_background_dark"
+        layoutWidth="FILL_PARENT"
+        >
+    </style>
+    <style id="TAB_UP_BUTTON_DARK"
+        backgroundImageId="tab_btn_dark_up"
+        />
+    <style id="TAB_UP_BUTTON_DARK_TEXT"
+        textColor="#E0E0E0"
+        align="Center"
+        >
+        <state state_selected="true" state_window_focused="true" state_hovered="true" textColor="#800000"/>
+        <state state_selected="true" state_window_focused="true" textColor="#000000"/>
+        <state state_selected="true" textColor="#E0E0E0"/>
+        <state state_window_focused="true" state_hovered="true" textColor="#FFE0E0"/>
+        <state state_window_focused="true" textColor="#FFFFFF"/>
+        <state state_hovered="true" textColor="#808000"/>
+    </style>
     <style id="TAB_UP"
         backgroundImageId="tab_up_background"
         layoutWidth="FILL_PARENT"
@@ -125,12 +145,13 @@
         backgroundColor="#F0F0F0"
         />
     <style id="TAB_WIDGET"
-        padding="3,3,3,3"
         backgroundColor="#EEEEEE"
         />
+
     <style id="MAIN_MENU"
         layoutWidth="FILL_PARENT"
         backgroundColor="#EFEFF2"
+	layoutWeight="0"
         />
     <style id="MAIN_MENU_ITEM"
         padding="4,2,4,2"
@@ -138,12 +159,9 @@
         textFlags="Parent"
         />
     <style id="MENU_ITEM"
+        backgroundImageId="menu_item_background"
         padding="4,2,4,2"
         >
-        <state state_focused="true" backgroundColor="#40C0C000"/>
-        <state state_pressed="true" backgroundColor="#4080C000"/>
-        <state state_selected="true" backgroundColor="#00F8F9Fa"/>
-        <state state_hovered="true" backgroundColor="#C0FFFF00"/>
     </style>
     <style id="MENU_ICON"
         margins="2,2,2,2"
@@ -215,25 +233,100 @@
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         />
-    <style id="TREE_ITEM"
+    <style id="STATUS_LINE"
+        backgroundColor="#D0D0D0"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="WRAP_CONTENT"
+        padding="4,4,4,4"
+	layoutWeight="0"
+        />
+    <style id="DOCK_HOST"
+        backgroundColor="#293955"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
         padding="2,2,2,2"
-        margins="0,0,0,0"
+        />
+    <style id="DOCK_HOST_BODY"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        padding="1,1,1,1"
+        margins="4,4,4,4"
+        />
+    <style id="DOCK_WINDOW"
+        backgroundColor="#8E9BBC"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        padding="1,1,1,1"
+        margins="4,4,4,4"
+        />
+    <style id="DOCK_WINDOW_CAPTION"
+        backgroundColor="#4d6082"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="WRAP_CONTENT"
+        padding="1,1,1,1"
+        />
+    <style id="DOCK_WINDOW_CAPTION_LABEL"
+        textColor="#FFFFFF"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="WRAP_CONTENT"
+        padding="3,3,3,3"
+        align="Left|VCenter"
+        />
+    <style id="DOCK_WINDOW_BODY"
+        backgroundColor="#FFFFFF"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        padding="1,1,1,1"
+        />
+
+    <style id="TOOLBAR_HOST"
+        backgroundColor="#d6dbe9"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="WRAP_CONTENT"
+        padding="1,1,1,1"
+        />
+    <style id="TOOLBAR"
+        backgroundImageId="toolbar_background"
+        layoutWidth="WRAP_CONTENT"
+        layoutHeight="WRAP_CONTENT"
+        margins="2,2,2,2"
+        />
+    <style id="TOOLBAR_BUTTON"
+        backgroundImageId="toolbar_button_background"
+        align="Center"
+        margins="1,1,1,1"
+        padding="4,4,4,4"
+        />
+    <style id="TOOLBAR_CONTROL"
+        backgroundImageId="toolbar_control_background"
+        align="Center"
+        margins="1,1,1,1"
+        padding="4,4,4,4"
+        />
+    <style id="TOOLBAR_SEPARATOR"
+        align="Center"
+        />
+
+    <style id="TREE_ITEM"
+        padding="1,1,1,1"
         minWidth="100"
         minHeight="16"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
         fontFace="Arial"
         fontFamily="SansSerif"
-        fontSize="16">
-        <state state_focused="true" backgroundColor="#40C0C000"/>
-        <state state_pressed="true" backgroundColor="#4080C000"/>
-        <state state_selected="true" backgroundColor="#00F8F9Fa"/>
-        <state state_hovered="true" backgroundColor="#C0FFFF00"/>
+        fontSize="12">
     </style>
     <style id="TREE_ITEM_EXPAND_ICON"
         margins="2,0,2,0"
         align="Left|VCenter"
         textFlags="Parent"
+    />
+    <style id="TREE_ITEM_BODY"
+        margins="2,0,2,0"
+        align="Left|VCenter"
+        textFlags="Parent"
+        backgroundImageId="list_item_background"
     />
     <style id="TREE_ITEM_ICON"
         margins="2,0,2,0"
@@ -245,6 +338,7 @@
         layoutHeight="WRAP_CONTENT"
         align="Left|VCenter"
         textFlags="Parent"
+	fontSize="12"
     />
     <style id="RESIZER_VERTICAL"
         layoutWidth="FILL_PARENT"

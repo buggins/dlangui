@@ -67,7 +67,7 @@ class MenuItem {
 	/// handle menu item click action (parameter is Action)
 	Signal!MenuItemActionHandler onMenuItemAction;
 	/// item action id, 0 if no action
-    @property int id() { return _action is null ? 0 : _action.id; }
+    @property int id() const { return _action is null ? 0 : _action.id; }
     /// returns count of submenu items
     @property int subitemCount() {
         return cast(int)_subitems.length;
@@ -84,7 +84,9 @@ class MenuItem {
         return _subitems[index];
     }
 
-	@property MenuItemType type() const { 
+	@property MenuItemType type() const {
+        if (id == SEPARATOR_ACTION_ID)
+            return MenuItemType.Separator;
 		if (_subitems.length > 0) // if there are children, force type to Submenu
 			return MenuItemType.Submenu;
 		return _type; 
@@ -154,15 +156,24 @@ class MenuItem {
 		return -1;
 	}
 
+    /// Add separator item
+    MenuItem addSeparator() {
+        return add(new Action(SEPARATOR_ACTION_ID));
+    }
+
 	/// adds submenu item
     MenuItem add(MenuItem subitem) {
         _subitems ~= subitem;
 		subitem._parent = this;
         return this;
     }
-    /// adds submenu item from action
-    MenuItem add(Action subitemAction) {
-        return add(new MenuItem(subitemAction));
+    /// adds submenu item(s) from one or more actions (will return item for last action)
+    MenuItem add(Action[] subitemActions...) {
+        MenuItem res = null;
+        foreach(subitemAction; subitemActions) {
+            res = add(new MenuItem(subitemAction));
+        }
+        return res;
     }
 	/// returns text description for first accelerator of action; null if no accelerators
 	@property dstring acceleratorText() {

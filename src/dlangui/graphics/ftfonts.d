@@ -246,14 +246,14 @@ private class FreeTypeFontFile {
         //FONT_GUARD
         int glyph_index = getCharIndex(code, def_char);
         int flags = FT_LOAD_DEFAULT;
-        const bool _drawMonochrome = false;
+        const bool _drawMonochrome = _size < FontManager.instance.minAnitialiasedFontSize;
         flags |= (!_drawMonochrome ? FT_LOAD_TARGET_NORMAL : FT_LOAD_TARGET_MONO);
         if (withImage)
             flags |= FT_LOAD_RENDER;
-        //if (_hintingMode == HINTING_MODE_AUTOHINT)
-        //    flags |= FT_LOAD_FORCE_AUTOHINT;
-        //else if (_hintingMode == HINTING_MODE_DISABLED)
-        //    flags |= FT_LOAD_NO_AUTOHINT | FT_LOAD_NO_HINTING;
+        if (FontManager.instance.hintingMode == HintingMode.AutoHint)
+            flags |= FT_LOAD_FORCE_AUTOHINT;
+        else if (FontManager.instance.hintingMode == HintingMode.Disabled)
+            flags |= FT_LOAD_NO_AUTOHINT | FT_LOAD_NO_HINTING;
         int error = FT_Load_Glyph(
                                   _face,          /* handle to face object */
                                   glyph_index,   /* glyph index           */
@@ -276,8 +276,30 @@ private class FreeTypeFontFile {
             int sz = w * cast(int)h;
             if (sz > 0) {
                 glyph.glyph = new ubyte[sz];
-                for (int i = 0; i < sz; i++)
-                    glyph.glyph[i] = bitmap.buffer[i];
+                if (_drawMonochrome) {
+                    // monochrome bitmap
+                    ubyte mask = 0x80;
+                    ubyte * ptr = bitmap.buffer;
+                    ubyte * dst = glyph.glyph.ptr;
+                    for ( int y=0; y<h; y++ ) {
+                        ubyte * row = ptr;
+                        mask = 0x80;
+                        for ( int x=0; x<w; x++ ) {
+                            *dst++ = (*row & mask) ? 0xFF : 00;
+                            mask >>= 1;
+                            if ( !mask && x != w-1) {
+                                mask = 0x80;
+                                row++;
+                            }
+                        }
+                        ptr += bitmap.pitch;
+                    }
+
+                } else {
+                    // antialiased
+                    for (int i = 0; i < sz; i++)
+                        glyph.glyph[i] = bitmap.buffer[i];
+                }
             }
             version (USE_OPENGL) {
                 glyph.id = nextGlyphId();
@@ -427,8 +449,18 @@ class FreeTypeFontManager : FontManager {
     private FontFileItem findBestMatch(int weight, bool italic, FontFamily family, string face) {
         FontFileItem best = null;
         int bestScore = 0;
+		string[] faces = face ? split(face, ",") : null;
         foreach(FontFileItem item; _fontFiles) {
             int score = 0;
+			if (faces) {
+				for (int i = 0; i < faces.length; i++) {
+					if (faces[i].equal(item.def.face)) {
+						score += 300 - i;
+						break;
+					}
+				}
+			} else
+				score += 200;
             if (face is null || face.equal(item.def.face))
                 score += 200; // face match
             if (family == item.def.family)

@@ -13,3 +13,9 @@ http://www.dsource.org/projects/bindings/wiki/WindowsApi
 If you wish to contribute to this project, please assign modules to yourself at that site, and refer to the translation instructions.
 
 Email me with comments/suggestions/bug reports: smjg@iname.com
+
+
+
+
+
+NOTE: Files unused by dlangui were moved to 3rdparty-extra.

@@ -53,6 +53,167 @@ module dlangui.core.linestream;
 import std.stream;
 import std.stdio;
 import std.conv;
+import std.utf;
+
+/// File encoding
+public enum EncodingType : int {
+    /// utf-8 unicode
+    UTF8,
+    /// utf-16 unicode big endian
+    UTF16BE,
+    /// utf-16 unicode little endian
+    UTF16LE,
+    /// utf-32 unicode big endian
+    UTF32BE,
+    /// utf-32 unicode little endian
+    UTF32LE,
+    /// plain ASCII (character codes must be <= 127)
+    ASCII,
+    /// encoding is unknown
+    UNKNOWN
+};
+/// Line ending style
+public enum LineEnding : int {
+    /// LF (0x0A) - unix style
+    LF,
+    /// CR followed by LF (0x0D,0x0A) - windows style
+    CRLF,
+    /// CR (0x0D) - mac style
+    CR,
+    /// unknown line ending
+    UNKNOWN,
+    /// mixed line endings detected
+    MIXED
+}
+
+/// Text file format
+struct TextFileFormat {
+    /// character encoding
+    EncodingType encoding;
+    /// line ending style
+    LineEnding lineEnding;
+    /// byte order mark character flag
+    bool bom;
+}
+
+/// Text file writer which supports different text file formats
+class OutputLineStream {
+    protected OutputStream _stream;
+    protected string _filename;
+    protected TextFileFormat _format;
+    protected bool _firstLine;
+    protected char[] _buf;
+    protected int _len;
+    protected static immutable int MAX_BUFFER_SIZE = 0x10000; // 64K
+    /// create
+    this(OutputStream stream, string filename, TextFileFormat format) {
+        _stream = stream;
+        _filename = filename;
+        _format = format;
+        _firstLine = true;
+        // fix format
+        if (_format.encoding == EncodingType.UNKNOWN || _format.encoding == EncodingType.ASCII)
+            _format.encoding = EncodingType.UTF8;
+        if (_format.lineEnding == LineEnding.UNKNOWN || _format.lineEnding == LineEnding.MIXED) {
+            version (Windows) {
+                _format.lineEnding = LineEnding.CRLF;
+            } else {
+                _format.lineEnding = LineEnding.LF;
+            }
+        }
+    }
+    protected void flush() {
+        if (_len > 0) {
+            _stream.write(_buf[0.._len]);
+            _len = 0;
+        }
+    }
+    /// convert character encoding and write to output stream
+    protected void convertAndWrite(dstring s) {
+        /// reserve buf space
+        if (_buf.length < _len + s.length * 4 + 4)
+            _buf.length = _len + s.length * 4 + 4;
+        switch (_format.encoding) {
+            case EncodingType.UTF8:
+            default:
+                char[4] d;
+                for (int i = 0; i < s.length; i++) {
+                    int bytes = encode(d, s[i]);
+                    for (int j = 0; j < bytes; j++)
+                        _buf[_len++] = d[j];
+                }
+                break;
+            case EncodingType.UTF16BE:
+                wchar[2] d;
+                for (int i = 0; i < s.length; i++) {
+                    int n = encode(d, s[i]);
+                    for (int j = 0; j < n; j++) {
+                        _buf[_len++] = cast(char)(d[j] >> 8);
+                        _buf[_len++] = cast(char)(d[j] & 0xFF);
+                    }
+                }
+                break;
+            case EncodingType.UTF16LE:
+                wchar[2] d;
+                for (int i = 0; i < s.length; i++) {
+                    int n = encode(d, s[i]);
+                    for (int j = 0; j < n; j++) {
+                        _buf[_len++] = cast(char)(d[j] & 0xFF);
+                        _buf[_len++] = cast(char)(d[j] >> 8);
+                    }
+                }
+                break;
+            case EncodingType.UTF32LE:
+                for (int i = 0; i < s.length; i++) {
+                    dchar ch = s[i];
+                    _buf[_len++] = cast(char)((ch >> 0) & 0xFF);
+                    _buf[_len++] = cast(char)((ch >> 8) & 0xFF);
+                    _buf[_len++] = cast(char)((ch >> 16) & 0xFF);
+                    _buf[_len++] = cast(char)((ch >> 24) & 0xFF);
+                }
+                break;
+            case EncodingType.UTF32BE:
+                for (int i = 0; i < s.length; i++) {
+                    dchar ch = s[i];
+                    _buf[_len++] = cast(char)((ch >> 24) & 0xFF);
+                    _buf[_len++] = cast(char)((ch >> 16) & 0xFF);
+                    _buf[_len++] = cast(char)((ch >> 8) & 0xFF);
+                    _buf[_len++] = cast(char)((ch >> 0) & 0xFF);
+                }
+                break;
+        }
+        if (_len > MAX_BUFFER_SIZE)
+            flush();
+    }
+    /// write single line
+    void writeLine(dstring line) {
+        if (_firstLine) {
+            if (_format.bom)
+                convertAndWrite("\uFEFF"d); // write BOM
+            _firstLine = false;
+        }
+        convertAndWrite(line);
+        switch(_format.lineEnding) {
+            case LineEnding.LF:
+                convertAndWrite("\n"d);
+                break;
+            case LineEnding.CR:
+                convertAndWrite("\r"d);
+                break;
+            default:
+            case LineEnding.CRLF:
+                convertAndWrite("\r\n"d);
+                break;
+        }
+    }
+    /// close stream
+    void close() {
+        flush();
+        _stream.close();
+        _buf = null;
+    }
+}
+
 
 /** 
     Support reading of file (or string in memory) by lines
@@ -64,21 +225,6 @@ import std.conv;
     Tracks line number.
 */
 class LineStream {
-    /// File encoding
-	public enum EncodingType {
-        /// plaing ASCII (character codes must be <= 127)
-        ASCII,
-        /// utf-8 unicode
-        UTF8,
-        /// utf-16 unicode big endian
-        UTF16BE,
-        /// utf-16 unicode little endian
-        UTF16LE,
-        /// utf-32 unicode big endian
-        UTF32BE,
-        /// utf-32 unicode little endian
-        UTF32LE
-    };
 
     /// Error codes
     public enum ErrorCodes {
@@ -98,6 +244,10 @@ class LineStream {
 	private uint _textLen; // position of last filled char in text buffer + 1
 	private dchar[] _textBuf; // text buffer
 	private bool _eof; // end of file, no more lines
+    protected bool _bomDetected;
+    protected int _crCount;
+    protected int _lfCount;
+    protected int _crlfCount;
 
     /// Returns file name
 	@property string filename() { return _filename; }
@@ -105,6 +255,25 @@ class LineStream {
 	@property uint line() { return _line; }
     /// Returns file encoding EncodingType
 	@property EncodingType encoding() { return _encoding; }
+
+    @property TextFileFormat textFormat() {
+        LineEnding le = LineEnding.CRLF;
+        if (_crlfCount) {
+            if (_crCount == _lfCount)
+                le = LineEnding.CRLF;
+            else
+                le = LineEnding.MIXED;
+        } else if (_crCount > _lfCount) {
+            le = LineEnding.CR;
+        } else if (_lfCount > _crCount) {
+            le = LineEnding.CR;
+        } else {
+            le = LineEnding.MIXED;
+        }
+        return TextFileFormat(_encoding, le, _bomDetected);
+    }
+
+
     /// Returns error code
 	@property int errorCode() { return _errorCode; }
     /// Returns error message
@@ -252,15 +421,21 @@ class LineStream {
 						charsLeft = _textLen - _textPos;
 					}
 					dchar ch2 = (p < charsLeft - 1) ? _textBuf[_textPos + p + 1] : 0;
-					if (ch2 == 0x0A)
+					if (ch2 == 0x0A) {
 						eol = p + 2;
-					else
+                        _lfCount++;
+                        _crCount++;
+                        _crlfCount++;
+                    } else {
 						eol = p + 1;
+                        _lfCount++;
+                    }
 					break;
 				} else if (ch == 0x0A || ch == 0x2028 || ch == 0x2029) {
 					// single char eoln
 					lastchar = p;
 					eol = p + 1;
+                    _crCount++;
 					break;
 				} else if (ch == 0 || ch == 0x001A) {
 					// eof
@@ -305,25 +480,34 @@ class LineStream {
 	}
 	
 	/// Factory for InputStream parser
-	public static LineStream create(InputStream stream, string filename) {
+	public static LineStream create(InputStream stream, string filename, bool autodetectUTFIfNoBOM = true) {
 		ubyte[] buf = new ubyte[BYTE_BUFFER_SIZE];
 		buf[0] = buf[1] = buf[2]  = buf[3] = 0;
 		if (!stream.isOpen)
 			return null;
         uint len = cast(uint)stream.read(buf);
+        LineStream res = null;
         if (buf[0] == 0xEF && buf[1] == 0xBB && buf[2] == 0xBF) {
-			return new Utf8LineStream(stream, filename, buf, len);
+			res = new Utf8LineStream(stream, filename, buf, len, 3);
         } else if (buf[0] == 0x00 && buf[1] == 0x00 && buf[2] == 0xFE && buf[3] == 0xFF) {
-			return new Utf32beLineStream(stream, filename, buf, len);
+			res = new Utf32beLineStream(stream, filename, buf, len);
         } else if (buf[0] == 0xFF && buf[1] == 0xFE && buf[2] == 0x00 && buf[3] == 0x00) {
-			return new Utf32leLineStream(stream, filename, buf, len);
+			res = new Utf32leLineStream(stream, filename, buf, len);
         } else if (buf[0] == 0xFE && buf[1] == 0xFF) {
-			return new Utf16beLineStream(stream, filename, buf, len);
+			res =  new Utf16beLineStream(stream, filename, buf, len);
         } else if (buf[0] == 0xFF && buf[1] == 0xFE) {
-			return new Utf16leLineStream(stream, filename, buf, len);
-		} else {
-			return new AsciiLineStream(stream, filename, buf, len);
+			res = new Utf16leLineStream(stream, filename, buf, len);
 		}
+        if (res) {
+            res._bomDetected = true;
+        } else {
+            if (autodetectUTFIfNoBOM) {
+                res = new Utf8LineStream(stream, filename, buf, len, 0);
+            } else {
+                res = new AsciiLineStream(stream, filename, buf, len);
+            }
+        }
+        return res;
 	}
 	
 	protected bool invalidCharFlag;
@@ -368,8 +552,8 @@ private class AsciiLineStream : LineStream {
 }
 
 private class Utf8LineStream : LineStream {
-	this(InputStream stream, string filename, ubyte[] buf, uint len) {
-		super(stream, filename, EncodingType.UTF8, buf, 3, len);
+	this(InputStream stream, string filename, ubyte[] buf, uint len, int skip) {
+		super(stream, filename, EncodingType.UTF8, buf, skip, len);
 	}
 	override uint decodeText() {
 		if (invalidCharFlag) {

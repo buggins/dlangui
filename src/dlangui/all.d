@@ -52,6 +52,9 @@ public import dlangui.core.i18n;
 public import dlangui.core.files;
 public import dlangui.core.stdaction;
 public import dlangui.graphics.images;
+public import dlangui.graphics.colors;
+public import dlangui.graphics.fonts;
+public import dlangui.graphics.drawbuf;
 public import dlangui.widgets.widget;
 public import dlangui.widgets.controls;
 public import dlangui.widgets.layouts;
@@ -60,13 +63,14 @@ public import dlangui.widgets.tabs;
 public import dlangui.widgets.menu;
 public import dlangui.widgets.scroll;
 public import dlangui.widgets.editors;
+public import dlangui.widgets.srcedit;
 public import dlangui.widgets.grid;
 public import dlangui.widgets.tree;
 public import dlangui.widgets.combobox;
 public import dlangui.widgets.popup;
-public import dlangui.graphics.colors;
-public import dlangui.graphics.fonts;
-public import dlangui.graphics.drawbuf;
+public import dlangui.widgets.appframe;
+public import dlangui.widgets.statusline;
+public import dlangui.widgets.docks;
 public import dlangui.platforms.common.platform;
 
 // some useful imports from Phobos

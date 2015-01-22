@@ -142,12 +142,24 @@ class Win32Font : Font {
                                &identity );
 		if (res == GDI_ERROR)
 			return null;
-		int gs = GetGlyphOutlineW( _drawbuf.dc, cast(wchar)ch,
-                                   GGO_GRAY8_BITMAP, //GGO_METRICS
-								  &metrics,
-								  0,
-								  NULL,
-								  &identity );
+        int gs = 0;
+        // calculate bitmap size
+        if (antialiased) {
+            gs = GetGlyphOutlineW( _drawbuf.dc, cast(wchar)ch,
+                                       GGO_GRAY8_BITMAP,
+                                      &metrics,
+                                      0,
+                                      NULL,
+                                      &identity );
+        } else {
+            gs = GetGlyphOutlineW( _drawbuf.dc, cast(wchar)ch,
+                                   GGO_BITMAP,
+                                  &metrics,
+                                  0,
+                                  NULL,
+                                  &identity );
+        }
+
 		if (gs >= 0x10000 || gs < 0)
 			return null;
 
@@ -167,33 +179,65 @@ class Win32Font : Font {
 			g.glyph = new ubyte[g.blackBoxX * g.blackBoxY];
 			if (gs>0)
 			{
-				ubyte[] glyph = new ubyte[gs];
-				res = GetGlyphOutlineW( _drawbuf.dc, cast(wchar)ch,
-                                        GGO_GRAY8_BITMAP, //GGO_METRICS
-									   &metrics,
-									   gs,
-									   glyph.ptr,
-									   &identity );
-				if (res==GDI_ERROR)
-				{
-					return null;
-				}
-				int glyph_row_size = (g.blackBoxX + 3) / 4 * 4;
-				ubyte * src = glyph.ptr;
-				ubyte * dst = g.glyph.ptr;
-				for (int y = 0; y < g.blackBoxY; y++)
-				{
-					for (int x = 0; x < g.blackBoxX; x++)
-					{
-						ubyte b = src[x];
-						if (b>=64)
-							b = 63;
-						b = (b<<2) & 0xFC;
-						dst[x] = b;
-					}
-					src += glyph_row_size;
-					dst += g.blackBoxX;
-				}
+                if (antialiased) {
+                    // antialiased glyph
+				    ubyte[] glyph = new ubyte[gs];
+				    res = GetGlyphOutlineW( _drawbuf.dc, cast(wchar)ch,
+                                            GGO_GRAY8_BITMAP, //GGO_METRICS
+									       &metrics,
+									       gs,
+									       glyph.ptr,
+									       &identity );
+				    if (res==GDI_ERROR)
+				    {
+					    return null;
+				    }
+				    int glyph_row_size = (g.blackBoxX + 3) / 4 * 4;
+				    ubyte * src = glyph.ptr;
+				    ubyte * dst = g.glyph.ptr;
+				    for (int y = 0; y < g.blackBoxY; y++)
+				    {
+					    for (int x = 0; x < g.blackBoxX; x++)
+					    {
+						    ubyte b = src[x];
+						    if (b>=64)
+							    b = 63;
+						    b = (b<<2) & 0xFC;
+						    dst[x] = b;
+					    }
+					    src += glyph_row_size;
+					    dst += g.blackBoxX;
+				    }
+                } else {
+                    // bitmap glyph
+				    ubyte[] glyph = new ubyte[gs];
+				    res = GetGlyphOutlineW( _drawbuf.dc, cast(wchar)ch,
+                                            GGO_BITMAP, //GGO_METRICS
+									       &metrics,
+									       gs,
+									       glyph.ptr,
+									       &identity );
+				    if (res==GDI_ERROR)
+				    {
+					    return null;
+				    }
+                    int glyph_row_bytes = ((g.blackBoxX + 7) / 8);
+				    int glyph_row_size = (glyph_row_bytes + 3) / 4 * 4;
+				    ubyte * src = glyph.ptr;
+				    ubyte * dst = g.glyph.ptr;
+				    for (int y = 0; y < g.blackBoxY; y++)
+				    {
+					    for (int x = 0; x < g.blackBoxX; x++)
+					    {
+                            int offset = x >> 3;
+                            int shift = 7 - (x & 7);
+						    ubyte b = ((src[offset] >> shift) & 1) ? 255 : 0;
+						    dst[x] = b;
+					    }
+					    src += glyph_row_size;
+					    dst += g.blackBoxX;
+				    }
+                }
 			}
 			else
 			{
@@ -215,13 +259,14 @@ class Win32Font : Font {
         lf.lfCharSet = ANSI_CHARSET; //DEFAULT_CHARSET;
 		lf.lfFaceName[0..def.face.length] = def.face;
 		lf.lfFaceName[def.face.length] = 0;
-		lf.lfHeight = size; //-size;
+		lf.lfHeight = -size; //size; //-size;
 		lf.lfItalic = italic;
-		lf.lfOutPrecision = OUT_OUTLINE_PRECIS; //OUT_TT_ONLY_PRECIS;
+        lf.lfWeight = weight;
+		lf.lfOutPrecision = OUT_TT_ONLY_PRECIS; //OUT_OUTLINE_PRECIS; //OUT_TT_ONLY_PRECIS;
 		lf.lfClipPrecision = CLIP_DEFAULT_PRECIS;
 		//lf.lfQuality = NONANTIALIASED_QUALITY; //ANTIALIASED_QUALITY;
 		//lf.lfQuality = PROOF_QUALITY; //ANTIALIASED_QUALITY;
-		lf.lfQuality = size < 18 ? NONANTIALIASED_QUALITY : PROOF_QUALITY; //ANTIALIASED_QUALITY;
+		lf.lfQuality = antialiased ? NONANTIALIASED_QUALITY : ANTIALIASED_QUALITY; //PROOF_QUALITY; //ANTIALIASED_QUALITY; //size < 18 ? NONANTIALIASED_QUALITY : PROOF_QUALITY; //ANTIALIASED_QUALITY;
 		lf.lfPitchAndFamily = def.pitchAndFamily;
         _hfont = CreateFontIndirectA(&lf);
         _drawbuf = new Win32ColorDrawBuf(1, 1);
@@ -362,8 +407,11 @@ class Win32FontManager : FontManager {
 	FontDef * findFace(string face) {
 		if (face.length == 0)
 			return null;
-		if (face in _faceByName)
-			return _faceByName[face];
+		string[] faces = split(face, ",");
+		foreach(f; faces) {
+			if (f in _faceByName)
+				return _faceByName[f];
+		}
 		return null;
 	}
 

@@ -21,6 +21,7 @@ module dlangui.graphics.gldrawbuf;
 version (USE_OPENGL):
 
 import dlangui.graphics.drawbuf;
+import dlangui.graphics.colors;
 import dlangui.core.logger;
 private import dlangui.graphics.glsupport;
 private import std.algorithm;
@@ -84,7 +85,9 @@ class GLDrawBuf : DrawBuf {
     /// fill rectangle with solid color (clipping is applied)
     override void fillRect(Rect rc, uint color) {
         assert(_scene !is null);
-        _scene.add(new SolidRectSceneItem(rc, applyAlpha(color)));
+        color = applyAlpha(color);
+        if (!isFullyTransparentColor(color) && applyClipping(rc))
+            _scene.add(new SolidRectSceneItem(rc, color));
     }
     /// draw 8bit alpha image - usually font glyph using specified color (clipping is applied)
 	override void drawGlyph(int x, int y, Glyph * glyph, uint color) {
@@ -92,10 +95,11 @@ class GLDrawBuf : DrawBuf {
 		Rect dstrect = Rect(x,y, x + glyph.blackBoxX, y + glyph.blackBoxY);
 		Rect srcrect = Rect(0, 0, glyph.blackBoxX, glyph.blackBoxY);
 		//Log.v("GLDrawBuf.drawGlyph dst=", dstrect, " src=", srcrect, " color=", color);
-        if (applyClipping(dstrect, srcrect)) {
+        color = applyAlpha(color);
+        if (!isFullyTransparentColor(color) && applyClipping(dstrect, srcrect)) {
             if (!glGlyphCache.get(glyph.id))
                 glGlyphCache.put(glyph);
-            _scene.add(new GlyphSceneItem(glyph.id, dstrect, srcrect, applyAlpha(color), null));
+            _scene.add(new GlyphSceneItem(glyph.id, dstrect, srcrect, color, null));
         }
     }
     /// draw source buffer rectangle contents to destination buffer

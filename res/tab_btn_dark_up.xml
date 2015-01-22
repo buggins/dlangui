@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+  <item
+    android:drawable="tab_btn_dark_up_focused_selected"
+    android:state_selected="true" android:state_window_focused="true" />
+  <item
+    android:drawable="tab_btn_dark_up_focused"
+    android:state_window_focused="true" />
+  <item
+    android:drawable="tab_btn_dark_up_selected"
+    android:state_selected="true" />
+  <item
+    android:drawable="tab_btn_dark_up_hover"
+    android:state_hovered="true" />
+  <item
+    android:drawable="tab_btn_dark_up_normal" />
+</selector>

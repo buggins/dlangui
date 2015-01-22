@@ -198,11 +198,20 @@ class Action {
         _iconId = id;
         return this;
     }
+    /// returns true if it's dummy action to specify separator
+    @property bool isSeparator() const {
+        return _id == SEPARATOR_ACTION_ID;
+    }
 
     override string toString() const {
         return "Action(" ~ to!string(_id) ~ ")";
     }
 }
+
+/// use this ID for menu and toolbar separators
+const int SEPARATOR_ACTION_ID = -1;
+__gshared Action ACTION_SEPARATOR = new Action(SEPARATOR_ACTION_ID);
+
 
 /// Map of Accelerator to Action
 struct ActionMap {
@@ -1005,3 +1014,54 @@ string keyName(uint keyCode) {
 	}
 }
 
+/// base class for custom events
+class CustomEvent {
+    protected int _id;
+    protected uint _uniqueId;
+
+    protected static uint _uniqueIdGenerator;
+
+    protected Widget _destinationWidget;
+    // event id
+    @property int id() { return _id; }
+    @property uint uniqueId() { return _uniqueId; }
+    @property Widget destinationWidget() { return _destinationWidget; }
+
+    protected Object _objectParam;
+    @property Object objectParam() {
+        return _objectParam;
+    }
+    @property CustomEvent objectParam(Object value) {
+        _objectParam = value;
+        return this;
+    }
+
+    protected int _intParam;
+    @property int intParam() {
+        return _intParam;
+    }
+    @property CustomEvent intParam(int value) {
+        _intParam = value;
+        return this;
+    }
+
+    this(int ID) {
+        _id = ID;
+        _uniqueId = ++_uniqueIdGenerator;
+    }
+}
+
+immutable int CUSTOM_RUNNABLE = 1;
+
+/// operation to execute (usually sent from background threads to run some code in UI thread)
+class RunnableEvent : CustomEvent {
+    protected void delegate() _action;
+    this(int ID, Widget destinationWidget, void delegate() action) {
+        super(ID);
+        _destinationWidget = destinationWidget;
+        _action = action;
+    }
+    void run() {
+        _action();
+    }
+}

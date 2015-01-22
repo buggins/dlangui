@@ -258,6 +258,8 @@ struct ObjectList(T) {
     }
     /** find child index for item, return -1 if not found */
     int indexOf(T item) {
+        if (item is null)
+            return -1;
         for (int i = 0; i < _count; i++)
             if (_list[i] == item)
                 return i;
@@ -286,6 +288,21 @@ struct ObjectList(T) {
         T old = _list[index];
         _list[index] = item;
         destroy(old);
+    }
+    /** Replace item with another value, destroy old value. */
+    void replace(T newItem, T oldItem) {
+        int idx = indexOf(oldItem);
+        if (newItem is null) {
+            if (idx >= 0) {
+                T item = remove(idx);
+                destroy(item);
+            }
+        } else {
+            if (idx >= 0)
+                replace(newItem, idx);
+            else
+                add(newItem);
+        }
     }
     /** remove and destroy all items */
     void clear() {

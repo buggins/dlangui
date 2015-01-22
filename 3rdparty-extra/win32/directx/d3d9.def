@@ -1,0 +1,2 @@
+IMPORTS
+_Direct3DCreate9@4 = d3d9.Direct3DCreate9
