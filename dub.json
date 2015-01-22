@@ -25,14 +25,12 @@
 			"versions": ["EmbedStandardResources"],
 
 			"sourcePaths": [
-				"3rdparty"
+				"3rdparty", "src"
 			],
 
 			"dependencies": {
 				"derelict-gl3": ">=1.0.12",
-				"dlib": ">=0.4.1"
-			},
-			"dependencies-posix": {
+				"dlib": ">=0.4.1",
 				"derelict-ft": ">=1.0.0",
 				"derelict-sdl2": ">=1.9.1"
 			},
