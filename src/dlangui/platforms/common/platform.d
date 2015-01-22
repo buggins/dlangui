@@ -811,7 +811,7 @@ class Platform {
         if (!_uiLanguage)
             uiLanguage = "en";
         if (!_themeId)
-            themeId = "theme_default";
+            uiTheme = "theme_default";
     }
 
 	protected string[] _resourceDirs;
