@@ -33,9 +33,50 @@ import dlangui.core.logger;
 import std.file;
 import std.algorithm;
 import std.xml;
-import std.algorithm;
 import std.conv;
+import std.string;
+import std.path;
 
+struct EmbeddedResource {
+    string name;
+    ubyte[] data;
+}
+
+struct EmbeddedResourceList {
+    private EmbeddedResource[] list;
+    void addResources(EmbeddedResource[] resources) {
+        list ~= resources;
+    }
+}
+
+__gshared EmbeddedResourceList embeddedResourceList;
+
+EmbeddedResource[] embedResource(string resourceName)() {
+    static if ((baseName(resourceName)).length > 0)
+        return [EmbeddedResource(resourceName, cast(ubyte[])import(baseName(resourceName)))];
+    else
+        return [];
+}
+
+/// embed all resources from list
+EmbeddedResource[] embedResources(string[] resourceNames)() {
+    static if (resourceNames.length == 0)
+        return [];
+    else
+        return embedResource!(resourceNames[0])() ~ embedResources!(resourceNames[1..$])();
+}
+
+/// embed all resources from list
+EmbeddedResource[] embedResourcesFromList(string resourceList)() {
+    return embedResources!(split(import(resourceList), "\n"))();
+}
+
+
+__gshared static this() {
+    version (EmbedStandardResources) {
+        embeddedResourceList.addResources(embedResourcesFromList!("standard_resources.list")());
+    }
+}
 
 class Drawable : RefCountedObject {
 	//private static int _instanceCount;

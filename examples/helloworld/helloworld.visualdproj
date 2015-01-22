@@ -191,6 +191,6 @@
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
  </Config>
  <Folder name="helloworld">
-  <File path="src/app.d" />
+  <File path="src/helloworld.d" />
  </Folder>
 </DProject>
