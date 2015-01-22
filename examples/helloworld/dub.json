@@ -5,22 +5,8 @@
     "license": "Boost",
     "authors": ["Vadim Lopatin"],
 
-    "targetName": "helloworld",
     "targetPath": "bin",
     "targetType": "executable",
-
-    "versions-posix": ["USE_SDL", "USE_OPENGL"],
-    "versions-windows": ["USE_OPENGL"],
-
-    "sourceFiles": [
-         "src/app.d"
-    ],
-
-    "copyFiles-windows": [
-        "../../lib/FreeImage.dll"
-    ],
-
-    "mainSourceFile": "src/app.d",
 
     "dependencies": {
         "dlangui:dlanguilib": "*",

@@ -207,13 +207,13 @@ Third party components used
 * DerelictSDL2 + SDL2 for cross platform support
 * WindowsAPI bindings from http://www.dsource.org/projects/bindings/wiki/WindowsApi (patched)
 * XCB and X11 bindings (patched) when SDL2 is not used; TODO: provide links
-* DLIB - for loading images (it replaced FreeImage recently)
+* DLIB - for loading GIF and JPEG images (it replaced FreeImage recently)
 
 
 Hello World
 --------------------------------------------------------------
 
-	// main.d
+	// myproject.d
 	import dlangui.all;
 	mixin DLANGUI_ENTRY_POINT;
 
@@ -249,20 +249,10 @@ Sample dub.json:
 	{
 	    "name": "myproject",
 	    "description": "sample DLangUI project",
-	    "homepage": "https://github.com/buggins/dlangui",
-	    "license": "Boost",
-	    "authors": ["Vadim Lopatin"],
 	
-	    "targetName": "example",
 	    "targetPath": "bin",
 	    "targetType": "executable",
 	
-	    "sourcePaths": ["src"],
-	
-	    "sourceFiles": [
-	         "src/app.d"
-	    ],
-
 	    "copyFiles": [
 	        "res"
 	    ],

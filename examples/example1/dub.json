@@ -5,20 +5,10 @@
     "license": "Boost",
     "authors": ["Vadim Lopatin"],
 
-    "targetName": "example1",
     "targetPath": "bin",
     "targetType": "executable",
 
-    "sourceFiles": [
-         "src/main.d"
-    ],
-
     "copyFiles": ["res"],
-
-    "versions-posix": ["USE_SDL", "USE_OPENGL"],
-    "versions-windows": ["Unicode"],
-
-    "mainSourceFile": "src/main.d",
 
     "dependencies": {
         "dlangui:dlanguilib": "*"

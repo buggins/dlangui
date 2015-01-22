@@ -38,14 +38,13 @@
 			"sourcePaths-windows": [
 				"3rdparty"
 			],
-			"excludedSourceFiles-windows": [
-				"3rdparty/X11/*"
-			],
 			"dependencies": {
-				"derelict-sdl2": ">=1.9.1",
 				"derelict-gl3": ">=1.0.12",
-				"derelict-ft": ">=1.0.0",
 				"dlib": ">=0.4.1"
+			},
+			"dependencies-posix": {
+				"derelict-ft": ">=1.0.0",
+				"derelict-sdl2": ">=1.9.1"
 			},
                         "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.", "--ex", "src.dlangui"]
         },

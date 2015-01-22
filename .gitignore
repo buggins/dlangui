@@ -20,3 +20,5 @@ index.html
 api.html
 screenshots.html
 *.log
+include
+lib/res
