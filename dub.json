@@ -23,8 +23,6 @@
 			"versions-posix": ["USE_SDL", "USE_OPENGL"],
 			"versions-windows": ["Unicode"],
 
-			"copyFiles": ["res"],
-
 			"sourceFiles": [
 				"project.ddoc"
 			],
@@ -35,9 +33,10 @@
 			        "../../src/screenshots.d"
 			],
 
-			"sourcePaths-windows": [
+			"sourcePaths": [
 				"3rdparty"
 			],
+
 			"dependencies": {
 				"derelict-gl3": ">=1.0.12",
 				"dlib": ">=0.4.1"
@@ -46,6 +45,16 @@
 				"derelict-ft": ">=1.0.0",
 				"derelict-sdl2": ">=1.9.1"
 			},
+			"configurations": [
+				{
+					"name": "normal",
+					"versions": ["EmbedStandardResources"]
+				},
+				{
+					"name": "no-standard-resources",
+					"copyFiles": ["res"]
+				}
+			],
                         "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.", "--ex", "src.dlangui"]
         },
         "./examples/helloworld/",
