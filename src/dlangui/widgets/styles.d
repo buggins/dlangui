@@ -1278,20 +1278,21 @@ bool loadTheme(Theme theme, string resourceId, int level = 0) {
 		filename = drawableCache.findResource(resourceId);
 		if (!filename || !filename.endsWith(".xml"))
 			return false;
-		string s = cast(string)std.file.read(filename);
+		string s = cast(string)loadResourceBytes(filename);
+        if (!s) {
+            Log.e("Cannot read XML resource ", resourceId, " from file ", filename);
+            return false;
+        }
 		
 		// Check for well-formedness
 		//check(s);
-		
+	
 		// Make a DOM tree
 		auto doc = new Document(s);
 		
 		return loadTheme(theme, doc);
 	} catch (CheckException e) {
 		Log.e("Invalid XML resource ", resourceId);
-		return false;
-	} catch (Throwable e) {
-		Log.e("Cannot read XML resource ", resourceId, " from file ", filename, " exception: ", e);
 		return false;
 	}
 }

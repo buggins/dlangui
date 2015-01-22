@@ -31,6 +31,8 @@ version (USE_DEIMAGE) {
 version (USE_DLIBIMAGE) {
     import dlib.image.io.io;
     import dlib.image.image;
+    import dlib.image.io.png;
+    import dlib.image.io.jpeg;
     version = ENABLE_DLIBIMAGE_JPEG;
 }
 
@@ -39,10 +41,24 @@ import dlangui.core.types;
 import dlangui.graphics.colors;
 import dlangui.graphics.drawbuf;
 import std.stream;
+import std.path;
 import std.conv : to;
+
 
 /// load and decode image from file to ColorDrawBuf, returns null if loading or decoding is failed
 ColorDrawBuf loadImage(string filename) {
+    try {
+        immutable ubyte[] data = cast(immutable ubyte[])std.file.read(filename);
+        return loadImage(data, filename);
+    } catch (Exception e) {
+        Log.e("exception while loading image from file ", filename);
+        Log.e(to!string(e));
+        return null;
+    }
+}
+
+/// load and decode image from input stream to ColorDrawBuf, returns null if loading or decoding is failed
+ColorDrawBuf loadImage(immutable ubyte[] data, string filename) {
     Log.d("Loading image from file " ~ filename);
     version (USE_DEIMAGE) {
         try {
@@ -69,6 +85,7 @@ ColorDrawBuf loadImage(string filename) {
         }
     } else version (USE_DLIBIMAGE) {
         import std.algorithm;
+        static import dlib.core.stream;
         try {
             version (ENABLE_DLIBIMAGE_JPEG) {
             } else {
@@ -76,19 +93,23 @@ ColorDrawBuf loadImage(string filename) {
                 if (filename.endsWith(".jpeg") || filename.endsWith(".jpg") || filename.endsWith(".JPG") || filename.endsWith(".JPEG"))
                     return null;
             }
-            SuperImage image = dlib.image.io.io.loadImage(filename);
+            SuperImage image = null;
+            dlib.core.stream.ArrayStream dlibstream = new dlib.core.stream.ArrayStream(cast(ubyte[])data, data.length);
+            switch(filename.extension)
+            {
+                case ".jpg", ".JPG", ".jpeg":
+                    image = dlib.image.io.jpeg.loadJPEG(dlibstream);
+                    break;
+                case ".png", ".PNG":
+                    image = dlib.image.io.png.loadPNG(dlibstream);
+                    break;
+                default:
+                    break;
+            }
+            //SuperImage image = dlib.image.io.io.loadImage(filename);
             if (!image)
                 return null;
-            int w = image.width;
-            int h = image.height;
-            ColorDrawBuf buf = new ColorDrawBuf(w, h);
-            for (int y = 0; y < h; y++) {
-                uint * dstLine = buf.scanLine(y);
-                for (int x = 0; x < w; x++) {
-                    auto pixel = image[x, h - 1 - y].convert(8);
-                    dstLine[x] = makeRGBA(pixel.r, pixel.g, pixel.b, 255 - pixel.a);
-                }
-            }
+            ColorDrawBuf buf = importImage(image);
             destroy(image);
             return buf;
         } catch (Exception e) {
@@ -108,6 +129,22 @@ ColorDrawBuf loadImage(string filename) {
         }
     }
 
+}
+
+version (USE_DLIBIMAGE) {
+    ColorDrawBuf importImage(SuperImage image) {
+        int w = image.width;
+        int h = image.height;
+        ColorDrawBuf buf = new ColorDrawBuf(w, h);
+        for (int y = 0; y < h; y++) {
+            uint * dstLine = buf.scanLine(y);
+            for (int x = 0; x < w; x++) {
+                auto pixel = image[x, h - 1 - y].convert(8);
+                dstLine[x] = makeRGBA(pixel.r, pixel.g, pixel.b, 255 - pixel.a);
+            }
+        }
+        return buf;
+    }
 }
 
 class ImageDecodingException : Exception {

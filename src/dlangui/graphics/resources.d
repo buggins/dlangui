@@ -37,9 +37,16 @@ import std.conv;
 import std.string;
 import std.path;
 
+/// filename prefix for embedded resources
+immutable string EMBEDDED_RESOURCE_PREFIX = "@embedded@/";
+
 struct EmbeddedResource {
-    string name;
-    ubyte[] data;
+    immutable string name;
+    immutable ubyte[] data;
+    this(immutable string name, immutable ubyte[] data) {
+        this.name = name;
+        this.data = data;
+    }
 }
 
 struct EmbeddedResourceList {
@@ -47,14 +54,41 @@ struct EmbeddedResourceList {
     void addResources(EmbeddedResource[] resources) {
         list ~= resources;
     }
+    /// find by exact file name
+    EmbeddedResource * find(string name) {
+        for(int i = 0; i < list.length; i++)
+            if (name.equal(list[i].name))
+                return &list[i];
+        return null;
+    }
+    /// find by name w/o extension
+    EmbeddedResource * findAutoExtension(string name) {
+        string xmlname = name ~ ".xml";
+        string pngname = name ~ ".png";
+        string png9name = name ~ ".9.png";
+        string jpgname = name ~ ".jpg";
+        string jpegname = name ~ ".jpeg";
+        for(int i = 0; i < list.length; i++) {
+            string s = list[i].name;
+            if (s.equal(xmlname) || s.equal(pngname) || s.equal(png9name) 
+                    || s.equal(jpgname) || s.equal(jpegname))
+                return &list[i];
+        }
+        return null;
+    }
 }
 
 __gshared EmbeddedResourceList embeddedResourceList;
 
 EmbeddedResource[] embedResource(string resourceName)() {
-    static if ((baseName(resourceName)).length > 0)
-        return [EmbeddedResource(resourceName, cast(ubyte[])import(baseName(resourceName)))];
-    else
+    immutable string name = baseName(resourceName);
+    static if (name.length > 0) {
+        immutable ubyte[] data = cast(immutable ubyte[])import(name);
+        static if (data.length > 0)
+            return [EmbeddedResource(name, data)];
+        else
+            return [];
+    } else
         return [];
 }
 
@@ -62,8 +96,10 @@ EmbeddedResource[] embedResource(string resourceName)() {
 EmbeddedResource[] embedResources(string[] resourceNames)() {
     static if (resourceNames.length == 0)
         return [];
+    static if (resourceNames.length == 1)
+        return embedResource!(resourceNames[0])();
     else
-        return embedResource!(resourceNames[0])() ~ embedResources!(resourceNames[1..$])();
+        return embedResources!(resourceNames[0 .. $/2])() ~ embedResources!(resourceNames[$/2 .. $])();
 }
 
 /// embed all resources from list
@@ -75,6 +111,24 @@ EmbeddedResource[] embedResourcesFromList(string resourceList)() {
 __gshared static this() {
     version (EmbedStandardResources) {
         embeddedResourceList.addResources(embedResourcesFromList!("standard_resources.list")());
+    }
+}
+
+/// load resource bytes from embedded resource or file
+immutable(ubyte[]) loadResourceBytes(string filename) {
+    if (filename.startsWith(EMBEDDED_RESOURCE_PREFIX)) {
+        EmbeddedResource * embedded = embeddedResourceList.find(filename[EMBEDDED_RESOURCE_PREFIX.length .. $]);
+        if (embedded)
+            return embedded.data;
+        return null;
+    } else {
+        try {
+            immutable ubyte[] data = cast(immutable ubyte[])std.file.read(filename);
+            return data;
+        } catch (Exception e) {
+            Log.e("exception while loading file ", filename);
+            return null;
+        }
     }
 }
 
@@ -538,7 +592,11 @@ class StateDrawable : Drawable {
         import std.string;
 
         try {
-            string s = cast(string)std.file.read(filename);
+            string s = cast(string)loadResourceBytes(filename);
+            if (!s) {
+                Log.e("Cannot read drawable resource from file ", filename);
+                return false;
+            }
 
             // Check for well-formedness
             //check(s);
@@ -549,9 +607,6 @@ class StateDrawable : Drawable {
             return load(doc);
         } catch (CheckException e) {
             Log.e("Invalid XML file ", filename);
-            return false;
-        } catch (Throwable e) {
-            Log.e("Cannot read drawable resource from file ", filename);
             return false;
         }
     }
@@ -602,10 +657,13 @@ class ImageCache {
                 _used = true;
                 return _drawbuf;
             }
-            _drawbuf = loadImage(_filename);
-            if (_filename.endsWith(".9.png"))
-                _drawbuf.detectNinePatch();
-            _used = true;
+            immutable ubyte[] data = loadResourceBytes(_filename);
+            if (data) {
+                _drawbuf = loadImage(data, _filename);
+                if (_filename.endsWith(".9.png"))
+                    _drawbuf.detectNinePatch();
+                _used = true;
+            }
             if (_drawbuf.isNull)
                 _error = true;
             return _drawbuf;
@@ -917,6 +975,12 @@ class DrawableCache {
             return id; // it's not a file name, just a color #AARRGGBB
         if (id in _idToFileMap)
             return _idToFileMap[id];
+        EmbeddedResource * embedded = embeddedResourceList.findAutoExtension(id);
+        if (embedded) {
+            string fn = EMBEDDED_RESOURCE_PREFIX ~ embedded.name;
+            _idToFileMap[id] = fn;
+            return fn;
+        }
         foreach(string path; _resourcePaths) {
             string fn;
             fn = checkFileName(path, id, ".xml");
