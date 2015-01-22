@@ -28,6 +28,10 @@
 				"3rdparty", "src"
 			],
 
+			"importPaths": [
+				"3rdparty", "src"
+			],
+
 			"dependencies": {
 				"derelict-gl3": ">=1.0.12",
 				"dlib": ">=0.4.1",
@@ -42,9 +46,9 @@
     ],
 
     "dependencies": {
-        "dlangui:dlanguilib": "~master",
-        "dlangui:example1": "~master",
-        "dlangui:helloworld": "~master",
-        "dlangui:tetris": "~master"
+        "dlangui:dlanguilib": "*",
+        "dlangui:example1": "*",
+        "dlangui:helloworld": "*",
+        "dlangui:tetris": "*"
     }
 }
