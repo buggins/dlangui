@@ -22,16 +22,7 @@
 
 			"versions-posix": ["USE_SDL", "USE_OPENGL"],
 			"versions-windows": ["Unicode"],
-
-			"sourceFiles": [
-				"project.ddoc"
-			],
-
-			"excludedSourceFiles": [
-		        	"../../src/api.d",
-			        "../../src/index.d",
-			        "../../src/screenshots.d"
-			],
+			"versions": ["EmbedStandardResources"],
 
 			"sourcePaths": [
 				"3rdparty"
@@ -45,16 +36,6 @@
 				"derelict-ft": ">=1.0.0",
 				"derelict-sdl2": ">=1.9.1"
 			},
-			"configurations": [
-				{
-					"name": "normal",
-					"versions": ["EmbedStandardResources"]
-				},
-				{
-					"name": "no-standard-resources",
-					"copyFiles": ["res"]
-				}
-			],
                         "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.", "--ex", "src.dlangui"]
         },
         "./examples/helloworld/",
@@ -63,9 +44,9 @@
     ],
 
     "dependencies": {
-        "dlangui:dlanguilib": "*",
-        "dlangui:example1": "*",
-        "dlangui:helloworld": "*",
-        "dlangui:tetris": "*"
+        "dlangui:dlanguilib": "~master",
+        "dlangui:example1": "~master",
+        "dlangui:helloworld": "~master",
+        "dlangui:tetris": "~master"
     }
 }

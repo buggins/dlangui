@@ -6,6 +6,7 @@
     "authors": ["Vadim Lopatin"],
 
     "targetPath": "bin",
+    "targetName": "helloworld",
     "targetType": "executable",
 
     "dependencies": {

@@ -192,7 +192,7 @@
  </Config>
  <Folder name="tetris">
   <File path="src\gui.d" />
-  <File path="src\main.d" />
+  <File path="src\tetris.d" />
   <File path="src\model.d" />
  </Folder>
 </DProject>

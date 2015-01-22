@@ -7,6 +7,7 @@
 
     "targetPath": "bin",
     "targetType": "executable",
+    "targetName": "example1",
 
     "copyFiles": ["res"],
 

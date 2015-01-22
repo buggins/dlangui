@@ -52,6 +52,6 @@
     <Target>Executable</Target>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="src/main.d" />
+    <Compile Include="src/helloworld.d" />
   </ItemGroup>
 </Project>
