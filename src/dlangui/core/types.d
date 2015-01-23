@@ -173,6 +173,30 @@ struct Rect {
     }
 }
 
+/// screen dots per inch
+private __gshared int PRIVATE_SCREEN_DPI = 96;
+
+@property int SCREEN_DPI() {
+    return PRIVATE_SCREEN_DPI;
+}
+
+@property void SCREEN_DPI(int dpi) {
+    PRIVATE_SCREEN_DPI = dpi;
+}
+
+/// one point is 1/72 of inch
+immutable int POINTS_PER_INCH = 72;
+
+/// convert points (1/72in units) to pixels according to SCREEN_DPI
+int pointsToPixels(int pt) {
+    return pt * SCREEN_DPI / POINTS_PER_INCH;
+}
+
+/// convert points (1/72in units) to pixels according to SCREEN_DPI
+int pixelsToPoints(int px) {
+    return px * POINTS_PER_INCH / SCREEN_DPI;
+}
+
 /** 
     Character glyph.
     

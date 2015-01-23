@@ -680,6 +680,10 @@ class Win32Platform : Platform {
         {
             return false;
         }
+        HDC dc = CreateCompatibleDC(NULL);
+        SCREEN_DPI = GetDeviceCaps(dc, LOGPIXELSY);
+        DeleteObject(dc);
+
         return true;
     }
     override int enterMessageLoop() {
@@ -912,7 +916,6 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
 
     // use Win32 font manager
     if (FontManager.instance is null) {
-	    //Win32FontManager fontMan = new Win32FontManager();
 	    FontManager.instance = new Win32FontManager();
     }
 

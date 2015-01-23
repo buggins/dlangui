@@ -53,17 +53,18 @@ private struct FontDef {
 * Font implementation based on Win32 API system fonts.
 */
 class Win32Font : Font {
-    HFONT _hfont;
-    int _size;
-    int _height;
-    int _weight;
-    int _baseline;
-    bool _italic;
-    string _face;
-    FontFamily _family;
-    LOGFONTA _logfont;
-    Win32ColorDrawBuf _drawbuf;
-	GlyphCache _glyphCache;
+    protected HFONT _hfont;
+    protected int _dpi;
+    protected int _size;
+    protected int _height;
+    protected int _weight;
+    protected int _baseline;
+    protected bool _italic;
+    protected string _face;
+    protected FontFamily _family;
+    protected LOGFONTA _logfont;
+    protected Win32ColorDrawBuf _drawbuf;
+	protected GlyphCache _glyphCache;
 
 	/// need to call create() after construction to initialize font
     this() {
@@ -250,7 +251,6 @@ class Win32Font : Font {
 		return _glyphCache.put(ch, g);
 	}
 
-
     /// init from font definition
 	bool create(FontDef * def, int size, int weight, bool italic) {
         if (!isNull())
@@ -259,7 +259,7 @@ class Win32Font : Font {
         lf.lfCharSet = ANSI_CHARSET; //DEFAULT_CHARSET;
 		lf.lfFaceName[0..def.face.length] = def.face;
 		lf.lfFaceName[def.face.length] = 0;
-		lf.lfHeight = -size; //size; //-size;
+		lf.lfHeight = size; //pixelsToPoints(size);
 		lf.lfItalic = italic;
         lf.lfWeight = weight;
 		lf.lfOutPrecision = OUT_TT_ONLY_PRECIS; //OUT_OUTLINE_PRECIS; //OUT_TT_ONLY_PRECIS;
@@ -277,6 +277,7 @@ class Win32Font : Font {
 
 		_size = size;
         _height = tm.tmHeight;
+        Log.d("Win32Font.create: height=", _height, " for size=", _size, "  points=", lf.lfHeight, " dpi=", _dpi);
         _baseline = _height - tm.tmDescent;
         _weight = weight;
         _italic = italic;
@@ -314,7 +315,7 @@ class Win32FontManager : FontManager {
 	private FontList _activeFonts;
 	private FontDef[] _fontFaces;
 	private FontDef*[string] _faceByName;
-
+    
 	/// initialize in constructor
     this() {
         debug Log.i("Creating Win32FontManager");
