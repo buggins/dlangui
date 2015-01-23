@@ -188,6 +188,14 @@ extern (C) int UIAppMain(string[] args) {
     // embed resources listed in views/resources.list into executable
     embeddedResourceList.addResources(embedResourcesFromList!("resources.list")());
 
+	version (USE_OPENGL) {
+		// you can turn on subpixel font rendering (ClearType) here
+		FontManager.subpixelRenderingMode = SubpixelRenderingMode.None; //
+	} else {
+		// you can turn on subpixel font rendering (ClearType) here
+		FontManager.subpixelRenderingMode = SubpixelRenderingMode.BGR; //SubpixelRenderingMode.None; //
+	}
+
     // select translation file - for english language
 	Platform.instance.uiLanguage = "en";
 	// load theme from file "theme_default.xml"

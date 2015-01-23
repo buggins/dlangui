@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<theme id="theme_default" fontSize="15" >
+<theme id="theme_default" fontSize="15" 
+        fontFace="Verdana,Arial,DejaVu Sans"
+        fontFamily="SansSerif"
+	>
     <style id="BUTTON"
         backgroundImageId="btn_background"
         align="Center"
@@ -313,9 +316,7 @@
         minHeight="16"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
-        fontFace="Arial"
-        fontFamily="SansSerif"
-        fontSize="16">
+        fontSize="17">
     </style>
     <style id="TREE_ITEM_EXPAND_ICON"
         margins="2,0,2,0"
@@ -338,7 +339,7 @@
         layoutHeight="WRAP_CONTENT"
         align="Left|VCenter"
         textFlags="Parent"
-	fontSize="16"
+	fontSize="17"
     />
     <style id="RESIZER_VERTICAL"
         layoutWidth="FILL_PARENT"

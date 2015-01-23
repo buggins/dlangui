@@ -271,11 +271,6 @@ class Win32Font : Font {
 
         bool needSubpixelRendering = FontManager.subpixelRenderingMode && antialiased;
 		MAT2 scaleMatrix = { {0,1}, {0,0}, {0,0}, {0,1} };
-        int xdivider = 1;
-        if (needSubpixelRendering) {
-            scaleMatrix.eM11.value = 3; // request glyph 3 times wider for subpixel antialiasing
-            xdivider = 3;
-        }
 
 		uint res;
 		res = GetGlyphOutlineW( _drawbuf.dc, cast(wchar)ch,
@@ -286,6 +281,22 @@ class Win32Font : Font {
                                &scaleMatrix );
 		if (res == GDI_ERROR)
 			return null;
+
+		Glyph * g = new Glyph;
+        version (USE_OPENGL) {
+            g.id = nextGlyphId();
+        }
+		//g.blackBoxX = cast(ushort)metrics.gmBlackBoxX;
+		//g.blackBoxY = cast(ubyte)metrics.gmBlackBoxY;
+		//g.originX = cast(byte)metrics.gmptGlyphOrigin.x;
+		//g.originY = cast(byte)metrics.gmptGlyphOrigin.y;
+		//g.width = cast(ubyte)metrics.gmCellIncX;
+		g.subpixelMode = SubpixelRenderingMode.None;
+
+        if (needSubpixelRendering) {
+            scaleMatrix.eM11.value = 3; // request glyph 3 times wider for subpixel antialiasing
+        }
+
         int gs = 0;
         // calculate bitmap size
         if (antialiased) {
@@ -307,17 +318,24 @@ class Win32Font : Font {
 		if (gs >= 0x10000 || gs < 0)
 			return null;
 
-		Glyph * g = new Glyph;
-        version (USE_OPENGL) {
-            g.id = nextGlyphId();
-        }
-		g.blackBoxX = cast(ushort)metrics.gmBlackBoxX;
-		g.blackBoxY = cast(ubyte)metrics.gmBlackBoxY;
-		g.originX = cast(byte)(needSubpixelRendering ? ((metrics.gmptGlyphOrigin.x + 0) / 3) : (metrics.gmptGlyphOrigin.x));
-		g.originY = cast(byte)metrics.gmptGlyphOrigin.y;
-		g.width = cast(ubyte)(needSubpixelRendering ? (metrics.gmCellIncX  + 0) / 3 : metrics.gmCellIncX);
-        g.subpixelMode = needSubpixelRendering ? FontManager.subpixelRenderingMode : SubpixelRenderingMode.None;
-		//g.glyphIndex = cast(ushort)glyphIndex;
+		if (needSubpixelRendering) {
+			//Log.d("ch=", ch);
+			//Log.d("NORMAL:  blackBoxX=", g.blackBoxX, " \tblackBoxY=", g.blackBoxY, " \torigin.x=", g.originX, " \torigin.y=", g.originY, "\tgmCellIncX=", g.width);
+			g.blackBoxX = cast(ushort)metrics.gmBlackBoxX;
+			g.blackBoxY = cast(ubyte)metrics.gmBlackBoxY;
+			g.originX = cast(byte)((metrics.gmptGlyphOrigin.x + 0) / 3);
+			g.originY = cast(byte)metrics.gmptGlyphOrigin.y;
+			g.width = cast(ubyte)((metrics.gmCellIncX  + 2) / 3);
+			g.subpixelMode = FontManager.subpixelRenderingMode;
+			//Log.d(" *3   :  blackBoxX=", metrics.gmBlackBoxX, " \tblackBoxY=", metrics.gmBlackBoxY, " \torigin.x=", metrics.gmptGlyphOrigin.x, " \torigin.y=", metrics.gmptGlyphOrigin.y, " \tgmCellIncX=", metrics.gmCellIncX);
+			//Log.d("  /3  :  blackBoxX=", g.blackBoxX, " \tblackBoxY=", g.blackBoxY, " \torigin.x=", g.originX, " \torigin.y=", g.originY, "\tgmCellIncX=", g.width);
+		} else {
+			g.blackBoxX = cast(ushort)metrics.gmBlackBoxX;
+			g.blackBoxY = cast(ubyte)metrics.gmBlackBoxY;
+			g.originX = cast(byte)metrics.gmptGlyphOrigin.x;
+			g.originY = cast(byte)metrics.gmptGlyphOrigin.y;
+			g.width = cast(ubyte)metrics.gmCellIncX;
+		}
 
 		if (g.blackBoxX > 0 && g.blackBoxY > 0)	{
 			g.glyph = new ubyte[g.blackBoxX * g.blackBoxY];
