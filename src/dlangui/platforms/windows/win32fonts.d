@@ -48,6 +48,100 @@ private struct FontDef {
 	}
 }
 
+// support of subpixel rendering
+// from AntigrainGeometry https://rsdn.ru/forum/src/830679.1
+import std.math;
+// Sub-pixel energy distribution lookup table.
+// See description by Steve Gibson: http://grc.com/cttech.htm
+// The class automatically normalizes the coefficients
+// in such a way that primary + 2*secondary + 3*tertiary = 1.0
+// Also, the input values are in range of 0...NumLevels, output ones
+// are 0...255
+//---------------------------------
+struct lcd_distribution_lut(int maxv = 65)
+{
+    this(double prim, double second, double tert)
+    {
+        double norm = (255.0 / (maxv - 1)) / (prim + second*2 + tert*2);
+        prim   *= norm;
+        second *= norm;
+        tert   *= norm;
+        for(int i = 0; i < maxv; i++)
+        {
+            m_primary[i]   = cast(ubyte)floor(prim   * i);
+            m_secondary[i] = cast(ubyte)floor(second * i);
+            m_tertiary[i]  = cast(ubyte)floor(tert   * i);
+        }
+    }
+
+    uint primary(int v)   const {
+        if (v >= maxv) {
+            Log.e("pixel value returned from font engine > 64: ", v);
+            v = maxv - 1;
+        }
+        return m_primary[v];   
+    }
+    uint secondary(int v) const { 
+        if (v >= maxv) {
+            Log.e("pixel value returned from font engine > 64: ", v);
+            v = maxv - 1;
+        }
+        return m_secondary[v]; 
+    }
+    uint tertiary(int v)  const { 
+        if (v >= maxv) {
+            Log.e("pixel value returned from font engine > 64: ", v);
+            v = maxv - 1;
+        }
+        return m_tertiary[v];  
+    }
+
+private:
+    ubyte m_primary[maxv];
+    ubyte m_secondary[maxv];
+    ubyte m_tertiary[maxv];
+};
+
+private __gshared lcd_distribution_lut!65 lut;
+__gshared static this() {
+    lut = lcd_distribution_lut!65(0.5, 0.25, 0.125);
+}
+
+// This function prepares the alpha-channel information 
+// for the glyph averaging the values in accordance with 
+// the method suggested by Steve Gibson. The function
+// extends the width by 4 extra pixels, 2 at the beginning 
+// and 2 at the end. Also, it doesn't align the new width 
+// to 4 bytes, that is, the output gm.gmBlackBoxX is the 
+// actual width of the array.
+// returns dst glyph width
+//---------------------------------
+ushort prepare_lcd_glyph(ubyte * gbuf1, 
+                       ref GLYPHMETRICS gm, 
+                       ref ubyte[] gbuf2)
+{
+    uint src_stride = (gm.gmBlackBoxX + 3) / 4 * 4;
+    uint dst_width  = src_stride + 4;
+    gbuf2 = new ubyte[dst_width * gm.gmBlackBoxY];
+
+    for(uint y = 0; y < gm.gmBlackBoxY; ++y)
+    {
+        ubyte * src_ptr = gbuf1 + src_stride * y;
+        ubyte * dst_ptr = gbuf2.ptr + dst_width * y;
+        uint x;
+        for(x = 0; x < gm.gmBlackBoxX; ++x)
+        {
+            uint v = *src_ptr++;
+            dst_ptr[0] += lut.tertiary(v);
+            dst_ptr[1] += lut.secondary(v);
+            dst_ptr[2] += lut.primary(v);
+            dst_ptr[3] += lut.secondary(v);
+            dst_ptr[4] += lut.tertiary(v);
+            ++dst_ptr;
+        }
+    }
+    return cast(ushort) dst_width;
+}
 
 /**
 * Font implementation based on Win32 API system fonts.
@@ -133,14 +227,21 @@ class Win32Font : Font {
 			return null;
 		GLYPHMETRICS metrics;
 
-		MAT2 identity = { {0,1}, {0,0}, {0,0}, {0,1} };
+        bool needSubpixelRendering = FontManager.subpixelRenderingMode && antialiased;
+		MAT2 scaleMatrix = { {0,1}, {0,0}, {0,0}, {0,1} };
+        int xdivider = 1;
+        if (needSubpixelRendering) {
+            scaleMatrix.eM11.value = 3; // request glyph 3 times wider for subpixel antialiasing
+            xdivider = 3;
+        }
+
 		uint res;
 		res = GetGlyphOutlineW( _drawbuf.dc, cast(wchar)ch,
                                 GGO_METRICS,
                                &metrics,
                                0,
                                null,
-                               &identity );
+                               &scaleMatrix );
 		if (res == GDI_ERROR)
 			return null;
         int gs = 0;
@@ -151,14 +252,14 @@ class Win32Font : Font {
                                       &metrics,
                                       0,
                                       NULL,
-                                      &identity );
+                                      &scaleMatrix );
         } else {
             gs = GetGlyphOutlineW( _drawbuf.dc, cast(wchar)ch,
                                    GGO_BITMAP,
                                   &metrics,
                                   0,
                                   NULL,
-                                  &identity );
+                                  &scaleMatrix );
         }
 
 		if (gs >= 0x10000 || gs < 0)
@@ -168,15 +269,15 @@ class Win32Font : Font {
         version (USE_OPENGL) {
             g.id = nextGlyphId();
         }
-		g.blackBoxX = cast(ubyte)metrics.gmBlackBoxX;
+		g.blackBoxX = cast(ushort)metrics.gmBlackBoxX;
 		g.blackBoxY = cast(ubyte)metrics.gmBlackBoxY;
-		g.originX = cast(byte)metrics.gmptGlyphOrigin.x;
+		g.originX = cast(byte)(needSubpixelRendering ? metrics.gmptGlyphOrigin.x / 3: metrics.gmptGlyphOrigin.x);
 		g.originY = cast(byte)metrics.gmptGlyphOrigin.y;
-		g.width = cast(ubyte)metrics.gmCellIncX;
+		g.width = cast(ubyte)(needSubpixelRendering ? metrics.gmCellIncX / 3 : metrics.gmCellIncX);
+        g.subpixelMode = needSubpixelRendering ? FontManager.subpixelRenderingMode : SubpixelRenderingMode.None;
 		//g.glyphIndex = cast(ushort)glyphIndex;
 
-		if (g.blackBoxX>0 && g.blackBoxY>0)
-		{
+		if (g.blackBoxX > 0 && g.blackBoxY > 0)	{
 			g.glyph = new ubyte[g.blackBoxX * g.blackBoxY];
 			if (gs>0)
 			{
@@ -188,27 +289,36 @@ class Win32Font : Font {
 									       &metrics,
 									       gs,
 									       glyph.ptr,
-									       &identity );
+									       &scaleMatrix);
 				    if (res==GDI_ERROR)
 				    {
 					    return null;
 				    }
-				    int glyph_row_size = (g.blackBoxX + 3) / 4 * 4;
-				    ubyte * src = glyph.ptr;
-				    ubyte * dst = g.glyph.ptr;
-				    for (int y = 0; y < g.blackBoxY; y++)
-				    {
-					    for (int x = 0; x < g.blackBoxX; x++)
-					    {
-						    ubyte b = src[x];
-						    if (b>=64)
-							    b = 63;
-						    b = (b<<2) & 0xFC;
-						    dst[x] = b;
-					    }
-					    src += glyph_row_size;
-					    dst += g.blackBoxX;
-				    }
+                    if (needSubpixelRendering) {
+                        ubyte[] newglyph;
+                        g.blackBoxX = prepare_lcd_glyph(glyph.ptr, 
+                                                 metrics, 
+                                                 newglyph);
+                        g.glyph = newglyph;
+                        //g.width = g.width / 3;
+                    } else {
+				        int glyph_row_size = (g.blackBoxX + 3) / 4 * 4;
+				        ubyte * src = glyph.ptr;
+				        ubyte * dst = g.glyph.ptr;
+				        for (int y = 0; y < g.blackBoxY; y++)
+				        {
+					        for (int x = 0; x < g.blackBoxX; x++)
+					        {
+						        ubyte b = src[x];
+						        if (b>=64)
+							        b = 63;
+						        b = (b<<2) & 0xFC;
+						        dst[x] = b;
+					        }
+					        src += glyph_row_size;
+					        dst += g.blackBoxX;
+				        }
+                    }
                 } else {
                     // bitmap glyph
 				    ubyte[] glyph = new ubyte[gs];
@@ -217,7 +327,7 @@ class Win32Font : Font {
 									       &metrics,
 									       gs,
 									       glyph.ptr,
-									       &identity );
+									       &scaleMatrix );
 				    if (res==GDI_ERROR)
 				    {
 					    return null;

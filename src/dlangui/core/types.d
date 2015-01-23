@@ -197,6 +197,14 @@ int pixelsToPoints(int px) {
     return px * POINTS_PER_INCH / SCREEN_DPI;
 }
 
+/// Subpixel rendering mode for fonts (aka ClearType)
+enum SubpixelRenderingMode : ubyte {
+    /// no sub
+    None,
+    /// subpixel rendering on, subpixel order: B,G,R
+    BGR,
+}
+
 /** 
     Character glyph.
     
@@ -205,25 +213,27 @@ int pixelsToPoints(int px) {
 align(1)
 struct Glyph
 {
+    /// 0: width of glyph black box
+    ushort   blackBoxX;
+    /// 2: height of glyph black box
+    ubyte   blackBoxY;
+    /// 3: X origin for glyph
+    byte    originX;
+    /// 4: Y origin for glyph
+    byte    originY;
+
+    /// 5: full width of glyph
+    ubyte   width;
+    /// 6: subpixel rendering mode - if !=SubpixelRenderingMode.None, glyph data contains 3 bytes per pixel instead of 1
+    SubpixelRenderingMode subpixelMode;
+    /// 7: usage flag, to handle cleanup of unused glyphs
+	ubyte   lastUsage;
     version (USE_OPENGL) {
-        ///< 0: unique id of glyph (for drawing in hardware accelerated scenes)
+        /// 8: unique id of glyph (for drawing in hardware accelerated scenes)
         uint    id;
     }
 
-    ///< 4: width of glyph black box
-    ubyte   blackBoxX;
-    ///< 5: height of glyph black box
-    ubyte   blackBoxY;
-    ///< 6: X origin for glyph
-    byte    originX;
-    ///< 7: Y origin for glyph
-    byte    originY;
-
-    ///< 8: full width of glyph
-    ubyte   width;
-    ///< 9: usage flag, to handle cleanup of unused glyphs
-	ubyte   lastUsage;
-    ///< 12: glyph data, arbitrary size
+    ///< 12: glyph data, arbitrary size (blackBoxX * blackBoxY)
     ubyte[] glyph;       
 }
 

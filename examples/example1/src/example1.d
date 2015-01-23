@@ -194,10 +194,12 @@ extern (C) int UIAppMain(string[] args) {
 	Platform.instance.uiTheme = "theme_default";
 
     // you can override default hinting mode here (Normal, AutoHint, Disabled)
-    FontManager.instance.hintingMode = HintingMode.Normal;
+    FontManager.hintingMode = HintingMode.Normal;
     // you can override antialiasing setting here (0 means antialiasing always on, some big value = always off)
     // fonts with size less than specified value will not be antialiased
-    FontManager.instance.minAnitialiasedFontSize = 0; // 0 means always antialiased
+    FontManager.minAnitialiasedFontSize = 0; // 0 means always antialiased
+    // you can turn on subpixel font rendering (ClearType) here
+    FontManager.subpixelRenderingMode = SubpixelRenderingMode.None;// SubpixelRenderingMode.BGR;
 
     // create window
     Window window = Platform.instance.createWindow("My Window", null);

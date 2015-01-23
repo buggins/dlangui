@@ -527,6 +527,7 @@ class FontManager {
     protected static __gshared FontManager _instance;
     protected static __gshared int _minAnitialiasedFontSize = DEF_MIN_ANTIALIASED_FONT_SIZE;
     protected static __gshared HintingMode _hintingMode = HintingMode.Normal;
+    protected static __gshared SubpixelRenderingMode _subpixelRenderingMode = SubpixelRenderingMode.None;
 
     /// sets new font manager singleton instance
     static @property void instance(FontManager manager) {
@@ -552,23 +553,33 @@ class FontManager {
 	abstract void cleanup();
 
     /// get min font size for antialiased fonts (0 means antialiasing always on, some big value = always off)
-    @property int minAnitialiasedFontSize() {
+    static @property int minAnitialiasedFontSize() {
         return _minAnitialiasedFontSize;
     }
 
     /// set new min font size for antialiased fonts - fonts with size >= specified value will be antialiased (0 means antialiasing always on, some big value = always off)
-    @property void minAnitialiasedFontSize(int size) {
+    static @property void minAnitialiasedFontSize(int size) {
         _minAnitialiasedFontSize = size;
     }
 
     /// get current hinting mode (Normal, AutoHint, Disabled)
-    @property HintingMode hintingMode() {
+    static @property HintingMode hintingMode() {
         return _hintingMode;
     }
 
     /// set hinting mode (Normal, AutoHint, Disabled)
-    @property void hintingMode(HintingMode mode) {
+    static @property void hintingMode(HintingMode mode) {
         _hintingMode = mode;
+    }
+
+    /// get current subpixel rendering mode for fonts (aka ClearType)
+    static @property SubpixelRenderingMode subpixelRenderingMode() {
+        return _subpixelRenderingMode;
+    }
+
+    /// set subpixel rendering mode for fonts (aka ClearType)
+    static @property void subpixelRenderingMode(SubpixelRenderingMode mode) {
+        _subpixelRenderingMode = mode;
     }
 
 	~this() {
