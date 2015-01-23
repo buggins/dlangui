@@ -266,6 +266,7 @@ private class FreeTypeFontFile {
         glyph.originX =   cast(byte)(_slot.metrics.horiBearingX >> 6);
         glyph.originY =   cast(byte)(_slot.metrics.horiBearingY >> 6);
         glyph.width =     cast(ubyte)(myabs(cast(int)(_slot.metrics.horiAdvance)) >> 6);
+        glyph.subpixelMode = SubpixelRenderingMode.None;
 		//glyph.glyphIndex = cast(ushort)code;
         if (withImage) {
             FT_Bitmap*  bitmap = &_slot.bitmap;

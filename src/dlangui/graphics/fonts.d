@@ -243,7 +243,7 @@ class Font : RefCountedObject {
 				continue;
             }
             int w = x + glyph.width; // using advance
-            int w2 = x + glyph.originX + glyph.blackBoxX; // using black box
+            int w2 = x + glyph.originX + glyph.correctedBlackBoxX; // using black box
             if (w < w2) // choose bigger value
                 w = w2;
             pwidths[i] = w;
@@ -334,7 +334,7 @@ class Font : RefCountedObject {
 				continue;
 			if ( glyph.blackBoxX && glyph.blackBoxY ) {
 				int gx = x + xx + glyph.originX;
-				if (gx + glyph.blackBoxX < clip.left)
+				if (gx + glyph.correctedBlackBoxX < clip.left)
 					continue;
 				buf.drawGlyph( gx,
                                y + _baseline - glyph.originY,
@@ -405,7 +405,7 @@ class Font : RefCountedObject {
 				continue;
 			if ( glyph.blackBoxX && glyph.blackBoxY ) {
 				int gx = x + xx + glyph.originX;
-				if (gx + glyph.blackBoxX < clip.left)
+				if (gx + glyph.correctedBlackBoxX < clip.left)
 					continue;
 				buf.drawGlyph( gx,
                                y + _baseline - glyph.originY,

@@ -315,7 +315,7 @@
         layoutHeight="WRAP_CONTENT"
         fontFace="Arial"
         fontFamily="SansSerif"
-        fontSize="12">
+        fontSize="16">
     </style>
     <style id="TREE_ITEM_EXPAND_ICON"
         margins="2,0,2,0"
@@ -338,7 +338,7 @@
         layoutHeight="WRAP_CONTENT"
         align="Left|VCenter"
         textFlags="Parent"
-	fontSize="12"
+	fontSize="16"
     />
     <style id="RESIZER_VERTICAL"
         layoutWidth="FILL_PARENT"

@@ -18,6 +18,8 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.graphics.colors;
 
+import dlangui.core.types;
+
 private import std.string : strip;
 
 /// special color constant to identify value as not a color (to use default/parent value instead)
@@ -49,6 +51,37 @@ uint blendARGB(uint dst, uint src, uint alpha) {
     uint g = ((srcg * ialpha + dstg * alpha) >> 8) & 0xFF;
     uint b = ((srcb * ialpha + dstb * alpha) >> 8) & 0xFF;
     return (r << 16) | (g << 8) | b;
+}
+
+//immutable int COMPONENT_OFFSET_BGR[3] = [2, 1, 0];
+immutable int COMPONENT_OFFSET_BGR[3] = [2, 1, 0];
+//immutable int COMPONENT_OFFSET_BGR[3] = [1, 2, 0];
+immutable int COMPONENT_OFFSET_RGB[3] = [0, 1, 2];
+immutable int COMPONENT_OFFSET_ALPHA = 3;
+int subpixelComponentIndex(int x0, SubpixelRenderingMode mode) {
+    switch (mode) {
+        case SubpixelRenderingMode.RGB:
+            return COMPONENT_OFFSET_BGR[x0];
+        case SubpixelRenderingMode.BGR:
+        default:
+            return COMPONENT_OFFSET_BGR[x0];
+    }
+}
+
+/// blend subpixel using alpha
+void blendSubpixel(ubyte * dst, ubyte * src, uint alpha, int x0, SubpixelRenderingMode mode) {
+    uint dstalpha = dst[COMPONENT_OFFSET_ALPHA];
+    int offset = subpixelComponentIndex(x0, mode);
+    uint srcr = src[offset];
+    dst[COMPONENT_OFFSET_ALPHA] = 0;
+    if (dstalpha > 0x80) {
+        dst[offset] = cast(ubyte)srcr;
+        return;
+    }
+    uint dstr = dst[offset];
+    uint ialpha = 256 - alpha;
+    uint r = ((srcr * ialpha + dstr * alpha) >> 8) & 0xFF;
+    dst[offset] = cast(ubyte)r;
 }
 
 /// blend two alpha values 0..255 (255 is fully transparent, 0 is opaque)

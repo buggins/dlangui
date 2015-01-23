@@ -92,8 +92,8 @@ class GLDrawBuf : DrawBuf {
     /// draw 8bit alpha image - usually font glyph using specified color (clipping is applied)
 	override void drawGlyph(int x, int y, Glyph * glyph, uint color) {
         assert(_scene !is null);
-		Rect dstrect = Rect(x,y, x + glyph.blackBoxX, y + glyph.blackBoxY);
-		Rect srcrect = Rect(0, 0, glyph.blackBoxX, glyph.blackBoxY);
+		Rect dstrect = Rect(x,y, x + glyph.correctedBlackBoxX, y + glyph.blackBoxY);
+		Rect srcrect = Rect(0, 0, glyph.correctedBlackBoxX, glyph.blackBoxY);
 		//Log.v("GLDrawBuf.drawGlyph dst=", dstrect, " src=", srcrect, " color=", color);
         color = applyAlpha(color);
         if (!isFullyTransparentColor(color) && applyClipping(dstrect, srcrect)) {
@@ -659,7 +659,7 @@ private class GLGlyphCache {
             return _itemCount;
         }
         GLGlyphCacheItem addItem(Glyph * glyph) {
-            GLGlyphCacheItem cacheItem = reserveSpace(glyph.id, glyph.blackBoxX, glyph.blackBoxY);
+            GLGlyphCacheItem cacheItem = reserveSpace(glyph.id, glyph.correctedBlackBoxX, glyph.blackBoxY);
             if (cacheItem is null)
                 return null;
             _drawbuf.drawGlyph(cacheItem._rc.left, cacheItem._rc.top, glyph, 0xFFFFFF);

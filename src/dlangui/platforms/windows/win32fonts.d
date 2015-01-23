@@ -107,6 +107,22 @@ __gshared static this() {
     lut = lcd_distribution_lut!65(0.5, 0.25, 0.125);
 }
 
+private int myabs(int n) {
+    return n < 0 ? -n : n;
+}
+private int colorStat(ubyte * p) {
+    int avg = (cast(int)p[0] + cast(int)p[1] + cast(int)p[2]) / 3;
+    return myabs(avg - cast(int)p[0]) + myabs(avg - cast(int)p[1]) + myabs(avg - cast(int)p[2]);
+}
+
+private int minIndex(int n0, int n1, int n2) {
+    if (n0 <= n1 && n0 <= n2)
+        return 0;
+    if (n1 <= n0 && n1 <= n2)
+        return 1;
+    return n2;
+}
+
 // This function prepares the alpha-channel information 
 // for the glyph averaging the values in accordance with 
 // the method suggested by Steve Gibson. The function
@@ -118,8 +134,10 @@ __gshared static this() {
 //---------------------------------
 ushort prepare_lcd_glyph(ubyte * gbuf1, 
                        ref GLYPHMETRICS gm, 
-                       ref ubyte[] gbuf2)
+                       ref ubyte[] gbuf2,
+                       ref int shiftedBy)
 {
+    shiftedBy = 0;
     uint src_stride = (gm.gmBlackBoxX + 3) / 4 * 4;
     uint dst_width  = src_stride + 4;
     gbuf2 = new ubyte[dst_width * gm.gmBlackBoxY];
@@ -128,8 +146,7 @@ ushort prepare_lcd_glyph(ubyte * gbuf1,
     {
         ubyte * src_ptr = gbuf1 + src_stride * y;
         ubyte * dst_ptr = gbuf2.ptr + dst_width * y;
-        uint x;
-        for(x = 0; x < gm.gmBlackBoxX; ++x)
+        for(uint x = 0; x < gm.gmBlackBoxX; ++x)
         {
             uint v = *src_ptr++;
             dst_ptr[0] += lut.tertiary(v);
@@ -140,6 +157,31 @@ ushort prepare_lcd_glyph(ubyte * gbuf1,
             ++dst_ptr;
         }
     }
+    /*
+    int dx = (dst_width - 2) / 3;
+    int stats[3] = [0, 0, 0];
+    for (uint y = 0; y < gm.gmBlackBoxY; y++) {
+        for(uint x = 0; x < dx; ++x)
+        {
+            for (uint x0 = 0; x0 < 3; x0++) {
+                stats[x0] += colorStat(gbuf2.ptr + dst_width * y + x0);
+            }
+        }
+    }
+    shiftedBy = 0; //minIndex(stats[0], stats[1], stats[2]);
+    if (shiftedBy) {
+        for (uint y = 0; y < gm.gmBlackBoxY; y++) {
+            ubyte * dst_ptr = gbuf2.ptr + dst_width * y;
+            for(uint x = 0; x < gm.gmBlackBoxX; ++x)
+            {
+                if (x + shiftedBy < gm.gmBlackBoxX)
+                    dst_ptr[x] = dst_ptr[x + shiftedBy];
+                else
+                    dst_ptr[x] = 0;
+            }
+        }
+    }
+    */
     return cast(ushort) dst_width;
 }
 
@@ -271,9 +313,9 @@ class Win32Font : Font {
         }
 		g.blackBoxX = cast(ushort)metrics.gmBlackBoxX;
 		g.blackBoxY = cast(ubyte)metrics.gmBlackBoxY;
-		g.originX = cast(byte)(needSubpixelRendering ? metrics.gmptGlyphOrigin.x / 3: metrics.gmptGlyphOrigin.x);
+		g.originX = cast(byte)(needSubpixelRendering ? ((metrics.gmptGlyphOrigin.x + 0) / 3) : (metrics.gmptGlyphOrigin.x));
 		g.originY = cast(byte)metrics.gmptGlyphOrigin.y;
-		g.width = cast(ubyte)(needSubpixelRendering ? metrics.gmCellIncX / 3 : metrics.gmCellIncX);
+		g.width = cast(ubyte)(needSubpixelRendering ? (metrics.gmCellIncX  + 0) / 3 : metrics.gmCellIncX);
         g.subpixelMode = needSubpixelRendering ? FontManager.subpixelRenderingMode : SubpixelRenderingMode.None;
 		//g.glyphIndex = cast(ushort)glyphIndex;
 
@@ -296,11 +338,14 @@ class Win32Font : Font {
 				    }
                     if (needSubpixelRendering) {
                         ubyte[] newglyph;
-                        g.blackBoxX = prepare_lcd_glyph(glyph.ptr, 
+                        int shiftedBy = 0;
+                        g.blackBoxX = prepare_lcd_glyph(glyph.ptr,
                                                  metrics, 
-                                                 newglyph);
+                                                 newglyph,
+                                                 shiftedBy);
                         g.glyph = newglyph;
-                        //g.width = g.width / 3;
+                        //g.originX = cast(ubyte)((metrics.gmptGlyphOrigin.x + 2 - shiftedBy) / 3);
+                        //g.width = cast(ubyte)((metrics.gmCellIncX  + 2 - shiftedBy) / 3);
                     } else {
 				        int glyph_row_size = (g.blackBoxX + 3) / 4 * 4;
 				        ubyte * src = glyph.ptr;

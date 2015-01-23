@@ -201,8 +201,10 @@ int pixelsToPoints(int px) {
 enum SubpixelRenderingMode : ubyte {
     /// no sub
     None,
-    /// subpixel rendering on, subpixel order: B,G,R
+    /// subpixel rendering on, subpixel order on device: B,G,R
     BGR,
+    /// subpixel rendering on, subpixel order on device: R,G,B
+    RGB,
 }
 
 /** 
@@ -215,6 +217,9 @@ struct Glyph
 {
     /// 0: width of glyph black box
     ushort   blackBoxX;
+
+    @property ushort correctedBlackBoxX() { return subpixelMode ? blackBoxX / 3 : blackBoxX; }
+
     /// 2: height of glyph black box
     ubyte   blackBoxY;
     /// 3: X origin for glyph

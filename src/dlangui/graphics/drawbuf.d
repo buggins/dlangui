@@ -562,6 +562,7 @@ class ColorDrawBufBase : DrawBuf {
         int srcdy = glyph.blackBoxY;
 		bool clipping = true; //!_clipRect.empty();
 		color = applyAlpha(color);
+        bool subpixel = glyph.subpixelMode != SubpixelRenderingMode.None;
 		for (int yy = 0; yy < srcdy; yy++) {
 			int liney = y + yy;
 			if (clipping && (liney < _clipRect.top || liney >= _clipRect.bottom))
@@ -571,21 +572,30 @@ class ColorDrawBufBase : DrawBuf {
 			uint * row = scanLine(liney);
 			ubyte * srcrow = src.ptr + yy * srcdx;
 			for (int xx = 0; xx < srcdx; xx++) {
-				int colx = xx + x;
+				int colx = x + (subpixel ? xx / 3 : xx);
 				if (clipping && (colx < _clipRect.left || colx >= _clipRect.right))
 					continue;
 				if (colx < 0 || colx >= _dx)
 					continue;
-				uint alpha1 = srcrow[xx] ^ 255;
 				uint alpha2 = (color >> 24);
-				uint alpha = ((((alpha1 ^ 255) * (alpha2 ^ 255)) >> 8) ^ 255) & 255;
-				uint pixel = row[colx];
-				if (!alpha)
-					row[colx] = pixel;
-				else if (alpha < 255) {
-					// apply blending
-					row[colx] = blendARGB(pixel, color, alpha);
-				}
+                uint alpha1 = srcrow[xx] ^ 255;
+                uint alpha = ((((alpha1 ^ 255) * (alpha2 ^ 255)) >> 8) ^ 255) & 255;
+                if (subpixel) {
+                    int x0 = xx % 3;
+                    ubyte * dst = cast(ubyte*)(row + colx);
+                    ubyte * pcolor = cast(ubyte*)(&color);
+                    blendSubpixel(dst, pcolor, alpha, x0, glyph.subpixelMode);
+                } else {
+                    uint pixel = row[colx];
+                    if (alpha < 255) {
+				        if (!alpha)
+					        row[colx] = pixel;
+				        else {
+					        // apply blending
+					        row[colx] = blendARGB(pixel, color, alpha);
+				        }
+                    }
+                }
 			}
 		}
 	}
