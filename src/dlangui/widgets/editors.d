@@ -1262,7 +1262,6 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
 			new Action(EditorActions.ToggleReplaceMode, KeyCode.INS, 0),
 			new Action(EditorActions.SelectAll, KeyCode.KEY_A, KeyFlag.Control),
-
 		]);
     }
 
@@ -2084,16 +2083,16 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             uint keyFlags = event.flags & (MouseFlag.Shift | MouseFlag.Control | MouseFlag.Alt);
             if (event.wheelDelta < 0) {
                 if (keyFlags == MouseFlag.Shift)
-                    return dispatchAction(new Action(EditorActions.ScrollRight));
+                    return handleAction(new Action(EditorActions.ScrollRight));
                 if (keyFlags == MouseFlag.Control)
-                    return dispatchAction(new Action(EditorActions.ZoomOut));
-                return dispatchAction(new Action(EditorActions.ScrollLineDown));
+                    return handleAction(new Action(EditorActions.ZoomOut));
+                return handleAction(new Action(EditorActions.ScrollLineDown));
             } else if (event.wheelDelta > 0) {
                 if (keyFlags == MouseFlag.Shift)
-                    return dispatchAction(new Action(EditorActions.ScrollLeft));
+                    return handleAction(new Action(EditorActions.ScrollLeft));
                 if (keyFlags == MouseFlag.Control)
-                    return dispatchAction(new Action(EditorActions.ZoomIn));
-                return dispatchAction(new Action(EditorActions.ScrollLineUp));
+                    return handleAction(new Action(EditorActions.ZoomIn));
+                return handleAction(new Action(EditorActions.ScrollLineUp));
             }
         }
 	    return super.onMouseEvent(event);
@@ -2307,6 +2306,11 @@ class EditBox : EditWidgetBase {
 		_content.contentChangeListeners = this;
         styleId = STYLE_EDIT_BOX;
         text = initialContent;
+		acceleratorMap.add( [
+			// zoom
+			new Action(EditorActions.ZoomIn, KeyCode.ADD, KeyFlag.Control),
+			new Action(EditorActions.ZoomOut, KeyCode.SUB, KeyFlag.Control),
+		]);
     }
 
     protected int _firstVisibleLine;
@@ -2687,9 +2691,10 @@ class EditBox : EditWidgetBase {
                 return true;
             case EditorActions.ZoomIn:
                 {
-                    if (_minFontSize < _maxFontSize && _minFontSize > 10 && _maxFontSize > 10) {
+                    if (_minFontSize < _maxFontSize && _minFontSize >= 9 && _maxFontSize >= 9) {
                         int currentFontSize = fontSize;
-                        int newFontSize = currentFontSize * 110 / 100;
+						int increment = currentFontSize >= 30 ? 2 : 1;
+                        int newFontSize = currentFontSize + increment; //* 110 / 100;
                         if (currentFontSize != newFontSize && newFontSize <= _maxFontSize) {
                             fontSize = cast(ushort)newFontSize;
                             updateFontProps();
@@ -2702,9 +2707,10 @@ class EditBox : EditWidgetBase {
                 return true;
             case EditorActions.ZoomOut:
                 {
-                    if (_minFontSize < _maxFontSize && _minFontSize > 10 && _maxFontSize > 10) {
+                    if (_minFontSize < _maxFontSize && _minFontSize >= 9 && _maxFontSize >= 9) {
                         int currentFontSize = fontSize;
-                        int newFontSize = currentFontSize * 100 / 110;
+						int increment = currentFontSize >= 30 ? 2 : 1;
+                        int newFontSize = currentFontSize - increment; //* 100 / 110;
                         if (currentFontSize != newFontSize && newFontSize >= _minFontSize) {
                             fontSize = cast(ushort)newFontSize;
                             updateFontProps();
