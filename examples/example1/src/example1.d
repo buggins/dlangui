@@ -206,8 +206,13 @@ extern (C) int UIAppMain(string[] args) {
     // you can override antialiasing setting here (0 means antialiasing always on, some big value = always off)
     // fonts with size less than specified value will not be antialiased
     FontManager.minAnitialiasedFontSize = 0; // 0 means always antialiased
-    // you can turn on subpixel font rendering (ClearType) here
-    FontManager.subpixelRenderingMode = SubpixelRenderingMode.None;// SubpixelRenderingMode.BGR;
+	version (USE_OPENGL) {
+		// you can turn on subpixel font rendering (ClearType) here
+		FontManager.subpixelRenderingMode = SubpixelRenderingMode.None; //
+	} else {
+		// you can turn on subpixel font rendering (ClearType) here
+		FontManager.subpixelRenderingMode = SubpixelRenderingMode.BGR; //SubpixelRenderingMode.None; //
+	}
 
     // create window
     Window window = Platform.instance.createWindow("My Window", null);

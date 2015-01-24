@@ -246,8 +246,9 @@ private class FreeTypeFontFile {
         //FONT_GUARD
         int glyph_index = getCharIndex(code, def_char);
         int flags = FT_LOAD_DEFAULT;
-        const bool _drawMonochrome = _size < FontManager.instance.minAnitialiasedFontSize;
-        flags |= (!_drawMonochrome ? FT_LOAD_TARGET_NORMAL : FT_LOAD_TARGET_MONO);
+        const bool _drawMonochrome = _size < FontManager.minAnitialiasedFontSize;
+		SubpixelRenderingMode subpixel = _drawMonochrome ? SubpixelRenderingMode.None : FontManager.subpixelRenderingMode;
+        flags |= (!_drawMonochrome ? (subpixel ? FT_LOAD_TARGET_LCD : FT_LOAD_TARGET_NORMAL) : FT_LOAD_TARGET_MONO);
         if (withImage)
             flags |= FT_LOAD_RENDER;
         if (FontManager.instance.hintingMode == HintingMode.AutoHint)
@@ -261,17 +262,17 @@ private class FreeTypeFontFile {
         if ( error )
             return false;
         glyph.lastUsage = 1;
-        glyph.blackBoxX = cast(ubyte)(_slot.metrics.width >> 6);
+        glyph.blackBoxX = cast(ushort)(_slot.metrics.width >> 6);
         glyph.blackBoxY = cast(ubyte)(_slot.metrics.height >> 6);
         glyph.originX =   cast(byte)(_slot.metrics.horiBearingX >> 6);
         glyph.originY =   cast(byte)(_slot.metrics.horiBearingY >> 6);
         glyph.width =     cast(ubyte)(myabs(cast(int)(_slot.metrics.horiAdvance)) >> 6);
-        glyph.subpixelMode = SubpixelRenderingMode.None;
+        glyph.subpixelMode = subpixel;
 		//glyph.glyphIndex = cast(ushort)code;
         if (withImage) {
             FT_Bitmap*  bitmap = &_slot.bitmap;
-            ubyte w = cast(ubyte)(bitmap.width);
-            ubyte h = cast(ubyte)(bitmap.rows);
+            ushort w = cast(ushort)(bitmap.width);
+			ubyte h = cast(ubyte)(bitmap.rows);
             glyph.blackBoxX = w;
             glyph.blackBoxY = h;
             int sz = w * cast(int)h;
@@ -298,8 +299,11 @@ private class FreeTypeFontFile {
 
                 } else {
                     // antialiased
-                    for (int i = 0; i < sz; i++)
-                        glyph.glyph[i] = bitmap.buffer[i];
+					for (uint y = 0; y < h; y++) {
+						for (uint x = 0; x < w; x++) {
+							glyph.glyph[y * w + x] = bitmap.buffer[y * bitmap.pitch + x];
+						}
+					}
                 }
             }
             version (USE_OPENGL) {
@@ -491,6 +495,7 @@ class FreeTypeFontManager : FontManager {
             Log.e("Cannot init freetype library, error=", error);
             throw new Exception("Cannot init freetype library");
         }
+		FT_Library_SetLcdFilter(_library, FT_LCD_FILTER_DEFAULT);
     }
     ~this() {
 		debug Log.d("FreeTypeFontManager ~this()");
