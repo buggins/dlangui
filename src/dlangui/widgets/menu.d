@@ -189,6 +189,14 @@ class MenuItem {
         }
         return res;
     }
+    /// adds submenu item(s) from one or more actions (will return item for last action)
+    MenuItem add(const Action[] subitemActions...) {
+        MenuItem res = null;
+        foreach(subitemAction; subitemActions) {
+            res = add(new MenuItem(subitemAction));
+        }
+        return res;
+    }
 	/// returns text description for first accelerator of action; null if no accelerators
 	@property dstring acceleratorText() {
 		if (!_action)
@@ -226,6 +234,10 @@ class MenuItem {
     }
     this(Action action) {
         _action = action;
+        _enabled = true;
+    }
+    this(const Action action) {
+        _action = action.clone;
         _enabled = true;
     }
     ~this() {

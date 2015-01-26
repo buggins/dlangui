@@ -62,7 +62,7 @@ class ToolBarHost : HorizontalLayout {
 
 /// image button for toolbar
 class ToolBarImageButton : ImageButton {
-    this(Action a) {
+    this(const Action a) {
         super(a);
         styleId = STYLE_TOOLBAR_BUTTON;
         focusable = false;
@@ -100,7 +100,7 @@ class ToolBar : HorizontalLayout {
         addChild(widget);
     }
     /// adds image button to toolbar
-    void addButtons(Action[] actions...) {
+    void addButtons(const Action[] actions...) {
         foreach(a; actions) {
             if (a.isSeparator) {
                 addChild(new ToolBarSeparator());
