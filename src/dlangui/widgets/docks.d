@@ -44,11 +44,11 @@ class DockHost : WidgetGroupDefaultDrawing {
         _bodyWidget.parent = this;
     }
 
-    void addDockedWindow(DockWindow dockWin, int delta) {
+    void addDockedWindow(DockWindow dockWin) {
         addChild(dockWin);
     }
 
-	void onResize(ResizerWidget source) {
+	void onResize(ResizerWidget source, int delta) {
 	}
 
     this() {
