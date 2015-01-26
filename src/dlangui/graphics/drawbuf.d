@@ -612,21 +612,22 @@ class ColorDrawBufBase : DrawBuf {
 			int increment = subpixel ? 3 : 1;
 			for (int xx = 0; xx <= srcdx - increment; xx += increment) {
 				int colx = x + (subpixel ? xx / 3 : xx);
-                uint alpha1 = srcrow[xx] ^ 255;
                 if (subpixel) {
-                    //int x0 = xx % 3;
-                    //ubyte * dst = cast(ubyte*)(row + colx);
-                    //ubyte * pcolor = cast(ubyte*)(&color);
-                    //blendSubpixel(dst, pcolor, alpha, x0, glyph.subpixelMode);
+                    uint t1 = srcrow[xx];
+                    uint t2 = srcrow[xx + 1];
+                    uint t3 = srcrow[xx + 2];
+                    //uint pixel = ((t2 ^ 0x00) << 24) | ((t1  ^ 0xFF)<< 16) | ((t2 ^ 0xFF) << 8) | (t3 ^ 0xFF);
+                    uint pixel = ((t2 ^ 0x00) << 24) | 0xFFFFFF;
+					row[colx] = pixel;
                 } else {
-                    uint pixel = (alpha1 << 24) || 0xFFFFFF; //(alpha1 << 16) || (alpha1 << 8) || alpha1;
+                    uint alpha1 = srcrow[xx] ^ 0xFF;
+                    //uint pixel = (alpha1 << 24) | 0xFFFFFF; //(alpha1 << 16) || (alpha1 << 8) || alpha1;
+                    //uint pixel = ((alpha1 ^ 0xFF) << 24) | (alpha1 << 16) | (alpha1 << 8) | alpha1;
+                    uint pixel = ((alpha1 ^ 0xFF) << 24) | 0xFFFFFF;
 					row[colx] = pixel;
                 }
 			}
 		}
-		// for debugging
-		fillRect(Rect(x,y,x+2, y+2), 0xFF8040C0);
-		fillRect(Rect(x+2,y+2,x+4, y+4), 0x40408070);
 	}
 
     override void fillRect(Rect rc, uint color) {

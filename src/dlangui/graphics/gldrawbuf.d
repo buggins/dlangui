@@ -257,12 +257,12 @@ private class GLImageCache {
             if (_drawbuf is null)
                 return; // no draw buffer!!!
             if (_textureId == 0) {
-                //CRLog::debug("updateTexture - new texture");
                 _textureId = glSupport.genTexture();
+                Log.d("updateTexture - new texture id=", _textureId);
                 if (!_textureId)
                     return;
             }
-            //CRLog::debug("updateTexture - setting image %dx%d", _drawbuf.width, _drawbuf.height);
+            Log.d("updateTexture for image cache page - setting image ", _drawbuf.width, "x", _drawbuf.height, " tx=", _textureId);
             uint * pixels = _drawbuf.scanLine(0);
             if (!glSupport.setTextureImage(_textureId, _drawbuf.width, _drawbuf.height, cast(ubyte*)pixels)) {
                 glSupport.deleteTexture(_textureId);
@@ -565,7 +565,7 @@ private class GLGlyphCache {
 
         this(GLGlyphCache cache, int dx, int dy) {
             _cache = cache;
-            Log.v("created image cache page ", dx, "x", dy);
+            Log.v("created glyph cache page ", dx, "x", dy);
             _tdx = nearestPOT(dx);
             _tdy = nearestPOT(dy);
             _itemCount = 0;
@@ -586,12 +586,12 @@ private class GLGlyphCache {
             if (_drawbuf is null)
                 return; // no draw buffer!!!
             if (_textureId == 0) {
-                //CRLog::debug("updateTexture - new texture");
                 _textureId = glSupport.genTexture();
+                //Log.d("updateTexture - new texture ", _textureId);
                 if (!_textureId)
                     return;
             }
-            //CRLog::debug("updateTexture - setting image %dx%d", _drawbuf.width, _drawbuf.height);
+            //Log.d("updateTexture for font glyph page - setting image ", _drawbuf.width, "x", _drawbuf.height, " tx=", _textureId);
             int len = _drawbuf.width * _drawbuf.height;
             if (!glSupport.setTextureImage(_textureId, _drawbuf.width, _drawbuf.height, cast(ubyte *)_drawbuf.scanLine(0))) {
                 glSupport.deleteTexture(_textureId);
@@ -642,6 +642,7 @@ private class GLGlyphCache {
             _itemCount--;
             return _itemCount;
         }
+
         GLGlyphCacheItem addItem(Glyph * glyph) {
             GLGlyphCacheItem cacheItem = reserveSpace(glyph.id, glyph.correctedBlackBoxX, glyph.blackBoxY);
             if (cacheItem is null)
@@ -651,6 +652,7 @@ private class GLGlyphCache {
             _needUpdateTexture = true;
             return cacheItem;
         }
+
         void drawItem(GLGlyphCacheItem item, Rect dstrc, Rect srcrc, uint color, Rect * clip) {
             //CRLog::trace("drawing item at %d,%d %dx%d <= %d,%d %dx%d ", x, y, dx, dy, srcx, srcy, srcdx, srcdy);
             if (_needUpdateTexture)
@@ -682,7 +684,7 @@ private class GLGlyphCache {
                 }
                 if (!dstrc.empty) {
                     //Log.d("drawing glyph with color ", color);
-                    glSupport.drawColorAndTextureGlyphRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, false);
+                    glSupport.drawColorAndTextureGlyphRect(_textureId, _tdx, _tdy, srcrc, dstrc, color);
                     //glSupport.drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, false);
                 }
 

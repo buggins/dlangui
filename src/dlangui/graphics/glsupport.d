@@ -451,6 +451,26 @@ class FontProgram : SolidFillProgram {
         return res && texCoordLocation >= 0;
     }
 
+    override void beforeExecute() {
+        glEnable(GL_BLEND);
+        glDisable(GL_CULL_FACE);
+        checkError("glDisable(GL_CULL_FACE)");
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        //glBlendFunc(GL_ONE, GL_SRC_COLOR);
+        //glBlendFunc(GL_ONE, GL_SRC_COLOR);
+        //glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
+        //glBlendFunc(GL_ONE_MINUS_SRC_COLOR, GL_SRC_COLOR);
+        checkError("glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR)");
+        bind();
+        glUniformMatrix4fv(matrixLocation,  1, false, glSupport.qtmatrix.ptr);
+        checkError("glUniformMatrix4fv");
+    }
+
+    override void afterExecute() {
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        super.afterExecute();
+    }
+
     bool execute(float[] vertices, float[] texcoords, float[] colors, uint textureId, bool linear) {
         if (error)
             return false;
@@ -642,12 +662,12 @@ class GLSupport {
             Log.e("No program");
     }
 
-    void drawColorAndTextureGlyphRect(uint textureId, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color, bool linear) {
-        //Log.v("drawColorAndTextureRect tx=", textureId, " src=", srcrc, " dst=", dstrc);
-        drawColorAndTextureGlyphRect(textureId, tdx, tdy, srcrc.left, srcrc.top, srcrc.width(), srcrc.height(), dstrc.left, dstrc.top, dstrc.width(), dstrc.height(), color, linear);
+    void drawColorAndTextureGlyphRect(uint textureId, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color) {
+        //Log.v("drawColorAndGlyphRect tx=", textureId, " src=", srcrc, " dst=", dstrc);
+        drawColorAndTextureGlyphRect(textureId, tdx, tdy, srcrc.left, srcrc.top, srcrc.width(), srcrc.height(), dstrc.left, dstrc.top, dstrc.width(), dstrc.height(), color);
     }
 
-    void drawColorAndTextureGlyphRect(uint textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, uint color, bool linear) {
+    void drawColorAndTextureGlyphRect(uint textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, uint color) {
         float[6*4] colors;
         LVGLFillColor(color, colors.ptr, 6);
         float dstx0 = cast(float)xx;
@@ -665,14 +685,15 @@ class GLSupport {
         float srcy0 = srcy / cast(float)tdy;
         float srcx1 = (srcx + srcdx) / cast(float)tdx;
         float srcy1 = (srcy + srcdy) / cast(float)tdy;
-        float[3 * 6] vertices = [dstx0,dsty0,Z_2D,
-        dstx0,dsty1,Z_2D,
-        dstx1,dsty1,Z_2D,
-        dstx0,dsty0,Z_2D,
-        dstx1,dsty1,Z_2D,
-        dstx1,dsty0,Z_2D];
+        float[3 * 6] vertices = 
+           [dstx0, dsty0, Z_2D,
+            dstx0, dsty1, Z_2D,
+            dstx1, dsty1, Z_2D,
+            dstx0, dsty0, Z_2D,
+            dstx1, dsty1, Z_2D,
+            dstx1, dsty0, Z_2D];
         float[2 * 6] texcoords = [srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0];
-        _fontProgram.execute(vertices, texcoords, colors, textureId, linear);
+        _fontProgram.execute(vertices, texcoords, colors, textureId, false);
         //drawColorAndTextureRect(vertices, texcoords, colors, textureId, linear);
     }
 
