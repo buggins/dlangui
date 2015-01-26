@@ -45,6 +45,16 @@ class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
         init();
     }
 
+    /// map key to action
+    override Action findKeyAction(uint keyCode, uint flags) {
+        if (_mainMenu) {
+            Action action = _mainMenu.findKeyAction(keyCode, flags);
+            if (action)
+                return action;
+        }
+        return super.findKeyAction(keyCode, flags);
+    }
+
     protected void init() {
         _mainMenu = createMainMenu();
         _toolbarHost = createToolbars();

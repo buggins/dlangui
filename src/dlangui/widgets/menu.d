@@ -84,6 +84,20 @@ class MenuItem {
         return _subitems[index];
     }
 
+    /// map key to action
+    Action findKeyAction(uint keyCode, uint flags) {
+        if (_action) {
+            if (_action.checkAccelerator(keyCode, flags))
+                return _action;
+        }
+        for (int i = 0; i < subitemCount; i++) {
+            Action a = subitem(i).findKeyAction(keyCode, flags);
+            if (a)
+                return a;
+        }
+        return null;
+    }
+
 	@property MenuItemType type() const {
         if (id == SEPARATOR_ACTION_ID)
             return MenuItemType.Separator;
@@ -676,6 +690,13 @@ class MenuWidgetBase : ListWidget {
         if (thisPopup !is null)
             thisPopup.close();
     }
+
+    /// map key to action
+    override Action findKeyAction(uint keyCode, uint flags) {
+        Action action = _item.findKeyAction(keyCode, flags);
+        return action;
+    }
+
 }
 
 /// main menu (horizontal)

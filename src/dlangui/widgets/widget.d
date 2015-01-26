@@ -924,7 +924,7 @@ class Widget {
     }
 
     /// map key to action
-    protected Action findKeyAction(uint keyCode, uint flags) {
+    Action findKeyAction(uint keyCode, uint flags) {
         Action action = _acceleratorMap.findByKey(keyCode, flags);
         return action;
     }
