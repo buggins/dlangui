@@ -271,8 +271,14 @@ class LayoutItems {
 	}
 }
 
+enum ResizerEventType : int {
+	StartDragging,
+	Dragging,
+	EndDragging
+}
+
 interface ResizeHandler {
-	void onResize(ResizerWidget source, int delta);
+	void onResize(ResizerWidget source, ResizerEventType event, int currentPosition);
 }
 
 /**
@@ -319,7 +325,6 @@ class ResizerWidget : Widget {
     protected void updateProps() {
         _previousWidget = null;
         _nextWidget = null;
-        _orientation = Orientation.Vertical;
         LinearLayout parentLayout = cast(LinearLayout)_parent;
         if (parentLayout) {
             _orientation = parentLayout.orientation;
@@ -400,7 +405,9 @@ class ResizerWidget : Widget {
                     _delta = _minDragDelta;
                 if (_delta > _maxDragDelta)
                     _delta = _maxDragDelta;
-            }
+            } else if (resizeListener.assigned) {
+				resizeListener(this, ResizerEventType.StartDragging, Orientation.Vertical ? _dragStart.y : _dragStart.x);
+			}
             return true;
         }
         if (event.action == MouseAction.FocusOut && _dragging) {
@@ -408,6 +415,10 @@ class ResizerWidget : Widget {
         }
         if (event.action == MouseAction.Move && _dragging) {
             int delta = _orientation == Orientation.Vertical ? event.y - _dragStart.y : event.x - _dragStart.x;
+			if (resizeListener.assigned) {
+				resizeListener(this, ResizerEventType.Dragging, Orientation.Vertical ? event.y : event.x);
+				return true;
+			}
             _delta = _dragStartPosition + delta;
             if (_delta < _minDragDelta)
                 _delta = _minDragDelta;
@@ -453,6 +464,9 @@ class ResizerWidget : Widget {
             if (_dragging) {
                 //sendScrollEvent(ScrollAction.SliderReleased, _position);
                 _dragging = false;
+				if (resizeListener.assigned) {
+					resizeListener(this, ResizerEventType.EndDragging, Orientation.Vertical ? event.y : event.x);
+				}
             }
             return true;
         }
@@ -470,8 +484,13 @@ class ResizerWidget : Widget {
         }
         if (event.action == MouseAction.Cancel) {
             Log.d("SliderButton.onMouseEvent event.action == MouseAction.Cancel");
-            resetState(State.Pressed);
-            _dragging = false;
+			if (_dragging) {
+				resetState(State.Pressed);
+				_dragging = false;
+				if (resizeListener.assigned) {
+					resizeListener(this, ResizerEventType.EndDragging, Orientation.Vertical ? event.y : event.x);
+				}
+			}
             return true;
         }
         return false;

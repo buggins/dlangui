@@ -48,7 +48,12 @@ class DockHost : WidgetGroupDefaultDrawing {
         addChild(dockWin);
     }
 
-	void onResize(ResizerWidget source, int delta) {
+	protected int _resizeStartPos;
+	void onResize(ResizerWidget source, ResizerEventType event, int newPosition) {
+		if (event == ResizerEventType.StartDragging) {
+			_resizeStartPos = newPosition;
+		} else if (event == ResizerEventType.Dragging) {
+		}
 	}
 
     this() {
