@@ -10,7 +10,7 @@ VerticalLayout - just LinearLayout with orientation=Orientation.Vertical
 HorizontalLayout - just LinearLayout with orientation=Orientation.Vertical
 FrameLayout - children occupy the same place, usually one one is visible at a time
 TableLayout - children aligned into rows and columns
-
+ResizerWidget - widget to resize sibling widgets
 
 Synopsis:
 
@@ -271,6 +271,10 @@ class LayoutItems {
 	}
 }
 
+interface ResizeHandler {
+	void onResize(ResizerWidget source, int delta);
+}
+
 /**
  * Resizer control.
  * Put it between other items in LinearLayout to allow resizing its siblings.
@@ -282,16 +286,20 @@ class ResizerWidget : Widget {
     protected Widget _nextWidget;
     protected string _styleVertical;
     protected string _styleHorizontal;
+	Signal!ResizeHandler resizeListener;
 
+	/// Orientation: Vertical to resize vertically, Horizontal - to resize horizontally
+    @property Orientation orientation() { return _orientation; }
     /// empty parameter list constructor - for usage by factory
     this() {
         this(null);
     }
     /// create with ID parameter
-    this(string ID) {
+    this(string ID, Orientation orient = Orientation.Vertical) {
         super(ID);
         _styleVertical = "RESIZER_VERTICAL";
         _styleHorizontal = "RESIZER_HORIZONTAL";
+		_orientation = orient;
         trackHover = true;
     }
 

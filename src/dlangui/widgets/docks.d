@@ -31,6 +31,10 @@ class DockHost : WidgetGroupDefaultDrawing {
     protected int _bottomSpace;
     protected int _rightSpace;
     protected int _leftSpace;
+	protected ResizerWidget _topResizer;
+	protected ResizerWidget _bottomResizer;
+	protected ResizerWidget _leftResizer;
+	protected ResizerWidget _rightResizer;
     protected Widget _bodyWidget;
     @property Widget bodyWidget() { return _bodyWidget; }
     @property void bodyWidget(Widget widget) { 
@@ -40,13 +44,32 @@ class DockHost : WidgetGroupDefaultDrawing {
         _bodyWidget.parent = this;
     }
 
-    void addDockedWindow(DockWindow dockWin) {
+    void addDockedWindow(DockWindow dockWin, int delta) {
         addChild(dockWin);
     }
+
+	void onResize(ResizerWidget source) {
+	}
 
     this() {
         super("DOCK_HOST");
         styleId = STYLE_DOCK_HOST;
+		_topResizer = new ResizerWidget("top_resizer", Orientation.Vertical);
+		_topResizer.visibility = Visibility.Gone;
+		_topResizer.resizeListener = &onResize;
+		_leftResizer = new ResizerWidget("left_resizer", Orientation.Horizontal);
+		_leftResizer.visibility = Visibility.Gone;
+		_leftResizer.resizeListener = &onResize;
+		_rightResizer = new ResizerWidget("right_resizer", Orientation.Horizontal);
+		_rightResizer.visibility = Visibility.Gone;
+		_rightResizer.resizeListener = &onResize;
+		_bottomResizer = new ResizerWidget("bottom_resizer", Orientation.Vertical);
+		_bottomResizer.visibility = Visibility.Gone;
+		_bottomResizer.resizeListener = &onResize;
+		addChild(_topResizer);
+		addChild(_leftResizer);
+		addChild(_rightResizer);
+		addChild(_bottomResizer);
     }
 
     protected DockWindow[] getDockedWindowList(DockAlignment alignType) {
@@ -102,6 +125,31 @@ class DockHost : WidgetGroupDefaultDrawing {
         _bottomSpace = bottom.length ? rc.height / 4 : 0;
         _rightSpace = right.length ? rc.width / 4 : 0;
         _leftSpace = left.length ? rc.width / 4 : 0;
+		int resizerWidth = 6;
+		if (_topSpace) {
+			_topResizer.visibility = Visibility.Visible;
+			_topResizer.layout(Rect(rc.left + _leftSpace, rc.top + _topSpace - resizerWidth, rc.right - _rightSpace, rc.top + _topSpace));
+		} else {
+			_topResizer.visibility = Visibility.Gone;
+		}
+		if (_bottomSpace) {
+			_bottomResizer.visibility = Visibility.Visible;
+			_bottomResizer.layout(Rect(rc.left + _leftSpace, rc.bottom - _bottomSpace, rc.right - _rightSpace, rc.bottom - _bottomSpace + resizerWidth));
+		} else {
+			_bottomResizer.visibility = Visibility.Gone;
+		}
+		if (_leftSpace) {
+			_leftResizer.visibility = Visibility.Visible;
+			_leftResizer.layout(Rect(rc.left + _leftSpace - resizerWidth, rc.top, rc.left + _leftSpace, rc.bottom));
+		} else {
+			_leftResizer.visibility = Visibility.Gone;
+		}
+		if (_rightSpace) {
+			_rightResizer.visibility = Visibility.Visible;
+			_rightResizer.layout(Rect(rc.right - _rightSpace, rc.top, rc.right - _rightSpace + resizerWidth, rc.bottom));
+		} else {
+			_rightResizer.visibility = Visibility.Gone;
+		}
         if (_bodyWidget)
             _bodyWidget.layout(Rect(rc.left + _leftSpace, rc.top + _topSpace, rc.right - _rightSpace, rc.bottom - _bottomSpace));
         layoutDocked(top, Rect(rc.left + _leftSpace, rc.top, rc.right - _rightSpace, rc.top + _topSpace), Orientation.Horizontal);
