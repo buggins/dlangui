@@ -738,9 +738,15 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         }
     }
 
+    void clearSelection() {
+        _tree.selectItem(null);
+    }
+
     void selectItem(TreeItem item, bool makeVisible = true) {
-        if (!item)
+        if (!item) {
+            clearSelection();
             return;
+        }
         _tree.selectItem(item);
         if (makeVisible)
             makeItemVisible(item);

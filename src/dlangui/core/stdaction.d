@@ -30,29 +30,18 @@ enum StandardAction : int {
     Ignore,
     Open,
     Save,
+    DiscardChanges,
 }
 
-const Action ACTION_OK;
-const Action ACTION_CANCEL;
-const Action ACTION_YES;
-const Action ACTION_NO;
-const Action ACTION_CLOSE;
-const Action ACTION_ABORT;
-const Action ACTION_RETRY;
-const Action ACTION_IGNORE;
-const Action ACTION_OPEN;
-const Action ACTION_SAVE;
+const Action ACTION_OK = new Action(StandardAction.Ok, "ACTION_OK"c);
+const Action ACTION_CANCEL = new Action(StandardAction.Cancel, "ACTION_CANCEL"c);
+const Action ACTION_YES = new Action(StandardAction.Yes, "ACTION_YES"c);
+const Action ACTION_NO = new Action(StandardAction.No, "ACTION_NO"c);
+const Action ACTION_CLOSE = new Action(StandardAction.Close, "ACTION_CLOSE"c);
+const Action ACTION_ABORT =  new Action(StandardAction.Abort, "ACTION_ABORT"c);
+const Action ACTION_RETRY = new Action(StandardAction.Retry, "ACTION_RETRY"c);
+const Action ACTION_IGNORE = new Action(StandardAction.Ignore, "ACTION_IGNORE"c);
+const Action ACTION_OPEN = new Action(StandardAction.Open, "ACTION_OPEN"c);
+const Action ACTION_SAVE = new Action(StandardAction.Save, "ACTION_SAVE"c);
+const Action ACTION_DISCARD_CHANGES = new Action(StandardAction.DiscardChanges, "ACTION_DISCARD_CHANGES"c);
 
-static this()
-{
-  ACTION_OK = new Action(StandardAction.Ok, "ACTION_OK"c);
-  ACTION_CANCEL = cast(immutable(Action)) new Action(StandardAction.Cancel, "ACTION_CANCEL"c);
-  ACTION_YES = cast(immutable(Action)) new Action(StandardAction.Yes, "ACTION_YES"c);
-  ACTION_NO = cast(immutable(Action)) new Action(StandardAction.No, "ACTION_NO"c);
-  ACTION_CLOSE = cast(immutable(Action)) new Action(StandardAction.Close, "ACTION_CLOSE"c);
-  ACTION_ABORT = cast(immutable(Action)) new Action(StandardAction.Abort, "ACTION_ABORT"c);
-  ACTION_RETRY = cast(immutable(Action)) new Action(StandardAction.Retry, "ACTION_RETRY"c);
-  ACTION_IGNORE = cast(immutable(Action)) new Action(StandardAction.Ignore, "ACTION_IGNORE"c);
-  ACTION_OPEN = cast(immutable(Action)) new Action(StandardAction.Open, "ACTION_OPEN"c);
-  ACTION_SAVE = cast(immutable(Action)) new Action(StandardAction.Save, "ACTION_SAVE"c);
-}

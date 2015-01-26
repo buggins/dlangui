@@ -26,8 +26,16 @@ import dlangui.core.signals;
 import dlangui.widgets.layouts;
 import dlangui.widgets.controls;
 
+import std.algorithm;
+
+/// current tab is changed handler
 interface TabHandler {
     void onTabChanged(string newActiveTabId, string previousTabId);
+}
+
+/// tab close button pressed handler
+interface TabCloseHandler {
+    void onTabClose(string tabId);
 }
 
 
@@ -86,6 +94,7 @@ class TabItemWidget : HorizontalLayout {
     private ImageButton _closeButton;
     private TabItem _item;
     private bool _enableCloseButton;
+    Signal!TabCloseHandler onTabCloseListener;
     @property TabItem tabItem() { return _item; }
     @property TabControl tabControl() { return cast(TabControl)parent; }
     this(TabItem item, bool enableCloseButton = true) {
@@ -119,6 +128,8 @@ class TabItemWidget : HorizontalLayout {
     protected bool onClick(Widget source) {
         if (source.compareId("CLOSE")) {
             Log.d("tab close button pressed");
+            if (onTabCloseListener.assigned)
+                onTabCloseListener(_item.id);
         }
         return true;
     }
@@ -217,6 +228,9 @@ class TabControl : WidgetGroupDefaultDrawing {
 	/// signal of tab change (e.g. by clicking on tab header)
 	Signal!TabHandler onTabChangedListener;
 
+    /// signal on tab close button
+    Signal!TabCloseHandler onTabCloseListener;
+
     /// empty parameter list constructor - for usage by factory
     this() {
         this(null);
@@ -299,11 +313,28 @@ class TabControl : WidgetGroupDefaultDrawing {
 
     /// remove tab
     TabControl removeTab(string id) {
+        string nextId;
+        if (id.equal(_selectedTabId)) {
+            // current tab is being closed: remember next tab id
+            int nextIndex = getNextItemIndex(1);
+            if (nextIndex < 0)
+                nextIndex = getNextItemIndex(-1);
+            if (nextIndex >= 0)
+                nextId = _items[nextIndex].id;
+        }
         int index = _items.indexById(id);
         if (index >= 0) {
             _children.remove(index + 1);
             _items.remove(index);
+            if (id.equal(_selectedTabId))
+                _selectedTabId = null;
             requestLayout();
+        }
+        if (nextId) {
+            index = _items.indexById(nextId);
+            if (index >= 0) {
+                selectTab(index, true);
+            }
         }
         return this;
     }
@@ -329,6 +360,10 @@ class TabControl : WidgetGroupDefaultDrawing {
         }
     }
 
+    protected void onTabClose(string tabId) {
+        if (onTabCloseListener.assigned)
+            onTabCloseListener(tabId);
+    }
 
     /// add new tab
     TabControl addTab(TabItem item, int index = -1, bool enableCloseButton = false) {
@@ -337,6 +372,7 @@ class TabControl : WidgetGroupDefaultDrawing {
         widget.parent = this;
         widget.onClickListener = &onClick;
         widget.setStyles(_tabButtonStyle, _tabButtonTextStyle);
+        widget.onTabCloseListener = &onTabClose;
         _children.insert(widget, index);
         updateTabs();
         requestLayout();
@@ -439,6 +475,10 @@ class TabControl : WidgetGroupDefaultDrawing {
     }
 
     protected string _selectedTabId;
+
+    @property string selectedTabId() const {
+        return _selectedTabId;
+    }
 
     void updateAccessTs() {
         int index = _items.indexById(_selectedTabId);
@@ -566,7 +606,7 @@ class TabHost : FrameLayout, TabHandler {
 
 
 /// compound widget - contains from TabControl widget (tabs header) and TabHost (content pages)
-class TabWidget : VerticalLayout, TabHandler {
+class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
     protected TabControl _tabControl;
     protected TabHost _tabHost;
     /// empty parameter list constructor - for usage by factory
@@ -579,6 +619,7 @@ class TabWidget : VerticalLayout, TabHandler {
         _tabControl = new TabControl("TAB_CONTROL");
         _tabHost = new TabHost("TAB_HOST", _tabControl);
 		_tabControl.onTabChangedListener.connect(this);
+		_tabControl.onTabCloseListener.connect(this);
         styleId = STYLE_TAB_WIDGET;
         addChild(_tabControl);
         addChild(_tabHost);
@@ -587,6 +628,13 @@ class TabWidget : VerticalLayout, TabHandler {
 
 	/// signal of tab change (e.g. by clicking on tab header)
 	Signal!TabHandler onTabChangedListener;
+    /// signal on tab close button
+    Signal!TabCloseHandler onTabCloseListener;
+
+    protected override void onTabClose(string tabId) {
+        if (onTabCloseListener.assigned)
+            onTabCloseListener(tabId);
+    }
 
     protected override void onTabChanged(string newActiveTabId, string previousTabId) {
         // forward to listener

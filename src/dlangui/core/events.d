@@ -171,6 +171,14 @@ class Action {
         _id = newId;
         return this;
     }
+    /// compares id of this action with another action id
+    bool opEquals(int anotherActionId) const {
+        return _id == anotherActionId;
+    }
+    /// compares id of this action with another action id
+    bool opEquals(const Action action) const {
+        return _id == action._id;
+    }
     /// sets label string resource id
     @property Action label(string resourceId) {
         _label = resourceId;

@@ -111,6 +111,7 @@
         >
     </style>
     <style id="TAB_UP_BUTTON_DARK"
+        padding="5,1,1,1"
         backgroundImageId="tab_btn_dark_up"
         />
     <style id="TAB_UP_BUTTON_DARK_TEXT"
