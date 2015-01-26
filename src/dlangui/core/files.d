@@ -156,14 +156,15 @@ string parentDir(string path) {
     return buildNormalizedPath(path, "..");
 }
 
-/// check filename with pattern (currently only *.ext pattern is supported)
+/// check filename with pattern (currently only *.ext, *.* and filename.ext patterns are supported)
 bool filterFilename(string filename, string pattern) {
 	if (pattern.equal("*.*"))
 		return true; // matches any
 	if (pattern.length < 3)
 		return false;
-	if (pattern[0] != '*' || pattern[1] != '.')
-		return false;
+	if (pattern[0] != '*' || pattern[1] != '.') {
+		return filename.baseName.equal(pattern);
+    }
 	return filename.endsWith(pattern[1..$]);
 }
 

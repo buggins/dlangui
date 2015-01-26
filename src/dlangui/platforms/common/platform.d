@@ -515,6 +515,8 @@ class Window {
                 return true;
             focus = focus.parent;
         }
+        if (_mainWidget)
+            return _mainWidget.handleAction(action);
         return false;
     }
 
