@@ -537,9 +537,6 @@ private class TextureSceneItem : SceneItem {
 };
 
 
-/// by some reason ALPHA texture does not work as expected
-private immutable USE_RGBA_TEXTURE_FOR_GLYPHS = true;
-
 private class GLGlyphCache {
 
     static class GLGlyphCacheItem {
@@ -557,7 +554,7 @@ private class GLGlyphCache {
         private GLGlyphCache _cache;
         private int _tdx;
         private int _tdy;
-        private GrayDrawBuf _drawbuf;
+        private ColorDrawBuf _drawbuf;
         private int _currentLine;
         private int _nextLine;
         private int _x;
@@ -585,9 +582,6 @@ private class GLGlyphCache {
             }
         }
 
-        static if (USE_RGBA_TEXTURE_FOR_GLYPHS) {
-            uint[] _rgbaBuffer;
-        }
         void updateTexture() {
             if (_drawbuf is null)
                 return; // no draw buffer!!!
@@ -598,23 +592,11 @@ private class GLGlyphCache {
                     return;
             }
             //CRLog::debug("updateTexture - setting image %dx%d", _drawbuf.width, _drawbuf.height);
-            ubyte * pixels = _drawbuf.scanLine(0);
-            static if (USE_RGBA_TEXTURE_FOR_GLYPHS) {
-                int len = _drawbuf.width * _drawbuf.height;
-                _rgbaBuffer.length = len;
-                for (int i = 0; i < len; i++)
-                    _rgbaBuffer[i] = ((cast(uint)pixels[i]) << 24) | 0x00FFFFFF;
-                if (!glSupport.setTextureImage(_textureId, _drawbuf.width, _drawbuf.height, cast(ubyte*)_rgbaBuffer.ptr)) {
-                    glSupport.deleteTexture(_textureId);
-                    _textureId = 0;
-                    return;
-                }
-            } else {
-                if (!setTextureImageAlpha(_textureId, _drawbuf.width, _drawbuf.height, pixels)) {
-                    deleteTexture(_textureId);
-                    _textureId = 0;
-                    return;
-                }
+            int len = _drawbuf.width * _drawbuf.height;
+            if (!glSupport.setTextureImage(_textureId, _drawbuf.width, _drawbuf.height, cast(ubyte *)_drawbuf.scanLine(0))) {
+                glSupport.deleteTexture(_textureId);
+                _textureId = 0;
+                return;
             }
             _needUpdateTexture = false;
             if (_closed) {
@@ -622,6 +604,7 @@ private class GLGlyphCache {
                 _drawbuf = null;
             }
         }
+
         GLGlyphCacheItem reserveSpace(uint objectId, int width, int height) {
             GLGlyphCacheItem cacheItem = new GLGlyphCacheItem(this, objectId);
             if (_closed)
@@ -643,10 +626,11 @@ private class GLGlyphCache {
                 if (_nextLine < _currentLine + height + 2)
                     _nextLine = _currentLine + height + 2;
                 if (!_drawbuf) {
-                    _drawbuf = new GrayDrawBuf(_tdx, _tdy);
+                    _drawbuf = new ColorDrawBuf(_tdx, _tdy);
                     //_drawbuf.SetBackgroundColor(0x000000);
                     //_drawbuf.SetTextColor(0xFFFFFF);
-                    _drawbuf.fill(0x00000000);
+                    //_drawbuf.fill(0x00000000);
+                    _drawbuf.fill(0xFF000000);
                 }
                 _x += width + 1;
                 _needUpdateTexture = true;
@@ -662,7 +646,8 @@ private class GLGlyphCache {
             GLGlyphCacheItem cacheItem = reserveSpace(glyph.id, glyph.correctedBlackBoxX, glyph.blackBoxY);
             if (cacheItem is null)
                 return null;
-            _drawbuf.drawGlyph(cacheItem._rc.left, cacheItem._rc.top, glyph, 0xFFFFFF);
+            //_drawbuf.drawGlyph(cacheItem._rc.left, cacheItem._rc.top, glyph, 0xFFFFFF);
+            _drawbuf.drawGlyphToTexture(cacheItem._rc.left, cacheItem._rc.top, glyph);
             _needUpdateTexture = true;
             return cacheItem;
         }
@@ -697,7 +682,8 @@ private class GLGlyphCache {
                 }
                 if (!dstrc.empty) {
                     //Log.d("drawing glyph with color ", color);
-                    glSupport.drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, false);
+                    glSupport.drawColorAndTextureGlyphRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, false);
+                    //glSupport.drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, false);
                 }
 
             }
@@ -706,9 +692,6 @@ private class GLGlyphCache {
             _closed = true;
             if (_needUpdateTexture)
                 updateTexture();
-            static if (USE_RGBA_TEXTURE_FOR_GLYPHS) {
-                _rgbaBuffer = null;
-            }
         }
     }
 

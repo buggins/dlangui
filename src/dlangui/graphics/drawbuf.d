@@ -600,6 +600,35 @@ class ColorDrawBufBase : DrawBuf {
 		}
 	}
 
+	void drawGlyphToTexture(int x, int y, Glyph * glyph) {
+        ubyte[] src = glyph.glyph;
+        int srcdx = glyph.blackBoxX;
+        int srcdy = glyph.blackBoxY;
+        bool subpixel = glyph.subpixelMode != SubpixelRenderingMode.None;
+		for (int yy = 0; yy < srcdy; yy++) {
+			int liney = y + yy;
+			uint * row = scanLine(liney);
+			ubyte * srcrow = src.ptr + yy * srcdx;
+			int increment = subpixel ? 3 : 1;
+			for (int xx = 0; xx <= srcdx - increment; xx += increment) {
+				int colx = x + (subpixel ? xx / 3 : xx);
+                uint alpha1 = srcrow[xx] ^ 255;
+                if (subpixel) {
+                    //int x0 = xx % 3;
+                    //ubyte * dst = cast(ubyte*)(row + colx);
+                    //ubyte * pcolor = cast(ubyte*)(&color);
+                    //blendSubpixel(dst, pcolor, alpha, x0, glyph.subpixelMode);
+                } else {
+                    uint pixel = (alpha1 << 24) || 0xFFFFFF; //(alpha1 << 16) || (alpha1 << 8) || alpha1;
+					row[colx] = pixel;
+                }
+			}
+		}
+		// for debugging
+		fillRect(Rect(x,y,x+2, y+2), 0xFF8040C0);
+		fillRect(Rect(x+2,y+2,x+4, y+4), 0x40408070);
+	}
+
     override void fillRect(Rect rc, uint color) {
         if (applyClipping(rc)) {
             for (int y = rc.top; y < rc.bottom; y++) {

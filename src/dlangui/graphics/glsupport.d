@@ -416,6 +416,116 @@ class TextureProgram : SolidFillProgram {
     }
 }
 
+class FontProgram : SolidFillProgram {
+    @property override string vertexSource() {
+        return         
+            "attribute " ~ HIGHP ~ " vec4 vertex;\n"
+            "attribute " ~ LOWP ~ " vec4 colAttr;\n"
+            "attribute " ~ MEDIUMP ~ " vec4 texCoord;\n"
+            "varying " ~ LOWP ~ " vec4 col;\n"
+            "varying " ~ MEDIUMP ~ " vec4 texc;\n"
+            "uniform " ~ MEDIUMP ~ " mat4 matrix;\n"
+            "void main(void)\n"
+            "{\n"
+            "    gl_Position = matrix * vertex;\n"
+            "    col = colAttr;\n"
+            "    texc = texCoord;\n"
+            "}\n";
+
+    }
+    @property override string fragmentSource() {
+        return
+            "uniform sampler2D texture;\n"
+            "varying " ~ LOWP ~ " vec4 col;\n"
+            "varying " ~ MEDIUMP ~ " vec4 texc;\n"
+            "void main(void)\n"
+            "{\n"
+            "    gl_FragColor = texture2D(texture, texc.st) * col;\n"
+            "}\n";
+    }
+
+    GLint texCoordLocation;
+    override bool initLocations() {
+        bool res = super.initLocations();
+        texCoordLocation = glGetAttribLocation(program, "texCoord");
+        return res && texCoordLocation >= 0;
+    }
+
+    bool execute(float[] vertices, float[] texcoords, float[] colors, uint textureId, bool linear) {
+        if (error)
+            return false;
+        if (!initialized)
+            if (!compile())
+                return false;
+        beforeExecute();
+        glActiveTexture(GL_TEXTURE0);
+        checkError("glActiveTexture GL_TEXTURE0");
+        glBindTexture(GL_TEXTURE_2D, textureId);
+        checkError("glBindTexture");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+        checkError("drawColorAndTextureRect - glTexParameteri");
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+        checkError("drawColorAndTextureRect - glTexParameteri");
+
+        GLuint vao;
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
+
+        GLuint vbo;
+        glGenBuffers(1, &vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(
+					 GL_ARRAY_BUFFER,
+					 vertices.length * vertices[0].sizeof +
+					 colors.length * colors[0].sizeof +
+					 texcoords.length * texcoords[0].sizeof,
+					 null,
+					 GL_STREAM_DRAW);
+        glBufferSubData(
+						GL_ARRAY_BUFFER,
+						0,
+						vertices.length * vertices[0].sizeof,
+						vertices.ptr);
+        glBufferSubData(
+						GL_ARRAY_BUFFER,
+						vertices.length * vertices[0].sizeof,
+						colors.length * colors[0].sizeof,
+						colors.ptr);
+        glBufferSubData(
+						GL_ARRAY_BUFFER,
+						vertices.length * vertices[0].sizeof + colors.length * colors[0].sizeof,
+						texcoords.length * texcoords[0].sizeof,
+						texcoords.ptr);
+
+        glEnableVertexAttribArray(vertexLocation);
+        glEnableVertexAttribArray(colAttrLocation);
+        glEnableVertexAttribArray(texCoordLocation);
+
+        glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
+        glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * vertices[0].sizeof));
+        glVertexAttribPointer(texCoordLocation, 2, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * vertices[0].sizeof + colors.length * colors[0].sizeof));
+
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        checkError("glDrawArrays");
+
+        glDisableVertexAttribArray(vertexLocation);
+        glDisableVertexAttribArray(colAttrLocation);
+        glDisableVertexAttribArray(texCoordLocation);
+
+        afterExecute();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glDeleteBuffers(1, &vbo);
+
+        glBindVertexArray(0);
+        glDeleteVertexArrays(1, &vao);
+
+        glBindTexture(GL_TEXTURE_2D, 0);
+        checkError("glBindTexture");
+        return true;
+    }
+}
+
 __gshared GLSupport _glSupport;
 @property GLSupport glSupport() {
     if (!_glSupport) {
@@ -432,15 +542,21 @@ class GLSupport {
 
     TextureProgram _textureProgram;
     SolidFillProgram _solidFillProgram;
+    FontProgram _fontProgram;
 
     @property bool valid() {
-        return _textureProgram && _solidFillProgram;
+        return _textureProgram && _solidFillProgram && _fontProgram;
     }
 
     bool initShaders() {
         if (_textureProgram is null) {
             _textureProgram = new TextureProgram();
             if (!_textureProgram.compile())
+                return false;
+        }
+        if (_fontProgram is null) {
+            _fontProgram = new FontProgram();
+            if (!_fontProgram.compile())
                 return false;
         }
         if (_solidFillProgram is null) {
@@ -457,6 +573,10 @@ class GLSupport {
         if (_textureProgram !is null) {
             destroy(_textureProgram);
 		    _textureProgram = null;
+        }
+        if (_fontProgram !is null) {
+            destroy(_fontProgram);
+		    _fontProgram = null;
         }
         if (_solidFillProgram !is null) {
             destroy(_solidFillProgram);
@@ -520,6 +640,40 @@ class GLSupport {
             _solidFillProgram.execute(vertices, colors);
         } else
             Log.e("No program");
+    }
+
+    void drawColorAndTextureGlyphRect(uint textureId, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color, bool linear) {
+        //Log.v("drawColorAndTextureRect tx=", textureId, " src=", srcrc, " dst=", dstrc);
+        drawColorAndTextureGlyphRect(textureId, tdx, tdy, srcrc.left, srcrc.top, srcrc.width(), srcrc.height(), dstrc.left, dstrc.top, dstrc.width(), dstrc.height(), color, linear);
+    }
+
+    void drawColorAndTextureGlyphRect(uint textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, uint color, bool linear) {
+        float[6*4] colors;
+        LVGLFillColor(color, colors.ptr, 6);
+        float dstx0 = cast(float)xx;
+        float dsty0 = cast(float)(bufferDy - (yy));
+        float dstx1 = cast(float)(xx + dx);
+        float dsty1 = cast(float)(bufferDy - (yy + dy));
+
+        // don't flip for framebuffer
+        if (currentFramebufferId) {
+            dsty0 = cast(float)((yy));
+            dsty1 = cast(float)((yy + dy));
+        }
+
+        float srcx0 = srcx / cast(float)tdx;
+        float srcy0 = srcy / cast(float)tdy;
+        float srcx1 = (srcx + srcdx) / cast(float)tdx;
+        float srcy1 = (srcy + srcdy) / cast(float)tdy;
+        float[3 * 6] vertices = [dstx0,dsty0,Z_2D,
+        dstx0,dsty1,Z_2D,
+        dstx1,dsty1,Z_2D,
+        dstx0,dsty0,Z_2D,
+        dstx1,dsty1,Z_2D,
+        dstx1,dsty0,Z_2D];
+        float[2 * 6] texcoords = [srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0];
+        _fontProgram.execute(vertices, texcoords, colors, textureId, linear);
+        //drawColorAndTextureRect(vertices, texcoords, colors, textureId, linear);
     }
 
     void drawColorAndTextureRect(uint textureId, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color, bool linear) {
