@@ -122,7 +122,10 @@ class TabItemWidget : HorizontalLayout {
         }
         return true;
     }
-    protected void setItem(TabItem item) {
+    @property TabItem item() {
+        return _item;
+    }
+    @property void setItem(TabItem item) {
         _item = item;
         if (item.iconId !is null) {
             _icon.visibility = Visibility.Visible;
@@ -304,6 +307,29 @@ class TabControl : WidgetGroupDefaultDrawing {
         }
         return this;
     }
+
+    /// change name of tab
+    void renameTab(string ID, dstring name) {
+        int index = _items.indexById(id);
+        if (index >= 0) {
+            renameTab(index, name);
+        }
+    }
+
+    /// change name of tab
+    void renameTab(int index, dstring name) {
+        _items[index].text = name;
+        for (int i = 0; i < _children.count; i++) {
+            TabItemWidget widget = cast (TabItemWidget)_children[i];
+            if (widget && widget.item is _items[index]) {
+                widget.setItem(_items[index]);
+                requestLayout();
+                break;
+            }
+        }
+    }
+
+
     /// add new tab
     TabControl addTab(TabItem item, int index = -1, bool enableCloseButton = false) {
         _items.insert(item, index);
@@ -585,6 +611,16 @@ class TabWidget : VerticalLayout, TabHandler {
         _tabHost.removeTab(id);
         requestLayout();
         return this;
+    }
+
+    /// change name of tab
+    void renameTab(string ID, dstring name) {
+        _tabControl.renameTab(ID, name);
+    }
+
+    /// change name of tab
+    void renameTab(int index, dstring name) {
+        _tabControl.renameTab(index, name);
     }
 
 	/// select tab

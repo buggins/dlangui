@@ -325,6 +325,8 @@ enum EditAction {
 
     /// replace whole content
     ReplaceContent,
+    /// saved content
+    SaveContent,
 }
 
 /// edit operation details for EditableContent
@@ -451,12 +453,29 @@ class UndoBuffer {
     void clear() {
         _undoList.clear();
         _redoList.clear();
+        _savedState = null;
+    }
+
+    protected EditOperation _savedState;
+
+    /// current state is saved
+    void saved() {
+        _savedState = _undoList.peekBack;
+    }
+    /// returns true if content has been changed since last saved() or clear() call
+    @property bool modified() {
+        return _savedState !is _undoList.peekBack;
     }
 }
 
 /// Editable Content change listener
 interface EditableContentListener {
 	void onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source);
+}
+
+/// Modified state change listener
+interface ModifiedStateListener {
+	void onModifiedStateChange(Widget source, bool modified);
 }
 
 alias TokenPropString = ubyte[];
@@ -474,6 +493,10 @@ class EditableContent {
         _multiline = multiline;
         _lines.length = 1; // initial state: single empty line
         _undoBuffer = new UndoBuffer();
+    }
+
+    @property bool modified() {
+        return _undoBuffer.modified;
     }
 
     protected UndoBuffer _undoBuffer;
@@ -545,6 +568,14 @@ class EditableContent {
         TextRange rangeAfter;
         // notify about content change
         handleContentChange(new EditOperation(EditAction.ReplaceContent), rangeBefore, rangeAfter, this);
+    }
+
+    /// call listener to say that content is saved
+    void notifyContentSaved() {
+        TextRange rangeBefore;
+        TextRange rangeAfter;
+        // notify about content change
+        handleContentChange(new EditOperation(EditAction.SaveContent), rangeBefore, rangeAfter, this);
     }
 
     protected void updateTokenProps(int startLine, int endLine) {
@@ -926,8 +957,8 @@ class EditableContent {
             op.newRange = rangeAfter;
             op.oldContent = oldcontent;
             replaceRange(rangeBefore, rangeAfter, newcontent);
-			handleContentChange(op, rangeBefore, rangeAfter, source);
             _undoBuffer.saveForUndo(op);
+			handleContentChange(op, rangeBefore, rangeAfter, source);
 			return true;
         }
         return false;
@@ -1013,6 +1044,7 @@ class EditableContent {
             }
             // EOF
             _format = lines.textFormat;
+            _undoBuffer.clear();
             notifyContentReplaced();
             return true;
         } catch (Exception e) {
@@ -1047,7 +1079,8 @@ class EditableContent {
             for (int i = 0; i < _lines.length; i++) {
                 writer.writeLine(_lines[i]);
             }
-            // EOF
+            _undoBuffer.saved();
+            notifyContentSaved();
             return true;
         } catch (Exception e) {
             Log.e("Exception while trying to write file ", filename, " ", e.toString);
@@ -1115,6 +1148,9 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected uint _iconsPaneWidth = 16;
     protected uint _foldingPaneWidth = 16;
     protected uint _modificationMarksPaneWidth = 8;
+
+    /// Modified state change listener
+    Signal!ModifiedStateListener onModifiedStateChangeListener;
 
     /// override to support modification of client rect after change, e.g. apply offset
     override protected void handleClientRectLayout(ref Rect rc) {
@@ -1470,6 +1506,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 ensureCaretVisible();
                 correctCaretPos();
                 requestLayout();
+            } else if (operation.action == EditAction.SaveContent) {
+                // saved
             } else {
 		        _caretPos = rangeAfter.end;
                 _selectionRange.start = _caretPos;
@@ -1481,9 +1519,15 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             // TODO: do something better (e.g. take into account ranges when correcting)
         }
 		invalidate();
+        if (onModifiedStateChangeListener.assigned) {
+            if (_lastReportedModifiedState != content.modified) {
+                _lastReportedModifiedState = content.modified;
+                onModifiedStateChangeListener(this, content.modified);
+            }
+        }
 		return;
 	}
-
+    protected bool _lastReportedModifiedState;
 
     /// get widget text
     override @property dstring text() { return _content.text; }

@@ -137,8 +137,8 @@ struct Collection(T, bool ownItems = false) {
         T result = _items[index];
         for (size_t i = index; i + 1 < _len; i++)
             _items[i] = _items[i + 1];
-        _items[_len] = T.init;
         _len--;
+        _items[_len] = T.init;
         return result;
     }
     /// remove single item by value - if present in collection, returning true if item was found and removed
@@ -185,6 +185,13 @@ struct Collection(T, bool ownItems = false) {
         return remove(0);
     }
 
+    /// peek first item
+    @property T peekFront() {
+        if (empty)
+            return T.init; // no items
+        return _items[0];
+    }
+
     /// insert item at beginning of collection
     void pushFront(T item) {
         add(item, 0);
@@ -195,6 +202,13 @@ struct Collection(T, bool ownItems = false) {
         if (empty)
             return T.init; // no items
         return remove(length - 1);
+    }
+
+    /// peek last item
+    @property T peekBack() {
+        if (empty)
+            return T.init; // no items
+        return _items[length - 1];
     }
 
     /// insert item at end of collection
