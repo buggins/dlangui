@@ -3,16 +3,19 @@
 /**
 This module contains simple controls widgets implementation.
 
-TextWidget
+TextWidget - static text
 
-ImageWidget
+ImageWidget - image
 
-Button
+Button - button with only text
 
-ImageButton
+ImageButton - button with only image
 
-ScrollBar
+ImageTextButton - button with text and image
 
+ScrollBar - scrollbar control
+
+UrlImageTextButton - URL link button
 
 Synopsis:
 
@@ -29,9 +32,11 @@ module dlangui.widgets.controls;
 
 import dlangui.widgets.widget;
 import dlangui.widgets.layouts;
+import dlangui.core.stdaction;
 
 private import std.algorithm;
 private import std.conv : to;
+private import std.utf : toUTF32;
 
 /// vertical spacer to fill empty space in vertical layouts
 class VSpacer : Widget {
@@ -280,6 +285,24 @@ class ImageTextButton : HorizontalLayout {
         action = a;
     }
 
+}
+
+/// button - url
+class UrlImageTextButton : ImageTextButton {
+    this(string ID, dstring labelText, string url, string icon = "applications-internet") {
+        super(ID, icon, labelText);
+        Action a = ACTION_OPEN_URL.clone();
+        a.label = labelText;
+        a.stringParam = url;
+        _action = a;
+        styleId = null;
+        //_icon.styleId = STYLE_BUTTON_IMAGE;
+        //_label.styleId = STYLE_BUTTON_LABEL;
+        //_label.textFlags(TextFlag.Underline);
+        _label.ownStyle.getOrCreateState(State.Hovered, State.Hovered).textFlags(TextFlag.Underline);
+        _label.textColor(0x000080);
+        padding(Rect(3,3,3,3));
+    }
 }
 
 /// checkbox

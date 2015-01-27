@@ -30,6 +30,7 @@ import dlangui.dialogs.msgbox;
 private import dlangui.graphics.gldrawbuf;
 private import std.algorithm;
 private import core.sync.mutex;
+private import std.string;
 
 // specify debug=DebugMouseEvents for logging mouse handling
 // specify debug=DebugRedraw for logging drawing and layouts handling
@@ -846,6 +847,19 @@ class Platform {
 		i18n.findTranslationsDir(dirs);
 		return this;
 	}
+
+    /// override to support opening url in external browser
+    bool openURL(string url) {
+        Log.d("Platform.openURL(", url, ") is called");
+        bool res = false;
+        version(Windows) {
+            import win32.shellapi;
+            ShellExecuteA(null, "open", url.toStringz, null, null, 1);
+            res = true;
+        }
+        // TODO: support other platforms
+        return res;
+    }
 }
 
 /// get current platform object instance

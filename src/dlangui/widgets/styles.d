@@ -746,6 +746,17 @@ class Style {
 		return child;
 	}
 
+    /// find exact existing state style or create new if no matched styles found
+    Style getOrCreateState(uint stateMask = 0, uint stateValue = 0) {
+		if (stateValue == State.Normal)
+			return this;
+		foreach(item; _substates) {
+			if ((item._stateMask == stateMask) && (item._stateValue == stateValue))
+				return item;
+		}
+		return createState(stateMask, stateValue);
+    }
+
 	/// find substyle based on widget state (e.g. focused, pressed, ...)
 	const(Style) forState(uint state) const {
 		if (state == State.Normal)

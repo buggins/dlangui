@@ -394,7 +394,7 @@ wstring fromWStringz(const(wchar) * s) {
 /** widget state flags - bits */
 enum State : uint {
     /// state not specified / normal
-    Normal = 4, // Normal is Enabled
+    Normal = 4 | 256, // Normal is Enabled
     /// pressed (e.g. clicked by mouse)
     Pressed = 1,
     /// widget has focus

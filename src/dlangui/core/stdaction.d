@@ -31,6 +31,7 @@ enum StandardAction : int {
     Open,
     Save,
     DiscardChanges,
+    OpenUrl,
 }
 
 const Action ACTION_OK = new Action(StandardAction.Ok, "ACTION_OK"c);
@@ -44,4 +45,5 @@ const Action ACTION_IGNORE = new Action(StandardAction.Ignore, "ACTION_IGNORE"c)
 const Action ACTION_OPEN = new Action(StandardAction.Open, "ACTION_OPEN"c);
 const Action ACTION_SAVE = new Action(StandardAction.Save, "ACTION_SAVE"c);
 const Action ACTION_DISCARD_CHANGES = new Action(StandardAction.DiscardChanges, "ACTION_DISCARD_CHANGES"c);
+const Action ACTION_OPEN_URL = (new Action(StandardAction.OpenUrl)).iconId("applications-internet");
 

@@ -23,6 +23,7 @@ res/main_menu_item_background.xml
 res/main_menu_item_background_hover.9.png
 res/main_menu_item_background_normal.9.png
 res/main_menu_item_background_selected.9.png
+res/mdpi/applications-internet.png
 res/mdpi/arrow_right_down_black.png
 res/mdpi/arrow_right_hollow.png
 res/mdpi/btn_check_off.png
