@@ -24,6 +24,8 @@ import dlangui.core.signals;
 import dlangui.core.stdaction;
 import dlangui.widgets.layouts;
 import dlangui.widgets.controls;
+import dlangui.widgets.winframe;
+import dlangui.widgets.popup;
 import dlangui.platforms.common.platform;
 
 import std.conv;
@@ -34,6 +36,8 @@ enum DialogFlag : uint {
     Modal = 1,
     /// dialog can be resized
     Resizable = 2,
+    /// dialog is show in popup widget inside current window instead of separate window
+    Popup = 4,
 }
 
 /// slot to pass dialog result
@@ -45,6 +49,7 @@ interface DialogResultHandler {
 class Dialog : VerticalLayout {
     protected Window _window;
     protected Window _parentWindow;
+    protected PopupWidget _popup;
     protected UIString _caption;
     protected uint _flags;
     protected string _icon;
@@ -95,6 +100,7 @@ class Dialog : VerticalLayout {
     protected const(Action) [] _buttonActions;
 
     protected ImageTextButton _defaultButton;
+    protected ImageTextButton _cancelButton;
 	/// create panel with buttons based on list of actions
 	Widget createButtonsPanel(const(Action) [] actions, int defaultActionIndex, int splitBeforeIndex) {
         _buttonActions = actions;
@@ -111,6 +117,8 @@ class Dialog : VerticalLayout {
 				btn.setState(State.Default);
                 _defaultButton = btn;
             }
+            if (a.id == StandardAction.Cancel || a.id == StandardAction.No)
+                _cancelButton = btn;
             btn.action = a.clone();
 			res.addChild(btn);
 		}
@@ -146,7 +154,10 @@ class Dialog : VerticalLayout {
             else if (_parentWindow)
                 _parentWindow.dispatchAction(action);
         }
-        window.close();
+        if (_popup)
+            _parentWindow.removePopup(_popup);
+        else
+            window.close();
     }
 
     /// shows dialog
@@ -160,11 +171,23 @@ class Dialog : VerticalLayout {
             layoutWidth = FILL_PARENT;
             layoutHeight = FILL_PARENT;
         }
-        _window = Platform.instance.createWindow(_caption, _parentWindow, wflags);
-		if (_window && _icon)
-			_window.windowIcon = drawableCache.getImage(_icon);
-        _window.mainWidget = this;
-        _window.show();
+        if (_flags & DialogFlag.Popup) {
+            DialogFrame _frame = new DialogFrame(this, _cancelButton !is null);
+            if (_cancelButton) {
+                _frame.onCloseButtonClickListener = delegate(Widget w) {
+                    close(_cancelButton.action);
+                    return true;
+                };
+            }
+            _popup = _parentWindow.showPopup(_frame);
+            _popup.flags(PopupFlags.Modal);
+        } else {
+            _window = Platform.instance.createWindow(_caption, _parentWindow, wflags);
+            if (_window && _icon)
+                _window.windowIcon = drawableCache.getImage(_icon);
+            _window.mainWidget = this;
+            _window.show();
+        }
         onShow();
     }
 
@@ -173,6 +196,17 @@ class Dialog : VerticalLayout {
         // override to do something useful
         if (_defaultButton)
             _defaultButton.setFocus();
+    }
+}
+
+/// frame with caption for dialog
+class DialogFrame : WindowFrame {
+    protected Dialog _dialog;
+    this(Dialog dialog, bool enableCloseButton) {
+        super(dialog.id ~ "_frame", enableCloseButton);
+        _dialog = dialog;
+        _caption.text = _dialog.windowCaption.value;
+        bodyWidget = _dialog;
     }
 }
 

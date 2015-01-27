@@ -50,6 +50,8 @@ struct PopupAnchor {
 enum PopupFlags : uint {
     /// close popup when mouse button clicked outside of its bounds
     CloseOnClickOutside = 1,
+    /// modal popup - keypresses and mouse events can be routed to this popup only
+    Modal = 2,
 }
 
 /** interface - slot for onPopupCloseListener */

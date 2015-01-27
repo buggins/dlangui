@@ -23,6 +23,7 @@ module dlangui.widgets.docks;
 
 import dlangui.widgets.layouts;
 import dlangui.widgets.controls;
+import dlangui.widgets.winframe;
 
 /// dock alignment types
 enum DockAlignment {
@@ -272,17 +273,7 @@ class DockHost : WidgetGroupDefaultDrawing {
 }
 
 /// docked window
-class DockWindow : VerticalLayout {
-
-    protected Widget _bodyWidget;
-    @property Widget bodyWidget() { return _bodyWidget; }
-    @property void bodyWidget(Widget widget) { 
-        _children.replace(widget, _bodyWidget);
-        _bodyWidget = widget;
-        _bodyWidget.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
-        _bodyWidget.parent = this;
-        requestLayout();
-    }
+class DockWindow : WindowFrame {
 
     protected DockAlignment _dockAlignment;
 
@@ -295,46 +286,16 @@ class DockWindow : VerticalLayout {
         return this; 
     }
 
-    protected HorizontalLayout _captionLayout;
-    protected TextWidget _caption;
-    protected ImageButton _closeButton;
-
     this(string ID) {
         super(ID);
+    }
+
+    override protected void init() {
+        super.init();
         _dockAlignment = DockAlignment.Right; // default alignment is right
-        init();
     }
 
-    protected bool onCloseButtonClick(Widget source) {
-        return true;
-    }
-    protected void init() {
-
-        styleId = STYLE_DOCK_WINDOW;
-
-        _captionLayout = new HorizontalLayout("DOCK_WINDOW_CAPTION_PANEL");
-        _captionLayout.layoutWidth(FILL_PARENT).layoutHeight(WRAP_CONTENT);
-        _captionLayout.styleId = STYLE_DOCK_WINDOW_CAPTION;
-
-        _caption = new TextWidget("DOCK_WINDOW_CAPTION");
-        _caption.styleId = STYLE_DOCK_WINDOW_CAPTION_LABEL;
-
-        _closeButton = new ImageButton("DOCK_WINDOW_CAPTION_CLOSE_BUTTON");
-        _closeButton.styleId = STYLE_BUTTON_TRANSPARENT;
-        _closeButton.drawableId = "close";
-		_closeButton.trackHover = true;
-        _closeButton.onClickListener = &onCloseButtonClick;
-
-        _captionLayout.addChild(_caption);
-        _captionLayout.addChild(_closeButton);
-
-        _bodyWidget = createBodyWidget();
-        _bodyWidget.styleId = STYLE_DOCK_WINDOW_BODY;
-
-        addChild(_captionLayout);
-        addChild(_bodyWidget);
-    }
-    protected Widget createBodyWidget() {
-        return new Widget("DOCK_WINDOW_BODY");
-    }
+    //protected Widget createBodyWidget() {
+    //    return new Widget("DOCK_WINDOW_BODY");
+    //}
 }

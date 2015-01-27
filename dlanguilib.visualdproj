@@ -391,6 +391,7 @@
      <File path="src\dlangui\widgets\toolbars.d" />
      <File path="src\dlangui\widgets\tree.d" />
      <File path="src\dlangui\widgets\widget.d" />
+     <File path="src\dlangui\widgets\winframe.d" />
     </Folder>
     <File path="src\dlangui\all.d" />
    </Folder>
