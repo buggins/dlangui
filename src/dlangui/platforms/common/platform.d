@@ -193,6 +193,15 @@ class Window {
         return false;
     }
 
+    /// returns last modal popup widget, or null if no modal popups opened
+    PopupWidget modalPopup() {
+        for (int i = cast(int)_popups.length - 1; i >= 0; i--) {
+            if (_popups[i].flags & PopupFlags.Modal)
+                return _popups[i];
+        }
+        return null;
+    }
+
     /// returns true if widget is child of either main widget or one of popups
     bool isChild(Widget w) {
         if (_mainWidget !is null && _mainWidget.isChild(w))
@@ -271,9 +280,17 @@ class Window {
         long drawStart = currentTimeMillis;
         // draw main widget
         _mainWidget.onDraw(buf);
+
+        PopupWidget modal = modalPopup();
+
         // draw popups
-        foreach(p; _popups)
+        foreach(p; _popups) {
+            if (p is modal) {
+                // TODO: get shadow color from theme
+                buf.fillRect(Rect(0, 0, buf.width, buf.height), 0xD0404040);
+            }
             p.onDraw(buf);
+        }
         long drawEnd = currentTimeMillis;
         debug(DebugRedraw) {
 		    if (drawEnd - drawStart > PERFORMANCE_LOGGING_THRESHOLD_MS)
@@ -341,6 +358,7 @@ class Window {
     /// dispatch keyboard event
     bool dispatchKeyEvent(KeyEvent event) {
 		bool res = false;
+        PopupWidget modal = modalPopup();
 		if (event.action == KeyAction.KeyDown || event.action == KeyAction.KeyUp) {
 			_keyboardModifiers = event.flags;
 			if (event.keyCode == KeyCode.ALT || event.keyCode == KeyCode.LALT || event.keyCode == KeyCode.RALT) {
@@ -360,14 +378,20 @@ class Window {
                 return res;
         }
         Widget focus = focusedWidget;
-        while (focus) {
-            if (focus.onKeyEvent(event))
-                return true; // processed by focused widget
-            if (focus.focusGroup)
-                break;
-            focus = focus.parent;
+        if (!modal || modal.isChild(focus)) {
+            while (focus) {
+                if (focus.onKeyEvent(event))
+                    return true; // processed by focused widget
+                if (focus.focusGroup)
+                    break;
+                focus = focus.parent;
+            }
         }
-        if (_mainWidget) {
+        if (modal) {
+            if (dispatchKeyEvent(modal, event))
+                return res;
+            return modal.onKeyEvent(event) || res;
+        } else if (_mainWidget) {
             if (dispatchKeyEvent(_mainWidget, event))
                 return res;
             return _mainWidget.onKeyEvent(event) || res;
@@ -585,8 +609,10 @@ class Window {
         if (_mainWidget is null)
             return false;
 
+        PopupWidget modal = modalPopup();
+
         // check if _mouseCaptureWidget and _mouseTrackingWidget still exist in child of root widget
-        if (_mouseCaptureWidget !is null && !isChild(_mouseCaptureWidget)) {
+        if (_mouseCaptureWidget !is null && (!isChild(_mouseCaptureWidget) || (modal && !modal.isChild(_mouseCaptureWidget)))) {
             clearMouseCapture();
         }
 
@@ -666,6 +692,8 @@ class Window {
 				auto p = _popups[i];
                 if (p.isPointInside(event.x, event.y))
                     insideOneOfPopups = true;
+                if (p is modal)
+                    break;
             }
             for (int i = cast(int)_popups.length - 1; i >= 0; i--) {
 				auto p = _popups[i];
@@ -676,8 +704,11 @@ class Window {
                     if (dispatchMouseEvent(p, event, cursorIsSet))
                         return true;
                 }
+                if (p is modal)
+                    break;
             }
-            res = dispatchMouseEvent(_mainWidget, event, cursorIsSet);
+            if (!modal)
+                res = dispatchMouseEvent(_mainWidget, event, cursorIsSet);
         }
         return res || processed || _mainWidget.needDraw;
     }

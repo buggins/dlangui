@@ -209,4 +209,3 @@ class DialogFrame : WindowFrame {
         bodyWidget = _dialog;
     }
 }
-
