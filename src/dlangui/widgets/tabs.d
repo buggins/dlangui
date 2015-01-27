@@ -686,6 +686,12 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
         return _tabHost.tabBody(id);
     }
 
+    /// get tab content widget by id
+    Widget tabBody(int index) {
+        string id = _tabControl.tab(index).id;
+        return _tabHost.tabBody(id);
+    }
+
 	/// returns tab item by id (null if index out of range)
 	TabItem tab(int index) {
 		return _tabControl.tab(index);
@@ -694,6 +700,10 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
 	TabItem tab(string id) {
 		return _tabControl.tab(id);
 	}
+    /// returns tab count
+    @property int tabCount() const {
+        return _tabControl.tabCount;
+    }
 	/// get tab index by tab id (-1 if not found)
 	int tabIndex(string id) {
 		return _tabControl.tabIndex(id);

@@ -67,7 +67,7 @@ class Dialog : VerticalLayout {
     /** 
         Measure widget according to desired width and height constraints. (Step 1 of two phase layout). 
     */
-    void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) { 
         super.measure(parentWidth, parentHeight);
         if ((_flags & DialogFlag.Resizable) && (_flags & DialogFlag.Popup)) {
             Point sz = Point(_parentWindow.width * 4 / 5, _parentWindow.height * 4 / 5);
