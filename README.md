@@ -215,7 +215,7 @@ Hello World
 
 	// myproject.d
 	import dlangui.all;
-	mixin DLANGUI_ENTRY_POINT;
+	mixin APP_ENTRY_POINT;
 
 	/// entry point for dlangui based application
 	extern (C) int UIAppMain(string[] args) {
