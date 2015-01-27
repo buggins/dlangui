@@ -24,17 +24,147 @@ module dlangui.widgets.docks;
 import dlangui.widgets.layouts;
 import dlangui.widgets.controls;
 
+/// dock alignment types
+enum DockAlignment {
+    /// at left of body
+    Left,
+    /// at right of body
+    Right,
+    /// above body
+    Top,
+    /// below body
+    Bottom
+}
+
+
+struct DockSpace {
+    protected Rect _rc;
+    protected Rect _resizerRect;
+    protected Rect _dockRect;
+    protected DockWindow[] _docks;
+    @property DockWindow[] docks() { return _docks; }
+    protected DockHost _host;
+    protected DockAlignment _alignment;
+    @property DockAlignment alignment() { return _alignment; }
+    protected ResizerWidget _resizer;
+    @property ResizerWidget resizer() { return _resizer; }
+    protected int _space;
+    @property int space() { return _space; }
+    protected int _minSpace;
+    protected int _maxSpace;
+    ResizerWidget init(DockHost host, DockAlignment a) {
+        _host = host;
+        _alignment = a;
+        final switch (a) {
+            case DockAlignment.Top:
+                _resizer =  new ResizerWidget("top_resizer", Orientation.Vertical);
+                break;
+            case DockAlignment.Bottom:
+                _resizer =  new ResizerWidget("bottom_resizer", Orientation.Vertical);
+                break;
+            case DockAlignment.Left:
+                _resizer =  new ResizerWidget("left_resizer", Orientation.Horizontal);
+                break;
+            case DockAlignment.Right:
+                _resizer =  new ResizerWidget("right_resizer", Orientation.Horizontal);
+                break;
+        }
+		_resizer.visibility = Visibility.Gone;
+		_resizer.resizeListener = &onResize;
+        return _resizer;
+    }
+    /// host to be layed out
+    void beforeLayout(Rect rc, DockWindow[] docks) {
+        _docks = docks;
+        int baseSize;
+        if (_resizer.orientation == Orientation.Vertical)
+            baseSize = rc.height;
+        else
+            baseSize = rc.width;
+        _minSpace = baseSize * 1 / 10;
+        _maxSpace = baseSize * 4 / 10;
+        if (_docks.length) {
+            if (_space < _minSpace) {
+                if (_space == 0)
+                    _space = (_minSpace + _maxSpace) / 2;
+                else
+                    _space = _minSpace;
+            }
+            if (_space > _maxSpace) {
+                _space = _maxSpace;
+            }
+            _resizer.visibility = Visibility.Visible;
+        } else {
+            _space = 0;
+            _resizer.visibility = Visibility.Gone;
+        }
+    }
+    void layout(Rect rc) {
+        int rsWidth = 3; // resizer width
+        if (_space) {
+            _rc = rc;
+            final switch (_alignment) {
+                case DockAlignment.Top:
+                    _resizerRect = Rect(rc.left, rc.bottom - rsWidth, rc.right, rc.bottom + rsWidth);
+                    _dockRect = Rect(rc.left, rc.top, rc.right, rc.bottom - rsWidth);
+                    break;
+                case DockAlignment.Bottom:
+                    _resizerRect = Rect(rc.left, rc.top - rsWidth, rc.right, rc.top + rsWidth);
+                    _dockRect = Rect(rc.left, rc.top + rsWidth, rc.right, rc.bottom);
+                    break;
+                case DockAlignment.Left:
+                    _resizerRect = Rect(rc.right - rsWidth, rc.top, rc.right + rsWidth, rc.bottom);
+                    _dockRect = Rect(rc.left, rc.top, rc.right - rsWidth, rc.bottom);
+                    break;
+                case DockAlignment.Right:
+                    _resizerRect = Rect(rc.left - rsWidth, rc.top, rc.left + rsWidth, rc.bottom);
+                    _dockRect = Rect(rc.left + rsWidth, rc.top, rc.right, rc.bottom);
+                    break;
+            }
+            // layout resizer
+            _resizer.layout(_resizerRect);
+            // layout docked
+            layoutDocked();
+        } else {
+            _rc = _resizerRect = _dockRect = Rect(0, 0, 0, 0); // empty rect
+        }
+    }
+	protected void onResize(ResizerWidget source, ResizerEventType event, int newPosition) {
+        _host.onResize(source, event, newPosition);
+    }
+    protected void layoutDocked() {
+        Rect rc = _rc; //_dockRect;
+        int len = cast(int)_docks.length;
+        for (int i = 0; i < len; i++) {
+            Rect itemRc = rc;
+            if (len > 1) {
+                if (_resizer.orientation == Orientation.Horizontal) {
+                    itemRc.top = rc.top + rc.height * i / len;
+                    if (i != len - 1)
+                        itemRc.bottom = rc.top + rc.height * (i + 1) / len;
+                    else
+                        itemRc.bottom = rc.bottom;
+                } else {
+                    itemRc.left = rc.left + rc.width * i / len;
+                    if (i != len - 1)
+                        itemRc.right = rc.left + rc.width * (i + 1) / len;
+                    else
+                        itemRc.right = rc.right;
+                }
+            }
+            _docks[i].layout(itemRc);
+        }
+    }
+}
+
 /// Layout for docking support - contains body widget and optional docked windows
 class DockHost : WidgetGroupDefaultDrawing {
 
-    protected int _topSpace;
-    protected int _bottomSpace;
-    protected int _rightSpace;
-    protected int _leftSpace;
-	protected ResizerWidget _topResizer;
-	protected ResizerWidget _bottomResizer;
-	protected ResizerWidget _leftResizer;
-	protected ResizerWidget _rightResizer;
+    
+    protected DockSpace _topSpace;
+    protected DockSpace _bottomSpace;
+    protected DockSpace _rightSpace;
+    protected DockSpace _leftSpace;
     protected Widget _bodyWidget;
     @property Widget bodyWidget() { return _bodyWidget; }
     @property void bodyWidget(Widget widget) { 
@@ -59,22 +189,10 @@ class DockHost : WidgetGroupDefaultDrawing {
     this() {
         super("DOCK_HOST");
         styleId = STYLE_DOCK_HOST;
-		_topResizer = new ResizerWidget("top_resizer", Orientation.Vertical);
-		_topResizer.visibility = Visibility.Gone;
-		_topResizer.resizeListener = &onResize;
-		_leftResizer = new ResizerWidget("left_resizer", Orientation.Horizontal);
-		_leftResizer.visibility = Visibility.Gone;
-		_leftResizer.resizeListener = &onResize;
-		_rightResizer = new ResizerWidget("right_resizer", Orientation.Horizontal);
-		_rightResizer.visibility = Visibility.Gone;
-		_rightResizer.resizeListener = &onResize;
-		_bottomResizer = new ResizerWidget("bottom_resizer", Orientation.Vertical);
-		_bottomResizer.visibility = Visibility.Gone;
-		_bottomResizer.resizeListener = &onResize;
-		addChild(_topResizer);
-		addChild(_leftResizer);
-		addChild(_rightResizer);
-		addChild(_bottomResizer);
+        addChild(_topSpace.init(this, DockAlignment.Top));
+        addChild(_bottomSpace.init(this, DockAlignment.Bottom));
+        addChild(_leftSpace.init(this, DockAlignment.Left));
+        addChild(_rightSpace.init(this, DockAlignment.Right));
     }
 
     protected DockWindow[] getDockedWindowList(DockAlignment alignType) {
@@ -90,29 +208,6 @@ class DockHost : WidgetGroupDefaultDrawing {
         return list;
     }
 
-    protected void layoutDocked(DockWindow[] list, Rect rc, Orientation orient) {
-        int len = cast(int)list.length;
-        for (int i = 0; i < len; i++) {
-            Rect itemRc = rc;
-            if (len > 1) {
-                if (orient == Orientation.Vertical) {
-                    itemRc.top = rc.top + rc.height * i / len;
-                    if (i != len - 1)
-                        itemRc.bottom = rc.top + rc.height * (i + 1) / len;
-                    else
-                        itemRc.bottom = rc.bottom;
-                } else {
-                    itemRc.left = rc.left + rc.width * i / len;
-                    if (i != len - 1)
-                        itemRc.right = rc.left + rc.width * (i + 1) / len;
-                    else
-                        itemRc.right = rc.right;
-                }
-            }
-            list[i].layout(itemRc);
-        }
-    }
-
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     override void layout(Rect rc) {
         _needLayout = false;
@@ -122,46 +217,18 @@ class DockHost : WidgetGroupDefaultDrawing {
         _pos = rc;
         applyMargins(rc);
         applyPadding(rc);
-        DockWindow[] top = getDockedWindowList(DockAlignment.Top);
-        DockWindow[] left = getDockedWindowList(DockAlignment.Left);
-        DockWindow[] right = getDockedWindowList(DockAlignment.Right);
-        DockWindow[] bottom = getDockedWindowList(DockAlignment.Bottom);
-        _topSpace = top.length ? rc.height / 4 : 0;
-        _bottomSpace = bottom.length ? rc.height / 4 : 0;
-        _rightSpace = right.length ? rc.width / 4 : 0;
-        _leftSpace = left.length ? rc.width / 4 : 0;
-		int resizerWidth = 6;
-		if (_topSpace) {
-			_topResizer.visibility = Visibility.Visible;
-			_topResizer.layout(Rect(rc.left + _leftSpace, rc.top + _topSpace - resizerWidth, rc.right - _rightSpace, rc.top + _topSpace));
-		} else {
-			_topResizer.visibility = Visibility.Gone;
-		}
-		if (_bottomSpace) {
-			_bottomResizer.visibility = Visibility.Visible;
-			_bottomResizer.layout(Rect(rc.left + _leftSpace, rc.bottom - _bottomSpace, rc.right - _rightSpace, rc.bottom - _bottomSpace + resizerWidth));
-		} else {
-			_bottomResizer.visibility = Visibility.Gone;
-		}
-		if (_leftSpace) {
-			_leftResizer.visibility = Visibility.Visible;
-			_leftResizer.layout(Rect(rc.left + _leftSpace - resizerWidth, rc.top, rc.left + _leftSpace, rc.bottom));
-		} else {
-			_leftResizer.visibility = Visibility.Gone;
-		}
-		if (_rightSpace) {
-			_rightResizer.visibility = Visibility.Visible;
-			_rightResizer.layout(Rect(rc.right - _rightSpace, rc.top, rc.right - _rightSpace + resizerWidth, rc.bottom));
-		} else {
-			_rightResizer.visibility = Visibility.Gone;
-		}
+        _topSpace.beforeLayout(rc, getDockedWindowList(DockAlignment.Top));
+        _leftSpace.beforeLayout(rc, getDockedWindowList(DockAlignment.Left));
+        _rightSpace.beforeLayout(rc, getDockedWindowList(DockAlignment.Right));
+        _bottomSpace.beforeLayout(rc, getDockedWindowList(DockAlignment.Bottom));
+        _topSpace.layout(Rect(rc.left + _leftSpace.space, rc.top, rc.right - _rightSpace.space, rc.top + _topSpace.space));
+        _bottomSpace.layout(Rect(rc.left + _leftSpace.space, rc.bottom - _bottomSpace.space, rc.right - _rightSpace.space, rc.bottom));
+        _leftSpace.layout(Rect(rc.left, rc.top, rc.left + _leftSpace.space, rc.bottom));
+        _rightSpace.layout(Rect(rc.right - _rightSpace.space, rc.top, rc.right, rc.bottom));
         if (_bodyWidget)
-            _bodyWidget.layout(Rect(rc.left + _leftSpace, rc.top + _topSpace, rc.right - _rightSpace, rc.bottom - _bottomSpace));
-        layoutDocked(top, Rect(rc.left + _leftSpace, rc.top, rc.right - _rightSpace, rc.top + _topSpace), Orientation.Horizontal);
-        layoutDocked(bottom, Rect(rc.left + _leftSpace, rc.bottom - _bottomSpace, rc.right - _rightSpace, rc.bottom), Orientation.Horizontal);
-        layoutDocked(left, Rect(rc.left, rc.top, rc.left + _leftSpace, rc.bottom), Orientation.Vertical);
-        layoutDocked(right, Rect(rc.right - _rightSpace, rc.top, rc.right, rc.bottom), Orientation.Vertical);
+            _bodyWidget.layout(Rect(rc.left + _leftSpace.space, rc.top + _topSpace.space, rc.right - _rightSpace.space, rc.bottom - _bottomSpace.space));
     }
+
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
     override void measure(int parentWidth, int parentHeight) { 
         Rect m = margins;
@@ -194,14 +261,6 @@ class DockHost : WidgetGroupDefaultDrawing {
         }
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }
-}
-
-/// dock alignment types
-enum DockAlignment {
-    Left,
-    Right,
-    Top,
-    Bottom
 }
 
 /// docked window
