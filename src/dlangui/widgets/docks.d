@@ -129,8 +129,19 @@ struct DockSpace {
             _rc = _resizerRect = _dockRect = Rect(0, 0, 0, 0); // empty rect
         }
     }
+    protected int _dragStartSpace;
+    protected int _dragStartPosition;
 	protected void onResize(ResizerWidget source, ResizerEventType event, int newPosition) {
-        _host.onResize(source, event, newPosition);
+        if (!_space)
+            return;
+        if (event == ResizerEventType.StartDragging) {
+            _dragStartSpace = _space;
+            _dragStartPosition = newPosition;
+        } else if (event == ResizerEventType.Dragging) {
+            int dir = _alignment == DockAlignment.Right || _alignment == DockAlignment.Bottom ? -1 : 1;
+            _space = _dragStartSpace + dir * (newPosition - _dragStartPosition);
+            _host.onResize(source, event, newPosition);
+        }
     }
     protected void layoutDocked() {
         Rect rc = _rc; //_dockRect;
@@ -180,10 +191,7 @@ class DockHost : WidgetGroupDefaultDrawing {
 
 	protected int _resizeStartPos;
 	void onResize(ResizerWidget source, ResizerEventType event, int newPosition) {
-		if (event == ResizerEventType.StartDragging) {
-			_resizeStartPos = newPosition;
-		} else if (event == ResizerEventType.Dragging) {
-		}
+        layout(_pos);
 	}
 
     this() {

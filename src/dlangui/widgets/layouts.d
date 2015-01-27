@@ -406,7 +406,7 @@ class ResizerWidget : Widget {
                 if (_delta > _maxDragDelta)
                     _delta = _maxDragDelta;
             } else if (resizeListener.assigned) {
-				resizeListener(this, ResizerEventType.StartDragging, Orientation.Vertical ? _dragStart.y : _dragStart.x);
+				resizeListener(this, ResizerEventType.StartDragging, _orientation == Orientation.Vertical ? event.y : event.x);
 			}
             return true;
         }
@@ -416,7 +416,7 @@ class ResizerWidget : Widget {
         if (event.action == MouseAction.Move && _dragging) {
             int delta = _orientation == Orientation.Vertical ? event.y - _dragStart.y : event.x - _dragStart.x;
 			if (resizeListener.assigned) {
-				resizeListener(this, ResizerEventType.Dragging, Orientation.Vertical ? event.y : event.x);
+				resizeListener(this, ResizerEventType.Dragging, _orientation == Orientation.Vertical ? event.y : event.x);
 				return true;
 			}
             _delta = _dragStartPosition + delta;
@@ -465,7 +465,7 @@ class ResizerWidget : Widget {
                 //sendScrollEvent(ScrollAction.SliderReleased, _position);
                 _dragging = false;
 				if (resizeListener.assigned) {
-					resizeListener(this, ResizerEventType.EndDragging, Orientation.Vertical ? event.y : event.x);
+					resizeListener(this, ResizerEventType.EndDragging, _orientation == Orientation.Vertical ? event.y : event.x);
 				}
             }
             return true;
@@ -488,7 +488,7 @@ class ResizerWidget : Widget {
 				resetState(State.Pressed);
 				_dragging = false;
 				if (resizeListener.assigned) {
-					resizeListener(this, ResizerEventType.EndDragging, Orientation.Vertical ? event.y : event.x);
+					resizeListener(this, ResizerEventType.EndDragging, _orientation == Orientation.Vertical ? event.y : event.x);
 				}
 			}
             return true;
