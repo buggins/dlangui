@@ -668,6 +668,12 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         _needUpdateWidgets = false;
     }
 
+    void clearAllItems() {
+        items.clear();
+        updateWidgets();
+        requestLayout();
+    }
+
     protected void updateWidgetStates() {
         for (int i = 0; i < _contentWidget.childCount; i++) {
             TreeItemWidget child = cast(TreeItemWidget)_contentWidget.child(i);

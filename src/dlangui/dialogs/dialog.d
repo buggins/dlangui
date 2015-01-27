@@ -162,7 +162,7 @@ class Dialog : VerticalLayout {
         if (action) {
             if (onDialogResult.assigned)
                 onDialogResult(this, action);
-            else if (_parentWindow)
+            else if (_parentWindow && !_popup)
                 _parentWindow.dispatchAction(action);
         }
         if (_popup)
