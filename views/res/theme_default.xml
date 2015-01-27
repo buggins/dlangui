@@ -194,7 +194,7 @@
         <state state_enabled="false" textColor="#80404040"/>
     </style>
     <style id="TRANSPARENT_BUTTON_BACKGROUND"
-        backgroundImageId="transparent_button_background"
+        backgroundImageId="btn_background_transparent"
         padding="4,2,4,2"
         />
     <style id="POPUP_MENU"

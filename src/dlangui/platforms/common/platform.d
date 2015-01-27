@@ -690,13 +690,17 @@ class Window {
             bool insideOneOfPopups = false;
             for (int i = cast(int)_popups.length - 1; i >= 0; i--) {
 				auto p = _popups[i];
-                if (p.isPointInside(event.x, event.y))
-                    insideOneOfPopups = true;
+                if (p.isPointInside(event.x, event.y)) {
+                    if (p !is modal)
+                        insideOneOfPopups = true;
+                }
                 if (p is modal)
                     break;
             }
             for (int i = cast(int)_popups.length - 1; i >= 0; i--) {
 				auto p = _popups[i];
+                if (p is modal)
+                    break;
                 if (!insideOneOfPopups) {
                     if (p.onMouseEventOutside(event)) // stop loop when true is returned, but allow other main widget to handle event
                         break;
@@ -704,11 +708,11 @@ class Window {
                     if (dispatchMouseEvent(p, event, cursorIsSet))
                         return true;
                 }
-                if (p is modal)
-                    break;
             }
             if (!modal)
                 res = dispatchMouseEvent(_mainWidget, event, cursorIsSet);
+            else
+                res = dispatchMouseEvent(modal, event, cursorIsSet);
         }
         return res || processed || _mainWidget.needDraw;
     }

@@ -242,6 +242,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         res.layoutWidth(WRAP_CONTENT).layoutHeight(FILL_PARENT).layoutWeight(0);
         res.onItemClickListener = delegate(Widget source, int itemIndex) {
             openDirectory(_roots[itemIndex].path, null);
+            res.selectItem(-1);
             return true;
         };
         res.focusable = true;
