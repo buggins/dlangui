@@ -134,6 +134,8 @@ immutable string STYLE_DOCK_WINDOW = "DOCK_WINDOW";
 immutable string STYLE_DOCK_WINDOW_CAPTION_LABEL = "DOCK_WINDOW_CAPTION_LABEL";
 /// standard style id for dock window body
 immutable string STYLE_DOCK_WINDOW_BODY = "DOCK_WINDOW_BODY";
+/// standard style id for toolbar separator
+immutable string STYLE_FLOATING_WINDOW = "FLOATING_WINDOW";
 
 /// standard style id for tab control in dock frame
 immutable string STYLE_TAB_UP_DARK = "TAB_UP_DARK";

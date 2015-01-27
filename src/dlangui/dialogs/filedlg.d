@@ -69,6 +69,8 @@ struct FileFilterEntry {
 	}
 }
 
+__gshared bool SHOW_FILE_DIALOG_IN_POPUP = true;
+
 /// File open / save dialog
 class FileDialog : Dialog, CustomGridCellAdapter {
 	protected FilePathPanel _edPath;
@@ -90,7 +92,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     protected bool _isOpenDialog;
 
 	this(UIString caption, Window parent, Action action = null, uint fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable | FileDialogFlag.FileMustExist) {
-        super(caption, parent, fileDialogFlags);
+        super(caption, parent, fileDialogFlags | (SHOW_FILE_DIALOG_IN_POPUP ? DialogFlag.Popup : 0));
         _isOpenDialog = !(_flags & FileDialogFlag.ConfirmOverwrite);
         if (action is null) {
             if (_isOpenDialog)

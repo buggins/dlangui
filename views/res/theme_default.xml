@@ -263,6 +263,13 @@
         padding="1,1,1,1"
         margins="4,4,4,4"
         />
+    <style id="FLOATING_WINDOW"
+        backgroundImageId="popup_window_background"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        padding="1,1,1,1"
+        margins="4,4,4,4"
+        />
     <style id="DOCK_WINDOW_CAPTION"
         backgroundColor="#4d6082"
         layoutWidth="FILL_PARENT"

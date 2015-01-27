@@ -64,6 +64,17 @@ class Dialog : VerticalLayout {
         _icon = "dlangui-logo1";
     }
 
+    /** 
+        Measure widget according to desired width and height constraints. (Step 1 of two phase layout). 
+    */
+    void measure(int parentWidth, int parentHeight) { 
+        super.measure(parentWidth, parentHeight);
+        if ((_flags & DialogFlag.Resizable) && (_flags & DialogFlag.Popup)) {
+            Point sz = Point(_parentWindow.width * 4 / 5, _parentWindow.height * 4 / 5);
+            measuredContent(parentWidth, parentHeight, sz.x, sz.y);
+        }
+    }
+
     /// get icon resource id
     @property string windowIcon() {
         return _icon;
@@ -204,6 +215,7 @@ class DialogFrame : WindowFrame {
     protected Dialog _dialog;
     this(Dialog dialog, bool enableCloseButton) {
         super(dialog.id ~ "_frame", enableCloseButton);
+        styleId = STYLE_FLOATING_WINDOW;
         _dialog = dialog;
         _caption.text = _dialog.windowCaption.value;
         bodyWidget = _dialog;
