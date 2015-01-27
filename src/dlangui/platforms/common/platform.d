@@ -883,17 +883,20 @@ class Platform {
 		return this;
 	}
 
-    /// override to support opening url in external browser
+    /// open url in external browser
     bool openURL(string url) {
-        Log.d("Platform.openURL(", url, ") is called");
-        bool res = false;
-        version(Windows) {
-            import win32.shellapi;
-            ShellExecuteA(null, "open", url.toStringz, null, null, 1);
-            res = true;
-        }
-        // TODO: support other platforms
-        return res;
+		import std.process;
+		browse(url);
+		return true;
+		//Log.d("Platform.openURL(", url, ") is called");
+		//bool res = false;
+		//version(Windows) {
+		//    import win32.shellapi;
+		//    ShellExecuteA(null, "open", url.toStringz, null, null, 1);
+		//    res = true;
+		//}
+		//// TODO: support other platforms
+		//return res;
     }
 }
 
