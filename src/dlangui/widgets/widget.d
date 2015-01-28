@@ -555,9 +555,12 @@ class Widget {
     /// sets widget visibility (Visible, Invisible, Gone)
     @property Widget visibility(Visibility visible) {
         if (_visibility != visible) {
-            if ((_visibility == Visibility.Gone) || (visible == Visibility.Gone))
-                requestLayout();
-            else
+            if ((_visibility == Visibility.Gone) || (visible == Visibility.Gone)) {
+                if (parent)
+                    parent.requestLayout();
+                else
+                    requestLayout();
+            } else
                 invalidate();
             _visibility = visible;
         }
