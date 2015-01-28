@@ -564,6 +564,11 @@ class FreeTypeFontManager : FontManager {
         return true;
     }
 
+    /// returns number of registered fonts
+    @property int registeredFontCount() {
+        return cast(int)_fontFiles.length;
+    }
+
 }
 
 private int myabs(int n) { return n >= 0 ? n : -n; }

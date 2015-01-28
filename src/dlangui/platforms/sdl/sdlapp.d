@@ -1133,6 +1133,17 @@ version (Windows) {
             ft.registerFont("/Library/Fonts/Georgia Italic.ttf", FontFamily.SansSerif, "Georgia", true, FontWeight.Normal);
             ft.registerFont("/Library/Fonts/Georgia Bold Italic.ttf", FontFamily.SansSerif, "Georgia", true, FontWeight.Bold);
         }
+
+        if (!ft.registeredFontCount) {
+            Log.e("******************************************************************");
+            Log.e("No font files found!!!");
+            Log.e("Currently, only hardcoded font paths implemented.");
+            Log.e("Probably you can modify sdlapp.d to add some fonts for your system.");
+            Log.e("TODO: use fontconfig");
+            Log.e("******************************************************************");
+            assert(false);
+        }
+
 		FontManager.instance = ft;
 
         return sdlmain(args);
