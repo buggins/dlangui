@@ -681,7 +681,8 @@ class EditableContent {
         // update highlight if necessary
         updateTokenProps(rangeAfter.start.line, rangeAfter.end.line + 1);
         // call listeners
-		contentChangeListeners(this, op, rangeBefore, rangeAfter, source);
+		if (contentChangeListeners.assigned)
+			contentChangeListeners(this, op, rangeBefore, rangeAfter, source);
 	}
 
     /// return text for specified range
@@ -2405,6 +2406,13 @@ class EditBox : EditWidgetBase {
         FontRef font = font();
         _lineHeight = font.height;
         _numVisibleLines = (_clientRect.height + _lineHeight - 1) / _lineHeight;
+		if (_firstVisibleLine >= _content.length) {
+			_firstVisibleLine = _content.length - _numVisibleLines + 1;
+			if (_firstVisibleLine < 0)
+				_firstVisibleLine = 0;
+			_caretPos.line = _content.length - 1;
+			_caretPos.pos = 0;
+		}
         if (_firstVisibleLine + _numVisibleLines > _content.length)
             _numVisibleLines = _content.length - _firstVisibleLine;
         _visibleLines.length = _numVisibleLines;
@@ -2942,13 +2950,15 @@ class LogWidget : EditBox {
         super(ID);
         _scrollLock = true;
         enabled = false;
-        fontSize = 12;
+        fontSize = 15;
 		fontFace = "Consolas,Lucida Console,Courier New";
 		fontFamily = FontFamily.MonoSpace;
     }
     /// append lines to the end of text
     void appendLines(dstring[] lines...) {
-        lines ~= ""d; // append new line after last line
+		if (lines.length == 0)
+			return;
+        //lines ~= ""d; // append new line after last line
         content.appendLines(lines);
         if (_maxLines > 0 && lineCount > _maxLines) {
             TextRange range;

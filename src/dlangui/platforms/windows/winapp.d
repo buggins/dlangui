@@ -319,7 +319,7 @@ class Win32Window : Window {
     }
 
     private long _nextExpectedTimerTs;
-    private UINT_PTR _timerId;
+    private UINT_PTR _timerId = 1;
 
     /// schedule timer for interval in milliseconds - call window.onTimer when finished
     override protected void scheduleSystemTimer(long intervalMillis) {
@@ -329,13 +329,20 @@ class Win32Window : Window {
         if (_timerId && _nextExpectedTimerTs && _nextExpectedTimerTs < nextts + 10)
             return; // don't reschedule timer, timer event will be received soon
         if (_hwnd) {
-            _timerId = SetTimer(_hwnd, _timerId, cast(uint)intervalMillis, null);
+			//_timerId = 
+            SetTimer(_hwnd, _timerId, cast(uint)intervalMillis, null);
             _nextExpectedTimerTs = nextts;
         }
     }
 
     void handleTimer(UINT_PTR timerId) {
-        onTimer();
+		//Log.d("handleTimer id=", timerId);
+		if (timerId == _timerId) {
+			KillTimer(_hwnd, timerId);
+			//_timerId = 0;
+			_nextExpectedTimerTs = 0;
+			onTimer();
+		}
     }
 
 

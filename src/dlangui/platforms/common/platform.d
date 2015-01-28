@@ -849,15 +849,21 @@ class Window {
 
     /// system timer interval expired - notify queue
     protected void onTimer() {
+		//Log.d("window.onTimer");
         bool res = _timerQueue.notify();
+		//Log.d("window.onTimer after notify");
         if (res) {
             // check if update needed and redraw if so
+			//Log.d("before update");
             update(false);
+			//Log.d("after update");
         }
+		//Log.d("schedule next timer");
         long nextInterval = _timerQueue.nextIntervalMillis();
         if (nextInterval > 0) {
             scheduleSystemTimer(nextInterval);
         }
+		//Log.d("schedule next timer done");
     }
 
     /// set timer for destination widget - destination.onTimer() will be called after interval expiration; returns timer id
