@@ -51,7 +51,7 @@ enum LogLevel : int {
 }
 
 /// Returns timestamp in milliseconds since 1970 UTC similar to Java System.currentTimeMillis()
-long currentTimeMillis() {
+@property long currentTimeMillis() {
     return std.datetime.Clock.currStdTime / 10000;
 }
 

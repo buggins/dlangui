@@ -923,6 +923,12 @@ class Widget {
         return res;
     }
 
+    /// handle timer; return true to repeat timer event after next interval, false cancel timer
+    bool onTimer(ulong id) {
+        // override to do something useful
+        return false;
+    }
+
     /// map key to action
     Action findKeyAction(uint keyCode, uint flags) {
         Action action = _acceleratorMap.findByKey(keyCode, flags);

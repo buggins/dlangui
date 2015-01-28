@@ -86,6 +86,51 @@ class EventList {
     }
 }
 
+class TimerInfo {
+    static ulong nextId;
+
+    this(Widget targetWidget, long intervalMillis) {
+        _id = ++nextId;
+        assert(intervalMillis >= 0 && intervalMillis < 7*24*60*60*1000L);
+        _targetWidget = targetWidget;
+        _interval = intervalMillis;
+        _nextTimestamp = currentTimeMillis + _interval;
+    }
+    /// cancel timer
+    void cancel() {
+        _targetWidget = null;
+    }
+    /// cancel timer
+    void notify() {
+        if (_targetWidget) {
+            _nextTimestamp = currentTimeMillis + _interval;
+            if (!_targetWidget.onTimer(_id)) {
+                _targetWidget = null;
+            }
+        }
+    }
+    /// unique Id of timer
+    @property ulong id() { return _id; }
+    /// timer interval, milliseconds
+    @property long interval() { return _interval; }
+    /// next timestamp to invoke timer at, as per currentTimeMillis()
+    @property long nextTimestamp() { return _nextTimestamp; }
+    /// widget to route timer event to
+    @property Widget targetWidget() { return _targetWidget; }
+
+    protected ulong _id;
+    protected long _interval;
+    protected long _nextTimestamp;
+    protected Widget _targetWidget;
+}
+
+class TimerQueue {
+    protected TimerInfo[] _queue;
+    void add(TimerInfo event) {
+        int len = cast(int)_queue.length;
+    }
+}
+
 /**
  * Window abstraction layer. Widgets can be shown only inside window.
  * 
