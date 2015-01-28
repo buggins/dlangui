@@ -264,7 +264,7 @@ struct Cup {
                 _destroyedFullRows[i] = false;
             }
         }
-        return true;
+        return res;
     }
 
     /// check if all cells where current figire is located are free
