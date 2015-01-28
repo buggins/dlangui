@@ -45,6 +45,42 @@ Widget createAboutWidget()
 	return res;
 }
 
+class TimerTest : HorizontalLayout {
+    ulong timerId;
+    TextWidget _counter;
+    int _value;
+    Button _start;
+    Button _stop;
+    override bool onTimer(ulong id) {
+        _value++;
+        _counter.text = to!dstring(_value);
+        return true;
+    }
+    this() {
+        addChild(new TextWidget(null, "Timer test."d));
+        _counter = new TextWidget(null, "0"d);
+        _counter.fontSize(32);
+        _start = new Button(null, "Start timer"d);
+        _stop = new Button(null, "Stop timer"d);
+        _stop.enabled = false;
+        _start.onClickListener = delegate(Widget src) {
+            _start.enabled = false;
+            _stop.enabled = true;
+            timerId = setTimer(1000);
+            return true;
+        };
+        _stop.onClickListener = delegate(Widget src) {
+            _start.enabled = true;
+            _stop.enabled = false;
+            cancelTimer(timerId);
+            return true;
+        };
+        addChild(_start);
+        addChild(_stop);
+        addChild(_counter);
+    }
+}
+
 class AnimatedDrawable : Drawable {
 	DrawableRef background;
 	this() {
@@ -375,6 +411,7 @@ extern (C) int UIAppMain(string[] args) {
 		layout.addChild((new TextWidget()).textColor(0x00802000).text("Text widget 0"));
 		layout.addChild((new TextWidget()).textColor(0x40FF4000).text("Text widget"));
 		layout.addChild((new Button("BTN1")).textResource("EXIT")); //.textColor(0x40FF4000)
+        layout.addChild(new TimerTest());
 		
 		static if (true) {
 		

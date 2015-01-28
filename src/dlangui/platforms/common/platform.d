@@ -891,7 +891,9 @@ class Window {
         }
         /// cancel timer
         void cancelTimer(ulong timerId) {
-            for (size_t i = _queue.length - 1; i >= 0; i--) {
+            if (!_queue.length)
+                return;
+            for (int i = cast(int)_queue.length - 1; i >= 0; i--) {
                 if (_queue[i].id == timerId) {
                     _queue[i].cancel();
                     break;
@@ -908,9 +910,11 @@ class Window {
             return delta;
         }
         private void cleanup() {
+            if (!_queue.length)
+                return;
             sort(_queue);
-            size_t newsize = 0;
-            for (size_t i = _queue.length - 1; i >= 0; i--) {
+            size_t newsize = _queue.length;
+            for (int i = cast(int)_queue.length - 1; i >= 0; i--) {
                 if (!_queue[i].valid) {
                     newsize = i;
                 }
@@ -919,6 +923,8 @@ class Window {
                 _queue.length = newsize;
         }
         private TimerInfo[] expired() {
+            if (!_queue.length)
+                return null;
             long ts = currentTimeMillis;
             TimerInfo[] res;
             for (int i = 0; i < _queue.length; i++) {
