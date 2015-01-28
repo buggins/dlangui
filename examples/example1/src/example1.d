@@ -244,10 +244,10 @@ extern (C) int UIAppMain(string[] args) {
     FontManager.minAnitialiasedFontSize = 0; // 0 means always antialiased
 	//version (USE_OPENGL) {
 	//	// you can turn on subpixel font rendering (ClearType) here
-	//	FontManager.subpixelRenderingMode = SubpixelRenderingMode.None; //
+		FontManager.subpixelRenderingMode = SubpixelRenderingMode.None; //
 	//} else {
 		// you can turn on subpixel font rendering (ClearType) here
-		FontManager.subpixelRenderingMode = SubpixelRenderingMode.BGR; //SubpixelRenderingMode.None; //
+	//FontManager.subpixelRenderingMode = SubpixelRenderingMode.BGR; //SubpixelRenderingMode.None; //
 	//}
 
     // create window
