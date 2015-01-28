@@ -24,11 +24,78 @@ import dlangui.widgets.layouts;
 import dlangui.widgets.statusline;
 import dlangui.widgets.toolbars;
 
+/// to update status for background operation in AppFrame
+class BackgroundOperationWatcher {
+
+    protected bool _cancelRequested;
+    /// returns cancel status
+    @property bool cancelRequested() { return _cancelRequested; }
+    /// returns description of background operation to show in status line
+    @property dstring description() { return null; }
+    /// returns icon of background operation to show in status line
+    @property string icon() { return null; }
+    /// returns desired update interval
+    @property long updateInterval() { return 100; }
+    /// update background operation status
+    void update() {
+        // do some work here
+        // when task is done or cancelled, finished should return true
+        // either simple update of status or some real work can be done here
+    }
+    /// request cancel - once cancelled, finished should return true
+    void cancel() {
+        _cancelRequested = true;
+    }
+    /// return true when task is done - to remove it from AppFrame
+    @property bool finished() { 
+        return false; 
+    }
+    /// will be called by app frame when BackgroundOperationWatcher is to be removed
+    void removing() {
+    }
+}
+
+/// base class for application frame with main menu, status line, toolbars
 class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
     protected MainMenu _mainMenu;
     protected StatusLine _statusLine;
     protected ToolBarHost _toolbarHost;
     protected Widget _body;
+    protected BackgroundOperationWatcher _currentBackgroundOperation;
+    protected ulong _currentBackgroundOperationTimer;
+
+    /// timer handler
+    override bool onTimer(ulong timerId) {
+        if (timerId == _currentBackgroundOperationTimer) {
+            if (_currentBackgroundOperation) {
+                _currentBackgroundOperation.update();
+                if (_currentBackgroundOperation.finished) {
+                    _currentBackgroundOperation.removing();
+                    destroy(_currentBackgroundOperation);
+                    _currentBackgroundOperation = null;
+                    _currentBackgroundOperationTimer = 0;
+                    return false;
+                }
+                return true;
+            } else {
+                _currentBackgroundOperationTimer = 0;
+            }
+        }
+        return false; // stop timer
+    }
+
+    /// set background operation to show in status
+    void setBackgroundOperation(BackgroundOperationWatcher op) {
+        if (_currentBackgroundOperation) {
+            _currentBackgroundOperation.removing();
+            destroy(_currentBackgroundOperation);
+            _currentBackgroundOperation = null;
+        }
+        _currentBackgroundOperation = op;
+        if (op)
+            _currentBackgroundOperationTimer = setTimer(op.updateInterval);
+    }
+
     /// main menu widget
     @property MainMenu mainMenu() { return _mainMenu; }
     /// status line widget
