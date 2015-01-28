@@ -45,4 +45,7 @@ class StatusLine : HorizontalLayout {
     void setStatusText(dstring value) {
         setStatusText(null, value);
     }
+    /// show / update / animate background operation status; when both parameters are nulls, hide background op status panel
+    void setBackgroundOperationStatus(string icon, dstring statusText) {
+    }
 }

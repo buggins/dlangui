@@ -27,7 +27,14 @@ import dlangui.widgets.toolbars;
 /// to update status for background operation in AppFrame
 class BackgroundOperationWatcher {
 
+    protected AppFrame _frame;
     protected bool _cancelRequested;
+    protected bool _finished;
+
+    this(AppFrame frame) {
+        _frame = frame;
+    }
+
     /// returns cancel status
     @property bool cancelRequested() { return _cancelRequested; }
     /// returns description of background operation to show in status line
@@ -41,6 +48,8 @@ class BackgroundOperationWatcher {
         // do some work here
         // when task is done or cancelled, finished should return true
         // either simple update of status or some real work can be done here
+        if (_frame.statusLine)
+            _frame.statusLine.setBackgroundOperationStatus(icon, description);
     }
     /// request cancel - once cancelled, finished should return true
     void cancel() {
@@ -48,10 +57,13 @@ class BackgroundOperationWatcher {
     }
     /// return true when task is done - to remove it from AppFrame
     @property bool finished() { 
-        return false; 
+        return _finished; 
     }
     /// will be called by app frame when BackgroundOperationWatcher is to be removed
     void removing() {
+        // in this handler, you can post new background operation to AppFrame
+        if (_frame.statusLine)
+            _frame.statusLine.setBackgroundOperationStatus(null, null);
     }
 }
 
