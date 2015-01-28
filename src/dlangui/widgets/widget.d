@@ -923,9 +923,21 @@ class Widget {
         return res;
     }
 
+
+    /// set new timer to call onTimer() after specified interval (for recurred notifications, return true from onTimer)
+    ulong setTimer(long intervalMillis) {
+        return window.setTimer(this, intervalMillis);
+    }
+
+    /// cancel timer - pass value returned from setTimer() as timerId parameter
+    void cancelTimer(ulong timerId) {
+        window.cancelTimer(timerId);
+    }
+
     /// handle timer; return true to repeat timer event after next interval, false cancel timer
     bool onTimer(ulong id) {
         // override to do something useful
+        // return true to repeat after the same interval, false to stop timer
         return false;
     }
 

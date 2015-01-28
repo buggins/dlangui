@@ -117,19 +117,38 @@ class TimerInfo {
     @property long nextTimestamp() { return _nextTimestamp; }
     /// widget to route timer event to
     @property Widget targetWidget() { return _targetWidget; }
+    /// return true if timer is not yet cancelled
+    @property bool valid() { return _targetWidget !is null; }
 
     protected ulong _id;
     protected long _interval;
     protected long _nextTimestamp;
     protected Widget _targetWidget;
-}
 
-class TimerQueue {
-    protected TimerInfo[] _queue;
-    void add(TimerInfo event) {
-        int len = cast(int)_queue.length;
+    override bool opEquals(Object obj) {
+        TimerInfo b = cast(TimerInfo)obj;
+        if (!b)
+            return false;
+        return b._nextTimestamp == _nextTimestamp;
+    }
+    override int opCmp(Object obj) {
+        TimerInfo b = cast(TimerInfo)obj;
+        if (!b)
+            return false;
+        if (valid && !b.valid)
+            return -1;
+        if (!valid && b.valid)
+            return 1;
+        if (!valid && !b.valid)
+            return 0;
+        if (_nextTimestamp < b._nextTimestamp)
+            return -1;
+        if (_nextTimestamp > b._nextTimestamp)
+            return 1;
+        return 0;
     }
 }
+
 
 /**
  * Window abstraction layer. Widgets can be shown only inside window.
@@ -261,6 +280,7 @@ class Window {
 
 	this() {
         _eventList = new EventList();
+        _timerQueue = new TimerQueue();
 		_backgroundColor = 0xFFFFFF;
 	}
 	~this() {
@@ -272,6 +292,7 @@ class Window {
 		    _mainWidget = null;
 		}
         destroy(_eventList);
+        destroy(_timerQueue);
         _eventList = null;
 	}
 
@@ -817,6 +838,124 @@ class Window {
         MessageBox dlg = new MessageBox(title, message, this, actions, defaultActionIndex, handler);
         dlg.show();
     }
+
+    protected TimerQueue _timerQueue;
+
+
+    /// schedule timer for interval in milliseconds - call window.onTimer when finished
+    protected void scheduleSystemTimer(long intervalMillis) {
+        Log.d("override scheduleSystemTimer to support timers");
+    }
+
+    /// system timer interval expired - notify queue
+    protected void onTimer() {
+        bool res = _timerQueue.notify();
+        if (res) {
+            // check if update needed and redraw if so
+            update(false);
+        }
+        long nextInterval = _timerQueue.nextIntervalMillis();
+        if (nextInterval > 0) {
+            scheduleSystemTimer(nextInterval);
+        }
+    }
+
+    /// set timer for destination widget - destination.onTimer() will be called after interval expiration; returns timer id
+    ulong setTimer(Widget destination, long intervalMillis) {
+        if (!isChild(destination)) {
+            Log.e("setTimer() is called not for child widget of window");
+            return 0;
+        }
+        ulong res = _timerQueue.add(destination, intervalMillis);
+        long nextInterval = _timerQueue.nextIntervalMillis();
+        if (nextInterval > 0) {
+            scheduleSystemTimer(intervalMillis);
+        }
+        return res;
+    }
+
+    /// cancel previously scheduled widget timer (for timerId pass value returned from setTimer)
+    void cancelTimer(ulong timerId) {
+        _timerQueue.cancelTimer(timerId);
+    }
+
+    /// timers queue
+    private class TimerQueue {
+        protected TimerInfo[] _queue;
+        /// add new timer
+        ulong add(Widget destination, long intervalMillis) {
+            TimerInfo item = new TimerInfo(destination, intervalMillis);
+            _queue ~= item;
+            sort(_queue);
+            return item.id;
+        }
+        /// cancel timer
+        void cancelTimer(ulong timerId) {
+            for (size_t i = _queue.length - 1; i >= 0; i--) {
+                if (_queue[i].id == timerId) {
+                    _queue[i].cancel();
+                    break;
+                }
+            }
+        }
+        /// returns interval if millis of next scheduled event or -1 if no events queued
+        long nextIntervalMillis() {
+            if (!_queue.length || !_queue[0].valid)
+                return -1;
+            long delta = _queue[0].nextTimestamp - currentTimeMillis;
+            if (delta < 1)
+                delta = 1;
+            return delta;
+        }
+        private void cleanup() {
+            sort(_queue);
+            size_t newsize = 0;
+            for (size_t i = _queue.length - 1; i >= 0; i--) {
+                if (!_queue[i].valid) {
+                    newsize = i;
+                }
+            }
+            if (_queue.length > newsize)
+                _queue.length = newsize;
+        }
+        private TimerInfo[] expired() {
+            long ts = currentTimeMillis;
+            TimerInfo[] res;
+            for (int i = 0; i < _queue.length; i++) {
+                if (_queue[i].nextTimestamp <= ts)
+                    res ~= _queue[i];
+            }
+            return res;
+        }
+        /// returns true if at least one widget was notified
+        bool notify() {
+            bool res = false;
+            checkValidWidgets();
+            TimerInfo[] list = expired();
+            if (list) {
+                for (int i = 0; i < list.length; i++) {
+                    Widget w = _queue[i].targetWidget;
+                    if (w && !isChild(w))
+                        _queue[i].cancel();
+                    else {
+                        _queue[i].notify();
+                        res = true;
+                    }
+                }
+            }
+            cleanup();
+            return res;
+        }
+        private void checkValidWidgets() {
+            for (int i = 0; i < _queue.length; i++) {
+                Widget w = _queue[i].targetWidget;
+                if (w && !isChild(w))
+                    _queue[i].cancel();
+            }
+            cleanup();
+        }
+    }
+
 
 }
 

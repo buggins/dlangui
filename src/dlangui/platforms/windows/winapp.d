@@ -318,6 +318,27 @@ class Win32Window : Window {
         PostMessageW(_hwnd, CUSTOM_MESSAGE_ID, 0, event.uniqueId);
     }
 
+    private long _nextExpectedTimerTs;
+    private UINT_PTR _timerId;
+
+    /// schedule timer for interval in milliseconds - call window.onTimer when finished
+    override protected void scheduleSystemTimer(long intervalMillis) {
+        if (intervalMillis < 10)
+            intervalMillis = 10;
+        long nextts = currentTimeMillis + intervalMillis;
+        if (_timerId && _nextExpectedTimerTs && _nextExpectedTimerTs < nextts + 10)
+            return; // don't reschedule timer, timer event will be received soon
+        if (_hwnd) {
+            _timerId = SetTimer(_hwnd, _timerId, cast(uint)intervalMillis, null);
+            _nextExpectedTimerTs = nextts;
+        }
+    }
+
+    void handleTimer(UINT_PTR timerId) {
+        onTimer();
+    }
+
+
     Win32ColorDrawBuf getDrawBuf() {
         //RECT rect;
         //GetClientRect(_hwnd, &rect);
@@ -1060,6 +1081,12 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 				if (window.onKey(KeyAction.Text, wParam, repeatCount, wParam == UNICODE_NOCHAR ? 0 : wParam))
                     return 1; // processed
                 return 1;
+            }
+            break;
+        case WM_TIMER:
+			if (window !is null) {
+				window.handleTimer(wParam);
+                return 0;
             }
             break;
         case WM_GETMINMAXINFO:
