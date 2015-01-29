@@ -2951,13 +2951,16 @@ class LogWidget : EditBox {
         _scrollLock = true;
         enabled = false;
         fontSize = 15;
-		fontFace = "Consolas,Lucida Console,Courier New";
+		//fontFace = "Consolas,Lucida Console,Courier New";
+		fontFace = "Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console";
 		fontFamily = FontFamily.MonoSpace;
+        minFontSize(10).maxFontSize(32); // allow font zoom with Ctrl + MouseWheel
     }
     /// append lines to the end of text
-    void appendLines(dstring[] lines...) {
-		if (lines.length == 0)
+    void appendText(dstring text) {
+		if (text.length == 0)
 			return;
+        dstring[] lines = text.split("\n");
         //lines ~= ""d; // append new line after last line
         content.appendLines(lines);
         if (_maxLines > 0 && lineCount > _maxLines) {

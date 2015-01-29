@@ -25,7 +25,8 @@ import dlangui.widgets.styles;
 class SourceEdit : EditBox {
 	this(string ID) {
 		super(ID);
-		fontFace = "Consolas,Lucida Console,Courier New";
+		fontFace = "Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console";
+		//fontFace = "Consolas,Lucida Console,Courier New";
 		fontFamily = FontFamily.MonoSpace;
 		fontSize = 17;
 		layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);

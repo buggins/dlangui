@@ -78,8 +78,8 @@ Log.e("exception while reading file", e);
 */
 synchronized class Log {
     static:
-    private LogLevel logLevel = LogLevel.Info;
-    private std.stdio.File logFile;
+    __gshared private LogLevel logLevel = LogLevel.Info;
+    __gshared private std.stdio.File logFile;
         
     /// Redirects output to stdout
     void setStdoutLogger() {
