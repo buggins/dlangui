@@ -54,6 +54,7 @@ version (USE_OPENGL) {
 //	pragma(lib, "dl");	
 		
 private __gshared uint USER_EVENT_ID;
+private __gshared uint TIMER_EVENT_ID;
 
 class SDLWindow : Window {
 	SDLPlatform _platform;
@@ -729,6 +730,44 @@ class SDLWindow : Window {
 		if (code == _lastRedrawEventCode)
 			redraw();
 	}
+
+
+    private long _nextExpectedTimerTs;
+    private SDL_TimerID _timerId = 0;
+
+    /// schedule timer for interval in milliseconds - call window.onTimer when finished
+    override protected void scheduleSystemTimer(long intervalMillis) {
+        if (intervalMillis < 10)
+            intervalMillis = 10;
+        long nextts = currentTimeMillis + intervalMillis;
+        if (_timerId && _nextExpectedTimerTs && _nextExpectedTimerTs < nextts + 10)
+            return; // don't reschedule timer, timer event will be received soon
+        if (_win) {
+            if (_timerId) {
+                SDL_RemoveTimer(_timerId);
+                _timerId = 0;
+            }
+            _timerId = SDL_AddTimer(cast(uint)intervalMillis, &myTimerCallbackFunc, cast(void*)windowId);
+            _nextExpectedTimerTs = nextts;
+        }
+    }
+
+    void handleTimer(SDL_TimerID timerId) {
+        SDL_RemoveTimer(_timerId);
+        _timerId = 0;
+		_nextExpectedTimerTs = 0;
+		onTimer();
+    }
+}
+
+private extern(C) uint myTimerCallbackFunc(uint interval, void *param) nothrow {
+    uint windowId = cast(uint)param;
+    SDL_Event sdlevent;
+    sdlevent.user.type = TIMER_EVENT_ID;
+    sdlevent.user.code = 0;
+    sdlevent.user.windowID = windowId;
+    SDL_PushEvent(&sdlevent);
+    return(interval);
 }
 
 private __gshared bool _enableOpengl;
@@ -950,6 +989,11 @@ class SDLPlatform : Platform {
                             SDLWindow w = getWindow(event.user.windowID);
                             if (w) {
                                 w.handlePostedEvent(cast(uint)event.user.code);
+                            }
+                        } else if (event.type == TIMER_EVENT_ID) {
+                            SDLWindow w = getWindow(event.user.windowID);
+                            if (w) {
+                                w.handleTimer(cast(uint)event.user.code);
                             }
                         }
                         break;
@@ -1178,6 +1222,7 @@ int sdlmain(string[] args) {
     scope(exit)SDL_Quit();
 
     USER_EVENT_ID = SDL_RegisterEvents(1);
+    TIMER_EVENT_ID = SDL_RegisterEvents(1);
 
     int request = SDL_GetDesktopDisplayMode(0,&displayMode);
 
