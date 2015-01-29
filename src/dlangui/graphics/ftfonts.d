@@ -251,10 +251,10 @@ private class FreeTypeFontFile {
         int flags = FT_LOAD_DEFAULT;
         const bool _drawMonochrome = _size < FontManager.minAnitialiasedFontSize;
 		SubpixelRenderingMode subpixel = _drawMonochrome ? SubpixelRenderingMode.None : FontManager.subpixelRenderingMode;
-        flags |= (!_drawMonochrome ? (subpixel ? FT_LOAD_TARGET_LCD : FT_LOAD_TARGET_NORMAL) : FT_LOAD_TARGET_MONO);
+        flags |= (!_drawMonochrome ? (subpixel ? FT_LOAD_TARGET_LCD : (FontManager.instance.hintingMode == HintingMode.Light ? FT_LOAD_TARGET_LIGHT : FT_LOAD_TARGET_NORMAL)) : FT_LOAD_TARGET_MONO);
         if (withImage)
             flags |= FT_LOAD_RENDER;
-        if (FontManager.instance.hintingMode == HintingMode.AutoHint)
+        if (FontManager.instance.hintingMode == HintingMode.AutoHint || FontManager.instance.hintingMode == HintingMode.Light)
             flags |= FT_LOAD_FORCE_AUTOHINT;
         else if (FontManager.instance.hintingMode == HintingMode.Disabled)
             flags |= FT_LOAD_NO_AUTOHINT | FT_LOAD_NO_HINTING;
@@ -498,7 +498,7 @@ class FreeTypeFontManager : FontManager {
             Log.e("Cannot init freetype library, error=", error);
             throw new Exception("Cannot init freetype library");
         }
-		FT_Library_SetLcdFilter(_library, FT_LCD_FILTER_DEFAULT);
+		//FT_Library_SetLcdFilter(_library, FT_LCD_FILTER_DEFAULT);
     }
     ~this() {
 		debug(FontResources) Log.d("FreeTypeFontManager ~this()");

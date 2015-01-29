@@ -519,7 +519,9 @@ enum HintingMode : int {
     /// force autohinting algorithm even if font contains hint data
     AutoHint,
     /// disable hinting completely
-    Disabled
+    Disabled,
+	/// light autohint (similar to Mac)
+	Light
 }
 
 /// Access points to fonts.
