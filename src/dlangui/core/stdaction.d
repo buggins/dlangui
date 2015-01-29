@@ -36,11 +36,11 @@ enum StandardAction : int {
     OpenUrl,
 }
 
-const Action ACTION_OK = new Action(StandardAction.Ok, "ACTION_OK"c);
-const Action ACTION_CANCEL = new Action(StandardAction.Cancel, "ACTION_CANCEL"c);
-const Action ACTION_YES = new Action(StandardAction.Yes, "ACTION_YES"c);
-const Action ACTION_NO = new Action(StandardAction.No, "ACTION_NO"c);
-const Action ACTION_CLOSE = new Action(StandardAction.Close, "ACTION_CLOSE"c);
+const Action ACTION_OK = new Action(StandardAction.Ok, "ACTION_OK"c, "dialog-ok");
+const Action ACTION_CANCEL = new Action(StandardAction.Cancel, "ACTION_CANCEL"c, "dialog-cancel");
+const Action ACTION_YES = new Action(StandardAction.Yes, "ACTION_YES"c, "dialog-ok");
+const Action ACTION_NO = new Action(StandardAction.No, "ACTION_NO"c, "dialog-cancel");
+const Action ACTION_CLOSE = new Action(StandardAction.Close, "ACTION_CLOSE"c, "dialog-close");
 const Action ACTION_ABORT =  new Action(StandardAction.Abort, "ACTION_ABORT"c);
 const Action ACTION_RETRY = new Action(StandardAction.Retry, "ACTION_RETRY"c);
 const Action ACTION_IGNORE = new Action(StandardAction.Ignore, "ACTION_IGNORE"c);

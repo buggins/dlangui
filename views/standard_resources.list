@@ -53,6 +53,10 @@ res/mdpi/btn_radio_on_disabled.png
 res/mdpi/btn_radio_on_focused.png
 res/mdpi/btn_radio_on_pressed.png
 res/mdpi/computer.png
+res/mdpi/dialog-cancel.png
+res/mdpi/dialog-close.png
+res/mdpi/dialog-ok.png
+res/mdpi/dialog-ok-apply.png
 res/mdpi/dlangui-logo1.png
 res/mdpi/drive-harddisk.png
 res/mdpi/drive-optical.png
