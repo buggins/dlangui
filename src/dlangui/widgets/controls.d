@@ -480,7 +480,7 @@ class AbstractSlider : WidgetGroup {
     @property AbstractSlider pageSize(int size) {
         if (_pageSize != size) {
             _pageSize = size;
-            requestLayout();
+            //requestLayout();
         }
         return this;
     }
@@ -489,7 +489,7 @@ class AbstractSlider : WidgetGroup {
         if (_minValue != min || _maxValue != max) {
             _minValue = min;
             _maxValue = max;
-            requestLayout();
+            //requestLayout();
         }
         return this;
     }
@@ -782,7 +782,17 @@ class ScrollBar : AbstractSlider, OnClickHandler {
             _pageUp.visibility = Visibility.Gone;
             _pageDown.visibility = Visibility.Gone;
         }
+		cancelLayout();
     }
+
+	override void cancelLayout() {
+		_btnBack.cancelLayout();
+		_btnForward.cancelLayout();
+		_indicator.cancelLayout();
+		_pageUp.cancelLayout();
+		_pageDown.cancelLayout();
+		super.cancelLayout();
+	}
 
     protected void layoutButtons() {
         Rect irc = _scrollArea;
@@ -802,6 +812,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
             layoutButtons(irc);
         }
         updateState();
+		cancelLayout();
 	}
 
 	protected void layoutButtons(Rect irc) {

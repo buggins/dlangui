@@ -276,12 +276,12 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
 		hsbrc.right = hsbrc.right - (needVscroll ? _vscrollbar.measuredWidth : 0);
 		hsbrc.top = hsbrc.bottom - (needHscroll ? _hscrollbar.measuredHeight : 0);
         if (_vscrollbar) {
-		    _vscrollbar.layout(vsbrc);
             _vscrollbar.visibility = needVscroll ? Visibility.Visible : Visibility.Gone;
+		    _vscrollbar.layout(vsbrc);
         }
         if (_hscrollbar) {
-            _hscrollbar.layout(hsbrc);
             _hscrollbar.visibility = needHscroll ? Visibility.Visible : Visibility.Gone;
+            _hscrollbar.layout(hsbrc);
         }
 		// client area
 		_clientRect = rc;

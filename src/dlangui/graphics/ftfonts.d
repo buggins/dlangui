@@ -19,6 +19,9 @@ private import std.file;
 private import std.string;
 private import std.utf;
 
+/// define debug=FontResources for logging of font file resources creation/freeing
+//debug = FontResources;
+
 private struct FontDef {
     immutable FontFamily _family;
     immutable string _face;
@@ -116,12 +119,12 @@ private class FreeTypeFontFile {
         _matrix.yy = 0x10000;
         _matrix.xy = 0;
         _matrix.yx = 0;
-		debug Log.d("Created FreeTypeFontFile, count=", ++_instanceCount);
+		debug(FontResources) Log.d("Created FreeTypeFontFile, count=", ++_instanceCount);
     }
 
 	~this() {
         clear();
-		debug Log.d("Destroyed FreeTypeFontFile, count=", --_instanceCount);
+		debug(FontResources) Log.d("Destroyed FreeTypeFontFile, count=", --_instanceCount);
     }
 
     private static string familyName(FT_Face face)
@@ -152,7 +155,7 @@ private class FreeTypeFontFile {
         	if (kernFile.length > 0)
         		error = FT_Attach_File(_face, kernFile.toStringz);
         }
-        Log.d("Font file opened successfully");
+        debug(FontResources) Log.d("Font file opened successfully");
         _slot = _face.glyph;
         _faceName = familyName(_face);
         error = FT_Set_Pixel_Sizes(
@@ -168,7 +171,7 @@ private class FreeTypeFontFile {
         _baseline = _height + cast(int)(_face.size.metrics.descender >> 6);
         _weight = _face.style_flags & FT_STYLE_FLAG_BOLD ? FontWeight.Bold : FontWeight.Normal;
         _italic = _face.style_flags & FT_STYLE_FLAG_ITALIC ? true : false;
-        Log.d("Opened font face=", _faceName, " height=", _height, " size=", size, " weight=", weight, " italic=", italic);
+        debug(FontResources) Log.d("Opened font face=", _faceName, " height=", _height, " size=", size, " weight=", weight, " italic=", italic);
         return true; // successfully opened
     }
 
@@ -498,14 +501,14 @@ class FreeTypeFontManager : FontManager {
 		FT_Library_SetLcdFilter(_library, FT_LCD_FILTER_DEFAULT);
     }
     ~this() {
-		debug Log.d("FreeTypeFontManager ~this()");
+		debug(FontResources) Log.d("FreeTypeFontManager ~this()");
 		//_activeFonts.clear();
 		foreach(ref FontFileItem item; _fontFiles) {
 			destroy(item);
 			item = null;
 		}
 		_fontFiles.length = 0;
-		debug Log.d("Destroyed all fonts. Freeing library.");
+		debug(FontResources) Log.d("Destroyed all fonts. Freeing library.");
         // uninit library
         if (_library)
             FT_Done_FreeType(_library);
@@ -548,7 +551,7 @@ class FreeTypeFontManager : FontManager {
             face = font.face;
             italic = font.italic;
             weight = font.weight;
-            Log.d("Using properties from font file: face=", face, " weight=", weight, " italic=", italic);
+            debug(FontResources)Log.d("Using properties from font file: face=", face, " weight=", weight, " italic=", italic);
         }
 		destroy(font);
 

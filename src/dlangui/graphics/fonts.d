@@ -480,12 +480,12 @@ struct FontList {
 		return -1;
 	}
 	ref FontRef add(Font item) {
-		Log.d("FontList.add() enter");
+		//Log.d("FontList.add() enter");
 		if (_len >= _list.length) {
 			_list.length = _len < 16 ? 16 : _list.length * 2;
 		}
 		_list[_len++] = item;
-		Log.d("FontList.add() exit");
+		//Log.d("FontList.add() exit");
 		return _list[_len - 1];
 	}
 	// remove unused items - with reference == 1
