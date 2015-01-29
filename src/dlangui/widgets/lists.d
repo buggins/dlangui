@@ -529,6 +529,10 @@ class ListWidget : WidgetGroup, OnScrollHandler {
             pwidth -= m.left + m.right + p.left + p.right;
         if (parentHeight != SIZE_UNSPECIFIED)
             pheight -= m.top + m.bottom + p.top + p.bottom;
+
+        bool oldNeedLayout = _needLayout;
+        Visibility oldScrollbarVisibility = _scrollbar.visibility;
+
         _scrollbar.visibility = Visibility.Visible;
         _scrollbar.measure(pwidth, pheight);
 
@@ -606,6 +610,10 @@ class ListWidget : WidgetGroup, OnScrollHandler {
             }
         }
         measuredContent(parentWidth, parentHeight, sz.x + _sbsz.x, sz.y + _sbsz.y);
+        if (_scrollbar.visibility == oldScrollbarVisibility) {
+            _needLayout = oldNeedLayout;
+            _scrollbar.cancelLayout();
+        }
     }
 
 
@@ -715,6 +723,8 @@ class ListWidget : WidgetGroup, OnScrollHandler {
             makeSelectionVisible();
             _makeSelectionVisibleOnNextLayout = false;
         }
+        _needLayout = false;
+        _scrollbar.cancelLayout();
     }
 
     /// Draw widget at its position to buffer

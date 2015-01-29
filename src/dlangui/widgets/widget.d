@@ -927,6 +927,10 @@ class Widget {
     }
 
 
+    void cancelLayout() {
+        _needLayout = false;
+    }
+
     /// set new timer to call onTimer() after specified interval (for recurred notifications, return true from onTimer)
     ulong setTimer(long intervalMillis) {
         return window.setTimer(this, intervalMillis);

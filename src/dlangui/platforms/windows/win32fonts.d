@@ -527,7 +527,7 @@ class Win32FontManager : FontManager {
     override ref FontRef getFont(int size, int weight, bool italic, FontFamily family, string face) {
 		//Log.i("getFont()");
 		FontDef * def = findFace(family, face);
-		Log.i("getFont() found face ", def.face, " by requested face ", face);
+		//Log.i("getFont() found face ", def.face, " by requested face ", face);
 		if (def !is null) {
 			int index = _activeFonts.find(size, weight, italic, def.family, def.face);
 			if (index >= 0)

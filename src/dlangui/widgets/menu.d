@@ -779,6 +779,12 @@ class MainMenu : MenuWidgetBase {
             deactivate();
     }
 
+    /// request relayout of widget and its children
+    //override void requestLayout() {
+    //    Log.d("MainMenu.requestLayout is called");
+    //    super.requestLayout();
+    //}
+
     /// bring focus to main menu, if not yet activated
     void activate() {
         debug(DebugMenus) Log.d("activating main menu");
