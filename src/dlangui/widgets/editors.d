@@ -1495,7 +1495,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     }
 
 	override void onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source) {
-        Log.d("onContentChange rangeBefore=", rangeBefore, " rangeAfter=", rangeAfter, " text=", operation.content);
+        //Log.d("onContentChange rangeBefore=", rangeBefore, " rangeAfter=", rangeAfter, " text=", operation.content);
         updateMaxLineWidth();
 		measureVisibleText();
         if (source is this) {
