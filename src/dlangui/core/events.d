@@ -44,6 +44,38 @@ struct Accelerator {
 	}
 }
 
+/// use to for requesting of action state (to enable/disable, hide, get check status, etc)
+class ActionState {
+    /// when false, control showing this action should be disabled
+    bool enabled;
+    /// when false, control showing this action should be hidden
+    bool visible;
+    /// when true, for checkbox/radiobutton-like controls state should shown as checked
+    bool checked;
+    this(bool en, bool vis, bool check) {
+        this.enabled = en;
+        this.visible = vis;
+        this.checked = check;
+    }
+    ActionState clone() const {
+        return new ActionState(enabled, visible, checked);
+    }
+}
+
+immutable ACTION_ID_STATE_REQUEST = -1;
+
+/// action is 
+__gshared const(ActionState) ACTION_STATE_DEFAULT_ENABLED;
+__gshared const(ActionState) ACTION_STATE_DEFAULT_DISABLE;
+__gshared const(ActionState) ACTION_STATE_DEFAULT_INVISIBLE;
+
+__gshared static this() {
+    ACTION_STATE_DEFAULT_ENABLED = cast(const(ActionState))new ActionState(true, true, false);
+    ACTION_STATE_DEFAULT_DISABLE = cast(const(ActionState))new ActionState(false, true, false);
+    ACTION_STATE_DEFAULT_INVISIBLE = cast(const(ActionState))new ActionState(false, false, false);
+}
+
+
 /** 
     UI action
 
@@ -65,6 +97,42 @@ class Action {
     protected long _longParam;
     /// optional object parameter
     protected Object _objectParam;
+
+    protected ActionState _defaultState;
+
+    /// default state for action if action state lookup failed
+    @property const(ActionState) defaultState() const { return _defaultState ? _defaultState : ACTION_STATE_DEFAULT_ENABLED; }
+
+    /// default state for action if action state lookup failed
+    @property Action defaultState(ActionState s) { _defaultState = s; return this; }
+
+    /// returns true if action is state request
+    @property bool isStateRequest() const {
+        return id == ACTION_ID_STATE_REQUEST;
+    }
+    
+    /// if this action is request of UI state for another action, returns ID of action state is requested for
+    @property int requestedActionId() const {
+        return isStateRequest ? cast(int)_longParam : 0;
+    }
+    /// if this action is request of UI state for another action, returns state (default if not changed while request handling by UI components)
+    @property const(ActionState) requestedActionState() const {
+        assert(isStateRequest);
+        return cast(ActionState)_objectParam;
+    }
+    /// if this action is request of UI state for another action, returns state (default if not changed while request handling by UI components)
+    @property const(Action) requestedActionState(ActionState s) const {
+        // hack: it's ok to replace action state in const ACTION_ID_STATE_REQUEST action
+        assert(isStateRequest);
+        Action nonconstThis = cast(Action)this;
+        nonconstThis._objectParam = cast(Object)s.clone();
+        return this;
+    }
+    /// create state request action for current action
+    Action createStateRequest() {
+        return (new Action(ACTION_ID_STATE_REQUEST)).longParam(_id).objectParam(defaultState.clone());
+    }
+
     /// returns optional string parameter
     @property string stringParam() const {
         return _stringParam;
@@ -75,7 +143,7 @@ class Action {
         return this;
     }
     /// sets optional long parameter
-    @property long longParam() {
+    @property long longParam() const {
         return _longParam;
     }
     /// returns optional long parameter
@@ -85,6 +153,10 @@ class Action {
     }
     /// returns additional custom (Object) parameter
     @property Object objectParam() {
+        return _objectParam;
+    }
+    /// returns additional custom (Object) parameter
+    @property const(Object) objectParam() const {
         return _objectParam;
     }
     /// sets additional custom (Object) parameter
