@@ -24,7 +24,7 @@
 			"versions-windows": ["Unicode", "USE_FREETYPE"],
 			"versions": ["EmbedStandardResources"],
 
- 			"copyFiles-windows": ["lib/freetype-6.dll", "lib/zlib1.dll"],
+ 			"copyFiles-windows": ["lib/libfreetype-6.dll", "lib/zlib1.dll"],
 
 			"sourcePaths": [
 				"3rdparty", "src"
