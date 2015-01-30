@@ -626,23 +626,48 @@ class Widget {
     @property void action(const Action action) { _action = action.clone; }
     /// action to emit on click
     @property void action(Action action) { _action = action; }
-    /// ask for update state of some action (unles force=true, checks window flag 
-    void updateActionState(Action a, bool force = false) {
+    /// ask for update state of some action (unles force=true, checks window flag actionsUpdateRequested), returns true if action state is changed
+    bool updateActionState(Action a, bool force = false) {
         if (Window w = window) {
             if (!force && !w.actionsUpdateRequested())
-                return;
+                return false;
+            const ActionState oldState = a.state;
             if (w.dispatchActionStateRequest(a, this)) {
                 // state is updated
             } else {
                 a.state = a.defaultState;
             }
+            if (a.state != oldState)
+                return true;
         }
+        return false;
     }
     /// call to update state for action (if action is assigned for widget)
     void updateActionState(bool force = false) {
         if (!_action)
             return;
-        updateActionState(_action, force);
+        if (updateActionState(_action, force))
+            handleActionStateChanged();
+    }
+    /// called when state of action assigned on widget is changed
+    void handleActionStateChanged() {
+        // override to update enabled state, visibility and checked state
+        // default processing: copy flags to this widget
+        updateStateFromAction(_action);
+    }
+    /// apply enabled, visibile and checked state for this widget from action's state
+    void updateStateFromAction(Action a) {
+        const ActionState s = a.state;
+        if (s.enabled != enabled) {
+            enabled = s.enabled;
+        }
+        if (s.checked != checked) {
+            checked = s.checked;
+        }
+        bool v = _visibility == Visibility.Visible;
+        if (s.visible != v) {
+            visibility = s.visible ? Visibility.Visible : Visibility.Gone;
+        }
     }
 
     protected bool _focusGroup;

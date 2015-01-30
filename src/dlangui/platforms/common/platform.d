@@ -818,6 +818,14 @@ class Window {
         return res || processed || _mainWidget.needDraw;
     }
 
+    /// calls update actions recursively
+    protected void dispatchWidgetUpdateActionStateRecursive(Widget root) {
+        if (root is null)
+            return;
+        root.updateActionState(true);
+        for (int i = 0; i < root.childCount; i++)
+            dispatchWidgetUpdateActionStateRecursive(root.child(i));
+    }
     /// checks content widgets for necessary redraw and/or layout
     protected void checkUpdateNeeded(Widget root, ref bool needDraw, ref bool needLayout, ref bool animationActive) {
         if (root is null)
@@ -842,6 +850,14 @@ class Window {
 	}
     /// checks content widgets for necessary redraw and/or layout
     bool checkUpdateNeeded(ref bool needDraw, ref bool needLayout, ref bool animationActive) {
+        if (_actionsUpdateRequested) {
+            // call update action check - as requested
+            if (_mainWidget !is null)
+                dispatchWidgetUpdateActionStateRecursive(_mainWidget);
+            foreach(p; _popups)
+                dispatchWidgetUpdateActionStateRecursive(p);
+            _actionsUpdateRequested = false;
+        }
         needDraw = needLayout = animationActive = false;
         if (_mainWidget is null)
             return false;

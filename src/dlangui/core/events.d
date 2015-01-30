@@ -164,8 +164,10 @@ class Action {
         _id = a._id;
         _label = a._label;
         _iconId = a._iconId;
-        _state = a._state.clone();
-        _defaultState = a._defaultState.clone();
+        if (a._state)
+            _state = a._state.clone();
+        if (a._defaultState)
+            _defaultState = a._defaultState.clone();
         _accelerators.length = a._accelerators.length;
         for(int i = 0; i < _accelerators.length; i++)
             _accelerators[i] = a._accelerators[i];
