@@ -2766,11 +2766,12 @@ class EditBox : EditWidgetBase {
                 return true;
             case EditorActions.ZoomIn:
                 {
-                    if (_minFontSize < _maxFontSize && _minFontSize >= 9 && _maxFontSize >= 9) {
+                    if (_minFontSize < _maxFontSize && _minFontSize >= 7 && _maxFontSize >= 7) {
                         int currentFontSize = fontSize;
-						int increment = currentFontSize >= 30 ? 2 : 1;
+						int increment = currentFontSize >= 40 ? 2 : 1;
                         int newFontSize = currentFontSize + increment; //* 110 / 100;
-                        if (currentFontSize != newFontSize && newFontSize <= _maxFontSize) {
+                        if (currentFontSize != newFontSize && newFontSize <= _maxFontSize && newFontSize >= _minFontSize) {
+                            Log.i("Font size in editor ", id, " zoomed to ", newFontSize);
                             fontSize = cast(ushort)newFontSize;
                             updateFontProps();
                             measureVisibleText();
@@ -2973,11 +2974,11 @@ class LogWidget : EditBox {
         super(ID);
         _scrollLock = true;
         enabled = false;
-        fontSize = 15;
+        fontSize = 14;
 		//fontFace = "Consolas,Lucida Console,Courier New";
 		fontFace = "Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console";
 		fontFamily = FontFamily.MonoSpace;
-        minFontSize(10).maxFontSize(32); // allow font zoom with Ctrl + MouseWheel
+        minFontSize(8).maxFontSize(32); // allow font zoom with Ctrl + MouseWheel
     }
     /// append lines to the end of text
     void appendText(dstring text) {

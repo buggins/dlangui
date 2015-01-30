@@ -584,6 +584,20 @@ class FontManager {
         _subpixelRenderingMode = mode;
     }
 
+    private static __gshared double _fontGamma = 1.0;
+    /// get font gamma (1.0 is neutral, < 1.0 makes glyphs lighter, >1.0 makes glyphs bolder)
+    static @property double fontGamma() { return _fontGamma; }
+    /// set font gamma (1.0 is neutral, < 1.0 makes glyphs lighter, >1.0 makes glyphs bolder)
+    static @property void fontGamma(double v) { 
+        if (v < 0.1)
+            v = 0.1;
+        else if (v > 4)
+            v = 4;
+        _fontGamma = v; 
+        _gamma65.gamma = v;
+        _gamma256.gamma = v;
+    }
+
 	~this() {
 		Log.d("Destroying font manager");
 	}
@@ -688,3 +702,46 @@ struct GlyphCache
 }
 
 
+// support of font glyph Gamma correction
+// table to correct gamma and translate to output range 0..255
+// maxv is 65 for win32 fonts, 256 for freetype
+import std.math;
+//---------------------------------
+struct glyph_gamma_table(int maxv = 65)
+{
+    this(double gammaValue = 1.0)
+    {
+        gamma = gammaValue;
+    }
+    @property double gamma() { return _gamma; }
+    @property void gamma(double g) {
+        _gamma = g;
+        for(int i = 0; i < maxv; i++)
+        {
+            double v = (maxv - 1.0 - i) / maxv;
+            v = pow(v, g);
+            int n = cast(int)round(v * 255);
+            n = 255 - n;
+            if (n < 0)
+                n = 0;
+            else if (n > 255)
+                n = 255;
+            _map[i] = cast(ubyte)n;
+        }
+    }
+    /// correct byte value from source range to 0..255 applying gamma
+    ubyte correct(ubyte src) {
+        if (src >= maxv) src = maxv - 1;
+        return _map[src];
+    }
+private:
+    ubyte _map[maxv];
+    double _gamma = 1.0;
+};
+
+__gshared glyph_gamma_table!65 _gamma65;
+__gshared glyph_gamma_table!256 _gamma256;
+__gshared static this() {
+    _gamma65 = glyph_gamma_table!65(1.0);
+    _gamma256 = glyph_gamma_table!256(1.0);
+}

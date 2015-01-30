@@ -304,7 +304,7 @@ private class FreeTypeFontFile {
                     // antialiased
 					for (uint y = 0; y < h; y++) {
 						for (uint x = 0; x < w; x++) {
-							glyph.glyph[y * w + x] = bitmap.buffer[y * bitmap.pitch + x];
+							glyph.glyph[y * w + x] = _gamma256.correct(bitmap.buffer[y * bitmap.pitch + x]);
 						}
 					}
                 }

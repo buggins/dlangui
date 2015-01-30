@@ -28,7 +28,7 @@ class SourceEdit : EditBox {
 		fontFace = "Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console";
 		//fontFace = "Consolas,Lucida Console,Courier New";
 		fontFamily = FontFamily.MonoSpace;
-		fontSize = 17;
+		fontSize = 14;
 		layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
         minFontSize(10).maxFontSize(75); // allow font zoom with Ctrl + MouseWheel
 

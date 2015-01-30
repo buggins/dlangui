@@ -375,11 +375,7 @@ class Win32Font : Font {
 				        {
 					        for (int x = 0; x < g.blackBoxX; x++)
 					        {
-						        ubyte b = src[x];
-						        if (b>=64)
-							        b = 63;
-						        b = (b<<2) & 0xFC;
-						        dst[x] = b;
+						        dst[x] = _gamma65.correct(src[x]);
 					        }
 					        src += glyph_row_size;
 					        dst += g.blackBoxX;
