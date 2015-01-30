@@ -614,6 +614,53 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     abstract protected Point measureVisibleText();
 
+    protected int _caretBlingingInterval = 1000;
+    protected ulong _caretTimerId;
+    protected bool _caretBlinkingPhase;
+    protected long _lastBlinkStartTs;
+    protected void startCaretBlinking() {
+        if (window) {
+            long ts = currentTimeMillis;
+            if (_caretTimerId) {
+                if (_lastBlinkStartTs + _caretBlingingInterval / 4 > ts)
+                    return; // don't update timer too frequently
+                cancelTimer(_caretTimerId);
+            }
+            _caretTimerId = setTimer(_caretBlingingInterval / 2);
+            _lastBlinkStartTs = ts;
+            _caretBlinkingPhase = false;
+            invalidate();
+        }
+    }
+    protected void stopCaretBlinking() {
+        if (window) {
+            if (_caretTimerId) {
+                cancelTimer(_caretTimerId);
+                _caretTimerId = 0;
+            }
+        }
+    }
+    /// handle timer; return true to repeat timer event after next interval, false cancel timer
+    override bool onTimer(ulong id) {
+        if (id == _caretTimerId) {
+            _caretBlinkingPhase = !_caretBlinkingPhase;
+            if (!_caretBlinkingPhase)
+                _lastBlinkStartTs = currentTimeMillis;
+            invalidate();
+            return focused;
+        }
+        return super.onTimer(id);
+    }
+    /// override to handle focus changes
+    override protected void handleFocusChange(bool focused) {
+        if (focused)
+            startCaretBlinking();
+        else
+            stopCaretBlinking();
+        super.handleFocusChange(focused);
+    }
+
+
     /// returns cursor rectangle
     protected Rect caretRect() {
         Rect caretRc = textPosToClient(_caretPos);
@@ -635,6 +682,9 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     /// draws caret
     protected void drawCaret(DrawBuf buf) {
         if (focused) {
+            if (_caretBlinkingPhase) {
+                return;
+            }
             // draw caret
             Rect caretRc = caretRect();
             if (caretRc.intersects(_clientRect)) {
@@ -1137,6 +1187,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
 	/// handle keys
 	override bool onKeyEvent(KeyEvent event) {
+        if (focused) startCaretBlinking();
 		if (event.action == KeyAction.Text && event.text.length && !(event.flags & (KeyFlag.Control | KeyFlag.Alt))) {
 			Log.d("text entered: ", event.text);
             if (readOnly)
@@ -1163,6 +1214,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 		// support onClick
 	    if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
             setFocus();
+            startCaretBlinking();
             updateCaretPositionByMouse(event.x - _clientRect.left, event.y - _clientRect.top, false);
             invalidate();
 	        return true;
@@ -1813,30 +1865,18 @@ class EditBox : EditWidgetBase {
                     }
                 }
                 return true;
+            case EditorActions.ZoomOut:
             case EditorActions.ZoomIn:
                 {
-                    if (_minFontSize < _maxFontSize && _minFontSize >= 7 && _maxFontSize >= 7) {
-                        int currentFontSize = fontSize;
-						int increment = currentFontSize >= 40 ? 2 : 1;
-                        int newFontSize = currentFontSize + increment; //* 110 / 100;
-                        if (currentFontSize != newFontSize && newFontSize <= _maxFontSize && newFontSize >= _minFontSize) {
-                            Log.i("Font size in editor ", id, " zoomed to ", newFontSize);
-                            fontSize = cast(ushort)newFontSize;
-                            updateFontProps();
-                            measureVisibleText();
-                            updateScrollBars();
-                            invalidate();
-                        }
-                    }
-                }
-                return true;
-            case EditorActions.ZoomOut:
-                {
-                    if (_minFontSize < _maxFontSize && _minFontSize >= 9 && _maxFontSize >= 9) {
+                    int dir = a.id == EditorActions.ZoomIn ? 1 : -1;
+                    if (_minFontSize < _maxFontSize && _minFontSize > 0 && _maxFontSize > 0) {
                         int currentFontSize = fontSize;
 						int increment = currentFontSize >= 30 ? 2 : 1;
-                        int newFontSize = currentFontSize - increment; //* 100 / 110;
-                        if (currentFontSize != newFontSize && newFontSize >= _minFontSize) {
+                        int newFontSize = currentFontSize + increment * dir; //* 110 / 100;
+                        if (newFontSize > 30)
+                            newFontSize &= 0xFFFE;
+                        if (currentFontSize != newFontSize && newFontSize <= _maxFontSize && newFontSize >= _minFontSize) {
+                            Log.i("Font size in editor ", id, " zoomed to ", newFontSize);
                             fontSize = cast(ushort)newFontSize;
                             updateFontProps();
                             measureVisibleText();
