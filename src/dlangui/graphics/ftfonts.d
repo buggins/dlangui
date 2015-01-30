@@ -491,7 +491,12 @@ class FreeTypeFontManager : FontManager {
 
     this() {
         // load dynaic library
-        DerelictFT.load();
+        try {
+            DerelictFT.load();
+        } catch (Exception e) {
+            Log.e("Derelict: cannot load freetype shared library: ", e.msg);
+            throw new Exception("Cannot load freetype library");
+        }
         // init library
         int error = FT_Init_FreeType(&_library);
         if (error) {

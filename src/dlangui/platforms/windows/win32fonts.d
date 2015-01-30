@@ -29,6 +29,9 @@ import dlangui.platforms.windows.win32drawbuf;
 import std.string;
 import std.utf;
 
+/// define debug=FontResources for logging of font file resources creation/freeing
+//debug = FontResources;
+
 //auto toUTF16z(S)(S s)
 //{
     //return toUTFz!(const(wchar)*)(s);
@@ -450,13 +453,13 @@ class Win32Font : Font {
 
 		_size = size;
         _height = tm.tmHeight;
-        Log.d("Win32Font.create: height=", _height, " for size=", _size, "  points=", lf.lfHeight, " dpi=", _dpi);
+        debug(FontResources) Log.d("Win32Font.create: height=", _height, " for size=", _size, "  points=", lf.lfHeight, " dpi=", _dpi);
         _baseline = _height - tm.tmDescent;
         _weight = weight;
         _italic = italic;
         _face = def.face;
         _family = def.family;
-		Log.d("Created font ", _face, " ", _size);
+		debug(FontResources) Log.d("Created font ", _face, " ", _size);
 		return true;
 	}
 
@@ -532,11 +535,11 @@ class Win32FontManager : FontManager {
 			int index = _activeFonts.find(size, weight, italic, def.family, def.face);
 			if (index >= 0)
 				return _activeFonts.get(index);
-			Log.d("Creating new font");
+			debug(FontResources) Log.d("Creating new font");
 			Win32Font item = new Win32Font();
 			if (!item.create(def, size, weight, italic))
 				return _emptyFontRef;
-			Log.d("Adding to list of active fonts");
+			debug(FontResources) Log.d("Adding to list of active fonts");
 			return _activeFonts.add(item);
 		} else {
 			return _emptyFontRef;
