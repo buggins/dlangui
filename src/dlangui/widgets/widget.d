@@ -669,6 +669,12 @@ class Widget {
             visibility = s.visible ? Visibility.Visible : Visibility.Gone;
         }
     }
+    /// set action update request flag, will be cleared after redraw
+    void requestActionsUpdate(bool immediateUpdate = false) {
+        if (Window w = window) {
+            w.requestActionsUpdate(immediateUpdate);
+        }
+    }
 
     protected bool _focusGroup;
     /*****************************************

@@ -86,6 +86,7 @@ class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
                     destroy(_currentBackgroundOperation);
                     _currentBackgroundOperation = null;
                     _currentBackgroundOperationTimer = 0;
+                    requestActionsUpdate();
                     return false;
                 }
                 return true;
@@ -106,6 +107,7 @@ class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
         _currentBackgroundOperation = op;
         if (op)
             _currentBackgroundOperationTimer = setTimer(op.updateInterval);
+        requestActionsUpdate();
     }
 
     /// main menu widget

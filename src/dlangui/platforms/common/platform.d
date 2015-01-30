@@ -848,14 +848,18 @@ class Window {
 	protected void setCursorType(uint cursorType) {
 		// override to support different mouse cursors
 	}
+    /// update action states
+    protected void dispatchWidgetUpdateActionStateRecursive() {
+        if (_mainWidget !is null)
+            dispatchWidgetUpdateActionStateRecursive(_mainWidget);
+        foreach(p; _popups)
+            dispatchWidgetUpdateActionStateRecursive(p);
+    }
     /// checks content widgets for necessary redraw and/or layout
     bool checkUpdateNeeded(ref bool needDraw, ref bool needLayout, ref bool animationActive) {
         if (_actionsUpdateRequested) {
             // call update action check - as requested
-            if (_mainWidget !is null)
-                dispatchWidgetUpdateActionStateRecursive(_mainWidget);
-            foreach(p; _popups)
-                dispatchWidgetUpdateActionStateRecursive(p);
+            dispatchWidgetUpdateActionStateRecursive();
             _actionsUpdateRequested = false;
         }
         needDraw = needLayout = animationActive = false;
@@ -884,10 +888,14 @@ class Window {
 	/// close window
 	abstract void close();
 
-    protected bool _actionsUpdateRequested;
+    protected bool _actionsUpdateRequested = true;
+
     /// set action update request flag, will be cleared after redraw
-    void requestActionsUpdate() {
-        _actionsUpdateRequested = true;
+    void requestActionsUpdate(bool immediateUpdate = false) {
+        if (!immediateUpdate)
+            _actionsUpdateRequested = true;
+        else
+            dispatchWidgetUpdateActionStateRecursive();
     }
 
     @property bool actionsUpdateRequested() {

@@ -69,14 +69,14 @@ class ActionState {
 }
 
 /// action is 
-__gshared const(ActionState) ACTION_STATE_DEFAULT_ENABLED;
-__gshared const(ActionState) ACTION_STATE_DEFAULT_DISABLE;
-__gshared const(ActionState) ACTION_STATE_DEFAULT_INVISIBLE;
+__gshared const(ActionState) ACTION_STATE_ENABLED;
+__gshared const(ActionState) ACTION_STATE_DISABLE;
+__gshared const(ActionState) ACTION_STATE_INVISIBLE;
 
 __gshared static this() {
-    ACTION_STATE_DEFAULT_ENABLED = cast(const(ActionState))new ActionState(true, true, false);
-    ACTION_STATE_DEFAULT_DISABLE = cast(const(ActionState))new ActionState(false, true, false);
-    ACTION_STATE_DEFAULT_INVISIBLE = cast(const(ActionState))new ActionState(false, false, false);
+    ACTION_STATE_ENABLED = cast(const(ActionState))new ActionState(true, true, false);
+    ACTION_STATE_DISABLE = cast(const(ActionState))new ActionState(false, true, false);
+    ACTION_STATE_INVISIBLE = cast(const(ActionState))new ActionState(false, false, false);
 }
 
 
@@ -106,21 +106,25 @@ class Action {
 
     protected ActionState _defaultState;
 
+    /// set default state to disabled, visible, not-checked
+    Action disableByDefault() { _defaultState = new ActionState(false, true, false); return this; }
+    /// set default state to disabled, invisible, not-checked
+    Action hideByDefault() { _defaultState = new ActionState(false, false, false); return this; }
     /// default state for action if action state lookup failed
-    @property const(ActionState) defaultState() const { return _defaultState ? _defaultState : ACTION_STATE_DEFAULT_ENABLED; }
+    @property const(ActionState) defaultState() const { return _defaultState ? _defaultState : ACTION_STATE_ENABLED; }
     /// default state for action if action state lookup failed
     @property Action defaultState(ActionState s) { _defaultState = s; return this; }
     /// action state
-    @property const(ActionState) state() const { return _state ? _state :  (_defaultState ? _defaultState : ACTION_STATE_DEFAULT_ENABLED); }
+    @property const(ActionState) state() const { return _state ? _state :  (_defaultState ? _defaultState : ACTION_STATE_ENABLED); }
     /// update action state (for non-const action)
     @property Action state(const ActionState s) {
-        if (_state != s)
+        if (!_state || _state != s)
             _state = s.clone();
         return this; 
     }
     /// update action state (can be changed even for const objects)
     @property const(Action) state(const ActionState s) const {
-        if (_state != s) {
+        if (!_state || _state != s) {
             // hack
             Action nonConstThis = cast(Action) this;
             nonConstThis._state = s.clone();

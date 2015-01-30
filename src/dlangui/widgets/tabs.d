@@ -401,7 +401,7 @@ class TabControl : WidgetGroupDefaultDrawing {
         return true;
     }
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         //Log.d("tabControl.measure enter");
         Rect m = margins;
         Rect p = padding;
@@ -747,4 +747,14 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
         }
         return super.onKeyEvent(event);
     }
+
+    @property string selectedTabId() const {
+        return _tabControl._selectedTabId;
+    }
+
+    /// get tab content widget by id
+    Widget selectedTabBody() {
+        return _tabHost.tabBody(_tabControl._selectedTabId);
+    }
+
 }

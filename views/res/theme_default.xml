@@ -311,13 +311,17 @@
         align="Center"
         margins="1,1,1,1"
         padding="2,2,2,2"
-        />
+        >
+        <state state_enabled="false" alpha="160" backgroundImageId="@null"/>
+    </style>
     <style id="TOOLBAR_CONTROL"
         backgroundImageId="toolbar_control_background"
         align="Center"
         margins="1,1,1,1"
         padding="2,2,2,2"
-        />
+        >
+        <state state_enabled="false" alpha="160" backgroundImageId="@null"/>
+    </style>
     <style id="TOOLBAR_SEPARATOR"
         align="Center"
         />
