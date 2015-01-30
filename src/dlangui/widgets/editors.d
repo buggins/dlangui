@@ -614,7 +614,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     abstract protected Point measureVisibleText();
 
-    protected int _caretBlingingInterval = 1000;
+    protected int _caretBlingingInterval = 800;
     protected ulong _caretTimerId;
     protected bool _caretBlinkingPhase;
     protected long _lastBlinkStartTs;

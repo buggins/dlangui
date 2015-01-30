@@ -304,7 +304,7 @@
         backgroundImageId="toolbar_background"
         layoutWidth="WRAP_CONTENT"
         layoutHeight="WRAP_CONTENT"
-        margins="1,1,1,1"
+        margins="2,1,2,1"
         />
     <style id="TOOLBAR_BUTTON"
         backgroundImageId="toolbar_button_background"
