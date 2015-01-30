@@ -531,12 +531,16 @@ class TabHost : FrameLayout, TabHandler {
         return this;
     }
 
+    protected Visibility _hiddenTabsVisibility = Visibility.Invisible;
+    @property Visibility hiddenTabsVisibility() { return _hiddenTabsVisibility; }
+    @property void hiddenTabsVisibility(Visibility v) { _hiddenTabsVisibility = v; }
+
 	/// signal of tab change (e.g. by clicking on tab header)
 	Signal!TabHandler onTabChangedListener;
 
     protected override void onTabChanged(string newActiveTabId, string previousTabId) {
         if (newActiveTabId !is null) {
-            showChild(newActiveTabId, Visibility.Invisible, true);
+            showChild(newActiveTabId, _hiddenTabsVisibility, true);
         }
         if (onTabChangedListener.assigned)
             onTabChangedListener(newActiveTabId, previousTabId);
@@ -670,6 +674,9 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
     void renameTab(int index, dstring name) {
         _tabControl.renameTab(index, name);
     }
+
+    @property Visibility hiddenTabsVisibility() { return _tabHost.hiddenTabsVisibility; }
+    @property void hiddenTabsVisibility(Visibility v) { _tabHost.hiddenTabsVisibility = v; }
 
 	/// select tab
     void selectTab(string ID, bool updateAccess = true) {

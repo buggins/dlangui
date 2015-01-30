@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<theme id="theme_default" fontSize="15" 
+<theme id="theme_default" 
+        fontSize="14" 
         fontFace="Verdana,Arial,DejaVu Sans"
         fontFamily="SansSerif"
 	>
@@ -241,7 +242,7 @@
         backgroundColor="#D0D0D0"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
-        padding="4,4,4,4"
+        padding="1,1,1,1"
 	layoutWeight="0"
         />
     <style id="DOCK_HOST"
@@ -300,19 +301,19 @@
         backgroundImageId="toolbar_background"
         layoutWidth="WRAP_CONTENT"
         layoutHeight="WRAP_CONTENT"
-        margins="2,2,2,2"
+        margins="1,1,1,1"
         />
     <style id="TOOLBAR_BUTTON"
         backgroundImageId="toolbar_button_background"
         align="Center"
         margins="1,1,1,1"
-        padding="4,4,4,4"
+        padding="2,2,2,2"
         />
     <style id="TOOLBAR_CONTROL"
         backgroundImageId="toolbar_control_background"
         align="Center"
         margins="1,1,1,1"
-        padding="4,4,4,4"
+        padding="2,2,2,2"
         />
     <style id="TOOLBAR_SEPARATOR"
         align="Center"
@@ -321,7 +322,7 @@
     <style id="TREE_ITEM"
         padding="1,1,1,1"
         minWidth="100"
-        minHeight="15"
+        minHeight="14"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
         fontSize="14">

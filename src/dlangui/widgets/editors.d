@@ -1149,6 +1149,9 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected uint _iconsPaneWidth = 16;
     protected uint _foldingPaneWidth = 16;
     protected uint _modificationMarksPaneWidth = 8;
+    /// when true, call measureVisibileText on next layout
+    protected bool _contentChanged = true;
+
 
     /// Modified state change listener
     Signal!ModifiedStateListener onModifiedStateChangeListener;
@@ -1496,23 +1499,27 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
 	override void onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source) {
         //Log.d("onContentChange rangeBefore=", rangeBefore, " rangeAfter=", rangeAfter, " text=", operation.content);
-        updateMaxLineWidth();
-		measureVisibleText();
         if (source is this) {
             if (operation.action == EditAction.ReplaceContent) {
-                // loaded from file
+                _contentChanged = true;
+                // fully replaced, e.g., loaded from file or text property is assigned
 		        _caretPos = rangeAfter.end;
                 _selectionRange.start = _caretPos;
                 _selectionRange.end = _caretPos;
+                updateMaxLineWidth();
+                measureVisibleText();
                 ensureCaretVisible();
                 correctCaretPos();
                 requestLayout();
             } else if (operation.action == EditAction.SaveContent) {
                 // saved
             } else {
-		        _caretPos = rangeAfter.end;
+                _contentChanged = true;
+                _caretPos = rangeAfter.end;
                 _selectionRange.start = _caretPos;
                 _selectionRange.end = _caretPos;
+                updateMaxLineWidth();
+                measureVisibleText();
                 ensureCaretVisible();
             }
         } else {
@@ -2283,6 +2290,10 @@ class EditLine : EditWidgetBase {
         _clientRect = rc;
         applyMargins(_clientRect);
         applyPadding(_clientRect);
+        if (_contentChanged) {
+            measureVisibleText();
+            _contentChanged = false;
+        }
     }
 
 
@@ -2401,6 +2412,18 @@ class EditBox : EditWidgetBase {
         return this;
     }
 
+    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+    override void layout(Rect rc) {
+        if (visibility == Visibility.Gone) {
+            return;
+        }
+        super.layout(rc);
+        if (_contentChanged) {
+            measureVisibleText();
+            _contentChanged = false;
+        }
+    }
+
     override protected Point measureVisibleText() {
         Point sz;
         FontRef font = font();
@@ -2442,7 +2465,7 @@ class EditBox : EditWidgetBase {
 
     /// update verticat scrollbar widget position
     override protected void updateVScrollBar() {
-        int visibleLines = _clientRect.height / _lineHeight; // fully visible lines
+        int visibleLines = _lineHeight ? _clientRect.height / _lineHeight : 1; // fully visible lines
         if (visibleLines < 1)
             visibleLines = 1;
         _vscrollbar.setRange(0, _content.length - 1);
@@ -2494,7 +2517,7 @@ class EditBox : EditWidgetBase {
             _caretPos.line = _content.length - 1;
         if (_caretPos.line < 0)
             _caretPos.line = 0;
-        int visibleLines = _clientRect.height / _lineHeight; // fully visible lines
+        int visibleLines = _lineHeight > 0 ? _clientRect.height / _lineHeight : 1; // fully visible lines
         if (visibleLines < 1)
             visibleLines = 1;
         if (_caretPos.line < _firstVisibleLine) {
