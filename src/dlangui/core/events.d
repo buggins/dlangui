@@ -60,9 +60,13 @@ class ActionState {
     ActionState clone() const {
         return new ActionState(enabled, visible, checked);
     }
+    override bool opEquals(Object obj) {
+        if (auto other = cast(ActionState)obj) {
+            return enabled == other.enabled && visible == other.visible && checked == other.checked;
+        }
+        return false;
+    }
 }
-
-immutable ACTION_ID_STATE_REQUEST = -1;
 
 /// action is 
 __gshared const(ActionState) ACTION_STATE_DEFAULT_ENABLED;
@@ -98,39 +102,30 @@ class Action {
     /// optional object parameter
     protected Object _objectParam;
 
+    protected ActionState _state;
+
     protected ActionState _defaultState;
 
     /// default state for action if action state lookup failed
     @property const(ActionState) defaultState() const { return _defaultState ? _defaultState : ACTION_STATE_DEFAULT_ENABLED; }
-
     /// default state for action if action state lookup failed
     @property Action defaultState(ActionState s) { _defaultState = s; return this; }
-
-    /// returns true if action is state request
-    @property bool isStateRequest() const {
-        return id == ACTION_ID_STATE_REQUEST;
+    /// action state
+    @property const(ActionState) state() const { return _state ? _state :  (_defaultState ? _defaultState : ACTION_STATE_DEFAULT_ENABLED); }
+    /// update action state (for non-const action)
+    @property Action state(const ActionState s) {
+        if (_state != s)
+            _state = s.clone();
+        return this; 
     }
-    
-    /// if this action is request of UI state for another action, returns ID of action state is requested for
-    @property int requestedActionId() const {
-        return isStateRequest ? cast(int)_longParam : 0;
-    }
-    /// if this action is request of UI state for another action, returns state (default if not changed while request handling by UI components)
-    @property const(ActionState) requestedActionState() const {
-        assert(isStateRequest);
-        return cast(ActionState)_objectParam;
-    }
-    /// if this action is request of UI state for another action, returns state (default if not changed while request handling by UI components)
-    @property const(Action) requestedActionState(ActionState s) const {
-        // hack: it's ok to replace action state in const ACTION_ID_STATE_REQUEST action
-        assert(isStateRequest);
-        Action nonconstThis = cast(Action)this;
-        nonconstThis._objectParam = cast(Object)s.clone();
-        return this;
-    }
-    /// create state request action for current action
-    Action createStateRequest() {
-        return (new Action(ACTION_ID_STATE_REQUEST)).longParam(_id).objectParam(defaultState.clone());
+    /// update action state (can be changed even for const objects)
+    @property const(Action) state(const ActionState s) const {
+        if (_state != s) {
+            // hack
+            Action nonConstThis = cast(Action) this;
+            nonConstThis._state = s.clone();
+        }
+        return this; 
     }
 
     /// returns optional string parameter
@@ -169,6 +164,8 @@ class Action {
         _id = a._id;
         _label = a._label;
         _iconId = a._iconId;
+        _state = a._state.clone();
+        _defaultState = a._defaultState.clone();
         _accelerators.length = a._accelerators.length;
         for(int i = 0; i < _accelerators.length; i++)
             _accelerators[i] = a._accelerators[i];

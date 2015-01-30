@@ -364,6 +364,7 @@ class Window {
         }
         if (animationActive)
             scheduleAnimation();
+        _actionsUpdateRequested = false;
     }
 
     /// after drawing, call to schedule redraw if animation is active
@@ -401,6 +402,8 @@ class Window {
                 newFocus.setState(State.Focused);
             }
             _focusedWidget = newFocus;
+            // after focus change, ask for actions update automatically
+            requestActionsUpdate();
         }
         return _focusedWidget;
     }
@@ -608,6 +611,38 @@ class Window {
         }
         if (_mainWidget)
             return _mainWidget.handleAction(action);
+        return false;
+    }
+
+    /// dispatch action to main widget
+    bool dispatchActionStateRequest(const Action action, Widget sourceWidget = null) {
+        // try to handle by source widget
+        if(sourceWidget && isChild(sourceWidget)) {
+            if (sourceWidget.handleActionStateRequest(action))
+                return true;
+            sourceWidget = sourceWidget.parent;
+        }
+        Widget focus = focusedWidget;
+        // then offer action to focused widget
+        if (focus && isChild(focus)) {
+            if (focus.handleActionStateRequest(action))
+                return true;
+            focus = focus.parent;
+        }
+        // then offer to parent chain of source widget
+        while (sourceWidget && isChild(sourceWidget)) {
+            if (sourceWidget.handleActionStateRequest(action))
+                return true;
+            sourceWidget = sourceWidget.parent;
+        }
+        // then offer to parent chain of focused widget
+        while (focus && isChild(focus)) {
+            if (focus.handleActionStateRequest(action))
+                return true;
+            focus = focus.parent;
+        }
+        if (_mainWidget)
+            return _mainWidget.handleActionStateRequest(action);
         return false;
     }
 
@@ -832,6 +867,16 @@ class Window {
     abstract void invalidate();
 	/// close window
 	abstract void close();
+
+    protected bool _actionsUpdateRequested;
+    /// set action update request flag, will be cleared after redraw
+    void requestActionsUpdate() {
+        _actionsUpdateRequested = true;
+    }
+
+    @property bool actionsUpdateRequested() {
+        return _actionsUpdateRequested;
+    }
 
     /// Show message box with specified title and message
     void showMessageBox(UIString title, UIString message, const (Action)[] actions = [ACTION_OK], int defaultActionIndex = 0, bool delegate(const Action result) handler = null) {

@@ -626,7 +626,24 @@ class Widget {
     @property void action(const Action action) { _action = action.clone; }
     /// action to emit on click
     @property void action(Action action) { _action = action; }
-
+    /// ask for update state of some action (unles force=true, checks window flag 
+    void updateActionState(Action a, bool force = false) {
+        if (Window w = window) {
+            if (!force && !w.actionsUpdateRequested())
+                return;
+            if (w.dispatchActionStateRequest(a, this)) {
+                // state is updated
+            } else {
+                a.state = a.defaultState;
+            }
+        }
+    }
+    /// call to update state for action (if action is assigned for widget)
+    void updateActionState(bool force = false) {
+        if (!_action)
+            return;
+        updateActionState(_action, force);
+    }
 
     protected bool _focusGroup;
     /*****************************************
@@ -904,6 +921,10 @@ class Widget {
 
 	/// override to handle specific actions
 	bool handleAction(const Action a) {
+		return false;
+	}
+	/// override to handle specific actions state (e.g. change enabled state for supported actions)
+	bool handleActionStateRequest(const Action a) {
 		return false;
 	}
 
