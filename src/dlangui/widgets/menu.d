@@ -231,7 +231,11 @@ class MenuItem {
 
 	/// call to update state for action (if action is assigned for widget)
     void updateActionState(Widget w) {
+		//import dlangui.widgets.editors;
 		if (_action) {
+			//if (_action.id == EditorActions.Copy) {
+			//	Log.d("Requesting Copy action. Old state: ", _action.state);
+			//}
 			w.updateActionState(_action, true);
 			_enabled = _action.state.enabled;
 			_checked = _action.state.checked;
@@ -663,6 +667,17 @@ class MenuWidgetBase : ListWidget {
     protected int _menuToggleState;
     protected Widget _menuTogglePreviousFocus;
 
+	/// override to handle specific actions state (e.g. change enabled state for supported actions)
+	override bool handleActionStateRequest(const Action a) {
+		if (_menuTogglePreviousFocus) {
+			Log.d("Menu.handleActionStateRequest forwarding to ", _menuTogglePreviousFocus);
+			bool res = _menuTogglePreviousFocus.handleActionStateRequest(a);
+			Log.d("Menu.handleActionStateRequest forwarding handled successful: ", a.state.toString);
+			return res;
+		}
+		return false;
+	}
+
     /// list navigation using keys
     override bool onKeyEvent(KeyEvent event) {
         if (orientation == Orientation.Horizontal) {
@@ -723,7 +738,7 @@ class MenuWidgetBase : ListWidget {
 				}
 			}
         }
-		if (_selectedItemIndex >= 0 && event.action == KeyAction.KeyDown && event.flags == 0 && (event.keyCode == KeyCode.RETURN || event.keyCode == KeyCode.SPACE)) {
+		if (_selectedItemIndex >= 0 && event.action == KeyAction.KeyDown && /*event.flags == 0 &&*/ (event.keyCode == KeyCode.RETURN || event.keyCode == KeyCode.SPACE)) {
 			itemClicked(_selectedItemIndex);
 			return true;
 		}
@@ -757,8 +772,8 @@ class MainMenu : MenuWidgetBase {
 
 	/// call to update state for action (if action is assigned for widget)
     override void updateActionState(bool force) {
-		Log.d("MainMenu: updateActionState");
-		_item.updateActionState(this);
+		//Log.d("MainMenu: updateActionState");
+		//_item.updateActionState(this);
 
 	}
 
@@ -869,6 +884,9 @@ class MainMenu : MenuWidgetBase {
         if (focused && _openedPopup is null) {
             // activating!
             _menuTogglePreviousFocus = window.focusedWidget;
+			//updateActionState(true);
+			Log.d("MainMenu: updateActionState");
+			_item.updateActionState(this);
         }
         super.handleFocusChange(focused);
     }

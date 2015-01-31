@@ -66,6 +66,9 @@ class ActionState {
         }
         return false;
     }
+	override string toString() const { 
+		return (enabled ? "enabled" : "disabled") ~ (visible ? "_visible" : "_invisible") ~ (checked ? "_checked" : "");
+	}
 }
 
 /// action is 

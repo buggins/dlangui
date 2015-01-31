@@ -623,19 +623,25 @@ class Widget {
     /// action to emit on click
     @property const(Action) action() { return _action; }
     /// action to emit on click
-    @property void action(const Action action) { _action = action.clone; }
+    @property void action(const Action action) { _action = action.clone; handleActionStateChanged(); }
     /// action to emit on click
-    @property void action(Action action) { _action = action; }
+    @property void action(Action action) { _action = action; handleActionStateChanged(); }
     /// ask for update state of some action (unles force=true, checks window flag actionsUpdateRequested), returns true if action state is changed
     bool updateActionState(Action a, bool force = false) {
         if (Window w = window) {
             if (!force && !w.actionsUpdateRequested())
                 return false;
             const ActionState oldState = a.state;
+			//import dlangui.widgets.editors;
+			//if (a.id == EditorActions.Undo) {
+			//	Log.d("Requesting Undo action. Old state: ", a.state);
+			//}
             if (w.dispatchActionStateRequest(a, this)) {
                 // state is updated
+				//Log.d("updateActionState ", a.label, " found state: ", a.state.toString);
             } else {
                 a.state = a.defaultState;
+				//Log.d("updateActionState ", a.label, " using default state: ", a.state.toString);
             }
             if (a.state != oldState)
                 return true;
