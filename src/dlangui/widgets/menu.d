@@ -229,6 +229,18 @@ class MenuItem {
 	/// prepare for opening of submenu, return true if opening is allowed
 	Signal!(bool, MenuItem) onBeforeOpeningSubmenu;
 
+	/// call to update state for action (if action is assigned for widget)
+    void updateActionState(Widget w) {
+		if (_action) {
+			w.updateActionState(_action, true);
+			_enabled = _action.state.enabled;
+			_checked = _action.state.checked;
+		}
+		for (int i = 0; i < _subitems.length; i++) {
+			_subitems[i].updateActionState(w);
+		}
+	}
+
     this() {
         _enabled = true;
     }
@@ -338,6 +350,16 @@ class MenuItemWidget : WidgetGroupDefaultDrawing {
 			resetState(State.Checked);
 	}
 
+	///// call to update state for action (if action is assigned for widget)
+	//override void updateActionState(bool force = false) {
+	//    if (!_item.action)
+	//        return;
+	//    super.updateActionState(_item._action, force);
+	//    _item.enabled = _item._action.state.enabled;
+	//    _item.checked = _item._action.state.checked;
+	//    updateState();
+	//}
+
 	this(MenuItem item, bool mainMenu) {
         id="menuitem";
 		_mainMenu = mainMenu;
@@ -421,6 +443,15 @@ class MenuWidgetBase : ListWidget {
 		return _orientation == Orientation.Horizontal;
 	}
 
+	/// call to update state for action (if action is assigned for widget)
+    override void updateActionState(bool force = false) {
+		for (int i = 0; i < itemCount; i++) {
+			MenuItemWidget w = cast(MenuItemWidget)itemWidget(i);
+			if (w)
+				w.updateActionState(force);
+		}
+	}
+
 	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
 	override void measure(int parentWidth, int parentHeight) {
 		if (_orientation == Orientation.Horizontal) {
@@ -495,8 +526,10 @@ class MenuWidgetBase : ListWidget {
                 _openedPopup = null;
 			}
         }
+
 		PopupMenu popupMenu = new PopupMenu(itemWidget.item, this);
 		PopupWidget popup = window.showPopup(popupMenu, itemWidget, orientation == Orientation.Horizontal ? PopupAlign.Below :  PopupAlign.Right);
+		requestActionsUpdate();
         popup.onPopupCloseListener = &onPopupClosed;
         popup.flags = PopupFlags.CloseOnClickOutside;
 		_openedPopup = popup;
@@ -721,6 +754,13 @@ class MainMenu : MenuWidgetBase {
 		_clickOnButtonDown = true;
         selectOnHover = false;
     }
+
+	/// call to update state for action (if action is assigned for widget)
+    override void updateActionState(bool force) {
+		Log.d("MainMenu: updateActionState");
+		_item.updateActionState(this);
+
+	}
 
     /// override and return true to track key events even when not focused
     @property override bool wantsKeyTracking() {

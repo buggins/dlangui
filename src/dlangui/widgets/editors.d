@@ -387,14 +387,15 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 	override bool isActionEnabled(const Action action) {
 		switch (action.id) {
 			case EditorActions.Copy:
-			case EditorActions.Cut:
 				return !_selectionRange.empty;
+			case EditorActions.Cut:
+				return enabled && !_selectionRange.empty;
 			case EditorActions.Paste:
-				return Platform.instance.getClipboardText().length > 0;
+				return enabled && Platform.instance.getClipboardText().length > 0;
 			case EditorActions.Undo:
-				return _content.hasUndo;
+				return enabled && _content.hasUndo;
 			case EditorActions.Redo:
-				return _content.hasRedo;
+				return enabled && _content.hasRedo;
 			default:
 				return super.isActionEnabled(action);
 		}
@@ -406,14 +407,15 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 		if (_popupMenu.onBeforeOpeningSubmenu.assigned)
 			if (!_popupMenu.onBeforeOpeningSubmenu(_popupMenu))
 				return;
-		for (int i = 0; i < _popupMenu.subitemCount; i++) {
-			MenuItem item = _popupMenu.subitem(i);
-			if (item.action && isActionEnabled(item.action)) {
-				item.enabled = true;
-			} else {
-				item.enabled = false;
-			}
-		}
+		_popupMenu.updateActionState(this);
+		//for (int i = 0; i < _popupMenu.subitemCount; i++) {
+		//    MenuItem item = _popupMenu.subitem(i);
+		//    if (item.action && isActionEnabled(item.action)) {
+		//        item.enabled = true;
+		//    } else {
+		//        item.enabled = false;
+		//    }
+		//}
 		PopupMenu popupMenu = new PopupMenu(_popupMenu);
 		popupMenu.onMenuItemActionListener = this;
 		PopupWidget popup = window.showPopup(popupMenu, this, PopupAlign.Point | PopupAlign.Right, x, y);
@@ -560,6 +562,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 ensureCaretVisible();
                 correctCaretPos();
                 requestLayout();
+				requestActionsUpdate();
             } else if (operation.action == EditAction.SaveContent) {
                 // saved
             } else {
@@ -570,6 +573,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 updateMaxLineWidth();
                 measureVisibleText();
                 ensureCaretVisible();
+				requestActionsUpdate();
             }
         } else {
             correctCaretPos();
@@ -580,6 +584,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             if (_lastReportedModifiedState != content.modified) {
                 _lastReportedModifiedState = content.modified;
                 onModifiedStateChangeListener(this, content.modified);
+				requestActionsUpdate();
             }
         }
 		return;
@@ -765,6 +770,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             _selectionRange.end = _caretPos;
         }
         invalidate();
+		requestActionsUpdate();
     }
 
     protected void updateCaretPositionByMouse(int x, int y, bool selecting) {
@@ -814,6 +820,24 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         ensureCaretVisible();
         return true;
     }
+
+	/// override to handle specific actions state (e.g. change enabled state for supported actions)
+	override bool handleActionStateRequest(const Action a) {
+		switch (a.id) {
+            case EditorActions.Copy:
+            case EditorActions.Cut:
+            case EditorActions.Paste:
+            case EditorActions.Undo:
+            case EditorActions.Redo:
+                if (isActionEnabled(a))
+                    a.state = ACTION_STATE_ENABLED;
+                else
+                    a.state = ACTION_STATE_DISABLE;
+                return true;
+			default:
+				return super.handleActionStateRequest(a);
+		}
+	}
 
 	override protected bool handleAction(const Action a) {
         TextPosition oldCaretPos = _caretPos;
@@ -1084,6 +1108,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 _selectionRange.end = _content.lineEnd(_content.length - 1);
                 _caretPos = _selectionRange.end;
                 ensureCaretVisible();
+				requestActionsUpdate();
                 return true;
 			default:
 				break;

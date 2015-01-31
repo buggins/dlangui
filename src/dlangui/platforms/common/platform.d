@@ -233,8 +233,9 @@ class Window {
 		res.anchor.x = x;
 		res.anchor.y = y;
         _popups ~= res;
-        if (_mainWidget !is null)
+        if (_mainWidget !is null) {
             _mainWidget.requestLayout();
+		}
         return res;
     }
     /// remove popup
@@ -403,7 +404,7 @@ class Window {
             }
             _focusedWidget = newFocus;
             // after focus change, ask for actions update automatically
-            requestActionsUpdate();
+            //requestActionsUpdate();
         }
         return _focusedWidget;
     }
