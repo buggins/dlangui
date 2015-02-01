@@ -45,42 +45,35 @@ struct Accelerator {
 }
 
 /// use to for requesting of action state (to enable/disable, hide, get check status, etc)
-class ActionState {
+struct ActionState {
+	enum StateFlag {
+		enabled = 1,
+		visible = 2,
+		checked = 4
+	}
+	protected ubyte _flags;
     /// when false, control showing this action should be disabled
-    bool enabled;
+    @property bool enabled() const { return (_flags & StateFlag.enabled) != 0; }
+    @property void enabled(bool f) { _flags = f ? (_flags | StateFlag.enabled) : (_flags & ~StateFlag.enabled); }
     /// when false, control showing this action should be hidden
-    bool visible;
+    @property bool visible() const { return (_flags & StateFlag.visible) != 0; }
+    @property void visible(bool f) { _flags = f ? (_flags | StateFlag.visible) : (_flags & ~StateFlag.visible); }
     /// when true, for checkbox/radiobutton-like controls state should shown as checked
-    bool checked;
+    @property bool checked() const { return (_flags & StateFlag.checked) != 0; }
+    @property void checked(bool f) { _flags = f ? (_flags | StateFlag.checked) : (_flags & ~StateFlag.checked); }
     this(bool en, bool vis, bool check) {
-        this.enabled = en;
-        this.visible = vis;
-        this.checked = check;
+		_flags = (en ? StateFlag.enabled : 0) 
+			| (vis ? StateFlag.visible : 0) 
+			| (check ? StateFlag.checked : 0);
     }
-    ActionState clone() const {
-        return new ActionState(enabled, visible, checked);
-    }
-    override bool opEquals(Object obj) {
-        if (auto other = cast(ActionState)obj) {
-            return enabled == other.enabled && visible == other.visible && checked == other.checked;
-        }
-        return false;
-    }
-	override string toString() const { 
+	string toString() const { 
 		return (enabled ? "enabled" : "disabled") ~ (visible ? "_visible" : "_invisible") ~ (checked ? "_checked" : "");
 	}
 }
 
-/// action is 
-__gshared const(ActionState) ACTION_STATE_ENABLED;
-__gshared const(ActionState) ACTION_STATE_DISABLE;
-__gshared const(ActionState) ACTION_STATE_INVISIBLE;
-
-__gshared static this() {
-    ACTION_STATE_ENABLED = cast(const(ActionState))new ActionState(true, true, false);
-    ACTION_STATE_DISABLE = cast(const(ActionState))new ActionState(false, true, false);
-    ACTION_STATE_INVISIBLE = cast(const(ActionState))new ActionState(false, false, false);
-}
+const ACTION_STATE_ENABLED = ActionState(true, true, false);
+const ACTION_STATE_DISABLE = ActionState(false, true, false);
+const ACTION_STATE_INVISIBLE = ActionState(false, false, false);
 
 
 /** 
@@ -105,32 +98,28 @@ class Action {
     /// optional object parameter
     protected Object _objectParam;
 
-    protected ActionState _state;
+    protected ActionState _state = ACTION_STATE_ENABLED;
 
-    protected ActionState _defaultState;
+    protected ActionState _defaultState = ACTION_STATE_ENABLED;
 
     /// set default state to disabled, visible, not-checked
-    Action disableByDefault() { _defaultState = new ActionState(false, true, false); return this; }
+    Action disableByDefault() { _defaultState = ACTION_STATE_DISABLE; return this; }
     /// set default state to disabled, invisible, not-checked
-    Action hideByDefault() { _defaultState = new ActionState(false, false, false); return this; }
+    Action hideByDefault() { _defaultState = ACTION_STATE_INVISIBLE; return this; }
     /// default state for action if action state lookup failed
-    @property const(ActionState) defaultState() const { return _defaultState ? _defaultState : ACTION_STATE_ENABLED; }
+    @property const(ActionState) defaultState() const { return _defaultState; }
     /// default state for action if action state lookup failed
     @property Action defaultState(ActionState s) { _defaultState = s; return this; }
-    /// action state
-    @property const(ActionState) state() const { return _state ? _state :  (_defaultState ? _defaultState : ACTION_STATE_ENABLED); }
+    /// action state (can be used to enable/disable, show/hide, check/uncheck control)
+    @property const(ActionState) state() const { return _state; }
     /// update action state (for non-const action)
-    @property Action state(const ActionState s) {
-        if (!_state || _state != s)
-            _state = s.clone();
-        return this; 
-    }
+    @property Action state(const ActionState s) { _state = s; return this; }
     /// update action state (can be changed even for const objects)
     @property const(Action) state(const ActionState s) const {
-        if (!_state || _state != s) {
+        if (_state != s) {
             // hack
             Action nonConstThis = cast(Action) this;
-            nonConstThis._state = s.clone();
+            nonConstThis._state = s;
         }
         return this; 
     }
@@ -171,10 +160,8 @@ class Action {
         _id = a._id;
         _label = a._label;
         _iconId = a._iconId;
-        if (a._state)
-            _state = a._state.clone();
-        if (a._defaultState)
-            _defaultState = a._defaultState.clone();
+        _state = a._state;
+        _defaultState = a._defaultState;
         _accelerators.length = a._accelerators.length;
         for(int i = 0; i < _accelerators.length; i++)
             _accelerators[i] = a._accelerators[i];
