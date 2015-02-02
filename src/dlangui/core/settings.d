@@ -15,25 +15,43 @@ interface Settings {
     string getString(string key, string defValue = null);
     /// set string for key, returns old value or null if not set
     string setString(string key, string value);
+    /// get string by index, returns defValue if no such key
+    string getString(int index, string defValue = null);
+    /// set string for index, returns old value or null if not set
+    string setString(int index, string value);
     /// get bool by key, returns defValue if no such key
     bool getBool(string key, bool defValue = false);
-    /// set bool for key, returns old value or null if not set
+    /// set bool for key, returns old value or false if not set
     bool setBool(string key, bool value);
+    /// get bool by index, returns defValue if no such key
+    bool getBool(int index, bool defValue = false);
+    /// set bool for index, returns old value or false if not set
+    bool setBool(int index, bool value);
     /// get bool by key, returns defValue if no such key
     int getInt(string key, int defValue = 0);
-    /// set bool for key, returns old value or null if not set
+    /// set bool for key, returns old value or 0 if not set
     int setInt(string key, int value);
+    /// get bool by index, returns defValue if no such key
+    int getInt(int index, int defValue = 0);
+    /// set bool for index, returns old value or 0 if not set
+    int setInt(int index, int value);
     /// remove setting, returns true if removed, false if no such key
     bool remove(string key);
-    /// child subsettings access
+    /// child subsettings access by string key
     Settings child(string key, bool createIfNotExist = false);
+    /// child subsettings access by index
+    Settings child(int index, bool createIfNotExist = false);
+    /// returns number of number-indexed items
+    @property int length();
 }
 
 /// implementation of settings object
 class SettingsImpl : Settings {
     protected SettingsImpl _parent;
     protected SettingsImpl[string] _children;
+    protected SettingsImpl[] _indexedChildren;
     protected string[string] _values;
+    protected string[] _indexedValues;
     
     this(SettingsImpl parent = null) {
         _parent = parent;
@@ -42,6 +60,34 @@ class SettingsImpl : Settings {
     /// returns reference to parent settings
     override @property Settings parent() {
         return _parent;
+    }
+
+    /// get string by index, returns defValue if no such key
+    override string getString(int index, string defValue = null) {
+        if (index < 0 || index >= _indexedValues.length)
+            return defValue;
+        string res = _indexedValues[index];
+        if (!res)
+            return defValue;
+        return res;
+    }
+    /// set string for index, returns old value or null if not set
+    override string setString(int index, string value) {
+        assert(index >= 0);
+        assert(index < 10000);
+        string res;
+        if (index >= 0 && index < _indexedValues.length)
+            res = _indexedValues[index];
+        if (_indexedValues.length <= index)
+            _indexedValues.length = !_indexedValues.length ? 8 : index * 2;
+        _indexedValues[index] = value;
+        if (index < _indexedChildren.length)
+            _indexedChildren[index] = null;
+        return res;
+    }
+    /// returns number of number-indexed items
+    override @property int length() {
+        return cast(int)max(_indexedValues.length, _indexedChildren.length);
     }
 
     private static bool splitKey(string key, ref string part1, ref string part2) {
@@ -140,6 +186,20 @@ class SettingsImpl : Settings {
         }
     }
 
+    /// child subsettings access by index
+    override Settings child(int index, bool createIfNotExist = false) {
+        assert(index >= 0);
+        if (_indexedChildren.length <= index && createIfNotExist)
+            _indexedChildren.length = !_indexedChildren.length ? 8 : index * 2;
+        Settings res = index < _indexedChildren.length ? _indexedChildren[index] : null;
+        if (res || !createIfNotExist)
+            return res;
+        SettingsImpl newItem = new SettingsImpl(this);
+        _indexedChildren[index] = newItem;
+        if (index < _indexedValues.length)
+            _indexedValues[index] = null;
+        return newItem;
+    }
 
     /// remove setting, returns true if removed, false if no such key
     bool remove(string key) {
@@ -199,20 +259,36 @@ class SettingsImpl : Settings {
     }
 
     /// get bool by key, returns defValue if no such key
-    bool getBool(string key, bool defValue = false) {
+    override bool getBool(string key, bool defValue = false) {
         return parseBool(getString(key, ""), defValue);
     }
     /// set bool for key, returns old value or null if not set
-    bool setBool(string key, bool value) {
+    override bool setBool(string key, bool value) {
         return parseBool(setString(key, value ? "1" : "0"), false);
+    }
+    /// get bool by index, returns defValue if no such key
+    override bool getBool(int index, bool defValue = false) {
+        return parseBool(getString(index, ""), defValue);
+    }
+    /// set bool for index, returns old value or false if not set
+    override bool setBool(int index, bool value) {
+        return parseBool(setString(index, value ? "1" : "0"), false);
     }
 
     /// get bool by key, returns defValue if no such key
-    int getInt(string key, int defValue = 0) {
+    override int getInt(string key, int defValue = 0) {
         return parseInt(getString(key, ""), defValue);
     }
     /// set bool for key, returns old value or null if not set
-    int setInt(string key, int value) {
+    override int setInt(string key, int value) {
         return parseInt(setString(key, to!string(value)), false);
+    }
+    /// get bool by index, returns defValue if no such key
+    override int getInt(int index, int defValue = 0) {
+        return parseInt(getString(index, ""), defValue);
+    }
+    /// set bool for index, returns old value or 0 if not set
+    override int setInt(int index, int value) {
+        return parseInt(setString(index, to!string(value)), false);
     }
 }
