@@ -89,6 +89,12 @@ enum TokenCategory : ubyte {
     Error_InvalidComment = (15 << TOKEN_CATEGORY_SHIFT) | 4,
 }
 
+class TextLineMark {
+}
+
+class TextLineMarks {
+}
+
 
 /// split dstring by delimiters
 dstring[] splitDString(dstring source, dchar delimiter = EOL) {
@@ -199,6 +205,16 @@ enum EditAction {
     SaveContent,
 }
 
+/// values for editable line state
+enum EditStateMark : ubyte {
+    /// content is unchanged - e.g. after loading from file
+    unchanged,
+    /// content is changed and not yet saved
+    changed,
+    /// content is changed, but already saved to file
+    saved,
+}
+
 /// edit operation details for EditableContent
 class EditOperation {
     protected EditAction _action;
@@ -217,6 +233,11 @@ class EditOperation {
     /// new content for range (if required for this action)
     protected dstring[] _content;
 	@property ref dstring[] content() { return _content; }
+
+    /// line edit marks for old range
+    protected EditStateMark[] _oldEditMarks;
+	@property ref EditStateMark[] oldEditMarks() { return _oldEditMarks; }
+	@property void oldEditMarks(EditStateMark[] marks) { _oldEditMarks = marks; }
 
     /// old content for range
     protected dstring[] _oldContent;
@@ -332,6 +353,7 @@ class UndoBuffer {
     void saved() {
         _savedState = _undoList.peekBack;
     }
+
     /// returns true if content has been changed since last saved() or clear() call
     @property bool modified() {
         return _savedState !is _undoList.peekBack;
@@ -357,6 +379,7 @@ class EditableContent {
     this(bool multiline) {
         _multiline = multiline;
         _lines.length = 1; // initial state: single empty line
+        _editMarks.length = 1;
         _undoBuffer = new UndoBuffer();
     }
 
@@ -400,8 +423,14 @@ class EditableContent {
     /// returns true if miltyline content is supported
     @property bool multiline() { return _multiline; }
 
+    /// text content by lines
     protected dstring[] _lines;
+    /// token properties by lines - for syntax highlight
     protected TokenPropString[] _tokenProps;
+
+    /// line edit marks
+    protected EditStateMark[] _editMarks;
+	@property EditStateMark[] editMarks() { return _editMarks; }
 
     /// returns all lines concatenated delimited by '\n'
     @property dstring text() {
@@ -437,6 +466,11 @@ class EditableContent {
 
     /// call listener to say that content is saved
     void notifyContentSaved() {
+        // mark all changed lines as saved
+        for (int i = 0; i < _editMarks.length; i++) {
+            if (_editMarks[i] == EditStateMark.changed)
+                _editMarks[i] = EditStateMark.saved;
+        }
         TextRange rangeBefore;
         TextRange rangeAfter;
         // notify about content change
@@ -447,6 +481,12 @@ class EditableContent {
         clearTokenProps(startLine, endLine);
         if (_syntaxHighlighter) {
             _syntaxHighlighter.updateHighlight(_lines, _tokenProps, startLine, endLine);
+        }
+    }
+
+    protected void markChangedLines(int startLine, int endLine) {
+        for (int i = startLine; i < endLine; i++) {
+            _editMarks[i] = EditStateMark.changed;
         }
     }
 
@@ -464,6 +504,12 @@ class EditableContent {
         }
     }
 
+    void clearEditMarks() {
+        _editMarks.length = _lines.length;
+        for (int i = 0; i < _editMarks.length; i++)
+            _editMarks[i] = EditStateMark.unchanged;
+    }
+
     /// replace whole text with another content
     @property EditableContent text(dstring newContent) {
         clearUndo();
@@ -478,6 +524,7 @@ class EditableContent {
             _tokenProps.length = 1;
             updateTokenProps(0, cast(int)_lines.length);
         }
+        clearEditMarks();
         notifyContentReplaced();
         return this;
     }
@@ -500,9 +547,15 @@ class EditableContent {
         return index >= 0 && index < _lines.length ? _lines[index] : ""d;
     }
 
-    /// returns line token properties one item per character
+    /// returns line token properties one item per character (index is 0 based line number)
     TokenPropString lineTokenProps(int index) {
         return index >= 0 && index < _tokenProps.length ? _tokenProps[index] : null;
+    }
+
+    /// returns access to line edit mark by line index (0 based)
+    ref EditStateMark editMark(int index) {
+        assert (index >= 0 && index < _editMarks.length);
+        return _editMarks[index];
     }
 
 	/// returns text position for end of line lineIndex
@@ -549,6 +602,19 @@ class EditableContent {
 		if (contentChangeListeners.assigned)
 			contentChangeListeners(this, op, rangeBefore, rangeAfter, source);
 	}
+
+    /// return edit marks for specified range
+    EditStateMark[] rangeMarks(TextRange range) {
+        EditStateMark[] res;
+        if (range.empty) {
+            res ~= EditStateMark.unchanged;
+            return res;
+        }
+        for (int lineIndex = range.start.line; lineIndex <= range.end.line; lineIndex++) {
+            res ~= _editMarks[lineIndex];
+        }
+        return res;
+    }
 
     /// return text for specified range
     dstring[] rangeText(TextRange range) {
@@ -607,13 +673,16 @@ class EditableContent {
         for (int i = start; i < _lines.length - removedCount; i++) {
             _lines[i] = _lines[i + removedCount];
             _tokenProps[i] = _tokenProps[i + removedCount];
+            _editMarks[i] = _editMarks[i + removedCount];
         }
         for (int i = cast(int)_lines.length - removedCount; i < _lines.length; i++) {
             _lines[i] = null; // free unused line references
             _tokenProps[i] = null; // free unused line references
+            _editMarks[i] = EditStateMark.unchanged; // free unused line references
         }
         _lines.length -= removedCount;
         _tokenProps.length = _lines.length;
+        _editMarks.length = _lines.length;
     }
 
     /// inserts count empty lines at specified position
@@ -621,13 +690,16 @@ class EditableContent {
         assert(count > 0);
         _lines.length += count;
         _tokenProps.length = _lines.length;
+        _editMarks.length = _lines.length;
         for (int i = cast(int)_lines.length - 1; i >= start + count; i--) {
             _lines[i] = _lines[i - count];
             _tokenProps[i] = _tokenProps[i - count];
+            _editMarks[i] = _editMarks[i - count];
         }
         for (int i = start; i < start + count; i++) {
             _lines[i] = ""d;
             _tokenProps[i] = null;
+            _editMarks[i] = EditStateMark.changed;
         }
     }
 
@@ -657,6 +729,7 @@ class EditableContent {
                 //Log.d("merging lines ", firstLineHead, " ", newline, " ", lastLineTail);
                 _lines[i] = cast(dstring)buf;
                 clearTokenProps(i, i + 1);
+                markChangedLines(i, i + 1);
                 //Log.d("merge result: ", _lines[i]);
             } else if (i == after.start.line) {
                 dchar[] buf;
@@ -664,15 +737,18 @@ class EditableContent {
                 buf ~= newline;
                 _lines[i] = cast(dstring)buf;
                 clearTokenProps(i, i + 1);
+                markChangedLines(i, i + 1);
             } else if (i == after.end.line) {
                 dchar[] buf;
                 buf ~= newline;
                 buf ~= lastLineTail;
                 _lines[i] = cast(dstring)buf;
                 clearTokenProps(i, i + 1);
+                markChangedLines(i, i + 1);
             } else {
                 _lines[i] = newline; // no dup needed
                 clearTokenProps(i, i + 1);
+                markChangedLines(i, i + 1);
             }
         }
     }
@@ -806,6 +882,7 @@ class EditableContent {
             assert(rangeBefore.start <= rangeBefore.end);
             //correctRange(rangeBefore);
             dstring[] oldcontent = rangeText(rangeBefore);
+            EditStateMark[] oldmarks = rangeMarks(rangeBefore);
             dstring[] newcontent = op.content;
             if (newcontent.length == 0)
                 newcontent ~= ""d;
@@ -822,6 +899,7 @@ class EditableContent {
             assert(rangeAfter.start <= rangeAfter.end);
             op.newRange = rangeAfter;
             op.oldContent = oldcontent;
+            op.oldEditMarks = oldmarks;
             replaceRange(rangeBefore, rangeAfter, newcontent);
             _undoBuffer.saveForUndo(op);
 			handleContentChange(op, rangeBefore, rangeAfter, source);

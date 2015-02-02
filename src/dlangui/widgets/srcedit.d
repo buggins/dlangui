@@ -31,7 +31,7 @@ class SourceEdit : EditBox {
 		fontSize = 14;
 		layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
         minFontSize(10).maxFontSize(75); // allow font zoom with Ctrl + MouseWheel
-
+        showModificationMarks = true;
 
         _showLineNumbers = true;
 	}

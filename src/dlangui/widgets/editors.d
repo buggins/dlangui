@@ -242,6 +242,16 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     }
 
     protected void drawLeftPaneModificationMarks(DrawBuf buf, Rect rc, int line) {
+        if (line >= 0 && line < content.length) {
+            EditStateMark m = content.editMark(line);
+            if (m == EditStateMark.changed) {
+                // modified, not saved
+                buf.fillRect(rc, 0xFFD040);
+            } else if (m == EditStateMark.saved) {
+                // modified, not saved
+                buf.fillRect(rc, 0x80FF60);
+            }
+        }
     }
 
     protected void drawLeftPaneLineNumbers(DrawBuf buf, Rect rc, int line) {
@@ -440,6 +450,51 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     /// sets tab size (in number of spaces)
     @property EditWidgetBase wantTabs(bool wantTabs) {
         _wantTabs = wantTabs;
+        return this;
+    }
+
+    /// when true, show icons like bookmarks or breakpoints at the left
+    @property bool showIcons() {
+        return _showIcons;
+    }
+
+    /// when true, show icons like bookmarks or breakpoints at the left
+    @property EditWidgetBase showIcons(bool flg) {
+        if (_showIcons != flg) {
+            _showIcons = flg;
+            updateLeftPaneWidth();
+            requestLayout();
+        }
+        return this;
+    }
+
+    /// when true, show folding controls at the left
+    @property bool showFolding() {
+        return _showFolding;
+    }
+
+    /// when true, show folding controls at the left
+    @property EditWidgetBase showFolding(bool flg) {
+        if (_showFolding != flg) {
+            _showFolding = flg;
+            updateLeftPaneWidth();
+            requestLayout();
+        }
+        return this;
+    }
+
+    /// when true, show modification marks for lines (whether line is unchanged/modified/modified_saved
+    @property bool showModificationMarks() {
+        return _showModificationMarks;
+    }
+
+    /// when true, show modification marks for lines (whether line is unchanged/modified/modified_saved
+    @property EditWidgetBase showModificationMarks(bool flg) {
+        if (_showModificationMarks != flg) {
+            _showModificationMarks = flg;
+            updateLeftPaneWidth();
+            requestLayout();
+        }
         return this;
     }
 
