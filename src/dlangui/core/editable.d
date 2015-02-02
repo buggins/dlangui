@@ -295,10 +295,16 @@ class EditOperation {
         return false;
     }
 
-    void saved() {
+    //void saved() {
+    //    for (int i = 0; i < _oldEditMarks.length; i++) {
+    //        if (_oldEditMarks[i] == EditStateMark.changed)
+    //            _oldEditMarks[i] = EditStateMark.saved;
+    //    }
+    //}
+    void modified(bool all = true) {
         for (int i = 0; i < _oldEditMarks.length; i++) {
-            if (_oldEditMarks[i] == EditStateMark.changed)
-                _oldEditMarks[i] = EditStateMark.saved;
+            if (all || _oldEditMarks[i] == EditStateMark.saved)
+                _oldEditMarks[i] = EditStateMark.changed;
         }
     }
 }
@@ -323,6 +329,7 @@ class UndoBuffer {
         _redoList.clear();
         if (!_undoList.empty) {
             if (_undoList.back.merge(op)) {
+                //_undoList.back.modified();
                 return; // merged - no need to add new operation
             }
         }
@@ -360,22 +367,11 @@ class UndoBuffer {
     void saved() {
         _savedState = _undoList.peekBack;
         for (int i = 0; i < _undoList.length; i++) {
-            _undoList[i].saved();
+            _undoList[i].modified();
         }
         for (int i = 0; i < _redoList.length; i++) {
-            _redoList[i].saved();
+            _redoList[i].modified();
         }
-    }
-
-    /// returns true if saved state is in undo buffer
-    bool savedInUndo() {
-        if (!_savedState)
-            return false;
-        for (int i = 0; i < _undoList.length; i++) {
-            if (_savedState is _undoList[i])
-                return true;
-        }
-        return false;
     }
 
     /// returns true if saved state is in redo buffer
@@ -971,7 +967,7 @@ class EditableContent {
         TextRange rangeBefore = op.newRange;
         dstring[] oldcontent = op.content;
         dstring[] newcontent = op.oldContent;
-        EditStateMark[] newmarks = _undoBuffer.savedInUndo() ? op.oldEditMarks : null;
+        EditStateMark[] newmarks = op.oldEditMarks; //_undoBuffer.savedInUndo() ?  : null;
         TextRange rangeAfter = op.range;
         //Log.d("Undoing op rangeBefore=", rangeBefore, " contentBefore=`", oldcontent, "` rangeAfter=", rangeAfter, " contentAfter=`", newcontent, "`");
         replaceRange(rangeBefore, rangeAfter, newcontent, newmarks);
