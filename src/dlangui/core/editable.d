@@ -367,6 +367,28 @@ class UndoBuffer {
         }
     }
 
+    /// returns true if saved state is in undo buffer
+    bool savedInUndo() {
+        if (!_savedState)
+            return false;
+        for (int i = 0; i < _undoList.length; i++) {
+            if (_savedState is _undoList[i])
+                return true;
+        }
+        return false;
+    }
+
+    /// returns true if saved state is in redo buffer
+    bool savedInRedo() {
+        if (!_savedState)
+            return false;
+        for (int i = 0; i < _redoList.length; i++) {
+            if (_savedState is _redoList[i])
+                return true;
+        }
+        return false;
+    }
+
     /// returns true if content has been changed since last saved() or clear() call
     @property bool modified() {
         return _savedState !is _undoList.peekBack;
@@ -736,8 +758,8 @@ class EditableContent {
         }
         for (int i = after.start.line; i <= after.end.line; i++) {
             if (marks) {
-                if (i - after.start.line < marks.length)
-                    _editMarks[i] = marks[i - after.start.line];
+                //if (i - after.start.line < marks.length)
+                _editMarks[i] = marks[i - after.start.line];
             }
             dstring newline = newContent[i - after.start.line];
             if (i == after.start.line && i == after.end.line) {
@@ -748,7 +770,8 @@ class EditableContent {
                 //Log.d("merging lines ", firstLineHead, " ", newline, " ", lastLineTail);
                 _lines[i] = cast(dstring)buf;
                 clearTokenProps(i, i + 1);
-                markChangedLines(i, i + 1);
+                if (!marks)
+                    markChangedLines(i, i + 1);
                 //Log.d("merge result: ", _lines[i]);
             } else if (i == after.start.line) {
                 dchar[] buf;
@@ -756,18 +779,21 @@ class EditableContent {
                 buf ~= newline;
                 _lines[i] = cast(dstring)buf;
                 clearTokenProps(i, i + 1);
-                markChangedLines(i, i + 1);
+                if (!marks)
+                    markChangedLines(i, i + 1);
             } else if (i == after.end.line) {
                 dchar[] buf;
                 buf ~= newline;
                 buf ~= lastLineTail;
                 _lines[i] = cast(dstring)buf;
                 clearTokenProps(i, i + 1);
-                markChangedLines(i, i + 1);
+                if (!marks)
+                    markChangedLines(i, i + 1);
             } else {
                 _lines[i] = newline; // no dup needed
                 clearTokenProps(i, i + 1);
-                markChangedLines(i, i + 1);
+                if (!marks)
+                    markChangedLines(i, i + 1);
             }
         }
     }
@@ -936,7 +962,7 @@ class EditableContent {
         return _undoBuffer.hasRedo;
     }
     /// undoes last change
-    bool undo() {
+    bool undo(Object source) {
         if (!hasUndo)
             return false;
         if (_readOnly)
@@ -945,16 +971,16 @@ class EditableContent {
         TextRange rangeBefore = op.newRange;
         dstring[] oldcontent = op.content;
         dstring[] newcontent = op.oldContent;
-        EditStateMark[] newmarks = op.oldEditMarks;
+        EditStateMark[] newmarks = _undoBuffer.savedInUndo() ? op.oldEditMarks : null;
         TextRange rangeAfter = op.range;
         //Log.d("Undoing op rangeBefore=", rangeBefore, " contentBefore=`", oldcontent, "` rangeAfter=", rangeAfter, " contentAfter=`", newcontent, "`");
         replaceRange(rangeBefore, rangeAfter, newcontent, newmarks);
-        handleContentChange(op, rangeBefore, rangeAfter, this);
+        handleContentChange(op, rangeBefore, rangeAfter, source ? source : this);
         return true;
     }
 
     /// redoes last undone change
-    bool redo() {
+    bool redo(Object source) {
         if (!hasUndo)
             return false;
         if (_readOnly)
@@ -966,7 +992,7 @@ class EditableContent {
         TextRange rangeAfter = op.newRange;
         //Log.d("Redoing op rangeBefore=", rangeBefore, " contentBefore=`", oldcontent, "` rangeAfter=", rangeAfter, " contentAfter=`", newcontent, "`");
         replaceRange(rangeBefore, rangeAfter, newcontent);
-        handleContentChange(op, rangeBefore, rangeAfter, this);
+        handleContentChange(op, rangeBefore, rangeAfter, source ? source : this);
         return true;
     }
     /// clear undo/redp history

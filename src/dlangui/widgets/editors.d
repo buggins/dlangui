@@ -631,8 +631,11 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 				requestActionsUpdate();
             }
         } else {
+            updateMaxLineWidth();
+            measureVisibleText();
             correctCaretPos();
-            // TODO: do something better (e.g. take into account ranges when correcting)
+            requestLayout();
+            requestActionsUpdate();
         }
 		invalidate();
         if (onModifiedStateChangeListener.assigned) {
@@ -1073,14 +1076,14 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 {
                     if (readOnly)
                         return true;
-                    _content.undo();
+                    _content.undo(this);
                 }
                 return true;
             case EditorActions.Redo:
                 {
                     if (readOnly)
                         return true;
-                    _content.redo();
+                    _content.redo(this);
                 }
                 return true;
             case EditorActions.Tab:
