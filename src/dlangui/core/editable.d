@@ -458,6 +458,7 @@ class EditableContent {
 
     /// call listener to say that whole content is replaced e.g. by loading from file
     void notifyContentReplaced() {
+        clearEditMarks();
         TextRange rangeBefore;
         TextRange rangeAfter;
         // notify about content change
@@ -532,6 +533,7 @@ class EditableContent {
     /// clear content
     void clear() {
         clearUndo();
+        clearEditMarks();
         _lines.length = 0;
     }
 
@@ -704,7 +706,7 @@ class EditableContent {
     }
 
     /// inserts or removes lines, removes text in range
-    protected void replaceRange(TextRange before, TextRange after, dstring[] newContent) {
+    protected void replaceRange(TextRange before, TextRange after, dstring[] newContent, EditStateMark[] marks = null) {
         dstring firstLineBefore = line(before.start.line);
         dstring lastLineBefore = before.singleLine ? firstLineBefore : line(before.end.line);
         dstring firstLineHead = before.start.pos > 0 && before.start.pos <= firstLineBefore.length ? firstLineBefore[0..before.start.pos] : ""d;
@@ -720,6 +722,10 @@ class EditableContent {
             removeLines(before.start.line + 1, linesBefore - linesAfter);
         }
         for (int i = after.start.line; i <= after.end.line; i++) {
+            if (marks) {
+                if (i - after.start.line < marks.length)
+                    _editMarks[i] = marks[i - after.start.line];
+            }
             dstring newline = newContent[i - after.start.line];
             if (i == after.start.line && i == after.end.line) {
                 dchar[] buf;
@@ -926,9 +932,10 @@ class EditableContent {
         TextRange rangeBefore = op.newRange;
         dstring[] oldcontent = op.content;
         dstring[] newcontent = op.oldContent;
+        EditStateMark[] newmarks = op.oldEditMarks;
         TextRange rangeAfter = op.range;
         //Log.d("Undoing op rangeBefore=", rangeBefore, " contentBefore=`", oldcontent, "` rangeAfter=", rangeAfter, " contentAfter=`", newcontent, "`");
-        replaceRange(rangeBefore, rangeAfter, newcontent);
+        replaceRange(rangeBefore, rangeAfter, newcontent, newmarks);
         handleContentChange(op, rangeBefore, rangeAfter, this);
         return true;
     }

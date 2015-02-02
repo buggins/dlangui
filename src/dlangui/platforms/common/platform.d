@@ -317,55 +317,59 @@ class Window {
 	static immutable int PERFORMANCE_LOGGING_THRESHOLD_MS = 20;
 
     void onDraw(DrawBuf buf) {
-        bool needDraw = false;
-        bool needLayout = false;
-        bool animationActive = false;
-        checkUpdateNeeded(needDraw, needLayout, animationActive);
-        if (needLayout || animationActive)
-            needDraw = true;
-        long ts = std.datetime.Clock.currStdTime;
-        if (animationActive && lastDrawTs != 0) {
-            animate(ts - lastDrawTs);
-            // layout required flag could be changed during animate - check again
+        try {
+            bool needDraw = false;
+            bool needLayout = false;
+            bool animationActive = false;
             checkUpdateNeeded(needDraw, needLayout, animationActive);
-        }
-		lastDrawTs = ts;
-		if (needLayout) {
-            long measureStart = currentTimeMillis;
-            measure();
-            long measureEnd = currentTimeMillis;
-			if (measureEnd - measureStart > PERFORMANCE_LOGGING_THRESHOLD_MS) {
-				debug(DebugRedraw) Log.d("measure took ", measureEnd - measureStart, " ms");
+            if (needLayout || animationActive)
+                needDraw = true;
+            long ts = std.datetime.Clock.currStdTime;
+            if (animationActive && lastDrawTs != 0) {
+                animate(ts - lastDrawTs);
+                // layout required flag could be changed during animate - check again
+                checkUpdateNeeded(needDraw, needLayout, animationActive);
             }
-            layout();
-            long layoutEnd = currentTimeMillis;
-			if (layoutEnd - measureEnd > PERFORMANCE_LOGGING_THRESHOLD_MS) {
-				debug(DebugRedraw) Log.d("layout took ", layoutEnd - measureEnd, " ms");
+		    lastDrawTs = ts;
+		    if (needLayout) {
+                long measureStart = currentTimeMillis;
+                measure();
+                long measureEnd = currentTimeMillis;
+			    if (measureEnd - measureStart > PERFORMANCE_LOGGING_THRESHOLD_MS) {
+				    debug(DebugRedraw) Log.d("measure took ", measureEnd - measureStart, " ms");
+                }
+                layout();
+                long layoutEnd = currentTimeMillis;
+			    if (layoutEnd - measureEnd > PERFORMANCE_LOGGING_THRESHOLD_MS) {
+				    debug(DebugRedraw) Log.d("layout took ", layoutEnd - measureEnd, " ms");
+                }
+                //checkUpdateNeeded(needDraw, needLayout, animationActive);
             }
-            //checkUpdateNeeded(needDraw, needLayout, animationActive);
-        }
-        long drawStart = currentTimeMillis;
-        // draw main widget
-        _mainWidget.onDraw(buf);
+            long drawStart = currentTimeMillis;
+            // draw main widget
+            _mainWidget.onDraw(buf);
 
-        PopupWidget modal = modalPopup();
+            PopupWidget modal = modalPopup();
 
-        // draw popups
-        foreach(p; _popups) {
-            if (p is modal) {
-                // TODO: get shadow color from theme
-                buf.fillRect(Rect(0, 0, buf.width, buf.height), 0xD0404040);
+            // draw popups
+            foreach(p; _popups) {
+                if (p is modal) {
+                    // TODO: get shadow color from theme
+                    buf.fillRect(Rect(0, 0, buf.width, buf.height), 0xD0404040);
+                }
+                p.onDraw(buf);
             }
-            p.onDraw(buf);
+            long drawEnd = currentTimeMillis;
+            debug(DebugRedraw) {
+		        if (drawEnd - drawStart > PERFORMANCE_LOGGING_THRESHOLD_MS)
+        	        Log.d("draw took ", drawEnd - drawStart, " ms");
+            }
+            if (animationActive)
+                scheduleAnimation();
+            _actionsUpdateRequested = false;
+        } catch (Exception e) {
+            Log.e("Exception inside winfow.onDraw: ", e);
         }
-        long drawEnd = currentTimeMillis;
-        debug(DebugRedraw) {
-		    if (drawEnd - drawStart > PERFORMANCE_LOGGING_THRESHOLD_MS)
-        	    Log.d("draw took ", drawEnd - drawStart, " ms");
-        }
-        if (animationActive)
-            scheduleAnimation();
-        _actionsUpdateRequested = false;
     }
 
     /// after drawing, call to schedule redraw if animation is active

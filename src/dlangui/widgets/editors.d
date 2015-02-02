@@ -196,8 +196,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected uint _leftPaneLineNumberColor = 0x4060D0;
     protected uint _leftPaneLineNumberBackgroundColor = 0xF0F0F0;
     protected uint _iconsPaneWidth = 16;
-    protected uint _foldingPaneWidth = 16;
-    protected uint _modificationMarksPaneWidth = 8;
+    protected uint _foldingPaneWidth = 12;
+    protected uint _modificationMarksPaneWidth = 4;
     /// when true, call measureVisibileText on next layout
     protected bool _contentChanged = true;
 
@@ -249,7 +249,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 buf.fillRect(rc, 0xFFD040);
             } else if (m == EditStateMark.saved) {
                 // modified, not saved
-                buf.fillRect(rc, 0x80FF60);
+                buf.fillRect(rc, 0x20C020);
             }
         }
     }
