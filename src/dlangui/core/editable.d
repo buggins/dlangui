@@ -294,6 +294,13 @@ class EditOperation {
         }
         return false;
     }
+
+    void saved() {
+        for (int i = 0; i < _oldEditMarks.length; i++) {
+            if (_oldEditMarks[i] == EditStateMark.changed)
+                _oldEditMarks[i] = EditStateMark.saved;
+        }
+    }
 }
 
 /// Undo/Redo buffer
@@ -352,6 +359,12 @@ class UndoBuffer {
     /// current state is saved
     void saved() {
         _savedState = _undoList.peekBack;
+        for (int i = 0; i < _undoList.length; i++) {
+            _undoList[i].saved();
+        }
+        for (int i = 0; i < _redoList.length; i++) {
+            _redoList[i].saved();
+        }
     }
 
     /// returns true if content has been changed since last saved() or clear() call
