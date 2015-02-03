@@ -24,6 +24,8 @@ import dlangui.core.linestream;
 import std.algorithm;
 import std.stream;
 
+// uncomment FileFormats debug symbol to dump file formats for loaded/saved files.
+//debug = FileFormats;
 
 immutable dchar EOL = '\n';
 
@@ -1031,6 +1033,7 @@ class EditableContent {
             // EOF
             _format = lines.textFormat;
             _undoBuffer.clear();
+            debug(FileFormats)Log.d("loaded file:", filename, " format detected:", _format);
             notifyContentReplaced();
             return true;
         } catch (Exception e) {
@@ -1060,6 +1063,7 @@ class EditableContent {
         _format = format;
         import dlangui.core.linestream;
         try {
+            debug(FileFormats)Log.d("creating output stream, file=", filename, " format=", format);
             OutputLineStream writer = new OutputLineStream(stream, filename, format);
             scope(exit) { writer.close(); }
             for (int i = 0; i < _lines.length; i++) {

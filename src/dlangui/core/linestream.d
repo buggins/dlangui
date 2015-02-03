@@ -94,6 +94,9 @@ struct TextFileFormat {
     LineEnding lineEnding;
     /// byte order mark character flag
     bool bom;
+    string toString() {
+        return to!string(encoding) ~ " " ~ to!string(lineEnding) ~ (bom ? " bom" : "");
+    }
 }
 
 /// Text file writer which supports different text file formats
@@ -266,11 +269,12 @@ class LineStream {
         } else if (_crCount > _lfCount) {
             le = LineEnding.CR;
         } else if (_lfCount > _crCount) {
-            le = LineEnding.CR;
+            le = LineEnding.LF;
         } else {
             le = LineEnding.MIXED;
         }
-        return TextFileFormat(_encoding, le, _bomDetected);
+        TextFileFormat res = TextFileFormat(_encoding, le, _bomDetected);
+        return res;
     }
 
 
@@ -409,7 +413,7 @@ class LineStream {
 			}
 			for (; p < charsLeft; p++) {
 				dchar ch = _textBuf[_textPos + p];
-				if (ch == 0x0D) {
+				if (ch == '\r') { // CR
 					lastchar = p;
 					if (p == charsLeft - 1) {
 						// need one more char to check if it's 0D0A or just 0D eol
@@ -421,21 +425,23 @@ class LineStream {
 						charsLeft = _textLen - _textPos;
 					}
 					dchar ch2 = (p < charsLeft - 1) ? _textBuf[_textPos + p + 1] : 0;
-					if (ch2 == 0x0A) {
+					if (ch2 == '\n') { // LF
+                        // CRLF
 						eol = p + 2;
                         _lfCount++;
                         _crCount++;
                         _crlfCount++;
                     } else {
+                        // just CR
 						eol = p + 1;
-                        _lfCount++;
+                        _crCount++;
                     }
 					break;
-				} else if (ch == 0x0A || ch == 0x2028 || ch == 0x2029) {
+				} else if (ch == '\n' || ch == 0x2028 || ch == 0x2029) {
 					// single char eoln
 					lastchar = p;
 					eol = p + 1;
-                    _crCount++;
+                    _lfCount++;
 					break;
 				} else if (ch == 0 || ch == 0x001A) {
 					// eof
