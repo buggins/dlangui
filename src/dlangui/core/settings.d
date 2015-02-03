@@ -37,57 +37,145 @@ interface Settings {
     int setInt(int index, int value);
     /// remove setting, returns true if removed, false if no such key
     bool remove(string key);
-    /// child subsettings access by string key
-    Settings child(string key, bool createIfNotExist = false);
     /// child subsettings access by index
-    Settings child(int index, bool createIfNotExist = false);
+    Settings child(string key);
+    /// child subsettings access by string key
+    Settings child(int index);
+    /// child Object subsettings access by index
+    Settings childObject(string key, bool createIfNotExist = false);
+    /// child Object subsettings access by index
+    Settings childObject(int index, bool createIfNotExist = false);
+    /// child Array subsettings access by index
+    Settings childArray(int index, bool createIfNotExist = false);
     /// returns number of number-indexed items
     @property int length();
+    /// returns true if this is map (use only string-indexed operations)
+    @property bool isMap();
+    /// returns true if this is array (use only int-indexed operations)
+    @property bool isArray();
+}
+
+class Setting {
+    int _index;
+    string _id;
+    string _stringValue;
+    SettingsImpl _objectValue;
+
+    this(string id, string value) {
+        _id = id;
+        _index = -1;
+        _stringValue = value;
+    }
+
+    this(int index, string value) {
+        _index = index;
+        _stringValue = value;
+    }
+
+    this(string id, SettingsImpl value) {
+        _id = id;
+        _index = -1;
+        _objectValue = value;
+    }
+
+    this(int index, SettingsImpl value) {
+        _index = index;
+        _objectValue = value;
+    }
+
+    @property bool hasId() { return _id !is null; }
+    @property bool hasIndex() { return _index >= 0; }
+    @property bool isString() { return !_objectValue; }
+    @property bool isObject() { return _objectValue !is null; }
+
+    @property string id() { return _id; }
+    @property int index() { return _index; }
+
+    @property SettingsImpl objectValue() { return _objectValue; }
+    @property void objectValue(SettingsImpl v) { 
+        _stringValue = null;
+        _objectValue = v;
+    }
+    @property string stringValue() { return _stringValue; }
+    @property void stringValue(string v) { 
+        _objectValue = null;
+        _stringValue = v; 
+    }
 }
 
 /// implementation of settings object
 class SettingsImpl : Settings {
+    protected bool _isArray;
     protected SettingsImpl _parent;
-    protected SettingsImpl[string] _children;
-    protected SettingsImpl[] _indexedChildren;
-    protected string[string] _values;
-    protected string[] _indexedValues;
+
+    protected Setting[string] _byId;
+    protected Setting[] _byIndex;
+    protected int _nextIndex;
+
+    //protected bool removeSetting(Setting v) {
+
+    //}
+
+    //protected SettingsImpl[string] _children;
+    //protected SettingsImpl[] _indexedChildren;
+    //protected string[string] _values;
+    //protected string[] _indexedValues;
     
-    this(SettingsImpl parent = null) {
+    this(SettingsImpl parent, bool isMap) {
         _parent = parent;
+        _isArray = !isMap;
     }
 
+    /// returns true if this is map (use only string-indexed operations)
+    override @property bool isMap() {
+        return !_isArray;
+    }
+    /// returns true if this is array (use only int-indexed operations)
+    override @property bool isArray() {
+        return _isArray;
+    }
     /// returns reference to parent settings
     override @property Settings parent() {
         return _parent;
     }
 
+    protected void reserveIndex(int index) {
+        if (_byIndex.length <= index)
+            _byIndex.length = !_byIndex.length ? 8 : index * 2;
+    }
+
     /// get string by index, returns defValue if no such key
     override string getString(int index, string defValue = null) {
-        if (index < 0 || index >= _indexedValues.length)
+        if (index < 0 || index >= _byIndex.length)
             return defValue;
-        string res = _indexedValues[index];
-        if (!res)
+        Setting res = _byIndex[index];
+        if (!res || !res.isString)
             return defValue;
-        return res;
+        return res.stringValue;
     }
     /// set string for index, returns old value or null if not set
     override string setString(int index, string value) {
         assert(index >= 0);
         assert(index < 10000);
-        string res;
-        if (index >= 0 && index < _indexedValues.length)
-            res = _indexedValues[index];
-        if (_indexedValues.length <= index)
-            _indexedValues.length = !_indexedValues.length ? 8 : index * 2;
-        _indexedValues[index] = value;
-        if (index < _indexedChildren.length)
-            _indexedChildren[index] = null;
-        return res;
+        Setting res;
+        string resString;
+        if (index >= 0 && index < _byIndex.length)
+            res = _byIndex[index];
+        reserveIndex(index);
+       if (res) {
+            resString = res.stringValue;
+            res.stringValue = value;
+        } else {
+            _byIndex[index] = new Setting(index, value);
+        }
+        if (_nextIndex <= index)
+            _nextIndex = index + 1;
+        return resString;
     }
-    /// returns number of number-indexed items
+
+    /// returns number items
     override @property int length() {
-        return cast(int)max(_indexedValues.length, _indexedChildren.length);
+        return _nextIndex;
     }
 
     private static bool splitKey(string key, ref string part1, ref string part2) {
@@ -106,19 +194,19 @@ class SettingsImpl : Settings {
         }
         return false;
     }
-    /// get string by key, returns defValue if no such key
+    /// get string by key, returns defValue if no such key or value for key is not a string
     override string getString(string key, string defValue = null) {
         string part1, part2;
         if (splitKey(key, part1, part2)) {
             // path
-            auto p = (part1 in _children);
-            if (!p)
+            Setting * p = (part1 in _byId);
+            if (!p || !p.isObject)
                 return defValue;
-            return p.getString(part2, defValue);
+            return (*p).objectValue.getString(part2, defValue);
         } else {
-            auto p = (key in _values);
-            if (p)
-                return *p;
+            Setting * p = (key in _byId);
+            if (p && (*p).isString)
+                return (*p).stringValue;
             return defValue;
         }
     }
@@ -126,78 +214,184 @@ class SettingsImpl : Settings {
     override string setString(string key, string value) {
         string part1, part2;
         if (splitKey(key, part1, part2)) {
-            // path
-            auto p = (part1 in _children);
+            // path delimited by /
+            Setting * p = (part1 in _byId);
             if (!p) {
-                SettingsImpl newItem = new SettingsImpl(this);
-                _children[part1] = newItem;
+                // no such key at all - create new object
+                SettingsImpl newItem = new SettingsImpl(this, true);
+                int index = _nextIndex++;
+                Setting s = new Setting(part1, newItem);
+                _byId[part1] = s;
+                reserveIndex(index);
+                _byIndex[index] = s;
                 return newItem.setString(part2, value);
             } else {
-                return (*p).setString(part2, value);
+                // already has such key
+                if (!(*p).isObject) // if not an object, replace with object
+                    (*p).objectValue = new SettingsImpl(this, true);
+                return (*p).objectValue.setString(part2, value);
             }
         } else {
-            auto p = (key in _values);
-            string res;
-            if (p)
-                res = *p;
-            _values[key] = value;
-            return res;
-        }
-    }
-    /// returns true if settings object has specified key
-    override bool hasKey(string key) {
-        string part1, part2;
-        if (splitKey(key, part1, part2)) {
-            auto p = (part1 in _children);
+            // simple id
+            Setting * p = (key in _byId);
             if (!p) {
-                return false;
+                // no such key - create new item
+                int index = _nextIndex++;
+                Setting s = new Setting(key, value);
+                _byId[key] = s;
+                reserveIndex(index);
+                _byIndex[index] = s;
+                return null;
             } else {
-                return (*p).hasKey(part2);
+                // found existing item
+                string oldValue = (*p).stringValue;
+                (*p).stringValue = value;
+                return oldValue;
             }
-        } else {
-            return (key in _values) !is null;
         }
     }
 
-    override Settings child(string key, bool createIfNotExist = false) {
+    /// returns true if settings object has specified key
+    override bool hasKey(string key) {
+        assert(isMap);
         string part1, part2;
         if (splitKey(key, part1, part2)) {
-            auto p = (part1 in _children);
+            auto p = (part1 in _byId);
             if (!p) {
-                if (!createIfNotExist)
-                    return null;
-                SettingsImpl newItem = new SettingsImpl(this);
-                _children[part1] = newItem;
-                return newItem.child(part2, createIfNotExist);
+                return false;
             } else {
-                return (*p).child(part2);
+                if (!(*p).isObject) // found, but it's a string
+                    return false;
+                return (*p).objectValue.hasKey(part2);
             }
         } else {
-            auto p = (key in _children);
+            return (key in _byId) !is null;
+        }
+    }
+
+    override Settings childObject(string key, bool createIfNotExist = false) {
+        assert(isMap);
+        string part1, part2;
+        if (splitKey(key, part1, part2)) {
+            auto p = (part1 in _byId);
             if (!p) {
                 if (!createIfNotExist)
                     return null;
-                SettingsImpl newItem = new SettingsImpl(this);
-                _children[key] = newItem;
+                SettingsImpl newItem = new SettingsImpl(this, true);
+                int index = _nextIndex++;
+                Setting s = new Setting(part1, newItem);
+                _byId[part1] = s;
+                reserveIndex(index);
+                _byIndex[index] = s;
+                return newItem.childObject(part2, createIfNotExist);
+            } else {
+                if ((*p).isObject)
+                    return (*p).objectValue.childObject(part2, createIfNotExist);
+                // exists, but not an object
+                if (!createIfNotExist)
+                    return null;
+                SettingsImpl newItem = new SettingsImpl(this, true);
+                (*p).objectValue = newItem;
+                return newItem.childObject(part2, createIfNotExist);
+            }
+        } else {
+            auto p = (key in _byId);
+            if (!p) {
+                if (!createIfNotExist)
+                    return null;
+                SettingsImpl newItem = new SettingsImpl(this, true);
+                int index = _nextIndex++;
+                Setting s = new Setting(key, newItem);
+                _byId[key] = s;
+                reserveIndex(index);
+                _byIndex[index] = s;
                 return newItem;
             } else {
-                return (*p);
+                if ((*p).isObject)
+                    return (*p).objectValue;
+                // exists, but not an object
+                if (!createIfNotExist)
+                    return null;
+                SettingsImpl newItem = new SettingsImpl(this, true);
+                (*p).objectValue = newItem;
+                return newItem;
             }
         }
     }
 
     /// child subsettings access by index
-    override Settings child(int index, bool createIfNotExist = false) {
-        assert(index >= 0);
-        if (_indexedChildren.length <= index && createIfNotExist)
-            _indexedChildren.length = !_indexedChildren.length ? 8 : index * 2;
-        Settings res = index < _indexedChildren.length ? _indexedChildren[index] : null;
-        if (res || !createIfNotExist)
-            return res;
-        SettingsImpl newItem = new SettingsImpl(this);
-        _indexedChildren[index] = newItem;
-        if (index < _indexedValues.length)
-            _indexedValues[index] = null;
+    override Settings child(int index) {
+        // can work both for maps and arrays
+        if (index < 0 || index >= _nextIndex)
+            return null; // index out of range
+        return _byIndex[index].objectValue;
+    }
+
+    /// child subsettings access string key
+    override Settings child(string key) {
+        assert(isMap);
+        auto p = (key in _byId);
+        if (!p)
+            return null;
+        return (*p).objectValue;
+    }
+
+    /// child subsettings access by index
+    override Settings childObject(int index, bool createIfNotExist = false) {
+        // can work both for maps and arrays
+        assert(index >= 0 && index < 10000);
+        if (_byIndex.length <= index && createIfNotExist)
+            reserveIndex(index);
+        Setting res = index < _byIndex.length ? _byIndex[index] : null;
+        if (!res && !createIfNotExist)
+            return null;
+        if (res && res.isObject) // exists and is object
+            return res.objectValue;
+        SettingsImpl newItem = new SettingsImpl(this, true);
+        if (res) {
+            // exists but not an object
+            res.objectValue = newItem;
+            return newItem;
+        }
+        // not exists - create new Setting
+        _byIndex[index] = new Setting(index, newItem);
+        if (_nextIndex <= index)
+            _nextIndex = index + 1;
+        return newItem;
+    }
+
+    /// child Array subsettings access by index
+    Settings childArray(int index, bool createIfNotExist = false) {
+        // can work both for maps and arrays
+        assert(index >= 0 && index < 10000);
+        if (_byIndex.length <= index && createIfNotExist)
+            reserveIndex(index);
+        Setting res = index < _byIndex.length ? _byIndex[index] : null;
+        if (!res && !createIfNotExist)
+            return null;
+        if (res && res.isObject) { // exists and is object
+            if (res.objectValue.isArray) // existing child is array
+                return res.objectValue;
+            // existing child is map
+            if (!createIfNotExist)
+                return null; // wrong type
+            // replace it with empty array since createIfNotExist is true
+            SettingsImpl newItem = new SettingsImpl(this, false);
+            res.objectValue = newItem;
+            return newItem;
+        }
+        if (res && !createIfNotExist)
+            return null;
+        SettingsImpl newItem = new SettingsImpl(this, false);
+        if (res) {
+            // exists but not an object
+            res.objectValue = newItem;
+            return newItem;
+        }
+        // not exists - create new Setting
+        _byIndex[index] = new Setting(index, newItem);
+        if (_nextIndex <= index)
+            _nextIndex = index + 1;
         return newItem;
     }
 
@@ -205,15 +399,33 @@ class SettingsImpl : Settings {
     bool remove(string key) {
         string part1, part2;
         if (splitKey(key, part1, part2)) {
-            auto p = (part1 in _children);
-            if (!p) {
+            auto p = (part1 in _byId);
+            if (!p || !(*p).isObject) {
                 return false;
             } else {
-                return (*p).remove(part2);
+                return (*p).objectValue.remove(part2);
             }
         } else {
-            return _values.remove(key);
+            auto p = (key in _byId);
+            if (!p)
+                return false;
+            for (int i = 0; i < _byIndex.length; i++) {
+                if (_byIndex[i] is (*p)) {
+                    return remove(i);
+                }
+            }
+            return false;
         }
+    }
+
+    /// remove item by index
+    bool remove(int index) {
+        if (index < 0 || index >= _nextIndex)
+            return false; // index out of range
+        for (int i = index; i < _nextIndex - 1; i++)
+            _byIndex[i] = _byIndex[i + 1];
+        _byIndex[--_nextIndex] = null;
+        return true;
     }
 
     static bool parseBool(string v, bool defValue) {
