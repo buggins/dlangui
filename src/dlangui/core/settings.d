@@ -39,6 +39,17 @@ struct SettingArray {
             return null;
         return list[index];
     }
+    /// remove by index, returns removed value
+    Setting remove(int index) {
+        Setting res = get(index);
+        if (!res)
+            return null;
+        for (int i = index; i < list.length - 1; i++)
+            list[i] = list[i + 1];
+        list[$ - 1] = null;
+        list.length--;
+        return res;
+    }
 }
 
 /// ordered map
@@ -51,6 +62,55 @@ struct SettingMap {
         if (index < 0 || index >= list.length)
             return null;
         return list[index];
+    }
+    /// get item by key, returns null if key is not found
+    Setting get(string key) {
+        auto p = (key in map);
+        if (!p)
+            return null;
+        return list[*p];
+    }
+    Setting set(string key, Setting value, Setting parent) {
+        value.parent = parent;
+        auto p = (key in map);
+        if (p) {
+            // key is found
+            list[*p] = value;
+        } else {
+            // new value
+            list ~= value;
+            map[key] = cast(int)list.length - 1;
+        }
+        return value;
+    }
+
+    /// remove by index, returns removed value
+    Setting remove(int index) {
+        Setting res = get(index);
+        if (!res)
+            return null;
+        for (int i = index; i < list.length - 1; i++)
+            list[i] = list[i + 1];
+        list[$ - 1] = null;
+        list.length--;
+        string key;
+        foreach(k, ref v; map) {
+            if (v == index) {
+                key = k;
+            } else if (v > index) {
+                v--;
+            }
+        }
+        if (key)
+            map.remove(key);
+        return res;
+    }
+    /// remove by key, returns removed value
+    Setting remove(string key) {
+        auto p = (key in map);
+        if (!p)
+            return null;
+        return remove(*p);
     }
 }
 
@@ -157,6 +217,27 @@ final class Setting {
                 return null;
         }
     }
+    /// read as string value
+    inout(string) strDef(string defValue) inout { 
+        final switch(_type) with(SettingType) {
+            case STRING:
+                return _store.str;
+            case INTEGER:
+                return to!string(_store.integer);
+            case UINTEGER:
+                return to!string(_store.uinteger);
+            case FLOAT:
+                return to!string(_store.floating);
+            case TRUE:
+                return "true";
+            case FALSE:
+                return "false";
+            case NULL:
+            case ARRAY:
+            case OBJECT:
+                return defValue;
+        }
+    }
     /// set string value for object
     @property string str(string v) {
         if (_type != SettingType.STRING)
@@ -226,6 +307,27 @@ final class Setting {
                 return 0;
         }
     }
+    /// read as long value
+    inout(long) integerDef(long defValue) inout { 
+        final switch(_type) with(SettingType) {
+            case STRING:
+                return parseLong(_store.str, defValue);
+            case INTEGER:
+                return _store.integer;
+            case UINTEGER:
+                return cast(long)_store.uinteger;
+            case FLOAT:
+                return cast(long)_store.floating;
+            case TRUE:
+                return 1;
+            case FALSE:
+                return 0;
+            case NULL:
+            case ARRAY:
+            case OBJECT:
+                return defValue;
+        }
+    }
     /// set long value for object
     @property long integer(long v) {
         if (_type != SettingType.INTEGER)
@@ -254,6 +356,27 @@ final class Setting {
                 return 0;
         }
     }
+    /// read as ulong value
+    inout(long) uintegerDef(ulong defValue) inout { 
+        final switch(_type) with(SettingType) {
+            case STRING:
+                return parseULong(_store.str, defValue);
+            case INTEGER:
+                return cast(ulong)_store.integer;
+            case UINTEGER:
+                return _store.uinteger;
+            case FLOAT:
+                return cast(ulong)_store.floating;
+            case TRUE:
+                return 1;
+            case FALSE:
+                return 0;
+            case NULL:
+            case ARRAY:
+            case OBJECT:
+                return defValue;
+        }
+    }
     /// set ulong value for object
     @property ulong uinteger(ulong v) {
         if (_type != SettingType.UINTEGER)
@@ -280,6 +403,27 @@ final class Setting {
             case ARRAY:
             case OBJECT:
                 return 0;
+        }
+    }
+    /// read as double value with default
+    inout(double) floatingDef(double defValue) inout {
+        final switch(_type) with(SettingType) {
+            case STRING:
+                return defValue; //parseULong(_store.str);
+            case INTEGER:
+                return cast(double)_store.integer;
+            case UINTEGER:
+                return cast(double)_store.uinteger;
+            case FLOAT:
+                return _store.floating;
+            case TRUE:
+                return 1;
+            case FALSE:
+                return 0;
+            case NULL:
+            case ARRAY:
+            case OBJECT:
+                return defValue;
         }
     }
     /// set ulong value for object
@@ -332,6 +476,28 @@ final class Setting {
                 return _store.map && !_store.map.empty;
         }
     }
+    /// read as boolean value
+    inout(bool) booleanDef(bool defValue) inout {
+        final switch(_type) with(SettingType) {
+            case STRING:
+                return parseBool(_store.str, defValue);
+            case INTEGER:
+                return _store.integer != 0;
+            case UINTEGER:
+                return _store.uinteger != 0;
+            case FLOAT:
+                return _store.floating != 0;
+            case TRUE:
+                return true;
+            case FALSE:
+            case NULL:
+                return false;
+            case ARRAY:
+                return defValue;
+            case OBJECT:
+                return defValue;
+        }
+    }
     /// set bool value for object
     @property bool boolean(bool v) {
         if (_type == SettingType.TRUE) {
@@ -367,23 +533,207 @@ final class Setting {
         }
     }
 
+    /// for object returns item by key, null if not found or this setting is not an object
+    Setting opIndex(string key) {
+        if (_type == SettingType.OBJECT) {
+            if (!_store.map)
+                return null;
+            return _store.map.get(key);
+        } else {
+            return null;
+        }
+    }
+
+    /// for array or object remove item by index, returns removed item or null if index is out of bounds or setting is neither array nor object
+    Setting remove(int index) {
+        if (_type == SettingType.ARRAY) {
+            return _store.array.remove(index);
+        } else if (_type == SettingType.OBJECT) {
+            if (!_store.map)
+                return null;
+            return _store.map.remove(index);
+        } else {
+            return null;
+        }
+    }
+
+    /// for object remove item by key, returns removed item or null if is not found or setting is not an object
+    Setting remove(string key) {
+        if (_type == SettingType.OBJECT) {
+            if (!_store.map)
+                return null;
+            return _store.map.remove(key);
+        } else {
+            return null;
+        }
+    }
+
+    // assign long value
+    long opAssign(long value) {
+        return (integer = value);
+    }
+    // assign ulong value
+    ulong opAssign(ulong value) {
+        return (uinteger = value);
+    }
+    // assign string value
+    string opAssign(string value) {
+        return (str = value);
+    }
+    // assign bool value
+    bool opAssign(bool value) {
+        return (boolean = value);
+    }
+    // assign double value
+    double opAssign(double value) {
+        return (floating = value);
+    }
+
     // array methods
-    /// sets value for item by index
+    /// sets value for array item by integer index
     T opIndexAssign(T)(T value, int index) {
         if (_type != SettingType.ARRAY)
             clear(SettingType.ARRAY);
         static if (is(value == Setting)) {
             _store.array.set(index, value, this);
         } else {
-            if (index >= 0 && index < _store.array.list.length) {
+            Setting item = _store.array.get(index);
+            if (item) {
                 // existing item
-                Setting item = _store.array.list[index];
+                item = value;
             } else {
                 // create new item
                 _store.array.set(index, new Setting(value), this);
             }
         }
         return value;
+    }
+
+    // map methods
+    /// sets value for object item by string key
+    T opIndexAssign(T)(T value, string key) {
+        if (_type != SettingType.OBJECT)
+            clear(SettingType.OBJECT);
+        if (!_store.map)
+            _store.map = new SettingMap();
+        static if (is(value == Setting)) {
+            _store.map.set(key, value, this);
+        } else {
+            Setting item = _store.map.get(key);
+            if (item) {
+                // existing item
+                item = value;
+            } else {
+                // create new item
+                _store.map.set(key, new Setting(value), this);
+            }
+        }
+        return value;
+    }
+
+    /// sets long item by index of array or map
+    long setInteger(int index, long value) {
+        return opIndexAssign(value, index);
+    }
+    /// sets ulong item by index of array or map
+    ulong setUinteger(int index, ulong value) {
+        return opIndexAssign(value, index);
+    }
+    /// sets bool item by index of array or map
+    bool setBoolean(int index, bool value) {
+        return opIndexAssign(value, index);
+    }
+    /// sets double item by index of array or map
+    double setFloating(int index, double value) {
+        return opIndexAssign(value, index);
+    }
+    /// sets str item by index of array or map
+    string setString(int index, string value) {
+        return opIndexAssign(value, index);
+    }
+
+    /// returns long item by index of array or map
+    long getInteger(int index, long defValue = 0) {
+        if (auto item = opIndex(index))
+            return item.integerDef(defValue);
+        return defValue;
+    }
+    /// returns ulong item by index of array or map
+    ulong getUinteger(int index, ulong defValue = 0) {
+        if (auto item = opIndex(index))
+            return item.uintegerDef(defValue);
+        return defValue;
+    }
+    /// returns bool item by index of array or map
+    bool getBoolean(int index, bool defValue = false) {
+        if (auto item = opIndex(index))
+            return item.booleanDef(defValue);
+        return defValue;
+    }
+    /// returns double item by index of array or map
+    double getFloating(int index, double defValue = 0) {
+        if (auto item = opIndex(index))
+            return item.floatingDef(defValue);
+        return defValue;
+    }
+    /// returns str item by index of array or map
+    string getString(int index, string defValue = null) {
+        if (auto item = opIndex(index))
+            return item.strDef(defValue);
+        return defValue;
+    }
+
+
+    /// sets long item of map
+    long setInteger(string key, long value) {
+        return opIndexAssign(value, key);
+    }
+    /// sets ulong item of map
+    ulong setUinteger(string key, ulong value) {
+        return opIndexAssign(value, key);
+    }
+    /// sets bool item of map
+    bool setBoolean(string key, bool value) {
+        return opIndexAssign(value, key);
+    }
+    /// sets double item of map
+    double setFloating(string key, double value) {
+        return opIndexAssign(value, key);
+    }
+    /// sets str item of map
+    string setString(string key, string value) {
+        return opIndexAssign(value, key);
+    }
+
+    /// returns long item by key from map
+    long getInteger(string key, long defValue = 0) {
+        if (auto item = opIndex(key))
+            return item.integerDef(defValue);
+        return defValue;
+    }
+    /// returns ulong item by key from map
+    ulong getUinteger(string key, ulong defValue = 0) {
+        if (auto item = opIndex(key))
+            return item.uintegerDef(defValue);
+        return defValue;
+    }
+    /// returns bool item by key from map
+    bool getBoolean(string key, bool defValue = false) {
+        if (auto item = opIndex(key))
+            return item.booleanDef(defValue);
+        return defValue;
+    }
+    /// returns double item by key from map
+    double getFloating(string key, double defValue = 0) {
+        if (auto item = opIndex(key))
+            return item.floatingDef(defValue);
+        return defValue;
+    }
+    /// returns str item by key from map
+    string getString(string key, string defValue = null) {
+        if (auto item = opIndex(key))
+            return item.strDef(defValue);
+        return defValue;
     }
 }
 
