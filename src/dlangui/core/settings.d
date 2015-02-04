@@ -4,6 +4,391 @@ import std.range;
 import std.algorithm;
 import std.conv;
 
+enum SettingType {
+    STRING,
+    INTEGER,
+    UINTEGER,
+    FLOAT,
+    OBJECT,
+    ARRAY,
+    TRUE,
+    FALSE,
+    NULL
+}
+
+/// array
+struct SettingArray {
+    Setting[] list;
+    @property bool empty() inout { return list.length == 0; }
+    Setting set(int index, Setting value, Setting parent = null) {
+        if (index < 0)
+            index = cast(int)(list.length);
+        if (index >= list.length) {
+            int oldlen = cast(int)list.length;
+            list.length = index + 1;
+            for (int i = oldlen; i < index; i++)
+                list[i] = new Setting(); // insert NULL items in holes
+        }
+        list[index] = value;
+        value.parent = parent;
+        return value;
+    }
+    /// get item by index, returns null if index out of bounds
+    Setting get(int index) {
+        if (index < 0 || index >= list.length)
+            return null;
+        return list[index];
+    }
+}
+
+/// ordered map
+struct SettingMap {
+    Setting[] list;
+    int[string] map;
+    @property bool empty() inout { return list.length == 0; }
+    /// get item by index, returns null if index out of bounds
+    Setting get(int index) {
+        if (index < 0 || index >= list.length)
+            return null;
+        return list[index];
+    }
+}
+
+/// setting object
+final class Setting {
+    union Store {
+        string str;
+        long integer;
+        ulong uinteger;
+        double floating;
+        SettingArray array;
+        SettingMap * map;
+    }
+    private Setting _parent;
+    private Store _store;
+    private SettingType _type = SettingType.NULL;
+
+    this() {
+        // NULL setting
+    }
+    this(long v) {
+        integer = v;
+    }
+    this(ulong v) {
+        uinteger = v;
+    }
+    this(string v) {
+        str = v;
+    }
+    this(double v) {
+        floating = v;
+    }
+    this(bool v) {
+        boolean = v;
+    }
+    this(Setting[] v) {
+        clear(SettingType.ARRAY);
+        _store.array.list = v;
+    }
+
+    /// get parent
+    @property inout(Setting) parent() inout { return _parent; }
+    /// set parent
+    @property Setting parent(Setting v) {
+        _parent = v;
+        return v;
+    }
+
+    @property SettingType type() const { return _type; }
+    /// clear value and set new type
+    void clear(SettingType newType) {
+        if (newType != _type) {
+            clear();
+            _type = newType;
+        }
+        clear();
+    }
+    /// clear value
+    void clear() {
+        final switch(_type) with(SettingType) {
+            case STRING:
+                _store.str = null;
+                break;
+            case ARRAY:
+                _store.array = _store.array.init;
+                break;
+            case OBJECT:
+                _store.map = _store.map.init;
+                break;
+            case INTEGER:
+                _store.integer = _store.integer.init;
+                break;
+            case UINTEGER:
+                _store.uinteger = _store.uinteger.init;
+                break;
+            case FLOAT:
+                _store.floating = _store.floating.init;
+                break;
+            case TRUE:
+            case FALSE:
+            case NULL:
+                break;
+        }
+    }
+
+    /// read as string value
+    @property inout(string) str() inout { 
+        final switch(_type) with(SettingType) {
+            case STRING:
+                return _store.str;
+            case INTEGER:
+                return to!string(_store.integer);
+            case UINTEGER:
+                return to!string(_store.uinteger);
+            case FLOAT:
+                return to!string(_store.floating);
+            case TRUE:
+                return "true";
+            case FALSE:
+                return "false";
+            case NULL:
+            case ARRAY:
+            case OBJECT:
+                return null;
+        }
+    }
+    /// set string value for object
+    @property string str(string v) {
+        if (_type != SettingType.STRING)
+            clear(SettingType.STRING);
+        _store.str = v;
+        return v;
+    }
+
+    static long parseLong(inout string v, long defValue = 0) {
+        int len = cast(int)v.length;
+        if (len == 0)
+            return defValue;
+        int sign = 1;
+        long value = 0;
+        int digits = 0;
+        for (int i = 0; i < len; i++) {
+            char ch = v[i];
+            if (ch == '-') {
+                if (i != 0)
+                    return defValue;
+                sign = -1;
+            } else if (ch >= '0' && ch <= '9') {
+                digits++;
+                value = value * 10 + (ch - '0');
+            } else {
+                return defValue;
+            }
+        }
+        return digits > 0 ? (sign > 0 ? value : -value) : defValue;
+    }
+
+    static ulong parseULong(inout string v, ulong defValue = 0) {
+        int len = cast(int)v.length;
+        if (len == 0)
+            return defValue;
+        ulong value = 0;
+        int digits = 0;
+        for (int i = 0; i < len; i++) {
+            char ch = v[i];
+            if (ch >= '0' && ch <= '9') {
+                digits++;
+                value = value * 10 + (ch - '0');
+            } else {
+                return defValue;
+            }
+        }
+        return digits > 0 ? value : defValue;
+    }
+
+    /// read as long value
+    @property inout(long) integer() inout { 
+        final switch(_type) with(SettingType) {
+            case STRING:
+                return parseLong(_store.str);
+            case INTEGER:
+                return _store.integer;
+            case UINTEGER:
+                return cast(long)_store.uinteger;
+            case FLOAT:
+                return cast(long)_store.floating;
+            case TRUE:
+                return 1;
+            case FALSE:
+            case NULL:
+            case ARRAY:
+            case OBJECT:
+                return 0;
+        }
+    }
+    /// set long value for object
+    @property long integer(long v) {
+        if (_type != SettingType.INTEGER)
+            clear(SettingType.INTEGER);
+        _store.integer = v;
+        return v;
+    }
+
+    /// read as ulong value
+    @property inout(long) uinteger() inout { 
+        final switch(_type) with(SettingType) {
+            case STRING:
+                return parseULong(_store.str);
+            case INTEGER:
+                return cast(ulong)_store.integer;
+            case UINTEGER:
+                return _store.uinteger;
+            case FLOAT:
+                return cast(ulong)_store.floating;
+            case TRUE:
+                return 1;
+            case FALSE:
+            case NULL:
+            case ARRAY:
+            case OBJECT:
+                return 0;
+        }
+    }
+    /// set ulong value for object
+    @property ulong uinteger(ulong v) {
+        if (_type != SettingType.UINTEGER)
+            clear(SettingType.UINTEGER);
+        _store.uinteger = v;
+        return v;
+    }
+
+    /// read as double value
+    @property inout(double) floating() inout {
+        final switch(_type) with(SettingType) {
+            case STRING:
+                return 0; //parseULong(_store.str);
+            case INTEGER:
+                return cast(double)_store.integer;
+            case UINTEGER:
+                return cast(double)_store.uinteger;
+            case FLOAT:
+                return _store.floating;
+            case TRUE:
+                return 1;
+            case FALSE:
+            case NULL:
+            case ARRAY:
+            case OBJECT:
+                return 0;
+        }
+    }
+    /// set ulong value for object
+    @property double floating(double v) {
+        if (_type != SettingType.FLOAT)
+            clear(SettingType.FLOAT);
+        _store.floating = v;
+        return v;
+    }
+
+    /// parse string as boolean; supports 1, 0, y, n, yes, no, t, f, true, false; returns defValue if cannot be parsed
+    static bool parseBool(inout string v, bool defValue = false) {
+        int len = cast(int)v.length;
+        if (len == 0)
+            return defValue;
+        char ch = v[0];
+        if (len == 1) {
+            if (ch == '1' || ch == 'y' || ch == 't')
+                return true;
+            if (ch == '1' || ch == 'y' || ch == 't')
+                return false;
+            return defValue;
+        }
+        if (v.equal("yes") || v.equal("true"))
+            return true;
+        if (v.equal("no") || v.equal("false"))
+            return false;
+        return defValue;
+    }
+
+    /// read as boolean value
+    @property inout(bool) boolean() inout {
+        final switch(_type) with(SettingType) {
+            case STRING:
+                return parseBool(_store.str);
+            case INTEGER:
+                return _store.integer != 0;
+            case UINTEGER:
+                return _store.uinteger != 0;
+            case FLOAT:
+                return _store.floating != 0;
+            case TRUE:
+                return true;
+            case FALSE:
+            case NULL:
+                return false;
+            case ARRAY:
+                return !_store.array.empty;
+            case OBJECT:
+                return _store.map && !_store.map.empty;
+        }
+    }
+    /// set bool value for object
+    @property bool boolean(bool v) {
+        if (_type == SettingType.TRUE) {
+            if (!v) _type = SettingType.FALSE;
+        } else if (_type == SettingType.FALSE) {
+            if (v) _type = SettingType.TRUE;
+        } else {
+            clear(v ? SettingType.TRUE : SettingType.FALSE);
+        }
+        return v;
+    }
+
+    /// get number of elements for array or map, returns 0 for other types
+    int length() inout {
+        if (_type == SettingType.ARRAY) {
+            return cast(int)_store.array.list.length;
+        } else if (_type == SettingType.OBJECT) {
+            return _store.map ? cast(int)_store.map.list.length : 0;
+        } else
+            return 0;
+    }
+
+    /// for array or object returns item by index, null if index is out of bounds or setting is neither array nor object
+    Setting opIndex(int index) {
+        if (_type == SettingType.ARRAY) {
+            return _store.array.get(index);
+        } else if (_type == SettingType.OBJECT) {
+            if (!_store.map)
+                return null;
+            return _store.map.get(index);
+        } else {
+            return null;
+        }
+    }
+
+    // array methods
+    /// sets value for item by index
+    T opIndexAssign(T)(T value, int index) {
+        if (_type != SettingType.ARRAY)
+            clear(SettingType.ARRAY);
+        static if (is(value == Setting)) {
+            _store.array.set(index, value, this);
+        } else {
+            if (index >= 0 && index < _store.array.list.length) {
+                // existing item
+                Setting item = _store.array.list[index];
+            } else {
+                // create new item
+                _store.array.set(index, new Setting(value), this);
+            }
+        }
+        return value;
+    }
+}
+
+version (AAA): // comment out
+
 /// access to settings
 /// keys may be either simple key identifier or path delimited by / (e.g. setting1/subsetting2/subsetting15)
 interface Settings {
