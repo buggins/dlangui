@@ -125,12 +125,14 @@ class OutputLineStream {
             }
         }
     }
+
     protected void flush() {
         if (_len > 0) {
             _stream.writeExact(_buf.ptr, _len);
             _len = 0;
         }
     }
+
     /// convert character encoding and write to output stream
     protected void convertAndWrite(dstring s) {
         /// reserve buf space

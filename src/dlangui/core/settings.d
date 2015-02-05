@@ -50,6 +50,9 @@ struct SettingArray {
         list.length--;
         return res;
     }
+    @property int length() {
+        return cast(int)list.length;
+    }
 }
 
 /// ordered map
@@ -105,12 +108,24 @@ struct SettingMap {
             map.remove(key);
         return res;
     }
+    /// returns key for index
+    string keyByIndex(int index) {
+        foreach(k, ref v; map) {
+            if (v == index) {
+                return k;
+            }
+        }
+        return null;
+    }
     /// remove by key, returns removed value
     Setting remove(string key) {
         auto p = (key in map);
         if (!p)
             return null;
         return remove(*p);
+    }
+    @property int length() {
+        return cast(int)list.length;
     }
 }
 
@@ -594,7 +609,7 @@ final class Setting {
     T opIndexAssign(T)(T value, int index) {
         if (_type != SettingType.ARRAY)
             clear(SettingType.ARRAY);
-        static if (is(value == Setting)) {
+        static if (is(T: Setting)) {
             _store.array.set(index, value, this);
         } else {
             Setting item = _store.array.get(index);
@@ -631,7 +646,7 @@ final class Setting {
             clear(SettingType.OBJECT);
         if (!_store.map)
             _store.map = new SettingMap();
-        static if (is(value == Setting)) {
+        static if (is(T: Setting)) {
             _store.map.set(key, value, this);
         } else {
             Setting item = _store.map.get(key);
@@ -811,6 +826,191 @@ final class Setting {
         if (auto item = opIndex(key))
             return item.strDef(defValue);
         return defValue;
+    }
+
+    /// serialize to json
+    string toJSON(bool pretty = false) {
+        Buf buf;
+        toJSON(buf, 0, pretty);
+        return buf.get();
+    }
+    private static struct Buf {
+        char[] buffer;
+        int pos;
+        string get() {
+            return buffer[0 .. pos].dup;
+        }
+        void reserve(int size) {
+            if (pos + size >= buffer.length)
+                buffer.length = buffer.length ? 4096 : (pos + size + 4096) * 2;
+        }
+        void append(char ch) {
+            buffer[pos++] = ch;
+        }
+        void append(string s) {
+            foreach(ch; s)
+                buffer[pos++] = ch;
+        }
+        void appendEOL() {
+            append('\n');
+        }
+
+        void appendTabs(int level) {
+            reserve(level * 4 + 1024);
+            for(int i = 0; i < level; i++) {
+                buffer[pos++] = ' ';
+                buffer[pos++] = ' ';
+                buffer[pos++] = ' ';
+                buffer[pos++] = ' ';
+            }
+        }
+
+        void appendHex(uint ch) {
+            buffer[pos++] = '\\';
+            buffer[pos++] = 'u';
+            for (int i = 3; i >= 0; i--) {
+                uint d = (ch >> (4 * i)) & 0x0F;
+                buffer[pos++] = "0123456789abcdef"[d];
+            }
+        }
+        void appendJSONString(string s) {
+            reserve(s.length * 3 + 8);
+            if (s is null) {
+                append("null");
+            } else {
+                append('\"');
+                foreach(ch; s) {
+                    switch (ch) {
+                        case '\\':
+                            buffer[pos++] = '\\';
+                            buffer[pos++] = '\\';
+                            break;
+                        case '\"':
+                            buffer[pos++] = '\\';
+                            buffer[pos++] = '\"';
+                            break;
+                        case '\r':
+                            buffer[pos++] = '\\';
+                            buffer[pos++] = 'r';
+                            break;
+                        case '\n':
+                            buffer[pos++] = '\\';
+                            buffer[pos++] = 'n';
+                            break;
+                        case '\b':
+                            buffer[pos++] = '\\';
+                            buffer[pos++] = 'b';
+                            break;
+                        case '\t':
+                            buffer[pos++] = '\\';
+                            buffer[pos++] = 't';
+                            break;
+                        case '\f':
+                            buffer[pos++] = '\\';
+                            buffer[pos++] = 'f';
+                            break;
+                        default:
+                            if (ch < ' ') {
+                                appendHex(ch);
+                            } else {
+                                buffer[pos++] = ch;
+                            }
+                            break;
+                    }
+                }
+                append(s);
+                append('\"');
+            }
+        }
+    }
+
+    void toJSON(ref Buf buf, int level, bool pretty) {
+        buf.reserve(1024);
+        final switch(_type) with(SettingType) {
+            case STRING:
+                buf.appendJSONString(_store.str);
+                break;
+            case INTEGER:
+                buf.append(to!string(_store.integer));
+                break;
+            case UINTEGER:
+                buf.append(to!string(_store.uinteger));
+                break;
+            case FLOAT:
+                buf.append(to!string(_store.floating));
+                break;
+            case TRUE:
+                buf.append("true");
+                break;
+            case FALSE:
+                buf.append("false");
+                break;
+            case NULL:
+                buf.append("null");
+                break;
+            case ARRAY:
+                buf.append('[');
+                if (pretty && _store.array.length > 0)
+                    buf.appendEOL();
+                for (int i = 0; ; i++) {
+                    if (pretty)
+                        buf.appendTabs(level + 1);
+                    _store.array.get(i).toJSON(buf, level + 1, pretty);
+                    if (i >= _store.array.length - 1)
+                        break;
+                    buf.append(',');
+                    if (pretty)
+                        buf.appendEOL();
+                }
+                if (pretty) {
+                    buf.appendEOL();
+                    buf.appendTabs(level);
+                }
+                buf.append(']');
+                break;
+            case OBJECT:
+                buf.append('{');
+                if (_store.map && _store.map.length) {
+                    if (pretty)
+                        buf.appendEOL();
+                    for (int i = 0; ; i++) {
+                        string key = _store.map.keyByIndex(i);
+                        if (pretty)
+                            buf.appendTabs(level + 1);
+                        buf.appendJSONString(key);
+                        buf.append(':');
+                        if (pretty)
+                            buf.append(' ');
+                        _store.map.get(i).toJSON(buf, level + 1, pretty);
+                        if (i >= _store.map.length - 1)
+                            break;
+                        buf.append(',');
+                        if (pretty)
+                            buf.appendEOL();
+                    }
+                }
+                if (pretty) {
+                    buf.appendEOL();
+                    buf.appendTabs(level);
+                }
+                buf.append('}');
+                break;
+        }
+    }
+
+    void save(string filename, bool pretty = true) {
+        import std.file;
+        write(filename, toJSON(pretty));
+    }
+
+    bool parseJSON(string s) {
+        return true;
+    }
+
+    bool load(string filename) {
+        import std.file;
+        string s = readText(filename);
+        return parseJSON(s);
     }
 }
 
