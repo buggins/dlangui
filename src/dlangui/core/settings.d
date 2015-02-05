@@ -608,6 +608,21 @@ final class Setting {
         }
         return value;
     }
+    /// sets value for array item by integer index if not already present
+    T setDef(T)(T value, int index) {
+        if (_type != SettingType.ARRAY)
+            clear(SettingType.ARRAY);
+        Setting item = _store.array.get(index);
+        if (item)
+            return value;
+        static if (is(value == Setting)) {
+            _store.array.set(index, value, this);
+        } else {
+            // create new item
+            _store.array.set(index, new Setting(value), this);
+        }
+        return value;
+    }
 
     // map methods
     /// sets value for object item by string key
@@ -627,6 +642,23 @@ final class Setting {
                 // create new item
                 _store.map.set(key, new Setting(value), this);
             }
+        }
+        return value;
+    }
+    /// sets value for object item by string key
+    T setDef(T)(T value, string key) {
+        if (_type != SettingType.OBJECT)
+            clear(SettingType.OBJECT);
+        if (!_store.map)
+            _store.map = new SettingMap();
+        Setting item = _store.map.get(key);
+        if (item)
+            return value;
+        static if (is(value == Setting)) {
+            _store.map.set(key, value, this);
+        } else {
+            // create new item
+            _store.map.set(key, new Setting(value), this);
         }
         return value;
     }
@@ -651,6 +683,28 @@ final class Setting {
     string setString(int index, string value) {
         return opIndexAssign(value, index);
     }
+
+    /// sets long item by index of array or map only if it's фдкуфвн present
+    long setIntegerDef(int index, long value) {
+        return setDef(value, index);
+    }
+    /// sets ulong item by index of array or map only if it's фдкуфвн present
+    ulong setUintegerDef(int index, ulong value) {
+        return setDef(value, index);
+    }
+    /// sets bool item by index of array or map only if it's фдкуфвн present
+    bool setBooleanDef(int index, bool value) {
+        return setDef(value, index);
+    }
+    /// sets double item by index of array or map only if it's фдкуфвн present
+    double setFloatingDef(int index, double value) {
+        return setDef(value, index);
+    }
+    /// sets str item by index of array or map only if it's фдкуфвн present
+    string setStringDef(int index, string value) {
+        return setDef(value, index);
+    }
+
 
     /// returns long item by index of array or map
     long getInteger(int index, long defValue = 0) {
@@ -704,6 +758,29 @@ final class Setting {
     string setString(string key, string value) {
         return opIndexAssign(value, key);
     }
+
+    /// sets long item of map if key is not yet present in map
+    long setIntegerDef(string key, long value) {
+        return setDef(value, key);
+    }
+    /// sets ulong item of map if key is not yet present in map
+    ulong setUintegerDef(string key, ulong value) {
+        return setDef(value, key);
+    }
+    /// sets bool item of map if key is not yet present in map
+    bool setBooleanDef(string key, bool value) {
+        return setDef(value, key);
+    }
+    /// sets double item of map if key is not yet present in map
+    double setFloatingDef(string key, double value) {
+        return setDef(value, key);
+    }
+    /// sets str item of map if key is not yet present in map
+    string setStringDef(string key, string value) {
+        return setDef(value, key);
+    }
+
+
 
     /// returns long item by key from map
     long getInteger(string key, long defValue = 0) {
