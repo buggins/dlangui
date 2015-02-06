@@ -1,5 +1,6 @@
 module dlangui.core.settings;
 
+import dlangui.core.logger;
 import std.range;
 import std.algorithm : equal;
 import std.conv : to;
@@ -920,7 +921,6 @@ final class Setting {
                             break;
                     }
                 }
-                append(s);
                 append('\"');
             }
         }
@@ -1078,7 +1078,7 @@ final class Setting {
             return (ch >= '0' && ch <= '9');
         }
         @property char skipSpaces() {
-            for(;pos < json.length;) {
+            for(;pos < json.length;pos++) {
                 char ch = json[pos];
                 if (!isSpace(ch))
                     break;
@@ -1110,11 +1110,10 @@ final class Setting {
         }
 
         @property string parseString() {
-            char ch = peek;
-            if (ch != '\"') {
-                error("cannot parse string");
-            }
             char[] res;
+            char ch = peek;
+            if (ch != '\"')
+                error("cannot parse string");
             for (;;) {
                 ch = nextChar;
                 if (!ch)
@@ -1156,7 +1155,7 @@ final class Setting {
                     res ~= ch;
                 }
             }
-            return cast(string)res;
+            error("cannot parse string");
         }
         @property string parseIdent() {
             char ch = peek;
@@ -1201,7 +1200,7 @@ final class Setting {
             int sign = 1;
             if (ch == '-') {
                 sign = -1;
-                nextChar;
+                ch = nextChar;
             }
             if (!isDigit(ch))
                 error("cannot parse number");
@@ -1238,16 +1237,21 @@ final class Setting {
                         shift = shift * 10 + (ch - '0');
                         ch = nextChar;
                     }
-                    if (shiftSign < 0)
-                        shift = -shift;
                 }
                 if (isAlpha(ch))
                     error("error while parsing number");
-                double v = sign > 0 ? n : -n;
+                double v = cast(double)n;
                 if (n2) // part after period
                     v += cast(double)n2 / n2_div;
-                if (shift) // E part - pow10
-                    v *= pow(10.0, shift);
+                if (sign < 0)
+                    v = -v;
+                if (shift) { // E part - pow10
+                    double p = pow(10.0, shift);
+                    if (shiftSign > 0)
+                        v *= p;
+                    else
+                        v /= p;
+                }
                 res.floating = v;
             } else {
                 // integer
@@ -1330,17 +1334,24 @@ final class Setting {
         return this;
     }
 
-    bool parseJSON(string s) {
+    void parseJSON(string s) {
         clear(SettingType.NULL);
         JsonParser parser;
         parser.init(s);
-        return true;
+        parseJSON(parser);
     }
 
     bool load(string filename) {
-        import std.file;
-        string s = readText(filename);
-        return parseJSON(s);
+        try {
+            import std.file;
+            string s = readText(filename);
+            parseJSON(s);
+            return true;
+        } catch (Exception e) {
+            // Failed
+            Log.e("exception while parsing json: ", e);
+            return false;
+        }
     }
 }
 
