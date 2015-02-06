@@ -1,9 +1,10 @@
 module dlangui.core.settings;
 
 import std.range;
-import std.algorithm;
-import std.conv;
-import std.utf;
+import std.algorithm : equal;
+import std.conv : to;
+import std.utf : encode;
+import std.math : pow;
 
 enum SettingType {
     STRING,
@@ -1015,12 +1016,8 @@ final class Setting {
         @property char peek() {
             return pos < json.length ? json[pos] : 0;
         }
-        /// returns next char, 0 if eof
-        @property char nextChar() {
-            return pos < json.length ? json[pos++] : 0;
-        }
         /// skips current char, returns next one (or null if eof)
-        @property char skipChar() {
+        @property char nextChar() {
             if (pos < json.length - 1) {
                 return json[++pos];
             } else {
@@ -1102,7 +1099,7 @@ final class Setting {
                 error("unexpected end of file while parsing unicode character entity inside string");
             dchar ch = 0;
             for (int i = 0; i < 4; i++) {
-                int d = parseHexDigit(skipChar);
+                int d = parseHexDigit(nextChar);
                 if (d < 0)
                     error("error while parsing unicode character entity inside string");
                 ch = (ch << 4) | d;
@@ -1112,23 +1109,23 @@ final class Setting {
             return buf[0..sz].dup;
         }
 
-        string parseString() {
+        @property string parseString() {
             char ch = peek;
             if (ch != '\"') {
                 error("cannot parse string");
             }
             char[] res;
             for (;;) {
-                ch = skipChar;
+                ch = nextChar;
                 if (!ch)
                     error("unexpected end of file while parsing string");
                 if (ch == '\"') {
-                    skipChar;
+                    nextChar;
                     return cast(string)res;
                 }
                 if (ch == '\\') {
                     // escape sequence
-                    ch = skipChar;
+                    ch = nextChar;
                     switch (ch) {
                         case 'n':
                             res ~= '\n';
@@ -1161,16 +1158,16 @@ final class Setting {
             }
             return cast(string)res;
         }
-        string parseIdent() {
+        @property string parseIdent() {
             char ch = peek;
             if (ch == '\"') {
-                return parseString();
+                return parseString;
             }
             char[] res;
             if (isAlpha(ch)) {
                 res ~= ch;
                 for (;;) {
-                    ch = skipChar;
+                    ch = nextChar;
                     if (isAlNum(ch)) {
                         res ~= ch;
                     } else {
@@ -1197,71 +1194,142 @@ final class Setting {
             pos += ident.length;
             return true;
         }
-        Setting parseNumber(Setting res) {
-            return res;
-        }
-    }
 
-    private Setting parseValue(ref JsonParser parser) {
-        char ch = parser.skipSpaces;
-        Setting res = new Setting();
-        if (ch == '\"') {
-            res = parser.parseString;
-            return res;
-        } else if (ch == '[') {
-            //res.parseArray(parser);
-        } else if (ch == '{') {
-            res.parseMap(parser);
-        } else {
-            if (parser.parseKeyword("null")) {
-                return res;
-            } else if (parser.parseKeyword("true")) {
-                res = true;
-                return res;
-            } else if (parser.parseKeyword("false")) {
-                res = false;
-                return res;
-            } else if (ch == '-' || JsonParser.isDigit(ch)) {
-                return parser.parseNumber(res);
+        // parse long, ulong or double
+        void parseNumber(Setting res) {
+            char ch = peek;
+            int sign = 1;
+            if (ch == '-') {
+                sign = -1;
+                nextChar;
+            }
+            if (!isDigit(ch))
+                error("cannot parse number");
+            ulong n = 0;
+            while (isDigit(ch)) {
+                n = n * 10 + (ch - '0');
+                ch = nextChar;
+            }
+            if (ch == '.' || ch == 'e' || ch == 'E') {
+                // floating
+                ulong n2 = 0;
+                ulong n2_div = 1;
+                if (ch == '.') {
+                    ch = nextChar;
+                    while(isDigit(ch)) {
+                        n2 = n2 * 10 + (ch - '0');
+                        n2_div *= 10;
+                        ch = nextChar;
+                    }
+                    if (isAlpha(ch) && ch != 'e' && ch != 'E')
+                        error("error while parsing number");
+                }
+                int shift = 0;
+                int shiftSign = 1;
+                if (ch == 'e' || ch == 'E') {
+                    ch = nextChar;
+                    if (ch == '-') {
+                        shiftSign = -1;
+                        ch = nextChar;
+                    }
+                    if (!isDigit(ch))
+                        error("error while parsing number");
+                    while(isDigit(ch)) {
+                        shift = shift * 10 + (ch - '0');
+                        ch = nextChar;
+                    }
+                    if (shiftSign < 0)
+                        shift = -shift;
+                }
+                if (isAlpha(ch))
+                    error("error while parsing number");
+                double v = sign > 0 ? n : -n;
+                if (n2) // part after period
+                    v += cast(double)n2 / n2_div;
+                if (shift) // E part - pow10
+                    v *= pow(10.0, shift);
+                res.floating = v;
             } else {
-                parser.error("cannot parse JSON value");
+                // integer
+                if (isAlpha(ch))
+                    error("cannot parse number");
+                if (sign < 0 || !(n & 0x8000000000000000L))
+                    res.integer = cast(long)(n * sign); // signed
+                else
+                    res.uinteger = n; // unsigned
             }
         }
-        return res;
     }
 
     private void parseMap(ref JsonParser parser) {
         clear(SettingType.OBJECT);
-        parser.skipChar; // skip initial {
+        parser.nextChar; // skip initial {
         for(;;) {
             char ch = parser.skipSpaces;
             if (ch == '}') {
-                parser.skipChar;
+                parser.nextChar;
+                break;
             }
-            string key = parser.parseIdent();
+            string key = parser.parseIdent;
             ch = parser.skipSpaces;
             if (ch != ':')
                 parser.error("no : char after object field name");
-            parser.skipChar();
-            Setting value = parseValue(parser);
-            this[key] = value;
+            parser.nextChar;
+            this[key] = (new Setting()).parseJSON(parser);
             ch = parser.skipSpaces;
             if (ch == ',') {
-                parser.skipChar();
-                parser.skipSpaces();
+                parser.nextChar;
+                parser.skipSpaces;
             } else if (ch != '}') {
                 parser.error("unexpected character when waiting for , or } while parsing object");
             }
         }
     }
-    private void parseJSON(ref JsonParser parser) {
-        char ch = parser.skipSpaces;
-        if (ch == '{') {
-            parseMap(parser);
-        } else if (ch == '[') {
-        } else if (ch == '\"') {
+
+    private void parseArray(ref JsonParser parser) {
+        clear(SettingType.ARRAY);
+        parser.nextChar; // skip initial [
+        for(;;) {
+            char ch = parser.skipSpaces;
+            if (ch == ']') {
+                parser.nextChar;
+                break;
+            }
+            Setting value = new Setting();
+            value.parseJSON(parser);
+            this[_store.array.length] = value;
+            ch = parser.skipSpaces;
+            if (ch == ',') {
+                parser.nextChar;
+                parser.skipSpaces;
+            } else if (ch != ']') {
+                parser.error("unexpected character when waiting for , or ] while parsing array");
+            }
         }
     }
+
+    private Setting parseJSON(ref JsonParser parser) {
+        char ch = parser.skipSpaces;
+        if (ch == '\"') {
+            this = parser.parseString;
+        } else if (ch == '[') {
+            parseArray(parser);
+        } else if (ch == '{') {
+            parseMap(parser);
+        } else if (parser.parseKeyword("null")) {
+            // do nothing - we already have NULL value
+        } else if (parser.parseKeyword("true")) {
+            this = true;
+        } else if (parser.parseKeyword("false")) {
+            this = false;
+        } else if (ch == '-' || JsonParser.isDigit(ch)) {
+            parser.parseNumber(this);
+        } else {
+            parser.error("cannot parse JSON value");
+        }
+        return this;
+    }
+
     bool parseJSON(string s) {
         clear(SettingType.NULL);
         JsonParser parser;
