@@ -1132,7 +1132,7 @@ final class Setting {
         string get() {
             return buffer[0 .. pos].dup;
         }
-        void reserve(int size) {
+        void reserve(size_t size) {
             if (pos + size >= buffer.length)
                 buffer.length = buffer.length ? 4096 : (pos + size + 4096) * 2;
         }
