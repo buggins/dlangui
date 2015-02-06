@@ -1444,7 +1444,6 @@ final class Setting {
                     res ~= ch;
                 }
             }
-            error("cannot parse string");
         }
         @property string parseIdent() {
             char ch = peek;
