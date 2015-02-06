@@ -3,6 +3,7 @@ module dlangui.core.settings;
 import std.range;
 import std.algorithm;
 import std.conv;
+import std.utf;
 
 enum SettingType {
     STRING,
@@ -1003,7 +1004,268 @@ final class Setting {
         write(filename, toJSON(pretty));
     }
 
+    private static struct JsonParser {
+        string json;
+        int pos;
+        void init(string s) {
+            json = s;
+            pos = 0;
+        }
+        /// returns current char
+        @property char peek() {
+            return pos < json.length ? json[pos] : 0;
+        }
+        /// returns next char, 0 if eof
+        @property char nextChar() {
+            return pos < json.length ? json[pos++] : 0;
+        }
+        /// skips current char, returns next one (or null if eof)
+        @property char skipChar() {
+            if (pos < json.length - 1) {
+                return json[++pos];
+            } else {
+                if (pos < json.length)
+                    pos++;
+            }
+            return 0;
+        }
+        void error(string msg) {
+            string context;
+            // calculate error position line and column
+            int line = 1;
+            int col = 1;
+            int lineStart = 0;
+            for (int i = 0; i < pos; i++) {
+                char ch = json[i];
+                if (ch == '\r') {
+                    if (i < json.length - 1 && json[i + 1] == '\n')
+                        i++;
+                    line++;
+                    col = 1;
+                    lineStart = i + 1;
+                } else if (ch == '\n') {
+                    if (i < json.length - 1 && json[i + 1] == '\r')
+                        i++;
+                    line++;
+                    col = 1;
+                    lineStart = i + 1;
+                }
+            }
+            int contextStart = pos;
+            int contextEnd = pos;
+            for (; contextEnd < json.length; contextEnd++) {
+                if (json[contextEnd] == '\r' || json[contextEnd] == '\n')
+                    break;
+            }
+            if (contextEnd - contextStart < 3) {
+                for (int i = 0; i < 3 && contextStart > 0; contextStart--, i++) {
+                    if (json[contextStart - 1] == '\r' || json[contextStart - 1] == '\n')
+                        break;
+                }
+            } else if (contextEnd > contextStart + 10)
+                contextEnd = contextStart + 10;
+            if (contextEnd > contextStart && contextEnd < json.length)
+                context = "near `" ~ json[contextStart .. contextEnd] ~ "` ";
+            throw new Exception("JSON parsing error in (" ~ to!string(line) ~ ":" ~ to!string(col) ~ ") " ~ context ~ ": " ~ msg);
+        }
+        static bool isSpace(char ch) {
+            return ch== ' ' || ch == '\t' || ch == '\r' || ch == '\n';
+        }
+        static bool isAlpha(char ch) {
+            return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_';
+        }
+        static bool isAlNum(char ch) {
+            return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '_';
+        }
+        static bool isDigit(char ch) {
+            return (ch >= '0' && ch <= '9');
+        }
+        @property char skipSpaces() {
+            for(;pos < json.length;) {
+                char ch = json[pos];
+                if (!isSpace(ch))
+                    break;
+            }
+            return peek;
+        }
+        static int parseHexDigit(char ch) {
+            if (ch >= '0' && ch <='9')
+                return ch - '0';
+            if (ch >= 'a' && ch <='f')
+                return ch - 'a' + 10;
+            if (ch >= 'A' && ch <='F')
+                return ch - 'A' + 10;
+            return -1;
+        }
+        string parseUnicodeChar() {
+            if (pos >= json.length - 3)
+                error("unexpected end of file while parsing unicode character entity inside string");
+            dchar ch = 0;
+            for (int i = 0; i < 4; i++) {
+                int d = parseHexDigit(skipChar);
+                if (d < 0)
+                    error("error while parsing unicode character entity inside string");
+                ch = (ch << 4) | d;
+            }
+            char[4] buf;
+            size_t sz = encode(buf, ch);
+            return buf[0..sz].dup;
+        }
+
+        string parseString() {
+            char ch = peek;
+            if (ch != '\"') {
+                error("cannot parse string");
+            }
+            char[] res;
+            for (;;) {
+                ch = skipChar;
+                if (!ch)
+                    error("unexpected end of file while parsing string");
+                if (ch == '\"') {
+                    skipChar;
+                    return cast(string)res;
+                }
+                if (ch == '\\') {
+                    // escape sequence
+                    ch = skipChar;
+                    switch (ch) {
+                        case 'n':
+                            res ~= '\n';
+                            break;
+                        case 'r':
+                            res ~= '\r';
+                            break;
+                        case 'b':
+                            res ~= '\b';
+                            break;
+                        case 'f':
+                            res ~= '\f';
+                            break;
+                        case '\\':
+                            res ~= '\\';
+                            break;
+                        case '\"':
+                            res ~= '\"';
+                            break;
+                        case 'u':
+                            res ~= parseUnicodeChar();
+                            break;
+                        default:
+                            error("unexpected escape sequence in string");
+                            break;
+                    }
+                } else {
+                    res ~= ch;
+                }
+            }
+            return cast(string)res;
+        }
+        string parseIdent() {
+            char ch = peek;
+            if (ch == '\"') {
+                return parseString();
+            }
+            char[] res;
+            if (isAlpha(ch)) {
+                res ~= ch;
+                for (;;) {
+                    ch = skipChar;
+                    if (isAlNum(ch)) {
+                        res ~= ch;
+                    } else {
+                        break;
+                    }
+                }
+            } else
+                error("cannot parse string");
+            return cast(string)res;
+        }
+        bool parseKeyword(string ident) {
+            // returns true if parsed ok
+            if (pos + ident.length > json.length)
+                return false;
+            for (int i = 0; i < ident.length; i++) {
+                if (ident[i] != json[pos + i])
+                    return false;
+            }
+            if (pos + ident.length < json.length) {
+                char ch = json[pos + ident.length];
+                if (isAlNum(ch))
+                    return false;
+            }
+            pos += ident.length;
+            return true;
+        }
+        Setting parseNumber(Setting res) {
+            return res;
+        }
+    }
+
+    private Setting parseValue(ref JsonParser parser) {
+        char ch = parser.skipSpaces;
+        Setting res = new Setting();
+        if (ch == '\"') {
+            res = parser.parseString;
+            return res;
+        } else if (ch == '[') {
+            //res.parseArray(parser);
+        } else if (ch == '{') {
+            res.parseMap(parser);
+        } else {
+            if (parser.parseKeyword("null")) {
+                return res;
+            } else if (parser.parseKeyword("true")) {
+                res = true;
+                return res;
+            } else if (parser.parseKeyword("false")) {
+                res = false;
+                return res;
+            } else if (ch == '-' || JsonParser.isDigit(ch)) {
+                return parser.parseNumber(res);
+            } else {
+                parser.error("cannot parse JSON value");
+            }
+        }
+        return res;
+    }
+
+    private void parseMap(ref JsonParser parser) {
+        clear(SettingType.OBJECT);
+        parser.skipChar; // skip initial {
+        for(;;) {
+            char ch = parser.skipSpaces;
+            if (ch == '}') {
+                parser.skipChar;
+            }
+            string key = parser.parseIdent();
+            ch = parser.skipSpaces;
+            if (ch != ':')
+                parser.error("no : char after object field name");
+            parser.skipChar();
+            Setting value = parseValue(parser);
+            this[key] = value;
+            ch = parser.skipSpaces;
+            if (ch == ',') {
+                parser.skipChar();
+                parser.skipSpaces();
+            } else if (ch != '}') {
+                parser.error("unexpected character when waiting for , or } while parsing object");
+            }
+        }
+    }
+    private void parseJSON(ref JsonParser parser) {
+        char ch = parser.skipSpaces;
+        if (ch == '{') {
+            parseMap(parser);
+        } else if (ch == '[') {
+        } else if (ch == '\"') {
+        }
+    }
     bool parseJSON(string s) {
+        clear(SettingType.NULL);
+        JsonParser parser;
+        parser.init(s);
         return true;
     }
 
