@@ -253,6 +253,10 @@ It is a project to build D language IDE using DlangUI library.
 
 Now it's in early alpha stage, and could be used as a demo for DlangUI.
 
+But it already can open DUB based projects, edit, build and run them.
+
+There is simple syntax highlight.
+
 Project page: [https://github.com/buggins/dlangide](https://github.com/buggins/dlangide)
 
 How to build and run using DUB:
