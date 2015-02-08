@@ -409,6 +409,12 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 	/// override to change popup menu items state
 	override bool isActionEnabled(const Action action) {
 		switch (action.id) {
+			case EditorActions.ToggleBlockComment:
+				return !_selectionRange.empty;
+			case EditorActions.ToggleLineComment:
+			case EditorActions.Tab:
+			case EditorActions.BackTab:
+				return true;
 			case EditorActions.Copy:
 				return !_selectionRange.empty;
 			case EditorActions.Cut:

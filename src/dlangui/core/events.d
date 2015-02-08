@@ -1026,6 +1026,12 @@ string keyName(uint keyCode) {
 			return "8";
 		case KeyCode.KEY_9:
 			return "9";
+		case KeyCode.KEY_DIVIDE:
+			return "/";
+		case KeyCode.KEY_MULTIPLY:
+			return "*";
+		case KeyCode.TAB:
+			return "Tab";
 		case KeyCode.F1:
 			return "F1";
 		case KeyCode.F2:
