@@ -1982,6 +1982,29 @@ class EditBox : EditWidgetBase {
                     }
                 }
                 return true;
+			case EditorActions.ToggleLineComment:
+				// TODO
+				return true;
+			case EditorActions.ToggleBlockComment:
+				// TODO
+				return true;
+			case EditorActions.InsertLine:
+                {
+                    correctCaretPos();
+					TextPosition p = _content.lineEnd(_caretPos.line);
+					TextRange r = TextRange(p, p);
+                    EditOperation op = new EditOperation(EditAction.Replace, r, [""d, ""d]);
+                    _content.performOperation(op, this);
+					_caretPos = oldCaretPos;
+                }
+				return true;
+			case EditorActions.DeleteLine:
+                {
+                    correctCaretPos();
+                    EditOperation op = new EditOperation(EditAction.Replace, _content.lineRange(_caretPos.line), [""d]);
+                    _content.performOperation(op, this);
+                }
+				return true;
             default:
                 break;
 		}

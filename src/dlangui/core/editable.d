@@ -598,6 +598,16 @@ class EditableContent {
         return TextPosition(lineIndex, lineLength(lineIndex));
 	}
 
+	/// returns text position for begin of line lineIndex
+	TextPosition lineBegin(int lineIndex) {
+        return TextPosition(lineIndex, 0);
+	}
+
+	/// returns text range for whole line lineIndex
+	TextRange lineRange(int lineIndex) {
+        return TextRange(TextPosition(lineIndex, 0), lineIndex < _lines.length - 1 ? lineBegin(lineIndex + 1) : lineEnd(lineIndex));
+	}
+
     /// returns position before first non-space character of line, returns 0 position if no non-space chars
     TextPosition firstNonSpace(int lineIndex) {
         dstring s = line(lineIndex);
