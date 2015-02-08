@@ -720,6 +720,18 @@ enum KeyCode : uint {
     KEY_Y = 0x59,
     /// Z
     KEY_Z = 0x5a,
+    /// key /
+    KEY_DIVIDE = 0x6F,
+    /// key +
+    KEY_ADD = 0x6B,
+    /// key -
+    KEY_MULTIPLY = 0x6A,
+    /// key ,
+    KEY_COMMA = 0xBC,
+    /// key .
+    KEY_PERIOD = 0xBE,
+    /// key -
+    KEY_SUBTRACT = 0x6D,
     /// left win key
     LWIN = 0x5b,
     /// right win key

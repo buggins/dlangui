@@ -158,6 +158,14 @@ enum EditorActions : int {
 	/// Zoom out editor font
 	ZoomOut,
 	
+	/// Togle line comment
+	ToggleLineComment,
+	/// Toggle block comment
+	ToggleBlockComment,
+	/// Delete current line
+	DeleteLine,
+	/// Insert line
+	InsertLine,
 }
 
 /// base for all editor widgets
@@ -361,6 +369,11 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
 			new Action(EditorActions.ToggleReplaceMode, KeyCode.INS, 0),
 			new Action(EditorActions.SelectAll, KeyCode.KEY_A, KeyFlag.Control),
+
+			new Action(EditorActions.ToggleLineComment, KeyCode.KEY_DIVIDE, KeyFlag.Control),
+			new Action(EditorActions.ToggleBlockComment, KeyCode.KEY_DIVIDE, KeyFlag.Control | KeyFlag.Shift),
+			new Action(EditorActions.DeleteLine, KeyCode.KEY_Y, KeyFlag.Control),
+			new Action(EditorActions.InsertLine, KeyCode.RETURN, KeyFlag.Control),
 		]);
     }
 
