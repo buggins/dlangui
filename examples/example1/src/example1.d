@@ -376,7 +376,7 @@ extern (C) int UIAppMain(string[] args) {
                                 } else {
                                     SourceEdit editor = new SourceEdit(filename);
                                     if (editor.load(filename)) {
-                                        tabs.addTab(editor, toUTF32(baseName(filename)));
+                                        tabs.addTab(editor, toUTF32(baseName(filename)), null, true);
                                         tabs.selectTab(filename);
                                     } else {
                                         destroy(editor);

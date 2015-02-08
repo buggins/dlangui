@@ -109,7 +109,7 @@ class TabItemWidget : HorizontalLayout {
         _closeButton.drawableId = "close";
 		_closeButton.trackHover = true;
         _closeButton.onClickListener = &onClick;
-        if (_enableCloseButton) {
+        if (!_enableCloseButton) {
             _closeButton.visibility = Visibility.Gone;
         } else {
             _closeButton.visibility = Visibility.Visible;
@@ -260,6 +260,14 @@ class TabControl : WidgetGroupDefaultDrawing {
             }
         }
     }
+
+	/// when true, shows close buttons in tabs
+	@property bool enableCloseButton() { return _enableCloseButton; }
+	/// ditto
+	@property void enableCloseButton(bool enabled) {
+		_enableCloseButton = enabled;
+	}
+
     /// returns tab count
     @property int tabCount() const {
         return _items.length;
