@@ -168,9 +168,21 @@ EmbeddedResource[] embedResources(string[] resourceNames)() {
         return embedResources!(resourceNames[0 .. $/2])() ~ embedResources!(resourceNames[$/2 .. $])();
 }
 
+/// split string into lines, autodetect line endings
+string[] splitLines(string s) {
+	auto lines_crlf = split(s, "\r\n");
+	auto lines_cr = split(s, "\r");
+	auto lines_lf = split(s, "\n");
+	if (lines_crlf.length >= lines_cr.length && lines_crlf.length >= lines_lf.length)
+		return lines_crlf;
+	if (lines_cr.length > lines_lf.length)
+		return lines_cr;
+	return lines_lf;
+}
+
 /// embed all resources from list
 EmbeddedResource[] embedResourcesFromList(string resourceList)() {
-    return embedResources!(split(import(resourceList), "\n"))();
+    return embedResources!(splitLines(import(resourceList)))();
 }
 
 
