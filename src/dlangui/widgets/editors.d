@@ -410,11 +410,11 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 	override bool isActionEnabled(const Action action) {
 		switch (action.id) {
 			case EditorActions.ToggleBlockComment:
-				return !_selectionRange.empty;
+				return enabled && !_selectionRange.empty;
 			case EditorActions.ToggleLineComment:
 			case EditorActions.Tab:
 			case EditorActions.BackTab:
-				return true;
+				return enabled;
 			case EditorActions.Copy:
 				return !_selectionRange.empty;
 			case EditorActions.Cut:
@@ -906,6 +906,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             case EditorActions.Paste:
             case EditorActions.Undo:
             case EditorActions.Redo:
+			case EditorActions.ToggleBlockComment:
+			case EditorActions.ToggleLineComment:
+			case EditorActions.Tab:
+			case EditorActions.BackTab:
                 if (isActionEnabled(a))
                     a.state = ACTION_STATE_ENABLED;
                 else
