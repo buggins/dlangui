@@ -419,10 +419,28 @@ class SDLWindow : Window {
         if (action == MouseAction.Wheel) {
             // handle wheel
             short wheelDelta = cast(short)y;
+			if (_keyFlags & KeyFlag.Shift)
+				lastFlags |= MouseFlag.Shift;
+			else
+				lastFlags &= ~MouseFlag.Shift;
+			if (_keyFlags & KeyFlag.Control)
+				lastFlags |= MouseFlag.Control;
+			else
+				lastFlags &= ~MouseFlag.Control;
+			if (_keyFlags & KeyFlag.Alt)
+				lastFlags |= MouseFlag.Alt;
+			else
+				lastFlags &= ~MouseFlag.Alt;
             if (wheelDelta)
                 event = new MouseEvent(action, MouseButton.None, lastFlags, lastx, lasty, wheelDelta);
         } else {
             lastFlags = convertMouseFlags(state);
+			if (_keyFlags & KeyFlag.Shift)
+				lastFlags |= MouseFlag.Shift;
+			if (_keyFlags & KeyFlag.Control)
+				lastFlags |= MouseFlag.Control;
+			if (_keyFlags & KeyFlag.Alt)
+				lastFlags |= MouseFlag.Alt;
             lastx = cast(short)x;
             lasty = cast(short)y;
             MouseButton btn = convertMouseButton(button);
@@ -668,6 +686,7 @@ class SDLWindow : Window {
         return res;
     }
 
+	uint _keyFlags;
 	bool processKeyEvent(KeyAction action, uint keyCode, uint flags) {
 		debug(DebugSDL) Log.d("processKeyEvent ", action, " SDL key=0x", format("%08x", keyCode), " SDL flags=0x", format("%08x", flags));
 		keyCode = convertKeyCode(keyCode);
@@ -705,6 +724,7 @@ class SDLWindow : Window {
 					break;
 			}
 		}
+		_keyFlags = flags;
 
 		debug(DebugSDL) Log.d("processKeyEvent ", action, " converted key=0x", format("%08x", keyCode), " converted flags=0x", format("%08x", flags));
 		bool res = dispatchKeyEvent(new KeyEvent(action, keyCode, flags));
