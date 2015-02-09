@@ -23,6 +23,7 @@ import dlangui.core.collections;
 import dlangui.core.linestream;
 import std.algorithm;
 import std.stream;
+import std.conv : to;
 
 // uncomment FileFormats debug symbol to dump file formats for loaded/saved files.
 //debug = FileFormats;
@@ -172,6 +173,12 @@ struct TextPosition {
             return 1;
         return 0;
     }
+    inout bool opEquals(ref inout TextPosition v) {
+        return line == v.line && pos == v.pos;
+    }
+    @property string toString() {
+        return to!string(line) ~ ":" ~ to!string(pos);
+    }
 }
 
 /// text content range
@@ -189,6 +196,9 @@ struct TextRange {
     /// returns count of lines in range
     @property int lines() const {
         return end.line - start.line + 1;
+    }
+    @property string toString() {
+        return "[" ~ start.toString ~ ":" ~ end.toString ~ "]";
     }
 }
 
@@ -398,7 +408,10 @@ interface EditableContentListener {
 	void onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source);
 }
 
-alias TokenPropString = ubyte[];
+/// TokenCategory holder 
+alias TokenProp = ubyte;
+/// TokenCategory string
+alias TokenPropString = TokenProp[];
 
 /// interface for custom syntax highlight
 interface SyntaxHighlighter {
@@ -467,6 +480,10 @@ class EditableContent {
         _syntaxHighlighter.content = this;
         updateTokenProps(0, cast(int)_lines.length);
         return this;
+    }
+
+    @property const(dstring[]) lines() {
+        return _lines;
     }
 
     /// returns true if content has syntax highlight handler set
@@ -647,6 +664,16 @@ class EditableContent {
         return index >= 0 && index < _tokenProps.length ? _tokenProps[index] : null;
     }
 
+    /// returns token properties character position
+    TokenProp tokenProp(TextPosition p) {
+        return p.line >= 0 && p.line < _tokenProps.length && p.pos >= 0 && p.pos < _tokenProps[p.line].length  ? _tokenProps[p.line][p.pos] : 0;
+    }
+
+    /// returns position for end of last line
+    TextPosition endOfFile() {
+        return TextPosition(cast(int)_lines.length - 1, cast(int)_lines[$-1].length);
+    }
+
     /// returns access to line edit mark by line index (0 based)
     ref EditStateMark editMark(int index) {
         assert (index >= 0 && index < _editMarks.length);
@@ -664,6 +691,19 @@ class EditableContent {
             return lineEnd(lineIndex - 1);
         return TextPosition(lineIndex, 0);
 	}
+
+    /// returns previous character position
+    TextPosition prevCharPos(TextPosition p) {
+        for (;;) {
+            if (p.line <= 0)
+                return TextPosition(0, 0);
+            if (p.pos > 0) {
+                p.pos--;
+                return p;
+            }
+            p = lineEnd(p.line - 1);
+        }
+    }
 
 	/// returns text range for whole line lineIndex
 	TextRange lineRange(int lineIndex) {
