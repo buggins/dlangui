@@ -411,9 +411,6 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 	/// override to change popup menu items state
 	override bool isActionEnabled(const Action action) {
 		switch (action.id) {
-			case EditorActions.ToggleBlockComment:
-				return enabled && !_selectionRange.empty;
-			case EditorActions.ToggleLineComment:
 			case EditorActions.Tab:
 			case EditorActions.BackTab:
 			case EditorActions.Indent:
@@ -908,7 +905,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 			case EditorActions.ToggleBlockComment:
                 if (!_content.syntaxHighlighter || !_content.syntaxHighlighter.supportsToggleBlockComment)
                     a.state = ACTION_STATE_INVISIBLE;
-                else if (_content.syntaxHighlighter.canToggleBlockComment(_selectionRange))
+                else if (enabled && _content.syntaxHighlighter.canToggleBlockComment(_selectionRange))
                     a.state = ACTION_STATE_ENABLED;
                 else
                     a.state = ACTION_STATE_DISABLE;
@@ -916,7 +913,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 			case EditorActions.ToggleLineComment:
                 if (!_content.syntaxHighlighter || !_content.syntaxHighlighter.supportsToggleLineComment)
                     a.state = ACTION_STATE_INVISIBLE;
-                else if (_content.syntaxHighlighter.canToggleLineComment(_selectionRange))
+                else if (enabled && _content.syntaxHighlighter.canToggleLineComment(_selectionRange))
                     a.state = ACTION_STATE_ENABLED;
                 else
                     a.state = ACTION_STATE_DISABLE;

@@ -683,7 +683,7 @@ class EditableContent {
             if (ch == ' ') {
                 x++;
             } else if (ch == '\t') {
-                x = (x + _tabSize) % _tabSize;
+                x = (x + _tabSize) / _tabSize * _tabSize;
             } else {
                 if (res.firstNonSpace < 0) {
                     res.firstNonSpace = i;

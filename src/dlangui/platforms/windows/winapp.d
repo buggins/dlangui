@@ -640,8 +640,12 @@ class Win32Window : Window {
             _keyFlags &= ~flag;
     }
 
-    bool onKey(KeyAction action, uint keyCode, int repeatCount, dchar character = 0) {
+    bool onKey(KeyAction action, uint keyCode, int repeatCount, dchar character = 0, bool syskey = false) {
         KeyEvent event;
+        if (syskey)
+            _keyFlags |= KeyFlag.Alt;
+        //else
+        //    _keyFlags &= ~KeyFlag.Alt;
         if (action == KeyAction.KeyDown || action == KeyAction.KeyUp) {
             switch(keyCode) {
                 case KeyCode.SHIFT:
@@ -654,13 +658,29 @@ class Win32Window : Window {
                     updateKeyFlags(action, KeyFlag.Alt);
                     break;
                 default:
+                    if (GetKeyState(VK_CONTROL) & 0x8000)
+                        _keyFlags |= KeyFlag.Control;
+                    else
+                        _keyFlags &= ~KeyFlag.Control;
+                    if (GetKeyState(VK_SHIFT) & 0x8000)
+                        _keyFlags |= KeyFlag.Shift;
+                    else
+                        _keyFlags &= ~KeyFlag.Shift;
                     break;
             }
+            if (keyCode == 0xBF)
+                keyCode = KeyCode.KEY_DIVIDE;
             event = new KeyEvent(action, keyCode, _keyFlags);
         } else if (action == KeyAction.Text && character != 0) {
-            dchar[] text;
-            text ~= character;
-            event = new KeyEvent(action, 0, _keyFlags, cast(dstring)text);
+            if (_keyFlags & (KeyFlag.Control | KeyFlag.Alt)) {
+                if (character >= 1 && character <= 26) {
+                    event = new KeyEvent(action, KeyCode.KEY_A + character - 1, _keyFlags);
+                }
+            } else {
+                dchar[] text;
+                text ~= character;
+                event = new KeyEvent(action, 0, _keyFlags, cast(dstring)text);
+            }
         }
         bool res = false;
         if (event !is null) {
@@ -1091,7 +1111,7 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_SYSKEYUP:
 			if (window !is null) {
                 int repeatCount = lParam & 0xFFFF;
-				if (window.onKey(message == WM_KEYDOWN || message == WM_SYSKEYDOWN ? KeyAction.KeyDown : KeyAction.KeyUp, wParam, repeatCount))
+				if (window.onKey(message == WM_KEYDOWN || message == WM_SYSKEYDOWN ? KeyAction.KeyDown : KeyAction.KeyUp, wParam, repeatCount, 0, message == WM_SYSKEYUP || message == WM_SYSKEYDOWN))
                     return 0; // processed
             }
             break;
