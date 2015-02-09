@@ -185,6 +185,17 @@ struct TextPosition {
 struct TextRange {
     TextPosition start;
     TextPosition end;
+    bool intersects(const ref TextRange v) const {
+        if (start >= v.end)
+            return false;
+        if (end <= v.start)
+            return false;
+        return true;
+    }
+    /// returns true if position is inside this range
+    bool isInside(TextPosition p) const {
+        return start <= p && end > p;
+    }
     /// returns true if range is empty
     @property bool empty() const {
         return end <= start;
