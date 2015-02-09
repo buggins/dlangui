@@ -751,7 +751,7 @@ class EditableContent {
     /// corrent range to cover full lines
     TextRange fullLinesRange(TextRange r) {
         r.start.pos = 0;
-        if (r.end.pos > 0)
+        if (r.end.pos > 0 || r.start.line == r.end.line)
             r.end = lineBegin(r.end.line + 1);
         return r;
     }
