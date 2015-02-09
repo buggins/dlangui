@@ -404,6 +404,18 @@ alias TokenPropString = ubyte[];
 interface SyntaxHighlighter {
     /// categorize characters in content by token types
     void updateHighlight(dstring[] lines, TokenPropString[] props, int changeStartLine, int changeEndLine);
+    /// return true if toggle line comment is supported for file type
+    @property bool supportsToggleLineComment();
+    /// return true if can toggle line comments for specified text range
+    bool canToggleLineComment(EditableContent content, TextRange range);
+    /// toggle line comments for specified text range
+    void toggleLineComment(EditableContent content, TextRange range, Object source);
+    /// return true if toggle block comment is supported for file type
+    @property bool supportsToggleBlockComment();
+    /// return true if can toggle block comments for specified text range
+    bool canToggleBlockComment(EditableContent content, TextRange range);
+    /// toggle block comments for specified text range
+    void toggleBlockComment(EditableContent content, TextRange range, Object source);
 }
 
 /// editable plain text (singleline/multiline)

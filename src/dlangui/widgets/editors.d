@@ -907,13 +907,27 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 	/// override to handle specific actions state (e.g. change enabled state for supported actions)
 	override bool handleActionStateRequest(const Action a) {
 		switch (a.id) {
+			case EditorActions.ToggleBlockComment:
+                if (!_content.syntaxHighlighter || !_content.syntaxHighlighter.supportsToggleBlockComment)
+                    a.state = ACTION_STATE_INVISIBLE;
+                else if (_content.syntaxHighlighter.canToggleBlockComment(_content, _selectionRange))
+                    a.state = ACTION_STATE_ENABLED;
+                else
+                    a.state = ACTION_STATE_DISABLE;
+                return true;
+			case EditorActions.ToggleLineComment:
+                if (!_content.syntaxHighlighter || !_content.syntaxHighlighter.supportsToggleLineComment)
+                    a.state = ACTION_STATE_INVISIBLE;
+                else if (_content.syntaxHighlighter.canToggleLineComment(_content, _selectionRange))
+                    a.state = ACTION_STATE_ENABLED;
+                else
+                    a.state = ACTION_STATE_DISABLE;
+                return true;
             case EditorActions.Copy:
             case EditorActions.Cut:
             case EditorActions.Paste:
             case EditorActions.Undo:
             case EditorActions.Redo:
-			case EditorActions.ToggleBlockComment:
-			case EditorActions.ToggleLineComment:
 			case EditorActions.Tab:
 			case EditorActions.BackTab:
 			case EditorActions.Indent:
@@ -2024,12 +2038,14 @@ class EditBox : EditWidgetBase {
                     }
                 }
                 return true;
-			case EditorActions.ToggleLineComment:
-				// TODO
-				return true;
 			case EditorActions.ToggleBlockComment:
-				// TODO
-				return true;
+                if (_content.syntaxHighlighter && _content.syntaxHighlighter.supportsToggleBlockComment && _content.syntaxHighlighter.canToggleBlockComment(_content, _selectionRange))
+                    _content.syntaxHighlighter.toggleBlockComment(_content, _selectionRange, this);
+                return true;
+			case EditorActions.ToggleLineComment:
+                if (_content.syntaxHighlighter && _content.syntaxHighlighter.supportsToggleLineComment && _content.syntaxHighlighter.canToggleLineComment(_content, _selectionRange))
+                    _content.syntaxHighlighter.toggleLineComment(_content, _selectionRange, this);
+                return true;
 			case EditorActions.InsertLine:
                 {
                     correctCaretPos();
