@@ -598,8 +598,10 @@ class EditableContent {
         return TextPosition(lineIndex, lineLength(lineIndex));
 	}
 
-	/// returns text position for begin of line lineIndex
+	/// returns text position for begin of line lineIndex (if lineIndex > number of lines, returns end of last line)
 	TextPosition lineBegin(int lineIndex) {
+        if (lineIndex >= _lines.length)
+            return lineEnd(lineIndex - 1);
         return TextPosition(lineIndex, 0);
 	}
 

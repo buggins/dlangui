@@ -34,6 +34,7 @@ class SourceEdit : EditBox {
         showModificationMarks = true;
 
         _showLineNumbers = true;
+
 	}
 	this() {
 		this("SRCEDIT");

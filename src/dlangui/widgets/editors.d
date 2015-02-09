@@ -134,7 +134,11 @@ enum EditorActions : int {
 	Tab,
 	/// Tab (unindent text, or remove whitespace before cursor, usually Shift+Tab)
 	BackTab,
-	
+	/// Indent text block or single line
+	Indent,
+	/// Unindent text
+    Unindent,
+
 	/// Select whole content (usually, Ctrl+A)
 	SelectAll,
 	
@@ -414,6 +418,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 			case EditorActions.ToggleLineComment:
 			case EditorActions.Tab:
 			case EditorActions.BackTab:
+			case EditorActions.Indent:
+			case EditorActions.Unindent:
 				return enabled;
 			case EditorActions.Copy:
 				return !_selectionRange.empty;
@@ -910,6 +916,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 			case EditorActions.ToggleLineComment:
 			case EditorActions.Tab:
 			case EditorActions.BackTab:
+			case EditorActions.Indent:
+			case EditorActions.Unindent:
                 if (isActionEnabled(a))
                     a.state = ACTION_STATE_ENABLED;
                 else
@@ -1109,6 +1117,12 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     _content.redo(this);
                 }
                 return true;
+			case EditorActions.Indent:
+                indentRange(false);
+                return true;
+			case EditorActions.Unindent:
+                indentRange(true);
+                return true;
             case EditorActions.Tab:
                 {
                     if (readOnly)
@@ -1126,7 +1140,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     } else {
                         if (wholeLinesSelected()) {
                             // indent range
-                            indentRange(false);
+                            return handleAction(new Action(EditorActions.Indent));
                         } else {
                             // insert tab
                             if (_useSpacesForTabs) {
@@ -1157,7 +1171,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     } else {
                         if (wholeLinesSelected()) {
                             // unindent range
-                            indentRange(true);
+                            return handleAction(new Action(EditorActions.Unindent));
                         } else {
                             // remove space before selection
                             TextRange r = spaceBefore(_selectionRange.start);
@@ -1224,10 +1238,11 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     }
 
     /// change line indent
-    protected dstring indentLine(dstring src, bool back) {
+    protected dstring indentLine(dstring src, bool back, TextPosition * cursorPos) {
         int firstNonSpace = -1;
         int x = 0;
         int unindentPos = -1;
+        int cursor = cursorPos ? cursorPos.pos : 0;
         for (int i = 0; i < src.length; i++) {
             dchar ch = src[i];
             if (ch == ' ') {
@@ -1247,14 +1262,23 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             // unindent
             if (unindentPos == -1)
                 return src; // no change
-            if (unindentPos == src.length)
+            if (unindentPos == src.length) {
+                if (cursorPos)
+                    cursorPos.pos = 0;
                 return ""d;
+            }
+            if (cursor >= unindentPos)
+                cursorPos.pos -= unindentPos;
             return src[unindentPos .. $].dup;
         } else {
             // indent
             if (_useSpacesForTabs) {
+                if (cursor > 0)
+                    cursorPos.pos += tabSize;
                 return spacesForTab(0) ~ src;
             } else {
+                if (cursor > 0)
+                    cursorPos.pos++;
                 return "\t"d ~ src;
             }
         }
@@ -1262,20 +1286,28 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     /// indent / unindent range
     protected void indentRange(bool back) {
-        int lineCount = _selectionRange.end.line - _selectionRange.start.line;
+        TextRange r = _selectionRange;
+        r.start.pos = 0;
+        if (r.end.pos > 0)
+            r.end = _content.lineBegin(r.end.line + 1);
+        if (r.end.line <= r.start.line)
+            r = TextRange(_content.lineBegin(_caretPos.line), _content.lineBegin(_caretPos.line + 1));
+        int lineCount = r.end.line - r.start.line;
+        if (r.end.pos > 0)
+            lineCount++;
         dstring[] newContent = new dstring[lineCount + 1];
         bool changed = false;
         for (int i = 0; i < lineCount; i++) {
-            dstring srcline = _content.line(_selectionRange.start.line + i);
-            dstring dstline = indentLine(srcline, back);
+            dstring srcline = _content.line(r.start.line + i);
+            dstring dstline = indentLine(srcline, back, r.start.line + i == _caretPos.line ? &_caretPos : null);
             newContent[i] = dstline;
             if (dstline.length != srcline.length)
                 changed = true;
         }
         if (changed) {
-            TextRange saveRange = _selectionRange;
+            TextRange saveRange = r;
             TextPosition saveCursor = _caretPos;
-            EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, newContent);
+            EditOperation op = new EditOperation(EditAction.Replace, r, newContent);
             _content.performOperation(op, this);
             _selectionRange = saveRange;
             _caretPos = saveCursor;
