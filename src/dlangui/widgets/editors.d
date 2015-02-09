@@ -180,14 +180,12 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected Point _scrollPos;
     protected bool _fixedFont;
     protected int _spaceWidth;
-    protected int _tabSize = 4;
     protected int _leftPaneWidth; // left pane - can be used to show line numbers, collapse controls, bookmarks, breakpoints, custom icons
 
     protected int _minFontSize = -1; // disable zooming
     protected int _maxFontSize = -1; // disable zooming
 
     protected bool _wantTabs = true;
-    protected bool _useSpacesForTabs = false;
     protected bool _showLineNumbers = false; // show line numbers in left pane
     protected bool _showModificationMarks = false; // show modification marks in left pane
     protected bool _showIcons = false; // show icons in left pane
@@ -564,18 +562,18 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     /// when true, spaces will be inserted instead of tabs
     @property bool useSpacesForTabs() {
-        return _useSpacesForTabs;
+        return _content.useSpacesForTabs;
     }
 
     /// set new Tab key behavior flag: when true, spaces will be inserted instead of tabs
     @property EditWidgetBase useSpacesForTabs(bool useSpacesForTabs) {
-        _useSpacesForTabs = useSpacesForTabs;
+        _content.useSpacesForTabs = useSpacesForTabs;
         return this;
     }
 
     /// returns tab size (in number of spaces)
     @property int tabSize() {
-        return _tabSize;
+        return _content.tabSize;
     }
 
     /// sets tab size (in number of spaces)
@@ -584,8 +582,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             newTabSize = 1;
         else if (newTabSize > 16)
             newTabSize = 16;
-        if (newTabSize != _tabSize) {
-            _tabSize = newTabSize;
+        if (newTabSize != tabSize) {
+            _content.tabSize = newTabSize;
             requestLayout();
         }
         return this;
@@ -807,7 +805,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected int calcLineWidth(dstring s) {
         int w = 0;
         if (_fixedFont) {
-            int tabw = _tabSize * _spaceWidth;
+            int tabw = tabSize * _spaceWidth;
             // version optimized for fixed font
             for (int i = 0; i < s.length; i++) {
                 if (s[i] == '\t') {
@@ -910,7 +908,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 			case EditorActions.ToggleBlockComment:
                 if (!_content.syntaxHighlighter || !_content.syntaxHighlighter.supportsToggleBlockComment)
                     a.state = ACTION_STATE_INVISIBLE;
-                else if (_content.syntaxHighlighter.canToggleBlockComment(_content, _selectionRange))
+                else if (_content.syntaxHighlighter.canToggleBlockComment(_selectionRange))
                     a.state = ACTION_STATE_ENABLED;
                 else
                     a.state = ACTION_STATE_DISABLE;
@@ -918,7 +916,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 			case EditorActions.ToggleLineComment:
                 if (!_content.syntaxHighlighter || !_content.syntaxHighlighter.supportsToggleLineComment)
                     a.state = ACTION_STATE_INVISIBLE;
-                else if (_content.syntaxHighlighter.canToggleLineComment(_content, _selectionRange))
+                else if (_content.syntaxHighlighter.canToggleLineComment(_selectionRange))
                     a.state = ACTION_STATE_ENABLED;
                 else
                     a.state = ACTION_STATE_DISABLE;
@@ -1142,7 +1140,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     if (readOnly)
                         return true;
                     if (_selectionRange.empty) {
-                        if (_useSpacesForTabs) {
+                        if (useSpacesForTabs) {
                             // insert one or more spaces to 
                             EditOperation op = new EditOperation(EditAction.Replace, TextRange(_caretPos, _caretPos), [spacesForTab(_caretPos.pos)]);
                             _content.performOperation(op, this);
@@ -1157,7 +1155,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                             return handleAction(new Action(EditorActions.Indent));
                         } else {
                             // insert tab
-                            if (_useSpacesForTabs) {
+                            if (useSpacesForTabs) {
                                 // insert one or more spaces to 
                                 EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [spacesForTab(_selectionRange.start.pos)]);
                                 _content.performOperation(op, this);
@@ -1286,7 +1284,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             return src[unindentPos .. $].dup;
         } else {
             // indent
-            if (_useSpacesForTabs) {
+            if (useSpacesForTabs) {
                 if (cursor > 0)
                     cursorPos.pos += tabSize;
                 return spacesForTab(0) ~ src;
@@ -2039,12 +2037,12 @@ class EditBox : EditWidgetBase {
                 }
                 return true;
 			case EditorActions.ToggleBlockComment:
-                if (_content.syntaxHighlighter && _content.syntaxHighlighter.supportsToggleBlockComment && _content.syntaxHighlighter.canToggleBlockComment(_content, _selectionRange))
-                    _content.syntaxHighlighter.toggleBlockComment(_content, _selectionRange, this);
+                if (_content.syntaxHighlighter && _content.syntaxHighlighter.supportsToggleBlockComment && _content.syntaxHighlighter.canToggleBlockComment(_selectionRange))
+                    _content.syntaxHighlighter.toggleBlockComment(_selectionRange, this);
                 return true;
 			case EditorActions.ToggleLineComment:
-                if (_content.syntaxHighlighter && _content.syntaxHighlighter.supportsToggleLineComment && _content.syntaxHighlighter.canToggleLineComment(_content, _selectionRange))
-                    _content.syntaxHighlighter.toggleLineComment(_content, _selectionRange, this);
+                if (_content.syntaxHighlighter && _content.syntaxHighlighter.supportsToggleLineComment && _content.syntaxHighlighter.canToggleLineComment(_selectionRange))
+                    _content.syntaxHighlighter.toggleLineComment(_selectionRange, this);
                 return true;
 			case EditorActions.InsertLine:
                 {

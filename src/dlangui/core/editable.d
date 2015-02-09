@@ -402,20 +402,42 @@ alias TokenPropString = ubyte[];
 
 /// interface for custom syntax highlight
 interface SyntaxHighlighter {
+
+    /// returns editable content
+    @property EditableContent content();
+    /// set editable content
+    @property SyntaxHighlighter content(EditableContent content);
+
     /// categorize characters in content by token types
     void updateHighlight(dstring[] lines, TokenPropString[] props, int changeStartLine, int changeEndLine);
     /// return true if toggle line comment is supported for file type
     @property bool supportsToggleLineComment();
     /// return true if can toggle line comments for specified text range
-    bool canToggleLineComment(EditableContent content, TextRange range);
+    bool canToggleLineComment(TextRange range);
     /// toggle line comments for specified text range
-    void toggleLineComment(EditableContent content, TextRange range, Object source);
+    void toggleLineComment(TextRange range, Object source);
     /// return true if toggle block comment is supported for file type
     @property bool supportsToggleBlockComment();
     /// return true if can toggle block comments for specified text range
-    bool canToggleBlockComment(EditableContent content, TextRange range);
+    bool canToggleBlockComment(TextRange range);
     /// toggle block comments for specified text range
-    void toggleBlockComment(EditableContent content, TextRange range, Object source);
+    void toggleBlockComment(TextRange range, Object source);
+}
+
+/// measure line text (tabs, spaces, and nonspace positions)
+struct TextLineMeasure {
+    /// line length
+    int len;
+    /// first non-space index in line
+    int firstNonSpace = -1;
+    /// first non-space position according to tab size
+    int firstNonSpaceX;
+    /// last non-space character index in line
+    int lastNonSpace = -1;
+    /// last non-space position based on tab size
+    int lastNonSpaceX;
+    /// true if line has zero length or consists of spaces and tabs only
+    @property bool empty() { return len == 0 || firstNonSpace < 0; }
 }
 
 /// editable plain text (singleline/multiline)
@@ -442,6 +464,7 @@ class EditableContent {
 
     @property EditableContent syntaxHighlighter(SyntaxHighlighter syntaxHighlighter) {
         _syntaxHighlighter = syntaxHighlighter;
+        _syntaxHighlighter.content = this;
         updateTokenProps(0, cast(int)_lines.length);
         return this;
     }
@@ -459,6 +482,31 @@ class EditableContent {
 
     @property void readOnly(bool readOnly) {
         _readOnly = readOnly;
+    }
+
+    protected int _tabSize = 4;
+    protected bool _useSpacesForTabs = true;
+    /// returns tab size (in number of spaces)
+    @property int tabSize() {
+        return _tabSize;
+    }
+    /// sets tab size (in number of spaces)
+    @property EditableContent tabSize(int newTabSize) {
+        if (newTabSize < 1)
+            newTabSize = 1;
+        else if (newTabSize > 16)
+            newTabSize = 16;
+        _tabSize = newTabSize;
+        return this;
+    }
+    /// when true, spaces will be inserted instead of tabs
+    @property bool useSpacesForTabs() {
+        return _useSpacesForTabs;
+    }
+    /// set new Tab key behavior flag: when true, spaces will be inserted instead of tabs
+    @property EditableContent useSpacesForTabs(bool useSpacesForTabs) {
+        _useSpacesForTabs = useSpacesForTabs;
+        return this;
     }
 
 	/// listeners for edit operations
@@ -621,6 +669,52 @@ class EditableContent {
 	TextRange lineRange(int lineIndex) {
         return TextRange(TextPosition(lineIndex, 0), lineIndex < _lines.length - 1 ? lineBegin(lineIndex + 1) : lineEnd(lineIndex));
 	}
+
+    /// measures line non-space start and end positions
+    TextLineMeasure measureLine(int lineIndex) {
+        TextLineMeasure res;
+        dstring s = _lines[lineIndex];
+        res.len = cast(int)s.length;
+        if (lineIndex < 0 || lineIndex >= _lines.length)
+            return res;
+        int x = 0;
+        for (int i = 0; i < s.length; i++) {
+            dchar ch = s[i];
+            if (ch == ' ') {
+                x++;
+            } else if (ch == '\t') {
+                x = (x + _tabSize) % _tabSize;
+            } else {
+                if (res.firstNonSpace < 0) {
+                    res.firstNonSpace = i;
+                    res.firstNonSpaceX = x;
+                }
+                res.lastNonSpace = i;
+                res.lastNonSpaceX = x;
+                x++;
+            }
+        }
+        return res;
+    }
+
+    /// return true if line with index lineIndex is empty (has length 0 or consists only of spaces and tabs)
+    bool lineIsEmpty(int lineIndex) {
+        if (lineIndex < 0 || lineIndex >= _lines.length)
+            return true;
+        dstring s = _lines[lineIndex];
+        foreach(ch; s)
+            if (ch != ' ' && ch != '\t')
+                return false;
+        return true;
+    }
+
+    /// corrent range to cover full lines
+    TextRange fullLinesRange(TextRange r) {
+        r.start.pos = 0;
+        if (r.end.pos > 0)
+            r.end = lineBegin(r.end.line + 1);
+        return r;
+    }
 
     /// returns position before first non-space character of line, returns 0 position if no non-space chars
     TextPosition firstNonSpace(int lineIndex) {
