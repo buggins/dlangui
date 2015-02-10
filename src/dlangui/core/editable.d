@@ -438,6 +438,7 @@ interface SyntaxHighlighter {
     @property bool supportsToggleLineComment();
     /// return true if can toggle line comments for specified text range
     bool canToggleLineComment(TextRange range);
+
     /// toggle line comments for specified text range
     void toggleLineComment(TextRange range, Object source);
     /// return true if toggle block comment is supported for file type
@@ -446,6 +447,9 @@ interface SyntaxHighlighter {
     bool canToggleBlockComment(TextRange range);
     /// toggle block comments for specified text range
     void toggleBlockComment(TextRange range, Object source);
+
+    /// returns paired bracket {} () [] for char at position p, returns paired char position or p if not found or not bracket
+    TextPosition findPairedBracket(TextPosition p);
 }
 
 /// measure line text (tabs, spaces, and nonspace positions)
