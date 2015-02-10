@@ -851,6 +851,21 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 		requestActionsUpdate();
     }
 
+    protected void selectWordByMouse(int x, int y) {
+        TextPosition oldCaretPos = _caretPos;
+        TextPosition newPos = clientToTextPos(Point(x,y));
+        TextRange r = content.wordBounds(newPos);
+        if (r.start < r.end) {
+            _selectionRange = r;
+            _caretPos = r.end;
+            invalidate();
+            requestActionsUpdate();
+        } else {
+            _caretPos = newPos;
+            updateSelectionAfterCursorMovement(oldCaretPos, false);
+        }
+    }
+
     protected void updateCaretPositionByMouse(int x, int y, bool selecting) {
         TextPosition oldCaretPos = _caretPos;
         TextPosition newPos = clientToTextPos(Point(x,y));
@@ -1362,7 +1377,11 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 	    if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
             setFocus();
             startCaretBlinking();
-            updateCaretPositionByMouse(event.x - _clientRect.left, event.y - _clientRect.top, false);
+            if (event.doubleClick) {
+                selectWordByMouse(event.x - _clientRect.left, event.y - _clientRect.top);
+            } else {
+                updateCaretPositionByMouse(event.x - _clientRect.left, event.y - _clientRect.top, false);
+            }
             invalidate();
 	        return true;
 	    }

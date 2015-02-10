@@ -1213,8 +1213,9 @@ mixin template APP_ENTRY_POINT() {
                     char* lpCmdLine, int nCmdShow)
         {
 			try {
-				return DLANGUIWinMain(hInstance, hPrevInstance,
+				int res = DLANGUIWinMain(hInstance, hPrevInstance,
                                     lpCmdLine, nCmdShow);
+                return res;
 			} catch (Exception e) {
 				Log.e("Exception: ", e);
 				return 1;

@@ -577,6 +577,45 @@ class EditableContent {
         performOperation(op, this);
     }
 
+    static bool isAlphaForWordSelection(dchar ch) {
+        return ch == '_' || (ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
+    }
+
+    /// get word bounds by position
+    TextRange wordBounds(TextPosition pos) {
+        TextRange res;
+        res.start = pos;
+        res.end = pos;
+        if (pos.line < 0 || pos.line >= _lines.length)
+            return res;
+        dstring s = line(pos.line);
+        int p = pos.pos;
+        if (p < 0 || p > s.length)
+            return res;
+        dchar leftChar = p > 0 ? s[p - 1] : 0;
+        dchar rightChar = p < s.length - 1 ? s[p + 1] : 0;
+        dchar centerChar = p < s.length ? s[p] : 0;
+        if (isAlphaForWordSelection(centerChar)) {
+            // ok
+        } else if (isAlphaForWordSelection(leftChar)) {
+            p--;
+        } else if (isAlphaForWordSelection(rightChar)) {
+            p++;
+        } else {
+            return res;
+        }
+        int start = p;
+        int end = p;
+        while (start > 0 && isAlphaForWordSelection(s[start - 1]))
+            start--;
+        while (end  + 1 < s.length && isAlphaForWordSelection(s[end + 1]))
+            end++;
+        end++;
+        res.start.pos = start;
+        res.end.pos = end;
+        return res;
+    }
+
     /// call listener to say that whole content is replaced e.g. by loading from file
     void notifyContentReplaced() {
         clearEditMarks();
