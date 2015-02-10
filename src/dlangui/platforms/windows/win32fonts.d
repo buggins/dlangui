@@ -431,7 +431,7 @@ class Win32Font : Font {
         lf.lfCharSet = ANSI_CHARSET; //DEFAULT_CHARSET;
 		lf.lfFaceName[0..def.face.length] = def.face;
 		lf.lfFaceName[def.face.length] = 0;
-		lf.lfHeight = size; //pixelsToPoints(size);
+		lf.lfHeight = -size; //pixelsToPoints(size);
 		lf.lfItalic = italic;
         lf.lfWeight = weight;
 		lf.lfOutPrecision = OUT_TT_ONLY_PRECIS; //OUT_OUTLINE_PRECIS; //OUT_TT_ONLY_PRECIS;

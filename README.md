@@ -13,8 +13,11 @@ Wiki: [https://github.com/buggins/dlangui/wiki/Home](https://github.com/buggins/
 
 Screenshots: [http://buggins.github.io/dlangui/screenshots.html](http://buggins.github.io/dlangui/screenshots.html)
 
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/buggins/dlangui?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)  [![Build Status](https://travis-ci.org/buggins/dlangui.svg?branch=master)](https://travis-ci.org/buggins/dlangui)
 
+WARNING: recent breaking change: when specifying dlangui library as DUB dependency, use "dlangui" instead of "dlangui:dlanguilib".
+
+
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/buggins/dlangui?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)  [![Build Status](https://travis-ci.org/buggins/dlangui.svg?branch=master)](https://travis-ci.org/buggins/dlangui)
 
 Main features:
 
@@ -241,7 +244,7 @@ Sample dub.json:
 	    "targetType": "executable",
 	
 	    "dependencies": {
-	        "dlangui:dlanguilib": "~master"
+	        "dlangui": "~master"
 	    }
 	}
 

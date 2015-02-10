@@ -86,7 +86,7 @@ struct CustomCharProps {
         this.color = color;
         this.textFlags = 0;
     }
-    this(uint color, bool underline, bool strikeThrough) {
+    this(uint color, bool underline, bool strikeThrough = false) {
         this.color = color;
         if (underline)
             this.textFlags |= TextFlag.Underline;

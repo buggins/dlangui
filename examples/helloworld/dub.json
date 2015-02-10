@@ -10,6 +10,6 @@
     "targetType": "executable",
 
     "dependencies": {
-        "dlangui:dlanguilib": "*",
+        "dlangui": "*",
     }
 }
