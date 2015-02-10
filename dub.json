@@ -8,56 +8,43 @@
     "buildRequirements":[
         "allowWarnings"
     ],
-    "subPackages": [
-        {
-			"name": "dlanguilib",
-			"description": "D language cross platform GUI library, inspired by Android UI API. Supports OpenGL based hardware acceleration, i18n, styles and themes.",
-			"homepage": "https://github.com/buggins/dlangui",
-			"license": "Boost",
-			"authors": ["Vadim Lopatin"],
 
-			"targetName": "dlanguilib",
-			"targetPath": "lib",
-			"targetType": "staticLibrary",
+    "targetName": "dlangui",
+    "targetPath": "lib",
+    "targetType": "staticLibrary",
+    "versions-posix": ["USE_SDL", "USE_OPENGL"],
+    "versions-windows": ["Unicode", "USE_FREETYPE"],
+    "versions": ["EmbedStandardResources"],
 
-			"versions-posix": ["USE_SDL", "USE_OPENGL"],
-			"versions-windows": ["Unicode", "USE_FREETYPE"],
-			"versions": ["EmbedStandardResources"],
+    "copyFiles-windows": ["lib/libfreetype-6.dll", "lib/zlib1.dll"],
 
- 			"copyFiles-windows": ["lib/libfreetype-6.dll", "lib/zlib1.dll"],
+    "sourcePaths": [
+	"3rdparty", "src"
+    ],
 
-			"sourcePaths": [
-				"3rdparty", "src"
-			],
-
-			"importPaths": [
-				"3rdparty", "src"
-			],
-
-			"stringImportPaths": [
-				"views",
-				"views/res",
-				"views/res/mdpi",
-				"views/res/i18n"
-			],
-
-			"dependencies": {
-				"derelict-gl3": ">=1.0.12",
-				"dlib": ">=0.4.1",
-				"derelict-ft": ">=1.0.0",
-				"derelict-sdl2": ">=1.9.1"
-			},
-                        "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.", "--ex", "src.dlangui"]
-        },
-        "./examples/helloworld/",
-        "./examples/example1/",
-        "./examples/tetris/"
+    "importPaths": [
+	"3rdparty", "src"
+    ],
+ 
+    "stringImportPaths": [
+	"views",
+	"views/res",
+	"views/res/mdpi",
+	"views/res/i18n"
     ],
 
     "dependencies": {
-        "dlangui:dlanguilib": "*",
-        "dlangui:example1": "*",
-        "dlangui:helloworld": "*",
-        "dlangui:tetris": "*"
-    }
+	"derelict-gl3": ">=1.0.12",
+	"dlib": "~master",
+	"derelict-ft": ">=1.0.0",
+	"derelict-sdl2": ">=1.9.1"
+    },
+
+    "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.", "--ex", "src.dlangui"],
+
+    "subPackages": [
+        "./examples/helloworld/",
+        "./examples/example1/",
+        "./examples/tetris/"
+    ]
 }
