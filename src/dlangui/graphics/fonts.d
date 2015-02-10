@@ -377,6 +377,9 @@ class Font : RefCountedObject {
 			dchar ch = text[i];
             uint color = i < charProps.length ? charProps[i].color : charProps[$ - 1].color;
             customizedTextFlags = (i < charProps.length ? charProps[i].textFlags : charProps[$ - 1].textFlags) | textFlags;
+            // turn off underline after hot key
+            if (!(customizedTextFlags & TextFlag.Underline))
+                underline = false;
 			if (ch == '&' && (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.HotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))) {
 				if (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))
 					underline = true; // turn ON underline for hot key
@@ -393,9 +396,9 @@ class Font : RefCountedObject {
 				// draw underline
 				if (xx2 > xx)
 					buf.fillRect(Rect(x + xx, underlineY, x + xx2, underlineY + underlineHeight), color);
-				// turn off underline after hot key
-				if (!(customizedTextFlags & TextFlag.Underline))
-					underline = false; 
+                // turn off underline after hot key
+                if (!(customizedTextFlags & TextFlag.Underline))
+                    underline = false;
 			}
 
             if (ch == ' ' || ch == '\t')
