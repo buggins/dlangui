@@ -3,13 +3,19 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>10.0.0</ProductVersion>
+    <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{0B737AB4-0C3B-4250-A133-3AD793E2D322}</ProjectGuid>
     <UseDefaultCompiler>true</UseDefaultCompiler>
     <PreferOneStepBuild>true</PreferOneStepBuild>
-    <Compiler>DMD2</Compiler>
+    <Compiler>ldc2</Compiler>
     <IncrementalLinking>true</IncrementalLinking>
+    <Includes>
+      <Includes>
+        <Path>source</Path>
+        <Path>.</Path>
+      </Includes>
+    </Includes>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -21,11 +27,7 @@
     <Target>StaticLibrary</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
-    <Libs>
-      <Libs>
-        <Lib>dl</Lib>
-      </Libs>
-    </Libs>
+    <ExtraLinkerArguments>-ldl</ExtraLinkerArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release</OutputPath>
@@ -36,6 +38,11 @@
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
+    <Libs>
+      <Libs>
+        <Lib>dl</Lib>
+      </Libs>
+    </Libs>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -47,10 +54,16 @@
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
+    <Libs>
+      <Libs>
+        <Lib>dl</Lib>
+      </Libs>
+    </Libs>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\..\..\DerelictUtil\source\derelict\util\exception.d">
       <Link>exception.d</Link>
+      <LastGenOutput>obj/Debug/exception.o</LastGenOutput>
     </Compile>
     <Compile Include="..\..\..\DerelictUtil\source\derelict\util\loader.d">
       <Link>loader.d</Link>
@@ -60,9 +73,11 @@
     </Compile>
     <Compile Include="..\..\..\DerelictUtil\source\derelict\util\system.d">
       <Link>system.d</Link>
+      <LastGenOutput>obj/Debug/system.o</LastGenOutput>
     </Compile>
     <Compile Include="..\..\..\DerelictUtil\source\derelict\util\wintypes.d">
       <Link>wintypes.d</Link>
+      <LastGenOutput>obj/Debug/wintypes.o</LastGenOutput>
     </Compile>
     <Compile Include="..\..\..\DerelictUtil\source\derelict\util\xtypes.d">
       <Link>xtypes.d</Link>

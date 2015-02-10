@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 # Visual Studio 2010
 Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "dlangui-monod-lib", "dlangui-monod-lib.dproj", "{84FCA922-7BD9-4B9E-A192-A52F0A830AF5}"
 EndProject
-Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "DerelictFI", "3rdparty\DerelictFI\DerelictFI.dproj", "{ED644EF9-A446-4987-873F-B7F3CC28E3B7}"
-EndProject
 Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "DerelictFT", "3rdparty\DerelictFT\DerelictFT.dproj", "{2B088613-C536-4E5C-8B74-7913267D75DA}"
 EndProject
 Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "DerelictGL3", "3rdparty\DerelictGL3\DerelictGL3.dproj", "{5355CB25-5AA9-4738-9A0F-C0673DBBCB07}"
@@ -14,6 +12,8 @@ EndProject
 Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "DerelictSDL2", "3rdparty\DerelictSDL2\DerelictSDL2.dproj", "{87EE4E19-2409-4441-A0C0-2E6D08C555D9}"
 EndProject
 Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "example1", "examples\example1\example1.dproj", "{11EEFA98-AAC1-45BD-8972-C97571D2D196}"
+EndProject
+Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "dlib", "3rdparty\dlib\dlib.dproj", "{174F5AAC-3D16-4AD9-9041-0DC0723A78FE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -34,6 +34,12 @@ Global
 		{11EEFA98-AAC1-45BD-8972-C97571D2D196}.Release|Any CPU.Build.0 = Release|Any CPU
 		{11EEFA98-AAC1-45BD-8972-C97571D2D196}.Unittest|Any CPU.ActiveCfg = Unittest|Any CPU
 		{11EEFA98-AAC1-45BD-8972-C97571D2D196}.Unittest|Any CPU.Build.0 = Unittest|Any CPU
+		{174F5AAC-3D16-4AD9-9041-0DC0723A78FE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{174F5AAC-3D16-4AD9-9041-0DC0723A78FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{174F5AAC-3D16-4AD9-9041-0DC0723A78FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{174F5AAC-3D16-4AD9-9041-0DC0723A78FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{174F5AAC-3D16-4AD9-9041-0DC0723A78FE}.Unittest|Any CPU.ActiveCfg = Unittest|Any CPU
+		{174F5AAC-3D16-4AD9-9041-0DC0723A78FE}.Unittest|Any CPU.Build.0 = Unittest|Any CPU
 		{2B088613-C536-4E5C-8B74-7913267D75DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{2B088613-C536-4E5C-8B74-7913267D75DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2B088613-C536-4E5C-8B74-7913267D75DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -58,14 +64,5 @@ Global
 		{87EE4E19-2409-4441-A0C0-2E6D08C555D9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{87EE4E19-2409-4441-A0C0-2E6D08C555D9}.Unittest|Any CPU.ActiveCfg = Unittest|Any CPU
 		{87EE4E19-2409-4441-A0C0-2E6D08C555D9}.Unittest|Any CPU.Build.0 = Unittest|Any CPU
-		{ED644EF9-A446-4987-873F-B7F3CC28E3B7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{ED644EF9-A446-4987-873F-B7F3CC28E3B7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{ED644EF9-A446-4987-873F-B7F3CC28E3B7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{ED644EF9-A446-4987-873F-B7F3CC28E3B7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{ED644EF9-A446-4987-873F-B7F3CC28E3B7}.Unittest|Any CPU.ActiveCfg = Unittest|Any CPU
-		{ED644EF9-A446-4987-873F-B7F3CC28E3B7}.Unittest|Any CPU.Build.0 = Unittest|Any CPU
-	EndGlobalSection
-	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = examples\example1\example1.dproj
 	EndGlobalSection
 EndGlobal
