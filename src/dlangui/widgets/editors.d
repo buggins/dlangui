@@ -1625,6 +1625,7 @@ class EditBox : EditWidgetBase {
     protected int[][] _visibleLinesMeasurement; // char positions for visible lines
     protected int[] _visibleLinesWidths; // width (in pixels) of visible lines
     protected CustomCharProps[][] _visibleLinesHighlights;
+    protected CustomCharProps[][] _visibleLinesHighlightsBuf;
 
     override protected int lineCount() {
         return _content.length;
@@ -1687,13 +1688,22 @@ class EditBox : EditWidgetBase {
         if (_firstVisibleLine + _numVisibleLines > _content.length)
             _numVisibleLines = _content.length - _firstVisibleLine;
         _visibleLines.length = _numVisibleLines;
-        _visibleLinesMeasurement.length = _numVisibleLines;
-        _visibleLinesWidths.length = _numVisibleLines;
-        _visibleLinesHighlights.length = _numVisibleLines;
+        if (_visibleLinesMeasurement.length < _numVisibleLines)
+            _visibleLinesMeasurement.length = _numVisibleLines;
+        if (_visibleLinesWidths.length < _numVisibleLines)
+            _visibleLinesWidths.length = _numVisibleLines;
+        if (_visibleLinesHighlights.length < _numVisibleLines) {
+            _visibleLinesHighlights.length = _numVisibleLines;
+            _visibleLinesHighlightsBuf.length = _numVisibleLines;
+        }
         for (int i = 0; i < _numVisibleLines; i++) {
             _visibleLines[i] = _content[_firstVisibleLine + i];
-            _visibleLinesMeasurement[i].length = _visibleLines[i].length;
-            _visibleLinesHighlights[i] = handleCustomLineHighlight(_firstVisibleLine + i, _visibleLines[i]);
+            size_t len = _visibleLines[i].length;
+            if (_visibleLinesMeasurement[i].length < len)
+                _visibleLinesMeasurement[i].length = len;
+            if (_visibleLinesHighlightsBuf[i].length < len)
+                _visibleLinesHighlightsBuf[i].length = len;
+            _visibleLinesHighlights[i] = handleCustomLineHighlight(_firstVisibleLine + i, _visibleLines[i], _visibleLinesHighlightsBuf[i]);
             int charsMeasured = font.measureText(_visibleLines[i], _visibleLinesMeasurement[i], int.max, tabSize);
             _visibleLinesWidths[i] = charsMeasured > 0 ? _visibleLinesMeasurement[i][charsMeasured - 1] : 0;
             if (sz.x < _visibleLinesWidths[i])
@@ -2151,7 +2161,7 @@ class EditBox : EditWidgetBase {
 
         Return null if no syntax highlight required for line.
      */
-    protected CustomCharProps[] handleCustomLineHighlight(int line, dstring txt) {
+    protected CustomCharProps[] handleCustomLineHighlight(int line, dstring txt, ref CustomCharProps[] buf) {
         if (!_tokenHighlightColors)
             return null; // no highlight colors set
         TokenPropString tokenProps = _content.lineTokenProps(line);
@@ -2164,7 +2174,9 @@ class EditBox : EditWidgetBase {
                 }
             if (!hasNonzeroTokens)
                 return null; // all characters are of unknown token type (or white space)
-            CustomCharProps[] colors = new CustomCharProps[tokenProps.length];
+            if (buf.length < tokenProps.length)
+                buf.length = tokenProps.length;
+            CustomCharProps[] colors = buf[0..tokenProps.length]; //new CustomCharProps[tokenProps.length];
             for (int i = 0; i < tokenProps.length; i++) {
                 ubyte p = tokenProps[i];
                 if (p in _tokenHighlightColors)
