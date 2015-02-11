@@ -200,7 +200,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     // TODO: move to styles
     protected uint _selectionColorFocused = 0xB060A0FF;
     protected uint _selectionColorNormal = 0xD060A0FF;
-    protected uint _leftPaneBackgroundColor = 0xE0E0E0;
+    protected uint _leftPaneBackgroundColor = 0xF4F4F4;
     protected uint _leftPaneBackgroundColor2 = 0xFFFFFF;
     protected uint _leftPaneBackgroundColor3 = 0xC0C0C0;
     protected uint _leftPaneLineNumberColor = 0x4060D0;
@@ -246,11 +246,11 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     }
 
     protected void drawLeftPaneFolding(DrawBuf buf, Rect rc, int line) {
-        buf.fillRect(rc, 0xF0F0F0);
+        buf.fillRect(rc, 0xFFFFFF);
     }
 
     protected void drawLeftPaneIcons(DrawBuf buf, Rect rc, int line) {
-        buf.fillRect(rc, 0xC0C0C0);
+        buf.fillRect(rc, 0xE0E0E0);
     }
 
     protected void drawLeftPaneModificationMarks(DrawBuf buf, Rect rc, int line) {
@@ -281,23 +281,23 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected void drawLeftPane(DrawBuf buf, Rect rc, int line) {
         // override for custom drawn left pane
         buf.fillRect(rc, _leftPaneBackgroundColor);
-        buf.fillRect(Rect(rc.right - 2, rc.top, rc.right - 1, rc.bottom), _leftPaneBackgroundColor2);
-        buf.fillRect(Rect(rc.right - 1, rc.top, rc.right - 0, rc.bottom), _leftPaneBackgroundColor3);
+        //buf.fillRect(Rect(rc.right - 2, rc.top, rc.right - 1, rc.bottom), _leftPaneBackgroundColor2);
+        //buf.fillRect(Rect(rc.right - 1, rc.top, rc.right - 0, rc.bottom), _leftPaneBackgroundColor3);
         rc.right -= 3;
         if (_foldingWidth) {
             Rect rc2 = rc;
             rc.right = rc2.left = rc2.right - _foldingWidth;
             drawLeftPaneFolding(buf, rc2, line);
         }
-        if (_lineNumbersWidth) {
-            Rect rc2 = rc;
-            rc.right = rc2.left = rc2.right - _lineNumbersWidth;
-            drawLeftPaneLineNumbers(buf, rc2, line);
-        }
         if (_modificationMarksWidth) {
             Rect rc2 = rc;
             rc.right = rc2.left = rc2.right - _modificationMarksWidth;
             drawLeftPaneModificationMarks(buf, rc2, line);
+        }
+        if (_lineNumbersWidth) {
+            Rect rc2 = rc;
+            rc.right = rc2.left = rc2.right - _lineNumbersWidth;
+            drawLeftPaneLineNumbers(buf, rc2, line);
         }
         if (_iconsWidth) {
             Rect rc2 = rc;
@@ -440,14 +440,6 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 			if (!_popupMenu.onBeforeOpeningSubmenu(_popupMenu))
 				return;
 		_popupMenu.updateActionState(this);
-		//for (int i = 0; i < _popupMenu.subitemCount; i++) {
-		//    MenuItem item = _popupMenu.subitem(i);
-		//    if (item.action && isActionEnabled(item.action)) {
-		//        item.enabled = true;
-		//    } else {
-		//        item.enabled = false;
-		//    }
-		//}
 		PopupMenu popupMenu = new PopupMenu(_popupMenu);
 		popupMenu.onMenuItemActionListener = this;
 		PopupWidget popup = window.showPopup(popupMenu, this, PopupAlign.Point | PopupAlign.Right, x, y);

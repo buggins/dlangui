@@ -1073,7 +1073,7 @@ class Platform {
 	 * 
 	 * Window w/o Resizable nor Fullscreen will be created with size based on measurement of its content widget
 	 */
-	abstract Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable);
+	abstract Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0);
 	/**
 	 * close window
 	 * 

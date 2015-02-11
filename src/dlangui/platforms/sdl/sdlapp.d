@@ -60,10 +60,12 @@ class SDLWindow : Window {
 	SDLPlatform _platform;
 	SDL_Window * _win;
 	SDL_Renderer* _renderer;
-	this(SDLPlatform platform, dstring caption, Window parent, uint flags) {
+	this(SDLPlatform platform, dstring caption, Window parent, uint flags, uint width = 0, uint height = 0) {
 		_platform = platform;
 		_caption = caption;
 		debug Log.d("Creating SDL window");
+        _dx = width;
+        _dy = height;
 		create(flags);
 	}
 
@@ -100,6 +102,10 @@ class SDLWindow : Window {
 
 	protected uint _flags;
 	bool create(uint flags) {
+        if (!_dx)
+            _dx = 600;
+        if (!_dy)
+            _dy = 400;
 		_flags = flags;
 		uint windowFlags = SDL_WINDOW_HIDDEN;
 		if (flags & WindowFlag.Resizable)
@@ -116,7 +122,7 @@ class SDLWindow : Window {
                 _glSupport = new GLSupport();
         }
 		_win = SDL_CreateWindow(toUTF8(_caption).toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
-                                800, 600, 
+                                _dx, _dy, 
                                 windowFlags);
         version(USE_OPENGL) {
             if (!_win) {
@@ -126,7 +132,7 @@ class SDLWindow : Window {
                     // recreate w/o OpenGL
                     windowFlags &= ~SDL_WINDOW_OPENGL;
 					_win = SDL_CreateWindow(toUTF8(_caption).toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
-                                            800, 600, 
+                                            _dx, _dy, 
                                             windowFlags);
                 }
             }
@@ -851,9 +857,9 @@ class SDLPlatform : Platform {
 
 	}
 
-	override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable) {
+	override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0) {
         setDefaultLanguageAndThemeIfNecessary();
-		SDLWindow res = new SDLWindow(this, windowCaption, parent, flags);
+		SDLWindow res = new SDLWindow(this, windowCaption, parent, flags, width, height);
 		_windowMap[res.windowId] = res;
 		return res;
 	}

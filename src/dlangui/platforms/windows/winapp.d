@@ -167,9 +167,15 @@ class Win32Window : Window {
     Win32ColorDrawBuf _drawbuf;
     bool useOpengl;
     uint _flags;
-    this(Win32Platform platform, dstring windowCaption, Window parent, uint flags) {
+    this(Win32Platform platform, dstring windowCaption, Window parent, uint flags, uint width = 0, uint height = 0) {
         Win32Window w32parent = cast(Win32Window)parent;
         HWND parenthwnd = w32parent ? w32parent._hwnd : null;
+        _dx = width;
+        _dy = height;
+        if (!_dx)
+            _dx = 600;
+        if (!_dy)
+            _dy = 400;
         _platform = platform;
         version (USE_OPENGL) {
             _gl = new GLSupport();
@@ -188,8 +194,8 @@ class Win32Window : Window {
                             ws,  // window style
                             CW_USEDEFAULT,        // initial x position
                             CW_USEDEFAULT,        // initial y position
-                            CW_USEDEFAULT,        // initial x size
-                            CW_USEDEFAULT,        // initial y size
+                            _dx,        // initial x size
+                            _dy,        // initial y size
                             parenthwnd,                 // parent window handle
                             null,                 // window menu handle
                             _hInstance,           // program instance handle
@@ -762,9 +768,9 @@ class Win32Platform : Platform {
             return _windowMap[cast(ulong)hwnd];
         return null;
     }
-    override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable) {
+    override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0) {
         setDefaultLanguageAndThemeIfNecessary();
-        return new Win32Window(this, windowCaption, parent, flags);
+        return new Win32Window(this, windowCaption, parent, flags, width, height);
     }
 
 	/// calls request layout for all windows
