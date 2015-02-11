@@ -246,9 +246,11 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     }
 
     protected void drawLeftPaneFolding(DrawBuf buf, Rect rc, int line) {
+        buf.fillRect(rc, 0xF0F0F0);
     }
 
     protected void drawLeftPaneIcons(DrawBuf buf, Rect rc, int line) {
+        buf.fillRect(rc, 0xC0C0C0);
     }
 
     protected void drawLeftPaneModificationMarks(DrawBuf buf, Rect rc, int line) {

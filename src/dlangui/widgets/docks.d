@@ -87,7 +87,7 @@ struct DockSpace {
         if (_docks.length) {
             if (_space < _minSpace) {
                 if (_space == 0)
-                    _space = (_minSpace + _maxSpace) / 2;
+                    _space = _minSpace + (_maxSpace - _minSpace) * 1 / 3;
                 else
                     _space = _minSpace;
             }
