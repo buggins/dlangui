@@ -784,29 +784,32 @@ class EditableContent {
 
     /// returns previous character position
     TextPosition prevCharPos(TextPosition p) {
+        if (p.line <= 0)
+            return TextPosition(0, 0);
+        p.pos--;
         for (;;) {
             if (p.line <= 0)
                 return TextPosition(0, 0);
-            if (p.pos > 0) {
-                p.pos--;
+            if (p.pos >= 0 && p.pos < lineLength(p.line))
                 return p;
-            }
-            p = lineEnd(p.line - 1);
+            p.line--;
+            p.pos = lineLength(p.line) - 1;
         }
     }
 
     /// returns previous character position
     TextPosition nextCharPos(TextPosition p) {
         TextPosition eof = endOfFile();
+        if (p >= eof)
+            return eof;
+        p.pos++;
         for (;;) {
             if (p >= eof)
                 return eof;
-            int len = lineLength(p.line);
-            if (p.pos < len) {
-                p.pos++;
+            if (p.pos >= 0 && p.pos < lineLength(p.line))
                 return p;
-            }
-            p = lineBegin(p.line + 1);
+            p.line++;
+            p.pos = 0;
         }
     }
 
