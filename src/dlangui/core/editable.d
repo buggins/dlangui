@@ -92,6 +92,11 @@ enum TokenCategory : ubyte {
     Error_InvalidComment = (15 << TOKEN_CATEGORY_SHIFT) | 4,
 }
 
+/// extracts token category, clearing subcategory
+ubyte tokenCategory(ubyte t) {
+    return t & 0xF0;
+}
+
 class TextLineMark {
 }
 
@@ -713,6 +718,21 @@ class EditableContent {
         return index >= 0 && index < _lines.length ? _lines[index] : ""d;
     }
 
+    /// returns character at position lineIndex, pos
+    dchar opIndex(int lineIndex, int pos) {
+        dstring s = line(lineIndex);
+        if (pos >= 0 && pos < s.length)
+            return s[pos];
+        return 0;
+    }
+    /// returns character at position lineIndex, pos
+    dchar opIndex(TextPosition p) {
+        dstring s = line(p.line);
+        if (p.pos >= 0 && p.pos < s.length)
+            return s[p.pos];
+        return 0;
+    }
+
     /// returns line token properties one item per character (index is 0 based line number)
     TokenPropString lineTokenProps(int index) {
         return index >= 0 && index < _tokenProps.length ? _tokenProps[index] : null;
@@ -724,7 +744,7 @@ class EditableContent {
     }
 
     /// returns position for end of last line
-    TextPosition endOfFile() {
+    @property TextPosition endOfFile() {
         return TextPosition(cast(int)_lines.length - 1, cast(int)_lines[$-1].length);
     }
 
@@ -756,6 +776,21 @@ class EditableContent {
                 return p;
             }
             p = lineEnd(p.line - 1);
+        }
+    }
+
+    /// returns previous character position
+    TextPosition nextCharPos(TextPosition p) {
+        TextPosition eof = endOfFile();
+        for (;;) {
+            if (p >= eof)
+                return eof;
+            int len = lineLength(p.line);
+            if (p.pos < len) {
+                p.pos++;
+                return p;
+            }
+            p = lineBegin(p.line + 1);
         }
     }
 
