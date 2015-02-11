@@ -72,6 +72,8 @@ module dlangui.widgets.tree;
 import dlangui.widgets.widget;
 import dlangui.widgets.controls;
 import dlangui.widgets.scroll;
+import dlangui.widgets.menu;
+import dlangui.widgets.popup;
 import dlangui.widgets.layouts;
 import std.conv;
 import std.algorithm;
@@ -496,6 +498,10 @@ enum TreeActions : int {
 
 const int DOUBLE_CLICK_TIME_MS = 250;
 
+interface OnTreePopupMenuListener {
+    MenuItem onTreeItemPopupMenu(TreeItems source, TreeItem selectedItem);
+}
+
 /// Item widget for displaying in trees
 class TreeItemWidget : HorizontalLayout {
     TreeItem _item;
@@ -505,6 +511,8 @@ class TreeItemWidget : HorizontalLayout {
     TextWidget _label;
     HorizontalLayout _body;
     long lastClickTime;
+
+    Listener!OnTreePopupMenuListener popupMenuListener;
 
     @property TreeItem item() { return _item; }
 
@@ -600,6 +608,22 @@ class TreeItemWidget : HorizontalLayout {
         return false;
     }
 
+    /// process mouse event; return true if event is processed by widget.
+    override bool onMouseEvent(MouseEvent event) {
+        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Right) {
+            if (popupMenuListener.assigned) {
+                MenuItem menu = popupMenuListener(_item.root, _item);
+                if (menu) {
+                    PopupMenu popupMenu = new PopupMenu(menu);
+                    PopupWidget popup = window.showPopup(popupMenu, this, PopupAlign.Point | PopupAlign.Right, event.x, event.y);
+                    popup.flags = PopupFlags.CloseOnClickOutside;
+                    return true;
+                }
+            }
+        }
+        return super.onMouseEvent(event);
+    }
+
     void updateWidget() {
         if (_expander) {
             _expander.drawable = _item.expanded ? "arrow_right_down_black" : "arrow_right_hollow";
@@ -616,6 +640,7 @@ class TreeItemWidget : HorizontalLayout {
 }
 
 
+
 /// Abstract tree widget
 class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateChangeListener, OnTreeSelectionChangeListener, OnKeyHandler {
 
@@ -624,6 +649,8 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
     @property ref TreeItems items() { return _tree; }
 
     Signal!OnTreeSelectionChangeListener selectionListener;
+    /// allows to provide individual popup menu for items
+    Listener!OnTreePopupMenuListener popupMenuListener;
 
     protected bool _needUpdateWidgets;
     protected bool _needUpdateWidgetStates;
@@ -637,6 +664,12 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         if (_tree)
             _tree.noCollapseForSingleTopLevelItem = flg;
         return this;
+    }
+
+    protected MenuItem onTreeItemPopupMenu(TreeItems source, TreeItem selectedItem) {
+        if (popupMenuListener)
+            return popupMenuListener(source, selectedItem);
+        return null;
     }
 
     /// empty parameter list constructor - for usage by factory
@@ -684,8 +717,9 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
 
     /** Override to use custom tree item widgets. */
     protected Widget createItemWidget(TreeItem item) {
-        Widget res = new TreeItemWidget(item);
+        TreeItemWidget res = new TreeItemWidget(item);
         res.onKeyListener = this;
+        res.popupMenuListener = &onTreeItemPopupMenu;
         return res;
     }
 
