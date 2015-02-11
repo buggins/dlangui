@@ -1629,6 +1629,7 @@ class EditBox : EditWidgetBase {
 			new Action(EditorActions.ZoomOut, KeyCode.SUB, KeyFlag.Control),
 		]);
     }
+    protected uint _matchingBracketHightlightColor = 0xFFF0E0;
 
     protected int _firstVisibleLine;
 
@@ -2109,6 +2110,20 @@ class EditBox : EditWidgetBase {
         //measuredContent(parentWidth, parentHeight, textSz.x + vsbwidth, textSz.y + hsbheight);
     }
 
+
+    protected void highlightLineRange(DrawBuf buf, Rect lineRect, uint color, TextRange r) {
+        Rect startrc = textPosToClient(r.start);
+        Rect endrc = textPosToClient(r.end);
+        Rect rc = lineRect;
+        rc.left = _clientRect.left + startrc.left;
+        rc.right = _clientRect.left + endrc.right;
+        if (!rc.empty) {
+            // draw selection rect for matching bracket
+            Log.d("highlight bracket 1: ", rc);
+            buf.fillRect(rc, 0xFFDD80);
+        }
+    }
+
     /// override to custom highlight of line background
     protected void drawLineBackground(DrawBuf buf, int lineIndex, Rect lineRect, Rect visibleRect) {
         // highlight odd lines
@@ -2128,6 +2143,17 @@ class EditBox : EditWidgetBase {
                 // draw selection rect for line
                 buf.fillRect(rc, focused ? _selectionColorFocused : _selectionColorNormal);
             }
+        }
+
+        if (_matchingBraces.start.line == lineIndex)  {
+            TextRange r = TextRange(_matchingBraces.start, _matchingBraces.start);
+            r.end.pos++;
+            highlightLineRange(buf, lineRect, _matchingBracketHightlightColor, r);
+        }
+        if (_matchingBraces.end.line == lineIndex)  {
+            TextRange r = TextRange(_matchingBraces.end, _matchingBraces.end);
+            r.end.pos++;
+            highlightLineRange(buf, lineRect, _matchingBracketHightlightColor, r);
         }
 
         // frame around current line
@@ -2207,7 +2233,15 @@ class EditBox : EditWidgetBase {
         return null;
     }
 
+    TextRange _matchingBraces;
+
 	override protected void drawClient(DrawBuf buf) {
+        // update matched braces
+        if (!content.findMatchedBraces(_caretPos, _matchingBraces)) {
+            _matchingBraces.start.line = -1;
+            _matchingBraces.end.line = -1;
+        }
+
         Rect rc = _clientRect;
 
         FontRef font = font();

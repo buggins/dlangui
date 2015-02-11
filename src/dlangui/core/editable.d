@@ -647,6 +647,22 @@ class EditableContent {
         handleContentChange(new EditOperation(EditAction.SaveContent), rangeBefore, rangeAfter, this);
     }
 
+    bool findMatchedBraces(TextPosition p, out TextRange range) {
+        if (!_syntaxHighlighter)
+            return false;
+        TextPosition p2 = _syntaxHighlighter.findPairedBracket(p);
+        if (p == p2)
+            return false;
+        if (p < p2) {
+            range.start = p;
+            range.end = p2;
+        } else {
+            range.start = p2;
+            range.end = p;
+        }
+        return true;
+    }
+
     protected void updateTokenProps(int startLine, int endLine) {
         clearTokenProps(startLine, endLine);
         if (_syntaxHighlighter) {
