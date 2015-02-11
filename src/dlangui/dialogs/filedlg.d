@@ -91,6 +91,8 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
     protected bool _isOpenDialog;
 
+    protected string[string] _filetypeIcons;
+
 	this(UIString caption, Window parent, Action action = null, uint fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable | FileDialogFlag.FileMustExist) {
         super(caption, parent, fileDialogFlags | (SHOW_FILE_DIALOG_IN_POPUP ? DialogFlag.Popup : 0));
         _isOpenDialog = !(_flags & FileDialogFlag.ConfirmOverwrite);
@@ -102,6 +104,9 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         }
         _action = action;
     }
+
+    /// mapping of file extension to icon resource name, e.g. ".txt": "text-plain"
+    @property ref string[string] filetypeIcons() { return _filetypeIcons; }
 
 	/// filter list for file type filter combo box
 	@property FileFilterEntry[] filters() {
@@ -165,7 +170,15 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             if (d) {
                 _fileList.setCellText(0, i, "folder");
             } else {
-                _fileList.setCellText(0, i, "text-plain"d);
+                string ext = extension(fname);
+                string resname;
+                if (ext in _filetypeIcons)
+                    resname = _filetypeIcons[ext];
+                else if (baseName(fname) in _filetypeIcons)
+                    resname = _filetypeIcons[baseName(fname)];
+                else
+                    resname = "text-plain";
+                _fileList.setCellText(0, i, toUTF32(resname));
                 sz = to!string(_entries[i].size);
                 date = "2014-01-01 00:00:00";
             }
