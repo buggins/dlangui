@@ -115,6 +115,14 @@ class TreeItem {
         return res;
     }
 
+    /// returns true if item supports collapse
+    @property bool canCollapse() {
+        if (auto r = root) {
+            return r.canCollapse(this);
+        }
+        return true;
+    }
+
     /// returns topmost item
     @property TreeItems root() {
         TreeItem p = this;
@@ -324,6 +332,10 @@ class TreeItems : TreeItem {
     Listener!OnTreeStateChangeListener stateListener;
     Listener!OnTreeSelectionChangeListener selectionListener;
 
+    protected bool _noCollapseForSingleTopLevelItem;
+    @property bool noCollapseForSingleTopLevelItem() { return _noCollapseForSingleTopLevelItem; }
+    @property TreeItems noCollapseForSingleTopLevelItem(bool flg) { _noCollapseForSingleTopLevelItem = flg; return this; }
+
     protected TreeItem _selectedItem;
 
     this() {
@@ -336,10 +348,31 @@ class TreeItems : TreeItem {
             contentListener(this);
     }
 
+    bool canCollapse(TreeItem item) {
+        if (!_noCollapseForSingleTopLevelItem)
+            return true;
+        if (!hasChildren)
+            return false;
+        if (_children.count == 1 && _children[0] is item)
+            return false;
+        return true;
+    }
+
+    bool canCollapseTopLevel() {
+        if (!_noCollapseForSingleTopLevelItem)
+            return true;
+        if (!hasChildren)
+            return false;
+        if (_children.count == 1)
+            return false;
+        return true;
+    }
+
     override void toggleExpand(TreeItem item) {
-        if (item.expanded)
-            item.collapse();
-        else
+        if (item.expanded) {
+            if (item.canCollapse())
+                item.collapse();
+        } else
             item.expand();
         if (stateListener.assigned)
             stateListener(this);
@@ -491,10 +524,15 @@ class TreeItemWidget : HorizontalLayout {
         //for (int i = 1; i < _item.level; i++)
         //    tabText ~= singleTab;
         //_tab.text = cast(dstring)tabText;
-        int w = (_item.level - 1) * style.font.size * 2;
+        int level = _item.level - 1;
+        if (!_item.root.canCollapseTopLevel())
+            level--;
+        if (level < 0)
+            level = 0;
+        int w = level * style.font.size * 2;
         _tab.minWidth = w;
         _tab.maxWidth = w;
-        if (_item.hasChildren) {
+        if (_item.hasChildren && _item.canCollapse()) {
             _expander = new ImageWidget("expander", _item.hasChildren && _item.expanded ? "arrow_right_down_black" : "arrow_right_hollow");
             _expander.styleId = STYLE_TREE_ITEM_EXPAND_ICON;
             _expander.clickable = true;
@@ -589,6 +627,17 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
 
     protected bool _needUpdateWidgets;
     protected bool _needUpdateWidgetStates;
+
+    protected bool _noCollapseForSingleTopLevelItem;
+    @property bool noCollapseForSingleTopLevelItem() { 
+        return _noCollapseForSingleTopLevelItem; 
+    }
+    @property TreeWidgetBase noCollapseForSingleTopLevelItem(bool flg) { 
+        _noCollapseForSingleTopLevelItem = flg;
+        if (_tree)
+            _tree.noCollapseForSingleTopLevelItem = flg;
+        return this;
+    }
 
     /// empty parameter list constructor - for usage by factory
     this() {
