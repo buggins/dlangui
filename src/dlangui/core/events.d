@@ -720,6 +720,10 @@ enum KeyCode : uint {
     KEY_Y = 0x59,
     /// Z
     KEY_Z = 0x5a,
+    /// [
+    KEY_BRACKETOPEN = 0xDB,
+    /// ]
+    KEY_BRACKETCLOSE = 0xDD,
     /// key /
     KEY_DIVIDE = 0x6F,
     /// key +

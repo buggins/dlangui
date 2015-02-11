@@ -658,14 +658,9 @@ class Win32Window : Window {
                     updateKeyFlags(action, KeyFlag.Alt);
                     break;
                 default:
-                    if (GetKeyState(VK_CONTROL) & 0x8000)
-                        _keyFlags |= KeyFlag.Control;
-                    else
-                        _keyFlags &= ~KeyFlag.Control;
-                    if (GetKeyState(VK_SHIFT) & 0x8000)
-                        _keyFlags |= KeyFlag.Shift;
-                    else
-                        _keyFlags &= ~KeyFlag.Shift;
+                    updateKeyFlags((GetKeyState(VK_CONTROL) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.Control);
+                    updateKeyFlags((GetKeyState(VK_SHIFT) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.Shift);
+                    updateKeyFlags((GetKeyState(VK_MENU) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.Alt);
                     break;
             }
             if (keyCode == 0xBF)
