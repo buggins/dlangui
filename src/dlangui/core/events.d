@@ -1130,7 +1130,7 @@ class CustomEvent {
     protected int _id;
     protected uint _uniqueId;
 
-    protected static uint _uniqueIdGenerator;
+    protected static __gshared uint _uniqueIdGenerator;
 
     protected Widget _destinationWidget;
     // event id

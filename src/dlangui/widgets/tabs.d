@@ -41,7 +41,7 @@ interface TabCloseHandler {
 
 /// tab item metadata
 class TabItem {
-    private static long _lastAccessCounter;
+    private static __gshared long _lastAccessCounter;
     private string _iconRes;
     private string _id;
     private UIString _label;

@@ -111,7 +111,7 @@ private class FreeTypeFontFile {
     @property int weight() { return _weight; }
     @property bool italic() { return _italic; }
 
-	debug private static int _instanceCount;
+	debug private static __gshared int _instanceCount;
     this(FT_Library library, string filename) {
         _library = library;
         _filename = filename;
@@ -487,7 +487,7 @@ class FreeTypeFontManager : FontManager {
 
 	//private FontList _activeFonts;
 
-    private static FontRef _nullFontRef;
+    private static __gshared FontRef _nullFontRef;
 
     this() {
         // load dynaic library

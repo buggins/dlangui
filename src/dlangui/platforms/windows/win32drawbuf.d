@@ -57,7 +57,7 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
     /// returns HBITMAP for alpha
     HBITMAP createTransparencyBitmap() {
         int hbytes = (((_dx + 7) / 8) + 1) & 0xFFFFFFFE;
-        static ubyte[] buf;
+        static __gshared ubyte[] buf;
         buf.length = hbytes * _dy * 2;
         //for (int y = 0; y < _dy; y++) {
         //    uint * src = scanLine(y);

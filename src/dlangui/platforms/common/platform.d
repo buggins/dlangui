@@ -87,7 +87,7 @@ class EventList {
 }
 
 class TimerInfo {
-    static ulong nextId;
+    static __gshared ulong nextId;
 
     this(Widget targetWidget, long intervalMillis) {
         _id = ++nextId;
