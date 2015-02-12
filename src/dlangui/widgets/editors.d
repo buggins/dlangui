@@ -1629,7 +1629,7 @@ class EditBox : EditWidgetBase {
 			new Action(EditorActions.ZoomOut, KeyCode.SUB, KeyFlag.Control),
 		]);
     }
-    protected uint _matchingBracketHightlightColor = 0xFFF0E0;
+    protected uint _matchingBracketHightlightColor = 0x60FFE0B0;
 
     protected int _firstVisibleLine;
 
@@ -2119,8 +2119,7 @@ class EditBox : EditWidgetBase {
         rc.right = _clientRect.left + endrc.right;
         if (!rc.empty) {
             // draw selection rect for matching bracket
-            Log.d("highlight bracket 1: ", rc);
-            buf.fillRect(rc, 0xFFDD80);
+            buf.fillRect(rc, color);
         }
     }
 
@@ -2146,13 +2145,11 @@ class EditBox : EditWidgetBase {
         }
 
         if (_matchingBraces.start.line == lineIndex)  {
-            TextRange r = TextRange(_matchingBraces.start, _matchingBraces.start);
-            r.end.pos++;
+            TextRange r = TextRange(_matchingBraces.start, _matchingBraces.start.offset(1));
             highlightLineRange(buf, lineRect, _matchingBracketHightlightColor, r);
         }
         if (_matchingBraces.end.line == lineIndex)  {
-            TextRange r = TextRange(_matchingBraces.end, _matchingBraces.end);
-            r.end.pos++;
+            TextRange r = TextRange(_matchingBraces.end, _matchingBraces.end.offset(1));
             highlightLineRange(buf, lineRect, _matchingBracketHightlightColor, r);
         }
 

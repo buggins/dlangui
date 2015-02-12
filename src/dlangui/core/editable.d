@@ -89,7 +89,9 @@ enum TokenCategory : ubyte {
     /// invalid identifier token - error occured while parsing identifier
     Error_InvalidIdentifier = (15 << TOKEN_CATEGORY_SHIFT) | 4,
     /// invalid comment token - error occured while parsing comment
-    Error_InvalidComment = (15 << TOKEN_CATEGORY_SHIFT) | 4,
+    Error_InvalidComment = (15 << TOKEN_CATEGORY_SHIFT) | 7,
+    /// invalid comment token - error occured while parsing comment
+    Error_InvalidOp = (15 << TOKEN_CATEGORY_SHIFT) | 8,
 }
 
 /// extracts token category, clearing subcategory
@@ -183,6 +185,10 @@ struct TextPosition {
     }
     @property string toString() {
         return to!string(line) ~ ":" ~ to!string(pos);
+    }
+    /// adds deltaPos to position and returns result
+    TextPosition offset(int deltaPos) {
+        return TextPosition(line, pos + deltaPos);
     }
 }
 
