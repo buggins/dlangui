@@ -67,6 +67,7 @@ class ToolBarImageButton : ImageButton {
         styleId = STYLE_TOOLBAR_BUTTON;
         focusable = false;
     }
+    mixin ActionTooltipSupport;
 }
 
 /// separator for toolbars
@@ -85,6 +86,7 @@ class ToolBarComboBox : ComboBox {
         if (items.length > 0)
             selectedItemIndex = 0;
     }
+    mixin ActionTooltipSupport;
 }
 
 /// Layout with buttons

@@ -252,17 +252,18 @@ class Window {
         _tooltip.timerId = setTimer(ownerWidget, delay);
     }
 
+    /// call when tooltip timer is expired
     private bool onTooltipTimer() {
         _tooltip.timerId = 0;
         if (isChild(_tooltip.ownerWidget)) {
-            Widget w = _tooltip.ownerWidget.createTooltip();
+            Widget w = _tooltip.ownerWidget.createTooltip(_lastMouseX, _lastMouseY, _tooltip.alignment, _tooltip.x, _tooltip.y);
             if (w)
                 showTooltip(w, _tooltip.ownerWidget, _tooltip.alignment, _tooltip.x, _tooltip.y);
         }
         return false;
     }
 
-    /// hide tooltip if shown
+    /// hide tooltip if shown and cancel tooltip timer if set
     void hideTooltip() {
         if (_tooltip.popup) {
             destroy(_tooltip.popup);
@@ -270,6 +271,8 @@ class Window {
             if (_mainWidget)
                 _mainWidget.invalidate();
         }
+        if (_tooltip.timerId)
+            cancelTimer(_tooltip.timerId);
     }
 
     /// show tooltip immediately
@@ -506,6 +509,7 @@ class Window {
     /// dispatch keyboard event
     bool dispatchKeyEvent(KeyEvent event) {
 		bool res = false;
+        hideTooltip();
         PopupWidget modal = modalPopup();
 		if (event.action == KeyAction.KeyDown || event.action == KeyAction.KeyUp) {
 			_keyboardModifiers = event.flags;
@@ -783,12 +787,18 @@ class Window {
         return false;
     }
 
+    private int _lastMouseX;
+    private int _lastMouseY;
     /// dispatch mouse event to window content widgets
     bool dispatchMouseEvent(MouseEvent event) {
         // ignore events if there is no root
         if (_mainWidget is null)
             return false;
 
+        if (event.action == MouseAction.Move) {
+            _lastMouseX = event.x;
+            _lastMouseY = event.y;
+        }
         hideTooltip();
 
         PopupWidget modal = modalPopup();

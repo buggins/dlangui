@@ -126,6 +126,12 @@ struct UIString {
         _value = null;
         return this;
     }
+
+    /// returns true if string is empty: neither resource nor string is assigned
+    bool empty() const {
+        return _value.length == 0 && _id.length == 0;
+    }
+
     /** Default conversion to dstring */
     alias value this;
 }

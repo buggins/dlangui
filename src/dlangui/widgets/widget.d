@@ -683,15 +683,16 @@ class Widget {
     }
 
     /// returns true if widget has tooltip to show
-    bool hasTooltip() {
+    @property bool hasTooltip() {
         return false;
     }
-    /// will be called from window once tooltip request timer expired
-    Widget createTooltip() {
+    /// will be called from window once tooltip request timer expired; if null is returned, popup will not be shown; you can change alignment and position of popup here
+    Widget createTooltip(int mouseX, int mouseY, ref uint alignment, ref int x, ref int y) {
         return null;
     }
+
     /// schedule tooltip
-    void scheduleTooltip(long delay = 300, uint alignment = 2 /*PopupAlign.Below*/, int x = 0, int y = 0) {
+    protected void scheduleTooltip(long delay = 300, uint alignment = 2 /*PopupAlign.Below*/, int x = 0, int y = 0) {
         if (auto w = window)
             w.scheduleTooltip(this, delay, alignment, x, y);
     }
@@ -1106,6 +1107,9 @@ class Widget {
 	            return true;
 	        }
 		}
+        if (event.action == MouseAction.Move && event.flags == 0 && hasTooltip) {
+            scheduleTooltip(200);
+        }
 		if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Right) {
 			if (canShowPopupMenu(event.x, event.y)) {
 				showPopupMenu(event.x, event.y);
@@ -1553,3 +1557,21 @@ struct AnimationHelper {
         return _timeElapsed >= _maxInterval; 
     }
 }
+
+
+/// mixin this to widget class to support tooltips based on widget's action label
+mixin template ActionTooltipSupport() {
+    /// returns true if widget has tooltip to show
+    override @property bool hasTooltip() {
+        if (!_action || _action.labelValue.empty)
+            return false;
+        return true;
+    }
+    /// will be called from window once tooltip request timer expired; if null is returned, popup will not be shown; you can change alignment and position of popup here
+    override Widget createTooltip(int mouseX, int mouseY, ref uint alignment, ref int x, ref int y) {
+        Widget res = new TextWidget("tooltip", _action.tooltipText);
+        res.styleId = STYLE_TOOLTIP;
+        return res;
+    }
+}
+

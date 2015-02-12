@@ -300,6 +300,14 @@
         layoutHeight="WRAP_CONTENT"
         padding="1,1,1,1"
         />
+    <style id="TOOLTIP"
+        backgroundImageId="tooltip_background"
+        layoutWidth="WRAP_CONTENT"
+        layoutHeight="WRAP_CONTENT"
+        margins="2,7,2,1"
+        padding="3,3,3,3"
+	textColor="#404040"
+        />
     <style id="TOOLBAR"
         backgroundImageId="toolbar_background"
         layoutWidth="WRAP_CONTENT"

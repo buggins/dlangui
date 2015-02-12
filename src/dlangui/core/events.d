@@ -215,6 +215,22 @@ class Action {
 			return null;
 		return _accelerators[0].label;
 	}
+    /// returns tooltip text for action
+    @property dstring tooltipText() {
+        dchar[] buf;
+        // strip out & characters
+        foreach(ch; label) {
+            if (ch != '&')
+                buf ~= ch;
+        }
+        dstring accel = acceleratorText;
+        if (accel.length > 0) {
+            buf ~= " (";
+            buf ~= accel;
+            buf ~= ")";
+        }
+        return cast(dstring)buf;
+    }
     /// adds one more accelerator
     Action addAccelerator(uint keyCode, uint keyFlags = 0) {
         _accelerators ~= Accelerator(keyCode, keyFlags);

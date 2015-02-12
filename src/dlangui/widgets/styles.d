@@ -144,6 +144,10 @@ immutable string STYLE_TAB_UP_BUTTON_DARK = "TAB_UP_BUTTON_DARK";
 /// standard style id for tab control tab button text in dock frame
 immutable string STYLE_TAB_UP_BUTTON_DARK_TEXT = "TAB_UP_BUTTON_DARK_TEXT";
 
+/// standard style id for tooltip popup
+immutable string STYLE_TOOLTIP = "TOOLTIP";
+
+
 /// standard style id for toolbars layout
 immutable string STYLE_TOOLBAR_HOST = "TOOLBAR_HOST";
 /// standard style id for toolbars
