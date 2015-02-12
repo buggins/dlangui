@@ -376,7 +376,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
 			new Action(EditorActions.ToggleLineComment, KeyCode.KEY_DIVIDE, KeyFlag.Control),
 			new Action(EditorActions.ToggleBlockComment, KeyCode.KEY_DIVIDE, KeyFlag.Control | KeyFlag.Shift),
-			new Action(EditorActions.DeleteLine, KeyCode.KEY_Y, KeyFlag.Control),
+			new Action(EditorActions.DeleteLine, KeyCode.KEY_D, KeyFlag.Control),
+			new Action(EditorActions.DeleteLine, KeyCode.KEY_L, KeyFlag.Control),
 			new Action(EditorActions.InsertLine, KeyCode.RETURN, KeyFlag.Control),
 		]);
     }

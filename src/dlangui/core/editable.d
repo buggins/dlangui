@@ -1251,7 +1251,7 @@ class EditableContent {
 
     /// redoes last undone change
     bool redo(Object source) {
-        if (!hasUndo)
+        if (!hasRedo)
             return false;
         if (_readOnly)
             throw new Exception("content is readonly");
