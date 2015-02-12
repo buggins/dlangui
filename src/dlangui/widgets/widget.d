@@ -682,6 +682,20 @@ class Widget {
         }
     }
 
+    /// returns true if widget has tooltip to show
+    bool hasTooltip() {
+        return false;
+    }
+    /// will be called from window once tooltip request timer expired
+    Widget createTooltip() {
+        return null;
+    }
+    /// schedule tooltip
+    void scheduleTooltip(long delay = 300, uint alignment = 2 /*PopupAlign.Below*/, int x = 0, int y = 0) {
+        if (auto w = window)
+            w.scheduleTooltip(this, delay, alignment, x, y);
+    }
+
     protected bool _focusGroup;
     /*****************************************
      * When focus group is set for some parent widget, focus from one of containing widgets can be moved using keyboard only to one of other widgets containing in it and cannot bypass bounds of focusGroup.

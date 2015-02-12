@@ -189,6 +189,8 @@ class Window {
 			_mainWidget.requestLayout();
 		foreach(p; _popups)
 			p.requestLayout();
+        if (_tooltip.popup)
+            _tooltip.popup.requestLayout();
 	}
     void measure() {
         if (_mainWidget !is null) {
@@ -196,6 +198,8 @@ class Window {
         }
         foreach(p; _popups)
             p.measure(_dx, _dy);
+        if (_tooltip.popup)
+            _tooltip.popup.measure(_dx, _dy);
     }
     void layout() {
         Rect rc = Rect(0, 0, _dx, _dy);
@@ -204,6 +208,8 @@ class Window {
         }
         foreach(p; _popups)
             p.layout(rc);
+        if (_tooltip.popup)
+            _tooltip.popup.layout(rc);
     }
     void onResize(int width, int height) {
         if (_dx == width && _dy == height)
@@ -225,6 +231,61 @@ class Window {
     }
 
     protected PopupWidget[] _popups;
+
+    protected static struct TooltipInfo {
+        PopupWidget popup;
+        ulong timerId;
+        Widget ownerWidget;
+        uint alignment;
+        int x;
+        int y;
+    }
+
+    protected TooltipInfo _tooltip;
+
+    /// schedule tooltip for widget be shown with specified delay
+    void scheduleTooltip(Widget ownerWidget, long delay, uint alignment = PopupAlign.Below, int x = 0, int y = 0) {
+        _tooltip.alignment = alignment;
+        _tooltip.x = x;
+        _tooltip.y = y;
+        _tooltip.ownerWidget = ownerWidget;
+        _tooltip.timerId = setTimer(ownerWidget, delay);
+    }
+
+    private bool onTooltipTimer() {
+        _tooltip.timerId = 0;
+        if (isChild(_tooltip.ownerWidget)) {
+            Widget w = _tooltip.ownerWidget.createTooltip();
+            if (w)
+                showTooltip(w, _tooltip.ownerWidget, _tooltip.alignment, _tooltip.x, _tooltip.y);
+        }
+        return false;
+    }
+
+    /// hide tooltip if shown
+    void hideTooltip() {
+        if (_tooltip.popup) {
+            destroy(_tooltip.popup);
+            _tooltip.popup = null;
+            if (_mainWidget)
+                _mainWidget.invalidate();
+        }
+    }
+
+    /// show tooltip immediately
+    PopupWidget showTooltip(Widget content, Widget anchor = null, uint alignment = PopupAlign.Center, int x = 0, int y = 0) {
+        hideTooltip();
+        if (!content)
+            return null;
+        PopupWidget res = new PopupWidget(content, this);
+        res.anchor.widget = anchor !is null ? anchor : _mainWidget;
+        res.anchor.alignment = alignment;
+		res.anchor.x = x;
+		res.anchor.y = y;
+        _tooltip.popup = res;
+        return res;
+    }
+
     /// show new popup
     PopupWidget showPopup(Widget content, Widget anchor = null, uint alignment = PopupAlign.Center, int x = 0, int y = 0) {
         PopupWidget res = new PopupWidget(content, this);
@@ -274,6 +335,9 @@ class Window {
         foreach(p; _popups)
             if (p.isChild(w))
                 return true;
+        if (_tooltip.popup)
+            if (_tooltip.popup.isChild(w))
+                return true;
         return false;
     }
 
@@ -285,6 +349,10 @@ class Window {
 		_backgroundColor = 0xFFFFFF;
 	}
 	~this() {
+        if (_tooltip.popup) {
+            destroy(_tooltip.popup);
+            _tooltip.popup = null;
+        }
         foreach(p; _popups)
             destroy(p);
         _popups = null;
@@ -312,6 +380,8 @@ class Window {
         animate(_mainWidget, interval);
         foreach(p; _popups)
             p.animate(interval);
+        if (_tooltip.popup)
+            _tooltip.popup.animate(interval);
     }
 
 	static immutable int PERFORMANCE_LOGGING_THRESHOLD_MS = 20;
@@ -359,6 +429,10 @@ class Window {
                 }
                 p.onDraw(buf);
             }
+
+            if (_tooltip.popup)
+                _tooltip.popup.onDraw(buf);
+
             long drawEnd = currentTimeMillis;
             debug(DebugRedraw) {
 		        if (drawEnd - drawStart > PERFORMANCE_LOGGING_THRESHOLD_MS)
@@ -715,6 +789,8 @@ class Window {
         if (_mainWidget is null)
             return false;
 
+        hideTooltip();
+
         PopupWidget modal = modalPopup();
 
         // check if _mouseCaptureWidget and _mouseTrackingWidget still exist in child of root widget
@@ -873,6 +949,8 @@ class Window {
         checkUpdateNeeded(_mainWidget, needDraw, needLayout, animationActive);
         foreach(p; _popups)
             checkUpdateNeeded(p, needDraw, needLayout, animationActive);
+        if (_tooltip.popup)
+            checkUpdateNeeded(_tooltip.popup, needDraw, needLayout, animationActive);
         return needDraw || needLayout || animationActive;
     }
     /// requests update for window (unless force is true, update will be performed only if layout, redraw or animation is required).
@@ -1020,12 +1098,19 @@ class Window {
             TimerInfo[] list = expired();
             if (list) {
                 for (int i = 0; i < list.length; i++) {
-                    Widget w = _queue[i].targetWidget;
-                    if (w && !isChild(w))
+                    if (_queue[i].id == _tooltip.timerId) {
+                        // special case for tooltip timer
+                        onTooltipTimer();
                         _queue[i].cancel();
-                    else {
-                        _queue[i].notify();
                         res = true;
+                    } else {
+                        Widget w = _queue[i].targetWidget;
+                        if (w && !isChild(w))
+                            _queue[i].cancel();
+                        else {
+                            _queue[i].notify();
+                            res = true;
+                        }
                     }
                 }
             }
