@@ -878,10 +878,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     }
 
     /// returns true if one or more lines selected fully
-    protected bool wholeLinesSelected() {
-        return _selectionRange.end.line > _selectionRange.start.line 
-            && _selectionRange.end.pos == 0 
-            && _selectionRange.start.pos == 0;
+    protected bool multipleLinesSelected() {
+        return _selectionRange.end.line > _selectionRange.start.line;
     }
 
     protected bool _camelCasePartsAsWords = true;
@@ -1157,7 +1155,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                             _content.performOperation(op, this);
                         }
                     } else {
-                        if (wholeLinesSelected()) {
+                        if (multipleLinesSelected()) {
                             // indent range
                             return handleAction(new Action(EditorActions.Indent));
                         } else {
@@ -1188,7 +1186,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                             _content.performOperation(op, this);
                         }
                     } else {
-                        if (wholeLinesSelected()) {
+                        if (multipleLinesSelected()) {
                             // unindent range
                             return handleAction(new Action(EditorActions.Unindent));
                         } else {
