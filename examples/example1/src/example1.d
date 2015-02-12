@@ -516,7 +516,7 @@ extern (C) int UIAppMain(string[] args) {
 		    layout3.addChild(new TextWidget(null, "Buttons in HorizontalLayout"d));
 		    WidgetGroup buttons1 = new HorizontalLayout();
 		    buttons1.addChild(new TextWidget(null, "Button widgets: "d));
-            buttons1.addChild(new Button("btn1", "Button"d));
+            buttons1.addChild((new Button("btn1", "Button"d)).tooltipText("Tooltip text for button"d));
             buttons1.addChild((new Button("btn2", "Disabled Button"d)).enabled(false));
 		    buttons1.addChild(new TextWidget(null, "ImageButton widgets: "d));
             buttons1.addChild(new ImageButton("btn3", "text-plain"));

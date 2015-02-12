@@ -682,12 +682,28 @@ class Widget {
         }
     }
 
+    protected UIString _tooltipText;
+    /// tooltip text - when not empty, widget will show tooltips automatically; for advanced tooltips - override hasTooltip and createTooltip
+    @property dstring tooltipText() { return _tooltipText; }
+    /// tooltip text - when not empty, widget will show tooltips automatically; for advanced tooltips - override hasTooltip and createTooltip
+    @property Widget tooltipText(dstring text) { _tooltipText = text; return this; }
+    /// tooltip text - when not empty, widget will show tooltips automatically; for advanced tooltips - override hasTooltip and createTooltip
+    @property Widget tooltipText(UIString text) { _tooltipText = text; return this; }
+
+
     /// returns true if widget has tooltip to show
     @property bool hasTooltip() {
-        return false;
+        return !_tooltipText.empty;
     }
     /// will be called from window once tooltip request timer expired; if null is returned, popup will not be shown; you can change alignment and position of popup here
     Widget createTooltip(int mouseX, int mouseY, ref uint alignment, ref int x, ref int y) {
+        // default implementation supports tooltips when tooltipText property is set
+        if (!_tooltipText.empty) {
+            import dlangui.widgets.controls;
+            Widget res = new TextWidget("tooltip", _tooltipText.value);
+            res.styleId = STYLE_TOOLTIP;
+            return res;
+        }
         return null;
     }
 
