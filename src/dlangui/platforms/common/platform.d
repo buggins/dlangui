@@ -263,6 +263,20 @@ class Window {
         return false;
     }
 
+    /// called when user dragged file(s) to application window
+    void handleDroppedFiles(string[] filenames) {
+        //Log.d("handleDroppedFiles(", filenames, ")");
+        if (_onFilesDropped)
+            _onFilesDropped(filenames);
+    }
+
+    protected void delegate(string[]) _onFilesDropped;
+    /// get handler for files dropped to app window
+    @property void delegate(string[]) onFilesDropped() { return _onFilesDropped; }
+    /// set handler for files dropped to app window
+    @property Window onFilesDropped(void delegate(string[]) handler) { _onFilesDropped = handler; return this; }
+
+
     /// hide tooltip if shown and cancel tooltip timer if set
     void hideTooltip() {
         if (_tooltip.popup) {

@@ -200,7 +200,6 @@ class Win32Window : Window {
                             null,                 // window menu handle
                             _hInstance,           // program instance handle
                             cast(void*)this);                // creation parameters
-
         version (USE_OPENGL) {
             import derelict.opengl3.wgl;
 
@@ -322,6 +321,13 @@ class Win32Window : Window {
     override void postEvent(CustomEvent event) {
         super.postEvent(event);
         PostMessageW(_hwnd, CUSTOM_MESSAGE_ID, 0, event.uniqueId);
+    }
+
+    /// set handler for files dropped to app window
+    override @property Window onFilesDropped(void delegate(string[]) handler) { 
+        super.onFilesDropped(handler);
+        DragAcceptFiles(_hwnd, handler ? TRUE : FALSE);
+        return this; 
     }
 
     private long _nextExpectedTimerTs;
@@ -1141,6 +1147,23 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 return 0;
             }
             break;
+        case WM_DROPFILES:
+			if (window !is null) {
+                HDROP hdrop = cast(HDROP)wParam;
+                string[] files;
+                wchar[] buf;
+                auto count = DragQueryFileW(hdrop, 0xFFFFFFFF, cast(wchar*)NULL, 0);
+                for (int i = 0; i < count; i++) {
+                    auto sz = DragQueryFileW(hdrop, i, cast(wchar*)NULL, 0); 
+                    buf.length = sz + 2;
+                    sz = DragQueryFileW(hdrop, i, buf.ptr, sz + 1); 
+                    files ~= toUTF8(buf[0..sz]);
+                }
+                if (files.length)
+                    window.handleDroppedFiles(files);
+                DragFinish(hdrop);
+            }
+            return 0;
         case WM_GETMINMAXINFO:
         case WM_NCCREATE:
         case WM_NCCALCSIZE:
