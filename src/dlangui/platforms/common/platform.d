@@ -276,6 +276,22 @@ class Window {
     /// set handler for files dropped to app window
     @property Window onFilesDropped(void delegate(string[]) handler) { _onFilesDropped = handler; return this; }
 
+    protected bool delegate() _onCanClose;
+    /// get handler for closing of app (it must return true to allow immediate close, false to cancel close or close window later)
+    @property bool delegate() onCanClose() { return _onCanClose; }
+    /// set handler for closing of app (it must return true to allow immediate close, false to cancel close or close window later)
+    @property Window onCanClose(bool delegate() handler) { _onCanClose = handler; return this; }
+
+    /// calls onCanClose handler if set to check if system may close window
+    bool handleCanClose() {
+        if (!_onCanClose)
+            return true;
+        bool res = _onCanClose();
+        if (!res)
+            update(true); // redraw window if it was decided to not close immediately
+        return res;
+    }
+
 
     /// hide tooltip if shown and cancel tooltip timer if set
     void hideTooltip() {

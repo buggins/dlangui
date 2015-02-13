@@ -1164,6 +1164,13 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 DragFinish(hdrop);
             }
             return 0;
+        case WM_CLOSE:
+			if (window !is null) {
+                if (!window.handleCanClose())
+                    return 0; // prevent closing
+            }
+            // default handler inside DefWindowProc will close window
+            break;
         case WM_GETMINMAXINFO:
         case WM_NCCREATE:
         case WM_NCCALCSIZE:
