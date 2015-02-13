@@ -332,7 +332,9 @@ class TabControl : WidgetGroupDefaultDrawing {
         }
         int index = _items.indexById(id);
         if (index >= 0) {
-            _children.remove(index + 1);
+            Widget w = _children.remove(index + 1);
+            if (w)
+                destroy(w);
             _items.remove(index);
             if (id.equal(_selectedTabId))
                 _selectedTabId = null;

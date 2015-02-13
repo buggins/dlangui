@@ -382,6 +382,7 @@ class Window {
 		_backgroundColor = 0xFFFFFF;
 	}
 	~this() {
+		debug Log.d("Destroying window");
         if (_tooltip.popup) {
             destroy(_tooltip.popup);
             _tooltip.popup = null;
