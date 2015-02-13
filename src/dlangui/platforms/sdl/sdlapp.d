@@ -873,6 +873,7 @@ class SDLPlatform : Platform {
 		Log.i("entering message loop");
 		SDL_Event event;
 		bool quit = false;
+        bool skipNextQuit = false;
         while(!quit) {
 			//redrawWindows();
 
@@ -882,9 +883,12 @@ class SDLPlatform : Platform {
 				//Log.d("Event.type = ", event.type);
 
 				if (event.type == SDL_QUIT) {
-					Log.i("event.type == SDL_QUIT");
-					quit = true;
-					break;
+                    if (!skipNextQuit) {
+					    Log.i("event.type == SDL_QUIT");
+					    quit = true;
+					    break;
+                    }
+                    skipNextQuit = false;
 				} 
 				if (_redrawEventId && event.type == _redrawEventId) {
 					// user defined redraw event
@@ -920,9 +924,13 @@ class SDLPlatform : Platform {
                                 w.redraw();
                                 break;
                             case SDL_WINDOWEVENT_CLOSE:
-                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_CLOSE win=", event.window.windowID);
-                                _windowMap.remove(windowID);
-                                destroy(w);
+                                if (w.handleCanClose()) {
+                                    debug(DebugSDL) Log.d("SDL_WINDOWEVENT_CLOSE win=", event.window.windowID);
+                                    _windowMap.remove(windowID);
+                                    destroy(w);
+                                } else {
+                                    skipNextQuit = true;
+                                }
                                 break;
                             case SDL_WINDOWEVENT_SHOWN:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_SHOWN");
@@ -1344,15 +1352,13 @@ int sdlmain(string[] args) {
     Platform.setInstance(null);
 
     //
-	debug(resalloc) {
-        Widget.shuttingDown();
-    }
+	debug setAppShuttingDownFlag();
 
     currentTheme = null;
     drawableCache = null;
     imageCache = null;
     FontManager.instance = null;
-    debug(resalloc) {
+    debug {
 		if (DrawBuf.instanceCount > 0) {
 			Log.e("Non-zero DrawBuf instance count when exiting: ", DrawBuf.instanceCount);
 		}
@@ -1365,6 +1371,14 @@ int sdlmain(string[] args) {
 		if (ImageDrawable.instanceCount > 0) {
 			Log.e("Non-zero ImageDrawable instance count when exiting: ", ImageDrawable.instanceCount);
 		}
+        version (USE_FREETYPE) {
+            if (FreeTypeFontFile.instanceCount > 0) {
+                Log.e("Non-zero FreeTypeFontFile instance count when exiting: ", FreeTypeFontFile.instanceCount);
+            }
+            if (FreeTypeFont.instanceCount > 0) {
+                Log.e("Non-zero FreeTypeFont instance count when exiting: ", FreeTypeFont.instanceCount);
+            }
+        }
     }
     Log.d("Exiting main");
 

@@ -81,13 +81,13 @@ class DrawBuf : RefCountedObject {
         version (USE_OPENGL) {
             _id = drawBufIdGenerator++;
         }
-		debug(resalloc) _instanceCount++;
+		debug _instanceCount++;
     }
 
-	debug(resalloc) private static int _instanceCount;
-	debug(resalloc) @property static int instanceCount() { return _instanceCount; }
+	debug private static __gshared int _instanceCount;
+	debug @property static int instanceCount() { return _instanceCount; }
 	~this() {
-		debug(resalloc) _instanceCount--;
+		debug _instanceCount--;
 		clear();
 	}
 

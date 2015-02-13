@@ -211,12 +211,16 @@ immutable(ubyte[]) loadResourceBytes(string filename) {
 }
 
 class Drawable : RefCountedObject {
-	//private static int _instanceCount;
+	debug static __gshared int _instanceCount;
+	debug @property static int instanceCount() { return _instanceCount; }
+
 	this() {
+        debug ++_instanceCount;
 		//Log.d("Created drawable, count=", ++_instanceCount);
 	}
 	~this() {
 		//Log.d("Destroyed drawable, count=", --_instanceCount);
+        debug --_instanceCount;
 	}
     abstract void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0);
     @property abstract int width();
@@ -329,27 +333,21 @@ class ImageDrawable : Drawable {
     protected DrawBufRef _image;
     protected bool _tiled;
 
-	debug(resalloc) private static int _instanceCount;
+	debug static __gshared int _instanceCount;
+	debug @property static int instanceCount() { return _instanceCount; }
 
     this(ref DrawBufRef image, bool tiled = false, bool ninePatch = false) {
         _image = image;
         _tiled = tiled;
         if (ninePatch)
             _image.detectNinePatch();
-		debug(resalloc) {
-			_instanceCount++;
-			Log.d("Created ImageDrawable, count=", _instanceCount);
-		}
+        debug _instanceCount++;
+		debug(resalloc) Log.d("Created ImageDrawable, count=", _instanceCount);
     }
-	debug(resalloc) {
-		@property static int instanceCount() { return _instanceCount; }
-	}
 	~this() {
 		_image.clear();
-		debug(resalloc) {
-			_instanceCount--;
-			Log.d("Destroyed ImageDrawable, count=", _instanceCount);
-		}
+        debug _instanceCount--;
+		debug(resalloc) Log.d("Destroyed ImageDrawable, count=", _instanceCount);
 	}
     @property override int width() { 
         if (_image.isNull)
@@ -857,20 +855,23 @@ class DrawableCache {
         DrawableRef _drawable;
         DrawableRef[ColorTransform] _transformed;
 
-		debug(resalloc) private static int _instanceCount;
+        debug private static __gshared int _instanceCount;
+        debug @property static int instanceCount() { return _instanceCount; }
         this(string id, string filename, bool tiled) {
             _id = id;
             _filename = filename;
             _tiled = tiled;
             _error = filename is null;
-			debug(resalloc) Log.d("Created DrawableCacheItem, count=", ++_instanceCount);
+            debug ++_instanceCount;
+			debug(resalloc) Log.d("Created DrawableCacheItem, count=", _instanceCount);
         }
 		~this() {
 			_drawable.clear();
 			foreach(ref t; _transformed)
 				t.clear();
 			_transformed.destroy();
-			debug(resalloc) Log.d("Destroyed DrawableCacheItem, count=", --_instanceCount);
+            debug --_instanceCount;
+			debug(resalloc) Log.d("Destroyed DrawableCacheItem, count=", _instanceCount);
 		}
         /// remove from memory, will cause reload on next access
         void compact() {

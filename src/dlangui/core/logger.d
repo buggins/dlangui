@@ -153,3 +153,18 @@ synchronized class Log {
             log(LogLevel.Fatal, args);
     }
 }
+
+debug {
+    private static __gshared bool _appShuttingDown = false;
+
+    @property bool appShuttingDown() { return _appShuttingDown; }
+
+    /// for debug purposes - sets shutdown flag to log widgets not destroyed in time.
+    void setAppShuttingDownFlag() {
+        _appShuttingDown = true;
+    }
+}
+
+void onResourceDestroyWhileShutdown(string resourceName, string objname = null) {
+    Log.e("Resource leak: destroying resource while shutdown! ", resourceName, " ", objname);
+}

@@ -85,7 +85,7 @@ private class FontFileItem {
 
 }
 
-private class FreeTypeFontFile {
+class FreeTypeFontFile {
     private string _filename;
     private string _faceName;
     private FT_Library    _library;
@@ -112,6 +112,7 @@ private class FreeTypeFontFile {
     @property bool italic() { return _italic; }
 
 	debug private static __gshared int _instanceCount;
+	debug @property static int instanceCount() { return _instanceCount; }
     this(FT_Library library, string filename) {
         _library = library;
         _filename = filename;
@@ -119,12 +120,14 @@ private class FreeTypeFontFile {
         _matrix.yy = 0x10000;
         _matrix.xy = 0;
         _matrix.yx = 0;
-		debug(FontResources) Log.d("Created FreeTypeFontFile, count=", ++_instanceCount);
+        debug ++_instanceCount;
+		debug(FontResources) Log.d("Created FreeTypeFontFile, count=", _instanceCount);
     }
 
 	~this() {
         clear();
-		debug(FontResources) Log.d("Destroyed FreeTypeFontFile, count=", --_instanceCount);
+        debug --_instanceCount;
+		debug(FontResources) Log.d("Destroyed FreeTypeFontFile, count=", _instanceCount);
     }
 
     private static string familyName(FT_Face face)
@@ -329,25 +332,29 @@ private class FreeTypeFontFile {
 }
 
 /**
-* Font implementation based on Win32 API system fonts.
+* Font implementation based on FreeType.
 */
 class FreeTypeFont : Font {
     private FontFileItem _fontItem;
     private Collection!(FreeTypeFontFile, true) _files;
 
-	debug(resalloc) static int _instanceCount;
+	debug static __gshared int _instanceCount;
+	debug @property static int instanceCount() { return _instanceCount; }
+
 	/// need to call create() after construction to initialize font
     this(FontFileItem item, int size) {
         _fontItem = item;
         _size = size;
         _height = size;
-		debug(resalloc) Log.d("Created font, count=", ++_instanceCount);
+        debug ++_instanceCount;
+		debug(resalloc) Log.d("Created font, count=", _instanceCount);
     }
 
 	/// do cleanup
 	~this() {
 		clear();
-		debug(resalloc) Log.d("Destroyed font, count=", --_instanceCount);
+        debug --_instanceCount;
+		debug(resalloc) Log.d("Destroyed font, count=", _instanceCount);
 	}
 	
     private int _size;

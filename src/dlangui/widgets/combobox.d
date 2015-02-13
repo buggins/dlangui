@@ -150,6 +150,9 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         addChild(_body);
         addChild(_button);
 	}
+
+    ~this() {
+    }
 }
 
 
@@ -232,6 +235,13 @@ class ComboBox : ComboBoxBase {
 		}
 		res.minWidth = maxItemWidth;
         return res;
+    }
+
+    ~this() {
+        if (_adapter) {
+            destroy(_adapter);
+            _adapter = null;
+        }
     }
 
 }

@@ -174,9 +174,8 @@ class Widget {
 		return CursorType.Arrow;
 	}
 
-	debug(resalloc) {
-	    private static int _instanceCount = 0;
-        private static bool _appShuttingDown = false;
+	debug {
+	    private static __gshared int _instanceCount = 0;
     }
     /// empty parameter list constructor - for usage by factory
     this() {
@@ -186,15 +185,15 @@ class Widget {
     this(string ID) {
 		_id = ID;
         _state = State.Enabled;
-		debug(resalloc) _instanceCount++;
+		debug _instanceCount++;
 		//Log.d("Created widget, count = ", ++_instanceCount);
     }
 
 	~this() {
-		debug(resalloc) {
-            //Log.v("destroying widget ", _id);
-            if (_appShuttingDown)
-                Log.e("Destroying widget ", _id, " after app shutdown: probably, resource leak");
+		debug {
+            //Log.v("destroying widget ", _id, " ", this.classinfo.name);
+            if (appShuttingDown)
+                onResourceDestroyWhileShutdown(_id, this.classinfo.name);
             _instanceCount--;
         }
 		if (_ownStyle !is null)
@@ -203,13 +202,9 @@ class Widget {
 		//Log.d("Destroyed widget, count = ", --_instanceCount);
 	}
 
-	debug(resalloc) {
+	debug {
         /// for debug purposes - number of created widget objects, not yet destroyed
         static @property int instanceCount() { return _instanceCount; }
-        /// for debug purposes - sets shutdown flag to log widgets not destroyed in time.
-        static void shuttingDown() {
-            _appShuttingDown = true;
-        }
     }
 
     /// accessor to style - by lookup in theme by styleId (if style id is not set, theme base style will be used).
