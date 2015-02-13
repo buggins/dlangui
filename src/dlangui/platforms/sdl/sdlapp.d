@@ -1371,6 +1371,9 @@ int sdlmain(string[] args) {
 		if (ImageDrawable.instanceCount > 0) {
 			Log.e("Non-zero ImageDrawable instance count when exiting: ", ImageDrawable.instanceCount);
 		}
+		if (Drawable.instanceCount > 0) {
+			Log.e("Non-zero Drawable instance count when exiting: ", Drawable.instanceCount);
+		}
         version (USE_FREETYPE) {
             if (FreeTypeFontFile.instanceCount > 0) {
                 Log.e("Non-zero FreeTypeFontFile instance count when exiting: ", FreeTypeFontFile.instanceCount);

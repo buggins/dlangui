@@ -1091,13 +1091,14 @@ class DrawableCache {
     ~this() {
 		debug(resalloc) Log.e("Drawable instace count before destroying of DrawableCache: ", ImageDrawable.instanceCount);
 
-		Log.i("Destroying DrawableCache _idToDrawableMap.length=", _idToDrawableMap.length);
+		//Log.i("Destroying DrawableCache _idToDrawableMap.length=", _idToDrawableMap.length);
+		Log.i("Destroying DrawableCache");
 		foreach (ref item; _idToDrawableMap) {
 			destroy(item);
 			item = null;
 		}
 		_idToDrawableMap.destroy();
-		debug(resalloc) Log.e("Drawable instace count after destroying of DrawableCache: ", ImageDrawable.instanceCount);
+		debug if(ImageDrawable.instanceCount) Log.e("Drawable instace count after destroying of DrawableCache: ", ImageDrawable.instanceCount);
     }
 }
 

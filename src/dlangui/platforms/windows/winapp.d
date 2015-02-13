@@ -1021,6 +1021,35 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
     Log.i("Entering UIAppMain: ", args);
     int result = UIAppMain(args);
     Log.i("UIAppMain returned ", result);
+
+    debug {
+		if (DrawBuf.instanceCount > 0) {
+			Log.e("Non-zero DrawBuf instance count when exiting: ", DrawBuf.instanceCount);
+		}
+		if (Style.instanceCount > 0) {
+			Log.e("Non-zero Style instance count when exiting: ", Style.instanceCount);
+		}
+		if (Widget.instanceCount() > 0) {
+            Log.e("Non-zero Widget instance count when exiting: ", Widget.instanceCount);
+        }
+		if (ImageDrawable.instanceCount > 0) {
+			Log.e("Non-zero ImageDrawable instance count when exiting: ", ImageDrawable.instanceCount);
+		}
+		if (Drawable.instanceCount > 0) {
+			Log.e("Non-zero Drawable instance count when exiting: ", Drawable.instanceCount);
+		}
+        version (USE_FREETYPE) {
+            import dlangui.graphics.ftfonts;
+            if (FreeTypeFontFile.instanceCount > 0) {
+                Log.e("Non-zero FreeTypeFontFile instance count when exiting: ", FreeTypeFontFile.instanceCount);
+            }
+            if (FreeTypeFont.instanceCount > 0) {
+                Log.e("Non-zero FreeTypeFont instance count when exiting: ", FreeTypeFont.instanceCount);
+            }
+        }
+    }
+    Log.d("Exiting main");
+
     return result;
 }
 
