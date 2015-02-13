@@ -1176,3 +1176,78 @@ class RunnableEvent : CustomEvent {
         _action();
     }
 }
+
+
+private static __gshared string[int] actionIdToNameMap;
+private static __gshared int[string] actionNameToIdMap;
+private static __gshared Accelerator[][int] actionAcceleratorsMap;
+
+/// clear global action accelerators map
+void clearActionAcceleratorsMap() {
+    destroy(actionAcceleratorsMap);
+}
+/// overrides accelerators for action by id
+void setActionAccelerators(int actionId, Accelerator[] accelerators) {
+    actionAcceleratorsMap[actionId] = accelerators;
+}
+/// lookup accelerators override for action by id
+Accelerator[] findActionAccelerators(int actionId) {
+    if (auto found = actionAcceleratorsMap[actionId])
+        return found;
+    return null;
+}
+/// lookup accelerators override for action by name (e.g. "EditorActions.ToggleLineComment")
+Accelerator[] findActionAccelerators(string actionName) {
+    int actionId = actionNameToId(actionName);
+    if (actionId == 0)
+        return null;
+    if (auto found = actionAcceleratorsMap[actionId])
+        return found;
+    return null;
+}
+
+/// converts id to name for actions registered by registerActionEnum, returns null if not found
+string actionIdToName(int id) {
+    if (auto name = id in actionIdToNameMap) {
+        return *name;
+    }
+    return null;
+}
+
+/// converts action name id for for actions registered by registerActionEnum, returns 0 if not found
+int actionNameToId(string name) {
+    if (auto id = name in actionNameToIdMap) {
+        return *id;
+    }
+    return 0;
+}
+
+private string[] enumMemberNames(T)() if (is(T == enum)) {
+    import std.traits;
+    string[] res;
+    foreach(item; __traits(allMembers, T)) {
+        res ~= T.stringof ~ "." ~ item;
+    }
+    return res;
+}
+
+private int[] enumMemberValues(T)() if (is(T == enum)) {
+    import std.traits;
+    int[] res;
+    foreach(item; EnumMembers!T) {
+        res ~= cast(int)item;
+    }
+    return res;
+}
+
+/// register enum items as action names and ids for lookup by actionIdToName and actionNameToId functions (names will be generated as "EnumName.EnumItemName")
+void registerActionEnum(T)() if (is(T == enum)) {
+    immutable int[] memberValues = enumMemberValues!T;
+    immutable string[] memberNames = enumMemberNames!T;
+    //pragma(msg, enumMemberValues!T);
+    //pragma(msg, enumMemberNames!T);
+    for (int i = 0; i < memberValues.length; i++) {
+        actionIdToNameMap[memberValues[i]] = memberNames[i];
+        actionNameToIdMap[memberNames[i]] = memberValues[i];
+    }
+}

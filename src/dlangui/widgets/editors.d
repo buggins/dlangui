@@ -172,6 +172,12 @@ enum EditorActions : int {
 	InsertLine,
 }
 
+
+__gshared static this() {
+    // register editor action names and ids
+    registerActionEnum!EditorActions();
+}
+
 /// base for all editor widgets
 class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemActionHandler {
     protected EditableContent _content;
