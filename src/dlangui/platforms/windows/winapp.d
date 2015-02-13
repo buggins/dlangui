@@ -558,16 +558,19 @@ class Win32Window : Window {
                 action = MouseAction.ButtonDown;
                 button = MouseButton.Left;
                 pbuttonDetails = &_lbutton;
+                SetFocus(_hwnd);
                 break;
             case WM_RBUTTONDOWN:
                 action = MouseAction.ButtonDown;
                 button = MouseButton.Right;
                 pbuttonDetails = &_rbutton;
+                SetFocus(_hwnd);
                 break;
             case WM_MBUTTONDOWN:
                 action = MouseAction.ButtonDown;
                 button = MouseButton.Middle;
                 pbuttonDetails = &_mbutton;
+                SetFocus(_hwnd);
                 break;
             case WM_LBUTTONUP:
                 action = MouseAction.ButtonUp;
