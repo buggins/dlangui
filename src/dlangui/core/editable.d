@@ -605,7 +605,7 @@ class EditableContent {
             return res;
         dstring s = line(pos.line);
         int p = pos.pos;
-        if (p < 0 || p > s.length)
+        if (p < 0 || p > s.length || s.length == 0)
             return res;
         dchar leftChar = p > 0 ? s[p - 1] : 0;
         dchar rightChar = p < s.length - 1 ? s[p + 1] : 0;
