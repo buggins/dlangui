@@ -64,7 +64,7 @@ class SettingsFile {
         _setting = new Setting();
         _filename = filename;
         if (_filename) {
-            string dir = baseName(_filename);
+            string dir = dirName(_filename);
             if (load()) {
                 // loaded ok
             } else {
@@ -114,7 +114,7 @@ class SettingsFile {
         if (filename !is null)
             _filename = filename;
         assert(_filename);
-        string dir = baseName(_filename);
+        string dir = dirName(_filename);
         if (!dir.exists) {
             try {
                 mkdirRecurse(dir);
@@ -168,6 +168,16 @@ final class Setting {
     this(Setting[] v) {
         clear(SettingType.ARRAY);
         _store.array.list = v;
+    }
+
+    this(string[] v) {
+        clear(SettingType.ARRAY);
+        this.strArray = v;
+    }
+
+    this(string[string] v) {
+        clear(SettingType.ARRAY);
+        this.strMap = v;
     }
 
     /// returns true if setting has been changed
@@ -920,10 +930,6 @@ final class Setting {
     double opAssign(double value) {
         return (floating = value);
     }
-    // assign string[] value
-    string[] opAssign(string[] value) {
-        return (strArray = value);
-    }
     // assign int[] value
     int[] opAssign(int[] value) {
         return (intArray = value);
@@ -931,6 +937,10 @@ final class Setting {
     // assign string[string] value
     string[string] opAssign(string[string] value) {
         return (strMap = value);
+    }
+    // assign string[] value
+    string[] opAssign(string[] value) {
+        return (strArray = value);
     }
     // assign int[string] value
     int[string] opAssign(int[string] value) {

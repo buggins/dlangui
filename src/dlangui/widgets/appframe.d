@@ -81,7 +81,7 @@ class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
 
 
 
-    protected string _appName = "dlangui";
+    protected string _appName;
     /// override to return some identifier for app, e.g. to use as settings directory name
     @property string appCodeName() {
         return _appName;
@@ -121,18 +121,20 @@ class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
                         for (int i = 0; i < value.length; i++) {
                             string v = value[i].str;
                             Accelerator a;
-                            if (a.parse(v))
+                            if (a.parse(v)) {
+                                //Log.d("Read accelerator for action ", key, " : ", a.toString);
                                 accelerators ~= a;
-                            else
-                                Log.e("cannot parse accelerator: ", v);
+                            } else
+                                Log.e("applyShortcutsSettings: cannot parse accelerator: ", v);
                         }
                     } else {
                         string v = value.str;
                         Accelerator a;
-                        if (a.parse(v))
+                        if (a.parse(v)) {
+                            //Log.d("Read accelerator for action ", key, " : ", a.toString);
                             accelerators ~= a;
-                        else
-                            Log.e("cannot parse accelerator: ", v);
+                        } else
+                            Log.e("applyShortcutsSettings: cannot parse accelerator: ", v);
                     }
                     setActionAccelerators(actionId, accelerators);
                 }
@@ -148,7 +150,7 @@ class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
         foreach(a; actions) {
             string name = actionIdToName(a.id);
             if (name) {
-                Accelerator[] acc = findActionAccelerators(a.id);
+                const(Accelerator)[] acc = a.accelerators;
                 if (acc.length > 0) {
                     if (acc.length == 1) {
                         _shortcutSettings[name] = acc[0].toString;
@@ -212,6 +214,7 @@ class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
         super("APP_FRAME");
         layoutWidth = FILL_PARENT;
         layoutHeight = FILL_PARENT;
+        _appName = "dlangui";
         init();
     }
 
@@ -240,6 +243,11 @@ class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
         addChild(_body);
         if (_statusLine)
             addChild(_statusLine);
+        updateShortcuts();
+    }
+
+    /// override it
+    protected void updateShortcuts() {
     }
 
     /// override to handle main menu commands

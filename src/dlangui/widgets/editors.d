@@ -113,9 +113,11 @@ enum EditorActions : int {
 	
 	/// insert new line (Enter)
 	InsertNewLine,
-	/// insert new line after current position (Ctrl+Enter)
+	/// insert new line before current position (Ctrl+Enter)
 	PrependNewLine,
-	
+	/// insert new line after current position (Ctrl+Enter)
+	AppendNewLine,
+
 	/// Turn On/Off replace mode
 	ToggleReplaceMode, 
 	
@@ -177,6 +179,19 @@ __gshared static this() {
     // register editor action names and ids
     registerActionEnum!EditorActions();
 }
+
+const Action ACTION_EDITOR_INSERT_NEW_LINE = (new Action(EditorActions.InsertNewLine, KeyCode.RETURN, 0)).addAccelerator(KeyCode.RETURN, KeyFlag.Shift);
+const Action ACTION_EDITOR_PREPEND_NEW_LINE = (new Action(EditorActions.PrependNewLine, KeyCode.RETURN, KeyFlag.Control|KeyFlag.Shift));
+const Action ACTION_EDITOR_APPEND_NEW_LINE = (new Action(EditorActions.AppendNewLine, KeyCode.RETURN, KeyFlag.Control));
+const Action ACTION_EDITOR_DELETE_LINE = (new Action(EditorActions.DeleteLine, KeyCode.KEY_D, KeyFlag.Control)).addAccelerator(KeyCode.KEY_L, KeyFlag.Control);
+const Action ACTION_EDITOR_TOGGLE_REPLACE_MODE = (new Action(EditorActions.ToggleReplaceMode, KeyCode.INS, 0));
+const Action ACTION_EDITOR_SELECT_ALL = (new Action(EditorActions.SelectAll, KeyCode.KEY_A, KeyFlag.Control));
+const Action ACTION_EDITOR_TOGGLE_LINE_COMMENT = (new Action(EditorActions.ToggleLineComment, KeyCode.KEY_DIVIDE, KeyFlag.Control));
+const Action ACTION_EDITOR_TOGGLE_BLOCK_COMMENT = (new Action(EditorActions.ToggleBlockComment, KeyCode.KEY_DIVIDE, KeyFlag.Control | KeyFlag.Shift));
+
+const Action[] STD_EDITOR_ACTIONS = [ACTION_EDITOR_INSERT_NEW_LINE, ACTION_EDITOR_PREPEND_NEW_LINE, 
+        ACTION_EDITOR_APPEND_NEW_LINE, ACTION_EDITOR_DELETE_LINE, ACTION_EDITOR_TOGGLE_REPLACE_MODE, 
+        ACTION_EDITOR_SELECT_ALL, ACTION_EDITOR_TOGGLE_LINE_COMMENT, ACTION_EDITOR_TOGGLE_BLOCK_COMMENT];
 
 /// base for all editor widgets
 class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemActionHandler {
@@ -348,10 +363,6 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 			new Action(EditorActions.ScrollLineUp, KeyCode.UP, KeyFlag.Control),
 			new Action(EditorActions.ScrollLineDown, KeyCode.DOWN, KeyFlag.Control),
 
-			new Action(EditorActions.InsertNewLine, KeyCode.RETURN, 0),
-			new Action(EditorActions.InsertNewLine, KeyCode.RETURN, KeyFlag.Shift),
-			new Action(EditorActions.PrependNewLine, KeyCode.RETURN, KeyFlag.Control),
-
             // Backspace/Del
 			new Action(EditorActions.DelPrevChar, KeyCode.BACK, 0),
 			new Action(EditorActions.DelNextChar, KeyCode.DEL, 0),
@@ -376,16 +387,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
 			new Action(EditorActions.Tab, KeyCode.TAB, 0),
 			new Action(EditorActions.BackTab, KeyCode.TAB, KeyFlag.Shift),
-
-			new Action(EditorActions.ToggleReplaceMode, KeyCode.INS, 0),
-			new Action(EditorActions.SelectAll, KeyCode.KEY_A, KeyFlag.Control),
-
-			new Action(EditorActions.ToggleLineComment, KeyCode.KEY_DIVIDE, KeyFlag.Control),
-			new Action(EditorActions.ToggleBlockComment, KeyCode.KEY_DIVIDE, KeyFlag.Control | KeyFlag.Shift),
-			new Action(EditorActions.DeleteLine, KeyCode.KEY_D, KeyFlag.Control),
-			new Action(EditorActions.DeleteLine, KeyCode.KEY_L, KeyFlag.Control),
-			new Action(EditorActions.InsertLine, KeyCode.RETURN, KeyFlag.Control),
 		]);
+        acceleratorMap.add(STD_EDITOR_ACTIONS);
     }
 
 	protected MenuItem _popupMenu;
@@ -1515,6 +1518,7 @@ class EditLine : EditWidgetBase {
 		switch (a.id) {
 			case EditorActions.InsertNewLine:
 			case EditorActions.PrependNewLine:
+			case EditorActions.AppendNewLine:
 				if (editorActionListener.assigned) {
 					return editorActionListener(a);
 				}
@@ -2071,7 +2075,7 @@ class EditBox : EditWidgetBase {
                 if (_content.syntaxHighlighter && _content.syntaxHighlighter.supportsToggleLineComment && _content.syntaxHighlighter.canToggleLineComment(_selectionRange))
                     _content.syntaxHighlighter.toggleLineComment(_selectionRange, this);
                 return true;
-			case EditorActions.InsertLine:
+			case EditorActions.AppendNewLine:
                 {
                     correctCaretPos();
 					TextPosition p = _content.lineEnd(_caretPos.line);

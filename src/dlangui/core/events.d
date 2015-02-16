@@ -43,7 +43,7 @@ struct Accelerator {
 		return cast(dstring)buf;
 	}
 	/// Serializes accelerator text description
-	@property string toString() {
+	@property string toString() const {
 		char[] buf;
 		if (keyFlags & KeyFlag.Control)
 			buf ~= "Ctrl+";
@@ -246,13 +246,21 @@ class Action {
 	@property Accelerator[] accelerators() {
         // check for accelerators override in settings
         Accelerator[] res = findActionAccelerators(_id);
-        if (res)
+        if (res) {
+            //Log.d("Found accelerators ", res);
             return res;
+        }
         // return this action accelerators
 		return _accelerators;
 	}
 	/// returs const array of accelerators
 	@property const(Accelerator)[] accelerators() const {
+        // check for accelerators override in settings
+        Accelerator[] res = findActionAccelerators(_id);
+        if (res) {
+            //Log.d("Found accelerators ", res);
+            return res;
+        }
 		return _accelerators;
 	}
 	/// returns text description for first accelerator of action; null if no accelerators
@@ -1082,7 +1090,12 @@ uint parseKeyName(string name) {
 		case "Down": return KeyCode.DOWN;
 		case "Ins": return KeyCode.DEL;
 		case "Del": return KeyCode.INS;
-            // TODO: add more keys here
+		case "[": return KeyCode.KEY_BRACKETOPEN;
+		case "]": return KeyCode.KEY_BRACKETCLOSE;
+		case ",": return KeyCode.KEY_COMMA;
+		case ".": return KeyCode.KEY_PERIOD;
+		case "Backspace": return KeyCode.BACK;
+		case "Enter": return KeyCode.RETURN;
         default:
             return 0;
     }
@@ -1241,6 +1254,14 @@ string keyName(uint keyCode) {
 			return "Ins";
 		case KeyCode.DEL:
 			return "Del";
+		case KeyCode.KEY_BRACKETOPEN:
+            return "[";
+		case KeyCode.KEY_BRACKETCLOSE:
+            return "]";
+		case KeyCode.BACK:
+            return "Backspace";
+		case KeyCode.RETURN:
+            return "Enter";
 		default:
 			return format("0x%08x", keyCode);
 	}
@@ -1313,8 +1334,8 @@ void setActionAccelerators(int actionId, Accelerator[] accelerators) {
 }
 /// lookup accelerators override for action by id
 Accelerator[] findActionAccelerators(int actionId) {
-    if (auto found = actionAcceleratorsMap[actionId])
-        return found;
+    if (auto found = actionId in actionAcceleratorsMap)
+        return *found;
     return null;
 }
 /// lookup accelerators override for action by name (e.g. "EditorActions.ToggleLineComment")
