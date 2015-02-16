@@ -116,21 +116,53 @@ class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
                 if (actionId == 0) {
                     Log.e("applyShortcutsSettings: Unknown action name: ", key);
                 } else {
-                    Accelerator[] accelerators;
+                    Accelerator[] accelerators = [];
                     if (value.isArray) {
                         for (int i = 0; i < value.length; i++) {
                             string v = value[i].str;
+                            Accelerator a;
+                            if (a.parse(v))
+                                accelerators ~= a;
+                            else
+                                Log.e("cannot parse accelerator: ", v);
                         }
                     } else {
                         string v = value.str;
+                        Accelerator a;
+                        if (a.parse(v))
+                            accelerators ~= a;
+                        else
+                            Log.e("cannot parse accelerator: ", v);
                     }
-                    // TODO: parse accelerators
                     setActionAccelerators(actionId, accelerators);
                 }
             }
             return true;
         }
         return false;
+    }
+
+    /// set shortcut settings from actions and save to file - useful for initial settings file version creation
+    bool saveShortcutsSettings(const(Action)[] actions) {
+        shortcutSettings.clear();
+        foreach(a; actions) {
+            string name = actionIdToName(a.id);
+            if (name) {
+                Accelerator[] acc = findActionAccelerators(a.id);
+                if (acc.length > 0) {
+                    if (acc.length == 1) {
+                        _shortcutSettings[name] = acc[0].toString;
+                    } else {
+                        string[] array;
+                        foreach(accel; acc) {
+                            array ~= accel.toString;
+                        }
+                        _shortcutSettings[name] = array;
+                    }
+                }
+            }
+        }
+        return shortcutSettings.save();
     }
 
     /// timer handler

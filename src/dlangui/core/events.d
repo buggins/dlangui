@@ -42,6 +42,47 @@ struct Accelerator {
 		buf ~= toUTF32(keyName(keyCode));
 		return cast(dstring)buf;
 	}
+	/// Serializes accelerator text description
+	@property string toString() {
+		char[] buf;
+		if (keyFlags & KeyFlag.Control)
+			buf ~= "Ctrl+";
+		if (keyFlags & KeyFlag.Alt)
+			buf ~= "Alt+";
+		if (keyFlags & KeyFlag.Shift)
+			buf ~= "Shift+";
+		buf ~= keyName(keyCode);
+		return cast(string)buf;
+	}
+    /// parse accelerator from string
+    bool parse(string s) {
+        keyCode = 0;
+        keyFlags = 0;
+        s = s.strip;
+        for(;;) {
+            bool flagFound = false;
+            if (s.startsWith("Ctrl+")) {
+                keyFlags |= KeyFlag.Control;
+                s = s[5 .. $];
+                flagFound = true;
+            }
+            if (s.startsWith("Alt+")) {
+                keyFlags |= KeyFlag.Alt;
+                s = s[4 .. $];
+                flagFound = true;
+            }
+            if (s.startsWith("Shift+")) {
+                keyFlags |= KeyFlag.Shift;
+                s = s[6 .. $];
+                flagFound = true;
+            }
+            if (!flagFound)
+                break;
+            s = s.strip;
+        }
+        keyCode = parseKeyName(s);
+        return keyCode != 0;
+    }
 }
 
 /// use to for requesting of action state (to enable/disable, hide, get check status, etc)
@@ -203,6 +244,11 @@ class Action {
 	}
 	/// returs array of accelerators
 	@property Accelerator[] accelerators() {
+        // check for accelerators override in settings
+        Accelerator[] res = findActionAccelerators(_id);
+        if (res)
+            return res;
+        // return this action accelerators
 		return _accelerators;
 	}
 	/// returs const array of accelerators
@@ -964,6 +1010,81 @@ class ScrollEvent {
         if (_position != newPosition)
             position = newPosition;
         return position;
+    }
+}
+
+/** 
+Converts key name to KeyCode enum value
+For unknown key code, returns 0
+*/
+uint parseKeyName(string name) {
+	switch (name) {
+		case "A": case "a": return KeyCode.KEY_A;
+		case "B": case "b": return KeyCode.KEY_B;
+		case "C": case "c": return KeyCode.KEY_C;
+		case "D": case "d": return KeyCode.KEY_D;
+		case "E": case "e": return KeyCode.KEY_E;
+		case "F": case "f": return KeyCode.KEY_F;
+		case "G": case "g": return KeyCode.KEY_G;
+		case "H": case "h": return KeyCode.KEY_H;
+		case "I": case "i": return KeyCode.KEY_I;
+		case "J": case "j": return KeyCode.KEY_J;
+		case "K": case "k": return KeyCode.KEY_K;
+		case "L": case "l": return KeyCode.KEY_L;
+		case "M": case "m": return KeyCode.KEY_M;
+		case "N": case "n": return KeyCode.KEY_N;
+		case "O": case "o": return KeyCode.KEY_O;
+		case "P": case "p": return KeyCode.KEY_P;
+		case "Q": case "q": return KeyCode.KEY_Q;
+		case "R": case "r": return KeyCode.KEY_R;
+		case "S": case "s": return KeyCode.KEY_S;
+		case "T": case "t": return KeyCode.KEY_T;
+		case "U": case "u": return KeyCode.KEY_U;
+		case "V": case "v": return KeyCode.KEY_V;
+		case "W": case "w": return KeyCode.KEY_W;
+		case "X": case "x": return KeyCode.KEY_X;
+		case "Y": case "y": return KeyCode.KEY_Y;
+		case "Z": case "z": return KeyCode.KEY_Z;
+		case "F1": return KeyCode.F1;
+		case "F2": return KeyCode.F2;
+		case "F3": return KeyCode.F3;
+		case "F4": return KeyCode.F4;
+		case "F5": return KeyCode.F5;
+		case "F6": return KeyCode.F6;
+		case "F7": return KeyCode.F7;
+		case "F8": return KeyCode.F8;
+		case "F9": return KeyCode.F9;
+		case "F10": return KeyCode.F10;
+		case "F11": return KeyCode.F11;
+		case "F12": return KeyCode.F12;
+		case "F13": return KeyCode.F13;
+		case "F14": return KeyCode.F14;
+		case "F15": return KeyCode.F15;
+		case "F16": return KeyCode.F16;
+		case "F17": return KeyCode.F17;
+		case "F18": return KeyCode.F18;
+		case "F19": return KeyCode.F19;
+		case "F20": return KeyCode.F20;
+		case "F21": return KeyCode.F21;
+		case "F22": return KeyCode.F22;
+		case "F23": return KeyCode.F23;
+		case "F24": return KeyCode.F24;
+		case "/": return KeyCode.KEY_DIVIDE;
+		case "*": return KeyCode.KEY_MULTIPLY;
+		case "Tab": return KeyCode.TAB;
+		case "PageUp": return KeyCode.PAGEUP;
+		case "PageDown": return KeyCode.PAGEDOWN;
+		case "Home": return KeyCode.HOME;
+		case "End": return KeyCode.END;
+		case "Left": return KeyCode.LEFT;
+		case "Right": return KeyCode.RIGHT;
+		case "Up": return KeyCode.UP;
+		case "Down": return KeyCode.DOWN;
+		case "Ins": return KeyCode.DEL;
+		case "Del": return KeyCode.INS;
+            // TODO: add more keys here
+        default:
+            return 0;
     }
 }
 
