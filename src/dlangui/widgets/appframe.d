@@ -23,6 +23,9 @@ import dlangui.widgets.menu;
 import dlangui.widgets.layouts;
 import dlangui.widgets.statusline;
 import dlangui.widgets.toolbars;
+import dlangui.core.files;
+import dlangui.core.settings;
+import std.path;
 
 /// to update status for background operation in AppFrame
 class BackgroundOperationWatcher {
@@ -75,6 +78,60 @@ class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
     protected Widget _body;
     protected BackgroundOperationWatcher _currentBackgroundOperation;
     protected ulong _currentBackgroundOperationTimer;
+
+
+
+    protected string _appName = "dlangui";
+    /// override to return some identifier for app, e.g. to use as settings directory name
+    @property string appCodeName() {
+        return _appName;
+    }
+    /// override to return some identifier for app, e.g. to use as settings directory name
+    @property AppFrame appCodeName(string name) {
+        _appName = name;
+        return this;
+    }
+
+    protected string _settingsDir;
+    /// Application settings directory; by default, returns .appcodename directory in user's home directory (e.g. /home/user/.appcodename, C:\Users\User\AppData\Roaming\.appcodename); override to change it
+    @property string settingsDir() {
+        if (!_settingsDir)
+            _settingsDir = appDataPath("." ~ appCodeName);
+        return _settingsDir;
+    }
+
+    protected SettingsFile _shortcutSettings;
+    /// returns shortcuts settings object
+    @property SettingsFile shortcutSettings() {
+        if (!_shortcutSettings) {
+            _shortcutSettings = new SettingsFile(buildNormalizedPath(settingsDir, "shortcuts.json"));
+        }
+        return _shortcutSettings;
+    }
+
+    bool applyShortcutsSettings() {
+        if (shortcutSettings.loaded) {
+            foreach(key, value; _shortcutSettings.map) {
+                int actionId = actionNameToId(key);
+                if (actionId == 0) {
+                    Log.e("applyShortcutsSettings: Unknown action name: ", key);
+                } else {
+                    Accelerator[] accelerators;
+                    if (value.isArray) {
+                        for (int i = 0; i < value.length; i++) {
+                            string v = value[i].str;
+                        }
+                    } else {
+                        string v = value.str;
+                    }
+                    // TODO: parse accelerators
+                    setActionAccelerators(actionId, accelerators);
+                }
+            }
+            return true;
+        }
+        return false;
+    }
 
     /// timer handler
     override bool onTimer(ulong timerId) {

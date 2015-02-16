@@ -32,6 +32,9 @@ import std.algorithm : equal;
 import std.conv : to;
 import std.utf : encode;
 import std.math : pow;
+import std.file;
+import std.path;
+import std.datetime : SysTime;
 
 /// setting types - same as in std.json
 enum SettingType {
@@ -44,6 +47,89 @@ enum SettingType {
     TRUE,
     FALSE,
     NULL
+}
+
+/// Settings object whith file information
+class SettingsFile {
+    protected Setting _setting;
+    protected string _filename;
+    protected SysTime _lastModificationTime;
+    protected bool _loaded;
+
+    @property Setting setting() { return _setting; }
+    alias setting this;
+
+    /// create settings file object; if filename is provided, attempts to load settings from file
+    this(string filename = null) {
+        _setting = new Setting();
+        _filename = filename;
+        if (_filename) {
+            string dir = baseName(_filename);
+            if (load()) {
+                // loaded ok
+            } else {
+            }
+        }
+    }
+
+    @property bool loaded() {
+        return _loaded;
+    }
+
+    /// filename
+    @property string filename() { return _filename; }
+    /// filename
+    @property void filename(string fn) { _filename = fn; }
+
+    protected bool updateModificationTime() {
+        if (_filename is null)
+            return false;
+        try {
+            if (!_filename.exists || !_filename.isFile)
+                return false;
+            SysTime accTime;
+            getTimes(_filename, accTime, _lastModificationTime);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /// load settings from file
+    bool load(string filename = null) {
+        if (filename !is null)
+            _filename = filename;
+        assert(_filename !is null);
+        if (updateModificationTime()) {
+            bool res = _setting.load(_filename);
+            if (res)
+                _loaded = true;
+            return res;
+        }
+        return false;
+    }
+
+    /// save settings to file
+    bool save(string filename = null, bool pretty = true) {
+        if (filename !is null)
+            _filename = filename;
+        assert(_filename);
+        string dir = baseName(_filename);
+        if (!dir.exists) {
+            try {
+                mkdirRecurse(dir);
+            } catch (Exception e) {
+                return false;
+            }
+        } else if (!dir.isDir) {
+            Log.d("", dir, " is file");
+            return false;
+        }
+        bool res = _setting.save(_filename, pretty);
+        res = updateModificationTime() || res;
+        return res;
+    }
+
 }
 
 /// setting object
@@ -93,6 +179,7 @@ final class Setting {
     @property void changed(bool changed) {
         _changed = changed;
     }
+
 
     /// array
     private static struct SettingArray {
@@ -216,7 +303,18 @@ final class Setting {
         return v;
     }
 
+    /// returns SettingType of setting
     @property SettingType type() const { return _type; }
+
+    @property bool isString() { return _type == SettingType.STRING; }
+    @property bool isInteger() { return _type == SettingType.INTEGER; }
+    @property bool isUinteger() { return _type == SettingType.UINTEGER; }
+    @property bool isFloating() { return _type == SettingType.FLOAT; }
+    @property bool isObject() { return _type == SettingType.OBJECT; }
+    @property bool isArray() { return _type == SettingType.ARRAY; }
+    @property bool isBoolean() { return _type == SettingType.TRUE || _type == SettingType.FALSE; }
+    @property bool isNull() { return _type == SettingType.NULL; }
+
     /// clear value and set new type
     void clear(SettingType newType) {
         if (newType != _type) {
@@ -1289,9 +1387,15 @@ final class Setting {
         }
     }
 
-    void save(string filename, bool pretty = true) {
-        import std.file;
-        write(filename, toJSON(pretty));
+    /// save to file
+    bool save(string filename, bool pretty = true) {
+        try {
+            write(filename, toJSON(pretty));
+            return true;
+        } catch (Exception e) {
+            Log.e("exception while saving settings file: ", e);
+            return false;
+        }
     }
 
     private static struct JsonParser {
@@ -1631,7 +1735,6 @@ final class Setting {
 
     bool load(string filename) {
         try {
-            import std.file;
             string s = readText(filename);
             parseJSON(s);
             return true;
