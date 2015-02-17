@@ -1088,14 +1088,15 @@ uint parseKeyName(string name) {
 		case "Right": return KeyCode.RIGHT;
 		case "Up": return KeyCode.UP;
 		case "Down": return KeyCode.DOWN;
-		case "Ins": return KeyCode.DEL;
-		case "Del": return KeyCode.INS;
+		case "Ins": return KeyCode.INS;
+		case "Del": return KeyCode.DEL;
 		case "[": return KeyCode.KEY_BRACKETOPEN;
 		case "]": return KeyCode.KEY_BRACKETCLOSE;
 		case ",": return KeyCode.KEY_COMMA;
 		case ".": return KeyCode.KEY_PERIOD;
 		case "Backspace": return KeyCode.BACK;
 		case "Enter": return KeyCode.RETURN;
+		case "Space": return KeyCode.SPACE;
         default:
             return 0;
     }
@@ -1260,6 +1261,8 @@ string keyName(uint keyCode) {
             return "]";
 		case KeyCode.BACK:
             return "Backspace";
+		case KeyCode.SPACE:
+            return "Space";
 		case KeyCode.RETURN:
             return "Enter";
 		default:
