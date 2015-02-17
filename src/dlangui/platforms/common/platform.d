@@ -282,6 +282,12 @@ class Window {
     /// set handler for closing of app (it must return true to allow immediate close, false to cancel close or close window later)
     @property Window onCanClose(bool delegate() handler) { _onCanClose = handler; return this; }
 
+    protected void delegate() _onClose;
+    /// get handler for closing of window
+    @property void delegate() onClose() { return _onClose; }
+    /// set handler for closing of window
+    @property Window onClose(void delegate() handler) { _onClose = handler; return this; }
+
     /// calls onCanClose handler if set to check if system may close window
     bool handleCanClose() {
         if (!_onCanClose)
@@ -383,6 +389,8 @@ class Window {
 	}
 	~this() {
 		debug Log.d("Destroying window");
+        if (_onClose)
+            _onClose();
         if (_tooltip.popup) {
             destroy(_tooltip.popup);
             _tooltip.popup = null;
