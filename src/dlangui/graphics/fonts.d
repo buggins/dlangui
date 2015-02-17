@@ -738,7 +738,7 @@ struct glyph_gamma_table(int maxv = 65)
         return _map[src];
     }
 private:
-    ubyte _map[maxv];
+    ubyte[maxv] _map;
     double _gamma = 1.0;
 };
 

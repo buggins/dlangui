@@ -100,9 +100,9 @@ struct lcd_distribution_lut(int maxv = 65)
     }
 
 private:
-    ubyte m_primary[maxv];
-    ubyte m_secondary[maxv];
-    ubyte m_tertiary[maxv];
+    ubyte[maxv] m_primary;
+    ubyte[maxv] m_secondary;
+    ubyte[maxv] m_tertiary;
 };
 
 private __gshared lcd_distribution_lut!65 lut;

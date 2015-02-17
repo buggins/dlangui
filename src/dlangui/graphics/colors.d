@@ -53,10 +53,10 @@ uint blendARGB(uint dst, uint src, uint alpha) {
     return (r << 16) | (g << 8) | b;
 }
 
-//immutable int COMPONENT_OFFSET_BGR[3] = [2, 1, 0];
-immutable int COMPONENT_OFFSET_BGR[3] = [2, 1, 0];
-//immutable int COMPONENT_OFFSET_BGR[3] = [1, 2, 0];
-immutable int COMPONENT_OFFSET_RGB[3] = [0, 1, 2];
+//immutable int[3] COMPONENT_OFFSET_BGR = [2, 1, 0];
+immutable int[3] COMPONENT_OFFSET_BGR = [2, 1, 0];
+//immutable int[3] COMPONENT_OFFSET_BGR = [1, 2, 0];
+immutable int[3] COMPONENT_OFFSET_RGB = [0, 1, 2];
 immutable int COMPONENT_OFFSET_ALPHA = 3;
 int subpixelComponentIndex(int x0, SubpixelRenderingMode mode) {
     switch (mode) {
