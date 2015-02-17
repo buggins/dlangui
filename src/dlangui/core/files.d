@@ -339,3 +339,32 @@ string[] splitPath(string path) {
 	}
 	return res;
 }
+
+/// for executable name w/o path, find absolute path to executable
+string findExecutablePath(string executableName) {
+    import std.algorithm;
+    import std.string;
+    version (Windows) {
+        if (!executableName.endsWith(".exe"))
+            executableName = executableName ~ ".exe";
+    }
+    string currentExeDir = dirName(thisExePath());
+    string inCurrentExeDir = absolutePath(buildNormalizedPath(currentExeDir, executableName));
+    if (exists(inCurrentExeDir) && isFile(inCurrentExeDir))
+        return inCurrentExeDir; // found in current directory
+    string pathVariable = environment.get("PATH");
+    if (!pathVariable)
+        return null;
+    string[] paths;
+    version(Windows) {
+        paths = pathVariable.split(";");
+    } else {
+        paths = pathVariable.split(":");
+    }
+    foreach(path; paths) {
+        string pathname = absolutePath(buildNormalizedPath(path, executableName));
+        if (exists(pathname) && isFile(pathname))
+            return pathname;
+    }
+    return null;
+}
