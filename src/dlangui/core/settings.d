@@ -1227,6 +1227,12 @@ final class Setting {
             return item.strDef(defValue);
         return defValue;
     }
+    /// returns string array item by key from map, returns null if not found
+    string[] getStringArray(string key) {
+        if (auto item = opIndex(key))
+            return item.strArray();
+        return null;
+    }
 
     /// serialize to json
     string toJSON(bool pretty = false) {
