@@ -863,7 +863,8 @@ int DLANGUIWinMain(void* hInstance, void* hPrevInstance,
     {
         Runtime.initialize();
         result = myWinMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
-        Runtime.terminate();
+        // TODO: fix hanging on multithreading app
+        //Runtime.terminate();
     }
     catch (Throwable e) // catch any uncaught exceptions
     {
