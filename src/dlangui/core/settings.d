@@ -104,6 +104,7 @@ class SettingsFile {
             bool res = _setting.load(_filename);
             if (res)
                 _loaded = true;
+            afterLoad();
             return res;
         }
         return false;
@@ -127,9 +128,21 @@ class SettingsFile {
         }
         bool res = _setting.save(_filename, pretty);
         res = updateModificationTime() || res;
+        afterSave();
         return res;
     }
 
+    /// override to add default values if missing
+    void updateDefaults() {
+    }
+
+    /// override to do something after loading - e.g. set defaults
+    void afterLoad() {
+    }
+
+    /// override to do something after saving
+    void afterSave() {
+    }
 }
 
 /// setting object
@@ -1016,7 +1029,7 @@ final class Setting {
                     return null;
                 s = new Setting();
                 s.clear(SettingType.OBJECT);
-                this[part1] = s;
+                this[path] = s;
             }
             return s;
         }
