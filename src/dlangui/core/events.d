@@ -279,9 +279,9 @@ class Action {
         }
         dstring accel = acceleratorText;
         if (accel.length > 0) {
-            buf ~= " (";
+            buf ~= " ("d;
             buf ~= accel;
-            buf ~= ")";
+            buf ~= ")"d;
         }
         return cast(dstring)buf;
     }
