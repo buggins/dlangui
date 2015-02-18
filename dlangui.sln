@@ -18,9 +18,12 @@ EndProject
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dlangide", "..\dlangide\dlangide.visualdproj", "{66B1B701-6AC9-41F5-8DB4-5CB161321977}"
 	ProjectSection(ProjectDependencies) = postProject
 		{5FF17402-9997-4D0E-8068-6D84B8769D98} = {5FF17402-9997-4D0E-8068-6D84B8769D98}
+		{C4F86459-686F-4841-A6BE-7FCC38DC47FE} = {C4F86459-686F-4841-A6BE-7FCC38DC47FE}
 	EndProjectSection
 EndProject
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "tetris", "examples\tetris\tetris.visualdproj", "{68C78CAD-6176-4C60-B4A5-520475C26D56}"
+EndProject
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "libdparse", "..\dlangide\libdparse\libdparse.visualdproj", "{C4F86459-686F-4841-A6BE-7FCC38DC47FE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,6 +51,10 @@ Global
 		{68C78CAD-6176-4C60-B4A5-520475C26D56}.Debug|Win32.Build.0 = Debug|Win32
 		{68C78CAD-6176-4C60-B4A5-520475C26D56}.Release|Win32.ActiveCfg = Release|Win32
 		{68C78CAD-6176-4C60-B4A5-520475C26D56}.Release|Win32.Build.0 = Release|Win32
+		{C4F86459-686F-4841-A6BE-7FCC38DC47FE}.Debug|Win32.ActiveCfg = Debug|Win32
+		{C4F86459-686F-4841-A6BE-7FCC38DC47FE}.Debug|Win32.Build.0 = Debug|Win32
+		{C4F86459-686F-4841-A6BE-7FCC38DC47FE}.Release|Win32.ActiveCfg = Release|Win32
+		{C4F86459-686F-4841-A6BE-7FCC38DC47FE}.Release|Win32.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
