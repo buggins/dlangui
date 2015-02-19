@@ -503,8 +503,10 @@ class EditableContent {
 
     @property EditableContent syntaxHighlighter(SyntaxHighlighter syntaxHighlighter) {
         _syntaxHighlighter = syntaxHighlighter;
-        _syntaxHighlighter.content = this;
-        updateTokenProps(0, cast(int)_lines.length);
+        if (_syntaxHighlighter) {
+            _syntaxHighlighter.content = this;
+            updateTokenProps(0, cast(int)_lines.length);
+        }
         return this;
     }
 
