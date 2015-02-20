@@ -1689,6 +1689,8 @@ class EditBox : EditWidgetBase {
         if (visibility == Visibility.Gone) {
             return;
         }
+        if (rc != _pos)
+            _contentChanged = true;
         super.layout(rc);
         if (_contentChanged) {
             measureVisibleText();
