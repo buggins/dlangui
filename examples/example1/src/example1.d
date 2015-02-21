@@ -15,7 +15,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
  */
 module main;
 
-import dlangui.all;
+import dlangui;
 import dlangui.dialogs.dialog;
 import dlangui.dialogs.filedlg;
 import dlangui.dialogs.msgbox;

@@ -217,7 +217,7 @@ Hello World
 --------------------------------------------------------------
 
 	// myproject.d
-	import dlangui.all;
+	import dlangui;
 	mixin APP_ENTRY_POINT;
 
 	/// entry point for dlangui based application
@@ -239,10 +239,10 @@ Sample dub.json:
 	{
 	    "name": "myproject",
 	    "description": "sample DLangUI project",
-	
+
 	    "targetPath": "bin",
 	    "targetType": "executable",
-	
+
 	    "dependencies": {
 	        "dlangui": "~master"
 	    }
