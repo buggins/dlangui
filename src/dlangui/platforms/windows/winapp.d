@@ -751,7 +751,7 @@ class Win32Platform : Platform {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
         }
-        return msg.wParam;
+        return cast(int)msg.wParam;
     }
     private Win32Window[ulong] _windowMap;
     /// add window to window map
@@ -836,7 +836,7 @@ class Win32Platform : Platform {
         EmptyClipboard();
         wstring w = toUTF16(text);
         HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE, 
-                           (w.length + 1) * TCHAR.sizeof); 
+                           cast(uint)((w.length + 1) * TCHAR.sizeof)); 
         if (hglbCopy == NULL) { 
             CloseClipboard(); 
             return; 
@@ -1151,14 +1151,14 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_SYSKEYUP:
 			if (window !is null) {
                 int repeatCount = lParam & 0xFFFF;
-				if (window.onKey(message == WM_KEYDOWN || message == WM_SYSKEYDOWN ? KeyAction.KeyDown : KeyAction.KeyUp, wParam, repeatCount, 0, message == WM_SYSKEYUP || message == WM_SYSKEYDOWN))
+				if (window.onKey(message == WM_KEYDOWN || message == WM_SYSKEYDOWN ? KeyAction.KeyDown : KeyAction.KeyUp, cast(uint)wParam, repeatCount, 0, message == WM_SYSKEYUP || message == WM_SYSKEYDOWN))
                     return 0; // processed
             }
             break;
         case WM_UNICHAR:
 			if (window !is null) {
                 int repeatCount = lParam & 0xFFFF;
-				if (window.onKey(KeyAction.Text, wParam, repeatCount, wParam == UNICODE_NOCHAR ? 0 : wParam))
+				if (window.onKey(KeyAction.Text, cast(uint)wParam, repeatCount, wParam == UNICODE_NOCHAR ? 0 : cast(uint)wParam))
                     return 1; // processed
                 return 1;
             }
@@ -1166,7 +1166,7 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_CHAR:
 			if (window !is null) {
                 int repeatCount = lParam & 0xFFFF;
-				if (window.onKey(KeyAction.Text, wParam, repeatCount, wParam == UNICODE_NOCHAR ? 0 : wParam))
+				if (window.onKey(KeyAction.Text, cast(uint)wParam, repeatCount, wParam == UNICODE_NOCHAR ? 0 : cast(uint)wParam))
                     return 1; // processed
                 return 1;
             }
