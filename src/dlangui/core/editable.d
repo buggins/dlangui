@@ -857,6 +857,31 @@ class EditableContent {
         return TextRange(TextPosition(lineIndex, 0), lineIndex < _lines.length - 1 ? lineBegin(lineIndex + 1) : lineEnd(lineIndex));
 	}
 
+    /// find nearest next tab position
+    int nextTab(int pos) {
+        return (pos + tabSize) / tabSize * tabSize;
+    }
+
+    /// returns spaces/tabs for filling from the beginning of line to specified position
+    dstring fillSpace(int pos) {
+        dchar[] buf;
+        int x = 0;
+        while (x + tabSize <= pos) {
+            if (useSpacesForTabs) {
+                for (int i = 0; i < tabSize; i++)
+                    buf ~= ' ';
+            } else {
+                buf ~= '\t';
+            }
+            x += tabSize;
+        }
+        while (x < pos) {
+            buf ~= ' ';
+            x++;
+        }
+        return cast(dstring)buf;
+    }
+
     /// measures line non-space start and end positions
     TextLineMeasure measureLine(int lineIndex) {
         TextLineMeasure res;
