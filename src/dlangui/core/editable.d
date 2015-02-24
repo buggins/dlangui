@@ -436,12 +436,12 @@ alias TokenProp = ubyte;
 alias TokenPropString = TokenProp[];
 
 /// interface for custom syntax highlight
-interface SyntaxHighlighter {
+interface SyntaxSupport {
 
     /// returns editable content
     @property EditableContent content();
     /// set editable content
-    @property SyntaxHighlighter content(EditableContent content);
+    @property SyntaxSupport content(EditableContent content);
 
     /// categorize characters in content by token types
     void updateHighlight(dstring[] lines, TokenPropString[] props, int changeStartLine, int changeEndLine);
@@ -495,16 +495,16 @@ class EditableContent {
 
     protected UndoBuffer _undoBuffer;
 
-    protected SyntaxHighlighter _syntaxHighlighter;
+    protected SyntaxSupport _syntaxSupport;
 
-    @property SyntaxHighlighter syntaxHighlighter() {
-        return _syntaxHighlighter;
+    @property SyntaxSupport syntaxSupport() {
+        return _syntaxSupport;
     }
 
-    @property EditableContent syntaxHighlighter(SyntaxHighlighter syntaxHighlighter) {
-        _syntaxHighlighter = syntaxHighlighter;
-        if (_syntaxHighlighter) {
-            _syntaxHighlighter.content = this;
+    @property EditableContent syntaxSupport(SyntaxSupport syntaxSupport) {
+        _syntaxSupport = syntaxSupport;
+        if (_syntaxSupport) {
+            _syntaxSupport.content = this;
             updateTokenProps(0, cast(int)_lines.length);
         }
         return this;
@@ -516,7 +516,7 @@ class EditableContent {
 
     /// returns true if content has syntax highlight handler set
     @property bool hasSyntaxHighlight() {
-        return _syntaxHighlighter !is null;
+        return _syntaxSupport !is null;
     }
 
     protected bool _readOnly;
@@ -656,9 +656,9 @@ class EditableContent {
     }
 
     bool findMatchedBraces(TextPosition p, out TextRange range) {
-        if (!_syntaxHighlighter)
+        if (!_syntaxSupport)
             return false;
-        TextPosition p2 = _syntaxHighlighter.findPairedBracket(p);
+        TextPosition p2 = _syntaxSupport.findPairedBracket(p);
         if (p == p2)
             return false;
         if (p < p2) {
@@ -673,8 +673,8 @@ class EditableContent {
 
     protected void updateTokenProps(int startLine, int endLine) {
         clearTokenProps(startLine, endLine);
-        if (_syntaxHighlighter) {
-            _syntaxHighlighter.updateHighlight(_lines, _tokenProps, startLine, endLine);
+        if (_syntaxSupport) {
+            _syntaxSupport.updateHighlight(_lines, _tokenProps, startLine, endLine);
         }
     }
 

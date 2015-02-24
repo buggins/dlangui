@@ -920,17 +920,17 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 	override bool handleActionStateRequest(const Action a) {
 		switch (a.id) {
 			case EditorActions.ToggleBlockComment:
-                if (!_content.syntaxHighlighter || !_content.syntaxHighlighter.supportsToggleBlockComment)
+                if (!_content.syntaxSupport || !_content.syntaxSupport.supportsToggleBlockComment)
                     a.state = ACTION_STATE_INVISIBLE;
-                else if (enabled && _content.syntaxHighlighter.canToggleBlockComment(_selectionRange))
+                else if (enabled && _content.syntaxSupport.canToggleBlockComment(_selectionRange))
                     a.state = ACTION_STATE_ENABLED;
                 else
                     a.state = ACTION_STATE_DISABLE;
                 return true;
 			case EditorActions.ToggleLineComment:
-                if (!_content.syntaxHighlighter || !_content.syntaxHighlighter.supportsToggleLineComment)
+                if (!_content.syntaxSupport || !_content.syntaxSupport.supportsToggleLineComment)
                     a.state = ACTION_STATE_INVISIBLE;
-                else if (enabled && _content.syntaxHighlighter.canToggleLineComment(_selectionRange))
+                else if (enabled && _content.syntaxSupport.canToggleLineComment(_selectionRange))
                     a.state = ACTION_STATE_ENABLED;
                 else
                     a.state = ACTION_STATE_DISABLE;
@@ -2070,12 +2070,12 @@ class EditBox : EditWidgetBase {
                 }
                 return true;
 			case EditorActions.ToggleBlockComment:
-                if (_content.syntaxHighlighter && _content.syntaxHighlighter.supportsToggleBlockComment && _content.syntaxHighlighter.canToggleBlockComment(_selectionRange))
-                    _content.syntaxHighlighter.toggleBlockComment(_selectionRange, this);
+                if (_content.syntaxSupport && _content.syntaxSupport.supportsToggleBlockComment && _content.syntaxSupport.canToggleBlockComment(_selectionRange))
+                    _content.syntaxSupport.toggleBlockComment(_selectionRange, this);
                 return true;
 			case EditorActions.ToggleLineComment:
-                if (_content.syntaxHighlighter && _content.syntaxHighlighter.supportsToggleLineComment && _content.syntaxHighlighter.canToggleLineComment(_selectionRange))
-                    _content.syntaxHighlighter.toggleLineComment(_selectionRange, this);
+                if (_content.syntaxSupport && _content.syntaxSupport.supportsToggleLineComment && _content.syntaxSupport.canToggleLineComment(_selectionRange))
+                    _content.syntaxSupport.toggleLineComment(_selectionRange, this);
                 return true;
 			case EditorActions.AppendNewLine:
                 {

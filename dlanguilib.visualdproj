@@ -395,7 +395,7 @@
      <File path="src\dlangui\widgets\widget.d" />
      <File path="src\dlangui\widgets\winframe.d" />
     </Folder>
-    <File path="src\dlangui\all.d" />
+    <File path="src\dlangui\package.d" />
    </Folder>
   </Folder>
  </Folder>
