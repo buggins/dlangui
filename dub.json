@@ -35,7 +35,7 @@
 
     "dependencies": {
 	"derelict-gl3": ">=1.0.12",
-	"dlib": ">=0.4.1",
+	"dlib": "~master",
 	"derelict-ft": ">=1.0.0",
 	"derelict-sdl2": ">=1.9.1"
     },
