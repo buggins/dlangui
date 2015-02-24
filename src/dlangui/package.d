@@ -7,7 +7,7 @@ Synopsis:
 
 ----
 // helloworld
-import dlangui.all;
+import dlangui;
 // required in one of modules
 mixin APP_ENTRY_POINT;
 
@@ -44,7 +44,7 @@ Copyright: Vadim Lopatin, 2014
 License:   Boost License 1.0
 Authors:   Vadim Lopatin, coolreader.org@gmail.com
  */
-module dlangui.all;
+module dlangui;
 
 public import dlangui.core.logger;
 public import dlangui.core.types;

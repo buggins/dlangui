@@ -2,7 +2,7 @@ module gui;
 
 import model;
 
-import dlangui.all;
+import dlangui;
 
 /// game action codes
 enum TetrisAction : int {
@@ -21,7 +21,7 @@ const Action ACTION_FAST_DOWN   = (new Action(TetrisAction.FastDown,  KeyCode.SP
 const Action ACTION_PAUSE       = (new Action(TetrisAction.Pause,     KeyCode.ESCAPE)).addAccelerator(KeyCode.PAUSE).iconId("pause");
 const Action ACTION_LEVEL_UP    = (new Action(TetrisAction.LevelUp,   KeyCode.ADD)).addAccelerator(KeyCode.INS).iconId("levelup");
 
-const Action[] CUP_ACTIONS = [ACTION_PAUSE,     ACTION_ROTATE,      ACTION_LEVEL_UP, 
+const Action[] CUP_ACTIONS = [ACTION_PAUSE,     ACTION_ROTATE,      ACTION_LEVEL_UP,
                               ACTION_MOVE_LEFT, ACTION_FAST_DOWN,   ACTION_MOVE_RIGHT];
 
 /// about dialog

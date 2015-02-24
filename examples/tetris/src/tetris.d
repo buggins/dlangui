@@ -15,7 +15,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
  */
 module main;
 
-import dlangui.all;
+import dlangui;
 import model;
 import gui;
 
