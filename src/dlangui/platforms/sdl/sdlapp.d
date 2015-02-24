@@ -1255,6 +1255,7 @@ version (Windows) {
 		ft.registerFonts("/usr/share/fonts/truetype/dejavu/");
 		ft.registerFonts("/usr/share/fonts/TTF/");
 		ft.registerFonts("/usr/share/fonts/dejavu/");
+		ft.registerFonts("/usr/share/fonts/truetype/ttf-dejavu/"); // let it compile on Debian Wheezy
         version(OSX) {
             ft.registerFont("/Library/Fonts/Arial.ttf", FontFamily.SansSerif, "Arial", false, FontWeight.Normal);
             ft.registerFont("/Library/Fonts/Arial Bold.ttf", FontFamily.SansSerif, "Arial", false, FontWeight.Bold);
