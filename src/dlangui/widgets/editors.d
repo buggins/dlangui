@@ -590,6 +590,19 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return this;
     }
 
+    /// true if smart indents are supported
+    @property bool supportsSmartIndents() { return _content.supportsSmartIndents; }
+    /// true if smart indents are enabled
+    @property bool smartIndents() { return _content.smartIndents; }
+    /// set smart indents enabled flag
+    @property EditWidgetBase smartIndents(bool enabled) { _content.smartIndents = enabled; return this; }
+
+    /// true if smart indents are enabled
+    @property bool smartIndentsAfterPaste() { return _content.smartIndentsAfterPaste; }
+    /// set smart indents enabled flag
+    @property EditWidgetBase smartIndentsAfterPaste(bool enabled) { _content.smartIndentsAfterPaste = enabled; return this; }
+
+
     /// editor content object
     @property EditableContent content() {
         return _content;
@@ -627,11 +640,19 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected void updateMaxLineWidth() {
     }
 
+    protected void processSmartIndent(EditOperation operation) {
+        if (!supportsSmartIndents)
+            return;
+        if (!smartIndents && !smartIndentsAfterPaste)
+            return;
+        _content.syntaxSupport.applySmartIndent(operation, this);
+    }
+
 	override void onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source) {
         //Log.d("onContentChange rangeBefore=", rangeBefore, " rangeAfter=", rangeAfter, " text=", operation.content);
+        _contentChanged = true;
         if (source is this) {
             if (operation.action == EditAction.ReplaceContent) {
-                _contentChanged = true;
                 // fully replaced, e.g., loaded from file or text property is assigned
 		        _caretPos = rangeAfter.end;
                 _selectionRange.start = _caretPos;
@@ -645,7 +666,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             } else if (operation.action == EditAction.SaveContent) {
                 // saved
             } else {
-                _contentChanged = true;
+                // modified
                 _caretPos = rangeAfter.end;
                 _selectionRange.start = _caretPos;
                 _selectionRange.end = _caretPos;
@@ -653,6 +674,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 measureVisibleText();
                 ensureCaretVisible();
 				requestActionsUpdate();
+                processSmartIndent(operation);
             }
         } else {
             updateMaxLineWidth();

@@ -341,6 +341,16 @@ class EditOperation {
                 _oldEditMarks[i] = EditStateMark.changed;
         }
     }
+
+    /// return true if it's insert new line operation
+    @property bool isInsertNewLine() {
+        return content.length == 2 && content[0].length == 0 && content[1].length == 0;
+    }
+
+    /// if new content is single char, return it, otherwise return 0
+    @property dchar singleChar() {
+        return content.length == 1 && content[0].length == 1 ? content[0][0] : 0;
+    }
 }
 
 /// Undo/Redo buffer
@@ -435,7 +445,7 @@ alias TokenProp = ubyte;
 /// TokenCategory string
 alias TokenPropString = TokenProp[];
 
-/// interface for custom syntax highlight
+/// interface for custom syntax highlight, comments toggling, smart indents, and other language dependent features for source code editors
 interface SyntaxSupport {
 
     /// returns editable content
@@ -445,13 +455,14 @@ interface SyntaxSupport {
 
     /// categorize characters in content by token types
     void updateHighlight(dstring[] lines, TokenPropString[] props, int changeStartLine, int changeEndLine);
+
     /// return true if toggle line comment is supported for file type
     @property bool supportsToggleLineComment();
     /// return true if can toggle line comments for specified text range
     bool canToggleLineComment(TextRange range);
-
     /// toggle line comments for specified text range
     void toggleLineComment(TextRange range, Object source);
+
     /// return true if toggle block comment is supported for file type
     @property bool supportsToggleBlockComment();
     /// return true if can toggle block comments for specified text range
@@ -461,6 +472,11 @@ interface SyntaxSupport {
 
     /// returns paired bracket {} () [] for char at position p, returns paired char position or p if not found or not bracket
     TextPosition findPairedBracket(TextPosition p);
+
+    /// returns true if smart indent is supported
+    bool supportsSmartIndents();
+    /// apply smart indent after edit operation, if needed
+    void applySmartIndent(EditOperation op, Object source);
 }
 
 /// measure line text (tabs, spaces, and nonspace positions)
@@ -553,6 +569,21 @@ class EditableContent {
         _useSpacesForTabs = useSpacesForTabs;
         return this;
     }
+
+    /// true if smart indents are supported
+    @property bool supportsSmartIndents() { return _syntaxSupport && _syntaxSupport.supportsSmartIndents; }
+
+    protected bool _smartIndents;
+    /// true if smart indents are enabled
+    @property bool smartIndents() { return _smartIndents; }
+    /// set smart indents enabled flag
+    @property EditableContent smartIndents(bool enabled) { _smartIndents = enabled; return this; }
+
+    protected bool _smartIndentsAfterPaste;
+    /// true if smart indents are enabled
+    @property bool smartIndentsAfterPaste() { return _smartIndentsAfterPaste; }
+    /// set smart indents enabled flag
+    @property EditableContent smartIndentsAfterPaste(bool enabled) { _smartIndentsAfterPaste = enabled; return this; }
 
 	/// listeners for edit operations
 	Signal!EditableContentListener contentChangeListeners;
