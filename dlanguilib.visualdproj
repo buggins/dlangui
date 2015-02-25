@@ -8,10 +8,12 @@
   <multiobj>0</multiobj>
   <singleFileCompilation>0</singleFileCompilation>
   <oneobj>0</oneobj>
+  <mscoff>0</mscoff>
   <trace>0</trace>
   <quiet>0</quiet>
   <verbose>0</verbose>
   <vtls>0</vtls>
+  <vgc>0</vgc>
   <symdebug>1</symdebug>
   <optimize>0</optimize>
   <cpu>0</cpu>
@@ -44,8 +46,12 @@
   <nofloat>0</nofloat>
   <Dversion>2</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
+  <allinst>0</allinst>
+  <stackStomp>0</stackStomp>
   <compiler>0</compiler>
   <otherDMD>0</otherDMD>
+  <cccmd>$(CC) -c</cccmd>
+  <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
   <imppath>3rdparty ../DerelictGL3/source  ../DerelictUtil/source  ../DerelictFT/source ../de_image/source/interfaces ../de_image/source/png $(SolutionDir)/../dlib</imppath>
   <fileImppath>$(SolutionDir)/views $(SolutionDir)/views/res $(SolutionDir)/views/res/i18n $(SolutionDir)/views/res/mdpi</fileImppath>
@@ -89,6 +95,7 @@
   <resfile />
   <exefile>$(OutDir)\$(ProjectName).lib</exefile>
   <useStdLibPath>1</useStdLibPath>
+  <cRuntime>2</cRuntime>
   <additionalOptions />
   <preBuildCommand />
   <postBuildCommand />
@@ -102,10 +109,12 @@
   <multiobj>0</multiobj>
   <singleFileCompilation>0</singleFileCompilation>
   <oneobj>0</oneobj>
+  <mscoff>0</mscoff>
   <trace>0</trace>
   <quiet>0</quiet>
   <verbose>0</verbose>
   <vtls>0</vtls>
+  <vgc>0</vgc>
   <symdebug>0</symdebug>
   <optimize>1</optimize>
   <cpu>0</cpu>
@@ -138,8 +147,12 @@
   <nofloat>0</nofloat>
   <Dversion>2</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
+  <allinst>0</allinst>
+  <stackStomp>0</stackStomp>
   <compiler>0</compiler>
   <otherDMD>0</otherDMD>
+  <cccmd>$(CC) -c</cccmd>
+  <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
   <imppath>3rdparty ../DerelictGL3/source  ../DerelictUtil/source  ../DerelictFT/source ../de_image/source/interfaces ../de_image/source/png $(SolutionDir)/../dlib</imppath>
   <fileImppath>$(SolutionDir)/views $(SolutionDir)/views/res $(SolutionDir)/views/res/i18n $(SolutionDir)/views/res/mdpi</fileImppath>
@@ -183,6 +196,7 @@
   <resfile />
   <exefile>$(OutDir)\$(ProjectName).lib</exefile>
   <useStdLibPath>1</useStdLibPath>
+  <cRuntime>1</cRuntime>
   <additionalOptions />
   <preBuildCommand />
   <postBuildCommand />
@@ -294,6 +308,7 @@
     <File path="3rdparty\win32\objbase.d" />
     <File path="3rdparty\win32\objfwd.d" />
     <File path="3rdparty\win32\objidl.d" />
+    <File path="3rdparty\win32\ocidl.d" />
     <File path="3rdparty\win32\ole.d" />
     <File path="3rdparty\win32\ole2.d" />
     <File path="3rdparty\win32\oleauto.d" />
