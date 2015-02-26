@@ -540,11 +540,12 @@ class TreeItemWidget : HorizontalLayout {
         int w = level * style.font.size * 2;
         _tab.minWidth = w;
         _tab.maxWidth = w;
-        if (_item.hasChildren && _item.canCollapse()) {
+        if (_item.canCollapse()) {
             _expander = new ImageWidget("expander", _item.hasChildren && _item.expanded ? "arrow_right_down_black" : "arrow_right_hollow");
             _expander.styleId = STYLE_TREE_ITEM_EXPAND_ICON;
             _expander.clickable = true;
             _expander.trackHover = true;
+            _expander.visibility = _item.hasChildren ? Visibility.Visible : Visibility.Invisible;
             //_expander.setState(State.Parent);
 
             _expander.onClickListener = delegate(Widget source) {
