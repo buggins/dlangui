@@ -316,9 +316,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 	override void init() {
         _roots = getRootPaths;
 
-		layoutWidth(FILL_PARENT);
-		layoutWidth(FILL_PARENT);
-        minWidth = 600;
+		layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).minWidth(600);
         //minHeight = 400;
 
 		LinearLayout content = new HorizontalLayout("dlgcontent");

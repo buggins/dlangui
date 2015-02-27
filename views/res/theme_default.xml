@@ -335,7 +335,6 @@
         />
 
     <style id="TREE_ITEM"
-        padding="1,1,1,1"
         minWidth="100"
         minHeight="14"
         layoutWidth="FILL_PARENT"
@@ -343,18 +342,15 @@
         >
     </style>
     <style id="TREE_ITEM_EXPAND_ICON"
-        margins="0,0,0,0"
         align="Left|VCenter"
         textFlags="Parent"
     />
     <style id="TREE_ITEM_BODY"
-        margins="0,0,0,0"
         align="Left|VCenter"
         textFlags="Parent"
         backgroundImageId="list_item_background"
     />
     <style id="TREE_ITEM_ICON"
-        margins="2,0,2,0"
         align="Left|VCenter"
         textFlags="Parent"
     />

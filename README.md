@@ -1,7 +1,7 @@
 Dlang UI
 ========
 
-Cross platform GUI for D. Layouts, styles, themes, unicode, i18n, OpenGL based acceleration, widget set.
+Cross platform GUI for D. Widgets, layouts, styles, themes, unicode, i18n, OpenGL based acceleration.
 
 GitHub page: [https://github.com/buggins/dlangui](https://github.com/buggins/dlangui)
 
@@ -254,11 +254,11 @@ DlangIDE project
 
 It is a project to build D language IDE using DlangUI library.
 
-Now it's in early alpha stage, and could be used as a demo for DlangUI.
-
 But it already can open DUB based projects, edit, build and run them.
 
-There is simple syntax highlight.
+Simple syntax highlight.
+
+DCD integration: go to definition and autocompletion for D source code.
 
 Project page: [https://github.com/buggins/dlangide](https://github.com/buggins/dlangide)
 
