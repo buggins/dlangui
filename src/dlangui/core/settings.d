@@ -600,6 +600,58 @@ final class Setting {
         return list;
     }
 
+    /// to iterate using foreach
+    int opApply(int delegate(ref Setting)dg) {
+        int result = 0;
+        if (_type == SettingType.ARRAY) {
+            for(int i = 0; i < _store.array.list.length; i++) {
+                result = dg(_store.array.list[i]);
+                if (result)
+                    break;
+            }
+        } else if (_type == SettingType.OBJECT) {
+            for(int i = 0; i < _store.map.list.length; i++) {
+                result = dg(_store.map.list[i]);
+                if (result)
+                    break;
+            }
+        }
+        return result;
+    }
+
+    /// to iterate over OBJECT using foreach(key, value; map)
+    int opApply(int delegate(ref string, ref Setting)dg) {
+        int result = 0;
+        if (_type == SettingType.OBJECT) {
+            for(int i = 0; i < _store.map.list.length; i++) {
+                string key = _store.map.keyByIndex(i);
+                result = dg(key, _store.map.list[i]);
+                if (result)
+                    break;
+            }
+        }
+        return result;
+    }
+
+    /// to iterate using foreach_reverse
+    int opApplyReverse(int delegate(ref Setting)dg) {
+        int result = 0;
+        if (_type == SettingType.ARRAY) {
+            for(int i = cast(int)_store.array.list.length - 1; i >= 0; i--) {
+                result = dg(_store.array.list[i]);
+                if (result)
+                    break;
+            }
+        } else if (_type == SettingType.OBJECT) {
+            for(int i = cast(int)_store.map.list.length - 1; i >= 0; i--) {
+                result = dg(_store.map.list[i]);
+                if (result)
+                    break;
+            }
+        }
+        return result;
+    }
+
     static long parseLong(inout string v, long defValue = 0) {
         int len = cast(int)v.length;
         if (len == 0)
