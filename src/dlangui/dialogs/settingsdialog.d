@@ -33,6 +33,11 @@ class SettingsItem {
     /// setting path, e.g. "editor/tabSize"
     @property string id() { return _id; }
     @property ref UIString label() { return _label; }
+    /// create setting widget
+    Widget createWidget(Setting settings) {
+        TextWidget res = new TextWidget(_id, _label);
+        return res;
+    }
 }
 
 class SettingsPage {
@@ -76,6 +81,13 @@ class SettingsPage {
     void addChild(SettingsItem item) {
         _items.add(item);
         item._page = this;
+    }
+
+    /// create page widget (default implementation creates empty page)
+    Widget createWidget(Setting settings) {
+        Widget res = new Widget(_id);
+        res.minWidth(200).minHeight(200);
+        return res;
     }
 }
 
