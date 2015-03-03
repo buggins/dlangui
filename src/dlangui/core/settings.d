@@ -1059,6 +1059,30 @@ final class Setting {
         return value;
     }
 
+    /// returns setting by path like "editors/sourceEditor/tabSize", creates object tree "editors/sourceEditor" and object of specified type if part of path does not exist.
+    Setting settingByPath(string path, SettingType type) {
+        if (type != SettingType.OBJECT)
+            clear(SettingType.OBJECT);
+        string part1, part2;
+        if (splitKey(path, part1, part2)) {
+            auto s = this[part1];
+            if (!s) {
+                s = new Setting();
+                s.clear(SettingType.OBJECT);
+                this[part1] = s;
+            }
+            return s.settingByPath(part2, type);
+        } else {
+            auto s = this[path];
+            if (!s) {
+                s = new Setting();
+                s.clear(type);
+                this[path] = s;
+            }
+            return s;
+        }
+    }
+
     /// get (or optionally create) object (map) by slash delimited path (e.g. key1/subkey2/subkey3)
     Setting objectByPath(string path, bool createIfNotExist = false) {
         if (type != SettingType.OBJECT) {

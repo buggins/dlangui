@@ -40,6 +40,20 @@ class SettingsItem {
     }
 }
 
+/// items shows checkbox
+class CheckboxItem : SettingsItem {
+    this(string id, UIString label) {
+        super(id, label);
+    }
+    /// create setting widget
+    override Widget createWidget(Setting settings) {
+        CheckBox res = new CheckBox(_id, _label);
+        Setting setting = settings.settingByPath(_id, SettingType.FALSE);
+        res.checked = setting.boolean;
+        return res;
+    }
+}
+
 class SettingsPage {
     protected SettingsPage _parent;
     protected ObjectList!SettingsPage _children;

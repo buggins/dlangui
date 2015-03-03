@@ -313,6 +313,9 @@ class CheckBox : ImageTextButton {
     this(string ID, dstring labelText) {
         super(ID, "btn_check", labelText);
     }
+    this(string ID, UIString label) {
+        super(ID, "btn_check", label);
+    }
     override protected void init(string drawableId, UIString caption) {
         super.init(drawableId, caption);
         styleId = STYLE_CHECKBOX;
