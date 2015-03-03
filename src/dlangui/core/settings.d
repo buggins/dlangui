@@ -530,8 +530,12 @@ final class Setting {
                 return null;
             case OBJECT:
                 string[string] res;
-                foreach(key, value; _store.map.map) 
-                    res[key] = this[value].str;
+                if (_store.map) {
+                    foreach(key, value; _store.map.map)  {
+                        Setting v = _store.map.get(value);
+                        res[key] = v ? v.str : null;
+                    }
+                }
                 return res;
         }
     }

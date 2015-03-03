@@ -78,7 +78,7 @@ class SettingsPage {
         return _items[index];
     }
 
-    void addChild(SettingsItem item) {
+    void addItem(SettingsItem item) {
         _items.add(item);
         item._page = this;
     }
@@ -89,21 +89,48 @@ class SettingsPage {
         res.minWidth(200).minHeight(200);
         return res;
     }
+
+    /// returns true if this page is root page
+    @property bool isRoot() {
+        return !_parent;
+    }
+
+    TreeItem createTreeItem() {
+        return null;
+    }
+
 }
 
 class SettingsDialog : Dialog {
     protected TreeWidget _tree;
     protected FrameLayout _frame;
     protected SettingsFile _settings;
+    protected SettingsPage _layout;
 
-	this(UIString caption, Window parent, SettingsFile settings) {
+	this(UIString caption, Window parent, SettingsFile settings, SettingsPage layout) {
         super(caption, parent, DialogFlag.Modal | DialogFlag.Resizable | DialogFlag.Popup);
         _settings = settings;
+        _layout = layout;
     }
 
     void onTreeItemSelected(TreeItems source, TreeItem selectedItem, bool activated) {
         if (!selectedItem)
             return;
+    }
+
+    void createControls(SettingsPage page, TreeItem base) {
+        TreeItem item = base;
+        if (!page.isRoot) {
+            item = page.createTreeItem();
+            Widget widget = page.createWidget(_settings);
+            base.addChild(item);
+            _frame.addChild(widget);
+        }
+        if (page.childCount > 0) {
+            for (int i = 0; i < page.childCount; i++) {
+                createControls(page.child(i), item);
+            }
+        }
     }
 
     /// override to implement creation of dialog controls
@@ -114,7 +141,7 @@ class SettingsDialog : Dialog {
         _tree.selectionListener = &onTreeItemSelected;
 		_tree.fontSize = 16;
         _frame = new FrameLayout("prop_pages");
-
+        createControls(_layout, _tree.items);
     }
 
 }

@@ -132,6 +132,11 @@ class TreeItem {
             p = p._parent;
         return cast(TreeItems)p;
     }
+
+    /// returns true if this item is root item
+    @property bool isRoot() {
+        return false;
+    }
     
     void clear() {
         _children.clear();
@@ -344,6 +349,11 @@ class TreeItems : TreeItem {
         super("tree");
     }
 
+    /// returns true if this item is root item
+    override @property bool isRoot() {
+        return true;
+    }
+    
     /// notify listeners
     override protected void onUpdate(TreeItem item) {
         if (contentListener.assigned)
