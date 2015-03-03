@@ -57,6 +57,12 @@ class SettingsFile {
     protected bool _loaded;
 
     @property Setting setting() { return _setting; }
+    @property Setting copySettings() { 
+        return _setting.clone(); 
+    }
+    @property void applySettings(Setting settings) { 
+        _setting.apply(settings); 
+    }
     alias setting this;
 
     /// create settings file object; if filename is provided, attempts to load settings from file
@@ -241,6 +247,13 @@ final class Setting {
         @property int length() {
             return cast(int)list.length;
         }
+        /// deep copy
+        void copyFrom(ref SettingArray v) {
+            list.length = v.list.length;
+            for(int i = 0; i < v.list.length; i++) {
+                list[i] = v.list[i].clone();
+            }
+        }
     }
 
     /// ordered map
@@ -315,6 +328,16 @@ final class Setting {
         @property int length() {
             return cast(int)list.length;
         }
+        /// deep copy
+        void copyFrom(SettingMap * v) {
+            list.length = v.list.length;
+            for(int i = 0; i < v.list.length; i++) {
+                list[i] = v.list[i].clone();
+            }
+            destroy(map);
+            foreach(key, value; v.map)
+                map[key] = value;
+        }
     }
 
 
@@ -373,6 +396,45 @@ final class Setting {
                 break;
         }
     }
+
+    void apply(Setting settings) {
+    }
+
+    /// deep copy of settings
+    Setting clone() {
+        Setting res = new Setting();
+        res.clear(_type);
+        final switch(_type) with(SettingType) {
+            case STRING:
+                res._store.str = _store.str;
+                break;
+            case ARRAY:
+                res._store.array.copyFrom(_store.array);
+                break;
+            case OBJECT:
+                if (_store.map) {
+                    res._store.map = new SettingMap();
+                    res._store.map.copyFrom(_store.map);
+                }
+                break;
+            case INTEGER:
+                res._store.integer = _store.integer;
+                break;
+            case UINTEGER:
+                res._store.uinteger = _store.uinteger;
+                break;
+            case FLOAT:
+                res._store.floating = _store.floating;
+                break;
+            case TRUE:
+            case FALSE:
+            case NULL:
+                break;
+        }
+        res._changed = false;
+        return res;
+    }
+
 
     /// read as string value
     @property inout(string) str() inout { 

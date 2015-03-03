@@ -4,7 +4,7 @@ import dlangui.core.events;
 import dlangui.core.i18n;
 import dlangui.core.stdaction;
 import dlangui.core.files;
-import dlangui.core.settings;
+public import dlangui.core.settings;
 import dlangui.widgets.controls;
 import dlangui.widgets.lists;
 import dlangui.widgets.layouts;
@@ -22,6 +22,7 @@ private import std.utf;
 private import std.conv : to;
 private import std.array : split;
 
+/// item on settings page
 class SettingsItem {
     protected string _id;
     protected UIString _label;
@@ -40,20 +41,27 @@ class SettingsItem {
     }
 }
 
-/// items shows checkbox
+/// checkbox setting
 class CheckboxItem : SettingsItem {
-    this(string id, UIString label) {
+    private bool _inverse;
+    this(string id, UIString label, bool inverse = false) {
         super(id, label);
+        _inverse = inverse;
     }
     /// create setting widget
     override Widget createWidget(Setting settings) {
         CheckBox res = new CheckBox(_id, _label);
         Setting setting = settings.settingByPath(_id, SettingType.FALSE);
-        res.checked = setting.boolean;
+        res.checked = setting.boolean ^ _inverse;
+        res.onCheckChangeListener = delegate(Widget source, bool checked) {
+            setting.boolean = checked ^ _inverse;
+            return true;
+        };
         return res;
     }
 }
 
+/// settings page - item of settings tree, can edit several settings
 class SettingsPage {
     protected SettingsPage _parent;
     protected ObjectList!SettingsPage _children;
@@ -78,9 +86,14 @@ class SettingsPage {
         return _children[index];
     }
 
-    void addChild(SettingsPage item) {
+    SettingsPage addChild(SettingsPage item) {
         _children.add(item);
         item._parent = this;
+        return item;
+    }
+
+    SettingsPage addChild(string id, UIString label) {
+        return addChild(new SettingsPage(id, label));
     }
 
     @property int itemCount() {
@@ -92,9 +105,17 @@ class SettingsPage {
         return _items[index];
     }
 
-    void addItem(SettingsItem item) {
+    SettingsItem addItem(SettingsItem item) {
         _items.add(item);
         item._page = this;
+        return item;
+    }
+
+    /// add checkbox (boolean value) for setting
+    CheckboxItem addCheckbox(string id, UIString label, bool inverse = false) {
+        CheckboxItem res = new CheckboxItem(id, label, inverse);
+        addItem(res);
+        return res;
     }
 
     /// create page widget (default implementation creates empty page)
@@ -110,7 +131,7 @@ class SettingsPage {
     }
 
     TreeItem createTreeItem() {
-        return null;
+        return new TreeItem(_id, _label);
     }
 
 }
@@ -118,10 +139,10 @@ class SettingsPage {
 class SettingsDialog : Dialog {
     protected TreeWidget _tree;
     protected FrameLayout _frame;
-    protected SettingsFile _settings;
+    protected Setting _settings;
     protected SettingsPage _layout;
 
-	this(UIString caption, Window parent, SettingsFile settings, SettingsPage layout) {
+	this(UIString caption, Window parent, Setting settings, SettingsPage layout) {
         super(caption, parent, DialogFlag.Modal | DialogFlag.Resizable | DialogFlag.Popup);
         _settings = settings;
         _layout = layout;
@@ -152,10 +173,18 @@ class SettingsDialog : Dialog {
 		minWidth(600).minHeight(400);
         _tree = new TreeWidget("prop_tree");
         _tree.layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT);
+        _tree.minHeight(200).minWidth(100);
         _tree.selectionListener = &onTreeItemSelected;
 		_tree.fontSize = 16;
         _frame = new FrameLayout("prop_pages");
+        _frame.minHeight(200).minWidth(100);
         createControls(_layout, _tree.items);
+        HorizontalLayout content = new HorizontalLayout("settings_dlg_content");
+        content.addChild(_tree);
+        content.addChild(_frame);
+        content.layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT);
+		addChild(content);
+		addChild(createButtonsPanel([ACTION_APPLY, ACTION_CANCEL], 0, 0));
     }
 
 }
