@@ -375,7 +375,7 @@ class ScrollWidget :  ScrollWidgetBase {
         if (_contentWidget) {
             Point sz = fullContentSize();
             Point p = scrollPos;
-            _contentWidget.layout(Rect(_pos.left - p.x, _pos.top - p.y, _pos.left + sz.x - p.x, _pos.top + sz.y - p.y));
+            _contentWidget.layout(Rect(_clientRect.left - p.x, _clientRect.top - p.y, _clientRect.left + sz.x - p.x, _clientRect.top + sz.y - p.y));
             _contentWidget.onDraw(buf);
         }
     }

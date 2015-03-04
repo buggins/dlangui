@@ -191,8 +191,8 @@ class SettingsDialog : Dialog {
         _tree.selectionListener = &onTreeItemSelected;
 		_tree.fontSize = 16;
         _frame = new FrameLayout("prop_pages");
-        _frame.minHeight(200).minWidth(100).layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT);
         _frame.styleId = STYLE_SETTINGS_PAGES;
+        _frame.minHeight(200).minWidth(100).layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT);
         createControls(_layout, _tree.items);
         HorizontalLayout content = new HorizontalLayout("settings_dlg_content");
         content.addChild(_tree);
@@ -202,6 +202,7 @@ class SettingsDialog : Dialog {
 		addChild(createButtonsPanel([ACTION_APPLY, ACTION_CANCEL], 0, 0));
         if (_layout.childCount > 0)
             _tree.selectItem(_layout.child(0).id);
+
     }
 
 }
