@@ -518,13 +518,13 @@ const int DEF_MIN_ANTIALIASED_FONT_SIZE = 0; // 0 means always use antialiasing
 /// Hinting mode (currently supported for FreeType only)
 enum HintingMode : int {
     /// based on information from font (using bytecode interpreter)
-    Normal,
+    Normal, // 0
     /// force autohinting algorithm even if font contains hint data
-    AutoHint,
+    AutoHint, // 1
     /// disable hinting completely
-    Disabled,
+    Disabled, // 2
 	/// light autohint (similar to Mac)
-	Light
+	Light // 3
 }
 
 /// Access points to fonts.

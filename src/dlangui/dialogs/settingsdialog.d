@@ -36,9 +36,9 @@ class SettingsItem {
     @property string id() { return _id; }
     @property ref UIString label() { return _label; }
     /// create setting widget
-    Widget createWidget(Setting settings) {
+    Widget[] createWidgets(Setting settings) {
         TextWidget res = new TextWidget(_id, _label);
-        return res;
+        return [res];
     }
 }
 
@@ -50,7 +50,7 @@ class CheckboxItem : SettingsItem {
         _inverse = inverse;
     }
     /// create setting widget
-    override Widget createWidget(Setting settings) {
+    override Widget[] createWidgets(Setting settings) {
         CheckBox res = new CheckBox(_id, _label);
         Setting setting = settings.settingByPath(_id, SettingType.FALSE);
         res.checked = setting.boolean ^ _inverse;
@@ -58,7 +58,105 @@ class CheckboxItem : SettingsItem {
             setting.boolean = checked ^ _inverse;
             return true;
         };
-        return res;
+        return [res];
+    }
+}
+
+/// ComboBox based setting with string keys
+class StringComboBoxItem : SettingsItem {
+    protected StringListValue[] _items;
+    this(string id, UIString label, StringListValue[] items) {
+        super(id, label);
+        _items = items;
+    }
+    /// create setting widget
+    override Widget[] createWidgets(Setting settings) {
+        TextWidget lbl = new TextWidget(_id ~ "-label", _label);
+        ComboBox cb = new ComboBox(_id, _items);
+        //cb.minWidth = 100;
+        Setting setting = settings.settingByPath(_id, SettingType.STRING);
+        string itemId = setting.str;
+        int index = -1;
+        for (int i = 0; i < _items.length; i++) {
+            if (_items[i].stringId.equal(itemId)) {
+                index = i;
+                break;
+            }
+        }
+        if (index >= 0)
+            cb.selectedItemIndex = index;
+        cb.onItemClickListener = delegate(Widget source, int itemIndex) {
+            if (itemIndex >= 0 && itemIndex < _items.length)
+                setting.str = _items[itemIndex].stringId;
+            return true;
+        };
+        return [lbl, cb];
+    }
+}
+
+/// ComboBox based setting with int keys
+class IntComboBoxItem : SettingsItem {
+    protected StringListValue[] _items;
+    this(string id, UIString label, StringListValue[] items) {
+        super(id, label);
+        _items = items;
+    }
+    /// create setting widget
+    override Widget[] createWidgets(Setting settings) {
+        TextWidget lbl = new TextWidget(_id ~ "-label", _label);
+        ComboBox cb = new ComboBox(_id, _items);
+        //cb.minWidth = 100;
+        Setting setting = settings.settingByPath(_id, SettingType.INTEGER);
+        long itemId = setting.integer;
+        int index = -1;
+        for (int i = 0; i < _items.length; i++) {
+            if (_items[i].intId == itemId) {
+                index = i;
+                break;
+            }
+        }
+        if (index >= 0)
+            cb.selectedItemIndex = index;
+        cb.onItemClickListener = delegate(Widget source, int itemIndex) {
+            if (itemIndex >= 0 && itemIndex < _items.length)
+                setting.integer = _items[itemIndex].intId;
+            return true;
+        };
+        return [lbl, cb];
+    }
+}
+
+/// ComboBox based setting with floating point keys (actualy, fixed point digits after period is specidied by divider constructor parameter)
+class FloatComboBoxItem : SettingsItem {
+    protected StringListValue[] _items;
+    protected long _divider;
+    this(string id, UIString label, StringListValue[] items, long divider = 1000) {
+        super(id, label);
+        _items = items;
+        _divider = divider;
+    }
+    /// create setting widget
+    override Widget[] createWidgets(Setting settings) {
+        TextWidget lbl = new TextWidget(_id ~ "-label", _label);
+        ComboBox cb = new ComboBox(_id, _items);
+        //cb.minWidth = 100;
+        Setting setting = settings.settingByPath(_id, SettingType.FLOAT);
+        long itemId = cast(long)(setting.floating * _divider);
+        int index = -1;
+        for (int i = 0; i < _items.length; i++) {
+            if (_items[i].intId == itemId) {
+                index = i;
+                break;
+            }
+        }
+        if (index >= 0)
+            cb.selectedItemIndex = index;
+        cb.onItemClickListener = delegate(Widget source, int itemIndex) {
+            if (itemIndex >= 0 && itemIndex < _items.length)
+                setting.floating = _items[itemIndex].intId / cast(double)_divider;
+            return true;
+        };
+        return [lbl, cb];
     }
 }
 
@@ -73,8 +171,7 @@ class NumberEditItem : SettingsItem {
         _defaultValue = defaultValue;
     }
     /// create setting widget
-    override Widget createWidget(Setting settings) {
-        HorizontalLayout res = new HorizontalLayout(_id);
+    override Widget[] createWidgets(Setting settings) {
         TextWidget lbl = new TextWidget(_id ~ "-label", _label);
         EditLine ed = new EditLine(_id ~ "-edit", _label);
         Setting setting = settings.settingByPath(_id, SettingType.INTEGER);
@@ -96,9 +193,7 @@ class NumberEditItem : SettingsItem {
                 }
             }
         };
-        res.addChild(lbl);
-        res.addChild(ed);
-        return res;
+        return [lbl, ed];
     }
 }
 
@@ -166,6 +261,24 @@ class SettingsPage {
         return res;
     }
 
+    StringComboBoxItem addStringComboBox(string id, UIString label, StringListValue[] items) {
+        StringComboBoxItem res = new StringComboBoxItem(id, label, items);
+        addItem(res);
+        return res;
+    }
+
+    IntComboBoxItem addIntComboBox(string id, UIString label, StringListValue[] items) {
+        IntComboBoxItem res = new IntComboBoxItem(id, label, items);
+        addItem(res);
+        return res;
+    }
+
+    FloatComboBoxItem addFloatComboBox(string id, UIString label, StringListValue[] items, long divider = 1000) {
+        FloatComboBoxItem res = new FloatComboBoxItem(id, label, items, divider);
+        addItem(res);
+        return res;
+    }
+
     /// create page widget (default implementation creates empty page)
     Widget createWidget(Setting settings) {
         VerticalLayout res = new VerticalLayout(_id);
@@ -175,11 +288,23 @@ class SettingsPage {
             caption.styleId = STYLE_SETTINGS_PAGE_TITLE;
             caption.layoutWidth(FILL_PARENT);
             res.addChild(caption);
+            TableLayout tbl = null;
             for (int i = 0; i < itemCount; i++) {
                 SettingsItem v = item(i);
-                Widget w = v.createWidget(settings);
-                if (w)
-                    res.addChild(w);
+                Widget[] w = v.createWidgets(settings);
+                if (w.length == 1) {
+                    tbl = null;
+                    res.addChild(w[0]);
+                } else if (w.length == 2) {
+                    if (!tbl) {
+                        tbl = new TableLayout();
+                        tbl.colCount = 2;
+                        res.addChild(tbl);
+                    }
+                    tbl.addChild(w[0]);
+                    tbl.addChild(w[1]);
+                }
+                    
             }
         }
         return res;
@@ -218,8 +343,8 @@ class SettingsDialog : Dialog {
         TreeItem item = base;
         if (!page.isRoot) {
             item = page.createTreeItem();
-            Widget widget = page.createWidget(_settings);
             base.addChild(item);
+            Widget widget = page.createWidget(_settings);
             _frame.addChild(widget);
         }
         if (page.childCount > 0) {

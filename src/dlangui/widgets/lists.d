@@ -34,6 +34,11 @@ interface ListAdapter {
 	uint setItemState(int index, uint flags);
 	/// reset one or more list item's state flags, returns updated state
 	uint resetItemState(int index, uint flags);
+    /// returns integer item id by index (if supported)
+    int itemId(int index);
+    /// returns string item id by index (if supported)
+    string itemStringId(int index);
+
 }
 
 /// List adapter for simple list of widget instances
@@ -61,15 +66,49 @@ class WidgetListAdapter : ListAdapter {
 	override uint resetItemState(int index, uint flags) {
 		return _widgets.get(index).resetState(flags).state;
 	}
+    /// returns integer item id by index (if supported)
+    override int itemId(int index) {
+        return 0;
+    }
+    /// returns string item id by index (if supported)
+    override string itemStringId(int index) {
+        return null;
+    }
     ~this() {
         //Log.d("Destroying WidgetListAdapter");
     }
 }
 
+/// string values string list adapter
+struct StringListValue {
+    string stringId;
+    int intId;
+    UIString label;
+    this(string id, dstring name) {
+        this.stringId = id;
+        this.label = name;
+    }
+    this(string id, string nameResourceId) {
+        this.stringId = id;
+        this.label = nameResourceId;
+    }
+    this(int id, dstring name) {
+        this.intId = id;
+        this.label = name;
+    }
+    this(int id, string nameResourceId) {
+        this.intId = id;
+        this.label = nameResourceId;
+    }
+}
+
+
 /** List adapter providing strings only. */
 class StringListAdapter : ListAdapter {
     protected UIStringCollection _items;
     protected uint[] _states;
+    protected int[] _intIds;
+    protected string[] _stringIds;
     protected TextWidget _widget;
     protected int _lastItemIndex;
 
@@ -81,6 +120,8 @@ class StringListAdapter : ListAdapter {
     /** Init with array of string resource IDs. */
     this(string[] items) {
         _items.addAll(items);
+        _intIds.length = items.length;
+        _stringIds.length = items.length;
         _lastItemIndex = -1;
         updateStatesLength();
     }
@@ -88,6 +129,21 @@ class StringListAdapter : ListAdapter {
     /** Init with array of unicode strings. */
     this(dstring[] items) {
         _items.addAll(items);
+        _intIds.length = items.length;
+        _stringIds.length = items.length;
+        _lastItemIndex = -1;
+        updateStatesLength();
+    }
+
+    /** Init with array of StringListValue. */
+    this(StringListValue[] items) {
+        _intIds.length = items.length;
+        _stringIds.length = items.length;
+        for (int i = 0; i < items.length; i++) {
+            _items.add(items[i].label);
+            _intIds[i] = items[i].intId;
+            _stringIds[i] = items[i].stringId;
+        }
         _lastItemIndex = -1;
         updateStatesLength();
     }
@@ -100,6 +156,16 @@ class StringListAdapter : ListAdapter {
         return _items.length;
     }
 
+    /// returns integer item id by index (if supported)
+    override int itemId(int index) {
+        return index >= 0 && index < _intIds.length ? _intIds[index] : 0;
+    }
+
+    /// returns string item id by index (if supported)
+    override string itemStringId(int index) {
+        return index >= 0 && index < _stringIds.length ? _stringIds[index] : null;
+    }
+
     protected void updateStatesLength() {
         if (_states.length < _items.length) {
             int oldlen = cast(int)_states.length;
@@ -107,6 +173,10 @@ class StringListAdapter : ListAdapter {
             for (int i = oldlen; i < _items.length; i++)
                 _states[i] = State.Enabled;
         }
+        if (_intIds.length < items.length)
+            _intIds.length = items.length;
+        if (_stringIds.length < items.length)
+            _stringIds.length = items.length;
     }
 
     /// return list item widget by item index

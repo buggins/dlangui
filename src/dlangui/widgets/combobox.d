@@ -93,6 +93,7 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         res.styleId = STYLE_COMBO_BOX_BUTTON;
 		res.layoutWeight = 0;
         res.onClickListener = this;
+        res.alignment = Align.VCenter | Align.Right;
         return res;
     }
 
@@ -105,6 +106,16 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
 
     protected PopupWidget _popup;
     protected ListWidget _popupList;
+
+    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+    override void layout(Rect rc) {
+        super.layout(rc);
+        _pos = rc;
+        applyMargins(rc);
+        applyPadding(rc);
+        rc.left = rc.right - _button.measuredWidth;
+        _button.layout(rc);
+    }
 
     protected void showPopup() {
         _popupList = createPopup();
@@ -175,6 +186,10 @@ class ComboBox : ComboBoxBase {
     }
 
     this(string ID, dstring[] items) {
+        super(ID, (_adapter = new StringListAdapter(items)), true);
+    }
+
+    this(string ID, StringListValue[] items) {
         super(ID, (_adapter = new StringListAdapter(items)), true);
     }
 
