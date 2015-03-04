@@ -61,7 +61,9 @@ class SettingsFile {
         return _setting.clone(); 
     }
     @property void applySettings(Setting settings) { 
-        _setting.apply(settings); 
+        // TODO copy only changed settings
+        _setting = settings;
+        //_setting.apply(settings); 
     }
     alias setting this;
 
@@ -1082,7 +1084,7 @@ final class Setting {
 
     /// returns setting by path like "editors/sourceEditor/tabSize", creates object tree "editors/sourceEditor" and object of specified type if part of path does not exist.
     Setting settingByPath(string path, SettingType type) {
-        if (type != SettingType.OBJECT)
+        if (_type != SettingType.OBJECT)
             clear(SettingType.OBJECT);
         string part1, part2;
         if (splitKey(path, part1, part2)) {

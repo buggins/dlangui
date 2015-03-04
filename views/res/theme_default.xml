@@ -362,14 +362,13 @@
     />
 
     <style id="SETTINGS_TREE"
-        margins="4,4,4,4"
-        padding="4,4,4,4"
+        margins="8,8,8,8"
         backgroundColor="#FFFFFF"
         layoutWeight="3"
     />
 
     <style id="SETTINGS_PAGES"
-        margins="0,4,4,4"
+        margins="0,8,8,8"
         padding="4,4,4,4"
         layoutWidth="FILL_PARENT"
         layoutWeight="5"

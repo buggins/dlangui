@@ -77,7 +77,7 @@ class NumberEditItem : SettingsItem {
         HorizontalLayout res = new HorizontalLayout(_id);
         TextWidget lbl = new TextWidget(_id ~ "-label", _label);
         EditLine ed = new EditLine(_id ~ "-edit", _label);
-        Setting setting = settings.settingByPath(_id, SettingType.STRING);
+        Setting setting = settings.settingByPath(_id, SettingType.INTEGER);
         int n = cast(int)setting.integerDef(_defaultValue);
         if (_minValue != int.max && n < _minValue)
             n = _minValue;
