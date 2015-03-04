@@ -62,6 +62,46 @@ class CheckboxItem : SettingsItem {
     }
 }
 
+class NumberEditItem : SettingsItem {
+    protected int _minValue;
+    protected int _maxValue;
+    protected int _defaultValue;
+    this(string id, UIString label, int minValue = int.max, int maxValue = int.max, int defaultValue = 0) {
+        super(id, label);
+        _minValue = minValue;
+        _maxValue = maxValue;
+        _defaultValue = defaultValue;
+    }
+    /// create setting widget
+    override Widget createWidget(Setting settings) {
+        HorizontalLayout res = new HorizontalLayout(_id);
+        TextWidget lbl = new TextWidget(_id ~ "-label", _label);
+        EditLine ed = new EditLine(_id ~ "-edit", _label);
+        Setting setting = settings.settingByPath(_id, SettingType.STRING);
+        int n = cast(int)setting.integerDef(_defaultValue);
+        if (_minValue != int.max && n < _minValue)
+            n = _minValue;
+        if (_maxValue != int.max && n > _maxValue)
+            n = _maxValue;
+        setting.integer = cast(long)n;
+        ed.text = toUTF32(to!string(n));
+        ed.onContentChangeListener = delegate(EditableContent content) {
+            long v = parseLong(toUTF8(content.text), long.max);
+            if (v != long.max) {
+                if ((_minValue == int.max || v >= _minValue) && (_maxValue == int.max || v <= _maxValue)) {
+                    setting.integer = v;
+                    ed.textColor = 0x000000;
+                } else {
+                    ed.textColor = 0xFF0000;
+                }
+            }
+        };
+        res.addChild(lbl);
+        res.addChild(ed);
+        return res;
+    }
+}
+
 /// settings page - item of settings tree, can edit several settings
 class SettingsPage {
     protected SettingsPage _parent;
@@ -115,6 +155,13 @@ class SettingsPage {
     /// add checkbox (boolean value) for setting
     CheckboxItem addCheckbox(string id, UIString label, bool inverse = false) {
         CheckboxItem res = new CheckboxItem(id, label, inverse);
+        addItem(res);
+        return res;
+    }
+
+    /// add EditLine to edit number
+    NumberEditItem addNumberEdit(string id, UIString label, int minValue = int.max, int maxValue = int.max, int defaultValue = 0) {
+        NumberEditItem res = new NumberEditItem(id, label, minValue, maxValue, defaultValue);
         addItem(res);
         return res;
     }
@@ -192,7 +239,7 @@ class SettingsDialog : Dialog {
 		_tree.fontSize = 16;
         _frame = new FrameLayout("prop_pages");
         _frame.styleId = STYLE_SETTINGS_PAGES;
-        _frame.minHeight(200).minWidth(100).layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT);
+        _frame.layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT).minHeight(200).minWidth(100);
         createControls(_layout, _tree.items);
         HorizontalLayout content = new HorizontalLayout("settings_dlg_content");
         content.addChild(_tree);
@@ -202,7 +249,6 @@ class SettingsDialog : Dialog {
 		addChild(createButtonsPanel([ACTION_APPLY, ACTION_CANCEL], 0, 0));
         if (_layout.childCount > 0)
             _tree.selectItem(_layout.child(0).id);
-
     }
 
 }

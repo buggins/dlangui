@@ -43,6 +43,11 @@ interface ModifiedStateListener {
 	void onModifiedStateChange(Widget source, bool modified);
 }
 
+/// Modified content listener
+interface EditableContentChangeListener {
+	void onEditableContentChanged(EditableContent source);
+}
+
 /// Editor action codes
 enum EditorActions : int {
 	None = 0,
@@ -235,6 +240,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     /// Modified state change listener
     Signal!ModifiedStateListener onModifiedStateChangeListener;
+    Signal!EditableContentChangeListener onContentChangeListener;
 
     /// override to support modification of client rect after change, e.g. apply offset
     override protected void handleClientRectLayout(ref Rect rc) {
@@ -690,6 +696,9 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 onModifiedStateChangeListener(this, content.modified);
 				requestActionsUpdate();
             }
+        }
+        if (onContentChangeListener.assigned) {
+            onContentChangeListener(_content);
         }
 		return;
 	}

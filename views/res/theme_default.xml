@@ -371,7 +371,6 @@
     <style id="SETTINGS_PAGES"
         margins="0,4,4,4"
         padding="4,4,4,4"
-        backgroundColor="#80FFFFFF"
         layoutWidth="FILL_PARENT"
         layoutWeight="5"
     />
