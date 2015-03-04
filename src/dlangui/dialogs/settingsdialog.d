@@ -12,6 +12,7 @@ import dlangui.widgets.tree;
 import dlangui.widgets.editors;
 import dlangui.widgets.menu;
 import dlangui.widgets.combobox;
+import dlangui.widgets.styles;
 import dlangui.platforms.common.platform;
 import dlangui.dialogs.dialog;
 
@@ -120,8 +121,20 @@ class SettingsPage {
 
     /// create page widget (default implementation creates empty page)
     Widget createWidget(Setting settings) {
-        Widget res = new Widget(_id);
-        res.minWidth(200).minHeight(200);
+        VerticalLayout res = new VerticalLayout(_id);
+        res.minWidth(200).minHeight(200).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+        if (itemCount > 0) {
+            TextWidget caption = new TextWidget("prop-body-caption-" ~ _id, _label);
+            caption.styleId = STYLE_SETTINGS_PAGE_TITLE;
+            caption.layoutWidth(FILL_PARENT);
+            res.addChild(caption);
+            for (int i = 0; i < itemCount; i++) {
+                SettingsItem v = item(i);
+                Widget w = v.createWidget(settings);
+                if (w)
+                    res.addChild(w);
+            }
+        }
         return res;
     }
 
@@ -151,6 +164,7 @@ class SettingsDialog : Dialog {
     void onTreeItemSelected(TreeItems source, TreeItem selectedItem, bool activated) {
         if (!selectedItem)
             return;
+        _frame.showChild(selectedItem.id);
     }
 
     void createControls(SettingsPage page, TreeItem base) {
@@ -172,12 +186,13 @@ class SettingsDialog : Dialog {
 	override void init() {
 		minWidth(600).minHeight(400);
         _tree = new TreeWidget("prop_tree");
-        _tree.layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT);
-        _tree.minHeight(200).minWidth(100);
+        _tree.styleId = STYLE_SETTINGS_TREE;
+        _tree.layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT).minHeight(200).minWidth(100);
         _tree.selectionListener = &onTreeItemSelected;
 		_tree.fontSize = 16;
         _frame = new FrameLayout("prop_pages");
-        _frame.minHeight(200).minWidth(100);
+        _frame.minHeight(200).minWidth(100).layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT);
+        _frame.styleId = STYLE_SETTINGS_PAGES;
         createControls(_layout, _tree.items);
         HorizontalLayout content = new HorizontalLayout("settings_dlg_content");
         content.addChild(_tree);
@@ -185,6 +200,8 @@ class SettingsDialog : Dialog {
         content.layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT);
 		addChild(content);
 		addChild(createButtonsPanel([ACTION_APPLY, ACTION_CANCEL], 0, 0));
+        if (_layout.childCount > 0)
+            _tree.selectItem(_layout.child(0).id);
     }
 
 }

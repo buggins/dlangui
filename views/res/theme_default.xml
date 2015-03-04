@@ -360,6 +360,25 @@
         align="Left|VCenter"
         textFlags="Parent"
     />
+
+    <style id="SETTINGS_TREE"
+        margins="8,8,8,8"
+        padding="4,4,4,4"
+        backgroundColor="#FFFFFF"
+    />
+
+    <style id="SETTINGS_PAGES"
+        margins="0,8,8,8"
+        padding="4,4,4,4"
+        backgroundColor="#80FFFFFF"
+    />
+
+    <style id="SETTINGS_PAGE_TITLE"
+        margins="4,4,4,14"
+	fontSize="18"
+	layoutWeight="0"
+    />
+
     <style id="RESIZER_VERTICAL"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"

@@ -159,6 +159,12 @@ immutable string STYLE_TOOLBAR_CONTROL = "TOOLBAR_CONTROL";
 /// standard style id for toolbar separator
 immutable string STYLE_TOOLBAR_SEPARATOR = "TOOLBAR_SEPARATOR";
 
+/// standard style id for settings dialog tree
+immutable string STYLE_SETTINGS_TREE = "SETTINGS_TREE";
+/// standard style id for settings dialog content pages frame
+immutable string STYLE_SETTINGS_PAGES = "SETTINGS_PAGES";
+/// standard style id for settings dialog page title
+immutable string STYLE_SETTINGS_PAGE_TITLE = "SETTINGS_PAGE_TITLE";
 
 // Layout size constants
 /// layout option, to occupy all available place
