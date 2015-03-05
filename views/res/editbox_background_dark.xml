@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true" android:state_enabled="false" android:drawable="editbox_background_disabled_focus" />
+    <item android:state_focused="true" android:drawable="editbox_background_focus" />
+    <item android:state_enabled="false" android:drawable="editbox_background_disabled" />
+    <item android:drawable="editbox_background_normal" />
+</selector>
+

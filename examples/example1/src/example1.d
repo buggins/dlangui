@@ -316,21 +316,26 @@ extern (C) int UIAppMain(string[] args) {
 		viewItem.add(langItem);
 		MenuItem themeItem = new MenuItem(new Action(62, "MENU_VIEW_THEME"));
 		MenuItem theme1 = (new MenuItem(new Action(621, "MENU_VIEW_THEME_DEFAULT"))).type(MenuItemType.Radio).checked(true);
-		MenuItem theme2 = (new MenuItem(new Action(622, "MENU_VIEW_THEME_CUSTOM1"))).type(MenuItemType.Radio);
+		MenuItem theme2 = (new MenuItem(new Action(622, "MENU_VIEW_THEME_DARK"))).type(MenuItemType.Radio);
+		MenuItem theme3 = (new MenuItem(new Action(623, "MENU_VIEW_THEME_CUSTOM1"))).type(MenuItemType.Radio);
 		auto onThemeChange = delegate (MenuItem item) {
 			if (!item.checked)
 				return false;
 			if (item.id == 621) {
 				platform.instance.uiTheme = "theme_default";
 			} else if (item.id == 622) {
+				platform.instance.uiTheme = "theme_dark";
+			} else if (item.id == 623) {
 				platform.instance.uiTheme = "theme_custom1";
 			}
 			return true;
 		};
 		theme1.onMenuItemClick = onThemeChange;
 		theme2.onMenuItemClick = onThemeChange;
+		theme3.onMenuItemClick = onThemeChange;
 		themeItem.add(theme1);
 		themeItem.add(theme2);
+		themeItem.add(theme3);
 		viewItem.add(themeItem);
 
 		MenuItem windowItem = new MenuItem(new Action(3, "MENU_WINDOW"c));
@@ -842,7 +847,6 @@ void main()
 	    window.mainWidget = contentLayout;
 
 		tabs.selectTab("tab3");
-
 	} else {
 	    window.mainWidget = (new Button()).text("sample button");
 	}

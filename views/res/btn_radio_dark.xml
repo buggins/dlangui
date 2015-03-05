@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_checked="true" android:state_pressed="true"
+          android:state_enabled="true"
+          android:drawable="@drawable/btn_radio_on_pressed_dark" />
+    <item android:state_checked="false" android:state_pressed="true"
+          android:state_enabled="true"
+          android:drawable="@drawable/btn_radio_off_pressed_dark" />
+
+    <item android:state_checked="true" android:state_focused="true"
+          android:state_enabled="true"
+          android:drawable="@drawable/btn_radio_on_focused_dark" />
+    <item android:state_checked="false" android:state_focused="true"
+          android:state_enabled="true"
+          android:drawable="@drawable/btn_radio_off_focused_dark" />
+
+    <item android:state_checked="true" android:state_hovered="true"
+          android:state_enabled="true"
+          android:drawable="@drawable/btn_radio_on_focused_dark" />
+    <item android:state_checked="false" android:state_hovered="true"
+          android:state_enabled="true"
+          android:drawable="@drawable/btn_radio_off_focused_dark" />
+
+    <item android:state_checked="false" android:state_enabled="true"
+          android:drawable="@drawable/btn_radio_off_dark" />
+    <item android:state_checked="true" android:state_enabled="true"
+          android:drawable="@drawable/btn_radio_on_dark" />
+
+    <!-- Disabled states -->
+
+    <item android:state_checked="false" android:drawable="@drawable/btn_radio_off_disabled_dark" />
+    <item android:state_checked="true" android:drawable="@drawable/btn_radio_on_disabled_dark" />
+
+</selector>

@@ -166,6 +166,12 @@ immutable string STYLE_SETTINGS_PAGES = "SETTINGS_PAGES";
 /// standard style id for settings dialog page title
 immutable string STYLE_SETTINGS_PAGE_TITLE = "SETTINGS_PAGE_TITLE";
 
+/// window background color resource id
+immutable string STYLE_COLOR_WINDOW_BACKGROUND = "window_background";
+/// dialog background color resource id
+immutable string STYLE_COLOR_DIALOG_BACKGROUND = "dialog_background";
+
+
 // Layout size constants
 /// layout option, to occupy all available place
 immutable int FILL_PARENT = int.max - 1;
@@ -277,6 +283,14 @@ class Style {
 	protected FontRef _font;
 	protected DrawableRef _backgroundDrawable;
 
+    void onThemeChanged() {
+        _backgroundDrawable.clear();
+        foreach(s; _substates)
+            s.onThemeChanged();
+        foreach(s; _children)
+            s.onThemeChanged();
+    }
+
 	@property const(Theme) theme() const {
 		if (_theme !is null)
 			return _theme;
@@ -334,7 +348,7 @@ class Style {
             (cast(Style)this)._backgroundDrawable = drawableCache.get(image);
         } else {
             uint color = backgroundColor;
-            (cast(Style)this)._backgroundDrawable = new SolidFillDrawable(color);
+            (cast(Style)this)._backgroundDrawable = isFullyTransparentColor(color) ? new EmptyDrawable() : new SolidFillDrawable(color);
         }
         return (cast(Style)this)._backgroundDrawable;
     }
@@ -1357,6 +1371,11 @@ class DrawableAttribute {
     }
 }
 
+/// returns custom drawable replacement id for specified id from current theme, or returns passed value if not found or no current theme
+string getCustomDrawableId(string id) {
+    string res = currentTheme ? currentTheme.customDrawableId(id) : id;
+    return !res ? id : res;
+}
 
 shared static ~this() {
 	currentTheme = null;

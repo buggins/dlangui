@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android" >
+  <item
+    android:drawable="btn_default_small_normal_disable_focused_dark"
+    color_transform_add1="0,0,0,0"
+    android:state_enabled="false"
+    android:state_focused="true" />
+  <item
+    android:drawable="btn_default_small_normal_disable_dark"
+    color_transform_add1="0,0,0,0"
+    android:state_focused="true" />
+  <item
+    android:drawable="btn_default_small_pressed_dark"
+    color_transform_add1="0,0,0,0"
+    android:state_pressed="true" />
+  <item
+    android:drawable="btn_default_small_selected_dark"
+    color_transform_add1="0,0,0,0"
+    android:state_selected="true" />
+  <item
+    android:drawable="btn_default_small_normal_hover_dark"
+    color_transform_add1="0,0,0,0"
+    android:state_hovered="true" />
+  <item
+    android:drawable="@null" />
+</selector>

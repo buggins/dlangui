@@ -386,6 +386,8 @@ class Window {
         _eventList = new EventList();
         _timerQueue = new TimerQueue();
 		_backgroundColor = 0xFFFFFF;
+        if (currentTheme)
+            _backgroundColor = currentTheme.customColor(STYLE_COLOR_WINDOW_BACKGROUND);
 	}
 	~this() {
 		debug Log.d("Destroying window");
@@ -778,6 +780,10 @@ class Window {
         }
         if (_tooltip.popup)
             _tooltip.popup.onThemeChanged();
+        if (currentTheme) {
+            _backgroundColor = currentTheme.customColor(STYLE_COLOR_WINDOW_BACKGROUND);
+        }
+        invalidate();
     }
 
 

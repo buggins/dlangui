@@ -305,16 +305,18 @@ class UrlImageTextButton : ImageTextButton {
     }
 }
 
+
+
 /// checkbox
 class CheckBox : ImageTextButton {
     this(string ID = null, string textResourceId = null) {
-        super(ID, "btn_check", textResourceId);
+        super(ID, getCustomDrawableId("btn_check"), textResourceId);
     }
     this(string ID, dstring labelText) {
-        super(ID, "btn_check", labelText);
+        super(ID, getCustomDrawableId("btn_check"), labelText);
     }
     this(string ID, UIString label) {
-        super(ID, "btn_check", label);
+        super(ID, getCustomDrawableId("btn_check"), label);
     }
     override protected void init(string drawableId, UIString caption) {
         super.init(drawableId, caption);
@@ -330,15 +332,20 @@ class CheckBox : ImageTextButton {
         checked = !checked;
         return super.handleClick();
     }
+    /// handle theme change: e.g. reload some themed resources
+    override void onThemeChanged() {
+        if (currentTheme)
+            _icon.drawableId = getCustomDrawableId("btn_check");
+    }
 }
 
 /// radio button
 class RadioButton : ImageTextButton {
     this(string ID = null, string textResourceId = null) {
-        super(ID, "btn_radio", textResourceId);
+        super(ID,getCustomDrawableId("btn_radio"), textResourceId);
     }
     this(string ID, dstring labelText) {
-        super(ID, "btn_radio", labelText);
+        super(ID, getCustomDrawableId("btn_radio"), labelText);
     }
     override protected void init(string drawableId, UIString caption) {
         super.init(drawableId, caption);
@@ -348,6 +355,12 @@ class RadioButton : ImageTextButton {
         if (_label)
             _label.styleId = STYLE_RADIOBUTTON_LABEL;
         checkable = true;
+    }
+
+    /// handle theme change: e.g. reload some themed resources
+    override void onThemeChanged() {
+        if (currentTheme)
+            _icon.drawableId = getCustomDrawableId("btn_radio");
     }
 
 	void uncheckSiblings() {

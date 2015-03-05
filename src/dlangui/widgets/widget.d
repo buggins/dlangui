@@ -247,6 +247,9 @@ class Widget {
         // default implementation: call recursive for children
         for (int i = 0; i < childCount; i++)
             child(i).onThemeChanged();
+        if (_ownStyle) {
+            _ownStyle.onThemeChanged();
+        }
     }
 
     /// returns widget id, null if not set
