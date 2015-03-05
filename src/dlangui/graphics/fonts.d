@@ -426,6 +426,8 @@ class Font : RefCountedObject {
 	abstract void checkpoint();
 	/// removes entries not used after last call of checkpoint() or cleanup()
 	abstract void cleanup();
+    /// clears glyph cache
+    abstract void clearGlyphCache();
 
     void clear() {}
 
@@ -510,6 +512,11 @@ struct FontList {
 		for (int i = 0; i < _len; i++)
 			_list[i].checkpoint();
 	}
+    /// clears glyph cache
+    void clearGlyphCache() {
+		for (int i = 0; i < _len; i++)
+			_list[i].clearGlyphCache();
+    }
 }
 
 /// default min font size for antialiased fonts (e.g. if 16 is set, for 16+ sizes antialiasing will be used, for sizes <=15 - antialiasing will be off)
@@ -564,7 +571,11 @@ class FontManager {
 
     /// set new min font size for antialiased fonts - fonts with size >= specified value will be antialiased (0 means antialiasing always on, some big value = always off)
     static @property void minAnitialiasedFontSize(int size) {
-        _minAnitialiasedFontSize = size;
+        if (_minAnitialiasedFontSize != size) {
+            _minAnitialiasedFontSize = size;
+            if (_instance)
+                _instance.clearGlyphCaches();
+        }
     }
 
     /// get current hinting mode (Normal, AutoHint, Disabled)
@@ -574,7 +585,11 @@ class FontManager {
 
     /// set hinting mode (Normal, AutoHint, Disabled)
     static @property void hintingMode(HintingMode mode) {
-        _hintingMode = mode;
+        if (_hintingMode != mode) {
+            _hintingMode = mode;
+            if (_instance)
+                _instance.clearGlyphCaches();
+        }
     }
 
     /// get current subpixel rendering mode for fonts (aka ClearType)
@@ -596,9 +611,17 @@ class FontManager {
             v = 0.1;
         else if (v > 4)
             v = 4;
-        _fontGamma = v; 
-        _gamma65.gamma = v;
-        _gamma256.gamma = v;
+        if (_fontGamma != v) {
+            _fontGamma = v; 
+            _gamma65.gamma = v;
+            _gamma256.gamma = v;
+            if (_instance)
+                _instance.clearGlyphCaches();
+        }
+    }
+
+    void clearGlyphCaches() {
+        // override to clear glyph caches
     }
 
 	~this() {
@@ -656,7 +679,7 @@ struct GlyphCache
 	void cleanup() {
 		foreach(part; _glyphs) {
 			if (part !is null)
-			foreach(item; part) {
+			foreach(ref item; part) {
 				if (item && !item.lastUsage) {
 					version (USE_OPENGL) {
 						// notify about destroyed glyphs
@@ -665,6 +688,7 @@ struct GlyphCache
 						}
 					}
 					destroy(item);
+                    item = null;
 				}
 			}
 		}
@@ -685,7 +709,7 @@ struct GlyphCache
 	void clear() {
 		foreach(part; _glyphs) {
 			if (part !is null)
-			foreach(item; part) {
+			foreach(ref item; part) {
 				if (item) {
 					version (USE_OPENGL) {
 						// notify about destroyed glyphs
@@ -694,6 +718,7 @@ struct GlyphCache
 						}
 					}
 					destroy(item);
+                    item = null;
 				}
 			}
 		}

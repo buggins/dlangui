@@ -83,6 +83,15 @@ private class FontFileItem {
         return _activeFonts.add(font);
     }
 
+    void clearGlyphCaches() {
+        _activeFonts.clearGlyphCache();
+    }
+    void checkpoint() {
+        _activeFonts.checkpoint();
+    }
+    void cleanup() {
+        _activeFonts.cleanup();
+    }
 }
 
 class FreeTypeFontFile {
@@ -437,6 +446,11 @@ class FreeTypeFont : Font {
 		_glyphCache.cleanup();
 	}
 
+    /// clears glyph cache
+    override void clearGlyphCache() {
+        _glyphCache.clear();
+    }
+
     @property override int size() { return _size; }
     @property override int height() { return _files.length > 0 ? _files[0].height : _size; }
     @property override int weight() { return _fontItem.def.weight; }
@@ -536,11 +550,25 @@ class FreeTypeFontManager : FontManager {
 
 	/// clear usage flags for all entries
 	override void checkpoint() {
+        foreach(ref ff; _fontFiles) {
+            ff.checkpoint();
+        }
     }
 
 	/// removes entries not used after last call of checkpoint() or cleanup()
 	override void cleanup() {
+        foreach(ref ff; _fontFiles) {
+            ff.cleanup();
+        }
     }
+
+    /// clears glyph cache
+    override void clearGlyphCaches() {
+        foreach(ref ff; _fontFiles) {
+            ff.clearGlyphCaches();
+        }
+    }
+
 
     /// register freetype font by filename - optinally font properties can be passed if known (e.g. from libfontconfig).
     bool registerFont(string filename, FontFamily family = FontFamily.SansSerif, string face = null, bool italic = false, int weight = 0) {

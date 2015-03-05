@@ -242,6 +242,13 @@ class Widget {
 		return _ownStyle;
 	}
 
+    /// handle theme change: e.g. reload some themed resources
+    void onThemeChanged() {
+        // default implementation: call recursive for children
+        for (int i = 0; i < childCount; i++)
+            child(i).onThemeChanged();
+    }
+
     /// returns widget id, null if not set
 	@property string id() const { return _id; }
     /// set widget id

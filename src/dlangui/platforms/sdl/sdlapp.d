@@ -843,6 +843,11 @@ class SDLPlatform : Platform {
 		}
 	}
 
+    /// handle theme change: e.g. reload some themed resources
+    override void onThemeChanged() {
+		foreach(w; _windowMap)
+			w.dispatchThemeChanged();
+    }
 
 	private uint _redrawEventId;
 

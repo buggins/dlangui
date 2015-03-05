@@ -469,6 +469,11 @@ class Win32Font : Font {
 		_glyphCache.cleanup();
 	}
 
+    /// clears glyph cache
+    override void clearGlyphCache() {
+		_glyphCache.clear();
+    }
+
     @property override int size() { return _size; }
     @property override int height() { return _height; }
     @property override int weight() { return _weight; }
@@ -627,6 +632,11 @@ class Win32FontManager : FontManager {
 		_activeFonts.cleanup();
 		//_list.cleanup();
 	}
+
+    /// clears glyph cache
+    override void clearGlyphCaches() {
+		_activeFonts.clearGlyphCache();
+    }
 }
 
 FontFamily pitchAndFamilyToFontFamily(ubyte flags) {

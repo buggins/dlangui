@@ -768,6 +768,19 @@ class Window {
         return false;
     }
 
+    /// handle theme change: e.g. reload some themed resources
+    void dispatchThemeChanged() {
+        if (_mainWidget)
+            _mainWidget.onThemeChanged();
+            // draw popups
+        foreach(p; _popups) {
+            p.onThemeChanged();
+        }
+        if (_tooltip.popup)
+            _tooltip.popup.onThemeChanged();
+    }
+
+
     /// post event to handle in UI thread (this method can be used from background thread)
     void postEvent(CustomEvent event) {
         // override to post event into window message queue
@@ -1242,6 +1255,7 @@ class Platform {
 			i18n.load("en.ini"); //"ru.ini", "en.ini"
 		else
 			i18n.load(langCode ~ ".ini", "en.ini");
+        onThemeChanged();
 		requestLayout();
 		return this;
 	}
@@ -1262,6 +1276,7 @@ class Platform {
 			Log.i("Applying loaded theme ", theme.id);
 		}
 		currentTheme = theme;
+        onThemeChanged();
 		requestLayout();
 		return this;
 	}
@@ -1302,6 +1317,12 @@ class Platform {
 		//// TODO: support other platforms
 		//return res;
     }
+
+    /// handle theme change: e.g. reload some themed resources
+    void onThemeChanged() {
+        // override and call dispatchThemeChange for all windows
+    }
+
 }
 
 /// get current platform object instance

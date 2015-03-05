@@ -790,6 +790,12 @@ class Win32Platform : Platform {
 		}
 	}
 
+    /// handle theme change: e.g. reload some themed resources
+    override void onThemeChanged() {
+		foreach(w; _windowMap)
+			w.dispatchThemeChanged();
+    }
+
 	Win32Window _windowToClose;
 
 	/// close window
