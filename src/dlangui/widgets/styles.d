@@ -1372,7 +1372,7 @@ class DrawableAttribute {
 }
 
 /// returns custom drawable replacement id for specified id from current theme, or returns passed value if not found or no current theme
-string getCustomDrawableId(string id) {
+string overrideCustomDrawableId(string id) {
     string res = currentTheme ? currentTheme.customDrawableId(id) : id;
     return !res ? id : res;
 }

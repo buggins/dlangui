@@ -148,7 +148,7 @@ class ImageWidget : Widget {
         if (!_drawable.isNull)
             return _drawable;
         if (_drawableId !is null)
-            _drawable = drawableCache.get(_drawableId);
+            _drawable = drawableCache.get(overrideCustomDrawableId(_drawableId));
         return _drawable;
     }
     /// set custom drawable (not one from resources)
@@ -165,6 +165,12 @@ class ImageWidget : Widget {
         _drawable.clear();
         requestLayout();
         return this;
+    }
+
+    /// handle theme change: e.g. reload some themed resources
+    override void onThemeChanged() {
+        if (_drawableId !is null)
+            _drawable.clear(); // remove cached drawable
     }
 
     override void measure(int parentWidth, int parentHeight) { 
@@ -310,13 +316,13 @@ class UrlImageTextButton : ImageTextButton {
 /// checkbox
 class CheckBox : ImageTextButton {
     this(string ID = null, string textResourceId = null) {
-        super(ID, getCustomDrawableId("btn_check"), textResourceId);
+        super(ID, "btn_check", textResourceId);
     }
     this(string ID, dstring labelText) {
-        super(ID, getCustomDrawableId("btn_check"), labelText);
+        super(ID, "btn_check", labelText);
     }
     this(string ID, UIString label) {
-        super(ID, getCustomDrawableId("btn_check"), label);
+        super(ID, "btn_check", label);
     }
     override protected void init(string drawableId, UIString caption) {
         super.init(drawableId, caption);
@@ -332,20 +338,15 @@ class CheckBox : ImageTextButton {
         checked = !checked;
         return super.handleClick();
     }
-    /// handle theme change: e.g. reload some themed resources
-    override void onThemeChanged() {
-        if (currentTheme)
-            _icon.drawableId = getCustomDrawableId("btn_check");
-    }
 }
 
 /// radio button
 class RadioButton : ImageTextButton {
     this(string ID = null, string textResourceId = null) {
-        super(ID,getCustomDrawableId("btn_radio"), textResourceId);
+        super(ID, "btn_radio", textResourceId);
     }
     this(string ID, dstring labelText) {
-        super(ID, getCustomDrawableId("btn_radio"), labelText);
+        super(ID, "btn_radio", labelText);
     }
     override protected void init(string drawableId, UIString caption) {
         super.init(drawableId, caption);
@@ -355,12 +356,6 @@ class RadioButton : ImageTextButton {
         if (_label)
             _label.styleId = STYLE_RADIOBUTTON_LABEL;
         checkable = true;
-    }
-
-    /// handle theme change: e.g. reload some themed resources
-    override void onThemeChanged() {
-        if (currentTheme)
-            _icon.drawableId = getCustomDrawableId("btn_radio");
     }
 
 	void uncheckSiblings() {
