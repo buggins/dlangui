@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android" >
   <item
-    android:drawable="main_menu_item_background_selected"
+    android:drawable="main_menu_item_background_selected_dark"
     android:state_selected="true" />
   <item
-    android:drawable="main_menu_item_background_hover"
+    android:drawable="main_menu_item_background_hover_dark"
     android:state_hovered="true" />
   <item
     android:drawable="@null" />

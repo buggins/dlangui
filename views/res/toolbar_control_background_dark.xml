@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android" >
   <item
-    android:drawable="toolbar_control_disabled"
+    android:drawable="toolbar_control_disabled_dark"
     android:state_enabled="false"
     android:state_focused="true" />
   <item
-    android:drawable="toolbar_button_hover"
+    android:drawable="toolbar_button_hover_dark"
     android:state_hovered="true"
     android:state_focused="true" />
   <item
-    android:drawable="toolbar_button_hover"
+    android:drawable="toolbar_button_hover_dark"
     android:state_focused="true" 
   />
   <item
-    android:drawable="toolbar_button_pressed"
+    android:drawable="toolbar_button_pressed_dark"
     android:state_pressed="true" />
   <item
-    android:drawable="toolbar_button_hover"
+    android:drawable="toolbar_button_hover_dark"
     android:state_hovered="true" />
   <item
-    android:drawable="toolbar_control_normal" />
+    android:drawable="toolbar_control_normal_dark" />
 </selector>

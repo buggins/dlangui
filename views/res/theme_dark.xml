@@ -14,8 +14,8 @@
 	focusRectColors="#FFF"
         textFlags="UnderlineHotKeys"
         >
-        <state state_enabled="false" textColor="#80FFFFFF"/>
-        <state state_enabled="true" state_hovered="true" textColor="#80FFFF"/>
+        <state state_enabled="false" textColor="#60FFFFFF"/>
+        <state state_enabled="true" state_hovered="true" textColor="#FF0000"/>
     </style>
     <style id="BUTTON_TRANSPARENT"
         backgroundImageId="btn_background_transparent_dark"
@@ -27,8 +27,8 @@
         align="Left|VCenter"
         textFlags="UnderlineHotKeys"
         >
-        <state state_enabled="false" textColor="#80FFFFFF"/>
-        <state state_enabled="true" state_hovered="true" textColor="#80FFFF"/>
+        <state state_enabled="false" textColor="#60FFFFFF"/>
+        <state state_enabled="true" state_hovered="true" textColor="#FF0000"/>
     </style>
     <style id="BUTTON_IMAGE"
         margins="2,2,2,2"
@@ -186,20 +186,20 @@
         align="Left|VCenter"
         textFlags="UnderlineHotKeys"
         >
-        <state state_enabled="false" textColor="#80C0C0C0"/>
+        <state state_enabled="false" textColor="#60FFFFFF"/>
     </style>
     <style id="MAIN_MENU_LABEL"
         margins="4,2,4,2"
         align="Left|VCenter"
         textFlags="Parent"
         >
-        <state state_enabled="false" textColor="#80C0C0C0"/>
+        <state state_enabled="false" textColor="#60FFFFFF"/>
     </style>
     <style id="MENU_ACCEL"
         margins="4,2,4,2"
         align="Left|VCenter"
         >
-        <state state_enabled="false" textColor="#80C0C0C0"/>
+        <state state_enabled="false" textColor="#60FFFFFF"/>
     </style>
     <style id="TRANSPARENT_BUTTON_BACKGROUND"
         backgroundImageId="btn_background_transparent_dark"
