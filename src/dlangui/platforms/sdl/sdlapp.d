@@ -115,6 +115,7 @@ class SDLWindow : Window {
 		// TODO: implement modal behavior
 		//if (flags & WindowFlag.Modal)
 		//	windowFlags |= SDL_WINDOW_INPUT_GRABBED;
+        windowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
 		version(USE_OPENGL) {
             if (_enableOpengl)
                 windowFlags |= SDL_WINDOW_OPENGL;
