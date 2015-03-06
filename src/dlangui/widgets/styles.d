@@ -377,10 +377,10 @@ class Style {
     }
 
     /// get custom color attribute
-    uint customColor(string id) {
+    uint customColor(string id, uint defColor = COLOR_TRANSPARENT) const {
         if (id in _customColors)
             return _customColors[id];
-        return parentStyle.customColor(id);
+        return parentStyle.customColor(id, defColor);
     }
 
     /// sets custom color attribute for style
@@ -883,10 +883,10 @@ class Theme : Style {
     }
 
     /// get custom color attribute - transparent by default
-    override uint customColor(string id) {
+    override uint customColor(string id, uint defColor = COLOR_TRANSPARENT) const {
         if (id in _customColors)
             return _customColors[id];
-        return COLOR_TRANSPARENT;
+        return defColor;
     }
 
     /// returns colors to draw focus rectangle or null if no focus rect should be drawn for style

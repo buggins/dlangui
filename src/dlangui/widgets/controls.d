@@ -305,8 +305,7 @@ class UrlImageTextButton : ImageTextButton {
         //_icon.styleId = STYLE_BUTTON_IMAGE;
         //_label.styleId = STYLE_BUTTON_LABEL;
         //_label.textFlags(TextFlag.Underline);
-        _label.ownStyle.getOrCreateState(State.Hovered, State.Hovered).textFlags(TextFlag.Underline);
-        _label.textColor(0x000080);
+        _label.styleId = "BUTTON_LABEL_LINK";
         padding(Rect(3,3,3,3));
     }
 }

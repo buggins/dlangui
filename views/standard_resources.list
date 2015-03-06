@@ -189,6 +189,7 @@ res/tab_up_background_focused.9.png
 res/tab_up_background_focused_dark.9.png
 res/tab_up_background_selected.9.png
 res/tab_up_background_selected_dark.9.png
+res/tab_up_background_theme_dark.xml
 res/theme_default.xml
 res/theme_dark.xml
 res/toolbar_button_background.xml

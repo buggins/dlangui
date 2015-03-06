@@ -1251,7 +1251,7 @@ class StringGridWidget : StringGridWidgetBase {
         Point sz = fnt.textSize(txt);
         Align ha = Align.Left;
         applyAlign(rc, sz, ha, Align.VCenter);
-		fnt.drawText(buf, rc.left + 1, rc.top + 1, txt, 0x000000);
+		fnt.drawText(buf, rc.left + 1, rc.top + 1, txt, textColor);
 	}
 
 	/// draw cell content
@@ -1272,7 +1272,7 @@ class StringGridWidget : StringGridWidgetBase {
         if (row < 0)
             ha = Align.HCenter;
         applyAlign(rc, sz, ha, Align.VCenter);
-		fnt.drawText(buf, rc.left + 1, rc.top + 1, txt, 0x000000);
+		fnt.drawText(buf, rc.left + 1, rc.top + 1, txt, textColor);
 	}
 
 	/// draw cell background
@@ -1288,7 +1288,7 @@ class StringGridWidget : StringGridWidgetBase {
         if (_rowSelect && selectedRow)
             selectedCell = true;
         // draw header cell background
-        uint cl = 0x80909090;
+        uint cl = 0xC0909090;
         if (c >= _headerCols || r >= _headerRows) {
             if (c < _headerCols && selectedRow)
                 cl = 0x80FFC040;
@@ -1296,8 +1296,8 @@ class StringGridWidget : StringGridWidgetBase {
                 cl = 0x80FFC040;
         }
         buf.fillRect(rc, cl);
-        buf.fillRect(vborder, 0x80202020);
-        buf.fillRect(hborder, 0x80202020);
+        buf.fillRect(vborder, 0xC0202020);
+        buf.fillRect(hborder, 0xC0202020);
 	}
 
 	/// draw cell background
@@ -1315,15 +1315,15 @@ class StringGridWidget : StringGridWidgetBase {
         // normal cell background
         if (c < _fixedCols || r < _fixedRows) {
             // fixed cell background
-            buf.fillRect(rc, 0x80E0E0E0);
+            buf.fillRect(rc, 0xC0E0E0E0);
         }
-        buf.fillRect(vborder, 0x80C0C0C0);
-        buf.fillRect(hborder, 0x80C0C0C0);
+        buf.fillRect(vborder, 0xC0C0C0C0);
+        buf.fillRect(hborder, 0xC0C0C0C0);
         if (selectedCell) {
             if (_rowSelect)
-                buf.drawFrame(rc, 0x80A0B0FF, Rect(0,1,0,1), 0xC0FFFF00);
+                buf.drawFrame(rc, 0xC0A0B0FF, Rect(0,1,0,1), 0xE0FFFF40);
             else
-                buf.drawFrame(rc, 0x404040FF, Rect(1,1,1,1), 0xC0FFFF00);
+                buf.drawFrame(rc, 0x804040FF, Rect(1,1,1,1), 0xE0FFFF40);
         }
 	}
 

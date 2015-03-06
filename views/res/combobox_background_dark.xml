@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_pressed="true" 
-        android:drawable="@drawable/btn_pressed" />
+        android:drawable="@drawable/btn_pressed_dark" />
     <item android:state_focused="true" android:state_default="true" android:state_enabled="true"
-        android:drawable="@drawable/btn_default" />
+        android:drawable="@drawable/btn_default_dark" />
     <item android:state_focused="true" android:state_enabled="true"
-        android:drawable="@drawable/btn_default" />
+        android:drawable="@drawable/btn_default_dark" />
     <item android:state_enabled="true" android:state_default="true"
-        android:drawable="@drawable/btn_default" />
+        android:drawable="@drawable/btn_default_dark" />
     <item android:state_enabled="true" android:state_hovered="true"
-        android:drawable="@drawable/btn_hover" />
+        android:drawable="@drawable/btn_hover_dark" />
     <item android:state_enabled="true"
-        android:drawable="@drawable/btn_normal" />
+        android:drawable="@drawable/btn_normal_dark" />
     <item
-        android:drawable="@drawable/btn_disabled" />
+        android:drawable="@drawable/btn_disabled_dark" />
 </selector>
 

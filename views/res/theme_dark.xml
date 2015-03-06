@@ -7,6 +7,8 @@
 	>
     <color id="window_background" value="#000000"/>
     <color id="dialog_background" value="#222222"/>
+    <color id="edit_background" value="#070808"/>
+
     <style id="BUTTON"
         backgroundImageId="btn_background_dark"
         align="Center"
@@ -29,6 +31,12 @@
         >
         <state state_enabled="false" textColor="#60FFFFFF"/>
         <state state_enabled="true" state_hovered="true" textColor="#FF0000"/>
+    </style>
+    <style id="BUTTON_LABEL_LINK" parent="BUTTON_LABEL"
+	textColor="#2020FF"
+        >
+        <state state_enabled="false" textColor="#60FFFFFF"/>
+        <state state_enabled="true" state_hovered="true" textColor="#E0E0FF" textFlags="Underline"/>
     </style>
     <style id="BUTTON_IMAGE"
         margins="2,2,2,2"
@@ -84,14 +92,11 @@
         backgroundImageId="btn_background_dark"
         align="Center"
         />
-    <color id="sample_color_rgb" value="#8CF"/>
-    <color id="sample_color_argb" value="#48CF"/>
-    <color id="sample_color_rrggbb" value="#80C0F0"/>
-    <color id="sample_color_aarrggbb" value="#4080C0F0"/>
     <drawable id="btn_check" value="btn_check_dark"/>
     <drawable id="btn_radio" value="btn_radio_dark"/>
     <drawable id="arrow_right_down_black" value="arrow_right_down_black_dark"/>
     <drawable id="arrow_right_hollow" value="arrow_right_hollow_dark"/>
+    <drawable id="toolbar_separator" value="toolbar_separator_dark"/>
 
     <drawable id="scrollbar_button_up" value="scrollbar_btn_up"/>
     <drawable id="scrollbar_button_down" value="scrollbar_btn_down"/>
@@ -122,7 +127,7 @@
     </style>
 
     <style id="TAB_UP_DARK"
-        backgroundImageId="tab_up_background_dark"
+        backgroundImageId="tab_up_background_theme_dark"
         layoutWidth="FILL_PARENT"
         >
     </style>
@@ -196,20 +201,20 @@
         align="Left|VCenter"
         textFlags="UnderlineHotKeys"
         >
-        <state state_enabled="false" textColor="#60FFFFFF"/>
+        <state state_enabled="false" textColor="#FFFFFF"/>
     </style>
     <style id="MAIN_MENU_LABEL"
         margins="4,2,4,2"
         align="Left|VCenter"
         textFlags="Parent"
         >
-        <state state_enabled="false" textColor="#60FFFFFF"/>
+        <state state_enabled="false" textColor="#FFFFFF"/>
     </style>
     <style id="MENU_ACCEL"
         margins="4,2,4,2"
         align="Left|VCenter"
         >
-        <state state_enabled="false" textColor="#60FFFFFF"/>
+        <state state_enabled="false" textColor="#FFFFFF"/>
     </style>
     <style id="TRANSPARENT_BUTTON_BACKGROUND"
         backgroundImageId="btn_background_transparent_dark"
@@ -263,7 +268,7 @@
 	layoutWeight="0"
         />
     <style id="DOCK_HOST"
-        backgroundColor="#293955"
+        backgroundColor="#192935"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         padding="2,2,2,2"
@@ -363,7 +368,7 @@
     <style id="TREE_ITEM_BODY"
         align="Left|VCenter"
         textFlags="Parent"
-        backgroundImageId="list_item_background"
+        backgroundImageId="list_item_background_dark"
     />
     <style id="TREE_ITEM_ICON"
         align="Left|VCenter"
