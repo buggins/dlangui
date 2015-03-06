@@ -90,12 +90,22 @@
     <color id="sample_color_aarrggbb" value="#4080C0F0"/>
     <drawable id="btn_check" value="btn_check_dark"/>
     <drawable id="btn_radio" value="btn_radio_dark"/>
+    <drawable id="arrow_right_down_black" value="arrow_right_down_black_dark"/>
+    <drawable id="arrow_right_hollow" value="arrow_right_hollow_dark"/>
+
     <drawable id="scrollbar_button_up" value="scrollbar_btn_up"/>
     <drawable id="scrollbar_button_down" value="scrollbar_btn_down"/>
     <drawable id="scrollbar_button_left" value="scrollbar_btn_left"/>
     <drawable id="scrollbar_button_right" value="scrollbar_btn_right"/>
+
+    <drawable id="scrollbar_btn_up" value="scrollbar_btn_up_dark"/>
+    <drawable id="scrollbar_btn_down" value="scrollbar_btn_down_dark"/>
+    <drawable id="scrollbar_btn_left" value="scrollbar_btn_left_dark"/>
+    <drawable id="scrollbar_btn_right" value="scrollbar_btn_right_dark"/>
+
     <drawable id="scrollbar_indicator_vertical" value="scrollbar_indicator_vertical"/>
     <drawable id="scrollbar_indicator_horizontal" value="scrollbar_indicator_horizontal"/>
+
     <style id="SCROLLBAR"
         backgroundColor="#C0808080"
         align="Center"

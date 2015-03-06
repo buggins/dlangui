@@ -157,9 +157,13 @@ res/menu_item_background_dark.xml
 res/popup_menu_background_normal.9.png
 res/popup_menu_background_normal_dark.9.png
 res/scrollbar_btn_down.png
+res/scrollbar_btn_down_dark.png
 res/scrollbar_btn_left.png
+res/scrollbar_btn_left_dark.png
 res/scrollbar_btn_right.png
+res/scrollbar_btn_right_dark.png
 res/scrollbar_btn_up.png
+res/scrollbar_btn_up_dark.png
 res/scrollbar_indicator_horizontal.png
 res/scrollbar_indicator_vertical.png
 res/tab_btn_dark_up.xml

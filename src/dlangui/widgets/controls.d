@@ -709,6 +709,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         return this; 
     }
 
+
     /// empty parameter list constructor - for usage by factory
     this() {
         this(null, Orientation.Vertical);
