@@ -936,6 +936,10 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
     }
     Platform.setInstance(w32platform);
 
+    // TODO
+    // Issue #72 Windows fix requeres following call
+    // SetProcessDPIAware();
+    // But it's not supported by current win32 D binding
 
 
     try {
