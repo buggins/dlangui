@@ -1845,6 +1845,7 @@ class EditBox : EditWidgetBase {
         return true;
     }
 
+    protected bool _enableScrollAfterText = true;
     override protected void ensureCaretVisible() {
         if (_caretPos.line >= _content.length)
             _caretPos.line = _content.length - 1;
@@ -1853,12 +1854,28 @@ class EditBox : EditWidgetBase {
         int visibleLines = _lineHeight > 0 ? _clientRect.height / _lineHeight : 1; // fully visible lines
         if (visibleLines < 1)
             visibleLines = 1;
+        int maxFirstVisibleLine = _content.length - 1;
+        if (!_enableScrollAfterText)
+            maxFirstVisibleLine = _content.length - visibleLines;
+        if (maxFirstVisibleLine < 0)
+            maxFirstVisibleLine = 0;
+
         if (_caretPos.line < _firstVisibleLine) {
             _firstVisibleLine = _caretPos.line;
+            if (_firstVisibleLine > maxFirstVisibleLine)
+                _firstVisibleLine = maxFirstVisibleLine;
             measureVisibleText();
             invalidate();
         } else if (_caretPos.line >= _firstVisibleLine + visibleLines) {
             _firstVisibleLine = _caretPos.line - visibleLines + 1;
+            if (_firstVisibleLine > maxFirstVisibleLine)
+                _firstVisibleLine = maxFirstVisibleLine;
+            if (_firstVisibleLine < 0)
+                _firstVisibleLine = 0;
+            measureVisibleText();
+            invalidate();
+        } else if (_firstVisibleLine > maxFirstVisibleLine) {
+            _firstVisibleLine = maxFirstVisibleLine;
             if (_firstVisibleLine < 0)
                 _firstVisibleLine = 0;
             measureVisibleText();
@@ -2352,12 +2369,14 @@ class LogWidget : EditBox {
     this(string ID) {
         super(ID);
         _scrollLock = true;
+        _enableScrollAfterText = false;
         enabled = false;
         fontSize = 14;
 		//fontFace = "Consolas,Lucida Console,Courier New";
 		fontFace = "Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console";
 		fontFamily = FontFamily.MonoSpace;
         minFontSize(8).maxFontSize(32); // allow font zoom with Ctrl + MouseWheel
+        onThemeChanged();
     }
     /// append lines to the end of text
     void appendText(dstring text) {
@@ -2371,11 +2390,37 @@ class LogWidget : EditBox {
             range.end.line = lineCount - _maxLines;
             EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
             _content.performOperation(op, this);
+            _contentChanged = true;
         }
         updateScrollBars();
         if (_scrollLock) {
-            _caretPos = TextPosition(lineCount > 0 ? lineCount - 1 : 0, 0);
+            _caretPos = lastLineBegin();
             ensureCaretVisible();
         }
     }
+
+    TextPosition lastLineBegin() {
+        TextPosition res;
+        if (_content.length == 0)
+            return res;
+        if (_content.lineLength(_content.length - 1) == 0 && _content.length > 1)
+            res.line = _content.length - 2;
+        else
+            res.line = _content.length - 1;
+        return res;
+    }
+
+    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+    override void layout(Rect rc) {
+        if (visibility == Visibility.Gone) {
+            return;
+        }
+        super.layout(rc);
+        if (_scrollLock) {
+            measureVisibleText();
+            _caretPos = lastLineBegin();
+            ensureCaretVisible();
+        }
+    }
+
 }
