@@ -432,6 +432,22 @@ class SDLWindow : Window {
     short lastx;
     short lasty;
 	void processMouseEvent(MouseAction action, uint button, uint state, int x, int y) {
+
+        // correct mouse coordinates for HIGHDPI on mac
+        int drawableW = 0;
+        int drawableH = 0;
+        int winW = 0;
+        int winH = 0;
+        SDL_GL_GetDrawableSize(_win, &drawableW, &drawableH);
+        SDL_GetWindowSize(_win, &winW, &winH);
+        if (drawableW != winW || drawableH != winH) {
+            if (drawableW > 0 && winW > 0 && drawableH > 0 && drawableW > 0) {
+                x = x * drawableW / winW;
+                y = y * drawableH / winH;
+            }
+        }
+
+
         MouseEvent event = null;
         if (action == MouseAction.Wheel) {
             // handle wheel
