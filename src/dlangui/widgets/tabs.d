@@ -231,13 +231,18 @@ class TabControl : WidgetGroupDefaultDrawing {
     /// signal on tab close button
     Signal!TabCloseHandler onTabCloseListener;
 
+    protected Align _tabAlignment;
+    @property Align tabAlignment() { return _tabAlignment; }
+    @property void tabAlignment(Align a) { _tabAlignment = a; }
+
     /// empty parameter list constructor - for usage by factory
     this() {
         this(null);
     }
     /// create with ID parameter
-    this(string ID) {
+    this(string ID, Align tabAlignment = Align.Top) {
         super(ID);
+        _tabAlignment = tabAlignment;
         setStyles(STYLE_TAB_UP, STYLE_TAB_UP_BUTTON, STYLE_TAB_UP_BUTTON_TEXT);
         _items = new TabItemList();
         _moreButton = new ImageButton("MORE", "tab_more");
@@ -628,15 +633,20 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
         this(null);
     }
     /// create with ID parameter
-    this(string ID) {
+    this(string ID, Align tabAlignment = Align.Top) {
         super(ID);
-        _tabControl = new TabControl("TAB_CONTROL");
+        _tabControl = new TabControl("TAB_CONTROL", tabAlignment);
         _tabHost = new TabHost("TAB_HOST", _tabControl);
 		_tabControl.onTabChangedListener.connect(this);
 		_tabControl.onTabCloseListener.connect(this);
         styleId = STYLE_TAB_WIDGET;
-        addChild(_tabControl);
-        addChild(_tabHost);
+        if (tabAlignment == Align.Top) {
+            addChild(_tabControl);
+            addChild(_tabHost);
+        } else {
+            addChild(_tabHost);
+            addChild(_tabControl);
+        }
         focusGroup = true;
     }
 

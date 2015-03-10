@@ -143,6 +143,12 @@ immutable string STYLE_TAB_UP_DARK = "TAB_UP_DARK";
 immutable string STYLE_TAB_UP_BUTTON_DARK = "TAB_UP_BUTTON_DARK";
 /// standard style id for tab control tab button text in dock frame
 immutable string STYLE_TAB_UP_BUTTON_DARK_TEXT = "TAB_UP_BUTTON_DARK_TEXT";
+/// standard style id for tab control in dock frame
+immutable string STYLE_TAB_DOWN_DARK = "TAB_DOWN_DARK";
+/// standard style id for tab control tab button in dock frame
+immutable string STYLE_TAB_DOWN_BUTTON_DARK = "TAB_DOWN_BUTTON_DARK";
+/// standard style id for tab control tab button text in dock frame
+immutable string STYLE_TAB_DOWN_BUTTON_DARK_TEXT = "TAB_DOWN_BUTTON_DARK_TEXT";
 
 /// standard style id for tooltip popup
 immutable string STYLE_TOOLTIP = "TOOLTIP";

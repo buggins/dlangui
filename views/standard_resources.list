@@ -122,6 +122,16 @@ res/mdpi/folder.png
 res/mdpi/media-flash-sd-mmc.png
 res/mdpi/popup_window_background.9.png
 res/mdpi/popup_window_background_dark.9.png
+res/mdpi/tab_btn_dark_down_focused.9.png
+res/mdpi/tab_btn_dark_down_focused_dark.9.png
+res/mdpi/tab_btn_dark_down_focused_selected.9.png
+res/mdpi/tab_btn_dark_down_focused_selected_dark.9.png
+res/mdpi/tab_btn_dark_down_hover.9.png
+res/mdpi/tab_btn_dark_down_hover_dark.9.png
+res/mdpi/tab_btn_dark_down_normal.9.png
+res/mdpi/tab_btn_dark_down_normal_dark.9.png
+res/mdpi/tab_btn_dark_down_selected.9.png
+res/mdpi/tab_btn_dark_down_selected_dark.9.png
 res/mdpi/tab_btn_dark_up_focused.9.png
 res/mdpi/tab_btn_dark_up_focused_dark.9.png
 res/mdpi/tab_btn_dark_up_focused_selected.9.png
@@ -132,6 +142,10 @@ res/mdpi/tab_btn_dark_up_normal.9.png
 res/mdpi/tab_btn_dark_up_normal_dark.9.png
 res/mdpi/tab_btn_dark_up_selected.9.png
 res/mdpi/tab_btn_dark_up_selected_dark.9.png
+res/mdpi/tab_down_background_dark_focused.9.png
+res/mdpi/tab_down_background_dark_focused_dark.9.png
+res/mdpi/tab_down_background_dark_normal.9.png
+res/mdpi/tab_down_background_dark_normal_dark.9.png
 res/mdpi/tab_up_background_dark_focused.9.png
 res/mdpi/tab_up_background_dark_focused_dark.9.png
 res/mdpi/tab_up_background_dark_normal.9.png
@@ -166,6 +180,8 @@ res/scrollbar_btn_up.png
 res/scrollbar_btn_up_dark.png
 res/scrollbar_indicator_horizontal.png
 res/scrollbar_indicator_vertical.png
+res/tab_btn_dark_down.xml
+res/tab_btn_dark_down_dark.xml
 res/tab_btn_dark_up.xml
 res/tab_btn_dark_up_dark.xml
 res/tab_btn_normal.9.png
@@ -183,6 +199,8 @@ res/tab_btn_up_normal_dark.9.png
 res/tab_btn_up_selected.9.png
 res/tab_btn_up_selected_dark.9.png
 res/tab_more.png
+res/tab_down_background_dark.xml
+res/tab_down_background_theme_dark.xml
 res/tab_up_background.9.png
 res/tab_up_background_dark.xml
 res/tab_up_background_focused.9.png

@@ -471,7 +471,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
 	/// returns mouse cursor type for widget
 	override uint getCursorType(int x, int y) {
-		return CursorType.IBeam;
+		return x < _pos.left + _leftPaneWidth ? CursorType.Arrow : CursorType.IBeam;
 	}
 	
 

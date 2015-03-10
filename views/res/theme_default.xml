@@ -137,6 +137,15 @@
         <state state_hovered="true" backgroundColor="#F0404080"/>
     </style>
 
+    <style id="TAB_DOWN_DARK"
+        backgroundImageId="tab_down_background_dark"
+        layoutWidth="FILL_PARENT"
+        >
+    </style>
+    <style id="TAB_DOWN_BUTTON_DARK"
+        padding="5,1,1,1"
+        backgroundImageId="tab_btn_dark_down"
+        />
     <style id="TAB_UP_DARK"
         backgroundImageId="tab_up_background_dark"
         layoutWidth="FILL_PARENT"
