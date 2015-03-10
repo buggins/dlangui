@@ -231,6 +231,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected uint _leftPaneBackgroundColor3 = 0xC0C0C0;
     protected uint _leftPaneLineNumberColor = 0x4060D0;
     protected uint _leftPaneLineNumberBackgroundColor = 0xF0F0F0;
+    protected uint _caretColor = 0x000000;
+    protected uint _caretColorReplace = 0x808080FF;
     protected uint _iconsPaneWidth = 16;
     protected uint _foldingPaneWidth = 12;
     protected uint _modificationMarksPaneWidth = 4;
@@ -273,11 +275,11 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     }
 
     protected void drawLeftPaneFolding(DrawBuf buf, Rect rc, int line) {
-        buf.fillRect(rc, 0xFFFFFF);
+        buf.fillRect(rc, _leftPaneBackgroundColor2);
     }
 
     protected void drawLeftPaneIcons(DrawBuf buf, Rect rc, int line) {
-        buf.fillRect(rc, 0xE0E0E0);
+        buf.fillRect(rc, _leftPaneBackgroundColor3);
     }
 
     protected void drawLeftPaneModificationMarks(DrawBuf buf, Rect rc, int line) {
@@ -797,6 +799,20 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return caretRc;
     }
 
+    /// handle theme change: e.g. reload some themed resources
+    override void onThemeChanged() {
+        _caretColor = style.customColor("edit_caret");
+        _caretColorReplace = style.customColor("edit_caret_replace");
+        _selectionColorFocused = style.customColor("editor_selection_focused");
+        _selectionColorNormal = style.customColor("editor_selection_normal");
+        _leftPaneBackgroundColor = style.customColor("editor_left_pane_background");
+        _leftPaneBackgroundColor2 = style.customColor("editor_left_pane_background2");
+        _leftPaneBackgroundColor3 = style.customColor("editor_left_pane_background3");
+        _leftPaneLineNumberColor = style.customColor("editor_left_pane_line_number_text");
+        _leftPaneLineNumberBackgroundColor = style.customColor("editor_left_pane_line_number_background");
+        super.onThemeChanged();
+    }
+
     /// draws caret
     protected void drawCaret(DrawBuf buf) {
         if (focused) {
@@ -810,8 +826,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 rc1.right = rc1.left + 1;
                 caretRc.left++;
                 if (_replaceMode)
-                    buf.fillRect(caretRc, 0x808080FF);
-                buf.fillRect(rc1, 0x000000);
+                    buf.fillRect(caretRc, _caretColorReplace);
+                buf.fillRect(rc1, _caretColor);
             }
         }
     }

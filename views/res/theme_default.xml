@@ -7,6 +7,15 @@
     <color id="window_background" value="#FFFFFF"/>
     <color id="dialog_background" value="#EEEEEE"/>
     <color id="edit_background" value="#FFFFFF"/>
+    <color id="edit_caret" value="#000000"/>
+    <color id="edit_caret_replace" value="#808080FF"/>
+    <color id="editor_selection_focused" value="#B060A0FF"/>
+    <color id="editor_selection_normal" value="#D060A0FF"/>
+    <color id="editor_left_pane_background" value="#F4F4F4"/>
+    <color id="editor_left_pane_background2" value="#FFFFFF"/>
+    <color id="editor_left_pane_background3" value="#C0C0C0"/>
+    <color id="editor_left_pane_line_number_text" value="#4060D0"/>
+    <color id="editor_left_pane_line_number_background" value="#F0F0F0"/>
 
     <style id="BUTTON"
         backgroundImageId="btn_background"

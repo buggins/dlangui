@@ -8,6 +8,15 @@
     <color id="window_background" value="#000000"/>
     <color id="dialog_background" value="#222222"/>
     <color id="edit_background" value="#070808"/>
+    <color id="edit_caret" value="#E0E0E0"/>
+    <color id="edit_caret_replace" value="#808080FF"/>
+    <color id="editor_selection_focused" value="#B080B0FF"/>
+    <color id="editor_selection_normal" value="#D080C0FF"/>
+    <color id="editor_left_pane_background" value="#030305"/>
+    <color id="editor_left_pane_background2" value="#080808"/>
+    <color id="editor_left_pane_background3" value="#040404"/>
+    <color id="editor_left_pane_line_number_text" value="#707070"/>
+    <color id="editor_left_pane_line_number_background" value="#060606"/>
 
     <style id="BUTTON"
         backgroundImageId="btn_background_dark"
