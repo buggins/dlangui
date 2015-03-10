@@ -167,6 +167,16 @@ class SDLWindow : Window {
 		return true;
 	}
 		
+    void doResize(int width, int height) {
+        int w = 0;
+        int h = 0;
+        SDL_GL_GetDrawableSize(_win, &w, &h);
+        if (w != width || h != height) {
+            Log.d("SDL_GL_GetDrawableSize returned ", w, "x", h, " while resize event reports ", width, "x", height);
+        }
+        onResize(w, h);
+    }
+
 	@property uint windowId() {
         if (_win)
 			return SDL_GetWindowID(_win);
@@ -920,13 +930,13 @@ class SDLPlatform : Platform {
                             case SDL_WINDOWEVENT_RESIZED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_RESIZED win=", event.window.windowID, " pos=", event.window.data1,
                                         ",", event.window.data2);
-                                w.onResize(event.window.data1, event.window.data2);
+                                w.doResize(event.window.data1, event.window.data2);
                                 w.redraw();
                                 break;
                             case SDL_WINDOWEVENT_SIZE_CHANGED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_SIZE_CHANGED win=", event.window.windowID, " pos=", event.window.data1,
                                         ",", event.window.data2);
-                                w.onResize(event.window.data1, event.window.data2);
+                                w.doResize(event.window.data1, event.window.data2);
                                 w.redraw();
                                 break;
                             case SDL_WINDOWEVENT_CLOSE:
@@ -1102,7 +1112,8 @@ version (Windows) {
                 Runtime.initialize();
                 result = myWinMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
                 Log.i("calling Runtime.terminate()");
-                Runtime.terminate();
+                // commented out to fix hanging runtime.terminate when there are background threads
+                //Runtime.terminate();
             }
             catch (Throwable e) // catch any uncaught exceptions
             {

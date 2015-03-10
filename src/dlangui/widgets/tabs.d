@@ -650,6 +650,9 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
         focusGroup = true;
     }
 
+    TabControl tabControl() { return _tabControl; }
+    TabHost tabHost() { return _tabHost; }
+
 	/// signal of tab change (e.g. by clicking on tab header)
 	Signal!TabHandler onTabChangedListener;
     /// signal on tab close button
