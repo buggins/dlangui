@@ -233,6 +233,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected uint _leftPaneLineNumberBackgroundColor = 0xF0F0F0;
     protected uint _caretColor = 0x000000;
     protected uint _caretColorReplace = 0x808080FF;
+    protected uint _matchingBracketHightlightColor = 0x60FFE0B0;
     protected uint _iconsPaneWidth = 16;
     protected uint _foldingPaneWidth = 12;
     protected uint _modificationMarksPaneWidth = 4;
@@ -810,6 +811,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         _leftPaneBackgroundColor3 = style.customColor("editor_left_pane_background3");
         _leftPaneLineNumberColor = style.customColor("editor_left_pane_line_number_text");
         _leftPaneLineNumberBackgroundColor = style.customColor("editor_left_pane_line_number_background");
+        _matchingBracketHightlightColor = style.customColor("editor_matching_bracket_highlight");
         super.onThemeChanged();
     }
 
@@ -1490,6 +1492,7 @@ class EditLine : EditWidgetBase {
         wantTabs = false;
         styleId = STYLE_EDIT_LINE;
         text = initialContent;
+        onThemeChanged();
     }
 
     protected dstring _measuredText;
@@ -1684,8 +1687,8 @@ class EditBox : EditWidgetBase {
 			new Action(EditorActions.ZoomIn, KeyCode.ADD, KeyFlag.Control),
 			new Action(EditorActions.ZoomOut, KeyCode.SUB, KeyFlag.Control),
 		]);
+        onThemeChanged();
     }
-    protected uint _matchingBracketHightlightColor = 0x60FFE0B0;
 
     protected int _firstVisibleLine;
 

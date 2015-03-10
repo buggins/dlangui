@@ -289,6 +289,14 @@ class GridWidgetBase : ScrollWidgetBase {
     /// set row count
 	@property GridWidgetBase rows(int r) { resize(cols, r); return this; }
 
+    protected uint _selectionColor = 0x804040FF;
+    protected uint _selectionColorRowSelect = 0xC0A0B0FF;
+    protected uint _fixedCellBackgroundColor = 0xC0E0E0E0;
+    protected uint _cellBorderColor = 0xC0C0C0C0;
+    protected uint _cellHeaderBorderColor = 0xC0202020;
+    protected uint _cellHeaderBackgroundColor = 0xC0909090;
+    protected uint _cellHeaderSelectedBackgroundColor = 0x80FFC040;
+
     /// row header column count
 	@property int headerCols() { return _headerCols; }
 	@property GridWidgetBase headerCols(int c) { 
@@ -1171,13 +1179,16 @@ class StringGridWidget : StringGridWidgetBase {
 	this(string ID) {
 		super(ID);
 		styleId = STYLE_EDIT_BOX;
+        onThemeChanged();
 	}
+
 	/// get cell text
 	override dstring cellText(int col, int row) {
         if (col >= 0 && col < cols && row >= 0 && row < rows)
 		    return _data[row][col];
         return ""d;
 	}
+
 	/// set cell text
 	override StringGridWidgetBase setCellText(int col, int row, dstring text) {
         if (col >= 0 && col < cols && row >= 0 && row < rows)
@@ -1288,17 +1299,30 @@ class StringGridWidget : StringGridWidgetBase {
         if (_rowSelect && selectedRow)
             selectedCell = true;
         // draw header cell background
-        uint cl = 0xC0909090;
+        uint cl = _cellHeaderBackgroundColor;
         if (c >= _headerCols || r >= _headerRows) {
             if (c < _headerCols && selectedRow)
-                cl = 0x80FFC040;
+                cl = _cellHeaderSelectedBackgroundColor;
             if (r < _headerRows && selectedCol)
-                cl = 0x80FFC040;
+                cl = _cellHeaderSelectedBackgroundColor;
         }
         buf.fillRect(rc, cl);
-        buf.fillRect(vborder, 0xC0202020);
-        buf.fillRect(hborder, 0xC0202020);
+        buf.fillRect(vborder, _cellHeaderBorderColor);
+        buf.fillRect(hborder, _cellHeaderBorderColor);
 	}
+
+
+    /// handle theme change: e.g. reload some themed resources
+    override void onThemeChanged() {
+        _selectionColor = style.customColor("grid_selection_color", 0x804040FF);
+        _selectionColorRowSelect = style.customColor("grid_selection_color_row", 0xC0A0B0FF);
+        _fixedCellBackgroundColor = style.customColor("grid_cell_background_fixed", 0xC0E0E0E0);
+        _cellBorderColor = style.customColor("grid_cell_border_color", 0xC0C0C0C0);
+        _cellHeaderBorderColor = style.customColor("grid_cell_border_color_header", 0xC0202020);
+        _cellHeaderBackgroundColor = style.customColor("grid_cell_background_header", 0xC0909090);
+        _cellHeaderSelectedBackgroundColor = style.customColor("grid_cell_background_header_selected", 0x80FFC040);
+        super.onThemeChanged();
+    }
 
 	/// draw cell background
 	protected override void drawCellBackground(DrawBuf buf, Rect rc, int c, int r) {
@@ -1315,15 +1339,15 @@ class StringGridWidget : StringGridWidgetBase {
         // normal cell background
         if (c < _fixedCols || r < _fixedRows) {
             // fixed cell background
-            buf.fillRect(rc, 0xC0E0E0E0);
+            buf.fillRect(rc, _fixedCellBackgroundColor);
         }
-        buf.fillRect(vborder, 0xC0C0C0C0);
-        buf.fillRect(hborder, 0xC0C0C0C0);
+        buf.fillRect(vborder, _cellBorderColor);
+        buf.fillRect(hborder, _cellBorderColor);
         if (selectedCell) {
             if (_rowSelect)
-                buf.drawFrame(rc, 0xC0A0B0FF, Rect(0,1,0,1), 0xE0FFFF40);
+                buf.drawFrame(rc, _selectionColorRowSelect, Rect(0,1,0,1), _cellBorderColor);
             else
-                buf.drawFrame(rc, 0x804040FF, Rect(1,1,1,1), 0xE0FFFF40);
+                buf.drawFrame(rc, _selectionColor, Rect(1,1,1,1), _cellBorderColor);
         }
 	}
 

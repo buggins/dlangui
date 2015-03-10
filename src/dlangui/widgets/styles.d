@@ -1234,7 +1234,7 @@ bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
 			uint stateValue = 0;
 			extractStateFlags(item.tag.attr, stateMask, stateValue);
 			if (stateMask) {
-				Style state = style.createState(stateMask, stateValue);
+				Style state = style.getOrCreateState(stateMask, stateValue);
 				loadStyleAttributes(state, item, false);
 			}
 		} else if (item.tag.name.equal("drawable")) {

@@ -9,6 +9,7 @@
     <color id="edit_background" value="#FFFFFF"/>
     <color id="edit_caret" value="#000000"/>
     <color id="edit_caret_replace" value="#808080FF"/>
+    <color id="editor_matching_bracket_highlight" value="#60FFE0B0"/>
     <color id="editor_selection_focused" value="#B060A0FF"/>
     <color id="editor_selection_normal" value="#D060A0FF"/>
     <color id="editor_left_pane_background" value="#F4F4F4"/>
@@ -16,6 +17,14 @@
     <color id="editor_left_pane_background3" value="#C0C0C0"/>
     <color id="editor_left_pane_line_number_text" value="#4060D0"/>
     <color id="editor_left_pane_line_number_background" value="#F0F0F0"/>
+
+    <color id="grid_selection_color" value="#804040FF"/>
+    <color id="grid_selection_color_row" value="#C0A0B0FF"/>
+    <color id="grid_cell_background_fixed" value="#C0E0E0E0"/>
+    <color id="grid_cell_border_color" value="#C0C0C0C0"/>
+    <color id="grid_cell_border_color_header" value="#C0202020"/>
+    <color id="grid_cell_background_header" value="#C0909090"/>
+    <color id="grid_cell_background_header_selected" value="#80FFC040"/>
 
     <style id="BUTTON"
         backgroundImageId="btn_background"
@@ -76,6 +85,7 @@
         />
     <style id="RADIOBUTTON_LABEL" parent="CHECKBOX_LABEL"
         align="Left|VCenter"
+	focusRectColors="#000"
         >
         <state state_enabled="true" state_hovered="true" textColor="#006080"/>
     </style>

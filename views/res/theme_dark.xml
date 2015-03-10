@@ -10,6 +10,7 @@
     <color id="edit_background" value="#070808"/>
     <color id="edit_caret" value="#E0E0E0"/>
     <color id="edit_caret_replace" value="#808080FF"/>
+    <color id="editor_matching_bracket_highlight" value="#40606000"/>
     <color id="editor_selection_focused" value="#B080B0FF"/>
     <color id="editor_selection_normal" value="#D080C0FF"/>
     <color id="editor_left_pane_background" value="#030305"/>
@@ -17,6 +18,14 @@
     <color id="editor_left_pane_background3" value="#040404"/>
     <color id="editor_left_pane_line_number_text" value="#707070"/>
     <color id="editor_left_pane_line_number_background" value="#060606"/>
+
+    <color id="grid_selection_color" value="#60909040"/>
+    <color id="grid_selection_color_row" value="#60A0A040"/>
+    <color id="grid_cell_background_fixed" value="#C0404040"/>
+    <color id="grid_cell_border_color" value="#C0808080"/>
+    <color id="grid_cell_border_color_header" value="#80000000"/>
+    <color id="grid_cell_background_header" value="#C0808080"/>
+    <color id="grid_cell_background_header_selected" value="#40B0B060"/>
 
     <style id="BUTTON"
         backgroundImageId="btn_background_dark"
@@ -26,7 +35,7 @@
         textFlags="UnderlineHotKeys"
         >
         <state state_enabled="false" textColor="#60FFFFFF"/>
-        <state state_enabled="true" state_hovered="true" textColor="#FF0000"/>
+        <state state_enabled="true" state_hovered="true" textColor="#E0E080"/>
     </style>
     <style id="BUTTON_TRANSPARENT"
         backgroundImageId="btn_background_transparent_dark"
@@ -36,16 +45,18 @@
         layoutWidth="FILL_PARENT"
         margins="2,2,2,2"
         align="Left|VCenter"
+	focusRectColors="#FFF"
         textFlags="UnderlineHotKeys"
         >
         <state state_enabled="false" textColor="#60FFFFFF"/>
-        <state state_enabled="true" state_hovered="true" textColor="#FF0000"/>
+        <state state_enabled="true" state_hovered="true" textColor="#E0E080"/>
     </style>
     <style id="BUTTON_LABEL_LINK" parent="BUTTON_LABEL"
 	textColor="#2020FF"
+	focusRectColors="#FFF"
         >
         <state state_enabled="false" textColor="#60FFFFFF"/>
-        <state state_enabled="true" state_hovered="true" textColor="#E0E0FF" textFlags="Underline"/>
+        <state state_enabled="true" state_hovered="true" textColor="#A0A0FF" textFlags="Underline"/>
     </style>
     <style id="BUTTON_IMAGE"
         margins="2,2,2,2"
@@ -77,6 +88,7 @@
         />
     <style id="RADIOBUTTON_LABEL" parent="CHECKBOX_LABEL"
         align="Left|VCenter"
+	focusRectColors="#FFF"
         >
         <state state_enabled="true" state_hovered="true" textColor="#C0FFFF"/>
     </style>
@@ -210,20 +222,20 @@
         align="Left|VCenter"
         textFlags="UnderlineHotKeys"
         >
-        <state state_enabled="false" textColor="#FFFFFF"/>
+        <state state_enabled="false" textColor="#808080"/>
     </style>
     <style id="MAIN_MENU_LABEL"
         margins="4,2,4,2"
         align="Left|VCenter"
         textFlags="Parent"
         >
-        <state state_enabled="false" textColor="#FFFFFF"/>
+        <state state_enabled="false" textColor="#808080"/>
     </style>
     <style id="MENU_ACCEL"
         margins="4,2,4,2"
         align="Left|VCenter"
         >
-        <state state_enabled="false" textColor="#FFFFFF"/>
+        <state state_enabled="false" textColor="#808080"/>
     </style>
     <style id="TRANSPARENT_BUTTON_BACKGROUND"
         backgroundImageId="btn_background_transparent_dark"
@@ -277,7 +289,7 @@
 	layoutWeight="0"
         />
     <style id="DOCK_HOST"
-        backgroundColor="#192935"
+        backgroundColor="#091925"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         padding="2,2,2,2"
@@ -303,13 +315,13 @@
         margins="4,4,4,4"
         />
     <style id="DOCK_WINDOW_CAPTION"
-        backgroundColor="#4d6082"
+        backgroundColor="#3d5072"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
         padding="1,1,1,1"
         />
     <style id="DOCK_WINDOW_CAPTION_LABEL"
-        textColor="#FFFFFF"
+        textColor="#E0E0E0"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
         padding="3,3,3,3"
@@ -324,7 +336,7 @@
         />
 
     <style id="TOOLBAR_HOST"
-        backgroundColor="#202020"
+        backgroundColor="#202325"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
         padding="1,1,1,1"
@@ -335,7 +347,7 @@
         layoutHeight="WRAP_CONTENT"
         margins="2,7,2,1"
         padding="3,3,3,3"
-	textColor="#404040"
+	textColor="#E0E0E0"
         />
     <style id="TOOLBAR"
         backgroundImageId="toolbar_background_dark"
