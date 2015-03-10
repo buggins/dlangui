@@ -2378,6 +2378,7 @@ class LogWidget : EditBox {
         minFontSize(8).maxFontSize(32); // allow font zoom with Ctrl + MouseWheel
         onThemeChanged();
     }
+
     /// append lines to the end of text
     void appendText(dstring text) {
 		if (text.length == 0)
