@@ -153,6 +153,7 @@ class SDLWindow : Window {
                     _gl3Reloaded = true;
                     if (!glSupport.valid && !glSupport.initShaders())
                         _enableOpengl = false;
+                    fixSize();
                 }
             }
         }
@@ -162,11 +163,19 @@ class SDLWindow : Window {
 				Log.e("SDL2: Failed to create renderer");
 				return false;
 			}
+            fixSize();
         }
 		windowCaption = _caption;
 		return true;
 	}
-		
+	
+    void fixSize() {
+        int w = 0;
+        int h = 0;
+        SDL_GetWindowSize(_win, &w, &h);
+        doResize(w, h);
+    }
+
     void doResize(int width, int height) {
         int w = 0;
         int h = 0;
@@ -174,7 +183,10 @@ class SDLWindow : Window {
         if (w != width || h != height) {
             Log.d("SDL_GL_GetDrawableSize returned ", w, "x", h, " while resize event reports ", width, "x", height);
         }
-        onResize(w, h);
+        if (w && h)
+            onResize(w, h);
+        else
+            onResize(width, height);
     }
 
 	@property uint windowId() {
@@ -193,10 +205,7 @@ class SDLWindow : Window {
 		SDL_ShowWindow(_win);
         if (_mainWidget)
             _mainWidget.setFocus();
-        int w = 0;
-        int h = 0;
-        SDL_GL_GetWindowSize(_win, &w, &h);
-        doResize(w, h);
+        fixSize();
 	}
 
 	/// close window
