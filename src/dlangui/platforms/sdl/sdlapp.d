@@ -193,6 +193,10 @@ class SDLWindow : Window {
 		SDL_ShowWindow(_win);
         if (_mainWidget)
             _mainWidget.setFocus();
+        int w = 0;
+        int h = 0;
+        SDL_GL_GetWindowSize(_win, &w, &h);
+        doResize(w, h);
 	}
 
 	/// close window
