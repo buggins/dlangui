@@ -271,11 +271,15 @@ class FrameDrawable : Drawable {
     @property override Rect padding() { return _frameWidths; }
 }
 
+enum DimensionUnits {
+    pixels,
+    points
+}
 
 /// decode size string, e.g. 1px or 2 or 3pt
 static uint decodeDimension(string s) {
     uint value = 0;
-    int units = 0;
+    DimensionUnits units = DimensionUnits.pixels;
     foreach(c; s) {
         int digit = -1;
         if (c >='0' && c <= '9')
@@ -283,9 +287,17 @@ static uint decodeDimension(string s) {
         if (digit >= 0)
             value = value * 10 + digit;
         else if (c == 't') // just test by containing 't' - for NNNpt
-            units = 1; // "pt"
+            units = DimensionUnits.points; // "pt"
     }
     // TODO: convert points to pixels
+    switch(units) {
+    case DimensionUnits.points:
+        // convert points to pixels
+        value = pointsToPixels(value);
+        break;
+    default:
+        break;
+    }
     return value;
 }
 

@@ -868,6 +868,14 @@ int DLANGUIWinMain(void* hInstance, void* hPrevInstance,
     try
     {
         Runtime.initialize();
+
+        // call SetProcessDPIAware to support HI DPI - fix by Kapps
+        auto ulib = LoadLibraryA("user32.dll");
+        alias SetProcessDPIAwareFunc = int function();
+        auto setDpiFunc = cast(SetProcessDPIAwareFunc)GetProcAddress(ulib, "SetProcessDPIAware");
+        if(setDpiFunc) // Should never fail, but just in case...
+            setDpiFunc();
+
         result = myWinMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
         // TODO: fix hanging on multithreading app
         //Runtime.terminate();

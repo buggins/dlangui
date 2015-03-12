@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <theme id="theme_default" 
-        fontSize="12" 
+        fontSize="9pt" 
         fontFace="Verdana,Arial,DejaVu Sans"
         fontFamily="SansSerif"
 	>
@@ -156,7 +156,6 @@
         backgroundImageId="tab_btn_dark_up"
         />
     <style id="TAB_UP_BUTTON_DARK_TEXT"
-        fontSize="12"
         textColor="#E0E0E0"
         align="Center"
         >
@@ -175,7 +174,6 @@
     </style>
     <style id="TAB_UP_BUTTON_TEXT"
         textColor="#000000"
-        fontSize="12"
         align="Center"
         >
         <state state_selected="true" state_focused="true" textColor="#000000"/>
@@ -324,7 +322,6 @@
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
         padding="3,3,3,3"
-	fontSize="12"
         align="Left|VCenter"
         />
     <style id="DOCK_WINDOW_BODY"
@@ -416,7 +413,7 @@
 
     <style id="SETTINGS_PAGE_TITLE"
         margins="4,4,4,14"
-	fontSize="18"
+	fontSize="11pt"
 	layoutWeight="0"
         layoutWidth="FILL_PARENT"
     />

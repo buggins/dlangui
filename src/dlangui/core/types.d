@@ -181,7 +181,12 @@ private __gshared int PRIVATE_SCREEN_DPI = 96;
 }
 
 @property void SCREEN_DPI(int dpi) {
-    PRIVATE_SCREEN_DPI = dpi;
+    if (dpi >= 72 && dpi <= 500) {
+        if (PRIVATE_SCREEN_DPI != dpi) {
+            // changed DPI
+            PRIVATE_SCREEN_DPI = dpi;
+        }
+    }
 }
 
 /// one point is 1/72 of inch

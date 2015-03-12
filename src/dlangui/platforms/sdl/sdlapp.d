@@ -180,13 +180,14 @@ class SDLWindow : Window {
         int w = 0;
         int h = 0;
         SDL_GL_GetDrawableSize(_win, &w, &h);
-        if (w != width || h != height) {
-            Log.d("SDL_GL_GetDrawableSize returned ", w, "x", h, " while resize event reports ", width, "x", height);
+        version (Windows) {
+            // DPI already calculated
+        } else {
+            // scale DPI
+            if (w > width && h > height && width > 0 && height > 0)
+                SCREEN_DPI = 96 * w / width;
         }
-        if (w && h)
-            onResize(w, h);
-        else
-            onResize(width, height);
+        onResize(std.algorithm.max(width, w), std.algorithm.max(height, h));
     }
 
 	@property uint windowId() {
@@ -194,7 +195,6 @@ class SDLWindow : Window {
 			return SDL_GetWindowID(_win);
         return 0;
 	}
-
 		
 	override void show() {
 		Log.d("SDLWindow.show()");
@@ -364,9 +364,7 @@ class SDLWindow : Window {
 	void redraw() {
         //Log.e("Widget instance count in SDLWindow.redraw: ", Widget.instanceCount());
         // check if size has been changed
-        int w, h;
-        SDL_GetWindowSize(_win, &w, &h);
-        onResize(w, h);
+        fixSize();
 
 		if (_enableOpengl) {
             version(USE_OPENGL) {
@@ -1139,6 +1137,21 @@ version (Windows) {
             try
             {
                 Runtime.initialize();
+
+                // call SetProcessDPIAware to support HI DPI - fix by Kapps
+                auto ulib = LoadLibraryA("user32.dll");
+                alias SetProcessDPIAwareFunc = int function();
+                auto setDpiFunc = cast(SetProcessDPIAwareFunc)GetProcAddress(ulib, "SetProcessDPIAware");
+                if(setDpiFunc) // Should never fail, but just in case...
+                    setDpiFunc();
+
+                // Get screen DPI
+                HDC dc = CreateCompatibleDC(NULL);
+                SCREEN_DPI = GetDeviceCaps(dc, LOGPIXELSY);
+                DeleteObject(dc);
+
+                //SCREEN_DPI = 96 * 3 / 2;
+
                 result = myWinMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
                 Log.i("calling Runtime.terminate()");
                 // commented out to fix hanging runtime.terminate when there are background threads
