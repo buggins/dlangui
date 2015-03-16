@@ -25,9 +25,6 @@ mixin APP_ENTRY_POINT;
 /// entry point for dlangui based application
 extern (C) int UIAppMain(string[] args) {
 
-    //auto power2 = delegate(int X) { return X * X; };
-    auto power2 = (int X) => X * X;
-
     // embed resources listed in views/resources.list into executable
     embeddedResourceList.addResources(embedResourcesFromList!("resources.list")());
 

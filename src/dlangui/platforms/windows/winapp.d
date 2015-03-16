@@ -1020,19 +1020,24 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
 	currentTheme = createDefaultTheme();
 
     version (USE_OPENGL) {
-        import derelict.opengl3.gl3;
-        DerelictGL3.load();
+        try {
+            import derelict.opengl3.gl3;
+            DerelictGL3.load();
 
-        // just to check OpenGL context
-        Log.i("Trying to setup OpenGL context");
-        Win32Window tmpWindow = new Win32Window(w32platform, ""d, null, 0);
-        destroy(tmpWindow);
-        if (openglEnabled)
-            Log.i("OpenGL support is enabled");
-        else
-            Log.w("OpenGL support is disabled");
-        // process messages
-        platform.enterMessageLoop();
+            // just to check OpenGL context
+            Log.i("Trying to setup OpenGL context");
+            Win32Window tmpWindow = new Win32Window(w32platform, ""d, null, 0);
+            destroy(tmpWindow);
+            if (openglEnabled)
+                Log.i("OpenGL support is enabled");
+            else
+                Log.w("OpenGL support is disabled");
+            // process messages
+            platform.enterMessageLoop();
+        } catch (Exception e) {
+            Log.e("Exception while trying to init OpenGL", e);
+            openglEnabled = false;
+        }
     }
 
     // Load versions 1.2+ and all supported ARB and EXT extensions.
