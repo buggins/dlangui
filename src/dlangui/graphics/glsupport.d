@@ -84,10 +84,17 @@ class GLProgram {
         import core.stdc.stdlib;
         import std.string;
 
-		Log.d("compileShader glsl=", glslversion, " code: ", src);
+        char[] versionLine;
+        versionLine ~= "#version ";
+        foreach(ch; glslversion)
+            if (ch >= '0' && ch <= '9')
+                versionLine ~= ch;
+        versionLine ~= "\n\n";
+        string sourceCode = versionLine ~ src;
+		Log.d("compileShader glsl=", glslversion, " code: ", sourceCode);
 
         GLuint shader = glCreateShader(type);//GL_VERTEX_SHADER
-        const char * psrc = src.toStringz;
+        const char * psrc = sourceCode.toStringz;
         GLuint len = cast(uint)src.length;
         glShaderSource(shader, 1, &psrc, cast(const(int)*)&len);
         glCompileShader(shader);

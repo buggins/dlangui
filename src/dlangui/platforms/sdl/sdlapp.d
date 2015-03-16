@@ -147,23 +147,9 @@ class SDLWindow : Window {
                 Log.i("Trying to create OpenGL 3.2 context");
                 _context = SDL_GL_CreateContext(_win); // Create the actual context and make it current
                 if (!_context) {
-                    Log.e("SDL_GL_CreateContext failed for version 3.2: ", fromStringz(SDL_GetError()));
-                    Log.w("Trying to create OpenGL 2.1 context");
-                    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,2);
-                    SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,1);
-                    _context = SDL_GL_CreateContext(_win); // Create the actual context and make it current
-                    if (!_context) {
-                        Log.e("SDL_GL_CreateContext failed: ", fromStringz(SDL_GetError()));
-                        Log.w("Trying to create OpenGL 2.0 context");
-                        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,2);
-                        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,0);
-                        _context = SDL_GL_CreateContext(_win); // Create the actual context and make it current
-                        if (!_context) {
-                            Log.e("SDL_GL_CreateContext failed: ", fromStringz(SDL_GetError()));
-                            _enableOpengl = false;
-                            Log.w("OpenGL support is disabled");
-                        }
-                    }
+                    Log.e("SDL_GL_CreateContext failed: ", fromStringz(SDL_GetError()));
+                    _enableOpengl = false;
+                    Log.w("OpenGL support is disabled");
                 }
                 if (_context && !_gl3Reloaded) {
                     DerelictGL3.reload();
