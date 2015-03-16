@@ -86,16 +86,19 @@ class GLProgram {
 
         char[] versionLine;
         versionLine ~= "#version ";
-        foreach(ch; glslversion)
+        foreach(ch; glslversion) {
             if (ch >= '0' && ch <= '9')
                 versionLine ~= ch;
+            else if (ch != '.')
+                break;
+        }
         versionLine ~= "\n\n";
-        string sourceCode = versionLine ~ src;
-		Log.d("compileShader glsl=", glslversion, " code: ", sourceCode);
+        char[] sourceCode = versionLine ~ src;
+		Log.d("compileShader glsl=", glslversion, " code:\n", sourceCode);
 
         GLuint shader = glCreateShader(type);//GL_VERTEX_SHADER
         const char * psrc = sourceCode.toStringz;
-        GLuint len = cast(uint)src.length;
+        GLuint len = cast(uint)sourceCode.length;
         glShaderSource(shader, 1, &psrc, cast(const(int)*)&len);
         glCompileShader(shader);
         GLint compiled;
@@ -118,7 +121,7 @@ class GLProgram {
         }
     }
     bool compile() {
-		glslversion = cast(string)std.string.fromStringz(glGetString(GL_SHADING_LANGUAGE_VERSION));
+		glslversion = std.string.fromStringz(glGetString(GL_SHADING_LANGUAGE_VERSION)).dup;
         vertexShader = compileShader(vertexSource, GL_VERTEX_SHADER);
         fragmentShader = compileShader(fragmentSource, GL_FRAGMENT_SHADER);
         if (!vertexShader || !fragmentShader) {
