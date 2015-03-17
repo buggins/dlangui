@@ -195,9 +195,9 @@ immutable string MEDIUMP = "";
 class SolidFillProgram : GLProgram {
     @property override string vertexSource() {
         return         
-            "attribute " ~ HIGHP ~ " vec4 vertex;\n"
-            "attribute " ~ LOWP ~ " vec4 colAttr;\n"
-            "varying " ~ LOWP ~ " vec4 col;\n"
+            "in " ~ HIGHP ~ " vec4 vertex;\n"
+            "in " ~ LOWP ~ " vec4 colAttr;\n"
+            "out " ~ LOWP ~ " vec4 col;\n"
             "uniform " ~ MEDIUMP ~ " mat4 matrix;\n"
             "void main(void)\n"
             "{\n"
@@ -208,7 +208,7 @@ class SolidFillProgram : GLProgram {
     }
     @property override string fragmentSource() {
         return
-            "varying " ~ LOWP ~ " vec4 col;\n"
+            "in " ~ LOWP ~ " vec4 col;\n"
             "void main(void)\n"
             "{\n"
             "    gl_FragColor = col;\n"
@@ -319,11 +319,11 @@ class SolidFillProgram : GLProgram {
 class TextureProgram : SolidFillProgram {
     @property override string vertexSource() {
         return         
-            "attribute " ~ HIGHP ~ " vec4 vertex;\n"
-            "attribute " ~ LOWP ~ " vec4 colAttr;\n"
-            "attribute " ~ MEDIUMP ~ " vec4 texCoord;\n"
-            "varying " ~ LOWP ~ " vec4 col;\n"
-            "varying " ~ MEDIUMP ~ " vec4 texc;\n"
+            "in " ~ HIGHP ~ " vec4 vertex;\n"
+            "in " ~ LOWP ~ " vec4 colAttr;\n"
+            "in " ~ MEDIUMP ~ " vec4 texCoord;\n"
+            "out " ~ LOWP ~ " vec4 col;\n"
+            "out " ~ MEDIUMP ~ " vec4 texc;\n"
             "uniform " ~ MEDIUMP ~ " mat4 matrix;\n"
             "void main(void)\n"
             "{\n"
@@ -336,8 +336,8 @@ class TextureProgram : SolidFillProgram {
     @property override string fragmentSource() {
         return
             "uniform sampler2D texture;\n"
-            "varying " ~ LOWP ~ " vec4 col;\n"
-            "varying " ~ MEDIUMP ~ " vec4 texc;\n"
+            "in " ~ LOWP ~ " vec4 col;\n"
+            "in " ~ MEDIUMP ~ " vec4 texc;\n"
             "void main(void)\n"
             "{\n"
             "    gl_FragColor = texture2D(texture, texc.st) * col;\n"
@@ -429,11 +429,11 @@ class TextureProgram : SolidFillProgram {
 class FontProgram : SolidFillProgram {
     @property override string vertexSource() {
         return         
-            "attribute " ~ HIGHP ~ " vec4 vertex;\n"
-            "attribute " ~ LOWP ~ " vec4 colAttr;\n"
-            "attribute " ~ MEDIUMP ~ " vec4 texCoord;\n"
-            "varying " ~ LOWP ~ " vec4 col;\n"
-            "varying " ~ MEDIUMP ~ " vec4 texc;\n"
+            "in " ~ HIGHP ~ " vec4 vertex;\n"
+            "in " ~ LOWP ~ " vec4 colAttr;\n"
+            "in " ~ MEDIUMP ~ " vec4 texCoord;\n"
+            "out " ~ LOWP ~ " vec4 col;\n"
+            "out " ~ MEDIUMP ~ " vec4 texc;\n"
             "uniform " ~ MEDIUMP ~ " mat4 matrix;\n"
             "void main(void)\n"
             "{\n"
@@ -446,8 +446,8 @@ class FontProgram : SolidFillProgram {
     @property override string fragmentSource() {
         return
             "uniform sampler2D texture;\n"
-            "varying " ~ LOWP ~ " vec4 col;\n"
-            "varying " ~ MEDIUMP ~ " vec4 texc;\n"
+            "in " ~ LOWP ~ " vec4 col;\n"
+            "in " ~ MEDIUMP ~ " vec4 texc;\n"
             "void main(void)\n"
             "{\n"
             "    gl_FragColor = texture2D(texture, texc.st) * col;\n"
