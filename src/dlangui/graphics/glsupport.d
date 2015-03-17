@@ -94,7 +94,7 @@ class GLProgram {
         }
         versionLine ~= "\n\n";
         char[] sourceCode = versionLine ~ src;
-		Log.d("compileShader glsl=", glslversion, " code:\n", sourceCode);
+		Log.d("compileShader glsl=", glslversion, " type:", (type == GL_VERTEX_SHADER ? "GL_VERTEX_SHADER" : (type == GL_FRAGMENT_SHADER ? "GL_FRAGMENT_SHADER" : "UNKNOWN")), " code:\n", sourceCode);
 
         GLuint shader = glCreateShader(type);//GL_VERTEX_SHADER
         const char * psrc = sourceCode.toStringz;
@@ -340,7 +340,7 @@ class TextureProgram : SolidFillProgram {
             "in " ~ MEDIUMP ~ " vec4 texc;\n"
             "void main(void)\n"
             "{\n"
-            "    gl_FragColor = texture2D(texture, texc.st) * col;\n"
+            "    gl_FragColor = texture(texture, texc.st) * col;\n" //texture2D
             "}\n";
     }
 
@@ -450,7 +450,7 @@ class FontProgram : SolidFillProgram {
             "in " ~ MEDIUMP ~ " vec4 texc;\n"
             "void main(void)\n"
             "{\n"
-            "    gl_FragColor = texture2D(texture, texc.st) * col;\n"
+            "    gl_FragColor = texture(texture, texc.st) * col;\n"//texture2D
             "}\n";
     }
 
