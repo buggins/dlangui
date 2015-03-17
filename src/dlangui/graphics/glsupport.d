@@ -21,10 +21,11 @@ module dlangui.graphics.glsupport;
 version(USE_OPENGL):
 
 import dlangui.core.logger;
-private import derelict.opengl3.gl3;
-private import dlangui.core.types;
-private import std.conv;
-private import std.string;
+import derelict.opengl3.gl3;
+import dlangui.core.types;
+import std.conv;
+import std.string;
+import std.array;
 
 // utility function to fill 4-float array of vertex colors with converted CR 32bit color
 private void LVGLFillColor(uint color, float * buf, int count) {
@@ -78,24 +79,28 @@ class GLProgram {
     protected bool initialized;
     protected bool error;
 	protected string glslversion;
+	protected int glslversionInt;
+    protected char[] glslversionString;
     this() {
     }
+    
+    private void compatibilityFixes(ref char[] code) {
+        if (glslversionInt < 150)
+            code = replace(code, " texture(", " texture2D(");
+    }
+    
     private GLuint compileShader(string src, GLuint type) {
         import core.stdc.stdlib;
         import std.string;
 
-        char[] versionLine;
-        versionLine ~= "#version ";
-        foreach(ch; glslversion) {
-            if (ch >= '0' && ch <= '9')
-                versionLine ~= ch;
-            else if (ch != '.')
-                break;
-        }
-        versionLine ~= "\n\n";
-        char[] sourceCode = versionLine ~ src;
+        char[] sourceCode;
+        sourceCode ~= "#version ";
+        sourceCode ~= glslversionString;
+        sourceCode ~= "\n";
+        sourceCode ~= src;
+        compatibilityFixes(sourceCode);
+        
 		Log.d("compileShader glsl=", glslversion, " type:", (type == GL_VERTEX_SHADER ? "GL_VERTEX_SHADER" : (type == GL_FRAGMENT_SHADER ? "GL_FRAGMENT_SHADER" : "UNKNOWN")), " code:\n", sourceCode);
-
         GLuint shader = glCreateShader(type);//GL_VERTEX_SHADER
         const char * psrc = sourceCode.toStringz;
         GLuint len = cast(uint)sourceCode.length;
@@ -120,8 +125,20 @@ class GLProgram {
             return 0;
         }
     }
+
     bool compile() {
 		glslversion = std.string.fromStringz(glGetString(GL_SHADING_LANGUAGE_VERSION)).dup;
+
+        glslversionString.length = 0;
+        glslversionInt = 0;
+        foreach(ch; glslversion) {
+            if (ch >= '0' && ch <= '9') {
+                glslversionString ~= ch;
+                glslversionInt = glslversionInt * 10 + (ch - '0');
+            } else if (ch != '.')
+                break;
+        }
+
         vertexShader = compileShader(vertexSource, GL_VERTEX_SHADER);
         fragmentShader = compileShader(fragmentSource, GL_FRAGMENT_SHADER);
         if (!vertexShader || !fragmentShader) {

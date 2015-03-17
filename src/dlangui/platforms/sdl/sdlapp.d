@@ -100,6 +100,20 @@ class SDLWindow : Window {
         private SDL_GLContext _context;
     }
 
+    version(USE_OPENGL) {
+        protected bool createContext(int versionMajor, int versionMinor) {
+            Log.i("Trying to create OpenGL ", versionMajor, ".", versionMinor, " context");
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, versionMajor);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, versionMinor);
+            _context = SDL_GL_CreateContext(_win); // Create the actual context and make it current
+            if (!_context)
+                Log.e("SDL_GL_CreateContext failed: ", fromStringz(SDL_GetError()));
+            else
+                Log.i("Created successfully");
+            return _context !is null;
+        }
+    }
+
 	protected uint _flags;
 	bool create(uint flags) {
         if (!_dx)
@@ -142,14 +156,23 @@ class SDLWindow : Window {
 			Log.e("SDL2: Failed to create window");
 			return false;
 		}
+		
         version(USE_OPENGL) {
             if (_enableOpengl) {
                 Log.i("Trying to create OpenGL 3.2 context");
                 _context = SDL_GL_CreateContext(_win); // Create the actual context and make it current
                 if (!_context) {
                     Log.e("SDL_GL_CreateContext failed: ", fromStringz(SDL_GetError()));
-                    _enableOpengl = false;
-                    Log.w("OpenGL support is disabled");
+                    Log.w("trying other versions of OpenGL");
+                    bool flg = false;
+                    flg = flg || createContext(3, 3);
+                    flg = flg || createContext(3, 1);
+                    flg = flg || createContext(4, 0);
+                    flg = flg || createContext(2, 1);
+                    if (!flg) {
+                        _enableOpengl = false;
+                        Log.w("OpenGL support is disabled");
+                    }
                 }
                 if (_context && !_gl3Reloaded) {
                     DerelictGL3.reload();
