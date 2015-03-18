@@ -26,8 +26,13 @@ import dlangui.core.logger;
 private import dlangui.graphics.glsupport;
 private import std.algorithm;
 
+interface GLConfigCallback {
+    void saveConfiguration();
+    void restoreConfiguration();
+}
+
 /// drawing buffer - image container which allows to perform some drawing operations
-class GLDrawBuf : DrawBuf {
+class GLDrawBuf : DrawBuf, GLConfigCallback {
     // width
     protected int _dx;
     // height
@@ -51,6 +56,12 @@ class GLDrawBuf : DrawBuf {
     /// returns current height
     @property override int height() { return _dy; }
 
+    override void saveConfiguration() {
+    }
+    override void restoreConfiguration() {
+        glSupport.setOrthoProjection(_dx, _dy);
+    }
+
     /// reserved for hardware-accelerated drawing - begins drawing batch
     override void beforeDrawing() {
         resetClipping();
@@ -58,11 +69,11 @@ class GLDrawBuf : DrawBuf {
         if (_scene !is null) {
             _scene.reset();
         }
-        _scene = new Scene();
+        _scene = new Scene(this);
     }
 
     /// reserved for hardware-accelerated drawing - ends drawing batch
-    override void afterDrawing() { 
+    override void afterDrawing() {
         glSupport.setOrthoProjection(_dx, _dy);
         _scene.draw();
         glSupport.flushGL();
@@ -136,12 +147,35 @@ class GLDrawBuf : DrawBuf {
 /// base class for all drawing scene items.
 class SceneItem {
     abstract void draw();
+    /// when true, save configuration before drawing, and restore after drawing
+    @property bool needSaveConfiguration() { return false; }
+    /// when true, don't destroy item after drawing, since it's owned by some other component
+    @property bool persistent() { return false; }
+    void beforeDraw() { }
+    void afterDraw() { }
+}
+
+class CustomSceneItem : SceneItem {
+    private SceneItem[] _items;
+    void add(SceneItem item) {
+        _items ~= item;
+    }
+    override void draw() {
+        foreach(SceneItem item; _items) {
+            item.beforeDraw();
+            item.draw();
+            item.afterDraw();
+        }
+    }
+    override @property bool needSaveConfiguration() { return true; }
 }
 
 /// Drawing scene (operations sheduled for drawing)
 class Scene {
     private SceneItem[] _items;
-    this() {
+    private GLConfigCallback _configCallback;
+    this(GLConfigCallback configCallback) {
+        _configCallback = configCallback;
         activeSceneCount++;
     }
     ~this() {
@@ -153,14 +187,24 @@ class Scene {
     }
     /// draws all scene items and removes them from list
     void draw() {
-        foreach(SceneItem item; _items)
+        foreach(SceneItem item; _items) {
+            if (item.needSaveConfiguration) {
+                _configCallback.saveConfiguration();
+            }
+            item.beforeDraw();
             item.draw();
+            item.afterDraw();
+            if (item.needSaveConfiguration) {
+                _configCallback.restoreConfiguration();
+            }
+        }
         reset();
     }
     /// resets scene for new drawing - deletes all items
     void reset() {
         foreach(ref SceneItem item; _items) {
-            destroy(item);
+            if (!item.persistent) // only destroy items not owner by other components
+                destroy(item);
             item = null;
         }
         _items.length = 0;
