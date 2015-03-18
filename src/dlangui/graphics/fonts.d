@@ -417,6 +417,21 @@ class Font : RefCountedObject {
 		}
     }
 
+    /// measure multiline text with line splitting, returns width and height in pixels
+    Point measureMultilineText(const dchar[] text, int maxLines = 0, int maxWidth = 0, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
+        SimpleTextFormatter fmt;
+        FontRef fnt = FontRef(this);
+        return fmt.format(text, fnt, maxLines, maxWidth, tabSize, tabOffset, textFlags);
+    }
+
+    /// draws multiline text with line splitting
+    void drawMultilineText(DrawBuf buf, int x, int y, const dchar[] text, uint color, int maxLines = 0, int maxWidth = 0, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
+        SimpleTextFormatter fmt;
+        FontRef fnt = FontRef(this);
+        fmt.format(text, fnt, maxLines, maxWidth, tabSize, tabOffset, textFlags);
+        fmt.draw(buf, x, y, fnt, color);
+    }
+
 
 	/// get character glyph information
 	abstract Glyph * getCharGlyph(dchar ch, bool withImage = true);
@@ -433,6 +448,109 @@ class Font : RefCountedObject {
     ~this() { clear(); }
 }
 alias FontRef = Ref!Font;
+
+/// helper to split text into several lines and draw it
+struct SimpleTextFormatter {
+    dstring[] _lines;
+    int _tabSize;
+    int _tabOffset;
+    uint _textFlags;
+    /// split text into lines and measure it; returns size in pixels
+    Point format(const dchar[] text, FontRef fnt, int maxLines = 0, int maxWidth = 0, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
+        _tabSize = tabSize;
+        _tabOffset = tabOffset;
+        _textFlags = textFlags;
+        Point sz;
+        _lines.length = 0;
+        int lineHeight = fnt.height;
+        if (text.length == 0) {
+            sz.y = lineHeight;
+            return sz;
+        }
+        int[] widths;
+        int charsMeasured = fnt.measureText(text, widths, MAX_WIDTH_UNSPECIFIED, _tabSize, _tabOffset, _textFlags);
+        int lineStart = 0;
+        int lineStartX = 0;
+        int lastWordEnd = 0;
+        int lastWordEndX = 0;
+        dchar prevChar = 0;
+        for (int i = 0; i <= charsMeasured; i++) {
+            dchar ch = text[i];
+            if (ch == '\n' || i == charsMeasured) {
+                // split by EOL char or at end of text
+                dstring line = cast(dstring)text[lineStart .. i];
+                int lineEndX = (i == charsMeasured) || (i == lineStart) ? lineStartX : widths[i - 1];
+                int lineWidth = lineEndX - lineStartX;
+                sz.y += lineHeight;
+                if (sz.x < lineWidth)
+                    sz.x = lineWidth;
+                _lines ~= line;
+                if (i == charsMeasured) // end of text reached
+                    break;
+
+                // check max lines constraint
+                if (maxLines && _lines.length >= maxLines) // max lines reached
+                    break;
+
+                lineStart = i + 1;
+                lineStartX = widths[i];
+            } else {
+                // split by width
+                int x = widths[i];
+                if (ch == '\t' || ch == ' ') {
+                    // track last word end
+                    if (prevChar != '\t' && prevChar != ' ' && prevChar != 0) {
+                        lastWordEnd = i - 1;
+                        lastWordEndX = widths[i - 1];
+                    }
+                    prevChar = ch;
+                    continue;
+                }
+                if (maxWidth > 0 && x > maxWidth && x - lineStartX > maxWidth && i > lineStart) {
+                    // need splitting
+                    int lineEnd = i;
+                    int lineEndX = widths[i - 1];
+                    if (lastWordEnd > lineStart && lastWordEndX - lineStartX >= maxWidth / 3) {
+                        // split on word bound
+                        lineEnd = lastWordEnd;
+                        lineEndX = widths[lastWordEnd - 1];
+                    }
+                    // add line
+                    dstring line = cast(dstring)text[lineStart .. lastWordEnd];
+                    int lineWidth = lineEndX - lineStartX;
+                    sz.y += lineHeight;
+                    if (sz.x < lineWidth)
+                        sz.x = lineWidth;
+                    _lines ~= line;
+
+                    // check max lines constraint
+                    if (maxLines && _lines.length >= maxLines) // max lines reached
+                        break;
+
+                    // find next line start
+                    lineStart = lineEnd;
+                    while(lineStart < text.length && (text[lineStart] == ' ' || text[lineStart] == '\t'))
+                        lineStart++;
+                    if (lineStart >= text.length)
+                        break;
+                    lineStartX = widths[lineStart - 1];
+                }
+            }
+            prevChar = ch;
+        }
+        return sz;
+    }
+    /// draw formatted text
+    void draw(DrawBuf buf, int x, int y, FontRef fnt, uint color) {
+        int lineHeight = fnt.height;
+        for (int i = 0; i < _lines.length; i++) {
+            dstring line = _lines[i];
+        	fnt.drawText(buf, x, y, line, color, _tabSize, _tabOffset, _textFlags);
+            y += lineHeight;
+        }
+    }
+}
+
 
 /// font instance collection - utility class, for font manager implementations
 struct FontList {
