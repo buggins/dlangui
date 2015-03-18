@@ -34,6 +34,8 @@ import dlangui.graphics.resources;
 // Themes should define all of these styles in order to support all controls
 /// standard style id for TextWidget
 immutable string STYLE_TEXT = "TEXT";
+/// standard style id for MultilineTextWidget
+immutable string STYLE_MULTILINE_TEXT = "MULTILINE_TEXT";
 /// standard style id for Button
 immutable string STYLE_BUTTON = "BUTTON";
 /// standard style id for Button label
@@ -277,6 +279,7 @@ class Style {
     protected int _layoutWidth = SIZE_UNSPECIFIED;
     protected int _layoutHeight = SIZE_UNSPECIFIED;
     protected int _layoutWeight = WEIGHT_UNSPECIFIED;
+    protected int _maxLines = SIZE_UNSPECIFIED;
 
     protected uint[] _focusRectColors;
 
@@ -484,6 +487,14 @@ class Style {
             return parentStyle.textColor;
 	}
 
+	/// text color
+	@property int maxLines() const {
+        if (_maxLines != SIZE_UNSPECIFIED)
+            return _maxLines;
+        else
+            return parentStyle.maxLines;
+	}
+
 	/// text flags
 	@property uint textFlags() const {
 		if (_textFlags != TEXT_FLAGS_UNSPECIFIED)
@@ -660,6 +671,11 @@ class Style {
 		return this;
 	}
 
+	@property Style maxLines(int lines) {
+		_maxLines = lines;
+		return this;
+	}
+
 	@property Style alpha(uint alpha) {
 		_alpha = alpha;
 		return this;
@@ -814,6 +830,7 @@ class Theme : Style {
 		_parentStyle = null;
 		_backgroundColor = COLOR_TRANSPARENT; // transparent
 		_textColor = 0x000000; // black
+        _maxLines = 1;
 		_align = Align.TopLeft;
 		_fontSize = 14; // TODO: from settings or screen properties / DPI
 		_fontStyle = FONT_STYLE_NORMAL;
@@ -1218,6 +1235,8 @@ bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
 		style.minHeight = decodeDimension(elem.tag.attr["minHeight"]);
 	if ("maxHeight" in elem.tag.attr)
 		style.maxHeight = decodeDimension(elem.tag.attr["maxHeight"]);
+	if ("maxLines" in elem.tag.attr)
+		style.maxLines = decodeDimension(elem.tag.attr["maxLines"]);
 	if ("fontFace" in elem.tag.attr)
 		style.fontFace = elem.tag.attr["fontFace"];
 	if ("fontFamily" in elem.tag.attr)

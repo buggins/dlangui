@@ -98,6 +98,14 @@
         >
         <state state_enabled="false" textColor="#A0FFFFFF"/>
     </style>
+    <style id="MULTILINE_TEXT"
+        margins="2,2,2,2"
+        padding="1,1,1,1"
+        align="Left|VCenter"
+        maxLines = "0"
+        >
+        <state state_enabled="false" textColor="#A0FFFFFF"/>
+    </style>
     <style id="HSPACER"
         layoutWidth="FILL_PARENT"
         layoutWeight="100"

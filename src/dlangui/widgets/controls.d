@@ -70,6 +70,17 @@ class TextWidget : Widget {
         styleId = STYLE_TEXT;
         _text = rawText;
     }
+    this(string ID, UIString uitext) {
+		super(ID);
+        styleId = STYLE_TEXT;
+        _text = uitext;
+    }
+
+    /// max lines to show
+    @property int maxLines() { return style.maxLines; }
+    /// set max lines to show
+    @property void maxLines(int n) { ownStyle.maxLines = n; }
+
     protected UIString _text;
     /// get widget text
     override @property dstring text() { return _text; }
@@ -95,7 +106,12 @@ class TextWidget : Widget {
     override void measure(int parentWidth, int parentHeight) { 
         FontRef font = font();
         //auto measureStart = std.datetime.Clock.currAppTick;
-		Point sz = font.textSize(text, MAX_WIDTH_UNSPECIFIED, 4, 0, textFlags);
+        Point sz;
+        if (maxLines == 1) {
+		    sz = font.textSize(text, MAX_WIDTH_UNSPECIFIED, 4, 0, textFlags);
+        } else {
+            sz = font.measureMultilineText(text, maxLines, MAX_WIDTH_UNSPECIFIED, 4, 0, textFlags);
+        }
         //auto measureEnd = std.datetime.Clock.currAppTick;
         //auto duration = measureEnd - measureStart;
         //if (duration.length > 10)
@@ -113,9 +129,33 @@ class TextWidget : Widget {
 		applyPadding(rc);
 
         FontRef font = font();
-        Point sz = font.textSize(text);
-        applyAlign(rc, sz);
-		font.drawText(buf, rc.left, rc.top, text, textColor, 4, 0, textFlags);
+        if (maxLines == 1) {
+            Point sz = font.textSize(text);
+            applyAlign(rc, sz);
+		    font.drawText(buf, rc.left, rc.top, text, textColor, 4, 0, textFlags);
+        } else {
+            SimpleTextFormatter fmt;
+            Point sz = fmt.format(text, font, maxLines, rc.width, 4, 0, textFlags);
+            applyAlign(rc, sz);
+            // TODO: apply align to alignment lines
+            fmt.draw(buf, rc.left, rc.top, font, textColor);
+        }
+    }
+}
+
+/// static text widget with multiline text
+class MultilineTextWidget : TextWidget {
+    this(string ID = null, string textResourceId = null) {
+		super(ID, textResourceId);
+        styleId = STYLE_MULTILINE_TEXT;
+    }
+    this(string ID, dstring rawText) {
+		super(ID, rawText);
+        styleId = STYLE_MULTILINE_TEXT;
+    }
+    this(string ID, UIString uitext) {
+		super(ID, uitext);
+        styleId = STYLE_MULTILINE_TEXT;
     }
 }
 

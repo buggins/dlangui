@@ -209,6 +209,8 @@ class Font : RefCountedObject {
 			return 0;
 		const dchar * pstr = text.ptr;
 		uint len = cast(uint)text.length;
+        if (widths.length < len)
+            widths.length = len + 1;
         int x = 0;
         int charsMeasured = 0;
         int * pwidths = widths.ptr;
@@ -475,7 +477,7 @@ struct SimpleTextFormatter {
         int lastWordEndX = 0;
         dchar prevChar = 0;
         for (int i = 0; i <= charsMeasured; i++) {
-            dchar ch = text[i];
+            dchar ch = i < charsMeasured ? text[i] : 0;
             if (ch == '\n' || i == charsMeasured) {
                 // split by EOL char or at end of text
                 dstring line = cast(dstring)text[lineStart .. i];
@@ -506,7 +508,7 @@ struct SimpleTextFormatter {
                     prevChar = ch;
                     continue;
                 }
-                if (maxWidth > 0 && x > maxWidth && x - lineStartX > maxWidth && i > lineStart) {
+                if (maxWidth > 0 && maxWidth != MAX_WIDTH_UNSPECIFIED && x > maxWidth && x - lineStartX > maxWidth && i > lineStart) {
                     // need splitting
                     int lineEnd = i;
                     int lineEndX = widths[i - 1];
