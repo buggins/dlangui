@@ -1036,7 +1036,7 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
             platform.enterMessageLoop();
         } catch (Exception e) {
             Log.e("Exception while trying to init OpenGL", e);
-            openglEnabled = false;
+		    setOpenglEnabled(false);
         }
     }
 

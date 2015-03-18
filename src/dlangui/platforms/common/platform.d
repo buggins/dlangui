@@ -1341,9 +1341,12 @@ version (USE_OPENGL) {
     /// check if hardware acceleration is enabled
     @property bool openglEnabled() { return _OPENGL_ENABLED; }
     /// call on app initialization if OpenGL support is detected
-    void setOpenglEnabled() {
-        _OPENGL_ENABLED = true;
-	    glyphDestroyCallback = &onGlyphDestroyedCallback;
+    void setOpenglEnabled(bool enabled = true) {
+        _OPENGL_ENABLED = enabled;
+        if (enabled)
+	        glyphDestroyCallback = &onGlyphDestroyedCallback;
+        else
+	        glyphDestroyCallback = null;
     }
 }
 
