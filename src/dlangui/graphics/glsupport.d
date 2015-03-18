@@ -84,7 +84,7 @@ class GLProgram {
     this() {
     }
     
-    private void compatibilityFixes(ref char[] code) {
+    private void compatibilityFixes(ref char[] code, GLuint type) {
         if (glslversionInt < 150)
             code = replace(code, " texture(", " texture2D(");
     }
@@ -98,7 +98,7 @@ class GLProgram {
         sourceCode ~= glslversionString;
         sourceCode ~= "\n";
         sourceCode ~= src;
-        compatibilityFixes(sourceCode);
+        compatibilityFixes(sourceCode, type);
         
 		Log.d("compileShader glsl=", glslversion, " type:", (type == GL_VERTEX_SHADER ? "GL_VERTEX_SHADER" : (type == GL_FRAGMENT_SHADER ? "GL_FRAGMENT_SHADER" : "UNKNOWN")), " code:\n", sourceCode);
         GLuint shader = glCreateShader(type);//GL_VERTEX_SHADER
@@ -226,9 +226,10 @@ class SolidFillProgram : GLProgram {
     @property override string fragmentSource() {
         return
             "in " ~ LOWP ~ " vec4 col;\n"
+            "out " ~ LOWP ~ " vec4 outColor;\n"
             "void main(void)\n"
             "{\n"
-            "    gl_FragColor = col;\n"
+            "    outColor = col;\n"
             "}\n";
     }
 
@@ -355,9 +356,10 @@ class TextureProgram : SolidFillProgram {
             "uniform sampler2D texture;\n"
             "in " ~ LOWP ~ " vec4 col;\n"
             "in " ~ MEDIUMP ~ " vec4 texc;\n"
+            "out " ~ LOWP ~ " vec4 outColor;\n"
             "void main(void)\n"
             "{\n"
-            "    gl_FragColor = texture(texture, texc.st) * col;\n" //texture2D
+            "    outColor = texture(texture, texc.st) * col;\n" //texture2D
             "}\n";
     }
 
@@ -465,9 +467,10 @@ class FontProgram : SolidFillProgram {
             "uniform sampler2D texture;\n"
             "in " ~ LOWP ~ " vec4 col;\n"
             "in " ~ MEDIUMP ~ " vec4 texc;\n"
+            "out " ~ LOWP ~ " vec4 outColor;\n"
             "void main(void)\n"
             "{\n"
-            "    gl_FragColor = texture(texture, texc.st) * col;\n"//texture2D
+            "    outColor = texture(texture, texc.st) * col;\n"//texture2D
             "}\n";
     }
 
