@@ -211,26 +211,28 @@ immutable string MEDIUMP = "";
 
 class SolidFillProgram : GLProgram {
     @property override string vertexSource() {
-        return         
-            "in " ~ HIGHP ~ " vec4 vertex;\n"
-            "in " ~ LOWP ~ " vec4 colAttr;\n"
-            "out " ~ LOWP ~ " vec4 col;\n"
-            "uniform " ~ MEDIUMP ~ " mat4 matrix;\n"
-            "void main(void)\n"
-            "{\n"
-            "    gl_Position = matrix * vertex;\n"
-            "    col = colAttr;\n"
-            "}\n";
+        return q{
+            in vec4 vertex;
+            in vec4 colAttr;
+            out vec4 col;
+            uniform mat4 matrix;
+            void main(void)
+            {
+                gl_Position = matrix * vertex;
+                col = colAttr;
+            }
+        };
 
     }
     @property override string fragmentSource() {
-        return
-            "in " ~ LOWP ~ " vec4 col;\n"
-            "out " ~ LOWP ~ " vec4 outColor;\n"
-            "void main(void)\n"
-            "{\n"
-            "    outColor = col;\n"
-            "}\n";
+        return q{
+            in vec4 col;
+            out vec4 outColor;
+            void main(void)
+            {
+                outColor = col;
+            }
+        };
     }
 
     void beforeExecute() {
@@ -336,31 +338,33 @@ class SolidFillProgram : GLProgram {
 
 class TextureProgram : SolidFillProgram {
     @property override string vertexSource() {
-        return         
-            "in " ~ HIGHP ~ " vec4 vertex;\n"
-            "in " ~ LOWP ~ " vec4 colAttr;\n"
-            "in " ~ MEDIUMP ~ " vec4 texCoord;\n"
-            "out " ~ LOWP ~ " vec4 col;\n"
-            "out " ~ MEDIUMP ~ " vec4 texc;\n"
-            "uniform " ~ MEDIUMP ~ " mat4 matrix;\n"
-            "void main(void)\n"
-            "{\n"
-            "    gl_Position = matrix * vertex;\n"
-            "    col = colAttr;\n"
-            "    texc = texCoord;\n"
-            "}\n";
+        return q{
+            in vec4 vertex;
+            in vec4 colAttr;
+            in vec4 texCoord;
+            out vec4 col;
+            out vec4 texc;
+            uniform mat4 matrix;
+            void main(void)
+            {
+                gl_Position = matrix * vertex;
+                col = colAttr;
+                texc = texCoord;
+            }
+        };
 
     }
     @property override string fragmentSource() {
-        return
-            "uniform sampler2D texture;\n"
-            "in " ~ LOWP ~ " vec4 col;\n"
-            "in " ~ MEDIUMP ~ " vec4 texc;\n"
-            "out " ~ LOWP ~ " vec4 outColor;\n"
-            "void main(void)\n"
-            "{\n"
-            "    outColor = texture(texture, texc.st) * col;\n" //texture2D
-            "}\n";
+        return q{
+            uniform sampler2D texture;
+            in vec4 col;
+            in vec4 texc;
+            out vec4 outColor;
+            void main(void)
+            {
+                outColor = texture(texture, texc.st) * col;
+            }
+        };
     }
 
     GLint texCoordLocation;
@@ -447,31 +451,33 @@ class TextureProgram : SolidFillProgram {
 
 class FontProgram : SolidFillProgram {
     @property override string vertexSource() {
-        return         
-            "in " ~ HIGHP ~ " vec4 vertex;\n"
-            "in " ~ LOWP ~ " vec4 colAttr;\n"
-            "in " ~ MEDIUMP ~ " vec4 texCoord;\n"
-            "out " ~ LOWP ~ " vec4 col;\n"
-            "out " ~ MEDIUMP ~ " vec4 texc;\n"
-            "uniform " ~ MEDIUMP ~ " mat4 matrix;\n"
-            "void main(void)\n"
-            "{\n"
-            "    gl_Position = matrix * vertex;\n"
-            "    col = colAttr;\n"
-            "    texc = texCoord;\n"
-            "}\n";
+        return q{
+            in vec4 vertex;
+            in vec4 colAttr;
+            in vec4 texCoord;
+            out vec4 col;
+            out vec4 texc;
+            uniform mat4 matrix;
+            void main(void)
+            {
+                gl_Position = matrix * vertex;
+                col = colAttr;
+                texc = texCoord;
+            }
+        };
 
     }
     @property override string fragmentSource() {
-        return
-            "uniform sampler2D texture;\n"
-            "in " ~ LOWP ~ " vec4 col;\n"
-            "in " ~ MEDIUMP ~ " vec4 texc;\n"
-            "out " ~ LOWP ~ " vec4 outColor;\n"
-            "void main(void)\n"
-            "{\n"
-            "    outColor = texture(texture, texc.st) * col;\n"//texture2D
-            "}\n";
+        return q{
+            uniform sampler2D texture;
+            in vec4 col;
+            in vec4 texc;
+            out vec4 outColor;
+            void main(void)
+            {
+                outColor = texture(texture, texc.st) * col;
+            }
+        };
     }
 
     GLint texCoordLocation;
