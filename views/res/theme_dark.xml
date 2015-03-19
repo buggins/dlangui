@@ -1,7 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <theme id="theme_dark" parent="theme_default"
-        fontFace="Verdana,Arial,DejaVu Sans"
-        fontFamily="SansSerif"
 	textColor="#E0E0E0"
 	>
     <color id="window_background" value="#000000"/>
@@ -28,24 +26,17 @@
 
     <style id="BUTTON"
         backgroundImageId="btn_background_dark"
-        align="Center"
-        margins="5,5,5,5"
 	focusRectColors="#FFF"
-        textFlags="UnderlineHotKeys"
         >
         <state state_enabled="false" textColor="#60FFFFFF"/>
         <state state_enabled="true" state_hovered="true" textColor="#E0E080"/>
     </style>
     <style id="BUTTON_TRANSPARENT"
         backgroundImageId="btn_background_transparent_dark"
-        align="Center"
         />
     <style id="BUTTON_LABEL"
         layoutWidth="FILL_PARENT"
-        margins="2,2,2,2"
-        align="Left|VCenter"
 	focusRectColors="#FFF"
-        textFlags="UnderlineHotKeys"
         >
         <state state_enabled="false" textColor="#60FFFFFF"/>
         <state state_enabled="true" state_hovered="true" textColor="#E0E080"/>
@@ -57,68 +48,26 @@
         <state state_enabled="false" textColor="#60FFFFFF"/>
         <state state_enabled="true" state_hovered="true" textColor="#A0A0FF" textFlags="Underline"/>
     </style>
-    <style id="BUTTON_IMAGE"
-        margins="2,2,2,2"
-        align="Center"
-        />
-    <style id="CHECKBOX"
-        backgroundImageId="@null"
-        margins="2,2,2,2"
-        padding="2,2,2,2"
-	focusRectColors="@null"
-        />
-    <style id="CHECKBOX_IMAGE" parent="BUTTON_IMAGE"
-        align="Center"
-        margins="2,2,2,2"
-        />
     <style id="CHECKBOX_LABEL" parent="BUTTON_LABEL"
-        align="Left|VCenter"
 	focusRectColors="#FFF"
         >
         <state state_enabled="true" state_hovered="true" textColor="#C0FFFF"/>
     </style>
-    <style id="RADIOBUTTON" parent="CHECKBOX"
-        margins="2,2,2,2"
-        padding="2,2,2,2"
-        />
-    <style id="RADIOBUTTON_IMAGE" parent="CHECKBOX_IMAGE"
-        align="Center"
-        margins="2,2,2,2"
-        />
     <style id="RADIOBUTTON_LABEL" parent="CHECKBOX_LABEL"
-        align="Left|VCenter"
 	focusRectColors="#FFF"
         >
         <state state_enabled="true" state_hovered="true" textColor="#C0FFFF"/>
     </style>
     <style id="TEXT"
-        margins="2,2,2,2"
-        padding="1,1,1,1"
-        align="Left|VCenter"
         >
         <state state_enabled="false" textColor="#A0FFFFFF"/>
     </style>
     <style id="MULTILINE_TEXT"
-        margins="2,2,2,2"
-        padding="1,1,1,1"
-        align="Left|VCenter"
-        maxLines = "0"
         >
         <state state_enabled="false" textColor="#A0FFFFFF"/>
     </style>
-    <style id="HSPACER"
-        layoutWidth="FILL_PARENT"
-        layoutWeight="100"
-        minWidth="5"
-        />
-    <style id="VSPACER"
-        layoutHeight="FILL_PARENT"
-        layoutWeight="100"
-        minHeight="5"
-        />
     <style id="BUTTON_NOMARGINS"
         backgroundImageId="btn_background_dark"
-        align="Center"
         />
     <drawable id="btn_check" value="btn_check_dark"/>
     <drawable id="btn_radio" value="btn_radio_dark"/>
@@ -141,11 +90,6 @@
 
     <style id="SCROLLBAR"
         backgroundColor="#C0808080"
-        align="Center"
-        />
-    <style id="SCROLLBAR_BUTTON" parent="BUTTON"
-        />
-    <style id="SLIDER"
         />
     <style id="PAGE_SCROLL"
         backgroundColor="#FFFFFFFF"
@@ -156,25 +100,20 @@
 
     <style id="TAB_DOWN_DARK"
         backgroundImageId="tab_down_background_theme_dark"
-        layoutWidth="FILL_PARENT"
         >
     </style>
     <style id="TAB_DOWN_BUTTON_DARK"
-        padding="5,1,1,1"
         backgroundImageId="tab_btn_dark_down_dark"
         />
     <style id="TAB_UP_DARK"
         backgroundImageId="tab_up_background_theme_dark"
-        layoutWidth="FILL_PARENT"
         >
     </style>
     <style id="TAB_UP_BUTTON_DARK"
-        padding="5,1,1,1"
         backgroundImageId="tab_btn_dark_up_dark"
         />
     <style id="TAB_UP_BUTTON_DARK_TEXT"
         textColor="#E0E0E0"
-        align="Center"
         >
         <state state_selected="true" state_window_focused="true" state_hovered="true" textColor="#FFFFC0"/>
         <state state_selected="true" state_window_focused="true" textColor="#FFFFE0"/>
@@ -185,13 +124,11 @@
     </style>
     <style id="TAB_UP"
         backgroundImageId="tab_up_background_theme_dark"
-        layoutWidth="FILL_PARENT"
         >
         <state state_selected="true" backgroundImageId="tab_up_backgrond_selected_dark"/>
     </style>
     <style id="TAB_UP_BUTTON_TEXT"
         textColor="#C0C0C0"
-        align="Center"
         >
         <state state_selected="true" state_focused="true" textColor="#FFFFC0"/>
         <state state_selected="true" textColor="#FFFFC0"/>
@@ -202,8 +139,6 @@
         backgroundImageId="tab_btn_up_dark"
         />
     <style id="TAB_HOST"
-        layoutWidth="FILL_PARENT"
-        layoutHeight="FILL_PARENT"
         backgroundColor="#101010"
         />
     <style id="TAB_WIDGET"
@@ -211,49 +146,33 @@
         />
 
     <style id="MAIN_MENU"
-        layoutWidth="FILL_PARENT"
         backgroundColor="#202020"
-	layoutWeight="0"
         />
     <style id="MAIN_MENU_ITEM"
-        padding="4,2,4,2"
         backgroundImageId="main_menu_item_background_dark"
-        textFlags="Parent"
         />
     <style id="MENU_ITEM"
         backgroundImageId="menu_item_background_dark"
-        padding="4,2,4,2"
         >
     </style>
     <style id="MENU_ICON"
-        margins="2,2,2,2"
-        align="Left|VCenter"
         >
         <state state_enabled="false" alpha="160"/>
     </style>
     <style id="MENU_LABEL"
-        margins="4,2,4,2"
-        align="Left|VCenter"
-        textFlags="UnderlineHotKeys"
         >
         <state state_enabled="false" textColor="#808080"/>
     </style>
     <style id="MAIN_MENU_LABEL"
-        margins="4,2,4,2"
-        align="Left|VCenter"
-        textFlags="Parent"
         >
         <state state_enabled="false" textColor="#808080"/>
     </style>
     <style id="MENU_ACCEL"
-        margins="4,2,4,2"
-        align="Left|VCenter"
         >
         <state state_enabled="false" textColor="#808080"/>
     </style>
     <style id="TRANSPARENT_BUTTON_BACKGROUND"
         backgroundImageId="btn_background_transparent_dark"
-        padding="4,2,4,2"
         />
     <style id="POPUP_MENU"
         backgroundImageId="popup_menu_background_normal_dark"
@@ -264,123 +183,59 @@
 
     <style id="COMBO_BOX"
         backgroundImageId="combobox_background_dark"
-        padding="2,2,2,2"
-        margins="2,2,2,2"
-        minWidth="40"
         />
     <style id="COMBO_BOX_BODY"
-        padding="2,2,2,2"
-        minWidth="40"
-        align="Left|VCenter"
 	focusRectColors="#FFF"
         />
     <style id="COMBO_BOX_BUTTON"
-        padding="2,2,2,2"
         backgroundImageId="btn_background_transparent_dark"
-        align="Center"
         />
 
     <style id="EDIT_LINE"
         backgroundImageId="editbox_background_dark"
-        padding="4,4,4,4"
-        margins="2,2,2,2"
-        minWidth="40"
         />
     <style id="EDIT_BOX"
         backgroundImageId="editbox_background_dark"
-        padding="2,2,2,2"
-        margins="2,2,2,2"
-        minWidth="100"
-        minHeight="60"
-        layoutWidth="FILL_PARENT"
-        layoutHeight="FILL_PARENT"
         />
     <style id="STATUS_LINE"
         backgroundColor="#101010"
-        layoutWidth="FILL_PARENT"
-        layoutHeight="WRAP_CONTENT"
-        padding="1,1,1,1"
-	layoutWeight="0"
         />
     <style id="DOCK_HOST"
         backgroundColor="#091925"
-        layoutWidth="FILL_PARENT"
-        layoutHeight="FILL_PARENT"
-        padding="2,2,2,2"
-        />
-    <style id="DOCK_HOST_BODY"
-        layoutWidth="FILL_PARENT"
-        layoutHeight="FILL_PARENT"
-        padding="1,1,1,1"
-        margins="4,4,4,4"
         />
     <style id="DOCK_WINDOW"
         backgroundColor="#8E9BBC"
-        layoutWidth="FILL_PARENT"
-        layoutHeight="FILL_PARENT"
-        padding="1,1,1,1"
-        margins="4,4,4,4"
         />
     <style id="FLOATING_WINDOW"
         backgroundImageId="popup_window_background_dark"
-        layoutWidth="FILL_PARENT"
-        layoutHeight="FILL_PARENT"
-        padding="1,1,1,1"
-        margins="4,4,4,4"
         />
     <style id="DOCK_WINDOW_CAPTION"
         backgroundColor="#3d5072"
-        layoutWidth="FILL_PARENT"
-        layoutHeight="WRAP_CONTENT"
-        padding="1,1,1,1"
         />
     <style id="DOCK_WINDOW_CAPTION_LABEL"
         textColor="#E0E0E0"
-        layoutWidth="FILL_PARENT"
-        layoutHeight="WRAP_CONTENT"
-        padding="3,3,3,3"
-        align="Left|VCenter"
         />
     <style id="DOCK_WINDOW_BODY"
         backgroundColor="#000000"
-        layoutWidth="FILL_PARENT"
-        layoutHeight="FILL_PARENT"
-        padding="1,1,1,1"
         />
 
     <style id="TOOLBAR_HOST"
         backgroundColor="#202325"
-        layoutWidth="FILL_PARENT"
-        layoutHeight="WRAP_CONTENT"
-        padding="1,1,1,1"
         />
     <style id="TOOLTIP"
         backgroundImageId="tooltip_background_dark"
-        layoutWidth="WRAP_CONTENT"
-        layoutHeight="WRAP_CONTENT"
-        margins="2,7,2,1"
-        padding="3,3,3,3"
 	textColor="#E0E0E0"
         />
     <style id="TOOLBAR"
         backgroundImageId="toolbar_background_dark"
-        layoutWidth="WRAP_CONTENT"
-        layoutHeight="WRAP_CONTENT"
-        margins="2,1,2,1"
         />
     <style id="TOOLBAR_BUTTON"
         backgroundImageId="toolbar_button_background_dark"
-        align="Center"
-        margins="1,1,1,1"
-        padding="2,2,2,2"
         >
         <state state_enabled="false" alpha="160" backgroundImageId="@null"/>
     </style>
     <style id="TOOLBAR_CONTROL"
         backgroundImageId="toolbar_control_background_dark"
-        align="Center"
-        margins="1,1,1,1"
-        padding="2,2,2,2"
         >
         <state state_enabled="false" alpha="160" backgroundImageId="@null"/>
     </style>
@@ -388,57 +243,14 @@
         align="Center"
         />
 
-    <style id="TREE_ITEM"
-        minWidth="100"
-        minHeight="14"
-        layoutWidth="FILL_PARENT"
-        layoutHeight="WRAP_CONTENT"
-        >
-    </style>
-    <style id="TREE_ITEM_EXPAND_ICON"
-        align="Left|VCenter"
-        textFlags="Parent"
-    />
     <style id="TREE_ITEM_BODY"
-        align="Left|VCenter"
-        textFlags="Parent"
         backgroundImageId="list_item_background_dark"
     />
-    <style id="TREE_ITEM_ICON"
-        align="Left|VCenter"
-        textFlags="Parent"
-    />
-    <style id="TREE_ITEM_LABEL"
-        layoutWidth="FILL_PARENT"
-        layoutHeight="WRAP_CONTENT"
-        align="Left|VCenter"
-        textFlags="Parent"
-    />
-
     <style id="SETTINGS_TREE"
-        margins="8,8,8,8"
         backgroundColor="#000000"
-        layoutWeight="3"
-    />
-
-    <style id="SETTINGS_PAGES"
-        margins="0,8,8,8"
-        padding="4,4,4,4"
-        layoutWidth="FILL_PARENT"
-        layoutWeight="5"
-    />
-
-    <style id="SETTINGS_PAGE_TITLE"
-        margins="4,4,4,14"
-	layoutWeight="0"
-        layoutWidth="FILL_PARENT"
     />
 
     <style id="RESIZER_VERTICAL"
-        layoutWidth="FILL_PARENT"
-        layoutHeight="WRAP_CONTENT"
-	minHeight="7"
-	maxHeight="7"
 	backgroundColor="#303030">
         <state state_focused="true" backgroundColor="#40404000"/>
         <state state_pressed="true" backgroundColor="#40406000"/>
@@ -446,10 +258,6 @@
         <state state_hovered="true" backgroundColor="#C0404000"/>
     </style>
     <style id="RESIZER_HORIZONTAL"
-        layoutWidth="FILL_PARENT"
-        layoutHeight="WRAP_CONTENT"
-	minWidth="7"
-	maxWidth="7"
 	backgroundColor="#303030">
         <state state_focused="true" backgroundColor="#40404000"/>
         <state state_pressed="true" backgroundColor="#40406000"/>

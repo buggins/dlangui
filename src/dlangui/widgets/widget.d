@@ -460,9 +460,9 @@ class Widget {
         return this; 
     }
     /// returns font size in pixels
-    @property ushort fontSize() const { return stateStyle.fontSize; }
+    @property int fontSize() const { return stateStyle.fontSize; }
     /// set font size for widget - override one from style
-	@property Widget fontSize(ushort size) { 
+	@property Widget fontSize(int size) {
         ownStyle.fontSize = size; 
         requestLayout();
         return this; 

@@ -173,6 +173,35 @@ struct Rect {
     }
 }
 
+// Layout size constants
+/// layout option, to occupy all available place
+immutable int FILL_PARENT = 0x4000_0000;
+/// layout option, for size based on content
+immutable int WRAP_CONTENT = 0x2000_0000;
+/// use as widget.layout() param to avoid applying of parent size
+immutable int SIZE_UNSPECIFIED = 0x6000_0000;
+
+/// use in styles to specify size in points (1/72 inch)
+immutable int SIZE_IN_POINTS_FLAG = 0x1000_0000;
+/// (RESERVED) use in styles to specify size in percents * 100 (e.g. 0 == 0%, 10000 == 100%, 100 = 1%)
+immutable int SIZE_IN_PERCENTS_FLAG = 0x0800_0000;
+
+
+/// convert custom size to pixels (sz can be either pixels, or points if SIZE_IN_POINTS_FLAG bit set)
+int toPixels(int sz) {
+    return sz > 0 ? ((sz & SIZE_IN_POINTS_FLAG) ? pointsToPixels(sz ^ SIZE_IN_POINTS_FLAG) : sz) : sz;
+}
+
+/// convert custom size Point to pixels (sz can be either pixels, or points if SIZE_IN_POINTS_FLAG bit set)
+Point toPixels(const Point sz) {
+    return Point(toPixels(sz.x), toPixels(sz.y));
+}
+
+/// convert custom size Rect to pixels (sz can be either pixels, or points if SIZE_IN_POINTS_FLAG bit set)
+Rect toPixels(const Rect sz) {
+    return Rect(toPixels(sz.left), toPixels(sz.top), toPixels(sz.right), toPixels(sz.bottom));
+}
+
 /// screen dots per inch
 private __gshared int PRIVATE_SCREEN_DPI = 96;
 

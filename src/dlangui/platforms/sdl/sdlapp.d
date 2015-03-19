@@ -928,8 +928,16 @@ class SDLPlatform : Platform {
 
 	override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0) {
         setDefaultLanguageAndThemeIfNecessary();
+        int oldDPI = SCREEN_DPI;
 		SDLWindow res = new SDLWindow(this, windowCaption, parent, flags, width, height);
 		_windowMap[res.windowId] = res;
+        version(Windows) {
+            width = pointsToPixels(width);
+            height = pointsToPixels(height);
+            res.doResize(width, height);
+        }
+        if (oldDPI != SCREEN_DPI)
+            onThemeChanged();
 		return res;
 	}
 

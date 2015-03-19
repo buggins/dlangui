@@ -11,8 +11,10 @@ Synopsis:
 
 ----
 import dlangui.widgets.styles;
-
 ----
+
+Recent changes:
+     Dimensions like fontSize, padding, margins, min/max width and height can be specified in points, e.g. minWidth = "3pt" margins="1pt,2pt,1pt,2pt"
 
 Copyright: Vadim Lopatin, 2014
 License:   Boost License 1.0
@@ -180,13 +182,6 @@ immutable string STYLE_COLOR_WINDOW_BACKGROUND = "window_background";
 immutable string STYLE_COLOR_DIALOG_BACKGROUND = "dialog_background";
 
 
-// Layout size constants
-/// layout option, to occupy all available place
-immutable int FILL_PARENT = int.max - 1;
-/// layout option, for size based on content
-immutable int WRAP_CONTENT = int.max - 2;
-/// use as widget.layout() param to avoid applying of parent size
-immutable int SIZE_UNSPECIFIED = int.max;
 
 // Other style constants
 
@@ -262,8 +257,8 @@ class Style {
 	protected ubyte _align = Align.TopLeft;
 	protected ubyte _fontStyle = FONT_STYLE_UNSPECIFIED;
 	protected FontFamily _fontFamily = FontFamily.Unspecified;
-	protected ushort _fontSize = FONT_SIZE_UNSPECIFIED;
 	protected ushort _fontWeight = FONT_WEIGHT_UNSPECIFIED;
+	protected int _fontSize = FONT_SIZE_UNSPECIFIED;
 	protected uint _backgroundColor = COLOR_UNSPECIFIED;
 	protected uint _textColor = COLOR_UNSPECIFIED;
 	protected uint _textFlags = 0;
@@ -447,9 +442,9 @@ class Style {
 	}
 
 	/// font size
-	@property ushort fontSize() const {
+	@property int fontSize() const {
         if (_fontSize != FONT_SIZE_UNSPECIFIED)
-            return _fontSize;
+            return toPixels(_fontSize);
         else
             return parentStyle.fontSize;
 	}
@@ -458,17 +453,17 @@ class Style {
     // layout parameters: margins / padding
 
 	/// padding
-	@property ref const(Rect) padding() const {
+	@property const(Rect) padding() const {
 		if (_stateMask || _padding.left == SIZE_UNSPECIFIED)
-			return parentStyle._padding;
-		return _padding;
+			return toPixels(parentStyle._padding);
+		return toPixels(_padding);
 	}
 
 	/// margins
-	@property ref const(Rect) margins() const {
+	@property const(Rect) margins() const {
 		if (_stateMask || _margins.left == SIZE_UNSPECIFIED)
-			return parentStyle._margins;
-		return _margins;
+			return toPixels(parentStyle._margins);
+		return toPixels(_margins);
 	}
 
 	/// alpha (0=opaque .. 255=transparent)
@@ -528,28 +523,28 @@ class Style {
 	/// minimal width constraint, 0 if limit is not set
 	@property uint minWidth() const {
         if (_minWidth != SIZE_UNSPECIFIED)
-            return _minWidth;
+            return toPixels(_minWidth);
         else
             return parentStyle.minWidth;
 	}
 	/// max width constraint, returns SIZE_UNSPECIFIED if limit is not set
 	@property uint maxWidth() const {
         if (_maxWidth != SIZE_UNSPECIFIED)
-            return _maxWidth;
+            return toPixels(_maxWidth);
         else
             return parentStyle.maxWidth;
 	}
 	/// minimal height constraint, 0 if limit is not set
 	@property uint minHeight() const {
         if (_minHeight != SIZE_UNSPECIFIED)
-            return _minHeight;
+            return toPixels(_minHeight);
         else
             return parentStyle.minHeight;
 	}
 	/// max height constraint, SIZE_UNSPECIFIED if limit is not set
 	@property uint maxHeight() const {
         if (_maxHeight != SIZE_UNSPECIFIED)
-            return _maxHeight;
+            return toPixels(_maxHeight);
         else
             return parentStyle.maxHeight;
 	}
@@ -660,7 +655,7 @@ class Style {
 		return this;
 	}
 
-	@property Style fontSize(ushort size) {
+	@property Style fontSize(int size) {
 		_fontSize = size;
 		_font.clear();
 		return this;
@@ -832,7 +827,7 @@ class Theme : Style {
 		_textColor = 0x000000; // black
         _maxLines = 1;
 		_align = Align.TopLeft;
-		_fontSize = 14; // TODO: from settings or screen properties / DPI
+		_fontSize = 9 | SIZE_IN_POINTS_FLAG; // TODO: from settings or screen properties / DPI
 		_fontStyle = FONT_STYLE_NORMAL;
 		_fontWeight = 400;
 		//_fontFace = "Arial"; // TODO: from settings

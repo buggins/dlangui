@@ -292,14 +292,15 @@ static uint decodeDimension(string s) {
     // TODO: convert points to pixels
     switch(units) {
     case DimensionUnits.points:
-        // convert points to pixels
-        value = pointsToPixels(value);
+        // need to convert points to pixels
+        value |= SIZE_IN_POINTS_FLAG;
         break;
     default:
         break;
     }
     return value;
 }
+
 
 /// decode solid color / gradient / frame drawable from string like #AARRGGBB, e.g. #5599AA
 /// 

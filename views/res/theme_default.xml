@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <theme id="theme_default" 
-        fontSize="9pt" 
+        fontSize="11pt" 
         fontFace="Verdana,Arial,DejaVu Sans"
         fontFamily="SansSerif"
 	>

@@ -778,6 +778,8 @@ class Win32Platform : Platform {
         return null;
     }
     override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0) {
+        width = pointsToPixels(width);
+        height = pointsToPixels(height);
         setDefaultLanguageAndThemeIfNecessary();
         return new Win32Window(this, windowCaption, parent, flags, width, height);
     }
