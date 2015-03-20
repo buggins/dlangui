@@ -85,7 +85,7 @@ class GLProgram {
     }
     
     private void compatibilityFixes(ref char[] code, GLuint type) {
-        if (glslversionInt < 150)
+        //if (glslversionInt < 150)
             code = replace(code, " texture(", " texture2D(");
     }
     
