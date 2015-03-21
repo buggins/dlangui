@@ -85,7 +85,7 @@ class GLProgram {
     }
     
     private void compatibilityFixes(ref char[] code, GLuint type) {
-        //if (glslversionInt < 150)
+        if (glslversionInt < 150)
             code = replace(code, " texture(", " texture2D(");
     }
     
@@ -356,13 +356,13 @@ class TextureProgram : SolidFillProgram {
     }
     @property override string fragmentSource() {
         return q{
-            uniform sampler2D texture;
+            uniform sampler2D tex;
             in vec4 col;
             in vec4 texc;
             out vec4 outColor;
             void main(void)
             {
-                outColor = texture(texture, texc.st) * col;
+                outColor = texture(tex, texc.st) * col;
             }
         };
     }
@@ -469,13 +469,13 @@ class FontProgram : SolidFillProgram {
     }
     @property override string fragmentSource() {
         return q{
-            uniform sampler2D texture;
+            uniform sampler2D tex;
             in vec4 col;
             in vec4 texc;
             out vec4 outColor;
             void main(void)
             {
-                outColor = texture(texture, texc.st) * col;
+                outColor = texture(tex, texc.st) * col;
             }
         };
     }
