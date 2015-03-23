@@ -121,6 +121,15 @@ struct EmbeddedResourceList {
     /// find by exact file name
     EmbeddedResource * find(string name) {
         // search backwards to allow overriding standard resources (which are added first)
+        if (SCREEN_DPI > 110 && (name.endsWith(".png") || name.endsWith(".jpg") || name.endsWith(".jpeg"))) {
+            // HIGH DPI resources are in /hdpi/ directory and started with hdpi_ prefix
+            string prefixedName = "hdpi_" ~ name;
+            for (int i = cast(int)list.length - 1; i >= 0; i--)
+                if (prefixedName.equal(list[i].name)) {
+                    Log.d("found hdpi resource ", prefixedName);
+                    return &list[i];
+                }
+        }
         for (int i = cast(int)list.length - 1; i >= 0; i--)
             if (name.equal(list[i].name))
                 return &list[i];
