@@ -1949,7 +1949,7 @@ class EditBox : EditWidgetBase {
         dstring currentLine = _content[_caretPos.line];
 		switch (a.id) {
             case EditorActions.PrependNewLine:
-                {
+                if (!readOnly) {
                     correctCaretPos();
                     _caretPos.pos = 0;
                     EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d, ""d]);
@@ -1957,7 +1957,7 @@ class EditBox : EditWidgetBase {
                 }
                 return true;
             case EditorActions.InsertNewLine:
-                {
+                if (!readOnly) {
                     correctCaretPos();
                     EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d, ""d]);
                     _content.performOperation(op, this);
@@ -2137,15 +2137,15 @@ class EditBox : EditWidgetBase {
                 }
                 return true;
 			case EditorActions.ToggleBlockComment:
-                if (_content.syntaxSupport && _content.syntaxSupport.supportsToggleBlockComment && _content.syntaxSupport.canToggleBlockComment(_selectionRange))
+                if (!readOnly && _content.syntaxSupport && _content.syntaxSupport.supportsToggleBlockComment && _content.syntaxSupport.canToggleBlockComment(_selectionRange))
                     _content.syntaxSupport.toggleBlockComment(_selectionRange, this);
                 return true;
 			case EditorActions.ToggleLineComment:
-                if (_content.syntaxSupport && _content.syntaxSupport.supportsToggleLineComment && _content.syntaxSupport.canToggleLineComment(_selectionRange))
+                if (!readOnly && _content.syntaxSupport && _content.syntaxSupport.supportsToggleLineComment && _content.syntaxSupport.canToggleLineComment(_selectionRange))
                     _content.syntaxSupport.toggleLineComment(_selectionRange, this);
                 return true;
 			case EditorActions.AppendNewLine:
-                {
+                if (!readOnly) {
                     correctCaretPos();
 					TextPosition p = _content.lineEnd(_caretPos.line);
 					TextRange r = TextRange(p, p);
@@ -2155,7 +2155,7 @@ class EditBox : EditWidgetBase {
                 }
 				return true;
 			case EditorActions.DeleteLine:
-                {
+                if (!readOnly) {
                     correctCaretPos();
                     EditOperation op = new EditOperation(EditAction.Replace, _content.lineRange(_caretPos.line), [""d]);
                     _content.performOperation(op, this);
