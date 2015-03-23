@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <theme id="theme_default" 
-        fontSize="11pt" 
+        fontSize="9pt" 
         fontFace="Verdana,Arial,DejaVu Sans"
         fontFamily="SansSerif"
 	>
@@ -421,7 +421,7 @@
 
     <style id="SETTINGS_PAGE_TITLE"
         margins="4,4,4,14"
-	fontSize="11pt"
+	fontSize="120%"
 	layoutWeight="0"
         layoutWidth="FILL_PARENT"
     />

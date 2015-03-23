@@ -273,27 +273,44 @@ class FrameDrawable : Drawable {
 
 enum DimensionUnits {
     pixels,
-    points
+    points,
+    percents
 }
 
 /// decode size string, e.g. 1px or 2 or 3pt
 static uint decodeDimension(string s) {
     uint value = 0;
     DimensionUnits units = DimensionUnits.pixels;
+    bool dotFound = false;
+    uint afterPointValue = 0;
+    uint afterPointDivider = 1;
     foreach(c; s) {
         int digit = -1;
         if (c >='0' && c <= '9')
             digit = c - '0';
-        if (digit >= 0)
-            value = value * 10 + digit;
-        else if (c == 't') // just test by containing 't' - for NNNpt
+        if (digit >= 0) {
+            if (dotFound) {
+                afterPointValue = afterPointValue * 10 + digit;
+                afterPointDivider *= 10;
+            } else {
+                value = value * 10 + digit;
+            }
+        } else if (c == 't') // just test by containing 't' - for NNNpt
             units = DimensionUnits.points; // "pt"
+        else if (c == '%')
+            units = DimensionUnits.percents;
+        else if (c == '.')
+            dotFound = true;
     }
     // TODO: convert points to pixels
     switch(units) {
     case DimensionUnits.points:
         // need to convert points to pixels
         value |= SIZE_IN_POINTS_FLAG;
+        break;
+    case DimensionUnits.percents:
+        // need to convert percents
+        value = ((value * 100) + (afterPointValue * 100 / afterPointDivider)) | SIZE_IN_PERCENTS_FLAG;
         break;
     default:
         break;

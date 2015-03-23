@@ -15,6 +15,7 @@ import dlangui.widgets.styles;
 
 Recent changes:
      Dimensions like fontSize, padding, margins, min/max width and height can be specified in points, e.g. minWidth = "3pt" margins="1pt,2pt,1pt,2pt"
+     % for font size, based on parent font size, e.g. fontSize="120.5%" means parentStyle.fontSize * 120.5 / 100.0;
 
 Copyright: Vadim Lopatin, 2014
 License:   Boost License 1.0
@@ -443,9 +444,11 @@ class Style {
 
 	/// font size
 	@property int fontSize() const {
-        if (_fontSize != FONT_SIZE_UNSPECIFIED)
+        if (_fontSize != FONT_SIZE_UNSPECIFIED) {
+            if (_fontSize & SIZE_IN_PERCENTS_FLAG)
+                return parentStyle.fontSize * (_fontSize ^ SIZE_IN_PERCENTS_FLAG) / 10000;
             return toPixels(_fontSize);
-        else
+        } else
             return parentStyle.fontSize;
 	}
 
@@ -1237,7 +1240,7 @@ bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
 	if ("fontFamily" in elem.tag.attr)
 		style.fontFamily = decodeFontFamily(elem.tag.attr["fontFamily"]);
 	if ("fontSize" in elem.tag.attr)
-		style.fontSize = cast(ushort)decodeDimension(elem.tag.attr["fontSize"]);
+		style.fontSize = cast(int)decodeDimension(elem.tag.attr["fontSize"]);
 	if ("layoutWidth" in elem.tag.attr)
 		style.layoutWidth = decodeLayoutDimension(elem.tag.attr["layoutWidth"]);
 	if ("layoutHeight" in elem.tag.attr)
