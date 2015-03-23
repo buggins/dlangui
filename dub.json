@@ -30,6 +30,7 @@
 	"views",
 	"views/res",
 	"views/res/mdpi",
+	"views/res/hdpi",
 	"views/res/i18n"
     ],
 
@@ -37,7 +38,8 @@
 	"derelict-gl3": ">=1.0.12",
 	"dlib": "~master",
 	"derelict-ft": ">=1.0.0",
-	"derelict-sdl2": ">=1.9.1"
+	"derelict-sdl2": ">=1.9.1",
+	"gl3n": "==1.0.0"
     },
 
     "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.", "--ex", "src.dlangui"],

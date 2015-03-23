@@ -53,8 +53,8 @@
   <cccmd>$(CC) -c</cccmd>
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>3rdparty ../DerelictGL3/source  ../DerelictUtil/source  ../DerelictFT/source ../de_image/source/interfaces ../de_image/source/png $(SolutionDir)/../dlib</imppath>
-  <fileImppath>$(SolutionDir)/views $(SolutionDir)/views/res $(SolutionDir)/views/res/i18n $(SolutionDir)/views/res/mdpi</fileImppath>
+  <imppath>3rdparty ../DerelictGL3/source  ../DerelictUtil/source  ../DerelictFT/source ../de_image/source/interfaces ../de_image/source/png $(SolutionDir)/../dlib  $(SolutionDir)/../gl3n</imppath>
+  <fileImppath>$(SolutionDir)/views $(SolutionDir)/views/res $(SolutionDir)/views/res/i18n $(SolutionDir)/views/res/mdpi $(SolutionDir)/views/res/hdpi</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
@@ -72,7 +72,7 @@
   <debuglevel>0</debuglevel>
   <debugids>DebugFocus</debugids>
   <versionlevel>0</versionlevel>
-  <versionids>EmbedStandardResources Unicode USE_FREETYPE</versionids>
+  <versionids>EmbedStandardResources Unicode USE_FREETYPE  USE_OPENGL USE_SDL</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>1</createImplib>
@@ -290,6 +290,15 @@
     <File path="..\dlib\dlib\math\vector.d" />
     <File path="..\dlib\dlib\image\io\zstream.d" />
    </Folder>
+   <Folder name="gl3n">
+    <File path="..\gl3n\gl3n\aabb.d" />
+    <File path="..\gl3n\gl3n\frustum.d" />
+    <File path="..\gl3n\gl3n\interpolate.d" />
+    <File path="..\gl3n\gl3n\linalg.d" />
+    <File path="..\gl3n\gl3n\math.d" />
+    <File path="..\gl3n\gl3n\plane.d" />
+    <File path="..\gl3n\gl3n\util.d" />
+   </Folder>
    <Folder name="win32">
     <File path="3rdparty\win32\basetsd.d" />
     <File path="3rdparty\win32\basetyps.d" />
@@ -368,6 +377,11 @@
      <File path="src\dlangui\dialogs\settingsdialog.d" />
     </Folder>
     <Folder name="graphics">
+     <Folder name="scene">
+      <File path="src\dlangui\graphics\scene\node.d" />
+      <File path="src\dlangui\graphics\scene\scene3d.d" />
+      <File path="src\dlangui\graphics\scene\transform.d" />
+     </Folder>
      <File path="src\dlangui\graphics\colors.d" />
      <File path="src\dlangui\graphics\drawbuf.d" />
      <File path="src\dlangui\graphics\fonts.d" />
