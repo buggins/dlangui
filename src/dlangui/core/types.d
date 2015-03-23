@@ -207,6 +207,16 @@ Rect toPixels(const Rect sz) {
     return Rect(toPixels(sz.left), toPixels(sz.top), toPixels(sz.right), toPixels(sz.bottom));
 }
 
+/// make size value with SIZE_IN_POINTS_FLAG set
+int makePointSize(int pt) {
+    return pt | SIZE_IN_POINTS_FLAG;
+}
+
+/// make size value with SIZE_IN_PERCENTS_FLAG set
+int makePercentSize(int percent) {
+    return (percent * 100) | SIZE_IN_PERCENTS_FLAG;
+}
+
 /// screen dots per inch
 private __gshared int PRIVATE_SCREEN_DPI = 96;
 
