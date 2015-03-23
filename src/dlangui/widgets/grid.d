@@ -1102,7 +1102,7 @@ class GridWidgetBase : ScrollWidgetBase {
 		super(ID, hscrollbarMode, vscrollbarMode);
         _headerCols = 1;
         _headerRows = 1;
-        _defRowHeight = 20;
+        _defRowHeight = pointsToPixels(16);
         _defColumnWidth = 100;
         _showColHeaders = true;
         _showRowHeaders = true;
