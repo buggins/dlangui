@@ -1192,7 +1192,7 @@ version (Windows) {
                 SCREEN_DPI = GetDeviceCaps(dc, LOGPIXELSY);
                 DeleteObject(dc);
 
-                SCREEN_DPI = 96 * 3 / 2;
+                //SCREEN_DPI = 96 * 3 / 2;
 
                 result = myWinMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
                 Log.i("calling Runtime.terminate()");

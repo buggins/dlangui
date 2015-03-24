@@ -228,6 +228,7 @@ class Window {
             Log.d("layout took ", layoutEnd - measureEnd, " ms");
             //Log.d("layout position: ", _mainWidget.pos);
         }
+        update(true);
     }
 
     protected PopupWidget[] _popups;
