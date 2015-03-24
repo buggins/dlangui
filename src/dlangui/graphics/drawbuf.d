@@ -260,6 +260,8 @@ class DrawBuf : RefCountedObject {
     abstract void fill(uint color);
     /// fill rectangle with solid color (clipping is applied)
     abstract void fillRect(Rect rc, uint color);
+	/// draw pixel at (x, y) with specified color 
+	abstract void drawPixel(int x, int y, uint color);
     /// draw 8bit alpha image - usually font glyph using specified color (clipping is applied)
 	abstract void drawGlyph(int x, int y, Glyph * glyph, uint color);
     /// draw source buffer rectangle contents to destination buffer
@@ -646,6 +648,22 @@ class ColorDrawBufBase : DrawBuf {
             }
         }
     }
+
+	/// draw pixel at (x, y) with specified color 
+	override void drawPixel(int x, int y, uint color) {
+		if (!_clipRect.isPointInside(x, y))
+			return;
+        color = applyAlpha(color);
+		uint * row = scanLine(y);
+		uint alpha = color >> 24;
+		if (!alpha) {
+			row[x] = color;
+		} else if (alpha < 254) {
+			// apply blending
+			row[x] = blendARGB(row[x], color, alpha);
+		}
+	}
+
 }
 
 class GrayDrawBuf : DrawBuf {
@@ -828,11 +846,11 @@ class GrayDrawBuf : DrawBuf {
 		}
 	}
     override void fillRect(Rect rc, uint color) {
-        ubyte cl = rgbToGray(color);
         if (applyClipping(rc)) {
+			uint alpha = color >> 24;
+			ubyte cl = rgbToGray(color);
             for (int y = rc.top; y < rc.bottom; y++) {
                 ubyte * row = scanLine(y);
-                uint alpha = color >> 24;
                 for (int x = rc.left; x < rc.right; x++) {
                     if (!alpha)
                         row[x] = cl;
@@ -844,6 +862,22 @@ class GrayDrawBuf : DrawBuf {
             }
         }
     }
+
+	/// draw pixel at (x, y) with specified color 
+	override void drawPixel(int x, int y, uint color) {
+		if (!_clipRect.isPointInside(x, y))
+			return;
+        color = applyAlpha(color);
+        ubyte cl = rgbToGray(color);
+		ubyte * row = scanLine(y);
+		uint alpha = color >> 24;
+		if (!alpha) {
+			row[x] = cl;
+		} else if (alpha < 254) {
+			// apply blending
+			row[x] = blendGray(row[x], cl, alpha);
+		}
+	}
 }
 
 class ColorDrawBuf : ColorDrawBufBase {

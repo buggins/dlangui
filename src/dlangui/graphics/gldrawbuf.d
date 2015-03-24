@@ -100,7 +100,17 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
         if (!isFullyTransparentColor(color) && applyClipping(rc))
             _scene.add(new SolidRectSceneItem(rc, color));
     }
-    /// draw 8bit alpha image - usually font glyph using specified color (clipping is applied)
+	/// draw pixel at (x, y) with specified color 
+	override void drawPixel(int x, int y, uint color) {
+        assert(_scene !is null);
+		if (!_clipRect.isPointInside(x, y))
+			return;
+        color = applyAlpha(color);
+        if (isFullyTransparentColor(color))
+			return;
+		_scene.add(new SolidRectSceneItem(Rect(x, y, x + 1, y + 1), color));
+	}	
+	/// draw 8bit alpha image - usually font glyph using specified color (clipping is applied)
 	override void drawGlyph(int x, int y, Glyph * glyph, uint color) {
         assert(_scene !is null);
 		Rect dstrect = Rect(x,y, x + glyph.correctedBlackBoxX, y + glyph.blackBoxY);
