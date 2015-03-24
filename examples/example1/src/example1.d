@@ -840,6 +840,19 @@ void main()
 
 		tabs.addTab((new SampleAnimationWidget("tab6")).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT), "TAB_ANIMATION"c);
 
+		CanvasWidget canvas = new CanvasWidget("canvas");
+		canvas.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+		canvas.onDrawListener = delegate(CanvasWidget canvas, DrawBuf buf, Rect rc) {
+			int x = rc.left;
+			int y = rc.top;
+			buf.fillRect(Rect(x+20, y+20, x+150, y+200), 0x80FF80);
+			buf.fillRect(Rect(x+90, y+80, x+250, y+250), 0x80FF80FF);
+			canvas.font.drawText(buf, x + 40, y + 50, "fillRect()"d, 0xC080C0);
+			canvas.font.drawText(buf, x + 300, y + 100, "drawPixel()"d, 0x000080);
+			for (int i = 0; i < 80; i++)
+				buf.drawPixel(x+300 + i * 4, y+140 + i * 3 % 100, 0xFF0000 + i * 2);
+		};
+		tabs.addTab(canvas, "TAB_CANVAS"c);
 
         //==========================================================================
 
