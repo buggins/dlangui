@@ -65,12 +65,13 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         return _selectedItemIndex;
     }
 
-    @property void selectedItemIndex(int index) {
+    @property ComboBoxBase selectedItemIndex(int index) {
         if (_selectedItemIndex == index)
-            return;
+            return this;
         _selectedItemIndex = index;
         if (onItemClickListener.assigned)
             onItemClickListener(this, index);
+        return this;
     }
 
 	/// change enabled state
