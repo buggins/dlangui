@@ -178,10 +178,10 @@ class ImageWidget : Widget {
     @property string drawableId() { return _drawableId; }
     /// set drawable image id
     @property ImageWidget drawableId(string id) { 
-        _drawableId = id; 
+        _drawableId = id;
         _drawable.clear();
         requestLayout();
-        return this; 
+        return this;
     }
     /// get drawable
     @property ref DrawableRef drawable() {
