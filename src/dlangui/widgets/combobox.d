@@ -222,9 +222,9 @@ class ComboBox : ComboBoxBase {
         return this;
     }
 
-    override @property void selectedItemIndex(int index) {
+    override @property ComboBoxBase selectedItemIndex(int index) {
         _body.text = _adapter.items[index];
-		super.selectedItemIndex(index);
+		return super.selectedItemIndex(index);
     }
 
 	override void init() {
