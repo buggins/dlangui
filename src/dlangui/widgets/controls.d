@@ -994,3 +994,38 @@ class ScrollBar : AbstractSlider, OnClickHandler {
     }
 }
 
+/// interface - slot for onClick
+interface OnDrawHandler {
+    void doDraw(CanvasWidget canvas, DrawBuf buf, Rect rc);
+}
+
+/// canvas widget - draw on it either by overriding of doDraw() or by assigning of onDrawListener
+class CanvasWidget : Widget {
+	
+	Listener!OnDrawHandler onDrawListener;
+
+    this(string ID = null) {
+		super(ID);
+    }
+
+    override void measure(int parentWidth, int parentHeight) { 
+        measuredContent(parentWidth, parentHeight, 0, 0);
+    }
+
+	void doDraw(DrawBuf buf, Rect rc) {
+		if (onDrawListener.assigned)
+			onDrawListener(this, buf, rc);
+	}
+
+    override void onDraw(DrawBuf buf) {
+        if (visibility != Visibility.Visible)
+            return;
+        super.onDraw(buf);
+        Rect rc = _pos;
+        applyMargins(rc);
+		auto saver = ClipRectSaver(buf, rc, alpha);
+		applyPadding(rc);
+		doDraw(buf, rc);
+    }
+}
+

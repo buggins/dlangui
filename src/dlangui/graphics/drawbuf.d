@@ -260,6 +260,8 @@ class DrawBuf : RefCountedObject {
     abstract void fill(uint color);
     /// fill rectangle with solid color (clipping is applied)
     abstract void fillRect(Rect rc, uint color);
+	/// draw pixel at (x, y) with specified color 
+	abstract void drawPixel(int x, int y, uint color);
     /// draw 8bit alpha image - usually font glyph using specified color (clipping is applied)
 	abstract void drawGlyph(int x, int y, Glyph * glyph, uint color);
     /// draw source buffer rectangle contents to destination buffer
@@ -335,6 +337,50 @@ class DrawBuf : RefCountedObject {
                 fillRect(Rect(rc.right - 1, y, rc.right, y + 1), color);
         }
     }
+
+	/// draw line from point p1 to p2 with specified color
+	void drawLine(Point p1, Point p2, uint colour) {
+		if (p1.x < _clipRect.left && p2.x < _clipRect.left)
+			return;
+		if (p1.y < _clipRect.top && p2.y < _clipRect.top)
+			return;
+		if (p1.x >= _clipRect.right && p2.x >= _clipRect.right)
+			return;
+		if (p1.y >= _clipRect.bottom && p2.y >= _clipRect.bottom)
+			return;
+		// from rosettacode.org
+		import std.math: abs;
+		immutable int dx = p2.x - p1.x;
+		immutable int ix = (dx > 0) - (dx < 0);
+		immutable int dx2 = abs(dx) * 2;
+		int dy = p2.y - p1.y;
+		immutable int iy = (dy > 0) - (dy < 0);
+		immutable int dy2 = abs(dy) * 2;
+		drawPixel(p1.x, p1.y, colour);
+		if (dx2 >= dy2) {
+			int error = dy2 - (dx2 / 2);
+			while (p1.x != p2.x) {
+				if (error >= 0 && (error || (ix > 0))) {
+					error -= dx2;
+					p1.y += iy;
+				}
+				error += dy2;
+				p1.x += ix;
+				drawPixel(p1.x, p1.y, colour);
+			}
+		} else {
+			int error = dx2 - (dy2 / 2);
+			while (p1.y != p2.y) {
+				if (error >= 0 && (error || (iy > 0))) {
+					error -= dy2;
+					p1.x += ix;
+				}
+				error += dx2;
+				p1.y += iy;
+				drawPixel(p1.x, p1.y, colour);
+			}
+		}
+	}
 
     /// create drawbuf with copy of current buffer with changed colors (returns this if not supported)
     DrawBuf transformColors(ref ColorTransform transform) {
@@ -646,6 +692,22 @@ class ColorDrawBufBase : DrawBuf {
             }
         }
     }
+
+	/// draw pixel at (x, y) with specified color 
+	override void drawPixel(int x, int y, uint color) {
+		if (!_clipRect.isPointInside(x, y))
+			return;
+        color = applyAlpha(color);
+		uint * row = scanLine(y);
+		uint alpha = color >> 24;
+		if (!alpha) {
+			row[x] = color;
+		} else if (alpha < 254) {
+			// apply blending
+			row[x] = blendARGB(row[x], color, alpha);
+		}
+	}
+
 }
 
 class GrayDrawBuf : DrawBuf {
@@ -828,11 +890,11 @@ class GrayDrawBuf : DrawBuf {
 		}
 	}
     override void fillRect(Rect rc, uint color) {
-        ubyte cl = rgbToGray(color);
         if (applyClipping(rc)) {
+			uint alpha = color >> 24;
+			ubyte cl = rgbToGray(color);
             for (int y = rc.top; y < rc.bottom; y++) {
                 ubyte * row = scanLine(y);
-                uint alpha = color >> 24;
                 for (int x = rc.left; x < rc.right; x++) {
                     if (!alpha)
                         row[x] = cl;
@@ -844,6 +906,22 @@ class GrayDrawBuf : DrawBuf {
             }
         }
     }
+
+	/// draw pixel at (x, y) with specified color 
+	override void drawPixel(int x, int y, uint color) {
+		if (!_clipRect.isPointInside(x, y))
+			return;
+        color = applyAlpha(color);
+        ubyte cl = rgbToGray(color);
+		ubyte * row = scanLine(y);
+		uint alpha = color >> 24;
+		if (!alpha) {
+			row[x] = cl;
+		} else if (alpha < 254) {
+			// apply blending
+			row[x] = blendGray(row[x], cl, alpha);
+		}
+	}
 }
 
 class ColorDrawBuf : ColorDrawBufBase {
