@@ -39,7 +39,7 @@
 	"dlib": "~master",
 	"derelict-ft": ">=1.0.0",
 	"derelict-sdl2": ">=1.9.1",
-	"gl3n": "==1.0.0"
+	"gl3n": "~>1.0.1"
     },
 
     "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.", "--ex", "src.dlangui"],
