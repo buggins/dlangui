@@ -481,7 +481,7 @@ struct SimpleTextFormatter {
             if (ch == '\n' || i == charsMeasured) {
                 // split by EOL char or at end of text
                 dstring line = cast(dstring)text[lineStart .. i];
-                int lineEndX = (i == charsMeasured) || (i == lineStart) ? lineStartX : widths[i - 1];
+                int lineEndX = (i == lineStart) ? lineStartX : widths[i - 1];
                 int lineWidth = lineEndX - lineStartX;
                 sz.y += lineHeight;
                 if (sz.x < lineWidth)

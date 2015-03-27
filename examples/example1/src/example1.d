@@ -341,7 +341,7 @@ extern (C) int UIAppMain(string[] args) {
 					window.close();
 					return true;
 				} else if (a.id == 41) {
-                    window.showMessageBox(UIString("About"d), UIString("DLangUI demo app\n(C) Vadim Lopatin, 2014\nhttp://github.com/buggins/dlangui\n"d));
+                    window.showMessageBox(UIString("About"d), UIString("DLangUI demo app\n(C) Vadim Lopatin, 2014\nhttp://github.com/buggins/dlangui"d));
 					return true;
                 } else if (a.id == ACTION_FILE_OPEN) {
                     UIString caption;
