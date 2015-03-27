@@ -946,77 +946,15 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
     }
     Platform.setInstance(w32platform);
 
-    // TODO
-    // Issue #72 Windows fix requeres following call
-    // SetProcessDPIAware();
-    // But it's not supported by current win32 D binding
 
-
-    try {
-        /// testing freetype font manager
-        version(USE_FREETYPE) {
-            import dlangui.graphics.ftfonts;
-            // trying to create font manager
-            FreeTypeFontManager ftfontMan = new FreeTypeFontManager();
-
-            import win32.shlobj;
-            string fontsPath = "c:\\Windows\\Fonts\\";
-            static if (true) { // SHGetFolderPathW not found in shell32.lib
-                WCHAR[MAX_PATH] szPath;
-                static if (false) {
-                    const CSIDL_FLAG_NO_ALIAS = 0x1000;
-                    const CSIDL_FLAG_DONT_UNEXPAND = 0x2000;
-                    if(SUCCEEDED(SHGetFolderPathW(NULL,
-                                                  CSIDL_FONTS|CSIDL_FLAG_NO_ALIAS|CSIDL_FLAG_DONT_UNEXPAND,
-                                                  NULL,
-                                                  0,
-                                                  szPath.ptr)))
-                    {
-                        fontsPath = toUTF8(fromWStringz(szPath));
-                    }
-                } else {
-                    if (GetWindowsDirectory(szPath.ptr, MAX_PATH - 1)) {
-                        fontsPath = toUTF8(fromWStringz(szPath));
-                        Log.i("Windows directory: ", fontsPath);
-                        fontsPath ~= "\\Fonts\\";
-                        Log.i("Fonts directory: ", fontsPath);
-                    }
-                }
-            }
-            ftfontMan.registerFont(fontsPath ~ "arial.ttf",     FontFamily.SansSerif, "Arial", false, FontWeight.Normal);
-            ftfontMan.registerFont(fontsPath ~ "arialbd.ttf",   FontFamily.SansSerif, "Arial", false, FontWeight.Bold);
-            ftfontMan.registerFont(fontsPath ~ "arialbi.ttf",   FontFamily.SansSerif, "Arial", true, FontWeight.Bold);
-            ftfontMan.registerFont(fontsPath ~ "ariali.ttf",    FontFamily.SansSerif, "Arial", true, FontWeight.Normal);
-            ftfontMan.registerFont(fontsPath ~ "cour.ttf",      FontFamily.MonoSpace, "Courier New", false, FontWeight.Normal);
-            ftfontMan.registerFont(fontsPath ~ "courbd.ttf",    FontFamily.MonoSpace, "Courier New", false, FontWeight.Bold);
-            ftfontMan.registerFont(fontsPath ~ "courbi.ttf",    FontFamily.MonoSpace, "Courier New", true, FontWeight.Bold);
-            ftfontMan.registerFont(fontsPath ~ "couri.ttf",     FontFamily.MonoSpace, "Courier New", true, FontWeight.Normal);
-            ftfontMan.registerFont(fontsPath ~ "times.ttf",     FontFamily.Serif, "Times New Roman", false, FontWeight.Normal);
-            ftfontMan.registerFont(fontsPath ~ "timesbd.ttf",   FontFamily.Serif, "Times New Roman", false, FontWeight.Bold);
-            ftfontMan.registerFont(fontsPath ~ "timesbi.ttf",   FontFamily.Serif, "Times New Roman", true, FontWeight.Bold);
-            ftfontMan.registerFont(fontsPath ~ "timesi.ttf",    FontFamily.Serif, "Times New Roman", true, FontWeight.Normal);
-            ftfontMan.registerFont(fontsPath ~ "consola.ttf",   FontFamily.MonoSpace, "Consolas", false, FontWeight.Normal);
-            ftfontMan.registerFont(fontsPath ~ "consolab.ttf",  FontFamily.MonoSpace, "Consolas", false, FontWeight.Bold);
-            ftfontMan.registerFont(fontsPath ~ "consolai.ttf",  FontFamily.MonoSpace, "Consolas", true, FontWeight.Normal);
-            ftfontMan.registerFont(fontsPath ~ "consolaz.ttf",  FontFamily.MonoSpace, "Consolas", true, FontWeight.Bold);
-            ftfontMan.registerFont(fontsPath ~ "verdana.ttf",   FontFamily.SansSerif, "Verdana", false, FontWeight.Normal);
-            ftfontMan.registerFont(fontsPath ~ "verdanab.ttf",  FontFamily.SansSerif, "Verdana", false, FontWeight.Bold);
-            ftfontMan.registerFont(fontsPath ~ "verdanai.ttf",  FontFamily.SansSerif, "Verdana", true, FontWeight.Normal);
-            ftfontMan.registerFont(fontsPath ~ "verdanaz.ttf",  FontFamily.SansSerif, "Verdana", true, FontWeight.Bold);
-            if (ftfontMan.registeredFontCount()) {
-                FontManager.instance = ftfontMan;
-            } else {
-                Log.w("No fonts registered in FreeType font manager. Disabling FreeType.");
-                destroy(ftfontMan);
-            }
-        }
-    } catch (Exception e) {
-        Log.e("Cannot create FreeTypeFontManager - falling back to win32");
-    }
-
-    // use Win32 font manager
-    if (FontManager.instance is null) {
-	    FontManager.instance = new Win32FontManager();
+    if (!initFontManager()) {
+        Log.e("******************************************************************");
+        Log.e("No font files found!!!");
+        Log.e("Currently, only hardcoded font paths implemented.");
+        Log.e("Probably you can modify sdlapp.d to add some fonts for your system.");
+        Log.e("TODO: use fontconfig");
+        Log.e("******************************************************************");
+        assert(false);
     }
 
 	currentTheme = createDefaultTheme();
@@ -1048,32 +986,8 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
     int result = UIAppMain(args);
     Log.i("UIAppMain returned ", result);
 
-    debug {
-		if (DrawBuf.instanceCount > 0) {
-			Log.e("Non-zero DrawBuf instance count when exiting: ", DrawBuf.instanceCount);
-		}
-		if (Style.instanceCount > 0) {
-			Log.e("Non-zero Style instance count when exiting: ", Style.instanceCount);
-		}
-		if (Widget.instanceCount() > 0) {
-            Log.e("Non-zero Widget instance count when exiting: ", Widget.instanceCount);
-        }
-		if (ImageDrawable.instanceCount > 0) {
-			Log.e("Non-zero ImageDrawable instance count when exiting: ", ImageDrawable.instanceCount);
-		}
-		if (Drawable.instanceCount > 0) {
-			Log.e("Non-zero Drawable instance count when exiting: ", Drawable.instanceCount);
-		}
-        version (USE_FREETYPE) {
-            import dlangui.graphics.ftfonts;
-            if (FreeTypeFontFile.instanceCount > 0) {
-                Log.e("Non-zero FreeTypeFontFile instance count when exiting: ", FreeTypeFontFile.instanceCount);
-            }
-            if (FreeTypeFont.instanceCount > 0) {
-                Log.e("Non-zero FreeTypeFont instance count when exiting: ", FreeTypeFont.instanceCount);
-            }
-        }
-    }
+    releaseResourcesOnAppExit();
+
     Log.d("Exiting main");
 
     return result;

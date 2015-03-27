@@ -4,7 +4,6 @@
     "homepage": "https://github.com/buggins/dlangui",
     "license": "Boost",
     "authors": ["Vadim Lopatin"],
-    "targetType": "none",
     "buildRequirements":[
         "allowWarnings"
     ],

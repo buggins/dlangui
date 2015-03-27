@@ -260,8 +260,10 @@
     <File path="..\de_image\source\png\devisualization\image\png\writer_chunks_IDAT.d" />
    </Folder>
    <Folder name="dlib_image">
-    <File path="..\dlib\dlib\image\io\bitio.d" />
+    <File path="..\dlib\dlib\container\aarray.d" />
+    <File path="..\dlib\dlib\container\array.d" />
     <File path="..\dlib\dlib\image\io\bmp.d" />
+    <File path="..\dlib\dlib\container\bst.d" />
     <File path="..\dlib\dlib\image\color.d" />
     <File path="..\dlib\dlib\filesystem\windows\common.d" />
     <File path="..\dlib\dlib\core\compound.d" />
@@ -271,24 +273,30 @@
     <File path="..\dlib\dlib\filesystem\dirrange.d" />
     <File path="..\dlib\dlib\filesystem\windows\file.d" />
     <File path="..\dlib\dlib\filesystem\filesystem.d" />
-    <File path="..\dlib\dlib\image\io\huffman.d" />
+    <File path="..\dlib\dlib\container\hash.d" />
+    <File path="..\dlib\dlib\coding\huffman.d" />
     <File path="..\dlib\dlib\image\io\idct.d" />
     <File path="..\dlib\dlib\image\image.d" />
     <File path="..\dlib\dlib\math\interpolation.d" />
     <File path="..\dlib\dlib\image\io\io.d" />
     <File path="..\dlib\dlib\image\io\jpeg.d" />
+    <File path="..\dlib\dlib\container\linkedlist.d" />
     <File path="..\dlib\dlib\math\linsolve.d" />
     <File path="..\dlib\dlib\filesystem\local.d" />
     <File path="..\dlib\dlib\math\matrix.d" />
+    <File path="..\dlib\dlib\core\memory.d" />
+    <File path="..\dlib\dlib\container\package.d" />
     <File path="..\dlib\dlib\image\io\png.d" />
+    <File path="..\dlib\dlib\container\queue.d" />
     <File path="..\dlib\dlib\functional\range.d" />
+    <File path="..\dlib\dlib\container\stack.d" />
     <File path="..\dlib\dlib\core\stream.d" />
     <File path="..\dlib\dlib\image\io\tga.d" />
     <File path="..\dlib\dlib\core\tuple.d" />
     <File path="..\dlib\dlib\math\utils.d" />
     <File path="..\dlib\dlib\image\io\utils.d" />
     <File path="..\dlib\dlib\math\vector.d" />
-    <File path="..\dlib\dlib\image\io\zstream.d" />
+    <File path="..\dlib\dlib\coding\zlib.d" />
    </Folder>
    <Folder name="gl3n">
     <File path="..\gl3n\gl3n\aabb.d" />
