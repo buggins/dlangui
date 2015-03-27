@@ -1468,20 +1468,19 @@ version (Windows) {
     }
 
 } else {
-    version(USE_FREETYPE) {
-        bool registerFonts(FreeTypeFontManager ft, string path) {
-            if (!exists(path) || !isDir(path))
-                return false;
-		    ft.registerFont(path ~ "DejaVuSans.ttf", FontFamily.SansSerif, "DejaVuSans", false, FontWeight.Normal);
-		    ft.registerFont(path ~ "DejaVuSans-Bold.ttf", FontFamily.SansSerif, "DejaVuSans", false, FontWeight.Bold);
-		    ft.registerFont(path ~ "DejaVuSans-Oblique.ttf", FontFamily.SansSerif, "DejaVuSans", true, FontWeight.Normal);
-		    ft.registerFont(path ~ "DejaVuSans-BoldOblique.ttf", FontFamily.SansSerif, "DejaVuSans", true, FontWeight.Bold);
-		    ft.registerFont(path ~ "DejaVuSansMono.ttf", FontFamily.MonoSpace, "DejaVuSansMono", false, FontWeight.Normal);
-		    ft.registerFont(path ~ "DejaVuSansMono-Bold.ttf", FontFamily.MonoSpace, "DejaVuSansMono", false, FontWeight.Bold);
-		    ft.registerFont(path ~ "DejaVuSansMono-Oblique.ttf", FontFamily.MonoSpace, "DejaVuSansMono", true, FontWeight.Normal);
-		    ft.registerFont(path ~ "DejaVuSansMono-BoldOblique.ttf", FontFamily.MonoSpace, "DejaVuSansMono", true, FontWeight.Bold);
-            return true;
-        }
+    import dlangui.graphics.ftfonts;
+    bool registerFonts(FreeTypeFontManager ft, string path) {
+        if (!exists(path) || !isDir(path))
+            return false;
+		ft.registerFont(path ~ "DejaVuSans.ttf", FontFamily.SansSerif, "DejaVuSans", false, FontWeight.Normal);
+		ft.registerFont(path ~ "DejaVuSans-Bold.ttf", FontFamily.SansSerif, "DejaVuSans", false, FontWeight.Bold);
+		ft.registerFont(path ~ "DejaVuSans-Oblique.ttf", FontFamily.SansSerif, "DejaVuSans", true, FontWeight.Normal);
+		ft.registerFont(path ~ "DejaVuSans-BoldOblique.ttf", FontFamily.SansSerif, "DejaVuSans", true, FontWeight.Bold);
+		ft.registerFont(path ~ "DejaVuSansMono.ttf", FontFamily.MonoSpace, "DejaVuSansMono", false, FontWeight.Normal);
+		ft.registerFont(path ~ "DejaVuSansMono-Bold.ttf", FontFamily.MonoSpace, "DejaVuSansMono", false, FontWeight.Bold);
+		ft.registerFont(path ~ "DejaVuSansMono-Oblique.ttf", FontFamily.MonoSpace, "DejaVuSansMono", true, FontWeight.Normal);
+		ft.registerFont(path ~ "DejaVuSansMono-BoldOblique.ttf", FontFamily.MonoSpace, "DejaVuSansMono", true, FontWeight.Bold);
+        return true;
     }
 
     /// initialize font manager - default implementation
