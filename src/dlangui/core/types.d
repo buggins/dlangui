@@ -190,8 +190,6 @@ immutable int SIZE_IN_PERCENTS_FLAG = 0x0800_0000;
 /// convert custom size to pixels (sz can be either pixels, or points if SIZE_IN_POINTS_FLAG bit set)
 int toPixels(int sz) {
     if (sz > 0 && (sz & SIZE_IN_POINTS_FLAG) != 0) {
-        import dlangui.core.logger;
-        Log.d("size in points");
         return pointsToPixels(sz ^ SIZE_IN_POINTS_FLAG);
     }
     return sz;
