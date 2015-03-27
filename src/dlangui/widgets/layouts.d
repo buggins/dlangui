@@ -413,6 +413,17 @@ class ResizerWidget : Widget {
         if (event.action == MouseAction.FocusOut && _dragging) {
             return true;
         }
+        if ((event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) || (!event.lbutton.isDown && _dragging)) {
+            resetState(State.Pressed);
+            if (_dragging) {
+                //sendScrollEvent(ScrollAction.SliderReleased, _position);
+                _dragging = false;
+				if (resizeListener.assigned) {
+					resizeListener(this, ResizerEventType.EndDragging, _orientation == Orientation.Vertical ? event.y : event.x);
+				}
+            }
+            return true;
+        }
         if (event.action == MouseAction.Move && _dragging) {
             int delta = _orientation == Orientation.Vertical ? event.y - _dragStart.y : event.x - _dragStart.x;
 			if (resizeListener.assigned) {
@@ -457,17 +468,6 @@ class ResizerWidget : Widget {
             requestLayout();
             invalidate();
             //onIndicatorDragging(_dragStartPosition, position);
-            return true;
-        }
-        if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
-            resetState(State.Pressed);
-            if (_dragging) {
-                //sendScrollEvent(ScrollAction.SliderReleased, _position);
-                _dragging = false;
-				if (resizeListener.assigned) {
-					resizeListener(this, ResizerEventType.EndDragging, _orientation == Orientation.Vertical ? event.y : event.x);
-				}
-            }
             return true;
         }
         if (event.action == MouseAction.Move && trackHover) {

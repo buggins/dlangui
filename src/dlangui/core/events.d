@@ -505,6 +505,13 @@ struct ButtonDetails {
 
     static final long DOUBLE_CLICK_THRESHOLD_MS = 200;
 
+
+    void reset() {
+        _downTs = _upTs = 0;
+        _downFlags = 0;
+        _downX = _downY = 0;
+    }
+
 	/// update for button down
 	void down(short x, short y, ushort flags) {
         //Log.d("Button down ", x, ",", y, " _downTs=", _downTs, " _upTs=", _upTs);

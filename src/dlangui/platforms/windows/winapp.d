@@ -556,6 +556,15 @@ class Win32Window : Window {
 	protected ButtonDetails _mbutton;
 	protected ButtonDetails _rbutton;
 
+    private void updateButtonsState(uint flags) {
+        if (!(flags & MK_LBUTTON) && _lbutton.isDown)
+            _lbutton.reset();
+        if (!(flags & MK_MBUTTON) && _mbutton.isDown)
+            _mbutton.reset();
+        if (!(flags & MK_RBUTTON) && _rbutton.isDown)
+            _rbutton.reset();
+    }
+
     private bool _mouseTracking;
 	private bool onMouse(uint message, uint flags, short x, short y) {
 		debug(DebugMouseEvents) Log.d("Win32 Mouse Message ", message, " flags=", flags, " x=", x, " y=", y);
@@ -566,6 +575,7 @@ class Win32Window : Window {
         switch (message) {
             case WM_MOUSEMOVE:
                 action = MouseAction.Move;
+                updateButtonsState(flags);
                 break;
             case WM_LBUTTONDOWN:
                 action = MouseAction.ButtonDown;
