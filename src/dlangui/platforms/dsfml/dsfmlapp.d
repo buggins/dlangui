@@ -102,6 +102,67 @@ class DSFMLWindow : dlangui.platforms.common.platform.Window {
         buf.afterDrawing();
     }
 
+    private MouseButton translateButton(uint btn) {
+        switch(btn) {
+            default:
+            case Mouse.Button.Left:
+                return MouseButton.Left;
+            case Mouse.Button.Right:
+                return MouseButton.Right;
+            case Mouse.Button.Middle:
+                return MouseButton.Middle;
+            case Mouse.Button.XButton1:
+                return MouseButton.XButton1;
+            case Mouse.Button.XButton2:
+                return MouseButton.XButton2;
+        }
+    }
+
+    private ushort mouseFlags;
+
+    bool handleEvent(ref Event event) {
+        switch (event.type) {
+            case(event.EventType.Closed): {
+                break;
+            }
+            case(event.EventType.Resized): {
+                onResize(event.size.width, event.size.height);
+                break;
+            }
+            case(event.EventType.MouseButtonPressed): {
+                auto btn = translateButton(event.mouseButton.button);
+                mouseFlags |= mouseButtonToFlag(btn);
+                MouseEvent ev = new MouseEvent(MouseAction.ButtonDown, btn, mouseFlags, cast(short)event.mouseButton.x, cast(short)event.mouseButton.y);
+                dispatchMouseEvent(ev);
+                break;
+            }
+            case(event.EventType.MouseButtonReleased): {
+                auto btn = translateButton(event.mouseButton.button);
+                mouseFlags &= ~mouseButtonToFlag(btn);
+                MouseEvent ev = new MouseEvent(MouseAction.ButtonUp, btn, mouseFlags, cast(short)event.mouseButton.x, cast(short)event.mouseButton.y);
+                dispatchMouseEvent(ev);
+                break;
+            }
+            case(event.EventType.MouseMoved): {
+                MouseEvent ev = new MouseEvent(MouseAction.Move, MouseButton.None, mouseFlags, cast(short)event.mouseMove.x, cast(short)event.mouseMove.y);
+                dispatchMouseEvent(ev);
+                break;
+            }
+            case(event.EventType.MouseEntered): {
+                break;
+            }
+            case(event.EventType.MouseLeft): {
+                break;
+            }
+            case(event.EventType.MouseWheelMoved): {
+                break;
+            }
+            default:
+                break;
+        }
+        return true;
+    }
+
 }
 
 /**

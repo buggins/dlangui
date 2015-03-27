@@ -53,7 +53,7 @@
   <cccmd>$(CC) -c</cccmd>
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>3rdparty ../DerelictGL3/source  ../DerelictUtil/source  ../DerelictFT/source ../de_image/source/interfaces ../de_image/source/png $(SolutionDir)/../dlib  $(SolutionDir)/../gl3n</imppath>
+  <imppath>3rdparty ../DerelictGL3/source  ../DerelictUtil/source  ../DerelictFT/source ../de_image/source/interfaces ../de_image/source/png $(SolutionDir)/../dlib  $(SolutionDir)/../gl3n $(SolutionDir)/../DSFML/src</imppath>
   <fileImppath>$(SolutionDir)/views $(SolutionDir)/views/res $(SolutionDir)/views/res/i18n $(SolutionDir)/views/res/mdpi $(SolutionDir)/views/res/hdpi</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
@@ -72,7 +72,7 @@
   <debuglevel>0</debuglevel>
   <debugids>DebugFocus FontResources</debugids>
   <versionlevel>0</versionlevel>
-  <versionids>EmbedStandardResources Unicode USE_FREETYPE USE_OPENGL</versionids>
+  <versionids>EmbedStandardResources Unicode USE_FREETYPE USE_OPENGL USE_DSFML</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>1</createImplib>
@@ -402,6 +402,9 @@
     <Folder name="platforms">
      <Folder name="common">
       <File path="src\dlangui\platforms\common\platform.d" />
+     </Folder>
+     <Folder name="dsfml">
+      <File path="src\dlangui\platforms\dsfml\dsfmlapp.d" />
      </Folder>
      <Folder name="sdl">
       <File path="src\dlangui\platforms\sdl\sdlapp.d" />

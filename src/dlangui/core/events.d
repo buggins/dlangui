@@ -482,6 +482,17 @@ enum MouseButton : ubyte {
     XButton2 = MouseFlag.XButton2, // additional button 2
 }
 
+/// converts MouseButton to MouseFlag
+ushort mouseButtonToFlag(MouseButton btn) {
+    switch(btn) with (MouseButton) {
+        case Left: return MouseFlag.LButton;
+        case Right: return MouseFlag.RButton;
+        case Middle: return MouseFlag.MButton;
+        case XButton1: return MouseFlag.XButton1;
+        case XButton2: return MouseFlag.XButton2;
+        default: return 0;
+    }
+}
 
 /// Mouse button state details for MouseEvent
 struct ButtonDetails {
