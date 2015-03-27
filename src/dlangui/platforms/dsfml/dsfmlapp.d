@@ -118,7 +118,74 @@ class DSFMLWindow : dlangui.platforms.common.platform.Window {
         }
     }
 
+    private uint translateKey(uint key) {
+        switch(key) {
+            case Keyboard.Key.A: return KeyCode.KEY_A;
+            case Keyboard.Key.B: return KeyCode.KEY_B;
+            case Keyboard.Key.C: return KeyCode.KEY_C;
+            case Keyboard.Key.D: return KeyCode.KEY_D;
+            case Keyboard.Key.E: return KeyCode.KEY_E;
+            case Keyboard.Key.F: return KeyCode.KEY_F;
+            case Keyboard.Key.G: return KeyCode.KEY_G;
+            case Keyboard.Key.H: return KeyCode.KEY_H;
+            case Keyboard.Key.I: return KeyCode.KEY_I;
+            case Keyboard.Key.J: return KeyCode.KEY_J;
+            case Keyboard.Key.K: return KeyCode.KEY_K;
+            case Keyboard.Key.L: return KeyCode.KEY_L;
+            case Keyboard.Key.M: return KeyCode.KEY_M;
+            case Keyboard.Key.N: return KeyCode.KEY_N;
+            case Keyboard.Key.O: return KeyCode.KEY_O;
+            case Keyboard.Key.P: return KeyCode.KEY_P;
+            case Keyboard.Key.Q: return KeyCode.KEY_Q;
+            case Keyboard.Key.R: return KeyCode.KEY_R;
+            case Keyboard.Key.S: return KeyCode.KEY_S;
+            case Keyboard.Key.T: return KeyCode.KEY_T;
+            case Keyboard.Key.U: return KeyCode.KEY_U;
+            case Keyboard.Key.V: return KeyCode.KEY_V;
+            case Keyboard.Key.W: return KeyCode.KEY_W;
+            case Keyboard.Key.X: return KeyCode.KEY_X;
+            case Keyboard.Key.Y: return KeyCode.KEY_Y;
+            case Keyboard.Key.Z: return KeyCode.KEY_Z;
+            case Keyboard.Key.Num0: return KeyCode.KEY_0;
+            case Keyboard.Key.Num1: return KeyCode.KEY_1;
+            case Keyboard.Key.Num2: return KeyCode.KEY_2;
+            case Keyboard.Key.Num3: return KeyCode.KEY_3;
+            case Keyboard.Key.Num4: return KeyCode.KEY_4;
+            case Keyboard.Key.Num5: return KeyCode.KEY_5;
+            case Keyboard.Key.Num6: return KeyCode.KEY_6;
+            case Keyboard.Key.Num7: return KeyCode.KEY_7;
+            case Keyboard.Key.Num8: return KeyCode.KEY_8;
+            case Keyboard.Key.Num9: return KeyCode.KEY_9;
+            case Keyboard.Key.Escape: return KeyCode.ESCAPE;
+            case Keyboard.Key.LControl: return KeyCode.LCONTROL;
+            case Keyboard.Key.LShift: return KeyCode.LSHIFT;
+            case Keyboard.Key.LAlt: return KeyCode.LALT;
+            case Keyboard.Key.RControl: return KeyCode.RCONTROL;
+            case Keyboard.Key.RShift: return KeyCode.RSHIFT;
+            case Keyboard.Key.RAlt: return KeyCode.RALT;
+            case Keyboard.Key.Return: return KeyCode.RETURN;
+            case Keyboard.Key.BackSpace: return KeyCode.BACK;
+            case Keyboard.Key.Tab: return KeyCode.TAB;
+            case Keyboard.Key.PageUp: return KeyCode.PAGEUP;
+            case Keyboard.Key.PageDown: return KeyCode.PAGEDOWN;
+            case Keyboard.Key.End: return KeyCode.END;
+            case Keyboard.Key.Home: return KeyCode.HOME;
+            case Keyboard.Key.Insert: return KeyCode.INS;
+            case Keyboard.Key.Delete: return KeyCode.DEL;
+            case Keyboard.Key.Add: return KeyCode.ADD;
+            case Keyboard.Key.Subtract: return KeyCode.SUB;
+            case Keyboard.Key.Multiply: return KeyCode.MUL;
+            case Keyboard.Key.Divide: return KeyCode.DIV;
+            case Keyboard.Key.Left: return KeyCode.LEFT;
+            case Keyboard.Key.Right: return KeyCode.RIGHT;
+            case Keyboard.Key.Up: return KeyCode.UP;
+            case Keyboard.Key.Down: return KeyCode.DOWN;
+            default: return 0x8000_0000 | key;
+        }
+    }
+
     private ushort mouseFlags;
+    private ushort keyFlags;
 
     bool handleEvent(ref Event event) {
         switch (event.type) {
@@ -133,29 +200,43 @@ class DSFMLWindow : dlangui.platforms.common.platform.Window {
                 auto btn = translateButton(event.mouseButton.button);
                 mouseFlags |= mouseButtonToFlag(btn);
                 MouseEvent ev = new MouseEvent(MouseAction.ButtonDown, btn, mouseFlags, cast(short)event.mouseButton.x, cast(short)event.mouseButton.y);
-                dispatchMouseEvent(ev);
-                break;
+                return dispatchMouseEvent(ev);
             }
             case(event.EventType.MouseButtonReleased): {
                 auto btn = translateButton(event.mouseButton.button);
                 mouseFlags &= ~mouseButtonToFlag(btn);
                 MouseEvent ev = new MouseEvent(MouseAction.ButtonUp, btn, mouseFlags, cast(short)event.mouseButton.x, cast(short)event.mouseButton.y);
-                dispatchMouseEvent(ev);
-                break;
+                return dispatchMouseEvent(ev);
             }
             case(event.EventType.MouseMoved): {
                 MouseEvent ev = new MouseEvent(MouseAction.Move, MouseButton.None, mouseFlags, cast(short)event.mouseMove.x, cast(short)event.mouseMove.y);
-                dispatchMouseEvent(ev);
-                break;
+                return dispatchMouseEvent(ev);
             }
             case(event.EventType.MouseEntered): {
                 break;
             }
             case(event.EventType.MouseLeft): {
+                mouseFlags = 0;
                 break;
             }
             case(event.EventType.MouseWheelMoved): {
                 break;
+            }
+            case(event.EventType.TextEntered): {
+                KeyEvent ev = new KeyEvent(KeyAction.Text, 0, 0, [event.text.unicode]);
+                return dispatchKeyEvent(ev);
+            }
+            case(event.EventType.KeyReleased): 
+            case(event.EventType.KeyPressed): {
+                keyFlags = 0;
+                if (event.key.alt)
+                    keyFlags |= KeyFlag.Alt;
+                if (event.key.control)
+                    keyFlags |= KeyFlag.Control;
+                if (event.key.shift)
+                    keyFlags |= KeyFlag.Shift;
+                KeyEvent ev = new KeyEvent(event.type == event.EventType.KeyPressed ? KeyAction.KeyDown : KeyAction.KeyUp, translateKey(event.key.code), keyFlags, [event.text.unicode]);
+                return dispatchKeyEvent(ev);
             }
             default:
                 break;
