@@ -1470,6 +1470,7 @@ version (Windows) {
 } else {
     import dlangui.graphics.ftfonts;
     bool registerFonts(FreeTypeFontManager ft, string path) {
+        import std.file;
         if (!exists(path) || !isDir(path))
             return false;
 		ft.registerFont(path ~ "DejaVuSans.ttf", FontFamily.SansSerif, "DejaVuSans", false, FontWeight.Normal);
