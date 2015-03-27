@@ -111,6 +111,19 @@ standard values are used.
 * Current default theme is similar to one in MS Visual Studio 2013
 * Resources can be either embedded into executable or loaded from external resource directory in runtime
 
+Important notice
+================
+
+If build of your app is failed due to dlangui or its dependencies, probably you have not upgraded dependencies.
+
+Try following:
+
+	dub upgrade --force-remove
+	dub build --force
+
+As well, sometimes removing of dub.json.selections can help.
+
+
 Win32 builds
 ------------
 
