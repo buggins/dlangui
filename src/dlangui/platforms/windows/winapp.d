@@ -929,12 +929,8 @@ private __gshared Win32Platform w32platform;
 
 int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdShow)
 {
-	Log.setFileLogger(std.stdio.File("ui.log", "w"));
-	debug {
-        Log.setLogLevel(LogLevel.Trace);
-    } else {
-        Log.setLogLevel(LogLevel.Info);
-    }
+    initLogs();
+
     Log.d("myWinMain()");
     string basePath = exePath();
     Log.i("Current executable: ", exePath());

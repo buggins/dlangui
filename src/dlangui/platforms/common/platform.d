@@ -222,10 +222,10 @@ class Window {
             measure();
             //Log.d("measured size: ", _mainWidget.measuredWidth, "x", _mainWidget.measuredHeight);
             long measureEnd = currentTimeMillis;
-            Log.d("measure took ", measureEnd - measureStart, " ms");
+            debug Log.d("resize: measure took ", measureEnd - measureStart, " ms");
             layout();
             long layoutEnd = currentTimeMillis;
-            Log.d("layout took ", layoutEnd - measureEnd, " ms");
+            debug Log.d("resize: layout took ", layoutEnd - measureEnd, " ms");
             //Log.d("layout position: ", _mainWidget.pos);
         }
         update(true);
@@ -986,7 +986,7 @@ class Window {
         if (!needLayout) {
             needLayout = root.needLayout || needLayout;
             if (needLayout) {
-                Log.d("need layout: ", root.id);
+                debug(DebugRedraw) Log.d("need layout: ", root.id);
             }
         }
 		if (root.animating && root.visible)
@@ -1565,5 +1565,19 @@ void releaseResourcesOnAppExit() {
                 Log.e("Non-zero FreeTypeFont instance count when exiting: ", FreeTypeFont.instanceCount);
             }
         }
+    }
+}
+
+/// initialize logging (for win32 - to file ui.log, for other platforms - stderr; log level is TRACE for debug builds, and WARN for release builds)
+void initLogs() {
+    version (Windows) {
+		Log.setFileLogger(std.stdio.File("ui.log", "w"));
+    } else {
+        Log.setStderrLogger();
+    }
+    debug {
+        Log.setLogLevel(LogLevel.Trace);
+    } else {
+        Log.setLogLevel(LogLevel.Warn);
     }
 }

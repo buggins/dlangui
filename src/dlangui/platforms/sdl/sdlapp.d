@@ -1237,12 +1237,7 @@ version (Windows) {
 
     int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int iCmdShow)
     {
-		Log.setFileLogger(std.stdio.File("ui.log", "w"));
-    	debug {
-            Log.setLogLevel(LogLevel.Trace);
-        } else {
-            Log.setLogLevel(LogLevel.Warn);
-        }
+        initLogs();
         Log.d("myWinMain()");
         string basePath = exePath();
         Log.i("Current executable: ", exePath());
@@ -1268,12 +1263,7 @@ version (Windows) {
 	int main(string[] args)
 	{
 		
-		Log.setStderrLogger();
-    	debug {
-            Log.setLogLevel(LogLevel.Trace);
-        } else {
-            Log.setLogLevel(LogLevel.Warn);
-        }
+        initLogs();
 
         if (!initFontManager()) {
             Log.e("******************************************************************");
