@@ -1532,6 +1532,12 @@ void releaseResourcesOnAppExit() {
     //
 	debug setAppShuttingDownFlag();
 
+    debug {
+		if (Widget.instanceCount() > 0) {
+            Log.e("Non-zero Widget instance count when exiting: ", Widget.instanceCount);
+        }
+    }
+
     currentTheme = null;
     drawableCache = null;
     imageCache = null;
@@ -1544,9 +1550,6 @@ void releaseResourcesOnAppExit() {
 		if (Style.instanceCount > 0) {
 			Log.e("Non-zero Style instance count when exiting: ", Style.instanceCount);
 		}
-		if (Widget.instanceCount() > 0) {
-            Log.e("Non-zero Widget instance count when exiting: ", Widget.instanceCount);
-        }
 		if (ImageDrawable.instanceCount > 0) {
 			Log.e("Non-zero ImageDrawable instance count when exiting: ", ImageDrawable.instanceCount);
 		}

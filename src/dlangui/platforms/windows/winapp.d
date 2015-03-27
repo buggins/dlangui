@@ -161,7 +161,7 @@ class Win32Window : Window {
     version (USE_OPENGL) {
         HGLRC _hGLRC; // opengl context
         HPALETTE _hPalette;
-        GLSupport _gl;
+        //GLSupport _gl;
     }
     dstring _caption;
     Win32ColorDrawBuf _drawbuf;
@@ -178,7 +178,9 @@ class Win32Window : Window {
             _dy = 400;
         _platform = platform;
         version (USE_OPENGL) {
-            _gl = new GLSupport();
+            //_gl = new GLSupport();
+            if (!_glSupport)
+                _glSupport = new GLSupport();
         }
         _caption = windowCaption;
         _flags = flags;
@@ -213,7 +215,7 @@ class Win32Window : Window {
                     if (_hGLRC) {
 
                         wglMakeCurrent(hDC, _hGLRC);
-                        _glSupport = _gl;
+                        //_glSupport = _gl;
 
                         if (!DERELICT_GL3_RELOADED) {
                             // run this code only once
@@ -221,24 +223,29 @@ class Win32Window : Window {
                             try {
                                 import derelict.opengl3.gl3;
                                 DerelictGL3.reload();
+
                                 // successful
-                                if (glSupport.initShaders()) {
+                                if (glSupport.valid || glSupport.initShaders()) {
                                     setOpenglEnabled();
                                     useOpengl = true;
                                 } else {
                                     Log.e("Failed to compile shaders");
                                 }
+
+                                destroy(_glSupport);
+                                _glSupport = null;
                             } catch (Exception e) {
                                 Log.e("Derelict exception", e);
                             }
                         } else {
-						    if (glSupport.initShaders()) {
+						    if (glSupport.valid || glSupport.initShaders()) {
 							    setOpenglEnabled();
 							    useOpengl = true;
 						    } else {
 							    Log.e("Failed to compile shaders");
 						    }
                         }
+                        wglMakeCurrent(hDC, null);
                     }
                 } else {
                     Log.e("Pixelformat failed");
@@ -266,7 +273,7 @@ class Win32Window : Window {
             //scope(exit) EndPaint(_hwnd, &ps);
             HDC hdc = GetDC(_hwnd);
             wglMakeCurrent(hdc, _hGLRC);
-            _glSupport = _gl;
+            //_glSupport = _gl;
             glDisable(GL_DEPTH_TEST);
             glViewport(0, 0, _dx, _dy);
 			float a = 1.0f;
@@ -303,10 +310,10 @@ class Win32Window : Window {
         version (USE_OPENGL) {
             import derelict.opengl3.wgl;
             if (_hGLRC) {
-			    glSupport.uninitShaders();
-                destroy(_glSupport);
-                _glSupport = null;
-                _gl = null;
+			    //glSupport.uninitShaders();
+                //destroy(_glSupport);
+                //_glSupport = null;
+                //_gl = null;
                 wglMakeCurrent (null, null) ;
                 wglDeleteContext(_hGLRC);
                 _hGLRC = null;

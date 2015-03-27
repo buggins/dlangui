@@ -70,7 +70,7 @@
   <doXGeneration>1</doXGeneration>
   <xfilename>$(IntDir)\$(TargetName).json</xfilename>
   <debuglevel>0</debuglevel>
-  <debugids>DebugFocus</debugids>
+  <debugids>DebugFocus FontResources</debugids>
   <versionlevel>0</versionlevel>
   <versionids>EmbedStandardResources Unicode USE_FREETYPE USE_OPENGL</versionids>
   <dump_source>0</dump_source>
