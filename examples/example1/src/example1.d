@@ -28,23 +28,6 @@ import std.path;
 
 mixin APP_ENTRY_POINT;
 
-Widget createAboutWidget()
-{
-	LinearLayout res = new VerticalLayout();
-	res.padding(Rect(10,10,10,10));
-	res.addChild(new TextWidget(null, "DLangUI demo app"d));
-	res.addChild(new TextWidget(null, "(C) Vadim Lopatin, 2014"d));
-	res.addChild(new TextWidget(null, "http://github.com/buggins/dlangui"d));
-	Button closeButton = new Button("close", "Close"d);
-	closeButton.onClickListener = delegate(Widget src) {
-		Log.i("Closing window");
-		res.window.close();
-		return true;
-	};
-	res.addChild(closeButton);
-	return res;
-}
-
 class TimerTest : HorizontalLayout {
     ulong timerId;
     TextWidget _counter;
@@ -344,12 +327,6 @@ extern (C) int UIAppMain(string[] args) {
         helpItem.add(new Action(40, "MENU_HELP_VIEW_HELP"));
 		MenuItem aboutItem = new MenuItem(new Action(41, "MENU_HELP_ABOUT"));
         helpItem.add(aboutItem);
-		aboutItem.onMenuItemClick = delegate(MenuItem item) {
-			Window wnd = Platform.instance.createWindow("About...", window, WindowFlag.Modal);
-			wnd.mainWidget = createAboutWidget();
-			wnd.show();
-			return true;
-		};
         mainMenuItems.add(fileItem);
         mainMenuItems.add(editItem);
 		mainMenuItems.add(viewItem);
@@ -362,6 +339,9 @@ extern (C) int UIAppMain(string[] args) {
 			if (a) {
 				if (a.id == ACTION_FILE_EXIT) {
 					window.close();
+					return true;
+				} else if (a.id == 41) {
+                    window.showMessageBox(UIString("About"d), UIString("DLangUI demo app\n(C) Vadim Lopatin, 2014\nhttp://github.com/buggins/dlangui\n"d));
 					return true;
                 } else if (a.id == ACTION_FILE_OPEN) {
                     UIString caption;
