@@ -11,9 +11,6 @@
     "targetName": "dlangui",
     "targetPath": "lib",
     "targetType": "staticLibrary",
-    "versions-posix": ["USE_SDL", "USE_OPENGL"],
-    "versions-windows": ["Unicode", "USE_FREETYPE"],
-    "versions": ["EmbedStandardResources"],
 
     "copyFiles-windows": ["lib/libfreetype-6.dll", "lib/zlib1.dll"],
 
@@ -33,19 +30,41 @@
 	"views/res/i18n"
     ],
 
-    "dependencies": {
-	"derelict-gl3": ">=1.0.12",
-	"dlib": "~master",
-	"derelict-ft": ">=1.0.0",
-	"derelict-sdl2": ">=1.9.1",
-	"gl3n": "~>1.0.1"
-    },
-
     "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.", "--ex", "src.dlangui"],
 
     "subPackages": [
         "./examples/helloworld/",
         "./examples/example1/",
         "./examples/tetris/"
+    ],
+
+    "configurations": [
+        {
+            "name": "default",
+            "versions": ["USE_OPENGL", "EmbedStandardResources", "USE_FREETYPE"],
+            "versions-posix": ["USE_SDL"],
+            "versions-windows": ["Unicode"],
+            "dependencies": {
+        	"dlib": "~master",
+        	"derelict-gl3": "~>1.0.12",
+        	"derelict-ft": "~>1.0.0",
+        	"gl3n": "~>1.0.1"
+            },
+            "dependencies-posix": {
+        	"derelict-sdl2": "~>1.9.1"
+            }
+        },
+        {
+            "name": "sdl",
+            "versions": ["USE_SDL", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources"],
+            "versions-windows": ["Unicode"],
+            "dependencies": {
+        	"dlib": "~master",
+        	"derelict-gl3": "~>1.0.12",
+        	"derelict-ft": "~>1.0.0",
+        	"derelict-sdl2": "~>1.9.1",
+        	"gl3n": "~>1.0.1"
+            }
+        }
     ]
 }
