@@ -65,6 +65,19 @@
         	"derelict-sdl2": "~>1.9.1",
         	"gl3n": "~>1.0.1"
             }
+        },
+        {
+            "name": "sfml",
+            "versions": ["USE_DSFML", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources"],
+            "versions-windows": ["Unicode"],
+            "dependencies": {
+        	"dlib": "~master",
+        	"derelict-gl3": "~>1.0.12",
+        	"derelict-ft": "~>1.0.0",
+        	"derelict-sdl2": "~>1.9.1",
+        	"gl3n": "~>1.0.1",
+        	"dsfml": "~master"
+            }
         }
     ]
 }

@@ -21,6 +21,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.platforms.windows.winapp;
 version (USE_SDL) { } 
+else version (USE_DSFML) { } 
 else version (Windows) {
 
 import core.runtime;

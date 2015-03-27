@@ -27,6 +27,7 @@ Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "libdparse", "..\dlangide\li
 EndProject
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dlanguisfml", "..\dsfml_project\dlanguisfml\dlanguisfml.visualdproj", "{5867E363-515A-4C7E-82C7-D1C1D35F55FC}"
 	ProjectSection(ProjectDependencies) = postProject
+		{5FF17402-9997-4D0E-8068-6D84B8769D98} = {5FF17402-9997-4D0E-8068-6D84B8769D98}
 		{DB490C05-D9F8-431C-91DD-CEE646A64FDA} = {DB490C05-D9F8-431C-91DD-CEE646A64FDA}
 	EndProjectSection
 EndProject

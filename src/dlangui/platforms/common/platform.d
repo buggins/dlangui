@@ -182,6 +182,10 @@ class Window {
     abstract @property void windowCaption(dstring caption);
 	/// sets window icon
 	abstract @property void windowIcon(DrawBufRef icon);
+    /// request window redraw
+    abstract void invalidate();
+	/// close window
+	abstract void close();
 
 	/// requests layout for main widget and popups
 	void requestLayout() {
@@ -1035,10 +1039,6 @@ class Window {
         }
         debug(DebugRedraw) Log.d("checkUpdateNeeded returned needDraw=", needDraw, " needLayout=", needLayout, " animationActive=", animationActive);
     }
-    /// request window redraw
-    abstract void invalidate();
-	/// close window
-	abstract void close();
 
     protected bool _actionsUpdateRequested = true;
 
