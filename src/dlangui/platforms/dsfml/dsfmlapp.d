@@ -163,6 +163,59 @@ class DSFMLWindow : dlangui.platforms.common.platform.Window {
             case Keyboard.Key.RControl: return KeyCode.RCONTROL;
             case Keyboard.Key.RShift: return KeyCode.RSHIFT;
             case Keyboard.Key.RAlt: return KeyCode.RALT;
+
+		    ///The [ key
+		    case Keyboard.Key.LBracket: return KeyCode.KEY_BRACKETOPEN;
+		    ///The ] key
+		    case Keyboard.Key.RBracket: return KeyCode.KEY_BRACKETCLOSE;
+		    ///The ; key
+		    case Keyboard.Key.SemiColon: return KeyCode.KEY_BRACKETOPEN;
+		    ///The , key
+		    case Keyboard.Key.Comma: return KeyCode.KEY_COMMA;
+		    ///The . key
+		    case Keyboard.Key.Period: return KeyCode.KEY_PERIOD;
+		    ///The ' key
+		    case Keyboard.Key.Quote: return KeyCode.QUOTE;
+		    ///The / key
+		    case Keyboard.Key.Slash: return KeyCode.KEY_DIVIDE;
+		    ///The \ key
+		    case Keyboard.Key.BackSlash: return KeyCode.BACKSLASH;
+		    ///The ~ key
+		    case Keyboard.Key.Tilde: return KeyCode.TILDE;
+		    ///The = key
+		    case Keyboard.Key.Equal: return KeyCode.EQUAL;
+		    ///The - key
+		    case Keyboard.Key.Dash: return KeyCode.SUB;
+		    ///The Space key
+		    case Keyboard.Key.Space: return KeyCode.SPACE;
+
+		    case Keyboard.Key.Numpad0: return KeyCode.NUM_0;
+		    case Keyboard.Key.Numpad1: return KeyCode.NUM_1;
+		    case Keyboard.Key.Numpad2: return KeyCode.NUM_2;
+		    case Keyboard.Key.Numpad3: return KeyCode.NUM_3;
+		    case Keyboard.Key.Numpad4: return KeyCode.NUM_4;
+		    case Keyboard.Key.Numpad5: return KeyCode.NUM_5;
+		    case Keyboard.Key.Numpad6: return KeyCode.NUM_6;
+		    case Keyboard.Key.Numpad7: return KeyCode.NUM_7;
+		    case Keyboard.Key.Numpad8: return KeyCode.NUM_8;
+		    case Keyboard.Key.Numpad9: return KeyCode.NUM_9;
+
+		    case Keyboard.Key.F1: return KeyCode.F1;
+		    case Keyboard.Key.F2: return KeyCode.F2;
+		    case Keyboard.Key.F3: return KeyCode.F3;
+		    case Keyboard.Key.F4: return KeyCode.F4;
+		    case Keyboard.Key.F5: return KeyCode.F5;
+		    case Keyboard.Key.F6: return KeyCode.F6;
+		    case Keyboard.Key.F7: return KeyCode.F7;
+		    case Keyboard.Key.F8: return KeyCode.F8;
+		    case Keyboard.Key.F9: return KeyCode.F9;
+		    case Keyboard.Key.F10: return KeyCode.F10;
+		    case Keyboard.Key.F11: return KeyCode.F11;
+		    case Keyboard.Key.F12: return KeyCode.F12;
+		    case Keyboard.Key.F13: return KeyCode.F13;
+		    case Keyboard.Key.F14: return KeyCode.F14;
+		    case Keyboard.Key.F15: return KeyCode.F15;
+
             case Keyboard.Key.Return: return KeyCode.RETURN;
             case Keyboard.Key.BackSpace: return KeyCode.BACK;
             case Keyboard.Key.Tab: return KeyCode.TAB;
@@ -352,6 +405,9 @@ class DSFMLPlatform : Platform {
 @property DSFMLPlatform dsfmlPlatform() {
     return cast(DSFMLPlatform)Platform.instance;
 }
+
+// entry point
+extern(C) int UIAppMain(string[] args);
 
 void initDSFMLApp() {
     initLogs();

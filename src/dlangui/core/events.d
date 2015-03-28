@@ -922,6 +922,20 @@ enum KeyCode : uint {
     LALT = 0xA4,
     /// right alt
     RALT = 0xA5,
+    //LMENU = 0xA4, //VK_LMENU
+    //RMENU = 0xA5,
+    /// ;
+    SEMICOLON = 0x201, 
+    /// ~
+    TILDE = 0x202,
+    /// '
+    QUOTE = 0x203,
+    /// /
+    SLASH = 0x204,
+    /// \
+    BACKSLASH = 0x205,
+    /// =
+    EQUAL = 0x206,
 }
 
 /// Keyboard event
