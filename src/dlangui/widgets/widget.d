@@ -1439,6 +1439,73 @@ class Widget {
         // override
     }
 
+    /// set string property value, for ML loaders
+    bool setProperty(string name, string value) {
+        if (name.equal("text")) {
+            text = UIString(value);
+            return true;
+        }
+        return false;
+    }
+
+    /// set string property value, for ML loaders
+    bool setProperty(string name, UIString value) {
+        if (name.equal("text")) {
+            text = value;
+            return true;
+        }
+        return false;
+    }
+
+    /// set int property value, for ML loaders
+    bool setProperty(string name, int value) {
+        if (name.equal("minWidth")) {
+            minWidth = value;
+            return true;
+        }
+        if (name.equal("maxWidth")) {
+            maxWidth = value;
+            return true;
+        }
+        if (name.equal("minHeight")) {
+            minHeight = value;
+            return true;
+        }
+        if (name.equal("maxHeight")) {
+            maxHeight = value;
+            return true;
+        }
+        if (name.equal("layoutWidth")) {
+            layoutWidth = value;
+            return true;
+        }
+        if (name.equal("layoutHeight")) {
+            layoutHeight = value;
+            return true;
+        }
+        if (name.equal("textColor")) {
+            textColor = cast(uint)value;
+            return true;
+        }
+        if (name.equal("backgroundColor")) {
+            backgroundColor = cast(uint)value;
+            return true;
+        }
+        return false;
+    }
+
+    /// set int property value, for ML loaders
+    bool setProperty(string name, Rect value) {
+        if (name.equal("margins")) {
+            margins = value;
+            return true;
+        }
+        if (name.equal("padding")) {
+            padding = value;
+            return true;
+        }
+        return false;
+    }
 }
 
 /** Widget list holder. */
@@ -1596,28 +1663,4 @@ mixin template ActionTooltipSupport() {
     }
 }
 
-alias WidgetFactory = Widget function();
 
-private __gshared WidgetFactory[string] _widgetFactories;
-
-WidgetFactory getWidgetFactory(string name) {
-    return _widgetFactories[name];
-}
-
-void registerWidgetFactory(string name, WidgetFactory factory) {
-    _widgetFactories[name] = factory;
-}
-
-void registerWidgetFactories(T...)() {
-    foreach(t; T) {
-        //pragma(msg, t.stringof);
-        immutable string code = "WidgetFactory f = function() { return new " ~ t.stringof ~ "(); };";
-        //pragma(msg, code);
-        mixin(code);
-        registerWidgetFactory(T.stringof, f);
-    }
-}
-
-__gshared static this() {
-    registerWidgetFactories!Widget;
-}

@@ -426,6 +426,7 @@
      <File path="src\dlangui\widgets\layouts.d" />
      <File path="src\dlangui\widgets\lists.d" />
      <File path="src\dlangui\widgets\menu.d" />
+     <File path="src\dlangui\widgets\metadata.d" />
      <File path="src\dlangui\widgets\popup.d" />
      <File path="src\dlangui\widgets\scroll.d" />
      <File path="src\dlangui\widgets\srcedit.d" />

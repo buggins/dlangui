@@ -445,6 +445,15 @@ extern (C) int UIAppMain(string[] args) {
 		layout.addChild((new TextWidget(null, "Text widget3 with very long text"d)).textColor(0x004000));
         layout.addChild(new VSpacer()); // vertical spacer to fill extra space
 
+        /*
+        import dlangui.core.parser;
+        Widget w = parseML(q{
+            TextWidget {
+            }
+        });
+        Log.d("id=", w.id);
+        */
+
 		layout.childById("BTN1").onClickListener = (delegate (Widget w) { Log.d("onClick ", w.id); return true; });
 		layout.childById("BTN2").onClickListener = (delegate (Widget w) { Log.d("onClick ", w.id); return true; });
 		layout.childById("BTN3").onClickListener = (delegate (Widget w) { Log.d("onClick ", w.id); return true; });

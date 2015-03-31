@@ -840,3 +840,6 @@ class TableLayout : WidgetGroupDefaultDrawing {
 	}
 	
 }
+
+import dlangui.widgets.metadata;
+mixin(registerWidgets!(VerticalLayout, HorizontalLayout, TableLayout, FrameLayout)());

@@ -2,6 +2,7 @@ module dlangui.core.parser;
 
 import dlangui.core.linestream;
 import dlangui.widgets.widget;
+import dlangui.widgets.metadata;
 import std.conv : to;
 
 class ParserException : Exception {
@@ -313,7 +314,7 @@ class Tokenizer {
     }
 
     protected ref const(Token) parseOp(TokenType op) {
-        _token.type = TokenType.error;
+        _token.type = op;
         skipChar();
         return _token;
     }
@@ -380,26 +381,41 @@ class MLParser {
 
     protected Token _token;
 
+
+    protected void nextToken() {
+        _token = _tokenizer.nextToken();
+        Log.d("parsed token: ", _token.type, " ", _token.line, ":", _token.pos, " ", _token.text);
+    }
+
     protected void skipWhitespaceAndEols() {
         for (;;) {
-            _token = _tokenizer.nextToken();
-            if (_token.type != TokenType.eol && _token.type != TokenType.eof && _token.type != TokenType.whitespace && _token.type != TokenType.comment)
+            nextToken();
+            if (_token.type != TokenType.eol && _token.type != TokenType.whitespace && _token.type != TokenType.comment)
                 break;
         }
         if (_token.type == TokenType.error)
             _tokenizer.emitError("error while parsing ML code");
     }
 
+    protected void skipWhitespace() {
+        for (;;) {
+            nextToken();
+            if (_token.type != TokenType.whitespace && _token.type != TokenType.comment)
+                break;
+        }
+        if (_token.type == TokenType.error)
+            _tokenizer.emitError("error while parsing ML code");
+    }
 
     protected void error(string msg) {
         _tokenizer.emitError(msg);
     }
 
     Widget createWidget(string name) {
-        WidgetFactory factory = getWidgetFactory(name);
-        if (!factory)
-            error("Cannot create widget " ~ name ~ " : unknown class");
-        return factory();
+        auto metadata = findWidgetMetadata(name);
+        if (!metadata)
+            error("Cannot create widget " ~ name ~ " : unregistered widget class");
+        return metadata.create();
     }
 
     protected void createContext(string name) {
@@ -419,6 +435,11 @@ class MLParser {
         if (!_context)
             _tokenizer.emitError("No context widget is specified!");
         skipWhitespaceAndEols();
+        if (_token.type != TokenType.curlyClose) // {
+            _tokenizer.emitError("} is expected");
+        skipWhitespaceAndEols();
+        if (_token.type != TokenType.eof) // {
+            _tokenizer.emitError("end of file expected");
         return _context;
     }
 
@@ -427,10 +448,12 @@ class MLParser {
         _tokenizer = null;
     }
 
-    /// Parse DlangUI ML code
-    static Widget parse(string code, string filename = "", Widget context = null) {
-        MLParser parser = new MLParser(code, filename);
-        scope(exit) destroy(parser);
-        return parser.parse();
-    }
+}
+
+
+/// Parse DlangUI ML code
+public Widget parseML(string code, string filename = "", Widget context = null) {
+    MLParser parser = new MLParser(code, filename);
+    scope(exit) destroy(parser);
+    return parser.parse();
 }
