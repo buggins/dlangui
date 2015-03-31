@@ -178,11 +178,6 @@ class Win32Window : Window {
         if (!_dy)
             _dy = 400;
         _platform = platform;
-        version (USE_OPENGL) {
-            //_gl = new GLSupport();
-            if (!_glSupport)
-                _glSupport = new GLSupport();
-        }
         _caption = windowCaption;
         _flags = flags;
         uint ws = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
@@ -225,6 +220,12 @@ class Win32Window : Window {
                                 import derelict.opengl3.gl3;
                                 DerelictGL3.reload();
 
+                                version (USE_OPENGL) {
+                                    //_gl = new GLSupport();
+                                    if (!_glSupport)
+                                        _glSupport = new GLSupport();
+                                }
+
                                 // successful
                                 if (glSupport.valid || glSupport.initShaders()) {
                                     setOpenglEnabled();
@@ -233,8 +234,6 @@ class Win32Window : Window {
                                     Log.e("Failed to compile shaders");
                                 }
 
-                                destroy(_glSupport);
-                                _glSupport = null;
                             } catch (Exception e) {
                                 Log.e("Derelict exception", e);
                             }
@@ -977,17 +976,17 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
         try {
             import derelict.opengl3.gl3;
             DerelictGL3.load();
-
-            // just to check OpenGL context
-            Log.i("Trying to setup OpenGL context");
-            Win32Window tmpWindow = new Win32Window(w32platform, ""d, null, 0);
-            destroy(tmpWindow);
-            if (openglEnabled)
-                Log.i("OpenGL support is enabled");
-            else
-                Log.w("OpenGL support is disabled");
-            // process messages
-            platform.enterMessageLoop();
+            //
+            //// just to check OpenGL context
+            //Log.i("Trying to setup OpenGL context");
+            //Win32Window tmpWindow = new Win32Window(w32platform, ""d, null, 0);
+            //destroy(tmpWindow);
+            //if (openglEnabled)
+            //    Log.i("OpenGL support is enabled");
+            //else
+            //    Log.w("OpenGL support is disabled");
+            //// process messages
+            //platform.enterMessageLoop();
         } catch (Exception e) {
             Log.e("Exception while trying to init OpenGL", e);
 		    setOpenglEnabled(false);
