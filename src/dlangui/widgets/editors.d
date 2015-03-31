@@ -1564,7 +1564,7 @@ class EditLine : EditWidgetBase {
         measuredContent(parentWidth, parentHeight, _measuredTextSize.x + _leftPaneWidth, _measuredTextSize.y);
     }
 
-	override protected bool handleAction(const Action a) {
+	override bool handleAction(const Action a) {
 		switch (a.id) {
 			case EditorActions.InsertNewLine:
 			case EditorActions.PrependNewLine:
