@@ -1596,3 +1596,28 @@ mixin template ActionTooltipSupport() {
     }
 }
 
+alias WidgetFactory = Widget function();
+
+private __gshared WidgetFactory[string] _widgetFactories;
+
+WidgetFactory getWidgetFactory(string name) {
+    return _widgetFactories[name];
+}
+
+void registerWidgetFactory(string name, WidgetFactory factory) {
+    _widgetFactories[name] = factory;
+}
+
+void registerWidgetFactories(T...)() {
+    foreach(t; T) {
+        //pragma(msg, t.stringof);
+        immutable string code = "WidgetFactory f = function() { return new " ~ t.stringof ~ "(); };";
+        //pragma(msg, code);
+        mixin(code);
+        registerWidgetFactory(T.stringof, f);
+    }
+}
+
+__gshared static this() {
+    registerWidgetFactories!Widget;
+}

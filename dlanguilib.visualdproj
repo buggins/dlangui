@@ -373,6 +373,7 @@
      <File path="src\dlangui\core\i18n.d" />
      <File path="src\dlangui\core\linestream.d" />
      <File path="src\dlangui\core\logger.d" />
+     <File path="src\dlangui\core\parser.d" />
      <File path="src\dlangui\core\settings.d" />
      <File path="src\dlangui\core\signals.d" />
      <File path="src\dlangui\core\stdaction.d" />
