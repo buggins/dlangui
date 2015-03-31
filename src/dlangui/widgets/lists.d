@@ -22,32 +22,106 @@ import dlangui.widgets.widget;
 import dlangui.widgets.controls;
 import dlangui.core.signals;
 
+/** interface - slot for onAdapterChangeListener */
+interface OnAdapterChangeHandler {
+    void onAdapterChange(ListAdapter source);
+}
+
+
 /// list widget adapter provides items for list widgets
 interface ListAdapter {
     /// returns number of widgets in list
-    @property int itemCount();
+    @property int itemCount() const;
     /// return list item widget by item index
     Widget itemWidget(int index);
 	/// return list item's state flags
-	uint itemState(int index);
+	uint itemState(int index) const;
 	/// set one or more list item's state flags, returns updated state
 	uint setItemState(int index, uint flags);
 	/// reset one or more list item's state flags, returns updated state
 	uint resetItemState(int index, uint flags);
     /// returns integer item id by index (if supported)
-    int itemId(int index);
+    int itemId(int index) const;
     /// returns string item id by index (if supported)
-    string itemStringId(int index);
+    string itemStringId(int index) const;
 
+    /// remove all items
+    void clear();
+
+    /// connect adapter change handler
+    ListAdapter connect(OnAdapterChangeHandler handler);
+    /// disconnect adapter change handler
+    ListAdapter disconnect(OnAdapterChangeHandler handler);
 }
 
 /// List adapter for simple list of widget instances
-class WidgetListAdapter : ListAdapter {
+class ListAdapterBase : ListAdapter {
+    /** Handle items change */
+    protected Signal!OnAdapterChangeHandler onAdapterChangeListener;
+
+    /// connect adapter change handler
+    override ListAdapter connect(OnAdapterChangeHandler handler) {
+        onAdapterChangeListener.connect(handler);
+        return this;
+    }
+    /// disconnect adapter change handler
+    override ListAdapter disconnect(OnAdapterChangeHandler handler) {
+        onAdapterChangeListener.disconnect(handler);
+        return this;
+    }
+    /// returns integer item id by index (if supported)
+    override int itemId(int index) const {
+        return 0;
+    }
+    /// returns string item id by index (if supported)
+    override string itemStringId(int index) const {
+        return null;
+    }
+
+    /// returns number of widgets in list
+    override @property int itemCount() const {
+        // override it
+        return 0;
+    }
+
+    /// return list item widget by item index
+    override Widget itemWidget(int index) {
+        // override it
+        return null;
+    }
+
+	/// return list item's state flags
+	override uint itemState(int index) const {
+        // override it
+        return State.Enabled;
+    }
+	/// set one or more list item's state flags, returns updated state
+	override uint setItemState(int index, uint flags) {
+        return 0;
+    }
+	/// reset one or more list item's state flags, returns updated state
+	override uint resetItemState(int index, uint flags) {
+        return 0;
+    }
+
+    /// remove all items
+    override void clear() {
+    }
+
+    /// notify listeners about list items changes
+    void updateViews() {
+        if (onAdapterChangeListener.assigned)
+            onAdapterChangeListener.emit(this);
+    }
+}
+
+/// List adapter for simple list of widget instances
+class WidgetListAdapter : ListAdapterBase {
     private WidgetList _widgets;
     /// list of widgets to display
-    @property ref WidgetList widgets() { return _widgets; }
+    @property ref const(WidgetList) widgets() { return _widgets; }
     /// returns number of widgets in list
-    @property override int itemCount() {
+    @property override int itemCount() const {
         return _widgets.count;
     }
     /// return list item widget by item index
@@ -55,7 +129,7 @@ class WidgetListAdapter : ListAdapter {
         return _widgets.get(index);
     }
 	/// return list item's state flags
-	override uint itemState(int index) {
+	override uint itemState(int index) const {
 		return _widgets.get(index).state;
 	}
 	/// set one or more list item's state flags, returns updated state
@@ -66,13 +140,23 @@ class WidgetListAdapter : ListAdapter {
 	override uint resetItemState(int index, uint flags) {
 		return _widgets.get(index).resetState(flags).state;
 	}
-    /// returns integer item id by index (if supported)
-    override int itemId(int index) {
-        return 0;
+    /// add item
+    WidgetListAdapter add(Widget item, int index = -1) {
+        _widgets.insert(item, index);
+        updateViews();
+        return this;
     }
-    /// returns string item id by index (if supported)
-    override string itemStringId(int index) {
-        return null;
+    /// remove item
+    WidgetListAdapter remove(int index) {
+        auto item = _widgets.remove(index);
+        destroy(item);
+        updateViews();
+        return this;
+    }
+    /// remove all items
+    override void clear() {
+        _widgets.clear();
+        updateViews();
     }
     ~this() {
         //Log.d("Destroying WidgetListAdapter");
@@ -104,7 +188,7 @@ struct StringListValue {
 
 
 /** List adapter providing strings only. */
-class StringListAdapter : ListAdapter {
+class StringListAdapter : ListAdapterBase {
     protected UIStringCollection _items;
     protected uint[] _states;
     protected int[] _intIds;
@@ -148,21 +232,88 @@ class StringListAdapter : ListAdapter {
         updateStatesLength();
     }
 
+    /// remove all items
+    override void clear() {
+        _items.clear();
+        updateStatesLength();
+        updateViews();
+    }
+
+    /// remove item by index
+    StringListAdapter remove(int index) {
+        if (index < 0 || index >= _items.length)
+            return this;
+        for (int i = 0; i < _items.length - 1; i++) {
+            _intIds[i] = _intIds[i + 1];
+            _stringIds[i] = _stringIds[i + 1];
+            _states[i] = _states[i + 1];
+        }
+        _items.remove(index);
+        _intIds.length = items.length;
+        _states.length = _items.length;
+        _stringIds.length = items.length;
+        updateViews();
+        return this;
+    }
+
+    /// add new item
+    StringListAdapter add(UIString item, int index = -1) {
+        if (index < 0 || index > _items.length)
+            index = _items.length;
+        _items.add(item, index);
+        _intIds.length = items.length;
+        _states.length = _items.length;
+        _stringIds.length = items.length;
+        for (int i = _items.length - 1; i > index; i--) {
+            _intIds[i] = _intIds[i - 1];
+            _stringIds[i] = _stringIds[i - 1];
+            _states[i] = _states[i - 1];
+        }
+        _intIds[index] = 0;
+        _stringIds[index] = null;
+        _states[index] = State.Enabled;
+        updateViews();
+        return this;
+    }
+    /// add new string resource item
+    StringListAdapter add(string item, int index = -1) {
+        return add(UIString(item), index);
+    }
+    /// add new raw dstring item
+    StringListAdapter add(dstring item, int index = -1) {
+        return add(UIString(item), index);
+    }
+
     /** Access to items collection. */
-    @property ref UIStringCollection items() { return _items; }
+    @property ref const(UIStringCollection) items() { return _items; }
+
+    /** Replace items collection. */
+    @property StringListAdapter items(dstring[] values) { 
+        _items = values;
+        _intIds.length = items.length;
+        _states.length = _items.length;
+        _stringIds.length = items.length;
+        for (int i = 0; i < _items.length; i++) {
+            _intIds[i] = 0;
+            _stringIds[i] = null;
+            _states[i] = State.Enabled;
+        }
+        updateViews();
+        return this;
+    }
 
     /// returns number of widgets in list
-    @property override int itemCount() {
+    @property override int itemCount() const {
         return _items.length;
     }
 
     /// returns integer item id by index (if supported)
-    override int itemId(int index) {
+    override int itemId(int index) const {
         return index >= 0 && index < _intIds.length ? _intIds[index] : 0;
     }
 
     /// returns string item id by index (if supported)
-    override string itemStringId(int index) {
+    override string itemStringId(int index) const {
         return index >= 0 && index < _stringIds.length ? _stringIds[index] : null;
     }
 
@@ -197,8 +348,9 @@ class StringListAdapter : ListAdapter {
     }
 
 	/// return list item's state flags
-	override uint itemState(int index) {
-        updateStatesLength();
+	override uint itemState(int index) const {
+        if (index < 0 || index >= _items.length)
+            return 0;
         return _states[index];
 	}
 
@@ -238,7 +390,7 @@ interface OnItemClickHandler {
 
 
 /** List widget - shows content as hori*/
-class ListWidget : WidgetGroup, OnScrollHandler {
+class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
 
     /** Handle selection change. */
     Signal!OnItemSelectedHandler onItemSelectedListener;
@@ -326,20 +478,32 @@ class ListWidget : WidgetGroup, OnScrollHandler {
     @property ListAdapter adapter() { return _adapter; }
     /// set adapter
     @property ListWidget adapter(ListAdapter adapter) {
+        if (_adapter is adapter)
+            return this; // no changes
+        if (_adapter)
+            _adapter.disconnect(this);
         if (_adapter !is null && _ownAdapter)
             destroy(_adapter);
         _adapter = adapter; 
+        if (_adapter)
+            _adapter.connect(this);
         _ownAdapter = false;
-        onAdapterChanged();
+        onAdapterChange(_adapter);
         return this; 
     }
     /// set adapter, which will be owned by list (destroy will be called for adapter on widget destroy)
     @property ListWidget ownAdapter(ListAdapter adapter) { 
+        if (_adapter is adapter)
+            return this; // no changes
+        if (_adapter)
+            _adapter.disconnect(this);
         if (_adapter !is null && _ownAdapter)
             destroy(_adapter);
         _adapter = adapter; 
+        if (_adapter)
+            _adapter.connect(this);
         _ownAdapter = true;
-        onAdapterChanged();
+        onAdapterChange(_adapter);
         return this; 
     }
 
@@ -362,10 +526,6 @@ class ListWidget : WidgetGroup, OnScrollHandler {
         if (_adapter !is null && index >= 0 && index < itemCount)
             return (_adapter.itemState(index) & State.Enabled) != 0;
         return false;
-    }
-
-    void onAdapterChanged() {
-        requestLayout();
     }
 
     /// empty parameter list constructor - for usage by factory
@@ -398,6 +558,11 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 			invalidate();
 		}
 	}
+
+    /// item list is changed
+    override void onAdapterChange(ListAdapter source) {
+        requestLayout();
+    }
 
 	/// override to handle change of selection
 	protected void selectionChanged(int index, int previouslySelectedItem = -1) {
@@ -555,6 +720,8 @@ class ListWidget : WidgetGroup, OnScrollHandler {
 	}
 
     ~this() {
+        if (_adapter)
+            _adapter.disconnect(this);
         //Log.d("Destroying List ", _id);
         if (_adapter !is null && _ownAdapter)
             destroy(_adapter);

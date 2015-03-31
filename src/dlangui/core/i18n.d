@@ -146,7 +146,7 @@ struct UIStringCollection {
     private int _length;
 
     /** Returns number of items */
-    @property int length() { return _length; }
+    @property int length() const { return _length; }
     /** Slice */
     UIString[] opIndex() {
         return _items[0 .. _length];
@@ -160,7 +160,7 @@ struct UIStringCollection {
         return _items[start .. end];
     }
     /** Read item by index */
-    UIString opIndex(size_t index) {
+    UIString opIndex(size_t index) const {
         return _items[index];
     }
     /** Modify item by index */
@@ -169,7 +169,7 @@ struct UIStringCollection {
         return _items[index];
     }
     /** Return unicode string for item by index */
-    dstring get(size_t index) {
+    dstring get(size_t index) const {
         return _items[index].value;
     }
     /** Assign UIStringCollection */
@@ -247,7 +247,7 @@ struct UIStringCollection {
         _length--;
     }
     /** Return index of first item with specified text or -1 if not found. */
-    int indexOf(dstring str) {
+    int indexOf(dstring str) const {
         for (int i = 0; i < _length; i++) {
             if (_items[i].value.equal(str))
                 return i;
@@ -255,7 +255,7 @@ struct UIStringCollection {
         return -1;
     }
     /** Return index of first item with specified string resource id or -1 if not found. */
-    int indexOf(string strId) {
+    int indexOf(string strId) const {
         for (int i = 0; i < _length; i++) {
             if (_items[i].id.equal(strId))
                 return i;
@@ -263,7 +263,7 @@ struct UIStringCollection {
         return -1;
     }
     /** Return index of first item with specified string or -1 if not found. */
-    int indexOf(UIString str) {
+    int indexOf(UIString str) const {
         if (str.id !is null)
             return indexOf(str.id);
         return indexOf(str.value);

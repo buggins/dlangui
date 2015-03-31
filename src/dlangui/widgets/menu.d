@@ -438,7 +438,7 @@ class MenuWidgetBase : ListWidget {
 			if (orientation == Orientation.Horizontal)
 				widget.styleId = STYLE_MAIN_MENU_ITEM;
 			widget.parent = this;
-            adapter.widgets.add(widget);
+            adapter.add(widget);
         }
         ownAdapter = adapter;
     }

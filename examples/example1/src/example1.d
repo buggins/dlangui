@@ -467,12 +467,12 @@ extern (C) int UIAppMain(string[] args) {
 
             StringListAdapter stringList = new StringListAdapter();
             WidgetListAdapter listAdapter = new WidgetListAdapter();
-            listAdapter.widgets.add((new TextWidget()).text("This is a list of widgets"d).styleId("LIST_ITEM"));
-            stringList.items.add("This is a list of strings from StringListAdapter"d);
+            listAdapter.add((new TextWidget()).text("This is a list of widgets"d).styleId("LIST_ITEM"));
+            stringList.add("This is a list of strings from StringListAdapter"d);
             for (int i = 1; i < 1000; i++) {
                 dstring label = "List item "d ~ to!dstring(i);
-                listAdapter.widgets.add((new TextWidget()).text("Widget list - "d ~ label).styleId("LIST_ITEM"));
-                stringList.items.add("Simple string - "d ~ label);
+                listAdapter.add((new TextWidget()).text("Widget list - "d ~ label).styleId("LIST_ITEM"));
+                stringList.add("Simple string - "d ~ label);
             }
             list.ownAdapter = listAdapter;
             listAdapter.resetItemState(0, State.Enabled);
@@ -492,6 +492,19 @@ extern (C) int UIAppMain(string[] args) {
             list2.selectItem(0);
             longLists.addChild(list2);
 
+            VerticalLayout itemedit = new VerticalLayout();
+            itemedit.addChild(new TextWidget(null, "New item text:"d));
+            EditLine itemtext = new EditLine(null, "Text for new item"d);
+            itemedit.addChild(itemtext);
+            Button btn = new Button(null, "Add item"d);
+            itemedit.addChild(btn);
+            longLists.addChild(itemedit);
+            btn.onClickListener = delegate(Widget src)
+            {
+                stringList.add(itemtext.text);
+                listAdapter.add((new TextWidget()).text(itemtext.text).styleId("LIST_ITEM"));
+                return true;
+            };
             tabs.addTab(longLists, "TAB_LONG_LIST"c);
         }
 

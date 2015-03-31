@@ -247,6 +247,11 @@ struct ObjectList(T) {
         assert(index >= 0 && index < _count, "child index out of range");
         return _list[index];
     }
+    /** get const item by index */
+    const(T) get(int index)  const {
+        assert(index >= 0 && index < _count, "child index out of range");
+        return _list[index];
+    }
     /// get item by index
     T opIndex(int index) {
         return get(index);
