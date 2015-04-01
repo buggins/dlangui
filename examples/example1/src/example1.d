@@ -458,14 +458,20 @@ extern (C) int UIAppMain(string[] args) {
                     */
                     id: myLabel1
                     text: "Some text"; padding: 5
+                    enabled: false
                 }
                 TextWidget {
                     id: myLabel2
                     text: SOME_TEXT_RESOURCE_ID; margins: 5
+                    enabled: true
                 }
             }
         });
-        Log.d("id=", w.id, " text=", w.text, " padding=", w.padding, " margins=", w.margins, " lbl1=", w.childById!TextWidget("myLabel1").text, " lbl2=", w.childById!TextWidget("myLabel2").text);
+        Log.d("id=", w.id, " text=", w.text, " padding=", w.padding, " margins=", w.margins, 
+              " lbl1.text=", w.childById!TextWidget("myLabel1").text, 
+              " lbl1.enabled=", w.childById!TextWidget("myLabel1").enabled, 
+              " lbl2.text=", w.childById!TextWidget("myLabel2").text
+              );
         destroy(w);
 
 		layout.childById("BTN1").onClickListener = (delegate (Widget w) { Log.d("onClick ", w.id); return true; });

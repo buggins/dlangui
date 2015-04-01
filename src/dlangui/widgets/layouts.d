@@ -810,6 +810,10 @@ class TableLayout : WidgetGroupDefaultDrawing {
 		return (childCount + (_colCount - 1)) / _colCount * _colCount;
 	}
 
+    /// set int property value, for ML loaders
+    mixin(generatePropertySettersMethodOverride("setIntProperty", "int",
+          "colCount"));
+
 	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
 	override void measure(int parentWidth, int parentHeight) { 
 		Rect m = margins;

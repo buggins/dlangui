@@ -473,7 +473,14 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 	override uint getCursorType(int x, int y) {
 		return x < _pos.left + _leftPaneWidth ? CursorType.Arrow : CursorType.IBeam;
 	}
-	
+
+    /// set bool property value, for ML loaders
+    mixin(generatePropertySettersMethodOverride("setBoolProperty", "bool",
+          "wantTabs", "showIcons", "showFolding", "showModificationMarks", "showLineNumbers", "readOnly", "replaceMode", "useSpacesForTabs"));
+
+    /// set int property value, for ML loaders
+    mixin(generatePropertySettersMethodOverride("setIntProperty", "int",
+          "tabSize"));
 
     /// when true, Tab / Shift+Tab presses are processed internally in widget (e.g. insert tab character) instead of focus change navigation.
     @property bool wantTabs() {
@@ -2366,6 +2373,10 @@ class LogWidget : EditBox {
     /// when true, automatically scrolls down when new lines are appended (usually being reset by scrollbar interaction)
     @property void scrollLock(bool flg) { _scrollLock = flg; }
 
+    this() {
+        this(null);
+    }
+
     this(string ID) {
         super(ID);
         _scrollLock = true;
@@ -2425,3 +2436,6 @@ class LogWidget : EditBox {
     }
 
 }
+
+import dlangui.widgets.metadata;
+mixin(registerWidgets!(EditLine, EditBox, LogWidget)());

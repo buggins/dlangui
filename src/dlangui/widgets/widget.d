@@ -1474,11 +1474,8 @@ class Widget {
     }
 
     /// set string property value, for ML loaders
-    bool setProperty(string name, string value) {
-        if (name.equal("id")) {
-            id = value;
-            return true;
-        }
+    bool setStringProperty(string name, string value) {
+        mixin(generatePropertySetters("id"));
         if (name.equal("text")) {
             text = UIString(value);
             return true;
@@ -1487,7 +1484,7 @@ class Widget {
     }
 
     /// set string property value, for ML loaders
-    bool setProperty(string name, dstring value) {
+    bool setDstringProperty(string name, dstring value) {
         if (name.equal("text")) {
             text = UIString(value);
             return true;
@@ -1496,7 +1493,7 @@ class Widget {
     }
 
     /// set string property value, for ML loaders
-    bool setProperty(string name, UIString value) {
+    bool setUistringProperty(string name, UIString value) {
         if (name.equal("text")) {
             text = value;
             return true;
@@ -1505,37 +1502,22 @@ class Widget {
     }
 
     /// set string property value, for ML loaders
-    bool setProperty(string name, bool value) {
-        if (name.equal("enabled")) {
-            enabled = value;
-            return true;
-        }
-        if (name.equal("clickable")) {
-            clickable = value;
-            return true;
-        }
-        if (name.equal("checkable")) {
-            checkable = value;
-            return true;
-        }
-        if (name.equal("checked")) {
-            checked = value;
-            return true;
-        }
+    bool setBoolProperty(string name, bool value) {
+        mixin(generatePropertySetters("enabled", "clickable", "checkable", "focusable", "checked"));
         return false;
     }
 
     /// set double property value, for ML loaders
-    bool setProperty(string name, double value) {
+    bool setDoubleProperty(string name, double value) {
         if (name.equal("alpha")) {
             int n = cast(int)(value * 255);
-            setProperty(name, n);
+            setIntProperty(name, n);
         }
         return false;
     }
 
     /// set int property value, for ML loaders
-    bool setProperty(string name, int value) {
+    bool setIntProperty(string name, int value) {
         if (name.equal("alpha")) {
             if (value < 0)
                 value = 0;
@@ -1544,38 +1526,7 @@ class Widget {
             alpha = cast(ushort)value;
             return true;
         }
-        if (name.equal("minWidth")) {
-            minWidth = value;
-            return true;
-        }
-        if (name.equal("maxWidth")) {
-            maxWidth = value;
-            return true;
-        }
-        if (name.equal("minHeight")) {
-            minHeight = value;
-            return true;
-        }
-        if (name.equal("maxHeight")) {
-            maxHeight = value;
-            return true;
-        }
-        if (name.equal("layoutWidth")) {
-            layoutWidth = value;
-            return true;
-        }
-        if (name.equal("layoutHeight")) {
-            layoutHeight = value;
-            return true;
-        }
-        if (name.equal("textColor")) {
-            textColor = cast(uint)value;
-            return true;
-        }
-        if (name.equal("backgroundColor")) {
-            backgroundColor = cast(uint)value;
-            return true;
-        }
+        mixin(generatePropertySetters("minWidth", "maxWidth", "minHeight", "maxHeight", "layoutWidth", "layoutHeight", "textColor", "backgroundColor"));
         if (name.equal("margins")) { // use same value for all sides
             margins = Rect(value, value, value, value);
             return true;
@@ -1587,16 +1538,9 @@ class Widget {
         return false;
     }
 
-    /// set int property value, for ML loaders
-    bool setProperty(string name, Rect value) {
-        if (name.equal("margins")) {
-            margins = value;
-            return true;
-        }
-        if (name.equal("padding")) {
-            padding = value;
-            return true;
-        }
+    /// set Rect property value, for ML loaders
+    bool setRectProperty(string name, Rect value) {
+        mixin(generatePropertySetters("margins", "padding"));
         return false;
     }
 }
@@ -1756,4 +1700,30 @@ mixin template ActionTooltipSupport() {
     }
 }
 
+/// use in mixin to set this object property with name propName with value of variable value if variable name matches propName
+string generatePropertySetter(string propName) {
+    return "        if (name.equal(\"" ~ propName ~ "\")) { \n" ~
+           "            " ~ propName ~ " = value;\n" ~
+           "            return true;\n" ~
+           "        }\n";
+}
+
+/// use in mixin to set this object properties with names from parameter list with value of variable value if variable name matches propName
+string generatePropertySetters(string[] propNames...) {
+    string res;
+    foreach(propName; propNames)
+        res ~= generatePropertySetter(propName);
+    return res;
+}
+
+/// use in mixin for method override to set this object properties with names from parameter list with value of variable value if variable name matches propName
+string generatePropertySettersMethodOverride(string methodName, string typeName, string[] propNames...) {
+    return "    override bool " ~ methodName ~ "(string name, " ~ typeName ~ " value) {\n" ~
+           "        return super." ~ methodName ~ "(name, value);\n" ~
+           "    }\n";
+    string res;
+    foreach(propName; propNames)
+        res ~= generatePropertySetter(propName);
+    return res;
+}
 

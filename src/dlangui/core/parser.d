@@ -511,44 +511,53 @@ class MLParser {
 
     protected void setIntProperty(string propName, int value, string suffix = null) {
         value = applySuffix(value, suffix);
-        if (!_currentWidget.setProperty(propName, value))
+        if (!_currentWidget.setIntProperty(propName, value))
+            error("unknown int property " ~ propName);
+    }
+
+    protected void setBoolProperty(string propName, bool value) {
+        if (!_currentWidget.setBoolProperty(propName, value))
             error("unknown int property " ~ propName);
     }
 
     protected void setFloatProperty(string propName, double value) {
-        if (!_currentWidget.setProperty(propName, value))
+        if (!_currentWidget.setDoubleProperty(propName, value))
             error("unknown double property " ~ propName);
     }
 
     protected void setRectProperty(string propName, Rect value) {
-        if (!_currentWidget.setProperty(propName, value))
+        if (!_currentWidget.setRectProperty(propName, value))
             error("unknown Rect property " ~ propName);
     }
 
     protected void setStringProperty(string propName, string value) {
         if (propName.equal("id")) {
-            if (!_currentWidget.setProperty(propName, value))
+            if (!_currentWidget.setStringProperty(propName, value))
                 error("cannot set id property for widget");
             return;
         }
 
         dstring v = toUTF32(value);
-        if (!_currentWidget.setProperty(propName, v))
+        if (!_currentWidget.setDstringProperty(propName, v))
             error("unknown string property " ~ propName);
     }
 
     protected void setIdentProperty(string propName, string value) {
         if (propName.equal("id")) {
-            if (!_currentWidget.setProperty(propName, value))
+            if (!_currentWidget.setStringProperty(propName, value))
                 error("cannot set id property for widget");
             return;
         }
 
-        if (value.equal("FILL") || value.equal("FILL_PARENT"))
+        if (value.equal("true"))
+            setBoolProperty(propName, true);
+        else if (value.equal("false"))
+            setBoolProperty(propName, false);
+        else if (value.equal("FILL") || value.equal("FILL_PARENT"))
             setIntProperty(propName, FILL_PARENT);
         else if (value.equal("WRAP") || value.equal("WRAP_CONTENT"))
             setIntProperty(propName, WRAP_CONTENT);
-        else if (!_currentWidget.setProperty(propName, value))
+        else if (!_currentWidget.setStringProperty(propName, value))
             error("unknown ident property " ~ propName);
     }
 

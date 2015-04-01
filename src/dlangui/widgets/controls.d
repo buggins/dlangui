@@ -207,6 +207,10 @@ class ImageWidget : Widget {
         return this;
     }
 
+    /// set string property value, for ML loaders
+    mixin(generatePropertySettersMethodOverride("setStringProperty", "string",
+          "drawableId"));
+
     /// handle theme change: e.g. reload some themed resources
     override void onThemeChanged() {
         if (_drawableId !is null)
@@ -243,7 +247,6 @@ class ImageWidget : Widget {
         }
     }
 }
-
 
 /// button with image only
 class ImageButton : ImageWidget {
@@ -534,6 +537,11 @@ class AbstractSlider : WidgetGroup {
         }
         return this;
     }
+
+    /// set int property value, for ML loaders
+    mixin(generatePropertySettersMethodOverride("setIntProperty", "int",
+          "minValue", "maxValue", "pageSize", "position"));
+
     /// set new range (min and max values for slider)
     AbstractSlider setRange(int min, int max) {
         if (_minValue != min || _maxValue != max) {
@@ -746,6 +754,18 @@ class ScrollBar : AbstractSlider, OnClickHandler {
             requestLayout(); 
         }
         return this; 
+    }
+
+    /// set string property value, for ML loaders
+    override bool setStringProperty(string name, string value) {
+        if (name.equal("orientation")) {
+            if (value.equal("Vertical") || value.equal("vertical"))
+                orientation = Orientation.Vertical;
+            else
+                orientation = Orientation.Horizontal;
+            return true;
+        }
+        return super.setStringProperty(name, value);
     }
 
 

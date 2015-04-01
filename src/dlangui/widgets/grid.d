@@ -56,6 +56,7 @@ import dlangui.widgets.widget;
 import dlangui.widgets.controls;
 import dlangui.widgets.scroll;
 import std.conv;
+import std.algorithm : equal;
 
 /**
  * Data provider for GridWidget.
@@ -346,10 +347,19 @@ class GridWidgetBase : ScrollWidgetBase {
 		return this;
 	}
 
+    /// set bool property value, for ML loaders
+    mixin(generatePropertySettersMethodOverride("setBoolProperty", "bool",
+          "showColHeaders", "showColHeaders", "rowSelect"));
+
+    /// set int property value, for ML loaders
+    mixin(generatePropertySettersMethodOverride("setIntProperty", "int",
+          "headerCols", "headerRows", "fixedCols", "fixedRows", "cols", "rows", "defColumnWidth", "defRowHeight"));
+
 	/// flag to enable column headers
 	@property bool showColHeaders() {
 		return _showColHeaders;
 	}
+
 	@property GridWidgetBase showColHeaders(bool show) {
         if (_showColHeaders != show) {
             _showColHeaders = show;
@@ -1353,3 +1363,5 @@ class StringGridWidget : StringGridWidgetBase {
 
 }
 
+import dlangui.widgets.metadata;
+mixin(registerWidgets!(StringGridWidget)());
