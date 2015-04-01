@@ -1,9 +1,13 @@
 module dlangui.core.parser;
 
 import dlangui.core.linestream;
+import dlangui.core.collections;
+import dlangui.core.types;
 import dlangui.widgets.widget;
 import dlangui.widgets.metadata;
 import std.conv : to;
+import std.algorithm : equal, min, max;
+import std.utf : toUTF32, toUTF8;
 
 class ParserException : Exception {
     protected string _msg;
@@ -54,6 +58,10 @@ enum TokenType : ushort {
     semicolon,
     /// , operator
     comma,
+    /// - operator
+    minus,
+    /// + operator
+    plus,
     /// [
     curlyOpen,
     /// ]
@@ -191,7 +199,7 @@ class Tokenizer {
     private char[] _stringbuf;
     protected ref const(Token) parseString() {
         _token.type = TokenType.str;
-        skipChar(); // skip "
+        //skipChar(); // skip "
         bool lastBackslash = false;
         _stringbuf.length = 0;
         for(;;) {
@@ -258,6 +266,19 @@ class Tokenizer {
             div++;
         }
         _token.floatvalue = cast(double)n + (div > 0 ? cast(double)n2 / div : 0.0);
+        string suffix;
+        if (ch == '%') {
+            suffix ~= ch;
+            ch = skipChar();
+        } else { 
+            while (ch >= 'a' && ch <= 'z') {
+                suffix ~= ch;
+                ch = skipChar();
+            }
+        }
+        if (isAlphaNum(ch) || ch == '.')
+            return parseError();
+        _token.text = suffix;
         return _token;
     }
 
@@ -272,8 +293,21 @@ class Tokenizer {
         }
         if (ch == '.')
             return parseFloating(n);
+        string suffix;
+        if (ch == '%') {
+            suffix ~= ch;
+            ch = skipChar();
+        } else {
+            while (ch >= 'a' && ch <= 'z') {
+                suffix ~= ch;
+                ch = skipChar();
+            }
+        }
+        if (isAlphaNum(ch) || ch == '.')
+            return parseError();
         _token.type = TokenType.integer;
         _token.intvalue = n;
+        _token.text = suffix;
         return _token;
     }
 
@@ -346,6 +380,8 @@ class Tokenizer {
             case ':': return parseOp(TokenType.colon);
             case ';': return parseOp(TokenType.semicolon);
             case ',': return parseOp(TokenType.comma);
+            case '-': return parseOp(TokenType.minus);
+            case '+': return parseOp(TokenType.plus);
             case '{': return parseOp(TokenType.curlyOpen);
             case '}': return parseOp(TokenType.curlyClose);
             case '(': return parseOp(TokenType.open);
@@ -357,8 +393,17 @@ class Tokenizer {
         }
     }
 
+    string getContextSource() {
+        string s = toUTF8(_lineText);
+        if (_pos == 0)
+            return " near `^^^" ~ s[0..min($,30)] ~ "`";
+        if (_pos >= _len)
+            return " near `" ~ s[max(_len - 30, 0) .. $] ~ "^^^`";
+        return " near `" ~ s[max(_pos - 15, 0) .. _pos] ~ "^^^" ~ s[_pos .. min(_pos + 15, $)] ~ "`";
+    }
+
     void emitError(string msg) {
-        throw new ParserException(msg, _filename, _token.line, _token.pos);
+        throw new ParserException(msg ~ getContextSource(), _filename, _token.line, _token.pos);
     }
 
     void emitError(string msg, ref const Token token) {
@@ -369,8 +414,11 @@ class Tokenizer {
 class MLParser {
     protected string _code;
     protected string _filename;
+    protected bool _ownContext;
     protected Widget _context;
+    protected Widget _currentWidget;
     protected Tokenizer _tokenizer;
+    protected Collection!Widget _treeStack;
     
     protected this(string code, string filename = "", Widget context = null) {
         _code = code;
@@ -381,30 +429,52 @@ class MLParser {
 
     protected Token _token;
 
-
+    /// move to next token
     protected void nextToken() {
         _token = _tokenizer.nextToken();
         Log.d("parsed token: ", _token.type, " ", _token.line, ":", _token.pos, " ", _token.text);
     }
 
+    /// throw exception if current token is eof
+    protected void checkNoEof() {
+        if (_token.type == TokenType.eof)
+            error("unexpected end of file");
+    }
+
+    /// move to next token, throw exception if eof
+    protected void nextTokenNoEof() {
+        nextToken();
+        checkNoEof();
+    }
+
     protected void skipWhitespaceAndEols() {
         for (;;) {
-            nextToken();
             if (_token.type != TokenType.eol && _token.type != TokenType.whitespace && _token.type != TokenType.comment)
                 break;
+            nextToken();
         }
         if (_token.type == TokenType.error)
-            _tokenizer.emitError("error while parsing ML code");
+            error("error while parsing ML code");
+    }
+
+    protected void skipWhitespaceAndEolsNoEof() {
+        skipWhitespaceAndEols();
+        checkNoEof();
+    }
+
+    protected void skipWhitespaceNoEof() {
+        skipWhitespace();
+        checkNoEof();
     }
 
     protected void skipWhitespace() {
         for (;;) {
-            nextToken();
             if (_token.type != TokenType.whitespace && _token.type != TokenType.comment)
                 break;
+            nextToken();
         }
         if (_token.type == TokenType.error)
-            _tokenizer.emitError("error while parsing ML code");
+            error("error while parsing ML code");
     }
 
     protected void error(string msg) {
@@ -422,25 +492,234 @@ class MLParser {
         if (_context)
             error("Context widget is already specified, but identifier " ~ name ~ " is found");
         _context = createWidget(name);
+        _ownContext = true;
+    }
+
+    protected int applySuffix(int value, string suffix) {
+        if (suffix.length > 0) {
+            if (suffix.equal("px")) {
+                // do nothing, value is in px by default
+            } else if (suffix.equal("pt")) {
+                value = makePointSize(value);
+            } else if (suffix.equal("%")) {
+                value = makePercentSize(value);
+            } else
+                error("unknown number suffix: " ~ suffix);
+        }
+        return value;
+    }
+
+    protected void setIntProperty(string propName, int value, string suffix = null) {
+        value = applySuffix(value, suffix);
+        if (!_currentWidget.setProperty(propName, value))
+            error("unknown int property " ~ propName);
+    }
+
+    protected void setFloatProperty(string propName, double value) {
+        if (!_currentWidget.setProperty(propName, value))
+            error("unknown double property " ~ propName);
+    }
+
+    protected void setRectProperty(string propName, Rect value) {
+        if (!_currentWidget.setProperty(propName, value))
+            error("unknown Rect property " ~ propName);
+    }
+
+    protected void setStringProperty(string propName, string value) {
+        if (propName.equal("id")) {
+            if (!_currentWidget.setProperty(propName, value))
+                error("cannot set id property for widget");
+            return;
+        }
+
+        dstring v = toUTF32(value);
+        if (!_currentWidget.setProperty(propName, v))
+            error("unknown string property " ~ propName);
+    }
+
+    protected void setIdentProperty(string propName, string value) {
+        if (propName.equal("id")) {
+            if (!_currentWidget.setProperty(propName, value))
+                error("cannot set id property for widget");
+            return;
+        }
+
+        if (value.equal("FILL") || value.equal("FILL_PARENT"))
+            setIntProperty(propName, FILL_PARENT);
+        else if (value.equal("WRAP") || value.equal("WRAP_CONTENT"))
+            setIntProperty(propName, WRAP_CONTENT);
+        else if (!_currentWidget.setProperty(propName, value))
+            error("unknown ident property " ~ propName);
+    }
+
+    protected void parseRectProperty(string propName) {
+        // current token is Rect
+        int[4] values = [0, 0, 0, 0];
+        nextToken();
+        skipWhitespaceAndEolsNoEof();
+        if (_token.type != TokenType.curlyOpen)
+            error("{ expected after Rect");
+        nextToken();
+        skipWhitespaceAndEolsNoEof();
+        int index = 0;
+        for (;;) {
+            if (_token.type == TokenType.curlyClose)
+                break;
+            if (_token.type == TokenType.integer) {
+                if (index >= 4)
+                    error("too many values in Rect");
+                int n = applySuffix(_token.intvalue, _token.text);
+                values[index++] = n;
+                nextToken();
+                skipWhitespaceAndEolsNoEof();
+                if (_token.type == TokenType.comma || _token.type == TokenType.semicolon) {
+                    nextToken();
+                    skipWhitespaceAndEolsNoEof();
+                }
+            } else if (_token.type == TokenType.ident) {
+                string name = _token.text;
+                nextToken();
+                skipWhitespaceAndEolsNoEof();
+                if (_token.type != TokenType.colon)
+                    error(": expected after property name " ~ name ~ " in Rect definition");
+                nextToken();
+                skipWhitespaceNoEof();
+                if (_token.type != TokenType.integer)
+                    error("integer expected as Rect property value");
+                int n = applySuffix(_token.intvalue, _token.text);
+                
+                if (name.equal("left"))
+                    values[0] = n;
+                else if (name.equal("top"))
+                    values[1] = n;
+                else if (name.equal("right"))
+                    values[2] = n;
+                else if (name.equal("bottom"))
+                    values[3] = n;
+                else
+                    error("unknown property " ~ name ~ " in Rect");
+
+                nextToken();
+                skipWhitespaceNoEof();
+                if (_token.type == TokenType.comma || _token.type == TokenType.semicolon) {
+                    nextToken();
+                    skipWhitespaceAndEolsNoEof();
+                }
+            } else {
+                error("invalid Rect definition");
+            }
+
+        }
+        setRectProperty(propName, Rect(values[0], values[1], values[2], values[3]));
+    }
+
+    protected void parseProperty() {
+        if (_token.type != TokenType.ident)
+            error("identifier expected");
+        string propName = _token.text;
+        nextToken();
+        skipWhitespaceNoEof();
+        if (_token.type == TokenType.colon) { // :
+            nextTokenNoEof(); // skip :
+            skipWhitespaceNoEof();
+            if (_token.type == TokenType.integer)
+                setIntProperty(propName, _token.intvalue, _token.text);
+            else if (_token.type == TokenType.minus || _token.type == TokenType.plus) {
+                int sign = _token.type == TokenType.minus ? -1 : 1;
+                nextTokenNoEof(); // skip :
+                skipWhitespaceNoEof();
+                if (_token.type == TokenType.integer) {
+                    setIntProperty(propName, _token.intvalue * sign, _token.text);
+                } else if (_token.type == TokenType.floating) {
+                    setFloatProperty(propName, _token.floatvalue * sign);
+                } else
+                    error("number expected after + and -");
+            } else if (_token.type == TokenType.floating)
+                setFloatProperty(propName, _token.floatvalue);
+            else if (_token.type == TokenType.str)
+                setStringProperty(propName, _token.text);
+            else if (_token.type == TokenType.ident) {
+                if (_token.text.equal("Rect")) {
+                    parseRectProperty(propName);
+                } else {
+                    setIdentProperty(propName, _token.text);
+                }
+            } else
+                error("int, float, string or identifier are expected as property value");
+            nextTokenNoEof();            
+            skipWhitespaceNoEof();
+            if (_token.type == TokenType.semicolon) {
+                // separated by ;
+                nextTokenNoEof();
+                skipWhitespaceAndEolsNoEof();
+                return;
+            } else if (_token.type == TokenType.eol) {
+                nextTokenNoEof();
+                skipWhitespaceAndEolsNoEof();
+                return;
+            } else if (_token.type == TokenType.curlyClose) {
+                // it was last property in object
+                return;
+            }
+            error("; eol or } expected after property definition");
+        } else if (_token.type == TokenType.curlyOpen) { // { -- start of object
+            Widget s = createWidget(propName);
+            parseWidgetProperties(s);
+        } else {
+            error(": or { expected after identifier");
+        }
+
+    }
+
+    protected void parseWidgetProperties(Widget w) {
+        if (_token.type != TokenType.curlyOpen) // {
+            error("{ is expected");
+        _treeStack.pushBack(w);
+        if (_currentWidget)
+            _currentWidget.addChild(w);
+        _currentWidget = w;
+        nextToken(); // skip {
+        skipWhitespaceAndEols();
+        for (;;) {
+            checkNoEof();
+            if (_token.type == TokenType.curlyClose) // end of object's internals
+                break;
+            parseProperty();
+        }
+        if (_token.type != TokenType.curlyClose) // {
+            error("{ is expected");
+        nextToken(); // skip }
+        skipWhitespaceAndEols();
+        _treeStack.popBack();
+        _currentWidget = _treeStack.peekBack();
     }
 
     protected Widget parse() {
-        skipWhitespaceAndEols();
-        if (_token.type == TokenType.ident) {
-            createContext(_token.text);
+        try {
+            nextToken();
             skipWhitespaceAndEols();
+            if (_token.type == TokenType.ident) {
+                createContext(_token.text);
+                nextToken();
+                skipWhitespaceAndEols();
+            }
+            if (_token.type != TokenType.curlyOpen) // {
+                error("{ is expected");
+            if (!_context)
+                error("No context widget is specified!");
+            parseWidgetProperties(_context);
+        
+            skipWhitespaceAndEols();
+            if (_token.type != TokenType.eof) // {
+                error("end of file expected");
+            return _context;
+        } catch (Exception e) {
+            Log.e("exception while parsing ML", e);
+            if (_context && _ownContext)
+                destroy(_context);
+            _context = null;
+            throw e;
         }
-        if (_token.type != TokenType.curlyOpen) // {
-            _tokenizer.emitError("{ is expected");
-        if (!_context)
-            _tokenizer.emitError("No context widget is specified!");
-        skipWhitespaceAndEols();
-        if (_token.type != TokenType.curlyClose) // {
-            _tokenizer.emitError("} is expected");
-        skipWhitespaceAndEols();
-        if (_token.type != TokenType.eof) // {
-            _tokenizer.emitError("end of file expected");
-        return _context;
     }
 
     ~this() {

@@ -1408,9 +1408,43 @@ class Widget {
             }
         } else {
             // search only across children of this widget
-            for (int i = childCount - 1; i >= 0; i--)
+            for (int i = childCount - 1; i >= 0; i--) {
                 if (id.equal(child(i).id))
                     return child(i);
+            }
+        }
+        // not found
+        return null; 
+    }
+
+    /// find child of specified type T by id, returns null if not found or cannot be converted to type T
+    T childById(T)(string id, bool deepSearch = true) { 
+        if (deepSearch) {
+            // search everywhere inside child tree
+            if (compareId(id)) {
+                T found = cast(T)this;
+                if (found)
+                    return found;
+            }
+            // lookup children
+            for (int i = childCount - 1; i >= 0; i--) {
+                Widget res = child(i).childById(id);
+                if (res !is null) {
+                    T found = cast(T)res;
+                    if (found)
+                        return found;
+                }
+            }
+        } else {
+            // search only across children of this widget
+            for (int i = childCount - 1; i >= 0; i--) {
+                Widget w = child(i);
+                if (id.equal(w.id)) {
+                    T found = cast(T)w;
+                    if (found)
+                        return found;
+                }
+            }
         }
         // not found
         return null; 
@@ -1441,6 +1475,19 @@ class Widget {
 
     /// set string property value, for ML loaders
     bool setProperty(string name, string value) {
+        if (name.equal("id")) {
+            id = value;
+            return true;
+        }
+        if (name.equal("text")) {
+            text = UIString(value);
+            return true;
+        }
+        return false;
+    }
+
+    /// set string property value, for ML loaders
+    bool setProperty(string name, dstring value) {
         if (name.equal("text")) {
             text = UIString(value);
             return true;
@@ -1457,8 +1504,46 @@ class Widget {
         return false;
     }
 
+    /// set string property value, for ML loaders
+    bool setProperty(string name, bool value) {
+        if (name.equal("enabled")) {
+            enabled = value;
+            return true;
+        }
+        if (name.equal("clickable")) {
+            clickable = value;
+            return true;
+        }
+        if (name.equal("checkable")) {
+            checkable = value;
+            return true;
+        }
+        if (name.equal("checked")) {
+            checked = value;
+            return true;
+        }
+        return false;
+    }
+
+    /// set double property value, for ML loaders
+    bool setProperty(string name, double value) {
+        if (name.equal("alpha")) {
+            int n = cast(int)(value * 255);
+            setProperty(name, n);
+        }
+        return false;
+    }
+
     /// set int property value, for ML loaders
     bool setProperty(string name, int value) {
+        if (name.equal("alpha")) {
+            if (value < 0)
+                value = 0;
+            else if (value > 255)
+                value = 255;
+            alpha = cast(ushort)value;
+            return true;
+        }
         if (name.equal("minWidth")) {
             minWidth = value;
             return true;
@@ -1489,6 +1574,14 @@ class Widget {
         }
         if (name.equal("backgroundColor")) {
             backgroundColor = cast(uint)value;
+            return true;
+        }
+        if (name.equal("margins")) { // use same value for all sides
+            margins = Rect(value, value, value, value);
+            return true;
+        }
+        if (name.equal("padding")) { // use same value for all sides
+            padding = Rect(value, value, value, value);
             return true;
         }
         return false;

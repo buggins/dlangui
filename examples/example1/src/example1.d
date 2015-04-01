@@ -445,14 +445,28 @@ extern (C) int UIAppMain(string[] args) {
 		layout.addChild((new TextWidget(null, "Text widget3 with very long text"d)).textColor(0x004000));
         layout.addChild(new VSpacer()); // vertical spacer to fill extra space
 
-        /*
+        
         import dlangui.core.parser;
         Widget w = parseML(q{
-            TextWidget {
+            VerticalLayout {
+                id: vlayout
+                margins: Rect { left: 5; right: 3; top: 2; bottom: 4 }
+                padding: Rect { 5, 4, 3, 2 } // same as Rect { left: 5; top: 4; right: 3; bottom: 2 }
+                TextWidget {
+                    /* this widget can be accessed via id myLabel1 
+                    e.g. w.childById!TextWidget("myLabel1") 
+                    */
+                    id: myLabel1
+                    text: "Some text"; padding: 5
+                }
+                TextWidget {
+                    id: myLabel2
+                    text: SOME_TEXT_RESOURCE_ID; margins: 5
+                }
             }
         });
-        Log.d("id=", w.id);
-        */
+        Log.d("id=", w.id, " text=", w.text, " padding=", w.padding, " margins=", w.margins, " lbl1=", w.childById!TextWidget("myLabel1").text, " lbl2=", w.childById!TextWidget("myLabel2").text);
+        destroy(w);
 
 		layout.childById("BTN1").onClickListener = (delegate (Widget w) { Log.d("onClick ", w.id); return true; });
 		layout.childById("BTN2").onClickListener = (delegate (Widget w) { Log.d("onClick ", w.id); return true; });
