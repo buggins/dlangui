@@ -525,8 +525,15 @@ class AbstractSlider : WidgetGroup {
     }
     /// returns slider range min value
     @property int minValue() const { return _minValue; }
+    /// sets slider range min value
+    @property AbstractSlider minValue(int v) { _minValue = v; return this; }
     /// returns slider range max value
     @property int maxValue() const { return _maxValue; }
+    /// sets slider range max value
+    @property AbstractSlider maxValue(int v) { _maxValue = v; return this; }
+
+
+
     /// page size (visible area size)
     @property int pageSize() const { return _pageSize; }
     /// set page size (visible area size)

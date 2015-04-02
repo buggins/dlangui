@@ -53,13 +53,43 @@ class DMLSourceEdit : SourceEdit {
         setTokenHightlightColor(TokenCategory.Comment, 0x008000); // green
         setTokenHightlightColor(TokenCategory.Keyword, 0x0000FF); // blue
         setTokenHightlightColor(TokenCategory.String, 0xa31515);  // brown
+        setTokenHightlightColor(TokenCategory.Integer, 0xa315C0);  // 
+        setTokenHightlightColor(TokenCategory.Float, 0xa315C0);  // 
         setTokenHightlightColor(TokenCategory.Error, 0xFF0000);  // red
+        setTokenHightlightColor(TokenCategory.Op, 0x503000);
+        setTokenHightlightColor(TokenCategory.Identifier_Class, 0x000080);  // blue
 
     }
 	this() {
 		this("DMLEDIT");
 	}
 }
+
+immutable dstring SAMPLE_SOURCE_CODE = 
+q{VerticalLayout {
+    id: vlayout
+    margins: Rect { left: 5; right: 3; top: 2; bottom: 4 }
+    padding: Rect { 5, 4, 3, 2 } // same as Rect { left: 5; top: 4; right: 3; bottom: 2 }
+    TextWidget {
+        /* this widget can be accessed via id myLabel1 
+            e.g. w.childById!TextWidget("myLabel1") 
+        */
+        id: myLabel1
+        text: "Some text"; padding: 5
+        enabled: false
+    }
+    TextWidget {
+        id: myLabel2
+        text: "More text"; margins: 5
+        enabled: true
+    }
+    CheckBox{ id: cb1; text: "Some checkbox" }
+    HorizontalLayout {
+        RadioButton { id: rb1; text: "Radio Button 1" }
+        RadioButton { id: rb1; text: "Radio Button 2" }
+    }
+}
+};
 
 
 class EditFrame : AppFrame {
@@ -106,8 +136,14 @@ class EditFrame : AppFrame {
 
     string _filename;
     void openSourceFile(string filename) {
+        import std.file;
         // TODO
-        _filename = filename;
+        if (exists(filename)) {
+            _filename = filename;
+            window.windowCaption = toUTF32(filename);
+            _editor.load(filename);
+            updatePreview();
+        }
     }
 
     bool onCanClose() {
@@ -167,11 +203,17 @@ class EditFrame : AppFrame {
             Widget w = parseML(source);
             if (statusLine)
                 statusLine.setStatusText("No errors"d);
+            if (_fillHorizontal)
+                w.layoutWidth = FILL_PARENT;
+            if (_fillVertical)
+                w.layoutHeight = FILL_PARENT;
+            if (_highlightBackground)
+                w.backgroundColor = 0xC0C0C0C0;
             _preview.contentWidget = w;
         } catch (ParserException e) {
             if (statusLine)
                 statusLine.setStatusText(toUTF32("ERROR: " ~ e.msg));
-            _editor.setCaretPos(e.line + 1, e.pos);
+            _editor.setCaretPos(e.line, e.pos);
             string msg = "\n" ~ e.msg ~ "\n";
             msg = replaceFirst(msg, " near `", "\nnear `");
             TextWidget w = new MultilineTextWidget(null, toUTF32(msg));
@@ -183,6 +225,9 @@ class EditFrame : AppFrame {
         }
     }
 
+    protected bool _fillHorizontal;
+    protected bool _fillVertical;
+    protected bool _highlightBackground;
     protected DMLSourceEdit _editor;
     protected ScrollWidget _preview;
     /// create app body widget
@@ -195,36 +240,40 @@ class EditFrame : AppFrame {
         hlayout.layoutHeight = FILL_PARENT;
         _editor = new DMLSourceEdit();
         hlayout.addChild(_editor);
-        _editor.text = q{
-VerticalLayout {
-    id: vlayout
-    margins: Rect { left: 5; right: 3; top: 2; bottom: 4 }
-    padding: Rect { 5, 4, 3, 2 } // same as Rect { left: 5; top: 4; right: 3; bottom: 2 }
-    TextWidget {
-        /* this widget can be accessed via id myLabel1 
-            e.g. w.childById!TextWidget("myLabel1") 
-        */
-        id: myLabel1
-        text: "Some text"; padding: 5
-        enabled: false
-    }
-    TextWidget {
-        id: myLabel2
-        text: "More text"; margins: 5
-        enabled: true
-    }
-    CheckBox{ id: cb1; text: "Some checkbox" }
-    HorizontalLayout {
-        RadioButton { id: rb1; text: "Radio Button 1" }
-        RadioButton { id: rb1; text: "Radio Button 2" }
-    }
-}
+        _editor.text = SAMPLE_SOURCE_CODE;
+        VerticalLayout previewLayout = new VerticalLayout();
+        previewLayout.layoutWidth = makePercentSize(50);
+        previewLayout.layoutHeight = FILL_PARENT;
+        auto previewControls = new HorizontalLayout();
+        auto cbFillHorizontal = new CheckBox(null, "Fill Horizontal"d);
+        auto cbFillVertical = new CheckBox(null, "Fill Vertical"d);
+        auto cbHighlightBackground = new CheckBox(null, "Background"d);
+        cbFillHorizontal.onCheckChangeListener = delegate(Widget source, bool checked) {
+            _fillHorizontal = checked;
+            updatePreview();
+            return true;
         };
+        cbFillVertical.onCheckChangeListener = delegate(Widget source, bool checked) {
+            _fillVertical = checked;
+            updatePreview();
+            return true;
+        };
+        cbHighlightBackground.onCheckChangeListener = delegate(Widget source, bool checked) {
+            _highlightBackground = checked;
+            updatePreview();
+            return true;
+        };
+        previewControls.addChild(cbFillHorizontal);
+        previewControls.addChild(cbFillVertical);
+        previewControls.addChild(cbHighlightBackground);
+
         _preview = new ScrollWidget();
-        _preview.layoutWidth = makePercentSize(50);
+        _preview.layoutWidth = FILL_PARENT;
         _preview.layoutHeight = FILL_PARENT;
         _preview.backgroundImageId = "tx_fabric.tiled";
-        hlayout.addChild(_preview);
+        previewLayout.addChild(previewControls);
+        previewLayout.addChild(_preview);
+        hlayout.addChild(previewLayout);
         bodyWidget.addChild(hlayout);
         return bodyWidget;
     }
@@ -236,6 +285,10 @@ extern (C) int UIAppMain(string[] args) {
 
     // embed non-standard resources listed in views/resources.list into executable
     embeddedResourceList.addResources(embedResourcesFromList!("resources.list")());
+
+    /// set font gamma (1.0 is neutral, < 1.0 makes glyphs lighter, >1.0 makes glyphs bolder)
+    FontManager.fontGamma = 0.8;
+    FontManager.hintingMode = HintingMode.Normal;
 
     // create window
     Window window = Platform.instance.createWindow("DlangUI ML editor"d, null, WindowFlag.Resizable, 700, 470);

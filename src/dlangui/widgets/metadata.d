@@ -50,3 +50,8 @@ string registerWidgets(T...)() {
     }
     return classDefs ~ "\n__gshared static this() {\n" ~ registerDefs ~ "}";
 }
+
+/// returns true if passed name is identifier of registered widget class
+bool isWidgetClassName(string name) {
+    return (name in _registeredWidgets) !is null;
+}

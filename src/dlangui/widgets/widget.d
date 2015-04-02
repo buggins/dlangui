@@ -1734,12 +1734,12 @@ string generatePropertySetters(string[] propNames...) {
 
 /// use in mixin for method override to set this object properties with names from parameter list with value of variable value if variable name matches propName
 string generatePropertySettersMethodOverride(string methodName, string typeName, string[] propNames...) {
-    return "    override bool " ~ methodName ~ "(string name, " ~ typeName ~ " value) {\n" ~
-           "        return super." ~ methodName ~ "(name, value);\n" ~
-           "    }\n";
-    string res;
+    string res = "    override bool " ~ methodName ~ "(string name, " ~ typeName ~ " value) {\n" ~
+                 "        import std.algorithm : equal;\n";
     foreach(propName; propNames)
         res ~= generatePropertySetter(propName);
+    res ~= "        return super." ~ methodName ~ "(name, value);\n" ~
+           "    }\n";
     return res;
 }
 

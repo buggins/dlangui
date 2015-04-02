@@ -655,6 +655,10 @@ class TableLayout : WidgetGroupDefaultDrawing {
 		super(ID);
 	}
 
+	this() {
+		this(null);
+	}
+
 	protected static struct TableLayoutCell {
 		int col;
 		int row;

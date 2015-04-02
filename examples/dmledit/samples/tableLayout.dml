@@ -1,0 +1,11 @@
+VerticalLayout {
+    TextWidget { text: "TableLayout example" }
+    TableLayout {
+        padding: 10
+        colCount: 2
+        TextWidget { text: "Param 1 name" }
+        EditLine { id: edit1; text: "Edit text for param 1" }
+        TextWidget { text: "Param 2 name" }
+        EditLine { id: edit2; text: "Text for param 2" }
+    }
+}

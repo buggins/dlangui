@@ -5,6 +5,7 @@ import dlangui.core.editable;
 import dlangui.core.linestream;
 import dlangui.core.textsource;
 import dlangui.core.logger;
+import dlangui.widgets.metadata;
 
 class DMLSyntaxSupport : SyntaxSupport {
 
@@ -546,7 +547,10 @@ class DMLSyntaxSupport : SyntaxSupport {
                         category = TokenCategory.Comment;
                         break;
                     case TokenType.ident:
-                        category = TokenCategory.Identifier;
+                        if (isWidgetClassName(token.token.text))
+                            category = TokenCategory.Identifier_Class;
+                        else
+                            category = TokenCategory.Identifier;
                         break;
                     case TokenType.str:
                         category = TokenCategory.String;
