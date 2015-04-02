@@ -35,6 +35,7 @@
     "subPackages": [
         "./examples/helloworld/",
         "./examples/example1/",
+        "./examples/dmledit/",
         "./examples/tetris/"
     ],
 

@@ -446,7 +446,6 @@ extern (C) int UIAppMain(string[] args) {
         layout.addChild(new VSpacer()); // vertical spacer to fill extra space
 
         
-        import dlangui.core.parser;
         Widget w = parseML(q{
             VerticalLayout {
                 id: vlayout

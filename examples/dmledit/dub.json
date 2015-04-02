@@ -1,0 +1,15 @@
+{
+    "name": "dmledit",
+    "description": "dlangui library example DML Editor",
+    "homepage": "https://github.com/buggins/dlangui",
+    "license": "Boost",
+    "authors": ["Vadim Lopatin"],
+
+    "targetPath": "bin",
+    "targetName": "dmledit",
+    "targetType": "executable",
+
+    "dependencies": {
+        "dlangui": "*",
+    }
+}

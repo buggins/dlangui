@@ -72,7 +72,9 @@ public import dlangui.widgets.appframe;
 public import dlangui.widgets.statusline;
 public import dlangui.widgets.docks;
 public import dlangui.platforms.common.platform;
+public import dlangui.core.parser;
 
 // some useful imports from Phobos
+public import std.algorithm : equal;
 public import std.conv : to;
 public import std.utf : toUTF32, toUTF8;
