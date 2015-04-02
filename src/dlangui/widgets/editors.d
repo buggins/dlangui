@@ -1475,7 +1475,20 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 	    return super.onMouseEvent(event);
     }
 
+    /// returns caret position
+    @property TextPosition caretPos() {
+        return _caretPos;
+    }
 
+	/// change caret position and ensure it is visible
+	void setCaretPos(int line, int column, bool makeVisible = true)
+	{
+		_caretPos = TextPosition(line,column);
+        correctCaretPos();
+		invalidate();
+        if (makeVisible)
+		    ensureCaretVisible();
+	}
 }
 
 interface EditorActionHandler {

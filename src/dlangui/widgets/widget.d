@@ -1228,7 +1228,7 @@ class Widget {
         else if (!isSpecialSize(lh))
             dy = lh;
         if (isPercentSize(lw) && parentWidth != SIZE_UNSPECIFIED)
-            dy = fromPercentSize(lw, parentWidth);
+            dx = fromPercentSize(lw, parentWidth);
         else if (!isSpecialSize(lw))
             dx = lw;
         // apply min/max width and height constraints
@@ -1479,7 +1479,7 @@ class Widget {
 
     /// set string property value, for ML loaders
     bool setStringProperty(string name, string value) {
-        mixin(generatePropertySetters("id"));
+        mixin(generatePropertySetters("id", "styleId", "backgroundImageId"));
         if (name.equal("text")) {
             text = UIString(value);
             return true;

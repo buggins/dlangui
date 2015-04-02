@@ -584,19 +584,21 @@ class MLParser {
     }
 
     protected void setStringProperty(string propName, string value) {
-        if (propName.equal("id")) {
+        if (propName.equal("id") || propName.equal("styleId") || propName.equal("backgroundImageId")) {
             if (!_currentWidget.setStringProperty(propName, value))
-                error("cannot set id property for widget");
+                error("cannot set " ~ propName ~ " property for widget");
             return;
         }
 
         dstring v = toUTF32(value);
-        if (!_currentWidget.setDstringProperty(propName, v))
-            error("unknown string property " ~ propName);
+        if (!_currentWidget.setDstringProperty(propName, v)) {
+            if (!_currentWidget.setStringProperty(propName, value))
+                error("unknown string property " ~ propName);
+        }
     }
 
     protected void setIdentProperty(string propName, string value) {
-        if (propName.equal("id")) {
+        if (propName.equal("id") || propName.equal("styleId") || propName.equal("backgroundImageId")) {
             if (!_currentWidget.setStringProperty(propName, value))
                 error("cannot set id property for widget");
             return;
