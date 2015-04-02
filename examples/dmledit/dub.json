@@ -5,6 +5,8 @@
     "license": "Boost",
     "authors": ["Vadim Lopatin"],
 
+    "stringImportPaths": ["views", "views/res", "views/res/i18n", "views/res/mdpi"],
+
     "targetPath": "bin",
     "targetName": "dmledit",
     "targetType": "executable",
