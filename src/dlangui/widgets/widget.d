@@ -44,6 +44,7 @@ public import dlangui.widgets.styles;
 public import dlangui.graphics.drawbuf;
 public import dlangui.graphics.resources;
 public import dlangui.graphics.fonts;
+public import dlangui.graphics.colors;
 
 public import dlangui.core.signals;
 
@@ -375,6 +376,13 @@ class Widget {
         invalidate();
         return this; 
     }
+    /// set background color for widget - from string like "#5599CC" or "white"
+    @property Widget backgroundColor(string colorString) { 
+        uint color = decodeHexColor(colorString, COLOR_TRANSPARENT);
+        ownStyle.backgroundColor = color; 
+        invalidate();
+        return this; 
+    }
 
 	/// background image id
 	@property string backgroundImageId() const {
@@ -411,8 +419,17 @@ class Widget {
     @property Widget textColor(uint value) { 
         ownStyle.textColor = value; 
         invalidate();
+        return this;
+    }
+    /// set text color for widget - from string like "#5599CC" or "white"
+    @property Widget textColor(string colorString) { 
+        uint color = decodeHexColor(colorString, 0x000000);
+        ownStyle.textColor = color; 
+        invalidate();
         return this; 
     }
+
+
 	/// get text flags (bit set of TextFlag enum values)
 	@property uint textFlags() { 
 		uint res = stateStyle.textFlags;
@@ -466,8 +483,12 @@ class Widget {
     /// returns font weight
     @property ushort fontWeight() const { return stateStyle.fontWeight; }
     /// set font weight for widget - override one from style
-	@property Widget fontWeight(ushort weight) { 
-        ownStyle.fontWeight = weight; 
+	@property Widget fontWeight(int weight) {
+        if (weight < 100)
+            weight = 100;
+        else if (weight > 900)
+            weight = 900;
+        ownStyle.fontWeight = cast(ushort)weight;
         requestLayout();
         return this; 
     }
@@ -1491,7 +1512,7 @@ class Widget {
 
     /// set string property value, for ML loaders
     bool setStringProperty(string name, string value) {
-        mixin(generatePropertySetters("id", "styleId", "backgroundImageId"));
+        mixin(generatePropertySetters("id", "styleId", "backgroundImageId", "backgroundColor", "textColor", "fontFace"));
         if (name.equal("text")) {
             text = UIString(value);
             return true;
@@ -1519,7 +1540,7 @@ class Widget {
 
     /// set string property value, for ML loaders
     bool setBoolProperty(string name, bool value) {
-        mixin(generatePropertySetters("enabled", "clickable", "checkable", "focusable", "checked"));
+        mixin(generatePropertySetters("enabled", "clickable", "checkable", "focusable", "checked", "fontItalic"));
         return false;
     }
 
@@ -1542,7 +1563,7 @@ class Widget {
             alpha = cast(ushort)value;
             return true;
         }
-        mixin(generatePropertySetters("minWidth", "maxWidth", "minHeight", "maxHeight", "layoutWidth", "layoutHeight", "textColor", "backgroundColor"));
+        mixin(generatePropertySetters("minWidth", "maxWidth", "minHeight", "maxHeight", "layoutWidth", "layoutHeight", "textColor", "backgroundColor", "fontSize", "fontWeight"));
         if (name.equal("margins")) { // use same value for all sides
             margins = Rect(value, value, value, value);
             return true;
