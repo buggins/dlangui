@@ -1,3 +1,18 @@
+// Written in the D programming language.
+
+/**
+This module is DML (DlangUI Markup Language) parser - similar to QML in QtQuick
+
+Synopsis:
+
+----
+// helloworld
+----
+
+Copyright: Vadim Lopatin, 2015
+License:   Boost License 1.0
+Authors:   Vadim Lopatin, coolreader.org@gmail.com
+ */
 module dlangui.core.parser;
 
 import dlangui.core.linestream;
@@ -21,7 +36,7 @@ class ParserException : Exception {
     @property int pos() { return _pos; }
 
     this(string msg, string file, int line, int pos) {
-        super(msg ~ " at " ~ _file ~ " line " ~ to!string(line) ~ " column " ~ to!string(pos));
+        super(msg ~ " at " ~ file ~ " line " ~ to!string(line) ~ " column " ~ to!string(pos));
         _msg = msg;
         _file = file;
         _line = line;
@@ -29,6 +44,28 @@ class ParserException : Exception {
     }
 }
 
+/// parser exception - unknown (unregistered) widget name
+class UnknownWidgetException : ParserException {
+    protected string _objectName;
+
+    @property string objectName() { return _objectName; }
+
+    this(string msg, string objectName, string file, int line, int pos) {
+        super(msg is null ? "Unknown widget name: " ~ objectName : msg, file, line, pos);
+        _objectName = objectName;
+    }
+}
+
+/// parser exception - unknown property for widget
+class UnknownPropertyException : UnknownWidgetException {
+    protected string _propName;
+
+    @property string propName() { return _propName; }
+
+    this(string msg, string objectName, string propName, string file, int line, int pos) {
+        super(msg is null ? "Unknown property " ~ objectName ~ "." ~ propName : msg, objectName, file, line, pos);
+    }
+}
 
 enum TokenType : ushort {
     /// end of file
@@ -406,6 +443,14 @@ class Tokenizer {
         throw new ParserException(msg ~ getContextSource(), _filename, _token.line, _token.pos);
     }
 
+    void emitUnknownPropertyError(string objectName, string propName) {
+        throw new UnknownPropertyException("Unknown property " ~ objectName ~ "." ~ propName ~ getContextSource(), objectName, propName, _filename, _token.line, _token.pos);
+    }
+
+    void emitUnknownObjectError(string objectName) {
+        throw new UnknownWidgetException("Unknown widget type " ~ objectName ~ getContextSource(), objectName, _filename, _token.line, _token.pos);
+    }
+
     void emitError(string msg, ref const Token token) {
         throw new ParserException(msg, _filename, token.line, token.pos);
     }
@@ -479,6 +524,14 @@ class MLParser {
 
     protected void error(string msg) {
         _tokenizer.emitError(msg);
+    }
+
+    protected void unknownObjectError(string objectName) {
+        _tokenizer.emitUnknownObjectError(objectName);
+    }
+
+    protected void unknownPropertyError(string objectName, string propName) {
+        _tokenizer.emitUnknownPropertyError(objectName, propName);
     }
 
     Widget createWidget(string name) {

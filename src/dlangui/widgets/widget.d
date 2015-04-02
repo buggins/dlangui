@@ -1223,9 +1223,13 @@ class Widget {
         // check for fixed size set in layoutWidth, layoutHeight
         int lh = layoutHeight;
         int lw = layoutWidth;
-        if (!isSpecialSize(lh))
+        if (isPercentSize(lh) && parentHeight != SIZE_UNSPECIFIED)
+            dy = fromPercentSize(lh, parentHeight);
+        else if (!isSpecialSize(lh))
             dy = lh;
-        if (!isSpecialSize(lw))
+        if (isPercentSize(lw) && parentWidth != SIZE_UNSPECIFIED)
+            dy = fromPercentSize(lw, parentWidth);
+        else if (!isSpecialSize(lw))
             dx = lw;
         // apply min/max width and height constraints
         int minw = minWidth;

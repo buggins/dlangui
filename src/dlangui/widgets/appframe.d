@@ -80,6 +80,13 @@ class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
     protected ulong _currentBackgroundOperationTimer;
 
 
+    this() {
+        super("APP_FRAME");
+        layoutWidth = FILL_PARENT;
+        layoutHeight = FILL_PARENT;
+        _appName = "dlangui";
+        init();
+    }
 
     protected string _appName;
     /// override to return some identifier for app, e.g. to use as settings directory name
@@ -209,14 +216,6 @@ class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
     @property ToolBarHost toolbars() { return _toolbarHost; }
     /// body widget
     @property Widget frameBody() { return _body; }
-
-    this() {
-        super("APP_FRAME");
-        layoutWidth = FILL_PARENT;
-        layoutHeight = FILL_PARENT;
-        _appName = "dlangui";
-        init();
-    }
 
     /// map key to action
     override Action findKeyAction(uint keyCode, uint flags) {

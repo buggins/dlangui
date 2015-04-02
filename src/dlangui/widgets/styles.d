@@ -205,12 +205,6 @@ immutable uint TEXT_FLAGS_USE_PARENT = uint.max - 1;
 /// to take layout weight from parent
 immutable int WEIGHT_UNSPECIFIED = -1;
 
-/// returns true for WRAP_CONTENT, WRAP_CONTENT, SIZE_UNSPECIFIED
-bool isSpecialSize(int sz) {
-    // don't forget to update if more special constants added
-    return sz >= WRAP_CONTENT;
-}
-
 /// Align option bit constants
 enum Align : ubyte {
 	/// alignment is not specified

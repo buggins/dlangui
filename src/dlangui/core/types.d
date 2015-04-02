@@ -215,6 +215,29 @@ int makePercentSize(int percent) {
     return (percent * 100) | SIZE_IN_PERCENTS_FLAG;
 }
 
+/// make size value with SIZE_IN_PERCENTS_FLAG set
+int makePercentSize(double percent) {
+    return cast(int)(percent * 100) | SIZE_IN_PERCENTS_FLAG;
+}
+
+/// returns true for WRAP_CONTENT, WRAP_CONTENT, SIZE_UNSPECIFIED
+bool isSpecialSize(int sz) {
+    // don't forget to update if more special constants added
+    return (sz & (WRAP_CONTENT | FILL_PARENT | SIZE_UNSPECIFIED)) != 0;
+}
+
+/// returns true if size has SIZE_IN_PERCENTS_FLAG bit set
+bool isPercentSize(int size) {
+    return (size & SIZE_IN_PERCENTS_FLAG) != 0;
+}
+
+/// if size has SIZE_IN_PERCENTS_FLAG bit set, returns percent of baseSize, otherwise returns size unchanged
+int fromPercentSize(int size, int baseSize) {
+    if (isPercentSize(size))
+        return cast(int)(cast(long)(size & ~SIZE_IN_PERCENTS_FLAG) * baseSize / 10000);
+    return size;
+}
+
 /// screen dots per inch
 private __gshared int PRIVATE_SCREEN_DPI = 96;
 

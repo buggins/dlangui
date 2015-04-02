@@ -71,6 +71,7 @@ public import dlangui.widgets.popup;
 public import dlangui.widgets.appframe;
 public import dlangui.widgets.statusline;
 public import dlangui.widgets.docks;
+public import dlangui.widgets.toolbars;
 public import dlangui.platforms.common.platform;
 public import dlangui.core.parser;
 

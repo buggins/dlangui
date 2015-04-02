@@ -34,6 +34,9 @@ EndProject
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dsfml", "..\DSFML\dsfml\dsfml.visualdproj", "{DB490C05-D9F8-431C-91DD-CEE646A64FDA}"
 EndProject
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dmledit", "examples\dmledit\dmledit.visualdproj", "{06D73450-2919-48A8-B2C3-738B12505D74}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5FF17402-9997-4D0E-8068-6D84B8769D98} = {5FF17402-9997-4D0E-8068-6D84B8769D98}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
