@@ -367,6 +367,7 @@
    <Folder name="dlangui">
     <Folder name="core">
      <File path="src\dlangui\core\collections.d" />
+     <File path="src\dlangui\core\dmlhighlight.d" />
      <File path="src\dlangui\core\editable.d" />
      <File path="src\dlangui\core\events.d" />
      <File path="src\dlangui\core\files.d" />
@@ -377,6 +378,7 @@
      <File path="src\dlangui\core\settings.d" />
      <File path="src\dlangui\core\signals.d" />
      <File path="src\dlangui\core\stdaction.d" />
+     <File path="src\dlangui\core\textsource.d" />
      <File path="src\dlangui\core\types.d" />
     </Folder>
     <Folder name="dialogs">

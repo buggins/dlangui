@@ -326,6 +326,12 @@ class Widget {
         requestLayout();
         return this; 
     }
+    /// set margins for widget with the same value for left, top, right, bottom - override one from style
+    @property Widget margins(int v) { 
+        ownStyle.margins = Rect(v, v, v, v); 
+        requestLayout();
+        return this; 
+    }
     immutable static int FOCUS_RECT_PADDING = 2;
     /// get padding (between background bounds and content of widget)
     @property Rect padding() const {
@@ -352,6 +358,12 @@ class Widget {
     /// set padding for widget - override one from style
     @property Widget padding(Rect rc) { 
         ownStyle.padding = rc; 
+        requestLayout();
+        return this; 
+    }
+    /// set padding for widget to the same value for left, top, right, bottom - override one from style
+    @property Widget padding(int v) { 
+        ownStyle.padding = Rect(v, v, v, v); 
         requestLayout();
         return this; 
     }

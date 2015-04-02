@@ -3,6 +3,8 @@ module dmledit;
 import dlangui;
 import dlangui.dialogs.filedlg;
 import dlangui.dialogs.dialog;
+import dlangui.core.dmlhighlight;
+import std.array : replaceFirst;
 
 mixin APP_ENTRY_POINT;
 
@@ -37,8 +39,28 @@ const Action ACTION_EDIT_UNINDENT = (new Action(EditorActions.Unindent, "MENU_ED
 const Action ACTION_EDIT_TOGGLE_LINE_COMMENT = (new Action(EditorActions.ToggleLineComment, "MENU_EDIT_TOGGLE_LINE_COMMENT"c, null, KeyCode.KEY_DIVIDE, KeyFlag.Control)).disableByDefault();
 const Action ACTION_EDIT_TOGGLE_BLOCK_COMMENT = (new Action(EditorActions.ToggleBlockComment, "MENU_EDIT_TOGGLE_BLOCK_COMMENT"c, null, KeyCode.KEY_DIVIDE, KeyFlag.Control|KeyFlag.Shift)).disableByDefault();
 const Action ACTION_EDIT_PREFERENCES = (new Action(IDEActions.EditPreferences, "MENU_EDIT_PREFERENCES"c, null)).disableByDefault();
-const Action ACTION_DEBUG_START = new Action(IDEActions.DebugStart, "MENU_DEBUG_START_DEBUGGING"c, "debug-run"c, KeyCode.F5, 0);
+const Action ACTION_DEBUG_START = new Action(IDEActions.DebugStart, "MENU_DEBUG_UPDATE_PREVIEW"c, "debug-run"c, KeyCode.F5, 0);
 const Action ACTION_HELP_ABOUT = new Action(IDEActions.HelpAbout, "MENU_HELP_ABOUT"c);
+
+/// DIDE source file editor
+class DMLSourceEdit : SourceEdit {
+	this(string ID) {
+		super(ID);
+		MenuItem editPopupItem = new MenuItem(null);
+		editPopupItem.add(ACTION_EDIT_COPY, ACTION_EDIT_PASTE, ACTION_EDIT_CUT, ACTION_EDIT_UNDO, ACTION_EDIT_REDO, ACTION_EDIT_INDENT, ACTION_EDIT_UNINDENT, ACTION_EDIT_TOGGLE_LINE_COMMENT, ACTION_DEBUG_START);
+        popupMenu = editPopupItem;
+        content.syntaxSupport = new DMLSyntaxSupport("");
+        setTokenHightlightColor(TokenCategory.Comment, 0x008000); // green
+        setTokenHightlightColor(TokenCategory.Keyword, 0x0000FF); // blue
+        setTokenHightlightColor(TokenCategory.String, 0xa31515);  // brown
+        setTokenHightlightColor(TokenCategory.Error, 0xFF0000);  // red
+
+    }
+	this() {
+		this("DMLEDIT");
+	}
+}
+
 
 class EditFrame : AppFrame {
 
@@ -47,7 +69,9 @@ class EditFrame : AppFrame {
     override protected void init() {
         _appName = "DMLEdit";
         super.init();
+        updatePreview();
     }
+
     /// create main menu
     override protected MainMenu createMainMenu() {
         mainMenuItems = new MenuItem();
@@ -58,7 +82,7 @@ class EditFrame : AppFrame {
         MenuItem editItem = new MenuItem(new Action(2, "MENU_EDIT"));
 		editItem.add(ACTION_EDIT_COPY, ACTION_EDIT_PASTE, 
                      ACTION_EDIT_CUT, ACTION_EDIT_UNDO, ACTION_EDIT_REDO,
-                     ACTION_EDIT_INDENT, ACTION_EDIT_UNINDENT, ACTION_EDIT_TOGGLE_LINE_COMMENT, ACTION_EDIT_TOGGLE_BLOCK_COMMENT);
+                     ACTION_EDIT_INDENT, ACTION_EDIT_UNINDENT, ACTION_EDIT_TOGGLE_LINE_COMMENT, ACTION_EDIT_TOGGLE_BLOCK_COMMENT, ACTION_DEBUG_START);
 
 		editItem.add(ACTION_EDIT_PREFERENCES);
         mainMenuItems.add(editItem);
@@ -141,15 +165,25 @@ class EditFrame : AppFrame {
         string source = toUTF8(dsource);
         try {
             Widget w = parseML(source);
-            statusLine.setStatusText("No errors"d);
+            if (statusLine)
+                statusLine.setStatusText("No errors"d);
             _preview.contentWidget = w;
         } catch (ParserException e) {
-            statusLine.setStatusText(toUTF32("ERROR: " ~ e.msg));
-            _editor.setCaretPos(e.line, e.pos);
+            if (statusLine)
+                statusLine.setStatusText(toUTF32("ERROR: " ~ e.msg));
+            _editor.setCaretPos(e.line + 1, e.pos);
+            string msg = "\n" ~ e.msg ~ "\n";
+            msg = replaceFirst(msg, " near `", "\nnear `");
+            TextWidget w = new MultilineTextWidget(null, toUTF32(msg));
+            w.padding = 10;
+            w.margins = 10;
+            w.maxLines = 10;
+            w.backgroundColor = 0xC0FF8080;
+            _preview.contentWidget = w;
         }
     }
 
-    protected SourceEdit _editor;
+    protected DMLSourceEdit _editor;
     protected ScrollWidget _preview;
     /// create app body widget
     override protected Widget createBody() {
@@ -159,7 +193,7 @@ class EditFrame : AppFrame {
         HorizontalLayout hlayout = new HorizontalLayout();
         hlayout.layoutWidth = FILL_PARENT;
         hlayout.layoutHeight = FILL_PARENT;
-        _editor = new SourceEdit();
+        _editor = new DMLSourceEdit();
         hlayout.addChild(_editor);
         _editor.text = q{
 VerticalLayout {
@@ -181,8 +215,8 @@ VerticalLayout {
     }
     CheckBox{ id: cb1; text: "Some checkbox" }
     HorizontalLayout {
-        RadioButton{ id: rb1; text: "Radio Button 1" }
-        RadioButton{ id: rb1; text: "Radio Button 2" }
+        RadioButton { id: rb1; text: "Radio Button 1" }
+        RadioButton { id: rb1; text: "Radio Button 2" }
     }
 }
         };
@@ -212,25 +246,6 @@ extern (C) int UIAppMain(string[] args) {
 
     // create some widget to show in window
     window.mainWidget = new EditFrame();
-        /*
-        parseML(q{
-        VerticalLayout {
-            id: vlayout
-            margins: Rect { left: 5; right: 3; top: 2; bottom: 4 }
-            padding: Rect { 5, 4, 3, 2 } // same as Rect { left: 5; top: 4; right: 3; bottom: 2 }
-            TextWidget {
-                id: myLabel1
-                text: "Some text"; padding: 5
-                enabled: false
-            }
-            TextWidget {
-                id: myLabel2
-                text: SOME_TEXT_RESOURCE_ID; margins: 5
-                enabled: true
-            }
-        }
-    });
-    */
 
     // show window
     window.show();

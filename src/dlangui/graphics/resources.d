@@ -824,6 +824,7 @@ class ImageCache {
         _map[filename] = item;
         return item.get;
     }
+
     /// get and cache color transformed image
     ref DrawBufRef get(string filename, ref ColorTransform transform) {
         if (transform.empty)

@@ -23,6 +23,7 @@ import dlangui.widgets.metadata;
 import std.conv : to;
 import std.algorithm : equal, min, max;
 import std.utf : toUTF32, toUTF8;
+import std.array : join;
 
 class ParserException : Exception {
     protected string _msg;
@@ -117,10 +118,22 @@ struct Token {
     TokenType type;
     ushort line;
     ushort pos;
+    bool multiline;
     string text;
     union {
         int intvalue;
         double floatvalue;
+    }
+	public @property string toString() {
+        if (type == TokenType.integer)
+		    return "" ~ to!string(line) ~ ":" ~ to!string(pos) ~ " " ~ to!string(type) ~ " " ~ to!string(intvalue);
+        else if (type == TokenType.floating)
+		    return "" ~ to!string(line) ~ ":" ~ to!string(pos) ~ " " ~ to!string(type) ~ " " ~ to!string(floatvalue);
+        else
+		    return "" ~ to!string(line) ~ ":" ~ to!string(pos) ~ " " ~ to!string(type) ~ " \"" ~ text ~ "\"";
+	}
+    @property bool isMultilineComment() {
+        return type == TokenType.comment && multiline;
     }
 }
 
@@ -355,6 +368,7 @@ class Tokenizer {
                 break;
         }
         _token.type = TokenType.comment;
+        _token.multiline = false;
         return _token;
     }
 
@@ -371,6 +385,7 @@ class Tokenizer {
                 break;
         }
         _token.type = TokenType.comment;
+        _token.multiline = true;
         return _token;
     }
 
@@ -799,4 +814,23 @@ public Widget parseML(string code, string filename = "", Widget context = null) 
     MLParser parser = new MLParser(code, filename);
     scope(exit) destroy(parser);
     return parser.parse();
+}
+
+/// tokenize source into array of tokens (excluding EOF)
+public Token[] tokenizeML(const(dstring[]) lines) {
+    string code = toUTF8(join(lines, "\n"));
+    return tokenizeML(code);
+}
+
+/// tokenize source into array of tokens (excluding EOF)
+public Token[] tokenizeML(string code) {
+    Token[] res;
+    auto tokenizer = new Tokenizer(code, "");
+    for (;;) {
+        auto token = tokenizer.nextToken();
+        if (token.type == TokenType.eof)
+            break;
+        res ~= token;
+    }
+    return res;
 }

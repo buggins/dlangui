@@ -1050,4 +1050,4 @@ class CanvasWidget : Widget {
 }
 
 import dlangui.widgets.metadata;
-mixin(registerWidgets!(Widget, TextWidget, Button, ImageWidget, ImageButton, ImageTextButton, RadioButton, CheckBox, ScrollBar)());
+mixin(registerWidgets!(Widget, TextWidget, MultilineTextWidget, Button, ImageWidget, ImageButton, ImageTextButton, RadioButton, CheckBox, ScrollBar)());
