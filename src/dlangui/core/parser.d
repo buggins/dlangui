@@ -159,7 +159,7 @@ class Tokenizer {
         _filename = filename;
         _lines = LineStream.create(source, filename);
         _lineText = _lines.readLine();
-        _len = _lineText.length;
+        _len = cast(int)_lineText.length;
         _line = 0;
         _pos = 0;
         _prevChar = 0;
@@ -193,7 +193,7 @@ class Tokenizer {
             _prevChar = EOF_CHAR;
         else {
             _lineText = _lines.readLine();
-            _len = _lineText.length;
+            _len = cast(int)_lineText.length;
             _line++;
             _pos = 0;
             _prevChar = EOL_CHAR;
