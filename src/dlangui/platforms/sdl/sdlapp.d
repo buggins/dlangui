@@ -1237,24 +1237,13 @@ version (Windows) {
 
     int myWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int iCmdShow)
     {
-        initLogs();
-        Log.d("myWinMain()");
+        //Log.d("myWinMain()");
         string basePath = exePath();
-        Log.i("Current executable: ", exePath());
+        //Log.i("Current executable: ", exePath());
         string cmdline = fromStringz(lpCmdLine).dup;
-        Log.i("Command line: ", cmdline);
+        //Log.i("Command line: ", cmdline);
         string[] args = splitCmdLine(cmdline);
-        Log.i("Command line params: ", args);
-
-        if (!initFontManager()) {
-            Log.e("******************************************************************");
-            Log.e("No font files found!!!");
-            Log.e("Currently, only hardcoded font paths implemented.");
-            Log.e("Probably you can modify sdlapp.d to add some fonts for your system.");
-            Log.e("TODO: use fontconfig");
-            Log.e("******************************************************************");
-            assert(false);
-        }
+        //Log.i("Command line params: ", args);
 
         return sdlmain(args);
     }
@@ -1265,21 +1254,25 @@ version (Windows) {
 		
         initLogs();
 
-        if (!initFontManager()) {
-            Log.e("******************************************************************");
-            Log.e("No font files found!!!");
-            Log.e("Currently, only hardcoded font paths implemented.");
-            Log.e("Probably you can modify sdlapp.d to add some fonts for your system.");
-            Log.e("TODO: use fontconfig");
-            Log.e("******************************************************************");
-            assert(false);
-        }
-
         return sdlmain(args);
 	}
 }
 
 int sdlmain(string[] args) {
+
+    initLogs();
+
+    if (!initFontManager()) {
+        Log.e("******************************************************************");
+        Log.e("No font files found!!!");
+        Log.e("Currently, only hardcoded font paths implemented.");
+        Log.e("Probably you can modify sdlapp.d to add some fonts for your system.");
+        Log.e("TODO: use fontconfig");
+        Log.e("******************************************************************");
+        assert(false);
+    }
+
+
     currentTheme = createDefaultTheme();
 
     try {
@@ -1331,7 +1324,11 @@ int sdlmain(string[] args) {
 
     int res = 0;
 
-    res = UIAppMain(args);
+    version (unittest) {
+    } else {
+        res = UIAppMain(args);
+    }
+    
     //Log.e("Widget instance count after UIAppMain: ", Widget.instanceCount());
 
     Log.d("Destroying SDL platform");
