@@ -367,14 +367,12 @@
    <Folder name="dlangui">
     <Folder name="core">
      <File path="src\dlangui\core\collections.d" />
-     <File path="src\dlangui\core\dmlhighlight.d" />
      <File path="src\dlangui\core\editable.d" />
      <File path="src\dlangui\core\events.d" />
      <File path="src\dlangui\core\files.d" />
      <File path="src\dlangui\core\i18n.d" />
      <File path="src\dlangui\core\linestream.d" />
      <File path="src\dlangui\core\logger.d" />
-     <File path="src\dlangui\core\parser.d" />
      <File path="src\dlangui\core\settings.d" />
      <File path="src\dlangui\core\signals.d" />
      <File path="src\dlangui\core\stdaction.d" />
@@ -386,6 +384,10 @@
      <File path="src\dlangui\dialogs\filedlg.d" />
      <File path="src\dlangui\dialogs\msgbox.d" />
      <File path="src\dlangui\dialogs\settingsdialog.d" />
+    </Folder>
+    <Folder name="dml">
+     <File path="src\dlangui\dml\dmlhighlight.d" />
+     <File path="src\dlangui\dml\parser.d" />
     </Folder>
     <Folder name="graphics">
      <Folder name="scene">

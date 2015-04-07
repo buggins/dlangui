@@ -73,7 +73,7 @@ public import dlangui.widgets.statusline;
 public import dlangui.widgets.docks;
 public import dlangui.widgets.toolbars;
 public import dlangui.platforms.common.platform;
-public import dlangui.core.parser;
+public import dlangui.dml.parser;
 
 // some useful imports from Phobos
 public import std.algorithm : equal;

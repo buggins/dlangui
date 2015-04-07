@@ -3,7 +3,7 @@ module dmledit;
 import dlangui;
 import dlangui.dialogs.filedlg;
 import dlangui.dialogs.dialog;
-import dlangui.core.dmlhighlight;
+import dlangui.dml.dmlhighlight;
 import std.array : replaceFirst;
 
 mixin APP_ENTRY_POINT;
