@@ -1355,6 +1355,9 @@ version (Windows) {
     // to remove import
     extern(Windows) int DLANGUIWinMain(void* hInstance, void* hPrevInstance,
                                        char* lpCmdLine, int nCmdShow);
+} else {
+    // to remove import
+    extern int DLANGUImain(string[] args);
 }
 
 /// put "mixin APP_ENTRY_POINT;" to main module of your dlangui based app
@@ -1385,6 +1388,11 @@ mixin template APP_ENTRY_POINT() {
 				Log.e("Exception: ", e);
 				return 1;
 			}
+        }
+    } else {
+	    int main(string[] args)
+	    {
+            return DLANGUImain(args);
         }
     }
 }

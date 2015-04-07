@@ -1260,7 +1260,7 @@ version (Windows) {
     }
 } else {
 
-	int main(string[] args)
+	int DLANGUImain(string[] args)
 	{
 		
         initLogs();
