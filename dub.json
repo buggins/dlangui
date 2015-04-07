@@ -33,6 +33,7 @@
         "./examples/helloworld/",
         "./examples/example1/",
         "./examples/dmledit/",
+        "./examples/d3d/",
         "./examples/tetris/"
     ],
 
@@ -63,6 +64,7 @@
         	"derelict-sdl2": "~>1.9.1",
         	"gl3n": "~>1.0.1"
             }
+	    "copyFiles-windows": ["lib/SDL2.dll"],
         },
         {
             "name": "sfml",

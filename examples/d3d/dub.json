@@ -1,0 +1,17 @@
+{
+    "name": "d3d",
+    "description": "dlangui library example 3D Application",
+    "homepage": "https://github.com/buggins/dlangui",
+    "license": "Boost",
+    "authors": ["Vadim Lopatin"],
+
+    "stringImportPaths": ["views", "views/res", "views/res/i18n", "views/res/mdpi"],
+
+    "targetPath": "bin",
+    "targetName": "d3d",
+    "targetType": "executable",
+
+    "dependencies": {
+        "dlangui": "*",
+    }
+}
