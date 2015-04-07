@@ -49,6 +49,7 @@ public import dlangui.graphics.colors;
 public import dlangui.core.signals;
 
 public import dlangui.platforms.common.platform;
+public import dlangui.dml.annotations;
 
 import std.algorithm;
 
@@ -134,6 +135,7 @@ enum CursorType {
  * Base class for all widgets.
  * 
  */
+@dmlwidget
 class Widget {
     /// widget id
     protected string _id;

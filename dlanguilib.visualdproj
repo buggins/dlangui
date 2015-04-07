@@ -386,6 +386,7 @@
      <File path="src\dlangui\dialogs\settingsdialog.d" />
     </Folder>
     <Folder name="dml">
+     <File path="src\dlangui\dml\annotations.d" />
      <File path="src\dlangui\dml\dmlhighlight.d" />
      <File path="src\dlangui\dml\parser.d" />
     </Folder>
