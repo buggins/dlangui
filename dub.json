@@ -4,9 +4,6 @@
     "homepage": "https://github.com/buggins/dlangui",
     "license": "Boost",
     "authors": ["Vadim Lopatin"],
-    "buildRequirements":[
-        "allowWarnings"
-    ],
 
     "targetName": "dlangui",
     "targetPath": "lib",
@@ -46,7 +43,7 @@
             "versions-posix": ["USE_SDL"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-        	"dlib": "~master",
+        	"dlib": "==0.5.2",
         	"derelict-gl3": "~>1.0.12",
         	"derelict-ft": "~>1.0.0",
         	"gl3n": "~>1.0.1"
@@ -60,7 +57,7 @@
             "versions": ["USE_SDL", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-        	"dlib": "~master",
+        	"dlib": "==0.5.2",
         	"derelict-gl3": "~>1.0.12",
         	"derelict-ft": "~>1.0.0",
         	"derelict-sdl2": "~>1.9.1",
@@ -72,7 +69,7 @@
             "versions": ["USE_DSFML", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-        	"dlib": "~master",
+        	"dlib": "==0.5.2",
         	"derelict-gl3": "~>1.0.12",
         	"derelict-ft": "~>1.0.0",
         	"gl3n": "~>1.0.1",
