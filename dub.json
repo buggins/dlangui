@@ -63,7 +63,7 @@
         	"derelict-ft": "~>1.0.0",
         	"derelict-sdl2": "~>1.9.1",
         	"gl3n": "~>1.0.1"
-            }
+            },
 	    "copyFiles-windows": ["lib/SDL2.dll"],
         },
         {
