@@ -5,12 +5,12 @@ import gl3n.math;
 
 /// 3d transform: scale + translation + rotation
 class Transform {
-    private bool _dirtyTransform = true;
-    private vec3 _scale = vec3(1.0f, 1.0f, 1.0f);
-    private vec3 _translation = vec3(0.0f, 0.0f, 0.0f);
-    private mat4 _rotation = mat4.identity;
+    protected bool _dirtyTransform = true;
+    protected vec3 _scale = vec3(1.0f, 1.0f, 1.0f);
+    protected vec3 _translation = vec3(0.0f, 0.0f, 0.0f);
+    protected mat4 _rotation = mat4.identity;
 
-    private mat4 _matrix;
+    protected mat4 _matrix;
 
     /// get scale vector
     public @property ref const(vec3) scaling() const { return _scale; }

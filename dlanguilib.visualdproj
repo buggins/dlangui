@@ -392,6 +392,7 @@
     </Folder>
     <Folder name="graphics">
      <Folder name="scene">
+      <File path="src\dlangui\graphics\scene\camera.d" />
       <File path="src\dlangui\graphics\scene\node.d" />
       <File path="src\dlangui\graphics\scene\scene3d.d" />
       <File path="src\dlangui\graphics\scene\transform.d" />
