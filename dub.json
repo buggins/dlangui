@@ -9,8 +9,6 @@
     "targetPath": "lib",
     "targetType": "staticLibrary",
 
-    "copyFiles-windows": ["lib/libfreetype-6.dll", "lib/zlib1.dll"],
-
     "sourcePaths": [
 	"3rdparty", "src"
     ],
@@ -51,7 +49,9 @@
             },
             "dependencies-posix": {
         	"derelict-sdl2": "~>1.9.1"
-            }
+            },
+            "copyFiles-windows-x86_64": ["libs/windows/x86_64/libfreetype-6.dll"],
+            "copyFiles-windows-x86": ["libs/windows/x86/libfreetype-6.dll"]
         },
         {
             "name": "sdl",
@@ -64,7 +64,8 @@
         	"derelict-sdl2": "~>1.9.1",
         	"gl3n": "~>1.0.1"
             },
-	    "copyFiles-windows": ["lib/SDL2.dll"],
+	    "copyFiles-windows-x86_64": ["libs/windows/x86_64/libfreetype-6.dll", "libs/windows/x86_64/SDL2.dll"],
+	    "copyFiles-windows-x86": ["libs/windows/x86/libfreetype-6.dll", "libs/windows/x86/SDL2.dll"]
         },
         {
             "name": "sfml",
@@ -76,7 +77,9 @@
         	"derelict-ft": "~>1.0.0",
         	"gl3n": "~>1.0.1",
         	"dsfml": "~master"
-            }
+            },
+            "copyFiles-windows-x86_64": ["libs/windows/x86_64/libfreetype-6.dll"],
+            "copyFiles-windows-x86": ["libs/windows/x86/libfreetype-6.dll"]
         }
     ]
 }
