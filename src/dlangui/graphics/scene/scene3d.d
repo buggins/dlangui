@@ -12,5 +12,6 @@ class Scene3d : Node3d {
     @property vec3 ambientColor() { return _ambientColor; }
     @property void ambientColor(const ref vec3 v) { _ambientColor = v; }
 
+
 }
 
