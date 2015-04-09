@@ -12,6 +12,10 @@ class Transform {
 
     protected mat4 _matrix;
 
+    this() {
+        setIdentity();
+    }
+
     /// get scale vector
     public @property ref const(vec3) scaling() const { return _scale; }
     /// get scale X
