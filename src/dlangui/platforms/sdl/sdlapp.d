@@ -1249,7 +1249,7 @@ version (Windows) {
     }
 } else {
 
-	int DLANGUImain(string[] args)
+	extern(C) int DLANGUImain(string[] args)
 	{
 		
         initLogs();

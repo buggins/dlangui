@@ -1357,7 +1357,7 @@ version (Windows) {
                                        char* lpCmdLine, int nCmdShow);
 } else {
     // to remove import
-    extern int DLANGUImain(string[] args);
+    extern(C) int DLANGUImain(string[] args);
 }
 
 /// put "mixin APP_ENTRY_POINT;" to main module of your dlangui based app
