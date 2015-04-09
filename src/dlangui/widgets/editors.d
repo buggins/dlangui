@@ -1780,6 +1780,8 @@ class EditBox : EditWidgetBase {
 			_caretPos.line = _content.length - 1;
 			_caretPos.pos = 0;
 		}
+        if (_numVisibleLines < 1)
+            _numVisibleLines = 1;
         if (_firstVisibleLine + _numVisibleLines > _content.length)
             _numVisibleLines = _content.length - _firstVisibleLine;
         _visibleLines.length = _numVisibleLines;
