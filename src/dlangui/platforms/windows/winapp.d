@@ -222,14 +222,20 @@ class Win32Window : Window {
 
                                 version (USE_OPENGL) {
                                     //_gl = new GLSupport();
-                                    if (!_glSupport)
+                                    if (!_glSupport) {
+                                        Log.v("Creating OpenGL support");
                                         _glSupport = new GLSupport();
+                                        Log.v("OpenGL support created");
+                                    }
                                 }
 
                                 // successful
+                                Log.v("initializing shaders");
                                 if (glSupport.valid || glSupport.initShaders()) {
+                                    Log.v("shaders are ok");
                                     setOpenglEnabled();
                                     useOpengl = true;
+                                    Log.v("OpenGL is initialized ok");
                                 } else {
                                     Log.e("Failed to compile shaders");
                                 }
@@ -773,10 +779,12 @@ class Win32Platform : Platform {
     private Win32Window[ulong] _windowMap;
     /// add window to window map
     void onWindowCreated(HWND hwnd, Win32Window window) {
+        Log.v("created window, adding to map");
         _windowMap[cast(ulong)hwnd] = window;
     }
     /// remove window from window map, returns true if there are some more windows left in map
     bool onWindowDestroyed(HWND hwnd, Win32Window window) {
+        Log.v("destroyed window, removing from map");
         Win32Window wnd = getWindow(hwnd);
         if (wnd) {
             _windowMap.remove(cast(ulong)hwnd);

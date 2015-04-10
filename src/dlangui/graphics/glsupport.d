@@ -164,14 +164,21 @@ class GLProgram {
         Log.d("Program compiled successfully");
         //glDetachShader(program, vertexShader);
         //glDetachShader(program, fragmentShader);
+        Log.v("trying glUseProgram(0)");
+        glUseProgram(0);
+        Log.v("before useProgram");
         glUseProgram(program);
         checkError("glUseProgram " ~ to!string(program));
+        Log.v("after useProgram");
         if (!initLocations()) {
             Log.e("some of locations were not found");
             error = true;
         }
         initialized = true;
-        return true;
+        Log.v("Program is initialized successfully");
+        glUseProgram(0);
+        checkError("glUseProgram " ~ to!string(program));
+        return !error;
     }
     bool initLocations() {
         return true;
@@ -605,19 +612,22 @@ class GLSupport {
     }
 
     bool initShaders() {
+        if (_solidFillProgram is null) {
+            Log.v("Compiling solid fill program");
+            _solidFillProgram = new SolidFillProgram();
+            if (!_solidFillProgram.compile())
+                return false;
+        }
         if (_textureProgram is null) {
+            Log.v("Compiling texture program");
             _textureProgram = new TextureProgram();
             if (!_textureProgram.compile())
                 return false;
         }
         if (_fontProgram is null) {
+            Log.v("Compiling font program");
             _fontProgram = new FontProgram();
             if (!_fontProgram.compile())
-                return false;
-        }
-        if (_solidFillProgram is null) {
-            _solidFillProgram = new SolidFillProgram();
-            if (!_solidFillProgram.compile())
                 return false;
         }
         Log.d("Shaders compiled successfully");
@@ -626,6 +636,10 @@ class GLSupport {
 
     bool uninitShaders() {
         Log.d("Uniniting shaders");
+        if (_solidFillProgram !is null) {
+            destroy(_solidFillProgram);
+		    _solidFillProgram = null;
+        }
         if (_textureProgram !is null) {
             destroy(_textureProgram);
 		    _textureProgram = null;
@@ -633,10 +647,6 @@ class GLSupport {
         if (_fontProgram !is null) {
             destroy(_fontProgram);
 		    _fontProgram = null;
-        }
-        if (_solidFillProgram !is null) {
-            destroy(_solidFillProgram);
-		    _solidFillProgram = null;
         }
         return true;
     }

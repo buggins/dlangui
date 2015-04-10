@@ -187,6 +187,10 @@ enum : int {
 
 /// entry point for dlangui based application
 extern (C) int UIAppMain(string[] args) {
+
+    // always use trace, even for release builds
+    Log.setLogLevel(LogLevel.Trace);
+
     // resource directory search paths
     // not required if only embedded resources are used
     //string[] resourceDirs = [
