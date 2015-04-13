@@ -1054,10 +1054,15 @@ class Window {
         return _actionsUpdateRequested;
     }
 
-    /// Show message box with specified title and message
+    /// Show message box with specified title and message (title and message as UIString)
     void showMessageBox(UIString title, UIString message, const (Action)[] actions = [ACTION_OK], int defaultActionIndex = 0, bool delegate(const Action result) handler = null) {
         MessageBox dlg = new MessageBox(title, message, this, actions, defaultActionIndex, handler);
         dlg.show();
+    }
+
+    /// Show message box with specified title and message (title and message as dstring)
+    void showMessageBox(dstring title, dstring message, const (Action)[] actions = [ACTION_OK], int defaultActionIndex = 0, bool delegate(const Action result) handler = null) {
+        showMessageBox(UIString(title), UIString(message), actions, defaultActionIndex, handler);
     }
 
     protected TimerQueue _timerQueue;
@@ -1224,6 +1229,8 @@ class Platform {
 	 * 		windowCaption = window caption text
 	 * 		parent = parent Window, or null if no parent
 	 * 		flags = WindowFlag bit set, combination of Resizable, Modal, Fullscreen
+     *      width = window width 
+     *      height = window height
 	 * 
 	 * Window w/o Resizable nor Fullscreen will be created with size based on measurement of its content widget
 	 */
