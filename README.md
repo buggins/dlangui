@@ -11,6 +11,8 @@ API Documentation: [http://buggins.github.io/dlangui/ddox](http://buggins.github
 
 Wiki: [https://github.com/buggins/dlangui/wiki/Home](https://github.com/buggins/dlangui/wiki/Home)
 
+Getting Started Tutorial: [https://github.com/buggins/dlangui/wiki/Getting-Started](https://github.com/buggins/dlangui/wiki/Getting-Started)
+
 Screenshots: [http://buggins.github.io/dlangui/screenshots.html](http://buggins.github.io/dlangui/screenshots.html)
 
 
@@ -324,14 +326,14 @@ Example of complex UI easy created from text:
         auto edit1 = window.mainWidget.childById!EditLine("edit1");
         auto edit2 = window.mainWidget.childById!EditLine("edit2");
         // close window on Cancel button click
-        window.mainWidget.childById!Button("btnCancel").onClickListener = delegate(Widget w) {
+        window.mainWidget.childById!Button("btnCancel").click = delegate(Widget w) {
             window.close();
             return true;
         };
         // show message box with content of editors
-        window.mainWidget.childById!Button("btnOk").onClickListener = delegate(Widget w) {
+        window.mainWidget.childById!Button("btnOk").click = delegate(Widget w) {
             window.showMessageBox(UIString("Ok button pressed"d), 
-                                  UIString("Editors content\nEdit1: "d ~ edit1.text ~ "\nEdit2: "d ~ edit2.text));
+                    UIString("Editors content\nEdit1: "d ~ edit1.text ~ "\nEdit2: "d ~ edit2.text));
             return true;
         };
 

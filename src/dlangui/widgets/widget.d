@@ -1204,15 +1204,29 @@ class Widget {
     // Signals
 
 	/// on click event listener (bool delegate(Widget))
-    Signal!OnClickHandler onClickListener;
+    Signal!OnClickHandler click;
+    /// click signal alias for backward compatibility; will be deprecated in future
+    alias onClickListener = click;
+
 	/// checked state change event listener (bool delegate(Widget, bool))
-    Signal!OnCheckHandler onCheckChangeListener;
+    Signal!OnCheckHandler checkChange;
+    /// checkChange signal alias for backward compatibility; will be deprecated in future
+    alias onCheckChangeListener = checkChange;
+
 	/// focus state change event listener (bool delegate(Widget, bool))
-    Signal!OnFocusHandler onFocusChangeListener;
+    Signal!OnFocusHandler focusChange;
+    /// focusChange signal alias for backward compatibility; will be deprecated in future
+    alias onFocusChangeListener = focusChange;
+
 	/// key event listener (bool delegate(Widget, KeyEvent)) - return true if event is processed by handler
-    Signal!OnKeyHandler onKeyListener;
+    Signal!OnKeyHandler keyEvent;
+    /// keyEvent signal alias for backward compatibility; will be deprecated in future
+    alias onKeyListener = keyEvent;
+
 	/// mouse event listener (bool delegate(Widget, MouseEvent)) - return true if event is processed by handler
-    Signal!OnMouseHandler onMouseListener;
+    Signal!OnMouseHandler mouseEvent;
+    /// mouseEvent signal alias for backward compatibility; will be deprecated in future
+    alias onMouseListener = mouseEvent;
 
     /// helper function to add onCheckChangeListener in method chain
     Widget addOnClickListener(bool delegate(Widget) listener) {

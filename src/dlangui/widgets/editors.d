@@ -241,9 +241,15 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected bool _contentChanged = true;
 
 
-    /// Modified state change listener
-    Signal!ModifiedStateListener onModifiedStateChangeListener;
-    Signal!EditableContentChangeListener onContentChangeListener;
+    /// Modified state change listener (e.g. content has been saved, or first time modified after save)
+    Signal!ModifiedStateListener modifiedStateChange;
+    /// modifiedStateChange signal alias for backward compatibility; will be deprecated in future
+    alias onModifiedStateChangeListener = modifiedStateChange;
+
+    /// editor content is changed
+    Signal!EditableContentChangeListener contentChange;
+    /// contentChange signal alias for backward compatibility; will be deprecated in future
+    alias onContentChangeListener = contentChange;
 
     /// override to support modification of client rect after change, e.g. apply offset
     override protected void handleClientRectLayout(ref Rect rc) {

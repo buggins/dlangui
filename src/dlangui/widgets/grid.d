@@ -228,9 +228,14 @@ interface CellActivatedHandler {
 /// Abstract grid widget
 class GridWidgetBase : ScrollWidgetBase {
     /// Callback to handle selection change
-    Listener!CellSelectedHandler onCellSelected;
+    Listener!CellSelectedHandler cellSelected;
+    /// cellSelected signal alias for backward compatibility; will be deprecated in future
+    alias onCellSelected = cellSelected;
+
     /// Callback to handle cell double click
-    Listener!CellActivatedHandler onCellActivated;
+    Listener!CellActivatedHandler cellActivated;
+    /// cellActivated signal alias for backward compatibility; will be deprecated in future
+    alias onCellActivated = cellActivated;
 
     protected CustomGridCellAdapter _customCellAdapter;
 

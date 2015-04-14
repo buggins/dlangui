@@ -45,7 +45,9 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
     protected int _selectedItemIndex;
 
     /** Handle item click. */
-    Signal!OnItemSelectedHandler onItemClickListener;
+    Signal!OnItemSelectedHandler itemClick;
+    /// itemClick signal alias for backward compatibility; will be deprecated in future
+    alias onItemClickListener = itemClick;
 
     protected Widget createSelectedItemWidget() {
         Widget res;

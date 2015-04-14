@@ -586,7 +586,9 @@ class EditableContent {
     @property EditableContent smartIndentsAfterPaste(bool enabled) { _smartIndentsAfterPaste = enabled; return this; }
 
 	/// listeners for edit operations
-	Signal!EditableContentListener contentChangeListeners;
+	Signal!EditableContentListener contentChanged;
+    /// contentChanged signal alias for backward compatibility; will be deprecated in future
+    alias contentChangeListeners = contentChanged;
 
     protected bool _multiline;
     /// returns true if miltyline content is supported

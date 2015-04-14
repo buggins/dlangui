@@ -46,13 +46,13 @@ class TimerTest : HorizontalLayout {
         _start = new Button(null, "Start timer"d);
         _stop = new Button(null, "Stop timer"d);
         _stop.enabled = false;
-        _start.onClickListener = delegate(Widget src) {
+        _start.click = delegate(Widget src) {
             _start.enabled = false;
             _stop.enabled = true;
             timerId = setTimer(1000);
             return true;
         };
-        _stop.onClickListener = delegate(Widget src) {
+        _stop.click = delegate(Widget src) {
             _start.enabled = true;
             _stop.enabled = false;
             cancelTimer(timerId);
@@ -477,9 +477,9 @@ extern (C) int UIAppMain(string[] args) {
               );
         destroy(w);
 
-		layout.childById("BTN1").onClickListener = (delegate (Widget w) { Log.d("onClick ", w.id); return true; });
-		layout.childById("BTN2").onClickListener = (delegate (Widget w) { Log.d("onClick ", w.id); return true; });
-		layout.childById("BTN3").onClickListener = (delegate (Widget w) { Log.d("onClick ", w.id); return true; });
+		layout.childById("BTN1").click = delegate (Widget w) { Log.d("onClick ", w.id); return true; };
+		layout.childById("BTN2").click = delegate (Widget w) { Log.d("onClick ", w.id); return true; };
+		layout.childById("BTN3").click = delegate (Widget w) { Log.d("onClick ", w.id); return true; };
 
         }
 
@@ -531,7 +531,7 @@ extern (C) int UIAppMain(string[] args) {
             Button btn = new Button(null, "Add item"d);
             itemedit.addChild(btn);
             longLists.addChild(itemedit);
-            btn.onClickListener = delegate(Widget src)
+            btn.click = delegate(Widget src)
             {
                 stringList.add(itemtext.text);
                 listAdapter.add((new TextWidget()).text(itemtext.text).styleId("LIST_ITEM"));

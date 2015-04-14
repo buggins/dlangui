@@ -393,9 +393,13 @@ interface OnItemClickHandler {
 class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
 
     /** Handle selection change. */
-    Signal!OnItemSelectedHandler onItemSelectedListener;
-    /** Handle item click. */
-    Signal!OnItemSelectedHandler onItemClickListener;
+    Signal!OnItemSelectedHandler itemSelected;
+    /// itemSelected signal alias for backward compatibility; will be deprecated in future
+    alias onItemSelectedListener = itemSelected;
+    /** Handle item click / activation (e.g. Space or Enter key press and mouse double click) */
+    Signal!OnItemClickHandler itemClick;
+    /// itemClick signal alias for backward compatibility; will be deprecated in future
+    alias onItemClickListener = itemClick;
 
     protected Orientation _orientation = Orientation.Vertical;
     /// returns linear layout orientation (Vertical, Horizontal)
