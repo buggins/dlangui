@@ -10,19 +10,19 @@
     "targetType": "staticLibrary",
 
     "sourcePaths": [
-	"3rdparty", "src"
+        "3rdparty", "src"
     ],
 
     "importPaths": [
-	"3rdparty", "src"
+        "3rdparty", "src"
     ],
  
     "stringImportPaths": [
-	"views",
-	"views/res",
-	"views/res/mdpi",
-	"views/res/hdpi",
-	"views/res/i18n"
+        "views",
+        "views/res",
+        "views/res/mdpi",
+        "views/res/hdpi",
+        "views/res/i18n"
     ],
 
     "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.", "--ex", "src.dlangui"],
@@ -42,44 +42,58 @@
             "versions-posix": ["USE_SDL"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-        	"dlib": "~master",
-        	"derelict-gl3": "~>1.0.12",
-        	"derelict-ft": "~>1.0.0",
-        	"gl3n": "~>1.0.1"
+                "dlib": "~master",
+                "derelict-gl3": "~>1.0.12",
+                "derelict-ft": "~>1.0.0",
+                "gl3n": "~>1.0.1"
             },
             "dependencies-posix": {
-        	"derelict-sdl2": "~>1.9.1"
+                "derelict-sdl2": "~>1.9.1"
             },
-            "copyFiles-windows-x86_64": ["libs/windows/x86_64/libfreetype-6.dll"],
-            "copyFiles-windows-x86": ["libs/windows/x86/libfreetype-6.dll"]
+            "copyFiles-windows-x86_64": [
+                "libs/windows/x86_64/libfreetype-6.dll"
+            ],
+            "copyFiles-windows-x86": [
+                "libs/windows/x86/libfreetype-6.dll"
+            ]
         },
         {
             "name": "sdl",
             "versions": ["USE_SDL", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-        	"dlib": "~master",
-        	"derelict-gl3": "~>1.0.12",
-        	"derelict-ft": "~>1.0.0",
-        	"derelict-sdl2": "~>1.9.1",
-        	"gl3n": "~>1.0.1"
+                "dlib": "~master",
+                "derelict-gl3": "~>1.0.12",
+                "derelict-ft": "~>1.0.0",
+                "derelict-sdl2": "~>1.9.1",
+                "gl3n": "~>1.0.1"
             },
-	    "copyFiles-windows-x86_64": ["libs/windows/x86_64/libfreetype-6.dll", "libs/windows/x86_64/SDL2.dll"],
-	    "copyFiles-windows-x86": ["libs/windows/x86/libfreetype-6.dll", "libs/windows/x86/SDL2.dll"]
+            "copyFiles-windows-x86_64": [
+                "libs/windows/x86_64/libfreetype-6.dll", 
+                "libs/windows/x86_64/SDL2.dll"
+            ],
+            "copyFiles-windows-x86": [
+                "libs/windows/x86/libfreetype-6.dll", 
+                "libs/windows/x86/SDL2.dll"
+            ]
         },
         {
             "name": "sfml",
             "versions": ["USE_DSFML", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-        	"dlib": "~master",
-        	"derelict-gl3": "~>1.0.12",
-        	"derelict-ft": "~>1.0.0",
-        	"gl3n": "~>1.0.1",
-        	"dsfml": "~master"
+                "dlib": "~master",
+                "derelict-gl3": "~>1.0.12",
+                "derelict-ft": "~>1.0.0",
+                "gl3n": "~>1.0.1",
+                "dsfml": "~master"
             },
-            "copyFiles-windows-x86_64": ["libs/windows/x86_64/libfreetype-6.dll"],
-            "copyFiles-windows-x86": ["libs/windows/x86/libfreetype-6.dll"]
+            "copyFiles-windows-x86_64": [
+                "libs/windows/x86_64/libfreetype-6.dll"
+            ],
+            "copyFiles-windows-x86": [
+                "libs/windows/x86/libfreetype-6.dll"
+            ]
         }
     ]
 }
