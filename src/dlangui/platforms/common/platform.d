@@ -1504,33 +1504,36 @@ version (Windows) {
     /// On linux/mac - tries to init freetype with some hardcoded font paths
     bool initFontManager() {
 		FreeTypeFontManager ft = new FreeTypeFontManager();
-		// TODO: use FontConfig
-		Log.w("Only hardcoded paths to TTF fonts are supported under linux so far. TODO: implement fontconfig support.");
-		ft.registerFonts("/usr/share/fonts/truetype/dejavu/");
-		ft.registerFonts("/usr/share/fonts/TTF/");
-		ft.registerFonts("/usr/share/fonts/dejavu/");
-		ft.registerFonts("/usr/share/fonts/truetype/ttf-dejavu/"); // let it compile on Debian Wheezy
-        version(OSX) {
-            ft.registerFont("/Library/Fonts/Arial.ttf", FontFamily.SansSerif, "Arial", false, FontWeight.Normal);
-            ft.registerFont("/Library/Fonts/Arial Bold.ttf", FontFamily.SansSerif, "Arial", false, FontWeight.Bold);
-            ft.registerFont("/Library/Fonts/Arial Italic.ttf", FontFamily.SansSerif, "Arial", true, FontWeight.Normal);
-            ft.registerFont("/Library/Fonts/Arial Bold Italic.ttf", FontFamily.SansSerif, "Arial", true, FontWeight.Bold);
-            ft.registerFont("/Library/Fonts/Arial Narrow.ttf", FontFamily.SansSerif, "Arial Narrow", false, FontWeight.Normal);
-            ft.registerFont("/Library/Fonts/Arial Narrow Bold.ttf", FontFamily.SansSerif, "Arial Narrow", false, FontWeight.Bold);
-            ft.registerFont("/Library/Fonts/Arial Narrow Italic.ttf", FontFamily.SansSerif, "Arial Narrow", true, FontWeight.Normal);
-            ft.registerFont("/Library/Fonts/Arial Narrow Bold Italic.ttf", FontFamily.SansSerif, "Arial Narrow", true, FontWeight.Bold);
-            ft.registerFont("/Library/Fonts/Courier New.ttf", FontFamily.MonoSpace, "Courier New", false, FontWeight.Normal);
-            ft.registerFont("/Library/Fonts/Courier New Bold.ttf", FontFamily.MonoSpace, "Courier New", false, FontWeight.Bold);
-            ft.registerFont("/Library/Fonts/Courier New Italic.ttf", FontFamily.MonoSpace, "Courier New", true, FontWeight.Normal);
-            ft.registerFont("/Library/Fonts/Courier New Bold Italic.ttf", FontFamily.MonoSpace, "Courier New", true, FontWeight.Bold);
-            ft.registerFont("/Library/Fonts/Georgia.ttf", FontFamily.SansSerif, "Georgia", false, FontWeight.Normal);
-            ft.registerFont("/Library/Fonts/Georgia Bold.ttf", FontFamily.SansSerif, "Georgia", false, FontWeight.Bold);
-            ft.registerFont("/Library/Fonts/Georgia Italic.ttf", FontFamily.SansSerif, "Georgia", true, FontWeight.Normal);
-            ft.registerFont("/Library/Fonts/Georgia Bold Italic.ttf", FontFamily.SansSerif, "Georgia", true, FontWeight.Bold);
-            ft.registerFont("/Library/Fonts/Georgia.ttf", FontFamily.SansSerif, "Georgia", false, FontWeight.Normal);
-            ft.registerFont("/Library/Fonts/Georgia Bold.ttf", FontFamily.SansSerif, "Georgia", false, FontWeight.Bold);
-            ft.registerFont("/Library/Fonts/Georgia Italic.ttf", FontFamily.SansSerif, "Georgia", true, FontWeight.Normal);
-            ft.registerFont("/Library/Fonts/Georgia Bold Italic.ttf", FontFamily.SansSerif, "Georgia", true, FontWeight.Bold);
+
+        if (!registerFontConfigFonts(ft)) {
+		    // TODO: use FontConfig
+		    Log.w("No fonts found using FontConfig. Trying hardcoded paths.");
+		    ft.registerFonts("/usr/share/fonts/truetype/dejavu/");
+		    ft.registerFonts("/usr/share/fonts/TTF/");
+		    ft.registerFonts("/usr/share/fonts/dejavu/");
+		    ft.registerFonts("/usr/share/fonts/truetype/ttf-dejavu/"); // let it compile on Debian Wheezy
+            version(OSX) {
+                ft.registerFont("/Library/Fonts/Arial.ttf", FontFamily.SansSerif, "Arial", false, FontWeight.Normal);
+                ft.registerFont("/Library/Fonts/Arial Bold.ttf", FontFamily.SansSerif, "Arial", false, FontWeight.Bold);
+                ft.registerFont("/Library/Fonts/Arial Italic.ttf", FontFamily.SansSerif, "Arial", true, FontWeight.Normal);
+                ft.registerFont("/Library/Fonts/Arial Bold Italic.ttf", FontFamily.SansSerif, "Arial", true, FontWeight.Bold);
+                ft.registerFont("/Library/Fonts/Arial Narrow.ttf", FontFamily.SansSerif, "Arial Narrow", false, FontWeight.Normal);
+                ft.registerFont("/Library/Fonts/Arial Narrow Bold.ttf", FontFamily.SansSerif, "Arial Narrow", false, FontWeight.Bold);
+                ft.registerFont("/Library/Fonts/Arial Narrow Italic.ttf", FontFamily.SansSerif, "Arial Narrow", true, FontWeight.Normal);
+                ft.registerFont("/Library/Fonts/Arial Narrow Bold Italic.ttf", FontFamily.SansSerif, "Arial Narrow", true, FontWeight.Bold);
+                ft.registerFont("/Library/Fonts/Courier New.ttf", FontFamily.MonoSpace, "Courier New", false, FontWeight.Normal);
+                ft.registerFont("/Library/Fonts/Courier New Bold.ttf", FontFamily.MonoSpace, "Courier New", false, FontWeight.Bold);
+                ft.registerFont("/Library/Fonts/Courier New Italic.ttf", FontFamily.MonoSpace, "Courier New", true, FontWeight.Normal);
+                ft.registerFont("/Library/Fonts/Courier New Bold Italic.ttf", FontFamily.MonoSpace, "Courier New", true, FontWeight.Bold);
+                ft.registerFont("/Library/Fonts/Georgia.ttf", FontFamily.SansSerif, "Georgia", false, FontWeight.Normal);
+                ft.registerFont("/Library/Fonts/Georgia Bold.ttf", FontFamily.SansSerif, "Georgia", false, FontWeight.Bold);
+                ft.registerFont("/Library/Fonts/Georgia Italic.ttf", FontFamily.SansSerif, "Georgia", true, FontWeight.Normal);
+                ft.registerFont("/Library/Fonts/Georgia Bold Italic.ttf", FontFamily.SansSerif, "Georgia", true, FontWeight.Bold);
+                ft.registerFont("/Library/Fonts/Georgia.ttf", FontFamily.SansSerif, "Georgia", false, FontWeight.Normal);
+                ft.registerFont("/Library/Fonts/Georgia Bold.ttf", FontFamily.SansSerif, "Georgia", false, FontWeight.Bold);
+                ft.registerFont("/Library/Fonts/Georgia Italic.ttf", FontFamily.SansSerif, "Georgia", true, FontWeight.Normal);
+                ft.registerFont("/Library/Fonts/Georgia Bold Italic.ttf", FontFamily.SansSerif, "Georgia", true, FontWeight.Bold);
+            }
         }
 
         if (!ft.registeredFontCount)

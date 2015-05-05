@@ -298,6 +298,11 @@
     <File path="..\dlib\dlib\math\vector.d" />
     <File path="..\dlib\dlib\coding\zlib.d" />
    </Folder>
+   <Folder name="fontconfig">
+    <File path="3rdparty\fontconfig\functions.d" />
+    <File path="3rdparty\fontconfig\package.d" />
+    <File path="3rdparty\fontconfig\types.d" />
+   </Folder>
    <Folder name="gl3n">
     <File path="..\gl3n\gl3n\aabb.d" />
     <File path="..\gl3n\gl3n\frustum.d" />

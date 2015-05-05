@@ -615,3 +615,223 @@ class FreeTypeFontManager : FontManager {
 }
 
 private int myabs(int n) { return n >= 0 ? n : -n; }
+
+
+
+bool registerFontConfigFonts(FreeTypeFontManager fontMan) {
+    import fontconfig;
+
+    try {
+        DerelictFC.load();
+    } catch (Exception e) {
+        Log.w("Cannot load FontConfig shared library");
+        return false;
+    }
+
+    FcFontSet *fontset;
+
+    FcObjectSet *os = FcObjectSetBuild(FC_FILE.toStringz, FC_WEIGHT.toStringz, FC_FAMILY.toStringz, 
+                                        FC_SLANT.toStringz, FC_SPACING.toStringz, FC_INDEX.toStringz, 
+                                        FC_STYLE.toStringz, null);
+    FcPattern *pat = FcPatternCreate();
+    //FcBool b = 1;
+    FcPatternAddBool(pat, FC_SCALABLE.toStringz, 1);
+
+    fontset = FcFontList(null, pat, os);
+
+    FcPatternDestroy(pat);
+    FcObjectSetDestroy(os);
+
+    int facesFound = 0;
+
+    // load fonts from file
+    //CRLog::debug("FONTCONFIG: %d font files found", fontset->nfont);
+    for(int i = 0; i < fontset.nfont; i++) {
+        const (FcChar8) *s = "".toStringz;
+        const (FcChar8) *family = "".toStringz;
+        const (FcChar8) *style = "".toStringz;
+        //FcBool b;
+        FcResult res;
+        //FC_SCALABLE
+        //res = FcPatternGetBool( fontset->fonts[i], FC_OUTLINE, 0, (FcBool*)&b);
+        //if(res != FcResultMatch)
+        //    continue;
+        //if ( !b )
+        //    continue; // skip non-scalable fonts
+        res = FcPatternGetString(fontset.fonts[i], FC_FILE.toStringz, 0, cast(FcChar8 **)&s);
+        if (res != FcResultMatch) {
+            continue;
+        }
+        string fn = fromStringz(s).dup;
+        string fn16 = toLower(fn);
+        if (!fn16.endsWith(".ttf") && !fn16.endsWith(".odf") && !fn16.endsWith(".otf") && !fn16.endsWith(".pfb") && !fn16.endsWith(".pfa")  ) {
+            continue;
+        }
+        int weight = FC_WEIGHT_MEDIUM;
+        res = FcPatternGetInteger(fontset.fonts[i], FC_WEIGHT.toStringz, 0, &weight);
+        if(res != FcResultMatch) {
+            //CRLog::debug("no FC_WEIGHT for %s", s);
+            //continue;
+        }
+        switch ( weight ) {
+        case FC_WEIGHT_THIN:          //    0
+            weight = 100;
+            break;
+        case FC_WEIGHT_EXTRALIGHT:    //    40
+        //case FC_WEIGHT_ULTRALIGHT        FC_WEIGHT_EXTRALIGHT
+            weight = 200;
+            break;
+        case FC_WEIGHT_LIGHT:         //    50
+        case FC_WEIGHT_BOOK:          //    75
+        case FC_WEIGHT_REGULAR:       //    80
+        //case FC_WEIGHT_NORMAL:            FC_WEIGHT_REGULAR
+            weight = 400;
+            break;
+        case FC_WEIGHT_MEDIUM:        //    100
+            weight = 500;
+            break;
+        case FC_WEIGHT_DEMIBOLD:      //    180
+        //case FC_WEIGHT_SEMIBOLD:          FC_WEIGHT_DEMIBOLD
+            weight = 600;
+            break;
+        case FC_WEIGHT_BOLD:          //    200
+            weight = 700;
+            break;
+        case FC_WEIGHT_EXTRABOLD:     //    205
+        //case FC_WEIGHT_ULTRABOLD:         FC_WEIGHT_EXTRABOLD
+            weight = 800;
+            break;
+        case FC_WEIGHT_BLACK:         //    210
+        //case FC_WEIGHT_HEAVY:             FC_WEIGHT_BLACK
+            weight = 900;
+            break;
+        case FC_WEIGHT_EXTRABLACK:    //    215
+        //case FC_WEIGHT_ULTRABLACK:        FC_WEIGHT_EXTRABLACK
+            weight = 900;
+            break;
+        default:
+            weight = 400;
+            break;
+        }
+        FcBool scalable = 0;
+        res = FcPatternGetBool(fontset.fonts[i], FC_SCALABLE.toStringz, 0, &scalable);
+        int index = 0;
+        res = FcPatternGetInteger(fontset.fonts[i], FC_INDEX.toStringz, 0, &index);
+        if(res != FcResultMatch) {
+            //CRLog::debug("no FC_INDEX for %s", s);
+            //continue;
+        }
+        res = FcPatternGetString(fontset.fonts[i], FC_FAMILY.toStringz, 0, cast(FcChar8 **)&family);
+        if(res != FcResultMatch) {
+            //CRLog::debug("no FC_FAMILY for %s", s);
+            continue;
+        }
+        res = FcPatternGetString(fontset.fonts[i], FC_STYLE.toStringz, 0, cast(FcChar8 **)&style);
+        if(res != FcResultMatch) {
+            //CRLog::debug("no FC_STYLE for %s", s);
+            style = "".toStringz;
+            //continue;
+        }
+        int slant = FC_SLANT_ROMAN;
+        res = FcPatternGetInteger(fontset.fonts[i], FC_SLANT.toStringz, 0, &slant);
+        if(res != FcResultMatch) {
+            //CRLog::debug("no FC_SLANT for %s", s);
+            //continue;
+        }
+        int spacing = 0;
+        res = FcPatternGetInteger(fontset.fonts[i], FC_SPACING.toStringz, 0, &spacing);
+        if(res != FcResultMatch) {
+            //CRLog::debug("no FC_SPACING for %s", s);
+            //continue;
+        }
+//                int cr_weight;
+//                switch(weight) {
+//                    case FC_WEIGHT_LIGHT: cr_weight = 200; break;
+//                    case FC_WEIGHT_MEDIUM: cr_weight = 300; break;
+//                    case FC_WEIGHT_DEMIBOLD: cr_weight = 500; break;
+//                    case FC_WEIGHT_BOLD: cr_weight = 700; break;
+//                    case FC_WEIGHT_BLACK: cr_weight = 800; break;
+//                    default: cr_weight=300; break;
+//                }
+        FontFamily fontFamily = FontFamily.SansSerif;
+        string face16 = family.fromStringz.toLower.dup;
+        if (spacing == FC_MONO)
+            fontFamily = FontFamily.MonoSpace;
+        else if (face16.indexOf("sans") >= 0)
+            fontFamily = FontFamily.SansSerif;
+        else if (face16.indexOf("serif") >= 0)
+            fontFamily = FontFamily.Serif;
+                
+        //css_ff_inherit,
+        //css_ff_serif,
+        //css_ff_sans_serif,
+        //css_ff_cursive,
+        //css_ff_fantasy,
+        //css_ff_monospace,
+        bool italic = (slant!=FC_SLANT_ROMAN);
+                
+        string face = family.fromStringz.dup;
+        string style16 = style.fromStringz.toLower.dup;
+        if (style16.indexOf("condensed") >= 0)
+            face ~= " Condensed";
+        else if (style16.indexOf("extralight") >= 0)
+            face ~= " Extra Light";
+
+        if (fontMan.registerFont(fn, fontFamily, face, italic, weight))
+            facesFound++;
+/*
+        LVFontDef def(
+            lString8((const char*)s),
+            -1, // height==-1 for scalable fonts
+            weight,
+            italic,
+            fontFamily,
+            face,
+            index
+        );
+
+        CRLog::debug("FONTCONFIG: Font family:%s style:%s weight:%d slant:%d spacing:%d file:%s", family, style, weight, slant, spacing, s);
+        if ( _cache.findDuplicate( &def ) ) {
+            CRLog::debug("is duplicate, skipping");
+            continue;
+        }
+        _cache.update( &def, LVFontRef(NULL) );
+
+        if ( scalable && !def.getItalic() ) {
+            LVFontDef newDef( def );
+            newDef.setItalic(2); // can italicize
+            if ( !_cache.findDuplicate( &newDef ) )
+                _cache.update( &newDef, LVFontRef(NULL) );
+        }
+                
+        */
+        facesFound++;
+                
+                
+    }
+
+    FcFontSetDestroy(fontset);
+
+
+    Log.i("FontConfig: ", facesFound, " font files registered");
+    //CRLog::info("FONTCONFIG: %d fonts registered", facesFound);
+
+    /+
+    string[] fallback_faces = [
+        "Arial Unicode MS",
+        "AR PL ShanHeiSun Uni",
+        "Liberation Sans"
+        // TODO: more faces
+    ];
+
+    for ( int i=0; fallback_faces[i]; i++ )
+        if ( SetFallbackFontFace(lString8(fallback_faces[i])) ) {
+            //CRLog::info("Fallback font %s is found", fallback_faces[i]);
+            break;
+        } else {
+            //CRLog::trace("Fallback font %s is not found", fallback_faces[i]);
+        }
+    +/
+
+    return facesFound > 0;
+}
