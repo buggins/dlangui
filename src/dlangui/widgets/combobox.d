@@ -207,14 +207,33 @@ class ComboBox : ComboBoxBase {
 
     @property void items(string[] itemResourceIds) {
         setAdapter(new StringListAdapter(itemResourceIds));
+        if(itemResourceIds.length > 0) {
+           selectedItemIndex = 0;
+        }
+        requestLayout();
     }
 
     @property void items(dstring[] items) {
         setAdapter(new StringListAdapter(items));
+        if(items.length > 0) {
+           selectedItemIndex = 0;
+        }
+        requestLayout();
     }
 
     @property void items(StringListValue[] items) {
         setAdapter(new StringListAdapter(items));
+        if(items.length > 0) {
+           selectedItemIndex = 0;
+        }
+        requestLayout();
+    }
+
+    /// get selected item as text
+    @property dstring selectedItem() {
+        if (_selectedItemIndex < 0 || _selectedItemIndex >= _adapter.itemCount)
+            return "";
+        return adapter.items.get(_selectedItemIndex);
     }
 
     /// returns list of items
