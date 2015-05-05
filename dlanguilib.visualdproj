@@ -53,8 +53,8 @@
   <cccmd>$(CC) -c</cccmd>
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>3rdparty ../DerelictGL3/source  ../DerelictUtil/source  ../DerelictFT/source ../de_image/source/interfaces ../de_image/source/png $(SolutionDir)/../dlib  $(SolutionDir)/../gl3n $(SolutionDir)/../DSFML/src</imppath>
-  <fileImppath>$(SolutionDir)/views $(SolutionDir)/views/res $(SolutionDir)/views/res/i18n $(SolutionDir)/views/res/mdpi $(SolutionDir)/views/res/hdpi</fileImppath>
+  <imppath>$(SolutionDir)/../dlangui/3rdparty $(SolutionDir)/../DerelictGL3/source  $(SolutionDir)/../DerelictUtil/source  $(SolutionDir)/../DerelictFT/source $(SolutionDir)/../de_image/source/interfaces $(SolutionDir)/../de_image/source/png $(SolutionDir)/../dlib</imppath>
+  <fileImppath>$(SolutionDir)/../dlangui/views $(SolutionDir)/../dlangui/views/res $(SolutionDir)/../dlangui/views/res/i18n $(SolutionDir)/../dlangui/views/res/mdpi  $(SolutionDir)/../dlangui/views/res/hdpi</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
@@ -72,7 +72,7 @@
   <debuglevel>0</debuglevel>
   <debugids>DebugFocus FontResources</debugids>
   <versionlevel>0</versionlevel>
-  <versionids>EmbedStandardResources Unicode USE_FREETYPE USE_OPENGL</versionids>
+  <versionids>EmbedStandardResources Unicode USE_FREETYPE</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>1</createImplib>
@@ -154,8 +154,8 @@
   <cccmd>$(CC) -c</cccmd>
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>3rdparty ../DerelictGL3/source  ../DerelictUtil/source  ../DerelictFT/source ../de_image/source/interfaces ../de_image/source/png $(SolutionDir)/../dlib</imppath>
-  <fileImppath>$(SolutionDir)/views $(SolutionDir)/views/res $(SolutionDir)/views/res/i18n $(SolutionDir)/views/res/mdpi</fileImppath>
+  <imppath>$(SolutionDir)/../dlangui/3rdparty $(SolutionDir)/../DerelictGL3/source  $(SolutionDir)/../DerelictUtil/source  $(SolutionDir)/../DerelictFT/source $(SolutionDir)/../de_image/source/interfaces $(SolutionDir)/../de_image/source/png $(SolutionDir)/../dlib</imppath>
+  <fileImppath>$(SolutionDir)/../dlangui/views $(SolutionDir)/../dlangui/views/res $(SolutionDir)/../dlangui/views/res/i18n $(SolutionDir)/../dlangui/views/res/mdpi  $(SolutionDir)/../dlangui/views/res/hdpi</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />

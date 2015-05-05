@@ -164,7 +164,7 @@ bool isFullyTransparentColor(uint color) pure nothrow {
 }
 
 /// decodes hex digit (0..9, a..f, A..F), returns uint.max if invalid
-uint decodeHexDigit(char ch) {
+uint decodeHexDigit(T)(T ch) {
     if (ch >= '0' && ch <= '9')
         return ch - '0';
     else if (ch >= 'a' && ch <= 'f')

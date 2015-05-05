@@ -342,6 +342,40 @@ class Tokenizer {
         return _token;
     }
 
+    protected ref const(Token) parseHex(int prefixLen) {
+        dchar ch = 0;
+        for (int i = 0; i < prefixLen; i++)
+            ch = skipChar();
+
+        uint n = decodeHexDigit(ch);
+        if (n == uint.max)
+            return parseError();
+
+        for(;;) {
+            ch = skipChar();
+            uint digit = decodeHexDigit(ch);
+            if (digit == uint.max)
+                break;
+            n = (n << 4) + digit;
+        }
+        string suffix;
+        if (ch == '%') {
+            suffix ~= ch;
+            ch = skipChar();
+        } else {
+            while (ch >= 'a' && ch <= 'z') {
+                suffix ~= ch;
+                ch = skipChar();
+            }
+        }
+        if (isAlphaNum(ch) || ch == '.')
+            return parseError();
+        _token.type = TokenType.integer;
+        _token.intvalue = n;
+        _token.text = suffix;
+        return _token;
+    }
+
     protected ref const(Token) parseNumber() {
         dchar ch = peekChar();
         uint n = ch - '0';
@@ -429,6 +463,10 @@ class Tokenizer {
             return parseString();
         if (isAlpha(ch))
             return parseIdent();
+        if (ch == '0' && peekNextChar == 'x')
+            return parseHex(2);
+        if (ch == '#')
+            return parseHex(1);
         if (isNum(ch))
             return parseNumber();
         if (ch == '.' && isNum(peekNextChar()))
@@ -821,7 +859,7 @@ class MLParser {
 
 /// Parse DlangUI ML code
 public Widget parseML(T = Widget)(string code, string filename = "", Widget context = null) {
-    MLParser parser = new MLParser(code, filename);
+    MLParser parser = new MLParser(code, filename, context);
     scope(exit) destroy(parser);
     Widget w = parser.parse();
     T res = cast(T) w;

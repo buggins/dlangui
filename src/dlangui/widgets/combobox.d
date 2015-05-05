@@ -151,6 +151,17 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
 		init();
     }
 
+    void setAdapter(ListAdapter adapter, bool ownAdapter = true) {
+        if (_adapter) {
+            if (_ownAdapter)
+                destroy(_adapter);
+            removeAllChildren();
+        }
+        _adapter = adapter;
+        _ownAdapter = ownAdapter;
+        init();
+    }
+
 	protected void init() {
         _body = createSelectedItemWidget();
         _body.onClickListener = this;
@@ -173,27 +184,46 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
 /** ComboBox with list of strings. */
 class ComboBox : ComboBoxBase {
     
-    protected StringListAdapter _adapter;
-
     /// empty parameter list constructor - for usage by factory
     this() {
         this(null);
     }
     /// create with ID parameter
     this(string ID) {
-        super(ID, (_adapter = new StringListAdapter()), true);
+        super(ID, new StringListAdapter(), true);
     }
 
     this(string ID, string[] items) {
-        super(ID, (_adapter = new StringListAdapter(items)), true);
+        super(ID, new StringListAdapter(items), true);
     }
 
     this(string ID, dstring[] items) {
-        super(ID, (_adapter = new StringListAdapter(items)), true);
+        super(ID, new StringListAdapter(items), true);
     }
 
     this(string ID, StringListValue[] items) {
-        super(ID, (_adapter = new StringListAdapter(items)), true);
+        super(ID, new StringListAdapter(items), true);
+    }
+
+    @property void items(string[] itemResourceIds) {
+        setAdapter(new StringListAdapter(itemResourceIds));
+    }
+
+    @property void items(dstring[] items) {
+        setAdapter(new StringListAdapter(items));
+    }
+
+    @property void items(StringListValue[] items) {
+        setAdapter(new StringListAdapter(items));
+    }
+
+    /// returns list of items
+    @property ref const(UIStringCollection) items() {
+        return (cast(StringListAdapter)_adapter).items;
+    }
+
+    @property StringListAdapter adapter() {
+        return cast(StringListAdapter)_adapter;
     }
 
     @property override dstring text() {
@@ -201,7 +231,7 @@ class ComboBox : ComboBoxBase {
     }
 
     @property override Widget text(dstring txt) {
-        int idx = _adapter.items.indexOf(txt);
+        int idx = adapter.items.indexOf(txt);
         if (idx >= 0) {
             selectedItemIndex = idx;
         } else {
@@ -213,7 +243,7 @@ class ComboBox : ComboBoxBase {
     }
 
     @property override Widget text(UIString txt) {
-        int idx = _adapter.items.indexOf(txt);
+        int idx = adapter.items.indexOf(txt);
         if (idx >= 0) {
             selectedItemIndex = idx;
         } else {
@@ -225,7 +255,7 @@ class ComboBox : ComboBoxBase {
     }
 
     override @property ComboBoxBase selectedItemIndex(int index) {
-        _body.text = _adapter.items[index];
+        _body.text = adapter.items[index];
 		return super.selectedItemIndex(index);
     }
 
