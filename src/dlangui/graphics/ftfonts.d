@@ -630,6 +630,9 @@ bool registerFontConfigFonts(FreeTypeFontManager fontMan) {
         return false;
     }
 
+    Log.i("Getting list of fonts using FontConfig");
+    long startts = currentTimeMillis();
+
     FcFontSet *fontset;
 
     FcObjectSet *os = FcObjectSetBuild(FC_FILE.toStringz, FC_WEIGHT.toStringz, FC_FAMILY.toStringz, 
@@ -815,7 +818,8 @@ bool registerFontConfigFonts(FreeTypeFontManager fontMan) {
     FcFontSetDestroy(fontset);
 
 
-    Log.i("FontConfig: ", facesFound, " font files registered");
+    long elapsed = currentTimeMillis - startts;
+    Log.i("FontConfig: ", facesFound, " font files registered in ", elapsed, "ms");
     //CRLog::info("FONTCONFIG: %d fonts registered", facesFound);
 
     /+
