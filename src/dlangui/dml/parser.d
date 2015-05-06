@@ -877,6 +877,12 @@ public Token[] tokenizeML(const(dstring[]) lines) {
 }
 
 /// tokenize source into array of tokens (excluding EOF)
+public Token[] tokenizeML(const(string[]) lines) {
+    string code = join(lines, "\n");
+    return tokenizeML(code);
+}
+
+/// tokenize source into array of tokens (excluding EOF)
 public Token[] tokenizeML(string code) {
     Token[] res;
     auto tokenizer = new Tokenizer(code, "");

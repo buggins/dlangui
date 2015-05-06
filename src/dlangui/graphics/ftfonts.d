@@ -571,29 +571,31 @@ class FreeTypeFontManager : FontManager {
 
 
     /// register freetype font by filename - optinally font properties can be passed if known (e.g. from libfontconfig).
-    bool registerFont(string filename, FontFamily family = FontFamily.SansSerif, string face = null, bool italic = false, int weight = 0) {
+    bool registerFont(string filename, FontFamily family = FontFamily.SansSerif, string face = null, bool italic = false, int weight = 0, bool dontLoadFile = false) {
         if (_library is null)
             return false;
         Log.d("FreeTypeFontManager.registerFont ", filename, " ", family, " ", face, " italic=", italic, " weight=", weight);
         if (!exists(filename) || !isFile(filename))
             return false;
 
-        FreeTypeFontFile font = new FreeTypeFontFile(_library, filename);
-        if (!font.open(24)) {
-            Log.e("Failed to open font ", filename);
-            destroy(font);
-            return false;
-        }
+        if (!dontLoadFile) {
+            FreeTypeFontFile font = new FreeTypeFontFile(_library, filename);
+            if (!font.open(24)) {
+                Log.e("Failed to open font ", filename);
+                destroy(font);
+                return false;
+            }
         
-        if (face == null || weight == 0) {
-            // properties are not set by caller
-            // get properties from loaded font
-            face = font.face;
-            italic = font.italic;
-            weight = font.weight;
-            debug(FontResources)Log.d("Using properties from font file: face=", face, " weight=", weight, " italic=", italic);
+            if (face == null || weight == 0) {
+                // properties are not set by caller
+                // get properties from loaded font
+                face = font.face;
+                italic = font.italic;
+                weight = font.weight;
+                debug(FontResources)Log.d("Using properties from font file: face=", face, " weight=", weight, " italic=", italic);
+            }
+		    destroy(font);
         }
-		destroy(font);
 
         FontDef def = FontDef(family, face, italic, weight);
         FontFileItem item = findFileItem(def);
@@ -777,7 +779,7 @@ bool registerFontConfigFonts(FreeTypeFontManager fontMan) {
         else if (style16.indexOf("extralight") >= 0)
             face ~= " Extra Light";
 
-        if (fontMan.registerFont(fn, fontFamily, face, italic, weight))
+        if (fontMan.registerFont(fn, fontFamily, face, italic, weight, true))
             facesFound++;
 /*
         LVFontDef def(
