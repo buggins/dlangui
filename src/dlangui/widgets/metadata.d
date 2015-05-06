@@ -54,7 +54,7 @@ WidgetSignalMetadata[] getSignalList(alias T)() {
 string generateMetadataClass(alias t)() {
     //pragma(msg, moduleName!t);
     import std.traits;
-    pragma(msg, getSignalList!t);
+    //pragma(msg, getSignalList!t);
     immutable string metadataClassName = t.stringof ~ "Metadata";
     return "class " ~ metadataClassName ~ " : WidgetMetadataDef { \n" ~
         "    override Widget create() {\n" ~
