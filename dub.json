@@ -27,6 +27,8 @@
 
     "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.", "--ex", "src.dlangui"],
 
+    "sourceFiles-windows": ["$PACKAGE_DIR/src/win_app.def"],
+
     "subPackages": [
         "./examples/helloworld/",
         "./examples/example1/",

@@ -99,3 +99,4 @@ string registerWidgets(T...)() {
 bool isWidgetClassName(string name) {
     return (name in _registeredWidgets) !is null;
 }
+
