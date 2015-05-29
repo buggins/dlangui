@@ -159,7 +159,15 @@ To develop using Visual-D or MonoD, download sources for dlabgui and dependencie
 
 Then open dlangui.sln using Visual D (or dlangui-monod.sln for MonoD)
 
+To avoid showing console window add win_app.def file to your package source directory and add line to your dub.json.
 
+win_app.def:
+
+	"sourceFiles": ["$PACKAGE_DIR/src/win_app.def"]
+
+dub.json:
+
+	"sourceFiles-windows": ["$PACKAGE_DIR/src/win_app.def"],
 
 
 Linux builds
