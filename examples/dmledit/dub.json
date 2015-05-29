@@ -11,6 +11,8 @@
     "targetName": "dmledit",
     "targetType": "executable",
 
+    "sourceFiles-windows": ["$PACKAGE_DIR/src/win_app.def"],
+
     "dependencies": {
         "dlangui": "*",
     }
