@@ -1592,7 +1592,7 @@ void initLogs() {
         debug {
     		Log.setFileLogger(std.stdio.File("ui.log", "w"));
         } else {
-            Log.setStderrLogger();
+            // no logging
         }
     } else {
         Log.setStderrLogger();
