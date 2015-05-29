@@ -1589,7 +1589,11 @@ void releaseResourcesOnAppExit() {
 /// initialize logging (for win32 - to file ui.log, for other platforms - stderr; log level is TRACE for debug builds, and WARN for release builds)
 void initLogs() {
     version (Windows) {
-		Log.setFileLogger(std.stdio.File("ui.log", "w"));
+        debug {
+    		Log.setFileLogger(std.stdio.File("ui.log", "w"));
+        } else {
+            Log.setStderrLogger();
+        }
     } else {
         Log.setStderrLogger();
     }
