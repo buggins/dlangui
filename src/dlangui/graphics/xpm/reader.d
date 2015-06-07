@@ -61,7 +61,7 @@ ColorDrawBuf parseXPM(const(ubyte)[] data)
     lines.popFront();
     
     //Read values
-    size_t w, h, ncols, cpp;
+    int w, h, ncols, cpp;
     while(!lines.empty) {
         auto str = extractXPMString(lines.front);
         
@@ -121,12 +121,12 @@ ColorDrawBuf parseXPM(const(ubyte)[] data)
     //Read pixels
     ColorDrawBuf colorBuf = new ColorDrawBuf(w, h);
     
-    for (size_t y = 0; y<h && !lines.empty; y++) {
+    for (int y = 0; y<h && !lines.empty; y++) {
         auto str = extractXPMString(lines.front);
         uint* dstLine = colorBuf.scanLine(y);
         if (str.length) {
             enforce(str.length >= w*cpp, "Invalid pixel line");
-            for (size_t x=0; x < w; x++) {
+            for (int x=0; x < w; x++) {
                 auto pixelStr = str[x*cpp..(x+1)*cpp];
                 auto colorPtr = xpmHash(pixelStr) in colorMap;
                 enforce(colorPtr, "Unknown pixel : '" ~ str ~ "'");
