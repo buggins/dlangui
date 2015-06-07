@@ -1,5 +1,14 @@
 module dlangui.graphics.xpm.reader;
 
+/**
+ * Reading .xpm files.
+ * 
+ * Copyright: Roman Chistokhodov, 2015
+ * License:   Boost License 1.0
+ * Authors:   Roman Chistokhodov, freeslave93@gmail.com
+ * 
+ */
+
 import dlangui.graphics.xpm.colors;
 
 import dlangui.graphics.colors;

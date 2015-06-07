@@ -64,8 +64,14 @@ ColorDrawBuf loadImage(immutable ubyte[] data, string filename) {
     import std.algorithm : endsWith;
     if (filename.endsWith(".xpm")) {
         import dlangui.graphics.xpm.reader;
-        
-        return parseXPM(data);
+        try {
+            return parseXPM(data);
+        }
+        catch(Exception e) {
+            Log.e("Failed to load image from file ", filename);
+            Log.e(to!string(e));
+            return null;
+        }
     }
     
     version (USE_DEIMAGE) {
