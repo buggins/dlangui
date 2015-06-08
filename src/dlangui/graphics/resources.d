@@ -142,11 +142,12 @@ struct EmbeddedResourceList {
         string png9name = name ~ ".9.png";
         string jpgname = name ~ ".jpg";
         string jpegname = name ~ ".jpeg";
+        string xpmname = name ~ ".xpm";
         // search backwards to allow overriding standard resources (which are added first)
         for (int i = cast(int)list.length - 1; i >= 0; i--) {
             string s = list[i].name;
             if (s.equal(xmlname) || s.equal(pngname) || s.equal(png9name) 
-                    || s.equal(jpgname) || s.equal(jpegname))
+                    || s.equal(jpgname) || s.equal(jpegname) || s.equal(xpmname))
                 return &list[i];
         }
         return null;
