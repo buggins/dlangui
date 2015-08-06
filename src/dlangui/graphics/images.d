@@ -153,7 +153,7 @@ version (USE_DLIBIMAGE) {
         for (int y = 0; y < h; y++) {
             uint * dstLine = buf.scanLine(y);
             for (int x = 0; x < w; x++) {
-                auto pixel = image[x, h - 1 - y].convert(8);
+                auto pixel = image[x, y].convert(8);
                 dstLine[x] = makeRGBA(pixel.r, pixel.g, pixel.b, 255 - pixel.a);
             }
         }
