@@ -21,7 +21,7 @@ import std.range;
 import std.exception;
 import std.format : formattedRead;
 
-private inout(char)[] extractXPMString(inout(char)[] str) {
+private const(char)[] extractXPMString(const(char)[] str) {
     auto firstIndex = str.indexOf('"');
     if (firstIndex != -1) {
         auto secondIndex = str.indexOf('"', firstIndex+1);

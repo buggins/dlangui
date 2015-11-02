@@ -477,7 +477,14 @@ extern (C) int UIAppMain(string[] args) {
               );
         destroy(w);
 
-		layout.childById("BTN1").click = delegate (Widget w) { Log.d("onClick ", w.id); return true; };
+		layout.childById("BTN1").click = delegate (Widget w) { 
+            Log.d("onClick ", w.id);
+            //w.backgroundImageId = null;
+            //w.backgroundColor = 0xFF00FF;
+            w.textColor = 0xFF00FF;
+            w.styleId = STYLE_BUTTON_NOMARGINS;
+            return true; 
+        };
 		layout.childById("BTN2").click = delegate (Widget w) { Log.d("onClick ", w.id); return true; };
 		layout.childById("BTN3").click = delegate (Widget w) { Log.d("onClick ", w.id); return true; };
 
