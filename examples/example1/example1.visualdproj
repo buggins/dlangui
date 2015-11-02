@@ -96,6 +96,7 @@
   <exefile>$(OutDir)\$(ProjectName).exe</exefile>
   <useStdLibPath>1</useStdLibPath>
   <cRuntime>2</cRuntime>
+  <privatePhobos>0</privatePhobos>
   <additionalOptions>-profile</additionalOptions>
   <preBuildCommand />
   <postBuildCommand />
@@ -197,6 +198,7 @@
   <exefile>$(OutDir)\$(ProjectName).exe</exefile>
   <useStdLibPath>1</useStdLibPath>
   <cRuntime>1</cRuntime>
+  <privatePhobos>0</privatePhobos>
   <additionalOptions />
   <preBuildCommand />
   <postBuildCommand />

@@ -773,6 +773,7 @@ class Win32Platform : Platform {
         {
             TranslateMessage(&msg);
             DispatchMessage(&msg);
+            destroyClosedWindows();
         }
         return cast(int)msg.wParam;
     }
@@ -788,7 +789,8 @@ class Win32Platform : Platform {
         Win32Window wnd = getWindow(hwnd);
         if (wnd) {
             _windowMap.remove(cast(ulong)hwnd);
-            destroy(window);
+            _windowsToDestroy ~= window;
+            //destroy(window);
         }
         return _windowMap.length > 0;
     }
@@ -823,13 +825,24 @@ class Win32Platform : Platform {
 			w.dispatchThemeChanged();
     }
 
-	Win32Window _windowToClose;
+    /// list of windows for deferred destroy in message loop
+	Win32Window[] _windowsToDestroy;
 
 	/// close window
 	override void closeWindow(Window w) {
 		Win32Window window = cast(Win32Window)w;
-		_windowToClose = window;
+        _windowsToDestroy ~= window;
+        SendMessage(window._hwnd, WM_CLOSE, 0, 0);
+        //window
 	}
+
+    /// destroy window objects planned for destroy
+    void destroyClosedWindows() {
+        foreach(Window w; _windowsToDestroy) {
+            destroy(w);
+        }
+        _windowsToDestroy.length = 0;
+    }
 
     /// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
     override dstring getClipboardText(bool mouseBuffer = false) {
@@ -1156,8 +1169,13 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             return 0;
         case WM_CLOSE:
 			if (window !is null) {
-                if (!window.handleCanClose())
+                bool canClose = window.handleCanClose();
+                if (!canClose) {
+                    Log.d("WM_CLOSE: canClose is false");
                     return 0; // prevent closing
+                }
+                Log.d("WM_CLOSE: closing window ");
+                //destroy(window);
             }
             // default handler inside DefWindowProc will close window
             break;
@@ -1167,13 +1185,6 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         default:
             //Log.d("Unhandled message ", message);
             break;
-    }
-    if (w32platform._windowToClose) {
-        Win32Window wnd = w32platform._windowToClose;
-        w32platform._windowToClose = null;
-        destroy(wnd);
-        //HWND w = w32platform._windowToClose._hwnd;
-        //CloseWindow(w);
     }
     return DefWindowProc(hwnd, message, wParam, lParam);
 }
