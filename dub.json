@@ -44,7 +44,7 @@
             "versions-posix": ["USE_SDL"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-                "dlib": "~>0.5.2",
+                "dlib": "~>0.7.0",
                 "derelict-gl3": "~>1.0.16",
                 "derelict-ft": "~>1.0.2",
                 "gl3n": "~>1.2.0"
@@ -64,7 +64,7 @@
             "versions": ["USE_SDL", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-                "dlib": "~>0.5.2",
+                "dlib": "~>0.7.0",
                 "derelict-gl3": "~>1.0.16",
                 "derelict-ft": "~>1.0.2",
                 "derelict-sdl2": "~>1.9.7",
@@ -84,7 +84,7 @@
             "versions": ["USE_DSFML", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-                "dlib": "~>0.5.2",
+                "dlib": "~>0.7.0",
                 "derelict-gl3": "~>1.0.16",
                 "derelict-ft": "~>1.0.2",
                 "gl3n": "~>1.2.0",
