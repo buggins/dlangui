@@ -70,11 +70,11 @@
   <doXGeneration>1</doXGeneration>
   <xfilename>$(IntDir)\$(TargetName).json</xfilename>
   <debuglevel>0</debuglevel>
-  <debugids />
+  <debugids>DebugFocus FontResources</debugids>
   <versionlevel>0</versionlevel>
   <versionids>EmbedStandardResources Unicode  USE_FREETYPE</versionids>
   <dump_source>0</dump_source>
-  <mapverbosity>3</mapverbosity>
+  <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
   <defaultlibname />
   <debuglibname />
@@ -90,7 +90,7 @@
   <objfiles />
   <linkswitches />
   <libfiles>dlangui.lib phobos.lib ole32.lib kernel32.lib user32.lib comctl32.lib comdlg32.lib shell32.lib</libfiles>
-  <libpaths>../../Debug ../../../DerelictOpenGL3/source</libpaths>
+  <libpaths>../../Debug</libpaths>
   <deffile />
   <resfile />
   <exefile>$(OutDir)\$(ProjectName).exe</exefile>

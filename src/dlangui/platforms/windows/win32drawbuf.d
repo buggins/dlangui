@@ -149,6 +149,10 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
     }
     /// fill with solid color
     override void fill(uint color) {
+        if (hasClipping) {
+            fillRect(_clipRect, color);
+            return;
+        }
         int len = _dx * _dy;
         //for (int i = 0; i < len; i++)
         //    _pixels[i] = color;

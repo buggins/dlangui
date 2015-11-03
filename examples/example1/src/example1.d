@@ -190,6 +190,7 @@ extern (C) int UIAppMain(string[] args) {
 
     // always use trace, even for release builds
     Log.setLogLevel(LogLevel.Trace);
+	Log.setFileLogger(std.stdio.File("ui.log", "w"));
 
     // resource directory search paths
     // not required if only embedded resources are used
@@ -875,6 +876,7 @@ void main()
 		CanvasWidget canvas = new CanvasWidget("canvas");
 		canvas.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
 		canvas.onDrawListener = delegate(CanvasWidget canvas, DrawBuf buf, Rect rc) {
+            Log.w("canvas.onDrawListener clipRect=" ~ to!string(buf.clipRect));
 			buf.fill(0xFFFFFF);
 			int x = rc.left;
 			int y = rc.top;

@@ -21,7 +21,6 @@ public import dlangui.core.types;
 import dlangui.core.logger;
 import dlangui.graphics.colors;
 
-
 /**
  * 9-patch image scaling information (see Android documentation).
  *
@@ -119,6 +118,9 @@ class DrawBuf : RefCountedObject {
     /// init clip rectangle to full buffer size
     void resetClipping() {
         _clipRect = Rect(0, 0, width, height);
+    }
+    @property bool hasClipping() {
+        return _clipRect.left != 0 || _clipRect.top != 0 || _clipRect.right != width || _clipRect.bottom != height;
     }
     /// returns clipping rectangle, when clipRect.isEmpty == true -- means no clipping.
     @property ref Rect clipRect() { return _clipRect; }
@@ -736,6 +738,10 @@ class GrayDrawBuf : DrawBuf {
         resetClipping();
     }
     override void fill(uint color) {
+        if (hasClipping) {
+            fillRect(_clipRect, color);
+            return;
+        }
         int len = _dx * _dy;
         ubyte * p = _buf.ptr;
         ubyte cl = rgbToGray(color);
@@ -961,6 +967,10 @@ class ColorDrawBuf : ColorDrawBufBase {
         resetClipping();
     }
     override void fill(uint color) {
+        if (hasClipping) {
+            fillRect(_clipRect, color);
+            return;
+        }
         int len = _dx * _dy;
         uint * p = _buf.ptr;
         for (int i = 0; i < len; i++)

@@ -90,6 +90,10 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
 
     /// fill the whole buffer with solid color (no clipping applied)
     override void fill(uint color) {
+        if (hasClipping) {
+            fillRect(_clipRect, color);
+            return;
+        }
         assert(_scene !is null);
         _scene.add(new SolidRectSceneItem(Rect(0, 0, _dx, _dy), applyAlpha(color)));
     }
