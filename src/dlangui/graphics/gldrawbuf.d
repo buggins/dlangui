@@ -149,6 +149,20 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
         }
     }
 
+	/// draw line from point p1 to p2 with specified color
+	override void drawLine(Point p1, Point p2, uint colour) {
+        assert(_scene !is null);
+		if (p1.x < _clipRect.left && p2.x < _clipRect.left)
+			return;
+		if (p1.y < _clipRect.top && p2.y < _clipRect.top)
+			return;
+		if (p1.x >= _clipRect.right && p2.x >= _clipRect.right)
+			return;
+		if (p1.y >= _clipRect.bottom && p2.y >= _clipRect.bottom)
+			return;
+        _scene.add(new LineSceneItem(p1, p2, colour));
+    }
+
     /// cleanup resources
     override void clear() {
         if (_framebuffer) {
@@ -855,6 +869,20 @@ private class GLGlyphCache {
 
 
 
+
+class LineSceneItem : SceneItem {
+    Point _p1;
+    Point _p2;
+    uint _color;
+    this(Point p1, Point p2, uint color) {
+        _p1 = p1;
+        _p2 = p2;
+        _color = color;
+    }
+    override void draw() {
+        glSupport.drawLine(_p1, _p2, _color, _color);
+    }
+}
 
 
 class SolidRectSceneItem : SceneItem {

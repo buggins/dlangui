@@ -343,6 +343,67 @@ class SolidFillProgram : GLProgram {
     }
 }
 
+class LineProgram : SolidFillProgram {
+    override bool execute(float[] vertices, float[] colors) {
+        if (error)
+            return false;
+        if (!initialized)
+            if (!compile())
+                return false;
+        beforeExecute();
+
+        GLuint vao;
+        glGenVertexArrays(1, &vao);
+        glBindVertexArray(vao);
+
+        GLuint vbo;
+        glGenBuffers(1, &vbo);
+        glBindBuffer(GL_ARRAY_BUFFER, vbo);
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            vertices.length * vertices[0].sizeof + colors.length * colors[0].sizeof,
+            null,
+            GL_STREAM_DRAW);
+        glBufferSubData(
+            GL_ARRAY_BUFFER,
+            0,
+            vertices.length * vertices[0].sizeof,
+            vertices.ptr);
+        glBufferSubData(
+            GL_ARRAY_BUFFER,
+            vertices.length * vertices[0].sizeof,
+            colors.length * colors[0].sizeof, 
+            colors.ptr);
+
+        glEnableVertexAttribArray(vertexLocation);
+        checkError("glEnableVertexAttribArray");
+        glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
+        checkError("glVertexAttribPointer");
+
+        glEnableVertexAttribArray(colAttrLocation);
+        checkError("glEnableVertexAttribArray");
+        glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, cast(void*) (float.sizeof*3*2));
+        checkError("glVertexAttribPointer");
+
+        glDrawArrays(GL_LINES, 0, 2);
+        checkError("glDrawArrays");
+
+        glDisableVertexAttribArray(vertexLocation);
+        checkError("glDisableVertexAttribArray");
+        glDisableVertexAttribArray(colAttrLocation);
+        checkError("glDisableVertexAttribArray");
+
+        afterExecute();
+
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+        glDeleteBuffers(1, &vbo);
+
+        glBindVertexArray(0);
+        glDeleteVertexArrays(1, &vao);
+        return true;
+    }
+}
+
 class TextureProgram : SolidFillProgram {
     @property override string vertexSource() {
         return q{
@@ -605,10 +666,11 @@ class GLSupport {
 
     TextureProgram _textureProgram;
     SolidFillProgram _solidFillProgram;
+    LineProgram _lineProgram;
     FontProgram _fontProgram;
 
     @property bool valid() {
-        return _textureProgram && _solidFillProgram && _fontProgram;
+        return _textureProgram && _solidFillProgram && _fontProgram && _lineProgram;
     }
 
     bool initShaders() {
@@ -616,6 +678,12 @@ class GLSupport {
             Log.v("Compiling solid fill program");
             _solidFillProgram = new SolidFillProgram();
             if (!_solidFillProgram.compile())
+                return false;
+        }
+        if (_lineProgram is null) {
+            Log.v("Compiling line program");
+            _lineProgram = new LineProgram();
+            if (!_lineProgram.compile())
                 return false;
         }
         if (_textureProgram is null) {
@@ -639,6 +707,10 @@ class GLSupport {
         if (_solidFillProgram !is null) {
             destroy(_solidFillProgram);
 		    _solidFillProgram = null;
+        }
+        if (_lineProgram !is null) {
+            destroy(_lineProgram);
+		    _lineProgram = null;
         }
         if (_textureProgram !is null) {
             destroy(_textureProgram);
@@ -674,6 +746,33 @@ class GLSupport {
         matrix2.copyDataTo(m);
         */
     }
+
+    void drawLine(Point p1, Point p2, uint color1, uint color2) {
+        float[2 * 4] colors;
+        LVGLFillColor(color1, colors.ptr + 4*0, 1);
+        LVGLFillColor(color2, colors.ptr + 4*1, 1);
+        float x0 = cast(float)(p1.x);
+        float y0 = cast(float)(bufferDy-p1.y);
+        float x1 = cast(float)(p2.x);
+        float y1 = cast(float)(bufferDy-p2.y);
+
+        // don't flip for framebuffer
+        if (currentFramebufferId) {
+            y0 = cast(float)(p1.y);
+            y1 = cast(float)(p2.y);
+        }
+
+        float[3 * 2] vertices = [
+            x0,y0,Z_2D,
+            x1,y1,Z_2D
+        ];
+        if (_lineProgram !is null) {
+            //Log.d("solid fill: vertices ", vertices, " colors ", colors);
+            _lineProgram.execute(vertices, colors);
+        } else
+            Log.e("No program");
+    }
+
     static immutable float Z_2D = -2.0f;
     void drawSolidFillRect(Rect rc, uint color1, uint color2, uint color3, uint color4) {
         float[6 * 4] colors;
