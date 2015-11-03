@@ -152,14 +152,8 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
 	/// draw line from point p1 to p2 with specified color
 	override void drawLine(Point p1, Point p2, uint colour) {
         assert(_scene !is null);
-		if (p1.x < _clipRect.left && p2.x < _clipRect.left)
-			return;
-		if (p1.y < _clipRect.top && p2.y < _clipRect.top)
-			return;
-		if (p1.x >= _clipRect.right && p2.x >= _clipRect.right)
-			return;
-		if (p1.y >= _clipRect.bottom && p2.y >= _clipRect.bottom)
-			return;
+        if (!clipLine(_clipRect, p1, p2))
+            return;
         _scene.add(new LineSceneItem(p1, p2, colour));
     }
 
