@@ -59,7 +59,7 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
     override void saveConfiguration() {
     }
     override void restoreConfiguration() {
-        glSupport.setOrthoProjection(_dx, _dy);
+        glSupport.setOrthoProjection(Rect(0, 0, _dx, _dy));
     }
 
     /// reserved for hardware-accelerated drawing - begins drawing batch
@@ -74,7 +74,7 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
 
     /// reserved for hardware-accelerated drawing - ends drawing batch
     override void afterDrawing() {
-        glSupport.setOrthoProjection(_dx, _dy);
+        glSupport.setOrthoProjection(Rect(0, 0, _dx, _dy));
         _scene.draw();
         glSupport.flushGL();
         destroy(_scene);

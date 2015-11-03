@@ -1089,13 +1089,53 @@ class GLSupport {
                 qtmatrix[y * 4 + x] = m[y][x];
     }
 
-    void setOrthoProjection(int dx, int dy) {
-        bufferDx = dx;
-        bufferDy = dy;
-        QMatrix4x4_ortho(0, dx, 0, dy, 0.5f, 50.0f);
-        glViewport(0, 0, dx, dy);
+    void QMatrix4x4_perspective(float angle, float aspect, float nearPlane, float farPlane)
+    {
+        import std.math;
+        // Bail out if the projection volume is zero-sized.
+        if (nearPlane == farPlane || aspect == 0.0f)
+            return;
+
+        // Construct the projection.
+        float[4][4] m;
+        float radians = (angle / 2.0f) * PI / 180.0f;
+        float sine = sin(radians);
+        if (sine == 0.0f)
+            return;
+        float cotan = cos(radians) / sine;
+        float clip = farPlane - nearPlane;
+        m[0][0] = cotan / aspect;
+        m[1][0] = 0.0f;
+        m[2][0] = 0.0f;
+        m[3][0] = 0.0f;
+        m[0][1] = 0.0f;
+        m[1][1] = cotan;
+        m[2][1] = 0.0f;
+        m[3][1] = 0.0f;
+        m[0][2] = 0.0f;
+        m[1][2] = 0.0f;
+        m[2][2] = -(nearPlane + farPlane) / clip;
+        m[3][2] = -(2.0f * nearPlane * farPlane) / clip;
+        m[0][3] = 0.0f;
+        m[1][3] = 0.0f;
+        m[2][3] = -1.0f;
+        m[3][3] = 0.0f;
+
+        for (int y = 0; y < 4; y++)
+            for (int x = 0; x < 4; x++)
+                qtmatrix[y * 4 + x] = m[y][x];
+    }
+
+    void setOrthoProjection(Rect view) {
+        bufferDx = view.width;
+        bufferDy = view.height;
+        QMatrix4x4_ortho(view.left, view.right, view.top, view.bottom, 0.5f, 50.0f);
+        glViewport(view.left, view.top, view.right, view.bottom);
         checkError("glViewport");
     }
 
+    void setPerspectiveProjection(float fieldOfView, float aspectRatio, float nearPlane, float farPlane) {
+        // TODO
+    }
 }
 
