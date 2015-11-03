@@ -21,8 +21,8 @@ import dlangui.core.logger;
 import dlangui.core.signals;
 import dlangui.core.collections;
 import dlangui.core.linestream;
+import dlangui.core.streams;
 import std.algorithm;
-import std.stream;
 import std.conv : to;
 
 // uncomment FileFormats debug symbol to dump file formats for loaded/saved files.
@@ -1379,7 +1379,7 @@ class EditableContent {
     bool load(string filename) {
         clear();
         try {
-            std.stream.File f = new std.stream.File(filename);
+            InputStream f = new FileInputStream(filename);
             scope(exit) { f.close(); }
             return load(f, filename);
         } catch (Exception e) {
@@ -1418,7 +1418,7 @@ class EditableContent {
         if (!filename)
             filename = _filename;
         try {
-            std.stream.File f = new std.stream.File(filename, FileMode.OutNew);
+            OutputStream f = new FileOutputStream(filename);
             scope(exit) { f.close(); }
             return save(f, filename, format);
         } catch (Exception e) {

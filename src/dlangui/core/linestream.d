@@ -50,7 +50,8 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.core.linestream;
 
-import std.stream;
+import dlangui.core.streams;
+//import std.stream;
 import std.stdio;
 import std.conv;
 import std.utf;
@@ -128,7 +129,7 @@ class OutputLineStream {
 
     protected void flush() {
         if (_len > 0) {
-            _stream.writeExact(_buf.ptr, _len);
+            _stream.write(cast(ubyte[])_buf[0 .. _len]);
             _len = 0;
         }
     }
@@ -483,7 +484,7 @@ class LineStream {
 		data[0] = 0xEF;
 		data[1] = 0xBB;
 		data[2] = 0xBF;
-		MemoryStream stream = new MemoryStream(data);
+		InputStream stream = new MemoryInputStream(data); //new MemoryStream(data);
 		return create(stream, filename);
 	}
 	

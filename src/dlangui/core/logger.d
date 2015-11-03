@@ -32,7 +32,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 module dlangui.core.logger;
 
 import std.stdio;
-import std.datetime;
+import std.datetime : SysTime, Clock;
 
 /// Log levels
 enum LogLevel : int {
@@ -117,7 +117,7 @@ synchronized class Log {
     void log(S...)(LogLevel level, S args) {
         if (logLevel >= level && logFile.isOpen) {
             SysTime ts = Clock.currTime();
-            logFile.writef("%04d-%02d-%02d %02d:%02d:%02d.%03d %s  ", ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second, ts.fracSec.msecs, logLevelName(level));
+            logFile.writef("%04d-%02d-%02d %02d:%02d:%02d.%03d %s  ", ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second, ts.fracSecs.split!("msecs").msecs, logLevelName(level));
             logFile.writeln(args);
             logFile.flush();
         }

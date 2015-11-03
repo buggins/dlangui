@@ -514,7 +514,7 @@ struct ButtonDetails {
         return _doubleClick;
     }
 
-    static final long DOUBLE_CLICK_THRESHOLD_MS = 200;
+    static long DOUBLE_CLICK_THRESHOLD_MS = 200;
 
 
     void reset() {

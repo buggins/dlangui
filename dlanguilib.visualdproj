@@ -383,6 +383,7 @@
      <File path="src\dlangui\core\settings.d" />
      <File path="src\dlangui\core\signals.d" />
      <File path="src\dlangui\core\stdaction.d" />
+     <File path="src\dlangui\core\streams.d" />
      <File path="src\dlangui\core\textsource.d" />
      <File path="src\dlangui\core\types.d" />
     </Folder>
@@ -398,15 +399,15 @@
      <File path="src\dlangui\dml\parser.d" />
     </Folder>
     <Folder name="graphics">
-     <Folder name="xpm">
-      <File path="src\dlangui\graphics\xpm\colors.d" />
-      <File path="src\dlangui\graphics\xpm\reader.d" />
-     </Folder>
      <Folder name="scene">
       <File path="src\dlangui\graphics\scene\camera.d" />
       <File path="src\dlangui\graphics\scene\node.d" />
       <File path="src\dlangui\graphics\scene\scene3d.d" />
       <File path="src\dlangui\graphics\scene\transform.d" />
+     </Folder>
+     <Folder name="xpm">
+      <File path="src\dlangui\graphics\xpm\colors.d" />
+      <File path="src\dlangui\graphics\xpm\reader.d" />
      </Folder>
      <File path="src\dlangui\graphics\colors.d" />
      <File path="src\dlangui\graphics\drawbuf.d" />

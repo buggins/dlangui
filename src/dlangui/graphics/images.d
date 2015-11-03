@@ -40,7 +40,7 @@ import dlangui.core.logger;
 import dlangui.core.types;
 import dlangui.graphics.colors;
 import dlangui.graphics.drawbuf;
-import std.stream;
+import dlangui.core.streams;
 import std.path;
 import std.conv : to;
 

@@ -36,7 +36,7 @@ import dlangui.graphics.colors;
 public import dlangui.core.editable;
 
 import std.algorithm;
-import std.stream;
+import dlangui.core.streams;
 
 /// Modified state change listener
 interface ModifiedStateListener {
