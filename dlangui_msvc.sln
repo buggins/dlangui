@@ -30,6 +30,11 @@ Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "tetris", "examples\tetris\t
 		{52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5} = {52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5}
 	EndProjectSection
 EndProject
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dlangide", "..\dlangide\dlangide_msvc.visualdproj", "{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5} = {52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -86,6 +91,12 @@ Global
 		{954B6A84-1EEC-42B0-B215-2A17842B1101}.Release|Win32.Build.0 = Release|Win32
 		{954B6A84-1EEC-42B0-B215-2A17842B1101}.Release|x64.ActiveCfg = Release|x64
 		{954B6A84-1EEC-42B0-B215-2A17842B1101}.Release|x64.Build.0 = Release|x64
+		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.Debug|Win32.ActiveCfg = Debug|Win32
+		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.Debug|Win32.Build.0 = Debug|Win32
+		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.Debug|x64.ActiveCfg = Debug|x64
+		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.Release|Win32.ActiveCfg = Release|Win32
+		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.Release|Win32.Build.0 = Release|Win32
+		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.Release|x64.ActiveCfg = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

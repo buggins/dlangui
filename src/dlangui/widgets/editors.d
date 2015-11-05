@@ -1790,6 +1790,8 @@ class EditBox : EditWidgetBase {
             _numVisibleLines = 1;
         if (_firstVisibleLine + _numVisibleLines > _content.length)
             _numVisibleLines = _content.length - _firstVisibleLine;
+        if (_numVisibleLines < 1)
+            _numVisibleLines = 1;
         _visibleLines.length = _numVisibleLines;
         if (_visibleLinesMeasurement.length < _numVisibleLines)
             _visibleLinesMeasurement.length = _numVisibleLines;
