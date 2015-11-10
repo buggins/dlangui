@@ -229,7 +229,7 @@
   <isSolaris>0</isSolaris>
   <scheduler>0</scheduler>
   <useDeprecated>0</useDeprecated>
-  <errDeprecated>0</errDeprecated>
+  <errDeprecated>1</errDeprecated>
   <useAssert>0</useAssert>
   <useInvariants>0</useInvariants>
   <useIn>0</useIn>
@@ -241,14 +241,14 @@
   <useInline>0</useInline>
   <release>0</release>
   <preservePaths>0</preservePaths>
-  <warnings>0</warnings>
+  <warnings>1</warnings>
   <infowarnings>0</infowarnings>
   <checkProperty>0</checkProperty>
   <genStackFrame>0</genStackFrame>
   <pic>0</pic>
   <cov>0</cov>
   <nofloat>0</nofloat>
-  <Dversion>2.043</Dversion>
+  <Dversion>2</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
   <allinst>0</allinst>
   <stackStomp>0</stackStomp>
@@ -314,7 +314,7 @@
   <multiobj>0</multiobj>
   <singleFileCompilation>0</singleFileCompilation>
   <oneobj>0</oneobj>
-  <mscoff>0</mscoff>
+  <mscoff>1</mscoff>
   <trace>0</trace>
   <quiet>0</quiet>
   <verbose>0</verbose>
@@ -331,7 +331,7 @@
   <isSolaris>0</isSolaris>
   <scheduler>0</scheduler>
   <useDeprecated>0</useDeprecated>
-  <errDeprecated>0</errDeprecated>
+  <errDeprecated>1</errDeprecated>
   <useAssert>0</useAssert>
   <useInvariants>0</useInvariants>
   <useIn>0</useIn>
@@ -343,14 +343,14 @@
   <useInline>1</useInline>
   <release>1</release>
   <preservePaths>0</preservePaths>
-  <warnings>0</warnings>
+  <warnings>1</warnings>
   <infowarnings>0</infowarnings>
   <checkProperty>0</checkProperty>
   <genStackFrame>0</genStackFrame>
   <pic>0</pic>
   <cov>0</cov>
   <nofloat>0</nofloat>
-  <Dversion>2.043</Dversion>
+  <Dversion>2</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
   <allinst>0</allinst>
   <stackStomp>0</stackStomp>
@@ -523,6 +523,7 @@
     <File path="3rdparty\win32\olectlid.d" />
     <File path="3rdparty\win32\oleidl.d" />
     <File path="3rdparty\win32\prsht.d" />
+    <File path="3rdparty\win32\psapi.d" />
     <File path="3rdparty\win32\readme.txt" />
     <File path="3rdparty\win32\rpc.d" />
     <File path="3rdparty\win32\rpcdce.d" />
@@ -584,6 +585,42 @@
      <File path="src\dlangui\dml\dmlhighlight.d" />
      <File path="src\dlangui\dml\parser.d" />
     </Folder>
+    <Folder name="graphics">
+     <Folder name="scene">
+      <File path="src\dlangui\graphics\scene\camera.d" />
+      <File path="src\dlangui\graphics\scene\node.d" />
+      <File path="src\dlangui\graphics\scene\scene3d.d" />
+      <File path="src\dlangui\graphics\scene\transform.d" />
+     </Folder>
+     <Folder name="xpm">
+      <File path="src\dlangui\graphics\xpm\colors.d" />
+      <File path="src\dlangui\graphics\xpm\reader.d" />
+     </Folder>
+     <File path="src\dlangui\graphics\colors.d" />
+     <File path="src\dlangui\graphics\drawbuf.d" />
+     <File path="src\dlangui\graphics\fonts.d" />
+     <File path="src\dlangui\graphics\ftfonts.d" />
+     <File path="src\dlangui\graphics\gldrawbuf.d" />
+     <File path="src\dlangui\graphics\glsupport.d" />
+     <File path="src\dlangui\graphics\images.d" />
+     <File path="src\dlangui\graphics\resources.d" />
+    </Folder>
+    <Folder name="platforms">
+     <Folder name="common">
+      <File path="src\dlangui\platforms\common\platform.d" />
+     </Folder>
+     <Folder name="dsfml">
+      <File path="src\dlangui\platforms\dsfml\dsfmlapp.d" />
+     </Folder>
+     <Folder name="sdl">
+      <File path="src\dlangui\platforms\sdl\sdlapp.d" />
+     </Folder>
+     <Folder name="windows">
+      <File path="src\dlangui\platforms\windows\win32drawbuf.d" />
+      <File path="src\dlangui\platforms\windows\win32fonts.d" />
+      <File path="src\dlangui\platforms\windows\winapp.d" />
+     </Folder>
+    </Folder>
     <Folder name="widgets">
      <File path="src\dlangui\widgets\appframe.d" />
      <File path="src\dlangui\widgets\combobox.d" />
@@ -605,42 +642,6 @@
      <File path="src\dlangui\widgets\tree.d" />
      <File path="src\dlangui\widgets\widget.d" />
      <File path="src\dlangui\widgets\winframe.d" />
-    </Folder>
-    <Folder name="platforms">
-     <Folder name="common">
-      <File path="src\dlangui\platforms\common\platform.d" />
-     </Folder>
-     <Folder name="dsfml">
-      <File path="src\dlangui\platforms\dsfml\dsfmlapp.d" />
-     </Folder>
-     <Folder name="sdl">
-      <File path="src\dlangui\platforms\sdl\sdlapp.d" />
-     </Folder>
-     <Folder name="windows">
-      <File path="src\dlangui\platforms\windows\win32drawbuf.d" />
-      <File path="src\dlangui\platforms\windows\win32fonts.d" />
-      <File path="src\dlangui\platforms\windows\winapp.d" />
-     </Folder>
-    </Folder>
-    <Folder name="graphics">
-     <Folder name="xpm">
-      <File path="src\dlangui\graphics\xpm\colors.d" />
-      <File path="src\dlangui\graphics\xpm\reader.d" />
-     </Folder>
-     <Folder name="scene">
-      <File path="src\dlangui\graphics\scene\camera.d" />
-      <File path="src\dlangui\graphics\scene\node.d" />
-      <File path="src\dlangui\graphics\scene\scene3d.d" />
-      <File path="src\dlangui\graphics\scene\transform.d" />
-     </Folder>
-     <File path="src\dlangui\graphics\colors.d" />
-     <File path="src\dlangui\graphics\drawbuf.d" />
-     <File path="src\dlangui\graphics\fonts.d" />
-     <File path="src\dlangui\graphics\ftfonts.d" />
-     <File path="src\dlangui\graphics\gldrawbuf.d" />
-     <File path="src\dlangui\graphics\glsupport.d" />
-     <File path="src\dlangui\graphics\images.d" />
-     <File path="src\dlangui\graphics\resources.d" />
     </Folder>
     <File path="src\dlangui\package.d" />
    </Folder>

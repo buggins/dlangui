@@ -368,9 +368,52 @@ struct Cup {
         return 1;
     }
 
+    /// 1 == next cell below is occupied, 2 == one empty cell
+    private int distanceToOccupiedCellBelowForGroup(int group) {
+        int minDistanceFound = 0;
+        for (int y = 0; y < _rows; y++) {
+            for (int x = 0; x < _cols; x++) {
+                if (cellGroup(x, y) != group)
+                    continue;
+                if (y == 0)
+                    return 1; // right below
+                if (this[x, y - 1] != EMPTY) // check only lowest cell of group
+                    continue;
+                int dist = 0;
+                for (int d = 1; y - d >= 0; d++) {
+                    if (this[x, y - d] == EMPTY) {
+                        dist = d + 1;
+                    } else {
+                        // reached non-empty cell
+                        if (cellGroup(x, y - d) == group) {
+                            // non-empty cell of the same group after empty space - ignore
+                            dist = 0;
+                        }
+                        break;
+                    }
+                }
+                if (dist > 0) {
+                    // found some empty space below
+                    if (minDistanceFound == 0 || minDistanceFound > dist)
+                        minDistanceFound = dist;
+                }
+            }
+        }
+        if (minDistanceFound == 0)
+            return 1;
+        return minDistanceFound;
+    }
+
     /// mark cells in _cellGroups[] matrix which can fall down (value > 0 is distance to fall)
     bool markFallingCells() {
-        _cellGroups = new int[_cols * _rows];
+        // clear cellGroups matrix
+        if (_cellGroups.length != _cols * _rows) {
+            _cellGroups = new int[_cols * _rows];
+        } else {
+            foreach(ref cell; _cellGroups)
+                cell = 0;
+        }
+        // find and mark all groups
         int groupId = 1;
         for (int y = 0; y < _rows; y++) {
             for (int x = 0; x < _cols; x++) {
@@ -382,18 +425,23 @@ struct Cup {
         }
         // check space below each group - can it fall down?
         int[] spaceBelowGroup = new int[groupId];
-        for (int y = 0; y < _rows; y++) {
-            for (int x = 0; x < _cols; x++) {
-                int group = cellGroup(x, y);
-                if (group > 0) {
-                    if (y == 0)
-                        spaceBelowGroup[group] = 1;
-                    else if (this[x, y - 1] != EMPTY && cellGroup(x, y - 1) != group)
-                        spaceBelowGroup[group] = 1;
-                    else if (this[x, y - 1] == EMPTY) {
-                        int dist = distanceToOccupiedCellBelow(x, y);
-                        if (spaceBelowGroup[group] == 0 || spaceBelowGroup[group] > dist)
-                            spaceBelowGroup[group] = dist;
+        static if (true) {
+            for (int i = 1; i < groupId; i++)
+                spaceBelowGroup[i] = distanceToOccupiedCellBelowForGroup(i);
+        } else {
+            for (int y = 0; y < _rows; y++) {
+                for (int x = 0; x < _cols; x++) {
+                    int group = cellGroup(x, y);
+                    if (group > 0) {
+                        if (y == 0)
+                            spaceBelowGroup[group] = 1;
+                        else if (this[x, y - 1] != EMPTY && cellGroup(x, y - 1) != group)
+                            spaceBelowGroup[group] = 1;
+                        else if (this[x, y - 1] == EMPTY) {
+                            int dist = distanceToOccupiedCellBelow(x, y);
+                            if (spaceBelowGroup[group] == 0 || spaceBelowGroup[group] > dist)
+                                spaceBelowGroup[group] = dist;
+                        }
                     }
                 }
             }
