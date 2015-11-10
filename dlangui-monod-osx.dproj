@@ -2,24 +2,17 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
     <ProjectGuid>{1CC7C43E-7B39-4AFC-A45B-F1D9F582CF6D}</ProjectGuid>
-    <BaseDirectory>.</BaseDirectory>
     <Compiler>DMD2</Compiler>
     <PreferOneStepBuild>true</PreferOneStepBuild>
     <UseDefaultCompiler>true</UseDefaultCompiler>
     <IncrementalLinking>true</IncrementalLinking>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Debug</OutputPath>
-    <ObjectsDirectory>obj/Debug</ObjectsDirectory>
-    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
-    <UnittestMode>false</UnittestMode>
-    <OutputName>libdlangui-monod-osx</OutputName>
-    <Target>StaticLibrary</Target>
-    <Externalconsole>true</Externalconsole>
-    <DebugLevel>0</DebugLevel>
+    <Includes>
+      <Includes>
+        <Path>dlangui/src</Path>
+      </Includes>
+    </Includes>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release</OutputPath>
@@ -39,6 +32,25 @@
     <UnittestMode>true</UnittestMode>
     <OutputName>libdlangui-monod-osx</OutputName>
     <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_SDL</String>
+        <String>USE_OPENGL</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/Debug</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>libdlangui-monod-osx</OutputName>
+    <Target>StaticLibrary</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
@@ -171,5 +183,6 @@
     <Compile Include="3rdparty\fontconfig\functions.d" />
     <Compile Include="3rdparty\fontconfig\package.d" />
     <Compile Include="3rdparty\fontconfig\types.d" />
+    <Compile Include="src\dlangui\package.d" />
   </ItemGroup>
 </Project>
