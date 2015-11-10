@@ -155,7 +155,7 @@ To develop using Visual-D or MonoD, download sources for dlabgui and dependencie
         git clone https://github.com/DerelictOrg/DerelictSDL2.git
         git clone https://github.com/gecko0307/dlib.git
         git clone https://github.com/Devisualization/image.git de_image
-  
+        git clone https://github.com/Dav1dde/gl3n.git
 
 Then open dlangui.sln using Visual D (or dlangui-monod.sln for MonoD)
 
@@ -168,6 +168,39 @@ win_app.def:
 dub.json:
 
 	"sourceFiles-windows": ["$PACKAGE_DIR/src/win_app.def"],
+
+
+Mac OSX development using Mono-D
+--------------------------------
+
+DMD, DUB, git, MonoDevelop with Mono-D plugin must be installed
+
+
+Clone DlangUI repository
+
+        git clone https://github.com/buggins/dlangui.git
+
+Enter dlangui directory
+
+		cd dlangui
+
+Clone dependency libraries
+
+		mkdir deps
+		cd deps
+        git clone https://github.com/buggins/dlangui.git
+        git clone https://github.com/DerelictOrg/DerelictUtil.git
+        git clone https://github.com/DerelictOrg/DerelictGL3.git
+        git clone https://github.com/DerelictOrg/DerelictFT.git
+        git clone https://github.com/DerelictOrg/DerelictSDL2.git
+        git clone https://github.com/gecko0307/dlib.git
+        git clone https://github.com/Devisualization/image.git de_image
+        git clone https://github.com/Dav1dde/gl3n.git
+
+Open solution file with Mono-D	
+
+		dlangui-monod-osx.sln
+
 
 
 Linux builds
