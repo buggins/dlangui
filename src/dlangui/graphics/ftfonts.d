@@ -461,6 +461,17 @@ class FreeTypeFont : Font {
     @property override bool isNull() { return _files.length == 0; }
 }
 
+private derelict.util.exception.ShouldThrow missingSymFunc( string symName ) {
+    import std.algorithm : equal;
+    foreach(s; ["FT_New_Face", "FT_Attach_File", "FT_Set_Pixel_Sizes", 
+            "FT_Get_Char_Index", "FT_Load_Glyph", "FT_Done_Face", 
+            "FT_Init_FreeType", "FT_Done_FreeType"]) {
+        if (symName.equal(s)) // Symbol is used
+            return derelict.util.exception.ShouldThrow.Yes;
+    }
+    // Don't throw for unused symbol
+    return derelict.util.exception.ShouldThrow.No;
+}
 
 /// FreeType based font manager.
 class FreeTypeFontManager : FontManager {
@@ -513,6 +524,7 @@ class FreeTypeFontManager : FontManager {
     this() {
         // load dynaic library
         try {
+            DerelictFT.missingSymbolCallback = &missingSymFunc;
             DerelictFT.load();
         } catch (Exception e) {
             Log.e("Derelict: cannot load freetype shared library: ", e.msg);
