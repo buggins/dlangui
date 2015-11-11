@@ -69,7 +69,8 @@
                 "gl3n": "~>1.2.0"
             },
             "dependencies-posix": {
-                "derelict-sdl2": "~>1.9.7"
+                "derelict-sdl2": "~>1.9.7",
+                "derelict-ft": "~>1.0.2"
             }
         },
         {
