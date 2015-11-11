@@ -45,14 +45,29 @@ version (USE_OPENGL) {
 	import dlangui.graphics.glsupport;
 }
 	
+private derelict.util.exception.ShouldThrow missingSymFunc( string symName ) {
+    import std.algorithm : equal;
+    foreach(s; ["SDL_DestroyRenderer", "SDL_GL_DeleteContext", "SDL_DestroyWindow", "SDL_PushEvent", 
+                "SDL_GL_SetAttribute", "SDL_GL_CreateContext", "SDL_GetError", 
+                "SDL_CreateWindow", "SDL_CreateRenderer", "SDL_GetWindowSize",
+                "SDL_GL_GetDrawableSize", "SDL_GetWindowID", "SDL_SetWindowSize", 
+                "SDL_ShowWindow", "SDL_SetWindowTitle", "SDL_CreateRGBSurfaceFrom", 
+                "SDL_SetWindowIcon", "SDL_FreeSurface", "SDL_ShowCursor", 
+                "SDL_SetCursor", "SDL_CreateSystemCursor", "SDL_DestroyTexture", 
+                "SDL_CreateTexture", "SDL_UpdateTexture", "SDL_RenderCopy", 
+                "SDL_GL_SwapWindow", "SDL_GL_MakeCurrent", "SDL_SetRenderDrawColor", 
+                "SDL_RenderClear", "SDL_RenderPresent", "SDL_GetModState", 
+                "SDL_RemoveTimer", "SDL_RemoveTimer", "SDL_PushEvent", 
+                "SDL_RegisterEvents", "SDL_WaitEvent", "SDL_StartTextInput", 
+                "SDL_Quit", "SDL_HasClipboardText", "SDL_GetClipboardText", 
+                "SDL_free", "SDL_SetClipboardText", "SDL_Init"]) {
+        if (symName.equal(s)) // Symbol is used
+            return derelict.util.exception.ShouldThrow.Yes;
+    }
+    // Don't throw for unused symbol
+    return derelict.util.exception.ShouldThrow.No;
+}
 
-//	pragma(lib, "xcb");
-//	pragma(lib, "xcb-shm");
-//	pragma(lib, "xcb-image");
-//	pragma(lib, "X11-xcb");
-//	pragma(lib, "X11");
-//	pragma(lib, "dl");	
-		
 private __gshared uint USER_EVENT_ID;
 private __gshared uint TIMER_EVENT_ID;
 
@@ -1276,6 +1291,7 @@ int sdlmain(string[] args) {
     currentTheme = createDefaultTheme();
 
     try {
+        DerelictSDL2.missingSymbolCallback = &missingSymFunc;
         // Load the SDL 2 library.
         DerelictSDL2.load();
     } catch (Exception e) {
