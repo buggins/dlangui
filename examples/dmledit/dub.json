@@ -13,7 +13,13 @@
 
     "sourceFiles-windows": ["$PACKAGE_DIR/src/win_app.def"],
 
+    "versions": ["EmbedStandardResources"],
+
     "dependencies": {
-        "dlangui": "*",
+        "dlangui": {"path": "../../"}
+    },
+
+    "subConfigurations": {
+        "dlangui": "minimal"
     }
 }
