@@ -1416,8 +1416,11 @@ version (Windows) {
         try {
             /// testing freetype font manager
             version(USE_FREETYPE) {
+                Log.v("Trying to init FreeType font manager");
+
                 import dlangui.graphics.ftfonts;
                 // trying to create font manager
+                Log.v("Creating FreeTypeFontManager");
                 FreeTypeFontManager ftfontMan = new FreeTypeFontManager();
 
                 import win32.shlobj;
@@ -1444,6 +1447,7 @@ version (Windows) {
                         }
                     }
                 }
+                Log.v("Registering fonts");
                 ftfontMan.registerFont(fontsPath ~ "arial.ttf",     FontFamily.SansSerif, "Arial", false, FontWeight.Normal);
                 ftfontMan.registerFont(fontsPath ~ "arialbd.ttf",   FontFamily.SansSerif, "Arial", false, FontWeight.Bold);
                 ftfontMan.registerFont(fontsPath ~ "arialbi.ttf",   FontFamily.SansSerif, "Arial", true, FontWeight.Bold);
@@ -1590,9 +1594,13 @@ void releaseResourcesOnAppExit() {
 void initLogs() {
     version (Windows) {
         debug {
-    		Log.setFileLogger(std.stdio.File("ui.log", "w"));
+    		Log.setFileLogger(new std.stdio.File("ui.log", "w"));
         } else {
-            // no logging
+            // no logging unless version ForceLogs is set
+            version(ForceLogs) {
+        		Log.setFileLogger(new std.stdio.File("ui.log", "w"));
+                Log.i("Logging to file ui.log");
+            }
         }
     } else {
         Log.setStderrLogger();
@@ -1600,6 +1608,13 @@ void initLogs() {
     debug {
         Log.setLogLevel(LogLevel.Trace);
     } else {
-        Log.setLogLevel(LogLevel.Warn);
+        version(ForceLogs) {
+            Log.setLogLevel(LogLevel.Trace);
+            Log.i("Log level: trace");
+        } else {
+            Log.setLogLevel(LogLevel.Warn);
+            Log.i("Log level: warn");
+        }
     }
+    Log.i("Logger is initialized");
 }

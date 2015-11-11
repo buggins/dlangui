@@ -189,8 +189,8 @@ enum : int {
 extern (C) int UIAppMain(string[] args) {
 
     // always use trace, even for release builds
-    Log.setLogLevel(LogLevel.Trace);
-	Log.setFileLogger(std.stdio.File("ui.log", "w"));
+    //Log.setLogLevel(LogLevel.Trace);
+	//Log.setFileLogger(new std.stdio.File("ui.log", "w"));
 
     // resource directory search paths
     // not required if only embedded resources are used

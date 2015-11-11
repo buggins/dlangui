@@ -76,33 +76,56 @@ Log.e("exception while reading file", e);
 ----
 
 */
-synchronized class Log {
-    static:
-    __gshared private LogLevel logLevel = LogLevel.Info;
-    __gshared private std.stdio.File logFile;
+
+import core.sync.mutex;
+
+class Log {
+    static __gshared private LogLevel logLevel = LogLevel.Info;
+    static __gshared private std.stdio.File * logFile = null;
+    static __gshared private Mutex mutex = null;
+
+    static this() {
+        Log.mutex = new Mutex();
+    }
         
     /// Redirects output to stdout
-    void setStdoutLogger() {
-        logFile = stdout;
+    static public void setStdoutLogger() {
+        synchronized(mutex) {
+            logFile = &stdout;
+        }
     }
 
     /// Redirects output to stderr
-    void setStderrLogger() {
-        logFile = stderr;
+    static public void setStderrLogger() {
+        synchronized(mutex) {
+            logFile = &stderr;
+        }
     }
 
     /// Redirects output to file
-    void setFileLogger(File file) {
-        logFile = file;
+    static public void setFileLogger(File * file) {
+        synchronized(mutex) {
+            if (logFile !is null && logFile != &stdout && logFile != &stderr) {
+                logFile.close();
+                destroy(logFile);
+                logFile = null;
+            }
+            logFile = file;
+            if (logFile !is null)
+                logFile.writeln("DlangUI log file");
+        }
     }
 
     /// Sets log level (one of LogLevel)
-    void setLogLevel(LogLevel level) {
-        logLevel = level;
+    static public void setLogLevel(LogLevel level) {
+        synchronized(mutex) {
+            logLevel = level;
+            i("Log level changed to ", level);
+        }
     }
 
     /// Log level to name helper function
-    string logLevelName(LogLevel level) {
+    static public string logLevelName(LogLevel level) {
         switch (level) {
             case LogLevel.Fatal: return "F";
             case LogLevel.Error: return "E";
@@ -114,8 +137,8 @@ synchronized class Log {
         }
     }
     /// Log message with arbitrary log level
-    void log(S...)(LogLevel level, S args) {
-        if (logLevel >= level && logFile.isOpen) {
+    static public void log(S...)(LogLevel level, S args) {
+        if (logLevel >= level && logFile !is null && logFile.isOpen) {
             SysTime ts = Clock.currTime();
             logFile.writef("%04d-%02d-%02d %02d:%02d:%02d.%03d %s  ", ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second, ts.fracSecs.split!("msecs").msecs, logLevelName(level));
             logFile.writeln(args);
@@ -123,34 +146,46 @@ synchronized class Log {
         }
     }
     /// Log verbose / trace message
-    void v(S...)(S args) {
-        if (logLevel >= LogLevel.Trace && logFile.isOpen)
-            log(LogLevel.Trace, args);
+    static public void v(S...)(S args) {
+        synchronized(mutex) {
+            if (logLevel >= LogLevel.Trace && logFile !is null && logFile.isOpen)
+                log(LogLevel.Trace, args);
+        }
     }
     /// Log debug message
-    void d(S...)(S args) {
-        if (logLevel >= LogLevel.Debug && logFile.isOpen)
-            log(LogLevel.Debug, args);
+    static public void d(S...)(S args) {
+        synchronized(mutex) {
+            if (logLevel >= LogLevel.Debug && logFile !is null && logFile.isOpen)
+                log(LogLevel.Debug, args);
+        }
     }
     /// Log info message
-    void i(S...)(S args) {
-        if (logLevel >= LogLevel.Info && logFile.isOpen)
-            log(LogLevel.Info, args);
+    static public void i(S...)(S args) {
+        synchronized(mutex) {
+            if (logLevel >= LogLevel.Info && logFile !is null && logFile.isOpen)
+                log(LogLevel.Info, args);
+        }
     }
     /// Log warn message
-    void w(S...)(S args) {
-        if (logLevel >= LogLevel.Warn && logFile.isOpen)
-            log(LogLevel.Warn, args);
+    static public void w(S...)(S args) {
+        synchronized(mutex) {
+            if (logLevel >= LogLevel.Warn && logFile !is null && logFile.isOpen)
+                log(LogLevel.Warn, args);
+        }
     }
     /// Log error message
-    void e(S...)(S args) {
-        if (logLevel >= LogLevel.Error && logFile.isOpen)
-            log(LogLevel.Error, args);
+    static public void e(S...)(S args) {
+        synchronized(mutex) {
+            if (logLevel >= LogLevel.Error && logFile !is null && logFile.isOpen)
+                log(LogLevel.Error, args);
+        }
     }
     /// Log fatal error message
-    void f(S...)(S args) {
-        if (logLevel >= LogLevel.Fatal && logFile.isOpen)
-            log(LogLevel.Fatal, args);
+    static public void f(S...)(S args) {
+        synchronized(mutex) {
+            if (logLevel >= LogLevel.Fatal && logFile !is null && logFile.isOpen)
+                log(LogLevel.Fatal, args);
+        }
     }
 }
 
@@ -168,3 +203,4 @@ debug {
 void onResourceDestroyWhileShutdown(string resourceName, string objname = null) {
     Log.e("Resource leak: destroying resource while shutdown! ", resourceName, " ", objname);
 }
+

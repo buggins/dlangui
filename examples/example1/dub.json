@@ -9,11 +9,17 @@
     "targetType": "executable",
     "targetName": "example1",
 
+    "versions": ["EmbedStandardResources", "ForceLogs"],
+
     "stringImportPaths": ["views", "views/res", "views/res/i18n", "views/res/mdpi"],
 
     "sourceFiles-windows": ["$PACKAGE_DIR/src/win_app.def"],
 
     "dependencies": {
-        "dlangui": "*"
+        "dlangui": {"path": "../../"}
+    },
+
+    "subConfigurations": {
+        "dlangui": "minimal"
     }
 }

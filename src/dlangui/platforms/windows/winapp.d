@@ -905,8 +905,7 @@ int DLANGUIWinMain(void* hInstance, void* hPrevInstance,
             char* lpCmdLine, int nCmdShow) {
     int result;
 
-    try
-    {
+    try {
         Runtime.initialize();
 
         // call SetProcessDPIAware to support HI DPI - fix by Kapps
@@ -973,7 +972,9 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
     _cmdShow = iCmdShow;
     _hInstance = hInstance;
 
+    Log.v("Creating platform");
     w32platform = new Win32Platform();
+    Log.v("Registering window class");
     if (!w32platform.registerWndClass()) {
         MessageBoxA(null, "This program requires Windows NT!", "DLANGUI App".toStringz, MB_ICONERROR);
         return 0;
@@ -981,6 +982,7 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
     Platform.setInstance(w32platform);
 
 
+    Log.v("Initializing font manager");
     if (!initFontManager()) {
         Log.e("******************************************************************");
         Log.e("No font files found!!!");

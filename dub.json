@@ -40,7 +40,7 @@
     "configurations": [
         {
             "name": "default",
-            "versions": ["USE_OPENGL", "EmbedStandardResources", "USE_FREETYPE"],
+            "versions": ["USE_OPENGL", "EmbedStandardResources", "USE_FREETYPE", "ForceLogs"],
             "versions-posix": ["USE_SDL"],
             "versions-windows": ["Unicode"],
             "dependencies": {
@@ -50,7 +50,7 @@
                 "gl3n": "~>1.2.0"
             },
             "dependencies-posix": {
-                "derelict-sdl2": "~>1.9.1"
+                "derelict-sdl2": "~>1.9.7"
             },
             "copyFiles-windows-x86_64": [
                 "libs/windows/x86_64/libfreetype-6.dll"
@@ -58,6 +58,19 @@
             "copyFiles-windows-x86": [
                 "libs/windows/x86/libfreetype-6.dll"
             ]
+        },
+        {
+            "name": "minimal",
+            "versions": ["EmbedStandardResources", "ForceLogs"],
+            "versions-posix": ["USE_SDL", "USE_FREETYPE"],
+            "versions-windows": ["Unicode"],
+            "dependencies": {
+                "dlib": "~>0.7.0",
+                "gl3n": "~>1.2.0"
+            },
+            "dependencies-posix": {
+                "derelict-sdl2": "~>1.9.7"
+            }
         },
         {
             "name": "sdl",
@@ -88,7 +101,7 @@
                 "derelict-gl3": "~>1.0.16",
                 "derelict-ft": "~>1.0.2",
                 "gl3n": "~>1.2.0",
-                "dsfml": "~master"
+                "dsfml": "~>2.1.0"
             },
             "copyFiles-windows-x86_64": [
                 "libs/windows/x86_64/libfreetype-6.dll"

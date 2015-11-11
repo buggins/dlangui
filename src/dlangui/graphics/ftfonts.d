@@ -9,6 +9,8 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.graphics.ftfonts;
 
+version(USE_FREETYPE):
+
 import dlangui.graphics.fonts;
 
 import derelict.freetype.ft;
@@ -524,12 +526,16 @@ class FreeTypeFontManager : FontManager {
     this() {
         // load dynaic library
         try {
+            Log.v("DerelictFT: Loading FreeType library");
             DerelictFT.missingSymbolCallback = &missingSymFunc;
+            Log.v("DerelictFT: Missing symbols callback is registered");
             DerelictFT.load();
-        } catch (Exception e) {
+            Log.v("DerelictFT: Loaded");
+        } catch (Throwable e) {
             Log.e("Derelict: cannot load freetype shared library: ", e.msg);
             throw new Exception("Cannot load freetype library");
         }
+        Log.v("Initializing FreeType library");
         // init library
         int error = FT_Init_FreeType(&_library);
         if (error) {
