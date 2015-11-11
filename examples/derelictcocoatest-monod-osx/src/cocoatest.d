@@ -32,7 +32,12 @@ void main(string[] args)
         NSTitledWindowMask | NSClosableWindowMask | NSResizableWindowMask, //NSBorderlessWindowMask, 
         NSBackingStoreBuffered, NO);
     window.makeKeyAndOrderFront();
+
+    NSView parentView;
+    parentView = window.contentView();
     
     NSApp.activateIgnoringOtherApps(YES);
     NSApp.run();
+
+    DerelictCocoa.unload();
 }
