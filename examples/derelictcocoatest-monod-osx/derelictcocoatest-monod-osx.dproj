@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{1F050D82-5245-4B51-A554-473194EA0DE9}</ProjectGuid>
+    <Compiler>DMD2</Compiler>
+    <PreferOneStepBuild>true</PreferOneStepBuild>
+    <UseDefaultCompiler>true</UseDefaultCompiler>
+    <IncrementalLinking>true</IncrementalLinking>
+    <DependentProjectIds>
+      <DependentProjectIds>
+        <String>{1CC7C43E-7B39-4AFC-A45B-F1D9F582CF6D}</String>
+      </DependentProjectIds>
+    </DependentProjectIds>
+    <Includes>
+      <Includes>
+        <Path>../../src</Path>
+        <Path>../../deps/dlib</Path>
+        <Path>../../deps/gl3n</Path>
+        <Path>../../deps/DerelictGL3/source</Path>
+        <Path>../../deps/DerelictCocoa/source</Path>
+        <Path>../../deps/DerelictSDL2/source</Path>
+        <Path>../../deps/DerelictFT/source</Path>
+        <Path>../../deps/DerelictUtil/source</Path>
+      </Includes>
+    </Includes>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug</OutputPath>
+    <ObjectsDirectory>obj/Debug</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>derelictcocoatest-monod-osx</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release</OutputPath>
+    <ObjectsDirectory>obj/Release</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>derelictcocoatest-monod-osx</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Unittest</OutputPath>
+    <ObjectsDirectory>obj/Unittest</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <UnittestMode>true</UnittestMode>
+    <OutputName>derelictcocoatest-monod-osx</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="src\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="src\cocoatest.d" />
+  </ItemGroup>
+</Project>

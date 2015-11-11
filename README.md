@@ -196,6 +196,7 @@ Clone dependency libraries
         git clone https://github.com/gecko0307/dlib.git
         git clone https://github.com/Devisualization/image.git de_image
         git clone https://github.com/Dav1dde/gl3n.git
+        git clone https://github.com/p0nce/DerelictCocoa.git
 
 Open solution file with Mono-D	
 

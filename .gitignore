@@ -22,3 +22,5 @@ screenshots.html
 *.log
 include
 lib/res
+.DS_Store
+*.userprefs
