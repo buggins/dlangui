@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
-    <ProjectGuid>{54BDE028-6064-4CA9-B6CA-4C0BEEE70F24}</ProjectGuid>
+    <ProjectGuid>{8E722D80-CF8D-4D98-BEAE-7BC9E6752AC4}</ProjectGuid>
     <Compiler>DMD2</Compiler>
     <PreferOneStepBuild>true</PreferOneStepBuild>
     <UseDefaultCompiler>true</UseDefaultCompiler>
@@ -33,43 +33,12 @@
         <String>USE_SDL</String>
         <String>USE_OPENGL</String>
         <String>USE_FREETYPE</String>
-        <String>EmbedStandardResources</String>
       </VersionIds>
     </VersionIds>
     <ObjectsDirectory>obj/Debug</ObjectsDirectory>
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
-    <ExtraCompilerArguments>-Jviews
--Jviews/res
--Jviews/res/hdpi
--Jviews/res/mdpi
--Jviews/res/i18n
-</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
-    <OutputName>example1-monod-linux</OutputName>
-    <Target>Executable</Target>
-    <Externalconsole>true</Externalconsole>
-    <DebugLevel>0</DebugLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
-    <OutputPath>bin\Release</OutputPath>
-    <VersionIds>
-      <VersionIds>
-        <String>USE_SDL</String>
-        <String>USE_OPENGL</String>
-        <String>USE_FREETYPE</String>
-        <String>EmbedStandardResources</String>
-      </VersionIds>
-    </VersionIds>
-    <ObjectsDirectory>obj/Release</ObjectsDirectory>
-    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
-    <ExtraCompilerArguments>-Jviews
--Jviews/res
--Jviews/res/hdpi
--Jviews/res/mdpi
--Jviews/res/i18n
-</ExtraCompilerArguments>
-    <UnittestMode>false</UnittestMode>
-    <OutputName>example1-monod-linux</OutputName>
+    <OutputName>helloworld-monod-linux</OutputName>
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
@@ -82,24 +51,34 @@
         <String>USE_SDL</String>
         <String>USE_OPENGL</String>
         <String>USE_FREETYPE</String>
-        <String>EmbedStandardResources</String>
       </VersionIds>
     </VersionIds>
     <ObjectsDirectory>obj/Unittest</ObjectsDirectory>
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
-    <ExtraCompilerArguments>-Jviews
--Jviews/res
--Jviews/res/hdpi
--Jviews/res/mdpi
--Jviews/res/i18n
-</ExtraCompilerArguments>
     <UnittestMode>true</UnittestMode>
-    <OutputName>example1-monod-linux</OutputName>
+    <OutputName>helloworld-monod-linux</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <OutputPath>bin\Release</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_SDL</String>
+        <String>USE_OPENGL</String>
+        <String>USE_FREETYPE</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/Release</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>helloworld-monod-linux</OutputName>
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="src\example1.d" />
+    <Compile Include="src\helloworld.d" />
   </ItemGroup>
 </Project>

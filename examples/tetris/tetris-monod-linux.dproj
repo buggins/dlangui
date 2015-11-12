@@ -3,16 +3,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
-    <ProjectGuid>{54BDE028-6064-4CA9-B6CA-4C0BEEE70F24}</ProjectGuid>
+    <ProjectGuid>{0A3A0D08-E4DC-418E-B92B-561CC91C2306}</ProjectGuid>
     <Compiler>DMD2</Compiler>
     <PreferOneStepBuild>true</PreferOneStepBuild>
     <UseDefaultCompiler>true</UseDefaultCompiler>
     <IncrementalLinking>true</IncrementalLinking>
-    <DependentProjectIds>
-      <DependentProjectIds>
-        <String>{A38BEF21-AAFE-4115-A978-63B7C8C2FBD1}</String>
-      </DependentProjectIds>
-    </DependentProjectIds>
     <Includes>
       <Includes>
         <Path>../../src</Path>
@@ -24,6 +19,11 @@
         <Path>../../deps/DerelictUtil/source</Path>
       </Includes>
     </Includes>
+    <DependentProjectIds>
+      <DependentProjectIds>
+        <String>{A38BEF21-AAFE-4115-A978-63B7C8C2FBD1}</String>
+      </DependentProjectIds>
+    </DependentProjectIds>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <DebugSymbols>true</DebugSymbols>
@@ -38,17 +38,17 @@
     </VersionIds>
     <ObjectsDirectory>obj/Debug</ObjectsDirectory>
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>tetris-monod-linux</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
     <ExtraCompilerArguments>-Jviews
 -Jviews/res
 -Jviews/res/hdpi
 -Jviews/res/mdpi
 -Jviews/res/i18n
 </ExtraCompilerArguments>
-    <UnittestMode>false</UnittestMode>
-    <OutputName>example1-monod-linux</OutputName>
-    <Target>Executable</Target>
-    <Externalconsole>true</Externalconsole>
-    <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <OutputPath>bin\Release</OutputPath>
@@ -69,7 +69,7 @@
 -Jviews/res/i18n
 </ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
-    <OutputName>example1-monod-linux</OutputName>
+    <OutputName>tetris-monod-linux</OutputName>
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
@@ -94,12 +94,14 @@
 -Jviews/res/i18n
 </ExtraCompilerArguments>
     <UnittestMode>true</UnittestMode>
-    <OutputName>example1-monod-linux</OutputName>
+    <OutputName>tetris-monod-linux</OutputName>
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="src\example1.d" />
+    <Compile Include="src\gui.d" />
+    <Compile Include="src\model.d" />
+    <Compile Include="src\tetris.d" />
   </ItemGroup>
 </Project>

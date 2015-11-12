@@ -3,16 +3,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
-    <ProjectGuid>{54BDE028-6064-4CA9-B6CA-4C0BEEE70F24}</ProjectGuid>
+    <ProjectGuid>{075C374A-563A-4CAC-9E9F-0B6E1DFEAEC3}</ProjectGuid>
     <Compiler>DMD2</Compiler>
     <PreferOneStepBuild>true</PreferOneStepBuild>
     <UseDefaultCompiler>true</UseDefaultCompiler>
     <IncrementalLinking>true</IncrementalLinking>
-    <DependentProjectIds>
-      <DependentProjectIds>
-        <String>{A38BEF21-AAFE-4115-A978-63B7C8C2FBD1}</String>
-      </DependentProjectIds>
-    </DependentProjectIds>
     <Includes>
       <Includes>
         <Path>../../src</Path>
@@ -24,6 +19,11 @@
         <Path>../../deps/DerelictUtil/source</Path>
       </Includes>
     </Includes>
+    <DependentProjectIds>
+      <DependentProjectIds>
+        <String>{A38BEF21-AAFE-4115-A978-63B7C8C2FBD1}</String>
+      </DependentProjectIds>
+    </DependentProjectIds>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
     <DebugSymbols>true</DebugSymbols>
@@ -38,28 +38,20 @@
     </VersionIds>
     <ObjectsDirectory>obj/Debug</ObjectsDirectory>
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>dmledit-monod-linux</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
     <ExtraCompilerArguments>-Jviews
 -Jviews/res
 -Jviews/res/hdpi
 -Jviews/res/mdpi
 -Jviews/res/i18n
 </ExtraCompilerArguments>
-    <UnittestMode>false</UnittestMode>
-    <OutputName>example1-monod-linux</OutputName>
-    <Target>Executable</Target>
-    <Externalconsole>true</Externalconsole>
-    <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <OutputPath>bin\Release</OutputPath>
-    <VersionIds>
-      <VersionIds>
-        <String>USE_SDL</String>
-        <String>USE_OPENGL</String>
-        <String>USE_FREETYPE</String>
-        <String>EmbedStandardResources</String>
-      </VersionIds>
-    </VersionIds>
     <ObjectsDirectory>obj/Release</ObjectsDirectory>
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
     <ExtraCompilerArguments>-Jviews
@@ -69,14 +61,10 @@
 -Jviews/res/i18n
 </ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
-    <OutputName>example1-monod-linux</OutputName>
+    <OutputName>dmledit-monod-linux</OutputName>
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|x64' ">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Unittest</OutputPath>
     <VersionIds>
       <VersionIds>
         <String>USE_SDL</String>
@@ -85,6 +73,10 @@
         <String>EmbedStandardResources</String>
       </VersionIds>
     </VersionIds>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Unittest</OutputPath>
     <ObjectsDirectory>obj/Unittest</ObjectsDirectory>
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
     <ExtraCompilerArguments>-Jviews
@@ -94,12 +86,20 @@
 -Jviews/res/i18n
 </ExtraCompilerArguments>
     <UnittestMode>true</UnittestMode>
-    <OutputName>example1-monod-linux</OutputName>
+    <OutputName>dmledit-monod-linux</OutputName>
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_SDL</String>
+        <String>USE_OPENGL</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="src\example1.d" />
+    <Compile Include="src\dmledit.d" />
   </ItemGroup>
 </Project>
