@@ -3,16 +3,11 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
-    <ProjectGuid>{079F4963-E637-4E8F-9EB3-BDC404F9DC1D}</ProjectGuid>
+    <ProjectGuid>{CB4E43FF-5E6A-4F4E-9A6C-F182EC258112}</ProjectGuid>
     <Compiler>DMD2</Compiler>
     <PreferOneStepBuild>true</PreferOneStepBuild>
     <UseDefaultCompiler>true</UseDefaultCompiler>
     <IncrementalLinking>true</IncrementalLinking>
-    <DependentProjectIds>
-      <DependentProjectIds>
-        <String>{1CC7C43E-7B39-4AFC-A45B-F1D9F582CF6D}</String>
-      </DependentProjectIds>
-    </DependentProjectIds>
     <Includes>
       <Includes>
         <Path>../../src</Path>
@@ -40,11 +35,10 @@
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
     <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
-    <OutputName>example1-monod-osx</OutputName>
+    <OutputName>helloworld-monod-osx</OutputName>
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
-    <ExtraLinkerArguments>-v</ExtraLinkerArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <OutputPath>bin\Release</OutputPath>
@@ -60,7 +54,7 @@
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
     <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
-    <OutputName>example1-monod-osx</OutputName>
+    <OutputName>helloworld-monod-osx</OutputName>
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
@@ -80,12 +74,12 @@
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
     <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi</ExtraCompilerArguments>
     <UnittestMode>true</UnittestMode>
-    <OutputName>example1-monod-osx</OutputName>
+    <OutputName>helloworld-monod-osx</OutputName>
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="src\example1.d" />
+    <Compile Include="src\helloworld.d" />
   </ItemGroup>
 </Project>

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
-    <ProjectGuid>{079F4963-E637-4E8F-9EB3-BDC404F9DC1D}</ProjectGuid>
+    <ProjectGuid>{07ECE815-C4C3-4CDB-A60C-2E304EAAA2C7}</ProjectGuid>
     <Compiler>DMD2</Compiler>
     <PreferOneStepBuild>true</PreferOneStepBuild>
     <UseDefaultCompiler>true</UseDefaultCompiler>
@@ -40,11 +40,10 @@
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
     <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
-    <OutputName>example1-monod-osx</OutputName>
+    <OutputName>tetris-monod-osx</OutputName>
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
-    <ExtraLinkerArguments>-v</ExtraLinkerArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <OutputPath>bin\Release</OutputPath>
@@ -60,7 +59,7 @@
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
     <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
-    <OutputName>example1-monod-osx</OutputName>
+    <OutputName>tetris-monod-osx</OutputName>
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
@@ -80,12 +79,14 @@
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
     <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi</ExtraCompilerArguments>
     <UnittestMode>true</UnittestMode>
-    <OutputName>example1-monod-osx</OutputName>
+    <OutputName>tetris-monod-osx</OutputName>
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="src\example1.d" />
+    <Compile Include="src\gui.d" />
+    <Compile Include="src\model.d" />
+    <Compile Include="src\tetris.d" />
   </ItemGroup>
 </Project>
