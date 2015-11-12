@@ -82,11 +82,13 @@ import core.sync.mutex;
 class Log {
     static __gshared private LogLevel logLevel = LogLevel.Info;
     static __gshared private std.stdio.File * logFile = null;
-    static __gshared private Mutex mutex = null;
+    static __gshared private Mutex _mutex = null;
 
-    static this() {
-        Log.mutex = new Mutex();
-    }
+	static public @property Mutex mutex() {
+		if (_mutex is null)
+			_mutex = new Mutex();
+		return _mutex;
+	}
         
     /// Redirects output to stdout
     static public void setStdoutLogger() {

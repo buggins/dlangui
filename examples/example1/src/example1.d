@@ -239,7 +239,7 @@ extern (C) int UIAppMain(string[] args) {
 	//}
 
     // create window
-    Window window = Platform.instance.createWindow("My Window", null, WindowFlag.Resizable, 600, 500);
+    Window window = Platform.instance.createWindow("My Window", null, WindowFlag.Resizable, 800, 700);
 	
 	static if (true) {
         VerticalLayout contentLayout = new VerticalLayout();

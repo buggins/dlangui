@@ -1,0 +1,189 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <ProjectGuid>{A38BEF21-AAFE-4115-A978-63B7C8C2FBD1}</ProjectGuid>
+    <Compiler>DMD2</Compiler>
+    <PreferOneStepBuild>true</PreferOneStepBuild>
+    <UseDefaultCompiler>true</UseDefaultCompiler>
+    <IncrementalLinking>true</IncrementalLinking>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <OutputPath>bin\Release</OutputPath>
+    <ObjectsDirectory>obj/Release</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>libdlangui-monod-linux</OutputName>
+    <Target>StaticLibrary</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Unittest</OutputPath>
+    <ObjectsDirectory>obj/Unittest</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <UnittestMode>true</UnittestMode>
+    <OutputName>libdlangui-monod-linux</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_OPENGL</String>
+        <String>USE_SDL</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/Debug</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>libdlangui-monod-linux</OutputName>
+    <Target>StaticLibrary</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/i18n
+-Jviews/res/mdpi
+-Jviews/res/hdpi</ExtraCompilerArguments>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="src\dlangui\core\collections.d" />
+    <Compile Include="src\dlangui\core\editable.d" />
+    <Compile Include="src\dlangui\core\events.d" />
+    <Compile Include="src\dlangui\core\files.d" />
+    <Compile Include="src\dlangui\core\i18n.d" />
+    <Compile Include="src\dlangui\core\linestream.d" />
+    <Compile Include="src\dlangui\core\logger.d" />
+    <Compile Include="src\dlangui\core\settings.d" />
+    <Compile Include="src\dlangui\core\signals.d" />
+    <Compile Include="src\dlangui\core\stdaction.d" />
+    <Compile Include="src\dlangui\core\streams.d" />
+    <Compile Include="src\dlangui\core\textsource.d" />
+    <Compile Include="src\dlangui\core\types.d" />
+    <Compile Include="src\dlangui\dialogs\dialog.d" />
+    <Compile Include="src\dlangui\dialogs\filedlg.d" />
+    <Compile Include="src\dlangui\dialogs\msgbox.d" />
+    <Compile Include="src\dlangui\dialogs\settingsdialog.d" />
+    <Compile Include="src\dlangui\dml\annotations.d" />
+    <Compile Include="src\dlangui\dml\dmlhighlight.d" />
+    <Compile Include="src\dlangui\dml\parser.d" />
+    <Compile Include="src\dlangui\graphics\colors.d" />
+    <Compile Include="src\dlangui\graphics\drawbuf.d" />
+    <Compile Include="src\dlangui\graphics\fonts.d" />
+    <Compile Include="src\dlangui\graphics\ftfonts.d" />
+    <Compile Include="src\dlangui\graphics\gldrawbuf.d" />
+    <Compile Include="src\dlangui\graphics\glsupport.d" />
+    <Compile Include="src\dlangui\graphics\images.d" />
+    <Compile Include="src\dlangui\graphics\resources.d" />
+    <Compile Include="src\dlangui\graphics\scene\camera.d" />
+    <Compile Include="src\dlangui\graphics\scene\node.d" />
+    <Compile Include="src\dlangui\graphics\scene\scene3d.d" />
+    <Compile Include="src\dlangui\graphics\scene\transform.d" />
+    <Compile Include="src\dlangui\graphics\xpm\colors.d" />
+    <Compile Include="src\dlangui\graphics\xpm\reader.d" />
+    <Compile Include="src\dlangui\platforms\common\platform.d" />
+    <Compile Include="src\dlangui\platforms\sdl\sdlapp.d" />
+    <Compile Include="src\dlangui\widgets\appframe.d" />
+    <Compile Include="src\dlangui\widgets\combobox.d" />
+    <Compile Include="src\dlangui\widgets\controls.d" />
+    <Compile Include="src\dlangui\widgets\docks.d" />
+    <Compile Include="src\dlangui\widgets\editors.d" />
+    <Compile Include="src\dlangui\widgets\grid.d" />
+    <Compile Include="src\dlangui\widgets\layouts.d" />
+    <Compile Include="src\dlangui\widgets\lists.d" />
+    <Compile Include="src\dlangui\widgets\menu.d" />
+    <Compile Include="src\dlangui\widgets\metadata.d" />
+    <Compile Include="src\dlangui\widgets\popup.d" />
+    <Compile Include="src\dlangui\widgets\scroll.d" />
+    <Compile Include="src\dlangui\widgets\srcedit.d" />
+    <Compile Include="src\dlangui\widgets\statusline.d" />
+    <Compile Include="src\dlangui\widgets\styles.d" />
+    <Compile Include="src\dlangui\widgets\tabs.d" />
+    <Compile Include="src\dlangui\widgets\toolbars.d" />
+    <Compile Include="src\dlangui\widgets\tree.d" />
+    <Compile Include="src\dlangui\widgets\widget.d" />
+    <Compile Include="src\dlangui\widgets\winframe.d" />
+    <Compile Include="src\dlangui\package.d" />
+    <Compile Include="deps\DerelictFT\source\derelict\freetype\ft.d" />
+    <Compile Include="deps\DerelictFT\source\derelict\freetype\functions.d" />
+    <Compile Include="deps\DerelictFT\source\derelict\freetype\types.d" />
+    <Compile Include="deps\DerelictGL3\source\derelict\opengl3\arb.d" />
+    <Compile Include="deps\DerelictGL3\source\derelict\opengl3\cgl.d" />
+    <Compile Include="deps\DerelictGL3\source\derelict\opengl3\constants.d" />
+    <Compile Include="deps\DerelictGL3\source\derelict\opengl3\deprecatedConstants.d" />
+    <Compile Include="deps\DerelictGL3\source\derelict\opengl3\deprecatedFunctions.d" />
+    <Compile Include="deps\DerelictGL3\source\derelict\opengl3\ext.d" />
+    <Compile Include="deps\DerelictGL3\source\derelict\opengl3\functions.d" />
+    <Compile Include="deps\DerelictGL3\source\derelict\opengl3\gl.d" />
+    <Compile Include="deps\DerelictGL3\source\derelict\opengl3\gl3.d" />
+    <Compile Include="deps\DerelictGL3\source\derelict\opengl3\glx.d" />
+    <Compile Include="deps\DerelictGL3\source\derelict\opengl3\glxext.d" />
+    <Compile Include="deps\DerelictGL3\source\derelict\opengl3\internal.d" />
+    <Compile Include="deps\DerelictGL3\source\derelict\opengl3\types.d" />
+    <Compile Include="deps\DerelictGL3\source\derelict\opengl3\wgl.d" />
+    <Compile Include="deps\DerelictGL3\source\derelict\opengl3\wglext.d" />
+    <Compile Include="deps\DerelictSDL2\source\derelict\sdl2\functions.d" />
+    <Compile Include="deps\DerelictSDL2\source\derelict\sdl2\image.d" />
+    <Compile Include="deps\DerelictSDL2\source\derelict\sdl2\mixer.d" />
+    <Compile Include="deps\DerelictSDL2\source\derelict\sdl2\net.d" />
+    <Compile Include="deps\DerelictSDL2\source\derelict\sdl2\sdl.d" />
+    <Compile Include="deps\DerelictSDL2\source\derelict\sdl2\ttf.d" />
+    <Compile Include="deps\DerelictSDL2\source\derelict\sdl2\types.d" />
+    <Compile Include="deps\DerelictUtil\source\derelict\util\exception.d" />
+    <Compile Include="deps\DerelictUtil\source\derelict\util\loader.d" />
+    <Compile Include="deps\DerelictUtil\source\derelict\util\sharedlib.d" />
+    <Compile Include="deps\DerelictUtil\source\derelict\util\system.d" />
+    <Compile Include="deps\DerelictUtil\source\derelict\util\wintypes.d" />
+    <Compile Include="deps\DerelictUtil\source\derelict\util\xtypes.d" />
+    <Compile Include="deps\dlib\dlib\coding\huffman.d" />
+    <Compile Include="deps\dlib\dlib\coding\zlib.d" />
+    <Compile Include="deps\dlib\dlib\image\io\bmp.d" />
+    <Compile Include="deps\dlib\dlib\image\io\idct.d" />
+    <Compile Include="deps\dlib\dlib\image\io\io.d" />
+    <Compile Include="deps\dlib\dlib\image\io\jpeg.d" />
+    <Compile Include="deps\dlib\dlib\image\io\png.d" />
+    <Compile Include="deps\dlib\dlib\image\io\tga.d" />
+    <Compile Include="deps\dlib\dlib\image\io\utils.d" />
+    <Compile Include="deps\dlib\dlib\image\arithmetics.d" />
+    <Compile Include="deps\dlib\dlib\image\color.d" />
+    <Compile Include="deps\dlib\dlib\image\image.d" />
+    <Compile Include="deps\dlib\dlib\core\bitio.d" />
+    <Compile Include="deps\dlib\dlib\core\memory.d" />
+    <Compile Include="deps\dlib\dlib\core\oop.d" />
+    <Compile Include="deps\dlib\dlib\core\stream.d" />
+    <Compile Include="deps\dlib\dlib\functional\range.d" />
+    <Compile Include="deps\dlib\dlib\math\interpolation.d" />
+    <Compile Include="deps\dlib\dlib\math\vector.d" />
+    <Compile Include="deps\dlib\dlib\core\tuple.d" />
+    <Compile Include="deps\dlib\dlib\math\matrix.d" />
+    <Compile Include="deps\dlib\dlib\math\utils.d" />
+    <Compile Include="deps\dlib\dlib\math\decomposition.d" />
+    <Compile Include="deps\dlib\dlib\math\linsolve.d" />
+    <Compile Include="deps\dlib\dlib\core\compound.d" />
+    <Compile Include="deps\dlib\dlib\filesystem\delegaterange.d" />
+    <Compile Include="deps\dlib\dlib\filesystem\dirrange.d" />
+    <Compile Include="deps\dlib\dlib\filesystem\filesystem.d" />
+    <Compile Include="deps\dlib\dlib\filesystem\local.d" />
+    <Compile Include="deps\dlib\dlib\filesystem\posix\common.d" />
+    <Compile Include="deps\dlib\dlib\filesystem\posix\directory.d" />
+    <Compile Include="deps\dlib\dlib\filesystem\posix\file.d" />
+    <Compile Include="deps\dlib\dlib\container\array.d" />
+    <Compile Include="deps\gl3n\gl3n\frustum.d" />
+    <Compile Include="deps\gl3n\gl3n\linalg.d" />
+    <Compile Include="deps\gl3n\gl3n\math.d" />
+    <Compile Include="deps\gl3n\gl3n\plane.d" />
+    <Compile Include="deps\gl3n\gl3n\util.d" />
+    <Compile Include="deps\gl3n\gl3n\aabb.d" />
+    <Compile Include="3rdparty\fontconfig\functions.d" />
+    <Compile Include="3rdparty\fontconfig\package.d" />
+    <Compile Include="3rdparty\fontconfig\types.d" />
+  </ItemGroup>
+</Project>
