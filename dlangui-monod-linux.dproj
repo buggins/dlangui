@@ -80,6 +80,72 @@
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugMinimal|x64' ">
+    <OutputPath>bin\DebugMinimal</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_SDL</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/DebugMinimal</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/i18n
+-Jviews/res/mdpi
+-Jviews/res/hdpi</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>libdlangui-monod-linux</OutputName>
+    <Target>StaticLibrary</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'ReleaseMinimal|x64' ">
+    <OutputPath>bin\ReleaseMinimal</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_SDL</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/ReleaseMinimal</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/i18n
+-Jviews/res/mdpi
+-Jviews/res/hdpi</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>libdlangui-monod-linux</OutputName>
+    <Target>StaticLibrary</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'UnittestMinimal|x64' ">
+    <OutputPath>bin\UnittestMinimal</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_SDL</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/UnittestMinimal</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/i18n
+-Jviews/res/mdpi
+-Jviews/res/hdpi</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>libdlangui-monod-linux</OutputName>
+    <Target>StaticLibrary</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\dlangui\core\collections.d" />
     <Compile Include="src\dlangui\core\editable.d" />

@@ -99,6 +99,75 @@
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugMinimal|x64' ">
+    <OutputPath>bin\DebugMinimal</OutputPath>
+    <ObjectsDirectory>obj/DebugMinimal</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/hdpi
+-Jviews/res/mdpi
+-Jviews/res/i18n
+</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>example1-monod-linux</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_SDL</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'ReleaseMinimal|x64' ">
+    <OutputPath>bin\ReleaseMinimal</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_SDL</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/ReleaseMinimal</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/hdpi
+-Jviews/res/mdpi
+-Jviews/res/i18n
+</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>example1-monod-linux</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'UnittestMinimal|x64' ">
+    <OutputPath>bin\UnittestMinimal</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_SDL</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/UnittestMinimal</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/hdpi
+-Jviews/res/mdpi
+-Jviews/res/i18n
+</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>example1-monod-linux</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\example1.d" />
   </ItemGroup>

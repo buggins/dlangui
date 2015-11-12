@@ -78,6 +78,57 @@
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugMinimal|x64' ">
+    <OutputPath>bin\DebugMinimal</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_SDL</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/DebugMinimal</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>helloworld-monod-linux</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'ReleaseMinimal|x64' ">
+    <OutputPath>bin\ReleaseMinimal</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_SDL</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/ReleaseMinimal</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>helloworld-monod-linux</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'UnittestMinimal|x64' ">
+    <OutputPath>bin\UnittestMinimal</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_SDL</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/UnittestMinimal</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>helloworld-monod-linux</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\helloworld.d" />
   </ItemGroup>

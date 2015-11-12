@@ -9,7 +9,7 @@
     "targetType": "executable",
     "targetName": "tetris",
 
-    "stringImportPaths": ["views", "views/res", "views/res/i18n", "views/res/mdpi"],
+    "stringImportPaths": ["views", "views/res"],
 
     "sourceFiles-windows": ["$PACKAGE_DIR/src/win_app.def"],
 
