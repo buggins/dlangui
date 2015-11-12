@@ -272,6 +272,9 @@ Following settings are to be applied to all configurations of your new project (
 
 Now you can build and run your project.
  
+To hack DlangIDE project, you can clone it from https://github.com/buggins/dlangide.git into the same directory dlangui is cloned to. Then just open solution dlangide/dlangide-monod-linux.sln with mono-d.
+
+
 
 Linux builds (DUB)
 ------------------
