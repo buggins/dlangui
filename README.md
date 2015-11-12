@@ -202,10 +202,14 @@ Open solution file with Mono-D
 
 		dlangui-monod-osx.sln
 
+
 Linux development using Mono-D
 ------------------------------
 
-Install DUB, DMD, MonoDevelop with Mono-D plugin
+Install DUB, DMD, MonoDevelop with Mono-D plugin.
+
+Required libraries: libsdl2, x11, libfreetype, opengl, libfontconfig.
+
 
 Clone DlangUI repository
 
@@ -215,7 +219,7 @@ Enter dlangui directory
 
 		cd dlangui
 
-Clone dependency libraries
+Clone dependency libraries to dlangui/deps directory
 
 		mkdir deps
 		cd deps
@@ -224,62 +228,74 @@ Clone dependency libraries
         git clone https://github.com/DerelictOrg/DerelictFT.git
         git clone https://github.com/DerelictOrg/DerelictSDL2.git
         git clone https://github.com/gecko0307/dlib.git
-        git clone https://github.com/Devisualization/image.git de_image
         git clone https://github.com/Dav1dde/gl3n.git
 
 Open solution file with Mono-D	
 
 		dlangui-monod-linux.sln
 
+Try running examples: helloworld, example1, tetris, dmledit
+
+Configurations Debug, Release, Unittest build SDL2+OpenGL versions of apps.
+
+Configurations DebugMinimal, ReleaseMinimal, UnittestMinimal build pure SDL2 versions of apps.
 
 
-Linux builds
-------------
+If you are creating your own solution / project which uses DlangUI in Mono-D:
 
-* Uses SDL2 or XCB as a backend (SDL2 is recommended, since has better support now).
-* Uses shared memory images for faster drawing.
+  * Create new solution (assuming that solution directory is located in the same directory as dlangui and "Create directory for solution" option is unchecked; if no - you will need to correct pathes)
+  * Add / create source files of your project (e.g. copy+paste helloworld.d)
+  * Add dlangui library project dlangui/dlangui-monod-linux.dproj to solution
+  
+Following settings are to be applied to all configurations of your new project (Debug, Release, Unittest):
+
+  * In your project options Build/Project Dependencies - mark dlangui-monod-linux item
+  * In your project options Build/Compiling/Linking - check "Link in static/shared libraries from nested dependencies"
+  * In your project options Build/Compiling/Compiling - specify Version constants as "USE_OPENGL;USE_SDL;USE_FREETYPE;EmbedStandardResources" (EmbedStandardResources is required if you want to embed your own additional resources into executable)
+  * If your project needs to embed some resources into executable (usually from "views" directory), specify all directories which contain resources in Build/Compiling/Compiling/Extra Compiler Options, e.g.:
+  
+        -Jviews
+        -Jviews/res
+        -Jviews/res/i18n
+        -Jviews/res/mdpi
+        -Jviews/res/hdpi
+  
+  * In your project options Build/Includes put list of import directories of DlangUI library and its dependencies, like
+  
+        ../dlangui/src
+        ../dlangui/deps/dlib
+        ../dlangui/deps/gl3n
+        ../dlangui/deps/DerelictSDL2/source
+        ../dlangui/deps/DerelictFT/source
+        ../dlangui/deps/DerelictGL3/source
+        ../dlangui/deps/DerelictUtil/source
+
+Now you can build and run your project.
+ 
+
+Linux builds (DUB)
+------------------
+
+* Uses SDL2 as a backend.
 * Uses FreeType for font rendering.
-* TODO: Use FontConfig to get font list.
-* OpenGL is now working under SDL2 only.
-* Entering of unicode characters is now working under SDL2 only.
+* Uses FontConfig to get list of available fonts.
+* OpenGL is can be optionally used for better drawing performance.
 
-
-For linux build with SDL2 backend, following libraries are required:
-
-        libsdl2
-
-To build dlangui apps with XCB backend, development packages for following libraries required for XCB backend build:
-
-        xcb, xcb-util, xcb-shm, xcb-image, xcb-keysyms, X11-xcb, X11
+        libsdl2, libfreetype, libfontconfig
 
 E.g. in Ubuntu, you can use following command to enable SDL2 backend builds:
 
         sudo apt-get install libsdl2-dev
 
-or (for XCB backend)
-
-        sudo apt-get install libxcb-image0-dev libxcb-shm0-dev libxcb-keysyms1-dev
-
-
 In runtime, .so for following libraries are being loaded (binary packages required):
 
-        freetype, opengl
+        freetype, opengl, fontconfig
 
 
 Build and run on Linux using DUB:
 
         dub run dlangui:example1
 
-Development using Mono-D: 
-
-* open solution dlangui/dlanguimonod.sln 
-* build and run project example1
-
-You need fresh version of MonoDevelop to use Mono-D. It can be installed from PPA repository.
-
-        sudo add-apt-repository ppa:ermshiperete/monodevelop
-        sudo apt-get update
-        sudo apt-get install monodevelop-current
 
 
 Other platforms
