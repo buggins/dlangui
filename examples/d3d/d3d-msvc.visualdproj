@@ -1,5 +1,5 @@
 <DProject>
- <ProjectGuid>{79EA1B6E-D87E-4C45-A12D-7AD00C398F1F}</ProjectGuid>
+ <ProjectGuid>{1C8C4726-B356-4533-90C7-88BDA875BF30}</ProjectGuid>
  <Config name="Debug" platform="Win32">
   <obj>0</obj>
   <link>0</link>
@@ -53,7 +53,7 @@
   <cccmd>$(CC) -c</cccmd>
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>$(SolutionDir)/src $(SolutionDir)/3rdparty $(SolutionDir)/3rdparty/libpng/source $(SolutionDir)/../DerelictGL3/source  $(SolutionDir)/../DerelictUtil/source  $(SolutionDir)/../DerelictFT/source    $(SolutionDir)/../DerelictSDL2/source   $(SolutionDir)/../de_image/source/interfaces $(SolutionDir)/../de_image/source/png $(SolutionDir)/../dlib</imppath>
+  <imppath>$(SolutionDir)/src $(SolutionDir)/3rdparty $(SolutionDir)/deps/DerelictGL3/source  $(SolutionDir)/deps/DerelictUtil/source  $(SolutionDir)/deps/DerelictFT/source $(SolutionDir)/deps/DerelictSDL2/source $(SolutionDir)/deps/de_image/source/interfaces $(SolutionDir)/deps/de_image/source/png $(SolutionDir)/deps/dlib</imppath>
   <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
@@ -72,7 +72,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>Unicode  USE_OPENGL USE_FREETYPE EmbedStandardResources ForceLogs</versionids>
+  <versionids>Unicode  USE_OPENGL USE_FREETYPE EmbedStandardResources</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -155,7 +155,7 @@
   <cccmd>$(CC) -c</cccmd>
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>$(SolutionDir)/src $(SolutionDir)/3rdparty $(SolutionDir)/3rdparty/libpng/source $(SolutionDir)/../DerelictGL3/source  $(SolutionDir)/../DerelictUtil/source  $(SolutionDir)/../DerelictFT/source    $(SolutionDir)/../DerelictSDL2/source   $(SolutionDir)/../de_image/source/interfaces $(SolutionDir)/../de_image/source/png $(SolutionDir)/../dlib</imppath>
+  <imppath>$(SolutionDir)/src $(SolutionDir)/3rdparty $(SolutionDir)/deps/DerelictGL3/source  $(SolutionDir)/deps/DerelictUtil/source  $(SolutionDir)/deps/DerelictFT/source $(SolutionDir)/deps/DerelictSDL2/source $(SolutionDir)/deps/de_image/source/interfaces $(SolutionDir)/deps/de_image/source/png $(SolutionDir)/deps/dlib</imppath>
   <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
@@ -174,7 +174,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>Unicode  USE_OPENGL USE_FREETYPE EmbedStandardResources ForceLogs</versionids>
+  <versionids>Unicode  USE_OPENGL USE_FREETYPE EmbedStandardResources</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -248,7 +248,7 @@
   <pic>0</pic>
   <cov>0</cov>
   <nofloat>0</nofloat>
-  <Dversion>2</Dversion>
+  <Dversion>2.043</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
   <allinst>0</allinst>
   <stackStomp>0</stackStomp>
@@ -257,7 +257,7 @@
   <cccmd>$(CC) -c</cccmd>
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>$(SolutionDir)/src $(SolutionDir)/3rdparty $(SolutionDir)/3rdparty/libpng/source $(SolutionDir)/../DerelictGL3/source  $(SolutionDir)/../DerelictUtil/source  $(SolutionDir)/../DerelictFT/source    $(SolutionDir)/../DerelictSDL2/source   $(SolutionDir)/../de_image/source/interfaces $(SolutionDir)/../de_image/source/png $(SolutionDir)/../dlib</imppath>
+  <imppath>$(SolutionDir)/src $(SolutionDir)/3rdparty $(SolutionDir)/deps/DerelictGL3/source  $(SolutionDir)/deps/DerelictUtil/source  $(SolutionDir)/deps/DerelictFT/source $(SolutionDir)/deps/DerelictSDL2/source $(SolutionDir)/deps/de_image/source/interfaces $(SolutionDir)/deps/de_image/source/png $(SolutionDir)/deps/dlib</imppath>
   <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
@@ -276,7 +276,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>Unicode  USE_OPENGL USE_FREETYPE EmbedStandardResources ForceLogs</versionids>
+  <versionids>Unicode  USE_OPENGL USE_FREETYPE EmbedStandardResources</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -314,7 +314,7 @@
   <multiobj>0</multiobj>
   <singleFileCompilation>0</singleFileCompilation>
   <oneobj>0</oneobj>
-  <mscoff>1</mscoff>
+  <mscoff>0</mscoff>
   <trace>0</trace>
   <quiet>0</quiet>
   <verbose>0</verbose>
@@ -350,7 +350,7 @@
   <pic>0</pic>
   <cov>0</cov>
   <nofloat>0</nofloat>
-  <Dversion>2</Dversion>
+  <Dversion>2.043</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
   <allinst>0</allinst>
   <stackStomp>0</stackStomp>
@@ -359,7 +359,7 @@
   <cccmd>$(CC) -c</cccmd>
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>$(SolutionDir)/src $(SolutionDir)/3rdparty $(SolutionDir)/3rdparty/libpng/source $(SolutionDir)/../DerelictGL3/source  $(SolutionDir)/../DerelictUtil/source  $(SolutionDir)/../DerelictFT/source    $(SolutionDir)/../DerelictSDL2/source   $(SolutionDir)/../de_image/source/interfaces $(SolutionDir)/../de_image/source/png $(SolutionDir)/../dlib</imppath>
+  <imppath>$(SolutionDir)/src $(SolutionDir)/3rdparty $(SolutionDir)/deps/DerelictGL3/source  $(SolutionDir)/deps/DerelictUtil/source  $(SolutionDir)/deps/DerelictFT/source $(SolutionDir)/deps/DerelictSDL2/source $(SolutionDir)/deps/de_image/source/interfaces $(SolutionDir)/deps/de_image/source/png $(SolutionDir)/deps/dlib</imppath>
   <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
@@ -378,7 +378,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>Unicode  USE_OPENGL USE_FREETYPE EmbedStandardResources ForceLogs</versionids>
+  <versionids>Unicode  USE_OPENGL USE_FREETYPE EmbedStandardResources</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -408,7 +408,7 @@
   <postBuildCommand />
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
  </Config>
- <Folder name="dmledit">
-  <File path="src\dmledit.d" />
+ <Folder name="d3d">
+  <File path="src\d3d.d" />
  </Folder>
 </DProject>
