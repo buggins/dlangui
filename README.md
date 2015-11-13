@@ -371,6 +371,12 @@ Clone dependency libraries to dlangui/deps directory
         git clone https://github.com/gecko0307/dlib.git
         git clone https://github.com/Dav1dde/gl3n.git
         git clone https://github.com/Devisualization/image.git de_image
+        git clone https://github.com/Hackerpilot/libdparse.git
+
+For DlangIDE development, close dlangide project on the same directory level as dlangui is cloned:
+
+        cd ../..
+	git clone https://github.com/buggins/dlangide.git
 
 Open solution file with Visual-D
 
