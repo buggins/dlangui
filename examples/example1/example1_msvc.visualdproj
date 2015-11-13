@@ -72,7 +72,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>EmbedStandardResources Unicode USE_FREETYPE USE_OPENGL </versionids>
+  <versionids>EmbedStandardResources Unicode ForceLogs</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -116,8 +116,8 @@
   <verbose>0</verbose>
   <vtls>0</vtls>
   <vgc>0</vgc>
-  <symdebug>0</symdebug>
-  <optimize>1</optimize>
+  <symdebug>1</symdebug>
+  <optimize>0</optimize>
   <cpu>0</cpu>
   <isX86_64>0</isX86_64>
   <isLinux>0</isLinux>
@@ -136,8 +136,8 @@
   <noboundscheck>0</noboundscheck>
   <useSwitchError>0</useSwitchError>
   <useUnitTests>0</useUnitTests>
-  <useInline>1</useInline>
-  <release>1</release>
+  <useInline>0</useInline>
+  <release>0</release>
   <preservePaths>0</preservePaths>
   <warnings>0</warnings>
   <infowarnings>0</infowarnings>
@@ -174,7 +174,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>EmbedStandardResources Unicode USE_FREETYPE USE_OPENGL </versionids>
+  <versionids>EmbedStandardResources Unicode ForceLogs</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -276,7 +276,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>EmbedStandardResources Unicode USE_FREETYPE USE_OPENGL </versionids>
+  <versionids>EmbedStandardResources Unicode ForceLogs</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -378,7 +378,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>EmbedStandardResources Unicode USE_FREETYPE USE_OPENGL </versionids>
+  <versionids>EmbedStandardResources Unicode ForceLogs</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
