@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dlangui", "dlangui_msvc.visualdproj", "{52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5}"
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dlangui", "dlangui-msvc.visualdproj", "{52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5}"
 EndProject
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "d3d", "examples\d3d\d3d_msvc.visualdproj", "{1C8C4726-B356-4533-90C7-88BDA875BF30}"
 	ProjectSection(ProjectDependencies) = postProject
