@@ -38,7 +38,8 @@
     </VersionIds>
     <ObjectsDirectory>obj/Debug</ObjectsDirectory>
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
-    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi</ExtraCompilerArguments>
+    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi
+-v</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
     <OutputName>example1-monod-osx</OutputName>
     <Target>Executable</Target>
@@ -64,6 +65,7 @@
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
+    <ExtraLinkerArguments>-v</ExtraLinkerArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|x64' ">
     <DebugSymbols>true</DebugSymbols>
@@ -84,6 +86,7 @@
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
+    <ExtraLinkerArguments>-v</ExtraLinkerArguments>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\example1.d" />
