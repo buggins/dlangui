@@ -2,7 +2,7 @@
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
     <ProjectGuid>{1F050D82-5245-4B51-A554-473194EA0DE9}</ProjectGuid>
     <Compiler>DMD2</Compiler>
     <PreferOneStepBuild>true</PreferOneStepBuild>
@@ -26,17 +26,6 @@
       </Includes>
     </Includes>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Debug</OutputPath>
-    <ObjectsDirectory>obj/Debug</ObjectsDirectory>
-    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
-    <UnittestMode>false</UnittestMode>
-    <OutputName>derelictcocoatest-monod-osx</OutputName>
-    <Target>Executable</Target>
-    <Externalconsole>true</Externalconsole>
-    <DebugLevel>0</DebugLevel>
-  </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <OutputPath>bin\Release</OutputPath>
     <ObjectsDirectory>obj/Release</ObjectsDirectory>
@@ -53,6 +42,25 @@
     <ObjectsDirectory>obj/Unittest</ObjectsDirectory>
     <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
     <UnittestMode>true</UnittestMode>
+    <OutputName>derelictcocoatest-monod-osx</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_SDL</String>
+        <String>USE_OPENGL</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/Debug</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <UnittestMode>false</UnittestMode>
     <OutputName>derelictcocoatest-monod-osx</OutputName>
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>

@@ -38,14 +38,13 @@
     </VersionIds>
     <ObjectsDirectory>obj/Debug</ObjectsDirectory>
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
-    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi
--v</ExtraCompilerArguments>
+    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
     <OutputName>example1-monod-osx</OutputName>
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
-    <ExtraLinkerArguments>-v</ExtraLinkerArguments>
+    <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <OutputPath>bin\Release</OutputPath>
