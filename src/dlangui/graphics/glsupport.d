@@ -27,6 +27,22 @@ import std.conv;
 import std.string;
 import std.array;
 
+derelict.util.exception.ShouldThrow gl3MissingSymFunc( string symName ) {
+	import std.algorithm : equal;
+	foreach(s; ["glGetError", "glShaderSource", "glCompileShader", 
+			"glGetShaderiv", "glGetShaderInfoLog", "glGetString", 
+			"glCreateProgram", "glUseProgram", "glDeleteProgram", 
+			"glDeleteShader", "glEnable", "glDisable", "glBlendFunc", 
+			"glUniformMatrix4fv", "glGetAttribLocation", "glGetUniformLocation", 
+			"glGenVertexArrays", "glBindVertexArray", "glBufferData", 
+			"glBindBuffer", "glBufferSubData"]) {
+		if (symName.equal(s)) // Symbol is used
+			return derelict.util.exception.ShouldThrow.Yes;
+	}
+	// Don't throw for unused symbol
+	return derelict.util.exception.ShouldThrow.No;
+}
+
 // utility function to fill 4-float array of vertex colors with converted CR 32bit color
 private void LVGLFillColor(uint color, float * buf, int count) {
     float r = ((color >> 16) & 255) / 255.0f;
@@ -85,8 +101,11 @@ class GLProgram {
     }
     
     private void compatibilityFixes(ref char[] code, GLuint type) {
-        if (glslversionInt < 150)
+        if (glslversionInt < 150) {
             code = replace(code, " texture(", " texture2D(");
+			code = replace(code, "in ", "");
+			code = replace(code, "out ", "");
+		}
     }
     
     private GLuint compileShader(string src, GLuint type) {
@@ -277,11 +296,17 @@ class SolidFillProgram : GLProgram {
 
         matrixLocation = glGetUniformLocation(program, "matrix");
 		checkError("glGetUniformLocation matrix");
+		if (matrixLocation == 0)
+			Log.e("glGetUniformLocation failed for matrixLocation");
         vertexLocation = glGetAttribLocation(program, "vertex");
 		checkError("glGetAttribLocation vertex");
-        colAttrLocation = glGetAttribLocation(program, "colAttr");
+		if (vertexLocation == 0)
+			Log.e("glGetUniformLocation failed for vertexLocation");
+		colAttrLocation = glGetAttribLocation(program, "colAttr");
 		checkError("glGetAttribLocation colAttr");
-        return res && matrixLocation >= 0 && vertexLocation >= 0 && colAttrLocation >= 0;
+		if (colAttrLocation == 0)
+			Log.e("glGetUniformLocation failed for colAttrLocation");
+		return res && matrixLocation >= 0 && vertexLocation >= 0 && colAttrLocation >= 0;
     }
 
     bool execute(float[] vertices, float[] colors) {
