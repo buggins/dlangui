@@ -15,48 +15,59 @@ void main(string[] args)
     Log.setStderrLogger();
     Log.setLogLevel(LogLevel.Trace);
     DerelictCocoa.load();
-    
-    NSString appName = NSProcessInfo.processInfo().processName();
-    Log.i("appName = %s", appName);
-    //writefln("appName = %s", appName);
-    
-    auto pool = new NSAutoreleasePool;
-    
-    auto NSApp = NSApplication.sharedApplication;
-    
-    NSApp.setActivationPolicy(NSApplicationActivationPolicyRegular);
-    
-    NSMenu menubar = NSMenu.alloc;
-    menubar.init_();
-    NSMenuItem appMenuItem = NSMenuItem.alloc();
-    appMenuItem.init_();
-    menubar.addItem(appMenuItem);
-    NSApp.setMainMenu(menubar);
-    
-    NSWindow window = NSWindow.alloc();
-    window.initWithContentRect(NSMakeRect(10, 10, 200, 200), 
-        NSTitledWindowMask | NSClosableWindowMask | NSResizableWindowMask, //NSBorderlessWindowMask, 
-        NSBackingStoreBuffered, NO);
-    window.makeKeyAndOrderFront();
 
-    NSView parentView;
-    parentView = window.contentView();
+    static if (true) {
+        auto pool = new NSAutoreleasePool;
+        NSString appName = NSProcessInfo.processInfo().processName();
+        Log.i("appName = %s", appName);
 
-    Log.i("parentView=", parentView);
-    
-    NSApp.activateIgnoringOtherApps(YES);
-
-//    string uuid = randomUUID().toString();
-//    DlanguiCocoaView.customClassName = "DlanguiCocoaView_" ~ uuid;
-//    DlanguiCocoaView.registerSubclass();
-//    
-//    _view = DlanguiCocoaView.alloc();
-//    _view.initialize(this, width, height);
-//    
-//    parentView.addSubview(_view);
+        CocoaWindow window = new CocoaWindow(cast(void*)null, new IWindowListenerLogger(), 300, 300);
+        Log.d("");
+    } else {
 
 
-    NSApp.run();
+        NSString appName = NSProcessInfo.processInfo().processName();
+        Log.i("appName = %s", appName);
+        //writefln("appName = %s", appName);
+        
+        auto pool = new NSAutoreleasePool;
+        
+        auto NSApp = NSApplication.sharedApplication;
+        
+        NSApp.setActivationPolicy(NSApplicationActivationPolicyRegular);
+        
+        NSMenu menubar = NSMenu.alloc;
+        menubar.init_();
+        NSMenuItem appMenuItem = NSMenuItem.alloc();
+        appMenuItem.init_();
+        menubar.addItem(appMenuItem);
+        NSApp.setMainMenu(menubar);
+        
+        NSWindow window = NSWindow.alloc();
+        window.initWithContentRect(NSMakeRect(10, 10, 200, 200), 
+            NSTitledWindowMask | NSClosableWindowMask | NSResizableWindowMask, //NSBorderlessWindowMask, 
+            NSBackingStoreBuffered, NO);
+        window.makeKeyAndOrderFront();
+
+        NSView parentView;
+        parentView = window.contentView();
+
+        Log.i("parentView=", parentView);
+        
+        NSApp.activateIgnoringOtherApps(YES);
+
+    //    string uuid = randomUUID().toString();
+    //    DlanguiCocoaView.customClassName = "DlanguiCocoaView_" ~ uuid;
+    //    DlanguiCocoaView.registerSubclass();
+    //    
+    //    _view = DlanguiCocoaView.alloc();
+    //    _view.initialize(this, width, height);
+    //    
+    //    parentView.addSubview(_view);
+
+
+        NSApp.run();
+    }
 
     DerelictCocoa.unload();
 }
@@ -73,6 +84,40 @@ interface IWindowListener {
     void onResized(int width, int height);
     void onAnimate(double dt, double time);
     Rect getDirtyRectangle();
+}
+
+class IWindowListenerLogger : IWindowListener {
+    override void onMouseWheel(int x, int y, int deltaX, int deltaY, MouseState state) {
+        Log.d("onMouseWheel");
+    }
+    override void onKeyDown(uint key) {
+        Log.d("onKeyDown");
+    }
+    override void onKeyUp(uint key) {
+        Log.d("onKeyUp");
+    }
+    override void onMouseMove(int x, int y, int deltaX, int deltaY,
+        MouseState mouseState) {
+        Log.d("onMouseMove");
+    }
+    override void onMouseRelease(int x, int y, MouseButton mb, MouseState mouseState) {
+        Log.d("onMouseRelease");
+    }
+    override void onMouseClick(int x, int y, MouseButton mb, bool isDoubleClick, MouseState mouseState) {
+        Log.d("onMouseClick");
+    }
+    override void recomputeDirtyAreas() {
+        Log.d("recomputeDirtyAreas");
+    }
+    override void onResized(int width, int height) {
+        Log.d("onResized");
+    }
+    override void onAnimate(double dt, double time) {
+        Log.d("onAnimate");
+    }
+    override Rect getDirtyRectangle() {
+        return Rect(0, 0, 100, 100);
+    }
 }
 
 struct MouseState {
