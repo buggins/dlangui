@@ -146,16 +146,31 @@ class EditFrame : AppFrame {
         }
     }
 
+	void saveSourceFile(string filename) {
+		if (filename.length == 0)
+			filename = _filename;
+		import std.file;
+		_filename = filename;
+		window.windowCaption = toUTF32(filename);
+		_editor.save(filename);
+	}
+
     bool onCanClose() {
         // todo
         return true;
     }
 
-    FileDialog createFileDialog(UIString caption) {
-        FileDialog dlg = new FileDialog(caption, window, null);
+    FileDialog createFileDialog(UIString caption, bool fileMustExist = true) {
+		uint flags = DialogFlag.Modal | DialogFlag.Resizable;
+		if (fileMustExist)
+			flags |= FileDialogFlag.FileMustExist;
+        FileDialog dlg = new FileDialog(caption, window, null, flags);
         dlg.filetypeIcons[".d"] = "text-dml";
         return dlg;
     }
+
+	void saveAs() {
+	}
 
     /// override to handle specific actions
 	override bool handleAction(const Action a) {
@@ -169,7 +184,40 @@ class EditFrame : AppFrame {
                     window.showMessageBox(UIString("About DlangUI ML Editor"d), 
                                           UIString("DLangIDE\n(C) Vadim Lopatin, 2015\nhttp://github.com/buggins/dlangui\nSimple editor for DML code"d));
                     return true;
-                case IDEActions.FileOpen:
+				case IDEActions.FileNew:
+					UIString caption;
+					caption = "Create new DML file"d;
+					FileDialog dlg = createFileDialog(caption, false);
+					dlg.addFilter(FileFilterEntry(UIString("DML files"d), "*.dml"));
+					dlg.addFilter(FileFilterEntry(UIString("All files"d), "*.*"));
+					dlg.onDialogResult = delegate(Dialog dlg, const Action result) {
+						if (result.id == ACTION_OPEN.id) {
+							string filename = result.stringParam;
+							_editor.text=""d;
+							saveSourceFile(filename);
+						}
+					};
+					dlg.show();
+					return true;
+				case IDEActions.FileSave:
+					if (_filename.length) {
+						saveSourceFile(_filename);
+						return true;
+					}
+					UIString caption;
+					caption = "Save DML File as"d;
+					FileDialog dlg = createFileDialog(caption, false);
+					dlg.addFilter(FileFilterEntry(UIString("DML files"d), "*.dml"));
+					dlg.addFilter(FileFilterEntry(UIString("All files"d), "*.*"));
+					dlg.onDialogResult = delegate(Dialog dlg, const Action result) {
+						if (result.id == ACTION_OPEN.id) {
+							string filename = result.stringParam;
+							saveSourceFile(filename);
+						}
+					};
+					dlg.show();
+					return true;
+				case IDEActions.FileOpen:
                     UIString caption;
                     caption = "Open DML File"d;
                     FileDialog dlg = createFileDialog(caption);
@@ -196,7 +244,23 @@ class EditFrame : AppFrame {
 		return false;
 	}
 
-    void updatePreview() {
+	/// override to handle specific actions state (e.g. change enabled state for supported actions)
+	override bool handleActionStateRequest(const Action a) {
+		switch (a.id) {
+			case IDEActions.HelpAbout:
+			case IDEActions.FileNew:
+			case IDEActions.FileSave:
+			case IDEActions.FileOpen:
+			case IDEActions.DebugStart:
+			case IDEActions.EditPreferences:
+				a.state = ACTION_STATE_ENABLED;
+				return true;
+			default:
+				return super.handleActionStateRequest(a);
+		}
+	}
+
+	void updatePreview() {
         dstring dsource = _editor.text;
         string source = toUTF8(dsource);
         try {

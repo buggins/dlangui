@@ -1074,7 +1074,7 @@ class SDLPlatform : Platform {
                     case SDL_KEYDOWN:
                         SDLWindow w = getWindow(event.key.windowID);
                         if (w) {
-                            w.processKeyEvent(KeyAction.KeyDown, event.key.keysym.sym, event.key.keysym.mod);
+							w.processKeyEvent(KeyAction.KeyDown, event.key.keysym.sym, event.key.keysym.mod);
                             SDL_StartTextInput();
                         }
                         break;
@@ -1177,9 +1177,6 @@ class SDLPlatform : Platform {
 	protected SDLWindow[uint] _windowMap;
 }
 
-// entry point
-extern(C) int UIAppMain(string[] args);
-
 version (Windows) {
     import win32.windows;
     import dlangui.platforms.windows.win32fonts;
@@ -1266,9 +1263,6 @@ version (Windows) {
 
 	extern(C) int DLANGUImain(string[] args)
 	{
-		
-        initLogs();
-
         return sdlmain(args);
 	}
 }
@@ -1309,7 +1303,7 @@ int sdlmain(string[] args) {
     }
 
     SDL_DisplayMode displayMode;
-    if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_EVENTS) != 0) {
+	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_EVENTS|SDL_INIT_NOPARACHUTE) != 0) {
         Log.e("Cannot init SDL2");	
         return 2;
     }
@@ -1336,7 +1330,8 @@ int sdlmain(string[] args) {
     if (!sdl.connect()) {
         return 1;
     }
-    Platform.setInstance(sdl);
+
+	Platform.setInstance(sdl);
 
     int res = 0;
 

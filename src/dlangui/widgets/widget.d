@@ -1579,7 +1579,7 @@ class Widget {
             alpha = cast(ushort)value;
             return true;
         }
-        mixin(generatePropertySetters("minWidth", "maxWidth", "minHeight", "maxHeight", "layoutWidth", "layoutHeight", "textColor", "backgroundColor", "fontSize", "fontWeight"));
+        mixin(generatePropertySetters("minWidth", "maxWidth", "minHeight", "maxHeight", "layoutWidth", "layoutHeight", "layoutWeight", "textColor", "backgroundColor", "fontSize", "fontWeight"));
         if (name.equal("margins")) { // use same value for all sides
             margins = Rect(value, value, value, value);
             return true;
