@@ -6,6 +6,7 @@ import derelict.cocoa;
 import dlangui.core.logger;
 import dlangui.core.types;
 import dlangui.core.events;
+import dlangui.graphics.drawbuf;
 import std.uuid;
 import core.stdc.stdlib;
 import std.string;
@@ -15,6 +16,8 @@ void main(string[] args)
     Log.setStderrLogger();
     Log.setLogLevel(LogLevel.Trace);
     DerelictCocoa.load();
+
+
 
     static if (true) {
         auto pool = new NSAutoreleasePool;
@@ -107,13 +110,13 @@ class IWindowListenerLogger : IWindowListener {
         Log.d("onMouseClick");
     }
     override void recomputeDirtyAreas() {
-        Log.d("recomputeDirtyAreas");
+        //Log.d("recomputeDirtyAreas");
     }
     override void onResized(int width, int height) {
         Log.d("onResized");
     }
     override void onAnimate(double dt, double time) {
-        Log.d("onAnimate");
+        //Log.d("onAnimate");
     }
     override Rect getDirtyRectangle() {
         return Rect(0, 0, 100, 100);
@@ -149,6 +152,8 @@ private:
     CGColorSpaceRef _cgColorSpaceRef;
     NSData _imageData;
     NSString _logFormatStr;
+
+    ColorDrawBuf _drawBuf;
     
     DPlugCustomView _view = null;
     
@@ -184,7 +189,9 @@ public:
             
             NSWindow window = NSWindow.alloc();
             window.initWithContentRect(NSMakeRect(100, 100, width, height),
-                NSBorderlessWindowMask, NSBackingStoreBuffered, NO);
+                NSTitledWindowMask | NSClosableWindowMask | NSResizableWindowMask, 
+                NSBackingStoreBuffered, 
+                NO);
             window.makeKeyAndOrderFront();
             
             parentView = window.contentView();
@@ -409,10 +416,11 @@ private:
 //        wfb.pitch = byteStride(_width);
 //        wfb.pixels = cast(RGBA*)_buffer;
 //        _listener.onDraw(wfb, WindowPixelFormat.ARGB8);
-        
+        _drawBuf.fill(0x8090B0);
+        _drawBuf.fillRect(Rect(20, 20, 120, 120), 0xFFBBBB);
         
         size_t sizeNeeded = byteStride(_width) * _height;
-        _imageData = NSData.dataWithBytesNoCopy(_buffer, sizeNeeded, false);
+        _imageData = NSData.dataWithBytesNoCopy(cast(ubyte*)_drawBuf.scanLine(0), sizeNeeded, false);
         
         CIImage image = CIImage.imageWithBitmapData(_imageData,
             byteStride(_width),
@@ -440,6 +448,10 @@ private:
             _buffer = cast(ubyte*) malloc(sizeNeeded);
             _width = newWidth;
             _height = newHeight;
+            if (_drawBuf is null)
+                _drawBuf = new ColorDrawBuf(_width, _height);
+            else if (_drawBuf.width != _width || _drawBuf.height != _height)
+                _drawBuf.resize(_width, _height);
             _listener.onResized(_width, _height);
             return true;
         }
