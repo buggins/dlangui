@@ -3,29 +3,29 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
 VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dlangui", "dlangui_msvc.visualdproj", "{52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5}"
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dlangui", "dlangui-msvc.visualdproj", "{52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5}"
 EndProject
-Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "d3d", "examples\d3d\d3d_msvc.visualdproj", "{1C8C4726-B356-4533-90C7-88BDA875BF30}"
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "d3d", "examples\d3d\d3d-msvc.visualdproj", "{1C8C4726-B356-4533-90C7-88BDA875BF30}"
 	ProjectSection(ProjectDependencies) = postProject
 		{52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5} = {52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5}
 	EndProjectSection
 EndProject
-Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dmledit", "examples\dmledit\dmledit_msvc.visualdproj", "{79EA1B6E-D87E-4C45-A12D-7AD00C398F1F}"
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dmledit", "examples\dmledit\dmledit-msvc.visualdproj", "{79EA1B6E-D87E-4C45-A12D-7AD00C398F1F}"
 	ProjectSection(ProjectDependencies) = postProject
 		{52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5} = {52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5}
 	EndProjectSection
 EndProject
-Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "example1", "examples\example1\example1_msvc.visualdproj", "{B1CA031C-C195-4938-8F3E-8BFF7DA68933}"
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "example1", "examples\example1\example1-msvc.visualdproj", "{B1CA031C-C195-4938-8F3E-8BFF7DA68933}"
 	ProjectSection(ProjectDependencies) = postProject
 		{52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5} = {52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5}
 	EndProjectSection
 EndProject
-Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "helloworld", "examples\helloworld\helloworld_msvc.visualdproj", "{9F5147FF-DB71-4CEC-BF2F-803143E42BCD}"
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "helloworld", "examples\helloworld\helloworld-msvc.visualdproj", "{9F5147FF-DB71-4CEC-BF2F-803143E42BCD}"
 	ProjectSection(ProjectDependencies) = postProject
 		{52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5} = {52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5}
 	EndProjectSection
 EndProject
-Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "tetris", "examples\tetris\tetris_msvc.visualdproj", "{954B6A84-1EEC-42B0-B215-2A17842B1101}"
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "tetris", "examples\tetris\tetris-msvc.visualdproj", "{954B6A84-1EEC-42B0-B215-2A17842B1101}"
 	ProjectSection(ProjectDependencies) = postProject
 		{52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5} = {52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5}
 	EndProjectSection

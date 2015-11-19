@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <ProjectGuid>{620F56F7-F6DE-45D2-955D-912A22EE728A}</ProjectGuid>
+    <Compiler>DMD2</Compiler>
+    <PreferOneStepBuild>true</PreferOneStepBuild>
+    <UseDefaultCompiler>true</UseDefaultCompiler>
+    <IncrementalLinking>true</IncrementalLinking>
+    <Includes>
+      <Includes>
+        <Path>..\..\src</Path>
+        <Path>..\..\deps\DerelictFT\source</Path>
+        <Path>..\..\deps\DerelictSDL2\source</Path>
+        <Path>..\..\deps\DerelictGL3\source</Path>
+        <Path>..\..\deps\DerelictUtil\source</Path>
+        <Path>..\..\deps\gl3n</Path>
+        <Path>..\..\deps\dlib</Path>
+      </Includes>
+    </Includes>
+    <DependentProjectIds>
+      <DependentProjectIds>
+        <String>{45FB40CD-E99A-4C12-AC52-C13364412E09}</String>
+      </DependentProjectIds>
+    </DependentProjectIds>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug</OutputPath>
+    <Target>Executable</Target>
+    <OutputName>dmledit-monod-windows</OutputName>
+    <UnittestMode>false</UnittestMode>
+    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/hdpi -Jviews/res/mdpi</ExtraCompilerArguments>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <ObjectsDirectory>obj\Debug</ObjectsDirectory>
+    <DebugLevel>0</DebugLevel>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_FREETYPE</String>
+        <String>USE_OPENGL</String>
+        <String>EmbedStandardResources</String>
+        <String>Unicode</String>
+        <String>windows</String>
+      </VersionIds>
+    </VersionIds>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <OutputPath>bin\Release</OutputPath>
+    <Target>Executable</Target>
+    <OutputName>dmledit-monod-windows</OutputName>
+    <UnittestMode>false</UnittestMode>
+    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/hdpi -Jviews/res/mdpi</ExtraCompilerArguments>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <ObjectsDirectory>obj\Release</ObjectsDirectory>
+    <DebugLevel>0</DebugLevel>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_FREETYPE</String>
+        <String>USE_OPENGL</String>
+        <String>EmbedStandardResources</String>
+        <String>Unicode</String>
+        <String>windows</String>
+      </VersionIds>
+    </VersionIds>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Unittest</OutputPath>
+    <Externalconsole>true</Externalconsole>
+    <Target>Executable</Target>
+    <OutputName>dmledit-monod-windows</OutputName>
+    <UnittestMode>true</UnittestMode>
+    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/hdpi -Jviews/res/mdpi</ExtraCompilerArguments>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <ObjectsDirectory>obj\Unittest</ObjectsDirectory>
+    <DebugLevel>0</DebugLevel>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_FREETYPE</String>
+        <String>USE_OPENGL</String>
+        <String>EmbedStandardResources</String>
+        <String>Unicode</String>
+        <String>windows</String>
+      </VersionIds>
+    </VersionIds>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="src\dmledit.d" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\win_app.def" />
+  </ItemGroup>
+</Project>

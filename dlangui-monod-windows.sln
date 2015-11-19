@@ -1,0 +1,52 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "dlangui-monod-windows", "dlangui-monod-windows.dproj", "{45FB40CD-E99A-4C12-AC52-C13364412E09}"
+EndProject
+Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "dmledit-monod-windows", "examples\dmledit\dmledit-monod-windows.dproj", "{620F56F7-F6DE-45D2-955D-912A22EE728A}"
+EndProject
+Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "example1-monod-windows", "examples\example1\example1-monod-windows.dproj", "{32EF3B89-10C6-451E-90B9-868693B30D0F}"
+EndProject
+Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "helloworld-monod-windows", "examples\helloworld\helloworld-monod-windows.dproj", "{5EB161E7-0DB3-459F-86C5-32A84A3F4334}"
+EndProject
+Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "tetris-monod-windows", "examples\tetris\tetris-monod-windows.dproj", "{55D1FE26-E1FC-4787-9E22-D6385BA7C066}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		Unittest|Any CPU = Unittest|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{32EF3B89-10C6-451E-90B9-868693B30D0F}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{32EF3B89-10C6-451E-90B9-868693B30D0F}.Debug|Any CPU.Build.0 = Debug|x64
+		{32EF3B89-10C6-451E-90B9-868693B30D0F}.Release|Any CPU.ActiveCfg = Release|x64
+		{32EF3B89-10C6-451E-90B9-868693B30D0F}.Release|Any CPU.Build.0 = Release|x64
+		{32EF3B89-10C6-451E-90B9-868693B30D0F}.Unittest|Any CPU.ActiveCfg = Unittest|x64
+		{32EF3B89-10C6-451E-90B9-868693B30D0F}.Unittest|Any CPU.Build.0 = Unittest|x64
+		{45FB40CD-E99A-4C12-AC52-C13364412E09}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{45FB40CD-E99A-4C12-AC52-C13364412E09}.Debug|Any CPU.Build.0 = Debug|x64
+		{45FB40CD-E99A-4C12-AC52-C13364412E09}.Release|Any CPU.ActiveCfg = Release|x64
+		{45FB40CD-E99A-4C12-AC52-C13364412E09}.Release|Any CPU.Build.0 = Release|x64
+		{45FB40CD-E99A-4C12-AC52-C13364412E09}.Unittest|Any CPU.ActiveCfg = Unittest|x64
+		{45FB40CD-E99A-4C12-AC52-C13364412E09}.Unittest|Any CPU.Build.0 = Unittest|x64
+		{55D1FE26-E1FC-4787-9E22-D6385BA7C066}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{55D1FE26-E1FC-4787-9E22-D6385BA7C066}.Debug|Any CPU.Build.0 = Debug|x64
+		{55D1FE26-E1FC-4787-9E22-D6385BA7C066}.Release|Any CPU.ActiveCfg = Release|x64
+		{55D1FE26-E1FC-4787-9E22-D6385BA7C066}.Release|Any CPU.Build.0 = Release|x64
+		{55D1FE26-E1FC-4787-9E22-D6385BA7C066}.Unittest|Any CPU.ActiveCfg = Unittest|x64
+		{55D1FE26-E1FC-4787-9E22-D6385BA7C066}.Unittest|Any CPU.Build.0 = Unittest|x64
+		{5EB161E7-0DB3-459F-86C5-32A84A3F4334}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{5EB161E7-0DB3-459F-86C5-32A84A3F4334}.Debug|Any CPU.Build.0 = Debug|x64
+		{5EB161E7-0DB3-459F-86C5-32A84A3F4334}.Release|Any CPU.ActiveCfg = Release|x64
+		{5EB161E7-0DB3-459F-86C5-32A84A3F4334}.Release|Any CPU.Build.0 = Release|x64
+		{5EB161E7-0DB3-459F-86C5-32A84A3F4334}.Unittest|Any CPU.ActiveCfg = Unittest|x64
+		{5EB161E7-0DB3-459F-86C5-32A84A3F4334}.Unittest|Any CPU.Build.0 = Unittest|x64
+		{620F56F7-F6DE-45D2-955D-912A22EE728A}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{620F56F7-F6DE-45D2-955D-912A22EE728A}.Debug|Any CPU.Build.0 = Debug|x64
+		{620F56F7-F6DE-45D2-955D-912A22EE728A}.Release|Any CPU.ActiveCfg = Release|x64
+		{620F56F7-F6DE-45D2-955D-912A22EE728A}.Release|Any CPU.Build.0 = Release|x64
+		{620F56F7-F6DE-45D2-955D-912A22EE728A}.Unittest|Any CPU.ActiveCfg = Unittest|x64
+		{620F56F7-F6DE-45D2-955D-912A22EE728A}.Unittest|Any CPU.Build.0 = Unittest|x64
+	EndGlobalSection
+EndGlobal

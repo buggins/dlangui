@@ -183,12 +183,12 @@ Clone DlangUI repository
 
 Enter dlangui directory
 
-		cd dlangui
+        cd dlangui
 
 Clone dependency libraries
 
-		mkdir deps
-		cd deps
+        mkdir deps
+        cd deps
         git clone https://github.com/DerelictOrg/DerelictUtil.git
         git clone https://github.com/DerelictOrg/DerelictGL3.git
         git clone https://github.com/DerelictOrg/DerelictFT.git
@@ -217,12 +217,12 @@ Clone DlangUI repository
 
 Enter dlangui directory
 
-		cd dlangui
+        cd dlangui
 
 Clone dependency libraries to dlangui/deps directory
 
-		mkdir deps
-		cd deps
+        mkdir deps
+        cd deps
         git clone https://github.com/DerelictOrg/DerelictUtil.git
         git clone https://github.com/DerelictOrg/DerelictGL3.git
         git clone https://github.com/DerelictOrg/DerelictFT.git
@@ -233,7 +233,7 @@ Clone dependency libraries to dlangui/deps directory
 
 Open solution file with Mono-D	
 
-		dlangui-monod-linux.sln
+        dlangui-monod-linux.sln
 
 Try running examples: helloworld, example1, tetris, dmledit
 
@@ -274,6 +274,150 @@ Following settings are to be applied to all configurations of your new project (
 Now you can build and run your project.
  
 To hack DlangIDE project, you can clone it from https://github.com/buggins/dlangide.git into the same directory dlangui is cloned to. Then just open solution dlangide/dlangide-monod-linux.sln with mono-d.
+
+
+Windows development using Mono-D
+--------------------------------
+
+Install GIT, DUB, DMD, MonoDevelop with Mono-D plugin.
+
+
+Clone DlangUI repository
+
+        git clone https://github.com/buggins/dlangui.git
+
+Enter dlangui directory
+
+        cd dlangui
+
+Clone dependency libraries to dlangui/deps directory
+
+        mkdir deps
+        cd deps
+        git clone https://github.com/DerelictOrg/DerelictUtil.git
+        git clone https://github.com/DerelictOrg/DerelictGL3.git
+        git clone https://github.com/DerelictOrg/DerelictFT.git
+        git clone https://github.com/DerelictOrg/DerelictSDL2.git
+        git clone https://github.com/gecko0307/dlib.git
+        git clone https://github.com/Dav1dde/gl3n.git
+        git clone https://github.com/Devisualization/image.git de_image
+
+Open solution file with Mono-D	
+
+        dlangui-monod-windows.sln
+
+Try running examples: helloworld, example1, tetris, dmledit
+
+Configurations Debug, Release, Unittest build SDL2+OpenGL versions of apps.
+
+Configurations DebugMinimal, ReleaseMinimal, UnittestMinimal build pure win32 versions of apps w/o OpenGL.
+
+
+If you are creating your own solution / project which uses DlangUI in Mono-D:
+
+  * Create new solution (assuming that solution directory is located in the same directory as dlangui and "Create directory for solution" option is unchecked; if no - you will need to correct pathes)
+  * Add / create source files of your project (e.g. copy+paste helloworld.d)
+  * Add dlangui library project dlangui/dlangui-monod-linux.dproj to solution
+  
+Following settings are to be applied to all configurations of your new project (Debug, Release, Unittest):
+
+  * In your project options Build/Project Dependencies - mark dlangui-monod-linux item
+  * In your project options Build/Compiling/Linking - check "Link in static/shared libraries from nested dependencies"
+  * In your project options Build/Compiling/Compiling - specify Version constants as "USE_FREETYPE;USE_OPENGL;EmbedStandardResources;Unicode;windows" (EmbedStandardResources is required if you want to embed your own additional resources into executable)
+  * If your project needs to embed some resources into executable (usually from "views" directory), specify all directories which contain resources in Build/Compiling/Compiling/Extra Compiler Options, e.g.:
+  
+        -Jviews
+        -Jviews/res
+        -Jviews/res/i18n
+        -Jviews/res/mdpi
+        -Jviews/res/hdpi
+  
+  * In your project options Build/Includes put list of import directories of DlangUI library and its dependencies, like
+  
+        ../dlangui/src
+        ../dlangui/deps/dlib
+        ../dlangui/deps/gl3n
+        ../dlangui/deps/DerelictSDL2/source
+        ../dlangui/deps/DerelictFT/source
+        ../dlangui/deps/DerelictGL3/source
+        ../dlangui/deps/DerelictUtil/source
+
+Now you can build and run your project.
+ 
+To hack DlangIDE project, you can clone it from https://github.com/buggins/dlangide.git into the same directory dlangui is cloned to. Then just open solution dlangide/dlangide-monod-linux.sln with mono-d.
+
+
+Windows development using VisualD
+---------------------------------
+
+Install GIT, DUB, DMD, MS Visual Studio (e.g. Community 2013) + VisualD plugin
+
+
+Clone DlangUI repository
+
+        git clone https://github.com/buggins/dlangui.git
+
+Enter dlangui directory
+
+        cd dlangui
+
+Clone dependency libraries to dlangui/deps directory
+
+        mkdir deps
+        cd deps
+        git clone https://github.com/DerelictOrg/DerelictUtil.git
+        git clone https://github.com/DerelictOrg/DerelictGL3.git
+        git clone https://github.com/DerelictOrg/DerelictFT.git
+        git clone https://github.com/DerelictOrg/DerelictSDL2.git
+        git clone https://github.com/gecko0307/dlib.git
+        git clone https://github.com/Dav1dde/gl3n.git
+        git clone https://github.com/Devisualization/image.git de_image
+
+Open solution file with Visual-D
+
+        dlangui-msvc.sln
+
+Try running examples: helloworld, example1, tetris, dmledit
+
+Configurations Debug, Release, Unittest build SDL2+OpenGL versions of apps.
+
+Configurations DebugMinimal, ReleaseMinimal, UnittestMinimal build pure win32 versions of apps w/o OpenGL.
+
+
+If you are creating your own solution / project which uses DlangUI in Mono-D:
+
+  * Create new solution (assuming that solution directory is located in the same directory as dlangui and "Create directory for solution" option is unchecked; if no - you will need to correct pathes)
+  * Add / create source files of your project (e.g. copy+paste helloworld.d)
+  * Add dlangui library project dlangui/dlangui-monod-linux.dproj to solution
+  
+Following settings are to be applied to all configurations of your new project (Debug, Release, Unittest):
+
+  * In your project options Build/Project Dependencies - mark dlangui-monod-linux item
+  * In your project options Build/Compiling/Linking - check "Link in static/shared libraries from nested dependencies"
+  * In your project options Build/Compiling/Compiling - specify Version constants as "USE_FREETYPE;USE_OPENGL;EmbedStandardResources;Unicode;windows" (EmbedStandardResources is required if you want to embed your own additional resources into executable)
+  * If your project needs to embed some resources into executable (usually from "views" directory), specify all directories which contain resources in Build/Compiling/Compiling/Extra Compiler Options, e.g.:
+  
+        -Jviews
+        -Jviews/res
+        -Jviews/res/i18n
+        -Jviews/res/mdpi
+        -Jviews/res/hdpi
+  
+  * In your project options Build/Includes put list of import directories of DlangUI library and its dependencies, like
+  
+        ../dlangui/src
+        ../dlangui/deps/dlib
+        ../dlangui/deps/gl3n
+        ../dlangui/deps/DerelictSDL2/source
+        ../dlangui/deps/DerelictFT/source
+        ../dlangui/deps/DerelictGL3/source
+        ../dlangui/deps/DerelictUtil/source
+
+Now you can build and run your project.
+ 
+To hack DlangIDE project, you can clone it from https://github.com/buggins/dlangide.git into the same directory dlangui is cloned to. Then just open solution dlangide/dlangide-monod-linux.sln with mono-d.
+
+
 
 
 

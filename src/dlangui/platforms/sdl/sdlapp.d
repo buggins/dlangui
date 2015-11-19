@@ -175,7 +175,8 @@ class SDLWindow : Window {
         version(USE_OPENGL) {
             if (_enableOpengl) {
                 Log.i("Trying to create OpenGL 3.2 context");
-                _context = SDL_GL_CreateContext(_win); // Create the actual context and make it current
+				createContext(3, 2);
+                //_context = SDL_GL_CreateContext(_win); // Create the actual context and make it current
                 if (!_context) {
                     Log.e("SDL_GL_CreateContext failed: ", fromStringz(SDL_GetError()));
                     Log.w("trying other versions of OpenGL");
@@ -190,11 +191,17 @@ class SDLWindow : Window {
                     }
                 }
                 if (_context && !_gl3Reloaded) {
-                    DerelictGL3.reload();
-                    _gl3Reloaded = true;
-                    if (!glSupport.valid && !glSupport.initShaders())
-                        _enableOpengl = false;
-                    fixSize();
+					try {
+						DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
+						DerelictGL3.reload(GLVersion.GL21, GLVersion.GL40);
+	                    _gl3Reloaded = true;
+	                    if (!glSupport.valid && !glSupport.initShaders())
+	                        _enableOpengl = false;
+	                    fixSize();
+					} catch (derelict.util.exception.SymbolLoadException e) {
+						Log.e("Exception in DerelictGL3.reload ", e);
+						_enableOpengl = false;
+					}
                 }
             }
         }
@@ -1295,6 +1302,7 @@ int sdlmain(string[] args) {
 
     version(USE_OPENGL) {
         try {
+			DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
             DerelictGL3.load();
             _enableOpengl = true;
         } catch (Exception e) {

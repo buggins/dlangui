@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <ProjectGuid>{32EF3B89-10C6-451E-90B9-868693B30D0F}</ProjectGuid>
+    <Compiler>DMD2</Compiler>
+    <PreferOneStepBuild>true</PreferOneStepBuild>
+    <UseDefaultCompiler>true</UseDefaultCompiler>
+    <IncrementalLinking>true</IncrementalLinking>
+    <DependentProjectIds>
+      <DependentProjectIds>
+        <String>{45FB40CD-E99A-4C12-AC52-C13364412E09}</String>
+      </DependentProjectIds>
+    </DependentProjectIds>
+    <Includes>
+      <Includes>
+        <Path>..\..\src</Path>
+        <Path>..\..\deps\DerelictFT\source</Path>
+        <Path>..\..\deps\DerelictSDL2\source</Path>
+        <Path>..\..\deps\DerelictGL3\source</Path>
+        <Path>..\..\deps\DerelictUtil\source</Path>
+        <Path>..\..\deps\gl3n</Path>
+        <Path>..\..\deps\dlib</Path>
+      </Includes>
+    </Includes>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug</OutputPath>
+    <Target>Executable</Target>
+    <OutputName>example1-monod-windows</OutputName>
+    <UnittestMode>false</UnittestMode>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <ObjectsDirectory>obj\Debug</ObjectsDirectory>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_FREETYPE</String>
+        <String>USE_OPENGL</String>
+        <String>EmbedStandardResources</String>
+        <String>Unicode</String>
+        <String>windows</String>
+      </VersionIds>
+    </VersionIds>
+    <DebugLevel>0</DebugLevel>
+    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/hdpi -Jviews/res/mdpi</ExtraCompilerArguments>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <OutputPath>bin\Release</OutputPath>
+    <Target>Executable</Target>
+    <OutputName>example1-monod-windows</OutputName>
+    <UnittestMode>false</UnittestMode>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <ObjectsDirectory>obj\Release</ObjectsDirectory>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_FREETYPE</String>
+        <String>USE_OPENGL</String>
+        <String>EmbedStandardResources</String>
+        <String>Unicode</String>
+        <String>windows</String>
+      </VersionIds>
+    </VersionIds>
+    <DebugLevel>0</DebugLevel>
+    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/hdpi -Jviews/res/mdpi</ExtraCompilerArguments>
+    <ConsolePause>false</ConsolePause>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Unittest</OutputPath>
+    <Externalconsole>true</Externalconsole>
+    <Target>Executable</Target>
+    <OutputName>example1-monod-windows</OutputName>
+    <UnittestMode>true</UnittestMode>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <ObjectsDirectory>obj\Unittest</ObjectsDirectory>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_FREETYPE</String>
+        <String>USE_OPENGL</String>
+        <String>EmbedStandardResources</String>
+        <String>Unicode</String>
+        <String>windows</String>
+      </VersionIds>
+    </VersionIds>
+    <DebugLevel>0</DebugLevel>
+    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/hdpi -Jviews/res/mdpi</ExtraCompilerArguments>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="src\example1.d" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="src\win_app.def" />
+  </ItemGroup>
+</Project>

@@ -827,8 +827,8 @@ class Theme : Style {
 		_fontSize = 9 | SIZE_IN_POINTS_FLAG; // TODO: from settings or screen properties / DPI
 		_fontStyle = FONT_STYLE_NORMAL;
 		_fontWeight = 400;
-		//_fontFace = "Arial"; // TODO: from settings
-		_fontFace = "Verdana"; // TODO: from settings
+		_fontFace = "Arial"; // TODO: from settings
+		//_fontFace = "Verdana"; // TODO: from settings
         _fontFamily = FontFamily.SansSerif;
         _minHeight = 0;
         _minWidth = 0;
