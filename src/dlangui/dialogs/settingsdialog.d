@@ -197,6 +197,28 @@ class NumberEditItem : SettingsItem {
     }
 }
 
+class StringEditItem : SettingsItem {
+	string _defaultValue;
+	this(string id, UIString label, string defaultValue) {
+		super(id, label);
+		_defaultValue = defaultValue;
+	}
+	/// create setting widget
+	override Widget[] createWidgets(Setting settings) {
+		TextWidget lbl = new TextWidget(_id ~ "-label", _label);
+		EditLine ed = new EditLine(_id ~ "-edit", _label);
+		Setting setting = settings.settingByPath(_id, SettingType.STRING);
+		string value = setting.strDef(_defaultValue);
+		setting.str = value;
+		ed.text = toUTF32(value);
+		ed.onContentChangeListener = delegate(EditableContent content) {
+			string value = toUTF8(content.text);
+			setting.str = value;
+		};
+		return [lbl, ed];
+	}
+}
+
 /// settings page - item of settings tree, can edit several settings
 class SettingsPage {
     protected SettingsPage _parent;
@@ -261,7 +283,14 @@ class SettingsPage {
         return res;
     }
 
-    StringComboBoxItem addStringComboBox(string id, UIString label, StringListValue[] items) {
+	/// add EditLine to edit string
+	StringEditItem addStringEdit(string id, UIString label, string defaultValue = "") {
+		StringEditItem res = new StringEditItem(id, label, defaultValue);
+		addItem(res);
+		return res;
+	}
+	
+	StringComboBoxItem addStringComboBox(string id, UIString label, StringListValue[] items) {
         StringComboBoxItem res = new StringComboBoxItem(id, label, items);
         addItem(res);
         return res;

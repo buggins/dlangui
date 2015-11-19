@@ -54,4 +54,19 @@ class SourceEdit : EditBox {
         _filename = null;
         return false;
     }
+
+	bool save(string fn) {
+		if (content.save(fn)) {
+			_filename = fn;
+			requestLayout();
+			window.update();
+			return true;
+		}
+		// failed
+		requestLayout();
+		window.update();
+		_filename = null;
+		return false;
+	}
+
 }

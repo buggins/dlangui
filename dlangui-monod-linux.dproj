@@ -146,6 +146,33 @@
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugX11|x64' ">
+    <OutputPath>bin\DebugX11</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_X11</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/DebugX11</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <Libs>
+      <Libs>
+        <Lib>X</Lib>
+      </Libs>
+    </Libs>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/i18n
+-Jviews/res/mdpi
+-Jviews/res/hdpi</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>libdlangui-monod-linux</OutputName>
+    <Target>StaticLibrary</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\dlangui\core\collections.d" />
     <Compile Include="src\dlangui\core\editable.d" />
@@ -277,5 +304,37 @@
     <Compile Include="3rdparty\fontconfig\functions.d" />
     <Compile Include="3rdparty\fontconfig\package.d" />
     <Compile Include="3rdparty\fontconfig\types.d" />
+    <Compile Include="deps\x11\source\x11\keysym.d" />
+    <Compile Include="deps\x11\source\x11\keysymdef.d" />
+    <Compile Include="deps\x11\source\x11\X.d" />
+    <Compile Include="deps\x11\source\x11\Xatom.d" />
+    <Compile Include="deps\x11\source\x11\Xlib.d" />
+    <Compile Include="deps\x11\source\x11\XlibConf.d" />
+    <Compile Include="deps\x11\source\x11\Xlibint.d" />
+    <Compile Include="deps\x11\source\x11\Xlib_xcb.d" />
+    <Compile Include="deps\x11\source\x11\Xmd.d" />
+    <Compile Include="deps\x11\source\x11\Xproto.d" />
+    <Compile Include="deps\x11\source\x11\Xprotostr.d" />
+    <Compile Include="deps\x11\source\x11\Xproto_undef.d" />
+    <Compile Include="deps\x11\source\x11\Xregion.d" />
+    <Compile Include="deps\x11\source\x11\Xresource.d" />
+    <Compile Include="deps\x11\source\x11\Xtos.d" />
+    <Compile Include="deps\x11\source\x11\Xutil.d" />
+    <Compile Include="deps\x11\source\x11\extensions\randr.d" />
+    <Compile Include="deps\x11\source\x11\extensions\render.d" />
+    <Compile Include="deps\x11\source\x11\extensions\Xcomposite.d" />
+    <Compile Include="deps\x11\source\x11\extensions\Xfixes.d" />
+    <Compile Include="deps\x11\source\x11\extensions\Xge.d" />
+    <Compile Include="deps\x11\source\x11\extensions\XI.d" />
+    <Compile Include="deps\x11\source\x11\extensions\XI2.d" />
+    <Compile Include="deps\x11\source\x11\extensions\XInput.d" />
+    <Compile Include="deps\x11\source\x11\extensions\XInput2.d" />
+    <Compile Include="deps\x11\source\x11\extensions\Xrandr.d" />
+    <Compile Include="deps\x11\source\x11\extensions\Xrender.d" />
+    <Compile Include="src\dlangui\platforms\x11\x11app.d" />
+    <Compile Include="src\dlangui\platforms\common\startup.d" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="src\dlangui\platforms\x11\" />
   </ItemGroup>
 </Project>

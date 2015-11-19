@@ -175,7 +175,8 @@ class SDLWindow : Window {
         version(USE_OPENGL) {
             if (_enableOpengl) {
                 Log.i("Trying to create OpenGL 3.2 context");
-                _context = SDL_GL_CreateContext(_win); // Create the actual context and make it current
+				createContext(3, 2);
+                //_context = SDL_GL_CreateContext(_win); // Create the actual context and make it current
                 if (!_context) {
                     Log.e("SDL_GL_CreateContext failed: ", fromStringz(SDL_GetError()));
                     Log.w("trying other versions of OpenGL");
@@ -190,11 +191,17 @@ class SDLWindow : Window {
                     }
                 }
                 if (_context && !_gl3Reloaded) {
-                    DerelictGL3.reload();
-                    _gl3Reloaded = true;
-                    if (!glSupport.valid && !glSupport.initShaders())
-                        _enableOpengl = false;
-                    fixSize();
+					try {
+						DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
+						DerelictGL3.reload(GLVersion.GL21, GLVersion.GL40);
+	                    _gl3Reloaded = true;
+	                    if (!glSupport.valid && !glSupport.initShaders())
+	                        _enableOpengl = false;
+	                    fixSize();
+					} catch (derelict.util.exception.SymbolLoadException e) {
+						Log.e("Exception in DerelictGL3.reload ", e);
+						_enableOpengl = false;
+					}
                 }
             }
         }
@@ -1074,7 +1081,7 @@ class SDLPlatform : Platform {
                     case SDL_KEYDOWN:
                         SDLWindow w = getWindow(event.key.windowID);
                         if (w) {
-                            w.processKeyEvent(KeyAction.KeyDown, event.key.keysym.sym, event.key.keysym.mod);
+							w.processKeyEvent(KeyAction.KeyDown, event.key.keysym.sym, event.key.keysym.mod);
                             SDL_StartTextInput();
                         }
                         break;
@@ -1177,9 +1184,6 @@ class SDLPlatform : Platform {
 	protected SDLWindow[uint] _windowMap;
 }
 
-// entry point
-extern(C) int UIAppMain(string[] args);
-
 version (Windows) {
     import win32.windows;
     import dlangui.platforms.windows.win32fonts;
@@ -1266,9 +1270,6 @@ version (Windows) {
 
 	extern(C) int DLANGUImain(string[] args)
 	{
-		
-        initLogs();
-
         return sdlmain(args);
 	}
 }
@@ -1301,6 +1302,7 @@ int sdlmain(string[] args) {
 
     version(USE_OPENGL) {
         try {
+			DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
             DerelictGL3.load();
             _enableOpengl = true;
         } catch (Exception e) {
@@ -1309,7 +1311,7 @@ int sdlmain(string[] args) {
     }
 
     SDL_DisplayMode displayMode;
-    if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_EVENTS) != 0) {
+	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_EVENTS|SDL_INIT_NOPARACHUTE) != 0) {
         Log.e("Cannot init SDL2");	
         return 2;
     }
@@ -1336,7 +1338,8 @@ int sdlmain(string[] args) {
     if (!sdl.connect()) {
         return 1;
     }
-    Platform.setInstance(sdl);
+
+	Platform.setInstance(sdl);
 
     int res = 0;
 

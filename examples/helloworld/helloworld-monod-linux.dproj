@@ -129,6 +129,27 @@
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugX11|x64' ">
+    <OutputPath>bin\DebugX11</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_X11</String>
+        <String>USE_FREETYPE</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/DebugX11</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>helloworld-monod-linux</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+    <Libs>
+      <Libs>
+        <Lib>-L-lX11</Lib>
+      </Libs>
+    </Libs>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\helloworld.d" />
   </ItemGroup>
