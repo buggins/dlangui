@@ -18,6 +18,7 @@
         <Path>../../src</Path>
         <Path>../../deps/dlib</Path>
         <Path>../../deps/gl3n</Path>
+        <Path>../../deps/x11/source</Path>
         <Path>../../deps/DerelictSDL2/source</Path>
         <Path>../../deps/DerelictFT/source</Path>
         <Path>../../deps/DerelictGL3/source</Path>
@@ -168,10 +169,17 @@
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugX11|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugX11|x64' ">
     <OutputPath>bin\DebugX11</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_X11</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
     <ObjectsDirectory>obj/DebugX11</ObjectsDirectory>
-    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
     <ExtraCompilerArguments>-Jviews
 -Jviews/res
 -Jviews/res/hdpi
@@ -183,6 +191,12 @@
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
+    <ExtraLinkerArguments>-lX11</ExtraLinkerArguments>
+    <Libs>
+      <Libs>
+        <Lib>-L-lX11</Lib>
+      </Libs>
+    </Libs>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\example1.d" />

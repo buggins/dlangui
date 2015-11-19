@@ -156,10 +156,10 @@
       </VersionIds>
     </VersionIds>
     <ObjectsDirectory>obj/DebugX11</ObjectsDirectory>
-    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
     <Libs>
       <Libs>
-        <Lib>X</Lib>
+        <Lib>-L-lX11</Lib>
       </Libs>
     </Libs>
     <ExtraCompilerArguments>-Jviews
