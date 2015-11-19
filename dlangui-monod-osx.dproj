@@ -210,5 +210,6 @@
     <Compile Include="deps\DerelictCocoa\source\derelict\cocoa\foundation.d" />
     <Compile Include="deps\DerelictCocoa\source\derelict\cocoa\package.d" />
     <Compile Include="deps\DerelictCocoa\source\derelict\cocoa\runtime.d" />
+    <Compile Include="src\dlangui\platforms\common\startup.d" />
   </ItemGroup>
 </Project>
