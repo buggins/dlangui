@@ -608,6 +608,7 @@
     <Folder name="platforms">
      <Folder name="common">
       <File path="src\dlangui\platforms\common\platform.d" />
+      <File path="src\dlangui\platforms\common\startup.d" />
      </Folder>
      <Folder name="dsfml">
       <File path="src\dlangui\platforms\dsfml\dsfmlapp.d" />

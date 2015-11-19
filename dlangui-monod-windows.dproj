@@ -271,6 +271,7 @@
     <Compile Include="3rdparty\fontconfig\functions.d" />
     <Compile Include="3rdparty\fontconfig\package.d" />
     <Compile Include="3rdparty\fontconfig\types.d" />
+    <Compile Include="src\dlangui\platforms\common\startup.d" />
   </ItemGroup>
   <ItemGroup>
     <None Include="3rdparty\win32\makefile" />
