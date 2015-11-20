@@ -51,7 +51,7 @@ class X11Window : dlangui.platforms.common.platform.Window {
 		_win = XCreateSimpleWindow(x11display, DefaultRootWindow(x11display), 0, 0,	
 			_dx, _dy, 5, white, black);
 
-		readln();
+		//readln();
 		
 		/* here is where some properties of the window can be set.
 	   		The third and fourth items indicate the name which appears
