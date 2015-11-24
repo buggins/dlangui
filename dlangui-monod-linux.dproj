@@ -147,6 +147,7 @@
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugX11|x64' ">
+    <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\DebugX11</OutputPath>
     <VersionIds>
       <VersionIds>

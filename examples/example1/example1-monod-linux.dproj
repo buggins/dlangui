@@ -170,6 +170,7 @@
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugX11|x64' ">
+    <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\DebugX11</OutputPath>
     <VersionIds>
       <VersionIds>
@@ -192,22 +193,6 @@
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
     <ExtraLinkerArguments>-lX11</ExtraLinkerArguments>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugX11|AnyCPU' ">
-    <OutputPath>bin\DebugX11</OutputPath>
-    <ObjectsDirectory>obj/DebugX11</ObjectsDirectory>
-    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
-    <ExtraCompilerArguments>-Jviews
--Jviews/res
--Jviews/res/hdpi
--Jviews/res/mdpi
--Jviews/res/i18n
-</ExtraCompilerArguments>
-    <UnittestMode>false</UnittestMode>
-    <OutputName>example1-monod-linux</OutputName>
-    <Target>Executable</Target>
-    <Externalconsole>true</Externalconsole>
-    <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\example1.d" />
