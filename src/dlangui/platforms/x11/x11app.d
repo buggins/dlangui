@@ -34,7 +34,7 @@ class X11Window : dlangui.platforms.common.platform.Window {
 	this(X11Platform platform, dstring caption, dlangui.platforms.common.platform.Window parent, uint flags, uint width = 0, uint height = 0) {
 		_platform = platform;
 		_caption = caption;
-		debug Log.d("Creating SDL window");
+		debug Log.d("X11Window: Creating window");
 		_dx = width;
 		_dy = height;
 		//create(flags);
@@ -66,16 +66,19 @@ class X11Window : dlangui.platforms.common.platform.Window {
 		XSelectInput(x11display, _win, ExposureMask|ButtonPressMask|KeyPressMask);
 		
 		/* create the Graphics Context */
-		_gc = XCreateGC(x11display, _win, 0, cast(XGCValues*)null);        
+		_gc = XCreateGC(x11display, _win, 0, cast(XGCValues*)null);
+		Log.d("X11Window: windowId=", _win, " gc=", _gc);
+
+
 		
 		/* here is another routine to set the foreground and background
 	   		colors _currently_ in use in the window.
 		*/
-		XSetBackground(x11display, _gc, white);
-		XSetForeground(x11display, _gc, black);
+		//XSetBackground(x11display, _gc, white);
+		//XSetForeground(x11display, _gc, black);
 		
 		/* clear the window and bring it on top of the other windows */
-		XClearWindow(x11display, _win);
+		//XClearWindow(x11display, _win);
 	}
 
 	~this() {
@@ -110,12 +113,29 @@ class X11Window : dlangui.platforms.common.platform.Window {
 	/// close window
 	override void close() {
 	}
+
+	void processExpose() {
+		ulong black, white;
+		black = BlackPixel(x11display, x11screen);	/* get color black */
+		white = WhitePixel(x11display, x11screen);  /* get color white */
+		//XSetBackground(x11display, _gc, white);
+		XClearWindow(x11display, _win);
+		//XSetForeground ( x11display, _gc, white );
+		XFillRectangle(x11display, _win, _gc, 100, 200, 150, 300);
+		//XSetForeground ( x11display, _gc, black );
+		XDrawString ( x11display, _win, _gc, 20, 50,
+			cast(char*)"First example".ptr, "First example".length );
+		//XFreeGC ( x11display, gc );
+		XFlush(x11display);
+	}
 }
 
 class X11Platform : Platform {
 
 	this() {
 	}
+
+	X11Window[x11.Xlib.Window] _windowMap;
 
 	/**
 	 * create window
@@ -132,7 +152,14 @@ class X11Platform : Platform {
 		int newwidth = width;
 		int newheight = height;
 		X11Window window = new X11Window(this, windowCaption, parent, flags, newwidth, newheight);
+		_windowMap[window._win] = window;
 		return window;
+	}
+
+	X11Window findWindow(x11.Xlib.Window windowId) {
+		if (windowId in _windowMap)
+			return _windowMap[windowId];
+		return null;
 	}
 
 	/**
@@ -141,6 +168,7 @@ class X11Platform : Platform {
 	 * Closes window earlier created with createWindow()
 	 */
 	override void closeWindow(dlangui.platforms.common.platform.Window w) {
+		_windowMap.remove((cast(X11Window)w)._win);
 	}
 
 	/**
@@ -163,6 +191,10 @@ class X11Platform : Platform {
 			if (event.type==Expose && event.xexpose.count==0) {
 				/* the window was exposed redraw it! */
 				//redraw();
+				X11Window w = findWindow(event.xexpose.window);
+				if (w) {
+					w.processExpose();
+				}
 			}
 			if (event.type == KeyPress &&
 				XLookupString(&event.xkey, text.ptr, 255, &key, cast(XComposeStatus*)null) == 1) {
@@ -214,6 +246,7 @@ extern(C) int DLANGUImain(string[] args)
 		assert(false);
 	}
 
+	currentTheme = createDefaultTheme();
 
 	/* use the information from the environment variable DISPLAY 
 	   to create the X connection:
@@ -227,7 +260,8 @@ extern(C) int DLANGUImain(string[] args)
 	x11screen = DefaultScreen(x11display);
 
 
-	currentTheme = createDefaultTheme();
+
+	Log.d("X11 display=", x11display, " screen=", x11screen);
 
 	X11Platform x11platform = new X11Platform();
 
