@@ -25,13 +25,49 @@ pragma(lib, "X11");
 private __gshared Display * x11display;
 private __gshared int x11screen;
 
-class X11Window : dlangui.platforms.common.platform.Window {
+alias XWindow = x11.Xlib.Window;
+alias DWindow = dlangui.platforms.common.platform.Window;
+
+private GC createGC(Display* display, XWindow win)
+{
+	GC gc;				/* handle of newly created GC.  */
+	uint valuemask = 0;		/* which values in 'values' to  */
+	/* check when creating the GC.  */
+	XGCValues values;			/* initial values for the GC.   */
+	uint line_width = 2;		/* line width for the GC.       */
+	int line_style = LineSolid;		/* style for lines drawing and  */
+	int cap_style = CapButt;		/* style of the line's edje and */
+	int join_style = JoinBevel;		/*  joined lines.		*/
+	int screen_num = DefaultScreen(display);
+	
+	gc = XCreateGC(display, win, valuemask, &values);
+	if (!gc) {
+		Log.e("X11: Cannot create GC");
+		return null;
+		//fprintf(stderr, "XCreateGC: \n");
+	}
+	
+	/* allocate foreground and background colors for this GC. */
+	XSetForeground(display, gc, BlackPixel(display, screen_num));
+	XSetBackground(display, gc, WhitePixel(display, screen_num));
+
+	/* define the style of lines that will be drawn using this GC. */
+	XSetLineAttributes(display, gc,
+		line_width, line_style, cap_style, join_style);
+	
+	/* define the fill style for the GC. to be 'solid filling'. */
+	XSetFillStyle(display, gc, FillSolid);
+	
+	return gc;
+}
+
+class X11Window : DWindow {
 	protected X11Platform _platform;
 	protected dstring _caption;
-	protected x11.Xlib.Window _win;
+	protected XWindow _win;
 	protected GC _gc;
 
-	this(X11Platform platform, dstring caption, dlangui.platforms.common.platform.Window parent, uint flags, uint width = 0, uint height = 0) {
+	this(X11Platform platform, dstring caption, DWindow parent, uint flags, uint width = 0, uint height = 0) {
 		_platform = platform;
 		_caption = caption;
 		debug Log.d("X11Window: Creating window");
@@ -48,8 +84,11 @@ class X11Window : dlangui.platforms.common.platform.Window {
 	   		This window will be have be 200 pixels across and 300 down.
 	   		It will have the foreground white and background black
 		*/
-		_win = XCreateSimpleWindow(x11display, DefaultRootWindow(x11display), 0, 0,	
-			_dx, _dy, 5, white, black);
+		_win = XCreateSimpleWindow(x11display, DefaultRootWindow(x11display), 
+			1, 1,	
+			_dx, _dy, 5, black, white);
+		XMapWindow(x11display, _win);
+		XSync(x11display, false);
 
 		//readln();
 		
@@ -66,8 +105,10 @@ class X11Window : dlangui.platforms.common.platform.Window {
 		XSelectInput(x11display, _win, ExposureMask|ButtonPressMask|KeyPressMask);
 		
 		/* create the Graphics Context */
-		_gc = XCreateGC(x11display, _win, 0, cast(XGCValues*)null);
+		_gc = createGC(x11display, _win);
+		//_gc = XCreateGC(x11display, _win, 0, cast(XGCValues*)null);
 		Log.d("X11Window: windowId=", _win, " gc=", _gc);
+
 
 
 		
@@ -79,6 +120,7 @@ class X11Window : dlangui.platforms.common.platform.Window {
 		
 		/* clear the window and bring it on top of the other windows */
 		//XClearWindow(x11display, _win);
+		XFlush(x11display);
 	}
 
 	~this() {
@@ -90,7 +132,9 @@ class X11Window : dlangui.platforms.common.platform.Window {
 
 	/// show window
 	override void show() {
+		Log.d("X11Window.show");
 		XMapRaised(x11display, _win);
+		XFlush(x11display);
 	}
 
 	override @property dstring windowCaption() {
@@ -115,6 +159,7 @@ class X11Window : dlangui.platforms.common.platform.Window {
 	}
 
 	void processExpose() {
+		Log.d("processExpose()");
 		ulong black, white;
 		black = BlackPixel(x11display, x11screen);	/* get color black */
 		white = WhitePixel(x11display, x11screen);  /* get color white */
@@ -135,7 +180,7 @@ class X11Platform : Platform {
 	this() {
 	}
 
-	X11Window[x11.Xlib.Window] _windowMap;
+	X11Window[XWindow] _windowMap;
 
 	/**
 	 * create window
@@ -148,7 +193,7 @@ class X11Platform : Platform {
 	 * 
 	 * Window w/o Resizable nor Fullscreen will be created with size based on measurement of its content widget
 	 */
-	override dlangui.platforms.common.platform.Window createWindow(dstring windowCaption, dlangui.platforms.common.platform.Window parent, uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0) {
+	override DWindow createWindow(dstring windowCaption, DWindow parent, uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0) {
 		int newwidth = width;
 		int newheight = height;
 		X11Window window = new X11Window(this, windowCaption, parent, flags, newwidth, newheight);
@@ -156,7 +201,7 @@ class X11Platform : Platform {
 		return window;
 	}
 
-	X11Window findWindow(x11.Xlib.Window windowId) {
+	X11Window findWindow(XWindow windowId) {
 		if (windowId in _windowMap)
 			return _windowMap[windowId];
 		return null;
@@ -167,7 +212,7 @@ class X11Platform : Platform {
 	 * 
 	 * Closes window earlier created with createWindow()
 	 */
-	override void closeWindow(dlangui.platforms.common.platform.Window w) {
+	override void closeWindow(DWindow w) {
 		_windowMap.remove((cast(X11Window)w)._win);
 	}
 
@@ -189,12 +234,18 @@ class X11Platform : Platform {
 			*/
 			XNextEvent(x11display, &event);
 			
-			if (event.type==Expose && event.xexpose.count==0) {
-				/* the window was exposed redraw it! */
-				//redraw();
-				X11Window w = findWindow(event.xexpose.window);
-				if (w) {
-					w.processExpose();
+			if (event.type==Expose) {
+				if (event.xexpose.count==0) {
+					/* the window was exposed redraw it! */
+					//redraw();
+					X11Window w = findWindow(event.xexpose.window);
+					if (w) {
+						w.processExpose();
+					} else {
+						Log.e("Window not found");
+					}
+				} else {
+					Log.d("Expose: non-0 count");
 				}
 			}
 			if (event.type == KeyPress &&
@@ -212,6 +263,16 @@ class X11Platform : Platform {
 				/* tell where the mouse Button was Pressed */
 				Log.d("You pressed a button at ",
 					event.xbutton.x, ", ", event.xbutton.y);
+				Log.d("...");
+				XClearArea(x11display, event.xbutton.window, 0, 0, 1, 1, true);
+				X11Window w = findWindow(event.xbutton.window);
+				if (w) {
+					Log.e("Calling processExpose");
+					w.processExpose();
+				} else {
+					Log.e("Window not found");
+				}
+
 			}
 		}
 		return 0;
