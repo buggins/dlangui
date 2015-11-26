@@ -180,7 +180,8 @@ class X11Platform : Platform {
 		XEvent event;		/* the XEvent declaration !!! */
 		KeySym key;		/* a dealie-bob to handle KeyPress Events */	
 		char[255] text;		/* a char buffer for KeyPress Events */
-		
+
+		Log.d("enterMessageLoop()");
 		/* look for events forever... */
 		while(1) {		
 			/* get the next event and stuff it into our event variable.
