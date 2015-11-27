@@ -410,7 +410,7 @@
  </Config>
  <Folder name="spreadsheet">
   <Folder name="src">
-   <File path="src\spreadsheet.d" />
+   <File path="src\spreadsheetapp.d" />
   </Folder>
  </Folder>
 </DProject>

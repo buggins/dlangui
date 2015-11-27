@@ -65,33 +65,6 @@ class DMLSourceEdit : SourceEdit {
 	}
 }
 
-immutable dstring SAMPLE_SOURCE_CODE = 
-q{VerticalLayout {
-    id: vlayout
-    margins: Rect { left: 5; right: 3; top: 2; bottom: 4 }
-    padding: Rect { 5, 4, 3, 2 } // same as Rect { left: 5; top: 4; right: 3; bottom: 2 }
-    TextWidget {
-        /* this widget can be accessed via id myLabel1 
-            e.g. w.childById!TextWidget("myLabel1") 
-        */
-        id: myLabel1
-        text: "Some text"; padding: 5
-        enabled: false
-    }
-    TextWidget {
-        id: myLabel2
-        text: "More text"; margins: 5
-        enabled: true
-    }
-    CheckBox{ id: cb1; text: "Some checkbox" }
-    HorizontalLayout {
-        RadioButton { id: rb1; text: "Radio Button 1" }
-        RadioButton { id: rb1; text: "Radio Button 2" }
-    }
-}
-};
-
-
 class EditFrame : AppFrame {
 
     MenuItem mainMenuItems;
@@ -99,7 +72,6 @@ class EditFrame : AppFrame {
     override protected void init() {
         _appName = "DMLEdit";
         super.init();
-        updatePreview();
     }
 
     /// create main menu
@@ -141,18 +113,18 @@ class EditFrame : AppFrame {
         if (exists(filename)) {
             _filename = filename;
             window.windowCaption = toUTF32(filename);
-            _editor.load(filename);
-            updatePreview();
+            //_editor.load(filename);
+            //updatePreview();
         }
     }
 
 	void saveSourceFile(string filename) {
 		if (filename.length == 0)
 			filename = _filename;
-		import std.file;
-		_filename = filename;
-		window.windowCaption = toUTF32(filename);
-		_editor.save(filename);
+        //import std.file;
+        //_filename = filename;
+        //window.windowCaption = toUTF32(filename);
+        //_editor.save(filename);
 	}
 
     bool onCanClose() {
@@ -193,7 +165,7 @@ class EditFrame : AppFrame {
 					dlg.onDialogResult = delegate(Dialog dlg, const Action result) {
 						if (result.id == ACTION_OPEN.id) {
 							string filename = result.stringParam;
-							_editor.text=""d;
+							//_editor.text=""d;
 							saveSourceFile(filename);
 						}
 					};
@@ -232,7 +204,6 @@ class EditFrame : AppFrame {
                     dlg.show();
                     return true;
                 case IDEActions.DebugStart:
-                    updatePreview();
                     return true;
                 case IDEActions.EditPreferences:
                     //showPreferences();
@@ -260,40 +231,6 @@ class EditFrame : AppFrame {
 		}
 	}
 
-	void updatePreview() {
-        dstring dsource = _editor.text;
-        string source = toUTF8(dsource);
-        try {
-            Widget w = parseML(source);
-            if (statusLine)
-                statusLine.setStatusText("No errors"d);
-            if (_fillHorizontal)
-                w.layoutWidth = FILL_PARENT;
-            if (_fillVertical)
-                w.layoutHeight = FILL_PARENT;
-            if (_highlightBackground)
-                w.backgroundColor = 0xC0C0C0C0;
-            _preview.contentWidget = w;
-        } catch (ParserException e) {
-            if (statusLine)
-                statusLine.setStatusText(toUTF32("ERROR: " ~ e.msg));
-            _editor.setCaretPos(e.line, e.pos);
-            string msg = "\n" ~ e.msg ~ "\n";
-            msg = replaceFirst(msg, " near `", "\nnear `");
-            TextWidget w = new MultilineTextWidget(null, toUTF32(msg));
-            w.padding = 10;
-            w.margins = 10;
-            w.maxLines = 10;
-            w.backgroundColor = 0xC0FF8080;
-            _preview.contentWidget = w;
-        }
-    }
-
-    protected bool _fillHorizontal;
-    protected bool _fillVertical;
-    protected bool _highlightBackground;
-    protected DMLSourceEdit _editor;
-    protected ScrollWidget _preview;
     /// create app body widget
     override protected Widget createBody() {
         VerticalLayout bodyWidget = new VerticalLayout();
@@ -302,42 +239,6 @@ class EditFrame : AppFrame {
         HorizontalLayout hlayout = new HorizontalLayout();
         hlayout.layoutWidth = FILL_PARENT;
         hlayout.layoutHeight = FILL_PARENT;
-        _editor = new DMLSourceEdit();
-        hlayout.addChild(_editor);
-        _editor.text = SAMPLE_SOURCE_CODE;
-        VerticalLayout previewLayout = new VerticalLayout();
-        previewLayout.layoutWidth = makePercentSize(50);
-        previewLayout.layoutHeight = FILL_PARENT;
-        auto previewControls = new HorizontalLayout();
-        auto cbFillHorizontal = new CheckBox(null, "Fill Horizontal"d);
-        auto cbFillVertical = new CheckBox(null, "Fill Vertical"d);
-        auto cbHighlightBackground = new CheckBox(null, "Background"d);
-        cbFillHorizontal.onCheckChangeListener = delegate(Widget source, bool checked) {
-            _fillHorizontal = checked;
-            updatePreview();
-            return true;
-        };
-        cbFillVertical.onCheckChangeListener = delegate(Widget source, bool checked) {
-            _fillVertical = checked;
-            updatePreview();
-            return true;
-        };
-        cbHighlightBackground.onCheckChangeListener = delegate(Widget source, bool checked) {
-            _highlightBackground = checked;
-            updatePreview();
-            return true;
-        };
-        previewControls.addChild(cbFillHorizontal);
-        previewControls.addChild(cbFillVertical);
-        previewControls.addChild(cbHighlightBackground);
-
-        _preview = new ScrollWidget();
-        _preview.layoutWidth = FILL_PARENT;
-        _preview.layoutHeight = FILL_PARENT;
-        _preview.backgroundImageId = "tx_fabric.tiled";
-        previewLayout.addChild(previewControls);
-        previewLayout.addChild(_preview);
-        hlayout.addChild(previewLayout);
         bodyWidget.addChild(hlayout);
         return bodyWidget;
     }
