@@ -1,0 +1,25 @@
+{
+    "name": "spreadsheet",
+    "description": "dlangui library example DML Editor",
+    "homepage": "https://github.com/buggins/dlangui",
+    "license": "Boost",
+    "authors": ["Vadim Lopatin"],
+
+    "stringImportPaths": ["views", "views/res", "views/res/i18n", "views/res/mdpi"],
+
+    "targetPath": "bin",
+    "targetName": "spreadsheet",
+    "targetType": "executable",
+
+    "sourceFiles-windows": ["$PACKAGE_DIR/src/win_app.def"],
+
+    "versions": ["EmbedStandardResources"],
+
+    "dependencies": {
+        "dlangui": {"path": "../../"}
+    },
+
+    "subConfigurations": {
+        "dlangui": "minimal"
+    }
+}

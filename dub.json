@@ -34,7 +34,8 @@
         "./examples/example1/",
         "./examples/dmledit/",
         "./examples/d3d/",
-        "./examples/tetris/"
+        "./examples/tetris/",
+        "./examples/spreadsheet/"
     ],
 
     "configurations": [
