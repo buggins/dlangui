@@ -218,6 +218,19 @@ class SpreadSheetWidget : WidgetGroupDefaultDrawing, OnScrollHandler, CellSelect
 
     /// Callback for handling of view scroll (top left visible cell change)
     void onViewScrolled(GridWidgetBase source, int col, int row) {
+        if (source == _viewTopLeft) {
+            _viewTopRight.scrollTo(-1, row, source, false);
+            _viewBottomLeft.scrollTo(col, -1, source, false);
+        } else if (source == _viewTopRight) {
+            _viewTopLeft.scrollTo(-1, row, source, false);
+            _viewBottomRight.scrollTo(col, -1, source, false);
+        } else if (source == _viewBottomLeft) {
+            _viewTopLeft.scrollTo(col, -1, source, false);
+            _viewBottomRight.scrollTo(-1, row, source, false);
+        } else if (source == _viewBottomRight) {
+            _viewTopRight.scrollTo(col, -1, source, false);
+            _viewBottomLeft.scrollTo(-1, row, source, false);
+        }
     }
 
 }

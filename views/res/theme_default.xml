@@ -131,10 +131,16 @@
     <drawable id="scrollbar_indicator_vertical" value="scrollbar_indicator_vertical"/>
     <drawable id="scrollbar_indicator_horizontal" value="scrollbar_indicator_horizontal"/>
     <style id="SCROLLBAR"
-        backgroundColor="#C0808080"
+        backgroundColor="#dce2e8"
         align="Center"
         />
-    <style id="SCROLLBAR_BUTTON" parent="BUTTON"
+    <style id="SCROLLBAR_BUTTON"
+        backgroundImageId="scrollbar_btn_background"
+        align="Center"
+        />
+    <style id="SCROLLBAR_BUTTON_TRANSPARENT"
+        backgroundImageId="scrollbar_btn_transparent_background"
+        align="Center"
         />
     <style id="SLIDER"
         />

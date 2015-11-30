@@ -535,12 +535,12 @@ class GridWidgetBase : ScrollWidgetBase {
         return scrollTo(_headerCols + _fixedCols + _scrollCol + dx, _headerRows + _fixedRows + _scrollRow + dy);
     }
 
-    /// set scroll position to show specified cell as top left in scrollable area
-    bool scrollTo(int col, int row) {
+    /// set scroll position to show specified cell as top left in scrollable area; col or row -1 value means no change
+    bool scrollTo(int col, int row, GridWidgetBase source = null, bool doNotify = true) {
         int oldx = _scrollCol;
         int oldy = _scrollRow;
-        int newScrollCol = col - _headerCols - _fixedCols;
-        int newScrollRow = row - _headerRows - _fixedRows;
+        int newScrollCol = col == -1 ? _scrollCol : col - _headerCols - _fixedCols;
+        int newScrollRow = row == -1 ? _scrollRow : row - _headerRows - _fixedRows;
         if (newScrollCol > _maxScrollCol)
             newScrollCol = _maxScrollCol;
         if (newScrollCol < 0)
@@ -565,7 +565,13 @@ class GridWidgetBase : ScrollWidgetBase {
         //if (changed)
         updateScrollBars();
         invalidate();
-        return oldx != _scrollCol || oldy != _scrollRow;
+        bool changed = oldx != _scrollCol || oldy != _scrollRow;
+        if (doNotify && changed && viewScrolled.assigned) {
+            if (source is null)
+                source = this;
+            viewScrolled(source, col, row);
+        }
+        return changed;
     }
 
     /// process horizontal scrollbar event
@@ -635,6 +641,9 @@ class GridWidgetBase : ScrollWidgetBase {
         if (scrolled) {
             updateScrollBars();
             invalidate();
+            if (viewScrolled.assigned) {
+                viewScrolled(this, _scrollCol + _headerCols + _fixedCols, _scrollRow + _headerRows + _fixedRows);
+            }
         }
     }
 

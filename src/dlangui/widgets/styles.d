@@ -69,6 +69,8 @@ immutable string STYLE_VSPACER = "VSPACER";
 immutable string STYLE_SCROLLBAR = "SCROLLBAR";
 /// standard style id for ScrollBar button
 immutable string STYLE_SCROLLBAR_BUTTON = "SCROLLBAR_BUTTON";
+/// standard style id for ScrollBar button
+immutable string STYLE_SCROLLBAR_BUTTON_TRANSPARENT = "SCROLLBAR_BUTTON_TRANSPARENT";
 /// standard style id for ScrollBar page control
 immutable string STYLE_PAGE_SCROLL = "PAGE_SCROLL";
 /// standard style id for Slider

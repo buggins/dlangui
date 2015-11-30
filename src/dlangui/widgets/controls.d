@@ -623,7 +623,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
 
         this(string resourceId) {
             super("SLIDER", resourceId);
-			styleId = STYLE_BUTTON_NOMARGINS;
+			styleId = STYLE_SCROLLBAR_BUTTON;
             trackHover = true;
         }
 
@@ -801,8 +801,8 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         _btnForward = new ImageButton("FORWARD", style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_BUTTON_DOWN : ATTR_SCROLLBAR_BUTTON_RIGHT));
         _pageUp = new PageScrollButton("PAGE_UP");
         _pageDown = new PageScrollButton("PAGE_DOWN");
-        _btnBack.styleId = STYLE_SCROLLBAR_BUTTON;
-        _btnForward.styleId = STYLE_SCROLLBAR_BUTTON;
+        _btnBack.styleId = STYLE_SCROLLBAR_BUTTON_TRANSPARENT;
+        _btnForward.styleId = STYLE_SCROLLBAR_BUTTON_TRANSPARENT;
         _indicator = new SliderButton(style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_INDICATOR_VERTICAL : ATTR_SCROLLBAR_INDICATOR_HORIZONTAL));
         addChild(_btnBack);
         addChild(_btnForward);
