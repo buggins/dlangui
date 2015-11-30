@@ -3,7 +3,7 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
-    <ProjectGuid>{079F4963-E637-4E8F-9EB3-BDC404F9DC1D}</ProjectGuid>
+    <ProjectGuid>{AAC53A3B-44F0-4597-8074-F92021F63654}</ProjectGuid>
     <Compiler>DMD2</Compiler>
     <PreferOneStepBuild>true</PreferOneStepBuild>
     <UseDefaultCompiler>true</UseDefaultCompiler>
@@ -38,13 +38,12 @@
     </VersionIds>
     <ObjectsDirectory>obj/Debug</ObjectsDirectory>
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
-    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
-    <OutputName>example1-monod-osx</OutputName>
+    <OutputName>spreadsheet-monod-osx</OutputName>
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
-    <ConsolePause>false</ConsolePause>
+    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi</ExtraCompilerArguments>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
     <OutputPath>bin\Release</OutputPath>
@@ -60,12 +59,10 @@
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
     <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
-    <OutputName>example1-monod-osx</OutputName>
+    <OutputName>spreadsheet-monod-osx</OutputName>
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
-    <ExtraLinkerArguments>-v</ExtraLinkerArguments>
-    <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|x64' ">
     <DebugSymbols>true</DebugSymbols>
@@ -82,14 +79,13 @@
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
     <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi</ExtraCompilerArguments>
     <UnittestMode>true</UnittestMode>
-    <OutputName>example1-monod-osx</OutputName>
+    <OutputName>spreadsheet-monod-osx</OutputName>
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
-    <ExtraLinkerArguments>-v</ExtraLinkerArguments>
-    <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="src\example1.d" />
+    <Compile Include="src\spreadsheetapp.d" />
+    <Compile Include="src\dlangui\widgets\spreadsheet.d" />
   </ItemGroup>
 </Project>

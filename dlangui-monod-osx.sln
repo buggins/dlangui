@@ -13,6 +13,8 @@ Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "helloworld-monod-osx", "exa
 EndProject
 Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "tetris-monod-osx", "examples\tetris\tetris-monod-osx.dproj", "{07ECE815-C4C3-4CDB-A60C-2E304EAAA2C7}"
 EndProject
+Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "spreadsheet-monod-osx", "examples\spreadsheet\spreadsheet-monod-osx.dproj", "{AAC53A3B-44F0-4597-8074-F92021F63654}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,10 +40,10 @@ Global
 		{1CC7C43E-7B39-4AFC-A45B-F1D9F582CF6D}.Release|Any CPU.Build.0 = Release|x64
 		{1CC7C43E-7B39-4AFC-A45B-F1D9F582CF6D}.Unittest|Any CPU.ActiveCfg = Unittest|x64
 		{1CC7C43E-7B39-4AFC-A45B-F1D9F582CF6D}.Unittest|Any CPU.Build.0 = Unittest|x64
-		{1F050D82-5245-4B51-A554-473194EA0DE9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{1F050D82-5245-4B51-A554-473194EA0DE9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{1F050D82-5245-4B51-A554-473194EA0DE9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{1F050D82-5245-4B51-A554-473194EA0DE9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1F050D82-5245-4B51-A554-473194EA0DE9}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{1F050D82-5245-4B51-A554-473194EA0DE9}.Debug|Any CPU.Build.0 = Debug|x64
+		{1F050D82-5245-4B51-A554-473194EA0DE9}.Release|Any CPU.ActiveCfg = Debug|x64
+		{1F050D82-5245-4B51-A554-473194EA0DE9}.Release|Any CPU.Build.0 = Debug|x64
 		{1F050D82-5245-4B51-A554-473194EA0DE9}.Unittest|Any CPU.ActiveCfg = Unittest|Any CPU
 		{1F050D82-5245-4B51-A554-473194EA0DE9}.Unittest|Any CPU.Build.0 = Unittest|Any CPU
 		{8E3B1C65-63A3-4BD8-9268-604EE648E861}.Debug|Any CPU.ActiveCfg = Debug|x64
@@ -50,6 +52,12 @@ Global
 		{8E3B1C65-63A3-4BD8-9268-604EE648E861}.Release|Any CPU.Build.0 = Release|x64
 		{8E3B1C65-63A3-4BD8-9268-604EE648E861}.Unittest|Any CPU.ActiveCfg = Unittest|x64
 		{8E3B1C65-63A3-4BD8-9268-604EE648E861}.Unittest|Any CPU.Build.0 = Unittest|x64
+		{AAC53A3B-44F0-4597-8074-F92021F63654}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{AAC53A3B-44F0-4597-8074-F92021F63654}.Debug|Any CPU.Build.0 = Debug|x64
+		{AAC53A3B-44F0-4597-8074-F92021F63654}.Release|Any CPU.ActiveCfg = Release|x64
+		{AAC53A3B-44F0-4597-8074-F92021F63654}.Release|Any CPU.Build.0 = Release|x64
+		{AAC53A3B-44F0-4597-8074-F92021F63654}.Unittest|Any CPU.ActiveCfg = Unittest|Any CPU
+		{AAC53A3B-44F0-4597-8074-F92021F63654}.Unittest|Any CPU.Build.0 = Unittest|Any CPU
 		{CB4E43FF-5E6A-4F4E-9A6C-F182EC258112}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{CB4E43FF-5E6A-4F4E-9A6C-F182EC258112}.Debug|Any CPU.Build.0 = Debug|x64
 		{CB4E43FF-5E6A-4F4E-9A6C-F182EC258112}.Release|Any CPU.ActiveCfg = Release|x64
