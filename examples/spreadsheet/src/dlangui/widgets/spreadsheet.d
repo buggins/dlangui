@@ -46,6 +46,8 @@ class SpreadSheetView : StringGridWidget {
         super(ID);
         layoutWidth = FILL_PARENT;
         layoutHeight = FILL_PARENT;
+        styleId = null;
+        backgroundColor = 0xFFFFFF;
         resize(50, 50);
         _colWidths[0] = 50;
         for (int i = 0; i < 26; i++) {

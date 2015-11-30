@@ -13,7 +13,7 @@
     <style id="TAB_SHEET_DOWN_BUTTON_TEXT"
         textColor="#000000"
         align="Center"
-        fontSize="10px"
+        fontSize="12px"
         >
         <state state_selected="true" state_focused="true" textColor="#000000"/>
         <state state_selected="true" textColor="#000000"/>
@@ -22,5 +22,7 @@
     </style>
     <style id="TAB_SHEET_DOWN_BUTTON"
         backgroundImageId="tab_sheet_down"
-        />
+        >
+        <length id="overlap" value="10"/>
+    </style>
 </theme>

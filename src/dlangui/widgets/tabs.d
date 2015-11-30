@@ -220,6 +220,7 @@ class TabControl : WidgetGroupDefaultDrawing {
     protected ImageButton _moreButton;
     protected bool _enableCloseButton;
     protected TabItemWidget[] _sortedItems;
+    protected int _buttonOverlap;
 
     protected string _tabStyle;
     protected string _tabButtonStyle;
@@ -264,6 +265,7 @@ class TabControl : WidgetGroupDefaultDrawing {
                 w.setStyles(_tabButtonStyle, _tabButtonTextStyle);
             }
         }
+        _buttonOverlap = currentTheme.get(tabButtonStyle).customLength("overlap", 0);
     }
 
 	/// when true, shows close buttons in tabs
@@ -443,7 +445,7 @@ class TabControl : WidgetGroupDefaultDrawing {
                 sz.y = tab.measuredHeight;
             if (sz.x + tab.measuredWidth > pwidth)
                 break;
-            sz.x += tab.measuredWidth;
+            sz.x += tab.measuredWidth - _buttonOverlap;
         }
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
         //Log.d("tabControl.measure exit");
@@ -475,7 +477,7 @@ class TabControl : WidgetGroupDefaultDrawing {
             widget.visibility = Visibility.Visible;
             widget.measure(rc.width, rc.height);
             if (w + widget.measuredWidth < maxw) {
-                w += widget.measuredWidth;
+                w += widget.measuredWidth - _buttonOverlap;
             } else {
                 widget.visibility = Visibility.Gone;
             }
@@ -488,9 +490,36 @@ class TabControl : WidgetGroupDefaultDrawing {
             w = widget.measuredWidth;
             rc.right = rc.left + w;
             widget.layout(rc);
-            rc.left += w;
+            rc.left += w - _buttonOverlap;
         }
         //Log.d("tabControl.layout exit");
+    }
+
+    /// Draw widget at its position to buffer
+    override void onDraw(DrawBuf buf) {
+        if (visibility != Visibility.Visible)
+            return;
+        super.onDraw(buf);
+        Rect rc = _pos;
+        applyMargins(rc);
+        applyPadding(rc);
+		auto saver = ClipRectSaver(buf, rc);
+		for (int i = _children.count - 1; i >= 0; i--) {
+			Widget item = _children.get(i);
+			if (item.visibility != Visibility.Visible)
+				continue;
+            if (item.id.equal(_selectedTabId))
+                continue;
+			item.onDraw(buf);
+		}
+		for (int i = 0; i < _children.count; i++) {
+			Widget item = _children.get(i);
+			if (item.visibility != Visibility.Visible)
+				continue;
+            if (!item.id.equal(_selectedTabId))
+                continue;
+			item.onDraw(buf);
+		}
     }
 
     protected string _selectedTabId;

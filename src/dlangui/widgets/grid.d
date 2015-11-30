@@ -215,6 +215,13 @@ interface CustomGridCellAdapter {
 	void drawCell(DrawBuf buf, Rect rc, int col, int row);
 }
 
+interface GridModelAdapter {
+    @property int fixedCols();
+    @property int fixedRows();
+    @property void fixedCols(int value);
+    @property void fixedRows(int value);
+}
+
 /// Callback for handling of cell selection
 interface CellSelectedHandler {
     void onCellSelected(GridWidgetBase source, int col, int row);
@@ -231,7 +238,7 @@ interface ViewScrolledHandler {
 }
 
 /// Abstract grid widget
-class GridWidgetBase : ScrollWidgetBase {
+class GridWidgetBase : ScrollWidgetBase, GridModelAdapter {
     /// Callback to handle selection change
     Listener!CellSelectedHandler cellSelected;
     /// cellSelected signal alias for backward compatibility; will be deprecated in future
@@ -252,6 +259,11 @@ class GridWidgetBase : ScrollWidgetBase {
     /// Set adapter to override drawing of some particular cells
     @property GridWidgetBase customCellAdapter(CustomGridCellAdapter adapter) { _customCellAdapter = adapter; return this; }
 
+    protected GridModelAdapter _gridModelAdapter;
+    /// Get adapter to hold grid model data
+    @property GridModelAdapter gridModelAdapter() { return _gridModelAdapter; }
+    /// Set adapter to hold grid model data
+    @property GridWidgetBase gridModelAdapter(GridModelAdapter adapter) { _gridModelAdapter = adapter; return this; }
 
     /// column count (including header columns and fixed columns)
 	protected int _cols;
@@ -327,11 +339,23 @@ class GridWidgetBase : ScrollWidgetBase {
     }
 
     /// fixed (non-scrollable) data column count
-	@property int fixedCols() { return _fixedCols; }
-	@property GridWidgetBase fixedCols(int c) { _fixedCols = c; invalidate(); return this; }
+	@property int fixedCols() { return _gridModelAdapter is null ? _fixedCols : _gridModelAdapter.fixedCols; }
+	@property void fixedCols(int c) { 
+        if (_gridModelAdapter is null)
+            _fixedCols = c;
+        else
+            _gridModelAdapter.fixedCols = c;
+        invalidate(); 
+    }
     /// fixed (non-scrollable) data row count
-	@property int fixedRows() { return _fixedRows; }
-	@property GridWidgetBase fixedRows(int r) { _fixedRows = r; invalidate(); return this; }
+	@property int fixedRows() { return _gridModelAdapter is null ? _fixedRows : _gridModelAdapter.fixedCols; }
+	@property void fixedRows(int r) {
+        if (_gridModelAdapter is null)
+            _fixedRows = r; 
+        else
+            _gridModelAdapter.fixedCols = r;
+        invalidate(); 
+    }
 
     /// default column width - for newly added columns
     @property int defColumnWidth() {
@@ -417,7 +441,7 @@ class GridWidgetBase : ScrollWidgetBase {
 
     /// returns column width (index includes col/row headers, if any); returns 0 for columns hidden by scroll at the left
     int colWidth(int x) {
-        if (x >= _headerCols + _fixedCols && x < _headerCols + _fixedCols + _scrollCol)
+        if (x >= _headerCols + fixedCols && x < _headerCols + fixedCols + _scrollCol)
             return 0;
         return _colWidths[x];
     }
@@ -428,7 +452,7 @@ class GridWidgetBase : ScrollWidgetBase {
 
     /// returns row height (index includes col/row headers, if any); returns 0 for riws hidden by scroll at the top
     int rowHeight(int y) {
-        if (y >= _headerRows + _fixedRows && y < _headerRows + _fixedRows + _scrollRow)
+        if (y >= _headerRows + fixedRows && y < _headerRows + fixedRows + _scrollRow)
             return 0;
         return _rowHeights[y];
     }
@@ -532,15 +556,15 @@ class GridWidgetBase : ScrollWidgetBase {
 
     /// move scroll position horizontally by dx, and vertically by dy; returns true if scrolled
     bool scrollBy(int dx, int dy) {
-        return scrollTo(_headerCols + _fixedCols + _scrollCol + dx, _headerRows + _fixedRows + _scrollRow + dy);
+        return scrollTo(_headerCols + fixedCols + _scrollCol + dx, _headerRows + fixedRows + _scrollRow + dy);
     }
 
     /// set scroll position to show specified cell as top left in scrollable area; col or row -1 value means no change
     bool scrollTo(int col, int row, GridWidgetBase source = null, bool doNotify = true) {
         int oldx = _scrollCol;
         int oldy = _scrollRow;
-        int newScrollCol = col == -1 ? _scrollCol : col - _headerCols - _fixedCols;
-        int newScrollRow = row == -1 ? _scrollRow : row - _headerRows - _fixedRows;
+        int newScrollCol = col == -1 ? _scrollCol : col - _headerCols - fixedCols;
+        int newScrollRow = row == -1 ? _scrollRow : row - _headerRows - fixedRows;
         if (newScrollCol > _maxScrollCol)
             newScrollCol = _maxScrollCol;
         if (newScrollCol < 0)
@@ -550,13 +574,13 @@ class GridWidgetBase : ScrollWidgetBase {
         if (newScrollRow < 0)
             newScrollRow = 0;
         //bool changed = false;
-        if (newScrollCol >= 0 && newScrollCol + _headerCols + _fixedCols < _cols) {
+        if (newScrollCol >= 0 && newScrollCol + _headerCols + fixedCols < _cols) {
             if (_scrollCol != newScrollCol) {
                 _scrollCol = newScrollCol;
                 //changed = true;
             }
         }
-        if (newScrollRow >= 0 && newScrollRow + _headerRows + _fixedRows < _rows) {
+        if (newScrollRow >= 0 && newScrollRow + _headerRows + fixedRows < _rows) {
             if (_scrollRow != newScrollRow) {
                 _scrollRow = newScrollRow;
                 //changed = true;
@@ -578,7 +602,7 @@ class GridWidgetBase : ScrollWidgetBase {
     override bool onHScroll(ScrollEvent event) {
         if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased) {
             int col = colByAbsoluteX(event.position + _fullScrollableArea.left);
-            scrollTo(col, _scrollRow + _headerRows + _fixedRows);
+            scrollTo(col, _scrollRow + _headerRows + fixedRows);
         } else if (event.action == ScrollAction.PageUp) {
             dispatchAction(new Action(GridActions.ScrollPageLeft));
         } else if (event.action == ScrollAction.PageDown) {
@@ -595,7 +619,7 @@ class GridWidgetBase : ScrollWidgetBase {
     override bool onVScroll(ScrollEvent event) {
         if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased) {
             int row = rowByAbsoluteY(event.position + _fullScrollableArea.top);
-            scrollTo(_scrollCol + _headerCols + _fixedCols, row);
+            scrollTo(_scrollCol + _headerCols + fixedCols, row);
         } else if (event.action == ScrollAction.PageUp) {
             dispatchAction(new Action(GridActions.ScrollPageUp));
         } else if (event.action == ScrollAction.PageDown) {
@@ -612,26 +636,26 @@ class GridWidgetBase : ScrollWidgetBase {
     void makeCellVisible(int col, int row) {
         bool scrolled = false;
         Rect rc = cellRect(col, row);
-        if (col >= _headerCols + _fixedCols && col < _headerCols + _fixedCols + _scrollCol) {
+        if (col >= _headerCols + fixedCols && col < _headerCols + fixedCols + _scrollCol) {
             // scroll to the left
-            _scrollCol = col - _headerCols - _fixedCols;
+            _scrollCol = col - _headerCols - fixedCols;
             scrolled = true;
         } else {
-            while (rc.right > _clientRect.width && _scrollCol < _cols - _fixedCols - _headerCols - 1) {
-                if (_scrollCol == col - _headerCols - _fixedCols)
+            while (rc.right > _clientRect.width && _scrollCol < _cols - fixedCols - _headerCols - 1) {
+                if (_scrollCol == col - _headerCols - fixedCols)
                     break;
                 _scrollCol++;
                 rc = cellRect(col, row);
                 scrolled = true;
             }
         }
-        if (row >= _headerRows + _fixedRows && row < _headerRows + _fixedRows + _scrollRow) {
+        if (row >= _headerRows + fixedRows && row < _headerRows + fixedRows + _scrollRow) {
             // scroll to the left
-            _scrollRow = row - _headerRows - _fixedRows;
+            _scrollRow = row - _headerRows - fixedRows;
             scrolled = true;
         } else {
-            while (rc.bottom > _clientRect.height && _scrollRow < _rows - _fixedRows - _headerRows - 1) {
-                if (_scrollRow == row - _headerRows - _fixedRows)
+            while (rc.bottom > _clientRect.height && _scrollRow < _rows - fixedRows - _headerRows - 1) {
+                if (_scrollRow == row - _headerRows - fixedRows)
                     break;
                 _scrollRow++;
                 rc = cellRect(col, row);
@@ -642,7 +666,7 @@ class GridWidgetBase : ScrollWidgetBase {
             updateScrollBars();
             invalidate();
             if (viewScrolled.assigned) {
-                viewScrolled(this, _scrollCol + _headerCols + _fixedCols, _scrollRow + _headerRows + _fixedRows);
+                viewScrolled(this, _scrollCol + _headerCols + fixedCols, _scrollRow + _headerRows + fixedRows);
             }
         }
     }
@@ -726,8 +750,8 @@ class GridWidgetBase : ScrollWidgetBase {
     /// calculate scrollable area info
     protected void calcScrollableAreaPos() {
         _maxScrollCol = _maxScrollRow = 0;
-        _fullyVisibleCells.left = _headerCols + _fixedCols + _scrollCol;
-        _fullyVisibleCells.top = _headerRows + _fixedRows + _scrollRow;
+        _fullyVisibleCells.left = _headerCols + fixedCols + _scrollCol;
+        _fullyVisibleCells.top = _headerRows + fixedRows + _scrollRow;
         Rect rc;
         int xx = 0;
         for (int i = 0; i < _cols && xx < _clientRect.width; i++) {
@@ -764,7 +788,7 @@ class GridWidgetBase : ScrollWidgetBase {
         // calc scroll area in pixels
         xx = 0;
         for (int i = 0; i < _cols; i++) {
-            if (i == _headerCols + _fixedCols) {
+            if (i == _headerCols + fixedCols) {
                 _fullScrollableArea.left = xx;
             }
             if (i == _fullyVisibleCells.left) {
@@ -772,7 +796,7 @@ class GridWidgetBase : ScrollWidgetBase {
             }
             int w = _colWidths[i];
             xx += w;
-            if (i >= _headerCols + _fixedCols) {
+            if (i >= _headerCols + fixedCols) {
                 _fullScrollableArea.right = xx;
             }
             if (i >= _fullyVisibleCells.left) {
@@ -780,18 +804,18 @@ class GridWidgetBase : ScrollWidgetBase {
             }
         }
         xx = 0;
-        for (int i = _cols - 1; i >= _headerCols + _fixedCols; i--) {
+        for (int i = _cols - 1; i >= _headerCols + fixedCols; i--) {
             int w = _colWidths[i];
             if (xx + w > maxVisibleScrollWidth) {
                 _fullScrollableArea.right += maxVisibleScrollWidth - xx;
                 break;
             }
-            _maxScrollCol = i - _headerCols - _fixedCols;
+            _maxScrollCol = i - _headerCols - fixedCols;
             xx += w;
         }
         yy = 0;
         for (int i = 0; i < _rows; i++) {
-            if (i == _headerRows + _fixedRows) {
+            if (i == _headerRows + fixedRows) {
                 _fullScrollableArea.top = yy;
             }
             if (i == _fullyVisibleCells.top) {
@@ -799,7 +823,7 @@ class GridWidgetBase : ScrollWidgetBase {
             }
             int w = _rowHeights[i];
             yy += w;
-            if (i >= _headerRows + _fixedRows) {
+            if (i >= _headerRows + fixedRows) {
                 _fullScrollableArea.bottom = yy;
             }
             if (i >= _fullyVisibleCells.top) {
@@ -807,13 +831,13 @@ class GridWidgetBase : ScrollWidgetBase {
             }
         }
         yy = 0;
-        for (int i = _rows - 1; i >= _headerRows + _fixedRows; i--) {
+        for (int i = _rows - 1; i >= _headerRows + fixedRows; i--) {
             int w = _rowHeights[i];
             if (yy + w > maxVisibleScrollHeight) {
                 _fullScrollableArea.bottom += maxVisibleScrollHeight - yy;
                 break;
             }
-            _maxScrollRow = i - _headerRows - _fixedRows;
+            _maxScrollRow = i - _headerRows - fixedRows;
             yy += w;
         }
         // crop scroll area by client rect
@@ -884,7 +908,7 @@ class GridWidgetBase : ScrollWidgetBase {
                 return true;
             case GridActions.ScrollPageLeft:
                 // scroll left cell by cell
-                int prevCol = _headerCols + _fixedCols + _scrollCol;
+                int prevCol = _headerCols + fixedCols + _scrollCol;
                 while (_scrollCol > 0) {
                     scrollBy(-1, 0);
                     if (_fullyVisibleCells.right <= prevCol)
@@ -893,14 +917,14 @@ class GridWidgetBase : ScrollWidgetBase {
                 return true;
             case GridActions.ScrollPageRight:
                 int prevCol = _fullyVisibleCells.right;
-                while (_headerCols + _fixedCols + _scrollCol < prevCol) {
+                while (_headerCols + fixedCols + _scrollCol < prevCol) {
                     if (!scrollBy(1, 0))
                         break;
                 }
                 return true;
             case GridActions.ScrollPageUp:
                 // scroll up line by line
-                int prevRow = _headerRows + _fixedRows + _scrollRow;
+                int prevRow = _headerRows + fixedRows + _scrollRow;
                 while (_scrollRow > 0) {
                     scrollBy(0, -1);
                     if (_fullyVisibleCells.bottom <= prevRow)
@@ -909,14 +933,14 @@ class GridWidgetBase : ScrollWidgetBase {
                 return true;
             case GridActions.ScrollPageDown:
                 int prevRow = _fullyVisibleCells.bottom;
-                while (_headerRows + _fixedRows + _scrollRow < prevRow) {
+                while (_headerRows + fixedRows + _scrollRow < prevRow) {
                     if (!scrollBy(0, 1))
                         break;
                 }
                 return true;
             case GridActions.LineBegin:
-                if (_scrollCol > 0 && _col > _headerCols + _fixedCols + _scrollCol && !_rowSelect)
-                    selectCell(_headerCols + _fixedCols + _scrollCol, _row);
+                if (_scrollCol > 0 && _col > _headerCols + fixedCols + _scrollCol && !_rowSelect)
+                    selectCell(_headerCols + fixedCols + _scrollCol, _row);
                 else {
                     if (_scrollCol > 0) {
                         _scrollCol = 0;
@@ -942,13 +966,13 @@ class GridWidgetBase : ScrollWidgetBase {
                 return true;
             case GridActions.PageBegin:
                 if (_scrollRow > 0)
-                    selectCell(_col, _headerRows + _fixedRows + _scrollRow);
+                    selectCell(_col, _headerRows + fixedRows + _scrollRow);
                 else
                     selectCell(_col, _headerRows);
                 return true;
             case GridActions.PageEnd:
                 int found = -1;
-                for (int i = _fixedRows; i < _rows; i++) {
+                for (int i = fixedRows; i < _rows; i++) {
                     Rect rc = cellRect(_col, i);
                     if (rc.bottom <= _clientRect.height)
                         found = i;
@@ -1379,7 +1403,7 @@ class StringGridWidget : StringGridWidgetBase {
         if (_rowSelect && selectedRow)
             selectedCell = true;
         // normal cell background
-        if (c < _fixedCols || r < _fixedRows) {
+        if (c < fixedCols || r < fixedRows) {
             // fixed cell background
             buf.fillRect(rc, _fixedCellBackgroundColor);
         }

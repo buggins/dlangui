@@ -280,6 +280,7 @@ class Style {
 
     protected DrawableAttribute[string] _customDrawables;
     protected uint[string] _customColors;
+    protected uint[string] _customLength;
 
 	protected FontRef _font;
 	protected DrawableRef _backgroundDrawable;
@@ -387,6 +388,19 @@ class Style {
     /// sets custom color attribute for style
     Style setCustomColor(string id, uint color) {
         _customColors[id] = color;
+        return this;
+    }
+
+    /// get custom length attribute
+    uint customLength(string id, uint defLength = 0) const {
+        if (id in _customLength)
+            return _customLength[id];
+        return parentStyle.customLength(id, defLength);
+    }
+
+    /// sets custom length attribute for style
+    Style setCustomLength(string id, uint value) {
+        _customLength[id] = value;
         return this;
     }
 
@@ -906,6 +920,13 @@ class Theme : Style {
         return defColor;
     }
 
+    /// get custom color attribute - transparent by default
+    override uint customLength(string id, uint defValue = 0) const {
+        if (id in _customLength)
+            return _customLength[id];
+        return defValue;
+    }
+
     /// returns colors to draw focus rectangle or null if no focus rect should be drawn for style
     @property override const(uint[]) focusRectColors() const {
         if (_focusRectColors)
@@ -1269,6 +1290,13 @@ bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
             uint color = decodeHexColor(colorvalue, COLOR_TRANSPARENT);
 			if (colorid)
 				style.setCustomColor(colorid, color);
+		} else if (item.tag.name.equal("length")) {
+			// <color id="buttons_panel_color" value="#303080"/>
+			string lenid = attrValue(item, "id");
+			string lenvalue = attrValue(item, "value");
+            uint len = decodeDimension(lenvalue);
+			if (lenid.length > 0 && len > 0)
+				style.setCustomLength(lenid, len);
 		}
 	}
 	return true;
