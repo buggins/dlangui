@@ -101,7 +101,7 @@ class IWindowListenerLogger : IWindowListener {
     }
     override void onMouseMove(int x, int y, int deltaX, int deltaY,
         MouseState mouseState) {
-        Log.d("onMouseMove");
+        Log.d("onMouseMove ", x, ", ", y);
     }
     override void onMouseRelease(int x, int y, MouseButton mb, MouseState mouseState) {
         Log.d("onMouseRelease");
@@ -113,14 +113,18 @@ class IWindowListenerLogger : IWindowListener {
         //Log.d("recomputeDirtyAreas");
     }
     override void onResized(int width, int height) {
-        Log.d("onResized");
+        Log.d("onResized ", width, ", ", height);
+        _width = width;
+        _height = height;
     }
     override void onAnimate(double dt, double time) {
         //Log.d("onAnimate");
     }
     override Rect getDirtyRectangle() {
-        return Rect(0, 0, 100, 100);
+        return Rect(0, 0, _width, _height);
     }
+    int _width = 100;
+    int _height = 100;
 }
 
 struct MouseState {
@@ -398,6 +402,7 @@ private:
             int width = cast(int)(boundsRect.size.width);   // truncating down the dimensions of bounds
             int height = cast(int)(boundsRect.size.height);
             updateSizeIfNeeded(width, height);
+            _drawBuf.resize(width, height);
         }
         
         // The first drawRect callback occurs before the timer triggers.
@@ -423,11 +428,15 @@ private:
         _imageData = NSData.dataWithBytesNoCopy(cast(ubyte*)_drawBuf.scanLine(0), sizeNeeded, false);
         
         CIImage image = CIImage.imageWithBitmapData(_imageData,
-            byteStride(_width),
-            CGSize(_width, _height),
+            byteStride(_drawBuf.width),
+            CGSize(_drawBuf.width, _drawBuf.height),
             kCIFormatARGB8,
             _cgColorSpaceRef);
-        
+//        NSRect rc;
+//        rc.origin.x = 0;
+//        rc.origin.y = 0;
+//        rc.size.width = _drawBuf.width;
+//        rc.size.height = _drawBuf.height;
         ciContext.drawImage(image, rect, rect);
     }
     
