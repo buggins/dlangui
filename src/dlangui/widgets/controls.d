@@ -578,6 +578,19 @@ class AbstractSlider : WidgetGroup {
         }
         return true;
     }
+
+    protected Orientation _orientation = Orientation.Vertical;
+    /// returns scrollbar orientation (Vertical, Horizontal)
+    @property Orientation orientation() { return _orientation; }
+    /// sets scrollbar orientation
+    @property AbstractSlider orientation(Orientation value) { 
+        if (_orientation != value) {
+            _orientation = value; 
+            requestLayout(); 
+        }
+        return this; 
+    }
+
 }
 
 /// scroll bar - either vertical or horizontal
@@ -748,11 +761,10 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         return true;
     }
 
-    protected Orientation _orientation = Orientation.Vertical;
     /// returns scrollbar orientation (Vertical, Horizontal)
-    @property Orientation orientation() { return _orientation; }
+    override @property Orientation orientation() { return _orientation; }
     /// sets scrollbar orientation
-    @property ScrollBar orientation(Orientation value) { 
+    override @property AbstractSlider orientation(Orientation value) { 
         if (_orientation != value) {
             _orientation = value; 
             _btnBack.drawableId = style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_BUTTON_UP : ATTR_SCROLLBAR_BUTTON_LEFT);

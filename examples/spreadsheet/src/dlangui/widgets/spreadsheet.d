@@ -47,10 +47,20 @@ class SpreadSheetView : StringGridWidget {
         layoutWidth = FILL_PARENT;
         layoutHeight = FILL_PARENT;
         resize(50, 50);
+        _colWidths[0] = 50;
+        for (int i = 0; i < 26; i++) {
+            dchar[1] t;
+            t[0] = cast(dchar)('A' + i);
+            setColTitle(i, t.dup);
+        }
+        for (int i = 0; i < 50; i++) {
+            dstring label = to!dstring(i + 1);
+            setRowTitle(i, label);
+        }
     }
 }
 
-class SpreadSheetWidget : WidgetGroupDefaultDrawing {
+class SpreadSheetWidget : WidgetGroupDefaultDrawing, OnScrollHandler {
 
     SheetEditControl _editControl;
     SheetTabs _tabs;
@@ -119,6 +129,9 @@ class SpreadSheetWidget : WidgetGroupDefaultDrawing {
             _viewTopLeft, _viewTopRight, _viewBottomLeft, _viewBottomRight,
             _editControl, _tabs
         ]);
+
+        foreach(sb; _scrollbars)
+            sb.onScrollEventListener = this;
     }
 
 	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
@@ -166,5 +179,23 @@ class SpreadSheetWidget : WidgetGroupDefaultDrawing {
         _hScroll2.layout(Rect(rc.left + splitx + splitWidth, rc.bottom - hscrollHeight, rc.right - vscrollWidth, rc.bottom));
         _vScroll1.layout(Rect(rc.right - vscrollWidth, rc.top, rc.right, rc.top + splity));
         _vScroll2.layout(Rect(rc.right - vscrollWidth, rc.top + splity + splitHeight, rc.right, rc.bottom - bottomSize));
+    }
+
+    /// handle scroll event
+    override bool onScrollEvent(AbstractSlider source, ScrollEvent event) {
+        if (source == _hScroll1) {
+            _viewBottomLeft.onHScroll(event);
+            return _viewTopLeft.onHScroll(event);
+        } else if (source == _hScroll2) {
+            _viewBottomRight.onHScroll(event);
+            return _viewTopRight.onHScroll(event);
+        } else if (source == _vScroll1) {
+            _viewTopRight.onVScroll(event);
+            return _viewTopLeft.onVScroll(event);
+        } else if (source == _vScroll2) {
+            _viewBottomRight.onVScroll(event);
+            return _viewBottomLeft.onVScroll(event);
+        }
+        return true;
     }
 }

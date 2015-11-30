@@ -133,12 +133,11 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
 
     /// handle scroll event
     override bool onScrollEvent(AbstractSlider source, ScrollEvent event) {
-        if (source.compareId("hscrollbar")) {
+        if (source.orientation == Orientation.Horizontal) {
             return onHScroll(event);
-        } else if (source.compareId("vscrollbar")) {
+        } else {
             return onVScroll(event);
         }
-        return true;
     }
 
     /// update scrollbar positions
@@ -161,7 +160,7 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
             _hscrollbar = null;
             _hscrollbarMode = ScrollBarMode.Invisible;
         }
-        if (_hscrollbar) {
+        if (hscroll) {
             _hscrollbar = hscroll;
             _hscrollbarMode = ScrollBarMode.External;
         }
@@ -174,7 +173,7 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
             _vscrollbar = null;
             _vscrollbarMode = ScrollBarMode.Invisible;
         }
-        if (_vscrollbar) {
+        if (vscroll) {
             _vscrollbar = vscroll;
             _vscrollbarMode = ScrollBarMode.External;
         }
@@ -306,11 +305,11 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
 		Rect hsbrc = rc;
 		hsbrc.right = hsbrc.right - (needVscroll ? _vscrollbar.measuredWidth : 0);
 		hsbrc.top = hsbrc.bottom - (needHscroll ? _hscrollbar.measuredHeight : 0);
-        if (_vscrollbar) {
+        if (_vscrollbar && _vscrollbarMode != ScrollBarMode.External) {
             _vscrollbar.visibility = needVscroll ? Visibility.Visible : Visibility.Gone;
 		    _vscrollbar.layout(vsbrc);
         }
-        if (_hscrollbar) {
+        if (_hscrollbar && _hscrollbarMode != ScrollBarMode.External) {
             _hscrollbar.visibility = needHscroll ? Visibility.Visible : Visibility.Gone;
             _hscrollbar.layout(hsbrc);
         }
