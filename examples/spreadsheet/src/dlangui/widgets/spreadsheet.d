@@ -60,7 +60,7 @@ class SpreadSheetView : StringGridWidget {
     }
 }
 
-class SpreadSheetWidget : WidgetGroupDefaultDrawing, OnScrollHandler {
+class SpreadSheetWidget : WidgetGroupDefaultDrawing, OnScrollHandler, CellSelectedHandler, CellActivatedHandler, ViewScrolledHandler {
 
     SheetEditControl _editControl;
     SheetTabs _tabs;
@@ -106,10 +106,10 @@ class SpreadSheetWidget : WidgetGroupDefaultDrawing, OnScrollHandler {
         _viewBottomLeft = new SpreadSheetView("sheetViewBottomLeft");
         _viewBottomRight = new SpreadSheetView("sheetViewBottomRight");
 
-        _viewTopRight.headerCols = 0;
-        _viewBottomLeft.headerRows = 0;
-        _viewBottomRight.headerCols = 0;
-        _viewBottomRight.headerRows = 0;
+        _viewTopRight.setColWidth(0, 0);
+        _viewBottomLeft.setRowHeight(0, 0);
+        _viewBottomRight.setRowHeight(0, 0);
+        _viewBottomRight.setColWidth(0, 0);
 
         _views[0] = _viewTopLeft;
         _views[1] = _viewTopRight;
@@ -132,6 +132,11 @@ class SpreadSheetWidget : WidgetGroupDefaultDrawing, OnScrollHandler {
 
         foreach(sb; _scrollbars)
             sb.onScrollEventListener = this;
+        foreach(view; _views) {
+            view.cellSelected = this;
+            view.cellActivated = this;
+            view.viewScrolled = this;
+        }
     }
 
 	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
@@ -198,4 +203,21 @@ class SpreadSheetWidget : WidgetGroupDefaultDrawing, OnScrollHandler {
         }
         return true;
     }
+
+    /// Callback for handling of cell selection
+    void onCellSelected(GridWidgetBase source, int col, int row) {
+        foreach(view; _views) {
+            if (source != view)
+                view.selectCell(col + view.headerCols, row + view.headerRows, false, source, false);
+        }
+    }
+
+    /// Callback for handling of cell double click or Enter key press
+    void onCellActivated(GridWidgetBase source, int col, int row) {
+    }
+
+    /// Callback for handling of view scroll (top left visible cell change)
+    void onViewScrolled(GridWidgetBase source, int col, int row) {
+    }
+
 }

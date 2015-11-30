@@ -225,6 +225,11 @@ interface CellActivatedHandler {
     void onCellActivated(GridWidgetBase source, int col, int row);
 }
 
+/// Callback for handling of view scroll (top left visible cell change)
+interface ViewScrolledHandler {
+    void onViewScrolled(GridWidgetBase source, int col, int row);
+}
+
 /// Abstract grid widget
 class GridWidgetBase : ScrollWidgetBase {
     /// Callback to handle selection change
@@ -236,6 +241,9 @@ class GridWidgetBase : ScrollWidgetBase {
     Listener!CellActivatedHandler cellActivated;
     /// cellActivated signal alias for backward compatibility; will be deprecated in future
     alias onCellActivated = cellActivated;
+
+    /// Callback for handling of view scroll (top left visible cell change)
+    Listener!ViewScrolledHandler viewScrolled;
 
     protected CustomGridCellAdapter _customCellAdapter;
 
@@ -414,11 +422,19 @@ class GridWidgetBase : ScrollWidgetBase {
         return _colWidths[x];
     }
 
+    void setColWidth(int x, int w) {
+        _colWidths[x] = w;
+    }
+
     /// returns row height (index includes col/row headers, if any); returns 0 for riws hidden by scroll at the top
     int rowHeight(int y) {
         if (y >= _headerRows + _fixedRows && y < _headerRows + _fixedRows + _scrollRow)
             return 0;
         return _rowHeights[y];
+    }
+
+    void setRowHeight(int y, int w) {
+        _rowHeights[y] = w;
     }
 
     /// returns cell rectangle relative to client area; row 0 is col headers row; col 0 is row headers column
@@ -623,7 +639,9 @@ class GridWidgetBase : ScrollWidgetBase {
     }
 
     /// move selection to specified cell
-    bool selectCell(int col, int row, bool makeVisible = true) {
+    bool selectCell(int col, int row, bool makeVisible = true, GridWidgetBase source = null, bool needNotification = true) {
+        if (source is null)
+            source = this;
         if (_col == col && _row == row)
             return false; // same position
         if (col < _headerCols || row < _headerRows || col >= _cols || row >= _rows)
@@ -634,8 +652,8 @@ class GridWidgetBase : ScrollWidgetBase {
         calcScrollableAreaPos();
         if (makeVisible)
             makeCellVisible(_col, _row);
-        if (onCellSelected.assigned)
-            onCellSelected(this, _col - _headerCols, _row - _headerRows);
+        if (needNotification && onCellSelected.assigned)
+            onCellSelected(source, _col - _headerCols, _row - _headerRows);
         return true;
     }
 
