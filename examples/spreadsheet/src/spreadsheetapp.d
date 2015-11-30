@@ -3,7 +3,7 @@ module spreadsheet;
 import dlangui;
 import dlangui.dialogs.filedlg;
 import dlangui.dialogs.dialog;
-import dlangui.dml.dmlhighlight;
+import dlangui.widgets.spreadsheet;
 import std.array : replaceFirst;
 
 mixin APP_ENTRY_POINT;
@@ -42,35 +42,12 @@ const Action ACTION_EDIT_PREFERENCES = (new Action(IDEActions.EditPreferences, "
 const Action ACTION_DEBUG_START = new Action(IDEActions.DebugStart, "MENU_DEBUG_UPDATE_PREVIEW"c, "debug-run"c, KeyCode.F5, 0);
 const Action ACTION_HELP_ABOUT = new Action(IDEActions.HelpAbout, "MENU_HELP_ABOUT"c);
 
-/// DIDE source file editor
-class DMLSourceEdit : SourceEdit {
-	this(string ID) {
-		super(ID);
-		MenuItem editPopupItem = new MenuItem(null);
-		editPopupItem.add(ACTION_EDIT_COPY, ACTION_EDIT_PASTE, ACTION_EDIT_CUT, ACTION_EDIT_UNDO, ACTION_EDIT_REDO, ACTION_EDIT_INDENT, ACTION_EDIT_UNINDENT, ACTION_EDIT_TOGGLE_LINE_COMMENT, ACTION_DEBUG_START);
-        popupMenu = editPopupItem;
-        content.syntaxSupport = new DMLSyntaxSupport("");
-        setTokenHightlightColor(TokenCategory.Comment, 0x008000); // green
-        setTokenHightlightColor(TokenCategory.Keyword, 0x0000FF); // blue
-        setTokenHightlightColor(TokenCategory.String, 0xa31515);  // brown
-        setTokenHightlightColor(TokenCategory.Integer, 0xa315C0);  // 
-        setTokenHightlightColor(TokenCategory.Float, 0xa315C0);  // 
-        setTokenHightlightColor(TokenCategory.Error, 0xFF0000);  // red
-        setTokenHightlightColor(TokenCategory.Op, 0x503000);
-        setTokenHightlightColor(TokenCategory.Identifier_Class, 0x000080);  // blue
-
-    }
-	this() {
-		this("DMLEDIT");
-	}
-}
-
 class EditFrame : AppFrame {
 
     MenuItem mainMenuItems;
 
     override protected void init() {
-        _appName = "DMLEdit";
+        _appName = "DlangUISpreadSheet";
         super.init();
     }
 
@@ -231,15 +208,15 @@ class EditFrame : AppFrame {
 		}
 	}
 
+    SpreadSheetWidget _spreadsheet;
+
     /// create app body widget
     override protected Widget createBody() {
         VerticalLayout bodyWidget = new VerticalLayout();
         bodyWidget.layoutWidth = FILL_PARENT;
         bodyWidget.layoutHeight = FILL_PARENT;
-        HorizontalLayout hlayout = new HorizontalLayout();
-        hlayout.layoutWidth = FILL_PARENT;
-        hlayout.layoutHeight = FILL_PARENT;
-        bodyWidget.addChild(hlayout);
+        _spreadsheet = new SpreadSheetWidget();
+        bodyWidget.addChild(_spreadsheet);
         return bodyWidget;
     }
 
@@ -255,8 +232,13 @@ extern (C) int UIAppMain(string[] args) {
     FontManager.fontGamma = 0.8;
     FontManager.hintingMode = HintingMode.Normal;
 
+    // select translation file - for english language
+	Platform.instance.uiLanguage = "en";
+	// load theme from file "theme_custom.xml"
+	Platform.instance.uiTheme = "theme_custom";
+
     // create window
-    Window window = Platform.instance.createWindow("DlangUI ML editor"d, null, WindowFlag.Resizable, 700, 470);
+    Window window = Platform.instance.createWindow("DlangUI SpreadSheet example"d, null, WindowFlag.Resizable, 700, 470);
 
     // create some widget to show in window
     window.windowIcon = drawableCache.getImage("dlangui-logo1");

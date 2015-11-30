@@ -410,6 +410,11 @@
  </Config>
  <Folder name="spreadsheet">
   <Folder name="src">
+   <Folder name="dlangui">
+    <Folder name="widgets">
+     <File path="src\dlangui\widgets\spreadsheet.d" />
+    </Folder>
+   </Folder>
    <File path="src\spreadsheetapp.d" />
   </Folder>
  </Folder>

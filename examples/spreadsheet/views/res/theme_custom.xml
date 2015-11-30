@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<theme 
+    id="theme_custom" 
+    parent="theme_default"
+    fontSize="16"
+    >
+    <style id="TAB_SHEET_DOWN_BUTTON"
+        backgroundImageId="tab_sheet_down_background"
+        layoutWidth="FILL_PARENT"
+        >
+        <state state_selected="true" backgroundImageId="tab_up_backgrond_selected"/>
+    </style>
+    <style id="TAB_SHEET_DOWN_BUTTON_TEXT"
+        textColor="#000000"
+        align="Center"
+        fontSize="12px"
+        >
+        <state state_selected="true" state_focused="true" textColor="#000000"/>
+        <state state_selected="true" textColor="#000000"/>
+        <state state_focused="true" textColor="#000000"/>
+        <state state_hovered="true" textColor="#808000"/>
+    </style>
+    <style id="TAB_SHEET_DOWN_BUTTON"
+        backgroundImageId="tab_sheet_down"
+        />
+</theme>
