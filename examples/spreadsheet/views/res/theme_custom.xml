@@ -2,9 +2,9 @@
 <theme 
     id="theme_custom" 
     parent="theme_default"
-    fontSize="16"
+    fontSize="12px"
     >
-    <style id="TAB_SHEET_DOWN_BUTTON"
+    <style id="TAB_SHEET_DOWN"
         backgroundImageId="tab_sheet_down_background"
         layoutWidth="FILL_PARENT"
         >
@@ -13,12 +13,12 @@
     <style id="TAB_SHEET_DOWN_BUTTON_TEXT"
         textColor="#000000"
         align="Center"
-        fontSize="12px"
+        fontSize="10px"
         >
         <state state_selected="true" state_focused="true" textColor="#000000"/>
         <state state_selected="true" textColor="#000000"/>
         <state state_focused="true" textColor="#000000"/>
-        <state state_hovered="true" textColor="#808000"/>
+        <state state_hovered="true" textColor="#800000"/>
     </style>
     <style id="TAB_SHEET_DOWN_BUTTON"
         backgroundImageId="tab_sheet_down"

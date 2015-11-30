@@ -1419,10 +1419,19 @@ class Widget {
     Widget child(int index) { return null; }
     /// adds child, returns added item
     Widget addChild(Widget item) { assert(false, "addChild: children not suported for this widget type"); }
+    /// adds child, returns added item
+    Widget addChildren(Widget[] items) { 
+        foreach(item; items) {
+            addChild(item); 
+        }
+        return this;
+    }
     /// removes child, returns removed item
     Widget removeChild(int index) { assert(false, "removeChild: children not suported for this widget type"); }
     /// removes child by ID, returns removed item
     Widget removeChild(string id) { assert(false, "removeChild: children not suported for this widget type"); }
+    /// removes child, returns removed item
+    Widget removeChild(Widget child) { assert(false, "removeChild: children not suported for this widget type"); }
     /// returns index of widget in child list, -1 if passed widget is not a child of this widget
     int childIndex(Widget item) { return -1; }
 
@@ -1632,6 +1641,17 @@ class WidgetGroup : Widget {
     override Widget removeChild(string ID) {
         Widget res = null;
         int index = _children.indexOf(ID);
+        if (index < 0)
+            return null;
+        res = _children.remove(index); 
+        if (res !is null)
+            res.parent = null;
+        return res;
+    }
+    /// removes child, returns removed item
+    override Widget removeChild(Widget child) {
+        Widget res = null;
+        int index = _children.indexOf(child);
         if (index < 0)
             return null;
         res = _children.remove(index); 

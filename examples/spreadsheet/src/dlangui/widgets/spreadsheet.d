@@ -9,6 +9,8 @@ import dlangui.widgets.tabs;
 import dlangui.widgets.editors;
 import dlangui.widgets.grid;
 
+import std.algorithm : min;
+
 /// standard style id for Tab with Up alignment
 immutable string STYLE_TAB_SHEET_DOWN = "TAB_SHEET_DOWN";
 /// standard style id for button of Tab with Up alignment
@@ -21,6 +23,7 @@ class SheetTabs : TabControl {
     this(string ID = null) {
         super(ID, Align.Bottom);
         setStyles(STYLE_TAB_SHEET_DOWN, STYLE_TAB_SHEET_DOWN_BUTTON, STYLE_TAB_SHEET_DOWN_BUTTON_TEXT);
+        _moreButton.visibility = Visibility.Gone;
     }
 }
 
@@ -38,19 +41,36 @@ class SheetEditControl : HorizontalLayout {
     }
 }
 
-class SpreadSheetWidget : VerticalLayout {
+class SpreadSheetView : StringGridWidget {
+    this(string ID = null) {
+        super(ID);
+        layoutWidth = FILL_PARENT;
+        layoutHeight = FILL_PARENT;
+        resize(50, 50);
+    }
+}
+
+class SpreadSheetWidget : WidgetGroupDefaultDrawing {
 
     SheetEditControl _editControl;
-    StringGridWidget _grid;
     SheetTabs _tabs;
+
+    ScrollBar _hScroll1;
+    ScrollBar _hScroll2;
+    ScrollBar _vScroll1;
+    ScrollBar _vScroll2;
+
+    SpreadSheetView _viewTopLeft;
+    SpreadSheetView _viewTopRight;
+    SpreadSheetView _viewBottomLeft;
+    SpreadSheetView _viewBottomRight;
+
+    SpreadSheetView[4] _views;
+    ScrollBar[4] _scrollbars;
 
     this(string ID = "spreadsheet") {
         _editControl = new SheetEditControl();
         _editControl.layoutWidth = FILL_PARENT;
-        _grid = new StringGridWidget("grid");
-        _grid.layoutWidth = FILL_PARENT;
-        _grid.layoutHeight = FILL_PARENT;
-        _grid.resize(50, 50);
         _tabs = new SheetTabs();
         _tabs.layoutWidth = FILL_PARENT;
         _tabs.addTab("Sheet1", "Sheet1"d);
@@ -58,10 +78,93 @@ class SpreadSheetWidget : VerticalLayout {
         _tabs.addTab("Sheet3", "Sheet3"d);
         layoutWidth = FILL_PARENT;
         layoutHeight = FILL_PARENT;
-        backgroundColor = 0xFFE0E0E0;
+        backgroundColor = 0xdce2e8;
         minHeight = 100;
-        addChild(_editControl);
-        addChild(_grid);
-        addChild(_tabs);
+
+        _hScroll1 = new ScrollBar("hscroll1", Orientation.Horizontal);
+        _hScroll2 = new ScrollBar("hscroll2", Orientation.Horizontal);
+        _vScroll1 = new ScrollBar("vscroll1", Orientation.Vertical);
+        _vScroll2 = new ScrollBar("vscroll2", Orientation.Vertical);
+
+        _scrollbars[0] = _hScroll1;
+        _scrollbars[1] = _vScroll1;
+        _scrollbars[2] = _hScroll2;
+        _scrollbars[3] = _vScroll2;
+
+        _viewTopLeft = new SpreadSheetView("sheetViewTopLeft");
+        _viewTopRight = new SpreadSheetView("sheetViewTopRight");
+        _viewBottomLeft = new SpreadSheetView("sheetViewBottomLeft");
+        _viewBottomRight = new SpreadSheetView("sheetViewBottomRight");
+
+        _viewTopRight.headerCols = 0;
+        _viewBottomLeft.headerRows = 0;
+        _viewBottomRight.headerCols = 0;
+        _viewBottomRight.headerRows = 0;
+
+        _views[0] = _viewTopLeft;
+        _views[1] = _viewTopRight;
+        _views[2] = _viewBottomLeft;
+        _views[3] = _viewBottomRight;
+
+        _viewTopLeft.hscrollbar = _hScroll1;
+        _viewTopLeft.vscrollbar = _vScroll1;
+        _viewTopRight.hscrollbar = _hScroll2;
+        _viewTopRight.vscrollbar = _vScroll1;
+        _viewBottomLeft.hscrollbar = _hScroll1;
+        _viewBottomLeft.vscrollbar = _vScroll2;
+        _viewBottomRight.hscrollbar = _hScroll2;
+        _viewBottomRight.vscrollbar = _vScroll2;
+
+        addChildren([_hScroll1, _vScroll1, _hScroll2, _vScroll2,
+            _viewTopLeft, _viewTopRight, _viewBottomLeft, _viewBottomRight,
+            _editControl, _tabs
+        ]);
+    }
+
+	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+	override void measure(int parentWidth, int parentHeight) { 
+        if (visibility == Visibility.Gone) {
+            return;
+        }
+        _measuredWidth = parentWidth;
+        _measuredHeight = parentHeight;
+        foreach(view; _views)
+            view.measure(parentWidth, parentHeight);
+        foreach(sb; _scrollbars)
+            sb.measure(parentWidth, parentHeight);
+        _editControl.measure(parentWidth, parentHeight);
+        _tabs.measure(parentWidth, parentHeight);
+	}
+	/// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+	override void layout(Rect rc) {
+		if (visibility == Visibility.Gone) {
+			return;
+		}
+		_pos = rc;
+		_needLayout = false;
+		applyMargins(rc);
+		applyPadding(rc);
+        int editHeight = _editControl.measuredHeight;
+        _editControl.layout(Rect(rc.left, rc.top, rc.right, rc.top + editHeight));
+        rc.top += editHeight;
+        int splitWidth = 4;
+        int splitHeight = 4;
+        int hscrollHeight = _hScroll1.measuredHeight;
+        int vscrollWidth = _vScroll1.measuredWidth;
+        int tabsHeight = _tabs.measuredHeight;
+        int bottomSize = min(hscrollHeight, tabsHeight);
+        int splitx = (rc.width - vscrollWidth - splitWidth) / 2;
+        int splity = (rc.height - hscrollHeight - splitHeight) / 2;
+        _viewTopLeft.layout(Rect(rc.left, rc.top, rc.left + splitx, rc.top + splity));
+        _viewTopRight.layout(Rect(rc.left + splitx + splitWidth, rc.top, rc.right - vscrollWidth, rc.top + splity));
+        _viewBottomLeft.layout(Rect(rc.left, rc.top + splity + splitHeight, rc.left + splitx, rc.bottom - bottomSize));
+        _viewBottomRight.layout(Rect(rc.left + splitx + splitWidth, rc.top + splity + splitHeight, rc.right - vscrollWidth, rc.bottom - bottomSize));
+        int tabsWidth = splitx / 2;
+        _tabs.layout(Rect(rc.left, rc.bottom - bottomSize, rc.left + tabsWidth, rc.bottom - bottomSize + tabsHeight));
+
+        _hScroll1.layout(Rect(rc.left + tabsWidth + splitWidth, rc.bottom - hscrollHeight, rc.left + splitx, rc.bottom));
+        _hScroll2.layout(Rect(rc.left + splitx + splitWidth, rc.bottom - hscrollHeight, rc.right - vscrollWidth, rc.bottom));
+        _vScroll1.layout(Rect(rc.right - vscrollWidth, rc.top, rc.right, rc.top + splity));
+        _vScroll2.layout(Rect(rc.right - vscrollWidth, rc.top + splity + splitHeight, rc.right, rc.bottom - bottomSize));
     }
 }

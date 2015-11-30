@@ -429,9 +429,11 @@ class TabControl : WidgetGroupDefaultDrawing {
             pheight -= m.top + m.bottom + p.top + p.bottom;
         // measure children
         Point sz;
-        _moreButton.measure(pwidth, pheight);
-        sz.x = _moreButton.measuredWidth;
-        sz.y = _moreButton.measuredHeight;
+        if (_moreButton.visibility == Visibility.Visible) {
+            _moreButton.measure(pwidth, pheight);
+            sz.x = _moreButton.measuredWidth;
+            sz.y = _moreButton.measuredHeight;
+        }
         pwidth -= sz.x;
         for (int i = 1; i < _children.count; i++) {
             Widget tab = _children.get(i);
@@ -458,9 +460,11 @@ class TabControl : WidgetGroupDefaultDrawing {
         applyPadding(rc);
         // more button
         Rect moreRc = rc;
-        moreRc.left = rc.right - _moreButton.measuredWidth;
-        _moreButton.layout(moreRc);
-        rc.right -= _moreButton.measuredWidth;
+        if (_moreButton.visibility == Visibility.Visible) {
+            moreRc.left = rc.right - _moreButton.measuredWidth;
+            _moreButton.layout(moreRc);
+            rc.right -= _moreButton.measuredWidth;
+        }
         // tabs
         int maxw = rc.width;
         // measure and update visibility

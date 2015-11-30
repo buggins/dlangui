@@ -81,7 +81,9 @@ enum ScrollBarMode {
     /** always visible */
     Visible,
     /** automatically show/hide scrollbar depending on content size */
-    Auto
+    Auto,
+    /** Scrollbar is provided by external control outside this widget */
+    External,
 }
 
 /** 
@@ -146,6 +148,35 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         }
         if (_vscrollbar) {
             updateVScrollBar();
+        }
+    }
+
+    public @property ScrollBar hscrollbar() { return _hscrollbar; }
+    public @property ScrollBar vscrollbar() { return _vscrollbar; }
+    
+    public @property void hscrollbar(ScrollBar hscroll) { 
+        if (_hscrollbar) {
+            removeChild(_hscrollbar);
+            destroy(_hscrollbar);
+            _hscrollbar = null;
+            _hscrollbarMode = ScrollBarMode.Invisible;
+        }
+        if (_hscrollbar) {
+            _hscrollbar = hscroll;
+            _hscrollbarMode = ScrollBarMode.External;
+        }
+    }
+    
+    public @property void vscrollbar(ScrollBar vscroll) { 
+        if (_vscrollbar) {
+            removeChild(_vscrollbar);
+            destroy(_vscrollbar);
+            _vscrollbar = null;
+            _vscrollbarMode = ScrollBarMode.Invisible;
+        }
+        if (_vscrollbar) {
+            _vscrollbar = vscroll;
+            _vscrollbarMode = ScrollBarMode.External;
         }
     }
 
@@ -228,17 +259,17 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
 			pwidth -= m.left + m.right + p.left + p.right;
 		if (parentHeight != SIZE_UNSPECIFIED)
 			pheight -= m.top + m.bottom + p.top + p.bottom;
-        if (_hscrollbar) {
+        if (_hscrollbar && _hscrollbarMode == ScrollBarMode.Visible) {
 		    _hscrollbar.measure(pwidth, pheight);
         }
-        if (_vscrollbar) {
+        if (_vscrollbar && _vscrollbarMode == ScrollBarMode.Visible) {
 		    _vscrollbar.measure(pwidth, pheight);
         }
         Point sz = fullContentSize();
-        if (_hscrollbar) {
+        if (_hscrollbar && _hscrollbarMode == ScrollBarMode.Visible) {
 		    sz.y += _hscrollbar.measuredHeight;
         }
-        if (_vscrollbar) {
+        if (_vscrollbar && _vscrollbarMode == ScrollBarMode.Visible) {
 		    sz.x += _vscrollbar.measuredWidth;
         }
 		measuredContent(parentWidth, parentHeight, sz.x, sz.y);
@@ -258,8 +289,8 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
 		applyMargins(rc);
 		applyPadding(rc);
         Point sz = fullContentSize();
-        bool needHscroll = _hscrollbarMode != ScrollBarMode.Invisible && sz.x > rc.width;
-        bool needVscroll = _vscrollbarMode != ScrollBarMode.Invisible && sz.y > rc.height;
+        bool needHscroll = _hscrollbarMode != ScrollBarMode.External && _hscrollbarMode != ScrollBarMode.Invisible && sz.x > rc.width;
+        bool needVscroll = _vscrollbarMode != ScrollBarMode.External && _vscrollbarMode != ScrollBarMode.Invisible && sz.y > rc.height;
         if (needVscroll && _vscrollbarMode != ScrollBarMode.Invisible)
             needHscroll = sz.x > rc.width - _vscrollbar.measuredWidth;
         if (needHscroll && _hscrollbarMode != ScrollBarMode.Invisible)
