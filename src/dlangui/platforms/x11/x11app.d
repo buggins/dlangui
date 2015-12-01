@@ -182,10 +182,66 @@ class X11Window : DWindow {
 	}
 	/// request window redraw
 	override void invalidate() {
+		XEvent ev;
+		ev.type = Expose;
+		ev.xexpose.window = _win;
+		XSendEvent(x11display, _win, false, ExposureMask, &ev);
 	}
 
 	/// close window
 	override void close() {
+	}
+
+	ColorDrawBuf _drawbuf;
+	protected void drawUsingBitmap() {
+		if (_dx > 0 && _dy > 0) {
+			// prepare drawbuf
+			if (_drawbuf is null)
+				_drawbuf = new ColorDrawBuf(_dx, _dy);
+			else
+				_drawbuf.resize(_dx, _dy);
+			_drawbuf.resetClipping();
+			// draw widgets into buffer
+			onDraw(_drawbuf);
+			// draw buffer on X11 window
+
+			XImage * image = XCreateImage(x11display, 
+				DefaultVisual(x11display, DefaultScreen(x11display)),
+				24, 
+				ZPixmap, //XYPixmap, 
+				0,
+				cast(char*)_drawbuf.scanLine(0), 
+				_drawbuf.width,
+				_drawbuf.height,
+				32, 0);
+			XPutImage(x11display, _win, DefaultGC(x11display, DefaultScreen(x11display)), 
+				image,
+				0, 0, 0, 0,
+				_drawbuf.width,
+				_drawbuf.height);
+			XFlush(x11display);
+			//XDestroyImage(image);
+
+
+//			ulong black, white;
+//			black = BlackPixel(x11display, x11screen);	/* get color black */
+//			white = WhitePixel(x11display, x11screen);  /* get color white */
+//			Pixmap pixmap = XCreatePixmapFromBitmapData(x11display, _win, 
+//				cast(char*)_drawbuf.scanLine(0), 
+//				_drawbuf.width,
+//				_drawbuf.height,
+//				black,
+//				white,
+//				DefaultDepth(x11display, 0) // depth
+//				);
+//			//GC gc = XCreateGC(x11display, pixmap, 0, null);
+//			XCopyArea(x11display, pixmap, _win,
+//				_gc, //gc
+//				0, 0, _drawbuf.width, _drawbuf.height,
+//				0, 0);
+			//XFlush(x11display);
+			//XFreePixmap(x11display, pixmap);
+		}
 	}
 
 	void processExpose(int width, int height) {
@@ -209,14 +265,16 @@ class X11Window : DWindow {
 		ulong black, white;
 		black = BlackPixel(x11display, x11screen);	/* get color black */
 		white = WhitePixel(x11display, x11screen);  /* get color white */
-		//XSetBackground(x11display, _gc, white);
+		XSetBackground(x11display, _gc, white);
 		XClearWindow(x11display, _win);
-		XSetForeground( x11display, _gc, black );
-		XFillRectangle(x11display, _win, _gc, 5, 5, _dx - 10, 5);
-		XFillRectangle(x11display, _win, _gc, 5, _dy - 10, _dx - 10, 5);
-		XSetForeground ( x11display, _gc, black );
-		XDrawString ( x11display, _win, _gc, 20, 50,
-			cast(char*)"First example".ptr, "First example".length );
+		drawUsingBitmap();
+
+//		XSetForeground( x11display, _gc, black );
+//		XFillRectangle(x11display, _win, _gc, 5, 5, _dx - 10, 5);
+//		XFillRectangle(x11display, _win, _gc, 5, _dy - 10, _dx - 10, 5);
+//		XSetForeground ( x11display, _gc, black );
+//		XDrawString ( x11display, _win, _gc, 20, 50,
+//			cast(char*)"First example".ptr, "First example".length );
 		//XFreeGC ( x11display, gc );
 		XFlush(x11display);
 	}
