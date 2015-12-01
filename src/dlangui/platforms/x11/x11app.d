@@ -32,15 +32,15 @@ alias DWindow = dlangui.platforms.common.platform.Window;
 private GC createGC(Display* display, XWindow win)
 {
 	GC gc;				/* handle of newly created GC.  */
-	uint valuemask = 0;		/* which values in 'values' to  */
+	uint valuemask = GCFunction | GCBackground | GCForeground | GCPlaneMask;		/* which values in 'values' to  */
 	/* check when creating the GC.  */
 	XGCValues values;			/* initial values for the GC.   */
-	uint line_width = 2;		/* line width for the GC.       */
-	int line_style = LineSolid;		/* style for lines drawing and  */
-	int cap_style = CapButt;		/* style of the line's edje and */
-	int join_style = JoinBevel;		/*  joined lines.		*/
+	values.plane_mask = AllPlanes;
 	int screen_num = DefaultScreen(display);
-	
+	values.function_ = GXcopy;
+	values.background = WhitePixel(display, screen_num);
+	values.foreground = BlackPixel(display, screen_num);
+
 	gc = XCreateGC(display, win, valuemask, &values);
 	if (!gc) {
 		Log.e("X11: Cannot create GC");
@@ -48,10 +48,11 @@ private GC createGC(Display* display, XWindow win)
 		//fprintf(stderr, "XCreateGC: \n");
 	}
 	
-	/* allocate foreground and background colors for this GC. */
-	XSetForeground(display, gc, BlackPixel(display, screen_num));
-	XSetBackground(display, gc, WhitePixel(display, screen_num));
-
+	uint line_width = 2;		/* line width for the GC.       */
+	int line_style = LineSolid;		/* style for lines drawing and  */
+	int cap_style = CapButt;		/* style of the line's edje and */
+	int join_style = JoinBevel;		/*  joined lines.		*/
+	
 	/* define the style of lines that will be drawn using this GC. */
 	XSetLineAttributes(display, gc,
 		line_width, line_style, cap_style, join_style);
@@ -94,7 +95,7 @@ class X11Window : DWindow {
 		static if (true) {
 			_win = XCreateSimpleWindow(x11display, DefaultRootWindow(x11display), 
 				0, 0,	
-				_dx, _dy, 1, black, white);
+				_dx, _dy, 5, black, white);
 		} else {
 			XSetWindowAttributes attr;
 			attr.do_not_propagate_mask = 0;
@@ -115,8 +116,8 @@ class X11Window : DWindow {
 			if (!_win)
 				return;
 		}
-		XMapWindow(x11display, _win);
-		XSync(x11display, false);
+		//XMapWindow(x11display, _win);
+		//XSync(x11display, false);
 
 		//readln();
 		
@@ -148,7 +149,7 @@ class X11Window : DWindow {
 		
 		/* clear the window and bring it on top of the other windows */
 		//XClearWindow(x11display, _win);
-		XFlush(x11display);
+		//XFlush(x11display);
 	}
 
 	~this() {
@@ -204,24 +205,54 @@ class X11Window : DWindow {
 			// draw widgets into buffer
 			onDraw(_drawbuf);
 			// draw buffer on X11 window
-
+			//_drawbuf.invertAlpha();
+			//_drawbuf.invertByteOrder();
+			XImage img;
+			img.width = _drawbuf.width;
+			img.height = _drawbuf.height;
+			img.xoffset = 0;
+			img.format = ZPixmap;
+			img.data = cast(char*)_drawbuf.scanLine(0);
+			img.bitmap_unit = 32;
+			img.bitmap_pad = 32;
+			img.bitmap_bit_order = LSBFirst;
+			img.depth = 24;
+			img.chars_per_line = _drawbuf.width * 4;
+			img.bits_per_pixel = 32;
+			img.red_mask = 0xFF0000;
+			img.green_mask = 0x00FF00;
+			img.blue_mask = 0x0000FF;
+			XInitImage(&img);
+			XSetClipOrigin(x11display, _gc, 0, 0);
+			XPutImage(x11display, _win, 
+				_gc, //DefaultGC(x11display, DefaultScreen(x11display)), 
+				&img,
+				0, 0, 0, 0,
+				_drawbuf.width,
+				_drawbuf.height);
+			/*
 			XImage * image = XCreateImage(x11display, 
 				DefaultVisual(x11display, DefaultScreen(x11display)),
-				24, 
+				24,
 				ZPixmap, //XYPixmap, 
 				0,
 				cast(char*)_drawbuf.scanLine(0), 
 				_drawbuf.width,
 				_drawbuf.height,
 				32, 0);
-			XPutImage(x11display, _win, DefaultGC(x11display, DefaultScreen(x11display)), 
+			//image.bitmap_bit_order = MSBFirst;
+			//image.b
+			XPutImage(x11display, _win, 
+				_gc, //DefaultGC(x11display, DefaultScreen(x11display)), 
 				image,
 				0, 0, 0, 0,
 				_drawbuf.width,
 				_drawbuf.height);
+			*/
 			XFlush(x11display);
 			//XDestroyImage(image);
-
+			//XFree(image);
+	
 
 //			ulong black, white;
 //			black = BlackPixel(x11display, x11screen);	/* get color black */
@@ -244,37 +275,30 @@ class X11Window : DWindow {
 		}
 	}
 
-	void processExpose(int width, int height) {
-//		XWindow root_return;
-//		int x_return, y_return;
-//		uint width_return;
-//		uint height_return;
-//		uint border_width_return;
-//		uint depth_return;
-//		XGetGeometry(x11display, _win, &root_return, &x_return, &y_return, &width_return, 
-//			&height_return, &border_width_return, &depth_return);
-//		Log.d(format("XGetGeometry reported size %d, %d", width_return, height_return));
+	void processExpose() {
 		XWindowAttributes window_attributes_return;
 		XGetWindowAttributes(x11display, _win, &window_attributes_return);
 		Log.d(format("XGetWindowAttributes reported size %d, %d", window_attributes_return.width, window_attributes_return.height));
-		width = window_attributes_return.width;
-		height = window_attributes_return.height;
+		int width = window_attributes_return.width;
+		int height = window_attributes_return.height;
 		if (width > 0 && height > 0)
 			onResize(width, height);
 		Log.d(format("processExpose(%d, %d)", width, height));
 		ulong black, white;
 		black = BlackPixel(x11display, x11screen);	/* get color black */
 		white = WhitePixel(x11display, x11screen);  /* get color white */
+
 		XSetBackground(x11display, _gc, white);
 		XClearWindow(x11display, _win);
+
 		drawUsingBitmap();
 
-//		XSetForeground( x11display, _gc, black );
-//		XFillRectangle(x11display, _win, _gc, 5, 5, _dx - 10, 5);
-//		XFillRectangle(x11display, _win, _gc, 5, _dy - 10, _dx - 10, 5);
-//		XSetForeground ( x11display, _gc, black );
-//		XDrawString ( x11display, _win, _gc, 20, 50,
-//			cast(char*)"First example".ptr, "First example".length );
+		//XSetForeground( x11display, _gc, black );
+		//XFillRectangle(x11display, _win, _gc, 5, 5, _dx - 10, 5);
+		//XFillRectangle(x11display, _win, _gc, 5, _dy - 10, _dx - 10, 5);
+		//XSetForeground ( x11display, _gc, black );
+		//XDrawString ( x11display, _win, _gc, 20, 50,
+		//	cast(char*)"First example".ptr, "First example".length );
 		//XFreeGC ( x11display, gc );
 		XFlush(x11display);
 	}
@@ -348,7 +372,7 @@ class X11Platform : Platform {
 						X11Window w = findWindow(event.xexpose.window);
 						if (w) {
 
-							w.processExpose(event.xexpose.width, event.xexpose.height);
+							w.processExpose();
 						} else {
 							Log.e("Window not found");
 						}
@@ -384,11 +408,11 @@ class X11Platform : Platform {
 						Log.d("You pressed a button at ",
 							event.xbutton.x, ", ", event.xbutton.y);
 						Log.d("...");
-						XClearArea(x11display, event.xbutton.window, 0, 0, 1, 1, true);
+						//XClearArea(x11display, event.xbutton.window, 0, 0, 1, 1, true);
 						X11Window w = findWindow(event.xbutton.window);
 						if (w) {
 							Log.e("Calling processExpose");
-							w.processExpose(-1, -1);
+							w.processExpose();
 						} else {
 							Log.e("Window not found");
 						}

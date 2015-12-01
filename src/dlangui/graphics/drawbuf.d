@@ -947,7 +947,14 @@ class ColorDrawBuf : ColorDrawBufBase {
 		foreach(pixel; _buf)
 			pixel ^= 0xFF000000;
 	}
-    override uint * scanLine(int y) {
+	void invertByteOrder() {
+		foreach(pixel; _buf) {
+			pixel = (pixel & 0xFF00FF00) |
+				((pixel & 0xFF0000) >> 16) |
+				((pixel & 0xFF) << 16);
+		}
+	}
+	override uint * scanLine(int y) {
         if (y >= 0 && y < _dy)
             return _buf.ptr + _dx * y;
         return null;
