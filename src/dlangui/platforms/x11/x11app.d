@@ -116,6 +116,7 @@ class X11Window : DWindow {
 				);
 			if (!_win)
 				return;
+
 		}
 		//XMapWindow(x11display, _win);
 		//XSync(x11display, false);
@@ -132,8 +133,10 @@ class X11Window : DWindow {
 		/* this routine determines which types of input are allowed in
 	   		the input.  see the appropriate section for details...
 		*/
-		XSelectInput(x11display, _win, ExposureMask|ButtonPressMask|KeyPressMask);
-		
+		XSelectInput(x11display, _win, KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | 
+			EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonMotionMask | ExposureMask | VisibilityChangeMask |
+			FocusChangeMask);
+
 		/* create the Graphics Context */
 		_gc = createGC(x11display, _win);
 		//_gc = XCreateGC(x11display, _win, 0, cast(XGCValues*)null);
@@ -177,6 +180,8 @@ class X11Window : DWindow {
 		_caption = caption;
 		//if (_win)
 		//	SDL_SetWindowTitle(_win, toUTF8(_caption).toStringz);
+		import std.utf : toUTF8;
+		XSetStandardProperties(x11display, _win, cast(char*)_caption.toUTF8.toStringz, cast(char*)_caption.toUTF8.toStringz, None, cast(char**)null, 0, cast(XSizeHints*)null);
 	}
 
 	/// sets window icon
@@ -246,6 +251,357 @@ class X11Window : DWindow {
 
 		drawUsingBitmap();
 
+	}
+
+	protected ButtonDetails _lbutton;
+	protected ButtonDetails _mbutton;
+	protected ButtonDetails _rbutton;
+
+	ushort convertMouseFlags(uint flags) {
+		ushort res = 0;
+		if (flags & Button1Mask)
+			res |= MouseFlag.LButton;
+		if (flags & Button2Mask)
+			res |= MouseFlag.RButton;
+		if (flags & Button3Mask)
+			res |= MouseFlag.MButton;
+		return res;
+	}
+	
+	MouseButton convertMouseButton(uint button) {
+		if (button == Button1)
+			return MouseButton.Left;
+		if (button == Button2)
+			return MouseButton.Right;
+		if (button == Button3)
+			return MouseButton.Middle;
+		return MouseButton.None;
+	}
+
+	ushort lastFlags;
+	short lastx;
+	short lasty;
+	uint _keyFlags;
+	void processMouseEvent(MouseAction action, uint button, uint state, int x, int y) {
+		MouseEvent event = null;
+		if (action == MouseAction.Wheel) {
+			// handle wheel
+			short wheelDelta = cast(short)y;
+			if (_keyFlags & KeyFlag.Shift)
+				lastFlags |= MouseFlag.Shift;
+			else
+				lastFlags &= ~MouseFlag.Shift;
+			if (_keyFlags & KeyFlag.Control)
+				lastFlags |= MouseFlag.Control;
+			else
+				lastFlags &= ~MouseFlag.Control;
+			if (_keyFlags & KeyFlag.Alt)
+				lastFlags |= MouseFlag.Alt;
+			else
+				lastFlags &= ~MouseFlag.Alt;
+			if (wheelDelta)
+				event = new MouseEvent(action, MouseButton.None, lastFlags, lastx, lasty, wheelDelta);
+		} else {
+			lastFlags = convertMouseFlags(state);
+			if (_keyFlags & KeyFlag.Shift)
+				lastFlags |= MouseFlag.Shift;
+			if (_keyFlags & KeyFlag.Control)
+				lastFlags |= MouseFlag.Control;
+			if (_keyFlags & KeyFlag.Alt)
+				lastFlags |= MouseFlag.Alt;
+			lastx = cast(short)x;
+			lasty = cast(short)y;
+			MouseButton btn = convertMouseButton(button);
+			event = new MouseEvent(action, btn, lastFlags, lastx, lasty);
+		}
+		if (event) {
+			ButtonDetails * pbuttonDetails = null;
+			if (button == MouseButton.Left)
+				pbuttonDetails = &_lbutton;
+			else if (button == MouseButton.Right)
+				pbuttonDetails = &_rbutton;
+			else if (button == MouseButton.Middle)
+				pbuttonDetails = &_mbutton;
+			if (pbuttonDetails) {
+				if (action == MouseAction.ButtonDown) {
+					pbuttonDetails.down(cast(short)x, cast(short)y, lastFlags);
+				} else if (action == MouseAction.ButtonUp) {
+					pbuttonDetails.up(cast(short)x, cast(short)y, lastFlags);
+				}
+			}
+			event.lbutton = _lbutton;
+			event.rbutton = _rbutton;
+			event.mbutton = _mbutton;
+			bool res = dispatchMouseEvent(event);
+			if (res) {
+				debug(mouse) Log.d("Calling update() after mouse event");
+				invalidate();
+			}
+		}
+	}
+
+	uint convertKeyCode(uint keyCode) {
+		import x11.keysymdef;
+		alias KeyCode = dlangui.core.events.KeyCode;
+		switch(keyCode) {
+			case XK_0:
+				return KeyCode.KEY_0;
+			case XK_1:
+				return KeyCode.KEY_1;
+			case XK_2:
+				return KeyCode.KEY_2;
+			case XK_3:
+				return KeyCode.KEY_3;
+			case XK_4:
+				return KeyCode.KEY_4;
+			case XK_5:
+				return KeyCode.KEY_5;
+			case XK_6:
+				return KeyCode.KEY_6;
+			case XK_7:
+				return KeyCode.KEY_7;
+			case XK_8:
+				return KeyCode.KEY_8;
+			case XK_9:
+				return KeyCode.KEY_9;
+			case XK_A:
+				return KeyCode.KEY_A;
+			case XK_B:
+				return KeyCode.KEY_B;
+			case XK_C:
+				return KeyCode.KEY_C;
+			case XK_D:
+				return KeyCode.KEY_D;
+			case XK_E:
+				return KeyCode.KEY_E;
+			case XK_F:
+				return KeyCode.KEY_F;
+			case XK_G:
+				return KeyCode.KEY_G;
+			case XK_H:
+				return KeyCode.KEY_H;
+			case XK_I:
+				return KeyCode.KEY_I;
+			case XK_J:
+				return KeyCode.KEY_J;
+			case XK_K:
+				return KeyCode.KEY_K;
+			case XK_L:
+				return KeyCode.KEY_L;
+			case XK_M:
+				return KeyCode.KEY_M;
+			case XK_N:
+				return KeyCode.KEY_N;
+			case XK_O:
+				return KeyCode.KEY_O;
+			case XK_P:
+				return KeyCode.KEY_P;
+			case XK_Q:
+				return KeyCode.KEY_Q;
+			case XK_R:
+				return KeyCode.KEY_R;
+			case XK_S:
+				return KeyCode.KEY_S;
+			case XK_T:
+				return KeyCode.KEY_T;
+			case XK_U:
+				return KeyCode.KEY_U;
+			case XK_V:
+				return KeyCode.KEY_V;
+			case XK_W:
+				return KeyCode.KEY_W;
+			case XK_X:
+				return KeyCode.KEY_X;
+			case XK_Y:
+				return KeyCode.KEY_Y;
+			case XK_Z:
+				return KeyCode.KEY_Z;
+			case XK_F1:
+				return KeyCode.F1;
+			case XK_F2:
+				return KeyCode.F2;
+			case XK_F3:
+				return KeyCode.F3;
+			case XK_F4:
+				return KeyCode.F4;
+			case XK_F5:
+				return KeyCode.F5;
+			case XK_F6:
+				return KeyCode.F6;
+			case XK_F7:
+				return KeyCode.F7;
+			case XK_F8:
+				return KeyCode.F8;
+			case XK_F9:
+				return KeyCode.F9;
+			case XK_F10:
+				return KeyCode.F10;
+			case XK_F11:
+				return KeyCode.F11;
+			case XK_F12:
+				return KeyCode.F12;
+			case XK_F13:
+				return KeyCode.F13;
+			case XK_F14:
+				return KeyCode.F14;
+			case XK_F15:
+				return KeyCode.F15;
+			case XK_F16:
+				return KeyCode.F16;
+			case XK_F17:
+				return KeyCode.F17;
+			case XK_F18:
+				return KeyCode.F18;
+			case XK_F19:
+				return KeyCode.F19;
+			case XK_F20:
+				return KeyCode.F20;
+			case XK_F21:
+				return KeyCode.F21;
+			case XK_F22:
+				return KeyCode.F22;
+			case XK_F23:
+				return KeyCode.F23;
+			case XK_F24:
+				return KeyCode.F24;
+			case XK_BackSpace:
+				return KeyCode.BACK;
+			case XK_space:
+				return KeyCode.SPACE;
+			case XK_Tab:
+				return KeyCode.TAB;
+			case XK_Return:
+				return KeyCode.RETURN;
+			case XK_Escape:
+				return KeyCode.ESCAPE;
+			case XK_Delete:
+			//case 0x40000063: // dirty hack for Linux - key on keypad
+				return KeyCode.DEL;
+			case XK_Insert:
+			//case 0x40000062: // dirty hack for Linux - key on keypad
+				return KeyCode.INS;
+			case XK_Home:
+			//case 0x4000005f: // dirty hack for Linux - key on keypad
+				return KeyCode.HOME;
+			case XK_Page_Up:
+			//case 0x40000061: // dirty hack for Linux - key on keypad
+				return KeyCode.PAGEUP;
+			case XK_End:
+			//case 0x40000059: // dirty hack for Linux - key on keypad
+				return KeyCode.END;
+			case XK_Page_Down:
+			//case 0x4000005b: // dirty hack for Linux - key on keypad
+				return KeyCode.PAGEDOWN;
+			case XK_Left:
+			//case 0x4000005c: // dirty hack for Linux - key on keypad
+				return KeyCode.LEFT;
+			case XK_Right:
+			//case 0x4000005e: // dirty hack for Linux - key on keypad
+				return KeyCode.RIGHT;
+			case XK_Up:
+			//case 0x40000060: // dirty hack for Linux - key on keypad
+				return KeyCode.UP;
+			case XK_Down:
+			//case 0x4000005a: // dirty hack for Linux - key on keypad
+				return KeyCode.DOWN;
+			case XK_Control_L:
+				return KeyCode.LCONTROL;
+			case XK_Shift_L:
+				return KeyCode.LSHIFT;
+			case XK_Alt_L:
+				return KeyCode.LALT;
+			case XK_Control_R:
+				return KeyCode.RCONTROL;
+			case XK_Shift_R:
+				return KeyCode.RSHIFT;
+			case XK_Alt_R:
+				return KeyCode.RALT;
+			case XK_slash:
+				return KeyCode.KEY_DIVIDE;
+			default:
+				return 0x10000 | keyCode;
+		}
+	}
+	
+	uint convertKeyFlags(uint flags) {
+		uint res;
+		if (flags & ControlMask)
+			res |= KeyFlag.Control;
+		if (flags & ShiftMask)
+			res |= KeyFlag.Shift;
+		if (flags & LockMask)
+			res |= KeyFlag.Alt;
+//		if (flags & KMOD_RCTRL)
+//			res |= KeyFlag.RControl | KeyFlag.Control;
+//		if (flags & KMOD_RSHIFT)
+//			res |= KeyFlag.RShift | KeyFlag.Shift;
+//		if (flags & KMOD_RALT)
+//			res |= KeyFlag.RAlt | KeyFlag.Alt;
+//		if (flags & KMOD_LCTRL)
+//			res |= KeyFlag.LControl | KeyFlag.Control;
+//		if (flags & KMOD_LSHIFT)
+//			res |= KeyFlag.LShift | KeyFlag.Shift;
+//		if (flags & KMOD_LALT)
+//			res |= KeyFlag.LAlt | KeyFlag.Alt;
+		return res;
+	}
+	
+
+	bool processKeyEvent(KeyAction action, uint keyCode, uint flags) {
+		//debug(DebugSDL) 
+		Log.d("processKeyEvent ", action, " X11 key=0x", format("%08x", keyCode), " X11 flags=0x", format("%08x", flags));
+		keyCode = convertKeyCode(keyCode);
+		flags = convertKeyFlags(flags);
+		Log.d("processKeyEvent ", action, " converted key=0x", format("%08x", keyCode), " flags=0x", format("%08x", flags));
+
+		alias KeyCode = dlangui.core.events.KeyCode;
+		if (action == KeyAction.KeyDown) {
+			switch(keyCode) {
+				case KeyCode.ALT:
+					flags |= KeyFlag.Alt;
+					break;
+				case KeyCode.RALT:
+					flags |= KeyFlag.Alt | KeyFlag.RAlt;
+					break;
+				case KeyCode.LALT:
+					flags |= KeyFlag.Alt | KeyFlag.LAlt;
+					break;
+				case KeyCode.CONTROL:
+					flags |= KeyFlag.Control;
+					break;
+				case KeyCode.RCONTROL:
+					flags |= KeyFlag.Control | KeyFlag.RControl;
+					break;
+				case KeyCode.LCONTROL:
+					flags |= KeyFlag.Control | KeyFlag.LControl;
+					break;
+				case KeyCode.SHIFT:
+					flags |= KeyFlag.Shift;
+					break;
+				case KeyCode.RSHIFT:
+					flags |= KeyFlag.Shift | KeyFlag.RShift;
+					break;
+				case KeyCode.LSHIFT:
+					flags |= KeyFlag.Shift | KeyFlag.LShift;
+					break;
+				default:
+					break;
+			}
+		}
+		_keyFlags = flags;
+		
+		debug(DebugSDL) Log.d("processKeyEvent ", action, " converted key=0x", format("%08x", keyCode), " converted flags=0x", format("%08x", flags));
+		bool res = dispatchKeyEvent(new KeyEvent(action, keyCode, flags));
+		//			if ((keyCode & 0x10000) && (keyCode & 0xF000) != 0xF000) {
+		//				dchar[1] text;
+		//				text[0] = keyCode & 0xFFFF;
+		//				res = dispatchKeyEvent(new KeyEvent(KeyAction.Text, keyCode, flags, cast(dstring)text)) || res;
+		//			}
+		if (res) {
+			debug(DebugSDL) Log.d("Calling update() after key event");
+			invalidate();
+		}
+		return res;
 	}
 }
 
@@ -326,48 +682,58 @@ class X11Platform : Platform {
 					}
 					break;
 				case KeyPress:
-					if (XLookupString(&event.xkey, text.ptr, 255, &key, cast(XComposeStatus*)null) == 1) {
-						/* use the XLookupString routine to convert the invent
-		   					KeyPress data into regular text.  Weird but necessary...
-						*/
-						if (text[0]=='q') {
-							finished = true;
-							break;
-							//close_x();
-						}
-						Log.d("You pressed the key", text[0]);
+					Log.d("X11: KeyRelease event");
+					X11Window w = findWindow(event.xkey.window);
+					if (w) {
+						char[100] buf;
+						KeySym ks;
+						XLookupString(&event.xkey, buf.ptr, buf.length - 1, &ks, null);
+						w.processKeyEvent(KeyAction.KeyDown, cast(uint)ks,
+							//event.xkey.keycode, 
+							event.xkey.state);
+					} else {
+						Log.e("Window not found");
 					}
+//					if (XLookupString(&event.xkey, text.ptr, 255, &key, cast(XComposeStatus*)null) == 1) {
+//						/* use the XLookupString routine to convert the invent
+//		   					KeyPress data into regular text.  Weird but necessary...
+//						*/
+//						if (text[0]=='q') {
+//							finished = true;
+//							break;
+//							//close_x();
+//						}
+//						Log.d("You pressed the key", text[0]);
+//					}
 					break;
 				case KeyRelease:
 					Log.d("X11: KeyRelease event");
 					X11Window w = findWindow(event.xkey.window);
 					if (w) {
-						//w.processExpose();
+						char[100] buf;
+						KeySym ks;
+						XLookupString(&event.xkey, buf.ptr, buf.length - 1, &ks, null);
+						w.processKeyEvent(KeyAction.KeyUp, cast(uint)ks,
+							//event.xkey.keycode, 
+							event.xkey.state);
 					} else {
 						Log.e("Window not found");
 					}
 					break;
 				case ButtonPress:
-					if (event.type==ButtonPress) {
-						/* tell where the mouse Button was Pressed */
-						Log.d("You pressed a button at ",
-							event.xbutton.x, ", ", event.xbutton.y);
-						Log.d("...");
-						//XClearArea(x11display, event.xbutton.window, 0, 0, 1, 1, true);
-						X11Window w = findWindow(event.xbutton.window);
-						if (w) {
-							Log.e("Calling processExpose");
-							w.processExpose();
-						} else {
-							Log.e("Window not found");
-						}
+					Log.d("X11: ButtonPress event");
+					X11Window w = findWindow(event.xbutton.window);
+					if (w) {
+						w.processMouseEvent(MouseAction.ButtonDown, event.xbutton.button, event.xbutton.state, event.xbutton.x, event.xbutton.y);
+					} else {
+						Log.e("Window not found");
 					}
 					break;
 				case ButtonRelease:
 					Log.d("X11: ButtonRelease event");
 					X11Window w = findWindow(event.xbutton.window);
 					if (w) {
-						//w.processExpose();
+						w.processMouseEvent(MouseAction.ButtonUp, event.xbutton.button, event.xbutton.state, event.xbutton.x, event.xbutton.y);
 					} else {
 						Log.e("Window not found");
 					}
@@ -377,6 +743,7 @@ class X11Platform : Platform {
 					X11Window w = findWindow(event.xmotion.window);
 					if (w) {
 						//w.processExpose();
+						w.processMouseEvent(MouseAction.Move, 0, event.xmotion.state, event.xmotion.x, event.xmotion.y);
 					} else {
 						Log.e("Window not found");
 					}
@@ -385,6 +752,8 @@ class X11Platform : Platform {
 					Log.d("X11: EnterNotify event");
 					X11Window w = findWindow(event.xcrossing.window);
 					if (w) {
+						w.processMouseEvent(MouseAction.FocusIn, 0, event.xcrossing.state, event.xcrossing.x, event.xcrossing.y);
+
 						//w.processExpose();
 					} else {
 						Log.e("Window not found");
@@ -394,7 +763,7 @@ class X11Platform : Platform {
 					Log.d("X11: LeaveNotify event");
 					X11Window w = findWindow(event.xcrossing.window);
 					if (w) {
-						//w.processExpose();
+						w.processMouseEvent(MouseAction.Leave, 0, event.xcrossing.state, event.xcrossing.x, event.xcrossing.y);
 					} else {
 						Log.e("Window not found");
 					}
