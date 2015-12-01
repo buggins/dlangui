@@ -71,6 +71,10 @@ class X11Window : DWindow {
 		_platform = platform;
 		_caption = caption;
 		debug Log.d("X11Window: Creating window");
+		if (width == 0)
+			width = 500;
+		if (height == 0)
+			height = 300;
 		_dx = width;
 		_dy = height;
 		//create(flags);
@@ -84,9 +88,32 @@ class X11Window : DWindow {
 	   		This window will be have be 200 pixels across and 300 down.
 	   		It will have the foreground white and background black
 		*/
-		_win = XCreateSimpleWindow(x11display, DefaultRootWindow(x11display), 
-			1, 1,	
-			_dx, _dy, 5, black, white);
+
+		Log.d("Creating window of size ", _dx, "x", _dy);
+		static if (true) {
+			_win = XCreateSimpleWindow(x11display, DefaultRootWindow(x11display), 
+				0, 0,	
+				_dx, _dy, 1, black, white);
+		} else {
+			XSetWindowAttributes attr;
+			attr.do_not_propagate_mask = 0;
+			attr.override_redirect = True;
+			attr.cursor = Cursor();
+			attr.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask;
+			attr.background_pixel = white;
+
+			_win = XCreateWindow(x11display, DefaultRootWindow(x11display), 
+				0, 0,	
+				_dx, _dy, 5,
+				CopyFromParent, // depth
+				CopyFromParent, // class
+				cast(Visual*)CopyFromParent, // visual
+				CWEventMask|CWBackPixel|CWCursor|CWDontPropagate,
+				&attr
+				);
+			if (!_win)
+				return;
+		}
 		XMapWindow(x11display, _win);
 		XSync(x11display, false);
 
@@ -165,9 +192,9 @@ class X11Window : DWindow {
 		white = WhitePixel(x11display, x11screen);  /* get color white */
 		//XSetBackground(x11display, _gc, white);
 		XClearWindow(x11display, _win);
-		//XSetForeground ( x11display, _gc, white );
+		XSetForeground ( x11display, _gc, black );
 		XFillRectangle(x11display, _win, _gc, 100, 200, 150, 300);
-		//XSetForeground ( x11display, _gc, black );
+		XSetForeground ( x11display, _gc, black );
 		XDrawString ( x11display, _win, _gc, 20, 50,
 			cast(char*)"First example".ptr, "First example".length );
 		//XFreeGC ( x11display, gc );
