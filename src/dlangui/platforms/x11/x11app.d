@@ -598,11 +598,22 @@ class X11Window : DWindow {
 		//				res = dispatchKeyEvent(new KeyEvent(KeyAction.Text, keyCode, flags, cast(dstring)text)) || res;
 		//			}
 		if (res) {
-			debug(DebugSDL) Log.d("Calling update() after key event");
+			debug(keys) Log.d("Calling update() after key event");
 			invalidate();
 		}
 		return res;
 	}
+
+	bool processTextInput(dstring ds, uint flags) {
+		flags = convertKeyFlags(flags);
+		bool res = dispatchKeyEvent(new KeyEvent(KeyAction.Text, 0, flags, ds));
+		if (res) {
+			debug(keys) Log.d("Calling update() after text event");
+			invalidate();
+		}
+		return res;
+	}
+	
 }
 
 class X11Platform : Platform {
@@ -659,6 +670,7 @@ class X11Platform : Platform {
 		Log.d("enterMessageLoop()");
 		/* look for events forever... */
 		bool finished = false;
+		XComposeStatus compose;
 		while(!finished) {		
 			/* get the next event and stuff it into our event variable.
 		   		Note:  only events we set the mask for are detected!
@@ -682,15 +694,32 @@ class X11Platform : Platform {
 					}
 					break;
 				case KeyPress:
-					Log.d("X11: KeyRelease event");
+					Log.d("X11: KeyPress event");
 					X11Window w = findWindow(event.xkey.window);
 					if (w) {
 						char[100] buf;
 						KeySym ks;
-						XLookupString(&event.xkey, buf.ptr, buf.length - 1, &ks, null);
-						w.processKeyEvent(KeyAction.KeyDown, cast(uint)ks,
-							//event.xkey.keycode, 
-							event.xkey.state);
+						XLookupString(&event.xkey, buf.ptr, buf.length - 1, &ks, &compose);
+
+						string txt = fromStringz(buf.ptr).dup;
+						import std.utf;
+						dstring dtext;
+						try {
+							if (txt.length)
+								dtext = toUTF32(txt);
+						} catch (UTFException e) {
+							// ignore, invalid text
+						}
+						Log.d("X11: KeyPress event bytes=", txt.length, " text=", txt, " dtext=", dtext);
+						if (dtext.length) {
+							w.processTextInput(dtext, event.xkey.state);
+						} else {
+							w.processKeyEvent(KeyAction.KeyDown, cast(uint)ks,
+								//event.xkey.keycode, 
+								event.xkey.state);
+						}
+
+
 					} else {
 						Log.e("Window not found");
 					}
@@ -712,7 +741,7 @@ class X11Platform : Platform {
 					if (w) {
 						char[100] buf;
 						KeySym ks;
-						XLookupString(&event.xkey, buf.ptr, buf.length - 1, &ks, null);
+						XLookupString(&event.xkey, buf.ptr, buf.length - 1, &ks, &compose);
 						w.processKeyEvent(KeyAction.KeyUp, cast(uint)ks,
 							//event.xkey.keycode, 
 							event.xkey.state);
