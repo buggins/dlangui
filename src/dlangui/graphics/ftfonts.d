@@ -488,12 +488,32 @@ class FreeTypeFontManager : FontManager {
         return null;
     }
 
+	private static int faceMatch(string requested, string existing) {
+		if (!requested.icmp("Arial")) {
+			if (!existing.icmp("DejaVu Sans")) {
+				return 200;
+			}
+		}
+		if (!requested.icmp("Times New Roman")) {
+			if (!existing.icmp("DejaVu Serif")) {
+				return 200;
+			}
+		}
+		if (!requested.icmp("Courier New")) {
+			if (!existing.icmp("DejaVu Sans Mono")) {
+				return 200;
+			}
+		}
+		return 0;
+	}
+
     private FontFileItem findBestMatch(int weight, bool italic, FontFamily family, string face) {
         FontFileItem best = null;
         int bestScore = 0;
 		string[] faces = face ? split(face, ",") : null;
         foreach(int index, FontFileItem item; _fontFiles) {
             int score = 0;
+			int bestFaceMatch = 0;
 			if (faces && face.length) {
 				for (int i = 0; i < faces.length; i++) {
                     string f = faces[i].strip;
@@ -501,8 +521,12 @@ class FreeTypeFontManager : FontManager {
 						score += 3000 - i;
 						break;
 					}
+					int match = faceMatch(f, item.def.face);
+					if (match > bestFaceMatch)
+						bestFaceMatch = match;
 				}
 			}
+			score += bestFaceMatch;
             if (family == item.def.family)
                 score += 1000; // family match
             if (italic == item.def.italic)
@@ -561,6 +585,7 @@ class FreeTypeFontManager : FontManager {
         FontFileItem f = findBestMatch(weight, italic, family, face);
         if (f is null)
             return _nullFontRef;
+		//Log.d("getFont requesteed: ", face, " found: ", f.def.face);
         return f.get(size);
     }
 

@@ -243,12 +243,6 @@ class X11Window : DWindow {
 		if (width > 0 && height > 0)
 			onResize(width, height);
 		Log.d(format("processExpose(%d, %d)", width, height));
-//		ulong black, white;
-//		black = BlackPixel(x11display, x11screen);	/* get color black */
-//		white = WhitePixel(x11display, x11screen);  /* get color white */
-
-//		XSetBackground(x11display, _gc, white);
-//		XClearWindow(x11display, _win);
 
 		drawUsingBitmap();
 
