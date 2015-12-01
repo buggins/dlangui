@@ -72,6 +72,7 @@ class X11Window : DWindow {
 	this(X11Platform platform, dstring caption, DWindow parent, uint flags, uint width = 0, uint height = 0) {
 		_platform = platform;
 		_caption = caption;
+		//backgroundColor = 0xFFFFFF;
 		debug Log.d("X11Window: Creating window");
 		if (width == 0)
 			width = 500;
@@ -203,10 +204,9 @@ class X11Window : DWindow {
 				_drawbuf.resize(_dx, _dy);
 			_drawbuf.resetClipping();
 			// draw widgets into buffer
+			_drawbuf.fill(backgroundColor);
 			onDraw(_drawbuf);
 			// draw buffer on X11 window
-			//_drawbuf.invertAlpha();
-			//_drawbuf.invertByteOrder();
 			XImage img;
 			img.width = _drawbuf.width;
 			img.height = _drawbuf.height;
@@ -223,55 +223,14 @@ class X11Window : DWindow {
 			img.green_mask = 0x00FF00;
 			img.blue_mask = 0x0000FF;
 			XInitImage(&img);
-			XSetClipOrigin(x11display, _gc, 0, 0);
+			//XSetClipOrigin(x11display, _gc, 0, 0);
 			XPutImage(x11display, _win, 
 				_gc, //DefaultGC(x11display, DefaultScreen(x11display)), 
 				&img,
 				0, 0, 0, 0,
 				_drawbuf.width,
 				_drawbuf.height);
-			/*
-			XImage * image = XCreateImage(x11display, 
-				DefaultVisual(x11display, DefaultScreen(x11display)),
-				24,
-				ZPixmap, //XYPixmap, 
-				0,
-				cast(char*)_drawbuf.scanLine(0), 
-				_drawbuf.width,
-				_drawbuf.height,
-				32, 0);
-			//image.bitmap_bit_order = MSBFirst;
-			//image.b
-			XPutImage(x11display, _win, 
-				_gc, //DefaultGC(x11display, DefaultScreen(x11display)), 
-				image,
-				0, 0, 0, 0,
-				_drawbuf.width,
-				_drawbuf.height);
-			*/
 			XFlush(x11display);
-			//XDestroyImage(image);
-			//XFree(image);
-	
-
-//			ulong black, white;
-//			black = BlackPixel(x11display, x11screen);	/* get color black */
-//			white = WhitePixel(x11display, x11screen);  /* get color white */
-//			Pixmap pixmap = XCreatePixmapFromBitmapData(x11display, _win, 
-//				cast(char*)_drawbuf.scanLine(0), 
-//				_drawbuf.width,
-//				_drawbuf.height,
-//				black,
-//				white,
-//				DefaultDepth(x11display, 0) // depth
-//				);
-//			//GC gc = XCreateGC(x11display, pixmap, 0, null);
-//			XCopyArea(x11display, pixmap, _win,
-//				_gc, //gc
-//				0, 0, _drawbuf.width, _drawbuf.height,
-//				0, 0);
-			//XFlush(x11display);
-			//XFreePixmap(x11display, pixmap);
 		}
 	}
 
@@ -284,23 +243,15 @@ class X11Window : DWindow {
 		if (width > 0 && height > 0)
 			onResize(width, height);
 		Log.d(format("processExpose(%d, %d)", width, height));
-		ulong black, white;
-		black = BlackPixel(x11display, x11screen);	/* get color black */
-		white = WhitePixel(x11display, x11screen);  /* get color white */
+//		ulong black, white;
+//		black = BlackPixel(x11display, x11screen);	/* get color black */
+//		white = WhitePixel(x11display, x11screen);  /* get color white */
 
-		XSetBackground(x11display, _gc, white);
-		XClearWindow(x11display, _win);
+//		XSetBackground(x11display, _gc, white);
+//		XClearWindow(x11display, _win);
 
 		drawUsingBitmap();
 
-		//XSetForeground( x11display, _gc, black );
-		//XFillRectangle(x11display, _win, _gc, 5, 5, _dx - 10, 5);
-		//XFillRectangle(x11display, _win, _gc, 5, _dy - 10, _dx - 10, 5);
-		//XSetForeground ( x11display, _gc, black );
-		//XDrawString ( x11display, _win, _gc, 20, 50,
-		//	cast(char*)"First example".ptr, "First example".length );
-		//XFreeGC ( x11display, gc );
-		XFlush(x11display);
 	}
 }
 
