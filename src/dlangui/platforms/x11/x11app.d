@@ -25,6 +25,7 @@ pragma(lib, "X11");
 
 private __gshared Display * x11display;
 private __gshared int x11screen;
+private __gshared XIM xim;
 
 alias XWindow = x11.Xlib.Window;
 alias DWindow = dlangui.platforms.common.platform.Window;
@@ -68,6 +69,7 @@ class X11Window : DWindow {
 	protected dstring _caption;
 	protected XWindow _win;
 	protected GC _gc;
+	private __gshared XIC xic;
 
 	this(X11Platform platform, dstring caption, DWindow parent, uint flags, uint width = 0, uint height = 0) {
 		_platform = platform;
@@ -135,7 +137,7 @@ class X11Window : DWindow {
 		*/
 		XSelectInput(x11display, _win, KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | 
 			EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonMotionMask | ExposureMask | VisibilityChangeMask |
-			FocusChangeMask);
+			FocusChangeMask | KeymapStateMask);
 
 		/* create the Graphics Context */
 		_gc = createGC(x11display, _win);
@@ -699,8 +701,27 @@ class X11Platform : Platform {
 					if (w) {
 						char[100] buf;
 						KeySym ks;
-						XLookupString(&event.xkey, buf.ptr, buf.length - 1, &ks, &compose);
+						Status s;
+						if (!w.xic) {
+							w.xic = XCreateIC(xim,
+								XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
+								XNClientWindow, w._win, 0);
+							if (!w.xic) {
+								Log.e("Cannot create input context");
+							}
+						}
 
+						if (!w.xic)
+							XLookupString(&event.xkey, buf.ptr, buf.length - 1, &ks, &compose);
+						else {
+							Xutf8LookupString(w.xic, &event.xkey, buf.ptr, cast(int)buf.length - 1, &ks, &s);
+							if (s != XLookupChars && s != XLookupBoth)
+								XLookupString(&event.xkey, buf.ptr, buf.length - 1, &ks, &compose);
+						}
+						foreach(ref ch; buf) {
+							if (ch == 255 || ch < 32 || ch == 127)
+								ch = 0;
+						}
 						string txt = fromStringz(buf.ptr).dup;
 						import std.utf;
 						dstring dtext;
@@ -900,8 +921,10 @@ extern(C) int DLANGUImain(string[] args)
 	}
 
 	x11screen = DefaultScreen(x11display);
-
-
+	xim = XOpenIM(x11display, null, null, null);
+	if (!xim) {
+		Log.e("Cannot open input method");
+	}
 
 	Log.d("X11 display=", x11display, " screen=", x11screen);
 
