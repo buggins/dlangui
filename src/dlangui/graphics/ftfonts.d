@@ -492,21 +492,19 @@ class FreeTypeFontManager : FontManager {
         FontFileItem best = null;
         int bestScore = 0;
 		string[] faces = face ? split(face, ",") : null;
-        foreach(FontFileItem item; _fontFiles) {
+        foreach(int index, FontFileItem item; _fontFiles) {
             int score = 0;
-			if (faces) {
+			if (faces && face.length) {
 				for (int i = 0; i < faces.length; i++) {
-					if (faces[i].equal(item.def.face)) {
-						score += 300 - i;
+                    string f = faces[i].strip;
+					if (f.icmp(item.def.face) == 0) {
+						score += 3000 - i;
 						break;
 					}
 				}
-			} else
-				score += 200;
-            if (face is null || face.equal(item.def.face))
-                score += 200; // face match
+			}
             if (family == item.def.family)
-                score += 100; // family match
+                score += 1000; // family match
             if (italic == item.def.italic)
                 score += 50; // italic match
             int weightDiff = myabs(weight - item.def.weight);
@@ -592,9 +590,11 @@ class FreeTypeFontManager : FontManager {
     bool registerFont(string filename, FontFamily family = FontFamily.SansSerif, string face = null, bool italic = false, int weight = 0, bool dontLoadFile = false) {
         if (_library is null)
             return false;
-        Log.d("FreeTypeFontManager.registerFont ", filename, " ", family, " ", face, " italic=", italic, " weight=", weight);
-        if (!exists(filename) || !isFile(filename))
+        Log.v("FreeTypeFontManager.registerFont ", filename, " ", family, " ", face, " italic=", italic, " weight=", weight);
+        if (!exists(filename) || !isFile(filename)) {
+            Log.d("Font file ", filename, " not found");
             return false;
+        }
 
         if (!dontLoadFile) {
             FreeTypeFontFile font = new FreeTypeFontFile(_library, filename);

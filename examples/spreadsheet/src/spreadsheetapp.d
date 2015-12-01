@@ -243,6 +243,10 @@ extern (C) int UIAppMain(string[] args) {
     // create some widget to show in window
     window.windowIcon = drawableCache.getImage("dlangui-logo1");
 
+    FontRef font = FontManager.instance.getFont(24, 300, false, FontFamily.SansSerif, "Arial");
+    Log.d("font found: ", font.face);
+    font = FontManager.instance.getFont(24, 300, false, FontFamily.Serif, "Times New Roman");
+    Log.d("font found: ", font.face);
 
     // create some widget to show in window
     window.mainWidget = new EditFrame();

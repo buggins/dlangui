@@ -123,23 +123,48 @@ version (Windows) {
 			ft.registerFonts("/usr/share/fonts/dejavu/");
 			ft.registerFonts("/usr/share/fonts/truetype/ttf-dejavu/"); // let it compile on Debian Wheezy
 			version(OSX) {
-				ft.registerFont("/Library/Fonts/Arial.ttf", FontFamily.SansSerif, "Arial", false, FontWeight.Normal);
-				ft.registerFont("/Library/Fonts/Arial Bold.ttf", FontFamily.SansSerif, "Arial", false, FontWeight.Bold);
-				ft.registerFont("/Library/Fonts/Arial Italic.ttf", FontFamily.SansSerif, "Arial", true, FontWeight.Normal);
-				ft.registerFont("/Library/Fonts/Arial Bold Italic.ttf", FontFamily.SansSerif, "Arial", true, FontWeight.Bold);
-				//ft.registerFont("/Library/Fonts/Arial Narrow.ttf", FontFamily.SansSerif, "Arial Narrow", false, FontWeight.Normal);
-				//ft.registerFont("/Library/Fonts/Arial Narrow Bold.ttf", FontFamily.SansSerif, "Arial Narrow", false, FontWeight.Bold);
-				//ft.registerFont("/Library/Fonts/Arial Narrow Italic.ttf", FontFamily.SansSerif, "Arial Narrow", true, FontWeight.Normal);
-				//ft.registerFont("/Library/Fonts/Arial Narrow Bold Italic.ttf", FontFamily.SansSerif, "Arial Narrow", true, FontWeight.Bold);
-				ft.registerFont("/Library/Fonts/Courier New.ttf", FontFamily.MonoSpace, "Courier New", false, FontWeight.Normal);
-				ft.registerFont("/Library/Fonts/Courier New Bold.ttf", FontFamily.MonoSpace, "Courier New", false, FontWeight.Bold);
-				ft.registerFont("/Library/Fonts/Courier New Italic.ttf", FontFamily.MonoSpace, "Courier New", true, FontWeight.Normal);
-				ft.registerFont("/Library/Fonts/Courier New Bold Italic.ttf", FontFamily.MonoSpace, "Courier New", true, FontWeight.Bold);
-				ft.registerFont("/Library/Fonts/Georgia.ttf", FontFamily.Serif, "Georgia", false, FontWeight.Normal);
-				ft.registerFont("/Library/Fonts/Georgia Bold.ttf", FontFamily.Serif, "Georgia", false, FontWeight.Bold);
-				ft.registerFont("/Library/Fonts/Georgia Italic.ttf", FontFamily.Serif, "Georgia", true, FontWeight.Normal);
-				ft.registerFont("/Library/Fonts/Georgia Bold Italic.ttf", FontFamily.Serif, "Georgia", true, FontWeight.Bold);
-			}
+				ft.registerFont("/Library/Fonts/Arial.ttf", FontFamily.SansSerif, "Arial", false, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Arial Bold.ttf", FontFamily.SansSerif, "Arial", false, FontWeight.Bold, true);
+                ft.registerFont("/Library/Fonts/Arial Italic.ttf", FontFamily.SansSerif, "Arial", true, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Arial Bold Italic.ttf", FontFamily.SansSerif, "Arial", true, FontWeight.Bold, true);
+                ft.registerFont("/Library/Fonts/Arial.ttf", FontFamily.SansSerif, "Arial", false, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Arial Bold.ttf", FontFamily.SansSerif, "Arial", false, FontWeight.Bold, true);
+                ft.registerFont("/Library/Fonts/Arial Italic.ttf", FontFamily.SansSerif, "Arial", true, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Arial Bold Italic.ttf", FontFamily.SansSerif, "Arial", true, FontWeight.Bold, true);
+                ft.registerFont("/Library/Fonts/Arial Narrow.ttf", FontFamily.SansSerif, "Arial Narrow", false, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Arial Narrow Bold.ttf", FontFamily.SansSerif, "Arial Narrow", false, FontWeight.Bold, true);
+                ft.registerFont("/Library/Fonts/Arial Narrow Italic.ttf", FontFamily.SansSerif, "Arial Narrow", true, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Arial Narrow Bold Italic.ttf", FontFamily.SansSerif, "Arial Narrow", true, FontWeight.Bold, true);
+                ft.registerFont("/Library/Fonts/Courier New.ttf", FontFamily.MonoSpace, "Courier New", false, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Courier New Bold.ttf", FontFamily.MonoSpace, "Courier New", false, FontWeight.Bold, true);
+                ft.registerFont("/Library/Fonts/Courier New Italic.ttf", FontFamily.MonoSpace, "Courier New", true, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Courier New Bold Italic.ttf", FontFamily.MonoSpace, "Courier New", true, FontWeight.Bold, true);
+                ft.registerFont("/Library/Fonts/Georgia.ttf", FontFamily.Serif, "Georgia", false, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Georgia Bold.ttf", FontFamily.Serif, "Georgia", false, FontWeight.Bold, true);
+                ft.registerFont("/Library/Fonts/Georgia Italic.ttf", FontFamily.Serif, "Georgia", true, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Georgia Bold Italic.ttf", FontFamily.Serif, "Georgia", true, FontWeight.Bold, true);
+                ft.registerFont("/Library/Fonts/Comic Sans MS.ttf", FontFamily.SansSerif, "Comic Sans", false, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Comic Sans MS Bold.ttf", FontFamily.SansSerif, "Comic Sans", false, FontWeight.Bold, true);
+                ft.registerFont("/Library/Fonts/Tahoma.ttf", FontFamily.SansSerif, "Tahoma", false, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Tahoma Bold.ttf", FontFamily.SansSerif, "Tahoma", false, FontWeight.Bold, true);
+
+                ft.registerFont("/Library/Fonts/Microsoft/Arial.ttf", FontFamily.SansSerif, "Arial", false, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Microsoft/Arial Bold.ttf", FontFamily.SansSerif, "Arial", false, FontWeight.Bold, true);
+                ft.registerFont("/Library/Fonts/Microsoft/Arial Italic.ttf", FontFamily.SansSerif, "Arial", true, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Microsoft/Arial Bold Italic.ttf", FontFamily.SansSerif, "Arial", true, FontWeight.Bold, true);
+                ft.registerFont("/Library/Fonts/Microsoft/Calibri.ttf", FontFamily.SansSerif, "Calibri", false, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Microsoft/Calibri Bold.ttf", FontFamily.SansSerif, "Calibri", false, FontWeight.Bold, true);
+                ft.registerFont("/Library/Fonts/Microsoft/Calibri Italic.ttf", FontFamily.SansSerif, "Calibri", true, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Microsoft/Calibri Bold Italic.ttf", FontFamily.SansSerif, "Calibri", true, FontWeight.Bold, true);
+                ft.registerFont("/Library/Fonts/Microsoft/Times New Roman.ttf", FontFamily.Serif, "Times New Roman", false, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Microsoft/Times New Roman Bold.ttf", FontFamily.Serif, "Times New Roman", false, FontWeight.Bold, true);
+                ft.registerFont("/Library/Fonts/Microsoft/Times New Roman Italic.ttf", FontFamily.Serif, "Times New Roman", true, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Microsoft/Times New Roman Bold Italic.ttf", FontFamily.Serif, "Times New Roman", true, FontWeight.Bold, true);
+                ft.registerFont("/Library/Fonts/Microsoft/Verdana.ttf", FontFamily.SansSerif, "Verdana", false, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Microsoft/Verdana Bold.ttf", FontFamily.SansSerif, "Verdana", false, FontWeight.Bold, true);
+                ft.registerFont("/Library/Fonts/Microsoft/Verdana Italic.ttf", FontFamily.SansSerif, "Verdana", true, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Microsoft/Verdana Bold Italic.ttf", FontFamily.SansSerif, "Verdana", true, FontWeight.Bold, true);
+            }
 		}
 		
 		if (!ft.registeredFontCount)
