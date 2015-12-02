@@ -137,7 +137,7 @@ class X11Window : DWindow {
 		*/
 		XSelectInput(x11display, _win, KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | 
 			EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonMotionMask | ExposureMask | VisibilityChangeMask |
-			FocusChangeMask | KeymapStateMask);
+			FocusChangeMask | KeymapStateMask | StructureNotifyMask);
 
 		/* create the Graphics Context */
 		_gc = createGC(x11display, _win);
@@ -616,7 +616,47 @@ class X11Window : DWindow {
 		return res;
 	}
 	
+	private long _nextExpectedTimerTs;
+
+	/// schedule timer for interval in milliseconds - call window.onTimer when finished
+	override protected void scheduleSystemTimer(long intervalMillis) {
+		if (intervalMillis < 10)
+			intervalMillis = 10;
+		long nextts = currentTimeMillis + intervalMillis;
+		if (!_nextExpectedTimerTs || _nextExpectedTimerTs > nextts)
+			_nextExpectedTimerTs = nextts;
+	}
+	
+	bool handleTimer() {
+		if (!_nextExpectedTimerTs)
+			return false;
+		long ts = currentTimeMillis;
+		if (ts >= _nextExpectedTimerTs) {
+			_nextExpectedTimerTs = 0;
+			onTimer();
+			return true;
+		}
+		return false;
+	}
+
+	/// post event to handle in UI thread (this method can be used from background thread)
+	override void postEvent(CustomEvent event) {
+		super.postEvent(event);
+		XEvent ev;
+		ev.type = ClientMessage;
+		ev.xclient.window = _win;
+		ev.xclient.format = CUSTOM_EVENT;
+		ev.xclient.data.l[0] = event.uniqueId;
+		XSendEvent(x11display, _win, false, StructureNotifyMask, &ev);
+		//		SDL_Event sdlevent;
+//		sdlevent.user.type = USER_EVENT_ID;
+//		sdlevent.user.code = cast(int)event.uniqueId;
+//		sdlevent.user.windowID = windowId;
+//		SDL_PushEvent(&sdlevent);
+	}
 }
+
+private immutable int CUSTOM_EVENT = 32;
 
 class X11Platform : Platform {
 
@@ -659,12 +699,29 @@ class X11Platform : Platform {
 		_windowMap.remove((cast(X11Window)w)._win);
 	}
 
+	bool handleTimers() {
+		bool handled = false;
+		bool needRestart = true;
+		while (needRestart) {
+			needRestart = false;
+			foreach(w; _windowMap) {
+				if (w.handleTimer()) {
+					needRestart = true;
+					handled = true;
+					break;
+				}
+			}
+		}
+		return handled;
+	}
+
 	/**
 	 * Starts application message loop.
 	 * 
 	 * When returned from this method, application is shutting down.
 	 */
 	override int enterMessageLoop() {
+		import core.thread;
 		XEvent event;		/* the XEvent declaration !!! */
 		KeySym key;		/* a dealie-bob to handle KeyPress Events */	
 		char[255] text;		/* a char buffer for KeyPress Events */
@@ -677,6 +734,10 @@ class X11Platform : Platform {
 			/* get the next event and stuff it into our event variable.
 		   		Note:  only events we set the mask for are detected!
 			*/
+			if (!XPending(x11display) && !handleTimers()) {
+				Thread.sleep(dur!("msecs")(10));
+				continue;
+			}
 			XNextEvent(x11display, &event);
 
 			switch (event.type) {
@@ -868,6 +929,17 @@ class X11Platform : Platform {
 					X11Window w = findWindow(event.xkeymap.window);
 					if (w) {
 						//w.processExpose();
+					} else {
+						Log.e("Window not found");
+					}
+					break;
+				case ClientMessage:
+					Log.d("X11: ClientMessage event");
+					X11Window w = findWindow(event.xclient.window);
+					if (w) {
+						if (event.xclient.format == CUSTOM_EVENT) {
+							w.handlePostedEvent(cast(uint)event.xclient.data.l[0]);
+						}
 					} else {
 						Log.e("Window not found");
 					}
