@@ -199,6 +199,7 @@ public:
             window.makeKeyAndOrderFront();
             
             parentView = window.contentView();
+            //parentView.
             
             _cocoaApplication.activateIgnoringOtherApps(YES);
         }
@@ -425,8 +426,9 @@ private:
         _drawBuf.fillRect(Rect(20, 20, 120, 120), 0xFFBBBB);
         
         size_t sizeNeeded = byteStride(_width) * _height;
+        //_imageData = NSData.dataWithBytesNoCopy(cast(ubyte*)_drawBuf.scanLine(0), sizeNeeded, false);
         _imageData = NSData.dataWithBytesNoCopy(cast(ubyte*)_drawBuf.scanLine(0), sizeNeeded, false);
-        
+
         CIImage image = CIImage.imageWithBitmapData(_imageData,
             byteStride(_drawBuf.width),
             CGSize(_drawBuf.width, _drawBuf.height),

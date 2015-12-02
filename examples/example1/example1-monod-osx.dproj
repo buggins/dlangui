@@ -89,6 +89,26 @@
     <ExtraLinkerArguments>-v</ExtraLinkerArguments>
     <ConsolePause>false</ConsolePause>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugX11|x64' ">
+    <OutputPath>bin\DebugX11</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_X11</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/DebugX11</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <ExtraLinkerArguments>-L/usr/X11/lib -lX11</ExtraLinkerArguments>
+    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>example1-monod-osx</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <ConsolePause>false</ConsolePause>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\example1.d" />
   </ItemGroup>

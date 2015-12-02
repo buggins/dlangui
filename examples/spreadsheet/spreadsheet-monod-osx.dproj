@@ -84,6 +84,17 @@
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugX11|AnyCPU' ">
+    <OutputPath>bin\DebugX11</OutputPath>
+    <ObjectsDirectory>obj/DebugX11</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>spreadsheet-monod-osx</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\spreadsheetapp.d" />
     <Compile Include="src\dlangui\widgets\spreadsheet.d" />
