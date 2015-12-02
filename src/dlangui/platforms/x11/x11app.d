@@ -167,6 +167,9 @@ class X11Window : DWindow {
 	}
 
 	~this() {
+		if (timer) {
+			timer.stop();
+		}
 		if (_gc)
 			XFreeGC(x11display, _gc);
 		if (_win)
@@ -203,6 +206,7 @@ class X11Window : DWindow {
 		ev.type = Expose;
 		ev.xexpose.window = _win;
 		XSendEvent(x11display, _win, false, ExposureMask, &ev);
+		XFlush(x11display);
 	}
 
 	/// close window
@@ -662,15 +666,32 @@ class X11Window : DWindow {
 		return res;
 	}
 	
+	TimerThread timer;
 	private long _nextExpectedTimerTs;
+
+	XEvent ev;
 
 	/// schedule timer for interval in milliseconds - call window.onTimer when finished
 	override protected void scheduleSystemTimer(long intervalMillis) {
+		if (!timer) {
+			timer = new TimerThread(delegate() {
+				core.stdc.string.memset(&ev, 0, ev.sizeof);
+				//ev.xclient = XClientMessageEvent.init;
+				ev.xclient.type = ClientMessage;
+				ev.xclient.window = _win;
+				ev.xclient.display = x11display;
+				ev.xclient.format = TIMER_EVENT;
+				Log.d("Sending timer event");
+				XSendEvent(x11display, _win, false, StructureNotifyMask, &ev);
+			});
+		}
 		if (intervalMillis < 10)
 			intervalMillis = 10;
 		long nextts = currentTimeMillis + intervalMillis;
-		if (!_nextExpectedTimerTs || _nextExpectedTimerTs > nextts)
+		if (_nextExpectedTimerTs == 0 || _nextExpectedTimerTs > nextts) {
 			_nextExpectedTimerTs = nextts;
+			timer.set(nextts);
+		}
 	}
 	
 	bool handleTimer() {
@@ -689,7 +710,7 @@ class X11Window : DWindow {
 	override void postEvent(CustomEvent event) {
 		super.postEvent(event);
 		XEvent ev;
-		ev.type = ClientMessage;
+		ev.xclient.type = ClientMessage;
 		ev.xclient.window = _win;
 		ev.xclient.format = CUSTOM_EVENT;
 		ev.xclient.data.l[0] = event.uniqueId;
@@ -709,6 +730,7 @@ class X11Window : DWindow {
 }
 
 private immutable int CUSTOM_EVENT = 32;
+private immutable int TIMER_EVENT = 8;
 
 class X11Platform : Platform {
 
@@ -781,209 +803,215 @@ class X11Platform : Platform {
 			/* get the next event and stuff it into our event variable.
 		   		Note:  only events we set the mask for are detected!
 			*/
-			handleTimers();
-			if (!XPending(x11display)) {
-				Thread.sleep(dur!("msecs")(10));
-				continue;
-			}
-			XNextEvent(x11display, &event);
+			//bool timersHandled = handleTimers();
+			//if (timersHandled)
+			//	XFlush(x11display);
+			while (XEventsQueued(x11display, QueuedAfterFlush)) {//QueuedAfterFlush
+				//Thread.sleep(dur!("msecs")(10));
+				//continue;
+				XNextEvent(x11display, &event);
 
-			switch (event.type) {
-				case Expose:
-					if (event.xexpose.count==0) {
-						/* the window was exposed redraw it! */
-						//redraw();
-						X11Window w = findWindow(event.xexpose.window);
+				switch (event.type) {
+					case Expose:
+						if (event.xexpose.count==0) {
+							/* the window was exposed redraw it! */
+							//redraw();
+							X11Window w = findWindow(event.xexpose.window);
+							if (w) {
+
+								w.processExpose();
+							} else {
+								Log.e("Window not found");
+							}
+						} else {
+							Log.d("Expose: non-0 count");
+						}
+						break;
+					case KeyPress:
+						Log.d("X11: KeyPress event");
+						X11Window w = findWindow(event.xkey.window);
 						if (w) {
+							char[100] buf;
+							KeySym ks;
+							Status s;
+							if (!w.xic) {
+								w.xic = XCreateIC(xim,
+									XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
+									XNClientWindow, w._win, 0);
+								if (!w.xic) {
+									Log.e("Cannot create input context");
+								}
+							}
 
-							w.processExpose();
+							if (!w.xic)
+								XLookupString(&event.xkey, buf.ptr, buf.length - 1, &ks, &compose);
+							else {
+								Xutf8LookupString(w.xic, &event.xkey, buf.ptr, cast(int)buf.length - 1, &ks, &s);
+								if (s != XLookupChars && s != XLookupBoth)
+									XLookupString(&event.xkey, buf.ptr, buf.length - 1, &ks, &compose);
+							}
+							foreach(ref ch; buf) {
+								if (ch == 255 || ch < 32 || ch == 127)
+									ch = 0;
+							}
+							string txt = fromStringz(buf.ptr).dup;
+							import std.utf;
+							dstring dtext;
+							try {
+								if (txt.length)
+									dtext = toUTF32(txt);
+							} catch (UTFException e) {
+								// ignore, invalid text
+							}
+							Log.d("X11: KeyPress event bytes=", txt.length, " text=", txt, " dtext=", dtext);
+							if (dtext.length) {
+								w.processTextInput(dtext, event.xkey.state);
+							} else {
+								w.processKeyEvent(KeyAction.KeyDown, cast(uint)ks,
+									//event.xkey.keycode, 
+									event.xkey.state);
+							}
+
+
 						} else {
 							Log.e("Window not found");
 						}
-					} else {
-						Log.d("Expose: non-0 count");
-					}
-					break;
-				case KeyPress:
-					Log.d("X11: KeyPress event");
-					X11Window w = findWindow(event.xkey.window);
-					if (w) {
-						char[100] buf;
-						KeySym ks;
-						Status s;
-						if (!w.xic) {
-							w.xic = XCreateIC(xim,
-								XNInputStyle, XIMPreeditNothing | XIMStatusNothing,
-								XNClientWindow, w._win, 0);
-							if (!w.xic) {
-								Log.e("Cannot create input context");
-							}
-						}
-
-						if (!w.xic)
+						break;
+					case KeyRelease:
+						Log.d("X11: KeyRelease event");
+						X11Window w = findWindow(event.xkey.window);
+						if (w) {
+							char[100] buf;
+							KeySym ks;
 							XLookupString(&event.xkey, buf.ptr, buf.length - 1, &ks, &compose);
-						else {
-							Xutf8LookupString(w.xic, &event.xkey, buf.ptr, cast(int)buf.length - 1, &ks, &s);
-							if (s != XLookupChars && s != XLookupBoth)
-								XLookupString(&event.xkey, buf.ptr, buf.length - 1, &ks, &compose);
-						}
-						foreach(ref ch; buf) {
-							if (ch == 255 || ch < 32 || ch == 127)
-								ch = 0;
-						}
-						string txt = fromStringz(buf.ptr).dup;
-						import std.utf;
-						dstring dtext;
-						try {
-							if (txt.length)
-								dtext = toUTF32(txt);
-						} catch (UTFException e) {
-							// ignore, invalid text
-						}
-						Log.d("X11: KeyPress event bytes=", txt.length, " text=", txt, " dtext=", dtext);
-						if (dtext.length) {
-							w.processTextInput(dtext, event.xkey.state);
-						} else {
-							w.processKeyEvent(KeyAction.KeyDown, cast(uint)ks,
+							w.processKeyEvent(KeyAction.KeyUp, cast(uint)ks,
 								//event.xkey.keycode, 
 								event.xkey.state);
+						} else {
+							Log.e("Window not found");
 						}
-
-
-					} else {
-						Log.e("Window not found");
-					}
-					break;
-				case KeyRelease:
-					Log.d("X11: KeyRelease event");
-					X11Window w = findWindow(event.xkey.window);
-					if (w) {
-						char[100] buf;
-						KeySym ks;
-						XLookupString(&event.xkey, buf.ptr, buf.length - 1, &ks, &compose);
-						w.processKeyEvent(KeyAction.KeyUp, cast(uint)ks,
-							//event.xkey.keycode, 
-							event.xkey.state);
-					} else {
-						Log.e("Window not found");
-					}
-					break;
-				case ButtonPress:
-					Log.d("X11: ButtonPress event");
-					X11Window w = findWindow(event.xbutton.window);
-					if (w) {
-						w.processMouseEvent(MouseAction.ButtonDown, event.xbutton.button, event.xbutton.state, event.xbutton.x, event.xbutton.y);
-					} else {
-						Log.e("Window not found");
-					}
-					break;
-				case ButtonRelease:
-					Log.d("X11: ButtonRelease event");
-					X11Window w = findWindow(event.xbutton.window);
-					if (w) {
-						w.processMouseEvent(MouseAction.ButtonUp, event.xbutton.button, event.xbutton.state, event.xbutton.x, event.xbutton.y);
-					} else {
-						Log.e("Window not found");
-					}
-					break;
-				case MotionNotify:
-					Log.d("X11: MotionNotify event");
-					X11Window w = findWindow(event.xmotion.window);
-					if (w) {
-						//w.processExpose();
-						w.processMouseEvent(MouseAction.Move, 0, event.xmotion.state, event.xmotion.x, event.xmotion.y);
-					} else {
-						Log.e("Window not found");
-					}
-					break;
-				case EnterNotify:
-					Log.d("X11: EnterNotify event");
-					X11Window w = findWindow(event.xcrossing.window);
-					if (w) {
-						w.processMouseEvent(MouseAction.FocusIn, 0, event.xcrossing.state, event.xcrossing.x, event.xcrossing.y);
-
-						//w.processExpose();
-					} else {
-						Log.e("Window not found");
-					}
-					break;
-				case LeaveNotify:
-					Log.d("X11: LeaveNotify event");
-					X11Window w = findWindow(event.xcrossing.window);
-					if (w) {
-						w.processMouseEvent(MouseAction.Leave, 0, event.xcrossing.state, event.xcrossing.x, event.xcrossing.y);
-					} else {
-						Log.e("Window not found");
-					}
-					break;
-				case CreateNotify:
-					Log.d("X11: CreateNotify event");
-					X11Window w = findWindow(event.xcreatewindow.window);
-					if (w) {
-						//w.processExpose();
-					} else {
-						Log.e("Window not found");
-					}
-					break;
-				case DestroyNotify:
-					Log.d("X11: DestroyNotify event");
-					X11Window w = findWindow(event.xdestroywindow.window);
-					if (w) {
-						//w.processExpose();
-					} else {
-						Log.e("Window not found");
-					}
-					break;
-				case ResizeRequest:
-					Log.d("X11: ResizeRequest event");
-					X11Window w = findWindow(event.xresizerequest.window);
-					if (w) {
-						//w.processExpose();
-					} else {
-						Log.e("Window not found");
-					}
-					break;
-				case FocusIn:
-					Log.d("X11: FocusIn event");
-					X11Window w = findWindow(event.xfocus.window);
-					if (w) {
-						//w.processExpose();
-					} else {
-						Log.e("Window not found");
-					}
-					break;
-				case FocusOut:
-					Log.d("X11: FocusOut event");
-					X11Window w = findWindow(event.xfocus.window);
-					if (w) {
-						//w.processExpose();
-					} else {
-						Log.e("Window not found");
-					}
-					break;
-				case KeymapNotify:
-					Log.d("X11: KeymapNotify event");
-					X11Window w = findWindow(event.xkeymap.window);
-					if (w) {
-						//w.processExpose();
-					} else {
-						Log.e("Window not found");
-					}
-					break;
-				case ClientMessage:
-					Log.d("X11: ClientMessage event");
-					X11Window w = findWindow(event.xclient.window);
-					if (w) {
-						if (event.xclient.format == CUSTOM_EVENT) {
-							w.handlePostedEvent(cast(uint)event.xclient.data.l[0]);
+						break;
+					case ButtonPress:
+						Log.d("X11: ButtonPress event");
+						X11Window w = findWindow(event.xbutton.window);
+						if (w) {
+							w.processMouseEvent(MouseAction.ButtonDown, event.xbutton.button, event.xbutton.state, event.xbutton.x, event.xbutton.y);
+						} else {
+							Log.e("Window not found");
 						}
-					} else {
-						Log.e("Window not found");
-					}
-					break;
-				default:
-					break;
+						break;
+					case ButtonRelease:
+						Log.d("X11: ButtonRelease event");
+						X11Window w = findWindow(event.xbutton.window);
+						if (w) {
+							w.processMouseEvent(MouseAction.ButtonUp, event.xbutton.button, event.xbutton.state, event.xbutton.x, event.xbutton.y);
+						} else {
+							Log.e("Window not found");
+						}
+						break;
+					case MotionNotify:
+						Log.d("X11: MotionNotify event");
+						X11Window w = findWindow(event.xmotion.window);
+						if (w) {
+							//w.processExpose();
+							w.processMouseEvent(MouseAction.Move, 0, event.xmotion.state, event.xmotion.x, event.xmotion.y);
+						} else {
+							Log.e("Window not found");
+						}
+						break;
+					case EnterNotify:
+						Log.d("X11: EnterNotify event");
+						X11Window w = findWindow(event.xcrossing.window);
+						if (w) {
+							w.processMouseEvent(MouseAction.FocusIn, 0, event.xcrossing.state, event.xcrossing.x, event.xcrossing.y);
+
+							//w.processExpose();
+						} else {
+							Log.e("Window not found");
+						}
+						break;
+					case LeaveNotify:
+						Log.d("X11: LeaveNotify event");
+						X11Window w = findWindow(event.xcrossing.window);
+						if (w) {
+							w.processMouseEvent(MouseAction.Leave, 0, event.xcrossing.state, event.xcrossing.x, event.xcrossing.y);
+						} else {
+							Log.e("Window not found");
+						}
+						break;
+					case CreateNotify:
+						Log.d("X11: CreateNotify event");
+						X11Window w = findWindow(event.xcreatewindow.window);
+						if (w) {
+							//w.processExpose();
+						} else {
+							Log.e("Window not found");
+						}
+						break;
+					case DestroyNotify:
+						Log.d("X11: DestroyNotify event");
+						X11Window w = findWindow(event.xdestroywindow.window);
+						if (w) {
+							//w.processExpose();
+						} else {
+							Log.e("Window not found");
+						}
+						break;
+					case ResizeRequest:
+						Log.d("X11: ResizeRequest event");
+						X11Window w = findWindow(event.xresizerequest.window);
+						if (w) {
+							//w.processExpose();
+						} else {
+							Log.e("Window not found");
+						}
+						break;
+					case FocusIn:
+						Log.d("X11: FocusIn event");
+						X11Window w = findWindow(event.xfocus.window);
+						if (w) {
+							//w.processExpose();
+						} else {
+							Log.e("Window not found");
+						}
+						break;
+					case FocusOut:
+						Log.d("X11: FocusOut event");
+						X11Window w = findWindow(event.xfocus.window);
+						if (w) {
+							//w.processExpose();
+						} else {
+							Log.e("Window not found");
+						}
+						break;
+					case KeymapNotify:
+						Log.d("X11: KeymapNotify event");
+						X11Window w = findWindow(event.xkeymap.window);
+						if (w) {
+							//w.processExpose();
+						} else {
+							Log.e("Window not found");
+						}
+						break;
+					case ClientMessage:
+						Log.d("X11: ClientMessage event");
+						X11Window w = findWindow(event.xclient.window);
+						if (w) {
+							if (event.xclient.format == CUSTOM_EVENT) {
+								w.handlePostedEvent(cast(uint)event.xclient.data.l[0]);
+							} else if (event.xclient.format == TIMER_EVENT) {
+								w.handleTimer();
+							}
+						} else {
+							Log.e("Window not found");
+						}
+						break;
+					default:
+						break;
+				}
 			}
+			//Thread.sleep(dur!("msecs")(10));
+			//XFlush(x11display);
 		}
 		return 0;
 	}
@@ -1005,6 +1033,79 @@ class X11Platform : Platform {
 		foreach(w; _windowMap) {
 			w.requestLayout();
 		}
+	}
+}
+
+import core.thread;
+import core.sync.mutex;
+import core.sync.condition;
+class TimerThread : Thread {
+	Mutex mutex;
+	Condition condition;
+	bool stopped;
+	long nextEventTs;
+	void delegate() callback;
+
+	this(void delegate() timerCallback) {
+		callback = timerCallback;
+		mutex = new Mutex();
+		condition = new Condition(mutex);
+		super(&run);
+		start();
+	}
+
+	~this() {
+		stop();
+		destroy(condition);
+		destroy(mutex);
+	}
+
+	void set(long nextTs) {
+		mutex.lock();
+		if (nextEventTs == 0 || nextEventTs > nextTs) {
+			nextEventTs = nextTs;
+			condition.notify();
+		}
+		mutex.unlock();
+	}
+	void run() {
+
+		while (!stopped) {
+			bool expired = false;
+
+			mutex.lock();
+
+			long ts = currentTimeMillis;
+			long timeToWait = nextEventTs == 0 ? 1000 : nextEventTs - ts;
+			if (timeToWait < 10)
+				timeToWait = 10;
+
+			condition.wait(dur!"msecs"(timeToWait));
+
+			if (stopped) {
+				mutex.unlock();
+				break;
+			}
+			ts = currentTimeMillis;
+			if (nextEventTs && nextEventTs < ts && !stopped) {
+				expired = true;
+				nextEventTs = 0;
+			}
+
+			mutex.unlock();
+
+			if (expired)
+				callback();
+		}
+	}
+	void stop() {
+		if (stopped)
+			return;
+		stopped = true;
+		mutex.lock();
+		condition.notify();
+		mutex.unlock();
+		join();
 	}
 }
 
@@ -1104,6 +1205,8 @@ extern(C) int DLANGUImain(string[] args)
 
 	currentTheme = createDefaultTheme();
 
+	XInitThreads();
+
 	/* use the information from the environment variable DISPLAY 
 	   to create the X connection:
 	*/	
@@ -1140,6 +1243,8 @@ extern(C) int DLANGUImain(string[] args)
 	}
 
 	Log.d("X11 display=", x11display, " screen=", x11screen);
+
+
 
 	X11Platform x11platform = new X11Platform();
 
