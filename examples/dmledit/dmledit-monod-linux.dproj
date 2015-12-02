@@ -192,6 +192,7 @@
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
+    <ExtraLinkerArguments>-L-lX11</ExtraLinkerArguments>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\dmledit.d" />

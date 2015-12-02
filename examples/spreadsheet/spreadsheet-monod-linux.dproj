@@ -101,7 +101,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugMinimal|x64' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Debug</OutputPath>
+    <OutputPath>bin\DebugMinimal</OutputPath>
     <VersionIds>
       <VersionIds>
         <String>USE_SDL</String>
@@ -124,7 +124,7 @@
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'ReleaseMinimal|x64' ">
-    <OutputPath>bin\Release</OutputPath>
+    <OutputPath>bin\ReleaseMinimal</OutputPath>
     <VersionIds>
       <VersionIds>
         <String>USE_SDL</String>
@@ -148,7 +148,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'UnittestMinimal|x64' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Unittest</OutputPath>
+    <OutputPath>bin\UnittestMinimal</OutputPath>
     <VersionIds>
       <VersionIds>
         <String>USE_SDL</String>
@@ -172,7 +172,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugX11|x64' ">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>bin\Debug</OutputPath>
+    <OutputPath>bin\DebugX11</OutputPath>
     <VersionIds>
       <VersionIds>
         <String>USE_X11</String>

@@ -15,6 +15,7 @@ import dlangui.platforms.common.platform;
 
 import std.stdio;
 import std.string;
+import std.utf;
 
 import x11.Xlib;
 import x11.Xutil;
@@ -29,6 +30,11 @@ private __gshared XIM xim;
 
 alias XWindow = x11.Xlib.Window;
 alias DWindow = dlangui.platforms.common.platform.Window;
+
+private __gshared string localClipboardContent;
+private __gshared Atom   atom_UTF8_STRING;
+private __gshared Atom   atom_CLIPBOARD;
+private __gshared Atom   atom_TARGETS;
 
 private GC createGC(Display* display, XWindow win)
 {
@@ -367,56 +373,82 @@ class X11Window : DWindow {
 			case XK_9:
 				return KeyCode.KEY_9;
 			case XK_A:
+			case XK_a:
 				return KeyCode.KEY_A;
 			case XK_B:
+			case XK_b:
 				return KeyCode.KEY_B;
 			case XK_C:
+			case XK_c:
 				return KeyCode.KEY_C;
 			case XK_D:
+			case XK_d:
 				return KeyCode.KEY_D;
 			case XK_E:
+			case XK_e:
 				return KeyCode.KEY_E;
 			case XK_F:
+			case XK_f:
 				return KeyCode.KEY_F;
 			case XK_G:
+			case XK_g:
 				return KeyCode.KEY_G;
 			case XK_H:
+			case XK_h:
 				return KeyCode.KEY_H;
 			case XK_I:
+			case XK_i:
 				return KeyCode.KEY_I;
 			case XK_J:
+			case XK_j:
 				return KeyCode.KEY_J;
 			case XK_K:
+			case XK_k:
 				return KeyCode.KEY_K;
 			case XK_L:
+			case XK_l:
 				return KeyCode.KEY_L;
 			case XK_M:
+			case XK_m:
 				return KeyCode.KEY_M;
 			case XK_N:
+			case XK_n:
 				return KeyCode.KEY_N;
 			case XK_O:
+			case XK_o:
 				return KeyCode.KEY_O;
 			case XK_P:
+			case XK_p:
 				return KeyCode.KEY_P;
 			case XK_Q:
+			case XK_q:
 				return KeyCode.KEY_Q;
 			case XK_R:
+			case XK_r:
 				return KeyCode.KEY_R;
 			case XK_S:
+			case XK_s:
 				return KeyCode.KEY_S;
 			case XK_T:
+			case XK_t:
 				return KeyCode.KEY_T;
 			case XK_U:
+			case XK_u:
 				return KeyCode.KEY_U;
 			case XK_V:
+			case XK_v:
 				return KeyCode.KEY_V;
 			case XK_W:
+			case XK_w:
 				return KeyCode.KEY_W;
 			case XK_X:
+			case XK_x:
 				return KeyCode.KEY_X;
 			case XK_Y:
+			case XK_y:
 				return KeyCode.KEY_Y;
 			case XK_Z:
+			case XK_z:
 				return KeyCode.KEY_Z;
 			case XK_F1:
 				return KeyCode.F1;
@@ -473,36 +505,47 @@ class X11Window : DWindow {
 			case XK_Tab:
 				return KeyCode.TAB;
 			case XK_Return:
+			case XK_KP_Enter:
 				return KeyCode.RETURN;
 			case XK_Escape:
 				return KeyCode.ESCAPE;
+			case XK_KP_Delete:
 			case XK_Delete:
 			//case 0x40000063: // dirty hack for Linux - key on keypad
 				return KeyCode.DEL;
 			case XK_Insert:
-			//case 0x40000062: // dirty hack for Linux - key on keypad
+			case XK_KP_Insert:
+				//case 0x40000062: // dirty hack for Linux - key on keypad
 				return KeyCode.INS;
+			case XK_KP_Home:
 			case XK_Home:
 			//case 0x4000005f: // dirty hack for Linux - key on keypad
 				return KeyCode.HOME;
+			case XK_KP_Page_Up:
 			case XK_Page_Up:
 			//case 0x40000061: // dirty hack for Linux - key on keypad
 				return KeyCode.PAGEUP;
+			case XK_KP_End:
 			case XK_End:
 			//case 0x40000059: // dirty hack for Linux - key on keypad
 				return KeyCode.END;
+			case XK_KP_Page_Down:
 			case XK_Page_Down:
 			//case 0x4000005b: // dirty hack for Linux - key on keypad
 				return KeyCode.PAGEDOWN;
+			case XK_KP_Left:
 			case XK_Left:
 			//case 0x4000005c: // dirty hack for Linux - key on keypad
 				return KeyCode.LEFT;
+			case XK_KP_Right:
 			case XK_Right:
 			//case 0x4000005e: // dirty hack for Linux - key on keypad
 				return KeyCode.RIGHT;
+			case XK_KP_Up:
 			case XK_Up:
 			//case 0x40000060: // dirty hack for Linux - key on keypad
 				return KeyCode.UP;
+			case XK_KP_Down:
 			case XK_Down:
 			//case 0x4000005a: // dirty hack for Linux - key on keypad
 				return KeyCode.DOWN;
@@ -519,6 +562,7 @@ class X11Window : DWindow {
 			case XK_Alt_R:
 				return KeyCode.RALT;
 			case XK_slash:
+			case XK_KP_Divide:
 				return KeyCode.KEY_DIVIDE;
 			default:
 				return 0x10000 | keyCode;
@@ -938,17 +982,21 @@ class X11Platform : Platform {
 
 	/// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
 	override dstring getClipboardText(bool mouseBuffer = false) {
-		return "";
+		return toUTF32(localClipboardContent);
 	}
 
 	/// sets text to clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
 	override void setClipboardText(dstring text, bool mouseBuffer = false) {
-		// todo
+		localClipboardContent = toUTF8(text);
+		//XSetSelectionOwner(display, XA_PRIMARY, juce_messageWindowHandle, CurrentTime);
+		//XSetSelectionOwner(display, atom_CLIPBOARD, juce_messageWindowHandle, CurrentTime);
 	}
 	
 	/// calls request layout for all windows
 	override void requestLayout() {
-		// todo
+		foreach(w; _windowMap) {
+			w.requestLayout();
+		}
 	}
 }
 
@@ -978,6 +1026,12 @@ extern(C) int DLANGUImain(string[] args)
 	}
 
 	x11screen = DefaultScreen(x11display);
+
+	atom_UTF8_STRING = XInternAtom(x11display, "UTF8_STRING", False);
+	atom_CLIPBOARD   = XInternAtom(x11display, "CLIPBOARD", False);
+	atom_TARGETS     = XInternAtom(x11display, "TARGETS", False);
+
+
 	xim = XOpenIM(x11display, null, null, null);
 	if (!xim) {
 		Log.e("Cannot open input method");
