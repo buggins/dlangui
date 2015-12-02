@@ -701,15 +701,10 @@ class X11Platform : Platform {
 
 	bool handleTimers() {
 		bool handled = false;
-		bool needRestart = true;
-		while (needRestart) {
-			needRestart = false;
-			foreach(w; _windowMap) {
-				if (w.handleTimer()) {
-					needRestart = true;
-					handled = true;
-					break;
-				}
+		foreach(w; _windowMap) {
+			if (w.handleTimer()) {
+				handled = true;
+				break;
 			}
 		}
 		return handled;
@@ -734,7 +729,8 @@ class X11Platform : Platform {
 			/* get the next event and stuff it into our event variable.
 		   		Note:  only events we set the mask for are detected!
 			*/
-			if (!XPending(x11display) && !handleTimers()) {
+			handleTimers();
+			if (!XPending(x11display)) {
 				Thread.sleep(dur!("msecs")(10));
 				continue;
 			}
@@ -805,17 +801,6 @@ class X11Platform : Platform {
 					} else {
 						Log.e("Window not found");
 					}
-//					if (XLookupString(&event.xkey, text.ptr, 255, &key, cast(XComposeStatus*)null) == 1) {
-//						/* use the XLookupString routine to convert the invent
-//		   					KeyPress data into regular text.  Weird but necessary...
-//						*/
-//						if (text[0]=='q') {
-//							finished = true;
-//							break;
-//							//close_x();
-//						}
-//						Log.d("You pressed the key", text[0]);
-//					}
 					break;
 				case KeyRelease:
 					Log.d("X11: KeyRelease event");

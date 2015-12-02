@@ -1,0 +1,201 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">x64</Platform>
+    <ProjectGuid>{5BD82AA8-4026-44C2-8957-B4E2932542F0}</ProjectGuid>
+    <Compiler>DMD2</Compiler>
+    <PreferOneStepBuild>true</PreferOneStepBuild>
+    <UseDefaultCompiler>true</UseDefaultCompiler>
+    <IncrementalLinking>true</IncrementalLinking>
+    <Includes>
+      <Includes>
+        <Path>../../src</Path>
+        <Path>../../deps/dlib</Path>
+        <Path>../../deps/gl3n</Path>
+        <Path>../../deps/DerelictSDL2/source</Path>
+        <Path>../../deps/DerelictFT/source</Path>
+        <Path>../../deps/DerelictGL3/source</Path>
+        <Path>../../deps/DerelictUtil/source</Path>
+      </Includes>
+    </Includes>
+    <DependentProjectIds>
+      <DependentProjectIds>
+        <String>{A38BEF21-AAFE-4115-A978-63B7C8C2FBD1}</String>
+      </DependentProjectIds>
+    </DependentProjectIds>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug</OutputPath>
+    <ObjectsDirectory>obj/Debug</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>spreadsheet-monod-linux</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_SDL</String>
+        <String>USE_OPENGL</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/hdpi
+-Jviews/res/mdpi
+-Jviews/res/i18n
+</ExtraCompilerArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x64' ">
+    <OutputPath>bin\Release</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_SDL</String>
+        <String>USE_OPENGL</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/Release</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>spreadsheet-monod-linux</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/hdpi
+-Jviews/res/mdpi
+-Jviews/res/i18n
+</ExtraCompilerArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Unittest|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Unittest</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_SDL</String>
+        <String>USE_OPENGL</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/Unittest</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <UnittestMode>true</UnittestMode>
+    <OutputName>spreadsheet-monod-linux</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/hdpi
+-Jviews/res/mdpi
+-Jviews/res/i18n
+</ExtraCompilerArguments>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugMinimal|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_SDL</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/Debug</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/hdpi
+-Jviews/res/mdpi
+-Jviews/res/i18n
+</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>spreadsheet-monod-linux</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'ReleaseMinimal|x64' ">
+    <OutputPath>bin\Release</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_SDL</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/Release</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/hdpi
+-Jviews/res/mdpi
+-Jviews/res/i18n
+</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>spreadsheet-monod-linux</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'UnittestMinimal|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Unittest</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_SDL</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/Unittest</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/hdpi
+-Jviews/res/mdpi
+-Jviews/res/i18n
+</ExtraCompilerArguments>
+    <UnittestMode>true</UnittestMode>
+    <OutputName>spreadsheet-monod-linux</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugX11|x64' ">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>bin\Debug</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_X11</String>
+        <String>USE_FREETYPE</String>
+        <String>EmbedStandardResources</String>
+      </VersionIds>
+    </VersionIds>
+    <ObjectsDirectory>obj/Debug</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/hdpi
+-Jviews/res/mdpi
+-Jviews/res/i18n
+</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>spreadsheet-monod-linux</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="src\spreadsheetapp.d" />
+    <Compile Include="src\dlangui\widgets\spreadsheet.d" />
+  </ItemGroup>
+</Project>
