@@ -1,7 +1,7 @@
 module dlangui.core.config;
 
 version (USE_FREETYPE) {
-    enum USE_FREETYPE = true;
+    enum ENABLE_FREETYPE = true;
 } else {
     version (Windows) {
         enum ENABLE_FREETYPE = false;
