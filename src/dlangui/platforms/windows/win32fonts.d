@@ -287,7 +287,7 @@ class Win32Font : Font {
 			return null;
 
 		Glyph * g = new Glyph;
-        version (USE_OPENGL) {
+        static if (ENABLE_OPENGL) {
             g.id = nextGlyphId();
         }
 		//g.blackBoxX = cast(ushort)metrics.gmBlackBoxX;

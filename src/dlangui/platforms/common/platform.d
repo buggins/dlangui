@@ -1353,7 +1353,7 @@ class Platform {
     return Platform.instance;
 }
 
-version (USE_OPENGL) {
+static if (ENABLE_OPENGL) {
     private __gshared bool _OPENGL_ENABLED = false;
     /// check if hardware acceleration is enabled
     @property bool openglEnabled() { return _OPENGL_ENABLED; }
@@ -1378,12 +1378,6 @@ version (Windows) {
 
 /// put "mixin APP_ENTRY_POINT;" to main module of your dlangui based app
 mixin template APP_ENTRY_POINT() {
-    version (linux) {
-		version(USE_X11) {
-			pragma(lib, "X11");
-		}
-    }
-
     /// workaround for link issue when WinMain is located in library
     version(Windows) {
         extern (Windows) int WinMain(void* hInstance, void* hPrevInstance,

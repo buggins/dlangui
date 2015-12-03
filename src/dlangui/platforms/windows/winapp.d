@@ -22,9 +22,8 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 module dlangui.platforms.windows.winapp;
 
 public import dlangui.core.config;
-version (USE_SDL) { } 
-else version (USE_DSFML) { } 
-else version (Windows) {
+
+static if (BACKEND_WIN32):
 
 import core.runtime;
 import win32.windows;
@@ -44,7 +43,7 @@ import dlangui.graphics.fonts;
 import dlangui.core.logger;
 import dlangui.core.files;
 
-version (USE_OPENGL) {
+static if (ENABLE_OPENGL) {
     import dlangui.graphics.glsupport;
 }
 
@@ -63,7 +62,7 @@ immutable WIN_CLASS_NAME = "DLANGUI_APP";
 __gshared HINSTANCE _hInstance;
 __gshared int _cmdShow;
 
-version (USE_OPENGL) {
+static if (ENABLE_OPENGL) {
     bool setupPixelFormat(HDC hDC)
     {
         PIXELFORMATDESCRIPTOR pfd = {
@@ -161,7 +160,7 @@ class Win32Window : Window {
     Win32Platform _platform;
 
     HWND _hwnd;
-    version (USE_OPENGL) {
+    static if (ENABLE_OPENGL) {
         HGLRC _hGLRC; // opengl context
         HPALETTE _hPalette;
         //GLSupport _gl;
@@ -200,7 +199,7 @@ class Win32Window : Window {
                             null,                 // window menu handle
                             _hInstance,           // program instance handle
                             cast(void*)this);                // creation parameters
-        version (USE_OPENGL) {
+        static if (ENABLE_OPENGL) {
             import derelict.opengl3.wgl;
 
             /* initialize OpenGL rendering */
@@ -222,7 +221,7 @@ class Win32Window : Window {
                                 import derelict.opengl3.gl3;
                                 DerelictGL3.reload();
 
-                                version (USE_OPENGL) {
+                                static if (ENABLE_OPENGL) {
                                     //_gl = new GLSupport();
                                     if (!_glSupport) {
                                         Log.v("Creating OpenGL support");
@@ -264,7 +263,7 @@ class Win32Window : Window {
         }
     }
 
-    version (USE_OPENGL) {
+    static if (ENABLE_OPENGL) {
         private void paintUsingOpenGL() {
             // hack to stop infinite WM_PAINT loop
             PAINTSTRUCT ps;
@@ -315,7 +314,7 @@ class Win32Window : Window {
 
     ~this() {
         debug Log.d("Window destructor");
-        version (USE_OPENGL) {
+        static if (ENABLE_OPENGL) {
             import derelict.opengl3.wgl;
             if (_hGLRC) {
 			    //glSupport.uninitShaders();
@@ -547,7 +546,7 @@ class Win32Window : Window {
     void onPaint() {
         debug(DebugRedraw) Log.d("onPaint()");
         long paintStart = currentTimeMillis;
-        version (USE_OPENGL) {
+        static if (ENABLE_OPENGL) {
             if (useOpengl && _hGLRC) {
                 paintUsingOpenGL();
             } else {
@@ -997,7 +996,7 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
 
 	currentTheme = createDefaultTheme();
 
-    version (USE_OPENGL) {
+    static if (ENABLE_OPENGL) {
         try {
             import derelict.opengl3.gl3;
             DerelictGL3.load();
@@ -1196,6 +1195,4 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 //===========================================
 // end of version(Windows)
 //===========================================
-} 
-
 

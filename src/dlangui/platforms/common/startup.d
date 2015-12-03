@@ -7,7 +7,7 @@ public import dlangui.graphics.fonts;
 public import dlangui.graphics.resources;
 public import dlangui.widgets.widget;
 
-version(USE_FREETYPE) {
+static if (ENABLE_FREETYPE) {
 	public import dlangui.graphics.ftfonts;
 }
 
@@ -22,7 +22,7 @@ version (Windows) {
 		import dlangui.platforms.windows.win32fonts;
 		try {
 			/// testing freetype font manager
-			version(USE_FREETYPE) {
+			static if (ENABLE_FREETYPE) {
 				Log.v("Trying to init FreeType font manager");
 				
 				import dlangui.graphics.ftfonts;
@@ -236,7 +236,7 @@ extern (C) void releaseResourcesOnAppExit() {
 		if (Drawable.instanceCount > 0) {
 			Log.e("Non-zero Drawable instance count when exiting: ", Drawable.instanceCount);
 		}
-		version (USE_FREETYPE) {
+		static if (ENABLE_FREETYPE) {
 			import dlangui.graphics.ftfonts;
 			if (FreeTypeFontFile.instanceCount > 0) {
 				Log.e("Non-zero FreeTypeFontFile instance count when exiting: ", FreeTypeFontFile.instanceCount);

@@ -18,7 +18,8 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 module dlangui.platforms.sdl.sdlapp;
 
 public import dlangui.core.config;
-version(USE_SDL):
+static if (BACKEND_SDL):
+
 import core.runtime;
 import std.conv;
 import std.string;
@@ -41,7 +42,7 @@ import dlangui.platforms.common.platform;
 import derelict.sdl2.sdl;
 import derelict.opengl3.gl3;
 
-version (USE_OPENGL) {
+static if (ENABLE_OPENGL) {
     import dlangui.graphics.gldrawbuf;
 	import dlangui.graphics.glsupport;
 }
@@ -89,7 +90,7 @@ class SDLWindow : Window {
 		debug Log.d("Destroying SDL window");
 		if (_renderer)
 			SDL_DestroyRenderer(_renderer);
-        version(USE_OPENGL) {
+        static if (ENABLE_OPENGL) {
             if (_context)
                 SDL_GL_DeleteContext(_context);
         }
@@ -111,12 +112,12 @@ class SDLWindow : Window {
     }
 
 
-    version(USE_OPENGL) {
+    static if (ENABLE_OPENGL) {
         static private bool _gl3Reloaded = false;
         private SDL_GLContext _context;
     }
 
-    version(USE_OPENGL) {
+    static if (ENABLE_OPENGL) {
         protected bool createContext(int versionMajor, int versionMinor) {
             Log.i("Trying to create OpenGL ", versionMajor, ".", versionMinor, " context");
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, versionMajor);
@@ -146,7 +147,7 @@ class SDLWindow : Window {
 		//if (flags & WindowFlag.Modal)
 		//	windowFlags |= SDL_WINDOW_INPUT_GRABBED;
         windowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
-		version(USE_OPENGL) {
+		static if (ENABLE_OPENGL) {
             if (_enableOpengl)
                 windowFlags |= SDL_WINDOW_OPENGL;
             if (!_glSupport)
@@ -155,7 +156,7 @@ class SDLWindow : Window {
 		_win = SDL_CreateWindow(toUTF8(_caption).toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
                                 _dx, _dy, 
                                 windowFlags);
-        version(USE_OPENGL) {
+        static if (ENABLE_OPENGL) {
             if (!_win) {
                 if (_enableOpengl) {
                     Log.e("SDL_CreateWindow failed - cannot create OpenGL window: ", fromStringz(SDL_GetError()));
@@ -173,7 +174,7 @@ class SDLWindow : Window {
 			return false;
 		}
 		
-        version(USE_OPENGL) {
+        static if (ENABLE_OPENGL) {
             if (_enableOpengl) {
                 Log.i("Trying to create OpenGL 3.2 context");
 				createContext(3, 2);
@@ -416,7 +417,7 @@ class SDLWindow : Window {
         fixSize();
 
 		if (_enableOpengl) {
-            version(USE_OPENGL) {
+            static if (ENABLE_OPENGL) {
                 SDL_GL_MakeCurrent(_win, _context);
                 glDisable(GL_DEPTH_TEST);
                 glViewport(0, 0, _dx, _dy);
@@ -1301,7 +1302,7 @@ int sdlmain(string[] args) {
         return 1;
     }
 
-    version(USE_OPENGL) {
+    static if (ENABLE_OPENGL) {
         try {
 			DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
             DerelictGL3.load();
@@ -1323,7 +1324,7 @@ int sdlmain(string[] args) {
 
     int request = SDL_GetDesktopDisplayMode(0,&displayMode);
 
-    version(USE_OPENGL) {
+    static if (ENABLE_OPENGL) {
         // we want OpenGL 3.2
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,3);
         SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,2);

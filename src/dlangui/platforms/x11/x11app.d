@@ -1,7 +1,7 @@
 ﻿module dlangui.platforms.x11.x11app;
 
 public import dlangui.core.config;
-version (USE_X11):
+static if (BACKEND_X11):
 
 import dlangui.core.logger;
 import dlangui.core.events;
@@ -23,7 +23,7 @@ import x11.Xutil;
 import x11.Xtos;
 import x11.X;
 
-version (USE_OPENGL) {
+static if (ENABLE_OPENGL) {
 	import derelict.opengl3.gl3;
 	import derelict.opengl3.gl;
 	import dlangui.graphics.gldrawbuf;
@@ -178,7 +178,7 @@ class X11Window : DWindow {
 	protected GC _gc;
 	private __gshared XIC xic;
 
-	version (USE_OPENGL) {
+	static if (ENABLE_OPENGL) {
 		GLXContext _glc;
 	}
 
@@ -214,7 +214,7 @@ class X11Window : DWindow {
 				EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonMotionMask | ExposureMask | VisibilityChangeMask |
 					FocusChangeMask | KeymapStateMask | StructureNotifyMask;
 			Visual * visual = DefaultVisual(x11display, x11screen);
-			version (USE_OPENGL) {
+			static if (ENABLE_OPENGL) {
 				if (_enableOpengl) {
 					swamask |= CWColormap;
 					swa.colormap = x11cmap;
@@ -296,7 +296,7 @@ class X11Window : DWindow {
 		if (timer) {
 			timer.stop();
 		}
-		version(USE_OPENGL) {
+		static if (ENABLE_OPENGL) {
 			if (_glc) {
 				glXDestroyContext(x11display, _glc);
 				_glc = null;
@@ -312,26 +312,12 @@ class X11Window : DWindow {
 		}
 	}
 
-//	version(USE_OPENGL) {
-//		protected bool createContext(int versionMajor, int versionMinor) {
-//			Log.i("Trying to create OpenGL ", versionMajor, ".", versionMinor, " context");
-//			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, versionMajor);
-//			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, versionMinor);
-//			_glc = SDL_GL_CreateContext(_win); // Create the actual context and make it current
-//			if (!_context)
-//				Log.e("SDL_GL_CreateContext failed: ", fromStringz(SDL_GetError()));
-//			else
-//				Log.i("Created successfully");
-//			return _context !is null;
-//		}
-//	}
-
 	/// show window
 	override void show() {
 		Log.d("X11Window.show");
 		XMapRaised(x11display, _win);
 		XFlush(x11display);
-		version(USE_OPENGL) {
+		static if (ENABLE_OPENGL) {
 			if (_enableOpengl) {
 				_glc = glXCreateContext(x11display, x11visual, null, GL_TRUE);
 				if (!_glc) {
@@ -448,7 +434,7 @@ class X11Window : DWindow {
 	}
 
 	protected void drawUsingOpengl() {
-		version(USE_OPENGL) {
+		static if (ENABLE_OPENGL) {
 			//Log.d("drawUsingOpengl()");
 			glXMakeCurrent(x11display, cast(uint)_win, _glc);
 			glDisable(GL_DEPTH_TEST);
@@ -1385,7 +1371,7 @@ extern(C) int DLANGUImain(string[] args)
 
 	x11screen = DefaultScreen(x11display);
 
-	version(USE_OPENGL) {
+	static if (ENABLE_OPENGL) {
 		try {
 			DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
 			DerelictGL3.load();

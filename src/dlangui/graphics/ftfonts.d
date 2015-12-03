@@ -10,7 +10,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 module dlangui.graphics.ftfonts;
 
 public import dlangui.core.config;
-version(USE_FREETYPE):
+static if (ENABLE_FREETYPE):
 
 import dlangui.graphics.fonts;
 
@@ -324,7 +324,7 @@ class FreeTypeFontFile {
 					}
                 }
             }
-            version (USE_OPENGL) {
+            static if (ENABLE_OPENGL) {
                 glyph.id = nextGlyphId();
             }
         }

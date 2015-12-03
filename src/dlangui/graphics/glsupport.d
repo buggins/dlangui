@@ -19,7 +19,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 module dlangui.graphics.glsupport;
 
 public import dlangui.core.config;
-version(USE_OPENGL):
+static if (ENABLE_OPENGL):
 
 import dlangui.core.logger;
 import derelict.opengl3.gl3;

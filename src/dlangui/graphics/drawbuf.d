@@ -34,7 +34,7 @@ struct NinePatch {
     Rect padding;
 }
 
-version (USE_OPENGL) {
+static if (ENABLE_OPENGL) {
     /// non thread safe
     private __gshared uint drawBufIdGenerator = 0;
 }
@@ -71,14 +71,14 @@ class DrawBuf : RefCountedObject {
 		return (argb & 0xFFFFFF) | (a << 24);
 	}
 
-    version (USE_OPENGL) {
+    static if (ENABLE_OPENGL) {
         protected uint _id;
         /// unique ID of drawbug instance, for using with hardware accelerated rendering for caching
         @property uint id() { return _id; }
     }
 
     this() {
-        version (USE_OPENGL) {
+        static if (ENABLE_OPENGL) {
             _id = drawBufIdGenerator++;
         }
 		debug _instanceCount++;

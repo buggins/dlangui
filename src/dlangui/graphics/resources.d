@@ -90,6 +90,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 
 module dlangui.graphics.resources;
 
+import dlangui.core.config;
 import dlangui.graphics.images;
 import dlangui.graphics.drawbuf;
 import dlangui.graphics.colors;

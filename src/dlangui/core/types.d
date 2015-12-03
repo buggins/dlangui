@@ -305,7 +305,7 @@ struct Glyph
     SubpixelRenderingMode subpixelMode;
     /// 7: usage flag, to handle cleanup of unused glyphs
 	ubyte   lastUsage;
-    version (USE_OPENGL) {
+    static if (ENABLE_OPENGL) {
         /// 8: unique id of glyph (for drawing in hardware accelerated scenes)
         uint    id;
     }

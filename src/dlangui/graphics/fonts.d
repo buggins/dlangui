@@ -97,7 +97,7 @@ struct CustomCharProps {
     }
 }
 
-version (USE_OPENGL) {
+static if (ENABLE_OPENGL) {
 
     private __gshared void function(uint id) _glyphDestroyCallback;
     /**
@@ -802,7 +802,7 @@ struct GlyphCache
 			if (part !is null)
 			foreach(ref item; part) {
 				if (item && !item.lastUsage) {
-					version (USE_OPENGL) {
+					static if (ENABLE_OPENGL) {
 						// notify about destroyed glyphs
 						if (_glyphDestroyCallback !is null) {
 							_glyphDestroyCallback(item.id);
@@ -832,7 +832,7 @@ struct GlyphCache
 			if (part !is null)
 			foreach(ref item; part) {
 				if (item) {
-					version (USE_OPENGL) {
+					static if (ENABLE_OPENGL) {
 						// notify about destroyed glyphs
 						if (_glyphDestroyCallback !is null) {
 							_glyphDestroyCallback(item.id);

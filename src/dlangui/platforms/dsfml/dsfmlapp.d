@@ -2,7 +2,7 @@ module dlangui.platforms.dsfml.dsfmlapp;
 
 public import dlangui.core.config;
 
-version(USE_DSFML):
+static if (BACKEND_DSFML):
 
 import dlangui.platforms.common.platform;
 import dsfml.graphics;
