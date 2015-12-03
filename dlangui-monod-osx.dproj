@@ -93,6 +93,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\dlangui\core\collections.d" />
+    <Compile Include="src\dlangui\core\config.d" />
     <Compile Include="src\dlangui\core\editable.d" />
     <Compile Include="src\dlangui\core\events.d" />
     <Compile Include="src\dlangui\core\files.d" />
