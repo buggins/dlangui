@@ -152,6 +152,7 @@
     <VersionIds>
       <VersionIds>
         <String>USE_X11</String>
+        <String>USE_OPENGL</String>
         <String>USE_FREETYPE</String>
         <String>EmbedStandardResources</String>
       </VersionIds>

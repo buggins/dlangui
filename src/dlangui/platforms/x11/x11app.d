@@ -22,6 +22,17 @@ import x11.Xutil;
 import x11.Xtos;
 import x11.X;
 
+version (USE_OPENGL) {
+	import derelict.opengl3.gl3;
+	import dlangui.graphics.gldrawbuf;
+	import dlangui.graphics.glsupport;
+	import derelict.opengl3.glx;
+
+	private __gshared derelict.util.xtypes.XVisualInfo * x11visual;
+	private __gshared Colormap x11cmap;
+	private __gshared bool _gl3Reloaded = false;
+}
+
 //pragma(lib, "X11");
 
 private __gshared Display * x11display;
@@ -39,6 +50,8 @@ private __gshared Atom   atom_TARGETS;
 
 private __gshared Atom   atom_DLANGUI_TIMER_EVENT;
 private __gshared Atom   atom_DLANGUI_TASK_EVENT;
+
+private __gshared bool _enableOpengl = false;
 
 private __gshared Cursor[CursorType.Hand + 1] x11cursors;
 // Cursor font constants
@@ -163,6 +176,10 @@ class X11Window : DWindow {
 	protected GC _gc;
 	private __gshared XIC xic;
 
+	version (USE_OPENGL) {
+		GLXContext _glc;
+	}
+
 	this(X11Platform platform, dstring caption, DWindow parent, uint flags, uint width = 0, uint height = 0) {
 		_platform = platform;
 		_caption = caption;
@@ -188,9 +205,31 @@ class X11Window : DWindow {
 
 		Log.d("Creating window of size ", _dx, "x", _dy);
 		static if (true) {
-			_win = XCreateSimpleWindow(x11display, DefaultRootWindow(x11display), 
-				0, 0,	
-				_dx, _dy, 5, black, white);
+			XSetWindowAttributes swa;
+			uint swamask = CWEventMask | CWBackPixel;
+			swa.background_pixel = white;
+			swa.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | 
+				EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonMotionMask | ExposureMask | VisibilityChangeMask |
+					FocusChangeMask | KeymapStateMask | StructureNotifyMask;
+			Visual * visual = DefaultVisual(x11display, x11screen);
+			version (USE_OPENGL) {
+				if (_enableOpengl) {
+					swamask |= CWColormap;
+					swa.colormap = x11cmap;
+					visual = cast(Visual*)x11visual.visual;
+				}
+			}
+
+			_win = XCreateWindow(x11display, DefaultRootWindow(x11display), 
+				0, 0, 
+				_dx, _dy, 0, 
+				x11visual.depth, InputOutput, 
+				visual, 
+				swamask, 
+				&swa);
+//			_win = XCreateSimpleWindow(x11display, DefaultRootWindow(x11display), 
+//				0, 0,	
+//				_dx, _dy, 5, black, white);
 		} else {
 			XSetWindowAttributes attr;
 			attr.do_not_propagate_mask = 0;
@@ -227,14 +266,14 @@ class X11Window : DWindow {
 		/* this routine determines which types of input are allowed in
 	   		the input.  see the appropriate section for details...
 		*/
-		XSelectInput(x11display, _win, KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | 
-			EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonMotionMask | ExposureMask | VisibilityChangeMask |
-			FocusChangeMask | KeymapStateMask | StructureNotifyMask);
+//		XSelectInput(x11display, _win, KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | 
+//			EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonMotionMask | ExposureMask | VisibilityChangeMask |
+//			FocusChangeMask | KeymapStateMask | StructureNotifyMask);
 
 		/* create the Graphics Context */
 		_gc = createGC(x11display, _win);
 		//_gc = XCreateGC(x11display, _win, 0, cast(XGCValues*)null);
-		Log.d("X11Window: windowId=", _win, " gc=", _gc);
+		//Log.d("X11Window: windowId=", _win, " gc=", _gc);
 
 
 
@@ -254,17 +293,70 @@ class X11Window : DWindow {
 		if (timer) {
 			timer.stop();
 		}
-		if (_gc)
+		version(USE_OPENGL) {
+			if (_glc) {
+				glXDestroyContext(x11display, _glc);
+				_glc = null;
+			}
+		}
+		if (_gc) {
 			XFreeGC(x11display, _gc);
-		if (_win)
+			_gc = null;
+		}
+		if (_win) {
 			XDestroyWindow(x11display, _win);
+			_win = 0;
+		}
 	}
+
+//	version(USE_OPENGL) {
+//		protected bool createContext(int versionMajor, int versionMinor) {
+//			Log.i("Trying to create OpenGL ", versionMajor, ".", versionMinor, " context");
+//			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, versionMajor);
+//			SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, versionMinor);
+//			_glc = SDL_GL_CreateContext(_win); // Create the actual context and make it current
+//			if (!_context)
+//				Log.e("SDL_GL_CreateContext failed: ", fromStringz(SDL_GetError()));
+//			else
+//				Log.i("Created successfully");
+//			return _context !is null;
+//		}
+//	}
 
 	/// show window
 	override void show() {
 		Log.d("X11Window.show");
 		XMapRaised(x11display, _win);
 		XFlush(x11display);
+		version(USE_OPENGL) {
+			if (_enableOpengl) {
+				_glc = glXCreateContext(x11display, x11visual, null, GL_TRUE);
+				if (!_glc) {
+					_enableOpengl = false;
+				} else {
+					glXMakeCurrent(x11display, cast(uint)_win, _glc);
+					if (!_gl3Reloaded) {
+						DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
+						DerelictGL3.reload(GLVersion.GL21, GLVersion.GL40);
+						_gl3Reloaded = true;
+						if (!_glSupport)
+							_glSupport = new GLSupport();
+						if (!glSupport.valid && !glSupport.initShaders())
+							_enableOpengl = false;
+						glXMakeCurrent(x11display, cast(uint)_win, null);
+						if (!_enableOpengl && _glc) {
+							glXDestroyContext(x11display, _glc);
+							_glc = null;
+						}
+					}
+				}
+			}
+			if (_enableOpengl) {
+				Log.d("Open GL support is enabled");
+			} else {
+				Log.d("Open GL support is disabled");
+			}
+		}
 		if (_mainWidget)
 			_mainWidget.setFocus();
 	}
@@ -1230,6 +1322,7 @@ class TimerThread : Thread {
 	}
 }
 
+
 extern(C) int DLANGUImain(string[] args)
 {
 	initLogs();
@@ -1263,6 +1356,27 @@ extern(C) int DLANGUImain(string[] args)
 	}
 
 	x11screen = DefaultScreen(x11display);
+
+	version(USE_OPENGL) {
+		try {
+			DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
+			DerelictGL3.load();
+			Log.d("OpenGL library loaded ok");
+			GLint[] att = [ GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None ];
+			XWindow root;
+			root = DefaultRootWindow(x11display);
+			x11visual = glXChooseVisual(x11display, 0, cast(int*)att.ptr);
+			if (x11visual) {
+				x11cmap = XCreateColormap(x11display, root, cast(Visual*)x11visual.visual, AllocNone);
+				_enableOpengl = true;
+			} else {
+				Log.e("Cannot find suitable Visual for using of OpenGL");
+			}
+		} catch (Exception e) {
+			Log.e("Cannot load OpenGL library", e);
+		}
+	}
+	
 
 	atom_UTF8_STRING = XInternAtom(x11display, "UTF8_STRING", False);
 	atom_CLIPBOARD   = XInternAtom(x11display, "CLIPBOARD", False);
