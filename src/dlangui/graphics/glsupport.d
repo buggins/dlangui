@@ -22,6 +22,7 @@ version(USE_OPENGL):
 
 import dlangui.core.logger;
 import derelict.opengl3.gl3;
+import derelict.opengl3.gl;
 import dlangui.core.types;
 import std.conv;
 import std.string;
@@ -689,13 +690,20 @@ __gshared GLSupport _glSupport;
 
 class GLSupport {
 
+	private bool _legacyMode;
+	@property bool legacyMode() { return _legacyMode; }
+
+	this(bool legacy = false) {
+		_legacyMode = legacy;
+	}
+
     TextureProgram _textureProgram;
     SolidFillProgram _solidFillProgram;
     LineProgram _lineProgram;
     FontProgram _fontProgram;
 
     @property bool valid() {
-        return _textureProgram && _solidFillProgram && _fontProgram && _lineProgram;
+        return _legacyMode || _textureProgram && _solidFillProgram && _fontProgram && _lineProgram;
     }
 
     bool initShaders() {
@@ -825,11 +833,37 @@ class GLSupport {
             x0,y0,Z_2D,
             x1,y1,Z_2D,
             x1,y0,Z_2D];
-        if (_solidFillProgram !is null) {
-            //Log.d("solid fill: vertices ", vertices, " colors ", colors);
-            _solidFillProgram.execute(vertices, colors);
-        } else
-            Log.e("No program");
+
+		if (_legacyMode) {
+			glColor4f(1,1,1,1);
+			glDisable(GL_CULL_FACE);
+			glEnable(GL_BLEND);
+			glDisable(GL_ALPHA_TEST);
+			glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			checkError("glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
+			glEnableClientState(GL_VERTEX_ARRAY);
+			checkError("glEnableClientState(GL_VERTEX_ARRAY)");
+			glEnableClientState(GL_COLOR_ARRAY);
+			checkError("glEnableClientState(GL_COLOR_ARRAY)");
+			glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
+			checkError("glVertexPointer(3, GL_FLOAT, 0, vertices)");
+			glColorPointer(4, GL_FLOAT, 0, cast(void*)colors);
+			checkError("glColorPointer(4, GL_FLOAT, 0, colors)");
+			
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			checkError("glDrawArrays(GL_TRIANGLES, 0, 6)");
+			
+			glDisableClientState(GL_COLOR_ARRAY);
+			glDisableClientState(GL_VERTEX_ARRAY);
+			glDisable(GL_ALPHA_TEST);
+			glDisable(GL_BLEND);
+		} else {
+	        if (_solidFillProgram !is null) {
+	            //Log.d("solid fill: vertices ", vertices, " colors ", colors);
+	            _solidFillProgram.execute(vertices, colors);
+	        } else
+	            Log.e("No program");
+		}
     }
 
     void drawColorAndTextureGlyphRect(uint textureId, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color) {
@@ -863,7 +897,53 @@ class GLSupport {
             dstx1, dsty1, Z_2D,
             dstx1, dsty0, Z_2D];
         float[2 * 6] texcoords = [srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0];
-        _fontProgram.execute(vertices, texcoords, colors, textureId, false);
+
+		if (_legacyMode) {
+			bool linear = dx != srcdx || dy != srcdy;
+			glDisable(GL_CULL_FACE);
+			glActiveTexture(GL_TEXTURE0);
+			checkError("glActiveTexture");
+			glEnable(GL_TEXTURE_2D);
+			checkError("glEnable(GL_TEXTURE_2D)");
+			glBindTexture(GL_TEXTURE_2D, textureId);
+			checkError("glBindTexture");
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+			checkError("drawColorAndTextureRect - glTexParameteri");
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+			checkError("drawColorAndTextureRect - glTexParameteri");
+			
+			glColor4f(1,1,1,1);
+			glDisable(GL_ALPHA_TEST);
+			
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			checkError("glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
+			
+			glEnableClientState(GL_COLOR_ARRAY);
+			checkError("glEnableClientState(GL_COLOR_ARRAY)");
+			glEnableClientState(GL_VERTEX_ARRAY);
+			checkError("glEnableClientState(GL_VERTEX_ARRAY)");
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+			checkError("glEnableClientState(GL_TEXTURE_COORD_ARRAY)");
+			glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
+			checkError("glVertexPointer(3, GL_FLOAT, 0, vertices)");
+			glTexCoordPointer(2, GL_FLOAT, 0, cast(void*)texcoords.ptr);
+			checkError("glTexCoordPointer(2, GL_FLOAT, 0, texcoords)");
+			glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
+			checkError("glColorPointer(4, GL_FLOAT, 0, colors)");
+			
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			checkError("glDrawArrays");
+			
+			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+			glDisableClientState(GL_VERTEX_ARRAY);
+			glDisableClientState(GL_COLOR_ARRAY);
+			glDisable(GL_BLEND);
+			glDisable(GL_ALPHA_TEST);
+			glDisable(GL_TEXTURE_2D);
+		} else {
+        	_fontProgram.execute(vertices, texcoords, colors, textureId, false);
+		}
         //drawColorAndTextureRect(vertices, texcoords, colors, textureId, linear);
     }
 
@@ -897,7 +977,52 @@ class GLSupport {
         dstx1,dsty1,Z_2D,
         dstx1,dsty0,Z_2D];
         float[2 * 6] texcoords = [srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0];
-        _textureProgram.execute(vertices, texcoords, colors, textureId, linear);
+
+		if (_legacyMode) {
+			glDisable(GL_CULL_FACE);
+			glActiveTexture(GL_TEXTURE0);
+			checkError("glActiveTexture");
+			glEnable(GL_TEXTURE_2D);
+			checkError("glEnable(GL_TEXTURE_2D)");
+			glBindTexture(GL_TEXTURE_2D, textureId);
+			checkError("glBindTexture");
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+			checkError("drawColorAndTextureRect - glTexParameteri");
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+			checkError("drawColorAndTextureRect - glTexParameteri");
+			
+			glColor4f(1,1,1,1);
+			glDisable(GL_ALPHA_TEST);
+			
+			glEnable(GL_BLEND);
+			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			checkError("glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
+			
+			glEnableClientState(GL_COLOR_ARRAY);
+			checkError("glEnableClientState(GL_COLOR_ARRAY)");
+			glEnableClientState(GL_VERTEX_ARRAY);
+			checkError("glEnableClientState(GL_VERTEX_ARRAY)");
+			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+			checkError("glEnableClientState(GL_TEXTURE_COORD_ARRAY)");
+			glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
+			checkError("glVertexPointer(3, GL_FLOAT, 0, vertices)");
+			glTexCoordPointer(2, GL_FLOAT, 0, cast(void*)texcoords.ptr);
+			checkError("glTexCoordPointer(2, GL_FLOAT, 0, texcoords)");
+			glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
+			checkError("glColorPointer(4, GL_FLOAT, 0, colors)");
+			
+			glDrawArrays(GL_TRIANGLES, 0, 6);
+			checkError("glDrawArrays");
+			
+			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+			glDisableClientState(GL_VERTEX_ARRAY);
+			glDisableClientState(GL_COLOR_ARRAY);
+			glDisable(GL_BLEND);
+			glDisable(GL_ALPHA_TEST);
+			glDisable(GL_TEXTURE_2D);
+		} else {
+        	_textureProgram.execute(vertices, texcoords, colors, textureId, linear);
+		}
         //drawColorAndTextureRect(vertices, texcoords, colors, textureId, linear);
     }
 
@@ -1155,6 +1280,20 @@ class GLSupport {
         bufferDx = view.width;
         bufferDy = view.height;
         QMatrix4x4_ortho(view.left, view.right, view.top, view.bottom, 0.5f, 50.0f);
+		//myGlOrtho(0, dx, 0, dy, 0.1f, 5.0f);
+
+		if (_legacyMode) {
+			glMatrixMode(GL_PROJECTION);
+			//glPushMatrix();
+			//checkError("glPushMatrix");
+			//glLoadIdentity();
+			glLoadMatrixf(qtmatrix.ptr);
+			//glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
+			glMatrixMode(GL_MODELVIEW);
+			//glPushMatrix();
+			//checkError("glPushMatrix");
+			glLoadIdentity();
+		}
         glViewport(view.left, view.top, view.right, view.bottom);
         checkError("glViewport");
     }

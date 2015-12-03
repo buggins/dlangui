@@ -24,6 +24,7 @@ import x11.X;
 
 version (USE_OPENGL) {
 	import derelict.opengl3.gl3;
+	import derelict.opengl3.gl;
 	import dlangui.graphics.gldrawbuf;
 	import dlangui.graphics.glsupport;
 	import derelict.opengl3.glx;
@@ -340,7 +341,7 @@ class X11Window : DWindow {
 						DerelictGL3.reload(GLVersion.GL21, GLVersion.GL40);
 						_gl3Reloaded = true;
 						if (!_glSupport)
-							_glSupport = new GLSupport();
+							_glSupport = new GLSupport(true);
 						if (!glSupport.valid && !glSupport.initShaders())
 							_enableOpengl = false;
 						glXMakeCurrent(x11display, cast(uint)_win, null);
@@ -406,6 +407,7 @@ class X11Window : DWindow {
 	ColorDrawBuf _drawbuf;
 	protected void drawUsingBitmap() {
 		if (_dx > 0 && _dy > 0) {
+			//Log.d("drawUsingBitmap()");
 			// prepare drawbuf
 			if (_drawbuf is null)
 				_drawbuf = new ColorDrawBuf(_dx, _dy);
@@ -443,6 +445,27 @@ class X11Window : DWindow {
 		}
 	}
 
+	protected void drawUsingOpengl() {
+		version(USE_OPENGL) {
+			//Log.d("drawUsingOpengl()");
+			glXMakeCurrent(x11display, cast(uint)_win, _glc);
+			glDisable(GL_DEPTH_TEST);
+			glViewport(0, 0, _dx, _dy);
+			float a = 1.0f;
+			float r = ((_backgroundColor >> 16) & 255) / 255.0f;
+			float g = ((_backgroundColor >> 8) & 255) / 255.0f;
+			float b = ((_backgroundColor >> 0) & 255) / 255.0f;
+			glClearColor(r, g, b, a);
+			glClear(GL_COLOR_BUFFER_BIT);
+			GLDrawBuf buf = new GLDrawBuf(_dx, _dy, false);
+			buf.beforeDrawing();
+			onDraw(buf);
+			buf.afterDrawing();
+			glXSwapBuffers(x11display, cast(uint)_win);
+			destroy(buf);
+		}
+	}
+
 	void processExpose() {
 		XWindowAttributes window_attributes_return;
 		XGetWindowAttributes(x11display, _win, &window_attributes_return);
@@ -452,7 +475,10 @@ class X11Window : DWindow {
 		if (width > 0 && height > 0)
 			onResize(width, height);
 		Log.d(format("processExpose(%d, %d)", width, height));
-		drawUsingBitmap();
+		if (_enableOpengl)
+			drawUsingOpengl();
+		else
+			drawUsingBitmap();
 		//Log.d("processExpose - drawing finished");
 
 	}
@@ -1361,6 +1387,8 @@ extern(C) int DLANGUImain(string[] args)
 		try {
 			DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
 			DerelictGL3.load();
+			DerelictGL.missingSymbolCallback = &gl3MissingSymFunc;
+			DerelictGL.load();
 			Log.d("OpenGL library loaded ok");
 			GLint[] att = [ GLX_RGBA, GLX_DEPTH_SIZE, 24, GLX_DOUBLEBUFFER, None ];
 			XWindow root;
