@@ -262,7 +262,8 @@ class X11Window : DWindow {
 	   		at the top of the window and the name of the minimized window
 	   		respectively.
 		*/
-		XSetStandardProperties(x11display, _win, cast(char*)"My Window".ptr, cast(char*)"HI!".ptr, None, cast(char**)null, 0, cast(XSizeHints*)null);
+		char* caption8 = cast(char*)toUTF8(_caption).toStringz;
+		XSetStandardProperties(x11display, _win, caption8, caption8, None, cast(char**)null, 0, cast(XSizeHints*)null);
 
 		/* this routine determines which types of input are allowed in
 	   		the input.  see the appropriate section for details...

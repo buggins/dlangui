@@ -34,7 +34,7 @@ extern (C) int UIAppMain(string[] args) {
 	Platform.instance.uiTheme = "theme_default";
 
     // create window
-    Window window = Platform.instance.createWindow("DLangUI: Tetris game example"d, null, WindowFlag.Modal);
+    Window window = Platform.instance.createWindow("DLangUI: Tetris game example"d, null, WindowFlag.Modal, 600, 400);
 
     window.mainWidget = new GameWidget();
 

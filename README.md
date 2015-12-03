@@ -23,12 +23,12 @@ WARNING: recent breaking change: when specifying dlangui library as DUB dependen
 
 Main features:
 
-* Crossplatform (Win32 and Linux are supported in current version); can use SDL2 as a backend.
+* Crossplatform (Win32, OSX, and Linux are supported in current version); can use SDL2 as a backend.
 * Mostly inspired by Android UI API (layouts, styles, two phase layout, ...)
 * Supports highly customizable UI themes and styles
 * Supports internationalization
 * Hardware acceleration using OpenGL (when built with version USE_OPENGL)
-* Fallback to pure Win32 API / SDL / XCB when OpenGL is not available (e.g. opengl dynamic library cannot be loaded)
+* Fallback to pure Win32 API / SDL / X11 when OpenGL is not available (e.g. opengl dynamic library cannot be loaded)
 * Actually it's a port (with major refactoring) of GUI library for cross platform OpenGL based implementation of Cool Reader app project from C++.
 * Non thread safe - all UI operations should be preformed in single thread
 
@@ -175,6 +175,10 @@ Mac OSX development using Mono-D
 
 DMD, DUB, git, MonoDevelop with Mono-D plugin must be installed
 
+Can use SDL2 or X11 as a backend.
+
+Native Cocoa backend - work is in progress.
+
 In some directory, e.g. ~/src/d/ :
 
 Clone DlangUI repository
@@ -197,10 +201,12 @@ Clone dependency libraries
         git clone https://github.com/Devisualization/image.git de_image
         git clone https://github.com/Dav1dde/gl3n.git
         git clone https://github.com/p0nce/DerelictCocoa.git
+        git clone https://github.com/nomad-software/x11.git
 
 Open solution file with Mono-D	
 
 		dlangui-monod-osx.sln
+
 
 
 Linux development using Mono-D
