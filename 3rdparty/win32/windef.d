@@ -10,7 +10,7 @@
 \***********************************************************************/
 module win32.windef;
 version(Windows):
-
+version = Unicode;
 public import win32.winnt;
 private import win32.w32api;
 

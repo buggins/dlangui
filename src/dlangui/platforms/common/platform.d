@@ -19,6 +19,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.platforms.common.platform;
 
+public import dlangui.core.config;
 public import dlangui.core.events;
 import dlangui.core.collections;
 import dlangui.widgets.widget;
@@ -1381,16 +1382,6 @@ mixin template APP_ENTRY_POINT() {
 		version(USE_X11) {
 			pragma(lib, "X11");
 		}
-        version (USE_XCB) {
-	        //pragma(lib, "png");
-	        pragma(lib, "xcb");
-	        pragma(lib, "xcb-shm");
-	        pragma(lib, "xcb-image");
-	        pragma(lib, "xcb-keysyms");
-	        pragma(lib, "X11-xcb");
-	        pragma(lib, "X11");
-	        pragma(lib, "dl");
-        }
     }
 
     /// workaround for link issue when WinMain is located in library

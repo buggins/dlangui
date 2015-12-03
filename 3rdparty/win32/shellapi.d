@@ -10,6 +10,7 @@
 \***********************************************************************/
 module win32.shellapi;
 version(Windows):
+version = Unicode;
 pragma(lib, "shell32");
 
 private import win32.w32api, win32.windef, win32.basetyps;

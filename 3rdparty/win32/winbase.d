@@ -9,6 +9,7 @@
 \***********************************************************************/
 module win32.winbase;
 version(Windows):
+version = Unicode;
 pragma(lib, "kernel32");
 
 /**

@@ -9,6 +9,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.graphics.ftfonts;
 
+public import dlangui.core.config;
 version(USE_FREETYPE):
 
 import dlangui.graphics.fonts;

@@ -10,6 +10,7 @@
 \***********************************************************************/
 module win32.winnetwk;
 version(Windows):
+version = Unicode;
 pragma(lib, "mpr");
 
 private import win32.winbase, win32.winerror, win32.winnt;

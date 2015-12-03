@@ -9,6 +9,7 @@
 \***********************************************************************/
 module win32.wincon;
 version(Windows):
+version = Unicode;
 pragma(lib, "kernel32");
 
 private import win32.w32api, win32.windef;

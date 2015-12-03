@@ -9,6 +9,7 @@
 \***********************************************************************/
 module win32.commdlg;
 version(Windows):
+version = Unicode;
 pragma(lib, "comdlg32");
 
 private import win32.w32api;

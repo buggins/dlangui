@@ -14,6 +14,7 @@
 
 module win32.psapi;
 version(Windows):
+version = Unicode;
 
 private import win32.w32api;
 private import win32.winbase;

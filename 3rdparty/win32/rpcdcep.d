@@ -9,6 +9,7 @@
 \***********************************************************************/
 module win32.rpcdcep;
 version(Windows):
+version = Unicode;
 
 private import win32.basetyps;
 private import win32.w32api;

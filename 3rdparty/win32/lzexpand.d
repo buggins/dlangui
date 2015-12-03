@@ -9,6 +9,7 @@
 \***********************************************************************/
 module win32.lzexpand;
 version(Windows):
+version = Unicode;
 pragma(lib, "lz32");
 
 private import win32.winbase, win32.windef;

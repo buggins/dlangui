@@ -9,6 +9,7 @@
 \***********************************************************************/
 module win32.imm;
 version(Windows):
+version = Unicode;
 pragma(lib, "imm32");
 
 import win32.windef, win32.wingdi;

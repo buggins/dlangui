@@ -9,6 +9,7 @@
 \***********************************************************************/
 module win32.shlobj;
 version(Windows):
+version = Unicode;
 pragma(lib, "shell32");
 
 // TODO: fix bitfields

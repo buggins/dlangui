@@ -17,6 +17,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.platforms.sdl.sdlapp;
 
+public import dlangui.core.config;
 version(USE_SDL):
 import core.runtime;
 import std.conv;

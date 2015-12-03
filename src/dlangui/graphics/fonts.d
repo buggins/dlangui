@@ -42,6 +42,8 @@ License:   Boost License 1.0
 Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.graphics.fonts;
+
+public import dlangui.core.config;
 public import dlangui.graphics.drawbuf;
 public import dlangui.core.types;
 public import dlangui.core.logger;

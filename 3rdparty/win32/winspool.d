@@ -9,6 +9,7 @@
 \***********************************************************************/
 module win32.winspool;
 version(Windows):
+version = Unicode;
 pragma(lib, "winspool");
 
 private import win32.w32api, win32.windef, win32.wingdi;

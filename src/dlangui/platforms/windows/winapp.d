@@ -20,6 +20,8 @@ License:   Boost License 1.0
 Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.platforms.windows.winapp;
+
+public import dlangui.core.config;
 version (USE_SDL) { } 
 else version (USE_DSFML) { } 
 else version (Windows) {
@@ -224,7 +226,7 @@ class Win32Window : Window {
                                     //_gl = new GLSupport();
                                     if (!_glSupport) {
                                         Log.v("Creating OpenGL support");
-                                        _glSupport = new GLSupport();
+                                        _glSupport = new GLSupport(true);
                                         Log.v("OpenGL support created");
                                     }
                                 }

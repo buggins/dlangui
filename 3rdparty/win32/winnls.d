@@ -10,6 +10,7 @@
 \***********************************************************************/
 module win32.winnls;
 version(Windows):
+version = Unicode;
 pragma(lib, "kernel32");
 
 private import win32.basetsd, win32.w32api, win32.winbase, win32.windef;

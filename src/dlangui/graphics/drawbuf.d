@@ -17,6 +17,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.graphics.drawbuf;
 
+public import dlangui.core.config;
 public import dlangui.core.types;
 import dlangui.core.logger;
 import dlangui.graphics.colors;

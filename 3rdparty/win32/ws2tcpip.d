@@ -10,6 +10,7 @@
 
 module win32.ws2tcpip;
 version(Windows):
+version = Unicode;
 
 import win32.w32api;
 //import win32.winbase;

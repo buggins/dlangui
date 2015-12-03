@@ -1,5 +1,6 @@
 ﻿module dlangui.platforms.common.startup;
 
+public import dlangui.core.config;
 public import dlangui.core.events;
 public import dlangui.widgets.styles;
 public import dlangui.graphics.fonts;

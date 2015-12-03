@@ -10,6 +10,7 @@
 \***********************************************************************/
 module win32.winver;
 version(Windows):
+version = Unicode;
 pragma(lib, "version");
 
 private import win32.windef;

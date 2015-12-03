@@ -18,6 +18,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.graphics.gldrawbuf;
 
+public import dlangui.core.config;
 version (USE_OPENGL):
 
 import dlangui.graphics.drawbuf;

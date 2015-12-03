@@ -22,6 +22,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 module dlangui.platforms.windows.win32fonts;
 
 version(Windows):
+public import dlangui.core.config;
 
 import win32.windows;
 import dlangui.graphics.fonts;

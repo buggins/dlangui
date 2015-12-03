@@ -1,5 +1,6 @@
 ﻿module dlangui.platforms.x11.x11app;
 
+public import dlangui.core.config;
 version (USE_X11):
 
 import dlangui.core.logger;

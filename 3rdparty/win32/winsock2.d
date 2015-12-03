@@ -8,6 +8,7 @@
 \***********************************************************************/
 module win32.winsock2;
 version(Windows):
+version = Unicode;
 pragma(lib, "Ws2_32");
 
 /*

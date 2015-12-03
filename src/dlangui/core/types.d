@@ -41,6 +41,8 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.core.types;
 
+public import dlangui.core.config;
+
 import std.algorithm;
 
 /**  2D point */

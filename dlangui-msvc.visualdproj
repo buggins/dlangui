@@ -72,7 +72,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>Unicode  EmbedStandardResources ForceLogs</versionids>
+  <versionids>EmbedStandardResources ForceLogs</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -174,7 +174,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>Unicode  EmbedStandardResources ForceLogs</versionids>
+  <versionids> EmbedStandardResources ForceLogs</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -276,7 +276,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>Unicode  EmbedStandardResources ForceLogs</versionids>
+  <versionids>EmbedStandardResources ForceLogs</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -378,7 +378,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>Unicode  EmbedStandardResources ForceLogs</versionids>
+  <versionids> EmbedStandardResources ForceLogs</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -561,6 +561,7 @@
    <Folder name="dlangui">
     <Folder name="core">
      <File path="src\dlangui\core\collections.d" />
+     <File path="src\dlangui\core\config.d" />
      <File path="src\dlangui\core\editable.d" />
      <File path="src\dlangui\core\events.d" />
      <File path="src\dlangui\core\files.d" />

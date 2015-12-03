@@ -9,6 +9,7 @@
 \***********************************************************************/
 module win32.mmsystem;
 version(Windows):
+version = Unicode;
 pragma(lib, "winmm");
 
 /*	The #defines MAKEFOURCC, mmioFOURCC, sndAlias are used to define
