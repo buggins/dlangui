@@ -216,19 +216,16 @@ class Win32Window : Window {
 
                         if (!DERELICT_GL3_RELOADED) {
                             // run this code only once
+                            if (!_glSupport) {
+                                Log.v("Creating OpenGL support");
+                                _glSupport = new GLSupport(true);
+                                Log.v("OpenGL support created");
+                            }
+
                             DERELICT_GL3_RELOADED = true;
                             try {
                                 import derelict.opengl3.gl3;
                                 DerelictGL3.reload();
-
-                                static if (ENABLE_OPENGL) {
-                                    //_gl = new GLSupport();
-                                    if (!_glSupport) {
-                                        Log.v("Creating OpenGL support");
-                                        _glSupport = new GLSupport(true);
-                                        Log.v("OpenGL support created");
-                                    }
-                                }
 
                                 // successful
                                 Log.v("initializing shaders");
@@ -309,6 +306,7 @@ class Win32Window : Window {
             buf.afterDrawing();
             SwapBuffers(hdc);
             wglMakeCurrent(hdc, null);
+            destroy(buf);
         }
     }
 
@@ -999,6 +997,8 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
     static if (ENABLE_OPENGL) {
         try {
             import derelict.opengl3.gl3;
+            import derelict.opengl3.gl;
+            DerelictGL.load();
             DerelictGL3.load();
             //
             //// just to check OpenGL context
