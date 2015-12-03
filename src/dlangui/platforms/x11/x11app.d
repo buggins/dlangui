@@ -22,9 +22,10 @@ import x11.Xutil;
 import x11.Xtos;
 import x11.X;
 
-pragma(lib, "X11");
+//pragma(lib, "X11");
 
 private __gshared Display * x11display;
+private __gshared Display * x11display2;
 private __gshared int x11screen;
 private __gshared XIM xim;
 
@@ -36,7 +37,90 @@ private __gshared Atom   atom_UTF8_STRING;
 private __gshared Atom   atom_CLIPBOARD;
 private __gshared Atom   atom_TARGETS;
 
+private __gshared Atom   atom_DLANGUI_TIMER_EVENT;
+private __gshared Atom   atom_DLANGUI_TASK_EVENT;
+
 private __gshared Cursor[CursorType.Hand + 1] x11cursors;
+// Cursor font constants
+enum {
+	XC_X_cursor=0,
+	XC_arrow=2,
+	XC_based_arrow_down=4,
+	XC_based_arrow_up=6,
+	XC_boat = 8,
+	XC_bogosity = 10,
+	XC_bottom_left_corner=12,
+	XC_bottom_right_corner=14,
+	XC_bottom_side=16,
+	XC_bottom_tee=18,
+	XC_box_spiral=20,
+	XC_center_ptr=22,
+	XC_circle=24,
+	XC_clock=26,
+	XC_coffee_mug=28,
+	XC_cross=30,
+	XC_cross_reverse=32,
+	XC_crosshair=34,
+	XC_diamond_cross=36,
+	XC_dot=38,
+	XC_dotbox=40,
+	XC_double_arrow=42,
+	XC_draft_large=44,
+	XC_draft_small=46,
+	XC_draped_box=48,
+	XC_exchange=50,
+	XC_fleur=52,
+	XC_gobbler=54,
+	XC_gumby=56,
+	XC_hand1=58,
+	XC_hand2=60,
+	XC_heart=62,
+	XC_icon=64,
+	XC_iron_cross=66,
+	XC_left_ptr=68,
+	XC_left_side=70,
+	XC_left_tee=72,
+	XC_leftbutton=74,
+	XC_ll_angle=76,
+	XC_lr_angle=78,
+	XC_man=80,
+	XC_middlebutton=82,
+	XC_mouse=84,
+	XC_pencil=86,
+	XC_pirate=88,
+	XC_plus=90,
+	XC_question_arrow=92,
+	XC_right_ptr=94,
+	XC_right_side=96,
+	XC_right_tee=98,
+	XC_rightbutton=100,
+	XC_rtl_logo=102,
+	XC_sailboat=104,
+	XC_sb_down_arrow=106,
+	XC_sb_h_double_arrow=108,
+	XC_sb_left_arrow=110,
+	XC_sb_right_arrow=112,
+	XC_sb_up_arrow=114,
+	XC_sb_v_double_arrow=116,
+	XC_shuttle=118,
+	XC_sizing=120,
+	XC_spider=122,
+	XC_spraycan=124,
+	XC_star=126,
+	XC_target=128,
+	XC_tcross=130,
+	XC_top_left_arrow=132,
+	XC_top_left_corner=134,
+	XC_top_right_corner=136,
+	XC_top_side=138,
+	XC_top_tee=140,
+	XC_trek=142,
+	XC_ul_angle=144,
+	XC_umbrella=146,
+	XC_ur_angle=148,
+	XC_watch=150,
+	XC_xterm=152,
+}
 
 private GC createGC(Display* display, XWindow win)
 {
@@ -202,11 +286,25 @@ class X11Window : DWindow {
 	}
 	/// request window redraw
 	override void invalidate() {
+		Log.d("Window.invalidate()");
 		XEvent ev;
+		core.stdc.string.memset(&ev, 0, ev.sizeof);
 		ev.type = Expose;
 		ev.xexpose.window = _win;
-		XSendEvent(x11display, _win, false, ExposureMask, &ev);
-		XFlush(x11display);
+
+		static if (true) {
+			//ev.xclient.display = x11display2;
+			//ev.xclient.message_type = atom_DLANGUI_TASK_EVENT;
+			//ev.xclient.format = 32;
+			//ev.xclient.data.l[0] = event.uniqueId;
+			XLockDisplay(x11display2);
+			XSendEvent(x11display2, _win, false, StructureNotifyMask, &ev);
+			XFlush(x11display2);
+			XUnlockDisplay(x11display2);
+		} else {
+			XSendEvent(x11display, _win, false, ExposureMask, &ev);
+			XFlush(x11display);
+		}
 	}
 
 	/// close window
@@ -256,14 +354,14 @@ class X11Window : DWindow {
 	void processExpose() {
 		XWindowAttributes window_attributes_return;
 		XGetWindowAttributes(x11display, _win, &window_attributes_return);
-		Log.d(format("XGetWindowAttributes reported size %d, %d", window_attributes_return.width, window_attributes_return.height));
+		//Log.d(format("XGetWindowAttributes reported size %d, %d", window_attributes_return.width, window_attributes_return.height));
 		int width = window_attributes_return.width;
 		int height = window_attributes_return.height;
 		if (width > 0 && height > 0)
 			onResize(width, height);
 		Log.d(format("processExpose(%d, %d)", width, height));
-
 		drawUsingBitmap();
+		//Log.d("processExpose - drawing finished");
 
 	}
 
@@ -349,7 +447,8 @@ class X11Window : DWindow {
 			bool res = dispatchMouseEvent(event);
 			if (res) {
 				debug(mouse) Log.d("Calling update() after mouse event");
-				invalidate();
+				update();
+				//invalidate();
 			}
 		}
 	}
@@ -651,7 +750,8 @@ class X11Window : DWindow {
 		//			}
 		if (res) {
 			debug(keys) Log.d("Calling update() after key event");
-			invalidate();
+			//invalidate();
+			update();
 		}
 		return res;
 	}
@@ -665,7 +765,12 @@ class X11Window : DWindow {
 		}
 		return res;
 	}
-	
+
+	/// after drawing, call to schedule redraw if animation is active
+	override void scheduleAnimation() {
+		invalidate();
+	}
+
 	TimerThread timer;
 	private long _nextExpectedTimerTs;
 
@@ -678,11 +783,15 @@ class X11Window : DWindow {
 				core.stdc.string.memset(&ev, 0, ev.sizeof);
 				//ev.xclient = XClientMessageEvent.init;
 				ev.xclient.type = ClientMessage;
+				ev.xclient.message_type = atom_DLANGUI_TIMER_EVENT;
 				ev.xclient.window = _win;
-				ev.xclient.display = x11display;
-				ev.xclient.format = TIMER_EVENT;
+				ev.xclient.display = x11display2;
+				ev.xclient.format = 32;
 				Log.d("Sending timer event");
-				XSendEvent(x11display, _win, false, StructureNotifyMask, &ev);
+				XLockDisplay(x11display2);
+				XSendEvent(x11display2, _win, false, StructureNotifyMask, &ev);
+				XFlush(x11display2);
+				XUnlockDisplay(x11display2);
 			});
 		}
 		if (intervalMillis < 10)
@@ -710,11 +819,17 @@ class X11Window : DWindow {
 	override void postEvent(CustomEvent event) {
 		super.postEvent(event);
 		XEvent ev;
+		core.stdc.string.memset(&ev, 0, ev.sizeof);
 		ev.xclient.type = ClientMessage;
 		ev.xclient.window = _win;
-		ev.xclient.format = CUSTOM_EVENT;
+		ev.xclient.display = x11display2;
+		ev.xclient.message_type = atom_DLANGUI_TASK_EVENT;
+		ev.xclient.format = 32;
 		ev.xclient.data.l[0] = event.uniqueId;
-		XSendEvent(x11display, _win, false, StructureNotifyMask, &ev);
+		XLockDisplay(x11display2);
+		XSendEvent(x11display2, _win, false, StructureNotifyMask, &ev);
+		XFlush(x11display2);
+		XUnlockDisplay(x11display2);
 		//		SDL_Event sdlevent;
 //		sdlevent.user.type = USER_EVENT_ID;
 //		sdlevent.user.code = cast(int)event.uniqueId;
@@ -722,10 +837,15 @@ class X11Window : DWindow {
 //		SDL_PushEvent(&sdlevent);
 	}
 
+	protected uint _lastCursorType = CursorType.None;
 	/// sets cursor type for window
 	override protected void setCursorType(uint cursorType) {
-		XDefineCursor(x11display, _win, x11cursors[cursorType]);
-		XFlush(x11display);
+		if (_lastCursorType != cursorType) {
+			Log.d("setCursorType(", cursorType, ")");
+			_lastCursorType = cursorType;
+			XDefineCursor(x11display, _win, x11cursors[cursorType]);
+			XFlush(x11display);
+		}
 	}
 }
 
@@ -805,15 +925,16 @@ class X11Platform : Platform {
 			*/
 			//bool timersHandled = handleTimers();
 			//if (timersHandled)
-			//	XFlush(x11display);
-			while (XEventsQueued(x11display, QueuedAfterFlush)) {//QueuedAfterFlush
+			//XFlush(x11display);
+			//while (XEventsQueued(x11display, QueuedAfterFlush)) {//QueuedAfterFlush
+			{
 				//Thread.sleep(dur!("msecs")(10));
 				//continue;
 				XNextEvent(x11display, &event);
 
 				switch (event.type) {
 					case Expose:
-						if (event.xexpose.count==0) {
+						if (event.xexpose.count == 0) {
 							/* the window was exposed redraw it! */
 							//redraw();
 							X11Window w = findWindow(event.xexpose.window);
@@ -863,7 +984,7 @@ class X11Platform : Platform {
 							} catch (UTFException e) {
 								// ignore, invalid text
 							}
-							Log.d("X11: KeyPress event bytes=", txt.length, " text=", txt, " dtext=", dtext);
+							debug(x11) Log.d("X11: KeyPress event bytes=", txt.length, " text=", txt, " dtext=", dtext);
 							if (dtext.length) {
 								w.processTextInput(dtext, event.xkey.state);
 							} else {
@@ -910,10 +1031,9 @@ class X11Platform : Platform {
 						}
 						break;
 					case MotionNotify:
-						Log.d("X11: MotionNotify event");
+						debug(x11) Log.d("X11: MotionNotify event");
 						X11Window w = findWindow(event.xmotion.window);
 						if (w) {
-							//w.processExpose();
 							w.processMouseEvent(MouseAction.Move, 0, event.xmotion.state, event.xmotion.x, event.xmotion.y);
 						} else {
 							Log.e("Window not found");
@@ -924,8 +1044,6 @@ class X11Platform : Platform {
 						X11Window w = findWindow(event.xcrossing.window);
 						if (w) {
 							w.processMouseEvent(MouseAction.FocusIn, 0, event.xcrossing.state, event.xcrossing.x, event.xcrossing.y);
-
-							//w.processExpose();
 						} else {
 							Log.e("Window not found");
 						}
@@ -994,12 +1112,12 @@ class X11Platform : Platform {
 						}
 						break;
 					case ClientMessage:
-						Log.d("X11: ClientMessage event");
+						debug(x11) Log.d("X11: ClientMessage event");
 						X11Window w = findWindow(event.xclient.window);
 						if (w) {
-							if (event.xclient.format == CUSTOM_EVENT) {
+							if (event.xclient.message_type == atom_DLANGUI_TASK_EVENT) {
 								w.handlePostedEvent(cast(uint)event.xclient.data.l[0]);
-							} else if (event.xclient.format == TIMER_EVENT) {
+							} else if (event.xclient.message_type == atom_DLANGUI_TIMER_EVENT) {
 								w.handleTimer();
 							}
 						} else {
@@ -1076,11 +1194,14 @@ class TimerThread : Thread {
 			mutex.lock();
 
 			long ts = currentTimeMillis;
-			long timeToWait = nextEventTs == 0 ? 1000 : nextEventTs - ts;
+			long timeToWait = nextEventTs == 0 ? 1000000 : nextEventTs - ts;
 			if (timeToWait < 10)
 				timeToWait = 10;
 
-			condition.wait(dur!"msecs"(timeToWait));
+			if (nextEventTs == 0)
+				condition.wait();
+			else
+				condition.wait(dur!"msecs"(timeToWait));
 
 			if (stopped) {
 				mutex.unlock();
@@ -1109,86 +1230,6 @@ class TimerThread : Thread {
 	}
 }
 
-enum {
-    XC_X_cursor=0,
-    XC_arrow=2,
-    XC_based_arrow_down=4,
-    XC_based_arrow_up=6,
-    XC_boat = 8,
-    XC_bogosity = 10,
-    XC_bottom_left_corner=12,
-    XC_bottom_right_corner=14,
-    XC_bottom_side=16,
-    XC_bottom_tee=18,
-    XC_box_spiral=20,
-    XC_center_ptr=22,
-    XC_circle=24,
-    XC_clock=26,
-    XC_coffee_mug=28,
-    XC_cross=30,
-    XC_cross_reverse=32,
-    XC_crosshair=34,
-    XC_diamond_cross=36,
-    XC_dot=38,
-    XC_dotbox=40,
-    XC_double_arrow=42,
-    XC_draft_large=44,
-    XC_draft_small=46,
-    XC_draped_box=48,
-    XC_exchange=50,
-    XC_fleur=52,
-    XC_gobbler=54,
-    XC_gumby=56,
-    XC_hand1=58,
-    XC_hand2=60,
-    XC_heart=62,
-    XC_icon=64,
-    XC_iron_cross=66,
-    XC_left_ptr=68,
-    XC_left_side=70,
-    XC_left_tee=72,
-    XC_leftbutton=74,
-    XC_ll_angle=76,
-    XC_lr_angle=78,
-    XC_man=80,
-    XC_middlebutton=82,
-    XC_mouse=84,
-    XC_pencil=86,
-    XC_pirate=88,
-    XC_plus=90,
-    XC_question_arrow=92,
-    XC_right_ptr=94,
-    XC_right_side=96,
-    XC_right_tee=98,
-    XC_rightbutton=100,
-    XC_rtl_logo=102,
-    XC_sailboat=104,
-    XC_sb_down_arrow=106,
-    XC_sb_h_double_arrow=108,
-    XC_sb_left_arrow=110,
-    XC_sb_right_arrow=112,
-    XC_sb_up_arrow=114,
-    XC_sb_v_double_arrow=116,
-    XC_shuttle=118,
-    XC_sizing=120,
-    XC_spider=122,
-    XC_spraycan=124,
-    XC_star=126,
-    XC_target=128,
-    XC_tcross=130,
-    XC_top_left_arrow=132,
-    XC_top_left_corner=134,
-    XC_top_right_corner=136,
-    XC_top_side=138,
-    XC_top_tee=140,
-    XC_trek=142,
-    XC_ul_angle=144,
-    XC_umbrella=146,
-    XC_ur_angle=148,
-    XC_watch=150,
-    XC_xterm=152,
-}
-
 extern(C) int DLANGUImain(string[] args)
 {
 	initLogs();
@@ -1215,12 +1256,19 @@ extern(C) int DLANGUImain(string[] args)
 		Log.e("Cannot open X11 display");
 		return 1;
 	}
+	x11display2 = XOpenDisplay(null);
+	if (!x11display2) {
+		Log.e("Cannot open secondary connection for X11 display");
+		return 1;
+	}
 
 	x11screen = DefaultScreen(x11display);
 
 	atom_UTF8_STRING = XInternAtom(x11display, "UTF8_STRING", False);
 	atom_CLIPBOARD   = XInternAtom(x11display, "CLIPBOARD", False);
 	atom_TARGETS     = XInternAtom(x11display, "TARGETS", False);
+	atom_DLANGUI_TIMER_EVENT     = XInternAtom(x11display, "DLANGUI_TIMER_EVENT", False);
+	atom_DLANGUI_TASK_EVENT     = XInternAtom(x11display, "DLANGUI_TASK_EVENT", False);
 
 	x11cursors[CursorType.None] = XCreateFontCursor(x11display, XC_arrow);
 	x11cursors[CursorType.Parent] = XCreateFontCursor(x11display, XC_arrow);
@@ -1266,6 +1314,7 @@ extern(C) int DLANGUImain(string[] args)
 
 
 	XCloseDisplay(x11display);	
+	XCloseDisplay(x11display2);	
 
 	Log.d("Exiting main width result=", res);
 	
