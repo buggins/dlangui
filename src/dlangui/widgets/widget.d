@@ -271,12 +271,12 @@ class Widget {
     /// override to handle focus changes
     protected void handleFocusChange(bool focused) {
         invalidate();
-		onFocusChangeListener(this, focused);
+		focusChange(this, focused);
     }
     /// override to handle check changes
     protected void handleCheckChange(bool checked) {
         invalidate();
-		onCheckChangeListener(this, checked);
+		checkChange(this, checked);
     }
     /// set new widget state (set of flags from State enum)
     @property Widget state(uint newState) {
@@ -1047,8 +1047,8 @@ class Widget {
     // called to process click and notify listeners
     protected bool handleClick() {
         bool res = false;
-        if (onClickListener.assigned)
-            res = onClickListener(this);
+        if (click.assigned)
+            res = click(this);
         else if (_action) {
             return dispatchAction(_action);
         }
@@ -1085,7 +1085,7 @@ class Widget {
 
     /// process key event, return true if event is processed.
     bool onKeyEvent(KeyEvent event) {
-        if (onKeyListener.assigned && onKeyListener(this, event))
+        if (keyEvent.assigned && keyEvent(this, event))
             return true; // processed by external handler
 		if (event.action == KeyAction.KeyDown) {
 			Action action = findKeyAction(event.keyCode, event.flags & (KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Control));
@@ -1137,7 +1137,7 @@ class Widget {
 
     /// process mouse event; return true if event is processed by widget.
     bool onMouseEvent(MouseEvent event) {
-        if (onMouseListener.assigned && onMouseListener(this, event))
+        if (mouseEvent.assigned && mouseEvent(this, event))
             return true; // processed by external handler
         //Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
 		// support onClick
@@ -1205,44 +1205,34 @@ class Widget {
 
 	/// on click event listener (bool delegate(Widget))
     Signal!OnClickHandler click;
-    /// click signal alias for backward compatibility; will be deprecated in future
-    alias onClickListener = click;
 
 	/// checked state change event listener (bool delegate(Widget, bool))
     Signal!OnCheckHandler checkChange;
-    /// checkChange signal alias for backward compatibility; will be deprecated in future
-    alias onCheckChangeListener = checkChange;
 
 	/// focus state change event listener (bool delegate(Widget, bool))
     Signal!OnFocusHandler focusChange;
-    /// focusChange signal alias for backward compatibility; will be deprecated in future
-    alias onFocusChangeListener = focusChange;
 
 	/// key event listener (bool delegate(Widget, KeyEvent)) - return true if event is processed by handler
     Signal!OnKeyHandler keyEvent;
-    /// keyEvent signal alias for backward compatibility; will be deprecated in future
-    alias onKeyListener = keyEvent;
 
 	/// mouse event listener (bool delegate(Widget, MouseEvent)) - return true if event is processed by handler
     Signal!OnMouseHandler mouseEvent;
-    /// mouseEvent signal alias for backward compatibility; will be deprecated in future
-    alias onMouseListener = mouseEvent;
 
     /// helper function to add onCheckChangeListener in method chain
     Widget addOnClickListener(bool delegate(Widget) listener) {
-        onClickListener.connect(listener);
+        click.connect(listener);
         return this;
     }
 
     /// helper function to add onCheckChangeListener in method chain
     Widget addOnCheckChangeListener(bool delegate(Widget, bool) listener) {
-        onCheckChangeListener.connect(listener);
+        checkChange.connect(listener);
         return this;
     }
 
     /// helper function to add onFocusChangeListener in method chain
     Widget addOnFocusChangeListener(bool delegate(Widget, bool) listener) {
-        onFocusChangeListener.connect(listener);
+        focusChange.connect(listener);
         return this;
     }
 

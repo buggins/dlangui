@@ -16,7 +16,7 @@ Getting Started Tutorial: [https://github.com/buggins/dlangui/wiki/Getting-Start
 Screenshots: [http://buggins.github.io/dlangui/screenshots.html](http://buggins.github.io/dlangui/screenshots.html)
 
 
-WARNING: recent breaking change: when specifying dlangui library as DUB dependency, use "dlangui" instead of "dlangui:dlanguilib".
+WARNING: recent breaking change: some event listeners were renamed, e.g. onClickListener -> click, onFocusChangeListener -> focusChange...
 
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/buggins/dlangui?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)  [![Build Status](https://travis-ci.org/buggins/dlangui.svg?branch=master)](https://travis-ci.org/buggins/dlangui) [![PayPayl donate button](https://img.shields.io/badge/paypal-donate-yellow.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KPSNU8TYF6M5N "Donate once-off to this project using Paypal")

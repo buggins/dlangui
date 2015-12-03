@@ -312,17 +312,17 @@ class EditFrame : AppFrame {
         auto cbFillHorizontal = new CheckBox(null, "Fill Horizontal"d);
         auto cbFillVertical = new CheckBox(null, "Fill Vertical"d);
         auto cbHighlightBackground = new CheckBox(null, "Background"d);
-        cbFillHorizontal.onCheckChangeListener = delegate(Widget source, bool checked) {
+        cbFillHorizontal.checkChange = delegate(Widget source, bool checked) {
             _fillHorizontal = checked;
             updatePreview();
             return true;
         };
-        cbFillVertical.onCheckChangeListener = delegate(Widget source, bool checked) {
+        cbFillVertical.checkChange = delegate(Widget source, bool checked) {
             _fillVertical = checked;
             updatePreview();
             return true;
         };
-        cbHighlightBackground.onCheckChangeListener = delegate(Widget source, bool checked) {
+        cbHighlightBackground.checkChange = delegate(Widget source, bool checked) {
             _highlightBackground = checked;
             updatePreview();
             return true;

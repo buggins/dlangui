@@ -95,7 +95,7 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         ImageButton res = new ImageButton("COMBOBOX_BUTTON", "scrollbar_btn_down");
         res.styleId = STYLE_COMBO_BOX_BUTTON;
 		res.layoutWeight = 0;
-        res.onClickListener = this;
+        res.click = this;
         res.alignment = Align.VCenter | Align.Right;
         return res;
     }
@@ -164,7 +164,7 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
 
 	protected void init() {
         _body = createSelectedItemWidget();
-        _body.onClickListener = this;
+        _body.click = this;
         _button = createButton();
         //_body.state = State.Parent;
         //focusable = true;
@@ -284,7 +284,7 @@ class ComboBox : ComboBoxBase {
 		_body.clickable = true;
 		focusable = true;
 		clickable = true;
-		onClickListener = this;
+		click = this;
 	}
 
     override protected Widget createSelectedItemWidget() {

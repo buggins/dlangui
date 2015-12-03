@@ -641,16 +641,16 @@ class ScrollBar : AbstractSlider, OnClickHandler {
                 return true;
             }
             if (event.action == MouseAction.FocusOut && _dragging) {
-                Log.d("ScrollBar slider dragging - FocusOut");
+                debug(scrollbar) Log.d("ScrollBar slider dragging - FocusOut");
                 return true;
             }
             if (event.action == MouseAction.FocusIn && _dragging) {
-                Log.d("ScrollBar slider dragging - FocusIn");
+                debug(scrollbar) Log.d("ScrollBar slider dragging - FocusIn");
                 return true;
             }
             if (event.action == MouseAction.Move && _dragging) {
                 int delta = _orientation == Orientation.Vertical ? event.y - _dragStart.y : event.x - _dragStart.x;
-                Log.d("ScrollBar slider dragging - Move delta=", delta);
+                debug(scrollbar) Log.d("ScrollBar slider dragging - Move delta=", delta);
                 Rect rc = _dragStartRect;
                 int offset;
                 int space;
@@ -696,25 +696,25 @@ class ScrollBar : AbstractSlider, OnClickHandler {
             }
             if (event.action == MouseAction.Move && trackHover) {
                 if (!(state & State.Hovered)) {
-                    Log.d("Hover ", id);
+                    debug(scrollbar) Log.d("Hover ", id);
                     setState(State.Hovered);
                 }
 	            return true;
             }
             if (event.action == MouseAction.Leave && trackHover) {
-                Log.d("Leave ", id);
+                debug(scrollbar) Log.d("Leave ", id);
 	            resetState(State.Hovered);
 	            return true;
             }
             if (event.action == MouseAction.Cancel && trackHover) {
-                Log.d("Cancel ? trackHover", id);
+                debug(scrollbar) Log.d("Cancel ? trackHover", id);
 	            resetState(State.Hovered);
                 resetState(State.Pressed);
                 _dragging = false;
 	            return true;
             }
             if (event.action == MouseAction.Cancel) {
-                Log.d("SliderButton.onMouseEvent event.action == MouseAction.Cancel");
+                debug(scrollbar) Log.d("SliderButton.onMouseEvent event.action == MouseAction.Cancel");
                 resetState(State.Pressed);
                 _dragging = false;
                 return true;
@@ -814,10 +814,10 @@ class ScrollBar : AbstractSlider, OnClickHandler {
 		_indicator.focusable = false;
 		_pageUp.focusable = false;
 		_pageDown.focusable = false;
-        _btnBack.onClickListener = &onClick;
-        _btnForward.onClickListener = &onClick;
-        _pageUp.onClickListener = &onClick;
-        _pageDown.onClickListener = &onClick;
+        _btnBack.click = &onClick;
+        _btnForward.click = &onClick;
+        _pageUp.click = &onClick;
+        _pageDown.click = &onClick;
     }
 
     override void measure(int parentWidth, int parentHeight) { 

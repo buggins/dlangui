@@ -108,7 +108,7 @@ class TabItemWidget : HorizontalLayout {
         _closeButton.styleId = STYLE_BUTTON_TRANSPARENT;
         _closeButton.drawableId = "close";
 		_closeButton.trackHover = true;
-        _closeButton.onClickListener = &onClick;
+        _closeButton.click = &onClick;
         if (!_enableCloseButton) {
             _closeButton.visibility = Visibility.Gone;
         } else {
@@ -248,7 +248,7 @@ class TabControl : WidgetGroupDefaultDrawing {
         _items = new TabItemList();
         _moreButton = new ImageButton("MORE", "tab_more");
         _moreButton.styleId = STYLE_BUTTON_TRANSPARENT;
-        _moreButton.onClickListener = &onClick;
+        _moreButton.click = &onClick;
         _moreButton.margins(Rect(3,3,3,6));
         _enableCloseButton = true;
         styleId = _tabStyle;
@@ -387,7 +387,7 @@ class TabControl : WidgetGroupDefaultDrawing {
         _items.insert(item, index);
         TabItemWidget widget = new TabItemWidget(item, enableCloseButton);
         widget.parent = this;
-        widget.onClickListener = &onClick;
+        widget.click = &onClick;
         widget.setStyles(_tabButtonStyle, _tabButtonTextStyle);
         widget.onTabCloseListener = &onTabClose;
         _children.insert(widget, index);

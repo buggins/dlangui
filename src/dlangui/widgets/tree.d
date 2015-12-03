@@ -558,13 +558,13 @@ class TreeItemWidget : HorizontalLayout {
             _expander.visibility = _item.hasChildren ? Visibility.Visible : Visibility.Invisible;
             //_expander.setState(State.Parent);
 
-            _expander.onClickListener = delegate(Widget source) {
+            _expander.click = delegate(Widget source) {
                 _item.selectItem(_item);
                 _item.toggleExpand(_item);
                 return true;
             };
         }
-        onClickListener = delegate(Widget source) {
+        click = delegate(Widget source) {
             long ts = currentTimeMillis();
             _item.selectItem(_item);
             if (ts - lastClickTime < DOUBLE_CLICK_TIME_MS) {
@@ -598,7 +598,7 @@ class TreeItemWidget : HorizontalLayout {
     }
 
     override bool onKeyEvent(KeyEvent event) {
-        if (onKeyListener.assigned && onKeyListener(this, event))
+        if (keyEvent.assigned && keyEvent(this, event))
             return true; // processed by external handler
         if (!focused || !visible)
             return false;
@@ -729,7 +729,7 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
     /** Override to use custom tree item widgets. */
     protected Widget createItemWidget(TreeItem item) {
         TreeItemWidget res = new TreeItemWidget(item);
-        res.onKeyListener = this;
+        res.keyEvent = this;
         res.popupMenuListener = &onTreeItemPopupMenu;
         return res;
     }

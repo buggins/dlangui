@@ -33,7 +33,7 @@ Widget createAboutWidget()
 	res.addChild(new TextWidget(null, "(C) Vadim Lopatin, 2014"d));
 	res.addChild(new TextWidget(null, "http://github.com/buggins/dlangui"d));
 	Button closeButton = new Button("close", "Close"d);
-	closeButton.onClickListener = delegate(Widget src) {
+	closeButton.click = delegate(Widget src) {
 		Log.i("Closing window");
 		res.window.close();
 		return true;
@@ -521,7 +521,7 @@ class StatusWidget : VerticalLayout {
 
         ImageWidget image = new ImageWidget(null, "tetris_logo_big");
         image.layoutWidth(FILL_PARENT).alignment(Align.Center).clickable(true);
-        image.onClickListener = delegate(Widget src) {
+        image.click = delegate(Widget src) {
             _cup.handleAction(ACTION_PAUSE);
             // about dialog when clicking on image
             Window wnd = Platform.instance.createWindow("About...", window, WindowFlag.Modal);

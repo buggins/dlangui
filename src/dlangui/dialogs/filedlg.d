@@ -438,13 +438,13 @@ class FilePathPanelItem : HorizontalLayout {
         _text = new TextWidget(null, toUTF32(fname));
 		_text.styleId = STYLE_BUTTON_TRANSPARENT;
         _text.clickable = true;
-        _text.onClickListener = &onTextClick;
+        _text.click = &onTextClick;
 		//_text.backgroundColor = 0xC0FFFF;
 		_text.state = State.Parent;
         _button = new ImageButton(null, "scrollbar_btn_right");
 		_button.styleId = STYLE_BUTTON_TRANSPARENT;
         _button.focusable = false;
-        _button.onClickListener = &onButtonClick;
+        _button.click = &onButtonClick;
 		//_button.backgroundColor = 0xC0FFC0;
 		_button.state = State.Parent;
 		trackHover(true);
@@ -619,8 +619,8 @@ class FilePathPanel : FrameLayout {
 		_edPath = new EditLine(ID_EDITOR);
 		_edPath.layoutWidth = FILL_PARENT;
 		_edPath.editorActionListener = &onEditorAction;
-		_edPath.onFocusChangeListener = &onEditorFocusChanged;
-		_segments.onClickListener = &onSegmentsClickOutside;
+		_edPath.focusChange = &onEditorFocusChanged;
+		_segments.click = &onSegmentsClickOutside;
 		_segments.onPathSelectionListener = &onPathSelected;
 		addChild(_segments);
 		addChild(_edPath);

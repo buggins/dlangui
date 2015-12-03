@@ -49,12 +49,12 @@ extern (C) int UIAppMain(string[] args) {
     auto edit1 = window.mainWidget.childById!EditLine("edit1");
     auto edit2 = window.mainWidget.childById!EditLine("edit2");
     // close window on Cancel button click
-    window.mainWidget.childById!Button("btnCancel").onClickListener = delegate(Widget w) {
+    window.mainWidget.childById!Button("btnCancel").click = delegate(Widget w) {
         window.close();
         return true;
     };
     // show message box with content of editors
-    window.mainWidget.childById!Button("btnOk").onClickListener = delegate(Widget w) {
+    window.mainWidget.childById!Button("btnOk").click = delegate(Widget w) {
         window.showMessageBox(UIString("Ok button pressed"d), 
                               UIString("Editors content\nEdit1: "d ~ edit1.text ~ "\nEdit2: "d ~ edit2.text));
         return true;

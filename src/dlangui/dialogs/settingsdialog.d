@@ -54,7 +54,7 @@ class CheckboxItem : SettingsItem {
         CheckBox res = new CheckBox(_id, _label);
         Setting setting = settings.settingByPath(_id, SettingType.FALSE);
         res.checked = setting.boolean ^ _inverse;
-        res.onCheckChangeListener = delegate(Widget source, bool checked) {
+        res.checkChange = delegate(Widget source, bool checked) {
             setting.boolean = checked ^ _inverse;
             return true;
         };
