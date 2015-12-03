@@ -876,7 +876,7 @@ void main()
 		CanvasWidget canvas = new CanvasWidget("canvas");
 		canvas.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
 		canvas.onDrawListener = delegate(CanvasWidget canvas, DrawBuf buf, Rect rc) {
-            Log.w("canvas.onDrawListener clipRect=" ~ to!string(buf.clipRect));
+            //Log.w("canvas.onDrawListener clipRect=" ~ to!string(buf.clipRect));
 			buf.fill(0xFFFFFF);
 			int x = rc.left;
 			int y = rc.top;
