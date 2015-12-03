@@ -9,18 +9,18 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.graphics.ftfonts;
 
-public import dlangui.core.config;
+import dlangui.core.config;
 static if (ENABLE_FREETYPE):
 
 import dlangui.graphics.fonts;
 
 import derelict.freetype.ft;
-private import dlangui.core.logger;
-private import dlangui.core.collections;
-private import std.algorithm;
-private import std.file;
-private import std.string;
-private import std.utf;
+import dlangui.core.logger;
+import dlangui.core.collections;
+import std.algorithm;
+import std.file;
+import std.string;
+import std.utf;
 
 /// define debug=FontResources for logging of font file resources creation/freeing
 //debug = FontResources;

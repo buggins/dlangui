@@ -404,6 +404,7 @@
     <Compile Include="deps\x11\source\x11\extensions\Xrender.d" />
     <Compile Include="src\dlangui\platforms\x11\x11app.d" />
     <Compile Include="src\dlangui\platforms\common\startup.d" />
+    <Compile Include="src\dlangui\core\config.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\dlangui\platforms\x11\" />

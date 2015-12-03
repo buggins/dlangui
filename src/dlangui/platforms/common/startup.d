@@ -1,15 +1,13 @@
 ﻿module dlangui.platforms.common.startup;
 
-public import dlangui.core.config;
-public import dlangui.core.events;
-public import dlangui.widgets.styles;
-public import dlangui.graphics.fonts;
-public import dlangui.graphics.resources;
-public import dlangui.widgets.widget;
+import dlangui.core.config;
+import dlangui.core.events;
+import dlangui.widgets.styles;
+import dlangui.graphics.fonts;
+import dlangui.graphics.resources;
+import dlangui.widgets.widget;
 
-static if (ENABLE_FREETYPE) {
-	public import dlangui.graphics.ftfonts;
-}
+import dlangui.graphics.ftfonts;
 
 version (Windows) {
 	
