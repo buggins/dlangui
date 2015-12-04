@@ -422,8 +422,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 	override bool canShowPopupMenu(int x, int y) {
 		if (_popupMenu is null)
 			return false;
-		if (_popupMenu.onBeforeOpeningSubmenu.assigned)
-			if (!_popupMenu.onBeforeOpeningSubmenu(_popupMenu))
+		if (_popupMenu.openingSubmenu.assigned)
+			if (!_popupMenu.openingSubmenu(_popupMenu))
 				return false;
 		return true;
 	}
@@ -461,12 +461,12 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 	/// shows popup at (x,y)
 	override void showPopupMenu(int x, int y) {
 		/// if preparation signal handler assigned, call it; don't show popup if false is returned from handler
-		if (_popupMenu.onBeforeOpeningSubmenu.assigned)
-			if (!_popupMenu.onBeforeOpeningSubmenu(_popupMenu))
+		if (_popupMenu.openingSubmenu.assigned)
+			if (!_popupMenu.openingSubmenu(_popupMenu))
 				return;
 		_popupMenu.updateActionState(this);
 		PopupMenu popupMenu = new PopupMenu(_popupMenu);
-		popupMenu.onMenuItemActionListener = this;
+		popupMenu.menuItemAction = this;
 		PopupWidget popup = window.showPopup(popupMenu, this, PopupAlign.Point | PopupAlign.Right, x, y);
 		popup.flags = PopupFlags.CloseOnClickOutside;
 	}
@@ -1504,7 +1504,7 @@ interface EditorActionHandler {
 /// single line editor
 class EditLine : EditWidgetBase {
 
-	Signal!EditorActionHandler editorActionListener;
+	Signal!EditorActionHandler editorAction;
 
     /// empty parameter list constructor - for usage by factory
     this() {
@@ -1595,8 +1595,8 @@ class EditLine : EditWidgetBase {
 			case EditorActions.InsertNewLine:
 			case EditorActions.PrependNewLine:
 			case EditorActions.AppendNewLine:
-				if (editorActionListener.assigned) {
-					return editorActionListener(a);
+				if (editorAction.assigned) {
+					return editorAction(a);
 				}
 				break;
             case EditorActions.Up:

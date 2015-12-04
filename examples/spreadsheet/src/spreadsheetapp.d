@@ -139,7 +139,7 @@ class EditFrame : AppFrame {
 					FileDialog dlg = createFileDialog(caption, false);
 					dlg.addFilter(FileFilterEntry(UIString("DML files"d), "*.dml"));
 					dlg.addFilter(FileFilterEntry(UIString("All files"d), "*.*"));
-					dlg.onDialogResult = delegate(Dialog dlg, const Action result) {
+					dlg.dialogResult = delegate(Dialog dlg, const Action result) {
 						if (result.id == ACTION_OPEN.id) {
 							string filename = result.stringParam;
 							//_editor.text=""d;
@@ -158,7 +158,7 @@ class EditFrame : AppFrame {
 					FileDialog dlg = createFileDialog(caption, false);
 					dlg.addFilter(FileFilterEntry(UIString("DML files"d), "*.dml"));
 					dlg.addFilter(FileFilterEntry(UIString("All files"d), "*.*"));
-					dlg.onDialogResult = delegate(Dialog dlg, const Action result) {
+					dlg.dialogResult = delegate(Dialog dlg, const Action result) {
 						if (result.id == ACTION_OPEN.id) {
 							string filename = result.stringParam;
 							saveSourceFile(filename);
@@ -172,7 +172,7 @@ class EditFrame : AppFrame {
                     FileDialog dlg = createFileDialog(caption);
                     dlg.addFilter(FileFilterEntry(UIString("DML files"d), "*.dml"));
                     dlg.addFilter(FileFilterEntry(UIString("All files"d), "*.*"));
-                    dlg.onDialogResult = delegate(Dialog dlg, const Action result) {
+                    dlg.dialogResult = delegate(Dialog dlg, const Action result) {
 						if (result.id == ACTION_OPEN.id) {
                             string filename = result.stringParam;
                             openSourceFile(filename);

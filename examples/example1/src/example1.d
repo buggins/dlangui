@@ -297,8 +297,8 @@ extern (C) int UIAppMain(string[] args) {
 		};
 		MenuItem enLang = (new MenuItem(new Action(611, "MENU_VIEW_LANGUAGE_EN"))).type(MenuItemType.Radio).checked(true);
 		MenuItem ruLang = (new MenuItem(new Action(612, "MENU_VIEW_LANGUAGE_RU"))).type(MenuItemType.Radio);
-		enLang.onMenuItemClick = onLangChange;
-		ruLang.onMenuItemClick = onLangChange;
+		enLang.menuItemClick = onLangChange;
+		ruLang.menuItemClick = onLangChange;
 		langItem.add(enLang);
 		langItem.add(ruLang);
 		viewItem.add(langItem);
@@ -318,9 +318,9 @@ extern (C) int UIAppMain(string[] args) {
 			}
 			return true;
 		};
-		theme1.onMenuItemClick = onThemeChange;
-		theme2.onMenuItemClick = onThemeChange;
-		theme3.onMenuItemClick = onThemeChange;
+		theme1.menuItemClick = onThemeChange;
+		theme2.menuItemClick = onThemeChange;
+		theme3.menuItemClick = onThemeChange;
 		themeItem.add(theme1);
 		themeItem.add(theme2);
 		themeItem.add(theme3);
@@ -338,7 +338,7 @@ extern (C) int UIAppMain(string[] args) {
 		mainMenuItems.add(windowItem);
         mainMenuItems.add(helpItem);
         MainMenu mainMenu = new MainMenu(mainMenuItems);
-		mainMenu.onMenuItemClickListener = delegate(MenuItem item) {
+		mainMenu.menuItemClick = delegate(MenuItem item) {
 			Log.d("mainMenu.onMenuItemListener", item.label);
 			const Action a = item.action;
 			if (a) {
@@ -356,7 +356,7 @@ extern (C) int UIAppMain(string[] args) {
 					dlg.addFilter(FileFilterEntry(UIString("FILTER_TEXT_FILES", "Text files (*.txt)"d), "*.txt"));
 					dlg.addFilter(FileFilterEntry(UIString("FILTER_SOURCE_FILES", "Source files"d), "*.d;*.dd;*.c;*.cc;*.cpp;*.h;*.hpp"));
 					//dlg.filterIndex = 2;
-					dlg.onDialogResult = delegate(Dialog dlg, const Action result) {
+					dlg.dialogResult = delegate(Dialog dlg, const Action result) {
 						if (result.id == ACTION_OPEN.id) {
                             string filename = result.stringParam;
                             if (filename.endsWith(".d") || filename.endsWith(".txt") || filename.endsWith(".cpp") || filename.endsWith(".h") || filename.endsWith(".c")
@@ -395,7 +395,7 @@ extern (C) int UIAppMain(string[] args) {
 
 		// ========= create tabs ===================
 
-		tabs.onTabChangedListener = delegate(string newTabId, string oldTabId) {
+		tabs.tabChanged = delegate(string newTabId, string oldTabId) {
 			window.windowCaption = tabs.tab(newTabId).text.value ~ " - dlangui example 1"d;
 		};
         tabs.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
@@ -861,7 +861,7 @@ void main()
         treeLayout.addChild(new ResizerWidget());
         treeLayout.addChild(treeControlledPanel);
 
-        tree.selectionListener = delegate(TreeItems source, TreeItem selectedItem, bool activated) {
+        tree.selectionChange = delegate(TreeItems source, TreeItem selectedItem, bool activated) {
             dstring label = "Selected item: "d ~ toUTF32(selectedItem.id) ~ (activated ? " selected + activated"d : " selected"d);
             treeItemLabel.text = label;
         };

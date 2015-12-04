@@ -292,7 +292,7 @@ class ResizerWidget : Widget {
     protected Widget _nextWidget;
     protected string _styleVertical;
     protected string _styleHorizontal;
-	Signal!ResizeHandler resizeListener;
+	Signal!ResizeHandler resizeEvent;
 
 	/// Orientation: Vertical to resize vertically, Horizontal - to resize horizontally
     @property Orientation orientation() { return _orientation; }
@@ -405,8 +405,8 @@ class ResizerWidget : Widget {
                     _delta = _minDragDelta;
                 if (_delta > _maxDragDelta)
                     _delta = _maxDragDelta;
-            } else if (resizeListener.assigned) {
-				resizeListener(this, ResizerEventType.StartDragging, _orientation == Orientation.Vertical ? event.y : event.x);
+            } else if (resizeEvent.assigned) {
+				resizeEvent(this, ResizerEventType.StartDragging, _orientation == Orientation.Vertical ? event.y : event.x);
 			}
             return true;
         }
@@ -418,16 +418,16 @@ class ResizerWidget : Widget {
             if (_dragging) {
                 //sendScrollEvent(ScrollAction.SliderReleased, _position);
                 _dragging = false;
-				if (resizeListener.assigned) {
-					resizeListener(this, ResizerEventType.EndDragging, _orientation == Orientation.Vertical ? event.y : event.x);
+				if (resizeEvent.assigned) {
+					resizeEvent(this, ResizerEventType.EndDragging, _orientation == Orientation.Vertical ? event.y : event.x);
 				}
             }
             return true;
         }
         if (event.action == MouseAction.Move && _dragging) {
             int delta = _orientation == Orientation.Vertical ? event.y - _dragStart.y : event.x - _dragStart.x;
-			if (resizeListener.assigned) {
-				resizeListener(this, ResizerEventType.Dragging, _orientation == Orientation.Vertical ? event.y : event.x);
+			if (resizeEvent.assigned) {
+				resizeEvent(this, ResizerEventType.Dragging, _orientation == Orientation.Vertical ? event.y : event.x);
 				return true;
 			}
             _delta = _dragStartPosition + delta;
@@ -487,8 +487,8 @@ class ResizerWidget : Widget {
 			if (_dragging) {
 				resetState(State.Pressed);
 				_dragging = false;
-				if (resizeListener.assigned) {
-					resizeListener(this, ResizerEventType.EndDragging, _orientation == Orientation.Vertical ? event.y : event.x);
+				if (resizeEvent.assigned) {
+					resizeEvent(this, ResizerEventType.EndDragging, _orientation == Orientation.Vertical ? event.y : event.x);
 				}
 			}
             return true;

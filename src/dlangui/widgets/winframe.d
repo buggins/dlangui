@@ -47,10 +47,10 @@ class WindowFrame : VerticalLayout {
         init();
     }
 
-    Signal!OnClickHandler onCloseButtonClickListener;
+    Signal!OnClickHandler closeButtonClick;
     protected bool onCloseButtonClick(Widget source) {
-        if (onCloseButtonClickListener.assigned)
-            onCloseButtonClickListener(source);
+        if (closeButtonClick.assigned)
+            closeButtonClick(source);
         return true;
     }
 

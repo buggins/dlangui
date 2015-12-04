@@ -57,16 +57,16 @@ interface ListAdapter {
 /// List adapter for simple list of widget instances
 class ListAdapterBase : ListAdapter {
     /** Handle items change */
-    protected Signal!OnAdapterChangeHandler onAdapterChangeListener;
+    protected Signal!OnAdapterChangeHandler adapterChanged;
 
     /// connect adapter change handler
     override ListAdapter connect(OnAdapterChangeHandler handler) {
-        onAdapterChangeListener.connect(handler);
+        adapterChanged.connect(handler);
         return this;
     }
     /// disconnect adapter change handler
     override ListAdapter disconnect(OnAdapterChangeHandler handler) {
-        onAdapterChangeListener.disconnect(handler);
+        adapterChanged.disconnect(handler);
         return this;
     }
     /// returns integer item id by index (if supported)
@@ -110,8 +110,8 @@ class ListAdapterBase : ListAdapter {
 
     /// notify listeners about list items changes
     void updateViews() {
-        if (onAdapterChangeListener.assigned)
-            onAdapterChangeListener.emit(this);
+        if (adapterChanged.assigned)
+            adapterChanged.emit(this);
     }
 }
 
@@ -545,7 +545,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
 		_selectedItemIndex = -1;
         _scrollbar = new ScrollBar("listscroll", orientation);
         _scrollbar.visibility = Visibility.Gone;
-        _scrollbar.onScrollEventListener = &onScrollEvent;
+        _scrollbar.scrollEvent = &onScrollEvent;
         addChild(_scrollbar);
 	}
 

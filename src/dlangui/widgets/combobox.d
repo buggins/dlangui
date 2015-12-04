@@ -46,8 +46,6 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
 
     /** Handle item click. */
     Signal!OnItemSelectedHandler itemClick;
-    /// itemClick signal alias for backward compatibility; will be deprecated in future
-    alias onItemClickListener = itemClick;
 
     protected Widget createSelectedItemWidget() {
         Widget res;
@@ -71,8 +69,8 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         if (_selectedItemIndex == index)
             return this;
         _selectedItemIndex = index;
-        if (onItemClickListener.assigned)
-            onItemClickListener(this, index);
+        if (itemClick.assigned)
+            itemClick(this, index);
         return this;
     }
 
@@ -125,7 +123,7 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         _popup = window.showPopup(_popupList, this, PopupAlign.Below | PopupAlign.FitAnchorSize);
         _popup.flags = PopupFlags.CloseOnClickOutside;
         _popup.styleId = STYLE_POPUP_MENU;
-        _popup.onPopupCloseListener = delegate (PopupWidget source) {
+        _popup.popupClosed = delegate (PopupWidget source) {
             _popup = null;
             _popupList = null;
         };

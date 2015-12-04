@@ -508,7 +508,7 @@ class AbstractSlider : WidgetGroup {
     }
 
     /// scroll event listeners
-    Signal!OnScrollHandler onScrollEventListener;
+    Signal!OnScrollHandler scrollEvent;
 
     /// returns slider position
     @property int position() const { return _position; }
@@ -564,10 +564,10 @@ class AbstractSlider : WidgetGroup {
     }
 
     bool sendScrollEvent(ScrollAction action, int position) {
-        if (!onScrollEventListener.assigned)
+        if (!scrollEvent.assigned)
             return false;
         ScrollEvent event = new ScrollEvent(action, _minValue, _maxValue, _pageSize, position);
-        bool res = onScrollEventListener(this, event);
+        bool res = scrollEvent(this, event);
         if (event.positionChanged) {
             _position = event.position;
             if (_position > _maxValue)

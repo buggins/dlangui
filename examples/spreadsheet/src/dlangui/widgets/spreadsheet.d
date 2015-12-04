@@ -135,7 +135,7 @@ class SpreadSheetWidget : WidgetGroupDefaultDrawing, OnScrollHandler, CellSelect
         ]);
 
         foreach(sb; _scrollbars)
-            sb.onScrollEventListener = this;
+            sb.scrollEvent = this;
         foreach(view; _views) {
             view.cellSelected = this;
             view.cellActivated = this;

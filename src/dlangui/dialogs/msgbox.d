@@ -48,7 +48,7 @@ class MessageBox : Dialog {
         _actions = buttons;
         _defaultButtonIndex = defaultButtonIndex;
         if (handler) {
-            onDialogResult = delegate (Dialog dlg, const Action action) {
+            dialogResult = delegate (Dialog dlg, const Action action) {
                 handler(action);
             };
         }

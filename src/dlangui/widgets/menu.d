@@ -63,9 +63,9 @@ class MenuItem {
     protected MenuItem[] _subitems;
 	protected MenuItem _parent;
 	/// handle menu item click (parameter is MenuItem)
-	Signal!MenuItemClickHandler onMenuItemClick;
+	Signal!MenuItemClickHandler menuItemClick;
 	/// handle menu item click action (parameter is Action)
-	Signal!MenuItemActionHandler onMenuItemAction;
+	Signal!MenuItemActionHandler menuItemAction;
 	/// item action id, 0 if no action
     @property int id() const { return _action is null ? 0 : _action.id; }
     /// returns count of submenu items
@@ -227,7 +227,7 @@ class MenuItem {
 	/// handle menu item click
 	Signal!(void, MenuItem) onMenuItem;
 	/// prepare for opening of submenu, return true if opening is allowed
-	Signal!(bool, MenuItem) onBeforeOpeningSubmenu;
+	Signal!(bool, MenuItem) openingSubmenu;
 
 	/// call to update state for action (if action is assigned for widget)
     void updateActionState(Widget w) {
@@ -421,9 +421,9 @@ class MenuWidgetBase : ListWidget {
     protected int _openedPopupIndex;
 
 	/// menu item click listener
-	Signal!MenuItemClickHandler onMenuItemClickListener;
+	Signal!MenuItemClickHandler menuItemClick;
 	/// menu item action listener
-	Signal!MenuItemActionHandler onMenuItemActionListener;
+	Signal!MenuItemActionHandler menuItemAction;
 
     this(MenuWidgetBase parentMenu, MenuItem item, Orientation orientation) {
 		_parentMenu = parentMenu;
@@ -534,7 +534,7 @@ class MenuWidgetBase : ListWidget {
 		PopupMenu popupMenu = new PopupMenu(itemWidget.item, this);
 		PopupWidget popup = window.showPopup(popupMenu, itemWidget, orientation == Orientation.Horizontal ? PopupAlign.Below :  PopupAlign.Right);
 		requestActionsUpdate();
-        popup.onPopupCloseListener = &onPopupClosed;
+        popup.popupClosed = &onPopupClosed;
         popup.flags = PopupFlags.CloseOnClickOutside;
 		_openedPopup = popup;
 		_openedMenu = popupMenu;
@@ -583,10 +583,10 @@ class MenuWidgetBase : ListWidget {
 		} else if (item.type == MenuItemType.Radio) {
 			item.checked = true;
 		}
-		if (item.onMenuItemClick.assigned)
-			item.onMenuItemClick(item);
-		if (item.onMenuItemAction.assigned && item.action)
-			item.onMenuItemAction(item.action);
+		if (item.menuItemClick.assigned)
+			item.menuItemClick(item);
+		if (item.menuItemAction.assigned && item.action)
+			item.menuItemAction(item.action);
 	}
 
 	protected void onMenuItem(MenuItem item) {
@@ -605,9 +605,9 @@ class MenuWidgetBase : ListWidget {
 			selectOnHover = false;
 
 			// copy menu item click listeners
-			Signal!MenuItemClickHandler onMenuItemClickListenerCopy = onMenuItemClickListener;
+			Signal!MenuItemClickHandler onMenuItemClickListenerCopy = menuItemClick;
 			// copy item action listeners
-			Signal!MenuItemActionHandler onMenuItemActionListenerCopy = onMenuItemActionListener;
+			Signal!MenuItemActionHandler onMenuItemActionListenerCopy = menuItemAction;
 
 			handleMenuItemClick(item);
 
@@ -798,9 +798,9 @@ class MainMenu : MenuWidgetBase {
 		debug(DebugMenus) Log.d("MainMenu.onMenuItem ", item.action.label);
 
 		// copy menu item click listeners
-		Signal!MenuItemClickHandler onMenuItemClickListenerCopy = onMenuItemClickListener;
+		Signal!MenuItemClickHandler onMenuItemClickListenerCopy = menuItemClick;
 		// copy item action listeners
-		Signal!MenuItemActionHandler onMenuItemActionListenerCopy = onMenuItemActionListener;
+		Signal!MenuItemActionHandler onMenuItemActionListenerCopy = menuItemAction;
 		
 		deactivate();
 

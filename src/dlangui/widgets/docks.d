@@ -71,7 +71,7 @@ struct DockSpace {
                 break;
         }
 		_resizer.visibility = Visibility.Gone;
-		_resizer.resizeListener = &onResize;
+		_resizer.resizeEvent = &onResize;
         return _resizer;
     }
     /// host to be layed out

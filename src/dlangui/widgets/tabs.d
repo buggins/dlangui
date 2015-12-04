@@ -94,7 +94,7 @@ class TabItemWidget : HorizontalLayout {
     private ImageButton _closeButton;
     private TabItem _item;
     private bool _enableCloseButton;
-    Signal!TabCloseHandler onTabCloseListener;
+    Signal!TabCloseHandler tabClose;
     @property TabItem tabItem() { return _item; }
     @property TabControl tabControl() { return cast(TabControl)parent; }
     this(TabItem item, bool enableCloseButton = true) {
@@ -128,8 +128,8 @@ class TabItemWidget : HorizontalLayout {
     protected bool onClick(Widget source) {
         if (source.compareId("CLOSE")) {
             Log.d("tab close button pressed");
-            if (onTabCloseListener.assigned)
-                onTabCloseListener(_item.id);
+            if (tabClose.assigned)
+                tabClose(_item.id);
         }
         return true;
     }
@@ -227,10 +227,10 @@ class TabControl : WidgetGroupDefaultDrawing {
     protected string _tabButtonTextStyle;
 
 	/// signal of tab change (e.g. by clicking on tab header)
-	Signal!TabHandler onTabChangedListener;
+	Signal!TabHandler tabChanged;
 
     /// signal on tab close button
-    Signal!TabCloseHandler onTabCloseListener;
+    Signal!TabCloseHandler tabClose;
 
     protected Align _tabAlignment;
     @property Align tabAlignment() { return _tabAlignment; }
@@ -378,8 +378,8 @@ class TabControl : WidgetGroupDefaultDrawing {
     }
 
     protected void onTabClose(string tabId) {
-        if (onTabCloseListener.assigned)
-            onTabCloseListener(tabId);
+        if (tabClose.assigned)
+            tabClose(tabId);
     }
 
     /// add new tab
@@ -389,7 +389,7 @@ class TabControl : WidgetGroupDefaultDrawing {
         widget.parent = this;
         widget.click = &onClick;
         widget.setStyles(_tabButtonStyle, _tabButtonTextStyle);
-        widget.onTabCloseListener = &onTabClose;
+        widget.tabClose = &onTabClose;
         _children.insert(widget, index);
         updateTabs();
         requestLayout();
@@ -548,8 +548,8 @@ class TabControl : WidgetGroupDefaultDrawing {
                 _children.get(i).state = State.Normal;
             }
         }
-        if (onTabChangedListener.assigned)
-			onTabChangedListener(_selectedTabId, previousSelectedTab);
+        if (tabChanged.assigned)
+			tabChanged(_selectedTabId, previousSelectedTab);
     }
 
 }
@@ -565,7 +565,7 @@ class TabHost : FrameLayout, TabHandler {
         super(ID);
         _tabControl = tabControl;
         if (_tabControl !is null)
-            _tabControl.onTabChangedListener = &onTabChanged;
+            _tabControl.tabChanged = &onTabChanged;
         styleId = STYLE_TAB_HOST;
     }
     protected TabControl _tabControl;
@@ -575,7 +575,7 @@ class TabHost : FrameLayout, TabHandler {
     @property TabHost tabControl(TabControl newWidget) { 
         _tabControl = newWidget; 
         if (_tabControl !is null)
-            _tabControl.onTabChangedListener = &onTabChanged;
+            _tabControl.tabChanged = &onTabChanged;
         return this;
     }
 
@@ -584,14 +584,14 @@ class TabHost : FrameLayout, TabHandler {
     @property void hiddenTabsVisibility(Visibility v) { _hiddenTabsVisibility = v; }
 
 	/// signal of tab change (e.g. by clicking on tab header)
-	Signal!TabHandler onTabChangedListener;
+	Signal!TabHandler tabChanged;
 
     protected override void onTabChanged(string newActiveTabId, string previousTabId) {
         if (newActiveTabId !is null) {
             showChild(newActiveTabId, _hiddenTabsVisibility, true);
         }
-        if (onTabChangedListener.assigned)
-            onTabChangedListener(newActiveTabId, previousTabId);
+        if (tabChanged.assigned)
+            tabChanged(newActiveTabId, previousTabId);
     }
 
     /// get tab content widget by id
@@ -670,8 +670,8 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
         super(ID);
         _tabControl = new TabControl("TAB_CONTROL", tabAlignment);
         _tabHost = new TabHost("TAB_HOST", _tabControl);
-		_tabControl.onTabChangedListener.connect(this);
-		_tabControl.onTabCloseListener.connect(this);
+		_tabControl.tabChanged.connect(this);
+		_tabControl.tabClose.connect(this);
         styleId = STYLE_TAB_WIDGET;
         if (tabAlignment == Align.Top) {
             addChild(_tabControl);
@@ -687,19 +687,19 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
     TabHost tabHost() { return _tabHost; }
 
 	/// signal of tab change (e.g. by clicking on tab header)
-	Signal!TabHandler onTabChangedListener;
+	Signal!TabHandler tabChanged;
     /// signal on tab close button
-    Signal!TabCloseHandler onTabCloseListener;
+    Signal!TabCloseHandler tabClose;
 
     protected override void onTabClose(string tabId) {
-        if (onTabCloseListener.assigned)
-            onTabCloseListener(tabId);
+        if (tabClose.assigned)
+            tabClose(tabId);
     }
 
     protected override void onTabChanged(string newActiveTabId, string previousTabId) {
         // forward to listener
-        if (onTabChangedListener.assigned)
-            onTabChangedListener(newActiveTabId, previousTabId);
+        if (tabChanged.assigned)
+            tabChanged(newActiveTabId, previousTabId);
     }
 
     /// add new tab by id and label string resource id

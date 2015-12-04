@@ -659,9 +659,9 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
 
     @property ref TreeItems items() { return _tree; }
 
-    Signal!OnTreeSelectionChangeListener selectionListener;
+    Signal!OnTreeSelectionChangeListener selectionChange;
     /// allows to provide individual popup menu for items
-    Listener!OnTreePopupMenuListener popupMenuListener;
+    Listener!OnTreePopupMenuListener popupMenu;
 
     protected bool _needUpdateWidgets;
     protected bool _needUpdateWidgetStates;
@@ -678,8 +678,8 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
     }
 
     protected MenuItem onTreeItemPopupMenu(TreeItems source, TreeItem selectedItem) {
-        if (popupMenuListener)
-            return popupMenuListener(source, selectedItem);
+        if (popupMenu)
+            return popupMenu(source, selectedItem);
         return null;
     }
 
@@ -827,8 +827,8 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
             selected.setFocus();
             makeWidgetVisible(selected, false, true);
         }
-        if (selectionListener.assigned)
-            selectionListener(source, selectedItem, activated);
+        if (selectionChange.assigned)
+            selectionChange(source, selectedItem, activated);
     }
 
     void makeItemVisible(TreeItem item) {

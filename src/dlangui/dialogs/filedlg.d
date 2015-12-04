@@ -253,7 +253,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         }
         res.ownAdapter = adapter;
         res.layoutWidth(WRAP_CONTENT).layoutHeight(FILL_PARENT).layoutWeight(0);
-        res.onItemClickListener = delegate(Widget source, int itemIndex) {
+        res.itemClick = delegate(Widget source, int itemIndex) {
             openDirectory(_roots[itemIndex].path, null);
             res.selectItem(-1);
             return true;
@@ -351,7 +351,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 				filterLabels ~= f.label.value;
 			_cbFilters = new ComboBox("filter", filterLabels);
 			_cbFilters.selectedItemIndex = _filterIndex;
-			_cbFilters.onItemClickListener = delegate(Widget source, int itemIndex) {
+			_cbFilters.itemClick = delegate(Widget source, int itemIndex) {
 				_filterIndex = itemIndex;
 				reopenDirectory();
 				return true;
@@ -472,7 +472,7 @@ class FilePathPanelItem : HorizontalLayout {
 			string d = baseName(fullPath);
 			Action a = new Action(itemId++, toUTF32(d));
 			MenuItem item = new MenuItem(a);
-			item.onMenuItemClick = delegate(MenuItem item) { 
+			item.menuItemClick = delegate(MenuItem item) { 
 				if (onPathSelectionListener.assigned)
 					return onPathSelectionListener(fullPath);
 				return false;
@@ -618,7 +618,7 @@ class FilePathPanel : FrameLayout {
 		_segments = new FilePathPanelButtons(ID_SEGMENTS);
 		_edPath = new EditLine(ID_EDITOR);
 		_edPath.layoutWidth = FILL_PARENT;
-		_edPath.editorActionListener = &onEditorAction;
+		_edPath.editorAction = &onEditorAction;
 		_edPath.focusChange = &onEditorFocusChanged;
 		_segments.click = &onSegmentsClickOutside;
 		_segments.onPathSelectionListener = &onPathSelected;

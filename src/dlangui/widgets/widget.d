@@ -1218,6 +1218,9 @@ class Widget {
 	/// mouse event listener (bool delegate(Widget, MouseEvent)) - return true if event is processed by handler
     Signal!OnMouseHandler mouseEvent;
 
+
+    // Signal utils
+
     /// helper function to add onCheckChangeListener in method chain
     Widget addOnClickListener(bool delegate(Widget) listener) {
         click.connect(listener);

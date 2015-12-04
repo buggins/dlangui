@@ -66,7 +66,7 @@ class PopupWidget : LinearLayout {
 
     protected uint _flags;
     /** popup close signal */
-    Signal!OnPopupCloseHandler onPopupCloseListener;
+    Signal!OnPopupCloseHandler popupClosed;
     //protected void delegate(PopupWidget popup) _onPopupCloseListener;
     /// popup close listener (called right before closing)
     //@property void delegate(PopupWidget popup) onPopupCloseListener() { return _onPopupCloseListener; }
@@ -96,8 +96,8 @@ class PopupWidget : LinearLayout {
 
     /// just call on close listener
     void onClose() {
-        if (onPopupCloseListener.assigned)
-            onPopupCloseListener(this);
+        if (popupClosed.assigned)
+            popupClosed(this);
     }
 
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).

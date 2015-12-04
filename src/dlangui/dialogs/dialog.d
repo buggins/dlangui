@@ -54,7 +54,7 @@ class Dialog : VerticalLayout {
     protected uint _flags;
     protected string _icon;
 
-	Signal!DialogResultHandler onDialogResult;
+	Signal!DialogResultHandler dialogResult;
 
     this(UIString caption, Window parentWindow = null, uint flags = DialogFlag.Modal) {
         super("dialog-main-widget");
@@ -160,8 +160,8 @@ class Dialog : VerticalLayout {
       */
     void close(const Action action) {
         if (action) {
-            if (onDialogResult.assigned)
-                onDialogResult(this, action);
+            if (dialogResult.assigned)
+                dialogResult(this, action);
             else if (_parentWindow && !_popup)
                 _parentWindow.dispatchAction(action);
         }
@@ -185,7 +185,7 @@ class Dialog : VerticalLayout {
         if (_flags & DialogFlag.Popup) {
             DialogFrame _frame = new DialogFrame(this, _cancelButton !is null);
             if (_cancelButton) {
-                _frame.onCloseButtonClickListener = delegate(Widget w) {
+                _frame.closeButtonClick = delegate(Widget w) {
                     close(_cancelButton.action);
                     return true;
                 };

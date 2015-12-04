@@ -234,7 +234,7 @@ class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
         _body = createBody();
         _body.focusGroup = true;
         if (_mainMenu) {
-            _mainMenu.onMenuItemClickListener = &onMenuItemClick;
+            _mainMenu.menuItemClick = &onMenuItemClick;
             addChild(_mainMenu);
         }
         if (_toolbarHost)

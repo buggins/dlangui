@@ -85,7 +85,7 @@ class StringComboBoxItem : SettingsItem {
         }
         if (index >= 0)
             cb.selectedItemIndex = index;
-        cb.onItemClickListener = delegate(Widget source, int itemIndex) {
+        cb.itemClick = delegate(Widget source, int itemIndex) {
             if (itemIndex >= 0 && itemIndex < _items.length)
                 setting.str = _items[itemIndex].stringId;
             return true;
@@ -117,7 +117,7 @@ class IntComboBoxItem : SettingsItem {
         }
         if (index >= 0)
             cb.selectedItemIndex = index;
-        cb.onItemClickListener = delegate(Widget source, int itemIndex) {
+        cb.itemClick = delegate(Widget source, int itemIndex) {
             if (itemIndex >= 0 && itemIndex < _items.length)
                 setting.integer = _items[itemIndex].intId;
             return true;
@@ -151,7 +151,7 @@ class FloatComboBoxItem : SettingsItem {
         }
         if (index >= 0)
             cb.selectedItemIndex = index;
-        cb.onItemClickListener = delegate(Widget source, int itemIndex) {
+        cb.itemClick = delegate(Widget source, int itemIndex) {
             if (itemIndex >= 0 && itemIndex < _items.length)
                 setting.floating = _items[itemIndex].intId / cast(double)_divider;
             return true;
@@ -389,7 +389,7 @@ class SettingsDialog : Dialog {
         _tree = new TreeWidget("prop_tree");
         _tree.styleId = STYLE_SETTINGS_TREE;
         _tree.layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT).minHeight(200).minWidth(100);
-        _tree.selectionListener = &onTreeItemSelected;
+        _tree.selectionChange = &onTreeItemSelected;
 		_tree.fontSize = 16;
         _frame = new FrameLayout("prop_pages");
         _frame.styleId = STYLE_SETTINGS_PAGES;

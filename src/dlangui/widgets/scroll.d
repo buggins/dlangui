@@ -111,12 +111,12 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         _vscrollbarMode = vscrollbarMode;
         if (_vscrollbarMode != ScrollBarMode.Invisible) {
             _vscrollbar = new ScrollBar("vscrollbar", Orientation.Vertical);
-            _vscrollbar.onScrollEventListener = this;
+            _vscrollbar.scrollEvent = this;
             addChild(_vscrollbar);
         }
         if (_hscrollbarMode != ScrollBarMode.Invisible) {
             _hscrollbar = new ScrollBar("hscrollbar", Orientation.Horizontal);
-            _hscrollbar.onScrollEventListener = this;
+            _hscrollbar.scrollEvent = this;
             addChild(_hscrollbar);
         }
     }
