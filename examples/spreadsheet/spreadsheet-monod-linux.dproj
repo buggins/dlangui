@@ -218,6 +218,7 @@
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
+    <ObjectsDirectory>obj/ReleaseX11</ObjectsDirectory>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'UnittestX11|x64' ">
     <OutputPath>bin\UnittestX11</OutputPath>
@@ -241,6 +242,7 @@
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
+    <ObjectsDirectory>obj/UnittestX11</ObjectsDirectory>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\spreadsheetapp.d" />

@@ -1126,3 +1126,61 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
 
 }
 
+class StringListWidget : ListWidget {
+    this(string ID = null) {
+        super(ID);
+        styleId = STYLE_EDIT_BOX;
+    }
+
+    this(string ID, string[] items) {
+        super(ID);
+        styleId = STYLE_EDIT_BOX;
+        adapter = new StringListAdapter(items);
+    }
+    
+    this(string ID, dstring[] items) {
+        super(ID);
+        styleId = STYLE_EDIT_BOX;
+        adapter = new StringListAdapter(items);
+    }
+    
+    this(string ID, StringListValue[] items) {
+        super(ID);
+        styleId = STYLE_EDIT_BOX;
+        adapter = new StringListAdapter(items);
+    }
+
+    @property void items(string[] itemResourceIds) {
+        adapter = new StringListAdapter(itemResourceIds);
+        if(itemResourceIds.length > 0) {
+            selectedItemIndex = 0;
+        }
+        requestLayout();
+    }
+    
+    @property void items(dstring[] items) {
+        adapter = new StringListAdapter(items);
+        if(items.length > 0) {
+            selectedItemIndex = 0;
+        }
+        requestLayout();
+    }
+    
+    @property void items(StringListValue[] items) {
+        adapter = new StringListAdapter(items);
+        if(items.length > 0) {
+            selectedItemIndex = 0;
+        }
+        requestLayout();
+    }
+    
+    /// get selected item as text
+    @property dstring selectedItem() {
+        if (_selectedItemIndex < 0 || _selectedItemIndex >= _adapter.itemCount)
+            return "";
+        return (cast(StringListAdapter)adapter).items.get(_selectedItemIndex);
+    }
+}
+
+import dlangui.widgets.metadata;
+mixin(registerWidgets!(ListWidget, StringListWidget)());
