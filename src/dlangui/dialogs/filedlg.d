@@ -371,7 +371,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 		_edFilename = new EditLine("filename");
 		_edFilename.layoutWidth(FILL_PARENT);
         if (_flags & FileDialogFlag.SelectDirectory) {
-            _edFilename.visibility = Visibility.Invisible;
+            _edFilename.visibility = Visibility.Gone;
         }
 
 
