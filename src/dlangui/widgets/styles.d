@@ -1215,9 +1215,9 @@ FontFamily decodeFontFamily(string s) {
 
 /// decode layout dimension (FILL_PARENT, WRAP_CONTENT, or just size)
 int decodeLayoutDimension(string s) {
-	if (s.equal("FILL_PARENT"))
+	if (s.equal("FILL_PARENT") || s.equal("fill"))
 		return FILL_PARENT;
-	if (s.equal("WRAP_CONTENT"))
+	if (s.equal("WRAP_CONTENT") || s.equal("wrap"))
 		return WRAP_CONTENT;
 	return decodeDimension(s);
 }

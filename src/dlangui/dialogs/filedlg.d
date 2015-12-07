@@ -42,6 +42,8 @@ private import std.algorithm;
 private import std.file;
 private import std.path;
 private import std.utf;
+private import std.string;
+private import std.array;
 private import std.conv : to;
 private import std.array : split;
 
@@ -52,10 +54,13 @@ enum FileDialogFlag : uint {
     FileMustExist = 0x100,
     /// ask before saving to existing
     ConfirmOverwrite = 0x200,
+    /// select directory, not file
+    SelectDirectory = 0x400,
     /// flags for Open dialog
     Open = FileMustExist,
     /// flags for Save dialog
     Save = ConfirmOverwrite,
+
 }
 
 /// filetype filter entry for FileDialog
@@ -97,7 +102,9 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         super(caption, parent, fileDialogFlags | (SHOW_FILE_DIALOG_IN_POPUP ? DialogFlag.Popup : 0));
         _isOpenDialog = !(_flags & FileDialogFlag.ConfirmOverwrite);
         if (action is null) {
-            if (_isOpenDialog)
+            if (fileDialogFlags & FileDialogFlag.SelectDirectory)
+                action = ACTION_OPEN_DIRECTORY.clone();
+            else if (_isOpenDialog)
                 action = ACTION_OPEN.clone();
             else
                 action = ACTION_SAVE.clone();
@@ -132,6 +139,22 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 	@property void filterIndex(int index) {
 		_filterIndex = index;
 	}
+
+    @property string path() {
+        return _path;
+    }
+
+    @property void path(string s) {
+        _path = s;
+    }
+
+    @property string filename() {
+        return _filename;
+    }
+
+    @property void filename(string s) {
+        _filename = s;
+    }
 
 	/// return currently selected filter value - array of patterns like ["*.txt", "*.rtf"]
 	@property string[] selectedFilter() {
@@ -338,11 +361,15 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 		_edPath.layoutWidth(FILL_PARENT);
         _edPath.layoutWeight = 0;
 		_edPath.onPathSelectionListener = &onPathSelected;
-
 		HorizontalLayout fnlayout = new HorizontalLayout();
 		fnlayout.layoutWidth(FILL_PARENT);
 		_edFilename = new EditLine("filename");
 		_edFilename.layoutWidth(FILL_PARENT);
+        if (_flags & FileDialogFlag.SelectDirectory) {
+            _edFilename.visibility = Visibility.Invisible;
+        }
+
+
         //_edFilename.layoutWeight = 0;
 		fnlayout.addChild(_edFilename);
 		if (_filters.length) {
@@ -389,7 +416,10 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             onItemSelected(row);
         };
 
-        openDirectory(currentDir, null);
+        if (_path.empty) {
+            _path = currentDir;
+        }
+        openDirectory(_path, _filename);
         _fileList.layoutHeight = FILL_PARENT;
 
 	}
@@ -665,3 +695,114 @@ class FilePathPanel : FrameLayout {
 		return _path;
 	}
 }
+
+class FileNameEditLine : HorizontalLayout {
+    protected EditLine _edFileName;
+    protected Button _btn;
+    protected string[string] _filetypeIcons;
+    protected dstring _caption = "Open File"d;
+    protected uint _fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable | FileDialogFlag.FileMustExist;
+	protected FileFilterEntry[] _filters;
+	protected int _filterIndex;
+
+    /// Modified state change listener (e.g. content has been saved, or first time modified after save)
+    Signal!ModifiedStateListener modifiedStateChange;
+    /// editor content is changed
+    Signal!EditableContentChangeListener contentChange;
+
+    this(string ID = null) {
+        super(ID);
+        _edFileName = new EditLine("edFileName");
+        _edFileName.minWidth(200);
+        _btn = new Button("btnFile", "..."d);
+        _btn.click = delegate(Widget src) {
+            FileDialog dlg = new FileDialog(UIString(_caption), window, null, _fileDialogFlags);
+            foreach(key, value; _filetypeIcons)
+                dlg.filetypeIcons[key] = value;
+            dlg.filters = _filters;
+            dlg.dialogResult = delegate(Dialog dlg, const Action result) {
+				if (result.id == ACTION_OPEN.id) {
+                    _edFileName.text = toUTF32(result.stringParam);
+                    if (contentChange.assigned)
+                        contentChange(_edFileName.content);
+                }
+            };
+            string path = toUTF8(_edFileName.text);
+            if (!path.empty) {
+                if (exists(path) && isFile(path)) {
+                    dlg.path = dirName(path);
+                    dlg.filename = baseName(path);
+                } else if (exists(path) && isDir(path)) {
+                    dlg.path = path;
+                }
+            }
+            dlg.show();
+            return true;
+        };
+        _edFileName.contentChange = delegate(EditableContent content) {
+            if (contentChange.assigned)
+                contentChange(content);
+        };
+        _edFileName.modifiedStateChange = delegate(Widget src, bool modified) {
+            if (modifiedStateChange.assigned)
+                modifiedStateChange(src, modified);
+        };
+        addChild(_edFileName);
+        addChild(_btn);
+    }
+
+    @property uint fileDialogFlags() { return _fileDialogFlags; }
+    @property void fileDialogFlags(uint f) { _fileDialogFlags = f; }
+
+    @property dstring caption() { return _caption; }
+    @property void caption(dstring s) { _caption = s; }
+
+    /// returns widget content text (override to support this)
+    override @property dstring text() { return _edFileName.text; }
+    /// sets widget content text (override to support this)
+    override @property Widget text(dstring s) { _edFileName.text = s; return this; }
+    /// sets widget content text (override to support this)
+    override @property Widget text(UIString s) { _edFileName.text = s.value; return this; }
+
+    /// mapping of file extension to icon resource name, e.g. ".txt": "text-plain"
+    @property ref string[string] filetypeIcons() { return _filetypeIcons; }
+
+	/// filter list for file type filter combo box
+	@property FileFilterEntry[] filters() {
+		return _filters;
+	}
+
+	/// filter list for file type filter combo box
+	@property void filters(FileFilterEntry[] values) {
+		_filters = values;
+	}
+
+	/// add new filter entry
+	void addFilter(FileFilterEntry value) {
+		_filters ~= value;
+	}
+
+	/// filter index
+	@property int filterIndex() {
+		return _filterIndex;
+	}
+
+	/// filter index
+	@property void filterIndex(int index) {
+		_filterIndex = index;
+	}
+
+    @property bool readOnly() { return _edFileName.readOnly; }
+    @property void readOnly(bool f) { _edFileName.readOnly = f; }
+
+}
+
+class DirEditLine : FileNameEditLine {
+    this(string ID = null) {
+        super(ID);
+        _fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable | FileDialogFlag.FileMustExist | FileDialogFlag.SelectDirectory;
+    }
+}
+
+import dlangui.widgets.metadata;
+mixin(registerWidgets!(FileNameEditLine, DirEditLine)());

@@ -35,6 +35,7 @@ enum StandardAction : int {
     DiscardAll,
     OpenUrl,
     Apply,
+    OpenDirectory,
 }
 
 const Action ACTION_OK = new Action(StandardAction.Ok, "ACTION_OK"c, "dialog-ok");
@@ -47,6 +48,7 @@ const Action ACTION_ABORT =  new Action(StandardAction.Abort, "ACTION_ABORT"c);
 const Action ACTION_RETRY = new Action(StandardAction.Retry, "ACTION_RETRY"c);
 const Action ACTION_IGNORE = new Action(StandardAction.Ignore, "ACTION_IGNORE"c);
 const Action ACTION_OPEN = new Action(StandardAction.Open, "ACTION_OPEN"c);
+const Action ACTION_OPEN_DIRECTORY = new Action(StandardAction.OpenDirectory, "ACTION_OPEN_DIRECTORY"c);
 const Action ACTION_SAVE = new Action(StandardAction.Save, "ACTION_SAVE"c);
 const Action ACTION_SAVE_ALL = new Action(StandardAction.SaveAll, "ACTION_SAVE_ALL"c);
 const Action ACTION_DISCARD_CHANGES = new Action(StandardAction.DiscardChanges, "ACTION_DISCARD_CHANGES"c);
