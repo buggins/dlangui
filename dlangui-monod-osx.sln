@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "dlangui-monod-osx", "dlangui-monod-osx.dproj", "{1CC7C43E-7B39-4AFC-A45B-F1D9F582CF6D}"
+Project("{9344BDBB-3E7F-41FC-A0DD-8665D75EE146}") = "dlangui-monod-osx", "dlangui-monod-osx.dproj", "{1CC7C43E-7B39-4AFC-A45B-F1D9F582CF6D}"
 EndProject
 Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "example1-monod-osx", "examples\example1\example1-monod-osx.dproj", "{079F4963-E637-4E8F-9EB3-BDC404F9DC1D}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "tetris-monod-osx", "examples\tetris\tetris-monod-osx.dproj", "{07ECE815-C4C3-4CDB-A60C-2E304EAAA2C7}"
 EndProject
 Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "spreadsheet-monod-osx", "examples\spreadsheet\spreadsheet-monod-osx.dproj", "{AAC53A3B-44F0-4597-8074-F92021F63654}"
+EndProject
+Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "dlangide-monod-osx", "..\dlangide\dlangide-monod-osx.dproj", "{5125282E-FF14-4FF9-A65A-1B4816D76C6A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
