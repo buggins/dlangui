@@ -127,11 +127,11 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
             _popup = null;
             _popupList = null;
         };
-        _popupList.onItemSelectedListener = delegate(Widget source, int index) {
+        _popupList.itemSelected = delegate(Widget source, int index) {
             selectedItemIndex = index;
             return true;
         };
-        _popupList.onItemClickListener = delegate(Widget source, int index) {
+        _popupList.itemClick = delegate(Widget source, int index) {
             selectedItemIndex = index;
             if (_popup !is null)
                 _popup.close();

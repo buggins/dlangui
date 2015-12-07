@@ -182,7 +182,7 @@ class NumberEditItem : SettingsItem {
             n = _maxValue;
         setting.integer = cast(long)n;
         ed.text = toUTF32(to!string(n));
-        ed.onContentChangeListener = delegate(EditableContent content) {
+        ed.contentChange = delegate(EditableContent content) {
             long v = parseLong(toUTF8(content.text), long.max);
             if (v != long.max) {
                 if ((_minValue == int.max || v >= _minValue) && (_maxValue == int.max || v <= _maxValue)) {
@@ -211,7 +211,7 @@ class StringEditItem : SettingsItem {
 		string value = setting.strDef(_defaultValue);
 		setting.str = value;
 		ed.text = toUTF32(value);
-		ed.onContentChangeListener = delegate(EditableContent content) {
+		ed.contentChange = delegate(EditableContent content) {
 			string value = toUTF8(content.text);
 			setting.str = value;
 		};

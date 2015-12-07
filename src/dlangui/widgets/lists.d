@@ -394,12 +394,8 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
 
     /** Handle selection change. */
     Signal!OnItemSelectedHandler itemSelected;
-    /// itemSelected signal alias for backward compatibility; will be deprecated in future
-    alias onItemSelectedListener = itemSelected;
     /** Handle item click / activation (e.g. Space or Enter key press and mouse double click) */
     Signal!OnItemClickHandler itemClick;
-    /// itemClick signal alias for backward compatibility; will be deprecated in future
-    alias onItemClickListener = itemClick;
 
     protected Orientation _orientation = Orientation.Vertical;
     /// returns linear layout orientation (Vertical, Horizontal)
@@ -570,14 +566,14 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
 
 	/// override to handle change of selection
 	protected void selectionChanged(int index, int previouslySelectedItem = -1) {
-        if (onItemSelectedListener.assigned)
-            onItemSelectedListener(this, index);
+        if (itemSelected.assigned)
+            itemSelected(this, index);
 	}
 
 	/// override to handle mouse up on item
 	protected void itemClicked(int index) {
-        if (onItemClickListener.assigned)
-            onItemClickListener(this, index);
+        if (itemClick.assigned)
+            itemClick(this, index);
 	}
 
     /// allow to override state for updating of items

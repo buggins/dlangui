@@ -53,11 +53,15 @@ class Dialog : VerticalLayout {
     protected UIString _caption;
     protected uint _flags;
     protected string _icon;
+    protected int _initialWidth;
+    protected int _initialHeight;
 
 	Signal!DialogResultHandler dialogResult;
 
-    this(UIString caption, Window parentWindow = null, uint flags = DialogFlag.Modal) {
+    this(UIString caption, Window parentWindow = null, uint flags = DialogFlag.Modal, int initialWidth = 0, int initialHeight = 0) {
         super("dialog-main-widget");
+        _initialWidth = initialWidth;
+        _initialHeight = initialHeight;
         _caption = caption;
         _parentWindow = parentWindow;
         _flags = flags;
@@ -193,7 +197,7 @@ class Dialog : VerticalLayout {
             _popup = _parentWindow.showPopup(_frame);
             _popup.flags(PopupFlags.Modal);
         } else {
-            _window = Platform.instance.createWindow(_caption, _parentWindow, wflags);
+            _window = Platform.instance.createWindow(_caption, _parentWindow, wflags, _initialWidth, _initialHeight);
             if (_window && _icon)
                 _window.windowIcon = drawableCache.getImage(_icon);
             _window.mainWidget = this;
