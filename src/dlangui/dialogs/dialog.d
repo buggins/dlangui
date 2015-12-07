@@ -200,6 +200,7 @@ class Dialog : VerticalLayout {
             _window = Platform.instance.createWindow(_caption, _parentWindow, wflags, _initialWidth, _initialHeight);
             if (_window && _icon)
                 _window.windowIcon = drawableCache.getImage(_icon);
+            _window.backgroundColor = currentTheme.customColor("dialog_background");
             _window.mainWidget = this;
             _window.show();
         }

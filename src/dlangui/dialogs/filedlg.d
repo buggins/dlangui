@@ -56,10 +56,12 @@ enum FileDialogFlag : uint {
     ConfirmOverwrite = 0x200,
     /// select directory, not file
     SelectDirectory = 0x400,
+    /// show Create Directory button
+    EnableCreateDirectory = 0x800,
     /// flags for Open dialog
-    Open = FileMustExist,
+    Open = FileMustExist | EnableCreateDirectory,
     /// flags for Save dialog
-    Save = ConfirmOverwrite,
+    Save = ConfirmOverwrite | EnableCreateDirectory,
 
 }
 
@@ -319,10 +321,13 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             super.handleAction(action);
             return true;
         }
-        if (action.id == StandardAction.Open || action.id == StandardAction.Save) {
-            if (_filename.length > 0) {
+        if (action.id == StandardAction.Open || action.id == StandardAction.OpenDirectory || action.id == StandardAction.Save) {
+            if (_filename.length > 0 || action.id == StandardAction.OpenDirectory) {
                 Action result = _action;
-                result.stringParam = _filename;
+                if (action.id == StandardAction.OpenDirectory)
+                    result.stringParam = _path;
+                else
+                    result.stringParam = _filename;
                 close(result);
                 return true;
             }
@@ -701,7 +706,7 @@ class FileNameEditLine : HorizontalLayout {
     protected Button _btn;
     protected string[string] _filetypeIcons;
     protected dstring _caption = "Open File"d;
-    protected uint _fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable | FileDialogFlag.FileMustExist;
+    protected uint _fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable | FileDialogFlag.FileMustExist | FileDialogFlag.EnableCreateDirectory;
 	protected FileFilterEntry[] _filters;
 	protected int _filterIndex;
 
@@ -715,13 +720,14 @@ class FileNameEditLine : HorizontalLayout {
         _edFileName = new EditLine("edFileName");
         _edFileName.minWidth(200);
         _btn = new Button("btnFile", "..."d);
+        _btn.styleId = STYLE_BUTTON_NOMARGINS;
         _btn.click = delegate(Widget src) {
             FileDialog dlg = new FileDialog(UIString(_caption), window, null, _fileDialogFlags);
             foreach(key, value; _filetypeIcons)
                 dlg.filetypeIcons[key] = value;
             dlg.filters = _filters;
             dlg.dialogResult = delegate(Dialog dlg, const Action result) {
-				if (result.id == ACTION_OPEN.id) {
+				if (result.id == ACTION_OPEN.id || result.id == ACTION_OPEN_DIRECTORY.id) {
                     _edFileName.text = toUTF32(result.stringParam);
                     if (contentChange.assigned)
                         contentChange(_edFileName.content);
@@ -800,7 +806,8 @@ class FileNameEditLine : HorizontalLayout {
 class DirEditLine : FileNameEditLine {
     this(string ID = null) {
         super(ID);
-        _fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable | FileDialogFlag.FileMustExist | FileDialogFlag.SelectDirectory;
+        _fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable 
+            | FileDialogFlag.FileMustExist | FileDialogFlag.SelectDirectory | FileDialogFlag.EnableCreateDirectory;
     }
 }
 

@@ -671,9 +671,9 @@ class MLParser {
             setBoolProperty(propName, true);
         else if (value.equal("false"))
             setBoolProperty(propName, false);
-        else if (value.equal("FILL") || value.equal("FILL_PARENT"))
+        else if (value.equal("fill") || value.equal("FILL") || value.equal("FILL_PARENT"))
             setIntProperty(propName, FILL_PARENT);
-        else if (value.equal("WRAP") || value.equal("WRAP_CONTENT"))
+        else if (value.equal("wrap") || value.equal("WRAP") || value.equal("WRAP_CONTENT"))
             setIntProperty(propName, WRAP_CONTENT);
         else if (!_currentWidget.setStringProperty(propName, value))
             error("unknown ident property " ~ propName);
