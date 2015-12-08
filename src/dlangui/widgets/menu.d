@@ -583,10 +583,18 @@ class MenuWidgetBase : ListWidget {
 		} else if (item.type == MenuItemType.Radio) {
 			item.checked = true;
 		}
-		if (item.menuItemClick.assigned)
-			item.menuItemClick(item);
-		if (item.menuItemAction.assigned && item.action)
-			item.menuItemAction(item.action);
+        MenuItem p = item;
+        while (p) {
+		    if (p.menuItemClick.assigned) {
+			    p.menuItemClick(item);
+                break;
+            }
+		    if (p.menuItemAction.assigned && item.action) {
+			    p.menuItemAction(item.action);
+                break;
+            }
+            p = p._parent;
+        }
 	}
 
 	protected void onMenuItem(MenuItem item) {

@@ -717,10 +717,11 @@ class FileNameEditLine : HorizontalLayout {
 
     this(string ID = null) {
         super(ID);
-        _edFileName = new EditLine("edFileName");
+        _edFileName = new EditLine("FileNameEditLine_edFileName");
         _edFileName.minWidth(200);
-        _btn = new Button("btnFile", "..."d);
+        _btn = new Button("FileNameEditLine_btnFile", "..."d);
         _btn.styleId = STYLE_BUTTON_NOMARGINS;
+        _btn.layoutWeight = 0;
         _btn.click = delegate(Widget src) {
             FileDialog dlg = new FileDialog(UIString(_caption), window, null, _fileDialogFlags);
             foreach(key, value; _filetypeIcons)
@@ -808,6 +809,7 @@ class DirEditLine : FileNameEditLine {
         super(ID);
         _fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable 
             | FileDialogFlag.FileMustExist | FileDialogFlag.SelectDirectory | FileDialogFlag.EnableCreateDirectory;
+        _caption = "Select directory"d;
     }
 }
 

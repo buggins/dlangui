@@ -164,11 +164,28 @@ class TabItemList {
         return _list[index];
     }
     /// get item by index
+    const (TabItem) get(int index) const {
+        if (index < 0 || index >= _len)
+            return null;
+        return _list[index];
+    }
+    /// get item by index
     TabItem opIndex(int index) {
+        return get(index);
+    }
+    /// get item by index
+    const (TabItem) opIndex(int index) const {
         return get(index);
     }
     /// get item by id
     TabItem get(string id) {
+        int idx = indexById(id);
+        if (idx < 0)
+            return null;
+        return _list[idx];
+    }
+    /// get item by id
+    const (TabItem) get(string id) const {
         int idx = indexById(id);
         if (idx < 0)
             return null;
@@ -204,7 +221,7 @@ class TabItemList {
         return res;
     }
     /// find tab index by id
-    int indexById(string id) {
+    int indexById(string id) const {
         import std.algorithm;
         for (int i = 0; i < _len; i++) {
             if (_list[i].id.equal(id))
@@ -285,6 +302,10 @@ class TabControl : WidgetGroupDefaultDrawing {
     }
     /// returns tab item by id (null if not found)
     TabItem tab(string id) {
+        return _items.get(id);
+    }
+    /// returns tab item by id (null if not found)
+    const(TabItem) tab(string id) const {
         return _items.get(id);
     }
     /// get tab index by tab id (-1 if not found)
@@ -802,6 +823,14 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
             }
         }
         return super.onKeyEvent(event);
+    }
+
+    @property const(TabItem) selectedTab() const {
+        return _tabControl.tab(selectedTabId);
+    }
+
+    @property TabItem selectedTab() {
+        return _tabControl.tab(selectedTabId);
     }
 
     @property string selectedTabId() const {
