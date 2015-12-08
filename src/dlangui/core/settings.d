@@ -151,6 +151,18 @@ class SettingsFile {
     /// override to do something after saving
     void afterSave() {
     }
+
+    bool merge(string json) {
+        try {
+            Setting setting = new Setting();
+            setting.parseJSON(json);
+            _setting.apply(setting);
+        } catch (Exception e) {
+            Log.e("SettingsFile.merge - failed to parse json", e);
+            return false;
+        }
+        return true;
+    }
 }
 
 /// setting object
@@ -400,6 +412,11 @@ final class Setting {
     }
 
     void apply(Setting settings) {
+        if (settings.isObject) {
+            foreach(key, value; settings.map) {
+                this[key] = value;
+            }
+        }
     }
 
     /// deep copy of settings
