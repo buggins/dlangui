@@ -1691,7 +1691,7 @@ class EditLine : EditWidgetBase {
 
 
 
-/// single line editor
+/// multiline editor
 class EditBox : EditWidgetBase {
     /// empty parameter list constructor - for usage by factory
     this() {
