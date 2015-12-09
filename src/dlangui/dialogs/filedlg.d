@@ -315,10 +315,28 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         }
     }
 
+    protected void createAndEnterDirectory(string name) {
+        string newdir = buildNormalizedPath(_path, name);
+        try {
+            mkdirRecurse(newdir);
+            openDirectory(newdir, null);
+        } catch (Exception e) {
+            window.showMessageBox(UIString("CREATE_FOLDER_ERROR_TITLE"c), UIString("CREATE_FOLDER_ERROR_MESSAGE"c));
+        }
+    }
+
     /// Custom handling of actions
     override bool handleAction(const Action action) {
         if (action.id == StandardAction.Cancel) {
             super.handleAction(action);
+            return true;
+        }
+        if (action.id == StandardAction.CreateDirectory) {
+            // show editor popup
+            window.showInputBox(UIString("CREATE_NEW_FOLDER"c), UIString("INPUT_NAME_FOR_FOLDER"c), ""d, delegate(dstring s) {
+                if (!s.empty)
+                    createAndEnterDirectory(toUTF8(s));
+            });
             return true;
         }
         if (action.id == StandardAction.Open || action.id == StandardAction.OpenDirectory || action.id == StandardAction.Save) {
@@ -411,7 +429,11 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
 
 		addChild(content);
-		addChild(createButtonsPanel([cast(immutable)_action, ACTION_CANCEL], 0, 0));
+        if (_flags & FileDialogFlag.EnableCreateDirectory) {
+		    addChild(createButtonsPanel([ACTION_CREATE_DIRECTORY, cast(immutable)_action, ACTION_CANCEL], 1, 1));
+        } else {
+		    addChild(createButtonsPanel([cast(immutable)_action, ACTION_CANCEL], 0, 0));
+        }
 
         _fileList.customCellAdapter = this;
         _fileList.onCellActivated = delegate(GridWidgetBase source, int col, int row) {

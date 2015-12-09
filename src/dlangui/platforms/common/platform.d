@@ -26,7 +26,6 @@ import dlangui.widgets.widget;
 import dlangui.widgets.popup;
 import dlangui.graphics.drawbuf;
 import dlangui.core.stdaction;
-import dlangui.dialogs.msgbox;
 
 private import dlangui.graphics.gldrawbuf;
 private import std.algorithm;
@@ -1065,6 +1064,7 @@ class Window {
 
     /// Show message box with specified title and message (title and message as UIString)
     void showMessageBox(UIString title, UIString message, const (Action)[] actions = [ACTION_OK], int defaultActionIndex = 0, bool delegate(const Action result) handler = null) {
+        import dlangui.dialogs.msgbox;
         MessageBox dlg = new MessageBox(title, message, this, actions, defaultActionIndex, handler);
         dlg.show();
     }
@@ -1072,6 +1072,16 @@ class Window {
     /// Show message box with specified title and message (title and message as dstring)
     void showMessageBox(dstring title, dstring message, const (Action)[] actions = [ACTION_OK], int defaultActionIndex = 0, bool delegate(const Action result) handler = null) {
         showMessageBox(UIString(title), UIString(message), actions, defaultActionIndex, handler);
+    }
+
+    void showInputBox(UIString title, UIString message, dstring initialText, void delegate(dstring result) handler) {
+        import dlangui.dialogs.inputbox;
+        InputBox dlg = new InputBox(title, message, this, initialText, handler);
+        dlg.show();
+    }
+
+    void showInputBox(dstring title, dstring message, dstring initialText, void delegate(dstring result) handler) {
+        showInputBox(UIString(title), UIString(message), initialText, handler);
     }
 
     protected TimerQueue _timerQueue;

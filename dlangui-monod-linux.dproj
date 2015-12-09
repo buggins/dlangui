@@ -260,6 +260,7 @@
     <Compile Include="src\dlangui\core\types.d" />
     <Compile Include="src\dlangui\dialogs\dialog.d" />
     <Compile Include="src\dlangui\dialogs\filedlg.d" />
+    <Compile Include="src\dlangui\dialogs\inputbox.d" />
     <Compile Include="src\dlangui\dialogs\msgbox.d" />
     <Compile Include="src\dlangui\dialogs\settingsdialog.d" />
     <Compile Include="src\dlangui\dml\annotations.d" />

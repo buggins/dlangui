@@ -578,6 +578,7 @@
     <Folder name="dialogs">
      <File path="src\dlangui\dialogs\dialog.d" />
      <File path="src\dlangui\dialogs\filedlg.d" />
+     <File path="src\dlangui\dialogs\inputbox.d" />
      <File path="src\dlangui\dialogs\msgbox.d" />
      <File path="src\dlangui\dialogs\settingsdialog.d" />
     </Folder>
