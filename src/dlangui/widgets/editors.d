@@ -1410,7 +1410,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 	/// handle keys
 	override bool onKeyEvent(KeyEvent event) {
         if (focused) startCaretBlinking();
-		if (event.action == KeyAction.Text && event.text.length && !(event.flags & (KeyFlag.Control | KeyFlag.Alt))) {
+        bool ctrlOrAltPressed = false; //(event.flags & (KeyFlag.Control /* | KeyFlag.Alt */));
+		if (event.action == KeyAction.Text && event.text.length && !ctrlOrAltPressed) {
 			Log.d("text entered: ", event.text);
             if (readOnly)
                 return true;

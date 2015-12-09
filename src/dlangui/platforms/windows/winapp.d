@@ -700,14 +700,16 @@ class Win32Window : Window {
                     updateKeyFlags((GetKeyState(VK_MENU) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.Alt);
                     break;
             }
+            //updateKeyFlags((GetKeyState(VK_CONTROL) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.Control);
+            //updateKeyFlags((GetKeyState(VK_SHIFT) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.Shift);
+            //updateKeyFlags((GetKeyState(VK_MENU) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.Alt);
             if (keyCode == 0xBF)
                 keyCode = KeyCode.KEY_DIVIDE;
             event = new KeyEvent(action, keyCode, _keyFlags);
         } else if (action == KeyAction.Text && character != 0) {
-            if (_keyFlags & (KeyFlag.Control | KeyFlag.Alt)) {
-                if (character >= 1 && character <= 26) {
-                    event = new KeyEvent(action, KeyCode.KEY_A + character - 1, _keyFlags);
-                }
+            bool ctrlAZKeyCode = (character >= 1 && character <= 26);
+            if ((_keyFlags & (KeyFlag.Control | KeyFlag.Alt)) && ctrlAZKeyCode) {
+                event = new KeyEvent(action, KeyCode.KEY_A + character - 1, _keyFlags);
             } else {
                 dchar[] text;
                 text ~= character;
