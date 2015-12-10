@@ -23,14 +23,18 @@ module dlangui.graphics.images;
 public import dlangui.core.config;
 
 //version = USE_DEIMAGE;
-version = USE_DLIBIMAGE;
+//version = USE_DLIBIMAGE;
+version = USE_DIMAGE;
 
 version (USE_DEIMAGE) {
     import devisualization.image;
     import devisualization.image.png;
-}
-
-version (USE_DLIBIMAGE) {
+} else version (USE_DIMAGE) {
+    //import dimage.io;
+    import dimage.image;
+    import dimage.png;
+    import dimage.jpeg;
+} else version (USE_DLIBIMAGE) {
     import dlib.image.io.io;
     import dlib.image.image;
     import dlib.image.io.png;
@@ -78,7 +82,7 @@ ColorDrawBuf loadImage(immutable ubyte[] data, string filename) {
     
     version (USE_DEIMAGE) {
         try {
-            Image image = imageFromFile(filename);
+            Image image = imageFromData(extension(filename)[1 ..$], cast(ubyte[])data); //imageFromFile(filename);
             int w = cast(int)image.width;
             int h = cast(int)image.height;
             ColorDrawBuf buf = new ColorDrawBuf(w, h);
@@ -133,6 +137,34 @@ ColorDrawBuf loadImage(immutable ubyte[] data, string filename) {
             Log.e(to!string(e));
             return null;
         }
+    } else version (USE_DIMAGE) {
+        import std.algorithm;
+        static import dimage.stream;
+        try {
+            SuperImage image = null;
+            dimage.stream.ArrayStream dlibstream = new dimage.stream.ArrayStream(cast(ubyte[])data, data.length);
+            switch(filename.extension)
+            {
+                case ".jpg", ".JPG", ".jpeg":
+                    image = dimage.jpeg.loadJPEG(dlibstream);
+                    break;
+                case ".png", ".PNG":
+                    image = dimage.png.loadPNG(dlibstream);
+                    break;
+                default:
+                    break;
+            }
+            //SuperImage image = dlib.image.io.io.loadImage(filename);
+            if (!image)
+                return null;
+            ColorDrawBuf buf = importImage(image);
+            destroy(image);
+            return buf;
+        } catch (Exception e) {
+            Log.e("Failed to load image from file ", filename, " using dlib image");
+            Log.e(to!string(e));
+            return null;
+        }
     } else {
         try {
             std.stream.File f = new std.stream.File(filename);
@@ -157,6 +189,22 @@ version (USE_DLIBIMAGE) {
             for (int x = 0; x < w; x++) {
                 auto pixel = image[x, y].convert(8);
                 dstLine[x] = makeRGBA(pixel.r, pixel.g, pixel.b, 255 - pixel.a);
+            }
+        }
+        return buf;
+    }
+}
+
+version (USE_DIMAGE) {
+    ColorDrawBuf importImage(SuperImage image) {
+        int w = image.width;
+        int h = image.height;
+        ColorDrawBuf buf = new ColorDrawBuf(w, h);
+        for (int y = 0; y < h; y++) {
+            uint * dstLine = buf.scanLine(y);
+            for (int x = 0; x < w; x++) {
+                uint pixel = image[x, y];
+                dstLine[x] = pixel ^ 0xFF000000;
             }
         }
         return buf;
