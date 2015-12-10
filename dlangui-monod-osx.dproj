@@ -225,5 +225,16 @@
     <Compile Include="deps\x11\source\x11\Xresource.d" />
     <Compile Include="deps\x11\source\x11\Xtos.d" />
     <Compile Include="deps\x11\source\x11\Xutil.d" />
+    <Compile Include="3rdparty\dimage\array.d" />
+    <Compile Include="3rdparty\dimage\bitio.d" />
+    <Compile Include="3rdparty\dimage\compound.d" />
+    <Compile Include="3rdparty\dimage\huffman.d" />
+    <Compile Include="3rdparty\dimage\idct.d" />
+    <Compile Include="3rdparty\dimage\image.d" />
+    <Compile Include="3rdparty\dimage\jpeg.d" />
+    <Compile Include="3rdparty\dimage\memory.d" />
+    <Compile Include="3rdparty\dimage\png.d" />
+    <Compile Include="3rdparty\dimage\stream.d" />
+    <Compile Include="3rdparty\dimage\zlib.d" />
   </ItemGroup>
 </Project>
