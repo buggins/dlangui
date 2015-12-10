@@ -270,6 +270,31 @@ class ExecutableFileNameEditItem : SettingsItem {
 	}
 }
 
+class PathNameEditItem : SettingsItem {
+	string _defaultValue;
+	this(string id, UIString label, string defaultValue) {
+		super(id, label);
+		_defaultValue = defaultValue;
+	}
+	/// create setting widget
+	override Widget[] createWidgets(Setting settings) {
+        import dlangui.dialogs.filedlg;
+		TextWidget lbl = new TextWidget(_id ~ "-label", _label);
+		DirEditLine ed = new DirEditLine(_id ~ "-path-edit");
+        ed.addFilter(FileFilterEntry(UIString("All files"d), "*.*"));
+        ed.minWidth = 200;
+		Setting setting = settings.settingByPath(_id, SettingType.STRING);
+		string value = setting.strDef(_defaultValue);
+		setting.str = value;
+		ed.text = toUTF32(value);
+		ed.contentChange = delegate(EditableContent content) {
+			string value = toUTF8(content.text);
+			setting.str = value;
+		};
+		return [lbl, ed];
+	}
+}
+
 /// settings page - item of settings tree, can edit several settings
 class SettingsPage {
     protected SettingsPage _parent;
@@ -344,6 +369,13 @@ class SettingsPage {
 	/// add EditLine to edit filename
 	FileNameEditItem addFileNameEdit(string id, UIString label, string defaultValue = "") {
 		FileNameEditItem res = new FileNameEditItem(id, label, defaultValue);
+		addItem(res);
+		return res;
+	}
+	
+	/// add EditLine to edit filename
+	PathNameEditItem addDirNameEdit(string id, UIString label, string defaultValue = "") {
+		PathNameEditItem res = new PathNameEditItem(id, label, defaultValue);
 		addItem(res);
 		return res;
 	}

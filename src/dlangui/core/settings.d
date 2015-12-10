@@ -80,6 +80,23 @@ class SettingsFile {
         }
     }
 
+    static int limitInt(long value, int minvalue, int maxvalue) {
+        if (value < minvalue)
+            return minvalue;
+        else if (value > maxvalue)
+            return maxvalue;
+        return cast(int)value;
+    }
+
+    static string limitString(string value, const string[] values) {
+        assert(values.length > 0);
+        foreach(v; values)
+            if (v.equal(value))
+                return value;
+        return values[0];
+    }
+
+
     @property bool loaded() {
         return _loaded;
     }
@@ -222,7 +239,6 @@ final class Setting {
     @property void changed(bool changed) {
         _changed = changed;
     }
-
 
     /// array
     private static struct SettingArray {
