@@ -21,7 +21,6 @@
         <Path>..\..\deps\DerelictGL3\source</Path>
         <Path>..\..\deps\DerelictUtil\source</Path>
         <Path>..\..\deps\gl3n</Path>
-        <Path>..\..\deps\dlib</Path>
       </Includes>
     </Includes>
   </PropertyGroup>

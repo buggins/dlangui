@@ -16,7 +16,6 @@
     <Includes>
       <Includes>
         <Path>../../src</Path>
-        <Path>../../deps/dlib</Path>
         <Path>../../deps/gl3n</Path>
         <Path>../../deps/x11/source</Path>
         <Path>../../deps/DerelictSDL2/source</Path>

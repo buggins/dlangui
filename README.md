@@ -153,8 +153,6 @@ To develop using Visual-D or MonoD, download sources for dlabgui and dependencie
         git clone https://github.com/DerelictOrg/DerelictGL3.git
         git clone https://github.com/DerelictOrg/DerelictFT.git
         git clone https://github.com/DerelictOrg/DerelictSDL2.git
-        git clone https://github.com/gecko0307/dlib.git
-        git clone https://github.com/Devisualization/image.git de_image
         git clone https://github.com/Dav1dde/gl3n.git
 
 Then open dlangui.sln using Visual D (or dlangui-monod.sln for MonoD)
@@ -197,8 +195,6 @@ Clone dependency libraries
         git clone https://github.com/DerelictOrg/DerelictGL3.git
         git clone https://github.com/DerelictOrg/DerelictFT.git
         git clone https://github.com/DerelictOrg/DerelictSDL2.git
-        git clone https://github.com/gecko0307/dlib.git
-        git clone https://github.com/Devisualization/image.git de_image
         git clone https://github.com/Dav1dde/gl3n.git
         git clone https://github.com/p0nce/DerelictCocoa.git
         git clone https://github.com/nomad-software/x11.git
@@ -233,7 +229,6 @@ Clone dependency libraries to dlangui/deps directory
         git clone https://github.com/DerelictOrg/DerelictGL3.git
         git clone https://github.com/DerelictOrg/DerelictFT.git
         git clone https://github.com/DerelictOrg/DerelictSDL2.git
-        git clone https://github.com/gecko0307/dlib.git
         git clone https://github.com/Dav1dde/gl3n.git
         git clone https://github.com/nomad-software/x11.git
 
@@ -270,7 +265,6 @@ Following settings are to be applied to all configurations of your new project (
   * In your project options Build/Includes put list of import directories of DlangUI library and its dependencies, like
   
         ../dlangui/src
-        ../dlangui/deps/dlib
         ../dlangui/deps/gl3n
         ../dlangui/deps/DerelictSDL2/source
         ../dlangui/deps/DerelictFT/source
@@ -304,9 +298,7 @@ Clone dependency libraries to dlangui/deps directory
         git clone https://github.com/DerelictOrg/DerelictGL3.git
         git clone https://github.com/DerelictOrg/DerelictFT.git
         git clone https://github.com/DerelictOrg/DerelictSDL2.git
-        git clone https://github.com/gecko0307/dlib.git
         git clone https://github.com/Dav1dde/gl3n.git
-        git clone https://github.com/Devisualization/image.git de_image
 
 Open solution file with Mono-D	
 
@@ -341,7 +333,6 @@ Following settings are to be applied to all configurations of your new project (
   * In your project options Build/Includes put list of import directories of DlangUI library and its dependencies, like
   
         ../dlangui/src
-        ../dlangui/deps/dlib
         ../dlangui/deps/gl3n
         ../dlangui/deps/DerelictSDL2/source
         ../dlangui/deps/DerelictFT/source
@@ -375,9 +366,7 @@ Clone dependency libraries to dlangui/deps directory
         git clone https://github.com/DerelictOrg/DerelictGL3.git
         git clone https://github.com/DerelictOrg/DerelictFT.git
         git clone https://github.com/DerelictOrg/DerelictSDL2.git
-        git clone https://github.com/gecko0307/dlib.git
         git clone https://github.com/Dav1dde/gl3n.git
-        git clone https://github.com/Devisualization/image.git de_image
         git clone https://github.com/Hackerpilot/libdparse.git
 
 For DlangIDE development, close dlangide project on the same directory level as dlangui is cloned:
@@ -418,7 +407,6 @@ Following settings are to be applied to all configurations of your new project (
   * In your project options Build/Includes put list of import directories of DlangUI library and its dependencies, like
   
         ../dlangui/src
-        ../dlangui/deps/dlib
         ../dlangui/deps/gl3n
         ../dlangui/deps/DerelictSDL2/source
         ../dlangui/deps/DerelictFT/source
@@ -471,8 +459,8 @@ Third party components used
 * DerelictFT + FreeType library support under linux and optionally under Windows.
 * DerelictSDL2 + SDL2 for cross platform support
 * WindowsAPI bindings from http://www.dsource.org/projects/bindings/wiki/WindowsApi (patched)
-* XCB and X11 bindings (patched) when SDL2 is not used; TODO: provide links
-* DLIB - for loading GIF and JPEG images (it replaced FreeImage recently)
+* X11 binding when SDL2 is not used
+* PNG and JPEG reading code is based on dlib sources
 
 
 Hello World
