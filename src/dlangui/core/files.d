@@ -187,7 +187,7 @@ bool filterFilename(string filename, string[] filters) {
 
     Returns true if directory exists and listed successfully, false otherwise.
 */
-bool listDirectory(string dir, bool includeDirs, bool includeFiles, bool showHiddenFiles, string[] filters, ref DirEntry[] entries) {
+bool listDirectory(string dir, bool includeDirs, bool includeFiles, bool showHiddenFiles, string[] filters, ref DirEntry[] entries, bool showExecutables = false) {
 
     entries.length = 0;
 
@@ -216,9 +216,23 @@ bool listDirectory(string dir, bool includeDirs, bool includeFiles, bool showHid
             foreach(DirEntry e; dirs)
                 entries ~= e;
         if (includeFiles)
-            foreach(DirEntry e; files)
-                if (filterFilename(e.name, filters))
+            foreach(DirEntry e; files) {
+                bool passed = false;
+                if (showExecutables) {
+                    version(Windows) {
+                        passed = e.name.endsWith(".exe") || e.name.endsWith(".EXE") 
+                            || e.name.endsWith(".cmd") || e.name.endsWith(".CMD") 
+                            || e.name.endsWith(".bat") || e.name.endsWith(".BAT");
+                    } else version (posix) {
+                        // execute permission for others
+                        passed = (e.attributes & 1) != 0;
+                    }
+                } else {
+                    passed = filterFilename(e.name, filters);
+                }
+                if (passed)
                     entries ~= e;
+            }
         return true;
     } catch (FileException e) {
         return false;

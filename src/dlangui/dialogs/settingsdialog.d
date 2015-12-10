@@ -73,7 +73,7 @@ class StringComboBoxItem : SettingsItem {
     override Widget[] createWidgets(Setting settings) {
         TextWidget lbl = new TextWidget(_id ~ "-label", _label);
         ComboBox cb = new ComboBox(_id, _items);
-        //cb.minWidth = 100;
+        cb.minWidth = 200;
         Setting setting = settings.settingByPath(_id, SettingType.STRING);
         string itemId = setting.str;
         int index = -1;
@@ -105,7 +105,7 @@ class IntComboBoxItem : SettingsItem {
     override Widget[] createWidgets(Setting settings) {
         TextWidget lbl = new TextWidget(_id ~ "-label", _label);
         ComboBox cb = new ComboBox(_id, _items);
-        //cb.minWidth = 100;
+        cb.minWidth = 100;
         Setting setting = settings.settingByPath(_id, SettingType.INTEGER);
         long itemId = setting.integer;
         int index = -1;
@@ -139,7 +139,7 @@ class FloatComboBoxItem : SettingsItem {
     override Widget[] createWidgets(Setting settings) {
         TextWidget lbl = new TextWidget(_id ~ "-label", _label);
         ComboBox cb = new ComboBox(_id, _items);
-        //cb.minWidth = 100;
+        cb.minWidth = 100;
         Setting setting = settings.settingByPath(_id, SettingType.FLOAT);
         long itemId = cast(long)(setting.floating * _divider);
         int index = -1;
@@ -174,6 +174,7 @@ class NumberEditItem : SettingsItem {
     override Widget[] createWidgets(Setting settings) {
         TextWidget lbl = new TextWidget(_id ~ "-label", _label);
         EditLine ed = new EditLine(_id ~ "-edit", _label);
+        ed.minWidth = 100;
         Setting setting = settings.settingByPath(_id, SettingType.INTEGER);
         int n = cast(int)setting.integerDef(_defaultValue);
         if (_minValue != int.max && n < _minValue)
@@ -206,7 +207,57 @@ class StringEditItem : SettingsItem {
 	/// create setting widget
 	override Widget[] createWidgets(Setting settings) {
 		TextWidget lbl = new TextWidget(_id ~ "-label", _label);
-		EditLine ed = new EditLine(_id ~ "-edit", _label);
+		EditLine ed = new EditLine(_id ~ "-edit");
+        ed.minWidth = 200;
+		Setting setting = settings.settingByPath(_id, SettingType.STRING);
+		string value = setting.strDef(_defaultValue);
+		setting.str = value;
+		ed.text = toUTF32(value);
+		ed.contentChange = delegate(EditableContent content) {
+			string value = toUTF8(content.text);
+			setting.str = value;
+		};
+		return [lbl, ed];
+	}
+}
+
+class FileNameEditItem : SettingsItem {
+	string _defaultValue;
+	this(string id, UIString label, string defaultValue) {
+		super(id, label);
+		_defaultValue = defaultValue;
+	}
+	/// create setting widget
+	override Widget[] createWidgets(Setting settings) {
+        import dlangui.dialogs.filedlg;
+		TextWidget lbl = new TextWidget(_id ~ "-label", _label);
+		FileNameEditLine ed = new FileNameEditLine(_id ~ "-filename-edit");
+        ed.minWidth = 200;
+		Setting setting = settings.settingByPath(_id, SettingType.STRING);
+		string value = setting.strDef(_defaultValue);
+		setting.str = value;
+		ed.text = toUTF32(value);
+		ed.contentChange = delegate(EditableContent content) {
+			string value = toUTF8(content.text);
+			setting.str = value;
+		};
+		return [lbl, ed];
+	}
+}
+
+class ExecutableFileNameEditItem : SettingsItem {
+	string _defaultValue;
+	this(string id, UIString label, string defaultValue) {
+		super(id, label);
+		_defaultValue = defaultValue;
+	}
+	/// create setting widget
+	override Widget[] createWidgets(Setting settings) {
+        import dlangui.dialogs.filedlg;
+		TextWidget lbl = new TextWidget(_id ~ "-label", _label);
+		FileNameEditLine ed = new FileNameEditLine(_id ~ "-filename-edit");
+        ed.addFilter(FileFilterEntry(UIString("Executable files"d), "*.exe", true));
+        ed.minWidth = 200;
 		Setting setting = settings.settingByPath(_id, SettingType.STRING);
 		string value = setting.strDef(_defaultValue);
 		setting.str = value;
@@ -286,6 +337,20 @@ class SettingsPage {
 	/// add EditLine to edit string
 	StringEditItem addStringEdit(string id, UIString label, string defaultValue = "") {
 		StringEditItem res = new StringEditItem(id, label, defaultValue);
+		addItem(res);
+		return res;
+	}
+	
+	/// add EditLine to edit filename
+	FileNameEditItem addFileNameEdit(string id, UIString label, string defaultValue = "") {
+		FileNameEditItem res = new FileNameEditItem(id, label, defaultValue);
+		addItem(res);
+		return res;
+	}
+	
+	/// add EditLine to edit executable file name
+	ExecutableFileNameEditItem addExecutableFileNameEdit(string id, UIString label, string defaultValue = "") {
+		ExecutableFileNameEditItem res = new ExecutableFileNameEditItem(id, label, defaultValue);
 		addItem(res);
 		return res;
 	}

@@ -69,14 +69,20 @@ enum FileDialogFlag : uint {
 struct FileFilterEntry {
 	UIString label;
 	string[] filter;
-	this(UIString displayLabel, string filterList) {
+    bool executableOnly;
+	this(UIString displayLabel, string filterList, bool executableOnly = false) {
 		label = displayLabel;
 		if (filterList.length)
 			filter = split(filterList, ";");
+        this.executableOnly = executableOnly;
 	}
 }
 
-__gshared bool SHOW_FILE_DIALOG_IN_POPUP = true;
+version (Windows) {
+    __gshared bool SHOW_FILE_DIALOG_IN_POPUP = true;
+} else {
+    __gshared bool SHOW_FILE_DIALOG_IN_POPUP = false;
+}
 
 /// File open / save dialog
 class FileDialog : Dialog, CustomGridCellAdapter {
@@ -165,6 +171,12 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 		return null;
 	}
 
+    @property bool executableFilterSelected() {
+		if (_filterIndex >= 0 && _filterIndex < _filters.length)
+			return _filters[_filterIndex].executableOnly;
+		return false;
+    }
+
     protected bool upLevel() {
         return openDirectory(parentDir(_path), _path);
     }
@@ -177,7 +189,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         dir = buildNormalizedPath(dir);
         Log.d("FileDialog.openDirectory(", dir, ")");
         _fileList.rows = 0;
-        if (!listDirectory(dir, true, true, false, selectedFilter, _entries))
+        if (!listDirectory(dir, true, true, false, selectedFilter, _entries, executableFilterSelected))
             return false;
         _path = dir;
         _isRoot = isRoot(dir);
