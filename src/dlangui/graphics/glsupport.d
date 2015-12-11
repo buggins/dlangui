@@ -435,18 +435,13 @@ class TextureProgram : SolidFillProgram {
         return res && texCoordLocation >= 0;
     }
 
-    bool execute(float[] vertices, float[] texcoords, float[] colors, uint textureId, bool linear) {
+    bool execute(float[] vertices, float[] texcoords, float[] colors, Tex2D texture, bool linear) {
         if(!check())
             return false;
         beforeExecute();
-        glActiveTexture(GL_TEXTURE0);
-        checkError("glActiveTexture GL_TEXTURE0");
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        checkError("glBindTexture");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
-        checkError("drawColorAndTextureRect - glTexParameteri");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
-        checkError("drawColorAndTextureRect - glTexParameteri");
+
+        texture.setup();
+        texture.setSamplerParams(linear);
 
         VAO vao = new VAO();
 
@@ -494,8 +489,7 @@ class TextureProgram : SolidFillProgram {
         destroy(vbo);
         destroy(vao);
 
-        glBindTexture(GL_TEXTURE_2D, 0);
-        checkError("glBindTexture");
+        texture.unbind();
         return true;
     }
 }
@@ -558,18 +552,13 @@ class FontProgram : SolidFillProgram {
         super.afterExecute();
     }
 
-    bool execute(float[] vertices, float[] texcoords, float[] colors, uint textureId, bool linear) {
+    bool execute(float[] vertices, float[] texcoords, float[] colors, Tex2D texture, bool linear) {
         if(!check())
             return false;
         beforeExecute();
-        glActiveTexture(GL_TEXTURE0);
-        checkError("glActiveTexture GL_TEXTURE0");
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        checkError("glBindTexture");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
-        checkError("drawColorAndTextureRect - glTexParameteri");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
-        checkError("drawColorAndTextureRect - glTexParameteri");
+
+        texture.setup();
+        texture.setSamplerParams(linear);
 
         VAO vao = new VAO();
 
@@ -617,8 +606,7 @@ class FontProgram : SolidFillProgram {
         destroy(vbo);
         destroy(vao);
 
-        glBindTexture(GL_TEXTURE_2D, 0);
-        checkError("glBindTexture");
+        texture.unbind();
         return true;
     }
 }
@@ -813,12 +801,12 @@ class GLSupport {
 		}
     }
 
-    void drawColorAndTextureGlyphRect(uint textureId, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color) {
-        //Log.v("drawColorAndGlyphRect tx=", textureId, " src=", srcrc, " dst=", dstrc);
-        drawColorAndTextureGlyphRect(textureId, tdx, tdy, srcrc.left, srcrc.top, srcrc.width(), srcrc.height(), dstrc.left, dstrc.top, dstrc.width(), dstrc.height(), color);
+    void drawColorAndTextureGlyphRect(Tex2D texture, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color) {
+        //Log.v("drawColorAndGlyphRect tx=", texture.ID, " src=", srcrc, " dst=", dstrc);
+        drawColorAndTextureGlyphRect(texture, tdx, tdy, srcrc.left, srcrc.top, srcrc.width(), srcrc.height(), dstrc.left, dstrc.top, dstrc.width(), dstrc.height(), color);
     }
 
-    void drawColorAndTextureGlyphRect(uint textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, uint color) {
+    void drawColorAndTextureGlyphRect(Tex2D texture, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, uint color) {
         float[6*4] colors;
         LVGLFillColor(color, colors.ptr, 6);
         float dstx0 = cast(float)xx;
@@ -848,16 +836,9 @@ class GLSupport {
 		if (_legacyMode) {
 			bool linear = dx != srcdx || dy != srcdy;
 			glDisable(GL_CULL_FACE);
-			glActiveTexture(GL_TEXTURE0);
-			checkError("glActiveTexture");
 			glEnable(GL_TEXTURE_2D);
-			checkError("glEnable(GL_TEXTURE_2D)");
-			glBindTexture(GL_TEXTURE_2D, textureId);
-			checkError("glBindTexture");
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
-			checkError("drawColorAndTextureRect - glTexParameteri");
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
-			checkError("drawColorAndTextureRect - glTexParameteri");
+			texture.setup();
+			texture.setSamplerParams(linear);
 
 			glColor4f(1,1,1,1);
 			glDisable(GL_ALPHA_TEST);
@@ -889,17 +870,17 @@ class GLSupport {
 			glDisable(GL_ALPHA_TEST);
 			glDisable(GL_TEXTURE_2D);
 		} else {
-        	_fontProgram.execute(vertices, texcoords, colors, textureId, false);
+        	_fontProgram.execute(vertices, texcoords, colors, texture, false);
 		}
-        //drawColorAndTextureRect(vertices, texcoords, colors, textureId, linear);
+        //drawColorAndTextureRect(vertices, texcoords, colors, texture, linear);
     }
 
-    void drawColorAndTextureRect(uint textureId, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color, bool linear) {
-        //Log.v("drawColorAndTextureRect tx=", textureId, " src=", srcrc, " dst=", dstrc);
-        drawColorAndTextureRect(textureId, tdx, tdy, srcrc.left, srcrc.top, srcrc.width(), srcrc.height(), dstrc.left, dstrc.top, dstrc.width(), dstrc.height(), color, linear);
+    void drawColorAndTextureRect(Tex2D texture, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color, bool linear) {
+        //Log.v("drawColorAndTextureRect tx=", texture.ID, " src=", srcrc, " dst=", dstrc);
+        drawColorAndTextureRect(texture, tdx, tdy, srcrc.left, srcrc.top, srcrc.width(), srcrc.height(), dstrc.left, dstrc.top, dstrc.width(), dstrc.height(), color, linear);
     }
 
-    void drawColorAndTextureRect(uint textureId, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, uint color, bool linear) {
+    void drawColorAndTextureRect(Tex2D texture, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, uint color, bool linear) {
         float[6*4] colors;
         LVGLFillColor(color, colors.ptr, 6);
         float dstx0 = cast(float)xx;
@@ -927,16 +908,9 @@ class GLSupport {
 
 		if (_legacyMode) {
 			glDisable(GL_CULL_FACE);
-			glActiveTexture(GL_TEXTURE0);
-			checkError("glActiveTexture");
 			glEnable(GL_TEXTURE_2D);
-			checkError("glEnable(GL_TEXTURE_2D)");
-			glBindTexture(GL_TEXTURE_2D, textureId);
-			checkError("glBindTexture");
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
-			checkError("drawColorAndTextureRect - glTexParameteri");
-			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
-			checkError("drawColorAndTextureRect - glTexParameteri");
+			texture.setup();
+			texture.setSamplerParams(linear);
 
 			glColor4f(1,1,1,1);
 			glDisable(GL_ALPHA_TEST);
@@ -968,30 +942,9 @@ class GLSupport {
 			glDisable(GL_ALPHA_TEST);
 			glDisable(GL_TEXTURE_2D);
 		} else {
-        	_textureProgram.execute(vertices, texcoords, colors, textureId, linear);
+        	_textureProgram.execute(vertices, texcoords, colors, texture, linear);
 		}
-        //drawColorAndTextureRect(vertices, texcoords, colors, textureId, linear);
-    }
-
-    /// generate new texture ID
-    uint genTexture() {
-        GLuint textureId = 0;
-        glGenTextures(1, &textureId);
-        return textureId;
-    }
-
-    /// delete OpenGL texture
-    void deleteTexture(ref uint textureId) {
-        if (!textureId)
-            return;
-        if (glIsTexture(textureId) != GL_TRUE) {
-            Log.e("Invalid texture ", textureId);
-            return;
-        }
-        GLuint id = textureId;
-        glDeleteTextures(1, &id);
-        checkError("glDeleteTextures");
-        textureId = 0;
+        //drawColorAndTextureRect(vertices, texcoords, colors, texture, linear);
     }
 
     /// call glFlush
@@ -1000,32 +953,16 @@ class GLSupport {
         checkError("glFlush");
     }
 
-    bool setTextureImage(uint textureId, int dx, int dy, ubyte * pixels) {
+    bool setTextureImage(Tex2D texture, int dx, int dy, ubyte * pixels) {
         //checkError("before setTextureImage");
-        glActiveTexture(GL_TEXTURE0);
-        checkError("updateTexture - glActiveTexture");
-        glBindTexture(GL_TEXTURE_2D, 0);
-        checkError("updateTexture - glBindTexture(0)");
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        checkError("updateTexture - glBindTexture");
+        texture.setup();
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         checkError("updateTexture - glPixelStorei");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        checkError("updateTexture - glTexParameteri");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        checkError("updateTexture - glTexParameteri");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        checkError("updateTexture - glTexParameteri");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        checkError("updateTexture - glTexParameteri");
-
-        if (!glIsTexture(textureId))
-            Log.e("second test - invalid texture passed to CRGLSupportImpl::setTextureImage");
+        texture.setSamplerParams(true, true);
 
         // ORIGINAL: glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dx, dy, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dx, dy, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-        checkError("updateTexture - glTexImage2D");
-        if (glGetError() != GL_NO_ERROR) {
+        if (checkError("updateTexture - glTexImage2D")) {
             Log.e("Cannot set image for texture");
             return false;
         }
@@ -1033,36 +970,19 @@ class GLSupport {
         return true;
     }
 
-    bool setTextureImageAlpha(uint textureId, int dx, int dy, ubyte * pixels) {
+    bool setTextureImageAlpha(Tex2D texture, int dx, int dy, ubyte * pixels) {
         checkError("before setTextureImageAlpha");
-        glActiveTexture(GL_TEXTURE0);
-        checkError("updateTexture - glActiveTexture");
-        glBindTexture(GL_TEXTURE_2D, 0);
-        checkError("updateTexture - glBindTexture(0)");
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        checkError("setTextureImageAlpha - glBindTexture");
+        texture.setup();
         glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         checkError("setTextureImageAlpha - glPixelStorei");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        checkError("setTextureImageAlpha - glTexParameteri");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        checkError("setTextureImageAlpha - glTexParameteri");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        checkError("setTextureImageAlpha - glTexParameteri");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        checkError("setTextureImageAlpha - glTexParameteri");
-
-        if (!glIsTexture(textureId))
-            Log.e("second test: invalid texture passed to CRGLSupportImpl::setTextureImageAlpha");
+        texture.setSamplerParams(true, true);
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, dx, dy, 0, GL_ALPHA, GL_UNSIGNED_BYTE, pixels);
-        checkError("setTextureImageAlpha - glTexImage2D");
-        if (glGetError() != GL_NO_ERROR) {
+        if (checkError("setTextureImageAlpha - glTexImage2D")) {
             Log.e("Cannot set image for texture");
             return false;
         }
-        glBindTexture(GL_TEXTURE_2D, 0);
-        checkError("updateTexture - glBindTexture(0)");
+        texture.unbind();
         checkError("after setTextureImageAlpha");
         return true;
     }
