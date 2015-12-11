@@ -300,15 +300,15 @@ class SolidFillProgram : GLProgram {
 
         matrixLocation = glGetUniformLocation(program, "matrix");
 		checkError("glGetUniformLocation matrix");
-		if (matrixLocation == 0)
+		if (matrixLocation == -1)
 			Log.e("glGetUniformLocation failed for matrixLocation");
         vertexLocation = glGetAttribLocation(program, "vertex");
 		checkError("glGetAttribLocation vertex");
-		if (vertexLocation == 0)
+		if (vertexLocation == -1)
 			Log.e("glGetUniformLocation failed for vertexLocation");
 		colAttrLocation = glGetAttribLocation(program, "colAttr");
 		checkError("glGetAttribLocation colAttr");
-		if (colAttrLocation == 0)
+		if (colAttrLocation == -1)
 			Log.e("glGetUniformLocation failed for colAttrLocation");
 		return res && matrixLocation >= 0 && vertexLocation >= 0 && colAttrLocation >= 0;
     }
