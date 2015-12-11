@@ -69,7 +69,9 @@ static this() {
         0x0500:  "GL_INVALID_ENUM",
         0x0501:  "GL_INVALID_VALUE",
         0x0502:  "GL_INVALID_OPERATION",
-        0x0505:  "GL_OUT_OF_MEMORY"
+        0x0505:  "GL_OUT_OF_MEMORY",
+        0x0506:  "GL_INVALID_FRAMEBUFFER_OPERATION",
+        0x0507:  "GL_CONTEXT_LOST"
     ];
 }
 /** 
@@ -81,7 +83,7 @@ bool checkError(string context="", string file=__FILE__, int line=__LINE__)
     GLenum err = glGetError();
     if (err != GL_NO_ERROR)
     {
-        Log.e("OpenGL error ", err in errors ? errors[err] : to!string(err), " at ", file, ":", line, " -- ", context);
+        Log.e("OpenGL error ", errors.get(err, to!string(err)), " at ", file, ":", line, " -- ", context);
         return true;
     }
     return false;
