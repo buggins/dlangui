@@ -64,7 +64,8 @@
             "versions": ["EmbedStandardResources", "ForceLogs"],
             "versions-posix": ["USE_SDL", "USE_FREETYPE", "USE_OPENGL"],
             "versions-windows": ["Unicode"],
-                "gl3n": "~>1.2.0"
+            "dependencies": {
+                "gl3n": "~>1.2.0",
             },
             "dependencies-posix": {
                 "derelict-gl3": "~>1.0.16",
