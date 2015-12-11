@@ -185,7 +185,7 @@ class GLProgram {
         Log.d("Program compiled successfully");
         //glDetachShader(program, vertexShader);
         //glDetachShader(program, fragmentShader);
-        Log.v("trying glUseProgram(0)");
+        Log.v("trying glUseProgram with 0");
         glUseProgram(0);
         Log.v("before useProgram");
         glUseProgram(program);
