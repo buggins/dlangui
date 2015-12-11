@@ -69,7 +69,9 @@ static this() {
         0x0500:  "GL_INVALID_ENUM",
         0x0501:  "GL_INVALID_VALUE",
         0x0502:  "GL_INVALID_OPERATION",
-        0x0505:  "GL_OUT_OF_MEMORY"
+        0x0505:  "GL_OUT_OF_MEMORY",
+        0x0506:  "GL_INVALID_FRAMEBUFFER_OPERATION",
+        0x0507:  "GL_CONTEXT_LOST"
     ];
 }
 /** 
@@ -81,7 +83,7 @@ bool checkError(string context="", string file=__FILE__, int line=__LINE__)
     GLenum err = glGetError();
     if (err != GL_NO_ERROR)
     {
-        Log.e("OpenGL error ", err in errors ? errors[err] : to!string(err), " at ", file, ":", line, " -- ", context);
+        Log.e("OpenGL error ", errors.get(err, to!string(err)), " at ", file, ":", line, " -- ", context);
         return true;
     }
     return false;
@@ -122,10 +124,9 @@ class GLProgram {
         compatibilityFixes(sourceCode, type);
         
 		Log.d("compileShader glsl=", glslversion, " type:", (type == GL_VERTEX_SHADER ? "GL_VERTEX_SHADER" : (type == GL_FRAGMENT_SHADER ? "GL_FRAGMENT_SHADER" : "UNKNOWN")), " code:\n", sourceCode);
-        GLuint shader = glCreateShader(type);//GL_VERTEX_SHADER
+        GLuint shader = glCreateShader(type);
         const char * psrc = sourceCode.toStringz;
-        GLuint len = cast(uint)sourceCode.length;
-        glShaderSource(shader, 1, &psrc, cast(const(int)*)&len);
+        glShaderSource(shader, 1, &psrc, null);
         glCompileShader(shader);
         GLint compiled;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
@@ -139,9 +140,8 @@ class GLProgram {
             if (blen > 1)
             {
                 GLchar[] msg = new GLchar[blen + 1];
-                GLchar * pmsg = &msg[0];
-                glGetShaderInfoLog(shader, blen, &slen, pmsg);
-                Log.d("Shader compilation error: ", fromStringz(pmsg));
+                glGetShaderInfoLog(shader, blen, &slen, msg.ptr);
+                Log.d("Shader compilation error: ", fromStringz(msg.ptr));
             }    
             return 0;
         }
@@ -176,16 +176,13 @@ class GLProgram {
             GLint maxLength = 0;
             glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
             GLchar[] msg = new GLchar[maxLength + 1];
-            GLchar * pmsg = &msg[0];
-            glGetProgramInfoLog(program, maxLength, &maxLength, pmsg);
-            Log.e("Error while linking program: ", fromStringz(pmsg));
+            glGetProgramInfoLog(program, maxLength, &maxLength, msg.ptr);
+            Log.e("Error while linking program: ", fromStringz(msg.ptr));
             error = true;
             return false;
         }
-        Log.d("Program compiled successfully");
-        //glDetachShader(program, vertexShader);
-        //glDetachShader(program, fragmentShader);
-        Log.v("trying glUseProgram(0)");
+        Log.d("Program linked successfully");
+        Log.v("trying glUseProgram with 0");
         glUseProgram(0);
         Log.v("before useProgram");
         glUseProgram(program);
@@ -298,15 +295,15 @@ class SolidFillProgram : GLProgram {
 
         matrixLocation = glGetUniformLocation(program, "matrix");
 		checkError("glGetUniformLocation matrix");
-		if (matrixLocation == 0)
+		if (matrixLocation == -1)
 			Log.e("glGetUniformLocation failed for matrixLocation");
         vertexLocation = glGetAttribLocation(program, "vertex");
 		checkError("glGetAttribLocation vertex");
-		if (vertexLocation == 0)
+		if (vertexLocation == -1)
 			Log.e("glGetUniformLocation failed for vertexLocation");
 		colAttrLocation = glGetAttribLocation(program, "colAttr");
 		checkError("glGetAttribLocation colAttr");
-		if (colAttrLocation == 0)
+		if (colAttrLocation == -1)
 			Log.e("glGetUniformLocation failed for colAttrLocation");
 		return res && matrixLocation >= 0 && vertexLocation >= 0 && colAttrLocation >= 0;
     }
