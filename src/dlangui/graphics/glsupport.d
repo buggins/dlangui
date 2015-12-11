@@ -31,12 +31,12 @@ import std.array;
 
 derelict.util.exception.ShouldThrow gl3MissingSymFunc( string symName ) {
 	import std.algorithm : equal;
-	foreach(s; ["glGetError", "glShaderSource", "glCompileShader", 
-			"glGetShaderiv", "glGetShaderInfoLog", "glGetString", 
-			"glCreateProgram", "glUseProgram", "glDeleteProgram", 
-			"glDeleteShader", "glEnable", "glDisable", "glBlendFunc", 
-			"glUniformMatrix4fv", "glGetAttribLocation", "glGetUniformLocation", 
-			"glGenVertexArrays", "glBindVertexArray", "glBufferData", 
+	foreach(s; ["glGetError", "glShaderSource", "glCompileShader",
+			"glGetShaderiv", "glGetShaderInfoLog", "glGetString",
+			"glCreateProgram", "glUseProgram", "glDeleteProgram",
+			"glDeleteShader", "glEnable", "glDisable", "glBlendFunc",
+			"glUniformMatrix4fv", "glGetAttribLocation", "glGetUniformLocation",
+			"glGenVertexArrays", "glBindVertexArray", "glBufferData",
 			"glBindBuffer", "glBufferSubData"]) {
 		if (symName.equal(s)) // Symbol is used
 			return derelict.util.exception.ShouldThrow.Yes;
@@ -74,7 +74,7 @@ static this() {
         0x0507:  "GL_CONTEXT_LOST"
     ];
 }
-/** 
+/**
  * Convenient wrapper around glGetError()
  * TODO use one of the DEBUG extensions instead
  */
@@ -103,7 +103,7 @@ class GLProgram {
     protected char[] glslversionString;
     this() {
     }
-    
+
     private void compatibilityFixes(ref char[] code, GLuint type) {
         if (glslversionInt < 150) {
             code = replace(code, " texture(", " texture2D(");
@@ -111,7 +111,7 @@ class GLProgram {
 			code = replace(code, "out ", "");
 		}
     }
-    
+
     private GLuint compileShader(string src, GLuint type) {
         import core.stdc.stdlib;
         import std.string;
@@ -122,7 +122,7 @@ class GLProgram {
         sourceCode ~= "\n";
         sourceCode ~= src;
         compatibilityFixes(sourceCode, type);
-        
+
 		Log.d("compileShader glsl=", glslversion, " type:", (type == GL_VERTEX_SHADER ? "GL_VERTEX_SHADER" : (type == GL_FRAGMENT_SHADER ? "GL_FRAGMENT_SHADER" : "UNKNOWN")), " code:\n", sourceCode);
         GLuint shader = glCreateShader(type);
         const char * psrc = sourceCode.toStringz;
@@ -134,15 +134,15 @@ class GLProgram {
             // compiled successfully
             return shader;
         } else {
-            GLint blen = 0;	
+            GLint blen = 0;
             GLsizei slen = 0;
-            glGetShaderiv(shader, GL_INFO_LOG_LENGTH , &blen);       
+            glGetShaderiv(shader, GL_INFO_LOG_LENGTH , &blen);
             if (blen > 1)
             {
                 GLchar[] msg = new GLchar[blen + 1];
                 glGetShaderInfoLog(shader, blen, &slen, msg.ptr);
                 Log.d("Shader compilation error: ", fromStringz(msg.ptr));
-            }    
+            }
             return 0;
         }
     }
@@ -260,12 +260,22 @@ class SolidFillProgram : GLProgram {
         };
     }
 
+    bool check()
+    {
+        if (error)
+            return false;
+        if (!initialized)
+            if (!compile())
+                return false;
+        return true;
+    }
+
     void beforeExecute() {
         glEnable(GL_BLEND);
         glDisable(GL_CULL_FACE);
         checkError("glDisable(GL_CULL_FACE)");
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE); 
+        //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
         checkError("glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
         bind();
         //glUniformMatrix4fv(matrixLocation,  1, false, m.value_ptr);
@@ -281,17 +291,8 @@ class SolidFillProgram : GLProgram {
     protected GLint matrixLocation;
     protected GLint vertexLocation;
     protected GLint colAttrLocation;
-	protected GLuint vertexBuffer;
-	protected GLuint colAttrBuffer;
     override bool initLocations() {
         bool res = super.initLocations();
-
-		//glGenBuffers(1, &vertexBuffer);
-		//glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
-		//glBufferData(GL_ARRAY_BUFFER, float.sizeof * 3 * 6, null, GL_DYNAMIC_DRAW);
-		//glGenBuffers(1, &colAttrBuffer);
-		//glBindBuffer(GL_ARRAY_BUFFER, colAttrBuffer);
-		//glBufferData(GL_ARRAY_BUFFER, float.sizeof * 4 * 6, null, GL_DYNAMIC_DRAW);
 
         matrixLocation = glGetUniformLocation(program, "matrix");
 		checkError("glGetUniformLocation matrix");
@@ -309,11 +310,8 @@ class SolidFillProgram : GLProgram {
     }
 
     bool execute(float[] vertices, float[] colors) {
-        if (error)
+        if(!check())
             return false;
-        if (!initialized)
-            if (!compile())
-                return false;
         beforeExecute();
 
         GLuint vao;
@@ -369,11 +367,8 @@ class SolidFillProgram : GLProgram {
 
 class LineProgram : SolidFillProgram {
     override bool execute(float[] vertices, float[] colors) {
-        if (error)
+        if(!check())
             return false;
-        if (!initialized)
-            if (!compile())
-                return false;
         beforeExecute();
 
         GLuint vao;
@@ -396,7 +391,7 @@ class LineProgram : SolidFillProgram {
         glBufferSubData(
             GL_ARRAY_BUFFER,
             vertices.length * vertices[0].sizeof,
-            colors.length * colors[0].sizeof, 
+            colors.length * colors[0].sizeof,
             colors.ptr);
 
         glEnableVertexAttribArray(vertexLocation);
@@ -467,11 +462,8 @@ class TextureProgram : SolidFillProgram {
     }
 
     bool execute(float[] vertices, float[] texcoords, float[] colors, uint textureId, bool linear) {
-        if (error)
+        if(!check())
             return false;
-        if (!initialized)
-            if (!compile())
-                return false;
         beforeExecute();
         glActiveTexture(GL_TEXTURE0);
         checkError("glActiveTexture GL_TEXTURE0");
@@ -600,11 +592,8 @@ class FontProgram : SolidFillProgram {
     }
 
     bool execute(float[] vertices, float[] texcoords, float[] colors, uint textureId, bool linear) {
-        if (error)
+        if(!check())
             return false;
-        if (!initialized)
-            if (!compile())
-                return false;
         beforeExecute();
         glActiveTexture(GL_TEXTURE0);
         checkError("glActiveTexture GL_TEXTURE0");
@@ -847,10 +836,10 @@ class GLSupport {
 			checkError("glVertexPointer(3, GL_FLOAT, 0, vertices)");
 			glColorPointer(4, GL_FLOAT, 0, cast(void*)colors);
 			checkError("glColorPointer(4, GL_FLOAT, 0, colors)");
-			
+
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 			checkError("glDrawArrays(GL_TRIANGLES, 0, 6)");
-			
+
 			glDisableClientState(GL_COLOR_ARRAY);
 			glDisableClientState(GL_VERTEX_ARRAY);
 			glDisable(GL_ALPHA_TEST);
@@ -887,7 +876,7 @@ class GLSupport {
         float srcy0 = srcy / cast(float)tdy;
         float srcx1 = (srcx + srcdx) / cast(float)tdx;
         float srcy1 = (srcy + srcdy) / cast(float)tdy;
-        float[3 * 6] vertices = 
+        float[3 * 6] vertices =
            [dstx0, dsty0, Z_2D,
             dstx0, dsty1, Z_2D,
             dstx1, dsty1, Z_2D,
@@ -909,14 +898,14 @@ class GLSupport {
 			checkError("drawColorAndTextureRect - glTexParameteri");
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
 			checkError("drawColorAndTextureRect - glTexParameteri");
-			
+
 			glColor4f(1,1,1,1);
 			glDisable(GL_ALPHA_TEST);
-			
+
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			checkError("glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
-			
+
 			glEnableClientState(GL_COLOR_ARRAY);
 			checkError("glEnableClientState(GL_COLOR_ARRAY)");
 			glEnableClientState(GL_VERTEX_ARRAY);
@@ -929,10 +918,10 @@ class GLSupport {
 			checkError("glTexCoordPointer(2, GL_FLOAT, 0, texcoords)");
 			glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
 			checkError("glColorPointer(4, GL_FLOAT, 0, colors)");
-			
+
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 			checkError("glDrawArrays");
-			
+
 			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 			glDisableClientState(GL_VERTEX_ARRAY);
 			glDisableClientState(GL_COLOR_ARRAY);
@@ -988,14 +977,14 @@ class GLSupport {
 			checkError("drawColorAndTextureRect - glTexParameteri");
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
 			checkError("drawColorAndTextureRect - glTexParameteri");
-			
+
 			glColor4f(1,1,1,1);
 			glDisable(GL_ALPHA_TEST);
-			
+
 			glEnable(GL_BLEND);
 			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 			checkError("glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
-			
+
 			glEnableClientState(GL_COLOR_ARRAY);
 			checkError("glEnableClientState(GL_COLOR_ARRAY)");
 			glEnableClientState(GL_VERTEX_ARRAY);
@@ -1008,10 +997,10 @@ class GLSupport {
 			checkError("glTexCoordPointer(2, GL_FLOAT, 0, texcoords)");
 			glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
 			checkError("glColorPointer(4, GL_FLOAT, 0, colors)");
-			
+
 			glDrawArrays(GL_TRIANGLES, 0, 6);
 			checkError("glDrawArrays");
-			
+
 			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 			glDisableClientState(GL_VERTEX_ARRAY);
 			glDisableClientState(GL_COLOR_ARRAY);
@@ -1121,10 +1110,9 @@ class GLSupport {
     private uint currentFramebufferId;
 
     /// returns texture ID for buffer, 0 if failed
-    bool createFramebuffer(ref uint textureId, ref uint framebufferId, int dx, int dy) {
+    bool createFramebuffer(out uint textureId, out uint framebufferId, int dx, int dy) {
         checkError("before createFramebuffer");
         bool res = true;
-        textureId = framebufferId = 0;
         textureId = genTexture();
         if (!textureId)
             return false;
