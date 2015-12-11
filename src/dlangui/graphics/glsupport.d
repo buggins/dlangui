@@ -124,10 +124,9 @@ class GLProgram {
         compatibilityFixes(sourceCode, type);
         
 		Log.d("compileShader glsl=", glslversion, " type:", (type == GL_VERTEX_SHADER ? "GL_VERTEX_SHADER" : (type == GL_FRAGMENT_SHADER ? "GL_FRAGMENT_SHADER" : "UNKNOWN")), " code:\n", sourceCode);
-        GLuint shader = glCreateShader(type);//GL_VERTEX_SHADER
+        GLuint shader = glCreateShader(type);
         const char * psrc = sourceCode.toStringz;
-        GLuint len = cast(uint)sourceCode.length;
-        glShaderSource(shader, 1, &psrc, cast(const(int)*)&len);
+        glShaderSource(shader, 1, &psrc, null);
         glCompileShader(shader);
         GLint compiled;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
@@ -141,9 +140,8 @@ class GLProgram {
             if (blen > 1)
             {
                 GLchar[] msg = new GLchar[blen + 1];
-                GLchar * pmsg = &msg[0];
-                glGetShaderInfoLog(shader, blen, &slen, pmsg);
-                Log.d("Shader compilation error: ", fromStringz(pmsg));
+                glGetShaderInfoLog(shader, blen, &slen, msg.ptr);
+                Log.d("Shader compilation error: ", fromStringz(msg.ptr));
             }    
             return 0;
         }
@@ -178,15 +176,12 @@ class GLProgram {
             GLint maxLength = 0;
             glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
             GLchar[] msg = new GLchar[maxLength + 1];
-            GLchar * pmsg = &msg[0];
-            glGetProgramInfoLog(program, maxLength, &maxLength, pmsg);
-            Log.e("Error while linking program: ", fromStringz(pmsg));
+            glGetProgramInfoLog(program, maxLength, &maxLength, msg.ptr);
+            Log.e("Error while linking program: ", fromStringz(msg.ptr));
             error = true;
             return false;
         }
-        Log.d("Program compiled successfully");
-        //glDetachShader(program, vertexShader);
-        //glDetachShader(program, fragmentShader);
+        Log.d("Program linked successfully");
         Log.v("trying glUseProgram with 0");
         glUseProgram(0);
         Log.v("before useProgram");
