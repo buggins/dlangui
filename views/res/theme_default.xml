@@ -284,6 +284,7 @@
         minWidth="40"
         />
     <style id="EDIT_BOX"
+        fontFace="Menlo,Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console"
         backgroundImageId="editbox_background"
         padding="2,2,2,2"
         margins="2,2,2,2"

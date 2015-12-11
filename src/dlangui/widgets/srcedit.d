@@ -25,7 +25,7 @@ import dlangui.widgets.styles;
 class SourceEdit : EditBox {
 	this(string ID) {
 		super(ID);
-		fontFace = "Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console";
+		fontFace = "Menlo,Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console";
 		//fontFace = "Consolas,Lucida Console,Courier New";
 		fontFamily = FontFamily.MonoSpace;
 		fontSize = makePointSize(10);

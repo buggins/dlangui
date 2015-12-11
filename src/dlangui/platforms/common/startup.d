@@ -163,6 +163,13 @@ version (Windows) {
                 ft.registerFont("/Library/Fonts/Microsoft/Verdana Bold.ttf", FontFamily.SansSerif, "Verdana", false, FontWeight.Bold, true);
                 ft.registerFont("/Library/Fonts/Microsoft/Verdana Italic.ttf", FontFamily.SansSerif, "Verdana", true, FontWeight.Normal, true);
                 ft.registerFont("/Library/Fonts/Microsoft/Verdana Bold Italic.ttf", FontFamily.SansSerif, "Verdana", true, FontWeight.Bold, true);
+
+                ft.registerFont("/Library/Fonts/Microsoft/Consolas.ttf", FontFamily.MonoSpace, "Consolas", false, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Microsoft/Consolas Bold.ttf", FontFamily.MonoSpace, "Consolas", false, FontWeight.Bold, true);
+                ft.registerFont("/Library/Fonts/Microsoft/Consolas Italic.ttf", FontFamily.MonoSpace, "Consolas", true, FontWeight.Normal, true);
+                ft.registerFont("/Library/Fonts/Microsoft/Consolas Bold Italic.ttf", FontFamily.MonoSpace, "Consolas", true, FontWeight.Bold, true);
+
+                ft.registerFont("/System/Library/Fonts/Menlo.ttc", FontFamily.MonoSpace, "Menlo", false, FontWeight.Normal, true);
             }
 		}
 		
