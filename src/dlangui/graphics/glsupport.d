@@ -1289,3 +1289,62 @@ class GLSupport {
     }
 }
 
+
+enum GLObjectTypes { Buffer, VertexArray, Texture, Framebuffer };
+class GLObject(GLObjectTypes type, GLuint target = 0) {
+    @property auto ID() const { return id; }
+    //alias ID this; // good, but it confuses destroy()
+
+    private GLuint id;
+
+    this() {
+        mixin("glGen" ~ to!string(type) ~ "s(1, &id);");
+        checkError("glGen" ~ to!string(type));
+        bind();
+	}
+
+    ~this() {
+        unbind();
+        mixin("glDelete" ~ to!string(type) ~ "s(1, &id);");
+        checkError("glDelete" ~ to!string(type));
+    }
+
+    void bind() {
+        static if(target != 0)
+            mixin("glBind" ~ to!string(type) ~ "(" ~ to!string(target) ~ ", id);");
+        else
+            mixin("glBind" ~ to!string(type) ~ "(id);");
+    }
+
+    void unbind() {
+        static if(target != 0)
+            mixin("glBind" ~ to!string(type) ~ "(" ~ to!string(target) ~ ", 0);");
+        else
+            mixin("glBind" ~ to!string(type) ~ "(0);");
+        checkError("unbind " ~ to!string(type));
+	}
+
+    static if(type == GLObjectTypes.Texture)
+    {
+    void setSamplerParams(bool linear, bool clamp = false) {
+        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+        checkError("filtering - glTexParameteri");
+        if(clamp) {
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+            checkError("clamp - glTexParameteri");
+        }
+    }
+
+    void setup(GLuint binding = 0) {
+        glActiveTexture(GL_TEXTURE0 + binding);
+        glBindTexture(target, id);
+        checkError("setup texture");
+    }
+    }
+}
+alias VAO = GLObject!(GLObjectTypes.VertexArray);
+alias VBO = GLObject!(GLObjectTypes.Buffer, GL_ARRAY_BUFFER);
+alias Tex2D = GLObject!(GLObjectTypes.Texture, GL_TEXTURE_2D);
+alias FBO = GLObject!(GLObjectTypes.Framebuffer, GL_FRAMEBUFFER);
