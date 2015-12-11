@@ -737,7 +737,7 @@ class GLSupport {
         float y1 = cast(float)(bufferDy-p2.y);
 
         // don't flip for framebuffer
-        if (currentFramebufferId) {
+        if (currentFBO) {
             y0 = cast(float)(p1.y);
             y1 = cast(float)(p2.y);
         }
@@ -768,7 +768,7 @@ class GLSupport {
         float y1 = cast(float)(bufferDy-rc.bottom);
 
         // don't flip for framebuffer
-        if (currentFramebufferId) {
+        if (currentFBO) {
             y0 = cast(float)(rc.top);
             y1 = cast(float)(rc.bottom);
         }
@@ -827,7 +827,7 @@ class GLSupport {
         float dsty1 = cast(float)(bufferDy - (yy + dy));
 
         // don't flip for framebuffer
-        if (currentFramebufferId) {
+        if (currentFBO) {
             dsty0 = cast(float)((yy));
             dsty1 = cast(float)((yy + dy));
         }
@@ -908,7 +908,7 @@ class GLSupport {
         float dsty1 = cast(float)(bufferDy - (yy + dy));
 
         // don't flip for framebuffer
-        if (currentFramebufferId) {
+        if (currentFBO) {
             dsty0 = cast(float)((yy));
             dsty1 = cast(float)((yy + dy));
         }
@@ -1067,37 +1067,27 @@ class GLSupport {
         return true;
     }
 
-    private uint currentFramebufferId;
+    private FBO currentFBO;
 
-    /// returns texture ID for buffer, 0 if failed
-    bool createFramebuffer(out uint textureId, out uint framebufferId, int dx, int dy) {
+    /// returns texture for buffer, null if failed
+    bool createFramebuffer(out Tex2D texture, out FBO fbo, int dx, int dy) {
         checkError("before createFramebuffer");
         bool res = true;
-        textureId = genTexture();
-        if (!textureId)
+        texture = new Tex2D();
+        if (!texture.ID)
             return false;
-        GLuint fid = 0;
-        glGenFramebuffers(1, &fid);
-        if (checkError("createFramebuffer glGenFramebuffersOES")) return false;
-        framebufferId = fid;
-        glBindFramebuffer(GL_FRAMEBUFFER, framebufferId);
-        if (checkError("createFramebuffer glBindFramebuffer")) return false;
+        checkError("glBindTexture GL_TEXTURE_2D");
+        FBO f = new FBO();
+        if (!f.ID)
+            return false;
+        fbo = f;
 
-        glBindTexture(GL_TEXTURE_2D, textureId);
-        checkError("glBindTexture(GL_TEXTURE_2D, _textureId)");
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, dx, dy, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, null);
         checkError("glTexImage2D");
 
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        checkError("texParameter");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        checkError("texParameter");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        checkError("texParameter");
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        checkError("texParameter");
+        texture.setSamplerParams(true, true);
 
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0);
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.ID, 0);
         checkError("glFramebufferTexture2D");
         // Always check that our framebuffer is ok
         if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
@@ -1112,35 +1102,26 @@ class GLSupport {
         checkError("glClear");
         checkError("after createFramebuffer");
         //CRLog::trace("CRGLSupportImpl::createFramebuffer %d,%d  texture=%d, buffer=%d", dx, dy, textureId, framebufferId);
-        currentFramebufferId = framebufferId;
+        currentFBO = fbo;
 
-        glBindTexture(GL_TEXTURE_2D, 0);
-        checkError("createFramebuffer - glBindTexture(0)");
-        glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        checkError("createFramebuffer - glBindFramebuffer(0)");
+        texture.unbind();
+        fbo.unbind();
 
         return res;
     }
 
-    void deleteFramebuffer(ref uint framebufferId) {
+    void deleteFramebuffer(ref FBO fbo) {
         //CRLog::debug("GLDrawBuf::deleteFramebuffer");
-        if (framebufferId != 0) {
-            glBindFramebuffer(GL_FRAMEBUFFER, 0);
-            checkError("deleteFramebuffer - glBindFramebuffer");
-            GLuint fid = framebufferId;
-            glDeleteFramebuffers(1, &fid);
-            checkError("deleteFramebuffer - glDeleteFramebuffer");
+        if (fbo.ID != 0) {
+            destroy(fbo);
         }
-        //CRLog::trace("CRGLSupportImpl::deleteFramebuffer(%d)", framebufferId);
-        framebufferId = 0;
-        checkError("after deleteFramebuffer");
-        currentFramebufferId = 0;
+        currentFBO = null;
     }
 
-    bool bindFramebuffer(uint framebufferId) {
+    bool bindFramebuffer(FBO fbo) {
         //CRLog::trace("CRGLSupportImpl::bindFramebuffer(%d)", framebufferId);
-        glBindFramebuffer(GL_FRAMEBUFFER, framebufferId);
-        currentFramebufferId = framebufferId;
+        fbo.bind();
+        currentFBO = fbo;
         return !checkError("glBindFramebuffer");
     }
 
