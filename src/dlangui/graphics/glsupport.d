@@ -79,10 +79,14 @@ static this() {
  * TODO use one of the DEBUG extensions
  */
 /// Using: checkgl!glFunction(funcParams);
-auto checkgl(alias func, string functionName=__FUNCTION__, int line=__LINE__, Args...)(Args args)
+template checkgl(alias func)
 {
-    scope(success) checkError(func.stringof, functionName, line);
-    return func(args);
+    debug auto checkgl(alias func, string functionName=__FUNCTION__, int line=__LINE__, Args...)(Args args)
+    {
+        scope(success) checkError(func.stringof, functionName, line);
+        return func(args);
+    } else
+        alias checkgl = func;
 }
 bool checkError(string context="", string functionName=__FUNCTION__, int line=__LINE__)
 {
