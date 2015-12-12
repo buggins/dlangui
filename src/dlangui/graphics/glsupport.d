@@ -76,14 +76,20 @@ static this() {
 }
 /**
  * Convenient wrapper around glGetError()
- * TODO use one of the DEBUG extensions instead
+ * TODO use one of the DEBUG extensions
  */
-bool checkError(string context="", string file=__FILE__, int line=__LINE__)
+/// Using: checkgl!glFunction(funcParams);
+auto checkgl(alias func, string functionName=__FUNCTION__, int line=__LINE__, Args...)(Args args)
+{
+    scope(success) checkError(func.stringof, functionName, line);
+    return func(args);
+}
+bool checkError(string context="", string functionName=__FUNCTION__, int line=__LINE__)
 {
     GLenum err = glGetError();
     if (err != GL_NO_ERROR)
     {
-        Log.e("OpenGL error ", errors.get(err, to!string(err)), " at ", file, ":", line, " -- ", context);
+        Log.e("OpenGL error ", errors.get(err, to!string(err)), " at ", functionName, ":", line, " -- ", context);
         return true;
     }
     return false;
@@ -280,8 +286,8 @@ class SolidFillProgram : GLProgram {
         bind();
         //glUniformMatrix4fv(matrixLocation,  1, false, m.value_ptr);
         //glUniformMatrix4fv(matrixLocation,  1, false, matrix.ptr);
-        glUniformMatrix4fv(matrixLocation,  1, false, glSupport.qtmatrix.ptr);
-        checkError("glUniformMatrix4fv");
+        checkgl!glUniformMatrix4fv(matrixLocation,  1, false, glSupport.qtmatrix.ptr);
+        //checkError("glUniformMatrix4fv");
     }
 
     void afterExecute() {
@@ -495,8 +501,8 @@ class FontProgram : SolidFillProgram {
         //glBlendFunc(GL_ONE_MINUS_SRC_COLOR, GL_SRC_COLOR);
         checkError("glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR)");
         bind();
-        glUniformMatrix4fv(matrixLocation,  1, false, glSupport.qtmatrix.ptr);
-        checkError("glUniformMatrix4fv");
+        checkgl!glUniformMatrix4fv(matrixLocation,  1, false, glSupport.qtmatrix.ptr);
+        //checkError("glUniformMatrix4fv");
     }
 
     override void afterExecute() {
