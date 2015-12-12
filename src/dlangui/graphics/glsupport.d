@@ -81,7 +81,7 @@ static this() {
 /// Using: checkgl!glFunction(funcParams);
 template checkgl(alias func)
 {
-    debug auto checkgl(alias func, string functionName=__FUNCTION__, int line=__LINE__, Args...)(Args args)
+    debug auto checkgl(string functionName=__FUNCTION__, int line=__LINE__, Args...)(Args args)
     {
         scope(success) checkError(func.stringof, functionName, line);
         return func(args);
