@@ -317,20 +317,7 @@ class SolidFillProgram : GLProgram {
         VAO vao = new VAO();
 
         VBO vbo = new VBO();
-        glBufferData(
-            GL_ARRAY_BUFFER,
-            vertices.length * vertices[0].sizeof + colors.length * colors[0].sizeof,
-            null,
-            GL_STREAM_DRAW);
-        glBufferSubData(
-            GL_ARRAY_BUFFER,
-            0,
-            vertices.length * vertices[0].sizeof,
-            vertices.ptr);
-        glBufferSubData(
-            GL_ARRAY_BUFFER,
-            vertices.length * vertices[0].sizeof,
-            colors.length * colors[0].sizeof, colors.ptr);
+        vbo.fill([vertices, colors]);
 
         glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
         glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * vertices[0].sizeof));
@@ -361,21 +348,7 @@ class LineProgram : SolidFillProgram {
         VAO vao = new VAO();
 
         VBO vbo = new VBO();
-        glBufferData(
-            GL_ARRAY_BUFFER,
-            vertices.length * vertices[0].sizeof + colors.length * colors[0].sizeof,
-            null,
-            GL_STREAM_DRAW);
-        glBufferSubData(
-            GL_ARRAY_BUFFER,
-            0,
-            vertices.length * vertices[0].sizeof,
-            vertices.ptr);
-        glBufferSubData(
-            GL_ARRAY_BUFFER,
-            vertices.length * vertices[0].sizeof,
-            colors.length * colors[0].sizeof,
-            colors.ptr);
+        vbo.fill([vertices, colors]);
 
         glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
         glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * vertices[0].sizeof));
@@ -446,28 +419,7 @@ class TextureProgram : SolidFillProgram {
         VAO vao = new VAO();
 
         VBO vbo = new VBO();
-        glBufferData(
-            GL_ARRAY_BUFFER,
-            vertices.length * vertices[0].sizeof +
-            colors.length * colors[0].sizeof +
-            texcoords.length * texcoords[0].sizeof,
-            null,
-            GL_STREAM_DRAW);
-        glBufferSubData(
-            GL_ARRAY_BUFFER,
-            0,
-            vertices.length * vertices[0].sizeof,
-            vertices.ptr);
-        glBufferSubData(
-            GL_ARRAY_BUFFER,
-            vertices.length * vertices[0].sizeof,
-            colors.length * colors[0].sizeof,
-            colors.ptr);
-        glBufferSubData(
-            GL_ARRAY_BUFFER,
-            vertices.length * vertices[0].sizeof + colors.length * colors[0].sizeof,
-            texcoords.length * texcoords[0].sizeof,
-            texcoords.ptr);
+        vbo.fill([vertices, colors, texcoords]);
 
         glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
         glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * vertices[0].sizeof));
@@ -563,28 +515,7 @@ class FontProgram : SolidFillProgram {
         VAO vao = new VAO();
 
         VBO vbo = new VBO();
-        glBufferData(
-					 GL_ARRAY_BUFFER,
-					 vertices.length * vertices[0].sizeof +
-					 colors.length * colors[0].sizeof +
-					 texcoords.length * texcoords[0].sizeof,
-					 null,
-					 GL_STREAM_DRAW);
-        glBufferSubData(
-						GL_ARRAY_BUFFER,
-						0,
-						vertices.length * vertices[0].sizeof,
-						vertices.ptr);
-        glBufferSubData(
-						GL_ARRAY_BUFFER,
-						vertices.length * vertices[0].sizeof,
-						colors.length * colors[0].sizeof,
-						colors.ptr);
-        glBufferSubData(
-						GL_ARRAY_BUFFER,
-						vertices.length * vertices[0].sizeof + colors.length * colors[0].sizeof,
-						texcoords.length * texcoords[0].sizeof,
-						texcoords.ptr);
+        vbo.fill([vertices, colors, texcoords]);
 
         glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
         glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * vertices[0].sizeof));
@@ -689,10 +620,6 @@ class GLSupport {
 		    _fontProgram = null;
         }
         return true;
-    }
-
-    bool isTexture(uint textureId) {
-        return glIsTexture(textureId) == GL_TRUE;
     }
 
     void setRotation(int x, int y, int rotationAngle) {
@@ -1184,6 +1111,27 @@ class GLObject(GLObjectTypes type, GLuint target = 0) {
             mixin("glBind" ~ to!string(type) ~ "(0);");
         checkError("unbind " ~ to!string(type));
 	}
+    
+    static if(type == GLObjectTypes.Buffer)
+    {
+    void fill(float[][] buffs) {
+        int length;
+        foreach(b; buffs)
+            length += b.length;
+        glBufferData(target,
+					 length * float.sizeof,
+					 null,
+					 GL_STREAM_DRAW);
+        int offset;
+        foreach(b; buffs) {
+            glBufferSubData(target,
+                            offset,
+                            b.length * float.sizeof,
+                            b.ptr);
+            offset += b.length * float.sizeof;
+        }
+    }
+    }
 
     static if(type == GLObjectTypes.Texture)
     {
