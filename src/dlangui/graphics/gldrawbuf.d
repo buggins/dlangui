@@ -445,8 +445,7 @@ private class GLImageCache {
                     // unset rotation
                     glSupport.setRotation(rx, ry, 0);
                     //                glMatrixMode(GL_PROJECTION);
-                    //                glPopMatrix();
-                    //                checkError("pop matrix");
+                    //                checkgl!glPopMatrix();
                 }
 
             }

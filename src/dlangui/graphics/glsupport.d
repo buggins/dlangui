@@ -200,8 +200,7 @@ class GLProgram {
         }
         initialized = true;
         Log.v("Program is initialized successfully");
-        glUseProgram(0);
-        checkError("glUseProgram " ~ to!string(program));
+        checkgl!glUseProgram(0);
         return !error;
     }
     bool initLocations() {
@@ -217,8 +216,7 @@ class GLProgram {
         return true;
     }
     void release() {
-        glUseProgram(0);
-        checkError("glUseProgram(0)");
+        checkgl!glUseProgram(0);
     }
     ~this() {
         clear();
@@ -278,16 +276,13 @@ class SolidFillProgram : GLProgram {
 
     void beforeExecute() {
         glEnable(GL_BLEND);
-        glDisable(GL_CULL_FACE);
-        checkError("glDisable(GL_CULL_FACE)");
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        checkgl!glDisable(GL_CULL_FACE);
+        checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-        checkError("glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
         bind();
         //glUniformMatrix4fv(matrixLocation,  1, false, m.value_ptr);
         //glUniformMatrix4fv(matrixLocation,  1, false, matrix.ptr);
-        checkgl!glUniformMatrix4fv(matrixLocation,  1, false, glSupport.qtmatrix.ptr);
-        //checkError("glUniformMatrix4fv");
+        checkgl!glUniformMatrix4fv(matrixLocation, 1, false, glSupport.qtmatrix.ptr);
     }
 
     void afterExecute() {
@@ -300,16 +295,13 @@ class SolidFillProgram : GLProgram {
     override bool initLocations() {
         bool res = super.initLocations();
 
-        matrixLocation = glGetUniformLocation(program, "matrix");
-		checkError("glGetUniformLocation matrix");
+        matrixLocation = checkgl!glGetUniformLocation(program, toStringz("matrix"));
 		if (matrixLocation == -1)
 			Log.e("glGetUniformLocation failed for matrixLocation");
-        vertexLocation = glGetAttribLocation(program, "vertex");
-		checkError("glGetAttribLocation vertex");
+        vertexLocation = checkgl!glGetAttribLocation(program, toStringz("vertex"));
 		if (vertexLocation == -1)
 			Log.e("glGetUniformLocation failed for vertexLocation");
-		colAttrLocation = glGetAttribLocation(program, "colAttr");
-		checkError("glGetAttribLocation colAttr");
+		colAttrLocation = checkgl!glGetAttribLocation(program, toStringz("colAttr"));
 		if (colAttrLocation == -1)
 			Log.e("glGetUniformLocation failed for colAttrLocation");
 		return res && matrixLocation >= 0 && vertexLocation >= 0 && colAttrLocation >= 0;
@@ -331,8 +323,7 @@ class SolidFillProgram : GLProgram {
         glEnableVertexAttribArray(vertexLocation);
         glEnableVertexAttribArray(colAttrLocation);
 
-        glDrawArrays(GL_TRIANGLES, 0, cast(int)vertices.length/3);
-        checkError("glDrawArrays");
+        checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)vertices.length/3);
 
         glDisableVertexAttribArray(vertexLocation);
         glDisableVertexAttribArray(colAttrLocation);
@@ -362,8 +353,7 @@ class LineProgram : SolidFillProgram {
         glEnableVertexAttribArray(vertexLocation);
         glEnableVertexAttribArray(colAttrLocation);
 
-        glDrawArrays(GL_LINES, 0, cast(int)vertices.length/3);
-        checkError("glDrawArrays");
+        checkgl!glDrawArrays(GL_LINES, 0, cast(int)vertices.length/3);
 
         glDisableVertexAttribArray(vertexLocation);
         glDisableVertexAttribArray(colAttrLocation);
@@ -435,8 +425,7 @@ class TextureProgram : SolidFillProgram {
         glEnableVertexAttribArray(colAttrLocation);
         glEnableVertexAttribArray(texCoordLocation);
 
-        glDrawArrays(GL_TRIANGLES, 0, cast(int)vertices.length/3);
-        checkError("glDrawArrays");
+        checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)vertices.length/3);
 
         glDisableVertexAttribArray(vertexLocation);
         glDisableVertexAttribArray(colAttrLocation);
@@ -492,17 +481,14 @@ class FontProgram : SolidFillProgram {
 
     override void beforeExecute() {
         glEnable(GL_BLEND);
-        glDisable(GL_CULL_FACE);
-        checkError("glDisable(GL_CULL_FACE)");
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        checkgl!glDisable(GL_CULL_FACE);
+        checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         //glBlendFunc(GL_ONE, GL_SRC_COLOR);
         //glBlendFunc(GL_ONE, GL_SRC_COLOR);
         //glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
         //glBlendFunc(GL_ONE_MINUS_SRC_COLOR, GL_SRC_COLOR);
-        checkError("glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR)");
         bind();
-        checkgl!glUniformMatrix4fv(matrixLocation,  1, false, glSupport.qtmatrix.ptr);
-        //checkError("glUniformMatrix4fv");
+        checkgl!glUniformMatrix4fv(matrixLocation, 1, false, glSupport.qtmatrix.ptr);
     }
 
     override void afterExecute() {
@@ -531,8 +517,7 @@ class FontProgram : SolidFillProgram {
         glEnableVertexAttribArray(colAttrLocation);
         glEnableVertexAttribArray(texCoordLocation);
 
-        glDrawArrays(GL_TRIANGLES, 0, cast(int)vertices.length/3);
-        checkError("glDrawArrays");
+        checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)vertices.length/3);
 
         glDisableVertexAttribArray(vertexLocation);
         glDisableVertexAttribArray(colAttrLocation);
@@ -707,19 +692,13 @@ class GLSupport {
 			glDisable(GL_CULL_FACE);
 			glEnable(GL_BLEND);
 			glDisable(GL_ALPHA_TEST);
-			glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			checkError("glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
-			glEnableClientState(GL_VERTEX_ARRAY);
-			checkError("glEnableClientState(GL_VERTEX_ARRAY)");
-			glEnableClientState(GL_COLOR_ARRAY);
-			checkError("glEnableClientState(GL_COLOR_ARRAY)");
-			glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
-			checkError("glVertexPointer(3, GL_FLOAT, 0, vertices)");
-			glColorPointer(4, GL_FLOAT, 0, cast(void*)colors);
-			checkError("glColorPointer(4, GL_FLOAT, 0, colors)");
+			checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			checkgl!glEnableClientState(GL_VERTEX_ARRAY);
+			checkgl!glEnableClientState(GL_COLOR_ARRAY);
+			checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
+			checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors);
 
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-			checkError("glDrawArrays(GL_TRIANGLES, 0, 6)");
+			checkgl!glDrawArrays(GL_TRIANGLES, 0, 6);
 
 			glDisableClientState(GL_COLOR_ARRAY);
 			glDisableClientState(GL_VERTEX_ARRAY);
@@ -777,24 +756,16 @@ class GLSupport {
 			glDisable(GL_ALPHA_TEST);
 
 			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			checkError("glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
+			checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-			glEnableClientState(GL_COLOR_ARRAY);
-			checkError("glEnableClientState(GL_COLOR_ARRAY)");
-			glEnableClientState(GL_VERTEX_ARRAY);
-			checkError("glEnableClientState(GL_VERTEX_ARRAY)");
-			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-			checkError("glEnableClientState(GL_TEXTURE_COORD_ARRAY)");
-			glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
-			checkError("glVertexPointer(3, GL_FLOAT, 0, vertices)");
-			glTexCoordPointer(2, GL_FLOAT, 0, cast(void*)texcoords.ptr);
-			checkError("glTexCoordPointer(2, GL_FLOAT, 0, texcoords)");
-			glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
-			checkError("glColorPointer(4, GL_FLOAT, 0, colors)");
+			checkgl!glEnableClientState(GL_COLOR_ARRAY);
+			checkgl!glEnableClientState(GL_VERTEX_ARRAY);
+			checkgl!glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+			checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
+			checkgl!glTexCoordPointer(2, GL_FLOAT, 0, cast(void*)texcoords.ptr);
+			checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
 
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-			checkError("glDrawArrays");
+			checkgl!glDrawArrays(GL_TRIANGLES, 0, 6);
 
 			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 			glDisableClientState(GL_VERTEX_ARRAY);
@@ -849,24 +820,16 @@ class GLSupport {
 			glDisable(GL_ALPHA_TEST);
 
 			glEnable(GL_BLEND);
-			glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			checkError("glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA)");
+			checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-			glEnableClientState(GL_COLOR_ARRAY);
-			checkError("glEnableClientState(GL_COLOR_ARRAY)");
-			glEnableClientState(GL_VERTEX_ARRAY);
-			checkError("glEnableClientState(GL_VERTEX_ARRAY)");
-			glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-			checkError("glEnableClientState(GL_TEXTURE_COORD_ARRAY)");
-			glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
-			checkError("glVertexPointer(3, GL_FLOAT, 0, vertices)");
-			glTexCoordPointer(2, GL_FLOAT, 0, cast(void*)texcoords.ptr);
-			checkError("glTexCoordPointer(2, GL_FLOAT, 0, texcoords)");
-			glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
-			checkError("glColorPointer(4, GL_FLOAT, 0, colors)");
+			checkgl!glEnableClientState(GL_COLOR_ARRAY);
+			checkgl!glEnableClientState(GL_VERTEX_ARRAY);
+			checkgl!glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+			checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
+			checkgl!glTexCoordPointer(2, GL_FLOAT, 0, cast(void*)texcoords.ptr);
+			checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
 
-			glDrawArrays(GL_TRIANGLES, 0, 6);
-			checkError("glDrawArrays");
+			checkgl!glDrawArrays(GL_TRIANGLES, 0, 6);
 
 			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
 			glDisableClientState(GL_VERTEX_ARRAY);
@@ -882,15 +845,13 @@ class GLSupport {
 
     /// call glFlush
     void flushGL() {
-        glFlush();
-        checkError("glFlush");
+        checkgl!glFlush();
     }
 
     bool setTextureImage(Tex2D texture, int dx, int dy, ubyte * pixels) {
-        //checkError("before setTextureImage");
+        checkError("before setTextureImage");
         texture.setup();
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        checkError("updateTexture - glPixelStorei");
+        checkgl!glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         texture.setSamplerParams(true, true);
 
         // ORIGINAL: glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dx, dy, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
@@ -899,15 +860,13 @@ class GLSupport {
             Log.e("Cannot set image for texture");
             return false;
         }
-        checkError("after setTextureImage");
         return true;
     }
 
     bool setTextureImageAlpha(Tex2D texture, int dx, int dy, ubyte * pixels) {
         checkError("before setTextureImageAlpha");
         texture.setup();
-        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-        checkError("setTextureImageAlpha - glPixelStorei");
+        checkgl!glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         texture.setSamplerParams(true, true);
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, dx, dy, 0, GL_ALPHA, GL_UNSIGNED_BYTE, pixels);
@@ -916,7 +875,6 @@ class GLSupport {
             return false;
         }
         texture.unbind();
-        checkError("after setTextureImageAlpha");
         return true;
     }
 
@@ -935,25 +893,19 @@ class GLSupport {
             return false;
         fbo = f;
 
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, dx, dy, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, null);
-        checkError("glTexImage2D");
+        checkgl!glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, dx, dy, 0, GL_RGB, GL_UNSIGNED_SHORT_5_6_5, null);
 
         texture.setSamplerParams(true, true);
 
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.ID, 0);
-        checkError("glFramebufferTexture2D");
+        checkgl!glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texture.ID, 0);
         // Always check that our framebuffer is ok
-        if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
+        if(checkgl!glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {
             Log.e("glFramebufferTexture2D failed");
             res = false;
         }
-        checkError("glCheckFramebufferStatus");
         //glClearColor(0.5f, 0, 0, 1);
-        glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
-        checkError("glClearColor");
-        glClear(GL_COLOR_BUFFER_BIT);
-        checkError("glClear");
-        checkError("after createFramebuffer");
+        checkgl!glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
+        checkgl!glClear(GL_COLOR_BUFFER_BIT);
         //CRLog::trace("CRGLSupportImpl::createFramebuffer %d,%d  texture=%d, buffer=%d", dx, dy, textureId, framebufferId);
         currentFBO = fbo;
 
@@ -1064,18 +1016,15 @@ class GLSupport {
 
 		if (_legacyMode) {
 			glMatrixMode(GL_PROJECTION);
-			//glPushMatrix();
-			//checkError("glPushMatrix");
+			//checkgl!glPushMatrix();
 			//glLoadIdentity();
 			glLoadMatrixf(qtmatrix.ptr);
 			//glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
 			glMatrixMode(GL_MODELVIEW);
-			//glPushMatrix();
-			//checkError("glPushMatrix");
+			//checkgl!glPushMatrix();
 			glLoadIdentity();
 		}
-        glViewport(view.left, view.top, view.right, view.bottom);
-        checkError("glViewport");
+        checkgl!glViewport(view.left, view.top, view.right, view.bottom);
     }
 
     void setPerspectiveProjection(float fieldOfView, float aspectRatio, float nearPlane, float farPlane) {
@@ -1092,15 +1041,13 @@ class GLObject(GLObjectTypes type, GLuint target = 0) {
     private GLuint id;
 
     this() {
-        mixin("glGen" ~ to!string(type) ~ "s(1, &id);");
-        checkError("glGen" ~ to!string(type));
+        mixin("checkgl!glGen" ~ to!string(type) ~ "s(1, &id);");
         bind();
-	}
+    }
 
     ~this() {
         unbind();
-        mixin("glDelete" ~ to!string(type) ~ "s(1, &id);");
-        checkError("glDelete" ~ to!string(type));
+        mixin("checkgl!glDelete" ~ to!string(type) ~ "s(1, &id);");
     }
 
     void bind() {
@@ -1112,11 +1059,10 @@ class GLObject(GLObjectTypes type, GLuint target = 0) {
 
     void unbind() {
         static if(target != 0)
-            mixin("glBind" ~ to!string(type) ~ "(" ~ to!string(target) ~ ", 0);");
+            mixin("checkgl!glBind" ~ to!string(type) ~ "(" ~ to!string(target) ~ ", 0);");
         else
-            mixin("glBind" ~ to!string(type) ~ "(0);");
-        checkError("unbind " ~ to!string(type));
-	}
+            mixin("checkgl!glBind" ~ to!string(type) ~ "(0);");
+    }
     
     static if(type == GLObjectTypes.Buffer)
     {
@@ -1125,9 +1071,9 @@ class GLObject(GLObjectTypes type, GLuint target = 0) {
         foreach(b; buffs)
             length += b.length;
         glBufferData(target,
-					 length * float.sizeof,
-					 null,
-					 GL_STREAM_DRAW);
+                     length * float.sizeof,
+                     null,
+                     GL_STREAM_DRAW);
         int offset;
         foreach(b; buffs) {
             glBufferSubData(target,
