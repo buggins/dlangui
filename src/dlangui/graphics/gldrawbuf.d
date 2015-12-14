@@ -105,8 +105,8 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
         if (!isFullyTransparentColor(color) && applyClipping(rc))
             _scene.add(new SolidRectSceneItem(rc, color));
     }
-	/// draw pixel at (x, y) with specified color 
-	override void drawPixel(int x, int y, uint color) {
+    /// draw pixel at (x, y) with specified color
+    override void drawPixel(int x, int y, uint color) {
         assert(_scene !is null);
 		if (!_clipRect.isPointInside(x, y))
 			return;
@@ -114,7 +114,7 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
         if (isFullyTransparentColor(color))
 			return;
 		_scene.add(new SolidRectSceneItem(Rect(x, y, x + 1, y + 1), color));
-	}	
+    }
 	/// draw 8bit alpha image - usually font glyph using specified color (clipping is applied)
 	override void drawGlyph(int x, int y, Glyph * glyph, uint color) {
         assert(_scene !is null);
@@ -280,7 +280,7 @@ private class GLImageCache {
         private GLImageCachePage _page;
 
         @property GLImageCachePage page() { return _page; }
-            
+
         uint _objectId;
         Rect _rc;
         bool _deleted;
@@ -298,7 +298,7 @@ private class GLImageCache {
         private int _x;
         private bool _closed;
         private bool _needUpdateTexture;
-        private uint _textureId;
+        private Tex2D _texture;
         private int _itemCount;
 
         this(GLImageCache cache, int dx, int dy) {
@@ -314,26 +314,26 @@ private class GLImageCache {
                 destroy(_drawbuf);
                 _drawbuf = null;
             }
-            if (_textureId != 0) {
-                glSupport.deleteTexture(_textureId);
-                _textureId = 0;
+            if (_texture.ID != 0) {
+                destroy(_texture);
+                _texture = null;
             }
         }
 
         void updateTexture() {
             if (_drawbuf is null)
                 return; // no draw buffer!!!
-            if (_textureId == 0) {
-                _textureId = glSupport.genTexture();
-                Log.d("updateTexture - new texture id=", _textureId);
-                if (!_textureId)
+            if (_texture is null || _texture.ID == 0) {
+                _texture = new Tex2D();
+                Log.d("updateTexture - new texture id=", _texture.ID);
+                if (!_texture.ID)
                     return;
             }
-            Log.d("updateTexture for image cache page - setting image ", _drawbuf.width, "x", _drawbuf.height, " tx=", _textureId);
+            Log.d("updateTexture for image cache page - setting image ", _drawbuf.width, "x", _drawbuf.height, " tx=", _texture.ID);
             uint * pixels = _drawbuf.scanLine(0);
-            if (!glSupport.setTextureImage(_textureId, _drawbuf.width, _drawbuf.height, cast(ubyte*)pixels)) {
-                glSupport.deleteTexture(_textureId);
-                _textureId = 0;
+            if (!glSupport.setTextureImage(_texture, _drawbuf.width, _drawbuf.height, cast(ubyte*)pixels)) {
+                destroy(_texture);
+                _texture = null;
                 return;
             }
             _needUpdateTexture = false;
@@ -409,11 +409,7 @@ private class GLImageCache {
             //CRLog::trace("drawing item at %d,%d %dx%d <= %d,%d %dx%d ", x, y, dx, dy, srcx, srcy, srcdx, srcdy);
             if (_needUpdateTexture)
                 updateTexture();
-            if (_textureId != 0) {
-                if (!glSupport.isTexture(_textureId)) {
-                    Log.e("Invalid texture ", _textureId);
-                    return;
-                }
+            if (_texture.ID != 0) {
                 //rotationAngle = 0;
                 int rx = dstrc.middlex;
                 int ry = dstrc.middley;
@@ -442,15 +438,14 @@ private class GLImageCache {
                     dstrc.bottom -= clip.bottom;
                 }
                 if (!dstrc.empty)
-                    glSupport.drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height());
-                //drawColorAndTextureRect(vertices, texcoords, color, _textureId);
+                    glSupport.drawColorAndTextureRect(_texture, _tdx, _tdy, srcrc, dstrc, color, srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height());
+                //drawColorAndTextureRect(vertices, texcoords, color, _texture);
 
                 if (rotationAngle) {
                     // unset rotation
                     glSupport.setRotation(rx, ry, 0);
                     //                glMatrixMode(GL_PROJECTION);
-                    //                glPopMatrix();
-                    //                checkError("pop matrix");
+                    //                checkgl!glPopMatrix();
                 }
 
             }
@@ -482,7 +477,7 @@ private class GLImageCache {
     private void updateTextureSize() {
         if (!tdx) {
             // TODO
-            tdx = tdy = 1024; //getMaxTextureSize(); 
+            tdx = tdy = 1024; //getMaxTextureSize();
             if (tdx > 1024)
                 tdx = tdy = 1024;
         }
@@ -627,7 +622,7 @@ private class GLGlyphCache {
         private int _x;
         private bool _closed;
         private bool _needUpdateTexture;
-        private uint _textureId;
+        private Tex2D _texture;
         private int _itemCount;
 
         this(GLGlyphCache cache, int dx, int dy) {
@@ -643,26 +638,26 @@ private class GLGlyphCache {
                 destroy(_drawbuf);
                 _drawbuf = null;
             }
-            if (_textureId != 0) {
-                glSupport.deleteTexture(_textureId);
-                _textureId = 0;
+            if (_texture.ID != 0) {
+                destroy(_texture);
+                _texture = null;
             }
         }
 
         void updateTexture() {
             if (_drawbuf is null)
                 return; // no draw buffer!!!
-            if (_textureId == 0) {
-                _textureId = glSupport.genTexture();
-                //Log.d("updateTexture - new texture ", _textureId);
-                if (!_textureId)
+            if (_texture is null || _texture.ID == 0) {
+                _texture = new Tex2D();
+                //Log.d("updateTexture - new texture ", _texture.ID);
+                if (!_texture.ID)
                     return;
             }
-            //Log.d("updateTexture for font glyph page - setting image ", _drawbuf.width, "x", _drawbuf.height, " tx=", _textureId);
+            //Log.d("updateTexture for font glyph page - setting image ", _drawbuf.width, "x", _drawbuf.height, " tx=", _texture.ID);
             int len = _drawbuf.width * _drawbuf.height;
-            if (!glSupport.setTextureImage(_textureId, _drawbuf.width, _drawbuf.height, cast(ubyte *)_drawbuf.scanLine(0))) {
-                glSupport.deleteTexture(_textureId);
-                _textureId = 0;
+            if (!glSupport.setTextureImage(_texture, _drawbuf.width, _drawbuf.height, cast(ubyte *)_drawbuf.scanLine(0))) {
+                destroy(_texture);
+                _texture = null;
                 return;
             }
             _needUpdateTexture = false;
@@ -724,11 +719,7 @@ private class GLGlyphCache {
             //CRLog::trace("drawing item at %d,%d %dx%d <= %d,%d %dx%d ", x, y, dx, dy, srcx, srcy, srcdx, srcdy);
             if (_needUpdateTexture)
                 updateTexture();
-            if (_textureId != 0) {
-                if (!glSupport.isTexture(_textureId)) {
-                    Log.e("Invalid texture ", _textureId);
-                    return;
-                }
+            if (_texture.ID != 0) {
                 // convert coordinates to cached texture
                 srcrc.offset(item._rc.left, item._rc.top);
                 if (clip) {
@@ -751,8 +742,8 @@ private class GLGlyphCache {
                 }
                 if (!dstrc.empty) {
                     //Log.d("drawing glyph with color ", color);
-                    glSupport.drawColorAndTextureGlyphRect(_textureId, _tdx, _tdy, srcrc, dstrc, color);
-                    //glSupport.drawColorAndTextureRect(_textureId, _tdx, _tdy, srcrc, dstrc, color, false);
+                    glSupport.drawColorAndTextureGlyphRect(_texture, _tdx, _tdy, srcrc, dstrc, color);
+                    //glSupport.drawColorAndTextureRect(_texture, _tdx, _tdy, srcrc, dstrc, color, false);
                 }
 
             }
@@ -782,7 +773,7 @@ private class GLGlyphCache {
     private void updateTextureSize() {
         if (!tdx) {
             // TODO
-            tdx = tdy = 1024; //getMaxTextureSize(); 
+            tdx = tdy = 1024; //getMaxTextureSize();
             if (tdx > 1024)
                 tdx = tdy = 1024;
         }
