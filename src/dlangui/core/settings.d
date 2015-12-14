@@ -1699,6 +1699,9 @@ final class Setting {
                         case '\\':
                             res ~= '\\';
                             break;
+                        case '/':
+                            res ~= '/';
+                            break;
                         case '\"':
                             res ~= '\"';
                             break;
