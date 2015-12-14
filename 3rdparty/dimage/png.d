@@ -820,6 +820,7 @@ uint crc32(R)(R range, uint inCrc = 0) if (isInputRange!R)
     return (crc ^ 0xFFFFFFFF);
 }
 
+static if (false) {
 unittest
 {
     import std.base64;
@@ -844,4 +845,4 @@ unittest
     savePNG(img, "tests/minimal.png");
     loadPNG("tests/minimal.png");
 }
-
+}
