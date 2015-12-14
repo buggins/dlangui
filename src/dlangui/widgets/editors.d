@@ -634,14 +634,14 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             return this; // not changed
         if (_content !is null) {
             // disconnect old content
-            _content.contentChangeListeners.disconnect(this);
+            _content.contentChanged.disconnect(this);
             if (_ownContent) {
                 destroy(_content);
             }
         }
         _content = content;
         _ownContent = false;
-        _content.contentChangeListeners.connect(this);
+        _content.contentChanged.connect(this);
         if (_content.readOnly)
             enabled = false;
         return this;
@@ -1511,7 +1511,7 @@ class EditLine : EditWidgetBase {
     this(string ID, dstring initialContent = null) {
         super(ID, ScrollBarMode.Invisible, ScrollBarMode.Invisible);
         _content = new EditableContent(false);
-		_content.contentChangeListeners = this;
+		_content.contentChanged = this;
         wantTabs = false;
         styleId = STYLE_EDIT_LINE;
         text = initialContent;
@@ -1702,7 +1702,7 @@ class EditBox : EditWidgetBase {
     this(string ID, dstring initialContent = null, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
         super(ID, hscrollbarMode, vscrollbarMode);
         _content = new EditableContent(true); // multiline
-		_content.contentChangeListeners = this;
+		_content.contentChanged = this;
         styleId = STYLE_EDIT_BOX;
         text = initialContent;
 		acceleratorMap.add( [

@@ -99,13 +99,6 @@ ubyte tokenCategory(ubyte t) {
     return t & 0xF0;
 }
 
-class TextLineMark {
-}
-
-class TextLineMarks {
-}
-
-
 /// split dstring by delimiters
 dstring[] splitDString(dstring source, dchar delimiter = EOL) {
     int start = 0;
@@ -545,6 +538,9 @@ class EditableContent {
         _readOnly = readOnly;
     }
 
+    protected LineIcons _lineIcons;
+    @property ref LineIcons lineIcons() { return _lineIcons; }
+
     protected int _tabSize = 4;
     protected bool _useSpacesForTabs = true;
     /// returns tab size (in number of spaces)
@@ -587,8 +583,6 @@ class EditableContent {
 
 	/// listeners for edit operations
 	Signal!EditableContentListener contentChanged;
-    /// contentChanged signal alias for backward compatibility; will be deprecated in future
-    alias contentChangeListeners = contentChanged;
 
     protected bool _multiline;
     /// returns true if miltyline content is supported
@@ -966,8 +960,8 @@ class EditableContent {
         // update highlight if necessary
         updateTokenProps(rangeAfter.start.line, rangeAfter.end.line + 1);
         // call listeners
-		if (contentChangeListeners.assigned)
-			contentChangeListeners(this, op, rangeBefore, rangeAfter, source);
+		if (contentChanged.assigned)
+			contentChanged(this, op, rangeBefore, rangeAfter, source);
 	}
 
     /// return edit marks for specified range
@@ -1429,6 +1423,118 @@ class EditableContent {
     /// save to file in current format
     bool save(string filename = null) {
         return save(filename, _format);
+    }
+}
+
+/// types of text editor line icon marks (bookmark / breakpoint / error / ...)
+enum LineIconType : int {
+    /// bookmark
+    bookmark,
+    /// breakpoint mark
+    breakpoint,
+    /// error mark
+    error,
+}
+
+/// text editor line icon
+class LineIcon {
+    /// line number
+    int line;
+    LineIconType type;
+    Object param;
+}
+
+/// text editor line icon list
+struct LineIcons {
+    private LineIcon[] _items;
+    private int _len;
+
+    /// returns count of items
+    @property int length() { return _len; }
+    /// returns item by index, or null if index out of bounds
+    LineIcon opIndex(int index) {
+        if (index < 0 || index >= _len)
+            return null;
+        return _items[index];
+    }
+    private void insert(LineIcon icon, int index) {
+        if (index < 0)
+            index = 0;
+        if (index > _len)
+            index = _len;
+        if (_items.length <= index)
+            _items.length = index + 16;
+        if (index < _len) {
+            for (size_t i = _len; i > index; i--)
+                _items[i] = _items[i - 1];
+        }
+        _items[index] = icon;
+        _len++;
+    }
+    private int findSortedIndex(int line, LineIconType type) {
+        // TODO: use binary search
+        for (int i = 0; i < _len; i++) {
+            if (_items[i].line > line || _items[i].type > type) {
+                return i;
+            }
+        }
+        return _len;
+    }
+    /// add icon mark
+    void add(LineIcon icon) {
+        int index = findSortedIndex(icon.line, icon.type);
+        insert(icon, index);
+    }
+    /// add all icons from list
+    void addAll(LineIcon[] list) {
+        foreach(item; list)
+            add(item);
+    }
+    /// remove icon mark by index
+    LineIcon remove(int index) {
+        if (index < 0 || index >= _len)
+            return null;
+        LineIcon res = _items[index];
+        for (int i = index; i < _len - 1; i++)
+            _items[i] = _items[i + 1];
+        _len--;
+        return res;
+    }
+    /// remove icon mark
+    LineIcon remove(LineIcon icon) {
+        for (int i = 0; i < _len; i++) {
+            if (_items[i] is icon)
+                return remove(i);
+        }
+        for (int i = 0; i < _len; i++) {
+            if (_items[i].param !is null && icon.param !is null && _items[i].param is icon.param)
+                return remove(i);
+        }
+        for (int i = 0; i < _len; i++) {
+            if (_items[i].line == icon.line && _items[i].type == icon.type)
+                return remove(i);
+        }
+        return null;
+    }
+    /// remove all icon marks of specified type
+    void removeByType(LineIconType type) {
+        for (int i = _len - 1; i >= 0; i--) {
+            if (_items[i].type == type)
+                remove(i);
+        }
+    }
+    /// get array of icons of specified type
+    LineIcon[] findByType(LineIconType type) {
+        LineIcon[] res;
+        for (int i = 0; i < _len; i++) {
+            if (_items[i].type == type)
+                res ~= _items[i];
+        }
+        return res;
+    }
+    /// update mark position lines after text change
+    void updateLinePositions(TextRange rangeBefore, TextRange rangeAfter) {
+        // TODO
     }
 }
 
