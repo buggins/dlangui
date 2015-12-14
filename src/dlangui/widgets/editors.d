@@ -177,6 +177,13 @@ enum EditorActions : int {
 	DeleteLine,
 	/// Insert line
 	InsertLine,
+
+	/// Toggle bookmark in current line
+	ToggleBookmark,
+    /// move cursor to next bookmark
+    GoToNextBookmark,
+    /// move cursor to previous bookmark
+    GoToPreviousBookmark,
 }
 
 
@@ -193,6 +200,9 @@ const Action ACTION_EDITOR_TOGGLE_REPLACE_MODE = (new Action(EditorActions.Toggl
 const Action ACTION_EDITOR_SELECT_ALL = (new Action(EditorActions.SelectAll, KeyCode.KEY_A, KeyFlag.Control));
 const Action ACTION_EDITOR_TOGGLE_LINE_COMMENT = (new Action(EditorActions.ToggleLineComment, KeyCode.KEY_DIVIDE, KeyFlag.Control));
 const Action ACTION_EDITOR_TOGGLE_BLOCK_COMMENT = (new Action(EditorActions.ToggleBlockComment, KeyCode.KEY_DIVIDE, KeyFlag.Control | KeyFlag.Shift));
+const Action ACTION_EDITOR_TOGGLE_BOOKMARK = (new Action(EditorActions.ToggleBookmark, "ACTION_EDITOR_TOGGLE_BOOKMARK"c));
+const Action ACTION_EDITOR_GOTO_NEXT_BOOKMARK = (new Action(EditorActions.GoToNextBookmark, "ACTION_EDITOR_GOTO_NEXT_BOOKMARK"c));
+const Action ACTION_EDITOR_GOTO_PREVIOUS_BOOKMARK = (new Action(EditorActions.GoToPreviousBookmark, "ACTION_EDITOR_GOTO_PREVIOUS_BOOKMARK"c));
 
 const Action[] STD_EDITOR_ACTIONS = [ACTION_EDITOR_INSERT_NEW_LINE, ACTION_EDITOR_PREPEND_NEW_LINE, 
         ACTION_EDITOR_APPEND_NEW_LINE, ACTION_EDITOR_DELETE_LINE, ACTION_EDITOR_TOGGLE_REPLACE_MODE, 
@@ -449,6 +459,12 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 				return enabled && _content.hasUndo;
 			case EditorActions.Redo:
 				return enabled && _content.hasRedo;
+			case EditorActions.ToggleBookmark:
+				return _content.multiline;
+			case EditorActions.GoToNextBookmark:
+				return _content.multiline && _content.lineIcons.hasBookmarks;
+			case EditorActions.GoToPreviousBookmark:
+				return _content.multiline && _content.lineIcons.hasBookmarks;
 			default:
 				return super.isActionEnabled(action);
 		}
@@ -1289,6 +1305,22 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 ensureCaretVisible();
 				requestActionsUpdate();
                 return true;
+			case EditorActions.ToggleBookmark:
+                if (_content.multiline) {
+                    _content.lineIcons.toggleBookmark(_selectionRange.end.line);
+                    return true;
+                }
+				return false;
+			case EditorActions.GoToNextBookmark:
+			case EditorActions.GoToPreviousBookmark:
+                if (_content.multiline) {
+                    LineIcon mark = _content.lineIcons.findNext(LineIconType.bookmark, _selectionRange.end.line, a.id == EditorActions.GoToNextBookmark ? 1 : -1);
+                    if (mark) {
+                        setCaretPos(mark.line, 0, true);
+                        return true;
+                    }
+                }
+				return false;
 			default:
 				break;
 		}

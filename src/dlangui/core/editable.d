@@ -433,6 +433,10 @@ interface EditableContentListener {
 	void onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source);
 }
 
+interface EditableContentMarksChangeListener {
+    void onMarksChange(EditableContent content, LineIcon[] movedMarks, LineIcon[] removedMarks);
+}
+
 /// TokenCategory holder 
 alias TokenProp = ubyte;
 /// TokenCategory string
@@ -583,6 +587,8 @@ class EditableContent {
 
 	/// listeners for edit operations
 	Signal!EditableContentListener contentChanged;
+    /// listeners for mark changes after edit operation
+    Signal!EditableContentMarksChangeListener marksChanged;
 
     protected bool _multiline;
     /// returns true if miltyline content is supported
@@ -959,6 +965,12 @@ class EditableContent {
 	void handleContentChange(EditOperation op, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source) {
         // update highlight if necessary
         updateTokenProps(rangeAfter.start.line, rangeAfter.end.line + 1);
+        LineIcon[] moved;
+        LineIcon[] removed;
+        if (_lineIcons.updateLinePositions(rangeBefore, rangeAfter, moved, removed)) {
+            if (marksChanged.assigned)
+                marksChanged(this, moved, removed);
+        }
         // call listeners
 		if (contentChanged.assigned)
 			contentChanged(this, op, rangeBefore, rangeAfter, source);
@@ -1438,10 +1450,20 @@ enum LineIconType : int {
 
 /// text editor line icon
 class LineIcon {
+    /// mark type
+    LineIconType type;
     /// line number
     int line;
-    LineIconType type;
+    /// arbitrary parameter
     Object param;
+    /// empty
+    this() {
+    }
+    this(LineIconType type, int line, Object obj = null) {
+        this.type = type;
+        this.line = line;
+        this.param = null;
+    }
 }
 
 /// text editor line icon list
@@ -1516,12 +1538,16 @@ struct LineIcons {
         }
         return null;
     }
-    /// remove all icon marks of specified type
-    void removeByType(LineIconType type) {
+    /// remove all icon marks of specified type, return true if any of items removed
+    bool removeByType(LineIconType type) {
+        bool res = false;
         for (int i = _len - 1; i >= 0; i--) {
-            if (_items[i].type == type)
+            if (_items[i].type == type) {
                 remove(i);
+                res = true;
+            }
         }
+        return res;
     }
     /// get array of icons of specified type
     LineIcon[] findByType(LineIconType type) {
@@ -1532,9 +1558,89 @@ struct LineIcons {
         }
         return res;
     }
-    /// update mark position lines after text change
-    void updateLinePositions(TextRange rangeBefore, TextRange rangeAfter) {
-        // TODO
+    /// get array of icons of specified type
+    LineIcon findByLineAndType(int line, LineIconType type) {
+        for (int i = 0; i < _len; i++) {
+            if (_items[i].type == type && _items[i].line == line)
+                return _items[i];
+        }
+        return null;
+    }
+    /// update mark position lines after text change, returns true if any of marks were moved or removed
+    bool updateLinePositions(TextRange rangeBefore, TextRange rangeAfter, ref LineIcon[] moved, ref LineIcon[] removed) {
+        moved = null;
+        removed = null;
+        bool res = false;
+        for (int i = _len - 1; i >= 0; i--) {
+            LineIcon item = _items[i];
+            if (rangeBefore.start.line > item.line && rangeAfter.start.line > item.line)
+                continue; // line is before ranges
+            else if (rangeBefore.start.line < item.line || rangeAfter.start.line < item.line) {
+                // line is fully after change
+                int deltaLines = rangeAfter.end.line - rangeBefore.end.line;
+                if (!deltaLines)
+                    continue;
+                if (deltaLines < 0 && rangeBefore.end.line >= item.line && rangeAfter.end.line < item.line) {
+                    // remove
+                    removed ~= item;
+                    _items.remove(i);
+                    res = true;
+                } else {
+                    // move
+                    item.line += deltaLines;
+                    moved ~= item;
+                    res = true;
+                }
+            }
+        }
+        return res;
+    }
+
+    LineIcon findNext(LineIconType type, int line, int direction) {
+        LineIcon firstBefore;
+        LineIcon firstAfter;
+        if (direction < 0) {
+            // backward
+            for (int i = _len - 1; i >= 0; i--) {
+                LineIcon item = _items[i];
+                if (item.type != type)
+                    continue;
+                if (!firstBefore && item.line < line)
+                    firstBefore = item;
+                else if (!firstAfter && item.line > line)
+                    firstAfter = item;
+            }
+        } else {
+            // forward
+            for (int i = 0; i < _len; i++) {
+                LineIcon item = _items[i];
+                if (item.type != type)
+                    continue;
+                if (!firstBefore && item.line < line)
+                    firstBefore = item;
+                else if (!firstAfter && item.line > line)
+                    firstAfter = item;
+            }
+        }
+        if (firstAfter)
+            return firstAfter;
+        return firstBefore;
+    }
+
+    @property bool hasBookmarks() {
+        for (int i = 0; i < _len; i++) {
+            if (_items[i].type == LineIconType.bookmark)
+                return true;
+        }
+        return false;
+    }
+
+    void toggleBookmark(int line) {
+        LineIcon existing = findByLineAndType(line, LineIconType.bookmark);
+        if (existing)
+            remove(existing);
+        else
+            add(new LineIcon(LineIconType.bookmark, line));
     }
 }
 
