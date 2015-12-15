@@ -14,9 +14,12 @@
     <color id="editor_selection_normal" value="#D060A0FF"/>
     <color id="editor_left_pane_background" value="#F4F4F4"/>
     <color id="editor_left_pane_background2" value="#FFFFFF"/>
-    <color id="editor_left_pane_background3" value="#C0C0C0"/>
+    <color id="editor_left_pane_background3" value="#E0E0E0"/>
     <color id="editor_left_pane_line_number_text" value="#4060D0"/>
     <color id="editor_left_pane_line_number_background" value="#F0F0F0"/>
+    <color id="editor_left_pane_line_icon_color_breakpoint" value="#FF0000"/>
+    <color id="editor_left_pane_line_icon_color_bookmark" value="#0000FF"/>
+    <color id="editor_left_pane_line_icon_color_error" value="#80FF0000"/>
 
     <color id="grid_selection_color" value="#804040FF"/>
     <color id="grid_selection_color_row" value="#C0A0B0FF"/>

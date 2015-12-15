@@ -200,13 +200,15 @@ const Action ACTION_EDITOR_TOGGLE_REPLACE_MODE = (new Action(EditorActions.Toggl
 const Action ACTION_EDITOR_SELECT_ALL = (new Action(EditorActions.SelectAll, KeyCode.KEY_A, KeyFlag.Control));
 const Action ACTION_EDITOR_TOGGLE_LINE_COMMENT = (new Action(EditorActions.ToggleLineComment, KeyCode.KEY_DIVIDE, KeyFlag.Control));
 const Action ACTION_EDITOR_TOGGLE_BLOCK_COMMENT = (new Action(EditorActions.ToggleBlockComment, KeyCode.KEY_DIVIDE, KeyFlag.Control | KeyFlag.Shift));
-const Action ACTION_EDITOR_TOGGLE_BOOKMARK = (new Action(EditorActions.ToggleBookmark, "ACTION_EDITOR_TOGGLE_BOOKMARK"c));
-const Action ACTION_EDITOR_GOTO_NEXT_BOOKMARK = (new Action(EditorActions.GoToNextBookmark, "ACTION_EDITOR_GOTO_NEXT_BOOKMARK"c));
-const Action ACTION_EDITOR_GOTO_PREVIOUS_BOOKMARK = (new Action(EditorActions.GoToPreviousBookmark, "ACTION_EDITOR_GOTO_PREVIOUS_BOOKMARK"c));
+const Action ACTION_EDITOR_TOGGLE_BOOKMARK = (new Action(EditorActions.ToggleBookmark, "ACTION_EDITOR_TOGGLE_BOOKMARK"c, null, KeyCode.KEY_B, KeyFlag.Control | KeyFlag.Shift));
+const Action ACTION_EDITOR_GOTO_NEXT_BOOKMARK = (new Action(EditorActions.GoToNextBookmark, "ACTION_EDITOR_GOTO_NEXT_BOOKMARK"c, null, KeyCode.DOWN, KeyFlag.Control | KeyFlag.Shift));
+const Action ACTION_EDITOR_GOTO_PREVIOUS_BOOKMARK = (new Action(EditorActions.GoToPreviousBookmark, "ACTION_EDITOR_GOTO_PREVIOUS_BOOKMARK"c, null, KeyCode.UP, KeyFlag.Control | KeyFlag.Shift));
 
 const Action[] STD_EDITOR_ACTIONS = [ACTION_EDITOR_INSERT_NEW_LINE, ACTION_EDITOR_PREPEND_NEW_LINE, 
         ACTION_EDITOR_APPEND_NEW_LINE, ACTION_EDITOR_DELETE_LINE, ACTION_EDITOR_TOGGLE_REPLACE_MODE, 
-        ACTION_EDITOR_SELECT_ALL, ACTION_EDITOR_TOGGLE_LINE_COMMENT, ACTION_EDITOR_TOGGLE_BLOCK_COMMENT];
+        ACTION_EDITOR_SELECT_ALL, ACTION_EDITOR_TOGGLE_LINE_COMMENT, ACTION_EDITOR_TOGGLE_BLOCK_COMMENT,
+        ACTION_EDITOR_TOGGLE_BOOKMARK, ACTION_EDITOR_GOTO_NEXT_BOOKMARK, ACTION_EDITOR_GOTO_PREVIOUS_BOOKMARK
+];
 
 /// base for all editor widgets
 class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemActionHandler {
@@ -238,9 +240,13 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected uint _selectionColorNormal = 0xD060A0FF;
     protected uint _leftPaneBackgroundColor = 0xF4F4F4;
     protected uint _leftPaneBackgroundColor2 = 0xFFFFFF;
-    protected uint _leftPaneBackgroundColor3 = 0xC0C0C0;
+    protected uint _leftPaneBackgroundColor3 = 0xE0E0E0;
     protected uint _leftPaneLineNumberColor = 0x4060D0;
     protected uint _leftPaneLineNumberBackgroundColor = 0xF0F0F0;
+    protected uint _colorIconBreakpoint = 0xFF0000;
+    protected uint _colorIconBookmark = 0x0000FF;
+    protected uint _colorIconError = 0x80FF0000;
+
     protected uint _caretColor = 0x000000;
     protected uint _caretColorReplace = 0x808080FF;
     protected uint _matchingBracketHightlightColor = 0x60FFE0B0;
@@ -291,8 +297,32 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         buf.fillRect(rc, _leftPaneBackgroundColor2);
     }
 
+    protected void drawLeftPaneIcon(DrawBuf buf, Rect rc, LineIcon icon) {
+        if (!icon)
+            return;
+        if (icon.type == LineIconType.error) {
+            buf.fillRect(rc, _colorIconError);
+        } else if (icon.type == LineIconType.bookmark) {
+            int dh = rc.height / 4;
+            rc.top += dh;
+            rc.bottom -= dh;
+            buf.fillRect(rc, _colorIconBookmark);
+        } else if (icon.type == LineIconType.breakpoint) {
+            int dh = rc.height / 8;
+            rc.top += dh;
+            rc.bottom -= dh;
+            int dw = rc.width / 4;
+            rc.left += dw;
+            rc.right -= dw;
+            buf.fillRect(rc, _colorIconBreakpoint);
+        }
+    }
+
     protected void drawLeftPaneIcons(DrawBuf buf, Rect rc, int line) {
         buf.fillRect(rc, _leftPaneBackgroundColor3);
+        drawLeftPaneIcon(buf, rc, content.lineIcons.findByLineAndType(line, LineIconType.error));
+        drawLeftPaneIcon(buf, rc, content.lineIcons.findByLineAndType(line, LineIconType.bookmark));
+        drawLeftPaneIcon(buf, rc, content.lineIcons.findByLineAndType(line, LineIconType.breakpoint));
     }
 
     protected void drawLeftPaneModificationMarks(DrawBuf buf, Rect rc, int line) {
@@ -318,6 +348,73 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         int x = rc.right - sz.x;
         int y = rc.top + (rc.height - sz.y) / 2;
         fnt.drawText(buf, x, y, s, _leftPaneLineNumberColor);
+    }
+
+    protected bool onLeftPaneMouseClick(MouseEvent event) {
+        return false;
+    }
+
+    protected bool handleLeftPaneFoldingMouseClick(MouseEvent event, Rect rc, int line) {
+        return true;
+    }
+
+    protected bool handleLeftPaneModificationMarksMouseClick(MouseEvent event, Rect rc, int line) {
+        return true;
+    }
+
+    protected bool handleLeftPaneLineNumbersMouseClick(MouseEvent event, Rect rc, int line) {
+        return true;
+    }
+
+    protected MenuItem getLeftPaneIconsPopupMenu(int line) {
+        return null;
+    }
+
+    protected bool handleLeftPaneIconsMouseClick(MouseEvent event, Rect rc, int line) {
+        if (event.button == MouseButton.Right) {
+            MenuItem menu = getLeftPaneIconsPopupMenu(line);
+            if (menu) {
+		        if (menu.openingSubmenu.assigned)
+			        if (!menu.openingSubmenu(_popupMenu))
+				        return true;
+		        menu.updateActionState(this);
+		        PopupMenu popupMenu = new PopupMenu(menu);
+		        popupMenu.menuItemAction = this;
+		        PopupWidget popup = window.showPopup(popupMenu, this, PopupAlign.Point | PopupAlign.Right, event.x, event.y);
+		        popup.flags = PopupFlags.CloseOnClickOutside;
+            }
+            return true;
+        }
+        return true;
+    }
+
+    protected bool handleLeftPaneMouseClick(MouseEvent event, Rect rc, int line) {
+        rc.right -= 3;
+        if (_foldingWidth) {
+            Rect rc2 = rc;
+            rc.right = rc2.left = rc2.right - _foldingWidth;
+            if (event.x >= rc2.left && event.x < rc2.right)
+                return handleLeftPaneFoldingMouseClick(event, rc2, line);
+        }
+        if (_modificationMarksWidth) {
+            Rect rc2 = rc;
+            rc.right = rc2.left = rc2.right - _modificationMarksWidth;
+            if (event.x >= rc2.left && event.x < rc2.right)
+                return handleLeftPaneModificationMarksMouseClick(event, rc2, line);
+        }
+        if (_lineNumbersWidth) {
+            Rect rc2 = rc;
+            rc.right = rc2.left = rc2.right - _lineNumbersWidth;
+            if (event.x >= rc2.left && event.x < rc2.right)
+                return handleLeftPaneLineNumbersMouseClick(event, rc2, line);
+        }
+        if (_iconsWidth) {
+            Rect rc2 = rc;
+            rc.right = rc2.left = rc2.right - _iconsWidth;
+            if (event.x >= rc2.left && event.x < rc2.right)
+                return handleLeftPaneIconsMouseClick(event, rc2, line);
+        }
+        return true;
     }
 
     protected void drawLeftPane(DrawBuf buf, Rect rc, int line) {
@@ -836,6 +933,9 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         _leftPaneBackgroundColor3 = style.customColor("editor_left_pane_background3");
         _leftPaneLineNumberColor = style.customColor("editor_left_pane_line_number_text");
         _leftPaneLineNumberBackgroundColor = style.customColor("editor_left_pane_line_number_background");
+        _colorIconBreakpoint = style.customColor("editor_left_pane_line_icon_color_breakpoint", 0xFF0000);
+        _colorIconBookmark = style.customColor("editor_left_pane_line_icon_color_bookmark", 0x0000FF);
+        _colorIconError = style.customColor("editor_left_pane_line_icon_color_error", 0x80FF0000);
         _matchingBracketHightlightColor = style.customColor("editor_matching_bracket_highlight");
         super.onThemeChanged();
     }
@@ -1307,7 +1407,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 return true;
 			case EditorActions.ToggleBookmark:
                 if (_content.multiline) {
-                    _content.lineIcons.toggleBookmark(_selectionRange.end.line);
+                    int line = a.longParam >= 0 ? cast(int)a.longParam : _selectionRange.end.line;
+                    _content.lineIcons.toggleBookmark(line);
                     return true;
                 }
 				return false;
@@ -1467,6 +1568,11 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     override bool onMouseEvent(MouseEvent event) {
         //Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
 		// support onClick
+        if (event.action == MouseAction.ButtonDown && event.x < _clientRect.left && event.x >= _clientRect.left - _leftPaneWidth) {
+            setFocus();
+            if (onLeftPaneMouseClick(event))
+                return true;
+        }
 	    if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
             setFocus();
             startCaretBlinking();
@@ -2406,6 +2512,38 @@ class EditBox : EditWidgetBase {
         }
 
         drawCaret(buf);
+    }
+
+    protected override bool onLeftPaneMouseClick(MouseEvent event) {
+        if (_leftPaneWidth <= 0)
+            return false;
+        Rect rc = _clientRect;
+        FontRef font = font();
+        int i = _firstVisibleLine;
+        int lc = lineCount;
+        for (;;) {
+            Rect lineRect = rc;
+            lineRect.left = _clientRect.left - _leftPaneWidth;
+            lineRect.right = _clientRect.left;
+            lineRect.bottom = lineRect.top + _lineHeight;
+            if (lineRect.top >= _clientRect.bottom)
+                break;
+            if (event.y >= lineRect.top && event.y < lineRect.bottom) {
+                return handleLeftPaneMouseClick(event, lineRect, i);
+            }
+            i++;
+            rc.top += _lineHeight;
+        }
+        return false;
+    }
+
+    override protected MenuItem getLeftPaneIconsPopupMenu(int line) {
+        MenuItem menu = new MenuItem();
+        Action toggleBookmarkAction = ACTION_EDITOR_TOGGLE_BOOKMARK.clone();
+        toggleBookmarkAction.longParam = line;
+        toggleBookmarkAction.objectParam = this;
+        MenuItem item = menu.add(toggleBookmarkAction);
+        return menu;
     }
 
 }

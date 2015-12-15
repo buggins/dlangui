@@ -15,6 +15,9 @@
     <color id="editor_left_pane_background3" value="#040404"/>
     <color id="editor_left_pane_line_number_text" value="#707070"/>
     <color id="editor_left_pane_line_number_background" value="#060606"/>
+    <color id="editor_left_pane_line_icon_color_breakpoint" value="#FF0000"/>
+    <color id="editor_left_pane_line_icon_color_bookmark" value="#0000FF"/>
+    <color id="editor_left_pane_line_icon_color_error" value="#80FF0000"/>
 
     <color id="grid_selection_color" value="#60909040"/>
     <color id="grid_selection_color_row" value="#60A0A040"/>

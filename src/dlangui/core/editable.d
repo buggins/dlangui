@@ -1605,9 +1605,9 @@ struct LineIcons {
                 LineIcon item = _items[i];
                 if (item.type != type)
                     continue;
-                if (!firstBefore && item.line < line)
+                if (!firstBefore && item.line >= line)
                     firstBefore = item;
-                else if (!firstAfter && item.line > line)
+                else if (!firstAfter && item.line < line)
                     firstAfter = item;
             }
         } else {
@@ -1616,7 +1616,7 @@ struct LineIcons {
                 LineIcon item = _items[i];
                 if (item.type != type)
                     continue;
-                if (!firstBefore && item.line < line)
+                if (!firstBefore && item.line <= line)
                     firstBefore = item;
                 else if (!firstAfter && item.line > line)
                     firstAfter = item;

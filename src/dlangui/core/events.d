@@ -135,7 +135,7 @@ class Action {
     /// optional string parameter
     protected string _stringParam;
     /// optional long parameter
-    protected long _longParam;
+    protected long _longParam = long.min;
     /// optional object parameter
     protected Object _objectParam;
 
