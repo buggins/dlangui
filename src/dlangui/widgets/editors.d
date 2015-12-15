@@ -1407,7 +1407,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 return true;
 			case EditorActions.ToggleBookmark:
                 if (_content.multiline) {
-                    int line = a.longParam >= 0 ? cast(int)a.longParam : _selectionRange.end.line;
+                    int line = a.longParam >= 0 ? cast(int)a.longParam : _caretPos.line;
                     _content.lineIcons.toggleBookmark(line);
                     return true;
                 }
