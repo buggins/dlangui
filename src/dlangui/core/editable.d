@@ -1455,14 +1455,14 @@ class LineIcon {
     /// line number
     int line;
     /// arbitrary parameter
-    Object param;
+    Object objectParam;
     /// empty
     this() {
     }
     this(LineIconType type, int line, Object obj = null) {
         this.type = type;
         this.line = line;
-        this.param = null;
+        this.objectParam = obj;
     }
 }
 
@@ -1522,22 +1522,27 @@ struct LineIcons {
         _len--;
         return res;
     }
+
     /// remove icon mark
     LineIcon remove(LineIcon icon) {
+        // same object
         for (int i = 0; i < _len; i++) {
             if (_items[i] is icon)
                 return remove(i);
         }
+        // has the same objectParam
         for (int i = 0; i < _len; i++) {
-            if (_items[i].param !is null && icon.param !is null && _items[i].param is icon.param)
+            if (_items[i].objectParam !is null && icon.objectParam !is null && _items[i].objectParam is icon.objectParam)
                 return remove(i);
         }
+        // has same line and type
         for (int i = 0; i < _len; i++) {
             if (_items[i].line == icon.line && _items[i].type == icon.type)
                 return remove(i);
         }
         return null;
     }
+
     /// remove all icon marks of specified type, return true if any of items removed
     bool removeByType(LineIconType type) {
         bool res = false;
