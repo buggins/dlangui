@@ -353,6 +353,15 @@ class UrlImageTextButton : ImageTextButton {
     }
 }
 
+/// button looking like URL, executing specified action
+class LinkButton : ImageTextButton {
+    this(Action a) {
+        super(a);
+        styleId = null;
+        _label.styleId = "BUTTON_LABEL_LINK";
+        padding(Rect(3,3,3,3));
+    }
+}
 
 
 /// checkbox
