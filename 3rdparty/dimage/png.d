@@ -365,7 +365,9 @@ Compound!(SuperImage, string) loadPNG(
     
     ubyte[] buffer = zlibDecoder.buffer;
     version(PNGDebug) writefln("buffer.length = %s", buffer.length);
-    
+
+    bool transparencyPalette;
+
     // create image
     if (hdr.colorType == ColorType.Greyscale)
     {
@@ -397,9 +399,10 @@ Compound!(SuperImage, string) loadPNG(
     }
     else if (hdr.colorType == ColorType.Palette)
     {
-        if (transparency.length > 0)
+        if (transparency.length > 0) {
             img = imgFac.createImage(hdr.width, hdr.height, 4, 8);
-        else
+            transparencyPalette = true;
+        } else
             img = imgFac.createImage(hdr.width, hdr.height, 3, 8);
     }
     else
@@ -549,7 +552,7 @@ Compound!(SuperImage, string) loadPNG(
     }
     else if (hdr.colorType == ColorType.Palette)
     {
-        if (transparency.length > 0) {
+        if (transparencyPalette) {
             for (int i = 0; i < img.length; i++) {
                 img.data[i] = ((cast(uint)buffer[bufindex])<<16) | ((cast(uint)buffer[bufindex + 1])<<8) | ((cast(uint)buffer[bufindex + 2])<<0) | ((cast(uint)buffer[bufindex + 3])<<24);
                 bufindex += 4;
