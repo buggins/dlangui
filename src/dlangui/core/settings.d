@@ -1506,7 +1506,7 @@ final class Setting {
                 buf.append('[');
                 if (pretty && _store.array.length > 0)
                     buf.appendEOL();
-                for (int i = 0; ; i++) {
+                for (int i = 0; i < _store.array.length; i++) {
                     if (pretty)
                         buf.appendTabs(level + 1);
                     _store.array.get(i).toJSON(buf, level + 1, pretty);
