@@ -226,7 +226,6 @@ bool listDirectory(string dir, bool includeDirs, bool includeFiles, bool showHid
                             || e.name.endsWith(".bat") || e.name.endsWith(".BAT");
                     } else version (posix) {
                         // execute permission for others
-                        Log.d("file attributes for ", e.name, " are %04x".format(e.attributes));
                         passed = (e.attributes & attr_mask) != 0;
                     } else version(OSX) {
                         passed = (e.attributes & attr_mask) != 0;
