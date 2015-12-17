@@ -219,13 +219,17 @@ bool listDirectory(string dir, bool includeDirs, bool includeFiles, bool showHid
             foreach(DirEntry e; files) {
                 bool passed = false;
                 if (showExecutables) {
+                    uint attr_mask = (1 << 0) || (1 << 3) || (1 << 6);
                     version(Windows) {
                         passed = e.name.endsWith(".exe") || e.name.endsWith(".EXE") 
                             || e.name.endsWith(".cmd") || e.name.endsWith(".CMD") 
                             || e.name.endsWith(".bat") || e.name.endsWith(".BAT");
                     } else version (posix) {
                         // execute permission for others
-                        passed = (e.attributes & 1) != 0;
+                        Log.d("file attributes for ", e.name, " are %04x".format(e.attributes));
+                        passed = (e.attributes & attr_mask) != 0;
+                    } else version(OSX) {
+                        passed = (e.attributes & attr_mask) != 0;
                     }
                 } else {
                     passed = filterFilename(e.name, filters);
