@@ -256,7 +256,11 @@ class SDLWindow : Window {
         if (_mainWidget)
             _mainWidget.setFocus();
         fixSize();
-	}
+        //update(true);
+        //redraw();
+        SDL_RaiseWindow(_win);
+        invalidate();
+    }
 
 	/// close window
 	override void close() {
