@@ -190,6 +190,13 @@ class DockHost : WidgetGroupDefaultDrawing {
         addChild(dockWin);
     }
 
+    DockWindow removeDockedWindow(string id) {
+        DockWindow res = childById!DockWindow(id);
+        if (res)
+            removeChild(id);
+        return res;
+    }
+
 	protected int _resizeStartPos;
 	void onResize(ResizerWidget source, ResizerEventType event, int newPosition) {
         layout(_pos);
@@ -217,6 +224,13 @@ class DockHost : WidgetGroupDefaultDrawing {
         return list;
     }
 
+    protected DockAlignment[4] _layoutPriority = [DockAlignment.Top, DockAlignment.Left, DockAlignment.Right, DockAlignment.Bottom];
+    @property DockAlignment[4] layoutPriority() { return _layoutPriority; }
+    @property void layoutPriority(DockAlignment[4] p) { 
+        _layoutPriority = p;
+        requestLayout();
+    }
+
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     override void layout(Rect rc) {
         _needLayout = false;
@@ -226,14 +240,31 @@ class DockHost : WidgetGroupDefaultDrawing {
         _pos = rc;
         applyMargins(rc);
         applyPadding(rc);
-        _topSpace.beforeLayout(rc, getDockedWindowList(DockAlignment.Top));
-        _leftSpace.beforeLayout(rc, getDockedWindowList(DockAlignment.Left));
-        _rightSpace.beforeLayout(rc, getDockedWindowList(DockAlignment.Right));
-        _bottomSpace.beforeLayout(rc, getDockedWindowList(DockAlignment.Bottom));
-        _topSpace.layout(Rect(rc.left + _leftSpace.space, rc.top, rc.right - _rightSpace.space, rc.top + _topSpace.space));
-        _bottomSpace.layout(Rect(rc.left + _leftSpace.space, rc.bottom - _bottomSpace.space, rc.right - _rightSpace.space, rc.bottom));
-        _leftSpace.layout(Rect(rc.left, rc.top, rc.left + _leftSpace.space, rc.bottom));
-        _rightSpace.layout(Rect(rc.right - _rightSpace.space, rc.top, rc.right, rc.bottom));
+        foreach(a; _layoutPriority) {
+            if (a == DockAlignment.Top) _topSpace.beforeLayout(rc, getDockedWindowList(DockAlignment.Top));
+            if (a == DockAlignment.Left) _leftSpace.beforeLayout(rc, getDockedWindowList(DockAlignment.Left));
+            if (a == DockAlignment.Right) _rightSpace.beforeLayout(rc, getDockedWindowList(DockAlignment.Right));
+            if (a == DockAlignment.Bottom) _bottomSpace.beforeLayout(rc, getDockedWindowList(DockAlignment.Bottom));
+        }
+        int topsp, bottomsp, leftsp, rightsp;
+        foreach(a; _layoutPriority) {
+            if (a == DockAlignment.Top) {
+                _topSpace.layout(Rect(rc.left + leftsp, rc.top, rc.right - rightsp, rc.top + _topSpace.space));
+                topsp = _topSpace.space;
+            }
+            if (a == DockAlignment.Bottom) {
+                _bottomSpace.layout(Rect(rc.left + leftsp, rc.bottom - _bottomSpace.space, rc.right - rightsp, rc.bottom));
+                bottomsp = _bottomSpace.space;
+            }
+            if (a == DockAlignment.Left) {
+                _leftSpace.layout(Rect(rc.left, rc.top + topsp, rc.left + _leftSpace.space, rc.bottom - bottomsp));
+                leftsp = _leftSpace.space;
+            }
+            if (a == DockAlignment.Right) {
+                _rightSpace.layout(Rect(rc.right - _rightSpace.space, rc.top + topsp, rc.right, rc.bottom - bottomsp));
+                rightsp = _rightSpace.space;
+            }
+        }
         if (_bodyWidget)
             _bodyWidget.layout(Rect(rc.left + _leftSpace.space, rc.top + _topSpace.space, rc.right - _rightSpace.space, rc.bottom - _bottomSpace.space));
     }
