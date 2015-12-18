@@ -221,6 +221,7 @@ immutable(ubyte[]) loadResourceBytes(string filename) {
     }
 }
 
+/// Base class for all drawables
 class Drawable : RefCountedObject {
 	debug static __gshared int _instanceCount;
 	debug @property static int instanceCount() { return _instanceCount; }
@@ -237,6 +238,37 @@ class Drawable : RefCountedObject {
     @property abstract int width();
     @property abstract int height();
     @property Rect padding() { return Rect(0,0,0,0); }
+}
+
+/// Custom drawing inside openGL
+class OpenGLDrawable : Drawable {
+	
+	private OpenGLDrawableDelegate _drawHandler;
+
+	@property OpenGLDrawableDelegate drawHandler() { return _drawHandler; }
+	@property OpenGLDrawable drawHandler(OpenGLDrawableDelegate handler) { _drawHandler = handler; return this; }
+
+	this(OpenGLDrawableDelegate drawHandler = null) {
+		_drawHandler = drawHandler;
+	}
+
+	void onDraw(DrawBuf buf, Rect rc) {
+		// either override this method or assign draw handler
+		if (_drawHandler) {
+			_drawHandler(buf, rc);
+		}
+	}
+
+    override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
+		buf.drawCustomOpenGLScene(rc, &onDraw);
+	}
+
+    override @property int width() {
+		return 20; // dummy size
+	}
+    override @property int height() {
+		return 20; // dummy size
+	}
 }
 
 class EmptyDrawable : Drawable {

@@ -894,6 +894,11 @@ void main()
 		};
 		tabs.addTab(canvas, "TAB_CANVAS"c);
 
+		static if (ENABLE_OPENGL) {
+			//
+			tabs.addTab(new MyOpenglWidget(), "OpenGL"d);
+		}
+
         //==========================================================================
 
         contentLayout.addChild(tabs);
@@ -913,4 +918,20 @@ void main()
     Log.i("Root paths: ", getRootPaths);
 
     return Platform.instance.enterMessageLoop();
+}
+
+static if (ENABLE_OPENGL) {
+	class MyOpenglWidget : Widget {
+		this() {
+			super("OpenGLView");
+			layoutWidth = FILL_PARENT;
+			layoutHeight = FILL_PARENT;
+			backgroundDrawable = DrawableRef(new OpenGLDrawable(&doDraw));
+		}
+
+		private void doDraw(DrawBuf buf, Rect rc) {
+			// do some drawing
+			// TODO
+		}
+	}
 }

@@ -39,6 +39,9 @@ static if (ENABLE_OPENGL) {
     private __gshared uint drawBufIdGenerator = 0;
 }
 
+/// Custom draw delegate for OpenGL direct drawing
+alias OpenGLDrawableDelegate = void delegate(DrawBuf buf, Rect rc);
+
 /// drawing buffer - image container which allows to perform some drawing operations
 class DrawBuf : RefCountedObject {
     protected Rect _clipRect;
@@ -383,6 +386,12 @@ class DrawBuf : RefCountedObject {
     DrawBuf transformColors(ref ColorTransform transform) {
         return this;
     }
+
+	/// draw custom OpenGL scene
+	void drawCustomOpenGLScene(Rect rc, OpenGLDrawableDelegate handler) {
+		// override it for OpenGL draw buffer
+		Log.w("drawCustomOpenGLScene is called for non-OpenGL DrawBuf");
+	}
 
     void clear() {
 		resetClipping();

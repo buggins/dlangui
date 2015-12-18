@@ -402,11 +402,18 @@ class Widget {
         return style.focusRectColors;
     }
 
+	DrawableRef _backgroundDrawable;
 	/// background drawable
 	@property DrawableRef backgroundDrawable() const {
-		return stateStyle.backgroundDrawable;
+		if (_backgroundDrawable.isNull)
+			return stateStyle.backgroundDrawable;
+		return (cast(Widget)this)._backgroundDrawable;
 	}
-	
+	/// background drawable
+	@property void backgroundDrawable(DrawableRef drawable) {
+		_backgroundDrawable = drawable;
+	}
+
 	/// widget drawing alpha value (0=opaque .. 255=transparent)
 	@property uint alpha() const { return stateStyle.alpha; }
 	/// set widget drawing alpha value (0=opaque .. 255=transparent)
