@@ -241,13 +241,9 @@ interface ViewScrolledHandler {
 class GridWidgetBase : ScrollWidgetBase, GridModelAdapter {
     /// Callback to handle selection change
     Listener!CellSelectedHandler cellSelected;
-    /// cellSelected signal alias for backward compatibility; will be deprecated in future
-    alias onCellSelected = cellSelected;
 
     /// Callback to handle cell double click
     Listener!CellActivatedHandler cellActivated;
-    /// cellActivated signal alias for backward compatibility; will be deprecated in future
-    alias onCellActivated = cellActivated;
 
     /// Callback for handling of view scroll (top left visible cell change)
     Listener!ViewScrolledHandler viewScrolled;
@@ -685,8 +681,8 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter {
         calcScrollableAreaPos();
         if (makeVisible)
             makeCellVisible(_col, _row);
-        if (needNotification && onCellSelected.assigned)
-            onCellSelected(source, _col - _headerCols, _row - _headerRows);
+        if (needNotification && cellSelected.assigned)
+            cellSelected(source, _col - _headerCols, _row - _headerRows);
         return true;
     }
 
@@ -695,8 +691,8 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter {
         if (_col != col || _row != row) {
             selectCell(col, row, true);
         }
-        if (onCellActivated.assigned)
-            onCellActivated(this, this.col, this.row);
+        if (cellActivated.assigned)
+            cellActivated(this, this.col, this.row);
         return true;
     }
 
@@ -876,8 +872,8 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter {
 
 		switch (actionId) {
             case GridActions.ActivateCell:
-                if (onCellActivated.assigned) {
-                    onCellActivated(this, col, row);
+                if (cellActivated.assigned) {
+                    cellActivated(this, col, row);
                     return true;
                 }
                 return false;

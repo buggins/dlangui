@@ -121,6 +121,9 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         }
     }
 
+    /// returns client area rectangle
+	@property Rect clientRect() { return _clientRect; }
+
     /// process horizontal scrollbar event
     bool onHScroll(ScrollEvent event) {
         return true;

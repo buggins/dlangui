@@ -448,10 +448,10 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         }
 
         _fileList.customCellAdapter = this;
-        _fileList.onCellActivated = delegate(GridWidgetBase source, int col, int row) {
+        _fileList.cellActivated = delegate(GridWidgetBase source, int col, int row) {
             onItemActivated(row);
         };
-        _fileList.onCellSelected = delegate(GridWidgetBase source, int col, int row) {
+        _fileList.cellSelected = delegate(GridWidgetBase source, int col, int row) {
             onItemSelected(row);
         };
 
