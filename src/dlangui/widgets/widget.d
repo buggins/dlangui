@@ -1696,7 +1696,7 @@ class WidgetGroupDefaultDrawing : WidgetGroup {
     }
 }
 
-immutable long ONE_SECOND = 10000000L;
+immutable long ONE_SECOND = 10_000_000L;
 
 /// Helper to handle animation progress
 struct AnimationHelper {

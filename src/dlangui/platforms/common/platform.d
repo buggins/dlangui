@@ -180,7 +180,7 @@ class Window {
             _mainWidget.window = this;
     }
 
-	// Abstract methods : override in platform implementatino
+	// Abstract methods : override in platform implementation
 
 	/// show window
     abstract void show();
