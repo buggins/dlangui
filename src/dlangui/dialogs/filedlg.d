@@ -216,8 +216,13 @@ class FileDialog : Dialog, CustomGridCellAdapter {
                 else
                     resname = "text-plain";
                 _fileList.setCellText(0, i, toUTF32(resname));
-                sz = to!string(_entries[i].size);
-                date = "2014-01-01 00:00:00";
+                double size = _entries[i].size;
+                import std.format : format;
+                sz = size < 1024 ? to!string(size) ~ " B" :
+                    (size < 1024*1024 ? "%.1f".format(size/1024) ~ " KB" :
+                    (size < 1024*1024*1024 ? "%.1f".format(size/(1024*1024)) ~ " MB" :
+                    "%.1f".format(size/(1024*1024*1024)) ~ " GB"));
+                date = _entries[i].timeLastModified.toSimpleString();
             }
             _fileList.setCellText(2, i, toUTF32(sz));
             _fileList.setCellText(3, i, toUTF32(date));
