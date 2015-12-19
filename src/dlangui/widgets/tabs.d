@@ -222,7 +222,6 @@ class TabItemList {
     }
     /// find tab index by id
     int indexById(string id) const {
-        import std.algorithm;
         for (int i = 0; i < _len; i++) {
             if (_list[i].id.equal(id))
                 return i;

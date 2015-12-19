@@ -554,7 +554,7 @@ private class GLImageCache {
                     removePage(item.page);
                 }
                 _map.remove(objectId);
-                delete item;
+                destroy(item);
             }
         }
     }
@@ -659,7 +659,6 @@ private class GLGlyphCache {
                     return;
             }
             //Log.d("updateTexture for font glyph page - setting image ", _drawbuf.width, "x", _drawbuf.height, " tx=", _texture.ID);
-            int len = _drawbuf.width * _drawbuf.height;
             if (!glSupport.setTextureImage(_texture, _drawbuf.width, _drawbuf.height, cast(ubyte *)_drawbuf.scanLine(0))) {
                 destroy(_texture);
                 _texture = null;
@@ -839,7 +838,7 @@ private class GLGlyphCache {
                     removePage(item.page);
                 }
                 _map.remove(objectId);
-                delete item;
+                destroy(item);
             }
         }
     }
@@ -924,8 +923,7 @@ public:
 	}
 	override void draw() {
 		if (_handler) {
-			import derelict.opengl3.gl3;
-			import derelict.opengl3.gl;
+			import derelict.opengl3.gl3 : glViewport;
 			glViewport(_rc.left, _rc.top, _rc.right, _rc.bottom);
 			_handler(_buf, _rc);
 			glSupport.setOrthoProjection(Rect(0, 0, _buf.width, _buf.height));

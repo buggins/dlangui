@@ -280,7 +280,6 @@ synchronized class UIStringTranslator {
     /** Looks for i18n directory inside one of passed dirs, and uses first found as directory to read i18n files from */
     void findTranslationsDir(string[] dirs ...) {
         _resourceDirs.length = 0;
-        import std.file;
         foreach(dir; dirs) {
             string path = appendPath(dir, "i18n/");
             if (exists(path) && isDir(path)) {

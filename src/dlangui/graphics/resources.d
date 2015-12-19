@@ -458,7 +458,6 @@ class ImageDrawable : Drawable {
             //Log.d("drawing nine patch image with frame ", p.frame, " padding ", p.padding);
             int w = width;
             int h = height;
-            Rect dstrect = rc;
             Rect srcrect = Rect(1, 1, w + 1, h + 1);
             if (true) { //buf.applyClipping(dstrect, srcrect)) {
                 int x0 = srcrect.left;
@@ -737,9 +736,6 @@ class StateDrawable : Drawable {
 
     /// load from XML file
     bool load(string filename) {
-        import std.file;
-        import std.string;
-
         try {
             string s = cast(string)loadResourceBytes(filename);
             if (!s) {

@@ -554,7 +554,7 @@ class FreeTypeFontManager : FontManager {
             Log.v("DerelictFT: Missing symbols callback is registered");
             DerelictFT.load();
             Log.v("DerelictFT: Loaded");
-        } catch (Throwable e) {
+        } catch (Exception e) {
             Log.e("Derelict: cannot load freetype shared library: ", e.msg);
             throw new Exception("Cannot load freetype library");
         }

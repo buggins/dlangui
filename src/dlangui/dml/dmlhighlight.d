@@ -267,7 +267,7 @@ class DMLSyntaxSupport : SyntaxSupport {
     static struct TokenWithRange {
         Token token;
         TextRange range;
-        @property string toString() {
+        @property string toString() const {
             return token.toString ~ range.toString;
         }
     }
@@ -431,7 +431,6 @@ class DMLSyntaxSupport : SyntaxSupport {
             for (int i = range.start.line; i <= range.end.line; i++) {
                 dstring s = content.line(i);
                 int charsRemoved = 0;
-                int minp = 0;
                 if (i == range.start.line) {
                     int maxp = content.lineLength(range.start.line);
                     if (i == range.end.line)
@@ -594,7 +593,6 @@ class DMLSyntaxSupport : SyntaxSupport {
         if (line == 0)
             return; // not for first line
         int prevLine = line - 1;
-        dstring lineText = _content.line(line);
         TextLineMeasure lineMeasurement = _content.measureLine(line);
         TextLineMeasure prevLineMeasurement = _content.measureLine(prevLine);
         while (prevLineMeasurement.empty && prevLine > 0) {
@@ -636,8 +634,6 @@ class DMLSyntaxSupport : SyntaxSupport {
         if (lineMeasurement.firstNonSpace != op.newRange.start.pos)
             return; // not in beginning of line
         if (lineMeasurement.firstNonSpaceX >= 0 && lineMeasurement.firstNonSpaceX != prevLineMeasurement.firstNonSpaceX) {
-            dstring prevLineText = _content.line(prevLine);
-            TokenPropString prevLineTokenProps = _content.lineTokenProps(prevLine);
             int spacex = prevLineMeasurement.firstNonSpaceX;
             if (spacex != lineMeasurement.firstNonSpaceX) {
                 dstring txt = _content.fillSpace(spacex);

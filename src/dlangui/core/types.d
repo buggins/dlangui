@@ -170,7 +170,7 @@ struct Rect {
         return left >= rc.left && right <= rc.right && top >= rc.top && bottom <= rc.bottom;
     }
 
-    bool opEquals(Rect rc) {
+    bool opEquals(Rect rc) const {
         return left == rc.left && right == rc.right && top == rc.top && bottom == rc.bottom;
     }
 }

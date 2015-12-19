@@ -909,7 +909,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
         if (_scrollPosition < 0)
             _scrollPosition = 0;
         if (_needScrollbar) {
-            if (_orientation == Orientation.Vertical) {
+            if (_orientation == Orientation.Vertical) { // FIXME:
                 _scrollbar.position = _scrollPosition;
             } else {
                 _scrollbar.position = _scrollPosition;
@@ -1105,7 +1105,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
                     if (itemEnabled(i))
 					    setHoverItem(i);
                 }
-				if ((event.button == MouseFlag.LButton || event.button == MouseFlag.RButton)) {
+				if (event.button == MouseFlag.LButton || event.button == MouseFlag.RButton) {
 					if ((_clickOnButtonDown && event.action == MouseAction.ButtonDown) || (!_clickOnButtonDown && event.action == MouseAction.ButtonUp)) {
                         if (itemEnabled(i)) {
 						    itemClicked(i);

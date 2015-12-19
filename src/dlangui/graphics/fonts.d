@@ -886,7 +886,7 @@ struct glyph_gamma_table(int maxv = 65)
 private:
     ubyte[maxv] _map;
     double _gamma = 1.0;
-};
+}
 
 __gshared glyph_gamma_table!65 _gamma65;
 __gshared glyph_gamma_table!256 _gamma256;

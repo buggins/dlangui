@@ -799,7 +799,7 @@ class Widget {
         bool nearY(TabOrderInfo v) {
             return v.rect.top >= rect.top - NEAR_THRESHOLD  && v.rect.top <= rect.top + NEAR_THRESHOLD;
         }
-        override int opCmp(Object obj) {
+        override int opCmp(Object obj) const {
             TabOrderInfo v = cast(TabOrderInfo)obj;
             if (tabOrder != 0 && v.tabOrder !=0) {
                 if (tabOrder < v.tabOrder)
@@ -832,7 +832,7 @@ class Widget {
             }
             return obj1.rect.left < obj2.rect.left;
         }
-        override string toString() {
+        override string toString() const {
             return widget.id;
         }
     }

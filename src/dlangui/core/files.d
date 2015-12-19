@@ -359,8 +359,7 @@ string[] splitPath(string path) {
 
 /// for executable name w/o path, find absolute path to executable
 string findExecutablePath(string executableName) {
-    import std.algorithm;
-    import std.string;
+    import std.string : split;
     version (Windows) {
         if (!executableName.endsWith(".exe"))
             executableName = executableName ~ ".exe";

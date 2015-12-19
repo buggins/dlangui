@@ -1548,7 +1548,6 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 			Log.d("text entered: ", event.text);
             if (readOnly)
                 return true;
-			dchar ch = event.text[0];
             if (replaceMode && _selectionRange.empty && _content[_caretPos.line].length >= _caretPos.pos + event.text.length) {
                 // replace next char(s)
                 TextRange range = _selectionRange;
