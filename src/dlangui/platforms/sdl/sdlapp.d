@@ -84,7 +84,8 @@ class SDLWindow : Window {
         _dx = width;
         _dy = height;
 		create(flags);
-	}
+        Log.i(_enableOpengl ? "OpenGL is enabled" : "OpenGL is disabled");
+    }
 
 	~this() {
 		debug Log.d("Destroying SDL window");
@@ -152,7 +153,7 @@ class SDLWindow : Window {
                 windowFlags |= SDL_WINDOW_OPENGL;
             if (!_glSupport) {
                 version(OSX) {
-                    bool useLegacyOpengl = true;
+                    bool useLegacyOpengl = false; //true;
                 } else {
                     bool useLegacyOpengl = false;
                 }
@@ -182,6 +183,7 @@ class SDLWindow : Window {
 		
         static if (ENABLE_OPENGL) {
             if (_enableOpengl) {
+                Log.i("Trying to create OpenGL 3.2 context");
 				createContext(3, 2);
                 //_context = SDL_GL_CreateContext(_win); // Create the actual context and make it current
                 if (!_context) {
@@ -199,11 +201,14 @@ class SDLWindow : Window {
                 }
                 if (_context && !_gl3Reloaded) {
 					try {
+                        Log.d("Reloading DerelictGL3");
 						DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
 						DerelictGL3.reload(GLVersion.GL21, GLVersion.GL40);
 	                    _gl3Reloaded = true;
-	                    if (!glSupport.valid && !glSupport.initShaders())
+	                    if (!glSupport.valid && !glSupport.initShaders()) {
+                            Log.e("Failed to initialize OpenGL - disabling OpenGL support");
 	                        _enableOpengl = false;
+                        }
 	                    fixSize();
 					} catch (derelict.util.exception.SymbolLoadException e) {
 						Log.e("Exception in DerelictGL3.reload ", e);
@@ -220,6 +225,7 @@ class SDLWindow : Window {
 			}
             fixSize();
         }
+        setOpenglEnabled(_enableOpengl);
 		windowCaption = _caption;
 		return true;
 	}

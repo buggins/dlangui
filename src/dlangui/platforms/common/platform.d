@@ -180,7 +180,7 @@ class Window {
             _mainWidget.window = this;
     }
 
-	// Abstract methods : override in platform implementation
+	// Abstract methods : override in platform implementatino
 
 	/// show window
     abstract void show();
@@ -1374,6 +1374,11 @@ static if (ENABLE_OPENGL) {
 	        glyphDestroyCallback = &onGlyphDestroyedCallback;
         else
 	        glyphDestroyCallback = null;
+    }
+} else {
+    @property bool openglEnabled() { return false; }
+    void setOpenglEnabled(bool enabled = true) {
+        // ignore
     }
 }
 
