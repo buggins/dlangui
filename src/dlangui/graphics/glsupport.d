@@ -45,20 +45,6 @@ derelict.util.exception.ShouldThrow gl3MissingSymFunc( string symName ) {
 	return derelict.util.exception.ShouldThrow.No;
 }
 
-// utility function to fill 4-float array of vertex colors with converted CR 32bit color
-private void LVGLFillColor(uint color, float * buf, int count) {
-    float r = ((color >> 16) & 255) / 255.0f;
-    float g = ((color >> 8) & 255) / 255.0f;
-    float b = ((color >> 0) & 255) / 255.0f;
-    float a = (((color >> 24) & 255) ^ 255) / 255.0f;
-    for (int i=0; i<count; i++) {
-        *buf++ = r;
-        *buf++ = g;
-        *buf++ = b;
-        *buf++ = a;
-    }
-}
-
 /* For reporting OpenGL errors, it's nicer to get a human-readable symbolic name for the
  * error instead of the numeric form. Derelict's GLenum is just an alias for uint, so we
  * can't depend on D's nice toString() for enums.
@@ -103,14 +89,14 @@ bool checkError(string context="", string functionName=__FUNCTION__, int line=__
 class GLProgram {
     @property abstract string vertexSource();
     @property abstract string fragmentSource();
-    protected GLuint vertexShader;
-    protected GLuint fragmentShader;
+    private GLuint vertexShader;
+    private GLuint fragmentShader;
     protected GLuint program;
     protected bool initialized;
     protected bool error;
-	protected string glslversion;
-	protected int glslversionInt;
-    protected char[] glslversionString;
+    private string glslversion;
+    private int glslversionInt;
+    private char[] glslversionString;
     this() {
     }
 
@@ -133,7 +119,7 @@ class GLProgram {
         sourceCode ~= src;
         compatibilityFixes(sourceCode, type);
 
-		Log.d("compileShader glsl=", glslversion, " type:", (type == GL_VERTEX_SHADER ? "GL_VERTEX_SHADER" : (type == GL_FRAGMENT_SHADER ? "GL_FRAGMENT_SHADER" : "UNKNOWN")), " code:\n", sourceCode);
+		Log.d("compileShader: glsl = ", glslversion, ", type: ", (type == GL_VERTEX_SHADER ? "GL_VERTEX_SHADER" : (type == GL_FRAGMENT_SHADER ? "GL_FRAGMENT_SHADER" : "UNKNOWN")));//, " code:\n", sourceCode);
         GLuint shader = glCreateShader(type);
         const char * psrc = sourceCode.toStringz;
         glShaderSource(shader, 1, &psrc, null);
@@ -192,40 +178,18 @@ class GLProgram {
             return false;
         }
         Log.d("Program linked successfully");
-        Log.v("trying glUseProgram with 0");
-        glUseProgram(0);
-        Log.v("before useProgram");
-        glUseProgram(program);
-        checkError("glUseProgram " ~ to!string(program));
-        Log.v("after useProgram");
+        
         if (!initLocations()) {
             Log.e("some of locations were not found");
             error = true;
         }
         initialized = true;
         Log.v("Program is initialized successfully");
-        checkgl!glUseProgram(0);
         return !error;
     }
-    bool initLocations() {
-        return true;
-    }
-    bool bind() {
-        if (!initialized)
-            return false;
-		if (!glIsProgram(program))
-			Log.e("!glIsProgram(program)");
-        glUseProgram(program);
-        checkError("glUseProgram " ~ to!string(program));
-        return true;
-    }
-    void release() {
-        checkgl!glUseProgram(0);
-    }
+    abstract bool initLocations();
+    
     ~this() {
-        clear();
-    }
-    void clear() {
         // TODO: cleanup
         if (program)
             glDeleteProgram(program);
@@ -277,28 +241,30 @@ class SolidFillProgram : GLProgram {
                 return false;
         return true;
     }
+    
+    void bind() {
+        checkgl!glUseProgram(program);
+    }
+    void unbind() {
+        checkgl!glUseProgram(0);
+    }
 
     void beforeExecute() {
         glEnable(GL_BLEND);
         checkgl!glDisable(GL_CULL_FACE);
         checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
         bind();
-        //glUniformMatrix4fv(matrixLocation,  1, false, m.value_ptr);
-        //glUniformMatrix4fv(matrixLocation,  1, false, matrix.ptr);
         checkgl!glUniformMatrix4fv(matrixLocation, 1, false, glSupport.qtmatrix.ptr);
     }
 
     void afterExecute() {
-        release();
+        unbind();
     }
 
     protected GLint matrixLocation;
     protected GLint vertexLocation;
     protected GLint colAttrLocation;
     override bool initLocations() {
-        bool res = super.initLocations();
-
         matrixLocation = checkgl!glGetUniformLocation(program, toStringz("matrix"));
 		if (matrixLocation == -1)
 			Log.e("glGetUniformLocation failed for matrixLocation");
@@ -308,7 +274,7 @@ class SolidFillProgram : GLProgram {
 		colAttrLocation = checkgl!glGetAttribLocation(program, toStringz("colAttr"));
 		if (colAttrLocation == -1)
 			Log.e("glGetUniformLocation failed for colAttrLocation");
-		return res && matrixLocation >= 0 && vertexLocation >= 0 && colAttrLocation >= 0;
+		return matrixLocation >= 0 && vertexLocation >= 0 && colAttrLocation >= 0;
     }
 
     bool execute(float[] vertices, float[] colors) {
@@ -328,9 +294,6 @@ class SolidFillProgram : GLProgram {
         glEnableVertexAttribArray(colAttrLocation);
 
         checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)vertices.length/3);
-
-        glDisableVertexAttribArray(vertexLocation);
-        glDisableVertexAttribArray(colAttrLocation);
 
         afterExecute();
 
@@ -358,9 +321,6 @@ class LineProgram : SolidFillProgram {
         glEnableVertexAttribArray(colAttrLocation);
 
         checkgl!glDrawArrays(GL_LINES, 0, cast(int)vertices.length/3);
-
-        glDisableVertexAttribArray(vertexLocation);
-        glDisableVertexAttribArray(colAttrLocation);
 
         afterExecute();
 
@@ -408,7 +368,7 @@ class TextureProgram : SolidFillProgram {
         return res && texCoordLocation >= 0;
     }
 
-    bool execute(float[] vertices, float[] texcoords, float[] colors, Tex2D texture, bool linear) {
+    bool execute(float[] vertices, float[] colors, float[] texcoords, Tex2D texture, bool linear) {
         if(!check())
             return false;
         beforeExecute();
@@ -484,15 +444,8 @@ class FontProgram : SolidFillProgram {
     }
 
     override void beforeExecute() {
-        glEnable(GL_BLEND);
-        checkgl!glDisable(GL_CULL_FACE);
-        checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        //glBlendFunc(GL_ONE, GL_SRC_COLOR);
-        //glBlendFunc(GL_ONE, GL_SRC_COLOR);
+        super.beforeExecute();
         //glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
-        //glBlendFunc(GL_ONE_MINUS_SRC_COLOR, GL_SRC_COLOR);
-        bind();
-        checkgl!glUniformMatrix4fv(matrixLocation, 1, false, glSupport.qtmatrix.ptr);
     }
 
     override void afterExecute() {
@@ -500,7 +453,7 @@ class FontProgram : SolidFillProgram {
         super.afterExecute();
     }
 
-    bool execute(float[] vertices, float[] texcoords, float[] colors, Tex2D texture, bool linear) {
+    bool execute(float[] vertices, float[] colors, float[] texcoords, Tex2D texture, bool linear) {
         if(!check())
             return false;
         beforeExecute();
@@ -523,10 +476,6 @@ class FontProgram : SolidFillProgram {
 
         checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)vertices.length/3);
 
-        glDisableVertexAttribArray(vertexLocation);
-        glDisableVertexAttribArray(colAttrLocation);
-        glDisableVertexAttribArray(texCoordLocation);
-
         afterExecute();
 
         destroy(vbo);
@@ -534,6 +483,26 @@ class FontProgram : SolidFillProgram {
 
         texture.unbind();
         return true;
+    }
+}
+
+
+struct Color
+{
+    float r, g, b, a;
+}
+
+// utility function to fill 4-float array of vertex colors with converted CR 32bit color
+private void FillColor(uint color, Color[] buf_slice) {
+    float r = ((color >> 16) & 255) / 255.0;
+    float g = ((color >> 8) & 255) / 255.0;
+    float b = ((color >> 0) & 255) / 255.0;
+    float a = (((color >> 24) & 255) ^ 255) / 255.0;
+    foreach(ref col; buf_slice) {
+        col.r = r;
+        col.g = g;
+        col.b = b;
+        col.a = a;
     }
 }
 
@@ -638,9 +607,9 @@ class GLSupport {
     }
 
     void drawLine(Point p1, Point p2, uint color1, uint color2) {
-        float[2 * 4] colors;
-        LVGLFillColor(color1, colors.ptr + 4*0, 1);
-        LVGLFillColor(color2, colors.ptr + 4*1, 1);
+        Color[2] colors;
+        FillColor(color1, colors[0..1]);
+        FillColor(color2, colors[1..2]);
         float x0 = cast(float)(p1.x);
         float y0 = cast(float)(bufferDy-p1.y);
         float x1 = cast(float)(p2.x);
@@ -657,21 +626,20 @@ class GLSupport {
             x1,y1,Z_2D
         ];
         if (_lineProgram !is null) {
-            //Log.d("solid fill: vertices ", vertices, " colors ", colors);
-            _lineProgram.execute(vertices, colors);
+            _lineProgram.execute(vertices, cast(float[])colors);
         } else
             Log.e("No program");
     }
 
     static immutable float Z_2D = -2.0f;
     void drawSolidFillRect(Rect rc, uint color1, uint color2, uint color3, uint color4) {
-        float[6 * 4] colors;
-        LVGLFillColor(color1, colors.ptr + 4*0, 1);
-        LVGLFillColor(color4, colors.ptr + 4*1, 1);
-        LVGLFillColor(color3, colors.ptr + 4*2, 1);
-        LVGLFillColor(color1, colors.ptr + 4*3, 1);
-        LVGLFillColor(color3, colors.ptr + 4*4, 1);
-        LVGLFillColor(color2, colors.ptr + 4*5, 1);
+        Color[6] colors;
+        FillColor(color1, colors[0..1]);
+        FillColor(color4, colors[1..2]);
+        FillColor(color3, colors[2..3]);
+        FillColor(color1, colors[3..4]);
+        FillColor(color3, colors[4..5]);
+        FillColor(color2, colors[5..6]);
         float x0 = cast(float)(rc.left);
         float y0 = cast(float)(bufferDy-rc.top);
         float x1 = cast(float)(rc.right);
@@ -710,21 +678,19 @@ class GLSupport {
 			glDisable(GL_BLEND);
 		} else {
 	        if (_solidFillProgram !is null) {
-	            //Log.d("solid fill: vertices ", vertices, " colors ", colors);
-	            _solidFillProgram.execute(vertices, colors);
+	            _solidFillProgram.execute(vertices, cast(float[])colors);
 	        } else
 	            Log.e("No program");
 		}
     }
 
     void drawColorAndTextureGlyphRect(Tex2D texture, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color) {
-        //Log.v("drawColorAndGlyphRect tx=", texture.ID, " src=", srcrc, " dst=", dstrc);
         drawColorAndTextureGlyphRect(texture, tdx, tdy, srcrc.left, srcrc.top, srcrc.width(), srcrc.height(), dstrc.left, dstrc.top, dstrc.width(), dstrc.height(), color);
     }
 
     void drawColorAndTextureGlyphRect(Tex2D texture, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, uint color) {
-        float[6*4] colors;
-        LVGLFillColor(color, colors.ptr, 6);
+        Color[6] colors;
+        FillColor(color, colors);
         float dstx0 = cast(float)xx;
         float dsty0 = cast(float)(bufferDy - (yy));
         float dstx1 = cast(float)(xx + dx);
@@ -740,8 +706,8 @@ class GLSupport {
         float srcy0 = srcy / cast(float)tdy;
         float srcx1 = (srcx + srcdx) / cast(float)tdx;
         float srcy1 = (srcy + srcdy) / cast(float)tdy;
-        float[3 * 6] vertices =
-           [dstx0, dsty0, Z_2D,
+        float[3 * 6] vertices = [
+            dstx0, dsty0, Z_2D,
             dstx0, dsty1, Z_2D,
             dstx1, dsty1, Z_2D,
             dstx0, dsty0, Z_2D,
@@ -778,19 +744,18 @@ class GLSupport {
 			glDisable(GL_ALPHA_TEST);
 			glDisable(GL_TEXTURE_2D);
 		} else {
-        	_fontProgram.execute(vertices, texcoords, colors, texture, false);
+        	_fontProgram.execute(vertices, cast(float[])colors, texcoords, texture, false);
 		}
         //drawColorAndTextureRect(vertices, texcoords, colors, texture, linear);
     }
 
     void drawColorAndTextureRect(Tex2D texture, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color, bool linear) {
-        //Log.v("drawColorAndTextureRect tx=", texture.ID, " src=", srcrc, " dst=", dstrc);
         drawColorAndTextureRect(texture, tdx, tdy, srcrc.left, srcrc.top, srcrc.width(), srcrc.height(), dstrc.left, dstrc.top, dstrc.width(), dstrc.height(), color, linear);
     }
 
     void drawColorAndTextureRect(Tex2D texture, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, uint color, bool linear) {
-        float[6*4] colors;
-        LVGLFillColor(color, colors.ptr, 6);
+        Color[6] colors;
+        FillColor(color, colors);
         float dstx0 = cast(float)xx;
         float dsty0 = cast(float)(bufferDy - (yy));
         float dstx1 = cast(float)(xx + dx);
@@ -806,12 +771,13 @@ class GLSupport {
         float srcy0 = srcy / cast(float)tdy;
         float srcx1 = (srcx + srcdx) / cast(float)tdx;
         float srcy1 = (srcy + srcdy) / cast(float)tdy;
-        float[3 * 6] vertices = [dstx0,dsty0,Z_2D,
-        dstx0,dsty1,Z_2D,
-        dstx1,dsty1,Z_2D,
-        dstx0,dsty0,Z_2D,
-        dstx1,dsty1,Z_2D,
-        dstx1,dsty0,Z_2D];
+        float[3 * 6] vertices = [
+            dstx0,dsty0,Z_2D,
+            dstx0,dsty1,Z_2D,
+            dstx1,dsty1,Z_2D,
+            dstx0,dsty0,Z_2D,
+            dstx1,dsty1,Z_2D,
+            dstx1,dsty0,Z_2D];
         float[2 * 6] texcoords = [srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0];
 
 		if (_legacyMode) {
@@ -842,7 +808,7 @@ class GLSupport {
 			glDisable(GL_ALPHA_TEST);
 			glDisable(GL_TEXTURE_2D);
 		} else {
-        	_textureProgram.execute(vertices, texcoords, colors, texture, linear);
+        	_textureProgram.execute(vertices, cast(float[])colors, texcoords, texture, linear);
 		}
         //drawColorAndTextureRect(vertices, texcoords, colors, texture, linear);
     }

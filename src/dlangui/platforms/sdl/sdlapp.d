@@ -182,7 +182,6 @@ class SDLWindow : Window {
 		
         static if (ENABLE_OPENGL) {
             if (_enableOpengl) {
-                Log.i("Trying to create OpenGL 3.2 context");
 				createContext(3, 2);
                 //_context = SDL_GL_CreateContext(_win); // Create the actual context and make it current
                 if (!_context) {
