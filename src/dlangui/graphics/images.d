@@ -88,9 +88,9 @@ ColorDrawBuf loadImage(immutable ubyte[] data, string filename) {
             ColorDrawBuf buf = new ColorDrawBuf(w, h);
             Color_RGBA[] pixels = image.rgba.allPixels;
             int index = 0;
-            for (int y = 0; y < h; y++) {
+            foreach(y; 0 .. h) {
                 uint * dstLine = buf.scanLine(y);
-                for (int x = 0; x < w; x++) {
+                foreach(x; 0 .. w) {
                     Color_RGBA * pixel = &pixels[index + x];
                     dstLine[x] = makeRGBA(pixel.r_ubyte, pixel.g_ubyte, pixel.b_ubyte, pixel.a_ubyte);
                 }
@@ -182,9 +182,9 @@ version (USE_DLIBIMAGE) {
         int w = image.width;
         int h = image.height;
         ColorDrawBuf buf = new ColorDrawBuf(w, h);
-        for (int y = 0; y < h; y++) {
+        foreach(y; 0 .. h) {
             uint * dstLine = buf.scanLine(y);
-            for (int x = 0; x < w; x++) {
+            foreach(x; 0 .. w) {
                 auto pixel = image[x, y].convert(8);
                 dstLine[x] = makeRGBA(pixel.r, pixel.g, pixel.b, 255 - pixel.a);
             }
@@ -198,9 +198,9 @@ version (USE_DIMAGE) {
         int w = image.width;
         int h = image.height;
         ColorDrawBuf buf = new ColorDrawBuf(w, h);
-        for (int y = 0; y < h; y++) {
+        foreach(y; 0 .. h) {
             uint * dstLine = buf.scanLine(y);
-            for (int x = 0; x < w; x++) {
+            foreach(x; 0 .. w) {
                 uint pixel = image[x, y];
                 dstLine[x] = pixel ^ 0xFF000000;
             }

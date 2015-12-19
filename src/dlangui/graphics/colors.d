@@ -204,7 +204,7 @@ uint decodeHexColor(string s, uint defValue = 0) {
     if (s[0] != '#')
         return defValue;
     uint value = 0;
-    for (int i = 1; i < s.length; i++) {
+    foreach(i; 1 .. s.length) {
         uint digit = decodeHexDigit(s[i]);
         if (digit == uint.max)
             return defValue;

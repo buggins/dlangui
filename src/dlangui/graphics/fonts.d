@@ -220,7 +220,7 @@ class Font : RefCountedObject {
         tabOffset = tabOffset % tabWidth;
         if (tabOffset < 0)
             tabOffset += tabWidth;
-		for (int i = 0; i < len; i++) {
+        foreach(int i; 0 .. len) {
             //auto measureStart = std.datetime.Clock.currAppTick;
             dchar ch = pstr[i];
             if (ch == '\t') {
@@ -308,7 +308,7 @@ class Font : RefCountedObject {
 		bool underline = (textFlags & TextFlag.Underline) != 0;
 		int underlineHeight = 1;
 		int underlineY = y + _baseline + underlineHeight * 2;
-		for (int i = 0; i < charsMeasured; i++) {
+        foreach(int i; 0 .. charsMeasured) {
 			dchar ch = text[i];
 			if (ch == '&' && (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.HotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))) {
 				if (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))
@@ -377,7 +377,7 @@ class Font : RefCountedObject {
 		bool underline = (customizedTextFlags & TextFlag.Underline) != 0;
 		int underlineHeight = 1;
 		int underlineY = y + _baseline + underlineHeight * 2;
-		for (int i = 0; i < charsMeasured; i++) {
+        foreach(int i; 0 .. charsMeasured) {
 			dchar ch = text[i];
             uint color = i < charProps.length ? charProps[i].color : charProps[$ - 1].color;
             customizedTextFlags = (i < charProps.length ? charProps[i].textFlags : charProps[$ - 1].textFlags) | textFlags;
@@ -478,7 +478,7 @@ struct SimpleTextFormatter {
         int lastWordEnd = 0;
         int lastWordEndX = 0;
         dchar prevChar = 0;
-        for (int i = 0; i <= charsMeasured; i++) {
+        foreach(int i; 0 .. charsMeasured + 1) {
             dchar ch = i < charsMeasured ? text[i] : 0;
             if (ch == '\n' || i == charsMeasured) {
                 // split by EOL char or at end of text
@@ -547,9 +547,8 @@ struct SimpleTextFormatter {
     /// draw formatted text
     void draw(DrawBuf buf, int x, int y, FontRef fnt, uint color) {
         int lineHeight = fnt.height;
-        for (int i = 0; i < _lines.length; i++) {
-            dstring line = _lines[i];
-        	fnt.drawText(buf, x, y, line, color, _tabSize, _tabOffset, _textFlags);
+        foreach(line; _lines) {
+            fnt.drawText(buf, x, y, line, color, _tabSize, _tabOffset, _textFlags);
             y += lineHeight;
         }
     }
@@ -569,7 +568,7 @@ struct FontList {
 	}
 	
 	void clear() {
-		for (uint i = 0; i < _len; i++) {
+		foreach(i; 0 .. _len) {
 			_list[i].clear();
 			_list[i] = null;
 		}
@@ -581,7 +580,7 @@ struct FontList {
 	}
 	// find by a set of parameters - returns index of found item, -1 if not found
 	int find(int size, int weight, bool italic, FontFamily family, string face) {
-		for (int i = 0; i < _len; i++) {
+		foreach(int i; 0 .. _len) {
 			Font item = _list[i].get;
 			if (item.family != family)
 				continue;
@@ -597,7 +596,7 @@ struct FontList {
 	}
 	// find by size only - returns index of found item, -1 if not found
 	int find(int size) {
-		for (int i = 0; i < _len; i++) {
+		foreach(int i; 0 .. _len) {
 			Font item = _list[i].get;
 			if (item.size != size)
 				continue;
@@ -616,27 +615,27 @@ struct FontList {
 	}
 	// remove unused items - with reference == 1
 	void cleanup() {
-		for (int i = 0; i < _len; i++)
+		foreach(i; 0 .. _len)
 			if (_list[i].refCount <= 1)
 				_list[i].clear();
-		int dst = 0;
-		for (int i = 0; i < _len; i++) {
+		uint dst = 0;
+		foreach(i; 0 .. _len) {
 			if (!_list[i].isNull)
 				if (i != dst)
 					_list[dst++] = _list[i];
 		}
 		_len = dst;
-		for (int i = 0; i < _len; i++)
+		foreach(i; 0 .. _len)
 			_list[i].cleanup();
 	}
 	void checkpoint() {
-		for (int i = 0; i < _len; i++)
+		foreach(i; 0 .. _len)
 			_list[i].checkpoint();
 	}
     /// clears glyph cache
     void clearGlyphCache() {
-		for (int i = 0; i < _len; i++)
-			_list[i].clearGlyphCache();
+        foreach(i; 0 .. _len)
+            _list[i].clearGlyphCache();
     }
 }
 
@@ -865,7 +864,7 @@ struct glyph_gamma_table(int maxv = 65)
     @property double gamma() { return _gamma; }
     @property void gamma(double g) {
         _gamma = g;
-        for(int i = 0; i < maxv; i++)
+        foreach(int i; 0 .. maxv)
         {
             double v = (maxv - 1.0 - i) / maxv;
             v = pow(v, g);

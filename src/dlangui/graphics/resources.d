@@ -701,7 +701,7 @@ class StateDrawable : Drawable {
         uint[4] nn;
         if (!parseList4!float(value, n))
             return COLOR_TRANSFORM_MULTIPLY_NONE;
-        for(int i = 0; i < 4; i++) {
+        foreach(i; 0 .. 4) {
             int res = cast(int)(n[i] * 0x40);
             if (res < 0)
                 res = 0;

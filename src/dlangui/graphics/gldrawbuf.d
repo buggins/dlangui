@@ -471,7 +471,7 @@ private class GLImageCache {
     private void removePage(GLImageCachePage page) {
         if (_activePage == page)
             _activePage = null;
-        for (int i = 0; i < _pages.length; i++)
+        foreach(i; 0 .. _pages.length)
             if (_pages[i] == page) {
                 _pages.remove(i);
                 break;
@@ -526,7 +526,7 @@ private class GLImageCache {
     }
     /// clears cache
     void clear() {
-        for (int i = 0; i < _pages.length; i++) {
+        foreach(i; 0 .. _pages.length) {
             destroy(_pages[i]);
             _pages[i] = null;
         }
@@ -565,7 +565,7 @@ private class GLImageCache {
             if (item._deleted)
                 list ~= item._objectId;
         }
-        for (int i = 0 ; i < list.length; i++) {
+        foreach(i; 0 .. list.length) {
             onCachedObjectDeleted(list[i]);
         }
     }
@@ -767,7 +767,7 @@ private class GLGlyphCache {
     void removePage(GLGlyphCachePage page) {
         if (_activePage == page)
             _activePage = null;
-        for (int i = 0; i < _pages.length; i++)
+        foreach(i; 0 .. _pages.length)
             if (_pages[i] == page) {
                 _pages.remove(i);
                 break;
@@ -811,7 +811,7 @@ private class GLGlyphCache {
         _map[glyph.id] = res;
     }
     void clear() {
-        for (int i = 0; i < _pages.length; i++) {
+        foreach(i; 0 .. _pages.length) {
             destroy(_pages[i]);
             _pages[i] = null;
         }
@@ -849,7 +849,7 @@ private class GLGlyphCache {
             if (item._deleted)
                 list ~= item._objectId;
         }
-        for (int i = 0 ; i < list.length; i++) {
+        foreach(i; 0 .. list.length) {
             onCachedObjectDeleted(list[i]);
         }
     }
