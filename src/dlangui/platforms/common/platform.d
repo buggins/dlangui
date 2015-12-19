@@ -129,7 +129,7 @@ class TimerInfo {
     protected long _nextTimestamp;
     protected Widget _targetWidget;
 
-    override bool opEquals(Object obj) {
+    override bool opEquals(Object obj) const {
         TimerInfo b = cast(TimerInfo)obj;
         if (!b)
             return false;
@@ -653,7 +653,6 @@ class Window {
         //Log.d("addTracking ", w.id, " items after: ", _mouseTrackingWidgets.length);
     }
     private bool checkRemoveTracking(MouseEvent event) {
-        import std.algorithm;
         bool res = false;
         for(int i = cast(int)_mouseTrackingWidgets.length - 1; i >=0; i--) {
             Widget w = _mouseTrackingWidgets[i];

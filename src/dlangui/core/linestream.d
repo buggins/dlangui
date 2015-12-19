@@ -72,7 +72,7 @@ public enum EncodingType : int {
     ASCII,
     /// encoding is unknown
     UNKNOWN
-};
+}
 /// Line ending style
 public enum LineEnding : int {
     /// LF (0x0A) - unix style
@@ -95,7 +95,7 @@ struct TextFileFormat {
     LineEnding lineEnding;
     /// byte order mark character flag
     bool bom;
-    string toString() {
+    string toString() const {
         return to!string(encoding) ~ " " ~ to!string(lineEnding) ~ (bom ? " bom" : "");
     }
 }
@@ -236,7 +236,7 @@ class LineStream {
     public enum ErrorCodes {
         /// invalid character for current encoding
         INVALID_CHARACTER
-    };
+    }
 
     private InputStream _stream;
 	private string _filename;
@@ -596,7 +596,7 @@ private class Utf8LineStream : LineStream {
 					invalidCharFlag = true;
                     break;
 				}
-                ch = ((ch0 & 0x1F) << 6) | ((ch1 & 0x3F));
+                ch = ((ch0 & 0x1F) << 6) | (ch1 & 0x3F);
                 bread = 2;
             } if ((ch0 & 0xF0) == 0xE0) {
                 // three bytes 1110xxxx 10xxxxxx 10xxxxxx
@@ -608,7 +608,7 @@ private class Utf8LineStream : LineStream {
 					invalidCharFlag = true;
                     break;
 				}
-                ch = ((ch0 & 0x0F) << 12) | ((ch1 & 0x1F) << 6) | ((ch2 & 0x3F));
+                ch = ((ch0 & 0x0F) << 12) | ((ch1 & 0x1F) << 6) | (ch2 & 0x3F);
                 bread = 3;
             } if ((ch0 & 0xF8) == 0xF0) {
                 // four bytes 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
@@ -621,7 +621,7 @@ private class Utf8LineStream : LineStream {
 					invalidCharFlag = true;
                     break;
 				}
-                ch = ((ch0 & 0x07) << 18) | ((ch1 & 0x3F) << 12) | ((ch2 & 0x3F) << 6) | ((ch3 & 0x3F));
+                ch = ((ch0 & 0x07) << 18) | ((ch1 & 0x3F) << 12) | ((ch2 & 0x3F) << 6) | (ch3 & 0x3F);
                 bread = 4;
             } if ((ch0 & 0xFC) == 0xF8) {
                 // five bytes 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
@@ -635,7 +635,7 @@ private class Utf8LineStream : LineStream {
 					invalidCharFlag = true;
                     break;
 				}
-                ch = ((ch0 & 0x03) << 24) | ((ch1 & 0x3F) << 18) | ((ch2 & 0x3F) << 12) | ((ch3 & 0x3F) << 6) | ((ch4 & 0x3F));
+                ch = ((ch0 & 0x03) << 24) | ((ch1 & 0x3F) << 18) | ((ch2 & 0x3F) << 12) | ((ch3 & 0x3F) << 6) | (ch4 & 0x3F);
                 bread = 5;
             } if ((ch0 & 0xFE) == 0xFC) {
                 // six bytes 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
@@ -650,7 +650,7 @@ private class Utf8LineStream : LineStream {
 					invalidCharFlag = true;
                     break;
 				}
-                ch = ((ch0 & 0x01) << 30) | ((ch1 & 0x3F) << 24) | ((ch2 & 0x3F) << 18) | ((ch3 & 0x3F) << 12) | ((ch4 & 0x3F) << 6) | ((ch5 & 0x3F));
+                ch = ((ch0 & 0x01) << 30) | ((ch1 & 0x3F) << 24) | ((ch2 & 0x3F) << 18) | ((ch3 & 0x3F) << 12) | ((ch4 & 0x3F) << 6) | (ch5 & 0x3F);
                 bread = 5;
             }
 			if ((ch >= 0xd800 && ch < 0xe000) || (ch > 0x10FFFF)) {

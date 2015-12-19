@@ -19,7 +19,8 @@ struct XPMPredefinedColor
         return cmp(name, str);
     }
     ///ditto
-    const int opBinaryRight(string op)(in char[] str) if (op == "<")  {
+    int opBinaryRight(string op)(in char[] str) const
+        if (op == "<") {
         return cmp(str, name);
     }
 }

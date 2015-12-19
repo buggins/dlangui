@@ -69,7 +69,7 @@ ColorDrawBuf loadImage(immutable ubyte[] data, string filename) {
     
     import std.algorithm : endsWith;
     if (filename.endsWith(".xpm")) {
-        import dlangui.graphics.xpm.reader;
+        import dlangui.graphics.xpm.reader : parseXPM;
         try {
             return parseXPM(data);
         }
@@ -104,7 +104,6 @@ ColorDrawBuf loadImage(immutable ubyte[] data, string filename) {
             return null;
         }
     } else version (USE_DLIBIMAGE) {
-        import std.algorithm;
         static import dlib.core.stream;
         try {
             version (ENABLE_DLIBIMAGE_JPEG) {
@@ -138,7 +137,6 @@ ColorDrawBuf loadImage(immutable ubyte[] data, string filename) {
             return null;
         }
     } else version (USE_DIMAGE) {
-        import std.algorithm;
         static import dimage.stream;
         try {
             SuperImage image = null;

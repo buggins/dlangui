@@ -103,14 +103,19 @@ class GLProgram {
     private void compatibilityFixes(ref char[] code, GLuint type) {
         if (glslversionInt < 150) {
             code = replace(code, " texture(", " texture2D(");
-			code = replace(code, "in ", "");
-			code = replace(code, "out ", "");
-		}
+            if(type == GL_VERTEX_SHADER)
+            {
+                code = replace(code, "in ", "attribute ");
+                code = replace(code, "out ", "varying ");
+            } else
+            {
+                code = replace(code, "in ", "varying ");
+            }
+        }
     }
 
     private GLuint compileShader(string src, GLuint type) {
-        import core.stdc.stdlib;
-        import std.string;
+        import std.string : toStringz, fromStringz;
 
         char[] sourceCode;
         sourceCode ~= "#version ";
@@ -201,10 +206,6 @@ class GLProgram {
         initialized = false;
     }
 }
-
-immutable string HIGHP = "";
-immutable string LOWP = "";
-immutable string MEDIUMP = "";
 
 class SolidFillProgram : GLProgram {
     @property override string vertexSource() {
@@ -698,8 +699,8 @@ class GLSupport {
 
         // don't flip for framebuffer
         if (currentFBO) {
-            dsty0 = cast(float)((yy));
-            dsty1 = cast(float)((yy + dy));
+            dsty0 = cast(float)(yy);
+            dsty1 = cast(float)(yy + dy);
         }
 
         float srcx0 = srcx / cast(float)tdx;
@@ -763,8 +764,8 @@ class GLSupport {
 
         // don't flip for framebuffer
         if (currentFBO) {
-            dsty0 = cast(float)((yy));
-            dsty1 = cast(float)((yy + dy));
+            dsty0 = cast(float)(yy);
+            dsty1 = cast(float)(yy + dy);
         }
 
         float srcx0 = srcx / cast(float)tdx;

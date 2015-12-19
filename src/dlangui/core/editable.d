@@ -103,7 +103,6 @@ ubyte tokenCategory(ubyte t) {
 dstring[] splitDString(dstring source, dchar delimiter = EOL) {
     int start = 0;
     dstring[] res;
-    dchar lastchar;
     for (int i = 0; i <= source.length; i++) {
         if (i == source.length || source[i] == delimiter) {
             if (i >= start) {
@@ -173,10 +172,10 @@ struct TextPosition {
             return 1;
         return 0;
     }
-    inout bool opEquals(ref inout TextPosition v) {
+    bool opEquals(ref inout TextPosition v) inout {
         return line == v.line && pos == v.pos;
     }
-    @property string toString() {
+    @property string toString() const {
         return to!string(line) ~ ":" ~ to!string(pos);
     }
     /// adds deltaPos to position and returns result
@@ -212,7 +211,7 @@ struct TextRange {
     @property int lines() const {
         return end.line - start.line + 1;
     }
-    @property string toString() {
+    @property string toString() const {
         return "[" ~ start.toString ~ ":" ~ end.toString ~ "]";
     }
 }
@@ -856,7 +855,7 @@ class EditableContent {
 
 	/// returns text range for whole line lineIndex
 	TextRange lineRange(int lineIndex) {
-        return TextRange(TextPosition(lineIndex, 0), lineIndex < _lines.length - 1 ? lineBegin(lineIndex + 1) : lineEnd(lineIndex));
+        return TextRange(TextPosition(lineIndex, 0), lineIndex < cast(int)_lines.length - 1 ? lineBegin(lineIndex + 1) : lineEnd(lineIndex));
 	}
 
     /// find nearest next tab position

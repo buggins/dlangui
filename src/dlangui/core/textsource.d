@@ -13,7 +13,7 @@ class SourceFile {
     public this(string filename) {
         _filename = filename;
     }
-    override @property string toString() {
+    override @property string toString() const {
         return _filename;
     }
 }

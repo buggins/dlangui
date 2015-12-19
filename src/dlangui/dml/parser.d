@@ -134,7 +134,7 @@ struct Token {
         int intvalue;
         double floatvalue;
     }
-	public @property string toString() {
+	public @property string toString() const {
         if (type == TokenType.integer)
 		    return "" ~ to!string(line) ~ ":" ~ to!string(pos) ~ " " ~ to!string(type) ~ " " ~ to!string(intvalue);
         else if (type == TokenType.floating)
@@ -163,7 +163,7 @@ class Tokenizer {
 	enum : int {
 		EOF_CHAR = 0x001A,
 		EOL_CHAR = 0x000A
-	};
+	}
 
     this(string source, string filename = "") {
         _filename = filename;

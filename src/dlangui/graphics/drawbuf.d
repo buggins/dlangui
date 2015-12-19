@@ -871,7 +871,6 @@ class GrayDrawBuf : DrawBuf {
         int srcdx = glyph.blackBoxX;
         int srcdy = glyph.blackBoxY;
 		bool clipping = true; //!_clipRect.empty();
-        ubyte cl = cast(ubyte)(color & 255);
 		for (int yy = 0; yy < srcdy; yy++) {
 			int liney = y + yy;
 			if (clipping && (liney < _clipRect.top || liney >= _clipRect.bottom))

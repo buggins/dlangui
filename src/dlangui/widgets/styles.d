@@ -1354,9 +1354,6 @@ bool loadTheme(Theme theme, Element doc, int level = 0) {
 /// load theme from file
 bool loadTheme(Theme theme, string resourceId, int level = 0) {
 
-	import std.file;
-	import std.string;
-
 	string filename;
 	try {
 		filename = drawableCache.findResource(resourceId);

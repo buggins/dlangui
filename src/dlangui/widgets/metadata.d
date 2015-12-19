@@ -39,7 +39,7 @@ WidgetSignalMetadata[] getSignalList(alias T)() {
             // skip non-public members
             static if (__traits(getProtection, __traits(getMember, T, m)) == "public") {
                 static if (__traits(compiles, __traits(getMember, T, m).params_t ) && __traits(compiles, __traits(getMember, T, m).return_t)) {
-                    alias typeof(__traits(getMember, T, m)) ti;
+                    alias ti = typeof(__traits(getMember, T, m));
                     res ~= WidgetSignalMetadata(m, 
                                                 __traits(getMember, T, m).return_t.stringof ~ __traits(getMember, T, m).params_t.stringof,
                                                 typeid(__traits(getMember, T, m).return_t),
