@@ -1016,25 +1016,26 @@ class ScrollEvent {
     /// default update position for actions like PageUp/PageDown, LineUp/LineDown
     int defaultUpdatePosition() {
         int delta = 0;
-        switch (_action) {
-            case ScrollAction.LineUp:
+        switch (_action) with(ScrollAction)
+        {
+            case LineUp:
                 delta = _pageSize / 20;
                 if (delta < 1)
                     delta = 1;
                 delta = -delta;
                 break;
-            case ScrollAction.LineDown:
+            case LineDown:
                 delta = _pageSize / 20;
                 if (delta < 1)
                     delta = 1;
                 break;
-            case ScrollAction.PageUp:
+            case PageUp:
                 delta = _pageSize * 3 / 4;
                 if (delta < 1)
                     delta = 1;
                 delta = -delta;
                 break;
-            case ScrollAction.PageDown:
+            case PageDown:
                 delta = _pageSize * 3 / 4;
                 if (delta < 1)
                     delta = 1;

@@ -605,9 +605,9 @@ class TreeItemWidget : HorizontalLayout {
         if (event.action != KeyAction.KeyDown)
             return false;
         int action = 0;
-        switch (event.keyCode) {
-            case KeyCode.SPACE:
-            case KeyCode.RETURN:
+        switch (event.keyCode) with(KeyCode) {
+            case SPACE:
+            case RETURN:
                 if (_item.hasChildren)
                     _item.toggleExpand(_item);
                 else
@@ -859,42 +859,43 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
 
 	override protected bool handleAction(const Action a) {
         Log.d("tree.handleAction ", a.id);
-        switch (a.id) {
-            case TreeActions.ScrollLeft:
+        switch (a.id) with(TreeActions)
+        {
+            case ScrollLeft:
                 if (_hscrollbar)
                     _hscrollbar.sendScrollEvent(ScrollAction.LineUp);
                 break;
-            case TreeActions.ScrollRight:
+            case ScrollRight:
                 if (_hscrollbar)
                     _hscrollbar.sendScrollEvent(ScrollAction.LineDown);
                 break;
-            case TreeActions.ScrollUp:
+            case ScrollUp:
                 if (_vscrollbar)
                     _vscrollbar.sendScrollEvent(ScrollAction.LineUp);
                 break;
-            case TreeActions.ScrollPageUp:
+            case ScrollPageUp:
                 if (_vscrollbar)
                     _vscrollbar.sendScrollEvent(ScrollAction.PageUp);
                 break;
-            case TreeActions.ScrollDown:
+            case ScrollDown:
                 if (_vscrollbar)
                     _vscrollbar.sendScrollEvent(ScrollAction.LineDown);
                 break;
-            case TreeActions.ScrollPageDown:
+            case ScrollPageDown:
                 if (_vscrollbar)
                     _vscrollbar.sendScrollEvent(ScrollAction.PageDown);
                 break;
-            case TreeActions.Up:
+            case Up:
                 _tree.selectPrevious();
                 break;
-            case TreeActions.Down:
+            case Down:
                 _tree.selectNext();
                 break;
-            case TreeActions.PageUp:
+            case PageUp:
                 // TODO: implement page up
                 _tree.selectPrevious();
                 break;
-            case TreeActions.PageDown:
+            case PageDown:
                 // TODO: implement page down
                 _tree.selectPrevious();
                 break;

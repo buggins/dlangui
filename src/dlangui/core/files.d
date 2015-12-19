@@ -75,22 +75,23 @@ struct RootEntry {
     @property dstring label() { return _display; }
     /// Returns icon resource id
     @property string icon() {
-        switch (type) {
-            case RootEntryType.NETWORK:
+        switch (type) with(RootEntryType)
+        {
+            case NETWORK:
                 return "folder-network";
-            case RootEntryType.BOOKMARK:
+            case BOOKMARK:
                 return "folder-bookmark";
-            case RootEntryType.CDROM:
+            case CDROM:
                 return "drive-optical";
-            case RootEntryType.FIXED:
+            case FIXED:
                 return "drive-harddisk";
-            case RootEntryType.HOME:
+            case HOME:
                 return "user-home";
-            case RootEntryType.ROOT:
+            case ROOT:
                 return "computer";
-            case RootEntryType.SDCARD:
+            case SDCARD:
                 return "media-flash-sd-mmc";
-            case RootEntryType.REMOVABLE:
+            case REMOVABLE:
                 return "device-removable-media";
             default:
                 return "folder-blue";

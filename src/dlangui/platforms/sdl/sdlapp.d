@@ -346,41 +346,42 @@ class SDLWindow : Window {
 				return;
 			}
 			// create new cursor
-			switch (cursorType) {
-				case CursorType.Arrow:
+			switch (cursorType) with(CursorType)
+			{
+				case Arrow:
 					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
 					break;
-				case CursorType.IBeam:
+				case IBeam:
 					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
 					break;
-				case CursorType.Wait:
+				case Wait:
 					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
 					break;
-				case CursorType.WaitArrow:
+				case WaitArrow:
 					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAITARROW);
 					break;
-				case CursorType.Crosshair:
+				case Crosshair:
 					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);
 					break;
-				case CursorType.No:
+				case No:
 					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO);
 					break;
-				case CursorType.Hand:
+				case Hand:
 					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
 					break;
-				case CursorType.SizeNWSE:
+				case SizeNWSE:
 					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
 					break;
-				case CursorType.SizeNESW:
+				case SizeNESW:
 					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW);
 					break;
-				case CursorType.SizeWE:
+				case SizeWE:
 					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE);
 					break;
-				case CursorType.SizeNS:
+				case SizeNS:
 					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS);
 					break;
-				case CursorType.SizeAll:
+				case SizeAll:
 					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
 					break;
 				default:

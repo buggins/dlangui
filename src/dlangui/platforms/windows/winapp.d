@@ -443,46 +443,47 @@ class Win32Window : Window {
 
     void onSetCursorType() {
         HANDLE winCursor = null;
-        switch (_cursorType) {
-            case CursorType.None:
+        switch (_cursorType) with(CursorType)
+        {
+            case None:
                 winCursor = null;
                 break;
-            case CursorType.Parent:
+            case Parent:
                 break;
-            case CursorType.Arrow:
+            case Arrow:
                 winCursor = loadCursor(IDC_ARROW);
                 break;
-            case CursorType.IBeam:
+            case IBeam:
                 winCursor = loadCursor(IDC_IBEAM);
                 break;
-            case CursorType.Wait:
+            case Wait:
                 winCursor = loadCursor(IDC_WAIT);
                 break;
-            case CursorType.Crosshair:
+            case Crosshair:
                 winCursor = loadCursor(IDC_CROSS);
                 break;
-            case CursorType.WaitArrow:
+            case WaitArrow:
                 winCursor = loadCursor(IDC_APPSTARTING);
                 break;
-            case CursorType.SizeNWSE:
+            case SizeNWSE:
                 winCursor = loadCursor(IDC_SIZENWSE);
                 break;
-            case CursorType.SizeNESW:
+            case SizeNESW:
                 winCursor = loadCursor(IDC_SIZENESW);
                 break;
-            case CursorType.SizeWE:
+            case SizeWE:
                 winCursor = loadCursor(IDC_SIZEWE);
                 break;
-            case CursorType.SizeNS:
+            case SizeNS:
                 winCursor = loadCursor(IDC_SIZENS);
                 break;
-            case CursorType.SizeAll:
+            case SizeAll:
                 winCursor = loadCursor(IDC_SIZEALL);
                 break;
-            case CursorType.No:
+            case No:
                 winCursor = loadCursor(IDC_NO);
                 break;
-            case CursorType.Hand:
+            case Hand:
                 winCursor = loadCursor(IDC_HAND);
                 break;
             default:

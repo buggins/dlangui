@@ -105,136 +105,137 @@ class DSFMLWindow : dlangui.platforms.common.platform.Window {
     }
 
     private MouseButton translateButton(uint btn) {
-        switch(btn) {
+        switch(btn) with(Mouse.Button) {
             default:
-            case Mouse.Button.Left:
+            case Left:
                 return MouseButton.Left;
-            case Mouse.Button.Right:
+            case Right:
                 return MouseButton.Right;
-            case Mouse.Button.Middle:
+            case Middle:
                 return MouseButton.Middle;
-            case Mouse.Button.XButton1:
+            case XButton1:
                 return MouseButton.XButton1;
-            case Mouse.Button.XButton2:
+            case XButton2:
                 return MouseButton.XButton2;
         }
     }
 
     private uint translateKey(uint key) {
-        switch(key) {
-            case Keyboard.Key.A: return KeyCode.KEY_A;
-            case Keyboard.Key.B: return KeyCode.KEY_B;
-            case Keyboard.Key.C: return KeyCode.KEY_C;
-            case Keyboard.Key.D: return KeyCode.KEY_D;
-            case Keyboard.Key.E: return KeyCode.KEY_E;
-            case Keyboard.Key.F: return KeyCode.KEY_F;
-            case Keyboard.Key.G: return KeyCode.KEY_G;
-            case Keyboard.Key.H: return KeyCode.KEY_H;
-            case Keyboard.Key.I: return KeyCode.KEY_I;
-            case Keyboard.Key.J: return KeyCode.KEY_J;
-            case Keyboard.Key.K: return KeyCode.KEY_K;
-            case Keyboard.Key.L: return KeyCode.KEY_L;
-            case Keyboard.Key.M: return KeyCode.KEY_M;
-            case Keyboard.Key.N: return KeyCode.KEY_N;
-            case Keyboard.Key.O: return KeyCode.KEY_O;
-            case Keyboard.Key.P: return KeyCode.KEY_P;
-            case Keyboard.Key.Q: return KeyCode.KEY_Q;
-            case Keyboard.Key.R: return KeyCode.KEY_R;
-            case Keyboard.Key.S: return KeyCode.KEY_S;
-            case Keyboard.Key.T: return KeyCode.KEY_T;
-            case Keyboard.Key.U: return KeyCode.KEY_U;
-            case Keyboard.Key.V: return KeyCode.KEY_V;
-            case Keyboard.Key.W: return KeyCode.KEY_W;
-            case Keyboard.Key.X: return KeyCode.KEY_X;
-            case Keyboard.Key.Y: return KeyCode.KEY_Y;
-            case Keyboard.Key.Z: return KeyCode.KEY_Z;
-            case Keyboard.Key.Num0: return KeyCode.KEY_0;
-            case Keyboard.Key.Num1: return KeyCode.KEY_1;
-            case Keyboard.Key.Num2: return KeyCode.KEY_2;
-            case Keyboard.Key.Num3: return KeyCode.KEY_3;
-            case Keyboard.Key.Num4: return KeyCode.KEY_4;
-            case Keyboard.Key.Num5: return KeyCode.KEY_5;
-            case Keyboard.Key.Num6: return KeyCode.KEY_6;
-            case Keyboard.Key.Num7: return KeyCode.KEY_7;
-            case Keyboard.Key.Num8: return KeyCode.KEY_8;
-            case Keyboard.Key.Num9: return KeyCode.KEY_9;
-            case Keyboard.Key.Escape: return KeyCode.ESCAPE;
-            case Keyboard.Key.LControl: return KeyCode.LCONTROL;
-            case Keyboard.Key.LShift: return KeyCode.LSHIFT;
-            case Keyboard.Key.LAlt: return KeyCode.LALT;
-            case Keyboard.Key.RControl: return KeyCode.RCONTROL;
-            case Keyboard.Key.RShift: return KeyCode.RSHIFT;
-            case Keyboard.Key.RAlt: return KeyCode.RALT;
+        switch(key) with(Keyboard.Key)
+        {
+            case A: return KeyCode.KEY_A;
+            case B: return KeyCode.KEY_B;
+            case C: return KeyCode.KEY_C;
+            case D: return KeyCode.KEY_D;
+            case E: return KeyCode.KEY_E;
+            case F: return KeyCode.KEY_F;
+            case G: return KeyCode.KEY_G;
+            case H: return KeyCode.KEY_H;
+            case I: return KeyCode.KEY_I;
+            case J: return KeyCode.KEY_J;
+            case K: return KeyCode.KEY_K;
+            case L: return KeyCode.KEY_L;
+            case M: return KeyCode.KEY_M;
+            case N: return KeyCode.KEY_N;
+            case O: return KeyCode.KEY_O;
+            case P: return KeyCode.KEY_P;
+            case Q: return KeyCode.KEY_Q;
+            case R: return KeyCode.KEY_R;
+            case S: return KeyCode.KEY_S;
+            case T: return KeyCode.KEY_T;
+            case U: return KeyCode.KEY_U;
+            case V: return KeyCode.KEY_V;
+            case W: return KeyCode.KEY_W;
+            case X: return KeyCode.KEY_X;
+            case Y: return KeyCode.KEY_Y;
+            case Z: return KeyCode.KEY_Z;
+            case Num0: return KeyCode.KEY_0;
+            case Num1: return KeyCode.KEY_1;
+            case Num2: return KeyCode.KEY_2;
+            case Num3: return KeyCode.KEY_3;
+            case Num4: return KeyCode.KEY_4;
+            case Num5: return KeyCode.KEY_5;
+            case Num6: return KeyCode.KEY_6;
+            case Num7: return KeyCode.KEY_7;
+            case Num8: return KeyCode.KEY_8;
+            case Num9: return KeyCode.KEY_9;
+            case Escape: return KeyCode.ESCAPE;
+            case LControl: return KeyCode.LCONTROL;
+            case LShift: return KeyCode.LSHIFT;
+            case LAlt: return KeyCode.LALT;
+            case RControl: return KeyCode.RCONTROL;
+            case RShift: return KeyCode.RSHIFT;
+            case RAlt: return KeyCode.RALT;
 
 		    ///The [ key
-		    case Keyboard.Key.LBracket: return KeyCode.KEY_BRACKETOPEN;
+		    case LBracket: return KeyCode.KEY_BRACKETOPEN;
 		    ///The ] key
-		    case Keyboard.Key.RBracket: return KeyCode.KEY_BRACKETCLOSE;
+		    case RBracket: return KeyCode.KEY_BRACKETCLOSE;
 		    ///The ; key
-		    case Keyboard.Key.SemiColon: return KeyCode.KEY_BRACKETOPEN;
+		    case SemiColon: return KeyCode.KEY_BRACKETOPEN;
 		    ///The , key
-		    case Keyboard.Key.Comma: return KeyCode.KEY_COMMA;
+		    case Comma: return KeyCode.KEY_COMMA;
 		    ///The . key
-		    case Keyboard.Key.Period: return KeyCode.KEY_PERIOD;
+		    case Period: return KeyCode.KEY_PERIOD;
 		    ///The ' key
-		    case Keyboard.Key.Quote: return KeyCode.QUOTE;
+		    case Quote: return KeyCode.QUOTE;
 		    ///The / key
-		    case Keyboard.Key.Slash: return KeyCode.KEY_DIVIDE;
+		    case Slash: return KeyCode.KEY_DIVIDE;
 		    ///The \ key
-		    case Keyboard.Key.BackSlash: return KeyCode.BACKSLASH;
+		    case BackSlash: return KeyCode.BACKSLASH;
 		    ///The ~ key
-		    case Keyboard.Key.Tilde: return KeyCode.TILDE;
+		    case Tilde: return KeyCode.TILDE;
 		    ///The = key
-		    case Keyboard.Key.Equal: return KeyCode.EQUAL;
+		    case Equal: return KeyCode.EQUAL;
 		    ///The - key
-		    case Keyboard.Key.Dash: return KeyCode.SUB;
+		    case Dash: return KeyCode.SUB;
 		    ///The Space key
-		    case Keyboard.Key.Space: return KeyCode.SPACE;
+		    case Space: return KeyCode.SPACE;
 
-		    case Keyboard.Key.Numpad0: return KeyCode.NUM_0;
-		    case Keyboard.Key.Numpad1: return KeyCode.NUM_1;
-		    case Keyboard.Key.Numpad2: return KeyCode.NUM_2;
-		    case Keyboard.Key.Numpad3: return KeyCode.NUM_3;
-		    case Keyboard.Key.Numpad4: return KeyCode.NUM_4;
-		    case Keyboard.Key.Numpad5: return KeyCode.NUM_5;
-		    case Keyboard.Key.Numpad6: return KeyCode.NUM_6;
-		    case Keyboard.Key.Numpad7: return KeyCode.NUM_7;
-		    case Keyboard.Key.Numpad8: return KeyCode.NUM_8;
-		    case Keyboard.Key.Numpad9: return KeyCode.NUM_9;
+		    case Numpad0: return KeyCode.NUM_0;
+		    case Numpad1: return KeyCode.NUM_1;
+		    case Numpad2: return KeyCode.NUM_2;
+		    case Numpad3: return KeyCode.NUM_3;
+		    case Numpad4: return KeyCode.NUM_4;
+		    case Numpad5: return KeyCode.NUM_5;
+		    case Numpad6: return KeyCode.NUM_6;
+		    case Numpad7: return KeyCode.NUM_7;
+		    case Numpad8: return KeyCode.NUM_8;
+		    case Numpad9: return KeyCode.NUM_9;
 
-		    case Keyboard.Key.F1: return KeyCode.F1;
-		    case Keyboard.Key.F2: return KeyCode.F2;
-		    case Keyboard.Key.F3: return KeyCode.F3;
-		    case Keyboard.Key.F4: return KeyCode.F4;
-		    case Keyboard.Key.F5: return KeyCode.F5;
-		    case Keyboard.Key.F6: return KeyCode.F6;
-		    case Keyboard.Key.F7: return KeyCode.F7;
-		    case Keyboard.Key.F8: return KeyCode.F8;
-		    case Keyboard.Key.F9: return KeyCode.F9;
-		    case Keyboard.Key.F10: return KeyCode.F10;
-		    case Keyboard.Key.F11: return KeyCode.F11;
-		    case Keyboard.Key.F12: return KeyCode.F12;
-		    case Keyboard.Key.F13: return KeyCode.F13;
-		    case Keyboard.Key.F14: return KeyCode.F14;
-		    case Keyboard.Key.F15: return KeyCode.F15;
+		    case F1: return KeyCode.F1;
+		    case F2: return KeyCode.F2;
+		    case F3: return KeyCode.F3;
+		    case F4: return KeyCode.F4;
+		    case F5: return KeyCode.F5;
+		    case F6: return KeyCode.F6;
+		    case F7: return KeyCode.F7;
+		    case F8: return KeyCode.F8;
+		    case F9: return KeyCode.F9;
+		    case F10: return KeyCode.F10;
+		    case F11: return KeyCode.F11;
+		    case F12: return KeyCode.F12;
+		    case F13: return KeyCode.F13;
+		    case F14: return KeyCode.F14;
+		    case F15: return KeyCode.F15;
 
-            case Keyboard.Key.Return: return KeyCode.RETURN;
-            case Keyboard.Key.BackSpace: return KeyCode.BACK;
-            case Keyboard.Key.Tab: return KeyCode.TAB;
-            case Keyboard.Key.PageUp: return KeyCode.PAGEUP;
-            case Keyboard.Key.PageDown: return KeyCode.PAGEDOWN;
-            case Keyboard.Key.End: return KeyCode.END;
-            case Keyboard.Key.Home: return KeyCode.HOME;
-            case Keyboard.Key.Insert: return KeyCode.INS;
-            case Keyboard.Key.Delete: return KeyCode.DEL;
-            case Keyboard.Key.Add: return KeyCode.ADD;
-            case Keyboard.Key.Subtract: return KeyCode.SUB;
-            case Keyboard.Key.Multiply: return KeyCode.MUL;
-            case Keyboard.Key.Divide: return KeyCode.DIV;
-            case Keyboard.Key.Left: return KeyCode.LEFT;
-            case Keyboard.Key.Right: return KeyCode.RIGHT;
-            case Keyboard.Key.Up: return KeyCode.UP;
-            case Keyboard.Key.Down: return KeyCode.DOWN;
+            case Return: return KeyCode.RETURN;
+            case BackSpace: return KeyCode.BACK;
+            case Tab: return KeyCode.TAB;
+            case PageUp: return KeyCode.PAGEUP;
+            case PageDown: return KeyCode.PAGEDOWN;
+            case End: return KeyCode.END;
+            case Home: return KeyCode.HOME;
+            case Insert: return KeyCode.INS;
+            case Delete: return KeyCode.DEL;
+            case Add: return KeyCode.ADD;
+            case Subtract: return KeyCode.SUB;
+            case Multiply: return KeyCode.MUL;
+            case Divide: return KeyCode.DIV;
+            case Left: return KeyCode.LEFT;
+            case Right: return KeyCode.RIGHT;
+            case Up: return KeyCode.UP;
+            case Down: return KeyCode.DOWN;
             default: return 0x8000_0000 | key;
         }
     }
@@ -243,46 +244,46 @@ class DSFMLWindow : dlangui.platforms.common.platform.Window {
     private ushort keyFlags;
 
     bool handleEvent(ref Event event) {
-        switch (event.type) {
-            case(event.EventType.Closed): {
+        switch (event.type) with(event.EventType) {
+            case Closed: {
                 break;
             }
-            case(event.EventType.Resized): {
+            case Resized: {
                 onResize(event.size.width, event.size.height);
                 break;
             }
-            case(event.EventType.MouseButtonPressed): {
+            case MouseButtonPressed: {
                 auto btn = translateButton(event.mouseButton.button);
                 mouseFlags |= mouseButtonToFlag(btn);
                 MouseEvent ev = new MouseEvent(MouseAction.ButtonDown, btn, mouseFlags, cast(short)event.mouseButton.x, cast(short)event.mouseButton.y);
                 return dispatchMouseEvent(ev);
             }
-            case(event.EventType.MouseButtonReleased): {
+            case MouseButtonReleased: {
                 auto btn = translateButton(event.mouseButton.button);
                 mouseFlags &= ~mouseButtonToFlag(btn);
                 MouseEvent ev = new MouseEvent(MouseAction.ButtonUp, btn, mouseFlags, cast(short)event.mouseButton.x, cast(short)event.mouseButton.y);
                 return dispatchMouseEvent(ev);
             }
-            case(event.EventType.MouseMoved): {
+            case MouseMoved: {
                 MouseEvent ev = new MouseEvent(MouseAction.Move, MouseButton.None, mouseFlags, cast(short)event.mouseMove.x, cast(short)event.mouseMove.y);
                 return dispatchMouseEvent(ev);
             }
-            case(event.EventType.MouseEntered): {
+            case MouseEntered: {
                 break;
             }
-            case(event.EventType.MouseLeft): {
+            case MouseLeft: {
                 mouseFlags = 0;
                 break;
             }
-            case(event.EventType.MouseWheelMoved): {
+            case MouseWheelMoved: {
                 break;
             }
-            case(event.EventType.TextEntered): {
+            case TextEntered: {
                 KeyEvent ev = new KeyEvent(KeyAction.Text, 0, 0, [event.text.unicode]);
                 return dispatchKeyEvent(ev);
             }
-            case(event.EventType.KeyReleased): 
-            case(event.EventType.KeyPressed): {
+            case KeyReleased: 
+            case KeyPressed: {
                 keyFlags = 0;
                 if (event.key.alt)
                     keyFlags |= KeyFlag.Alt;

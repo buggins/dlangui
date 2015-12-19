@@ -59,10 +59,10 @@ immutable int[3] COMPONENT_OFFSET_BGR = [2, 1, 0];
 immutable int[3] COMPONENT_OFFSET_RGB = [0, 1, 2];
 immutable int COMPONENT_OFFSET_ALPHA = 3;
 int subpixelComponentIndex(int x0, SubpixelRenderingMode mode) {
-    switch (mode) {
-        case SubpixelRenderingMode.RGB:
+    switch (mode) with(SubpixelRenderingMode) {
+        case RGB:
             return COMPONENT_OFFSET_BGR[x0];
-        case SubpixelRenderingMode.BGR:
+        case BGR:
         default:
             return COMPONENT_OFFSET_BGR[x0];
     }
