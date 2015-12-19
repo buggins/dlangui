@@ -852,17 +852,18 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter {
         calcScrollableAreaPos();
         int actionId = a.id;
         if (_rowSelect) {
-            switch(actionId) {
-                case GridActions.Left:
+            switch(actionId) with(GridActions)
+            {
+                case Left:
                     actionId = GridActions.ScrollLeft;
                     break;
-                case GridActions.Right:
+                case Right:
                     actionId = GridActions.ScrollRight;
                     break;
-                //case GridActions.LineBegin:
+                //case LineBegin:
                 //    actionId = GridActions.ScrollPageLeft;
                 //    break;
-                //case GridActions.LineEnd:
+                //case LineEnd:
                 //    actionId = GridActions.ScrollPageRight;
                 //    break;
                 default:
@@ -870,39 +871,40 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter {
             }
         }
 
-		switch (actionId) {
-            case GridActions.ActivateCell:
+		switch (actionId) with(GridActions)
+		{
+            case ActivateCell:
                 if (cellActivated.assigned) {
                     cellActivated(this, col, row);
                     return true;
                 }
                 return false;
-            case GridActions.ScrollLeft:
+            case ScrollLeft:
                 scrollBy(-1, 0);
                 return true;
-            case GridActions.Left:
+            case Left:
                 selectCell(_col - 1, _row);
                 return true;
-            case GridActions.ScrollRight:
+            case ScrollRight:
                 scrollBy(1, 0);
                 return true;
-            case GridActions.Right:
+            case Right:
                 selectCell(_col + 1, _row);
                 return true;
-            case GridActions.ScrollUp:
+            case ScrollUp:
                 scrollBy(0, -1);
                 return true;
-            case GridActions.Up:
+            case Up:
                 selectCell(_col, _row - 1);
                 return true;
-            case GridActions.ScrollDown:
+            case ScrollDown:
                 if (_fullyVisibleCells.bottom < _rows - 1)
                     scrollBy(0, 1);
                 return true;
-            case GridActions.Down:
+            case Down:
                 selectCell(_col, _row + 1);
                 return true;
-            case GridActions.ScrollPageLeft:
+            case ScrollPageLeft:
                 // scroll left cell by cell
                 int prevCol = _headerCols + fixedCols + _scrollCol;
                 while (_scrollCol > 0) {
@@ -911,14 +913,14 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter {
                         break;
                 }
                 return true;
-            case GridActions.ScrollPageRight:
+            case ScrollPageRight:
                 int prevCol = _fullyVisibleCells.right;
                 while (_headerCols + fixedCols + _scrollCol < prevCol) {
                     if (!scrollBy(1, 0))
                         break;
                 }
                 return true;
-            case GridActions.ScrollPageUp:
+            case ScrollPageUp:
                 // scroll up line by line
                 int prevRow = _headerRows + fixedRows + _scrollRow;
                 while (_scrollRow > 0) {
@@ -927,14 +929,14 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter {
                         break;
                 }
                 return true;
-            case GridActions.ScrollPageDown:
+            case ScrollPageDown:
                 int prevRow = _fullyVisibleCells.bottom;
                 while (_headerRows + fixedRows + _scrollRow < prevRow) {
                     if (!scrollBy(0, 1))
                         break;
                 }
                 return true;
-            case GridActions.LineBegin:
+            case LineBegin:
                 if (_scrollCol > 0 && _col > _headerCols + fixedCols + _scrollCol && !_rowSelect)
                     selectCell(_headerCols + fixedCols + _scrollCol, _row);
                 else {
@@ -946,10 +948,10 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter {
                     selectCell(_headerCols, _row);
                 }
                 return true;
-            case GridActions.LineEnd:
+            case LineEnd:
                 selectCell(_cols - 1, _row);
                 return true;
-            case GridActions.DocumentBegin:
+            case DocumentBegin:
                 if (_scrollRow > 0) {
                     _scrollRow = 0;
                     updateScrollBars();
@@ -957,16 +959,16 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter {
                 }
                 selectCell(_col, _headerRows);
                 return true;
-            case GridActions.DocumentEnd:
+            case DocumentEnd:
                 selectCell(_col, _rows - 1);
                 return true;
-            case GridActions.PageBegin:
+            case PageBegin:
                 if (_scrollRow > 0)
                     selectCell(_col, _headerRows + fixedRows + _scrollRow);
                 else
                     selectCell(_col, _headerRows);
                 return true;
-            case GridActions.PageEnd:
+            case PageEnd:
                 int found = -1;
                 for (int i = fixedRows; i < _rows; i++) {
                     Rect rc = cellRect(_col, i);
@@ -978,7 +980,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter {
                 if (found >= 0)
                     selectCell(_col, found);
                 return true;
-            case GridActions.PageUp:
+            case PageUp:
                 if (_row > _fullyVisibleCells.top) {
                     // not at top scrollable cell
                     selectCell(_col, _fullyVisibleCells.top);
@@ -998,7 +1000,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter {
                     }
                 }
                 return true;
-            case GridActions.PageDown: 
+            case PageDown: 
                 if (_row < _rows) {
                     if (_row < _fullyVisibleCells.bottom) {
                         // not at top scrollable cell

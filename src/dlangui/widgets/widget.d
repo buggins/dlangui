@@ -946,24 +946,25 @@ class Widget {
             return false;
         FocusMovement direction = FocusMovement.None;
         uint flags = event.flags & (KeyFlag.Shift | KeyFlag.Control | KeyFlag.Alt);
-        switch (event.keyCode) {
-            case KeyCode.LEFT:
+        switch (event.keyCode) with(KeyCode)
+        {
+            case LEFT:
                 if (flags == 0)
                     direction = FocusMovement.Left;
                 break;
-            case KeyCode.RIGHT:
+            case RIGHT:
                 if (flags == 0)
                     direction = FocusMovement.Right;
                 break;
-            case KeyCode.UP:
+            case UP:
                 if (flags == 0)
                     direction = FocusMovement.Up;
                 break;
-            case KeyCode.DOWN:
+            case DOWN:
                 if (flags == 0)
                     direction = FocusMovement.Down;
                 break;
-            case KeyCode.TAB:
+            case TAB:
                 if (flags == 0)
                     direction = FocusMovement.Next;
                 else if (flags == KeyFlag.Shift)

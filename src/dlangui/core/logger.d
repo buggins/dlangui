@@ -128,13 +128,14 @@ class Log {
 
     /// Log level to name helper function
     static public string logLevelName(LogLevel level) {
-        switch (level) {
-            case LogLevel.Fatal: return "F";
-            case LogLevel.Error: return "E";
-            case LogLevel.Warn: return "W";
-            case LogLevel.Info: return "I";
-            case LogLevel.Debug: return "D";
-            case LogLevel.Trace: return "V";
+        switch (level) with(LogLevel)
+        {
+            case Fatal: return "F";
+            case Error: return "E";
+            case Warn: return "W";
+            case Info: return "I";
+            case Debug: return "D";
+            case Trace: return "V";
             default: return "?";
         }
     }

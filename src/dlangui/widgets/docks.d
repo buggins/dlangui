@@ -56,17 +56,18 @@ struct DockSpace {
     ResizerWidget init(DockHost host, DockAlignment a) {
         _host = host;
         _alignment = a;
-        final switch (a) {
-            case DockAlignment.Top:
+        final switch (a) with(DockAlignment)
+        {
+            case Top:
                 _resizer =  new ResizerWidget("top_resizer", Orientation.Vertical);
                 break;
-            case DockAlignment.Bottom:
+            case Bottom:
                 _resizer =  new ResizerWidget("bottom_resizer", Orientation.Vertical);
                 break;
-            case DockAlignment.Left:
+            case Left:
                 _resizer =  new ResizerWidget("left_resizer", Orientation.Horizontal);
                 break;
-            case DockAlignment.Right:
+            case Right:
                 _resizer =  new ResizerWidget("right_resizer", Orientation.Horizontal);
                 break;
         }
@@ -104,20 +105,21 @@ struct DockSpace {
         int rsWidth = 3; // resizer width
         if (_space) {
             _rc = rc;
-            final switch (_alignment) {
-                case DockAlignment.Top:
+            final switch (_alignment) with(DockAlignment)
+            {
+                case Top:
                     _resizerRect = Rect(rc.left, rc.bottom - rsWidth, rc.right, rc.bottom + rsWidth);
                     _dockRect = Rect(rc.left, rc.top, rc.right, rc.bottom - rsWidth);
                     break;
-                case DockAlignment.Bottom:
+                case Bottom:
                     _resizerRect = Rect(rc.left, rc.top - rsWidth, rc.right, rc.top + rsWidth);
                     _dockRect = Rect(rc.left, rc.top + rsWidth, rc.right, rc.bottom);
                     break;
-                case DockAlignment.Left:
+                case Left:
                     _resizerRect = Rect(rc.right - rsWidth, rc.top, rc.right + rsWidth, rc.bottom);
                     _dockRect = Rect(rc.left, rc.top, rc.right - rsWidth, rc.bottom);
                     break;
-                case DockAlignment.Right:
+                case Right:
                     _resizerRect = Rect(rc.left - rsWidth, rc.top, rc.left + rsWidth, rc.bottom);
                     _dockRect = Rect(rc.left + rsWidth, rc.top, rc.right, rc.bottom);
                     break;

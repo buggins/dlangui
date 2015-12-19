@@ -540,27 +540,28 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
 	/// override to change popup menu items state
 	override bool isActionEnabled(const Action action) {
-		switch (action.id) {
-			case EditorActions.Tab:
-			case EditorActions.BackTab:
-			case EditorActions.Indent:
-			case EditorActions.Unindent:
+		switch (action.id) with(EditorActions)
+		{
+			case Tab:
+			case BackTab:
+			case Indent:
+			case Unindent:
 				return enabled;
-			case EditorActions.Copy:
+			case Copy:
 				return !_selectionRange.empty;
-			case EditorActions.Cut:
+			case Cut:
 				return enabled && !_selectionRange.empty;
-			case EditorActions.Paste:
+			case Paste:
 				return enabled && Platform.instance.getClipboardText().length > 0;
-			case EditorActions.Undo:
+			case Undo:
 				return enabled && _content.hasUndo;
-			case EditorActions.Redo:
+			case Redo:
 				return enabled && _content.hasRedo;
-			case EditorActions.ToggleBookmark:
+			case ToggleBookmark:
 				return _content.multiline;
-			case EditorActions.GoToNextBookmark:
+			case GoToNextBookmark:
 				return _content.multiline && _content.lineIcons.hasBookmarks;
-			case EditorActions.GoToPreviousBookmark:
+			case GoToPreviousBookmark:
 				return _content.multiline && _content.lineIcons.hasBookmarks;
 			default:
 				return super.isActionEnabled(action);
@@ -1092,8 +1093,9 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
 	/// override to handle specific actions state (e.g. change enabled state for supported actions)
 	override bool handleActionStateRequest(const Action a) {
-		switch (a.id) {
-			case EditorActions.ToggleBlockComment:
+		switch (a.id) with(EditorActions)
+		{
+			case ToggleBlockComment:
                 if (!_content.syntaxSupport || !_content.syntaxSupport.supportsToggleBlockComment)
                     a.state = ACTION_STATE_INVISIBLE;
                 else if (enabled && _content.syntaxSupport.canToggleBlockComment(_selectionRange))
@@ -1101,7 +1103,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 else
                     a.state = ACTION_STATE_DISABLE;
                 return true;
-			case EditorActions.ToggleLineComment:
+			case ToggleLineComment:
                 if (!_content.syntaxSupport || !_content.syntaxSupport.supportsToggleLineComment)
                     a.state = ACTION_STATE_INVISIBLE;
                 else if (enabled && _content.syntaxSupport.canToggleLineComment(_selectionRange))
@@ -1109,15 +1111,15 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 else
                     a.state = ACTION_STATE_DISABLE;
                 return true;
-            case EditorActions.Copy:
-            case EditorActions.Cut:
-            case EditorActions.Paste:
-            case EditorActions.Undo:
-            case EditorActions.Redo:
-			case EditorActions.Tab:
-			case EditorActions.BackTab:
-			case EditorActions.Indent:
-			case EditorActions.Unindent:
+            case Copy:
+            case Cut:
+            case Paste:
+            case Undo:
+            case Redo:
+			case Tab:
+			case BackTab:
+			case Indent:
+			case Unindent:
                 if (isActionEnabled(a))
                     a.state = ACTION_STATE_ENABLED;
                 else
@@ -1131,9 +1133,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 	override protected bool handleAction(const Action a) {
         TextPosition oldCaretPos = _caretPos;
         dstring currentLine = _content[_caretPos.line];
-		switch (a.id) {
-            case EditorActions.Left:
-            case EditorActions.SelectLeft:
+		switch (a.id) with(EditorActions)
+		{
+            case Left:
+            case SelectLeft:
                 correctCaretPos();
                 if (_caretPos.pos > 0) {
                     _caretPos.pos--;
@@ -1145,8 +1148,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     ensureCaretVisible();
 				}
                 return true;
-            case EditorActions.Right:
-            case EditorActions.SelectRight:
+            case Right:
+            case SelectRight:
                 correctCaretPos();
                 if (_caretPos.pos < currentLine.length) {
                     _caretPos.pos++;
@@ -1159,8 +1162,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     ensureCaretVisible();
 				}
                 return true;
-            case EditorActions.WordLeft:
-            case EditorActions.SelectWordLeft:
+            case WordLeft:
+            case SelectWordLeft:
                 {
                     TextPosition newpos = _content.moveByWord(_caretPos, -1, _camelCasePartsAsWords);
                     if (newpos != _caretPos) {
@@ -1170,8 +1173,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     }
                 }
                 return true;
-            case EditorActions.WordRight:
-            case EditorActions.SelectWordRight:
+            case WordRight:
+            case SelectWordRight:
                 {
                     TextPosition newpos = _content.moveByWord(_caretPos, 1, _camelCasePartsAsWords);
                     if (newpos != _caretPos) {
@@ -1181,8 +1184,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     }
                 }
                 return true;
-            case EditorActions.DocumentBegin:
-            case EditorActions.SelectDocumentBegin:
+            case DocumentBegin:
+            case SelectDocumentBegin:
                 if (_caretPos.pos > 0 || _caretPos.line > 0) {
                     _caretPos.line = 0;
                     _caretPos.pos = 0;
@@ -1190,16 +1193,16 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                 }
                 return true;
-            case EditorActions.LineBegin:
-            case EditorActions.SelectLineBegin:
+            case LineBegin:
+            case SelectLineBegin:
                 if (_caretPos.pos > 0) {
                     _caretPos.pos = 0;
                     ensureCaretVisible();
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                 }
                 return true;
-            case EditorActions.DocumentEnd:
-            case EditorActions.SelectDocumentEnd:
+            case DocumentEnd:
+            case SelectDocumentEnd:
                 if (_caretPos.line < _content.length - 1 || _caretPos.pos < _content[_content.length - 1].length) {
                     _caretPos.line = _content.length - 1;
                     _caretPos.pos = cast(int)_content[_content.length - 1].length;
@@ -1207,15 +1210,15 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                 }
                 return true;
-            case EditorActions.LineEnd:
-            case EditorActions.SelectLineEnd:
+            case LineEnd:
+            case SelectLineEnd:
                 if (_caretPos.pos < currentLine.length) {
                     _caretPos.pos = cast(int)currentLine.length;
                     ensureCaretVisible();
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                 }
                 return true;
-            case EditorActions.DelPrevWord:
+            case DelPrevWord:
                 if (readOnly)
                     return true;
                 correctCaretPos();
@@ -1225,7 +1228,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 if (newpos < _caretPos)
                     removeRangeText(TextRange(newpos, _caretPos));
                 return true;
-            case EditorActions.DelNextWord:
+            case DelNextWord:
                 if (readOnly)
                     return true;
                 correctCaretPos();
@@ -1235,7 +1238,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 if (newpos > _caretPos)
                     removeRangeText(TextRange(_caretPos, newpos));
                 return true;
-            case EditorActions.DelPrevChar:
+            case DelPrevChar:
                 if (readOnly)
                     return true;
                 correctCaretPos();
@@ -1253,7 +1256,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     removeRangeText(range);
                 }
                 return true;
-            case EditorActions.DelNextChar:
+            case DelNextChar:
                 if (readOnly)
                     return true;
                 correctCaretPos();
@@ -1272,13 +1275,13 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     removeRangeText(range);
                 }
                 return true;
-            case EditorActions.Copy:
+            case Copy:
                 if (!_selectionRange.empty) {
                     dstring selectionText = concatDStrings(_content.rangeText(_selectionRange));
                     platform.setClipboardText(selectionText);
                 }
                 return true;
-            case EditorActions.Cut:
+            case Cut:
                 if (!_selectionRange.empty) {
                     dstring selectionText = concatDStrings(_content.rangeText(_selectionRange));
                     platform.setClipboardText(selectionText);
@@ -1288,7 +1291,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     _content.performOperation(op, this);
                 }
                 return true;
-            case EditorActions.Paste:
+            case Paste:
                 {
                     if (readOnly)
                         return true;
@@ -1303,27 +1306,27 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     _content.performOperation(op, this);
                 }
                 return true;
-            case EditorActions.Undo:
+            case Undo:
                 {
                     if (readOnly)
                         return true;
                     _content.undo(this);
                 }
                 return true;
-            case EditorActions.Redo:
+            case Redo:
                 {
                     if (readOnly)
                         return true;
                     _content.redo(this);
                 }
                 return true;
-			case EditorActions.Indent:
+			case Indent:
                 indentRange(false);
                 return true;
-			case EditorActions.Unindent:
+			case Unindent:
                 indentRange(true);
                 return true;
-            case EditorActions.Tab:
+            case Tab:
                 {
                     if (readOnly)
                         return true;
@@ -1357,7 +1360,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     }
                 }
                 return true;
-            case EditorActions.BackTab:
+            case BackTab:
                 {
                     if (readOnly)
                         return true;
@@ -1394,10 +1397,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     }
                 }
                 return true;
-            case EditorActions.ToggleReplaceMode:
+            case ToggleReplaceMode:
                 replaceMode = !replaceMode;
                 return true;
-            case EditorActions.SelectAll:
+            case SelectAll:
                 _selectionRange.start.line = 0;
                 _selectionRange.start.pos = 0;
                 _selectionRange.end = _content.lineEnd(_content.length - 1);
@@ -1405,15 +1408,15 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 ensureCaretVisible();
 				requestActionsUpdate();
                 return true;
-			case EditorActions.ToggleBookmark:
+			case ToggleBookmark:
                 if (_content.multiline) {
                     int line = a.longParam >= 0 ? cast(int)a.longParam : _caretPos.line;
                     _content.lineIcons.toggleBookmark(line);
                     return true;
                 }
 				return false;
-			case EditorActions.GoToNextBookmark:
-			case EditorActions.GoToPreviousBookmark:
+			case GoToNextBookmark:
+			case GoToPreviousBookmark:
                 if (_content.multiline) {
                     LineIcon mark = _content.lineIcons.findNext(LineIconType.bookmark, _selectionRange.end.line, a.id == EditorActions.GoToNextBookmark ? 1 : -1);
                     if (mark) {
@@ -1725,21 +1728,22 @@ class EditLine : EditWidgetBase {
     }
 
 	override bool handleAction(const Action a) {
-		switch (a.id) {
-			case EditorActions.InsertNewLine:
-			case EditorActions.PrependNewLine:
-			case EditorActions.AppendNewLine:
+		switch (a.id) with(EditorActions)
+		{
+			case InsertNewLine:
+			case PrependNewLine:
+			case AppendNewLine:
 				if (editorAction.assigned) {
 					return editorAction(a);
 				}
 				break;
-            case EditorActions.Up:
+            case Up:
                 break;
-            case EditorActions.Down:
+            case Down:
                 break;
-            case EditorActions.PageUp:
+            case PageUp:
                 break;
-            case EditorActions.PageDown:
+            case PageDown:
                 break;
             default:
                 break;
@@ -2111,8 +2115,9 @@ class EditBox : EditWidgetBase {
 	override protected bool handleAction(const Action a) {
         TextPosition oldCaretPos = _caretPos;
         dstring currentLine = _content[_caretPos.line];
-		switch (a.id) {
-            case EditorActions.PrependNewLine:
+		switch (a.id) with(EditorActions)
+		{
+            case PrependNewLine:
                 if (!readOnly) {
                     correctCaretPos();
                     _caretPos.pos = 0;
@@ -2120,39 +2125,39 @@ class EditBox : EditWidgetBase {
                     _content.performOperation(op, this);
                 }
                 return true;
-            case EditorActions.InsertNewLine:
+            case InsertNewLine:
                 if (!readOnly) {
                     correctCaretPos();
                     EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d, ""d]);
                     _content.performOperation(op, this);
                 }
                 return true;
-            case EditorActions.Up:
-            case EditorActions.SelectUp:
+            case Up:
+            case SelectUp:
                 if (_caretPos.line > 0) {
                     _caretPos.line--;
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                     ensureCaretVisible();
                 }
                 return true;
-            case EditorActions.Down:
-            case EditorActions.SelectDown:
+            case Down:
+            case SelectDown:
                 if (_caretPos.line < _content.length - 1) {
                     _caretPos.line++;
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                     ensureCaretVisible();
                 }
                 return true;
-            case EditorActions.PageBegin:
-            case EditorActions.SelectPageBegin:
+            case PageBegin:
+            case SelectPageBegin:
                 {
                     ensureCaretVisible();
                     _caretPos.line = _firstVisibleLine;
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                 }
                 return true;
-            case EditorActions.PageEnd:
-            case EditorActions.SelectPageEnd:
+            case PageEnd:
+            case SelectPageEnd:
                 {
                     ensureCaretVisible();
                     int fullLines = _clientRect.height / _lineHeight;
@@ -2163,8 +2168,8 @@ class EditBox : EditWidgetBase {
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                 }
                 return true;
-            case EditorActions.PageUp:
-            case EditorActions.SelectPageUp:
+            case PageUp:
+            case SelectPageUp:
                 {
                     ensureCaretVisible();
                     int fullLines = _clientRect.height / _lineHeight;
@@ -2182,8 +2187,8 @@ class EditBox : EditWidgetBase {
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                 }
                 return true;
-            case EditorActions.PageDown:
-            case EditorActions.SelectPageDown:
+            case PageDown:
+            case SelectPageDown:
                 {
                     ensureCaretVisible();
                     int fullLines = _clientRect.height / _lineHeight;
@@ -2200,7 +2205,7 @@ class EditBox : EditWidgetBase {
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                 }
                 return true;
-            case EditorActions.ScrollLeft:
+            case ScrollLeft:
                 {
                     if (_scrollPos.x > 0) {
                         int newpos = _scrollPos.x - _spaceWidth * 4;
@@ -2212,7 +2217,7 @@ class EditBox : EditWidgetBase {
                     }
                 }
                 return true;
-            case EditorActions.ScrollRight:
+            case ScrollRight:
                 {
                     if (_scrollPos.x < _maxLineWidth - _clientRect.width) {
                         int newpos = _scrollPos.x + _spaceWidth * 4;
@@ -2224,7 +2229,7 @@ class EditBox : EditWidgetBase {
                     }
                 }
                 return true;
-            case EditorActions.ScrollLineUp:
+            case ScrollLineUp:
                 {
                     if (_firstVisibleLine > 0) {
                         _firstVisibleLine -= 3;
@@ -2236,7 +2241,7 @@ class EditBox : EditWidgetBase {
                     }
                 }
                 return true;
-            case EditorActions.ScrollPageUp:
+            case ScrollPageUp:
                 {
                     int fullLines = _clientRect.height / _lineHeight;
                     if (_firstVisibleLine > 0) {
@@ -2249,7 +2254,7 @@ class EditBox : EditWidgetBase {
                     }
                 }
                 return true;
-            case EditorActions.ScrollLineDown:
+            case ScrollLineDown:
                 {
                     int fullLines = _clientRect.height / _lineHeight;
                     if (_firstVisibleLine + fullLines < _content.length) {
@@ -2264,7 +2269,7 @@ class EditBox : EditWidgetBase {
                     }
                 }
                 return true;
-            case EditorActions.ScrollPageDown:
+            case ScrollPageDown:
                 {
                     int fullLines = _clientRect.height / _lineHeight;
                     if (_firstVisibleLine + fullLines < _content.length) {
@@ -2279,10 +2284,10 @@ class EditBox : EditWidgetBase {
                     }
                 }
                 return true;
-            case EditorActions.ZoomOut:
-            case EditorActions.ZoomIn:
+            case ZoomOut:
+            case ZoomIn:
                 {
-                    int dir = a.id == EditorActions.ZoomIn ? 1 : -1;
+                    int dir = a.id == ZoomIn ? 1 : -1;
                     if (_minFontSize < _maxFontSize && _minFontSize > 0 && _maxFontSize > 0) {
                         int currentFontSize = fontSize;
 						int increment = currentFontSize >= 30 ? 2 : 1;
@@ -2300,15 +2305,15 @@ class EditBox : EditWidgetBase {
                     }
                 }
                 return true;
-			case EditorActions.ToggleBlockComment:
+			case ToggleBlockComment:
                 if (!readOnly && _content.syntaxSupport && _content.syntaxSupport.supportsToggleBlockComment && _content.syntaxSupport.canToggleBlockComment(_selectionRange))
                     _content.syntaxSupport.toggleBlockComment(_selectionRange, this);
                 return true;
-			case EditorActions.ToggleLineComment:
+			case ToggleLineComment:
                 if (!readOnly && _content.syntaxSupport && _content.syntaxSupport.supportsToggleLineComment && _content.syntaxSupport.canToggleLineComment(_selectionRange))
                     _content.syntaxSupport.toggleLineComment(_selectionRange, this);
                 return true;
-			case EditorActions.AppendNewLine:
+			case AppendNewLine:
                 if (!readOnly) {
                     correctCaretPos();
 					TextPosition p = _content.lineEnd(_caretPos.line);
@@ -2318,7 +2323,7 @@ class EditBox : EditWidgetBase {
 					_caretPos = oldCaretPos;
                 }
 				return true;
-			case EditorActions.DeleteLine:
+			case DeleteLine:
                 if (!readOnly) {
                     correctCaretPos();
                     EditOperation op = new EditOperation(EditAction.Replace, _content.lineRange(_caretPos.line), [""d]);

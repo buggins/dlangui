@@ -139,8 +139,9 @@ class OutputLineStream {
         /// reserve buf space
         if (_buf.length < _len + s.length * 4 + 4)
             _buf.length = _len + s.length * 4 + 4;
-        switch (_format.encoding) {
-            case EncodingType.UTF8:
+        switch (_format.encoding) with(EncodingType)
+        {
+            case UTF8:
             default:
                 char[4] d;
                 for (int i = 0; i < s.length; i++) {
@@ -149,7 +150,7 @@ class OutputLineStream {
                         _buf[_len++] = d[j];
                 }
                 break;
-            case EncodingType.UTF16BE:
+            case UTF16BE:
                 wchar[2] d;
                 for (int i = 0; i < s.length; i++) {
                     int n = cast(int)encode(d, s[i]);
@@ -159,7 +160,7 @@ class OutputLineStream {
                     }
                 }
                 break;
-            case EncodingType.UTF16LE:
+            case UTF16LE:
                 wchar[2] d;
                 for (int i = 0; i < s.length; i++) {
                     int n = cast(int)encode(d, s[i]);
@@ -169,7 +170,7 @@ class OutputLineStream {
                     }
                 }
                 break;
-            case EncodingType.UTF32LE:
+            case UTF32LE:
                 for (int i = 0; i < s.length; i++) {
                     dchar ch = s[i];
                     _buf[_len++] = cast(char)((ch >> 0) & 0xFF);
@@ -178,7 +179,7 @@ class OutputLineStream {
                     _buf[_len++] = cast(char)((ch >> 24) & 0xFF);
                 }
                 break;
-            case EncodingType.UTF32BE:
+            case UTF32BE:
                 for (int i = 0; i < s.length; i++) {
                     dchar ch = s[i];
                     _buf[_len++] = cast(char)((ch >> 24) & 0xFF);
