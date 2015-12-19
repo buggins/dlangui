@@ -344,7 +344,7 @@ class Tokenizer {
 
     protected ref const(Token) parseHex(int prefixLen) {
         dchar ch = 0;
-        for (int i = 0; i < prefixLen; i++)
+        foreach(i; 0 .. prefixLen)
             ch = skipChar();
 
         uint n = decodeHexDigit(ch);
