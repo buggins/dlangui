@@ -214,19 +214,22 @@ class X11Window : DWindow {
 				EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonMotionMask | ExposureMask | VisibilityChangeMask |
 					FocusChangeMask | KeymapStateMask | StructureNotifyMask;
 			Visual * visual = DefaultVisual(x11display, x11screen);
+            int depth = DefaultDepth(x11display, x11screen);
 			static if (ENABLE_OPENGL) {
 				if (_enableOpengl) {
 					swamask |= CWColormap;
 					swa.colormap = x11cmap;
 					visual = cast(Visual*)x11visual.visual;
+                    depth = x11visutal.depth;
 				}
 			}
 
 			_win = XCreateWindow(x11display, DefaultRootWindow(x11display), 
 				0, 0, 
 				_dx, _dy, 0, 
-				x11visual.depth, InputOutput, 
-				visual, 
+				depth, 
+                InputOutput, 
+				visual,
 				swamask, 
 				&swa);
 //			_win = XCreateSimpleWindow(x11display, DefaultRootWindow(x11display), 

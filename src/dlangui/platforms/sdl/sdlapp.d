@@ -150,8 +150,14 @@ class SDLWindow : Window {
 		static if (ENABLE_OPENGL) {
             if (_enableOpengl)
                 windowFlags |= SDL_WINDOW_OPENGL;
-            if (!_glSupport)
-                _glSupport = new GLSupport();
+            if (!_glSupport) {
+                version(OSX) {
+                    bool useLegacyOpengl = true;
+                } else {
+                    bool useLegacyOpengl = false;
+                }
+                _glSupport = new GLSupport(useLegacyOpengl);
+            }
         }
 		_win = SDL_CreateWindow(toUTF8(_caption).toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
                                 _dx, _dy, 
