@@ -176,7 +176,7 @@ class DMLSyntaxSupport : SyntaxSupport {
     }
 
     protected bool isLineComment(dstring s) {
-        for (int i = 0; i < cast(int)s.length - 1; i++) {
+        foreach(i; 0 .. s.length - 1) {
             if (s[i] == '/' && s[i + 1] == '/')
                 return true;
             else if (s[i] != ' ' && s[i] != '\t')
@@ -189,7 +189,7 @@ class DMLSyntaxSupport : SyntaxSupport {
         dchar[] res;
         int x = 0;
         bool commented = false;
-        for (int i = 0; i < s.length; i++) {
+        foreach(i; 0 .. s.length) {
             dchar ch = s[i];
             if (ch == '\t') {
                 int newX = (x + _content.tabSize) / _content.tabSize * _content.tabSize;
@@ -232,7 +232,7 @@ class DMLSyntaxSupport : SyntaxSupport {
     /// remove single line comment from beginning of line
     protected dstring uncommentLine(dstring s) {
         int p = -1;
-        for (int i = 0; i < cast(int)s.length - 1; i++) {
+        foreach(int i; 0 .. cast(int)s.length - 1) {
             if (s[i] == '/' && s[i + 1] == '/') {
                 p = i;
                 break;
@@ -241,7 +241,7 @@ class DMLSyntaxSupport : SyntaxSupport {
         if (p < 0)
             return s;
         s = s[0..p] ~ s[p + 2 .. $];
-        for (int i = 0; i < s.length; i++) {
+        foreach(i; 0 .. s.length) {
             if (s[i] != ' ' && s[i] != '\t') {
                 return s;
             }
@@ -353,7 +353,7 @@ class DMLSyntaxSupport : SyntaxSupport {
         bool hasNonEmpty = false;
         dstring[] srctext;
         dstring[] dsttext;
-        for (int i = 0; i < lineCount; i++) {
+        foreach(i; 0 .. lineCount) {
             int lineIndex = r.start.line + i;
             dstring s = content.line(lineIndex);
             srctext ~= s;
@@ -372,7 +372,7 @@ class DMLSyntaxSupport : SyntaxSupport {
             minLeftX = 0;
         if (hasNoComments || !hasComments) {
             // comment
-            for (int i = 0; i < lineCount; i++) {
+            foreach(i; 0 .. lineCount) {
                 dsttext ~= commentLine(srctext[i], minLeftX);
             }
             if (!noEolAtEndOfRange)
@@ -381,7 +381,7 @@ class DMLSyntaxSupport : SyntaxSupport {
             _content.performOperation(op, source);
         } else {
             // uncomment
-            for (int i = 0; i < lineCount; i++) {
+            foreach(i; 0 .. lineCount) {
                 dsttext ~= uncommentLine(srctext[i]);
             }
             if (!noEolAtEndOfRange)
@@ -428,7 +428,7 @@ class DMLSyntaxSupport : SyntaxSupport {
         if (startToken.range == endToken.range && startToken.token.isMultilineComment) {
             TextRange range = startToken.range;
             dstring[] dsttext;
-            for (int i = range.start.line; i <= range.end.line; i++) {
+            foreach(i; range.start.line .. range.end.line + 1) {
                 dstring s = content.line(i);
                 int charsRemoved = 0;
                 if (i == range.start.line) {
@@ -436,7 +436,7 @@ class DMLSyntaxSupport : SyntaxSupport {
                     if (i == range.end.line)
                         maxp = range.end.pos - 2;
                     charsRemoved = 2;
-                    for (int j = range.start.pos + charsRemoved; j < maxp; j++) {
+                    foreach(j; range.start.pos + charsRemoved .. maxp) {
                         if (s[j] != s[j - 1])
                             break;
                         charsRemoved++;
@@ -482,7 +482,7 @@ class DMLSyntaxSupport : SyntaxSupport {
                 }
             }
             dstring[] dsttext;
-            for (int i = srcrange.start.line; i <= srcrange.end.line; i++) {
+            foreach(i; srcrange.start.line .. srcrange.end.line + 1) {
                 dstring s = content.line(i);
                 int charsAdded = 0;
                 if (i == srcrange.start.line) {
@@ -531,10 +531,10 @@ class DMLSyntaxSupport : SyntaxSupport {
                 uint newLine = token.range.start.line;
 
                 // fill with category
-                for (int i = tokenLine; i <= newLine; i++) {
+                foreach(int i; tokenLine .. newLine + 1) {
                     int start = i > tokenLine ? 0 : tokenPos;
                     int end = i < newLine ? cast(int)lines[i].length : newPos;
-                    for (int j = start; j < end; j++) {
+                    foreach(j; start .. end) {
 						if (j < _props[i].length) {
 							_props[i][j] = category;
 						}
@@ -542,30 +542,31 @@ class DMLSyntaxSupport : SyntaxSupport {
                 }
 
                 // handle token - convert to category
-                switch(token.token.type) {
-                    case TokenType.comment:
+                switch(token.token.type) with(TokenType)
+                {
+                    case comment:
                         category = TokenCategory.Comment;
                         break;
-                    case TokenType.ident:
+                    case ident:
                         if (isWidgetClassName(token.token.text))
                             category = TokenCategory.Identifier_Class;
                         else
                             category = TokenCategory.Identifier;
                         break;
-                    case TokenType.str:
+                    case str:
                         category = TokenCategory.String;
                         break;
-                    case TokenType.integer:
+                    case integer:
                         category = TokenCategory.Integer;
                         break;
-                    case TokenType.floating:
+                    case floating:
                         category = TokenCategory.Float;
                         break;
-                    case TokenType.error:
+                    case error:
                         category = TokenCategory.Error;
                         break;
                     default:
-                        if (token.token.type >= TokenType.colon)
+                        if (token.token.type >= colon)
                             category = TokenCategory.Op;
                         else
                             category = 0;
