@@ -328,14 +328,14 @@ class DrawBuf : RefCountedObject {
         if (isFullyTransparentColor(color1) && isFullyTransparentColor(color2))
             return;
         // draw horizontal lines
-        for (int x = rc.left; x < rc.right; x++) {
+        foreach(int x; rc.left .. rc.right) {
             if ((x ^ rc.top) & 1)
                 fillRect(Rect(x, rc.top, x + 1, rc.top + 1), color1);
             if ((x ^ (rc.bottom - 1)) & 1)
                 fillRect(Rect(x, rc.bottom - 1, x + 1, rc.bottom), color2);
         }
         // draw vertical lines
-        for (int y = rc.top + 1; y < rc.bottom - 1; y++) {
+        foreach(int y; rc.top + 1 .. rc.bottom - 1) {
             uint color = color1 == color2 ? color1 : blendARGB(color2, color1, 255 / (rc.bottom - rc.top));
             if ((y ^ rc.left) & 1)
                 fillRect(Rect(rc.left, y, rc.left + 1, y + 1), color);
@@ -440,12 +440,12 @@ class ColorDrawBufBase : DrawBuf {
                 int dy = srcrect.height;
                 ColorDrawBufBase colorDrawBuf = cast(ColorDrawBufBase) src;
                 if (colorDrawBuf !is null) {
-                    for (int yy = 0; yy < dy; yy++) {
+                    foreach(yy; 0 .. dy) {
                         uint * srcrow = colorDrawBuf.scanLine(srcrect.top + yy) + srcrect.left;
                         uint * dstrow = scanLine(dstrect.top + yy) + dstrect.left;
                         if (!_alpha) {
                             // simplified version - no alpha blending
-                            for (int i = 0; i < dx; i++) {
+                            foreach(i; 0 .. dx) {
                                 uint pixel = srcrow[i];
                                 uint alpha = pixel >> 24;
                                 if (!alpha)
@@ -457,7 +457,7 @@ class ColorDrawBufBase : DrawBuf {
                             }
                         } else {
                             // combine two alphas
-                            for (int i = 0; i < dx; i++) {
+                            foreach(i; 0 .. dx) {
                                 uint pixel = srcrow[i];
                                 uint alpha = blendAlpha(_alpha, pixel >> 24);
                                 if (!alpha)
@@ -480,7 +480,7 @@ class ColorDrawBufBase : DrawBuf {
         int dd = dst1 - dst0;
         int sd = src1 - src0;
         int[] res = new int[dd];
-        for (int i = 0; i < dd; i++)
+        foreach(int i; 0 .. dd)
             res[i] = src0 + i * sd / dd;
         return res;
     }
@@ -499,12 +499,12 @@ class ColorDrawBufBase : DrawBuf {
             int dy = dstrect.height;
             ColorDrawBufBase colorDrawBuf = cast(ColorDrawBufBase) src;
             if (colorDrawBuf !is null) {
-                for (int y = 0; y < dy; y++) {
+                foreach(y; 0 .. dy) {
                     uint * srcrow = colorDrawBuf.scanLine(ymap[y]);
                     uint * dstrow = scanLine(dstrect.top + y) + dstrect.left;
                     if (!_alpha) {
                         // simplified alpha calculation
-                        for (int x = 0; x < dx; x++) {
+                        foreach(x; 0 .. dx) {
                             uint srcpixel = srcrow[xmap[x]];
                             uint dstpixel = dstrow[x];
                             uint alpha = srcpixel >> 24;
@@ -517,7 +517,7 @@ class ColorDrawBufBase : DrawBuf {
                         }
                     } else {
                         // blending two alphas
-                        for (int x = 0; x < dx; x++) {
+                        foreach(x; 0 .. dx) {
                             uint srcpixel = srcrow[xmap[x]];
                             uint dstpixel = dstrow[x];
                             uint srca = srcpixel >> 24;
@@ -541,7 +541,7 @@ class ColorDrawBufBase : DrawBuf {
     	bool foundUsed = false;
         x0 = 0;
         x1 = 0;
-    	for (int x = 1; x < _dx - 1; x++) {
+        foreach(int x; 1 .. _dx - 1) {
     		if (isBlackPixel(line[x])) { // opaque black pixel
     			if (!foundUsed) {
     				x0 = x;
@@ -570,7 +570,7 @@ class ColorDrawBufBase : DrawBuf {
     	bool foundUsed = false;
         y0 = 0;
         y1 = 0;
-    	for (int y = 1; y < _dy - 1; y++) {
+        foreach(int y; 1 .. _dy - 1) {
             uint * line = scanLine(y);
     		if (isBlackPixel(line[x])) { // opaque black pixel
     			if (!foundUsed) {
@@ -615,7 +615,7 @@ class ColorDrawBufBase : DrawBuf {
 		bool clipping = true; //!_clipRect.empty();
 		color = applyAlpha(color);
         bool subpixel = glyph.subpixelMode != SubpixelRenderingMode.None;
-		for (int yy = 0; yy < srcdy; yy++) {
+		foreach(int yy; 0 .. srcdy) {
 			int liney = y + yy;
 			if (clipping && (liney < _clipRect.top || liney >= _clipRect.bottom))
 				continue;
@@ -623,7 +623,7 @@ class ColorDrawBufBase : DrawBuf {
 				continue;
 			uint * row = scanLine(liney);
 			ubyte * srcrow = src.ptr + yy * srcdx;
-			for (int xx = 0; xx < srcdx; xx++) {
+			foreach(int xx; 0 .. srcdx) {
 				int colx = x + (subpixel ? xx / 3 : xx);
 				if (clipping && (colx < _clipRect.left || colx >= _clipRect.right))
 					continue;
@@ -657,7 +657,7 @@ class ColorDrawBufBase : DrawBuf {
         int srcdx = glyph.blackBoxX;
         int srcdy = glyph.blackBoxY;
         bool subpixel = glyph.subpixelMode != SubpixelRenderingMode.None;
-		for (int yy = 0; yy < srcdy; yy++) {
+		foreach(int yy; 0 .. srcdy) {
 			int liney = y + yy;
 			uint * row = scanLine(liney);
 			ubyte * srcrow = src.ptr + yy * srcdx;
@@ -684,13 +684,13 @@ class ColorDrawBufBase : DrawBuf {
 
     override void fillRect(Rect rc, uint color) {
         if (applyClipping(rc)) {
-            for (int y = rc.top; y < rc.bottom; y++) {
+            foreach(y; rc.top .. rc.bottom) {
                 uint * row = scanLine(y);
                 uint alpha = color >> 24;
                 if (!alpha) {
                     row[rc.left .. rc.right] = color;
                 } else if (alpha < 254) {
-                    for (int x = rc.left; x < rc.right; x++) {
+                    foreach(x; rc.left .. rc.right) {
                         // apply blending
                         row[x] = blendARGB(row[x], color, alpha);
                     }
@@ -749,7 +749,7 @@ class GrayDrawBuf : DrawBuf {
         int len = _dx * _dy;
         ubyte * p = _buf.ptr;
         ubyte cl = rgbToGray(color);
-        for (int i = 0; i < len; i++)
+        foreach(i; 0 .. len)
             p[i] = cl;
     }
 
@@ -762,10 +762,10 @@ class GrayDrawBuf : DrawBuf {
                 int dy = srcrect.height;
                 GrayDrawBuf grayDrawBuf = cast (GrayDrawBuf) src;
                 if (grayDrawBuf !is null) {
-                    for (int yy = 0; yy < dy; yy++) {
+                    foreach(yy; 0 .. dy) {
                         ubyte * srcrow = grayDrawBuf.scanLine(srcrect.top + yy) + srcrect.left;
                         ubyte * dstrow = scanLine(dstrect.top + yy) + dstrect.left;
-                        for (int i = 0; i < dx; i++) {
+                        foreach(i; 0 .. dx) {
                             ubyte pixel = srcrow[i];
                             dstrow[i] = pixel;
                         }
@@ -780,7 +780,7 @@ class GrayDrawBuf : DrawBuf {
         int dd = dst1 - dst0;
         int sd = src1 - src0;
         int[] res = new int[dd];
-        for (int i = 0; i < dd; i++)
+        foreach(int i; 0 .. dd)
             res[i] = src0 + i * sd / dd;
         return res;
     }
@@ -794,10 +794,10 @@ class GrayDrawBuf : DrawBuf {
             int dy = dstrect.height;
             GrayDrawBuf grayDrawBuf = cast (GrayDrawBuf) src;
             if (grayDrawBuf !is null) {
-                for (int y = 0; y < dy; y++) {
+                foreach(y; 0 .. dy) {
                     ubyte * srcrow = grayDrawBuf.scanLine(ymap[y]);
                     ubyte * dstrow = scanLine(dstrect.top + y) + dstrect.left;
-                    for (int x = 0; x < dx; x++) {
+                    foreach(x; 0 .. dx) {
                         ubyte srcpixel = srcrow[xmap[x]];
                         ubyte dstpixel = dstrow[x];
                         dstrow[x] = srcpixel;
@@ -813,7 +813,7 @@ class GrayDrawBuf : DrawBuf {
     	bool foundUsed = false;
         x0 = 0;
         x1 = 0;
-    	for (int x = 1; x < _dx - 1; x++) {
+        foreach(int x; 1 .. _dx - 1) {
     		if (line[x] == 0x00000000) { // opaque black pixel
     			if (!foundUsed) {
     				x0 = x;
@@ -830,7 +830,7 @@ class GrayDrawBuf : DrawBuf {
     	bool foundUsed = false;
         y0 = 0;
         y1 = 0;
-    	for (int y = 1; y < _dy - 1; y++) {
+        foreach(int y; 1 .. _dy - 1) {
             ubyte * line = scanLine(y);
     		if (line[x] == 0x00000000) { // opaque black pixel
     			if (!foundUsed) {
@@ -871,7 +871,7 @@ class GrayDrawBuf : DrawBuf {
         int srcdx = glyph.blackBoxX;
         int srcdy = glyph.blackBoxY;
 		bool clipping = true; //!_clipRect.empty();
-		for (int yy = 0; yy < srcdy; yy++) {
+		foreach(int yy; 0 .. srcdy) {
 			int liney = y + yy;
 			if (clipping && (liney < _clipRect.top || liney >= _clipRect.bottom))
 				continue;
@@ -879,7 +879,7 @@ class GrayDrawBuf : DrawBuf {
 				continue;
 			ubyte * row = scanLine(liney);
 			ubyte * srcrow = src.ptr + yy * srcdx;
-			for (int xx = 0; xx < srcdx; xx++) {
+			foreach(int xx; 0 .. srcdx) {
 				int colx = xx + x;
 				if (clipping && (colx < _clipRect.left || colx >= _clipRect.right))
 					continue;
@@ -902,9 +902,9 @@ class GrayDrawBuf : DrawBuf {
         if (applyClipping(rc)) {
 			uint alpha = color >> 24;
 			ubyte cl = rgbToGray(color);
-            for (int y = rc.top; y < rc.bottom; y++) {
+            foreach(y; rc.top .. rc.bottom) {
                 ubyte * row = scanLine(y);
-                for (int x = rc.left; x < rc.right; x++) {
+                foreach(x; rc.left .. rc.right) {
                     if (!alpha)
                         row[x] = cl;
                     else if (alpha < 255) {
@@ -943,7 +943,7 @@ class ColorDrawBuf : ColorDrawBufBase {
 	this(ColorDrawBuf v) {
 		this(v.width, v.height);
 		//_buf.length = v._buf.length;
-		for (int i = 0; i < _buf.length; i++)
+		foreach(i; 0 .. _buf.length)
 			_buf[i] = v._buf[i];
 	}
 	/// create resized copy of ColorDrawBuf
@@ -983,7 +983,7 @@ class ColorDrawBuf : ColorDrawBufBase {
         }
         int len = _dx * _dy;
         uint * p = _buf.ptr;
-        for (int i = 0; i < len; i++)
+        foreach(i; 0 .. len)
             p[i] = color;
     }
     override DrawBuf transformColors(ref ColorTransform transform) {
@@ -996,11 +996,11 @@ class ColorDrawBuf : ColorDrawBufBase {
             *p = *_ninePatch;
             res.ninePatch = p;
         }
-        for (int y = 0; y < _dy; y++) {
+        foreach(int y; 0 .. _dy) {
             uint * srcline = scanLine(y);
             uint * dstline = res.scanLine(y);
             bool allowTransformY = !skipFrame || (y !=0 && y != _dy - 1);
-            for (int x = 0; x < _dx; x++) {
+            foreach(int x; 0 .. _dx) {
                 bool allowTransformX = !skipFrame || (x !=0 && x != _dx - 1);
                 if (!allowTransformX || !allowTransformY)
                     dstline[x] = srcline[x];

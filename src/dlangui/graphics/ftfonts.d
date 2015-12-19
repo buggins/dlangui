@@ -301,10 +301,10 @@ class FreeTypeFontFile {
                     ubyte mask = 0x80;
                     ubyte * ptr = bitmap.buffer;
                     ubyte * dst = glyph.glyph.ptr;
-                    for ( int y=0; y<h; y++ ) {
+                    foreach(y; 0 .. h) {
                         ubyte * row = ptr;
                         mask = 0x80;
-                        for ( int x=0; x<w; x++ ) {
+                        foreach(x; 0 .. w) {
                             *dst++ = (*row & mask) ? 0xFF : 00;
                             mask >>= 1;
                             if ( !mask && x != w-1) {
@@ -317,8 +317,8 @@ class FreeTypeFontFile {
 
                 } else {
                     // antialiased
-					for (uint y = 0; y < h; y++) {
-						for (uint x = 0; x < w; x++) {
+					foreach(y; 0 .. h) {
+						foreach(x; 0 .. w) {
 							glyph.glyph[y * w + x] = _gamma256.correct(bitmap.buffer[y * bitmap.pitch + x]);
 						}
 					}
@@ -516,7 +516,7 @@ class FreeTypeFontManager : FontManager {
             int score = 0;
 			int bestFaceMatch = 0;
 			if (faces && face.length) {
-				for (int i = 0; i < faces.length; i++) {
+				foreach(i; 0 .. faces.length) {
                     string f = faces[i].strip;
 					if (f.icmp(item.def.face) == 0) {
 						score += 3000 - i;
@@ -695,7 +695,7 @@ bool registerFontConfigFonts(FreeTypeFontManager fontMan) {
 
     // load fonts from file
     //CRLog::debug("FONTCONFIG: %d font files found", fontset->nfont);
-    for(int i = 0; i < fontset.nfont; i++) {
+    foreach(i; 0 .. fontset.nfont) {
         const (FcChar8) *s = "".toStringz;
         const (FcChar8) *family = "".toStringz;
         const (FcChar8) *style = "".toStringz;

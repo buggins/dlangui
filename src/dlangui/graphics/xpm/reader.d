@@ -135,7 +135,7 @@ ColorDrawBuf parseXPM(const(ubyte)[] data)
         uint* dstLine = colorBuf.scanLine(y);
         if (str.length) {
             enforce(str.length >= w*cpp, "Invalid pixel line");
-            for (int x=0; x < w; x++) {
+            foreach(int x; 0 .. w) {
                 auto pixelStr = str[x*cpp..(x+1)*cpp];
                 auto colorPtr = xpmHash(pixelStr) in colorMap;
                 enforce(colorPtr, "Unknown pixel : '" ~ str ~ "'");
