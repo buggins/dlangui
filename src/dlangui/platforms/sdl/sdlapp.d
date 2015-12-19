@@ -41,6 +41,7 @@ import dlangui.platforms.common.platform;
 
 import derelict.sdl2.sdl;
 import derelict.opengl3.gl3;
+import derelict.opengl3.gl;
 
 static if (ENABLE_OPENGL) {
     import dlangui.graphics.gldrawbuf;
@@ -1321,6 +1322,8 @@ int sdlmain(string[] args) {
         try {
 			DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
             DerelictGL3.load();
+            DerelictGL.missingSymbolCallback = &gl3MissingSymFunc;
+            DerelictGL.load();
             _enableOpengl = true;
         } catch (Exception e) {
             Log.e("Cannot load opengl library", e);
