@@ -189,23 +189,23 @@ immutable string STYLE_COLOR_DIALOG_BACKGROUND = "dialog_background";
 // Other style constants
 
 /// unspecified align - to take parent's value instead
-immutable ubyte ALIGN_UNSPECIFIED = 0;
+enum ubyte ALIGN_UNSPECIFIED = 0;
 /// unspecified font size constant - to take parent style property value
-immutable ushort FONT_SIZE_UNSPECIFIED = 0xFFFF;
+enum ushort FONT_SIZE_UNSPECIFIED = 0xFFFF;
 /// unspecified font weight constant - to take parent style property value
-immutable ushort FONT_WEIGHT_UNSPECIFIED = 0x0000;
+enum ushort FONT_WEIGHT_UNSPECIFIED = 0x0000;
 /// unspecified font style constant - to take parent style property value
-immutable ubyte FONT_STYLE_UNSPECIFIED = 0xFF;
+enum ubyte FONT_STYLE_UNSPECIFIED = 0xFF;
 /// normal font style constant
-immutable ubyte FONT_STYLE_NORMAL = 0x00;
+enum ubyte FONT_STYLE_NORMAL = 0x00;
 /// italic font style constant
-immutable ubyte FONT_STYLE_ITALIC = 0x01;
+enum ubyte FONT_STYLE_ITALIC = 0x01;
 /// use text flags from parent style
-immutable uint TEXT_FLAGS_UNSPECIFIED = uint.max;
+enum uint TEXT_FLAGS_UNSPECIFIED = uint.max;
 /// use text flags from parent widget
-immutable uint TEXT_FLAGS_USE_PARENT = uint.max - 1;
+enum uint TEXT_FLAGS_USE_PARENT = uint.max - 1;
 /// to take layout weight from parent
-immutable int WEIGHT_UNSPECIFIED = -1;
+enum int WEIGHT_UNSPECIFIED = -1;
 
 /// Align option bit constants
 enum Align : ubyte {
@@ -245,46 +245,48 @@ enum TextFlag : uint {
 
 /// style properties
 class Style {
-	protected string _id;
-	protected Theme _theme;
-	protected Style _parentStyle;
-	protected string _parentId;
-	protected uint _stateMask;
-	protected uint _stateValue;
-	protected ubyte _align = Align.TopLeft;
-	protected ubyte _fontStyle = FONT_STYLE_UNSPECIFIED;
-	protected FontFamily _fontFamily = FontFamily.Unspecified;
-	protected ushort _fontWeight = FONT_WEIGHT_UNSPECIFIED;
-	protected int _fontSize = FONT_SIZE_UNSPECIFIED;
-	protected uint _backgroundColor = COLOR_UNSPECIFIED;
-	protected uint _textColor = COLOR_UNSPECIFIED;
-	protected uint _textFlags = 0;
-	protected uint _alpha;
-	protected string _fontFace;
-	protected string _backgroundImageId;
-	protected Rect _padding;
-	protected Rect _margins;
-    protected int _minWidth = SIZE_UNSPECIFIED;
-    protected int _maxWidth = SIZE_UNSPECIFIED;
-    protected int _minHeight = SIZE_UNSPECIFIED;
-    protected int _maxHeight = SIZE_UNSPECIFIED;
-    protected int _layoutWidth = SIZE_UNSPECIFIED;
-    protected int _layoutHeight = SIZE_UNSPECIFIED;
-    protected int _layoutWeight = WEIGHT_UNSPECIFIED;
-    protected int _maxLines = SIZE_UNSPECIFIED;
+protected:
+    string _id;
+    Theme _theme;
+    Style _parentStyle;
+    string _parentId;
+    uint _stateMask;
+    uint _stateValue;
+    ubyte _align = Align.TopLeft;
+    ubyte _fontStyle = FONT_STYLE_UNSPECIFIED;
+    FontFamily _fontFamily = FontFamily.Unspecified;
+    ushort _fontWeight = FONT_WEIGHT_UNSPECIFIED;
+    int _fontSize = FONT_SIZE_UNSPECIFIED;
+    uint _backgroundColor = COLOR_UNSPECIFIED;
+    uint _textColor = COLOR_UNSPECIFIED;
+    uint _textFlags = 0;
+    uint _alpha;
+    string _fontFace;
+    string _backgroundImageId;
+    Rect _padding;
+    Rect _margins;
+    int _minWidth = SIZE_UNSPECIFIED;
+    int _maxWidth = SIZE_UNSPECIFIED;
+    int _minHeight = SIZE_UNSPECIFIED;
+    int _maxHeight = SIZE_UNSPECIFIED;
+    int _layoutWidth = SIZE_UNSPECIFIED;
+    int _layoutHeight = SIZE_UNSPECIFIED;
+    int _layoutWeight = WEIGHT_UNSPECIFIED;
+    int _maxLines = SIZE_UNSPECIFIED;
 
-    protected uint[] _focusRectColors;
+    uint[] _focusRectColors;
 
-	protected Style[] _substates;
-	protected Style[] _children;
+    Style[] _substates;
+    Style[] _children;
 
-    protected DrawableAttribute[string] _customDrawables;
-    protected uint[string] _customColors;
-    protected uint[string] _customLength;
+    DrawableAttribute[string] _customDrawables;
+    uint[string] _customColors;
+    uint[string] _customLength;
 
-	protected FontRef _font;
-	protected DrawableRef _backgroundDrawable;
+    FontRef _font;
+    DrawableRef _backgroundDrawable;
 
+public:
     void onThemeChanged() {
         _backgroundDrawable.clear();
         foreach(s; _substates)
@@ -1391,10 +1393,13 @@ Theme loadTheme(string resourceId) {
 
 /// custom drawable attribute container for styles
 class DrawableAttribute {
-    protected string _id;
-    protected string _drawableId;
-    protected DrawableRef _drawable;
-    protected bool _initialized;
+protected:
+    string _id;
+    string _drawableId;
+    DrawableRef _drawable;
+    bool _initialized;
+    
+public:
     this(string id, string drawableId) {
         _id = id;
         _drawableId = drawableId;

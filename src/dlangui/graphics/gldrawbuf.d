@@ -244,8 +244,8 @@ bool hasActiveScene() {
     return activeSceneCount > 0;
 }
 
-immutable int MIN_TEX_SIZE = 64;
-immutable int MAX_TEX_SIZE  = 4096;
+enum MIN_TEX_SIZE = 64;
+enum MAX_TEX_SIZE  = 4096;
 private int nearestPOT(int n) {
     for (int i = MIN_TEX_SIZE; i <= MAX_TEX_SIZE; i *= 2) {
 		if (n <= i)
@@ -265,7 +265,6 @@ void onGlyphDestroyedCallback(uint pobject) {
 }
 
 private __gshared GLImageCache glImageCache;
-
 private __gshared GLGlyphCache glGlyphCache;
 
 shared static this() {
@@ -569,40 +568,7 @@ private class GLImageCache {
             onCachedObjectDeleted(list[i]);
         }
     }
-};
-
-
-
-private class TextureSceneItem : SceneItem {
-	private uint objectId;
-    //CacheableObject * img;
-    private Rect dstrc;
-    private Rect srcrc;
-	private uint color;
-	private uint options;
-	private Rect * clip;
-    private int rotationAngle;
-
-	override void draw() {
-		if (glImageCache)
-            glImageCache.drawItem(objectId, dstrc, srcrc, color, options, clip, rotationAngle);
-	}
-
-    this(uint _objectId, Rect _dstrc, Rect _srcrc, uint _color, uint _options, Rect * _clip, int _rotationAngle)
-	{
-        objectId = _objectId;
-        dstrc = _dstrc;
-        srcrc = _srcrc;
-        color = _color;
-        options = _options;
-        clip = _clip;
-        rotationAngle = _rotationAngle;
-	}
-
-	~this() {
-	}
-};
-
+}
 
 private class GLGlyphCache {
 
@@ -853,17 +819,19 @@ private class GLGlyphCache {
             onCachedObjectDeleted(list[i]);
         }
     }
-};
+}
 
 
 
 
 
-
-class LineSceneItem : SceneItem {
+private class LineSceneItem : SceneItem {
+private:
     Point _p1;
     Point _p2;
     uint _color;
+
+public:
     this(Point p1, Point p2, uint color) {
         _p1 = p1;
         _p2 = p2;
@@ -874,10 +842,12 @@ class LineSceneItem : SceneItem {
     }
 }
 
-
-class SolidRectSceneItem : SceneItem {
+private class SolidRectSceneItem : SceneItem {
+private:
     Rect _rc;
     uint _color;
+
+public:
     this(Rect rc, uint color) {
         _rc = rc;
         _color = color;
@@ -887,12 +857,43 @@ class SolidRectSceneItem : SceneItem {
     }
 }
 
+private class TextureSceneItem : SceneItem {
+private:
+	uint objectId;
+    //CacheableObject * img;
+    Rect dstrc;
+    Rect srcrc;
+	uint color;
+	uint options;
+	Rect * clip;
+    int rotationAngle;
+
+public:
+	override void draw() {
+		if (glImageCache)
+            glImageCache.drawItem(objectId, dstrc, srcrc, color, options, clip, rotationAngle);
+	}
+
+    this(uint _objectId, Rect _dstrc, Rect _srcrc, uint _color, uint _options, Rect * _clip, int _rotationAngle)
+	{
+        objectId = _objectId;
+        dstrc = _dstrc;
+        srcrc = _srcrc;
+        color = _color;
+        options = _options;
+        clip = _clip;
+        rotationAngle = _rotationAngle;
+	}
+}
+
 private class GlyphSceneItem : SceneItem {
+private:
 	uint objectId;
     Rect dstrc;
     Rect srcrc;
 	uint color;
 	Rect * clip;
+
 public:
 	override void draw() {
 		if (glGlyphCache)
@@ -906,8 +907,6 @@ public:
         color = _color;
         clip = _clip;
 	}
-	~this() {
-	}
 }
 
 private class CustomDrawnSceneItem : SceneItem {
@@ -915,6 +914,7 @@ private:
 	DrawBuf _buf;
 	Rect _rc;
 	OpenGLDrawableDelegate _handler;
+
 public:
 	this(DrawBuf buf, Rect rc, OpenGLDrawableDelegate handler) {
 		_buf = buf;

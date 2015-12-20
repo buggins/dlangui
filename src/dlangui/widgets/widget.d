@@ -35,21 +35,23 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.widgets.widget;
 
-public import dlangui.core.types;
-public import dlangui.core.events;
-public import dlangui.core.i18n;
-public import dlangui.core.collections;
-public import dlangui.widgets.styles;
+public {
+    import dlangui.core.types;
+    import dlangui.core.events;
+    import dlangui.core.i18n;
+    import dlangui.core.collections;
+    import dlangui.widgets.styles;
 
-public import dlangui.graphics.drawbuf;
-public import dlangui.graphics.resources;
-public import dlangui.graphics.fonts;
-public import dlangui.graphics.colors;
+    import dlangui.graphics.drawbuf;
+    import dlangui.graphics.resources;
+    import dlangui.graphics.fonts;
+    import dlangui.graphics.colors;
 
-public import dlangui.core.signals;
+    import dlangui.core.signals;
 
-public import dlangui.platforms.common.platform;
-public import dlangui.dml.annotations;
+    import dlangui.platforms.common.platform;
+    import dlangui.dml.annotations;
+}
 
 import std.algorithm;
 
@@ -137,36 +139,38 @@ enum CursorType {
  */
 @dmlwidget
 class Widget {
+protected:
     /// widget id
-    protected string _id;
+    string _id;
     /// current widget position, set by layout()
-    protected Rect _pos;
+    Rect _pos;
     /// widget visibility: either Visible, Invisible, Gone
-    protected Visibility _visibility = Visibility.Visible; // visible by default
+    Visibility _visibility = Visibility.Visible; // visible by default
     /// style id to lookup style in theme
-	protected string _styleId;
+    string _styleId;
     /// own copy of style - to override some of style properties, null of no properties overriden
-	protected Style _ownStyle;
+    Style _ownStyle;
 
     /// widget state (set of flags from State enum)
-    protected uint _state;
+    uint _state;
 
     /// width measured by measure()
-    protected int _measuredWidth;
+    int _measuredWidth;
     /// height measured by measure()
-    protected int _measuredHeight;
+    int _measuredHeight;
     /// true to force layout
-    protected bool _needLayout = true;
+    bool _needLayout = true;
     /// true to force redraw
-    protected bool _needDraw = true;
+    bool _needDraw = true;
     /// parent widget
-    protected Widget _parent;
+    Widget _parent;
     /// window (to be used for top level widgets only!)
-    protected Window _window;
+    Window _window;
 
     /// does widget need to track mouse Hover
-    protected bool _trackHover;
+    bool _trackHover;
 
+public:
     /// mouse movement processing flag (when true, widget will change Hover state while mouse is moving)
     @property bool trackHover() const { return _trackHover; }
     /// set new trackHover flag value (when true, widget will change Hover state while mouse is moving)
@@ -1457,31 +1461,8 @@ class Widget {
         return false;
     }
 
-    /// find child by id, returns null if not found
-    Widget childById(string id, bool deepSearch = true) { 
-        if (deepSearch) {
-            // search everywhere inside child tree
-            if (compareId(id))
-                return this;
-            // lookup children
-            for (int i = childCount - 1; i >= 0; i--) {
-                Widget res = child(i).childById(id);
-                if (res !is null)
-                    return res;
-            }
-        } else {
-            // search only across children of this widget
-            for (int i = childCount - 1; i >= 0; i--) {
-                if (id.equal(child(i).id))
-                    return child(i);
-            }
-        }
-        // not found
-        return null; 
-    }
-
     /// find child of specified type T by id, returns null if not found or cannot be converted to type T
-    T childById(T)(string id, bool deepSearch = true) { 
+    T childById(T = typeof(this))(string id, bool deepSearch = true) { 
         if (deepSearch) {
             // search everywhere inside child tree
             if (compareId(id)) {
@@ -1690,14 +1671,12 @@ class WidgetGroupDefaultDrawing : WidgetGroup {
 		auto saver = ClipRectSaver(buf, rc);
 		for (int i = 0; i < _children.count; i++) {
 			Widget item = _children.get(i);
-			if (item.visibility != Visibility.Visible)
-				continue;
 			item.onDraw(buf);
 		}
     }
 }
 
-immutable long ONE_SECOND = 10_000_000L;
+enum ONE_SECOND = 10_000_000L;
 
 /// Helper to handle animation progress
 struct AnimationHelper {
