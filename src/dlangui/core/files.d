@@ -114,7 +114,7 @@ struct RootEntry {
     version (Windows) {
         import win32.windows;
         uint mask = GetLogicalDrives();
-        for (int i = 0; i < 26; i++) {
+        foreach(int i; 0 .. 26) {
             if (mask & (1 << i)) {
                 char letter = cast(char)('A' + i);
                 string path = "" ~ letter ~ ":\\";
@@ -257,8 +257,8 @@ bool isPathDelimiter(char ch) {
 /** Returns current executable path only, including last path delimiter - removes executable name from result of std.file.thisExePath() */
 @property string exePath() {
     string path = thisExePath();
-    int lastSlash = 0;
-    for (int i = 0; i < path.length; i++)
+    ulong lastSlash = 0;
+    foreach(i; 0 .. path.length)
         if (path[i] == PATH_DELIMITER)
             lastSlash = i;
     return path[0 .. lastSlash + 1];
@@ -346,8 +346,8 @@ char[] appendPath(char[] buf, string[] pathItems ...) {
 /** Split path into elements, e.g. /home/user/dir1 -> ["home", "user", "dir1"], "c:\dir1\dir2" -> ["c:", "dir1", "dir2"] */
 string[] splitPath(string path) {
 	string[] res;
-	int start = 0;
-	for (int i = 0; i <= path.length; i++) {
+	ulong start = 0;
+	foreach(i; 0 .. path.length + 1) {
 		char ch = i < path.length ? path[i] : 0;
 		if (ch == '\\' || ch == '/' || ch == 0) {
 			if (start < i)

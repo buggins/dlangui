@@ -286,7 +286,7 @@ class EditOperation {
 		_action = action;
 		_range = range;
         _content.length = text.length;
-        for(int i = 0; i < text.length; i++)
+        foreach(i; 0 .. text.length)
 		    _content[i] = text[i].dup;
         //_content = text;
 	}
@@ -328,7 +328,7 @@ class EditOperation {
     //    }
     //}
     void modified(bool all = true) {
-        for (int i = 0; i < _oldEditMarks.length; i++) {
+        foreach(i; 0 .. _oldEditMarks.length) {
             if (all || _oldEditMarks[i] == EditStateMark.saved)
                 _oldEditMarks[i] = EditStateMark.changed;
         }
@@ -402,10 +402,10 @@ class UndoBuffer {
     /// current state is saved
     void saved() {
         _savedState = _undoList.peekBack;
-        for (int i = 0; i < _undoList.length; i++) {
+        foreach(i; 0 .. _undoList.length) {
             _undoList[i].modified();
         }
-        for (int i = 0; i < _redoList.length; i++) {
+        foreach(i; 0 .. _redoList.length) {
             _redoList[i].modified();
         }
     }
@@ -414,7 +414,7 @@ class UndoBuffer {
     bool savedInRedo() {
         if (!_savedState)
             return false;
-        for (int i = 0; i < _redoList.length; i++) {
+        foreach(i; 0 .. _redoList.length) {
             if (_savedState is _redoList[i])
                 return true;
         }
@@ -677,7 +677,7 @@ class EditableContent {
     /// call listener to say that content is saved
     void notifyContentSaved() {
         // mark all changed lines as saved
-        for (int i = 0; i < _editMarks.length; i++) {
+        foreach(i; 0 .. _editMarks.length) {
             if (_editMarks[i] == EditStateMark.changed)
                 _editMarks[i] = EditStateMark.saved;
         }
@@ -711,18 +711,18 @@ class EditableContent {
     }
 
     protected void markChangedLines(int startLine, int endLine) {
-        for (int i = startLine; i < endLine; i++) {
+        foreach(i; startLine .. endLine) {
             _editMarks[i] = EditStateMark.changed;
         }
     }
 
     /// set props arrays size equal to text line sizes, bit fill with unknown token
     protected void clearTokenProps(int startLine, int endLine) {
-        for (int i = startLine; i < endLine; i++) {
+        foreach(i; startLine .. endLine) {
             if (hasSyntaxHighlight) {
                 int len = cast(int)_lines[i].length;
                 _tokenProps[i].length = len;
-                for (int j = 0; j < len; j++)
+                foreach(j; 0 .. len)
                     _tokenProps[i][j] = TOKEN_UNKNOWN;
             } else {
                 _tokenProps[i] = null; // no token props
@@ -732,7 +732,7 @@ class EditableContent {
 
     void clearEditMarks() {
         _editMarks.length = _lines.length;
-        for (int i = 0; i < _editMarks.length; i++)
+        foreach(i; 0 .. _editMarks.length)
             _editMarks[i] = EditStateMark.unchanged;
     }
 
@@ -869,7 +869,7 @@ class EditableContent {
         int x = 0;
         while (x + tabSize <= pos) {
             if (useSpacesForTabs) {
-                for (int i = 0; i < tabSize; i++)
+                foreach(i; 0 .. tabSize)
                     buf ~= ' ';
             } else {
                 buf ~= '\t';
@@ -1068,7 +1068,7 @@ class EditableContent {
             _tokenProps[i] = _tokenProps[i - count];
             _editMarks[i] = _editMarks[i - count];
         }
-        for (int i = start; i < start + count; i++) {
+        foreach(i; start .. start + count) {
             _lines[i] = ""d;
             _tokenProps[i] = null;
             _editMarks[i] = EditStateMark.changed;
@@ -1091,7 +1091,7 @@ class EditableContent {
             // remove extra lines
             removeLines(before.start.line + 1, linesBefore - linesAfter);
         }
-        for (int i = after.start.line; i <= after.end.line; i++) {
+        foreach(int i; after.start.line .. after.end.line + 1) {
             if (marks) {
                 //if (i - after.start.line < marks.length)
                 _editMarks[i] = marks[i - after.start.line];

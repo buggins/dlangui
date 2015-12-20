@@ -242,13 +242,13 @@ struct UIStringCollection {
     void remove(int index) {
         if (index < 0 || index >= _length)
             return;
-        for (size_t i = index; i < _length - 1; i++)
+        foreach(i; index .. _length - 1)
             _items[i] = _items[i + 1];
         _length--;
     }
     /** Return index of first item with specified text or -1 if not found. */
     int indexOf(dstring str) const {
-        for (int i = 0; i < _length; i++) {
+        foreach(i; 0 .. _length) {
             if (_items[i].value.equal(str))
                 return i;
         }
@@ -256,7 +256,7 @@ struct UIStringCollection {
     }
     /** Return index of first item with specified string resource id or -1 if not found. */
     int indexOf(string strId) const {
-        for (int i = 0; i < _length; i++) {
+        foreach(i; 0 .. _length) {
             if (_items[i].id.equal(strId))
                 return i;
         }

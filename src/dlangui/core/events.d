@@ -204,7 +204,7 @@ class Action {
         _state = a._state;
         _defaultState = a._defaultState;
         _accelerators.length = a._accelerators.length;
-        for(int i = 0; i < _accelerators.length; i++)
+        foreach(i; 0 .. _accelerators.length)
             _accelerators[i] = a._accelerators[i];
         _stringParam = a._stringParam;
         _longParam = a._longParam;
@@ -1424,7 +1424,7 @@ void registerActionEnum(T)() if (is(T == enum)) {
     immutable string[] memberNames = enumMemberNames!T;
     //pragma(msg, enumMemberValues!T);
     //pragma(msg, enumMemberNames!T);
-    for (int i = 0; i < memberValues.length; i++) {
+    foreach(i; 0 .. memberValues.length) {
         actionIdToNameMap[memberValues[i]] = memberNames[i];
         actionNameToIdMap[memberNames[i]] = memberValues[i];
     }

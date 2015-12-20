@@ -250,7 +250,7 @@ final class Setting {
             if (index >= list.length) {
                 int oldlen = cast(int)list.length;
                 list.length = index + 1;
-                for (int i = oldlen; i < index; i++)
+                foreach(i; oldlen .. index)
                     list[i] = new Setting(); // insert NULL items in holes
             }
             list[index] = value;
@@ -268,7 +268,7 @@ final class Setting {
             Setting res = get(index);
             if (!res)
                 return null;
-            for (int i = index; i < list.length - 1; i++)
+            foreach(i; index .. list.length - 1)
                 list[i] = list[i + 1];
             list[$ - 1] = null;
             list.length--;
@@ -280,7 +280,7 @@ final class Setting {
         /// deep copy
         void copyFrom(ref SettingArray v) {
             list.length = v.list.length;
-            for(int i = 0; i < v.list.length; i++) {
+            foreach(i; 0 .. v.list.length) {
                 list[i] = v.list[i].clone();
             }
         }
@@ -323,7 +323,7 @@ final class Setting {
             Setting res = get(index);
             if (!res)
                 return null;
-            for (int i = index; i < list.length - 1; i++)
+            foreach(i; index .. list.length - 1)
                 list[i] = list[i + 1];
             list[$ - 1] = null;
             list.length--;
@@ -361,7 +361,7 @@ final class Setting {
         /// deep copy
         void copyFrom(SettingMap * v) {
             list.length = v.list.length;
-            for(int i = 0; i < v.list.length; i++) {
+            foreach(i; 0 .. v.list.length) {
                 list[i] = v.list[i].clone();
             }
             destroy(map);
@@ -541,7 +541,7 @@ final class Setting {
             case ARRAY:
             case OBJECT:
                 string[] res;
-                for(int i = 0; i < length; i++)
+                foreach(i; 0 .. length)
                     res ~= this[i].str;
                 return res;
         }
@@ -570,7 +570,7 @@ final class Setting {
             case ARRAY:
             case OBJECT:
                 int[] res;
-                for(int i = 0; i < length; i++)
+                foreach(i; 0 .. length)
                     res ~= cast(int)this[i].integer;
                 return res;
         }
@@ -599,7 +599,7 @@ final class Setting {
             case ARRAY:
             case OBJECT:
                 Setting[] res;
-                for(int i = 0; i < length; i++)
+                foreach(i; 0 .. length)
                     res ~= this[i];
                 return res;
         }
@@ -1412,7 +1412,7 @@ final class Setting {
 
         void appendTabs(int level) {
             reserve(level * 4 + 1024);
-            for(int i = 0; i < level; i++) {
+            foreach(i; 0 .. level) {
                 buffer[pos++] = ' ';
                 buffer[pos++] = ' ';
                 buffer[pos++] = ' ';
@@ -1506,7 +1506,7 @@ final class Setting {
                 buf.append('[');
                 if (pretty && _store.array.length > 0)
                     buf.appendEOL();
-                for (int i = 0; i < _store.array.length; i++) {
+                foreach(i; 0 .. _store.array.length) {
                     if (pretty)
                         buf.appendTabs(level + 1);
                     _store.array.get(i).toJSON(buf, level + 1, pretty);
@@ -1590,7 +1590,7 @@ final class Setting {
             int line = 1;
             int col = 1;
             int lineStart = 0;
-            for (int i = 0; i < pos; i++) {
+            foreach(int i; 0 .. pos) {
                 char ch = json[i];
                 if (ch == '\r') {
                     if (i < json.length - 1 && json[i + 1] == '\n')
@@ -1656,7 +1656,7 @@ final class Setting {
             if (pos >= json.length - 3)
                 error("unexpected end of file while parsing unicode character entity inside string");
             dchar ch = 0;
-            for (int i = 0; i < 4; i++) {
+            foreach(i; 0 .. 4) {
                 int d = parseHexDigit(nextChar);
                 if (d < 0)
                     error("error while parsing unicode character entity inside string");
@@ -1741,7 +1741,7 @@ final class Setting {
             // returns true if parsed ok
             if (pos + ident.length > json.length)
                 return false;
-            for (int i = 0; i < ident.length; i++) {
+            foreach(i; 0 .. ident.length) {
                 if (ident[i] != json[pos + i])
                     return false;
             }
@@ -1921,7 +1921,7 @@ long parseLong(inout string v, long defValue = 0) {
     int sign = 1;
     long value = 0;
     int digits = 0;
-    for (int i = 0; i < len; i++) {
+    foreach(i; 0 .. len) {
         char ch = v[i];
         if (ch == '-') {
             if (i != 0)
@@ -1943,7 +1943,7 @@ ulong parseULong(inout string v, ulong defValue = 0) {
         return defValue;
     ulong value = 0;
     int digits = 0;
-    for (int i = 0; i < len; i++) {
+    foreach(i; 0 .. len) {
         char ch = v[i];
         if (ch >= '0' && ch <= '9') {
             digits++;
