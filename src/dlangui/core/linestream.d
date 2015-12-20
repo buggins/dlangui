@@ -144,17 +144,17 @@ class OutputLineStream {
             case UTF8:
             default:
                 char[4] d;
-                for (int i = 0; i < s.length; i++) {
+                foreach(i; 0 .. s.length) {
                     int bytes = cast(int)encode(d, s[i]);
-                    for (int j = 0; j < bytes; j++)
+                    foreach(j; 0 .. bytes)
                         _buf[_len++] = d[j];
                 }
                 break;
             case UTF16BE:
                 wchar[2] d;
-                for (int i = 0; i < s.length; i++) {
+                foreach(i; 0 .. s.length) {
                     int n = cast(int)encode(d, s[i]);
-                    for (int j = 0; j < n; j++) {
+                    foreach(j; 0 .. n) {
                         _buf[_len++] = cast(char)(d[j] >> 8);
                         _buf[_len++] = cast(char)(d[j] & 0xFF);
                     }
@@ -162,16 +162,16 @@ class OutputLineStream {
                 break;
             case UTF16LE:
                 wchar[2] d;
-                for (int i = 0; i < s.length; i++) {
+                foreach(i; 0 .. s.length) {
                     int n = cast(int)encode(d, s[i]);
-                    for (int j = 0; j < n; j++) {
+                    foreach(j; 0 .. n) {
                         _buf[_len++] = cast(char)(d[j] & 0xFF);
                         _buf[_len++] = cast(char)(d[j] >> 8);
                     }
                 }
                 break;
             case UTF32LE:
-                for (int i = 0; i < s.length; i++) {
+                foreach(i; 0 .. s.length) {
                     dchar ch = s[i];
                     _buf[_len++] = cast(char)((ch >> 0) & 0xFF);
                     _buf[_len++] = cast(char)((ch >> 8) & 0xFF);
@@ -180,7 +180,7 @@ class OutputLineStream {
                 }
                 break;
             case UTF32BE:
-                for (int i = 0; i < s.length; i++) {
+                foreach(i; 0 .. s.length) {
                     dchar ch = s[i];
                     _buf[_len++] = cast(char)((ch >> 24) & 0xFF);
                     _buf[_len++] = cast(char)((ch >> 16) & 0xFF);
@@ -315,7 +315,7 @@ class LineStream {
 		if (_streamEof || bytesLeft > QUARTER_BYTE_BUFFER_SIZE)
 			return bytesLeft;
 		if (_pos > 0) {
-			for (uint i = 0; i < bytesLeft; i++)
+			foreach(i; 0 .. bytesLeft)
 				_buf[i] = _buf[i + _pos];
 			_len = bytesLeft;
 			_pos = 0;
@@ -347,7 +347,7 @@ class LineStream {
 		if (_textPos > _textBuf.length / 2) {
 			uint charCount = _textLen - _textPos;
 			dchar * p = _textBuf.ptr;
-			for (uint i = 0; i < charCount; i++)
+			foreach(i; 0 .. charCount)
 				p[i] = p[i + _textPos];
 			_textLen = charCount;
 			_textPos = 0;
@@ -479,7 +479,7 @@ class LineStream {
 	public static LineStream create(string code, string filename = "") {
 		uint len = cast(uint)code.length;
 		ubyte[] data = new ubyte[len + 3];
-		for (uint i = 0; i < len; i++)
+		foreach(i; 0 .. len)
 			data[i + 3] = code[i];
 		// BOM for UTF8
 		data[0] = 0xEF;
