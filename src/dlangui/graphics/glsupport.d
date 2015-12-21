@@ -957,6 +957,80 @@ class GLSupport {
     }
 }
 
+struct vec3 {
+	float[3] vec;
+	alias vec this;
+	@property float x() { return vec[0]; }
+	@property float y() { return vec[1]; }
+	@property float z() { return vec[2]; }
+	@property void x(float v) { vec[0] = v; }
+	@property void y(float v) { vec[1] = v; }
+	@property void z(float v) { vec[2] = v; }
+	this(float[3] v) {
+		vec = v;
+	}
+	this(float x, float y, float z) {
+		vec[0] = x;
+		vec[1] = y;
+		vec[2] = z;
+	}
+}
+
+struct vec4 {
+	float[4] vec;
+	alias vec this;
+	@property float x() { return vec[0]; }
+	@property float y() { return vec[1]; }
+	@property float z() { return vec[2]; }
+	@property float w() { return vec[3]; }
+	@property void x(float v) { vec[0] = v; }
+	@property void y(float v) { vec[1] = v; }
+	@property void z(float v) { vec[2] = v; }
+	@property void w(float v) { vec[3] = v; }
+	this(float[4] v) {
+		vec = v;
+	}
+	this(float x, float y, float z, float w) {
+		vec[0] = x;
+		vec[1] = y;
+		vec[2] = z;
+		vec[3] = w;
+	}
+	this(vec3 v) {
+		vec[0] = v[0];
+		vec[1] = v[1];
+		vec[2] = v[2];
+		vec[3] = 1.0f;
+	}
+}
+
+struct mat4 {
+	float[16] m;
+	ref mat4 setIdentity() {
+		for (int x = 0; x < 4; x++) {
+			for (int y = 0; y < 4; y++) {
+				if (x == y)
+					m[y * 4 + x] = 1.0f;
+				else
+					m[y * 4 + x] = 0.0f;
+			}
+		}
+		return this;
+	}
+	ref mat4 setZero() {
+		foreach(ref f; m)
+			f = 0.0f;
+		return this;
+	}
+	static mat4 identity() {
+		mat4 res;
+		return res.setIdentity();
+	}
+	static mat4 zero() {
+		mat4 res;
+		return res.setZero();
+	}
+}
 
 enum GLObjectTypes { Buffer, VertexArray, Texture, Framebuffer };
 class GLObject(GLObjectTypes type, GLuint target = 0) {
