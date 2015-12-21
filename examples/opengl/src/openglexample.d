@@ -95,7 +95,6 @@ static if (ENABLE_OPENGL) {
 
 		/// this is OpenGLDrawableDelegate implementation
 		private void doDraw(Rect windowRect, Rect rc) {
-            Log.v("GlGears: MyOpenglWidget.doDraw() draw gears");
             if (!openglEnabled) {
                 Log.v("GlGears: OpenGL is disabled");
                 return;
@@ -176,10 +175,11 @@ static if (ENABLE_OPENGL) {
 				-1.0f, 1.0f, 1.0f,
 				1.0f,-1.0f, 1.0f
 			];
+			float[] uv = _tx.uv;
 			float tx0 = 0.0f;
-			float tx1 = 1.0f;
+			float tx1 = uv[0];
 			float ty0 = 0.0f;
-			float ty1 = 1.0f;
+			float ty1 = uv[1];
 			texcoords = [
 				//
 				tx0, ty1,
@@ -244,16 +244,23 @@ static if (ENABLE_OPENGL) {
 				return;
 			}
 
+			//glClear(/*GL_COLOR_BUFFER_BIT | */GL_DEPTH_BUFFER_BIT);
+			checkgl!glDisable(GL_CULL_FACE);
+			checkgl!glDisable(GL_DEPTH_TEST);
+
 			import gl3n.linalg;
 			mat4 projectionMatrix = mat4.perspective(rc.width, rc.height, 45.0f, 0.5f, 100.0f);
-			mat4 viewMatrix = mat4.translation(0.0f, 0.0f, -4.0f);
+			mat4 viewMatrix = mat4.look_at(vec3(-4, 0, 0), vec3(0, 0, 0), vec3(0, 1, 0));//translation(0.0f, 0.0f, 4.0f).rotatez(angle);
 			mat4 modelMatrix = mat4.identity;
 			mat4 m = projectionMatrix * viewMatrix * modelMatrix;
 
 			float[16] matrix;
 			for (int y = 0; y < 4; y++)
 				for (int x = 0; x < 4; x++)
-					matrix[y * 4 + x] = m[y][x];
+					matrix[x * 4 + y] = m[y][x];
+			//matrix[y * 4 + x] = m[y][x];
+
+			Log.d("projectionViewModelMatrix: ", matrix);
 
 			_program.execute(vertices, colors, texcoords, _tx.texture, true, matrix);
 		}
@@ -267,6 +274,7 @@ static if (ENABLE_OPENGL) {
 				angle += interval * 0.000002f;
 			} else {
 				// TODO: animate new API example
+				angle += interval * 0.000002f;
 			}
 			invalidate();
 		}
