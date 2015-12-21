@@ -1575,6 +1575,10 @@ public:
             margins = Rect(value, value, value, value);
             return true;
         }
+        if (name.equal("alignment")) {
+            alignment = cast(Align)value;
+            return true;
+        }
         if (name.equal("padding")) { // use same value for all sides
             padding = Rect(value, value, value, value);
             return true;

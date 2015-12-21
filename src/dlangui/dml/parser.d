@@ -675,6 +675,22 @@ class MLParser {
             setIntProperty(propName, FILL_PARENT);
         else if (value.equal("wrap") || value.equal("WRAP") || value.equal("WRAP_CONTENT"))
             setIntProperty(propName, WRAP_CONTENT);
+        else if (value.equal("left") || value.equal("Left"))
+            setIntProperty(propName, Align.Left);
+        else if (value.equal("right") || value.equal("Right"))
+            setIntProperty(propName, Align.Right);
+        else if (value.equal("top") || value.equal("Top"))
+            setIntProperty(propName, Align.Top);
+        else if (value.equal("bottom") || value.equal("Bottom"))
+            setIntProperty(propName, Align.Bottom);
+        else if (value.equal("hcenter") || value.equal("HCenter"))
+            setIntProperty(propName, Align.HCenter);
+        else if (value.equal("vcenter") || value.equal("VCenter"))
+            setIntProperty(propName, Align.VCenter);
+        else if (value.equal("center") || value.equal("Center"))
+            setIntProperty(propName, Align.Center);
+        else if (value.equal("topleft") || value.equal("TopLeft"))
+            setIntProperty(propName, Align.TopLeft);
         else if (!_currentWidget.setStringProperty(propName, value))
             error("unknown ident property " ~ propName);
     }
