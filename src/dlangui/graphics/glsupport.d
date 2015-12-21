@@ -455,6 +455,76 @@ __gshared GLSupport _glSupport;
     return _glSupport;
 }
 
+/// initialize OpenGL suport helper (call when current OpenGL context is initialized)
+bool initGLSupport(bool legacy = false) {
+	import dlangui.platforms.common.platform : setOpenglEnabled;
+	if (_glSupport && _glSupport.valid)
+		return true;
+	static bool DERELICT_GL3_RELOADED;
+	static bool gl3ReloadedOk;
+	static bool glReloadedOk;
+	if (!DERELICT_GL3_RELOADED) {
+		DERELICT_GL3_RELOADED = true;
+		try {
+			Log.v("Reloading DerelictGL3");
+			import derelict.opengl3.gl3;
+			DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
+			DerelictGL3.reload();
+			gl3ReloadedOk = true;
+		} catch (Exception e) {
+			Log.e("Derelict exception while reloading DerelictGL3", e);
+		}
+		try {
+			Log.v("Reloading DerelictGL");
+			import derelict.opengl3.gl;
+			DerelictGL.missingSymbolCallback = &gl3MissingSymFunc;
+			DerelictGL.reload();
+			glReloadedOk = true;
+		} catch (Exception e) {
+			Log.e("Derelict exception while reloading DerelictGL", e);
+		}
+	}
+	if (!gl3ReloadedOk && !glReloadedOk) {
+		Log.e("Neither DerelictGL3 nor DerelictGL were reloaded successfully");
+		return false;
+	}
+	if (!gl3ReloadedOk)
+		legacy = true;
+	else if (!glReloadedOk)
+		legacy = false;
+	if (!_glSupport) {
+		_glSupport = new GLSupport(legacy);
+		if (_glSupport.valid || _glSupport.initShaders()) {
+			Log.v("shaders are ok");
+			setOpenglEnabled();
+			Log.v("OpenGL is initialized ok");
+			return true;
+		} else {
+			Log.e("Failed to compile shaders");
+			// try opposite legacy flag
+			if (_glSupport.legacyMode == legacy) {
+				Log.i("Trying to reinit GLSupport with legacy flag ", !legacy);
+				_glSupport = new GLSupport(!legacy);
+				if (_glSupport.valid || _glSupport.initShaders()) {
+					Log.v("shaders are ok");
+					setOpenglEnabled();
+					Log.v("OpenGL is initialized ok");
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	if (_glSupport.valid || _glSupport.initShaders()) {
+		setOpenglEnabled();
+		return true;
+	} else {
+		Log.e("Failed to compile shaders");
+		return false;
+	}
+}
+
+/// OpenGL suport helper
 class GLSupport {
 
 	private bool _legacyMode;

@@ -205,56 +205,19 @@ class Win32Window : Window {
             /* initialize OpenGL rendering */
             HDC hDC = GetDC(_hwnd);
 
-            if (!DERELICT_GL3_RELOADED || openglEnabled) {
+            if (openglEnabled || !_glSupport) {
                 if (setupPixelFormat(hDC)) {
                     _hPalette = setupPalette(hDC);
                     _hGLRC = wglCreateContext(hDC);
                     if (_hGLRC) {
-
                         wglMakeCurrent(hDC, _hGLRC);
-                        //_glSupport = _gl;
-
-                        if (!DERELICT_GL3_RELOADED) {
-                            // run this code only once
-                            if (!_glSupport) {
-                                Log.v("Creating OpenGL support");
-                                _glSupport = new GLSupport(true);
-                                Log.v("OpenGL support created");
-                            }
-
-                            DERELICT_GL3_RELOADED = true;
-                            try {
-                                import derelict.opengl3.gl3;
-                                DerelictGL3.reload();
-
-                                // successful
-                                Log.v("initializing shaders");
-                                if (glSupport.valid || glSupport.initShaders()) {
-                                    Log.v("shaders are ok");
-                                    setOpenglEnabled();
-                                    useOpengl = true;
-                                    Log.v("OpenGL is initialized ok");
-                                } else {
-                                    Log.e("Failed to compile shaders");
-                                }
-
-                            } catch (Exception e) {
-                                Log.e("Derelict exception", e);
-                            }
-                        } else {
-						    if (glSupport.valid || glSupport.initShaders()) {
-							    setOpenglEnabled();
-							    useOpengl = true;
-						    } else {
-							    Log.e("Failed to compile shaders");
-						    }
-                        }
+                        useOpengl = initGLSupport(false);
                         wglMakeCurrent(hDC, null);
                     }
                 } else {
                     Log.e("Pixelformat failed");
                     // disable GL
-                    DERELICT_GL3_RELOADED = true;
+					useOpengl = false;
                 }
             }
         }
