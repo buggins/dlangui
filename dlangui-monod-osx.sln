@@ -17,6 +17,8 @@ Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "spreadsheet-monod-osx", "ex
 EndProject
 Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "dlangide-monod-osx", "..\dlangide\dlangide-monod-osx.dproj", "{5125282E-FF14-4FF9-A65A-1B4816D76C6A}"
 EndProject
+Project("{3947E667-4C90-4C3A-BEB9-7148D6FE0D7C}") = "opengl-monod-osx", "examples\opengl\opengl-monod-osx.dproj", "{F533AB80-BD2F-4F4A-A23D-16AD24CE822A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -87,5 +89,13 @@ Global
 		{CB4E43FF-5E6A-4F4E-9A6C-F182EC258112}.Release|Any CPU.Build.0 = Release|x64
 		{CB4E43FF-5E6A-4F4E-9A6C-F182EC258112}.Unittest|Any CPU.ActiveCfg = Unittest|x64
 		{CB4E43FF-5E6A-4F4E-9A6C-F182EC258112}.Unittest|Any CPU.Build.0 = Unittest|x64
+		{F533AB80-BD2F-4F4A-A23D-16AD24CE822A}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{F533AB80-BD2F-4F4A-A23D-16AD24CE822A}.Debug|Any CPU.Build.0 = Debug|x64
+		{F533AB80-BD2F-4F4A-A23D-16AD24CE822A}.DebugX11|Any CPU.ActiveCfg = Debug|Any CPU
+		{F533AB80-BD2F-4F4A-A23D-16AD24CE822A}.DebugX11|Any CPU.Build.0 = Debug|Any CPU
+		{F533AB80-BD2F-4F4A-A23D-16AD24CE822A}.Release|Any CPU.ActiveCfg = Release|x64
+		{F533AB80-BD2F-4F4A-A23D-16AD24CE822A}.Release|Any CPU.Build.0 = Release|x64
+		{F533AB80-BD2F-4F4A-A23D-16AD24CE822A}.Unittest|Any CPU.ActiveCfg = Unittest|x64
+		{F533AB80-BD2F-4F4A-A23D-16AD24CE822A}.Unittest|Any CPU.Build.0 = Unittest|x64
 	EndGlobalSection
 EndGlobal
