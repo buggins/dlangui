@@ -35,6 +35,7 @@
         "./examples/dmledit/",
         "./examples/d3d/",
         "./examples/tetris/",
+        "./examples/opengl/",
         "./examples/spreadsheet/"
     ],
 

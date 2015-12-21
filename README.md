@@ -236,7 +236,7 @@ Open solution file with Mono-D
 
         dlangui-monod-linux.sln
 
-Try running examples: helloworld, example1, tetris, dmledit
+Try running examples: helloworld, example1, tetris, dmledit, spreadsheet, opengl
 
 Configurations Debug, Release, Unittest build SDL2+OpenGL versions of apps.
 
@@ -304,7 +304,7 @@ Open solution file with Mono-D
 
         dlangui-monod-windows.sln
 
-Try running examples: helloworld, example1, tetris, dmledit
+Try running examples: helloworld, example1, tetris, dmledit, spreadsheet, opengl
 
 Configurations Debug, Release, Unittest build SDL2+OpenGL versions of apps.
 
@@ -378,7 +378,7 @@ Open solution file with Visual-D
 
         dlangui-msvc.sln
 
-Try running examples: helloworld, example1, tetris, dmledit
+Try running examples: helloworld, example1, tetris, dmledit, spreadsheet, opengl
 
 Configurations Debug, Release, Unittest build SDL2+OpenGL versions of apps.
 

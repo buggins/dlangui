@@ -239,7 +239,7 @@ extern (C) int UIAppMain(string[] args) {
 	//}
 
     // create window
-    Window window = Platform.instance.createWindow("My Window", null, WindowFlag.Resizable, 800, 700);
+    Window window = Platform.instance.createWindow("DlangUI Example 1", null, WindowFlag.Resizable, 800, 700);
 	
 	static if (true) {
         VerticalLayout contentLayout = new VerticalLayout();
@@ -931,44 +931,54 @@ static if (ENABLE_OPENGL) {
 			layoutWidth = FILL_PARENT;
 			layoutHeight = FILL_PARENT;
 			alignment = Align.Center;
-			backgroundDrawable = DrawableRef(new OpenGLDrawable(&doDraw));
 			// add some UI on top of OpenGL drawable
 			Widget w = parseML(q{
 				VerticalLayout {
-					margins: 40
-					padding: 40
 					alignment: center
+					layoutWidth: fill; layoutHeight: fill
+					// background for window - tiled texture
+					backgroundImageId: "tx_fabric.tiled"
+					VerticalLayout {
+						// child widget - will draw using OpenGL here
+						id: glView
+						margins: 20
+						padding: 20
+						layoutWidth: fill; layoutHeight: fill
 
-					//backgroundColor: "#C0E0E070" // semitransparent yellow background
-					// red bold text with size = 150% of base style size and font face Arial
-					TextWidget { text: "Hello World example for DlangUI"; textColor: "red"; fontSize: 150%; fontWeight: 800; fontFace: "Arial" }
-					// arrange controls as form - table with two columns
-					TableLayout {
-						colCount: 2
-						TextWidget { text: "param 1" }
-						EditLine { id: edit1; text: "some text" }
-						TextWidget { text: "param 2" }
-						EditLine { id: edit2; text: "some text for param2" }
-						TextWidget { text: "some radio buttons" }
-						// arrange some radio buttons vertically
-						VerticalLayout {
-							RadioButton { id: rb1; text: "Item 1" }
-							RadioButton { id: rb2; text: "Item 2" }
-							RadioButton { id: rb3; text: "Item 3" }
+						//backgroundColor: "#C0E0E070" // semitransparent yellow background
+						// red bold text with size = 150% of base style size and font face Arial
+						TextWidget { text: "Some controls to draw on top of OpenGL scene"; textColor: "red"; fontSize: 150%; fontWeight: 800; fontFace: "Arial" }
+						// arrange controls as form - table with two columns
+						TableLayout {
+							colCount: 2
+							TextWidget { text: "param 1" }
+							EditLine { id: edit1; text: "some text" }
+							TextWidget { text: "param 2" }
+							EditLine { id: edit2; text: "some text for param2" }
+							TextWidget { text: "some radio buttons" }
+							// arrange some radio buttons vertically
+							VerticalLayout {
+								RadioButton { id: rb1; text: "Item 1" }
+								RadioButton { id: rb2; text: "Item 2" }
+								RadioButton { id: rb3; text: "Item 3" }
+							}
+							TextWidget { text: "and checkboxes" }
+							// arrange some checkboxes horizontally
+							HorizontalLayout {
+								CheckBox { id: cb1; text: "checkbox 1" }
+								CheckBox { id: cb2; text: "checkbox 2" }
+							}
 						}
-						TextWidget { text: "and checkboxes" }
-						// arrange some checkboxes horizontally
+						VSpacer { layoutWeight: 10 }
 						HorizontalLayout {
-							CheckBox { id: cb1; text: "checkbox 1" }
-							CheckBox { id: cb2; text: "checkbox 2" }
+							Button { id: btnOk; text: "Ok" }
+							Button { id: btnCancel; text: "Cancel" }
 						}
-					}
-					HorizontalLayout {
-						Button { id: btnOk; text: "Ok" }
-						Button { id: btnCancel; text: "Cancel" }
 					}
 				}
 			});
+			// setting OpenGL background drawable for one of child widgets
+			w.childById("glView").backgroundDrawable = DrawableRef(new OpenGLDrawable(&doDraw));
 			addChild(w);
 		}
 

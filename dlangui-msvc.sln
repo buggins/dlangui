@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 2013
-VisualStudioVersion = 12.0.31101.0
+# Visual Studio 14
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dlangui", "dlangui-msvc.visualdproj", "{52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5}"
 EndProject
@@ -36,6 +36,11 @@ Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dlangide", "..\dlangide\dla
 	EndProjectSection
 EndProject
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "spreadsheet", "examples\spreadsheet\spreadsheet-msvc.visualdproj", "{533AF38D-98E7-446F-9689-805BDFF3CE84}"
+	ProjectSection(ProjectDependencies) = postProject
+		{52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5} = {52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5}
+	EndProjectSection
+EndProject
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "opengl", "examples\opengl\opengl-msvc.visualdproj", "{29CF2CAC-2C0C-4F17-9292-E1706AC7EBBF}"
 	ProjectSection(ProjectDependencies) = postProject
 		{52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5} = {52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5}
 	EndProjectSection
@@ -101,14 +106,20 @@ Global
 		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.Debug|x64.ActiveCfg = Debug|x64
 		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.Release|Win32.ActiveCfg = Release|Win32
 		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.Release|Win32.Build.0 = Release|Win32
-		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.Release|x64.ActiveCfg = Release|Win32
+		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.Release|x64.ActiveCfg = Release|x64
 		{533AF38D-98E7-446F-9689-805BDFF3CE84}.Debug|Win32.ActiveCfg = Debug|Win32
 		{533AF38D-98E7-446F-9689-805BDFF3CE84}.Debug|Win32.Build.0 = Debug|Win32
 		{533AF38D-98E7-446F-9689-805BDFF3CE84}.Debug|x64.ActiveCfg = Debug|x64
 		{533AF38D-98E7-446F-9689-805BDFF3CE84}.Debug|x64.Build.0 = Debug|x64
 		{533AF38D-98E7-446F-9689-805BDFF3CE84}.Release|Win32.ActiveCfg = Release|Win32
 		{533AF38D-98E7-446F-9689-805BDFF3CE84}.Release|Win32.Build.0 = Release|Win32
-		{533AF38D-98E7-446F-9689-805BDFF3CE84}.Release|x64.ActiveCfg = Release|Win32
+		{533AF38D-98E7-446F-9689-805BDFF3CE84}.Release|x64.ActiveCfg = Release|x64
+		{29CF2CAC-2C0C-4F17-9292-E1706AC7EBBF}.Debug|Win32.ActiveCfg = Debug|Win32
+		{29CF2CAC-2C0C-4F17-9292-E1706AC7EBBF}.Debug|Win32.Build.0 = Debug|Win32
+		{29CF2CAC-2C0C-4F17-9292-E1706AC7EBBF}.Debug|x64.ActiveCfg = Debug|x64
+		{29CF2CAC-2C0C-4F17-9292-E1706AC7EBBF}.Release|Win32.ActiveCfg = Release|Win32
+		{29CF2CAC-2C0C-4F17-9292-E1706AC7EBBF}.Release|Win32.Build.0 = Release|Win32
+		{29CF2CAC-2C0C-4F17-9292-E1706AC7EBBF}.Release|x64.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

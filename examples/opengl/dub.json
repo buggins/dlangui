@@ -1,19 +1,19 @@
 {
-    "name": "example1",
-    "description": "dlangui library example 1",
+    "name": "opengl",
+    "description": "dlangui library OpenGL example",
     "homepage": "https://github.com/buggins/dlangui",
     "license": "Boost",
     "authors": ["Vadim Lopatin"],
 
     "targetPath": "bin",
     "targetType": "executable",
-    "targetName": "example1",
+    "targetName": "openglexample",
 
     "stringImportPaths": ["views", "views/res", "views/res/i18n", "views/res/mdpi"],
 
     "sourceFiles-windows": ["$PACKAGE_DIR/src/win_app.def"],
 
-    "versions": ["EmbedStandardResources", "ForceLogs"],
+    "versions": ["EmbedStandardResources"],
 
     "dependencies": {
         "dlangui": {"path": "../../"}
