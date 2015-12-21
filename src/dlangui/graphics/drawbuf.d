@@ -40,7 +40,7 @@ static if (ENABLE_OPENGL) {
 }
 
 /// Custom draw delegate for OpenGL direct drawing
-alias OpenGLDrawableDelegate = void delegate(DrawBuf buf, Rect rc);
+alias OpenGLDrawableDelegate = void delegate(Rect windowRect, Rect rc);
 
 /// drawing buffer - image container which allows to perform some drawing operations
 class DrawBuf : RefCountedObject {

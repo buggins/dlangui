@@ -91,7 +91,7 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
 
 	/// draw custom OpenGL scene
 	override void drawCustomOpenGLScene(Rect rc, OpenGLDrawableDelegate handler) {
-		_scene.add(new CustomDrawnSceneItem(this, rc, handler));
+		_scene.add(new CustomDrawnSceneItem(Rect(0, 0, width, height), rc, handler));
 	}
 
     /// fill the whole buffer with solid color (no clipping applied)
@@ -911,13 +911,13 @@ public:
 
 private class CustomDrawnSceneItem : SceneItem {
 private:
-	DrawBuf _buf;
+	Rect _windowRect;
 	Rect _rc;
 	OpenGLDrawableDelegate _handler;
 
 public:
-	this(DrawBuf buf, Rect rc, OpenGLDrawableDelegate handler) {
-		_buf = buf;
+	this(Rect windowRect, Rect rc, OpenGLDrawableDelegate handler) {
+		_windowRect = windowRect;
 		_rc = rc;
 		_handler = handler;
 	}
@@ -925,10 +925,9 @@ public:
 		if (_handler) {
 
 			import derelict.opengl3.gl3 : glViewport;
-			glViewport(_rc.left, _buf.height - _rc.bottom, _rc.width, _rc.height);
-			_handler(_buf, _rc);
-			glSupport.setOrthoProjection(Rect(0, 0, _buf.width, _buf.height));
-
+			glViewport(_rc.left, _windowRect.height - _rc.bottom, _rc.width, _rc.height);
+			_handler(_windowRect, _rc);
+			glSupport.setOrthoProjection(_windowRect);
 		}
 	}
 }

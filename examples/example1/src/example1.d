@@ -974,7 +974,8 @@ static if (ENABLE_OPENGL) {
 
 		bool _oldApi;
 
-		private void doDraw(DrawBuf buf, Rect rc) {
+		/// this is OpenGLDrawableDelegate implementation
+		private void doDraw(Rect windowRect, Rect rc) {
             Log.v("GlGears: MyOpenglWidget.doDraw() draw gears");
             if (!openglEnabled) {
                 Log.v("GlGears: OpenGL is disabled");
@@ -988,6 +989,7 @@ static if (ENABLE_OPENGL) {
 			}
 		}
 
+		/// Legacy API example (glBegin/glEnd)
 		void drawUsingOldAPI(Rect rc) {
 			static bool _initCalled;
             if (!_initCalled) {
@@ -1006,17 +1008,21 @@ static if (ENABLE_OPENGL) {
 			glDisable(GL_LIGHT0);
 			glDisable(GL_DEPTH_TEST);
 		}
+
+		/// New API example (OpenGL3+, shaders)
 		void drawUsingNewAPI(Rect rc) {
+			// TODO: put some sample code here
 		}
 		/// returns true is widget is being animated - need to call animate() and redraw
 		@property override bool animating() { return true; }
 		/// animates window; interval is time left from previous draw, in hnsecs (1/10000000 of second)
 		override void animate(long interval) {
 			if (_oldApi) {
+				// animate legacy API example
 				// rotate gears
 				angle += interval * 0.000002f;
 			} else {
-				// animate new API example
+				// TODO: animate new API example
 			}
 			invalidate();
 		}

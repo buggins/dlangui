@@ -252,10 +252,10 @@ class OpenGLDrawable : Drawable {
 		_drawHandler = drawHandler;
 	}
 
-	void onDraw(DrawBuf buf, Rect rc) {
+	void onDraw(Rect windowRect, Rect rc) {
 		// either override this method or assign draw handler
 		if (_drawHandler) {
-			_drawHandler(buf, rc);
+			_drawHandler(windowRect, rc);
 		}
 	}
 
