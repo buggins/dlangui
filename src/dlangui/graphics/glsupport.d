@@ -461,6 +461,10 @@ class GLSupport {
 	@property bool legacyMode() { return _legacyMode; }
 
 	this(bool legacy = false) {
+		if (legacy && !glLightfv) {
+			Log.w("GLSupport legacy API is not supported");
+			legacy = false;
+		}
 		_legacyMode = legacy;
 	}
 
