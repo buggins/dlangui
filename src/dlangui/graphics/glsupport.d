@@ -260,8 +260,8 @@ class SolidFillProgram : GLProgram {
                 col = colAttr;
             }
         };
-
     }
+
     @property override string fragmentSource() {
         return q{
             in vec4 col;
@@ -278,7 +278,7 @@ class SolidFillProgram : GLProgram {
         checkgl!glDisable(GL_CULL_FACE);
         checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         bind();
-        checkgl!glUniformMatrix4fv(matrixLocation, 1, false, glSupport.qtmatrix.ptr);
+        checkgl!glUniformMatrix4fv(matrixLocation, 1, false, glSupport.projectionMatrix.ptr);
     }
 
     void afterExecute() {
@@ -842,7 +842,11 @@ class GLSupport {
     /// current gl buffer height
     private int bufferDy;
     //private float[16] matrix;
-    private float[16] qtmatrix;
+    private float[16] _projectionMatrix;
+
+	@property float[16] projectionMatrix() {
+		return _projectionMatrix;
+	}
 
     void QMatrix4x4_ortho(float left, float right, float bottom, float top, float nearPlane, float farPlane)
     {
@@ -873,7 +877,7 @@ class GLSupport {
         m[3][3] = 1.0f;
         for (int y = 0; y < 4; y++)
             for (int x = 0; x < 4; x++)
-                qtmatrix[y * 4 + x] = m[y][x];
+                _projectionMatrix[y * 4 + x] = m[y][x];
     }
 
     void QMatrix4x4_perspective(float angle, float aspect, float nearPlane, float farPlane)
@@ -910,10 +914,11 @@ class GLSupport {
 
         for (int y = 0; y < 4; y++)
             for (int x = 0; x < 4; x++)
-                qtmatrix[y * 4 + x] = m[y][x];
+                _projectionMatrix[y * 4 + x] = m[y][x];
     }
 
     void setOrthoProjection(Rect windowRect, Rect view) {
+		flushGL();
         bufferDx = windowRect.width;
         bufferDy = windowRect.height;
         QMatrix4x4_ortho(view.left, view.right, view.top, view.bottom, 0.5f, 50.0f);
@@ -923,7 +928,7 @@ class GLSupport {
 			glMatrixMode(GL_PROJECTION);
 			//checkgl!glPushMatrix();
 			//glLoadIdentity();
-			glLoadMatrixf(qtmatrix.ptr);
+			glLoadMatrixf(_projectionMatrix.ptr);
 			//glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
 			glMatrixMode(GL_MODELVIEW);
 			//checkgl!glPushMatrix();
@@ -933,11 +938,21 @@ class GLSupport {
     }
 
     void setPerspectiveProjection(Rect windowRect, Rect view, float fieldOfView, float nearPlane, float farPlane) {
-
+		flushGL();
         bufferDx = windowRect.width;
         bufferDy = windowRect.height;
 		float aspectRatio = cast(float)view.width / cast(float)view.height;
 		QMatrix4x4_perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
+		if (_legacyMode) {
+			glMatrixMode(GL_PROJECTION);
+			//checkgl!glPushMatrix();
+			//glLoadIdentity();
+			glLoadMatrixf(_projectionMatrix.ptr);
+			//glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
+			glMatrixMode(GL_MODELVIEW);
+			//checkgl!glPushMatrix();
+			glLoadIdentity();
+		}
 		checkgl!glViewport(view.left, currentFBO ? view.top : windowRect.height - view.bottom, view.width, view.height);
     }
 }

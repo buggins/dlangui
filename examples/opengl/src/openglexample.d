@@ -31,6 +31,8 @@ static if (ENABLE_OPENGL) {
 
     import derelict.opengl3.gl3;
     import derelict.opengl3.gl;
+	import dlangui.graphics.glsupport;
+	import dlangui.graphics.gldrawbuf;
 
 	class MyOpenglWidget : VerticalLayout {
 		this() {
@@ -98,16 +100,16 @@ static if (ENABLE_OPENGL) {
                 Log.v("GlGears: OpenGL is disabled");
                 return;
             }
-			_oldApi = !!glLightfv;
+			_oldApi = glSupport.legacyMode; // !!glLightfv;
 			if (_oldApi) {
-				drawUsingOldAPI(rc);
+				drawUsingOldAPI(windowRect, rc);
 			} else {
-				drawUsingNewAPI(rc);
+				drawUsingNewAPI(windowRect, rc);
 			}
 		}
 
 		/// Legacy API example (glBegin/glEnd)
-		void drawUsingOldAPI(Rect rc) {
+		void drawUsingOldAPI(Rect windowRect, Rect rc) {
 			static bool _initCalled;
             if (!_initCalled) {
                 Log.d("GlGears: calling init()");
@@ -126,9 +128,134 @@ static if (ENABLE_OPENGL) {
 			glDisable(GL_DEPTH_TEST);
 		}
 
+		MyProgram _program;
+
+		GLTexture _tx;
+		float[] vertices;
+		float[] texcoords;
+		float[4*6*6] colors;
+		void createMesh() {
+			if (!_tx)
+				_tx = new GLTexture("crate");
+			// define Cube mesh
+			vertices = [
+				-1.0f,-1.0f,-1.0f, // triangle 1 : begin
+				-1.0f,-1.0f, 1.0f,
+				-1.0f, 1.0f, 1.0f, // triangle 1 : end
+				1.0f, 1.0f,-1.0f, // triangle 2 : begin
+				-1.0f,-1.0f,-1.0f,
+				-1.0f, 1.0f,-1.0f, // triangle 2 : end
+				1.0f,-1.0f, 1.0f,
+				-1.0f,-1.0f,-1.0f,
+				1.0f,-1.0f,-1.0f,
+				1.0f, 1.0f,-1.0f,
+				1.0f,-1.0f,-1.0f,
+				-1.0f,-1.0f,-1.0f,
+				-1.0f,-1.0f,-1.0f,
+				-1.0f, 1.0f, 1.0f,
+				-1.0f, 1.0f,-1.0f,
+				1.0f,-1.0f, 1.0f,
+				-1.0f,-1.0f, 1.0f,
+				-1.0f,-1.0f,-1.0f,
+				-1.0f, 1.0f, 1.0f,
+				-1.0f,-1.0f, 1.0f,
+				1.0f,-1.0f, 1.0f,
+				1.0f, 1.0f, 1.0f,
+				1.0f,-1.0f,-1.0f,
+				1.0f, 1.0f,-1.0f,
+				1.0f,-1.0f,-1.0f,
+				1.0f, 1.0f, 1.0f,
+				1.0f,-1.0f, 1.0f,
+				1.0f, 1.0f, 1.0f,
+				1.0f, 1.0f,-1.0f,
+				-1.0f, 1.0f,-1.0f,
+				1.0f, 1.0f, 1.0f,
+				-1.0f, 1.0f,-1.0f,
+				-1.0f, 1.0f, 1.0f,
+				1.0f, 1.0f, 1.0f,
+				-1.0f, 1.0f, 1.0f,
+				1.0f,-1.0f, 1.0f
+			];
+			float tx0 = 0.0f;
+			float tx1 = 1.0f;
+			float ty0 = 0.0f;
+			float ty1 = 1.0f;
+			texcoords = [
+				//
+				tx0, ty1,
+				tx0, ty0,
+				tx1, ty0,
+				tx1, ty0,
+				tx1, ty1,
+				tx0, ty1,
+				//
+				tx0, ty1,
+				tx0, ty0,
+				tx1, ty0,
+				tx1, ty0,
+				tx1, ty1,
+				tx0, ty1,
+				//
+				tx0, ty1,
+				tx0, ty0,
+				tx1, ty0,
+				tx1, ty0,
+				tx1, ty1,
+				tx0, ty1,
+				//
+				tx0, ty1,
+				tx0, ty0,
+				tx1, ty0,
+				tx1, ty0,
+				tx1, ty1,
+				tx0, ty1,
+				//
+				tx0, ty1,
+				tx0, ty0,
+				tx1, ty0,
+				tx1, ty0,
+				tx1, ty1,
+				tx0, ty1,
+				//
+				tx0, ty1,
+				tx0, ty0,
+				tx1, ty0,
+				tx1, ty0,
+				tx1, ty1,
+				tx0, ty1,
+			];
+			// init with white color
+			foreach(ref cl; colors)
+				cl = 1.0f;
+		}
+
 		/// New API example (OpenGL3+, shaders)
-		void drawUsingNewAPI(Rect rc) {
+		void drawUsingNewAPI(Rect windowRect, Rect rc) {
 			// TODO: put some sample code here
+			if (!_program) {
+				_program = new MyProgram();
+				createMesh();
+			}
+			if (!_program.check())
+				return;
+
+			if (!_tx.isValid) {
+				Log.e("Invalid texture");
+				return;
+			}
+
+			import gl3n.linalg;
+			mat4 projectionMatrix = mat4.perspective(rc.width, rc.height, 45.0f, 0.5f, 100.0f);
+			mat4 viewMatrix = mat4.translation(0.0f, 0.0f, -4.0f);
+			mat4 modelMatrix = mat4.identity;
+			mat4 m = projectionMatrix * viewMatrix * modelMatrix;
+
+			float[16] matrix;
+			for (int y = 0; y < 4; y++)
+				for (int x = 0; x < 4; x++)
+					matrix[y * 4 + x] = m[y][x];
+
+			_program.execute(vertices, colors, texcoords, _tx.texture, true, matrix);
 		}
 		/// returns true is widget is being animated - need to call animate() and redraw
 		@property override bool animating() { return true; }
@@ -145,8 +272,100 @@ static if (ENABLE_OPENGL) {
 		}
 	}
 
+	// ====================================================================================
+	// Shaders based example
 
-    // Sample project for old API: GlxGears
+	class MyProgram : GLProgram {
+		@property override string vertexSource() {
+			return q{
+				in vec4 vertex;
+				in vec4 colAttr;
+				in vec4 texCoord;
+				out vec4 col;
+				out vec4 texc;
+				uniform mat4 matrix;
+				void main(void)
+				{
+					gl_Position = matrix * vertex;
+					col = colAttr;
+					texc = texCoord;
+				}
+			};
+
+		}
+		@property override string fragmentSource() {
+			return q{
+				uniform sampler2D tex;
+				in vec4 col;
+				in vec4 texc;
+				out vec4 outColor;
+				void main(void)
+				{
+					outColor = texture(tex, texc.st) * col;
+				}
+			};
+		}
+
+		protected GLint matrixLocation;
+		protected GLint vertexLocation;
+		protected GLint colAttrLocation;
+		protected GLint texCoordLocation;
+		override bool initLocations() {
+			matrixLocation = getUniformLocation("matrix");
+			vertexLocation = getAttribLocation("vertex");
+			colAttrLocation = getAttribLocation("colAttr");
+			texCoordLocation = getAttribLocation("texCoord");
+			return matrixLocation >= 0 && vertexLocation >= 0 && colAttrLocation >= 0 && texCoordLocation >= 0;
+		}
+
+		bool execute(float[] vertices, float[] colors, float[] texcoords, Tex2D texture, bool linear, float[16] matrix) {
+			if(!check())
+				return false;
+
+			glEnable(GL_BLEND);
+			checkgl!glDisable(GL_CULL_FACE);
+			checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+			bind();
+			checkgl!glUniformMatrix4fv(matrixLocation, 1, false, matrix.ptr);
+
+			texture.setup();
+			texture.setSamplerParams(linear);
+
+			VAO vao = new VAO();
+
+			VBO vbo = new VBO();
+			vbo.fill([vertices, colors, texcoords]);
+
+			glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
+			glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * vertices[0].sizeof));
+			glVertexAttribPointer(texCoordLocation, 2, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * vertices[0].sizeof + colors.length * colors[0].sizeof));
+
+			glEnableVertexAttribArray(vertexLocation);
+			glEnableVertexAttribArray(colAttrLocation);
+			glEnableVertexAttribArray(texCoordLocation);
+
+			checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)vertices.length/3);
+
+			glDisableVertexAttribArray(vertexLocation);
+			glDisableVertexAttribArray(colAttrLocation);
+			glDisableVertexAttribArray(texCoordLocation);
+
+			unbind();
+
+			destroy(vbo);
+			destroy(vao);
+
+			texture.unbind();
+			return true;
+		}
+	}
+
+
+
+
+	//=====================================================================================
+	// Legacy OpenGL API example
+    // GlxGears
 
     import std.math;
     static __gshared GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;

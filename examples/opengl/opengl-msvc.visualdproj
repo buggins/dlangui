@@ -155,7 +155,7 @@
   <cccmd>$(CC) -c</cccmd>
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>$(SolutionDir)/src $(SolutionDir)/3rdparty $(SolutionDir)/deps/DerelictGL3/source  $(SolutionDir)/deps/DerelictUtil/source  $(SolutionDir)/deps/DerelictFT/source $(SolutionDir)/deps/DerelictSDL2/source</imppath>
+  <imppath>$(SolutionDir)/src $(SolutionDir)/3rdparty $(SolutionDir)/deps/DerelictGL3/source  $(SolutionDir)/deps/DerelictUtil/source  $(SolutionDir)/deps/DerelictFT/source $(SolutionDir)/deps/DerelictSDL2/source $(SolutionDir)/deps/gl3n</imppath>
   <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>

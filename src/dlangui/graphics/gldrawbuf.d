@@ -318,7 +318,7 @@ private class GLImageCache {
                 destroy(_drawbuf);
                 _drawbuf = null;
             }
-            if (_texture.ID != 0) {
+            if (_texture && _texture.ID != 0) {
                 destroy(_texture);
                 _texture = null;
             }
@@ -925,6 +925,76 @@ public:
 			glSupport.setOrthoProjection(_windowRect, _rc);
 			_handler(_windowRect, _rc);
 			glSupport.setOrthoProjection(_windowRect, _windowRect);
+		}
+	}
+}
+
+
+/// GL Texture object from image
+static class GLTexture {
+	protected int _dx;
+	protected int _dy;
+	protected int _tdx;
+	protected int _tdy;
+
+	@property Point imageSize() {
+		return Point(_dx, _dy);
+	}
+
+	protected Tex2D _texture;
+	/// returns texture object
+	@property Tex2D texture() { return _texture; }
+	/// returns texture id
+	@property uint textureId() { return _texture ? _texture.ID : 0; }
+
+	bool isValid() {
+		return _texture && _texture.ID;
+	}
+	/// image coords to UV
+	float[2] uv(int x, int y) {
+		float[2] res;
+		res[0] = x * cast(float) _dx / _tdx;
+		res[1] = y * cast(float) _dy / _tdy;
+		return res;
+	}
+	float[2] uv(Point pt) {
+		float[2] res;
+		res[0] = pt.x * cast(float) _dx / _tdx;
+		res[1] = pt.y * cast(float) _dy / _tdy;
+		return res;
+	}
+	/// return UV coords for bottom right corner
+	float[2] uv() {
+		return uv(_dx, _dy);
+	}
+
+	this(string resourceId) {
+		import dlangui.graphics.resources;
+		string path = drawableCache.findResource(resourceId);
+		this(cast(ColorDrawBuf)imageCache.get(path));
+	}
+
+	this(ColorDrawBuf buf) {
+		if (buf) {
+			_dx = buf.width;
+			_dy = buf.height;
+			_tdx = nearestPOT(_dx);
+			_tdy = nearestPOT(_dy);
+			_texture = new Tex2D();
+			if (!_texture.ID)
+				return;
+			uint * pixels = buf.scanLine(0);
+			if (!glSupport.setTextureImage(_texture, buf.width, buf.height, cast(ubyte*)pixels)) {
+				destroy(_texture);
+				_texture = null;
+				return;
+			}
+		}
+	}
+	~this() {
+		if (_texture && _texture.ID != 0) {
+			destroy(_texture);
+			_texture = null;
 		}
 	}
 }
