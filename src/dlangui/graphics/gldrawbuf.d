@@ -923,10 +923,12 @@ public:
 	}
 	override void draw() {
 		if (_handler) {
+
 			import derelict.opengl3.gl3 : glViewport;
-			glViewport(_rc.left, _rc.top, _rc.right, _rc.bottom);
+			glViewport(_rc.left, _buf.height - _rc.bottom, _rc.width, _rc.height);
 			_handler(_buf, _rc);
 			glSupport.setOrthoProjection(Rect(0, 0, _buf.width, _buf.height));
+
 		}
 	}
 }

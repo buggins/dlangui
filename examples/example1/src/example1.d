@@ -1014,8 +1014,9 @@ static if (ENABLE_OPENGL) {
 		override void animate(long interval) {
 			if (_oldApi) {
 				// rotate gears
-				angle += interval * 0.000005f;
+				angle += interval * 0.000002f;
 			} else {
+				// animate new API example
 			}
 			invalidate();
 		}
@@ -1205,9 +1206,6 @@ static if (ENABLE_OPENGL) {
         glxgears_reshape(Rect rc)
     {
         GLfloat h = cast(GLfloat) rc.height / cast(GLfloat) rc.width;
-        
-        glViewport(rc.top, rc.left, cast(GLint)rc.width, cast(GLint)rc.height);
-        //glViewport(0, 0, cast(GLint) width, cast(GLint) height);
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         glFrustum(-1.0, 1.0, -h, h, 5.0, 60.0);
