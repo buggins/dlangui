@@ -192,6 +192,8 @@ class GLProgram {
         Log.v("Program is initialized successfully");
         return !error;
     }
+
+	/// override to init shader code locations
     abstract bool initLocations();
     
     ~this() {
@@ -205,6 +207,44 @@ class GLProgram {
         program = vertexShader = fragmentShader = 0;
         initialized = false;
     }
+
+	/// returns true if program is ready for use (compiles program if not yet compiled)
+    bool check()
+    {
+        if (error)
+            return false;
+        if (!initialized)
+            if (!compile())
+                return false;
+        return true;
+    }
+
+	/// binds program to current context
+    void bind() {
+        checkgl!glUseProgram(program);
+    }
+
+	/// unbinds program from current context
+    void unbind() {
+        checkgl!glUseProgram(0);
+    }
+
+	/// get uniform location from program, returns -1 if location is not found
+	int getUniformLocation(string variableName) {
+        int res = checkgl!glGetUniformLocation(program, variableName.toStringz);
+		if (res == -1)
+			Log.e("glGetUniformLocation failed for " ~ variableName);
+		return res;
+	}
+
+	/// get attribute location from program, returns -1 if location is not found
+	int getAttribLocation(string variableName) {
+        int res = checkgl!glGetAttribLocation(program, variableName.toStringz);
+		if (res == -1)
+			Log.e("glGetAttribLocation failed for " ~ variableName);
+		return res;
+	}
+
 }
 
 class SolidFillProgram : GLProgram {
@@ -233,23 +273,6 @@ class SolidFillProgram : GLProgram {
         };
     }
 
-    bool check()
-    {
-        if (error)
-            return false;
-        if (!initialized)
-            if (!compile())
-                return false;
-        return true;
-    }
-    
-    void bind() {
-        checkgl!glUseProgram(program);
-    }
-    void unbind() {
-        checkgl!glUseProgram(0);
-    }
-
     void beforeExecute() {
         glEnable(GL_BLEND);
         checkgl!glDisable(GL_CULL_FACE);
@@ -266,15 +289,9 @@ class SolidFillProgram : GLProgram {
     protected GLint vertexLocation;
     protected GLint colAttrLocation;
     override bool initLocations() {
-        matrixLocation = checkgl!glGetUniformLocation(program, toStringz("matrix"));
-		if (matrixLocation == -1)
-			Log.e("glGetUniformLocation failed for matrixLocation");
-        vertexLocation = checkgl!glGetAttribLocation(program, toStringz("vertex"));
-		if (vertexLocation == -1)
-			Log.e("glGetUniformLocation failed for vertexLocation");
-		colAttrLocation = checkgl!glGetAttribLocation(program, toStringz("colAttr"));
-		if (colAttrLocation == -1)
-			Log.e("glGetUniformLocation failed for colAttrLocation");
+        matrixLocation = getUniformLocation("matrix");
+        vertexLocation = getAttribLocation("vertex");
+		colAttrLocation = getAttribLocation("colAttr");
 		return matrixLocation >= 0 && vertexLocation >= 0 && colAttrLocation >= 0;
     }
 
@@ -365,7 +382,7 @@ class TextureProgram : SolidFillProgram {
     GLint texCoordLocation;
     override bool initLocations() {
         bool res = super.initLocations();
-        texCoordLocation = glGetAttribLocation(program, "texCoord");
+        texCoordLocation = getAttribLocation("texCoord");
         return res && texCoordLocation >= 0;
     }
 
@@ -838,7 +855,7 @@ class GLSupport {
 			//checkgl!glPushMatrix();
 			glLoadIdentity();
 		}
-        checkgl!glViewport(view.left, windowRect.height - view.bottom, view.width, view.height);
+        checkgl!glViewport(view.left, currentFBO ? view.top : windowRect.height - view.bottom, view.width, view.height);
     }
 
     void setPerspectiveProjection(Rect windowRect, Rect view, float fieldOfView, float nearPlane, float farPlane) {
@@ -847,7 +864,7 @@ class GLSupport {
         bufferDy = windowRect.height;
 		float aspectRatio = cast(float)view.width / cast(float)view.height;
 		QMatrix4x4_perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
-		checkgl!glViewport(view.left, windowRect.height - view.bottom, view.width, view.height);
+		checkgl!glViewport(view.left, currentFBO ? view.top : windowRect.height - view.bottom, view.width, view.height);
     }
 }
 
