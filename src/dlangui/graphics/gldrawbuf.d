@@ -712,8 +712,7 @@ private class GLGlyphCache {
                 }
                 if (!dstrc.empty) {
                     //Log.d("drawing glyph with color ", color);
-                    glSupport.drawColorAndTextureGlyphRect(_texture, _tdx, _tdy, srcrc, dstrc, color);
-                    //glSupport.drawColorAndTextureRect(_texture, _tdx, _tdy, srcrc, dstrc, color, false);
+                    glSupport.drawColorAndTextureRect(_texture, _tdx, _tdy, srcrc, dstrc, color, false);
                 }
 
             }

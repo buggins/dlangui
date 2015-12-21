@@ -406,87 +406,6 @@ class TextureProgram : SolidFillProgram {
     }
 }
 
-class FontProgram : SolidFillProgram {
-    @property override string vertexSource() {
-        return q{
-            in vec4 vertex;
-            in vec4 colAttr;
-            in vec4 texCoord;
-            out vec4 col;
-            out vec4 texc;
-            uniform mat4 matrix;
-            void main(void)
-            {
-                gl_Position = matrix * vertex;
-                col = colAttr;
-                texc = texCoord;
-            }
-        };
-
-    }
-    @property override string fragmentSource() {
-        return q{
-            uniform sampler2D tex;
-            in vec4 col;
-            in vec4 texc;
-            out vec4 outColor;
-            void main(void)
-            {
-                outColor = texture(tex, texc.st) * col;
-            }
-        };
-    }
-
-    GLint texCoordLocation;
-    override bool initLocations() {
-        bool res = super.initLocations();
-        texCoordLocation = glGetAttribLocation(program, "texCoord");
-        return res && texCoordLocation >= 0;
-    }
-
-    override void beforeExecute() {
-        super.beforeExecute();
-        //glBlendFunc(GL_SRC_COLOR, GL_ONE_MINUS_SRC_COLOR);
-    }
-
-    override void afterExecute() {
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        super.afterExecute();
-    }
-
-    bool execute(float[] vertices, float[] colors, float[] texcoords, Tex2D texture, bool linear) {
-        if(!check())
-            return false;
-        beforeExecute();
-
-        texture.setup();
-        texture.setSamplerParams(linear);
-
-        VAO vao = new VAO();
-
-        VBO vbo = new VBO();
-        vbo.fill([vertices, colors, texcoords]);
-
-        glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
-        glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * vertices[0].sizeof));
-        glVertexAttribPointer(texCoordLocation, 2, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * vertices[0].sizeof + colors.length * colors[0].sizeof));
-
-        glEnableVertexAttribArray(vertexLocation);
-        glEnableVertexAttribArray(colAttrLocation);
-        glEnableVertexAttribArray(texCoordLocation);
-
-        checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)vertices.length/3);
-
-        afterExecute();
-
-        destroy(vbo);
-        destroy(vao);
-
-        texture.unbind();
-        return true;
-    }
-}
-
 
 struct Color
 {
@@ -531,10 +450,9 @@ class GLSupport {
     TextureProgram _textureProgram;
     SolidFillProgram _solidFillProgram;
     LineProgram _lineProgram;
-    FontProgram _fontProgram;
 
     @property bool valid() {
-        return _legacyMode || _textureProgram && _solidFillProgram && _fontProgram && _lineProgram;
+        return _legacyMode || _textureProgram && _solidFillProgram && _lineProgram;
     }
 
     bool initShaders() {
@@ -556,12 +474,6 @@ class GLSupport {
             if (!_textureProgram.compile())
                 return false;
         }
-        if (_fontProgram is null) {
-            Log.v("Compiling font program");
-            _fontProgram = new FontProgram();
-            if (!_fontProgram.compile())
-                return false;
-        }
         Log.d("Shaders compiled successfully");
         return true;
     }
@@ -579,10 +491,6 @@ class GLSupport {
         if (_textureProgram !is null) {
             destroy(_textureProgram);
 		    _textureProgram = null;
-        }
-        if (_fontProgram !is null) {
-            destroy(_fontProgram);
-		    _fontProgram = null;
         }
         return true;
     }
@@ -683,71 +591,6 @@ class GLSupport {
 	        } else
 	            Log.e("No program");
 		}
-    }
-
-    void drawColorAndTextureGlyphRect(Tex2D texture, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color) {
-        drawColorAndTextureGlyphRect(texture, tdx, tdy, srcrc.left, srcrc.top, srcrc.width(), srcrc.height(), dstrc.left, dstrc.top, dstrc.width(), dstrc.height(), color);
-    }
-
-    void drawColorAndTextureGlyphRect(Tex2D texture, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, uint color) {
-        Color[6] colors;
-        FillColor(color, colors);
-        float dstx0 = cast(float)xx;
-        float dsty0 = cast(float)(bufferDy - (yy));
-        float dstx1 = cast(float)(xx + dx);
-        float dsty1 = cast(float)(bufferDy - (yy + dy));
-
-        // don't flip for framebuffer
-        if (currentFBO) {
-            dsty0 = cast(float)(yy);
-            dsty1 = cast(float)(yy + dy);
-        }
-
-        float srcx0 = srcx / cast(float)tdx;
-        float srcy0 = srcy / cast(float)tdy;
-        float srcx1 = (srcx + srcdx) / cast(float)tdx;
-        float srcy1 = (srcy + srcdy) / cast(float)tdy;
-        float[3 * 6] vertices = [
-            dstx0, dsty0, Z_2D,
-            dstx0, dsty1, Z_2D,
-            dstx1, dsty1, Z_2D,
-            dstx0, dsty0, Z_2D,
-            dstx1, dsty1, Z_2D,
-            dstx1, dsty0, Z_2D];
-        float[2 * 6] texcoords = [srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0];
-
-		if (_legacyMode) {
-			bool linear = dx != srcdx || dy != srcdy;
-			glDisable(GL_CULL_FACE);
-			glEnable(GL_TEXTURE_2D);
-			texture.setup();
-			texture.setSamplerParams(linear);
-
-			glColor4f(1,1,1,1);
-			glDisable(GL_ALPHA_TEST);
-
-			glEnable(GL_BLEND);
-			checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-			checkgl!glEnableClientState(GL_COLOR_ARRAY);
-			checkgl!glEnableClientState(GL_VERTEX_ARRAY);
-			checkgl!glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-			checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
-			checkgl!glTexCoordPointer(2, GL_FLOAT, 0, cast(void*)texcoords.ptr);
-			checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
-
-			checkgl!glDrawArrays(GL_TRIANGLES, 0, 6);
-
-			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-			glDisableClientState(GL_VERTEX_ARRAY);
-			glDisableClientState(GL_COLOR_ARRAY);
-			glDisable(GL_BLEND);
-			glDisable(GL_ALPHA_TEST);
-			glDisable(GL_TEXTURE_2D);
-		} else {
-        	_fontProgram.execute(vertices, cast(float[])colors, texcoords, texture, false);
-		}
-        //drawColorAndTextureRect(vertices, texcoords, colors, texture, linear);
     }
 
     void drawColorAndTextureRect(Tex2D texture, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color, bool linear) {
