@@ -925,15 +925,54 @@ static if (ENABLE_OPENGL) {
     import derelict.opengl3.gl3;
     import derelict.opengl3.gl;
 
-	class MyOpenglWidget : Widget {
+	class MyOpenglWidget : VerticalLayout {
 		this() {
 			super("OpenGLView");
 			layoutWidth = FILL_PARENT;
 			layoutHeight = FILL_PARENT;
+			alignment = Align.Center;
 			backgroundDrawable = DrawableRef(new OpenGLDrawable(&doDraw));
+			// add some UI on top of OpenGL drawable
+			Widget w = parseML(q{
+				VerticalLayout {
+					margins: 40
+					padding: 40
+					alignment: center
+
+					//backgroundColor: "#C0E0E070" // semitransparent yellow background
+					// red bold text with size = 150% of base style size and font face Arial
+					TextWidget { text: "Hello World example for DlangUI"; textColor: "red"; fontSize: 150%; fontWeight: 800; fontFace: "Arial" }
+					// arrange controls as form - table with two columns
+					TableLayout {
+						colCount: 2
+						TextWidget { text: "param 1" }
+						EditLine { id: edit1; text: "some text" }
+						TextWidget { text: "param 2" }
+						EditLine { id: edit2; text: "some text for param2" }
+						TextWidget { text: "some radio buttons" }
+						// arrange some radio buttons vertically
+						VerticalLayout {
+							RadioButton { id: rb1; text: "Item 1" }
+							RadioButton { id: rb2; text: "Item 2" }
+							RadioButton { id: rb3; text: "Item 3" }
+						}
+						TextWidget { text: "and checkboxes" }
+						// arrange some checkboxes horizontally
+						HorizontalLayout {
+							CheckBox { id: cb1; text: "checkbox 1" }
+							CheckBox { id: cb2; text: "checkbox 2" }
+						}
+					}
+					HorizontalLayout {
+						Button { id: btnOk; text: "Ok" }
+						Button { id: btnCancel; text: "Cancel" }
+					}
+				}
+			});
+			addChild(w);
 		}
 
-        bool _initCalled;
+		bool _oldApi;
 
 		private void doDraw(DrawBuf buf, Rect rc) {
             Log.v("GlGears: MyOpenglWidget.doDraw() draw gears");
@@ -941,25 +980,49 @@ static if (ENABLE_OPENGL) {
                 Log.v("GlGears: OpenGL is disabled");
                 return;
             }
-            if (!glLightfv) {
-                Log.v("GlGears: GL context doesn't support old OpenGL API");
-                // TODO: use some new api code?
-                return;
-            }
+			_oldApi = !!glLightfv;
+			if (_oldApi) {
+				drawUsingOldAPI(rc);
+			} else {
+				drawUsingNewAPI(rc);
+			}
+		}
+
+		void drawUsingOldAPI(Rect rc) {
+			static bool _initCalled;
             if (!_initCalled) {
                 Log.d("GlGears: calling init()");
                 _initCalled = true;
-                init();
+                glxgears_init();
             }
             Log.v("GlGears: calling reshape()");
-            reshape(rc.width, rc.height);
+            glxgears_reshape(rc);
             Log.v("GlGears: calling draw()");
-            draw();
+			glEnable(GL_LIGHTING);
+			glEnable(GL_LIGHT0);
+			glEnable(GL_DEPTH_TEST);
+            glxgears_draw();
+			glDisable(GL_LIGHTING);
+			glDisable(GL_LIGHT0);
+			glDisable(GL_DEPTH_TEST);
+		}
+		void drawUsingNewAPI(Rect rc) {
+		}
+		/// returns true is widget is being animated - need to call animate() and redraw
+		@property override bool animating() { return true; }
+		/// animates window; interval is time left from previous draw, in hnsecs (1/10000000 of second)
+		override void animate(long interval) {
+			if (_oldApi) {
+				// rotate gears
+				angle += interval * 0.000005f;
+			} else {
+			}
+			invalidate();
 		}
 	}
 
 
-
+    // Sample project for old API: GlxGears
 
     import std.math;
     static __gshared GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
@@ -1106,9 +1169,9 @@ static if (ENABLE_OPENGL) {
     }
     
     
-    static void draw()
+    static void glxgears_draw()
     {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glClear(/*GL_COLOR_BUFFER_BIT | */GL_DEPTH_BUFFER_BIT);
         
         glPushMatrix();
         glRotatef(view_rotx, 1.0, 0.0, 0.0);
@@ -1139,11 +1202,12 @@ static if (ENABLE_OPENGL) {
     
     /* new window size or exposure */
     static void
-        reshape(int width, int height)
+        glxgears_reshape(Rect rc)
     {
-        GLfloat h = cast(GLfloat) height / cast(GLfloat) width;
+        GLfloat h = cast(GLfloat) rc.height / cast(GLfloat) rc.width;
         
-        glViewport(0, 0, cast(GLint) width, cast(GLint) height);
+        glViewport(rc.top, rc.left, cast(GLint)rc.width, cast(GLint)rc.height);
+        //glViewport(0, 0, cast(GLint) width, cast(GLint) height);
         glMatrixMode(GL_PROJECTION);
         glLoadIdentity();
         glFrustum(-1.0, 1.0, -h, h, 5.0, 60.0);
@@ -1153,7 +1217,7 @@ static if (ENABLE_OPENGL) {
     }
     
     
-    static void init()
+    static void glxgears_init()
     {
         static GLfloat[4] pos = [ 5.0, 5.0, 10.0, 0.0 ];
         static GLfloat[4] red = [ 0.8, 0.1, 0.0, 1.0 ];
