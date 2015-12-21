@@ -979,9 +979,9 @@ class GLSupport {
                 qtmatrix[y * 4 + x] = m[y][x];
     }
 
-    void setOrthoProjection(Rect view) {
-        bufferDx = view.width;
-        bufferDy = view.height;
+    void setOrthoProjection(Rect windowRect, Rect view) {
+        bufferDx = windowRect.width;
+        bufferDy = windowRect.height;
         QMatrix4x4_ortho(view.left, view.right, view.top, view.bottom, 0.5f, 50.0f);
 		//myGlOrtho(0, dx, 0, dy, 0.1f, 5.0f);
 
@@ -995,11 +995,16 @@ class GLSupport {
 			//checkgl!glPushMatrix();
 			glLoadIdentity();
 		}
-        checkgl!glViewport(view.left, view.top, view.right, view.bottom);
+        checkgl!glViewport(view.left, windowRect.height - view.bottom, view.width, view.height);
     }
 
-    void setPerspectiveProjection(float fieldOfView, float aspectRatio, float nearPlane, float farPlane) {
-        // TODO
+    void setPerspectiveProjection(Rect windowRect, Rect view, float fieldOfView, float nearPlane, float farPlane) {
+
+        bufferDx = windowRect.width;
+        bufferDy = windowRect.height;
+		float aspectRatio = cast(float)view.width / cast(float)view.height;
+		QMatrix4x4_perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
+		checkgl!glViewport(view.left, windowRect.height - view.bottom, view.width, view.height);
     }
 }
 

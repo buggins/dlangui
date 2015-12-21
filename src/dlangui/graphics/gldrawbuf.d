@@ -60,7 +60,7 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
     override void saveConfiguration() {
     }
     override void restoreConfiguration() {
-        glSupport.setOrthoProjection(Rect(0, 0, _dx, _dy));
+        glSupport.setOrthoProjection(Rect(0, 0, _dx, _dy), Rect(0, 0, _dx, _dy));
     }
 
     /// reserved for hardware-accelerated drawing - begins drawing batch
@@ -75,7 +75,7 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
 
     /// reserved for hardware-accelerated drawing - ends drawing batch
     override void afterDrawing() {
-        glSupport.setOrthoProjection(Rect(0, 0, _dx, _dy));
+        glSupport.setOrthoProjection(Rect(0, 0, _dx, _dy), Rect(0, 0, _dx, _dy));
         _scene.draw();
         glSupport.flushGL();
         destroy(_scene);
@@ -923,11 +923,9 @@ public:
 	}
 	override void draw() {
 		if (_handler) {
-
-			import derelict.opengl3.gl3 : glViewport;
-			glViewport(_rc.left, _windowRect.height - _rc.bottom, _rc.width, _rc.height);
+			glSupport.setOrthoProjection(_windowRect, _rc);
 			_handler(_windowRect, _rc);
-			glSupport.setOrthoProjection(_windowRect);
+			glSupport.setOrthoProjection(_windowRect, _windowRect);
 		}
 	}
 }
