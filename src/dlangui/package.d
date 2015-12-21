@@ -46,36 +46,38 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
  */
 module dlangui;
 
-public import dlangui.core.logger;
-public import dlangui.core.types;
-public import dlangui.core.i18n;
-public import dlangui.core.files;
-public import dlangui.core.stdaction;
-public import dlangui.graphics.images;
-public import dlangui.graphics.colors;
-public import dlangui.graphics.fonts;
-public import dlangui.graphics.drawbuf;
-public import dlangui.widgets.widget;
-public import dlangui.widgets.controls;
-public import dlangui.widgets.layouts;
-public import dlangui.widgets.lists;
-public import dlangui.widgets.tabs;
-public import dlangui.widgets.menu;
-public import dlangui.widgets.scroll;
-public import dlangui.widgets.editors;
-public import dlangui.widgets.srcedit;
-public import dlangui.widgets.grid;
-public import dlangui.widgets.tree;
-public import dlangui.widgets.combobox;
-public import dlangui.widgets.popup;
-public import dlangui.widgets.appframe;
-public import dlangui.widgets.statusline;
-public import dlangui.widgets.docks;
-public import dlangui.widgets.toolbars;
-public import dlangui.platforms.common.platform;
-public import dlangui.dml.parser;
+public {
+    import dlangui.core.logger;
+    import dlangui.core.types;
+    import dlangui.core.i18n;
+    import dlangui.core.files;
+    import dlangui.core.stdaction;
+    import dlangui.graphics.images;
+    import dlangui.graphics.colors;
+    import dlangui.graphics.fonts;
+    import dlangui.graphics.drawbuf;
+    import dlangui.widgets.widget;
+    import dlangui.widgets.controls;
+    import dlangui.widgets.layouts;
+    import dlangui.widgets.lists;
+    import dlangui.widgets.tabs;
+    import dlangui.widgets.menu;
+    import dlangui.widgets.scroll;
+    import dlangui.widgets.editors;
+    import dlangui.widgets.srcedit;
+    import dlangui.widgets.grid;
+    import dlangui.widgets.tree;
+    import dlangui.widgets.combobox;
+    import dlangui.widgets.popup;
+    import dlangui.widgets.appframe;
+    import dlangui.widgets.statusline;
+    import dlangui.widgets.docks;
+    import dlangui.widgets.toolbars;
+    import dlangui.platforms.common.platform;
+    import dlangui.dml.parser;
 
-// some useful imports from Phobos
-public import std.algorithm : equal;
-public import std.conv : to;
-public import std.utf : toUTF32, toUTF8;
+    // some useful imports from Phobos
+    import std.algorithm : equal;
+    import std.conv : to;
+    import std.utf : toUTF32, toUTF8;
+}
