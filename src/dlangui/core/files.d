@@ -257,8 +257,8 @@ bool isPathDelimiter(char ch) {
 /** Returns current executable path only, including last path delimiter - removes executable name from result of std.file.thisExePath() */
 @property string exePath() {
     string path = thisExePath();
-    ulong lastSlash = 0;
-    foreach(i; 0 .. path.length)
+    int lastSlash = 0;
+    for (int i = 0; i < path.length; i++)
         if (path[i] == PATH_DELIMITER)
             lastSlash = i;
     return path[0 .. lastSlash + 1];
@@ -346,8 +346,8 @@ char[] appendPath(char[] buf, string[] pathItems ...) {
 /** Split path into elements, e.g. /home/user/dir1 -> ["home", "user", "dir1"], "c:\dir1\dir2" -> ["c:", "dir1", "dir2"] */
 string[] splitPath(string path) {
 	string[] res;
-	ulong start = 0;
-	foreach(i; 0 .. path.length + 1) {
+	int start = 0;
+	for (int i = 0; i <= path.length; i++) {
 		char ch = i < path.length ? path[i] : 0;
 		if (ch == '\\' || ch == '/' || ch == 0) {
 			if (start < i)
