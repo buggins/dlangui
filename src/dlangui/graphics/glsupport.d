@@ -21,6 +21,7 @@ module dlangui.graphics.glsupport;
 public import dlangui.core.config;
 static if (ENABLE_OPENGL):
 
+public import dlangui.core.math3d;
 import dlangui.core.logger;
 import derelict.opengl3.gl3;
 import derelict.opengl3.gl;
@@ -836,92 +837,23 @@ class GLSupport {
     }
 
     /// projection matrix
-    //private mat4 m;
     /// current gl buffer width
     private int bufferDx;
     /// current gl buffer height
     private int bufferDy;
     //private float[16] matrix;
-    private float[16] _projectionMatrix;
+    private mat4 _projectionMatrix;
 
 	@property float[16] projectionMatrix() {
 		return _projectionMatrix;
 	}
 
-    void QMatrix4x4_ortho(float left, float right, float bottom, float top, float nearPlane, float farPlane)
-    {
-        // Bail out if the projection volume is zero-sized.
-        if (left == right || bottom == top || nearPlane == farPlane)
-            return;
-
-        // Construct the projection.
-        float width = right - left;
-        float invheight = top - bottom;
-        float clip = farPlane - nearPlane;
-        float[4][4] m;
-        m[0][0] = 2.0f / width;
-        m[1][0] = 0.0f;
-        m[2][0] = 0.0f;
-        m[3][0] = -(left + right) / width;
-        m[0][1] = 0.0f;
-        m[1][1] = 2.0f / invheight;
-        m[2][1] = 0.0f;
-        m[3][1] = -(top + bottom) / invheight;
-        m[0][2] = 0.0f;
-        m[1][2] = 0.0f;
-        m[2][2] = -2.0f / clip;
-        m[3][2] = -(nearPlane + farPlane) / clip;
-        m[0][3] = 0.0f;
-        m[1][3] = 0.0f;
-        m[2][3] = 0.0f;
-        m[3][3] = 1.0f;
-        for (int y = 0; y < 4; y++)
-            for (int x = 0; x < 4; x++)
-                _projectionMatrix[y * 4 + x] = m[y][x];
-    }
-
-    void QMatrix4x4_perspective(float angle, float aspect, float nearPlane, float farPlane)
-    {
-        import std.math;
-        // Bail out if the projection volume is zero-sized.
-        if (nearPlane == farPlane || aspect == 0.0f)
-            return;
-
-        // Construct the projection.
-        float[4][4] m;
-        float radians = (angle / 2.0f) * PI / 180.0f;
-        float sine = sin(radians);
-        if (sine == 0.0f)
-            return;
-        float cotan = cos(radians) / sine;
-        float clip = farPlane - nearPlane;
-        m[0][0] = cotan / aspect;
-        m[1][0] = 0.0f;
-        m[2][0] = 0.0f;
-        m[3][0] = 0.0f;
-        m[0][1] = 0.0f;
-        m[1][1] = cotan;
-        m[2][1] = 0.0f;
-        m[3][1] = 0.0f;
-        m[0][2] = 0.0f;
-        m[1][2] = 0.0f;
-        m[2][2] = -(nearPlane + farPlane) / clip;
-        m[3][2] = -(2.0f * nearPlane * farPlane) / clip;
-        m[0][3] = 0.0f;
-        m[1][3] = 0.0f;
-        m[2][3] = -1.0f;
-        m[3][3] = 0.0f;
-
-        for (int y = 0; y < 4; y++)
-            for (int x = 0; x < 4; x++)
-                _projectionMatrix[y * 4 + x] = m[y][x];
-    }
-
     void setOrthoProjection(Rect windowRect, Rect view) {
 		flushGL();
         bufferDx = windowRect.width;
         bufferDy = windowRect.height;
-        QMatrix4x4_ortho(view.left, view.right, view.top, view.bottom, 0.5f, 50.0f);
+		_projectionMatrix.setOrtho(view.left, view.right, view.top, view.bottom, 0.5f, 50.0f);
+        //QMatrix4x4_ortho(view.left, view.right, view.top, view.bottom, 0.5f, 50.0f);
 		//myGlOrtho(0, dx, 0, dy, 0.1f, 5.0f);
 
 		if (_legacyMode) {
@@ -942,7 +874,8 @@ class GLSupport {
         bufferDx = windowRect.width;
         bufferDy = windowRect.height;
 		float aspectRatio = cast(float)view.width / cast(float)view.height;
-		QMatrix4x4_perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
+		//QMatrix4x4_perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
+		_projectionMatrix.setPerspective(fieldOfView, aspectRatio, nearPlane, farPlane);
 		if (_legacyMode) {
 			glMatrixMode(GL_PROJECTION);
 			//checkgl!glPushMatrix();
@@ -955,81 +888,6 @@ class GLSupport {
 		}
 		checkgl!glViewport(view.left, currentFBO ? view.top : windowRect.height - view.bottom, view.width, view.height);
     }
-}
-
-struct vec3 {
-	float[3] vec;
-	alias vec this;
-	@property float x() { return vec[0]; }
-	@property float y() { return vec[1]; }
-	@property float z() { return vec[2]; }
-	@property void x(float v) { vec[0] = v; }
-	@property void y(float v) { vec[1] = v; }
-	@property void z(float v) { vec[2] = v; }
-	this(float[3] v) {
-		vec = v;
-	}
-	this(float x, float y, float z) {
-		vec[0] = x;
-		vec[1] = y;
-		vec[2] = z;
-	}
-}
-
-struct vec4 {
-	float[4] vec;
-	alias vec this;
-	@property float x() { return vec[0]; }
-	@property float y() { return vec[1]; }
-	@property float z() { return vec[2]; }
-	@property float w() { return vec[3]; }
-	@property void x(float v) { vec[0] = v; }
-	@property void y(float v) { vec[1] = v; }
-	@property void z(float v) { vec[2] = v; }
-	@property void w(float v) { vec[3] = v; }
-	this(float[4] v) {
-		vec = v;
-	}
-	this(float x, float y, float z, float w) {
-		vec[0] = x;
-		vec[1] = y;
-		vec[2] = z;
-		vec[3] = w;
-	}
-	this(vec3 v) {
-		vec[0] = v[0];
-		vec[1] = v[1];
-		vec[2] = v[2];
-		vec[3] = 1.0f;
-	}
-}
-
-struct mat4 {
-	float[16] m;
-	ref mat4 setIdentity() {
-		for (int x = 0; x < 4; x++) {
-			for (int y = 0; y < 4; y++) {
-				if (x == y)
-					m[y * 4 + x] = 1.0f;
-				else
-					m[y * 4 + x] = 0.0f;
-			}
-		}
-		return this;
-	}
-	ref mat4 setZero() {
-		foreach(ref f; m)
-			f = 0.0f;
-		return this;
-	}
-	static mat4 identity() {
-		mat4 res;
-		return res.setIdentity();
-	}
-	static mat4 zero() {
-		mat4 res;
-		return res.setZero();
-	}
 }
 
 enum GLObjectTypes { Buffer, VertexArray, Texture, Framebuffer };

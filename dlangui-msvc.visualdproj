@@ -237,7 +237,7 @@
   <useArrayBounds>0</useArrayBounds>
   <noboundscheck>0</noboundscheck>
   <useSwitchError>0</useSwitchError>
-  <useUnitTests>0</useUnitTests>
+  <useUnitTests>1</useUnitTests>
   <useInline>0</useInline>
   <release>0</release>
   <preservePaths>0</preservePaths>
@@ -548,6 +548,7 @@
      <File path="src\dlangui\core\i18n.d" />
      <File path="src\dlangui\core\linestream.d" />
      <File path="src\dlangui\core\logger.d" />
+     <File path="src\dlangui\core\math3d.d" />
      <File path="src\dlangui\core\settings.d" />
      <File path="src\dlangui\core\signals.d" />
      <File path="src\dlangui\core\stdaction.d" />

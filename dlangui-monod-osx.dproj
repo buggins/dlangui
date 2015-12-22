@@ -111,6 +111,7 @@
     <Compile Include="src\dlangui\core\i18n.d" />
     <Compile Include="src\dlangui\core\linestream.d" />
     <Compile Include="src\dlangui\core\logger.d" />
+    <Compile Include="src\dlangui\core\math3d.d" />
     <Compile Include="src\dlangui\core\settings.d" />
     <Compile Include="src\dlangui\core\signals.d" />
     <Compile Include="src\dlangui\core\stdaction.d" />
