@@ -251,6 +251,7 @@ static if (ENABLE_OPENGL) {
 				return;
 			}
 
+			//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 			//glClear(/*GL_COLOR_BUFFER_BIT | */GL_DEPTH_BUFFER_BIT);
 			checkgl!glDisable(GL_CULL_FACE);
 			checkgl!glDisable(GL_DEPTH_TEST);
@@ -258,14 +259,24 @@ static if (ENABLE_OPENGL) {
 			//import gl3n.linalg;
 			//glSupport.setPerspectiveProjection(windowRect, rc, 45.0f, 0.5f, 100.0f);
 			//mat4 projectionMatrix = glSupport.projectionMatrix; //mat4.perspective(rc.width, rc.height, 90.0f, 0.5f, 100.0f);
-			mat4 projectionMatrix = glSupport.projectionMatrix;
+			// ======== Projection Matrix ==================
+			mat4 projectionMatrix; // = glSupport.projectionMatrix;
+			projectionMatrix.setIdentity();
 			float aspectRatio = cast(float)rc.width / cast(float)rc.height;
-			projectionMatrix.setPerspective(45.0f, aspectRatio, 0.5f, 100.0f);
-			mat4 viewMatrix = 1.0f;
-			viewMatrix.lookAt(vec3(10, 0, 0), vec3(0, 0, 0), vec3(0, 1, 0));//translation(0.0f, 0.0f, 4.0f).rotatez(angle);
-			mat4 modelMatrix = mat4.identity;
+			projectionMatrix.setPerspective(45.0f, aspectRatio, 0.1f, 100.0f);
+
+			// ======== View Matrix ==================
+			mat4 viewMatrix;
+			viewMatrix.setIdentity();
+			viewMatrix.lookAt(vec3(2, 0, 0), vec3(0, 0, 0), vec3(0, 1, 0));//translation(0.0f, 0.0f, 4.0f).rotatez(angle);
+
+			// ======== Model Matrix ==================
+			mat4 modelMatrix;
+			modelMatrix.setIdentity();
+			modelMatrix.scale(0.3f);
+
 			//modelMatrix.translate(3, 0, 0);
-			mat4 m = projectionMatrix * viewMatrix * modelMatrix;
+			mat4 m = (projectionMatrix * viewMatrix) * modelMatrix;
 			//mat4 m = modelMatrix * viewMatrix * projectionMatrix;
 
 			//float[16] matrix;
@@ -280,6 +291,12 @@ static if (ENABLE_OPENGL) {
 			Log.d("(-1,-1,-1) * matrix: ", (m * vec3(-1, -1, -1)).vec);
 			Log.d("(1,1,1) * matrix: ", (m * vec3(1, 1, 1)).vec);
 			Log.d("(0,3,0) * matrix: ", (m * vec3(0, 3, 0)).vec);
+			for (int i = 0; i < vertices.length - 2; i+=3) {
+				vec3 v = vec3(vertices[i], vertices[i + 1], vertices[i + 2]);
+				vec3 v_mul_m = (v * m);
+				vec3 m_mul_v = (m * v);
+				Log.d("pvmmatrix * ", v.vec, " = ", v_mul_m.vec);
+			}
 			//Log.d("(1,1,1) * matrix: ", m * vec4(1, 1, 1, 1));
 			//Log.d("(0,1,0) * matrix: ", m * vec4(0, 1, 0, 1));
 			//Log.d("(1,0,0) * matrix: ", m * vec4(1, 0, 0, 1));
@@ -309,14 +326,17 @@ static if (ENABLE_OPENGL) {
 	class MyProgram : GLProgram {
 		@property override string vertexSource() {
 			return q{
+				uniform mat4 matrix;
 				in vec4 vertex;
 				in vec4 colAttr;
 				in vec4 texCoord;
+
 				out vec4 col;
 				out vec4 texc;
-				uniform mat4 matrix;
+
 				void main(void)
 				{
+					//gl_Position = vertex * matrix;
 					gl_Position = matrix * vertex;
 					col = colAttr;
 					texc = texCoord;
@@ -332,7 +352,8 @@ static if (ENABLE_OPENGL) {
 				out vec4 outColor;
 				void main(void)
 				{
-					outColor = texture(tex, texc.st) * col;
+					outColor = col; //texture(tex, texc.st); // * col;
+					//outColor = col; //texture(tex, texc.st) * col;
 				}
 			};
 		}
