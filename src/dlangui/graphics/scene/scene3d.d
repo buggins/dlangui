@@ -3,8 +3,7 @@ module dlangui.graphics.scene.scene3d;
 import dlangui.graphics.scene.node;
 import dlangui.graphics.scene.camera;
 
-import gl3n.linalg;
-import gl3n.math;
+import dlangui.core.math3d;
 
 /// 3D scene
 class Scene3d : Node3d {

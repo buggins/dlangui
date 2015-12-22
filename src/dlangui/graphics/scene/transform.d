@@ -1,7 +1,6 @@
 module dlangui.graphics.scene.transform;
 
-import gl3n.linalg;
-import gl3n.math;
+import dlangui.core.math3d;
 
 /// 3d transform: scale + translation + rotation
 class Transform {
@@ -77,11 +76,11 @@ class Transform {
     public void scaleZ(float value) { _scale.z *= value; _dirtyTransform = true; }
 
     /// rotate around X axis
-    public void rotateX(float angle) { _rotation.rotatex(angle); _dirtyTransform = true; }
+    public void rotateX(float angle) { _rotation.rotateX(angle); _dirtyTransform = true; }
     /// rotate around Y axis
-    public void rotateY(float angle) { _rotation.rotatey(angle); _dirtyTransform = true; }
+    public void rotateY(float angle) { _rotation.rotateY(angle); _dirtyTransform = true; }
     /// rotate around Z axis
-    public void rotateZ(float angle) { _rotation.rotatez(angle); _dirtyTransform = true; }
+    public void rotateZ(float angle) { _rotation.rotateZ(angle); _dirtyTransform = true; }
     /// rotate around custom axis
     public void rotate(float angle, const ref vec3 axis) { _rotation.rotate(angle, axis); _dirtyTransform = true; }
 

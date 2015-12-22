@@ -1,7 +1,6 @@
 module dlangui.graphics.scene.node;
 
-import gl3n.linalg;
-import gl3n.math;
+import dlangui.core.math3d;
 
 import dlangui.graphics.scene.transform;
 import dlangui.core.collections;

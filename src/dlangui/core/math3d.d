@@ -12,7 +12,6 @@ struct vec3 {
 			float z;
 		}
 	}
-	alias vec this;
 	//@property ref float x() { return vec[0]; }
 	//@property ref float y() { return vec[1]; }
 	//@property ref float z() { return vec[2]; }
@@ -22,7 +21,7 @@ struct vec3 {
 	this(float[3] v) {
 		vec = v;
 	}
-	this(vec3 v) {
+	this(const vec3 v) {
 		vec = v.vec;
 	}
 	this(float x, float y, float z) {
@@ -79,30 +78,30 @@ struct vec3 {
 	}
 	/// add components of another vector to corresponding components of this vector
 	ref vec3 add(vec3 v) {
-		vec[0] += v[0];
-		vec[1] += v[1];
-		vec[2] += v[2];
+		vec[0] += v.vec[0];
+		vec[1] += v.vec[1];
+		vec[2] += v.vec[2];
 		return this;
 	}
 	/// multiply components of this vector  by corresponding components of another vector
 	ref vec3 mul(vec3 v) {
-		vec[0] *= v[0];
-		vec[1] *= v[1];
-		vec[2] *= v[2];
+		vec[0] *= v.vec[0];
+		vec[1] *= v.vec[1];
+		vec[2] *= v.vec[2];
 		return this;
 	}
 	/// subtract components of another vector from corresponding components of this vector
 	ref vec3 sub(vec3 v) {
-		vec[0] -= v[0];
-		vec[1] -= v[1];
-		vec[2] -= v[2];
+		vec[0] -= v.vec[0];
+		vec[1] -= v.vec[1];
+		vec[2] -= v.vec[2];
 		return this;
 	}
 	/// divide components of this vector  by corresponding components of another vector
 	ref vec3 div(vec3 v) {
-		vec[0] /= v[0];
-		vec[1] /= v[1];
-		vec[2] /= v[2];
+		vec[0] /= v.vec[0];
+		vec[1] /= v.vec[1];
+		vec[2] /= v.vec[2];
 		return this;
 	}
 
@@ -231,9 +230,9 @@ struct vec3 {
 	/// returns vector with all components which are negative of components for this vector
     vec3 opUnary(string op : "-")() const {
         vec3 ret = this;
-		ret[0] = vec[0];
-		ret[1] = vec[1];
-		ret[2] = vec[2];
+		ret.vec[0] = vec[0];
+		ret.vec[1] = vec[1];
+		ret.vec[2] = vec[2];
         return ret;
     }
 
@@ -268,16 +267,46 @@ struct vec3 {
 					v1.z * v2.x - v1.x * v2.z,
 					v1.x * v2.y - v1.y * v2.x);
 	}
+
+	/// multiply vector by matrix
+	vec3 opBinary(string op : "*")(const ref mat4 matrix) const
+	{
+		float x, y, z, w;
+		x = x * matrix.m[0*4 + 0] +
+			y * matrix.m[0*4 + 1] +
+			z * matrix.m[0*4 + 2] +
+			matrix.m[0*4 + 3];
+		y = x * matrix.m[1*4 + 0] +
+			y * matrix.m[1*4 + 1] +
+			z * matrix.m[1*4 + 2] +
+			matrix.m[1*4 + 3];
+		z = x * matrix.m[2*4 + 0] +
+			y * matrix.m[2*4 + 1] +
+			z * matrix.m[2*4 + 2] +
+			matrix.m[2*4 + 3];
+		w = x * matrix.m[3*4 + 0] +
+			y * matrix.m[3*4 + 1] +
+			z * matrix.m[3*4 + 2] +
+			matrix.m[3*4 + 3];
+		if (w == 1.0f)
+			return vec3(x, y, z);
+		else
+			return vec3(x / w, y / w, z / w);
+	}
+
 }
 
 /// 4 component vector
 struct vec4 {
-	float[4] vec;
-	alias vec this;
-	@property ref float x() { return vec[0]; }
-	@property ref float y() { return vec[1]; }
-	@property ref float z() { return vec[2]; }
-	@property ref float w() { return vec[3]; }
+	union {
+		float[4] vec;
+		struct {
+			float x;
+			float y;
+			float z;
+			float w;
+		}
+	}
 	alias r = x;
 	alias g = y;
 	alias b = z;
@@ -295,9 +324,9 @@ struct vec4 {
 		vec[3] = w;
 	}
 	this(vec3 v) {
-		vec[0] = v[0];
-		vec[1] = v[1];
-		vec[2] = v[2];
+		vec[0] = v.vec[0];
+		vec[1] = v.vec[1];
+		vec[2] = v.vec[2];
 		vec[3] = 1.0f;
 	}
 	ref vec4 opAssign(const float[4] v) {
@@ -316,9 +345,9 @@ struct vec4 {
 		return this;
 	}
 	ref vec4 opAssign(const vec3 v) {
-		vec[0] = v[0];
-		vec[1] = v[1];
-		vec[2] = v[2];
+		vec[0] = v.vec[0];
+		vec[1] = v.vec[1];
+		vec[2] = v.vec[2];
 		vec[3] = 1.0f;
 		return this;
 	}
@@ -363,34 +392,34 @@ struct vec4 {
 	}
 	/// add components of another vector to corresponding components of this vector
 	ref vec4 add(const vec4 v) {
-		vec[0] += v[0];
-		vec[1] += v[1];
-		vec[2] += v[2];
-		vec[3] += v[3];
+		vec[0] += v.vec[0];
+		vec[1] += v.vec[1];
+		vec[2] += v.vec[2];
+		vec[3] += v.vec[3];
 		return this;
 	}
 	/// multiply components of this vector  by corresponding components of another vector
 	ref vec4 mul(vec4 v) {
-		vec[0] *= v[0];
-		vec[1] *= v[1];
-		vec[2] *= v[2];
-		vec[3] *= v[3];
+		vec[0] *= v.vec[0];
+		vec[1] *= v.vec[1];
+		vec[2] *= v.vec[2];
+		vec[3] *= v.vec[3];
 		return this;
 	}
 	/// subtract components of another vector from corresponding components of this vector
 	ref vec4 sub(vec4 v) {
-		vec[0] -= v[0];
-		vec[1] -= v[1];
-		vec[2] -= v[2];
-		vec[3] -= v[3];
+		vec[0] -= v.vec[0];
+		vec[1] -= v.vec[1];
+		vec[2] -= v.vec[2];
+		vec[3] -= v.vec[3];
 		return this;
 	}
 	/// divide components of this vector  by corresponding components of another vector
 	ref vec4 div(vec4 v) {
-		vec[0] /= v[0];
-		vec[1] /= v[1];
-		vec[2] /= v[2];
-		vec[3] /= v[3];
+		vec[0] /= v.vec[0];
+		vec[1] /= v.vec[1];
+		vec[2] /= v.vec[2];
+		vec[3] /= v.vec[3];
 		return this;
 	}
 
@@ -573,7 +602,7 @@ struct vec4 {
 struct mat4 {
 	float[16] m;
 
-	alias m this;
+	//alias m this;
 
 	this(float v) {
 		setDiagonal(v);
@@ -782,6 +811,57 @@ struct mat4 {
 		return m;
 	}
 
+	vec3 opBinary(string op : "*")(const vec3 vector) const
+	{
+		float x, y, z, w;
+		x = vector.x * m[0*4 + 0] +
+			vector.y * m[1*4 + 0] +
+			vector.z * m[2*4 + 0] +
+			m[3*4 + 0];
+		y = vector.x * m[0*4 + 1] +
+			vector.y * m[1*4 + 1] +
+			vector.z * m[2*4 + 1] +
+			m[3*4 + 1];
+		z = vector.x * m[0*4 + 2] +
+			vector.y * m[1*4 + 2] +
+			vector.z * m[2*4 + 2] +
+			m[3*4 + 2];
+		w = vector.x * m[0*4 + 3] +
+			vector.y * m[1*4 + 3] +
+			vector.z * m[2*4 + 3] +
+			m[3*4 + 3];
+		if (w == 1.0f)
+			return vec3(x, y, z);
+		else
+			return vec3(x / w, y / w, z / w);
+	}
+
+	vec4 opBinary(string op : "*")(const vec4 vector) const
+	{
+		// TODO
+		float x, y, z, w;
+		x = vector.x * m[0*4 + 0] +
+			vector.y * m[1*4 + 0] +
+			vector.z * m[2*4 + 0] +
+			m[3*4 + 0];
+		y = vector.x * m[0*4 + 1] +
+			vector.y * m[1*4 + 1] +
+			vector.z * m[2*4 + 1] +
+			m[3*4 + 1];
+		z = vector.x * m[0*4 + 2] +
+			vector.y * m[1*4 + 2] +
+			vector.z * m[2*4 + 2] +
+			m[3*4 + 2];
+		w = vector.x * m[0*4 + 3] +
+			vector.y * m[1*4 + 3] +
+			vector.z * m[2*4 + 3] +
+			m[3*4 + 3];
+		if (w == 1.0f)
+			return vec4(x, y, z, 1);
+		else
+			return vec4(x / w, y / w, z / w, 1);
+	}
+
 	/// 2d index by row, col
 	ref float opIndex(int y, int x) {
 		return m[y*4 + x];
@@ -867,9 +947,39 @@ struct mat4 {
 		return this;
 	}
 
+	ref mat4 rotate(float angle, const vec3 axis) {
+		// TODO
+		return this;
+	}
+
+	ref mat4 rotateX(float angle) {
+		// TODO
+		return this;
+	}
+
+	ref mat4 rotateY(float angle) {
+		// TODO
+		return this;
+	}
+
+	ref mat4 rotateZ(float angle) {
+		// TODO
+		return this;
+	}
+
+	ref mat4 scale(float x, float y, float z) {
+		// TODO
+		return this;
+	}
+
+	static mat4 translation(float x, float y, float z) {
+		// TODO
+		mat4 res = 1;
+		return res;
+	}
+
 
 }
-
 
 unittest {
 	vec3 a, b, c;
@@ -932,4 +1042,9 @@ unittest {
 	m /= 3;
 	m.translate(vec3(2, 3, 4));
 	m.setLookAt(vec3(5, 5, 5), vec3(0, 0, 0), vec3(-1, 1, 1));
+
+	vec3 vv1 = vec3(1,2,3);
+	auto p1 = m * vv1;
+	vec3 vv2 = vec3(3,4,5);
+	auto p2 = vv2 * m;
 }

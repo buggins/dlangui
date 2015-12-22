@@ -279,7 +279,7 @@ class SolidFillProgram : GLProgram {
         checkgl!glDisable(GL_CULL_FACE);
         checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         bind();
-        checkgl!glUniformMatrix4fv(matrixLocation, 1, false, glSupport.projectionMatrix.ptr);
+        checkgl!glUniformMatrix4fv(matrixLocation, 1, false, glSupport.projectionMatrix.m.ptr);
     }
 
     void afterExecute() {
@@ -844,7 +844,7 @@ class GLSupport {
     //private float[16] matrix;
     private mat4 _projectionMatrix;
 
-	@property float[16] projectionMatrix() {
+	@property ref mat4 projectionMatrix() {
 		return _projectionMatrix;
 	}
 
@@ -860,7 +860,7 @@ class GLSupport {
 			glMatrixMode(GL_PROJECTION);
 			//checkgl!glPushMatrix();
 			//glLoadIdentity();
-			glLoadMatrixf(_projectionMatrix.ptr);
+			glLoadMatrixf(_projectionMatrix.m.ptr);
 			//glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
 			glMatrixMode(GL_MODELVIEW);
 			//checkgl!glPushMatrix();
@@ -880,7 +880,7 @@ class GLSupport {
 			glMatrixMode(GL_PROJECTION);
 			//checkgl!glPushMatrix();
 			//glLoadIdentity();
-			glLoadMatrixf(_projectionMatrix.ptr);
+			glLoadMatrixf(_projectionMatrix.m.ptr);
 			//glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
 			glMatrixMode(GL_MODELVIEW);
 			//checkgl!glPushMatrix();

@@ -2,8 +2,7 @@ module dlangui.graphics.scene.camera;
 
 import dlangui.graphics.scene.node;
 
-import gl3n.linalg;
-import gl3n.math;
+import dlangui.core.math3d;
 
 /// Camera
 class Camera : Node3d {
@@ -51,13 +50,13 @@ class Camera : Node3d {
 
     /// set orthographic projection
     void setOrtho(float left, float right, float bottom, float top, float near, float far) {
-        _projectionMatrix = mat4.orthographic(left, right, bottom, top, near, far);
+        _projectionMatrix.setOrtho(left, right, bottom, top, near, far);
         _dirtyViewProjection = true;
     }
 
     /// set perspective projection
     void setPerspective(float width, float height, float fov, float near, float far) {
-        _projectionMatrix = mat4.perspective(width, height, fov, near, far);
+        _projectionMatrix.setPerspective(fov, width / height, near, far);
         _dirtyViewProjection = true;
     }
 
