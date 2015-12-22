@@ -248,28 +248,32 @@ static if (ENABLE_OPENGL) {
 			checkgl!glDisable(GL_CULL_FACE);
 			checkgl!glDisable(GL_DEPTH_TEST);
 
-			import gl3n.linalg;
-			glSupport.setPerspectiveProjection(windowRect, rc, 90.0f, 0.5f, 100.0f);
-			mat4 projectionMatrix = mat4.perspective(rc.width, rc.height, 90.0f, 0.5f, 100.0f);
-			mat4 viewMatrix = mat4.look_at(vec3(10, 10, 0), vec3(0, 0, 0), vec3(1, -1, 0));//translation(0.0f, 0.0f, 4.0f).rotatez(angle);
+			//import gl3n.linalg;
+			glSupport.setPerspectiveProjection(windowRect, rc, 45.0f, 0.5f, 100.0f);
+			//mat4 projectionMatrix = glSupport.projectionMatrix; //mat4.perspective(rc.width, rc.height, 90.0f, 0.5f, 100.0f);
+			mat4 projectionMatrix;
+			float aspectRatio = cast(float)rc.width / cast(float)rc.height;
+			projectionMatrix.setPerspective(45.0f, aspectRatio, 0.5f, 100.0f);
+			mat4 viewMatrix = 1.0f;
+			viewMatrix.lookAt(vec3(10, 10, 0), vec3(0, 0, 0), vec3(1, -1, 0));//translation(0.0f, 0.0f, 4.0f).rotatez(angle);
 			mat4 modelMatrix = mat4.identity;
 			mat4 m = projectionMatrix * viewMatrix * modelMatrix;
 
-			float[16] matrix;
-			for (int y = 0; y < 4; y++)
-				for (int x = 0; x < 4; x++)
-					matrix[y * 4 + x] = m[x][y];
+			//float[16] matrix;
+			//for (int y = 0; y < 4; y++)
+			//    for (int x = 0; x < 4; x++)
+			//        matrix[y * 4 + x] = m[x][y];
 					//matrix[x * 4 + y] = m[y][x];
 
 			Log.d("projectionViewModelMatrix qt: ", glSupport.projectionMatrix);
-			Log.d("projectionViewModelMatrix: ", matrix);
-			Log.d("(-1,-1,-1) * matrix: ", m * vec4(-1, -1, -1, 1));
-			Log.d("(1,1,1) * matrix: ", m * vec4(1, 1, 1, 1));
-			Log.d("(0,1,0) * matrix: ", m * vec4(0, 1, 0, 1));
-			Log.d("(1,0,0) * matrix: ", m * vec4(1, 0, 0, 1));
-			Log.d("(0,0,0) * matrix: ", m * vec4(0, 0, 0, 1));
+			Log.d("projectionViewModelMatrix: ", cast(float[16])m.m);
+			//Log.d("(-1,-1,-1) * matrix: ", m * vec4(-1, -1, -1, 1));
+			//Log.d("(1,1,1) * matrix: ", m * vec4(1, 1, 1, 1));
+			//Log.d("(0,1,0) * matrix: ", m * vec4(0, 1, 0, 1));
+			//Log.d("(1,0,0) * matrix: ", m * vec4(1, 0, 0, 1));
+			//Log.d("(0,0,0) * matrix: ", m * vec4(0, 0, 0, 1));
 
-			_program.execute(vertices, colors, texcoords, _tx.texture, true, matrix);
+			_program.execute(vertices, colors, texcoords, _tx.texture, true, m);
 		}
 		/// returns true is widget is being animated - need to call animate() and redraw
 		@property override bool animating() { return true; }

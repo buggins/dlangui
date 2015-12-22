@@ -108,7 +108,7 @@ struct vec3 {
 
 	/// add value to all components of vector
 	vec3 opBinary(string op : "+")(float v) const {
-		vec3 res;
+		vec3 res = this;
 		res.vec[0] += v;
 		res.vec[1] += v;
 		res.vec[2] += v;
@@ -116,7 +116,7 @@ struct vec3 {
 	}
 	/// multiply all components of vector by value
 	vec3 opBinary(string op : "*")(float v) const {
-		vec3 res;
+		vec3 res = this;
 		res.vec[0] *= v;
 		res.vec[1] *= v;
 		res.vec[2] *= v;
@@ -124,7 +124,7 @@ struct vec3 {
 	}
 	/// subtract value from all components of vector
 	vec3 opBinary(string op : "-")(float v) const {
-		vec3 res;
+		vec3 res = this;
 		res.vec[0] -= v;
 		res.vec[1] -= v;
 		res.vec[2] -= v;
@@ -132,7 +132,7 @@ struct vec3 {
 	}
 	/// divide all components of vector by value
 	vec3 opBinary(string op : "/")(float v) const {
-		vec3 res;
+		vec3 res = this;
 		res.vec[0] /= v;
 		res.vec[1] /= v;
 		res.vec[2] /= v;
@@ -201,7 +201,7 @@ struct vec3 {
 
 	/// add value to all components of vector
 	vec3 opBinary(string op : "+")(const vec3 v) const {
-		vec3 res;
+		vec3 res = this;
 		res.vec[0] += v.vec[0];
 		res.vec[1] += v.vec[1];
 		res.vec[2] += v.vec[2];
@@ -209,7 +209,7 @@ struct vec3 {
 	}
 	/// subtract value from all components of vector
 	vec3 opBinary(string op : "-")(const vec3 v) const {
-		vec3 res;
+		vec3 res = this;
 		res.vec[0] -= v.vec[0];
 		res.vec[1] -= v.vec[1];
 		res.vec[2] -= v.vec[2];
@@ -227,6 +227,16 @@ struct vec3 {
 		res += vec[2] * v.vec[2];
 		return res;
 	}
+
+	/// returns vector with all components which are negative of components for this vector
+    vec3 opUnary(string op : "-")() const {
+        vec3 ret = this;
+		ret[0] = vec[0];
+		ret[1] = vec[1];
+		ret[2] = vec[2];
+        return ret;
+    }
+
 
 	/// sum of squares of all vector components
 	@property float magnitudeSquared() {
@@ -252,6 +262,12 @@ struct vec3 {
 		return res;
 	}
 
+	/// cross product
+	static vec3 crossProduct(const vec3 v1, const vec3 v2) {
+		return vec3(v1.y * v2.z - v1.z * v2.y,
+					v1.z * v2.x - v1.x * v2.z,
+					v1.x * v2.y - v1.y * v2.x);
+	}
 }
 
 /// 4 component vector
@@ -380,7 +396,7 @@ struct vec4 {
 
 	/// add value to all components of vector
 	vec4 opBinary(string op : "+")(float v) const {
-		vec4 res;
+		vec4 res = this;
 		res.vec[0] += v;
 		res.vec[1] += v;
 		res.vec[2] += v;
@@ -389,7 +405,7 @@ struct vec4 {
 	}
 	/// multiply all components of vector by value
 	vec4 opBinary(string op : "*")(float v) const {
-		vec4 res;
+		vec4 res = this;
 		res.vec[0] *= v;
 		res.vec[1] *= v;
 		res.vec[2] *= v;
@@ -398,7 +414,7 @@ struct vec4 {
 	}
 	/// subtract value from all components of vector
 	vec4 opBinary(string op : "-")(float v) const {
-		vec4 res;
+		vec4 res = this;
 		res.vec[0] -= v;
 		res.vec[1] -= v;
 		res.vec[2] -= v;
@@ -407,7 +423,7 @@ struct vec4 {
 	}
 	/// divide all components of vector by value
 	vec4 opBinary(string op : "/")(float v) const {
-		vec4 res;
+		vec4 res = this;
 		res.vec[0] /= v;
 		res.vec[1] /= v;
 		res.vec[2] /= v;
@@ -485,7 +501,7 @@ struct vec4 {
 
 	/// add value to all components of vector
 	vec4 opBinary(string op : "+")(const vec4 v) const {
-		vec4 res;
+		vec4 res = this;
 		res.vec[0] += v.vec[0];
 		res.vec[1] += v.vec[1];
 		res.vec[2] += v.vec[2];
@@ -494,7 +510,7 @@ struct vec4 {
 	}
 	/// subtract value from all components of vector
 	vec4 opBinary(string op : "-")(const vec4 v) const {
-		vec4 res;
+		vec4 res = this;
 		res.vec[0] -= v.vec[0];
 		res.vec[1] -= v.vec[1];
 		res.vec[2] -= v.vec[2];
@@ -514,6 +530,18 @@ struct vec4 {
 		res += vec[3] * v.vec[3];
 		return res;
 	}
+
+	/// returns vector with all components which are negative of components for this vector
+    vec4 opUnary(string op : "-")() const {
+        vec4 ret = this;
+		ret[0] = vec[0];
+		ret[1] = vec[1];
+		ret[2] = vec[2];
+		ret[3] = vec[3];
+        return ret;
+    }
+
+
 
 	/// sum of squares of all vector components
 	@property float magnitudeSquared() {
@@ -547,6 +575,10 @@ struct mat4 {
 
 	alias m this;
 
+	this(float v) {
+		setDiagonal(v);
+	}
+
 	this(const ref mat4 v) {
 		m[0..15] = v.m[0..15];
 	}
@@ -555,6 +587,10 @@ struct mat4 {
 	}
 
 	ref mat4 opAssign(const ref mat4 v) {
+		m[0..15] = v.m[0..15];
+		return this;
+	}
+	ref mat4 opAssign(const  mat4 v) {
 		m[0..15] = v.m[0..15];
 		return this;
 	}
@@ -622,6 +658,130 @@ struct mat4 {
         m[3*4 + 3] = 0.0f;
     }
 
+	ref mat4 lookAt(const vec3 eye, const vec3 center, const vec3 up) {
+		vec3 forward = (center - eye).normalized();
+		vec3 side = vec3.crossProduct(forward, up).normalized();
+		vec3 upVector = vec3.crossProduct(side, forward);
+
+		mat4 m;
+		m.setIdentity();
+		m[0*4 + 0] = side.x;
+		m[1*4 + 0] = side.y;
+		m[2*4 + 0] = side.z;
+		m[3*4 + 0] = 0.0f;
+		m[0*4 + 1] = upVector.x;
+		m[1*4 + 1] = upVector.y;
+		m[2*4 + 1] = upVector.z;
+		m[3*4 + 1] = 0.0f;
+		m[0*4 + 2] = -forward.x;
+		m[1*4 + 2] = -forward.y;
+		m[2*4 + 2] = -forward.z;
+		m[3*4 + 2] = 0.0f;
+		m[0*4 + 3] = 0.0f;
+		m[1*4 + 3] = 0.0f;
+		m[2*4 + 3] = 0.0f;
+		m[3*4 + 3] = 1.0f;
+
+		this *= m;
+		translate(-eye);
+		return this;
+	}
+
+	ref mat4 setLookAt(const vec3 eye, const vec3 center, const vec3 up) {
+		setIdentity();
+		lookAt(eye, center, up);
+		return this;
+	}
+
+	ref mat4 translate(const vec3 v) {
+		m[3*4 + 0] += m[0*4 + 0] * v.x + m[1*4 + 0] * v.y + m[2*4 + 0] * v.z;
+        m[3*4 + 1] += m[0*4 + 1] * v.x + m[1*4 + 1] * v.y + m[2*4 + 1] * v.z;
+        m[3*4 + 2] += m[0*4 + 2] * v.x + m[1*4 + 2] * v.y + m[2*4 + 2] * v.z;
+        m[3*4 + 3] += m[0*4 + 3] * v.x + m[1*4 + 3] * v.y + m[2*4 + 3] * v.z;
+		return this;
+	}
+
+	/// multiply this matrix by another matrix
+	mat4 opBinary(string op : "*")(const ref mat4 m2) const {
+		return mul(this, m2);
+	}
+
+	/// multiply this matrix by another matrix
+	mat4 opOpAssign(string op : "*")(const ref mat4 m2) {
+		this = mul(this, m2);
+		return this;
+	}
+
+	/// multiply two matrices
+	static mat4 mul(const ref mat4 m1, const ref mat4 m2) {
+		mat4 m;
+		m.m[0*4 + 0] = m1.m[0*4 + 0] * m2.m[0*4 + 0] +
+			m1.m[1*4 + 0] * m2.m[0*4 + 1] +
+			m1.m[2*4 + 0] * m2.m[0*4 + 2] +
+			m1.m[3*4 + 0] * m2.m[0*4 + 3];
+		m.m[0*4 + 1] = m1.m[0*4 + 1] * m2.m[0*4 + 0] +
+			m1.m[1*4 + 1] * m2.m[0*4 + 1] +
+			m1.m[2*4 + 1] * m2.m[0*4 + 2] +
+			m1.m[3*4 + 1] * m2.m[0*4 + 3];
+		m.m[0*4 + 2] = m1.m[0*4 + 2] * m2.m[0*4 + 0] +
+			m1.m[1*4 + 2] * m2.m[0*4 + 1] +
+			m1.m[2*4 + 2] * m2.m[0*4 + 2] +
+			m1.m[3*4 + 2] * m2.m[0*4 + 3];
+		m.m[0*4 + 3] = m1.m[0*4 + 3] * m2.m[0*4 + 0] +
+			m1.m[1*4 + 3] * m2.m[0*4 + 1] +
+			m1.m[2*4 + 3] * m2.m[0*4 + 2] +
+			m1.m[3*4 + 3] * m2.m[0*4 + 3];
+		m.m[1*4 + 0] = m1.m[0*4 + 0] * m2.m[1*4 + 0] +
+			m1.m[1*4 + 0] * m2.m[1*4 + 1] +
+			m1.m[2*4 + 0] * m2.m[1*4 + 2] +
+			m1.m[3*4 + 0] * m2.m[1*4 + 3];
+		m.m[1*4 + 1] = m1.m[0*4 + 1] * m2.m[1*4 + 0] +
+			m1.m[1*4 + 1] * m2.m[1*4 + 1] +
+			m1.m[2*4 + 1] * m2.m[1*4 + 2] +
+			m1.m[3*4 + 1] * m2.m[1*4 + 3];
+		m.m[1*4 + 2] = m1.m[0*4 + 2] * m2.m[1*4 + 0] +
+			m1.m[1*4 + 2] * m2.m[1*4 + 1] +
+			m1.m[2*4 + 2] * m2.m[1*4 + 2] +
+			m1.m[3*4 + 2] * m2.m[1*4 + 3];
+		m.m[1*4 + 3] = m1.m[0*4 + 3] * m2.m[1*4 + 0] +
+			m1.m[1*4 + 3] * m2.m[1*4 + 1] +
+			m1.m[2*4 + 3] * m2.m[1*4 + 2] +
+			m1.m[3*4 + 3] * m2.m[1*4 + 3];
+		m.m[2*4 + 0] = m1.m[0*4 + 0] * m2.m[2*4 + 0] +
+			m1.m[1*4 + 0] * m2.m[2*4 + 1] +
+			m1.m[2*4 + 0] * m2.m[2*4 + 2] +
+			m1.m[3*4 + 0] * m2.m[2*4 + 3];
+		m.m[2*4 + 1] = m1.m[0*4 + 1] * m2.m[2*4 + 0] +
+			m1.m[1*4 + 1] * m2.m[2*4 + 1] +
+			m1.m[2*4 + 1] * m2.m[2*4 + 2] +
+			m1.m[3*4 + 1] * m2.m[2*4 + 3];
+		m.m[2*4 + 2] = m1.m[0*4 + 2] * m2.m[2*4 + 0] +
+			m1.m[1*4 + 2] * m2.m[2*4 + 1] +
+			m1.m[2*4 + 2] * m2.m[2*4 + 2] +
+			m1.m[3*4 + 2] * m2.m[2*4 + 3];
+		m.m[2*4 + 3] = m1.m[0*4 + 3] * m2.m[2*4 + 0] +
+			m1.m[1*4 + 3] * m2.m[2*4 + 1] +
+			m1.m[2*4 + 3] * m2.m[2*4 + 2] +
+			m1.m[3*4 + 3] * m2.m[2*4 + 3];
+		m.m[3*4 + 0] = m1.m[0*4 + 0] * m2.m[3*4 + 0] +
+			m1.m[1*4 + 0] * m2.m[3*4 + 1] +
+			m1.m[2*4 + 0] * m2.m[3*4 + 2] +
+			m1.m[3*4 + 0] * m2.m[3*4 + 3];
+		m.m[3*4 + 1] = m1.m[0*4 + 1] * m2.m[3*4 + 0] +
+			m1.m[1*4 + 1] * m2.m[3*4 + 1] +
+			m1.m[2*4 + 1] * m2.m[3*4 + 2] +
+			m1.m[3*4 + 1] * m2.m[3*4 + 3];
+		m.m[3*4 + 2] = m1.m[0*4 + 2] * m2.m[3*4 + 0] +
+			m1.m[1*4 + 2] * m2.m[3*4 + 1] +
+			m1.m[2*4 + 2] * m2.m[3*4 + 2] +
+			m1.m[3*4 + 2] * m2.m[3*4 + 3];
+		m.m[3*4 + 3] = m1.m[0*4 + 3] * m2.m[3*4 + 0] +
+			m1.m[1*4 + 3] * m2.m[3*4 + 1] +
+			m1.m[2*4 + 3] * m2.m[3*4 + 2] +
+			m1.m[3*4 + 3] * m2.m[3*4 + 3];
+		return m;
+	}
+
 	/// 2d index by row, col
 	ref float opIndex(int y, int x) {
 		return m[y*4 + x];
@@ -642,31 +802,72 @@ struct mat4 {
 		return m[index];
 	}
 
-	/// set to identity
+	/// set to identity: fill all items of matrix with zero except main diagonal items which will be assigned to 1.0f
 	ref mat4 setIdentity() {
+		return setDiagonal(1.0f);
+	}
+	/// set to diagonal: fill all items of matrix with zero except main diagonal items which will be assigned to v
+	ref mat4 setDiagonal(float v) {
 		for (int x = 0; x < 4; x++) {
 			for (int y = 0; y < 4; y++) {
 				if (x == y)
-					m[y * 4 + x] = 1.0f;
+					m[y * 4 + x] = v;
 				else
 					m[y * 4 + x] = 0.0f;
 			}
 		}
 		return this;
 	}
+	/// fill all items of matrix with specified value
+	ref mat4 fill(float v) {
+		foreach(ref f; m)
+			f = v;
+		return this;
+	}
+	/// fill all items of matrix with zero
 	ref mat4 setZero() {
 		foreach(ref f; m)
 			f = 0.0f;
 		return this;
 	}
+	/// creates identity matrix
 	static mat4 identity() {
 		mat4 res;
 		return res.setIdentity();
 	}
+	/// creates zero matrix
 	static mat4 zero() {
 		mat4 res;
 		return res.setZero();
 	}
+
+
+	/// add value to all components of matrix
+	ref mat4 opOpAssign(string op : "+")(float v) {
+		foreach(ref item; m)
+			item += v;
+		return this;
+	}
+	/// multiply all components of matrix by value
+	ref mat4 opOpAssign(string op : "*")(float v) {
+		foreach(ref item; m)
+			item *= v;
+		return this;
+	}
+	/// subtract value from all components of matrix
+	ref mat4 opOpAssign(string op : "-")(float v) {
+		foreach(ref item; m)
+			item -= v;
+		return this;
+	}
+	/// divide all components of vector by matrix
+	ref mat4 opOpAssign(string op : "/")(float v) {
+		foreach(ref item; m)
+			item /= v;
+		return this;
+	}
+
+
 }
 
 
@@ -725,4 +926,10 @@ unittest {
 	float r;
 	r = m[1, 3];
 	m[2, 1] = 0.0f;
+	m += 1;
+	m -= 2;
+	m *= 3;
+	m /= 3;
+	m.translate(vec3(2, 3, 4));
+	m.setLookAt(vec3(5, 5, 5), vec3(0, 0, 0), vec3(-1, 1, 1));
 }
