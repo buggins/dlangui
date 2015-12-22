@@ -229,6 +229,13 @@ static if (ENABLE_OPENGL) {
 				cl = 1.0f;
 		}
 
+		~this() {
+			if (_program)
+				destroy(_program);
+			if (_tx)
+				destroy(_tx);
+		}
+
 		/// New API example (OpenGL3+, shaders)
 		void drawUsingNewAPI(Rect windowRect, Rect rc) {
 			// TODO: put some sample code here
@@ -249,15 +256,17 @@ static if (ENABLE_OPENGL) {
 			checkgl!glDisable(GL_DEPTH_TEST);
 
 			//import gl3n.linalg;
-			glSupport.setPerspectiveProjection(windowRect, rc, 45.0f, 0.5f, 100.0f);
+			//glSupport.setPerspectiveProjection(windowRect, rc, 45.0f, 0.5f, 100.0f);
 			//mat4 projectionMatrix = glSupport.projectionMatrix; //mat4.perspective(rc.width, rc.height, 90.0f, 0.5f, 100.0f);
 			mat4 projectionMatrix = glSupport.projectionMatrix;
 			float aspectRatio = cast(float)rc.width / cast(float)rc.height;
 			projectionMatrix.setPerspective(45.0f, aspectRatio, 0.5f, 100.0f);
 			mat4 viewMatrix = 1.0f;
-			viewMatrix.lookAt(vec3(-10, 0, 0), vec3(0, 0, 0), vec3(0, 1, 0));//translation(0.0f, 0.0f, 4.0f).rotatez(angle);
+			viewMatrix.lookAt(vec3(10, 0, 0), vec3(0, 0, 0), vec3(0, 1, 0));//translation(0.0f, 0.0f, 4.0f).rotatez(angle);
 			mat4 modelMatrix = mat4.identity;
+			//modelMatrix.translate(3, 0, 0);
 			mat4 m = projectionMatrix * viewMatrix * modelMatrix;
+			//mat4 m = modelMatrix * viewMatrix * projectionMatrix;
 
 			//float[16] matrix;
 			//for (int y = 0; y < 4; y++)
@@ -265,10 +274,12 @@ static if (ENABLE_OPENGL) {
 			//        matrix[y * 4 + x] = m[x][y];
 					//matrix[x * 4 + y] = m[y][x];
 
-			Log.d("projectionViewModelMatrix qt: ", glSupport.projectionMatrix);
+			Log.d("projectionMatrix qt: ", glSupport.projectionMatrix);
+			Log.d("projectionMatrix 2 : ", projectionMatrix);
 			Log.d("projectionViewModelMatrix: ", cast(float[16])m.m);
 			Log.d("(-1,-1,-1) * matrix: ", (m * vec3(-1, -1, -1)).vec);
 			Log.d("(1,1,1) * matrix: ", (m * vec3(1, 1, 1)).vec);
+			Log.d("(0,3,0) * matrix: ", (m * vec3(0, 3, 0)).vec);
 			//Log.d("(1,1,1) * matrix: ", m * vec4(1, 1, 1, 1));
 			//Log.d("(0,1,0) * matrix: ", m * vec4(0, 1, 0, 1));
 			//Log.d("(1,0,0) * matrix: ", m * vec4(1, 0, 0, 1));

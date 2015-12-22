@@ -271,27 +271,27 @@ struct vec3 {
 	/// multiply vector by matrix
 	vec3 opBinary(string op : "*")(const ref mat4 matrix) const
 	{
-		float x, y, z, w;
-		x = x * matrix.m[0*4 + 0] +
+		float xx, yy, zz, ww;
+		xx = x * matrix.m[0*4 + 0] +
 			y * matrix.m[0*4 + 1] +
 			z * matrix.m[0*4 + 2] +
 			matrix.m[0*4 + 3];
-		y = x * matrix.m[1*4 + 0] +
+		yy = x * matrix.m[1*4 + 0] +
 			y * matrix.m[1*4 + 1] +
 			z * matrix.m[1*4 + 2] +
 			matrix.m[1*4 + 3];
-		z = x * matrix.m[2*4 + 0] +
+		zz = x * matrix.m[2*4 + 0] +
 			y * matrix.m[2*4 + 1] +
 			z * matrix.m[2*4 + 2] +
 			matrix.m[2*4 + 3];
-		w = x * matrix.m[3*4 + 0] +
+		ww = x * matrix.m[3*4 + 0] +
 			y * matrix.m[3*4 + 1] +
 			z * matrix.m[3*4 + 2] +
 			matrix.m[3*4 + 3];
-		if (w == 1.0f)
-			return vec3(x, y, z);
+		if (ww == 1.0f)
+			return vec3(xx, yy, zz);
 		else
-			return vec3(x / w, y / w, z / w);
+			return vec3(xx / ww, yy / ww, zz / ww);
 	}
 
 }
@@ -596,6 +596,33 @@ struct vec4 {
 		return res;
 	}
 
+	/// multiply vector by matrix
+	vec4 opBinary(string op : "*")(const ref mat4 matrix) const
+	{
+		float xx, yy, zz, ww;
+		xx = x * matrix.m[0*4 + 0] +
+			 y * matrix.m[0*4 + 1] +
+			 z * matrix.m[0*4 + 2] +
+			 w * matrix.m[0*4 + 3];
+		yy = x * matrix.m[1*4 + 0] +
+			 y * matrix.m[1*4 + 1] +
+			 z * matrix.m[1*4 + 2] +
+			 w * matrix.m[1*4 + 3];
+		zz = x * matrix.m[2*4 + 0] +
+			 y * matrix.m[2*4 + 1] +
+			 z * matrix.m[2*4 + 2] +
+			 w * matrix.m[2*4 + 3];
+		ww = x * matrix.m[3*4 + 0] +
+			 y * matrix.m[3*4 + 1] +
+			 z * matrix.m[3*4 + 2] +
+			 w * matrix.m[3*4 + 3];
+		return vec4(xx, yy, zz, ww);
+	}
+
+}
+
+bool fuzzyNull(float v) {
+	return v < 0.0000001f && v > -0.0000001f;
 }
 
 /// float matrix 4 x 4
@@ -730,6 +757,38 @@ struct mat4 {
 		return this;
 	}
 
+	ref mat4 translate(float x, float y, float z) {
+		m[3*4 + 0] += m[0*4 + 0] * x + m[1*4 + 0] * y + m[2*4 + 0] * z;
+        m[3*4 + 1] += m[0*4 + 1] * x + m[1*4 + 1] * y + m[2*4 + 1] * z;
+        m[3*4 + 2] += m[0*4 + 2] * x + m[1*4 + 2] * y + m[2*4 + 2] * z;
+        m[3*4 + 3] += m[0*4 + 3] * x + m[1*4 + 3] * y + m[2*4 + 3] * z;
+		return this;
+	}
+
+	/// add scalar to all items of matrix
+	mat4 opBinary(string op : "+")(float v) const {
+		foreach(ref item; m)
+			item += v;
+	}
+
+	/// multiply this matrix by scalar
+	mat4 opBinary(string op : "-")(float v) const {
+		foreach(ref item; m)
+			item -= v;
+	}
+
+	/// multiply this matrix by scalar
+	mat4 opBinary(string op : "*")(float v) const {
+		foreach(ref item; m)
+			item *= v;
+	}
+
+	/// multiply this matrix by scalar
+	mat4 opBinary(string op : "/")(float v) const {
+		foreach(ref item; m)
+			item /= v;
+	}
+
 	/// multiply this matrix by another matrix
 	mat4 opBinary(string op : "*")(const ref mat4 m2) const {
 		return mul(this, m2);
@@ -811,6 +870,7 @@ struct mat4 {
 		return m;
 	}
 
+	/// multiply matrix by vec3
 	vec3 opBinary(string op : "*")(const vec3 vector) const
 	{
 		float x, y, z, w;
@@ -836,30 +896,27 @@ struct mat4 {
 			return vec3(x / w, y / w, z / w);
 	}
 
+	/// multiply matrix by vec4
 	vec4 opBinary(string op : "*")(const vec4 vector) const
 	{
-		// TODO
 		float x, y, z, w;
 		x = vector.x * m[0*4 + 0] +
 			vector.y * m[1*4 + 0] +
 			vector.z * m[2*4 + 0] +
-			m[3*4 + 0];
+			vector.w * m[3*4 + 0];
 		y = vector.x * m[0*4 + 1] +
 			vector.y * m[1*4 + 1] +
 			vector.z * m[2*4 + 1] +
-			m[3*4 + 1];
+			vector.w * m[3*4 + 1];
 		z = vector.x * m[0*4 + 2] +
 			vector.y * m[1*4 + 2] +
 			vector.z * m[2*4 + 2] +
-			m[3*4 + 2];
+			vector.w * m[3*4 + 2];
 		w = vector.x * m[0*4 + 3] +
 			vector.y * m[1*4 + 3] +
 			vector.z * m[2*4 + 3] +
-			m[3*4 + 3];
-		if (w == 1.0f)
-			return vec4(x, y, z, 1);
-		else
-			return vec4(x / w, y / w, z / w, 1);
+			vector.w * m[3*4 + 3];
+		return vec4(x, y, z, w);
 	}
 
 	/// 2d index by row, col
@@ -948,27 +1005,144 @@ struct mat4 {
 	}
 
 	ref mat4 rotate(float angle, const vec3 axis) {
-		// TODO
+		return rotate(angle, axis.x, axis.y, axis.z);
+	}
+
+	ref mat4 rotate(float angle, float x, float y, float z) {
+		if (angle == 0.0f)
+			return this;
+		mat4 m;
+		float c, s, ic;
+		if (angle == 90.0f || angle == -270.0f) {
+			s = 1.0f;
+			c = 0.0f;
+		} else if (angle == -90.0f || angle == 270.0f) {
+			s = -1.0f;
+			c = 0.0f;
+		} else if (angle == 180.0f || angle == -180.0f) {
+			s = 0.0f;
+			c = -1.0f;
+		} else {
+			float a = angle * PI / 180.0f;
+			c = cos(a);
+			s = sin(a);
+		}
+		bool quick = false;
+		if (x == 0.0f) {
+			if (y == 0.0f) {
+				if (z != 0.0f) {
+					// Rotate around the Z axis.
+					m.setIdentity();
+					m.m[0*4 + 0] = c;
+					m.m[1*4 + 1] = c;
+					if (z < 0.0f) {
+						m.m[1*4 + 0] = s;
+						m.m[0*4 + 1] = -s;
+					} else {
+						m.m[1*4 + 0] = -s;
+						m.m[0*4 + 1] = s;
+					}
+					quick = true;
+				}
+			} else if (z == 0.0f) {
+				// Rotate around the Y axis.
+				m.setIdentity();
+				m.m[0*4 + 0] = c;
+				m.m[2*4 + 2] = c;
+				if (y < 0.0f) {
+					m.m[2*4 + 0] = -s;
+					m.m[0*4 + 2] = s;
+				} else {
+					m.m[2*4 + 0] = s;
+					m.m[0*4 + 2] = -s;
+				}
+				quick = true;
+			}
+		} else if (y == 0.0f && z == 0.0f) {
+			// Rotate around the X axis.
+			m.setIdentity();
+			m.m[1*4 + 1] = c;
+			m.m[2*4 + 2] = c;
+			if (x < 0.0f) {
+				m.m[2*4 + 1] = s;
+				m.m[1*4 + 2] = -s;
+			} else {
+				m.m[2*4 + 1] = -s;
+				m.m[1*4 + 2] = s;
+			}
+			quick = true;
+		}
+		if (!quick) {
+			float len = x * x + y * y + z * z;
+			if (!fuzzyNull(len - 1.0f) && !fuzzyNull(len)) {
+				len = sqrt(len);
+				x /= len;
+				y /= len;
+				z /= len;
+			}
+			ic = 1.0f - c;
+			m.m[0*4 + 0] = x * x * ic + c;
+			m.m[1*4 + 0] = x * y * ic - z * s;
+			m.m[2*4 + 0] = x * z * ic + y * s;
+			m.m[3*4 + 0] = 0.0f;
+			m.m[0*4 + 1] = y * x * ic + z * s;
+			m.m[1*4 + 1] = y * y * ic + c;
+			m.m[2*4 + 1] = y * z * ic - x * s;
+			m.m[3*4 + 1] = 0.0f;
+			m.m[0*4 + 2] = x * z * ic - y * s;
+			m.m[1*4 + 2] = y * z * ic + x * s;
+			m.m[2*4 + 2] = z * z * ic + c;
+			m.m[3*4 + 2] = 0.0f;
+			m.m[0*4 + 3] = 0.0f;
+			m.m[1*4 + 3] = 0.0f;
+			m.m[2*4 + 3] = 0.0f;
+			m.m[3*4 + 3] = 1.0f;
+		}
+		this *= m;
 		return this;
 	}
 
 	ref mat4 rotateX(float angle) {
-		// TODO
-		return this;
+		return rotate(angle, 1, 0, 0);
 	}
 
 	ref mat4 rotateY(float angle) {
-		// TODO
-		return this;
+		return rotate(angle, 0, 1, 0);
 	}
 
 	ref mat4 rotateZ(float angle) {
-		// TODO
-		return this;
+		return rotate(angle, 0, 0, 1);
 	}
 
 	ref mat4 scale(float x, float y, float z) {
-		// TODO
+		m[0*4 + 0] *= x;
+        m[0*4 + 1] *= x;
+        m[0*4 + 2] *= x;
+        m[0*4 + 3] *= x;
+        m[1*4 + 0] *= y;
+        m[1*4 + 1] *= y;
+        m[1*4 + 2] *= y;
+        m[1*4 + 3] *= y;
+        m[2*4 + 0] *= z;
+        m[2*4 + 1] *= z;
+        m[2*4 + 2] *= z;
+        m[2*4 + 3] *= z;
+		return this;
+	}
+
+	ref mat4 scale(const vec3 v) {
+		m[0*4 + 0] *= v.x;
+        m[0*4 + 1] *= v.x;
+        m[0*4 + 2] *= v.x;
+        m[0*4 + 3] *= v.x;
+        m[1*4 + 0] *= v.y;
+        m[1*4 + 1] *= v.y;
+        m[1*4 + 2] *= v.y;
+        m[1*4 + 3] *= v.y;
+        m[2*4 + 0] *= v.z;
+        m[2*4 + 1] *= v.z;
+        m[2*4 + 2] *= v.z;
+        m[2*4 + 3] *= v.z;
 		return this;
 	}
 
@@ -1041,10 +1215,21 @@ unittest {
 	m *= 3;
 	m /= 3;
 	m.translate(vec3(2, 3, 4));
+	m.translate(5, 6, 7);
+	m.lookAt(vec3(5, 5, 5), vec3(0, 0, 0), vec3(-1, 1, 1));
 	m.setLookAt(vec3(5, 5, 5), vec3(0, 0, 0), vec3(-1, 1, 1));
+	m.scale(2,3,4);
+	m.scale(vec3(2,3,4));
 
 	vec3 vv1 = vec3(1,2,3);
 	auto p1 = m * vv1;
 	vec3 vv2 = vec3(3,4,5);
 	auto p2 = vv2 * m;
+	auto p3 = vec4(1,2,3,4) * m;
+	auto p4 = m * vec4(1,2,3,4);
+
+	m.rotate(30, 1, 1, 1);
+	m.rotateX(10);
+	m.rotateY(10);
+	m.rotateZ(10);
 }
