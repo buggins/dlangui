@@ -50,17 +50,17 @@ enum : int {
 alias FcResult = int;
 
 struct FcValue {
-    FcType	type;
+    FcType    type;
     union {
-	    const FcChar8	*s;
-	    int		i;
-	    FcBool		b;
-	    double		d;
-	    const FcMatrix	*m;
-	    const FcCharSet	*c;
-	    void		*f;
-	    const FcLangSet	*l;
-	    const FcRange	*r;
+        const FcChar8    *s;
+        int        i;
+        FcBool        b;
+        double        d;
+        const FcMatrix    *m;
+        const FcCharSet    *c;
+        void        *f;
+        const FcLangSet    *l;
+        const FcRange    *r;
     }
 }
 
@@ -88,15 +88,15 @@ enum FcEndian {
 }
 
 struct FcFontSet {
-    int		nfont;
-    int		sfont;
-    FcPattern	**fonts;
+    int        nfont;
+    int        sfont;
+    FcPattern    **fonts;
 }
 
 struct FcObjectSet {
-    int		nobject;
-    int		sobject;
-    const char	**objects;
+    int        nobject;
+    int        sobject;
+    const char    **objects;
 }
 
 struct FcPattern {}
@@ -126,75 +126,75 @@ enum {
 }
 
 enum {
-    FC_SLANT_ROMAN		    =0,
-    FC_SLANT_ITALIC		    =100,
-    FC_SLANT_OBLIQUE	    =110
+    FC_SLANT_ROMAN            =0,
+    FC_SLANT_ITALIC            =100,
+    FC_SLANT_OBLIQUE        =110
 }
 
 enum {
-    FC_WIDTH_ULTRACONDENSED	    =50,
-    FC_WIDTH_EXTRACONDENSED	    =63,
-    FC_WIDTH_CONDENSED	    =75,
-    FC_WIDTH_SEMICONDENSED	    =87,
-    FC_WIDTH_NORMAL		    =100,
-    FC_WIDTH_SEMIEXPANDED	    =113,
-    FC_WIDTH_EXPANDED	    =125,
-    FC_WIDTH_EXTRAEXPANDED	    =150,
-    FC_WIDTH_ULTRAEXPANDED	    =200
+    FC_WIDTH_ULTRACONDENSED        =50,
+    FC_WIDTH_EXTRACONDENSED        =63,
+    FC_WIDTH_CONDENSED        =75,
+    FC_WIDTH_SEMICONDENSED        =87,
+    FC_WIDTH_NORMAL            =100,
+    FC_WIDTH_SEMIEXPANDED        =113,
+    FC_WIDTH_EXPANDED        =125,
+    FC_WIDTH_EXTRAEXPANDED        =150,
+    FC_WIDTH_ULTRAEXPANDED        =200
 }
 
 enum {
-    FC_PROPORTIONAL		=0,
-    FC_DUAL			    =90,
-    FC_MONO			    =100,
-    FC_CHARCELL		    =110
+    FC_PROPORTIONAL        =0,
+    FC_DUAL                =90,
+    FC_MONO                =100,
+    FC_CHARCELL            =110
 }
 
-const FC_FAMILY = "family";		/* String */
-const FC_STYLE = "style";		/* String */
-const FC_SLANT = "slant";		/* Int */
-const FC_WEIGHT = "weight";		/* Int */
-const FC_SIZE = "size";		/* Range (double) */
-const FC_ASPECT = "aspect";		/* Double */
-const FC_PIXEL_SIZE = "pixelsize";		/* Double */
-const FC_SPACING = "spacing";		/* Int */
-const FC_FOUNDRY = "foundry";		/* String */
-const FC_ANTIALIAS = "antialias";		/* Bool (depends) */
-const FC_HINTING = "hinting";		/* Bool (true) */
-const FC_HINT_STYLE = "hintstyle";		/* Int */
-const FC_VERTICAL_LAYOUT = "verticallayout";	/* Bool (false) */
-const FC_AUTOHINT = "autohint";		/* Bool (false) */
-const FC_GLOBAL_ADVANCE = "globaladvance";	/* Bool (true) */
-const FC_WIDTH = "width";		/* Int */
-const FC_FILE = "file";		/* String */
-const FC_INDEX = "index";		/* Int */
-const FC_FT_FACE = "ftface";		/* FT_Face */
-const FC_RASTERIZER = "rasterizer";	/* String (deprecated) */
-const FC_OUTLINE = "outline";		/* Bool */
-const FC_SCALABLE = "scalable";		/* Bool */
-const FC_COLOR = "color";		/* Bool */
-const FC_SCALE = "scale";		/* double */
-const FC_DPI = "dpi";		/* double */
-const FC_RGBA = "rgba";		/* Int */
-const FC_MINSPACE = "minspace";		/* Bool use minimum line spacing */
-const FC_SOURCE = "source";		/* String (deprecated) */
-const FC_CHARSET = "charset";		/* CharSet */
-const FC_LANG = "lang";		/* String RFC 3066 langs */
-const FC_FONTVERSION = "fontversion";	/* Int from 'head' table */
-const FC_FULLNAME = "fullname";	/* String */
-const FC_FAMILYLANG = "familylang";	/* String RFC 3066 langs */
-const FC_STYLELANG = "stylelang";		/* String RFC 3066 langs */
-const FC_FULLNAMELANG = "fullnamelang";	/* String RFC 3066 langs */
-const FC_CAPABILITY = "capability";	/* String */
-const FC_FONTFORMAT = "fontformat";	/* String */
-const FC_EMBOLDEN = "embolden";		/* Bool - true if emboldening needed*/
-const FC_EMBEDDED_BITMAP = "embeddedbitmap";	/* Bool - true to enable embedded bitmaps */
-const FC_DECORATIVE = "decorative";	/* Bool - true if style is a decorative variant */
-const FC_LCD_FILTER	= "lcdfilter";		/* Int */
-const FC_FONT_FEATURES = "fontfeatures";	/* String */
-const FC_NAMELANG = "namelang";		/* String RFC 3866 langs */
-const FC_PRGNAME = "prgname";		/* String */
-const FC_HASH = "hash";		/* String (deprecated) */
-const FC_POSTSCRIPT_NAME = "postscriptname";	/* String */
+const FC_FAMILY = "family";        /* String */
+const FC_STYLE = "style";        /* String */
+const FC_SLANT = "slant";        /* Int */
+const FC_WEIGHT = "weight";        /* Int */
+const FC_SIZE = "size";        /* Range (double) */
+const FC_ASPECT = "aspect";        /* Double */
+const FC_PIXEL_SIZE = "pixelsize";        /* Double */
+const FC_SPACING = "spacing";        /* Int */
+const FC_FOUNDRY = "foundry";        /* String */
+const FC_ANTIALIAS = "antialias";        /* Bool (depends) */
+const FC_HINTING = "hinting";        /* Bool (true) */
+const FC_HINT_STYLE = "hintstyle";        /* Int */
+const FC_VERTICAL_LAYOUT = "verticallayout";    /* Bool (false) */
+const FC_AUTOHINT = "autohint";        /* Bool (false) */
+const FC_GLOBAL_ADVANCE = "globaladvance";    /* Bool (true) */
+const FC_WIDTH = "width";        /* Int */
+const FC_FILE = "file";        /* String */
+const FC_INDEX = "index";        /* Int */
+const FC_FT_FACE = "ftface";        /* FT_Face */
+const FC_RASTERIZER = "rasterizer";    /* String (deprecated) */
+const FC_OUTLINE = "outline";        /* Bool */
+const FC_SCALABLE = "scalable";        /* Bool */
+const FC_COLOR = "color";        /* Bool */
+const FC_SCALE = "scale";        /* double */
+const FC_DPI = "dpi";        /* double */
+const FC_RGBA = "rgba";        /* Int */
+const FC_MINSPACE = "minspace";        /* Bool use minimum line spacing */
+const FC_SOURCE = "source";        /* String (deprecated) */
+const FC_CHARSET = "charset";        /* CharSet */
+const FC_LANG = "lang";        /* String RFC 3066 langs */
+const FC_FONTVERSION = "fontversion";    /* Int from 'head' table */
+const FC_FULLNAME = "fullname";    /* String */
+const FC_FAMILYLANG = "familylang";    /* String RFC 3066 langs */
+const FC_STYLELANG = "stylelang";        /* String RFC 3066 langs */
+const FC_FULLNAMELANG = "fullnamelang";    /* String RFC 3066 langs */
+const FC_CAPABILITY = "capability";    /* String */
+const FC_FONTFORMAT = "fontformat";    /* String */
+const FC_EMBOLDEN = "embolden";        /* Bool - true if emboldening needed*/
+const FC_EMBEDDED_BITMAP = "embeddedbitmap";    /* Bool - true to enable embedded bitmaps */
+const FC_DECORATIVE = "decorative";    /* Bool - true if style is a decorative variant */
+const FC_LCD_FILTER    = "lcdfilter";        /* Int */
+const FC_FONT_FEATURES = "fontfeatures";    /* String */
+const FC_NAMELANG = "namelang";        /* String RFC 3866 langs */
+const FC_PRGNAME = "prgname";        /* String */
+const FC_HASH = "hash";        /* String (deprecated) */
+const FC_POSTSCRIPT_NAME = "postscriptname";    /* String */
 
 

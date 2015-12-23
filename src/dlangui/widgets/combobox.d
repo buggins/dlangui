@@ -74,13 +74,13 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         return this;
     }
 
-	/// change enabled state
+    /// change enabled state
     override @property Widget enabled(bool flg) { 
         super.enabled(flg);
         _button.enabled = flg;
         return this; 
     }
-	/// return true if state has State.Enabled flag set
+    /// return true if state has State.Enabled flag set
     override @property bool enabled() { return super.enabled; }
 
     override bool onClick(Widget source) {
@@ -92,7 +92,7 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
     protected ImageButton createButton() {
         ImageButton res = new ImageButton("COMBOBOX_BUTTON", "scrollbar_btn_down");
         res.styleId = STYLE_COMBO_BOX_BUTTON;
-		res.layoutWeight = 0;
+        res.layoutWeight = 0;
         res.click = this;
         res.alignment = Align.VCenter | Align.Right;
         return res;
@@ -146,7 +146,7 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         _ownAdapter = ownAdapter;
         styleId = STYLE_COMBO_BOX;
         trackHover = true;
-		init();
+        init();
     }
 
     void setAdapter(ListAdapter adapter, bool ownAdapter = true) {
@@ -160,7 +160,7 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         init();
     }
 
-	protected void init() {
+    protected void init() {
         _body = createSelectedItemWidget();
         _body.click = this;
         _button = createButton();
@@ -172,7 +172,7 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         //_body.focusable = true;
         addChild(_body);
         addChild(_button);
-	}
+    }
 
     ~this() {
     }
@@ -273,32 +273,32 @@ class ComboBox : ComboBoxBase {
 
     override @property ComboBoxBase selectedItemIndex(int index) {
         _body.text = adapter.items[index];
-		return super.selectedItemIndex(index);
+        return super.selectedItemIndex(index);
     }
 
-	override void init() {
-		super.init();
-		_body.focusable = false;
-		_body.clickable = true;
-		focusable = true;
-		clickable = true;
-		click = this;
-	}
+    override void init() {
+        super.init();
+        _body.focusable = false;
+        _body.clickable = true;
+        focusable = true;
+        clickable = true;
+        click = this;
+    }
 
     override protected Widget createSelectedItemWidget() {
         TextWidget res = new TextWidget("COMBO_BOX_BODY");
-		res.styleId = STYLE_COMBO_BOX_BODY;
-		res.clickable = true;
+        res.styleId = STYLE_COMBO_BOX_BODY;
+        res.clickable = true;
         res.layoutWidth = FILL_PARENT;
         res.layoutHeight = WRAP_CONTENT;
-		int maxItemWidth = 0;
-		for(int i = 0; i < _adapter.itemCount; i++) {
-			Widget item = _adapter.itemWidget(i);
-			item.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
-			if (maxItemWidth < item.measuredWidth)
-				maxItemWidth = item.measuredWidth;
-		}
-		res.minWidth = maxItemWidth;
+        int maxItemWidth = 0;
+        for(int i = 0; i < _adapter.itemCount; i++) {
+            Widget item = _adapter.itemWidget(i);
+            item.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+            if (maxItemWidth < item.measuredWidth)
+                maxItemWidth = item.measuredWidth;
+        }
+        res.minWidth = maxItemWidth;
         return res;
     }
 
@@ -351,11 +351,11 @@ class ComboEdit : ComboBox {
         return res;
     }
 
-	override void init() {
-		super.init();
-		//focusable = false;
-		//_body.focusable = true;
-	}
+    override void init() {
+        super.init();
+        //focusable = false;
+        //_body.focusable = true;
+    }
 
 }
 

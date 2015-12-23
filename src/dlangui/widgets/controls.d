@@ -61,17 +61,17 @@ class HSpacer : Widget {
 /// static text widget
 class TextWidget : Widget {
     this(string ID = null, string textResourceId = null) {
-		super(ID);
+        super(ID);
         styleId = STYLE_TEXT;
         _text = textResourceId;
     }
     this(string ID, dstring rawText) {
-		super(ID);
+        super(ID);
         styleId = STYLE_TEXT;
         _text = rawText;
     }
     this(string ID, UIString uitext) {
-		super(ID);
+        super(ID);
         styleId = STYLE_TEXT;
         _text = uitext;
     }
@@ -88,19 +88,19 @@ class TextWidget : Widget {
     override @property Widget text(dstring s) { 
         _text = s; 
         requestLayout();
-		return this;
+        return this;
     }
     /// set text to show
     override @property Widget text(UIString s) { 
         _text = s;
         requestLayout();
-		return this;
+        return this;
     }
     /// set text resource ID to show
     @property Widget textResource(string s) { 
         _text = s; 
         requestLayout();
-		return this;
+        return this;
     }
 
     override void measure(int parentWidth, int parentHeight) { 
@@ -108,7 +108,7 @@ class TextWidget : Widget {
         //auto measureStart = std.datetime.Clock.currAppTick;
         Point sz;
         if (maxLines == 1) {
-		    sz = font.textSize(text, MAX_WIDTH_UNSPECIFIED, 4, 0, textFlags);
+            sz = font.textSize(text, MAX_WIDTH_UNSPECIFIED, 4, 0, textFlags);
         } else {
             sz = font.measureMultilineText(text, maxLines, MAX_WIDTH_UNSPECIFIED, 4, 0, textFlags);
         }
@@ -125,14 +125,14 @@ class TextWidget : Widget {
         super.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
-		auto saver = ClipRectSaver(buf, rc, alpha);
-		applyPadding(rc);
+        auto saver = ClipRectSaver(buf, rc, alpha);
+        applyPadding(rc);
 
         FontRef font = font();
         if (maxLines == 1) {
             Point sz = font.textSize(text);
             applyAlign(rc, sz);
-		    font.drawText(buf, rc.left, rc.top, text, textColor, 4, 0, textFlags);
+            font.drawText(buf, rc.left, rc.top, text, textColor, 4, 0, textFlags);
         } else {
             SimpleTextFormatter fmt;
             Point sz = fmt.format(text, font, maxLines, rc.width, 4, 0, textFlags);
@@ -146,15 +146,15 @@ class TextWidget : Widget {
 /// static text widget with multiline text
 class MultilineTextWidget : TextWidget {
     this(string ID = null, string textResourceId = null) {
-		super(ID, textResourceId);
+        super(ID, textResourceId);
         styleId = STYLE_MULTILINE_TEXT;
     }
     this(string ID, dstring rawText) {
-		super(ID, rawText);
+        super(ID, rawText);
         styleId = STYLE_MULTILINE_TEXT;
     }
     this(string ID, UIString uitext) {
-		super(ID, uitext);
+        super(ID, uitext);
         styleId = STYLE_MULTILINE_TEXT;
     }
 }
@@ -166,13 +166,13 @@ class ImageWidget : Widget {
     protected DrawableRef _drawable;
 
     this(string ID = null, string drawableId = null) {
-		super(ID);
+        super(ID);
         _drawableId = drawableId;
-	}
+    }
 
-	~this() {
-		_drawable.clear();
-	}
+    ~this() {
+        _drawable.clear();
+    }
 
     /// get drawable image id
     @property string drawableId() { return _drawableId; }
@@ -234,8 +234,8 @@ class ImageWidget : Widget {
         super.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
-		auto saver = ClipRectSaver(buf, rc, alpha);
-		applyPadding(rc);
+        auto saver = ClipRectSaver(buf, rc, alpha);
+        applyPadding(rc);
         DrawableRef img = drawable;
         if (!img.isNull) {
             Point sz;
@@ -409,23 +409,23 @@ class RadioButton : ImageTextButton {
         checkable = true;
     }
 
-	void uncheckSiblings() {
-		Widget p = parent;
-		if (!p)
-			return;
-		for (int i = 0; i < p.childCount; i++) {
-			Widget child = p.child(i);
-			if (child is this)
-				continue;
-			RadioButton rb = cast(RadioButton)child;
-			if (rb)
-				rb.checked = false;
-		}
-	}
+    void uncheckSiblings() {
+        Widget p = parent;
+        if (!p)
+            return;
+        for (int i = 0; i < p.childCount; i++) {
+            Widget child = p.child(i);
+            if (child is this)
+                continue;
+            RadioButton rb = cast(RadioButton)child;
+            if (rb)
+                rb.checked = false;
+        }
+    }
 
     // called to process click and notify listeners
     override protected bool handleClick() {
-		uncheckSiblings();
+        uncheckSiblings();
         checked = true;
 
         return super.handleClick();
@@ -442,33 +442,33 @@ class Button : Widget {
     @property Widget textResource(string s) { _text = s; requestLayout(); return this; }
     /// empty parameter list constructor - for usage by factory
     this() {
-		super(null);
+        super(null);
         init(UIString());
     }
 
     private void init(UIString label) {
         styleId = STYLE_BUTTON;
         _text = label;
-		clickable = true;
+        clickable = true;
         focusable = true;
         trackHover = true;
     }
 
     /// create with ID parameter
     this(string ID) {
-		super(ID);
+        super(ID);
         init(UIString());
     }
     this(string ID, UIString label) {
-		super(ID);
+        super(ID);
         init(label);
     }
     this(string ID, dstring label) {
-		super(ID);
+        super(ID);
         init(UIString(label));
     }
     this(string ID, string labelResourceId) {
-		super(ID);
+        super(ID);
         init(UIString(labelResourceId));
     }
     /// constructor from action
@@ -483,14 +483,14 @@ class Button : Widget {
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }
 
-	override void onDraw(DrawBuf buf) {
+    override void onDraw(DrawBuf buf) {
         super.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
         buf.fillRect(_pos, backgroundColor);
         applyPadding(rc);
-		auto saver = ClipRectSaver(buf, rc, alpha);
-		FontRef font = font();
+        auto saver = ClipRectSaver(buf, rc, alpha);
+        FontRef font = font();
         Point sz = font.textSize(text);
         applyAlign(rc, sz);
         font.drawText(buf, rc.left, rc.top, text, textColor, 4, 0, textFlags);
@@ -632,7 +632,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
 
         this(string resourceId) {
             super("SLIDER", resourceId);
-			styleId = STYLE_SCROLLBAR_BUTTON;
+            styleId = STYLE_SCROLLBAR_BUTTON;
             trackHover = true;
         }
 
@@ -708,19 +708,19 @@ class ScrollBar : AbstractSlider, OnClickHandler {
                     debug(scrollbar) Log.d("Hover ", id);
                     setState(State.Hovered);
                 }
-	            return true;
+                return true;
             }
             if (event.action == MouseAction.Leave && trackHover) {
                 debug(scrollbar) Log.d("Leave ", id);
-	            resetState(State.Hovered);
-	            return true;
+                resetState(State.Hovered);
+                return true;
             }
             if (event.action == MouseAction.Cancel && trackHover) {
                 debug(scrollbar) Log.d("Cancel ? trackHover", id);
-	            resetState(State.Hovered);
+                resetState(State.Hovered);
                 resetState(State.Pressed);
                 _dragging = false;
-	            return true;
+                return true;
             }
             if (event.action == MouseAction.Cancel) {
                 debug(scrollbar) Log.d("SliderButton.onMouseEvent event.action == MouseAction.Cancel");
@@ -803,7 +803,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
     }
     /// create with ID parameter
     this(string ID, Orientation orient = Orientation.Vertical) {
-		super(ID);
+        super(ID);
         styleId = STYLE_SCROLLBAR;
         _orientation = orient;
         _btnBack = new ImageButton("BACK", style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_BUTTON_UP : ATTR_SCROLLBAR_BUTTON_LEFT));
@@ -818,11 +818,11 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         addChild(_indicator);
         addChild(_pageUp);
         addChild(_pageDown);
-		_btnBack.focusable = false;
-		_btnForward.focusable = false;
-		_indicator.focusable = false;
-		_pageUp.focusable = false;
-		_pageDown.focusable = false;
+        _btnBack.focusable = false;
+        _btnForward.focusable = false;
+        _indicator.focusable = false;
+        _pageUp.focusable = false;
+        _pageDown.focusable = false;
         _btnBack.click = &onClick;
         _btnForward.click = &onClick;
         _pageUp.click = &onClick;
@@ -838,15 +838,15 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         _pageDown.measure(parentWidth, parentHeight);
         _btnSize = _btnBack.measuredWidth;
         _minIndicatorSize = _orientation == Orientation.Vertical ? _indicator.measuredHeight : _indicator.measuredWidth;
-		if (_btnSize < _minIndicatorSize)
-			_btnSize = _minIndicatorSize;
-		if (_btnSize < _btnForward.measuredWidth)
-			_btnSize = _btnForward.measuredWidth;
-		if (_btnSize < _btnForward.measuredHeight)
-			_btnSize = _btnForward.measuredHeight;
-		if (_btnSize < _btnBack.measuredHeight)
-			_btnSize = _btnBack.measuredHeight;
-		if (_btnSize < 16)
+        if (_btnSize < _minIndicatorSize)
+            _btnSize = _minIndicatorSize;
+        if (_btnSize < _btnForward.measuredWidth)
+            _btnSize = _btnForward.measuredWidth;
+        if (_btnSize < _btnForward.measuredHeight)
+            _btnSize = _btnForward.measuredHeight;
+        if (_btnSize < _btnBack.measuredHeight)
+            _btnSize = _btnBack.measuredHeight;
+        if (_btnSize < 16)
             _btnSize = 16;
         if (_orientation == Orientation.Vertical) {
             // vertical
@@ -860,9 +860,9 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }
 
-	override protected void onPositionChanged() {
-		if (!needLayout)
-        	layoutButtons();
+    override protected void onPositionChanged() {
+        if (!needLayout)
+            layoutButtons();
     }
 
     /// hide controls when scroll is not possible
@@ -881,17 +881,17 @@ class ScrollBar : AbstractSlider, OnClickHandler {
             _pageUp.visibility = Visibility.Gone;
             _pageDown.visibility = Visibility.Gone;
         }
-		cancelLayout();
+        cancelLayout();
     }
 
-	override void cancelLayout() {
-		_btnBack.cancelLayout();
-		_btnForward.cancelLayout();
-		_indicator.cancelLayout();
-		_pageUp.cancelLayout();
-		_pageDown.cancelLayout();
-		super.cancelLayout();
-	}
+    override void cancelLayout() {
+        _btnBack.cancelLayout();
+        _btnForward.cancelLayout();
+        _indicator.cancelLayout();
+        _pageUp.cancelLayout();
+        _pageDown.cancelLayout();
+        super.cancelLayout();
+    }
 
     protected void layoutButtons() {
         Rect irc = _scrollArea;
@@ -911,10 +911,10 @@ class ScrollBar : AbstractSlider, OnClickHandler {
             layoutButtons(irc);
         }
         updateState();
-		cancelLayout();
-	}
+        cancelLayout();
+    }
 
-	protected void layoutButtons(Rect irc) {
+    protected void layoutButtons(Rect irc) {
         Rect r;
         _indicator.visibility = Visibility.Visible;
         if (_orientation == Orientation.Vertical) {
@@ -993,7 +993,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
             r.right = fwdbtnpos;
             _scrollArea = r;
         }
-		layoutButtons();
+        layoutButtons();
         _pos = rc;
     }
 
@@ -1033,8 +1033,8 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         Rect rc = _pos;
         applyMargins(rc);
         applyPadding(rc);
-		auto saver = ClipRectSaver(buf, rc, alpha);
-		_btnForward.onDraw(buf);
+        auto saver = ClipRectSaver(buf, rc, alpha);
+        _btnForward.onDraw(buf);
         _btnBack.onDraw(buf);
         _pageUp.onDraw(buf);
         _pageDown.onDraw(buf);
@@ -1049,21 +1049,21 @@ interface OnDrawHandler {
 
 /// canvas widget - draw on it either by overriding of doDraw() or by assigning of onDrawListener
 class CanvasWidget : Widget {
-	
-	Listener!OnDrawHandler onDrawListener;
+    
+    Listener!OnDrawHandler onDrawListener;
 
     this(string ID = null) {
-		super(ID);
+        super(ID);
     }
 
     override void measure(int parentWidth, int parentHeight) { 
         measuredContent(parentWidth, parentHeight, 0, 0);
     }
 
-	void doDraw(DrawBuf buf, Rect rc) {
-		if (onDrawListener.assigned)
-			onDrawListener(this, buf, rc);
-	}
+    void doDraw(DrawBuf buf, Rect rc) {
+        if (onDrawListener.assigned)
+            onDrawListener(this, buf, rc);
+    }
 
     override void onDraw(DrawBuf buf) {
         if (visibility != Visibility.Visible)
@@ -1071,9 +1071,9 @@ class CanvasWidget : Widget {
         super.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
-		auto saver = ClipRectSaver(buf, rc, alpha);
-		applyPadding(rc);
-		doDraw(buf, rc);
+        auto saver = ClipRectSaver(buf, rc, alpha);
+        applyPadding(rc);
+        doDraw(buf, rc);
     }
 }
 

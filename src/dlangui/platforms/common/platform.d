@@ -42,12 +42,12 @@ extern(C) int UIAppMain(string[] args);
 
 /// window creation flags
 enum WindowFlag : uint {
-	/// window can be resized
-	Resizable = 1,
-	/// window should be shown in fullscreen mode
-	Fullscreen = 2,
-	/// modal window - grabs input focus
-	Modal = 4,
+    /// window can be resized
+    Resizable = 1,
+    /// window should be shown in fullscreen mode
+    Fullscreen = 2,
+    /// modal window - grabs input focus
+    Modal = 4,
 }
 
 /// protected event list
@@ -161,17 +161,17 @@ class TimerInfo {
 class Window {
     protected int _dx;
     protected int _dy;
-	protected uint _keyboardModifiers;
-	protected uint _backgroundColor;
+    protected uint _keyboardModifiers;
+    protected uint _backgroundColor;
     protected Widget _mainWidget;
     protected EventList _eventList;
 
-	@property uint backgroundColor() const { return _backgroundColor; }
-	@property void backgroundColor(uint color) { _backgroundColor = color; }
-	@property int width() const { return _dx; }
+    @property uint backgroundColor() const { return _backgroundColor; }
+    @property void backgroundColor(uint color) { _backgroundColor = color; }
+    @property int width() const { return _dx; }
     @property int height() const { return _dy; }
-	@property uint keyboardModifiers() const { return _keyboardModifiers; }
-	@property Widget mainWidget() { return _mainWidget; }
+    @property uint keyboardModifiers() const { return _keyboardModifiers; }
+    @property Widget mainWidget() { return _mainWidget; }
     @property void mainWidget(Widget widget) { 
         if (_mainWidget !is null)
             _mainWidget.window = null;
@@ -180,30 +180,30 @@ class Window {
             _mainWidget.window = this;
     }
 
-	// Abstract methods : override in platform implementatino
+    // Abstract methods : override in platform implementatino
 
-	/// show window
+    /// show window
     abstract void show();
-	/// returns window caption
+    /// returns window caption
     abstract @property dstring windowCaption();
-	/// sets window caption
+    /// sets window caption
     abstract @property void windowCaption(dstring caption);
-	/// sets window icon
-	abstract @property void windowIcon(DrawBufRef icon);
+    /// sets window icon
+    abstract @property void windowIcon(DrawBufRef icon);
     /// request window redraw
     abstract void invalidate();
-	/// close window
-	abstract void close();
+    /// close window
+    abstract void close();
 
-	/// requests layout for main widget and popups
-	void requestLayout() {
-		if (_mainWidget)
-			_mainWidget.requestLayout();
-		foreach(p; _popups)
-			p.requestLayout();
+    /// requests layout for main widget and popups
+    void requestLayout() {
+        if (_mainWidget)
+            _mainWidget.requestLayout();
+        foreach(p; _popups)
+            p.requestLayout();
         if (_tooltip.popup)
             _tooltip.popup.requestLayout();
-	}
+    }
     void measure() {
         if (_mainWidget !is null) {
             _mainWidget.measure(_dx, _dy);
@@ -332,8 +332,8 @@ class Window {
         PopupWidget res = new PopupWidget(content, this);
         res.anchor.widget = anchor !is null ? anchor : _mainWidget;
         res.anchor.alignment = alignment;
-		res.anchor.x = x;
-		res.anchor.y = y;
+        res.anchor.x = x;
+        res.anchor.y = y;
         _tooltip.popup = res;
         return res;
     }
@@ -343,12 +343,12 @@ class Window {
         PopupWidget res = new PopupWidget(content, this);
         res.anchor.widget = anchor !is null ? anchor : _mainWidget;
         res.anchor.alignment = alignment;
-		res.anchor.x = x;
-		res.anchor.y = y;
+        res.anchor.x = x;
+        res.anchor.y = y;
         _popups ~= res;
         if (_mainWidget !is null) {
             _mainWidget.requestLayout();
-		}
+        }
         return res;
     }
     /// remove popup
@@ -395,15 +395,15 @@ class Window {
 
     private long lastDrawTs;
 
-	this() {
+    this() {
         _eventList = new EventList();
         _timerQueue = new TimerQueue();
-		_backgroundColor = 0xFFFFFF;
+        _backgroundColor = 0xFFFFFF;
         if (currentTheme)
             _backgroundColor = currentTheme.customColor(STYLE_COLOR_WINDOW_BACKGROUND);
-	}
-	~this() {
-		debug Log.d("Destroying window");
+    }
+    ~this() {
+        debug Log.d("Destroying window");
         if (_onClose)
             _onClose();
         if (_tooltip.popup) {
@@ -413,14 +413,14 @@ class Window {
         foreach(p; _popups)
             destroy(p);
         _popups = null;
-		if (_mainWidget !is null) {
-			destroy(_mainWidget);
-		    _mainWidget = null;
-		}
+        if (_mainWidget !is null) {
+            destroy(_mainWidget);
+            _mainWidget = null;
+        }
         destroy(_eventList);
         destroy(_timerQueue);
         _eventList = null;
-	}
+    }
 
     private void animate(Widget root, long interval) {
         if (root is null)
@@ -441,7 +441,7 @@ class Window {
             _tooltip.popup.animate(interval);
     }
 
-	static immutable int PERFORMANCE_LOGGING_THRESHOLD_MS = 20;
+    static immutable int PERFORMANCE_LOGGING_THRESHOLD_MS = 20;
 
     void onDraw(DrawBuf buf) {
         try {
@@ -457,18 +457,18 @@ class Window {
                 // layout required flag could be changed during animate - check again
                 checkUpdateNeeded(needDraw, needLayout, animationActive);
             }
-		    lastDrawTs = ts;
-		    if (needLayout) {
+            lastDrawTs = ts;
+            if (needLayout) {
                 long measureStart = currentTimeMillis;
                 measure();
                 long measureEnd = currentTimeMillis;
-			    if (measureEnd - measureStart > PERFORMANCE_LOGGING_THRESHOLD_MS) {
-				    debug(DebugRedraw) Log.d("measure took ", measureEnd - measureStart, " ms");
+                if (measureEnd - measureStart > PERFORMANCE_LOGGING_THRESHOLD_MS) {
+                    debug(DebugRedraw) Log.d("measure took ", measureEnd - measureStart, " ms");
                 }
                 layout();
                 long layoutEnd = currentTimeMillis;
-			    if (layoutEnd - measureEnd > PERFORMANCE_LOGGING_THRESHOLD_MS) {
-				    debug(DebugRedraw) Log.d("layout took ", layoutEnd - measureEnd, " ms");
+                if (layoutEnd - measureEnd > PERFORMANCE_LOGGING_THRESHOLD_MS) {
+                    debug(DebugRedraw) Log.d("layout took ", layoutEnd - measureEnd, " ms");
                 }
                 //checkUpdateNeeded(needDraw, needLayout, animationActive);
             }
@@ -492,8 +492,8 @@ class Window {
 
             long drawEnd = currentTimeMillis;
             debug(DebugRedraw) {
-		        if (drawEnd - drawStart > PERFORMANCE_LOGGING_THRESHOLD_MS)
-        	        Log.d("draw took ", drawEnd - drawStart, " ms");
+                if (drawEnd - drawStart > PERFORMANCE_LOGGING_THRESHOLD_MS)
+                    Log.d("draw took ", drawEnd - drawStart, " ms");
             }
             if (animationActive)
                 scheduleAnimation();
@@ -562,19 +562,19 @@ class Window {
 
     /// dispatch keyboard event
     bool dispatchKeyEvent(KeyEvent event) {
-		bool res = false;
+        bool res = false;
         hideTooltip();
         PopupWidget modal = modalPopup();
-		if (event.action == KeyAction.KeyDown || event.action == KeyAction.KeyUp) {
-			_keyboardModifiers = event.flags;
-			if (event.keyCode == KeyCode.ALT || event.keyCode == KeyCode.LALT || event.keyCode == KeyCode.RALT) {
-				debug(DebugKeys) Log.d("ALT key: keyboardModifiers = ", _keyboardModifiers);
-				if (_mainWidget) {
-					_mainWidget.invalidate();
-					res = true;
-				}
-			}
-		}
+        if (event.action == KeyAction.KeyDown || event.action == KeyAction.KeyUp) {
+            _keyboardModifiers = event.flags;
+            if (event.keyCode == KeyCode.ALT || event.keyCode == KeyCode.LALT || event.keyCode == KeyCode.RALT) {
+                debug(DebugKeys) Log.d("ALT key: keyboardModifiers = ", _keyboardModifiers);
+                if (_mainWidget) {
+                    _mainWidget.invalidate();
+                    res = true;
+                }
+            }
+        }
         if (event.action == KeyAction.Text) {
             // filter text
             if (event.text.length < 1)
@@ -617,18 +617,18 @@ class Window {
             if (dispatchMouseEvent(child, event, cursorIsSet))
                 return true;
         }
-		if (event.action == MouseAction.Move && !cursorIsSet) {
-			uint cursorType = root.getCursorType(event.x, event.y);
-			if (cursorType != CursorType.Parent) {
-				setCursorType(cursorType);
-				cursorIsSet = true;
-			}
-		}
+        if (event.action == MouseAction.Move && !cursorIsSet) {
+            uint cursorType = root.getCursorType(event.x, event.y);
+            if (cursorType != CursorType.Parent) {
+                setCursorType(cursorType);
+                cursorIsSet = true;
+            }
+        }
         // if not processed by children, offer event to root
         if (sendAndCheckOverride(root, event)) {
             debug(DebugMouseEvents) Log.d("MouseEvent is processed");
             if (event.action == MouseAction.ButtonDown && _mouseCaptureWidget is null && !event.doNotTrackButtonDown) {
-				debug(DebugMouseEvents) Log.d("Setting active widget");
+                debug(DebugMouseEvents) Log.d("Setting active widget");
                 setCaptureWidget(root, event);
             } else if (event.action == MouseAction.Move) {
                 addTracking(root);
@@ -684,28 +684,28 @@ class Window {
 
     /// widget which tracks all events after processed ButtonDown
     protected Widget _mouseCaptureWidget;
-	protected ushort _mouseCaptureButtons;
+    protected ushort _mouseCaptureButtons;
     protected bool _mouseCaptureFocusedOut;
-	/// does current capture widget want to receive move events even if pointer left it
+    /// does current capture widget want to receive move events even if pointer left it
     protected bool _mouseCaptureFocusedOutTrackMovements;
-	
+    
     protected void clearMouseCapture() {
-		_mouseCaptureWidget = null;
-		_mouseCaptureFocusedOut = false;
+        _mouseCaptureWidget = null;
+        _mouseCaptureFocusedOut = false;
         _mouseCaptureFocusedOutTrackMovements = false;
         _mouseCaptureButtons = 0;
     }
 
-	protected bool dispatchCancel(MouseEvent event) {
-    	event.changeAction(MouseAction.Cancel);
+    protected bool dispatchCancel(MouseEvent event) {
+        event.changeAction(MouseAction.Cancel);
         bool res = _mouseCaptureWidget.onMouseEvent(event);
         clearMouseCapture();
-		return res;
-	}
-	
+        return res;
+    }
+    
     protected bool sendAndCheckOverride(Widget widget, MouseEvent event) {
-		if (!isChild(widget))
-			return false;
+        if (!isChild(widget))
+            return false;
         bool res = widget.onMouseEvent(event);
         if (event.trackingWidget !is null && _mouseCaptureWidget !is event.trackingWidget) {
             setCaptureWidget(event.trackingWidget, event);
@@ -881,37 +881,37 @@ class Window {
         debug(DebugMouseEvents) Log.d("dispatchMouseEvent ", event.action, "  (", event.x, ",", event.y, ")");
 
         bool res = false;
-		ushort currentButtons = event.flags & (MouseFlag.LButton|MouseFlag.RButton|MouseFlag.MButton);
+        ushort currentButtons = event.flags & (MouseFlag.LButton|MouseFlag.RButton|MouseFlag.MButton);
         if (_mouseCaptureWidget !is null) {
             // try to forward message directly to active widget
             if (event.action == MouseAction.Move) {
                 debug(DebugMouseEvents) Log.d("dispatchMouseEvent: Move; buttons state=", currentButtons);
                 if (!_mouseCaptureWidget.isPointInside(event.x, event.y)) {
-					if (currentButtons != _mouseCaptureButtons) {
+                    if (currentButtons != _mouseCaptureButtons) {
                         debug(DebugMouseEvents) Log.d("dispatchMouseEvent: Move; buttons state changed from ", _mouseCaptureButtons, " to ", currentButtons, " - cancelling capture");
-						return dispatchCancel(event);
+                        return dispatchCancel(event);
                     }
                     // point is no more inside of captured widget
                     if (!_mouseCaptureFocusedOut) {
                         // sending FocusOut message
                         event.changeAction(MouseAction.FocusOut);
                         _mouseCaptureFocusedOut = true;
-						_mouseCaptureButtons = currentButtons;
+                        _mouseCaptureButtons = currentButtons;
                         _mouseCaptureFocusedOutTrackMovements = sendAndCheckOverride(_mouseCaptureWidget, event);
                         return true;
                     } else if (_mouseCaptureFocusedOutTrackMovements) {
-						// pointer is outside, but we still need to track pointer
+                        // pointer is outside, but we still need to track pointer
                         return sendAndCheckOverride(_mouseCaptureWidget, event);
                     }
-					// don't forward message
+                    // don't forward message
                     return true;
                 } else {
                     // point is inside widget
                     if (_mouseCaptureFocusedOut) {
                         _mouseCaptureFocusedOut = false;
-						if (currentButtons != _mouseCaptureButtons)
-							return dispatchCancel(event);
-                       	event.changeAction(MouseAction.FocusIn); // back in after focus out
+                        if (currentButtons != _mouseCaptureButtons)
+                            return dispatchCancel(event);
+                           event.changeAction(MouseAction.FocusIn); // back in after focus out
                     }
                     return sendAndCheckOverride(_mouseCaptureWidget, event);
                 }
@@ -920,7 +920,7 @@ class Window {
                     // sending FocusOut message
                     event.changeAction(MouseAction.FocusOut);
                     _mouseCaptureFocusedOut = true;
-					_mouseCaptureButtons = event.flags & (MouseFlag.LButton|MouseFlag.RButton|MouseFlag.MButton);
+                    _mouseCaptureButtons = event.flags & (MouseFlag.LButton|MouseFlag.RButton|MouseFlag.MButton);
                     return sendAndCheckOverride(_mouseCaptureWidget, event);
                 } else {
                     debug(DebugMouseEvents) Log.d("dispatchMouseEvent: mouseCaptureFocusedOut + Leave - cancelling capture");
@@ -928,9 +928,9 @@ class Window {
                 }
             } else if (event.action == MouseAction.ButtonDown || event.action == MouseAction.ButtonUp) {
                 if (!_mouseCaptureWidget.isPointInside(event.x, event.y)) {
-					if (currentButtons != _mouseCaptureButtons) {
+                    if (currentButtons != _mouseCaptureButtons) {
                         debug(DebugMouseEvents) Log.d("dispatchMouseEvent: ButtonUp/ButtonDown; buttons state changed from ", _mouseCaptureButtons, " to ", currentButtons, " - cancelling capture");
-						return dispatchCancel(event);
+                        return dispatchCancel(event);
                     }
                 }
             }
@@ -938,7 +938,7 @@ class Window {
             res = sendAndCheckOverride(_mouseCaptureWidget, event);
             if (!currentButtons) {
                 // usable capturing - no more buttons pressed
-				debug(DebugMouseEvents) Log.d("unsetting active widget");
+                debug(DebugMouseEvents) Log.d("unsetting active widget");
                 clearMouseCapture();
             }
             return res;
@@ -947,11 +947,11 @@ class Window {
         if (event.action == MouseAction.Move || event.action == MouseAction.Leave) {
             processed = checkRemoveTracking(event);
         }
-		bool cursorIsSet = false;
+        bool cursorIsSet = false;
         if (!res) {
             bool insideOneOfPopups = false;
             for (int i = cast(int)_popups.length - 1; i >= 0; i--) {
-				auto p = _popups[i];
+                auto p = _popups[i];
                 if (p.isPointInside(event.x, event.y)) {
                     if (p !is modal)
                         insideOneOfPopups = true;
@@ -960,7 +960,7 @@ class Window {
                     break;
             }
             for (int i = cast(int)_popups.length - 1; i >= 0; i--) {
-				auto p = _popups[i];
+                auto p = _popups[i];
                 if (p is modal)
                     break;
                 if (!insideOneOfPopups) {
@@ -1000,15 +1000,15 @@ class Window {
                 debug(DebugRedraw) Log.d("need layout: ", root.id);
             }
         }
-		if (root.animating && root.visible)
-        	animationActive = true; // check animation only for visible widgets
+        if (root.animating && root.visible)
+            animationActive = true; // check animation only for visible widgets
         for (int i = 0; i < root.childCount; i++)
             checkUpdateNeeded(root.child(i), needDraw, needLayout, animationActive);
     }
-	/// sets cursor type for window
-	protected void setCursorType(uint cursorType) {
-		// override to support different mouse cursors
-	}
+    /// sets cursor type for window
+    protected void setCursorType(uint cursorType) {
+        // override to support different mouse cursors
+    }
     /// update action states
     protected void dispatchWidgetUpdateActionStateRecursive() {
         if (_mainWidget !is null)
@@ -1093,21 +1093,21 @@ class Window {
 
     /// system timer interval expired - notify queue
     protected void onTimer() {
-		//Log.d("window.onTimer");
+        //Log.d("window.onTimer");
         bool res = _timerQueue.notify();
-		//Log.d("window.onTimer after notify");
+        //Log.d("window.onTimer after notify");
         if (res) {
             // check if update needed and redraw if so
-			//Log.d("before update");
+            //Log.d("before update");
             update(false);
-			//Log.d("after update");
+            //Log.d("after update");
         }
-		//Log.d("schedule next timer");
+        //Log.d("schedule next timer");
         long nextInterval = _timerQueue.nextIntervalMillis();
         if (nextInterval > 0) {
             scheduleSystemTimer(nextInterval);
         }
-		//Log.d("schedule next timer done");
+        //Log.d("schedule next timer done");
     }
 
     /// set timer for destination widget - destination.onTimer() will be called after interval expiration; returns timer id
@@ -1241,77 +1241,77 @@ class Platform {
         return _instance;
     }
 
-	/**
-	 * create window
-	 * Args:
-	 * 		windowCaption = window caption text
-	 * 		parent = parent Window, or null if no parent
-	 * 		flags = WindowFlag bit set, combination of Resizable, Modal, Fullscreen
+    /**
+     * create window
+     * Args:
+     *         windowCaption = window caption text
+     *         parent = parent Window, or null if no parent
+     *         flags = WindowFlag bit set, combination of Resizable, Modal, Fullscreen
      *      width = window width 
      *      height = window height
-	 * 
-	 * Window w/o Resizable nor Fullscreen will be created with size based on measurement of its content widget
-	 */
-	abstract Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0);
-	/**
-	 * close window
-	 * 
-	 * Closes window earlier created with createWindow()
-	 */
-	abstract void closeWindow(Window w);
-	/**
-	 * Starts application message loop.
-	 * 
-	 * When returned from this method, application is shutting down.
-	 */
+     * 
+     * Window w/o Resizable nor Fullscreen will be created with size based on measurement of its content widget
+     */
+    abstract Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0);
+    /**
+     * close window
+     * 
+     * Closes window earlier created with createWindow()
+     */
+    abstract void closeWindow(Window w);
+    /**
+     * Starts application message loop.
+     * 
+     * When returned from this method, application is shutting down.
+     */
     abstract int enterMessageLoop();
     /// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
     abstract dstring getClipboardText(bool mouseBuffer = false);
     /// sets text to clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
     abstract void setClipboardText(dstring text, bool mouseBuffer = false);
 
-	/// calls request layout for all windows
-	abstract void requestLayout();
+    /// calls request layout for all windows
+    abstract void requestLayout();
 
-	protected string _uiLanguage;
-	/// returns currently selected UI language code
-	@property string uiLanguage() {
-		return _uiLanguage;
-	}
-	/// set UI language (e.g. "en", "fr", "ru") - will relayout content of all windows if language has been changed
-	@property Platform uiLanguage(string langCode) {
-		if (_uiLanguage.equal(langCode))
-			return this;
-		_uiLanguage = langCode;
-		if (langCode.equal("en"))
-			i18n.load("en.ini"); //"ru.ini", "en.ini"
-		else
-			i18n.load(langCode ~ ".ini", "en.ini");
+    protected string _uiLanguage;
+    /// returns currently selected UI language code
+    @property string uiLanguage() {
+        return _uiLanguage;
+    }
+    /// set UI language (e.g. "en", "fr", "ru") - will relayout content of all windows if language has been changed
+    @property Platform uiLanguage(string langCode) {
+        if (_uiLanguage.equal(langCode))
+            return this;
+        _uiLanguage = langCode;
+        if (langCode.equal("en"))
+            i18n.load("en.ini"); //"ru.ini", "en.ini"
+        else
+            i18n.load(langCode ~ ".ini", "en.ini");
         onThemeChanged();
-		requestLayout();
-		return this;
-	}
-	protected string _themeId;
-	@property string uiTheme() {
-		return _themeId;
-	}
-	/// sets application UI theme - will relayout content of all windows if theme has been changed
-	@property Platform uiTheme(string themeResourceId) {
-		if (_themeId.equal(themeResourceId))
-			return this;
-		_themeId = themeResourceId;
-		Theme theme = loadTheme(themeResourceId);
-		if (!theme) {
-			Log.e("Cannot load theme from resource ", themeResourceId, " - will use default theme");
-			theme = createDefaultTheme();
-		} else {
-			Log.i("Applying loaded theme ", theme.id);
-		}
-		currentTheme = theme;
+        requestLayout();
+        return this;
+    }
+    protected string _themeId;
+    @property string uiTheme() {
+        return _themeId;
+    }
+    /// sets application UI theme - will relayout content of all windows if theme has been changed
+    @property Platform uiTheme(string themeResourceId) {
+        if (_themeId.equal(themeResourceId))
+            return this;
+        _themeId = themeResourceId;
+        Theme theme = loadTheme(themeResourceId);
+        if (!theme) {
+            Log.e("Cannot load theme from resource ", themeResourceId, " - will use default theme");
+            theme = createDefaultTheme();
+        } else {
+            Log.i("Applying loaded theme ", theme.id);
+        }
+        currentTheme = theme;
         onThemeChanged();
-		requestLayout();
-		return this;
-	}
+        requestLayout();
+        return this;
+    }
 
     /// to set uiLanguage and themeId to default (en, theme_default) if not set yet
     protected void setDefaultLanguageAndThemeIfNecessary() {
@@ -1321,33 +1321,33 @@ class Platform {
             uiTheme = "theme_default";
     }
 
-	protected string[] _resourceDirs;
-	/// returns list of resource directories
-	@property string[] resourceDirs() { return _resourceDirs; }
-	/// set list of directories to load resources from
-	@property Platform resourceDirs(string[] dirs) {
-		// setup resource directories - will use only existing directories
-		drawableCache.setResourcePaths(dirs);
-		_resourceDirs = drawableCache.resourcePaths;
-		// setup i18n - look for i18n directory inside one of passed directories
-		i18n.findTranslationsDir(dirs);
-		return this;
-	}
+    protected string[] _resourceDirs;
+    /// returns list of resource directories
+    @property string[] resourceDirs() { return _resourceDirs; }
+    /// set list of directories to load resources from
+    @property Platform resourceDirs(string[] dirs) {
+        // setup resource directories - will use only existing directories
+        drawableCache.setResourcePaths(dirs);
+        _resourceDirs = drawableCache.resourcePaths;
+        // setup i18n - look for i18n directory inside one of passed directories
+        i18n.findTranslationsDir(dirs);
+        return this;
+    }
 
     /// open url in external browser
     bool openURL(string url) {
-		import std.process;
-		browse(url);
-		return true;
-		//Log.d("Platform.openURL(", url, ") is called");
-		//bool res = false;
-		//version(Windows) {
-		//    import win32.shellapi;
-		//    ShellExecuteA(null, "open", url.toStringz, null, null, 1);
-		//    res = true;
-		//}
-		//// TODO: support other platforms
-		//return res;
+        import std.process;
+        browse(url);
+        return true;
+        //Log.d("Platform.openURL(", url, ") is called");
+        //bool res = false;
+        //version(Windows) {
+        //    import win32.shellapi;
+        //    ShellExecuteA(null, "open", url.toStringz, null, null, 1);
+        //    res = true;
+        //}
+        //// TODO: support other platforms
+        //return res;
     }
 
     /// handle theme change: e.g. reload some themed resources
@@ -1370,9 +1370,9 @@ static if (ENABLE_OPENGL) {
     void setOpenglEnabled(bool enabled = true) {
         _OPENGL_ENABLED = enabled;
         if (enabled)
-	        glyphDestroyCallback = &onGlyphDestroyedCallback;
+            glyphDestroyCallback = &onGlyphDestroyedCallback;
         else
-	        glyphDestroyCallback = null;
+            glyphDestroyCallback = null;
     }
 } else {
     @property bool openglEnabled() { return false; }
@@ -1397,18 +1397,18 @@ mixin template APP_ENTRY_POINT() {
         extern (Windows) int WinMain(void* hInstance, void* hPrevInstance,
                     char* lpCmdLine, int nCmdShow)
         {
-			try {
-				int res = DLANGUIWinMain(hInstance, hPrevInstance,
+            try {
+                int res = DLANGUIWinMain(hInstance, hPrevInstance,
                                     lpCmdLine, nCmdShow);
                 return res;
-			} catch (Exception e) {
-				Log.e("Exception: ", e);
-				return 1;
-			}
+            } catch (Exception e) {
+                Log.e("Exception: ", e);
+                return 1;
+            }
         }
     } else {
-	    int main(string[] args)
-	    {
+        int main(string[] args)
+        {
             return DLANGUImain(args);
         }
     }

@@ -535,10 +535,10 @@ class DMLSyntaxSupport : SyntaxSupport {
                     int start = i > tokenLine ? 0 : tokenPos;
                     int end = i < newLine ? cast(int)lines[i].length : newPos;
                     foreach(j; start .. end) {
-						if (j < _props[i].length) {
-							_props[i][j] = category;
-						}
-					}
+                        if (j < _props[i].length) {
+                            _props[i][j] = category;
+                        }
+                    }
                 }
 
                 // handle token - convert to category

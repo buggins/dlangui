@@ -42,7 +42,7 @@ enum DialogFlag : uint {
 
 /// slot to pass dialog result
 interface DialogResultHandler {
-	public void onDialogResult(Dialog dlg, const Action result);
+    public void onDialogResult(Dialog dlg, const Action result);
 }
 
 /// base for all dialogs
@@ -56,7 +56,7 @@ class Dialog : VerticalLayout {
     protected int _initialWidth;
     protected int _initialHeight;
 
-	Signal!DialogResultHandler dialogResult;
+    Signal!DialogResultHandler dialogResult;
 
     this(UIString caption, Window parentWindow = null, uint flags = DialogFlag.Modal, int initialWidth = 0, int initialHeight = 0) {
         super("dialog-main-widget");
@@ -87,58 +87,58 @@ class Dialog : VerticalLayout {
     /// set icon resource id
     @property Dialog windowIcon(string iconResourceId) {
         _icon = iconResourceId;
-		if (_window && _icon)
-			_window.windowIcon = drawableCache.getImage(_icon);
+        if (_window && _icon)
+            _window.windowIcon = drawableCache.getImage(_icon);
         return this;
     }
 
-	@property UIString windowCaption() {
-		return _caption;
-	}
+    @property UIString windowCaption() {
+        return _caption;
+    }
 
     /// set window caption
-	@property Dialog windowCaption(dstring caption) {
-		_caption = caption;
-		if (_window)
-			_window.windowCaption = caption;
+    @property Dialog windowCaption(dstring caption) {
+        _caption = caption;
+        if (_window)
+            _window.windowCaption = caption;
         return this;
-	}
+    }
 
     /// get window caption
-	@property Dialog windowCaption(UIString caption) {
-		_caption = caption;
-		if (_window)
-			_window.windowCaption = caption;
+    @property Dialog windowCaption(UIString caption) {
+        _caption = caption;
+        if (_window)
+            _window.windowCaption = caption;
         return this;
-	}
+    }
 
     protected const(Action) [] _buttonActions;
 
     protected ImageTextButton _defaultButton;
     protected ImageTextButton _cancelButton;
-	/// create panel with buttons based on list of actions
-	Widget createButtonsPanel(const(Action) [] actions, int defaultActionIndex, int splitBeforeIndex) {
+    /// create panel with buttons based on list of actions
+    Widget createButtonsPanel(const(Action) [] actions, int defaultActionIndex, int splitBeforeIndex) {
         _buttonActions = actions;
-		LinearLayout res = new HorizontalLayout("buttons");
-		res.layoutWidth(FILL_PARENT);
+        LinearLayout res = new HorizontalLayout("buttons");
+        res.layoutWidth(FILL_PARENT);
         res.layoutWeight = 0;
-		for (int i = 0; i < actions.length; i++) {
-			if (splitBeforeIndex == i)
-				res.addChild(new HSpacer());
-			const Action a = actions[i];
-			string id = "btn" ~ to!string(a.id);
-			ImageTextButton btn = new ImageTextButton(id, a.iconId, a.label);
-			if (defaultActionIndex == i) {
-				btn.setState(State.Default);
+        for (int i = 0; i < actions.length; i++) {
+            if (splitBeforeIndex == i)
+                res.addChild(new HSpacer());
+            const Action a = actions[i];
+            string id = "btn" ~ to!string(a.id);
+            ImageTextButton btn = new ImageTextButton(id, a.iconId, a.label);
+            if (defaultActionIndex == i) {
+                btn.setState(State.Default);
                 _defaultButton = btn;
             }
             if (a.id == StandardAction.Cancel || a.id == StandardAction.No)
                 _cancelButton = btn;
             btn.action = a.clone();
-			res.addChild(btn);
-		}
-		return res;
-	}
+            res.addChild(btn);
+        }
+        return res;
+    }
 
     /// Custom handling of actions
     override bool handleAction(const Action action) {
@@ -150,9 +150,9 @@ class Dialog : VerticalLayout {
         return false;
     }
 
-	/// override to implement creation of dialog controls
-	void init() {
-	}
+    /// override to implement creation of dialog controls
+    void init() {
+    }
 
     /** Notify about dialog result, and then close dialog.
 
@@ -177,7 +177,7 @@ class Dialog : VerticalLayout {
 
     /// shows dialog
     void show() {
-		init();
+        init();
         uint wflags = 0;
         if (_flags & DialogFlag.Modal)
             wflags |= WindowFlag.Modal;

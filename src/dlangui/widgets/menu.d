@@ -31,26 +31,26 @@ import dlangui.widgets.popup;
 
 /// menu item type
 enum MenuItemType {
-	/// normal menu item
-	Normal,
-	/// menu item - checkbox
-	Check,
-	/// menu item - radio button
-	Radio,
-	/// menu separator (horizontal line)
-	Separator,
-	/// submenu - contains child items
-	Submenu
+    /// normal menu item
+    Normal,
+    /// menu item - checkbox
+    Check,
+    /// menu item - radio button
+    Radio,
+    /// menu separator (horizontal line)
+    Separator,
+    /// submenu - contains child items
+    Submenu
 }
 
 /// interface to handle menu item click
 interface MenuItemClickHandler {
-	bool onMenuItemClick(MenuItem item);
+    bool onMenuItemClick(MenuItem item);
 }
 
 /// interface to handle menu item action
 interface MenuItemActionHandler {
-	bool onMenuItemAction(const Action action);
+    bool onMenuItemAction(const Action action);
 }
 
 
@@ -58,27 +58,27 @@ interface MenuItemActionHandler {
 class MenuItem {
     protected bool _checked;
     protected bool _enabled;
-	protected MenuItemType _type = MenuItemType.Normal;
+    protected MenuItemType _type = MenuItemType.Normal;
     protected Action _action;
     protected MenuItem[] _subitems;
-	protected MenuItem _parent;
-	/// handle menu item click (parameter is MenuItem)
-	Signal!MenuItemClickHandler menuItemClick;
-	/// handle menu item click action (parameter is Action)
-	Signal!MenuItemActionHandler menuItemAction;
-	/// item action id, 0 if no action
+    protected MenuItem _parent;
+    /// handle menu item click (parameter is MenuItem)
+    Signal!MenuItemClickHandler menuItemClick;
+    /// handle menu item click action (parameter is Action)
+    Signal!MenuItemActionHandler menuItemAction;
+    /// item action id, 0 if no action
     @property int id() const { return _action is null ? 0 : _action.id; }
     /// returns count of submenu items
     @property int subitemCount() {
         return cast(int)_subitems.length;
     }
-	/// returns subitem index for item, -1 if item is not direct subitem of this
-	@property int subitemIndex(MenuItem item) {
-		for (int i = 0; i < _subitems.length; i++)
-			if (_subitems[i] is item)
-				return i;
-		return -1;
-	}
+    /// returns subitem index for item, -1 if item is not direct subitem of this
+    @property int subitemIndex(MenuItem item) {
+        for (int i = 0; i < _subitems.length; i++)
+            if (_subitems[i] is item)
+                return i;
+        return -1;
+    }
     /// returns submenu item by index
     MenuItem subitem(int index) {
         return _subitems[index];
@@ -98,87 +98,87 @@ class MenuItem {
         return null;
     }
 
-	@property MenuItemType type() const {
+    @property MenuItemType type() const {
         if (id == SEPARATOR_ACTION_ID)
             return MenuItemType.Separator;
-		if (_subitems.length > 0) // if there are children, force type to Submenu
-			return MenuItemType.Submenu;
-		return _type; 
-	}
+        if (_subitems.length > 0) // if there are children, force type to Submenu
+            return MenuItemType.Submenu;
+        return _type; 
+    }
 
-	/// set new MenuItemType
-	@property MenuItem type(MenuItemType type) {
-		_type = type;
-		return this; 
-	}
+    /// set new MenuItemType
+    @property MenuItem type(MenuItemType type) {
+        _type = type;
+        return this; 
+    }
 
-	/// get check for checkbox or radio button item
-	@property bool checked() {
-		return _checked;
-	}
-	/// check radio button with specified index, uncheck other radio buttons in group (group consists of sequence of radio button items; other item type - end of group)
-	protected void checkRadioButton(int index) {
-		// find bounds of group
-		int start = index;
-		int end = index;
-		for (; start > 0 && _subitems[start - 1].type == MenuItemType.Radio; start--) {
-			// do nothing
-		}
-		for (; end < _subitems.length - 1 && _subitems[end + 1].type == MenuItemType.Radio; end++) {
-			// do nothing
-		}
-		// check item with specified index, uncheck others
-		for (int i = start; i <= end; i++)
-			_subitems[i]._checked = (i == index);
-	}
-	/// set check for checkbox or radio button item
-	@property MenuItem checked(bool flg) {
-		if (_checked == flg)
-			return this;
-		_checked = flg;
-		if (flg && _parent && type == MenuItemType.Radio) {
-			int index = _parent.subitemIndex(this);
-			if (index >= 0) {
-				_parent.checkRadioButton(index);
-			}
-		}
-		return this;
-	}
-	
-	/// get hotkey character from label (e.g. 'F' for item labeled "&File"), 0 if no hotkey
-	dchar getHotkey() {
-		dstring s = label;
-		dchar ch = 0;
-		for (int i = 0; i < s.length - 1; i++) {
-			if (s[i] == '&') {
-				ch = s[i + 1];
-				break;
-			}
-		}
-		return dcharToUpper(ch);
-	}
+    /// get check for checkbox or radio button item
+    @property bool checked() {
+        return _checked;
+    }
+    /// check radio button with specified index, uncheck other radio buttons in group (group consists of sequence of radio button items; other item type - end of group)
+    protected void checkRadioButton(int index) {
+        // find bounds of group
+        int start = index;
+        int end = index;
+        for (; start > 0 && _subitems[start - 1].type == MenuItemType.Radio; start--) {
+            // do nothing
+        }
+        for (; end < _subitems.length - 1 && _subitems[end + 1].type == MenuItemType.Radio; end++) {
+            // do nothing
+        }
+        // check item with specified index, uncheck others
+        for (int i = start; i <= end; i++)
+            _subitems[i]._checked = (i == index);
+    }
+    /// set check for checkbox or radio button item
+    @property MenuItem checked(bool flg) {
+        if (_checked == flg)
+            return this;
+        _checked = flg;
+        if (flg && _parent && type == MenuItemType.Radio) {
+            int index = _parent.subitemIndex(this);
+            if (index >= 0) {
+                _parent.checkRadioButton(index);
+            }
+        }
+        return this;
+    }
+    
+    /// get hotkey character from label (e.g. 'F' for item labeled "&File"), 0 if no hotkey
+    dchar getHotkey() {
+        dstring s = label;
+        dchar ch = 0;
+        for (int i = 0; i < s.length - 1; i++) {
+            if (s[i] == '&') {
+                ch = s[i + 1];
+                break;
+            }
+        }
+        return dcharToUpper(ch);
+    }
 
-	/// find subitem by hotkey character, returns subitem index, -1 if not found
-	int findSubitemByHotkey(dchar ch) {
-		if (!ch)
-			return -1;
-		ch = dcharToUpper(ch);
-		for (int i = 0; i < _subitems.length; i++) {
-			if (_subitems[i].getHotkey() == ch)
-				return i;
-		}
-		return -1;
-	}
+    /// find subitem by hotkey character, returns subitem index, -1 if not found
+    int findSubitemByHotkey(dchar ch) {
+        if (!ch)
+            return -1;
+        ch = dcharToUpper(ch);
+        for (int i = 0; i < _subitems.length; i++) {
+            if (_subitems[i].getHotkey() == ch)
+                return i;
+        }
+        return -1;
+    }
 
     /// Add separator item
     MenuItem addSeparator() {
         return add(new Action(SEPARATOR_ACTION_ID));
     }
 
-	/// adds submenu item
+    /// adds submenu item
     MenuItem add(MenuItem subitem) {
         _subitems ~= subitem;
-		subitem._parent = this;
+        subitem._parent = this;
         return this;
     }
     /// adds submenu item(s) from one or more actions (will return item for last action)
@@ -197,13 +197,13 @@ class MenuItem {
         }
         return res;
     }
-	/// returns text description for first accelerator of action; null if no accelerators
-	@property dstring acceleratorText() {
-		if (!_action)
-			return null;
-		return _action.acceleratorText;
-	}
-	/// returns true if item is submenu (contains subitems)
+    /// returns text description for first accelerator of action; null if no accelerators
+    @property dstring acceleratorText() {
+        if (!_action)
+            return null;
+        return _action.acceleratorText;
+    }
+    /// returns true if item is submenu (contains subitems)
     @property bool isSubmenu() {
         return _subitems.length > 0;
     }
@@ -216,34 +216,34 @@ class MenuItem {
     /// sets item action
     @property MenuItem action(Action a) { _action = a; return this; }
 
-	/// menu item Enabled flag
-	@property bool enabled() { return _enabled && type != MenuItemType.Separator; }
-	/// menu item Enabled flag
-	@property MenuItem enabled(bool enabled) {
-		_enabled = enabled;
-		return this;
-	}
+    /// menu item Enabled flag
+    @property bool enabled() { return _enabled && type != MenuItemType.Separator; }
+    /// menu item Enabled flag
+    @property MenuItem enabled(bool enabled) {
+        _enabled = enabled;
+        return this;
+    }
 
-	/// handle menu item click
-	Signal!(void, MenuItem) onMenuItem;
-	/// prepare for opening of submenu, return true if opening is allowed
-	Signal!(bool, MenuItem) openingSubmenu;
+    /// handle menu item click
+    Signal!(void, MenuItem) onMenuItem;
+    /// prepare for opening of submenu, return true if opening is allowed
+    Signal!(bool, MenuItem) openingSubmenu;
 
-	/// call to update state for action (if action is assigned for widget)
+    /// call to update state for action (if action is assigned for widget)
     void updateActionState(Widget w) {
-		//import dlangui.widgets.editors;
-		if (_action) {
-			//if (_action.id == EditorActions.Copy) {
-			//	Log.d("Requesting Copy action. Old state: ", _action.state);
-			//}
-			w.updateActionState(_action, true);
-			_enabled = _action.state.enabled;
-			_checked = _action.state.checked;
-		}
-		for (int i = 0; i < _subitems.length; i++) {
-			_subitems[i].updateActionState(w);
-		}
-	}
+        //import dlangui.widgets.editors;
+        if (_action) {
+            //if (_action.id == EditorActions.Copy) {
+            //    Log.d("Requesting Copy action. Old state: ", _action.state);
+            //}
+            w.updateActionState(_action, true);
+            _enabled = _action.state.enabled;
+            _checked = _action.state.checked;
+        }
+        for (int i = 0; i < _subitems.length; i++) {
+            _subitems[i].updateActionState(w);
+        }
+    }
 
     this() {
         _enabled = true;
@@ -263,409 +263,409 @@ class MenuItem {
 
 /// widget to draw menu item
 class MenuItemWidget : WidgetGroupDefaultDrawing {
-	protected bool _mainMenu;
+    protected bool _mainMenu;
     protected MenuItem _item;
-	protected ImageWidget _icon;
-	protected TextWidget _accel;
+    protected ImageWidget _icon;
+    protected TextWidget _accel;
     protected TextWidget _label;
-	protected int _labelWidth;
-	protected int _iconWidth;
-	protected int _accelWidth;
-	protected int _height;
+    protected int _labelWidth;
+    protected int _iconWidth;
+    protected int _accelWidth;
+    protected int _height;
     @property MenuItem item() { return _item; }
-	void setSubitemSizes(int maxLabelWidth, int maxHeight, int maxIconWidth, int maxAccelWidth) {
-		_labelWidth = maxLabelWidth;
-		_height = maxHeight;
-		_iconWidth = maxIconWidth;
-		_accelWidth = maxAccelWidth;
-	}
-	void measureSubitems(ref int maxLabelWidth, ref int maxHeight, ref int maxIconWidth, ref int maxAccelWidth) {
-		_label.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
-		if (maxLabelWidth < _label.measuredWidth)
-			maxLabelWidth = _label.measuredWidth;
-		if (maxHeight < _label.measuredHeight)
-			maxHeight = _label.measuredHeight;
-		if (_icon) {
-			_icon.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
-			if (maxIconWidth < _icon.measuredWidth)
-				maxIconWidth = _icon.measuredWidth;
-			if (maxHeight < _icon.measuredHeight)
-				maxHeight = _icon.measuredHeight;
-		}
-		if (_accel) {
-			_accel.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
-			if (maxAccelWidth < _accel.measuredWidth)
-				maxAccelWidth = _accel.measuredWidth;
-			if (maxHeight < _accel.measuredHeight)
-				maxHeight = _accel.measuredHeight;
-		}
-	}
-	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-	override void measure(int parentWidth, int parentHeight) { 
-		updateState();
-		Rect m = margins;
-		Rect p = padding;
-		// calc size constraints for children
-		int pwidth = parentWidth;
-		int pheight = parentHeight;
-		if (parentWidth != SIZE_UNSPECIFIED)
-			pwidth -= m.left + m.right + p.left + p.right;
-		if (parentHeight != SIZE_UNSPECIFIED)
-			pheight -= m.top + m.bottom + p.top + p.bottom;
-		if (_labelWidth)
-			measuredContent(parentWidth, parentHeight, _iconWidth + _labelWidth + _accelWidth, _height); // for vertical (popup menu)
-		else {
-			_label.measure(pwidth, pheight);
-			measuredContent(parentWidth, parentHeight, _label.measuredWidth, _label.measuredHeight); // for horizonral (main) menu
-		}
-	}
+    void setSubitemSizes(int maxLabelWidth, int maxHeight, int maxIconWidth, int maxAccelWidth) {
+        _labelWidth = maxLabelWidth;
+        _height = maxHeight;
+        _iconWidth = maxIconWidth;
+        _accelWidth = maxAccelWidth;
+    }
+    void measureSubitems(ref int maxLabelWidth, ref int maxHeight, ref int maxIconWidth, ref int maxAccelWidth) {
+        _label.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+        if (maxLabelWidth < _label.measuredWidth)
+            maxLabelWidth = _label.measuredWidth;
+        if (maxHeight < _label.measuredHeight)
+            maxHeight = _label.measuredHeight;
+        if (_icon) {
+            _icon.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+            if (maxIconWidth < _icon.measuredWidth)
+                maxIconWidth = _icon.measuredWidth;
+            if (maxHeight < _icon.measuredHeight)
+                maxHeight = _icon.measuredHeight;
+        }
+        if (_accel) {
+            _accel.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+            if (maxAccelWidth < _accel.measuredWidth)
+                maxAccelWidth = _accel.measuredWidth;
+            if (maxHeight < _accel.measuredHeight)
+                maxHeight = _accel.measuredHeight;
+        }
+    }
+    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+    override void measure(int parentWidth, int parentHeight) { 
+        updateState();
+        Rect m = margins;
+        Rect p = padding;
+        // calc size constraints for children
+        int pwidth = parentWidth;
+        int pheight = parentHeight;
+        if (parentWidth != SIZE_UNSPECIFIED)
+            pwidth -= m.left + m.right + p.left + p.right;
+        if (parentHeight != SIZE_UNSPECIFIED)
+            pheight -= m.top + m.bottom + p.top + p.bottom;
+        if (_labelWidth)
+            measuredContent(parentWidth, parentHeight, _iconWidth + _labelWidth + _accelWidth, _height); // for vertical (popup menu)
+        else {
+            _label.measure(pwidth, pheight);
+            measuredContent(parentWidth, parentHeight, _label.measuredWidth, _label.measuredHeight); // for horizonral (main) menu
+        }
+    }
 
-	/// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
-	override void layout(Rect rc) {
-		_needLayout = false;
-		if (visibility == Visibility.Gone) {
-			return;
-		}
-		_pos = rc;
-		applyMargins(rc);
-		applyPadding(rc);
-		Rect labelRc = rc;
-		Rect iconRc = rc;
-		Rect accelRc = rc;
-		iconRc.right = iconRc.left + _iconWidth;
-		accelRc.left = accelRc.right - _accelWidth;
-		labelRc.left += _iconWidth;
-		labelRc.right -= _accelWidth;
-		if (_icon)
-			_icon.layout(iconRc);
-		if (_accel)
-			_accel.layout(accelRc);
-		_label.layout(labelRc);
-	}
+    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+    override void layout(Rect rc) {
+        _needLayout = false;
+        if (visibility == Visibility.Gone) {
+            return;
+        }
+        _pos = rc;
+        applyMargins(rc);
+        applyPadding(rc);
+        Rect labelRc = rc;
+        Rect iconRc = rc;
+        Rect accelRc = rc;
+        iconRc.right = iconRc.left + _iconWidth;
+        accelRc.left = accelRc.right - _accelWidth;
+        labelRc.left += _iconWidth;
+        labelRc.right -= _accelWidth;
+        if (_icon)
+            _icon.layout(iconRc);
+        if (_accel)
+            _accel.layout(accelRc);
+        _label.layout(labelRc);
+    }
 
-	protected void updateState() {
-		if (_item.enabled)
-			setState(State.Enabled);
-		else
-			resetState(State.Enabled);
-		if (_item.checked)
-			setState(State.Checked);
-		else
-			resetState(State.Checked);
-	}
+    protected void updateState() {
+        if (_item.enabled)
+            setState(State.Enabled);
+        else
+            resetState(State.Enabled);
+        if (_item.checked)
+            setState(State.Checked);
+        else
+            resetState(State.Checked);
+    }
 
-	///// call to update state for action (if action is assigned for widget)
-	//override void updateActionState(bool force = false) {
-	//    if (!_item.action)
-	//        return;
-	//    super.updateActionState(_item._action, force);
-	//    _item.enabled = _item._action.state.enabled;
-	//    _item.checked = _item._action.state.checked;
-	//    updateState();
-	//}
+    ///// call to update state for action (if action is assigned for widget)
+    //override void updateActionState(bool force = false) {
+    //    if (!_item.action)
+    //        return;
+    //    super.updateActionState(_item._action, force);
+    //    _item.enabled = _item._action.state.enabled;
+    //    _item.checked = _item._action.state.checked;
+    //    updateState();
+    //}
 
-	this(MenuItem item, bool mainMenu) {
+    this(MenuItem item, bool mainMenu) {
         id="menuitem";
-		_mainMenu = mainMenu;
+        _mainMenu = mainMenu;
         _item = item;
         styleId = STYLE_MENU_ITEM;
-		updateState();
-		string iconId = _item.action.iconId;
-		if (_item.type == MenuItemType.Check)
-			iconId = "btn_check";
-		else if (_item.type == MenuItemType.Radio)
-			iconId = "btn_radio";
-		// icon
-		if (_item.action && iconId.length) {
-			_icon = new ImageWidget("MENU_ICON", iconId);
-			_icon.styleId = STYLE_MENU_ICON;
-			_icon.state = State.Parent;
-			addChild(_icon);
-		}
-		// label
-		_label = new TextWidget("MENU_LABEL");
+        updateState();
+        string iconId = _item.action.iconId;
+        if (_item.type == MenuItemType.Check)
+            iconId = "btn_check";
+        else if (_item.type == MenuItemType.Radio)
+            iconId = "btn_radio";
+        // icon
+        if (_item.action && iconId.length) {
+            _icon = new ImageWidget("MENU_ICON", iconId);
+            _icon.styleId = STYLE_MENU_ICON;
+            _icon.state = State.Parent;
+            addChild(_icon);
+        }
+        // label
+        _label = new TextWidget("MENU_LABEL");
         _label.text = _item.label;
-		_label.styleId = _mainMenu ? "MAIN_MENU_LABEL" : "MENU_LABEL";
-		_label.state = State.Parent;
-		addChild(_label);
-		// accelerator
-		dstring acc = _item.acceleratorText;
-		if (_item.isSubmenu && !mainMenu) {
+        _label.styleId = _mainMenu ? "MAIN_MENU_LABEL" : "MENU_LABEL";
+        _label.state = State.Parent;
+        addChild(_label);
+        // accelerator
+        dstring acc = _item.acceleratorText;
+        if (_item.isSubmenu && !mainMenu) {
             version (Windows) {
-			    acc = ">"d;
-			    //acc = "►"d;
+                acc = ">"d;
+                //acc = "►"d;
             } else {
-			    acc = "‣"d;
+                acc = "‣"d;
             }
         }
-		if (acc !is null) {
-			_accel = new TextWidget("MENU_ACCEL");
-			_accel.styleId = STYLE_MENU_ACCEL;
-			_accel.text = acc;
-			_accel.state = State.Parent;
-			if (_item.isSubmenu && !mainMenu)
-				_accel.alignment = Align.Right | Align.VCenter;
-			addChild(_accel);
-		}
+        if (acc !is null) {
+            _accel = new TextWidget("MENU_ACCEL");
+            _accel.styleId = STYLE_MENU_ACCEL;
+            _accel.text = acc;
+            _accel.state = State.Parent;
+            if (_item.isSubmenu && !mainMenu)
+                _accel.alignment = Align.Right | Align.VCenter;
+            addChild(_accel);
+        }
         trackHover = true;
-		clickable = true;
+        clickable = true;
     }
 }
 
 /// base class for menus
 class MenuWidgetBase : ListWidget {
-	protected MenuWidgetBase _parentMenu;
+    protected MenuWidgetBase _parentMenu;
     protected MenuItem _item;
-	protected PopupMenu _openedMenu;
-	protected PopupWidget _openedPopup;
+    protected PopupMenu _openedMenu;
+    protected PopupWidget _openedPopup;
     protected int _openedPopupIndex;
 
-	/// menu item click listener
-	Signal!MenuItemClickHandler menuItemClick;
-	/// menu item action listener
-	Signal!MenuItemActionHandler menuItemAction;
+    /// menu item click listener
+    Signal!MenuItemClickHandler menuItemClick;
+    /// menu item action listener
+    Signal!MenuItemActionHandler menuItemAction;
 
     this(MenuWidgetBase parentMenu, MenuItem item, Orientation orientation) {
-		_parentMenu = parentMenu;
+        _parentMenu = parentMenu;
         _item = item;
-		this.orientation = orientation;
+        this.orientation = orientation;
         id = "popup_menu";
         styleId = STYLE_POPUP_MENU;
         WidgetListAdapter adapter = new WidgetListAdapter();
         for (int i=0; i < _item.subitemCount; i++) {
             MenuItem subitem = _item.subitem(i);
             MenuItemWidget widget = new MenuItemWidget(subitem, orientation == Orientation.Horizontal);
-			if (orientation == Orientation.Horizontal)
-				widget.styleId = STYLE_MAIN_MENU_ITEM;
-			widget.parent = this;
+            if (orientation == Orientation.Horizontal)
+                widget.styleId = STYLE_MAIN_MENU_ITEM;
+            widget.parent = this;
             adapter.add(widget);
         }
         ownAdapter = adapter;
     }
 
-	@property protected bool isMainMenu() {
-		return _orientation == Orientation.Horizontal;
-	}
+    @property protected bool isMainMenu() {
+        return _orientation == Orientation.Horizontal;
+    }
 
-	/// call to update state for action (if action is assigned for widget)
+    /// call to update state for action (if action is assigned for widget)
     override void updateActionState(bool force = false) {
-		for (int i = 0; i < itemCount; i++) {
-			MenuItemWidget w = cast(MenuItemWidget)itemWidget(i);
-			if (w)
-				w.updateActionState(force);
-		}
-	}
+        for (int i = 0; i < itemCount; i++) {
+            MenuItemWidget w = cast(MenuItemWidget)itemWidget(i);
+            if (w)
+                w.updateActionState(force);
+        }
+    }
 
-	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-	override void measure(int parentWidth, int parentHeight) {
-		if (_orientation == Orientation.Horizontal) {
-			// for horizontal (main) menu, don't align items
-			super.measure(parentWidth, parentHeight);
-			return;
-		}
+    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+    override void measure(int parentWidth, int parentHeight) {
+        if (_orientation == Orientation.Horizontal) {
+            // for horizontal (main) menu, don't align items
+            super.measure(parentWidth, parentHeight);
+            return;
+        }
 
-		if (visibility == Visibility.Gone) {
-			_measuredWidth = _measuredHeight = 0;
-			return;
-		}
-		int maxLabelWidth;
-		int maxHeight;
-		int maxIconWidth;
-		int maxAccelWidth;
-		/// find max dimensions for item icon and accelerator sizes
-		for (int i = 0; i < itemCount; i++) {
-			MenuItemWidget w = cast(MenuItemWidget)itemWidget(i);
-			if (w)
-				w.measureSubitems(maxLabelWidth, maxHeight, maxIconWidth, maxAccelWidth);
-		}
-		/// set equal dimensions for item icon and accelerator sizes
-		for (int i = 0; i < itemCount; i++) {
-			MenuItemWidget w = cast(MenuItemWidget)itemWidget(i);
-			if (w)
-				w.setSubitemSizes(maxLabelWidth, maxHeight, maxIconWidth, maxAccelWidth);
-		}
-		super.measure(parentWidth, parentHeight);
-	}
+        if (visibility == Visibility.Gone) {
+            _measuredWidth = _measuredHeight = 0;
+            return;
+        }
+        int maxLabelWidth;
+        int maxHeight;
+        int maxIconWidth;
+        int maxAccelWidth;
+        /// find max dimensions for item icon and accelerator sizes
+        for (int i = 0; i < itemCount; i++) {
+            MenuItemWidget w = cast(MenuItemWidget)itemWidget(i);
+            if (w)
+                w.measureSubitems(maxLabelWidth, maxHeight, maxIconWidth, maxAccelWidth);
+        }
+        /// set equal dimensions for item icon and accelerator sizes
+        for (int i = 0; i < itemCount; i++) {
+            MenuItemWidget w = cast(MenuItemWidget)itemWidget(i);
+            if (w)
+                w.setSubitemSizes(maxLabelWidth, maxHeight, maxIconWidth, maxAccelWidth);
+        }
+        super.measure(parentWidth, parentHeight);
+    }
 
-	protected void performUndoSelection() {
-		selectItem(-1);
-		setHoverItem(-1);
-	}
+    protected void performUndoSelection() {
+        selectItem(-1);
+        setHoverItem(-1);
+    }
 
     protected void onPopupClosed(PopupWidget p) {
         debug(DebugMenus) Log.d("menu ", id, " onPopupClosed selectionChanging=", _selectionChangingInProgress);
-		if (_openedPopup) {
-			if (_openedPopup is p) {
-				_openedMenu.onPopupClosed(p);
-				//bool undoSelection = _openedPopupIndex == _selectedItemIndex;
-				_openedPopup = null;
-				_openedMenu = null;
-				//if (undoSelection) {
-				//	performUndoSelection();
-				//}
-				if (!isMainMenu)
-					window.setFocus(this);
+        if (_openedPopup) {
+            if (_openedPopup is p) {
+                _openedMenu.onPopupClosed(p);
+                //bool undoSelection = _openedPopupIndex == _selectedItemIndex;
+                _openedPopup = null;
+                _openedMenu = null;
+                //if (undoSelection) {
+                //    performUndoSelection();
+                //}
+                if (!isMainMenu)
+                    window.setFocus(this);
                 //else
                 //    performUndoSelection();
                 if (isMainMenu && !_selectionChangingInProgress)
                     close();
-			} else if (thisPopup is p) {
-				_openedPopup.close();
+            } else if (thisPopup is p) {
+                _openedPopup.close();
                 _openedPopup = null;
-			}
-		}
+            }
+        }
     }
 
-	protected void openSubmenu(int index, MenuItemWidget itemWidget, bool selectFirstItem) {
+    protected void openSubmenu(int index, MenuItemWidget itemWidget, bool selectFirstItem) {
         debug(DebugMenus) Log.d("menu", id, " open submenu ", index);
-		if (_openedPopup !is null) {
-			if (_openedPopupIndex == index) {
-				if (selectFirstItem) {
-					window.setFocus(_openedMenu);
-					_openedMenu.selectItem(0);
-				}
-				return;
-			} else {
-			    _openedPopup.close();
+        if (_openedPopup !is null) {
+            if (_openedPopupIndex == index) {
+                if (selectFirstItem) {
+                    window.setFocus(_openedMenu);
+                    _openedMenu.selectItem(0);
+                }
+                return;
+            } else {
+                _openedPopup.close();
                 _openedPopup = null;
-			}
+            }
         }
 
-		PopupMenu popupMenu = new PopupMenu(itemWidget.item, this);
-		PopupWidget popup = window.showPopup(popupMenu, itemWidget, orientation == Orientation.Horizontal ? PopupAlign.Below :  PopupAlign.Right);
-		requestActionsUpdate();
+        PopupMenu popupMenu = new PopupMenu(itemWidget.item, this);
+        PopupWidget popup = window.showPopup(popupMenu, itemWidget, orientation == Orientation.Horizontal ? PopupAlign.Below :  PopupAlign.Right);
+        requestActionsUpdate();
         popup.popupClosed = &onPopupClosed;
         popup.flags = PopupFlags.CloseOnClickOutside;
-		_openedPopup = popup;
-		_openedMenu = popupMenu;
+        _openedPopup = popup;
+        _openedMenu = popupMenu;
         _openedPopupIndex = index;
         _selectedItemIndex = index;
         if (selectFirstItem) {
             debug(DebugMenus) Log.d("menu: selecting first item");
-			window.setFocus(popupMenu);
-			_openedMenu.selectItem(0);
-		}
-	}
+            window.setFocus(popupMenu);
+            _openedMenu.selectItem(0);
+        }
+    }
 
     protected bool _selectionChangingInProgress;
-	/// override to handle change of selection
-	override protected void selectionChanged(int index, int previouslySelectedItem = -1) {
+    /// override to handle change of selection
+    override protected void selectionChanged(int index, int previouslySelectedItem = -1) {
         debug(DebugMenus) Log.d("menu ", id, " selectionChanged ", index, ", ", previouslySelectedItem, " _selectedItemIndex=", _selectedItemIndex);
         _selectionChangingInProgress = true;
-		if (index >= 0)
-			setFocus();
-		MenuItemWidget itemWidget = index >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(index) : null;
-		MenuItemWidget prevWidget = previouslySelectedItem >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(previouslySelectedItem) : null;
+        if (index >= 0)
+            setFocus();
+        MenuItemWidget itemWidget = index >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(index) : null;
+        MenuItemWidget prevWidget = previouslySelectedItem >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(previouslySelectedItem) : null;
         bool popupWasOpen = false;
-		if (prevWidget !is null) {
-			if (_openedPopup !is null) {
-				_openedPopup.close();
+        if (prevWidget !is null) {
+            if (_openedPopup !is null) {
+                _openedPopup.close();
                 _openedPopup = null;
                 popupWasOpen = true;
             }
-		}
-		if (itemWidget !is null) {
-			if (itemWidget.item.isSubmenu()) {
-				if (_selectOnHover || popupWasOpen) {
-					openSubmenu(index, itemWidget, _orientation == Orientation.Horizontal); // for main menu, select first item
-				}
-			} else {
-				// normal item
-			}
-		}
+        }
+        if (itemWidget !is null) {
+            if (itemWidget.item.isSubmenu()) {
+                if (_selectOnHover || popupWasOpen) {
+                    openSubmenu(index, itemWidget, _orientation == Orientation.Horizontal); // for main menu, select first item
+                }
+            } else {
+                // normal item
+            }
+        }
         _selectionChangingInProgress = false;
-	}
+    }
 
-	protected void handleMenuItemClick(MenuItem item) {
-		// precessing for CheckBox and RadioButton menus
-		if (item.type == MenuItemType.Check) {
-			item.checked = !item.checked;
-		} else if (item.type == MenuItemType.Radio) {
-			item.checked = true;
-		}
+    protected void handleMenuItemClick(MenuItem item) {
+        // precessing for CheckBox and RadioButton menus
+        if (item.type == MenuItemType.Check) {
+            item.checked = !item.checked;
+        } else if (item.type == MenuItemType.Radio) {
+            item.checked = true;
+        }
         MenuItem p = item;
         while (p) {
-		    if (p.menuItemClick.assigned) {
-			    p.menuItemClick(item);
+            if (p.menuItemClick.assigned) {
+                p.menuItemClick(item);
                 break;
             }
-		    if (p.menuItemAction.assigned && item.action) {
-			    p.menuItemAction(item.action);
+            if (p.menuItemAction.assigned && item.action) {
+                p.menuItemAction(item.action);
                 break;
             }
             p = p._parent;
         }
-	}
+    }
 
-	protected void onMenuItem(MenuItem item) {
+    protected void onMenuItem(MenuItem item) {
         debug(DebugMenus) Log.d("onMenuItem ", item.action.label);
-		if (_openedPopup !is null) {
-			_openedPopup.close();
-			_openedPopup = null;
-		}
-		if (_parentMenu !is null)
-			_parentMenu.onMenuItem(item);
-		else {
-			// top level handling
-			Log.d("onMenuItem ", item.id);
-			selectItem(-1);
+        if (_openedPopup !is null) {
+            _openedPopup.close();
+            _openedPopup = null;
+        }
+        if (_parentMenu !is null)
+            _parentMenu.onMenuItem(item);
+        else {
+            // top level handling
+            Log.d("onMenuItem ", item.id);
+            selectItem(-1);
             setHoverItem(-1);
-			selectOnHover = false;
+            selectOnHover = false;
 
-			// copy menu item click listeners
-			Signal!MenuItemClickHandler onMenuItemClickListenerCopy = menuItemClick;
-			// copy item action listeners
-			Signal!MenuItemActionHandler onMenuItemActionListenerCopy = menuItemAction;
+            // copy menu item click listeners
+            Signal!MenuItemClickHandler onMenuItemClickListenerCopy = menuItemClick;
+            // copy item action listeners
+            Signal!MenuItemActionHandler onMenuItemActionListenerCopy = menuItemAction;
 
-			handleMenuItemClick(item);
+            handleMenuItemClick(item);
 
-			PopupWidget popup = cast(PopupWidget)parent;
-			if (popup)
-				popup.close();
+            PopupWidget popup = cast(PopupWidget)parent;
+            if (popup)
+                popup.close();
 
-			// this pointer now can be invalid - if popup removed
-			if (onMenuItemClickListenerCopy.assigned)
-				if (onMenuItemClickListenerCopy(item))
-					return;
-			// this pointer now can be invalid - if popup removed
-			if (onMenuItemActionListenerCopy.assigned)
-				onMenuItemActionListenerCopy(item.action);
-		}
-	}
+            // this pointer now can be invalid - if popup removed
+            if (onMenuItemClickListenerCopy.assigned)
+                if (onMenuItemClickListenerCopy(item))
+                    return;
+            // this pointer now can be invalid - if popup removed
+            if (onMenuItemActionListenerCopy.assigned)
+                onMenuItemActionListenerCopy(item.action);
+        }
+    }
 
     @property MenuItemWidget selectedMenuItemWidget() {
         return _selectedItemIndex >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(_selectedItemIndex) : null;
     }
 
-	/// override to handle mouse up on item
-	override protected void itemClicked(int index) {
-		MenuItemWidget itemWidget = index >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(index) : null;
-		if (itemWidget !is null) {
-			debug(DebugMenus) Log.d("Menu ", id, " Item clicked ", itemWidget.item.action.id);
-			if (itemWidget.item.isSubmenu()) {
-				// submenu clicked
-				if (_clickOnButtonDown && _openedPopup !is null && _openedMenu._item is itemWidget.item) {
+    /// override to handle mouse up on item
+    override protected void itemClicked(int index) {
+        MenuItemWidget itemWidget = index >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(index) : null;
+        if (itemWidget !is null) {
+            debug(DebugMenus) Log.d("Menu ", id, " Item clicked ", itemWidget.item.action.id);
+            if (itemWidget.item.isSubmenu()) {
+                // submenu clicked
+                if (_clickOnButtonDown && _openedPopup !is null && _openedMenu._item is itemWidget.item) {
 
                     if (_selectedItemIndex == index) {
                         _openedMenu.setFocus();
                         return;
                     }
 
-					// second click on main menu opened item
-					_openedPopup.close();
-					_openedPopup = null;
-					//selectItem(-1);
-					selectOnHover = false;
-				} else {
-					openSubmenu(index, itemWidget, _orientation == Orientation.Horizontal); // for main menu, select first item
-					selectOnHover = true;
-				}
-			} else {
-				// normal item
-				onMenuItem(itemWidget.item);
-			}
-		}
-	}
+                    // second click on main menu opened item
+                    _openedPopup.close();
+                    _openedPopup = null;
+                    //selectItem(-1);
+                    selectOnHover = false;
+                } else {
+                    openSubmenu(index, itemWidget, _orientation == Orientation.Horizontal); // for main menu, select first item
+                    selectOnHover = true;
+                }
+            } else {
+                // normal item
+                onMenuItem(itemWidget.item);
+            }
+        }
+    }
 
     /// returns popup this menu is located in
     @property PopupWidget thisPopup() {
@@ -675,16 +675,16 @@ class MenuWidgetBase : ListWidget {
     protected int _menuToggleState;
     protected Widget _menuTogglePreviousFocus;
 
-	/// override to handle specific actions state (e.g. change enabled state for supported actions)
-	override bool handleActionStateRequest(const Action a) {
-		if (_menuTogglePreviousFocus) {
-			Log.d("Menu.handleActionStateRequest forwarding to ", _menuTogglePreviousFocus);
-			bool res = _menuTogglePreviousFocus.handleActionStateRequest(a);
-			Log.d("Menu.handleActionStateRequest forwarding handled successful: ", a.state.toString);
-			return res;
-		}
-		return false;
-	}
+    /// override to handle specific actions state (e.g. change enabled state for supported actions)
+    override bool handleActionStateRequest(const Action a) {
+        if (_menuTogglePreviousFocus) {
+            Log.d("Menu.handleActionStateRequest forwarding to ", _menuTogglePreviousFocus);
+            bool res = _menuTogglePreviousFocus.handleActionStateRequest(a);
+            Log.d("Menu.handleActionStateRequest forwarding handled successful: ", a.state.toString);
+            return res;
+        }
+        return false;
+    }
 
     /// list navigation using keys
     override bool onKeyEvent(KeyEvent event) {
@@ -705,11 +705,11 @@ class MenuWidgetBase : ListWidget {
                     if (_parentMenu !is null) {
                         if (_parentMenu.orientation == Orientation.Vertical) {
                             if (thisPopup !is null) {
-								//int selectedItem = _selectedItemIndex;
+                                //int selectedItem = _selectedItemIndex;
                                 // back to parent menu on Left key
                                 thisPopup.close();
-								//if (selectedItem >= 0)
-								//	selectItem(selectedItem);
+                                //if (selectedItem >= 0)
+                                //    selectItem(selectedItem);
                                 return true;
                             }
                         } else {
@@ -738,18 +738,18 @@ class MenuWidgetBase : ListWidget {
                     return true;
                 }
             } else if (event.action == KeyAction.Text && event.flags == 0) {
-				dchar ch = event.text[0];
-				int index = _item.findSubitemByHotkey(ch);
-				if (index >= 0) {
-					itemClicked(index);
-					return true;
-				}
-			}
+                dchar ch = event.text[0];
+                int index = _item.findSubitemByHotkey(ch);
+                if (index >= 0) {
+                    itemClicked(index);
+                    return true;
+                }
+            }
         }
-		if (_selectedItemIndex >= 0 && event.action == KeyAction.KeyDown && /*event.flags == 0 &&*/ (event.keyCode == KeyCode.RETURN || event.keyCode == KeyCode.SPACE)) {
-			itemClicked(_selectedItemIndex);
-			return true;
-		}
+        if (_selectedItemIndex >= 0 && event.action == KeyAction.KeyDown && /*event.flags == 0 &&*/ (event.keyCode == KeyCode.RETURN || event.keyCode == KeyCode.SPACE)) {
+            itemClicked(_selectedItemIndex);
+            return true;
+        }
         bool res = super.onKeyEvent(event);
         return res;
     }
@@ -771,66 +771,66 @@ class MenuWidgetBase : ListWidget {
 class MainMenu : MenuWidgetBase {
 
     this(MenuItem item) {
-		super(null, item, Orientation.Horizontal);
+        super(null, item, Orientation.Horizontal);
         id = "MAIN_MENU";
         styleId = STYLE_MAIN_MENU;
-		_clickOnButtonDown = true;
+        _clickOnButtonDown = true;
         selectOnHover = false;
     }
 
-	/// call to update state for action (if action is assigned for widget)
+    /// call to update state for action (if action is assigned for widget)
     override void updateActionState(bool force) {
-		//Log.d("MainMenu: updateActionState");
-		//_item.updateActionState(this);
+        //Log.d("MainMenu: updateActionState");
+        //_item.updateActionState(this);
 
-	}
+    }
 
     /// override and return true to track key events even when not focused
     @property override bool wantsKeyTracking() {
         return true;
     }
 
-	/// get text flags (bit set of TextFlag enum values)
-	@property override uint textFlags() {
-		// override text flags for main menu
-		if (_selectedItemIndex >= 0)
-			return TextFlag.UnderlineHotKeys | TextFlag.HotKeys;
-		else
-			return TextFlag.UnderlineHotKeysWhenAltPressed | TextFlag.HotKeys;
-	}
+    /// get text flags (bit set of TextFlag enum values)
+    @property override uint textFlags() {
+        // override text flags for main menu
+        if (_selectedItemIndex >= 0)
+            return TextFlag.UnderlineHotKeys | TextFlag.HotKeys;
+        else
+            return TextFlag.UnderlineHotKeysWhenAltPressed | TextFlag.HotKeys;
+    }
 
-	protected int _menuToggleState;
+    protected int _menuToggleState;
     protected Widget _menuTogglePreviousFocus;
 
-	override protected void onMenuItem(MenuItem item) {
-		debug(DebugMenus) Log.d("MainMenu.onMenuItem ", item.action.label);
+    override protected void onMenuItem(MenuItem item) {
+        debug(DebugMenus) Log.d("MainMenu.onMenuItem ", item.action.label);
 
-		// copy menu item click listeners
-		Signal!MenuItemClickHandler onMenuItemClickListenerCopy = menuItemClick;
-		// copy item action listeners
-		Signal!MenuItemActionHandler onMenuItemActionListenerCopy = menuItemAction;
-		
-		deactivate();
+        // copy menu item click listeners
+        Signal!MenuItemClickHandler onMenuItemClickListenerCopy = menuItemClick;
+        // copy item action listeners
+        Signal!MenuItemActionHandler onMenuItemActionListenerCopy = menuItemAction;
+        
+        deactivate();
 
-		handleMenuItemClick(item);
+        handleMenuItemClick(item);
 
-		// this pointer now can be invalid - if popup removed
-		if (onMenuItemClickListenerCopy.assigned)
-			if (onMenuItemClickListenerCopy(item))
-				return;
-		// this pointer now can be invalid - if popup removed
-		if (onMenuItemActionListenerCopy.assigned)
-			onMenuItemActionListenerCopy(item.action);
-	}
+        // this pointer now can be invalid - if popup removed
+        if (onMenuItemClickListenerCopy.assigned)
+            if (onMenuItemClickListenerCopy(item))
+                return;
+        // this pointer now can be invalid - if popup removed
+        if (onMenuItemActionListenerCopy.assigned)
+            onMenuItemActionListenerCopy(item.action);
+    }
 
     /// return true if main menu is activated (focused or has open submenu)
     @property bool activated() {
         return focused || _selectedItemIndex >= 0 || _openedPopup !is null;
     }
 
-	override protected void performUndoSelection() {
-		deactivate();
-	}
+    override protected void performUndoSelection() {
+        deactivate();
+    }
 
     /// closes this menu - ESC handling
     override void close() {
@@ -868,7 +868,7 @@ class MainMenu : MenuWidgetBase {
         }
         selectItem(-1);
         setHoverItem(-1);
-		selectOnHover = false;
+        selectOnHover = false;
         window.setFocus(_menuTogglePreviousFocus);
     }
 
@@ -892,9 +892,9 @@ class MainMenu : MenuWidgetBase {
         if (focused && _openedPopup is null) {
             // activating!
             _menuTogglePreviousFocus = window.focusedWidget;
-			//updateActionState(true);
-			Log.d("MainMenu: updateActionState");
-			_item.updateActionState(this);
+            //updateActionState(true);
+            Log.d("MainMenu: updateActionState");
+            _item.updateActionState(this);
         }
         super.handleFocusChange(focused);
     }
@@ -910,17 +910,17 @@ class MainMenu : MenuWidgetBase {
             deactivate();
             return true;
         }
-		if (event.action == KeyAction.Text && (event.flags & KeyFlag.Alt) && !(event.flags & KeyFlag.Shift) && !(event.flags & KeyFlag.Shift)) {
-			dchar ch = event.text[0];
-			int index = _item.findSubitemByHotkey(ch);
-			if (index >= 0) {
-				activate();
-				itemClicked(index);
-				return true;
-			} else {
-				return false;
-			}
-		}
+        if (event.action == KeyAction.Text && (event.flags & KeyFlag.Alt) && !(event.flags & KeyFlag.Shift) && !(event.flags & KeyFlag.Shift)) {
+            dchar ch = event.text[0];
+            int index = _item.findSubitemByHotkey(ch);
+            if (index >= 0) {
+                activate();
+                itemClicked(index);
+                return true;
+            } else {
+                return false;
+            }
+        }
 
         if (event.action == KeyAction.KeyDown && isAlt && noOtherModifiers) {
             _menuToggleState = 1;
@@ -958,9 +958,9 @@ class MainMenu : MenuWidgetBase {
 class PopupMenu : MenuWidgetBase {
 
     this(MenuItem item, MenuWidgetBase parentMenu = null) {
-		super(parentMenu, item, Orientation.Vertical);
+        super(parentMenu, item, Orientation.Vertical);
         id = "POPUP_MENU";
         styleId = STYLE_POPUP_MENU;
-		selectOnHover = true;
+        selectOnHover = true;
     }
 }

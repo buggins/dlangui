@@ -11,7 +11,7 @@ extern( C ) @nogc nothrow {
 
     alias da_FC_FcPatternAddBool = FcBool function(FcPattern *p, const char *object, FcBool b);
 
-    alias da_FC_FcFontList = FcFontSet * function(FcConfig	*config, FcPattern	*p, FcObjectSet *os);
+    alias da_FC_FcFontList = FcFontSet * function(FcConfig    *config, FcPattern    *p, FcObjectSet *os);
 
     alias da_FC_FcPatternDestroy = void function(FcPattern *p);
 
@@ -56,7 +56,7 @@ extern(C) FcPattern * FcPatternCreate();
 
 extern(C) FcBool FcPatternAddBool(FcPattern *p, const char *object, FcBool b);
 
-extern(C) FcFontSet * FcFontList(FcConfig	*config, FcPattern	*p, FcObjectSet *os);
+extern(C) FcFontSet * FcFontList(FcConfig    *config, FcPattern    *p, FcObjectSet *os);
 
 extern(C) void FcPatternDestroy(FcPattern *p);
 

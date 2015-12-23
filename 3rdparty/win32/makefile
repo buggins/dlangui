@@ -22,13 +22,13 @@ SOURCES := $(filter-out $(EXCLUSIONS), $(SOURCES))
 ########################################
 
 win32.lib : $(SOURCES)
-	$(DC) $^ -lib -of$@ $(DFLAGS)
+    $(DC) $^ -lib -of$@ $(DFLAGS)
 
 win64.lib : $(SOURCES)
-	$(DC) $^ -lib -m64 -of$@ $(DFLAGS)
+    $(DC) $^ -lib -m64 -of$@ $(DFLAGS)
 
 clean :
-	-del win32.lib
-	-del win64.lib
+    -del win32.lib
+    -del win64.lib
 
 .PHONY : clean

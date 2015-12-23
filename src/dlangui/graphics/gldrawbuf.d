@@ -66,7 +66,7 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
     /// reserved for hardware-accelerated drawing - begins drawing batch
     override void beforeDrawing() {
         resetClipping();
-		_alpha = 0;
+        _alpha = 0;
         if (_scene !is null) {
             _scene.reset();
         }
@@ -89,10 +89,10 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
         resetClipping();
     }
 
-	/// draw custom OpenGL scene
-	override void drawCustomOpenGLScene(Rect rc, OpenGLDrawableDelegate handler) {
-		_scene.add(new CustomDrawnSceneItem(Rect(0, 0, width, height), rc, handler));
-	}
+    /// draw custom OpenGL scene
+    override void drawCustomOpenGLScene(Rect rc, OpenGLDrawableDelegate handler) {
+        _scene.add(new CustomDrawnSceneItem(Rect(0, 0, width, height), rc, handler));
+    }
 
     /// fill the whole buffer with solid color (no clipping applied)
     override void fill(uint color) {
@@ -113,19 +113,19 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
     /// draw pixel at (x, y) with specified color
     override void drawPixel(int x, int y, uint color) {
         assert(_scene !is null);
-		if (!_clipRect.isPointInside(x, y))
-			return;
+        if (!_clipRect.isPointInside(x, y))
+            return;
         color = applyAlpha(color);
         if (isFullyTransparentColor(color))
-			return;
-		_scene.add(new SolidRectSceneItem(Rect(x, y, x + 1, y + 1), color));
+            return;
+        _scene.add(new SolidRectSceneItem(Rect(x, y, x + 1, y + 1), color));
     }
-	/// draw 8bit alpha image - usually font glyph using specified color (clipping is applied)
-	override void drawGlyph(int x, int y, Glyph * glyph, uint color) {
+    /// draw 8bit alpha image - usually font glyph using specified color (clipping is applied)
+    override void drawGlyph(int x, int y, Glyph * glyph, uint color) {
         assert(_scene !is null);
-		Rect dstrect = Rect(x,y, x + glyph.correctedBlackBoxX, y + glyph.blackBoxY);
-		Rect srcrect = Rect(0, 0, glyph.correctedBlackBoxX, glyph.blackBoxY);
-		//Log.v("GLDrawBuf.drawGlyph dst=", dstrect, " src=", srcrect, " color=", color);
+        Rect dstrect = Rect(x,y, x + glyph.correctedBlackBoxX, y + glyph.blackBoxY);
+        Rect srcrect = Rect(0, 0, glyph.correctedBlackBoxX, glyph.blackBoxY);
+        //Log.v("GLDrawBuf.drawGlyph dst=", dstrect, " src=", srcrect, " color=", color);
         color = applyAlpha(color);
         if (!isFullyTransparentColor(color) && applyClipping(dstrect, srcrect)) {
             if (!glGlyphCache.get(glyph.id))
@@ -155,8 +155,8 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
         }
     }
 
-	/// draw line from point p1 to p2 with specified color
-	override void drawLine(Point p1, Point p2, uint colour) {
+    /// draw line from point p1 to p2 with specified color
+    override void drawLine(Point p1, Point p2, uint colour) {
         assert(_scene !is null);
         if (!clipLine(_clipRect, p1, p2))
             return;
@@ -248,20 +248,20 @@ enum MIN_TEX_SIZE = 64;
 enum MAX_TEX_SIZE  = 4096;
 private int nearestPOT(int n) {
     for (int i = MIN_TEX_SIZE; i <= MAX_TEX_SIZE; i *= 2) {
-		if (n <= i)
-			return i;
-	}
-	return MIN_TEX_SIZE;
+        if (n <= i)
+            return i;
+    }
+    return MIN_TEX_SIZE;
 }
 
 /// object deletion listener callback function type
 void onObjectDestroyedCallback(uint pobject) {
-	glImageCache.onCachedObjectDeleted(pobject);
+    glImageCache.onCachedObjectDeleted(pobject);
 }
 
 /// object deletion listener callback function type
 void onGlyphDestroyedCallback(uint pobject) {
-	glGlyphCache.onCachedObjectDeleted(pobject);
+    glGlyphCache.onCachedObjectDeleted(pobject);
 }
 
 private __gshared GLImageCache glImageCache;
@@ -273,8 +273,8 @@ shared static this() {
 }
 
 void LVGLClearImageCache() {
-	glImageCache.clear();
-	glGlyphCache.clear();
+    glImageCache.clear();
+    glGlyphCache.clear();
 }
 
 /// OpenGL texture cache for ColorDrawBuf objects
@@ -763,16 +763,16 @@ private class GLGlyphCache {
     void put(Glyph * glyph) {
         updateTextureSize();
         GLGlyphCacheItem res = null;
-		if (_activePage is null) {
-			_activePage = new GLGlyphCachePage(this, tdx, tdy);
-			_pages ~= _activePage;
-		}
-		res = _activePage.addItem(glyph);
-		if (!res) {
-			_activePage = new GLGlyphCachePage(this, tdx, tdy);
-			_pages ~= _activePage;
-			res = _activePage.addItem(glyph);
-		}
+        if (_activePage is null) {
+            _activePage = new GLGlyphCachePage(this, tdx, tdy);
+            _pages ~= _activePage;
+        }
+        res = _activePage.addItem(glyph);
+        if (!res) {
+            _activePage = new GLGlyphCachePage(this, tdx, tdy);
+            _pages ~= _activePage;
+            res = _activePage.addItem(glyph);
+        }
         _map[glyph.id] = res;
     }
     void clear() {
@@ -858,23 +858,23 @@ public:
 
 private class TextureSceneItem : SceneItem {
 private:
-	uint objectId;
+    uint objectId;
     //CacheableObject * img;
     Rect dstrc;
     Rect srcrc;
-	uint color;
-	uint options;
-	Rect * clip;
+    uint color;
+    uint options;
+    Rect * clip;
     int rotationAngle;
 
 public:
-	override void draw() {
-		if (glImageCache)
+    override void draw() {
+        if (glImageCache)
             glImageCache.drawItem(objectId, dstrc, srcrc, color, options, clip, rotationAngle);
-	}
+    }
 
     this(uint _objectId, Rect _dstrc, Rect _srcrc, uint _color, uint _options, Rect * _clip, int _rotationAngle)
-	{
+    {
         objectId = _objectId;
         dstrc = _dstrc;
         srcrc = _srcrc;
@@ -882,119 +882,119 @@ public:
         options = _options;
         clip = _clip;
         rotationAngle = _rotationAngle;
-	}
+    }
 }
 
 private class GlyphSceneItem : SceneItem {
 private:
-	uint objectId;
+    uint objectId;
     Rect dstrc;
     Rect srcrc;
-	uint color;
-	Rect * clip;
+    uint color;
+    Rect * clip;
 
 public:
-	override void draw() {
-		if (glGlyphCache)
+    override void draw() {
+        if (glGlyphCache)
             glGlyphCache.drawItem(objectId, dstrc, srcrc, color, clip);
-	}
+    }
     this(uint _objectId, Rect _dstrc, Rect _srcrc, uint _color, Rect * _clip)
-	{
+    {
         objectId = _objectId;
         dstrc = _dstrc;
         srcrc = _srcrc;
         color = _color;
         clip = _clip;
-	}
+    }
 }
 
 private class CustomDrawnSceneItem : SceneItem {
 private:
-	Rect _windowRect;
-	Rect _rc;
-	OpenGLDrawableDelegate _handler;
+    Rect _windowRect;
+    Rect _rc;
+    OpenGLDrawableDelegate _handler;
 
 public:
-	this(Rect windowRect, Rect rc, OpenGLDrawableDelegate handler) {
-		_windowRect = windowRect;
-		_rc = rc;
-		_handler = handler;
-	}
-	override void draw() {
-		if (_handler) {
-			glSupport.setOrthoProjection(_windowRect, _rc);
-			_handler(_windowRect, _rc);
-			glSupport.setOrthoProjection(_windowRect, _windowRect);
-		}
-	}
+    this(Rect windowRect, Rect rc, OpenGLDrawableDelegate handler) {
+        _windowRect = windowRect;
+        _rc = rc;
+        _handler = handler;
+    }
+    override void draw() {
+        if (_handler) {
+            glSupport.setOrthoProjection(_windowRect, _rc);
+            _handler(_windowRect, _rc);
+            glSupport.setOrthoProjection(_windowRect, _windowRect);
+        }
+    }
 }
 
 
 /// GL Texture object from image
 static class GLTexture {
-	protected int _dx;
-	protected int _dy;
-	protected int _tdx;
-	protected int _tdy;
+    protected int _dx;
+    protected int _dy;
+    protected int _tdx;
+    protected int _tdy;
 
-	@property Point imageSize() {
-		return Point(_dx, _dy);
-	}
+    @property Point imageSize() {
+        return Point(_dx, _dy);
+    }
 
-	protected Tex2D _texture;
-	/// returns texture object
-	@property Tex2D texture() { return _texture; }
-	/// returns texture id
-	@property uint textureId() { return _texture ? _texture.ID : 0; }
+    protected Tex2D _texture;
+    /// returns texture object
+    @property Tex2D texture() { return _texture; }
+    /// returns texture id
+    @property uint textureId() { return _texture ? _texture.ID : 0; }
 
-	bool isValid() {
-		return _texture && _texture.ID;
-	}
-	/// image coords to UV
-	float[2] uv(int x, int y) {
-		float[2] res;
-		res[0] = x * cast(float) _dx / _tdx;
-		res[1] = y * cast(float) _dy / _tdy;
-		return res;
-	}
-	float[2] uv(Point pt) {
-		float[2] res;
-		res[0] = pt.x * cast(float) _dx / _tdx;
-		res[1] = pt.y * cast(float) _dy / _tdy;
-		return res;
-	}
-	/// return UV coords for bottom right corner
-	float[2] uv() {
-		return uv(_dx, _dy);
-	}
+    bool isValid() {
+        return _texture && _texture.ID;
+    }
+    /// image coords to UV
+    float[2] uv(int x, int y) {
+        float[2] res;
+        res[0] = x * cast(float) _dx / _tdx;
+        res[1] = y * cast(float) _dy / _tdy;
+        return res;
+    }
+    float[2] uv(Point pt) {
+        float[2] res;
+        res[0] = pt.x * cast(float) _dx / _tdx;
+        res[1] = pt.y * cast(float) _dy / _tdy;
+        return res;
+    }
+    /// return UV coords for bottom right corner
+    float[2] uv() {
+        return uv(_dx, _dy);
+    }
 
-	this(string resourceId) {
-		import dlangui.graphics.resources;
-		string path = drawableCache.findResource(resourceId);
-		this(cast(ColorDrawBuf)imageCache.get(path));
-	}
+    this(string resourceId) {
+        import dlangui.graphics.resources;
+        string path = drawableCache.findResource(resourceId);
+        this(cast(ColorDrawBuf)imageCache.get(path));
+    }
 
-	this(ColorDrawBuf buf) {
-		if (buf) {
-			_dx = buf.width;
-			_dy = buf.height;
-			_tdx = nearestPOT(_dx);
-			_tdy = nearestPOT(_dy);
-			_texture = new Tex2D();
-			if (!_texture.ID)
-				return;
-			uint * pixels = buf.scanLine(0);
-			if (!glSupport.setTextureImage(_texture, buf.width, buf.height, cast(ubyte*)pixels)) {
-				destroy(_texture);
-				_texture = null;
-				return;
-			}
-		}
-	}
-	~this() {
-		if (_texture && _texture.ID != 0) {
-			destroy(_texture);
-			_texture = null;
-		}
-	}
+    this(ColorDrawBuf buf) {
+        if (buf) {
+            _dx = buf.width;
+            _dy = buf.height;
+            _tdx = nearestPOT(_dx);
+            _tdy = nearestPOT(_dy);
+            _texture = new Tex2D();
+            if (!_texture.ID)
+                return;
+            uint * pixels = buf.scanLine(0);
+            if (!glSupport.setTextureImage(_texture, buf.width, buf.height, cast(ubyte*)pixels)) {
+                destroy(_texture);
+                _texture = null;
+                return;
+            }
+        }
+    }
+    ~this() {
+        if (_texture && _texture.ID != 0) {
+            destroy(_texture);
+            _texture = null;
+        }
+    }
 }

@@ -19,18 +19,18 @@ writeln(r);
 
 // reference counted objects, useful for RAII / resource management.
 class Foo : RefCountedObject {
-	int[] resource;
-	~this() {
-		writeln("freeing Foo resources");
-	}
+    int[] resource;
+    ~this() {
+        writeln("freeing Foo resources");
+    }
 }
 {
-	Ref!Foo ref1;
-	{
-		Ref!Foo fooRef = new RefCountedObject();
-		ref1 = fooRef;
-	}
-	// RAII: will destroy object when no more references
+    Ref!Foo ref1;
+    {
+        Ref!Foo fooRef = new RefCountedObject();
+        ref1 = fooRef;
+    }
+    // RAII: will destroy object when no more references
 }
 
 ----
@@ -304,7 +304,7 @@ struct Glyph
     /// 6: subpixel rendering mode - if !=SubpixelRenderingMode.None, glyph data contains 3 bytes per pixel instead of 1
     SubpixelRenderingMode subpixelMode;
     /// 7: usage flag, to handle cleanup of unused glyphs
-	ubyte   lastUsage;
+    ubyte   lastUsage;
     static if (ENABLE_OPENGL) {
         /// 8: unique id of glyph (for drawing in hardware accelerated scenes)
         uint    id;
@@ -326,13 +326,13 @@ class RefCountedObject {
     @property int refCount() const { return _refCount; }
     /// increments reference counter
     void addRef() { 
-		_refCount++; 
-	}
+        _refCount++; 
+    }
     /// decrement reference counter, destroy object if no more references left
     void releaseRef() { 
-		if (--_refCount == 0) 
-			destroy(this); 
-	}
+        if (--_refCount == 0) 
+            destroy(this); 
+    }
     ~this() {}
 }
 
@@ -359,10 +359,10 @@ struct Ref(T) { // if (T is RefCountedObject)
             _data.addRef();
     }
     /// after blit
-	this(this) {
-		if (_data !is null)
+    this(this) {
+        if (_data !is null)
             _data.addRef();
-	}
+    }
     /// assign from another refcount by reference
     ref Ref opAssign(ref Ref data) {
         if (data._data == _data)
@@ -372,7 +372,7 @@ struct Ref(T) { // if (T is RefCountedObject)
         _data = data._data;
         if (_data !is null)
             _data.addRef();
-		return this;
+        return this;
     }
     /// assign from another refcount by value
     ref Ref opAssign(Ref data) {
@@ -383,7 +383,7 @@ struct Ref(T) { // if (T is RefCountedObject)
         _data = data._data;
         if (_data !is null)
             _data.addRef();
-		return this;
+        return this;
     }
     /// assign object
     ref Ref opAssign(T data) {
@@ -394,7 +394,7 @@ struct Ref(T) { // if (T is RefCountedObject)
         _data = data;
         if (_data !is null)
             _data.addRef();
-		return this;
+        return this;
     }
     /// clears reference
     void clear() { 
@@ -404,13 +404,13 @@ struct Ref(T) { // if (T is RefCountedObject)
         }
     }
     /// returns object reference (null if not assigned)
-	@property T get() {
-		return _data;
-	}
+    @property T get() {
+        return _data;
+    }
     /// returns const reference from const object
-	@property const(T) get() const {
-		return _data;
-	}
+    @property const(T) get() const {
+        return _data;
+    }
     /// decreases counter, and destroys object if no more references left
     ~this() {
         if (_data !is null)
@@ -425,19 +425,19 @@ struct Ref(T) { // if (T is RefCountedObject)
 string fromStringz(const(char[]) s) {
     if (s is null)
         return null;
-	int i = 0;
-	while(s[i])
-		i++;
-	return cast(string)(s[0..i].dup);
+    int i = 0;
+    while(s[i])
+        i++;
+    return cast(string)(s[0..i].dup);
 }
 
 string fromStringz(const(char*) s) {
     if (s is null)
         return null;
-	int i = 0;
-	while(s[i])
-		i++;
-	return cast(string)(s[0..i].dup);
+    int i = 0;
+    while(s[i])
+        i++;
+    return cast(string)(s[0..i].dup);
 }
 */
 
@@ -445,20 +445,20 @@ string fromStringz(const(char*) s) {
 wstring fromWStringz(const(wchar[]) s) {
     if (s is null)
         return null;
-	int i = 0;
-	while(s[i])
-		i++;
-	return cast(wstring)(s[0..i].dup);
+    int i = 0;
+    while(s[i])
+        i++;
+    return cast(wstring)(s[0..i].dup);
 }
 
 /** conversion from wchar z-string */
 wstring fromWStringz(const(wchar) * s) {
     if (s is null)
         return null;
-	int i = 0;
-	while(s[i])
-		i++;
-	return cast(wstring)(s[0..i].dup);
+    int i = 0;
+    while(s[i])
+        i++;
+    return cast(wstring)(s[0..i].dup);
 }
 
 
@@ -497,9 +497,9 @@ enum State : uint {
     TODO: support non-ascii.
 */
 dchar dcharToUpper(dchar ch) {
-	// TODO: support non-ascii letters
-	if (ch >= 'a' && ch <= 'z')
-		return ch - 'a' + 'A';
-	return ch;
+    // TODO: support non-ascii letters
+    if (ch >= 'a' && ch <= 'z')
+        return ch - 'a' + 'A';
+    return ch;
 }
 

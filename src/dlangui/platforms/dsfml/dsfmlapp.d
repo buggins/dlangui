@@ -48,25 +48,25 @@ class DSFMLWindow : dlangui.platforms.common.platform.Window {
     override void show() {
     }
 
-	/// returns window caption
+    /// returns window caption
     override @property dstring windowCaption() {
         // TODO
         return ""d;
     }
-	/// sets window caption
+    /// sets window caption
     override @property void windowCaption(dstring caption) {
         // TODO
     }
-	/// sets window icon
-	override @property void windowIcon(DrawBufRef icon) {
+    /// sets window icon
+    override @property void windowIcon(DrawBufRef icon) {
         // TODO
     }
     /// request window redraw
     override void invalidate() {
         // TODO
     }
-	/// close window
-	override void close() {
+    /// close window
+    override void close() {
         // TODO
     }
 
@@ -90,10 +90,10 @@ class DSFMLWindow : dlangui.platforms.common.platform.Window {
 
         glDisable(GL_DEPTH_TEST);
         glViewport(0, 0, _dx, _dy);
-		float a = 1.0f;
-		float r = ((_backgroundColor >> 16) & 255) / 255.0f;
-		float g = ((_backgroundColor >> 8) & 255) / 255.0f;
-		float b = ((_backgroundColor >> 0) & 255) / 255.0f;
+        float a = 1.0f;
+        float r = ((_backgroundColor >> 16) & 255) / 255.0f;
+        float g = ((_backgroundColor >> 8) & 255) / 255.0f;
+        float b = ((_backgroundColor >> 0) & 255) / 255.0f;
         //glClearColor(r, g, b, a);
         //glClear(GL_COLOR_BUFFER_BIT);
 
@@ -167,57 +167,57 @@ class DSFMLWindow : dlangui.platforms.common.platform.Window {
             case RShift: return KeyCode.RSHIFT;
             case RAlt: return KeyCode.RALT;
 
-		    ///The [ key
-		    case LBracket: return KeyCode.KEY_BRACKETOPEN;
-		    ///The ] key
-		    case RBracket: return KeyCode.KEY_BRACKETCLOSE;
-		    ///The ; key
-		    case SemiColon: return KeyCode.KEY_BRACKETOPEN;
-		    ///The , key
-		    case Comma: return KeyCode.KEY_COMMA;
-		    ///The . key
-		    case Period: return KeyCode.KEY_PERIOD;
-		    ///The ' key
-		    case Quote: return KeyCode.QUOTE;
-		    ///The / key
-		    case Slash: return KeyCode.KEY_DIVIDE;
-		    ///The \ key
-		    case BackSlash: return KeyCode.BACKSLASH;
-		    ///The ~ key
-		    case Tilde: return KeyCode.TILDE;
-		    ///The = key
-		    case Equal: return KeyCode.EQUAL;
-		    ///The - key
-		    case Dash: return KeyCode.SUB;
-		    ///The Space key
-		    case Space: return KeyCode.SPACE;
+            ///The [ key
+            case LBracket: return KeyCode.KEY_BRACKETOPEN;
+            ///The ] key
+            case RBracket: return KeyCode.KEY_BRACKETCLOSE;
+            ///The ; key
+            case SemiColon: return KeyCode.KEY_BRACKETOPEN;
+            ///The , key
+            case Comma: return KeyCode.KEY_COMMA;
+            ///The . key
+            case Period: return KeyCode.KEY_PERIOD;
+            ///The ' key
+            case Quote: return KeyCode.QUOTE;
+            ///The / key
+            case Slash: return KeyCode.KEY_DIVIDE;
+            ///The \ key
+            case BackSlash: return KeyCode.BACKSLASH;
+            ///The ~ key
+            case Tilde: return KeyCode.TILDE;
+            ///The = key
+            case Equal: return KeyCode.EQUAL;
+            ///The - key
+            case Dash: return KeyCode.SUB;
+            ///The Space key
+            case Space: return KeyCode.SPACE;
 
-		    case Numpad0: return KeyCode.NUM_0;
-		    case Numpad1: return KeyCode.NUM_1;
-		    case Numpad2: return KeyCode.NUM_2;
-		    case Numpad3: return KeyCode.NUM_3;
-		    case Numpad4: return KeyCode.NUM_4;
-		    case Numpad5: return KeyCode.NUM_5;
-		    case Numpad6: return KeyCode.NUM_6;
-		    case Numpad7: return KeyCode.NUM_7;
-		    case Numpad8: return KeyCode.NUM_8;
-		    case Numpad9: return KeyCode.NUM_9;
+            case Numpad0: return KeyCode.NUM_0;
+            case Numpad1: return KeyCode.NUM_1;
+            case Numpad2: return KeyCode.NUM_2;
+            case Numpad3: return KeyCode.NUM_3;
+            case Numpad4: return KeyCode.NUM_4;
+            case Numpad5: return KeyCode.NUM_5;
+            case Numpad6: return KeyCode.NUM_6;
+            case Numpad7: return KeyCode.NUM_7;
+            case Numpad8: return KeyCode.NUM_8;
+            case Numpad9: return KeyCode.NUM_9;
 
-		    case F1: return KeyCode.F1;
-		    case F2: return KeyCode.F2;
-		    case F3: return KeyCode.F3;
-		    case F4: return KeyCode.F4;
-		    case F5: return KeyCode.F5;
-		    case F6: return KeyCode.F6;
-		    case F7: return KeyCode.F7;
-		    case F8: return KeyCode.F8;
-		    case F9: return KeyCode.F9;
-		    case F10: return KeyCode.F10;
-		    case F11: return KeyCode.F11;
-		    case F12: return KeyCode.F12;
-		    case F13: return KeyCode.F13;
-		    case F14: return KeyCode.F14;
-		    case F15: return KeyCode.F15;
+            case F1: return KeyCode.F1;
+            case F2: return KeyCode.F2;
+            case F3: return KeyCode.F3;
+            case F4: return KeyCode.F4;
+            case F5: return KeyCode.F5;
+            case F6: return KeyCode.F6;
+            case F7: return KeyCode.F7;
+            case F8: return KeyCode.F8;
+            case F9: return KeyCode.F9;
+            case F10: return KeyCode.F10;
+            case F11: return KeyCode.F11;
+            case F12: return KeyCode.F12;
+            case F13: return KeyCode.F13;
+            case F14: return KeyCode.F14;
+            case F15: return KeyCode.F15;
 
             case Return: return KeyCode.RETURN;
             case BackSpace: return KeyCode.BACK;
@@ -319,16 +319,16 @@ class DSFMLPlatform : Platform {
         return w;
     }
 
-	/**
-	 * create window
-	 * Args:
-	 * 		windowCaption = window caption text
-	 * 		parent = parent Window, or null if no parent
-	 * 		flags = WindowFlag bit set, combination of Resizable, Modal, Fullscreen
-	 * 
-	 * Window w/o Resizable nor Fullscreen will be created with size based on measurement of its content widget
-	 */
-	override dlangui.platforms.common.platform.Window createWindow(dstring windowCaption, 
+    /**
+     * create window
+     * Args:
+     *         windowCaption = window caption text
+     *         parent = parent Window, or null if no parent
+     *         flags = WindowFlag bit set, combination of Resizable, Modal, Fullscreen
+     * 
+     * Window w/o Resizable nor Fullscreen will be created with size based on measurement of its content widget
+     */
+    override dlangui.platforms.common.platform.Window createWindow(dstring windowCaption, 
                                                                    dlangui.platforms.common.platform.Window parent, 
                                                                    uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0) {
         auto window = new RenderWindow(VideoMode(800, 600, 32), "Hello DSFML!", dsfml.window.window.Window.Style.Titlebar | dsfml.window.window.Window.Style.Close | dsfml.window.window.Window.Style.Resize);
@@ -338,23 +338,23 @@ class DSFMLPlatform : Platform {
         return w;
     }
 
-	/**
-	 * close window
-	 * 
-	 * Closes window earlier created with createWindow()
-	 */
-	override void closeWindow(dlangui.platforms.common.platform.Window w) {
+    /**
+     * close window
+     * 
+     * Closes window earlier created with createWindow()
+     */
+    override void closeWindow(dlangui.platforms.common.platform.Window w) {
         DSFMLWindow win = cast(DSFMLWindow)w;
         // TODO: support more than one window
         _activeWindows[0] = null;
         _activeWindows.length = 0;// = _activeWindows.remove(win);
         win.wnd.close();
     }
-	/**
-	 * Starts application message loop.
-	 * 
-	 * When returned from this method, application is shutting down.
-	 */
+    /**
+     * Starts application message loop.
+     * 
+     * When returned from this method, application is shutting down.
+     */
     override int enterMessageLoop() {
         // TODO: support more than one window
         if (_activeWindows.length < 1)
@@ -397,8 +397,8 @@ class DSFMLPlatform : Platform {
         // TODO:
     }
 
-	/// calls request layout for all windows
-	override void requestLayout() {
+    /// calls request layout for all windows
+    override void requestLayout() {
         // TODO:
     }
 
@@ -419,7 +419,7 @@ void initDSFMLApp() {
     Platform.setInstance(p);
     initFontManager();
 
-	currentTheme = createDefaultTheme();
+    currentTheme = createDefaultTheme();
 
     import derelict.opengl3.gl3;
     import dlangui.graphics.glsupport;

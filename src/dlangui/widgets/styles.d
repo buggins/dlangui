@@ -209,36 +209,36 @@ enum int WEIGHT_UNSPECIFIED = -1;
 
 /// Align option bit constants
 enum Align : ubyte {
-	/// alignment is not specified
+    /// alignment is not specified
     Unspecified = ALIGN_UNSPECIFIED,
-	/// horizontally align to the left of box
+    /// horizontally align to the left of box
     Left = 1,
-	/// horizontally align to the right of box
-	Right = 2,
-	/// horizontally align to the center of box
-	HCenter = 1 | 2,
-	/// vertically align to the top of box
-	Top = 4,
-	/// vertically align to the bottom of box
-	Bottom = 8,
-	/// vertically align to the center of box
-	VCenter = 4 | 8,
-	/// align to the center of box (VCenter | HCenter)
-	Center = VCenter | HCenter,
-	/// align to the top left corner of box (Left | Top)
-	TopLeft = Left | Top,
+    /// horizontally align to the right of box
+    Right = 2,
+    /// horizontally align to the center of box
+    HCenter = 1 | 2,
+    /// vertically align to the top of box
+    Top = 4,
+    /// vertically align to the bottom of box
+    Bottom = 8,
+    /// vertically align to the center of box
+    VCenter = 4 | 8,
+    /// align to the center of box (VCenter | HCenter)
+    Center = VCenter | HCenter,
+    /// align to the top left corner of box (Left | Top)
+    TopLeft = Left | Top,
 }
 
 /// text drawing flag bits
 enum TextFlag : uint {
-	/// text contains hot key prefixed with & char (e.g. "&File")
-	HotKeys = 1,
-	/// underline hot key when drawing
-	UnderlineHotKeys = 2,
-	/// underline hot key when drawing
-	UnderlineHotKeysWhenAltPressed = 4,
-	/// underline text when drawing
-	Underline = 8,
+    /// text contains hot key prefixed with & char (e.g. "&File")
+    HotKeys = 1,
+    /// underline hot key when drawing
+    UnderlineHotKeys = 2,
+    /// underline hot key when drawing
+    UnderlineHotKeysWhenAltPressed = 4,
+    /// underline text when drawing
+    Underline = 8,
     /// strikethrough text when drawing
     StrikeThrough = 16 // TODO:
 }
@@ -295,41 +295,41 @@ public:
             s.onThemeChanged();
     }
 
-	@property const(Theme) theme() const {
-		if (_theme !is null)
-			return _theme;
-		return currentTheme;
-	}
+    @property const(Theme) theme() const {
+        if (_theme !is null)
+            return _theme;
+        return currentTheme;
+    }
 
-	@property Theme theme() {
-		if (_theme !is null)
-			return _theme;
-		return currentTheme;
-	}
+    @property Theme theme() {
+        if (_theme !is null)
+            return _theme;
+        return currentTheme;
+    }
 
-	@property string id() const { return _id; }
-	@property Style id(string id) {
-		this._id = id;
-		return this;
-	}
+    @property string id() const { return _id; }
+    @property Style id(string id) {
+        this._id = id;
+        return this;
+    }
 
-	/// access to parent style for this style
-	@property const(Style) parentStyle() const {
-		if (_parentStyle !is null)
-			return _parentStyle;
-		if (_parentId !is null && currentTheme !is null)
-			return currentTheme.get(_parentId);
-		return currentTheme;
-	}
+    /// access to parent style for this style
+    @property const(Style) parentStyle() const {
+        if (_parentStyle !is null)
+            return _parentStyle;
+        if (_parentId !is null && currentTheme !is null)
+            return currentTheme.get(_parentId);
+        return currentTheme;
+    }
 
-	/// access to parent style for this style
-	@property Style parentStyle() {
-		if (_parentStyle !is null)
-			return _parentStyle;
-		if (_parentId !is null && currentTheme !is null)
-			return currentTheme.get(_parentId);
-		return currentTheme;
-	}
+    /// access to parent style for this style
+    @property Style parentStyle() {
+        if (_parentStyle !is null)
+            return _parentStyle;
+        if (_parentId !is null && currentTheme !is null)
+            return currentTheme.get(_parentId);
+        return currentTheme;
+    }
 
     @property string parentStyleId() {
         return _parentId;
@@ -345,8 +345,8 @@ public:
     }
 
     @property ref DrawableRef backgroundDrawable() const {
-		if (!(cast(Style)this)._backgroundDrawable.isNull)
-			return (cast(Style)this)._backgroundDrawable;
+        if (!(cast(Style)this)._backgroundDrawable.isNull)
+            return (cast(Style)this)._backgroundDrawable;
         string image = backgroundImageId;
         if (image !is null) {
             (cast(Style)this)._backgroundDrawable = drawableCache.get(image);
@@ -410,159 +410,159 @@ public:
     //===================================================
     // font properties
 
-	@property ref FontRef font() const {
-		if (!(cast(Style)this)._font.isNull)
-			return (cast(Style)this)._font;
-		string face = fontFace;
-		int size = fontSize;
-		ushort weight = fontWeight;
-		bool italic = fontItalic;
-		FontFamily family = fontFamily;
-		(cast(Style)this)._font = FontManager.instance.getFont(size, weight, italic, family, face);
-		return (cast(Style)this)._font;
-	}
+    @property ref FontRef font() const {
+        if (!(cast(Style)this)._font.isNull)
+            return (cast(Style)this)._font;
+        string face = fontFace;
+        int size = fontSize;
+        ushort weight = fontWeight;
+        bool italic = fontItalic;
+        FontFamily family = fontFamily;
+        (cast(Style)this)._font = FontManager.instance.getFont(size, weight, italic, family, face);
+        return (cast(Style)this)._font;
+    }
 
-	/// font size
-	@property FontFamily fontFamily() const {
+    /// font size
+    @property FontFamily fontFamily() const {
         if (_fontFamily != FontFamily.Unspecified)
             return _fontFamily;
         else
             return parentStyle.fontFamily;
-	}
+    }
 
-	/// font size
-	@property string fontFace() const {
+    /// font size
+    @property string fontFace() const {
         if (_fontFace !is null)
             return _fontFace;
         else
             return parentStyle.fontFace;
-	}
+    }
 
-	/// font style - italic
-	@property bool fontItalic() const {
+    /// font style - italic
+    @property bool fontItalic() const {
         if (_fontStyle != FONT_STYLE_UNSPECIFIED)
             return _fontStyle == FONT_STYLE_ITALIC;
         else
             return parentStyle.fontItalic;
-	}
+    }
 
-	/// font weight
-	@property ushort fontWeight() const {
+    /// font weight
+    @property ushort fontWeight() const {
         if (_fontWeight != FONT_WEIGHT_UNSPECIFIED)
             return _fontWeight;
         else
             return parentStyle.fontWeight;
-	}
+    }
 
-	/// font size
-	@property int fontSize() const {
+    /// font size
+    @property int fontSize() const {
         if (_fontSize != FONT_SIZE_UNSPECIFIED) {
             if (_fontSize & SIZE_IN_PERCENTS_FLAG)
                 return parentStyle.fontSize * (_fontSize ^ SIZE_IN_PERCENTS_FLAG) / 10000;
             return toPixels(_fontSize);
         } else
             return parentStyle.fontSize;
-	}
+    }
 
     //===================================================
     // layout parameters: margins / padding
 
-	/// padding
-	@property const(Rect) padding() const {
-		if (_stateMask || _padding.left == SIZE_UNSPECIFIED)
-			return toPixels(parentStyle._padding);
-		return toPixels(_padding);
-	}
+    /// padding
+    @property const(Rect) padding() const {
+        if (_stateMask || _padding.left == SIZE_UNSPECIFIED)
+            return toPixels(parentStyle._padding);
+        return toPixels(_padding);
+    }
 
-	/// margins
-	@property const(Rect) margins() const {
-		if (_stateMask || _margins.left == SIZE_UNSPECIFIED)
-			return toPixels(parentStyle._margins);
-		return toPixels(_margins);
-	}
+    /// margins
+    @property const(Rect) margins() const {
+        if (_stateMask || _margins.left == SIZE_UNSPECIFIED)
+            return toPixels(parentStyle._margins);
+        return toPixels(_margins);
+    }
 
-	/// alpha (0=opaque .. 255=transparent)
-	@property uint alpha() const {
-		if (_alpha != COLOR_UNSPECIFIED)
-			return _alpha;
-		else
-			return parentStyle.alpha;
-	}
-	
-	/// text color
-	@property uint textColor() const {
+    /// alpha (0=opaque .. 255=transparent)
+    @property uint alpha() const {
+        if (_alpha != COLOR_UNSPECIFIED)
+            return _alpha;
+        else
+            return parentStyle.alpha;
+    }
+    
+    /// text color
+    @property uint textColor() const {
         if (_textColor != COLOR_UNSPECIFIED)
             return _textColor;
         else
             return parentStyle.textColor;
-	}
+    }
 
-	/// text color
-	@property int maxLines() const {
+    /// text color
+    @property int maxLines() const {
         if (_maxLines != SIZE_UNSPECIFIED)
             return _maxLines;
         else
             return parentStyle.maxLines;
-	}
+    }
 
-	/// text flags
-	@property uint textFlags() const {
-		if (_textFlags != TEXT_FLAGS_UNSPECIFIED)
-			return _textFlags;
-		else
-			return parentStyle.textFlags;
-	}
-	
-	//===================================================
+    /// text flags
+    @property uint textFlags() const {
+        if (_textFlags != TEXT_FLAGS_UNSPECIFIED)
+            return _textFlags;
+        else
+            return parentStyle.textFlags;
+    }
+    
+    //===================================================
     // background
 
-	/// background color
-	@property uint backgroundColor() const {
+    /// background color
+    @property uint backgroundColor() const {
         if (_backgroundColor != COLOR_UNSPECIFIED)
             return _backgroundColor;
         else
             return parentStyle.backgroundColor;
-	}
+    }
 
-	/// font size
-	@property string backgroundImageId() const {
+    /// font size
+    @property string backgroundImageId() const {
         if (_backgroundImageId !is null)
             return _backgroundImageId;
         else
             return parentStyle.backgroundImageId;
-	}
+    }
 
     //===================================================
     // size restrictions
 
-	/// minimal width constraint, 0 if limit is not set
-	@property uint minWidth() const {
+    /// minimal width constraint, 0 if limit is not set
+    @property uint minWidth() const {
         if (_minWidth != SIZE_UNSPECIFIED)
             return toPixels(_minWidth);
         else
             return parentStyle.minWidth;
-	}
-	/// max width constraint, returns SIZE_UNSPECIFIED if limit is not set
-	@property uint maxWidth() const {
+    }
+    /// max width constraint, returns SIZE_UNSPECIFIED if limit is not set
+    @property uint maxWidth() const {
         if (_maxWidth != SIZE_UNSPECIFIED)
             return toPixels(_maxWidth);
         else
             return parentStyle.maxWidth;
-	}
-	/// minimal height constraint, 0 if limit is not set
-	@property uint minHeight() const {
+    }
+    /// minimal height constraint, 0 if limit is not set
+    @property uint minHeight() const {
         if (_minHeight != SIZE_UNSPECIFIED)
             return toPixels(_minHeight);
         else
             return parentStyle.minHeight;
-	}
-	/// max height constraint, SIZE_UNSPECIFIED if limit is not set
-	@property uint maxHeight() const {
+    }
+    /// max height constraint, SIZE_UNSPECIFIED if limit is not set
+    @property uint maxHeight() const {
         if (_maxHeight != SIZE_UNSPECIFIED)
             return toPixels(_maxHeight);
         else
             return parentStyle.maxHeight;
-	}
+    }
     /// set min width constraint
     @property Style minWidth(int value) {
         _minWidth = value;
@@ -585,29 +585,29 @@ public:
     }
 
 
-	/// layout width parameter
-	@property uint layoutWidth() const {
+    /// layout width parameter
+    @property uint layoutWidth() const {
         if (_layoutWidth != SIZE_UNSPECIFIED)
             return _layoutWidth;
         else
             return parentStyle.layoutWidth;
-	}
+    }
 
-	/// layout height parameter
-	@property uint layoutHeight() const {
+    /// layout height parameter
+    @property uint layoutHeight() const {
         if (_layoutHeight != SIZE_UNSPECIFIED)
             return _layoutHeight;
         else
             return parentStyle.layoutHeight;
-	}
+    }
 
-	/// layout weight parameter
-	@property uint layoutWeight() const {
+    /// layout weight parameter
+    @property uint layoutWeight() const {
         if (_layoutWeight != WEIGHT_UNSPECIFIED)
             return _layoutWeight;
         else
             return parentStyle.layoutWeight;
-	}
+    }
 
     /// set layout height
     @property Style layoutHeight(int value) {
@@ -628,17 +628,17 @@ public:
     //===================================================
     // alignment
 
-	/// get full alignment (both vertical and horizontal)
-	@property ubyte alignment() const { 
+    /// get full alignment (both vertical and horizontal)
+    @property ubyte alignment() const { 
         if (_align != Align.Unspecified)
             return _align; 
         else
             return parentStyle.alignment;
     }
-	/// vertical alignment: Top / VCenter / Bottom
-	@property ubyte valign() const { return alignment & Align.VCenter; }
-	/// horizontal alignment: Left / HCenter / Right
-	@property ubyte halign() const { return alignment & Align.HCenter; }
+    /// vertical alignment: Top / VCenter / Bottom
+    @property ubyte valign() const { return alignment & Align.VCenter; }
+    /// horizontal alignment: Left / HCenter / Right
+    @property ubyte halign() const { return alignment & Align.HCenter; }
 
     /// set alignment
     @property Style alignment(ubyte value) {
@@ -646,86 +646,86 @@ public:
         return this;
     }
 
-	@property Style fontFace(string face) {
-		_fontFace = face;
-		_font.clear();
-		return this;
-	}
+    @property Style fontFace(string face) {
+        _fontFace = face;
+        _font.clear();
+        return this;
+    }
 
-	@property Style fontFamily(FontFamily family) {
-		_fontFamily = family;
-		_font.clear();
-		return this;
-	}
+    @property Style fontFamily(FontFamily family) {
+        _fontFamily = family;
+        _font.clear();
+        return this;
+    }
 
-	@property Style fontStyle(ubyte style) {
-		_fontStyle = style;
-		_font.clear();
-		return this;
-	}
+    @property Style fontStyle(ubyte style) {
+        _fontStyle = style;
+        _font.clear();
+        return this;
+    }
 
-	@property Style fontWeight(ushort weight) {
-		_fontWeight = weight;
-		_font.clear();
-		return this;
-	}
+    @property Style fontWeight(ushort weight) {
+        _fontWeight = weight;
+        _font.clear();
+        return this;
+    }
 
-	@property Style fontSize(int size) {
-		_fontSize = size;
-		_font.clear();
-		return this;
-	}
+    @property Style fontSize(int size) {
+        _fontSize = size;
+        _font.clear();
+        return this;
+    }
 
-	@property Style textColor(uint color) {
-		_textColor = color;
-		return this;
-	}
+    @property Style textColor(uint color) {
+        _textColor = color;
+        return this;
+    }
 
-	@property Style maxLines(int lines) {
-		_maxLines = lines;
-		return this;
-	}
+    @property Style maxLines(int lines) {
+        _maxLines = lines;
+        return this;
+    }
 
-	@property Style alpha(uint alpha) {
-		_alpha = alpha;
-		return this;
-	}
-	
-	@property Style textFlags(uint flags) {
-		_textFlags = flags;
-		return this;
-	}
-	
-	@property Style backgroundColor(uint color) {
-		_backgroundColor = color;
+    @property Style alpha(uint alpha) {
+        _alpha = alpha;
+        return this;
+    }
+    
+    @property Style textFlags(uint flags) {
+        _textFlags = flags;
+        return this;
+    }
+    
+    @property Style backgroundColor(uint color) {
+        _backgroundColor = color;
         _backgroundImageId = null;
-		_backgroundDrawable.clear();
-		return this;
-	}
+        _backgroundDrawable.clear();
+        return this;
+    }
 
-	@property Style backgroundImageId(string image) {
-		_backgroundImageId = image;
-		_backgroundDrawable.clear();
-		return this;
-	}
+    @property Style backgroundImageId(string image) {
+        _backgroundImageId = image;
+        _backgroundDrawable.clear();
+        return this;
+    }
 
-	@property Style margins(Rect rc) {
-		_margins = rc;
-		return this;
-	}
+    @property Style margins(Rect rc) {
+        _margins = rc;
+        return this;
+    }
 
-	Style setMargins(int left, int top, int right, int bottom) {
-		_margins.left = left;
-		_margins.top = top;
-		_margins.right = right;
-		_margins.bottom = bottom;
-		return this;
-	}
-	
-	@property Style padding(Rect rc) {
-		_padding = rc;
-		return this;
-	}
+    Style setMargins(int left, int top, int right, int bottom) {
+        _margins.left = left;
+        _margins.top = top;
+        _margins.right = right;
+        _margins.bottom = bottom;
+        return this;
+    }
+    
+    @property Style padding(Rect rc) {
+        _padding = rc;
+        return this;
+    }
 
     /// returns colors to draw focus rectangle (one for solid, two for vertical gradient) or null if no focus rect should be drawn for style
     @property const(uint[]) focusRectColors() const {
@@ -743,164 +743,164 @@ public:
         return this;
     }
 
-	Style setPadding(int left, int top, int right, int bottom) {
-		_padding.left = left;
-		_padding.top = top;
-		_padding.right = right;
-		_padding.bottom = bottom;
-		return this;
-	}
-	
-	debug private static __gshared int _instanceCount;
-	debug @property static int instanceCount() { return _instanceCount; }
+    Style setPadding(int left, int top, int right, int bottom) {
+        _padding.left = left;
+        _padding.top = top;
+        _padding.right = right;
+        _padding.bottom = bottom;
+        return this;
+    }
+    
+    debug private static __gshared int _instanceCount;
+    debug @property static int instanceCount() { return _instanceCount; }
 
-	this(Theme theme, string id) {
-		_theme = theme;
-		_parentStyle = theme;
-		_id = id;
-		debug _instanceCount++;
-		//Log.d("Created style ", _id, ", count=", ++_instanceCount);
-	}
+    this(Theme theme, string id) {
+        _theme = theme;
+        _parentStyle = theme;
+        _id = id;
+        debug _instanceCount++;
+        //Log.d("Created style ", _id, ", count=", ++_instanceCount);
+    }
 
 
-	~this() {
-		foreach(ref Style item; _substates) {
-			//Log.d("Destroying substate");
-			destroy(item);
-			item = null;
-		}
-		_substates.destroy();
-		foreach(ref Style item; _children) {
-			destroy(item);
-			item = null;
-		}
-		_children.destroy();
-		_backgroundDrawable.clear();
-		_font.clear();
-		debug _instanceCount--;
-		//Log.d("Destroyed style ", _id, ", parentId=", _parentId, ", state=", _stateMask, ", count=", --_instanceCount);
-	}
+    ~this() {
+        foreach(ref Style item; _substates) {
+            //Log.d("Destroying substate");
+            destroy(item);
+            item = null;
+        }
+        _substates.destroy();
+        foreach(ref Style item; _children) {
+            destroy(item);
+            item = null;
+        }
+        _children.destroy();
+        _backgroundDrawable.clear();
+        _font.clear();
+        debug _instanceCount--;
+        //Log.d("Destroyed style ", _id, ", parentId=", _parentId, ", state=", _stateMask, ", count=", --_instanceCount);
+    }
 
-	/// create named substyle of this style
-	Style createSubstyle(string id) {
-		Style child = (_theme !is null ? _theme : currentTheme).createSubstyle(id);
-		child._parentStyle = this;
-		_children ~= child;
-		return child;
-	}
+    /// create named substyle of this style
+    Style createSubstyle(string id) {
+        Style child = (_theme !is null ? _theme : currentTheme).createSubstyle(id);
+        child._parentStyle = this;
+        _children ~= child;
+        return child;
+    }
 
-	/// create state substyle for this style
-	Style createState(uint stateMask = 0, uint stateValue = 0) {
+    /// create state substyle for this style
+    Style createState(uint stateMask = 0, uint stateValue = 0) {
         assert(stateMask != 0);
-		debug(styles) Log.d("Creating substate ", stateMask);
-		Style child = (_theme !is null ? _theme : currentTheme).createSubstyle(null);
-		child._parentStyle = this;
-		child._stateMask = stateMask;
-		child._stateValue = stateValue;
-		child._backgroundColor = COLOR_UNSPECIFIED;
-		child._textColor = COLOR_UNSPECIFIED;
-		child._textFlags = TEXT_FLAGS_UNSPECIFIED;
-		_substates ~= child;
-		return child;
-	}
+        debug(styles) Log.d("Creating substate ", stateMask);
+        Style child = (_theme !is null ? _theme : currentTheme).createSubstyle(null);
+        child._parentStyle = this;
+        child._stateMask = stateMask;
+        child._stateValue = stateValue;
+        child._backgroundColor = COLOR_UNSPECIFIED;
+        child._textColor = COLOR_UNSPECIFIED;
+        child._textFlags = TEXT_FLAGS_UNSPECIFIED;
+        _substates ~= child;
+        return child;
+    }
 
     /// find exact existing state style or create new if no matched styles found
     Style getOrCreateState(uint stateMask = 0, uint stateValue = 0) {
-		if (stateValue == State.Normal)
-			return this;
-		foreach(item; _substates) {
-			if ((item._stateMask == stateMask) && (item._stateValue == stateValue))
-				return item;
-		}
-		return createState(stateMask, stateValue);
+        if (stateValue == State.Normal)
+            return this;
+        foreach(item; _substates) {
+            if ((item._stateMask == stateMask) && (item._stateValue == stateValue))
+                return item;
+        }
+        return createState(stateMask, stateValue);
     }
 
-	/// find substyle based on widget state (e.g. focused, pressed, ...)
-	const(Style) forState(uint state) const {
-		if (state == State.Normal)
-			return this;
+    /// find substyle based on widget state (e.g. focused, pressed, ...)
+    const(Style) forState(uint state) const {
+        if (state == State.Normal)
+            return this;
         //Log.d("forState ", state, " styleId=", _id, " substates=", _substates.length);
-		if (parentStyle !is null && _substates.length == 0 && parentStyle._substates.length > 0) //id is null && 
-			return parentStyle.forState(state);
-		foreach(item; _substates) {
-			if ((item._stateMask & state) == item._stateValue)
-				return item;
-		}
-		return this; // fallback to current style
-	}
-	
+        if (parentStyle !is null && _substates.length == 0 && parentStyle._substates.length > 0) //id is null && 
+            return parentStyle.forState(state);
+        foreach(item; _substates) {
+            if ((item._stateMask & state) == item._stateValue)
+                return item;
+        }
+        return this; // fallback to current style
+    }
+    
 }
 
 /// Theme - root for style hierarhy.
 class Theme : Style {
-	protected Style[string] _byId;
+    protected Style[string] _byId;
 
-	this(string id) {
-		super(this, id);
-		_parentStyle = null;
-		_backgroundColor = COLOR_TRANSPARENT; // transparent
-		_textColor = 0x000000; // black
+    this(string id) {
+        super(this, id);
+        _parentStyle = null;
+        _backgroundColor = COLOR_TRANSPARENT; // transparent
+        _textColor = 0x000000; // black
         _maxLines = 1;
-		_align = Align.TopLeft;
-		_fontSize = 9 | SIZE_IN_POINTS_FLAG; // TODO: from settings or screen properties / DPI
-		_fontStyle = FONT_STYLE_NORMAL;
-		_fontWeight = 400;
-		_fontFace = "Arial"; // TODO: from settings
-		//_fontFace = "Verdana"; // TODO: from settings
+        _align = Align.TopLeft;
+        _fontSize = 9 | SIZE_IN_POINTS_FLAG; // TODO: from settings or screen properties / DPI
+        _fontStyle = FONT_STYLE_NORMAL;
+        _fontWeight = 400;
+        _fontFace = "Arial"; // TODO: from settings
+        //_fontFace = "Verdana"; // TODO: from settings
         _fontFamily = FontFamily.SansSerif;
         _minHeight = 0;
         _minWidth = 0;
         _layoutWidth = WRAP_CONTENT;
         _layoutHeight = WRAP_CONTENT;
         _layoutWeight = 1;
-	}
-	
-	~this() {
-		//Log.d("Theme destructor");
+    }
+    
+    ~this() {
+        //Log.d("Theme destructor");
         if (unknownStyleIds.length > 0) {
             Log.e("Unknown style statistics: ", unknownStyleIds);
         }
-		foreach(ref Style item; _byId) {
-			destroy(item);
-			item = null;
-		}
-		_byId.destroy();
-	}
+        foreach(ref Style item; _byId) {
+            destroy(item);
+            item = null;
+        }
+        _byId.destroy();
+    }
 
-	/// create wrapper style which will have currentTheme.get(id) as parent instead of fixed parent - to modify some base style properties in widget
-	Style modifyStyle(string id) {
-		Style style = new Style(null, null);
-		style._parentId = id;
+    /// create wrapper style which will have currentTheme.get(id) as parent instead of fixed parent - to modify some base style properties in widget
+    Style modifyStyle(string id) {
+        Style style = new Style(null, null);
+        style._parentId = id;
         style._align = Align.Unspecified; // inherit
-		style._padding.left = SIZE_UNSPECIFIED; // inherit
-		style._margins.left = SIZE_UNSPECIFIED; // inherit
-		style._textColor = COLOR_UNSPECIFIED; // inherit
-		style._textFlags = TEXT_FLAGS_UNSPECIFIED; // inherit
-		return style;
-	}
+        style._padding.left = SIZE_UNSPECIFIED; // inherit
+        style._margins.left = SIZE_UNSPECIFIED; // inherit
+        style._textColor = COLOR_UNSPECIFIED; // inherit
+        style._textFlags = TEXT_FLAGS_UNSPECIFIED; // inherit
+        return style;
+    }
 
-	// ================================================
-	// override to avoid infinite recursion
-	/// font size
-	@property override string backgroundImageId() const {
+    // ================================================
+    // override to avoid infinite recursion
+    /// font size
+    @property override string backgroundImageId() const {
         return _backgroundImageId;
-	}
-	/// minimal width constraint, 0 if limit is not set
-	@property override uint minWidth() const {
+    }
+    /// minimal width constraint, 0 if limit is not set
+    @property override uint minWidth() const {
         return _minWidth;
-	}
-	/// max width constraint, returns SIZE_UNSPECIFIED if limit is not set
-	@property override uint maxWidth() const {
+    }
+    /// max width constraint, returns SIZE_UNSPECIFIED if limit is not set
+    @property override uint maxWidth() const {
         return _maxWidth;
-	}
-	/// minimal height constraint, 0 if limit is not set
-	@property override uint minHeight() const {
+    }
+    /// minimal height constraint, 0 if limit is not set
+    @property override uint minHeight() const {
         return _minHeight;
-	}
-	/// max height constraint, SIZE_UNSPECIFIED if limit is not set
-	@property override uint maxHeight() const {
+    }
+    /// max height constraint, SIZE_UNSPECIFIED if limit is not set
+    @property override uint maxHeight() const {
         return _maxHeight;
-	}
+    }
 
     private DrawableRef _emptyDrawable;
     override ref DrawableRef customDrawable(string id) const {
@@ -936,25 +936,25 @@ class Theme : Style {
         return null;
     }
 
-	/// create new named style or get existing
-	override Style createSubstyle(string id) {
-		if (id !is null && id in _byId)
-			return _byId[id]; // already exists
-		Style style = new Style(this, id);
-		if (id !is null)
-			_byId[id] = style;
+    /// create new named style or get existing
+    override Style createSubstyle(string id) {
+        if (id !is null && id in _byId)
+            return _byId[id]; // already exists
+        Style style = new Style(this, id);
+        if (id !is null)
+            _byId[id] = style;
         style._parentStyle = this; // as initial value, use theme as parent
-		return style;
-	}
+        return style;
+    }
 
     /// to track unknown styles refernced from code
     int[string] unknownStyleIds;
-	/// find style by id, returns theme if not style with specified ID is not found
-	@property Style get(string id) {
+    /// find style by id, returns theme if not style with specified ID is not found
+    @property Style get(string id) {
         if (id is null)
             return this;
-		if (id in _byId)
-			return _byId[id];
+        if (id in _byId)
+            return _byId[id];
         // track unknown style ID references
         if (id in unknownStyleIds)
             unknownStyleIds[id] = unknownStyleIds[id] + 1;
@@ -962,17 +962,17 @@ class Theme : Style {
             Log.e("Unknown style ID requested: ", id);
             unknownStyleIds[id] = 1;
         }
-		return this;
-	}
-	
-	/// find substyle based on widget state (e.g. focused, pressed, ...)
-	override const(Style) forState(uint state) const {
-		return this;
-	}
+        return this;
+    }
+    
+    /// find substyle based on widget state (e.g. focused, pressed, ...)
+    override const(Style) forState(uint state) const {
+        return this;
+    }
 
-	void dumpStats() {
-		Log.d("Theme ", _id, ": children:", _children.length, ", substates:", _substates.length, ", mapsize:", _byId.length);
-	}
+    void dumpStats() {
+        Log.d("Theme ", _id, ": children:", _children.length, ", substates:", _substates.length, ", mapsize:", _byId.length);
+    }
 }
 
 /// to access current theme
@@ -981,10 +981,10 @@ private __gshared Theme _currentTheme;
 @property Theme currentTheme() { return _currentTheme; }
 /// set new current theme
 @property void currentTheme(Theme theme) { 
-	if (_currentTheme !is null) {
-		destroy(_currentTheme);
-	}
-	_currentTheme = theme; 
+    if (_currentTheme !is null) {
+        destroy(_currentTheme);
+    }
+    _currentTheme = theme; 
 }
 
 immutable ATTR_SCROLLBAR_BUTTON_UP = "scrollbar_button_up";
@@ -995,15 +995,15 @@ immutable ATTR_SCROLLBAR_INDICATOR_VERTICAL = "scrollbar_indicator_vertical";
 immutable ATTR_SCROLLBAR_INDICATOR_HORIZONTAL = "scrollbar_indicator_horizontal";
 
 Theme createDefaultTheme() {
-	Log.d("Creating default theme");
-	Theme res = new Theme("default");
+    Log.d("Creating default theme");
+    Theme res = new Theme("default");
     //res.fontSize(14);
     version (Windows) {
         res.fontFace = "Verdana";
     }
     //res.fontFace = "Arial Narrow";
     res.fontSize = 15; // TODO: choose based on DPI
-	Style button = res.createSubstyle(STYLE_BUTTON).backgroundImageId("btn_background").alignment(Align.Center).setMargins(5,5,5,5);
+    Style button = res.createSubstyle(STYLE_BUTTON).backgroundImageId("btn_background").alignment(Align.Center).setMargins(5,5,5,5);
     res.createSubstyle(STYLE_BUTTON_TRANSPARENT).backgroundImageId("btn_background_transparent").alignment(Align.Center);
     res.createSubstyle(STYLE_BUTTON_LABEL).layoutWidth(FILL_PARENT).alignment(Align.Left|Align.VCenter);
     res.createSubstyle(STYLE_BUTTON_IMAGE).alignment(Align.Center);
@@ -1011,7 +1011,7 @@ Theme createDefaultTheme() {
     res.createSubstyle(STYLE_HSPACER).layoutWidth(FILL_PARENT).minWidth(5).layoutWeight(100);
     res.createSubstyle(STYLE_VSPACER).layoutHeight(FILL_PARENT).minHeight(5).layoutWeight(100);
     res.createSubstyle(STYLE_BUTTON_NOMARGINS).backgroundImageId("btn_background").alignment(Align.Center); // .setMargins(5,5,5,5)
-	//button.createState(State.Enabled | State.Focused, State.Focused).backgroundImageId("btn_default_small_normal_disable_focused");
+    //button.createState(State.Enabled | State.Focused, State.Focused).backgroundImageId("btn_default_small_normal_disable_focused");
     //button.createState(State.Enabled, 0).backgroundImageId("btn_default_small_normal_disable");
     //button.createState(State.Pressed, State.Pressed).backgroundImageId("btn_default_small_pressed");
     //button.createState(State.Focused, State.Focused).backgroundImageId("btn_default_small_selected");
@@ -1052,21 +1052,21 @@ Theme createDefaultTheme() {
     tabHost.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
     tabHost.backgroundColor(0xF0F0F0);
     Style tabWidget = res.createSubstyle(STYLE_TAB_WIDGET);
-	tabWidget.setPadding(3,3,3,3).backgroundColor(0xEEEEEE);
+    tabWidget.setPadding(3,3,3,3).backgroundColor(0xEEEEEE);
     //tabWidget.backgroundImageId("frame_blue");
-	//res.dumpStats();
+    //res.dumpStats();
 
     Style mainMenu = res.createSubstyle(STYLE_MAIN_MENU).backgroundColor(0xEFEFF2).layoutWidth(FILL_PARENT);
-	Style mainMenuItem = res.createSubstyle(STYLE_MAIN_MENU_ITEM).setPadding(4,2,4,2).backgroundImageId("main_menu_item_background").textFlags(TEXT_FLAGS_USE_PARENT);
+    Style mainMenuItem = res.createSubstyle(STYLE_MAIN_MENU_ITEM).setPadding(4,2,4,2).backgroundImageId("main_menu_item_background").textFlags(TEXT_FLAGS_USE_PARENT);
     Style menuItem = res.createSubstyle(STYLE_MENU_ITEM).setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
     menuItem.createState(State.Focused, State.Focused).backgroundColor(0x40C0C000);
     menuItem.createState(State.Pressed, State.Pressed).backgroundColor(0x4080C000);
     menuItem.createState(State.Selected, State.Selected).backgroundColor(0x00F8F9Fa);
     menuItem.createState(State.Hovered, State.Hovered).backgroundColor(0xC0FFFF00);
-	res.createSubstyle(STYLE_MENU_ICON).setMargins(2,2,2,2).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).alpha(0xA0);
-	res.createSubstyle(STYLE_MENU_LABEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TextFlag.UnderlineHotKeys).createState(State.Enabled,0).textColor(0x80404040);
-	res.createSubstyle(STYLE_MAIN_MENU_LABEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TEXT_FLAGS_USE_PARENT).createState(State.Enabled,0).textColor(0x80404040);
-	res.createSubstyle(STYLE_MENU_ACCEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).textColor(0x80404040);
+    res.createSubstyle(STYLE_MENU_ICON).setMargins(2,2,2,2).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).alpha(0xA0);
+    res.createSubstyle(STYLE_MENU_LABEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TextFlag.UnderlineHotKeys).createState(State.Enabled,0).textColor(0x80404040);
+    res.createSubstyle(STYLE_MAIN_MENU_LABEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).textFlags(TEXT_FLAGS_USE_PARENT).createState(State.Enabled,0).textColor(0x80404040);
+    res.createSubstyle(STYLE_MENU_ACCEL).setMargins(4,2,4,2).alignment(Align.VCenter|Align.Left).createState(State.Enabled,0).textColor(0x80404040);
 
     Style transparentButtonBackground = res.createSubstyle(STYLE_TRANSPARENT_BUTTON_BACKGROUND).backgroundImageId("transparent_button_background").setPadding(4,2,4,2); //.backgroundColor(0xE0E080)   ;
     //transparentButtonBackground.createState(State.Focused, State.Focused).backgroundColor(0xC0C0C000);
@@ -1087,33 +1087,33 @@ Theme createDefaultTheme() {
         .setPadding(5,6,5,6).setMargins(2,2,2,2).minWidth(100).minHeight(60).layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT)
         .fontFace("Courier New").fontFamily(FontFamily.MonoSpace).fontSize(16);
 
-	return res;
+    return res;
 }
 
 /// decode comma delimited dimension list or single value - and put to Rect
 Rect decodeRect(string s) {
-	uint[6] values;
-	int valueCount = 0;
-	int start = 0;
-	for (int i = 0; i <= s.length; i++) {
-		if (i == s.length || s[i] == ',') {
-			if (i > start) {
-				string item = s[start .. i];
-				values[valueCount++] = decodeDimension(item);
-				if (valueCount >= 6)
-					break;
-			}
-			start = i + 1;
-		}
-	}
-	if (valueCount == 1) // same value for all dimensions
-		return Rect(values[0], values[0], values[0], values[0]);
-	else if (valueCount == 2) // one value of horizontal, and one for vertical
-		return Rect(values[0], values[1], values[0], values[1]);
-	else if (valueCount == 4) // separate left, top, right, bottom
-		return Rect(values[0], values[1], values[2], values[3]);
-	Log.e("Invalid rect attribute value ", s);
-	return Rect(0,0,0,0);
+    uint[6] values;
+    int valueCount = 0;
+    int start = 0;
+    for (int i = 0; i <= s.length; i++) {
+        if (i == s.length || s[i] == ',') {
+            if (i > start) {
+                string item = s[start .. i];
+                values[valueCount++] = decodeDimension(item);
+                if (valueCount >= 6)
+                    break;
+            }
+            start = i + 1;
+        }
+    }
+    if (valueCount == 1) // same value for all dimensions
+        return Rect(values[0], values[0], values[0], values[0]);
+    else if (valueCount == 2) // one value of horizontal, and one for vertical
+        return Rect(values[0], values[1], values[0], values[1]);
+    else if (valueCount == 4) // separate left, top, right, bottom
+        return Rect(values[0], values[1], values[2], values[3]);
+    Log.e("Invalid rect attribute value ", s);
+    return Rect(0,0,0,0);
 }
 
 private import std.array : split;
@@ -1137,171 +1137,171 @@ uint[] decodeFocusRectColors(string s) {
 
 /// parses string like "Left|VCenter" to bit set of Align flags
 ubyte decodeAlignment(string s) {
-	ubyte res = 0;
-	int start = 0;
-	for (int i = 0; i <= s.length; i++) {
-		if (i == s.length || s[i] == '|') {
-			if (i > start) {
-				string item = s[start .. i];
-				if (item.equal("Left"))
-					res |= Align.Left;
-				else if (item.equal("Right"))
-					res |= Align.Right;
-				else if (item.equal("Top"))
-					res |= Align.Top;
-				else if (item.equal("Bottom"))
-					res |= Align.Bottom;
-				else if (item.equal("HCenter"))
-					res |= Align.HCenter;
-				else if (item.equal("VCenter"))
-					res |= Align.VCenter;
-				else if (item.equal("Center"))
-					res |= Align.Center;
-				else if (item.equal("TopLeft"))
-					res |= Align.TopLeft;
-				else
-					Log.e("unknown Align value: ", item);
-			}
-			start = i + 1;
-		}
-	}
-	return res;
+    ubyte res = 0;
+    int start = 0;
+    for (int i = 0; i <= s.length; i++) {
+        if (i == s.length || s[i] == '|') {
+            if (i > start) {
+                string item = s[start .. i];
+                if (item.equal("Left"))
+                    res |= Align.Left;
+                else if (item.equal("Right"))
+                    res |= Align.Right;
+                else if (item.equal("Top"))
+                    res |= Align.Top;
+                else if (item.equal("Bottom"))
+                    res |= Align.Bottom;
+                else if (item.equal("HCenter"))
+                    res |= Align.HCenter;
+                else if (item.equal("VCenter"))
+                    res |= Align.VCenter;
+                else if (item.equal("Center"))
+                    res |= Align.Center;
+                else if (item.equal("TopLeft"))
+                    res |= Align.TopLeft;
+                else
+                    Log.e("unknown Align value: ", item);
+            }
+            start = i + 1;
+        }
+    }
+    return res;
 }
 
 /// parses string like "HotKeys|UnderlineHotKeysWhenAltPressed" to bit set of TextFlag flags
 uint decodeTextFlags(string s) {
-	uint res = 0;
-	int start = 0;
-	for (int i = 0; i <= s.length; i++) {
-		if (i == s.length || s[i] == '|') {
-			if (i > start) {
-				string item = s[start .. i];
-				if (item.equal("HotKeys"))
-					res |= TextFlag.HotKeys;
-				else if (item.equal("UnderlineHotKeys"))
-					res |= TextFlag.UnderlineHotKeys;
-				else if (item.equal("UnderlineHotKeysWhenAltPressed"))
-					res |= TextFlag.UnderlineHotKeysWhenAltPressed;
-				else if (item.equal("Underline"))
-					res |= TextFlag.Underline;
-				else if (item.equal("Unspecified"))
-					res = TEXT_FLAGS_UNSPECIFIED;
-				else if (item.equal("Parent"))
-					res = TEXT_FLAGS_USE_PARENT;
-				else
-					Log.e("unknown text flag value: ", item);
-			}
-			start = i + 1;
-		}
-	}
-	return res;
+    uint res = 0;
+    int start = 0;
+    for (int i = 0; i <= s.length; i++) {
+        if (i == s.length || s[i] == '|') {
+            if (i > start) {
+                string item = s[start .. i];
+                if (item.equal("HotKeys"))
+                    res |= TextFlag.HotKeys;
+                else if (item.equal("UnderlineHotKeys"))
+                    res |= TextFlag.UnderlineHotKeys;
+                else if (item.equal("UnderlineHotKeysWhenAltPressed"))
+                    res |= TextFlag.UnderlineHotKeysWhenAltPressed;
+                else if (item.equal("Underline"))
+                    res |= TextFlag.Underline;
+                else if (item.equal("Unspecified"))
+                    res = TEXT_FLAGS_UNSPECIFIED;
+                else if (item.equal("Parent"))
+                    res = TEXT_FLAGS_USE_PARENT;
+                else
+                    Log.e("unknown text flag value: ", item);
+            }
+            start = i + 1;
+        }
+    }
+    return res;
 }
 
 /// decode FontFamily item name to value
 FontFamily decodeFontFamily(string s) {
-	if (s.equal("SansSerif"))
-		return FontFamily.SansSerif;
-	if (s.equal("Serif"))
-		return FontFamily.Serif;
-	if (s.equal("Cursive"))
-		return FontFamily.Cursive;
-	if (s.equal("Fantasy"))
-		return FontFamily.Fantasy;
-	if (s.equal("MonoSpace"))
-		return FontFamily.MonoSpace;
-	if (s.equal("Unspecified"))
-		return FontFamily.Unspecified;
-	Log.e("unknown font family ", s);
-	return FontFamily.SansSerif;
+    if (s.equal("SansSerif"))
+        return FontFamily.SansSerif;
+    if (s.equal("Serif"))
+        return FontFamily.Serif;
+    if (s.equal("Cursive"))
+        return FontFamily.Cursive;
+    if (s.equal("Fantasy"))
+        return FontFamily.Fantasy;
+    if (s.equal("MonoSpace"))
+        return FontFamily.MonoSpace;
+    if (s.equal("Unspecified"))
+        return FontFamily.Unspecified;
+    Log.e("unknown font family ", s);
+    return FontFamily.SansSerif;
 }
 
 /// decode layout dimension (FILL_PARENT, WRAP_CONTENT, or just size)
 int decodeLayoutDimension(string s) {
-	if (s.equal("FILL_PARENT") || s.equal("fill"))
-		return FILL_PARENT;
-	if (s.equal("WRAP_CONTENT") || s.equal("wrap"))
-		return WRAP_CONTENT;
-	return decodeDimension(s);
+    if (s.equal("FILL_PARENT") || s.equal("fill"))
+        return FILL_PARENT;
+    if (s.equal("WRAP_CONTENT") || s.equal("wrap"))
+        return WRAP_CONTENT;
+    return decodeDimension(s);
 }
 
 /// load style attributes from XML element
 bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
     //Log.d("Theme: loadStyleAttributes ", style.id, " ", elem.tag.attr);
-	if ("backgroundImageId" in elem.tag.attr)
-		style.backgroundImageId = elem.tag.attr["backgroundImageId"];
-	if ("backgroundColor" in elem.tag.attr) {
+    if ("backgroundImageId" in elem.tag.attr)
+        style.backgroundImageId = elem.tag.attr["backgroundImageId"];
+    if ("backgroundColor" in elem.tag.attr) {
         uint col = decodeHexColor(elem.tag.attr["backgroundColor"]);
-		style.backgroundColor = col;
+        style.backgroundColor = col;
         //Log.d("    background color=", col);
     } else {
         //Log.d("    no background color attr");
     }
-	if ("textColor" in elem.tag.attr)
-		style.textColor = decodeHexColor(elem.tag.attr["textColor"]);
-	if ("margins" in elem.tag.attr)
-		style.margins = decodeRect(elem.tag.attr["margins"]);
-	if ("padding" in elem.tag.attr)
-		style.padding = decodeRect(elem.tag.attr["padding"]);
-	if ("align" in elem.tag.attr)
-		style.alignment = decodeAlignment(elem.tag.attr["align"]);
-	if ("minWidth" in elem.tag.attr)
-		style.minWidth = decodeDimension(elem.tag.attr["minWidth"]);
-	if ("maxWidth" in elem.tag.attr)
-		style.maxWidth = decodeDimension(elem.tag.attr["maxWidth"]);
-	if ("minHeight" in elem.tag.attr)
-		style.minHeight = decodeDimension(elem.tag.attr["minHeight"]);
-	if ("maxHeight" in elem.tag.attr)
-		style.maxHeight = decodeDimension(elem.tag.attr["maxHeight"]);
-	if ("maxLines" in elem.tag.attr)
-		style.maxLines = decodeDimension(elem.tag.attr["maxLines"]);
-	if ("fontFace" in elem.tag.attr)
-		style.fontFace = elem.tag.attr["fontFace"];
-	if ("fontFamily" in elem.tag.attr)
-		style.fontFamily = decodeFontFamily(elem.tag.attr["fontFamily"]);
-	if ("fontSize" in elem.tag.attr)
-		style.fontSize = cast(int)decodeDimension(elem.tag.attr["fontSize"]);
-	if ("layoutWidth" in elem.tag.attr)
-		style.layoutWidth = decodeLayoutDimension(elem.tag.attr["layoutWidth"]);
-	if ("layoutHeight" in elem.tag.attr)
-		style.layoutHeight = decodeLayoutDimension(elem.tag.attr["layoutHeight"]);
-	if ("alpha" in elem.tag.attr)
-		style.alpha = decodeDimension(elem.tag.attr["alpha"]);
-	if ("textFlags" in elem.tag.attr)
-		style.textFlags = decodeTextFlags(elem.tag.attr["textFlags"]);
-	if ("focusRectColors" in elem.tag.attr)
-		style.focusRectColors = decodeFocusRectColors(elem.tag.attr["focusRectColors"]);
-	foreach(item; elem.elements) {
-		if (allowStates && item.tag.name.equal("state")) {
-			uint stateMask = 0;
-			uint stateValue = 0;
-			extractStateFlags(item.tag.attr, stateMask, stateValue);
-			if (stateMask) {
-				Style state = style.getOrCreateState(stateMask, stateValue);
-				loadStyleAttributes(state, item, false);
-			}
-		} else if (item.tag.name.equal("drawable")) {
-			// <drawable id="scrollbar_button_up" value="scrollbar_btn_up"/>
-			string drawableid = attrValue(item, "id");
-			string drawablevalue = attrValue(item, "value");
-			if (drawableid)
-				style.setCustomDrawable(drawableid, drawablevalue);
-		} else if (item.tag.name.equal("color")) {
-			// <color id="buttons_panel_color" value="#303080"/>
-			string colorid = attrValue(item, "id");
-			string colorvalue = attrValue(item, "value");
+    if ("textColor" in elem.tag.attr)
+        style.textColor = decodeHexColor(elem.tag.attr["textColor"]);
+    if ("margins" in elem.tag.attr)
+        style.margins = decodeRect(elem.tag.attr["margins"]);
+    if ("padding" in elem.tag.attr)
+        style.padding = decodeRect(elem.tag.attr["padding"]);
+    if ("align" in elem.tag.attr)
+        style.alignment = decodeAlignment(elem.tag.attr["align"]);
+    if ("minWidth" in elem.tag.attr)
+        style.minWidth = decodeDimension(elem.tag.attr["minWidth"]);
+    if ("maxWidth" in elem.tag.attr)
+        style.maxWidth = decodeDimension(elem.tag.attr["maxWidth"]);
+    if ("minHeight" in elem.tag.attr)
+        style.minHeight = decodeDimension(elem.tag.attr["minHeight"]);
+    if ("maxHeight" in elem.tag.attr)
+        style.maxHeight = decodeDimension(elem.tag.attr["maxHeight"]);
+    if ("maxLines" in elem.tag.attr)
+        style.maxLines = decodeDimension(elem.tag.attr["maxLines"]);
+    if ("fontFace" in elem.tag.attr)
+        style.fontFace = elem.tag.attr["fontFace"];
+    if ("fontFamily" in elem.tag.attr)
+        style.fontFamily = decodeFontFamily(elem.tag.attr["fontFamily"]);
+    if ("fontSize" in elem.tag.attr)
+        style.fontSize = cast(int)decodeDimension(elem.tag.attr["fontSize"]);
+    if ("layoutWidth" in elem.tag.attr)
+        style.layoutWidth = decodeLayoutDimension(elem.tag.attr["layoutWidth"]);
+    if ("layoutHeight" in elem.tag.attr)
+        style.layoutHeight = decodeLayoutDimension(elem.tag.attr["layoutHeight"]);
+    if ("alpha" in elem.tag.attr)
+        style.alpha = decodeDimension(elem.tag.attr["alpha"]);
+    if ("textFlags" in elem.tag.attr)
+        style.textFlags = decodeTextFlags(elem.tag.attr["textFlags"]);
+    if ("focusRectColors" in elem.tag.attr)
+        style.focusRectColors = decodeFocusRectColors(elem.tag.attr["focusRectColors"]);
+    foreach(item; elem.elements) {
+        if (allowStates && item.tag.name.equal("state")) {
+            uint stateMask = 0;
+            uint stateValue = 0;
+            extractStateFlags(item.tag.attr, stateMask, stateValue);
+            if (stateMask) {
+                Style state = style.getOrCreateState(stateMask, stateValue);
+                loadStyleAttributes(state, item, false);
+            }
+        } else if (item.tag.name.equal("drawable")) {
+            // <drawable id="scrollbar_button_up" value="scrollbar_btn_up"/>
+            string drawableid = attrValue(item, "id");
+            string drawablevalue = attrValue(item, "value");
+            if (drawableid)
+                style.setCustomDrawable(drawableid, drawablevalue);
+        } else if (item.tag.name.equal("color")) {
+            // <color id="buttons_panel_color" value="#303080"/>
+            string colorid = attrValue(item, "id");
+            string colorvalue = attrValue(item, "value");
             uint color = decodeHexColor(colorvalue, COLOR_TRANSPARENT);
-			if (colorid)
-				style.setCustomColor(colorid, color);
-		} else if (item.tag.name.equal("length")) {
-			// <color id="buttons_panel_color" value="#303080"/>
-			string lenid = attrValue(item, "id");
-			string lenvalue = attrValue(item, "value");
+            if (colorid)
+                style.setCustomColor(colorid, color);
+        } else if (item.tag.name.equal("length")) {
+            // <color id="buttons_panel_color" value="#303080"/>
+            string lenid = attrValue(item, "id");
+            string lenvalue = attrValue(item, "value");
             uint len = decodeDimension(lenvalue);
-			if (lenid.length > 0 && len > 0)
-				style.setCustomLength(lenid, len);
-		}
-	}
-	return true;
+            if (lenid.length > 0 && len > 0)
+                style.setCustomLength(lenid, len);
+        }
+    }
+    return true;
 }
 
 /** 
@@ -1311,84 +1311,84 @@ bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
  * ---
  * <?xml version="1.0" encoding="utf-8"?>
  * <theme id="theme_custom" parent="theme_default">
- *   	<style id="BUTTON" 
- * 			backgroundImageId="btn_background"
- * 	 	>
- *   	</style>
+ *       <style id="BUTTON" 
+ *             backgroundImageId="btn_background"
+ *          >
+ *       </style>
  * </theme>
  * ---
  * 
  */
 bool loadTheme(Theme theme, Element doc, int level = 0) {
-	if (!doc.tag.name.equal("theme")) {
-		Log.e("<theme> element should be main in theme file!");
-		return false;
-	}
-	// <theme>
-	string id = attrValue(doc, "id");
-	string parent = attrValue(doc, "parent");
-	theme.id = id;
-	if (parent.length > 0) {
-		// load base theme
-		if (level < 3) // to prevent infinite recursion
-			loadTheme(theme, parent, level + 1);
-	}
-	loadStyleAttributes(theme, doc, false);
-	foreach(styleitem; doc.elements) {
-		if (styleitem.tag.name.equal("style")) {
-			// load <style>
-			string styleid = attrValue(styleitem, "id");
-			string styleparent = attrValue(styleitem, "parent");
-			if (styleid.length) {
-				// create new style
-				Style parentStyle = null;
-				parentStyle = theme.get(styleparent);
-				Style style = parentStyle.createSubstyle(styleid);
-				loadStyleAttributes(style, styleitem, true);
-			} else {
-				Log.e("style without ID in theme file");
-			}
-		}
-	}
-	return true;
+    if (!doc.tag.name.equal("theme")) {
+        Log.e("<theme> element should be main in theme file!");
+        return false;
+    }
+    // <theme>
+    string id = attrValue(doc, "id");
+    string parent = attrValue(doc, "parent");
+    theme.id = id;
+    if (parent.length > 0) {
+        // load base theme
+        if (level < 3) // to prevent infinite recursion
+            loadTheme(theme, parent, level + 1);
+    }
+    loadStyleAttributes(theme, doc, false);
+    foreach(styleitem; doc.elements) {
+        if (styleitem.tag.name.equal("style")) {
+            // load <style>
+            string styleid = attrValue(styleitem, "id");
+            string styleparent = attrValue(styleitem, "parent");
+            if (styleid.length) {
+                // create new style
+                Style parentStyle = null;
+                parentStyle = theme.get(styleparent);
+                Style style = parentStyle.createSubstyle(styleid);
+                loadStyleAttributes(style, styleitem, true);
+            } else {
+                Log.e("style without ID in theme file");
+            }
+        }
+    }
+    return true;
 }
 
 /// load theme from file
 bool loadTheme(Theme theme, string resourceId, int level = 0) {
 
-	string filename;
-	try {
-		filename = drawableCache.findResource(resourceId);
-		if (!filename || !filename.endsWith(".xml"))
-			return false;
-		string s = cast(string)loadResourceBytes(filename);
+    string filename;
+    try {
+        filename = drawableCache.findResource(resourceId);
+        if (!filename || !filename.endsWith(".xml"))
+            return false;
+        string s = cast(string)loadResourceBytes(filename);
         if (!s) {
             Log.e("Cannot read XML resource ", resourceId, " from file ", filename);
             return false;
         }
-		
-		// Check for well-formedness
-		//check(s);
-	
-		// Make a DOM tree
-		auto doc = new Document(s);
-		
-		return loadTheme(theme, doc);
-	} catch (CheckException e) {
-		Log.e("Invalid XML resource ", resourceId);
-		return false;
-	}
+        
+        // Check for well-formedness
+        //check(s);
+    
+        // Make a DOM tree
+        auto doc = new Document(s);
+        
+        return loadTheme(theme, doc);
+    } catch (CheckException e) {
+        Log.e("Invalid XML resource ", resourceId);
+        return false;
+    }
 }
 
 /// load theme from XML file (null if failed)
 Theme loadTheme(string resourceId) {
-	Theme res = new Theme(resourceId);
-	if (loadTheme(res, resourceId)) {
-		res.id = resourceId;
-		return res;
-	}
-	destroy(res);
-	return null;
+    Theme res = new Theme(resourceId);
+    if (loadTheme(res, resourceId)) {
+        res.id = resourceId;
+        return res;
+    }
+    destroy(res);
+    return null;
 }
 
 /// custom drawable attribute container for styles
@@ -1427,5 +1427,5 @@ string overrideCustomDrawableId(string id) {
 }
 
 shared static ~this() {
-	currentTheme = null;
+    currentTheme = null;
 }

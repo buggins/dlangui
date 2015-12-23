@@ -45,9 +45,9 @@ import derelict.opengl3.gl;
 
 static if (ENABLE_OPENGL) {
     import dlangui.graphics.gldrawbuf;
-	import dlangui.graphics.glsupport;
+    import dlangui.graphics.glsupport;
 }
-	
+    
 private derelict.util.exception.ShouldThrow missingSymFunc( string symName ) {
     import std.algorithm : equal;
     foreach(s; ["SDL_DestroyRenderer", "SDL_GL_DeleteContext", "SDL_DestroyWindow", "SDL_PushEvent", 
@@ -75,32 +75,32 @@ private __gshared uint USER_EVENT_ID;
 private __gshared uint TIMER_EVENT_ID;
 
 class SDLWindow : Window {
-	SDLPlatform _platform;
-	SDL_Window * _win;
-	SDL_Renderer* _renderer;
-	this(SDLPlatform platform, dstring caption, Window parent, uint flags, uint width = 0, uint height = 0) {
-		_platform = platform;
-		_caption = caption;
-		debug Log.d("Creating SDL window");
+    SDLPlatform _platform;
+    SDL_Window * _win;
+    SDL_Renderer* _renderer;
+    this(SDLPlatform platform, dstring caption, Window parent, uint flags, uint width = 0, uint height = 0) {
+        _platform = platform;
+        _caption = caption;
+        debug Log.d("Creating SDL window");
         _dx = width;
         _dy = height;
-		create(flags);
+        create(flags);
         Log.i(_enableOpengl ? "OpenGL is enabled" : "OpenGL is disabled");
     }
 
-	~this() {
-		debug Log.d("Destroying SDL window");
-		if (_renderer)
-			SDL_DestroyRenderer(_renderer);
+    ~this() {
+        debug Log.d("Destroying SDL window");
+        if (_renderer)
+            SDL_DestroyRenderer(_renderer);
         static if (ENABLE_OPENGL) {
             if (_context)
                 SDL_GL_DeleteContext(_context);
         }
-		if (_win)
-			SDL_DestroyWindow(_win);
-		if (_drawbuf)
-			destroy(_drawbuf);
-	}
+        if (_win)
+            SDL_DestroyWindow(_win);
+        if (_drawbuf)
+            destroy(_drawbuf);
+    }
 
 
     /// post event to handle in UI thread (this method can be used from background thread)
@@ -133,27 +133,27 @@ class SDLWindow : Window {
         }
     }
 
-	protected uint _flags;
-	bool create(uint flags) {
+    protected uint _flags;
+    bool create(uint flags) {
         if (!_dx)
             _dx = 600;
         if (!_dy)
             _dy = 400;
-		_flags = flags;
-		uint windowFlags = SDL_WINDOW_HIDDEN;
-		if (flags & WindowFlag.Resizable)
-			windowFlags |= SDL_WINDOW_RESIZABLE;
-		if (flags & WindowFlag.Fullscreen)
-			windowFlags |= SDL_WINDOW_FULLSCREEN;
-		// TODO: implement modal behavior
-		//if (flags & WindowFlag.Modal)
-		//	windowFlags |= SDL_WINDOW_INPUT_GRABBED;
+        _flags = flags;
+        uint windowFlags = SDL_WINDOW_HIDDEN;
+        if (flags & WindowFlag.Resizable)
+            windowFlags |= SDL_WINDOW_RESIZABLE;
+        if (flags & WindowFlag.Fullscreen)
+            windowFlags |= SDL_WINDOW_FULLSCREEN;
+        // TODO: implement modal behavior
+        //if (flags & WindowFlag.Modal)
+        //    windowFlags |= SDL_WINDOW_INPUT_GRABBED;
         windowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
-		static if (ENABLE_OPENGL) {
+        static if (ENABLE_OPENGL) {
             if (_enableOpengl)
                 windowFlags |= SDL_WINDOW_OPENGL;
         }
-		_win = SDL_CreateWindow(toUTF8(_caption).toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
+        _win = SDL_CreateWindow(toUTF8(_caption).toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
                                 _dx, _dy, 
                                 windowFlags);
         static if (ENABLE_OPENGL) {
@@ -163,21 +163,21 @@ class SDLWindow : Window {
                     _enableOpengl = false;
                     // recreate w/o OpenGL
                     windowFlags &= ~SDL_WINDOW_OPENGL;
-					_win = SDL_CreateWindow(toUTF8(_caption).toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
+                    _win = SDL_CreateWindow(toUTF8(_caption).toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
                                             _dx, _dy, 
                                             windowFlags);
                 }
             }
         }
-		if (!_win) {
-			Log.e("SDL2: Failed to create window");
-			return false;
-		}
-		
+        if (!_win) {
+            Log.e("SDL2: Failed to create window");
+            return false;
+        }
+        
         static if (ENABLE_OPENGL) {
             if (_enableOpengl) {
                 Log.i("Trying to create OpenGL 3.2 context");
-				createContext(3, 2);
+                createContext(3, 2);
                 //_context = SDL_GL_CreateContext(_win); // Create the actual context and make it current
                 if (!_context) {
                     Log.e("SDL_GL_CreateContext failed: ", fromStringz(SDL_GetError()));
@@ -193,24 +193,24 @@ class SDLWindow : Window {
                     }
                 }
                 if (_context && !_glSupport) {
-					_enableOpengl = initGLSupport(false);
-					fixSize();
+                    _enableOpengl = initGLSupport(false);
+                    fixSize();
                 }
             }
         }
         if (!_enableOpengl) {
-			_renderer = SDL_CreateRenderer(_win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-			if (!_renderer) {
-				Log.e("SDL2: Failed to create renderer");
-				return false;
-			}
+            _renderer = SDL_CreateRenderer(_win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
+            if (!_renderer) {
+                Log.e("SDL2: Failed to create renderer");
+                return false;
+            }
             fixSize();
         }
         setOpenglEnabled(_enableOpengl);
-		windowCaption = _caption;
-		return true;
-	}
-	
+        windowCaption = _caption;
+        return true;
+    }
+    
     void fixSize() {
         int w = 0;
         int h = 0;
@@ -232,19 +232,19 @@ class SDLWindow : Window {
         onResize(std.algorithm.max(width, w), std.algorithm.max(height, h));
     }
 
-	@property uint windowId() {
+    @property uint windowId() {
         if (_win)
-			return SDL_GetWindowID(_win);
+            return SDL_GetWindowID(_win);
         return 0;
-	}
-		
-	override void show() {
-		Log.d("SDLWindow.show()");
-		if (_mainWidget && !(_flags & WindowFlag.Resizable)) {
-			_mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
-			SDL_SetWindowSize(_win, _mainWidget.measuredWidth, _mainWidget.measuredHeight);
-		}
-		SDL_ShowWindow(_win);
+    }
+        
+    override void show() {
+        Log.d("SDLWindow.show()");
+        if (_mainWidget && !(_flags & WindowFlag.Resizable)) {
+            _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+            SDL_SetWindowSize(_win, _mainWidget.measuredWidth, _mainWidget.measuredHeight);
+        }
+        SDL_ShowWindow(_win);
         if (_mainWidget)
             _mainWidget.setFocus();
         fixSize();
@@ -254,128 +254,128 @@ class SDLWindow : Window {
         invalidate();
     }
 
-	/// close window
-	override void close() {
-		Log.d("SDLWindow.close()");
-		_platform.closeWindow(this);
-	}
+    /// close window
+    override void close() {
+        Log.d("SDLWindow.close()");
+        _platform.closeWindow(this);
+    }
 
 
-	protected dstring _caption;
+    protected dstring _caption;
 
-	override @property dstring windowCaption() {
-		return _caption;
-	}
+    override @property dstring windowCaption() {
+        return _caption;
+    }
 
-	override @property void windowCaption(dstring caption) {
-		_caption = caption;
-		if (_win)
-			SDL_SetWindowTitle(_win, toUTF8(_caption).toStringz);
-	}
+    override @property void windowCaption(dstring caption) {
+        _caption = caption;
+        if (_win)
+            SDL_SetWindowTitle(_win, toUTF8(_caption).toStringz);
+    }
 
-	/// sets window icon
-	@property override void windowIcon(DrawBufRef buf) {
-		ColorDrawBuf icon = cast(ColorDrawBuf)buf.get;
-		if (!icon) {
-			Log.e("Trying to set null icon for window");
-			return;
-		}
+    /// sets window icon
+    @property override void windowIcon(DrawBufRef buf) {
+        ColorDrawBuf icon = cast(ColorDrawBuf)buf.get;
+        if (!icon) {
+            Log.e("Trying to set null icon for window");
+            return;
+        }
         int iconw = 32;
         int iconh = 32;
         ColorDrawBuf iconDraw = new ColorDrawBuf(iconw, iconh);
         iconDraw.fill(0xE0E0E0);
         iconDraw.drawRescaled(Rect(0, 0, iconw, iconh), icon, Rect(0, 0, icon.width, icon.height));
-		iconDraw.invertAlpha();
-		SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(iconDraw.scanLine(0), iconDraw.width, iconDraw.height, 32, iconDraw.width * 4, 0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
-		if (surface) {
-			// The icon is attached to the window pointer
-			SDL_SetWindowIcon(_win, surface); 
-			// ...and the surface containing the icon pixel data is no longer required.
-			SDL_FreeSurface(surface);
-		} else {
-			Log.e("failed to set window icon");
-		}
-		destroy(iconDraw);
-	}
+        iconDraw.invertAlpha();
+        SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(iconDraw.scanLine(0), iconDraw.width, iconDraw.height, 32, iconDraw.width * 4, 0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
+        if (surface) {
+            // The icon is attached to the window pointer
+            SDL_SetWindowIcon(_win, surface); 
+            // ...and the surface containing the icon pixel data is no longer required.
+            SDL_FreeSurface(surface);
+        } else {
+            Log.e("failed to set window icon");
+        }
+        destroy(iconDraw);
+    }
 
-	/// after drawing, call to schedule redraw if animation is active
-	override void scheduleAnimation() {
-		invalidate();
-	}
+    /// after drawing, call to schedule redraw if animation is active
+    override void scheduleAnimation() {
+        invalidate();
+    }
 
-	protected uint _lastCursorType = CursorType.None;
-	protected SDL_Cursor * [uint] _cursorMap;
-	/// sets cursor type for window
-	override protected void setCursorType(uint cursorType) {
-		// override to support different mouse cursors
-		if (_lastCursorType != cursorType) {
-			if (cursorType == CursorType.None) {
-				SDL_ShowCursor(SDL_DISABLE);
-				return;
-			}
-			if (_lastCursorType == CursorType.None)
-				SDL_ShowCursor(SDL_ENABLE);
-			_lastCursorType = cursorType;
-			SDL_Cursor * cursor;
-			// check for existing cursor in map
-			if (cursorType in _cursorMap) {
-				//Log.d("changing cursor to ", cursorType);
-				cursor = _cursorMap[cursorType];
-				if (cursor)
-					SDL_SetCursor(cursor);
-				return;
-			}
-			// create new cursor
-			switch (cursorType) with(CursorType)
-			{
-				case Arrow:
-					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
-					break;
-				case IBeam:
-					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
-					break;
-				case Wait:
-					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
-					break;
-				case WaitArrow:
-					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAITARROW);
-					break;
-				case Crosshair:
-					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);
-					break;
-				case No:
-					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO);
-					break;
-				case Hand:
-					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
-					break;
-				case SizeNWSE:
-					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
-					break;
-				case SizeNESW:
-					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW);
-					break;
-				case SizeWE:
-					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE);
-					break;
-				case SizeNS:
-					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS);
-					break;
-				case SizeAll:
-					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
-					break;
-				default:
-					// TODO: support custom cursors
-					cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
-					break;
-			}
-			_cursorMap[cursorType] = cursor;
-			if (cursor) {
-				debug(DebugSDL) Log.d("changing cursor to ", cursorType);
-				SDL_SetCursor(cursor);
-			}
-		}
-	}
+    protected uint _lastCursorType = CursorType.None;
+    protected SDL_Cursor * [uint] _cursorMap;
+    /// sets cursor type for window
+    override protected void setCursorType(uint cursorType) {
+        // override to support different mouse cursors
+        if (_lastCursorType != cursorType) {
+            if (cursorType == CursorType.None) {
+                SDL_ShowCursor(SDL_DISABLE);
+                return;
+            }
+            if (_lastCursorType == CursorType.None)
+                SDL_ShowCursor(SDL_ENABLE);
+            _lastCursorType = cursorType;
+            SDL_Cursor * cursor;
+            // check for existing cursor in map
+            if (cursorType in _cursorMap) {
+                //Log.d("changing cursor to ", cursorType);
+                cursor = _cursorMap[cursorType];
+                if (cursor)
+                    SDL_SetCursor(cursor);
+                return;
+            }
+            // create new cursor
+            switch (cursorType) with(CursorType)
+            {
+                case Arrow:
+                    cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+                    break;
+                case IBeam:
+                    cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_IBEAM);
+                    break;
+                case Wait:
+                    cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAIT);
+                    break;
+                case WaitArrow:
+                    cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_WAITARROW);
+                    break;
+                case Crosshair:
+                    cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_CROSSHAIR);
+                    break;
+                case No:
+                    cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_NO);
+                    break;
+                case Hand:
+                    cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_HAND);
+                    break;
+                case SizeNWSE:
+                    cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENWSE);
+                    break;
+                case SizeNESW:
+                    cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENESW);
+                    break;
+                case SizeWE:
+                    cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEWE);
+                    break;
+                case SizeNS:
+                    cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZENS);
+                    break;
+                case SizeAll:
+                    cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_SIZEALL);
+                    break;
+                default:
+                    // TODO: support custom cursors
+                    cursor = SDL_CreateSystemCursor(SDL_SYSTEM_CURSOR_ARROW);
+                    break;
+            }
+            _cursorMap[cursorType] = cursor;
+            if (cursor) {
+                debug(DebugSDL) Log.d("changing cursor to ", cursorType);
+                SDL_SetCursor(cursor);
+            }
+        }
+    }
 
     SDL_Texture * _texture;
     int _txw;
@@ -396,7 +396,7 @@ class SDLWindow : Window {
         }
     }
 
-	private void draw(ColorDrawBuf buf) {
+    private void draw(ColorDrawBuf buf) {
         updateBufferSize();
         SDL_Rect rect;
         rect.w = buf.width;
@@ -406,14 +406,14 @@ class SDLWindow : Window {
                             cast(const void*)buf.scanLine(0),
                             buf.width * cast(int)uint.sizeof);
         SDL_RenderCopy(_renderer, _texture, &rect, &rect);
-	}
+    }
 
-	void redraw() {
+    void redraw() {
         //Log.e("Widget instance count in SDLWindow.redraw: ", Widget.instanceCount());
         // check if size has been changed
         fixSize();
 
-		if (_enableOpengl) {
+        if (_enableOpengl) {
             static if (ENABLE_OPENGL) {
                 SDL_GL_MakeCurrent(_win, _context);
                 glDisable(GL_DEPTH_TEST);
@@ -431,7 +431,7 @@ class SDLWindow : Window {
                 SDL_GL_SwapWindow(_win);
                 destroy(buf);
             }
-		} else {
+        } else {
             // Select the color for drawing.
             ubyte r = cast(ubyte)((_backgroundColor >> 16) & 255);
             ubyte g = cast(ubyte)((_backgroundColor >> 8) & 255);
@@ -440,31 +440,31 @@ class SDLWindow : Window {
             // Clear the entire screen to our selected color.
             SDL_RenderClear(_renderer);
 
-			if (!_drawbuf)
-				_drawbuf = new ColorDrawBuf(_dx, _dy);
-			_drawbuf.resize(_dx, _dy);
+            if (!_drawbuf)
+                _drawbuf = new ColorDrawBuf(_dx, _dy);
+            _drawbuf.resize(_dx, _dy);
             _drawbuf.resetClipping();
-			_drawbuf.fill(_backgroundColor);
-			onDraw(_drawbuf);
-			draw(_drawbuf);
+            _drawbuf.fill(_backgroundColor);
+            onDraw(_drawbuf);
+            draw(_drawbuf);
 
             // Up until now everything was drawn behind the scenes.
             // This will show the new, red contents of the window.
             SDL_RenderPresent(_renderer);
-		}
-	}
-		
-	ColorDrawBuf _drawbuf;
+        }
+    }
+        
+    ColorDrawBuf _drawbuf;
 
-	//bool _exposeSent;
-	void processExpose() {
-		redraw();
-		//_exposeSent = false;
-	}
+    //bool _exposeSent;
+    void processExpose() {
+        redraw();
+        //_exposeSent = false;
+    }
 
-	protected ButtonDetails _lbutton;
-	protected ButtonDetails _mbutton;
-	protected ButtonDetails _rbutton;
+    protected ButtonDetails _lbutton;
+    protected ButtonDetails _mbutton;
+    protected ButtonDetails _rbutton;
     ushort convertMouseFlags(uint flags) {
         ushort res = 0;
         if (flags & SDL_BUTTON_LMASK)
@@ -489,7 +489,7 @@ class SDLWindow : Window {
     ushort lastFlags;
     short lastx;
     short lasty;
-	void processMouseEvent(MouseAction action, uint button, uint state, int x, int y) {
+    void processMouseEvent(MouseAction action, uint button, uint state, int x, int y) {
 
         // correct mouse coordinates for HIGHDPI on mac
         int drawableW = 0;
@@ -510,28 +510,28 @@ class SDLWindow : Window {
         if (action == MouseAction.Wheel) {
             // handle wheel
             short wheelDelta = cast(short)y;
-			if (_keyFlags & KeyFlag.Shift)
-				lastFlags |= MouseFlag.Shift;
-			else
-				lastFlags &= ~MouseFlag.Shift;
-			if (_keyFlags & KeyFlag.Control)
-				lastFlags |= MouseFlag.Control;
-			else
-				lastFlags &= ~MouseFlag.Control;
-			if (_keyFlags & KeyFlag.Alt)
-				lastFlags |= MouseFlag.Alt;
-			else
-				lastFlags &= ~MouseFlag.Alt;
+            if (_keyFlags & KeyFlag.Shift)
+                lastFlags |= MouseFlag.Shift;
+            else
+                lastFlags &= ~MouseFlag.Shift;
+            if (_keyFlags & KeyFlag.Control)
+                lastFlags |= MouseFlag.Control;
+            else
+                lastFlags &= ~MouseFlag.Control;
+            if (_keyFlags & KeyFlag.Alt)
+                lastFlags |= MouseFlag.Alt;
+            else
+                lastFlags &= ~MouseFlag.Alt;
             if (wheelDelta)
                 event = new MouseEvent(action, MouseButton.None, lastFlags, lastx, lasty, wheelDelta);
         } else {
             lastFlags = convertMouseFlags(state);
-			if (_keyFlags & KeyFlag.Shift)
-				lastFlags |= MouseFlag.Shift;
-			if (_keyFlags & KeyFlag.Control)
-				lastFlags |= MouseFlag.Control;
-			if (_keyFlags & KeyFlag.Alt)
-				lastFlags |= MouseFlag.Alt;
+            if (_keyFlags & KeyFlag.Shift)
+                lastFlags |= MouseFlag.Shift;
+            if (_keyFlags & KeyFlag.Control)
+                lastFlags |= MouseFlag.Control;
+            if (_keyFlags & KeyFlag.Alt)
+                lastFlags |= MouseFlag.Alt;
             lastx = cast(short)x;
             lasty = cast(short)y;
             MouseButton btn = convertMouseButton(button);
@@ -555,15 +555,15 @@ class SDLWindow : Window {
             event.lbutton = _lbutton;
             event.rbutton = _rbutton;
             event.mbutton = _mbutton;
-		    bool res = dispatchMouseEvent(event);
-	        if (res) {
-	            debug(mouse) Log.d("Calling update() after mouse event");
-	            invalidate();
-	        }
+            bool res = dispatchMouseEvent(event);
+            if (res) {
+                debug(mouse) Log.d("Calling update() after mouse event");
+                invalidate();
+            }
         }
-	}
+    }
 
-	uint convertKeyCode(uint keyCode) {
+    uint convertKeyCode(uint keyCode) {
         switch(keyCode) {
             case SDLK_0:
                 return KeyCode.KEY_0;
@@ -696,35 +696,35 @@ class SDLWindow : Window {
             case SDLK_ESCAPE:
                 return KeyCode.ESCAPE;
             case SDLK_DELETE:
-			case 0x40000063: // dirty hack for Linux - key on keypad
-				return KeyCode.DEL;
-			case SDLK_INSERT:
-			case 0x40000062: // dirty hack for Linux - key on keypad
-				return KeyCode.INS;
+            case 0x40000063: // dirty hack for Linux - key on keypad
+                return KeyCode.DEL;
+            case SDLK_INSERT:
+            case 0x40000062: // dirty hack for Linux - key on keypad
+                return KeyCode.INS;
             case SDLK_HOME:
-			case 0x4000005f: // dirty hack for Linux - key on keypad
-				return KeyCode.HOME;
+            case 0x4000005f: // dirty hack for Linux - key on keypad
+                return KeyCode.HOME;
             case SDLK_PAGEUP:
-			case 0x40000061: // dirty hack for Linux - key on keypad
-				return KeyCode.PAGEUP;
+            case 0x40000061: // dirty hack for Linux - key on keypad
+                return KeyCode.PAGEUP;
             case SDLK_END:
-			case 0x40000059: // dirty hack for Linux - key on keypad
+            case 0x40000059: // dirty hack for Linux - key on keypad
                 return KeyCode.END;
             case SDLK_PAGEDOWN:
-			case 0x4000005b: // dirty hack for Linux - key on keypad
-				return KeyCode.PAGEDOWN;
+            case 0x4000005b: // dirty hack for Linux - key on keypad
+                return KeyCode.PAGEDOWN;
             case SDLK_LEFT:
-			case 0x4000005c: // dirty hack for Linux - key on keypad
-				return KeyCode.LEFT;
+            case 0x4000005c: // dirty hack for Linux - key on keypad
+                return KeyCode.LEFT;
             case SDLK_RIGHT:
-			case 0x4000005e: // dirty hack for Linux - key on keypad
-				return KeyCode.RIGHT;
+            case 0x4000005e: // dirty hack for Linux - key on keypad
+                return KeyCode.RIGHT;
             case SDLK_UP:
-			case 0x40000060: // dirty hack for Linux - key on keypad
-				return KeyCode.UP;
+            case 0x40000060: // dirty hack for Linux - key on keypad
+                return KeyCode.UP;
             case SDLK_DOWN:
-			case 0x4000005a: // dirty hack for Linux - key on keypad
-				return KeyCode.DOWN;
+            case 0x4000005a: // dirty hack for Linux - key on keypad
+                return KeyCode.DOWN;
             case SDLK_LCTRL:
                 return KeyCode.LCONTROL;
             case SDLK_LSHIFT:
@@ -742,9 +742,9 @@ class SDLWindow : Window {
             default:
                 return 0x10000 | keyCode;
         }
-	}
-		
-	uint convertKeyFlags(uint flags) {
+    }
+        
+    uint convertKeyFlags(uint flags) {
         uint res;
         if (flags & KMOD_CTRL)
             res |= KeyFlag.Control;
@@ -753,20 +753,20 @@ class SDLWindow : Window {
         if (flags & KMOD_ALT)
             res |= KeyFlag.Alt;
         if (flags & KMOD_RCTRL)
-			res |= KeyFlag.RControl | KeyFlag.Control;
+            res |= KeyFlag.RControl | KeyFlag.Control;
         if (flags & KMOD_RSHIFT)
-			res |= KeyFlag.RShift | KeyFlag.Shift;
+            res |= KeyFlag.RShift | KeyFlag.Shift;
         if (flags & KMOD_RALT)
-			res |= KeyFlag.RAlt | KeyFlag.Alt;
+            res |= KeyFlag.RAlt | KeyFlag.Alt;
         if (flags & KMOD_LCTRL)
-			res |= KeyFlag.LControl | KeyFlag.Control;
+            res |= KeyFlag.LControl | KeyFlag.Control;
         if (flags & KMOD_LSHIFT)
-			res |= KeyFlag.LShift | KeyFlag.Shift;
+            res |= KeyFlag.LShift | KeyFlag.Shift;
         if (flags & KMOD_LALT)
-			res |= KeyFlag.LAlt | KeyFlag.Alt;
+            res |= KeyFlag.LAlt | KeyFlag.Alt;
         return res;
-	}
-				
+    }
+                
     bool processTextInput(const char * s) {
         string str = fromStringz(s).dup;
         dstring ds = toUTF32(str);
@@ -779,70 +779,70 @@ class SDLWindow : Window {
         return res;
     }
 
-	uint _keyFlags;
-	bool processKeyEvent(KeyAction action, uint keyCode, uint flags) {
-		debug(DebugSDL) Log.d("processKeyEvent ", action, " SDL key=0x", format("%08x", keyCode), " SDL flags=0x", format("%08x", flags));
-		keyCode = convertKeyCode(keyCode);
-		flags = convertKeyFlags(flags);
-		if (action == KeyAction.KeyDown) {
-			switch(keyCode) {
-				case KeyCode.ALT:
-					flags |= KeyFlag.Alt;
-					break;
-				case KeyCode.RALT:
-					flags |= KeyFlag.Alt | KeyFlag.RAlt;
-					break;
-				case KeyCode.LALT:
-					flags |= KeyFlag.Alt | KeyFlag.LAlt;
-					break;
-				case KeyCode.CONTROL:
-					flags |= KeyFlag.Control;
-					break;
-				case KeyCode.RCONTROL:
-					flags |= KeyFlag.Control | KeyFlag.RControl;
-					break;
-				case KeyCode.LCONTROL:
-					flags |= KeyFlag.Control | KeyFlag.LControl;
-					break;
-				case KeyCode.SHIFT:
-					flags |= KeyFlag.Shift;
-					break;
-				case KeyCode.RSHIFT:
-					flags |= KeyFlag.Shift | KeyFlag.RShift;
-					break;
-				case KeyCode.LSHIFT:
-					flags |= KeyFlag.Shift | KeyFlag.LShift;
-					break;
-				default:
-					break;
-			}
-		}
-		_keyFlags = flags;
+    uint _keyFlags;
+    bool processKeyEvent(KeyAction action, uint keyCode, uint flags) {
+        debug(DebugSDL) Log.d("processKeyEvent ", action, " SDL key=0x", format("%08x", keyCode), " SDL flags=0x", format("%08x", flags));
+        keyCode = convertKeyCode(keyCode);
+        flags = convertKeyFlags(flags);
+        if (action == KeyAction.KeyDown) {
+            switch(keyCode) {
+                case KeyCode.ALT:
+                    flags |= KeyFlag.Alt;
+                    break;
+                case KeyCode.RALT:
+                    flags |= KeyFlag.Alt | KeyFlag.RAlt;
+                    break;
+                case KeyCode.LALT:
+                    flags |= KeyFlag.Alt | KeyFlag.LAlt;
+                    break;
+                case KeyCode.CONTROL:
+                    flags |= KeyFlag.Control;
+                    break;
+                case KeyCode.RCONTROL:
+                    flags |= KeyFlag.Control | KeyFlag.RControl;
+                    break;
+                case KeyCode.LCONTROL:
+                    flags |= KeyFlag.Control | KeyFlag.LControl;
+                    break;
+                case KeyCode.SHIFT:
+                    flags |= KeyFlag.Shift;
+                    break;
+                case KeyCode.RSHIFT:
+                    flags |= KeyFlag.Shift | KeyFlag.RShift;
+                    break;
+                case KeyCode.LSHIFT:
+                    flags |= KeyFlag.Shift | KeyFlag.LShift;
+                    break;
+                default:
+                    break;
+            }
+        }
+        _keyFlags = flags;
 
-		debug(DebugSDL) Log.d("processKeyEvent ", action, " converted key=0x", format("%08x", keyCode), " converted flags=0x", format("%08x", flags));
-		bool res = dispatchKeyEvent(new KeyEvent(action, keyCode, flags));
-//			if ((keyCode & 0x10000) && (keyCode & 0xF000) != 0xF000) {
-//				dchar[1] text;
-//				text[0] = keyCode & 0xFFFF;
-//				res = dispatchKeyEvent(new KeyEvent(KeyAction.Text, keyCode, flags, cast(dstring)text)) || res;
-//			}
-	    if (res) {
-	        debug(DebugSDL) Log.d("Calling update() after key event");
-	        invalidate();
-	    }
-		return res;
-	}
+        debug(DebugSDL) Log.d("processKeyEvent ", action, " converted key=0x", format("%08x", keyCode), " converted flags=0x", format("%08x", flags));
+        bool res = dispatchKeyEvent(new KeyEvent(action, keyCode, flags));
+//            if ((keyCode & 0x10000) && (keyCode & 0xF000) != 0xF000) {
+//                dchar[1] text;
+//                text[0] = keyCode & 0xFFFF;
+//                res = dispatchKeyEvent(new KeyEvent(KeyAction.Text, keyCode, flags, cast(dstring)text)) || res;
+//            }
+        if (res) {
+            debug(DebugSDL) Log.d("Calling update() after key event");
+            invalidate();
+        }
+        return res;
+    }
 
-	uint _lastRedrawEventCode;
-	/// request window redraw
-	override void invalidate() {
-		_platform.sendRedrawEvent(windowId, ++_lastRedrawEventCode);
-	}
-		
-	void processRedrawEvent(uint code) {
-		if (code == _lastRedrawEventCode)
-			redraw();
-	}
+    uint _lastRedrawEventCode;
+    /// request window redraw
+    override void invalidate() {
+        _platform.sendRedrawEvent(windowId, ++_lastRedrawEventCode);
+    }
+        
+    void processRedrawEvent(uint code) {
+        if (code == _lastRedrawEventCode)
+            redraw();
+    }
 
 
     private long _nextExpectedTimerTs;
@@ -868,8 +868,8 @@ class SDLWindow : Window {
     void handleTimer(SDL_TimerID timerId) {
         SDL_RemoveTimer(_timerId);
         _timerId = 0;
-		_nextExpectedTimerTs = 0;
-		onTimer();
+        _nextExpectedTimerTs = 0;
+        onTimer();
     }
 }
 
@@ -886,68 +886,68 @@ private extern(C) uint myTimerCallbackFunc(uint interval, void *param) nothrow {
 private __gshared bool _enableOpengl;
 
 class SDLPlatform : Platform {
-	this() {
-			
-	}
-	~this() {
-		foreach(ref SDLWindow wnd; _windowMap) {
-			destroy(wnd);
-			wnd = null;
-		}
-		destroy(_windowMap);
-		disconnect();
-	}
-	void disconnect() {
-		/* Cleanup */
-	}
-	bool connect() {
-			
+    this() {
+            
+    }
+    ~this() {
+        foreach(ref SDLWindow wnd; _windowMap) {
+            destroy(wnd);
+            wnd = null;
+        }
+        destroy(_windowMap);
+        disconnect();
+    }
+    void disconnect() {
+        /* Cleanup */
+    }
+    bool connect() {
+            
 
-		return true;
-	}
+        return true;
+    }
 
-	SDLWindow getWindow(uint id) {
-		if (id in _windowMap)
-			return _windowMap[id];
-		return null;
-	}
+    SDLWindow getWindow(uint id) {
+        if (id in _windowMap)
+            return _windowMap[id];
+        return null;
+    }
 
-	SDLWindow _windowToClose;
+    SDLWindow _windowToClose;
 
-	/// close window
-	override void closeWindow(Window w) {
-		SDLWindow window = cast(SDLWindow)w;
-		_windowToClose = window;
-	}
+    /// close window
+    override void closeWindow(Window w) {
+        SDLWindow window = cast(SDLWindow)w;
+        _windowToClose = window;
+    }
 
-	/// calls request layout for all windows
-	override void requestLayout() {
-		foreach(w; _windowMap) {
-			w.requestLayout();
-			w.invalidate();
-		}
-	}
+    /// calls request layout for all windows
+    override void requestLayout() {
+        foreach(w; _windowMap) {
+            w.requestLayout();
+            w.invalidate();
+        }
+    }
 
     /// handle theme change: e.g. reload some themed resources
     override void onThemeChanged() {
-		foreach(w; _windowMap)
-			w.dispatchThemeChanged();
+        foreach(w; _windowMap)
+            w.dispatchThemeChanged();
     }
 
-	private uint _redrawEventId;
+    private uint _redrawEventId;
 
-	void sendRedrawEvent(uint windowId, uint code) {
-		if (!_redrawEventId)
-			_redrawEventId = SDL_RegisterEvents(1);
-		SDL_Event event;
-		event.type = _redrawEventId;
-		event.user.windowID = windowId;
-		event.user.code = code;
-		SDL_PushEvent(&event);
+    void sendRedrawEvent(uint windowId, uint code) {
+        if (!_redrawEventId)
+            _redrawEventId = SDL_RegisterEvents(1);
+        SDL_Event event;
+        event.type = _redrawEventId;
+        event.user.windowID = windowId;
+        event.user.code = code;
+        SDL_PushEvent(&event);
 
-	}
+    }
 
-	override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0) {
+    override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0) {
         setDefaultLanguageAndThemeIfNecessary();
         int oldDPI = SCREEN_DPI;
         int newwidth = width;
@@ -956,8 +956,8 @@ class SDLPlatform : Platform {
             newwidth = pointsToPixels(width);
             newheight = pointsToPixels(height);
         }
-		SDLWindow res = new SDLWindow(this, windowCaption, parent, flags, newwidth, newheight);
-		_windowMap[res.windowId] = res;
+        SDLWindow res = new SDLWindow(this, windowCaption, parent, flags, newwidth, newheight);
+        _windowMap[res.windowId] = res;
         if (oldDPI != SCREEN_DPI) {
             version(Windows) {
                 newwidth = pointsToPixels(width);
@@ -967,44 +967,44 @@ class SDLPlatform : Platform {
             }
             onThemeChanged();
         }
-		return res;
-	}
+        return res;
+    }
 
     //void redrawWindows() {
     //    foreach(w; _windowMap)
     //        w.redraw();
     //}
 
-	override int enterMessageLoop() {
-		Log.i("entering message loop");
-		SDL_Event event;
-		bool quit = false;
+    override int enterMessageLoop() {
+        Log.i("entering message loop");
+        SDL_Event event;
+        bool quit = false;
         bool skipNextQuit = false;
         while(!quit) {
-			//redrawWindows();
+            //redrawWindows();
 
-			//if (SDL_PollEvent(&event)) {
-			if (SDL_WaitEvent(&event)) {
+            //if (SDL_PollEvent(&event)) {
+            if (SDL_WaitEvent(&event)) {
 
-				//Log.d("Event.type = ", event.type);
+                //Log.d("Event.type = ", event.type);
 
-				if (event.type == SDL_QUIT) {
+                if (event.type == SDL_QUIT) {
                     if (!skipNextQuit) {
-					    Log.i("event.type == SDL_QUIT");
-					    quit = true;
-					    break;
+                        Log.i("event.type == SDL_QUIT");
+                        quit = true;
+                        break;
                     }
                     skipNextQuit = false;
-				} 
-				if (_redrawEventId && event.type == _redrawEventId) {
-					// user defined redraw event
-					uint windowID = event.user.windowID;
-					SDLWindow w = getWindow(windowID);
-					if (w) {
-						w.processRedrawEvent(event.user.code);
-					}
-					continue;
-				}
+                } 
+                if (_redrawEventId && event.type == _redrawEventId) {
+                    // user defined redraw event
+                    uint windowID = event.user.windowID;
+                    SDLWindow w = getWindow(windowID);
+                    if (w) {
+                        w.processRedrawEvent(event.user.code);
+                    }
+                    continue;
+                }
                 switch (event.type) {
                     case SDL_WINDOWEVENT:
                     {
@@ -1058,19 +1058,19 @@ class SDLPlatform : Platform {
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MAXIMIZED");
                                 break;
                             case SDL_WINDOWEVENT_RESTORED:
-								debug(DebugSDL) Log.d("SDL_WINDOWEVENT_RESTORED");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_RESTORED");
                                 break;
                             case SDL_WINDOWEVENT_ENTER:
-								debug(DebugSDL) Log.d("SDL_WINDOWEVENT_ENTER");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_ENTER");
                                 break;
                             case SDL_WINDOWEVENT_LEAVE:
-								debug(DebugSDL) Log.d("SDL_WINDOWEVENT_LEAVE");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_LEAVE");
                                 break;
                             case SDL_WINDOWEVENT_FOCUS_GAINED:
-								debug(DebugSDL) Log.d("SDL_WINDOWEVENT_FOCUS_GAINED");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_FOCUS_GAINED");
                                 break;
                             case SDL_WINDOWEVENT_FOCUS_LOST:
-								debug(DebugSDL) Log.d("SDL_WINDOWEVENT_FOCUS_LOST");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_FOCUS_LOST");
                                 break;
                             default:
                                 break;
@@ -1080,7 +1080,7 @@ class SDLPlatform : Platform {
                     case SDL_KEYDOWN:
                         SDLWindow w = getWindow(event.key.windowID);
                         if (w) {
-							w.processKeyEvent(KeyAction.KeyDown, event.key.keysym.sym, event.key.keysym.mod);
+                            w.processKeyEvent(KeyAction.KeyDown, event.key.keysym.sym, event.key.keysym.mod);
                             SDL_StartTextInput();
                         }
                         break;
@@ -1140,47 +1140,47 @@ class SDLPlatform : Platform {
                         }
                         break;
                 }
-				if (_windowToClose) {
-					if (_windowToClose.windowId in _windowMap) {
-						Log.i("Platform.closeWindow()");
-						_windowMap.remove(_windowToClose.windowId);
-						SDL_DestroyWindow(_windowToClose._win);
-						Log.i("windowMap.length=", _windowMap.length);
-						destroy(_windowToClose);
-					}
-					_windowToClose = null;
-				}
-				//
-				if (_windowMap.length == 0) {
-					//quit = true;
-					SDL_Quit();
-					quit = true;
-				}
-			}
-		}
-		Log.i("exiting message loop");
-		return 0;
-	}
-		
+                if (_windowToClose) {
+                    if (_windowToClose.windowId in _windowMap) {
+                        Log.i("Platform.closeWindow()");
+                        _windowMap.remove(_windowToClose.windowId);
+                        SDL_DestroyWindow(_windowToClose._win);
+                        Log.i("windowMap.length=", _windowMap.length);
+                        destroy(_windowToClose);
+                    }
+                    _windowToClose = null;
+                }
+                //
+                if (_windowMap.length == 0) {
+                    //quit = true;
+                    SDL_Quit();
+                    quit = true;
+                }
+            }
+        }
+        Log.i("exiting message loop");
+        return 0;
+    }
+        
     /// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
-	override dstring getClipboardText(bool mouseBuffer = false) {
+    override dstring getClipboardText(bool mouseBuffer = false) {
         if (!SDL_HasClipboardText())
-			return ""d;
+            return ""d;
         char * txt = SDL_GetClipboardText();
         if (!txt)
             return ""d;
         string s = fromStringz(txt).dup;
         SDL_free(txt);
         return toUTF32(s);
-	}
-		
+    }
+        
     /// sets text to clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
-	override void setClipboardText(dstring text, bool mouseBuffer = false) {
+    override void setClipboardText(dstring text, bool mouseBuffer = false) {
         string s = toUTF8(text);
         SDL_SetClipboardText(s.toStringz);
-	}
-		
-	protected SDLWindow[uint] _windowMap;
+    }
+        
+    protected SDLWindow[uint] _windowMap;
 }
 
 version (Windows) {
@@ -1267,10 +1267,10 @@ version (Windows) {
     }
 } else {
 
-	extern(C) int DLANGUImain(string[] args)
-	{
+    extern(C) int DLANGUImain(string[] args)
+    {
         return sdlmain(args);
-	}
+    }
 }
 
 int sdlmain(string[] args) {
@@ -1301,7 +1301,7 @@ int sdlmain(string[] args) {
 
     static if (ENABLE_OPENGL) {
         try {
-			DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
+            DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
             DerelictGL3.load();
             DerelictGL.missingSymbolCallback = &gl3MissingSymFunc;
             DerelictGL.load();
@@ -1312,8 +1312,8 @@ int sdlmain(string[] args) {
     }
 
     SDL_DisplayMode displayMode;
-	if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_EVENTS|SDL_INIT_NOPARACHUTE) != 0) {
-        Log.e("Cannot init SDL2");	
+    if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_EVENTS|SDL_INIT_NOPARACHUTE) != 0) {
+        Log.e("Cannot init SDL2");    
         return 2;
     }
     scope(exit)SDL_Quit();
@@ -1340,7 +1340,7 @@ int sdlmain(string[] args) {
         return 1;
     }
 
-	Platform.setInstance(sdl);
+    Platform.setInstance(sdl);
 
     int res = 0;
 

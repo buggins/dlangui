@@ -245,51 +245,51 @@ enum EditStateMark : ubyte {
 class EditOperation {
     protected EditAction _action;
     /// action performed
-	@property EditAction action() { return _action; }
+    @property EditAction action() { return _action; }
     protected TextRange _range;
 
     /// source range to replace with new content
-	@property ref TextRange range() { return _range; }
+    @property ref TextRange range() { return _range; }
     protected TextRange _newRange;
 
     /// new range after operation applied
-	@property ref TextRange newRange() { return _newRange; }
-	@property void newRange(TextRange range) { _newRange = range; }
+    @property ref TextRange newRange() { return _newRange; }
+    @property void newRange(TextRange range) { _newRange = range; }
 
     /// new content for range (if required for this action)
     protected dstring[] _content;
-	@property ref dstring[] content() { return _content; }
+    @property ref dstring[] content() { return _content; }
 
     /// line edit marks for old range
     protected EditStateMark[] _oldEditMarks;
-	@property ref EditStateMark[] oldEditMarks() { return _oldEditMarks; }
-	@property void oldEditMarks(EditStateMark[] marks) { _oldEditMarks = marks; }
+    @property ref EditStateMark[] oldEditMarks() { return _oldEditMarks; }
+    @property void oldEditMarks(EditStateMark[] marks) { _oldEditMarks = marks; }
 
     /// old content for range
     protected dstring[] _oldContent;
-	@property ref dstring[] oldContent() { return _oldContent; }
-	@property void oldContent(dstring[] content) { _oldContent = content; }
+    @property ref dstring[] oldContent() { return _oldContent; }
+    @property void oldContent(dstring[] content) { _oldContent = content; }
 
-	this(EditAction action) {
-		_action = action;
-	}
-	this(EditAction action, TextPosition pos, dstring text) {
-		this(action, TextRange(pos, pos), text);
-	}
-	this(EditAction action, TextRange range, dstring text) {
-		_action = action;
-		_range = range;
-		_content.length = 1;
-		_content[0] = text.dup;
-	}
-	this(EditAction action, TextRange range, dstring[] text) {
-		_action = action;
-		_range = range;
+    this(EditAction action) {
+        _action = action;
+    }
+    this(EditAction action, TextPosition pos, dstring text) {
+        this(action, TextRange(pos, pos), text);
+    }
+    this(EditAction action, TextRange range, dstring text) {
+        _action = action;
+        _range = range;
+        _content.length = 1;
+        _content[0] = text.dup;
+    }
+    this(EditAction action, TextRange range, dstring[] text) {
+        _action = action;
+        _range = range;
         _content.length = text.length;
         foreach(i; 0 .. text.length)
-		    _content[i] = text[i].dup;
+            _content[i] = text[i].dup;
         //_content = text;
-	}
+    }
     /// try to merge two operations (simple entering of characters in the same line), return true if succeded
     bool merge(EditOperation op) {
         if (_range.start.line != op._range.start.line) // both ops whould be on the same line
@@ -429,7 +429,7 @@ class UndoBuffer {
 
 /// Editable Content change listener
 interface EditableContentListener {
-	void onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source);
+    void onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source);
 }
 
 interface EditableContentMarksChangeListener {
@@ -584,8 +584,8 @@ class EditableContent {
     /// set smart indents enabled flag
     @property EditableContent smartIndentsAfterPaste(bool enabled) { _smartIndentsAfterPaste = enabled; return this; }
 
-	/// listeners for edit operations
-	Signal!EditableContentListener contentChanged;
+    /// listeners for edit operations
+    Signal!EditableContentListener contentChanged;
     /// listeners for mark changes after edit operation
     Signal!EditableContentMarksChangeListener marksChanged;
 
@@ -600,7 +600,7 @@ class EditableContent {
 
     /// line edit marks
     protected EditStateMark[] _editMarks;
-	@property EditStateMark[] editMarks() { return _editMarks; }
+    @property EditStateMark[] editMarks() { return _editMarks; }
 
     /// returns all lines concatenated delimited by '\n'
     @property dstring text() {
@@ -810,17 +810,17 @@ class EditableContent {
         return _editMarks[index];
     }
 
-	/// returns text position for end of line lineIndex
-	TextPosition lineEnd(int lineIndex) {
+    /// returns text position for end of line lineIndex
+    TextPosition lineEnd(int lineIndex) {
         return TextPosition(lineIndex, lineLength(lineIndex));
-	}
+    }
 
-	/// returns text position for begin of line lineIndex (if lineIndex > number of lines, returns end of last line)
-	TextPosition lineBegin(int lineIndex) {
+    /// returns text position for begin of line lineIndex (if lineIndex > number of lines, returns end of last line)
+    TextPosition lineBegin(int lineIndex) {
         if (lineIndex >= _lines.length)
             return lineEnd(lineIndex - 1);
         return TextPosition(lineIndex, 0);
-	}
+    }
 
     /// returns previous character position
     TextPosition prevCharPos(TextPosition p) {
@@ -853,10 +853,10 @@ class EditableContent {
         }
     }
 
-	/// returns text range for whole line lineIndex
-	TextRange lineRange(int lineIndex) {
+    /// returns text range for whole line lineIndex
+    TextRange lineRange(int lineIndex) {
         return TextRange(TextPosition(lineIndex, 0), lineIndex < cast(int)_lines.length - 1 ? lineBegin(lineIndex + 1) : lineEnd(lineIndex));
-	}
+    }
 
     /// find nearest next tab position
     int nextTab(int pos) {
@@ -947,10 +947,10 @@ class EditableContent {
         return TextPosition(lineIndex, 0);
     }
 
-	/// returns text position for end of line lineIndex
-	int lineLength(int lineIndex) {
+    /// returns text position for end of line lineIndex
+    int lineLength(int lineIndex) {
         return lineIndex >= 0 && lineIndex < _lines.length ? cast(int)_lines[lineIndex].length : 0;
-	}
+    }
 
     /// returns maximum length of line
     int maxLineLength() {
@@ -961,7 +961,7 @@ class EditableContent {
         return m;
     }
 
-	void handleContentChange(EditOperation op, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source) {
+    void handleContentChange(EditOperation op, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source) {
         // update highlight if necessary
         updateTokenProps(rangeAfter.start.line, rangeAfter.end.line + 1);
         LineIcon[] moved;
@@ -971,9 +971,9 @@ class EditableContent {
                 marksChanged(this, moved, removed);
         }
         // call listeners
-		if (contentChanged.assigned)
-			contentChanged(this, op, rangeBefore, rangeAfter, source);
-	}
+        if (contentChanged.assigned)
+            contentChanged(this, op, rangeBefore, rangeAfter, source);
+    }
 
     /// return edit marks for specified range
     EditStateMark[] rangeMarks(TextRange range) {
@@ -1254,11 +1254,11 @@ class EditableContent {
     }
 
     /// edit content
-	bool performOperation(EditOperation op, Object source) {
+    bool performOperation(EditOperation op, Object source) {
         if (_readOnly)
             throw new Exception("content is readonly");
         if (op.action == EditAction.Replace) {
-			TextRange rangeBefore = op.range;
+            TextRange rangeBefore = op.range;
             assert(rangeBefore.start <= rangeBefore.end);
             //correctRange(rangeBefore);
             dstring[] oldcontent = rangeText(rangeBefore);
@@ -1266,7 +1266,7 @@ class EditableContent {
             dstring[] newcontent = op.content;
             if (newcontent.length == 0)
                 newcontent ~= ""d;
-			TextRange rangeAfter = op.range;
+            TextRange rangeAfter = op.range;
             rangeAfter.end = rangeAfter.start;
             if (newcontent.length > 1) {
                 // different lines
@@ -1282,11 +1282,11 @@ class EditableContent {
             op.oldEditMarks = oldmarks;
             replaceRange(rangeBefore, rangeAfter, newcontent);
             _undoBuffer.saveForUndo(op);
-			handleContentChange(op, rangeBefore, rangeAfter, source);
-			return true;
+            handleContentChange(op, rangeBefore, rangeAfter, source);
+            return true;
         }
         return false;
-	}
+    }
 
     /// return true if there is at least one operation in undo buffer
     @property bool hasUndo() {

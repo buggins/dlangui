@@ -107,7 +107,7 @@ class TabItemWidget : HorizontalLayout {
         _closeButton = new ImageButton("CLOSE");
         _closeButton.styleId = STYLE_BUTTON_TRANSPARENT;
         _closeButton.drawableId = "close";
-		_closeButton.trackHover = true;
+        _closeButton.trackHover = true;
         _closeButton.click = &onClick;
         if (!_enableCloseButton) {
             _closeButton.visibility = Visibility.Gone;
@@ -118,7 +118,7 @@ class TabItemWidget : HorizontalLayout {
         addChild(_label);
         addChild(_closeButton);
         setItem(item);
-		clickable = true;
+        clickable = true;
         trackHover = true;
     }
     void setStyles(string tabButtonStyle, string tabButtonTextStyle) {
@@ -242,8 +242,8 @@ class TabControl : WidgetGroupDefaultDrawing {
     protected string _tabButtonStyle;
     protected string _tabButtonTextStyle;
 
-	/// signal of tab change (e.g. by clicking on tab header)
-	Signal!TabHandler tabChanged;
+    /// signal of tab change (e.g. by clicking on tab header)
+    Signal!TabHandler tabChanged;
 
     /// signal on tab close button
     Signal!TabCloseHandler tabClose;
@@ -284,12 +284,12 @@ class TabControl : WidgetGroupDefaultDrawing {
         _buttonOverlap = currentTheme.get(tabButtonStyle).customLength("overlap", 0);
     }
 
-	/// when true, shows close buttons in tabs
-	@property bool enableCloseButton() { return _enableCloseButton; }
-	/// ditto
-	@property void enableCloseButton(bool enabled) {
-		_enableCloseButton = enabled;
-	}
+    /// when true, shows close buttons in tabs
+    @property bool enableCloseButton() { return _enableCloseButton; }
+    /// ditto
+    @property void enableCloseButton(bool enabled) {
+        _enableCloseButton = enabled;
+    }
 
     /// returns tab count
     @property int tabCount() const {
@@ -523,23 +523,23 @@ class TabControl : WidgetGroupDefaultDrawing {
         Rect rc = _pos;
         applyMargins(rc);
         applyPadding(rc);
-		auto saver = ClipRectSaver(buf, rc);
-		for (int i = _children.count - 1; i >= 0; i--) {
-			Widget item = _children.get(i);
-			if (item.visibility != Visibility.Visible)
-				continue;
+        auto saver = ClipRectSaver(buf, rc);
+        for (int i = _children.count - 1; i >= 0; i--) {
+            Widget item = _children.get(i);
+            if (item.visibility != Visibility.Visible)
+                continue;
             if (item.id.equal(_selectedTabId))
                 continue;
-			item.onDraw(buf);
-		}
-		for (int i = 0; i < _children.count; i++) {
-			Widget item = _children.get(i);
-			if (item.visibility != Visibility.Visible)
-				continue;
+            item.onDraw(buf);
+        }
+        for (int i = 0; i < _children.count; i++) {
+            Widget item = _children.get(i);
+            if (item.visibility != Visibility.Visible)
+                continue;
             if (!item.id.equal(_selectedTabId))
                 continue;
-			item.onDraw(buf);
-		}
+            item.onDraw(buf);
+        }
     }
 
     protected string _selectedTabId;
@@ -558,7 +558,7 @@ class TabControl : WidgetGroupDefaultDrawing {
         if (_children.get(index + 1).compareId(_selectedTabId))
             return; // already selected
         string previousSelectedTab = _selectedTabId;
-		for (int i = 1; i < _children.count; i++) {
+        for (int i = 1; i < _children.count; i++) {
             if (index == i - 1) {
                 _children.get(i).state = State.Selected;
                 _selectedTabId = _children.get(i).id;
@@ -569,7 +569,7 @@ class TabControl : WidgetGroupDefaultDrawing {
             }
         }
         if (tabChanged.assigned)
-			tabChanged(_selectedTabId, previousSelectedTab);
+            tabChanged(_selectedTabId, previousSelectedTab);
     }
 
 }
@@ -603,8 +603,8 @@ class TabHost : FrameLayout, TabHandler {
     @property Visibility hiddenTabsVisibility() { return _hiddenTabsVisibility; }
     @property void hiddenTabsVisibility(Visibility v) { _hiddenTabsVisibility = v; }
 
-	/// signal of tab change (e.g. by clicking on tab header)
-	Signal!TabHandler tabChanged;
+    /// signal of tab change (e.g. by clicking on tab header)
+    Signal!TabHandler tabChanged;
 
     protected override void onTabChanged(string newActiveTabId, string previousTabId) {
         if (newActiveTabId !is null) {
@@ -662,16 +662,16 @@ class TabHost : FrameLayout, TabHandler {
     }
 //    /// request relayout of widget and its children
 //    override void requestLayout() {
-//		Log.d("TabHost.requestLayout called");
-//		super.requestLayout();
+//        Log.d("TabHost.requestLayout called");
+//        super.requestLayout();
 //        //_needLayout = true;
 //    }
 //    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
 //    override void layout(Rect rc) {
-//		Log.d("TabHost.layout() called");
-//		super.layout(rc);
-//		Log.d("after layout(): needLayout = ", needLayout);
-//	}
+//        Log.d("TabHost.layout() called");
+//        super.layout(rc);
+//        Log.d("after layout(): needLayout = ", needLayout);
+//    }
 
 }
 
@@ -690,8 +690,8 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
         super(ID);
         _tabControl = new TabControl("TAB_CONTROL", tabAlignment);
         _tabHost = new TabHost("TAB_HOST", _tabControl);
-		_tabControl.tabChanged.connect(this);
-		_tabControl.tabClose.connect(this);
+        _tabControl.tabChanged.connect(this);
+        _tabControl.tabClose.connect(this);
         styleId = STYLE_TAB_WIDGET;
         if (tabAlignment == Align.Top) {
             addChild(_tabControl);
@@ -706,8 +706,8 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
     TabControl tabControl() { return _tabControl; }
     TabHost tabHost() { return _tabHost; }
 
-	/// signal of tab change (e.g. by clicking on tab header)
-	Signal!TabHandler tabChanged;
+    /// signal of tab change (e.g. by clicking on tab header)
+    Signal!TabHandler tabChanged;
     /// signal on tab close button
     Signal!TabCloseHandler tabClose;
 
@@ -728,13 +728,13 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
         return this;
     }
 
-	/// add new tab by id and label (raw value)
+    /// add new tab by id and label (raw value)
     TabWidget addTab(Widget widget, dstring label, string iconId = null, bool enableCloseButton = false) {
         _tabHost.addTab(widget, label, iconId, enableCloseButton);
         return this;
     }
 
-	/// remove tab by id
+    /// remove tab by id
     TabWidget removeTab(string id) {
         _tabHost.removeTab(id);
         requestLayout();
@@ -754,12 +754,12 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
     @property Visibility hiddenTabsVisibility() { return _tabHost.hiddenTabsVisibility; }
     @property void hiddenTabsVisibility(Visibility v) { _tabHost.hiddenTabsVisibility = v; }
 
-	/// select tab
+    /// select tab
     void selectTab(string ID, bool updateAccess = true) {
         _tabHost.selectTab(ID, updateAccess);
     }
 
-	/// select tab
+    /// select tab
     void selectTab(int index, bool updateAccess = true) {
         _tabControl.selectTab(index, updateAccess);
     }
@@ -775,22 +775,22 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
         return _tabHost.tabBody(id);
     }
 
-	/// returns tab item by id (null if index out of range)
-	TabItem tab(int index) {
-		return _tabControl.tab(index);
-	}
-	/// returns tab item by id (null if not found)
-	TabItem tab(string id) {
-		return _tabControl.tab(id);
-	}
+    /// returns tab item by id (null if index out of range)
+    TabItem tab(int index) {
+        return _tabControl.tab(index);
+    }
+    /// returns tab item by id (null if not found)
+    TabItem tab(string id) {
+        return _tabControl.tab(id);
+    }
     /// returns tab count
     @property int tabCount() const {
         return _tabControl.tabCount;
     }
-	/// get tab index by tab id (-1 if not found)
-	int tabIndex(string id) {
-		return _tabControl.tabIndex(id);
-	}
+    /// get tab index by tab id (-1 if not found)
+    int tabIndex(string id) {
+        return _tabControl.tabIndex(id);
+    }
 
     /// change style ids
     void setStyles(string tabWidgetStyle, string tabStyle, string tabButtonStyle, string tabButtonTextStyle) {
@@ -810,7 +810,7 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
                 }
             }
         }
-		if (event.action == KeyAction.KeyDown) {
+        if (event.action == KeyAction.KeyDown) {
             if (event.keyCode == KeyCode.TAB && (event.flags & KeyFlag.Control)) {
                 // support Ctrl+Tab and Ctrl+Shift+Tab for navigation
                 _tabNavigationInProgress = true;

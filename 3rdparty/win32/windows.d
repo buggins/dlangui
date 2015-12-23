@@ -11,15 +11,15 @@ module win32.windows;
 version(Windows):
 
 /*
-	windows.h - main header file for the Win32 API
+    windows.h - main header file for the Win32 API
 
-	Written by Anders Norlander <anorland@hem2.passagen.se>
+    Written by Anders Norlander <anorland@hem2.passagen.se>
 
-	This file is part of a free library for the Win32 API.
+    This file is part of a free library for the Win32 API.
 
-	This library is distributed in the hope that it will be useful,
-	but WITHOUT ANY WARRANTY; without even the implied warranty of
-	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    This library is distributed in the hope that it will be useful,
+    but WITHOUT ANY WARRANTY; without even the implied warranty of
+    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
 */
 
@@ -46,10 +46,10 @@ public import win32.ole2;
 // Select correct version of winsock.  Importing the incorrect
 // module will cause a static assert to prevent problems later on.
 version (Win32_Winsock1) {
-	public import win32.winsock;
+    public import win32.winsock;
 } else {
-	public import win32.winsock2;
-	public import win32.ws2tcpip;
+    public import win32.winsock2;
+    public import win32.ws2tcpip;
 }
 
 /+

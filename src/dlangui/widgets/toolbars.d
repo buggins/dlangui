@@ -54,7 +54,7 @@ class ToolBarHost : HorizontalLayout {
         return null;
     }
     /// override to handle specific actions
-	override bool handleAction(const Action a) {
+    override bool handleAction(const Action a) {
         // route to focused control first, then to main widget
         return window.dispatchAction(a);
     }

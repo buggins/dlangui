@@ -256,7 +256,7 @@ class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
     }
 
     /// override to handle main menu actions
-	bool onMenuItemAction(const Action action) {
+    bool onMenuItemAction(const Action action) {
         // default handling: dispatch action using window (first offered to focused control, then to main widget)
         return window.dispatchAction(action);
     }
@@ -287,7 +287,7 @@ class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
     }
 
     /// override to handle specific actions
-	override bool handleAction(const Action a) {
+    override bool handleAction(const Action a) {
         return false;
     }
 

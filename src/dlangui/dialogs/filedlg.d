@@ -67,15 +67,15 @@ enum FileDialogFlag : uint {
 
 /// filetype filter entry for FileDialog
 struct FileFilterEntry {
-	UIString label;
-	string[] filter;
+    UIString label;
+    string[] filter;
     bool executableOnly;
-	this(UIString displayLabel, string filterList, bool executableOnly = false) {
-		label = displayLabel;
-		if (filterList.length)
-			filter = split(filterList, ";");
+    this(UIString displayLabel, string filterList, bool executableOnly = false) {
+        label = displayLabel;
+        if (filterList.length)
+            filter = split(filterList, ";");
         this.executableOnly = executableOnly;
-	}
+    }
 }
 
 version (Windows) {
@@ -86,17 +86,17 @@ version (Windows) {
 
 /// File open / save dialog
 class FileDialog : Dialog, CustomGridCellAdapter {
-	protected FilePathPanel _edPath;
-	protected EditLine _edFilename;
-	protected ComboBox _cbFilters;
-	protected StringGridWidget _fileList;
-	protected VerticalLayout leftPanel;
-	protected VerticalLayout rightPanel;
+    protected FilePathPanel _edPath;
+    protected EditLine _edFilename;
+    protected ComboBox _cbFilters;
+    protected StringGridWidget _fileList;
+    protected VerticalLayout leftPanel;
+    protected VerticalLayout rightPanel;
     protected Action _action;
 
     protected RootEntry[] _roots;
-	protected FileFilterEntry[] _filters;
-	protected int _filterIndex;
+    protected FileFilterEntry[] _filters;
+    protected int _filterIndex;
     protected string _path;
     protected string _filename;
     protected DirEntry[] _entries;
@@ -106,7 +106,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
     protected string[string] _filetypeIcons;
 
-	this(UIString caption, Window parent, Action action = null, uint fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable | FileDialogFlag.FileMustExist) {
+    this(UIString caption, Window parent, Action action = null, uint fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable | FileDialogFlag.FileMustExist) {
         super(caption, parent, fileDialogFlags | (SHOW_FILE_DIALOG_IN_POPUP ? DialogFlag.Popup : 0));
         _isOpenDialog = !(_flags & FileDialogFlag.ConfirmOverwrite);
         if (action is null) {
@@ -123,30 +123,30 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     /// mapping of file extension to icon resource name, e.g. ".txt": "text-plain"
     @property ref string[string] filetypeIcons() { return _filetypeIcons; }
 
-	/// filter list for file type filter combo box
-	@property FileFilterEntry[] filters() {
-		return _filters;
-	}
+    /// filter list for file type filter combo box
+    @property FileFilterEntry[] filters() {
+        return _filters;
+    }
 
-	/// filter list for file type filter combo box
-	@property void filters(FileFilterEntry[] values) {
-		_filters = values;
-	}
+    /// filter list for file type filter combo box
+    @property void filters(FileFilterEntry[] values) {
+        _filters = values;
+    }
 
-	/// add new filter entry
-	void addFilter(FileFilterEntry value) {
-		_filters ~= value;
-	}
+    /// add new filter entry
+    void addFilter(FileFilterEntry value) {
+        _filters ~= value;
+    }
 
-	/// filter index
-	@property int filterIndex() {
-		return _filterIndex;
-	}
+    /// filter index
+    @property int filterIndex() {
+        return _filterIndex;
+    }
 
-	/// filter index
-	@property void filterIndex(int index) {
-		_filterIndex = index;
-	}
+    /// filter index
+    @property void filterIndex(int index) {
+        _filterIndex = index;
+    }
 
     @property string path() {
         return _path;
@@ -164,26 +164,26 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _filename = s;
     }
 
-	/// return currently selected filter value - array of patterns like ["*.txt", "*.rtf"]
-	@property string[] selectedFilter() {
-		if (_filterIndex >= 0 && _filterIndex < _filters.length)
-			return _filters[_filterIndex].filter;
-		return null;
-	}
+    /// return currently selected filter value - array of patterns like ["*.txt", "*.rtf"]
+    @property string[] selectedFilter() {
+        if (_filterIndex >= 0 && _filterIndex < _filters.length)
+            return _filters[_filterIndex].filter;
+        return null;
+    }
 
     @property bool executableFilterSelected() {
-		if (_filterIndex >= 0 && _filterIndex < _filters.length)
-			return _filters[_filterIndex].executableOnly;
-		return false;
+        if (_filterIndex >= 0 && _filterIndex < _filters.length)
+            return _filters[_filterIndex].executableOnly;
+        return false;
     }
 
     protected bool upLevel() {
         return openDirectory(parentDir(_path), _path);
     }
 
-	protected bool reopenDirectory() {
-		return openDirectory(_path, null);
-	}
+    protected bool reopenDirectory() {
+        return openDirectory(_path, null);
+    }
 
     protected bool openDirectory(string dir, string selectedItemPath) {
         dir = buildNormalizedPath(dir);
@@ -269,8 +269,8 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         return Point(icon.width + 2, icon.height + 2);
     }
 
-	/// draw data cell content
-	override void drawCell(DrawBuf buf, Rect rc, int col, int row) {
+    /// draw data cell content
+    override void drawCell(DrawBuf buf, Rect rc, int col, int row) {
         DrawableRef img = rowIcon(row);
         if (!img.isNull) {
             Point sz;
@@ -370,86 +370,86 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         return super.handleAction(action);
     }
 
-	bool onPathSelected(string path) {
-		//
-		return openDirectory(path, null);
-	}
+    bool onPathSelected(string path) {
+        //
+        return openDirectory(path, null);
+    }
 
-	/// override to implement creation of dialog controls
-	override void init() {
+    /// override to implement creation of dialog controls
+    override void init() {
         _roots = getRootPaths;
 
-		layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).minWidth(600);
+        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).minWidth(600);
         //minHeight = 400;
 
-		LinearLayout content = new HorizontalLayout("dlgcontent");
+        LinearLayout content = new HorizontalLayout("dlgcontent");
 
-		content.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT); //.minWidth(400).minHeight(300);
+        content.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT); //.minWidth(400).minHeight(300);
 
-		leftPanel = new VerticalLayout("places");
+        leftPanel = new VerticalLayout("places");
         leftPanel.addChild(createRootsList());
-		leftPanel.layoutHeight(FILL_PARENT).minWidth(40);
+        leftPanel.layoutHeight(FILL_PARENT).minWidth(40);
 
-		rightPanel = new VerticalLayout("main");
-		rightPanel.layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT);
-		rightPanel.addChild(new TextWidget(null, "Path:"d));
+        rightPanel = new VerticalLayout("main");
+        rightPanel.layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT);
+        rightPanel.addChild(new TextWidget(null, "Path:"d));
 
-		content.addChild(leftPanel);
-		content.addChild(rightPanel);
+        content.addChild(leftPanel);
+        content.addChild(rightPanel);
 
-		_edPath = new FilePathPanel("path");
-		_edPath.layoutWidth(FILL_PARENT);
+        _edPath = new FilePathPanel("path");
+        _edPath.layoutWidth(FILL_PARENT);
         _edPath.layoutWeight = 0;
-		_edPath.onPathSelectionListener = &onPathSelected;
-		HorizontalLayout fnlayout = new HorizontalLayout();
-		fnlayout.layoutWidth(FILL_PARENT);
-		_edFilename = new EditLine("filename");
-		_edFilename.layoutWidth(FILL_PARENT);
+        _edPath.onPathSelectionListener = &onPathSelected;
+        HorizontalLayout fnlayout = new HorizontalLayout();
+        fnlayout.layoutWidth(FILL_PARENT);
+        _edFilename = new EditLine("filename");
+        _edFilename.layoutWidth(FILL_PARENT);
         if (_flags & FileDialogFlag.SelectDirectory) {
             _edFilename.visibility = Visibility.Gone;
         }
 
 
         //_edFilename.layoutWeight = 0;
-		fnlayout.addChild(_edFilename);
-		if (_filters.length) {
-			dstring[] filterLabels;
-			foreach(f; _filters)
-				filterLabels ~= f.label.value;
-			_cbFilters = new ComboBox("filter", filterLabels);
-			_cbFilters.selectedItemIndex = _filterIndex;
-			_cbFilters.itemClick = delegate(Widget source, int itemIndex) {
-				_filterIndex = itemIndex;
-				reopenDirectory();
-				return true;
-			};
-			_cbFilters.layoutWidth(WRAP_CONTENT);
-			_cbFilters.layoutWeight(0);
-			//_cbFilters.backgroundColor = 0xFFC0FF;
-			fnlayout.addChild(_cbFilters);
-			//fnlayout.backgroundColor = 0xFFFFC0;
-		}
+        fnlayout.addChild(_edFilename);
+        if (_filters.length) {
+            dstring[] filterLabels;
+            foreach(f; _filters)
+                filterLabels ~= f.label.value;
+            _cbFilters = new ComboBox("filter", filterLabels);
+            _cbFilters.selectedItemIndex = _filterIndex;
+            _cbFilters.itemClick = delegate(Widget source, int itemIndex) {
+                _filterIndex = itemIndex;
+                reopenDirectory();
+                return true;
+            };
+            _cbFilters.layoutWidth(WRAP_CONTENT);
+            _cbFilters.layoutWeight(0);
+            //_cbFilters.backgroundColor = 0xFFC0FF;
+            fnlayout.addChild(_cbFilters);
+            //fnlayout.backgroundColor = 0xFFFFC0;
+        }
 
-		_fileList = new StringGridWidget("files");
-		_fileList.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
-		_fileList.resize(4, 3);
-		_fileList.setColTitle(0, " "d);
-		_fileList.setColTitle(1, "Name"d);
-		_fileList.setColTitle(2, "Size"d);
-		_fileList.setColTitle(3, "Modified"d);
-		_fileList.showRowHeaders = false;
-		_fileList.rowSelect = true;
+        _fileList = new StringGridWidget("files");
+        _fileList.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+        _fileList.resize(4, 3);
+        _fileList.setColTitle(0, " "d);
+        _fileList.setColTitle(1, "Name"d);
+        _fileList.setColTitle(2, "Size"d);
+        _fileList.setColTitle(3, "Modified"d);
+        _fileList.showRowHeaders = false;
+        _fileList.rowSelect = true;
 
-		rightPanel.addChild(_edPath);
-		rightPanel.addChild(_fileList);
-		rightPanel.addChild(fnlayout);
+        rightPanel.addChild(_edPath);
+        rightPanel.addChild(_fileList);
+        rightPanel.addChild(fnlayout);
 
 
-		addChild(content);
+        addChild(content);
         if (_flags & FileDialogFlag.EnableCreateDirectory) {
-		    addChild(createButtonsPanel([ACTION_CREATE_DIRECTORY, cast(immutable)_action, ACTION_CANCEL], 1, 1));
+            addChild(createButtonsPanel([ACTION_CREATE_DIRECTORY, cast(immutable)_action, ACTION_CANCEL], 1, 1));
         } else {
-		    addChild(createButtonsPanel([cast(immutable)_action, ACTION_CANCEL], 0, 0));
+            addChild(createButtonsPanel([cast(immutable)_action, ACTION_CANCEL], 0, 0));
         }
 
         _fileList.customCellAdapter = this;
@@ -466,7 +466,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         openDirectory(_path, _filename);
         _fileList.layoutHeight = FILL_PARENT;
 
-	}
+    }
 
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     override void layout(Rect rc) {
@@ -506,22 +506,22 @@ class FilePathPanelItem : HorizontalLayout {
     Listener!OnPathSelectionHandler onPathSelectionListener;
     this(string path) {
         super(null);
-		styleId = STYLE_LIST_ITEM;
+        styleId = STYLE_LIST_ITEM;
         _path = path;
         string fname = isRoot(path) ? path : baseName(path);
         _text = new TextWidget(null, toUTF32(fname));
-		_text.styleId = STYLE_BUTTON_TRANSPARENT;
+        _text.styleId = STYLE_BUTTON_TRANSPARENT;
         _text.clickable = true;
         _text.click = &onTextClick;
-		//_text.backgroundColor = 0xC0FFFF;
-		_text.state = State.Parent;
+        //_text.backgroundColor = 0xC0FFFF;
+        _text.state = State.Parent;
         _button = new ImageButton(null, "scrollbar_btn_right");
-		_button.styleId = STYLE_BUTTON_TRANSPARENT;
+        _button.styleId = STYLE_BUTTON_TRANSPARENT;
         _button.focusable = false;
         _button.click = &onButtonClick;
-		//_button.backgroundColor = 0xC0FFC0;
-		_button.state = State.Parent;
-		trackHover(true);
+        //_button.backgroundColor = 0xC0FFC0;
+        _button.state = State.Parent;
+        trackHover(true);
         addChild(_text);
         addChild(_button);
         margins(Rect(2,0,2,0));
@@ -534,28 +534,28 @@ class FilePathPanelItem : HorizontalLayout {
     private bool onButtonClick(Widget src) {
         // show popup menu with subdirs
         string[] filters;
-		DirEntry[] entries;
+        DirEntry[] entries;
         if (!listDirectory(_path, true, false, false, filters, entries))
             return false;
-		if (entries.length == 0)
-			return false;
-		MenuItem dirs = new MenuItem();
-		int itemId = 25000;
-		foreach(ref DirEntry e; entries) {
-			string fullPath = e.name;
-			string d = baseName(fullPath);
-			Action a = new Action(itemId++, toUTF32(d));
-			MenuItem item = new MenuItem(a);
-			item.menuItemClick = delegate(MenuItem item) { 
-				if (onPathSelectionListener.assigned)
-					return onPathSelectionListener(fullPath);
-				return false;
-			};
-			dirs.add(item);
-		}
-		PopupMenu menuWidget = new PopupMenu(dirs);
-		PopupWidget popup = window.showPopup(menuWidget, this, PopupAlign.Below);
-		popup.flags = PopupFlags.CloseOnClickOutside;
+        if (entries.length == 0)
+            return false;
+        MenuItem dirs = new MenuItem();
+        int itemId = 25000;
+        foreach(ref DirEntry e; entries) {
+            string fullPath = e.name;
+            string d = baseName(fullPath);
+            Action a = new Action(itemId++, toUTF32(d));
+            MenuItem item = new MenuItem(a);
+            item.menuItemClick = delegate(MenuItem item) { 
+                if (onPathSelectionListener.assigned)
+                    return onPathSelectionListener(fullPath);
+                return false;
+            };
+            dirs.add(item);
+        }
+        PopupMenu menuWidget = new PopupMenu(dirs);
+        PopupWidget popup = window.showPopup(menuWidget, this, PopupAlign.Below);
+        popup.flags = PopupFlags.CloseOnClickOutside;
         return true;
     }
 }
@@ -563,17 +563,17 @@ class FilePathPanelItem : HorizontalLayout {
 /// Panel with buttons - path segments - for fast navigation to subdirs.
 class FilePathPanelButtons : WidgetGroupDefaultDrawing {
     protected string _path;
-	Listener!OnPathSelectionHandler onPathSelectionListener;
-	protected bool onPathSelected(string path) {
-		if (onPathSelectionListener.assigned) {
-			return onPathSelectionListener(path);
-		}
-		return false;
-	}
+    Listener!OnPathSelectionHandler onPathSelectionListener;
+    protected bool onPathSelected(string path) {
+        if (onPathSelectionListener.assigned) {
+            return onPathSelectionListener(path);
+        }
+        return false;
+    }
     this(string ID = null) {
         super(ID);
-		layoutWidth = FILL_PARENT;
-		clickable = true;
+        layoutWidth = FILL_PARENT;
+        clickable = true;
     }
     protected void init(string path) {
         _path = path;
@@ -581,7 +581,7 @@ class FilePathPanelButtons : WidgetGroupDefaultDrawing {
         string itemPath = path;
         for (;;) {
             FilePathPanelItem item = new FilePathPanelItem(itemPath);
-			item.onPathSelectionListener = &onPathSelected;
+            item.onPathSelectionListener = &onPathSelected;
             addChild(item);
             if (isRoot(itemPath)) {
                 break;
@@ -601,8 +601,8 @@ class FilePathPanelButtons : WidgetGroupDefaultDrawing {
         if (parentHeight != SIZE_UNSPECIFIED)
             pheight -= m.top + m.bottom + p.top + p.bottom;
         int reservedForEmptySpace = parentWidth / 20;
-		if (reservedForEmptySpace > 40)
-			reservedForEmptySpace = 40;
+        if (reservedForEmptySpace > 40)
+            reservedForEmptySpace = 40;
 
         Point sz;
         sz.x += reservedForEmptySpace;
@@ -636,8 +636,8 @@ class FilePathPanelButtons : WidgetGroupDefaultDrawing {
         applyPadding(rc);
 
         int reservedForEmptySpace = rc.width / 20;
-		if (reservedForEmptySpace > 40)
-			reservedForEmptySpace = 40;
+        if (reservedForEmptySpace > 40)
+            reservedForEmptySpace = 40;
         int maxw = rc.width - reservedForEmptySpace;
         int totalw = 0;
         int visibleItems = 0;
@@ -675,69 +675,69 @@ class FilePathPanelButtons : WidgetGroupDefaultDrawing {
 }
 
 interface PathSelectedHandler {
-	bool onPathSelected(string path);
+    bool onPathSelected(string path);
 }
 
 /// Panel - either path segment buttons or text editor line
 class FilePathPanel : FrameLayout {
-	Listener!OnPathSelectionHandler onPathSelectionListener;
-	static const ID_SEGMENTS = "SEGMENTS";
-	static const ID_EDITOR = "ED_PATH";
+    Listener!OnPathSelectionHandler onPathSelectionListener;
+    static const ID_SEGMENTS = "SEGMENTS";
+    static const ID_EDITOR = "ED_PATH";
     protected FilePathPanelButtons _segments;
-	protected EditLine _edPath;
-	protected string _path;
-	Signal!PathSelectedHandler pathListener;
+    protected EditLine _edPath;
+    protected string _path;
+    Signal!PathSelectedHandler pathListener;
     this(string ID = null) {
         super(ID);
-		_segments = new FilePathPanelButtons(ID_SEGMENTS);
-		_edPath = new EditLine(ID_EDITOR);
-		_edPath.layoutWidth = FILL_PARENT;
-		_edPath.editorAction = &onEditorAction;
-		_edPath.focusChange = &onEditorFocusChanged;
-		_segments.click = &onSegmentsClickOutside;
-		_segments.onPathSelectionListener = &onPathSelected;
-		addChild(_segments);
-		addChild(_edPath);
+        _segments = new FilePathPanelButtons(ID_SEGMENTS);
+        _edPath = new EditLine(ID_EDITOR);
+        _edPath.layoutWidth = FILL_PARENT;
+        _edPath.editorAction = &onEditorAction;
+        _edPath.focusChange = &onEditorFocusChanged;
+        _segments.click = &onSegmentsClickOutside;
+        _segments.onPathSelectionListener = &onPathSelected;
+        addChild(_segments);
+        addChild(_edPath);
     }
-	protected bool onEditorFocusChanged(Widget source, bool focused) {
-		if (!focused) {
-			_edPath.text = toUTF32(_path);
-			showChild(ID_SEGMENTS);
-		}
-		return true;
-	}
-	protected bool onPathSelected(string path) {
-		if (onPathSelectionListener.assigned) {
-			if (exists(path))
-				return onPathSelectionListener(path);
-		}
-		return false;
-	}
-	protected bool onSegmentsClickOutside(Widget w) {
-		// switch to editor
-		_edPath.text = toUTF32(_path);
-		showChild(ID_EDITOR);
-		_edPath.setFocus();
-		return true;
-	}
-	protected bool onEditorAction(const Action action) {
-		if (action.id == EditorActions.InsertNewLine) {
-			string fn = buildNormalizedPath(toUTF8(_edPath.text));
-			if (exists(fn) && isDir(fn))
-				return onPathSelected(fn);
-		}
-		return false;
-	}
+    protected bool onEditorFocusChanged(Widget source, bool focused) {
+        if (!focused) {
+            _edPath.text = toUTF32(_path);
+            showChild(ID_SEGMENTS);
+        }
+        return true;
+    }
+    protected bool onPathSelected(string path) {
+        if (onPathSelectionListener.assigned) {
+            if (exists(path))
+                return onPathSelectionListener(path);
+        }
+        return false;
+    }
+    protected bool onSegmentsClickOutside(Widget w) {
+        // switch to editor
+        _edPath.text = toUTF32(_path);
+        showChild(ID_EDITOR);
+        _edPath.setFocus();
+        return true;
+    }
+    protected bool onEditorAction(const Action action) {
+        if (action.id == EditorActions.InsertNewLine) {
+            string fn = buildNormalizedPath(toUTF8(_edPath.text));
+            if (exists(fn) && isDir(fn))
+                return onPathSelected(fn);
+        }
+        return false;
+    }
 
-	@property void path(string value) {
-		_segments.init(value);
-		_edPath.text = toUTF32(value);
-		_path = value;
-		showChild(ID_SEGMENTS);
-	}
-	@property string path() {
-		return _path;
-	}
+    @property void path(string value) {
+        _segments.init(value);
+        _edPath.text = toUTF32(value);
+        _path = value;
+        showChild(ID_SEGMENTS);
+    }
+    @property string path() {
+        return _path;
+    }
 }
 
 class FileNameEditLine : HorizontalLayout {
@@ -746,8 +746,8 @@ class FileNameEditLine : HorizontalLayout {
     protected string[string] _filetypeIcons;
     protected dstring _caption = "Open File"d;
     protected uint _fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable | FileDialogFlag.FileMustExist | FileDialogFlag.EnableCreateDirectory;
-	protected FileFilterEntry[] _filters;
-	protected int _filterIndex;
+    protected FileFilterEntry[] _filters;
+    protected int _filterIndex;
 
     /// Modified state change listener (e.g. content has been saved, or first time modified after save)
     Signal!ModifiedStateListener modifiedStateChange;
@@ -767,7 +767,7 @@ class FileNameEditLine : HorizontalLayout {
                 dlg.filetypeIcons[key] = value;
             dlg.filters = _filters;
             dlg.dialogResult = delegate(Dialog dlg, const Action result) {
-				if (result.id == ACTION_OPEN.id || result.id == ACTION_OPEN_DIRECTORY.id) {
+                if (result.id == ACTION_OPEN.id || result.id == ACTION_OPEN_DIRECTORY.id) {
                     _edFileName.text = toUTF32(result.stringParam);
                     if (contentChange.assigned)
                         contentChange(_edFileName.content);
@@ -813,30 +813,30 @@ class FileNameEditLine : HorizontalLayout {
     /// mapping of file extension to icon resource name, e.g. ".txt": "text-plain"
     @property ref string[string] filetypeIcons() { return _filetypeIcons; }
 
-	/// filter list for file type filter combo box
-	@property FileFilterEntry[] filters() {
-		return _filters;
-	}
+    /// filter list for file type filter combo box
+    @property FileFilterEntry[] filters() {
+        return _filters;
+    }
 
-	/// filter list for file type filter combo box
-	@property void filters(FileFilterEntry[] values) {
-		_filters = values;
-	}
+    /// filter list for file type filter combo box
+    @property void filters(FileFilterEntry[] values) {
+        _filters = values;
+    }
 
-	/// add new filter entry
-	void addFilter(FileFilterEntry value) {
-		_filters ~= value;
-	}
+    /// add new filter entry
+    void addFilter(FileFilterEntry value) {
+        _filters ~= value;
+    }
 
-	/// filter index
-	@property int filterIndex() {
-		return _filterIndex;
-	}
+    /// filter index
+    @property int filterIndex() {
+        return _filterIndex;
+    }
 
-	/// filter index
-	@property void filterIndex(int index) {
-		_filterIndex = index;
-	}
+    /// filter index
+    @property void filterIndex(int index) {
+        _filterIndex = index;
+    }
 
     @property bool readOnly() { return _edFileName.readOnly; }
     @property void readOnly(bool f) { _edFileName.readOnly = f; }

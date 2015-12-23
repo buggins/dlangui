@@ -159,24 +159,24 @@ string parentDir(string path) {
 
 /// check filename with pattern (currently only *.ext, *.* and filename.ext patterns are supported)
 bool filterFilename(string filename, string pattern) {
-	if (pattern.equal("*.*"))
-		return true; // matches any
-	if (pattern.length < 3)
-		return false;
-	if (pattern[0] != '*' || pattern[1] != '.') {
-		return filename.baseName.equal(pattern);
+    if (pattern.equal("*.*"))
+        return true; // matches any
+    if (pattern.length < 3)
+        return false;
+    if (pattern[0] != '*' || pattern[1] != '.') {
+        return filename.baseName.equal(pattern);
     }
-	return filename.endsWith(pattern[1..$]);
+    return filename.endsWith(pattern[1..$]);
 }
 
 /// Filters file name by pattern list
 bool filterFilename(string filename, string[] filters) {
-	if (filters.length == 0)
-		return true; // no filters - show all
-	foreach(pattern; filters) {
-		if (filterFilename(filename, pattern))
-			return true;
-	}
+    if (filters.length == 0)
+        return true; // no filters - show all
+    foreach(pattern; filters) {
+        if (filterFilename(filename, pattern))
+            return true;
+    }
     return false;
 }
 
@@ -345,17 +345,17 @@ char[] appendPath(char[] buf, string[] pathItems ...) {
 
 /** Split path into elements, e.g. /home/user/dir1 -> ["home", "user", "dir1"], "c:\dir1\dir2" -> ["c:", "dir1", "dir2"] */
 string[] splitPath(string path) {
-	string[] res;
-	int start = 0;
-	for (int i = 0; i <= path.length; i++) {
-		char ch = i < path.length ? path[i] : 0;
-		if (ch == '\\' || ch == '/' || ch == 0) {
-			if (start < i)
-				res ~= path[start .. i].dup;
-			start = i + 1;
-		}
-	}
-	return res;
+    string[] res;
+    int start = 0;
+    for (int i = 0; i <= path.length; i++) {
+        char ch = i < path.length ? path[i] : 0;
+        if (ch == '\\' || ch == '/' || ch == 0) {
+            if (start < i)
+                res ~= path[start .. i].dup;
+            start = i + 1;
+        }
+    }
+    return res;
 }
 
 /// for executable name w/o path, find absolute path to executable

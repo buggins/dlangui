@@ -29,8 +29,8 @@ class InputBox : Dialog {
             };
         }
     }
-	/// override to implement creation of dialog controls
-	override void init() {
+    /// override to implement creation of dialog controls
+    override void init() {
         TextWidget msg = new MultilineTextWidget("msg", _message);
         padding(Rect(10, 10, 10, 10));
         msg.padding(Rect(10, 10, 10, 10));
@@ -40,9 +40,9 @@ class InputBox : Dialog {
         editor.contentChange = delegate(EditableContent content) {
             _text = content.text;
         };
-		addChild(msg);
-		addChild(editor);
-		addChild(createButtonsPanel(_actions, _defaultButtonIndex, 0));
+        addChild(msg);
+        addChild(editor);
+        addChild(createButtonsPanel(_actions, _defaultButtonIndex, 0));
     }
 
 }

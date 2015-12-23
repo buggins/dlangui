@@ -23,22 +23,22 @@ import dlangui.widgets.editors;
 import dlangui.widgets.styles;
 
 class SourceEdit : EditBox {
-	this(string ID) {
-		super(ID);
-		fontFace = "Menlo,Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console";
-		//fontFace = "Consolas,Lucida Console,Courier New";
-		fontFamily = FontFamily.MonoSpace;
-		fontSize = makePointSize(10);
-		layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+    this(string ID) {
+        super(ID);
+        fontFace = "Menlo,Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console";
+        //fontFace = "Consolas,Lucida Console,Courier New";
+        fontFamily = FontFamily.MonoSpace;
+        fontSize = makePointSize(10);
+        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
         minFontSize(9).maxFontSize(75); // allow font zoom with Ctrl + MouseWheel
         showModificationMarks = true;
 
         _showLineNumbers = true;
 
-	}
-	this() {
-		this("SRCEDIT");
-	}
+    }
+    this() {
+        this("SRCEDIT");
+    }
     protected string _filename;
     @property string filename() {
         return _filename;
@@ -55,18 +55,18 @@ class SourceEdit : EditBox {
         return false;
     }
 
-	bool save(string fn) {
-		if (content.save(fn)) {
-			_filename = fn;
-			requestLayout();
-			window.update();
-			return true;
-		}
-		// failed
-		requestLayout();
-		window.update();
-		_filename = null;
-		return false;
-	}
+    bool save(string fn) {
+        if (content.save(fn)) {
+            _filename = fn;
+            requestLayout();
+            window.update();
+            return true;
+        }
+        // failed
+        requestLayout();
+        window.update();
+        _filename = null;
+        return false;
+    }
 
 }

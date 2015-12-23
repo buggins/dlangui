@@ -71,10 +71,10 @@ struct Collection(T, bool ownItems = false) {
             static if (is(T == class) || is(T == struct)) {
                 // clear items
                 for (size_t i = newSize; i < _len; i++) {
-					static if (ownItems)
-						destroy(_items[i]);
+                    static if (ownItems)
+                        destroy(_items[i]);
                     _items[i] = T.init;
-				}
+                }
             }
         } else if (newSize > _len) {
             // expand
@@ -105,11 +105,11 @@ struct Collection(T, bool ownItems = false) {
         _items[index] = item;
         _len++;
     }
-	/// add all items from other collection
-	void addAll(ref Collection!(T, ownItems) v) {
-		for (int i = 0; i < v.length; i++)
-			add(v[i]);
-	}
+    /// add all items from other collection
+    void addAll(ref Collection!(T, ownItems) v) {
+        for (int i = 0; i < v.length; i++)
+            add(v[i]);
+    }
     /// support for appending (~=, +=) and removing by value (-=)
     ref Collection opOpAssign(string op)(T item) {
         static if (op.equal("~") || op.equal("+")) {
@@ -147,8 +147,8 @@ struct Collection(T, bool ownItems = false) {
         if (index == size_t.max)
             return false;
         T res = remove(index);
-		static if (ownItems)
-			destroy(res);
+        static if (ownItems)
+            destroy(res);
         return true;
     }
     /// support of foreach with reference
@@ -166,10 +166,10 @@ struct Collection(T, bool ownItems = false) {
         static if (is(T == class) || is(T == struct)) {
             /// clear references
             for(size_t i = 0; i < _len; i++) {
-				static if (ownItems)
-					destroy(_items[i]);
+                static if (ownItems)
+                    destroy(_items[i]);
                 _items[i] = T.init;
-			}
+            }
         }
         _len = 0;
         _items = null;

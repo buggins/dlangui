@@ -71,8 +71,8 @@ struct DockSpace {
                 _resizer =  new ResizerWidget("right_resizer", Orientation.Horizontal);
                 break;
         }
-		_resizer.visibility = Visibility.Gone;
-		_resizer.resizeEvent = &onResize;
+        _resizer.visibility = Visibility.Gone;
+        _resizer.resizeEvent = &onResize;
         return _resizer;
     }
     /// host to be layed out
@@ -134,7 +134,7 @@ struct DockSpace {
     }
     protected int _dragStartSpace;
     protected int _dragStartPosition;
-	protected void onResize(ResizerWidget source, ResizerEventType event, int newPosition) {
+    protected void onResize(ResizerWidget source, ResizerEventType event, int newPosition) {
         if (!_space)
             return;
         if (event == ResizerEventType.StartDragging) {
@@ -199,10 +199,10 @@ class DockHost : WidgetGroupDefaultDrawing {
         return res;
     }
 
-	protected int _resizeStartPos;
-	void onResize(ResizerWidget source, ResizerEventType event, int newPosition) {
+    protected int _resizeStartPos;
+    void onResize(ResizerWidget source, ResizerEventType event, int newPosition) {
         layout(_pos);
-	}
+    }
 
     this() {
         super("DOCK_HOST");

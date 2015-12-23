@@ -34,12 +34,12 @@ interface ListAdapter {
     @property int itemCount() const;
     /// return list item widget by item index
     Widget itemWidget(int index);
-	/// return list item's state flags
-	uint itemState(int index) const;
-	/// set one or more list item's state flags, returns updated state
-	uint setItemState(int index, uint flags);
-	/// reset one or more list item's state flags, returns updated state
-	uint resetItemState(int index, uint flags);
+    /// return list item's state flags
+    uint itemState(int index) const;
+    /// set one or more list item's state flags, returns updated state
+    uint setItemState(int index, uint flags);
+    /// reset one or more list item's state flags, returns updated state
+    uint resetItemState(int index, uint flags);
     /// returns integer item id by index (if supported)
     int itemId(int index) const;
     /// returns string item id by index (if supported)
@@ -90,17 +90,17 @@ class ListAdapterBase : ListAdapter {
         return null;
     }
 
-	/// return list item's state flags
-	override uint itemState(int index) const {
+    /// return list item's state flags
+    override uint itemState(int index) const {
         // override it
         return State.Enabled;
     }
-	/// set one or more list item's state flags, returns updated state
-	override uint setItemState(int index, uint flags) {
+    /// set one or more list item's state flags, returns updated state
+    override uint setItemState(int index, uint flags) {
         return 0;
     }
-	/// reset one or more list item's state flags, returns updated state
-	override uint resetItemState(int index, uint flags) {
+    /// reset one or more list item's state flags, returns updated state
+    override uint resetItemState(int index, uint flags) {
         return 0;
     }
 
@@ -128,18 +128,18 @@ class WidgetListAdapter : ListAdapterBase {
     override Widget itemWidget(int index) {
         return _widgets.get(index);
     }
-	/// return list item's state flags
-	override uint itemState(int index) const {
-		return _widgets.get(index).state;
-	}
-	/// set one or more list item's state flags, returns updated state
-	override uint setItemState(int index, uint flags) {
-		return _widgets.get(index).setState(flags).state;
-	}
-	/// reset one or more list item's state flags, returns updated state
-	override uint resetItemState(int index, uint flags) {
-		return _widgets.get(index).resetState(flags).state;
-	}
+    /// return list item's state flags
+    override uint itemState(int index) const {
+        return _widgets.get(index).state;
+    }
+    /// set one or more list item's state flags, returns updated state
+    override uint setItemState(int index, uint flags) {
+        return _widgets.get(index).setState(flags).state;
+    }
+    /// reset one or more list item's state flags, returns updated state
+    override uint resetItemState(int index, uint flags) {
+        return _widgets.get(index).resetState(flags).state;
+    }
     /// add item
     WidgetListAdapter add(Widget item, int index = -1) {
         _widgets.insert(item, index);
@@ -347,29 +347,29 @@ class StringListAdapter : ListAdapterBase {
         return _widget;
     }
 
-	/// return list item's state flags
-	override uint itemState(int index) const {
+    /// return list item's state flags
+    override uint itemState(int index) const {
         if (index < 0 || index >= _items.length)
             return 0;
         return _states[index];
-	}
+    }
 
-	/// set one or more list item's state flags, returns updated state
-	override uint setItemState(int index, uint flags) {
+    /// set one or more list item's state flags, returns updated state
+    override uint setItemState(int index, uint flags) {
         updateStatesLength();
         _states[index] |= flags;
         if (_widget !is null && _lastItemIndex == index)
             _widget.state = _states[index];
         return _states[index];
-	}
-	/// reset one or more list item's state flags, returns updated state
-	override uint resetItemState(int index, uint flags) {
+    }
+    /// reset one or more list item's state flags, returns updated state
+    override uint resetItemState(int index, uint flags) {
         updateStatesLength();
         _states[index] &= ~flags;
         if (_widget !is null && _lastItemIndex == index)
             _widget.state = _states[index];
-		return _states[index];
-	}
+        return _states[index];
+    }
 
     ~this() {
         //Log.d("Destroying StringListAdapter");
@@ -426,20 +426,20 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
     protected Rect _clientRc;
     /// total height of all items for Vertical orientation, or width for Horizontal
     protected int _totalSize;
-	/// item with Hover state, -1 if no such item
-	protected int _hoverItemIndex;
-	/// item with Selected state, -1 if no such item
-	protected int _selectedItemIndex;
+    /// item with Hover state, -1 if no such item
+    protected int _hoverItemIndex;
+    /// item with Selected state, -1 if no such item
+    protected int _selectedItemIndex;
 
-	/// when true, mouse hover selects underlying item
-	protected bool _selectOnHover;
-	/// when true, mouse hover selects underlying item
-	@property bool selectOnHover() { return _selectOnHover; }
-	/// when true, mouse hover selects underlying item
-	@property ListWidget selectOnHover(bool select) { _selectOnHover = select; return this; }
+    /// when true, mouse hover selects underlying item
+    protected bool _selectOnHover;
+    /// when true, mouse hover selects underlying item
+    @property bool selectOnHover() { return _selectOnHover; }
+    /// when true, mouse hover selects underlying item
+    @property ListWidget selectOnHover(bool select) { _selectOnHover = select; return this; }
 
-	/// if true, generate itemClicked on mouse down instead mouse up event
-	protected bool _clickOnButtonDown;
+    /// if true, generate itemClicked on mouse down instead mouse up event
+    protected bool _clickOnButtonDown;
 
     /// returns rectangle for item (not scrolled, first item starts at 0,0)
     Rect itemRectNoScroll(int index) {
@@ -533,48 +533,48 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
         this(null);
     }
     /// create with ID parameter
-	this(string ID, Orientation orientation = Orientation.Vertical) {
-		super(ID);
+    this(string ID, Orientation orientation = Orientation.Vertical) {
+        super(ID);
         _orientation = orientation;
         focusable = true;
-		_hoverItemIndex = -1;
-		_selectedItemIndex = -1;
+        _hoverItemIndex = -1;
+        _selectedItemIndex = -1;
         _scrollbar = new ScrollBar("listscroll", orientation);
         _scrollbar.visibility = Visibility.Gone;
         _scrollbar.scrollEvent = &onScrollEvent;
         addChild(_scrollbar);
-	}
+    }
 
-	protected void setHoverItem(int index) {
-		if (_hoverItemIndex == index)
-			return;
-		if (_hoverItemIndex != -1) {
-			_adapter.resetItemState(_hoverItemIndex, State.Hovered);
-			invalidate();
-		}
-		_hoverItemIndex = index;
-		if (_hoverItemIndex != -1) {
-			_adapter.setItemState(_hoverItemIndex, State.Hovered);
-			invalidate();
-		}
-	}
+    protected void setHoverItem(int index) {
+        if (_hoverItemIndex == index)
+            return;
+        if (_hoverItemIndex != -1) {
+            _adapter.resetItemState(_hoverItemIndex, State.Hovered);
+            invalidate();
+        }
+        _hoverItemIndex = index;
+        if (_hoverItemIndex != -1) {
+            _adapter.setItemState(_hoverItemIndex, State.Hovered);
+            invalidate();
+        }
+    }
 
     /// item list is changed
     override void onAdapterChange(ListAdapter source) {
         requestLayout();
     }
 
-	/// override to handle change of selection
-	protected void selectionChanged(int index, int previouslySelectedItem = -1) {
+    /// override to handle change of selection
+    protected void selectionChanged(int index, int previouslySelectedItem = -1) {
         if (itemSelected.assigned)
             itemSelected(this, index);
-	}
+    }
 
-	/// override to handle mouse up on item
-	protected void itemClicked(int index) {
+    /// override to handle mouse up on item
+    protected void itemClicked(int index) {
         if (itemClick.assigned)
             itemClick(this, index);
-	}
+    }
 
     /// allow to override state for updating of items
     // currently used to treat main menu items with opened submenu as focused
@@ -583,7 +583,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
     }
 
     protected void updateSelectedItemFocus() {
-		if (_selectedItemIndex != -1) {
+        if (_selectedItemIndex != -1) {
             if ((_adapter.itemState(_selectedItemIndex) & State.Focused) != (overrideStateForItem & State.Focused)) {
                 if (overrideStateForItem & State.Focused)
                     _adapter.setItemState(_selectedItemIndex, State.Focused);
@@ -671,7 +671,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
         return true;
     }
 
-	bool selectItem(int index, int disabledItemsSkipDirection) {
+    bool selectItem(int index, int disabledItemsSkipDirection) {
         debug Log.d("selectItem ", index, " skipDirection=", disabledItemsSkipDirection);
         if (index == -1 || disabledItemsSkipDirection == 0)
             return selectItem(index);
@@ -697,27 +697,27 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
         selectItem(index);
     }
 
-	bool selectItem(int index) {
+    bool selectItem(int index) {
         debug Log.d("selectItem ", index);
-		if (_selectedItemIndex == index) {
+        if (_selectedItemIndex == index) {
             updateSelectedItemFocus();
             makeSelectionVisible();
             return true;
         }
         if (index != -1 && !itemEnabled(index))
             return false;
-		if (_selectedItemIndex != -1) {
-			_adapter.resetItemState(_selectedItemIndex, State.Selected | State.Focused);
-			invalidate();
-		}
-		_selectedItemIndex = index;
-		if (_selectedItemIndex != -1) {
+        if (_selectedItemIndex != -1) {
+            _adapter.resetItemState(_selectedItemIndex, State.Selected | State.Focused);
+            invalidate();
+        }
+        _selectedItemIndex = index;
+        if (_selectedItemIndex != -1) {
             makeSelectionVisible();
-			_adapter.setItemState(_selectedItemIndex, State.Selected | (overrideStateForItem & State.Focused));
-			invalidate();
-		}
+            _adapter.setItemState(_selectedItemIndex, State.Selected | (overrideStateForItem & State.Focused));
+            invalidate();
+        }
         return true;
-	}
+    }
 
     ~this() {
         if (_adapter)
@@ -778,7 +778,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
 
         int sbsize = _orientation == Orientation.Vertical ? _scrollbar.measuredWidth : _scrollbar.measuredHeight;
         // measure children
-		Point sz;
+        Point sz;
         _sbsz.destroy();
         for (int i = 0; i < itemCount; i++) {
             Widget w = itemWidget(i);
@@ -972,8 +972,8 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
         Rect rc = _pos;
         applyMargins(rc);
         applyPadding(rc);
-		auto saver = ClipRectSaver(buf, rc, alpha);
-		// draw scrollbar
+        auto saver = ClipRectSaver(buf, rc, alpha);
+        // draw scrollbar
         if (_needScrollbar)
             _scrollbar.onDraw(buf);
 
@@ -996,9 +996,9 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
                     continue;
                 w.measure(itemrc.width, itemrc.height);
                 w.layout(itemrc);
-			    w.onDraw(buf);
+                w.onDraw(buf);
             }
-		}
+        }
     }
 
     /// list navigation using keys
@@ -1067,15 +1067,15 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
     /// process mouse event; return true if event is processed by widget.
     override bool onMouseEvent(MouseEvent event) {
         //Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
-		if (event.action == MouseAction.Leave || event.action == MouseAction.Cancel) {
-			setHoverItem(-1);
-			return true;
-		}
+        if (event.action == MouseAction.Leave || event.action == MouseAction.Cancel) {
+            setHoverItem(-1);
+            return true;
+        }
         // delegate processing of mouse wheel to scrollbar widget
         if (event.action == MouseAction.Wheel && _needScrollbar) {
             return _scrollbar.onMouseEvent(event);
         }
-		// support onClick
+        // support onClick
         Rect rc = _pos;
         applyMargins(rc);
         applyPadding(rc);
@@ -1094,29 +1094,29 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
             itemrc.top += rc.top - scrollOffset.y;
             itemrc.bottom += rc.top - scrollOffset.y;
             if (itemrc.isPointInside(Point(event.x, event.y))) {
-				if ((event.flags & (MouseFlag.LButton || MouseFlag.RButton)) || _selectOnHover) {
-					if (_selectedItemIndex != i && itemEnabled(i)) {
-						int prevSelection = _selectedItemIndex;
-						selectItem(i);
-						setHoverItem(-1);
-						selectionChanged(_selectedItemIndex, prevSelection);
-					}
-				} else {
+                if ((event.flags & (MouseFlag.LButton || MouseFlag.RButton)) || _selectOnHover) {
+                    if (_selectedItemIndex != i && itemEnabled(i)) {
+                        int prevSelection = _selectedItemIndex;
+                        selectItem(i);
+                        setHoverItem(-1);
+                        selectionChanged(_selectedItemIndex, prevSelection);
+                    }
+                } else {
                     if (itemEnabled(i))
-					    setHoverItem(i);
+                        setHoverItem(i);
                 }
-				if (event.button == MouseFlag.LButton || event.button == MouseFlag.RButton) {
-					if ((_clickOnButtonDown && event.action == MouseAction.ButtonDown) || (!_clickOnButtonDown && event.action == MouseAction.ButtonUp)) {
+                if (event.button == MouseFlag.LButton || event.button == MouseFlag.RButton) {
+                    if ((_clickOnButtonDown && event.action == MouseAction.ButtonDown) || (!_clickOnButtonDown && event.action == MouseAction.ButtonUp)) {
                         if (itemEnabled(i)) {
-						    itemClicked(i);
-						    if (_clickOnButtonDown)
-							    event.doNotTrackButtonDown = true;
+                            itemClicked(i);
+                            if (_clickOnButtonDown)
+                                event.doNotTrackButtonDown = true;
                         }
-					}
-				}
-				return true;
+                    }
+                }
+                return true;
             }
-		}
+        }
         return true;
     }
 

@@ -31,19 +31,19 @@ import std.string;
 import std.array;
 
 derelict.util.exception.ShouldThrow gl3MissingSymFunc( string symName ) {
-	import std.algorithm : equal;
-	foreach(s; ["glGetError", "glShaderSource", "glCompileShader",
-			"glGetShaderiv", "glGetShaderInfoLog", "glGetString",
-			"glCreateProgram", "glUseProgram", "glDeleteProgram",
-			"glDeleteShader", "glEnable", "glDisable", "glBlendFunc",
-			"glUniformMatrix4fv", "glGetAttribLocation", "glGetUniformLocation",
-			"glGenVertexArrays", "glBindVertexArray", "glBufferData",
-			"glBindBuffer", "glBufferSubData"]) {
-		if (symName.equal(s)) // Symbol is used
-			return derelict.util.exception.ShouldThrow.Yes;
-	}
-	// Don't throw for unused symbol
-	return derelict.util.exception.ShouldThrow.No;
+    import std.algorithm : equal;
+    foreach(s; ["glGetError", "glShaderSource", "glCompileShader",
+            "glGetShaderiv", "glGetShaderInfoLog", "glGetString",
+            "glCreateProgram", "glUseProgram", "glDeleteProgram",
+            "glDeleteShader", "glEnable", "glDisable", "glBlendFunc",
+            "glUniformMatrix4fv", "glGetAttribLocation", "glGetUniformLocation",
+            "glGenVertexArrays", "glBindVertexArray", "glBufferData",
+            "glBindBuffer", "glBufferSubData"]) {
+        if (symName.equal(s)) // Symbol is used
+            return derelict.util.exception.ShouldThrow.Yes;
+    }
+    // Don't throw for unused symbol
+    return derelict.util.exception.ShouldThrow.No;
 }
 
 /* For reporting OpenGL errors, it's nicer to get a human-readable symbolic name for the
@@ -125,7 +125,7 @@ class GLProgram {
         sourceCode ~= src;
         compatibilityFixes(sourceCode, type);
 
-		Log.d("compileShader: glsl = ", glslversion, ", type: ", (type == GL_VERTEX_SHADER ? "GL_VERTEX_SHADER" : (type == GL_FRAGMENT_SHADER ? "GL_FRAGMENT_SHADER" : "UNKNOWN")));//, " code:\n", sourceCode);
+        Log.d("compileShader: glsl = ", glslversion, ", type: ", (type == GL_VERTEX_SHADER ? "GL_VERTEX_SHADER" : (type == GL_FRAGMENT_SHADER ? "GL_FRAGMENT_SHADER" : "UNKNOWN")));//, " code:\n", sourceCode);
         GLuint shader = glCreateShader(type);
         const char * psrc = sourceCode.toStringz;
         glShaderSource(shader, 1, &psrc, null);
@@ -150,7 +150,7 @@ class GLProgram {
     }
 
     bool compile() {
-		glslversion = std.string.fromStringz(glGetString(GL_SHADING_LANGUAGE_VERSION)).dup;
+        glslversion = std.string.fromStringz(glGetString(GL_SHADING_LANGUAGE_VERSION)).dup;
 
         glslversionString.length = 0;
         glslversionInt = 0;
@@ -194,7 +194,7 @@ class GLProgram {
         return !error;
     }
 
-	/// override to init shader code locations
+    /// override to init shader code locations
     abstract bool initLocations();
     
     ~this() {
@@ -209,7 +209,7 @@ class GLProgram {
         initialized = false;
     }
 
-	/// returns true if program is ready for use (compiles program if not yet compiled)
+    /// returns true if program is ready for use (compiles program if not yet compiled)
     bool check()
     {
         if (error)
@@ -220,31 +220,31 @@ class GLProgram {
         return true;
     }
 
-	/// binds program to current context
+    /// binds program to current context
     void bind() {
         checkgl!glUseProgram(program);
     }
 
-	/// unbinds program from current context
+    /// unbinds program from current context
     void unbind() {
         checkgl!glUseProgram(0);
     }
 
-	/// get uniform location from program, returns -1 if location is not found
-	int getUniformLocation(string variableName) {
+    /// get uniform location from program, returns -1 if location is not found
+    int getUniformLocation(string variableName) {
         int res = checkgl!glGetUniformLocation(program, variableName.toStringz);
-		if (res == -1)
-			Log.e("glGetUniformLocation failed for " ~ variableName);
-		return res;
-	}
+        if (res == -1)
+            Log.e("glGetUniformLocation failed for " ~ variableName);
+        return res;
+    }
 
-	/// get attribute location from program, returns -1 if location is not found
-	int getAttribLocation(string variableName) {
+    /// get attribute location from program, returns -1 if location is not found
+    int getAttribLocation(string variableName) {
         int res = checkgl!glGetAttribLocation(program, variableName.toStringz);
-		if (res == -1)
-			Log.e("glGetAttribLocation failed for " ~ variableName);
-		return res;
-	}
+        if (res == -1)
+            Log.e("glGetAttribLocation failed for " ~ variableName);
+        return res;
+    }
 
 }
 
@@ -292,8 +292,8 @@ class SolidFillProgram : GLProgram {
     override bool initLocations() {
         matrixLocation = getUniformLocation("matrix");
         vertexLocation = getAttribLocation("vertex");
-		colAttrLocation = getAttribLocation("colAttr");
-		return matrixLocation >= 0 && vertexLocation >= 0 && colAttrLocation >= 0;
+        colAttrLocation = getAttribLocation("colAttr");
+        return matrixLocation >= 0 && vertexLocation >= 0 && colAttrLocation >= 0;
     }
 
     bool execute(float[] vertices, float[] colors) {
@@ -458,86 +458,86 @@ __gshared GLSupport _glSupport;
 
 /// initialize OpenGL suport helper (call when current OpenGL context is initialized)
 bool initGLSupport(bool legacy = false) {
-	import dlangui.platforms.common.platform : setOpenglEnabled;
-	if (_glSupport && _glSupport.valid)
-		return true;
-	static bool DERELICT_GL3_RELOADED;
-	static bool gl3ReloadedOk;
-	static bool glReloadedOk;
-	if (!DERELICT_GL3_RELOADED) {
-		DERELICT_GL3_RELOADED = true;
-		try {
-			Log.v("Reloading DerelictGL3");
-			import derelict.opengl3.gl3;
-			DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
-			DerelictGL3.reload();
-			gl3ReloadedOk = true;
-		} catch (Exception e) {
-			Log.e("Derelict exception while reloading DerelictGL3", e);
-		}
-		try {
-			Log.v("Reloading DerelictGL");
-			import derelict.opengl3.gl;
-			DerelictGL.missingSymbolCallback = &gl3MissingSymFunc;
-			DerelictGL.reload();
-			glReloadedOk = true;
-		} catch (Exception e) {
-			Log.e("Derelict exception while reloading DerelictGL", e);
-		}
-	}
-	if (!gl3ReloadedOk && !glReloadedOk) {
-		Log.e("Neither DerelictGL3 nor DerelictGL were reloaded successfully");
-		return false;
-	}
-	if (!gl3ReloadedOk)
-		legacy = true;
-	else if (!glReloadedOk)
-		legacy = false;
-	if (!_glSupport) {
-		_glSupport = new GLSupport(legacy);
-		if (_glSupport.valid || _glSupport.initShaders()) {
-			Log.v("shaders are ok");
-			setOpenglEnabled();
-			Log.v("OpenGL is initialized ok");
-			return true;
-		} else {
-			Log.e("Failed to compile shaders");
-			// try opposite legacy flag
-			if (_glSupport.legacyMode == legacy) {
-				Log.i("Trying to reinit GLSupport with legacy flag ", !legacy);
-				_glSupport = new GLSupport(!legacy);
-				if (_glSupport.valid || _glSupport.initShaders()) {
-					Log.v("shaders are ok");
-					setOpenglEnabled();
-					Log.v("OpenGL is initialized ok");
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	if (_glSupport.valid || _glSupport.initShaders()) {
-		setOpenglEnabled();
-		return true;
-	} else {
-		Log.e("Failed to compile shaders");
-		return false;
-	}
+    import dlangui.platforms.common.platform : setOpenglEnabled;
+    if (_glSupport && _glSupport.valid)
+        return true;
+    static bool DERELICT_GL3_RELOADED;
+    static bool gl3ReloadedOk;
+    static bool glReloadedOk;
+    if (!DERELICT_GL3_RELOADED) {
+        DERELICT_GL3_RELOADED = true;
+        try {
+            Log.v("Reloading DerelictGL3");
+            import derelict.opengl3.gl3;
+            DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
+            DerelictGL3.reload();
+            gl3ReloadedOk = true;
+        } catch (Exception e) {
+            Log.e("Derelict exception while reloading DerelictGL3", e);
+        }
+        try {
+            Log.v("Reloading DerelictGL");
+            import derelict.opengl3.gl;
+            DerelictGL.missingSymbolCallback = &gl3MissingSymFunc;
+            DerelictGL.reload();
+            glReloadedOk = true;
+        } catch (Exception e) {
+            Log.e("Derelict exception while reloading DerelictGL", e);
+        }
+    }
+    if (!gl3ReloadedOk && !glReloadedOk) {
+        Log.e("Neither DerelictGL3 nor DerelictGL were reloaded successfully");
+        return false;
+    }
+    if (!gl3ReloadedOk)
+        legacy = true;
+    else if (!glReloadedOk)
+        legacy = false;
+    if (!_glSupport) {
+        _glSupport = new GLSupport(legacy);
+        if (_glSupport.valid || _glSupport.initShaders()) {
+            Log.v("shaders are ok");
+            setOpenglEnabled();
+            Log.v("OpenGL is initialized ok");
+            return true;
+        } else {
+            Log.e("Failed to compile shaders");
+            // try opposite legacy flag
+            if (_glSupport.legacyMode == legacy) {
+                Log.i("Trying to reinit GLSupport with legacy flag ", !legacy);
+                _glSupport = new GLSupport(!legacy);
+                if (_glSupport.valid || _glSupport.initShaders()) {
+                    Log.v("shaders are ok");
+                    setOpenglEnabled();
+                    Log.v("OpenGL is initialized ok");
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    if (_glSupport.valid || _glSupport.initShaders()) {
+        setOpenglEnabled();
+        return true;
+    } else {
+        Log.e("Failed to compile shaders");
+        return false;
+    }
 }
 
 /// OpenGL suport helper
 class GLSupport {
 
-	private bool _legacyMode;
-	@property bool legacyMode() { return _legacyMode; }
+    private bool _legacyMode;
+    @property bool legacyMode() { return _legacyMode; }
 
-	this(bool legacy = false) {
-		if (legacy && !glLightfv) {
-			Log.w("GLSupport legacy API is not supported");
-			legacy = false;
-		}
-		_legacyMode = legacy;
-	}
+    this(bool legacy = false) {
+        if (legacy && !glLightfv) {
+            Log.w("GLSupport legacy API is not supported");
+            legacy = false;
+        }
+        _legacyMode = legacy;
+    }
 
     TextureProgram _textureProgram;
     SolidFillProgram _solidFillProgram;
@@ -574,15 +574,15 @@ class GLSupport {
         Log.d("Uniniting shaders");
         if (_solidFillProgram !is null) {
             destroy(_solidFillProgram);
-		    _solidFillProgram = null;
+            _solidFillProgram = null;
         }
         if (_lineProgram !is null) {
             destroy(_lineProgram);
-		    _lineProgram = null;
+            _lineProgram = null;
         }
         if (_textureProgram !is null) {
             destroy(_textureProgram);
-		    _textureProgram = null;
+            _textureProgram = null;
         }
         return true;
     }
@@ -599,9 +599,9 @@ class GLSupport {
         QMatrix4x4 matrix2;
         matrix2.ortho(0, bufferDx, 0, bufferDy, 0.5f, 5.0f);
         if (rotationAngle) {
-		    matrix2.translate(rotationX, rotationY, 0);
-		    matrix2.rotate(rotationAngle, 0, 0, 1);
-		    matrix2.translate(-rotationX, -rotationY, 0);
+            matrix2.translate(rotationX, rotationY, 0);
+            matrix2.rotate(rotationAngle, 0, 0, 1);
+            matrix2.translate(-rotationX, -rotationY, 0);
         }
         matrix2.copyDataTo(m);
         */
@@ -660,29 +660,29 @@ class GLSupport {
             x1,y1,Z_2D,
             x1,y0,Z_2D];
 
-		if (_legacyMode) {
-			glColor4f(1,1,1,1);
-			glDisable(GL_CULL_FACE);
-			glEnable(GL_BLEND);
-			glDisable(GL_ALPHA_TEST);
-			checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-			checkgl!glEnableClientState(GL_VERTEX_ARRAY);
-			checkgl!glEnableClientState(GL_COLOR_ARRAY);
-			checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
-			checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors);
+        if (_legacyMode) {
+            glColor4f(1,1,1,1);
+            glDisable(GL_CULL_FACE);
+            glEnable(GL_BLEND);
+            glDisable(GL_ALPHA_TEST);
+            checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            checkgl!glEnableClientState(GL_VERTEX_ARRAY);
+            checkgl!glEnableClientState(GL_COLOR_ARRAY);
+            checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
+            checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors);
 
-			checkgl!glDrawArrays(GL_TRIANGLES, 0, 6);
+            checkgl!glDrawArrays(GL_TRIANGLES, 0, 6);
 
-			glDisableClientState(GL_COLOR_ARRAY);
-			glDisableClientState(GL_VERTEX_ARRAY);
-			glDisable(GL_ALPHA_TEST);
-			glDisable(GL_BLEND);
-		} else {
-	        if (_solidFillProgram !is null) {
-	            _solidFillProgram.execute(vertices, cast(float[])colors);
-	        } else
-	            Log.e("No program");
-		}
+            glDisableClientState(GL_COLOR_ARRAY);
+            glDisableClientState(GL_VERTEX_ARRAY);
+            glDisable(GL_ALPHA_TEST);
+            glDisable(GL_BLEND);
+        } else {
+            if (_solidFillProgram !is null) {
+                _solidFillProgram.execute(vertices, cast(float[])colors);
+            } else
+                Log.e("No program");
+        }
     }
 
     void drawColorAndTextureRect(Tex2D texture, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color, bool linear) {
@@ -716,36 +716,36 @@ class GLSupport {
             dstx1,dsty0,Z_2D];
         float[2 * 6] texcoords = [srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0];
 
-		if (_legacyMode) {
-			glDisable(GL_CULL_FACE);
-			glEnable(GL_TEXTURE_2D);
-			texture.setup();
-			texture.setSamplerParams(linear);
+        if (_legacyMode) {
+            glDisable(GL_CULL_FACE);
+            glEnable(GL_TEXTURE_2D);
+            texture.setup();
+            texture.setSamplerParams(linear);
 
-			glColor4f(1,1,1,1);
-			glDisable(GL_ALPHA_TEST);
+            glColor4f(1,1,1,1);
+            glDisable(GL_ALPHA_TEST);
 
-			glEnable(GL_BLEND);
-			checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glEnable(GL_BLEND);
+            checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-			checkgl!glEnableClientState(GL_COLOR_ARRAY);
-			checkgl!glEnableClientState(GL_VERTEX_ARRAY);
-			checkgl!glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-			checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
-			checkgl!glTexCoordPointer(2, GL_FLOAT, 0, cast(void*)texcoords.ptr);
-			checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
+            checkgl!glEnableClientState(GL_COLOR_ARRAY);
+            checkgl!glEnableClientState(GL_VERTEX_ARRAY);
+            checkgl!glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+            checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
+            checkgl!glTexCoordPointer(2, GL_FLOAT, 0, cast(void*)texcoords.ptr);
+            checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
 
-			checkgl!glDrawArrays(GL_TRIANGLES, 0, 6);
+            checkgl!glDrawArrays(GL_TRIANGLES, 0, 6);
 
-			glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-			glDisableClientState(GL_VERTEX_ARRAY);
-			glDisableClientState(GL_COLOR_ARRAY);
-			glDisable(GL_BLEND);
-			glDisable(GL_ALPHA_TEST);
-			glDisable(GL_TEXTURE_2D);
-		} else {
-        	_textureProgram.execute(vertices, cast(float[])colors, texcoords, texture, linear);
-		}
+            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+            glDisableClientState(GL_VERTEX_ARRAY);
+            glDisableClientState(GL_COLOR_ARRAY);
+            glDisable(GL_BLEND);
+            glDisable(GL_ALPHA_TEST);
+            glDisable(GL_TEXTURE_2D);
+        } else {
+            _textureProgram.execute(vertices, cast(float[])colors, texcoords, texture, linear);
+        }
         //drawColorAndTextureRect(vertices, texcoords, colors, texture, linear);
     }
 
@@ -844,49 +844,49 @@ class GLSupport {
     //private float[16] matrix;
     private mat4 _projectionMatrix;
 
-	@property ref mat4 projectionMatrix() {
-		return _projectionMatrix;
-	}
+    @property ref mat4 projectionMatrix() {
+        return _projectionMatrix;
+    }
 
     void setOrthoProjection(Rect windowRect, Rect view) {
-		flushGL();
+        flushGL();
         bufferDx = windowRect.width;
         bufferDy = windowRect.height;
-		_projectionMatrix.setOrtho(view.left, view.right, view.top, view.bottom, 0.5f, 50.0f);
+        _projectionMatrix.setOrtho(view.left, view.right, view.top, view.bottom, 0.5f, 50.0f);
         //QMatrix4x4_ortho(view.left, view.right, view.top, view.bottom, 0.5f, 50.0f);
-		//myGlOrtho(0, dx, 0, dy, 0.1f, 5.0f);
+        //myGlOrtho(0, dx, 0, dy, 0.1f, 5.0f);
 
-		if (_legacyMode) {
-			glMatrixMode(GL_PROJECTION);
-			//checkgl!glPushMatrix();
-			//glLoadIdentity();
-			glLoadMatrixf(_projectionMatrix.m.ptr);
-			//glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
-			glMatrixMode(GL_MODELVIEW);
-			//checkgl!glPushMatrix();
-			glLoadIdentity();
-		}
+        if (_legacyMode) {
+            glMatrixMode(GL_PROJECTION);
+            //checkgl!glPushMatrix();
+            //glLoadIdentity();
+            glLoadMatrixf(_projectionMatrix.m.ptr);
+            //glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
+            glMatrixMode(GL_MODELVIEW);
+            //checkgl!glPushMatrix();
+            glLoadIdentity();
+        }
         checkgl!glViewport(view.left, currentFBO ? view.top : windowRect.height - view.bottom, view.width, view.height);
     }
 
     void setPerspectiveProjection(Rect windowRect, Rect view, float fieldOfView, float nearPlane, float farPlane) {
-		flushGL();
+        flushGL();
         bufferDx = windowRect.width;
         bufferDy = windowRect.height;
-		float aspectRatio = cast(float)view.width / cast(float)view.height;
-		//QMatrix4x4_perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
-		_projectionMatrix.setPerspective(fieldOfView, aspectRatio, nearPlane, farPlane);
-		if (_legacyMode) {
-			glMatrixMode(GL_PROJECTION);
-			//checkgl!glPushMatrix();
-			//glLoadIdentity();
-			glLoadMatrixf(_projectionMatrix.m.ptr);
-			//glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
-			glMatrixMode(GL_MODELVIEW);
-			//checkgl!glPushMatrix();
-			glLoadIdentity();
-		}
-		checkgl!glViewport(view.left, currentFBO ? view.top : windowRect.height - view.bottom, view.width, view.height);
+        float aspectRatio = cast(float)view.width / cast(float)view.height;
+        //QMatrix4x4_perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
+        _projectionMatrix.setPerspective(fieldOfView, aspectRatio, nearPlane, farPlane);
+        if (_legacyMode) {
+            glMatrixMode(GL_PROJECTION);
+            //checkgl!glPushMatrix();
+            //glLoadIdentity();
+            glLoadMatrixf(_projectionMatrix.m.ptr);
+            //glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
+            glMatrixMode(GL_MODELVIEW);
+            //checkgl!glPushMatrix();
+            glLoadIdentity();
+        }
+        checkgl!glViewport(view.left, currentFBO ? view.top : windowRect.height - view.bottom, view.width, view.height);
     }
 }
 

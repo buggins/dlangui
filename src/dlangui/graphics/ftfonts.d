@@ -28,18 +28,18 @@ import std.utf;
 private struct FontDef {
     immutable FontFamily _family;
     immutable string _face;
-	immutable bool _italic;
-	immutable int _weight;
-	@property FontFamily family() { return _family; }
-	@property string face() { return _face; }
-	@property bool italic() { return _italic; }
-	@property int weight() { return _weight; }
-	this(FontFamily family, string face, bool italic, int weight) {
-		_family = family;
-		_face = face;
-		_italic = italic;
+    immutable bool _italic;
+    immutable int _weight;
+    @property FontFamily family() { return _family; }
+    @property string face() { return _face; }
+    @property bool italic() { return _italic; }
+    @property int weight() { return _weight; }
+    this(FontFamily family, string face, bool italic, int weight) {
+        _family = family;
+        _face = face;
+        _italic = italic;
         _weight = weight;
-	}
+    }
     bool opEquals(ref const FontDef v) const {
         return _family == v._family && _italic == v._italic && _weight == v._weight && _face.equal(v._face);
     }
@@ -54,7 +54,7 @@ private struct FontDef {
 }
 
 private class FontFileItem {
-	private FontList _activeFonts;
+    private FontList _activeFonts;
     private FT_Library _library;
     private FontDef _def;
     string[] _filenames;
@@ -123,8 +123,8 @@ class FreeTypeFontFile {
     @property int weight() { return _weight; }
     @property bool italic() { return _italic; }
 
-	debug private static __gshared int _instanceCount;
-	debug @property static int instanceCount() { return _instanceCount; }
+    debug private static __gshared int _instanceCount;
+    debug @property static int instanceCount() { return _instanceCount; }
     this(FT_Library library, string filename) {
         _library = library;
         _filename = filename;
@@ -133,19 +133,19 @@ class FreeTypeFontFile {
         _matrix.xy = 0;
         _matrix.yx = 0;
         debug ++_instanceCount;
-		debug(FontResources) Log.d("Created FreeTypeFontFile, count=", _instanceCount);
+        debug(FontResources) Log.d("Created FreeTypeFontFile, count=", _instanceCount);
     }
 
-	~this() {
+    ~this() {
         clear();
         debug --_instanceCount;
-		debug(FontResources) Log.d("Destroyed FreeTypeFontFile, count=", _instanceCount);
+        debug(FontResources) Log.d("Destroyed FreeTypeFontFile, count=", _instanceCount);
     }
 
     private static string familyName(FT_Face face)
     {
         string faceName = fromStringz(face.family_name).dup;
-		string styleName = fromStringz(face.style_name).dup;
+        string styleName = fromStringz(face.style_name).dup;
         if (faceName.equal("Arial") && styleName.equal("Narrow"))
             faceName ~= " Narrow";
         else if (styleName.equal("Condensed"))
@@ -159,16 +159,16 @@ class FreeTypeFontFile {
         if (error)
             return false;
         if ( _filename.endsWith(".pfb") || _filename.endsWith(".pfa") ) {
-        	string kernFile = _filename[0 .. $ - 4];
+            string kernFile = _filename[0 .. $ - 4];
             if (exists(kernFile ~ ".afm")) {
-        		kernFile ~= ".afm";
+                kernFile ~= ".afm";
             } else if (exists(kernFile ~ ".pfm" )) {
-        		kernFile ~= ".pfm";
-        	} else {
-        		kernFile.destroy();
-        	}
-        	if (kernFile.length > 0)
-        		error = FT_Attach_File(_face, kernFile.toStringz);
+                kernFile ~= ".pfm";
+            } else {
+                kernFile.destroy();
+            }
+            if (kernFile.length > 0)
+                error = FT_Attach_File(_face, kernFile.toStringz);
         }
         debug(FontResources) Log.d("Font file opened successfully");
         _slot = _face.glyph;
@@ -190,7 +190,7 @@ class FreeTypeFontFile {
         return true; // successfully opened
     }
 
-	/// find some suitable replacement for important characters missing in font
+    /// find some suitable replacement for important characters missing in font
     static dchar getReplacementChar(dchar code) {
         switch (code) {
             case UNICODE_SOFT_HYPHEN_CODE:
@@ -265,7 +265,7 @@ class FreeTypeFontFile {
         int glyph_index = getCharIndex(code, def_char);
         int flags = FT_LOAD_DEFAULT;
         const bool _drawMonochrome = _size < FontManager.minAnitialiasedFontSize;
-		SubpixelRenderingMode subpixel = _drawMonochrome ? SubpixelRenderingMode.None : FontManager.subpixelRenderingMode;
+        SubpixelRenderingMode subpixel = _drawMonochrome ? SubpixelRenderingMode.None : FontManager.subpixelRenderingMode;
         flags |= (!_drawMonochrome ? (subpixel ? FT_LOAD_TARGET_LCD : (FontManager.instance.hintingMode == HintingMode.Light ? FT_LOAD_TARGET_LIGHT : FT_LOAD_TARGET_NORMAL)) : FT_LOAD_TARGET_MONO);
         if (withImage)
             flags |= FT_LOAD_RENDER;
@@ -286,11 +286,11 @@ class FreeTypeFontFile {
         glyph.originY =   cast(byte)(_slot.metrics.horiBearingY >> 6);
         glyph.width =     cast(ubyte)(myabs(cast(int)(_slot.metrics.horiAdvance)) >> 6);
         glyph.subpixelMode = subpixel;
-		//glyph.glyphIndex = cast(ushort)code;
+        //glyph.glyphIndex = cast(ushort)code;
         if (withImage) {
             FT_Bitmap*  bitmap = &_slot.bitmap;
             ushort w = cast(ushort)(bitmap.width);
-			ubyte h = cast(ubyte)(bitmap.rows);
+            ubyte h = cast(ubyte)(bitmap.rows);
             glyph.blackBoxX = w;
             glyph.blackBoxY = h;
             int sz = w * cast(int)h;
@@ -317,11 +317,11 @@ class FreeTypeFontFile {
 
                 } else {
                     // antialiased
-					foreach(y; 0 .. h) {
-						foreach(x; 0 .. w) {
-							glyph.glyph[y * w + x] = _gamma256.correct(bitmap.buffer[y * bitmap.pitch + x]);
-						}
-					}
+                    foreach(y; 0 .. h) {
+                        foreach(x; 0 .. w) {
+                            glyph.glyph[y * w + x] = _gamma256.correct(bitmap.buffer[y * bitmap.pitch + x]);
+                        }
+                    }
                 }
             }
             static if (ENABLE_OPENGL) {
@@ -350,40 +350,40 @@ class FreeTypeFont : Font {
     private FontFileItem _fontItem;
     private Collection!(FreeTypeFontFile, true) _files;
 
-	debug static __gshared int _instanceCount;
-	debug @property static int instanceCount() { return _instanceCount; }
+    debug static __gshared int _instanceCount;
+    debug @property static int instanceCount() { return _instanceCount; }
 
-	/// need to call create() after construction to initialize font
+    /// need to call create() after construction to initialize font
     this(FontFileItem item, int size) {
         _fontItem = item;
         _size = size;
         _height = size;
         debug ++_instanceCount;
-		debug(resalloc) Log.d("Created font, count=", _instanceCount);
+        debug(resalloc) Log.d("Created font, count=", _instanceCount);
     }
 
-	/// do cleanup
-	~this() {
-		clear();
+    /// do cleanup
+    ~this() {
+        clear();
         debug --_instanceCount;
-		debug(resalloc) Log.d("Destroyed font, count=", _instanceCount);
-	}
-	
+        debug(resalloc) Log.d("Destroyed font, count=", _instanceCount);
+    }
+    
     private int _size;
     private int _height;
 
-	private GlyphCache _glyphCache;
+    private GlyphCache _glyphCache;
 
 
-	/// cleanup resources
+    /// cleanup resources
     override void clear() {
         _files.clear();
     }
 
-	uint getGlyphIndex(dchar code)
-	{
+    uint getGlyphIndex(dchar code)
+    {
         return 0;
-	}
+    }
 
     /// find glyph index for character
     bool findGlyph(dchar code, dchar def_char, ref FT_UInt index, ref FreeTypeFontFile file) {
@@ -397,18 +397,18 @@ class FreeTypeFont : Font {
         return false;
     }
 
-	override Glyph * getCharGlyph(dchar ch, bool withImage = true) {
+    override Glyph * getCharGlyph(dchar ch, bool withImage = true) {
         if (ch > 0xFFFF) // do not support unicode chars above 0xFFFF - due to cache limitations
             return null;
         //long measureStart = std.datetime.Clock.currStdTime;
-		Glyph * found = _glyphCache.find(cast(ushort)ch);
+        Glyph * found = _glyphCache.find(cast(ushort)ch);
         //long measureEnd = std.datetime.Clock.currStdTime;
         //long duration = measureEnd - measureStart;
         //if (duration > 10000)
         //if (duration > 10000)
         //    Log.d("ft _glyphCache.find took ", duration / 10, " ns");
-		if (found !is null)
-			return found;
+        if (found !is null)
+            return found;
         //Log.v("Glyph ", ch, " is not found in cache, getting from font");
         FT_UInt index;
         FreeTypeFontFile file;
@@ -420,34 +420,34 @@ class FreeTypeFont : Font {
         if (!file.getGlyphInfo(ch, *glyph, 0, withImage))
             return null;
         if (withImage)
-		    return _glyphCache.put(ch, glyph);
+            return _glyphCache.put(ch, glyph);
         return glyph;
-	}
+    }
 
     /// load font files
-	bool create() {
+    bool create() {
         if (!isNull())
             clear();
         foreach (string filename; _fontItem.filenames) {
             FreeTypeFontFile file = new FreeTypeFontFile(_fontItem.library, filename);
             if (file.open(_size, 0)) {
                 _files.add(file);
-			} else {
-				destroy(file);
-			}
+            } else {
+                destroy(file);
+            }
         }
-		return _files.length > 0;
-	}
+        return _files.length > 0;
+    }
 
-	/// clear usage flags for all entries
-	override void checkpoint() {
-		_glyphCache.checkpoint();
-	}
+    /// clear usage flags for all entries
+    override void checkpoint() {
+        _glyphCache.checkpoint();
+    }
 
-	/// removes entries not used after last call of checkpoint() or cleanup()
-	override void cleanup() {
-		_glyphCache.cleanup();
-	}
+    /// removes entries not used after last call of checkpoint() or cleanup()
+    override void cleanup() {
+        _glyphCache.cleanup();
+    }
 
     /// clears glyph cache
     override void clearGlyphCache() {
@@ -489,45 +489,45 @@ class FreeTypeFontManager : FontManager {
         return null;
     }
 
-	private static int faceMatch(string requested, string existing) {
-		if (!requested.icmp("Arial")) {
-			if (!existing.icmp("DejaVu Sans")) {
-				return 200;
-			}
-		}
-		if (!requested.icmp("Times New Roman")) {
-			if (!existing.icmp("DejaVu Serif")) {
-				return 200;
-			}
-		}
-		if (!requested.icmp("Courier New")) {
-			if (!existing.icmp("DejaVu Sans Mono")) {
-				return 200;
-			}
-		}
-		return 0;
-	}
+    private static int faceMatch(string requested, string existing) {
+        if (!requested.icmp("Arial")) {
+            if (!existing.icmp("DejaVu Sans")) {
+                return 200;
+            }
+        }
+        if (!requested.icmp("Times New Roman")) {
+            if (!existing.icmp("DejaVu Serif")) {
+                return 200;
+            }
+        }
+        if (!requested.icmp("Courier New")) {
+            if (!existing.icmp("DejaVu Sans Mono")) {
+                return 200;
+            }
+        }
+        return 0;
+    }
 
     private FontFileItem findBestMatch(int weight, bool italic, FontFamily family, string face) {
         FontFileItem best = null;
         int bestScore = 0;
-		string[] faces = face ? split(face, ",") : null;
+        string[] faces = face ? split(face, ",") : null;
         foreach(int index, FontFileItem item; _fontFiles) {
             int score = 0;
-			int bestFaceMatch = 0;
-			if (faces && face.length) {
-				foreach(i; 0 .. faces.length) {
+            int bestFaceMatch = 0;
+            if (faces && face.length) {
+                foreach(i; 0 .. faces.length) {
                     string f = faces[i].strip;
-					if (f.icmp(item.def.face) == 0) {
-						score += 3000 - i;
-						break;
-					}
-					int match = faceMatch(f, item.def.face);
-					if (match > bestFaceMatch)
-						bestFaceMatch = match;
-				}
-			}
-			score += bestFaceMatch;
+                    if (f.icmp(item.def.face) == 0) {
+                        score += 3000 - i;
+                        break;
+                    }
+                    int match = faceMatch(f, item.def.face);
+                    if (match > bestFaceMatch)
+                        bestFaceMatch = match;
+                }
+            }
+            score += bestFaceMatch;
             if (family == item.def.family)
                 score += 1000; // family match
             if (italic == item.def.italic)
@@ -542,7 +542,7 @@ class FreeTypeFontManager : FontManager {
         return best;
     }
 
-	//private FontList _activeFonts;
+    //private FontList _activeFonts;
 
     private static __gshared FontRef _nullFontRef;
 
@@ -565,17 +565,17 @@ class FreeTypeFontManager : FontManager {
             Log.e("Cannot init freetype library, error=", error);
             throw new Exception("Cannot init freetype library");
         }
-		//FT_Library_SetLcdFilter(_library, FT_LCD_FILTER_DEFAULT);
+        //FT_Library_SetLcdFilter(_library, FT_LCD_FILTER_DEFAULT);
     }
     ~this() {
-		debug(FontResources) Log.d("FreeTypeFontManager ~this()");
-		//_activeFonts.clear();
-		foreach(ref FontFileItem item; _fontFiles) {
-			destroy(item);
-			item = null;
-		}
-		_fontFiles.length = 0;
-		debug(FontResources) Log.d("Destroyed all fonts. Freeing library.");
+        debug(FontResources) Log.d("FreeTypeFontManager ~this()");
+        //_activeFonts.clear();
+        foreach(ref FontFileItem item; _fontFiles) {
+            destroy(item);
+            item = null;
+        }
+        _fontFiles.length = 0;
+        debug(FontResources) Log.d("Destroyed all fonts. Freeing library.");
         // uninit library
         if (_library)
             FT_Done_FreeType(_library);
@@ -586,19 +586,19 @@ class FreeTypeFontManager : FontManager {
         FontFileItem f = findBestMatch(weight, italic, family, face);
         if (f is null)
             return _nullFontRef;
-		//Log.d("getFont requesteed: ", face, " found: ", f.def.face);
+        //Log.d("getFont requesteed: ", face, " found: ", f.def.face);
         return f.get(size);
     }
 
-	/// clear usage flags for all entries
-	override void checkpoint() {
+    /// clear usage flags for all entries
+    override void checkpoint() {
         foreach(ref ff; _fontFiles) {
             ff.checkpoint();
         }
     }
 
-	/// removes entries not used after last call of checkpoint() or cleanup()
-	override void cleanup() {
+    /// removes entries not used after last call of checkpoint() or cleanup()
+    override void cleanup() {
         foreach(ref ff; _fontFiles) {
             ff.cleanup();
         }
@@ -638,7 +638,7 @@ class FreeTypeFontManager : FontManager {
                 weight = font.weight;
                 debug(FontResources)Log.d("Using properties from font file: face=", face, " weight=", weight, " italic=", italic);
             }
-		    destroy(font);
+            destroy(font);
         }
 
         FontDef def = FontDef(family, face, italic, weight);

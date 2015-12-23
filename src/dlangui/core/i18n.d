@@ -92,7 +92,7 @@ struct UIString {
     }
     /** create string with resource id and raw value as fallback for missing translations */
     this(string id, dstring fallbackValue) {
-		_id = id;
+        _id = id;
         _value = fallbackValue;
     }
 
@@ -108,7 +108,7 @@ struct UIString {
     @property dstring value() const { 
         if (_id !is null) // translate ID to dstring
             return i18n.get(_id, _value); // get from resource, use _value as fallback
-		return _value;
+        return _value;
     }
     /** Set raw value using property */
     @property void value(dstring newValue) {
@@ -283,7 +283,7 @@ synchronized class UIStringTranslator {
         foreach(dir; dirs) {
             string path = appendPath(dir, "i18n/");
             if (exists(path) && isDir(path)) {
-				Log.i("Adding i18n dir ", path);
+                Log.i("Adding i18n dir ", path);
                 _resourceDirs ~= path;
             }
         }
@@ -346,8 +346,8 @@ synchronized class UIStringTranslator {
         s = _fallback.get(id);
         if (s !is null)
             return s;
-		if (fallbackValue.length > 0)
-			return fallbackValue;
+        if (fallbackValue.length > 0)
+            return fallbackValue;
         return "UNTRANSLATED: "d ~ toUTF32(id);
     }
 }

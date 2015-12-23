@@ -68,7 +68,7 @@ class WindowFrame : VerticalLayout {
         _closeButton = new ImageButton("DOCK_WINDOW_CAPTION_CLOSE_BUTTON");
         _closeButton.styleId = STYLE_BUTTON_TRANSPARENT;
         _closeButton.drawableId = "close";
-		_closeButton.trackHover = true;
+        _closeButton.trackHover = true;
         _closeButton.click = &onCloseButtonClick;
         if (!_showCloseButton)
             _closeButton.visibility = Visibility.Gone;

@@ -6,7 +6,7 @@ This app is a Tetris demo for DlangUI library.
 Synopsis:
 
 ----
-	dub run dlangui:tetris
+    dub run dlangui:tetris
 ----
 
 Copyright: Vadim Lopatin, 2014
@@ -29,9 +29,9 @@ extern (C) int UIAppMain(string[] args) {
     embeddedResourceList.addResources(embedResourcesFromList!("resources.list")());
 
     // select translation file - for english language
-	Platform.instance.uiLanguage = "en";
-	// load theme from file "theme_default.xml"
-	Platform.instance.uiTheme = "theme_default";
+    Platform.instance.uiLanguage = "en";
+    // load theme from file "theme_default.xml"
+    Platform.instance.uiTheme = "theme_default";
 
     // create window
     Window window = Platform.instance.createWindow("DLangUI: Tetris game example"d, null, WindowFlag.Modal, 600, 400);

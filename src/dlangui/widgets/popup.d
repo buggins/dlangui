@@ -33,16 +33,16 @@ enum PopupAlign : uint {
     Below = 2,
     /// place popup below anchor widget close to right bound (when no space enough, align near left bound)
     Right = 4,
-	/// align to specified point
-	Point = 8,
+    /// align to specified point
+    Point = 8,
     /// if popup content size is less than anchor's size, increase it to anchor size
     FitAnchorSize = 16,
 }
 
 struct PopupAnchor {
     Widget widget;
-	int x;
-	int y;
+    int x;
+    int y;
     uint  alignment = PopupAlign.Center;
 }
 
@@ -89,10 +89,10 @@ class PopupWidget : LinearLayout {
     override void measure(int parentWidth, int parentHeight) { 
         super.measure(parentWidth, parentHeight);
     }
-	/// close and destroy popup
-	void close() {
-		window.removePopup(this);
-	}
+    /// close and destroy popup
+    void close() {
+        window.removePopup(this);
+    }
 
     /// just call on close listener
     void onClose() {
@@ -121,25 +121,25 @@ class PopupWidget : LinearLayout {
         Rect r;
         Point anchorPt;
 
-		if (anchor.alignment & PopupAlign.Point) {
-			r.left = anchor.x;
-			r.top = anchor.y;
-		} else {
-			if (anchor.alignment & PopupAlign.Center) {
-	            // center around center of anchor widget
-	            r.left = anchorrc.middlex - w / 2;
-	            r.top = anchorrc.middley - h / 2;
-	        } else if (anchor.alignment & PopupAlign.Below) {
-	            r.left = anchorrc.left;
-	            r.top = anchorrc.bottom;
-	        } else if (anchor.alignment & PopupAlign.Right) {
-	            r.left = anchorrc.right;
-	            r.top = anchorrc.top;
-	        }
+        if (anchor.alignment & PopupAlign.Point) {
+            r.left = anchor.x;
+            r.top = anchor.y;
+        } else {
+            if (anchor.alignment & PopupAlign.Center) {
+                // center around center of anchor widget
+                r.left = anchorrc.middlex - w / 2;
+                r.top = anchorrc.middley - h / 2;
+            } else if (anchor.alignment & PopupAlign.Below) {
+                r.left = anchorrc.left;
+                r.top = anchorrc.bottom;
+            } else if (anchor.alignment & PopupAlign.Right) {
+                r.left = anchorrc.right;
+                r.top = anchorrc.top;
+            }
             if (anchor.alignment & PopupAlign.FitAnchorSize)
                 if (w < anchorrc.width)
                     w = anchorrc.width;
-		}
+        }
         r.right = r.left + w;
         r.bottom = r.top + h;
         r.moveToFit(rc);

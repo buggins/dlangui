@@ -96,17 +96,17 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
     protected ScrollBarMode _vscrollbarMode;
     protected ScrollBarMode _hscrollbarMode;
     /// vertical scrollbar control
-	protected ScrollBar _vscrollbar;
+    protected ScrollBar _vscrollbar;
     /// horizontal scrollbar control
-	protected ScrollBar _hscrollbar;
+    protected ScrollBar _hscrollbar;
     /// inner area, excluding additional controls like scrollbars
-	protected Rect _clientRect;
+    protected Rect _clientRect;
 
     protected Rect _fullScrollableArea;
     protected Rect _visibleScrollableArea;
 
-	this(string ID = null, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
-		super(ID);
+    this(string ID = null, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
+        super(ID);
         _hscrollbarMode = hscrollbarMode;
         _vscrollbarMode = vscrollbarMode;
         if (_vscrollbarMode != ScrollBarMode.Invisible) {
@@ -122,7 +122,7 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
     }
 
     /// returns client area rectangle
-	@property Rect clientRect() { return _clientRect; }
+    @property Rect clientRect() { return _clientRect; }
 
     /// process horizontal scrollbar event
     bool onHScroll(ScrollEvent event) {
@@ -198,47 +198,47 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         _vscrollbar.position(_visibleScrollableArea.top - _fullScrollableArea.top);
     }
 
-	protected void drawClient(DrawBuf buf) {
+    protected void drawClient(DrawBuf buf) {
         // override it
     }
 
     protected void drawExtendedArea(DrawBuf buf) {
     }
 
-	/// Draw widget at its position to buffer
-	override void onDraw(DrawBuf buf) {
-		if (visibility != Visibility.Visible)
-			return;
+    /// Draw widget at its position to buffer
+    override void onDraw(DrawBuf buf) {
+        if (visibility != Visibility.Visible)
+            return;
         super.onDraw(buf);
-		Rect rc = _pos;
-		applyMargins(rc);
+        Rect rc = _pos;
+        applyMargins(rc);
         {
-		    auto saver = ClipRectSaver(buf, rc, alpha);
-		    DrawableRef bg = backgroundDrawable;
-		    if (!bg.isNull) {
-			    bg.drawTo(buf, rc, state);
-		    }
-		    applyPadding(rc);
+            auto saver = ClipRectSaver(buf, rc, alpha);
+            DrawableRef bg = backgroundDrawable;
+            if (!bg.isNull) {
+                bg.drawTo(buf, rc, state);
+            }
+            applyPadding(rc);
             if (_hscrollbar)
-		        _hscrollbar.onDraw(buf);
+                _hscrollbar.onDraw(buf);
             if (_vscrollbar)
-		        _vscrollbar.onDraw(buf);
+                _vscrollbar.onDraw(buf);
             // apply clipping
             {
-		        auto saver2 = ClipRectSaver(buf, _clientRect, alpha);
-		        drawClient(buf);
+                auto saver2 = ClipRectSaver(buf, _clientRect, alpha);
+                drawClient(buf);
             }
             {
                 // no clipping for drawing of extended area
                 Rect clipr = rc;
                 clipr.bottom = _clientRect.bottom;
-		        auto saver3 = ClipRectSaver(buf, clipr, alpha);
+                auto saver3 = ClipRectSaver(buf, clipr, alpha);
                 drawExtendedArea(buf);
             }
         }
 
-		_needDraw = false;
-	}
+        _needDraw = false;
+    }
 
     /// calculate full content size in pixels
     Point fullContentSize() {
@@ -247,49 +247,49 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         return sz;
     }
 
-	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-	override void measure(int parentWidth, int parentHeight) { 
+    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+    override void measure(int parentWidth, int parentHeight) { 
         if (visibility == Visibility.Gone) {
             return;
         }
-		Rect m = margins;
-		Rect p = padding;
-		// calc size constraints for children
-		int pwidth = parentWidth;
-		int pheight = parentHeight;
-		if (parentWidth != SIZE_UNSPECIFIED)
-			pwidth -= m.left + m.right + p.left + p.right;
-		if (parentHeight != SIZE_UNSPECIFIED)
-			pheight -= m.top + m.bottom + p.top + p.bottom;
+        Rect m = margins;
+        Rect p = padding;
+        // calc size constraints for children
+        int pwidth = parentWidth;
+        int pheight = parentHeight;
+        if (parentWidth != SIZE_UNSPECIFIED)
+            pwidth -= m.left + m.right + p.left + p.right;
+        if (parentHeight != SIZE_UNSPECIFIED)
+            pheight -= m.top + m.bottom + p.top + p.bottom;
         if (_hscrollbar && _hscrollbarMode == ScrollBarMode.Visible) {
-		    _hscrollbar.measure(pwidth, pheight);
+            _hscrollbar.measure(pwidth, pheight);
         }
         if (_vscrollbar && _vscrollbarMode == ScrollBarMode.Visible) {
-		    _vscrollbar.measure(pwidth, pheight);
+            _vscrollbar.measure(pwidth, pheight);
         }
         Point sz = fullContentSize();
         if (_hscrollbar && _hscrollbarMode == ScrollBarMode.Visible) {
-		    sz.y += _hscrollbar.measuredHeight;
+            sz.y += _hscrollbar.measuredHeight;
         }
         if (_vscrollbar && _vscrollbarMode == ScrollBarMode.Visible) {
-		    sz.x += _vscrollbar.measuredWidth;
+            sz.x += _vscrollbar.measuredWidth;
         }
-		measuredContent(parentWidth, parentHeight, sz.x, sz.y);
-	}
+        measuredContent(parentWidth, parentHeight, sz.x, sz.y);
+    }
 
     /// override to support modification of client rect after change, e.g. apply offset
     protected void handleClientRectLayout(ref Rect rc) {
     }
 
-	/// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
-	override void layout(Rect rc) {
-		if (visibility == Visibility.Gone) {
-			return;
-		}
-		_pos = rc;
-		_needLayout = false;
-		applyMargins(rc);
-		applyPadding(rc);
+    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+    override void layout(Rect rc) {
+        if (visibility == Visibility.Gone) {
+            return;
+        }
+        _pos = rc;
+        _needLayout = false;
+        applyMargins(rc);
+        applyPadding(rc);
         Point sz = fullContentSize();
         bool needHscroll = _hscrollbarMode != ScrollBarMode.External && _hscrollbarMode != ScrollBarMode.Invisible && sz.x > rc.width;
         bool needVscroll = _vscrollbarMode != ScrollBarMode.External && _vscrollbarMode != ScrollBarMode.Invisible && sz.y > rc.height;
@@ -302,29 +302,29 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         needVscroll = needVscroll || (_vscrollbarMode == ScrollBarMode.Visible);
         needHscroll = needHscroll || (_hscrollbarMode == ScrollBarMode.Visible);
         // scrollbars
-		Rect vsbrc = rc;
-		vsbrc.left = vsbrc.right - (needVscroll ? _vscrollbar.measuredWidth : 0);
-		vsbrc.bottom = vsbrc.bottom - (needHscroll ? _hscrollbar.measuredHeight : 0);
-		Rect hsbrc = rc;
-		hsbrc.right = hsbrc.right - (needVscroll ? _vscrollbar.measuredWidth : 0);
-		hsbrc.top = hsbrc.bottom - (needHscroll ? _hscrollbar.measuredHeight : 0);
+        Rect vsbrc = rc;
+        vsbrc.left = vsbrc.right - (needVscroll ? _vscrollbar.measuredWidth : 0);
+        vsbrc.bottom = vsbrc.bottom - (needHscroll ? _hscrollbar.measuredHeight : 0);
+        Rect hsbrc = rc;
+        hsbrc.right = hsbrc.right - (needVscroll ? _vscrollbar.measuredWidth : 0);
+        hsbrc.top = hsbrc.bottom - (needHscroll ? _hscrollbar.measuredHeight : 0);
         if (_vscrollbar && _vscrollbarMode != ScrollBarMode.External) {
             _vscrollbar.visibility = needVscroll ? Visibility.Visible : Visibility.Gone;
-		    _vscrollbar.layout(vsbrc);
+            _vscrollbar.layout(vsbrc);
         }
         if (_hscrollbar && _hscrollbarMode != ScrollBarMode.External) {
             _hscrollbar.visibility = needHscroll ? Visibility.Visible : Visibility.Gone;
             _hscrollbar.layout(hsbrc);
         }
-		// client area
-		_clientRect = rc;
+        // client area
+        _clientRect = rc;
         handleClientRectLayout(_clientRect);
         if (needVscroll)
-		    _clientRect.right = vsbrc.left;
+            _clientRect.right = vsbrc.left;
         if (needHscroll)
             _clientRect.bottom = hsbrc.top;
         updateScrollBars();
-	}
+    }
 
     void makeRectVisible(Rect rc, bool alignHorizontally = true, bool alignVertically = true) {
         if (rc.isInsideOf(_visibleScrollableArea))
@@ -366,8 +366,8 @@ class ScrollWidget :  ScrollWidgetBase {
         this(null);
     }
     /// create with ID parameter
-	this(string ID, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
-		super(ID, hscrollbarMode, vscrollbarMode);
+    this(string ID, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
+        super(ID, hscrollbarMode, vscrollbarMode);
     }
 
     /// calculate full content size in pixels
@@ -404,7 +404,7 @@ class ScrollWidget :  ScrollWidgetBase {
         super.updateScrollBars();
     }
 
-	override protected void drawClient(DrawBuf buf) {
+    override protected void drawClient(DrawBuf buf) {
         if (_contentWidget) {
             Point sz = fullContentSize();
             Point p = scrollPos;

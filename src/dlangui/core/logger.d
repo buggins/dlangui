@@ -37,17 +37,17 @@ import std.datetime : SysTime, Clock;
 /// Log levels
 enum LogLevel : int {
     /// Fatal error, cannot resume
-	Fatal,
+    Fatal,
     /// Error
-	Error,
+    Error,
     /// Warning
-	Warn,
+    Warn,
     /// Informational message
-	Info,
+    Info,
     /// Debug message
-	Debug,
+    Debug,
     /// Tracing message
-	Trace
+    Trace
 }
 
 /// Returns timestamp in milliseconds since 1970 UTC similar to Java System.currentTimeMillis()
@@ -84,11 +84,11 @@ class Log {
     static __gshared private std.stdio.File * logFile = null;
     static __gshared private Mutex _mutex = null;
 
-	static public @property Mutex mutex() {
-		if (_mutex is null)
-			_mutex = new Mutex();
-		return _mutex;
-	}
+    static public @property Mutex mutex() {
+        if (_mutex is null)
+            _mutex = new Mutex();
+        return _mutex;
+    }
         
     /// Redirects output to stdout
     static public void setStdoutLogger() {

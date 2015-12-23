@@ -46,33 +46,33 @@ alias OpenGLDrawableDelegate = void delegate(Rect windowRect, Rect rc);
 class DrawBuf : RefCountedObject {
     protected Rect _clipRect;
     protected NinePatch * _ninePatch;
-	protected uint _alpha;
+    protected uint _alpha;
 
-	/// get current alpha setting (to be applied to all drawing operations)
-	@property uint alpha() { return _alpha; }
-	/// set new alpha setting (to be applied to all drawing operations)
-	@property void alpha(uint alpha) {
-		_alpha = alpha;
-		if (_alpha > 0xFF)
-			_alpha = 0xFF;
-	}
+    /// get current alpha setting (to be applied to all drawing operations)
+    @property uint alpha() { return _alpha; }
+    /// set new alpha setting (to be applied to all drawing operations)
+    @property void alpha(uint alpha) {
+        _alpha = alpha;
+        if (_alpha > 0xFF)
+            _alpha = 0xFF;
+    }
 
-	/// apply additional transparency to current drawbuf alpha value
-	void addAlpha(uint alpha) {
-		_alpha = blendAlpha(_alpha, alpha);
-	}
+    /// apply additional transparency to current drawbuf alpha value
+    void addAlpha(uint alpha) {
+        _alpha = blendAlpha(_alpha, alpha);
+    }
 
-	/// applies current drawbuf alpha to argb color value
-	uint applyAlpha(uint argb) {
-		if (!_alpha)
-			return argb; // no drawbuf alpha
-		uint a1 = (argb >> 24) & 0xFF;
-		if (a1 == 0xFF)
-			return argb; // fully transparent
-		uint a2 = _alpha & 0xFF;
-		uint a = blendAlpha(a1, a2);
-		return (argb & 0xFFFFFF) | (a << 24);
-	}
+    /// applies current drawbuf alpha to argb color value
+    uint applyAlpha(uint argb) {
+        if (!_alpha)
+            return argb; // no drawbuf alpha
+        uint a1 = (argb >> 24) & 0xFF;
+        if (a1 == 0xFF)
+            return argb; // fully transparent
+        uint a2 = _alpha & 0xFF;
+        uint a = blendAlpha(a1, a2);
+        return (argb & 0xFFFFFF) | (a << 24);
+    }
 
     static if (ENABLE_OPENGL) {
         protected uint _id;
@@ -84,15 +84,15 @@ class DrawBuf : RefCountedObject {
         static if (ENABLE_OPENGL) {
             _id = drawBufIdGenerator++;
         }
-		debug _instanceCount++;
+        debug _instanceCount++;
     }
 
-	debug private static __gshared int _instanceCount;
-	debug @property static int instanceCount() { return _instanceCount; }
-	~this() {
-		debug _instanceCount--;
-		clear();
-	}
+    debug private static __gshared int _instanceCount;
+    debug @property static int instanceCount() { return _instanceCount; }
+    ~this() {
+        debug _instanceCount--;
+        clear();
+    }
 
     protected void function(uint) _onDestroyCallback;
     @property void onDestroyCallback(void function(uint) callback) { _onDestroyCallback = callback; }
@@ -137,10 +137,10 @@ class DrawBuf : RefCountedObject {
     }
     /// sets new clipping rectangle, intersect with previous one.
     @property void intersectClipRect(const ref Rect rect) {
-		//if (_clipRect.empty)
-		//	_clipRect = rect;
-		//else
-		_clipRect.intersect(rect);
+        //if (_clipRect.empty)
+        //    _clipRect = rect;
+        //else
+        _clipRect.intersect(rect);
         _clipRect.intersect(Rect(0, 0, width, height));
     }
     /// returns true if rectangle is completely clipped out and cannot be drawn.
@@ -249,7 +249,7 @@ class DrawBuf : RefCountedObject {
         return !rc.empty() && !rc2.empty();
     }
     /// reserved for hardware-accelerated drawing - begins drawing batch
-	void beforeDrawing() { _alpha = 0; }
+    void beforeDrawing() { _alpha = 0; }
     /// reserved for hardware-accelerated drawing - ends drawing batch
     void afterDrawing() { }
     /// returns buffer bits per pixel
@@ -266,10 +266,10 @@ class DrawBuf : RefCountedObject {
     abstract void fill(uint color);
     /// fill rectangle with solid color (clipping is applied)
     abstract void fillRect(Rect rc, uint color);
-	/// draw pixel at (x, y) with specified color 
-	abstract void drawPixel(int x, int y, uint color);
+    /// draw pixel at (x, y) with specified color 
+    abstract void drawPixel(int x, int y, uint color);
     /// draw 8bit alpha image - usually font glyph using specified color (clipping is applied)
-	abstract void drawGlyph(int x, int y, Glyph * glyph, uint color);
+    abstract void drawGlyph(int x, int y, Glyph * glyph, uint color);
     /// draw source buffer rectangle contents to destination buffer
     abstract void drawFragment(int x, int y, DrawBuf src, Rect srcrect);
     /// draw source buffer rectangle contents to destination buffer rectangle applying rescaling
@@ -344,57 +344,57 @@ class DrawBuf : RefCountedObject {
         }
     }
 
-	/// draw line from point p1 to p2 with specified color
-	void drawLine(Point p1, Point p2, uint colour) {
+    /// draw line from point p1 to p2 with specified color
+    void drawLine(Point p1, Point p2, uint colour) {
         if (!clipLine(_clipRect, p1, p2))
             return;
-		// from rosettacode.org
-		import std.math: abs;
-		immutable int dx = p2.x - p1.x;
-		immutable int ix = (dx > 0) - (dx < 0);
-		immutable int dx2 = abs(dx) * 2;
-		int dy = p2.y - p1.y;
-		immutable int iy = (dy > 0) - (dy < 0);
-		immutable int dy2 = abs(dy) * 2;
-		drawPixel(p1.x, p1.y, colour);
-		if (dx2 >= dy2) {
-			int error = dy2 - (dx2 / 2);
-			while (p1.x != p2.x) {
-				if (error >= 0 && (error || (ix > 0))) {
-					error -= dx2;
-					p1.y += iy;
-				}
-				error += dy2;
-				p1.x += ix;
-				drawPixel(p1.x, p1.y, colour);
-			}
-		} else {
-			int error = dx2 - (dy2 / 2);
-			while (p1.y != p2.y) {
-				if (error >= 0 && (error || (iy > 0))) {
-					error -= dy2;
-					p1.x += ix;
-				}
-				error += dx2;
-				p1.y += iy;
-				drawPixel(p1.x, p1.y, colour);
-			}
-		}
-	}
+        // from rosettacode.org
+        import std.math: abs;
+        immutable int dx = p2.x - p1.x;
+        immutable int ix = (dx > 0) - (dx < 0);
+        immutable int dx2 = abs(dx) * 2;
+        int dy = p2.y - p1.y;
+        immutable int iy = (dy > 0) - (dy < 0);
+        immutable int dy2 = abs(dy) * 2;
+        drawPixel(p1.x, p1.y, colour);
+        if (dx2 >= dy2) {
+            int error = dy2 - (dx2 / 2);
+            while (p1.x != p2.x) {
+                if (error >= 0 && (error || (ix > 0))) {
+                    error -= dx2;
+                    p1.y += iy;
+                }
+                error += dy2;
+                p1.x += ix;
+                drawPixel(p1.x, p1.y, colour);
+            }
+        } else {
+            int error = dx2 - (dy2 / 2);
+            while (p1.y != p2.y) {
+                if (error >= 0 && (error || (iy > 0))) {
+                    error -= dy2;
+                    p1.x += ix;
+                }
+                error += dx2;
+                p1.y += iy;
+                drawPixel(p1.x, p1.y, colour);
+            }
+        }
+    }
 
     /// create drawbuf with copy of current buffer with changed colors (returns this if not supported)
     DrawBuf transformColors(ref ColorTransform transform) {
         return this;
     }
 
-	/// draw custom OpenGL scene
-	void drawCustomOpenGLScene(Rect rc, OpenGLDrawableDelegate handler) {
-		// override it for OpenGL draw buffer
-		Log.w("drawCustomOpenGLScene is called for non-OpenGL DrawBuf");
-	}
+    /// draw custom OpenGL scene
+    void drawCustomOpenGLScene(Rect rc, OpenGLDrawableDelegate handler) {
+        // override it for OpenGL draw buffer
+        Log.w("drawCustomOpenGLScene is called for non-OpenGL DrawBuf");
+    }
 
     void clear() {
-		resetClipping();
+        resetClipping();
     }
 }
 
@@ -404,19 +404,19 @@ alias DrawBufRef = Ref!DrawBuf;
 struct ClipRectSaver {
     private DrawBuf _buf;
     private Rect _oldClipRect;
-	private uint _oldAlpha;
+    private uint _oldAlpha;
     /// apply (intersect) new clip rectangle and alpha to draw buf; restore 
     this(DrawBuf buf, ref Rect newClipRect, uint newAlpha = 0) {
         _buf = buf;
         _oldClipRect = buf.clipRect;
-		_oldAlpha = buf.alpha;
+        _oldAlpha = buf.alpha;
         buf.intersectClipRect(newClipRect);
-		if (newAlpha)
-			buf.addAlpha(newAlpha);
+        if (newAlpha)
+            buf.addAlpha(newAlpha);
     }
     ~this() {
         _buf.clipRect = _oldClipRect;
-		_buf.alpha = _oldAlpha;
+        _buf.alpha = _oldAlpha;
     }
 }
 
@@ -538,48 +538,48 @@ class ColorDrawBufBase : DrawBuf {
     /// detect position of black pixels in row for 9-patch markup
     private bool detectHLine(int y, ref int x0, ref int x1) {
         uint * line = scanLine(y);
-    	bool foundUsed = false;
+        bool foundUsed = false;
         x0 = 0;
         x1 = 0;
         foreach(int x; 1 .. _dx - 1) {
-    		if (isBlackPixel(line[x])) { // opaque black pixel
-    			if (!foundUsed) {
-    				x0 = x;
-        			foundUsed = true;
-    			}
-    			x1 = x + 1;
-    		}
-    	}
+            if (isBlackPixel(line[x])) { // opaque black pixel
+                if (!foundUsed) {
+                    x0 = x;
+                    foundUsed = true;
+                }
+                x1 = x + 1;
+            }
+        }
         return x1 > x0;
     }
 
-	static bool isBlackPixel(uint c) {
-		if (((c >> 24) & 255) > 10)
-			return false;
-		if (((c >> 16) & 255) > 10)
-			return false;
-		if (((c >> 8) & 255) > 10)
-			return false;
-		if (((c >> 0) & 255) > 10)
-			return false;
-		return true;
-	}
-	
+    static bool isBlackPixel(uint c) {
+        if (((c >> 24) & 255) > 10)
+            return false;
+        if (((c >> 16) & 255) > 10)
+            return false;
+        if (((c >> 8) & 255) > 10)
+            return false;
+        if (((c >> 0) & 255) > 10)
+            return false;
+        return true;
+    }
+    
     /// detect position of black pixels in column for 9-patch markup
     private bool detectVLine(int x, ref int y0, ref int y1) {
-    	bool foundUsed = false;
+        bool foundUsed = false;
         y0 = 0;
         y1 = 0;
         foreach(int y; 1 .. _dy - 1) {
             uint * line = scanLine(y);
-    		if (isBlackPixel(line[x])) { // opaque black pixel
-    			if (!foundUsed) {
-    				y0 = y;
-        			foundUsed = true;
-    			}
-    			y1 = y + 1;
-    		}
-    	}
+            if (isBlackPixel(line[x])) { // opaque black pixel
+                if (!foundUsed) {
+                    y0 = y;
+                    foundUsed = true;
+                }
+                y1 = y + 1;
+            }
+        }
         return y1 > y0;
     }
     /// detect nine patch using image 1-pixel border (see Android documentation)
@@ -604,32 +604,32 @@ class ColorDrawBufBase : DrawBuf {
         p.padding.top = y10 - 1;
         p.padding.bottom = _dy - y11 - 1;
         _ninePatch = p;
-		//Log.d("NinePatch detected: frame=", p.frame, " padding=", p.padding, " left+right=", p.frame.left + p.frame.right, " dx=", _dx);
+        //Log.d("NinePatch detected: frame=", p.frame, " padding=", p.padding, " left+right=", p.frame.left + p.frame.right, " dx=", _dx);
         return true;
     }
 
-	override void drawGlyph(int x, int y, Glyph * glyph, uint color) {
+    override void drawGlyph(int x, int y, Glyph * glyph, uint color) {
         ubyte[] src = glyph.glyph;
         int srcdx = glyph.blackBoxX;
         int srcdy = glyph.blackBoxY;
-		bool clipping = true; //!_clipRect.empty();
-		color = applyAlpha(color);
+        bool clipping = true; //!_clipRect.empty();
+        color = applyAlpha(color);
         bool subpixel = glyph.subpixelMode != SubpixelRenderingMode.None;
-		foreach(int yy; 0 .. srcdy) {
-			int liney = y + yy;
-			if (clipping && (liney < _clipRect.top || liney >= _clipRect.bottom))
-				continue;
-			if (liney < 0 || liney >= _dy)
-				continue;
-			uint * row = scanLine(liney);
-			ubyte * srcrow = src.ptr + yy * srcdx;
-			foreach(int xx; 0 .. srcdx) {
-				int colx = x + (subpixel ? xx / 3 : xx);
-				if (clipping && (colx < _clipRect.left || colx >= _clipRect.right))
-					continue;
-				if (colx < 0 || colx >= _dx)
-					continue;
-				uint alpha2 = (color >> 24);
+        foreach(int yy; 0 .. srcdy) {
+            int liney = y + yy;
+            if (clipping && (liney < _clipRect.top || liney >= _clipRect.bottom))
+                continue;
+            if (liney < 0 || liney >= _dy)
+                continue;
+            uint * row = scanLine(liney);
+            ubyte * srcrow = src.ptr + yy * srcdx;
+            foreach(int xx; 0 .. srcdx) {
+                int colx = x + (subpixel ? xx / 3 : xx);
+                if (clipping && (colx < _clipRect.left || colx >= _clipRect.right))
+                    continue;
+                if (colx < 0 || colx >= _dx)
+                    continue;
+                uint alpha2 = (color >> 24);
                 uint alpha1 = srcrow[xx] ^ 255;
                 uint alpha = ((((alpha1 ^ 255) * (alpha2 ^ 255)) >> 8) ^ 255) & 255;
                 if (subpixel) {
@@ -640,47 +640,47 @@ class ColorDrawBufBase : DrawBuf {
                 } else {
                     uint pixel = row[colx];
                     if (alpha < 255) {
-				        if (!alpha)
-					        row[colx] = pixel;
-				        else {
-					        // apply blending
-					        row[colx] = blendARGB(pixel, color, alpha);
-				        }
+                        if (!alpha)
+                            row[colx] = pixel;
+                        else {
+                            // apply blending
+                            row[colx] = blendARGB(pixel, color, alpha);
+                        }
                     }
                 }
-			}
-		}
-	}
+            }
+        }
+    }
 
-	void drawGlyphToTexture(int x, int y, Glyph * glyph) {
+    void drawGlyphToTexture(int x, int y, Glyph * glyph) {
         ubyte[] src = glyph.glyph;
         int srcdx = glyph.blackBoxX;
         int srcdy = glyph.blackBoxY;
         bool subpixel = glyph.subpixelMode != SubpixelRenderingMode.None;
-		foreach(int yy; 0 .. srcdy) {
-			int liney = y + yy;
-			uint * row = scanLine(liney);
-			ubyte * srcrow = src.ptr + yy * srcdx;
-			int increment = subpixel ? 3 : 1;
-			for (int xx = 0; xx <= srcdx - increment; xx += increment) {
-				int colx = x + (subpixel ? xx / 3 : xx);
+        foreach(int yy; 0 .. srcdy) {
+            int liney = y + yy;
+            uint * row = scanLine(liney);
+            ubyte * srcrow = src.ptr + yy * srcdx;
+            int increment = subpixel ? 3 : 1;
+            for (int xx = 0; xx <= srcdx - increment; xx += increment) {
+                int colx = x + (subpixel ? xx / 3 : xx);
                 if (subpixel) {
                     uint t1 = srcrow[xx];
                     uint t2 = srcrow[xx + 1];
                     uint t3 = srcrow[xx + 2];
                     //uint pixel = ((t2 ^ 0x00) << 24) | ((t1  ^ 0xFF)<< 16) | ((t2 ^ 0xFF) << 8) | (t3 ^ 0xFF);
                     uint pixel = ((t2 ^ 0x00) << 24) | 0xFFFFFF;
-					row[colx] = pixel;
+                    row[colx] = pixel;
                 } else {
                     uint alpha1 = srcrow[xx] ^ 0xFF;
                     //uint pixel = (alpha1 << 24) | 0xFFFFFF; //(alpha1 << 16) || (alpha1 << 8) || alpha1;
                     //uint pixel = ((alpha1 ^ 0xFF) << 24) | (alpha1 << 16) | (alpha1 << 8) | alpha1;
                     uint pixel = ((alpha1 ^ 0xFF) << 24) | 0xFFFFFF;
-					row[colx] = pixel;
+                    row[colx] = pixel;
                 }
-			}
-		}
-	}
+            }
+        }
+    }
 
     override void fillRect(Rect rc, uint color) {
         if (applyClipping(rc)) {
@@ -699,20 +699,20 @@ class ColorDrawBufBase : DrawBuf {
         }
     }
 
-	/// draw pixel at (x, y) with specified color 
-	override void drawPixel(int x, int y, uint color) {
-		if (!_clipRect.isPointInside(x, y))
-			return;
+    /// draw pixel at (x, y) with specified color 
+    override void drawPixel(int x, int y, uint color) {
+        if (!_clipRect.isPointInside(x, y))
+            return;
         color = applyAlpha(color);
-		uint * row = scanLine(y);
-		uint alpha = color >> 24;
-		if (!alpha) {
-			row[x] = color;
-		} else if (alpha < 254) {
-			// apply blending
-			row[x] = blendARGB(row[x], color, alpha);
-		}
-	}
+        uint * row = scanLine(y);
+        uint alpha = color >> 24;
+        if (!alpha) {
+            row[x] = color;
+        } else if (alpha < 254) {
+            // apply blending
+            row[x] = blendARGB(row[x], color, alpha);
+        }
+    }
 
 }
 
@@ -810,36 +810,36 @@ class GrayDrawBuf : DrawBuf {
     /// detect position of black pixels in row for 9-patch markup
     private bool detectHLine(int y, ref int x0, ref int x1) {
         ubyte * line = scanLine(y);
-    	bool foundUsed = false;
+        bool foundUsed = false;
         x0 = 0;
         x1 = 0;
         foreach(int x; 1 .. _dx - 1) {
-    		if (line[x] == 0x00000000) { // opaque black pixel
-    			if (!foundUsed) {
-    				x0 = x;
-        			foundUsed = true;
-    			}
-    			x1 = x + 1;
-    		}
-    	}
+            if (line[x] == 0x00000000) { // opaque black pixel
+                if (!foundUsed) {
+                    x0 = x;
+                    foundUsed = true;
+                }
+                x1 = x + 1;
+            }
+        }
         return x1 > x0;
     }
 
     /// detect position of black pixels in column for 9-patch markup
     private bool detectVLine(int x, ref int y0, ref int y1) {
-    	bool foundUsed = false;
+        bool foundUsed = false;
         y0 = 0;
         y1 = 0;
         foreach(int y; 1 .. _dy - 1) {
             ubyte * line = scanLine(y);
-    		if (line[x] == 0x00000000) { // opaque black pixel
-    			if (!foundUsed) {
-    				y0 = y;
-        			foundUsed = true;
-    			}
-    			y1 = y + 1;
-    		}
-    	}
+            if (line[x] == 0x00000000) { // opaque black pixel
+                if (!foundUsed) {
+                    y0 = y;
+                    foundUsed = true;
+                }
+                y1 = y + 1;
+            }
+        }
         return y1 > y0;
     }
     /// detect nine patch using image 1-pixel border (see Android documentation)
@@ -866,42 +866,42 @@ class GrayDrawBuf : DrawBuf {
         _ninePatch = p;
         return true;
     }
-	override void drawGlyph(int x, int y, Glyph * glyph, uint color) {
+    override void drawGlyph(int x, int y, Glyph * glyph, uint color) {
         ubyte[] src = glyph.glyph;
         int srcdx = glyph.blackBoxX;
         int srcdy = glyph.blackBoxY;
-		bool clipping = true; //!_clipRect.empty();
-		foreach(int yy; 0 .. srcdy) {
-			int liney = y + yy;
-			if (clipping && (liney < _clipRect.top || liney >= _clipRect.bottom))
-				continue;
-			if (liney < 0 || liney >= _dy)
-				continue;
-			ubyte * row = scanLine(liney);
-			ubyte * srcrow = src.ptr + yy * srcdx;
-			foreach(int xx; 0 .. srcdx) {
-				int colx = xx + x;
-				if (clipping && (colx < _clipRect.left || colx >= _clipRect.right))
-					continue;
-				if (colx < 0 || colx >= _dx)
-					continue;
-				uint alpha1 = srcrow[xx] ^ 255;
-				uint alpha2 = (color >> 24);
-				uint alpha = ((((alpha1 ^ 255) * (alpha2 ^ 255)) >> 8) ^ 255) & 255;
-				uint pixel = row[colx];
-				if (!alpha)
-					row[colx] = cast(ubyte)pixel;
-				else if (alpha < 255) {
-					// apply blending
-					row[colx] = cast(ubyte)blendARGB(pixel, color, alpha);
-				}
-			}
-		}
-	}
+        bool clipping = true; //!_clipRect.empty();
+        foreach(int yy; 0 .. srcdy) {
+            int liney = y + yy;
+            if (clipping && (liney < _clipRect.top || liney >= _clipRect.bottom))
+                continue;
+            if (liney < 0 || liney >= _dy)
+                continue;
+            ubyte * row = scanLine(liney);
+            ubyte * srcrow = src.ptr + yy * srcdx;
+            foreach(int xx; 0 .. srcdx) {
+                int colx = xx + x;
+                if (clipping && (colx < _clipRect.left || colx >= _clipRect.right))
+                    continue;
+                if (colx < 0 || colx >= _dx)
+                    continue;
+                uint alpha1 = srcrow[xx] ^ 255;
+                uint alpha2 = (color >> 24);
+                uint alpha = ((((alpha1 ^ 255) * (alpha2 ^ 255)) >> 8) ^ 255) & 255;
+                uint pixel = row[colx];
+                if (!alpha)
+                    row[colx] = cast(ubyte)pixel;
+                else if (alpha < 255) {
+                    // apply blending
+                    row[colx] = cast(ubyte)blendARGB(pixel, color, alpha);
+                }
+            }
+        }
+    }
     override void fillRect(Rect rc, uint color) {
         if (applyClipping(rc)) {
-			uint alpha = color >> 24;
-			ubyte cl = rgbToGray(color);
+            uint alpha = color >> 24;
+            ubyte cl = rgbToGray(color);
             foreach(y; rc.top .. rc.bottom) {
                 ubyte * row = scanLine(y);
                 foreach(x; rc.left .. rc.right) {
@@ -916,54 +916,54 @@ class GrayDrawBuf : DrawBuf {
         }
     }
 
-	/// draw pixel at (x, y) with specified color 
-	override void drawPixel(int x, int y, uint color) {
-		if (!_clipRect.isPointInside(x, y))
-			return;
+    /// draw pixel at (x, y) with specified color 
+    override void drawPixel(int x, int y, uint color) {
+        if (!_clipRect.isPointInside(x, y))
+            return;
         color = applyAlpha(color);
         ubyte cl = rgbToGray(color);
-		ubyte * row = scanLine(y);
-		uint alpha = color >> 24;
-		if (!alpha) {
-			row[x] = cl;
-		} else if (alpha < 254) {
-			// apply blending
-			row[x] = blendGray(row[x], cl, alpha);
-		}
-	}
+        ubyte * row = scanLine(y);
+        uint alpha = color >> 24;
+        if (!alpha) {
+            row[x] = cl;
+        } else if (alpha < 254) {
+            // apply blending
+            row[x] = blendGray(row[x], cl, alpha);
+        }
+    }
 }
 
 class ColorDrawBuf : ColorDrawBufBase {
     uint[] _buf;
-	/// create ARGB8888 draw buf of specified width and height
+    /// create ARGB8888 draw buf of specified width and height
     this(int width, int height) {
         resize(width, height);
     }
-	/// create copy of ColorDrawBuf
-	this(ColorDrawBuf v) {
-		this(v.width, v.height);
-		//_buf.length = v._buf.length;
-		foreach(i; 0 .. _buf.length)
-			_buf[i] = v._buf[i];
-	}
-	/// create resized copy of ColorDrawBuf
-	this(ColorDrawBuf v, int dx, int dy) {
-		this(dx, dy);
+    /// create copy of ColorDrawBuf
+    this(ColorDrawBuf v) {
+        this(v.width, v.height);
+        //_buf.length = v._buf.length;
+        foreach(i; 0 .. _buf.length)
+            _buf[i] = v._buf[i];
+    }
+    /// create resized copy of ColorDrawBuf
+    this(ColorDrawBuf v, int dx, int dy) {
+        this(dx, dy);
         fill(0xFFFFFFFF);
         drawRescaled(Rect(0, 0, dx, dy), v, Rect(0, 0, v.width, v.height));
-	}
-	void invertAlpha() {
-		foreach(pixel; _buf)
-			pixel ^= 0xFF000000;
-	}
-	void invertByteOrder() {
-		foreach(pixel; _buf) {
-			pixel = (pixel & 0xFF00FF00) |
-				((pixel & 0xFF0000) >> 16) |
-				((pixel & 0xFF) << 16);
-		}
-	}
-	override uint * scanLine(int y) {
+    }
+    void invertAlpha() {
+        foreach(pixel; _buf)
+            pixel ^= 0xFF000000;
+    }
+    void invertByteOrder() {
+        foreach(pixel; _buf) {
+            pixel = (pixel & 0xFF00FF00) |
+                ((pixel & 0xFF0000) >> 16) |
+                ((pixel & 0xFF) << 16);
+        }
+    }
+    override uint * scanLine(int y) {
         if (y >= 0 && y < _dy)
             return _buf.ptr + _dx * y;
         return null;
@@ -1029,20 +1029,20 @@ private const int TOP = 8;    // 1000
 
 private OutCode ComputeOutCode(Rect clipRect, double x, double y)
 {
-	OutCode code;
+    OutCode code;
 
-	code = INSIDE;          // initialised as being inside of clip window
+    code = INSIDE;          // initialised as being inside of clip window
 
-	if (x < clipRect.left)           // to the left of clip window
-		code |= LEFT;
-	else if (x > clipRect.right)      // to the right of clip window
-		code |= RIGHT;
-	if (y < clipRect.top)           // below the clip window
-		code |= BOTTOM;
-	else if (y > clipRect.bottom)      // above the clip window
-		code |= TOP;
+    if (x < clipRect.left)           // to the left of clip window
+        code |= LEFT;
+    else if (x > clipRect.right)      // to the right of clip window
+        code |= RIGHT;
+    if (y < clipRect.top)           // below the clip window
+        code |= BOTTOM;
+    else if (y > clipRect.bottom)      // above the clip window
+        code |= TOP;
 
-	return code;
+    return code;
 }
 
 package bool clipLine(ref Rect clipRect, ref Point p1, ref Point p2) {
@@ -1065,53 +1065,53 @@ package bool clipLine(ref Rect clipRect, ref Point p1, ref Point p2) {
 // diagonal from (xmin, ymin) to (xmax, ymax).
 private bool CohenSutherlandLineClipAndDraw(ref Rect clipRect, ref double x0, ref double y0, ref double x1, ref double y1)
 {
-	// compute outcodes for P0, P1, and whatever point lies outside the clip rectangle
-	OutCode outcode0 = ComputeOutCode(clipRect, x0, y0);
-	OutCode outcode1 = ComputeOutCode(clipRect, x1, y1);
-	bool accept = false;
+    // compute outcodes for P0, P1, and whatever point lies outside the clip rectangle
+    OutCode outcode0 = ComputeOutCode(clipRect, x0, y0);
+    OutCode outcode1 = ComputeOutCode(clipRect, x1, y1);
+    bool accept = false;
 
-	while (true) {
-		if (!(outcode0 | outcode1)) { // Bitwise OR is 0. Trivially accept and get out of loop
-			accept = true;
-			break;
-		} else if (outcode0 & outcode1) { // Bitwise AND is not 0. Trivially reject and get out of loop
-			break;
-		} else {
-			// failed both tests, so calculate the line segment to clip
-			// from an outside point to an intersection with clip edge
-			double x, y;
+    while (true) {
+        if (!(outcode0 | outcode1)) { // Bitwise OR is 0. Trivially accept and get out of loop
+            accept = true;
+            break;
+        } else if (outcode0 & outcode1) { // Bitwise AND is not 0. Trivially reject and get out of loop
+            break;
+        } else {
+            // failed both tests, so calculate the line segment to clip
+            // from an outside point to an intersection with clip edge
+            double x, y;
 
-			// At least one endpoint is outside the clip rectangle; pick it.
-			OutCode outcodeOut = outcode0 ? outcode0 : outcode1;
+            // At least one endpoint is outside the clip rectangle; pick it.
+            OutCode outcodeOut = outcode0 ? outcode0 : outcode1;
 
-			// Now find the intersection point;
-			// use formulas y = y0 + slope * (x - x0), x = x0 + (1 / slope) * (y - y0)
-			if (outcodeOut & TOP) {           // point is above the clip rectangle
-				x = x0 + (x1 - x0) * (clipRect.bottom - y0) / (y1 - y0);
-				y = clipRect.bottom;
-			} else if (outcodeOut & BOTTOM) { // point is below the clip rectangle
-				x = x0 + (x1 - x0) * (clipRect.top - y0) / (y1 - y0);
-				y = clipRect.top;
-			} else if (outcodeOut & RIGHT) {  // point is to the right of clip rectangle
-				y = y0 + (y1 - y0) * (clipRect.right - x0) / (x1 - x0);
-				x = clipRect.right;
-			} else if (outcodeOut & LEFT) {   // point is to the left of clip rectangle
-				y = y0 + (y1 - y0) * (clipRect.left - x0) / (x1 - x0);
-				x = clipRect.left;
-			}
+            // Now find the intersection point;
+            // use formulas y = y0 + slope * (x - x0), x = x0 + (1 / slope) * (y - y0)
+            if (outcodeOut & TOP) {           // point is above the clip rectangle
+                x = x0 + (x1 - x0) * (clipRect.bottom - y0) / (y1 - y0);
+                y = clipRect.bottom;
+            } else if (outcodeOut & BOTTOM) { // point is below the clip rectangle
+                x = x0 + (x1 - x0) * (clipRect.top - y0) / (y1 - y0);
+                y = clipRect.top;
+            } else if (outcodeOut & RIGHT) {  // point is to the right of clip rectangle
+                y = y0 + (y1 - y0) * (clipRect.right - x0) / (x1 - x0);
+                x = clipRect.right;
+            } else if (outcodeOut & LEFT) {   // point is to the left of clip rectangle
+                y = y0 + (y1 - y0) * (clipRect.left - x0) / (x1 - x0);
+                x = clipRect.left;
+            }
 
-			// Now we move outside point to intersection point to clip
-			// and get ready for next pass.
-			if (outcodeOut == outcode0) {
-				x0 = x;
-				y0 = y;
-				outcode0 = ComputeOutCode(clipRect, x0, y0);
-			} else {
-				x1 = x;
-				y1 = y;
-				outcode1 = ComputeOutCode(clipRect, x1, y1);
-			}
-		}
-	}
+            // Now we move outside point to intersection point to clip
+            // and get ready for next pass.
+            if (outcodeOut == outcode0) {
+                x0 = x;
+                y0 = y;
+                outcode0 = ComputeOutCode(clipRect, x0, y0);
+            } else {
+                x1 = x;
+                y1 = y;
+                outcode1 = ComputeOutCode(clipRect, x1, y1);
+            }
+        }
+    }
     return accept;
 }

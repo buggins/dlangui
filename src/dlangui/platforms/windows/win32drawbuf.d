@@ -40,21 +40,21 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
     this(int width, int height) {
         resize(width, height);
     }
-	/// create resized copy of ColorDrawBuf
-	this(ColorDrawBuf v, int dx, int dy) {
-		this(dx, dy);
+    /// create resized copy of ColorDrawBuf
+    this(ColorDrawBuf v, int dx, int dy) {
+        this(dx, dy);
         resetClipping();
         fill(0xFFFFFFFF);
         if (_dx == dx && _dy == dy)
             drawImage(0, 0, v);
         else
             drawRescaled(Rect(0, 0, dx, dy), v, Rect(0, 0, v.width, v.height));
-	}
+    }
     /// invert alpha in buffer content
-	void invertAlpha() {
-		for(int i = _dx * _dy - 1; i >= 0; i--)
-			_pixels[i] ^= 0xFF000000;
-	}
+    void invertAlpha() {
+        for(int i = _dx * _dy - 1; i >= 0; i--)
+            _pixels[i] ^= 0xFF000000;
+    }
     /// returns HBITMAP for alpha
     HBITMAP createTransparencyBitmap() {
         int hbytes = (((_dx + 7) / 8) + 1) & 0xFFFFFFFE;

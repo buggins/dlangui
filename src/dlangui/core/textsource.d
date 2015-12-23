@@ -8,8 +8,8 @@ private import std.array;
 * Even if contains only file name, it's better to use it instead of string - object reference size is twice less than array ref.
 */
 class SourceFile {
-	protected string _filename;
-	@property string filename() { return _filename; }
+    protected string _filename;
+    @property string filename() { return _filename; }
     public this(string filename) {
         _filename = filename;
     }
@@ -21,19 +21,19 @@ class SourceFile {
 /// source lines for tokenizer
 interface SourceLines {
     /// source file
-	@property SourceFile file();
+    @property SourceFile file();
     /// last read line
-	@property uint line();
+    @property uint line();
     /// source encoding
-	//@property EncodingType encoding() { return _encoding; }
+    //@property EncodingType encoding() { return _encoding; }
     /// error code
-	@property int errorCode();
+    @property int errorCode();
     /// error message
-	@property string errorMessage();
+    @property string errorMessage();
     /// error line
-	@property int errorLine();
+    @property int errorLine();
     /// error position
-	@property int errorPos();
+    @property int errorPos();
     /// end of file reached
     @property bool eof();
 
@@ -89,17 +89,17 @@ class ArraySourceLines : SourceLines {
     /// source file
     override @property SourceFile file() { return _file; }
     /// last read line
-	override @property uint line() { return _line + _firstLine; }
+    override @property uint line() { return _line + _firstLine; }
     /// source encoding
-	//@property EncodingType encoding() { return _encoding; }
+    //@property EncodingType encoding() { return _encoding; }
     /// error code
-	override @property int errorCode() { return 0; }
+    override @property int errorCode() { return 0; }
     /// error message
-	override @property string errorMessage() { return ""; }
+    override @property string errorMessage() { return ""; }
     /// error line
-	override @property int errorLine() { return 0; }
+    override @property int errorLine() { return 0; }
     /// error position
-	override @property int errorPos() { return 0; }
+    override @property int errorPos() { return 0; }
 
     /// read line, return null if EOF reached or error occured
     override dchar[] readLine() {

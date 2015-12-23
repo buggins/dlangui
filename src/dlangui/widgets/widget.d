@@ -116,21 +116,21 @@ enum FocusMovement {
 
 /// standard mouse cursor types
 enum CursorType {
-	None,
-	/// use parent's cursor
-	Parent,
-	Arrow,
-	IBeam,
-	Wait,
-	Crosshair,
-	WaitArrow,
-	SizeNWSE,
-	SizeNESW,
-	SizeWE,
-	SizeNS,
-	SizeAll,
-	No,
-	Hand
+    None,
+    /// use parent's cursor
+    Parent,
+    Arrow,
+    IBeam,
+    Wait,
+    Crosshair,
+    WaitArrow,
+    SizeNWSE,
+    SizeNESW,
+    SizeWE,
+    SizeNS,
+    SizeAll,
+    No,
+    Hand
 }
 
 /**
@@ -176,13 +176,13 @@ public:
     /// set new trackHover flag value (when true, widget will change Hover state while mouse is moving)
     @property Widget trackHover(bool v) { _trackHover = v; return this; }
 
-	/// returns mouse cursor type for widget
-	uint getCursorType(int x, int y) {
-		return CursorType.Arrow;
-	}
+    /// returns mouse cursor type for widget
+    uint getCursorType(int x, int y) {
+        return CursorType.Arrow;
+    }
 
-	debug {
-	    private static __gshared int _instanceCount = 0;
+    debug {
+        private static __gshared int _instanceCount = 0;
     }
     /// empty parameter list constructor - for usage by factory
     this() {
@@ -190,38 +190,38 @@ public:
     }
     /// create with ID parameter
     this(string ID) {
-		_id = ID;
+        _id = ID;
         _state = State.Enabled;
-		debug _instanceCount++;
-		//Log.d("Created widget, count = ", ++_instanceCount);
+        debug _instanceCount++;
+        //Log.d("Created widget, count = ", ++_instanceCount);
     }
 
-	~this() {
-		debug {
+    ~this() {
+        debug {
             //Log.v("destroying widget ", _id, " ", this.classinfo.name);
             if (appShuttingDown)
                 onResourceDestroyWhileShutdown(_id, this.classinfo.name);
             _instanceCount--;
         }
-		if (_ownStyle !is null)
-			destroy(_ownStyle);
-		_ownStyle = null;
-		//Log.d("Destroyed widget, count = ", --_instanceCount);
-	}
+        if (_ownStyle !is null)
+            destroy(_ownStyle);
+        _ownStyle = null;
+        //Log.d("Destroyed widget, count = ", --_instanceCount);
+    }
 
-	debug {
+    debug {
         /// for debug purposes - number of created widget objects, not yet destroyed
         static @property int instanceCount() { return _instanceCount; }
     }
 
     /// accessor to style - by lookup in theme by styleId (if style id is not set, theme base style will be used).
-	protected @property const (Style) style() const {
-		if (_ownStyle !is null)
-			return _ownStyle;
-		return currentTheme.get(_styleId);
-	}
+    protected @property const (Style) style() const {
+        if (_ownStyle !is null)
+            return _ownStyle;
+        return currentTheme.get(_styleId);
+    }
     /// accessor to style - by lookup in theme by styleId (if style id is not set, theme base style will be used).
-	protected @property const (Style) style(uint stateFlags) const {
+    protected @property const (Style) style(uint stateFlags) const {
         const (Style) normalStyle = style();
         if (stateFlags == State.Normal) // state is normal
             return normalStyle;
@@ -235,19 +235,19 @@ public:
         //const (Style) parentStateStyle = parentStyle.forState(stateFlags);
         //if (parentStateStyle !is parentStyle)
         //    return parentStateStyle; // found style for state in parent
-		return normalStyle; // fallback to current style
-	}
+        return normalStyle; // fallback to current style
+    }
     /// returns style for current widget state
     protected @property const(Style) stateStyle() const {
         return style(state);
     }
 
     /// enforces widget's own style - allows override some of style properties
-	protected @property Style ownStyle() {
-		if (_ownStyle is null)
-			_ownStyle = currentTheme.modifyStyle(_styleId);
-		return _ownStyle;
-	}
+    protected @property Style ownStyle() {
+        if (_ownStyle is null)
+            _ownStyle = currentTheme.modifyStyle(_styleId);
+        return _ownStyle;
+    }
 
     /// handle theme change: e.g. reload some themed resources
     void onThemeChanged() {
@@ -260,7 +260,7 @@ public:
     }
 
     /// returns widget id, null if not set
-	@property string id() const { return _id; }
+    @property string id() const { return _id; }
     /// set widget id
     @property Widget id(string id) { _id = id; return this; }
     /// compare widget id with specified value, returs true if matches
@@ -275,12 +275,12 @@ public:
     /// override to handle focus changes
     protected void handleFocusChange(bool focused) {
         invalidate();
-		focusChange(this, focused);
+        focusChange(this, focused);
     }
     /// override to handle check changes
     protected void handleCheckChange(bool checked) {
         invalidate();
-		checkChange(this, checked);
+        checkChange(this, checked);
     }
     /// set new widget state (set of flags from State enum)
     @property Widget state(uint newState) {
@@ -317,7 +317,7 @@ public:
     // Style related properties
 
     /// returns widget style id, null if not set
-	@property string styleId() const { return _styleId; }
+    @property string styleId() const { return _styleId; }
     /// set widget style id
     @property Widget styleId(string id) { 
         _styleId = id;
@@ -342,26 +342,26 @@ public:
     immutable static int FOCUS_RECT_PADDING = 2;
     /// get padding (between background bounds and content of widget)
     @property Rect padding() const {
-		// get max padding from style padding and background drawable padding
-		Rect p = style.padding; 
-		DrawableRef d = backgroundDrawable;
-		if (!d.isNull) {
-			Rect dp = d.padding;
-			if (p.left < dp.left)
-				p.left = dp.left;
-			if (p.right < dp.right)
-				p.right = dp.right;
-			if (p.top < dp.top)
-				p.top = dp.top;
-			if (p.bottom < dp.bottom)
-				p.bottom = dp.bottom;
-		}
+        // get max padding from style padding and background drawable padding
+        Rect p = style.padding; 
+        DrawableRef d = backgroundDrawable;
+        if (!d.isNull) {
+            Rect dp = d.padding;
+            if (p.left < dp.left)
+                p.left = dp.left;
+            if (p.right < dp.right)
+                p.right = dp.right;
+            if (p.top < dp.top)
+                p.top = dp.top;
+            if (p.bottom < dp.bottom)
+                p.bottom = dp.bottom;
+        }
         if ((focusable || ((state & State.Parent) && parent.focusable)) && focusRectColors) {
             // add two pixels to padding when focus rect is required - one pixel for focus rect, one for additional space
             p.offset(FOCUS_RECT_PADDING, FOCUS_RECT_PADDING);
         }
-		return p;
-	}
+        return p;
+    }
     /// set padding for widget - override one from style
     @property Widget padding(Rect rc) { 
         ownStyle.padding = rc; 
@@ -390,43 +390,43 @@ public:
         return this; 
     }
 
-	/// background image id
-	@property string backgroundImageId() const {
-		return style.backgroundImageId;
-	}
+    /// background image id
+    @property string backgroundImageId() const {
+        return style.backgroundImageId;
+    }
 
-	/// background image id
-	@property Widget backgroundImageId(string imageId) {
-		ownStyle.backgroundImageId = imageId;
-		return this;
-	}
+    /// background image id
+    @property Widget backgroundImageId(string imageId) {
+        ownStyle.backgroundImageId = imageId;
+        return this;
+    }
 
     /// returns colors to draw focus rectangle (one for solid, two for vertical gradient) or null if no focus rect should be drawn for style
     @property const(uint[]) focusRectColors() const {
         return style.focusRectColors;
     }
 
-	DrawableRef _backgroundDrawable;
-	/// background drawable
-	@property DrawableRef backgroundDrawable() const {
-		if (_backgroundDrawable.isNull)
-			return stateStyle.backgroundDrawable;
-		return (cast(Widget)this)._backgroundDrawable;
-	}
-	/// background drawable
-	@property void backgroundDrawable(DrawableRef drawable) {
-		_backgroundDrawable = drawable;
-	}
+    DrawableRef _backgroundDrawable;
+    /// background drawable
+    @property DrawableRef backgroundDrawable() const {
+        if (_backgroundDrawable.isNull)
+            return stateStyle.backgroundDrawable;
+        return (cast(Widget)this)._backgroundDrawable;
+    }
+    /// background drawable
+    @property void backgroundDrawable(DrawableRef drawable) {
+        _backgroundDrawable = drawable;
+    }
 
-	/// widget drawing alpha value (0=opaque .. 255=transparent)
-	@property uint alpha() const { return stateStyle.alpha; }
-	/// set widget drawing alpha value (0=opaque .. 255=transparent)
-	@property Widget alpha(uint value) { 
-		ownStyle.alpha = value; 
-		invalidate();
-		return this; 
-	}
-	/// get text color (ARGB 32 bit value)
+    /// widget drawing alpha value (0=opaque .. 255=transparent)
+    @property uint alpha() const { return stateStyle.alpha; }
+    /// set widget drawing alpha value (0=opaque .. 255=transparent)
+    @property Widget alpha(uint value) { 
+        ownStyle.alpha = value; 
+        invalidate();
+        return this; 
+    }
+    /// get text color (ARGB 32 bit value)
     @property uint textColor() const { return stateStyle.textColor; }
     /// set text color (ARGB 32 bit value)
     @property Widget textColor(uint value) { 
@@ -443,44 +443,44 @@ public:
     }
 
 
-	/// get text flags (bit set of TextFlag enum values)
-	@property uint textFlags() { 
-		uint res = stateStyle.textFlags;
-		if (res == TEXT_FLAGS_USE_PARENT) {
-			if (parent)
-				res = parent.textFlags;
-			else
-				res = 0;
-		}
-		if (res & TextFlag.UnderlineHotKeysWhenAltPressed) {
-			uint modifiers = 0;
-			if (window !is null)
-				modifiers = window.keyboardModifiers;
-			bool altPressed = (modifiers & (KeyFlag.Alt | KeyFlag.LAlt | KeyFlag.RAlt)) != 0;
-			if (!altPressed) {
-				res = (res & ~(TextFlag.UnderlineHotKeysWhenAltPressed | TextFlag.UnderlineHotKeys)) | TextFlag.HotKeys;
-			} else {
-				res |= TextFlag.UnderlineHotKeys;
-			}
-		}
+    /// get text flags (bit set of TextFlag enum values)
+    @property uint textFlags() { 
+        uint res = stateStyle.textFlags;
+        if (res == TEXT_FLAGS_USE_PARENT) {
+            if (parent)
+                res = parent.textFlags;
+            else
+                res = 0;
+        }
+        if (res & TextFlag.UnderlineHotKeysWhenAltPressed) {
+            uint modifiers = 0;
+            if (window !is null)
+                modifiers = window.keyboardModifiers;
+            bool altPressed = (modifiers & (KeyFlag.Alt | KeyFlag.LAlt | KeyFlag.RAlt)) != 0;
+            if (!altPressed) {
+                res = (res & ~(TextFlag.UnderlineHotKeysWhenAltPressed | TextFlag.UnderlineHotKeys)) | TextFlag.HotKeys;
+            } else {
+                res |= TextFlag.UnderlineHotKeys;
+            }
+        }
 
-		return res; 
-	}
-	/// set text flags (bit set of TextFlag enum values)
-	@property Widget textFlags(uint value) { 
-		ownStyle.textFlags = value;
-		bool oldHotkeys = (ownStyle.textFlags & (TextFlag.HotKeys | TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed)) != 0;
-		bool newHotkeys = (value & (TextFlag.HotKeys | TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed)) != 0;
-		if (oldHotkeys != newHotkeys)
-			requestLayout();
-		else
-			invalidate();
-		return this; 
-	}
-	/// returns font face
+        return res; 
+    }
+    /// set text flags (bit set of TextFlag enum values)
+    @property Widget textFlags(uint value) { 
+        ownStyle.textFlags = value;
+        bool oldHotkeys = (ownStyle.textFlags & (TextFlag.HotKeys | TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed)) != 0;
+        bool newHotkeys = (value & (TextFlag.HotKeys | TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed)) != 0;
+        if (oldHotkeys != newHotkeys)
+            requestLayout();
+        else
+            invalidate();
+        return this; 
+    }
+    /// returns font face
     @property string fontFace() const { return stateStyle.fontFace; }
     /// set font face for widget - override one from style
-	@property Widget fontFace(string face) { 
+    @property Widget fontFace(string face) { 
         ownStyle.fontFace = face; 
         requestLayout();
         return this; 
@@ -488,7 +488,7 @@ public:
     /// returns font style (italic/normal)
     @property bool fontItalic() const { return stateStyle.fontItalic; }
     /// set font style (italic/normal) for widget - override one from style
-	@property Widget fontItalic(bool italic) { 
+    @property Widget fontItalic(bool italic) { 
         ownStyle.fontStyle = italic ? FONT_STYLE_ITALIC : FONT_STYLE_NORMAL; 
         requestLayout();
         return this; 
@@ -496,7 +496,7 @@ public:
     /// returns font weight
     @property ushort fontWeight() const { return stateStyle.fontWeight; }
     /// set font weight for widget - override one from style
-	@property Widget fontWeight(int weight) {
+    @property Widget fontWeight(int weight) {
         if (weight < 100)
             weight = 100;
         else if (weight > 900)
@@ -508,7 +508,7 @@ public:
     /// returns font size in pixels
     @property int fontSize() const { return stateStyle.fontSize; }
     /// set font size for widget - override one from style
-	@property Widget fontSize(int size) {
+    @property Widget fontSize(int size) {
         ownStyle.fontSize = size; 
         requestLayout();
         return this; 
@@ -623,19 +623,19 @@ public:
         return _pos.isPointInside(x, y);
     }
 
-	/// return true if state has State.Enabled flag set
+    /// return true if state has State.Enabled flag set
     @property bool enabled() { return (state & State.Enabled) != 0; }
-	/// change enabled state
+    /// change enabled state
     @property Widget enabled(bool flg) { flg ? setState(State.Enabled) : resetState(State.Enabled); return this; }
 
     protected bool _clickable;
-	/// when true, user can click this control, and get onClick listeners called
+    /// when true, user can click this control, and get onClick listeners called
     @property bool clickable() { return _clickable; }
     @property Widget clickable(bool flg) { _clickable = flg; return this; }
     @property bool canClick() { return _clickable && enabled && visible; }
 
     protected bool _checkable;
-	/// when true, control supports Checked state
+    /// when true, control supports Checked state
     @property bool checkable() { return _checkable; }
     @property Widget checkable(bool flg) { _checkable = flg; return this; }
     @property bool canCheck() { return _checkable && enabled && visible; }
@@ -683,16 +683,16 @@ public:
             if (!force && !w.actionsUpdateRequested())
                 return false;
             const ActionState oldState = a.state;
-			//import dlangui.widgets.editors;
-			//if (a.id == EditorActions.Undo) {
-			//	Log.d("Requesting Undo action. Old state: ", a.state);
-			//}
+            //import dlangui.widgets.editors;
+            //if (a.id == EditorActions.Undo) {
+            //    Log.d("Requesting Undo action. Old state: ", a.state);
+            //}
             if (w.dispatchActionStateRequest(a, this)) {
                 // state is updated
-				//Log.d("updateActionState ", a.label, " found state: ", a.state.toString);
+                //Log.d("updateActionState ", a.label, " found state: ", a.state.toString);
             } else {
                 a.state = a.defaultState;
-				//Log.d("updateActionState ", a.label, " using default state: ", a.state.toString);
+                //Log.d("updateActionState ", a.label, " using default state: ", a.state.toString);
             }
             if (a.state != oldState)
                 return true;
@@ -1036,17 +1036,17 @@ public:
     // =======================================================
     // Events
 
-	protected ActionMap _acceleratorMap;
-	@property ref ActionMap acceleratorMap() { return _acceleratorMap; }
+    protected ActionMap _acceleratorMap;
+    @property ref ActionMap acceleratorMap() { return _acceleratorMap; }
 
-	/// override to handle specific actions
-	bool handleAction(const Action a) {
-		return false;
-	}
-	/// override to handle specific actions state (e.g. change enabled state for supported actions)
-	bool handleActionStateRequest(const Action a) {
-		return false;
-	}
+    /// override to handle specific actions
+    bool handleAction(const Action a) {
+        return false;
+    }
+    /// override to handle specific actions state (e.g. change enabled state for supported actions)
+    bool handleActionStateRequest(const Action a) {
+        return false;
+    }
 
     /// call to dispatch action
     bool dispatchAction(const Action a) {
@@ -1099,16 +1099,16 @@ public:
     bool onKeyEvent(KeyEvent event) {
         if (keyEvent.assigned && keyEvent(this, event))
             return true; // processed by external handler
-		if (event.action == KeyAction.KeyDown) {
-			Action action = findKeyAction(event.keyCode, event.flags & (KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Control));
-			if (action !is null) {
-				return dispatchAction(action);
-			}
-		}
+        if (event.action == KeyAction.KeyDown) {
+            Action action = findKeyAction(event.keyCode, event.flags & (KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Control));
+            if (action !is null) {
+                return dispatchAction(action);
+            }
+        }
         // handle focus navigation using keys
         if (focused && handleMoveFocusUsingKeys(event))
             return true;
-		if (canClick) {
+        if (canClick) {
             // support onClick event initiated by Space or Return keys
             if (event.action == KeyAction.KeyDown) {
                 if (event.keyCode == KeyCode.SPACE || event.keyCode == KeyCode.RETURN) {
@@ -1152,82 +1152,82 @@ public:
         if (mouseEvent.assigned && mouseEvent(this, event))
             return true; // processed by external handler
         //Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
-		// support onClick
-		if (canClick) {
-	        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
-	            setState(State.Pressed);
+        // support onClick
+        if (canClick) {
+            if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
+                setState(State.Pressed);
                 if (canFocus)
                     setFocus();
-	            return true;
-	        }
-	        if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
-	            resetState(State.Pressed);
+                return true;
+            }
+            if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
+                resetState(State.Pressed);
                 handleClick();
-	            return true;
-	        }
-	        if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {
-	            resetState(State.Pressed);
-	            resetState(State.Hovered);
-	            return true;
-	        }
-	        if (event.action == MouseAction.FocusIn) {
-	            setState(State.Pressed);
-	            return true;
-	        }
-		}
+                return true;
+            }
+            if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {
+                resetState(State.Pressed);
+                resetState(State.Hovered);
+                return true;
+            }
+            if (event.action == MouseAction.FocusIn) {
+                setState(State.Pressed);
+                return true;
+            }
+        }
         if (event.action == MouseAction.Move && event.flags == 0 && hasTooltip) {
             scheduleTooltip(200);
         }
-		if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Right) {
-			if (canShowPopupMenu(event.x, event.y)) {
-				showPopupMenu(event.x, event.y);
-				return true;
-			}
-		}
+        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Right) {
+            if (canShowPopupMenu(event.x, event.y)) {
+                showPopupMenu(event.x, event.y);
+                return true;
+            }
+        }
         if (canFocus && event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
             setFocus();
             return true;
         }
         if (trackHover) {
-	        if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {
+            if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {
                 if ((state & State.Hovered)) {
                     debug(mouse) Log.d("Hover off ", id);
                     resetState(State.Hovered);
                 }
-	            return true;
-	        }
+                return true;
+            }
             if (event.action == MouseAction.Move) {
                 if (!(state & State.Hovered)) {
-					debug(mouse) Log.d("Hover ", id);
+                    debug(mouse) Log.d("Hover ", id);
                     setState(State.Hovered);
                 }
-	            return true;
+                return true;
             }
             if (event.action == MouseAction.Leave) {
-				debug(mouse) Log.d("Leave ", id);
-	            resetState(State.Hovered);
-	            return true;
+                debug(mouse) Log.d("Leave ", id);
+                resetState(State.Hovered);
+                return true;
             }
         }
-	    return false;
+        return false;
     }
 
     // =======================================================
     // Signals
 
-	/// on click event listener (bool delegate(Widget))
+    /// on click event listener (bool delegate(Widget))
     Signal!OnClickHandler click;
 
-	/// checked state change event listener (bool delegate(Widget, bool))
+    /// checked state change event listener (bool delegate(Widget, bool))
     Signal!OnCheckHandler checkChange;
 
-	/// focus state change event listener (bool delegate(Widget, bool))
+    /// focus state change event listener (bool delegate(Widget, bool))
     Signal!OnFocusHandler focusChange;
 
-	/// key event listener (bool delegate(Widget, KeyEvent)) - return true if event is processed by handler
+    /// key event listener (bool delegate(Widget, KeyEvent)) - return true if event is processed by handler
     Signal!OnKeyHandler keyEvent;
 
-	/// mouse event listener (bool delegate(Widget, MouseEvent)) - return true if event is processed by handler
+    /// mouse event listener (bool delegate(Widget, MouseEvent)) - return true if event is processed by handler
     Signal!OnMouseHandler mouseEvent;
 
 
@@ -1343,12 +1343,12 @@ public:
             return;
         Rect rc = _pos;
         applyMargins(rc);
-		auto saver = ClipRectSaver(buf, rc, alpha);
+        auto saver = ClipRectSaver(buf, rc, alpha);
         DrawableRef bg = backgroundDrawable;
-		if (!bg.isNull) {
-	        bg.drawTo(buf, rc, state);
-		}
-	    applyPadding(rc);
+        if (!bg.isNull) {
+            bg.drawTo(buf, rc, state);
+        }
+        applyPadding(rc);
         if (state & State.Focused) {
             rc.expand(FOCUS_RECT_PADDING, FOCUS_RECT_PADDING);
             drawFocusRect(buf, rc);
@@ -1400,20 +1400,20 @@ public:
         applyAlign(rc, sz, ha, va);
     }
 
-	// ===========================================================
-	// popup menu support
-	/// returns true if widget can show popup menu (e.g. by mouse right click at point x,y)
-	bool canShowPopupMenu(int x, int y) {
-		return false;
-	}
-	/// shows popup menu at (x,y)
-	void showPopupMenu(int x, int y) {
-		// override to show popup
-	}
-	/// override to change popup menu items state
-	bool isActionEnabled(const Action action) {
-		return true;
-	}
+    // ===========================================================
+    // popup menu support
+    /// returns true if widget can show popup menu (e.g. by mouse right click at point x,y)
+    bool canShowPopupMenu(int x, int y) {
+        return false;
+    }
+    /// shows popup menu at (x,y)
+    void showPopupMenu(int x, int y) {
+        // override to show popup
+    }
+    /// override to change popup menu items state
+    bool isActionEnabled(const Action action) {
+        return true;
+    }
 
     // ===========================================================
     // Widget hierarhy methods
@@ -1604,9 +1604,9 @@ class WidgetGroup : Widget {
         this(null);
     }
     /// create with ID parameter
-	this(string ID) {
-		super(ID);
-	}
+    this(string ID) {
+        super(ID);
+    }
 
     protected WidgetList _children;
 
@@ -1661,9 +1661,9 @@ class WidgetGroupDefaultDrawing : WidgetGroup {
         this(null);
     }
     /// create with ID parameter
-	this(string ID) {
-		super(ID);
-	}
+    this(string ID) {
+        super(ID);
+    }
     /// Draw widget at its position to buffer
     override void onDraw(DrawBuf buf) {
         if (visibility != Visibility.Visible)
@@ -1672,11 +1672,11 @@ class WidgetGroupDefaultDrawing : WidgetGroup {
         Rect rc = _pos;
         applyMargins(rc);
         applyPadding(rc);
-		auto saver = ClipRectSaver(buf, rc);
-		for (int i = 0; i < _children.count; i++) {
-			Widget item = _children.get(i);
-			item.onDraw(buf);
-		}
+        auto saver = ClipRectSaver(buf, rc);
+        for (int i = 0; i < _children.count; i++) {
+            Widget item = _children.get(i);
+            item.onDraw(buf);
+        }
     }
 }
 

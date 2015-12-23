@@ -181,14 +181,14 @@ EmbeddedResource[] embedResources(string[] resourceNames)() {
 
 /// split string into lines, autodetect line endings
 string[] splitLines(string s) {
-	auto lines_crlf = split(s, "\r\n");
-	auto lines_cr = split(s, "\r");
-	auto lines_lf = split(s, "\n");
-	if (lines_crlf.length >= lines_cr.length && lines_crlf.length >= lines_lf.length)
-		return lines_crlf;
-	if (lines_cr.length > lines_lf.length)
-		return lines_cr;
-	return lines_lf;
+    auto lines_crlf = split(s, "\r\n");
+    auto lines_cr = split(s, "\r");
+    auto lines_lf = split(s, "\n");
+    if (lines_crlf.length >= lines_cr.length && lines_crlf.length >= lines_lf.length)
+        return lines_crlf;
+    if (lines_cr.length > lines_lf.length)
+        return lines_cr;
+    return lines_lf;
 }
 
 /// embed all resources from list
@@ -223,17 +223,17 @@ immutable(ubyte[]) loadResourceBytes(string filename) {
 
 /// Base class for all drawables
 class Drawable : RefCountedObject {
-	debug static __gshared int _instanceCount;
-	debug @property static int instanceCount() { return _instanceCount; }
+    debug static __gshared int _instanceCount;
+    debug @property static int instanceCount() { return _instanceCount; }
 
-	this() {
+    this() {
         debug ++_instanceCount;
-		//Log.d("Created drawable, count=", ++_instanceCount);
-	}
-	~this() {
-		//Log.d("Destroyed drawable, count=", --_instanceCount);
+        //Log.d("Created drawable, count=", ++_instanceCount);
+    }
+    ~this() {
+        //Log.d("Destroyed drawable, count=", --_instanceCount);
         debug --_instanceCount;
-	}
+    }
     abstract void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0);
     @property abstract int width();
     @property abstract int height();
@@ -242,33 +242,33 @@ class Drawable : RefCountedObject {
 
 /// Custom drawing inside openGL
 class OpenGLDrawable : Drawable {
-	
-	private OpenGLDrawableDelegate _drawHandler;
+    
+    private OpenGLDrawableDelegate _drawHandler;
 
-	@property OpenGLDrawableDelegate drawHandler() { return _drawHandler; }
-	@property OpenGLDrawable drawHandler(OpenGLDrawableDelegate handler) { _drawHandler = handler; return this; }
+    @property OpenGLDrawableDelegate drawHandler() { return _drawHandler; }
+    @property OpenGLDrawable drawHandler(OpenGLDrawableDelegate handler) { _drawHandler = handler; return this; }
 
-	this(OpenGLDrawableDelegate drawHandler = null) {
-		_drawHandler = drawHandler;
-	}
+    this(OpenGLDrawableDelegate drawHandler = null) {
+        _drawHandler = drawHandler;
+    }
 
-	void onDraw(Rect windowRect, Rect rc) {
-		// either override this method or assign draw handler
-		if (_drawHandler) {
-			_drawHandler(windowRect, rc);
-		}
-	}
+    void onDraw(Rect windowRect, Rect rc) {
+        // either override this method or assign draw handler
+        if (_drawHandler) {
+            _drawHandler(windowRect, rc);
+        }
+    }
 
     override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
-		buf.drawCustomOpenGLScene(rc, &onDraw);
-	}
+        buf.drawCustomOpenGLScene(rc, &onDraw);
+    }
 
     override @property int width() {
-		return 20; // dummy size
-	}
+        return 20; // dummy size
+    }
     override @property int height() {
-		return 20; // dummy size
-	}
+        return 20; // dummy size
+    }
 }
 
 class EmptyDrawable : Drawable {
@@ -406,8 +406,8 @@ class ImageDrawable : Drawable {
     protected DrawBufRef _image;
     protected bool _tiled;
 
-	debug static __gshared int _instanceCount;
-	debug @property static int instanceCount() { return _instanceCount; }
+    debug static __gshared int _instanceCount;
+    debug @property static int instanceCount() { return _instanceCount; }
 
     this(ref DrawBufRef image, bool tiled = false, bool ninePatch = false) {
         _image = image;
@@ -415,13 +415,13 @@ class ImageDrawable : Drawable {
         if (ninePatch)
             _image.detectNinePatch();
         debug _instanceCount++;
-		debug(resalloc) Log.d("Created ImageDrawable, count=", _instanceCount);
+        debug(resalloc) Log.d("Created ImageDrawable, count=", _instanceCount);
     }
-	~this() {
-		_image.clear();
+    ~this() {
+        _image.clear();
         debug _instanceCount--;
-		debug(resalloc) Log.d("Destroyed ImageDrawable, count=", _instanceCount);
-	}
+        debug(resalloc) Log.d("Destroyed ImageDrawable, count=", _instanceCount);
+    }
     @property override int width() { 
         if (_image.isNull)
             return 0;
@@ -516,14 +516,14 @@ class ImageDrawable : Drawable {
             }
         } else if (_tiled) {
             // tiled
-			int imgdx = _image.width;
-			int imgdy = _image.height;
-			tilex0 %= imgdx;
-			if (tilex0 < 0)
-				tilex0 += imgdx;
-			tiley0 %= imgdy;
-			if (tiley0 < 0)
-				tiley0 += imgdy;
+            int imgdx = _image.width;
+            int imgdy = _image.height;
+            tilex0 %= imgdx;
+            if (tilex0 < 0)
+                tilex0 += imgdx;
+            tiley0 %= imgdy;
+            if (tiley0 < 0)
+                tiley0 += imgdy;
             int xx0 = rc.left;
             int yy0 = rc.top;
             if (tilex0)
@@ -538,7 +538,7 @@ class ImageDrawable : Drawable {
                         buf.drawFragment(dst.left, dst.top, _image.get, src);
                 }
             }
-		} else {
+        } else {
             // rescaled or normal
             if (rc.width != _image.width || rc.height != _image.height)
                 buf.drawRescaled(rc, _image.get, Rect(0, 0, _image.width, _image.height));
@@ -551,7 +551,7 @@ class ImageDrawable : Drawable {
 string attrValue(Element item, string attrname, string attrname2 = null) {
     if (attrname in item.tag.attr)
         return item.tag.attr[attrname];
-	if (attrname2 && attrname2 in item.tag.attr)
+    if (attrname2 && attrname2 in item.tag.attr)
         return item.tag.attr[attrname2];
     return null;
 }
@@ -629,11 +629,11 @@ class StateDrawable : Drawable {
     // max drawable size for all states
     protected Point _size;
 
-	~this() {
-		foreach(ref item; _stateList)
-			destroy(item);
-		_stateList = null;
-	}
+    ~this() {
+        foreach(ref item; _stateList)
+            destroy(item);
+        _stateList = null;
+    }
 
     void addState(uint stateMask, uint stateValue, string resourceId, ref ColorTransform transform) {
         StateItem item = new StateItem();
@@ -866,13 +866,13 @@ class ImageCache {
         _map[filename] = item;
         return item.get(transform);
     }
-	// clear usage flags for all entries
-	void checkpoint() {
+    // clear usage flags for all entries
+    void checkpoint() {
         foreach (item; _map)
             item.checkpoint();
     }
-	// removes entries not used after last call of checkpoint() or cleanup()
-	void cleanup() {
+    // removes entries not used after last call of checkpoint() or cleanup()
+    void cleanup() {
         foreach (item; _map)
             item.cleanup();
     }
@@ -882,11 +882,11 @@ class ImageCache {
     }
     ~this() {
         debug Log.i("Destroying ImageCache");
-		foreach (ref item; _map) {
-			destroy(item);
+        foreach (ref item; _map) {
+            destroy(item);
             item = null;
-		}
-		_map.destroy();
+        }
+        _map.destroy();
     }
 }
 
@@ -895,9 +895,9 @@ __gshared ImageCache _imageCache;
 @property ImageCache imageCache() { return _imageCache; }
 /// image cache singleton
 @property void imageCache(ImageCache cache) { 
-	if (_imageCache !is null)
-		destroy(_imageCache);
-	_imageCache = cache; 
+    if (_imageCache !is null)
+        destroy(_imageCache);
+    _imageCache = cache; 
 }
 
 __gshared DrawableCache _drawableCache;
@@ -905,9 +905,9 @@ __gshared DrawableCache _drawableCache;
 @property DrawableCache drawableCache() { return _drawableCache; }
 /// drawable cache singleton
 @property void drawableCache(DrawableCache cache) { 
-	if (_drawableCache !is null)
-		destroy(_drawableCache);
-	_drawableCache = cache;
+    if (_drawableCache !is null)
+        destroy(_drawableCache);
+    _drawableCache = cache;
 }
 
 shared static this() {
@@ -933,24 +933,24 @@ class DrawableCache {
             _tiled = tiled;
             _error = filename is null;
             debug ++_instanceCount;
-			debug(resalloc) Log.d("Created DrawableCacheItem, count=", _instanceCount);
+            debug(resalloc) Log.d("Created DrawableCacheItem, count=", _instanceCount);
         }
-		~this() {
-			_drawable.clear();
-			foreach(ref t; _transformed)
-				t.clear();
-			_transformed.destroy();
+        ~this() {
+            _drawable.clear();
+            foreach(ref t; _transformed)
+                t.clear();
+            _transformed.destroy();
             debug --_instanceCount;
-			debug(resalloc) Log.d("Destroyed DrawableCacheItem, count=", _instanceCount);
-		}
+            debug(resalloc) Log.d("Destroyed DrawableCacheItem, count=", _instanceCount);
+        }
         /// remove from memory, will cause reload on next access
         void compact() {
             if (!_drawable.isNull)
                 _drawable.clear();
-			foreach(t; _transformed)
-				t.clear();
-			_transformed.destroy();
-		}
+            foreach(t; _transformed)
+                t.clear();
+            _transformed.destroy();
+        }
         /// mark as not used
         void checkpoint() {
             _used = false;
@@ -1034,19 +1034,19 @@ class DrawableCache {
         }
     }
     void clear() {
-		Log.d("DrawableCache.clear()");
+        Log.d("DrawableCache.clear()");
         _idToFileMap.destroy();
         foreach(DrawableCacheItem item; _idToDrawableMap)
             item.drawable.clear();
         _idToDrawableMap.destroy();
     }
-	// clear usage flags for all entries
-	void checkpoint() {
+    // clear usage flags for all entries
+    void checkpoint() {
         foreach (item; _idToDrawableMap)
             item.checkpoint();
     }
-	// removes entries not used after last call of checkpoint() or cleanup()
-	void cleanup() {
+    // removes entries not used after last call of checkpoint() or cleanup()
+    void cleanup() {
         foreach (item; _idToDrawableMap)
             item.cleanup();
     }
@@ -1118,8 +1118,8 @@ class DrawableCache {
             return fn.dup;
         return null;
     }
-	/// get resource file full pathname by resource id, null if not found
-	string findResource(string id) {
+    /// get resource file full pathname by resource id, null if not found
+    string findResource(string id) {
         if (id.startsWith("#"))
             return id; // it's not a file name, just a color #AARRGGBB
         if (id in _idToFileMap)
@@ -1147,28 +1147,28 @@ class DrawableCache {
         Log.w("resource ", id, " is not found");
         return null;
     }
-	/// get image (DrawBuf) from imageCache by resource id
-	DrawBufRef getImage(string id) {
-		DrawBufRef res;
-		string fname = findResource(id);
-		if (fname.endsWith(".png") || fname.endsWith(".jpg"))
-			return imageCache.get(fname);
-		return res;
-	}
+    /// get image (DrawBuf) from imageCache by resource id
+    DrawBufRef getImage(string id) {
+        DrawBufRef res;
+        string fname = findResource(id);
+        if (fname.endsWith(".png") || fname.endsWith(".jpg"))
+            return imageCache.get(fname);
+        return res;
+    }
     this() {
         debug Log.i("Creating DrawableCache");
     }
     ~this() {
-		debug(resalloc) Log.e("Drawable instace count before destroying of DrawableCache: ", ImageDrawable.instanceCount);
+        debug(resalloc) Log.e("Drawable instace count before destroying of DrawableCache: ", ImageDrawable.instanceCount);
 
-		//Log.i("Destroying DrawableCache _idToDrawableMap.length=", _idToDrawableMap.length);
-		Log.i("Destroying DrawableCache");
-		foreach (ref item; _idToDrawableMap) {
-			destroy(item);
-			item = null;
-		}
-		_idToDrawableMap.destroy();
-		debug if(ImageDrawable.instanceCount) Log.e("Drawable instace count after destroying of DrawableCache: ", ImageDrawable.instanceCount);
+        //Log.i("Destroying DrawableCache _idToDrawableMap.length=", _idToDrawableMap.length);
+        Log.i("Destroying DrawableCache");
+        foreach (ref item; _idToDrawableMap) {
+            destroy(item);
+            item = null;
+        }
+        _idToDrawableMap.destroy();
+        debug if(ImageDrawable.instanceCount) Log.e("Drawable instace count after destroying of DrawableCache: ", ImageDrawable.instanceCount);
     }
 }
 

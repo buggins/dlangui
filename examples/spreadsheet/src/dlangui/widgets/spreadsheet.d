@@ -46,8 +46,8 @@ class SpreadSheetView : StringGridWidget {
         super(ID);
         layoutWidth = FILL_PARENT;
         layoutHeight = FILL_PARENT;
-		defRowHeight = 14;
-		defColumnWidth = 80;
+        defRowHeight = 14;
+        defColumnWidth = 80;
         styleId = null;
         backgroundColor = 0xFFFFFF;
         resize(50, 50);
@@ -143,8 +143,8 @@ class SpreadSheetWidget : WidgetGroupDefaultDrawing, OnScrollHandler, CellSelect
         }
     }
 
-	/// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-	override void measure(int parentWidth, int parentHeight) { 
+    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+    override void measure(int parentWidth, int parentHeight) { 
         if (visibility == Visibility.Gone) {
             return;
         }
@@ -156,16 +156,16 @@ class SpreadSheetWidget : WidgetGroupDefaultDrawing, OnScrollHandler, CellSelect
             sb.measure(parentWidth, parentHeight);
         _editControl.measure(parentWidth, parentHeight);
         _tabs.measure(parentWidth, parentHeight);
-	}
-	/// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
-	override void layout(Rect rc) {
-		if (visibility == Visibility.Gone) {
-			return;
-		}
-		_pos = rc;
-		_needLayout = false;
-		applyMargins(rc);
-		applyPadding(rc);
+    }
+    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+    override void layout(Rect rc) {
+        if (visibility == Visibility.Gone) {
+            return;
+        }
+        _pos = rc;
+        _needLayout = false;
+        applyMargins(rc);
+        applyPadding(rc);
         int editHeight = _editControl.measuredHeight;
         _editControl.layout(Rect(rc.left, rc.top, rc.right, rc.top + editHeight));
         rc.top += editHeight;

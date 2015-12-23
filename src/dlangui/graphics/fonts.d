@@ -59,18 +59,18 @@ enum FontFamily : ubyte {
     /// Serif font, e.g. Times New Roman
     Serif,
     /// Fantasy font
-	Fantasy,
+    Fantasy,
     /// Cursive font
-	Cursive,
+    Cursive,
     /// Monospace font (fixed pitch font), e.g. Courier New
     MonoSpace
 }
 
 /// font weight constants (0..1000)
 enum FontWeight : int {
-	/// normal font weight
+    /// normal font weight
     Normal = 400,
-	/// bold font
+    /// bold font
     Bold = 800
 }
 
@@ -112,7 +112,7 @@ static if (ENABLE_OPENGL) {
      * 
      * Used for resource management. Usually you don't have to call it manually.
      */
-	@property void glyphDestroyCallback(void function(uint id) callback) { _glyphDestroyCallback = callback; }
+    @property void glyphDestroyCallback(void function(uint id) callback) { _glyphDestroyCallback = callback; }
 
     private __gshared uint _nextGlyphId;
     /**
@@ -122,7 +122,7 @@ static if (ENABLE_OPENGL) {
      * 
      * Used for resource management. Usually you don't have to call it manually.
      */
-	uint nextGlyphId() { return _nextGlyphId++; }
+    uint nextGlyphId() { return _nextGlyphId++; }
 }
 
 /// constant for measureText maxWidth paramenter - to tell that all characters of text string should be measured.
@@ -177,11 +177,11 @@ class Font : RefCountedObject {
     @property int spaceWidth() {
         if (_spaceWidth < 0) {
             _spaceWidth = charWidth(' ');
-			if (_spaceWidth <= 0)
-				_spaceWidth = charWidth('0');
-			if (_spaceWidth <= 0)
-				_spaceWidth = size;
-		}
+            if (_spaceWidth <= 0)
+                _spaceWidth = charWidth('0');
+            if (_spaceWidth <= 0)
+                _spaceWidth = size;
+        }
         return _spaceWidth;
     }
 
@@ -191,7 +191,7 @@ class Font : RefCountedObject {
         return !g ? 0 : g.width;
     }
 
-	/*******************************************************************************************
+    /*******************************************************************************************
      * Measure text string, return accumulated widths[] (distance to end of n-th character), returns number of measured chars.
      *
      * Supports Tab character processing and processing of menu item labels like '&File'.
@@ -200,17 +200,17 @@ class Font : RefCountedObject {
      *          text = text string to measure
      *          widths = output buffer to put measured widths (widths[i] will be set to cumulative widths text[0..i])
      *          maxWidth = maximum width to measure - measure is stopping if max width is reached (pass MAX_WIDTH_UNSPECIFIED to measure all characters)
-     *      	tabSize = tabulation size, in number of spaces
-     *      	tabOffset = when string is drawn not from left position, use to move tab stops left/right
-     *      	textFlags = TextFlag bit set - to control underline, hotkey label processing, etc...
+     *          tabSize = tabulation size, in number of spaces
+     *          tabOffset = when string is drawn not from left position, use to move tab stops left/right
+     *          textFlags = TextFlag bit set - to control underline, hotkey label processing, etc...
      * Returns:
      *          number of characters measured (may be less than text.length if maxWidth is reached)
      ******************************************************************************************/
-	int measureText(const dchar[] text, ref int[] widths, int maxWidth = MAX_WIDTH_UNSPECIFIED, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
-		if (text.length == 0)
-			return 0;
-		const dchar * pstr = text.ptr;
-		uint len = cast(uint)text.length;
+    int measureText(const dchar[] text, ref int[] widths, int maxWidth = MAX_WIDTH_UNSPECIFIED, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
+        if (text.length == 0)
+            return 0;
+        const dchar * pstr = text.ptr;
+        uint len = cast(uint)text.length;
         if (widths.length < len)
             widths.length = len + 1;
         int x = 0;
@@ -232,19 +232,19 @@ class Font : RefCountedObject {
                 charsMeasured = i + 1;
                 x = tabPosition;
                 continue;
-			} else if (ch == '&' && (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.HotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))) {
-				pwidths[i] = x;
-				continue; // skip '&' in hot key when measuring
-			}
-			Glyph * glyph = getCharGlyph(pstr[i], true); // TODO: what is better
+            } else if (ch == '&' && (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.HotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))) {
+                pwidths[i] = x;
+                continue; // skip '&' in hot key when measuring
+            }
+            Glyph * glyph = getCharGlyph(pstr[i], true); // TODO: what is better
             //auto measureEnd = std.datetime.Clock.currAppTick;
             //auto duration = measureEnd - measureStart;
             //if (duration.length > 10)
             //    Log.d("ft measureText took ", duration.length, " ticks");
-			if (glyph is null) {
+            if (glyph is null) {
                 // if no glyph, use previous width - treat as zero width
                 pwidths[i] = x;
-				continue;
+                continue;
             }
             int w = x + glyph.width; // using advance
             int w2 = x + glyph.originX + glyph.correctedBlackBoxX; // using black box
@@ -256,22 +256,22 @@ class Font : RefCountedObject {
             if (x > maxWidth)
                 break;
         }
-		return charsMeasured;
-	}
+        return charsMeasured;
+    }
 
     private int[] _textSizeBuffer; // buffer to reuse while measuring strings - to avoid GC
 
-	/*************************************************************************
+    /*************************************************************************
      * Measure text string as single line, returns width and height
      * 
      * Params:
      *          text = text string to measure
      *          maxWidth = maximum width - measure is stopping if max width is reached
-     *      	tabSize = tabulation size, in number of spaces
-     *      	tabOffset = when string is drawn not from left position, use to move tab stops left/right
-     *      	textFlags = TextFlag bit set - to control underline, hotkey label processing, etc...
+     *          tabSize = tabulation size, in number of spaces
+     *          tabOffset = when string is drawn not from left position, use to move tab stops left/right
+     *          textFlags = TextFlag bit set - to control underline, hotkey label processing, etc...
      ************************************************************************/
-	Point textSize(const dchar[] text, int maxWidth = MAX_WIDTH_UNSPECIFIED, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
+    Point textSize(const dchar[] text, int maxWidth = MAX_WIDTH_UNSPECIFIED, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
         if (_textSizeBuffer.length < text.length + 1)
             _textSizeBuffer.length = text.length + 1;
         int charsMeasured = measureText(text, _textSizeBuffer, maxWidth, tabSize, tabOffset, textFlags);
@@ -280,7 +280,7 @@ class Font : RefCountedObject {
         return Point(_textSizeBuffer[charsMeasured - 1], height);
     }
 
-	/*****************************************************************************************
+    /*****************************************************************************************
      * Draw text string to buffer.
      *
      * Params:
@@ -293,62 +293,62 @@ class Font : RefCountedObject {
      *      tabOffset = when string is drawn not from left position, use to move tab stops left/right
      *      textFlags = set of TextFlag bit fields
      ****************************************************************************************/
-	void drawText(DrawBuf buf, int x, int y, const dchar[] text, uint color, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
+    void drawText(DrawBuf buf, int x, int y, const dchar[] text, uint color, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
         if (text.length == 0)
             return; // nothing to draw - empty text
         if (_textSizeBuffer.length < text.length)
             _textSizeBuffer.length = text.length;
-		int charsMeasured = measureText(text, _textSizeBuffer, MAX_WIDTH_UNSPECIFIED, tabSize, tabOffset, textFlags);
-		Rect clip = buf.clipRect; //clipOrFullRect;
+        int charsMeasured = measureText(text, _textSizeBuffer, MAX_WIDTH_UNSPECIFIED, tabSize, tabOffset, textFlags);
+        Rect clip = buf.clipRect; //clipOrFullRect;
         if (clip.empty)
             return; // not visible - clipped out
-		if (y + height < clip.top || y >= clip.bottom)
-			return; // not visible - fully above or below clipping rectangle
+        if (y + height < clip.top || y >= clip.bottom)
+            return; // not visible - fully above or below clipping rectangle
         int _baseline = baseline;
-		bool underline = (textFlags & TextFlag.Underline) != 0;
-		int underlineHeight = 1;
-		int underlineY = y + _baseline + underlineHeight * 2;
+        bool underline = (textFlags & TextFlag.Underline) != 0;
+        int underlineHeight = 1;
+        int underlineY = y + _baseline + underlineHeight * 2;
         foreach(int i; 0 .. charsMeasured) {
-			dchar ch = text[i];
-			if (ch == '&' && (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.HotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))) {
-				if (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))
-					underline = true; // turn ON underline for hot key
-				continue; // skip '&' in hot key when measuring
-			}
-			int xx = (i > 0) ? _textSizeBuffer[i - 1] : 0;
-			if (x + xx > clip.right)
-				break;
-			if (x + xx + 255 < clip.left)
-				continue; // far at left of clipping region
+            dchar ch = text[i];
+            if (ch == '&' && (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.HotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))) {
+                if (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))
+                    underline = true; // turn ON underline for hot key
+                continue; // skip '&' in hot key when measuring
+            }
+            int xx = (i > 0) ? _textSizeBuffer[i - 1] : 0;
+            if (x + xx > clip.right)
+                break;
+            if (x + xx + 255 < clip.left)
+                continue; // far at left of clipping region
 
-			if (underline) {
-				int xx2 = _textSizeBuffer[i];
-				// draw underline
-				if (xx2 > xx)
-					buf.fillRect(Rect(x + xx, underlineY, x + xx2, underlineY + underlineHeight), color);
-				// turn off underline after hot key
-				if (!(textFlags & TextFlag.Underline))
-					underline = false; 
-			}
+            if (underline) {
+                int xx2 = _textSizeBuffer[i];
+                // draw underline
+                if (xx2 > xx)
+                    buf.fillRect(Rect(x + xx, underlineY, x + xx2, underlineY + underlineHeight), color);
+                // turn off underline after hot key
+                if (!(textFlags & TextFlag.Underline))
+                    underline = false; 
+            }
 
             if (ch == ' ' || ch == '\t')
                 continue;
-			Glyph * glyph = getCharGlyph(ch);
-			if (glyph is null)
-				continue;
-			if ( glyph.blackBoxX && glyph.blackBoxY ) {
-				int gx = x + xx + glyph.originX;
-				if (gx + glyph.correctedBlackBoxX < clip.left)
-					continue;
-				buf.drawGlyph( gx,
+            Glyph * glyph = getCharGlyph(ch);
+            if (glyph is null)
+                continue;
+            if ( glyph.blackBoxX && glyph.blackBoxY ) {
+                int gx = x + xx + glyph.originX;
+                if (gx + glyph.correctedBlackBoxX < clip.left)
+                    continue;
+                buf.drawGlyph( gx,
                                y + _baseline - glyph.originY,
                               glyph,
                               color);
-			}
-		}
-	}
+            }
+        }
+    }
 
-	/*****************************************************************************************
+    /*****************************************************************************************
     * Draw text string to buffer.
     *
     * Params:
@@ -361,64 +361,64 @@ class Font : RefCountedObject {
     *      tabOffset = when string is drawn not from left position, use to move tab stops left/right
     *      textFlags = set of TextFlag bit fields
     ****************************************************************************************/
-	void drawColoredText(DrawBuf buf, int x, int y, const dchar[] text, const CustomCharProps[] charProps, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
+    void drawColoredText(DrawBuf buf, int x, int y, const dchar[] text, const CustomCharProps[] charProps, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
         if (text.length == 0)
             return; // nothing to draw - empty text
         if (_textSizeBuffer.length < text.length)
             _textSizeBuffer.length = text.length;
-		int charsMeasured = measureText(text, _textSizeBuffer, MAX_WIDTH_UNSPECIFIED, tabSize, tabOffset, textFlags);
-		Rect clip = buf.clipRect; //clipOrFullRect;
+        int charsMeasured = measureText(text, _textSizeBuffer, MAX_WIDTH_UNSPECIFIED, tabSize, tabOffset, textFlags);
+        Rect clip = buf.clipRect; //clipOrFullRect;
         if (clip.empty)
             return; // not visible - clipped out
-		if (y + height < clip.top || y >= clip.bottom)
-			return; // not visible - fully above or below clipping rectangle
+        if (y + height < clip.top || y >= clip.bottom)
+            return; // not visible - fully above or below clipping rectangle
         int _baseline = baseline;
         uint customizedTextFlags = (charProps.length ? charProps[0].textFlags : 0) | textFlags;
-		bool underline = (customizedTextFlags & TextFlag.Underline) != 0;
-		int underlineHeight = 1;
-		int underlineY = y + _baseline + underlineHeight * 2;
+        bool underline = (customizedTextFlags & TextFlag.Underline) != 0;
+        int underlineHeight = 1;
+        int underlineY = y + _baseline + underlineHeight * 2;
         foreach(int i; 0 .. charsMeasured) {
-			dchar ch = text[i];
+            dchar ch = text[i];
             uint color = i < charProps.length ? charProps[i].color : charProps[$ - 1].color;
             customizedTextFlags = (i < charProps.length ? charProps[i].textFlags : charProps[$ - 1].textFlags) | textFlags;
             underline = (customizedTextFlags & TextFlag.Underline) != 0;
             // turn off underline after hot key
-			if (ch == '&' && (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.HotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))) {
-				if (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))
-					underline = true; // turn ON underline for hot key
-				continue; // skip '&' in hot key when measuring
-			}
-			int xx = (i > 0) ? _textSizeBuffer[i - 1] : 0;
-			if (x + xx > clip.right)
-				break;
-			if (x + xx + 255 < clip.left)
-				continue; // far at left of clipping region
+            if (ch == '&' && (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.HotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))) {
+                if (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))
+                    underline = true; // turn ON underline for hot key
+                continue; // skip '&' in hot key when measuring
+            }
+            int xx = (i > 0) ? _textSizeBuffer[i - 1] : 0;
+            if (x + xx > clip.right)
+                break;
+            if (x + xx + 255 < clip.left)
+                continue; // far at left of clipping region
 
-			if (underline) {
-				int xx2 = _textSizeBuffer[i];
-				// draw underline
-				if (xx2 > xx)
-					buf.fillRect(Rect(x + xx, underlineY, x + xx2, underlineY + underlineHeight), color);
+            if (underline) {
+                int xx2 = _textSizeBuffer[i];
+                // draw underline
+                if (xx2 > xx)
+                    buf.fillRect(Rect(x + xx, underlineY, x + xx2, underlineY + underlineHeight), color);
                 // turn off underline after hot key
                 if (!(customizedTextFlags & TextFlag.Underline))
                     underline = false;
-			}
+            }
 
             if (ch == ' ' || ch == '\t')
                 continue;
-			Glyph * glyph = getCharGlyph(ch);
-			if (glyph is null)
-				continue;
-			if ( glyph.blackBoxX && glyph.blackBoxY ) {
-				int gx = x + xx + glyph.originX;
-				if (gx + glyph.correctedBlackBoxX < clip.left)
-					continue;
-				buf.drawGlyph( gx,
+            Glyph * glyph = getCharGlyph(ch);
+            if (glyph is null)
+                continue;
+            if ( glyph.blackBoxX && glyph.blackBoxY ) {
+                int gx = x + xx + glyph.originX;
+                if (gx + glyph.correctedBlackBoxX < clip.left)
+                    continue;
+                buf.drawGlyph( gx,
                                y + _baseline - glyph.originY,
                               glyph,
                               color);
-			}
-		}
+            }
+        }
     }
 
     /// measure multiline text with line splitting, returns width and height in pixels
@@ -437,13 +437,13 @@ class Font : RefCountedObject {
     }
 
 
-	/// get character glyph information
-	abstract Glyph * getCharGlyph(dchar ch, bool withImage = true);
+    /// get character glyph information
+    abstract Glyph * getCharGlyph(dchar ch, bool withImage = true);
 
-	/// clear usage flags for all entries
-	abstract void checkpoint();
-	/// removes entries not used after last call of checkpoint() or cleanup()
-	abstract void cleanup();
+    /// clear usage flags for all entries
+    abstract void checkpoint();
+    /// removes entries not used after last call of checkpoint() or cleanup()
+    abstract void cleanup();
     /// clears glyph cache
     abstract void clearGlyphCache();
 
@@ -557,81 +557,81 @@ struct SimpleTextFormatter {
 
 /// font instance collection - utility class, for font manager implementations
 struct FontList {
-	FontRef[] _list;
-	uint _len;
-	~this() {
-		clear();
-	}
-	
-	@property uint length() {
-		return _len;
-	}
-	
-	void clear() {
-		foreach(i; 0 .. _len) {
-			_list[i].clear();
-			_list[i] = null;
-		}
-		_len = 0;
-	}
-	// returns item by index
-	ref FontRef get(int index) {
-		return _list[index];
-	}
-	// find by a set of parameters - returns index of found item, -1 if not found
-	int find(int size, int weight, bool italic, FontFamily family, string face) {
-		foreach(int i; 0 .. _len) {
-			Font item = _list[i].get;
-			if (item.family != family)
-				continue;
-			if (item.size != size)
-				continue;
-			if (item.italic != italic || item.weight != weight)
-				continue;
-			if (!equal(item.face, face))
-				continue;
-			return i;
-		}
-		return -1;
-	}
-	// find by size only - returns index of found item, -1 if not found
-	int find(int size) {
-		foreach(int i; 0 .. _len) {
-			Font item = _list[i].get;
-			if (item.size != size)
-				continue;
-			return i;
-		}
-		return -1;
-	}
-	ref FontRef add(Font item) {
-		//Log.d("FontList.add() enter");
-		if (_len >= _list.length) {
-			_list.length = _len < 16 ? 16 : _list.length * 2;
-		}
-		_list[_len++] = item;
-		//Log.d("FontList.add() exit");
-		return _list[_len - 1];
-	}
-	// remove unused items - with reference == 1
-	void cleanup() {
-		foreach(i; 0 .. _len)
-			if (_list[i].refCount <= 1)
-				_list[i].clear();
-		uint dst = 0;
-		foreach(i; 0 .. _len) {
-			if (!_list[i].isNull)
-				if (i != dst)
-					_list[dst++] = _list[i];
-		}
-		_len = dst;
-		foreach(i; 0 .. _len)
-			_list[i].cleanup();
-	}
-	void checkpoint() {
-		foreach(i; 0 .. _len)
-			_list[i].checkpoint();
-	}
+    FontRef[] _list;
+    uint _len;
+    ~this() {
+        clear();
+    }
+    
+    @property uint length() {
+        return _len;
+    }
+    
+    void clear() {
+        foreach(i; 0 .. _len) {
+            _list[i].clear();
+            _list[i] = null;
+        }
+        _len = 0;
+    }
+    // returns item by index
+    ref FontRef get(int index) {
+        return _list[index];
+    }
+    // find by a set of parameters - returns index of found item, -1 if not found
+    int find(int size, int weight, bool italic, FontFamily family, string face) {
+        foreach(int i; 0 .. _len) {
+            Font item = _list[i].get;
+            if (item.family != family)
+                continue;
+            if (item.size != size)
+                continue;
+            if (item.italic != italic || item.weight != weight)
+                continue;
+            if (!equal(item.face, face))
+                continue;
+            return i;
+        }
+        return -1;
+    }
+    // find by size only - returns index of found item, -1 if not found
+    int find(int size) {
+        foreach(int i; 0 .. _len) {
+            Font item = _list[i].get;
+            if (item.size != size)
+                continue;
+            return i;
+        }
+        return -1;
+    }
+    ref FontRef add(Font item) {
+        //Log.d("FontList.add() enter");
+        if (_len >= _list.length) {
+            _list.length = _len < 16 ? 16 : _list.length * 2;
+        }
+        _list[_len++] = item;
+        //Log.d("FontList.add() exit");
+        return _list[_len - 1];
+    }
+    // remove unused items - with reference == 1
+    void cleanup() {
+        foreach(i; 0 .. _len)
+            if (_list[i].refCount <= 1)
+                _list[i].clear();
+        uint dst = 0;
+        foreach(i; 0 .. _len) {
+            if (!_list[i].isNull)
+                if (i != dst)
+                    _list[dst++] = _list[i];
+        }
+        _len = dst;
+        foreach(i; 0 .. _len)
+            _list[i].cleanup();
+    }
+    void checkpoint() {
+        foreach(i; 0 .. _len)
+            _list[i].checkpoint();
+    }
     /// clears glyph cache
     void clearGlyphCache() {
         foreach(i; 0 .. _len)
@@ -650,8 +650,8 @@ enum HintingMode : int {
     AutoHint, // 1
     /// disable hinting completely
     Disabled, // 2
-	/// light autohint (similar to Mac)
-	Light // 3
+    /// light autohint (similar to Mac)
+    Light // 3
 }
 
 /// Access points to fonts.
@@ -663,8 +663,8 @@ class FontManager {
 
     /// sets new font manager singleton instance
     static @property void instance(FontManager manager) {
-		if (_instance !is null) {
-			destroy(_instance);
+        if (_instance !is null) {
+            destroy(_instance);
             _instance = null;
         }
         _instance = manager;
@@ -678,11 +678,11 @@ class FontManager {
     /// get font instance best matched specified parameters
     abstract ref FontRef getFont(int size, int weight, bool italic, FontFamily family, string face);
 
-	/// clear usage flags for all entries -- for cleanup of unused fonts
-	abstract void checkpoint();
+    /// clear usage flags for all entries -- for cleanup of unused fonts
+    abstract void checkpoint();
 
-	/// removes entries not used after last call of checkpoint() or cleanup()
-	abstract void cleanup();
+    /// removes entries not used after last call of checkpoint() or cleanup()
+    abstract void cleanup();
 
     /// get min font size for antialiased fonts (0 means antialiasing always on, some big value = always off)
     static @property int minAnitialiasedFontSize() {
@@ -744,9 +744,9 @@ class FontManager {
         // override to clear glyph caches
     }
 
-	~this() {
-		Log.d("Destroying font manager");
-	}
+    ~this() {
+        Log.d("Destroying font manager");
+    }
 }
 
 
@@ -763,90 +763,90 @@ class FontManager {
  ***************************************/
 struct GlyphCache
 {
-	alias glyph_ptr = Glyph*;
-	private glyph_ptr[][1024] _glyphs;
-	
-	/// try to find glyph for character in cache, returns null if not found
-	Glyph * find(dchar ch) {
-		ch = ch & 0xF_FFFF;
-		//if (_array is null)
-		//    _array = new Glyph[0x10000];
-		uint p = ch >> 8;
-		glyph_ptr[] row = _glyphs[p];
-		if (row is null)
-			return null;
-		uint i = ch & 0xFF;
-		Glyph * res = row[i];
-		if (!res)
-			return null;
-		res.lastUsage = 1;
-		return res;
-	}
-	
-	/// put character glyph to cache
-	Glyph * put(dchar ch, Glyph * glyph) {
-		ch = ch & 0xF_FFFF;
-		uint p = ch >> 8;
-		uint i = ch & 0xFF;
-		if (_glyphs[p] is null)
-			_glyphs[p] = new glyph_ptr[256];
-		_glyphs[p][i] = glyph;
-		glyph.lastUsage = 1;
-		return glyph;
-	}
-	
-	/// removes entries not used after last call of checkpoint() or cleanup()
-	void cleanup() {
-		foreach(part; _glyphs) {
-			if (part !is null)
-			foreach(ref item; part) {
-				if (item && !item.lastUsage) {
-					static if (ENABLE_OPENGL) {
-						// notify about destroyed glyphs
-						if (_glyphDestroyCallback !is null) {
-							_glyphDestroyCallback(item.id);
-						}
-					}
-					destroy(item);
+    alias glyph_ptr = Glyph*;
+    private glyph_ptr[][1024] _glyphs;
+    
+    /// try to find glyph for character in cache, returns null if not found
+    Glyph * find(dchar ch) {
+        ch = ch & 0xF_FFFF;
+        //if (_array is null)
+        //    _array = new Glyph[0x10000];
+        uint p = ch >> 8;
+        glyph_ptr[] row = _glyphs[p];
+        if (row is null)
+            return null;
+        uint i = ch & 0xFF;
+        Glyph * res = row[i];
+        if (!res)
+            return null;
+        res.lastUsage = 1;
+        return res;
+    }
+    
+    /// put character glyph to cache
+    Glyph * put(dchar ch, Glyph * glyph) {
+        ch = ch & 0xF_FFFF;
+        uint p = ch >> 8;
+        uint i = ch & 0xFF;
+        if (_glyphs[p] is null)
+            _glyphs[p] = new glyph_ptr[256];
+        _glyphs[p][i] = glyph;
+        glyph.lastUsage = 1;
+        return glyph;
+    }
+    
+    /// removes entries not used after last call of checkpoint() or cleanup()
+    void cleanup() {
+        foreach(part; _glyphs) {
+            if (part !is null)
+            foreach(ref item; part) {
+                if (item && !item.lastUsage) {
+                    static if (ENABLE_OPENGL) {
+                        // notify about destroyed glyphs
+                        if (_glyphDestroyCallback !is null) {
+                            _glyphDestroyCallback(item.id);
+                        }
+                    }
+                    destroy(item);
                     item = null;
-				}
-			}
-		}
-	}
-	
-	/// clear usage flags for all entries
-	void checkpoint() {
-		foreach(part; _glyphs) {
-			if (part !is null)
-			foreach(item; part) {
-				if (item)
-					item.lastUsage = 0;
-			}
-		}
-	}
-	
-	/// removes all entries (when built with USE_OPENGL version, notify OpenGL cache about removed glyphs)
-	void clear() {
-		foreach(part; _glyphs) {
-			if (part !is null)
-			foreach(ref item; part) {
-				if (item) {
-					static if (ENABLE_OPENGL) {
-						// notify about destroyed glyphs
-						if (_glyphDestroyCallback !is null) {
-							_glyphDestroyCallback(item.id);
-						}
-					}
-					destroy(item);
+                }
+            }
+        }
+    }
+    
+    /// clear usage flags for all entries
+    void checkpoint() {
+        foreach(part; _glyphs) {
+            if (part !is null)
+            foreach(item; part) {
+                if (item)
+                    item.lastUsage = 0;
+            }
+        }
+    }
+    
+    /// removes all entries (when built with USE_OPENGL version, notify OpenGL cache about removed glyphs)
+    void clear() {
+        foreach(part; _glyphs) {
+            if (part !is null)
+            foreach(ref item; part) {
+                if (item) {
+                    static if (ENABLE_OPENGL) {
+                        // notify about destroyed glyphs
+                        if (_glyphDestroyCallback !is null) {
+                            _glyphDestroyCallback(item.id);
+                        }
+                    }
+                    destroy(item);
                     item = null;
-				}
-			}
-		}
-	}
-	/// on destroy, destroy all items (when built with USE_OPENGL version, notify OpenGL cache about removed glyphs)
-	~this() {
-		clear();
-	}
+                }
+            }
+        }
+    }
+    /// on destroy, destroy all items (when built with USE_OPENGL version, notify OpenGL cache about removed glyphs)
+    ~this() {
+        clear();
+    }
 }
 
 

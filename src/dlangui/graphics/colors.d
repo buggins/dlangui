@@ -86,11 +86,11 @@ void blendSubpixel(ubyte * dst, ubyte * src, uint alpha, int x0, SubpixelRenderi
 
 /// blend two alpha values 0..255 (255 is fully transparent, 0 is opaque)
 uint blendAlpha(uint a1, uint a2) {
-	if (!a1)
-		return a2;
-	if (!a2)
-		return a1;
-	return (((a1 ^ 0xFF) * (a2 ^ 0xFF)) >> 8) ^ 0xFF;
+    if (!a1)
+        return a2;
+    if (!a2)
+        return a1;
+    return (((a1 ^ 0xFF) * (a2 ^ 0xFF)) >> 8) ^ 0xFF;
 }
 
 /// applies additional alpha to color

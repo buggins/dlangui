@@ -27,33 +27,33 @@ private import std.utf;
 /// Keyboard accelerator (key + modifiers)
 struct Accelerator {
     /// Key code, usually one of KeyCode enum items
-	uint keyCode;
+    uint keyCode;
     /// Key flags bit set, usually one of KeyFlag enum items
-	uint keyFlags;
-	/// Returns accelerator text description
-	@property dstring label() {
-		dstring buf;
-		if (keyFlags & KeyFlag.Control)
-			buf ~= "Ctrl+";
-		if (keyFlags & KeyFlag.Alt)
-			buf ~= "Alt+";
-		if (keyFlags & KeyFlag.Shift)
-			buf ~= "Shift+";
-		buf ~= toUTF32(keyName(keyCode));
-		return cast(dstring)buf;
-	}
-	/// Serializes accelerator text description
-	@property string toString() const {
-		char[] buf;
-		if (keyFlags & KeyFlag.Control)
-			buf ~= "Ctrl+";
-		if (keyFlags & KeyFlag.Alt)
-			buf ~= "Alt+";
-		if (keyFlags & KeyFlag.Shift)
-			buf ~= "Shift+";
-		buf ~= keyName(keyCode);
-		return cast(string)buf;
-	}
+    uint keyFlags;
+    /// Returns accelerator text description
+    @property dstring label() {
+        dstring buf;
+        if (keyFlags & KeyFlag.Control)
+            buf ~= "Ctrl+";
+        if (keyFlags & KeyFlag.Alt)
+            buf ~= "Alt+";
+        if (keyFlags & KeyFlag.Shift)
+            buf ~= "Shift+";
+        buf ~= toUTF32(keyName(keyCode));
+        return cast(dstring)buf;
+    }
+    /// Serializes accelerator text description
+    @property string toString() const {
+        char[] buf;
+        if (keyFlags & KeyFlag.Control)
+            buf ~= "Ctrl+";
+        if (keyFlags & KeyFlag.Alt)
+            buf ~= "Alt+";
+        if (keyFlags & KeyFlag.Shift)
+            buf ~= "Shift+";
+        buf ~= keyName(keyCode);
+        return cast(string)buf;
+    }
     /// parse accelerator from string
     bool parse(string s) {
         keyCode = 0;
@@ -87,12 +87,12 @@ struct Accelerator {
 
 /// use to for requesting of action state (to enable/disable, hide, get check status, etc)
 struct ActionState {
-	enum StateFlag {
-		enabled = 1,
-		visible = 2,
-		checked = 4
-	}
-	protected ubyte _flags;
+    enum StateFlag {
+        enabled = 1,
+        visible = 2,
+        checked = 4
+    }
+    protected ubyte _flags;
     /// when false, control showing this action should be disabled
     @property bool enabled() const { return (_flags & StateFlag.enabled) != 0; }
     @property void enabled(bool f) { _flags = f ? (_flags | StateFlag.enabled) : (_flags & ~StateFlag.enabled); }
@@ -103,13 +103,13 @@ struct ActionState {
     @property bool checked() const { return (_flags & StateFlag.checked) != 0; }
     @property void checked(bool f) { _flags = f ? (_flags | StateFlag.checked) : (_flags & ~StateFlag.checked); }
     this(bool en, bool vis, bool check) {
-		_flags = (en ? StateFlag.enabled : 0) 
-			| (vis ? StateFlag.visible : 0) 
-			| (check ? StateFlag.checked : 0);
+        _flags = (en ? StateFlag.enabled : 0) 
+            | (vis ? StateFlag.visible : 0) 
+            | (check ? StateFlag.checked : 0);
     }
-	string toString() const { 
-		return (enabled ? "enabled" : "disabled") ~ (visible ? "_visible" : "_invisible") ~ (checked ? "_checked" : "");
-	}
+    string toString() const { 
+        return (enabled ? "enabled" : "disabled") ~ (visible ? "_visible" : "_invisible") ~ (checked ? "_checked" : "");
+    }
 }
 
 const ACTION_STATE_ENABLED = ActionState(true, true, false);
@@ -131,7 +131,7 @@ class Action {
     /// icon resource id
     protected string _iconId;
     /// accelerator list
-	protected Accelerator[] _accelerators;
+    protected Accelerator[] _accelerators;
     /// optional string parameter
     protected string _stringParam;
     /// optional long parameter
@@ -222,28 +222,28 @@ class Action {
         _id = id;
     }
     /// create action with id, labelResourceId, and optional icon and key accelerator.
-	this(int id, string labelResourceId, string iconResourceId = null, uint keyCode = 0, uint keyFlags = 0) {
+    this(int id, string labelResourceId, string iconResourceId = null, uint keyCode = 0, uint keyFlags = 0) {
         _id = id;
         _label = labelResourceId;
         _iconId = iconResourceId;
-		if (keyCode)
-			_accelerators ~= Accelerator(keyCode, keyFlags);
-	}
-	/// action with accelerator, w/o label
+        if (keyCode)
+            _accelerators ~= Accelerator(keyCode, keyFlags);
+    }
+    /// action with accelerator, w/o label
     this(int id, uint keyCode, uint keyFlags = 0) {
         _id = id;
-		_accelerators ~= Accelerator(keyCode, keyFlags);
+        _accelerators ~= Accelerator(keyCode, keyFlags);
     }
-	/// action with label, icon, and accelerator
-	this(int id, dstring label, string iconResourceId = null, uint keyCode = 0, uint keyFlags = 0) {
-		_id = id;
-		_label = label;
-		_iconId = iconResourceId;
-		if (keyCode)
-			_accelerators ~= Accelerator(keyCode, keyFlags);
-	}
-	/// returs array of accelerators
-	@property Accelerator[] accelerators() {
+    /// action with label, icon, and accelerator
+    this(int id, dstring label, string iconResourceId = null, uint keyCode = 0, uint keyFlags = 0) {
+        _id = id;
+        _label = label;
+        _iconId = iconResourceId;
+        if (keyCode)
+            _accelerators ~= Accelerator(keyCode, keyFlags);
+    }
+    /// returs array of accelerators
+    @property Accelerator[] accelerators() {
         // check for accelerators override in settings
         Accelerator[] res = findActionAccelerators(_id);
         if (res) {
@@ -251,24 +251,24 @@ class Action {
             return res;
         }
         // return this action accelerators
-		return _accelerators;
-	}
-	/// returs const array of accelerators
-	@property const(Accelerator)[] accelerators() const {
+        return _accelerators;
+    }
+    /// returs const array of accelerators
+    @property const(Accelerator)[] accelerators() const {
         // check for accelerators override in settings
         Accelerator[] res = findActionAccelerators(_id);
         if (res) {
             //Log.d("Found accelerators ", res);
             return res;
         }
-		return _accelerators;
-	}
-	/// returns text description for first accelerator of action; null if no accelerators
-	@property dstring acceleratorText() {
-		if (_accelerators.length < 1)
-			return null;
-		return _accelerators[0].label;
-	}
+        return _accelerators;
+    }
+    /// returns text description for first accelerator of action; null if no accelerators
+    @property dstring acceleratorText() {
+        if (_accelerators.length < 1)
+            return null;
+        return _accelerators[0].label;
+    }
     /// returns tooltip text for action
     @property dstring tooltipText() {
         dchar[] buf;
@@ -290,13 +290,13 @@ class Action {
         _accelerators ~= Accelerator(keyCode, keyFlags);
         return this;
     }
-	/// returns true if accelerator matches provided key code and flags
-	bool checkAccelerator(uint keyCode, uint keyFlags) {
-		foreach(a; _accelerators)
-			if (a.keyCode == keyCode && a.keyFlags == keyFlags)
-				return true;
-		return false;
-	}
+    /// returns true if accelerator matches provided key code and flags
+    bool checkAccelerator(uint keyCode, uint keyFlags) {
+        foreach(a; _accelerators)
+            if (a.keyCode == keyCode && a.keyFlags == keyFlags)
+                return true;
+        return false;
+    }
     /// returns action id
     @property int id() const {
         return _id;
@@ -358,68 +358,68 @@ __gshared Action ACTION_SEPARATOR = new Action(SEPARATOR_ACTION_ID);
 
 /// Map of Accelerator to Action
 struct ActionMap {
-	protected Action[Accelerator] _map;
-	/// Add all actions from list
-	void add(ActionList items) {
-		foreach(a; items) {
-			foreach(acc; a.accelerators)
-				_map[acc] = a;
-		}
-	}
-	/// Add array of actions
-	void add(Action[] items) {
-		foreach(a; items) {
-			foreach(acc; a.accelerators)
-				_map[acc] = a;
-		}
-	}
-	/// Add array of actions
-	void add(const Action[] items) {
-		foreach(a; items) {
-			foreach(acc; a.accelerators)
-				_map[acc] = a.clone;
-		}
-	}
-	/// Add action
-	void add(Action a) {
-		foreach(acc; a.accelerators)
-			_map[acc] = a;
-	}
-	/// Aind action by key, return null if not found
-	Action findByKey(uint keyCode, uint flags) {
-		Accelerator acc;
-		acc.keyCode = keyCode;
-		acc.keyFlags = flags;
-		if (acc in _map)
-			return _map[acc];
-		return null;
-	}
+    protected Action[Accelerator] _map;
+    /// Add all actions from list
+    void add(ActionList items) {
+        foreach(a; items) {
+            foreach(acc; a.accelerators)
+                _map[acc] = a;
+        }
+    }
+    /// Add array of actions
+    void add(Action[] items) {
+        foreach(a; items) {
+            foreach(acc; a.accelerators)
+                _map[acc] = a;
+        }
+    }
+    /// Add array of actions
+    void add(const Action[] items) {
+        foreach(a; items) {
+            foreach(acc; a.accelerators)
+                _map[acc] = a.clone;
+        }
+    }
+    /// Add action
+    void add(Action a) {
+        foreach(acc; a.accelerators)
+            _map[acc] = a;
+    }
+    /// Aind action by key, return null if not found
+    Action findByKey(uint keyCode, uint flags) {
+        Accelerator acc;
+        acc.keyCode = keyCode;
+        acc.keyFlags = flags;
+        if (acc in _map)
+            return _map[acc];
+        return null;
+    }
 }
 
 /// List of Actions, for looking up Action by key
 struct ActionList {
-	private Collection!Action _actions;
-	alias _actions this;
+    private Collection!Action _actions;
+    alias _actions this;
 
     /// Add several actions from array
-	void add(Action[] items) {
-		foreach(a; items)
-			_actions ~= a;
-	}
+    void add(Action[] items) {
+        foreach(a; items)
+            _actions ~= a;
+    }
 
     /// Add all items from another list
-	void add(ref ActionList items) {
-		foreach(a; items)
-			_actions ~= a;
-	}
+    void add(ref ActionList items) {
+        foreach(a; items)
+            _actions ~= a;
+    }
 
-	/// Find action by key, return null if not found
-	Action findByKey(uint keyCode, uint flags) {
-		foreach(a; _actions)
-			if (a.checkAccelerator(keyCode, flags))
-				return a;
-		return null;
-	}
+    /// Find action by key, return null if not found
+    Action findByKey(uint keyCode, uint flags) {
+        foreach(a; _actions)
+            if (a.checkAccelerator(keyCode, flags))
+                return a;
+        return null;
+    }
 }
 
 /// Mouse action codes for MouseEvent
@@ -427,15 +427,15 @@ enum MouseAction : ubyte {
     /// button down handling is cancelled
     Cancel,   
     /// button is down
-	ButtonDown, 
+    ButtonDown, 
     /// button is up
-	ButtonUp, 
+    ButtonUp, 
     /// mouse pointer is moving
-	Move,     
+    Move,     
     /// pointer is back inside widget while button is down after FocusOut
-	FocusIn,  
+    FocusIn,  
     /// pointer moved outside of widget while button was down (if handler returns true, Move events will be sent even while pointer is outside widget)
-	FocusOut, 
+    FocusOut, 
     /// scroll wheel movement
     Wheel,    
     //Hover,    // pointer entered widget which while button was not down (return true to track Hover state)
@@ -447,23 +447,23 @@ enum MouseAction : ubyte {
 enum MouseFlag : ushort {
     // mouse buttons
     /// Left mouse button is down
-	LButton = 0x0001,
+    LButton = 0x0001,
     /// Middle mouse button is down
-	MButton = 0x0010,
+    MButton = 0x0010,
     /// Right mouse button is down
-	RButton = 0x0002,
+    RButton = 0x0002,
     /// X1 mouse button is down
-	XButton1= 0x0020,
+    XButton1= 0x0020,
     /// X2 mouse button is down
-	XButton2= 0x0040,
+    XButton2= 0x0040,
 
     // keyboard modifiers
     /// Ctrl key is down
-	Control = 0x0008,
+    Control = 0x0008,
     /// Shift key is down
-	Shift   = 0x0004,
+    Shift   = 0x0004,
     /// Alt key is down
-	Alt     = 0x0080,
+    Alt     = 0x0080,
 }
 
 /// Mouse button codes for MouseEvent
@@ -496,16 +496,16 @@ ushort mouseButtonToFlag(MouseButton btn) {
 
 /// Mouse button state details for MouseEvent
 struct ButtonDetails {
-	/// Clock.currStdTime() for down event of this button (0 if button is up).
-	protected long  _downTs;
-	/// Clock.currStdTime() for up event of this button (0 if button is still down).
-	protected long  _upTs;
-	/// x coordinates of down event
-	protected short _downX;
-	/// y coordinates of down event
-	protected short _downY;
-	/// mouse button flags when down event occured
-	protected ushort _downFlags;
+    /// Clock.currStdTime() for down event of this button (0 if button is up).
+    protected long  _downTs;
+    /// Clock.currStdTime() for up event of this button (0 if button is still down).
+    protected long  _upTs;
+    /// x coordinates of down event
+    protected short _downX;
+    /// y coordinates of down event
+    protected short _downY;
+    /// mouse button flags when down event occured
+    protected ushort _downFlags;
     /// true if button is made down shortly after up - valid if button is down
     protected bool _doubleClick;
 
@@ -523,27 +523,27 @@ struct ButtonDetails {
         _downX = _downY = 0;
     }
 
-	/// update for button down
-	void down(short x, short y, ushort flags) {
+    /// update for button down
+    void down(short x, short y, ushort flags) {
         //Log.d("Button down ", x, ",", y, " _downTs=", _downTs, " _upTs=", _upTs);
         long oldDownTs = _downTs;
-		_downX = x;
-		_downY = y;
-		_downFlags = flags;
+        _downX = x;
+        _downY = y;
+        _downFlags = flags;
         _upTs = 0;
-		_downTs = std.datetime.Clock.currStdTime;
+        _downTs = std.datetime.Clock.currStdTime;
         long downIntervalMs = (_downTs - oldDownTs) / 10000;
         //Log.d("Button down ", x, ",", y, " _downTs=", _downTs, " _upTs=", _upTs, " downInterval=", downIntervalMs);
         _doubleClick = (oldDownTs && downIntervalMs < DOUBLE_CLICK_THRESHOLD_MS);
-	}
-	/// update for button up
-	void up(short x, short y, ushort flags) {
+    }
+    /// update for button up
+    void up(short x, short y, ushort flags) {
         //Log.d("Button up ", x, ",", y, " _downTs=", _downTs, " _upTs=", _upTs);
         _doubleClick = false;
         _upTs = std.datetime.Clock.currStdTime;
-	}
+    }
     /// returns true if button is currently pressed
-	@property bool isDown() { return _downTs != 0 && _upTs == 0; }
+    @property bool isDown() { return _downTs != 0 && _upTs == 0; }
     /// returns button down state duration in hnsecs (1/10000 of second).
     @property int downDuration() {
         if (_downTs == 0)
@@ -568,27 +568,27 @@ class MouseEvent {
     /// timestamp of event
     protected long _eventTimestamp;
     /// mouse action code
-	protected MouseAction _action;
+    protected MouseAction _action;
     /// mouse button code for ButtonUp/ButtonDown
-	protected MouseButton _button;
+    protected MouseButton _button;
     /// x coordinate of pointer
-	protected short _x;
+    protected short _x;
     /// y coordinate of pointer
-	protected short _y;
+    protected short _y;
     /// flags bit set - usually from MouseFlag enum
-	protected ushort _flags;
+    protected ushort _flags;
     /// wheel delta
-	protected short _wheelDelta;
+    protected short _wheelDelta;
     /// widget which currently tracks mouse events
     protected Widget _trackingWidget;
     /// left button state details
-	protected ButtonDetails _lbutton;
+    protected ButtonDetails _lbutton;
     /// middle button state details
-	protected ButtonDetails _mbutton;
+    protected ButtonDetails _mbutton;
     /// right button state details
-	protected ButtonDetails _rbutton;
+    protected ButtonDetails _rbutton;
     /// when true, no tracking of mouse on ButtonDown is necessary
-	protected bool _doNotTrackButtonDown;
+    protected bool _doNotTrackButtonDown;
     /// left button state details
     @property ref ButtonDetails lbutton() { return _lbutton; }
     /// right button state details
@@ -606,17 +606,17 @@ class MouseEvent {
     /// button which caused ButtonUp or ButtonDown action
     @property MouseButton button() { return _button; }
     /// action
-	@property MouseAction action() { return _action; }
+    @property MouseAction action() { return _action; }
     /// override action code (for usage from platform code)
-	void changeAction(MouseAction a) { _action = a; }
+    void changeAction(MouseAction a) { _action = a; }
     /// returns flags (buttons and keys state)
-	@property ushort flags() { return _flags; }
+    @property ushort flags() { return _flags; }
     /// returns delta for Wheel event
-	@property short wheelDelta() { return _wheelDelta; }
+    @property short wheelDelta() { return _wheelDelta; }
     /// x coordinate of mouse pointer (relative to window client area)
-	@property short x() { return _x; }
+    @property short x() { return _x; }
     /// y coordinate of mouse pointer (relative to window client area)
-	@property short y() { return _y; }
+    @property short y() { return _y; }
 
     /// Returns true for ButtonDown event when button is pressed second time in short interval after pressing first time
     @property bool doubleClick() {
@@ -626,11 +626,11 @@ class MouseEvent {
     }
 
     /// get event tracking widget to override
-	@property Widget trackingWidget() { return _trackingWidget; }
+    @property Widget trackingWidget() { return _trackingWidget; }
     /// returns mouse button tracking flag
-	@property bool doNotTrackButtonDown() { return _doNotTrackButtonDown; }
+    @property bool doNotTrackButtonDown() { return _doNotTrackButtonDown; }
     /// sets mouse button tracking flag
-	@property void doNotTrackButtonDown(bool flg) { _doNotTrackButtonDown = flg; }
+    @property void doNotTrackButtonDown(bool flg) { _doNotTrackButtonDown = flg; }
     /// override mouse tracking widget
     void track(Widget w) {
         _trackingWidget = w;
@@ -638,26 +638,26 @@ class MouseEvent {
     /// copy constructor
     this (MouseEvent e) {
         _eventTimestamp = e._eventTimestamp;
-		_action = e._action;
+        _action = e._action;
         _button = e._button;
-		_flags = e._flags;
-		_x = e._x;
-		_y = e._y;
+        _flags = e._flags;
+        _x = e._x;
+        _y = e._y;
         _lbutton = e._lbutton;
         _rbutton = e._rbutton;
         _mbutton = e._mbutton;
         _wheelDelta = e._wheelDelta;
     }
     /// construct mouse event from data
-	this (MouseAction a, MouseButton b, ushort f, short x, short y, short wheelDelta = 0) {
+    this (MouseAction a, MouseButton b, ushort f, short x, short y, short wheelDelta = 0) {
         _eventTimestamp = std.datetime.Clock.currStdTime;
-		_action = a;
+        _action = a;
         _button = b;
-		_flags = f;
-		_x = x;
-		_y = y;
+        _flags = f;
+        _x = x;
+        _y = y;
         _wheelDelta = wheelDelta;
-	}
+    }
 }
 
 /// Keyboard actions for KeyEvent
@@ -675,17 +675,17 @@ enum KeyAction : uint {
 /// Keyboard flags for KeyEvent
 enum KeyFlag : uint {
     /// Ctrl key is down
-	Control = 0x0008,
+    Control = 0x0008,
     /// Shift key is down
-	Shift   = 0x0004,
+    Shift   = 0x0004,
     /// Alt key is down
-	Alt     = 0x0080,
+    Alt     = 0x0080,
     /// Right Ctrl key is down
     RControl = 0x0108,
     /// Right Shift key is down
-	RShift   = 0x0104,
+    RShift   = 0x0104,
     /// Right Alt key is down
-	RAlt     = 0x0180,
+    RAlt     = 0x0180,
     /// Left Ctrl key is down
     LControl = 0x0208,
     /// Left Shift key is down
@@ -1059,77 +1059,77 @@ Converts key name to KeyCode enum value
 For unknown key code, returns 0
 */
 uint parseKeyName(string name) {
-	switch (name) {
-		case "A": case "a": return KeyCode.KEY_A;
-		case "B": case "b": return KeyCode.KEY_B;
-		case "C": case "c": return KeyCode.KEY_C;
-		case "D": case "d": return KeyCode.KEY_D;
-		case "E": case "e": return KeyCode.KEY_E;
-		case "F": case "f": return KeyCode.KEY_F;
-		case "G": case "g": return KeyCode.KEY_G;
-		case "H": case "h": return KeyCode.KEY_H;
-		case "I": case "i": return KeyCode.KEY_I;
-		case "J": case "j": return KeyCode.KEY_J;
-		case "K": case "k": return KeyCode.KEY_K;
-		case "L": case "l": return KeyCode.KEY_L;
-		case "M": case "m": return KeyCode.KEY_M;
-		case "N": case "n": return KeyCode.KEY_N;
-		case "O": case "o": return KeyCode.KEY_O;
-		case "P": case "p": return KeyCode.KEY_P;
-		case "Q": case "q": return KeyCode.KEY_Q;
-		case "R": case "r": return KeyCode.KEY_R;
-		case "S": case "s": return KeyCode.KEY_S;
-		case "T": case "t": return KeyCode.KEY_T;
-		case "U": case "u": return KeyCode.KEY_U;
-		case "V": case "v": return KeyCode.KEY_V;
-		case "W": case "w": return KeyCode.KEY_W;
-		case "X": case "x": return KeyCode.KEY_X;
-		case "Y": case "y": return KeyCode.KEY_Y;
-		case "Z": case "z": return KeyCode.KEY_Z;
-		case "F1": return KeyCode.F1;
-		case "F2": return KeyCode.F2;
-		case "F3": return KeyCode.F3;
-		case "F4": return KeyCode.F4;
-		case "F5": return KeyCode.F5;
-		case "F6": return KeyCode.F6;
-		case "F7": return KeyCode.F7;
-		case "F8": return KeyCode.F8;
-		case "F9": return KeyCode.F9;
-		case "F10": return KeyCode.F10;
-		case "F11": return KeyCode.F11;
-		case "F12": return KeyCode.F12;
-		case "F13": return KeyCode.F13;
-		case "F14": return KeyCode.F14;
-		case "F15": return KeyCode.F15;
-		case "F16": return KeyCode.F16;
-		case "F17": return KeyCode.F17;
-		case "F18": return KeyCode.F18;
-		case "F19": return KeyCode.F19;
-		case "F20": return KeyCode.F20;
-		case "F21": return KeyCode.F21;
-		case "F22": return KeyCode.F22;
-		case "F23": return KeyCode.F23;
-		case "F24": return KeyCode.F24;
-		case "/": return KeyCode.KEY_DIVIDE;
-		case "*": return KeyCode.KEY_MULTIPLY;
-		case "Tab": return KeyCode.TAB;
-		case "PageUp": return KeyCode.PAGEUP;
-		case "PageDown": return KeyCode.PAGEDOWN;
-		case "Home": return KeyCode.HOME;
-		case "End": return KeyCode.END;
-		case "Left": return KeyCode.LEFT;
-		case "Right": return KeyCode.RIGHT;
-		case "Up": return KeyCode.UP;
-		case "Down": return KeyCode.DOWN;
-		case "Ins": return KeyCode.INS;
-		case "Del": return KeyCode.DEL;
-		case "[": return KeyCode.KEY_BRACKETOPEN;
-		case "]": return KeyCode.KEY_BRACKETCLOSE;
-		case ",": return KeyCode.KEY_COMMA;
-		case ".": return KeyCode.KEY_PERIOD;
-		case "Backspace": return KeyCode.BACK;
-		case "Enter": return KeyCode.RETURN;
-		case "Space": return KeyCode.SPACE;
+    switch (name) {
+        case "A": case "a": return KeyCode.KEY_A;
+        case "B": case "b": return KeyCode.KEY_B;
+        case "C": case "c": return KeyCode.KEY_C;
+        case "D": case "d": return KeyCode.KEY_D;
+        case "E": case "e": return KeyCode.KEY_E;
+        case "F": case "f": return KeyCode.KEY_F;
+        case "G": case "g": return KeyCode.KEY_G;
+        case "H": case "h": return KeyCode.KEY_H;
+        case "I": case "i": return KeyCode.KEY_I;
+        case "J": case "j": return KeyCode.KEY_J;
+        case "K": case "k": return KeyCode.KEY_K;
+        case "L": case "l": return KeyCode.KEY_L;
+        case "M": case "m": return KeyCode.KEY_M;
+        case "N": case "n": return KeyCode.KEY_N;
+        case "O": case "o": return KeyCode.KEY_O;
+        case "P": case "p": return KeyCode.KEY_P;
+        case "Q": case "q": return KeyCode.KEY_Q;
+        case "R": case "r": return KeyCode.KEY_R;
+        case "S": case "s": return KeyCode.KEY_S;
+        case "T": case "t": return KeyCode.KEY_T;
+        case "U": case "u": return KeyCode.KEY_U;
+        case "V": case "v": return KeyCode.KEY_V;
+        case "W": case "w": return KeyCode.KEY_W;
+        case "X": case "x": return KeyCode.KEY_X;
+        case "Y": case "y": return KeyCode.KEY_Y;
+        case "Z": case "z": return KeyCode.KEY_Z;
+        case "F1": return KeyCode.F1;
+        case "F2": return KeyCode.F2;
+        case "F3": return KeyCode.F3;
+        case "F4": return KeyCode.F4;
+        case "F5": return KeyCode.F5;
+        case "F6": return KeyCode.F6;
+        case "F7": return KeyCode.F7;
+        case "F8": return KeyCode.F8;
+        case "F9": return KeyCode.F9;
+        case "F10": return KeyCode.F10;
+        case "F11": return KeyCode.F11;
+        case "F12": return KeyCode.F12;
+        case "F13": return KeyCode.F13;
+        case "F14": return KeyCode.F14;
+        case "F15": return KeyCode.F15;
+        case "F16": return KeyCode.F16;
+        case "F17": return KeyCode.F17;
+        case "F18": return KeyCode.F18;
+        case "F19": return KeyCode.F19;
+        case "F20": return KeyCode.F20;
+        case "F21": return KeyCode.F21;
+        case "F22": return KeyCode.F22;
+        case "F23": return KeyCode.F23;
+        case "F24": return KeyCode.F24;
+        case "/": return KeyCode.KEY_DIVIDE;
+        case "*": return KeyCode.KEY_MULTIPLY;
+        case "Tab": return KeyCode.TAB;
+        case "PageUp": return KeyCode.PAGEUP;
+        case "PageDown": return KeyCode.PAGEDOWN;
+        case "Home": return KeyCode.HOME;
+        case "End": return KeyCode.END;
+        case "Left": return KeyCode.LEFT;
+        case "Right": return KeyCode.RIGHT;
+        case "Up": return KeyCode.UP;
+        case "Down": return KeyCode.DOWN;
+        case "Ins": return KeyCode.INS;
+        case "Del": return KeyCode.DEL;
+        case "[": return KeyCode.KEY_BRACKETOPEN;
+        case "]": return KeyCode.KEY_BRACKETCLOSE;
+        case ",": return KeyCode.KEY_COMMA;
+        case ".": return KeyCode.KEY_PERIOD;
+        case "Backspace": return KeyCode.BACK;
+        case "Enter": return KeyCode.RETURN;
+        case "Space": return KeyCode.SPACE;
         default:
             return 0;
     }
@@ -1141,166 +1141,166 @@ uint parseKeyName(string name) {
     For unknown key code, prints its hex value.
 */
 string keyName(uint keyCode) {
-	switch (keyCode) {
-		case KeyCode.KEY_A:
-			return "A";
-		case KeyCode.KEY_B:
-			return "B";
-		case KeyCode.KEY_C:
-			return "C";
-		case KeyCode.KEY_D:
-			return "D";
-		case KeyCode.KEY_E:
-			return "E";
-		case KeyCode.KEY_F:
-			return "F";
-		case KeyCode.KEY_G:
-			return "G";
-		case KeyCode.KEY_H:
-			return "H";
-		case KeyCode.KEY_I:
-			return "I";
-		case KeyCode.KEY_J:
-			return "J";
-		case KeyCode.KEY_K:
-			return "K";
-		case KeyCode.KEY_L:
-			return "L";
-		case KeyCode.KEY_M:
-			return "M";
-		case KeyCode.KEY_N:
-			return "N";
-		case KeyCode.KEY_O:
-			return "O";
-		case KeyCode.KEY_P:
-			return "P";
-		case KeyCode.KEY_Q:
-			return "Q";
-		case KeyCode.KEY_R:
-			return "R";
-		case KeyCode.KEY_S:
-			return "S";
-		case KeyCode.KEY_T:
-			return "T";
-		case KeyCode.KEY_U:
-			return "U";
-		case KeyCode.KEY_V:
-			return "V";
-		case KeyCode.KEY_W:
-			return "W";
-		case KeyCode.KEY_X:
-			return "X";
-		case KeyCode.KEY_Y:
-			return "Y";
-		case KeyCode.KEY_Z:
-			return "Z";
-		case KeyCode.KEY_0:
-			return "0";
-		case KeyCode.KEY_1:
-			return "1";
-		case KeyCode.KEY_2:
-			return "2";
-		case KeyCode.KEY_3:
-			return "3";
-		case KeyCode.KEY_4:
-			return "4";
-		case KeyCode.KEY_5:
-			return "5";
-		case KeyCode.KEY_6:
-			return "6";
-		case KeyCode.KEY_7:
-			return "7";
-		case KeyCode.KEY_8:
-			return "8";
-		case KeyCode.KEY_9:
-			return "9";
-		case KeyCode.KEY_DIVIDE:
-			return "/";
-		case KeyCode.KEY_MULTIPLY:
-			return "*";
-		case KeyCode.TAB:
-			return "Tab";
-		case KeyCode.F1:
-			return "F1";
-		case KeyCode.F2:
-			return "F2";
-		case KeyCode.F3:
-			return "F3";
-		case KeyCode.F4:
-			return "F4";
-		case KeyCode.F5:
-			return "F5";
-		case KeyCode.F6:
-			return "F6";
-		case KeyCode.F7:
-			return "F7";
-		case KeyCode.F8:
-			return "F8";
-		case KeyCode.F9:
-			return "F9";
-		case KeyCode.F10:
-			return "F10";
-		case KeyCode.F11:
-			return "F11";
-		case KeyCode.F12:
-			return "F12";
-		case KeyCode.F13:
-			return "F13";
-		case KeyCode.F14:
-			return "F14";
-		case KeyCode.F15:
-			return "F15";
-		case KeyCode.F16:
-			return "F16";
-		case KeyCode.F17:
-			return "F17";
-		case KeyCode.F18:
-			return "F18";
-		case KeyCode.F19:
-			return "F19";
-		case KeyCode.F20:
-			return "F20";
-		case KeyCode.F21:
-			return "F21";
-		case KeyCode.F22:
-			return "F22";
-		case KeyCode.F23:
-			return "F23";
-		case KeyCode.F24:
-			return "F24";
-		case KeyCode.PAGEUP:
-			return "PageUp";
-		case KeyCode.PAGEDOWN:
-			return "PageDown";
-		case KeyCode.HOME:
-			return "Home";
-		case KeyCode.END:
-			return "End";
-		case KeyCode.LEFT:
-			return "Left";
-		case KeyCode.RIGHT:
-			return "Right";
-		case KeyCode.UP:
-			return "Up";
-		case KeyCode.DOWN:
-			return "Down";
-		case KeyCode.INS:
-			return "Ins";
-		case KeyCode.DEL:
-			return "Del";
-		case KeyCode.KEY_BRACKETOPEN:
+    switch (keyCode) {
+        case KeyCode.KEY_A:
+            return "A";
+        case KeyCode.KEY_B:
+            return "B";
+        case KeyCode.KEY_C:
+            return "C";
+        case KeyCode.KEY_D:
+            return "D";
+        case KeyCode.KEY_E:
+            return "E";
+        case KeyCode.KEY_F:
+            return "F";
+        case KeyCode.KEY_G:
+            return "G";
+        case KeyCode.KEY_H:
+            return "H";
+        case KeyCode.KEY_I:
+            return "I";
+        case KeyCode.KEY_J:
+            return "J";
+        case KeyCode.KEY_K:
+            return "K";
+        case KeyCode.KEY_L:
+            return "L";
+        case KeyCode.KEY_M:
+            return "M";
+        case KeyCode.KEY_N:
+            return "N";
+        case KeyCode.KEY_O:
+            return "O";
+        case KeyCode.KEY_P:
+            return "P";
+        case KeyCode.KEY_Q:
+            return "Q";
+        case KeyCode.KEY_R:
+            return "R";
+        case KeyCode.KEY_S:
+            return "S";
+        case KeyCode.KEY_T:
+            return "T";
+        case KeyCode.KEY_U:
+            return "U";
+        case KeyCode.KEY_V:
+            return "V";
+        case KeyCode.KEY_W:
+            return "W";
+        case KeyCode.KEY_X:
+            return "X";
+        case KeyCode.KEY_Y:
+            return "Y";
+        case KeyCode.KEY_Z:
+            return "Z";
+        case KeyCode.KEY_0:
+            return "0";
+        case KeyCode.KEY_1:
+            return "1";
+        case KeyCode.KEY_2:
+            return "2";
+        case KeyCode.KEY_3:
+            return "3";
+        case KeyCode.KEY_4:
+            return "4";
+        case KeyCode.KEY_5:
+            return "5";
+        case KeyCode.KEY_6:
+            return "6";
+        case KeyCode.KEY_7:
+            return "7";
+        case KeyCode.KEY_8:
+            return "8";
+        case KeyCode.KEY_9:
+            return "9";
+        case KeyCode.KEY_DIVIDE:
+            return "/";
+        case KeyCode.KEY_MULTIPLY:
+            return "*";
+        case KeyCode.TAB:
+            return "Tab";
+        case KeyCode.F1:
+            return "F1";
+        case KeyCode.F2:
+            return "F2";
+        case KeyCode.F3:
+            return "F3";
+        case KeyCode.F4:
+            return "F4";
+        case KeyCode.F5:
+            return "F5";
+        case KeyCode.F6:
+            return "F6";
+        case KeyCode.F7:
+            return "F7";
+        case KeyCode.F8:
+            return "F8";
+        case KeyCode.F9:
+            return "F9";
+        case KeyCode.F10:
+            return "F10";
+        case KeyCode.F11:
+            return "F11";
+        case KeyCode.F12:
+            return "F12";
+        case KeyCode.F13:
+            return "F13";
+        case KeyCode.F14:
+            return "F14";
+        case KeyCode.F15:
+            return "F15";
+        case KeyCode.F16:
+            return "F16";
+        case KeyCode.F17:
+            return "F17";
+        case KeyCode.F18:
+            return "F18";
+        case KeyCode.F19:
+            return "F19";
+        case KeyCode.F20:
+            return "F20";
+        case KeyCode.F21:
+            return "F21";
+        case KeyCode.F22:
+            return "F22";
+        case KeyCode.F23:
+            return "F23";
+        case KeyCode.F24:
+            return "F24";
+        case KeyCode.PAGEUP:
+            return "PageUp";
+        case KeyCode.PAGEDOWN:
+            return "PageDown";
+        case KeyCode.HOME:
+            return "Home";
+        case KeyCode.END:
+            return "End";
+        case KeyCode.LEFT:
+            return "Left";
+        case KeyCode.RIGHT:
+            return "Right";
+        case KeyCode.UP:
+            return "Up";
+        case KeyCode.DOWN:
+            return "Down";
+        case KeyCode.INS:
+            return "Ins";
+        case KeyCode.DEL:
+            return "Del";
+        case KeyCode.KEY_BRACKETOPEN:
             return "[";
-		case KeyCode.KEY_BRACKETCLOSE:
+        case KeyCode.KEY_BRACKETCLOSE:
             return "]";
-		case KeyCode.BACK:
+        case KeyCode.BACK:
             return "Backspace";
-		case KeyCode.SPACE:
+        case KeyCode.SPACE:
             return "Space";
-		case KeyCode.RETURN:
+        case KeyCode.RETURN:
             return "Enter";
-		default:
-			return format("0x%08x", keyCode);
-	}
+        default:
+            return format("0x%08x", keyCode);
+    }
 }
 
 /// base class for custom events

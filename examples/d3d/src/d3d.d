@@ -54,21 +54,21 @@ extern (C) int UIAppMain(string[] args) {
     auto canvas = window.mainWidget.childById!CanvasWidget("canvas");
     canvas.onDrawListener = delegate(CanvasWidget canvas, DrawBuf buf, Rect rc) {
             Log.w("canvas.onDrawListener clipRect=" ~ to!string(buf.clipRect));
-			buf.fill(0xFFFFFF);
-			int x = rc.left;
-			int y = rc.top;
-			buf.fillRect(Rect(x+20, y+20, x+150, y+200), 0x80FF80);
-			buf.fillRect(Rect(x+90, y+80, x+250, y+250), 0x80FF80FF);
-			canvas.font.drawText(buf, x + 40, y + 50, "fillRect()"d, 0xC080C0);
-			buf.drawFrame(Rect(x + 400, y + 30, x + 550, y + 150), 0x204060, Rect(2,3,4,5), 0x80704020);
-			canvas.font.drawText(buf, x + 400, y + 5, "drawFrame()"d, 0x208020);
-			canvas.font.drawText(buf, x + 300, y + 100, "drawPixel()"d, 0x000080);
-			for (int i = 0; i < 80; i++)
-				buf.drawPixel(x+300 + i * 4, y+140 + i * 3 % 100, 0xFF0000 + i * 2);
-			canvas.font.drawText(buf, x + 200, y + 150, "drawLine()"d, 0x800020);
-			for (int i = 0; i < 40; i+=3)
-				buf.drawLine(Point(x+200 + i * 4, y+190), Point(x+150 + i * 7, y+320 + i * 2), 0x008000 + i * 5);
-		};
+            buf.fill(0xFFFFFF);
+            int x = rc.left;
+            int y = rc.top;
+            buf.fillRect(Rect(x+20, y+20, x+150, y+200), 0x80FF80);
+            buf.fillRect(Rect(x+90, y+80, x+250, y+250), 0x80FF80FF);
+            canvas.font.drawText(buf, x + 40, y + 50, "fillRect()"d, 0xC080C0);
+            buf.drawFrame(Rect(x + 400, y + 30, x + 550, y + 150), 0x204060, Rect(2,3,4,5), 0x80704020);
+            canvas.font.drawText(buf, x + 400, y + 5, "drawFrame()"d, 0x208020);
+            canvas.font.drawText(buf, x + 300, y + 100, "drawPixel()"d, 0x000080);
+            for (int i = 0; i < 80; i++)
+                buf.drawPixel(x+300 + i * 4, y+140 + i * 3 % 100, 0xFF0000 + i * 2);
+            canvas.font.drawText(buf, x + 200, y + 150, "drawLine()"d, 0x800020);
+            for (int i = 0; i < 40; i+=3)
+                buf.drawLine(Point(x+200 + i * 4, y+190), Point(x+150 + i * 7, y+320 + i * 2), 0x008000 + i * 5);
+        };
 
     // show window
     window.show();

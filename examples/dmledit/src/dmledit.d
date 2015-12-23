@@ -44,10 +44,10 @@ const Action ACTION_HELP_ABOUT = new Action(IDEActions.HelpAbout, "MENU_HELP_ABO
 
 /// DIDE source file editor
 class DMLSourceEdit : SourceEdit {
-	this(string ID) {
-		super(ID);
-		MenuItem editPopupItem = new MenuItem(null);
-		editPopupItem.add(ACTION_EDIT_COPY, ACTION_EDIT_PASTE, ACTION_EDIT_CUT, ACTION_EDIT_UNDO, ACTION_EDIT_REDO, ACTION_EDIT_INDENT, ACTION_EDIT_UNINDENT, ACTION_EDIT_TOGGLE_LINE_COMMENT, ACTION_DEBUG_START);
+    this(string ID) {
+        super(ID);
+        MenuItem editPopupItem = new MenuItem(null);
+        editPopupItem.add(ACTION_EDIT_COPY, ACTION_EDIT_PASTE, ACTION_EDIT_CUT, ACTION_EDIT_UNDO, ACTION_EDIT_REDO, ACTION_EDIT_INDENT, ACTION_EDIT_UNINDENT, ACTION_EDIT_TOGGLE_LINE_COMMENT, ACTION_DEBUG_START);
         popupMenu = editPopupItem;
         content.syntaxSupport = new DMLSyntaxSupport("");
         setTokenHightlightColor(TokenCategory.Comment, 0x008000); // green
@@ -60,9 +60,9 @@ class DMLSourceEdit : SourceEdit {
         setTokenHightlightColor(TokenCategory.Identifier_Class, 0x000080);  // blue
 
     }
-	this() {
-		this("DMLEDIT");
-	}
+    this() {
+        this("DMLEDIT");
+    }
 }
 
 immutable dstring SAMPLE_SOURCE_CODE = 
@@ -110,11 +110,11 @@ class EditFrame : AppFrame {
                      ACTION_FILE_EXIT);
         mainMenuItems.add(fileItem);
         MenuItem editItem = new MenuItem(new Action(2, "MENU_EDIT"));
-		editItem.add(ACTION_EDIT_COPY, ACTION_EDIT_PASTE, 
+        editItem.add(ACTION_EDIT_COPY, ACTION_EDIT_PASTE, 
                      ACTION_EDIT_CUT, ACTION_EDIT_UNDO, ACTION_EDIT_REDO,
                      ACTION_EDIT_INDENT, ACTION_EDIT_UNINDENT, ACTION_EDIT_TOGGLE_LINE_COMMENT, ACTION_EDIT_TOGGLE_BLOCK_COMMENT, ACTION_DEBUG_START);
 
-		editItem.add(ACTION_EDIT_PREFERENCES);
+        editItem.add(ACTION_EDIT_PREFERENCES);
         mainMenuItems.add(editItem);
         MainMenu mainMenu = new MainMenu(mainMenuItems);
         return mainMenu;
@@ -146,14 +146,14 @@ class EditFrame : AppFrame {
         }
     }
 
-	void saveSourceFile(string filename) {
-		if (filename.length == 0)
-			filename = _filename;
-		import std.file;
-		_filename = filename;
-		window.windowCaption = toUTF32(filename);
-		_editor.save(filename);
-	}
+    void saveSourceFile(string filename) {
+        if (filename.length == 0)
+            filename = _filename;
+        import std.file;
+        _filename = filename;
+        window.windowCaption = toUTF32(filename);
+        _editor.save(filename);
+    }
 
     bool onCanClose() {
         // todo
@@ -161,19 +161,19 @@ class EditFrame : AppFrame {
     }
 
     FileDialog createFileDialog(UIString caption, bool fileMustExist = true) {
-		uint flags = DialogFlag.Modal | DialogFlag.Resizable;
-		if (fileMustExist)
-			flags |= FileDialogFlag.FileMustExist;
+        uint flags = DialogFlag.Modal | DialogFlag.Resizable;
+        if (fileMustExist)
+            flags |= FileDialogFlag.FileMustExist;
         FileDialog dlg = new FileDialog(caption, window, null, flags);
         dlg.filetypeIcons[".d"] = "text-dml";
         return dlg;
     }
 
-	void saveAs() {
-	}
+    void saveAs() {
+    }
 
     /// override to handle specific actions
-	override bool handleAction(const Action a) {
+    override bool handleAction(const Action a) {
         if (a) {
             switch (a.id) {
                 case IDEActions.FileExit:
@@ -184,47 +184,47 @@ class EditFrame : AppFrame {
                     window.showMessageBox(UIString("About DlangUI ML Editor"d), 
                                           UIString("DLangIDE\n(C) Vadim Lopatin, 2015\nhttp://github.com/buggins/dlangui\nSimple editor for DML code"d));
                     return true;
-				case IDEActions.FileNew:
-					UIString caption;
-					caption = "Create new DML file"d;
-					FileDialog dlg = createFileDialog(caption, false);
-					dlg.addFilter(FileFilterEntry(UIString("DML files"d), "*.dml"));
-					dlg.addFilter(FileFilterEntry(UIString("All files"d), "*.*"));
-					dlg.dialogResult = delegate(Dialog dlg, const Action result) {
-						if (result.id == ACTION_OPEN.id) {
-							string filename = result.stringParam;
-							_editor.text=""d;
-							saveSourceFile(filename);
-						}
-					};
-					dlg.show();
-					return true;
-				case IDEActions.FileSave:
-					if (_filename.length) {
-						saveSourceFile(_filename);
-						return true;
-					}
-					UIString caption;
-					caption = "Save DML File as"d;
-					FileDialog dlg = createFileDialog(caption, false);
-					dlg.addFilter(FileFilterEntry(UIString("DML files"d), "*.dml"));
-					dlg.addFilter(FileFilterEntry(UIString("All files"d), "*.*"));
-					dlg.dialogResult = delegate(Dialog dlg, const Action result) {
-						if (result.id == ACTION_OPEN.id) {
-							string filename = result.stringParam;
-							saveSourceFile(filename);
-						}
-					};
-					dlg.show();
-					return true;
-				case IDEActions.FileOpen:
+                case IDEActions.FileNew:
+                    UIString caption;
+                    caption = "Create new DML file"d;
+                    FileDialog dlg = createFileDialog(caption, false);
+                    dlg.addFilter(FileFilterEntry(UIString("DML files"d), "*.dml"));
+                    dlg.addFilter(FileFilterEntry(UIString("All files"d), "*.*"));
+                    dlg.dialogResult = delegate(Dialog dlg, const Action result) {
+                        if (result.id == ACTION_OPEN.id) {
+                            string filename = result.stringParam;
+                            _editor.text=""d;
+                            saveSourceFile(filename);
+                        }
+                    };
+                    dlg.show();
+                    return true;
+                case IDEActions.FileSave:
+                    if (_filename.length) {
+                        saveSourceFile(_filename);
+                        return true;
+                    }
+                    UIString caption;
+                    caption = "Save DML File as"d;
+                    FileDialog dlg = createFileDialog(caption, false);
+                    dlg.addFilter(FileFilterEntry(UIString("DML files"d), "*.dml"));
+                    dlg.addFilter(FileFilterEntry(UIString("All files"d), "*.*"));
+                    dlg.dialogResult = delegate(Dialog dlg, const Action result) {
+                        if (result.id == ACTION_OPEN.id) {
+                            string filename = result.stringParam;
+                            saveSourceFile(filename);
+                        }
+                    };
+                    dlg.show();
+                    return true;
+                case IDEActions.FileOpen:
                     UIString caption;
                     caption = "Open DML File"d;
                     FileDialog dlg = createFileDialog(caption);
                     dlg.addFilter(FileFilterEntry(UIString("DML files"d), "*.dml"));
                     dlg.addFilter(FileFilterEntry(UIString("All files"d), "*.*"));
                     dlg.dialogResult = delegate(Dialog dlg, const Action result) {
-						if (result.id == ACTION_OPEN.id) {
+                        if (result.id == ACTION_OPEN.id) {
                             string filename = result.stringParam;
                             openSourceFile(filename);
                         }
@@ -241,26 +241,26 @@ class EditFrame : AppFrame {
                     return super.handleAction(a);
             }
         }
-		return false;
-	}
+        return false;
+    }
 
-	/// override to handle specific actions state (e.g. change enabled state for supported actions)
-	override bool handleActionStateRequest(const Action a) {
-		switch (a.id) {
-			case IDEActions.HelpAbout:
-			case IDEActions.FileNew:
-			case IDEActions.FileSave:
-			case IDEActions.FileOpen:
-			case IDEActions.DebugStart:
-			case IDEActions.EditPreferences:
-				a.state = ACTION_STATE_ENABLED;
-				return true;
-			default:
-				return super.handleActionStateRequest(a);
-		}
-	}
+    /// override to handle specific actions state (e.g. change enabled state for supported actions)
+    override bool handleActionStateRequest(const Action a) {
+        switch (a.id) {
+            case IDEActions.HelpAbout:
+            case IDEActions.FileNew:
+            case IDEActions.FileSave:
+            case IDEActions.FileOpen:
+            case IDEActions.DebugStart:
+            case IDEActions.EditPreferences:
+                a.state = ACTION_STATE_ENABLED;
+                return true;
+            default:
+                return super.handleActionStateRequest(a);
+        }
+    }
 
-	void updatePreview() {
+    void updatePreview() {
         dstring dsource = _editor.text;
         string source = toUTF8(dsource);
         try {

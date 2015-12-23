@@ -193,17 +193,17 @@ class TreeItem {
     /// set text to show
     @property TreeItem text(dstring s) {
         _text = s; 
-		return this;
+        return this;
     }
     /// set text to show
     @property TreeItem text(UIString s) { 
         _text = s;
-		return this;
+        return this;
     }
     /// set text resource ID to show
     @property TreeItem textResource(string s) {
         _text = s; 
-		return this;
+        return this;
     }
 
     bool compareId(string id) {
@@ -438,7 +438,7 @@ class TreeItems : TreeItem {
 /// grid control action codes
 enum TreeActions : int {
     /// no action
-	None = 0,
+    None = 0,
     /// move selection up
     Up = 2000,
     /// move selection down
@@ -471,38 +471,38 @@ enum TreeActions : int {
     /// scroll right, w/o changing selection
     ScrollPageRight,
 
-	/// move cursor one page up
-	PageUp,
-	/// move cursor one page up with selection
-	SelectPageUp,
-	/// move cursor one page down
-	PageDown,
-	/// move cursor one page down with selection
-	SelectPageDown,
-	/// move cursor to the beginning of page
-	PageBegin, 
-	/// move cursor to the beginning of page with selection
-	SelectPageBegin, 
-	/// move cursor to the end of page
-	PageEnd,   
-	/// move cursor to the end of page with selection
-	SelectPageEnd,   
-	/// move cursor to the beginning of line
-	LineBegin,
-	/// move cursor to the beginning of line with selection
-	SelectLineBegin,
-	/// move cursor to the end of line
-	LineEnd,
-	/// move cursor to the end of line with selection
-	SelectLineEnd,
-	/// move cursor to the beginning of document
-	DocumentBegin,
-	/// move cursor to the beginning of document with selection
-	SelectDocumentBegin,
-	/// move cursor to the end of document
-	DocumentEnd,
-	/// move cursor to the end of document with selection
-	SelectDocumentEnd,
+    /// move cursor one page up
+    PageUp,
+    /// move cursor one page up with selection
+    SelectPageUp,
+    /// move cursor one page down
+    PageDown,
+    /// move cursor one page down with selection
+    SelectPageDown,
+    /// move cursor to the beginning of page
+    PageBegin, 
+    /// move cursor to the beginning of page with selection
+    SelectPageBegin, 
+    /// move cursor to the end of page
+    PageEnd,   
+    /// move cursor to the end of page with selection
+    SelectPageEnd,   
+    /// move cursor to the beginning of line
+    LineBegin,
+    /// move cursor to the beginning of line with selection
+    SelectLineBegin,
+    /// move cursor to the end of line
+    LineEnd,
+    /// move cursor to the end of line with selection
+    SelectLineEnd,
+    /// move cursor to the beginning of document
+    DocumentBegin,
+    /// move cursor to the beginning of document with selection
+    SelectDocumentBegin,
+    /// move cursor to the end of document
+    DocumentEnd,
+    /// move cursor to the end of document with selection
+    SelectDocumentEnd,
 }
 
 
@@ -688,8 +688,8 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         this(null);
     }
     /// create with ID parameter
-	this(string ID, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
-		super(ID, hscrollbarMode, vscrollbarMode);
+    this(string ID, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
+        super(ID, hscrollbarMode, vscrollbarMode);
         contentWidget = new VerticalLayout("TREE_CONTENT");
         _tree = new TreeItems();
         _tree.contentListener = this;
@@ -697,26 +697,26 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         _tree.selectionListener = this;
         _needUpdateWidgets = true;
         _needUpdateWidgetStates = true;
-		acceleratorMap.add( [
-			new Action(TreeActions.Up, KeyCode.UP, 0),
-			new Action(TreeActions.Down, KeyCode.DOWN, 0),
-			new Action(TreeActions.ScrollLeft, KeyCode.LEFT, 0),
-			new Action(TreeActions.ScrollRight, KeyCode.RIGHT, 0),
-			//new Action(TreeActions.LineBegin, KeyCode.HOME, 0),
-			//new Action(TreeActions.LineEnd, KeyCode.END, 0),
-			new Action(TreeActions.PageUp, KeyCode.PAGEUP, 0),
-			new Action(TreeActions.PageDown, KeyCode.PAGEDOWN, 0),
-			//new Action(TreeActions.PageBegin, KeyCode.PAGEUP, KeyFlag.Control),
-			//new Action(TreeActions.PageEnd, KeyCode.PAGEDOWN, KeyFlag.Control),
-			new Action(TreeActions.ScrollTop, KeyCode.HOME, KeyFlag.Control),
-			new Action(TreeActions.ScrollBottom, KeyCode.END, KeyFlag.Control),
-			new Action(TreeActions.ScrollPageUp, KeyCode.PAGEUP, KeyFlag.Control),
-			new Action(TreeActions.ScrollPageDown, KeyCode.PAGEDOWN, KeyFlag.Control),
-			new Action(TreeActions.ScrollUp, KeyCode.UP, KeyFlag.Control),
-			new Action(TreeActions.ScrollDown, KeyCode.DOWN, KeyFlag.Control),
-			new Action(TreeActions.ScrollLeft, KeyCode.LEFT, KeyFlag.Control),
-			new Action(TreeActions.ScrollRight, KeyCode.RIGHT, KeyFlag.Control),
-		]);
+        acceleratorMap.add( [
+            new Action(TreeActions.Up, KeyCode.UP, 0),
+            new Action(TreeActions.Down, KeyCode.DOWN, 0),
+            new Action(TreeActions.ScrollLeft, KeyCode.LEFT, 0),
+            new Action(TreeActions.ScrollRight, KeyCode.RIGHT, 0),
+            //new Action(TreeActions.LineBegin, KeyCode.HOME, 0),
+            //new Action(TreeActions.LineEnd, KeyCode.END, 0),
+            new Action(TreeActions.PageUp, KeyCode.PAGEUP, 0),
+            new Action(TreeActions.PageDown, KeyCode.PAGEDOWN, 0),
+            //new Action(TreeActions.PageBegin, KeyCode.PAGEUP, KeyFlag.Control),
+            //new Action(TreeActions.PageEnd, KeyCode.PAGEDOWN, KeyFlag.Control),
+            new Action(TreeActions.ScrollTop, KeyCode.HOME, KeyFlag.Control),
+            new Action(TreeActions.ScrollBottom, KeyCode.END, KeyFlag.Control),
+            new Action(TreeActions.ScrollPageUp, KeyCode.PAGEUP, KeyFlag.Control),
+            new Action(TreeActions.ScrollPageDown, KeyCode.PAGEDOWN, KeyFlag.Control),
+            new Action(TreeActions.ScrollUp, KeyCode.UP, KeyFlag.Control),
+            new Action(TreeActions.ScrollDown, KeyCode.DOWN, KeyFlag.Control),
+            new Action(TreeActions.ScrollLeft, KeyCode.LEFT, KeyFlag.Control),
+            new Action(TreeActions.ScrollRight, KeyCode.RIGHT, KeyFlag.Control),
+        ]);
     }
 
     ~this() {
@@ -740,12 +740,12 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
     }
 
     override bool onKey(Widget source, KeyEvent event) {
-		if (event.action == KeyAction.KeyDown) {
-			Action action = findKeyAction(event.keyCode, event.flags & (KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Control));
-			if (action !is null) {
-				return handleAction(action);
-			}
-		}
+        if (event.action == KeyAction.KeyDown) {
+            Action action = findKeyAction(event.keyCode, event.flags & (KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Control));
+            if (action !is null) {
+                return handleAction(action);
+            }
+        }
         return false;
     }
 
@@ -777,11 +777,11 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         _needUpdateWidgetStates = false;
     }
 
-	/// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
-	override void layout(Rect rc) {
-		if (visibility == Visibility.Gone) {
-			return;
-		}
+    /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
+    override void layout(Rect rc) {
+        if (visibility == Visibility.Gone) {
+            return;
+        }
         if (_needUpdateWidgets)
             updateWidgets();
         if (_needUpdateWidgetStates)
@@ -790,7 +790,7 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
     }
 
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-	override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) { 
         if (visibility == Visibility.Gone) {
             return;
         }
@@ -857,7 +857,7 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         selectItem(item, makeVisible);
     }
 
-	override protected bool handleAction(const Action a) {
+    override protected bool handleAction(const Action a) {
         Log.d("tree.handleAction ", a.id);
         switch (a.id) with(TreeActions)
         {
@@ -913,7 +913,7 @@ class TreeWidget :  TreeWidgetBase {
         this(null);
     }
     /// create with ID parameter
-	this(string ID) {
-		super(ID);
+    this(string ID) {
+        super(ID);
     }
 }

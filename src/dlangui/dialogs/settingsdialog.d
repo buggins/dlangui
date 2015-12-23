@@ -199,100 +199,100 @@ class NumberEditItem : SettingsItem {
 }
 
 class StringEditItem : SettingsItem {
-	string _defaultValue;
-	this(string id, UIString label, string defaultValue) {
-		super(id, label);
-		_defaultValue = defaultValue;
-	}
-	/// create setting widget
-	override Widget[] createWidgets(Setting settings) {
-		TextWidget lbl = new TextWidget(_id ~ "-label", _label);
-		EditLine ed = new EditLine(_id ~ "-edit");
+    string _defaultValue;
+    this(string id, UIString label, string defaultValue) {
+        super(id, label);
+        _defaultValue = defaultValue;
+    }
+    /// create setting widget
+    override Widget[] createWidgets(Setting settings) {
+        TextWidget lbl = new TextWidget(_id ~ "-label", _label);
+        EditLine ed = new EditLine(_id ~ "-edit");
         ed.minWidth = 200;
-		Setting setting = settings.settingByPath(_id, SettingType.STRING);
-		string value = setting.strDef(_defaultValue);
-		setting.str = value;
-		ed.text = toUTF32(value);
-		ed.contentChange = delegate(EditableContent content) {
-			string value = toUTF8(content.text);
-			setting.str = value;
-		};
-		return [lbl, ed];
-	}
+        Setting setting = settings.settingByPath(_id, SettingType.STRING);
+        string value = setting.strDef(_defaultValue);
+        setting.str = value;
+        ed.text = toUTF32(value);
+        ed.contentChange = delegate(EditableContent content) {
+            string value = toUTF8(content.text);
+            setting.str = value;
+        };
+        return [lbl, ed];
+    }
 }
 
 class FileNameEditItem : SettingsItem {
-	string _defaultValue;
-	this(string id, UIString label, string defaultValue) {
-		super(id, label);
-		_defaultValue = defaultValue;
-	}
-	/// create setting widget
-	override Widget[] createWidgets(Setting settings) {
+    string _defaultValue;
+    this(string id, UIString label, string defaultValue) {
+        super(id, label);
+        _defaultValue = defaultValue;
+    }
+    /// create setting widget
+    override Widget[] createWidgets(Setting settings) {
         import dlangui.dialogs.filedlg;
-		TextWidget lbl = new TextWidget(_id ~ "-label", _label);
-		FileNameEditLine ed = new FileNameEditLine(_id ~ "-filename-edit");
+        TextWidget lbl = new TextWidget(_id ~ "-label", _label);
+        FileNameEditLine ed = new FileNameEditLine(_id ~ "-filename-edit");
         ed.minWidth = 200;
-		Setting setting = settings.settingByPath(_id, SettingType.STRING);
-		string value = setting.strDef(_defaultValue);
-		setting.str = value;
-		ed.text = toUTF32(value);
-		ed.contentChange = delegate(EditableContent content) {
-			string value = toUTF8(content.text);
-			setting.str = value;
-		};
-		return [lbl, ed];
-	}
+        Setting setting = settings.settingByPath(_id, SettingType.STRING);
+        string value = setting.strDef(_defaultValue);
+        setting.str = value;
+        ed.text = toUTF32(value);
+        ed.contentChange = delegate(EditableContent content) {
+            string value = toUTF8(content.text);
+            setting.str = value;
+        };
+        return [lbl, ed];
+    }
 }
 
 class ExecutableFileNameEditItem : SettingsItem {
-	string _defaultValue;
-	this(string id, UIString label, string defaultValue) {
-		super(id, label);
-		_defaultValue = defaultValue;
-	}
-	/// create setting widget
-	override Widget[] createWidgets(Setting settings) {
+    string _defaultValue;
+    this(string id, UIString label, string defaultValue) {
+        super(id, label);
+        _defaultValue = defaultValue;
+    }
+    /// create setting widget
+    override Widget[] createWidgets(Setting settings) {
         import dlangui.dialogs.filedlg;
-		TextWidget lbl = new TextWidget(_id ~ "-label", _label);
-		FileNameEditLine ed = new FileNameEditLine(_id ~ "-filename-edit");
+        TextWidget lbl = new TextWidget(_id ~ "-label", _label);
+        FileNameEditLine ed = new FileNameEditLine(_id ~ "-filename-edit");
         ed.addFilter(FileFilterEntry(UIString("Executable files"d), "*.exe", true));
         ed.minWidth = 200;
-		Setting setting = settings.settingByPath(_id, SettingType.STRING);
-		string value = setting.strDef(_defaultValue);
-		setting.str = value;
-		ed.text = toUTF32(value);
-		ed.contentChange = delegate(EditableContent content) {
-			string value = toUTF8(content.text);
-			setting.str = value;
-		};
-		return [lbl, ed];
-	}
+        Setting setting = settings.settingByPath(_id, SettingType.STRING);
+        string value = setting.strDef(_defaultValue);
+        setting.str = value;
+        ed.text = toUTF32(value);
+        ed.contentChange = delegate(EditableContent content) {
+            string value = toUTF8(content.text);
+            setting.str = value;
+        };
+        return [lbl, ed];
+    }
 }
 
 class PathNameEditItem : SettingsItem {
-	string _defaultValue;
-	this(string id, UIString label, string defaultValue) {
-		super(id, label);
-		_defaultValue = defaultValue;
-	}
-	/// create setting widget
-	override Widget[] createWidgets(Setting settings) {
+    string _defaultValue;
+    this(string id, UIString label, string defaultValue) {
+        super(id, label);
+        _defaultValue = defaultValue;
+    }
+    /// create setting widget
+    override Widget[] createWidgets(Setting settings) {
         import dlangui.dialogs.filedlg;
-		TextWidget lbl = new TextWidget(_id ~ "-label", _label);
-		DirEditLine ed = new DirEditLine(_id ~ "-path-edit");
+        TextWidget lbl = new TextWidget(_id ~ "-label", _label);
+        DirEditLine ed = new DirEditLine(_id ~ "-path-edit");
         ed.addFilter(FileFilterEntry(UIString("All files"d), "*.*"));
         ed.minWidth = 200;
-		Setting setting = settings.settingByPath(_id, SettingType.STRING);
-		string value = setting.strDef(_defaultValue);
-		setting.str = value;
-		ed.text = toUTF32(value);
-		ed.contentChange = delegate(EditableContent content) {
-			string value = toUTF8(content.text);
-			setting.str = value;
-		};
-		return [lbl, ed];
-	}
+        Setting setting = settings.settingByPath(_id, SettingType.STRING);
+        string value = setting.strDef(_defaultValue);
+        setting.str = value;
+        ed.text = toUTF32(value);
+        ed.contentChange = delegate(EditableContent content) {
+            string value = toUTF8(content.text);
+            setting.str = value;
+        };
+        return [lbl, ed];
+    }
 }
 
 /// settings page - item of settings tree, can edit several settings
@@ -359,35 +359,35 @@ class SettingsPage {
         return res;
     }
 
-	/// add EditLine to edit string
-	StringEditItem addStringEdit(string id, UIString label, string defaultValue = "") {
-		StringEditItem res = new StringEditItem(id, label, defaultValue);
-		addItem(res);
-		return res;
-	}
-	
-	/// add EditLine to edit filename
-	FileNameEditItem addFileNameEdit(string id, UIString label, string defaultValue = "") {
-		FileNameEditItem res = new FileNameEditItem(id, label, defaultValue);
-		addItem(res);
-		return res;
-	}
-	
-	/// add EditLine to edit filename
-	PathNameEditItem addDirNameEdit(string id, UIString label, string defaultValue = "") {
-		PathNameEditItem res = new PathNameEditItem(id, label, defaultValue);
-		addItem(res);
-		return res;
-	}
-	
-	/// add EditLine to edit executable file name
-	ExecutableFileNameEditItem addExecutableFileNameEdit(string id, UIString label, string defaultValue = "") {
-		ExecutableFileNameEditItem res = new ExecutableFileNameEditItem(id, label, defaultValue);
-		addItem(res);
-		return res;
-	}
-	
-	StringComboBoxItem addStringComboBox(string id, UIString label, StringListValue[] items) {
+    /// add EditLine to edit string
+    StringEditItem addStringEdit(string id, UIString label, string defaultValue = "") {
+        StringEditItem res = new StringEditItem(id, label, defaultValue);
+        addItem(res);
+        return res;
+    }
+    
+    /// add EditLine to edit filename
+    FileNameEditItem addFileNameEdit(string id, UIString label, string defaultValue = "") {
+        FileNameEditItem res = new FileNameEditItem(id, label, defaultValue);
+        addItem(res);
+        return res;
+    }
+    
+    /// add EditLine to edit filename
+    PathNameEditItem addDirNameEdit(string id, UIString label, string defaultValue = "") {
+        PathNameEditItem res = new PathNameEditItem(id, label, defaultValue);
+        addItem(res);
+        return res;
+    }
+    
+    /// add EditLine to edit executable file name
+    ExecutableFileNameEditItem addExecutableFileNameEdit(string id, UIString label, string defaultValue = "") {
+        ExecutableFileNameEditItem res = new ExecutableFileNameEditItem(id, label, defaultValue);
+        addItem(res);
+        return res;
+    }
+    
+    StringComboBoxItem addStringComboBox(string id, UIString label, StringListValue[] items) {
         StringComboBoxItem res = new StringComboBoxItem(id, label, items);
         addItem(res);
         return res;
@@ -453,7 +453,7 @@ class SettingsDialog : Dialog {
     protected Setting _settings;
     protected SettingsPage _layout;
 
-	this(UIString caption, Window parent, Setting settings, SettingsPage layout) {
+    this(UIString caption, Window parent, Setting settings, SettingsPage layout) {
         super(caption, parent, DialogFlag.Modal | DialogFlag.Resizable | DialogFlag.Popup);
         _settings = settings;
         _layout = layout;
@@ -481,13 +481,13 @@ class SettingsDialog : Dialog {
     }
 
     /// override to implement creation of dialog controls
-	override void init() {
-		minWidth(600).minHeight(400);
+    override void init() {
+        minWidth(600).minHeight(400);
         _tree = new TreeWidget("prop_tree");
         _tree.styleId = STYLE_SETTINGS_TREE;
         _tree.layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT).minHeight(200).minWidth(100);
         _tree.selectionChange = &onTreeItemSelected;
-		_tree.fontSize = 16;
+        _tree.fontSize = 16;
         _frame = new FrameLayout("prop_pages");
         _frame.styleId = STYLE_SETTINGS_PAGES;
         _frame.layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT).minHeight(200).minWidth(100);
@@ -496,8 +496,8 @@ class SettingsDialog : Dialog {
         content.addChild(_tree);
         content.addChild(_frame);
         content.layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT);
-		addChild(content);
-		addChild(createButtonsPanel([ACTION_APPLY, ACTION_CANCEL], 0, 0));
+        addChild(content);
+        addChild(createButtonsPanel([ACTION_APPLY, ACTION_CANCEL], 0, 0));
         if (_layout.childCount > 0)
             _tree.selectItem(_layout.child(0).id);
     }

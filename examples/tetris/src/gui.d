@@ -27,19 +27,19 @@ const Action[] CUP_ACTIONS = [ACTION_PAUSE,     ACTION_ROTATE,      ACTION_LEVEL
 /// about dialog
 Widget createAboutWidget()
 {
-	LinearLayout res = new VerticalLayout();
-	res.padding(Rect(10,10,10,10));
-	res.addChild(new TextWidget(null, "DLangUI Tetris demo app"d));
-	res.addChild(new TextWidget(null, "(C) Vadim Lopatin, 2014"d));
-	res.addChild(new TextWidget(null, "http://github.com/buggins/dlangui"d));
-	Button closeButton = new Button("close", "Close"d);
-	closeButton.click = delegate(Widget src) {
-		Log.i("Closing window");
-		res.window.close();
-		return true;
-	};
-	res.addChild(closeButton);
-	return res;
+    LinearLayout res = new VerticalLayout();
+    res.padding(Rect(10,10,10,10));
+    res.addChild(new TextWidget(null, "DLangUI Tetris demo app"d));
+    res.addChild(new TextWidget(null, "(C) Vadim Lopatin, 2014"d));
+    res.addChild(new TextWidget(null, "http://github.com/buggins/dlangui"d));
+    Button closeButton = new Button("close", "Close"d);
+    closeButton.click = delegate(Widget src) {
+        Log.i("Closing window");
+        res.window.close();
+        return true;
+    };
+    res.addChild(closeButton);
+    return res;
 }
 
 /// Cup States
@@ -376,8 +376,8 @@ class CupWidget : Widget {
         super.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
-		auto saver = ClipRectSaver(buf, rc, alpha);
-	    applyPadding(rc);
+        auto saver = ClipRectSaver(buf, rc, alpha);
+        applyPadding(rc);
 
         Rect topLeft = cellRect(rc, 0, _rows - 1);
         Rect bottomRight = cellRect(rc, _cols - 1, 0);
@@ -439,8 +439,8 @@ class CupWidget : Widget {
 
     }
 
-	/// override to handle specific actions
-	override bool handleAction(const Action a) {
+    /// override to handle specific actions
+    override bool handleAction(const Action a) {
         switch (a.id) {
             case TetrisAction.MoveLeft:
                 _cup.move(-1, 0, falling);
@@ -465,7 +465,7 @@ class CupWidget : Widget {
                     return parent.handleAction(a);
                 return false;
         }
-	}
+    }
 
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
     override void measure(int parentWidth, int parentHeight) {
@@ -483,7 +483,7 @@ class CupWidget : Widget {
 
         focusable = true;
 
-		acceleratorMap.add(CUP_ACTIONS);
+        acceleratorMap.add(CUP_ACTIONS);
     }
 }
 
@@ -594,6 +594,6 @@ class GameWidget : FrameLayout {
         _cupPage = new CupPage();
         addChild(_cupPage);
         //showChild(_cupPage.id, Visibility.Invisible, true);
-		backgroundImageId = "tx_fabric.tiled";
+        backgroundImageId = "tx_fabric.tiled";
     }
 }

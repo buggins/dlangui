@@ -53,13 +53,13 @@ class MessageBox : Dialog {
             };
         }
     }
-	/// override to implement creation of dialog controls
-	override void init() {
+    /// override to implement creation of dialog controls
+    override void init() {
         TextWidget msg = new MultilineTextWidget("msg", _message);
         padding(Rect(10, 10, 10, 10));
         msg.padding(Rect(10, 10, 10, 10));
-		addChild(msg);
-		addChild(createButtonsPanel(_actions, _defaultButtonIndex, 0));
+        addChild(msg);
+        addChild(createButtonsPanel(_actions, _defaultButtonIndex, 0));
     }
 
 }

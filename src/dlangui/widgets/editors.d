@@ -40,146 +40,146 @@ import dlangui.core.streams;
 
 /// Modified state change listener
 interface ModifiedStateListener {
-	void onModifiedStateChange(Widget source, bool modified);
+    void onModifiedStateChange(Widget source, bool modified);
 }
 
 /// Modified content listener
 interface EditableContentChangeListener {
-	void onEditableContentChanged(EditableContent source);
+    void onEditableContentChanged(EditableContent source);
 }
 
 /// Editor action codes
 enum EditorActions : int {
-	None = 0,
-	/// move cursor one char left
-	Left = 1000,
-	/// move cursor one char left with selection
-	SelectLeft,
-	/// move cursor one char right
-	Right,
-	/// move cursor one char right with selection
-	SelectRight,
-	/// move cursor one line up
-	Up,
-	/// move cursor one line up with selection
-	SelectUp,
-	/// move cursor one line down
-	Down,
-	/// move cursor one line down with selection
-	SelectDown,
-	/// move cursor one word left
-	WordLeft,
-	/// move cursor one word left with selection
-	SelectWordLeft,
-	/// move cursor one word right
-	WordRight,
-	/// move cursor one word right with selection
-	SelectWordRight,
-	/// move cursor one page up
-	PageUp,
-	/// move cursor one page up with selection
-	SelectPageUp,
-	/// move cursor one page down
-	PageDown,
-	/// move cursor one page down with selection
-	SelectPageDown,
-	/// move cursor to the beginning of page
-	PageBegin, 
-	/// move cursor to the beginning of page with selection
-	SelectPageBegin, 
-	/// move cursor to the end of page
-	PageEnd,   
-	/// move cursor to the end of page with selection
-	SelectPageEnd,   
-	/// move cursor to the beginning of line
-	LineBegin,
-	/// move cursor to the beginning of line with selection
-	SelectLineBegin,
-	/// move cursor to the end of line
-	LineEnd,
-	/// move cursor to the end of line with selection
-	SelectLineEnd,
-	/// move cursor to the beginning of document
-	DocumentBegin,
-	/// move cursor to the beginning of document with selection
-	SelectDocumentBegin,
-	/// move cursor to the end of document
-	DocumentEnd,
-	/// move cursor to the end of document with selection
-	SelectDocumentEnd,
-	/// delete char before cursor (backspace)
-	DelPrevChar, 
-	/// delete char after cursor (del key)
-	DelNextChar, 
-	/// delete word before cursor (ctrl + backspace)
-	DelPrevWord, 
-	/// delete char after cursor (ctrl + del key)
-	DelNextWord, 
-	
-	/// insert new line (Enter)
-	InsertNewLine,
-	/// insert new line before current position (Ctrl+Enter)
-	PrependNewLine,
-	/// insert new line after current position (Ctrl+Enter)
-	AppendNewLine,
+    None = 0,
+    /// move cursor one char left
+    Left = 1000,
+    /// move cursor one char left with selection
+    SelectLeft,
+    /// move cursor one char right
+    Right,
+    /// move cursor one char right with selection
+    SelectRight,
+    /// move cursor one line up
+    Up,
+    /// move cursor one line up with selection
+    SelectUp,
+    /// move cursor one line down
+    Down,
+    /// move cursor one line down with selection
+    SelectDown,
+    /// move cursor one word left
+    WordLeft,
+    /// move cursor one word left with selection
+    SelectWordLeft,
+    /// move cursor one word right
+    WordRight,
+    /// move cursor one word right with selection
+    SelectWordRight,
+    /// move cursor one page up
+    PageUp,
+    /// move cursor one page up with selection
+    SelectPageUp,
+    /// move cursor one page down
+    PageDown,
+    /// move cursor one page down with selection
+    SelectPageDown,
+    /// move cursor to the beginning of page
+    PageBegin, 
+    /// move cursor to the beginning of page with selection
+    SelectPageBegin, 
+    /// move cursor to the end of page
+    PageEnd,   
+    /// move cursor to the end of page with selection
+    SelectPageEnd,   
+    /// move cursor to the beginning of line
+    LineBegin,
+    /// move cursor to the beginning of line with selection
+    SelectLineBegin,
+    /// move cursor to the end of line
+    LineEnd,
+    /// move cursor to the end of line with selection
+    SelectLineEnd,
+    /// move cursor to the beginning of document
+    DocumentBegin,
+    /// move cursor to the beginning of document with selection
+    SelectDocumentBegin,
+    /// move cursor to the end of document
+    DocumentEnd,
+    /// move cursor to the end of document with selection
+    SelectDocumentEnd,
+    /// delete char before cursor (backspace)
+    DelPrevChar, 
+    /// delete char after cursor (del key)
+    DelNextChar, 
+    /// delete word before cursor (ctrl + backspace)
+    DelPrevWord, 
+    /// delete char after cursor (ctrl + del key)
+    DelNextWord, 
+    
+    /// insert new line (Enter)
+    InsertNewLine,
+    /// insert new line before current position (Ctrl+Enter)
+    PrependNewLine,
+    /// insert new line after current position (Ctrl+Enter)
+    AppendNewLine,
 
-	/// Turn On/Off replace mode
-	ToggleReplaceMode, 
-	
-	/// Copy selection to clipboard
-	Copy, 
-	/// Cut selection to clipboard
-	Cut, 
-	/// Paste selection from clipboard
-	Paste, 
-	/// Undo last change
-	Undo,
-	/// Redo last undoed change
-	Redo,
-	
-	/// Tab (e.g., Tab key to insert tab character or indent text)
-	Tab,
-	/// Tab (unindent text, or remove whitespace before cursor, usually Shift+Tab)
-	BackTab,
-	/// Indent text block or single line
-	Indent,
-	/// Unindent text
+    /// Turn On/Off replace mode
+    ToggleReplaceMode, 
+    
+    /// Copy selection to clipboard
+    Copy, 
+    /// Cut selection to clipboard
+    Cut, 
+    /// Paste selection from clipboard
+    Paste, 
+    /// Undo last change
+    Undo,
+    /// Redo last undoed change
+    Redo,
+    
+    /// Tab (e.g., Tab key to insert tab character or indent text)
+    Tab,
+    /// Tab (unindent text, or remove whitespace before cursor, usually Shift+Tab)
+    BackTab,
+    /// Indent text block or single line
+    Indent,
+    /// Unindent text
     Unindent,
 
-	/// Select whole content (usually, Ctrl+A)
-	SelectAll,
-	
-	// Scroll operations
-	
-	/// Scroll one line up (not changing cursor)
-	ScrollLineUp,
-	/// Scroll one line down (not changing cursor)
-	ScrollLineDown,
-	/// Scroll one page up (not changing cursor)
-	ScrollPageUp,
-	/// Scroll one page down (not changing cursor)
-	ScrollPageDown,
-	/// Scroll window left
-	ScrollLeft,
-	/// Scroll window right
-	ScrollRight,
-	
-	/// Zoom in editor font
-	ZoomIn,
-	/// Zoom out editor font
-	ZoomOut,
-	
-	/// Togle line comment
-	ToggleLineComment,
-	/// Toggle block comment
-	ToggleBlockComment,
-	/// Delete current line
-	DeleteLine,
-	/// Insert line
-	InsertLine,
+    /// Select whole content (usually, Ctrl+A)
+    SelectAll,
+    
+    // Scroll operations
+    
+    /// Scroll one line up (not changing cursor)
+    ScrollLineUp,
+    /// Scroll one line down (not changing cursor)
+    ScrollLineDown,
+    /// Scroll one page up (not changing cursor)
+    ScrollPageUp,
+    /// Scroll one page down (not changing cursor)
+    ScrollPageDown,
+    /// Scroll window left
+    ScrollLeft,
+    /// Scroll window right
+    ScrollRight,
+    
+    /// Zoom in editor font
+    ZoomIn,
+    /// Zoom out editor font
+    ZoomOut,
+    
+    /// Togle line comment
+    ToggleLineComment,
+    /// Toggle block comment
+    ToggleBlockComment,
+    /// Delete current line
+    DeleteLine,
+    /// Insert line
+    InsertLine,
 
-	/// Toggle bookmark in current line
-	ToggleBookmark,
+    /// Toggle bookmark in current line
+    ToggleBookmark,
     /// move cursor to next bookmark
     GoToNextBookmark,
     /// move cursor to previous bookmark
@@ -374,14 +374,14 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         if (event.button == MouseButton.Right) {
             MenuItem menu = getLeftPaneIconsPopupMenu(line);
             if (menu) {
-		        if (menu.openingSubmenu.assigned)
-			        if (!menu.openingSubmenu(_popupMenu))
-				        return true;
-		        menu.updateActionState(this);
-		        PopupMenu popupMenu = new PopupMenu(menu);
-		        popupMenu.menuItemAction = this;
-		        PopupWidget popup = window.showPopup(popupMenu, this, PopupAlign.Point | PopupAlign.Right, event.x, event.y);
-		        popup.flags = PopupFlags.CloseOnClickOutside;
+                if (menu.openingSubmenu.assigned)
+                    if (!menu.openingSubmenu(_popupMenu))
+                        return true;
+                menu.updateActionState(this);
+                PopupMenu popupMenu = new PopupMenu(menu);
+                popupMenu.menuItemAction = this;
+                PopupWidget popup = window.showPopup(popupMenu, this, PopupAlign.Point | PopupAlign.Right, event.x, event.y);
+                popup.flags = PopupFlags.CloseOnClickOutside;
             }
             return true;
         }
@@ -448,88 +448,88 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     this(string ID, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
         super(ID, hscrollbarMode, vscrollbarMode);
         focusable = true;
-		acceleratorMap.add( [
-			new Action(EditorActions.Up, KeyCode.UP, 0),
-			new Action(EditorActions.SelectUp, KeyCode.UP, KeyFlag.Shift),
-			new Action(EditorActions.Down, KeyCode.DOWN, 0),
-			new Action(EditorActions.SelectDown, KeyCode.DOWN, KeyFlag.Shift),
-			new Action(EditorActions.Left, KeyCode.LEFT, 0),
-			new Action(EditorActions.SelectLeft, KeyCode.LEFT, KeyFlag.Shift),
-			new Action(EditorActions.Right, KeyCode.RIGHT, 0),
-			new Action(EditorActions.SelectRight, KeyCode.RIGHT, KeyFlag.Shift),
-			new Action(EditorActions.WordLeft, KeyCode.LEFT, KeyFlag.Control),
-			new Action(EditorActions.SelectWordLeft, KeyCode.LEFT, KeyFlag.Control | KeyFlag.Shift),
-			new Action(EditorActions.WordRight, KeyCode.RIGHT, KeyFlag.Control),
-			new Action(EditorActions.SelectWordRight, KeyCode.RIGHT, KeyFlag.Control | KeyFlag.Shift),
-			new Action(EditorActions.PageUp, KeyCode.PAGEUP, 0),
-			new Action(EditorActions.SelectPageUp, KeyCode.PAGEUP, KeyFlag.Shift),
-			new Action(EditorActions.PageDown, KeyCode.PAGEDOWN, 0),
-			new Action(EditorActions.SelectPageDown, KeyCode.PAGEDOWN, KeyFlag.Shift),
-			new Action(EditorActions.PageBegin, KeyCode.PAGEUP, KeyFlag.Control),
-			new Action(EditorActions.SelectPageBegin, KeyCode.PAGEUP, KeyFlag.Control | KeyFlag.Shift),
-			new Action(EditorActions.PageEnd, KeyCode.PAGEDOWN, KeyFlag.Control),
-			new Action(EditorActions.SelectPageEnd, KeyCode.PAGEDOWN, KeyFlag.Control | KeyFlag.Shift),
-			new Action(EditorActions.LineBegin, KeyCode.HOME, 0),
-			new Action(EditorActions.SelectLineBegin, KeyCode.HOME, KeyFlag.Shift),
-			new Action(EditorActions.LineEnd, KeyCode.END, 0),
-			new Action(EditorActions.SelectLineEnd, KeyCode.END, KeyFlag.Shift),
-			new Action(EditorActions.DocumentBegin, KeyCode.HOME, KeyFlag.Control),
-			new Action(EditorActions.SelectDocumentBegin, KeyCode.HOME, KeyFlag.Control | KeyFlag.Shift),
-			new Action(EditorActions.DocumentEnd, KeyCode.END, KeyFlag.Control),
-			new Action(EditorActions.SelectDocumentEnd, KeyCode.END, KeyFlag.Control | KeyFlag.Shift),
+        acceleratorMap.add( [
+            new Action(EditorActions.Up, KeyCode.UP, 0),
+            new Action(EditorActions.SelectUp, KeyCode.UP, KeyFlag.Shift),
+            new Action(EditorActions.Down, KeyCode.DOWN, 0),
+            new Action(EditorActions.SelectDown, KeyCode.DOWN, KeyFlag.Shift),
+            new Action(EditorActions.Left, KeyCode.LEFT, 0),
+            new Action(EditorActions.SelectLeft, KeyCode.LEFT, KeyFlag.Shift),
+            new Action(EditorActions.Right, KeyCode.RIGHT, 0),
+            new Action(EditorActions.SelectRight, KeyCode.RIGHT, KeyFlag.Shift),
+            new Action(EditorActions.WordLeft, KeyCode.LEFT, KeyFlag.Control),
+            new Action(EditorActions.SelectWordLeft, KeyCode.LEFT, KeyFlag.Control | KeyFlag.Shift),
+            new Action(EditorActions.WordRight, KeyCode.RIGHT, KeyFlag.Control),
+            new Action(EditorActions.SelectWordRight, KeyCode.RIGHT, KeyFlag.Control | KeyFlag.Shift),
+            new Action(EditorActions.PageUp, KeyCode.PAGEUP, 0),
+            new Action(EditorActions.SelectPageUp, KeyCode.PAGEUP, KeyFlag.Shift),
+            new Action(EditorActions.PageDown, KeyCode.PAGEDOWN, 0),
+            new Action(EditorActions.SelectPageDown, KeyCode.PAGEDOWN, KeyFlag.Shift),
+            new Action(EditorActions.PageBegin, KeyCode.PAGEUP, KeyFlag.Control),
+            new Action(EditorActions.SelectPageBegin, KeyCode.PAGEUP, KeyFlag.Control | KeyFlag.Shift),
+            new Action(EditorActions.PageEnd, KeyCode.PAGEDOWN, KeyFlag.Control),
+            new Action(EditorActions.SelectPageEnd, KeyCode.PAGEDOWN, KeyFlag.Control | KeyFlag.Shift),
+            new Action(EditorActions.LineBegin, KeyCode.HOME, 0),
+            new Action(EditorActions.SelectLineBegin, KeyCode.HOME, KeyFlag.Shift),
+            new Action(EditorActions.LineEnd, KeyCode.END, 0),
+            new Action(EditorActions.SelectLineEnd, KeyCode.END, KeyFlag.Shift),
+            new Action(EditorActions.DocumentBegin, KeyCode.HOME, KeyFlag.Control),
+            new Action(EditorActions.SelectDocumentBegin, KeyCode.HOME, KeyFlag.Control | KeyFlag.Shift),
+            new Action(EditorActions.DocumentEnd, KeyCode.END, KeyFlag.Control),
+            new Action(EditorActions.SelectDocumentEnd, KeyCode.END, KeyFlag.Control | KeyFlag.Shift),
 
-			new Action(EditorActions.ScrollLineUp, KeyCode.UP, KeyFlag.Control),
-			new Action(EditorActions.ScrollLineDown, KeyCode.DOWN, KeyFlag.Control),
+            new Action(EditorActions.ScrollLineUp, KeyCode.UP, KeyFlag.Control),
+            new Action(EditorActions.ScrollLineDown, KeyCode.DOWN, KeyFlag.Control),
 
             // Backspace/Del
-			new Action(EditorActions.DelPrevChar, KeyCode.BACK, 0),
-			new Action(EditorActions.DelNextChar, KeyCode.DEL, 0),
-			new Action(EditorActions.DelPrevWord, KeyCode.BACK, KeyFlag.Control),
-			new Action(EditorActions.DelNextWord, KeyCode.DEL, KeyFlag.Control),
+            new Action(EditorActions.DelPrevChar, KeyCode.BACK, 0),
+            new Action(EditorActions.DelNextChar, KeyCode.DEL, 0),
+            new Action(EditorActions.DelPrevWord, KeyCode.BACK, KeyFlag.Control),
+            new Action(EditorActions.DelNextWord, KeyCode.DEL, KeyFlag.Control),
 
             // Copy/Paste
-			new Action(EditorActions.Copy, KeyCode.KEY_C, KeyFlag.Control),
-			new Action(EditorActions.Copy, KeyCode.KEY_C, KeyFlag.Control|KeyFlag.Shift),
-			new Action(EditorActions.Copy, KeyCode.INS, KeyFlag.Control),
-			new Action(EditorActions.Cut, KeyCode.KEY_X, KeyFlag.Control),
-			new Action(EditorActions.Cut, KeyCode.KEY_X, KeyFlag.Control|KeyFlag.Shift),
-			new Action(EditorActions.Cut, KeyCode.DEL, KeyFlag.Shift),
-			new Action(EditorActions.Paste, KeyCode.KEY_V, KeyFlag.Control),
-			new Action(EditorActions.Paste, KeyCode.KEY_V, KeyFlag.Control|KeyFlag.Shift),
-			new Action(EditorActions.Paste, KeyCode.INS, KeyFlag.Shift),
+            new Action(EditorActions.Copy, KeyCode.KEY_C, KeyFlag.Control),
+            new Action(EditorActions.Copy, KeyCode.KEY_C, KeyFlag.Control|KeyFlag.Shift),
+            new Action(EditorActions.Copy, KeyCode.INS, KeyFlag.Control),
+            new Action(EditorActions.Cut, KeyCode.KEY_X, KeyFlag.Control),
+            new Action(EditorActions.Cut, KeyCode.KEY_X, KeyFlag.Control|KeyFlag.Shift),
+            new Action(EditorActions.Cut, KeyCode.DEL, KeyFlag.Shift),
+            new Action(EditorActions.Paste, KeyCode.KEY_V, KeyFlag.Control),
+            new Action(EditorActions.Paste, KeyCode.KEY_V, KeyFlag.Control|KeyFlag.Shift),
+            new Action(EditorActions.Paste, KeyCode.INS, KeyFlag.Shift),
 
             // Undo/Redo
-			new Action(EditorActions.Undo, KeyCode.KEY_Z, KeyFlag.Control),
-			new Action(EditorActions.Redo, KeyCode.KEY_Y, KeyFlag.Control),
-			new Action(EditorActions.Redo, KeyCode.KEY_Z, KeyFlag.Control|KeyFlag.Shift),
+            new Action(EditorActions.Undo, KeyCode.KEY_Z, KeyFlag.Control),
+            new Action(EditorActions.Redo, KeyCode.KEY_Y, KeyFlag.Control),
+            new Action(EditorActions.Redo, KeyCode.KEY_Z, KeyFlag.Control|KeyFlag.Shift),
 
-			new Action(EditorActions.Tab, KeyCode.TAB, 0),
-			new Action(EditorActions.BackTab, KeyCode.TAB, KeyFlag.Shift),
-		]);
+            new Action(EditorActions.Tab, KeyCode.TAB, 0),
+            new Action(EditorActions.BackTab, KeyCode.TAB, KeyFlag.Shift),
+        ]);
         acceleratorMap.add(STD_EDITOR_ACTIONS);
     }
 
-	protected MenuItem _popupMenu;
-	@property MenuItem popupMenu() { return _popupMenu; }
-	@property EditWidgetBase popupMenu(MenuItem popupMenu) {
-		_popupMenu = popupMenu;
-		return this;
-	}
+    protected MenuItem _popupMenu;
+    @property MenuItem popupMenu() { return _popupMenu; }
+    @property EditWidgetBase popupMenu(MenuItem popupMenu) {
+        _popupMenu = popupMenu;
+        return this;
+    }
 
-	/// 
-	override bool onMenuItemAction(const Action action) {
-		return dispatchAction(action);
-	}
+    /// 
+    override bool onMenuItemAction(const Action action) {
+        return dispatchAction(action);
+    }
 
-	/// returns true if widget can show popup (e.g. by mouse right click at point x,y)
-	override bool canShowPopupMenu(int x, int y) {
-		if (_popupMenu is null)
-			return false;
-		if (_popupMenu.openingSubmenu.assigned)
-			if (!_popupMenu.openingSubmenu(_popupMenu))
-				return false;
-		return true;
-	}
+    /// returns true if widget can show popup (e.g. by mouse right click at point x,y)
+    override bool canShowPopupMenu(int x, int y) {
+        if (_popupMenu is null)
+            return false;
+        if (_popupMenu.openingSubmenu.assigned)
+            if (!_popupMenu.openingSubmenu(_popupMenu))
+                return false;
+        return true;
+    }
 
     /// returns true if widget is focusable and visible and enabled
     override @property bool canFocus() {
@@ -538,57 +538,57 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     }
 
 
-	/// override to change popup menu items state
-	override bool isActionEnabled(const Action action) {
-		switch (action.id) with(EditorActions)
-		{
-			case Tab:
-			case BackTab:
-			case Indent:
-			case Unindent:
-				return enabled;
-			case Copy:
-				return !_selectionRange.empty;
-			case Cut:
-				return enabled && !_selectionRange.empty;
-			case Paste:
-				return enabled && Platform.instance.getClipboardText().length > 0;
-			case Undo:
-				return enabled && _content.hasUndo;
-			case Redo:
-				return enabled && _content.hasRedo;
-			case ToggleBookmark:
-				return _content.multiline;
-			case GoToNextBookmark:
-				return _content.multiline && _content.lineIcons.hasBookmarks;
-			case GoToPreviousBookmark:
-				return _content.multiline && _content.lineIcons.hasBookmarks;
-			default:
-				return super.isActionEnabled(action);
-		}
-	}
+    /// override to change popup menu items state
+    override bool isActionEnabled(const Action action) {
+        switch (action.id) with(EditorActions)
+        {
+            case Tab:
+            case BackTab:
+            case Indent:
+            case Unindent:
+                return enabled;
+            case Copy:
+                return !_selectionRange.empty;
+            case Cut:
+                return enabled && !_selectionRange.empty;
+            case Paste:
+                return enabled && Platform.instance.getClipboardText().length > 0;
+            case Undo:
+                return enabled && _content.hasUndo;
+            case Redo:
+                return enabled && _content.hasRedo;
+            case ToggleBookmark:
+                return _content.multiline;
+            case GoToNextBookmark:
+                return _content.multiline && _content.lineIcons.hasBookmarks;
+            case GoToPreviousBookmark:
+                return _content.multiline && _content.lineIcons.hasBookmarks;
+            default:
+                return super.isActionEnabled(action);
+        }
+    }
 
-	/// shows popup at (x,y)
-	override void showPopupMenu(int x, int y) {
-		/// if preparation signal handler assigned, call it; don't show popup if false is returned from handler
-		if (_popupMenu.openingSubmenu.assigned)
-			if (!_popupMenu.openingSubmenu(_popupMenu))
-				return;
-		_popupMenu.updateActionState(this);
-		PopupMenu popupMenu = new PopupMenu(_popupMenu);
-		popupMenu.menuItemAction = this;
-		PopupWidget popup = window.showPopup(popupMenu, this, PopupAlign.Point | PopupAlign.Right, x, y);
-		popup.flags = PopupFlags.CloseOnClickOutside;
-	}
+    /// shows popup at (x,y)
+    override void showPopupMenu(int x, int y) {
+        /// if preparation signal handler assigned, call it; don't show popup if false is returned from handler
+        if (_popupMenu.openingSubmenu.assigned)
+            if (!_popupMenu.openingSubmenu(_popupMenu))
+                return;
+        _popupMenu.updateActionState(this);
+        PopupMenu popupMenu = new PopupMenu(_popupMenu);
+        popupMenu.menuItemAction = this;
+        PopupWidget popup = window.showPopup(popupMenu, this, PopupAlign.Point | PopupAlign.Right, x, y);
+        popup.flags = PopupFlags.CloseOnClickOutside;
+    }
 
-	void onPopupMenuItem(MenuItem item) {
-		// TODO
-	}
+    void onPopupMenuItem(MenuItem item) {
+        // TODO
+    }
 
-	/// returns mouse cursor type for widget
-	override uint getCursorType(int x, int y) {
-		return x < _pos.left + _leftPaneWidth ? CursorType.Arrow : CursorType.IBeam;
-	}
+    /// returns mouse cursor type for widget
+    override uint getCursorType(int x, int y) {
+        return x < _pos.left + _leftPaneWidth ? CursorType.Arrow : CursorType.IBeam;
+    }
 
     /// set bool property value, for ML loaders
     mixin(generatePropertySettersMethodOverride("setBoolProperty", "bool",
@@ -780,13 +780,13 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         _content.syntaxSupport.applySmartIndent(operation, this);
     }
 
-	override void onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source) {
+    override void onContentChange(EditableContent content, EditOperation operation, ref TextRange rangeBefore, ref TextRange rangeAfter, Object source) {
         //Log.d("onContentChange rangeBefore=", rangeBefore, " rangeAfter=", rangeAfter, " text=", operation.content);
         _contentChanged = true;
         if (source is this) {
             if (operation.action == EditAction.ReplaceContent) {
                 // fully replaced, e.g., loaded from file or text property is assigned
-		        _caretPos = rangeAfter.end;
+                _caretPos = rangeAfter.end;
                 _selectionRange.start = _caretPos;
                 _selectionRange.end = _caretPos;
                 updateMaxLineWidth();
@@ -794,7 +794,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 ensureCaretVisible();
                 correctCaretPos();
                 requestLayout();
-				requestActionsUpdate();
+                requestActionsUpdate();
             } else if (operation.action == EditAction.SaveContent) {
                 // saved
             } else {
@@ -805,7 +805,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 updateMaxLineWidth();
                 measureVisibleText();
                 ensureCaretVisible();
-				requestActionsUpdate();
+                requestActionsUpdate();
                 processSmartIndent(operation);
             }
         } else {
@@ -815,19 +815,19 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             requestLayout();
             requestActionsUpdate();
         }
-		invalidate();
+        invalidate();
         if (modifiedStateChange.assigned) {
             if (_lastReportedModifiedState != content.modified) {
                 _lastReportedModifiedState = content.modified;
                 modifiedStateChange(this, content.modified);
-				requestActionsUpdate();
+                requestActionsUpdate();
             }
         }
         if (contentChange.assigned) {
             contentChange(_content);
         }
-		return;
-	}
+        return;
+    }
     protected bool _lastReportedModifiedState;
 
     /// get widget text
@@ -837,14 +837,14 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     override @property Widget text(dstring s) { 
         _content.text = s;
         requestLayout();
-		return this;
+        return this;
     }
 
     /// set text
     override @property Widget text(UIString s) { 
         _content.text = s;
         requestLayout();
-		return this;
+        return this;
     }
 
     protected TextPosition _caretPos;
@@ -1027,7 +1027,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             _selectionRange.end = _caretPos;
         }
         invalidate();
-		requestActionsUpdate();
+        requestActionsUpdate();
     }
 
     protected void selectWordByMouse(int x, int y) {
@@ -1091,11 +1091,11 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return true;
     }
 
-	/// override to handle specific actions state (e.g. change enabled state for supported actions)
-	override bool handleActionStateRequest(const Action a) {
-		switch (a.id) with(EditorActions)
-		{
-			case ToggleBlockComment:
+    /// override to handle specific actions state (e.g. change enabled state for supported actions)
+    override bool handleActionStateRequest(const Action a) {
+        switch (a.id) with(EditorActions)
+        {
+            case ToggleBlockComment:
                 if (!_content.syntaxSupport || !_content.syntaxSupport.supportsToggleBlockComment)
                     a.state = ACTION_STATE_INVISIBLE;
                 else if (enabled && _content.syntaxSupport.canToggleBlockComment(_selectionRange))
@@ -1103,7 +1103,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 else
                     a.state = ACTION_STATE_DISABLE;
                 return true;
-			case ToggleLineComment:
+            case ToggleLineComment:
                 if (!_content.syntaxSupport || !_content.syntaxSupport.supportsToggleLineComment)
                     a.state = ACTION_STATE_INVISIBLE;
                 else if (enabled && _content.syntaxSupport.canToggleLineComment(_selectionRange))
@@ -1116,25 +1116,25 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             case Paste:
             case Undo:
             case Redo:
-			case Tab:
-			case BackTab:
-			case Indent:
-			case Unindent:
+            case Tab:
+            case BackTab:
+            case Indent:
+            case Unindent:
                 if (isActionEnabled(a))
                     a.state = ACTION_STATE_ENABLED;
                 else
                     a.state = ACTION_STATE_DISABLE;
                 return true;
-			default:
-				return super.handleActionStateRequest(a);
-		}
-	}
+            default:
+                return super.handleActionStateRequest(a);
+        }
+    }
 
-	override protected bool handleAction(const Action a) {
+    override protected bool handleAction(const Action a) {
         TextPosition oldCaretPos = _caretPos;
         dstring currentLine = _content[_caretPos.line];
-		switch (a.id) with(EditorActions)
-		{
+        switch (a.id) with(EditorActions)
+        {
             case Left:
             case SelectLeft:
                 correctCaretPos();
@@ -1143,10 +1143,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                     ensureCaretVisible();
                 } else if (_caretPos.line > 0) {
-					_caretPos = _content.lineEnd(_caretPos.line - 1);
+                    _caretPos = _content.lineEnd(_caretPos.line - 1);
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                     ensureCaretVisible();
-				}
+                }
                 return true;
             case Right:
             case SelectRight:
@@ -1157,10 +1157,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     ensureCaretVisible();
                 } else if (_caretPos.line < _content.length) {
                     _caretPos.pos = 0;
-					_caretPos.line++;
+                    _caretPos.line++;
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                     ensureCaretVisible();
-				}
+                }
                 return true;
             case WordLeft:
             case SelectWordLeft:
@@ -1320,10 +1320,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     _content.redo(this);
                 }
                 return true;
-			case Indent:
+            case Indent:
                 indentRange(false);
                 return true;
-			case Unindent:
+            case Unindent:
                 indentRange(true);
                 return true;
             case Tab:
@@ -1406,17 +1406,17 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 _selectionRange.end = _content.lineEnd(_content.length - 1);
                 _caretPos = _selectionRange.end;
                 ensureCaretVisible();
-				requestActionsUpdate();
+                requestActionsUpdate();
                 return true;
-			case ToggleBookmark:
+            case ToggleBookmark:
                 if (_content.multiline) {
                     int line = a.longParam >= 0 ? cast(int)a.longParam : _caretPos.line;
                     _content.lineIcons.toggleBookmark(line);
                     return true;
                 }
-				return false;
-			case GoToNextBookmark:
-			case GoToPreviousBookmark:
+                return false;
+            case GoToNextBookmark:
+            case GoToPreviousBookmark:
                 if (_content.multiline) {
                     LineIcon mark = _content.lineIcons.findNext(LineIconType.bookmark, _selectionRange.end.line, a.id == EditorActions.GoToNextBookmark ? 1 : -1);
                     if (mark) {
@@ -1424,12 +1424,12 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                         return true;
                     }
                 }
-				return false;
-			default:
-				break;
-		}
-		return super.handleAction(a);
-	}
+                return false;
+            default:
+                break;
+        }
+        return super.handleAction(a);
+    }
 
     protected TextRange spaceBefore(TextPosition pos) {
         TextRange res = TextRange(pos, pos);
@@ -1543,39 +1543,39 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return super.findKeyAction(keyCode, flags);
     }
 
-	/// handle keys
-	override bool onKeyEvent(KeyEvent event) {
+    /// handle keys
+    override bool onKeyEvent(KeyEvent event) {
         if (focused) startCaretBlinking();
         bool ctrlOrAltPressed = false; //(event.flags & (KeyFlag.Control /* | KeyFlag.Alt */));
-		if (event.action == KeyAction.Text && event.text.length && !ctrlOrAltPressed) {
-			Log.d("text entered: ", event.text);
+        if (event.action == KeyAction.Text && event.text.length && !ctrlOrAltPressed) {
+            Log.d("text entered: ", event.text);
             if (readOnly)
                 return true;
             if (replaceMode && _selectionRange.empty && _content[_caretPos.line].length >= _caretPos.pos + event.text.length) {
                 // replace next char(s)
                 TextRange range = _selectionRange;
                 range.end.pos += cast(int)event.text.length;
-				EditOperation op = new EditOperation(EditAction.Replace, range, [event.text]);
-				_content.performOperation(op, this);
+                EditOperation op = new EditOperation(EditAction.Replace, range, [event.text]);
+                _content.performOperation(op, this);
             } else {
-				EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [event.text]);
-				_content.performOperation(op, this);
+                EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [event.text]);
+                _content.performOperation(op, this);
             }
             return true;
-		}
-		return super.onKeyEvent(event);
-	}
+        }
+        return super.onKeyEvent(event);
+    }
 
     /// process mouse event; return true if event is processed by widget.
     override bool onMouseEvent(MouseEvent event) {
         //Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
-		// support onClick
+        // support onClick
         if (event.action == MouseAction.ButtonDown && event.x < _clientRect.left && event.x >= _clientRect.left - _leftPaneWidth) {
             setFocus();
             if (onLeftPaneMouseClick(event))
                 return true;
         }
-	    if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
+        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
             setFocus();
             startCaretBlinking();
             if (event.doubleClick) {
@@ -1584,21 +1584,21 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 updateCaretPositionByMouse(event.x - _clientRect.left, event.y - _clientRect.top, false);
             }
             invalidate();
-	        return true;
-	    }
-	    if (event.action == MouseAction.Move && (event.flags & MouseButton.Left) != 0) {
+            return true;
+        }
+        if (event.action == MouseAction.Move && (event.flags & MouseButton.Left) != 0) {
             updateCaretPositionByMouse(event.x - _clientRect.left, event.y - _clientRect.top, true);
-	        return true;
-	    }
-	    if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
-	        return true;
-	    }
-	    if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {
-	        return true;
-	    }
-	    if (event.action == MouseAction.FocusIn) {
-	        return true;
-	    }
+            return true;
+        }
+        if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
+            return true;
+        }
+        if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {
+            return true;
+        }
+        if (event.action == MouseAction.FocusIn) {
+            return true;
+        }
         if (event.action == MouseAction.Wheel) {
             uint keyFlags = event.flags & (MouseFlag.Shift | MouseFlag.Control | MouseFlag.Alt);
             if (event.wheelDelta < 0) {
@@ -1615,7 +1615,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 return handleAction(new Action(EditorActions.ScrollLineUp));
             }
         }
-	    return super.onMouseEvent(event);
+        return super.onMouseEvent(event);
     }
 
     /// returns caret position
@@ -1623,25 +1623,25 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return _caretPos;
     }
 
-	/// change caret position and ensure it is visible
-	void setCaretPos(int line, int column, bool makeVisible = true)
-	{
-		_caretPos = TextPosition(line,column);
+    /// change caret position and ensure it is visible
+    void setCaretPos(int line, int column, bool makeVisible = true)
+    {
+        _caretPos = TextPosition(line,column);
         correctCaretPos();
-		invalidate();
+        invalidate();
         if (makeVisible)
-		    ensureCaretVisible();
-	}
+            ensureCaretVisible();
+    }
 }
 
 interface EditorActionHandler {
-	bool onEditorAction(const Action action);
+    bool onEditorAction(const Action action);
 }
 
 /// single line editor
 class EditLine : EditWidgetBase {
 
-	Signal!EditorActionHandler editorAction;
+    Signal!EditorActionHandler editorAction;
 
     /// empty parameter list constructor - for usage by factory
     this() {
@@ -1651,7 +1651,7 @@ class EditLine : EditWidgetBase {
     this(string ID, dstring initialContent = null) {
         super(ID, ScrollBarMode.Invisible, ScrollBarMode.Invisible);
         _content = new EditableContent(false);
-		_content.contentChanged = this;
+        _content.contentChanged = this;
         wantTabs = false;
         styleId = STYLE_EDIT_LINE;
         text = initialContent;
@@ -1671,13 +1671,13 @@ class EditLine : EditWidgetBase {
             res.left = _measuredTextSize.x;
         else
             res.left = _measuredTextWidths[p.pos - 1];
-		res.left -= _scrollPos.x;
+        res.left -= _scrollPos.x;
         res.right = res.left + 1;
         return res;
     }
 
     override protected TextPosition clientToTextPos(Point pt) {
-		pt.x += _scrollPos.x;
+        pt.x += _scrollPos.x;
         TextPosition res;
         for (int i = 0; i < _measuredText.length; i++) {
             int x0 = i > 0 ? _measuredTextWidths[i - 1] : 0;
@@ -1727,16 +1727,16 @@ class EditLine : EditWidgetBase {
         measuredContent(parentWidth, parentHeight, _measuredTextSize.x + _leftPaneWidth, _measuredTextSize.y);
     }
 
-	override bool handleAction(const Action a) {
-		switch (a.id) with(EditorActions)
-		{
-			case InsertNewLine:
-			case PrependNewLine:
-			case AppendNewLine:
-				if (editorAction.assigned) {
-					return editorAction(a);
-				}
-				break;
+    override bool handleAction(const Action a) {
+        switch (a.id) with(EditorActions)
+        {
+            case InsertNewLine:
+            case PrependNewLine:
+            case AppendNewLine:
+                if (editorAction.assigned) {
+                    return editorAction(a);
+                }
+                break;
             case Up:
                 break;
             case Down:
@@ -1747,19 +1747,19 @@ class EditLine : EditWidgetBase {
                 break;
             default:
                 break;
-		}
-		return super.handleAction(a);
-	}
+        }
+        return super.handleAction(a);
+    }
 
 
-	/// handle keys
-	override bool onKeyEvent(KeyEvent event) {
-		return super.onKeyEvent(event);
-	}
+    /// handle keys
+    override bool onKeyEvent(KeyEvent event) {
+        return super.onKeyEvent(event);
+    }
 
     /// process mouse event; return true if event is processed by widget.
     override bool onMouseEvent(MouseEvent event) {
-	    return super.onMouseEvent(event);
+        return super.onMouseEvent(event);
     }
 
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
@@ -1813,8 +1813,8 @@ class EditLine : EditWidgetBase {
         Rect rc = _pos;
         applyMargins(rc);
         applyPadding(rc);
-		auto saver = ClipRectSaver(buf, rc, alpha);
-		FontRef font = font();
+        auto saver = ClipRectSaver(buf, rc, alpha);
+        FontRef font = font();
         dstring txt = text;
         Point sz = font.textSize(txt);
         //applyAlign(rc, sz);
@@ -1843,14 +1843,14 @@ class EditBox : EditWidgetBase {
     this(string ID, dstring initialContent = null, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
         super(ID, hscrollbarMode, vscrollbarMode);
         _content = new EditableContent(true); // multiline
-		_content.contentChanged = this;
+        _content.contentChanged = this;
         styleId = STYLE_EDIT_BOX;
         text = initialContent;
-		acceleratorMap.add( [
-			// zoom
-			new Action(EditorActions.ZoomIn, KeyCode.ADD, KeyFlag.Control),
-			new Action(EditorActions.ZoomOut, KeyCode.SUB, KeyFlag.Control),
-		]);
+        acceleratorMap.add( [
+            // zoom
+            new Action(EditorActions.ZoomIn, KeyCode.ADD, KeyFlag.Control),
+            new Action(EditorActions.ZoomOut, KeyCode.SUB, KeyFlag.Control),
+        ]);
         onThemeChanged();
     }
 
@@ -1917,13 +1917,13 @@ class EditBox : EditWidgetBase {
         FontRef font = font();
         _lineHeight = font.height;
         _numVisibleLines = (_clientRect.height + _lineHeight - 1) / _lineHeight;
-		if (_firstVisibleLine >= _content.length) {
-			_firstVisibleLine = _content.length - _numVisibleLines + 1;
-			if (_firstVisibleLine < 0)
-				_firstVisibleLine = 0;
-			_caretPos.line = _content.length - 1;
-			_caretPos.pos = 0;
-		}
+        if (_firstVisibleLine >= _content.length) {
+            _firstVisibleLine = _content.length - _numVisibleLines + 1;
+            if (_firstVisibleLine < 0)
+                _firstVisibleLine = 0;
+            _caretPos.line = _content.length - 1;
+            _caretPos.pos = 0;
+        }
         if (_numVisibleLines < 1)
             _numVisibleLines = 1;
         if (_firstVisibleLine + _numVisibleLines > _content.length)
@@ -2112,11 +2112,11 @@ class EditBox : EditWidgetBase {
         return res;
     }
 
-	override protected bool handleAction(const Action a) {
+    override protected bool handleAction(const Action a) {
         TextPosition oldCaretPos = _caretPos;
         dstring currentLine = _content[_caretPos.line];
-		switch (a.id) with(EditorActions)
-		{
+        switch (a.id) with(EditorActions)
+        {
             case PrependNewLine:
                 if (!readOnly) {
                     correctCaretPos();
@@ -2290,7 +2290,7 @@ class EditBox : EditWidgetBase {
                     int dir = a.id == ZoomIn ? 1 : -1;
                     if (_minFontSize < _maxFontSize && _minFontSize > 0 && _maxFontSize > 0) {
                         int currentFontSize = fontSize;
-						int increment = currentFontSize >= 30 ? 2 : 1;
+                        int increment = currentFontSize >= 30 ? 2 : 1;
                         int newFontSize = currentFontSize + increment * dir; //* 110 / 100;
                         if (newFontSize > 30)
                             newFontSize &= 0xFFFE;
@@ -2305,36 +2305,36 @@ class EditBox : EditWidgetBase {
                     }
                 }
                 return true;
-			case ToggleBlockComment:
+            case ToggleBlockComment:
                 if (!readOnly && _content.syntaxSupport && _content.syntaxSupport.supportsToggleBlockComment && _content.syntaxSupport.canToggleBlockComment(_selectionRange))
                     _content.syntaxSupport.toggleBlockComment(_selectionRange, this);
                 return true;
-			case ToggleLineComment:
+            case ToggleLineComment:
                 if (!readOnly && _content.syntaxSupport && _content.syntaxSupport.supportsToggleLineComment && _content.syntaxSupport.canToggleLineComment(_selectionRange))
                     _content.syntaxSupport.toggleLineComment(_selectionRange, this);
                 return true;
-			case AppendNewLine:
+            case AppendNewLine:
                 if (!readOnly) {
                     correctCaretPos();
-					TextPosition p = _content.lineEnd(_caretPos.line);
-					TextRange r = TextRange(p, p);
+                    TextPosition p = _content.lineEnd(_caretPos.line);
+                    TextRange r = TextRange(p, p);
                     EditOperation op = new EditOperation(EditAction.Replace, r, [""d, ""d]);
                     _content.performOperation(op, this);
-					_caretPos = oldCaretPos;
+                    _caretPos = oldCaretPos;
                 }
-				return true;
-			case DeleteLine:
+                return true;
+            case DeleteLine:
                 if (!readOnly) {
                     correctCaretPos();
                     EditOperation op = new EditOperation(EditAction.Replace, _content.lineRange(_caretPos.line), [""d]);
                     _content.performOperation(op, this);
                 }
-				return true;
+                return true;
             default:
                 break;
-		}
-		return super.handleAction(a);
-	}
+        }
+        return super.handleAction(a);
+    }
 
     /// calculate full content size in pixels
     override Point fullContentSize() {
@@ -2479,7 +2479,7 @@ class EditBox : EditWidgetBase {
 
     TextRange _matchingBraces;
 
-	override protected void drawClient(DrawBuf buf) {
+    override protected void drawClient(DrawBuf buf) {
         // update matched braces
         if (!content.findMatchedBraces(_caretPos, _matchingBraces)) {
             _matchingBraces.start.line = -1;
@@ -2577,17 +2577,17 @@ class LogWidget : EditBox {
         _enableScrollAfterText = false;
         enabled = false;
         fontSize = makePointSize(9);
-		//fontFace = "Consolas,Lucida Console,Courier New";
-		fontFace = "Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console";
-		fontFamily = FontFamily.MonoSpace;
+        //fontFace = "Consolas,Lucida Console,Courier New";
+        fontFace = "Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console";
+        fontFamily = FontFamily.MonoSpace;
         minFontSize(pointsToPixels(6)).maxFontSize(pointsToPixels(32)); // allow font zoom with Ctrl + MouseWheel
         onThemeChanged();
     }
 
     /// append lines to the end of text
     void appendText(dstring text) {
-		if (text.length == 0)
-			return;
+        if (text.length == 0)
+            return;
         dstring[] lines = text.split("\n");
         //lines ~= ""d; // append new line after last line
         content.appendLines(lines);

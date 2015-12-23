@@ -31,10 +31,10 @@ interface SomeInterface {
     bool someMethod(string s, int n);
 }
 class Foo : SomeInterface {
-	override bool someMethod(string s, int n) {
-		writeln("someMethod called ", s, ", ", n);
-		return n > 10; // can return value
-	}
+    override bool someMethod(string s, int n) {
+        writeln("someMethod called ", s, ", ", n);
+        return n > 10; // can return value
+    }
 }
 
 // Listener! can hold arbitrary number of connected slots
@@ -63,7 +63,7 @@ signal2.emit("text", 3);
 
 // check if any slit is connected
 if (signal1.assigned)
-	writeln("has listeners");
+    writeln("has listeners");
 
 // Signal! can hold arbitrary number of connected slots
 
@@ -174,9 +174,9 @@ struct Signal(T1) if (is(T1 == interface) && __traits(allMembers, T1).length == 
     alias slot_t = return_t delegate(params_t);
     private Collection!slot_t _listeners;
 
-	this(ref Signal!T1 v) {
-		_listeners.addAll(v._listeners);
-	}
+    this(ref Signal!T1 v) {
+        _listeners.addAll(v._listeners);
+    }
 
     /// returns true if listener is assigned
     final bool assigned() {
@@ -185,12 +185,12 @@ struct Signal(T1) if (is(T1 == interface) && __traits(allMembers, T1).length == 
     /// replace all previously assigned listeners with new one (if null passed, remove all listeners)
     final void opAssign(slot_t listener) {
         _listeners.clear();
-		if (listener !is null)
-			_listeners ~= listener;
+        if (listener !is null)
+            _listeners ~= listener;
     }
     /// replace all previously assigned listeners with new one (if null passed, remove all listeners)
     final void opAssign(T1 listener) {
-		opAssign(&__traits(getMember, listener, __traits(allMembers, T1)[0]));
+        opAssign(&__traits(getMember, listener, __traits(allMembers, T1)[0]));
     }
     /// call all listeners; for signals having non-void return type, stop iterating when first return value is nonzero
     static if (is (return_t == void)) {
@@ -229,11 +229,11 @@ struct Signal(T1) if (is(T1 == interface) && __traits(allMembers, T1).length == 
     }
     /// add listener - as interface member
     final void connect(T1 listener) {
-		connect(&__traits(getMember, listener, __traits(allMembers, T1)[0]));
+        connect(&__traits(getMember, listener, __traits(allMembers, T1)[0]));
     }
     /// add listener - as interface member
     final void disconnect(T1 listener) {
-		disconnect(&__traits(getMember, listener, __traits(allMembers, T1)[0]));
+        disconnect(&__traits(getMember, listener, __traits(allMembers, T1)[0]));
     }
 }
 
@@ -249,8 +249,8 @@ struct Signal(RETURN_T, T1...)
     /// replace all previously assigned listeners with new one (if null passed, remove all listeners)
     final void opAssign(slot_t listener) {
         _listeners.clear();
-		if (listener !is null)
-			_listeners ~= listener;
+        if (listener !is null)
+            _listeners ~= listener;
     }
     /// call all listeners; for signals having non-void return type, stop iterating when first return value is nonzero
     static if (is (RETURN_T == void)) {

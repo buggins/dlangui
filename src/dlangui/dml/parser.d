@@ -134,14 +134,14 @@ struct Token {
         int intvalue;
         double floatvalue;
     }
-	public @property string toString() const {
+    public @property string toString() const {
         if (type == TokenType.integer)
-		    return "" ~ to!string(line) ~ ":" ~ to!string(pos) ~ " " ~ to!string(type) ~ " " ~ to!string(intvalue);
+            return "" ~ to!string(line) ~ ":" ~ to!string(pos) ~ " " ~ to!string(type) ~ " " ~ to!string(intvalue);
         else if (type == TokenType.floating)
-		    return "" ~ to!string(line) ~ ":" ~ to!string(pos) ~ " " ~ to!string(type) ~ " " ~ to!string(floatvalue);
+            return "" ~ to!string(line) ~ ":" ~ to!string(pos) ~ " " ~ to!string(type) ~ " " ~ to!string(floatvalue);
         else
-		    return "" ~ to!string(line) ~ ":" ~ to!string(pos) ~ " " ~ to!string(type) ~ " \"" ~ text ~ "\"";
-	}
+            return "" ~ to!string(line) ~ ":" ~ to!string(pos) ~ " " ~ to!string(type) ~ " \"" ~ text ~ "\"";
+    }
     @property bool isMultilineComment() {
         return type == TokenType.comment && multiline;
     }
@@ -160,10 +160,10 @@ class Tokenizer {
 
     Token _token;
 
-	enum : int {
-		EOF_CHAR = 0x001A,
-		EOL_CHAR = 0x000A
-	}
+    enum : int {
+        EOF_CHAR = 0x001A,
+        EOL_CHAR = 0x000A
+    }
 
     this(string source, string filename = "") {
         _filename = filename;

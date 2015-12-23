@@ -217,7 +217,7 @@ class Win32Window : Window {
                 } else {
                     Log.e("Pixelformat failed");
                     // disable GL
-					useOpengl = false;
+                    useOpengl = false;
                 }
             }
         }
@@ -243,10 +243,10 @@ class Win32Window : Window {
             //_glSupport = _gl;
             glDisable(GL_DEPTH_TEST);
             glViewport(0, 0, _dx, _dy);
-			float a = 1.0f;
-			float r = ((_backgroundColor >> 16) & 255) / 255.0f;
-			float g = ((_backgroundColor >> 8) & 255) / 255.0f;
-			float b = ((_backgroundColor >> 0) & 255) / 255.0f;
+            float a = 1.0f;
+            float r = ((_backgroundColor >> 16) & 255) / 255.0f;
+            float g = ((_backgroundColor >> 8) & 255) / 255.0f;
+            float b = ((_backgroundColor >> 0) & 255) / 255.0f;
             glClearColor(r, g, b, a);
             glClear(GL_COLOR_BUFFER_BIT);
 
@@ -278,7 +278,7 @@ class Win32Window : Window {
         static if (ENABLE_OPENGL) {
             import derelict.opengl3.wgl;
             if (_hGLRC) {
-			    //glSupport.uninitShaders();
+                //glSupport.uninitShaders();
                 //destroy(_glSupport);
                 //_glSupport = null;
                 //_gl = null;
@@ -316,20 +316,20 @@ class Win32Window : Window {
         if (_timerId && _nextExpectedTimerTs && _nextExpectedTimerTs < nextts + 10)
             return; // don't reschedule timer, timer event will be received soon
         if (_hwnd) {
-			//_timerId = 
+            //_timerId = 
             SetTimer(_hwnd, _timerId, cast(uint)intervalMillis, null);
             _nextExpectedTimerTs = nextts;
         }
     }
 
     void handleTimer(UINT_PTR timerId) {
-		//Log.d("handleTimer id=", timerId);
-		if (timerId == _timerId) {
-			KillTimer(_hwnd, timerId);
-			//_timerId = 0;
-			_nextExpectedTimerTs = 0;
-			onTimer();
-		}
+        //Log.d("handleTimer id=", timerId);
+        if (timerId == _timerId) {
+            KillTimer(_hwnd, timerId);
+            //_timerId = 0;
+            _nextExpectedTimerTs = 0;
+            onTimer();
+        }
     }
 
 
@@ -364,17 +364,17 @@ class Win32Window : Window {
         //UpdateWindow(_hwnd);
     }
 
-	override @property dstring windowCaption() {
-		return _caption;
-	}
+    override @property dstring windowCaption() {
+        return _caption;
+    }
 
-	override @property void windowCaption(dstring caption) {
-		_caption = caption;
-		if (_hwnd) {
-			Log.d("windowCaption ", caption);
-			SetWindowTextW(_hwnd, toUTF16z(_caption));
-		}
-	}
+    override @property void windowCaption(dstring caption) {
+        _caption = caption;
+        if (_hwnd) {
+            Log.d("windowCaption ", caption);
+            SetWindowTextW(_hwnd, toUTF16z(_caption));
+        }
+    }
     void onCreate() {
         Log.d("Window onCreate");
         _platform.onWindowCreated(_hwnd, this);
@@ -384,11 +384,11 @@ class Win32Window : Window {
         _platform.onWindowDestroyed(_hwnd, this);
     }
 
-	/// close window
-	override void close() {
-		Log.d("Window.close()");
-		_platform.closeWindow(this);
-	}
+    /// close window
+    override void close() {
+        Log.d("Window.close()");
+        _platform.closeWindow(this);
+    }
 
     HICON _icon;
 
@@ -455,23 +455,23 @@ class Win32Window : Window {
         SetCursor(winCursor);
     }
 
-	/// sets cursor type for window
-	override protected void setCursorType(uint cursorType) {
-		// override to support different mouse cursors
+    /// sets cursor type for window
+    override protected void setCursorType(uint cursorType) {
+        // override to support different mouse cursors
         _cursorType = cursorType;
         onSetCursorType();
-	}
+    }
 
-	/// sets window icon
-	@property override void windowIcon(DrawBufRef buf) {
+    /// sets window icon
+    @property override void windowIcon(DrawBufRef buf) {
         if (_icon)
             DestroyIcon(_icon);
         _icon = null;
-		ColorDrawBuf icon = cast(ColorDrawBuf)buf.get;
-		if (!icon) {
-			Log.e("Trying to set null icon for window");
-			return;
-		}
+        ColorDrawBuf icon = cast(ColorDrawBuf)buf.get;
+        if (!icon) {
+            Log.e("Trying to set null icon for window");
+            return;
+        }
         Win32ColorDrawBuf resizedicon = new Win32ColorDrawBuf(icon, 32, 32);
         resizedicon.invertAlpha();
         ICONINFO ii;
@@ -492,7 +492,7 @@ class Win32Window : Window {
         if (mask)
             DeleteObject(mask);
         DeleteObject(color);
-	}
+    }
 
     private void paintUsingGDI() {
         PAINTSTRUCT ps;
@@ -521,9 +521,9 @@ class Win32Window : Window {
         debug(DebugRedraw) Log.d("WM_PAINT handling took ", paintEnd - paintStart, " ms");
     }
 
-	protected ButtonDetails _lbutton;
-	protected ButtonDetails _mbutton;
-	protected ButtonDetails _rbutton;
+    protected ButtonDetails _lbutton;
+    protected ButtonDetails _mbutton;
+    protected ButtonDetails _rbutton;
 
     private void updateButtonsState(uint flags) {
         if (!(flags & MK_LBUTTON) && _lbutton.isDown)
@@ -535,8 +535,8 @@ class Win32Window : Window {
     }
 
     private bool _mouseTracking;
-	private bool onMouse(uint message, uint flags, short x, short y) {
-		debug(DebugMouseEvents) Log.d("Win32 Mouse Message ", message, " flags=", flags, " x=", x, " y=", y);
+    private bool onMouse(uint message, uint flags, short x, short y) {
+        debug(DebugMouseEvents) Log.d("Win32 Mouse Message ", message, " flags=", flags, " x=", x, " y=", y);
         MouseButton button = MouseButton.None;
         MouseAction action = MouseAction.ButtonDown;
         ButtonDetails * pbuttonDetails = null;
@@ -623,13 +623,13 @@ class Win32Window : Window {
         event.lbutton = _lbutton;
         event.rbutton = _rbutton;
         event.mbutton = _mbutton;
-		bool res = dispatchMouseEvent(event);
+        bool res = dispatchMouseEvent(event);
         if (res) {
             //Log.v("Calling update() after mouse event");
             update();
         }
         return res;
-	}
+    }
 
 
     protected uint _keyFlags;
@@ -694,7 +694,7 @@ class Win32Window : Window {
     /// request window redraw
     override void invalidate() {
         InvalidateRect(_hwnd, null, FALSE);
-		//UpdateWindow(_hwnd);
+        //UpdateWindow(_hwnd);
     }
 
     /// after drawing, call to schedule redraw if animation is active
@@ -776,30 +776,30 @@ class Win32Platform : Platform {
         return new Win32Window(this, windowCaption, parent, flags, width, height);
     }
 
-	/// calls request layout for all windows
-	override void requestLayout() {
-		foreach(w; _windowMap) {
-			w.requestLayout();
-			w.invalidate();
-		}
-	}
+    /// calls request layout for all windows
+    override void requestLayout() {
+        foreach(w; _windowMap) {
+            w.requestLayout();
+            w.invalidate();
+        }
+    }
 
     /// handle theme change: e.g. reload some themed resources
     override void onThemeChanged() {
-		foreach(w; _windowMap)
-			w.dispatchThemeChanged();
+        foreach(w; _windowMap)
+            w.dispatchThemeChanged();
     }
 
     /// list of windows for deferred destroy in message loop
-	Win32Window[] _windowsToDestroy;
+    Win32Window[] _windowsToDestroy;
 
-	/// close window
-	override void closeWindow(Window w) {
-		Win32Window window = cast(Win32Window)w;
+    /// close window
+    override void closeWindow(Window w) {
+        Win32Window window = cast(Win32Window)w;
         _windowsToDestroy ~= window;
         SendMessage(window._hwnd, WM_CLOSE, 0, 0);
         //window
-	}
+    }
 
     /// destroy window objects planned for destroy
     void destroyClosedWindows() {
@@ -958,7 +958,7 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
         assert(false);
     }
 
-	currentTheme = createDefaultTheme();
+    currentTheme = createDefaultTheme();
 
     static if (ENABLE_OPENGL) {
         try {
@@ -979,7 +979,7 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
             //platform.enterMessageLoop();
         } catch (Exception e) {
             Log.e("Exception while trying to init OpenGL", e);
-		    setOpenglEnabled(false);
+            setOpenglEnabled(false);
         }
     }
 
@@ -1073,16 +1073,16 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
             break;
         case WM_MOUSELEAVE:
-		case WM_MOUSEMOVE:
-		case WM_LBUTTONDOWN:
-		case WM_MBUTTONDOWN:
-		case WM_RBUTTONDOWN:
-		case WM_LBUTTONUP:
-		case WM_MBUTTONUP:
-		case WM_RBUTTONUP:
+        case WM_MOUSEMOVE:
+        case WM_LBUTTONDOWN:
+        case WM_MBUTTONDOWN:
+        case WM_RBUTTONDOWN:
+        case WM_LBUTTONUP:
+        case WM_MBUTTONUP:
+        case WM_RBUTTONUP:
         case WM_MOUSEWHEEL:
-			if (window !is null) {
-				if (window.onMouse(message, cast(uint)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF)))
+            if (window !is null) {
+                if (window.onMouse(message, cast(uint)wParam, cast(short)(lParam & 0xFFFF), cast(short)((lParam >> 16) & 0xFFFF)))
                     return 0; // processed
             }
             // not processed - default handling
@@ -1091,36 +1091,36 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_SYSKEYDOWN:
         case WM_KEYUP:
         case WM_SYSKEYUP:
-			if (window !is null) {
+            if (window !is null) {
                 int repeatCount = lParam & 0xFFFF;
-				if (window.onKey(message == WM_KEYDOWN || message == WM_SYSKEYDOWN ? KeyAction.KeyDown : KeyAction.KeyUp, cast(uint)wParam, repeatCount, 0, message == WM_SYSKEYUP || message == WM_SYSKEYDOWN))
+                if (window.onKey(message == WM_KEYDOWN || message == WM_SYSKEYDOWN ? KeyAction.KeyDown : KeyAction.KeyUp, cast(uint)wParam, repeatCount, 0, message == WM_SYSKEYUP || message == WM_SYSKEYDOWN))
                     return 0; // processed
             }
             break;
         case WM_UNICHAR:
-			if (window !is null) {
+            if (window !is null) {
                 int repeatCount = lParam & 0xFFFF;
-				if (window.onKey(KeyAction.Text, cast(uint)wParam, repeatCount, wParam == UNICODE_NOCHAR ? 0 : cast(uint)wParam))
+                if (window.onKey(KeyAction.Text, cast(uint)wParam, repeatCount, wParam == UNICODE_NOCHAR ? 0 : cast(uint)wParam))
                     return 1; // processed
                 return 1;
             }
             break;
         case WM_CHAR:
-			if (window !is null) {
+            if (window !is null) {
                 int repeatCount = lParam & 0xFFFF;
-				if (window.onKey(KeyAction.Text, cast(uint)wParam, repeatCount, wParam == UNICODE_NOCHAR ? 0 : cast(uint)wParam))
+                if (window.onKey(KeyAction.Text, cast(uint)wParam, repeatCount, wParam == UNICODE_NOCHAR ? 0 : cast(uint)wParam))
                     return 1; // processed
                 return 1;
             }
             break;
         case WM_TIMER:
-			if (window !is null) {
-				window.handleTimer(wParam);
+            if (window !is null) {
+                window.handleTimer(wParam);
                 return 0;
             }
             break;
         case WM_DROPFILES:
-			if (window !is null) {
+            if (window !is null) {
                 HDROP hdrop = cast(HDROP)wParam;
                 string[] files;
                 wchar[] buf;
@@ -1137,7 +1137,7 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
             return 0;
         case WM_CLOSE:
-			if (window !is null) {
+            if (window !is null) {
                 bool canClose = window.handleCanClose();
                 if (!canClose) {
                     Log.d("WM_CLOSE: canClose is false");

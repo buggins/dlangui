@@ -21,11 +21,11 @@ extern (C) int UIAppMain(string[] args) {
     ];
 
     // setup resource directories - will use only existing directories
-	Platform.instance.resourceDirs = resourceDirs;
+    Platform.instance.resourceDirs = resourceDirs;
     // select translation file - for english language
-	Platform.instance.uiLanguage = "en";
-	// load theme from file "theme_default.xml"
-	Platform.instance.uiTheme = "theme_default";
+    Platform.instance.uiLanguage = "en";
+    // load theme from file "theme_default.xml"
+    Platform.instance.uiTheme = "theme_default";
 
     // create window
     Window window = Platform.instance.createWindow("My Window", null);
