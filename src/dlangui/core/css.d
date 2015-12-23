@@ -246,6 +246,8 @@ class CssStyle {
     CssTextAlign textAlignLast = CssTextAlign.inherit;
     CssTextDecoration textDecoration = CssTextDecoration.inherit;
     CssHyphenate hyphenate = CssHyphenate.inherit;
+    CssLength color;
+    CssLength backgroundColor;
 }
 
 /// skip spaces, move to new location, return true if there are some characters left in source line
@@ -357,7 +359,7 @@ struct CssDeclItem {
     CssDeclType type;
     int value;
     string str;
-    
+
     void apply(CssStyle style) {
         switch (type) with (CssDeclType) {
             case display: style.display = cast(CssDisplay)value; break;
@@ -373,8 +375,12 @@ struct CssDeclItem {
                 style.hyphenate = cast(CssHyphenate)value; 
                 break; // hyphenate
 
-            case color: break;
-            case background_color: break;
+            case color:
+                style.color = CssLength.unpack(value);
+                break;
+            case background_color:
+                style.backgroundColor = CssLength.unpack(value);
+                break;
             case vertical_align: break;
             case font_family: break; // id families like serif, sans-serif
             case font_names: break;   // string font name like Arial, Courier
@@ -441,10 +447,11 @@ class CssDeclaration {
                         n = parseEnumItem!CssHyphenate(src, -1); 
                         break; // hyphenate
                     case color:
-                        //n = parseEnumItem!Css(src, -1);
-                        break;
-                    case background_color: 
-                        //n = parseEnumItem!Css(src, -1); 
+                    case background_color:
+                        CssLength v;
+                        if (parseColor(src, v)) {
+                            n = v.pack();
+                        }
                         break;
                     case vertical_align: n = parseEnumItem!CssVerticalAlign(src, -1); break;
                     case font_family: n = parseEnumItem!CssFontFamily(src, -1); break; // id families like serif, sans-serif
@@ -511,6 +518,96 @@ class CssDeclaration {
         return _list.length > 0;
     }
 }
+
+private int hexDigit( char c )
+{
+    if ( c >= '0' && c <= '9' )
+        return c-'0';
+    if ( c >= 'A' && c <= 'F' )
+        return c - 'A' + 10;
+    if ( c >= 'a' && c <= 'f' )
+        return c - 'a' + 10;
+    return -1;
+}
+
+private int parseStandardColor(string ident) {
+    switch(ident) {
+        case "black": return 0x000000;
+        case "green": return 0x008000;
+        case "silver": return 0xC0C0C0;
+        case "lime": return 0x00FF00;
+        case "gray": return 0x808080;
+        case "olive": return 0x808000;
+        case "white": return 0xFFFFFF;
+        case "yellow": return 0xFFFF00;
+        case "maroon": return 0x800000;
+        case "navy": return 0x000080;
+        case "red": return 0xFF0000;
+        case "blue": return 0x0000FF;
+        case "purple": return 0x800080;
+        case "teal": return 0x008080;
+        case "fuchsia": return 0xFF00FF;
+        case "aqua": return 0x00FFFF;
+        default: return -1;
+    }
+}
+
+private bool parseColor(ref string src, ref CssLength value)
+{
+    value.type = CssValueType.unspecified;
+    value.value = 0;
+    skipSpaces(src);
+    if (src.empty)
+        return false;
+    string ident = parseIdent(src);
+    if (!ident.empty) {
+        switch(ident) {
+            case "inherited":
+                value.type = CssValueType.inherited;
+                return true;
+            case "none":
+                return true;
+            default:
+                int v = parseStandardColor(ident);
+                if (v >= 0) {
+                    value.value = v;
+                    value.type = CssValueType.color;
+                    return true;
+                }
+                return false;
+        }
+    }
+    char ch = src[0];
+    if (ch == '#') {
+        // #rgb or #rrggbb colors
+        src = src[1 .. $];
+        int nDigits = 0;
+        for ( ; nDigits < src.length && hexDigit(src[nDigits])>=0; nDigits++ ) {
+        }
+        if ( nDigits==3 ) {
+            int r = hexDigit( src[0] );
+            int g = hexDigit( src[1] );
+            int b = hexDigit( src[2] );
+            value.type = CssValueType.color;
+            value.value = (((r + r*16) * 256) | (g + g*16)) * 256 | (b + b*16);
+            src = src[3..$];
+            return true;
+        } else if ( nDigits==6 ) {
+            int r = hexDigit( src[0] ) * 16;
+            r += hexDigit( src[1] );
+            int g = hexDigit( src[2] ) * 16;
+            g += hexDigit( src[3] );
+            int b = hexDigit( src[4] ) * 16;
+            b += hexDigit( src[5] );
+            value.type = CssValueType.color;
+            value.value = ((r * 256) | g) * 256 | b;
+            src = src[6..$];
+            return true;
+        }
+    }
+    return false;
+}
+
 
 version(unittest) {
     void testCSS() {
