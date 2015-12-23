@@ -204,9 +204,9 @@ enum CssDeclType : ubyte {
     text_align_last,
     text_decoration,
     hyphenate, // hyphenate
-    hyphenate2, // -webkit-hyphens
-    hyphenate3, // adobe-hyphenate
-    hyphenate4, // adobe-text-layout
+    _webkit_hyphens, // -webkit-hyphens
+    adobe_hyphenate, // adobe-hyphenate
+    adobe_text_layout, // adobe-text-layout
     color,
     background_color,
     vertical_align,
@@ -236,9 +236,16 @@ enum CssDeclType : ubyte {
     list_style,
     list_style_type,
     list_style_position,
-    list_style_image,
-    stop,
-    eol
+    list_style_image
+}
+
+class CssStyle {
+    CssDisplay display = CssDisplay.block;
+    CssWhiteSpace whiteSpace = CssWhiteSpace.inherit;
+    CssTextAlign textAlign = CssTextAlign.inherit;
+    CssTextAlign textAlignLast = CssTextAlign.inherit;
+    CssTextDecoration textDecoration = CssTextDecoration.inherit;
+    CssHyphenate hyphenate = CssHyphenate.inherit;
 }
 
 /// skip spaces, move to new location, return true if there are some characters left in source line
@@ -281,7 +288,7 @@ private string parseIdent(ref string src) {
 
 private bool skipChar(ref string src, char ch) {
     skipSpaces(src);
-    if (src.length > 0 && src[0] == ':') {
+    if (src.length > 0 && src[0] == ch) {
         src = src[1 .. $];
         skipSpaces(src);
         return true;
@@ -289,7 +296,7 @@ private bool skipChar(ref string src, char ch) {
     return false;
 }
 
-string replaceChar(string s, char from, char to) {
+private string replaceChar(string s, char from, char to) {
     foreach(ch; s) {
         if (ch == from) {
             char[] buf;
@@ -304,141 +311,230 @@ string replaceChar(string s, char from, char to) {
     return s;
 }
 
+/// remove trailing _ from string, e.g. "body_" -> "body"
+private string removeTrailingUnderscore(string s) {
+    if (s.endsWith("_"))
+        return s[0..$-1];
+    return s;
+}
+
 private int parseEnumItem(E)(ref string src, int defValue = -1) if (is(E == enum)) {
-    string ident = replaceChar(parseIdent(src), '_', '-');
+    string ident = replaceChar(parseIdent(src), '-', '_');
     foreach(member; EnumMembers!E) {
-        if (member.to!string.equal(ident))
-            return member;
+        if (ident == removeTrailingUnderscore(member.to!string)) {
+            return member.to!int;
+        }
     }
     return defValue;
 }
 
 private CssDeclType parseCssDeclType(ref string src) {
-    string ident = parseIdent(src);
-    if (ident.empty)
+    int n = parseEnumItem!CssDeclType(src, -1);
+    if (n < 0)
         return CssDeclType.unknown;
     if (!skipChar(src, ':')) // no : after identifier
         return CssDeclType.unknown;
-    switch(ident) with (CssDeclType) {
-        case "display": return display;
-        case "white-space": return white_space;
-        case "text-align": return text_align;
-        case "text-align-last": return text_align_last;
-        case "text-decoration": return text_decoration;
-        case "hyphenate": return hyphenate; // hyphenate
-        case "-webkit-hyphens": return hyphenate2; // -webkit-hyphens
-        case "-adobe-hyphenate": return hyphenate3; // adobe-hyphenate
-        case "-adobe-text-layout": return hyphenate4; // adobe-text-layout
-        case "color": return color;
-        case "background-color": return background_color;
-        case "vertical-align": return vertical_align;
-        case "font-family": return font_family; // id families like serif; sans-serif
-        case "font-names": return font_names;   // string font name like Arial; Courier
-        case "font-size": return font_size;
-        case "font-style": return font_style;
-        case "font-weight": return font_weight;
-        case "text-indent": return text_indent;
-        case "line-height": return line_height;
-        case "letter-spacing": return letter_spacing;
-        case "width": return width;
-        case "height": return height;
-        case "margin-left": return margin_left;
-        case "margin-right": return margin_right;
-        case "margin-top": return margin_top;
-        case "margin-bottom": return margin_bottom;
-        case "margin": return margin;
-        case "padding-left": return padding_left;
-        case "padding-right": return padding_right;
-        case "padding-top": return padding_top;
-        case "padding-bottom": return padding_bottom;
-        case "padding": return padding;
-        case "page-break-before": return page_break_before;
-        case "page-break-after": return page_break_after;
-        case "page-break-inside": return page_break_inside;
-        case "list-style": return list_style;
-        case "list-style-type": return list_style_type;
-        case "list-style-position": return list_style_position;
-        case "list-style-image": return list_style_image;
-        default:
-            return CssDeclType.unknown;
-    }
+    return cast(CssDeclType)n;
 }
 
-class CssDeclaration {
-    bool parse(ref string src) {
-        if (!skipSpaces(src))
-            return false;
-        if (!skipChar(src, '{'))
-            return false; // decl must start with {
-        CssDeclType propId = parseCssDeclType(src);
-        int n = -1;
-        switch(propId) with(CssDeclType) {
-            case display: n = parseEnumItem!CssDisplay(src, -1); break;
-            case white_space: n = parseEnumItem!CssWhiteSpace(src, -1); break;
-            case text_align: n = parseEnumItem!CssTextAlign(src, -1); break;
-            case text_align_last: n = parseEnumItem!CssTextAlign(src, -1); break;
-            case text_decoration: n = parseEnumItem!CssTextDecoration(src, -1); break;
-            case hyphenate:
-            case hyphenate2:
-            case hyphenate3:
-            case hyphenate4:
-                n = parseEnumItem!CssHyphenate(src, -1); 
+private bool nextProperty(ref string str) {
+    int pos = 0;
+    for (; pos < str.length; pos++) {
+        char ch = str[pos];
+        if (ch == '}')
+            break;
+        if (ch == ';') {
+            pos++;
+            break;
+        }
+    }
+    str = pos < str.length ? str[pos .. $] : null;
+    skipSpaces(str);
+    return !str.empty && str[0] != '}';
+}
+
+struct CssDeclItem {
+    CssDeclType type;
+    int value;
+    string str;
+    
+    void apply(CssStyle style) {
+        switch (type) with (CssDeclType) {
+            case display: style.display = cast(CssDisplay)value; break;
+            case white_space: style.whiteSpace = cast(CssWhiteSpace)value; break;
+            case text_align: style.textAlign = cast(CssTextAlign)value; break;
+            case text_align_last: style.textAlignLast = cast(CssTextAlign)value; break;
+            case text_decoration: style.textDecoration = cast(CssTextDecoration)value; break;
+
+            case _webkit_hyphens: // -webkit-hyphens
+            case adobe_hyphenate: // adobe-hyphenate
+            case adobe_text_layout: // adobe-text-layout
+            case hyphenate: 
+                style.hyphenate = cast(CssHyphenate)value; 
                 break; // hyphenate
-            case color:
-                //n = parseEnumItem!Css(src, -1); 
-                break;
-            case background_color: 
-                //n = parseEnumItem!Css(src, -1); 
-                break;
-            case vertical_align: n = parseEnumItem!CssVerticalAlign(src, -1); break;
-            case font_family: n = parseEnumItem!CssFontFamily(src, -1); break; // id families like serif, sans-serif
-            case font_names:
-                //n = parseEnumItem!Css(src, -1); 
-                break;   // string font name like Arial, Courier
-            case font_size:
-                //n = parseEnumItem!Css(src, -1); 
-                break;
-            case font_style: n = parseEnumItem!CssFontStyle(src, -1); break;
-            case font_weight:
-                //n = parseEnumItem!Css(src, -1); 
-                break;
-            case text_indent: 
-                //n = parseEnumItem!CssTextIndent(src, -1); 
-                break;
-            case line_height:
-            case letter_spacing:
-            case width:
-            case height:
-            case margin_left:
-            case margin_right:
-            case margin_top:
-            case margin_bottom:
-            case padding_left:
-            case padding_right:
-            case padding_top:
-            case padding_bottom:
-                //n = parseEnumItem!Css(src, -1); 
-                break;
-            case margin: 
-            case padding: 
-                //n = parseEnumItem!Css(src, -1); 
-                break;
-            case page_break_before:
-            case page_break_inside:
-            case page_break_after:
-                n = parseEnumItem!CssPageBreak(src, -1); 
-                break;
-            case list_style:
-                //n = parseEnumItem!Css(src, -1); 
-                break;
-            case list_style_type: n = parseEnumItem!CssListStyleType(src, -1); break;
-            case list_style_position: n = parseEnumItem!CssListStylePosition(src, -1); break;
-            case list_style_image: 
-                //n = parseEnumItem!CssListStyleImage(src, -1); 
-                break;
+
+            case color: break;
+            case background_color: break;
+            case vertical_align: break;
+            case font_family: break; // id families like serif, sans-serif
+            case font_names: break;   // string font name like Arial, Courier
+            case font_size: break;
+            case font_style: break;
+            case font_weight: break;
+            case text_indent: break;
+            case line_height: break;
+            case letter_spacing: break;
+            case width: break;
+            case height: break;
+            case margin_left: break;
+            case margin_right: break;
+            case margin_top: break;
+            case margin_bottom: break;
+            case margin: break;
+            case padding_left: break;
+            case padding_right: break;
+            case padding_top: break;
+            case padding_bottom: break;
+            case padding: break;
+            case page_break_before: break;
+            case page_break_after: break;
+            case page_break_inside: break;
+            case list_style: break;
+            case list_style_type: break;
+            case list_style_position: break;
+            case list_style_image: break;
             default:
                 break;
         }
-        return true;
+    }
+}
+
+/// css declaration like { display: block; margin-top: 10px }
+class CssDeclaration {
+    private CssDeclItem[] _list;
+
+    void apply(CssStyle style) {
+        foreach(item; _list)
+            item.apply(style);
+    }
+
+    bool parse(ref string src, bool mustBeInBrackets = true) {
+        if (!skipSpaces(src))
+            return false;
+        if (mustBeInBrackets && !skipChar(src, '{'))
+            return false; // decl must start with {
+        for (;;) {
+            CssDeclType propId = parseCssDeclType(src);
+            if (propId != CssDeclType.unknown) {
+                int n = -1;
+                string s = null;
+                switch(propId) with(CssDeclType) {
+                    case display: n = parseEnumItem!CssDisplay(src, -1); break;
+                    case white_space: n = parseEnumItem!CssWhiteSpace(src, -1); break;
+                    case text_align: n = parseEnumItem!CssTextAlign(src, -1); break;
+                    case text_align_last: n = parseEnumItem!CssTextAlign(src, -1); break;
+                    case text_decoration: n = parseEnumItem!CssTextDecoration(src, -1); break;
+                    case hyphenate:
+                    case _webkit_hyphens: // -webkit-hyphens
+                    case adobe_hyphenate: // adobe-hyphenate
+                    case adobe_text_layout: // adobe-text-layout
+                        n = parseEnumItem!CssHyphenate(src, -1); 
+                        break; // hyphenate
+                    case color:
+                        //n = parseEnumItem!Css(src, -1);
+                        break;
+                    case background_color: 
+                        //n = parseEnumItem!Css(src, -1); 
+                        break;
+                    case vertical_align: n = parseEnumItem!CssVerticalAlign(src, -1); break;
+                    case font_family: n = parseEnumItem!CssFontFamily(src, -1); break; // id families like serif, sans-serif
+                    case font_names:
+                        //n = parseEnumItem!Css(src, -1); 
+                        break;   // string font name like Arial, Courier
+                    case font_size:
+                        //n = parseEnumItem!Css(src, -1); 
+                        break;
+                    case font_style: n = parseEnumItem!CssFontStyle(src, -1); break;
+                    case font_weight:
+                        //n = parseEnumItem!Css(src, -1); 
+                        break;
+                    case text_indent: 
+                        //n = parseEnumItem!CssTextIndent(src, -1); 
+                        break;
+                    case line_height:
+                    case letter_spacing:
+                    case width:
+                    case height:
+                    case margin_left:
+                    case margin_right:
+                    case margin_top:
+                    case margin_bottom:
+                    case padding_left:
+                    case padding_right:
+                    case padding_top:
+                    case padding_bottom:
+                        //n = parseEnumItem!Css(src, -1); 
+                        break;
+                    case margin: 
+                    case padding: 
+                        //n = parseEnumItem!Css(src, -1); 
+                        break;
+                    case page_break_before:
+                    case page_break_inside:
+                    case page_break_after:
+                        n = parseEnumItem!CssPageBreak(src, -1); 
+                        break;
+                    case list_style:
+                        //n = parseEnumItem!Css(src, -1); 
+                        break;
+                    case list_style_type: n = parseEnumItem!CssListStyleType(src, -1); break;
+                    case list_style_position: n = parseEnumItem!CssListStylePosition(src, -1); break;
+                    case list_style_image: 
+                        //n = parseEnumItem!CssListStyleImage(src, -1); 
+                        break;
+                    default:
+                        break;
+                }
+                if (n >= 0 || !s.empty) {
+                    CssDeclItem item;
+                    item.type = propId;
+                    item.value = n;
+                    item.str = s;
+                    _list ~= item;
+                }
+            }
+            if (!nextProperty(src))
+                break;
+        }
+        if (mustBeInBrackets && !skipChar(src, '}'))
+            return false;
+        return _list.length > 0;
+    }
+}
+
+version(unittest) {
+    void testCSS() {
+        CssStyle style = new CssStyle();
+        CssDeclaration decl = new CssDeclaration();
+        CssWhiteSpace whiteSpace = CssWhiteSpace.inherit;
+        CssTextAlign textAlign = CssTextAlign.inherit;
+        CssTextAlign textAlignLast = CssTextAlign.inherit;
+        CssTextDecoration textDecoration = CssTextDecoration.inherit;
+        CssHyphenate hyphenate = CssHyphenate.inherit;
+        string src = "{ display: inline; text-decoration: underline; white-space: pre; text-align: right; text-align-last: left; hyphenate: auto }";
+        assert(decl.parse(src, true));
+        assert(style.display == CssDisplay.block);
+        assert(style.textDecoration == CssTextDecoration.inherit);
+        assert(style.whiteSpace == CssWhiteSpace.inherit);
+        assert(style.textAlign == CssTextAlign.inherit);
+        assert(style.textAlignLast == CssTextAlign.inherit);
+        assert(style.hyphenate == CssHyphenate.inherit);
+        decl.apply(style);
+        assert(style.display == CssDisplay.inline);
+        assert(style.textDecoration == CssTextDecoration.underline);
+        assert(style.whiteSpace == CssWhiteSpace.pre);
+        assert(style.textAlign == CssTextAlign.right);
+        assert(style.textAlignLast == CssTextAlign.left);
+        assert(style.hyphenate == CssHyphenate.auto_);
     }
 }
