@@ -82,6 +82,7 @@
   <ItemGroup>
     <Compile Include="src\dlangui\package.d" />
     <Compile Include="src\dlangui\core\collections.d" />
+    <Compile Include="src\dlangui\core\dom.d" />
     <Compile Include="src\dlangui\core\editable.d" />
     <Compile Include="src\dlangui\core\events.d" />
     <Compile Include="src\dlangui\core\files.d" />

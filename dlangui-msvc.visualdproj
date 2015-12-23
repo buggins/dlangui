@@ -33,7 +33,7 @@
   <useArrayBounds>0</useArrayBounds>
   <noboundscheck>0</noboundscheck>
   <useSwitchError>0</useSwitchError>
-  <useUnitTests>0</useUnitTests>
+  <useUnitTests>1</useUnitTests>
   <useInline>0</useInline>
   <release>0</release>
   <preservePaths>0</preservePaths>
@@ -542,6 +542,7 @@
     <Folder name="core">
      <File path="src\dlangui\core\collections.d" />
      <File path="src\dlangui\core\config.d" />
+     <File path="src\dlangui\core\dom.d" />
      <File path="src\dlangui\core\editable.d" />
      <File path="src\dlangui\core\events.d" />
      <File path="src\dlangui\core\files.d" />
