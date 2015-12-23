@@ -855,11 +855,11 @@ struct GlyphCache
 // maxv is 65 for win32 fonts, 256 for freetype
 import std.math;
 //---------------------------------
-struct glyph_gamma_table(int maxv = 65)
+class glyph_gamma_table(int maxv = 65)
 {
     this(double gammaValue = 1.0)
     {
-        gamma = gammaValue;
+        gamma(gammaValue);
     }
     @property double gamma() { return _gamma; }
     @property void gamma(double g) {
@@ -890,6 +890,6 @@ private:
 __gshared glyph_gamma_table!65 _gamma65;
 __gshared glyph_gamma_table!256 _gamma256;
 __gshared static this() {
-    _gamma65 = glyph_gamma_table!65(1.0);
-    _gamma256 = glyph_gamma_table!256(1.0);
+    _gamma65 = new glyph_gamma_table!65(1.0);
+    _gamma256 = new glyph_gamma_table!256(1.0);
 }

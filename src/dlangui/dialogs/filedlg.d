@@ -227,6 +227,9 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             _fileList.setCellText(2, i, toUTF32(sz));
             _fileList.setCellText(3, i, toUTF32(date));
         }
+        if(_fileList.height > 0)
+            _fileList.scrollTo(0, 0);
+
         _fileList.autoFitColumnWidths();
         _fileList.fillColumnWidth(1);
         if (selectionIndex >= 0)
