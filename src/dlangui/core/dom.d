@@ -11,11 +11,11 @@ import std.algorithm : equal;
 // Namespace, element tag and attribute names are stored as numeric ids for better performance and lesser memory consumption.
 
 /// id type for interning namespaces
-alias ns_id = ushort;
+alias ns_id = short;
 /// id type for interning element names
-alias elem_id = uint;
+alias elem_id = int;
 /// id type for interning attribute names
-alias attr_id = ushort;
+alias attr_id = short;
 
 
 /// Base class for DOM nodes
@@ -52,6 +52,22 @@ public:
     /// returns attribute count
     @property int attrCount() { return 0; }
 
+    /// get attribute by index
+    Attribute attr(int index) { return null; }
+    /// get attribute by namespace and attribute ids
+    Attribute attr(ns_id nsid, attr_id attrid) { return null; }
+    /// get attribute by namespace and attribute names
+    Attribute attr(string nsname, string attrname) { return attr(_document.nsId(nsname), _document.attrId(attrname)); }
+
+    /// set attribute value by namespace and attribute ids
+    Attribute setAttr(ns_id nsid, attr_id attrid, string value) { assert(false); }
+    /// set attribute value by namespace and attribute names
+    Attribute setAttr(string nsname, string attrname, string value) { return setAttr(_document.nsId(nsname), _document.attrId(attrname), value); }
+    /// get attribute value by namespace and attribute ids
+    string attrValue(ns_id nsid, attr_id attrid) { return null; }
+    /// get attribute value by namespace and attribute ids
+    string attrValue(string nsname, string attrname) { return attrValue(_document.nsId(nsname), _document.attrId(attrname)); }
+
     // child nodes
 
     /// returns child node count
@@ -71,15 +87,16 @@ public:
     /// append text child
     Node appendText(dstring s, int index = -1) { assert(false); }
     /// append element child - by namespace and tag names
-    Node appendElement(string ns, string tag, int index = -1) { assert(false); }
+    Node appendElement(string ns, string tag, int index = -1) { return appendElement(_document.nsId(ns), _document.tagId(tag), index); }
     /// append element child - by namespace and tag ids
     Node appendElement(ns_id ns, elem_id tag, int index = -1) { assert(false); }
+
+    // Text methods
 
     /// node text
     @property dstring text() { return null; }
     /// ditto
     @property void text(dstring s) { }
-
 
 }
 
@@ -102,6 +119,7 @@ public:
 class Element : Node {
 private:
     Collection!Node _children;
+    Collection!Attribute _attrs;
     elem_id _id; // element tag id
     ns_id _ns; // element namespace id
 
@@ -116,6 +134,45 @@ public:
     override @property elem_id id() { return _id; }
     /// return element namespace id
     override @property ns_id nsid() { return _ns; }
+
+    // Attributes
+
+    /// returns attribute count
+    override @property int attrCount() { return cast(int)_attrs.length; }
+
+    /// get attribute by index
+    override Attribute attr(int index) { return index >= 0 && index < _attrs.length ? _attrs[index] : null; }
+    /// get attribute by namespace and attribute ids
+    override Attribute attr(ns_id nsid, attr_id attrid) {
+        foreach (a; _attrs)
+            if ((nsid == Ns.any || nsid == a.nsid) && attrid == a.id)
+                return a;
+        return null;
+    }
+    /// get attribute by namespace and attribute names
+    override Attribute attr(string nsname, string attrname) { return attr(_document.nsId(nsname), _document.attrId(attrname)); }
+
+    /// set attribute value by namespace and attribute ids
+    override Attribute setAttr(ns_id nsid, attr_id attrid, string value) { 
+        Attribute a = attr(nsid, attrid);
+        if (!a) {
+            a = new Attribute(this, nsid, attrid, value);
+            _attrs.add(a);
+        } else {
+            a.value = value;
+        }
+        return a; 
+    }
+    /// set attribute value by namespace and attribute names
+    override Attribute setAttr(string nsname, string attrname, string value) { return setAttr(_document.nsId(nsname), _document.attrId(attrname), value); }
+    /// get attribute value by namespace and attribute ids
+    override string attrValue(ns_id nsid, attr_id attrid) { 
+        if (Attribute a = attr(nsid, attrid))
+            return a.value;
+        return null; 
+    }
+    /// get attribute value by namespace and attribute ids
+    override string attrValue(string nsname, string attrname) { return attrValue(_document.nsId(nsname), _document.attrId(attrname)); }
 
     // child nodes
 
@@ -141,18 +198,14 @@ public:
         _children.add(item, index >= 0 ? index : size_t.max);
         return item;
     }
-    /// append element child - by namespace and tag names
-    override Node appendElement(string ns, string tag, int index = -1) { 
-        Node item = document.createElement(ns, tag);
-        _children.add(item, index >= 0 ? index : size_t.max);
-        return item;
-    }
     /// append element child - by namespace and tag ids
     override Node appendElement(ns_id ns, elem_id tag, int index = -1) { 
         Node item = document.createElement(ns, tag);
         _children.add(item, index >= 0 ? index : size_t.max);
         return item;
     }
+    /// append element child - by namespace and tag names
+    override Node appendElement(string ns, string tag, int index = -1) { return appendElement(_document.nsId(ns), _document.tagId(tag), index); }
 }
 
 /// Document node
@@ -175,7 +228,7 @@ public:
     }
     /// create element node by namespace and tag names
     Element createElement(string ns, string tag) {
-        return new Element(this, internNs(ns), internTag(tag));
+        return new Element(this, nsId(ns), tagId(tag));
     }
 
     // Ids
@@ -193,19 +246,19 @@ public:
         return _attrIds[id];
     }
     /// get id for element tag name
-    elem_id internTag(string s) {
+    elem_id tagId(string s) {
         if (s.empty)
             return 0;
         return _elemIds.intern(s);
     }
     /// get id for namespace name
-    ns_id internNs(string s) {
+    ns_id nsId(string s) {
         if (s.empty)
             return 0;
         return _nsIds.intern(s);
     }
-    /// get id for namespace name
-    attr_id internAttr(string s) {
+    /// get id for attribute name
+    attr_id attrId(string s) {
         if (s.empty)
             return 0;
         return _attrIds.intern(s);
@@ -216,7 +269,38 @@ private:
     IdentMap!(ns_id) _nsIds;
 }
 
+class Attribute {
+private:
+    attr_id _id;
+    ns_id _nsid;
+    string _value;
+    Node _parent;
+    this(Node parent, ns_id nsid, attr_id id, string value) {
+        _parent = parent;
+        _nsid = nsid;
+        _id = id;
+        _value = value;
+    }
+public:
+    /// Parent element which owns this attribute
+    @property Node parent() { return _parent; }
+    /// Parent element document
+    @property Document document() { return _parent.document; }
 
+    /// get attribute id
+    @property attr_id id() { return _id; }
+    /// get attribute namespace id
+    @property ns_id nsid() { return _nsid; }
+    /// get attribute tag name
+    @property string name() { return document.tagName(_id); }
+    /// get attribute namespace name
+    @property string nsname() { return document.nsName(_nsid); }
+
+    /// get attribute value
+    @property string value() { return _value; }
+    /// set attribute value
+    @property void value(string s) { _value = s; }
+}
 
 /// remove trailing _ from string, e.g. "body_" -> "body"
 private string removeTrailingUnderscore(string s) {
@@ -230,7 +314,7 @@ struct IdentMap(ident_t) {
     /// initialize with elements of enum
     void init(E)() if (is(E == enum)) {
         foreach(member; EnumMembers!E) {
-            static if (member.to!int) {
+            static if (member.to!int > 0) {
                 //pragma(msg, "interning string '" ~ removeTrailingUnderscore(member.to!string) ~ "' for " ~ E.stringof);
                 intern(removeTrailingUnderscore(member.to!string), member);
             }
@@ -275,8 +359,8 @@ private:
 }
 
 /// standard tags
-enum Tag {
-    NONE,
+enum Tag : elem_id {
+    none,
     body_,
     pre,
     div,
@@ -284,16 +368,17 @@ enum Tag {
 }
 
 /// standard attributes
-enum Attr {
-    NONE,
+enum Attr : attr_id {
+    none,
     id,
     class_,
     style
 }
 
 /// standard namespaces
-enum Ns {
-    NONE,
+enum Ns : ns_id {
+    any = -1,
+    none = 0,
     xmlns,
     xs,
     xlink,
@@ -301,7 +386,7 @@ enum Ns {
     xsi
 }
 
-unittest {
+void testDOM() {
     import std.algorithm : equal;
     //import std.stdio;
     IdentMap!(elem_id) map;
@@ -317,11 +402,18 @@ unittest {
     assert(body_.name.equal("body"));
     auto div = body_.appendElement(null, "div");
     assert(body_.childCount == 1);
-    assert(div.id == Tag.body_);
+    assert(div.id == Tag.div);
     assert(div.name.equal("div"));
     div.appendText("Some text"d);
     assert(div.childCount == 1);
     assert(div.child(0).text.equal("Some text"d));
 
+    div.setAttr(Ns.none, Attr.id, "div_id");
+    assert(div.attrValue(Ns.none, Attr.id).equal("div_id"));
+
     destroy(doc);
+}
+
+unittest {
+    testDOM();
 }
