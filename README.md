@@ -15,6 +15,8 @@ Getting Started Tutorial: [https://github.com/buggins/dlangui/wiki/Getting-Start
 
 Screenshots: [http://buggins.github.io/dlangui/screenshots.html](http://buggins.github.io/dlangui/screenshots.html)
 
+Coding style: [https://github.com/buggins/dlangide/blob/master/README.md](https://github.com/buggins/dlangide/blob/master/README.md)
+
 
 WARNING: recent breaking change: some event listeners were renamed, e.g. onClickListener -> click, onFocusChangeListener -> focusChange...
 
