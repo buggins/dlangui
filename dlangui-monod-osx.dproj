@@ -105,6 +105,7 @@
   <ItemGroup>
     <Compile Include="src\dlangui\core\collections.d" />
     <Compile Include="src\dlangui\core\config.d" />
+    <Compile Include="src\dlangui\core\css.d" />
     <Compile Include="src\dlangui\core\dom.d" />
     <Compile Include="src\dlangui\core\editable.d" />
     <Compile Include="src\dlangui\core\events.d" />
@@ -129,6 +130,7 @@
     <Compile Include="src\dlangui\dml\parser.d" />
     <Compile Include="src\dlangui\graphics\colors.d" />
     <Compile Include="src\dlangui\graphics\drawbuf.d" />
+    <Compile Include="src\dlangui\graphics\domrender.d" />
     <Compile Include="src\dlangui\graphics\fonts.d" />
     <Compile Include="src\dlangui\graphics\ftfonts.d" />
     <Compile Include="src\dlangui\graphics\gldrawbuf.d" />
