@@ -20,26 +20,41 @@ private char skip(ref string src, int count = 1) {
     return src[0];
 }
 
-/// returns first char of string or 0 if end of string reached
-private char peek(string str) {
-    return str.empty ? 0 : str[0];
+/// returns char of string at specified position (first by default) or 0 if end of string reached
+private char peek(string str, int offset = 0) {
+    return offset >= str.length ? 0 : str[offset];
 }
 
 /// skip spaces, move to new location, return first character in string, 0 if end of string reached
-private char skipSpaces(ref string src) {
-    for(;;) {
-        if (src.empty) {
-            src = null;
+private char skipSpaces(ref string str)
+{
+    string oldpos = str;
+    for (;;) {
+        char ch = str.peek;
+        if (!ch)
             return 0;
+        while (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r')
+            ch = str.skip;
+        if (str.peek == '/' && str.peek(1) == '*') {
+            // comment found
+            str.skip(2);
+            while (str.peek && (str.peek(0) != '*' || str.peek(1) != '/'))
+                str.skip;
+            if (str.peek == '*' && str.peek(1) == '/' )
+                str.skip(2);
         }
-        char ch = src[0];
-        if (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n') {
-            src.skip;
-        } else {
-            return src.empty ? 0 : src[0];
-        }
+        ch = str.peek;
+        while (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r')
+            ch = str.skip;
+        if (oldpos.ptr is str.ptr)
+            break;
+        if (str.empty)
+            return 0;
+        oldpos = str;
     }
+    return str.peek;
 }
+
 
 private bool isIdentChar(char ch) {
     return (ch >= 'A' && ch <='Z') || (ch >= 'a' && ch <='z') || (ch == '-') || (ch == '_');
@@ -62,7 +77,7 @@ private string parseIdent(ref string src) {
 
 private bool skipChar(ref string src, char ch) {
     src.skipSpaces;
-    if (src.length > 0 && src[0] == ch) {
+    if (src.peek == ch) {
         src.skip;
         src.skipSpaces;
         return true;
@@ -506,6 +521,7 @@ private CssSelectorRule parseAttr(ref string str, Document doc)
     return rule;
 }
 
+/// Parse css properties declaration either in {} or w/o {} - e.g.  { width: 40%; margin-top: 3px } -- returns null if parse error occured or property list is empty
 CssDeclaration parseCssDeclaration(ref string src, bool mustBeInBrackets = true) {
     if (!src.skipSpaces)
         return null;
@@ -688,7 +704,7 @@ CssDeclaration parseCssDeclaration(ref string src, bool mustBeInBrackets = true)
     return res;
 }
 
-/// parse Css selector, return selector object if parsed ok
+/// parse Css selector, return selector object if parsed ok, null if error occured
 CssSelector parseCssSelector(ref string str, Document doc) {
     if (str.empty)
         return null;
@@ -756,6 +772,17 @@ CssSelector parseCssSelector(ref string str, Document doc) {
     }
 }
 
+/// skips until } or end of string, returns true if some characters left in string
+private bool skipUntilEndOfRule(ref string str)
+{
+    while (str.length && str[0] != '}')
+        str.skip;
+    if (str.peek == '}')
+        str.skip;
+    return !str.empty;
+}
+
+
 unittest {
     Document doc = new Document();
     string str;
@@ -768,4 +795,72 @@ unittest {
     str = ".myclass + div { }";
     assert(parseCssSelector(str, doc) !is null);
     assert(parseCssDeclaration(str, true) is null); // empty property decl
+    destroy(doc);
+}
+
+/// parse stylesheet text
+bool parseStyleSheet(StyleSheet sheet, Document doc, string str) {
+    bool res = false;
+    for(;;) {
+        if (!str.skipSpaces)
+            break;
+        CssSelector[] selectors;
+        for(;;) {
+            CssSelector selector = parseCssSelector(str, doc);
+            if (!selector)
+                break;
+            selectors ~= selector;
+            str.skipChar(',');
+        }
+        if (selectors.length) {
+            if (CssDeclaration decl = parseCssDeclaration(str, true)) {
+                foreach(item; selectors) {
+                    item.setDeclaration(decl);
+                    sheet.add(item);
+                    res = true;
+                }
+            }
+        }
+        if (!skipUntilEndOfRule(str))
+            break;
+    }
+    return res;
+}
+
+unittest {
+    string src = q{
+        body { width: 50%; color: blue }
+        body > div, body > section {
+            /* some comment 
+               goes here */
+            font-family: serif;
+            background-color: yellow;
+        }
+        section {
+            margin-top: 5px
+        }
+    };
+    Document doc = new Document();
+    StyleSheet sheet = new StyleSheet();
+    assert(parseStyleSheet(sheet, doc, src));
+    assert(sheet.length == 2);
+    // check appending of additional source text
+    assert(parseStyleSheet(sheet, doc, "pre { white-space: pre }"));
+    assert(sheet.length == 3);
+    destroy(doc);
+}
+
+unittest {
+    Document doc = new Document();
+    StyleSheet sheet = new StyleSheet();
+    assert(parseStyleSheet(sheet, doc, "* { color: #aaa }"));
+    assert(sheet.length == 1);
+    assert(parseStyleSheet(sheet, doc, "div, p { display: block }"));
+    assert(sheet.length == 3);
+    // check appending of additional source text
+    assert(parseStyleSheet(sheet, doc, "pre { white-space: pre }"));
+    assert(sheet.length == 4);
+    assert(parseStyleSheet(sheet, doc, "pre { font-size: 120% }"));
+    assert(sheet.length == 5);
+    destroy(doc);
 }

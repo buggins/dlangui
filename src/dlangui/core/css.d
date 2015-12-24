@@ -5,6 +5,9 @@ This module contains implementation of CSS support - Cascading Style Sheets.
 
 Port of CoolReader Engine written in C++.
 
+Supports subset of CSS standards.
+
+
 Synopsis:
 
 ----
@@ -324,7 +327,7 @@ public:
     @property CssSelectorRule next() { return _next; }
     @property void next(CssSelectorRule v) { _next = v; }
     /// check condition for node
-    bool check(ref Node node) {
+    bool check(ref Node node) const {
         if (!node || !node.parent)
             return false;
         switch (_type) with (CssSelectorRuleType) {
@@ -422,17 +425,17 @@ public:
     @property void id(elem_id id) { _id = id; }
 
     this() { }
+
     ~this() {
         //if (_next)
         //    destroy(_next);
-        //if (_rules) 
-        //    destroy(_rules); 
     }
 
     void insertRuleStart(CssSelectorRule rule) {
         rule.next = _rules;
         _rules = rule;
     }
+
     void insertRuleAfterStart(CssSelectorRule rule) {
         if (!_rules) {
             _rules = rule;
@@ -442,26 +445,26 @@ public:
         }
     }
 
-    @property uint tagId() { return _id; }
-    bool check(const Node node) const {
-        // TODO
-        return false;
+    /// check if selector rules match this node
+    bool check(Node node) const {
+        CssSelectorRule rule = cast(CssSelectorRule)_rules;
+        while (rule && node) {
+            if (!rule.check(node))
+                return false;
+            rule = rule.next;
+        }
+        return true;
     }
+
     /// apply to style if selector matches
-    void apply(const Node node, CssStyle style) const
-    {
+    void apply(Node node, CssStyle style) const {
         if (check(node))
             _decl.apply(style);
     }
-    void setDeclaration(CssDeclaration decl) { 
+
+    void setDeclaration(CssDeclaration decl) {
         _decl = decl; 
     }
-    int getSpecificity() { 
-        return _specificity;
-    }
-    @property CssSelector next() { return _next; }
-    @property void next(CssSelector next) { _next = next; }
-    //lUInt32 getHash();
 }
 
 struct CssDeclItem {
@@ -552,6 +555,71 @@ class CssDeclaration {
     void apply(CssStyle style) const {
         foreach(item; _list)
             item.apply(style);
+    }
+}
+
+/// CSS Style Sheet
+class StyleSheet {
+private:
+    CssSelector[elem_id] _selectorMap;
+    int _len;
+public:
+    /// clears stylesheet
+    void clear() {
+        _selectorMap = null;
+        _len = 0;
+    }
+
+    /// count of selectors in stylesheet
+    @property int length() { return _len; }
+
+    /// add selector to stylesheet
+    void add(CssSelector selector) {
+        elem_id id = selector.id;
+        if (auto p = id in _selectorMap) {
+            for (;;) {
+                if (!(*p) || (*p)._specificity < selector._specificity) {
+                    selector._next = (*p);
+                    (*p) = selector;
+                    _len++;
+                    break;
+                }
+                p = &((*p)._next);
+            }
+        } else {
+            // first selector for this id
+            _selectorMap[id] = selector;
+            _len++;
+        }
+    }
+
+    /// apply stylesheet to node style
+    void apply(Node node, CssStyle style) {
+        elem_id id = node.id;
+        CssSelector selector_0, selector_id;
+        if (auto p = 0 in _selectorMap)
+            selector_0 = *p;
+        if (id) {
+            if (auto p = id in _selectorMap)
+                selector_id = *p;
+        }
+        for (;;) {
+            if (selector_0) {
+                if (!selector_id || selector_id._specificity < selector_0._specificity) {
+                    selector_0.apply(node, style);
+                    selector_0 = selector_0._next;
+                } else {
+                    selector_id.apply(node, style);
+                    selector_id = selector_id._next;
+                }
+            } else if (selector_id) {
+                selector_id.apply(node, style);
+                selector_id = selector_id._next;
+            } else {
+                // end of lists
+                break;
+            }
+        }
     }
 }
 
