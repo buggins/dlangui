@@ -23,6 +23,7 @@ import std.conv : to;
 import std.string;
 import std.array : empty;
 import std.algorithm : equal;
+import std.ascii : isAlpha;
 
 import dlangui.core.dom;
 
@@ -413,8 +414,16 @@ private:
     CssSelector _next;
     CssSelectorRule _rules;
     void insertRuleStart(CssSelectorRule rule) {
+        rule.next = _rules;
+        _rules = rule;
     }
     void insertRuleAfterStart(CssSelectorRule rule) {
+        if (!_rules) {
+            _rules = rule;
+        } else {
+            rule.next = _rules.next;
+            _rules.next = rule;
+        }
     }
 public:
     this(CssSelector v) {
@@ -429,9 +438,71 @@ public:
         //if (_rules) 
         //    destroy(_rules); 
     }
-    bool parse(ref string str) { //, lxmlDocBase * doc
-        return false;
+
+    bool parse(ref string str, Document doc) { //, lxmlDocBase * doc
+        if (str.empty)
+            return false;
+        for (;;)
+        {
+            if (!skipSpaces(str))
+                return false;
+            char ch = str[0];
+            string ident = parseIdent(str);
+            if (ch == '*') { // universal selector
+                str = str[1 .. $];
+                skipSpaces(str);
+                _id = 0;
+            }  else if (ch == '.') { // classname follows
+                _id = 0;
+                // will be parsed as attribute
+            }  else if (!ident.empty) {
+                // ident
+                _id = doc.tagId(ident);
+            } else {
+                return false;
+            }
+            if (ch == ',' || ch == '{' )
+                return true;
+            // one or more attribute rules
+            bool attr_rule = false;
+            while (ch == '[' || ch == '.' || ch == '#') {
+                CssSelectorRule rule = parseAttr(str, doc);
+                if (!rule)
+                    return false;
+                insertRuleStart(rule); //insertRuleAfterStart
+                skipSpaces(str);
+                attr_rule = true;
+                //continue;
+            }
+            // element relation
+            if (ch == '>') {
+                str = str[1 .. $];
+                CssSelectorRule rule = new CssSelectorRule(CssSelectorRuleType.parent);
+                rule.id = _id;
+                insertRuleStart(rule);
+                _id=0;
+                continue;
+            } else if (ch == '+') {
+                str = str[1 .. $];
+                CssSelectorRule rule = new CssSelectorRule(CssSelectorRuleType.predecessor);
+                rule.id = _id;
+                insertRuleStart(rule);
+                _id=0;
+                continue;
+            } else if (ch.isAlpha) {
+                CssSelectorRule rule = new CssSelectorRule(CssSelectorRuleType.ancessor);
+                rule.id = _id;
+                insertRuleStart(rule);
+                _id=0;
+                continue;
+            }
+            if ( !attr_rule )
+                return false;
+            else if (str.length > 0 && (str[0] == ',' || str[0] == '{'))
+                return true;
+        }
     }
+
     @property uint tagId() { return _id; }
     bool check(const Node node) const {
         // TODO
@@ -1104,6 +1175,110 @@ string joinPropertyValueList(string[] list) {
 unittest {
     assert(joinPropertyValueList(["item1", "item 2"]) == "\"item1\", \"item 2\"");
 }
+
+
+private bool parseAttrValue(ref string str, ref string attrvalue)
+{
+    char[] buf;
+    int pos = 0;
+    if (!skipSpaces(str))
+        return false;
+    char ch = str[0];
+    if (ch == '\"') {
+        str = str[1 .. $];
+        for ( ; pos < str.length && str[pos] != '\"'; pos++) {
+            if (pos >= 1000)
+                return false;
+        }
+        if (pos >= str.length || str[pos] != '\"')
+            return false;
+        buf ~= str[0 .. pos];
+        str = str[pos + 1 .. $];
+        if (!skipSpaces(str))
+            return false;
+        if (str[0] != ']')
+            return false;
+        str = str[1 .. $];
+        attrvalue = buf.dup;
+        return true;
+    } else {
+        for ( ; pos < str.length && str[pos] != ' ' && str[pos] != '\t' && str[pos] != ']'; pos++) {
+            if (pos >= 1000)
+                return false;
+        }
+        if (pos >= str.length || str[pos] != ']')
+            return false;
+        buf ~= str[0 .. pos];
+        str = str[pos + 1 .. $];
+        attrvalue = buf.dup;
+        return true;
+    }
+}
+
+private CssSelectorRule parseAttr(ref string str, Document doc)
+{
+    CssSelectorRuleType st = CssSelectorRuleType.universal;
+    char ch = str[0];
+    if (ch == '.') {
+        // E.class
+        str = str[1 .. $];
+        skipSpaces(str);
+        string attrvalue = parseIdent(str);
+        if (attrvalue.empty)
+            return null;
+        CssSelectorRule rule = new CssSelectorRule(CssSelectorRuleType.class_);
+        rule.setAttr(Attr.class_, attrvalue.toLower);
+        return rule;
+    } else if (ch == '#') {
+        // E#id
+        str = str[1 .. $];
+        skipSpaces(str);
+        string attrvalue = parseIdent(str);
+        if (attrvalue.empty)
+            return null;
+        CssSelectorRule rule = new CssSelectorRule(CssSelectorRuleType.id);
+        rule.setAttr(Attr.id, attrvalue.toLower);
+        return rule;
+    } else if (ch != '[')
+        return null;
+    // [.....] rule
+    str = str[1 .. $]; // skip [
+    skipSpaces(str);
+    string attrname = parseIdent(str);
+    if (attrname.empty)
+        return null;
+    if (!skipSpaces(str))
+        return null;
+    string attrvalue = null;
+    ch = str[0];
+    if (ch == ']') {
+        // empty []
+        st = CssSelectorRuleType.attrset;
+        str = str[1 .. $]; // skip ]
+    } else if (ch == '=') {
+        str = str[1 .. $]; // skip =
+        if (!parseAttrValue(str, attrvalue))
+            return null;
+        st = CssSelectorRuleType.attreq;
+    } else if (ch == '~' && str.length > 1 && str[1] == '=') {
+        str = str[2 .. $]; // skip ~=
+        if (!parseAttrValue(str, attrvalue))
+            return null;
+        st = CssSelectorRuleType.attrhas;
+    } else if (ch == '|' && str.length > 1 && str[1] == '=') {
+        str = str[2 .. $]; // skip |=
+        if (!parseAttrValue(str, attrvalue))
+            return null;
+        st = CssSelectorRuleType.attrstarts;
+    } else {
+        return null;
+    }
+    CssSelectorRule rule = new CssSelectorRule(st);
+    attr_id id = doc.attrId(attrname);
+    rule.setAttr(id, attrvalue);
+    return rule;
+}
+
 
 unittest {
     CssStyle style = new CssStyle();
