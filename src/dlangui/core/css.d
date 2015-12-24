@@ -609,29 +609,27 @@ private bool parseColor(ref string src, ref CssLength value)
 }
 
 
-version(unittest) {
-    void testCSS() {
-        CssStyle style = new CssStyle();
-        CssDeclaration decl = new CssDeclaration();
-        CssWhiteSpace whiteSpace = CssWhiteSpace.inherit;
-        CssTextAlign textAlign = CssTextAlign.inherit;
-        CssTextAlign textAlignLast = CssTextAlign.inherit;
-        CssTextDecoration textDecoration = CssTextDecoration.inherit;
-        CssHyphenate hyphenate = CssHyphenate.inherit;
-        string src = "{ display: inline; text-decoration: underline; white-space: pre; text-align: right; text-align-last: left; hyphenate: auto }";
-        assert(decl.parse(src, true));
-        assert(style.display == CssDisplay.block);
-        assert(style.textDecoration == CssTextDecoration.inherit);
-        assert(style.whiteSpace == CssWhiteSpace.inherit);
-        assert(style.textAlign == CssTextAlign.inherit);
-        assert(style.textAlignLast == CssTextAlign.inherit);
-        assert(style.hyphenate == CssHyphenate.inherit);
-        decl.apply(style);
-        assert(style.display == CssDisplay.inline);
-        assert(style.textDecoration == CssTextDecoration.underline);
-        assert(style.whiteSpace == CssWhiteSpace.pre);
-        assert(style.textAlign == CssTextAlign.right);
-        assert(style.textAlignLast == CssTextAlign.left);
-        assert(style.hyphenate == CssHyphenate.auto_);
-    }
+unittest {
+    CssStyle style = new CssStyle();
+    CssDeclaration decl = new CssDeclaration();
+    CssWhiteSpace whiteSpace = CssWhiteSpace.inherit;
+    CssTextAlign textAlign = CssTextAlign.inherit;
+    CssTextAlign textAlignLast = CssTextAlign.inherit;
+    CssTextDecoration textDecoration = CssTextDecoration.inherit;
+    CssHyphenate hyphenate = CssHyphenate.inherit;
+    string src = "{ display: inline; text-decoration: underline; white-space: pre; text-align: right; text-align-last: left; hyphenate: auto }";
+    assert(decl.parse(src, true));
+    assert(style.display == CssDisplay.block);
+    assert(style.textDecoration == CssTextDecoration.inherit);
+    assert(style.whiteSpace == CssWhiteSpace.inherit);
+    assert(style.textAlign == CssTextAlign.inherit);
+    assert(style.textAlignLast == CssTextAlign.inherit);
+    assert(style.hyphenate == CssHyphenate.inherit);
+    decl.apply(style);
+    assert(style.display == CssDisplay.inline);
+    assert(style.textDecoration == CssTextDecoration.underline);
+    assert(style.whiteSpace == CssWhiteSpace.pre);
+    assert(style.textAlign == CssTextAlign.right);
+    assert(style.textAlignLast == CssTextAlign.left);
+    assert(style.hyphenate == CssHyphenate.auto_);
 }

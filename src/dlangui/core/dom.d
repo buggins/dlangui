@@ -403,40 +403,35 @@ enum Ns : ns_id {
     xsi
 }
 
-version(unittest) {
-    void testDOM() {
-        import std.algorithm : equal;
-        //import std.stdio;
-        IdentMap!(elem_id) map;
-        map.init!Tag();
-        //writeln("running DOM unit test");
-        assert(map["pre"] == Tag.pre);
-        assert(map["body"] == Tag.body_);
-        assert(map[Tag.div].equal("div"));
-
-        Document doc = new Document();
-        auto body_ = doc.appendElement(null, "body");
-        assert(body_.id == Tag.body_);
-        assert(body_.name.equal("body"));
-        auto div = body_.appendElement(null, "div");
-        assert(body_.childCount == 1);
-        assert(div.id == Tag.div);
-        assert(div.name.equal("div"));
-        auto t1 = div.appendText("Some text"d);
-        assert(div.childCount == 1);
-        assert(div.child(0).text.equal("Some text"d));
-        auto t2 = div.appendText("Some more text"d);
-        assert(div.childCount == 2);
-        assert(div.childIndex(t1) == 0);
-        assert(div.childIndex(t2) == 1);
-
-        div.setAttr(Ns.none, Attr.id, "div_id");
-        assert(div.attrValue(Ns.none, Attr.id).equal("div_id"));
-
-        destroy(doc);
-    }
-}
-
 unittest {
-    testDOM();
+    import std.algorithm : equal;
+    //import std.stdio;
+    IdentMap!(elem_id) map;
+    map.init!Tag();
+    //writeln("running DOM unit test");
+    assert(map["pre"] == Tag.pre);
+    assert(map["body"] == Tag.body_);
+    assert(map[Tag.div].equal("div"));
+
+    Document doc = new Document();
+    auto body_ = doc.appendElement(null, "body");
+    assert(body_.id == Tag.body_);
+    assert(body_.name.equal("body"));
+    auto div = body_.appendElement(null, "div");
+    assert(body_.childCount == 1);
+    assert(div.id == Tag.div);
+    assert(div.name.equal("div"));
+    auto t1 = div.appendText("Some text"d);
+    assert(div.childCount == 1);
+    assert(div.child(0).text.equal("Some text"d));
+    auto t2 = div.appendText("Some more text"d);
+    assert(div.childCount == 2);
+    assert(div.childIndex(t1) == 0);
+    assert(div.childIndex(t2) == 1);
+
+    div.setAttr(Ns.none, Attr.id, "div_id");
+    assert(div.attrValue(Ns.none, Attr.id).equal("div_id"));
+
+    destroy(doc);
 }
+

@@ -252,3 +252,22 @@ extern (C) void releaseResourcesOnAppExit() {
         }
     }
 }
+
+version(unittest) {
+    version (Windows) {
+        mixin APP_ENTRY_POINT;
+
+        /// entry point for dlangui based application
+        extern (C) int UIAppMain(string[] args) {
+            // just to enable running unit tests
+            import core.runtime;
+            import std.stdio;
+            if (!runModuleUnitTests()) {
+                writeln("Error occured in unit tests. Press enter.");
+                readln();
+                return 1;
+            }
+            return 0;
+        }
+    }
+}
