@@ -10,18 +10,33 @@ import std.ascii : isAlpha;
 import dlangui.core.dom;
 import dlangui.core.css;
 
-/// skip spaces, move to new location, return true if there are some characters left in source line
-private bool skipSpaces(ref string src) {
+/// skip specified count of chars of string, returns next available character, or 0 if end of string reached
+private char skip(ref string src, int count = 1) {
+    if (count >= src.length) {
+        src = null;
+        return 0;
+    }
+    src = src[count .. $];
+    return src[0];
+}
+
+/// returns first char of string or 0 if end of string reached
+private char peek(string str) {
+    return str.empty ? 0 : str[0];
+}
+
+/// skip spaces, move to new location, return first character in string, 0 if end of string reached
+private char skipSpaces(ref string src) {
     for(;;) {
         if (src.empty) {
             src = null;
-            return false;
+            return 0;
         }
         char ch = src[0];
         if (ch == ' ' || ch == '\t' || ch == '\r' || ch == '\n') {
-            src = src[1 .. $];
+            src.skip;
         } else {
-            return !src.empty;
+            return src.empty ? 0 : src[0];
         }
     }
 }
@@ -40,19 +55,16 @@ private string parseIdent(ref string src) {
     if (!pos)
         return null;
     string res = src[0 .. pos];
-    if (pos < src.length)
-        src = src[pos .. $];
-    else
-        src = null;
-    skipSpaces(src);
+    src.skip(pos);
+    src.skipSpaces;
     return res;
 }
 
 private bool skipChar(ref string src, char ch) {
-    skipSpaces(src);
+    src.skipSpaces;
     if (src.length > 0 && src[0] == ch) {
-        src = src[1 .. $];
-        skipSpaces(src);
+        src.skip;
+        src.skipSpaces;
         return true;
     }
     return false;
@@ -110,8 +122,8 @@ private bool nextProperty(ref string str) {
             break;
         }
     }
-    str = pos < str.length ? str[pos .. $] : null;
-    skipSpaces(str);
+    str.skip(pos);
+    str.skipSpaces;
     return !str.empty && str[0] != '}';
 }
 
@@ -153,8 +165,7 @@ private bool parseColor(ref string src, ref CssValue value)
 {
     value.type = CssValueType.unspecified;
     value.value = 0;
-    skipSpaces(src);
-    if (src.empty)
+    if (!src.skipSpaces)
         return false;
     string ident = parseIdent(src);
     if (!ident.empty) {
@@ -177,7 +188,7 @@ private bool parseColor(ref string src, ref CssValue value)
     char ch = src[0];
     if (ch == '#') {
         // #rgb or #rrggbb colors
-        src = src[1 .. $];
+        ch = src.skip;
         int nDigits = 0;
         for ( ; nDigits < src.length && hexDigit(src[nDigits])>=0; nDigits++ ) {
         }
@@ -187,7 +198,7 @@ private bool parseColor(ref string src, ref CssValue value)
             int b = hexDigit( src[2] );
             value.type = CssValueType.color;
             value.value = (((r + r*16) * 256) | (g + g*16)) * 256 | (b + b*16);
-            src = src[3..$];
+            src.skip(3);
             return true;
         } else if ( nDigits==6 ) {
             int r = hexDigit( src[0] ) * 16;
@@ -198,7 +209,7 @@ private bool parseColor(ref string src, ref CssValue value)
             b += hexDigit( src[5] );
             value.type = CssValueType.color;
             value.value = ((r * 256) | g) * 256 | b;
-            src = src[6..$];
+            src.skip(6);
             return true;
         }
     }
@@ -209,7 +220,7 @@ private bool parseLength(ref string src, ref CssValue value)
 {
     value.type = CssValueType.unspecified;
     value.value = 0;
-    skipSpaces(src);
+    src.skipSpaces;
     string ident = parseIdent(src);
     if (!ident.empty) {
         switch(ident) {
@@ -230,31 +241,29 @@ private bool parseLength(ref string src, ref CssValue value)
         }
         while (ch >= '0' && ch <= '9') {
             n = n*10 + (ch - '0');
-            src = src[1 .. $];
-            if (src.empty)
+            ch = src.skip;
+            if (!ch)
                 break;
-            ch = src[0];
         }
     }
     int frac = 0;
     int frac_div = 1;
     if (ch == '.') {
-        src = src[1 .. $];
+        src.skip;
         if (!src.empty) {
             ch = src[0];
             while (ch >= '0' && ch <= '9') {
                 frac = frac*10 + (ch - '0');
                 frac_div *= 10;
-                src = src[1 .. $];
-                if (src.empty)
+                ch = src.skip;
+                if (!ch)
                     break;
-                ch = src[0];
             }
         }
     }
     if (ch == '%') {
         value.type = CssValueType.percent;
-        src = src[1 .. $];
+        src.skip;
     } else {
         ident = parseIdent(src);
         if (!ident.empty) {
@@ -399,11 +408,11 @@ private bool parseAttrValue(ref string str, ref string attrvalue)
 {
     char[] buf;
     int pos = 0;
-    if (!skipSpaces(str))
+    if (!str.skipSpaces)
         return false;
     char ch = str[0];
     if (ch == '\"') {
-        str = str[1 .. $];
+        str.skip;
         for ( ; pos < str.length && str[pos] != '\"'; pos++) {
             if (pos >= 1000)
                 return false;
@@ -411,12 +420,12 @@ private bool parseAttrValue(ref string str, ref string attrvalue)
         if (pos >= str.length || str[pos] != '\"')
             return false;
         buf ~= str[0 .. pos];
-        str = str[pos + 1 .. $];
-        if (!skipSpaces(str))
+        str.skip(pos + 1);
+        if (!str.skipSpaces)
             return false;
         if (str[0] != ']')
             return false;
-        str = str[1 .. $];
+        str.skip;
         attrvalue = buf.dup;
         return true;
     } else {
@@ -427,7 +436,7 @@ private bool parseAttrValue(ref string str, ref string attrvalue)
         if (pos >= str.length || str[pos] != ']')
             return false;
         buf ~= str[0 .. pos];
-        str = str[pos + 1 .. $];
+        str.skip(pos + 1);
         attrvalue = buf.dup;
         return true;
     }
@@ -439,8 +448,8 @@ private CssSelectorRule parseAttr(ref string str, Document doc)
     char ch = str[0];
     if (ch == '.') {
         // E.class
-        str = str[1 .. $];
-        skipSpaces(str);
+        str.skip;
+        str.skipSpaces;
         string attrvalue = parseIdent(str);
         if (attrvalue.empty)
             return null;
@@ -449,8 +458,8 @@ private CssSelectorRule parseAttr(ref string str, Document doc)
         return rule;
     } else if (ch == '#') {
         // E#id
-        str = str[1 .. $];
-        skipSpaces(str);
+        str.skip;
+        str.skipSpaces;
         string attrvalue = parseIdent(str);
         if (attrvalue.empty)
             return null;
@@ -460,31 +469,31 @@ private CssSelectorRule parseAttr(ref string str, Document doc)
     } else if (ch != '[')
         return null;
     // [.....] rule
-    str = str[1 .. $]; // skip [
-    skipSpaces(str);
+    str.skip; // skip [
+    str.skipSpaces;
     string attrname = parseIdent(str);
     if (attrname.empty)
         return null;
-    if (!skipSpaces(str))
+    if (!str.skipSpaces)
         return null;
     string attrvalue = null;
     ch = str[0];
     if (ch == ']') {
         // empty []
         st = CssSelectorRuleType.attrset;
-        str = str[1 .. $]; // skip ]
+        str.skip; // skip ]
     } else if (ch == '=') {
-        str = str[1 .. $]; // skip =
+        str.skip; // skip =
         if (!parseAttrValue(str, attrvalue))
             return null;
         st = CssSelectorRuleType.attreq;
     } else if (ch == '~' && str.length > 1 && str[1] == '=') {
-        str = str[2 .. $]; // skip ~=
+        str.skip(2); // skip ~=
         if (!parseAttrValue(str, attrvalue))
             return null;
         st = CssSelectorRuleType.attrhas;
     } else if (ch == '|' && str.length > 1 && str[1] == '=') {
-        str = str[2 .. $]; // skip |=
+        str.skip(2); // skip |=
         if (!parseAttrValue(str, attrvalue))
             return null;
         st = CssSelectorRuleType.attrstarts;
@@ -498,7 +507,7 @@ private CssSelectorRule parseAttr(ref string str, Document doc)
 }
 
 CssDeclaration parseCssDeclaration(ref string src, bool mustBeInBrackets = true) {
-    if (!skipSpaces(src))
+    if (!src.skipSpaces)
         return null;
     if (mustBeInBrackets && !skipChar(src, '{'))
         return null; // decl must start with {
@@ -584,12 +593,12 @@ CssDeclaration parseCssDeclaration(ref string src, bool mustBeInBrackets = true)
                         CssValue len;
                         bool negative = false;
                         if (src[0] == '-') {
-                            src = src[1 .. $];
+                            src.skip;
                             negative = true;
                         }
                         if (parseLength(src, len)) {
                             // read optional "hanging" flag
-                            skipSpaces(src);
+                            src.skipSpaces;
                             string attr = parseIdent(src);
                             if (attr == "hanging")
                                 len.value = -len.value;
@@ -685,13 +694,13 @@ CssSelector parseCssSelector(ref string str, Document doc) {
         return null;
     CssSelector res = new CssSelector();
     for (;;) {
-        if (!skipSpaces(str))
+        if (!str.skipSpaces)
             return null;
         char ch = str[0];
         string ident = parseIdent(str);
         if (ch == '*') { // universal selector
-            str = str[1 .. $];
-            skipSpaces(str);
+            str.skip;
+            str.skipSpaces;
             res.id = 0;
         }  else if (ch == '.') { // classname follows
             res.id = 0;
@@ -714,20 +723,20 @@ CssSelector parseCssSelector(ref string str, Document doc) {
             if (!rule)
                 return null;
             res.insertRuleStart(rule); //insertRuleAfterStart
-            skipSpaces(str);
+            ch = str.skipSpaces;
             attr_rule = true;
             //continue;
         }
         // element relation
         if (ch == '>') {
-            str = str[1 .. $];
+            str.skip;
             CssSelectorRule rule = new CssSelectorRule(CssSelectorRuleType.parent);
             rule.id = res.id;
             res.insertRuleStart(rule);
             res.id = 0;
             continue;
         } else if (ch == '+') {
-            str = str[1 .. $];
+            str.skip;
             CssSelectorRule rule = new CssSelectorRule(CssSelectorRuleType.predecessor);
             rule.id = res.id;
             res.insertRuleStart(rule);
