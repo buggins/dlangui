@@ -480,7 +480,23 @@ class CssDeclaration {
                         }
                         break;
                     case vertical_align: n = parseEnumItem!CssVerticalAlign(src, -1); break;
-                    case font_family: n = parseEnumItem!CssFontFamily(src, -1); break; // id families like serif, sans-serif
+                    case font_family: // id families like serif, sans-serif
+                        string[] list;
+                        string[] faceList;
+                        if (splitPropertyValueList(src, list)) {
+                            foreach(item; list) {
+                                string name = item;
+                                int family = parseEnumItem!CssFontFamily(name, -1); 
+                                if (family != -1) {
+                                    // family name, e.g. sans-serif
+                                    n = family;
+                                } else {
+                                    faceList ~= item;
+                                }
+                            }
+                        }
+                        s = joinPropertyValueList(faceList);
+                        break; 
                     case font_names:
                         //n = parseEnumItem!Css(src, -1); 
                         break;   // string font name like Arial, Courier
@@ -737,6 +753,119 @@ private bool parseLength(ref string src, ref CssValue value)
     else
         value.value = n * 256 + 256 * frac / frac_div; // *256
     return true;
+}
+
+private void appendItem(ref string[] list, ref char[] item) {
+    if (!item.empty) {
+        list ~= item.dup;
+        item.length = 0;
+    }
+}
+
+/// splits string like "Arial", Times New Roman, Courier;  into list, stops on ; and }
+/// returns true if at least one item added to list; moves str to new position
+bool splitPropertyValueList(ref string str, ref string[] list)
+{
+    int i=0;
+    char quote_char = 0;
+    char[] name;
+    bool last_space = false;
+    for (i=0; i < str.length; i++) {
+        char ch = str[i];
+        switch(ch) {
+            case '\'':
+            case '\"':
+                if (quote_char == 0) {
+                    if (!name.empty)
+                        appendItem(list, name);
+                    quote_char = ch;
+                } else if (quote_char == ch) {
+                    if (!name.empty)
+                        appendItem(list, name);
+                    quote_char = 0;
+                } else {
+                    // append char
+                    name ~= ch;
+                }
+                last_space = false;
+                break;
+            case ',':
+                {
+                    if (quote_char==0) {
+                        if (!name.empty)
+                            appendItem(list, name);
+                    } else {
+                        // inside quotation: append char
+                        name ~= ch;
+                    }
+                    last_space = false;
+                }
+                break;
+            case '\t':
+            case ' ':
+                {
+                    if (quote_char != 0)
+                        name ~= ch;
+                    last_space = true;
+                }
+                break;
+            case ';':
+            case '}':
+                if (quote_char==0) {
+                    if (!name.empty)
+                        appendItem(list, name);
+                    str = i < str.length ? str[i .. $] : null;
+                    return list.length > 0;
+                } else {
+                    // inside quotation: append char
+                    name ~= ch;
+                    last_space = false;
+                }
+                break;
+            default:
+                if (last_space && !name.empty && quote_char == 0)
+                    name ~= ' ';
+                name ~= ch;
+                last_space = false;
+                break;
+        }
+    }
+    if (!name.empty)
+        appendItem(list, name);
+    str = i < str.length ? str[i .. $] : null;
+    return list.length > 0;
+}
+
+unittest {
+    string src = "Arial, 'Times New Roman', \"Arial Black\", sans-serif; next-property: }";
+    string[] list;
+    assert(splitPropertyValueList(src, list));
+    assert(list.length == 4);
+    assert(list[0] == "Arial");
+    assert(list[1] == "Times New Roman");
+    assert(list[2] == "Arial Black");
+    assert(list[3] == "sans-serif");
+}
+
+/// joins list of items into comma separated string, each item in quotation marks
+string joinPropertyValueList(string[] list) {
+    if (list.empty)
+        return null;
+    char[] res;
+
+    for (int i = 0; i < list.length; i++) {
+        if (i > 0)
+            res ~= ", ";
+        res ~= "\"";
+        res ~= list[i];
+        res ~= "\"";
+    }
+
+    return res.dup;
+}
+
+unittest {
+    assert(joinPropertyValueList(["item1", "item 2"]) == "\"item1\", \"item 2\"");
 }
 
 unittest {
