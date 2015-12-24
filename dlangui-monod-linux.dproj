@@ -247,6 +247,7 @@
   <ItemGroup>
     <Compile Include="src\dlangui\core\collections.d" />
     <Compile Include="src\dlangui\core\css.d" />
+    <Compile Include="src\dlangui\core\cssparser.d" />
     <Compile Include="src\dlangui\core\dom.d" />
     <Compile Include="src\dlangui\core\editable.d" />
     <Compile Include="src\dlangui\core\events.d" />
@@ -338,12 +339,6 @@
     <Compile Include="deps\DerelictUtil\source\derelict\util\system.d" />
     <Compile Include="deps\DerelictUtil\source\derelict\util\wintypes.d" />
     <Compile Include="deps\DerelictUtil\source\derelict\util\xtypes.d" />
-    <Compile Include="deps\gl3n\gl3n\frustum.d" />
-    <Compile Include="deps\gl3n\gl3n\linalg.d" />
-    <Compile Include="deps\gl3n\gl3n\math.d" />
-    <Compile Include="deps\gl3n\gl3n\plane.d" />
-    <Compile Include="deps\gl3n\gl3n\util.d" />
-    <Compile Include="deps\gl3n\gl3n\aabb.d" />
     <Compile Include="3rdparty\fontconfig\functions.d" />
     <Compile Include="3rdparty\fontconfig\package.d" />
     <Compile Include="3rdparty\fontconfig\types.d" />

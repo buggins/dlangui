@@ -738,6 +738,7 @@
      <File path="src\dlangui\core\collections.d" />
      <File path="src\dlangui\core\config.d" />
      <File path="src\dlangui\core\css.d" />
+     <File path="src\dlangui\core\cssparser.d" />
      <File path="src\dlangui\core\dom.d" />
      <File path="src\dlangui\core\editable.d" />
      <File path="src\dlangui\core\events.d" />

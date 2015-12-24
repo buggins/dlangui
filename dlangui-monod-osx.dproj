@@ -106,6 +106,7 @@
     <Compile Include="src\dlangui\core\collections.d" />
     <Compile Include="src\dlangui\core\config.d" />
     <Compile Include="src\dlangui\core\css.d" />
+    <Compile Include="src\dlangui\core\cssparser.d" />
     <Compile Include="src\dlangui\core\dom.d" />
     <Compile Include="src\dlangui\core\editable.d" />
     <Compile Include="src\dlangui\core\events.d" />
@@ -195,10 +196,6 @@
     <Compile Include="deps\DerelictFT\source\derelict\freetype\ft.d" />
     <Compile Include="deps\DerelictFT\source\derelict\freetype\functions.d" />
     <Compile Include="deps\DerelictFT\source\derelict\freetype\types.d" />
-    <Compile Include="deps\gl3n\gl3n\linalg.d" />
-    <Compile Include="deps\gl3n\gl3n\math.d" />
-    <Compile Include="deps\gl3n\gl3n\util.d" />
-    <Compile Include="deps\gl3n\gl3n\plane.d" />
     <Compile Include="src\dlangui\graphics\xpm\colors.d" />
     <Compile Include="3rdparty\fontconfig\functions.d" />
     <Compile Include="3rdparty\fontconfig\package.d" />

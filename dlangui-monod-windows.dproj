@@ -15,7 +15,6 @@
         <Path>deps\DerelictSDL2\source</Path>
         <Path>deps\DerelictGL3\source</Path>
         <Path>deps\DerelictUtil\source</Path>
-        <Path>deps\gl3n</Path>
         <Path>deps\dlib</Path>
       </Includes>
     </Includes>
@@ -83,6 +82,7 @@
     <Compile Include="src\dlangui\package.d" />
     <Compile Include="src\dlangui\core\collections.d" />
     <Compile Include="src\dlangui\core\css.d" />
+    <Compile Include="src\dlangui\core\cssparser.d" />
     <Compile Include="src\dlangui\core\dom.d" />
     <Compile Include="src\dlangui\core\editable.d" />
     <Compile Include="src\dlangui\core\events.d" />
@@ -120,6 +120,7 @@
     <Compile Include="src\dlangui\graphics\xpm\colors.d" />
     <Compile Include="src\dlangui\graphics\xpm\reader.d" />
     <Compile Include="src\dlangui\platforms\common\platform.d" />
+    <Compile Include="src\dlangui\platforms\common\startup.d" />
     <Compile Include="src\dlangui\platforms\sdl\sdlapp.d" />
     <Compile Include="src\dlangui\platforms\windows\win32drawbuf.d" />
     <Compile Include="src\dlangui\platforms\windows\win32fonts.d" />
@@ -200,6 +201,9 @@
     <Compile Include="3rdparty\win32\winver.d" />
     <Compile Include="3rdparty\win32\ws2tcpip.d" />
     <Compile Include="3rdparty\win32\wtypes.d" />
+    <Compile Include="3rdparty\fontconfig\functions.d" />
+    <Compile Include="3rdparty\fontconfig\package.d" />
+    <Compile Include="3rdparty\fontconfig\types.d" />
     <Compile Include="deps\DerelictFT\source\derelict\freetype\ft.d" />
     <Compile Include="deps\DerelictFT\source\derelict\freetype\functions.d" />
     <Compile Include="deps\DerelictFT\source\derelict\freetype\types.d" />
@@ -231,51 +235,6 @@
     <Compile Include="deps\DerelictUtil\source\derelict\util\system.d" />
     <Compile Include="deps\DerelictUtil\source\derelict\util\wintypes.d" />
     <Compile Include="deps\DerelictUtil\source\derelict\util\xtypes.d" />
-    <Compile Include="deps\dlib\dlib\image\io\bmp.d" />
-    <Compile Include="deps\dlib\dlib\image\io\idct.d" />
-    <Compile Include="deps\dlib\dlib\image\io\io.d" />
-    <Compile Include="deps\dlib\dlib\image\io\jpeg.d" />
-    <Compile Include="deps\dlib\dlib\image\io\png.d" />
-    <Compile Include="deps\dlib\dlib\image\io\tga.d" />
-    <Compile Include="deps\dlib\dlib\image\io\utils.d" />
-    <Compile Include="deps\dlib\dlib\image\arithmetics.d" />
-    <Compile Include="deps\dlib\dlib\image\color.d" />
-    <Compile Include="deps\dlib\dlib\image\image.d" />
-    <Compile Include="deps\dlib\dlib\core\bitio.d" />
-    <Compile Include="deps\dlib\dlib\core\compound.d" />
-    <Compile Include="deps\dlib\dlib\core\memory.d" />
-    <Compile Include="deps\dlib\dlib\core\oop.d" />
-    <Compile Include="deps\dlib\dlib\core\tuple.d" />
-    <Compile Include="deps\dlib\dlib\filesystem\delegaterange.d" />
-    <Compile Include="deps\dlib\dlib\filesystem\dirrange.d" />
-    <Compile Include="deps\dlib\dlib\filesystem\filesystem.d" />
-    <Compile Include="deps\dlib\dlib\filesystem\local.d" />
-    <Compile Include="deps\dlib\dlib\functional\combinators.d" />
-    <Compile Include="deps\dlib\dlib\functional\range.d" />
-    <Compile Include="deps\dlib\dlib\math\decomposition.d" />
-    <Compile Include="deps\dlib\dlib\math\interpolation.d" />
-    <Compile Include="deps\dlib\dlib\math\linsolve.d" />
-    <Compile Include="deps\dlib\dlib\math\matrix.d" />
-    <Compile Include="deps\dlib\dlib\math\utils.d" />
-    <Compile Include="deps\dlib\dlib\math\vector.d" />
-    <Compile Include="deps\gl3n\gl3n\aabb.d" />
-    <Compile Include="deps\gl3n\gl3n\frustum.d" />
-    <Compile Include="deps\gl3n\gl3n\interpolate.d" />
-    <Compile Include="deps\gl3n\gl3n\linalg.d" />
-    <Compile Include="deps\gl3n\gl3n\math.d" />
-    <Compile Include="deps\gl3n\gl3n\plane.d" />
-    <Compile Include="deps\gl3n\gl3n\util.d" />
-    <Compile Include="deps\dlib\dlib\core\stream.d" />
-    <Compile Include="deps\dlib\dlib\filesystem\windows\common.d" />
-    <Compile Include="deps\dlib\dlib\filesystem\windows\directory.d" />
-    <Compile Include="deps\dlib\dlib\filesystem\windows\file.d" />
-    <Compile Include="deps\dlib\dlib\coding\huffman.d" />
-    <Compile Include="deps\dlib\dlib\coding\zlib.d" />
-    <Compile Include="deps\dlib\dlib\container\array.d" />
-    <Compile Include="3rdparty\fontconfig\functions.d" />
-    <Compile Include="3rdparty\fontconfig\package.d" />
-    <Compile Include="3rdparty\fontconfig\types.d" />
-    <Compile Include="src\dlangui\platforms\common\startup.d" />
   </ItemGroup>
   <ItemGroup>
     <None Include="3rdparty\win32\makefile" />
