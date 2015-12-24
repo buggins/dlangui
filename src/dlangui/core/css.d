@@ -177,9 +177,11 @@ enum CssValueType : ubyte {
 }
 
 /// css length value
-struct CssLength {
-    CssValueType type = CssValueType.px;  ///< type of value
+struct CssValue {
+
     int value = 0;      ///< value (*256 for all types except % and px)
+    CssValueType type = CssValueType.px;  ///< type of value
+
     this(int px_value ) {
         value = px_value;
     }
@@ -187,13 +189,13 @@ struct CssLength {
         type = n_type;
         value = n_value;
     }
-    bool opEqual(CssLength v) const
+    bool opEqual(CssValue v) const
     {
         return type == v.type 
             && value == v.value;
     }
-    int pack() { return cast(int)type + (value<<4); }
-    static CssLength unpack(int v) { return CssLength(cast(CssValueType)(v & 0x0F), v >> 4); }
+
+    static const CssValue inherited = CssValue(CssValueType.inherited, 0);
 }
 
 enum CssDeclType : ubyte {
@@ -246,8 +248,20 @@ class CssStyle {
     CssTextAlign textAlignLast = CssTextAlign.inherit;
     CssTextDecoration textDecoration = CssTextDecoration.inherit;
     CssHyphenate hyphenate = CssHyphenate.inherit;
-    CssLength color;
-    CssLength backgroundColor;
+    CssValue color = CssValue.inherited;
+    CssValue backgroundColor = CssValue.inherited;
+    CssValue lineHeight = CssValue.inherited;
+    CssValue letterSpacing = CssValue.inherited;
+    CssValue width = CssValue.inherited;
+    CssValue height = CssValue.inherited;
+    CssValue marginLeft = CssValue.inherited;
+    CssValue marginRight = CssValue.inherited;
+    CssValue marginTop = CssValue.inherited;
+    CssValue marginBottom = CssValue.inherited;
+    CssValue paddingLeft = CssValue.inherited;
+    CssValue paddingRight = CssValue.inherited;
+    CssValue paddingTop = CssValue.inherited;
+    CssValue paddingBottom = CssValue.inherited;
 }
 
 /// skip spaces, move to new location, return true if there are some characters left in source line
@@ -357,7 +371,10 @@ private bool nextProperty(ref string str) {
 
 struct CssDeclItem {
     CssDeclType type;
-    int value;
+    union {
+        int value;
+        CssValue length;
+    }
     string str;
 
     void apply(CssStyle style) {
@@ -375,12 +392,8 @@ struct CssDeclItem {
                 style.hyphenate = cast(CssHyphenate)value; 
                 break; // hyphenate
 
-            case color:
-                style.color = CssLength.unpack(value);
-                break;
-            case background_color:
-                style.backgroundColor = CssLength.unpack(value);
-                break;
+            case color: style.color = length; break;
+            case background_color: style.backgroundColor = length; break;
             case vertical_align: break;
             case font_family: break; // id families like serif, sans-serif
             case font_names: break;   // string font name like Arial, Courier
@@ -390,18 +403,16 @@ struct CssDeclItem {
             case text_indent: break;
             case line_height: break;
             case letter_spacing: break;
-            case width: break;
-            case height: break;
-            case margin_left: break;
-            case margin_right: break;
-            case margin_top: break;
-            case margin_bottom: break;
-            case margin: break;
-            case padding_left: break;
-            case padding_right: break;
-            case padding_top: break;
-            case padding_bottom: break;
-            case padding: break;
+            case width: style.width = length; break;
+            case height: style.height = length; break;
+            case margin_left: style.marginLeft = length; break;
+            case margin_right: style.marginRight = length; break;
+            case margin_top: style.marginTop = length; break;
+            case margin_bottom: style.marginBottom = length; break;
+            case padding_left: style.paddingLeft = length; break;
+            case padding_right: style.paddingRight = length; break;
+            case padding_top: style.paddingTop = length; break;
+            case padding_bottom: style.paddingBottom = length; break;
             case page_break_before: break;
             case page_break_after: break;
             case page_break_inside: break;
@@ -418,6 +429,21 @@ struct CssDeclItem {
 /// css declaration like { display: block; margin-top: 10px }
 class CssDeclaration {
     private CssDeclItem[] _list;
+
+    private void addLengthDecl(CssDeclType type, CssValue len) {
+        CssDeclItem item;
+        item.type = type;
+        item.length = len;
+        _list ~= item;
+    }
+
+    private void addDecl(CssDeclType type, int value, string str) {
+        CssDeclItem item;
+        item.type = type;
+        item.value = value;
+        item.str = str;
+        _list ~= item;
+    }
 
     void apply(CssStyle style) {
         foreach(item; _list)
@@ -448,9 +474,9 @@ class CssDeclaration {
                         break; // hyphenate
                     case color:
                     case background_color:
-                        CssLength v;
+                        CssValue v;
                         if (parseColor(src, v)) {
-                            n = v.pack();
+                            addLengthDecl(propId, v);
                         }
                         break;
                     case vertical_align: n = parseEnumItem!CssVerticalAlign(src, -1); break;
@@ -480,11 +506,45 @@ class CssDeclaration {
                     case padding_right:
                     case padding_top:
                     case padding_bottom:
-                        //n = parseEnumItem!Css(src, -1); 
+                        // parse length
+                        CssValue value;
+                        if (parseLength(src, value))
+                            addLengthDecl(propId, value);
                         break;
                     case margin: 
                     case padding: 
                         //n = parseEnumItem!Css(src, -1); 
+                        CssValue[4] len;
+                        int i;
+                        for (i = 0; i < 4; ++i)
+                            if (!parseLength(src, len[i]))
+                                break;
+                        if (i) {
+                            switch (i) {
+                                case 1: 
+                                    len[1] = len[0];
+                                    goto case; /* fall through */
+                                case 2: 
+                                    len[2] = len[0];
+                                    goto case; /* fall through */
+                                case 3: 
+                                    len[3] = len[1];
+                                    break;
+                                default:
+                                    break;
+                            }
+                            if (propId == margin) {
+                                addLengthDecl(margin_left, len[0]);
+                                addLengthDecl(margin_top, len[1]);
+                                addLengthDecl(margin_right, len[2]);
+                                addLengthDecl(margin_bottom, len[3]);
+                            } else {
+                                addLengthDecl(padding_left, len[0]);
+                                addLengthDecl(padding_top, len[1]);
+                                addLengthDecl(padding_right, len[2]);
+                                addLengthDecl(padding_bottom, len[3]);
+                            }
+                        }
                         break;
                     case page_break_before:
                     case page_break_inside:
@@ -502,13 +562,8 @@ class CssDeclaration {
                     default:
                         break;
                 }
-                if (n >= 0 || !s.empty) {
-                    CssDeclItem item;
-                    item.type = propId;
-                    item.value = n;
-                    item.str = s;
-                    _list ~= item;
-                }
+                if (n >= 0 || !s.empty)
+                    addDecl(propId, n, s);
             }
             if (!nextProperty(src))
                 break;
@@ -552,7 +607,7 @@ private int parseStandardColor(string ident) {
     }
 }
 
-private bool parseColor(ref string src, ref CssLength value)
+private bool parseColor(ref string src, ref CssValue value)
 {
     value.type = CssValueType.unspecified;
     value.value = 0;
@@ -608,6 +663,81 @@ private bool parseColor(ref string src, ref CssLength value)
     return false;
 }
 
+private bool parseLength(ref string src, ref CssValue value)
+{
+    value.type = CssValueType.unspecified;
+    value.value = 0;
+    skipSpaces(src);
+    string ident = parseIdent(src);
+    if (!ident.empty) {
+        switch(ident) {
+            case "inherited":
+                value.type = CssValueType.inherited;
+                return true;
+            default:
+                return false;
+        }
+    }
+    if (src.empty)
+        return false;
+    int n = 0;
+    char ch = src[0];
+    if (ch != '.') {
+        if (ch < '0' || ch > '9') {
+            return false; // not a number
+        }
+        while (ch >= '0' && ch <= '9') {
+            n = n*10 + (ch - '0');
+            src = src[1 .. $];
+            if (src.empty)
+                break;
+            ch = src[0];
+        }
+    }
+    int frac = 0;
+    int frac_div = 1;
+    if (ch == '.') {
+        src = src[1 .. $];
+        if (!src.empty) {
+            ch = src[0];
+            while (ch >= '0' && ch <= '9') {
+                frac = frac*10 + (ch - '0');
+                frac_div *= 10;
+                src = src[1 .. $];
+                if (src.empty)
+                    break;
+                ch = src[0];
+            }
+        }
+    }
+    if (ch == '%') {
+        value.type = CssValueType.percent;
+        src = src[1 .. $];
+    } else {
+        ident = parseIdent(src);
+        if (!ident.empty) {
+            switch(ident) {
+                case "em": value.type = CssValueType.em; break;
+                case "pt": value.type = CssValueType.pt; break;
+                case "ex": value.type = CssValueType.ex; break;
+                case "px": value.type = CssValueType.px; break;
+                case "in": value.type = CssValueType.in_; break;
+                case "cm": value.type = CssValueType.cm; break;
+                case "mm": value.type = CssValueType.mm; break;
+                case "pc": value.type = CssValueType.pc; break;
+                default:
+                    return false;
+            }
+        } else {
+            value.type = CssValueType.px;
+        }
+    }
+    if ( value.type == CssValueType.px || value.type == CssValueType.percent )
+        value.value = n;                               // normal
+    else
+        value.value = n * 256 + 256 * frac / frac_div; // *256
+    return true;
+}
 
 unittest {
     CssStyle style = new CssStyle();
@@ -617,7 +747,7 @@ unittest {
     CssTextAlign textAlignLast = CssTextAlign.inherit;
     CssTextDecoration textDecoration = CssTextDecoration.inherit;
     CssHyphenate hyphenate = CssHyphenate.inherit;
-    string src = "{ display: inline; text-decoration: underline; white-space: pre; text-align: right; text-align-last: left; hyphenate: auto }";
+    string src = "{ display: inline; text-decoration: underline; white-space: pre; text-align: right; text-align-last: left; hyphenate: auto; width: 70%; height: 1.5pt; margin-left: 2.0em }";
     assert(decl.parse(src, true));
     assert(style.display == CssDisplay.block);
     assert(style.textDecoration == CssTextDecoration.inherit);
@@ -625,6 +755,7 @@ unittest {
     assert(style.textAlign == CssTextAlign.inherit);
     assert(style.textAlignLast == CssTextAlign.inherit);
     assert(style.hyphenate == CssHyphenate.inherit);
+    assert(style.width == CssValue.inherited);
     decl.apply(style);
     assert(style.display == CssDisplay.inline);
     assert(style.textDecoration == CssTextDecoration.underline);
@@ -632,4 +763,7 @@ unittest {
     assert(style.textAlign == CssTextAlign.right);
     assert(style.textAlignLast == CssTextAlign.left);
     assert(style.hyphenate == CssHyphenate.auto_);
+    assert(style.width == CssValue(CssValueType.percent, 70));
+    assert(style.height == CssValue(CssValueType.pt, 1*256 + 5*256/10)); // 1.5
+    assert(style.marginLeft == CssValue(CssValueType.em, 2*256 + 0*256/10)); // 2.0
 }
