@@ -15,7 +15,7 @@ Getting Started Tutorial: [https://github.com/buggins/dlangui/wiki/Getting-Start
 
 Screenshots: [http://buggins.github.io/dlangui/screenshots.html](http://buggins.github.io/dlangui/screenshots.html)
 
-Coding style: [https://github.com/buggins/dlangide/blob/master/README.md](https://github.com/buggins/dlangide/blob/master/README.md)
+Coding style: [https://github.com/buggins/dlangui/blob/master/CODING_STYLE.md](https://github.com/buggins/dlangui/blob/master/CODING_STYLE.md)
 
 
 WARNING: recent breaking change: some event listeners were renamed, e.g. onClickListener -> click, onFocusChangeListener -> focusChange...
@@ -72,8 +72,8 @@ Similar to layouts in Android
 
 * LinearLayout - layout children horizontally or vertically depending on orientation
 * VerticalLayout - just a LinearLayout with vertical orientation
-* HorizontalLayout - just a LinearLayout with vertical orientation
-* FrameLayout - all children occupy the same place; usually onle one of them is visible
+* HorizontalLayout - just a LinearLayout with horizontal orientation
+* FrameLayout - all children occupy the same place; usually only one of them is visible
 * TableLayout - children are aligned into rows and columns of table
 * ResizerWidget - put into LinearLayout between two other widgets to resize them using mouse
 * ScrollWidget - allow to scroll its child if its dimensions are bigger than possible
@@ -107,7 +107,7 @@ Styles and themes are a bit similar to ones in Android API.
 
 * Theme is a container for styles. Can be load from XML theme resource file.
 * Styles are accessible in theme by string ID.
-* Styles can be nested to form hiararchy - when some attribute is missing in style, value from base style will be used.
+* Styles can be nested to form hierarchy - when some attribute is missing in style, value from base style will be used.
 * State substyles are supported: allow to change widget appearance dynamically based on its state.
 * Widgets use style attributes directly from assigned style. When some attribute is being changed in widget, it creates its own copy of base style, 
 which allows to modify some of attributes, while getting base style attributes if they are not changed in widget. This trick can minimize memory usage for widget attributes when 
@@ -212,7 +212,7 @@ Linux development using Mono-D
 
 Install DUB, DMD, MonoDevelop with Mono-D plugin.
 
-Required libraries: libsdl2, x11, libfreetype, opengl, libfontconfig.
+Required libraries: libsdl2, x11, libfreetype, libfontconfig and OpenGL.
 
 
 Clone DlangUI repository
