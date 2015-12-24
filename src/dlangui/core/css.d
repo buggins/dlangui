@@ -3,6 +3,7 @@
 /**
 This module contains implementation of CSS support - Cascading Style Sheets.
 
+Port of CoolReader Engine written in C++.
 
 Synopsis:
 
@@ -19,9 +20,11 @@ module dlangui.core.css;
 
 import std.traits;
 import std.conv : to;
-import std.string : startsWith, endsWith;
+import std.string;
 import std.array : empty;
 import std.algorithm : equal;
+
+import dlangui.core.dom;
 
 /// display property values
 enum CssDisplay : ubyte {
@@ -65,7 +68,7 @@ enum CssTextAlign : ubyte {
 /// vertical-align property values
 enum CssVerticalAlign : ubyte {
     inherit,
-    baseline, 
+    baseline,
     sub,
     super_,
     top,
@@ -276,6 +279,181 @@ class CssStyle {
     CssValue textIndent = CssValue.inherited;
 }
 
+/// selector rule type
+enum CssSelectorRuleType : ubyte {
+    universal,     // *
+    parent,        // E > F
+    ancessor,      // E F
+    predecessor,   // E + F
+    attrset,       // E[foo]
+    attreq,        // E[foo="value"]
+    attrhas,       // E[foo~="value"]
+    attrstarts,    // E[foo|="value"]
+    id,            // E#id
+    class_          // E.class
+}
+
+class CssSelectorRule
+{
+private:
+    CssSelectorRuleType _type;
+    elem_id _id;
+    attr_id _attrid;
+    CssSelectorRule _next;
+    string _value;
+public:
+    this(CssSelectorRuleType type) { 
+        _type = type;
+    }
+    this(const CssSelectorRule v) {
+        _type = v._type;
+        _id = v._id;
+        _attrid = v._attrid;
+        _value = v._value;
+    }
+    ~this() { 
+        //if (_next) 
+        //    destroy(_next); 
+    }
+
+    @property elem_id id() { return _id; }
+    @property void id(elem_id newid) { _id = newid; }
+    @property attr_id attrid() { return _attrid; }
+    @property void setAttr(attr_id newid, string value) { _attrid = newid; _value = value; }
+    @property CssSelectorRule next() { return _next; }
+    @property void next(CssSelectorRule v) { _next = v; }
+    /// check condition for node
+    bool check(ref Node node) {
+        if (!node || !node.parent)
+            return false;
+        switch (_type) with (CssSelectorRuleType) {
+            case parent:        // E > F
+                node = node.parent;
+                if (!node)
+                    return false;
+                return node.id == _id;
+
+            case ancessor:      // E F
+                for (;;) {
+                    node = node.parent;
+                    if (!node)
+                        return false;
+                    if (node.id == _id)
+                        return true;
+                }
+
+            case predecessor:   // E + F
+                int index = node.index;
+                // while
+                if (index > 0) {
+                    Node elem = node.parent.childElement(index-1, _id);
+                    if ( elem ) {
+                        node = elem;
+                        //CRLog::trace("+ selector: found pred element");
+                        return true;
+                    }
+                    //index--;
+                }
+                return false;
+
+            case attrset:       // E[foo]
+                return node.hasAttr(_attrid);
+
+            case attreq:        // E[foo="value"]
+                string val = node.attrValue(Ns.any, _attrid);
+                return (val == _value);
+
+            case attrhas:       // E[foo~="value"]
+                // one of space separated values
+                string val = node.attrValue(Ns.any, _attrid);
+                int p = val.indexOf(_value);
+                if (p < 0)
+                    return false;
+                if ( (p > 0 && val[p - 1] != ' ') 
+                        || ( p + _value.length < val.length && val[p + _value.length] != ' '))
+                    return false;
+                return true;
+
+            case attrstarts:    // E[foo|="value"]
+                string val = node.attrValue(Ns.any, _attrid);
+                if (_value.length > val.length)
+                    return false;
+                return val[0 .. _value.length] == _value;
+
+            case id:            // E#id
+                string val = node.attrValue(Ns.any, Attr.id);
+                return val == _value;
+
+            case class_:         // E.class
+                string val = node.attrValue(Ns.any, Attr.class_);
+                return !val.icmp(_value);
+
+            case universal:     // *
+                return true;
+
+            default:
+                return true;
+        }
+    }
+}
+
+/** simple CSS selector
+
+Currently supports only element name and universal selector.
+
+- * { } - universal selector
+- element-name { } - selector by element name
+- element1, element2 { } - several selectors delimited by comma
+*/
+class CssSelector {
+private:
+    uint _id;
+    CssDeclaration _decl;
+    int _specificity;
+    CssSelector _next;
+    CssSelectorRule _rules;
+    void insertRuleStart(CssSelectorRule rule) {
+    }
+    void insertRuleAfterStart(CssSelectorRule rule) {
+    }
+public:
+    this(CssSelector v) {
+        _id = v._id;
+        _decl = v._decl;
+        _specificity = v._specificity;
+    }
+    this() { }
+    ~this() {
+        //if (_next)
+        //    destroy(_next);
+        //if (_rules) 
+        //    destroy(_rules); 
+    }
+    bool parse(ref string str) { //, lxmlDocBase * doc
+        return false;
+    }
+    @property uint tagId() { return _id; }
+    bool check(const Node node) const {
+        // TODO
+        return false;
+    }
+    /// apply to style if selector matches
+    void apply(const Node node, CssStyle style) const
+    {
+        if (check(node))
+            _decl.apply(style);
+    }
+    void setDeclaration(CssDeclaration decl) { 
+        _decl = decl; 
+    }
+    int getSpecificity() { 
+        return _specificity;
+    }
+    @property CssSelector next() { return _next; }
+    @property void next(CssSelector next) { _next = next; }
+    //lUInt32 getHash();
+}
+
 struct CssDeclItem {
     CssDeclType type = CssDeclType.unknown;
     union {
@@ -284,7 +462,7 @@ struct CssDeclItem {
     }
     string str;
 
-    void apply(CssStyle style) {
+    void apply(CssStyle style) const {
         switch (type) with (CssDeclType) {
             case display: style.display = cast(CssDisplay)value; break;
             case white_space: style.whiteSpace = cast(CssWhiteSpace)value; break;
@@ -357,7 +535,7 @@ class CssDeclaration {
         _list ~= item;
     }
 
-    void apply(CssStyle style) {
+    void apply(CssStyle style) const {
         foreach(item; _list)
             item.apply(style);
     }
@@ -938,9 +1116,9 @@ unittest {
     string src = "{ display: inline; text-decoration: underline; white-space: pre; text-align: right; text-align-last: left; "
         "hyphenate: auto; width: 70%; height: 1.5pt; margin-left: 2.0em; "
         "font-family: Arial, 'Times New Roman', sans-serif; font-size: 18pt; line-height: 120%; letter-spacing: 2px; font-weight: 300; "
-        " }";
+        " }t";
     assert(decl.parse(src, true));
-    assert(!src.empty && src[0] == '}');
+    assert(!src.empty && src[0] == 't');
     assert(style.display == CssDisplay.block);
     assert(style.textDecoration == CssTextDecoration.inherit);
     assert(style.whiteSpace == CssWhiteSpace.inherit);

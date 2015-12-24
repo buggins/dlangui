@@ -3,6 +3,7 @@
 /**
 This module contains implementation DOM - document object model.
 
+Port of CoolReader Engine written in C++.
 
 Synopsis:
 
@@ -84,6 +85,16 @@ public:
     string attrValue(ns_id nsid, attr_id attrid) { return null; }
     /// get attribute value by namespace and attribute ids
     string attrValue(string nsname, string attrname) { return attrValue(_document.nsId(nsname), _document.attrId(attrname)); }
+    /// returns true if node has attribute with specified name
+    bool hasAttr(string attrname) {
+        return hasAttr(document.attrId(attrname));
+    }
+    /// returns true if node has attribute with specified id
+    bool hasAttr(attr_id attrid) {
+        if (Attribute a = attr(Ns.any, attrid))
+            return true;
+        return false;
+    }
 
     // child nodes
 
@@ -100,6 +111,14 @@ public:
     int childIndex(Node child) { return -1; }
     /// return node index in parent's child node collection, -1 if not found
     @property int index() { return _parent ? _parent.childIndex(this) : -1; }
+
+    /// returns child node by index and optionally compares its tag id, returns null if child with this index is not an element or id does not match
+    Element childElement(int index, elem_id id = 0) {
+        Element res = cast(Element)child(index);
+        if (res && (id == 0 || res.id == id))
+            return res;
+        return null;
+    }
 
     /// append text child
     Node appendText(dstring s, int index = -1) { assert(false); }
