@@ -577,7 +577,8 @@ private class Utf8LineStream : LineStream {
         uint len = bytesAvailable;
         uint chars = 0;
         ubyte* b = bytes;
-        dchar* text = reserveTextBuf(len);
+        uint maxResultingBytes = len*2; //len*2 because worst case is if all input chars are singelbyte and resulting in two bytes
+        dchar* text = reserveTextBuf(maxResultingBytes);
         uint i = 0;
         for (; i < len; i++) {
             uint ch = 0;
@@ -658,6 +659,13 @@ private class Utf8LineStream : LineStream {
                 invalidCharFlag = true;
                 break;
             }
+
+            //if the code above could not read any charater stop procesing
+            if (bread == 0) {
+                  invalidCharFlag = true;
+                  break;
+            }
+
             if (ch < 0x10000) {
                 text[chars++] = ch;
             } else {
