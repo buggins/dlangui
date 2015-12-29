@@ -368,6 +368,10 @@ class FileDialog : Dialog, CustomGridCellAdapter {
                     result.stringParam = _filename;
                 close(result);
                 return true;
+            } else if (_filename.length == 0){
+                 auto row = _fileList.row();
+                 onItemActivated(row);
+                 return true;
             }
         }
         return super.handleAction(action);
