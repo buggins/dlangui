@@ -308,6 +308,11 @@ class LineStream {
         _pos = offset;
         _streamEof = _stream.eof;
     }
+
+    /// this constructor was created for unittests only
+    protected this(){
+        _encoding = EncodingType.UTF8;
+    }
     
     /// returns slice of bytes available in buffer
     protected uint readBytes() {
@@ -565,105 +570,184 @@ private class Utf8LineStream : LineStream {
     this(InputStream stream, string filename, ubyte[] buf, uint len, int skip) {
         super(stream, filename, EncodingType.UTF8, buf, skip, len);
     }
+
+    uint decodeBytes(ubyte* b,in uint bleft, out uint ch, out bool needMoreFlag){
+        uint bread = 0;
+        uint ch0 = b[0];
+        if (!(ch0 & 0x80)) {
+            // 0x00..0x7F single byte
+            // 0x80 == 10000000
+            // !(ch0 & 0x80) => ch0 < 10000000
+            ch = ch0;
+            bread = 1;
+        } else if ((ch0 & 0xE0) == 0xC0) {
+            // two bytes 110xxxxx 10xxxxxx
+            if (bleft < 2) {
+                needMoreFlag = true;
+                return 0;
+            }
+            uint ch1 = b[1];
+            if ((ch1 & 0xC0) != 0x80) {
+                return 0;
+            }
+            ch = ((ch0 & 0x1F) << 6) | (ch1 & 0x3F);
+            bread = 2;
+        } else if ((ch0 & 0xF0) == 0xE0) {
+            // three bytes 1110xxxx 10xxxxxx 10xxxxxx
+            if (bleft < 3) {
+                needMoreFlag = true;
+                return 0;
+            }
+            uint ch1 = b[1];
+            uint ch2 = b[2];
+            if ((ch1 & 0xC0) != 0x80 || (ch2 & 0xC0) != 0x80) {
+                return 0;
+            }
+            ch = ((ch0 & 0x0F) << 12) | ((ch1 & 0x3F) << 6) | (ch2 & 0x3F);
+            bread = 3;
+        } else if ((ch0 & 0xF8) == 0xF0) {
+            // four bytes 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
+            if (bleft < 4) {
+                needMoreFlag = true;
+                return 0;
+            }
+            uint ch1 = b[1];
+            uint ch2 = b[2];
+            uint ch3 = b[3];
+            if ((ch1 & 0xC0) != 0x80 || (ch2 & 0xC0) != 0x80 || (ch3 & 0xC0) != 0x80) {
+                return 0;
+            }
+            ch = ((ch0 & 0x07) << 18) | ((ch1 & 0x3F) << 12) | ((ch2 & 0x3F) << 6) | (ch3 & 0x3F);
+            bread = 4;
+        } else if ((ch0 & 0xFC) == 0xF8) {
+            // five bytes 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
+            if (bleft < 5) {
+                needMoreFlag = true;
+                return 0;
+            }
+            uint ch1 = b[1];
+            uint ch2 = b[2];
+            uint ch3 = b[3];
+            uint ch4 = b[4];
+            if ((ch1 & 0xC0) != 0x80 || (ch2 & 0xC0) != 0x80 || (ch3 & 0xC0) != 0x80 || (ch4 & 0xC0) != 0x80) {
+                return 0;
+            }
+            ch = ((ch0 & 0x03) << 24) | ((ch1 & 0x3F) << 18) | ((ch2 & 0x3F) << 12) | ((ch3 & 0x3F) << 6) | (ch4 & 0x3F);
+            bread = 5;
+        } else if ((ch0 & 0xFE) == 0xFC) {
+            // six bytes 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
+            if (bleft < 6){
+                needMoreFlag = true;
+                return 0;
+            }
+
+            uint ch1 = b[1];
+            uint ch2 = b[2];
+            uint ch3 = b[3];
+            uint ch4 = b[4];
+            uint ch5 = b[5];
+            if ((ch1 & 0xC0) != 0x80 || (ch2 & 0xC0) != 0x80 || (ch3 & 0xC0) != 0x80 || (ch4 & 0xC0) != 0x80 || (ch5 & 0xC0) != 0x80) {
+                return 0;
+            }
+            ch = ((ch0 & 0x01) << 30) | ((ch1 & 0x3F) << 24) | ((ch2 & 0x3F) << 18) | ((ch3 & 0x3F) << 12) | ((ch4 & 0x3F) << 6) | (ch5 & 0x3F);
+            bread = 5;
+        }
+        if ((ch >= 0xd800 && ch < 0xe000) || (ch > 0x10FFFF)) {
+            return 0;
+        }
+        return bread;
+    }
+
+    /// this constructor was created for unittests only
+    protected this(){
+       
+    }
+
+    unittest {
+        auto o = new Utf8LineStream();
+        ubyte[] buffer =  new ubyte[4];
+        ubyte * bytes  = buffer.ptr;
+        uint ch;
+        bool needMoreFlag;
+        uint bread;
+
+        //convert simple character
+        buffer[0] = '/';
+        bread = o.decodeBytes(bytes,1,ch,needMoreFlag);
+        assert(!needMoreFlag);
+        assert(bread == 1);
+        assert(ch == '/');
+        //writefln("/ as hex: 0x%32x,0x%32x", ch,'/');
+        
+        
+        //convert 2byte character
+        buffer[0] = 0xc3;
+        buffer[1] = 0x84;
+        bread = o.decodeBytes(bytes,1,ch,needMoreFlag);
+        assert(needMoreFlag);
+
+        bread = o.decodeBytes(bytes,2,ch,needMoreFlag);
+        assert(!needMoreFlag);
+        assert(bread == 2);
+        assert(ch == 'Ä');
+        //writefln("Ä as hex: 0x%32x,0x%32x", ch,'Ä');
+        
+        //convert 3byte character
+        buffer[0] = 0xe0;
+        buffer[1] = 0xa4;
+        buffer[2] = 0xb4;
+        bread = o.decodeBytes(bytes,2,ch,needMoreFlag);
+        assert(needMoreFlag);
+
+        bread = o.decodeBytes(bytes,3,ch,needMoreFlag);
+        assert(!needMoreFlag);
+        assert(bread == 3);
+        //writefln("ऴ as hex: 0x%32x,0x%32x", ch,'ऴ');
+        assert(ch == 'ऴ');
+
+        //regression test for https://github.com/buggins/dlangide/issues/65
+        buffer[0] = 0xEB;
+        buffer[1] = 0xB8;
+        buffer[2] = 0x94;
+        bread = o.decodeBytes(bytes,3,ch,needMoreFlag);
+        assert(!needMoreFlag);
+        assert(bread == 3);
+        //writefln("블 as hex: 0x%32x,0x%32x", ch,'블');
+        assert(ch == '블');
+    }
+    
     override uint decodeText() {
+        //number of bytesAvailable
+        uint len = readBytes();
+        if (len == 0)
+            return 0; // nothing to decode
+
         if (invalidCharFlag) {
             invalidCharError();
             return 0;
         }
-        uint bytesAvailable = readBytes();
         ubyte * bytes = _buf.ptr + _pos;
-        if (bytesAvailable == 0)
-            return 0; // nothing to decode
-        uint len = bytesAvailable;
-        uint chars = 0;
         ubyte* b = bytes;
+        uint chars = 0;
         uint maxResultingBytes = len*2; //len*2 because worst case is if all input chars are singelbyte and resulting in two bytes
         dchar* text = reserveTextBuf(maxResultingBytes);
         uint i = 0;
+        
+        bool needMoreFlag = false;
         for (; i < len; i++) {
             uint ch = 0;
-            uint ch0 = b[i];
             uint bleft = len - i;
-            uint bread = 0;
-            if (!(ch0 & 0x80)) {
-                // 0x00..0x7F single byte
-                ch = ch0;
-                bread = 1;
-            } if ((ch0 & 0xE0) == 0xC0) {
-                // two bytes 110xxxxx 10xxxxxx
-                if (bleft < 2)
-                    break;
-                uint ch1 = b[i + 1];
-                if ((ch1 & 0xC0) != 0x80) {
-                    invalidCharFlag = true;
-                    break;
-                }
-                ch = ((ch0 & 0x1F) << 6) | (ch1 & 0x3F);
-                bread = 2;
-            } if ((ch0 & 0xF0) == 0xE0) {
-                // three bytes 1110xxxx 10xxxxxx 10xxxxxx
-                if (bleft < 3)
-                    break;
-                uint ch1 = b[i + 1];
-                uint ch2 = b[i + 2];
-                if ((ch1 & 0xC0) != 0x80 || (ch2 & 0xC0) != 0x80) {
-                    invalidCharFlag = true;
-                    break;
-                }
-                ch = ((ch0 & 0x0F) << 12) | ((ch1 & 0x1F) << 6) | (ch2 & 0x3F);
-                bread = 3;
-            } if ((ch0 & 0xF8) == 0xF0) {
-                // four bytes 11110xxx 10xxxxxx 10xxxxxx 10xxxxxx
-                if (bleft < 4)
-                    break;
-                uint ch1 = b[i + 1];
-                uint ch2 = b[i + 2];
-                uint ch3 = b[i + 3];
-                if ((ch1 & 0xC0) != 0x80 || (ch2 & 0xC0) != 0x80 || (ch3 & 0xC0) != 0x80) {
-                    invalidCharFlag = true;
-                    break;
-                }
-                ch = ((ch0 & 0x07) << 18) | ((ch1 & 0x3F) << 12) | ((ch2 & 0x3F) << 6) | (ch3 & 0x3F);
-                bread = 4;
-            } if ((ch0 & 0xFC) == 0xF8) {
-                // five bytes 111110xx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-                if (bleft < 5)
-                    break;
-                uint ch1 = b[i + 1];
-                uint ch2 = b[i + 2];
-                uint ch3 = b[i + 3];
-                uint ch4 = b[i + 4];
-                if ((ch1 & 0xC0) != 0x80 || (ch2 & 0xC0) != 0x80 || (ch3 & 0xC0) != 0x80 || (ch4 & 0xC0) != 0x80) {
-                    invalidCharFlag = true;
-                    break;
-                }
-                ch = ((ch0 & 0x03) << 24) | ((ch1 & 0x3F) << 18) | ((ch2 & 0x3F) << 12) | ((ch3 & 0x3F) << 6) | (ch4 & 0x3F);
-                bread = 5;
-            } if ((ch0 & 0xFE) == 0xFC) {
-                // six bytes 1111110x 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx 10xxxxxx
-                if (bleft < 6)
-                    break;
-                uint ch1 = b[i + 1];
-                uint ch2 = b[i + 2];
-                uint ch3 = b[i + 3];
-                uint ch4 = b[i + 4];
-                uint ch5 = b[i + 5];
-                if ((ch1 & 0xC0) != 0x80 || (ch2 & 0xC0) != 0x80 || (ch3 & 0xC0) != 0x80 || (ch4 & 0xC0) != 0x80 || (ch5 & 0xC0) != 0x80) {
-                    invalidCharFlag = true;
-                    break;
-                }
-                ch = ((ch0 & 0x01) << 30) | ((ch1 & 0x3F) << 24) | ((ch2 & 0x3F) << 18) | ((ch3 & 0x3F) << 12) | ((ch4 & 0x3F) << 6) | (ch5 & 0x3F);
-                bread = 5;
-            }
-            if ((ch >= 0xd800 && ch < 0xe000) || (ch > 0x10FFFF)) {
-                invalidCharFlag = true;
+            uint bread = decodeBytes(b+i,bleft,ch,needMoreFlag);
+
+            if(needMoreFlag){
+                //decodeBytes needs more bytes, but nore more bytes left in the buffer
                 break;
             }
 
-            //if the code above could not read any charater stop procesing
             if (bread == 0) {
-                  invalidCharFlag = true;
-                  break;
+                //decodeBytes could not read any charater. stop procesing
+                invalidCharFlag = true;
+                break;
             }
 
             if (ch < 0x10000) {
