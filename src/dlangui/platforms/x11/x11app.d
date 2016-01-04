@@ -966,7 +966,7 @@ class X11Platform : Platform {
 	this() {
 	}
 
-	X11Window[XWindow] _windowMap;
+	private X11Window[XWindow] _windowMap;
 
 	/**
 	 * create window
