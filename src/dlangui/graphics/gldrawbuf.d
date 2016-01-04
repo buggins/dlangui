@@ -77,6 +77,7 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
     override void afterDrawing() {
         glSupport.setOrthoProjection(Rect(0, 0, _dx, _dy), Rect(0, 0, _dx, _dy));
         _scene.draw();
+        GLProgram.unbind();
         glSupport.flushGL();
         destroy(_scene);
         _scene = null;

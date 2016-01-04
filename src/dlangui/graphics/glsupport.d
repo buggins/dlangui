@@ -220,14 +220,19 @@ class GLProgram {
         return true;
     }
 
+    static GLuint currentProgram;
     /// binds program to current context
     void bind() {
-        checkgl!glUseProgram(program);
+        if(program != currentProgram) {
+            checkgl!glUseProgram(program);
+            currentProgram = program;
+        }
     }
 
     /// unbinds program from current context
-    void unbind() {
+    static void unbind() {
         checkgl!glUseProgram(0);
+        currentProgram = 0;
     }
 
     /// get uniform location from program, returns -1 if location is not found
@@ -274,18 +279,6 @@ class SolidFillProgram : GLProgram {
         };
     }
 
-    void beforeExecute() {
-        glEnable(GL_BLEND);
-        checkgl!glDisable(GL_CULL_FACE);
-        checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        bind();
-        checkgl!glUniformMatrix4fv(matrixLocation, 1, false, glSupport.projectionMatrix.m.ptr);
-    }
-
-    void afterExecute() {
-        unbind();
-    }
-
     protected GLint matrixLocation;
     protected GLint vertexLocation;
     protected GLint colAttrLocation;
@@ -294,6 +287,14 @@ class SolidFillProgram : GLProgram {
         vertexLocation = getAttribLocation("vertex");
         colAttrLocation = getAttribLocation("colAttr");
         return matrixLocation >= 0 && vertexLocation >= 0 && colAttrLocation >= 0;
+    }
+
+    void beforeExecute() {
+        glEnable(GL_BLEND);
+        checkgl!glDisable(GL_CULL_FACE);
+        checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        bind();
+        checkgl!glUniformMatrix4fv(matrixLocation, 1, false, glSupport.projectionMatrix.m.ptr);
     }
 
     bool execute(float[] vertices, float[] colors) {
@@ -313,8 +314,6 @@ class SolidFillProgram : GLProgram {
         glEnableVertexAttribArray(colAttrLocation);
 
         checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)vertices.length/3);
-
-        afterExecute();
 
         destroy(vbo);
         destroy(vao);
@@ -340,8 +339,6 @@ class LineProgram : SolidFillProgram {
         glEnableVertexAttribArray(colAttrLocation);
 
         checkgl!glDrawArrays(GL_LINES, 0, cast(int)vertices.length/3);
-
-        afterExecute();
 
         destroy(vbo);
         destroy(vao);
@@ -409,12 +406,6 @@ class TextureProgram : SolidFillProgram {
         glEnableVertexAttribArray(texCoordLocation);
 
         checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)vertices.length/3);
-
-        glDisableVertexAttribArray(vertexLocation);
-        glDisableVertexAttribArray(colAttrLocation);
-        glDisableVertexAttribArray(texCoordLocation);
-
-        afterExecute();
 
         destroy(vbo);
         destroy(vao);
