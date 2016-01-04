@@ -71,6 +71,7 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
             _scene.reset();
         }
         _scene = new Scene(this);
+        glSupport.prepareShaders();
     }
 
     /// reserved for hardware-accelerated drawing - ends drawing batch
