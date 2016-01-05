@@ -205,7 +205,7 @@ struct Cup {
         return _rows;
     }
     /// inits empty cup of specified size
-    void init(int cols, int rows) {
+    void initialize(int cols, int rows) {
         _cols = cols;
         _rows = rows;
         _cup = new int[_cols * _rows];
