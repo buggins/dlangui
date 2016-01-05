@@ -151,7 +151,7 @@ class Dialog : VerticalLayout {
     }
 
     /// override to implement creation of dialog controls
-    void init() {
+    void initialize() {
     }
 
     /** Notify about dialog result, and then close dialog.
@@ -177,7 +177,7 @@ class Dialog : VerticalLayout {
 
     /// shows dialog
     void show() {
-        init();
+        initialize();
         uint wflags = 0;
         if (_flags & DialogFlag.Modal)
             wflags |= WindowFlag.Modal;

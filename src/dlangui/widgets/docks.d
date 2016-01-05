@@ -53,7 +53,7 @@ struct DockSpace {
     @property int space() { return _space; }
     protected int _minSpace;
     protected int _maxSpace;
-    ResizerWidget init(DockHost host, DockAlignment a) {
+    ResizerWidget initialize(DockHost host, DockAlignment a) {
         _host = host;
         _alignment = a;
         final switch (a) with(DockAlignment)
@@ -207,10 +207,10 @@ class DockHost : WidgetGroupDefaultDrawing {
     this() {
         super("DOCK_HOST");
         styleId = STYLE_DOCK_HOST;
-        addChild(_topSpace.init(this, DockAlignment.Top));
-        addChild(_bottomSpace.init(this, DockAlignment.Bottom));
-        addChild(_leftSpace.init(this, DockAlignment.Left));
-        addChild(_rightSpace.init(this, DockAlignment.Right));
+        addChild(_topSpace.initialize(this, DockAlignment.Top));
+        addChild(_bottomSpace.initialize(this, DockAlignment.Bottom));
+        addChild(_leftSpace.initialize(this, DockAlignment.Left));
+        addChild(_rightSpace.initialize(this, DockAlignment.Right));
     }
 
     protected DockWindow[] getDockedWindowList(DockAlignment alignType) {
@@ -323,8 +323,8 @@ class DockWindow : WindowFrame {
         super(ID);
     }
 
-    override protected void init() {
-        super.init();
+    override protected void initialize() {
+        super.initialize();
         _dockAlignment = DockAlignment.Right; // default alignment is right
     }
 

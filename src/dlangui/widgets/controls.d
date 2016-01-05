@@ -300,7 +300,7 @@ class ImageTextButton : HorizontalLayout {
         return this; 
     }
 
-    protected void init(string drawableId, UIString caption) {
+    protected void initialize(string drawableId, UIString caption) {
         styleId = STYLE_BUTTON;
         _icon = new ImageWidget("icon", drawableId);
         _icon.styleId = STYLE_BUTTON_IMAGE;
@@ -318,19 +318,19 @@ class ImageTextButton : HorizontalLayout {
     this(string ID = null, string drawableId = null, string textResourceId = null) {
         super(ID);
         UIString caption = textResourceId;
-        init(drawableId, caption);
+        initialize(drawableId, caption);
     }
 
     this(string ID, string drawableId, dstring rawText) {
         super(ID);
         UIString caption = rawText;
-        init(drawableId, caption);
+        initialize(drawableId, caption);
     }
 
     /// constructor from action
     this(const Action a) {
         super("imagetextbutton-action" ~ to!string(a.id));
-        init(a.iconId, a.labelValue);
+        initialize(a.iconId, a.labelValue);
         action = a;
     }
 
@@ -375,8 +375,8 @@ class CheckBox : ImageTextButton {
     this(string ID, UIString label) {
         super(ID, "btn_check", label);
     }
-    override protected void init(string drawableId, UIString caption) {
-        super.init(drawableId, caption);
+    override protected void initialize(string drawableId, UIString caption) {
+        super.initialize(drawableId, caption);
         styleId = STYLE_CHECKBOX;
         if (_icon)
             _icon.styleId = STYLE_CHECKBOX_IMAGE;
@@ -399,8 +399,8 @@ class RadioButton : ImageTextButton {
     this(string ID, dstring labelText) {
         super(ID, "btn_radio", labelText);
     }
-    override protected void init(string drawableId, UIString caption) {
-        super.init(drawableId, caption);
+    override protected void initialize(string drawableId, UIString caption) {
+        super.initialize(drawableId, caption);
         styleId = STYLE_RADIOBUTTON;
         if (_icon)
             _icon.styleId = STYLE_RADIOBUTTON_IMAGE;
@@ -443,10 +443,10 @@ class Button : Widget {
     /// empty parameter list constructor - for usage by factory
     this() {
         super(null);
-        init(UIString());
+        initialize(UIString());
     }
 
-    private void init(UIString label) {
+    private void initialize(UIString label) {
         styleId = STYLE_BUTTON;
         _text = label;
         clickable = true;
@@ -457,19 +457,19 @@ class Button : Widget {
     /// create with ID parameter
     this(string ID) {
         super(ID);
-        init(UIString());
+        initialize(UIString());
     }
     this(string ID, UIString label) {
         super(ID);
-        init(label);
+        initialize(label);
     }
     this(string ID, dstring label) {
         super(ID);
-        init(UIString(label));
+        initialize(UIString(label));
     }
     this(string ID, string labelResourceId) {
         super(ID);
-        init(UIString(labelResourceId));
+        initialize(UIString(labelResourceId));
     }
     /// constructor from action
     this(const Action a) {

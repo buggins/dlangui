@@ -1566,7 +1566,7 @@ final class Setting {
     private static struct JsonParser {
         string json;
         int pos;
-        void init(string s) {
+        void initialize(string s) {
             json = s;
             pos = 0;
         }
@@ -1897,7 +1897,7 @@ final class Setting {
     void parseJSON(string s) {
         clear(SettingType.NULL);
         JsonParser parser;
-        parser.init(s);
+        parser.initialize(s);
         parseJSON(parser);
     }
 

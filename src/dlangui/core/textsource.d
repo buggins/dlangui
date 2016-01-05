@@ -55,7 +55,7 @@ class ArraySourceLines : SourceLines {
     }
 
     this(dstring[] lines, SourceFile file, uint firstLine = 0) {
-        init(lines, file, firstLine);
+        initialize(lines, file, firstLine);
     }
 
     this(string code, string filename) {
@@ -70,7 +70,7 @@ class ArraySourceLines : SourceLines {
         _file = null;
     }
 
-    void init(dstring[] lines, SourceFile file, uint firstLine = 0) {
+    void initialize(dstring[] lines, SourceFile file, uint firstLine = 0) {
         _lines = lines;
         _firstLine = firstLine;
         _line = 0;

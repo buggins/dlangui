@@ -690,7 +690,7 @@ class TableLayout : WidgetGroupDefaultDrawing {
         int minSize;
         int maxSize;
         int size;
-        void init(int index) {
+        void initialize(int index) {
             measuredSize = minSize = maxSize = layoutSize = size = 0;
             this.index = index;
         }
@@ -721,16 +721,16 @@ class TableLayout : WidgetGroupDefaultDrawing {
         protected int colCount;
         protected int rowCount;
 
-        void init(int cols, int rows) {
+        void initialize(int cols, int rows) {
             colCount = cols;
             rowCount = rows;
             _cells.length = cols * rows;
             _rows.length = rows;
             _cols.length = cols;
             for(int i = 0; i < rows; i++)
-                _rows[i].init(i);
+                _rows[i].initialize(i);
             for(int i = 0; i < cols; i++)
-                _cols[i].init(i);
+                _cols[i].initialize(i);
             for (int y = 0; y < rows; y++) {
                 for (int x = 0; x < cols; x++) {
                     cell(x, y).clear(x, y);
@@ -751,7 +751,7 @@ class TableLayout : WidgetGroupDefaultDrawing {
         }
 
         Point measure(Widget parent, int cc, int rc, int pwidth, int pheight) {
-            init(cc, rc);
+            initialize(cc, rc);
             for (int y = 0; y < rc; y++) {
                 for (int x = 0; x < cc; x++) {
                     int index = y * cc + x;

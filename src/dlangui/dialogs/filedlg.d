@@ -383,7 +383,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     }
 
     /// override to implement creation of dialog controls
-    override void init() {
+    override void initialize() {
         _roots = getRootPaths;
 
         layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).minWidth(600);
@@ -582,7 +582,7 @@ class FilePathPanelButtons : WidgetGroupDefaultDrawing {
         layoutWidth = FILL_PARENT;
         clickable = true;
     }
-    protected void init(string path) {
+    protected void initialize(string path) {
         _path = path;
         _children.clear();
         string itemPath = path;
@@ -737,7 +737,7 @@ class FilePathPanel : FrameLayout {
     }
 
     @property void path(string value) {
-        _segments.init(value);
+        _segments.initialize(value);
         _edPath.text = toUTF32(value);
         _path = value;
         showChild(ID_SEGMENTS);

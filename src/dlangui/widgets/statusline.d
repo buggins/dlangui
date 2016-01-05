@@ -107,9 +107,9 @@ class StatusLine : HorizontalLayout {
     this() {
         super("STATUS_LINE");
         styleId = STYLE_STATUS_LINE;
-        init();
+        initialize();
     }
-    void init() {
+    void initialize() {
         _defStatus = new TextWidget("STATUS_LINE_TEXT");
         _defStatus.layoutWidth(FILL_PARENT);
         _defStatus.text = "DLANGUI"d;

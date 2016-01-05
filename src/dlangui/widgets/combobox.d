@@ -146,7 +146,7 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         _ownAdapter = ownAdapter;
         styleId = STYLE_COMBO_BOX;
         trackHover = true;
-        init();
+        initialize();
     }
 
     void setAdapter(ListAdapter adapter, bool ownAdapter = true) {
@@ -157,10 +157,10 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         }
         _adapter = adapter;
         _ownAdapter = ownAdapter;
-        init();
+        initialize();
     }
 
-    protected void init() {
+    protected void initialize() {
         _body = createSelectedItemWidget();
         _body.click = this;
         _button = createButton();
@@ -276,8 +276,8 @@ class ComboBox : ComboBoxBase {
         return super.selectedItemIndex(index);
     }
 
-    override void init() {
-        super.init();
+    override void initialize() {
+        super.initialize();
         _body.focusable = false;
         _body.clickable = true;
         focusable = true;
@@ -351,8 +351,8 @@ class ComboEdit : ComboBox {
         return res;
     }
 
-    override void init() {
-        super.init();
+    override void initialize() {
+        super.initialize();
         //focusable = false;
         //_body.focusable = true;
     }
