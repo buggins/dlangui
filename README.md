@@ -272,6 +272,8 @@ Following settings are to be applied to all configurations of your new project (
         ../dlangui/deps/DerelictFT/source
         ../dlangui/deps/DerelictGL3/source
         ../dlangui/deps/DerelictUtil/source
+        ../dlangui/3rdparty
+        ../dlangui/3rdparty-extra
 
 Now you can build and run your project.
  
