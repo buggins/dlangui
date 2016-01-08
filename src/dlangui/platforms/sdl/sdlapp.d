@@ -47,7 +47,7 @@ static if (ENABLE_OPENGL) {
     import dlangui.graphics.gldrawbuf;
     import dlangui.graphics.glsupport;
 }
-    
+
 private derelict.util.exception.ShouldThrow missingSymFunc( string symName ) {
     import std.algorithm : equal;
     foreach(s; ["SDL_DestroyRenderer", "SDL_GL_DeleteContext", "SDL_DestroyWindow", "SDL_PushEvent", 
@@ -114,16 +114,16 @@ class SDLWindow : Window {
     }
 
 
-    static if (ENABLE_OPENGL) {
+    static if (ENABLE_OPENGL)
+    {
         static private bool _gl3Reloaded = false;
         private SDL_GLContext _context;
-    }
 
-    static if (ENABLE_OPENGL) {
         protected bool createContext(int versionMajor, int versionMinor) {
             Log.i("Trying to create OpenGL ", versionMajor, ".", versionMinor, " context");
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, versionMajor);
             SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, versionMinor);
+            SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
             _context = SDL_GL_CreateContext(_win); // Create the actual context and make it current
             if (!_context)
                 Log.e("SDL_GL_CreateContext failed: ", fromStringz(SDL_GetError()));
@@ -176,9 +176,7 @@ class SDLWindow : Window {
         
         static if (ENABLE_OPENGL) {
             if (_enableOpengl) {
-                Log.i("Trying to create OpenGL 3.2 context");
                 createContext(3, 2);
-                //_context = SDL_GL_CreateContext(_win); // Create the actual context and make it current
                 if (!_context) {
                     Log.e("SDL_GL_CreateContext failed: ", fromStringz(SDL_GetError()));
                     Log.w("trying other versions of OpenGL");
@@ -237,7 +235,7 @@ class SDLWindow : Window {
             return SDL_GetWindowID(_win);
         return 0;
     }
-        
+
     override void show() {
         Log.d("SDLWindow.show()");
         if (_mainWidget && !(_flags & WindowFlag.Resizable)) {
@@ -453,7 +451,7 @@ class SDLWindow : Window {
             SDL_RenderPresent(_renderer);
         }
     }
-        
+
     ColorDrawBuf _drawbuf;
 
     //bool _exposeSent;
@@ -743,7 +741,7 @@ class SDLWindow : Window {
                 return 0x10000 | keyCode;
         }
     }
-        
+
     uint convertKeyFlags(uint flags) {
         uint res;
         if (flags & KMOD_CTRL)
@@ -766,7 +764,7 @@ class SDLWindow : Window {
             res |= KeyFlag.LAlt | KeyFlag.Alt;
         return res;
     }
-                
+
     bool processTextInput(const char * s) {
         string str = fromStringz(s).dup;
         dstring ds = toUTF32(str);
@@ -838,7 +836,7 @@ class SDLWindow : Window {
     override void invalidate() {
         _platform.sendRedrawEvent(windowId, ++_lastRedrawEventCode);
     }
-        
+
     void processRedrawEvent(uint code) {
         if (code == _lastRedrawEventCode)
             redraw();
@@ -887,23 +885,16 @@ private __gshared bool _enableOpengl;
 
 class SDLPlatform : Platform {
     this() {
-            
     }
+
+    private SDLWindow[uint] _windowMap;
+
     ~this() {
         foreach(ref SDLWindow wnd; _windowMap) {
             destroy(wnd);
             wnd = null;
         }
         destroy(_windowMap);
-        disconnect();
-    }
-    void disconnect() {
-        /* Cleanup */
-    }
-    bool connect() {
-            
-
-        return true;
     }
 
     SDLWindow getWindow(uint id) {
@@ -944,7 +935,6 @@ class SDLPlatform : Platform {
         event.user.windowID = windowId;
         event.user.code = code;
         SDL_PushEvent(&event);
-
     }
 
     override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0) {
@@ -982,8 +972,6 @@ class SDLPlatform : Platform {
         bool skipNextQuit = false;
         while(!quit) {
             //redrawWindows();
-
-            //if (SDL_PollEvent(&event)) {
             if (SDL_WaitEvent(&event)) {
 
                 //Log.d("Event.type = ", event.type);
@@ -1150,9 +1138,7 @@ class SDLPlatform : Platform {
                     }
                     _windowToClose = null;
                 }
-                //
                 if (_windowMap.length == 0) {
-                    //quit = true;
                     SDL_Quit();
                     quit = true;
                 }
@@ -1161,7 +1147,7 @@ class SDLPlatform : Platform {
         Log.i("exiting message loop");
         return 0;
     }
-        
+
     /// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
     override dstring getClipboardText(bool mouseBuffer = false) {
         if (!SDL_HasClipboardText())
@@ -1173,14 +1159,12 @@ class SDLPlatform : Platform {
         SDL_free(txt);
         return toUTF32(s);
     }
-        
+
     /// sets text to clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
     override void setClipboardText(dstring text, bool mouseBuffer = false) {
         string s = toUTF8(text);
         SDL_SetClipboardText(s.toStringz);
     }
-        
-    protected SDLWindow[uint] _windowMap;
 }
 
 version (Windows) {
@@ -1321,13 +1305,9 @@ int sdlmain(string[] args) {
     USER_EVENT_ID = SDL_RegisterEvents(1);
     TIMER_EVENT_ID = SDL_RegisterEvents(1);
 
-    int request = SDL_GetDesktopDisplayMode(0,&displayMode);
+    int request = SDL_GetDesktopDisplayMode(0, &displayMode);
 
     static if (ENABLE_OPENGL) {
-        // we want OpenGL 3.2
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION,3);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION,2);
-        SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
         // Set OpenGL attributes
         SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
         SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
@@ -1335,10 +1315,7 @@ int sdlmain(string[] args) {
         SDL_GL_SetAttribute(SDL_GL_SHARE_WITH_CURRENT_CONTEXT, 1);
     }
 
-    SDLPlatform sdl = new SDLPlatform();
-    if (!sdl.connect()) {
-        return 1;
-    }
+    auto sdl = new SDLPlatform;
 
     Platform.setInstance(sdl);
 

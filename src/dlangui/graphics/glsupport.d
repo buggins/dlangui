@@ -220,14 +220,19 @@ class GLProgram {
         return true;
     }
 
+    static GLuint currentProgram;
     /// binds program to current context
     void bind() {
-        checkgl!glUseProgram(program);
+        if(program != currentProgram) {
+            checkgl!glUseProgram(program);
+            currentProgram = program;
+        }
     }
 
     /// unbinds program from current context
-    void unbind() {
+    static void unbind() {
         checkgl!glUseProgram(0);
+        currentProgram = 0;
     }
 
     /// get uniform location from program, returns -1 if location is not found
@@ -274,18 +279,6 @@ class SolidFillProgram : GLProgram {
         };
     }
 
-    void beforeExecute() {
-        glEnable(GL_BLEND);
-        checkgl!glDisable(GL_CULL_FACE);
-        checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        bind();
-        checkgl!glUniformMatrix4fv(matrixLocation, 1, false, glSupport.projectionMatrix.m.ptr);
-    }
-
-    void afterExecute() {
-        unbind();
-    }
-
     protected GLint matrixLocation;
     protected GLint vertexLocation;
     protected GLint colAttrLocation;
@@ -296,28 +289,49 @@ class SolidFillProgram : GLProgram {
         return matrixLocation >= 0 && vertexLocation >= 0 && colAttrLocation >= 0;
     }
 
+    VAO vao;
+    VBO vbo;
+    bool needToCreateVAO = true;
+    void createVAO(float[] vertices, float[] colors) {
+        if(vao)
+            destroy(vao);
+        vao = new VAO;
+
+        if(vbo)
+            destroy(vbo);
+        vbo = new VBO;
+
+        glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
+        glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * float.sizeof));
+
+        glEnableVertexAttribArray(vertexLocation);
+        glEnableVertexAttribArray(colAttrLocation);
+
+        needToCreateVAO = false;
+    }
+
+    void beforeExecute() {
+        glEnable(GL_BLEND);
+        checkgl!glDisable(GL_CULL_FACE);
+        checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        bind();
+        checkgl!glUniformMatrix4fv(matrixLocation, 1, false, glSupport.projectionMatrix.m.ptr);
+    }
+
     bool execute(float[] vertices, float[] colors) {
         if(!check())
             return false;
         beforeExecute();
 
-        VAO vao = new VAO();
+        if(needToCreateVAO)
+            createVAO(vertices, colors);
 
-        VBO vbo = new VBO();
+        vbo.bind();
         vbo.fill([vertices, colors]);
 
-        glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
-        glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * vertices[0].sizeof));
-
-        glEnableVertexAttribArray(vertexLocation);
-        glEnableVertexAttribArray(colAttrLocation);
-
-        checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)vertices.length/3);
-
-        afterExecute();
-
-        destroy(vbo);
-        destroy(vao);
+        vao.bind();
+        checkgl!glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        vao.unbind();
         return true;
     }
 }
@@ -328,23 +342,15 @@ class LineProgram : SolidFillProgram {
             return false;
         beforeExecute();
 
-        VAO vao = new VAO();
+        if(needToCreateVAO)
+            createVAO(vertices, colors);
 
-        VBO vbo = new VBO();
+        vbo.bind();
         vbo.fill([vertices, colors]);
 
-        glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
-        glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * vertices[0].sizeof));
-
-        glEnableVertexAttribArray(vertexLocation);
-        glEnableVertexAttribArray(colAttrLocation);
-
-        checkgl!glDrawArrays(GL_LINES, 0, cast(int)vertices.length/3);
-
-        afterExecute();
-
-        destroy(vbo);
-        destroy(vao);
+        vao.bind();
+        checkgl!glDrawArrays(GL_LINES, 0, 2);
+        vao.unbind();
         return true;
     }
 }
@@ -387,6 +393,26 @@ class TextureProgram : SolidFillProgram {
         return res && texCoordLocation >= 0;
     }
 
+    void createVAO(float[] vertices, float[] colors, float[] texcoords) {
+        if(vao)
+            destroy(vao);
+        vao = new VAO;
+
+        if(vbo)
+            destroy(vbo);
+        vbo = new VBO;
+
+        glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
+        glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * float.sizeof));
+        glVertexAttribPointer(texCoordLocation, 2, GL_FLOAT, GL_FALSE, 0, cast(void*) ((vertices.length + colors.length) * float.sizeof));
+
+        glEnableVertexAttribArray(vertexLocation);
+        glEnableVertexAttribArray(colAttrLocation);
+        glEnableVertexAttribArray(texCoordLocation);
+
+        needToCreateVAO = false;
+    }
+
     bool execute(float[] vertices, float[] colors, float[] texcoords, Tex2D texture, bool linear) {
         if(!check())
             return false;
@@ -395,29 +421,15 @@ class TextureProgram : SolidFillProgram {
         texture.setup();
         texture.setSamplerParams(linear);
 
-        VAO vao = new VAO();
+        if(needToCreateVAO)
+            createVAO(vertices, colors, texcoords);
 
-        VBO vbo = new VBO();
+        vbo.bind();
         vbo.fill([vertices, colors, texcoords]);
 
-        glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
-        glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * vertices[0].sizeof));
-        glVertexAttribPointer(texCoordLocation, 2, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * vertices[0].sizeof + colors.length * colors[0].sizeof));
-
-        glEnableVertexAttribArray(vertexLocation);
-        glEnableVertexAttribArray(colAttrLocation);
-        glEnableVertexAttribArray(texCoordLocation);
-
-        checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)vertices.length/3);
-
-        glDisableVertexAttribArray(vertexLocation);
-        glDisableVertexAttribArray(colAttrLocation);
-        glDisableVertexAttribArray(texCoordLocation);
-
-        afterExecute();
-
-        destroy(vbo);
-        destroy(vao);
+        vao.bind();
+        checkgl!glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        vao.unbind();
 
         texture.unbind();
         return true;
@@ -587,6 +599,12 @@ class GLSupport {
         return true;
     }
 
+    void prepareShaders() {
+        _solidFillProgram.needToCreateVAO = true;
+        _lineProgram.needToCreateVAO = true;
+        _textureProgram.needToCreateVAO = true;
+    }
+
     void setRotation(int x, int y, int rotationAngle) {
         /*
         this->rotationAngle = rotationAngle;
@@ -634,13 +652,11 @@ class GLSupport {
 
     static immutable float Z_2D = -2.0f;
     void drawSolidFillRect(Rect rc, uint color1, uint color2, uint color3, uint color4) {
-        Color[6] colors;
+        Color[4] colors;
         FillColor(color1, colors[0..1]);
-        FillColor(color4, colors[1..2]);
+        FillColor(color2, colors[1..2]);
         FillColor(color3, colors[2..3]);
-        FillColor(color1, colors[3..4]);
-        FillColor(color3, colors[4..5]);
-        FillColor(color2, colors[5..6]);
+        FillColor(color4, colors[3..4]);
         float x0 = cast(float)(rc.left);
         float y0 = cast(float)(bufferDy-rc.top);
         float x1 = cast(float)(rc.right);
@@ -652,13 +668,11 @@ class GLSupport {
             y1 = cast(float)(rc.bottom);
         }
 
-        float[3 * 6] vertices = [
+        float[3 * 4] vertices = [
             x0,y0,Z_2D,
             x0,y1,Z_2D,
-            x1,y1,Z_2D,
-            x0,y0,Z_2D,
-            x1,y1,Z_2D,
-            x1,y0,Z_2D];
+            x1,y0,Z_2D,
+            x1,y1,Z_2D];
 
         if (_legacyMode) {
             glColor4f(1,1,1,1);
@@ -671,7 +685,7 @@ class GLSupport {
             checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
             checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors);
 
-            checkgl!glDrawArrays(GL_TRIANGLES, 0, 6);
+            checkgl!glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
             glDisableClientState(GL_COLOR_ARRAY);
             glDisableClientState(GL_VERTEX_ARRAY);
@@ -690,7 +704,7 @@ class GLSupport {
     }
 
     void drawColorAndTextureRect(Tex2D texture, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, uint color, bool linear) {
-        Color[6] colors;
+        Color[4] colors;
         FillColor(color, colors);
         float dstx0 = cast(float)xx;
         float dsty0 = cast(float)(bufferDy - (yy));
@@ -707,14 +721,12 @@ class GLSupport {
         float srcy0 = srcy / cast(float)tdy;
         float srcx1 = (srcx + srcdx) / cast(float)tdx;
         float srcy1 = (srcy + srcdy) / cast(float)tdy;
-        float[3 * 6] vertices = [
+        float[3 * 4] vertices = [
             dstx0,dsty0,Z_2D,
             dstx0,dsty1,Z_2D,
-            dstx1,dsty1,Z_2D,
-            dstx0,dsty0,Z_2D,
-            dstx1,dsty1,Z_2D,
-            dstx1,dsty0,Z_2D];
-        float[2 * 6] texcoords = [srcx0,srcy0, srcx0,srcy1, srcx1,srcy1, srcx0,srcy0, srcx1,srcy1, srcx1,srcy0];
+            dstx1,dsty0,Z_2D,
+            dstx1,dsty1,Z_2D];
+        float[2 * 4] texcoords = [srcx0,srcy0, srcx0,srcy1, srcx1,srcy0, srcx1,srcy1];
 
         if (_legacyMode) {
             glDisable(GL_CULL_FACE);
@@ -735,7 +747,7 @@ class GLSupport {
             checkgl!glTexCoordPointer(2, GL_FLOAT, 0, cast(void*)texcoords.ptr);
             checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
 
-            checkgl!glDrawArrays(GL_TRIANGLES, 0, 6);
+            checkgl!glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
             glDisableClientState(GL_TEXTURE_COORD_ARRAY);
             glDisableClientState(GL_VERTEX_ARRAY);
