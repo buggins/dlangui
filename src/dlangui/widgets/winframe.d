@@ -44,7 +44,7 @@ class WindowFrame : VerticalLayout {
     this(string ID, bool showCloseButton = true) {
         super(ID);
         _showCloseButton = showCloseButton;
-        init();
+        initialize();
     }
 
     Signal!OnClickHandler closeButtonClick;
@@ -54,7 +54,7 @@ class WindowFrame : VerticalLayout {
         return true;
     }
 
-    protected void init() {
+    protected void initialize() {
 
         styleId = STYLE_DOCK_WINDOW;
 

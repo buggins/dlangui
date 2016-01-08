@@ -46,9 +46,9 @@ class EditFrame : AppFrame {
 
     MenuItem mainMenuItems;
 
-    override protected void init() {
+    override protected void initialize() {
         _appName = "DlangUISpreadSheet";
-        super.init();
+        super.initialize();
     }
 
     /// create main menu

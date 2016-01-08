@@ -249,9 +249,9 @@ class Document : Element {
 public:
     this() {
         super(null, 0, 0);
-        _elemIds.init!Tag();
-        _attrIds.init!Attr();
-        _nsIds.init!Ns();
+        _elemIds.initialize!Tag();
+        _attrIds.initialize!Attr();
+        _nsIds.initialize!Ns();
         _document = this;
     }
     /// create text node
@@ -348,7 +348,7 @@ private string removeTrailingUnderscore(string s) {
 /// String identifier to Id map - for interning strings
 struct IdentMap(ident_t) {
     /// initialize with elements of enum
-    void init(E)() if (is(E == enum)) {
+    void initialize(E)() if (is(E == enum)) {
         foreach(member; EnumMembers!E) {
             static if (member.to!int > 0) {
                 //pragma(msg, "interning string '" ~ removeTrailingUnderscore(member.to!string) ~ "' for " ~ E.stringof);
@@ -426,7 +426,7 @@ unittest {
     import std.algorithm : equal;
     //import std.stdio;
     IdentMap!(elem_id) map;
-    map.init!Tag();
+    map.initialize!Tag();
     //writeln("running DOM unit test");
     assert(map["pre"] == Tag.pre);
     assert(map["body"] == Tag.body_);

@@ -85,7 +85,7 @@ class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
         layoutWidth = FILL_PARENT;
         layoutHeight = FILL_PARENT;
         _appName = "dlangui";
-        init();
+        initialize();
     }
 
     protected string _appName;
@@ -227,7 +227,7 @@ class AppFrame : VerticalLayout, MenuItemClickHandler, MenuItemActionHandler {
         return super.findKeyAction(keyCode, flags);
     }
 
-    protected void init() {
+    protected void initialize() {
         _mainMenu = createMainMenu();
         _toolbarHost = createToolbars();
         _statusLine = createStatusLine();

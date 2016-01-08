@@ -264,7 +264,7 @@ class CupWidget : Widget {
     /// start new game
     void newGame() {
         setLevel(1);
-        init(_cols, _rows);
+        initialize(_cols, _rows);
         _cup.dropNextFigure();
         setCupState(CupState.NewFigure);
         if (window && _gameOverPopup) {
@@ -278,8 +278,8 @@ class CupWidget : Widget {
     }
 
     /// init cup
-    void init(int cols, int rows) {
-        _cup.init(cols, rows);
+    void initialize(int cols, int rows) {
+        _cup.initialize(cols, rows);
         _cols = cols;
         _rows = rows;
     }

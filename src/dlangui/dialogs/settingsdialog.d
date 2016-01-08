@@ -481,7 +481,7 @@ class SettingsDialog : Dialog {
     }
 
     /// override to implement creation of dialog controls
-    override void init() {
+    override void initialize() {
         minWidth(600).minHeight(400);
         _tree = new TreeWidget("prop_tree");
         _tree.styleId = STYLE_SETTINGS_TREE;

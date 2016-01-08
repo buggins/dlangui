@@ -109,7 +109,7 @@ ubyte rgbToGray(uint color) {
 
 // todo
 struct ColorTransformHandler {
-    void init(ref ColorTransform transform) {
+    void initialize(ref ColorTransform transform) {
 
     }
     uint transform(uint color) {

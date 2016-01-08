@@ -498,15 +498,15 @@ class Win32FontManager : FontManager {
     this() {
         debug Log.i("Creating Win32FontManager");
         //instance = this;
-        init();
+        initialize();
     }
     ~this() {
         debug Log.i("Destroying Win32FontManager");
     }
 
     /// initialize font manager by enumerating of system fonts
-    bool init() {
-        debug Log.i("Win32FontManager.init()");
+    bool initialize() {
+        debug Log.i("Win32FontManager.initialize()");
         Win32ColorDrawBuf drawbuf = new Win32ColorDrawBuf(1,1);
         LOGFONTA lf;
         lf.lfCharSet = ANSI_CHARSET; //DEFAULT_CHARSET;

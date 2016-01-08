@@ -35,7 +35,7 @@ class DMLSyntaxSupport : SyntaxSupport {
         dchar[] buf;
         int pos;
         bool reverse;
-        void init(bool reverse) {
+        void initialize(bool reverse) {
             this.reverse = reverse;
             pos = 0;
         }
@@ -146,7 +146,7 @@ class DMLSyntaxSupport : SyntaxSupport {
             return p;
         TextPosition startPos = p;
         int dir = isOpenBracket(ch) ? 1 : -1;
-        _bracketStack.init(dir < 0);
+        _bracketStack.initialize(dir < 0);
         _bracketStack.process(ch);
         for (;;) {
             ch = nextBracket(dir, p);

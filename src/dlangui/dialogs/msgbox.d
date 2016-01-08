@@ -54,7 +54,7 @@ class MessageBox : Dialog {
         }
     }
     /// override to implement creation of dialog controls
-    override void init() {
+    override void initialize() {
         TextWidget msg = new MultilineTextWidget("msg", _message);
         padding(Rect(10, 10, 10, 10));
         msg.padding(Rect(10, 10, 10, 10));
