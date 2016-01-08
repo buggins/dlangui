@@ -31,12 +31,12 @@ immutable uint COLOR_TRANSPARENT = 0xFFFFFFFF;
 immutable uint COLOR_TRANSFORM_OFFSET_NONE = 0x80808080;
 immutable uint COLOR_TRANSFORM_MULTIPLY_NONE = 0x40404040;
 
-uint makeRGBA(T)(T r, T g, T b, T a) {
+uint makeRGBA(T)(T r, T g, T b, T a) pure nothrow {
     return (cast(uint)a << 24)|(cast(uint)r << 16)|(cast(uint)g << 8)|(cast(uint)b);
 }
 
 /// blend two RGB pixels using alpha
-uint blendARGB(uint dst, uint src, uint alpha) {
+uint blendARGB(uint dst, uint src, uint alpha) pure nothrow {
     uint dstalpha = dst >> 24;
     if (dstalpha > 0x80)
         return src;
@@ -58,7 +58,7 @@ immutable int[3] COMPONENT_OFFSET_BGR = [2, 1, 0];
 //immutable int[3] COMPONENT_OFFSET_BGR = [1, 2, 0];
 immutable int[3] COMPONENT_OFFSET_RGB = [0, 1, 2];
 immutable int COMPONENT_OFFSET_ALPHA = 3;
-int subpixelComponentIndex(int x0, SubpixelRenderingMode mode) {
+int subpixelComponentIndex(int x0, SubpixelRenderingMode mode) pure nothrow {
     switch (mode) with(SubpixelRenderingMode) {
         case RGB:
             return COMPONENT_OFFSET_BGR[x0];
@@ -85,7 +85,7 @@ void blendSubpixel(ubyte * dst, ubyte * src, uint alpha, int x0, SubpixelRenderi
 }
 
 /// blend two alpha values 0..255 (255 is fully transparent, 0 is opaque)
-uint blendAlpha(uint a1, uint a2) {
+uint blendAlpha(uint a1, uint a2) pure nothrow {
     if (!a1)
         return a2;
     if (!a2)
@@ -94,12 +94,12 @@ uint blendAlpha(uint a1, uint a2) {
 }
 
 /// applies additional alpha to color
-uint addAlpha(uint color, uint alpha) {
+uint addAlpha(uint color, uint alpha) pure nothrow {
     alpha = blendAlpha(color >> 24, alpha);
     return (color & 0xFFFFFF) | (alpha << 24);
 }
 
-ubyte rgbToGray(uint color) {
+ubyte rgbToGray(uint color) pure nothrow {
     uint srcr = (color >> 16) & 0xFF;
     uint srcg = (color >> 8) & 0xFF;
     uint srcb = (color >> 0) & 0xFF;
@@ -117,7 +117,7 @@ struct ColorTransformHandler {
     }
 }
 
-uint transformComponent(int src, int addBefore, int multiply, int addAfter) {
+uint transformComponent(int src, int addBefore, int multiply, int addAfter) pure nothrow {
     int add1 = (cast(int)(addBefore << 1)) - 0x100;
     int add2 = (cast(int)(addAfter << 1)) - 0x100;
     int mul = cast(int)(multiply << 2);
@@ -129,7 +129,7 @@ uint transformComponent(int src, int addBefore, int multiply, int addAfter) {
     return cast(uint)res;
 }
 
-uint transformRGBA(uint src, uint addBefore, uint multiply, uint addAfter) {
+uint transformRGBA(uint src, uint addBefore, uint multiply, uint addAfter) pure nothrow {
     uint a = transformComponent(src >> 24, addBefore >> 24, multiply >> 24, addAfter >> 24);
     uint r = transformComponent((src >> 16) & 0xFF, (addBefore >> 16) & 0xFF, (multiply >> 16) & 0xFF, (addAfter >> 16) & 0xFF);
     uint g = transformComponent((src >> 8) & 0xFF, (addBefore >> 8) & 0xFF, (multiply >> 8) & 0xFF, (addAfter >> 8) & 0xFF);
@@ -153,7 +153,7 @@ struct ColorTransform {
 
 
 /// blend two RGB pixels using alpha
-ubyte blendGray(ubyte dst, ubyte src, uint alpha) {
+ubyte blendGray(ubyte dst, ubyte src, uint alpha) pure nothrow {
     uint ialpha = 256 - alpha;
     return cast(ubyte)(((src * ialpha + dst * alpha) >> 8) & 0xFF);
 }
@@ -164,7 +164,7 @@ bool isFullyTransparentColor(uint color) pure nothrow {
 }
 
 /// decodes hex digit (0..9, a..f, A..F), returns uint.max if invalid
-uint decodeHexDigit(T)(T ch) {
+uint decodeHexDigit(T)(T ch) pure nothrow {
     if (ch >= '0' && ch <= '9')
         return ch - '0';
     else if (ch >= 'a' && ch <= 'f')
@@ -175,7 +175,7 @@ uint decodeHexDigit(T)(T ch) {
 }
 
 /// decode color string  supported formats: #RGB #ARGB #RRGGBB #AARRGGBB
-uint decodeHexColor(string s, uint defValue = 0) {
+uint decodeHexColor(string s, uint defValue = 0) pure {
     s = strip(s);
     switch (s) {
         case "@null":
