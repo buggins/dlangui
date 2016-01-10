@@ -1513,7 +1513,7 @@ public:
         _window = window; 
     }
 
-    void removeAllChildren() {
+    void removeAllChildren(bool destroyObj = true) {
         // override
     }
 
@@ -1648,8 +1648,8 @@ class WidgetGroup : Widget {
     /// returns index of widget in child list, -1 if passed widget is not a child of this widget
     override int childIndex(Widget item) { return _children.indexOf(item); }
 
-    override void removeAllChildren() {
-        _children.clear();
+	override void removeAllChildren(bool destroyObj = true) {
+        _children.clear(destroyObj);
     }
 
 }
