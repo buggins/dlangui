@@ -324,9 +324,11 @@ struct ObjectList(T) {
         }
     }
     /** remove and destroy all items */
-    void clear() {
+	void clear(bool destroyObj = true) {
         for (int i = 0; i < _count; i++) {
-            destroy(_list[i]);
+			if(destroyObj) {
+				destroy(_list[i]);
+            }
             _list[i] = null;
         }
         _count = 0;
