@@ -155,7 +155,6 @@ To develop using Visual-D or MonoD, download sources for dlabgui and dependencie
         git clone https://github.com/DerelictOrg/DerelictGL3.git
         git clone https://github.com/DerelictOrg/DerelictFT.git
         git clone https://github.com/DerelictOrg/DerelictSDL2.git
-        git clone https://github.com/Dav1dde/gl3n.git
 
 Then open dlangui.sln using Visual D (or dlangui-monod.sln for MonoD)
 
@@ -197,7 +196,6 @@ Clone dependency libraries
         git clone https://github.com/DerelictOrg/DerelictGL3.git
         git clone https://github.com/DerelictOrg/DerelictFT.git
         git clone https://github.com/DerelictOrg/DerelictSDL2.git
-        git clone https://github.com/Dav1dde/gl3n.git
         git clone https://github.com/p0nce/DerelictCocoa.git
         git clone https://github.com/nomad-software/x11.git
 
@@ -231,7 +229,6 @@ Clone dependency libraries to dlangui/deps directory
         git clone https://github.com/DerelictOrg/DerelictGL3.git
         git clone https://github.com/DerelictOrg/DerelictFT.git
         git clone https://github.com/DerelictOrg/DerelictSDL2.git
-        git clone https://github.com/Dav1dde/gl3n.git
         git clone https://github.com/nomad-software/x11.git
 
 Open solution file with Mono-D	
@@ -337,7 +334,6 @@ Following settings are to be applied to all configurations of your new project (
   * In your project options Build/Includes put list of import directories of DlangUI library and its dependencies, like
   
         ../dlangui/src
-        ../dlangui/deps/gl3n
         ../dlangui/deps/DerelictSDL2/source
         ../dlangui/deps/DerelictFT/source
         ../dlangui/deps/DerelictGL3/source
@@ -370,18 +366,17 @@ Clone dependency libraries to dlangui/deps directory
         git clone https://github.com/DerelictOrg/DerelictGL3.git
         git clone https://github.com/DerelictOrg/DerelictFT.git
         git clone https://github.com/DerelictOrg/DerelictSDL2.git
-        git clone https://github.com/Dav1dde/gl3n.git
         git clone https://github.com/Hackerpilot/libdparse.git
 
 For DlangIDE development, close dlangide project on the same directory level as dlangui is cloned:
 
         cd ../..
-	git clone https://github.com/buggins/dlangide.git
-	git clone https://github.com/keywan-ghadami/DCD.git
-	git clone https://github.com/keywan-ghadami/dsymbol.git
-	git clone https://github.com/keywan-ghadami/libdparse.git
-	git clone https://github.com/keywan-ghadami/experimental_allocator.git
-	git clone https://github.com/keywan-ghadami/containers.git
+        git clone https://github.com/buggins/dlangide.git
+        git clone https://github.com/keywan-ghadami/DCD.git
+        git clone https://github.com/keywan-ghadami/dsymbol.git
+        git clone https://github.com/keywan-ghadami/libdparse.git
+        git clone https://github.com/keywan-ghadami/experimental_allocator.git
+        git clone https://github.com/keywan-ghadami/containers.git
 
 
 Open solution file with Visual-D
