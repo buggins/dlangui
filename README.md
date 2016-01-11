@@ -377,6 +377,12 @@ For DlangIDE development, close dlangide project on the same directory level as 
 
         cd ../..
 	git clone https://github.com/buggins/dlangide.git
+	git clone https://github.com/keywan-ghadami/DCD.git
+	git clone https://github.com/keywan-ghadami/dsymbol.git
+	git clone https://github.com/keywan-ghadami/libdparse.git
+	git clone https://github.com/keywan-ghadami/experimental_allocator.git
+	git clone https://github.com/keywan-ghadami/containers.git
+
 
 Open solution file with Visual-D
 

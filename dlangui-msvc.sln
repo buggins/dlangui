@@ -45,6 +45,8 @@ Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "opengl", "examples\opengl\o
 		{52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5} = {52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5}
 	EndProjectSection
 EndProject
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dwindow_visuald", "..\dwindow\dwindow-visuald.visualdproj", "{6EF05FEE-F632-4B33-805C-5B219269A511}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -158,6 +160,16 @@ Global
 		{29CF2CAC-2C0C-4F17-9292-E1706AC7EBBF}.Unittest|Win32.Build.0 = Release|Win32
 		{29CF2CAC-2C0C-4F17-9292-E1706AC7EBBF}.Unittest|x64.ActiveCfg = Release|x64
 		{29CF2CAC-2C0C-4F17-9292-E1706AC7EBBF}.Unittest|x64.Build.0 = Release|x64
+		{6EF05FEE-F632-4B33-805C-5B219269A511}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6EF05FEE-F632-4B33-805C-5B219269A511}.Debug|Win32.Build.0 = Debug|Win32
+		{6EF05FEE-F632-4B33-805C-5B219269A511}.Debug|x64.ActiveCfg = Debug|Win32
+		{6EF05FEE-F632-4B33-805C-5B219269A511}.Release|Win32.ActiveCfg = Release|Win32
+		{6EF05FEE-F632-4B33-805C-5B219269A511}.Release|Win32.Build.0 = Release|Win32
+		{6EF05FEE-F632-4B33-805C-5B219269A511}.Release|x64.ActiveCfg = Release|Win32
+		{6EF05FEE-F632-4B33-805C-5B219269A511}.Unittest|Win32.ActiveCfg = Release|Win32
+		{6EF05FEE-F632-4B33-805C-5B219269A511}.Unittest|Win32.Build.0 = Release|Win32
+		{6EF05FEE-F632-4B33-805C-5B219269A511}.Unittest|x64.ActiveCfg = Release|Win32
+		{6EF05FEE-F632-4B33-805C-5B219269A511}.Unittest|x64.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
