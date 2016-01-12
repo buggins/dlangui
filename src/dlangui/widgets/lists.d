@@ -1094,6 +1094,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
             itemrc.top += rc.top - scrollOffset.y;
             itemrc.bottom += rc.top - scrollOffset.y;
             if (itemrc.isPointInside(Point(event.x, event.y))) {
+                //Log.d("mouse event action=", event.action, " button=", event.button, " flags=", event.flags);
                 if ((event.flags & (MouseFlag.LButton || MouseFlag.RButton)) || _selectOnHover) {
                     if (_selectedItemIndex != i && itemEnabled(i)) {
                         int prevSelection = _selectedItemIndex;
@@ -1105,7 +1106,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
                     if (itemEnabled(i))
                         setHoverItem(i);
                 }
-                if (event.button == MouseFlag.LButton || event.button == MouseFlag.RButton) {
+                if (event.button == MouseButton.Left || event.button == MouseButton.Right) {
                     if ((_clickOnButtonDown && event.action == MouseAction.ButtonDown) || (!_clickOnButtonDown && event.action == MouseAction.ButtonUp)) {
                         if (itemEnabled(i)) {
                             itemClicked(i);

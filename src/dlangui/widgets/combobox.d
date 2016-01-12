@@ -128,13 +128,15 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
             _popupList = null;
         };
         _popupList.itemSelected = delegate(Widget source, int index) {
-            selectedItemIndex = index;
+            //selectedItemIndex = index;
             return true;
         };
         _popupList.itemClick = delegate(Widget source, int index) {
             selectedItemIndex = index;
-            if (_popup !is null)
+            if (_popup !is null) {
                 _popup.close();
+                _popup = null;
+            }
             return true;
         };
         _popupList.setFocus();
@@ -214,7 +216,8 @@ class ComboBox : ComboBoxBase {
     @property void items(dstring[] items) {
         setAdapter(new StringListAdapter(items));
         if(items.length > 0) {
-           selectedItemIndex = 0;
+            if (selectedItemIndex == -1 || selectedItemIndex > items.length)
+                selectedItemIndex = 0;
         }
         requestLayout();
     }
@@ -274,6 +277,11 @@ class ComboBox : ComboBoxBase {
     override @property ComboBoxBase selectedItemIndex(int index) {
         _body.text = adapter.items[index];
         return super.selectedItemIndex(index);
+    }
+
+    /** Selected item index. */
+    override @property int selectedItemIndex() {
+        return super.selectedItemIndex;
     }
 
     override void initialize() {
