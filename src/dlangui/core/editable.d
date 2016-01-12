@@ -1518,6 +1518,7 @@ struct LineIcons {
         LineIcon res = _items[index];
         for (int i = index; i < _len - 1; i++)
             _items[i] = _items[i + 1];
+        _items[_len] = null;
         _len--;
         return res;
     }
@@ -1587,7 +1588,7 @@ struct LineIcons {
                 if (deltaLines < 0 && rangeBefore.end.line >= item.line && rangeAfter.end.line < item.line) {
                     // remove
                     removed ~= item;
-                    _items.remove(i);
+                    remove(i);
                     res = true;
                 } else {
                     // move
