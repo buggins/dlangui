@@ -1004,6 +1004,21 @@ struct mat4 {
         return this;
     }
 
+    /// inplace rotate around Z axis
+    ref mat4 rotatez(float angle) {
+        return rotate(angle, 0, 0, 1);
+    }
+
+    /// inplace rotate around X axis
+    ref mat4 rotatex(float angle) {
+        return rotate(angle, 1, 0, 0);
+    }
+
+    /// inplace rotate around Y axis
+    ref mat4 rotatey(float angle) {
+        return rotate(angle, 0, 1, 0);
+    }
+
     ref mat4 rotate(float angle, const vec3 axis) {
         return rotate(angle, axis.x, axis.y, axis.z);
     }

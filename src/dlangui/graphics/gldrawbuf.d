@@ -791,14 +791,14 @@ static class GLTexture {
     /// image coords to UV
     float[2] uv(int x, int y) {
         float[2] res;
-        res[0] = x * cast(float) _dx / _tdx;
-        res[1] = y * cast(float) _dy / _tdy;
+        res[0] = cast(float)x / _tdx;
+        res[1] = cast(float)y / _tdy;
         return res;
     }
     float[2] uv(Point pt) {
         float[2] res;
-        res[0] = pt.x * cast(float) _dx / _tdx;
-        res[1] = pt.y * cast(float) _dy / _tdy;
+        res[0] = cast(float)pt.x / _tdx;
+        res[1] = cast(float)pt.y / _tdy;
         return res;
     }
     /// return UV coords for bottom right corner
@@ -819,14 +819,19 @@ static class GLTexture {
             _tdx = nearestPOT(_dx);
             _tdy = nearestPOT(_dy);
             _texture = new Tex2D();
-            if (!_texture.ID)
-                return;
-            uint * pixels = buf.scanLine(0);
-            if (!glSupport.setTextureImage(_texture, buf.width, buf.height, cast(ubyte*)pixels)) {
-                destroy(_texture);
+            if (!_texture.ID) {
                 _texture = null;
                 return;
             }
+            uint * pixels = buf.scanLine(0);
+            buf.invertAlpha();
+            if (!glSupport.setTextureImage(_texture, buf.width, buf.height, cast(ubyte*)pixels)) {
+                destroy(_texture);
+                _texture = null;
+                buf.invertAlpha();
+                return;
+            }
+            buf.invertAlpha();
         }
     }
     ~this() {

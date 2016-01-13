@@ -257,26 +257,33 @@ static if (ENABLE_OPENGL) {
             checkgl!glDisable(GL_DEPTH_TEST);
 
             //import gl3n.linalg;
-            //glSupport.setPerspectiveProjection(windowRect, rc, 45.0f, 0.5f, 100.0f);
+            glSupport.setPerspectiveProjection(windowRect, rc, 45.0f, 0.5f, 100.0f);
             //mat4 projectionMatrix = glSupport.projectionMatrix; //mat4.perspective(rc.width, rc.height, 90.0f, 0.5f, 100.0f);
             // ======== Projection Matrix ==================
             mat4 projectionMatrix; // = glSupport.projectionMatrix;
             projectionMatrix.setIdentity();
             float aspectRatio = cast(float)rc.width / cast(float)rc.height;
             projectionMatrix.setPerspective(45.0f, aspectRatio, 0.1f, 100.0f);
+            //projectionMatrix.setOrtho(-2.0f, 2.0f, 2.0f, -2.0f, -2.0f, 2.0f);
 
             // ======== View Matrix ==================
             mat4 viewMatrix;
             viewMatrix.setIdentity();
-            viewMatrix.lookAt(vec3(2, 0, 0), vec3(0, 0, 0), vec3(0, 1, 0));//translation(0.0f, 0.0f, 4.0f).rotatez(angle);
+            viewMatrix.translate(0, 0, -4);
+            //viewMatrix.rotatez(30.0f);
+            //viewMatrix.rotatey(15.0f);
+            //viewMatrix.translation(0.0f, 0.0f, 4.0f).rotatez(angle);
+            //viewMatrix.lookAt(vec3(-10, 0, 0), vec3(0, 0, 0), vec3(0, 1, 0));//translation(0.0f, 0.0f, 4.0f).rotatez(angle);
 
             // ======== Model Matrix ==================
             mat4 modelMatrix;
             modelMatrix.setIdentity();
-            modelMatrix.scale(0.3f);
+            //modelMatrix.scale(0.3f);
+            modelMatrix.rotatez(30.0f);
+            modelMatrix.rotatey(angle);
 
             //modelMatrix.translate(3, 0, 0);
-            mat4 m = (projectionMatrix * viewMatrix) * modelMatrix;
+            mat4 m = projectionMatrix * viewMatrix * modelMatrix;
             //mat4 m = modelMatrix * viewMatrix * projectionMatrix;
 
             //float[16] matrix;
@@ -326,17 +333,14 @@ static if (ENABLE_OPENGL) {
     class MyProgram : GLProgram {
         @property override string vertexSource() {
             return q{
-                uniform mat4 matrix;
                 in vec4 vertex;
                 in vec4 colAttr;
                 in vec4 texCoord;
-
                 out vec4 col;
                 out vec4 texc;
-
+                uniform mat4 matrix;
                 void main(void)
                 {
-                    //gl_Position = vertex * matrix;
                     gl_Position = matrix * vertex;
                     col = colAttr;
                     texc = texCoord;
@@ -352,8 +356,8 @@ static if (ENABLE_OPENGL) {
                 out vec4 outColor;
                 void main(void)
                 {
-                    outColor = col; //texture(tex, texc.st); // * col;
-                    //outColor = col; //texture(tex, texc.st) * col;
+                    //outColor = texture(tex, texc.st) * col;
+                    outColor = col;
                 }
             };
         }
@@ -396,7 +400,8 @@ static if (ENABLE_OPENGL) {
             glEnableVertexAttribArray(colAttrLocation);
             glEnableVertexAttribArray(texCoordLocation);
 
-            checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)vertices.length/3);
+            Log.d("Drawing ", vertices.length / 9, " triangles");
+            checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)vertices.length / 3);
 
             glDisableVertexAttribArray(vertexLocation);
             glDisableVertexAttribArray(colAttrLocation);
