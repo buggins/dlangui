@@ -953,7 +953,7 @@ class ColorDrawBuf : ColorDrawBufBase {
         drawRescaled(Rect(0, 0, dx, dy), v, Rect(0, 0, v.width, v.height));
     }
     void invertAlpha() {
-        foreach(pixel; _buf)
+        foreach(ref pixel; _buf)
             pixel ^= 0xFF000000;
     }
     void invertByteOrder() {

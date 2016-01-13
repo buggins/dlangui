@@ -175,7 +175,7 @@ static if (ENABLE_OPENGL) {
                 -1.0f, 1.0f, 1.0f,
                 1.0f,-1.0f, 1.0f
             ];
-            float[] uv = _tx.uv;
+            float[2] uv = _tx.uv;
             float tx0 = 0.0f;
             float tx1 = uv[0];
             float ty0 = 0.0f;
@@ -252,24 +252,20 @@ static if (ENABLE_OPENGL) {
             }
 
             //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            //glClear(/*GL_COLOR_BUFFER_BIT | */GL_DEPTH_BUFFER_BIT);
+            glClear(GL_DEPTH_BUFFER_BIT);
             checkgl!glDisable(GL_CULL_FACE);
-            checkgl!glDisable(GL_DEPTH_TEST);
+            checkgl!glEnable(GL_DEPTH_TEST);
 
-            //import gl3n.linalg;
-            glSupport.setPerspectiveProjection(windowRect, rc, 45.0f, 0.5f, 100.0f);
-            //mat4 projectionMatrix = glSupport.projectionMatrix; //mat4.perspective(rc.width, rc.height, 90.0f, 0.5f, 100.0f);
             // ======== Projection Matrix ==================
             mat4 projectionMatrix; // = glSupport.projectionMatrix;
             projectionMatrix.setIdentity();
             float aspectRatio = cast(float)rc.width / cast(float)rc.height;
             projectionMatrix.setPerspective(45.0f, aspectRatio, 0.1f, 100.0f);
-            //projectionMatrix.setOrtho(-2.0f, 2.0f, 2.0f, -2.0f, -2.0f, 2.0f);
 
             // ======== View Matrix ==================
             mat4 viewMatrix;
             viewMatrix.setIdentity();
-            viewMatrix.translate(0, 0, -4);
+            viewMatrix.translate(0, 0, -6);
             //viewMatrix.rotatez(30.0f);
             //viewMatrix.rotatey(15.0f);
             //viewMatrix.translation(0.0f, 0.0f, 4.0f).rotatez(angle);
@@ -279,8 +275,9 @@ static if (ENABLE_OPENGL) {
             mat4 modelMatrix;
             modelMatrix.setIdentity();
             //modelMatrix.scale(0.3f);
-            modelMatrix.rotatez(30.0f);
+            modelMatrix.rotatez(30.0f + angle * 0.3456778);
             modelMatrix.rotatey(angle);
+            modelMatrix.rotatez(angle * 1.98765f);
 
             //modelMatrix.translate(3, 0, 0);
             mat4 m = projectionMatrix * viewMatrix * modelMatrix;
@@ -310,6 +307,7 @@ static if (ENABLE_OPENGL) {
             //Log.d("(0,0,0) * matrix: ", m * vec4(0, 0, 0, 1));
 
             _program.execute(vertices, colors, texcoords, _tx.texture, true, m.m);
+            checkgl!glDisable(GL_DEPTH_TEST);
         }
         /// returns true is widget is being animated - need to call animate() and redraw
         @property override bool animating() { return true; }
@@ -356,8 +354,8 @@ static if (ENABLE_OPENGL) {
                 out vec4 outColor;
                 void main(void)
                 {
-                    //outColor = texture(tex, texc.st) * col;
-                    outColor = col;
+                    outColor = texture(tex, texc.st) * col;
+                    //outColor = col;
                 }
             };
         }

@@ -834,6 +834,7 @@ static class GLTexture {
             buf.invertAlpha();
         }
     }
+
     ~this() {
         if (_texture && _texture.ID != 0) {
             destroy(_texture);
