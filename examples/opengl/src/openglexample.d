@@ -54,6 +54,14 @@ class MyOpenglWidget : VerticalLayout {
                     padding: 20
                     layoutWidth: fill; layoutHeight: fill
 
+                    TextWidget { text: "DlangUI OpenGL custom drawable example"; textColor: "red"; fontSize: 150%; fontWeight: 800; fontFace: "Arial" }
+
+                    TextWidget { text: "Choose OpenGL drawable:" }
+                    VerticalLayout {
+                        RadioButton { id: rbExample1; text: "Shaders based example - Cube"; checked: true }
+                        RadioButton { id: rbExample2; text: "Legacy OpenGL API example - glxGears" }
+                    }
+
                     TextWidget { text: "Some controls to draw on top of OpenGL scene"; textColor: "red"; fontSize: 150%; fontWeight: 800; fontFace: "Arial" }
 
                     // arrange controls as form - table with two columns
@@ -76,11 +84,6 @@ class MyOpenglWidget : VerticalLayout {
                             CheckBox { id: cb1; text: "checkbox 1" }
                             CheckBox { id: cb2; text: "checkbox 2" }
                         }
-                    }
-                    TextWidget { text: "Choose OpenGL example:" }
-                    VerticalLayout {
-                        RadioButton { id: rbExample1; text: "Shaders based example - Cube"; checked: true }
-                        RadioButton { id: rbExample2; text: "Legacy OpenGL API example - glxGears" }
                     }
                     VSpacer { layoutWeight: 10 }
                     HorizontalLayout {
@@ -116,7 +119,7 @@ class MyOpenglWidget : VerticalLayout {
             // rotate gears
             angle += interval * 0.000002f;
         } else {
-            // TODO: animate new API example
+            // TODO: some other animation for new API example
             angle += interval * 0.000002f;
         }
         invalidate();
@@ -218,6 +221,7 @@ class MyOpenglWidget : VerticalLayout {
     void createMesh() {
         if (!_tx)
             _tx = new GLTexture("crate");
+
         // define Cube mesh
         auto p000 = [-1.0f, -1.0f, -1.0f];
         auto p100 = [ 1.0f, -1.0f, -1.0f];
@@ -227,12 +231,12 @@ class MyOpenglWidget : VerticalLayout {
         auto p101 = [ 1.0f, -1.0f,  1.0f];
         auto p011 = [-1.0f,  1.0f,  1.0f];
         auto p111 = [ 1.0f,  1.0f,  1.0f];
-        vertices = p000 ~ p010 ~ p110 ~ p110 ~ p100 ~ p000 // front face
-            ~ p101 ~ p111 ~ p011 ~ p011 ~ p001 ~ p101 // back face
-            ~ p100 ~ p110 ~ p111 ~ p111 ~ p101 ~ p100 // right face
-            ~ p001 ~ p011 ~ p010 ~ p010 ~ p000 ~ p001 // left face
-            ~ p010 ~ p011 ~ p111 ~ p111 ~ p110 ~ p010 // top face
-            ~ p001 ~ p000 ~ p100 ~ p100 ~ p101 ~ p001 // bottom face
+        vertices = p000 ~ p010 ~ p110 ~  p110 ~ p100 ~ p000 // front face
+                 ~ p101 ~ p111 ~ p011 ~  p011 ~ p001 ~ p101 // back face
+                 ~ p100 ~ p110 ~ p111 ~  p111 ~ p101 ~ p100 // right face
+                 ~ p001 ~ p011 ~ p010 ~  p010 ~ p000 ~ p001 // left face
+                 ~ p010 ~ p011 ~ p111 ~  p111 ~ p110 ~ p010 // top face
+                 ~ p001 ~ p000 ~ p100 ~  p100 ~ p101 ~ p001 // bottom face
             ;
         // texture coordinates
         float[2] uv = _tx.uv;
@@ -240,12 +244,12 @@ class MyOpenglWidget : VerticalLayout {
         float tx1 = uv[0];
         float ty0 = 0.0f;
         float ty1 = uv[1];
-        float[12] facetx = [tx1, ty1,
-        tx0, ty0,
-        tx0, ty1,
-        tx0, ty1,
-        tx1, ty0,
-        tx1, ty1];
+        float[12] facetx = [tx1, ty1, // triangle 1
+                            tx0, ty0,
+                            tx0, ty1,
+                            tx0, ty1, // triangle 2
+                            tx1, ty0,
+                            tx1, ty1];
         texcoords = facetx ~ facetx ~ facetx ~ facetx ~ facetx ~ facetx;
         // init with white color (1, 1, 1, 1)
         foreach(ref cl; colors)
@@ -307,7 +311,6 @@ class MyGLProgram : GLProgram {
             return false;
 
         glEnable(GL_BLEND);
-        //checkgl!glDisable(GL_CULL_FACE);
         checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         bind();
         checkgl!glUniformMatrix4fv(matrixLocation, 1, false, matrix.ptr);
@@ -499,8 +502,6 @@ static void
 
 static void glxgears_draw()
 {
-    glClear(/*GL_COLOR_BUFFER_BIT | */GL_DEPTH_BUFFER_BIT);
-
     glPushMatrix();
     glRotatef(view_rotx, 1.0, 0.0, 0.0);
     glRotatef(view_roty, 0.0, 1.0, 0.0);
