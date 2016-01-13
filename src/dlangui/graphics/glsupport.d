@@ -860,6 +860,11 @@ class GLSupport {
         return _projectionMatrix;
     }
 
+    /// clear depth buffer
+    void clearDepthBuffer() {
+        glClear(GL_DEPTH_BUFFER_BIT);
+    }
+
     void setOrthoProjection(Rect windowRect, Rect view) {
         flushGL();
         bufferDx = windowRect.width;

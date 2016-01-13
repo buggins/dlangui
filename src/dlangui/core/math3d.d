@@ -627,7 +627,7 @@ bool fuzzyNull(float v) {
 
 /// float matrix 4 x 4
 struct mat4 {
-    float[16] m;
+    float[16] m = [1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1];
 
     //alias m this;
 

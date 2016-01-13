@@ -761,12 +761,12 @@ public:
     override void draw() {
         if (_handler) {
             glSupport.setOrthoProjection(_windowRect, _rc);
+            glSupport.clearDepthBuffer();
             _handler(_windowRect, _rc);
             glSupport.setOrthoProjection(_windowRect, _windowRect);
         }
     }
 }
-
 
 /// GL Texture object from image
 static class GLTexture {
