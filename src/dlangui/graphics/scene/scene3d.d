@@ -3,7 +3,7 @@ module dlangui.graphics.scene.scene3d;
 import dlangui.graphics.scene.node;
 import dlangui.graphics.scene.camera;
 
-import dlangui.core.math3d;
+public import dlangui.core.math3d;
 
 /// 3D scene
 class Scene3d : Node3d {
@@ -27,6 +27,8 @@ class Scene3d : Node3d {
     /// set or clear current active camera
     @property void activeCamera(Camera cam) {
         _activeCamera = cam;
+        if (cam.parent != this)
+            addChild(cam);
     }
 
     /// returns scene for node
@@ -38,6 +40,13 @@ class Scene3d : Node3d {
         //ignore
     }
 
+    /// get projection*view matrix
+    @property ref const(mat4) viewProjectionMatrix() {
+        if (_activeCamera)
+            return _activeCamera.viewProjectionMatrix;
+        static mat4 dummyIdentityMatrix;
+        return dummyIdentityMatrix;
+    }
 }
 
 

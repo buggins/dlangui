@@ -1,6 +1,8 @@
 module d3d;
 
 import dlangui;
+import dlangui.graphics.scene.scene3d;
+import dlangui.graphics.scene.camera;
 
 mixin APP_ENTRY_POINT;
 
@@ -69,6 +71,12 @@ extern (C) int UIAppMain(string[] args) {
             for (int i = 0; i < 40; i+=3)
                 buf.drawLine(Point(x+200 + i * 4, y+190), Point(x+150 + i * 7, y+320 + i * 2), 0x008000 + i * 5);
         };
+
+    Scene3d scene = new Scene3d();
+    Camera cam = new Camera();
+    cam.translation = vec3(0, 0, -5);
+    scene.activeCamera = cam;
+    mat4 camMatrix = scene.viewProjectionMatrix;
 
     // show window
     window.show();
