@@ -1,6 +1,8 @@
 Dlang UI
 ========
 
+[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/buggins/dlangui?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)  [![Build Status](https://travis-ci.org/buggins/dlangui.svg?branch=master)](https://travis-ci.org/buggins/dlangui) [![PayPayl donate button](https://img.shields.io/badge/paypal-donate-yellow.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KPSNU8TYF6M5N "Donate once-off to this project using Paypal")
+
 Cross platform GUI for D. Widgets, layouts, styles, themes, unicode, i18n, OpenGL based acceleration.
 
 GitHub page: [https://github.com/buggins/dlangui](https://github.com/buggins/dlangui)
@@ -19,9 +21,8 @@ Coding style: [https://github.com/buggins/dlangui/blob/master/CODING_STYLE.md](h
 
 
 WARNING: recent breaking change: some event listeners were renamed, e.g. onClickListener -> click, onFocusChangeListener -> focusChange...
+WARNING: dependencies in dlangui/deps now are git submodules (if you previously cloned them into deps directory, remove deps dir before updating dlangui project)
 
-
-[![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/buggins/dlangui?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)  [![Build Status](https://travis-ci.org/buggins/dlangui.svg?branch=master)](https://travis-ci.org/buggins/dlangui) [![PayPayl donate button](https://img.shields.io/badge/paypal-donate-yellow.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KPSNU8TYF6M5N "Donate once-off to this project using Paypal")
 
 Main features:
 
@@ -140,7 +141,7 @@ Win32 builds
 
 Build and run demo app using DUB:
 
-        git clone https://github.com/buggins/dlangui.git
+        git clone --recursive https://github.com/buggins/dlangui.git
         cd dlangui
         dub run dlangui:example1 --build=release
 
@@ -148,15 +149,9 @@ Run Tetris game example
 
         dub run dlangui:tetris --build=release
 
-To develop using Visual-D or MonoD, download sources for dlabgui and dependencies into some directory:
+To develop using Visual-D or MonoD, open dlangui.sln using Visual D (or dlangui-monod.sln for MonoD)
 
-        git clone https://github.com/buggins/dlangui.git
-        git clone https://github.com/DerelictOrg/DerelictUtil.git
-        git clone https://github.com/DerelictOrg/DerelictGL3.git
-        git clone https://github.com/DerelictOrg/DerelictFT.git
-        git clone https://github.com/DerelictOrg/DerelictSDL2.git
 
-Then open dlangui.sln using Visual D (or dlangui-monod.sln for MonoD)
 
 To avoid showing console window add win_app.def file to your package source directory and add line to your dub.json.
 
@@ -182,26 +177,15 @@ In some directory, e.g. ~/src/d/ :
 
 Clone DlangUI repository
 
-        git clone https://github.com/buggins/dlangui.git
+        git clone --recursive https://github.com/buggins/dlangui.git
 
 Enter dlangui directory
 
         cd dlangui
 
-Clone dependency libraries
-
-        mkdir deps
-        cd deps
-        git clone https://github.com/DerelictOrg/DerelictUtil.git
-        git clone https://github.com/DerelictOrg/DerelictGL3.git
-        git clone https://github.com/DerelictOrg/DerelictFT.git
-        git clone https://github.com/DerelictOrg/DerelictSDL2.git
-        git clone https://github.com/p0nce/DerelictCocoa.git
-        git clone https://github.com/nomad-software/x11.git
-
 Open solution file with Mono-D	
 
-		dlangui-monod-osx.sln
+        dlangui-monod-osx.sln
 
 
 
@@ -220,16 +204,6 @@ Clone DlangUI repository
 Enter dlangui directory
 
         cd dlangui
-
-Clone dependency libraries to dlangui/deps directory
-
-        mkdir deps
-        cd deps
-        git clone https://github.com/DerelictOrg/DerelictUtil.git
-        git clone https://github.com/DerelictOrg/DerelictGL3.git
-        git clone https://github.com/DerelictOrg/DerelictFT.git
-        git clone https://github.com/DerelictOrg/DerelictSDL2.git
-        git clone https://github.com/nomad-software/x11.git
 
 Open solution file with Mono-D	
 
@@ -264,13 +238,11 @@ Following settings are to be applied to all configurations of your new project (
   * In your project options Build/Includes put list of import directories of DlangUI library and its dependencies, like
   
         ../dlangui/src
-        ../dlangui/deps/gl3n
         ../dlangui/deps/DerelictSDL2/source
         ../dlangui/deps/DerelictFT/source
         ../dlangui/deps/DerelictGL3/source
         ../dlangui/deps/DerelictUtil/source
         ../dlangui/3rdparty
-        ../dlangui/3rdparty-extra
 
 Now you can build and run your project.
  
@@ -290,16 +262,6 @@ Clone DlangUI repository
 Enter dlangui directory
 
         cd dlangui
-
-Clone dependency libraries to dlangui/deps directory
-
-        mkdir deps
-        cd deps
-        git clone https://github.com/DerelictOrg/DerelictUtil.git
-        git clone https://github.com/DerelictOrg/DerelictGL3.git
-        git clone https://github.com/DerelictOrg/DerelictFT.git
-        git clone https://github.com/DerelictOrg/DerelictSDL2.git
-        git clone https://github.com/Dav1dde/gl3n.git
 
 Open solution file with Mono-D	
 
@@ -352,26 +314,15 @@ Install GIT, DUB, DMD, MS Visual Studio (e.g. Community 2013) + VisualD plugin
 
 Clone DlangUI repository
 
-        git clone https://github.com/buggins/dlangui.git
+        git clone --recursive https://github.com/buggins/dlangui.git
+
+For DlangIDE development, close dlangide project on the same directory level as dlangui is cloned:
+
+        git clone --recursive https://github.com/buggins/dlangide.git
 
 Enter dlangui directory
 
         cd dlangui
-
-Clone dependency libraries to dlangui/deps directory
-
-        mkdir deps
-        cd deps
-        git clone https://github.com/DerelictOrg/DerelictUtil.git
-        git clone https://github.com/DerelictOrg/DerelictGL3.git
-        git clone https://github.com/DerelictOrg/DerelictFT.git
-        git clone https://github.com/DerelictOrg/DerelictSDL2.git
-        git clone https://github.com/Hackerpilot/libdparse.git
-
-For DlangIDE development, close dlangide project on the same directory level as dlangui is cloned:
-
-        cd ../..
-        git clone --recursive https://github.com/buggins/dlangide.git
 
 Open solution file with Visual-D
 
@@ -406,7 +357,6 @@ Following settings are to be applied to all configurations of your new project (
   * In your project options Build/Includes put list of import directories of DlangUI library and its dependencies, like
   
         ../dlangui/src
-        ../dlangui/deps/gl3n
         ../dlangui/deps/DerelictSDL2/source
         ../dlangui/deps/DerelictFT/source
         ../dlangui/deps/DerelictGL3/source
