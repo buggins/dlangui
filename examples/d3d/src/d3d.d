@@ -3,6 +3,8 @@ module d3d;
 import dlangui;
 import dlangui.graphics.scene.scene3d;
 import dlangui.graphics.scene.camera;
+import dlangui.graphics.scene.mesh;
+import dlangui.graphics.scene.material;
 
 mixin APP_ENTRY_POINT;
 
@@ -77,6 +79,7 @@ extern (C) int UIAppMain(string[] args) {
     cam.translation = vec3(0, 0, -5);
     scene.activeCamera = cam;
     mat4 camMatrix = scene.viewProjectionMatrix;
+    MeshPart part = new MeshPart();
 
     // show window
     window.show();

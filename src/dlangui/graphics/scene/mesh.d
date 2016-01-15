@@ -3,11 +3,66 @@ module dlangui.graphics.scene.mesh;
 import dlangui.graphics.scene.material;
 import dlangui.core.math3d;
 
-class Mesh {
-    protected Submesh[] _submeshes;
+enum VertexElementType : ubyte {
+    POSITION = 1,
+    NORMAL,
+    COLOR,
+    TEXCOORD0,
+    TEXCOORD1,
+    TEXCOORD2,
+    TEXCOORD3,
+    TEXCOORD4,
+    TEXCOORD5,
+    TEXCOORD6,
+    TEXCOORD7,
 }
 
-class Submesh {
+struct VertexElement {
+    private VertexElementType _type;
+    private ubyte _size;
+    @property VertexElementType type() const { return _type; }
+    @property ubyte size() const { return _size; }
+    this(VertexElementType type, ubyte size) {
+        _type = type;
+        _size = size;
+    }
+}
+
+/// Vertex format elements list
+struct VertexFormat {
+    private VertexElement[] _elements;
+    private int _vertexSize;
+    /// make using element list
+    this(inout VertexElement[] elems...) {
+        _elements = elems.dup;
+        foreach(elem; elems)
+            _vertexSize += elem.size * float.sizeof;
+    }
+    /// get number of elements
+    @property int length() const {
+        return cast(int)_elements.length;
+    }
+    /// get element by index
+    VertexElement opIndex(int index) const {
+        return _elements[index];
+    }
+    /// returns vertex size in bytes for format
+    @property int vertexSize() const {
+        return _vertexSize;
+    }
+    /// compare
+    bool opEquals(immutable ref VertexFormat fmt) {
+        if (_vertexSize != fmt._vertexSize)
+            return false;
+        for(int i = 0; i < _elements.length; i++)
+            if (_elements[i] != fmt._elements[i])
+                return false;
+        return true;
+    }
+}
+
+class Mesh {
+    protected MeshPart[] _parts;
     protected int _vertexCount;
     protected int _triangleCount;
     protected float[] _coords;  // [x, y, z]
@@ -78,8 +133,10 @@ class Submesh {
         _indexes ~= p3;
         _indexes ~= p4;
         _indexes ~= p1;
-        _triangleCount++;
-        _triangleCount++;
-        return _triangleCount - 1;
+        _triangleCount += 2;
+        return _triangleCount - 2;
     }
+}
+
+class MeshPart {
 }
