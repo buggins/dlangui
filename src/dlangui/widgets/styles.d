@@ -107,6 +107,8 @@ immutable string STYLE_LIST_ITEM = "LIST_ITEM";
 immutable string STYLE_EDIT_LINE = "EDIT_LINE";
 /// standard style id for EditBox
 immutable string STYLE_EDIT_BOX = "EDIT_BOX";
+/// standard style id for StringGrid
+immutable string STYLE_STRING_GRID = "STRING_GRID";
 /// standard style id for background similar to transparent button
 immutable string STYLE_TRANSPARENT_BUTTON_BACKGROUND = "TRANSPARENT_BUTTON_BACKGROUND";
 

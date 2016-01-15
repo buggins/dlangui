@@ -1242,7 +1242,7 @@ class StringGridWidget : StringGridWidgetBase {
     /// create with ID parameter
     this(string ID) {
         super(ID);
-        styleId = STYLE_EDIT_BOX;
+        styleId = STYLE_STRING_GRID;
         onThemeChanged();
     }
 
