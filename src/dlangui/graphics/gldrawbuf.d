@@ -256,6 +256,16 @@ private int nearestPOT(int n) {
     return MIN_TEX_SIZE;
 }
 
+private int correctTextureSize(int n) {
+    if (n < 16)
+        return 16;
+    version(POT_TEXTURE_SIZES) {
+        return nearestPOT(n);
+    } else {
+        return n;
+    }
+}
+
 /// object deletion listener callback function type
 void onObjectDestroyedCallback(uint pobject) {
     glImageCache.onCachedObjectDeleted(pobject);
@@ -307,8 +317,8 @@ private abstract class GLCache
     public:
         this(GLCache cache, int dx, int dy) {
             _cache = cache;
-            _tdx = nearestPOT(dx);
-            _tdy = nearestPOT(dy);
+            _tdx = correctTextureSize(dx);
+            _tdy = correctTextureSize(dy);
             _itemCount = 0;
         }
 
@@ -816,8 +826,8 @@ static class GLTexture {
         if (buf) {
             _dx = buf.width;
             _dy = buf.height;
-            _tdx = nearestPOT(_dx);
-            _tdy = nearestPOT(_dy);
+            _tdx = correctTextureSize(_dx);
+            _tdy = correctTextureSize(_dy);
             _texture = new Tex2D();
             if (!_texture.ID) {
                 _texture = null;

@@ -50,24 +50,18 @@ class Submesh {
         arrayElement(_txcoords, index, 2, 0)[0..2] = v.vec[0..2];
     }
 
-    /// add vertex data, returns index of added vertex
-    void setVertex(int index, vec3 coord, vec3 normal, vec4 color, vec2 txcoord) {
+    /// sets vertex data for specified vertex index, returns index of added vertex; pass index -1 to append vertex to end of list
+    int setVertex(int index, vec3 coord, vec3 normal, vec4 color, vec2 txcoord) {
+        if (index < 0)
+            index = _vertexCount;
         setVertexCoord(index, coord);
         setVertexNormal(index, normal);
         setVertexColor(index, color);
         setVertexTxCoord(index, txcoord);
+        return index;
     }
 
-    /// add vertex data, returns index of added vertex
-    int addVertex(vec3 coord, vec3 normal, vec4 color, vec2 txcoord) {
-        _coords ~= coord.vec;
-        _normals ~= normal.vec;
-        _colors ~= color.vec;
-        _txcoords ~= txcoord.vec;
-        _vertexCount++;
-        return _vertexCount - 1;
-    }
-
+    /// adds indexes for triangle
     int addTriangleIndexes(int p1, int p2, int p3) {
         _indexes ~= p1;
         _indexes ~= p2;
@@ -76,4 +70,16 @@ class Submesh {
         return _triangleCount - 1;
     }
 
+    /// adds indexes for 2 triangles forming rectangle
+    int addRectangleIndexes(int p1, int p2, int p3, int p4) {
+        _indexes ~= p1;
+        _indexes ~= p2;
+        _indexes ~= p3;
+        _indexes ~= p3;
+        _indexes ~= p4;
+        _indexes ~= p1;
+        _triangleCount++;
+        _triangleCount++;
+        return _triangleCount - 1;
+    }
 }
