@@ -2,6 +2,238 @@ module dlangui.core.math3d;
 
 import std.math;
 
+/// 2 dimensional vector
+struct vec2 {
+    union {
+        float[2] vec;
+        struct {
+            float x;
+            float y;
+        }
+    }
+    alias u = x;
+    alias v = y;
+    /// create with all components filled with specified value
+    this(float v) {
+        x = v;
+        y = v;
+    }
+    this(float[2] v) {
+        vec = v;
+    }
+    this(const vec2 v) {
+        vec = v.vec;
+    }
+    this(float x, float y) {
+        vec[0] = x;
+        vec[1] = y;
+    }
+    ref vec2 opAssign(float[2] v) {
+        vec = v;
+        return this;
+    }
+    ref vec2 opAssign(vec2 v) {
+        vec = v.vec;
+        return this;
+    }
+    /// fill all components of vector with specified value
+    ref vec2 clear(float v) {
+        vec[0] = vec[1] = v;
+        return this;
+    }
+    /// add value to all components of vector
+    ref vec2 add(float v) {
+        vec[0] += v;
+        vec[1] += v;
+        return this;
+    }
+    /// multiply all components of vector by value
+    ref vec2 mul(float v) {
+        vec[0] *= v;
+        vec[1] *= v;
+        return this;
+    }
+    /// subtract value from all components of vector
+    ref vec2 sub(float v) {
+        vec[0] -= v;
+        vec[1] -= v;
+        return this;
+    }
+    /// divide all components of vector by value
+    ref vec2 div(float v) {
+        vec[0] /= v;
+        vec[1] /= v;
+        return this;
+    }
+    /// add components of another vector to corresponding components of this vector
+    ref vec2 add(vec2 v) {
+        vec[0] += v.vec[0];
+        vec[1] += v.vec[1];
+        return this;
+    }
+    /// multiply components of this vector  by corresponding components of another vector
+    ref vec2 mul(vec2 v) {
+        vec[0] *= v.vec[0];
+        vec[1] *= v.vec[1];
+        return this;
+    }
+    /// subtract components of another vector from corresponding components of this vector
+    ref vec2 sub(vec2 v) {
+        vec[0] -= v.vec[0];
+        vec[1] -= v.vec[1];
+        return this;
+    }
+    /// divide components of this vector  by corresponding components of another vector
+    ref vec2 div(vec2 v) {
+        vec[0] /= v.vec[0];
+        vec[1] /= v.vec[1];
+        return this;
+    }
+
+    /// add value to all components of vector
+    vec2 opBinary(string op : "+")(float v) const {
+        vec2 res = this;
+        res.vec[0] += v;
+        res.vec[1] += v;
+        return res;
+    }
+    /// multiply all components of vector by value
+    vec2 opBinary(string op : "*")(float v) const {
+        vec2 res = this;
+        res.vec[0] *= v;
+        res.vec[1] *= v;
+        return res;
+    }
+    /// subtract value from all components of vector
+    vec2 opBinary(string op : "-")(float v) const {
+        vec2 res = this;
+        res.vec[0] -= v;
+        res.vec[1] -= v;
+        return res;
+    }
+    /// divide all components of vector by value
+    vec3 opBinary(string op : "/")(float v) const {
+        vec3 res = this;
+        res.vec[0] /= v;
+        res.vec[1] /= v;
+        res.vec[2] /= v;
+        return res;
+    }
+
+
+    /// add value to all components of vector
+    ref vec2 opOpAssign(string op : "+")(float v) {
+        vec[0] += v;
+        vec[1] += v;
+        return this;
+    }
+    /// multiply all components of vector by value
+    ref vec2 opOpAssign(string op : "*")(float v) {
+        vec[0] *= v;
+        vec[1] *= v;
+        return this;
+    }
+    /// subtract value from all components of vector
+    ref vec2 opOpAssign(string op : "-")(float v) {
+        vec[0] -= v;
+        vec[1] -= v;
+        vec[2] -= v;
+        return this;
+    }
+    /// divide all components of vector by value
+    ref vec2 opOpAssign(string op : "/")(float v) {
+        vec[0] /= v;
+        vec[1] /= v;
+        vec[2] /= v;
+        return this;
+    }
+
+    /// by component add values of corresponding components of other vector
+    ref vec2 opOpAssign(string op : "+")(const vec2 v) {
+        vec[0] += v.vec[0];
+        vec[1] += v.vec[1];
+        return this;
+    }
+    /// by component multiply values of corresponding components of other vector
+    ref vec2 opOpAssign(string op : "*")(const vec2 v) {
+        vec[0] *= v.vec[0];
+        vec[1] *= v.vec[1];
+        return this;
+    }
+    /// by component subtract values of corresponding components of other vector
+    ref vec2 opOpAssign(string op : "-")(const vec2 v) {
+        vec[0] -= v.vec[0];
+        vec[1] -= v.vec[1];
+        return this;
+    }
+    /// by component divide values of corresponding components of other vector
+    ref vec2 opOpAssign(string op : "/")(const vec2 v) {
+        vec[0] /= v.vec[0];
+        vec[1] /= v.vec[1];
+        return this;
+    }
+
+
+    /// add value to all components of vector
+    vec2 opBinary(string op : "+")(const vec2 v) const {
+        vec2 res = this;
+        res.vec[0] += v.vec[0];
+        res.vec[1] += v.vec[1];
+        return res;
+    }
+    /// subtract value from all components of vector
+    vec3 opBinary(string op : "-")(const vec2 v) const {
+        vec2 res = this;
+        res.vec[0] -= v.vec[0];
+        res.vec[1] -= v.vec[1];
+        return res;
+    }
+    /// subtract value from all components of vector
+    float opBinary(string op : "*")(const vec3 v) const {
+        return dot(v);
+    }
+    /// dot product (sum of by-component products of vector components)
+    float dot(const vec2 v) const {
+        float res = 0.0f;
+        res += vec[0] * v.vec[0];
+        res += vec[1] * v.vec[1];
+        return res;
+    }
+
+    /// returns vector with all components which are negative of components for this vector
+    vec2 opUnary(string op : "-")() const {
+        vec2 ret = this;
+        ret.vec[0] = -vec[0];
+        ret.vec[1] = -vec[1];
+        return ret;
+    }
+
+
+    /// sum of squares of all vector components
+    @property float magnitudeSquared() {
+        return vec[0]*vec[0] + vec[1]*vec[1];
+    }
+
+    /// length of vector
+    @property float magnitude() {
+        return sqrt(magnitudeSquared);
+    }
+
+    alias length = magnitude;
+
+    /// normalize vector: make its length == 1
+    void normalize() {
+        div(length);
+    }
+
+    /// returns normalized copy of this vector
+    @property vec2 normalized() {
+        vec2 res = this;
+        res.normalize();
+        return res;
+    }
+}
+
 /// 3 dimensional vector
 struct vec3 {
     union {
@@ -18,6 +250,10 @@ struct vec3 {
     alias r = x;
     alias g = y;
     alias b = z;
+    /// create with all components filled with specified value
+    this(float v) {
+        x = y = z = v;
+    }
     this(float[3] v) {
         vec = v;
     }
@@ -230,9 +466,9 @@ struct vec3 {
     /// returns vector with all components which are negative of components for this vector
     vec3 opUnary(string op : "-")() const {
         vec3 ret = this;
-        ret.vec[0] = vec[0];
-        ret.vec[1] = vec[1];
-        ret.vec[2] = vec[2];
+        ret.vec[0] = -vec[0];
+        ret.vec[1] = -vec[1];
+        ret.vec[2] = -vec[2];
         return ret;
     }
 
@@ -311,6 +547,10 @@ struct vec4 {
     alias g = y;
     alias b = z;
     alias a = w;
+    /// create with all components filled with specified value
+    this(float v) {
+        x = y = z = w = v;
+    }
     this(float[4] v) {
         vec = v;
     }
@@ -563,10 +803,10 @@ struct vec4 {
     /// returns vector with all components which are negative of components for this vector
     vec4 opUnary(string op : "-")() const {
         vec4 ret = this;
-        ret[0] = vec[0];
-        ret[1] = vec[1];
-        ret[2] = vec[2];
-        ret[3] = vec[3];
+        ret[0] = -vec[0];
+        ret[1] = -vec[1];
+        ret[2] = -vec[2];
+        ret[3] = -vec[3];
         return ret;
     }
 

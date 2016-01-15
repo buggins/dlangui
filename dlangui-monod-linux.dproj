@@ -280,6 +280,8 @@
     <Compile Include="src\dlangui\graphics\images.d" />
     <Compile Include="src\dlangui\graphics\resources.d" />
     <Compile Include="src\dlangui\graphics\scene\camera.d" />
+    <Compile Include="src\dlangui\graphics\scene\material.d" />
+    <Compile Include="src\dlangui\graphics\scene\mesh.d" />
     <Compile Include="src\dlangui\graphics\scene\node.d" />
     <Compile Include="src\dlangui\graphics\scene\scene3d.d" />
     <Compile Include="src\dlangui\graphics\scene\transform.d" />
