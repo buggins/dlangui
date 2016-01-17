@@ -904,8 +904,27 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         }
         return true;
     }
-}
 
+
+    /// process mouse event; return true if event is processed by widget.
+    override bool onMouseEvent(MouseEvent event) {
+        //Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
+        // support onClick
+        if (event.action == MouseAction.Wheel) {
+            uint keyFlags = event.flags & (MouseFlag.Shift | MouseFlag.Control | MouseFlag.Alt);
+            if (event.wheelDelta < 0) {
+                if (keyFlags == MouseFlag.Shift)
+                    return handleAction(new Action(TreeActions.ScrollRight));
+                return handleAction(new Action(TreeActions.ScrollDown));
+            } else if (event.wheelDelta > 0) {
+                if (keyFlags == MouseFlag.Shift)
+                    return handleAction(new Action(TreeActions.ScrollLeft));
+                return handleAction(new Action(TreeActions.ScrollUp));
+            }
+        }
+        return super.onMouseEvent(event);
+    }
+}
 /// Tree widget with items which can have icons and labels
 class TreeWidget :  TreeWidgetBase {
     /// empty parameter list constructor - for usage by factory
