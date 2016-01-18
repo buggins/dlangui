@@ -184,8 +184,16 @@ class TreeItem {
         return root.selectedItem();
     }
 
-    bool isSelected() {
+    @property TreeItem defaultItem() {
+        return root.defaultItem();
+    }
+
+    @property bool isSelected() {
         return (selectedItem is this);
+    }
+
+    @property bool isDefault() {
+        return (defaultItem is this);
     }
 
     /// get widget text
@@ -344,6 +352,7 @@ class TreeItems : TreeItem {
     @property TreeItems noCollapseForSingleTopLevelItem(bool flg) { _noCollapseForSingleTopLevelItem = flg; return this; }
 
     protected TreeItem _selectedItem;
+    protected TreeItem _defaultItem;
 
     this() {
         super("tree");
@@ -400,6 +409,12 @@ class TreeItems : TreeItem {
             selectionListener(this, _selectedItem, false);
     }
 
+    void setDefaultItem(TreeItem item) {
+        _defaultItem = item;
+        if (stateListener.assigned)
+            stateListener(this);
+    }
+
     override void activateItem(TreeItem item) {
         if (!(_selectedItem is item)) {
             _selectedItem = item;
@@ -412,6 +427,10 @@ class TreeItems : TreeItem {
 
     @property override TreeItem selectedItem() {
         return _selectedItem;
+    }
+
+    @property override TreeItem defaultItem() {
+        return _defaultItem;
     }
 
     void selectNext() {
@@ -647,6 +666,10 @@ class TreeItemWidget : HorizontalLayout {
             setState(State.Selected);
         else
             resetState(State.Selected);
+        if (_item.isDefault)
+            setState(State.Default);
+        else
+            resetState(State.Default);
     }
 }
 

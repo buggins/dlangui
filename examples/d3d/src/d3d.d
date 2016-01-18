@@ -22,6 +22,17 @@ extern (C) int UIAppMain(string[] args) {
             backgroundColor: "#C0E0E070" // semitransparent yellow background
             // red bold text with size = 150% of base style size and font face Arial
             TextWidget { text: "Hello World example for DlangUI"; textColor: "red"; fontSize: 150%; fontWeight: 800; fontFace: "Arial" }
+            HorizontalLayout {
+                layoutWidth: fill
+                TextWidget { text: "Text 20%"; backgroundColor:"#80FF0000"; layoutWidth: 20% }
+                VerticalLayout {
+                    layoutWidth: 30%
+                    TextWidget { text: "Text 30%"; backgroundColor:"#80FF00FF" }
+                    TextWidget { text: "Text 30%"; backgroundColor:"#8000FFFF" }
+                    TextWidget { text: "Text 30%"; backgroundColor:"#8000FFFF" }
+                }
+                TextWidget { text: "Text 50%"; backgroundColor:"#80FFFF00"; layoutWidth: 50% }
+            }
             // arrange controls as form - table with two columns
             TableLayout {
                 colCount: 2

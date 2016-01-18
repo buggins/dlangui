@@ -1217,6 +1217,16 @@ FontFamily decodeFontFamily(string s) {
     return FontFamily.SansSerif;
 }
 
+/// decode FontWeight item name to value
+FontWeight decodeFontWeight(string s) {
+    if (s.equal("bold"))
+        return FontWeight.Bold;
+    if (s.equal("normal"))
+        return FontWeight.Normal;
+    Log.e("unknown font weight ", s);
+    return FontWeight.Normal;
+}
+
 /// decode layout dimension (FILL_PARENT, WRAP_CONTENT, or just size)
 int decodeLayoutDimension(string s) {
     if (s.equal("FILL_PARENT") || s.equal("fill"))
@@ -1262,6 +1272,8 @@ bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
         style.fontFamily = decodeFontFamily(elem.tag.attr["fontFamily"]);
     if ("fontSize" in elem.tag.attr)
         style.fontSize = cast(int)decodeDimension(elem.tag.attr["fontSize"]);
+    if ("fontWeight" in elem.tag.attr)
+        style.fontWeight = cast(ushort)decodeFontWeight(elem.tag.attr["fontWeight"]);
     if ("layoutWidth" in elem.tag.attr)
         style.layoutWidth = decodeLayoutDimension(elem.tag.attr["layoutWidth"]);
     if ("layoutHeight" in elem.tag.attr)

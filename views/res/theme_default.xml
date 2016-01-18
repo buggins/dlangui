@@ -422,8 +422,9 @@
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
         align="Left|VCenter"
-        textFlags="Parent"
-    />
+        textFlags="Parent">
+        <state state_default="true" fontWeight="bold"/>
+    </style>
 
     <style id="SETTINGS_TREE"
         margins="8,8,8,8"
