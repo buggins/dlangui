@@ -857,6 +857,22 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         selectItem(item, makeVisible);
     }
 
+    /// process mouse event; return true if event is processed by widget.
+    override bool onMouseEvent(MouseEvent event) {
+        if (event.action == MouseAction.Wheel) {
+            if (event.flags == MouseFlag.Control) {
+                if (_hscrollbar)
+                    _hscrollbar.sendScrollEvent(event.wheelDelta > 0 ? ScrollAction.LineUp : ScrollAction.LineDown);
+                return true;
+            } else if (event.flags == 0) {
+                if (_vscrollbar)
+                    _vscrollbar.sendScrollEvent(event.wheelDelta > 0 ? ScrollAction.LineUp : ScrollAction.LineDown);
+                return true;
+            }
+        }
+        return super.onMouseEvent(event);
+    }
+
     override protected bool handleAction(const Action a) {
         Log.d("tree.handleAction ", a.id);
         switch (a.id) with(TreeActions)

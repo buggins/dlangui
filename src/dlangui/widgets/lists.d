@@ -1085,6 +1085,11 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
         } else {
             scrollOffset.x = _scrollPosition;
         }
+        if (event.action == MouseAction.Wheel) {
+            if (_scrollbar)
+                _scrollbar.sendScrollEvent(event.wheelDelta > 0 ? ScrollAction.LineUp : ScrollAction.LineDown);
+            return true;
+        }
         if (event.action == MouseAction.ButtonDown && (event.flags & (MouseFlag.LButton || MouseFlag.RButton)))
             setFocus();
         for (int i = 0; i < itemCount; i++) {
