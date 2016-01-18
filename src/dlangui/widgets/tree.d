@@ -667,8 +667,8 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
     protected bool _needUpdateWidgetStates;
 
     protected bool _noCollapseForSingleTopLevelItem;
-    @property bool noCollapseForSingleTopLevelItem() { 
-        return _noCollapseForSingleTopLevelItem; 
+    @property bool noCollapseForSingleTopLevelItem() {
+        return _noCollapseForSingleTopLevelItem;
     }
     @property TreeWidgetBase noCollapseForSingleTopLevelItem(bool flg) { 
         _noCollapseForSingleTopLevelItem = flg;
@@ -855,22 +855,6 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
     void selectItem(string itemId, bool makeVisible = true) {
         TreeItem item = findItemById(itemId);
         selectItem(item, makeVisible);
-    }
-
-    /// process mouse event; return true if event is processed by widget.
-    override bool onMouseEvent(MouseEvent event) {
-        if (event.action == MouseAction.Wheel) {
-            if (event.flags == MouseFlag.Control) {
-                if (_hscrollbar)
-                    _hscrollbar.sendScrollEvent(event.wheelDelta > 0 ? ScrollAction.LineUp : ScrollAction.LineDown);
-                return true;
-            } else if (event.flags == 0) {
-                if (_vscrollbar)
-                    _vscrollbar.sendScrollEvent(event.wheelDelta > 0 ? ScrollAction.LineUp : ScrollAction.LineDown);
-                return true;
-            }
-        }
-        return super.onMouseEvent(event);
     }
 
     override protected bool handleAction(const Action a) {

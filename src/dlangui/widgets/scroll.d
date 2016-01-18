@@ -134,6 +134,24 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         return true;
     }
 
+    /// process mouse event; return true if event is processed by widget.
+    override bool onMouseEvent(MouseEvent event) {
+        if (event.action == MouseAction.Wheel) {
+            if (event.flags == MouseFlag.Shift) {
+                if (_hscrollbar) {
+                    _hscrollbar.sendScrollEvent(event.wheelDelta > 0 ? ScrollAction.LineUp : ScrollAction.LineDown);
+                    return true;
+                }
+            } else if (event.flags == 0) {
+                if (_vscrollbar) {
+                    _vscrollbar.sendScrollEvent(event.wheelDelta > 0 ? ScrollAction.LineUp : ScrollAction.LineDown);
+                    return true;
+                }
+            }
+        }
+        return super.onMouseEvent(event);
+    }
+
     /// handle scroll event
     override bool onScrollEvent(AbstractSlider source, ScrollEvent event) {
         if (source.orientation == Orientation.Horizontal) {
