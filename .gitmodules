@@ -13,3 +13,6 @@
 [submodule "deps/x11"]
 	path = deps/x11
 	url = https://github.com/nomad-software/x11.git
+[submodule "deps/DerelictCocoa"]
+	path = deps/DerelictCocoa
+	url = https://github.com/p0nce/DerelictCocoa.git
