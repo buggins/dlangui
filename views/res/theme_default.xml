@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <theme id="theme_default" 
         fontSize="9pt" 
-        fontFace="Verdana,Arial,DejaVu Sans"
+        fontFace="Verdana,Arial,DejaVu Sans,Liberation Sans"
         fontFamily="SansSerif"
 	>
     <color id="window_background" value="#FFFFFF"/>
@@ -422,7 +422,8 @@
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
         align="Left|VCenter"
-        textFlags="Parent">
+        textFlags="Parent"
+        >
         <state state_default="true" fontWeight="bold"/>
     </style>
 
