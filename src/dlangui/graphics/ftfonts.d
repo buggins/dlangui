@@ -22,7 +22,7 @@ import std.file;
 import std.string;
 import std.utf;
 
-immutable int[string] STD_FONT_FACES = [
+__gshared int[string] STD_FONT_FACES = [
     "Arial": 12,
     "Times New Roman": 12,
     "Courier New": 10,

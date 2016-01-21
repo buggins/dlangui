@@ -2578,7 +2578,7 @@ class LogWidget : EditBox {
         enabled = false;
         fontSize = makePointSize(9);
         //fontFace = "Consolas,Lucida Console,Courier New";
-        fontFace = "Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console";
+        fontFace = "Menlo,Consolas,DejaVuSansMono,DejaVu Sans Mono,Lucida Sans Typewriter,Courier New,Lucida Console";
         fontFamily = FontFamily.MonoSpace;
         minFontSize(pointsToPixels(6)).maxFontSize(pointsToPixels(32)); // allow font zoom with Ctrl + MouseWheel
         onThemeChanged();
