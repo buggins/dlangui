@@ -22,26 +22,29 @@ import std.file;
 import std.string;
 import std.utf;
 
-__gshared int[string] STD_FONT_FACES = [
-    "Arial": 12,
-    "Times New Roman": 12,
-    "Courier New": 10,
-    "DejaVu Serif": 10,
-    "DejaVu Sans": 10,
-    "DejaVu Sans Mono": 10,
-    "Liberation Serif": 11,
-    "Liberation Sans": 11,
-    "Liberation Mono": 11,
-    "Verdana": 10,
-    "Menlo": 13,
-    "Consolas": 12,
-    "DejaVuSansMono": 10,
-    "Lucida Sans Typewriter": 10,
-    "Lucida Console": 12,
-    "FreeMono": 8,
-    "FreeSans": 8,
-    "FreeSerif": 8,
-];
+__gshared int[string] STD_FONT_FACES;
+__gshared static this() {
+    STD_FONT_FACES = [
+        "Arial": 12,
+        "Times New Roman": 12,
+        "Courier New": 10,
+        "DejaVu Serif": 10,
+        "DejaVu Sans": 10,
+        "DejaVu Sans Mono": 10,
+        "Liberation Serif": 11,
+        "Liberation Sans": 11,
+        "Liberation Mono": 11,
+        "Verdana": 10,
+        "Menlo": 13,
+        "Consolas": 12,
+        "DejaVuSansMono": 10,
+        "Lucida Sans Typewriter": 10,
+        "Lucida Console": 12,
+        "FreeMono": 8,
+        "FreeSans": 8,
+        "FreeSerif": 8,
+    ];
+}
 
 int stdFontFacePriority(string face) {
     if (auto p = (face in STD_FONT_FACES))
