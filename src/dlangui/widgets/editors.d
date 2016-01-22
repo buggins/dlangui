@@ -2479,6 +2479,74 @@ class EditBox : EditWidgetBase {
 
     TextRange _matchingBraces;
 
+    bool _showWhiteSpaceMarks;
+    /// when true, show marks for tabs and spaces at beginning and end of line, and tabs inside line
+    @property bool showWhiteSpaceMarks() const { return _showWhiteSpaceMarks; }
+    @property void showWhiteSpaceMarks(bool show) { 
+        if (_showWhiteSpaceMarks != show) {
+            _showWhiteSpaceMarks = show; 
+            invalidate();
+        }
+    }
+
+    void drawWhiteSpaceMarks(DrawBuf buf, ref FontRef font, dstring txt, int tabSize, Rect lineRect, Rect visibleRect) {
+        int firstNonSpace = -1;
+        int lastNonSpace = -1;
+        bool hasTabs = false;
+        for(int i = 0; i < txt.length; i++) {
+            if (txt[i] == '\t') {
+                hasTabs = true;
+            } else if (txt[i] != ' ') {
+                if (firstNonSpace == -1)
+                    firstNonSpace = i;
+                lastNonSpace = i + 1;
+            }
+        }
+        if (firstNonSpace <= 0 && lastNonSpace >= txt.length && !hasTabs)
+            return;
+        uint color = addAlpha(textColor, 0xC0);
+        static int[] textSizeBuffer;
+        int charsMeasured = font.measureText(txt, textSizeBuffer, MAX_WIDTH_UNSPECIFIED, tabSize, 0, 0);
+
+        for (int i = 0; i < txt.length && i < charsMeasured; i++) {
+            dchar ch = txt[i];
+            bool outsideText = (i < firstNonSpace || i >= lastNonSpace);
+            if ((ch == ' ' && outsideText) || ch == '\t') {
+                Rect rc = lineRect;
+                rc.left = lineRect.left + (i > 0 ? textSizeBuffer[i - 1] : 0);
+                rc.right = lineRect.left + textSizeBuffer[i];
+                int h = rc.height;
+                if (rc.intersects(visibleRect)) {
+                    // draw space mark
+                    if (ch == ' ') {
+                        // space
+                        int sz = h / 6;
+                        if (sz < 1)
+                            sz = 1;
+                        rc.top += h / 2 - sz / 2;
+                        rc.bottom = rc.top + sz;
+                        rc.left += rc.width / 2 - sz / 2;
+                        rc.right = rc.left + sz;
+                        buf.fillRect(rc, color);
+                    } else if (ch == '\t') {
+                        // tab
+                        Point p1 = Point(rc.left + 1, rc.top + h / 2);
+                        Point p2 = p1;
+                        p2.x = rc.right - 1;
+                        int sz = h / 4;
+                        if (sz < 2)
+                            sz = 2;
+                        if (sz > p2.x - p1.x)
+                            sz = p2.x - p1.x;
+                        buf.drawLine(p1, p2, color);
+                        buf.drawLine(p2, Point(p2.x - sz, p2.y - sz), color);
+                        buf.drawLine(p2, Point(p2.x - sz, p2.y + sz), color);
+                    }
+                }
+            }
+        }
+    }
+
     override protected void drawClient(DrawBuf buf) {
         // update matched braces
         if (!content.findMatchedBraces(_caretPos, _matchingBraces)) {
@@ -2500,6 +2568,10 @@ class EditBox : EditWidgetBase {
             visibleRect.left = _clientRect.left;
             visibleRect.right = _clientRect.right;
             drawLineBackground(buf, _firstVisibleLine + i, lineRect, visibleRect);
+            if (!txt.length)
+                continue;
+            if (_showWhiteSpaceMarks)
+                drawWhiteSpaceMarks(buf, font, txt, tabSize, lineRect, visibleRect);
             if (_leftPaneWidth > 0) {
                 Rect leftPaneRect = visibleRect;
                 leftPaneRect.right = leftPaneRect.left;
