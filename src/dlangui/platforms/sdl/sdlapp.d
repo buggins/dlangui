@@ -1169,20 +1169,66 @@ class SDLPlatform : Platform {
     /// show directory or file in OS file manager (explorer, finder, etc...)
     override bool showInFileManager(string pathName) {
         import std.process;
+        import std.path;
+        import std.file;
         string normalized = buildNormalizedPath(pathName);
-        version (OSX) {
-            string exe = "/usr/bin/osascript";
-            string[] args;
-            args ~= "-e";
-            args ~= "tell application \"Finder\" to reveal POSIX file \" ~ normalized ~ \"";
-            auto pid = spawnProcess(exe, args, Config.none);
-            wait(pid);
-            args[1] = "tell application \"Finder\" to activate";
-            pid = spawnProcess(exe, args, Config.none);
-            wait(pid);
-            return true;
-        } else {
-            // TODO: implement for POSIX
+        if (!normalized.exists) {
+            Log.e("showInFileManager failed - file or directory does not exist");
+            return false;
+        }
+        import std.string;
+        try {
+            version (Windows) {
+                Log.i("showInFileManager(", pathName, ")");
+                import win32.windows;
+                import dlangui.core.files;
+
+                string explorerPath = findExecutablePath("explorer.exe");
+                if (!explorerPath.length) {
+                    Log.e("showInFileManager failed - cannot find explorer.exe");
+                    return false;
+                }
+                string arg = "/select,\"" ~ normalized ~ "\"";
+                STARTUPINFO si;
+                si.cb = si.sizeof;
+                PROCESS_INFORMATION pi;
+                Log.d("showInFileManager: ", explorerPath, " ", arg);
+                arg = "\"" ~ explorerPath ~ "\" " ~ arg;
+                auto res = CreateProcessW(null, //explorerPath.toUTF16z,
+                                          cast(wchar*)arg.toUTF16z,
+                                          null, null, false, DETACHED_PROCESS,
+                                          null, null, &si, &pi);
+                if (!res) {
+                    Log.e("showInFileManager failed to run explorer.exe");
+                    return false;
+                }
+                return true;
+            } else version (OSX) {
+                string exe = "/usr/bin/osascript";
+                string[] args;
+                args ~= exe;
+                args ~= "-e";
+                args ~= "tell application \"Finder\" to reveal POSIX file \" ~ normalized ~ \"";
+                auto pid = spawnProcess(args);
+                wait(pid);
+                args[2] = "tell application \"Finder\" to activate";
+                pid = spawnProcess(args);
+                wait(pid);
+                return true;
+            } else {
+                // TODO: implement for POSIX
+                if (normalized.isFile)
+                    normalized = normalized.basePath;
+                string exe = "xdg-open";
+                string[] args;
+                args ~= exe;
+                args ~= normalized;
+                auto pid = spawnProcess(args);
+                wait(pid);
+                return true;
+            }
+        } catch (Exception e) {
+            Log.e("showInFileManager -- exception while trying to open file browser");
         }
         return false;
     }
