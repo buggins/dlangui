@@ -1165,6 +1165,27 @@ class SDLPlatform : Platform {
         string s = toUTF8(text);
         SDL_SetClipboardText(s.toStringz);
     }
+
+    /// show directory or file in OS file manager (explorer, finder, etc...)
+    override bool showInFileManager(string pathName) {
+        import std.process;
+        string normalized = buildNormalizedPath(pathName);
+        version (OSX) {
+            string exe = "/usr/bin/osascript";
+            string[] args;
+            args ~= "-e";
+            args ~= "tell application \"Finder\" to reveal POSIX file \" ~ normalized ~ \"";
+            auto pid = spawnProcess(exe, args, Config.none);
+            wait(pid);
+            args[1] = "tell application \"Finder\" to activate";
+            pid = spawnProcess(exe, args, Config.none);
+            wait(pid);
+            return true;
+        } else {
+            // TODO: implement for POSIX
+        }
+        return false;
+    }
 }
 
 version (Windows) {
