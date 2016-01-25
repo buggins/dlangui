@@ -2,37 +2,37 @@ DlangUI Coding Style
 ====================
 
 Tabs and indentation
-====================
+--------------------
 
 No Tab characters should be used in source code.
 Use 4 spaces instead of tabs.
 
 
 Identifiers
-===========
+-----------
 
-Class names: CamelCase with uppercase first letter, e.g.: LinearLayout, GridWidget
-Method and property names: camelCase with lowercase first letter, e.g.: textAlign, layoutWidth
-Private and protected class and struct fields: \_camelCase prepended with underscore, e.g. \_windowWidth
-Signal names: camelCase
-Enum member names: currently, 3 styles are used JAVA_LIKE, CamelCase and camelCase  TODO: make it consistent?
+Class names: CamelCase with uppercase first letter, e.g.: `LinearLayout`, `GridWidget`.  
+Method and property names: camelCase with lowercase first letter, e.g.: `textAlign`, `layoutWidth`.  
+Private and protected class and struct fields: \_camelCase prepended with underscore, e.g. `_windowWidth`.  
+Signal names: camelCase.  
+Enum member names: currently, 3 styles are used: JAVA_LIKE, CamelCase and camelCase. TODO: make it consistent?  
 
 	class MyClass {
-	    private int _x;
-	    @property int x() { return _x; }
+	    private int _magicNumber;
+	    @property int magicNumber() { return _magicNumber; }
 	}
 
 
 Spaces
-======
+------
 
 Always put space after comma or semicolon if there are more items in the same line.
 
-	update(x, y, isAnimating(this))
+	update(x, y, isAnimating(this));
 
 	auto list = [1, 2, 3, 4, 5];
 
-Usually there is no space after opening or before closing [] and ()
+Usually there is no space after opening or before closing `[]` and `()`.
 
 Spaces may be added to improve readability when there is a sequence brackets of the same type.
 
@@ -42,9 +42,9 @@ Use spaces before and after == != && || + - * / etc.
 
 
 Brackets
-========
+--------
 
-Curly braces for if, switch, for, foreach - preferable placed on the same lines as keyword
+Curly braces for `if`, `switch`, `for`, `foreach` - preferable placed on the same lines as keyword:
 
 	if (a == b) {
 	} else {
@@ -52,13 +52,13 @@ Curly braces for if, switch, for, foreach - preferable placed on the same lines 
 
 	foreach(item; list) {
 	    writeln(item);
-	}	
+	}
 
 Cases in switch should be indented:
 
 	switch(action.id) {
 	    case 1:
-                processAction(1);
+	        processAction(1);
 	        break;
 	    default:
 	        break;
