@@ -1218,7 +1218,7 @@ class SDLPlatform : Platform {
             } else {
                 // TODO: implement for POSIX
                 if (normalized.isFile)
-                    normalized = normalized.basePath;
+                    normalized = normalized.baseName;
                 string exe = "xdg-open";
                 string[] args;
                 args ~= exe;
