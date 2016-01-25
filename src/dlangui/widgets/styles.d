@@ -806,6 +806,40 @@ public:
         return child;
     }
 
+    Style clone() {
+        Style res = new Style(_theme, null);
+        res._stateMask = _stateMask;
+        res._stateValue = _stateValue;
+        res._align = _align;
+        res._fontStyle = _fontStyle;
+        res._fontFamily = _fontFamily;
+        res._fontWeight = _fontWeight;
+        res._fontSize = _fontSize;
+        res._backgroundColor = _backgroundColor;
+        res._textColor = _textColor;
+        res._textFlags = _textFlags;
+        res._alpha = _alpha;
+        res._fontFace = _fontFace;
+        res._backgroundImageId = _backgroundImageId;
+        res._padding = _padding;
+        res._margins = _margins;
+        res._minWidth = _minWidth;
+        res._maxWidth = _maxWidth;
+        res._minHeight = _minHeight;
+        res._maxHeight = _maxHeight;
+        res._layoutWidth = _layoutWidth;
+        res._layoutHeight = _layoutHeight;
+        res._layoutWeight = _layoutWeight;
+        res._maxLines = _maxLines;
+
+        res._focusRectColors = _focusRectColors.dup;
+
+        res._customDrawables = _customDrawables.dup;
+        res._customColors = _customColors.dup;
+        res._customLength = _customLength.dup;
+        return res;
+    }
+
     /// find exact existing state style or create new if no matched styles found
     Style getOrCreateState(uint stateMask = 0, uint stateValue = 0) {
         if (stateValue == State.Normal)
@@ -878,6 +912,14 @@ class Theme : Style {
         style._margins.left = SIZE_UNSPECIFIED; // inherit
         style._textColor = COLOR_UNSPECIFIED; // inherit
         style._textFlags = TEXT_FLAGS_UNSPECIFIED; // inherit
+        Style parent = get(id);
+        if (parent) {
+            foreach(item; parent._substates) {
+                Style substate = item.clone();
+                substate._parentStyle = style;
+                style._substates ~= substate;
+            }
+        }
         return style;
     }
 
