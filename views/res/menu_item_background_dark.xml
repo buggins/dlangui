@@ -5,7 +5,7 @@
     android:state_enabled="false"
     android:state_focused="true" />
   <item
-    android:drawable="btn_pressed_dark"
+    android:drawable="btn_hover_dark"
     android:state_focused="true" />
   <item
     android:drawable="btn_normal_dark"
