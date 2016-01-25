@@ -65,6 +65,13 @@ enum FileDialogFlag : uint {
 
 }
 
+/// File dialog action codes
+enum FileDialogActions : int {
+    ShowInFileManager = 4000,
+    CreateDirectory = 4001,
+    DeleteFile = 4002,
+}
+
 /// filetype filter entry for FileDialog
 struct FileFilterEntry {
     UIString label;
@@ -351,6 +358,10 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             super.handleAction(action);
             return true;
         }
+        if (action.id == FileDialogActions.ShowInFileManager) {
+            Platform.instance.showInFileManager(action.stringParam);
+            return true;
+        }
         if (action.id == StandardAction.CreateDirectory) {
             // show editor popup
             window.showInputBox(UIString("CREATE_NEW_FOLDER"c), UIString("INPUT_NAME_FOR_FOLDER"c), ""d, delegate(dstring s) {
@@ -380,6 +391,31 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     bool onPathSelected(string path) {
         //
         return openDirectory(path, null);
+    }
+
+    protected MenuItem getCellPopupMenu(GridWidgetBase source, int col, int row) {
+        if (row >= 0 && row < _entries.length) {
+            MenuItem item = new MenuItem();
+            DirEntry e = _entries[row];
+            // show in explorer action
+            auto showAction = new Action(FileDialogActions.ShowInFileManager, "ACTION_FILE_SHOW_IN_FILE_MANAGER"c);
+            showAction.stringParam = e.name;
+            item.add(showAction);
+            // create directory action
+            if (_flags & FileDialogFlag.EnableCreateDirectory)
+                item.add(ACTION_CREATE_DIRECTORY);
+
+            if (e.isDir) {
+                //_edFilename.text = ""d;
+                //_filename = "";
+            } else if (e.isFile) {
+                //string fname = e.name;
+                //_edFilename.text = toUTF32(baseName(fname));
+                //_filename = fname;
+            }
+            return item;
+        }
+        return null;
     }
 
     /// override to implement creation of dialog controls
@@ -446,6 +482,8 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _fileList.setColTitle(3, "Modified"d);
         _fileList.showRowHeaders = false;
         _fileList.rowSelect = true;
+        _fileList.cellPopupMenu = &getCellPopupMenu;
+        _fileList.menuItemAction = &handleAction;
 
         rightPanel.addChild(_edPath);
         rightPanel.addChild(_fileList);

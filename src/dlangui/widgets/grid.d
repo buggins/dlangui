@@ -55,8 +55,14 @@ module dlangui.widgets.grid;
 import dlangui.widgets.widget;
 import dlangui.widgets.controls;
 import dlangui.widgets.scroll;
+import dlangui.widgets.menu;
 import std.conv;
 import std.algorithm : equal;
+
+/// cellPopupMenu signal handler interface
+interface CellPopupMenuHandler {
+    MenuItem getCellPopupMenu(GridWidgetBase source, int col, int row);
+}
 
 /**
  * Data provider for GridWidget.
@@ -238,7 +244,7 @@ interface ViewScrolledHandler {
 }
 
 /// Abstract grid widget
-class GridWidgetBase : ScrollWidgetBase, GridModelAdapter {
+class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler {
     /// Callback to handle selection change
     Listener!CellSelectedHandler cellSelected;
 
@@ -694,6 +700,55 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter {
         if (cellActivated.assigned)
             cellActivated(this, this.col, this.row);
         return true;
+    }
+
+    /// cell popup menu
+    Signal!CellPopupMenuHandler cellPopupMenu;
+    /// popup menu item action
+    Signal!MenuItemActionHandler menuItemAction;
+
+    protected MenuItem getCellPopupMenu(int col, int row) {
+        if (cellPopupMenu.assigned)
+            return cellPopupMenu(this, col, row);
+        return null;
+    }
+
+    /// handle popup menu action
+    protected bool onMenuItemAction(const Action action) {
+        if (menuItemAction.assigned)
+            return menuItemAction(action);
+        return false;
+    }
+
+    /// returns true if widget can show popup menu (e.g. by mouse right click at point x,y)
+    override bool canShowPopupMenu(int x, int y) {
+        int col, row;
+        Rect rc;
+        x -= _clientRect.left;
+        y -= _clientRect.top;
+        pointToCell(x, y, col, row, rc);
+        MenuItem item = getCellPopupMenu(col, row);
+        if (!item)
+            return false;
+        return true;
+    }
+
+    /// shows popup menu at (x,y)
+    override void showPopupMenu(int xx, int yy) {
+        int col, row;
+        Rect rc;
+        int x = xx - _clientRect.left;
+        int y = yy - _clientRect.top;
+        pointToCell(x, y, col, row, rc);
+        MenuItem menu = getCellPopupMenu(col - _headerCols, row - _headerRows);
+        if (menu) {
+            import dlangui.widgets.popup;
+            menu.updateActionState(this);
+            PopupMenu popupMenu = new PopupMenu(menu);
+            popupMenu.menuItemAction = this;
+            PopupWidget popup = window.showPopup(popupMenu, this, PopupAlign.Point | PopupAlign.Right, xx, yy);
+            popup.flags = PopupFlags.CloseOnClickOutside;
+        }
     }
 
     /// handle mouse wheel events

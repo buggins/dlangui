@@ -1339,15 +1339,12 @@ class Platform {
         import std.process;
         browse(url);
         return true;
-        //Log.d("Platform.openURL(", url, ") is called");
-        //bool res = false;
-        //version(Windows) {
-        //    import win32.shellapi;
-        //    ShellExecuteA(null, "open", url.toStringz, null, null, 1);
-        //    res = true;
-        //}
-        //// TODO: support other platforms
-        //return res;
+    }
+
+    /// show directory or file in OS file manager (explorer, finder, etc...)
+    bool showInFileManager(string pathName) {
+        Log.w("showInFileManager is not implemented for current platform");
+        return false;
     }
 
     /// handle theme change: e.g. reload some themed resources

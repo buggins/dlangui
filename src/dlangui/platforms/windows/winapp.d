@@ -863,6 +863,39 @@ class Win32Platform : Platform {
         CloseClipboard();
     }
 
+    /// show directory or file in OS file manager (explorer, finder, etc...)
+    override bool showInFileManager(string pathName) {
+        Log.i("showInFileManager(", pathName, ")");
+        import dlangui.core.files;
+        //import std.process;
+        import std.path;
+        import std.string;
+
+        string explorerPath = findExecutablePath("explorer.exe");
+        if (!explorerPath.length) {
+            Log.e("showInFileManager failed - cannot find explorer.exe");
+            return false;
+        }
+        string normalized = buildNormalizedPath(pathName);
+        string arg = "/select,\"" ~ normalized ~ "\"";
+        STARTUPINFO si;
+        si.cb = si.sizeof;
+        PROCESS_INFORMATION pi;
+        Log.i("showInFileManager: ", explorerPath, " ", arg);
+        arg = "\"" ~ explorerPath ~ "\" " ~ arg;
+        auto res = CreateProcessW(null, //explorerPath.toUTF16z,
+                                  cast(wchar*)arg.toUTF16z,
+                                  null, null, false, DETACHED_PROCESS,
+                                  null, null, &si, &pi);
+        if (!res) {
+            Log.e("showInFileManager failed to run explorer.exe");
+            return false;
+        }
+
+        //auto pid = spawnProcess(explorerPath, [arg], );
+        return true;
+    }
+
 }
 
 extern(Windows)
