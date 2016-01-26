@@ -1208,10 +1208,12 @@ class SDLPlatform : Platform {
                 string[] args;
                 args ~= exe;
                 args ~= "-e";
-                args ~= "tell application \"Finder\" to reveal POSIX file \" ~ normalized ~ \"";
+                args ~= "tell application \"Finder\" to reveal (POSIX file \"" ~ normalized ~ "\")";
+                Log.d("Executing command: ", args);
                 auto pid = spawnProcess(args);
                 wait(pid);
                 args[2] = "tell application \"Finder\" to activate";
+                Log.d("Executing command: ", args);
                 pid = spawnProcess(args);
                 wait(pid);
                 return true;
