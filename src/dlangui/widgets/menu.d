@@ -155,14 +155,14 @@ class MenuItem {
                 break;
             }
         }
-        return dcharToUpper(ch);
+        return std.uni.toUpper(ch);
     }
 
     /// find subitem by hotkey character, returns subitem index, -1 if not found
     int findSubitemByHotkey(dchar ch) {
         if (!ch)
             return -1;
-        ch = dcharToUpper(ch);
+        ch = std.uni.toUpper(ch);
         for (int i = 0; i < _subitems.length; i++) {
             if (_subitems[i].getHotkey() == ch)
                 return i;
