@@ -464,6 +464,11 @@ enum MouseFlag : ushort {
     Shift   = 0x0004,
     /// Alt key is down
     Alt     = 0x0080,
+
+    /// Mask for mouse button flags
+    ButtonsMask = LButton | MButton | RButton | XButton1 | XButton2,
+    /// Mask for keyboard flags
+    KeyMask = Control|Shift|Alt,
 }
 
 /// Mouse button codes for MouseEvent
@@ -611,6 +616,10 @@ class MouseEvent {
     void changeAction(MouseAction a) { _action = a; }
     /// returns flags (buttons and keys state)
     @property ushort flags() { return _flags; }
+    /// returns mouse button flags only
+    @property ushort buttonFlags() { return _flags & MouseFlag.ButtonsMask; }
+    /// returns keyboard modifier flags only
+    @property ushort keyFlags() { return _flags & MouseFlag.KeyMask; }
     /// returns delta for Wheel event
     @property short wheelDelta() { return _wheelDelta; }
     /// x coordinate of mouse pointer (relative to window client area)

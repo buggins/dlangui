@@ -854,7 +854,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     abstract protected TextPosition clientToTextPos(Point pt);
 
-    abstract protected void ensureCaretVisible();
+    abstract protected void ensureCaretVisible(bool center = false);
 
     abstract protected Point measureVisibleText();
 
@@ -1566,6 +1566,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return super.onKeyEvent(event);
     }
 
+    /// Handle Ctrl + Left mouse click on text
+    protected void onControlClick() {
+    }
+
     /// process mouse event; return true if event is processed by widget.
     override bool onMouseEvent(MouseEvent event) {
         //Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
@@ -1582,6 +1586,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 selectWordByMouse(event.x - _clientRect.left, event.y - _clientRect.top);
             } else {
                 updateCaretPositionByMouse(event.x - _clientRect.left, event.y - _clientRect.top, false);
+                if (event.keyFlags == MouseFlag.Control)
+                    onControlClick();
             }
             invalidate();
             return true;
@@ -1624,13 +1630,13 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     }
 
     /// change caret position and ensure it is visible
-    void setCaretPos(int line, int column, bool makeVisible = true)
+    void setCaretPos(int line, int column, bool makeVisible = true, bool center = false)
     {
         _caretPos = TextPosition(line,column);
         correctCaretPos();
         invalidate();
         if (makeVisible)
-            ensureCaretVisible();
+            ensureCaretVisible(center);
     }
 }
 
@@ -1692,7 +1698,7 @@ class EditLine : EditWidgetBase {
         return res;
     }
 
-    override protected void ensureCaretVisible() {
+    override protected void ensureCaretVisible(bool center = false) {
         //_scrollPos
         Rect rc = textPosToClient(_caretPos);
         if (rc.left < 0) {
@@ -2014,7 +2020,7 @@ class EditBox : EditWidgetBase {
     }
 
     protected bool _enableScrollAfterText = true;
-    override protected void ensureCaretVisible() {
+    override protected void ensureCaretVisible(bool center = false) {
         if (_caretPos.line >= _content.length)
             _caretPos.line = _content.length - 1;
         if (_caretPos.line < 0)
@@ -2030,12 +2036,19 @@ class EditBox : EditWidgetBase {
 
         if (_caretPos.line < _firstVisibleLine) {
             _firstVisibleLine = _caretPos.line;
+            if (center) {
+                _firstVisibleLine -= visibleLines / 2;
+                if (_firstVisibleLine < 0)
+                    _firstVisibleLine = 0;
+            }
             if (_firstVisibleLine > maxFirstVisibleLine)
                 _firstVisibleLine = maxFirstVisibleLine;
             measureVisibleText();
             invalidate();
         } else if (_caretPos.line >= _firstVisibleLine + visibleLines) {
             _firstVisibleLine = _caretPos.line - visibleLines + 1;
+            if (center)
+                _firstVisibleLine += visibleLines / 2;
             if (_firstVisibleLine > maxFirstVisibleLine)
                 _firstVisibleLine = maxFirstVisibleLine;
             if (_firstVisibleLine < 0)
