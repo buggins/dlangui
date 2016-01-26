@@ -26,13 +26,9 @@ private import std.path;
 private import std.file;
 private import std.utf;
 
-version (Windows) {
-    /// path delimiter (\ for windows, / for others)
-    immutable char PATH_DELIMITER = '\\';
-} else {
-    /// path delimiter (\ for windows, / for others)
-    immutable char PATH_DELIMITER = '/';
-}
+
+/// path delimiter (\ for windows, / for others)
+enum char PATH_DELIMITER = dirSeparator[0];
 
 /// Filesystem root entry / bookmark types
 enum RootEntryType : uint {
@@ -99,9 +95,24 @@ struct RootEntry {
     }
 }
 
-/// Returns 
+/// Returns user's home directory entry
 @property RootEntry homeEntry() {
     return RootEntry(RootEntryType.HOME, homePath);
+}
+
+/// Returns user's home directory
+@property string homePath() {
+    string path;
+    version (Windows) {
+        path = environment.get("USERPROFILE");
+        if (path is null)
+            path = environment.get("HOME");
+    } else {
+        path = environment.get("HOME");
+    }
+    if (path is null)
+        path = "."; // fallback to current directory
+    return path;
 }
 
 /// returns array of system root entries
@@ -145,7 +156,7 @@ struct RootEntry {
 }
 
 /// returns true if directory is root directory (e.g. / or C:\)
-bool isRoot(string path) {
+bool isRoot(in string path) pure nothrow {
     string root = rootName(path);
     if (path.equal(root))
         return true;
@@ -153,24 +164,16 @@ bool isRoot(string path) {
 }
 
 /// returns parent directory for specified path
-string parentDir(string path) {
+string parentDir(in string path) pure nothrow {
     return buildNormalizedPath(path, "..");
 }
 
-/// check filename with pattern (currently only *.ext, *.* and filename.ext patterns are supported)
-bool filterFilename(string filename, string pattern) {
-    if (pattern.equal("*.*"))
-        return true; // matches any
-    if (pattern.length < 3)
-        return false;
-    if (pattern[0] != '*' || pattern[1] != '.') {
-        return filename.baseName.equal(pattern);
-    }
-    return filename.endsWith(pattern[1..$]);
+/// check filename with pattern
+bool filterFilename(in string filename, in string pattern) pure nothrow {
+    return globMatch(filename.baseName, pattern);
 }
-
 /// Filters file name by pattern list
-bool filterFilename(string filename, string[] filters) {
+bool filterFilename(in string filename, in string[] filters) pure nothrow {
     if (filters.length == 0)
         return true; // no filters - show all
     foreach(pattern; filters) {
@@ -188,7 +191,7 @@ bool filterFilename(string filename, string[] filters) {
 
     Returns true if directory exists and listed successfully, false otherwise.
 */
-bool listDirectory(string dir, bool includeDirs, bool includeFiles, bool showHiddenFiles, string[] filters, ref DirEntry[] entries, bool showExecutables = false) {
+bool listDirectory(in string dir, in bool includeDirs, in bool includeFiles, in bool showHiddenFiles, in string[] filters, ref DirEntry[] entries, in bool showExecutables = false) {
 
     entries.length = 0;
 
@@ -220,7 +223,7 @@ bool listDirectory(string dir, bool includeDirs, bool includeFiles, bool showHid
             foreach(DirEntry e; files) {
                 bool passed = false;
                 if (showExecutables) {
-                    uint attr_mask = (1 << 0) || (1 << 3) || (1 << 6);
+                    uint attr_mask = (1 << 0) | (1 << 3) | (1 << 6);
                     version(Windows) {
                         passed = e.name.endsWith(".exe") || e.name.endsWith(".EXE") 
                             || e.name.endsWith(".cmd") || e.name.endsWith(".CMD") 
@@ -244,50 +247,33 @@ bool listDirectory(string dir, bool includeDirs, bool includeFiles, bool showHid
 
 }
 
-/** Returns true if char ch is / or \ slash */
-bool isPathDelimiter(char ch) {
+/// Returns true if char ch is / or \ slash
+bool isPathDelimiter(in char ch) pure nothrow {
     return ch == '/' || ch == '\\';
 }
 
 /// Returns current directory
-@property string currentDir() {
-    return getcwd();
-}
+alias currentDir = std.file.getcwd;
 
-/** Returns current executable path only, including last path delimiter - removes executable name from result of std.file.thisExePath() */
+/// Returns current executable path only, including last path delimiter - removes executable name from result of std.file.thisExePath()
 @property string exePath() {
     string path = thisExePath();
     int lastSlash = 0;
-    for (int i = 0; i < path.length; i++)
-        if (path[i] == PATH_DELIMITER)
+    for (int i = cast(int)path.length - 1; i >= 0; i--)
+        if (path[i] == PATH_DELIMITER) {
             lastSlash = i;
+            break;
+        }
     return path[0 .. lastSlash + 1];
 }
 
-/// Returns user's home directory
-@property string homePath() {
-    string path;
-    version (Windows) {
-        path = environment.get("USERPROFILE");
-        if (path is null)
-            path = environment.get("HOME");
-    } else {
-        path = environment.get("HOME");
-    }
-    if (path is null)
-        path = "."; // fallback to current directory
-    return path;
-}
-
 /** 
-    
     Returns application data directory
 
     On unix, it will return path to subdirectory in home directory - e.g. /home/user/.subdir if ".subdir" is passed as a paramter.
 
     On windows, it will return path to subdir in APPDATA directory - e.g. C:\Users\User\AppData\Roaming\.subdir.
-
- */
+*/
 string appDataPath(string subdir = null) {
     string path;
     version (Windows) {
@@ -316,13 +302,13 @@ char[] convertPathDelimiters(char[] buf) {
     return buf;
 }
 
-/** Converts path delimiters to standard for platform (e.g. / to \ on windows, \ to / on posix) */
-string convertPathDelimiters(string src) {
+/// Converts path delimiters to standard for platform (e.g. / to \ on windows, \ to / on posix)
+string convertPathDelimiters(in string src) {
     char[] buf = src.dup;
     return cast(string)convertPathDelimiters(buf);
 }
 
-/** Appends file path parts with proper delimiters e.g. appendPath("/home/user", ".myapp", "config") => "/home/user/.myapp/config" */
+/// Appends file path parts with proper delimiters e.g. appendPath("/home/user", ".myapp", "config") => "/home/user/.myapp/config"
 string appendPath(string[] pathItems ...) {
     char[] buf;
     foreach (s; pathItems) {
@@ -333,7 +319,7 @@ string appendPath(string[] pathItems ...) {
     return convertPathDelimiters(buf).dup;
 }
 
-/**  Appends file path parts with proper delimiters (as well converts delimiters inside path to system) to buffer e.g. appendPath("/home/user", ".myapp", "config") => "/home/user/.myapp/config" */
+///  Appends file path parts with proper delimiters (as well converts delimiters inside path to system) to buffer e.g. appendPath("/home/user", ".myapp", "config") => "/home/user/.myapp/config"
 char[] appendPath(char[] buf, string[] pathItems ...) {
     foreach (s; pathItems) {
         if (buf.length && !isPathDelimiter(buf[$-1]))
@@ -343,8 +329,10 @@ char[] appendPath(char[] buf, string[] pathItems ...) {
     return convertPathDelimiters(buf);
 }
 
-/** Split path into elements, e.g. /home/user/dir1 -> ["home", "user", "dir1"], "c:\dir1\dir2" -> ["c:", "dir1", "dir2"] */
-string[] splitPath(string path) {
+/** Deprecated: use std.path.pathSplitter instead.
+    Splits path into elements, e.g. /home/user/dir1 -> ["home", "user", "dir1"], "c:\dir1\dir2" -> ["c:", "dir1", "dir2"]
+*/
+deprecated string[] splitPath(string path) {
     string[] res;
     int start = 0;
     for (int i = 0; i <= path.length; i++) {
@@ -372,12 +360,7 @@ string findExecutablePath(string executableName) {
     string pathVariable = environment.get("PATH");
     if (!pathVariable)
         return null;
-    string[] paths;
-    version(Windows) {
-        paths = pathVariable.split(";");
-    } else {
-        paths = pathVariable.split(":");
-    }
+    string[] paths = pathVariable.split(pathSeparator);
     foreach(path; paths) {
         string pathname = absolutePath(buildNormalizedPath(path, executableName));
         if (exists(pathname) && isFile(pathname))
@@ -385,4 +368,3 @@ string findExecutablePath(string executableName) {
     }
     return null;
 }
-
