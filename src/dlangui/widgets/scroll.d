@@ -121,6 +121,13 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         }
     }
 
+    /// vertical scrollbar mode
+    @property ScrollBarMode vscrollbarMode() { return _vscrollbarMode; }
+    @property void vscrollbarMode(ScrollBarMode m) { _vscrollbarMode = m; }
+    /// horizontal scrollbar mode
+    @property ScrollBarMode hscrollbarMode() { return _hscrollbarMode; }
+    @property void hscrollbarMode(ScrollBarMode m) { _hscrollbarMode = m; }
+
     /// returns client area rectangle
     @property Rect clientRect() { return _clientRect; }
 

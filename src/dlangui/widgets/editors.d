@@ -862,6 +862,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected ulong _caretTimerId;
     protected bool _caretBlinkingPhase;
     protected long _lastBlinkStartTs;
+
     protected void startCaretBlinking() {
         if (window) {
             long ts = currentTimeMillis;
@@ -876,6 +877,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             invalidate();
         }
     }
+
     protected void stopCaretBlinking() {
         if (window) {
             if (_caretTimerId) {
@@ -884,6 +886,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             }
         }
     }
+
     /// handle timer; return true to repeat timer event after next interval, false cancel timer
     override bool onTimer(ulong id) {
         if (id == _caretTimerId) {
@@ -893,17 +896,24 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             invalidate();
             return focused;
         }
+        if (id == _hoverTimer) {
+            cancelHoverTimer();
+            onHoverTimeout(_hoverMousePosition, _hoverTextPosition);
+            return false;
+        }
         return super.onTimer(id);
     }
+
     /// override to handle focus changes
     override protected void handleFocusChange(bool focused) {
         if (focused)
             startCaretBlinking();
-        else
+        else {
             stopCaretBlinking();
+            cancelHoverTimer();
+        }
         super.handleFocusChange(focused);
     }
-
 
     /// returns cursor rectangle
     protected Rect caretRect() {
@@ -1546,6 +1556,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     /// handle keys
     override bool onKeyEvent(KeyEvent event) {
         if (focused) startCaretBlinking();
+        cancelHoverTimer();
         bool ctrlOrAltPressed = false; //(event.flags & (KeyFlag.Control /* | KeyFlag.Alt */));
         if (event.action == KeyAction.Text && event.text.length && !ctrlOrAltPressed) {
             Log.d("text entered: ", event.text);
@@ -1568,20 +1579,53 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     /// Handle Ctrl + Left mouse click on text
     protected void onControlClick() {
+        // override to do something useful on Ctrl + Left mouse click in text
+    }
+
+    protected TextPosition _hoverTextPosition;
+    protected Point _hoverMousePosition;
+    protected ulong _hoverTimer;
+    protected long _hoverTimeoutMillis = 800;
+
+    /// override to handle mouse hover timeout in text
+    protected void onHoverTimeout(Point pt, TextPosition pos) {
+        // override to do something useful on hover timeout
+    }
+
+    protected void onHover(Point pos) {
+        if (_hoverMousePosition == pos)
+            return;
+        Log.d("onHover ", pos);
+        int x = pos.x - left - _leftPaneWidth;
+        int y = pos.y - top;
+        _hoverMousePosition = pos;
+        _hoverTextPosition = clientToTextPos(Point(x, y));
+        cancelHoverTimer();
+        _hoverTimer = setTimer(_hoverTimeoutMillis);
+    }
+
+    protected void cancelHoverTimer() {
+        if (_hoverTimer) {
+            cancelTimer(_hoverTimer);
+            _hoverTimer = 0;
+        }
     }
 
     /// process mouse event; return true if event is processed by widget.
     override bool onMouseEvent(MouseEvent event) {
         //Log.d("onMouseEvent ", id, " ", event.action, "  (", event.x, ",", event.y, ")");
         // support onClick
-        if (event.action == MouseAction.ButtonDown && event.x < _clientRect.left && event.x >= _clientRect.left - _leftPaneWidth) {
+        bool insideLeftPane = event.x < _clientRect.left && event.x >= _clientRect.left - _leftPaneWidth;
+        if (event.action == MouseAction.ButtonDown && insideLeftPane) {
             setFocus();
+            cancelHoverTimer();
             if (onLeftPaneMouseClick(event))
                 return true;
         }
         if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
             setFocus();
             startCaretBlinking();
+            cancelHoverTimer();
             if (event.doubleClick) {
                 selectWordByMouse(event.x - _clientRect.left, event.y - _clientRect.top);
             } else {
@@ -1596,16 +1640,29 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             updateCaretPositionByMouse(event.x - _clientRect.left, event.y - _clientRect.top, true);
             return true;
         }
+        if (event.action == MouseAction.Move && event.flags == 0) {
+            // hover
+            if (focused && !insideLeftPane) {
+                onHover(event.pos);
+            } else {
+                cancelHoverTimer();
+            }
+            return true;
+        }
         if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
+            cancelHoverTimer();
             return true;
         }
         if (event.action == MouseAction.FocusOut || event.action == MouseAction.Cancel) {
+            cancelHoverTimer();
             return true;
         }
         if (event.action == MouseAction.FocusIn) {
+            cancelHoverTimer();
             return true;
         }
         if (event.action == MouseAction.Wheel) {
+            cancelHoverTimer();
             uint keyFlags = event.flags & (MouseFlag.Shift | MouseFlag.Control | MouseFlag.Alt);
             if (event.wheelDelta < 0) {
                 if (keyFlags == MouseFlag.Shift)
@@ -1621,6 +1678,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 return handleAction(new Action(EditorActions.ScrollLineUp));
             }
         }
+        cancelHoverTimer();
         return super.onMouseEvent(event);
     }
 

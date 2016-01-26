@@ -627,6 +627,9 @@ class MouseEvent {
     /// y coordinate of mouse pointer (relative to window client area)
     @property short y() { return _y; }
 
+    /// returns point for mouse cursor position
+    @property Point pos() { return Point(_x, _y); }
+
     /// Returns true for ButtonDown event when button is pressed second time in short interval after pressing first time
     @property bool doubleClick() {
         if (_action != MouseAction.ButtonDown)

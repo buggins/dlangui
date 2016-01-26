@@ -520,7 +520,7 @@ struct SimpleTextFormatter {
                         lineEndX = widths[lastWordEnd - 1];
                     }
                     // add line
-                    dstring line = cast(dstring)text[lineStart .. lastWordEnd];
+                    dstring line = cast(dstring)text[lineStart .. lineEnd]; //lastWordEnd];
                     int lineWidth = lineEndX - lineStartX;
                     sz.y += lineHeight;
                     if (sz.x < lineWidth)

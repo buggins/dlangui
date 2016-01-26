@@ -73,6 +73,12 @@ struct Rect {
     @property int middley() { return (top + bottom) / 2; }
     /// returns middle point
     @property Point middle() { return Point(middlex, middley); }
+
+    /// returns top left point of rectangle
+    @property Point topLeft() { return Point(left, top); }
+    /// returns bottom right point of rectangle
+    @property Point bottomRight() { return Point(right, bottom); }
+
     /// add offset to horizontal and vertical coordinates
     void offset(int dx, int dy) {
         left += dx;

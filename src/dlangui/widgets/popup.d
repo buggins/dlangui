@@ -31,6 +31,8 @@ enum PopupAlign : uint {
     Center = 1,
     /// place popup below anchor widget close to lower bound
     Below = 2,
+    /// place popup below anchor widget close to lower bound
+    Above = 16,
     /// place popup below anchor widget close to right bound (when no space enough, align near left bound)
     Right = 4,
     /// align to specified point
@@ -52,6 +54,8 @@ enum PopupFlags : uint {
     CloseOnClickOutside = 1,
     /// modal popup - keypresses and mouse events can be routed to this popup only
     Modal = 2,
+    /// close popup when mouse is moved outside this popup
+    CloseOnMouseMoveOutside = 4,
 }
 
 /** interface - slot for onPopupCloseListener */
@@ -124,6 +128,15 @@ class PopupWidget : LinearLayout {
         if (anchor.alignment & PopupAlign.Point) {
             r.left = anchor.x;
             r.top = anchor.y;
+            if (anchor.alignment & PopupAlign.Center) {
+                // center around center of anchor widget
+                r.left -= w / 2;
+                r.top -= h / 2;
+            } else if (anchor.alignment & PopupAlign.Below) {
+            } else if (anchor.alignment & PopupAlign.Above) {
+                r.top -= h;
+            } else if (anchor.alignment & PopupAlign.Right) {
+            }
         } else {
             if (anchor.alignment & PopupAlign.Center) {
                 // center around center of anchor widget
@@ -132,6 +145,9 @@ class PopupWidget : LinearLayout {
             } else if (anchor.alignment & PopupAlign.Below) {
                 r.left = anchorrc.left;
                 r.top = anchorrc.bottom;
+            } else if (anchor.alignment & PopupAlign.Above) {
+                r.left = anchorrc.left;
+                r.top = anchorrc.top - h;
             } else if (anchor.alignment & PopupAlign.Right) {
                 r.left = anchorrc.right;
                 r.top = anchorrc.top;
@@ -162,6 +178,16 @@ class PopupWidget : LinearLayout {
                 // clicked outside - close popup
                 close();
                 return false;
+            }
+        }
+        if (_flags & PopupFlags.CloseOnMouseMoveOutside) {
+            if (event.action == MouseAction.Move || event.action == MouseAction.Wheel) {
+                int threshold = 3;
+                if (event.x < _pos.left - threshold || event.x > _pos.right + threshold || event.y < _pos.top - threshold || event.y > _pos.bottom + threshold) {
+                    Log.d("Closing popup due to PopupFlags.CloseOnMouseMoveOutside flag");
+                    close();
+                    return false;
+                }
             }
         }
         return false;
