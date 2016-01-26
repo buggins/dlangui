@@ -1100,7 +1100,7 @@ public:
         if (keyEvent.assigned && keyEvent(this, event))
             return true; // processed by external handler
         if (event.action == KeyAction.KeyDown) {
-            Action action = findKeyAction(event.keyCode, event.flags & (KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Control));
+            Action action = findKeyAction(event.keyCode, event.flags & (KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Control | KeyFlag.Menu));
             if (action !is null) {
                 return dispatchAction(action);
             }

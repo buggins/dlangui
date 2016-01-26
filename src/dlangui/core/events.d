@@ -769,7 +769,11 @@ enum KeyFlag : uint {
     /// Left Shift key is down
     LShift   = 0x0204,
     /// Left Alt key is down
-    LAlt     = 0x0280
+    LAlt     = 0x0280,
+    /// Left Menu/Win key is down
+    LMenu    = 0x0240,
+    /// Right Menu/Win key is down
+    RMenu    = 0x0140
 }
 
 /// Key code constants for KeyEvent

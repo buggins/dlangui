@@ -1555,6 +1555,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     /// handle keys
     override bool onKeyEvent(KeyEvent event) {
+        //Log.d("onKeyEvent ", event.action, " ", event.keyCode, " flags ", event.flags);
         if (focused) startCaretBlinking();
         cancelHoverTimer();
         bool ctrlOrAltPressed = false; //(event.flags & (KeyFlag.Control /* | KeyFlag.Alt */));
@@ -1595,7 +1596,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected void onHover(Point pos) {
         if (_hoverMousePosition == pos)
             return;
-        Log.d("onHover ", pos);
+        //Log.d("onHover ", pos);
         int x = pos.x - left - _leftPaneWidth;
         int y = pos.y - top;
         _hoverMousePosition = pos;
