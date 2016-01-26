@@ -727,7 +727,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         x -= _clientRect.left;
         y -= _clientRect.top;
         pointToCell(x, y, col, row, rc);
-        MenuItem item = getCellPopupMenu(col, row);
+        MenuItem item = getCellPopupMenu(col - _headerCols, row - _headerRows);
         if (!item)
             return false;
         return true;

@@ -1218,11 +1218,12 @@ class SDLPlatform : Platform {
             } else {
                 // TODO: implement for POSIX
                 if (normalized.isFile)
-                    normalized = normalized.baseName;
+                    normalized = normalized.dirName;
                 string exe = "xdg-open";
                 string[] args;
                 args ~= exe;
                 args ~= normalized;
+                Log.d("Executing ", args);
                 auto pid = spawnProcess(args);
                 wait(pid);
                 return true;
