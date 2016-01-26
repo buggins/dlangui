@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <theme id="theme_default" 
-        fontSize="9pt" 
-        fontFace="Verdana,Arial,DejaVu Sans,Liberation Sans"
+        fontSize="10pt" 
+        fontFace="Helvetica Neue,Verdana,Arial,DejaVu Sans,Liberation Sans,Helvetica"
         fontFamily="SansSerif"
 	>
     <color id="window_background" value="#FFFFFF"/>

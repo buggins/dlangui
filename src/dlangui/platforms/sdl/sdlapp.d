@@ -735,6 +735,10 @@ class SDLWindow : Window {
                 return KeyCode.RSHIFT;
             case SDLK_RALT:
                 return KeyCode.RALT;
+            case SDLK_LGUI:
+                return KeyCode.LWIN;
+            case SDLK_RGUI:
+                return KeyCode.RWIN;
             case '/':
                 return KeyCode.KEY_DIVIDE;
             default:
@@ -750,6 +754,8 @@ class SDLWindow : Window {
             res |= KeyFlag.Shift;
         if (flags & KMOD_ALT)
             res |= KeyFlag.Alt;
+        if (flags & KMOD_GUI)
+            res |= KeyFlag.Menu;
         if (flags & KMOD_RCTRL)
             res |= KeyFlag.RControl | KeyFlag.Control;
         if (flags & KMOD_RSHIFT)
@@ -796,6 +802,10 @@ class SDLWindow : Window {
                 case KeyCode.CONTROL:
                     flags |= KeyFlag.Control;
                     break;
+                case KeyCode.LWIN:
+                case KeyCode.RWIN:
+                    flags |= KeyFlag.Menu;
+                    break;
                 case KeyCode.RCONTROL:
                     flags |= KeyFlag.Control | KeyFlag.RControl;
                     break;
@@ -811,6 +821,7 @@ class SDLWindow : Window {
                 case KeyCode.LSHIFT:
                     flags |= KeyFlag.Shift | KeyFlag.LShift;
                     break;
+                
                 default:
                     break;
             }

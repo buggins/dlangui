@@ -33,13 +33,36 @@ struct Accelerator {
     /// Returns accelerator text description
     @property dstring label() {
         dstring buf;
-        if (keyFlags & KeyFlag.Control)
-            buf ~= "Ctrl+";
-        if (keyFlags & KeyFlag.Alt)
-            buf ~= "Alt+";
-        if (keyFlags & KeyFlag.Shift)
-            buf ~= "Shift+";
-        buf ~= toUTF32(keyName(keyCode));
+        version (OSX) {
+            static if (true) {
+                if (keyFlags & KeyFlag.Control)
+                    buf ~= "Ctrl+";
+                if (keyFlags & KeyFlag.Shift)
+                    buf ~= "Shift+";
+                if (keyFlags & KeyFlag.Option)
+                    buf ~= "Opt+";
+                if (keyFlags & KeyFlag.Command)
+                    buf ~= "Cmd+";
+            } else {
+                if (keyFlags & KeyFlag.Control)
+                    buf ~= "⌃";
+                if (keyFlags & KeyFlag.Shift)
+                    buf ~= "⇧";
+                if (keyFlags & KeyFlag.Option)
+                    buf ~= "⌥";
+                if (keyFlags & KeyFlag.Command)
+                    buf ~= "⌘";
+            }
+            buf ~= toUTF32(keyName(keyCode));
+        } else {
+            if (keyFlags & KeyFlag.Control)
+                buf ~= "Ctrl+";
+            if (keyFlags & KeyFlag.Alt)
+                buf ~= "Alt+";
+            if (keyFlags & KeyFlag.Shift)
+                buf ~= "Shift+";
+            buf ~= toUTF32(keyName(keyCode));
+        }
         return cast(dstring)buf;
     }
     /// Serializes accelerator text description
@@ -51,6 +74,8 @@ struct Accelerator {
             buf ~= "Alt+";
         if (keyFlags & KeyFlag.Shift)
             buf ~= "Shift+";
+        if (keyFlags & KeyFlag.Menu)
+            buf ~= "Menu+";
         buf ~= keyName(keyCode);
         return cast(string)buf;
     }
@@ -74,6 +99,11 @@ struct Accelerator {
             if (s.startsWith("Shift+")) {
                 keyFlags |= KeyFlag.Shift;
                 s = s[6 .. $];
+                flagFound = true;
+            }
+            if (s.startsWith("Menu+")) {
+                keyFlags |= KeyFlag.Menu;
+                s = s[5 .. $];
                 flagFound = true;
             }
             if (!flagFound)
@@ -226,12 +256,23 @@ class Action {
         _id = id;
         _label = labelResourceId;
         _iconId = iconResourceId;
-        if (keyCode)
+        if (keyCode) {
+            version (OSX) {
+                if (keyFlags & KeyFlag.Control) {
+                    _accelerators ~= Accelerator(keyCode, (keyFlags & ~KeyFlag.Control) | KeyFlag.Command);
+                }
+            }
             _accelerators ~= Accelerator(keyCode, keyFlags);
+        }
     }
     /// action with accelerator, w/o label
     this(int id, uint keyCode, uint keyFlags = 0) {
         _id = id;
+        version (OSX) {
+            if (keyFlags & KeyFlag.Control) {
+                _accelerators ~= Accelerator(keyCode, (keyFlags & ~KeyFlag.Control) | KeyFlag.Command);
+            }
+        }
         _accelerators ~= Accelerator(keyCode, keyFlags);
     }
     /// action with label, icon, and accelerator
@@ -239,8 +280,14 @@ class Action {
         _id = id;
         _label = label;
         _iconId = iconResourceId;
-        if (keyCode)
+        if (keyCode) {
+            version (OSX) {
+                if (keyFlags & KeyFlag.Control) {
+                    _accelerators ~= Accelerator(keyCode, (keyFlags & ~KeyFlag.Control) | KeyFlag.Command);
+                }
+            }
             _accelerators ~= Accelerator(keyCode, keyFlags);
+        }
     }
     /// returs array of accelerators
     @property Accelerator[] accelerators() {
@@ -288,6 +335,21 @@ class Action {
     /// adds one more accelerator
     Action addAccelerator(uint keyCode, uint keyFlags = 0) {
         _accelerators ~= Accelerator(keyCode, keyFlags);
+        return this;
+    }
+    /// adds one more accelerator only if platform is OSX
+    Action addMacAccelerator(uint keyCode, uint keyFlags = 0) {
+        version (OSX) {
+            _accelerators ~= Accelerator(keyCode, keyFlags);
+        }
+        return this;
+    }
+    /// adds one more accelerator only if platform is not OSX
+    Action addNonMacAccelerator(uint keyCode, uint keyFlags = 0) {
+        version (OSX) {
+        } else {
+            _accelerators ~= Accelerator(keyCode, keyFlags);
+        }
         return this;
     }
     /// returns true if accelerator matches provided key code and flags
@@ -692,6 +754,10 @@ enum KeyFlag : uint {
     Shift   = 0x0004,
     /// Alt key is down
     Alt     = 0x0080,
+    Option  = Alt,
+    /// Menu key
+    Menu    = 0x0040,
+    Command = Menu,
     /// Right Ctrl key is down
     RControl = 0x0108,
     /// Right Shift key is down
