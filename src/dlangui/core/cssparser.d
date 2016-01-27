@@ -195,7 +195,7 @@ private bool parseColor(ref string src, ref CssValue value)
         // #rgb or #rrggbb colors
         ch = src.skip;
         int nDigits = 0;
-        for ( ; nDigits < src.length && parseHexDigit(src[nDigits])>=0; nDigits++ ) {
+        for ( ; nDigits < src.length && parseHexDigit(src[nDigits]) != uint.max; nDigits++ ) {
         }
         if ( nDigits==3 ) {
             int r = parseHexDigit( src[0] );
