@@ -147,6 +147,10 @@ struct UIStringCollection {
 
     /** Returns number of items */
     @property int length() const { return _length; }
+
+    /** Returns true if collection is empty */
+    @property bool empty() const { return _length == 0; }
+
     /** Slice */
     UIString[] opIndex() {
         return _items[0 .. _length];
