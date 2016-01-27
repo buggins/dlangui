@@ -723,6 +723,8 @@ class SDLWindow : Window {
             case SDLK_DOWN:
             case 0x4000005a: // dirty hack for Linux - key on keypad
                 return KeyCode.DOWN;
+            case SDLK_KP_ENTER:
+                return KeyCode.RETURN;
             case SDLK_LCTRL:
                 return KeyCode.LCONTROL;
             case SDLK_LSHIFT:
