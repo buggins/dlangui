@@ -610,8 +610,8 @@ class EditableContent {
             return _lines[0];
         // concat lines
         dchar[] buf;
-        foreach(item;_lines) {
-            if (buf.length)
+        foreach(index, item;_lines) {
+            if (index)
                 buf ~= EOL;
             buf ~= item;
         }
