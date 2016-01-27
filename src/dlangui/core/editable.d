@@ -626,9 +626,7 @@ class EditableContent {
         performOperation(op, this);
     }
 
-    static bool isAlphaForWordSelection(dchar ch) {
-        return ch == '_' || (ch >= '0' && ch <= '9') || (ch >= 'A' && ch <= 'Z') || (ch >= 'a' && ch <= 'z');
-    }
+    static alias isAlphaForWordSelection = isAlNum;
 
     /// get word bounds by position
     TextRange wordBounds(TextPosition pos) {
@@ -1133,21 +1131,18 @@ class EditableContent {
         }
     }
 
-    static bool isDigit(dchar ch) pure nothrow {
-        return ch >= '0' && ch <= '9';
-    }
+
+    static alias isDigit = std.uni.isNumber;
     static bool isAlpha(dchar ch) pure nothrow {
-        return isLowerAlpha(ch) || isUpperAlpha(ch);
+        return std.uni.isAlpha(ch) || ch == '_';
     }
     static bool isAlNum(dchar ch) pure nothrow {
         return isDigit(ch) || isAlpha(ch);
     }
     static bool isLowerAlpha(dchar ch) pure nothrow {
-        return (ch >= 'a' && ch <= 'z') || (ch == '_');
+        return std.uni.isLower(ch) || ch == '_';
     }
-    static bool isUpperAlpha(dchar ch) pure nothrow {
-        return (ch >= 'A' && ch <= 'Z');
-    }
+    static alias isUpperAlpha = std.uni.isUpper;
     static bool isPunct(dchar ch) pure nothrow {
         switch(ch) {
             case '.':

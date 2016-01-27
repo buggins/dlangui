@@ -347,13 +347,13 @@ class Tokenizer {
         foreach(i; 0 .. prefixLen)
             ch = skipChar();
 
-        uint n = decodeHexDigit(ch);
+        uint n = parseHexDigit(ch);
         if (n == uint.max)
             return parseError();
 
         for(;;) {
             ch = skipChar();
-            uint digit = decodeHexDigit(ch);
+            uint digit = parseHexDigit(ch);
             if (digit == uint.max)
                 break;
             n = (n << 4) + digit;

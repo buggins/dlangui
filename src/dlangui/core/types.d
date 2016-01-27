@@ -45,19 +45,13 @@ public import dlangui.core.config;
 
 import std.algorithm;
 
-/**  2D point */
+/// 2D point
 struct Point {
-    /// x coordinate
     int x;
-    /// y coordinate
     int y;
-    this(int x0, int y0) {
-        x = x0;
-        y = y0;
-    }
 }
 
-/**  2D rectangle */
+/// 2D rectangle
 struct Rect {
     /// x coordinate of top left corner
     int left;
@@ -427,26 +421,6 @@ struct Ref(T) { // if (T is RefCountedObject)
 //================================================================================
 // some utility functions
 
-/*
-string fromStringz(const(char[]) s) {
-    if (s is null)
-        return null;
-    int i = 0;
-    while(s[i])
-        i++;
-    return cast(string)(s[0..i].dup);
-}
-
-string fromStringz(const(char*) s) {
-    if (s is null)
-        return null;
-    int i = 0;
-    while(s[i])
-        i++;
-    return cast(string)(s[0..i].dup);
-}
-*/
-
 /** conversion from wchar z-string */
 wstring fromWStringz(const(wchar[]) s) {
     if (s is null)
@@ -497,15 +471,20 @@ enum State : uint {
     Parent = 0x10000, // use parent's state
 }
 
-/** 
+/** Deprecated: use std.uni.toUpper instead.
     Uppercase unicode character.
-
-    TODO: support non-ascii.
 */
-dchar dcharToUpper(dchar ch) {
-    // TODO: support non-ascii letters
-    if (ch >= 'a' && ch <= 'z')
-        return ch - 'a' + 'A';
-    return ch;
+deprecated dchar dcharToUpper(dchar ch) {
+    return std.uni.toUpper(ch);
 }
 
+/// decodes hex digit (0..9, a..f, A..F), returns uint.max if invalid
+uint parseHexDigit(T)(T ch) pure nothrow {
+    if (ch >= '0' && ch <= '9')
+        return ch - '0';
+    else if (ch >= 'a' && ch <= 'f')
+        return ch - 'a' + 10;
+    else if (ch >= 'A' && ch <= 'F')
+        return ch - 'A' + 10;
+    return uint.max;
+}

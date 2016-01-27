@@ -5,10 +5,11 @@ import std.conv : to;
 import std.string;
 import std.array : empty;
 import std.algorithm : equal;
-import std.ascii : isAlpha;
+import std.ascii : isAlpha, isWhite;
 
 import dlangui.core.dom;
 import dlangui.core.css;
+import dlangui.core.types : parseHexDigit;
 
 /// skip specified count of chars of string, returns next available character, or 0 if end of string reached
 private char skip(ref string src, int count = 1) {
@@ -33,7 +34,7 @@ private char skipSpaces(ref string str)
         char ch = str.peek;
         if (!ch)
             return 0;
-        while (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r')
+        while (isWhite(ch))
             ch = str.skip;
         if (str.peek == '/' && str.peek(1) == '*') {
             // comment found
@@ -44,7 +45,7 @@ private char skipSpaces(ref string str)
                 str.skip(2);
         }
         ch = str.peek;
-        while (ch == ' ' || ch == '\t' || ch == '\n' || ch == '\r')
+        while (isWhite(ch))
             ch = str.skip;
         if (oldpos.ptr is str.ptr)
             break;
@@ -57,7 +58,7 @@ private char skipSpaces(ref string str)
 
 
 private bool isIdentChar(char ch) {
-    return (ch >= 'A' && ch <='Z') || (ch >= 'a' && ch <='z') || (ch == '-') || (ch == '_');
+    return isAlpha(ch) || (ch == '-') || (ch == '_');
 }
 
 /// parse css identifier
@@ -143,17 +144,6 @@ private bool nextProperty(ref string str) {
 }
 
 
-private int hexDigit( char c )
-{
-    if ( c >= '0' && c <= '9' )
-        return c-'0';
-    if ( c >= 'A' && c <= 'F' )
-        return c - 'A' + 10;
-    if ( c >= 'a' && c <= 'f' )
-        return c - 'a' + 10;
-    return -1;
-}
-
 private int parseStandardColor(string ident) {
     switch(ident) {
         case "black": return 0x000000;
@@ -205,23 +195,23 @@ private bool parseColor(ref string src, ref CssValue value)
         // #rgb or #rrggbb colors
         ch = src.skip;
         int nDigits = 0;
-        for ( ; nDigits < src.length && hexDigit(src[nDigits])>=0; nDigits++ ) {
+        for ( ; nDigits < src.length && parseHexDigit(src[nDigits]) != uint.max; nDigits++ ) {
         }
         if ( nDigits==3 ) {
-            int r = hexDigit( src[0] );
-            int g = hexDigit( src[1] );
-            int b = hexDigit( src[2] );
+            int r = parseHexDigit( src[0] );
+            int g = parseHexDigit( src[1] );
+            int b = parseHexDigit( src[2] );
             value.type = CssValueType.color;
             value.value = (((r + r*16) * 256) | (g + g*16)) * 256 | (b + b*16);
             src.skip(3);
             return true;
         } else if ( nDigits==6 ) {
-            int r = hexDigit( src[0] ) * 16;
-            r += hexDigit( src[1] );
-            int g = hexDigit( src[2] ) * 16;
-            g += hexDigit( src[3] );
-            int b = hexDigit( src[4] ) * 16;
-            b += hexDigit( src[5] );
+            int r = parseHexDigit( src[0] ) * 16;
+            r += parseHexDigit( src[1] );
+            int g = parseHexDigit( src[2] ) * 16;
+            g += parseHexDigit( src[3] );
+            int b = parseHexDigit( src[4] ) * 16;
+            b += parseHexDigit( src[5] );
             value.type = CssValueType.color;
             value.value = ((r * 256) | g) * 256 | b;
             src.skip(6);

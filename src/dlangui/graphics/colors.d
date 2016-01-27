@@ -163,17 +163,6 @@ bool isFullyTransparentColor(uint color) pure nothrow {
     return (color >> 24) == 0xFF;
 }
 
-/// decodes hex digit (0..9, a..f, A..F), returns uint.max if invalid
-uint decodeHexDigit(T)(T ch) pure nothrow {
-    if (ch >= '0' && ch <= '9')
-        return ch - '0';
-    else if (ch >= 'a' && ch <= 'f')
-        return ch - 'a' + 10;
-    else if (ch >= 'A' && ch <= 'F')
-        return ch - 'A' + 10;
-    return uint.max;
-}
-
 /// decode color string  supported formats: #RGB #ARGB #RRGGBB #AARRGGBB
 uint decodeHexColor(string s, uint defValue = 0) pure {
     s = strip(s);
@@ -205,7 +194,7 @@ uint decodeHexColor(string s, uint defValue = 0) pure {
         return defValue;
     uint value = 0;
     foreach(i; 1 .. s.length) {
-        uint digit = decodeHexDigit(s[i]);
+        uint digit = parseHexDigit(s[i]);
         if (digit == uint.max)
             return defValue;
         value = (value << 4) | digit;

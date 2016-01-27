@@ -7,7 +7,7 @@ Layouts are similar to the same in Android.
 
 LinearLayout - either VerticalLayout or HorizontalLayout.
 VerticalLayout - just LinearLayout with orientation=Orientation.Vertical
-HorizontalLayout - just LinearLayout with orientation=Orientation.Vertical
+HorizontalLayout - just LinearLayout with orientation=Orientation.Horizontal
 FrameLayout - children occupy the same place, usually one one is visible at a time
 TableLayout - children aligned into rows and columns
 ResizerWidget - widget to resize sibling widgets

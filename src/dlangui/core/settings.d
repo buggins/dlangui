@@ -27,6 +27,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 module dlangui.core.settings;
 
 import dlangui.core.logger;
+import dlangui.core.types : parseHexDigit;
 import std.range;
 import std.algorithm : equal;
 import std.conv : to;
@@ -1623,42 +1624,28 @@ final class Setting {
                 context = "near `" ~ json[contextStart .. contextEnd] ~ "` ";
             throw new Exception("JSON parsing error in (" ~ to!string(line) ~ ":" ~ to!string(col) ~ ") " ~ context ~ ": " ~ msg);
         }
-        static bool isSpace(char ch) {
-            return ch== ' ' || ch == '\t' || ch == '\r' || ch == '\n';
-        }
         static bool isAlpha(char ch) {
-            return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch == '_';
+            return std.ascii.isAlpha(ch) || ch == '_';
         }
         static bool isAlNum(char ch) {
-            return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || (ch >= '0' && ch <= '9') || ch == '_';
-        }
-        static bool isDigit(char ch) {
-            return (ch >= '0' && ch <= '9');
+            return std.ascii.isAlphaNum(ch) || ch == '_';
         }
         @property char skipSpaces() {
             for(;pos < json.length;pos++) {
                 char ch = json[pos];
-                if (!isSpace(ch))
+                if (!std.ascii.isWhite(ch))
                     break;
             }
             return peek;
         }
-        static int parseHexDigit(char ch) {
-            if (ch >= '0' && ch <='9')
-                return ch - '0';
-            if (ch >= 'a' && ch <='f')
-                return ch - 'a' + 10;
-            if (ch >= 'A' && ch <='F')
-                return ch - 'A' + 10;
-            return -1;
-        }
+
         string parseUnicodeChar() {
             if (pos >= json.length - 3)
                 error("unexpected end of file while parsing unicode character entity inside string");
             dchar ch = 0;
             foreach(i; 0 .. 4) {
-                int d = parseHexDigit(nextChar);
-                if (d < 0)
+                uint d = parseHexDigit(nextChar);
+                if (d == uint.max)
                     error("error while parsing unicode character entity inside string");
                 ch = (ch << 4) | d;
             }
@@ -1756,6 +1743,7 @@ final class Setting {
 
         // parse long, ulong or double
         void parseNumber(Setting res) {
+            import std.ascii : isDigit;
             char ch = peek;
             int sign = 1;
             if (ch == '-') {
@@ -1886,7 +1874,7 @@ final class Setting {
             this = true;
         } else if (parser.parseKeyword("false")) {
             this = false;
-        } else if (ch == '-' || JsonParser.isDigit(ch)) {
+        } else if (ch == '-' || std.ascii.isDigit(ch)) {
             parser.parseNumber(this);
         } else {
             parser.error("cannot parse JSON value");
