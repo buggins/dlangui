@@ -203,6 +203,9 @@
     <style id="STATUS_LINE"
         backgroundColor="#101010"
         />
+    <style id="STRING_GRID"
+        backgroundImageId="editbox_background_dark"
+        />
     <style id="DOCK_HOST"
         backgroundColor="#091925"
         />
