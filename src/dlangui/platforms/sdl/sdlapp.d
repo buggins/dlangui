@@ -777,6 +777,8 @@ class SDLWindow : Window {
         string str = fromStringz(s).dup;
         dstring ds = toUTF32(str);
         uint flags = convertKeyFlags(SDL_GetModState());
+        if (flags & KeyFlag.Control || flags & KeyFlag.Alt || flags & KeyFlag.Menu)
+            return true;
         bool res = dispatchKeyEvent(new KeyEvent(KeyAction.Text, 0, flags, ds));
         if (res) {
             debug(DebugSDL) Log.d("Calling update() after text event");
