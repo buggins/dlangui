@@ -264,7 +264,7 @@ class TabControl : WidgetGroupDefaultDrawing {
         _items = new TabItemList();
         _moreButton = new ImageButton("MORE", "tab_more");
         _moreButton.styleId = STYLE_BUTTON_TRANSPARENT;
-        _moreButton.click = &onClick;
+        _moreButton.mouseEvent = &onMouse;
         _moreButton.margins(Rect(3,3,3,6));
         _enableCloseButton = true;
         styleId = _tabStyle;
@@ -407,7 +407,7 @@ class TabControl : WidgetGroupDefaultDrawing {
         _items.insert(item, index);
         TabItemWidget widget = new TabItemWidget(item, enableCloseButton);
         widget.parent = this;
-        widget.click = &onClick;
+        widget.mouseEvent = &onMouse;
         widget.setStyles(_tabButtonStyle, _tabButtonTextStyle);
         widget.tabClose = &onTabClose;
         _children.insert(widget, index);
@@ -425,15 +425,17 @@ class TabControl : WidgetGroupDefaultDrawing {
         TabItem item = new TabItem(id, labelResourceId, iconId);
         return addTab(item, -1, enableCloseButton);
     }
-    protected bool onClick(Widget source) {
-        if (source.compareId("MORE")) {
-            Log.d("tab MORE button pressed");
-            return true;
-        }
-        string id = source.id;
-        int index = tabIndex(id);
-        if (index >= 0) {
-            selectTab(index, true);
+    protected bool onMouse(Widget source, MouseEvent event) {
+        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
+            if (source.compareId("MORE")) {
+                Log.d("tab MORE button pressed");
+                return true;
+            }
+            string id = source.id;
+            int index = tabIndex(id);
+            if (index >= 0) {
+                selectTab(index, true);
+            }
         }
         return true;
     }
