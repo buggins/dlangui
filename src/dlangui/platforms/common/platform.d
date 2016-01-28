@@ -158,7 +158,7 @@ class TimerInfo {
  * Window abstraction layer. Widgets can be shown only inside window.
  * 
  */
-class Window {
+class Window : CustomEventTarget {
     protected int _dx;
     protected int _dy;
     protected uint _keyboardModifiers;

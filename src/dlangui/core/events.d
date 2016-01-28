@@ -1437,6 +1437,13 @@ class RunnableEvent : CustomEvent {
     }
 }
 
+interface CustomEventTarget {
+    /// post event to handle in UI thread (this method can be used from background thread)
+    void postEvent(CustomEvent event);
+
+    /// post task to execute in UI thread (this method can be used from background thread)
+    void executeInUiThread(void delegate() runnable);
+}
 
 private static __gshared string[int] actionIdToNameMap;
 private static __gshared int[string] actionNameToIdMap;
