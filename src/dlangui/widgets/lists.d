@@ -20,6 +20,7 @@ module dlangui.widgets.lists;
 
 import dlangui.widgets.widget;
 import dlangui.widgets.controls;
+import dlangui.widgets.layouts;
 import dlangui.core.signals;
 
 /** interface - slot for onAdapterChangeListener */
@@ -163,37 +164,50 @@ class WidgetListAdapter : ListAdapterBase {
     }
 }
 
-/// string values string list adapter
+/// string values string list adapter - each item can have optional string or integer id, and optional icon resource id
 struct StringListValue {
-    string stringId;
+    /// integer id for item
     int intId;
+    /// string id for item
+    string stringId;
+    /// icon resource id
+    string iconId;
+    /// label to show for item
     UIString label;
-    this(string id, dstring name) {
+
+    this(string id, dstring name, string iconId = null) {
         this.stringId = id;
         this.label = name;
+        this.iconId = iconId;
     }
-    this(string id, string nameResourceId) {
+    this(string id, string nameResourceId, string iconId = null) {
         this.stringId = id;
         this.label = nameResourceId;
+        this.iconId = iconId;
     }
-    this(int id, dstring name) {
+    this(int id, dstring name, string iconId = null) {
         this.intId = id;
         this.label = name;
+        this.iconId = iconId;
     }
-    this(int id, string nameResourceId) {
+    this(int id, string nameResourceId, string iconId = null) {
         this.intId = id;
         this.label = nameResourceId;
+        this.iconId = iconId;
+    }
+    this(dstring name, string iconId = null) {
+        this.label = name;
+        this.iconId = iconId;
     }
 }
 
-
 /** List adapter providing strings only. */
-class StringListAdapter : ListAdapterBase {
+class StringListAdapterBase : ListAdapterBase {
     protected UIStringCollection _items;
     protected uint[] _states;
     protected int[] _intIds;
     protected string[] _stringIds;
-    protected TextWidget _widget;
+    protected string[] _iconIds;
     protected int _lastItemIndex;
 
     /** create empty string list adapter. */
@@ -206,6 +220,7 @@ class StringListAdapter : ListAdapterBase {
         _items.addAll(items);
         _intIds.length = items.length;
         _stringIds.length = items.length;
+        _iconIds.length = items.length;
         _lastItemIndex = -1;
         updateStatesLength();
     }
@@ -215,6 +230,7 @@ class StringListAdapter : ListAdapterBase {
         _items.addAll(items);
         _intIds.length = items.length;
         _stringIds.length = items.length;
+        _iconIds.length = items.length;
         _lastItemIndex = -1;
         updateStatesLength();
     }
@@ -223,10 +239,12 @@ class StringListAdapter : ListAdapterBase {
     this(StringListValue[] items) {
         _intIds.length = items.length;
         _stringIds.length = items.length;
+        _iconIds.length = items.length;
         for (int i = 0; i < items.length; i++) {
             _items.add(items[i].label);
             _intIds[i] = items[i].intId;
             _stringIds[i] = items[i].stringId;
+            _iconIds[i] = items[i].iconId;
         }
         _lastItemIndex = -1;
         updateStatesLength();
@@ -240,47 +258,52 @@ class StringListAdapter : ListAdapterBase {
     }
 
     /// remove item by index
-    StringListAdapter remove(int index) {
+    StringListAdapterBase remove(int index) {
         if (index < 0 || index >= _items.length)
             return this;
         for (int i = 0; i < _items.length - 1; i++) {
             _intIds[i] = _intIds[i + 1];
             _stringIds[i] = _stringIds[i + 1];
+            _iconIds[i] = _iconIds[i + 1];
             _states[i] = _states[i + 1];
         }
         _items.remove(index);
         _intIds.length = items.length;
         _states.length = _items.length;
         _stringIds.length = items.length;
+        _iconIds.length = items.length;
         updateViews();
         return this;
     }
 
     /// add new item
-    StringListAdapter add(UIString item, int index = -1) {
+    StringListAdapterBase add(UIString item, int index = -1) {
         if (index < 0 || index > _items.length)
             index = _items.length;
         _items.add(item, index);
         _intIds.length = items.length;
         _states.length = _items.length;
         _stringIds.length = items.length;
+        _iconIds.length = items.length;
         for (int i = _items.length - 1; i > index; i--) {
             _intIds[i] = _intIds[i - 1];
             _stringIds[i] = _stringIds[i - 1];
+            _iconIds[i] = _iconIds[i - 1];
             _states[i] = _states[i - 1];
         }
         _intIds[index] = 0;
         _stringIds[index] = null;
+        _iconIds[index] = null;
         _states[index] = State.Enabled;
         updateViews();
         return this;
     }
     /// add new string resource item
-    StringListAdapter add(string item, int index = -1) {
+    StringListAdapterBase add(string item, int index = -1) {
         return add(UIString(item), index);
     }
     /// add new raw dstring item
-    StringListAdapter add(dstring item, int index = -1) {
+    StringListAdapterBase add(dstring item, int index = -1) {
         return add(UIString(item), index);
     }
 
@@ -288,14 +311,16 @@ class StringListAdapter : ListAdapterBase {
     @property ref const(UIStringCollection) items() { return _items; }
 
     /** Replace items collection. */
-    @property StringListAdapter items(dstring[] values) { 
+    @property StringListAdapterBase items(dstring[] values) { 
         _items = values;
         _intIds.length = items.length;
         _states.length = _items.length;
         _stringIds.length = items.length;
+        _iconIds.length = items.length;
         for (int i = 0; i < _items.length; i++) {
             _intIds[i] = 0;
             _stringIds[i] = null;
+            _iconIds[i] = null;
             _states[i] = State.Enabled;
         }
         updateViews();
@@ -328,6 +353,56 @@ class StringListAdapter : ListAdapterBase {
             _intIds.length = items.length;
         if (_stringIds.length < items.length)
             _stringIds.length = items.length;
+        if (_iconIds.length < items.length)
+            _iconIds.length = items.length;
+    }
+
+    /// return list item's state flags
+    override uint itemState(int index) const {
+        if (index < 0 || index >= _items.length)
+            return 0;
+        return _states[index];
+    }
+
+    /// set one or more list item's state flags, returns updated state
+    override uint setItemState(int index, uint flags) {
+        updateStatesLength();
+        _states[index] |= flags;
+        return _states[index];
+    }
+    /// reset one or more list item's state flags, returns updated state
+    override uint resetItemState(int index, uint flags) {
+        updateStatesLength();
+        _states[index] &= ~flags;
+        return _states[index];
+    }
+
+    ~this() {
+    }
+}
+
+/** List adapter providing strings only. */
+class StringListAdapter : StringListAdapterBase {
+    protected TextWidget _widget;
+
+    /** create empty string list adapter. */
+    this() {
+        super();
+    }
+
+    /** Init with array of string resource IDs. */
+    this(string[] items) {
+        super(items);
+    }
+
+    /** Init with array of unicode strings. */
+    this(dstring[] items) {
+        super(items);
+    }
+
+    /** Init with array of StringListValue. */
+    this(StringListValue[] items) {
+        super(items);
     }
 
     /// return list item widget by item index
@@ -347,32 +422,94 @@ class StringListAdapter : ListAdapterBase {
         return _widget;
     }
 
-    /// return list item's state flags
-    override uint itemState(int index) const {
-        if (index < 0 || index >= _items.length)
-            return 0;
-        return _states[index];
+    /// set one or more list item's state flags, returns updated state
+    override uint setItemState(int index, uint flags) {
+        uint res = super.setItemState(index, flags);
+        if (_widget !is null && _lastItemIndex == index)
+            _widget.state = res;
+        return res;
+    }
+
+
+
+    /// reset one or more list item's state flags, returns updated state
+    override uint resetItemState(int index, uint flags) {
+        uint res = resetItemState(index, flags);
+        if (_widget !is null && _lastItemIndex == index)
+            _widget.state = res;
+        return res;
+    }
+
+    ~this() {
+        if (_widget)
+            destroy(_widget);
+    }
+}
+
+/** List adapter providing strings with icons. */
+class IconStringListAdapter : StringListAdapterBase {
+    protected HorizontalLayout _widget;
+    protected TextWidget _textWidget;
+    protected ImageWidget _iconWidget;
+
+    /** create empty string list adapter. */
+    this() {
+        super();
+    }
+
+    /** Init with array of StringListValue. */
+    this(StringListValue[] items) {
+        super(items);
+    }
+
+    /// return list item widget by item index
+    override Widget itemWidget(int index) {
+        updateStatesLength();
+        if (_widget is null) {
+            _widget = new HorizontalLayout("ICON_STRING_LIST_ITEM");
+            _widget.styleId = STYLE_LIST_ITEM;
+            _textWidget = new TextWidget("label");
+            _iconWidget = new ImageWidget("icon");
+            _widget.addChild(_iconWidget);
+            _widget.addChild(_textWidget);
+        } else {
+            if (index == _lastItemIndex)
+                return _widget;
+        }
+        // update widget
+        _textWidget.text = _items.get(index);
+        _textWidget.state = _states[index];
+        if (_iconIds[index]) {
+            _iconWidget.visibility = Visibility.Visible;
+            _iconWidget.drawableId = _iconIds[index];
+        } else {
+            _iconWidget.visibility = Visibility.Gone;
+        }
+        _lastItemIndex = index;
+        return _widget;
     }
 
     /// set one or more list item's state flags, returns updated state
     override uint setItemState(int index, uint flags) {
-        updateStatesLength();
-        _states[index] |= flags;
-        if (_widget !is null && _lastItemIndex == index)
-            _widget.state = _states[index];
-        return _states[index];
+        uint res = super.setItemState(index, flags);
+        if (_widget !is null && _lastItemIndex == index) {
+            _widget.state = res;
+            _textWidget.state = res;
+        }
+        return res;
     }
+
     /// reset one or more list item's state flags, returns updated state
     override uint resetItemState(int index, uint flags) {
-        updateStatesLength();
-        _states[index] &= ~flags;
-        if (_widget !is null && _lastItemIndex == index)
-            _widget.state = _states[index];
-        return _states[index];
+        uint res = resetItemState(index, flags);
+        if (_widget !is null && _lastItemIndex == index) {
+            _widget.state = res;
+            _textWidget.state = res;
+        }
+        return res;
     }
 
     ~this() {
-        //Log.d("Destroying StringListAdapter");
         if (_widget)
             destroy(_widget);
     }

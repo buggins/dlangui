@@ -319,6 +319,120 @@ class ComboBox : ComboBoxBase {
 
 }
 
+
+
+/** ComboBox with list of strings. */
+class IconTextComboBox : ComboBoxBase {
+
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null);
+    }
+    /// create with ID parameter
+    this(string ID) {
+        super(ID, new IconStringListAdapter(), true);
+    }
+
+    this(string ID, StringListValue[] items) {
+        super(ID, new IconStringListAdapter(items), true);
+    }
+
+    @property void items(StringListValue[] items) {
+        setAdapter(new IconStringListAdapter(items));
+        if(items.length > 0) {
+            selectedItemIndex = 0;
+        }
+        requestLayout();
+    }
+
+    /// get selected item as text
+    @property dstring selectedItem() {
+        if (_selectedItemIndex < 0 || _selectedItemIndex >= _adapter.itemCount)
+            return "";
+        return adapter.items.get(_selectedItemIndex);
+    }
+
+    /// returns list of items
+    @property ref const(UIStringCollection) items() {
+        return (cast(StringListAdapter)_adapter).items;
+    }
+
+    @property StringListAdapter adapter() {
+        return cast(StringListAdapter)_adapter;
+    }
+
+    @property override dstring text() {
+        return _body.text;
+    }
+
+    @property override Widget text(dstring txt) {
+        int idx = adapter.items.indexOf(txt);
+        if (idx >= 0) {
+            selectedItemIndex = idx;
+        } else {
+            // not found
+            _selectedItemIndex = -1;
+            _body.text = txt;
+        }
+        return this;
+    }
+
+    @property override Widget text(UIString txt) {
+        int idx = adapter.items.indexOf(txt);
+        if (idx >= 0) {
+            selectedItemIndex = idx;
+        } else {
+            // not found
+            _selectedItemIndex = -1;
+            _body.text = txt;
+        }
+        return this;
+    }
+
+    override @property ComboBoxBase selectedItemIndex(int index) {
+        _body.text = adapter.items[index];
+        return super.selectedItemIndex(index);
+    }
+
+    /** Selected item index. */
+    override @property int selectedItemIndex() {
+        return super.selectedItemIndex;
+    }
+
+    override void initialize() {
+        super.initialize();
+        _body.focusable = false;
+        _body.clickable = true;
+        focusable = true;
+        clickable = true;
+        click = this;
+    }
+
+    override protected Widget createSelectedItemWidget() {
+        TextWidget res = new TextWidget("COMBO_BOX_BODY");
+        res.styleId = STYLE_COMBO_BOX_BODY;
+        res.clickable = true;
+        res.layoutWidth = FILL_PARENT;
+        res.layoutHeight = WRAP_CONTENT;
+        int maxItemWidth = 0;
+        for(int i = 0; i < _adapter.itemCount; i++) {
+            Widget item = _adapter.itemWidget(i);
+            item.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+            if (maxItemWidth < item.measuredWidth)
+                maxItemWidth = item.measuredWidth;
+        }
+        res.minWidth = maxItemWidth;
+        return res;
+    }
+
+    ~this() {
+        if (_adapter) {
+            destroy(_adapter);
+            _adapter = null;
+        }
+    }
+}
+
 /** Editable ComboBox with list of strings. */
 class ComboEdit : ComboBox {
 
