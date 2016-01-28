@@ -434,7 +434,7 @@ class StringListAdapter : StringListAdapterBase {
 
     /// reset one or more list item's state flags, returns updated state
     override uint resetItemState(int index, uint flags) {
-        uint res = resetItemState(index, flags);
+        uint res = super.resetItemState(index, flags);
         if (_widget !is null && _lastItemIndex == index)
             _widget.state = res;
         return res;
