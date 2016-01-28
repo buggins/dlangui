@@ -46,26 +46,12 @@ derelict.util.exception.ShouldThrow gl3MissingSymFunc( string symName ) {
     return derelict.util.exception.ShouldThrow.No;
 }
 
-/* For reporting OpenGL errors, it's nicer to get a human-readable symbolic name for the
- * error instead of the numeric form. Derelict's GLenum is just an alias for uint, so we
- * can't depend on D's nice toString() for enums.
- */
-private immutable(string[int]) errors;
-static this() {
-    errors = [
-        0x0500:  "GL_INVALID_ENUM",
-        0x0501:  "GL_INVALID_VALUE",
-        0x0502:  "GL_INVALID_OPERATION",
-        0x0505:  "GL_OUT_OF_MEMORY",
-        0x0506:  "GL_INVALID_FRAMEBUFFER_OPERATION",
-        0x0507:  "GL_CONTEXT_LOST"
-    ];
-}
+
 /**
  * Convenient wrapper around glGetError()
+ * Using: checkgl!glFunction(funcParams);
  * TODO use one of the DEBUG extensions
  */
-/// Using: checkgl!glFunction(funcParams);
 template checkgl(alias func)
 {
     debug auto checkgl(string functionName=__FUNCTION__, int line=__LINE__, Args...)(Args args)
@@ -78,28 +64,43 @@ template checkgl(alias func)
 bool checkError(string context="", string functionName=__FUNCTION__, int line=__LINE__)
 {
     GLenum err = glGetError();
-    if (err != GL_NO_ERROR)
-    {
-        Log.e("OpenGL error ", errors.get(err, to!string(err)), " at ", functionName, ":", line, " -- ", context);
+    if (err != GL_NO_ERROR) {
+        Log.e("OpenGL error ", glerrorToString(err), " at ", functionName, ":", line, " -- ", context);
         return true;
     }
     return false;
+}
+
+/* For reporting OpenGL errors, it's nicer to get a human-readable symbolic name for the
+ * error instead of the numeric form. Derelict's GLenum is just an alias for uint, so we
+ * can't depend on D's nice toString() for enums.
+ */
+string glerrorToString(in GLenum err) pure nothrow {
+    switch(err) {
+        case 0x0500: return "GL_INVALID_ENUM";
+        case 0x0501: return "GL_INVALID_VALUE";
+        case 0x0502: return "GL_INVALID_OPERATION";
+        case 0x0505: return "GL_OUT_OF_MEMORY";
+        case 0x0506: return "GL_INVALID_FRAMEBUFFER_OPERATION";
+        case 0x0507: return "GL_CONTEXT_LOST";
+        case GL_NO_ERROR: return "No GL error";
+        default: return "Unknown GL error: " ~ to!string(err);
+    }
 }
 
 
 class GLProgram {
     @property abstract string vertexSource();
     @property abstract string fragmentSource();
-    private GLuint vertexShader;
-    private GLuint fragmentShader;
     protected GLuint program;
     protected bool initialized;
     protected bool error;
+
+    private GLuint vertexShader;
+    private GLuint fragmentShader;
     private string glslversion;
     private int glslversionInt;
     private char[] glslversionString;
-    this() {
-    }
 
     private void compatibilityFixes(ref char[] code, GLuint type) {
         if (glslversionInt < 150) {
@@ -125,7 +126,7 @@ class GLProgram {
         sourceCode ~= src;
         compatibilityFixes(sourceCode, type);
 
-        Log.d("compileShader: glsl = ", glslversion, ", type: ", (type == GL_VERTEX_SHADER ? "GL_VERTEX_SHADER" : (type == GL_FRAGMENT_SHADER ? "GL_FRAGMENT_SHADER" : "UNKNOWN")));//, " code:\n", sourceCode);
+        Log.d("compileShader: glsl = ", glslversion, ", type: ", (type == GL_VERTEX_SHADER ? "GL_VERTEX_SHADER" : (type == GL_FRAGMENT_SHADER ? "GL_FRAGMENT_SHADER" : "UNKNOWN")));
         GLuint shader = glCreateShader(type);
         const char * psrc = sourceCode.toStringz;
         glShaderSource(shader, 1, &psrc, null);
@@ -250,20 +251,19 @@ class GLProgram {
             Log.e("glGetAttribLocation failed for " ~ variableName);
         return res;
     }
-
 }
 
 class SolidFillProgram : GLProgram {
     @property override string vertexSource() {
         return q{
-            in vec4 vertex;
-            in vec4 colAttr;
+            in vec3 vertex_position;
+            in vec4 vertex_color;
             out vec4 col;
             uniform mat4 matrix;
             void main(void)
             {
-                gl_Position = matrix * vertex;
-                col = colAttr;
+                gl_Position = matrix * vec4(vertex_position, 1);
+                col = vertex_color;
             }
         };
     }
@@ -284,8 +284,8 @@ class SolidFillProgram : GLProgram {
     protected GLint colAttrLocation;
     override bool initLocations() {
         matrixLocation = getUniformLocation("matrix");
-        vertexLocation = getAttribLocation("vertex");
-        colAttrLocation = getAttribLocation("colAttr");
+        vertexLocation = getAttribLocation("vertex_position");
+        colAttrLocation = getAttribLocation("vertex_color");
         return matrixLocation >= 0 && vertexLocation >= 0 && colAttrLocation >= 0;
     }
 
@@ -358,30 +358,29 @@ class LineProgram : SolidFillProgram {
 class TextureProgram : SolidFillProgram {
     @property override string vertexSource() {
         return q{
-            in vec4 vertex;
-            in vec4 colAttr;
-            in vec4 texCoord;
+            in vec3 vertex_position;
+            in vec4 vertex_color;
+            in vec2 vertex_UV;
             out vec4 col;
-            out vec4 texc;
+            out vec2 UV;
             uniform mat4 matrix;
             void main(void)
             {
-                gl_Position = matrix * vertex;
-                col = colAttr;
-                texc = texCoord;
+                gl_Position = matrix * vec4(vertex_position, 1);
+                col = vertex_color;
+                UV = vertex_UV;
             }
         };
-
     }
     @property override string fragmentSource() {
         return q{
             uniform sampler2D tex;
             in vec4 col;
-            in vec4 texc;
+            in vec2 UV;
             out vec4 outColor;
             void main(void)
             {
-                outColor = texture(tex, texc.st) * col;
+                outColor = texture(tex, UV) * col;
             }
         };
     }
@@ -389,7 +388,7 @@ class TextureProgram : SolidFillProgram {
     GLint texCoordLocation;
     override bool initLocations() {
         bool res = super.initLocations();
-        texCoordLocation = getAttribLocation("texCoord");
+        texCoordLocation = getAttribLocation("vertex_UV");
         return res && texCoordLocation >= 0;
     }
 
@@ -537,8 +536,8 @@ bool initGLSupport(bool legacy = false) {
     }
 }
 
-/// OpenGL suport helper
-class GLSupport {
+/// OpenGL support helper
+final class GLSupport {
 
     private bool _legacyMode;
     @property bool legacyMode() { return _legacyMode; }
@@ -551,9 +550,9 @@ class GLSupport {
         _legacyMode = legacy;
     }
 
-    TextureProgram _textureProgram;
     SolidFillProgram _solidFillProgram;
     LineProgram _lineProgram;
+    TextureProgram _textureProgram;
 
     @property bool valid() {
         return _legacyMode || _textureProgram && _solidFillProgram && _lineProgram;
@@ -703,7 +702,7 @@ class GLSupport {
         drawColorAndTextureRect(texture, tdx, tdy, srcrc.left, srcrc.top, srcrc.width(), srcrc.height(), dstrc.left, dstrc.top, dstrc.width(), dstrc.height(), color, linear);
     }
 
-    void drawColorAndTextureRect(Tex2D texture, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, uint color, bool linear) {
+    private void drawColorAndTextureRect(Tex2D texture, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, uint color, bool linear) {
         Color[4] colors;
         FillColor(color, colors);
         float dstx0 = cast(float)xx;
@@ -758,7 +757,6 @@ class GLSupport {
         } else {
             _textureProgram.execute(vertices, cast(float[])colors, texcoords, texture, linear);
         }
-        //drawColorAndTextureRect(vertices, texcoords, colors, texture, linear);
     }
 
     /// call glFlush
@@ -768,7 +766,7 @@ class GLSupport {
 
     bool setTextureImage(Tex2D texture, int dx, int dy, ubyte * pixels) {
         checkError("before setTextureImage");
-        texture.setup();
+        texture.bind();
         checkgl!glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         texture.setSamplerParams(true, true);
 
@@ -778,12 +776,13 @@ class GLSupport {
             Log.e("Cannot set image for texture");
             return false;
         }
+        texture.unbind();
         return true;
     }
 
     bool setTextureImageAlpha(Tex2D texture, int dx, int dy, ubyte * pixels) {
         checkError("before setTextureImageAlpha");
-        texture.setup();
+        texture.bind();
         checkgl!glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         texture.setSamplerParams(true, true);
 
@@ -821,10 +820,8 @@ class GLSupport {
             Log.e("glFramebufferTexture2D failed");
             res = false;
         }
-        //glClearColor(0.5f, 0, 0, 1);
         checkgl!glClearColor(0.5f, 0.5f, 0.5f, 1.0f);
         checkgl!glClear(GL_COLOR_BUFFER_BIT);
-        //CRLog::trace("CRGLSupportImpl::createFramebuffer %d,%d  texture=%d, buffer=%d", dx, dy, textureId, framebufferId);
         currentFBO = fbo;
 
         texture.unbind();
@@ -834,7 +831,6 @@ class GLSupport {
     }
 
     void deleteFramebuffer(ref FBO fbo) {
-        //CRLog::debug("GLDrawBuf::deleteFramebuffer");
         if (fbo.ID != 0) {
             destroy(fbo);
         }
@@ -842,10 +838,13 @@ class GLSupport {
     }
 
     bool bindFramebuffer(FBO fbo) {
-        //CRLog::trace("CRGLSupportImpl::bindFramebuffer(%d)", framebufferId);
         fbo.bind();
         currentFBO = fbo;
         return !checkError("glBindFramebuffer");
+    }
+
+    void clearDepthBuffer() {
+        glClear(GL_DEPTH_BUFFER_BIT);
     }
 
     /// projection matrix
@@ -853,16 +852,10 @@ class GLSupport {
     private int bufferDx;
     /// current gl buffer height
     private int bufferDy;
-    //private float[16] matrix;
     private mat4 _projectionMatrix;
 
     @property ref mat4 projectionMatrix() {
         return _projectionMatrix;
-    }
-
-    /// clear depth buffer
-    void clearDepthBuffer() {
-        glClear(GL_DEPTH_BUFFER_BIT);
     }
 
     void setOrthoProjection(Rect windowRect, Rect view) {
@@ -870,8 +863,6 @@ class GLSupport {
         bufferDx = windowRect.width;
         bufferDy = windowRect.height;
         _projectionMatrix.setOrtho(view.left, view.right, view.top, view.bottom, 0.5f, 50.0f);
-        //QMatrix4x4_ortho(view.left, view.right, view.top, view.bottom, 0.5f, 50.0f);
-        //myGlOrtho(0, dx, 0, dy, 0.1f, 5.0f);
 
         if (_legacyMode) {
             glMatrixMode(GL_PROJECTION);
@@ -891,7 +882,6 @@ class GLSupport {
         bufferDx = windowRect.width;
         bufferDy = windowRect.height;
         float aspectRatio = cast(float)view.width / cast(float)view.height;
-        //QMatrix4x4_perspective(fieldOfView, aspectRatio, nearPlane, farPlane);
         _projectionMatrix.setPerspective(fieldOfView, aspectRatio, nearPlane, farPlane);
         if (_legacyMode) {
             glMatrixMode(GL_PROJECTION);
@@ -908,30 +898,34 @@ class GLSupport {
 }
 
 enum GLObjectTypes { Buffer, VertexArray, Texture, Framebuffer };
+/** RAII OpenGL object template.
+  * Note: on construction it binds itself to the target, and it binds 0 to target on destruction.
+  * All methods (except ctor, dtor, bind(), unbind() and setup()) does not perform binding.
+*/
 class GLObject(GLObjectTypes type, GLuint target = 0) {
-    @property auto ID() const { return id; }
+    immutable GLuint ID;
     //alias ID this; // good, but it confuses destroy()
 
-    private GLuint id;
-
     this() {
-        mixin("checkgl!glGen" ~ to!string(type) ~ "s(1, &id);");
+        GLuint handle;
+        mixin("checkgl!glGen" ~ to!string(type) ~ "s(1, &handle);");
+        ID = handle;
         bind();
     }
 
     ~this() {
         unbind();
-        mixin("checkgl!glDelete" ~ to!string(type) ~ "s(1, &id);");
+        mixin("checkgl!glDelete" ~ to!string(type) ~ "s(1, &ID);");
     }
 
     void bind() {
         static if(target != 0)
-            mixin("glBind" ~ to!string(type) ~ "(" ~ to!string(target) ~ ", id);");
+            mixin("glBind" ~ to!string(type) ~ "(" ~ to!string(target) ~ ", ID);");
         else
-            mixin("glBind" ~ to!string(type) ~ "(id);");
+            mixin("glBind" ~ to!string(type) ~ "(ID);");
     }
 
-    void unbind() {
+    static void unbind() {
         static if(target != 0)
             mixin("checkgl!glBind" ~ to!string(type) ~ "(" ~ to!string(target) ~ ", 0);");
         else
@@ -940,43 +934,43 @@ class GLObject(GLObjectTypes type, GLuint target = 0) {
     
     static if(type == GLObjectTypes.Buffer)
     {
-    void fill(float[][] buffs) {
-        int length;
-        foreach(b; buffs)
-            length += b.length;
-        glBufferData(target,
-                     length * float.sizeof,
-                     null,
-                     GL_STREAM_DRAW);
-        int offset;
-        foreach(b; buffs) {
-            glBufferSubData(target,
-                            offset,
-                            b.length * float.sizeof,
-                            b.ptr);
-            offset += b.length * float.sizeof;
+        void fill(float[][] buffs) {
+            int length;
+            foreach(b; buffs)
+                length += b.length;
+            glBufferData(target,
+                         length * float.sizeof,
+                         null,
+                         GL_STREAM_DRAW);
+            int offset;
+            foreach(b; buffs) {
+                glBufferSubData(target,
+                                offset,
+                                b.length * float.sizeof,
+                                b.ptr);
+                offset += b.length * float.sizeof;
+            }
         }
-    }
     }
 
     static if(type == GLObjectTypes.Texture)
     {
-    void setSamplerParams(bool linear, bool clamp = false) {
-        glTexParameteri(target, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
-        glTexParameteri(target, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
-        checkError("filtering - glTexParameteri");
-        if(clamp) {
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-            checkError("clamp - glTexParameteri");
+        void setSamplerParams(bool linear, bool clamp = false) {
+            glTexParameteri(target, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+            checkError("filtering - glTexParameteri");
+            if(clamp) {
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                checkError("clamp - glTexParameteri");
+            }
         }
-    }
 
-    void setup(GLuint binding = 0) {
-        glActiveTexture(GL_TEXTURE0 + binding);
-        glBindTexture(target, id);
-        checkError("setup texture");
-    }
+        void setup(GLuint binding = 0) {
+            glActiveTexture(GL_TEXTURE0 + binding);
+            glBindTexture(target, ID);
+            checkError("setup texture");
+        }
     }
 }
 alias VAO = GLObject!(GLObjectTypes.VertexArray);
