@@ -646,7 +646,7 @@ class FreeTypeFontManager : FontManager {
     bool registerFont(string filename, FontFamily family = FontFamily.SansSerif, string face = null, bool italic = false, int weight = 0, bool dontLoadFile = false) {
         if (_library is null)
             return false;
-        Log.v("FreeTypeFontManager.registerFont ", filename, " ", family, " ", face, " italic=", italic, " weight=", weight);
+        //Log.v("FreeTypeFontManager.registerFont ", filename, " ", family, " ", face, " italic=", italic, " weight=", weight);
         if (!exists(filename) || !isFile(filename)) {
             Log.d("Font file ", filename, " not found");
             return false;
