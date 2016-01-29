@@ -97,7 +97,7 @@ struct VertexFormat {
     }
 }
 
-class Mesh2 {
+class Mesh {
     protected VertexFormat _vertexFormat;
     protected int _vertexCount;
     protected float[] _vertexData;
@@ -137,7 +137,7 @@ class Mesh2 {
     }
 }
 
-class Mesh {
+class Mesh_bak {
     protected MeshPart[] _parts;
     protected int _vertexCount;
     protected int _triangleCount;

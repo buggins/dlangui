@@ -71,6 +71,28 @@ bool checkError(string context="", string functionName=__FUNCTION__, int line=__
     return false;
 }
 
+/**
+* Convenient wrapper around glGetError()
+* Using: checkgl!glFunction(funcParams);
+* TODO use one of the DEBUG extensions
+*/
+template assertgl(alias func)
+{
+    auto assertgl(string functionName=__FUNCTION__, int line=__LINE__, Args...)(Args args)
+    {
+        scope(success) assertNoError(func.stringof, functionName, line);
+        return func(args);
+    };
+}
+void assertNoError(string context="", string functionName=__FUNCTION__, int line=__LINE__)
+{
+    GLenum err = glGetError();
+    if (err != GL_NO_ERROR) {
+        Log.e("fatal OpenGL error ", glerrorToString(err), " at ", functionName, ":", line, " -- ", context);
+        assert(false);
+    }
+}
+
 /* For reporting OpenGL errors, it's nicer to get a human-readable symbolic name for the
  * error instead of the numeric form. Derelict's GLenum is just an alias for uint, so we
  * can't depend on D's nice toString() for enums.
@@ -975,3 +997,47 @@ alias VAO = GLObject!(GLObjectTypes.VertexArray);
 alias VBO = GLObject!(GLObjectTypes.Buffer, GL_ARRAY_BUFFER);
 alias Tex2D = GLObject!(GLObjectTypes.Texture, GL_TEXTURE_2D);
 alias FBO = GLObject!(GLObjectTypes.Framebuffer, GL_FRAMEBUFFER);
+
+import dlangui.graphics.scene.mesh;
+
+class VertexBuffer {
+    protected GLuint _vertexBuffer;
+    protected bool _dynamic;
+    this(Mesh mesh, bool dynamic = false) {
+        _dynamic = dynamic;
+        assertgl!glGenBuffers(1, &_vertexBuffer);
+        assertgl!glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
+        assertgl!glBufferData(GL_ARRAY_BUFFER, mesh.vertexFormat.vertexSize * mesh.vertexCount, null, _dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+    }
+    void setVertexData(float[] data) {
+        assertgl!glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
+        assertgl!glBufferData(GL_ARRAY_BUFFER, float.sizeof * cast(int)data.length , data.ptr, _dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+    }
+    ~this() {
+        if (_vertexBuffer) {
+            checkgl!glDeleteBuffers(1, &_vertexBuffer);
+            _vertexBuffer = 0;
+        }
+    }
+}
+
+class VertexAttributeBinding {
+    protected GLuint _handle;
+    this(Mesh mesh) {
+        checkgl!glBindBuffer(GL_ARRAY_BUFFER, 0);
+        checkgl!glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        checkgl!glGenVertexArrays(1, &_handle);
+        if (!_handle) {
+            Log.e("Cannot generate vertex array id");
+            return;
+        }
+        checkgl!glBindVertexArray(_handle);
+        //glBindBuffer(_handle, 
+        checkgl!glBindVertexArray(0);
+    }
+    ~this() {
+        if (_handle) {
+            checkgl!glDeleteVertexArrays(1, &_handle);
+        }
+    }
+}
