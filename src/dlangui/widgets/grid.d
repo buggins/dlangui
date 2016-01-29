@@ -1407,11 +1407,6 @@ class StringGridWidget : StringGridWidgetBase {
 
     /// draw cell background
     protected override void drawHeaderCellBackground(DrawBuf buf, Rect rc, int c, int r) {
-        Rect vborder = rc;
-        Rect hborder = rc;
-        vborder.left = vborder.right - 1;
-        hborder.top = hborder.bottom - 1;
-        hborder.right--;
         bool selectedCol = (c == col) && !_rowSelect;
         bool selectedRow = r == row;
         bool selectedCell = selectedCol && selectedRow;
@@ -1426,8 +1421,30 @@ class StringGridWidget : StringGridWidgetBase {
                 cl = _cellHeaderSelectedBackgroundColor;
         }
         buf.fillRect(rc, cl);
-        buf.fillRect(vborder, _cellHeaderBorderColor);
-        buf.fillRect(hborder, _cellHeaderBorderColor);
+        buf.drawLine(Point(rc.right, rc.bottom), Point(rc.right, rc.top), _cellHeaderBorderColor); // vertical
+        buf.drawLine(Point(rc.left, rc.bottom), Point(rc.right - 1, rc.bottom), _cellHeaderBorderColor); // horizontal
+    }
+
+    /// draw cell background
+    protected override void drawCellBackground(DrawBuf buf, Rect rc, int c, int r) {
+        bool selectedCol = c == col;
+        bool selectedRow = r == row;
+        bool selectedCell = selectedCol && selectedRow;
+        if (_rowSelect && selectedRow)
+            selectedCell = true;
+        // normal cell background
+        if (c < fixedCols || r < fixedRows) {
+            // fixed cell background
+            buf.fillRect(rc, _fixedCellBackgroundColor);
+        }
+        buf.drawLine(Point(rc.left, rc.bottom + 1), Point(rc.left, rc.top), _cellBorderColor); // vertical
+        buf.drawLine(Point(rc.left, rc.bottom), Point(rc.right - 1, rc.bottom), _cellBorderColor); // horizontal
+        if (selectedCell) {
+            if (_rowSelect)
+                buf.drawFrame(rc, _selectionColorRowSelect, Rect(0,1,0,1), _cellBorderColor);
+            else
+                buf.drawFrame(rc, _selectionColor, Rect(1,1,1,1), _cellBorderColor);
+        }
     }
 
 
@@ -1442,34 +1459,6 @@ class StringGridWidget : StringGridWidgetBase {
         _cellHeaderSelectedBackgroundColor = style.customColor("grid_cell_background_header_selected", 0x80FFC040);
         super.onThemeChanged();
     }
-
-    /// draw cell background
-    protected override void drawCellBackground(DrawBuf buf, Rect rc, int c, int r) {
-        Rect vborder = rc;
-        Rect hborder = rc;
-        vborder.left = vborder.right - 1;
-        hborder.top = hborder.bottom - 1;
-        hborder.right--;
-        bool selectedCol = c == col;
-        bool selectedRow = r == row;
-        bool selectedCell = selectedCol && selectedRow;
-        if (_rowSelect && selectedRow)
-            selectedCell = true;
-        // normal cell background
-        if (c < fixedCols || r < fixedRows) {
-            // fixed cell background
-            buf.fillRect(rc, _fixedCellBackgroundColor);
-        }
-        buf.fillRect(vborder, _cellBorderColor);
-        buf.fillRect(hborder, _cellBorderColor);
-        if (selectedCell) {
-            if (_rowSelect)
-                buf.drawFrame(rc, _selectionColorRowSelect, Rect(0,1,0,1), _cellBorderColor);
-            else
-                buf.drawFrame(rc, _selectionColor, Rect(1,1,1,1), _cellBorderColor);
-        }
-    }
-
 }
 
 import dlangui.widgets.metadata;
