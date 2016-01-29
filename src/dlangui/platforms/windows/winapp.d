@@ -156,6 +156,69 @@ static if (ENABLE_OPENGL) {
 
 const uint CUSTOM_MESSAGE_ID = WM_USER + 1;
 
+static if (ENABLE_OPENGL) {
+
+    /// Shared opengl context helper
+    struct SharedGLContext {
+        import derelict.opengl3.wgl;
+
+        HGLRC _hGLRC; // opengl context
+        HPALETTE _hPalette;
+        bool _error;
+        /// Init OpenGL context, if not yet initialized
+        bool init(HDC hDC) {
+            if (_hGLRC)
+                return true;
+            if (_error)
+                return false;
+            if (setupPixelFormat(hDC)) {
+                _hPalette = setupPalette(hDC);
+                _hGLRC = wglCreateContext(hDC);
+                if (_hGLRC) {
+                    bind(hDC);
+                    bool initialized = initGLSupport(false);
+                    unbind(hDC);
+                    if (!initialized) {
+                        uninit();
+                        Log.e("Failed to init OpenGL shaders");
+                        _error = true;
+                        return false;
+                    }
+                    return true;
+                } else {
+                    _error = true;
+                    return false;
+                }
+            } else {
+                Log.e("Cannot setup pixel format");
+                _error = true;
+                return false;
+            }
+        }
+        void uninit() {
+            if (_hGLRC) {
+                wglDeleteContext(_hGLRC);
+                _hGLRC = null;
+            }
+        }
+        /// make this context current for DC
+        void bind(HDC hDC) {
+            wglMakeCurrent(hDC, _hGLRC);
+        }
+        /// make null context current for DC
+        void unbind(HDC hDC) {
+            wglMakeCurrent(hDC, null);
+        }
+        void swapBuffers(HDC hDC) {
+            SwapBuffers(hDC);
+        }
+    }
+
+    /// OpenGL context to share between windows
+    __gshared SharedGLContext sharedGLContext;
+}
+
+
 class Win32Window : Window {
     Win32Platform _platform;
 
@@ -200,25 +263,11 @@ class Win32Window : Window {
                             _hInstance,           // program instance handle
                             cast(void*)this);                // creation parameters
         static if (ENABLE_OPENGL) {
-            import derelict.opengl3.wgl;
-
             /* initialize OpenGL rendering */
             HDC hDC = GetDC(_hwnd);
 
             if (openglEnabled || !_glSupport) {
-                if (setupPixelFormat(hDC)) {
-                    _hPalette = setupPalette(hDC);
-                    _hGLRC = wglCreateContext(hDC);
-                    if (_hGLRC) {
-                        wglMakeCurrent(hDC, _hGLRC);
-                        useOpengl = initGLSupport(false);
-                        wglMakeCurrent(hDC, null);
-                    }
-                } else {
-                    Log.e("Pixelformat failed");
-                    // disable GL
-                    useOpengl = false;
-                }
+                useOpengl = sharedGLContext.init(hDC);
             }
         }
     }
@@ -239,7 +288,7 @@ class Win32Window : Window {
             //HDC hdc = BeginPaint(_hwnd, &ps);
             //scope(exit) EndPaint(_hwnd, &ps);
             HDC hdc = GetDC(_hwnd);
-            wglMakeCurrent(hdc, _hGLRC);
+            sharedGLContext.bind(hdc);
             //_glSupport = _gl;
             glDisable(GL_DEPTH_TEST);
             glViewport(0, 0, _dx, _dy);
@@ -267,14 +316,15 @@ class Win32Window : Window {
                 onDraw(buf);
             }
             buf.afterDrawing();
-            SwapBuffers(hdc);
-            wglMakeCurrent(hdc, null);
+            sharedGLContext.swapBuffers(hdc);
+            sharedGLContext.unbind(hdc);
             destroy(buf);
         }
     }
 
     ~this() {
         debug Log.d("Window destructor");
+        /*
         static if (ENABLE_OPENGL) {
             import derelict.opengl3.wgl;
             if (_hGLRC) {
@@ -287,6 +337,7 @@ class Win32Window : Window {
                 _hGLRC = null;
             }
         }
+        */
         if (_hwnd)
             DestroyWindow(_hwnd);
         _hwnd = null;

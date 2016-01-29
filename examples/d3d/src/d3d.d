@@ -102,7 +102,10 @@ extern (C) int UIAppMain(string[] args) {
     cam.translation = vec3(0, 0, -5);
     scene.activeCamera = cam;
     mat4 camMatrix = scene.viewProjectionMatrix;
-    MeshPart part = new MeshPart();
+    VertexFormat vfmt = VertexFormat(VertexElementType.POSITION, VertexElementType.COLOR, VertexElementType.TEXCOORD0);
+    Mesh2 mesh = new Mesh2(vfmt);
+    mesh.addVertex([1,2,3, 1,1,1,1, 0,0]);
+    //MeshPart part = new MeshPart();
 
     // show window
     window.show();

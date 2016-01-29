@@ -86,7 +86,11 @@ struct FileFilterEntry {
 }
 
 version (Windows) {
-    __gshared bool SHOW_FILE_DIALOG_IN_POPUP = true;
+    static if (BACKEND_SDL) {
+        __gshared bool SHOW_FILE_DIALOG_IN_POPUP = false;
+    } else {
+        __gshared bool SHOW_FILE_DIALOG_IN_POPUP = false;
+    }
 } else {
     __gshared bool SHOW_FILE_DIALOG_IN_POPUP = false;
 }
