@@ -70,7 +70,7 @@ struct VertexFormat {
     }
     /// returns vertex size in bytes
     @property int vertexSize() const {
-        return _vertexSize * float.sizeof;
+        return _vertexSize * cast(int)float.sizeof;
     }
     /// returns vertex size in floats
     @property int vertexFloats() const {
