@@ -46,10 +46,8 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
     @property Scene scene() { return _scene; }
 
     this(int dx, int dy, bool framebuffer = false) {
-        _dx = dx;
-        _dy = dy;
+        resize(dx, dy);
         _framebuffer = framebuffer;
-        resetClipping();
     }
 
     /// returns current width
@@ -65,7 +63,6 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
 
     /// reserved for hardware-accelerated drawing - begins drawing batch
     override void beforeDrawing() {
-        resetClipping();
         _alpha = 0;
         if (_scene !is null) {
             _scene.reset();

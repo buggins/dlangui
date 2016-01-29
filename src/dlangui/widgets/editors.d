@@ -960,12 +960,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             // draw caret
             Rect caretRc = caretRect();
             if (caretRc.intersects(_clientRect)) {
-                Rect rc1 = caretRc;
-                rc1.right = rc1.left + 1;
                 caretRc.left++;
                 if (_replaceMode)
                     buf.fillRect(caretRc, _caretColorReplace);
-                buf.fillRect(rc1, _caretColor);
+                buf.drawLine(Point(caretRc.left, caretRc.bottom), Point(caretRc.left, caretRc.top), _caretColor);
             }
         }
     }
