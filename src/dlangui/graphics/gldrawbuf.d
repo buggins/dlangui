@@ -412,7 +412,7 @@ private abstract class GLCache
             _activePage = null;
         foreach(i; 0 .. _pages.length)
             if (_pages[i] == page) {
-                _pages.remove(i);
+                _pages = _pages.remove(i);
                 break;
             }
         destroy(page);
