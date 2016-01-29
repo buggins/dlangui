@@ -292,13 +292,8 @@ class SolidFillProgram : GLProgram {
     VAO vao;
     VBO vbo;
     bool needToCreateVAO = true;
-    void createVAO(float[] vertices, float[] colors) {
-        if(vao)
-            destroy(vao);
+    protected void createVAO(float[] vertices, float[] colors) {
         vao = new VAO;
-
-        if(vbo)
-            destroy(vbo);
         vbo = new VBO;
 
         glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
@@ -310,7 +305,7 @@ class SolidFillProgram : GLProgram {
         needToCreateVAO = false;
     }
 
-    void beforeExecute() {
+    protected void beforeExecute() {
         glEnable(GL_BLEND);
         checkgl!glDisable(GL_CULL_FACE);
         checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -333,6 +328,14 @@ class SolidFillProgram : GLProgram {
         checkgl!glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         vao.unbind();
         return true;
+    }
+
+    void destroyBuffers() {
+        destroy(vao);
+        destroy(vbo);
+        vao = null;
+        vbo = null;
+        needToCreateVAO = true;
     }
 }
 
@@ -392,13 +395,8 @@ class TextureProgram : SolidFillProgram {
         return res && texCoordLocation >= 0;
     }
 
-    void createVAO(float[] vertices, float[] colors, float[] texcoords) {
-        if(vao)
-            destroy(vao);
+    protected void createVAO(float[] vertices, float[] colors, float[] texcoords) {
         vao = new VAO;
-
-        if(vbo)
-            destroy(vbo);
         vbo = new VBO;
 
         glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
@@ -598,10 +596,10 @@ final class GLSupport {
         return true;
     }
 
-    void prepareShaders() {
-        _solidFillProgram.needToCreateVAO = true;
-        _lineProgram.needToCreateVAO = true;
-        _textureProgram.needToCreateVAO = true;
+    void destroyBuffers() {
+        _solidFillProgram.destroyBuffers();
+        _lineProgram.destroyBuffers();
+        _textureProgram.destroyBuffers();
     }
 
     void setRotation(int x, int y, int rotationAngle) {

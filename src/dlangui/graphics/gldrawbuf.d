@@ -71,7 +71,6 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
             _scene.reset();
         }
         _scene = new Scene(this);
-        glSupport.prepareShaders();
     }
 
     /// reserved for hardware-accelerated drawing - ends drawing batch
@@ -79,6 +78,7 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
         glSupport.setOrthoProjection(Rect(0, 0, _dx, _dy), Rect(0, 0, _dx, _dy));
         _scene.draw();
         GLProgram.unbind();
+        glSupport.destroyBuffers();
         glSupport.flushGL();
         destroy(_scene);
         _scene = null;
