@@ -608,6 +608,7 @@ class TreeItemWidget : HorizontalLayout {
         _label = new TextWidget("label", _item.text);
         _label.styleId = STYLE_TREE_ITEM_LABEL;
         _label.setState(State.Parent);
+        _label.padding(Rect(5, 0, 0, 0));
         _body.addChild(_label);
         // append children
         addChild(_tab);
