@@ -422,12 +422,13 @@ class SDLWindow : Window {
                 float b = ((_backgroundColor >> 0) & 255) / 255.0f;
                 glClearColor(r, g, b, a);
                 glClear(GL_COLOR_BUFFER_BIT);
-                GLDrawBuf buf = new GLDrawBuf(_dx, _dy, false);
-                buf.beforeDrawing();
-                onDraw(buf);
-                buf.afterDrawing();
+                if (!_drawbuf)
+                    _drawbuf = new GLDrawBuf(_dx, _dy);
+                _drawbuf.resize(_dx, _dy);
+                _drawbuf.beforeDrawing();
+                onDraw(_drawbuf);
+                _drawbuf.afterDrawing();
                 SDL_GL_SwapWindow(_win);
-                destroy(buf);
             }
         } else {
             // Select the color for drawing.
@@ -441,10 +442,9 @@ class SDLWindow : Window {
             if (!_drawbuf)
                 _drawbuf = new ColorDrawBuf(_dx, _dy);
             _drawbuf.resize(_dx, _dy);
-            _drawbuf.resetClipping();
             _drawbuf.fill(_backgroundColor);
             onDraw(_drawbuf);
-            draw(_drawbuf);
+            draw(cast(ColorDrawBuf)_drawbuf);
 
             // Up until now everything was drawn behind the scenes.
             // This will show the new, red contents of the window.
@@ -452,7 +452,7 @@ class SDLWindow : Window {
         }
     }
 
-    ColorDrawBuf _drawbuf;
+    DrawBuf _drawbuf;
 
     //bool _exposeSent;
     void processExpose() {
