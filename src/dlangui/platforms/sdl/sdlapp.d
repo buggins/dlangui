@@ -777,8 +777,11 @@ class SDLWindow : Window {
         string str = fromStringz(s).dup;
         dstring ds = toUTF32(str);
         uint flags = convertKeyFlags(SDL_GetModState());
-        if (flags & KeyFlag.Control || flags & KeyFlag.Alt || flags & KeyFlag.Menu)
-            return true;
+        //do not handle Ctrl+Space as text https://github.com/buggins/dlangui/issues/160
+        //but do hanlde RAlt https://github.com/buggins/dlangide/issues/129
+        if (flags & KeyFlag.Control || (flags & KeyFlag.LAlt) == KeyFlag.LAlt || flags & KeyFlag.Menu)
+                return true;
+       
         bool res = dispatchKeyEvent(new KeyEvent(KeyAction.Text, 0, flags, ds));
         if (res) {
             debug(DebugSDL) Log.d("Calling update() after text event");
