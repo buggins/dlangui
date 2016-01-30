@@ -1023,13 +1023,11 @@ class SDLPlatform : Platform {
                             case SDL_WINDOWEVENT_RESIZED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_RESIZED win=", event.window.windowID, " pos=", event.window.data1,
                                         ",", event.window.data2);
-                                w.doResize(event.window.data1, event.window.data2);
                                 w.redraw();
                                 break;
                             case SDL_WINDOWEVENT_SIZE_CHANGED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_SIZE_CHANGED win=", event.window.windowID, " pos=", event.window.data1,
                                         ",", event.window.data2);
-                                w.doResize(event.window.data1, event.window.data2);
                                 w.redraw();
                                 break;
                             case SDL_WINDOWEVENT_CLOSE:
@@ -1049,7 +1047,6 @@ class SDLPlatform : Platform {
                                 break;
                             case SDL_WINDOWEVENT_EXPOSED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_EXPOSED");
-                                w.redraw();
                                 break;
                             case SDL_WINDOWEVENT_MOVED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MOVED");
