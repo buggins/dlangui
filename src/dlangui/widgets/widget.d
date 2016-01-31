@@ -181,9 +181,6 @@ public:
         return CursorType.Arrow;
     }
 
-    debug {
-        private static __gshared int _instanceCount = 0;
-    }
     /// empty parameter list constructor - for usage by factory
     this() {
         this(null);
@@ -192,8 +189,15 @@ public:
     this(string ID) {
         _id = ID;
         _state = State.Enabled;
+        _cachedStyle = currentTheme.get(null);
         debug _instanceCount++;
         //Log.d("Created widget, count = ", ++_instanceCount);
+    }
+
+    debug {
+        private static __gshared int _instanceCount = 0;
+        /// for debug purposes - number of created widget objects, not yet destroyed
+        static @property int instanceCount() { return _instanceCount; }
     }
 
     ~this() {
@@ -209,15 +213,15 @@ public:
         //Log.d("Destroyed widget, count = ", --_instanceCount);
     }
 
-    debug {
-        /// for debug purposes - number of created widget objects, not yet destroyed
-        static @property int instanceCount() { return _instanceCount; }
-    }
 
+    // Caching a style to decrease a number of currentTheme.get calls.
+    private Style _cachedStyle;
     /// accessor to style - by lookup in theme by styleId (if style id is not set, theme base style will be used).
     protected @property const (Style) style() const {
         if (_ownStyle !is null)
             return _ownStyle;
+        if(_cachedStyle !is null)
+            return _cachedStyle;
         return currentTheme.get(_styleId);
     }
     /// accessor to style - by lookup in theme by styleId (if style id is not set, theme base style will be used).
@@ -251,6 +255,7 @@ public:
 
     /// handle theme change: e.g. reload some themed resources
     void onThemeChanged() {
+        _cachedStyle = currentTheme.get(_styleId);
         // default implementation: call recursive for children
         for (int i = 0; i < childCount; i++)
             child(i).onThemeChanged();
@@ -323,6 +328,7 @@ public:
         _styleId = id;
         if (_ownStyle)
             _ownStyle.parentStyleId = id;
+        _cachedStyle = currentTheme.get(id);
         return this; 
     }
     /// get margins (between widget bounds and its background)
