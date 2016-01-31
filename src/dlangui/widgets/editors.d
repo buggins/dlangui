@@ -332,7 +332,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 // modified, not saved
                 buf.fillRect(rc, 0xFFD040);
             } else if (m == EditStateMark.saved) {
-                // modified, not saved
+                // modified, saved
                 buf.fillRect(rc, 0x20C020);
             }
         }
@@ -2140,7 +2140,8 @@ class EditBox : EditWidgetBase {
         int lineIndex = p.line - _firstVisibleLine;
         res.top = lineIndex * _lineHeight;
         res.bottom = res.top + _lineHeight;
-        if (lineIndex >=0 && lineIndex < _visibleLines.length) {
+        // if visible
+        if (lineIndex >= 0 && lineIndex < _visibleLines.length) {
             if (p.pos == 0)
                 res.left = 0;
             else if (p.pos >= _visibleLinesMeasurement[lineIndex].length)
