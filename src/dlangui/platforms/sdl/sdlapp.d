@@ -127,8 +127,11 @@ class SDLWindow : Window {
             _context = SDL_GL_CreateContext(_win); // Create the actual context and make it current
             if (!_context)
                 Log.e("SDL_GL_CreateContext failed: ", fromStringz(SDL_GetError()));
-            else
+            else {
                 Log.i("Created successfully");
+                _platform.GLVersionMajor = versionMajor;
+                _platform.GLVersionMinor = versionMinor;
+            }
             return _context !is null;
         }
     }
@@ -176,21 +179,24 @@ class SDLWindow : Window {
         
         static if (ENABLE_OPENGL) {
             if (_enableOpengl) {
-                createContext(3, 2);
-                if (!_context) {
-                    Log.e("SDL_GL_CreateContext failed: ", fromStringz(SDL_GetError()));
+                bool success = createContext(_platform.GLVersionMajor, _platform.GLVersionMinor);
+                if (!success) {
                     Log.w("trying other versions of OpenGL");
-                    bool flg = false;
-                    flg = flg || createContext(3, 3);
-                    flg = flg || createContext(3, 1);
-                    flg = flg || createContext(4, 0);
-                    flg = flg || createContext(2, 1);
-                    if (!flg) {
+                    // Lazy conditions.
+                    if(_platform.GLVersionMajor >= 4)
+                        success = success || createContext(4, 0);
+                    success = success || createContext(3, 3);
+                    success = success || createContext(3, 2);
+                    success = success || createContext(3, 1);
+                    success = success || createContext(2, 1);
+                    if (!success) {
                         _enableOpengl = false;
+                        _platform.GLVersionMajor = 0;
+                        _platform.GLVersionMinor = 0;
                         Log.w("OpenGL support is disabled");
                     }
                 }
-                if (_context && !_glSupport) {
+                if (success && !_glSupport) {
                     _enableOpengl = initGLSupport(false);
                     fixSize();
                 }

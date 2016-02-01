@@ -220,7 +220,7 @@ class X11Window : DWindow {
 					swamask |= CWColormap;
 					swa.colormap = x11cmap;
 					visual = cast(Visual*)x11visual.visual;
-                    depth = x11visutal.depth;
+                    depth = x11visual.depth;
 				}
 			}
 

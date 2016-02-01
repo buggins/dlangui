@@ -125,8 +125,9 @@ class GLProgram {
     private char[] glslversionString;
 
     private void compatibilityFixes(ref char[] code, GLuint type) {
-        if (glslversionInt < 150) {
+        if (glslversionInt < 150)
             code = replace(code, " texture(", " texture2D(");
+        if (glslversionInt < 140) {
             if(type == GL_VERTEX_SHADER)
             {
                 code = replace(code, "in ", "attribute ");
@@ -134,6 +135,8 @@ class GLProgram {
             } else
             {
                 code = replace(code, "in ", "varying ");
+                code = replace(code, "out vec4 outColor;", "");
+                code = replace(code, "outColor", "gl_FragColor");
             }
         }
     }
