@@ -16,6 +16,9 @@
     android:drawable="toolbar_button_pressed"
     android:state_pressed="true" />
   <item
+    android:drawable="toolbar_button_pressed"
+    android:state_checked="true" />
+  <item
     android:drawable="toolbar_button_hover"
     android:state_hovered="true" />
   <item

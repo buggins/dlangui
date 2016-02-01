@@ -1530,6 +1530,10 @@ public:
             text = UIString(value);
             return true;
         }
+        if (name.equal("tooltipText")) {
+            tooltipText = UIString(value);
+            return true;
+        }
         return false;
     }
 
@@ -1539,6 +1543,10 @@ public:
             text = UIString(value);
             return true;
         }
+        if (name.equal("tooltipText")) {
+            tooltipText = UIString(value);
+            return true;
+        }
         return false;
     }
 
@@ -1546,6 +1554,10 @@ public:
     bool setUistringProperty(string name, UIString value) {
         if (name.equal("text")) {
             text = value;
+            return true;
+        }
+        if (name.equal("tooltipText")) {
+            tooltipText = value;
             return true;
         }
         return false;

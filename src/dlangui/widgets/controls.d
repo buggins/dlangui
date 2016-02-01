@@ -266,6 +266,26 @@ class ImageButton : ImageWidget {
     }
 }
 
+/// button with image working as trigger: check / uncheck occurs when pressing
+class ImageCheckButton : ImageButton {
+    /// constructor by id and icon resource id
+    this(string ID = null, string drawableId = null) {
+        super(ID, drawableId);
+        styleId = "BUTTON_CHECK_TRANSPARENT";
+    }
+    /// constructor from action
+    this(const Action a) {
+        super(a);
+        styleId = "BUTTON_CHECK_TRANSPARENT";
+    }
+
+    // called to process click and notify listeners
+    override protected bool handleClick() {
+        checked = !checked;
+        return super.handleClick();
+    }
+}
+
 /// button with image and text
 class ImageTextButton : HorizontalLayout {
     protected ImageWidget _icon;
@@ -1080,4 +1100,4 @@ class CanvasWidget : Widget {
 }
 
 import dlangui.widgets.metadata;
-mixin(registerWidgets!(Widget, TextWidget, MultilineTextWidget, Button, ImageWidget, ImageButton, ImageTextButton, RadioButton, CheckBox, ScrollBar, HSpacer, VSpacer, CanvasWidget)());
+mixin(registerWidgets!(Widget, TextWidget, MultilineTextWidget, Button, ImageWidget, ImageButton, ImageCheckButton, ImageTextButton, RadioButton, CheckBox, ScrollBar, HSpacer, VSpacer, CanvasWidget)());

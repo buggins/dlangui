@@ -43,6 +43,10 @@
         backgroundImageId="btn_background_transparent"
         align="Center"
         />
+    <style id="BUTTON_CHECK_TRANSPARENT"
+        backgroundImageId="btn_background_check_transparent"
+        align="Center"
+        />
     <style id="BUTTON_LABEL"
         layoutWidth="FILL_PARENT"
         margins="2,2,2,2"

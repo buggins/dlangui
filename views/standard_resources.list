@@ -1,4 +1,6 @@
 res/btn_background.xml
+res/btn_background_check_transparent.xml
+res/btn_background_check_transparent_dark.xml
 res/btn_background_dark.xml
 res/btn_background_transparent.xml
 res/btn_background_transparent_dark.xml
@@ -158,6 +160,8 @@ res/mdpi/editbox_background_focus.9.png
 res/mdpi/editbox_background_focus_dark.9.png
 res/mdpi/editbox_background_normal.9.png
 res/mdpi/editbox_background_normal_dark.9.png
+res/mdpi/find_case_sensitive.png
+res/mdpi/find_whole_words.png
 res/mdpi/folder-blue.png
 res/mdpi/folder-bookmark.png
 res/mdpi/folder-network.png

@@ -2852,8 +2852,8 @@ class LogWidget : EditBox {
 class FindPanel : HorizontalLayout {
     protected EditLine _edFind;
     protected EditLine _edReplace;
-    protected CheckBox _cbCaseInsensitive;
-    protected CheckBox _cbWholeWords;
+    protected ImageCheckButton _cbCaseSensitive;
+    protected ImageCheckButton _cbWholeWords;
     protected CheckBox _cbSelection;
     protected Button _btnFindNext;
     protected Button _btnFindPrev;
@@ -2869,22 +2869,22 @@ class FindPanel : HorizontalLayout {
                         layoutWidth: fill
                         HorizontalLayout {
                             layoutWidth: fill
-                            EditLine { id: edFind; layoutWidth: fill }
+                            EditLine { id: edFind; layoutWidth: fill; alignment: vcenter }
                             Button { id: btnFindNext; text: EDIT_FIND_NEXT }
                             Button { id: btnFindPrev; text: EDIT_FIND_PREV }
                         }
                         HorizontalLayout {
                             id: replace
                             layoutWidth: fill;
-                            EditLine { id: edReplace; layoutWidth: fill }
+                            EditLine { id: edReplace; layoutWidth: fill; alignment: vcenter }
                             Button { id: btnReplace; text: EDIT_REPLACE_NEXT }
                             Button { id: btnReplaceAll; text: EDIT_REPLACE_ALL }
                         }
                     }
                     VerticalLayout {
                         HorizontalLayout {
-                            CheckBox { id: cbCaseInsensitive; text: "Aa" }
-                            CheckBox { id: cbWholeWords; text: "Words" }
+                            ImageCheckButton { id: cbCaseSensitive; drawableId: "find_case_sensitive"; tooltipText: EDIT_FIND_CASE_SENSITIVE; styleId: TOOLBAR_BUTTON; alignment: vcenter }
+                            ImageCheckButton { id: cbWholeWords; drawableId: "find_whole_words"; tooltipText: EDIT_FIND_WHOLE_WORDS; styleId: TOOLBAR_BUTTON; alignment: vcenter }
                             CheckBox { id: cbSelection; text: "Sel" }
                         }
                         VSpacer {}
@@ -2904,8 +2904,8 @@ class FindPanel : HorizontalLayout {
         _btnFindPrev = childById!Button("btnFindPrev");
         _btnReplace = childById!Button("btnReplace");
         _btnReplaceAll = childById!Button("btnReplaceAll");
-        _cbCaseInsensitive = childById!CheckBox("cbCaseInsinsitive");
-        _cbWholeWords = childById!CheckBox("cbWholeWords");
+        _cbCaseSensitive = childById!ImageCheckButton("cbCaseSensitive");
+        _cbWholeWords = childById!ImageCheckButton("cbWholeWords");
         _cbSelection =  childById!CheckBox("cbSelection");
         if (!replace)
             childById("replace").visibility = Visibility.Gone;
