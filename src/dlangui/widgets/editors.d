@@ -185,6 +185,11 @@ enum EditorActions : int {
     GoToNextBookmark,
     /// move cursor to previous bookmark
     GoToPreviousBookmark,
+
+    /// Find text
+    Find,
+    /// Replace text
+    Replace
 }
 
 
@@ -204,6 +209,8 @@ const Action ACTION_EDITOR_TOGGLE_BLOCK_COMMENT = (new Action(EditorActions.Togg
 const Action ACTION_EDITOR_TOGGLE_BOOKMARK = (new Action(EditorActions.ToggleBookmark, "ACTION_EDITOR_TOGGLE_BOOKMARK"c, null, KeyCode.KEY_B, KeyFlag.Control | KeyFlag.Shift));
 const Action ACTION_EDITOR_GOTO_NEXT_BOOKMARK = (new Action(EditorActions.GoToNextBookmark, "ACTION_EDITOR_GOTO_NEXT_BOOKMARK"c, null, KeyCode.DOWN, KeyFlag.Control | KeyFlag.Shift));
 const Action ACTION_EDITOR_GOTO_PREVIOUS_BOOKMARK = (new Action(EditorActions.GoToPreviousBookmark, "ACTION_EDITOR_GOTO_PREVIOUS_BOOKMARK"c, null, KeyCode.UP, KeyFlag.Control | KeyFlag.Shift));
+const Action ACTION_EDITOR_FIND = (new Action(EditorActions.Find, KeyCode.KEY_F, KeyFlag.Control));
+const Action ACTION_EDITOR_REPLACE = (new Action(EditorActions.Replace, KeyCode.KEY_H, KeyFlag.Control));
 
 const Action[] STD_EDITOR_ACTIONS = [ACTION_EDITOR_INSERT_NEW_LINE, ACTION_EDITOR_PREPEND_NEW_LINE, 
         ACTION_EDITOR_APPEND_NEW_LINE, ACTION_EDITOR_DELETE_LINE, ACTION_EDITOR_TOGGLE_REPLACE_MODE, 
@@ -506,6 +513,9 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
             new Action(EditorActions.Tab, KeyCode.TAB, 0),
             new Action(EditorActions.BackTab, KeyCode.TAB, KeyFlag.Shift),
+
+            new Action(EditorActions.Find, KeyCode.KEY_F, KeyFlag.Control),
+            new Action(EditorActions.Replace, KeyCode.KEY_H, KeyFlag.Control),
         ]);
         acceleratorMap.add(STD_EDITOR_ACTIONS);
     }
@@ -564,6 +574,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 return _content.multiline && _content.lineIcons.hasBookmarks;
             case GoToPreviousBookmark:
                 return _content.multiline && _content.lineIcons.hasBookmarks;
+            case Replace:
+                return _content.multiline && !readOnly;
+            case Find:
+                return true;
             default:
                 return super.isActionEnabled(action);
         }
@@ -2420,6 +2434,12 @@ class EditBox : EditWidgetBase {
                     _content.performOperation(op, this);
                 }
                 return true;
+            case Find:
+                createFindPanel(false, false);
+                return true;
+            case Replace:
+                createFindPanel(false, true);
+                return true;
             default:
                 break;
         }
@@ -2725,12 +2745,14 @@ class EditBox : EditWidgetBase {
     /// create find panel
     protected void createFindPanel(bool selectionOnly, bool replaceMode) {
         _findPanel = new FindPanel(selectionOnly, replaceMode);
+        addChild(_findPanel);
         requestLayout();
     }
 
-    /// create find panel
+    /// close find panel
     protected void closeFindPanel() {
         if (_findPanel) {
+            removeChild(_findPanel);
             destroy(_findPanel);
             _findPanel = null;
             requestLayout();
@@ -2839,34 +2861,43 @@ class FindPanel : HorizontalLayout {
     protected Button _btnReplaceAll;
     this(bool selectionOnly, bool replace) {
         import dlangui.dml.parser;
-        parseML(q{
-            VerticalLayout {
-                layoutWidth: fill;
-                HorizontalLayout {
-                    EditLine { id: "edFind"; layoutWidth: fill }
-                    Button { id: "btnFindNext"; text: "Find next" }
-                    Button { id: "btnFindPrev"; text: "Find prev" }
+        try {
+            parseML(q{
+                {
+                    layoutWidth: fill
+                    VerticalLayout {
+                        layoutWidth: fill
+                        HorizontalLayout {
+                            layoutWidth: fill
+                            EditLine { id: edFind; layoutWidth: fill }
+                            Button { id: btnFindNext; text: EDIT_FIND_NEXT }
+                            Button { id: btnFindPrev; text: EDIT_FIND_PREV }
+                        }
+                        HorizontalLayout {
+                            id: replace
+                            layoutWidth: fill;
+                            EditLine { id: edReplace; layoutWidth: fill }
+                            Button { id: btnReplace; text: EDIT_REPLACE_NEXT }
+                            Button { id: btnReplaceAll; text: EDIT_REPLACE_ALL }
+                        }
+                    }
+                    VerticalLayout {
+                        HorizontalLayout {
+                            CheckBox { id: cbCaseInsensitive; text: "Aa" }
+                            CheckBox { id: cbWholeWords; text: "Words" }
+                            CheckBox { id: cbSelection; text: "Sel" }
+                        }
+                        VSpacer {}
+                    }
+                    VerticalLayout {
+                        ImageButton { id: btnClose; drawableId: "close"; styleId: BUTTON_TRANSPARENT }
+                        VSpacer {}
+                    }
                 }
-                HorizontalLayout {
-                    id: "replace"
-                    EditLine { id: "edReplace"; layoutWidth: fill }
-                    Button { id: "btnReplace"; text: "Replace" }
-                    Button { id: "btnReplaceAll"; text: "Replace All" }
-                }
-            }
-            VerticalLayout {
-                HorizontalLayout {
-                    CheckBox { id: "cbCaseInsensitive"; text: "Aa" }
-                    CheckBox { id: "cbWholeWords"; text: "Words" }
-                    CheckBox { id: "cbSelection"; text: "Sel" }
-                }
-                VSpacer {}
-            }
-            VerticalLayout {
-                Button { id="btnClose"; }
-                VSpacer {}
-            }
-        }, null, this);
+            }, null, this);
+        } catch (Exception e) {
+            Log.e("Exception while parsing DML: ", e);
+        }
         _edFind = childById!EditLine("edFind");
         _edReplace = childById!EditLine("edReplace");
         _btnFindNext = childById!Button("btnFindNext");
