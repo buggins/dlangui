@@ -213,6 +213,7 @@ class ImageWidget : Widget {
 
     /// handle theme change: e.g. reload some themed resources
     override void onThemeChanged() {
+        super.onThemeChanged();
         if (_drawableId !is null)
             _drawable.clear(); // remove cached drawable
     }

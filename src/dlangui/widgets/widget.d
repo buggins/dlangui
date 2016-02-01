@@ -255,12 +255,14 @@ public:
 
     /// handle theme change: e.g. reload some themed resources
     void onThemeChanged() {
-        _cachedStyle = currentTheme.get(_styleId);
         // default implementation: call recursive for children
         for (int i = 0; i < childCount; i++)
             child(i).onThemeChanged();
         if (_ownStyle) {
             _ownStyle.onThemeChanged();
+        }
+        if (_cachedStyle) {
+            _cachedStyle = currentTheme.get(_styleId);
         }
     }
 

@@ -886,6 +886,16 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
         return true;
     }
 
+    /// handle theme change: e.g. reload some themed resources
+    override void onThemeChanged() {
+        super.onThemeChanged();
+        _scrollbar.onThemeChanged();
+        for (int i = 0; i < itemCount; i++) {
+            Widget w = itemWidget(i);
+            w.onThemeChanged();
+        }
+    }
+
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
     override void measure(int parentWidth, int parentHeight) {
         if (visibility == Visibility.Gone) {
