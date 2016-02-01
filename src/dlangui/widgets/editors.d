@@ -26,6 +26,7 @@ module dlangui.widgets.editors;
 import dlangui.widgets.widget;
 import dlangui.widgets.controls;
 import dlangui.widgets.scroll;
+import dlangui.widgets.layouts;
 import dlangui.core.signals;
 import dlangui.core.collections;
 import dlangui.core.linestream;
@@ -1917,6 +1918,13 @@ class EditBox : EditWidgetBase {
         onThemeChanged();
     }
 
+    ~this() {
+        if (_findPanel) {
+            destroy(_findPanel);
+            _findPanel = null;
+        }
+    }
+
     protected int _firstVisibleLine;
 
     protected int _maxLineWidth;
@@ -1968,11 +1976,22 @@ class EditBox : EditWidgetBase {
         }
         if (rc != _pos)
             _contentChanged = true;
-        super.layout(rc);
+        Rect contentRc = rc;
+        int findPanelHeight;
+        if (_findPanel && _findPanel.visibility != Visibility.Gone) {
+            _findPanel.measure(rc.width, rc.height);
+            findPanelHeight = _findPanel.measuredHeight;
+            _findPanel.layout(Rect(rc.left, rc.bottom - findPanelHeight, rc.right, rc.bottom));
+            contentRc.bottom -= findPanelHeight;
+        }
+        
+        super.layout(contentRc);
         if (_contentChanged) {
             measureVisibleText();
             _contentChanged = false;
         }
+
+        _pos = rc;
     }
 
     override protected Point measureVisibleText() {
@@ -2423,6 +2442,14 @@ class EditBox : EditWidgetBase {
         }
         updateFontProps();
         updateMaxLineWidth();
+        int findPanelHeight;
+        if (_findPanel) {
+            _findPanel.measure(parentWidth, parentHeight);
+            findPanelHeight = _findPanel.measuredHeight;
+            if (parentHeight != SIZE_UNSPECIFIED)
+                parentHeight -= findPanelHeight;
+        }
+
         super.measure(parentWidth, parentHeight);
         // do we need to add vsbwidth, hsbheight ???
         //measuredContent(parentWidth, parentHeight, textSz.x + vsbwidth, textSz.y + hsbheight);
@@ -2693,6 +2720,32 @@ class EditBox : EditWidgetBase {
         return menu;
     }
 
+    protected FindPanel _findPanel;
+
+    /// create find panel
+    protected void createFindPanel(bool selectionOnly, bool replaceMode) {
+        _findPanel = new FindPanel(selectionOnly, replaceMode);
+        requestLayout();
+    }
+
+    /// create find panel
+    protected void closeFindPanel() {
+        if (_findPanel) {
+            destroy(_findPanel);
+            _findPanel = null;
+            requestLayout();
+        }
+    }
+
+    /// Draw widget at its position to buffer
+    override void onDraw(DrawBuf buf) {
+        if (visibility != Visibility.Visible)
+            return;
+        super.onDraw(buf);
+        if (_findPanel && _findPanel.visibility == Visibility.Visible) {
+            _findPanel.onDraw(buf);
+        }
+    }
 }
 
 /// Read only edit box for displaying logs with lines append operation
@@ -2772,6 +2825,61 @@ class LogWidget : EditBox {
         }
     }
 
+}
+
+class FindPanel : HorizontalLayout {
+    protected EditLine _edFind;
+    protected EditLine _edReplace;
+    protected CheckBox _cbCaseInsensitive;
+    protected CheckBox _cbWholeWords;
+    protected CheckBox _cbSelection;
+    protected Button _btnFindNext;
+    protected Button _btnFindPrev;
+    protected Button _btnReplace;
+    protected Button _btnReplaceAll;
+    this(bool selectionOnly, bool replace) {
+        import dlangui.dml.parser;
+        parseML(q{
+            VerticalLayout {
+                layoutWidth: fill;
+                HorizontalLayout {
+                    EditLine { id: "edFind"; layoutWidth: fill }
+                    Button { id: "btnFindNext"; text: "Find next" }
+                    Button { id: "btnFindPrev"; text: "Find prev" }
+                }
+                HorizontalLayout {
+                    id: "replace"
+                    EditLine { id: "edReplace"; layoutWidth: fill }
+                    Button { id: "btnReplace"; text: "Replace" }
+                    Button { id: "btnReplaceAll"; text: "Replace All" }
+                }
+            }
+            VerticalLayout {
+                HorizontalLayout {
+                    CheckBox { id: "cbCaseInsensitive"; text: "Aa" }
+                    CheckBox { id: "cbWholeWords"; text: "Words" }
+                    CheckBox { id: "cbSelection"; text: "Sel" }
+                }
+                VSpacer {}
+            }
+            VerticalLayout {
+                Button { id="btnClose"; }
+                VSpacer {}
+            }
+        }, null, this);
+        _edFind = childById!EditLine("edFind");
+        _edReplace = childById!EditLine("edReplace");
+        _btnFindNext = childById!Button("btnFindNext");
+        _btnFindPrev = childById!Button("btnFindPrev");
+        _btnReplace = childById!Button("btnReplace");
+        _btnReplaceAll = childById!Button("btnReplaceAll");
+        _cbCaseInsensitive = childById!CheckBox("cbCaseInsinsitive");
+        _cbWholeWords = childById!CheckBox("cbWholeWords");
+        _cbSelection =  childById!CheckBox("cbSelection");
+        if (!replace)
+            childById("replace").visibility = Visibility.Gone;
+        //_edFind = new EditLine("edFind"
+    }
 }
 
 import dlangui.widgets.metadata;
