@@ -128,8 +128,8 @@ version (Windows) {
 /// concat strings from array using delimiter
 dstring concatDStrings(dstring[] lines, dstring delimiter = SYSTEM_DEFAULT_EOL) {
     dchar[] buf;
-    foreach(line; lines) {
-        if (buf.length)
+    foreach(i, line; lines) {
+        if(i > 0)
             buf ~= delimiter;
         buf ~= line;
     }
@@ -996,12 +996,8 @@ class EditableContent {
         for (int lineIndex = range.start.line; lineIndex <= range.end.line; lineIndex++) {
             dstring lineText = line(lineIndex);
             dstring lineFragment = lineText;
-            int startchar = 0;
-            int endchar = cast(int)lineText.length;
-            if (lineIndex == range.start.line)
-                startchar = range.start.pos;
-            if (lineIndex == range.end.line)
-                endchar = range.end.pos;
+            int startchar = (lineIndex == range.start.line) ? range.start.pos : 0;
+            int endchar = (lineIndex == range.end.line) ? range.end.pos : cast(int)lineText.length;
             if (endchar > lineText.length)
                 endchar = cast(int)lineText.length;
             if (endchar <= startchar)
