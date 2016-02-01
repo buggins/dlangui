@@ -241,6 +241,9 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected int _iconsWidth = 0;
     protected int _foldingWidth = 0;
 
+    protected bool _selectAllWhenFocusedWithTab = false;
+    protected bool _deselectAllWhenUnfocused = false;
+
     protected bool _replaceMode;
 
     // TODO: move to styles
@@ -920,13 +923,20 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     }
 
     /// override to handle focus changes
-    override protected void handleFocusChange(bool focused) {
+    override protected void handleFocusChange(bool focused, bool receivedFocusFromKeyboard = false) {
         if (focused)
             startCaretBlinking();
         else {
             stopCaretBlinking();
             cancelHoverTimer();
+
+            if(_deselectAllWhenUnfocused) {
+                _selectionRange.start = _caretPos;
+                _selectionRange.end = _caretPos;
+            }
         }
+        if(focused && _selectAllWhenFocusedWithTab && receivedFocusFromKeyboard)
+            handleAction(ACTION_EDITOR_SELECT_ALL);
         super.handleFocusChange(focused);
     }
 
@@ -1643,7 +1653,9 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             if (event.doubleClick) {
                 selectWordByMouse(event.x - _clientRect.left, event.y - _clientRect.top);
             } else {
-                updateCaretPositionByMouse(event.x - _clientRect.left, event.y - _clientRect.top, false);
+                auto doSelect = cast(bool)(event.keyFlags & MouseFlag.Shift);
+                updateCaretPositionByMouse(event.x - _clientRect.left, event.y - _clientRect.top, doSelect);
+
                 if (event.keyFlags == MouseFlag.Control)
                     onControlClick();
             }
@@ -1730,6 +1742,8 @@ class EditLine : EditWidgetBase {
         super(ID, ScrollBarMode.Invisible, ScrollBarMode.Invisible);
         _content = new EditableContent(false);
         _content.contentChanged = this;
+        _selectAllWhenFocusedWithTab = true;
+        _deselectAllWhenUnfocused = true;
         wantTabs = false;
         styleId = STYLE_EDIT_LINE;
         text = initialContent;

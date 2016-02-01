@@ -732,7 +732,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
     }
 
     /// override to handle focus changes
-    override protected void handleFocusChange(bool focused) {
+    override protected void handleFocusChange(bool focused, bool receivedFocusFromKeyboard = false) {
         updateSelectedItemFocus();
     }
 

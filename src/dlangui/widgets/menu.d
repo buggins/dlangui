@@ -887,7 +887,7 @@ class MainMenu : MenuWidgetBase {
     }
 
     /// override to handle focus changes
-    override protected void handleFocusChange(bool focused) {
+    override protected void handleFocusChange(bool focused, bool receivedFocusFromKeyboard = false) {
         debug(DebugMenus) Log.d("menu ", id, "handling focus change to ", focused);
         if (focused && _openedPopup is null) {
             // activating!
