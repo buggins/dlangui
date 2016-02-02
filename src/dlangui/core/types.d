@@ -121,12 +121,7 @@ struct Rect {
         return right <= left || bottom <= top;
     }
     /// translate rectangle coordinates by (x,y) - add deltax to x coordinates, and deltay to y coordinates
-    void moveBy(int deltax, int deltay) {
-        left += deltax;
-        right += deltax;
-        top += deltay;
-        bottom += deltay;
-    }
+    alias moveBy = offset;
     /// moves this rect to fit rc bounds, retaining the same size
     void moveToFit(ref Rect rc) {
         if (right > rc.right)
@@ -174,6 +169,38 @@ struct Rect {
         return left == rc.left && right == rc.right && top == rc.top && bottom == rc.bottom;
     }
 }
+
+
+/// widget state bit flags
+enum State : uint {
+    /// state not specified / normal
+    Normal = 4 | 256, // Normal is Enabled
+    /// pressed (e.g. clicked by mouse)
+    Pressed = 1,
+    /// widget has focus
+    Focused = 2,
+    /// widget can process mouse and key events
+    Enabled = 4,
+    /// mouse pointer is over this widget
+    Hovered = 8, // mouse pointer is over control, buttons not pressed
+    /// widget is selected
+    Selected = 16,
+    /// widget can be checked
+    Checkable = 32,
+    /// widget is checked
+    Checked = 64,
+    /// widget is activated
+    Activated = 128,
+    /// window is focused
+    WindowFocused = 256,
+    /// widget is default control for form (should be focused when window gains focus first time)
+    Default = 512, // widget is default for form (e.g. default button will be focused on show)
+    /// widget has been focused by keyboard navigation
+    KeyboardFocused = 1024,
+    /// return state of parent instead of widget's state when requested
+    Parent = 0x10000, // use parent's state
+}
+
 
 // Layout size constants
 /// layout option, to occupy all available place
@@ -418,6 +445,7 @@ struct Ref(T) { // if (T is RefCountedObject)
     }
 }
 
+
 //================================================================================
 // some utility functions
 
@@ -439,38 +467,6 @@ wstring fromWStringz(const(wchar) * s) {
     while(s[i])
         i++;
     return cast(wstring)(s[0..i].dup);
-}
-
-
-
-/** widget state flags - bits */
-enum State : uint {
-    /// state not specified / normal
-    Normal = 4 | 256, // Normal is Enabled
-    /// pressed (e.g. clicked by mouse)
-    Pressed = 1,
-    /// widget has focus
-    Focused = 2,
-    /// widget can process mouse and key events
-    Enabled = 4,
-    /// mouse pointer is over this widget
-    Hovered = 8, // mouse pointer is over control, buttons not pressed
-    /// widget is selected
-    Selected = 16,
-    /// widget can be checked
-    Checkable = 32,
-    /// widget is checked
-    Checked = 64,
-    /// widget is activated
-    Activated = 128,
-    /// window is focused
-    WindowFocused = 256,
-    /// widget is default control for form (should be focused when window gains focus first time)
-    Default = 512, // widget is default for form (e.g. default button will be focused on show)
-    /// widget has been focused by keyboard navigation
-    KeyboardFocused = 1024,
-    /// return state of parent instead of widget's state when requested
-    Parent = 0x10000, // use parent's state
 }
 
 /** Deprecated: use std.uni.toUpper instead.
