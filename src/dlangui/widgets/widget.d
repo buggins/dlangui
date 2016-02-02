@@ -71,6 +71,11 @@ enum Orientation : ubyte {
     Horizontal
 }
 
+enum FocusReason : ubyte {
+    TabFocus,
+    Unspecified
+}
+
 /// interface - slot for onClick
 interface OnClickHandler {
     bool onClick(Widget source);
@@ -280,7 +285,7 @@ public:
         return _state | State.WindowFocused; // TODO:
     }
     /// override to handle focus changes
-    protected void handleFocusChange(bool focused) {
+    protected void handleFocusChange(bool focused, bool receivedFocusFromKeyboard = false) {
         invalidate();
         focusChange(this, focused);
     }
@@ -300,7 +305,7 @@ public:
             if ((oldState & State.Focused) && !(newState & State.Focused))
                 handleFocusChange(false);
             else if (!(oldState & State.Focused) && (newState & State.Focused))
-                handleFocusChange(true);
+                handleFocusChange(true, cast(bool)(newState & State.KeyboardFocused));
             // notify checked changes
             if ((oldState & State.Checked) && !(newState & State.Checked))
                 handleCheckChange(false);
@@ -990,7 +995,7 @@ public:
         Widget nextWidget = findNextFocusWidget(direction);
         if (!nextWidget)
             return false;
-        nextWidget.setFocus();
+        nextWidget.setFocus(FocusReason.TabFocus);
         return true;
     }
 
@@ -1009,7 +1014,7 @@ public:
     }
 
     /// sets focus to this widget or suitable focusable child, returns previously focused widget
-    Widget setFocus() {
+    Widget setFocus(FocusReason reason = FocusReason.Unspecified) {
         if (window is null)
             return null;
         if (!visible)
@@ -1020,11 +1025,11 @@ public:
             if (!w)
                 w = findFocusableChild(false);
             if (w)
-                return window.setFocus(w);
+                return window.setFocus(w, reason);
             // try to find focusable child
             return window.focusedWidget;
         }
-        return window.setFocus(this);
+        return window.setFocus(this, reason);
     }
     /// searches children for first focusable item, returns null if not found
     Widget findFocusableChild(bool defaultOnly) {

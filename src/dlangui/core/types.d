@@ -467,6 +467,8 @@ enum State : uint {
     WindowFocused = 256,
     /// widget is default control for form (should be focused when window gains focus first time)
     Default = 512, // widget is default for form (e.g. default button will be focused on show)
+    /// widget has been focused by keyboard navigation
+    KeyboardFocused = 1024,
     /// return state of parent instead of widget's state when requested
     Parent = 0x10000, // use parent's state
 }

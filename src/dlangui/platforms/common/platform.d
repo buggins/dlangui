@@ -523,19 +523,22 @@ class Window : CustomEventTarget {
     }
 
     /// change focus to widget
-    Widget setFocus(Widget newFocus) {
+    Widget setFocus(Widget newFocus, FocusReason reason = FocusReason.Unspecified) {
         if (!isChild(_focusedWidget))
             _focusedWidget = null;
         Widget oldFocus = _focusedWidget;
+        auto targetState = State.Focused;
+        if(reason == FocusReason.TabFocus)
+            targetState = State.Focused | State.KeyboardFocused;
         if (oldFocus is newFocus)
             return oldFocus;
         if (oldFocus !is null)
-            oldFocus.resetState(State.Focused);
+            oldFocus.resetState(targetState);
         if (newFocus is null || isChild(newFocus)) {
             if (newFocus !is null) {
                 // when calling, setState(focused), window.focusedWidget is still previously focused widget
                 debug(DebugFocus) Log.d("new focus: ", newFocus.id);
-                newFocus.setState(State.Focused);
+                newFocus.setState(targetState);
             }
             _focusedWidget = newFocus;
             // after focus change, ask for actions update automatically
