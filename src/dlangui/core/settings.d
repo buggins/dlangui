@@ -29,7 +29,7 @@ module dlangui.core.settings;
 import dlangui.core.logger;
 import dlangui.core.types : parseHexDigit;
 import std.range;
-import std.algorithm : equal;
+import std.algorithm : clamp, equal;
 import std.conv : to;
 import std.utf : encode;
 import std.math : pow;
@@ -82,15 +82,12 @@ class SettingsFile {
     }
 
     static int limitInt(long value, int minvalue, int maxvalue) {
-        if (value < minvalue)
-            return minvalue;
-        else if (value > maxvalue)
-            return maxvalue;
-        return cast(int)value;
+        return clamp(cast(int)value, minvalue, maxvalue);
     }
 
-    static string limitString(string value, const string[] values) {
-        assert(values.length > 0);
+    static string limitString(string value, const string[] values)
+    in { assert(values.length > 0); }
+    body {
         foreach(v; values)
             if (v.equal(value))
                 return value;

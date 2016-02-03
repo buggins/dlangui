@@ -1052,8 +1052,9 @@ class EditableContent {
     }
 
     /// inserts count empty lines at specified position
-    protected void insertLines(int start, int count) {
-        assert(count > 0);
+    protected void insertLines(int start, int count)
+    in { assert(count > 0); }
+    body {
         _lines.length += count;
         _tokenProps.length = _lines.length;
         _editMarks.length = _lines.length;

@@ -34,29 +34,26 @@ int stdFontFacePriority(string face) {
 //debug = FontResources;
 
 private struct FontDef {
-    immutable FontFamily _family;
-    immutable string _face;
-    immutable bool _italic;
-    immutable int _weight;
-    @property FontFamily family() { return _family; }
-    @property string face() { return _face; }
-    @property bool italic() { return _italic; }
-    @property int weight() { return _weight; }
+    immutable FontFamily family;
+    immutable string face;
+    immutable bool italic;
+    immutable int weight;
+
     this(FontFamily family, string face, bool italic, int weight) {
-        _family = family;
-        _face = face;
-        _italic = italic;
-        _weight = weight;
+        this.family = family;
+        this.face = face;
+        this.italic = italic;
+        this.weight = weight;
     }
     bool opEquals(ref const FontDef v) const {
-        return _family == v._family && _italic == v._italic && _weight == v._weight && _face.equal(v._face);
+        return family == v.family && italic == v.italic && weight == v.weight && face.equal(v.face);
     }
     hash_t toHash() const nothrow @safe {
         hash_t res = 123;
-        res = res * 31 + cast(hash_t)_italic;
-        res = res * 31 + cast(hash_t)_weight;
-        res = res * 31 + cast(hash_t)_family;
-        res = res * 31 + typeid(_face).getHash(&_face);
+        res = res * 31 + cast(hash_t)italic;
+        res = res * 31 + cast(hash_t)weight;
+        res = res * 31 + cast(hash_t)family;
+        res = res * 31 + typeid(face).getHash(&face);
         return res;
     }
 }

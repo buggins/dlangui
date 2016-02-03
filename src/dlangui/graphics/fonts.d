@@ -84,12 +84,10 @@ immutable dchar UNICODE_NB_HYPHEN = 0x2011;
 struct CustomCharProps {
     uint color;
     uint textFlags;
-    this(uint color) {
+
+    this(uint color, bool underline = false, bool strikeThrough = false) {
         this.color = color;
         this.textFlags = 0;
-    }
-    this(uint color, bool underline, bool strikeThrough = false) {
-        this.color = color;
         if (underline)
             this.textFlags |= TextFlag.Underline;
         if (strikeThrough)
@@ -726,15 +724,12 @@ class FontManager {
     /// get font gamma (1.0 is neutral, < 1.0 makes glyphs lighter, >1.0 makes glyphs bolder)
     static @property double fontGamma() { return _fontGamma; }
     /// set font gamma (1.0 is neutral, < 1.0 makes glyphs lighter, >1.0 makes glyphs bolder)
-    static @property void fontGamma(double v) { 
-        if (v < 0.1)
-            v = 0.1;
-        else if (v > 4)
-            v = 4;
-        if (_fontGamma != v) {
-            _fontGamma = v; 
-            _gamma65.gamma = v;
-            _gamma256.gamma = v;
+    static @property void fontGamma(double v) {
+        double gamma = clamp(v, 0.1, 4);
+        if (_fontGamma != gamma) {
+            _fontGamma = gamma;
+            _gamma65.gamma = gamma;
+            _gamma256.gamma = gamma;
             if (_instance)
                 _instance.clearGlyphCaches();
         }
@@ -767,7 +762,7 @@ struct GlyphCache
     private glyph_ptr[][1024] _glyphs;
     
     /// try to find glyph for character in cache, returns null if not found
-    Glyph * find(dchar ch) {
+    glyph_ptr find(dchar ch) {
         ch = ch & 0xF_FFFF;
         //if (_array is null)
         //    _array = new Glyph[0x10000];
@@ -776,7 +771,7 @@ struct GlyphCache
         if (row is null)
             return null;
         uint i = ch & 0xFF;
-        Glyph * res = row[i];
+        glyph_ptr res = row[i];
         if (!res)
             return null;
         res.lastUsage = 1;
@@ -784,7 +779,7 @@ struct GlyphCache
     }
     
     /// put character glyph to cache
-    Glyph * put(dchar ch, Glyph * glyph) {
+    glyph_ptr put(dchar ch, glyph_ptr glyph) {
         ch = ch & 0xF_FFFF;
         uint p = ch >> 8;
         uint i = ch & 0xFF;
@@ -868,13 +863,9 @@ class glyph_gamma_table(int maxv = 65)
         {
             double v = (maxv - 1.0 - i) / maxv;
             v = pow(v, g);
-            int n = cast(int)round(v * 255);
-            n = 255 - n;
-            if (n < 0)
-                n = 0;
-            else if (n > 255)
-                n = 255;
-            _map[i] = cast(ubyte)n;
+            int n = 255 - cast(int)round(v * 255);
+            ubyte n_clamp = cast(ubyte)clamp(n, 0, 255);
+            _map[i] = n_clamp;
         }
     }
     /// correct byte value from source range to 0..255 applying gamma
