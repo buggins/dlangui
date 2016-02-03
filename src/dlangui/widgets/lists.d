@@ -1331,5 +1331,5 @@ class StringListWidget : ListWidget {
     }
 }
 
-import dlangui.widgets.metadata;
-mixin(registerWidgets!(ListWidget, StringListWidget)());
+//import dlangui.widgets.metadata;
+//mixin(registerWidgets!(ListWidget, StringListWidget)());

@@ -1461,5 +1461,5 @@ class StringGridWidget : StringGridWidgetBase {
     }
 }
 
-import dlangui.widgets.metadata;
-mixin(registerWidgets!(StringGridWidget)());
+//import dlangui.widgets.metadata;
+//mixin(registerWidgets!(StringGridWidget)());

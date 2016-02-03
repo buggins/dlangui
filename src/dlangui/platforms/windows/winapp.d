@@ -821,9 +821,12 @@ class Win32Platform : Platform {
         return null;
     }
     override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0) {
+        Log.d("Platform.createWindow is called");
         width = pointsToPixels(width);
         height = pointsToPixels(height);
+        Log.v("Platform.createWindow : setDefaultLanguageAndThemeIfNecessary");
         setDefaultLanguageAndThemeIfNecessary();
+        Log.v("Platform.createWindow : new Win32Window");
         return new Win32Window(this, windowCaption, parent, flags, width, height);
     }
 
@@ -1003,6 +1006,35 @@ string[] splitCmdLine(string line) {
 
 private __gshared Win32Platform w32platform;
 
+static if (ENABLE_OPENGL) {
+    import derelict.opengl3.gl3;
+    import derelict.opengl3.gl;
+
+    void initOpenGL() {
+        try {
+            Log.d("Loading Derelict GL");
+            DerelictGL.load();
+            DerelictGL3.load();
+            Log.d("Derelict GL - loaded");
+            //
+            //// just to check OpenGL context
+            //Log.i("Trying to setup OpenGL context");
+            //Win32Window tmpWindow = new Win32Window(w32platform, ""d, null, 0);
+            //destroy(tmpWindow);
+            //if (openglEnabled)
+            //    Log.i("OpenGL support is enabled");
+            //else
+            //    Log.w("OpenGL support is disabled");
+            //// process messages
+            //platform.enterMessageLoop();
+        } catch (Exception e) {
+            Log.e("Exception while trying to init OpenGL", e);
+            setOpenglEnabled(false);
+        }
+    }
+}
+
+
 int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdShow)
 {
     initLogs();
@@ -1038,37 +1070,25 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
         Log.e("******************************************************************");
         assert(false);
     }
+    initResourceManagers();
 
     currentTheme = createDefaultTheme();
 
     static if (ENABLE_OPENGL) {
-        try {
-            import derelict.opengl3.gl3;
-            import derelict.opengl3.gl;
-            DerelictGL.load();
-            DerelictGL3.load();
-            //
-            //// just to check OpenGL context
-            //Log.i("Trying to setup OpenGL context");
-            //Win32Window tmpWindow = new Win32Window(w32platform, ""d, null, 0);
-            //destroy(tmpWindow);
-            //if (openglEnabled)
-            //    Log.i("OpenGL support is enabled");
-            //else
-            //    Log.w("OpenGL support is disabled");
-            //// process messages
-            //platform.enterMessageLoop();
-        } catch (Exception e) {
-            Log.e("Exception while trying to init OpenGL", e);
-            setOpenglEnabled(false);
-        }
+        initOpenGL();
     }
 
     // Load versions 1.2+ and all supported ARB and EXT extensions.
 
     Log.i("Entering UIAppMain: ", args);
-    int result = UIAppMain(args);
-    Log.i("UIAppMain returned ", result);
+    int result = -1;
+    try {
+        result = UIAppMain(args);
+        Log.i("UIAppMain returned ", result);
+    } catch (Exception e) {
+        Log.e("Abnormal UIAppMain termination");
+        Log.e("UIAppMain exception: ", e);
+    }
 
     releaseResourcesOnAppExit();
 

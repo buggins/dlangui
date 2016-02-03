@@ -211,6 +211,99 @@ extern (C) void initLogs() {
     Log.i("Logger is initialized");
 }
 
+/// call this on application initialization
+extern (C) void initResourceManagers() {
+    Log.d("initResourceManagers()");
+    import dlangui.graphics.fonts;
+    _gamma65 = new glyph_gamma_table!65(1.0);
+    _gamma256 = new glyph_gamma_table!256(1.0);
+    static if (ENABLE_FREETYPE) {
+        import dlangui.graphics.ftfonts;
+        STD_FONT_FACES = [
+            "Arial": 12,
+            "Times New Roman": 12,
+            "Courier New": 10,
+            "DejaVu Serif": 10,
+            "DejaVu Sans": 10,
+            "DejaVu Sans Mono": 10,
+            "Liberation Serif": 11,
+            "Liberation Sans": 11,
+            "Liberation Mono": 11,
+            "Verdana": 10,
+            "Menlo": 13,
+            "Consolas": 12,
+            "DejaVuSansMono": 10,
+            "Lucida Sans Typewriter": 10,
+            "Lucida Console": 12,
+            "FreeMono": 8,
+            "FreeSans": 8,
+            "FreeSerif": 8,
+        ];
+    }
+    static if (ENABLE_OPENGL) {
+        import dlangui.graphics.gldrawbuf;
+        initGLCaches();
+    }
+    import dlangui.graphics.resources;
+    embedStandardDlangUIResources();
+    _imageCache = new ImageCache();
+    _drawableCache = new DrawableCache();
+    version (Windows) {
+        import dlangui.platforms.windows.win32fonts;
+        initWin32FontsTables();
+    }
+
+    Log.d("Calling initSharedResourceManagers()");
+    initSharedResourceManagers();
+
+    Log.d("Calling initStandardEditorActions()");
+    import dlangui.widgets.editors;
+    initStandardEditorActions();
+
+    Log.d("Calling registerStandardWidgets()");
+    registerStandardWidgets();
+
+    Log.d("initResourceManagers() -- finished");
+}
+
+/// register standard widgets to use in DML
+void registerStandardWidgets() {
+    Log.d("Registering standard widgets for DML");
+    import dlangui.widgets.metadata;
+    import dlangui.widgets.widget;
+    import dlangui.widgets.layouts;
+    import dlangui.widgets.controls;
+    import dlangui.widgets.lists;
+    import dlangui.widgets.combobox;
+    import dlangui.widgets.editors;
+    import dlangui.widgets.grid;
+    import dlangui.dialogs.filedlg;
+    mixin(registerWidgets!(FileNameEditLine, DirEditLine, //dlangui.dialogs.filedlg
+                           ComboBox, ComboEdit, //dlangui.widgets.combobox
+                           Widget, TextWidget, MultilineTextWidget, Button, ImageWidget, ImageButton, ImageCheckButton, ImageTextButton, 
+                           RadioButton, CheckBox, ScrollBar, HSpacer, VSpacer, CanvasWidget, // dlangui.widgets.controls
+                           EditLine, EditBox, LogWidget,//dlangui.widgets.editors
+                           StringGridWidget, //dlangui.widgets.grid
+                           VerticalLayout, HorizontalLayout, TableLayout, FrameLayout, // dlangui.widgets.layouts
+                           ListWidget, StringListWidget,//dlangui.widgets.lists
+                           )("void registerWidgets"));
+    registerWidgets();
+}
+
+/// call this from shared static this()
+extern (C) void initSharedResourceManagers() {
+    //Log.d("initSharedResourceManagers()");
+    //import dlangui.core.i18n;
+    //if (!i18n) {
+    //    Log.d("Creating i18n object");
+    //    i18n = new shared UIStringTranslator();
+    //}
+}
+
+shared static this() {
+    //initSharedResourceManagers();
+}
+
 /// call this when all resources are supposed to be freed to report counts of non-freed resources by type
 extern (C) void releaseResourcesOnAppExit() {
     

@@ -197,7 +197,7 @@ EmbeddedResource[] embedResourcesFromList(string resourceList)() {
 }
 
 
-__gshared static this() {
+void embedStandardDlangUIResources() {
     version (EmbedStandardResources) {
         embeddedResourceList.addResources(embedResourcesFromList!("standard_resources.list")());
     }
@@ -908,11 +908,6 @@ __gshared DrawableCache _drawableCache;
     if (_drawableCache !is null)
         destroy(_drawableCache);
     _drawableCache = cache;
-}
-
-shared static this() {
-    _imageCache = new ImageCache();
-    _drawableCache = new DrawableCache();
 }
 
 class DrawableCache {

@@ -901,5 +901,5 @@ class DirEditLine : FileNameEditLine {
     }
 }
 
-import dlangui.widgets.metadata;
-mixin(registerWidgets!(FileNameEditLine, DirEditLine)());
+//import dlangui.widgets.metadata;
+//mixin(registerWidgets!(FileNameEditLine, DirEditLine)());

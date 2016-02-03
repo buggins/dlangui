@@ -1353,6 +1353,7 @@ extern(C) int DLANGUImain(string[] args)
 		Log.e("******************************************************************");
 		assert(false);
 	}
+    initResourceManagers();
 
 	currentTheme = createDefaultTheme();
 

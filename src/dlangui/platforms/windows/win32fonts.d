@@ -107,9 +107,11 @@ private:
 };
 
 private __gshared lcd_distribution_lut!65 lut;
-__gshared static this() {
+void initWin32FontsTables() {
     lut = lcd_distribution_lut!65(0.5, 0.25, 0.125);
 }
+
+
 
 private int myabs(int n) {
     return n < 0 ? -n : n;

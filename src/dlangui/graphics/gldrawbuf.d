@@ -276,9 +276,11 @@ void onGlyphDestroyedCallback(uint pobject) {
 private __gshared GLImageCache glImageCache;
 private __gshared GLGlyphCache glGlyphCache;
 
-shared static this() {
-    glImageCache = new GLImageCache;
-    glGlyphCache = new GLGlyphCache;
+void initGLCaches() {
+    if (!glImageCache)
+        glImageCache = new GLImageCache;
+    if (!glGlyphCache)
+        glGlyphCache = new GLGlyphCache;
 }
 
 private abstract class GLCache

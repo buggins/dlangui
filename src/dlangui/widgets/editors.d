@@ -193,7 +193,7 @@ enum EditorActions : int {
 }
 
 
-__gshared static this() {
+void initStandardEditorActions() {
     // register editor action names and ids
     registerActionEnum!EditorActions();
 }
@@ -2927,5 +2927,5 @@ class FindPanel : HorizontalLayout {
     }
 }
 
-import dlangui.widgets.metadata;
-mixin(registerWidgets!(EditLine, EditBox, LogWidget)());
+//import dlangui.widgets.metadata;
+//mixin(registerWidgets!(EditLine, EditBox, LogWidget)());

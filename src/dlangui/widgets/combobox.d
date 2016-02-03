@@ -481,5 +481,5 @@ class ComboEdit : ComboBox {
 
 }
 
-import dlangui.widgets.metadata;
-mixin(registerWidgets!(ComboBox)());
+//import dlangui.widgets.metadata;
+//mixin(registerWidgets!(ComboBox)());

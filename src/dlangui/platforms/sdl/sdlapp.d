@@ -1361,7 +1361,7 @@ int sdlmain(string[] args) {
         Log.e("******************************************************************");
         assert(false);
     }
-
+    initResourceManagers();
 
     currentTheme = createDefaultTheme();
 

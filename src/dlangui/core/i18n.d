@@ -275,7 +275,7 @@ struct UIStringCollection {
 }
 
 /** UI Strings internationalization translator */
-synchronized class UIStringTranslator {
+class UIStringTranslator {
 
     private UIStringList _main;
     private UIStringList _fallback;
@@ -325,8 +325,8 @@ synchronized class UIStringTranslator {
 
     /// create empty translator
     this() {
-        _main = new shared UIStringList();
-        _fallback = new shared UIStringList();
+        _main = new UIStringList();
+        _fallback = new UIStringList();
     }
 
     /** Load translation file(s) */
@@ -357,7 +357,7 @@ synchronized class UIStringTranslator {
 }
 
 /** UI string translator */
-private shared class UIStringList {
+private class UIStringList {
     private dstring[string] _map;
     /// remove all items
     void clear() {
@@ -433,8 +433,15 @@ private shared class UIStringList {
     }
 }
 
+//==============================================================
+// Global Shared objects
+
 /** Global UI translator object */
-shared UIStringTranslator i18n;
-shared static this() {
-    i18n = new shared UIStringTranslator();
+private UIStringTranslator _i18n;
+
+@property UIStringTranslator i18n() {
+    if (!_i18n) {
+        _i18n = new UIStringTranslator();
+    }
+    return _i18n;
 }

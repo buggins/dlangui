@@ -1299,10 +1299,13 @@ class Platform {
         if (_uiLanguage.equal(langCode))
             return this;
         _uiLanguage = langCode;
+
+        Log.v("Loading language file");
         if (langCode.equal("en"))
             i18n.load("en.ini"); //"ru.ini", "en.ini"
         else
             i18n.load(langCode ~ ".ini", "en.ini");
+        Log.v("Calling onThemeChanged");
         onThemeChanged();
         requestLayout();
         return this;
@@ -1315,6 +1318,7 @@ class Platform {
     @property Platform uiTheme(string themeResourceId) {
         if (_themeId.equal(themeResourceId))
             return this;
+        Log.v("uiTheme setting new theme ", themeResourceId);
         _themeId = themeResourceId;
         Theme theme = loadTheme(themeResourceId);
         if (!theme) {
@@ -1331,10 +1335,14 @@ class Platform {
 
     /// to set uiLanguage and themeId to default (en, theme_default) if not set yet
     protected void setDefaultLanguageAndThemeIfNecessary() {
-        if (!_uiLanguage)
+        if (!_uiLanguage) {
+            Log.v("setDefaultLanguageAndThemeIfNecessary : setting UI language");
             uiLanguage = "en";
-        if (!_themeId)
+        }
+        if (!_themeId) {
+            Log.v("setDefaultLanguageAndThemeIfNecessary : setting UI theme");
             uiTheme = "theme_default";
+        }
     }
 
     protected string[] _resourceDirs;
@@ -1433,6 +1441,11 @@ extern(C) bool initFontManager();
 extern(C) void initLogs();
 /// call this when all resources are supposed to be freed to report counts of non-freed resources by type
 extern(C) void releaseResourcesOnAppExit();
+/// call this on application initialization
+extern(C) void initResourceManagers();
+/// call this from shared static this()
+extern (C) void initSharedResourceManagers();
+
 
 
 

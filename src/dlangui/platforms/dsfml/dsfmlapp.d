@@ -417,6 +417,7 @@ void initDSFMLApp() {
     Log.d("Initializing DSFML platform");
     DSFMLPlatform p = new DSFMLPlatform();
     Platform.setInstance(p);
+    initResourceManagers();
     initFontManager();
 
     currentTheme = createDefaultTheme();

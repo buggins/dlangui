@@ -77,7 +77,7 @@ string generateRegisterMetadataClass(alias t)() {
     return "registerWidgetMetadata(\"" ~ t.stringof ~ "\", new " ~ metadataClassName ~ "());\n";
 }
 
-string registerWidgets(T...)() {
+string registerWidgets(T...)(string registerFunctionName = "__gshared static this") {
     string classDefs;
     string registerDefs;
     foreach(t; T) {
@@ -92,7 +92,7 @@ string registerWidgets(T...)() {
         registerDefs ~= registerdef;
         //registerWidgetMetadata(T.stringof, new Metadata());
     }
-    return classDefs ~ "\n__gshared static this() {\n" ~ registerDefs ~ "}";
+    return classDefs ~ "\n" ~ registerFunctionName ~ "() {\n" ~ registerDefs ~ "}";
 }
 
 /// returns true if passed name is identifier of registered widget class

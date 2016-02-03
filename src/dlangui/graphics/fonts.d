@@ -889,7 +889,3 @@ private:
 
 __gshared glyph_gamma_table!65 _gamma65;
 __gshared glyph_gamma_table!256 _gamma256;
-__gshared static this() {
-    _gamma65 = new glyph_gamma_table!65(1.0);
-    _gamma256 = new glyph_gamma_table!256(1.0);
-}
