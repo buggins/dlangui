@@ -53,6 +53,9 @@ interface ListAdapter {
     ListAdapter connect(OnAdapterChangeHandler handler);
     /// disconnect adapter change handler
     ListAdapter disconnect(OnAdapterChangeHandler handler);
+
+    /// called when theme is changed
+    void onThemeChanged();
 }
 
 /// List adapter for simple list of widget instances
@@ -114,6 +117,10 @@ class ListAdapterBase : ListAdapter {
         if (adapterChanged.assigned)
             adapterChanged.emit(this);
     }
+
+    /// called when theme is changed
+    void onThemeChanged() {
+    }
 }
 
 /// List adapter for simple list of widget instances
@@ -158,6 +165,12 @@ class WidgetListAdapter : ListAdapterBase {
     override void clear() {
         _widgets.clear();
         updateViews();
+    }
+    /// called when theme is changed
+    override void onThemeChanged() {
+        super.onThemeChanged();
+        foreach(w; _widgets)
+            w.onThemeChanged();
     }
     ~this() {
         //Log.d("Destroying WidgetListAdapter");
@@ -422,6 +435,13 @@ class StringListAdapter : StringListAdapterBase {
         return _widget;
     }
 
+    /// called when theme is changed
+    override void onThemeChanged() {
+        super.onThemeChanged();
+        if (_widget)
+            _widget.onThemeChanged();
+    }
+
     /// set one or more list item's state flags, returns updated state
     override uint setItemState(int index, uint flags) {
         uint res = super.setItemState(index, flags);
@@ -487,6 +507,13 @@ class IconStringListAdapter : StringListAdapterBase {
         }
         _lastItemIndex = index;
         return _widget;
+    }
+
+    /// called when theme is changed
+    override void onThemeChanged() {
+        super.onThemeChanged();
+        if (_widget)
+            _widget.onThemeChanged();
     }
 
     /// set one or more list item's state flags, returns updated state
@@ -894,6 +921,8 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
             Widget w = itemWidget(i);
             w.onThemeChanged();
         }
+        if (_adapter)
+            _adapter.onThemeChanged();
     }
 
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).

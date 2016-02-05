@@ -162,6 +162,16 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         initialize();
     }
 
+    override void onThemeChanged() {
+        super.onThemeChanged();
+        if (_body)
+            _body.onThemeChanged();
+        if (_adapter)
+            _adapter.onThemeChanged();
+        if (_button)
+            _button.onThemeChanged();
+    }
+
     protected void initialize() {
         _body = createSelectedItemWidget();
         _body.click = this;

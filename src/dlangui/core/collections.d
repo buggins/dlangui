@@ -333,6 +333,16 @@ struct ObjectList(T) {
         }
         _count = 0;
     }
+    /// Support foreach
+    int opApply(int delegate(ref T) callback) {
+        int res = 0;
+        for(int i = 0; i < _count; i++) {
+            res = callback(_list[i]);
+            if (res)
+                break;
+        }
+        return res;
+    }
     ~this() {
         clear();
     }
