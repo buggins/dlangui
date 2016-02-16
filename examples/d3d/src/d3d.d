@@ -103,8 +103,13 @@ extern (C) int UIAppMain(string[] args) {
     scene.activeCamera = cam;
     mat4 camMatrix = scene.viewProjectionMatrix;
     VertexFormat vfmt = VertexFormat(VertexElementType.POSITION, VertexElementType.COLOR, VertexElementType.TEXCOORD0);
-    Mesh mesh = new Mesh2(vfmt);
-    mesh.addVertex([1,2,3, 1,1,1,1, 0,0]);
+    Mesh mesh = new Mesh(vfmt);
+    mesh.addVertex([1,2,3,  1,1,1,1, 0,0]);
+    mesh.addVertex([-1,2,3, 1,1,1,1, 1,0]);
+    mesh.addVertex([-1,-2,3, 1,1,1,1, 1,1]);
+    mesh.addVertex([1,-2,3, 1,1,1,1, 0,1]);
+    mesh.addPart(PrimitiveType.triangles, [0, 1, 2, 2, 3, 0]);
+
     //MeshPart part = new MeshPart();
 
     // show window
