@@ -113,7 +113,7 @@ class Mesh {
     @property int vertexCount() const { return _vertexCount; }
 
     /// mesh part count
-    @property int partCount() const { return _parts.length; }
+    @property int partCount() const { return cast(int)_parts.length; }
     /// returns mesh part by index
     MeshPart part(int index) { return _parts[index]; }
 
