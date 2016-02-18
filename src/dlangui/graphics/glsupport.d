@@ -1003,44 +1003,75 @@ alias FBO = GLObject!(GLObjectTypes.Framebuffer, GL_FRAMEBUFFER);
 
 import dlangui.graphics.scene.mesh;
 
-class VertexBuffer {
-    protected GLuint _vertexBuffer;
-    protected bool _dynamic;
-    this(Mesh mesh, bool dynamic = false) {
-        _dynamic = dynamic;
-        assertgl!glGenBuffers(1, &_vertexBuffer);
-        assertgl!glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
-        assertgl!glBufferData(GL_ARRAY_BUFFER, mesh.vertexFormat.vertexSize * mesh.vertexCount, null, _dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-    }
-    void setVertexData(float[] data) {
-        assertgl!glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
-        assertgl!glBufferData(GL_ARRAY_BUFFER, float.sizeof * cast(int)data.length , data.ptr, _dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
-    }
-    ~this() {
-        if (_vertexBuffer) {
-            checkgl!glDeleteBuffers(1, &_vertexBuffer);
-            _vertexBuffer = 0;
-        }
-    }
+class VertexBufferBase {
+    /// bind into current context
+    void bind() {}
+    /// unbind from current context
+    void unbind() {}
+    /// set or change data
+    void setData(Mesh mesh) { }
 }
 
-class VertexAttributeBinding {
-    protected GLuint _handle;
-    this(Mesh mesh) {
+class VertexBuffer : VertexBufferBase {
+    protected VertexFormat _format;
+    protected GLuint _vertexBuffer;
+    protected GLuint _indexBuffer;
+    protected GLuint _vao;
+
+    this() {
+        assertgl!glGenBuffers(1, &_vertexBuffer);
+        assertgl!glGenBuffers(1, &_indexBuffer);
+        assertgl!glGenVertexArrays(1, &_vao);
+    }
+
+    ~this() {
+        checkgl!glDeleteBuffers(1, &_vertexBuffer);
+        checkgl!glDeleteBuffers(1, &_indexBuffer);
+        checkgl!glDeleteVertexArrays(1, &_vao);
+    }
+
+    /// bind into current context
+    override void bind() {
+        glBindVertexArray(_vao);
+    }
+
+    /// unbind from current context
+    override void unbind() {
+        checkgl!glBindVertexArray(0);
         checkgl!glBindBuffer(GL_ARRAY_BUFFER, 0);
         checkgl!glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-        checkgl!glGenVertexArrays(1, &_handle);
-        if (!_handle) {
-            Log.e("Cannot generate vertex array id");
-            return;
-        }
-        checkgl!glBindVertexArray(_handle);
-        //glBindBuffer(_handle, 
-        checkgl!glBindVertexArray(0);
     }
-    ~this() {
-        if (_handle) {
-            checkgl!glDeleteVertexArrays(1, &_handle);
-        }
+
+    void updateVertexFormat() {
+        // TODO: use vertex attributes from format and shaders
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, _format.vertexSize, cast(char*)(0));
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, _format.vertexSize, cast(char*)(float.sizeof*3));
+        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, _format.vertexSize, cast(char*)(float.sizeof*6));
+
+        glEnableVertexAttribArray(0);
+        glEnableVertexAttribArray(1);
+        glEnableVertexAttribArray(2);
+    }
+
+    /// set or change data
+    override void setData(Mesh mesh) {
+        _format = mesh.vertexFormat;
+        // vertex buffer
+        checkgl!glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
+        checkgl!glBufferData(GL_ARRAY_BUFFER, _format.vertexSize * mesh.vertexCount, mesh.vertexData.ptr, GL_STATIC_DRAW);
+        // index buffer
+        checkgl!glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+        const(ushort[]) indexData = mesh.indexData;
+        checkgl!glBufferData(GL_ELEMENT_ARRAY_BUFFER, ushort.sizeof * mesh.indexData.length, indexData.ptr, GL_STATIC_DRAW);
+        // vertex layout
+        checkgl!glBindVertexArray(_vao);
+        // specify vertex buffer
+        checkgl!glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
+        // set vertex buffer format
+        updateVertexFormat();
+        // specify index buffer
+        checkgl!glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+
+        unbind();
     }
 }

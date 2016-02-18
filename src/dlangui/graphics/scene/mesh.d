@@ -87,7 +87,7 @@ struct VertexFormat {
         return false;
     }
     /// compare
-    bool opEquals(immutable ref VertexFormat fmt) {
+    bool opEquals(immutable ref VertexFormat fmt) const {
         if (_vertexSize != fmt._vertexSize)
             return false;
         for(int i = 0; i < _elements.length; i++)
@@ -105,12 +105,37 @@ class Mesh {
     protected MeshPart[] _parts;
 
     @property ref const(VertexFormat) vertexFormat() const { return _vertexFormat; }
+
+    @property VertexFormat vertexFormat() { return _vertexFormat; }
+
     @property void vertexFormat(VertexFormat format) { 
         assert(_vertexCount == 0);
         _vertexFormat = format; 
     }
     /// returns vertex count
     @property int vertexCount() const { return _vertexCount; }
+
+    /// returns vertex data array
+    @property const(float[]) vertexData() const { return _vertexData; }
+
+    /// return index data for all parts
+    @property const(ushort[]) indexData() const {
+        if (!_parts)
+            return null;
+        if (_parts.length == 1)
+            return _parts[0].data;
+        int sz = 0;
+        foreach(p; _parts)
+            sz += p.length;
+        ushort[] res;
+        res.length = 0;
+        int pos = 0;
+        foreach(p; _parts) {
+            res[pos .. pos + p.length] = p.data[0 .. $];
+            pos += p.length;
+        }
+        return res;
+    }
 
     /// mesh part count
     @property int partCount() const { return cast(int)_parts.length; }
@@ -122,7 +147,7 @@ class Mesh {
         return meshPart;
     }
 
-    MeshPart addPart(PrimitiveType type, int[] indexes) {
+    MeshPart addPart(PrimitiveType type, ushort[] indexes) {
         return addPart(new MeshPart(type, indexes));
     }
 
@@ -166,14 +191,14 @@ enum PrimitiveType : int {
 /// Mesh part - set of vertex indexes with graphics primitive type
 class MeshPart {
     protected PrimitiveType _type;
-    protected int[] _indexData;
-    this(PrimitiveType type, int[] indexes = null) {
+    protected ushort[] _indexData;
+    this(PrimitiveType type, ushort[] indexes = null) {
         _type = type;
         _indexData.assumeSafeAppend;
         add(indexes);
     }
 
-    void add(int[] indexes) {
+    void add(ushort[] indexes) {
         if (indexes.length)
             _indexData ~= indexes;
     }
@@ -188,5 +213,5 @@ class MeshPart {
     @property int length() const { return cast(int)_indexData.length; }
 
     /// index data
-    @property int[] data() { return _indexData; }
+    @property const(ushort[]) data() const { return _indexData; }
 }
