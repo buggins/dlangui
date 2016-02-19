@@ -3,6 +3,7 @@ module dlangui.graphics.scene.mesh;
 import dlangui.graphics.scene.material;
 import dlangui.core.math3d;
 
+/// vertex element type
 enum VertexElementType : ubyte {
     POSITION = 1,
     NORMAL,
@@ -17,8 +18,17 @@ enum VertexElementType : ubyte {
     TEXCOORD7,
 }
 
+/// Graphics primitive type
+enum PrimitiveType : int {
+    triangles,
+    triangleStripes,
+    lines,
+    lineStripes,
+    points,
+}
+
 /// Vertex buffer object base class
-class VertexBufferBase {
+class VertexBuffer {
     /// bind into current context
     void bind() {}
     /// unbind from current context
@@ -27,6 +37,8 @@ class VertexBufferBase {
     void setData(Mesh mesh) { }
     /// update vertex element locations for effect/shader program
     void prepareDrawing(GraphicsEffect effect) { }
+    /// draw mesh using specified effect
+    void draw(GraphicsEffect effect) { }
 }
 
 /// location for element is not found
@@ -61,7 +73,7 @@ struct VertexElement {
                 case COLOR:
                     size = 4;
                     break;
-                default:
+                default: // tx coords
                     size = 2;
                     break;
             }
@@ -126,21 +138,34 @@ struct VertexFormat {
     }
 }
 
+struct IndexFragment {
+    PrimitiveType type;
+    ushort start;
+    ushort end;
+    this(PrimitiveType type, int start, int end) {
+        this.type = type;
+        this.start = cast(ushort)start;
+        this.end = cast(ushort)end;
+    }
+}
+
 /// Mesh
 class Mesh {
     protected VertexFormat _vertexFormat;
     protected int _vertexCount;
     protected float[] _vertexData;
     protected MeshPart[] _parts;
+    protected VertexBuffer _vertexBuffer;
 
     @property ref const(VertexFormat) vertexFormat() const { return _vertexFormat; }
 
     @property VertexFormat vertexFormat() { return _vertexFormat; }
 
-    @property void vertexFormat(VertexFormat format) { 
+    @property void vertexFormat(VertexFormat format) {
         assert(_vertexCount == 0);
         _vertexFormat = format; 
     }
+
     /// returns vertex count
     @property int vertexCount() const { return _vertexCount; }
 
@@ -164,6 +189,34 @@ class Mesh {
             pos += p.length;
         }
         return res;
+    }
+
+    /// list of mesh fragments
+    @property IndexFragment[] indexFragments() const {
+        IndexFragment[] res;
+        int pos = 0;
+        foreach(p; _parts) {
+            res ~= IndexFragment(p.type, pos, pos + p.length);
+            pos += p.length;
+        }
+        return res;
+    }
+
+    /// get vertex buffer object
+    @property VertexBuffer vertexBuffer() {
+        return _vertexBuffer;
+    }
+
+    /// set vertex buffer object
+    @property void vertexBuffer(VertexBuffer buffer) {
+        if (_vertexBuffer) {
+            _vertexBuffer.destroy;
+            _vertexBuffer = null;
+        }
+        _vertexBuffer = buffer;
+        if (_vertexBuffer) {
+            _vertexBuffer.setData(this);
+        }
     }
 
     /// mesh part count
@@ -206,15 +259,13 @@ class Mesh {
     this(VertexFormat vertexFormat) {
         _vertexFormat = vertexFormat;
     }
-}
 
-/// Graphics primitive type
-enum PrimitiveType : int {
-    triangles,
-    triangleStripes,
-    lines,
-    lineStripes,
-    points,
+    ~this() {
+        if (_vertexBuffer) {
+            _vertexBuffer.destroy;
+            _vertexBuffer = null;
+        }
+    }
 }
 
 /// Mesh part - set of vertex indexes with graphics primitive type

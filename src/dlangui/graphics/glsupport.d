@@ -1023,8 +1023,9 @@ alias VBO = GLObject!(GLObjectTypes.Buffer, GL_ARRAY_BUFFER);
 alias Tex2D = GLObject!(GLObjectTypes.Texture, GL_TEXTURE_2D);
 alias FBO = GLObject!(GLObjectTypes.Framebuffer, GL_FRAMEBUFFER);
 
-class VertexBuffer : VertexBufferBase {
+class GLVertexBuffer : VertexBuffer {
     protected VertexFormat _format;
+    protected IndexFragment[] _indexFragments;
     protected GLuint _vertexBuffer;
     protected GLuint _indexBuffer;
     protected GLuint _vao;
@@ -1066,20 +1067,10 @@ class VertexBuffer : VertexBufferBase {
         }
     }
 
-    void updateVertexFormat() {
-        // TODO: use vertex attributes from format and shaders
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, _format.vertexSize, cast(char*)(0));
-        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, _format.vertexSize, cast(char*)(float.sizeof*3));
-        glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, _format.vertexSize, cast(char*)(float.sizeof*6));
-
-        glEnableVertexAttribArray(0);
-        glEnableVertexAttribArray(1);
-        glEnableVertexAttribArray(2);
-    }
-
     /// set or change data
     override void setData(Mesh mesh) {
         _format = mesh.vertexFormat;
+        _indexFragments = mesh.indexFragments;
         // vertex buffer
         checkgl!glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
         checkgl!glBufferData(GL_ARRAY_BUFFER, _format.vertexSize * mesh.vertexCount, mesh.vertexData.ptr, GL_STATIC_DRAW);
@@ -1091,11 +1082,38 @@ class VertexBuffer : VertexBufferBase {
         checkgl!glBindVertexArray(_vao);
         // specify vertex buffer
         checkgl!glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
-        // set vertex buffer format
-        updateVertexFormat();
         // specify index buffer
         checkgl!glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
 
         unbind();
+    }
+
+    /// draw mesh using specified effect
+    override void draw(GraphicsEffect effect) {
+        bind();
+        prepareDrawing(effect);
+        foreach (fragment; _indexFragments) {
+            glDrawRangeElements(primitiveTypeToGL(fragment.type), 
+                                fragment.start, fragment.end, 
+                                fragment.end - fragment.start, 
+                                GL_UNSIGNED_SHORT, null);
+        }
+        unbind();
+    }
+}
+
+GLenum primitiveTypeToGL(PrimitiveType type) {
+    switch(type) with (PrimitiveType) {
+        case triangles:
+            return GL_TRIANGLES;
+        case triangleStripes:
+            return GL_TRIANGLE_STRIP;
+        case lines:
+            return GL_LINES;
+        case lineStripes:
+            return GL_LINE_STRIP;
+        case points:
+        default:
+            return GL_POINTS;
     }
 }
