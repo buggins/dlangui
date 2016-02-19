@@ -303,6 +303,18 @@ class GLProgram : GraphicsEffect {
     override void setUniform(string uniformName, vec4 vec) {
         checkgl!glUniform4fv(getAttribLocation(uniformName), 1, vec.vec.ptr);
     }
+
+    /// draw mesh using this program (program should be bound by this time and all uniforms should be set)
+    override void draw(Mesh mesh) {
+        VertexBuffer vb = mesh.vertexBuffer;
+        if (!vb) {
+            vb = new GLVertexBuffer();
+            mesh.vertexBuffer = vb;
+        }
+        vb.bind();
+        vb.draw(this);
+        vb.unbind();
+    }
 }
 
 class SolidFillProgram : GLProgram {

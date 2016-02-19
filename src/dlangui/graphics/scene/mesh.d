@@ -56,6 +56,8 @@ abstract class GraphicsEffect {
     void setUniform(string uniformName, vec3 vec);
 
     void setUniform(string uniformName, vec4 vec);
+
+    void draw(Mesh mesh);
 }
 
 /// vertex attribute properties
@@ -162,6 +164,7 @@ class Mesh {
     protected float[] _vertexData;
     protected MeshPart[] _parts;
     protected VertexBuffer _vertexBuffer;
+    protected bool _dirtyVertexBuffer = true;
 
     @property ref const(VertexFormat) vertexFormat() const { return _vertexFormat; }
 
@@ -170,6 +173,7 @@ class Mesh {
     @property void vertexFormat(VertexFormat format) {
         assert(_vertexCount == 0);
         _vertexFormat = format; 
+        _dirtyVertexBuffer = true;
     }
 
     /// returns vertex count
@@ -210,6 +214,10 @@ class Mesh {
 
     /// get vertex buffer object
     @property VertexBuffer vertexBuffer() {
+        if (_dirtyVertexBuffer && _vertexBuffer) {
+            _vertexBuffer.setData(this);
+            _dirtyVertexBuffer = false;
+        }
         return _vertexBuffer;
     }
 
@@ -222,6 +230,7 @@ class Mesh {
         _vertexBuffer = buffer;
         if (_vertexBuffer) {
             _vertexBuffer.setData(this);
+            _dirtyVertexBuffer = false;
         }
     }
 
@@ -232,6 +241,7 @@ class Mesh {
 
     MeshPart addPart(MeshPart meshPart) {
         _parts ~= meshPart;
+        _dirtyVertexBuffer = true;
         return meshPart;
     }
 
@@ -246,6 +256,7 @@ class Mesh {
         _vertexData.assumeSafeAppend();
         _vertexData ~= data;
         _vertexCount++;
+        _dirtyVertexBuffer = true;
         return res;
     }
 
@@ -256,6 +267,7 @@ class Mesh {
         _vertexData.assumeSafeAppend();
         _vertexData ~= data;
         _vertexCount += cast(int)(data.length / _vertexFormat.vertexFloats);
+        _dirtyVertexBuffer = true;
         return res;
     }
 
