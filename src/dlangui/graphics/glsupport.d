@@ -263,20 +263,45 @@ class GLProgram : GraphicsEffect {
         currentProgram = 0;
     }
 
+    protected int[string] _uniformLocations;
+    protected int[string] _attribLocations;
+
     /// get uniform location from program, returns -1 if location is not found
     int getUniformLocation(string variableName) {
+        if (auto p = variableName in _uniformLocations)
+            return *p;
         int res = checkgl!glGetUniformLocation(program, variableName.toStringz);
         if (res == -1)
             Log.e("glGetUniformLocation failed for " ~ variableName);
+        _uniformLocations[variableName] = res;
         return res;
     }
 
     /// get attribute location from program, returns -1 if location is not found
     int getAttribLocation(string variableName) {
+        if (auto p = variableName in _attribLocations)
+            return *p;
         int res = checkgl!glGetAttribLocation(program, variableName.toStringz);
         if (res == -1)
             Log.e("glGetAttribLocation failed for " ~ variableName);
+        _attribLocations[variableName] = res;
         return res;
+    }
+
+    override void setUniform(string uniformName, mat4 matrix) {
+        checkgl!glUniformMatrix4fv(getUniformLocation(uniformName), 1, false, matrix.m.ptr);
+    }
+
+    override void setUniform(string uniformName, vec2 vec) {
+        checkgl!glUniform2fv(getAttribLocation(uniformName), 1, vec.vec.ptr);
+    }
+
+    override void setUniform(string uniformName, vec3 vec) {
+        checkgl!glUniform3fv(getAttribLocation(uniformName), 1, vec.vec.ptr);
+    }
+
+    override void setUniform(string uniformName, vec4 vec) {
+        checkgl!glUniform4fv(getAttribLocation(uniformName), 1, vec.vec.ptr);
     }
 }
 

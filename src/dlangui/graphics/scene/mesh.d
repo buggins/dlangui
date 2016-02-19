@@ -45,11 +45,17 @@ class VertexBuffer {
 enum VERTEX_ELEMENT_NOT_FOUND = -1;
 
 /// Base class for graphics effect / program - e.g. for OpenGL shader program
-class GraphicsEffect {
+abstract class GraphicsEffect {
     /// get location for vertex attribute
-    int getVertexElementLocation(VertexElementType type) {
-        return VERTEX_ELEMENT_NOT_FOUND;
-    }
+    int getVertexElementLocation(VertexElementType type);
+
+    void setUniform(string uniformName, mat4 matrix);
+
+    void setUniform(string uniformName, vec2 vec);
+
+    void setUniform(string uniformName, vec3 vec);
+
+    void setUniform(string uniformName, vec4 vec);
 }
 
 /// vertex attribute properties
