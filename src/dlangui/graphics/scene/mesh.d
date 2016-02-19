@@ -17,11 +17,40 @@ enum VertexElementType : ubyte {
     TEXCOORD7,
 }
 
+/// Vertex buffer object base class
+class VertexBufferBase {
+    /// bind into current context
+    void bind() {}
+    /// unbind from current context
+    void unbind() {}
+    /// set or change data
+    void setData(Mesh mesh) { }
+    /// update vertex element locations for effect/shader program
+    void prepareDrawing(GraphicsEffect effect) { }
+}
+
+/// location for element is not found
+enum VERTEX_ELEMENT_NOT_FOUND = -1;
+
+/// Base class for graphics effect / program - e.g. for OpenGL shader program
+class GraphicsEffect {
+    /// get location for vertex attribute
+    int getVertexElementLocation(VertexElementType type) {
+        return VERTEX_ELEMENT_NOT_FOUND;
+    }
+}
+
+/// vertex attribute properties
 struct VertexElement {
     private VertexElementType _type;
     private ubyte _size;
+    /// returns element type
     @property VertexElementType type() const { return _type; }
+    /// return element size in floats
     @property ubyte size() const { return _size; }
+    /// return element size in bytes
+    @property ubyte byteSize() const { return cast(ubyte)(_size * float.sizeof); }
+
     this(VertexElementType type, ubyte size = 0) {
         if (size == 0) {
             switch(type) with (VertexElementType) {

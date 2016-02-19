@@ -19,9 +19,11 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 module dlangui.graphics.glsupport;
 
 public import dlangui.core.config;
+
 static if (ENABLE_OPENGL):
 
 public import dlangui.core.math3d;
+import dlangui.graphics.scene.mesh;
 import dlangui.core.logger;
 import derelict.opengl3.gl3;
 import derelict.opengl3.gl;
@@ -111,7 +113,7 @@ string glerrorToString(in GLenum err) pure nothrow {
 }
 
 
-class GLProgram {
+class GLProgram : GraphicsEffect {
     @property abstract string vertexSource();
     @property abstract string fragmentSource();
     protected GLuint program;
@@ -313,6 +315,17 @@ class SolidFillProgram : GLProgram {
         colAttrLocation = getAttribLocation("vertex_color");
         return matrixLocation >= 0 && vertexLocation >= 0 && colAttrLocation >= 0;
     }
+    /// get location for vertex attribute
+    override int getVertexElementLocation(VertexElementType type) {
+        switch(type) with(VertexElementType) {
+            case POSITION: 
+                return vertexLocation;
+            case COLOR: 
+                return colAttrLocation;
+            default:
+                return VERTEX_ELEMENT_NOT_FOUND;
+        }
+    }
 
     VAO vao;
     VBO vbo;
@@ -418,6 +431,15 @@ class TextureProgram : SolidFillProgram {
         bool res = super.initLocations();
         texCoordLocation = getAttribLocation("vertex_UV");
         return res && texCoordLocation >= 0;
+    }
+    /// get location for vertex attribute
+    override int getVertexElementLocation(VertexElementType type) {
+        switch(type) with(VertexElementType) {
+            case TEXCOORD0: 
+                return texCoordLocation;
+            default:
+                return super.getVertexElementLocation(type);
+        }
     }
 
     protected void createVAO(float[] vertices, float[] colors, float[] texcoords) {
@@ -1001,17 +1023,6 @@ alias VBO = GLObject!(GLObjectTypes.Buffer, GL_ARRAY_BUFFER);
 alias Tex2D = GLObject!(GLObjectTypes.Texture, GL_TEXTURE_2D);
 alias FBO = GLObject!(GLObjectTypes.Framebuffer, GL_FRAMEBUFFER);
 
-import dlangui.graphics.scene.mesh;
-
-class VertexBufferBase {
-    /// bind into current context
-    void bind() {}
-    /// unbind from current context
-    void unbind() {}
-    /// set or change data
-    void setData(Mesh mesh) { }
-}
-
 class VertexBuffer : VertexBufferBase {
     protected VertexFormat _format;
     protected GLuint _vertexBuffer;
@@ -1040,6 +1051,19 @@ class VertexBuffer : VertexBufferBase {
         checkgl!glBindVertexArray(0);
         checkgl!glBindBuffer(GL_ARRAY_BUFFER, 0);
         checkgl!glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    }
+
+    /// update vertex element locations for effect/shader program
+    override void prepareDrawing(GraphicsEffect effect) {
+        int offset = 0;
+        for(int i = 0; i < _format.length; i++) {
+            int loc = effect.getVertexElementLocation(_format[i].type);
+            if (loc >= 0) {
+                glVertexAttribPointer(loc, _format[i].size, GL_FLOAT, GL_FALSE, _format.vertexSize, cast(char*)(offset));
+                glEnableVertexAttribArray(loc);
+            }
+            offset += _format[i].byteSize;
+        }
     }
 
     void updateVertexFormat() {
