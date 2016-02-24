@@ -13,7 +13,7 @@ extern (C) int UIAppMain(string[] args) {
     // create window
     Window window = Platform.instance.createWindow("DlangUI example - 3D Application", null, WindowFlag.Resizable, 600, 500);
 
-    static if (true) {
+    static if (false) {
         VerticalLayout layout = new VerticalLayout();
         Button btn = new Button(null, "Button 1"d);
         btn.fontSize = 32;
@@ -32,6 +32,7 @@ extern (C) int UIAppMain(string[] args) {
                 padding: 10
                 backgroundColor: "#C0E0E070" // semitransparent yellow background
                 // red bold text with size = 150% of base style size and font face Arial
+                MainMenu {}
                 TextWidget { text: "Hello World example for DlangUI"; textColor: "red"; fontSize: 150%; fontWeight: 800; fontFace: "Arial" }
                 HorizontalLayout {
                     layoutWidth: fill
@@ -76,6 +77,13 @@ extern (C) int UIAppMain(string[] args) {
                 }
             }
         });
+
+        MenuItem mainMenuItems = new MenuItem();
+        MenuItem fileItem = new MenuItem(new Action(1, "MENU_FILE"));
+        fileItem.add(new Action(2, "MENU_FILE_OPEN"c, "document-open", KeyCode.KEY_O, KeyFlag.Control));
+        fileItem.add(new Action(3, "MENU_FILE_SAVE"c, "document-save", KeyCode.KEY_S, KeyFlag.Control));
+        mainMenuItems.add(fileItem);
+        window.mainWidget.childById!MainMenu("MAIN_MENU").menuItems = mainMenuItems;
 
         auto canvas = window.mainWidget.childById!CanvasWidget("canvas");
         canvas.onDrawListener = delegate(CanvasWidget canvas, DrawBuf buf, Rect rc) {

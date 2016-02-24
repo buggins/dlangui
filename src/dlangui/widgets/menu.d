@@ -451,6 +451,7 @@ class MenuWidgetBase : ListWidget {
             }
         }
         ownAdapter = adapter;
+        requestLayout();
     }
 
     @property protected bool isMainMenu() {
