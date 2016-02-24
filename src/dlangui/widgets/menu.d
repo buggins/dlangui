@@ -427,18 +427,28 @@ class MenuWidgetBase : ListWidget {
 
     this(MenuWidgetBase parentMenu, MenuItem item, Orientation orientation) {
         _parentMenu = parentMenu;
-        _item = item;
         this.orientation = orientation;
         id = "popup_menu";
         styleId = STYLE_POPUP_MENU;
+        menuItems = item;
+    }
+
+    @property void menuItems(MenuItem item) {
+        if (_item) {
+            destroy(_item);
+            _item = null;
+        }
+        _item = item;
         WidgetListAdapter adapter = new WidgetListAdapter();
-        for (int i=0; i < _item.subitemCount; i++) {
-            MenuItem subitem = _item.subitem(i);
-            MenuItemWidget widget = new MenuItemWidget(subitem, orientation == Orientation.Horizontal);
-            if (orientation == Orientation.Horizontal)
-                widget.styleId = STYLE_MAIN_MENU_ITEM;
-            widget.parent = this;
-            adapter.add(widget);
+        if (item) {
+            for (int i=0; i < _item.subitemCount; i++) {
+                MenuItem subitem = _item.subitem(i);
+                MenuItemWidget widget = new MenuItemWidget(subitem, orientation == Orientation.Horizontal);
+                if (orientation == Orientation.Horizontal)
+                    widget.styleId = STYLE_MAIN_MENU_ITEM;
+                widget.parent = this;
+                adapter.add(widget);
+            }
         }
         ownAdapter = adapter;
     }
@@ -761,6 +771,8 @@ class MenuWidgetBase : ListWidget {
 
     /// map key to action
     override Action findKeyAction(uint keyCode, uint flags) {
+        if (!_item)
+            return null;
         Action action = _item.findKeyAction(keyCode, flags);
         return action;
     }
@@ -769,6 +781,14 @@ class MenuWidgetBase : ListWidget {
 
 /// main menu (horizontal)
 class MainMenu : MenuWidgetBase {
+
+    this() {
+        super(null, null, Orientation.Horizontal);
+        id = "MAIN_MENU";
+        styleId = STYLE_MAIN_MENU;
+        _clickOnButtonDown = true;
+        selectOnHover = false;
+    }
 
     this(MenuItem item) {
         super(null, item, Orientation.Horizontal);
