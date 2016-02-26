@@ -266,6 +266,11 @@ class GLProgram : GraphicsEffect {
     protected int[string] _uniformLocations;
     protected int[string] _attribLocations;
 
+    /// get location for vertex attribute
+    override int getVertexElementLocation(VertexElementType type) {
+        return VERTEX_ELEMENT_NOT_FOUND;
+    }
+
     /// get uniform location from program, returns -1 if location is not found
     int getUniformLocation(string variableName) {
         if (auto p = variableName in _uniformLocations)
