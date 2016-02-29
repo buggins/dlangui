@@ -223,11 +223,6 @@ class Win32Window : Window {
     Win32Platform _platform;
 
     HWND _hwnd;
-    static if (ENABLE_OPENGL) {
-        HGLRC _hGLRC; // opengl context
-        HPALETTE _hPalette;
-        //GLSupport _gl;
-    }
     dstring _caption;
     Win32ColorDrawBuf _drawbuf;
     bool useOpengl;
@@ -560,7 +555,7 @@ class Win32Window : Window {
         debug(DebugRedraw) Log.d("onPaint()");
         long paintStart = currentTimeMillis;
         static if (ENABLE_OPENGL) {
-            if (useOpengl && _hGLRC) {
+            if (useOpengl && sharedGLContext._hGLRC) {
                 paintUsingOpenGL();
             } else {
                 paintUsingGDI();

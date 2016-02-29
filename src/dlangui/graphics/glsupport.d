@@ -1086,7 +1086,13 @@ class GLVertexBuffer : VertexBuffer {
 
     /// bind into current context
     override void bind() {
-        glBindVertexArray(_vao);
+        checkgl!glBindVertexArray(_vao);
+
+        // TODO: is it necessary to bind vertex/index buffers?
+        // specify vertex buffer
+        checkgl!glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
+        // specify index buffer
+        checkgl!glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
     }
 
     /// unbind from current context
@@ -1102,8 +1108,10 @@ class GLVertexBuffer : VertexBuffer {
         for(int i = 0; i < _format.length; i++) {
             int loc = effect.getVertexElementLocation(_format[i].type);
             if (loc >= 0) {
-                glVertexAttribPointer(loc, _format[i].size, GL_FLOAT, GL_FALSE, _format.vertexSize, cast(char*)(offset));
-                glEnableVertexAttribArray(loc);
+                checkgl!glVertexAttribPointer(loc, _format[i].size, GL_FLOAT, GL_FALSE, _format.vertexSize, cast(char*)(offset));
+                checkgl!glEnableVertexAttribArray(loc);
+            } else {
+                Log.d("Attribute location not found for ", _format[i].type);
             }
             offset += _format[i].byteSize;
         }

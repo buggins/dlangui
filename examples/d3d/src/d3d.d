@@ -14,6 +14,9 @@ mixin APP_ENTRY_POINT;
 
 /// entry point for dlangui based application
 extern (C) int UIAppMain(string[] args) {
+    // embed resources listed in views/resources.list into executable
+    embeddedResourceList.addResources(embedResourcesFromList!("resources.list")());
+
     // create window
     Window window = Platform.instance.createWindow("DlangUI example - 3D Application", null, WindowFlag.Resizable, 600, 500);
     window.mainWidget = new UiWidget();
