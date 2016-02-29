@@ -46,13 +46,14 @@ class UiWidget : VerticalLayout {
                 id: glView
                 margins: 10
                 padding: 10
-                TextWidget { text: "Hello World example for DlangUI"; textColor: "red"; fontSize: 150%; fontWeight: 800; fontFace: "Arial" }
+                TextWidget { text: "There should be OpenGL animation on background"; textColor: "red"; fontSize: 150%; fontWeight: 800; fontFace: "Arial" }
+                TextWidget { text: "Do you see it? If no, there is some bug in Mesh rendering code..."; fontSize: 120% }
                 HorizontalLayout {
-                layoutWidth: fill
-                        TextWidget { text: "Text 20%"; backgroundColor:"#80FF0000"; layoutWidth: 20% }
+                    layoutWidth: fill
+                    TextWidget { text: "Text 20%"; backgroundColor:"#80FF0000"; layoutWidth: 20% }
                     VerticalLayout {
-                    layoutWidth: 30%
-                            TextWidget { text: "Text 30%"; backgroundColor:"#80FF00FF" }
+                        layoutWidth: 30%
+                        TextWidget { text: "Text 30%"; backgroundColor:"#80FF00FF" }
                         TextWidget { text: "Text 30%"; backgroundColor:"#8000FFFF" }
                         TextWidget { text: "Text 30%"; backgroundColor:"#8000FFFF" }
                     }
@@ -60,8 +61,8 @@ class UiWidget : VerticalLayout {
                 }
                 // arrange controls as form - table with two columns
                 TableLayout {
-                colCount: 2
-                        TextWidget { text: "param 1" }
+                    colCount: 2
+                    TextWidget { text: "param 1" }
                     EditLine { id: edit1; text: "some text" }
                     TextWidget { text: "param 2" }
                     EditLine { id: edit2; text: "some text for param2" }
@@ -80,6 +81,7 @@ class UiWidget : VerticalLayout {
                     }
                 }
                 HorizontalLayout {
+                    TextWidget { text: "Some buttons:" }
                     Button { id: btnOk; text: "Ok"; fontSize: 27px }
                     Button { id: btnCancel; text: "Cancel"; fontSize: 27px }
                 }
