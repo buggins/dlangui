@@ -35,8 +35,6 @@ class VertexBuffer {
     void unbind() {}
     /// set or change data
     void setData(Mesh mesh) { }
-    /// update vertex element locations for effect/shader program
-    void prepareDrawing(GraphicsEffect effect) { }
     /// draw mesh using specified effect
     void draw(GraphicsEffect effect) { }
 }
