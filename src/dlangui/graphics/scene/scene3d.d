@@ -27,7 +27,7 @@ class Scene3d : Node3d {
     /// set or clear current active camera
     @property void activeCamera(Camera cam) {
         _activeCamera = cam;
-        if (cam.parent != this)
+        if (cam && cam.parent != this)
             addChild(cam);
     }
 

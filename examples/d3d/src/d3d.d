@@ -21,26 +21,6 @@ extern (C) int UIAppMain(string[] args) {
     Window window = Platform.instance.createWindow("DlangUI example - 3D Application", null, WindowFlag.Resizable, 600, 500);
     window.mainWidget = new UiWidget();
 
-    auto canvas = window.mainWidget.childById!CanvasWidget("canvas");
-    canvas.onDrawListener = delegate(CanvasWidget canvas, DrawBuf buf, Rect rc) {
-            Log.w("canvas.onDrawListener clipRect=" ~ to!string(buf.clipRect));
-            buf.fill(0xFFFFFF);
-            int x = rc.left;
-            int y = rc.top;
-            buf.fillRect(Rect(x+20, y+20, x+150, y+200), 0x80FF80);
-            buf.fillRect(Rect(x+90, y+80, x+250, y+250), 0x80FF80FF);
-            canvas.font.drawText(buf, x + 40, y + 50, "fillRect()"d, 0xC080C0);
-            buf.drawFrame(Rect(x + 400, y + 30, x + 550, y + 150), 0x204060, Rect(2,3,4,5), 0x80704020);
-            canvas.font.drawText(buf, x + 400, y + 5, "drawFrame()"d, 0x208020);
-            canvas.font.drawText(buf, x + 300, y + 100, "drawPixel()"d, 0x000080);
-            for (int i = 0; i < 80; i++)
-                buf.drawPixel(x+300 + i * 4, y+140 + i * 3 % 100, 0xFF0000 + i * 2);
-            canvas.font.drawText(buf, x + 200, y + 150, "drawLine()"d, 0x800020);
-            for (int i = 0; i < 40; i+=3)
-                buf.drawLine(Point(x+200 + i * 4, y+190), Point(x+150 + i * 7, y+320 + i * 2), 0x008000 + i * 5);
-        };
-
-
     //MeshPart part = new MeshPart();
 
     // show window
@@ -58,10 +38,13 @@ class UiWidget : VerticalLayout {
         alignment = Align.Center;
         parseML(q{
             {
+              margins: 10
+              padding: 10
+              backgroundColor: "#C0E0E070" // semitransparent yellow background
+              VerticalLayout {
                 id: glView
                 margins: 10
                 padding: 10
-                backgroundColor: "#C0E0E070" // semitransparent yellow background
                 TextWidget { text: "Hello World example for DlangUI"; textColor: "red"; fontSize: 150%; fontWeight: 800; fontFace: "Arial" }
                 HorizontalLayout {
                 layoutWidth: fill
@@ -99,11 +82,7 @@ class UiWidget : VerticalLayout {
                     Button { id: btnOk; text: "Ok"; fontSize: 27px }
                     Button { id: btnCancel; text: "Cancel"; fontSize: 27px }
                 }
-                CanvasWidget {
-                id: canvas
-                        minWidth: 500
-                        minHeight: 300
-                }
+              }
             }
         }, "", this);
         // assign OpenGL drawable to child widget background
@@ -111,18 +90,31 @@ class UiWidget : VerticalLayout {
 
 
         _scene = new Scene3d();
+
         _cam = new Camera();
-        _cam.translation = vec3(0, 0, -5);
+        _cam.translate(vec3(0, 0, -7));
+
         _scene.activeCamera = _cam;
-        mat4 camMatrix = _scene.viewProjectionMatrix;
+
         VertexFormat vfmt = VertexFormat(VertexElementType.POSITION, VertexElementType.COLOR, VertexElementType.TEXCOORD0);
         _mesh = new Mesh(vfmt);
-        _mesh.addVertex([1,2,3,  1,1,1,1, 0,0]);
-        _mesh.addVertex([-1,2,3, 1,1,1,1, 1,0]);
-        _mesh.addVertex([-1,-2,3, 1,1,1,1, 1,1]);
-        _mesh.addVertex([1,-2,3, 1,1,1,1, 0,1]);
+        // square
+        _mesh.addVertex([-1,-1, 3,  1,1,1,1, 0,0]);
+        _mesh.addVertex([-1, 1, 3,  1,1,1,1, 1,0]);
+        _mesh.addVertex([ 1, 1, 3,  1,1,1,1, 1,1]);
+        _mesh.addVertex([ 1,-1, 3,  1,1,1,1, 0,1]);
         _mesh.addPart(PrimitiveType.triangles, [0, 1, 2, 2, 3, 0]);
 
+    }
+
+    /// returns true is widget is being animated - need to call animate() and redraw
+    @property override bool animating() { return true; }
+    /// animates window; interval is time left from previous draw, in hnsecs (1/10000000 of second)
+    override void animate(long interval) {
+        Log.d("animating");
+        _cam.rotateX(0.01);
+        _cam.rotateY(0.02);
+        invalidate();
     }
 
     MyGLProgram _program;
@@ -147,6 +139,7 @@ class UiWidget : VerticalLayout {
         }
         mat4 camMatrix = _scene.viewProjectionMatrix;
         _program.bind();
+        Log.d("matrix uniform: ", camMatrix.m);
         _program.setUniform("matrix", camMatrix);
         _tx.texture.setup();
         _tx.texture.setSamplerParams(true);
@@ -155,6 +148,14 @@ class UiWidget : VerticalLayout {
 
         _tx.texture.unbind();
         _program.unbind();
+    }
+
+    ~this() {
+        destroy(_scene);
+        if (_program)
+            destroy(_program);
+        if (_tx)
+            destroy(_tx);
     }
 }
 
