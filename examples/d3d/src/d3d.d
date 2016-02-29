@@ -40,7 +40,8 @@ class UiWidget : VerticalLayout {
             {
               margins: 10
               padding: 10
-              backgroundColor: "#C0E0E070" // semitransparent yellow background
+              backgroundImageId: "tx_fabric.tiled"
+
               VerticalLayout {
                 id: glView
                 margins: 10
@@ -111,11 +112,13 @@ class UiWidget : VerticalLayout {
     @property override bool animating() { return true; }
     /// animates window; interval is time left from previous draw, in hnsecs (1/10000000 of second)
     override void animate(long interval) {
-        Log.d("animating");
+        //Log.d("animating");
         _cam.rotateX(0.01);
         _cam.rotateY(0.02);
+        angle += interval * 0.000002f;
         invalidate();
     }
+    float angle = 0;
 
     MyGLProgram _program;
     Scene3d _scene;
@@ -137,10 +140,36 @@ class UiWidget : VerticalLayout {
             Log.e("Invalid texture");
             return;
         }
-        mat4 camMatrix = _scene.viewProjectionMatrix;
+        _cam.setPerspective(4.0f, 3.0f, 45.0f, 0.1f, 100.0f);
+        mat4 projectionViewModelMatrix;
+        if (true) {
+            // ======== Projection Matrix ==================
+            mat4 projectionMatrix;
+            float aspectRatio = cast(float)rc.width / cast(float)rc.height;
+            projectionMatrix.setPerspective(45.0f, aspectRatio, 0.1f, 100.0f);
+
+            // ======== View Matrix ==================
+            mat4 viewMatrix;
+            viewMatrix.translate(0, 0, -6);
+            viewMatrix.rotatex(-15.0f);
+            //viewMatrix.lookAt(vec3(-10, 0, 0), vec3(0, 0, 0), vec3(0, 1, 0));//translation(0.0f, 0.0f, 4.0f).rotatez(angle);
+
+            // ======== Model Matrix ==================
+            mat4 modelMatrix;
+            modelMatrix.scale(1.5f);
+            modelMatrix.rotatez(30.0f + angle * 0.3456778);
+            modelMatrix.rotatey(angle);
+            modelMatrix.rotatez(angle * 1.98765f);
+
+            // ======= PMV matrix =====================
+            projectionViewModelMatrix = projectionMatrix * viewMatrix * modelMatrix;
+        } else {
+            projectionViewModelMatrix = _scene.viewProjectionMatrix;
+        }
+        //Log.d("matrix uniform: ", projectionViewModelMatrix.m);
+
         _program.bind();
-        Log.d("matrix uniform: ", camMatrix.m);
-        _program.setUniform("matrix", camMatrix);
+        _program.setUniform("matrix", projectionViewModelMatrix);
         _tx.texture.setup();
         _tx.texture.setSamplerParams(true);
 
