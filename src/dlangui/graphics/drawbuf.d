@@ -475,13 +475,16 @@ class ColorDrawBufBase : DrawBuf {
         }
     }
 
+	import std.container.array;
+
     /// Create mapping of source coordinates to destination coordinates, for resize.
-    private int[] createMap(int dst0, int dst1, int src0, int src1) {
+    private Array!int createMap(int dst0, int dst1, int src0, int src1, double k) {
         int dd = dst1 - dst0;
-        int sd = src1 - src0;
-        int[] res = new int[dd];
+        //int sd = src1 - src0;
+		Array!int res;
+		res.length = dd;
         foreach(int i; 0 .. dd)
-            res[i] = src0 + i * sd / dd;
+            res[i] = src0 + cast(int)(i * k);//sd / dd;
         return res;
     }
 
@@ -490,11 +493,14 @@ class ColorDrawBufBase : DrawBuf {
         //Log.d("drawRescaled ", dstrect, " <- ", srcrect);
         if (_alpha >= 254)
             return; // fully transparent - don't draw
+		double kx = cast(double)srcrect.width / dstrect.width;
+		double ky = cast(double)srcrect.height / dstrect.height;
         if (applyClipping(dstrect, srcrect)) {
-            int[] xmapArray = createMap(dstrect.left, dstrect.right, srcrect.left, srcrect.right);
-            int[] ymapArray = createMap(dstrect.top, dstrect.bottom, srcrect.top, srcrect.bottom);
-            int * xmap = xmapArray.ptr;
-            int * ymap = ymapArray.ptr;
+            auto xmapArray = createMap(dstrect.left, dstrect.right, srcrect.left, srcrect.right, kx);
+            auto ymapArray = createMap(dstrect.top, dstrect.bottom, srcrect.top, srcrect.bottom, ky);
+
+            int * xmap = &xmapArray[0];
+            int * ymap = &ymapArray[0];
             int dx = dstrect.width;
             int dy = dstrect.height;
             ColorDrawBufBase colorDrawBuf = cast(ColorDrawBufBase) src;
