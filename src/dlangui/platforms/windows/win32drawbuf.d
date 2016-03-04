@@ -157,7 +157,7 @@ class Win32ColorDrawBuf : ColorDrawBufBase {
         int len = _dx * _dy;
         //for (int i = 0; i < len; i++)
         //    _pixels[i] = color;
-        _pixels[0 .. len - 1] = color;
+        _pixels[0 .. len] = color;
     }
     /// draw to win32 device context
     void drawTo(HDC dc, int x, int y) {

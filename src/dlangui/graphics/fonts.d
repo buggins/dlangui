@@ -502,8 +502,8 @@ struct SimpleTextFormatter {
                 if (ch == '\t' || ch == ' ') {
                     // track last word end
                     if (prevChar != '\t' && prevChar != ' ' && prevChar != 0) {
-                        lastWordEnd = i - 1;
-                        lastWordEndX = widths[i - 1];
+                        lastWordEnd = i;
+                        lastWordEndX = widths[i]; 
                     }
                     prevChar = ch;
                     continue;
