@@ -336,12 +336,11 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     /// file list item selected
     protected void onItemSelected(int index) {
         DirEntry e = _entries[index];
+        string fname = e.name;
+        _edFilename.text = toUTF32(baseName(fname));
         if (e.isDir) {
-            _edFilename.text = ""d;
             _filename = "";
         } else if (e.isFile) {
-            string fname = e.name;
-            _edFilename.text = toUTF32(baseName(fname));
             _filename = fname;
         }
     }
