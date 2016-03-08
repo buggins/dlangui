@@ -1111,6 +1111,11 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return true;
     }
 
+    public dstring getSelectedText(){
+        dstring selectionText = concatDStrings(_content.rangeText(_selectionRange));
+        return selectionText;
+    }
+    
     protected bool removeRangeText(TextRange range) {
         if (range.empty)
             return false;
@@ -1310,13 +1315,13 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 return true;
             case Copy:
                 if (!_selectionRange.empty) {
-                    dstring selectionText = concatDStrings(_content.rangeText(_selectionRange));
+                    dstring selectionText = getSelectedText();
                     platform.setClipboardText(selectionText);
                 }
                 return true;
             case Cut:
                 if (!_selectionRange.empty) {
-                    dstring selectionText = concatDStrings(_content.rangeText(_selectionRange));
+                    dstring selectionText = getSelectedText();
                     platform.setClipboardText(selectionText);
                     if (readOnly)
                         return true;
