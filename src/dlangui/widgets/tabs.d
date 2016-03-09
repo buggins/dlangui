@@ -646,6 +646,7 @@ class TabHost : FrameLayout, TabHandler {
         assert(widget.id !is null, "ID for tab host page is mandatory");
         assert(_children.indexOf(id) == -1, "duplicate ID for tab host page");
         _tabControl.addTab(widget.id, label, iconId, enableCloseButton);
+        tabInitialization(widget);
         //widget.focusGroup = true; // doesn't allow move focus outside of tab content
         addChild(widget);
         return this;
@@ -656,9 +657,21 @@ class TabHost : FrameLayout, TabHandler {
         assert(widget.id !is null, "ID for tab host page is mandatory");
         assert(_children.indexOf(id) == -1, "duplicate ID for tab host page");
         _tabControl.addTab(widget.id, labelResourceId, iconId, enableCloseButton);
+        tabInitialization(widget);
         addChild(widget);
         return this;
     }
+
+    // handles initial tab selection & hides subsequently added tabs so
+    // they don't appear in the same frame
+    private void tabInitialization(Widget widget) {
+        if(_tabControl.selectedTabId is null) {
+            selectTab(_tabControl.tab(0).id,false);
+        } else {
+            widget.visibility = Visibility.Invisible;
+        }
+    }
+    
     /// select tab
     void selectTab(string ID, bool updateAccess) {
         int index = _tabControl.tabIndex(ID);
