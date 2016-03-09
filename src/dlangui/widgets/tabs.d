@@ -557,6 +557,10 @@ class TabControl : WidgetGroupDefaultDrawing {
     }
 
     void selectTab(int index, bool updateAccess) {
+        if (index < 0 || index + 1 >= _children.count) {
+            Log.e("Tried to access tab out of bounds (index = %d, count = %d)",index,_children.count-1);
+            return;
+        }
         if (_children.get(index + 1).compareId(_selectedTabId))
             return; // already selected
         string previousSelectedTab = _selectedTabId;
