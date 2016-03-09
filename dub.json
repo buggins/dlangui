@@ -46,7 +46,7 @@
             "versions-posix": ["USE_SDL"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-                "derelict-gl3": "~>1.0.16",
+                "derelict-gl3": "~>1.0.18",
                 "derelict-ft": "~>1.0.2"
             },
             "dependencies-posix": {
@@ -65,7 +65,7 @@
             "versions-posix": ["USE_SDL", "USE_FREETYPE", "USE_OPENGL"],
             "versions-windows": ["Unicode"],
             "dependencies-posix": {
-                "derelict-gl3": "~>1.0.16",
+                "derelict-gl3": "~>1.0.18",
                 "derelict-sdl2": "~>1.9.7",
                 "derelict-ft": "~>1.0.2"
             }
@@ -75,7 +75,7 @@
             "versions": ["USE_SDL", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-                "derelict-gl3": "~>1.0.16",
+                "derelict-gl3": "~>1.0.18",
                 "derelict-ft": "~>1.0.2",
                 "derelict-sdl2": "~>1.9.7"
             },
@@ -93,7 +93,7 @@
             "versions": ["USE_X11", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-                "derelict-gl3": "~>1.0.16",
+                "derelict-gl3": "~>1.0.18",
                 "derelict-ft": "~>1.0.2",
                 "x11": "~>1.0.9"
             }
@@ -103,7 +103,7 @@
             "versions": ["USE_DSFML", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-                "derelict-gl3": "~>1.0.16",
+                "derelict-gl3": "~>1.0.18",
                 "derelict-ft": "~>1.0.2",
                 "dsfml": "~>2.1.0"
             },
