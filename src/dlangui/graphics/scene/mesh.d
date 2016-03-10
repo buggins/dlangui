@@ -243,8 +243,13 @@ class Mesh {
         return meshPart;
     }
 
+    /// add new mesh part or append indexes to existing part (if type matches)
     MeshPart addPart(PrimitiveType type, ushort[] indexes) {
-        return addPart(new MeshPart(type, indexes));
+        MeshPart lastPart = _parts.length > 0 ? _parts[$ - 1] : null;
+        if (!lastPart || lastPart.type != type)
+            return addPart(new MeshPart(type, indexes));
+        lastPart.add(indexes);
+        return lastPart;
     }
 
     /// adds single vertex
