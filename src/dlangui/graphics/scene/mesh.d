@@ -30,9 +30,9 @@ enum PrimitiveType : int {
 /// Vertex buffer object base class
 class VertexBuffer {
     /// bind into current context
-    void bind() {}
+    //void bind() {}
     /// unbind from current context
-    void unbind() {}
+    //void unbind() {}
     /// set or change data
     void setData(Mesh mesh) { }
     /// draw mesh using specified effect

@@ -1083,30 +1083,125 @@ class GLVertexBuffer : VertexBuffer {
         checkgl!glDeleteVertexArrays(1, &_vao);
     }
 
-    /// bind into current context
-    override void bind() {
-        checkgl!glBindVertexArray(_vao);
-
-        // TODO: is it necessary to bind vertex/index buffers?
-        // specify vertex buffer
-        //checkgl!glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
-        // specify index buffer
-        //checkgl!glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-    }
-
-    /// unbind from current context
-    override void unbind() {
-        checkgl!glBindVertexArray(0);
-        checkgl!glBindBuffer(GL_ARRAY_BUFFER, 0);
-        checkgl!glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    }
+    ///// bind into current context
+    //override void bind() {
+    //    checkgl!glBindVertexArray(_vao);
+    //
+    //    // TODO: is it necessary to bind vertex/index buffers?
+    //    // specify vertex buffer
+    //    checkgl!glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
+    //    // specify index buffer
+    //    checkgl!glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+    //}
+    //
+    ///// unbind from current context
+    //override void unbind() {
+    //    checkgl!glBindVertexArray(0);
+    //    checkgl!glBindBuffer(GL_ARRAY_BUFFER, 0);
+    //    checkgl!glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    //}
 
     /// update vertex element locations for effect/shader program
     void enableAttributes(GraphicsEffect effect) {
+        checkgl!glBindVertexArray(_vao);
         // specify vertex buffer
         checkgl!glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
         // specify index buffer
         checkgl!glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+        int offset = 0;
+        for(int i = 0; i < _format.length; i++) {
+            int loc = effect.getVertexElementLocation(_format[i].type);
+            if (loc >= 0) {
+                checkgl!glVertexAttribPointer(loc, _format[i].size, GL_FLOAT, GL_FALSE, _format.vertexSize, cast(char*)(offset));
+                checkgl!glEnableVertexAttribArray(loc);
+            } else {
+                Log.d("Attribute location not found for ", _format[i].type);
+            }
+            offset += _format[i].byteSize;
+        }
+    }
+
+    void disableAttributes(GraphicsEffect effect) {
+        for(int i = 0; i < _format.length; i++) {
+            int loc = effect.getVertexElementLocation(_format[i].type);
+            if (loc >= 0) {
+                checkgl!glDisableVertexAttribArray(loc);
+            }
+        }
+        checkgl!glBindVertexArray(0);
+        checkgl!glBindBuffer(GL_ARRAY_BUFFER, 0);
+        checkgl!glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        //unbind();
+    }
+
+    /// set or change data
+    override void setData(Mesh mesh) {
+        _format = mesh.vertexFormat;
+        _indexFragments = mesh.indexFragments;
+        _vertexCount = mesh.vertexCount;
+        const(ushort[]) indexData = mesh.indexData;
+
+        Log.d("GLVertexBuffer.setData vertex data size=", mesh.vertexData.length, " index data size=", indexData.length, " vertex count=", _vertexCount, " indexBuffer=", _indexBuffer, " vertexBuffer=", _vertexBuffer, " vao=", _vao);
+
+        // vertex buffer
+        checkgl!glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
+        checkgl!glBufferData(GL_ARRAY_BUFFER, _format.vertexSize * mesh.vertexCount, mesh.vertexData.ptr, GL_STATIC_DRAW);
+        checkgl!glBindBuffer(GL_ARRAY_BUFFER, 0);
+        // index buffer
+        checkgl!glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+        checkgl!glBufferData(GL_ELEMENT_ARRAY_BUFFER, indexData.length * ushort.sizeof, indexData.ptr, GL_STATIC_DRAW);
+        checkgl!glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+        // vertex layout
+        //checkgl!glBindVertexArray(_vao);
+        // specify vertex buffer
+        //checkgl!glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
+        // specify index buffer
+        //checkgl!glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
+
+        //unbind();
+    }
+
+    /// draw mesh using specified effect
+    override void draw(GraphicsEffect effect) {
+        //bind();
+        enableAttributes(effect);
+        Log.d("draw ", _indexFragments);
+        foreach (fragment; _indexFragments) {
+            checkgl!glDrawRangeElements(primitiveTypeToGL(fragment.type), 
+                                0, _vertexCount - 1, // The first to last vertex
+                                fragment.end - fragment.start, // count of indexes used to draw elements
+                                GL_UNSIGNED_SHORT, 
+                                cast(char*)(fragment.start * short.sizeof) // offset from index buffer beginning to fragment start
+            );
+        }
+        disableAttributes(effect);
+        //unbind();
+    }
+}
+
+class DummyVertexBuffer : VertexBuffer {
+    protected VertexFormat _format;
+    protected IndexFragment[] _indexFragments;
+    protected int _vertexCount;
+    protected const(float)[] _vertexData;
+    protected const(ushort)[] _indexData;
+
+    this() {
+    }
+
+    ~this() {
+    }
+
+    ///// bind into current context
+    //override void bind() {
+    //}
+    //
+    ///// unbind from current context
+    //override void unbind() {
+    //}
+
+    /// update vertex element locations for effect/shader program
+    void enableAttributes(GraphicsEffect effect) {
         int offset = 0;
         for(int i = 0; i < _format.length; i++) {
             int loc = effect.getVertexElementLocation(_format[i].type);
@@ -1134,35 +1229,22 @@ class GLVertexBuffer : VertexBuffer {
         _format = mesh.vertexFormat;
         _indexFragments = mesh.indexFragments;
         _vertexCount = mesh.vertexCount;
-        // vertex buffer
-        checkgl!glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
-        checkgl!glBufferData(GL_ARRAY_BUFFER, _format.vertexSize * mesh.vertexCount, mesh.vertexData.ptr, GL_STATIC_DRAW);
-        // index buffer
-        checkgl!glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-        const(ushort[]) indexData = mesh.indexData;
-        checkgl!glBufferData(GL_ELEMENT_ARRAY_BUFFER, ushort.sizeof * mesh.indexData.length, indexData.ptr, GL_STATIC_DRAW);
-        // vertex layout
-        checkgl!glBindVertexArray(_vao);
-        // specify vertex buffer
-        checkgl!glBindBuffer(GL_ARRAY_BUFFER, _vertexBuffer);
-        // specify index buffer
-        checkgl!glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
-
-        unbind();
+        _vertexData = mesh.vertexData;
+        _indexData = mesh.indexData;
     }
 
     /// draw mesh using specified effect
     override void draw(GraphicsEffect effect) {
-        bind();
+        //bind();
         enableAttributes(effect);
         foreach (fragment; _indexFragments) {
             checkgl!glDrawRangeElements(primitiveTypeToGL(fragment.type), 
-                                0, _vertexCount, 
-                                fragment.end - fragment.start, 
-                                GL_UNSIGNED_SHORT, cast(char*)(fragment.start * short.sizeof));
+                                        0, _vertexCount, 
+                                        fragment.end - fragment.start, 
+                                        GL_UNSIGNED_SHORT, cast(char*)(fragment.start * short.sizeof));
         }
         disableAttributes(effect);
-        unbind();
+        //unbind();
     }
 }
 

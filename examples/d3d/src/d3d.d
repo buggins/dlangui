@@ -102,10 +102,15 @@ class UiWidget : VerticalLayout {
         VertexFormat vfmt = VertexFormat(VertexElementType.POSITION, VertexElementType.COLOR, VertexElementType.TEXCOORD0);
         _mesh = new Mesh(vfmt);
         // square
-        _mesh.addVertex([-1,-1, 3,  1,1,1,1, 0,0]);
-        _mesh.addVertex([-1, 1, 3,  1,1,1,1, 1,0]);
-        _mesh.addVertex([ 1, 1, 3,  1,1,1,1, 1,1]);
-        _mesh.addVertex([ 1,-1, 3,  1,1,1,1, 0,1]);
+
+        float x0 = 0.3;
+        float y0 = 0.2;
+        float z0 = -0.9;
+
+        _mesh.addVertex([x0-1,y0-1,z0+0,  1,0,1,1, 0,0]);
+        _mesh.addVertex([x0-1,y0+1,z0+0,  1,1,1,1, 1,0]);
+        _mesh.addVertex([x0+1,y0+1,z0+0,  0,1,1,1, 1,1]);
+        _mesh.addVertex([x0+1,y0-1,z0+0,  1,1,0,1, 0,1]);
         _mesh.addPart(PrimitiveType.triangles, [0, 1, 2, 2, 3, 0]);
 
     }
@@ -168,7 +173,8 @@ class UiWidget : VerticalLayout {
         } else {
             projectionViewModelMatrix = _scene.viewProjectionMatrix;
         }
-        //Log.d("matrix uniform: ", projectionViewModelMatrix.m);
+        projectionViewModelMatrix.setIdentity();
+        Log.d("matrix uniform: ", projectionViewModelMatrix.m);
 
         _program.bind();
         _program.setUniform("matrix", projectionViewModelMatrix);
