@@ -1165,7 +1165,6 @@ class GLVertexBuffer : VertexBuffer {
     override void draw(GraphicsEffect effect) {
         //bind();
         enableAttributes(effect);
-        Log.d("draw ", _indexFragments);
         foreach (fragment; _indexFragments) {
             checkgl!glDrawRangeElements(primitiveTypeToGL(fragment.type), 
                                 0, _vertexCount - 1, // The first to last vertex

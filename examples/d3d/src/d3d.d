@@ -41,11 +41,15 @@ class UiWidget : VerticalLayout {
               margins: 10
               padding: 10
               backgroundImageId: "tx_fabric.tiled"
+              layoutWidth: fill
+              layoutHeight: fill
 
               VerticalLayout {
                 id: glView
                 margins: 10
                 padding: 10
+                layoutWidth: fill
+                layoutHeight: fill
                 TextWidget { text: "There should be OpenGL animation on background"; textColor: "red"; fontSize: 150%; fontWeight: 800; fontFace: "Arial" }
                 TextWidget { text: "Do you see it? If no, there is some bug in Mesh rendering code..."; fontSize: 120% }
                 HorizontalLayout {
@@ -80,6 +84,7 @@ class UiWidget : VerticalLayout {
                         CheckBox { id: cb2; text: "checkbox 2" }
                     }
                 }
+                VSpacer { layoutWeight: 30 }
                 HorizontalLayout {
                     TextWidget { text: "Some buttons:" }
                     Button { id: btnOk; text: "Ok"; fontSize: 27px }
@@ -99,7 +104,18 @@ class UiWidget : VerticalLayout {
 
         _scene.activeCamera = _cam;
 
-        _mesh = Mesh.createCubeMesh(vec3(0, 0, -0.9));
+        _mesh = Mesh.createCubeMesh(vec3(0, 0, 0), 0.3f);
+        for (int i = 0; i < 10; i++) {
+            _mesh.addCubeMesh(vec3(0, 0, i * 2 + 1.0f), 0.2f, vec4(i / 12, 1, 1, 1));
+            _mesh.addCubeMesh(vec3(i * 2 + 1.0f, 0, 0), 0.2f, vec4(1, i / 12, 1, 1));
+            _mesh.addCubeMesh(vec3(-i * 2 - 1.0f, 0, 0), 0.2f, vec4(1, i / 12, 1, 1));
+            _mesh.addCubeMesh(vec3(0, i * 2 + 1.0f, 0), 0.2f, vec4(1, 1, i / 12 + 0.1, 1));
+            _mesh.addCubeMesh(vec3(0, -i * 2 - 1.0f, 0), 0.2f, vec4(1, 1, i / 12 + 0.1, 1));
+            _mesh.addCubeMesh(vec3(i * 2 + 1.0f, i * 2 + 1.0f, i * 2 + 1.0f), 0.2f, vec4(i / 12, i / 12, i / 12, 1));
+            _mesh.addCubeMesh(vec3(-i * 2 + 1.0f, i * 2 + 1.0f, i * 2 + 1.0f), 0.2f, vec4(i / 12, i / 12, 1 - i / 12, 1));
+            _mesh.addCubeMesh(vec3( i * 2 + 1.0f, -i * 2 + 1.0f, i * 2 + 1.0f), 0.2f, vec4(i / 12, 1 - i / 12, i / 12, 1));
+            _mesh.addCubeMesh(vec3(-i * 2 - 1.0f, -i * 2 - 1.0f, -i * 2 - 1.0f), 0.2f, vec4(1 - i / 12, i / 12, i / 12, 1));
+        }
     }
 
     /// returns true is widget is being animated - need to call animate() and redraw
@@ -134,27 +150,37 @@ class UiWidget : VerticalLayout {
             Log.e("Invalid texture");
             return;
         }
-        _cam.setPerspective(4.0f, 3.0f, 45.0f, 0.1f, 100.0f);
+        _cam.setPerspective(4.0f, 3.0f, 45.0f, 1.1f, 100.0f);
         mat4 projectionViewModelMatrix;
         if (true) {
             // ======== Projection Matrix ==================
             mat4 projectionMatrix;
             float aspectRatio = cast(float)rc.width / cast(float)rc.height;
-            projectionMatrix.setPerspective(45.0f, aspectRatio, 0.1f, 100.0f);
+            projectionMatrix.setPerspective(
+                45.0f, //angle
+                aspectRatio, // aspect
+                1.1f, // near
+                1000.0f // far
+                );
 
             // ======== View Matrix ==================
             mat4 viewMatrix;
-            //viewMatrix.translate(0, 0, 1  - angle / 100); // + angle
-            //viewMatrix.rotatex(-15.0f + angle);
+            //viewMatrix.translate(0, 0, -1  + angle / 100); // + angle
+            //viewMatrix.translate(0, 0, -4); // + angle
+            //viewMatrix.rotatez(-15.0f + angle);
             //viewMatrix.rotatez(angle);
-            //viewMatrix.lookAt(vec3(-10, 0, 0), vec3(0, 0, 0), vec3(0, 1, 0));//translation(0.0f, 0.0f, 4.0f).rotatez(angle);
+            //viewMatrix.lookAt(vec3(0, 0, -1 + angle / 100), vec3(0, 0, 0), vec3(0, 1, 0));//translation(0.0f, 0.0f, 4.0f).rotatez(angle);
+            //viewMatrix.lookAt(vec3(0, angle / 1000, -2 - angle / 100), vec3(0, 0, 0), vec3(0, 1, 0));//translation(0.0f, 0.0f, 4.0f).rotatez(angle);
+            viewMatrix.lookAt(vec3(0, 1, -3), vec3(0, 0, 0), vec3(0, 1, 0));//translation(0.0f, 0.0f, 4.0f).rotatez(angle);
 
             // ======== Model Matrix ==================
             mat4 modelMatrix;
-            modelMatrix.scale(0.2f);
+            //modelMatrix.scale(0.1f);
             modelMatrix.rotatez(30.0f + angle * 0.3456778);
+            //modelMatrix.rotatey(25);
+            //modelMatrix.rotatex(15);
             modelMatrix.rotatey(angle);
-            modelMatrix.rotatez(angle * 1.98765f);
+            modelMatrix.rotatex(angle * 1.98765f);
 
             // ======= PMV matrix =====================
             projectionViewModelMatrix = projectionMatrix * viewMatrix * modelMatrix;
@@ -162,11 +188,12 @@ class UiWidget : VerticalLayout {
             projectionViewModelMatrix = _scene.viewProjectionMatrix;
         }
         //projectionViewModelMatrix.setIdentity();
-        Log.d("matrix uniform: ", projectionViewModelMatrix.m);
+        //Log.d("matrix uniform: ", projectionViewModelMatrix.m);
 
         glEnable(GL_BLEND);
         checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         checkgl!glEnable(GL_CULL_FACE);
+        //checkgl!glDisable(GL_CULL_FACE);
         checkgl!glEnable(GL_DEPTH_TEST);
         checkgl!glCullFace(GL_BACK);
 

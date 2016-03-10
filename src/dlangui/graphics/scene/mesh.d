@@ -304,8 +304,7 @@ class Mesh {
             cast(ushort)(startVertex + 0)]);
     }
 
-    static Mesh createCubeMesh(vec3 pos, float d=1, vec4 color = vec4(1,1,1,1)) {
-        Mesh mesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.COLOR, VertexElementType.TEXCOORD0));
+    void addCubeMesh(vec3 pos, float d=1, vec4 color = vec4(1,1,1,1)) {
         auto p000 = vec3(pos.x-d, pos.y-d, pos.z-d);
         auto p100 = vec3(pos.x+d, pos.y-d, pos.z-d);
         auto p010 = vec3(pos.x-d, pos.y+d, pos.z-d);
@@ -314,12 +313,17 @@ class Mesh {
         auto p101 = vec3(pos.x+d, pos.y-d, pos.z+d);
         auto p011 = vec3(pos.x-d, pos.y+d, pos.z+d);
         auto p111 = vec3(pos.x+d, pos.y+d, pos.z+d);
-        mesh.addQuad(p000, p010, p110, p100, color); // front face
-        mesh.addQuad(p101, p111, p011, p001, color); // back face
-        mesh.addQuad(p100, p110, p111, p101, color); // right face
-        mesh.addQuad(p001, p011, p010, p000, color); // left face
-        mesh.addQuad(p010, p011, p111, p110, color); // top face
-        mesh.addQuad(p001, p000, p100, p101, color); // bottom face
+        addQuad(p000, p010, p110, p100, color); // front face
+        addQuad(p101, p111, p011, p001, color); // back face
+        addQuad(p100, p110, p111, p101, color); // right face
+        addQuad(p001, p011, p010, p000, color); // left face
+        addQuad(p010, p011, p111, p110, color); // top face
+        addQuad(p001, p000, p100, p101, color); // bottom face
+    }
+
+    static Mesh createCubeMesh(vec3 pos, float d=1, vec4 color = vec4(1,1,1,1)) {
+        Mesh mesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.COLOR, VertexElementType.TEXCOORD0));
+        mesh.addCubeMesh(pos, d, color);
         return mesh;
     }
 }
