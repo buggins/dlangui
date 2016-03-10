@@ -99,56 +99,7 @@ class UiWidget : VerticalLayout {
 
         _scene.activeCamera = _cam;
 
-        VertexFormat vfmt = VertexFormat(VertexElementType.POSITION, VertexElementType.COLOR, VertexElementType.TEXCOORD0);
-        _mesh = new Mesh(vfmt);
-        // square
-
-        float x0 = 0;
-        float y0 = 0;
-        float z0 = -0.9;
-
-        addCube(x0, y0, z0, 1);
-        //_mesh.addVertex([x0-1,y0-1,z0+0,  1,0,1,1, 0,0]);
-        //_mesh.addVertex([x0-1,y0+1,z0+0,  1,1,1,1, 1,0]);
-        //_mesh.addVertex([x0+1,y0+1,z0+0,  0,1,1,1, 1,1]);
-        //_mesh.addVertex([x0+1,y0-1,z0+0,  1,1,0,1, 0,1]);
-        //_mesh.addPart(PrimitiveType.triangles, [0, 1, 2, 2, 3, 0]);
-
-    }
-
-    void addCube(float x0, float y0, float z0, float d) {
-        auto p000 = [x0-d, y0-d, z0-d];
-        auto p100 = [x0+d, y0-d, z0-d];
-        auto p010 = [x0-d, y0+d, z0-d];
-        auto p110 = [x0+d, y0+d, z0-d];
-        auto p001 = [x0-d, y0-d, z0+d];
-        auto p101 = [x0+d, y0-d, z0+d];
-        auto p011 = [x0-d, y0+d, z0+d];
-        auto p111 = [x0+d, y0+d, z0+d];
-        addQuad(p000 ~ p010 ~ p110 ~  p100); // front face
-        addQuad(p101 ~ p111 ~ p011 ~  p001); // back face
-        addQuad(p100 ~ p110 ~ p111 ~  p101); // right face
-        addQuad(p001 ~ p011 ~ p010 ~  p000); // left face
-        addQuad(p010 ~ p011 ~ p111 ~  p110); // top face
-        addQuad(p001 ~ p000 ~ p100 ~  p101); // bottom face
-    }
-
-    void addQuad(float[] vertexes) {
-        static float[] txcoords = [0, 0, 1, 0, 1, 1, 0, 1];
-        ushort startVertex = cast(ushort)_mesh.vertexCount;
-        for (int i = 0; i < 4; i++) {
-            _mesh.addVertex([
-                vertexes[i*3 + 0], vertexes[i*3 + 1], vertexes[i*3 + 2],  
-                1,1,1,1, 
-                txcoords[i*2 + 0], txcoords[i*2 + 1]]);
-        }
-        _mesh.addPart(PrimitiveType.triangles, [
-            cast(ushort)(startVertex + 0), 
-            cast(ushort)(startVertex + 1), 
-            cast(ushort)(startVertex + 2), 
-            cast(ushort)(startVertex + 2), 
-            cast(ushort)(startVertex + 3), 
-            cast(ushort)(startVertex + 0)]);
+        _mesh = Mesh.createCubeMesh(vec3(0, 0, -0.9));
     }
 
     /// returns true is widget is being animated - need to call animate() and redraw

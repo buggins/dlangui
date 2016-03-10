@@ -287,6 +287,41 @@ class Mesh {
             _vertexBuffer = null;
         }
     }
+
+
+    private void addQuad(ref vec3 v0, ref vec3 v1, ref vec3 v2, ref vec3 v3, ref vec4 color) {
+        ushort startVertex = cast(ushort)vertexCount;
+        addVertex([v0.x, v0.y, v0.z, color.r, color.g, color.b, color.a, 0, 0]);
+        addVertex([v1.x, v1.y, v1.z, color.r, color.g, color.b, color.a, 1, 0]);
+        addVertex([v2.x, v2.y, v2.z, color.r, color.g, color.b, color.a, 1, 1]);
+        addVertex([v3.x, v3.y, v3.z, color.r, color.g, color.b, color.a, 0, 1]);
+        addPart(PrimitiveType.triangles, [
+            cast(ushort)(startVertex + 0), 
+            cast(ushort)(startVertex + 1), 
+            cast(ushort)(startVertex + 2), 
+            cast(ushort)(startVertex + 2), 
+            cast(ushort)(startVertex + 3), 
+            cast(ushort)(startVertex + 0)]);
+    }
+
+    static Mesh createCubeMesh(vec3 pos, float d=1, vec4 color = vec4(1,1,1,1)) {
+        Mesh mesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.COLOR, VertexElementType.TEXCOORD0));
+        auto p000 = vec3(pos.x-d, pos.y-d, pos.z-d);
+        auto p100 = vec3(pos.x+d, pos.y-d, pos.z-d);
+        auto p010 = vec3(pos.x-d, pos.y+d, pos.z-d);
+        auto p110 = vec3(pos.x+d, pos.y+d, pos.z-d);
+        auto p001 = vec3(pos.x-d, pos.y-d, pos.z+d);
+        auto p101 = vec3(pos.x+d, pos.y-d, pos.z+d);
+        auto p011 = vec3(pos.x-d, pos.y+d, pos.z+d);
+        auto p111 = vec3(pos.x+d, pos.y+d, pos.z+d);
+        mesh.addQuad(p000, p010, p110, p100, color); // front face
+        mesh.addQuad(p101, p111, p011, p001, color); // back face
+        mesh.addQuad(p100, p110, p111, p101, color); // right face
+        mesh.addQuad(p001, p011, p010, p000, color); // left face
+        mesh.addQuad(p010, p011, p111, p110, color); // top face
+        mesh.addQuad(p001, p000, p100, p101, color); // bottom face
+        return mesh;
+    }
 }
 
 /// Mesh part - set of vertex indexes with graphics primitive type
