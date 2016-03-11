@@ -1056,6 +1056,9 @@ class SDLPlatform : Platform {
                                 break;
                             case SDL_WINDOWEVENT_EXPOSED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_EXPOSED");
+                                version(linux) {
+                                    w.redraw(); 
+                                }
                                 break;
                             case SDL_WINDOWEVENT_MOVED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MOVED");
