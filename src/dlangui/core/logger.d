@@ -144,7 +144,7 @@ class Log {
         if (logLevel >= level && logFile !is null && logFile.isOpen) {
             SysTime ts = Clock.currTime();
             logFile.writef("%04d-%02d-%02d %02d:%02d:%02d.%03d %s  ", ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second, ts.fracSecs.split!("msecs").msecs, logLevelName(level));
-            logFile.writeln(args);
+            logFile.writefln(args);
             logFile.flush();
         }
     }
