@@ -17,5 +17,16 @@
 
     "dependencies": {
         "dlangui": {"path": "../../"}
-    }
+    },
+    "configurations" : [
+        {
+            "name" : "default",
+        }, 
+        {
+            "name" : "sdl",
+            "subConfigurations" : {
+                "dlangui" : "sdl"
+            }
+        }
+    ]
 }

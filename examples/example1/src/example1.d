@@ -352,9 +352,10 @@ extern (C) int UIAppMain(string[] args) {
                     UIString caption;
                     caption = "Open Text File"d;
                     FileDialog dlg = new FileDialog(caption, window, null);
-                    dlg.addFilter(FileFilterEntry(UIString("FILTER_ALL_FILES", "All files (*.*)"d), "*.*"));
+                    dlg.addFilter(FileFilterEntry(UIString("FILTER_ALL_FILES", "All files (*)"d), "*"));
                     dlg.addFilter(FileFilterEntry(UIString("FILTER_TEXT_FILES", "Text files (*.txt)"d), "*.txt"));
                     dlg.addFilter(FileFilterEntry(UIString("FILTER_SOURCE_FILES", "Source files"d), "*.d;*.dd;*.c;*.cc;*.cpp;*.h;*.hpp"));
+                    dlg.addFilter(FileFilterEntry(UIString("FILTER_EXECUTABLE_FILES", "Executable files"d), "*", true));
                     //dlg.filterIndex = 2;
                     dlg.dialogResult = delegate(Dialog dlg, const Action result) {
                         if (result.id == ACTION_OPEN.id) {

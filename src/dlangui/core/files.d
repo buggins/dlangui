@@ -119,7 +119,7 @@ struct RootEntry {
 @property RootEntry[] getRootPaths() {
     RootEntry[] res;
     res ~= RootEntry(RootEntryType.HOME, homePath);
-    version (posix) {
+    version (Posix) {
         res ~= RootEntry(RootEntryType.ROOT, "/", "File System"d);
     }
     version (Windows) {
@@ -192,10 +192,12 @@ bool filterFilename(in string filename, in string[] filters) pure nothrow {
     Returns true if directory exists and listed successfully, false otherwise.
 */
 bool listDirectory(in string dir, in bool includeDirs, in bool includeFiles, in bool showHiddenFiles, in string[] filters, ref DirEntry[] entries, in bool showExecutables = false) {
-
     entries.length = 0;
-
-    if (!isDir(dir)) {
+    
+    import std.exception : collectException;
+    bool dirExists;
+    collectException(dir.isDir, dirExists);
+    if (!dirExists) {
         return false;
     }
 
@@ -216,6 +218,8 @@ bool listDirectory(in string dir, in bool includeDirs, in bool includeFiles, in 
                 files ~= e;
             }
         }
+        dirs.sort!((a,b) => filenameCmp!(std.path.CaseSensitive.no)(a,b) < 0);
+        files.sort!((a,b) => filenameCmp!(std.path.CaseSensitive.no)(a,b) < 0);
         if (includeDirs)
             foreach(DirEntry e; dirs)
                 entries ~= e;
@@ -228,7 +232,7 @@ bool listDirectory(in string dir, in bool includeDirs, in bool includeFiles, in 
                         passed = e.name.endsWith(".exe") || e.name.endsWith(".EXE") 
                             || e.name.endsWith(".cmd") || e.name.endsWith(".CMD") 
                             || e.name.endsWith(".bat") || e.name.endsWith(".BAT");
-                    } else version (posix) {
+                    } else version (Posix) {
                         // execute permission for others
                         passed = (e.attributes & attr_mask) != 0;
                     } else version(OSX) {
