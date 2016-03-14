@@ -771,6 +771,8 @@ public:
         if (_handler) {
             glSupport.setOrthoProjection(_windowRect, _rc);
             glSupport.clearDepthBuffer();
+            //glEnable(GL_BLEND);
+            //checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             _handler(_windowRect, _rc);
             glSupport.setOrthoProjection(_windowRect, _windowRect);
         }

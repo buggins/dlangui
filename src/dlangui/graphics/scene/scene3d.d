@@ -41,9 +41,9 @@ class Scene3d : Node3d {
     }
 
     /// get projection*view matrix
-    @property ref const(mat4) viewProjectionMatrix() {
+    @property ref const(mat4) projectionViewMatrix() {
         if (_activeCamera)
-            return _activeCamera.viewProjectionMatrix;
+            return _activeCamera.projectionViewMatrix;
         static mat4 dummyIdentityMatrix;
         return dummyIdentityMatrix;
     }

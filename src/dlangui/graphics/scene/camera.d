@@ -40,7 +40,7 @@ class Camera : Node3d {
     }
 
     /// get projection*view matrix
-    @property ref const(mat4) viewProjectionMatrix() {
+    @property ref const(mat4) projectionViewMatrix() {
         if (_dirtyTransform || _dirtyViewProjection) {
             _viewProjectionMatrix = _projectionMatrix * matrix;
             _dirtyViewProjection = false;

@@ -150,50 +150,27 @@ class UiWidget : VerticalLayout {
             Log.e("Invalid texture");
             return;
         }
-        _cam.setPerspective(4.0f, 3.0f, 45.0f, 1.1f, 100.0f);
-        mat4 projectionViewModelMatrix;
-        if (true) {
-            // ======== Projection Matrix ==================
-            mat4 projectionMatrix;
-            float aspectRatio = cast(float)rc.width / cast(float)rc.height;
-            projectionMatrix.setPerspective(
-                45.0f, //angle
-                aspectRatio, // aspect
-                1.1f, // near
-                1000.0f // far
-                );
+        _cam.setPerspective(rc.width, rc.height, 45.0f, 0.1f, 100.0f);
+        _cam.setIdentity();
+        _cam.translate(vec3(0, 0, -1.1)); // - angle/1000
+        _cam.rotateZ(30.0f + angle * 0.3456778);
+        mat4 projectionViewMatrix = _cam.projectionViewMatrix;
 
-            // ======== View Matrix ==================
-            mat4 viewMatrix;
-            //viewMatrix.translate(0, 0, -1  + angle / 100); // + angle
-            //viewMatrix.translate(0, 0, -4); // + angle
-            //viewMatrix.rotatez(-15.0f + angle);
-            //viewMatrix.rotatez(angle);
-            //viewMatrix.lookAt(vec3(0, 0, -1 + angle / 100), vec3(0, 0, 0), vec3(0, 1, 0));//translation(0.0f, 0.0f, 4.0f).rotatez(angle);
-            //viewMatrix.lookAt(vec3(0, angle / 1000, -2 - angle / 100), vec3(0, 0, 0), vec3(0, 1, 0));//translation(0.0f, 0.0f, 4.0f).rotatez(angle);
-            viewMatrix.lookAt(vec3(0, 1, -3), vec3(0, 0, 0), vec3(0, 1, 0));//translation(0.0f, 0.0f, 4.0f).rotatez(angle);
+        // ======== Model Matrix ==================
+        mat4 modelMatrix;
+        //modelMatrix.scale(0.1f);
+        modelMatrix.rotatez(30.0f + angle * 0.3456778);
+        //modelMatrix.rotatey(25);
+        //modelMatrix.rotatex(15);
+        modelMatrix.rotatey(angle);
+        modelMatrix.rotatex(angle * 1.98765f);
 
-            // ======== Model Matrix ==================
-            mat4 modelMatrix;
-            //modelMatrix.scale(0.1f);
-            modelMatrix.rotatez(30.0f + angle * 0.3456778);
-            //modelMatrix.rotatey(25);
-            //modelMatrix.rotatex(15);
-            modelMatrix.rotatey(angle);
-            modelMatrix.rotatex(angle * 1.98765f);
+        mat4 projectionViewModelMatrix = projectionViewMatrix * modelMatrix;
 
-            // ======= PMV matrix =====================
-            projectionViewModelMatrix = projectionMatrix * viewMatrix * modelMatrix;
-        } else {
-            projectionViewModelMatrix = _scene.viewProjectionMatrix;
-        }
         //projectionViewModelMatrix.setIdentity();
         //Log.d("matrix uniform: ", projectionViewModelMatrix.m);
 
-        glEnable(GL_BLEND);
-        checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         checkgl!glEnable(GL_CULL_FACE);
-        //checkgl!glDisable(GL_CULL_FACE);
         checkgl!glEnable(GL_DEPTH_TEST);
         checkgl!glCullFace(GL_BACK);
 
