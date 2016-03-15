@@ -26,6 +26,7 @@ import dlangui.widgets.widget;
 import dlangui.widgets.popup;
 import dlangui.graphics.drawbuf;
 import dlangui.core.stdaction;
+import dlangui.core.asyncsocket;
 
 private import dlangui.graphics.gldrawbuf;
 private import std.algorithm;
@@ -812,6 +813,12 @@ class Window : CustomEventTarget {
     void executeInUiThread(void delegate() runnable) {
         RunnableEvent event = new RunnableEvent(CUSTOM_RUNNABLE, null, runnable);
         postEvent(event);
+    }
+
+    /// Creates async socket
+    AsyncSocket createAsyncSocket(AsyncSocketCallback callback) {
+        AsyncClientConnection conn = new AsyncClientConnection(new AsyncSocketCallbackProxy(callback, &executeInUiThread));
+        return conn;
     }
 
     /// remove event from queue by unique id if not yet dispatched (this method can be used from background thread)

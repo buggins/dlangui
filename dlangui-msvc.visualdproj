@@ -735,6 +735,7 @@
   <Folder name="src">
    <Folder name="dlangui">
     <Folder name="core">
+     <File path="src\dlangui\core\asyncsocket.d" />
      <File path="src\dlangui\core\collections.d" />
      <File path="src\dlangui\core\config.d" />
      <File path="src\dlangui\core\css.d" />
@@ -747,6 +748,7 @@
      <File path="src\dlangui\core\linestream.d" />
      <File path="src\dlangui\core\logger.d" />
      <File path="src\dlangui\core\math3d.d" />
+     <File path="src\dlangui\core\queue.d" />
      <File path="src\dlangui\core\settings.d" />
      <File path="src\dlangui\core\signals.d" />
      <File path="src\dlangui\core\stdaction.d" />
