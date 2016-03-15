@@ -304,6 +304,9 @@ public:
         if (_socket)
             destroy(_socket);
     }
+    @property SocketState state() {
+        return _socket.state;
+    }
     IRCChannel removeChannel(string name) {
         if (auto p = name in _channels) {
             _channels.remove(name);
