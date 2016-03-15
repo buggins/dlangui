@@ -207,21 +207,32 @@ class IRCFrame : AppFrame, IRCClientCallback {
 
     void onIRCMessage(IRCClient client, IRCMessage message) {
         IRCWindow w = getOrCreateWindowFor(client.hostPort);
-        if (message.commandId < 1000) {
-            // custom server messages
-            w.addLine(message.message);
-            return;
-        }
-        if (message.commandId == IRCCommand.JOIN || message.commandId == IRCCommand.PART) {
-            if (message.sourceAddress && !message.sourceAddress.nick.empty && message.target.startsWith("#")) {
-                w = getOrCreateWindowFor(message.target);
-                if (message.commandId == IRCCommand.JOIN) {
-                    w.addLine("* " ~ message.sourceAddress.longName ~ " has joined " ~ message.target);
-                } else {
-                    w.addLine("* " ~ message.sourceAddress.longName ~ " has left " ~ message.target ~ (message.message.empty ? "" : ("(Reason: " ~ message.message ~ ")")));
+        switch (message.commandId) with (IRCCommand) {
+            case JOIN:
+            case PART:
+                if (message.sourceAddress && !message.sourceAddress.nick.empty && message.target.startsWith("#")) {
+                    w = getOrCreateWindowFor(message.target);
+                    if (message.commandId == JOIN) {
+                        w.addLine("* " ~ message.sourceAddress.longName ~ " has joined " ~ message.target);
+                    } else {
+                        w.addLine("* " ~ message.sourceAddress.longName ~ " has left " ~ message.target ~ (message.message.empty ? "" : ("(Reason: " ~ message.message ~ ")")));
+                    }
                 }
-            }
-            return;
+                return;
+            case CHANNEL_NAMES_LIST_END:
+                if (message.target.startsWith("#")) {
+                    w = getOrCreateWindowFor(message.target);
+                    IRCChannel channel = _client.channelByName(message.target);
+                    w.updateUserList(channel);
+                }
+                return;
+            default:
+                if (message.commandId < 1000) {
+                    // custom server messages
+                    w.addLine(message.message);
+                    return;
+                }
+                break;
         }
         w.addLine(message.msg);
     }
@@ -258,7 +269,7 @@ class IRCWindow : VerticalLayout, EditorActionHandler {
             _listBox.minWidth = 100;
             _listBox.maxWidth = 200;
             _listBox.orientation = Orientation.Vertical;
-            _listBox.items = ["Nick1"d, "Nick2"d];
+            //_listBox.items = ["Nick1"d, "Nick2"d];
             hlayout.addChild(new ResizerWidget(null, Orientation.Horizontal));
             hlayout.addChild(_listBox);
             _kind = IRCWindowKind.Channel;
@@ -278,6 +289,10 @@ class IRCWindow : VerticalLayout, EditorActionHandler {
         if (visible)
             window.update();
     }
+    void updateUserList(IRCChannel channel) {
+        _listBox.items = channel.userNames;
+        window.update();
+    }
     bool onEditorAction(const Action action) {
         if (!_editLine.text.empty) {
             string s = toUTF8(_editLine.text);
@@ -288,8 +303,8 @@ class IRCWindow : VerticalLayout, EditorActionHandler {
                 string cmd = parseDelimitedParameter(s);
 
                 if (cmd == "/quit") {
-                    _client.quit(param);
-                    return;
+                    _client.quit(s);
+                    return true;
                 }
 
                 string param = parseDelimitedParameter(s);
@@ -303,6 +318,7 @@ class IRCWindow : VerticalLayout, EditorActionHandler {
                     _client.privMsg(param, s);
                 } else {
                     Log.d("Unknown command: " ~ cmd);
+                    addLine("Supported commands: /nick /join /part /msg /quit");
                 }
             } else {
                 // message

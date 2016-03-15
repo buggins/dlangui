@@ -2,8 +2,10 @@ module ircclient.net.client;
 
 public import dlangui.core.asyncsocket;
 import dlangui.core.logger;
-import std.string : empty, format;
+import dlangui.core.collections;
+import std.string : empty, format, startsWith;
 import std.conv : to;
+import std.utf : toUTF32, toUTF8;
 
 interface IRCClientCallback {
     void onIRCConnect(IRCClient client);
@@ -16,6 +18,10 @@ interface IRCClientCallback {
 
 enum IRCCommand : int {
     UNKNOWN,
+    CHANNEL_TOPIC = 332,
+    CHANNEL_TOPIC_SET_BY = 333,
+    CHANNEL_NAMES_LIST = 353,
+    CHANNEL_NAMES_LIST_END = 366,
     USER = 1000,
     PRIVMSG, // :source PRIVMSG <target> :Message
     NOTICE, // :source NOTICE <target> :Message
@@ -101,6 +107,16 @@ class IRCMessage {
                 if (params.length > 0)
                     target = params[0];
                 break;
+            case CHANNEL_TOPIC:
+            case CHANNEL_TOPIC_SET_BY:
+            case CHANNEL_NAMES_LIST_END:
+                if (params.length > 1)
+                    target = params[1];
+                break;
+            case CHANNEL_NAMES_LIST:
+                if (params.length > 2 && params[1] == "=")
+                    target = params[2];
+                break;
             default:
                 break;
         }
@@ -114,6 +130,8 @@ class IRCAddress {
     string channel;
     string nick;
     string username;
+    this() {
+    }
     this(string s) {
         full = s;
         string s1 = parseDelimitedParameter(s, '!');
@@ -134,6 +152,75 @@ class IRCAddress {
     }
 }
 
+class IRCUser {
+    string nick;
+    int flags;
+    this(string s) {
+        nick = s;
+    }
+}
+
+class UserList {
+    Collection!IRCUser _users;
+    @property int length() { return _users.length; }
+    @property IRCUser opIndex(int index) { return _users[index]; }
+    void fromList(string userList) {
+        _users.clear();
+        for(;;) {
+            string s = parseDelimitedParameter(userList);
+            if (s.empty)
+                break;
+            IRCUser u = new IRCUser(s);
+            _users.add(u);
+        }
+    }
+}
+
+class IRCChannel {
+    string name;
+    string topic;
+    string topicSetBy;
+    long topicSetWhen;
+    UserList users;
+    this(string name) {
+        this.name = name;
+        users = new UserList();
+    }
+    char[] userListBuffer;
+    void setUserList(string userList) {
+        users.fromList(userList);
+    }
+    @property dstring[] userNames() {
+        dstring[] res;
+        for(int i = 0; i < users.length; i++) {
+            res ~= toUTF32(users[i].nick);
+        }
+        return res;
+    }
+    void handleMessage(IRCMessage msg) {
+        switch (msg.commandId) with (IRCCommand) {
+            case CHANNEL_TOPIC:
+                topic = msg.message;
+                break;
+            case CHANNEL_TOPIC_SET_BY:
+                topicSetBy = msg.params.length == 3 ? msg.params[1] : null;
+                break;
+            case CHANNEL_NAMES_LIST:
+                if (userListBuffer.length > 0)
+                    userListBuffer ~= " ";
+                userListBuffer ~= msg.message;
+                break;
+            case CHANNEL_NAMES_LIST_END:
+                setUserList(userListBuffer.dup);
+                Log.d("user list for " ~ name ~ " : " ~ userListBuffer);
+                userListBuffer = null;
+                break;
+            default:
+                break;
+        }
+    }
+}
+
 /// IRC Client connection implementation
 class IRCClient : AsyncSocketCallback {
 protected:
@@ -143,6 +230,7 @@ protected:
     string _host;
     ushort _port;
     string _nick;
+    IRCChannel[string] _channels;
     void onDataReceived(AsyncSocket socket, ubyte[] data) {
         _readbuf ~= cast(char[])data;
         // split by lines
@@ -182,6 +270,16 @@ protected:
             case NOTICE:
                 _callback.onIRCNotice(this, msg.sourceAddress, msg.target, msg.message);
                 break;
+            case CHANNEL_TOPIC:
+            case CHANNEL_TOPIC_SET_BY:
+            case CHANNEL_NAMES_LIST:
+            case CHANNEL_NAMES_LIST_END:
+                if (msg.target.startsWith("#")) {
+                    auto channel = channelByName(msg.target, true);
+                    channel.handleMessage(msg);
+                    _callback.onIRCMessage(this, msg);
+                }
+                break;
             default:
                 _callback.onIRCMessage(this, msg);
                 break;
@@ -205,6 +303,23 @@ public:
     ~this() {
         if (_socket)
             destroy(_socket);
+    }
+    IRCChannel removeChannel(string name) {
+        if (auto p = name in _channels) {
+            _channels.remove(name);
+            return *p;
+        }
+        return null;
+    }
+    IRCChannel channelByName(string name, bool createIfNotExist = false) {
+        if (auto p = name in _channels) {
+            return *p;
+        }
+        if (!createIfNotExist)
+            return null;
+        IRCChannel res = new IRCChannel(name);
+        _channels[name] = res;
+        return res;
     }
     @property string host() { return _host; }
     @property ushort port() { return _port; }
