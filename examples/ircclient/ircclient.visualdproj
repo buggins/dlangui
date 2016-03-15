@@ -209,6 +209,10 @@
    <Folder name="net">
     <File path="src\ircclient\net\client.d" />
    </Folder>
+   <Folder name="ui">
+    <File path="src\ircclient\ui\frame.d" />
+    <File path="src\ircclient\ui\settingsdlg.d" />
+   </Folder>
   </Folder>
   <File path="src\main.d" />
  </Folder>
