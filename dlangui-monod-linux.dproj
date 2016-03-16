@@ -385,6 +385,8 @@
     <Compile Include="3rdparty\dimage\png.d" />
     <Compile Include="3rdparty\dimage\stream.d" />
     <Compile Include="3rdparty\dimage\zlib.d" />
+    <Compile Include="src\dlangui\core\asyncsocket.d" />
+    <Compile Include="src\dlangui\core\queue.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\dlangui\platforms\x11\" />
