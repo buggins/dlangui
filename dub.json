@@ -36,6 +36,7 @@
         "./examples/d3d/",
         "./examples/tetris/",
         "./examples/opengl/",
+        "./examples/ircclient/",
         "./examples/spreadsheet/"
     ],
 
