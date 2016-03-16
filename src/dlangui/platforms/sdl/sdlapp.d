@@ -1245,17 +1245,66 @@ class SDLPlatform : Platform {
                 wait(pid);
                 return true;
             } else {
-                // TODO: implement for POSIX
-                if (normalized.isFile)
-                    normalized = normalized.dirName;
-                string exe = "xdg-open";
-                string[] args;
-                args ~= exe;
-                args ~= normalized;
-                Log.d("Executing ", args);
-                auto pid = spawnProcess(args);
-                wait(pid);
-                return true;
+                import std.exception;
+                
+                /*
+                 * Use xdg-mime to get default application for inode/directory.
+                 * If application is known to be able to select the file, start it directly.
+                 * Otherwise just open directory with xdg-open.
+                 * 
+                 * So this relies on external tools like xdg-mime and xdg-open.
+                 * To make implementation free from external tools we need to implement 
+                 * reading of mimeapps.list to find appropriate .desktop file, 
+                 * find it on the file system, parse its Exec value and run. 
+                 * That's basically what xdg-open is doing.
+                 * 
+                 * We still will need to keep track of file managers capable of selecting file on opening, 
+                 * since there's no freedesktop specification on this feature.
+                 */
+                
+                static string[] getXdgOpen(string toOpen)
+                {
+                    bool pathIsDir;
+                    collectException(toOpen.isDir, pathIsDir);
+                    if (!pathIsDir) {
+                        toOpen = toOpen.dirName;
+                    }
+                    return ["xdg-open", toOpen];
+                }
+                
+                string toOpen = normalized;
+                
+                auto p = pipe();
+                spawnProcess(["xdg-mime", "query", "default", "inode/directory"], std.stdio.stdin, p.writeEnd);
+                auto fileManager = p.readEnd.readln().chomp();
+                p.close();
+                
+                if (fileManager.length) {
+                    string[] arguments;
+                    
+                    switch(fileManager) {
+                        //nautilus and nemo selects item if it's file
+                        case "nautilus.desktop":
+                        case "nautilus-classic.desktop":
+                            arguments = ["nautilus", toOpen];
+                            break;
+                        case "nemo.desktop":
+                            arguments = ["nemo", toOpen];
+                            break;
+                        //dolphin needs --select option
+                        case "kde4-dolphin.desktop":
+                        case "kde-dolphin.desktop":
+                            arguments = ["dolphin", "--select", toOpen];
+                            break;
+                        default:
+                            arguments = getXdgOpen(toOpen);
+                            break;
+                    }
+                    spawnProcess(arguments);
+                    return true;
+                } else { //xdg-mime returned non-zero.
+                    return false;
+                }
             }
         } catch (Exception e) {
             Log.e("showInFileManager -- exception while trying to open file browser");
