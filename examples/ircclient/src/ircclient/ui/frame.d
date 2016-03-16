@@ -42,8 +42,10 @@ const Action ACTION_EDIT_TOGGLE_LINE_COMMENT = (new Action(EditorActions.ToggleL
 const Action ACTION_EDIT_TOGGLE_BLOCK_COMMENT = (new Action(EditorActions.ToggleBlockComment, "MENU_EDIT_TOGGLE_BLOCK_COMMENT"c, null, KeyCode.KEY_DIVIDE, KeyFlag.Control|KeyFlag.Shift)).disableByDefault();
 
 const Action ACTION_EDIT_PREFERENCES = (new Action(IDEActions.EditPreferences, "MENU_EDIT_PREFERENCES"c, "document-properties"c, KeyCode.F9, 0));
-const Action ACTION_CONNECT = (new Action(IDEActions.Connect, "MENU_CONNECT"c, "debug-run"c, KeyCode.F5, 0)).disableByDefault();
-const Action ACTION_DISCONNECT = (new Action(IDEActions.Disconnect, "MENU_DISCONNECT"c, "debug-run"c, KeyCode.F5, 0)).disableByDefault();
+
+const Action ACTION_CONNECT = (new Action(IDEActions.Connect, "MENU_CONNECT"c, "connect"c, KeyCode.F5, 0)).disableByDefault();
+const Action ACTION_DISCONNECT = (new Action(IDEActions.Disconnect, "MENU_DISCONNECT"c, "disconnect"c, KeyCode.F5, 0)).disableByDefault();
+
 const Action ACTION_HELP_ABOUT = new Action(IDEActions.HelpAbout, "MENU_HELP_ABOUT"c, "document-open"c, KeyCode.F1, 0);
 
 class IRCFrame : AppFrame, IRCClientCallback {
@@ -155,10 +157,10 @@ class IRCFrame : AppFrame, IRCClientCallback {
                 a.state = ACTION_STATE_ENABLED;
                 return true;
             case IDEActions.Connect:
-                a.state = !_client || _client.state == SocketState.Disconnected ? ACTION_STATE_ENABLED : ACTION_STATE_DISABLE;
+                a.state = !_client || _client.state == SocketState.Disconnected ? ACTION_STATE_ENABLED : ACTION_STATE_INVISIBLE;
                 return true;
             case IDEActions.Disconnect:
-                a.state = !_client || _client.state == SocketState.Disconnected ? ACTION_STATE_DISABLE : ACTION_STATE_ENABLED;
+                a.state = !_client || _client.state == SocketState.Disconnected ? ACTION_STATE_INVISIBLE : ACTION_STATE_ENABLED;
                 return true;
             default:
                 return super.handleActionStateRequest(a);

@@ -1,6 +1,8 @@
 res/i18n/en.ini
 res/i18n/ru.ini
 res/mdpi/cr3_logo.png
+res/mdpi/connect.png
+res/mdpi/disconnect.png
 res/mdpi/debug-run.png
 res/mdpi/document-close.png
 res/mdpi/document-new.png
