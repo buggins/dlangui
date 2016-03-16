@@ -114,7 +114,7 @@ class IRCMessage {
                     target = params[1];
                 break;
             case CHANNEL_NAMES_LIST:
-                if (params.length > 2 && params[1] == "=")
+                if (params.length > 2 && (params[1] == "=" || params[1] == "@"))
                     target = params[2];
                 break;
             default:
@@ -174,6 +174,22 @@ class UserList {
             _users.add(u);
         }
     }
+    int findUser(string name) {
+        for(int i = 0; i < _users.length; i++) {
+            if (_users[i].nick == name)
+                return i;
+        }
+        return -1;
+    }
+    void addUser(string name) {
+        if (findUser(name) < 0)
+            _users.add(new IRCUser(name));
+    }
+    void removeUser(string name) {
+        if (int index = findUser(name)) {
+            _users.remove(index);
+        }
+    }
 }
 
 class IRCChannel {
@@ -214,6 +230,12 @@ class IRCChannel {
                 setUserList(userListBuffer.dup);
                 Log.d("user list for " ~ name ~ " : " ~ userListBuffer);
                 userListBuffer = null;
+                break;
+            case JOIN:
+                users.addUser(msg.sourceAddress.nick);
+                break;
+            case PART:
+                users.removeUser(msg.sourceAddress.nick);
                 break;
             default:
                 break;
@@ -274,6 +296,8 @@ protected:
             case CHANNEL_TOPIC_SET_BY:
             case CHANNEL_NAMES_LIST:
             case CHANNEL_NAMES_LIST_END:
+            case JOIN:
+            case PART:
                 if (msg.target.startsWith("#")) {
                     auto channel = channelByName(msg.target, true);
                     channel.handleMessage(msg);

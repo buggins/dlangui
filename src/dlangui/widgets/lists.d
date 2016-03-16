@@ -568,8 +568,8 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
     @property ListWidget orientation(Orientation value) { 
         _orientation = value;
         _scrollbar.orientation = value;
-        requestLayout(); 
-        return this; 
+        requestLayout();
+        return this;
     }
 
     protected Rect[] _itemRects;
@@ -1313,23 +1313,24 @@ class StringListWidget : ListWidget {
     this(string ID, string[] items) {
         super(ID);
         styleId = STYLE_EDIT_BOX;
-        adapter = new StringListAdapter(items);
+        ownAdapter = new StringListAdapter(items);
     }
     
     this(string ID, dstring[] items) {
         super(ID);
         styleId = STYLE_EDIT_BOX;
-        adapter = new StringListAdapter(items);
+        ownAdapter = new StringListAdapter(items);
     }
     
     this(string ID, StringListValue[] items) {
         super(ID);
         styleId = STYLE_EDIT_BOX;
-        adapter = new StringListAdapter(items);
+        ownAdapter = new StringListAdapter(items);
     }
 
     @property void items(string[] itemResourceIds) {
-        adapter = new StringListAdapter(itemResourceIds);
+        _selectedItemIndex = -1;
+        ownAdapter = new StringListAdapter(itemResourceIds);
         if(itemResourceIds.length > 0) {
             selectedItemIndex = 0;
         }
@@ -1337,7 +1338,8 @@ class StringListWidget : ListWidget {
     }
     
     @property void items(dstring[] items) {
-        adapter = new StringListAdapter(items);
+        _selectedItemIndex = -1;
+        ownAdapter = new StringListAdapter(items);
         if(items.length > 0) {
             selectedItemIndex = 0;
         }
@@ -1345,7 +1347,8 @@ class StringListWidget : ListWidget {
     }
     
     @property void items(StringListValue[] items) {
-        adapter = new StringListAdapter(items);
+        _selectedItemIndex = -1;
+        ownAdapter = new StringListAdapter(items);
         if(items.length > 0) {
             selectedItemIndex = 0;
         }

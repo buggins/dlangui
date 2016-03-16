@@ -174,6 +174,11 @@ class IRCFrame : AppFrame, IRCClientCallback {
         _tabs.layoutHeight = FILL_PARENT;
         //tabs.addTab(new IRCWindow("sample"), "Sample"d);
         statusLine.setStatusText(toUTF32("Not Connected"));
+        _tabs.tabChanged = delegate(string newActiveTabId, string previousTabId) {
+            if (IRCWindow w = cast(IRCWindow)_tabs.tabBody(newActiveTabId)) {
+                w.onTabActivated();
+            }
+        };
         return _tabs;
     }
 
@@ -187,18 +192,23 @@ class IRCFrame : AppFrame, IRCClientCallback {
         _client.connect(_settings.host, _settings.port);
     }
 
-    IRCWindow getOrCreateWindowFor(string party) {
+    IRCWindow getOrCreateWindowFor(string party, bool activate) {
         string winId = party;
         IRCWindow w = cast(IRCWindow)_tabs.tabBody(winId);
         if (!w) {
-            w = new IRCWindow(winId, _client);
+            w = new IRCWindow(winId, this, _client);
             _tabs.addTab(w, toUTF32(winId));
+            activate = true;
+        }
+        if (activate) {
+            _tabs.selectTab(winId);
+            w.onTabActivated();
         }
         return w;
     }
 
     void onIRCConnect(IRCClient client) {
-        IRCWindow w = getOrCreateWindowFor(client.hostPort);
+        IRCWindow w = getOrCreateWindowFor(client.hostPort, true);
         w.addLine("connected to " ~ client.hostPort);
         client.sendMessage("USER " ~ _settings.userName ~ " 0 * :" ~ _settings.userRealName);
         client.nick(_settings.nick);
@@ -209,13 +219,13 @@ class IRCFrame : AppFrame, IRCClientCallback {
     }
 
     void onIRCDisconnect(IRCClient client) {
-        IRCWindow w = getOrCreateWindowFor(client.hostPort);
+        IRCWindow w = getOrCreateWindowFor(client.hostPort, false);
         w.addLine("disconnected from " ~ client.hostPort);
         statusLine.setStatusText(toUTF32("Disconnected"));
     }
 
     void onIRCPing(IRCClient client, string message) {
-        IRCWindow w = getOrCreateWindowFor(client.hostPort);
+        IRCWindow w = getOrCreateWindowFor(client.hostPort, false);
         w.addLine("PING " ~ message);
         client.pong(message);
     }
@@ -226,32 +236,34 @@ class IRCFrame : AppFrame, IRCClientCallback {
             wid = source.nick;
         else if (source.nick == client.nick)
             wid = target;
-        IRCWindow w = getOrCreateWindowFor(wid);
+        IRCWindow w = getOrCreateWindowFor(wid, false);
         w.addLine("<" ~ (!source.nick.empty ? source.nick : source.full) ~ "> " ~ message);
     }
 
     void onIRCNotice(IRCClient client, IRCAddress source, string target, string message) {
-        IRCWindow w = getOrCreateWindowFor(target.startsWith("#") ? target : client.hostPort);
+        IRCWindow w = getOrCreateWindowFor(target.startsWith("#") ? target : client.hostPort, false);
         w.addLine("-" ~ source.full ~ "- " ~ message);
     }
 
     void onIRCMessage(IRCClient client, IRCMessage message) {
-        IRCWindow w = getOrCreateWindowFor(client.hostPort);
+        IRCWindow w = getOrCreateWindowFor(client.hostPort, false);
         switch (message.commandId) with (IRCCommand) {
             case JOIN:
             case PART:
                 if (message.sourceAddress && !message.sourceAddress.nick.empty && message.target.startsWith("#")) {
-                    w = getOrCreateWindowFor(message.target);
+                    w = getOrCreateWindowFor(message.target, false);
                     if (message.commandId == JOIN) {
                         w.addLine("* " ~ message.sourceAddress.longName ~ " has joined " ~ message.target);
                     } else {
                         w.addLine("* " ~ message.sourceAddress.longName ~ " has left " ~ message.target ~ (message.message.empty ? "" : ("(Reason: " ~ message.message ~ ")")));
                     }
+                    IRCChannel channel = _client.channelByName(message.target);
+                    w.updateUserList(channel);
                 }
                 return;
             case CHANNEL_NAMES_LIST_END:
                 if (message.target.startsWith("#")) {
-                    w = getOrCreateWindowFor(message.target);
+                    w = getOrCreateWindowFor(message.target, false);
                     IRCChannel channel = _client.channelByName(message.target);
                     w.updateUserList(channel);
                 }
@@ -275,14 +287,19 @@ enum IRCWindowKind {
 }
 
 class IRCWindow : VerticalLayout, EditorActionHandler {
+private:
+    IRCFrame _frame;
     LogWidget _editBox;
     StringListWidget _listBox;
     EditLine _editLine;
     IRCClient _client;
     IRCWindowKind _kind;
-    this(string ID, IRCClient client) {
+    dstring[] _userNames;
+public:
+    this(string ID, IRCFrame frame, IRCClient client) {
         super(ID);
         _client = client;
+        _frame = frame;
         layoutWidth = FILL_PARENT;
         layoutHeight = FILL_PARENT;
         HorizontalLayout hlayout = new HorizontalLayout();
@@ -302,6 +319,15 @@ class IRCWindow : VerticalLayout, EditorActionHandler {
             //_listBox.items = ["Nick1"d, "Nick2"d];
             hlayout.addChild(new ResizerWidget(null, Orientation.Horizontal));
             hlayout.addChild(_listBox);
+
+            _listBox.itemClick = delegate(Widget source, int itemIndex) {
+                auto user = itemIndex >= 0 && itemIndex < _userNames.length ? toUTF8(_userNames[itemIndex]) : null;
+                if (!user.empty && user != _client.nick) {
+                    _frame.getOrCreateWindowFor(user, true);
+                }
+                return true;
+            };
+
             _kind = IRCWindowKind.Channel;
         } else {
             if (id.indexOf(':') >= 0)
@@ -320,8 +346,10 @@ class IRCWindow : VerticalLayout, EditorActionHandler {
             window.update();
     }
     void updateUserList(IRCChannel channel) {
-        _listBox.items = channel.userNames;
-        window.update();
+        _userNames = channel.userNames;
+        _listBox.items = _userNames;
+        if (window)
+            window.update();
     }
     bool onEditorAction(const Action action) {
         if (!_editLine.text.empty) {
@@ -358,5 +386,8 @@ class IRCWindow : VerticalLayout, EditorActionHandler {
             }
         }
         return true;
+    }
+    void onTabActivated() {
+        _editLine.setFocus();
     }
 }
