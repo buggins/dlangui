@@ -211,6 +211,7 @@
    </Folder>
    <Folder name="ui">
     <File path="src\ircclient\ui\frame.d" />
+    <File path="src\ircclient\ui\settings.d" />
     <File path="src\ircclient\ui\settingsdlg.d" />
    </Folder>
   </Folder>

@@ -1,24 +1,21 @@
 module ircclient.ui.frame;
 
 import dlangui;
-import dlangui.dialogs.filedlg;
 import dlangui.dialogs.dialog;
-import dlangui.dml.dmlhighlight;
+import dlangui.core.settings;
+
 import std.array : replaceFirst;
+
 import ircclient.net.client;
 import ircclient.ui.settingsdlg;
+import ircclient.ui.settings;
+
 import std.string : startsWith, indexOf;
+import std.path;
 
 // action codes
-enum IDEActions : int {
-    //ProjectOpen = 1010000,
-    FileNew = 1010000,
-    FileOpen,
-    FileSave,
-    FileSaveAs,
-    FileSaveAll,
-    FileClose,
-    FileExit,
+enum IRCActions : int {
+    FileExit = 12300,
     EditPreferences,
     Connect,
     Disconnect,
@@ -26,32 +23,30 @@ enum IDEActions : int {
 }
 
 // actions
-const Action ACTION_FILE_NEW = new Action(IDEActions.FileNew, "MENU_FILE_NEW"c, "document-new", KeyCode.KEY_N, KeyFlag.Control);
-const Action ACTION_FILE_SAVE = (new Action(IDEActions.FileSave, "MENU_FILE_SAVE"c, "document-save", KeyCode.KEY_S, KeyFlag.Control)).disableByDefault();
-const Action ACTION_FILE_SAVE_AS = (new Action(IDEActions.FileSaveAs, "MENU_FILE_SAVE_AS"c)).disableByDefault();
-const Action ACTION_FILE_OPEN = new Action(IDEActions.FileOpen, "MENU_FILE_OPEN"c, "document-open", KeyCode.KEY_O, KeyFlag.Control);
-const Action ACTION_FILE_EXIT = new Action(IDEActions.FileExit, "MENU_FILE_EXIT"c, "document-close"c, KeyCode.KEY_X, KeyFlag.Alt);
+const Action ACTION_FILE_EXIT = new Action(IRCActions.FileExit, "MENU_FILE_EXIT"c, "document-close"c, KeyCode.KEY_X, KeyFlag.Alt);
+
 const Action ACTION_EDIT_COPY = (new Action(EditorActions.Copy, "MENU_EDIT_COPY"c, "edit-copy"c, KeyCode.KEY_C, KeyFlag.Control)).addAccelerator(KeyCode.INS, KeyFlag.Control).disableByDefault();
 const Action ACTION_EDIT_PASTE = (new Action(EditorActions.Paste, "MENU_EDIT_PASTE"c, "edit-paste"c, KeyCode.KEY_V, KeyFlag.Control)).addAccelerator(KeyCode.INS, KeyFlag.Shift).disableByDefault();
 const Action ACTION_EDIT_CUT = (new Action(EditorActions.Cut, "MENU_EDIT_CUT"c, "edit-cut"c, KeyCode.KEY_X, KeyFlag.Control)).addAccelerator(KeyCode.DEL, KeyFlag.Shift).disableByDefault();
 const Action ACTION_EDIT_UNDO = (new Action(EditorActions.Undo, "MENU_EDIT_UNDO"c, "edit-undo"c, KeyCode.KEY_Z, KeyFlag.Control)).disableByDefault();
 const Action ACTION_EDIT_REDO = (new Action(EditorActions.Redo, "MENU_EDIT_REDO"c, "edit-redo"c, KeyCode.KEY_Y, KeyFlag.Control)).addAccelerator(KeyCode.KEY_Z, KeyFlag.Control|KeyFlag.Shift).disableByDefault();
-const Action ACTION_EDIT_INDENT = (new Action(EditorActions.Indent, "MENU_EDIT_INDENT"c, "edit-indent"c, KeyCode.TAB, 0)).addAccelerator(KeyCode.KEY_BRACKETCLOSE, KeyFlag.Control).disableByDefault();
-const Action ACTION_EDIT_UNINDENT = (new Action(EditorActions.Unindent, "MENU_EDIT_UNINDENT"c, "edit-unindent", KeyCode.TAB, KeyFlag.Shift)).addAccelerator(KeyCode.KEY_BRACKETOPEN, KeyFlag.Control).disableByDefault();
-const Action ACTION_EDIT_TOGGLE_LINE_COMMENT = (new Action(EditorActions.ToggleLineComment, "MENU_EDIT_TOGGLE_LINE_COMMENT"c, null, KeyCode.KEY_DIVIDE, KeyFlag.Control)).disableByDefault();
-const Action ACTION_EDIT_TOGGLE_BLOCK_COMMENT = (new Action(EditorActions.ToggleBlockComment, "MENU_EDIT_TOGGLE_BLOCK_COMMENT"c, null, KeyCode.KEY_DIVIDE, KeyFlag.Control|KeyFlag.Shift)).disableByDefault();
 
-const Action ACTION_EDIT_PREFERENCES = (new Action(IDEActions.EditPreferences, "MENU_EDIT_PREFERENCES"c, "document-properties"c, KeyCode.F9, 0));
+const Action ACTION_EDIT_PREFERENCES = (new Action(IRCActions.EditPreferences, "MENU_EDIT_PREFERENCES"c, "document-properties"c, KeyCode.F9, 0));
 
-const Action ACTION_CONNECT = (new Action(IDEActions.Connect, "MENU_CONNECT"c, "connect"c, KeyCode.F5, 0)).disableByDefault();
-const Action ACTION_DISCONNECT = (new Action(IDEActions.Disconnect, "MENU_DISCONNECT"c, "disconnect"c, KeyCode.F5, 0)).disableByDefault();
+const Action ACTION_CONNECT = (new Action(IRCActions.Connect, "MENU_CONNECT"c, "connect"c, KeyCode.F5, 0)).disableByDefault();
+const Action ACTION_DISCONNECT = (new Action(IRCActions.Disconnect, "MENU_DISCONNECT"c, "disconnect"c, KeyCode.F5, 0)).disableByDefault();
 
-const Action ACTION_HELP_ABOUT = new Action(IDEActions.HelpAbout, "MENU_HELP_ABOUT"c, "document-open"c, KeyCode.F1, 0);
+const Action ACTION_HELP_ABOUT = new Action(IRCActions.HelpAbout, "MENU_HELP_ABOUT"c, "document-open"c, KeyCode.F1, 0);
 
 class IRCFrame : AppFrame, IRCClientCallback {
 
     MenuItem mainMenuItems;
     IRCClient _client;
+    IRCSettings _settings;
+
+
+    this() {
+    }
 
     ~this() {
         if (_client)
@@ -60,6 +55,10 @@ class IRCFrame : AppFrame, IRCClientCallback {
 
     override protected void initialize() {
         _appName = "DlangUI_IRCClient";
+        _settings = new IRCSettings(buildNormalizedPath(settingsDir, "settings.json"));
+        _settings.load();
+        _settings.updateDefaults();
+        _settings.save();
         super.initialize();
     }
 
@@ -90,6 +89,7 @@ class IRCFrame : AppFrame, IRCClientCallback {
         tb.addButtons(//ACTION_FILE_NEW, ACTION_FILE_OPEN, ACTION_FILE_SAVE, ACTION_SEPARATOR, 
                       ACTION_CONNECT,
                       ACTION_DISCONNECT,
+                      ACTION_SEPARATOR,
                       ACTION_EDIT_PREFERENCES,
                       ACTION_HELP_ABOUT);
 
@@ -108,19 +108,19 @@ class IRCFrame : AppFrame, IRCClientCallback {
     override bool handleAction(const Action a) {
         if (a) {
             switch (a.id) {
-                case IDEActions.FileExit:
+                case IRCActions.FileExit:
                     if (onCanClose())
                         window.close();
                     return true;
-                case IDEActions.HelpAbout:
+                case IRCActions.HelpAbout:
                     window.showMessageBox(UIString("About DlangUI IRC Client"d), 
                                           UIString("DLangUI IRC Client\n(C) Vadim Lopatin, 2015\nhttp://github.com/buggins/dlangui\nSimple IRC client"d));
                     return true;
-                case IDEActions.EditPreferences:
+                case IRCActions.EditPreferences:
                     showPreferences();
                     return true;
-                case IDEActions.Connect:
-                case IDEActions.Disconnect:
+                case IRCActions.Connect:
+                case IRCActions.Disconnect:
                     if (!_client || _client.state == SocketState.Disconnected)
                         connect();
                     else
@@ -134,13 +134,15 @@ class IRCFrame : AppFrame, IRCClientCallback {
     }
 
     void showPreferences() {
-        SettingsDialog dlg = new SettingsDialog(this);
+        IRCSettings s = _settings.clone();
+        SettingsDialog dlg = new SettingsDialog(this, s, !_client || _client.state == SocketState.Disconnected);
         dlg.dialogResult = delegate(Dialog dlg, const Action result) {
-            if (result.id == ACTION_APPLY.id) {
-                //Log.d("settings after edit:\n", s.toJSON(true));
-                //_settings.applySettings(s);
-                //applySettings(_settings);
-                //_settings.save();
+            if (result.id == ACTION_APPLY.id || result.id == ACTION_CONNECT.id) {
+                _settings.applySettings(s.setting);
+                _settings.save();
+            }
+            if (result.id == ACTION_CONNECT.id) {
+                connect();
             }
         };
         dlg.show();
@@ -149,17 +151,14 @@ class IRCFrame : AppFrame, IRCClientCallback {
     /// override to handle specific actions state (e.g. change enabled state for supported actions)
     override bool handleActionStateRequest(const Action a) {
         switch (a.id) {
-            case IDEActions.HelpAbout:
-            case IDEActions.FileNew:
-            case IDEActions.FileSave:
-            case IDEActions.FileOpen:
-            case IDEActions.EditPreferences:
+            case IRCActions.HelpAbout:
+            case IRCActions.EditPreferences:
                 a.state = ACTION_STATE_ENABLED;
                 return true;
-            case IDEActions.Connect:
+            case IRCActions.Connect:
                 a.state = !_client || _client.state == SocketState.Disconnected ? ACTION_STATE_ENABLED : ACTION_STATE_INVISIBLE;
                 return true;
-            case IDEActions.Disconnect:
+            case IRCActions.Disconnect:
                 a.state = !_client || _client.state == SocketState.Disconnected ? ACTION_STATE_INVISIBLE : ACTION_STATE_ENABLED;
                 return true;
             default:
@@ -185,7 +184,7 @@ class IRCFrame : AppFrame, IRCClientCallback {
             _client.socket = connection;
             _client.callback = this;
         }
-        _client.connect("irc.freenode.net", 6667);
+        _client.connect(_settings.host, _settings.port);
     }
 
     IRCWindow getOrCreateWindowFor(string party) {
@@ -201,9 +200,11 @@ class IRCFrame : AppFrame, IRCClientCallback {
     void onIRCConnect(IRCClient client) {
         IRCWindow w = getOrCreateWindowFor(client.hostPort);
         w.addLine("connected to " ~ client.hostPort);
-        client.sendMessage("USER username 0 * :Real name");
-        client.nick("dlangui_irc");
-        client.join("#clienttest");
+        client.sendMessage("USER " ~ _settings.userName ~ " 0 * :" ~ _settings.userRealName);
+        client.nick(_settings.nick);
+        string channel = _settings.defChannel;
+        if (_settings.joinOnConnect && channel.length > 1 && channel.startsWith("#"))
+            client.join(channel);
         statusLine.setStatusText(toUTF32("Connected to " ~ client.hostPort));
     }
 
