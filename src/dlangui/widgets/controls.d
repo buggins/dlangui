@@ -159,6 +159,49 @@ class MultilineTextWidget : TextWidget {
     }
 }
 
+/// Switch (on/off) widget
+class SwitchWidget : Widget {
+    this(string ID = null) {
+        super(ID);
+        styleId = STYLE_SWITCH;
+        clickable = true;
+        focusable = true;
+        trackHover = true;
+    }
+    // called to process click and notify listeners
+    override protected bool handleClick() {
+        checked = !checked;
+        return super.handleClick();
+    }
+    override void measure(int parentWidth, int parentHeight) { 
+        DrawableRef img = backgroundDrawable;
+        int w = 0;
+        int h = 0;
+        if (!img.isNull) {
+            w = img.width;
+            h = img.height;
+        }
+        measuredContent(parentWidth, parentHeight, w, h);
+    }
+
+    override void onDraw(DrawBuf buf) {
+        if (visibility != Visibility.Visible)
+            return;
+        Rect rc = _pos;
+        applyMargins(rc);
+        auto saver = ClipRectSaver(buf, rc, alpha);
+        DrawableRef img = backgroundDrawable;
+        if (!img.isNull) {
+            Point sz;
+            sz.x = img.width;
+            sz.y = img.height;
+            applyAlign(rc, sz);
+            uint st = state;
+            img.drawTo(buf, rc, st);
+        }
+    }
+}
+
 /// static image widget
 class ImageWidget : Widget {
 

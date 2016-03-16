@@ -66,6 +66,11 @@
         margins="2,2,2,2"
         align="Center"
         />
+    <style id="SWITCH"
+        margins="2,2,2,2"
+        align="Center"
+        backgroundImageId="switch"
+        />
     <style id="CHECKBOX"
         backgroundImageId="@null"
         margins="2,2,2,2"

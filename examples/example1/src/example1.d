@@ -567,6 +567,11 @@ extern (C) int UIAppMain(string[] args) {
             buttons10.addChild(new TextWidget(null, "ImageTextButton widgets: "d));
             buttons10.addChild(new ImageTextButton("btn5", "text-plain", "Enabled"d));
             buttons10.addChild((new ImageTextButton("btn6", "folder", "Disabled"d)).enabled(false));
+            buttons10.addChild(new TextWidget(null, "SwitchWidget widgets: "d));
+            buttons10.addChild((new SwitchWidget("SW1")).checked(true));
+            buttons10.addChild((new SwitchWidget("SW2")).checked(false));
+            buttons10.addChild((new SwitchWidget("SW3")).checked(true).enabled(false));
+            buttons10.addChild((new SwitchWidget("SW4")).checked(false).enabled(false));
             layout3.addChild(buttons10);
 
             WidgetGroup buttons11 = new HorizontalLayout();

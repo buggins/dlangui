@@ -169,6 +169,10 @@ res/mdpi/folder.png
 res/mdpi/media-flash-sd-mmc.png
 res/mdpi/popup_window_background.9.png
 res/mdpi/popup_window_background_dark.9.png
+res/mdpi/switch_off.png
+res/mdpi/switch_off_disabled.png
+res/mdpi/switch_on.png
+res/mdpi/switch_on_disabled.png
 res/mdpi/tab_btn_dark_down_focused.9.png
 res/mdpi/tab_btn_dark_down_focused_dark.9.png
 res/mdpi/tab_btn_dark_down_focused_selected.9.png
@@ -234,6 +238,7 @@ res/scrollbar_btn_up.png
 res/scrollbar_btn_up_dark.png
 res/scrollbar_indicator_horizontal.png
 res/scrollbar_indicator_vertical.png
+res/switch.xml
 res/tab_btn_dark_down.xml
 res/tab_btn_dark_down_dark.xml
 res/tab_btn_dark_up.xml

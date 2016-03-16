@@ -49,6 +49,8 @@ immutable string STYLE_BUTTON_IMAGE = "BUTTON_IMAGE";
 immutable string STYLE_BUTTON_TRANSPARENT = "BUTTON_TRANSPARENT";
 /// style id for Button w/o margins
 immutable string STYLE_BUTTON_NOMARGINS = "BUTTON_NOMARGINS";
+/// standard style id for Switch
+immutable string STYLE_SWITCH = "SWITCH";
 /// standard style id for CheckBox
 immutable string STYLE_CHECKBOX = "CHECKBOX";
 /// standard style id for CheckBox image

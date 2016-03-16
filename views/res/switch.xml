@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_checked="false" android:state_enabled="true"
+          android:drawable="@drawable/switch_off" />
+    <item android:state_checked="true" android:state_enabled="true"
+          android:drawable="@drawable/switch_on" />
+    <item android:state_checked="false" android:drawable="@drawable/switch_off_disabled" />
+    <item android:state_checked="true" android:drawable="@drawable/switch_on_disabled" />
+</selector>
+
