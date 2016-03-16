@@ -20,6 +20,7 @@ enum IRCActions : int {
     Connect,
     Disconnect,
     HelpAbout,
+    Join
 }
 
 // actions
@@ -31,12 +32,14 @@ const Action ACTION_EDIT_CUT = (new Action(EditorActions.Cut, "MENU_EDIT_CUT"c, 
 const Action ACTION_EDIT_UNDO = (new Action(EditorActions.Undo, "MENU_EDIT_UNDO"c, "edit-undo"c, KeyCode.KEY_Z, KeyFlag.Control)).disableByDefault();
 const Action ACTION_EDIT_REDO = (new Action(EditorActions.Redo, "MENU_EDIT_REDO"c, "edit-redo"c, KeyCode.KEY_Y, KeyFlag.Control)).addAccelerator(KeyCode.KEY_Z, KeyFlag.Control|KeyFlag.Shift).disableByDefault();
 
-const Action ACTION_EDIT_PREFERENCES = (new Action(IRCActions.EditPreferences, "MENU_EDIT_PREFERENCES"c, "document-properties"c, KeyCode.F9, 0));
+const Action ACTION_EDIT_PREFERENCES = (new Action(IRCActions.EditPreferences, "MENU_EDIT_PREFERENCES"c, "configure"c, KeyCode.F9, 0));
 
 const Action ACTION_CONNECT = (new Action(IRCActions.Connect, "MENU_CONNECT"c, "connect"c, KeyCode.F5, 0)).disableByDefault();
 const Action ACTION_DISCONNECT = (new Action(IRCActions.Disconnect, "MENU_DISCONNECT"c, "disconnect"c, KeyCode.F5, 0)).disableByDefault();
 
-const Action ACTION_HELP_ABOUT = new Action(IRCActions.HelpAbout, "MENU_HELP_ABOUT"c, "document-open"c, KeyCode.F1, 0);
+const Action ACTION_CHANNEL_JOIN = (new Action(IRCActions.Join, "MENU_CHANNEL_JOIN"c, "channel-join"c, KeyCode.F2, 0)).disableByDefault();
+
+const Action ACTION_HELP_ABOUT = new Action(IRCActions.HelpAbout, "MENU_HELP_ABOUT"c, "about"c, KeyCode.F1, 0);
 
 class IRCFrame : AppFrame, IRCClientCallback {
 
@@ -86,11 +89,11 @@ class IRCFrame : AppFrame, IRCClientCallback {
         ToolBarHost res = new ToolBarHost();
         ToolBar tb;
         tb = res.getOrAddToolbar("Standard");
-        tb.addButtons(//ACTION_FILE_NEW, ACTION_FILE_OPEN, ACTION_FILE_SAVE, ACTION_SEPARATOR, 
+        tb.addButtons(
                       ACTION_CONNECT,
                       ACTION_DISCONNECT,
-                      ACTION_SEPARATOR,
                       ACTION_EDIT_PREFERENCES,
+                      ACTION_SEPARATOR,
                       ACTION_HELP_ABOUT);
 
         //tb = res.getOrAddToolbar("Edit");
