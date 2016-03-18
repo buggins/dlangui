@@ -1057,7 +1057,7 @@ class SDLPlatform : Platform {
                             case SDL_WINDOWEVENT_EXPOSED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_EXPOSED");
                                 version(linux) {
-                                    w.redraw(); 
+                                    w.invalidate();
                                 }
                                 break;
                             case SDL_WINDOWEVENT_MOVED:
@@ -1072,7 +1072,7 @@ class SDLPlatform : Platform {
                             case SDL_WINDOWEVENT_RESTORED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_RESTORED");
                                 version(linux) { //not sure if needed on Windows or OSX. Also need to check on FreeBSD
-                                    w.redraw(); 
+                                    w.invalidate(); 
                                 }
                                 break;
                             case SDL_WINDOWEVENT_ENTER:
