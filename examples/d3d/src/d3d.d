@@ -116,6 +116,12 @@ class UiWidget : VerticalLayout {
             _mesh.addCubeMesh(vec3( i * 2 + 1.0f, -i * 2 + 1.0f, i * 2 + 1.0f), 0.2f, vec4(i / 12, 1 - i / 12, i / 12, 1));
             _mesh.addCubeMesh(vec3(-i * 2 - 1.0f, -i * 2 - 1.0f, -i * 2 - 1.0f), 0.2f, vec4(1 - i / 12, i / 12, i / 12, 1));
         }
+
+        import dminer.core.world;
+        World w = new World();
+        for (int x = -100; x < 100; x++)
+            for (int z = -100; z < 100; z++)
+                w.setCell(x, 10, z, 1);
     }
 
     /// returns true is widget is being animated - need to call animate() and redraw

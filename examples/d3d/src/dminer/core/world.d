@@ -1,6 +1,7 @@
 module dminer.core.world;
 
 import dminer.core.minetypes;
+import dminer.core.blocks;
 
 const int MAX_VIEW_DISTANCE_BITS = 7;
 const int MAX_VIEW_DISTANCE = (1 << MAX_VIEW_DISTANCE_BITS);
@@ -103,4 +104,74 @@ public:
 		if (maxx < x + 1)
 			maxx = x + 1;
 	}
+}
+
+/// Voxel World
+class World {
+private:
+	//Position camPosition;
+	int maxVisibleRange = MAX_VIEW_DISTANCE;
+	int lastChunkX = 1000000;
+	int lastChunkZ = 1000000;
+	Chunk * lastChunk;
+	ChunkMatrix chunks;
+	//DiamondVisitor visitorHelper;
+public:
+	this()
+    {
+    }
+	~this() {
+
+	}
+	//void visitVisibleCellsAllDirectionsFast(Position & position, CellVisitor * visitor);
+	//Position & getCamPosition() { return camPosition; }
+	cell_t getCell(Vector3d v) {
+		return getCell(v.x, v.y, v.z);
+	}
+	cell_t getCell(int x, int y, int z) {
+        if (y < 0)
+            return 3;
+        int chunkx = x >> CHUNK_DX_SHIFT;
+        int chunkz = z >> CHUNK_DX_SHIFT;
+        Chunk * p;
+        if (lastChunkX == chunkx && lastChunkZ == chunkz) {
+            p = lastChunk;
+        } else {
+            p = chunks.get(chunkx, chunkz);
+            lastChunkX = chunkx;
+            lastChunkZ = chunkz;
+            lastChunk = p;
+        }
+        if (!p)
+            return NO_CELL;
+        return p.get(x & CHUNK_DX_MASK, y, z & CHUNK_DX_MASK);
+    }
+	bool isOpaque(Vector3d v) {
+        cell_t cell = getCell(v);
+        return BLOCK_TYPE_OPAQUE[cell] && cell != BOUND_SKY;
+    }
+	void setCell(int x, int y, int z, cell_t value) {
+        int chunkx = x >> CHUNK_DX_SHIFT;
+        int chunkz = z >> CHUNK_DX_SHIFT;
+        Chunk * p;
+        if (lastChunkX == chunkx && lastChunkZ == chunkz) {
+            p = lastChunk;
+        }
+        else {
+            p = chunks.get(chunkx, chunkz);
+            lastChunkX = chunkx;
+            lastChunkZ = chunkz;
+            lastChunk = p;
+        }
+        if (!p) {
+            p = new Chunk();
+            chunks.set(chunkx, chunkz, p);
+            lastChunkX = chunkx;
+            lastChunkZ = chunkz;
+            lastChunk = p;
+        }
+        p.set(x & CHUNK_DX_MASK, y, z & CHUNK_DX_MASK, value);
+    }
+	//bool canPass(Vector3d pos, Vector3d size) {
+    //}
 }
