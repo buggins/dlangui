@@ -21,6 +21,8 @@ setLogLevel(LogLeve.Debug);
 
 // log debug message
 Log.d("mouse clicked at ", x, ",", y);
+// or with format string:
+Log.fd("mouse clicked at %d,%d", x, y);
 // log error message
 Log.e("exception while reading file", e);
 ----
@@ -33,6 +35,7 @@ module dlangui.core.logger;
 
 import std.stdio;
 import std.datetime : SysTime, Clock;
+import core.sync.mutex;
 
 /// Log levels
 enum LogLevel : int {
@@ -76,8 +79,6 @@ Log.e("exception while reading file", e);
 ----
 
 */
-
-import core.sync.mutex;
 
 class Log {
     static __gshared private LogLevel logLevel = LogLevel.Info;
@@ -144,6 +145,15 @@ class Log {
         if (logLevel >= level && logFile !is null && logFile.isOpen) {
             SysTime ts = Clock.currTime();
             logFile.writef("%04d-%02d-%02d %02d:%02d:%02d.%03d %s  ", ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second, ts.fracSecs.split!("msecs").msecs, logLevelName(level));
+            logFile.writeln(args);
+            logFile.flush();
+        }
+    }
+    /// Log message with arbitrary log level with format string
+    static public void logf(S...)(LogLevel level, S args) {
+        if (logLevel >= level && logFile !is null && logFile.isOpen) {
+            SysTime ts = Clock.currTime();
+            logFile.writef("%04d-%02d-%02d %02d:%02d:%02d.%03d %s  ", ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second, ts.fracSecs.split!("msecs").msecs, logLevelName(level));
             logFile.writefln(args);
             logFile.flush();
         }
@@ -155,11 +165,25 @@ class Log {
                 log(LogLevel.Trace, args);
         }
     }
+    /// Log verbose / trace message with format string
+    static public void fv(S...)(S args) {
+        synchronized(mutex) {
+            if (logLevel >= LogLevel.Trace && logFile !is null && logFile.isOpen)
+                logf(LogLevel.Trace, args);
+        }
+    }
     /// Log debug message
     static public void d(S...)(S args) {
         synchronized(mutex) {
             if (logLevel >= LogLevel.Debug && logFile !is null && logFile.isOpen)
                 log(LogLevel.Debug, args);
+        }
+    }
+    /// Log debug message with format string
+    static public void fd(S...)(S args) {
+        synchronized(mutex) {
+            if (logLevel >= LogLevel.Debug && logFile !is null && logFile.isOpen)
+                logf(LogLevel.Debug, args);
         }
     }
     /// Log info message
@@ -169,11 +193,25 @@ class Log {
                 log(LogLevel.Info, args);
         }
     }
+    /// Log info message
+    static public void fi(S...)(S args) {
+        synchronized(mutex) {
+            if (logLevel >= LogLevel.Info && logFile !is null && logFile.isOpen)
+                logf(LogLevel.Info, args);
+        }
+    }
     /// Log warn message
     static public void w(S...)(S args) {
         synchronized(mutex) {
             if (logLevel >= LogLevel.Warn && logFile !is null && logFile.isOpen)
                 log(LogLevel.Warn, args);
+        }
+    }
+    /// Log warn message
+    static public void fw(S...)(S args) {
+        synchronized(mutex) {
+            if (logLevel >= LogLevel.Warn && logFile !is null && logFile.isOpen)
+                logf(LogLevel.Warn, args);
         }
     }
     /// Log error message
@@ -183,11 +221,25 @@ class Log {
                 log(LogLevel.Error, args);
         }
     }
+    /// Log error message
+    static public void fe(S...)(S args) {
+        synchronized(mutex) {
+            if (logLevel >= LogLevel.Error && logFile !is null && logFile.isOpen)
+                logf(LogLevel.Error, args);
+        }
+    }
     /// Log fatal error message
     static public void f(S...)(S args) {
         synchronized(mutex) {
             if (logLevel >= LogLevel.Fatal && logFile !is null && logFile.isOpen)
                 log(LogLevel.Fatal, args);
+        }
+    }
+    /// Log fatal error message
+    static public void ff(S...)(S args) {
+        synchronized(mutex) {
+            if (logLevel >= LogLevel.Fatal && logFile !is null && logFile.isOpen)
+                logf(LogLevel.Fatal, args);
         }
     }
 }
