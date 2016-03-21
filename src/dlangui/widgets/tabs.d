@@ -521,24 +521,26 @@ class TabControl : WidgetGroupDefaultDrawing {
     override void onDraw(DrawBuf buf) {
         if (visibility != Visibility.Visible)
             return;
-        super.onDraw(buf);
+        super.Widget.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
         applyPadding(rc);
         auto saver = ClipRectSaver(buf, rc);
+        // draw all items except selected
         for (int i = _children.count - 1; i >= 0; i--) {
             Widget item = _children.get(i);
             if (item.visibility != Visibility.Visible)
                 continue;
-            if (item.id.equal(_selectedTabId))
+            if (item.id.equal(_selectedTabId)) // skip selected
                 continue;
             item.onDraw(buf);
         }
+        // draw selected item
         for (int i = 0; i < _children.count; i++) {
             Widget item = _children.get(i);
             if (item.visibility != Visibility.Visible)
                 continue;
-            if (!item.id.equal(_selectedTabId))
+            if (!item.id.equal(_selectedTabId)) // skip all except selected
                 continue;
             item.onDraw(buf);
         }
