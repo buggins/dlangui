@@ -1119,14 +1119,14 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
                     bool isHeader = x < _headerCols || y < _headerRows;
                     if (phase == 0) {
                         if (isHeader)
-                            drawHeaderCellBackground(buf, buf.clipRect, x - _headerCols, y - _headerRows);
+                            drawHeaderCellBackground(buf, cellRect, x - _headerCols, y - _headerRows);
                         else
-                            drawCellBackground(buf, buf.clipRect, x - _headerCols, y - _headerRows);
+                            drawCellBackground(buf, cellRect, x - _headerCols, y - _headerRows);
                     } else {
                         if (isHeader)
-                            drawHeaderCell(buf, buf.clipRect, x - _headerCols, y - _headerRows);
+                            drawHeaderCell(buf, cellRect, x - _headerCols, y - _headerRows);
                         else
-                            drawCell(buf, buf.clipRect, x - _headerCols, y - _headerRows);
+                            drawCell(buf, cellRect, x - _headerCols, y - _headerRows);
                     }
                 }
             }
