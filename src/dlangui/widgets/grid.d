@@ -1450,6 +1450,7 @@ class StringGridWidget : StringGridWidgetBase {
 
     /// handle theme change: e.g. reload some themed resources
     override void onThemeChanged() {
+        super.onThemeChanged();
         _selectionColor = style.customColor("grid_selection_color", 0x804040FF);
         _selectionColorRowSelect = style.customColor("grid_selection_color_row", 0xC0A0B0FF);
         _fixedCellBackgroundColor = style.customColor("grid_cell_background_fixed", 0xC0E0E0E0);
@@ -1457,7 +1458,6 @@ class StringGridWidget : StringGridWidgetBase {
         _cellHeaderBorderColor = style.customColor("grid_cell_border_color_header", 0xC0202020);
         _cellHeaderBackgroundColor = style.customColor("grid_cell_background_header", 0xC0909090);
         _cellHeaderSelectedBackgroundColor = style.customColor("grid_cell_background_header_selected", 0x80FFC040);
-        super.onThemeChanged();
     }
 }
 

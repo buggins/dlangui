@@ -960,6 +960,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     /// handle theme change: e.g. reload some themed resources
     override void onThemeChanged() {
+        super.onThemeChanged();
         _caretColor = style.customColor("edit_caret");
         _caretColorReplace = style.customColor("edit_caret_replace");
         _selectionColorFocused = style.customColor("editor_selection_focused");
@@ -973,7 +974,6 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         _colorIconBookmark = style.customColor("editor_left_pane_line_icon_color_bookmark", 0x0000FF);
         _colorIconError = style.customColor("editor_left_pane_line_icon_color_error", 0x80FF0000);
         _matchingBracketHightlightColor = style.customColor("editor_matching_bracket_highlight");
-        super.onThemeChanged();
     }
 
     /// draws caret

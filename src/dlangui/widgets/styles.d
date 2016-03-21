@@ -365,14 +365,14 @@ public:
     ref DrawableRef customDrawable(string id) {
         if (id in _customDrawables)
             return _customDrawables[id].drawable;
-        return parentStyle.customDrawable(id);
+        return parentStyle ? parentStyle.customDrawable(id) : currentTheme.customDrawable(id);
     }
 
     /// get custom drawable attribute
     string customDrawableId(string id) const {
         if (id in _customDrawables)
             return _customDrawables[id].drawableId;
-        return parentStyle.customDrawableId(id);
+        return parentStyle ? parentStyle.customDrawableId(id) : currentTheme.customDrawableId(id);
     }
 
     /// sets custom drawable attribute for style
@@ -388,7 +388,7 @@ public:
     uint customColor(string id, uint defColor = COLOR_TRANSPARENT) const {
         if (id in _customColors)
             return _customColors[id];
-        return parentStyle.customColor(id, defColor);
+        return parentStyle ? parentStyle.customColor(id, defColor) : currentTheme.customColor(id, defColor);
     }
 
     /// sets custom color attribute for style
@@ -401,7 +401,7 @@ public:
     uint customLength(string id, uint defLength = 0) const {
         if (id in _customLength)
             return _customLength[id];
-        return parentStyle.customLength(id, defLength);
+        return parentStyle ? parentStyle.customLength(id, defLength) : currentTheme.customLength(id, defLength);
     }
 
     /// sets custom length attribute for style
