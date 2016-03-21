@@ -441,6 +441,13 @@ alias TokenProp = ubyte;
 /// TokenCategory string
 alias TokenPropString = TokenProp[];
 
+struct LineSpan {
+    /// start index of line
+    int start;
+    /// number of lines it spans
+    int len;
+}
+
 /// interface for custom syntax highlight, comments toggling, smart indents, and other language dependent features for source code editors
 interface SyntaxSupport {
 

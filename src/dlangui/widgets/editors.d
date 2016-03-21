@@ -285,6 +285,25 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return 1;
     }
 
+    protected bool _wordWrap;
+    /// true if word wrap mode is set
+    @property bool wordWrap() {
+        return _wordWrap;
+    }
+    /// true if word wrap mode is set
+    @property EditWidgetBase wordWrap(bool v) {
+        _wordWrap = v;
+        invalidate();
+        return this;
+    }
+
+    void wrapLine(dstring line, int maxWidth) {
+        
+    }
+
+    /// information about line span into several lines - in word wrap mode
+    protected LineSpan[] _span;
+
     /// override to add custom items on left panel
     protected void updateLeftPaneWidth() {
         _iconsWidth = _showIcons ? _iconsPaneWidth : 0;
