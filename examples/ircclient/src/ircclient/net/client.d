@@ -162,11 +162,11 @@ class IRCUser {
 
 class UserList {
     Collection!IRCUser _users;
-    @property int length() { return _users.length; }
-    @property IRCUser opIndex(int index) { return _users[index]; }
+    @property size_t length() { return _users.length; }
+    @property IRCUser opIndex(size_t index) { return _users[index]; }
     void fromList(string userList) {
         _users.clear();
-        for(;;) {
+        while(true) {
             string s = parseDelimitedParameter(userList);
             if (s.empty)
                 break;
@@ -174,20 +174,22 @@ class UserList {
             _users.add(u);
         }
     }
-    int findUser(string name) {
-        for(int i = 0; i < _users.length; i++) {
+    import std.typecons : Tuple;
+    Tuple!(bool, "found", size_t, "index") findUser(string name) {
+        foreach(i; 0.._users.length) {
             if (_users[i].nick == name)
-                return i;
+                return typeof(return)(true, i);
         }
-        return -1;
+        return typeof(return)(false, 0);
     }
     void addUser(string name) {
-        if (findUser(name) < 0)
+        if (findUser(name).found == false)
             _users.add(new IRCUser(name));
     }
     void removeUser(string name) {
-        if (int index = findUser(name)) {
-            _users.remove(index);
+        auto user = findUser(name);
+        if (user.found) {
+            _users.remove(user.index);
         }
     }
 }
@@ -377,7 +379,7 @@ public:
     void disconnect() {
         _socket.disconnect();
     }
-    @property string nick() { 
+    @property string nick() {
         return _nick;
     }
     @property void nick(string nickName) {
