@@ -1115,7 +1115,7 @@ class GLVertexBuffer : VertexBuffer {
                 checkgl!glVertexAttribPointer(loc, _format[i].size, GL_FLOAT, GL_FALSE, _format.vertexSize, cast(char*)(offset));
                 checkgl!glEnableVertexAttribArray(loc);
             } else {
-                Log.d("Attribute location not found for ", _format[i].type);
+                //Log.d("Attribute location not found for ", _format[i].type);
             }
             offset += _format[i].byteSize;
         }
@@ -1208,7 +1208,7 @@ class DummyVertexBuffer : VertexBuffer {
                 checkgl!glVertexAttribPointer(loc, _format[i].size, GL_FLOAT, GL_FALSE, _format.vertexSize, cast(char*)(offset));
                 checkgl!glEnableVertexAttribArray(loc);
             } else {
-                Log.d("Attribute location not found for ", _format[i].type);
+                //Log.d("Attribute location not found for ", _format[i].type);
             }
             offset += _format[i].byteSize;
         }
