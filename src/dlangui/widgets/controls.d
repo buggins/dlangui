@@ -621,8 +621,17 @@ class AbstractSlider : WidgetGroup {
     }
 
     /// set int property value, for ML loaders
-    mixin(generatePropertySettersMethodOverride("setIntProperty", "int",
-          "minValue", "maxValue", "pageSize", "position"));
+    //mixin(generatePropertySettersMethodOverride("setIntProperty", "int",
+    //      "minValue", "maxValue", "pageSize", "position"));
+    /// set int property value, for ML loaders
+    override bool setIntProperty(string name, int value) {
+        if (name.equal("orientation")) { // use same value for all sides
+            orientation = cast(Orientation)value;
+            return true;
+        }
+        mixin(generatePropertySetters("minValue", "maxValue", "pageSize", "position"));
+        return super.setIntProperty(name, value);
+    }
 
     /// set new range (min and max values for slider)
     AbstractSlider setRange(int min, int max) {

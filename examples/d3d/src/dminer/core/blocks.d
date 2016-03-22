@@ -162,10 +162,10 @@ static void fillFaceMesh(float * data, const float * src, float x0, float y0, fl
                 case 2: // z
                     v += z0;
                     break;
-                case 9: // tx.u
+                case 10: // tx.u
                     v = ((tileX + v * BLOCK_SPRITE_SIZE)) / cast(float)BLOCK_TEXTURE_DX;
                     break;
-                case 10: // tx.v
+                case 11: // tx.v
                     v = (BLOCK_TEXTURE_DY - (tileY + v * BLOCK_SPRITE_SIZE)) / cast(float)BLOCK_TEXTURE_DY;
                     break;
             }

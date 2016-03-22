@@ -1,6 +1,7 @@
 module dlangui.core.math3d;
 
 import std.math;
+import std.string : format;
 
 /// 2 dimensional vector
 struct vec2 {
@@ -530,6 +531,9 @@ struct vec3 {
             return vec3(xx / ww, yy / ww, zz / ww);
     }
 
+    @property string toString() {
+        return "(%f,%f,%f)".format(x, y, z);
+    }
 }
 
 /// 4 component vector
@@ -859,6 +863,9 @@ struct vec4 {
         return vec4(xx, yy, zz, ww);
     }
 
+    @property string toString() {
+        return "(%f,%f,%f,%f)".format(x, y, z, w);
+    }
 }
 
 bool fuzzyNull(float v) {
@@ -937,14 +944,17 @@ struct mat4 {
         m[1*4 + 0] = 0.0f;
         m[2*4 + 0] = 0.0f;
         m[3*4 + 0] = 0.0f;
+
         m[0*4 + 1] = 0.0f;
         m[1*4 + 1] = f;
         m[2*4 + 1] = 0.0f;
         m[3*4 + 1] = 0.0f;
+
         m[0*4 + 2] = 0.0f;
         m[1*4 + 2] = 0.0f;
         m[2*4 + 2] = (nearPlane + farPlane) * d;
         m[3*4 + 2] = 2.0f * nearPlane * farPlane * d;
+
         m[0*4 + 3] = 0.0f;
         m[1*4 + 3] = 0.0f;
         m[2*4 + 3] = -1.0f;

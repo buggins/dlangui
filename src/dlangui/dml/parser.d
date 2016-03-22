@@ -691,6 +691,10 @@ class MLParser {
             setIntProperty(propName, Align.Center);
         else if (value.equal("topleft") || value.equal("TopLeft"))
             setIntProperty(propName, Align.TopLeft);
+        else if (propName.equal("orientation") && (value.equal("vertical") || value.equal("Vertical")))
+            setIntProperty(propName, Orientation.Vertical);
+        else if (propName.equal("orientation") && (value.equal("horizontal") || value.equal("Horizontal")))
+            setIntProperty(propName, Orientation.Horizontal);
         else if (!_currentWidget.setStringProperty(propName, value))
             error("unknown ident property " ~ propName);
     }

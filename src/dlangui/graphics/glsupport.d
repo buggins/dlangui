@@ -930,6 +930,7 @@ final class GLSupport {
 
     void clearDepthBuffer() {
         glClear(GL_DEPTH_BUFFER_BIT);
+        //glClear(GL_DEPTH_BUFFER_BIT | GL_COLOR_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
     }
 
     /// projection matrix

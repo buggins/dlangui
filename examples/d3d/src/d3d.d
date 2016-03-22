@@ -70,23 +70,14 @@ class UiWidget : VerticalLayout, CellVisitor {
                 // arrange controls as form - table with two columns
                 TableLayout {
                     colCount: 2
+                    TextWidget { text: "Translation X" }
+                    ScrollBar { id: sbTranslationX; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 300 }
+                    TextWidget { text: "Translation Y" }
+                    ScrollBar { id: sbTranslationY; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 300 }
+                    TextWidget { text: "Translation Z" }
+                    ScrollBar { id: sbTranslationZ; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 300 }
                     TextWidget { text: "param 1" }
                     EditLine { id: edit1; text: "some text" }
-                    TextWidget { text: "param 2" }
-                    EditLine { id: edit2; text: "some text for param2" }
-                    TextWidget { text: "some radio buttons" }
-                    // arrange some radio buttons vertically
-                    VerticalLayout {
-                        RadioButton { id: rb1; text: "Item 1" }
-                        RadioButton { id: rb2; text: "Item 2" }
-                        RadioButton { id: rb3; text: "Item 3" }
-                    }
-                    TextWidget { text: "and checkboxes" }
-                    // arrange some checkboxes horizontally
-                    HorizontalLayout {
-                        CheckBox { id: cb1; text: "checkbox 1" }
-                        CheckBox { id: cb2; text: "checkbox 2" }
-                    }
                 }
                 VSpacer { layoutWeight: 30 }
                 HorizontalLayout {
@@ -101,6 +92,15 @@ class UiWidget : VerticalLayout, CellVisitor {
         childById("glView").backgroundDrawable = DrawableRef(new OpenGLDrawable(&doDraw));
 
 
+        mat4 m;
+        m.translate(1, 2, -1);
+        Log.d("M*v=", m * vec3(0, 0, 0));
+        Log.d("M*v=", m * vec3(10, 10, 10));
+        m.translate(0, 0, -2);
+        Log.d("M*v=", m * vec3(0, 0, 0));
+        Log.d("M*v=", m * vec3(10, 10, 10));
+
+
         _scene = new Scene3d();
 
         _cam = new Camera();
@@ -109,8 +109,8 @@ class UiWidget : VerticalLayout, CellVisitor {
         _scene.activeCamera = _cam;
 
         int x0 = 0;
-        int y0 = 11;
-        int z0 = 0;
+        int y0 = 0;
+        int z0 = 2;
 
         _mesh = Mesh.createCubeMesh(vec3(x0+ 0, y0 + 0, z0 + 0), 0.3f);
         for (int i = 0; i < 10; i++) {
@@ -127,12 +127,17 @@ class UiWidget : VerticalLayout, CellVisitor {
 
         _minerMesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, VertexElementType.COLOR, VertexElementType.TEXCOORD0));
         _world = new World();
-        for (int x = -1000; x < 1000; x++)
-            for (int z = -1000; z < 1000; z++)
-                _world.setCell(x, 10, z, 1);
+        for (int x = -100; x < 100; x++)
+            for (int z = -100; z < 100; z++)
+                _world.setCell(x, 0, z, 1);
         _world.setCell(0, 11, 10, 2);
         _world.setCell(5, 11, 15, 2);
-        _world.camPosition = Position(Vector3d(0, 13, 0), Vector3d(0, 0, 1));
+        Random rnd;
+        rnd.setSeed(12345);
+        for(int i = 0; i < 1000; i++)
+            _world.setCell(rnd.next(6)-32, rnd.next(4), rnd.next(6)-32, 3);
+
+        _world.camPosition = Position(Vector3d(0, 3, 0), Vector3d(0, 0, 1));
         updateMinerMesh();
         //CellVisitor visitor = new TestVisitor();
         //Log.d("Testing cell visitor");
@@ -196,19 +201,20 @@ class UiWidget : VerticalLayout, CellVisitor {
         }
         _cam.setPerspective(rc.width, rc.height, 45.0f, 0.1f, 100.0f);
         _cam.setIdentity();
-        //_cam.translate(vec3(0, 14, -1.1)); // - angle/1000
-        _cam.translate(vec3(0, 14,  - angle/1000)); //
-        _cam.rotateZ(30.0f + angle * 0.3456778);
+        _cam.translate(vec3(-1, -1.5, -1)); // - angle/1000
+        //_cam.translate(vec3(0, 0, -1.1)); // - angle/1000
+        //_cam.translate(vec3(0, 3,  - angle/1000)); //
+        //_cam.rotateZ(30.0f + angle * 0.3456778);
         mat4 projectionViewMatrix = _cam.projectionViewMatrix;
 
         // ======== Model Matrix ==================
         mat4 modelMatrix;
         //modelMatrix.scale(0.1f);
-        modelMatrix.rotatez(30.0f + angle * 0.3456778);
+        //modelMatrix.rotatez(30.0f + angle * 0.3456778);
         //modelMatrix.rotatey(25);
         //modelMatrix.rotatex(15);
         modelMatrix.rotatey(angle);
-        modelMatrix.rotatex(angle * 1.98765f);
+        //modelMatrix.rotatex(angle * 1.98765f);
 
         mat4 projectionViewModelMatrix = projectionViewMatrix * modelMatrix;
 
