@@ -1,6 +1,8 @@
 module dminer.core.blocks;
 
 import dminer.core.minetypes;
+import dminer.core.world;
+import dlangui.graphics.scene.mesh;
 
 immutable string BLOCK_TEXTURE_FILENAME = "blocks";
 immutable int BLOCK_TEXTURE_DX = 1024;
@@ -9,6 +11,7 @@ immutable int BLOCK_SPRITE_SIZE = 16;
 immutable int BLOCK_SPRITE_STEP = 20;
 immutable int BLOCK_SPRITE_OFFSET = 21;
 immutable int BLOCK_TEXTURE_SPRITES_PER_LINE = 50;
+immutable int VERTEX_COMPONENTS = 12;
 
 enum BlockVisibility {
     INVISIBLE,
@@ -57,12 +60,148 @@ public:
     }
 
     /// create cube face
-    //void createFace(World * world, Position & camPosition, Vector3d pos, Dir face, FloatArray & vertices, IntArray & indexes) {
-    //}
+    void createFace(World world, ref Position camPosition, Vector3d pos, Dir face, Mesh mesh) {
+        // default implementation
+        ushort startVertexIndex = cast(ushort)mesh.vertexCount;
+        float[VERTEX_COMPONENTS * 4] vptr;
+        ushort[6] iptr;
+        createFaceMesh(vptr.ptr, face, pos.x + 0.5f, pos.y + 0.5f, pos.z + 0.5f, txIndex);
+        for (int i = 0; i < 6; i++)
+            iptr[i] = cast(ushort)(startVertexIndex + face_indexes[i]);
+        //if (HIGHLIGHT_GRID && ((pos.x & 7) == 0 || (pos.z & 7) == 0)) {
+        //    for (int i = 0; i < 4; i++) {
+        //        vptr[11 * i + 6 + 0] = 1.4f;
+        //        vptr[11 * i + 6 + 1] = 1.4f;
+        //        vptr[11 * i + 6 + 2] = 1.4f;
+        //    }
+        //}
+        mesh.addVertexes(vptr);
+        mesh.addPart(PrimitiveType.triangles, iptr);
+    }
     /// create faces
-    //void createFaces(World * world, Position & camPosition, Vector3d pos, int visibleFaces, FloatArray & vertices, IntArray & indexes) {
-    //}
+    void createFaces(World world, ref Position camPosition, Vector3d pos, int visibleFaces, Mesh mesh) {
+        for (int i = 0; i < 6; i++)
+            if (visibleFaces & (1 << i))
+                createFace(world, camPosition, pos, cast(Dir)i, mesh);
+    }
 }
+
+// pos, normal, color, tx
+static const float[VERTEX_COMPONENTS * 4] face_vertices_north =
+[
+	-0.5, 0.5, -0.5,	0.0, 0.0, -1.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
+	0.5, 0.5, -0.5,		0.0, 0.0, -1.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
+	-0.5, -0.5, -0.5,	0.0, 0.0, -1.0,		1.0, 1.0, 1.0, 1.0,		0.0, 1.0,
+	0.5, -0.5, -0.5,	0.0, 0.0, -1.0,		1.0, 1.0, 1.0, 1.0,		1.0, 1.0,
+];
+
+static const float[VERTEX_COMPONENTS * 4] face_vertices_south =
+[
+	-0.5, -0.5, 0.5,	0.0, 0.0, 1.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
+	0.5, -0.5, 0.5,		0.0, 0.0, 1.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
+	-0.5, 0.5, 0.5,		0.0, 0.0, 1.0,		1.0, 1.0, 1.0, 1.0,		0.0, 1.0,
+	0.5, 0.5, 0.5,		0.0, 0.0, 1.0,		1.0, 1.0, 1.0, 1.0,		1.0, 1.0,
+];
+
+static const float[VERTEX_COMPONENTS * 4] face_vertices_west =
+[
+	-0.5, -0.5, -0.5,	-1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
+	-0.5, -0.5, 0.5,	-1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
+	-0.5, 0.5, -0.5,	-1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 1.0,
+	-0.5, 0.5, 0.5,		-1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 1.0
+];
+
+static const float[VERTEX_COMPONENTS * 4] face_vertices_east =
+[
+	0.5, -0.5, 0.5,		1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
+	0.5, -0.5, -0.5,	1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
+	0.5, 0.5, 0.5,		1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 1.0,
+	0.5, 0.5, -0.5,		1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 1.0,
+];
+
+static const float[VERTEX_COMPONENTS * 4] face_vertices_up =
+[
+	-0.5, 0.5, 0.5,		0.0, 1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
+	0.5, 0.5, 0.5,		0.0, 1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
+	-0.5, 0.5, -0.5,	0.0, 1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 1.0,
+	0.5, 0.5, -0.5,		0.0, 1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 1.0,
+];
+
+static const float[VERTEX_COMPONENTS * 4] face_vertices_down =
+[
+	-0.5, -0.5, -0.5,	0.0, -1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
+	0.5, -0.5, -0.5,	0.0, -1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
+	-0.5, -0.5, 0.5,	0.0, -1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 1.0,
+	0.5, -0.5, 0.5,		0.0, -1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 1.0,
+];
+
+static const ushort[6] face_indexes =
+[
+    0, 1, 2, 2, 1, 3
+];
+
+static const ushort[6] face_indexes_back =
+[
+    0, 2, 1, 2, 3, 1
+];
+
+static void fillFaceMesh(float * data, const float * src, float x0, float y0, float z0, int tileX, int tileY) {
+	for (int i = 0; i < 4; i++) {
+		const float * srcvertex = src + i * VERTEX_COMPONENTS;
+		float * dstvertex = data + i * VERTEX_COMPONENTS;
+		for (int j = 0; j < 11; j++) {
+			float v = srcvertex[j];
+			switch (j) {
+                default:
+                case 0: // x
+                    v += x0;
+                    break;
+                case 1: // y
+                    v += y0;
+                    break;
+                case 2: // z
+                    v += z0;
+                    break;
+                case 9: // tx.u
+                    v = ((tileX + v * BLOCK_SPRITE_SIZE)) / cast(float)BLOCK_TEXTURE_DX;
+                    break;
+                case 10: // tx.v
+                    v = (BLOCK_TEXTURE_DY - (tileY + v * BLOCK_SPRITE_SIZE)) / cast(float)BLOCK_TEXTURE_DY;
+                    break;
+			}
+			dstvertex[j] = v;
+		}
+	}
+}
+
+static void createFaceMesh(float * data, Dir face, float x0, float y0, float z0, int tileIndex) {
+
+	int tileX = (tileIndex % BLOCK_TEXTURE_SPRITES_PER_LINE) * BLOCK_SPRITE_STEP + BLOCK_SPRITE_OFFSET;
+	int tileY = (tileIndex / BLOCK_TEXTURE_SPRITES_PER_LINE) * BLOCK_SPRITE_STEP + BLOCK_SPRITE_OFFSET;
+	// data is 11 comp * 4 vert floats
+	switch (face) {
+        default:
+        case NORTH:
+            fillFaceMesh(data, face_vertices_north.ptr, x0, y0, z0, tileX, tileY);
+            break;
+        case SOUTH:
+            fillFaceMesh(data, face_vertices_south.ptr, x0, y0, z0, tileX, tileY);
+            break;
+        case WEST:
+            fillFaceMesh(data, face_vertices_west.ptr, x0, y0, z0, tileX, tileY);
+            break;
+        case EAST:
+            fillFaceMesh(data, face_vertices_east.ptr, x0, y0, z0, tileX, tileY);
+            break;
+        case UP:
+            fillFaceMesh(data, face_vertices_up.ptr, x0, y0, z0, tileX, tileY);
+            break;
+        case DOWN:
+            fillFaceMesh(data, face_vertices_down.ptr, x0, y0, z0, tileX, tileY);
+            break;
+	}
+}
+
 
 
 // block type definitions

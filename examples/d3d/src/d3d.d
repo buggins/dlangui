@@ -34,7 +34,7 @@ extern (C) int UIAppMain(string[] args) {
     return Platform.instance.enterMessageLoop();
 }
 
-class UiWidget : VerticalLayout {
+class UiWidget : VerticalLayout, CellVisitor {
     this() {
         super("OpenGLView");
         layoutWidth = FILL_PARENT;
@@ -121,21 +121,37 @@ class UiWidget : VerticalLayout {
             _mesh.addCubeMesh(vec3(-i * 2 - 1.0f, -i * 2 - 1.0f, -i * 2 - 1.0f), 0.2f, vec4(1 - i / 12, i / 12, i / 12, 1));
         }
 
-        World w = new World();
+        _minerMesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, VertexElementType.COLOR, VertexElementType.TEXCOORD0));
+        World _world = new World();
         for (int x = -1000; x < 1000; x++)
             for (int z = -1000; z < 1000; z++)
-                w.setCell(x, 10, z, 1);
-        w.setCell(0, 11, 10, 2);
-        w.setCell(5, 11, 15, 2);
-        Position position = Position(Vector3d(0, 13, 0), Vector3d(0, 0, 1));
+                _world.setCell(x, 10, z, 1);
+        _world.setCell(0, 11, 10, 2);
+        _world.setCell(5, 11, 15, 2);
+        _world.camPosition = Position(Vector3d(0, 13, 0), Vector3d(0, 0, 1));
         CellVisitor visitor = new TestVisitor();
         Log.d("Testing cell visitor");
         long ts = currentTimeMillis;
-        w.visitVisibleCells(position, visitor);
+        _world.visitVisibleCells(_world.camPosition, visitor);
         long duration = currentTimeMillis - ts;
         Log.d("DiamondVisitor finished in ", duration, " ms");
-        destroy(w);
+        //destroy(w);
     }
+
+    void visit(World world, ref Position camPosition, Vector3d pos, cell_t cell, int visibleFaces) {
+        BlockDef def = BLOCK_DEFS[cell];
+        def.createFaces(world, world.camPosition, pos, visibleFaces, _minerMesh);
+    }
+    
+    void updateMinerMesh() {
+        _minerMesh.reset();
+        long ts = currentTimeMillis;
+        _world.visitVisibleCells(_world.camPosition, this);
+        long duration = currentTimeMillis - ts;
+        Log.d("DiamondVisitor finished in ", duration, " ms");
+    }
+
+    World _world;
 
     /// returns true is widget is being animated - need to call animate() and redraw
     @property override bool animating() { return true; }
@@ -153,6 +169,7 @@ class UiWidget : VerticalLayout {
     Scene3d _scene;
     Camera _cam;
     Mesh _mesh;
+    Mesh _minerMesh;
     GLTexture _tx;
 
 
@@ -212,6 +229,7 @@ class UiWidget : VerticalLayout {
             destroy(_program);
         if (_tx)
             destroy(_tx);
+        destroy(_world);
     }
 }
 

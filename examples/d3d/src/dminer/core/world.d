@@ -11,7 +11,8 @@ immutable int CHUNK_DX_SHIFT = 4;
 immutable int CHUNK_DX = (1<<CHUNK_DX_SHIFT);
 immutable int CHUNK_DX_MASK = (CHUNK_DX - 1);
 
-immutable int CHUNK_DY_SHIFT = 7;
+// Y range: 0..CHUNK_DY-1
+immutable int CHUNK_DY_SHIFT = 6;
 immutable int CHUNK_DY = (1<<CHUNK_DY_SHIFT);
 immutable int CHUNK_DY_MASK = (CHUNK_DY - 1);
 
@@ -109,7 +110,7 @@ public:
 /// Voxel World
 class World {
 private:
-    Position camPosition;
+    Position _camPosition;
     int maxVisibleRange = MAX_VIEW_DISTANCE;
     int lastChunkX = 1000000;
     int lastChunkZ = 1000000;
@@ -117,19 +118,21 @@ private:
     ChunkMatrix chunks;
     DiamondVisitor visitorHelper;
 public:
-    this()
-    {
+    this() {
+        _camPosition = Position(Vector3d(0, 13, 0), Vector3d(0, 0, 1));
     }
     ~this() {
 
     }
-    ref Position getCamPosition() { return camPosition; }
-    cell_t getCell(Vector3d v) {
+    @property final ref Position camPosition() { return _camPosition; }
+    final cell_t getCell(Vector3d v) {
         return getCell(v.x, v.y, v.z);
     }
-    cell_t getCell(int x, int y, int z) {
+    final cell_t getCell(int x, int y, int z) {
         if (y < 0)
-            return 3;
+            return BOUND_BOTTOM;
+        if (y >= CHUNK_DY)
+            return BOUND_SKY;
         int chunkx = x >> CHUNK_DX_SHIFT;
         int chunkz = z >> CHUNK_DX_SHIFT;
         Chunk * p;
@@ -145,11 +148,11 @@ public:
             return NO_CELL;
         return p.get(x & CHUNK_DX_MASK, y, z & CHUNK_DX_MASK);
     }
-    bool isOpaque(Vector3d v) {
+    final bool isOpaque(Vector3d v) {
         cell_t cell = getCell(v);
-        return BLOCK_TYPE_OPAQUE[cell] && cell != BOUND_SKY;
+        return BLOCK_TYPE_OPAQUE.ptr[cell] && cell != BOUND_SKY;
     }
-    void setCell(int x, int y, int z, cell_t value) {
+    final void setCell(int x, int y, int z, cell_t value) {
         int chunkx = x >> CHUNK_DX_SHIFT;
         int chunkz = z >> CHUNK_DX_SHIFT;
         Chunk * p;
@@ -172,7 +175,7 @@ public:
     }
     //bool canPass(Vector3d pos, Vector3d size) {
     //}
-    void visitVisibleCells(ref Position position, CellVisitor visitor) {
+    final void visitVisibleCells(ref Position position, CellVisitor visitor) {
         visitorHelper.init(this, &position,
                            visitor);
         visitorHelper.visitAll(MAX_VIEW_DISTANCE);
@@ -228,24 +231,24 @@ struct DiamondVisitor {
         cell_t cell = world.getCell(pos);
 
         // read cell from world
-        if (BLOCK_TYPE_VISIBLE[cell]) {
+        if (BLOCK_TYPE_VISIBLE.ptr[cell]) {
             int visibleFaces = 0;
-            if (v.y <= 0 && v * DIRECTION_VECTORS[DIR_UP] <= 0 &&
+            if (v.y <= 0 && v * DIRECTION_VECTORS.ptr[DIR_UP] <= 0 &&
                 !world.isOpaque(pos.move(DIR_UP)))
                 visibleFaces |= MASK_UP;
-            if (v.y >= 0 && v * DIRECTION_VECTORS[DIR_DOWN] <= 0 &&
+            if (v.y >= 0 && v * DIRECTION_VECTORS.ptr[DIR_DOWN] <= 0 &&
                 !world.isOpaque(pos.move(DIR_DOWN)))
                 visibleFaces |= MASK_DOWN;
-            if (v.x <= 0 && v * DIRECTION_VECTORS[DIR_EAST] <= 0 &&
+            if (v.x <= 0 && v * DIRECTION_VECTORS.ptr[DIR_EAST] <= 0 &&
                 !world.isOpaque(pos.move(DIR_EAST)))
                 visibleFaces |= MASK_EAST;
-            if (v.x >= 0 && v * DIRECTION_VECTORS[DIR_WEST] <= 0 &&
+            if (v.x >= 0 && v * DIRECTION_VECTORS.ptr[DIR_WEST] <= 0 &&
                 !world.isOpaque(pos.move(DIR_WEST)))
                 visibleFaces |= MASK_WEST;
-            if (v.z <= 0 && v * DIRECTION_VECTORS[DIR_SOUTH] <= 0 &&
+            if (v.z <= 0 && v * DIRECTION_VECTORS.ptr[DIR_SOUTH] <= 0 &&
                 !world.isOpaque(pos.move(DIR_SOUTH)))
                 visibleFaces |= MASK_SOUTH;
-            if (v.z >= 0 && v * DIRECTION_VECTORS[DIR_NORTH] <= 0 &&
+            if (v.z >= 0 && v * DIRECTION_VECTORS.ptr[DIR_NORTH] <= 0 &&
                 !world.isOpaque(pos.move(DIR_NORTH)))
                 visibleFaces |= MASK_NORTH;
             visitor.visit(world, *position, pos, cell, visibleFaces);

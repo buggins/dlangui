@@ -174,6 +174,17 @@ class Mesh {
         _dirtyVertexBuffer = true;
     }
 
+    void reset() {
+        _vertexCount = 0;
+        _vertexData.length = 0;
+        _dirtyVertexBuffer = true;
+        if (_parts.length) {
+            foreach(p; _parts)
+                destroy(p);
+            _parts.length = 0;
+        }
+    }
+
     /// returns vertex count
     @property int vertexCount() const { return _vertexCount; }
 
