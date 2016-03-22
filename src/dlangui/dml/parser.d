@@ -316,14 +316,14 @@ class Tokenizer {
         _token.type = TokenType.floating;
         dchar ch = peekChar();
         // floating point
-        int div = 0;
+        int div = 1;
         int n2 = 0;
         for (;;) {
             ch = skipChar();
             if (!isNum(ch))
                 break;
             n2 = n2 * 10 + (ch - '0');
-            div++;
+            div *= 10;
         }
         _token.floatvalue = cast(double)n + (div > 0 ? cast(double)n2 / div : 0.0);
         string suffix;

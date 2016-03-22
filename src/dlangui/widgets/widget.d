@@ -1580,7 +1580,7 @@ public:
     bool setDoubleProperty(string name, double value) {
         if (name.equal("alpha")) {
             int n = cast(int)(value * 255);
-            setIntProperty(name, n);
+            return setIntProperty(name, n);
         }
         return false;
     }

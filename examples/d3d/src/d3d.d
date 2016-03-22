@@ -40,54 +40,51 @@ class UiWidget : VerticalLayout, CellVisitor {
         layoutWidth = FILL_PARENT;
         layoutHeight = FILL_PARENT;
         alignment = Align.Center;
-        parseML(q{
-            {
-              margins: 10
-              padding: 10
-              backgroundImageId: "tx_fabric.tiled"
-              layoutWidth: fill
-              layoutHeight: fill
+        try {
+            parseML(q{
+                {
+                  margins: 10
+                  padding: 10
+                  backgroundImageId: "tx_fabric.tiled"
+                  layoutWidth: fill
+                  layoutHeight: fill
 
-              VerticalLayout {
-                id: glView
-                margins: 10
-                padding: 10
-                layoutWidth: fill
-                layoutHeight: fill
-                TextWidget { text: "There should be OpenGL animation on background"; textColor: "red"; fontSize: 150%; fontWeight: 800; fontFace: "Arial" }
-                TextWidget { text: "Do you see it? If no, there is some bug in Mesh rendering code..."; fontSize: 120% }
-                HorizontalLayout {
+                  VerticalLayout {
+                    id: glView
+                    margins: 10
+                    padding: 10
                     layoutWidth: fill
-                    TextWidget { text: "Text 20%"; backgroundColor:"#80FF0000"; layoutWidth: 20% }
-                    VerticalLayout {
-                        layoutWidth: 30%
-                        TextWidget { text: "Text 30%"; backgroundColor:"#80FF00FF" }
-                        TextWidget { text: "Text 30%"; backgroundColor:"#8000FFFF" }
-                        TextWidget { text: "Text 30%"; backgroundColor:"#8000FFFF" }
+                    layoutHeight: fill
+                    TextWidget { text: "There should be OpenGL animation on background"; textColor: "red"; fontSize: 150%; fontWeight: 800; fontFace: "Arial" }
+                    TextWidget { text: "Do you see it? If no, there is some bug in Mesh rendering code..."; fontSize: 120% }
+                    // arrange controls as form - table with two columns
+                    TableLayout {
+                        colCount: 4
+                        TextWidget { text: "Translation X" }
+                        ScrollBar { id: sbTranslationX; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 200; alpha: 0.6 }
+                        TextWidget { text: "Rotation X" }
+                        ScrollBar { id: sbRotationX; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 200; alpha: 0.6 }
+                        TextWidget { text: "Translation Y" }
+                        ScrollBar { id: sbTranslationY; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 200; alpha: 0.6 }
+                        TextWidget { text: "Rotation Y" }
+                        ScrollBar { id: sbRotationY; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 150; alpha: 0.6 }
+                        TextWidget { text: "Translation Z" }
+                        ScrollBar { id: sbTranslationZ; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 150; alpha: 0.6 }
+                        TextWidget { text: "Rotation Z" }
+                        ScrollBar { id: sbRotationZ; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 150; alpha: 0.6 }
                     }
-                    TextWidget { text: "Text 50%"; backgroundColor:"#80FFFF00"; layoutWidth: 50% }
+                    VSpacer { layoutWeight: 30 }
+                    HorizontalLayout {
+                        TextWidget { text: "Some buttons:" }
+                        Button { id: btnOk; text: "Ok"; fontSize: 27px }
+                        Button { id: btnCancel; text: "Cancel"; fontSize: 27px }
+                    }
+                  }
                 }
-                // arrange controls as form - table with two columns
-                TableLayout {
-                    colCount: 2
-                    TextWidget { text: "Translation X" }
-                    ScrollBar { id: sbTranslationX; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 300 }
-                    TextWidget { text: "Translation Y" }
-                    ScrollBar { id: sbTranslationY; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 300 }
-                    TextWidget { text: "Translation Z" }
-                    ScrollBar { id: sbTranslationZ; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 300 }
-                    TextWidget { text: "param 1" }
-                    EditLine { id: edit1; text: "some text" }
-                }
-                VSpacer { layoutWeight: 30 }
-                HorizontalLayout {
-                    TextWidget { text: "Some buttons:" }
-                    Button { id: btnOk; text: "Ok"; fontSize: 27px }
-                    Button { id: btnCancel; text: "Cancel"; fontSize: 27px }
-                }
-              }
-            }
-        }, "", this);
+            }, "", this);
+        } catch (Exception e) {
+            Log.e("Failed to parse dml", e);
+        }
         // assign OpenGL drawable to child widget background
         childById("glView").backgroundDrawable = DrawableRef(new OpenGLDrawable(&doDraw));
 
@@ -110,7 +107,7 @@ class UiWidget : VerticalLayout, CellVisitor {
 
         int x0 = 0;
         int y0 = 0;
-        int z0 = 2;
+        int z0 = 0;
 
         _mesh = Mesh.createCubeMesh(vec3(x0+ 0, y0 + 0, z0 + 0), 0.3f);
         for (int i = 0; i < 10; i++) {
@@ -201,11 +198,23 @@ class UiWidget : VerticalLayout, CellVisitor {
         }
         _cam.setPerspective(rc.width, rc.height, 45.0f, 0.1f, 100.0f);
         _cam.setIdentity();
-        _cam.translate(vec3(-1, -1.5, -1)); // - angle/1000
+        //_cam.translate(vec3(
+        //     childById!ScrollBar("sbTranslationX").position / 10.0f,
+        //     childById!ScrollBar("sbTranslationY").position / 10.0f,
+        //     childById!ScrollBar("sbTranslationZ").position / 10.0f));
+        _cam.translateX(childById!ScrollBar("sbTranslationX").position / 10.0f);
+        _cam.translateY(childById!ScrollBar("sbTranslationY").position / 10.0f);
+        _cam.translateZ(childById!ScrollBar("sbTranslationZ").position / 10.0f);
+        _cam.rotateX(childById!ScrollBar("sbRotationX").position * 2.5f);
+        _cam.rotateY(childById!ScrollBar("sbRotationY").position * 2.5f);
+        _cam.rotateZ(childById!ScrollBar("sbRotationZ").position * 2.5f);
+        //_cam.translate(vec3(-1, -1.5, -1)); // - angle/1000
         //_cam.translate(vec3(0, 0, -1.1)); // - angle/1000
         //_cam.translate(vec3(0, 3,  - angle/1000)); //
         //_cam.rotateZ(30.0f + angle * 0.3456778);
         mat4 projectionViewMatrix = _cam.projectionViewMatrix;
+
+        Log.d("projectionViewMatrix: ", projectionViewMatrix);
 
         // ======== Model Matrix ==================
         mat4 modelMatrix;
@@ -213,7 +222,7 @@ class UiWidget : VerticalLayout, CellVisitor {
         //modelMatrix.rotatez(30.0f + angle * 0.3456778);
         //modelMatrix.rotatey(25);
         //modelMatrix.rotatex(15);
-        modelMatrix.rotatey(angle);
+        //modelMatrix.rotatey(angle);
         //modelMatrix.rotatex(angle * 1.98765f);
 
         mat4 projectionViewModelMatrix = projectionViewMatrix * modelMatrix;
