@@ -104,37 +104,42 @@ class UiWidget : VerticalLayout, CellVisitor {
         _scene = new Scene3d();
 
         _cam = new Camera();
-        _cam.translate(vec3(0, 0, -7));
+        _cam.translate(vec3(0, 14, -7));
 
         _scene.activeCamera = _cam;
 
-        _mesh = Mesh.createCubeMesh(vec3(0, 0, 0), 0.3f);
+        int x0 = 0;
+        int y0 = 11;
+        int z0 = 0;
+
+        _mesh = Mesh.createCubeMesh(vec3(x0+ 0, y0 + 0, z0 + 0), 0.3f);
         for (int i = 0; i < 10; i++) {
-            _mesh.addCubeMesh(vec3(0, 0, i * 2 + 1.0f), 0.2f, vec4(i / 12, 1, 1, 1));
-            _mesh.addCubeMesh(vec3(i * 2 + 1.0f, 0, 0), 0.2f, vec4(1, i / 12, 1, 1));
-            _mesh.addCubeMesh(vec3(-i * 2 - 1.0f, 0, 0), 0.2f, vec4(1, i / 12, 1, 1));
-            _mesh.addCubeMesh(vec3(0, i * 2 + 1.0f, 0), 0.2f, vec4(1, 1, i / 12 + 0.1, 1));
-            _mesh.addCubeMesh(vec3(0, -i * 2 - 1.0f, 0), 0.2f, vec4(1, 1, i / 12 + 0.1, 1));
-            _mesh.addCubeMesh(vec3(i * 2 + 1.0f, i * 2 + 1.0f, i * 2 + 1.0f), 0.2f, vec4(i / 12, i / 12, i / 12, 1));
-            _mesh.addCubeMesh(vec3(-i * 2 + 1.0f, i * 2 + 1.0f, i * 2 + 1.0f), 0.2f, vec4(i / 12, i / 12, 1 - i / 12, 1));
-            _mesh.addCubeMesh(vec3( i * 2 + 1.0f, -i * 2 + 1.0f, i * 2 + 1.0f), 0.2f, vec4(i / 12, 1 - i / 12, i / 12, 1));
-            _mesh.addCubeMesh(vec3(-i * 2 - 1.0f, -i * 2 - 1.0f, -i * 2 - 1.0f), 0.2f, vec4(1 - i / 12, i / 12, i / 12, 1));
+            _mesh.addCubeMesh(vec3(x0+ 0, y0+0, z0+ i * 2 + 1.0f), 0.2f, vec4(i / 12, 1, 1, 1));
+            _mesh.addCubeMesh(vec3(x0+ i * 2 + 1.0f, y0+0, z0+ 0), 0.2f, vec4(1, i / 12, 1, 1));
+            _mesh.addCubeMesh(vec3(x0+ -i * 2 - 1.0f, y0+0, z0+ 0), 0.2f, vec4(1, i / 12, 1, 1));
+            _mesh.addCubeMesh(vec3(x0+ 0, y0+i * 2 + 1.0f, z0+ 0), 0.2f, vec4(1, 1, i / 12 + 0.1, 1));
+            _mesh.addCubeMesh(vec3(x0+ 0, y0+-i * 2 - 1.0f, z0+ 0), 0.2f, vec4(1, 1, i / 12 + 0.1, 1));
+            _mesh.addCubeMesh(vec3(x0+ i * 2 + 1.0f, y0+i * 2 + 1.0f, z0+ i * 2 + 1.0f), 0.2f, vec4(i / 12, i / 12, i / 12, 1));
+            _mesh.addCubeMesh(vec3(x0+ -i * 2 + 1.0f, y0+i * 2 + 1.0f, z0+ i * 2 + 1.0f), 0.2f, vec4(i / 12, i / 12, 1 - i / 12, 1));
+            _mesh.addCubeMesh(vec3(x0+  i * 2 + 1.0f, y0+-i * 2 + 1.0f, z0+ i * 2 + 1.0f), 0.2f, vec4(i / 12, 1 - i / 12, i / 12, 1));
+            _mesh.addCubeMesh(vec3(x0+ -i * 2 - 1.0f, y0+-i * 2 - 1.0f, z0+ -i * 2 - 1.0f), 0.2f, vec4(1 - i / 12, i / 12, i / 12, 1));
         }
 
         _minerMesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, VertexElementType.COLOR, VertexElementType.TEXCOORD0));
-        World _world = new World();
+        _world = new World();
         for (int x = -1000; x < 1000; x++)
             for (int z = -1000; z < 1000; z++)
                 _world.setCell(x, 10, z, 1);
         _world.setCell(0, 11, 10, 2);
         _world.setCell(5, 11, 15, 2);
         _world.camPosition = Position(Vector3d(0, 13, 0), Vector3d(0, 0, 1));
-        CellVisitor visitor = new TestVisitor();
-        Log.d("Testing cell visitor");
-        long ts = currentTimeMillis;
-        _world.visitVisibleCells(_world.camPosition, visitor);
-        long duration = currentTimeMillis - ts;
-        Log.d("DiamondVisitor finished in ", duration, " ms");
+        updateMinerMesh();
+        //CellVisitor visitor = new TestVisitor();
+        //Log.d("Testing cell visitor");
+        //long ts = currentTimeMillis;
+        //_world.visitVisibleCells(_world.camPosition, visitor);
+        //long duration = currentTimeMillis - ts;
+        //Log.d("DiamondVisitor finished in ", duration, " ms");
         //destroy(w);
     }
 
@@ -148,7 +153,7 @@ class UiWidget : VerticalLayout, CellVisitor {
         long ts = currentTimeMillis;
         _world.visitVisibleCells(_world.camPosition, this);
         long duration = currentTimeMillis - ts;
-        Log.d("DiamondVisitor finished in ", duration, " ms");
+        Log.d("DiamondVisitor finished in ", duration, " ms  ", "Vertex count: ", _minerMesh.vertexCount);
     }
 
     World _world;
@@ -171,6 +176,7 @@ class UiWidget : VerticalLayout, CellVisitor {
     Mesh _mesh;
     Mesh _minerMesh;
     GLTexture _tx;
+    GLTexture _blockstx;
 
 
     /// this is OpenGLDrawableDelegate implementation
@@ -182,13 +188,16 @@ class UiWidget : VerticalLayout, CellVisitor {
             return;
         if (!_tx)
             _tx = new GLTexture("crate");
-        if (!_tx.isValid) {
+        if (!_blockstx)
+            _blockstx = new GLTexture("blocks");
+        if (!_tx.isValid || !_blockstx.isValid) {
             Log.e("Invalid texture");
             return;
         }
         _cam.setPerspective(rc.width, rc.height, 45.0f, 0.1f, 100.0f);
         _cam.setIdentity();
-        _cam.translate(vec3(0, 0, -1.1)); // - angle/1000
+        //_cam.translate(vec3(0, 14, -1.1)); // - angle/1000
+        _cam.translate(vec3(0, 14,  - angle/1000)); //
         _cam.rotateZ(30.0f + angle * 0.3456778);
         mat4 projectionViewMatrix = _cam.projectionViewMatrix;
 
@@ -207,6 +216,7 @@ class UiWidget : VerticalLayout, CellVisitor {
         //Log.d("matrix uniform: ", projectionViewModelMatrix.m);
 
         checkgl!glEnable(GL_CULL_FACE);
+        //checkgl!glDisable(GL_CULL_FACE);
         checkgl!glEnable(GL_DEPTH_TEST);
         checkgl!glCullFace(GL_BACK);
 
@@ -218,6 +228,14 @@ class UiWidget : VerticalLayout, CellVisitor {
         _program.draw(_mesh);
 
         _tx.texture.unbind();
+
+        _blockstx.texture.setup();
+        _blockstx.texture.setSamplerParams(false);
+
+        _program.draw(_minerMesh);
+
+        _blockstx.texture.unbind();
+
         _program.unbind();
         checkgl!glDisable(GL_DEPTH_TEST);
         checkgl!glDisable(GL_CULL_FACE);

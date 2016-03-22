@@ -12,6 +12,6 @@
     "targetType": "executable",
 
     "dependencies": {
-        "dlangui": "*",
+        "dlangui": {"path": "../../"}
     }
 }

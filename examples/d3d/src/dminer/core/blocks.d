@@ -89,50 +89,50 @@ public:
 // pos, normal, color, tx
 static const float[VERTEX_COMPONENTS * 4] face_vertices_north =
 [
-	-0.5, 0.5, -0.5,	0.0, 0.0, -1.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
-	0.5, 0.5, -0.5,		0.0, 0.0, -1.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
-	-0.5, -0.5, -0.5,	0.0, 0.0, -1.0,		1.0, 1.0, 1.0, 1.0,		0.0, 1.0,
-	0.5, -0.5, -0.5,	0.0, 0.0, -1.0,		1.0, 1.0, 1.0, 1.0,		1.0, 1.0,
+    -0.5, 0.5, -0.5,	0.0, 0.0, -1.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
+    0.5, 0.5, -0.5,		0.0, 0.0, -1.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
+    -0.5, -0.5, -0.5,	0.0, 0.0, -1.0,		1.0, 1.0, 1.0, 1.0,		0.0, 1.0,
+    0.5, -0.5, -0.5,	0.0, 0.0, -1.0,		1.0, 1.0, 1.0, 1.0,		1.0, 1.0,
 ];
 
 static const float[VERTEX_COMPONENTS * 4] face_vertices_south =
 [
-	-0.5, -0.5, 0.5,	0.0, 0.0, 1.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
-	0.5, -0.5, 0.5,		0.0, 0.0, 1.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
-	-0.5, 0.5, 0.5,		0.0, 0.0, 1.0,		1.0, 1.0, 1.0, 1.0,		0.0, 1.0,
-	0.5, 0.5, 0.5,		0.0, 0.0, 1.0,		1.0, 1.0, 1.0, 1.0,		1.0, 1.0,
+    -0.5, -0.5, 0.5,	0.0, 0.0, 1.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
+    0.5, -0.5, 0.5,		0.0, 0.0, 1.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
+    -0.5, 0.5, 0.5,		0.0, 0.0, 1.0,		1.0, 1.0, 1.0, 1.0,		0.0, 1.0,
+    0.5, 0.5, 0.5,		0.0, 0.0, 1.0,		1.0, 1.0, 1.0, 1.0,		1.0, 1.0,
 ];
 
 static const float[VERTEX_COMPONENTS * 4] face_vertices_west =
 [
-	-0.5, -0.5, -0.5,	-1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
-	-0.5, -0.5, 0.5,	-1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
-	-0.5, 0.5, -0.5,	-1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 1.0,
-	-0.5, 0.5, 0.5,		-1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 1.0
+    -0.5, -0.5, -0.5,	-1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
+    -0.5, -0.5, 0.5,	-1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
+    -0.5, 0.5, -0.5,	-1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 1.0,
+    -0.5, 0.5, 0.5,		-1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 1.0
 ];
 
 static const float[VERTEX_COMPONENTS * 4] face_vertices_east =
 [
-	0.5, -0.5, 0.5,		1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
-	0.5, -0.5, -0.5,	1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
-	0.5, 0.5, 0.5,		1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 1.0,
-	0.5, 0.5, -0.5,		1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 1.0,
+    0.5, -0.5, 0.5,		1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
+    0.5, -0.5, -0.5,	1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
+    0.5, 0.5, 0.5,		1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 1.0,
+    0.5, 0.5, -0.5,		1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 1.0,
 ];
 
 static const float[VERTEX_COMPONENTS * 4] face_vertices_up =
 [
-	-0.5, 0.5, 0.5,		0.0, 1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
-	0.5, 0.5, 0.5,		0.0, 1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
-	-0.5, 0.5, -0.5,	0.0, 1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 1.0,
-	0.5, 0.5, -0.5,		0.0, 1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 1.0,
+    -0.5, 0.5, 0.5,		0.0, 1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
+    0.5, 0.5, 0.5,		0.0, 1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
+    -0.5, 0.5, -0.5,	0.0, 1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 1.0,
+    0.5, 0.5, -0.5,		0.0, 1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 1.0,
 ];
 
 static const float[VERTEX_COMPONENTS * 4] face_vertices_down =
 [
-	-0.5, -0.5, -0.5,	0.0, -1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
-	0.5, -0.5, -0.5,	0.0, -1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
-	-0.5, -0.5, 0.5,	0.0, -1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 1.0,
-	0.5, -0.5, 0.5,		0.0, -1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 1.0,
+    -0.5, -0.5, -0.5,	0.0, -1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
+    0.5, -0.5, -0.5,	0.0, -1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
+    -0.5, -0.5, 0.5,	0.0, -1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 1.0,
+    0.5, -0.5, 0.5,		0.0, -1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 1.0,
 ];
 
 static const ushort[6] face_indexes =
@@ -146,12 +146,12 @@ static const ushort[6] face_indexes_back =
 ];
 
 static void fillFaceMesh(float * data, const float * src, float x0, float y0, float z0, int tileX, int tileY) {
-	for (int i = 0; i < 4; i++) {
-		const float * srcvertex = src + i * VERTEX_COMPONENTS;
-		float * dstvertex = data + i * VERTEX_COMPONENTS;
-		for (int j = 0; j < 11; j++) {
-			float v = srcvertex[j];
-			switch (j) {
+    for (int i = 0; i < 4; i++) {
+        const float * srcvertex = src + i * VERTEX_COMPONENTS;
+        float * dstvertex = data + i * VERTEX_COMPONENTS;
+        for (int j = 0; j < 11; j++) {
+            float v = srcvertex[j];
+            switch (j) {
                 default:
                 case 0: // x
                     v += x0;
@@ -168,18 +168,18 @@ static void fillFaceMesh(float * data, const float * src, float x0, float y0, fl
                 case 10: // tx.v
                     v = (BLOCK_TEXTURE_DY - (tileY + v * BLOCK_SPRITE_SIZE)) / cast(float)BLOCK_TEXTURE_DY;
                     break;
-			}
-			dstvertex[j] = v;
-		}
-	}
+            }
+            dstvertex[j] = v;
+        }
+    }
 }
 
 static void createFaceMesh(float * data, Dir face, float x0, float y0, float z0, int tileIndex) {
 
-	int tileX = (tileIndex % BLOCK_TEXTURE_SPRITES_PER_LINE) * BLOCK_SPRITE_STEP + BLOCK_SPRITE_OFFSET;
-	int tileY = (tileIndex / BLOCK_TEXTURE_SPRITES_PER_LINE) * BLOCK_SPRITE_STEP + BLOCK_SPRITE_OFFSET;
-	// data is 11 comp * 4 vert floats
-	switch (face) {
+    int tileX = (tileIndex % BLOCK_TEXTURE_SPRITES_PER_LINE) * BLOCK_SPRITE_STEP + BLOCK_SPRITE_OFFSET;
+    int tileY = (tileIndex / BLOCK_TEXTURE_SPRITES_PER_LINE) * BLOCK_SPRITE_STEP + BLOCK_SPRITE_OFFSET;
+    // data is 11 comp * 4 vert floats
+    switch (face) {
         default:
         case NORTH:
             fillFaceMesh(data, face_vertices_north.ptr, x0, y0, z0, tileX, tileY);
@@ -199,7 +199,7 @@ static void createFaceMesh(float * data, Dir face, float x0, float y0, float z0,
         case DOWN:
             fillFaceMesh(data, face_vertices_down.ptr, x0, y0, z0, tileX, tileY);
             break;
-	}
+    }
 }
 
 
