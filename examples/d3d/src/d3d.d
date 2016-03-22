@@ -10,6 +10,10 @@ import dlangui.graphics.gldrawbuf;
 import derelict.opengl3.gl3;
 import derelict.opengl3.gl;
 
+import dminer.core.world;
+import dminer.core.minetypes;
+import dminer.core.blocks;
+
 mixin APP_ENTRY_POINT;
 
 /// entry point for dlangui based application
@@ -117,11 +121,15 @@ class UiWidget : VerticalLayout {
             _mesh.addCubeMesh(vec3(-i * 2 - 1.0f, -i * 2 - 1.0f, -i * 2 - 1.0f), 0.2f, vec4(1 - i / 12, i / 12, i / 12, 1));
         }
 
-        import dminer.core.world;
         World w = new World();
         for (int x = -100; x < 100; x++)
             for (int z = -100; z < 100; z++)
                 w.setCell(x, 10, z, 1);
+        Position position = Position(Vector3d(0, 13, 0), Vector3d(0, 1, 0));
+        CellVisitor visitor = new TestVisitor();
+        Log.d("Testing cell visitor");
+        w.visitVisibleCells(position, visitor);
+        destroy(w);
     }
 
     /// returns true is widget is being animated - need to call animate() and redraw
@@ -202,6 +210,17 @@ class UiWidget : VerticalLayout {
     }
 }
 
+class TestVisitor : CellVisitor {
+    void newDirection(ref Position camPosition) {
+        Log.d("TestVisitor.newDirection");
+    }
+    void visitFace(World world, ref Position camPosition, Vector3d pos, cell_t cell, Dir face) {
+        Log.d("TestVisitor.visitFace ", pos, " cell=", cell, " face=", face);
+    }
+    void visit(World world, ref Position camPosition, Vector3d pos, cell_t cell, int visibleFaces) {
+        Log.d("TestVisitor.visit ", pos, " cell=", cell);
+    }
+}
 
 // Simple texture + color shader
 class MyGLProgram : GLProgram {

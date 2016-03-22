@@ -173,8 +173,8 @@ struct Vector3d {
     int opBinary(string op : "*")(const Vector3d v) const {
         return x*v.x + y*v.y + z*v.z;
     }
-    /// 
-    int opBinary(string op : "*")(int n) const {
+    /// multiply vector elements by constant
+    Vector3d opBinary(string op : "*")(int n) const {
         return Vector3d(x * n, y * n, z * n);
     }
 
@@ -183,21 +183,21 @@ struct Vector3d {
         x += v.x;
         y += v.y;
         z += v.z;
-        return *this;
+        return this;
     }
     /// 
     ref Vector3d opOpAssign(string op : "-")(const Vector3d v) {
         x -= v.x;
         y -= v.y;
         z -= v.z;
-        return *this;
+        return this;
     }
     /// 
     ref Vector3d opOpAssign(string op : "*")(int n) {
         x *= n;
         y *= n;
         z *= n;
-        return *this;
+        return this;
     }
     Vector3d turnLeft() {
         return Vector3d(z, y, -x);
@@ -237,7 +237,8 @@ struct Vector3d {
         }
         return res;
     }
-};
+}
+
 const Vector3d ZERO3 = Vector3d(0, 0, 0);
 
 struct Array(T) {
@@ -271,16 +272,36 @@ public:
     @property int length() {
         return _length;
     }
+    /// append single item by ref
     void append(ref const T value) {
         if (_length >= _data.length)
             reserve(_data.length == 0 ? 64 : _data.length * 2 - _length);
         _data[_length++] = value;
     }
+    /// append single item by value
+    void append(T value) {
+        if (_length >= _data.length)
+            reserve(_data.length == 0 ? 64 : _data.length * 2 - _length);
+        _data[_length++] = value;
+    }
+    /// append single item w/o check
     void appendNoCheck(ref const T value) {
+        _data[_length++] = value;
+    }
+    /// append single item w/o check
+    void appendNoCheck(T value) {
         _data[_length++] = value;
     }
     /// appends same value several times, return pointer to appended items
     T* append(ref const T value, int count) {
+        reserve(count);
+        int startLen = _length;
+        for (int i = 0; i < count; i++)
+            _data[_length++] = value;
+        return _data.ptr + startLen;
+    }
+    /// appends same value several times, return pointer to appended items
+    T* append(T value, int count) {
         reserve(count);
         int startLen = _length;
         for (int i = 0; i < count; i++)
@@ -443,221 +464,33 @@ public:
     }
 }
 
-/+
-template<typename T, T initValue, void(*disposeFunction)(T value) > struct InfiniteArray {
-private:
-    T * data;
-    int size;
-    int minIdx;
-    int maxIdx;
-    void resize(int sz) {
-        if (sz < 128)
-            sz = 128;
-        else
-            sz = sz * 2;
-        if (size < sz) {
-            data = (T*)realloc(data, sizeof(T) * sz);
-            for (int i = size; i < sz; i++)
-                data[i] = initValue;
-            size = sz;
-        }
-    }
-public:
-    int minIndex() {
-        return minIdx;
-    }
-    int maxIndex() {
-        return maxIdx;
-    }
-    void set(int index, T value) {
-        int idx = index < 0 ? (-index) * 2 - 1 : index * 2;
-        resize(idx + 1);
-        T oldData = data[idx];
-        if (oldData != initValue)
-            disposeFunction(oldData);
-        data[idx] = value;
-        if (minIdx > index)
-            minIdx = index;
-        if (maxIdx < index + 1)
-            maxIdx = index + 1;
-    }
-    T get(int index) {
-        if (index < minIdx || index >= maxIdx)
-            return initValue;
-        int idx = index < 0 ? (-index) * 2 - 1 : index * 2;
-        return data[idx];
-    }
-    InfiniteArray() : data(NULL), size(0), minIdx(0), maxIdx(0) {
-    }
-    ~InfiniteArray() {
-        if (data) {
-            for (int i = 0; i < size; i++) {
-                if (data[i] != initValue)
-                    disposeFunction(data[i]);
-            }
-            free(data);
-        }
-        data = NULL;
-        size = 0;
-    }
-
-};
-
-/// returns opposite direction to specified direction
-Dir opposite(Dir d) {
-    return (Dir)(d ^ 1);
-}
-
-Dir turnLeft(Dir d) {
-    switch (d) {
-    case WEST:
-        return SOUTH;
-    case EAST:
-        return NORTH;
-    default:
-    case NORTH:
-        return WEST;
-    case SOUTH:
-        return EAST;
-    case UP:
-        return SOUTH;
-    case DOWN:
-        return NORTH;
-    }
-}
-
-Dir turnRight(Dir d) {
-    switch (d) {
-    case WEST:
-        return NORTH;
-    case EAST:
-        return SOUTH;
-    default:
-    case NORTH:
-        return EAST;
-    case SOUTH:
-        return WEST;
-    case UP:
-        return NORTH;
-    case DOWN:
-        return SOUTH;
-    }
-}
-
-Dir turnUp(Dir d) {
-    switch (d) {
-    case WEST:
-        return UP;
-    case EAST:
-        return UP;
-    default:
-    case NORTH:
-        return UP;
-    case SOUTH:
-        return UP;
-    case UP:
-        return SOUTH;
-    case DOWN:
-        return NORTH;
-    }
-}
-
-Dir turnDown(Dir d) {
-    switch (d) {
-    case WEST:
-        return DOWN;
-    case EAST:
-        return DOWN;
-    default:
-    case NORTH:
-        return DOWN;
-    case SOUTH:
-        return DOWN;
-    case UP:
-        return NORTH;
-    case DOWN:
-        return SOUTH;
-    }
-}
-
-
-class Direction {
-    this(int x, int y, int z) {
-        set(x, y, z);
-    }
-    this(Vector3d v) {
-        set(v);
-    }
-    this(Dir d) {
-        set(d);
-    }
-    this() {
-        set(0, 0, -1);
-    }
-    /// set by direction code
-    void set(Dir d);
-    /// set by vector
-    void set(int x, int y, int z);
-    /// set by vector
-    void set(Vector3d v) { set(v.x, v.y, v.z); }
-
-    void turnLeft() {
-        set(::turnLeft(dir));
-    }
-    void turnRight() {
-        set(::turnRight(dir));
-    }
-    void turnUp() {
-        set(::turnUp(dir));
-    }
-    void turnDown() {
-        set(::turnDown(dir));
-    }
-
-    Dir dir;
-    Vector3d forward;
-    Vector3d up;
-    Vector3d right;
-    Vector3d left;
-    Vector3d down;
-    Vector3d forwardUp;
-    Vector3d forwardDown;
-    Vector3d forwardLeft;
-    Vector3d forwardLeftUp;
-    Vector3d forwardLeftDown;
-    Vector3d forwardRight;
-    Vector3d forwardRightUp;
-    Vector3d forwardRightDown;
-};
-
 struct Position {
     Vector3d pos;
     Direction direction;
-    Position() {
-
+    this(ref Position p) {
+        pos = p.pos;
+        direction = p.direction;
     }
-    Position(Position & p) : pos(p.pos), direction(p.direction) {
-
-    }
-    Position(Vector3d position, Vector3d dir) : pos(position), direction(dir) {
-
+    this(Vector3d position, Vector3d dir) {
+        pos = position;
+        direction = dir;
     }
     Vector2d calcPlaneCoords(Vector3d v) {
         v = v - pos;
         switch (direction.dir) {
-        default:
-        case NORTH:
-            return Vector2d(v.x, v.y);
-        case SOUTH:
-            return Vector2d(-v.x, v.y);
-        case EAST:
-            return Vector2d(v.z, v.y);
-        case WEST:
-            return Vector2d(-v.z, v.y);
-        case UP:
-            return Vector2d(-v.z, v.x);
-        case DOWN:
-            return Vector2d(v.z, v.x);
+            default:
+            case NORTH:
+                return Vector2d(v.x, v.y);
+            case SOUTH:
+                return Vector2d(-v.x, v.y);
+            case EAST:
+                return Vector2d(v.z, v.y);
+            case WEST:
+                return Vector2d(-v.z, v.y);
+            case UP:
+                return Vector2d(-v.z, v.x);
+            case DOWN:
+                return Vector2d(v.z, v.x);
         }
     }
     void turnLeft() {
@@ -678,154 +511,220 @@ struct Position {
     void backward(int step = 1) {
         pos -= direction.forward * step;
     }
-};
-
-struct CellToVisit {
-    union {
-        struct {
-            int index;
-            cell_t cell;
-            ubyte dir;
-        };
-        ulong data;
-    };
-    CellToVisit() : data(0) {}
-    CellToVisit(int idx, cell_t cellValue, DirEx direction) : index(idx), cell(cellValue), dir(direction) {}
-    CellToVisit(const CellToVisit & v) : data(v.data) {}
-    CellToVisit(lUInt64 v) : data(v) {}
-    inline CellToVisit& operator = (CellToVisit v) {
-        data = v.data;
-        return *this;
-    }
-    inline CellToVisit& operator = (lUInt64 v) {
-        data = v;
-        return *this;
-    }
-};
-
-struct VolumeData {
-    int MAX_DIST_BITS;
-    int ROW_BITS;
-    int MAX_DIST;
-    int ROW_SIZE;
-    int DATA_SIZE;
-    int ROW_MASK;
-    cell_t * _data;
-    int directionDelta[64];
-    int directionExDelta[26];
-    int mainDirectionDeltas[6][9];
-    int mainDirectionDeltasNoForward[6][9];
-    VolumeData(int distBits);
-    ~VolumeData() {
-        delete[] _data;
-    }
-    int size() { return MAX_DIST; }
-    void clear() {
-        memset(_data, 0, sizeof(cell_t) * DATA_SIZE);
-    }
-
-    cell_t * ptr() { return _data;  }
-
-    /// put cell w/o bounds checking, (0,0,0) is center of array
-    inline void put(Vector3d v, cell_t cell) {
-        _data[((v.y + MAX_DIST) << (ROW_BITS * 2)) | ((v.z + MAX_DIST) << ROW_BITS) | (v.x + MAX_DIST)] = cell;
-    }
-
-    /// v is zero based destination coordinates
-    void putLayer(Vector3d v, cell_t * layer, int dx, int dz, int stripe);
-
-    /// put cell w/o bounds checking
-    inline void put(int index, cell_t cell) {
-        _data[index] = cell;
-    }
-
-    /// read w/o bounds checking, (0,0,0) is center of array
-    inline cell_t get(Vector3d v) {
-        return _data[((v.y + MAX_DIST) << (ROW_BITS * 2)) | ((v.z + MAX_DIST) << ROW_BITS) | (v.x + MAX_DIST)];
-    }
-
-    inline cell_t get(int index) {
-        return _data[index];
-    }
-
-    /// get array index for point - (0,0,0) is center
-    inline int getIndex(Vector3d v) {
-        return ((v.y + MAX_DIST) << (ROW_BITS * 2)) | ((v.z + MAX_DIST) << ROW_BITS) | (v.x + MAX_DIST);
-    }
-
-    inline Vector3d indexToPoint(int index) {
-        return Vector3d((index & ROW_MASK) - MAX_DIST,
-            ((index >> (ROW_BITS * 2)) & ROW_MASK) - MAX_DIST,
-            ((index >> (ROW_BITS)) & ROW_MASK) - MAX_DIST);
-    }
-
-    inline int moveIndex(int oldIndex, DirMask direction) {
-        return oldIndex + directionDelta[direction];
-    }
-    
-    inline int moveIndex(int oldIndex, DirEx direction) {
-        return oldIndex + directionExDelta[direction];
-    }
-
-    inline CellToVisit getNext(int index, DirEx direction, DirEx baseDir) {
-        int nextIndex = index + directionExDelta[direction];
-        return CellToVisit(nextIndex, _data[nextIndex], baseDir);
-    }
-
-    void getNearCellsForDirection(int index, DirEx direction, CellToVisit cells[9]);
-    void getNearCellsForDirectionNoForward(int index, DirEx direction, CellToVisit cells[9]);
-    void getNearCellsForDirection(int index, DirEx direction, cell_t cells[9]);
-    void getNearCellsForDirectionNoForward(int index, DirEx direction, cell_t cells[9]);
-
-    void fillLayer(int y, cell_t cell);
-
-    int * thisPlaneDirections(DirEx dir) { return mainDirectionDeltasNoForward[dir]; }
-    int * nextPlaneDirections(DirEx dir) { return mainDirectionDeltas[dir]; }
-};
-
-
-struct DirectionHelper {
-    DirEx dir;
-    IntArray oldcells;
-    IntArray newcells;
-    IntArray spreadcells;
-    int forwardCellCount;
-    void start(int index, DirEx direction);
-    void nextDistance();
-    void prepareSpreading();
-};
-
-class World;
-class CellVisitor {
-public:
-    virtual ~CellVisitor() {}
-    virtual void newDirection(Position & camPosition) { }
-    virtual void visitFace(World * world, Position & camPosition, Vector3d pos, cell_t cell, Dir face) { }
-    virtual void visit(World * world, Position & camPosition, Vector3d pos, cell_t cell, int visibleFaces) { }
 }
 
-struct VolumeVisitor {
-    World * world;
-    VolumeData * volume;
-    CellVisitor * visitor;
-    Position * position;
-    DirectionHelper helpers[6];
-    DirEx direction; // camera forward direction
-    DirEx oppdirection; // opposite direction
-    Vector3d dirvector;
-    int distance;
-    VolumeVisitor();
-    void init(World * w, Position * pos, VolumeData * data, CellVisitor * v);
-    ~VolumeVisitor();
-    bool visitCell(int index, cell_t cell);
-    void appendNewCell(int index, int distance);
-    void visitPlaneForward(int startIndex, DirEx direction);
-    // move in forward direction
-    void visitPlaneSpread(int startIndex, DirEx direction);
 
-    void visitAll();
+/// returns opposite direction to specified direction
+Dir opposite(Dir d) {
+    return cast(Dir)(d ^ 1);
 }
-+/
+
+Dir turnLeft(Dir d) {
+    switch (d) {
+        case WEST:
+            return SOUTH;
+        case EAST:
+            return NORTH;
+        default:
+        case NORTH:
+            return WEST;
+        case SOUTH:
+            return EAST;
+        case UP:
+            return SOUTH;
+        case DOWN:
+            return NORTH;
+    }
+}
+
+Dir turnRight(Dir d) {
+    switch (d) {
+        case WEST:
+            return NORTH;
+        case EAST:
+            return SOUTH;
+        default:
+        case NORTH:
+            return EAST;
+        case SOUTH:
+            return WEST;
+        case UP:
+            return NORTH;
+        case DOWN:
+            return SOUTH;
+    }
+}
+
+Dir turnUp(Dir d) {
+    switch (d) {
+        case WEST:
+            return UP;
+        case EAST:
+            return UP;
+        default:
+        case NORTH:
+            return UP;
+        case SOUTH:
+            return UP;
+        case UP:
+            return SOUTH;
+        case DOWN:
+            return NORTH;
+    }
+}
+
+Dir turnDown(Dir d) {
+    switch (d) {
+        case WEST:
+            return DOWN;
+        case EAST:
+            return DOWN;
+        default:
+        case NORTH:
+            return DOWN;
+        case SOUTH:
+            return DOWN;
+        case UP:
+            return NORTH;
+        case DOWN:
+            return SOUTH;
+    }
+}
+
+
+struct Direction {
+    this(int x, int y, int z) {
+        set(x, y, z);
+    }
+    this(Vector3d v) {
+        set(v);
+    }
+    this(Dir d) {
+        set(d);
+    }
+    /// set by direction code
+    void set(Dir d) {
+        switch (d) {
+            default:
+            case NORTH:
+                set(0, 0, -1);
+                break;
+            case SOUTH:
+                set(0, 0, 1);
+                break;
+            case WEST:
+                set(-1, 0, 0);
+                break;
+            case EAST:
+                set(1, 0, 0);
+                break;
+            case UP:
+                set(0, 1, 0);
+                break;
+            case DOWN:
+                set(0, -1, 0);
+                break;
+        }
+    }
+    /// set by vector
+    void set(Vector3d v) { set(v.x, v.y, v.z); }
+    /// set by vector
+    void set(int x, int y, int z) {
+        forward = Vector3d(x, y, z);
+        if (x) {
+            dir = (x > 0) ? EAST : WEST;
+        }
+        else if (y) {
+            dir = (y > 0) ? UP : DOWN;
+        }
+        else {
+            dir = (z > 0) ? SOUTH : NORTH;
+        }
+        switch (dir) {
+            case UP:
+                up = Vector3d(1, 0, 0);
+                left = Vector3d(0, 0, 1);
+                break;
+            case DOWN:
+                up = Vector3d(1, 0, 0);
+                left = Vector3d(0, 0, -1);
+                break;
+            default:
+            case NORTH:
+                up = Vector3d(0, 1, 0);
+                left = Vector3d(-1, 0, 0);
+                break;
+            case SOUTH:
+                up = Vector3d(0, 1, 0);
+                left = Vector3d(1, 0, 0);
+                break;
+            case EAST:
+                up = Vector3d(0, 1, 0);
+                left = Vector3d(0, 0, -1);
+                break;
+            case WEST:
+                up = Vector3d(0, 1, 0);
+                left = Vector3d(0, 0, 1);
+                break;
+        }
+        down = -up;
+        right = -left;
+        forwardUp = forward + up;
+        forwardDown = forward + down;
+        forwardLeft = forward + left;
+        forwardLeftUp = forward + left + up;
+        forwardLeftDown = forward + left + down;
+        forwardRight = forward + right;
+        forwardRightUp = forward + right + up;
+        forwardRightDown = forward + right + down;
+    }
+
+    void turnLeft() {
+        set(.turnLeft(dir));
+    }
+    void turnRight() {
+        set(.turnRight(dir));
+    }
+    void turnUp() {
+        set(.turnUp(dir));
+    }
+    void turnDown() {
+        set(.turnDown(dir));
+    }
+
+    Dir dir;
+    Vector3d forward;
+    Vector3d up;
+    Vector3d right;
+    Vector3d left;
+    Vector3d down;
+    Vector3d forwardUp;
+    Vector3d forwardDown;
+    Vector3d forwardLeft;
+    Vector3d forwardLeftUp;
+    Vector3d forwardLeftDown;
+    Vector3d forwardRight;
+    Vector3d forwardRightUp;
+    Vector3d forwardRightDown;
+}
+
+/// returns number of bits to store integer
+int bitsFor(int n) {
+	int res;
+	for (res = 0; n > 0; res++)
+		n >>= 1;
+	return res;
+}
+
+/// returns 0 for 0, 1 for negatives, 2 for positives
+int mySign(int n) {
+	if (n > 0)
+		return 1;
+	else if (n < 0)
+		return -1;
+	else
+		return 0;
+}
 
 immutable ulong RANDOM_MULTIPLIER  = ((cast(ulong)1 << 48) - 1);
 immutable ulong RANDOM_MASK = ((cast(ulong)1 << 48) - 1);
@@ -849,4 +748,11 @@ struct Random {
     int nextInt(int n);
 }
 
-extern const Vector3d DIRECTION_VECTORS[6];
+const Vector3d DIRECTION_VECTORS[6] = [
+	Vector3d(0, 0, -1),
+	Vector3d(0, 0, 1),
+	Vector3d(-1, 0, 0),
+	Vector3d(1, 0, 0),
+	Vector3d(0, 1, 0),
+	Vector3d(0, -1, 0)
+];
