@@ -66,15 +66,15 @@ public:
 
 
 // block type definitions
-__gshared BlockDef BLOCK_DEFS[256];
+__gshared BlockDef[256] BLOCK_DEFS;
 // faster check for block->canPass()
-__gshared bool BLOCK_TYPE_CAN_PASS[256];
+__gshared bool[256] BLOCK_TYPE_CAN_PASS;
 // faster check for block->isOpaque()
-__gshared bool BLOCK_TYPE_OPAQUE[256];
+__gshared bool[256] BLOCK_TYPE_OPAQUE;
 // faster check for block->isVisible()
-__gshared bool BLOCK_TYPE_VISIBLE[256];
+__gshared bool[256] BLOCK_TYPE_VISIBLE;
 // faster check for block->isVisible()
-__gshared bool BLOCK_TERRAIN_SMOOTHING[256];
+__gshared bool[256] BLOCK_TERRAIN_SMOOTHING;
 
 /// registers new block type
 void registerBlockType(BlockDef def) {

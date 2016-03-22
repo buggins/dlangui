@@ -20,22 +20,22 @@ immutable int CHUNK_DY_MASK = (CHUNK_DY - 1);
 // Layer is 256x16x16 CHUNK_DY layers = CHUNK_DY * (CHUNK_DX_SHIFT x CHUNK_DX_SHIFT) cells
 struct ChunkLayer {
 private:
-    cell_t cells[CHUNK_DX * CHUNK_DX];
+    cell_t[CHUNK_DX * CHUNK_DX] cells;
 public:
     cell_t* ptr(int x, int z) {
-        return &cells[(z << CHUNK_DX_SHIFT) + x];
+        return &cells.ptr[(z << CHUNK_DX_SHIFT) + x];
     }
     cell_t get(int x, int z) {
-        return cells[(z << CHUNK_DX_SHIFT) + x];
+        return cells.ptr[(z << CHUNK_DX_SHIFT) + x];
     }
     void set(int x, int z, cell_t cell) {
-        cells[(z << CHUNK_DX_SHIFT) + x] = cell;
+        cells.ptr[(z << CHUNK_DX_SHIFT) + x] = cell;
     }
 }
 
 struct Chunk {
 private:
-    ChunkLayer * layers[CHUNK_DY];
+    ChunkLayer*[CHUNK_DY] layers;
     int bottomLayer = - 1;
     int topLayer = -1;
 public:
@@ -62,10 +62,10 @@ public:
     }
     void set(int x, int y, int z, cell_t cell) {
         int layerIndex = y & CHUNK_DY_MASK;
-        ChunkLayer * layer = layers[layerIndex];
+        ChunkLayer * layer = layers.ptr[layerIndex];
         if (!layer) {
             layer = new ChunkLayer();
-            layers[layerIndex] = layer;
+            layers.ptr[layerIndex] = layer;
             if (topLayer == -1 || topLayer < layerIndex)
                 topLayer = layerIndex;
             if (bottomLayer == -1 || bottomLayer > layerIndex)
@@ -155,8 +155,7 @@ public:
         Chunk * p;
         if (lastChunkX == chunkx && lastChunkZ == chunkz) {
             p = lastChunk;
-        }
-        else {
+        } else {
             p = chunks.get(chunkx, chunkz);
             lastChunkX = chunkx;
             lastChunkZ = chunkz;
@@ -181,34 +180,34 @@ public:
 }
 
 interface CellVisitor {
-    void newDirection(ref Position camPosition);
-    void visitFace(World world, ref Position camPosition, Vector3d pos, cell_t cell, Dir face);
+    //void newDirection(ref Position camPosition);
+    //void visitFace(World world, ref Position camPosition, Vector3d pos, cell_t cell, Dir face);
     void visit(World world, ref Position camPosition, Vector3d pos, cell_t cell, int visibleFaces);
 }
 
 struct DiamondVisitor {
-	int maxDist;
-	int maxDistBits;
-	int dist;
-	World world;
-	Position * position;
-	Vector3d pos0;
-	CellVisitor visitor;
-	CellArray visited;
-	cell_t * visited_ptr;
-	Vector3dArray oldcells;
-	Vector3dArray newcells;
-	ubyte visitedOccupied;
-	ubyte visitedEmpty;
-	int m0;
-	int m0mask;
-	void init(World w, Position * pos, CellVisitor v) {
+    int maxDist;
+    int maxDistBits;
+    int dist;
+    World world;
+    Position * position;
+    Vector3d pos0;
+    CellVisitor visitor;
+    CellArray visited;
+    cell_t * visited_ptr;
+    Vector3dArray oldcells;
+    Vector3dArray newcells;
+    ubyte visitedOccupied;
+    ubyte visitedEmpty;
+    int m0;
+    int m0mask;
+    void init(World w, Position * pos, CellVisitor v) {
         world = w;
         position = pos;
         visitor = v;
         pos0 = position.pos;
     }
-	void visitCell(Vector3d v) {
+    void visitCell(Vector3d v) {
         //CRLog::trace("visitCell(%d %d %d) dist=%d", v.x, v.y, v.z, myAbs(v.x) + myAbs(v.y) + myAbs(v.z));
 
         //int occupied = visitedOccupied;
@@ -288,7 +287,7 @@ struct DiamondVisitor {
             newcells.clear();
             visitedOccupied += 2;
             visitedEmpty += 2;
-		//CRLog::trace("dist: %d cells: %d", dist, oldcells.length());
+        //CRLog::trace("dist: %d cells: %d", dist, oldcells.length());
             for (int i = 0; i < oldcells.length(); i++) {
                 Vector3d pt = oldcells[i];
                 int sx = mySign(pt.x);

@@ -265,7 +265,7 @@ public:
                 newsize <<= 1;
             _data.length = newsize;
             for (int i = oldsize; i < newsize; i++)
-                _data[i] = T.init;
+                _data.ptr[i] = T.init;
             _data.assumeSafeAppend();
         }
     }
@@ -275,29 +275,29 @@ public:
     /// append single item by ref
     void append(ref const T value) {
         if (_length >= _data.length)
-            reserve(_data.length == 0 ? 64 : _data.length * 2 - _length);
-        _data[_length++] = value;
+            reserve(cast(int)(_data.length == 0 ? 64 : _data.length * 2 - _length));
+        _data.ptr[_length++] = value;
     }
     /// append single item by value
     void append(T value) {
         if (_length >= _data.length)
-            reserve(_data.length == 0 ? 64 : _data.length * 2 - _length);
-        _data[_length++] = value;
+            reserve(cast(int)(_data.length == 0 ? 64 : _data.length * 2 - _length));
+        _data.ptr[_length++] = value;
     }
     /// append single item w/o check
     void appendNoCheck(ref const T value) {
-        _data[_length++] = value;
+        _data.ptr[_length++] = value;
     }
     /// append single item w/o check
     void appendNoCheck(T value) {
-        _data[_length++] = value;
+        _data.ptr[_length++] = value;
     }
     /// appends same value several times, return pointer to appended items
     T* append(ref const T value, int count) {
         reserve(count);
         int startLen = _length;
         for (int i = 0; i < count; i++)
-            _data[_length++] = value;
+            _data.ptr[_length++] = value;
         return _data.ptr + startLen;
     }
     /// appends same value several times, return pointer to appended items
@@ -305,20 +305,20 @@ public:
         reserve(count);
         int startLen = _length;
         for (int i = 0; i < count; i++)
-            _data[_length++] = value;
+            _data.ptr[_length++] = value;
         return _data.ptr + startLen;
     }
     void clear() {
         _length = 0;
     }
     T get(int index) {
-        return _data[index];
+        return _data.ptr[index];
     }
     void set(int index, T value) {
-        _data[index] = value;
+        _data.ptr[index] = value;
     }
     ref T opIndex(int index) {
-        return _data[index];
+        return _data.ptr[index];
     }
 }
 
@@ -439,7 +439,7 @@ public:
     T get(int x, int y) {
         if (x < -_size || x >= _size || y < -_size || y >= _size)
             return null;
-        return _data[calcIndex(x, y)];
+        return _data.ptr[calcIndex(x, y)];
     }
     void set(int x, int y, T v) {
         if (x < -_size || x >= _size || y < -_size || y >= _size) {
@@ -453,9 +453,9 @@ public:
             resize(newSizeShift);
         }
         int index = calcIndex(x, y);
-        if (_data[index])
-            destroy(_data[index]);
-        _data[index] = v;
+        if (_data.ptr[index])
+            destroy(_data.ptr[index]);
+        _data.ptr[index] = v;
     }
     ~this() {
         foreach(ref v; _data)
@@ -710,20 +710,20 @@ struct Direction {
 
 /// returns number of bits to store integer
 int bitsFor(int n) {
-	int res;
-	for (res = 0; n > 0; res++)
-		n >>= 1;
-	return res;
+    int res;
+    for (res = 0; n > 0; res++)
+        n >>= 1;
+    return res;
 }
 
 /// returns 0 for 0, 1 for negatives, 2 for positives
 int mySign(int n) {
-	if (n > 0)
-		return 1;
-	else if (n < 0)
-		return -1;
-	else
-		return 0;
+    if (n > 0)
+        return 1;
+    else if (n < 0)
+        return -1;
+    else
+        return 0;
 }
 
 immutable ulong RANDOM_MULTIPLIER  = ((cast(ulong)1 << 48) - 1);
@@ -748,11 +748,11 @@ struct Random {
     int nextInt(int n);
 }
 
-const Vector3d DIRECTION_VECTORS[6] = [
-	Vector3d(0, 0, -1),
-	Vector3d(0, 0, 1),
-	Vector3d(-1, 0, 0),
-	Vector3d(1, 0, 0),
-	Vector3d(0, 1, 0),
-	Vector3d(0, -1, 0)
+const Vector3d[6] DIRECTION_VECTORS = [
+    Vector3d(0, 0, -1),
+    Vector3d(0, 0, 1),
+    Vector3d(-1, 0, 0),
+    Vector3d(1, 0, 0),
+    Vector3d(0, 1, 0),
+    Vector3d(0, -1, 0)
 ];

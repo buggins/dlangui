@@ -122,13 +122,18 @@ class UiWidget : VerticalLayout {
         }
 
         World w = new World();
-        for (int x = -100; x < 100; x++)
-            for (int z = -100; z < 100; z++)
+        for (int x = -1000; x < 1000; x++)
+            for (int z = -1000; z < 1000; z++)
                 w.setCell(x, 10, z, 1);
-        Position position = Position(Vector3d(0, 13, 0), Vector3d(0, 1, 0));
+        w.setCell(0, 11, 10, 2);
+        w.setCell(5, 11, 15, 2);
+        Position position = Position(Vector3d(0, 13, 0), Vector3d(0, 0, 1));
         CellVisitor visitor = new TestVisitor();
         Log.d("Testing cell visitor");
+        long ts = currentTimeMillis;
         w.visitVisibleCells(position, visitor);
+        long duration = currentTimeMillis - ts;
+        Log.d("DiamondVisitor finished in ", duration, " ms");
         destroy(w);
     }
 
@@ -211,14 +216,14 @@ class UiWidget : VerticalLayout {
 }
 
 class TestVisitor : CellVisitor {
-    void newDirection(ref Position camPosition) {
-        Log.d("TestVisitor.newDirection");
-    }
-    void visitFace(World world, ref Position camPosition, Vector3d pos, cell_t cell, Dir face) {
-        Log.d("TestVisitor.visitFace ", pos, " cell=", cell, " face=", face);
-    }
+    //void newDirection(ref Position camPosition) {
+    //    Log.d("TestVisitor.newDirection");
+    //}
+    //void visitFace(World world, ref Position camPosition, Vector3d pos, cell_t cell, Dir face) {
+    //    Log.d("TestVisitor.visitFace ", pos, " cell=", cell, " face=", face);
+    //}
     void visit(World world, ref Position camPosition, Vector3d pos, cell_t cell, int visibleFaces) {
-        Log.d("TestVisitor.visit ", pos, " cell=", cell);
+        //Log.d("TestVisitor.visit ", pos, " cell=", cell);
     }
 }
 
