@@ -59,19 +59,31 @@ class UiWidget : VerticalLayout, CellVisitor {
                     TextWidget { text: "Do you see it? If no, there is some bug in Mesh rendering code..."; fontSize: 120% }
                     // arrange controls as form - table with two columns
                     TableLayout {
-                        colCount: 4
+                        colCount: 6
                         TextWidget { text: "Translation X" }
+                        TextWidget { id: lblTranslationX; text: "0.0"; minWidth: 80; backgroundColor: 0x80FFFFFF }
                         ScrollBar { id: sbTranslationX; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 200; alpha: 0.6 }
                         TextWidget { text: "Rotation X" }
-                        ScrollBar { id: sbRotationX; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 200; alpha: 0.6 }
+                        TextWidget { id: lblRotationX; text: "0.0"; minWidth: 80; backgroundColor: 0x80FFFFFF }
+                        ScrollBar { id: sbRotationX; orientation: horizontal; minValue: -100; maxValue: 100; position: 10; minWidth: 200; alpha: 0.6 }
                         TextWidget { text: "Translation Y" }
+                        TextWidget { id: lblTranslationY; text: "0.0"; minWidth: 80; backgroundColor: 0x80FFFFFF }
                         ScrollBar { id: sbTranslationY; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 200; alpha: 0.6 }
                         TextWidget { text: "Rotation Y" }
+                        TextWidget { id: lblRotationY; text: "0.0"; minWidth: 80; backgroundColor: 0x80FFFFFF }
                         ScrollBar { id: sbRotationY; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 150; alpha: 0.6 }
                         TextWidget { text: "Translation Z" }
+                        TextWidget { id: lblTranslationZ; text: "0.0"; minWidth: 80; backgroundColor: 0x80FFFFFF }
                         ScrollBar { id: sbTranslationZ; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 150; alpha: 0.6 }
                         TextWidget { text: "Rotation Z" }
+                        TextWidget { id: lblRotationZ; text: "0.0"; minWidth: 80; backgroundColor: 0x80FFFFFF }
                         ScrollBar { id: sbRotationZ; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 150; alpha: 0.6 }
+                        TextWidget { text: "Near" }
+                        TextWidget { id: lblNear; text: "0.1"; minWidth: 80; backgroundColor: 0x80FFFFFF }
+                        ScrollBar { id: sbNear; orientation: horizontal; minValue: 1; maxValue: 100; position: 1; minWidth: 150; alpha: 0.6 }
+                        TextWidget { text: "Far" }
+                        TextWidget { id: lblFar; text: "0.0"; minWidth: 80; backgroundColor: 0x80FFFFFF }
+                        ScrollBar { id: sbFar; orientation: horizontal; minValue: 20; maxValue: 1000; position: 1000; minWidth: 150; alpha: 0.6 }
                     }
                     VSpacer { layoutWeight: 30 }
                     HorizontalLayout {
@@ -87,7 +99,8 @@ class UiWidget : VerticalLayout, CellVisitor {
         }
         // assign OpenGL drawable to child widget background
         childById("glView").backgroundDrawable = DrawableRef(new OpenGLDrawable(&doDraw));
-
+        controlsToVars();
+        assignHandlers();
 
         mat4 m;
         m.translate(1, 2, -1);
@@ -145,6 +158,51 @@ class UiWidget : VerticalLayout, CellVisitor {
         //destroy(w);
     }
 
+    float rotationX;
+    float rotationY;
+    float rotationZ;
+    float translationX;
+    float translationY;
+    float translationZ;
+    float near;
+    float far;
+
+    /// handle scroll event
+    bool onScrollEvent(AbstractSlider source, ScrollEvent event) {
+        controlsToVars();
+        return true;
+    }
+
+    void assignHandlers() {
+        childById!ScrollBar("sbNear").scrollEvent = &onScrollEvent;
+        childById!ScrollBar("sbFar").scrollEvent = &onScrollEvent;
+        childById!ScrollBar("sbRotationX").scrollEvent = &onScrollEvent;
+        childById!ScrollBar("sbRotationY").scrollEvent = &onScrollEvent;
+        childById!ScrollBar("sbRotationZ").scrollEvent = &onScrollEvent;
+        childById!ScrollBar("sbTranslationX").scrollEvent = &onScrollEvent;
+        childById!ScrollBar("sbTranslationY").scrollEvent = &onScrollEvent;
+        childById!ScrollBar("sbTranslationZ").scrollEvent = &onScrollEvent;
+    }
+
+    void controlsToVars() {
+        near = childById!ScrollBar("sbNear").position / 10.0f;
+        far = childById!ScrollBar("sbFar").position / 10.0f;
+        translationX = childById!ScrollBar("sbTranslationX").position / 10.0f;
+        translationY = childById!ScrollBar("sbTranslationY").position / 10.0f;
+        translationZ = childById!ScrollBar("sbTranslationZ").position / 10.0f;
+        rotationX = childById!ScrollBar("sbRotationX").position * 2.5f;
+        rotationY = childById!ScrollBar("sbRotationY").position * 2.5f;
+        rotationZ = childById!ScrollBar("sbRotationZ").position * 2.5f;
+        childById("lblNear").text = to!dstring(near);
+        childById("lblFar").text = to!dstring(far);
+        childById("lblTranslationX").text = to!dstring(translationX);
+        childById("lblTranslationY").text = to!dstring(translationY);
+        childById("lblTranslationZ").text = to!dstring(translationZ);
+        childById("lblRotationX").text = to!dstring(rotationX);
+        childById("lblRotationY").text = to!dstring(rotationY);
+        childById("lblRotationZ").text = to!dstring(rotationZ);
+    }
+
     void visit(World world, ref Position camPosition, Vector3d pos, cell_t cell, int visibleFaces) {
         BlockDef def = BLOCK_DEFS[cell];
         def.createFaces(world, world.camPosition, pos, visibleFaces, _minerMesh);
@@ -196,18 +254,18 @@ class UiWidget : VerticalLayout, CellVisitor {
             Log.e("Invalid texture");
             return;
         }
-        _cam.setPerspective(rc.width, rc.height, 45.0f, 0.1f, 100.0f);
+        _cam.setPerspective(rc.width, rc.height, 45.0f, near, far);
         _cam.setIdentity();
         //_cam.translate(vec3(
         //     childById!ScrollBar("sbTranslationX").position / 10.0f,
         //     childById!ScrollBar("sbTranslationY").position / 10.0f,
         //     childById!ScrollBar("sbTranslationZ").position / 10.0f));
-        _cam.translateX(childById!ScrollBar("sbTranslationX").position / 10.0f);
-        _cam.translateY(childById!ScrollBar("sbTranslationY").position / 10.0f);
-        _cam.translateZ(childById!ScrollBar("sbTranslationZ").position / 10.0f);
-        _cam.rotateX(childById!ScrollBar("sbRotationX").position * 2.5f);
-        _cam.rotateY(childById!ScrollBar("sbRotationY").position * 2.5f);
-        _cam.rotateZ(childById!ScrollBar("sbRotationZ").position * 2.5f);
+        _cam.translateX(translationX);
+        _cam.translateY(translationY);
+        _cam.translateZ(translationZ);
+        _cam.rotateX(rotationX);
+        _cam.rotateY(rotationY);
+        _cam.rotateZ(rotationZ);
         //_cam.translate(vec3(-1, -1.5, -1)); // - angle/1000
         //_cam.translate(vec3(0, 0, -1.1)); // - angle/1000
         //_cam.translate(vec3(0, 3,  - angle/1000)); //
