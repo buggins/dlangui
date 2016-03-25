@@ -20,6 +20,10 @@ class Transform {
         setIdentity();
     }
 
+    protected void invalidateTransform() {
+        _dirtyTransform = true;
+    }
+
     /// get scale vector
     public @property ref const(vec3) scaling() const { return _scale; }
     /// get scale X
@@ -30,15 +34,15 @@ class Transform {
     public @property float scalingZ() const { return _scale.z; }
     
     /// set scale vector
-    public @property void scaling(const ref vec3 value) { _scale = value; _hasScale = true; _dirtyTransform = true; }
+    public @property void scaling(const ref vec3 value) { _scale = value; _hasScale = true; invalidateTransform(); }
     /// set scale vector x, y, z to the same value
-    public @property void scaling(float value) { _scale.x = _scale.y = _scale.z = value; _hasScale = true; _dirtyTransform = true; }
+    public @property void scaling(float value) { _scale.x = _scale.y = _scale.z = value; _hasScale = true; invalidateTransform(); }
     /// set scale X
-    public @property void scalingX(float value) { _scale.x = value; _hasScale = true; _dirtyTransform = true; }
+    public @property void scalingX(float value) { _scale.x = value; _hasScale = true; invalidateTransform(); }
     /// set scale Y
-    public @property void scalingY(float value) { _scale.y = value; _hasScale = true; _dirtyTransform = true; }
+    public @property void scalingY(float value) { _scale.y = value; _hasScale = true; invalidateTransform(); }
     /// set scale Z
-    public @property void scalingZ(float value) { _scale.z = value; _hasScale = true; _dirtyTransform = true; }
+    public @property void scalingZ(float value) { _scale.z = value; _hasScale = true; invalidateTransform(); }
 
     /// get translation vector
     public @property ref const(vec3) translation() const { return _translation; }
@@ -50,44 +54,44 @@ class Transform {
     public @property float translationZ() const { return _translation.z; }
 
     /// set translation vector
-    public @property void translation(inout vec3 value) { _translation = value; _hasTranslation = true; _dirtyTransform = true; }
+    public @property void translation(inout vec3 value) { _translation = value; _hasTranslation = true; invalidateTransform(); }
     /// set translation vector x, y, z to the same value
-    public @property void translation(float value) { _translation.x = _translation.y = _translation.z = value; _hasTranslation = true; _dirtyTransform = true; }
+    public @property void translation(float value) { _translation.x = _translation.y = _translation.z = value; _hasTranslation = true; invalidateTransform(); }
     /// set translation x
-    public @property void translationX(float value) { _translation.x = value; _hasTranslation = true; _dirtyTransform = true; }
+    public @property void translationX(float value) { _translation.x = value; _hasTranslation = true; invalidateTransform(); }
     /// set translation y
-    public @property void translationY(float value) { _translation.y = value; _hasTranslation = true; _dirtyTransform = true; }
+    public @property void translationY(float value) { _translation.y = value; _hasTranslation = true; invalidateTransform(); }
     /// set translation z
-    public @property void translationZ(float value) { _translation.z = value; _hasTranslation = true; _dirtyTransform = true; }
+    public @property void translationZ(float value) { _translation.z = value; _hasTranslation = true; invalidateTransform(); }
 
     /// translate by vector
-    public void translate(vec3 value) { _translation += value; _hasTranslation = true; _dirtyTransform = true; }
+    public void translate(vec3 value) { _translation += value; _hasTranslation = true; invalidateTransform(); }
     /// translate X
-    public void translateX(float value) { _translation.x += value; _hasTranslation = true; _dirtyTransform = true; }
+    public void translateX(float value) { _translation.x += value; _hasTranslation = true; invalidateTransform(); }
     /// translate Y
-    public void translateY(float value) { _translation.y += value; _hasTranslation = true; _dirtyTransform = true; }
+    public void translateY(float value) { _translation.y += value; _hasTranslation = true; invalidateTransform(); }
     /// translate Z
-    public void translateZ(float value) { _translation.z += value; _hasTranslation = true; _dirtyTransform = true; }
+    public void translateZ(float value) { _translation.z += value; _hasTranslation = true; invalidateTransform(); }
 
     /// scale by vector
-    public void scale(vec3 value) { _scale.x *= value.x; _scale.y *= value.y; _scale.z *= value.z; _hasScale = true; _dirtyTransform = true; }
+    public void scale(vec3 value) { _scale.x *= value.x; _scale.y *= value.y; _scale.z *= value.z; _hasScale = true; invalidateTransform(); }
     /// scale all axis by the same values
-    public void scale(float value) { _scale *= value; _hasScale = true; _dirtyTransform = true; }
+    public void scale(float value) { _scale *= value; _hasScale = true; invalidateTransform(); }
     /// scale X
-    public void scaleX(float value) { _scale.x *= value; _hasScale = true; _dirtyTransform = true; }
+    public void scaleX(float value) { _scale.x *= value; _hasScale = true; invalidateTransform(); }
     /// scale Y
-    public void scaleY(float value) { _scale.y *= value; _hasScale = true; _dirtyTransform = true; }
+    public void scaleY(float value) { _scale.y *= value; _hasScale = true; invalidateTransform(); }
     /// scale Z
-    public void scaleZ(float value) { _scale.z *= value; _hasScale = true; _dirtyTransform = true; }
+    public void scaleZ(float value) { _scale.z *= value; _hasScale = true; invalidateTransform(); }
 
     /// rotate around X axis
-    public void rotateX(float angle) { _rotation.rotateX(angle); _hasRotation = true; _dirtyTransform = true; }
+    public void rotateX(float angle) { _rotation.rotateX(angle); _hasRotation = true; invalidateTransform(); }
     /// rotate around Y axis
-    public void rotateY(float angle) { _rotation.rotateY(angle); _hasRotation = true; _dirtyTransform = true; }
+    public void rotateY(float angle) { _rotation.rotateY(angle); _hasRotation = true; invalidateTransform(); }
     /// rotate around Z axis
-    public void rotateZ(float angle) { _rotation.rotateZ(angle); _hasRotation = true; _dirtyTransform = true; }
+    public void rotateZ(float angle) { _rotation.rotateZ(angle); _hasRotation = true; invalidateTransform(); }
     /// rotate around custom axis
-    public void rotate(float angle, const ref vec3 axis) { _rotation.rotate(angle, axis); _hasRotation = true; _dirtyTransform = true; }
+    public void rotate(float angle, const ref vec3 axis) { _rotation.rotate(angle, axis); _hasRotation = true; invalidateTransform(); }
 
     /// set transform to identity transform
     public void setIdentity() {

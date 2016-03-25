@@ -8,8 +8,10 @@ import dlangui.core.math3d;
 class Camera : Node3d {
 
     protected mat4 _projectionMatrix;
+    protected mat4 _viewMatrix;
     protected mat4 _viewProjectionMatrix;
-    protected bool _dirtyViewProjection;
+    protected bool _dirtyViewProjection = true;
+    protected bool _dirtyView = true;
 
     protected bool _enabled;
 
@@ -39,10 +41,24 @@ class Camera : Node3d {
         _dirtyViewProjection = true;
     }
 
+    override protected void invalidateTransform() {
+        _dirtyTransform = true;
+        _dirtyViewProjection = true;
+        _dirtyView = true;
+    }
+
+    @property ref const(mat4) viewMatrix() {
+        if (_dirtyView) {
+            _viewMatrix = matrix.invert();
+            _dirtyView = false;
+        }
+        return _viewMatrix;
+    }
+
     /// get projection*view matrix
     @property ref const(mat4) projectionViewMatrix() {
         if (_dirtyTransform || _dirtyViewProjection) {
-            _viewProjectionMatrix = _projectionMatrix * matrix;
+            _viewProjectionMatrix = _projectionMatrix * viewMatrix;
             _dirtyViewProjection = false;
         }
         return _viewProjectionMatrix;

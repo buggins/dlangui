@@ -876,6 +876,11 @@ bool fuzzyNull(float v) {
 struct mat4 {
     float[16] m = [1, 0, 0, 0,  0, 1, 0, 0,  0, 0, 1, 0,  0, 0, 0, 1];
 
+    @property string dump() const {
+        import std.conv : to;
+        return to!string(m[0..4]) ~ to!string(m[4..8]) ~ to!string(m[8..12]) ~ to!string(m[12..16]);
+    }
+
     //alias m this;
 
     this(float v) {
@@ -883,22 +888,22 @@ struct mat4 {
     }
 
     this(const ref mat4 v) {
-        m[0..15] = v.m[0..15];
+        m[0..16] = v.m[0..16];
     }
     this(const float[16] v) {
-        m[0..15] = v[0..15];
+        m[0..16] = v[0..16];
     }
 
     ref mat4 opAssign(const ref mat4 v) {
-        m[0..15] = v.m[0..15];
+        m[0..16] = v.m[0..16];
         return this;
     }
     ref mat4 opAssign(const  mat4 v) {
-        m[0..15] = v.m[0..15];
+        m[0..16] = v.m[0..16];
         return this;
     }
     ref mat4 opAssign(const float[16] v) {
-        m[0..15] = v[0..15];
+        m[0..16] = v[0..16];
         return this;
     }
 
@@ -961,37 +966,6 @@ struct mat4 {
         m[3*4 + 3] = 0.0f;
     }
 
-    void setPerspective2(float angle, float aspect, float nearPlane, float farPlane)
-    {
-        // Bail out if the projection volume is zero-sized.
-        if (nearPlane == farPlane || aspect == 0.0f)
-            return;
-
-        // Construct the projection.
-        float radians = (angle / 2.0f) * PI / 180.0f;
-        float sine = sin(radians);
-        if (sine == 0.0f)
-            return;
-        float cotan = cos(radians) / sine;
-        float clip = farPlane - nearPlane;
-        m[0*4 + 0] = cotan / aspect;
-        m[1*4 + 0] = 0.0f;
-        m[2*4 + 0] = 0.0f;
-        m[3*4 + 0] = 0.0f;
-        m[0*4 + 1] = 0.0f;
-        m[1*4 + 1] = cotan;
-        m[2*4 + 1] = 0.0f;
-        m[3*4 + 1] = 0.0f;
-        m[0*4 + 2] = 0.0f;
-        m[1*4 + 2] = 0.0f;
-        m[2*4 + 2] = -(nearPlane + farPlane) / clip;
-        m[3*4 + 2] = -(2.0f * nearPlane * farPlane) / clip;
-        m[0*4 + 3] = 0.0f;
-        m[1*4 + 3] = 0.0f;
-        m[2*4 + 3] = -1.0f;
-        m[3*4 + 3] = 0.0f;
-    }
-
     ref mat4 lookAt(const vec3 eye, const vec3 center, const vec3 up) {
         vec3 forward = (center - eye).normalized();
         vec3 side = vec3.crossProduct(forward, up).normalized();
@@ -1019,6 +993,56 @@ struct mat4 {
         this *= m;
         translate(-eye);
         return this;
+    }
+
+    mat4 invert() const
+    {
+        float a0 = m[0] * m[5] - m[1] * m[4];
+        float a1 = m[0] * m[6] - m[2] * m[4];
+        float a2 = m[0] * m[7] - m[3] * m[4];
+        float a3 = m[1] * m[6] - m[2] * m[5];
+        float a4 = m[1] * m[7] - m[3] * m[5];
+        float a5 = m[2] * m[7] - m[3] * m[6];
+        float b0 = m[8] * m[13] - m[9] * m[12];
+        float b1 = m[8] * m[14] - m[10] * m[12];
+        float b2 = m[8] * m[15] - m[11] * m[12];
+        float b3 = m[9] * m[14] - m[10] * m[13];
+        float b4 = m[9] * m[15] - m[11] * m[13];
+        float b5 = m[10] * m[15] - m[11] * m[14];
+
+        // Calculate the determinant.
+        float det = a0 * b5 - a1 * b4 + a2 * b3 + a3 * b2 - a4 * b1 + a5 * b0;
+
+        mat4 inverse;
+
+        // Close to zero, can't invert.
+        if (fabs(det) <= 0.00000001f)
+            return inverse;
+
+        // Support the case where m == dst.
+        inverse.m[0]  = m[5] * b5 - m[6] * b4 + m[7] * b3;
+        inverse.m[1]  = -m[1] * b5 + m[2] * b4 - m[3] * b3;
+        inverse.m[2]  = m[13] * a5 - m[14] * a4 + m[15] * a3;
+        inverse.m[3]  = -m[9] * a5 + m[10] * a4 - m[11] * a3;
+
+        inverse.m[4]  = -m[4] * b5 + m[6] * b2 - m[7] * b1;
+        inverse.m[5]  = m[0] * b5 - m[2] * b2 + m[3] * b1;
+        inverse.m[6]  = -m[12] * a5 + m[14] * a2 - m[15] * a1;
+        inverse.m[7]  = m[8] * a5 - m[10] * a2 + m[11] * a1;
+
+        inverse.m[8]  = m[4] * b4 - m[5] * b2 + m[7] * b0;
+        inverse.m[9]  = -m[0] * b4 + m[1] * b2 - m[3] * b0;
+        inverse.m[10] = m[12] * a4 - m[13] * a2 + m[15] * a0;
+        inverse.m[11] = -m[8] * a4 + m[9] * a2 - m[11] * a0;
+
+        inverse.m[12] = -m[4] * b3 + m[5] * b1 - m[6] * b0;
+        inverse.m[13] = m[0] * b3 - m[1] * b1 + m[2] * b0;
+        inverse.m[14] = -m[12] * a3 + m[13] * a1 - m[14] * a0;
+        inverse.m[15] = m[8] * a3 - m[9] * a1 + m[10] * a0;
+
+        float mul = 1.0f / det;
+        inverse *= mul;
+        return inverse;
     }
 
     ref mat4 setLookAt(const vec3 eye, const vec3 center, const vec3 up) {
@@ -1073,9 +1097,8 @@ struct mat4 {
     }
 
     /// multiply this matrix by another matrix
-    mat4 opOpAssign(string op : "*")(const ref mat4 m2) {
+    void opOpAssign(string op : "*")(const ref mat4 m2) {
         this = mul(this, m2);
-        return this;
     }
 
     /// multiply two matrices
@@ -1274,28 +1297,24 @@ struct mat4 {
 
 
     /// add value to all components of matrix
-    ref mat4 opOpAssign(string op : "+")(float v) {
+    void opOpAssign(string op : "+")(float v) {
         foreach(ref item; m)
             item += v;
-        return this;
     }
     /// multiply all components of matrix by value
-    ref mat4 opOpAssign(string op : "*")(float v) {
+    void opOpAssign(string op : "*")(float v) {
         foreach(ref item; m)
             item *= v;
-        return this;
     }
     /// subtract value from all components of matrix
-    ref mat4 opOpAssign(string op : "-")(float v) {
+    void opOpAssign(string op : "-")(float v) {
         foreach(ref item; m)
             item -= v;
-        return this;
     }
     /// divide all components of vector by matrix
-    ref mat4 opOpAssign(string op : "/")(float v) {
+    void opOpAssign(string op : "/")(float v) {
         foreach(ref item; m)
             item /= v;
-        return this;
     }
 
     /// inplace rotate around Z axis

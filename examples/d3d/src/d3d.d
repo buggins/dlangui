@@ -65,19 +65,19 @@ class UiWidget : VerticalLayout, CellVisitor {
                         ScrollBar { id: sbTranslationX; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 200; alpha: 0.6 }
                         TextWidget { text: "Rotation X" }
                         TextWidget { id: lblRotationX; text: "0.0"; minWidth: 80; backgroundColor: 0x80FFFFFF }
-                        ScrollBar { id: sbRotationX; orientation: horizontal; minValue: -100; maxValue: 100; position: 10; minWidth: 200; alpha: 0.6 }
+                        ScrollBar { id: sbRotationX; orientation: horizontal; minValue: -180; maxValue: 180; position: 0; minWidth: 200; alpha: 0.6 }
                         TextWidget { text: "Translation Y" }
                         TextWidget { id: lblTranslationY; text: "0.0"; minWidth: 80; backgroundColor: 0x80FFFFFF }
-                        ScrollBar { id: sbTranslationY; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 200; alpha: 0.6 }
+                        ScrollBar { id: sbTranslationY; orientation: horizontal; minValue: -100; maxValue: 100; position: 15; minWidth: 200; alpha: 0.6 }
                         TextWidget { text: "Rotation Y" }
                         TextWidget { id: lblRotationY; text: "0.0"; minWidth: 80; backgroundColor: 0x80FFFFFF }
-                        ScrollBar { id: sbRotationY; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 150; alpha: 0.6 }
+                        ScrollBar { id: sbRotationY; orientation: horizontal; minValue: -180; maxValue: 180; position: 0; minWidth: 150; alpha: 0.6 }
                         TextWidget { text: "Translation Z" }
                         TextWidget { id: lblTranslationZ; text: "0.0"; minWidth: 80; backgroundColor: 0x80FFFFFF }
-                        ScrollBar { id: sbTranslationZ; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 150; alpha: 0.6 }
+                        ScrollBar { id: sbTranslationZ; orientation: horizontal; minValue: -100; maxValue: 100; position: 45; minWidth: 150; alpha: 0.6 }
                         TextWidget { text: "Rotation Z" }
                         TextWidget { id: lblRotationZ; text: "0.0"; minWidth: 80; backgroundColor: 0x80FFFFFF }
-                        ScrollBar { id: sbRotationZ; orientation: horizontal; minValue: -100; maxValue: 100; position: 0; minWidth: 150; alpha: 0.6 }
+                        ScrollBar { id: sbRotationZ; orientation: horizontal; minValue: -180; maxValue: 180; position: 0; minWidth: 150; alpha: 0.6 }
                         TextWidget { text: "Near" }
                         TextWidget { id: lblNear; text: "0.1"; minWidth: 80; backgroundColor: 0x80FFFFFF }
                         ScrollBar { id: sbNear; orientation: horizontal; minValue: 1; maxValue: 100; position: 1; minWidth: 150; alpha: 0.6 }
@@ -101,15 +101,6 @@ class UiWidget : VerticalLayout, CellVisitor {
         childById("glView").backgroundDrawable = DrawableRef(new OpenGLDrawable(&doDraw));
         controlsToVars();
         assignHandlers();
-
-        mat4 m;
-        m.translate(1, 2, -1);
-        Log.d("M*v=", m * vec3(0, 0, 0));
-        Log.d("M*v=", m * vec3(10, 10, 10));
-        m.translate(0, 0, -2);
-        Log.d("M*v=", m * vec3(0, 0, 0));
-        Log.d("M*v=", m * vec3(10, 10, 10));
-
 
         _scene = new Scene3d();
 
@@ -190,9 +181,9 @@ class UiWidget : VerticalLayout, CellVisitor {
         translationX = childById!ScrollBar("sbTranslationX").position / 10.0f;
         translationY = childById!ScrollBar("sbTranslationY").position / 10.0f;
         translationZ = childById!ScrollBar("sbTranslationZ").position / 10.0f;
-        rotationX = childById!ScrollBar("sbRotationX").position * 2.5f;
-        rotationY = childById!ScrollBar("sbRotationY").position * 2.5f;
-        rotationZ = childById!ScrollBar("sbRotationZ").position * 2.5f;
+        rotationX = childById!ScrollBar("sbRotationX").position;
+        rotationY = childById!ScrollBar("sbRotationY").position;
+        rotationZ = childById!ScrollBar("sbRotationZ").position;
         childById("lblNear").text = to!dstring(near);
         childById("lblFar").text = to!dstring(far);
         childById("lblTranslationX").text = to!dstring(translationX);
@@ -270,9 +261,8 @@ class UiWidget : VerticalLayout, CellVisitor {
         //_cam.translate(vec3(0, 0, -1.1)); // - angle/1000
         //_cam.translate(vec3(0, 3,  - angle/1000)); //
         //_cam.rotateZ(30.0f + angle * 0.3456778);
-        mat4 projectionViewMatrix = _cam.projectionViewMatrix;
 
-        Log.d("projectionViewMatrix: ", projectionViewMatrix);
+        mat4 projectionViewMatrix = _cam.projectionViewMatrix;
 
         // ======== Model Matrix ==================
         mat4 modelMatrix;
@@ -284,6 +274,46 @@ class UiWidget : VerticalLayout, CellVisitor {
         //modelMatrix.rotatex(angle * 1.98765f);
 
         mat4 projectionViewModelMatrix = projectionViewMatrix * modelMatrix;
+        //Log.d("projectionViewModelMatrix: ", projectionViewModelMatrix.dump);
+
+        //{
+        //    mat4 projection;
+        //    projection.setPerspective(45.0f, cast(float)rc.width / rc.height, near, far);
+        //    mat4 view;
+        //    view.translate(translationX, translationY, translationZ);
+        //    Log.d("    .viewMatrix.trans       ", view.dump);
+        //    view.rotateX(rotationX);
+        //    Log.d("    .viewMatrix.rx          ", view.dump);
+        //    view.rotateY(rotationY);
+        //    Log.d("    .viewMatrix.ry          ", view.dump);
+        //    view.rotateZ(rotationZ);
+        //    Log.d("    .viewMatrix.rz          ", view.dump);
+        //    mat4 projectionView = projection * view;
+        //    Log.d("    .projectionMatrix:      ", projection.dump);
+        //    Log.d("    .viewMatrix:            ", view.dump);
+        //    Log.d("    .projectionViewMatrix:  ", projectionView.dump);
+        //    Log.d("    .projectionViewMMatrix: ", (projectionView * modelMatrix).dump);
+        //}
+
+        //{
+        //    import gl3n.linalg;
+        //    static string dump(mat4 m) {
+        //        m.transpose;
+        //        return to!string(m[0]) ~ to!string(m[1]) ~ to!string(m[2]) ~ to!string(m[3]);
+        //    }
+        //    static float toRad(float angle) { return angle * 2 * PI / 360; }
+        //    mat4 projection = mat4.perspective(rc.width, rc.height, 45.0f, near, far);
+        //    mat4 view = mat4.identity.translate(translationX, translationY, translationZ).rotatex(toRad(rotationX)).rotatey(toRad(rotationY)).rotatez(toRad(rotationZ));
+        //    Log.d("gl3n.viewMatrix: tr         ", dump(mat4.identity.translate(translationX, translationY, translationZ)));
+        //    Log.d("gl3n.viewMatrix: rx         ", dump(mat4.identity.translate(translationX, translationY, translationZ).rotatex(toRad(rotationX))));
+        //    Log.d("gl3n.viewMatrix: ry         ", dump(mat4.identity.translate(translationX, translationY, translationZ).rotatex(toRad(rotationX)).rotatey(toRad(rotationY))));
+        //    Log.d("gl3n.viewMatrix: rz         ", dump(mat4.identity.translate(translationX, translationY, translationZ).rotatex(toRad(rotationX)).rotatey(toRad(rotationY)).rotatez(toRad(rotationZ))));
+        //    mat4 projectionView = projection * view;
+        //    Log.d("gl3n.projectionMatrix:      ", dump(projection));
+        //    Log.d("gl3n.viewMatrix:            ", dump(view));
+        //    Log.d("gl3n.projectionViewMatrix:  ", dump(projectionView));
+        //    Log.d("gl3n.projectionViewMMatrix: ", dump(projectionView * mat4.identity));
+        //}
 
         //projectionViewModelMatrix.setIdentity();
         //Log.d("matrix uniform: ", projectionViewModelMatrix.m);
