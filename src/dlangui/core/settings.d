@@ -82,7 +82,13 @@ class SettingsFile {
     }
 
     static int limitInt(long value, int minvalue, int maxvalue) {
-        return clamp(cast(int)value, minvalue, maxvalue);
+        if (value < minValue)
+            return minValue;
+        if (value > maxValue)
+            return maxValue;
+        return value;
+        // remove clamp to support older compilers
+        //return clamp(cast(int)value, minvalue, maxvalue);
     }
 
     static string limitString(string value, const string[] values)
