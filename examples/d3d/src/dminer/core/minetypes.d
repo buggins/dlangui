@@ -726,7 +726,7 @@ int mySign(int n) {
         return 0;
 }
 
-immutable ulong RANDOM_MULTIPLIER  = ((cast(ulong)1 << 48) - 1);
+immutable ulong RANDOM_MULTIPLIER  = 0x5DEECE66D;
 immutable ulong RANDOM_MASK = ((cast(ulong)1 << 48) - 1);
 immutable ulong RANDOM_ADDEND = cast(ulong)0xB;
 

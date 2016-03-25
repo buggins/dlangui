@@ -65,7 +65,7 @@ public:
         ushort startVertexIndex = cast(ushort)mesh.vertexCount;
         float[VERTEX_COMPONENTS * 4] vptr;
         ushort[6] iptr;
-        createFaceMesh(vptr.ptr, face, pos.x + 0.5f, pos.y + 0.5f, pos.z + 0.5f, txIndex);
+        createFaceMesh(vptr.ptr, face, pos.x, pos.y, pos.z, txIndex);
         for (int i = 0; i < 6; i++)
             iptr[i] = cast(ushort)(startVertexIndex + face_indexes[i]);
         //if (HIGHLIGHT_GRID && ((pos.x & 7) == 0 || (pos.z & 7) == 0)) {
@@ -149,10 +149,9 @@ static void fillFaceMesh(float * data, const float * src, float x0, float y0, fl
     for (int i = 0; i < 4; i++) {
         const float * srcvertex = src + i * VERTEX_COMPONENTS;
         float * dstvertex = data + i * VERTEX_COMPONENTS;
-        for (int j = 0; j < 11; j++) {
+        for (int j = 0; j < VERTEX_COMPONENTS; j++) {
             float v = srcvertex[j];
             switch (j) {
-                default:
                 case 0: // x
                     v += x0;
                     break;
@@ -166,7 +165,10 @@ static void fillFaceMesh(float * data, const float * src, float x0, float y0, fl
                     v = ((tileX + v * BLOCK_SPRITE_SIZE)) / cast(float)BLOCK_TEXTURE_DX;
                     break;
                 case 11: // tx.v
-                    v = (BLOCK_TEXTURE_DY - (tileY + v * BLOCK_SPRITE_SIZE)) / cast(float)BLOCK_TEXTURE_DY;
+                    //v = (BLOCK_TEXTURE_DY - (tileY + v * BLOCK_SPRITE_SIZE)) / cast(float)BLOCK_TEXTURE_DY;
+                    v = ((tileY + v * BLOCK_SPRITE_SIZE)) / cast(float)BLOCK_TEXTURE_DY;
+                    break;
+                default:
                     break;
             }
             dstvertex[j] = v;

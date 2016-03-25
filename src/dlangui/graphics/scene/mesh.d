@@ -174,6 +174,11 @@ class Mesh {
         _dirtyVertexBuffer = true;
     }
 
+    const(float[]) vertex(int index) {
+        int i = _vertexFormat.vertexFloats * index;
+        return _vertexData[i .. i + _vertexFormat.vertexFloats];
+    }
+
     void reset() {
         _vertexCount = 0;
         _vertexData.length = 0;

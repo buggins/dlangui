@@ -128,15 +128,20 @@ class UiWidget : VerticalLayout, CellVisitor {
 
         _minerMesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, VertexElementType.COLOR, VertexElementType.TEXCOORD0));
         _world = new World();
-        for (int x = -100; x < 100; x++)
-            for (int z = -100; z < 100; z++)
-                _world.setCell(x, 0, z, 1);
         _world.setCell(0, 11, 10, 2);
         _world.setCell(5, 11, 15, 2);
+        for (int x = -100; x < 100; x++)
+            for (int z = -100; z < 100; z++)
+                _world.setCell(x, 0, z, 2);
         Random rnd;
         rnd.setSeed(12345);
-        for(int i = 0; i < 1000; i++)
-            _world.setCell(rnd.next(6)-32, rnd.next(4), rnd.next(6)-32, 3);
+        for(int i = 0; i < 1000; i++) {
+            int bx = rnd.next(6)-32;
+            int by = rnd.next(4); 
+            int bz = rnd.next(6)-32;
+            Log.fd("Setting cell %d,%d,%d", bx, by, bz);
+            _world.setCell(bx, by, bz, 3);
+        }
 
         _world.camPosition = Position(Vector3d(0, 3, 0), Vector3d(0, 0, 1));
         updateMinerMesh();
@@ -205,6 +210,8 @@ class UiWidget : VerticalLayout, CellVisitor {
         _world.visitVisibleCells(_world.camPosition, this);
         long duration = currentTimeMillis - ts;
         Log.d("DiamondVisitor finished in ", duration, " ms  ", "Vertex count: ", _minerMesh.vertexCount);
+        for (int i = 0; i < 20; i++)
+            Log.d("vertex: ", _minerMesh.vertex(i));
     }
 
     World _world;
