@@ -875,11 +875,13 @@ class Window : CustomEventTarget {
         if (_mainWidget is null)
             return false;
 
+        bool actualChange = true;
         if (event.action == MouseAction.Move) {
+            actualChange = (_lastMouseX != event.x || _lastMouseY != event.y);
             _lastMouseX = event.x;
             _lastMouseY = event.y;
         }
-        hideTooltip();
+        if (actualChange) hideTooltip();
 
         PopupWidget modal = modalPopup();
 
