@@ -87,7 +87,7 @@ class SettingsFile {
             return minvalue;
         if (value > maxvalue)
             return maxvalue;
-        return value;
+        return cast(int)value;
         // remove clamp to support older compilers
         //return clamp(cast(int)value, minvalue, maxvalue);
     }
