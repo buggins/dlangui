@@ -25,7 +25,8 @@
         "views/res/i18n"
     ],
 
-    "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.", "--ex", "src.dlangui"],
+    "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.",
+        "--ex", "dimage.", "--ex", "fontconfig", "--ex", "src.dlangui"],
 
     "sourceFiles-windows": ["$PACKAGE_DIR/src/win_app.def"],
 
