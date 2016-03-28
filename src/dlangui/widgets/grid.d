@@ -1380,7 +1380,8 @@ class StringGridWidget : StringGridWidgetBase {
         dstring txt = cellText(col, row);
         Point sz = fnt.textSize(txt);
         Align ha = Align.Left;
-        applyAlign(rc, sz, ha, Align.VCenter);
+        //if (sz.y < rc.height)
+        //    applyAlign(rc, sz, ha, Align.VCenter);
         fnt.drawText(buf, rc.left + 1, rc.top + 1, txt, textColor);
     }
 
