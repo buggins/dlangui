@@ -354,7 +354,7 @@ class Font : RefCountedObject {
     *      x =     x coordinate to draw first character at
     *      y =     y coordinate to draw first character at
     *      text =  text string to draw
-    *      colors =  array of colors, colors[i] is color for character text[i]
+    *      charProps =  array of character properties, charProps[i] are properties for character text[i]
     *      tabSize = tabulation size, in number of spaces
     *      tabOffset = when string is drawn not from left position, use to move tab stops left/right
     *      textFlags = set of TextFlag bit fields

@@ -15,7 +15,7 @@ import dlangui.core.logger;
 // use stderror for logging
 setStderrLogger();
 // set log level
-setLogLevel(LogLeve.Debug);
+setLogLevel(LogLevel.Debug);
 
 // usage:
 
