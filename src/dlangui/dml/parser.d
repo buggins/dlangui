@@ -13,7 +13,7 @@ Widget layout = parseML(q{
         TextLine { id: editor; text: "Some text to edit" }
         Button { id: btnOk; text: "Ok" }
     }
-}
+});
 
 
 ----

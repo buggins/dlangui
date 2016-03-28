@@ -676,12 +676,12 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return this;
     }
 
-    /// when true, show modification marks for lines (whether line is unchanged/modified/modified_saved
+    /// when true, show modification marks for lines (whether line is unchanged/modified/modified_saved)
     @property bool showModificationMarks() {
         return _showModificationMarks;
     }
 
-    /// when true, show modification marks for lines (whether line is unchanged/modified/modified_saved
+    /// when true, show modification marks for lines (whether line is unchanged/modified/modified_saved)
     @property EditWidgetBase showModificationMarks(bool flg) {
         if (_showModificationMarks != flg) {
             _showModificationMarks = flg;
