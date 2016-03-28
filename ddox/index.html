@@ -1,17 +1,15 @@
-
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta charset="UTF-8"/><!-- using block title in layout.dt--><!-- using block ddox.defs in ddox.layout.dt--><!-- using block ddox.title in ddox.layout.dt-->
+		<meta charset="UTF-8"/>
 		<title>API documentation</title>
 		<link rel="stylesheet" type="text/css" href="./styles/ddox.css"/>
 		<link rel="stylesheet" href="./prettify/prettify.css" type="text/css"/>
 		<script type="text/javascript" src="./scripts/jquery.js">/**/</script>
-		<script type="text/javascript" src="./prettify/prettify.js">/**/</script>
 		<script type="text/javascript" src="./scripts/ddox.js">/**/</script>
 	</head>
-	<body onload="prettyPrint(); setupDdox();">
-		<nav id="main-nav"><!-- using block navigation in layout.dt-->
+	<body onload="setupDdox();">
+		<nav id="main-nav">
 						<ul class="tree-view">
 							<li class=" tree-view">
 								<a href="#" class="package">dlangui</a>
@@ -20,7 +18,25 @@
 								<a href="#" class="package">core</a>
 						<ul class="tree-view">
 							<li>
+								<a href="./dlangui/core/asyncsocket.html" class=" module">asyncsocket</a>
+							</li>
+							<li>
 								<a href="./dlangui/core/collections.html" class=" module">collections</a>
+							</li>
+							<li>
+								<a href="./dlangui/core/config.html" class=" module">config</a>
+							</li>
+							<li>
+								<a href="./dlangui/core/css.html" class=" module">css</a>
+							</li>
+							<li>
+								<a href="./dlangui/core/cssparser.html" class=" module">cssparser</a>
+							</li>
+							<li>
+								<a href="./dlangui/core/dom.html" class=" module">dom</a>
+							</li>
+							<li>
+								<a href="./dlangui/core/editable.html" class=" module">editable</a>
 							</li>
 							<li>
 								<a href="./dlangui/core/events.html" class=" module">events</a>
@@ -38,10 +54,25 @@
 								<a href="./dlangui/core/logger.html" class=" module">logger</a>
 							</li>
 							<li>
+								<a href="./dlangui/core/math3d.html" class=" module">math3d</a>
+							</li>
+							<li>
+								<a href="./dlangui/core/queue.html" class=" module">queue</a>
+							</li>
+							<li>
+								<a href="./dlangui/core/settings.html" class=" module">settings</a>
+							</li>
+							<li>
 								<a href="./dlangui/core/signals.html" class=" module">signals</a>
 							</li>
 							<li>
 								<a href="./dlangui/core/stdaction.html" class=" module">stdaction</a>
+							</li>
+							<li>
+								<a href="./dlangui/core/streams.html" class=" module">streams</a>
+							</li>
+							<li>
+								<a href="./dlangui/core/textsource.html" class=" module">textsource</a>
 							</li>
 							<li>
 								<a href="./dlangui/core/types.html" class=" module">types</a>
@@ -58,15 +89,72 @@
 								<a href="./dlangui/dialogs/filedlg.html" class=" module">filedlg</a>
 							</li>
 							<li>
+								<a href="./dlangui/dialogs/inputbox.html" class=" module">inputbox</a>
+							</li>
+							<li>
 								<a href="./dlangui/dialogs/msgbox.html" class=" module">msgbox</a>
+							</li>
+							<li>
+								<a href="./dlangui/dialogs/settingsdialog.html" class=" module">settingsdialog</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="./dlangui/dml/annotations.html" class=" module">annotations</a>
+							</li>
+							<li>
+								<a href="./dlangui/dml/dmlhighlight.html" class=" module">dmlhighlight</a>
+							</li>
+							<li>
+								<a href="./dlangui/dml/parser.html" class=" module">parser</a>
 							</li>
 						</ul>
 							</li>
 							<li class="collapsed tree-view">
 								<a href="#" class="package">graphics</a>
 						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">scene</a>
+						<ul class="tree-view">
+							<li>
+								<a href="./dlangui/graphics/scene/camera.html" class=" module">camera</a>
+							</li>
+							<li>
+								<a href="./dlangui/graphics/scene/material.html" class=" module">material</a>
+							</li>
+							<li>
+								<a href="./dlangui/graphics/scene/mesh.html" class=" module">mesh</a>
+							</li>
+							<li>
+								<a href="./dlangui/graphics/scene/node.html" class=" module">node</a>
+							</li>
+							<li>
+								<a href="./dlangui/graphics/scene/scene3d.html" class=" module">scene3d</a>
+							</li>
+							<li>
+								<a href="./dlangui/graphics/scene/transform.html" class=" module">transform</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">xpm</a>
+						<ul class="tree-view">
+							<li>
+								<a href="./dlangui/graphics/xpm/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="./dlangui/graphics/xpm/reader.html" class=" module">reader</a>
+							</li>
+						</ul>
+							</li>
 							<li>
 								<a href="./dlangui/graphics/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="./dlangui/graphics/domrender.html" class=" module">domrender</a>
 							</li>
 							<li>
 								<a href="./dlangui/graphics/drawbuf.html" class=" module">drawbuf</a>
@@ -100,6 +188,17 @@
 							<li>
 								<a href="./dlangui/platforms/common/platform.html" class=" module">platform</a>
 							</li>
+							<li>
+								<a href="./dlangui/platforms/common/startup.html" class=" module">startup</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dsfml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="./dlangui/platforms/dsfml/dsfmlapp.html" class=" module">dsfmlapp</a>
+							</li>
 						</ul>
 							</li>
 							<li class="collapsed tree-view">
@@ -121,6 +220,14 @@
 							</li>
 							<li>
 								<a href="./dlangui/platforms/windows/winapp.html" class=" module">winapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">x11</a>
+						<ul class="tree-view">
+							<li>
+								<a href="./dlangui/platforms/x11/x11app.html" class=" module">x11app</a>
 							</li>
 						</ul>
 							</li>
@@ -157,6 +264,9 @@
 								<a href="./dlangui/widgets/menu.html" class=" module">menu</a>
 							</li>
 							<li>
+								<a href="./dlangui/widgets/metadata.html" class=" module">metadata</a>
+							</li>
+							<li>
 								<a href="./dlangui/widgets/popup.html" class=" module">popup</a>
 							</li>
 							<li>
@@ -183,12 +293,15 @@
 							<li>
 								<a href="./dlangui/widgets/widget.html" class=" module">widget</a>
 							</li>
+							<li>
+								<a href="./dlangui/widgets/winframe.html" class=" module">winframe</a>
+							</li>
+						</ul>
+							</li>
 						</ul>
 							</li>
 							<li>
-								<a href="./dlangui/all.html" class=" module">all</a>
-							</li>
-						</ul>
+								<a href="./dlangui.html" class=" module">dlangui</a>
 							</li>
 						</ul>
 				<noscript>
@@ -205,24 +318,32 @@ var symbolSearchRootDir = "./";
 $('#symbolSearchPane').show();
 	</script>
 				</div>
-				<script type="text/javascript" src="./scripts/mousetrap.js"></script>
-				<script type="text/javascript">
+			<script type="text/javascript" src="./scripts/mousetrap.js"></script>
+			<script type="text/javascript">
 $(document).ready(function() {
 	Mousetrap.bind('s', function(e) {
 		$("#symbolSearch").focus();
 		return false;
 	});
 });
-				</script>
+			</script>
 		</nav>
 		<div id="main-contents">
-			<h1>API documentation</h1><!-- using block body in layout.dt--><!-- Default block ddox.description in ddox.layout.dt--><!-- Default block ddox.sections in ddox.layout.dt--><!-- using block ddox.members in ddox.layout.dt-->
+			<h1>API documentation</h1>
 			<table>
 				<col class="caption"/>
 				<tr>
 					<th>Module</th>
 					<th>Description</th>
 				</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/core/asyncsocket.html">dlangui.core.asyncsocket</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
 			<tr>
 				<td>
 					<a href="./dlangui/core/collections.html">dlangui.core.collections</a>
@@ -234,10 +355,53 @@ This module implements object collection.
 			</tr>
 			<tr>
 				<td>
+					<a href="./dlangui/core/config.html">dlangui.core.config</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/core/css.html">dlangui.core.css</a>
+				</td>
+				<td>
+This module contains implementation of CSS support - Cascading Style Sheets.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/core/cssparser.html">dlangui.core.cssparser</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/core/dom.html">dlangui.core.dom</a>
+				</td>
+				<td>
+This module contains implementation DOM - document object model.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/core/editable.html">dlangui.core.editable</a>
+				</td>
+				<td>
+This module contains implementation of editable text content.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
 					<a href="./dlangui/core/events.html">dlangui.core.events</a>
 				</td>
 				<td>
-This module contains dlangui event types declarations.
+This module contains <a href="./dlangui.html"><code class="lang-d"><span class="pln">dlangui</span></code></a> event types declarations.
 
 				</td>
 			</tr>
@@ -279,6 +443,31 @@ This module provides logging utilities.
 			</tr>
 			<tr>
 				<td>
+					<a href="./dlangui/core/math3d.html">dlangui.core.math3d</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/core/queue.html">dlangui.core.queue</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/core/settings.html">dlangui.core.settings</a>
+				</td>
+				<td>
+This module contains implementation of settings container.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
 					<a href="./dlangui/core/signals.html">dlangui.core.signals</a>
 				</td>
 				<td>
@@ -297,10 +486,26 @@ Definition of standard actions commonly used in dialogs and controls.
 			</tr>
 			<tr>
 				<td>
+					<a href="./dlangui/core/streams.html">dlangui.core.streams</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/core/textsource.html">dlangui.core.textsource</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			<tr>
+				<td>
 					<a href="./dlangui/core/types.html">dlangui.core.types</a>
 				</td>
 				<td>
-This module declares basic data types for usage in dlangui library.
+This module declares basic data types for usage in <a href="./dlangui.html"><code class="lang-d"><span class="pln">dlangui</span></code></a> library.
 
 				</td>
 			</tr>
@@ -309,7 +514,7 @@ This module declares basic data types for usage in dlangui library.
 					<a href="./dlangui/dialogs/dialog.html">dlangui.dialogs.dialog</a>
 				</td>
 				<td>
-This module contains common <a href="./dlangui/dialogs/dialog/Dialog.html"><code class="prettyprint lang-d">Dialog</code></a> implementation.
+This module contains common <a href="./dlangui/dialogs/dialog/Dialog.html"><code class="lang-d"><span class="typ">Dialog</span></code></a> implementation.
 
 				</td>
 			</tr>
@@ -318,7 +523,15 @@ This module contains common <a href="./dlangui/dialogs/dialog/Dialog.html"><code
 					<a href="./dlangui/dialogs/filedlg.html">dlangui.dialogs.filedlg</a>
 				</td>
 				<td>
-This module contains <a href="./dlangui/dialogs/filedlg/FileDialog.html"><code class="prettyprint lang-d">FileDialog</code></a> implementation.
+This module contains <a href="./dlangui/dialogs/filedlg/FileDialog.html"><code class="lang-d"><span class="typ">FileDialog</span></code></a> implementation.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/dialogs/inputbox.html">dlangui.dialogs.inputbox</a>
+				</td>
+				<td>
 
 				</td>
 			</tr>
@@ -333,10 +546,116 @@ This module contains common Dialog implementation.
 			</tr>
 			<tr>
 				<td>
+					<a href="./dlangui/dialogs/settingsdialog.html">dlangui.dialogs.settingsdialog</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/dml/annotations.html">dlangui.dml.annotations</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/dml/dmlhighlight.html">dlangui.dml.dmlhighlight</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/dml/parser.html">dlangui.dml.parser</a>
+				</td>
+				<td>
+This module is DML (DlangUI Markup Language) parser - similar to QML in QtQuick
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/graphics/scene/camera.html">dlangui.graphics.scene.camera</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/graphics/scene/material.html">dlangui.graphics.scene.material</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/graphics/scene/mesh.html">dlangui.graphics.scene.mesh</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/graphics/scene/node.html">dlangui.graphics.scene.node</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/graphics/scene/scene3d.html">dlangui.graphics.scene.scene3d</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/graphics/scene/transform.html">dlangui.graphics.scene.transform</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/graphics/xpm/colors.html">dlangui.graphics.xpm.colors</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/graphics/xpm/reader.html">dlangui.graphics.xpm.reader</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			<tr>
+				<td>
 					<a href="./dlangui/graphics/colors.html">dlangui.graphics.colors</a>
 				</td>
 				<td>
 This module contains declaration of useful color related operations.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/graphics/domrender.html">dlangui.graphics.domrender</a>
+				</td>
+				<td>
+This module contains implementation of DOM rendering.
 
 				</td>
 			</tr>
@@ -414,6 +733,22 @@ This module contains common Plaform definitions.
 			</tr>
 			<tr>
 				<td>
+					<a href="./dlangui/platforms/common/startup.html">dlangui.platforms.common.startup</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/platforms/dsfml/dsfmlapp.html">dlangui.platforms.dsfml.dsfmlapp</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			<tr>
+				<td>
 					<a href="./dlangui/platforms/sdl/sdlapp.html">dlangui.platforms.sdl.sdlapp</a>
 				</td>
 				<td>
@@ -445,6 +780,14 @@ This module contains implementation of Win32 fonts support
 				</td>
 				<td>
 This module contains implementation of Win32 platform support
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui/platforms/x11/x11app.html">dlangui.platforms.x11.x11app</a>
+				</td>
+				<td>
 
 				</td>
 			</tr>
@@ -531,6 +874,14 @@ This module contains menu widgets implementation.
 			</tr>
 			<tr>
 				<td>
+					<a href="./dlangui/widgets/metadata.html">dlangui.widgets.metadata</a>
+				</td>
+				<td>
+
+				</td>
+			</tr>
+			<tr>
+				<td>
 					<a href="./dlangui/widgets/popup.html">dlangui.widgets.popup</a>
 				</td>
 				<td>
@@ -606,13 +957,22 @@ This module contains tree widgets implementation
 					<a href="./dlangui/widgets/widget.html">dlangui.widgets.widget</a>
 				</td>
 				<td>
-This module contains declaration of <a href="./dlangui/widgets/widget/Widget.html"><code class="prettyprint lang-d">Widget</code></a> class - base class for all widgets.
+This module contains declaration of <a href="./dlangui/widgets/widget/Widget.html"><code class="lang-d"><span class="typ">Widget</span></code></a> class - base class for all widgets.
 
 				</td>
 			</tr>
 			<tr>
 				<td>
-					<a href="./dlangui/all.html">dlangui.all</a>
+					<a href="./dlangui/widgets/winframe.html">dlangui.widgets.winframe</a>
+				</td>
+				<td>
+This module implements window frame widget.
+
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<a href="./dlangui.html">dlangui</a>
 				</td>
 				<td>
 This module is just to simplify import of most useful DLANGUI modules.
@@ -621,13 +981,13 @@ This module is just to simplify import of most useful DLANGUI modules.
 			</tr>
 			</table>
 			<section>
-				<h2>Authors</h2><!-- Default block ddox.authors in ddox.layout.dt-->
+				<h2>Authors</h2>
 			</section>
 			<section>
-				<h2>Copyright</h2><!-- Default block ddox.copyright in ddox.layout.dt-->
+				<h2>Copyright</h2>
 			</section>
 			<section>
-				<h2>License</h2><!-- Default block ddox.license in ddox.layout.dt-->
+				<h2>License</h2>
 			</section>
 		</div>
 	</body>

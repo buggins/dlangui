@@ -1,17 +1,15 @@
-
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta charset="UTF-8"/><!-- using block title in layout.dt--><!-- using block ddox.defs in ddox.layout.dt--><!-- using block ddox.title in ddox.layout.dt-->
+		<meta charset="UTF-8"/>
 		<title>Module dlangui.widgets.tree</title>
 		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
 		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
 		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
-		<script type="text/javascript" src="../../prettify/prettify.js">/**/</script>
 		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
 	</head>
-	<body onload="prettyPrint(); setupDdox();">
-		<nav id="main-nav"><!-- using block navigation in layout.dt-->
+	<body onload="setupDdox();">
+		<nav id="main-nav">
 						<ul class="tree-view">
 							<li class=" tree-view">
 								<a href="#" class="package">dlangui</a>
@@ -20,7 +18,25 @@
 								<a href="#" class="package">core</a>
 						<ul class="tree-view">
 							<li>
+								<a href="../../dlangui/core/asyncsocket.html" class=" module">asyncsocket</a>
+							</li>
+							<li>
 								<a href="../../dlangui/core/collections.html" class=" module">collections</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/config.html" class=" module">config</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/css.html" class=" module">css</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/cssparser.html" class=" module">cssparser</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/dom.html" class=" module">dom</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/editable.html" class=" module">editable</a>
 							</li>
 							<li>
 								<a href="../../dlangui/core/events.html" class=" module">events</a>
@@ -38,10 +54,25 @@
 								<a href="../../dlangui/core/logger.html" class=" module">logger</a>
 							</li>
 							<li>
+								<a href="../../dlangui/core/math3d.html" class=" module">math3d</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/queue.html" class=" module">queue</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/settings.html" class=" module">settings</a>
+							</li>
+							<li>
 								<a href="../../dlangui/core/signals.html" class=" module">signals</a>
 							</li>
 							<li>
 								<a href="../../dlangui/core/stdaction.html" class=" module">stdaction</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/streams.html" class=" module">streams</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/textsource.html" class=" module">textsource</a>
 							</li>
 							<li>
 								<a href="../../dlangui/core/types.html" class=" module">types</a>
@@ -58,15 +89,72 @@
 								<a href="../../dlangui/dialogs/filedlg.html" class=" module">filedlg</a>
 							</li>
 							<li>
+								<a href="../../dlangui/dialogs/inputbox.html" class=" module">inputbox</a>
+							</li>
+							<li>
 								<a href="../../dlangui/dialogs/msgbox.html" class=" module">msgbox</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dialogs/settingsdialog.html" class=" module">settingsdialog</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/dml/annotations.html" class=" module">annotations</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dml/dmlhighlight.html" class=" module">dmlhighlight</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dml/parser.html" class=" module">parser</a>
 							</li>
 						</ul>
 							</li>
 							<li class="collapsed tree-view">
 								<a href="#" class="package">graphics</a>
 						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">scene</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/graphics/scene/camera.html" class=" module">camera</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/material.html" class=" module">material</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/mesh.html" class=" module">mesh</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/node.html" class=" module">node</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/scene3d.html" class=" module">scene3d</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/transform.html" class=" module">transform</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">xpm</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/graphics/xpm/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/xpm/reader.html" class=" module">reader</a>
+							</li>
+						</ul>
+							</li>
 							<li>
 								<a href="../../dlangui/graphics/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/domrender.html" class=" module">domrender</a>
 							</li>
 							<li>
 								<a href="../../dlangui/graphics/drawbuf.html" class=" module">drawbuf</a>
@@ -100,6 +188,17 @@
 							<li>
 								<a href="../../dlangui/platforms/common/platform.html" class=" module">platform</a>
 							</li>
+							<li>
+								<a href="../../dlangui/platforms/common/startup.html" class=" module">startup</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dsfml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/dsfml/dsfmlapp.html" class=" module">dsfmlapp</a>
+							</li>
 						</ul>
 							</li>
 							<li class="collapsed tree-view">
@@ -121,6 +220,14 @@
 							</li>
 							<li>
 								<a href="../../dlangui/platforms/windows/winapp.html" class=" module">winapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">x11</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/x11/x11app.html" class=" module">x11app</a>
 							</li>
 						</ul>
 							</li>
@@ -157,6 +264,9 @@
 								<a href="../../dlangui/widgets/menu.html" class=" module">menu</a>
 							</li>
 							<li>
+								<a href="../../dlangui/widgets/metadata.html" class=" module">metadata</a>
+							</li>
+							<li>
 								<a href="../../dlangui/widgets/popup.html" class=" module">popup</a>
 							</li>
 							<li>
@@ -183,12 +293,15 @@
 							<li>
 								<a href="../../dlangui/widgets/widget.html" class=" module">widget</a>
 							</li>
+							<li>
+								<a href="../../dlangui/widgets/winframe.html" class=" module">winframe</a>
+							</li>
+						</ul>
+							</li>
 						</ul>
 							</li>
 							<li>
-								<a href="../../dlangui/all.html" class=" module">all</a>
-							</li>
-						</ul>
+								<a href="../../dlangui.html" class=" module">dlangui</a>
 							</li>
 						</ul>
 				<noscript>
@@ -205,83 +318,78 @@ var symbolSearchRootDir = "../../";
 $('#symbolSearchPane').show();
 	</script>
 				</div>
-				<script type="text/javascript" src="../../scripts/mousetrap.js"></script>
-				<script type="text/javascript">
+			<script type="text/javascript" src="../../scripts/mousetrap.js"></script>
+			<script type="text/javascript">
 $(document).ready(function() {
 	Mousetrap.bind('s', function(e) {
 		$("#symbolSearch").focus();
 		return false;
 	});
 });
-				</script>
+			</script>
 		</nav>
 		<div id="main-contents">
-			<h1>Module dlangui.widgets.tree</h1><!-- using block body in layout.dt--><!-- using block ddox.description in ddox.layout.dt-->
+			<h1>Module dlangui.widgets.tree</h1>
 			<p>This module contains tree widgets implementation
 </p>
-<section>
-
-<p><a href="../../dlangui/widgets/tree/TreeWidgetBase.html"><code class="prettyprint lang-d">TreeWidgetBase</code></a> - abstract tree widget
+<section><p><a href="../../dlangui/widgets/tree/TreeWidgetBase.html"><code class="lang-d"><span class="typ">TreeWidgetBase</span></code></a> - abstract tree widget
 </p>
 
-<p><a href="../../dlangui/widgets/tree/TreeWidget.html"><code class="prettyprint lang-d">TreeWidget</code></a> - Tree widget with items which can have icons and labels
+<p><a href="../../dlangui/widgets/tree/TreeWidget.html"><code class="lang-d"><span class="typ">TreeWidget</span></code></a> - Tree widget with items which can have icons and labels
 </p>
-
 </section>
-<!-- using block ddox.sections in ddox.layout.dt-->
+
 			<section><section><h2>Synopsis</h2>
+<pre class="code"><code class="lang-d"><span class="kwd">import </span><span class="pln">dlangui<wbr/></span><span class="pun">.</span><span class="pln">widgets<wbr/></span><span class="pun">.</span><span class="pln">tree</span><span class="pun">;
 
-<pre class="code prettyprint lang-d">import dlangui.widgets.tree;
+</span><span class="com">// tree view example
+<a href="../../dlangui/widgets/tree/TreeWidget.html"></span><span class="typ">TreeWidget</a> </span><span class="pln">tree </span><span class="pun">= </span><span class="kwd">new <a href="../../dlangui/widgets/tree/TreeWidget.html"></span><span class="typ">TreeWidget</a></span><span class="pun">(</span><span class="str">"TREE1"</span><span class="pun">);
+</span><span class="pln">tree<wbr/></span><span class="pun">.</span><span class="pln">layoutWidth</span><span class="pun">(</span><span class="pln">WRAP_CONTENT</span><span class="pun">)<wbr/>.</span><span class="pln">layoutHeight</span><span class="pun">(</span><span class="pln">FILL_PARENT</span><span class="pun">);
+<a href="../../dlangui/widgets/tree/TreeItem.html"></span><span class="typ">TreeItem</a> </span><span class="pln">tree1 </span><span class="pun">= </span><span class="pln">tree<wbr/></span><span class="pun">.</span><span class="pln">items<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"group1"</span><span class="pun">, </span><span class="str">"Group 1"d</span><span class="pun">, </span><span class="str">"document-open"</span><span class="pun">);
+</span><span class="pln">tree1<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"g1_1"</span><span class="pun">, </span><span class="str">"Group 1 item 1"d</span><span class="pun">);
+</span><span class="pln">tree1<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"g1_2"</span><span class="pun">, </span><span class="str">"Group 1 item 2"d</span><span class="pun">);
+</span><span class="pln">tree1<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"g1_3"</span><span class="pun">, </span><span class="str">"Group 1 item 3"d</span><span class="pun">);
+<a href="../../dlangui/widgets/tree/TreeItem.html"></span><span class="typ">TreeItem</a> </span><span class="pln">tree2 </span><span class="pun">= </span><span class="pln">tree<wbr/></span><span class="pun">.</span><span class="pln">items<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"group2"</span><span class="pun">, </span><span class="str">"Group 2"d</span><span class="pun">, </span><span class="str">"document-save"</span><span class="pun">);
+</span><span class="pln">tree2<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"g2_1"</span><span class="pun">, </span><span class="str">"Group 2 item 1"d</span><span class="pun">, </span><span class="str">"edit-copy"</span><span class="pun">);
+</span><span class="pln">tree2<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"g2_2"</span><span class="pun">, </span><span class="str">"Group 2 item 2"d</span><span class="pun">, </span><span class="str">"edit-cut"</span><span class="pun">);
+</span><span class="pln">tree2<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"g2_3"</span><span class="pun">, </span><span class="str">"Group 2 item 3"d</span><span class="pun">, </span><span class="str">"edit-paste"</span><span class="pun">);
+</span><span class="pln">tree2<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"g2_4"</span><span class="pun">, </span><span class="str">"Group 2 item 4"d</span><span class="pun">);
+<a href="../../dlangui/widgets/tree/TreeItem.html"></span><span class="typ">TreeItem</a> </span><span class="pln">tree3 </span><span class="pun">= </span><span class="pln">tree<wbr/></span><span class="pun">.</span><span class="pln">items<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"group3"</span><span class="pun">, </span><span class="str">"Group 3"d</span><span class="pun">);
+</span><span class="pln">tree3<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"g3_1"</span><span class="pun">, </span><span class="str">"Group 3 item 1"d</span><span class="pun">);
+</span><span class="pln">tree3<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"g3_2"</span><span class="pun">, </span><span class="str">"Group 3 item 2"d</span><span class="pun">);
+<a href="../../dlangui/widgets/tree/TreeItem.html"></span><span class="typ">TreeItem</a> </span><span class="pln">tree32 </span><span class="pun">= </span><span class="pln">tree3<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"g3_3"</span><span class="pun">, </span><span class="str">"Group 3 item 3"d</span><span class="pun">);
+</span><span class="pln">tree3<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"g3_4"</span><span class="pun">, </span><span class="str">"Group 3 item 4"d</span><span class="pun">);
+</span><span class="pln">tree32<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"group3_2_1"</span><span class="pun">, </span><span class="str">"Group 3 item 2 subitem 1"d</span><span class="pun">);
+</span><span class="pln">tree32<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"group3_2_2"</span><span class="pun">, </span><span class="str">"Group 3 item 2 subitem 2"d</span><span class="pun">);
+</span><span class="pln">tree32<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"group3_2_3"</span><span class="pun">, </span><span class="str">"Group 3 item 2 subitem 3"d</span><span class="pun">);
+</span><span class="pln">tree32<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"group3_2_4"</span><span class="pun">, </span><span class="str">"Group 3 item 2 subitem 4"d</span><span class="pun">);
+</span><span class="pln">tree32<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"group3_2_5"</span><span class="pun">, </span><span class="str">"Group 3 item 2 subitem 5"d</span><span class="pun">);
+</span><span class="pln">tree3<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"g3_5"</span><span class="pun">, </span><span class="str">"Group 3 item 5"d</span><span class="pun">);
+</span><span class="pln">tree3<wbr/></span><span class="pun">.</span><span class="pln">newChild</span><span class="pun">(</span><span class="str">"g3_6"</span><span class="pun">, </span><span class="str">"Group 3 item 6"d</span><span class="pun">);
 
-// tree view example
-<a href="../../dlangui/widgets/tree/TreeWidget.html">TreeWidget</a> tree = new <a href="../../dlangui/widgets/tree/TreeWidget.html">TreeWidget</a>("TREE1");
-tree.layoutWidth(WRAP_CONTENT).layoutHeight(FILL_PARENT);
-<a href="../../dlangui/widgets/tree/TreeItem.html">TreeItem</a> tree1 = tree.items.newChild("group1", "Group 1"d, "document-open");
-tree1.newChild("g1_1", "Group 1 item 1"d);
-tree1.newChild("g1_2", "Group 1 item 2"d);
-tree1.newChild("g1_3", "Group 1 item 3"d);
-<a href="../../dlangui/widgets/tree/TreeItem.html">TreeItem</a> tree2 = tree.items.newChild("group2", "Group 2"d, "document-save");
-tree2.newChild("g2_1", "Group 2 item 1"d, "edit-copy");
-tree2.newChild("g2_2", "Group 2 item 2"d, "edit-cut");
-tree2.newChild("g2_3", "Group 2 item 3"d, "edit-paste");
-tree2.newChild("g2_4", "Group 2 item 4"d);
-<a href="../../dlangui/widgets/tree/TreeItem.html">TreeItem</a> tree3 = tree.items.newChild("group3", "Group 3"d);
-tree3.newChild("g3_1", "Group 3 item 1"d);
-tree3.newChild("g3_2", "Group 3 item 2"d);
-<a href="../../dlangui/widgets/tree/TreeItem.html">TreeItem</a> tree32 = tree3.newChild("g3_3", "Group 3 item 3"d);
-tree3.newChild("g3_4", "Group 3 item 4"d);
-tree32.newChild("group3_2_1", "Group 3 item 2 subitem 1"d);
-tree32.newChild("group3_2_2", "Group 3 item 2 subitem 2"d);
-tree32.newChild("group3_2_3", "Group 3 item 2 subitem 3"d);
-tree32.newChild("group3_2_4", "Group 3 item 2 subitem 4"d);
-tree32.newChild("group3_2_5", "Group 3 item 2 subitem 5"d);
-tree3.newChild("g3_5", "Group 3 item 5"d);
-tree3.newChild("g3_6", "Group 3 item 6"d);
+</span><span class="typ">LinearLayout </span><span class="pln">treeLayout </span><span class="pun">= </span><span class="kwd">new </span><span class="typ">HorizontalLayout</span><span class="pun">(</span><span class="str">"TREE"</span><span class="pun">);
+</span><span class="typ">LinearLayout </span><span class="pln">treeControlledPanel </span><span class="pun">= </span><span class="kwd">new </span><span class="typ">VerticalLayout</span><span class="pun">();
+</span><span class="pln">treeLayout<wbr/></span><span class="pun">.</span><span class="pln">layoutWidth </span><span class="pun">= </span><span class="pln">FILL_PARENT</span><span class="pun">;
+</span><span class="pln">treeControlledPanel<wbr/></span><span class="pun">.</span><span class="pln">layoutWidth </span><span class="pun">= </span><span class="pln">FILL_PARENT</span><span class="pun">;
+</span><span class="pln">treeControlledPanel<wbr/></span><span class="pun">.</span><span class="pln">layoutHeight </span><span class="pun">= </span><span class="pln">FILL_PARENT</span><span class="pun">;
+</span><span class="typ">TextWidget </span><span class="pln">treeItemLabel </span><span class="pun">= </span><span class="kwd">new </span><span class="typ">TextWidget</span><span class="pun">(</span><span class="str">"TREE_ITEM_DESC"</span><span class="pun">);
+</span><span class="pln">treeItemLabel<wbr/></span><span class="pun">.</span><span class="pln">layoutWidth </span><span class="pun">= </span><span class="pln">FILL_PARENT</span><span class="pun">;
+</span><span class="pln">treeItemLabel<wbr/></span><span class="pun">.</span><span class="pln">layoutHeight </span><span class="pun">= </span><span class="pln">FILL_PARENT</span><span class="pun">;
+</span><span class="pln">treeItemLabel<wbr/></span><span class="pun">.</span><span class="pln">alignment </span><span class="pun">= </span><span class="typ">Align<wbr/></span><span class="pun">.</span><span class="typ">Center</span><span class="pun">;
+</span><span class="pln">treeItemLabel<wbr/></span><span class="pun">.</span><span class="pln">text </span><span class="pun">= </span><span class="str">"Sample text"d</span><span class="pun">;
+</span><span class="pln">treeControlledPanel<wbr/></span><span class="pun">.</span><span class="pln">addChild</span><span class="pun">(</span><span class="pln">treeItemLabel</span><span class="pun">);
+</span><span class="pln">treeLayout<wbr/></span><span class="pun">.</span><span class="pln">addChild</span><span class="pun">(</span><span class="pln">tree</span><span class="pun">);
+</span><span class="pln">treeLayout<wbr/></span><span class="pun">.</span><span class="pln">addChild</span><span class="pun">(</span><span class="kwd">new </span><span class="typ">ResizerWidget</span><span class="pun">());
+</span><span class="pln">treeLayout<wbr/></span><span class="pun">.</span><span class="pln">addChild</span><span class="pun">(</span><span class="pln">treeControlledPanel</span><span class="pun">);
 
-LinearLayout treeLayout = new HorizontalLayout("TREE");
-LinearLayout treeControlledPanel = new VerticalLayout();
-treeLayout.layoutWidth = FILL_PARENT;
-treeControlledPanel.layoutWidth = FILL_PARENT;
-treeControlledPanel.layoutHeight = FILL_PARENT;
-TextWidget treeItemLabel = new TextWidget("TREE_ITEM_DESC");
-treeItemLabel.layoutWidth = FILL_PARENT;
-treeItemLabel.layoutHeight = FILL_PARENT;
-treeItemLabel.alignment = Align.Center;
-treeItemLabel.text = "Sample text"d;
-treeControlledPanel.addChild(treeItemLabel);
-treeLayout.addChild(tree);
-treeLayout.addChild(new ResizerWidget());
-treeLayout.addChild(treeControlledPanel);
-
-tree.selectionListener = delegate(<a href="../../dlangui/widgets/tree/TreeItems.html">TreeItems</a> source, <a href="../../dlangui/widgets/tree/TreeItem.html">TreeItem</a> selectedItem, bool activated) {
-    dstring label = "Selected item: "d ~ toUTF32(selectedItem.id) ~ (activated ? " selected + activated"d : " selected"d);
-    treeItemLabel.text = label;
+</span><span class="pln">tree<wbr/></span><span class="pun">.</span><span class="pln">selectionListener </span><span class="pun">= </span><span class="kwd">delegate</span><span class="pun">(<a href="../../dlangui/widgets/tree/TreeItems.html"></span><span class="typ">TreeItems</a> </span><span class="pln">source</span><span class="pun">, <a href="../../dlangui/widgets/tree/TreeItem.html"></span><span class="typ">TreeItem</a> </span><span class="pln">selectedItem</span><span class="pun">, </span><span class="typ">bool </span><span class="pln">activated</span><span class="pun">) {
+    </span><span class="pln">dstring label </span><span class="pun">= </span><span class="str">"Selected item: "d </span><span class="pun">~ </span><span class="pln">toUTF32</span><span class="pun">(</span><span class="pln">selectedItem<wbr/></span><span class="pun">.</span><span class="pln">id</span><span class="pun">) ~ (</span><span class="pln">activated </span><span class="pun">? </span><span class="str">" selected + activated"d </span><span class="pun">: </span><span class="str">" selected"d</span><span class="pun">);
+    </span><span class="pln">treeItemLabel<wbr/></span><span class="pun">.</span><span class="pln">text </span><span class="pun">= </span><span class="pln">label</span><span class="pun">;
 };
 
-tree.items.selectItem(tree.items.child(0));
-</pre>
+</span><span class="pln">tree<wbr/></span><span class="pun">.</span><span class="pln">items<wbr/></span><span class="pun">.</span><span class="pln">selectItem</span><span class="pun">(</span><span class="pln">tree<wbr/></span><span class="pun">.</span><span class="pln">items<wbr/></span><span class="pun">.</span><span class="pln">child</span><span class="pun">(</span><span class="lit">0</span><span class="pun">));</span></code></pre>
 </section>
-</section><!-- using block ddox.members in ddox.layout.dt-->
+</section>
 			<section>
 				<h2>Interfaces</h2>
 				<table>
@@ -294,6 +402,14 @@ tree.items.selectItem(tree.items.child(0));
 						<td>
 							<a id="OnTreeContentChangeListener" class="public" href="../../dlangui/widgets/tree/OnTreeContentChangeListener.html">
 								<code>OnTreeContentChangeListener</code>
+							</a>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="OnTreePopupMenuListener" class="public" href="../../dlangui/widgets/tree/OnTreePopupMenuListener.html">
+								<code>OnTreePopupMenuListener</code>
 							</a>
 						</td>
 						<td></td>
@@ -355,7 +471,7 @@ tree.items.selectItem(tree.items.child(0));
 								<code>TreeWidget</code>
 							</a>
 						</td>
-						<td>Tree widget with <a href="../../dlangui/widgets/tree/TreeWidgetBase.items.html"><code class="prettyprint lang-d">items</code></a> which can have icons and labels
+						<td>Tree widget with <a href="../../dlangui/widgets/tree/TreeWidgetBase.items.html"><code class="lang-d"><span class="pln">items</span></code></a> which can have icons and labels
 </td>
 					</tr>
 					<tr>
@@ -404,26 +520,26 @@ tree.items.selectItem(tree.items.child(0));
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">const(int)</code>
+<code class="prettyprint lang-d"><span class="kwd">const</span><span class="pun">(</span><span class="typ">int</span><span class="pun">)</span></code>
 						</td>
 						<td></td>
 					</tr>
 				</table>
 			</section>
 			<section>
-				<h2>Authors</h2><!-- using block ddox.authors in ddox.layout.dt-->
+				<h2>Authors</h2>
 <p>Vadim Lopatin, coolreader.org@gmail.com
 </p>
 
 			</section>
 			<section>
-				<h2>Copyright</h2><!-- using block ddox.copyright in ddox.layout.dt-->
+				<h2>Copyright</h2>
 <p>Vadim Lopatin, 2014
 </p>
 
 			</section>
 			<section>
-				<h2>License</h2><!-- using block ddox.license in ddox.layout.dt-->
+				<h2>License</h2>
 <p>Boost License 1.0
 </p>
 

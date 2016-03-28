@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Class EditableContent</title>
+		<link rel="stylesheet" type="text/css" href="../../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dlangui</a>
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">core</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/core/asyncsocket.html" class=" module">asyncsocket</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/collections.html" class=" module">collections</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/config.html" class=" module">config</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/css.html" class=" module">css</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/cssparser.html" class=" module">cssparser</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/dom.html" class=" module">dom</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/editable.html" class="selected module">editable</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/events.html" class=" module">events</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/files.html" class=" module">files</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/i18n.html" class=" module">i18n</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/linestream.html" class=" module">linestream</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/logger.html" class=" module">logger</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/math3d.html" class=" module">math3d</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/queue.html" class=" module">queue</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/settings.html" class=" module">settings</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/signals.html" class=" module">signals</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/stdaction.html" class=" module">stdaction</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/streams.html" class=" module">streams</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/textsource.html" class=" module">textsource</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/types.html" class=" module">types</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dialogs</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/dialogs/dialog.html" class=" module">dialog</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/dialogs/filedlg.html" class=" module">filedlg</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/dialogs/inputbox.html" class=" module">inputbox</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/dialogs/msgbox.html" class=" module">msgbox</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/dialogs/settingsdialog.html" class=" module">settingsdialog</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/dml/annotations.html" class=" module">annotations</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/dml/dmlhighlight.html" class=" module">dmlhighlight</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/dml/parser.html" class=" module">parser</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">graphics</a>
+						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">scene</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/graphics/scene/camera.html" class=" module">camera</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/scene/material.html" class=" module">material</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/scene/mesh.html" class=" module">mesh</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/scene/node.html" class=" module">node</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/scene/scene3d.html" class=" module">scene3d</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/scene/transform.html" class=" module">transform</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">xpm</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/graphics/xpm/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/xpm/reader.html" class=" module">reader</a>
+							</li>
+						</ul>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/domrender.html" class=" module">domrender</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/drawbuf.html" class=" module">drawbuf</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/fonts.html" class=" module">fonts</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/ftfonts.html" class=" module">ftfonts</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/gldrawbuf.html" class=" module">gldrawbuf</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/glsupport.html" class=" module">glsupport</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/images.html" class=" module">images</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/resources.html" class=" module">resources</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">platforms</a>
+						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">common</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/platforms/common/platform.html" class=" module">platform</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/platforms/common/startup.html" class=" module">startup</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dsfml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/platforms/dsfml/dsfmlapp.html" class=" module">dsfmlapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">sdl</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/platforms/sdl/sdlapp.html" class=" module">sdlapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">windows</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/platforms/windows/win32drawbuf.html" class=" module">win32drawbuf</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/platforms/windows/win32fonts.html" class=" module">win32fonts</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/platforms/windows/winapp.html" class=" module">winapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">x11</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/platforms/x11/x11app.html" class=" module">x11app</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">widgets</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/widgets/appframe.html" class=" module">appframe</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/combobox.html" class=" module">combobox</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/controls.html" class=" module">controls</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/docks.html" class=" module">docks</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/editors.html" class=" module">editors</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/grid.html" class=" module">grid</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/layouts.html" class=" module">layouts</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/lists.html" class=" module">lists</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/menu.html" class=" module">menu</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/metadata.html" class=" module">metadata</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/popup.html" class=" module">popup</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/scroll.html" class=" module">scroll</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/srcedit.html" class=" module">srcedit</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/statusline.html" class=" module">statusline</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/styles.html" class=" module">styles</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/tabs.html" class=" module">tabs</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/toolbars.html" class=" module">toolbars</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/tree.html" class=" module">tree</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/widget.html" class=" module">widget</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/widgets/winframe.html" class=" module">winframe</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+							</li>
+							<li>
+								<a href="../../../dlangui.html" class=" module">dlangui</a>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../../../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../../../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+			<script type="text/javascript" src="../../../scripts/mousetrap.js"></script>
+			<script type="text/javascript">
+$(document).ready(function() {
+	Mousetrap.bind('s', function(e) {
+		$("#symbolSearch").focus();
+		return false;
+	});
+});
+			</script>
+		</nav>
+		<div id="main-contents">
+			<h1>Class EditableContent</h1>
+			<section>
+				<p>editable plain <a href="../../dlangui/core/editable/EditableContent.text.html"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.text.html"><span class="pln">text</span></a></span></code></a> (singleline/<a href="../../dlangui/core/editable/EditableContent.multiline.html"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.multiline.html"><span class="pln">multiline</span></a></span></code></a>)
+</p>
+
+					<section>
+						<h3>Inherits from</h3>
+						<ul>
+							<li>
+								<code class="prettyprint lang-d"><span class="typ">Object</span></code>
+ (base class)
+							</li>
+						</ul>
+					</section>
+					<section>
+						<h3>Constructors</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.this.html" class="public">
+										<code>this</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Fields</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.contentChanged.html" class="public"><code>contentChanged</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/signals/Signal.html"><span class="typ">Signal</span></a>!(dlangui.core.editable.EditableContentListener)</code></td>
+								<td>listeners for edit operations
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.marksChanged.html" class="public"><code>marksChanged</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/signals/Signal.html"><span class="typ">Signal</span></a>!(dlangui.core.editable.EditableContentMarksChangeListener)</code></td>
+								<td>listeners for mark changes after edit operation
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent._editMarks.html" class="protected"><code>_editMarks</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/editable/EditStateMark.html"><span class="typ">EditStateMark</span></a><span class="pun">[]</span></code></td>
+								<td><a href="../../../dlangui/core/editable/EditableContent.line.html"><code class="lang-d"><span class="pln">line</span></code></a> edit marks
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent._filename.html" class="protected"><code>_filename</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent._format.html" class="protected"><code>_format</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/linestream/TextFileFormat.html"><span class="typ">TextFileFormat</span></a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent._lineIcons.html" class="protected"><code>_lineIcons</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/editable/LineIcons.html"><span class="typ">LineIcons</span></a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent._lines.html" class="protected"><code>_lines</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dstring</span><span class="pun">[]</span></code></td>
+								<td><a href="../../../dlangui/core/editable/EditableContent.text.html"><code class="lang-d"><span class="pln">text</span></code></a> content by <a href="../../../dlangui/core/editable/EditableContent.lines.html"><code class="lang-d"><span class="pln">lines</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent._multiline.html" class="protected"><code>_multiline</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent._readOnly.html" class="protected"><code>_readOnly</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent._smartIndents.html" class="protected"><code>_smartIndents</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent._smartIndentsAfterPaste.html" class="protected"><code>_smartIndentsAfterPaste</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent._syntaxSupport.html" class="protected"><code>_syntaxSupport</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/editable/SyntaxSupport.html"><span class="typ">SyntaxSupport</span></a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent._tabSize.html" class="protected"><code>_tabSize</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent._tokenProps.html" class="protected"><code>_tokenProps</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ubyte</span><span class="pun">[]</span><span class="pun">[]</span></code></td>
+								<td>token properties by <a href="../../../dlangui/core/editable/EditableContent.lines.html"><code class="lang-d"><span class="pln">lines</span></code></a> - for syntax highlight
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent._undoBuffer.html" class="protected"><code>_undoBuffer</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/editable/UndoBuffer.html"><span class="typ">UndoBuffer</span></a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent._useSpacesForTabs.html" class="protected"><code>_useSpacesForTabs</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td></td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Properties</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.editMarks.html" class="public property"><code>editMarks</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/editable/EditStateMark.html"><span class="typ">EditStateMark</span></a><span class="pun">[]</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.endOfFile.html" class="public property"><code>endOfFile</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/editable/TextPosition.html"><span class="typ">TextPosition</span></a></code></td>
+								<td>returns position for end of last <a href="../../../dlangui/core/editable/EditableContent.line.html"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.line.html"><span class="pln">line</span></a></span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.filename.html" class="public property"><code>filename</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td>
+								<td>file used to <a href="../../../dlangui/core/editable/EditableContent.load.html"><code class="lang-d"><span class="pln">load</span></code></a> editor content
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.hasRedo.html" class="public property"><code>hasRedo</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td>return true if there is at least one operation in <a href="../../../dlangui/core/editable/EditableContent.redo.html"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.redo.html"><span class="pln">redo</span></a></span></code></a> buffer
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.hasSyntaxHighlight.html" class="public property"><code>hasSyntaxHighlight</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td>returns true if content has syntax highlight handler set
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.hasUndo.html" class="public property"><code>hasUndo</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td>return true if there is at least one operation in <a href="../../../dlangui/core/editable/EditableContent.undo.html"><code class="lang-d"><span class="pln">undo</span></code></a> buffer
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.length.html" class="public property"><code>length</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td>
+								<td>returns <a href="../../../dlangui/core/editable/EditableContent.line.html"><code class="lang-d"><span class="pln">line</span></code></a> <a href="../../../dlangui/core/editable/EditableContent.text.html"><code class="lang-d"><span class="pln">text</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.lineIcons.html" class="public property"><code>lineIcons</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/editable/LineIcons.html"><span class="typ">LineIcons</span></a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.lines.html" class="public property"><code>lines</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="kwd">const</span><span class="pun">(</span><span class="pln">dstring</span><span class="pun">[]</span><span class="pun">)</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.modified.html" class="public property"><code>modified</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.multiline.html" class="public property"><code>multiline</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td>returns true if miltyline content is supported
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.readOnly.html" class="public property"><code>readOnly</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.readOnly.html" class="public property"><code>readOnly</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.smartIndents.html" class="public property"><code>smartIndents</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td>true if smart indents are enabled
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.smartIndents.html" class="public property"><code>smartIndents</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/editable/EditableContent.html"><span class="typ">EditableContent</span></a></code></td>
+								<td>set smart indents <a href="../../../dlangui/core/editable/EditableContent.smartIndents.html#enabled"><code class="lang-d"><span class="pln">enabled</span></code></a> flag
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.smartIndentsAfterPaste.html" class="public property"><code>smartIndentsAfterPaste</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td>true if smart indents are enabled
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.smartIndentsAfterPaste.html" class="public property"><code>smartIndentsAfterPaste</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/editable/EditableContent.html"><span class="typ">EditableContent</span></a></code></td>
+								<td>set smart indents <a href="../../../dlangui/core/editable/EditableContent.smartIndentsAfterPaste.html#enabled"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.smartIndentsAfterPaste.html#enabled"><span class="pln">enabled</span></a></span></code></a> flag
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.supportsSmartIndents.html" class="public property"><code>supportsSmartIndents</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td>true if smart indents are supported
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.syntaxSupport.html" class="public property"><code>syntaxSupport</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/editable/SyntaxSupport.html"><span class="typ">SyntaxSupport</span></a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.syntaxSupport.html" class="public property"><code>syntaxSupport</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/editable/EditableContent.html"><span class="typ">EditableContent</span></a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.tabSize.html" class="public property"><code>tabSize</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td>
+								<td>returns tab size (in number of spaces)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.tabSize.html" class="public property"><code>tabSize</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/editable/EditableContent.html"><span class="typ">EditableContent</span></a></code></td>
+								<td>sets tab size (in number of spaces)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.text.html" class="public property"><code>text</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/editable/EditableContent.html"><span class="typ">EditableContent</span></a></code></td>
+								<td>replace whole <code class="lang-d"><span class="pln">text</span></code> with another content
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.text.html" class="public property"><code>text</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dstring</span></code></td>
+								<td>returns all <a href="../../../dlangui/core/editable/EditableContent.lines.html"><code class="lang-d"><span class="pln">lines</span></code></a> concatenated delimited by '\n'
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.useSpacesForTabs.html" class="public property"><code>useSpacesForTabs</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/editable/EditableContent.html"><span class="typ">EditableContent</span></a></code></td>
+								<td>set new Tab key behavior flag: when true, spaces will be inserted instead of tabs
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.useSpacesForTabs.html" class="public property"><code>useSpacesForTabs</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td>when true, spaces will be inserted instead of tabs
+</td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Methods</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.appendLines.html" class="public">
+										<code>appendLines</code>
+									</a>
+								</td>
+								<td>append one or more <a href="../../../dlangui/core/editable/EditableContent.appendLines.html#lines"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.appendLines.html#lines"><span class="pln">lines</span></a></span></code></a> at end
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.clear.html" class="public">
+										<code>clear</code>
+									</a>
+								</td>
+								<td><code class="lang-d"><span class="pln">clear</span></code> content
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.clearEditMarks.html" class="public">
+										<code>clearEditMarks</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.clearUndo.html" class="public">
+										<code>clearUndo</code>
+									</a>
+								</td>
+								<td><a href="../../../dlangui/core/editable/EditableContent.clear.html"><code class="lang-d"><span class="pln">clear</span></code></a> <a href="../../../dlangui/core/editable/EditableContent.undo.html"><code class="lang-d"><span class="pln">undo</span></code></a>/redp history
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.correctPosition.html" class="public">
+										<code>correctPosition</code>
+									</a>
+								</td>
+								<td>when <a href="../../../dlangui/core/editable/EditableContent.correctPosition.html#position"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.correctPosition.html#position"><span class="pln">position</span></a></span></code></a> is out of content bounds, fix it to nearest valid <a href="../../../dlangui/core/editable/EditableContent.correctPosition.html#position"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.correctPosition.html#position"><span class="pln">position</span></a></span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.correctRange.html" class="public">
+										<code>correctRange</code>
+									</a>
+								</td>
+								<td>when <a href="../../../dlangui/core/editable/EditableContent.correctRange.html#range"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.correctRange.html#range"><span class="pln">range</span></a></span></code></a> positions is out of content bounds, fix it to nearest valid position
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.editMark.html" class="public">
+										<code>editMark</code>
+									</a>
+								</td>
+								<td>returns access to <a href="../../../dlangui/core/editable/EditableContent.line.html"><code class="lang-d"><span class="pln">line</span></code></a> edit mark by <a href="../../../dlangui/core/editable/EditableContent.line.html"><code class="lang-d"><span class="pln">line</span></code></a> <a href="../../../dlangui/core/editable/EditableContent.editMark.html#index"><code class="lang-d"><span class="pln">index</span></code></a> (0 based)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.fillSpace.html" class="public">
+										<code>fillSpace</code>
+									</a>
+								</td>
+								<td>returns spaces/tabs for filling from the beginning of <a href="../../../dlangui/core/editable/EditableContent.line.html"><code class="lang-d"><span class="pln">line</span></code></a> to specified position
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.findMatchedBraces.html" class="public">
+										<code>findMatchedBraces</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.firstNonSpace.html" class="public">
+										<code>firstNonSpace</code>
+									</a>
+								</td>
+								<td>returns position before first non-space character of <a href="../../../dlangui/core/editable/EditableContent.line.html"><code class="lang-d"><span class="pln">line</span></code></a>, returns 0 position if no non-space chars
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.fullLinesRange.html" class="public">
+										<code>fullLinesRange</code>
+									</a>
+								</td>
+								<td>corrent range to cover full <a href="../../../dlangui/core/editable/EditableContent.lines.html"><code class="lang-d"><span class="pln">lines</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.handleContentChange.html" class="public">
+										<code>handleContentChange</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.isAlNum.html" class="public">
+										<code>isAlNum</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.isAlpha.html" class="public">
+										<code>isAlpha</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.isBracket.html" class="public">
+										<code>isBracket</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.isLowerAlpha.html" class="public">
+										<code>isLowerAlpha</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.isPunct.html" class="public">
+										<code>isPunct</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.isWordBound.html" class="public">
+										<code>isWordBound</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.lastNonSpace.html" class="public">
+										<code>lastNonSpace</code>
+									</a>
+								</td>
+								<td>returns position after last non-space character of <a href="../../../dlangui/core/editable/EditableContent.line.html"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.line.html"><span class="pln">line</span></a></span></code></a>, returns 0 position if no non-space chars on <a href="../../../dlangui/core/editable/EditableContent.line.html"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.line.html"><span class="pln">line</span></a></span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.line.html" class="public">
+										<code>line</code>
+									</a>
+								</td>
+								<td>returns <code class="lang-d"><span class="pln">line</span></code> <a href="../../../dlangui/core/editable/EditableContent.text.html"><code class="lang-d"><span class="pln">text</span></code></a> by <a href="../../../dlangui/core/editable/EditableContent.line.html#index"><code class="lang-d"><span class="pln">index</span></code></a>, "" if <a href="../../../dlangui/core/editable/EditableContent.line.html#index"><code class="lang-d"><span class="pln">index</span></code></a> is out of bounds
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.lineBegin.html" class="public">
+										<code>lineBegin</code>
+									</a>
+								</td>
+								<td>returns <a href="../../../dlangui/core/editable/EditableContent.text.html"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.text.html"><span class="pln">text</span></a></span></code></a> position for begin of <a href="../../../dlangui/core/editable/EditableContent.line.html"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.line.html"><span class="pln">line</span></a></span></code></a> <a href="../../../dlangui/core/editable/EditableContent.lineBegin.html#lineIndex"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.lineBegin.html#lineIndex"><span class="pln">lineIndex</span></a></span></code></a> (if <a href="../../../dlangui/core/editable/EditableContent.lineBegin.html#lineIndex"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.lineBegin.html#lineIndex"><span class="pln">lineIndex</span></a></span></code></a> &gt; number of <a href="../../../dlangui/core/editable/EditableContent.lines.html"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.lines.html"><span class="pln">lines</span></a></span></code></a>, returns end of last <a href="../../../dlangui/core/editable/EditableContent.line.html"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.line.html"><span class="pln">line</span></a></span></code></a>)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.lineEnd.html" class="public">
+										<code>lineEnd</code>
+									</a>
+								</td>
+								<td>returns <a href="../../../dlangui/core/editable/EditableContent.text.html"><code class="lang-d"><span class="pln">text</span></code></a> position for end of <a href="../../../dlangui/core/editable/EditableContent.line.html"><code class="lang-d"><span class="pln">line</span></code></a> <a href="../../../dlangui/core/editable/EditableContent.lineEnd.html#lineIndex"><code class="lang-d"><span class="pln">lineIndex</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.lineIsEmpty.html" class="public">
+										<code>lineIsEmpty</code>
+									</a>
+								</td>
+								<td>return true if <a href="../../../dlangui/core/editable/EditableContent.line.html"><code class="lang-d"><span class="pln">line</span></code></a> with index <a href="../../../dlangui/core/editable/EditableContent.lineIsEmpty.html#lineIndex"><code class="lang-d"><span class="pln">lineIndex</span></code></a> is empty (has <a href="../../../dlangui/core/editable/EditableContent.length.html"><code class="lang-d"><span class="pln">length</span></code></a> 0 or consists only of spaces and tabs)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.lineLength.html" class="public">
+										<code>lineLength</code>
+									</a>
+								</td>
+								<td>returns <a href="../../../dlangui/core/editable/EditableContent.text.html"><code class="lang-d"><span class="pln">text</span></code></a> position for end of <a href="../../../dlangui/core/editable/EditableContent.line.html"><code class="lang-d"><span class="pln">line</span></code></a> <a href="../../../dlangui/core/editable/EditableContent.lineLength.html#lineIndex"><code class="lang-d"><span class="pln">lineIndex</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.lineRange.html" class="public">
+										<code>lineRange</code>
+									</a>
+								</td>
+								<td>returns <a href="../../../dlangui/core/editable/EditableContent.text.html"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.text.html"><span class="pln">text</span></a></span></code></a> range for whole <a href="../../../dlangui/core/editable/EditableContent.line.html"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.line.html"><span class="pln">line</span></a></span></code></a> <a href="../../../dlangui/core/editable/EditableContent.lineRange.html#lineIndex"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.lineRange.html#lineIndex"><span class="pln">lineIndex</span></a></span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.lineTokenProps.html" class="public">
+										<code>lineTokenProps</code>
+									</a>
+								</td>
+								<td>returns <a href="../../../dlangui/core/editable/EditableContent.line.html"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.line.html"><span class="pln">line</span></a></span></code></a> token properties one item per character (<a href="../../../dlangui/core/editable/EditableContent.lineTokenProps.html#index"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.lineTokenProps.html#index"><span class="pln">index</span></a></span></code></a> is 0 based <a href="../../../dlangui/core/editable/EditableContent.line.html"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.line.html"><span class="pln">line</span></a></span></code></a> number)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.load.html" class="public">
+										<code>load</code>
+									</a>
+								</td>
+								<td><code class="lang-d"><span class="pln">load</span></code> content form input stream
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.load.html" class="public">
+										<code>load</code>
+									</a>
+								</td>
+								<td><a href="../../../dlangui/core/editable/EditableContent.load.html"><code class="lang-d"><span class="pln">load</span></code></a> content from file
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.maxLineLength.html" class="public">
+										<code>maxLineLength</code>
+									</a>
+								</td>
+								<td>returns maximum <a href="../../../dlangui/core/editable/EditableContent.length.html"><code class="lang-d"><span class="pln">length</span></code></a> of <a href="../../../dlangui/core/editable/EditableContent.line.html"><code class="lang-d"><span class="pln">line</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.measureLine.html" class="public">
+										<code>measureLine</code>
+									</a>
+								</td>
+								<td>measures <a href="../../../dlangui/core/editable/EditableContent.line.html"><code class="lang-d"><span class="pln">line</span></code></a> non-space start and end positions
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.moveByWord.html" class="public">
+										<code>moveByWord</code>
+									</a>
+								</td>
+								<td>change <a href="../../../dlangui/core/editable/EditableContent.text.html"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.text.html"><span class="pln">text</span></a></span></code></a> position to nearest word bound (<a href="../../../dlangui/core/editable/EditableContent.moveByWord.html#direction"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.moveByWord.html#direction"><span class="pln">direction</span></a></span></code></a> &lt; 0 - back, &gt; 0 - forward)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.nextCharPos.html" class="public">
+										<code>nextCharPos</code>
+									</a>
+								</td>
+								<td>returns previous character position
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.nextTab.html" class="public">
+										<code>nextTab</code>
+									</a>
+								</td>
+								<td>find nearest next tab position
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.notifyContentReplaced.html" class="public">
+										<code>notifyContentReplaced</code>
+									</a>
+								</td>
+								<td>call listener to say that whole content is replaced e.g. by loading from file
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.notifyContentSaved.html" class="public">
+										<code>notifyContentSaved</code>
+									</a>
+								</td>
+								<td>call listener to say that content is saved
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.opIndex.html" class="public">
+										<code>opIndex</code>
+									</a>
+								</td>
+								<td>returns character at position <a href="../../../dlangui/core/editable/EditableContent.opIndex.html#lineIndex"><code class="lang-d"><span class="pln">lineIndex</span></code></a>, <a href="../../../dlangui/core/editable/EditableContent.opIndex.html#pos"><code class="lang-d"><span class="pln">pos</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.opIndex.html" class="public">
+										<code>opIndex</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.opIndex.html" class="public">
+										<code>opIndex</code>
+									</a>
+								</td>
+								<td>returns character at position <a href="../../../dlangui/core/editable/EditableContent.opIndex.html#lineIndex"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.opIndex.html#lineIndex"><span class="pln">lineIndex</span></a></span></code></a>, <a href="../../../dlangui/core/editable/EditableContent.opIndex.html#pos"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/editable/EditableContent.opIndex.html#pos"><span class="pln">pos</span></a></span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.performOperation.html" class="public">
+										<code>performOperation</code>
+									</a>
+								</td>
+								<td>edit content
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.prevCharPos.html" class="public">
+										<code>prevCharPos</code>
+									</a>
+								</td>
+								<td>returns previous character position
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.rangeMarks.html" class="public">
+										<code>rangeMarks</code>
+									</a>
+								</td>
+								<td>return edit marks for specified <a href="../../../dlangui/core/editable/EditableContent.rangeMarks.html#range"><code class="lang-d"><span class="pln">range</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.rangeText.html" class="public">
+										<code>rangeText</code>
+									</a>
+								</td>
+								<td>return <a href="../../../dlangui/core/editable/EditableContent.text.html"><code class="lang-d"><span class="pln">text</span></code></a> for specified <a href="../../../dlangui/core/editable/EditableContent.rangeText.html#range"><code class="lang-d"><span class="pln">range</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.redo.html" class="public">
+										<code>redo</code>
+									</a>
+								</td>
+								<td>redoes last undone change
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.save.html" class="public">
+										<code>save</code>
+									</a>
+								</td>
+								<td><code class="lang-d"><span class="pln">save</span></code> to output <a href="../../../dlangui/core/editable/EditableContent.save.html#stream"><code class="lang-d"><span class="pln">stream</span></code></a> in specified <a href="../../../dlangui/core/editable/EditableContent.save.html#format"><code class="lang-d"><span class="pln">format</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.save.html" class="public">
+										<code>save</code>
+									</a>
+								</td>
+								<td><a href="../../../dlangui/core/editable/EditableContent.save.html"><code class="lang-d"><span class="pln">save</span></code></a> to output <a href="../../../dlangui/core/editable/EditableContent.save.html#stream"><code class="lang-d"><span class="pln">stream</span></code></a> in current format
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.save.html" class="public">
+										<code>save</code>
+									</a>
+								</td>
+								<td><a href="../../../dlangui/core/editable/EditableContent.save.html"><code class="lang-d"><span class="pln">save</span></code></a> to file in specified <a href="../../../dlangui/core/editable/EditableContent.save.html#format"><code class="lang-d"><span class="pln">format</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.save.html" class="public">
+										<code>save</code>
+									</a>
+								</td>
+								<td><a href="../../../dlangui/core/editable/EditableContent.save.html"><code class="lang-d"><span class="pln">save</span></code></a> to file in current format
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.tokenProp.html" class="public">
+										<code>tokenProp</code>
+									</a>
+								</td>
+								<td>returns token properties character position
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.undo.html" class="public">
+										<code>undo</code>
+									</a>
+								</td>
+								<td>undoes last change
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.wordBounds.html" class="public">
+										<code>wordBounds</code>
+									</a>
+								</td>
+								<td>get word bounds by position
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.clearTokenProps.html" class="protected">
+										<code>clearTokenProps</code>
+									</a>
+								</td>
+								<td>set props arrays size equal to <a href="../../../dlangui/core/editable/EditableContent.text.html"><code class="lang-d"><span class="pln">text</span></code></a> <a href="../../../dlangui/core/editable/EditableContent.line.html"><code class="lang-d"><span class="pln">line</span></code></a> sizes, bit fill with unknown token
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.insertLines.html" class="protected">
+										<code>insertLines</code>
+									</a>
+								</td>
+								<td>inserts <a href="../../../dlangui/core/editable/EditableContent.insertLines.html#count"><code class="lang-d"><span class="pln">count</span></code></a> empty <a href="../../../dlangui/core/editable/EditableContent.lines.html"><code class="lang-d"><span class="pln">lines</span></code></a> at specified position
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.markChangedLines.html" class="protected">
+										<code>markChangedLines</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.removeLines.html" class="protected">
+										<code>removeLines</code>
+									</a>
+								</td>
+								<td>removes <a href="../../../dlangui/core/editable/EditableContent.removeLines.html#removedCount"><code class="lang-d"><span class="pln">removedCount</span></code></a> <a href="../../../dlangui/core/editable/EditableContent.lines.html"><code class="lang-d"><span class="pln">lines</span></code></a> starting from <a href="../../../dlangui/core/editable/EditableContent.removeLines.html#start"><code class="lang-d"><span class="pln">start</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.replaceRange.html" class="protected">
+										<code>replaceRange</code>
+									</a>
+								</td>
+								<td>inserts or removes <a href="../../../dlangui/core/editable/EditableContent.lines.html"><code class="lang-d"><span class="pln">lines</span></code></a>, removes <a href="../../../dlangui/core/editable/EditableContent.text.html"><code class="lang-d"><span class="pln">text</span></code></a> in range
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.updateTokenProps.html" class="protected">
+										<code>updateTokenProps</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Aliases</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.isAlphaForWordSelection.html" class="public">
+										<code>isAlphaForWordSelection</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.isDigit.html" class="public">
+										<code>isDigit</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/editable/EditableContent.isUpperAlpha.html" class="public">
+										<code>isUpperAlpha</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+						</table>
+					</section>
+
+			</section>
+			<section>
+				<h2>Authors</h2>
+<p>Vadim Lopatin, coolreader.org@gmail.com
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2>
+<p>Vadim Lopatin, 2014
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2>
+<p>Boost License 1.0
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>
