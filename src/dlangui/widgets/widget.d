@@ -252,7 +252,7 @@ public:
     }
 
     /// enforces widget's own style - allows override some of style properties
-    protected @property Style ownStyle() {
+    @property Style ownStyle() {
         if (_ownStyle is null)
             _ownStyle = currentTheme.modifyStyle(_styleId);
         return _ownStyle;

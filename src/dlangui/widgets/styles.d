@@ -530,7 +530,9 @@ public:
 
     /// font size
     @property string backgroundImageId() const {
-        if (_backgroundImageId !is null)
+        if (_backgroundImageId == COLOR_DRAWABLE)
+            return null;
+        else if (_backgroundImageId !is null)
             return _backgroundImageId;
         else
             return parentStyle.backgroundImageId;
@@ -702,7 +704,7 @@ public:
     
     @property Style backgroundColor(uint color) {
         _backgroundColor = color;
-        _backgroundImageId = null;
+        _backgroundImageId = COLOR_DRAWABLE;
         _backgroundDrawable.clear();
         return this;
     }
@@ -853,6 +855,20 @@ public:
         return createState(stateMask, stateValue);
     }
 
+    /// find substyle based on widget state (e.g. focused, pressed, ...)
+    Style forState(uint state) {
+        if (state == State.Normal)
+            return this;
+        //Log.d("forState ", state, " styleId=", _id, " substates=", _substates.length);
+        if (parentStyle !is null && _substates.length == 0 && parentStyle._substates.length > 0) //id is null && 
+            return parentStyle.forState(state);
+        foreach(item; _substates) {
+            if ((item._stateMask & state) == item._stateValue)
+                return item;
+        }
+        return this; // fallback to current style
+    }
+    
     /// find substyle based on widget state (e.g. focused, pressed, ...)
     const(Style) forState(uint state) const {
         if (state == State.Normal)
@@ -1013,6 +1029,11 @@ class Theme : Style {
     
     /// find substyle based on widget state (e.g. focused, pressed, ...)
     override const(Style) forState(uint state) const {
+        return this;
+    }
+
+    /// find substyle based on widget state (e.g. focused, pressed, ...)
+    override Style forState(uint state) {
         return this;
     }
 

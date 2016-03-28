@@ -27,6 +27,8 @@ immutable uint COLOR_UNSPECIFIED = 0xFFDEADFF;
 /// transparent color constant
 immutable uint COLOR_TRANSPARENT = 0xFFFFFFFF;
 
+immutable string COLOR_DRAWABLE = "#color";
+
 
 immutable uint COLOR_TRANSFORM_OFFSET_NONE = 0x80808080;
 immutable uint COLOR_TRANSFORM_MULTIPLY_NONE = 0x40404040;
