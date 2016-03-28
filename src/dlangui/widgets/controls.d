@@ -553,7 +553,7 @@ class Button : Widget {
         super.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
-        buf.fillRect(_pos, backgroundColor);
+        //buf.fillRect(_pos, backgroundColor);
         applyPadding(rc);
         auto saver = ClipRectSaver(buf, rc, alpha);
         FontRef font = font();
