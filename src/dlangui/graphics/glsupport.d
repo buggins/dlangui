@@ -19,17 +19,23 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 module dlangui.graphics.glsupport;
 
 public import dlangui.core.config;
-
 static if (ENABLE_OPENGL):
 
 public import dlangui.core.math3d;
-import dlangui.graphics.scene.mesh;
+
 import dlangui.core.logger;
-import derelict.opengl3.gl;
 import dlangui.core.types;
+
 import std.conv;
 import std.string;
 import std.array;
+
+public import derelict.opengl3.types;
+public import derelict.opengl3.gl3;
+public import derelict.opengl3.gl;
+
+import dlangui.graphics.scene.mesh;
+import dlangui.graphics.scene.effect;
 
 derelict.util.exception.ShouldThrow gl3MissingSymFunc( string symName ) {
     import std.algorithm : equal;
@@ -112,7 +118,7 @@ string glerrorToString(in GLenum err) pure nothrow {
 }
 
 
-class GLProgram : GraphicsEffect {
+class GLProgram : dlangui.graphics.scene.effect.GraphicsEffect {
     @property abstract string vertexSource();
     @property abstract string fragmentSource();
     protected GLuint program;

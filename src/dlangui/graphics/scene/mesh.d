@@ -1,8 +1,9 @@
 module dlangui.graphics.scene.mesh;
 
-import dlangui.graphics.scene.material;
 import dlangui.core.math3d;
 import dlangui.core.types;
+//import dlangui.graphics.scene.material;
+import dlangui.graphics.scene.effect;
 
 /// Reference counted Mesh object
 alias MeshRef = Ref!Mesh;
@@ -45,22 +46,6 @@ class VertexBuffer {
 
 /// location for element is not found
 enum VERTEX_ELEMENT_NOT_FOUND = -1;
-
-/// Base class for graphics effect / program - e.g. for OpenGL shader program
-abstract class GraphicsEffect : RefCountedObject {
-    /// get location for vertex attribute
-    int getVertexElementLocation(VertexElementType type);
-
-    void setUniform(string uniformName, mat4 matrix);
-
-    void setUniform(string uniformName, vec2 vec);
-
-    void setUniform(string uniformName, vec3 vec);
-
-    void setUniform(string uniformName, vec4 vec);
-
-    void draw(Mesh mesh);
-}
 
 /// vertex attribute properties
 struct VertexElement {
