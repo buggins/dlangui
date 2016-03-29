@@ -44,8 +44,8 @@
     "configurations": [
         {
             "name": "default",
-            "versions": ["USE_OPENGL", "EmbedStandardResources", "USE_FREETYPE", "ForceLogs"],
-            "versions-posix": ["USE_SDL"],
+            "versions": ["USE_OPENGL", "EmbedStandardResources"],
+            "versions-posix": ["USE_SDL", "USE_FREETYPE"],
             "versions-windows": ["Unicode"],
             "dependencies": {
                 "derelict-gl3": "~>1.0.18",
