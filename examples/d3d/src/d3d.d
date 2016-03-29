@@ -5,6 +5,7 @@ import dlangui.graphics.scene.scene3d;
 import dlangui.graphics.scene.camera;
 import dlangui.graphics.scene.mesh;
 import dlangui.graphics.scene.material;
+import dlangui.graphics.scene.effect;
 import dlangui.graphics.glsupport;
 import dlangui.graphics.gldrawbuf;
 import derelict.opengl3.gl3;
@@ -228,7 +229,7 @@ class UiWidget : VerticalLayout, CellVisitor {
     }
     float angle = 0;
 
-    MyGLProgram _program;
+    EffectRef _program;
     Scene3d _scene;
     Camera _cam;
     Mesh _mesh;
@@ -239,11 +240,9 @@ class UiWidget : VerticalLayout, CellVisitor {
 
     /// this is OpenGLDrawableDelegate implementation
     private void doDraw(Rect windowRect, Rect rc) {
-        if (!_program) {
-            _program = new MyGLProgram();
+        if (_program.isNull) {
+            _program = EffectCache.instance.get("textured.vert", "textured.frag");
         }
-        if (!_program.check())
-            return;
         if (!_tx)
             _tx = new GLTexture("crate");
         if (!_blockstx)
@@ -371,67 +370,5 @@ class TestVisitor : CellVisitor {
     void visit(World world, ref Position camPosition, Vector3d pos, cell_t cell, int visibleFaces) {
         //Log.d("TestVisitor.visit ", pos, " cell=", cell);
     }
-}
-
-// Simple texture + color shader
-class MyGLProgram : GLProgram {
-    @property override string vertexSource() {
-        return q{
-            in vec4 vertex;
-            in vec4 colAttr;
-            in vec4 texCoord;
-            out vec4 col;
-            out vec4 texc;
-            uniform mat4 matrix;
-            void main(void)
-            {
-                gl_Position = matrix * vertex;
-                col = colAttr;
-                texc = texCoord;
-            }
-        };
-
-    }
-    @property override string fragmentSource() {
-        return q{
-            uniform sampler2D tex;
-            in vec4 col;
-            in vec4 texc;
-            out vec4 outColor;
-            void main(void)
-            {
-                outColor = texture(tex, texc.st) * col;
-            }
-        };
-    }
-
-    // attribute locations
-    protected int matrixLocation;
-    protected int vertexLocation;
-    protected int colAttrLocation;
-    protected int texCoordLocation;
-
-    override bool initLocations() {
-        matrixLocation = getUniformLocation("matrix");
-        vertexLocation = getAttribLocation("vertex");
-        colAttrLocation = getAttribLocation("colAttr");
-        texCoordLocation = getAttribLocation("texCoord");
-        return matrixLocation >= 0 && vertexLocation >= 0 && colAttrLocation >= 0 && texCoordLocation >= 0;
-    }
-
-    /// get location for vertex attribute
-    override int getVertexElementLocation(VertexElementType type) {
-        switch(type) with(VertexElementType) {
-            case POSITION: 
-                return vertexLocation;
-            case COLOR: 
-                return colAttrLocation;
-            case TEXCOORD0: 
-                return texCoordLocation;
-            default:
-                return super.getVertexElementLocation(type);
-        }
-    }
-
 }
 

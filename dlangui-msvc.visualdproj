@@ -771,6 +771,7 @@
     <Folder name="graphics">
      <Folder name="scene">
       <File path="src\dlangui\graphics\scene\camera.d" />
+      <File path="src\dlangui\graphics\scene\effect.d" />
       <File path="src\dlangui\graphics\scene\material.d" />
       <File path="src\dlangui\graphics\scene\mesh.d" />
       <File path="src\dlangui\graphics\scene\node.d" />
@@ -778,7 +779,7 @@
       <File path="src\dlangui\graphics\scene\transform.d" />
      </Folder>
      <Folder name="xpm">
-      <File path="src\dlangui\graphics\xpm\colors.d" />
+      <File path="src\dlangui\graphics\xpm\xpmcolors.d" />
       <File path="src\dlangui\graphics\xpm\reader.d" />
      </Folder>
      <File path="src\dlangui\graphics\colors.d" />

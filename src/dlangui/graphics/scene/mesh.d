@@ -2,6 +2,7 @@ module dlangui.graphics.scene.mesh;
 
 import dlangui.graphics.scene.material;
 import dlangui.core.math3d;
+import dlangui.core.types;
 
 /// vertex element type
 enum VertexElementType : ubyte {
@@ -43,7 +44,7 @@ class VertexBuffer {
 enum VERTEX_ELEMENT_NOT_FOUND = -1;
 
 /// Base class for graphics effect / program - e.g. for OpenGL shader program
-abstract class GraphicsEffect {
+abstract class GraphicsEffect : RefCountedObject {
     /// get location for vertex attribute
     int getVertexElementLocation(VertexElementType type);
 

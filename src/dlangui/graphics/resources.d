@@ -119,6 +119,11 @@ struct EmbeddedResourceList {
     void addResources(EmbeddedResource[] resources) {
         list ~= resources;
     }
+    void dumpEmbeddedResources() {
+        foreach(r; list) {
+            Log.d("EmbeddedResource: ", r.name);
+        }
+    }
     /// find by exact file name
     EmbeddedResource * find(string name) {
         // search backwards to allow overriding standard resources (which are added first)
@@ -147,7 +152,7 @@ struct EmbeddedResourceList {
         // search backwards to allow overriding standard resources (which are added first)
         for (int i = cast(int)list.length - 1; i >= 0; i--) {
             string s = list[i].name;
-            if (s.equal(xmlname) || s.equal(pngname) || s.equal(png9name) 
+            if (s.equal(name) || s.equal(xmlname) || s.equal(pngname) || s.equal(png9name) 
                     || s.equal(jpgname) || s.equal(jpegname) || s.equal(xpmname))
                 return &list[i];
         }

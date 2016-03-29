@@ -1,5 +1,5 @@
 
-module dlangui.graphics.xpm.colors;
+module dlangui.graphics.xpm.xpmcolors;
 import std.algorithm : cmp;
 
 ///Represents for predefined xpm color

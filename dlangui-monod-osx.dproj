@@ -139,6 +139,7 @@
     <Compile Include="src\dlangui\graphics\images.d" />
     <Compile Include="src\dlangui\graphics\resources.d" />
     <Compile Include="src\dlangui\graphics\scene\camera.d" />
+    <Compile Include="src\dlangui\graphics\scene\effect.d" />
     <Compile Include="src\dlangui\graphics\scene\material.d" />
     <Compile Include="src\dlangui\graphics\scene\mesh.d" />
     <Compile Include="src\dlangui\graphics\scene\node.d" />
@@ -198,7 +199,7 @@
     <Compile Include="deps\DerelictFT\source\derelict\freetype\ft.d" />
     <Compile Include="deps\DerelictFT\source\derelict\freetype\functions.d" />
     <Compile Include="deps\DerelictFT\source\derelict\freetype\types.d" />
-    <Compile Include="src\dlangui\graphics\xpm\colors.d" />
+    <Compile Include="src\dlangui\graphics\xpm\xpmcolors.d" />
     <Compile Include="3rdparty\fontconfig\functions.d" />
     <Compile Include="3rdparty\fontconfig\package.d" />
     <Compile Include="3rdparty\fontconfig\types.d" />

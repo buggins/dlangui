@@ -4,3 +4,5 @@ res/mdpi/cr3_logo.png
 res/mdpi/tx_fabric.jpg
 res/mdpi/crate.png
 res/mdpi/blocks.png
+res/shaders/textured.vert
+res/shaders/textured.frag

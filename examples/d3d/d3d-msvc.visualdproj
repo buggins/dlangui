@@ -53,8 +53,8 @@
   <cccmd>$(CC) -c</cccmd>
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>$(SolutionDir)/src $(SolutionDir)/3rdparty $(SolutionDir)/deps/DerelictGL3/source  $(SolutionDir)/deps/DerelictUtil/source  $(SolutionDir)/deps/DerelictFT/source $(SolutionDir)/deps/DerelictSDL2/source</imppath>
-  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi</fileImppath>
+  <imppath>$(SolutionDir)/../dlangui/src $(SolutionDir)/../dlangui/3rdparty $(SolutionDir)/../dlangui/deps/DerelictGL3/source  $(SolutionDir)/../dlangui/deps/DerelictUtil/source  $(SolutionDir)/../dlangui/deps/DerelictFT/source $(SolutionDir)/../dlangui/deps/DerelictSDL2/source</imppath>
+  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi views/res/shaders</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
@@ -155,8 +155,8 @@
   <cccmd>$(CC) -c</cccmd>
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>$(SolutionDir)/src $(SolutionDir)/3rdparty $(SolutionDir)/deps/DerelictGL3/source  $(SolutionDir)/deps/DerelictUtil/source  $(SolutionDir)/deps/DerelictFT/source $(SolutionDir)/deps/DerelictSDL2/source</imppath>
-  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi</fileImppath>
+  <imppath>$(SolutionDir)/../dlangui/src $(SolutionDir)/../dlangui/3rdparty $(SolutionDir)/../dlangui/deps/DerelictGL3/source  $(SolutionDir)/../dlangui/deps/DerelictUtil/source  $(SolutionDir)/../dlangui/deps/DerelictFT/source $(SolutionDir)/../dlangui/deps/DerelictSDL2/source</imppath>
+  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi views/res/shaders</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
@@ -257,8 +257,8 @@
   <cccmd>$(CC) -c</cccmd>
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>$(SolutionDir)/src $(SolutionDir)/3rdparty $(SolutionDir)/deps/DerelictGL3/source  $(SolutionDir)/deps/DerelictUtil/source  $(SolutionDir)/deps/DerelictFT/source $(SolutionDir)/deps/DerelictSDL2/source</imppath>
-  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi</fileImppath>
+  <imppath>$(SolutionDir)/../dlangui/src $(SolutionDir)/../dlangui/3rdparty $(SolutionDir)/../dlangui/deps/DerelictGL3/source  $(SolutionDir)/../dlangui/deps/DerelictUtil/source  $(SolutionDir)/../dlangui/deps/DerelictFT/source $(SolutionDir)/../dlangui/deps/DerelictSDL2/source</imppath>
+  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi views/res/shaders</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
@@ -359,8 +359,8 @@
   <cccmd>$(CC) -c</cccmd>
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath>$(SolutionDir)/src $(SolutionDir)/3rdparty $(SolutionDir)/deps/DerelictGL3/source  $(SolutionDir)/deps/DerelictUtil/source  $(SolutionDir)/deps/DerelictFT/source $(SolutionDir)/deps/DerelictSDL2/source</imppath>
-  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi</fileImppath>
+  <imppath>$(SolutionDir)/../dlangui/src $(SolutionDir)/../dlangui/3rdparty $(SolutionDir)/../dlangui/deps/DerelictGL3/source  $(SolutionDir)/../dlangui/deps/DerelictUtil/source  $(SolutionDir)/../dlangui/deps/DerelictFT/source $(SolutionDir)/../dlangui/deps/DerelictSDL2/source</imppath>
+  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi views/res/shaders</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />

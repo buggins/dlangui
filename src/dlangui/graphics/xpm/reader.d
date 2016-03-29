@@ -9,7 +9,7 @@ module dlangui.graphics.xpm.reader;
  * 
  */
 
-import dlangui.graphics.xpm.colors;
+import dlangui.graphics.xpm.xpmcolors;
 
 import dlangui.graphics.colors;
 import dlangui.graphics.drawbuf;
