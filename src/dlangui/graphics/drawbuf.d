@@ -98,6 +98,18 @@ class DrawBuf : RefCountedObject {
     @property void onDestroyCallback(void function(uint) callback) { _onDestroyCallback = callback; }
     @property void function(uint) onDestroyCallback() { return _onDestroyCallback; }
 
+    /// Call to remove this image from OpenGL cache when image is updated.
+    void invalidate() {
+        static if (ENABLE_OPENGL) {
+            if (_onDestroyCallback) {
+                // remove from cache
+                _onDestroyCallback(_id);
+                // assign new ID
+                _id = drawBufIdGenerator++;
+            }
+        }
+    }
+
     // ===================================================
     // 9-patch functions (image scaling using 9-patch markup - unscaled frame and scaled middle parts).
     // See Android documentation for details.

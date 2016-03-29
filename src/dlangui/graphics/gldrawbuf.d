@@ -360,28 +360,30 @@ private abstract class GLCache
             if (_closed)
                 return null;
 
+            int spacer = (width == _tdx || height == _tdy) ? 0 : 1;
+
             // next line if necessary
-            if (_x + width + 2 > _tdx) {
+            if (_x + width + spacer * 2 > _tdx) {
                 // move to next line
                 _currentLine = _nextLine;
                 _x = 0;
             }
             // check if no room left for glyph height
-            if (_currentLine + height + 2 > _tdy) {
+            if (_currentLine + height + spacer * 2 > _tdy) {
                 _closed = true;
                 return null;
             }
-            cacheItem._rc = Rect(_x + 1, _currentLine + 1, _x + width + 1, _currentLine + height + 1);
+            cacheItem._rc = Rect(_x + spacer, _currentLine + spacer, _x + width + spacer, _currentLine + height + spacer);
             if (height && width) {
-                if (_nextLine < _currentLine + height + 2)
-                    _nextLine = _currentLine + height + 2;
+                if (_nextLine < _currentLine + height + 2 * spacer)
+                    _nextLine = _currentLine + height + 2 * spacer;
                 if (!_drawbuf) {
                     _drawbuf = new ColorDrawBuf(_tdx, _tdy);
                     //_drawbuf.SetBackgroundColor(0x000000);
                     //_drawbuf.SetTextColor(0xFFFFFF);
                     _drawbuf.fill(0xFF000000);
                 }
-                _x += width + 1;
+                _x += width + spacer;
                 _needUpdateTexture = true;
             }
             _itemCount++;
@@ -487,9 +489,17 @@ private class GLImageCache : GLCache
 
         void convertPixelFormat(GLCacheItem item) {
             Rect rc = item._rc;
-            for (int y = rc.top - 1; y <= rc.bottom; y++) {
+            if (rc.top > 0)
+                rc.top--;
+            if (rc.left > 0)
+                rc.left--;
+            if (rc.right < _tdx)
+                rc.right++;
+            if (rc.bottom < _tdy)
+                rc.bottom++;
+            for (int y = rc.top; y < rc.bottom; y++) {
                 uint * row = _drawbuf.scanLine(y);
-                for (int x = rc.left - 1; x <= rc.right; x++) {
+                for (int x = rc.left; x < rc.right; x++) {
                     uint cl = row[x];
                     // invert A
                     cl ^= 0xFF000000;
@@ -586,8 +596,10 @@ private class GLImageCache : GLCache
     /// draw cached item
     void drawItem(uint objectId, Rect dstrc, Rect srcrc, uint color, int options, Rect * clip, int rotationAngle) {
         GLCacheItem* item = objectId in _map;
-        if (item)
-            (cast(GLImageCachePage)item.page).drawItem(*item, dstrc, srcrc, color, options, clip, rotationAngle);
+        if (item) {
+            auto page = (cast(GLImageCachePage)item.page);
+            page.drawItem(*item, dstrc, srcrc, color, options, clip, rotationAngle);
+        }
     }
 }
 
