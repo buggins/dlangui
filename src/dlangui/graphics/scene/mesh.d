@@ -4,6 +4,9 @@ import dlangui.graphics.scene.material;
 import dlangui.core.math3d;
 import dlangui.core.types;
 
+/// Reference counted Mesh object
+alias MeshRef = Ref!Mesh;
+
 /// vertex element type
 enum VertexElementType : ubyte {
     POSITION = 1,
@@ -157,7 +160,7 @@ struct IndexFragment {
 }
 
 /// Mesh
-class Mesh {
+class Mesh : RefCountedObject {
     protected VertexFormat _vertexFormat;
     protected int _vertexCount;
     protected float[] _vertexData;

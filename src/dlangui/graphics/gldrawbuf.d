@@ -793,6 +793,7 @@ public:
 
 /// GL Texture object from image
 static class GLTexture {
+    protected string _resourceId;
     protected int _dx;
     protected int _dy;
     protected int _tdx;
@@ -831,6 +832,7 @@ static class GLTexture {
 
     this(string resourceId) {
         import dlangui.graphics.resources;
+        _resourceId = resourceId;
         string path = drawableCache.findResource(resourceId);
         this(cast(ColorDrawBuf)imageCache.get(path));
     }
@@ -859,9 +861,40 @@ static class GLTexture {
     }
 
     ~this() {
+        import std.string : empty;
+        if (!_resourceId.empty)
+            GLTextureCache.instance.onItemRemoved(_resourceId);
         if (_texture && _texture.ID != 0) {
             destroy(_texture);
             _texture = null;
         }
+    }
+}
+
+/// Cache for GLTexture
+class GLTextureCache {
+    protected GLTexture[string] _map;
+
+    static __gshared GLTextureCache _instance;
+
+    static @property GLTextureCache instance() { 
+        if (!_instance)
+            _instance = new GLTextureCache();
+        return _instance; 
+    }
+
+    private void onItemRemoved(string resourceId) {
+        if (resourceId in _map) {
+            _map.remove(resourceId);
+        }
+    }
+
+    GLTexture get(string resourceId) {
+        if (auto p = resourceId in _map) {
+            return *p;
+        }
+        GLTexture tx = new GLTexture(resourceId);
+        _map[resourceId] = tx;
+        return tx;
     }
 }

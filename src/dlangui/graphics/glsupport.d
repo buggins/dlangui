@@ -25,8 +25,9 @@ static if (ENABLE_OPENGL):
 public import dlangui.core.math3d;
 import dlangui.graphics.scene.mesh;
 import dlangui.core.logger;
-import derelict.opengl3.gl3;
+//import derelict.opengl3.gl3;
 import derelict.opengl3.gl;
+//import derelict.opengl3.types;
 import dlangui.core.types;
 import std.conv;
 import std.string;
@@ -114,6 +115,7 @@ string glerrorToString(in GLenum err) pure nothrow {
 
 
 class GLProgram : GraphicsEffect {
+    import derelict.opengl3.types;
     @property abstract string vertexSource();
     @property abstract string fragmentSource();
     protected GLuint program;
