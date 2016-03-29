@@ -118,7 +118,7 @@ string glerrorToString(in GLenum err) pure nothrow {
 }
 
 
-class GLProgram : dlangui.graphics.scene.effect.GraphicsEffect {
+class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
     @property abstract string vertexSource();
     @property abstract string fragmentSource();
     protected GLuint program;

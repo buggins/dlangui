@@ -9,22 +9,6 @@ import dlangui.graphics.glsupport;
 import dlangui.graphics.gldrawbuf;
 import dlangui.graphics.scene.mesh;
 
-/// Base class for graphics effect / program - e.g. for OpenGL shader program
-abstract class GraphicsEffect : RefCountedObject {
-    /// get location for vertex attribute
-    int getVertexElementLocation(VertexElementType type);
-
-    void setUniform(string uniformName, mat4 matrix);
-
-    void setUniform(string uniformName, vec2 vec);
-
-    void setUniform(string uniformName, vec3 vec);
-
-    void setUniform(string uniformName, vec4 vec);
-
-    void draw(Mesh mesh);
-}
-
 /// Reference counted Effect object
 alias EffectRef = Ref!Effect;
 
