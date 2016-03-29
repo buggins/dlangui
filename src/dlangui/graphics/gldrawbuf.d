@@ -27,6 +27,9 @@ import dlangui.core.logger;
 private import dlangui.graphics.glsupport;
 private import std.algorithm;
 
+/// Reference counted GLTexture object
+alias TextureRef = Ref!GLTexture;
+
 interface GLConfigCallback {
     void saveConfiguration();
     void restoreConfiguration();
@@ -792,7 +795,7 @@ public:
 }
 
 /// GL Texture object from image
-static class GLTexture {
+static class GLTexture : RefCountedObject {
     protected string _resourceId;
     protected int _dx;
     protected int _dy;

@@ -25,9 +25,7 @@ static if (ENABLE_OPENGL):
 public import dlangui.core.math3d;
 import dlangui.graphics.scene.mesh;
 import dlangui.core.logger;
-//import derelict.opengl3.gl3;
 import derelict.opengl3.gl;
-//import derelict.opengl3.types;
 import dlangui.core.types;
 import std.conv;
 import std.string;
@@ -115,7 +113,6 @@ string glerrorToString(in GLenum err) pure nothrow {
 
 
 class GLProgram : GraphicsEffect {
-    import derelict.opengl3.types;
     @property abstract string vertexSource();
     @property abstract string fragmentSource();
     protected GLuint program;
@@ -990,6 +987,8 @@ enum GLObjectTypes { Buffer, VertexArray, Texture, Framebuffer };
   * Note: on construction it binds itself to the target, and it binds 0 to target on destruction.
   * All methods (except ctor, dtor, bind(), unbind() and setup()) does not perform binding.
 */
+
+
 class GLObject(GLObjectTypes type, GLuint target = 0) {
     immutable GLuint ID;
     //alias ID this; // good, but it confuses destroy()
@@ -1061,6 +1060,7 @@ class GLObject(GLObjectTypes type, GLuint target = 0) {
         }
     }
 }
+
 alias VAO = GLObject!(GLObjectTypes.VertexArray);
 alias VBO = GLObject!(GLObjectTypes.Buffer, GL_ARRAY_BUFFER);
 alias Tex2D = GLObject!(GLObjectTypes.Texture, GL_TEXTURE_2D);

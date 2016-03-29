@@ -62,7 +62,7 @@ class Effect : GLProgram {
     }
 
     ~this() {
-        _instance.onObjectDestroyed(_id);
+        EffectCache.instance.onObjectDestroyed(_id);
     }
 
     protected void init() {
@@ -151,6 +151,8 @@ class Effect : GLProgram {
 class EffectCache {
     private Effect[EffectId] _map;
 
+    private static __gshared EffectCache _instance;
+
     /// returns effect cache singleton instance
     static @property EffectCache instance() {
         if (!_instance)
@@ -179,4 +181,3 @@ class EffectCache {
     }
 }
 
-private __gshared EffectCache _instance;
