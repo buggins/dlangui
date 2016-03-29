@@ -1,17 +1,15 @@
-
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta charset="UTF-8"/><!-- using block title in layout.dt--><!-- using block ddox.defs in ddox.layout.dt--><!-- using block ddox.title in ddox.layout.dt-->
+		<meta charset="UTF-8"/>
 		<title>Module dlangui.graphics.resources</title>
 		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
 		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
 		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
-		<script type="text/javascript" src="../../prettify/prettify.js">/**/</script>
 		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
 	</head>
-	<body onload="prettyPrint(); setupDdox();">
-		<nav id="main-nav"><!-- using block navigation in layout.dt-->
+	<body onload="setupDdox();">
+		<nav id="main-nav">
 						<ul class="tree-view">
 							<li class=" tree-view">
 								<a href="#" class="package">dlangui</a>
@@ -20,7 +18,25 @@
 								<a href="#" class="package">core</a>
 						<ul class="tree-view">
 							<li>
+								<a href="../../dlangui/core/asyncsocket.html" class=" module">asyncsocket</a>
+							</li>
+							<li>
 								<a href="../../dlangui/core/collections.html" class=" module">collections</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/config.html" class=" module">config</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/css.html" class=" module">css</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/cssparser.html" class=" module">cssparser</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/dom.html" class=" module">dom</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/editable.html" class=" module">editable</a>
 							</li>
 							<li>
 								<a href="../../dlangui/core/events.html" class=" module">events</a>
@@ -38,10 +54,25 @@
 								<a href="../../dlangui/core/logger.html" class=" module">logger</a>
 							</li>
 							<li>
+								<a href="../../dlangui/core/math3d.html" class=" module">math3d</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/queue.html" class=" module">queue</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/settings.html" class=" module">settings</a>
+							</li>
+							<li>
 								<a href="../../dlangui/core/signals.html" class=" module">signals</a>
 							</li>
 							<li>
 								<a href="../../dlangui/core/stdaction.html" class=" module">stdaction</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/streams.html" class=" module">streams</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/textsource.html" class=" module">textsource</a>
 							</li>
 							<li>
 								<a href="../../dlangui/core/types.html" class=" module">types</a>
@@ -58,15 +89,72 @@
 								<a href="../../dlangui/dialogs/filedlg.html" class=" module">filedlg</a>
 							</li>
 							<li>
+								<a href="../../dlangui/dialogs/inputbox.html" class=" module">inputbox</a>
+							</li>
+							<li>
 								<a href="../../dlangui/dialogs/msgbox.html" class=" module">msgbox</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dialogs/settingsdialog.html" class=" module">settingsdialog</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/dml/annotations.html" class=" module">annotations</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dml/dmlhighlight.html" class=" module">dmlhighlight</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dml/parser.html" class=" module">parser</a>
 							</li>
 						</ul>
 							</li>
 							<li class=" tree-view">
 								<a href="#" class="package">graphics</a>
 						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">scene</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/graphics/scene/camera.html" class=" module">camera</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/material.html" class=" module">material</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/mesh.html" class=" module">mesh</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/node.html" class=" module">node</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/scene3d.html" class=" module">scene3d</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/transform.html" class=" module">transform</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">xpm</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/graphics/xpm/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/xpm/reader.html" class=" module">reader</a>
+							</li>
+						</ul>
+							</li>
 							<li>
 								<a href="../../dlangui/graphics/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/domrender.html" class=" module">domrender</a>
 							</li>
 							<li>
 								<a href="../../dlangui/graphics/drawbuf.html" class=" module">drawbuf</a>
@@ -100,6 +188,17 @@
 							<li>
 								<a href="../../dlangui/platforms/common/platform.html" class=" module">platform</a>
 							</li>
+							<li>
+								<a href="../../dlangui/platforms/common/startup.html" class=" module">startup</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dsfml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/dsfml/dsfmlapp.html" class=" module">dsfmlapp</a>
+							</li>
 						</ul>
 							</li>
 							<li class="collapsed tree-view">
@@ -121,6 +220,14 @@
 							</li>
 							<li>
 								<a href="../../dlangui/platforms/windows/winapp.html" class=" module">winapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">x11</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/x11/x11app.html" class=" module">x11app</a>
 							</li>
 						</ul>
 							</li>
@@ -157,6 +264,9 @@
 								<a href="../../dlangui/widgets/menu.html" class=" module">menu</a>
 							</li>
 							<li>
+								<a href="../../dlangui/widgets/metadata.html" class=" module">metadata</a>
+							</li>
+							<li>
 								<a href="../../dlangui/widgets/popup.html" class=" module">popup</a>
 							</li>
 							<li>
@@ -183,12 +293,15 @@
 							<li>
 								<a href="../../dlangui/widgets/widget.html" class=" module">widget</a>
 							</li>
+							<li>
+								<a href="../../dlangui/widgets/winframe.html" class=" module">winframe</a>
+							</li>
+						</ul>
+							</li>
 						</ul>
 							</li>
 							<li>
-								<a href="../../dlangui/all.html" class=" module">all</a>
-							</li>
-						</ul>
+								<a href="../../dlangui.html" class=" module">dlangui</a>
 							</li>
 						</ul>
 				<noscript>
@@ -205,25 +318,24 @@ var symbolSearchRootDir = "../../";
 $('#symbolSearchPane').show();
 	</script>
 				</div>
-				<script type="text/javascript" src="../../scripts/mousetrap.js"></script>
-				<script type="text/javascript">
+			<script type="text/javascript" src="../../scripts/mousetrap.js"></script>
+			<script type="text/javascript">
 $(document).ready(function() {
 	Mousetrap.bind('s', function(e) {
 		$("#symbolSearch").focus();
 		return false;
 	});
 });
-				</script>
+			</script>
 		</nav>
 		<div id="main-contents">
-			<h1>Module dlangui.graphics.resources</h1><!-- using block body in layout.dt--><!-- using block ddox.description in ddox.layout.dt-->
+			<h1>Module dlangui.graphics.resources</h1>
 			<p>This module contains resource management and drawables implementation.
 </p>
-<section>
-<p><a href="../../dlangui/graphics/resources/imageCache.html"><code class="prettyprint lang-d">imageCache</code></a> is RAM cache of decoded images (as DrawBuf).
+<section><p><a href="../../dlangui/graphics/resources/imageCache.html"><code class="lang-d"><span class="pln">imageCache</span></code></a> is RAM cache of decoded images (as DrawBuf).
 </p>
 
-<p><a href="../../dlangui/graphics/resources/drawableCache.html"><code class="prettyprint lang-d">drawableCache</code></a> is cache of Drawables.
+<p><a href="../../dlangui/graphics/resources/drawableCache.html"><code class="lang-d"><span class="pln">drawableCache</span></code></a> is cache of Drawables.
 </p>
 
 <p>Supports nine-patch PNG images in .9.png files (like in Android).
@@ -231,15 +343,76 @@ $(document).ready(function() {
 
 <p>Supports state drawables using XML files similar to ones in Android.
 </p>
+
+
+
+<p>When your application uses custom resources, you can embed resources into executable and/or specify external resource directory(s).
+</p>
+
+<p>To embed resources, put them into views/res directory, and create file views/resources.list with list of all files to embed.
+</p>
+
+<p>Use following code to embed resources:
+</p>
+
+<pre class="code"><code class="lang-d"><span class="com">/// entry point for dlangui based application
+</span><span class="kwd">extern </span><span class="pun">(</span><span class="pln">C</span><span class="pun">) </span><span class="typ">int UIAppMain</span><span class="pun">(</span><span class="typ">string</span><span class="pun">[] </span><span class="pln">args</span><span class="pun">) {
+
+    </span><span class="com">// embed non-standard resources listed in views/resources.list into executable
+    </span><span class="pln">embeddedResourceList<wbr/></span><span class="pun">.</span><span class="pln">addResources</span><span class="pun">(<a href="../../dlangui/graphics/resources/embedResourcesFromList.html"></span><span class="pln">embedResourcesFromList</a></span><span class="pun">!(</span><span class="str">"resources.list"</span><span class="pun">)());
+
+    ...</span></code></pre>
+
+<p>Resource list resources.list file may look similar to following:
+</p>
+
+<pre class="code"><code class="lang-d"><span class="pln">res</span><span class="pun">/</span><span class="pln">i18n</span><span class="pun">/</span><span class="pln">en<wbr/></span><span class="pun">.</span><span class="pln">ini
+res</span><span class="pun">/</span><span class="pln">i18n</span><span class="pun">/</span><span class="pln">ru<wbr/></span><span class="pun">.</span><span class="pln">ini
+res</span><span class="pun">/</span><span class="pln">mdpi</span><span class="pun">/</span><span class="pln">cr3_logo<wbr/></span><span class="pun">.</span><span class="pln">png
+res</span><span class="pun">/</span><span class="pln">mdpi</span><span class="pun">/</span><span class="pln">document</span><span class="pun">-</span><span class="pln">open<wbr/></span><span class="pun">.</span><span class="pln">png
+res</span><span class="pun">/</span><span class="pln">mdpi</span><span class="pun">/</span><span class="pln">document</span><span class="pun">-</span><span class="pln">properties<wbr/></span><span class="pun">.</span><span class="pln">png
+res</span><span class="pun">/</span><span class="pln">mdpi</span><span class="pun">/</span><span class="pln">document</span><span class="pun">-</span><span class="pln">save<wbr/></span><span class="pun">.</span><span class="pln">png
+res</span><span class="pun">/</span><span class="pln">mdpi</span><span class="pun">/</span><span class="pln">edit</span><span class="pun">-</span><span class="pln">copy<wbr/></span><span class="pun">.</span><span class="pln">png
+res</span><span class="pun">/</span><span class="pln">mdpi</span><span class="pun">/</span><span class="pln">edit</span><span class="pun">-</span><span class="pln">paste<wbr/></span><span class="pun">.</span><span class="pln">png
+res</span><span class="pun">/</span><span class="pln">mdpi</span><span class="pun">/</span><span class="pln">edit</span><span class="pun">-</span><span class="pln">undo<wbr/></span><span class="pun">.</span><span class="pln">png
+res</span><span class="pun">/</span><span class="pln">mdpi</span><span class="pun">/</span><span class="pln">tx_fabric<wbr/></span><span class="pun">.</span><span class="pln">jpg
+res</span><span class="pun">/</span><span class="pln">theme_custom1<wbr/></span><span class="pun">.</span><span class="pln">xml</span></code></pre>
+
+<p>As well you can specify list of external directories to get resources from.
+</p>
+
+<pre class="code"><code class="lang-d"><span class="pln">
+</span><span class="com">/// entry point for dlangui based application
+</span><span class="kwd">extern </span><span class="pun">(</span><span class="pln">C</span><span class="pun">) </span><span class="typ">int UIAppMain</span><span class="pun">(</span><span class="typ">string</span><span class="pun">[] </span><span class="pln">args</span><span class="pun">) {
+    </span><span class="com">// resource directory search paths
+    </span><span class="typ">string</span><span class="pun">[] </span><span class="pln">resourceDirs </span><span class="pun">= [
+        </span><span class="pln">appendPath</span><span class="pun">(</span><span class="pln">exePath</span><span class="pun">, </span><span class="str">"../../../res/"</span><span class="pun">),   </span><span class="com">// for Visual D and DUB builds
+        </span><span class="pln">appendPath</span><span class="pun">(</span><span class="pln">exePath</span><span class="pun">, </span><span class="str">"../../../res/mdpi/"</span><span class="pun">),   </span><span class="com">// for Visual D and DUB builds
+        </span><span class="pln">appendPath</span><span class="pun">(</span><span class="pln">exePath</span><span class="pun">, </span><span class="str">"../../../../res/"</span><span class="pun">),</span><span class="com">// for Mono-D builds
+        </span><span class="pln">appendPath</span><span class="pun">(</span><span class="pln">exePath</span><span class="pun">, </span><span class="str">"../../../../res/mdpi/"</span><span class="pun">),</span><span class="com">// for Mono-D builds
+        </span><span class="pln">appendPath</span><span class="pun">(</span><span class="pln">exePath</span><span class="pun">, </span><span class="str">"res/"</span><span class="pun">), </span><span class="com">// when res dir is located at the same directory as executable
+        </span><span class="pln">appendPath</span><span class="pun">(</span><span class="pln">exePath</span><span class="pun">, </span><span class="str">"../res/"</span><span class="pun">), </span><span class="com">// when res dir is located at project directory
+        </span><span class="pln">appendPath</span><span class="pun">(</span><span class="pln">exePath</span><span class="pun">, </span><span class="str">"../../res/"</span><span class="pun">), </span><span class="com">// when res dir is located at the same directory as executable
+        </span><span class="pln">appendPath</span><span class="pun">(</span><span class="pln">exePath</span><span class="pun">, </span><span class="str">"res/mdpi/"</span><span class="pun">), </span><span class="com">// when res dir is located at the same directory as executable
+        </span><span class="pln">appendPath</span><span class="pun">(</span><span class="pln">exePath</span><span class="pun">, </span><span class="str">"../res/mdpi/"</span><span class="pun">), </span><span class="com">// when res dir is located at project directory
+        </span><span class="pln">appendPath</span><span class="pun">(</span><span class="pln">exePath</span><span class="pun">, </span><span class="str">"../../res/mdpi/"</span><span class="pun">) </span><span class="com">// when res dir is located at the same directory as executable
+    </span><span class="pun">];
+    </span><span class="com">// setup resource directories - will use only existing directories
+    </span><span class="typ">Platform<wbr/></span><span class="pun">.</span><span class="pln">instance<wbr/></span><span class="pun">.</span><span class="pln">resourceDirs </span><span class="pun">= </span><span class="pln">resourceDirs</span><span class="pun">;
+</span></code></pre>
+
+<p>When same file exists in both embedded and external resources, one from external resource directory will be used - it's useful for developing
+and testing of resources.
+</p>
 </section>
-<!-- using block ddox.sections in ddox.layout.dt-->
+
 			<section><section><h2>Synopsis</h2>
+<pre class="code"><code class="lang-d"><span class="kwd">import </span><span class="pln">dlangui<wbr/></span><span class="pun">.</span><span class="pln">graphics<wbr/></span><span class="pun">.</span><span class="pln">resources</span><span class="pun">;
 
-<pre class="code prettyprint lang-d">import dlangui.graphics.resources;
-
-</pre>
+</span><span class="com">// embed non-standard resources listed in views/resources.list into executable
+</span><span class="pln">embeddedResourceList<wbr/></span><span class="pun">.</span><span class="pln">addResources</span><span class="pun">(<a href="../../dlangui/graphics/resources/embedResourcesFromList.html"></span><span class="pln">embedResourcesFromList</a></span><span class="pun">!(</span><span class="str">"resources.list"</span><span class="pun">)());</span></code></pre>
 </section>
-</section><!-- using block ddox.members in ddox.layout.dt-->
+</section>
 			<section>
 				<h2>Functions</h2>
 				<table>
@@ -288,8 +461,42 @@ $(document).ready(function() {
 								<code>drawableCache</code>
 							</a>
 						</td>
-						<td>drawable <a href="../../dlangui/graphics/resources/drawableCache.html#cache"><code class="prettyprint lang-d">cache</code></a> singleton
+						<td>drawable <a href="../../dlangui/graphics/resources/drawableCache.html#cache"><code class="lang-d"><span class="pln">cache</span></code></a> singleton
 </td>
+					</tr>
+					<tr>
+						<td>
+							<a id="embedResource" class="public" href="../../dlangui/graphics/resources/embedResource.html">
+								<code>embedResource</code>
+							</a>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="embedResources" class="public" href="../../dlangui/graphics/resources/embedResources.html">
+								<code>embedResources</code>
+							</a>
+						</td>
+						<td>embed all resources from list
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="embedResourcesFromList" class="public" href="../../dlangui/graphics/resources/embedResourcesFromList.html">
+								<code>embedResourcesFromList</code>
+							</a>
+						</td>
+						<td>embed all resources from list
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="embedStandardDlangUIResources" class="public" href="../../dlangui/graphics/resources/embedStandardDlangUIResources.html">
+								<code>embedStandardDlangUIResources</code>
+							</a>
+						</td>
+						<td></td>
 					</tr>
 					<tr>
 						<td>
@@ -314,7 +521,25 @@ $(document).ready(function() {
 								<code>imageCache</code>
 							</a>
 						</td>
-						<td>image <a href="../../dlangui/graphics/resources/imageCache.html#cache"><code class="prettyprint lang-d">cache</code></a> singleton
+						<td>image <a href="../../dlangui/graphics/resources/imageCache.html#cache"><code class="lang-d"><span class="pln">cache</span></code></a> singleton
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="loadResourceBytes" class="public" href="../../dlangui/graphics/resources/loadResourceBytes.html">
+								<code>loadResourceBytes</code>
+							</a>
+						</td>
+						<td>load resource bytes from embedded resource or file
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="splitLines" class="public" href="../../dlangui/graphics/resources/splitLines.html">
+								<code>splitLines</code>
+							</a>
+						</td>
+						<td>split string into lines, autodetect line endings
 </td>
 					</tr>
 				</table>
@@ -333,7 +558,8 @@ $(document).ready(function() {
 								<code>Drawable</code>
 							</a>
 						</td>
-						<td></td>
+						<td>Base class for all drawables
+</td>
 					</tr>
 					<tr>
 						<td>
@@ -357,7 +583,7 @@ $(document).ready(function() {
 								<code>FrameDrawable</code>
 							</a>
 						</td>
-						<td>solid borders (may be of different <a href="../../dlangui/graphics/resources/FrameDrawable.width.html"><code class="prettyprint lang-d">width</code></a>) and, optionally, solid inner area
+						<td>solid borders (may be of different <a href="../../dlangui/graphics/resources/FrameDrawable.width.html"><code class="lang-d"><span class="pln">width</span></code></a>) and, optionally, solid inner area
 </td>
 					</tr>
 					<tr>
@@ -379,6 +605,15 @@ $(document).ready(function() {
 					</tr>
 					<tr>
 						<td>
+							<a id="OpenGLDrawable" class="public" href="../../dlangui/graphics/resources/OpenGLDrawable.html">
+								<code>OpenGLDrawable</code>
+							</a>
+						</td>
+						<td>Custom drawing inside openGL
+</td>
+					</tr>
+					<tr>
+						<td>
 							<a id="SolidFillDrawable" class="public" href="../../dlangui/graphics/resources/SolidFillDrawable.html">
 								<code>SolidFillDrawable</code>
 							</a>
@@ -391,8 +626,52 @@ $(document).ready(function() {
 								<code>StateDrawable</code>
 							</a>
 						</td>
-						<td><a href="../../dlangui/graphics/resources/Drawable.html"><code class="prettyprint lang-d">Drawable</code></a> which is drawn depending on state (see http://developer.android.com/guide/topics/resources/drawable-resource.html#StateList)
+						<td><a href="../../dlangui/graphics/resources/Drawable.html"><code class="lang-d"><span class="typ">Drawable</span></code></a> which is drawn depending on state (see http://developer.android.com/guide/topics/resources/drawable-resource.html#StateList)
 </td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Structs</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="EmbeddedResource" class="public" href="../../dlangui/graphics/resources/EmbeddedResource.html">
+								<code>EmbeddedResource</code>
+							</a>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="EmbeddedResourceList" class="public" href="../../dlangui/graphics/resources/EmbeddedResourceList.html">
+								<code>EmbeddedResourceList</code>
+							</a>
+						</td>
+						<td></td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Enums</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="DimensionUnits" class="public" href="../../dlangui/graphics/resources/DimensionUnits.html">
+								<code>DimensionUnits</code>
+							</a>
+						</td>
+						<td></td>
 					</tr>
 				</table>
 			</section>
@@ -407,12 +686,35 @@ $(document).ready(function() {
 					</tr>
 					<tr>
 						<td>
+							<a id="embeddedResourceList" class="public" href="../../dlangui/graphics/resources/embeddedResourceList.html">
+								<code>embeddedResourceList</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><a href="../../dlangui/graphics/resources/EmbeddedResourceList.html"><span class="typ">EmbeddedResourceList</span></a></code>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="EMBEDDED_RESOURCE_PREFIX" class="public" href="../../dlangui/graphics/resources/EMBEDDED_RESOURCE_PREFIX.html">
+								<code>EMBEDDED_RESOURCE_PREFIX</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
+						</td>
+						<td>filename prefix for embedded resources
+</td>
+					</tr>
+					<tr>
+						<td>
 							<a id="_drawableCache" class="public" href="../../dlangui/graphics/resources/_drawableCache.html">
 								<code>_drawableCache</code>
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d"><a href="../../dlangui/graphics/resources/DrawableCache.html">DrawableCache</a></code>
+<code class="prettyprint lang-d"><a href="../../dlangui/graphics/resources/DrawableCache.html"><span class="typ">DrawableCache</span></a></code>
 						</td>
 						<td></td>
 					</tr>
@@ -423,7 +725,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d"><a href="../../dlangui/graphics/resources/ImageCache.html">ImageCache</a></code>
+<code class="prettyprint lang-d"><a href="../../dlangui/graphics/resources/ImageCache.html"><span class="typ">ImageCache</span></a></code>
 						</td>
 						<td></td>
 					</tr>
@@ -451,19 +753,19 @@ $(document).ready(function() {
 				</table>
 			</section>
 			<section>
-				<h2>Authors</h2><!-- using block ddox.authors in ddox.layout.dt-->
+				<h2>Authors</h2>
 <p>Vadim Lopatin, coolreader.org@gmail.com
 </p>
 
 			</section>
 			<section>
-				<h2>Copyright</h2><!-- using block ddox.copyright in ddox.layout.dt-->
+				<h2>Copyright</h2>
 <p>Vadim Lopatin, 2014
 </p>
 
 			</section>
 			<section>
-				<h2>License</h2><!-- using block ddox.license in ddox.layout.dt-->
+				<h2>License</h2>
 <p>Boost License 1.0
 </p>
 

@@ -1,17 +1,15 @@
-
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta charset="UTF-8"/><!-- using block title in layout.dt--><!-- using block ddox.defs in ddox.layout.dt--><!-- using block ddox.title in ddox.layout.dt-->
+		<meta charset="UTF-8"/>
 		<title>Module dlangui.core.files</title>
 		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
 		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
 		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
-		<script type="text/javascript" src="../../prettify/prettify.js">/**/</script>
 		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
 	</head>
-	<body onload="prettyPrint(); setupDdox();">
-		<nav id="main-nav"><!-- using block navigation in layout.dt-->
+	<body onload="setupDdox();">
+		<nav id="main-nav">
 						<ul class="tree-view">
 							<li class=" tree-view">
 								<a href="#" class="package">dlangui</a>
@@ -20,7 +18,25 @@
 								<a href="#" class="package">core</a>
 						<ul class="tree-view">
 							<li>
+								<a href="../../dlangui/core/asyncsocket.html" class=" module">asyncsocket</a>
+							</li>
+							<li>
 								<a href="../../dlangui/core/collections.html" class=" module">collections</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/config.html" class=" module">config</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/css.html" class=" module">css</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/cssparser.html" class=" module">cssparser</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/dom.html" class=" module">dom</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/editable.html" class=" module">editable</a>
 							</li>
 							<li>
 								<a href="../../dlangui/core/events.html" class=" module">events</a>
@@ -38,10 +54,25 @@
 								<a href="../../dlangui/core/logger.html" class=" module">logger</a>
 							</li>
 							<li>
+								<a href="../../dlangui/core/math3d.html" class=" module">math3d</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/queue.html" class=" module">queue</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/settings.html" class=" module">settings</a>
+							</li>
+							<li>
 								<a href="../../dlangui/core/signals.html" class=" module">signals</a>
 							</li>
 							<li>
 								<a href="../../dlangui/core/stdaction.html" class=" module">stdaction</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/streams.html" class=" module">streams</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/textsource.html" class=" module">textsource</a>
 							</li>
 							<li>
 								<a href="../../dlangui/core/types.html" class=" module">types</a>
@@ -58,15 +89,72 @@
 								<a href="../../dlangui/dialogs/filedlg.html" class=" module">filedlg</a>
 							</li>
 							<li>
+								<a href="../../dlangui/dialogs/inputbox.html" class=" module">inputbox</a>
+							</li>
+							<li>
 								<a href="../../dlangui/dialogs/msgbox.html" class=" module">msgbox</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dialogs/settingsdialog.html" class=" module">settingsdialog</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/dml/annotations.html" class=" module">annotations</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dml/dmlhighlight.html" class=" module">dmlhighlight</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dml/parser.html" class=" module">parser</a>
 							</li>
 						</ul>
 							</li>
 							<li class="collapsed tree-view">
 								<a href="#" class="package">graphics</a>
 						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">scene</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/graphics/scene/camera.html" class=" module">camera</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/material.html" class=" module">material</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/mesh.html" class=" module">mesh</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/node.html" class=" module">node</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/scene3d.html" class=" module">scene3d</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/transform.html" class=" module">transform</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">xpm</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/graphics/xpm/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/xpm/reader.html" class=" module">reader</a>
+							</li>
+						</ul>
+							</li>
 							<li>
 								<a href="../../dlangui/graphics/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/domrender.html" class=" module">domrender</a>
 							</li>
 							<li>
 								<a href="../../dlangui/graphics/drawbuf.html" class=" module">drawbuf</a>
@@ -100,6 +188,17 @@
 							<li>
 								<a href="../../dlangui/platforms/common/platform.html" class=" module">platform</a>
 							</li>
+							<li>
+								<a href="../../dlangui/platforms/common/startup.html" class=" module">startup</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dsfml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/dsfml/dsfmlapp.html" class=" module">dsfmlapp</a>
+							</li>
 						</ul>
 							</li>
 							<li class="collapsed tree-view">
@@ -121,6 +220,14 @@
 							</li>
 							<li>
 								<a href="../../dlangui/platforms/windows/winapp.html" class=" module">winapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">x11</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/x11/x11app.html" class=" module">x11app</a>
 							</li>
 						</ul>
 							</li>
@@ -157,6 +264,9 @@
 								<a href="../../dlangui/widgets/menu.html" class=" module">menu</a>
 							</li>
 							<li>
+								<a href="../../dlangui/widgets/metadata.html" class=" module">metadata</a>
+							</li>
+							<li>
 								<a href="../../dlangui/widgets/popup.html" class=" module">popup</a>
 							</li>
 							<li>
@@ -183,12 +293,15 @@
 							<li>
 								<a href="../../dlangui/widgets/widget.html" class=" module">widget</a>
 							</li>
+							<li>
+								<a href="../../dlangui/widgets/winframe.html" class=" module">winframe</a>
+							</li>
+						</ul>
+							</li>
 						</ul>
 							</li>
 							<li>
-								<a href="../../dlangui/all.html" class=" module">all</a>
-							</li>
-						</ul>
+								<a href="../../dlangui.html" class=" module">dlangui</a>
 							</li>
 						</ul>
 				<noscript>
@@ -205,30 +318,26 @@ var symbolSearchRootDir = "../../";
 $('#symbolSearchPane').show();
 	</script>
 				</div>
-				<script type="text/javascript" src="../../scripts/mousetrap.js"></script>
-				<script type="text/javascript">
+			<script type="text/javascript" src="../../scripts/mousetrap.js"></script>
+			<script type="text/javascript">
 $(document).ready(function() {
 	Mousetrap.bind('s', function(e) {
 		$("#symbolSearch").focus();
 		return false;
 	});
 });
-				</script>
+			</script>
 		</nav>
 		<div id="main-contents">
-			<h1>Module dlangui.core.files</h1><!-- using block body in layout.dt--><!-- using block ddox.description in ddox.layout.dt-->
+			<h1>Module dlangui.core.files</h1>
 			<p>This module contains cross-platform file access utilities
 </p>
-<section>
+<section></section>
 
-</section>
-<!-- using block ddox.sections in ddox.layout.dt-->
 			<section><section><h2>Synopsis</h2>
-
-<pre class="code prettyprint lang-d">import dlangui.core.files;
-</pre>
+<pre class="code"><code class="lang-d"><span class="kwd">import </span><span class="pln">dlangui<wbr/></span><span class="pun">.</span><span class="pln">core<wbr/></span><span class="pun">.</span><span class="pln">files</span><span class="pun">;</span></code></pre>
 </section>
-</section><!-- using block ddox.members in ddox.layout.dt-->
+</section>
 			<section>
 				<h2>Functions</h2>
 				<table>
@@ -243,7 +352,7 @@ $(document).ready(function() {
 								<code>appDataPath</code>
 							</a>
 						</td>
-						<td>    Returns application data directory
+						<td>Returns application data directory
 </td>
 					</tr>
 					<tr>
@@ -252,7 +361,7 @@ $(document).ready(function() {
 								<code>appendPath</code>
 							</a>
 						</td>
-						<td> Appends file path parts with proper delimiters e.g. <code class="prettyprint lang-d">appendPath</code>("/home/user", ".myapp", "config") =&gt; "/home/user/.myapp/config"
+						<td>Appends file path parts with proper delimiters e.g. <code class="lang-d"><span class="pln">appendPath</span></code>("/home/user", ".myapp", "config") =&gt; "/home/user/.myapp/config"
 </td>
 					</tr>
 					<tr>
@@ -261,7 +370,7 @@ $(document).ready(function() {
 								<code>appendPath</code>
 							</a>
 						</td>
-						<td>  Appends file path parts with proper delimiters (as well converts delimiters inside path to system) to buffer e.g. <a href="../../dlangui/core/files/appendPath.html"><code class="prettyprint lang-d">appendPath</code></a>("/home/user", ".myapp", "config") =&gt; "/home/user/.myapp/config"
+						<td>Appends file path parts with proper delimiters (as well converts delimiters inside path to system) to buffer e.g. <a href="../../dlangui/core/files/appendPath.html"><code class="lang-d"><span class="pln">appendPath</span></code></a>("/home/user", ".myapp", "config") =&gt; "/home/user/.myapp/config"
 </td>
 					</tr>
 					<tr>
@@ -270,7 +379,7 @@ $(document).ready(function() {
 								<code>convertPathDelimiters</code>
 							</a>
 						</td>
-						<td>Converts path delimiters to standard for platform inplace in buffer(e.g. / to \ on windows, \ to / on posix), returns <a href="../../dlangui/core/files/convertPathDelimiters.html#buf"><code class="prettyprint lang-d">buf</code></a>
+						<td>Converts path delimiters to standard for platform inplace in buffer(e.g. / to \ on windows, \ to / on posix), returns <a href="../../dlangui/core/files/convertPathDelimiters.html#buf"><code class="lang-d"><span class="pln">buf</span></code></a>
 </td>
 					</tr>
 					<tr>
@@ -279,16 +388,7 @@ $(document).ready(function() {
 								<code>convertPathDelimiters</code>
 							</a>
 						</td>
-						<td> Converts path delimiters to standard for platform (e.g. / to \ on windows, \ to / on posix)
-</td>
-					</tr>
-					<tr>
-						<td>
-							<a id="currentDir" class="public property" href="../../dlangui/core/files/currentDir.html">
-								<code>currentDir</code>
-							</a>
-						</td>
-						<td>Returns current directory
+						<td>Converts path delimiters to standard for platform (e.g. / to \ on windows, \ to / on posix)
 </td>
 					</tr>
 					<tr>
@@ -297,7 +397,7 @@ $(document).ready(function() {
 								<code>exePath</code>
 							</a>
 						</td>
-						<td> Returns current executable path only, including last path delimiter - removes executable name from result of std.file.thisExePath()
+						<td>Returns current executable path only, including last path delimiter - removes executable name from result of std.file.thisExePath()
 </td>
 					</tr>
 					<tr>
@@ -306,7 +406,7 @@ $(document).ready(function() {
 								<code>filterFilename</code>
 							</a>
 						</td>
-						<td>check <a href="../../dlangui/core/files/filterFilename.html#filename"><code class="prettyprint lang-d">filename</code></a> with <a href="../../dlangui/core/files/filterFilename.html#pattern"><code class="prettyprint lang-d">pattern</code></a> (currently only *.ext <a href="../../dlangui/core/files/filterFilename.html#pattern"><code class="prettyprint lang-d">pattern</code></a> is supported)
+						<td>check <a href="../../dlangui/core/files/filterFilename.html#filename"><code class="lang-d"><span class="pln">filename</span></code></a> with <a href="../../dlangui/core/files/filterFilename.html#pattern"><code class="lang-d"><span class="pln">pattern</span></code></a>
 </td>
 					</tr>
 					<tr>
@@ -316,6 +416,15 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>Filters file name by pattern list
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="findExecutablePath" class="public" href="../../dlangui/core/files/findExecutablePath.html">
+								<code>findExecutablePath</code>
+							</a>
+						</td>
+						<td>for executable name w/o path, find absolute path to executable
 </td>
 					</tr>
 					<tr>
@@ -333,7 +442,7 @@ $(document).ready(function() {
 								<code>homeEntry</code>
 							</a>
 						</td>
-						<td>Returns
+						<td>Returns user's home directory entry
 </td>
 					</tr>
 					<tr>
@@ -351,7 +460,7 @@ $(document).ready(function() {
 								<code>isPathDelimiter</code>
 							</a>
 						</td>
-						<td> Returns true if char <a href="../../dlangui/core/files/isPathDelimiter.html#ch"><code class="prettyprint lang-d">ch</code></a> is / or \ slash
+						<td>Returns true if char <a href="../../dlangui/core/files/isPathDelimiter.html#ch"><code class="lang-d"><span class="pln">ch</span></code></a> is / or \ slash
 </td>
 					</tr>
 					<tr>
@@ -369,7 +478,7 @@ $(document).ready(function() {
 								<code>listDirectory</code>
 							</a>
 						</td>
-						<td> List directory content
+						<td>List directory content
 </td>
 					</tr>
 					<tr>
@@ -378,7 +487,7 @@ $(document).ready(function() {
 								<code>parentDir</code>
 							</a>
 						</td>
-						<td>returns parent directory for specified <a href="../../dlangui/core/files/parentDir.html#path"><code class="prettyprint lang-d">path</code></a>
+						<td>returns parent directory for specified <a href="../../dlangui/core/files/parentDir.html#path"><code class="lang-d"><span class="pln">path</span></code></a>
 </td>
 					</tr>
 					<tr>
@@ -387,8 +496,7 @@ $(document).ready(function() {
 								<code>splitPath</code>
 							</a>
 						</td>
-						<td> Split <a href="../../dlangui/core/files/splitPath.html#path"><code class="prettyprint lang-d">path</code></a> into elements, e.g. /home/user/dir1 -&gt; ["home", "user", "dir1"], "c:\dir1\dir2" -&gt; ["c:", "dir1", "dir2"]
-</td>
+						<td></td>
 					</tr>
 				</table>
 			</section>
@@ -431,7 +539,7 @@ $(document).ready(function() {
 				</table>
 			</section>
 			<section>
-				<h2>Global variables</h2>
+				<h2>Enum values</h2>
 				<table>
 					<col class="caption"/>
 					<tr>
@@ -446,7 +554,6 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char)</code>
 						</td>
 						<td>path delimiter (\ for windows, / for others)
 </td>
@@ -454,19 +561,41 @@ $(document).ready(function() {
 				</table>
 			</section>
 			<section>
-				<h2>Authors</h2><!-- using block ddox.authors in ddox.layout.dt-->
+				<h2>Aliases</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Type</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="currentDir" class="public" href="../../dlangui/core/files/currentDir.html">
+								<code>currentDir</code>
+							</a>
+						</td>
+						<td>
+						</td>
+						<td>Returns current directory
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Authors</h2>
 <p>Vadim Lopatin, coolreader.org@gmail.com
 </p>
 
 			</section>
 			<section>
-				<h2>Copyright</h2><!-- using block ddox.copyright in ddox.layout.dt-->
+				<h2>Copyright</h2>
 <p>Vadim Lopatin, 2014
 </p>
 
 			</section>
 			<section>
-				<h2>License</h2><!-- using block ddox.license in ddox.layout.dt-->
+				<h2>License</h2>
 <p>Boost License 1.0
 </p>
 

@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Module dlangui.core.editable</title>
+		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dlangui</a>
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">core</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/core/asyncsocket.html" class=" module">asyncsocket</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/collections.html" class=" module">collections</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/config.html" class=" module">config</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/css.html" class=" module">css</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/cssparser.html" class=" module">cssparser</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/dom.html" class=" module">dom</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/editable.html" class="selected module">editable</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/events.html" class=" module">events</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/files.html" class=" module">files</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/i18n.html" class=" module">i18n</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/linestream.html" class=" module">linestream</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/logger.html" class=" module">logger</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/math3d.html" class=" module">math3d</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/queue.html" class=" module">queue</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/settings.html" class=" module">settings</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/signals.html" class=" module">signals</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/stdaction.html" class=" module">stdaction</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/streams.html" class=" module">streams</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/textsource.html" class=" module">textsource</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/types.html" class=" module">types</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dialogs</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/dialogs/dialog.html" class=" module">dialog</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dialogs/filedlg.html" class=" module">filedlg</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dialogs/inputbox.html" class=" module">inputbox</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dialogs/msgbox.html" class=" module">msgbox</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dialogs/settingsdialog.html" class=" module">settingsdialog</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/dml/annotations.html" class=" module">annotations</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dml/dmlhighlight.html" class=" module">dmlhighlight</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dml/parser.html" class=" module">parser</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">graphics</a>
+						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">scene</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/graphics/scene/camera.html" class=" module">camera</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/material.html" class=" module">material</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/mesh.html" class=" module">mesh</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/node.html" class=" module">node</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/scene3d.html" class=" module">scene3d</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/transform.html" class=" module">transform</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">xpm</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/graphics/xpm/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/xpm/reader.html" class=" module">reader</a>
+							</li>
+						</ul>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/domrender.html" class=" module">domrender</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/drawbuf.html" class=" module">drawbuf</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/fonts.html" class=" module">fonts</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/ftfonts.html" class=" module">ftfonts</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/gldrawbuf.html" class=" module">gldrawbuf</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/glsupport.html" class=" module">glsupport</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/images.html" class=" module">images</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/resources.html" class=" module">resources</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">platforms</a>
+						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">common</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/common/platform.html" class=" module">platform</a>
+							</li>
+							<li>
+								<a href="../../dlangui/platforms/common/startup.html" class=" module">startup</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dsfml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/dsfml/dsfmlapp.html" class=" module">dsfmlapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">sdl</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/sdl/sdlapp.html" class=" module">sdlapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">windows</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/windows/win32drawbuf.html" class=" module">win32drawbuf</a>
+							</li>
+							<li>
+								<a href="../../dlangui/platforms/windows/win32fonts.html" class=" module">win32fonts</a>
+							</li>
+							<li>
+								<a href="../../dlangui/platforms/windows/winapp.html" class=" module">winapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">x11</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/x11/x11app.html" class=" module">x11app</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">widgets</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/widgets/appframe.html" class=" module">appframe</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/combobox.html" class=" module">combobox</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/controls.html" class=" module">controls</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/docks.html" class=" module">docks</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/editors.html" class=" module">editors</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/grid.html" class=" module">grid</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/layouts.html" class=" module">layouts</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/lists.html" class=" module">lists</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/menu.html" class=" module">menu</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/metadata.html" class=" module">metadata</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/popup.html" class=" module">popup</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/scroll.html" class=" module">scroll</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/srcedit.html" class=" module">srcedit</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/statusline.html" class=" module">statusline</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/styles.html" class=" module">styles</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/tabs.html" class=" module">tabs</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/toolbars.html" class=" module">toolbars</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/tree.html" class=" module">tree</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/widget.html" class=" module">widget</a>
+							</li>
+							<li>
+								<a href="../../dlangui/widgets/winframe.html" class=" module">winframe</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+							</li>
+							<li>
+								<a href="../../dlangui.html" class=" module">dlangui</a>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+			<script type="text/javascript" src="../../scripts/mousetrap.js"></script>
+			<script type="text/javascript">
+$(document).ready(function() {
+	Mousetrap.bind('s', function(e) {
+		$("#symbolSearch").focus();
+		return false;
+	});
+});
+			</script>
+		</nav>
+		<div id="main-contents">
+			<h1>Module dlangui.core.editable</h1>
+			<p>This module contains implementation of editable text content.
+</p>
+<section></section>
+
+			<section><section><h2>Synopsis</h2>
+<pre class="code"><code class="lang-d"><span class="kwd">import </span><span class="pln">dlangui<wbr/></span><span class="pun">.</span><span class="pln">core<wbr/></span><span class="pun">.</span><span class="pln">editable</span><span class="pun">;
+</span></code></pre>
+</section>
+</section>
+			<section>
+				<h2>Functions</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="concatDStrings" class="public" href="../../dlangui/core/editable/concatDStrings.html">
+								<code>concatDStrings</code>
+							</a>
+						</td>
+						<td>concat strings from array using <a href="../../dlangui/core/editable/concatDStrings.html#delimiter"><code class="lang-d"><span class="pln">delimiter</span></code></a>
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="replaceEolsWithSpaces" class="public" href="../../dlangui/core/editable/replaceEolsWithSpaces.html">
+								<code>replaceEolsWithSpaces</code>
+							</a>
+						</td>
+						<td>replace end of lines with spaces
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="splitDString" class="public" href="../../dlangui/core/editable/splitDString.html">
+								<code>splitDString</code>
+							</a>
+						</td>
+						<td>split dstring by delimiters
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="tokenCategory" class="public" href="../../dlangui/core/editable/tokenCategory.html">
+								<code>tokenCategory</code>
+							</a>
+						</td>
+						<td>extracts token category, clearing subcategory
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Interfaces</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="EditableContentListener" class="public" href="../../dlangui/core/editable/EditableContentListener.html">
+								<code>EditableContentListener</code>
+							</a>
+						</td>
+						<td>Editable Content change listener
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="EditableContentMarksChangeListener" class="public" href="../../dlangui/core/editable/EditableContentMarksChangeListener.html">
+								<code>EditableContentMarksChangeListener</code>
+							</a>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="SyntaxSupport" class="public" href="../../dlangui/core/editable/SyntaxSupport.html">
+								<code>SyntaxSupport</code>
+							</a>
+						</td>
+						<td>interface for custom syntax highlight, comments toggling, smart indents, and other language dependent features for source code editors
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Classes</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="EditableContent" class="public" href="../../dlangui/core/editable/EditableContent.html">
+								<code>EditableContent</code>
+							</a>
+						</td>
+						<td>editable plain <a href="../../dlangui/core/editable/EditableContent.text.html"><code class="lang-d"><span class="pln">text</span></code></a> (singleline/<a href="../../dlangui/core/editable/EditableContent.multiline.html"><code class="lang-d"><span class="pln">multiline</span></code></a>)
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="EditOperation" class="public" href="../../dlangui/core/editable/EditOperation.html">
+								<code>EditOperation</code>
+							</a>
+						</td>
+						<td>edit operation details for <a href="../../dlangui/core/editable/EditableContent.html"><code class="lang-d"><span class="typ">EditableContent</span></code></a>
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="LineIcon" class="public" href="../../dlangui/core/editable/LineIcon.html">
+								<code>LineIcon</code>
+							</a>
+						</td>
+						<td>text editor <a href="../../dlangui/core/editable/LineIcon.line.html"><code class="lang-d"><span class="pln">line</span></code></a> icon
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="UndoBuffer" class="public" href="../../dlangui/core/editable/UndoBuffer.html">
+								<code>UndoBuffer</code>
+							</a>
+						</td>
+						<td>Undo/Redo buffer
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Structs</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="LineIcons" class="public" href="../../dlangui/core/editable/LineIcons.html">
+								<code>LineIcons</code>
+							</a>
+						</td>
+						<td>text editor line icon list
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="LineSpan" class="public" href="../../dlangui/core/editable/LineSpan.html">
+								<code>LineSpan</code>
+							</a>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="TextLineMeasure" class="public" href="../../dlangui/core/editable/TextLineMeasure.html">
+								<code>TextLineMeasure</code>
+							</a>
+						</td>
+						<td>measure line text (tabs, spaces, and nonspace positions)
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="TextPosition" class="public" href="../../dlangui/core/editable/TextPosition.html">
+								<code>TextPosition</code>
+							</a>
+						</td>
+						<td>text content position
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="TextRange" class="public" href="../../dlangui/core/editable/TextRange.html">
+								<code>TextRange</code>
+							</a>
+						</td>
+						<td>text content range
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Enums</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="EditAction" class="public" href="../../dlangui/core/editable/EditAction.html">
+								<code>EditAction</code>
+							</a>
+						</td>
+						<td>action performed with editable contents
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="EditStateMark" class="public" href="../../dlangui/core/editable/EditStateMark.html">
+								<code>EditStateMark</code>
+							</a>
+						</td>
+						<td>values for editable line state
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="LineIconType" class="public" href="../../dlangui/core/editable/LineIconType.html">
+								<code>LineIconType</code>
+							</a>
+						</td>
+						<td>types of text editor line icon marks (<a href="../../dlangui/core/editable/LineIconType.bookmark.html"><code class="lang-d"><span class="pln">bookmark</span></code></a> / <a href="../../dlangui/core/editable/LineIconType.breakpoint.html"><code class="lang-d"><span class="pln">breakpoint</span></code></a> / <a href="../../dlangui/core/editable/LineIconType.error.html"><code class="lang-d"><span class="pln">error</span></code></a> / ...)
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="TokenCategory" class="public" href="../../dlangui/core/editable/TokenCategory.html">
+								<code>TokenCategory</code>
+							</a>
+						</td>
+						<td>token category for syntax highlight
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Global variables</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Type</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="EOL" class="public" href="../../dlangui/core/editable/EOL.html">
+								<code>EOL</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">dchar</span><span class="pun">)</span></code>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="SYSTEM_DEFAULT_EOL" class="public" href="../../dlangui/core/editable/SYSTEM_DEFAULT_EOL.html">
+								<code>SYSTEM_DEFAULT_EOL</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">dchar</span><span class="pun">[]</span><span class="pun">)</span></code>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="TOKEN_CATEGORY_MASK" class="public" href="../../dlangui/core/editable/TOKEN_CATEGORY_MASK.html">
+								<code>TOKEN_CATEGORY_MASK</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="kwd">const</span><span class="pun">(</span><span class="typ">ubyte</span><span class="pun">)</span></code>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="TOKEN_CATEGORY_SHIFT" class="public" href="../../dlangui/core/editable/TOKEN_CATEGORY_SHIFT.html">
+								<code>TOKEN_CATEGORY_SHIFT</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="kwd">const</span><span class="pun">(</span><span class="typ">ubyte</span><span class="pun">)</span></code>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="TOKEN_SUBCATEGORY_MASK" class="public" href="../../dlangui/core/editable/TOKEN_SUBCATEGORY_MASK.html">
+								<code>TOKEN_SUBCATEGORY_MASK</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="kwd">const</span><span class="pun">(</span><span class="typ">ubyte</span><span class="pun">)</span></code>
+						</td>
+						<td></td>
+					</tr>
+					<tr>
+						<td>
+							<a id="TOKEN_UNKNOWN" class="public" href="../../dlangui/core/editable/TOKEN_UNKNOWN.html">
+								<code>TOKEN_UNKNOWN</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="kwd">const</span><span class="pun">(</span><span class="typ">ubyte</span><span class="pun">)</span></code>
+						</td>
+						<td></td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Aliases</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Type</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="TokenProp" class="public" href="../../dlangui/core/editable/TokenProp.html">
+								<code>TokenProp</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="typ">ubyte</span></code>
+						</td>
+						<td><a href="../../dlangui/core/editable/TokenCategory.html"><code class="lang-d"><span class="typ">TokenCategory</span></code></a> holder
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="TokenPropString" class="public" href="../../dlangui/core/editable/TokenPropString.html">
+								<code>TokenPropString</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="typ">ubyte</span><span class="pun">[]</span></code>
+						</td>
+						<td><a href="../../dlangui/core/editable/TokenCategory.html"><code class="lang-d"><span class="typ">TokenCategory</span></code></a> string
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Authors</h2>
+<p>Vadim Lopatin, coolreader.org@gmail.com
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2>
+<p>Vadim Lopatin, 2014
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2>
+<p>Boost License 1.0
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>

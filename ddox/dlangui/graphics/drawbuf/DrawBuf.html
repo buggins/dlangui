@@ -1,17 +1,15 @@
-
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta charset="UTF-8"/><!-- using block title in layout.dt--><!-- using block ddox.defs in ddox.layout.dt--><!-- using block ddox.title in ddox.layout.dt-->
+		<meta charset="UTF-8"/>
 		<title>Class DrawBuf</title>
 		<link rel="stylesheet" type="text/css" href="../../../styles/ddox.css"/>
 		<link rel="stylesheet" href="../../../prettify/prettify.css" type="text/css"/>
 		<script type="text/javascript" src="../../../scripts/jquery.js">/**/</script>
-		<script type="text/javascript" src="../../../prettify/prettify.js">/**/</script>
 		<script type="text/javascript" src="../../../scripts/ddox.js">/**/</script>
 	</head>
-	<body onload="prettyPrint(); setupDdox();">
-		<nav id="main-nav"><!-- using block navigation in layout.dt-->
+	<body onload="setupDdox();">
+		<nav id="main-nav">
 						<ul class="tree-view">
 							<li class=" tree-view">
 								<a href="#" class="package">dlangui</a>
@@ -20,7 +18,25 @@
 								<a href="#" class="package">core</a>
 						<ul class="tree-view">
 							<li>
+								<a href="../../../dlangui/core/asyncsocket.html" class=" module">asyncsocket</a>
+							</li>
+							<li>
 								<a href="../../../dlangui/core/collections.html" class=" module">collections</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/config.html" class=" module">config</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/css.html" class=" module">css</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/cssparser.html" class=" module">cssparser</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/dom.html" class=" module">dom</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/editable.html" class=" module">editable</a>
 							</li>
 							<li>
 								<a href="../../../dlangui/core/events.html" class=" module">events</a>
@@ -38,10 +54,25 @@
 								<a href="../../../dlangui/core/logger.html" class=" module">logger</a>
 							</li>
 							<li>
+								<a href="../../../dlangui/core/math3d.html" class=" module">math3d</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/queue.html" class=" module">queue</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/settings.html" class=" module">settings</a>
+							</li>
+							<li>
 								<a href="../../../dlangui/core/signals.html" class=" module">signals</a>
 							</li>
 							<li>
 								<a href="../../../dlangui/core/stdaction.html" class=" module">stdaction</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/streams.html" class=" module">streams</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/textsource.html" class=" module">textsource</a>
 							</li>
 							<li>
 								<a href="../../../dlangui/core/types.html" class=" module">types</a>
@@ -58,15 +89,72 @@
 								<a href="../../../dlangui/dialogs/filedlg.html" class=" module">filedlg</a>
 							</li>
 							<li>
+								<a href="../../../dlangui/dialogs/inputbox.html" class=" module">inputbox</a>
+							</li>
+							<li>
 								<a href="../../../dlangui/dialogs/msgbox.html" class=" module">msgbox</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/dialogs/settingsdialog.html" class=" module">settingsdialog</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/dml/annotations.html" class=" module">annotations</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/dml/dmlhighlight.html" class=" module">dmlhighlight</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/dml/parser.html" class=" module">parser</a>
 							</li>
 						</ul>
 							</li>
 							<li class=" tree-view">
 								<a href="#" class="package">graphics</a>
 						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">scene</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/graphics/scene/camera.html" class=" module">camera</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/scene/material.html" class=" module">material</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/scene/mesh.html" class=" module">mesh</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/scene/node.html" class=" module">node</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/scene/scene3d.html" class=" module">scene3d</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/scene/transform.html" class=" module">transform</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">xpm</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/graphics/xpm/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/xpm/reader.html" class=" module">reader</a>
+							</li>
+						</ul>
+							</li>
 							<li>
 								<a href="../../../dlangui/graphics/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/domrender.html" class=" module">domrender</a>
 							</li>
 							<li>
 								<a href="../../../dlangui/graphics/drawbuf.html" class="selected module">drawbuf</a>
@@ -100,6 +188,17 @@
 							<li>
 								<a href="../../../dlangui/platforms/common/platform.html" class=" module">platform</a>
 							</li>
+							<li>
+								<a href="../../../dlangui/platforms/common/startup.html" class=" module">startup</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dsfml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/platforms/dsfml/dsfmlapp.html" class=" module">dsfmlapp</a>
+							</li>
 						</ul>
 							</li>
 							<li class="collapsed tree-view">
@@ -121,6 +220,14 @@
 							</li>
 							<li>
 								<a href="../../../dlangui/platforms/windows/winapp.html" class=" module">winapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">x11</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/platforms/x11/x11app.html" class=" module">x11app</a>
 							</li>
 						</ul>
 							</li>
@@ -157,6 +264,9 @@
 								<a href="../../../dlangui/widgets/menu.html" class=" module">menu</a>
 							</li>
 							<li>
+								<a href="../../../dlangui/widgets/metadata.html" class=" module">metadata</a>
+							</li>
+							<li>
 								<a href="../../../dlangui/widgets/popup.html" class=" module">popup</a>
 							</li>
 							<li>
@@ -183,12 +293,15 @@
 							<li>
 								<a href="../../../dlangui/widgets/widget.html" class=" module">widget</a>
 							</li>
+							<li>
+								<a href="../../../dlangui/widgets/winframe.html" class=" module">winframe</a>
+							</li>
+						</ul>
+							</li>
 						</ul>
 							</li>
 							<li>
-								<a href="../../../dlangui/all.html" class=" module">all</a>
-							</li>
-						</ul>
+								<a href="../../../dlangui.html" class=" module">dlangui</a>
 							</li>
 						</ul>
 				<noscript>
@@ -205,18 +318,18 @@ var symbolSearchRootDir = "../../../";
 $('#symbolSearchPane').show();
 	</script>
 				</div>
-				<script type="text/javascript" src="../../../scripts/mousetrap.js"></script>
-				<script type="text/javascript">
+			<script type="text/javascript" src="../../../scripts/mousetrap.js"></script>
+			<script type="text/javascript">
 $(document).ready(function() {
 	Mousetrap.bind('s', function(e) {
 		$("#symbolSearch").focus();
 		return false;
 	});
 });
-				</script>
+			</script>
 		</nav>
 		<div id="main-contents">
-			<h1>Class DrawBuf</h1><!-- using block body in layout.dt--><!-- Default block ddox.description in ddox.layout.dt--><!-- Default block ddox.sections in ddox.layout.dt--><!-- using block ddox.members in ddox.layout.dt-->
+			<h1>Class DrawBuf</h1>
 			<section>
 				<p>drawing buffer - image container which allows to perform some drawing operations
 </p>
@@ -225,7 +338,7 @@ $(document).ready(function() {
 						<h3>Inherits from</h3>
 						<ul>
 							<li>
-								<code class="prettyprint lang-d"><code class="prettyprint lang-d"><a href="../../../dlangui/core/types/RefCountedObject.html">RefCountedObject</a></code></code>
+								<code class="prettyprint lang-d"><a href="../../../dlangui/core/types/RefCountedObject.html"><span class="typ">RefCountedObject</span></a></code>
  (base class)
 							</li>
 						</ul>
@@ -261,36 +374,43 @@ $(document).ready(function() {
 								<td>
 									<a href="../../../dlangui/graphics/drawbuf/DrawBuf._alpha.html" class="protected"><code>_alpha</code></a>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">uint</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td>
 								<td></td>
 							</tr>
 							<tr>
 								<td>
 									<a href="../../../dlangui/graphics/drawbuf/DrawBuf._clipRect.html" class="protected"><code>_clipRect</code></a>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/types/Rect.html">Rect</a></code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/types/Rect.html"><span class="typ">Rect</span></a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf._id.html" class="protected"><code>_id</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td>
 								<td></td>
 							</tr>
 							<tr>
 								<td>
 									<a href="../../../dlangui/graphics/drawbuf/DrawBuf._ninePatch.html" class="protected"><code>_ninePatch</code></a>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/graphics/drawbuf/NinePatch.html">NinePatch</a>*</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/graphics/drawbuf/NinePatch.html"><span class="typ">NinePatch</span></a><span class="pun">*</span></code></td>
 								<td></td>
 							</tr>
 							<tr>
 								<td>
 									<a href="../../../dlangui/graphics/drawbuf/DrawBuf._onDestroyCallback.html" class="protected"><code>_onDestroyCallback</code></a>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">void function(uint)</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">void</span> <span class="kwd">function</span><span class="pun">(</span><span class="typ">uint</span><span class="pun">)</span></code></td>
 								<td></td>
 							</tr>
 							<tr>
 								<td>
 									<a href="../../../dlangui/core/types/RefCountedObject._refCount.html" class="protected inherited"><code>_refCount</code></a>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
-								<td>count of references to this object from <a href="../../../dlangui/core/types/Ref.html"><code class="prettyprint lang-d">Ref</code></a>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td>
+								<td>count of references to this object from <a href="../../../dlangui/core/types/Ref.html"><code class="lang-d"><span class="typ">Ref</span></code></a>
 </td>
 							</tr>
 						</table>
@@ -309,8 +429,8 @@ $(document).ready(function() {
 									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.alpha.html" class="public property"><code>alpha</code></a>
 									<span class="tableEntryAnnotation">[get]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">uint</code></td>
-								<td>get current <code class="prettyprint lang-d">alpha</code> setting (to be applied to all drawing operations)
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td>
+								<td>get current <code class="lang-d"><span class="pln">alpha</span></code> setting (to be applied to all drawing operations)
 </td>
 							</tr>
 							<tr>
@@ -318,8 +438,8 @@ $(document).ready(function() {
 									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.alpha.html" class="public property"><code>alpha</code></a>
 									<span class="tableEntryAnnotation">[set]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">uint</code></td>
-								<td>set new <a href="../../../dlangui/graphics/drawbuf/DrawBuf.alpha.html#alpha"><code class="prettyprint lang-d">alpha</code></a> setting (to be applied to all drawing operations)
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td>
+								<td>set new <a href="../../../dlangui/graphics/drawbuf/DrawBuf.alpha.html#alpha"><code class="lang-d"><span class="pln">alpha</span></code></a> setting (to be applied to all drawing operations)
 </td>
 							</tr>
 							<tr>
@@ -327,7 +447,7 @@ $(document).ready(function() {
 									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.bpp.html" class="public property"><code>bpp</code></a>
 									<span class="tableEntryAnnotation">[get]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td>
 								<td>returns buffer bits per pixel
 </td>
 							</tr>
@@ -336,7 +456,7 @@ $(document).ready(function() {
 									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.clipRect.html" class="public property"><code>clipRect</code></a>
 									<span class="tableEntryAnnotation">[get]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/types/Rect.html">Rect</a></code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/types/Rect.html"><span class="typ">Rect</span></a></code></td>
 								<td>returns clipping rectangle, when clipRect.isEmpty == true -- means no clipping.
 </td>
 							</tr>
@@ -345,16 +465,24 @@ $(document).ready(function() {
 									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.clipRect.html" class="public property"><code>clipRect</code></a>
 									<span class="tableEntryAnnotation">[set]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">ref const(<a href="../../../dlangui/core/types/Rect.html">Rect</a>)</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="kwd">const</span><span class="pun">(</span><a href="../../../dlangui/core/types/Rect.html"><span class="typ">Rect</span></a><span class="pun">)</span></code></td>
 								<td>returns clipping rectangle, or (0,0,dx,dy) when no clipping.
 </td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.hasClipping.html" class="public property"><code>hasClipping</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td></td>
 							</tr>
 							<tr>
 								<td>
 									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.hasNinePatch.html" class="public property"><code>hasNinePatch</code></a>
 									<span class="tableEntryAnnotation">[get]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">bool</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
 								<td>check whether there is nine-patch information available for drawing buffer
 </td>
 							</tr>
@@ -363,8 +491,17 @@ $(document).ready(function() {
 									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.height.html" class="public property"><code>height</code></a>
 									<span class="tableEntryAnnotation">[get]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
-								<td>returns current <code class="prettyprint lang-d">height</code>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td>
+								<td>returns current <code class="lang-d"><span class="pln">height</span></code>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.id.html" class="public property"><code>id</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td>
+								<td>unique ID of drawbug instance, for using with hardware accelerated rendering for caching
 </td>
 							</tr>
 							<tr>
@@ -372,7 +509,7 @@ $(document).ready(function() {
 									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.intersectClipRect.html" class="public property"><code>intersectClipRect</code></a>
 									<span class="tableEntryAnnotation">[set]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">ref const(<a href="../../../dlangui/core/types/Rect.html">Rect</a>)</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="kwd">const</span><span class="pun">(</span><a href="../../../dlangui/core/types/Rect.html"><span class="typ">Rect</span></a><span class="pun">)</span></code></td>
 								<td>sets new clipping rectangle, intersect with previous one.
 </td>
 							</tr>
@@ -381,7 +518,7 @@ $(document).ready(function() {
 									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.isClippedOut.html" class="public property"><code>isClippedOut</code></a>
 									<span class="tableEntryAnnotation">[set]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">bool</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
 								<td>returns true if rectangle is completely clipped out and cannot be drawn.
 </td>
 							</tr>
@@ -390,7 +527,7 @@ $(document).ready(function() {
 									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.ninePatch.html" class="public property"><code>ninePatch</code></a>
 									<span class="tableEntryAnnotation">[set]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/graphics/drawbuf/NinePatch.html">NinePatch</a>*</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/graphics/drawbuf/NinePatch.html"><span class="typ">NinePatch</span></a><span class="pun">*</span></code></td>
 								<td>set nine patch information pointer, null if this is not a nine patch image buffer
 </td>
 							</tr>
@@ -399,7 +536,7 @@ $(document).ready(function() {
 									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.ninePatch.html" class="public property"><code>ninePatch</code></a>
 									<span class="tableEntryAnnotation">[get]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">const(<a href="../../../dlangui/graphics/drawbuf/NinePatch.html">NinePatch</a>)*</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="kwd">const</span><span class="pun">(</span><a href="../../../dlangui/graphics/drawbuf/NinePatch.html"><span class="typ">NinePatch</span></a><span class="pun">)</span><span class="pun">*</span></code></td>
 								<td>get nine patch information pointer, null if this is not a nine patch image buffer
 </td>
 							</tr>
@@ -408,7 +545,7 @@ $(document).ready(function() {
 									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.onDestroyCallback.html" class="public property"><code>onDestroyCallback</code></a>
 									<span class="tableEntryAnnotation">[set]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">uint</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">void</span></code></td>
 								<td></td>
 							</tr>
 							<tr>
@@ -416,7 +553,7 @@ $(document).ready(function() {
 									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.onDestroyCallback.html" class="public property"><code>onDestroyCallback</code></a>
 									<span class="tableEntryAnnotation">[set]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">void function(uint)</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">void</span> <span class="kwd">function</span><span class="pun">(</span><span class="typ">uint</span><span class="pun">)</span></code></td>
 								<td></td>
 							</tr>
 							<tr>
@@ -424,8 +561,8 @@ $(document).ready(function() {
 									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.width.html" class="public property"><code>width</code></a>
 									<span class="tableEntryAnnotation">[get]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
-								<td>returns current <code class="prettyprint lang-d">width</code>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td>
+								<td>returns current <code class="lang-d"><span class="pln">width</span></code>
 </td>
 							</tr>
 							<tr>
@@ -433,7 +570,7 @@ $(document).ready(function() {
 									<a href="../../../dlangui/core/types/RefCountedObject.refCount.html" class="public inherited property"><code>refCount</code></a>
 									<span class="tableEntryAnnotation">[get]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td>
 								<td>returns current value of reference counter
 </td>
 							</tr>
@@ -453,7 +590,7 @@ $(document).ready(function() {
 										<code>addAlpha</code>
 									</a>
 								</td>
-								<td>apply additional transparency to current drawbuf <a href="../../../dlangui/graphics/drawbuf/DrawBuf.addAlpha.html#alpha"><code class="prettyprint lang-d">alpha</code></a> value
+								<td>apply additional transparency to current drawbuf <a href="../../../dlangui/graphics/drawbuf/DrawBuf.addAlpha.html#alpha"><code class="lang-d"><span class="pln">alpha</span></code></a> value
 </td>
 							</tr>
 							<tr>
@@ -471,7 +608,7 @@ $(document).ready(function() {
 										<code>applyAlpha</code>
 									</a>
 								</td>
-								<td>applies current drawbuf <a href="../../../dlangui/graphics/drawbuf/DrawBuf.alpha.html"><code class="prettyprint lang-d">alpha</code></a> to <a href="../../../dlangui/graphics/drawbuf/DrawBuf.applyAlpha.html#argb"><code class="prettyprint lang-d">argb</code></a> color value
+								<td>applies current drawbuf <a href="../../../dlangui/graphics/drawbuf/DrawBuf.alpha.html"><code class="lang-d"><span class="pln"><a href="../../../dlangui/graphics/drawbuf/DrawBuf.alpha.html"><span class="pln">alpha</span></a></span></code></a> to <a href="../../../dlangui/graphics/drawbuf/DrawBuf.applyAlpha.html#argb"><code class="lang-d"><span class="pln"><a href="../../../dlangui/graphics/drawbuf/DrawBuf.applyAlpha.html#argb"><span class="pln">argb</span></a></span></code></a> color value
 </td>
 							</tr>
 							<tr>
@@ -480,7 +617,7 @@ $(document).ready(function() {
 										<code>applyClipping</code>
 									</a>
 								</td>
-								<td>apply <a href="../../../dlangui/graphics/drawbuf/DrawBuf.clipRect.html"><code class="prettyprint lang-d">clipRect</code></a> and buffer bounds clipping to rectangle; if clippinup applied to first rectangle, reduce second rectangle bounds proportionally.
+								<td>apply <a href="../../../dlangui/graphics/drawbuf/DrawBuf.clipRect.html"><code class="lang-d"><span class="pln">clipRect</span></code></a> and buffer bounds clipping to rectangle; if clippinup applied to first rectangle, reduce second rectangle bounds proportionally.
 </td>
 							</tr>
 							<tr>
@@ -489,7 +626,7 @@ $(document).ready(function() {
 										<code>applyClipping</code>
 									</a>
 								</td>
-								<td>apply <a href="../../../dlangui/graphics/drawbuf/DrawBuf.clipRect.html"><code class="prettyprint lang-d">clipRect</code></a> and buffer bounds clipping to rectangle
+								<td>apply <a href="../../../dlangui/graphics/drawbuf/DrawBuf.clipRect.html"><code class="lang-d"><span class="pln">clipRect</span></code></a> and buffer bounds clipping to rectangle
 </td>
 							</tr>
 							<tr>
@@ -520,11 +657,20 @@ $(document).ready(function() {
 							</tr>
 							<tr>
 								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawCustomOpenGLScene.html" class="public">
+										<code>drawCustomOpenGLScene</code>
+									</a>
+								</td>
+								<td>draw custom OpenGL scene
+</td>
+							</tr>
+							<tr>
+								<td>
 									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawFocusRect.html" class="public">
 										<code>drawFocusRect</code>
 									</a>
 								</td>
-								<td>draw focus rectangle; vertical gradient supported - <a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawFocusRect.html#colors"><code class="prettyprint lang-d">colors</code></a>[0] is top color, <a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawFocusRect.html#colors"><code class="prettyprint lang-d">colors</code></a>[1] is bottom color
+								<td>draw focus rectangle; vertical gradient supported - <a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawFocusRect.html#colors"><code class="lang-d"><span class="pln">colors</span></code></a>[0] is top color, <a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawFocusRect.html#colors"><code class="lang-d"><span class="pln">colors</span></code></a>[1] is bottom color
 </td>
 							</tr>
 							<tr>
@@ -551,7 +697,7 @@ $(document).ready(function() {
 										<code>drawGlyph</code>
 									</a>
 								</td>
-								<td>draw 8bit <a href="../../../dlangui/graphics/drawbuf/DrawBuf.alpha.html"><code class="prettyprint lang-d">alpha</code></a> image - usually font <a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawGlyph.html#glyph"><code class="prettyprint lang-d">glyph</code></a> using specified <a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawGlyph.html#color"><code class="prettyprint lang-d">color</code></a> (clipping is applied)
+								<td>draw 8bit <a href="../../../dlangui/graphics/drawbuf/DrawBuf.alpha.html"><code class="lang-d"><span class="pln">alpha</span></code></a> image - usually font <a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawGlyph.html#glyph"><code class="lang-d"><span class="pln">glyph</span></code></a> using specified <a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawGlyph.html#color"><code class="lang-d"><span class="pln">color</span></code></a> (clipping is applied)
 </td>
 							</tr>
 							<tr>
@@ -561,6 +707,24 @@ $(document).ready(function() {
 									</a>
 								</td>
 								<td>draw unscaled image at specified coordinates
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawLine.html" class="public">
+										<code>drawLine</code>
+									</a>
+								</td>
+								<td>draw line from point <a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawLine.html#p1"><code class="lang-d"><span class="pln">p1</span></code></a> to <a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawLine.html#p2"><code class="lang-d"><span class="pln">p2</span></code></a> with specified color
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawPixel.html" class="public">
+										<code>drawPixel</code>
+									</a>
+								</td>
+								<td>draw pixel at (<a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawPixel.html#x"><code class="lang-d"><span class="pln">x</span></code></a>, <a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawPixel.html#y"><code class="lang-d"><span class="pln">y</span></code></a>) with specified <a href="../../../dlangui/graphics/drawbuf/DrawBuf.drawPixel.html#color"><code class="lang-d"><span class="pln">color</span></code></a>
 </td>
 							</tr>
 							<tr>
@@ -578,7 +742,7 @@ $(document).ready(function() {
 										<code>fill</code>
 									</a>
 								</td>
-								<td><code class="prettyprint lang-d">fill</code> the whole buffer with solid <a href="../../../dlangui/graphics/drawbuf/DrawBuf.fill.html#color"><code class="prettyprint lang-d">color</code></a> (no clipping applied)
+								<td><code class="lang-d"><span class="pln">fill</span></code> the whole buffer with solid <a href="../../../dlangui/graphics/drawbuf/DrawBuf.fill.html#color"><code class="lang-d"><span class="pln">color</span></code></a> (no clipping applied)
 </td>
 							</tr>
 							<tr>
@@ -587,7 +751,7 @@ $(document).ready(function() {
 										<code>fillRect</code>
 									</a>
 								</td>
-								<td><a href="../../../dlangui/graphics/drawbuf/DrawBuf.fill.html"><code class="prettyprint lang-d">fill</code></a> rectangle with solid <a href="../../../dlangui/graphics/drawbuf/DrawBuf.fillRect.html#color"><code class="prettyprint lang-d">color</code></a> (clipping is applied)
+								<td><a href="../../../dlangui/graphics/drawbuf/DrawBuf.fill.html"><code class="lang-d"><span class="pln">fill</span></code></a> rectangle with solid <a href="../../../dlangui/graphics/drawbuf/DrawBuf.fillRect.html#color"><code class="lang-d"><span class="pln">color</span></code></a> (clipping is applied)
 </td>
 							</tr>
 							<tr>
@@ -605,7 +769,7 @@ $(document).ready(function() {
 										<code>resize</code>
 									</a>
 								</td>
-								<td><code class="prettyprint lang-d">resize</code> buffer
+								<td><code class="lang-d"><span class="pln">resize</span></code> buffer
 </td>
 							</tr>
 							<tr>
@@ -640,19 +804,19 @@ $(document).ready(function() {
 
 			</section>
 			<section>
-				<h2>Authors</h2><!-- using block ddox.authors in ddox.layout.dt-->
+				<h2>Authors</h2>
 <p>Vadim Lopatin, coolreader.org@gmail.com
 </p>
 
 			</section>
 			<section>
-				<h2>Copyright</h2><!-- using block ddox.copyright in ddox.layout.dt-->
+				<h2>Copyright</h2>
 <p>Vadim Lopatin, 2014
 </p>
 
 			</section>
 			<section>
-				<h2>License</h2><!-- using block ddox.license in ddox.layout.dt-->
+				<h2>License</h2>
 <p>Boost License 1.0
 </p>
 

@@ -1,17 +1,15 @@
-
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta charset="UTF-8"/><!-- using block title in layout.dt--><!-- using block ddox.defs in ddox.layout.dt--><!-- using block ddox.title in ddox.layout.dt-->
+		<meta charset="UTF-8"/>
 		<title>Module dlangui.widgets.styles</title>
 		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
 		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
 		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
-		<script type="text/javascript" src="../../prettify/prettify.js">/**/</script>
 		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
 	</head>
-	<body onload="prettyPrint(); setupDdox();">
-		<nav id="main-nav"><!-- using block navigation in layout.dt-->
+	<body onload="setupDdox();">
+		<nav id="main-nav">
 						<ul class="tree-view">
 							<li class=" tree-view">
 								<a href="#" class="package">dlangui</a>
@@ -20,7 +18,25 @@
 								<a href="#" class="package">core</a>
 						<ul class="tree-view">
 							<li>
+								<a href="../../dlangui/core/asyncsocket.html" class=" module">asyncsocket</a>
+							</li>
+							<li>
 								<a href="../../dlangui/core/collections.html" class=" module">collections</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/config.html" class=" module">config</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/css.html" class=" module">css</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/cssparser.html" class=" module">cssparser</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/dom.html" class=" module">dom</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/editable.html" class=" module">editable</a>
 							</li>
 							<li>
 								<a href="../../dlangui/core/events.html" class=" module">events</a>
@@ -38,10 +54,25 @@
 								<a href="../../dlangui/core/logger.html" class=" module">logger</a>
 							</li>
 							<li>
+								<a href="../../dlangui/core/math3d.html" class=" module">math3d</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/queue.html" class=" module">queue</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/settings.html" class=" module">settings</a>
+							</li>
+							<li>
 								<a href="../../dlangui/core/signals.html" class=" module">signals</a>
 							</li>
 							<li>
 								<a href="../../dlangui/core/stdaction.html" class=" module">stdaction</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/streams.html" class=" module">streams</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/textsource.html" class=" module">textsource</a>
 							</li>
 							<li>
 								<a href="../../dlangui/core/types.html" class=" module">types</a>
@@ -58,15 +89,72 @@
 								<a href="../../dlangui/dialogs/filedlg.html" class=" module">filedlg</a>
 							</li>
 							<li>
+								<a href="../../dlangui/dialogs/inputbox.html" class=" module">inputbox</a>
+							</li>
+							<li>
 								<a href="../../dlangui/dialogs/msgbox.html" class=" module">msgbox</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dialogs/settingsdialog.html" class=" module">settingsdialog</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/dml/annotations.html" class=" module">annotations</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dml/dmlhighlight.html" class=" module">dmlhighlight</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dml/parser.html" class=" module">parser</a>
 							</li>
 						</ul>
 							</li>
 							<li class="collapsed tree-view">
 								<a href="#" class="package">graphics</a>
 						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">scene</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/graphics/scene/camera.html" class=" module">camera</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/material.html" class=" module">material</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/mesh.html" class=" module">mesh</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/node.html" class=" module">node</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/scene3d.html" class=" module">scene3d</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/transform.html" class=" module">transform</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">xpm</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/graphics/xpm/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/xpm/reader.html" class=" module">reader</a>
+							</li>
+						</ul>
+							</li>
 							<li>
 								<a href="../../dlangui/graphics/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/domrender.html" class=" module">domrender</a>
 							</li>
 							<li>
 								<a href="../../dlangui/graphics/drawbuf.html" class=" module">drawbuf</a>
@@ -100,6 +188,17 @@
 							<li>
 								<a href="../../dlangui/platforms/common/platform.html" class=" module">platform</a>
 							</li>
+							<li>
+								<a href="../../dlangui/platforms/common/startup.html" class=" module">startup</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dsfml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/dsfml/dsfmlapp.html" class=" module">dsfmlapp</a>
+							</li>
 						</ul>
 							</li>
 							<li class="collapsed tree-view">
@@ -121,6 +220,14 @@
 							</li>
 							<li>
 								<a href="../../dlangui/platforms/windows/winapp.html" class=" module">winapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">x11</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/x11/x11app.html" class=" module">x11app</a>
 							</li>
 						</ul>
 							</li>
@@ -157,6 +264,9 @@
 								<a href="../../dlangui/widgets/menu.html" class=" module">menu</a>
 							</li>
 							<li>
+								<a href="../../dlangui/widgets/metadata.html" class=" module">metadata</a>
+							</li>
+							<li>
 								<a href="../../dlangui/widgets/popup.html" class=" module">popup</a>
 							</li>
 							<li>
@@ -183,12 +293,15 @@
 							<li>
 								<a href="../../dlangui/widgets/widget.html" class=" module">widget</a>
 							</li>
+							<li>
+								<a href="../../dlangui/widgets/winframe.html" class=" module">winframe</a>
+							</li>
+						</ul>
+							</li>
 						</ul>
 							</li>
 							<li>
-								<a href="../../dlangui/all.html" class=" module">all</a>
-							</li>
-						</ul>
+								<a href="../../dlangui.html" class=" module">dlangui</a>
 							</li>
 						</ul>
 				<noscript>
@@ -205,34 +318,34 @@ var symbolSearchRootDir = "../../";
 $('#symbolSearchPane').show();
 	</script>
 				</div>
-				<script type="text/javascript" src="../../scripts/mousetrap.js"></script>
-				<script type="text/javascript">
+			<script type="text/javascript" src="../../scripts/mousetrap.js"></script>
+			<script type="text/javascript">
 $(document).ready(function() {
 	Mousetrap.bind('s', function(e) {
 		$("#symbolSearch").focus();
 		return false;
 	});
 });
-				</script>
+			</script>
 		</nav>
 		<div id="main-contents">
-			<h1>Module dlangui.widgets.styles</h1><!-- using block body in layout.dt--><!-- using block ddox.description in ddox.layout.dt-->
+			<h1>Module dlangui.widgets.styles</h1>
 			<p>This module contains declaration of themes and styles implementation.
 </p>
-<section>
-<p><a href="../../dlangui/widgets/styles/Style.html"><code class="prettyprint lang-d">Style</code></a> - style container
-<a href="../../dlangui/widgets/styles/Theme.html"><code class="prettyprint lang-d">Theme</code></a> - parent for all styles
+<section><p><a href="../../dlangui/widgets/styles/Style.html"><code class="lang-d"><span class="typ">Style</span></code></a> - style container
+<a href="../../dlangui/widgets/styles/Theme.html"><code class="lang-d"><span class="typ">Theme</span></code></a> - parent for all styles
 </p>
-
 </section>
-<!-- using block ddox.sections in ddox.layout.dt-->
+
 			<section><section><h2>Synopsis</h2>
+<pre class="code"><code class="lang-d"><span class="kwd">import </span><span class="pln">dlangui<wbr/></span><span class="pun">.</span><span class="pln">widgets<wbr/></span><span class="pun">.</span><span class="pln">styles</span><span class="pun">;</span></code></pre>
 
-<pre class="code prettyprint lang-d">import dlangui.widgets.styles;
-
-</pre>
+<p>Recent changes:
+     Dimensions like fontSize, padding, margins, min/max width and height can be specified in points, e.g. minWidth = "3pt" margins="1pt,2pt,1pt,2pt"
+     % for font size, based on parent font size, e.g. fontSize="120.5%" means parentStyle.fontSize * 120.5 / 100.0;
+</p>
 </section>
-</section><!-- using block ddox.members in ddox.layout.dt-->
+</section>
 			<section>
 				<h2>Functions</h2>
 				<table>
@@ -264,7 +377,7 @@ $(document).ready(function() {
 								<code>currentTheme</code>
 							</a>
 						</td>
-						<td>set new current <a href="../../dlangui/widgets/styles/currentTheme.html#theme"><code class="prettyprint lang-d">theme</code></a>
+						<td>set new current <a href="../../dlangui/widgets/styles/currentTheme.html#theme"><code class="lang-d"><span class="pln">theme</span></code></a>
 </td>
 					</tr>
 					<tr>
@@ -273,7 +386,7 @@ $(document).ready(function() {
 								<code>decodeAlignment</code>
 							</a>
 						</td>
-						<td>parses string like "Left|VCenter" to bit set of <a href="../../dlangui/widgets/styles/Align.html"><code class="prettyprint lang-d">Align</code></a> flags
+						<td>parses string like "Left|VCenter" to bit set of <a href="../../dlangui/widgets/styles/Align.html"><code class="lang-d"><span class="typ">Align</span></code></a> flags
 </td>
 					</tr>
 					<tr>
@@ -296,11 +409,20 @@ $(document).ready(function() {
 					</tr>
 					<tr>
 						<td>
+							<a id="decodeFontWeight" class="public" href="../../dlangui/widgets/styles/decodeFontWeight.html">
+								<code>decodeFontWeight</code>
+							</a>
+						</td>
+						<td>decode FontWeight item name to value
+</td>
+					</tr>
+					<tr>
+						<td>
 							<a id="decodeLayoutDimension" class="public" href="../../dlangui/widgets/styles/decodeLayoutDimension.html">
 								<code>decodeLayoutDimension</code>
 							</a>
 						</td>
-						<td>decode layout dimension (<a href="../../dlangui/widgets/styles/FILL_PARENT.html"><code class="prettyprint lang-d">FILL_PARENT</code></a>, <a href="../../dlangui/widgets/styles/WRAP_CONTENT.html"><code class="prettyprint lang-d">WRAP_CONTENT</code></a>, or just size)
+						<td>decode layout dimension (FILL_PARENT, WRAP_CONTENT, or just size)
 </td>
 					</tr>
 					<tr>
@@ -318,16 +440,7 @@ $(document).ready(function() {
 								<code>decodeTextFlags</code>
 							</a>
 						</td>
-						<td>parses string like "HotKeys|UnderlineHotKeysWhenAltPressed" to bit set of <a href="../../dlangui/widgets/styles/TextFlag.html"><code class="prettyprint lang-d">TextFlag</code></a> flags
-</td>
-					</tr>
-					<tr>
-						<td>
-							<a id="isSpecialSize" class="public" href="../../dlangui/widgets/styles/isSpecialSize.html">
-								<code>isSpecialSize</code>
-							</a>
-						</td>
-						<td>returns true for <a href="../../dlangui/widgets/styles/WRAP_CONTENT.html"><code class="prettyprint lang-d">WRAP_CONTENT</code></a>, <a href="../../dlangui/widgets/styles/WRAP_CONTENT.html"><code class="prettyprint lang-d">WRAP_CONTENT</code></a>, <a href="../../dlangui/widgets/styles/SIZE_UNSPECIFIED.html"><code class="prettyprint lang-d">SIZE_UNSPECIFIED</code></a>
+						<td>parses string like "HotKeys|UnderlineHotKeysWhenAltPressed" to bit set of <a href="../../dlangui/widgets/styles/TextFlag.html"><code class="lang-d"><span class="typ">TextFlag</span></code></a> flags
 </td>
 					</tr>
 					<tr>
@@ -336,7 +449,7 @@ $(document).ready(function() {
 								<code>loadStyleAttributes</code>
 							</a>
 						</td>
-						<td>load <a href="../../dlangui/widgets/styles/loadStyleAttributes.html#style"><code class="prettyprint lang-d">style</code></a> attributes from XML element
+						<td>load <a href="../../dlangui/widgets/styles/loadStyleAttributes.html#style"><code class="lang-d"><span class="pln">style</span></code></a> attributes from XML element
 </td>
 					</tr>
 					<tr>
@@ -345,7 +458,16 @@ $(document).ready(function() {
 								<code>loadTheme</code>
 							</a>
 						</td>
-						<td> load <a href="../../dlangui/widgets/styles/loadTheme.html#theme"><code class="prettyprint lang-d">theme</code></a> from XML document
+						<td>load <a href="../../dlangui/widgets/styles/loadTheme.html#theme"><code class="lang-d"><span class="pln">theme</span></code></a> from file
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="loadTheme" class="public" href="../../dlangui/widgets/styles/loadTheme.html">
+								<code>loadTheme</code>
+							</a>
+						</td>
+						<td>load <a href="../../dlangui/widgets/styles/loadTheme.html#theme"><code class="lang-d"><span class="pln">theme</span></code></a> from XML document
 </td>
 					</tr>
 					<tr>
@@ -359,11 +481,11 @@ $(document).ready(function() {
 					</tr>
 					<tr>
 						<td>
-							<a id="loadTheme" class="public" href="../../dlangui/widgets/styles/loadTheme.html">
-								<code>loadTheme</code>
+							<a id="overrideCustomDrawableId" class="public" href="../../dlangui/widgets/styles/overrideCustomDrawableId.html">
+								<code>overrideCustomDrawableId</code>
 							</a>
 						</td>
-						<td>load <a href="../../dlangui/widgets/styles/loadTheme.html#theme"><code class="prettyprint lang-d">theme</code></a> from file
+						<td>returns custom drawable replacement <a href="../../dlangui/widgets/styles/overrideCustomDrawableId.html#id"><code class="lang-d"><span class="pln">id</span></code></a> for specified <a href="../../dlangui/widgets/styles/overrideCustomDrawableId.html#id"><code class="lang-d"><span class="pln">id</span></code></a> from current theme, or returns passed value if not found or no current theme
 </td>
 					</tr>
 				</table>
@@ -382,7 +504,7 @@ $(document).ready(function() {
 								<code>DrawableAttribute</code>
 							</a>
 						</td>
-						<td>custom <a href="../../dlangui/widgets/styles/DrawableAttribute.drawable.html"><code class="prettyprint lang-d">drawable</code></a> attribute container for styles
+						<td>custom <a href="../../dlangui/widgets/styles/DrawableAttribute.drawable.html"><code class="lang-d"><span class="pln">drawable</span></code></a> attribute container for styles
 </td>
 					</tr>
 					<tr>
@@ -400,7 +522,7 @@ $(document).ready(function() {
 								<code>Theme</code>
 							</a>
 						</td>
-						<td><code class="prettyprint lang-d">Theme</code> - root for style hierarhy.
+						<td><code class="lang-d"><span class="typ">Theme</span></code> - root for style hierarhy.
 </td>
 					</tr>
 				</table>
@@ -419,7 +541,7 @@ $(document).ready(function() {
 								<code>Align</code>
 							</a>
 						</td>
-						<td><code class="prettyprint lang-d">Align</code> option bit constants
+						<td><code class="lang-d"><span class="typ">Align</span></code> option bit constants
 </td>
 					</tr>
 					<tr>
@@ -429,6 +551,116 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>text drawing flag bits
+</td>
+					</tr>
+				</table>
+			</section>
+			<section>
+				<h2>Enum values</h2>
+				<table>
+					<col class="caption"/>
+					<tr>
+						<th>Name</th>
+						<th>Type</th>
+						<th>Description</th>
+					</tr>
+					<tr>
+						<td>
+							<a id="ALIGN_UNSPECIFIED" class="public" href="../../dlangui/widgets/styles/ALIGN_UNSPECIFIED.html">
+								<code>ALIGN_UNSPECIFIED</code>
+							</a>
+						</td>
+						<td>
+						</td>
+						<td>unspecified align - to take parent's value instead
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="FONT_SIZE_UNSPECIFIED" class="public" href="../../dlangui/widgets/styles/FONT_SIZE_UNSPECIFIED.html">
+								<code>FONT_SIZE_UNSPECIFIED</code>
+							</a>
+						</td>
+						<td>
+						</td>
+						<td>unspecified font size constant - to take parent style property value
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="FONT_STYLE_ITALIC" class="public" href="../../dlangui/widgets/styles/FONT_STYLE_ITALIC.html">
+								<code>FONT_STYLE_ITALIC</code>
+							</a>
+						</td>
+						<td>
+						</td>
+						<td>italic font style constant
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="FONT_STYLE_NORMAL" class="public" href="../../dlangui/widgets/styles/FONT_STYLE_NORMAL.html">
+								<code>FONT_STYLE_NORMAL</code>
+							</a>
+						</td>
+						<td>
+						</td>
+						<td>normal font style constant
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="FONT_STYLE_UNSPECIFIED" class="public" href="../../dlangui/widgets/styles/FONT_STYLE_UNSPECIFIED.html">
+								<code>FONT_STYLE_UNSPECIFIED</code>
+							</a>
+						</td>
+						<td>
+						</td>
+						<td>unspecified font style constant - to take parent style property value
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="FONT_WEIGHT_UNSPECIFIED" class="public" href="../../dlangui/widgets/styles/FONT_WEIGHT_UNSPECIFIED.html">
+								<code>FONT_WEIGHT_UNSPECIFIED</code>
+							</a>
+						</td>
+						<td>
+						</td>
+						<td>unspecified font weight constant - to take parent style property value
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="TEXT_FLAGS_UNSPECIFIED" class="public" href="../../dlangui/widgets/styles/TEXT_FLAGS_UNSPECIFIED.html">
+								<code>TEXT_FLAGS_UNSPECIFIED</code>
+							</a>
+						</td>
+						<td>
+						</td>
+						<td>use text flags from parent style
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="TEXT_FLAGS_USE_PARENT" class="public" href="../../dlangui/widgets/styles/TEXT_FLAGS_USE_PARENT.html">
+								<code>TEXT_FLAGS_USE_PARENT</code>
+							</a>
+						</td>
+						<td>
+						</td>
+						<td>use text flags from parent widget
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="WEIGHT_UNSPECIFIED" class="public" href="../../dlangui/widgets/styles/WEIGHT_UNSPECIFIED.html">
+								<code>WEIGHT_UNSPECIFIED</code>
+							</a>
+						</td>
+						<td>
+						</td>
+						<td>to take layout weight from parent
 </td>
 					</tr>
 				</table>
@@ -444,24 +676,12 @@ $(document).ready(function() {
 					</tr>
 					<tr>
 						<td>
-							<a id="ALIGN_UNSPECIFIED" class="public" href="../../dlangui/widgets/styles/ALIGN_UNSPECIFIED.html">
-								<code>ALIGN_UNSPECIFIED</code>
-							</a>
-						</td>
-						<td>
-<code class="prettyprint lang-d">immutable(ubyte)</code>
-						</td>
-						<td>unspecified align - to take parent's value instead
-</td>
-					</tr>
-					<tr>
-						<td>
 							<a id="ATTR_SCROLLBAR_BUTTON_DOWN" class="public" href="../../dlangui/widgets/styles/ATTR_SCROLLBAR_BUTTON_DOWN.html">
 								<code>ATTR_SCROLLBAR_BUTTON_DOWN</code>
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td></td>
 					</tr>
@@ -472,7 +692,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td></td>
 					</tr>
@@ -483,7 +703,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td></td>
 					</tr>
@@ -494,7 +714,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td></td>
 					</tr>
@@ -505,7 +725,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td></td>
 					</tr>
@@ -516,93 +736,9 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td></td>
-					</tr>
-					<tr>
-						<td>
-							<a id="FILL_PARENT" class="public" href="../../dlangui/widgets/styles/FILL_PARENT.html">
-								<code>FILL_PARENT</code>
-							</a>
-						</td>
-						<td>
-<code class="prettyprint lang-d">immutable(int)</code>
-						</td>
-						<td>layout option, to occupy all available place
-</td>
-					</tr>
-					<tr>
-						<td>
-							<a id="FONT_SIZE_UNSPECIFIED" class="public" href="../../dlangui/widgets/styles/FONT_SIZE_UNSPECIFIED.html">
-								<code>FONT_SIZE_UNSPECIFIED</code>
-							</a>
-						</td>
-						<td>
-<code class="prettyprint lang-d">immutable(ushort)</code>
-						</td>
-						<td>unspecified font size constant - to take parent style property value
-</td>
-					</tr>
-					<tr>
-						<td>
-							<a id="FONT_STYLE_ITALIC" class="public" href="../../dlangui/widgets/styles/FONT_STYLE_ITALIC.html">
-								<code>FONT_STYLE_ITALIC</code>
-							</a>
-						</td>
-						<td>
-<code class="prettyprint lang-d">immutable(ubyte)</code>
-						</td>
-						<td>italic font style constant
-</td>
-					</tr>
-					<tr>
-						<td>
-							<a id="FONT_STYLE_NORMAL" class="public" href="../../dlangui/widgets/styles/FONT_STYLE_NORMAL.html">
-								<code>FONT_STYLE_NORMAL</code>
-							</a>
-						</td>
-						<td>
-<code class="prettyprint lang-d">immutable(ubyte)</code>
-						</td>
-						<td>normal font style constant
-</td>
-					</tr>
-					<tr>
-						<td>
-							<a id="FONT_STYLE_UNSPECIFIED" class="public" href="../../dlangui/widgets/styles/FONT_STYLE_UNSPECIFIED.html">
-								<code>FONT_STYLE_UNSPECIFIED</code>
-							</a>
-						</td>
-						<td>
-<code class="prettyprint lang-d">immutable(ubyte)</code>
-						</td>
-						<td>unspecified font style constant - to take parent style property value
-</td>
-					</tr>
-					<tr>
-						<td>
-							<a id="FONT_WEIGHT_UNSPECIFIED" class="public" href="../../dlangui/widgets/styles/FONT_WEIGHT_UNSPECIFIED.html">
-								<code>FONT_WEIGHT_UNSPECIFIED</code>
-							</a>
-						</td>
-						<td>
-<code class="prettyprint lang-d">immutable(ushort)</code>
-						</td>
-						<td>unspecified font weight constant - to take parent style property value
-</td>
-					</tr>
-					<tr>
-						<td>
-							<a id="SIZE_UNSPECIFIED" class="public" href="../../dlangui/widgets/styles/SIZE_UNSPECIFIED.html">
-								<code>SIZE_UNSPECIFIED</code>
-							</a>
-						</td>
-						<td>
-<code class="prettyprint lang-d">immutable(int)</code>
-						</td>
-						<td>use as widget.layout() param to avoid applying of parent size
-</td>
 					</tr>
 					<tr>
 						<td>
@@ -611,7 +747,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for Button
 </td>
@@ -623,7 +759,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for Button image
 </td>
@@ -635,7 +771,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for Button label
 </td>
@@ -647,7 +783,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>style id for Button w/o margins
 </td>
@@ -659,7 +795,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>style id for transparent Button
 </td>
@@ -671,7 +807,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for CheckBox
 </td>
@@ -683,7 +819,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for CheckBox image
 </td>
@@ -695,9 +831,33 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for CheckBox label
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_COLOR_DIALOG_BACKGROUND" class="public" href="../../dlangui/widgets/styles/STYLE_COLOR_DIALOG_BACKGROUND.html">
+								<code>STYLE_COLOR_DIALOG_BACKGROUND</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
+						</td>
+						<td>dialog background color resource id
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_COLOR_WINDOW_BACKGROUND" class="public" href="../../dlangui/widgets/styles/STYLE_COLOR_WINDOW_BACKGROUND.html">
+								<code>STYLE_COLOR_WINDOW_BACKGROUND</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
+						</td>
+						<td>window background color resource id
 </td>
 					</tr>
 					<tr>
@@ -707,7 +867,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for combo box
 </td>
@@ -719,7 +879,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for combo box body (current item)
 </td>
@@ -731,7 +891,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for combo box button
 </td>
@@ -743,7 +903,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for dock host
 </td>
@@ -755,7 +915,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for dock host body
 </td>
@@ -767,7 +927,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for dock window
 </td>
@@ -779,7 +939,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for dock window body
 </td>
@@ -791,7 +951,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for dock window caption
 </td>
@@ -803,7 +963,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for dock window caption label
 </td>
@@ -815,7 +975,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for EditBox
 </td>
@@ -827,9 +987,21 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for EditLine
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_FLOATING_WINDOW" class="public" href="../../dlangui/widgets/styles/STYLE_FLOATING_WINDOW.html">
+								<code>STYLE_FLOATING_WINDOW</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
+						</td>
+						<td>standard style id for toolbar separator
 </td>
 					</tr>
 					<tr>
@@ -839,7 +1011,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for HSpacer
 </td>
@@ -851,7 +1023,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for list items
 </td>
@@ -863,7 +1035,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for main menu
 </td>
@@ -875,7 +1047,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for main menu item
 </td>
@@ -887,7 +1059,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for main menu item label
 </td>
@@ -899,7 +1071,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for menu item accelerators label
 </td>
@@ -911,7 +1083,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for menu item icon
 </td>
@@ -923,7 +1095,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for menu item
 </td>
@@ -935,9 +1107,21 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for menu item label
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_MULTILINE_TEXT" class="public" href="../../dlangui/widgets/styles/STYLE_MULTILINE_TEXT.html">
+								<code>STYLE_MULTILINE_TEXT</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
+						</td>
+						<td>standard style id for MultilineTextWidget
 </td>
 					</tr>
 					<tr>
@@ -947,7 +1131,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for ScrollBar page control
 </td>
@@ -959,7 +1143,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for PopupMenu
 </td>
@@ -971,7 +1155,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for RadioButton
 </td>
@@ -983,7 +1167,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for RadioButton image
 </td>
@@ -995,7 +1179,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for RadioButton label
 </td>
@@ -1007,7 +1191,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for ScrollBar
 </td>
@@ -1019,9 +1203,57 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for ScrollBar button
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_SCROLLBAR_BUTTON_TRANSPARENT" class="public" href="../../dlangui/widgets/styles/STYLE_SCROLLBAR_BUTTON_TRANSPARENT.html">
+								<code>STYLE_SCROLLBAR_BUTTON_TRANSPARENT</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
+						</td>
+						<td>standard style id for ScrollBar button
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_SETTINGS_PAGES" class="public" href="../../dlangui/widgets/styles/STYLE_SETTINGS_PAGES.html">
+								<code>STYLE_SETTINGS_PAGES</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
+						</td>
+						<td>standard style id for settings dialog content pages frame
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_SETTINGS_PAGE_TITLE" class="public" href="../../dlangui/widgets/styles/STYLE_SETTINGS_PAGE_TITLE.html">
+								<code>STYLE_SETTINGS_PAGE_TITLE</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
+						</td>
+						<td>standard style id for settings dialog page title
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_SETTINGS_TREE" class="public" href="../../dlangui/widgets/styles/STYLE_SETTINGS_TREE.html">
+								<code>STYLE_SETTINGS_TREE</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
+						</td>
+						<td>standard style id for settings dialog tree
 </td>
 					</tr>
 					<tr>
@@ -1031,7 +1263,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for Slider
 </td>
@@ -1043,9 +1275,69 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for app frame status line
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_STRING_GRID" class="public" href="../../dlangui/widgets/styles/STYLE_STRING_GRID.html">
+								<code>STYLE_STRING_GRID</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
+						</td>
+						<td>standard style id for StringGrid
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_SWITCH" class="public" href="../../dlangui/widgets/styles/STYLE_SWITCH.html">
+								<code>STYLE_SWITCH</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
+						</td>
+						<td>standard style id for Switch
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TAB_DOWN_BUTTON_DARK" class="public" href="../../dlangui/widgets/styles/STYLE_TAB_DOWN_BUTTON_DARK.html">
+								<code>STYLE_TAB_DOWN_BUTTON_DARK</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
+						</td>
+						<td>standard style id for tab control tab button in dock frame
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TAB_DOWN_BUTTON_DARK_TEXT" class="public" href="../../dlangui/widgets/styles/STYLE_TAB_DOWN_BUTTON_DARK_TEXT.html">
+								<code>STYLE_TAB_DOWN_BUTTON_DARK_TEXT</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
+						</td>
+						<td>standard style id for tab control tab button text in dock frame
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TAB_DOWN_DARK" class="public" href="../../dlangui/widgets/styles/STYLE_TAB_DOWN_DARK.html">
+								<code>STYLE_TAB_DOWN_DARK</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
+						</td>
+						<td>standard style id for tab control in dock frame
 </td>
 					</tr>
 					<tr>
@@ -1055,7 +1347,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for TabHost
 </td>
@@ -1067,7 +1359,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for Tab with Up alignment
 </td>
@@ -1079,7 +1371,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for button of Tab with Up alignment
 </td>
@@ -1091,7 +1383,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for tab control tab button in dock frame
 </td>
@@ -1103,7 +1395,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for tab control tab button text in dock frame
 </td>
@@ -1115,7 +1407,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for button of Tab with Up alignment
 </td>
@@ -1127,7 +1419,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for tab control in dock frame
 </td>
@@ -1139,7 +1431,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for TabWidget
 </td>
@@ -1151,7 +1443,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for TextWidget
 </td>
@@ -1163,7 +1455,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for toolbars
 </td>
@@ -1175,9 +1467,21 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for toolbar button
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TOOLBAR_CONTROL" class="public" href="../../dlangui/widgets/styles/STYLE_TOOLBAR_CONTROL.html">
+								<code>STYLE_TOOLBAR_CONTROL</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
+						</td>
+						<td>standard style id for toolbar control, e.g. combobox
 </td>
 					</tr>
 					<tr>
@@ -1187,7 +1491,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for toolbars layout
 </td>
@@ -1199,9 +1503,21 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for toolbar separator
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TOOLTIP" class="public" href="../../dlangui/widgets/styles/STYLE_TOOLTIP.html">
+								<code>STYLE_TOOLTIP</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
+						</td>
+						<td>standard style id for tooltip popup
 </td>
 					</tr>
 					<tr>
@@ -1211,7 +1527,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for background similar to transparent button
 </td>
@@ -1223,9 +1539,21 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for tree item
+</td>
+					</tr>
+					<tr>
+						<td>
+							<a id="STYLE_TREE_ITEM_BODY" class="public" href="../../dlangui/widgets/styles/STYLE_TREE_ITEM_BODY.html">
+								<code>STYLE_TREE_ITEM_BODY</code>
+							</a>
+						</td>
+						<td>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
+						</td>
+						<td>standard style id for tree item body (icon + label)
 </td>
 					</tr>
 					<tr>
@@ -1235,7 +1563,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for tree item expand icon
 </td>
@@ -1247,7 +1575,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for tree item icon
 </td>
@@ -1259,7 +1587,7 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for tree item label
 </td>
@@ -1271,75 +1599,27 @@ $(document).ready(function() {
 							</a>
 						</td>
 						<td>
-<code class="prettyprint lang-d">immutable(char[])</code>
+<code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">char</span><span class="pun">[]</span><span class="pun">)</span></code>
 						</td>
 						<td>standard style id for VSpacer
-</td>
-					</tr>
-					<tr>
-						<td>
-							<a id="TEXT_FLAGS_UNSPECIFIED" class="public" href="../../dlangui/widgets/styles/TEXT_FLAGS_UNSPECIFIED.html">
-								<code>TEXT_FLAGS_UNSPECIFIED</code>
-							</a>
-						</td>
-						<td>
-<code class="prettyprint lang-d">immutable(uint)</code>
-						</td>
-						<td>use text flags from parent style
-</td>
-					</tr>
-					<tr>
-						<td>
-							<a id="TEXT_FLAGS_USE_PARENT" class="public" href="../../dlangui/widgets/styles/TEXT_FLAGS_USE_PARENT.html">
-								<code>TEXT_FLAGS_USE_PARENT</code>
-							</a>
-						</td>
-						<td>
-<code class="prettyprint lang-d">immutable(uint)</code>
-						</td>
-						<td>use text flags from parent widget
-</td>
-					</tr>
-					<tr>
-						<td>
-							<a id="WEIGHT_UNSPECIFIED" class="public" href="../../dlangui/widgets/styles/WEIGHT_UNSPECIFIED.html">
-								<code>WEIGHT_UNSPECIFIED</code>
-							</a>
-						</td>
-						<td>
-<code class="prettyprint lang-d">immutable(int)</code>
-						</td>
-						<td>to take layout weight from parent
-</td>
-					</tr>
-					<tr>
-						<td>
-							<a id="WRAP_CONTENT" class="public" href="../../dlangui/widgets/styles/WRAP_CONTENT.html">
-								<code>WRAP_CONTENT</code>
-							</a>
-						</td>
-						<td>
-<code class="prettyprint lang-d">immutable(int)</code>
-						</td>
-						<td>layout option, for size based on content
 </td>
 					</tr>
 				</table>
 			</section>
 			<section>
-				<h2>Authors</h2><!-- using block ddox.authors in ddox.layout.dt-->
+				<h2>Authors</h2>
 <p>Vadim Lopatin, coolreader.org@gmail.com
 </p>
 
 			</section>
 			<section>
-				<h2>Copyright</h2><!-- using block ddox.copyright in ddox.layout.dt-->
+				<h2>Copyright</h2>
 <p>Vadim Lopatin, 2014
 </p>
 
 			</section>
 			<section>
-				<h2>License</h2><!-- using block ddox.license in ddox.layout.dt-->
+				<h2>License</h2>
 <p>Boost License 1.0
 </p>
 

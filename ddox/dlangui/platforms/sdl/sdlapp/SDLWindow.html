@@ -1,0 +1,1459 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8"/>
+		<title>Class SDLWindow</title>
+		<link rel="stylesheet" type="text/css" href="../../../../styles/ddox.css"/>
+		<link rel="stylesheet" href="../../../../prettify/prettify.css" type="text/css"/>
+		<script type="text/javascript" src="../../../../scripts/jquery.js">/**/</script>
+		<script type="text/javascript" src="../../../../scripts/ddox.js">/**/</script>
+	</head>
+	<body onload="setupDdox();">
+		<nav id="main-nav">
+						<ul class="tree-view">
+							<li class=" tree-view">
+								<a href="#" class="package">dlangui</a>
+						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">core</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../../dlangui/core/asyncsocket.html" class=" module">asyncsocket</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/core/collections.html" class=" module">collections</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/core/config.html" class=" module">config</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/core/css.html" class=" module">css</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/core/cssparser.html" class=" module">cssparser</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/core/dom.html" class=" module">dom</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/core/editable.html" class=" module">editable</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/core/events.html" class=" module">events</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/core/files.html" class=" module">files</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/core/i18n.html" class=" module">i18n</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/core/linestream.html" class=" module">linestream</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/core/logger.html" class=" module">logger</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/core/math3d.html" class=" module">math3d</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/core/queue.html" class=" module">queue</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/core/settings.html" class=" module">settings</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/core/signals.html" class=" module">signals</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/core/stdaction.html" class=" module">stdaction</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/core/streams.html" class=" module">streams</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/core/textsource.html" class=" module">textsource</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/core/types.html" class=" module">types</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dialogs</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../../dlangui/dialogs/dialog.html" class=" module">dialog</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/dialogs/filedlg.html" class=" module">filedlg</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/dialogs/inputbox.html" class=" module">inputbox</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/dialogs/msgbox.html" class=" module">msgbox</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/dialogs/settingsdialog.html" class=" module">settingsdialog</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../../dlangui/dml/annotations.html" class=" module">annotations</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/dml/dmlhighlight.html" class=" module">dmlhighlight</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/dml/parser.html" class=" module">parser</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">graphics</a>
+						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">scene</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../../dlangui/graphics/scene/camera.html" class=" module">camera</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/graphics/scene/material.html" class=" module">material</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/graphics/scene/mesh.html" class=" module">mesh</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/graphics/scene/node.html" class=" module">node</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/graphics/scene/scene3d.html" class=" module">scene3d</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/graphics/scene/transform.html" class=" module">transform</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">xpm</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../../dlangui/graphics/xpm/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/graphics/xpm/reader.html" class=" module">reader</a>
+							</li>
+						</ul>
+							</li>
+							<li>
+								<a href="../../../../dlangui/graphics/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/graphics/domrender.html" class=" module">domrender</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/graphics/drawbuf.html" class=" module">drawbuf</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/graphics/fonts.html" class=" module">fonts</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/graphics/ftfonts.html" class=" module">ftfonts</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/graphics/gldrawbuf.html" class=" module">gldrawbuf</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/graphics/glsupport.html" class=" module">glsupport</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/graphics/images.html" class=" module">images</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/graphics/resources.html" class=" module">resources</a>
+							</li>
+						</ul>
+							</li>
+							<li class=" tree-view">
+								<a href="#" class="package">platforms</a>
+						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">common</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../../dlangui/platforms/common/platform.html" class=" module">platform</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/platforms/common/startup.html" class=" module">startup</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dsfml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../../dlangui/platforms/dsfml/dsfmlapp.html" class=" module">dsfmlapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class=" tree-view">
+								<a href="#" class="package">sdl</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../../dlangui/platforms/sdl/sdlapp.html" class="selected module">sdlapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">windows</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../../dlangui/platforms/windows/win32drawbuf.html" class=" module">win32drawbuf</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/platforms/windows/win32fonts.html" class=" module">win32fonts</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/platforms/windows/winapp.html" class=" module">winapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">x11</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../../dlangui/platforms/x11/x11app.html" class=" module">x11app</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">widgets</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../../dlangui/widgets/appframe.html" class=" module">appframe</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/widgets/combobox.html" class=" module">combobox</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/widgets/controls.html" class=" module">controls</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/widgets/docks.html" class=" module">docks</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/widgets/editors.html" class=" module">editors</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/widgets/grid.html" class=" module">grid</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/widgets/layouts.html" class=" module">layouts</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/widgets/lists.html" class=" module">lists</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/widgets/menu.html" class=" module">menu</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/widgets/metadata.html" class=" module">metadata</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/widgets/popup.html" class=" module">popup</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/widgets/scroll.html" class=" module">scroll</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/widgets/srcedit.html" class=" module">srcedit</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/widgets/statusline.html" class=" module">statusline</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/widgets/styles.html" class=" module">styles</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/widgets/tabs.html" class=" module">tabs</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/widgets/toolbars.html" class=" module">toolbars</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/widgets/tree.html" class=" module">tree</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/widgets/widget.html" class=" module">widget</a>
+							</li>
+							<li>
+								<a href="../../../../dlangui/widgets/winframe.html" class=" module">winframe</a>
+							</li>
+						</ul>
+							</li>
+						</ul>
+							</li>
+							<li>
+								<a href="../../../../dlangui.html" class=" module">dlangui</a>
+							</li>
+						</ul>
+				<noscript>
+					<p style="color: red">The search functionality needs JavaScript enabled</p>
+				</noscript>
+				<div id="symbolSearchPane" style="display: none">
+					<p>
+						<input id="symbolSearch" type="text" placeholder="Search for symbols" onchange="performSymbolSearch(24);" onkeypress="this.onchange();" onpaste="this.onchange();" oninput="this.onchange();"/>
+					</p>
+	<ul id="symbolSearchResults" style="display: none"></ul>
+	<script type="application/javascript" src="../../../../symbols.js"></script>
+	<script type="application/javascript">
+var symbolSearchRootDir = "../../../../";
+$('#symbolSearchPane').show();
+	</script>
+				</div>
+			<script type="text/javascript" src="../../../../scripts/mousetrap.js"></script>
+			<script type="text/javascript">
+$(document).ready(function() {
+	Mousetrap.bind('s', function(e) {
+		$("#symbolSearch").focus();
+		return false;
+	});
+});
+			</script>
+		</nav>
+		<div id="main-contents">
+			<h1>Class SDLWindow</h1>
+			<section>
+				<p></p>
+
+					<section>
+						<h3>Inherits from</h3>
+						<ul>
+							<li>
+								<code class="prettyprint lang-d"><a href="../../../../dlangui/platforms/common/platform/Window.html"><span class="typ">Window</span></a></code>
+ (base class)
+							</li>
+						</ul>
+					</section>
+					<section>
+						<h3>Constructors</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.this.html" class="public">
+										<code>this</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Fields</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.lastFlags.html" class="public"><code>lastFlags</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ushort</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.lastx.html" class="public"><code>lastx</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">short</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.lasty.html" class="public"><code>lasty</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">short</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow._drawbuf.html" class="public"><code>_drawbuf</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dlangui/graphics/drawbuf/DrawBuf.html"><span class="typ">DrawBuf</span></a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow._keyFlags.html" class="public"><code>_keyFlags</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow._lastRedrawEventCode.html" class="public"><code>_lastRedrawEventCode</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow._platform.html" class="public"><code>_platform</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dlangui/platforms/sdl/sdlapp/SDLPlatform.html"><span class="typ">SDLPlatform</span></a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow._renderer.html" class="public"><code>_renderer</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="pln">derelict<wbr/></span><span class="pun">.</span><span class="pln">sdl2<wbr/></span><span class="pun">.</span><span class="pln">types<wbr/></span><span class="pun">.</span><span class="typ">SDL_Renderer</span><span class="pun">*</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow._texture.html" class="public"><code>_texture</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="pln">derelict<wbr/></span><span class="pun">.</span><span class="pln">sdl2<wbr/></span><span class="pun">.</span><span class="pln">types<wbr/></span><span class="pun">.</span><span class="typ">SDL_Texture</span><span class="pun">*</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow._txh.html" class="public"><code>_txh</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow._txw.html" class="public"><code>_txw</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow._win.html" class="public"><code>_win</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="pln">derelict<wbr/></span><span class="pun">.</span><span class="pln">sdl2<wbr/></span><span class="pun">.</span><span class="pln">types<wbr/></span><span class="pun">.</span><span class="typ">SDL_Window</span><span class="pun">*</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.PERFORMANCE_LOGGING_THRESHOLD_MS.html" class="public inherited"><code>PERFORMANCE_LOGGING_THRESHOLD_MS</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="pln">immutable</span><span class="pun">(</span><span class="typ">int</span><span class="pun">)</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow._caption.html" class="protected"><code>_caption</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dstring</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow._cursorMap.html" class="protected"><code>_cursorMap</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="pln">derelict<wbr/></span><span class="pun">.</span><span class="pln">sdl2<wbr/></span><span class="pun">.</span><span class="pln">types<wbr/></span><span class="pun">.</span><span class="typ">SDL_Cursor</span><span class="pun">*</span><span class="pun">[</span><span class="typ">uint</span><span class="pun">]</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow._flags.html" class="protected"><code>_flags</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow._lastCursorType.html" class="protected"><code>_lastCursorType</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow._lbutton.html" class="protected"><code>_lbutton</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dlangui/core/events/ButtonDetails.html"><span class="typ">ButtonDetails</span></a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow._mbutton.html" class="protected"><code>_mbutton</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dlangui/core/events/ButtonDetails.html"><span class="typ">ButtonDetails</span></a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow._rbutton.html" class="protected"><code>_rbutton</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dlangui/core/events/ButtonDetails.html"><span class="typ">ButtonDetails</span></a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window._actionsUpdateRequested.html" class="protected inherited"><code>_actionsUpdateRequested</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window._backgroundColor.html" class="protected inherited"><code>_backgroundColor</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window._dx.html" class="protected inherited"><code>_dx</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window._dy.html" class="protected inherited"><code>_dy</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window._eventList.html" class="protected inherited"><code>_eventList</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dlangui/platforms/common/platform/EventList.html"><span class="typ">EventList</span></a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window._focusedWidget.html" class="protected inherited"><code>_focusedWidget</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dlangui/widgets/widget/Widget.html"><span class="typ">Widget</span></a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window._keyboardModifiers.html" class="protected inherited"><code>_keyboardModifiers</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window._mainWidget.html" class="protected inherited"><code>_mainWidget</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dlangui/widgets/widget/Widget.html"><span class="typ">Widget</span></a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window._mouseCaptureButtons.html" class="protected inherited"><code>_mouseCaptureButtons</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">ushort</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window._mouseCaptureFocusedOut.html" class="protected inherited"><code>_mouseCaptureFocusedOut</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window._mouseCaptureFocusedOutTrackMovements.html" class="protected inherited"><code>_mouseCaptureFocusedOutTrackMovements</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td>does current capture widget want to receive move events even if pointer left it
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window._mouseCaptureWidget.html" class="protected inherited"><code>_mouseCaptureWidget</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dlangui/widgets/widget/Widget.html"><span class="typ">Widget</span></a></code></td>
+								<td>widget which tracks all events after processed ButtonDown
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window._mouseTrackingWidgets.html" class="protected inherited"><code>_mouseTrackingWidgets</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dlangui/widgets/widget/Widget.html"><span class="typ">Widget</span></a><span class="pun">[]</span></code></td>
+								<td>widget which tracks Move events
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window._onCanClose.html" class="protected inherited"><code>_onCanClose</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span> <span class="kwd">delegate</span><span class="pun">(</span><span class="pun">)</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window._onClose.html" class="protected inherited"><code>_onClose</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><span class="pun">)</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window._onFilesDropped.html" class="protected inherited"><code>_onFilesDropped</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><span class="typ">string</span><span class="pun">[]</span><span class="pun">)</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window._popups.html" class="protected inherited"><code>_popups</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dlangui/widgets/popup/PopupWidget.html"><span class="typ">PopupWidget</span></a><span class="pun">[]</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window._timerQueue.html" class="protected inherited"><code>_timerQueue</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dlangui<wbr/></span><span class="pun">.</span><span class="pln">platforms<wbr/></span><span class="pun">.</span><span class="pln">common<wbr/></span><span class="pun">.</span><span class="pln">platform<wbr/></span><span class="pun">.</span><span class="typ">Window<wbr/></span><span class="pun">.</span><span class="typ">TimerQueue</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window._tooltip.html" class="protected inherited"><code>_tooltip</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dlangui/platforms/common/platform/Window.TooltipInfo.html"><span class="typ">Window<wbr/></span><span class="pun">.<wbr/></span><span class="typ">TooltipInfo</span></a></code></td>
+								<td></td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Properties</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Type</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.windowCaption.html" class="public property"><code>windowCaption</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dstring</span></code></td>
+								<td>sets window <a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.windowCaption.html#caption"><code class="lang-d"><span class="pln">caption</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.windowCaption.html" class="public property"><code>windowCaption</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dstring</span></code></td>
+								<td>returns window caption
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.windowIcon.html" class="public property"><code>windowIcon</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dlangui/core/types/Ref.html"><span class="typ">Ref</span></a>!(dlangui.graphics.drawbuf.DrawBuf)</code></td>
+								<td>sets window icon
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.windowId.html" class="public property"><code>windowId</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.actionsUpdateRequested.html" class="public inherited property"><code>actionsUpdateRequested</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.backgroundColor.html" class="public inherited property"><code>backgroundColor</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.backgroundColor.html" class="public inherited property"><code>backgroundColor</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.focusedWidget.html" class="public inherited property"><code>focusedWidget</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dlangui/widgets/widget/Widget.html"><span class="typ">Widget</span></a></code></td>
+								<td>returns current focused widget
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.height.html" class="public inherited property"><code>height</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.keyboardModifiers.html" class="public inherited property"><code>keyboardModifiers</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">uint</span></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.mainWidget.html" class="public inherited property"><code>mainWidget</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dlangui/widgets/widget/Widget.html"><span class="typ">Widget</span></a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.mainWidget.html" class="public inherited property"><code>mainWidget</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dlangui/widgets/widget/Widget.html"><span class="typ">Widget</span></a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.onCanClose.html" class="public inherited property"><code>onCanClose</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span> <span class="kwd">delegate</span><span class="pun">(</span><span class="pun">)</span></code></td>
+								<td>get handler for closing of app (it must return true to allow immediate <a href="../../../../dlangui/platforms/common/platform/Window.close.html"><code class="lang-d"><span class="pln">close</span></code></a>, false to cancel <a href="../../../../dlangui/platforms/common/platform/Window.close.html"><code class="lang-d"><span class="pln">close</span></code></a> or <a href="../../../../dlangui/platforms/common/platform/Window.close.html"><code class="lang-d"><span class="pln">close</span></code></a> window later)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.onCanClose.html" class="public inherited property"><code>onCanClose</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dlangui/platforms/common/platform/Window.html"><span class="typ">Window</span></a></code></td>
+								<td>set <a href="../../../../dlangui/platforms/common/platform/Window.onCanClose.html#handler"><code class="lang-d"><span class="pln">handler</span></code></a> for closing of app (it must return true to allow immediate <a href="../../../../dlangui/platforms/common/platform/Window.close.html"><code class="lang-d"><span class="pln">close</span></code></a>, false to cancel <a href="../../../../dlangui/platforms/common/platform/Window.close.html"><code class="lang-d"><span class="pln">close</span></code></a> or <a href="../../../../dlangui/platforms/common/platform/Window.close.html"><code class="lang-d"><span class="pln">close</span></code></a> window later)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.onClose.html" class="public inherited property"><code>onClose</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dlangui/platforms/common/platform/Window.html"><span class="typ">Window</span></a></code></td>
+								<td>set <a href="../../../../dlangui/platforms/common/platform/Window.onClose.html#handler"><code class="lang-d"><span class="pln">handler</span></code></a> for closing of window
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.onClose.html" class="public inherited property"><code>onClose</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><span class="pun">)</span></code></td>
+								<td>get handler for closing of window
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.onFilesDropped.html" class="public inherited property"><code>onFilesDropped</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">void</span> <span class="kwd">delegate</span><span class="pun">(</span><span class="typ">string</span><span class="pun">[]</span><span class="pun">)</span></code></td>
+								<td>get handler for files dropped to app window
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.onFilesDropped.html" class="public inherited property"><code>onFilesDropped</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../../dlangui/platforms/common/platform/Window.html"><span class="typ">Window</span></a></code></td>
+								<td>set <a href="../../../../dlangui/platforms/common/platform/Window.onFilesDropped.html#handler"><code class="lang-d"><span class="pln">handler</span></code></a> for files dropped to app window
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.width.html" class="public inherited property"><code>width</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td>
+								<td></td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Methods</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.close.html" class="public">
+										<code>close</code>
+									</a>
+								</td>
+								<td><code class="lang-d"><span class="pln">close</span></code> window
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.convertKeyCode.html" class="public">
+										<code>convertKeyCode</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.convertKeyFlags.html" class="public">
+										<code>convertKeyFlags</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.convertMouseButton.html" class="public">
+										<code>convertMouseButton</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.convertMouseFlags.html" class="public">
+										<code>convertMouseFlags</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.create.html" class="public">
+										<code>create</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.doResize.html" class="public">
+										<code>doResize</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.fixSize.html" class="public">
+										<code>fixSize</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.handleTimer.html" class="public">
+										<code>handleTimer</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.invalidate.html" class="public">
+										<code>invalidate</code>
+									</a>
+								</td>
+								<td>request window <a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.redraw.html"><code class="lang-d"><span class="pln">redraw</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.postEvent.html" class="public">
+										<code>postEvent</code>
+									</a>
+								</td>
+								<td>post <a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.postEvent.html#event"><code class="lang-d"><span class="pln"><a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.postEvent.html#event"><span class="pln">event</span></a></span></code></a> to handle in UI thread (this method can be used from background thread)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.processExpose.html" class="public">
+										<code>processExpose</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.processKeyEvent.html" class="public">
+										<code>processKeyEvent</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.processMouseEvent.html" class="public">
+										<code>processMouseEvent</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.processRedrawEvent.html" class="public">
+										<code>processRedrawEvent</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.processTextInput.html" class="public">
+										<code>processTextInput</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.redraw.html" class="public">
+										<code>redraw</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.scheduleAnimation.html" class="public">
+										<code>scheduleAnimation</code>
+									</a>
+								</td>
+								<td>after drawing, call to schedule <a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.redraw.html"><code class="lang-d"><span class="pln">redraw</span></code></a> if animation is active
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.show.html" class="public">
+										<code>show</code>
+									</a>
+								</td>
+								<td><code class="lang-d"><span class="pln">show</span></code> window
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.cancelEvent.html" class="public inherited">
+										<code>cancelEvent</code>
+									</a>
+								</td>
+								<td>remove event from queue by unique id if not yet dispatched (this method can be used from background thread)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.cancelTimer.html" class="public inherited">
+										<code>cancelTimer</code>
+									</a>
+								</td>
+								<td>cancel previously scheduled widget timer (for <a href="../../../../dlangui/platforms/common/platform/Window.cancelTimer.html#timerId"><code class="lang-d"><span class="pln">timerId</span></code></a> pass value returned from <a href="../../../../dlangui/platforms/common/platform/Window.setTimer.html"><code class="lang-d"><span class="pln">setTimer</span></code></a>)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.checkUpdateNeeded.html" class="public inherited">
+										<code>checkUpdateNeeded</code>
+									</a>
+								</td>
+								<td>checks content widgets for necessary redraw and/or <a href="../../../../dlangui/platforms/common/platform/Window.layout.html"><code class="lang-d"><span class="pln">layout</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.createAsyncSocket.html" class="public inherited">
+										<code>createAsyncSocket</code>
+									</a>
+								</td>
+								<td>Creates async socket
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.dispatchAction.html" class="public inherited">
+										<code>dispatchAction</code>
+									</a>
+								</td>
+								<td>dispatch <a href="../../../../dlangui/platforms/common/platform/Window.dispatchAction.html#action"><code class="lang-d"><span class="pln">action</span></code></a> to main widget
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.dispatchActionStateRequest.html" class="public inherited">
+										<code>dispatchActionStateRequest</code>
+									</a>
+								</td>
+								<td>dispatch <a href="../../../../dlangui/platforms/common/platform/Window.dispatchAction.html#action"><code class="lang-d"><span class="pln"><a href="../../../../dlangui/platforms/common/platform/Window.dispatchActionStateRequest.html#action"><span class="pln">action</span></a></span></code></a> to main widget
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.dispatchCustomEvent.html" class="public inherited">
+										<code>dispatchCustomEvent</code>
+									</a>
+								</td>
+								<td>dispatch custom <a href="../../../../dlangui/platforms/common/platform/Window.dispatchCustomEvent.html#event"><code class="lang-d"><span class="pln">event</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.dispatchKeyEvent.html" class="public inherited">
+										<code>dispatchKeyEvent</code>
+									</a>
+								</td>
+								<td>dispatch keyboard <a href="../../../../dlangui/platforms/common/platform/Window.dispatchKeyEvent.html#event"><code class="lang-d"><span class="pln">event</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.dispatchMouseEvent.html" class="public inherited">
+										<code>dispatchMouseEvent</code>
+									</a>
+								</td>
+								<td>dispatch mouse <a href="../../../../dlangui/platforms/common/platform/Window.dispatchMouseEvent.html#event"><code class="lang-d"><span class="pln">event</span></code></a> to window content widgets
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.dispatchThemeChanged.html" class="public inherited">
+										<code>dispatchThemeChanged</code>
+									</a>
+								</td>
+								<td>handle theme change: e.g. reload some themed resources
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.executeInUiThread.html" class="public inherited">
+										<code>executeInUiThread</code>
+									</a>
+								</td>
+								<td>post task to execute in UI thread (this method can be used from background thread)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.handleCanClose.html" class="public inherited">
+										<code>handleCanClose</code>
+									</a>
+								</td>
+								<td>calls <a href="../../../../dlangui/platforms/common/platform/Window.onCanClose.html"><code class="lang-d"><span class="pln">onCanClose</span></code></a> handler if set to check if system may <a href="../../../../dlangui/platforms/common/platform/Window.close.html"><code class="lang-d"><span class="pln">close</span></code></a> window
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.handleDroppedFiles.html" class="public inherited">
+										<code>handleDroppedFiles</code>
+									</a>
+								</td>
+								<td>called when user dragged file(s) to application window
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.handlePostedEvent.html" class="public inherited">
+										<code>handlePostedEvent</code>
+									</a>
+								</td>
+								<td>remove event from queue by unique id if not yet dispatched and dispatch it
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.handlePostedEvents.html" class="public inherited">
+										<code>handlePostedEvents</code>
+									</a>
+								</td>
+								<td>handle all events from queue, if any (call from UI thread only)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.hideTooltip.html" class="public inherited">
+										<code>hideTooltip</code>
+									</a>
+								</td>
+								<td>hide tooltip if shown and cancel tooltip timer if set
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.isChild.html" class="public inherited">
+										<code>isChild</code>
+									</a>
+								</td>
+								<td>returns true if widget is child of either main widget or one of popups
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.isMouseCaptured.html" class="public inherited">
+										<code>isMouseCaptured</code>
+									</a>
+								</td>
+								<td>returns true if mouse is currently captured
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.layout.html" class="public inherited">
+										<code>layout</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.measure.html" class="public inherited">
+										<code>measure</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.modalPopup.html" class="public inherited">
+										<code>modalPopup</code>
+									</a>
+								</td>
+								<td>returns last modal popup widget, or null if no modal popups opened
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.onDraw.html" class="public inherited">
+										<code>onDraw</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.onResize.html" class="public inherited">
+										<code>onResize</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.removePopup.html" class="public inherited">
+										<code>removePopup</code>
+									</a>
+								</td>
+								<td>remove <a href="../../../../dlangui/platforms/common/platform/Window.removePopup.html#popup"><code class="lang-d"><span class="pln">popup</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.requestActionsUpdate.html" class="public inherited">
+										<code>requestActionsUpdate</code>
+									</a>
+								</td>
+								<td>set action <a href="../../../../dlangui/platforms/common/platform/Window.update.html"><code class="lang-d"><span class="pln">update</span></code></a> request flag, will be cleared after redraw
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.requestLayout.html" class="public inherited">
+										<code>requestLayout</code>
+									</a>
+								</td>
+								<td>requests <a href="../../../../dlangui/platforms/common/platform/Window.layout.html"><code class="lang-d"><span class="pln">layout</span></code></a> for main widget and popups
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.scheduleTooltip.html" class="public inherited">
+										<code>scheduleTooltip</code>
+									</a>
+								</td>
+								<td>schedule tooltip for widget be shown with specified <a href="../../../../dlangui/platforms/common/platform/Window.scheduleTooltip.html#delay"><code class="lang-d"><span class="pln">delay</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.setFocus.html" class="public inherited">
+										<code>setFocus</code>
+									</a>
+								</td>
+								<td>change focus to widget
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.setTimer.html" class="public inherited">
+										<code>setTimer</code>
+									</a>
+								</td>
+								<td>set timer for <a href="../../../../dlangui/platforms/common/platform/Window.setTimer.html#destination"><code class="lang-d"><span class="pln">destination</span></code></a> widget - destination.onTimer() will be called after interval expiration; returns timer id
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.showInputBox.html" class="public inherited">
+										<code>showInputBox</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.showInputBox.html" class="public inherited">
+										<code>showInputBox</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.showMessageBox.html" class="public inherited">
+										<code>showMessageBox</code>
+									</a>
+								</td>
+								<td>Show <a href="../../../../dlangui/platforms/common/platform/Window.showMessageBox.html#message"><code class="lang-d"><span class="pln">message</span></code></a> box with specified <a href="../../../../dlangui/platforms/common/platform/Window.showMessageBox.html#title"><code class="lang-d"><span class="pln">title</span></code></a> and <a href="../../../../dlangui/platforms/common/platform/Window.showMessageBox.html#message"><code class="lang-d"><span class="pln">message</span></code></a> (<a href="../../../../dlangui/platforms/common/platform/Window.showMessageBox.html#title"><code class="lang-d"><span class="pln">title</span></code></a> and <a href="../../../../dlangui/platforms/common/platform/Window.showMessageBox.html#message"><code class="lang-d"><span class="pln">message</span></code></a> as UIString)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.showMessageBox.html" class="public inherited">
+										<code>showMessageBox</code>
+									</a>
+								</td>
+								<td>Show <a href="../../../../dlangui/platforms/common/platform/Window.showMessageBox.html#message"><code class="lang-d"><span class="pln">message</span></code></a> box with specified <a href="../../../../dlangui/platforms/common/platform/Window.showMessageBox.html#title"><code class="lang-d"><span class="pln">title</span></code></a> and <a href="../../../../dlangui/platforms/common/platform/Window.showMessageBox.html#message"><code class="lang-d"><span class="pln">message</span></code></a> (<a href="../../../../dlangui/platforms/common/platform/Window.showMessageBox.html#title"><code class="lang-d"><span class="pln">title</span></code></a> and <a href="../../../../dlangui/platforms/common/platform/Window.showMessageBox.html#message"><code class="lang-d"><span class="pln">message</span></code></a> as dstring)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.showPopup.html" class="public inherited">
+										<code>showPopup</code>
+									</a>
+								</td>
+								<td><a href="../../../../dlangui/platforms/common/platform/Window.show.html"><code class="lang-d"><span class="pln">show</span></code></a> new popup
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.showTooltip.html" class="public inherited">
+										<code>showTooltip</code>
+									</a>
+								</td>
+								<td><a href="../../../../dlangui/platforms/common/platform/Window.show.html"><code class="lang-d"><span class="pln"><a href="../../../../dlangui/platforms/common/platform/Window.show.html"><span class="pln">show</span></a></span></code></a> tooltip immediately
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.update.html" class="public inherited">
+										<code>update</code>
+									</a>
+								</td>
+								<td>requests <a href="../../../../dlangui/platforms/common/platform/Window.update.html"><code class="lang-d"><span class="pln">update</span></code></a> for window (unless <a href="../../../../dlangui/platforms/common/platform/Window.update.html#force"><code class="lang-d"><span class="pln">force</span></code></a> is true, <a href="../../../../dlangui/platforms/common/platform/Window.update.html"><code class="lang-d"><span class="pln">update</span></code></a> will be performed only if <a href="../../../../dlangui/platforms/common/platform/Window.layout.html"><code class="lang-d"><span class="pln">layout</span></code></a>, redraw or animation is required).
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.createContext.html" class="protected">
+										<code>createContext</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.scheduleSystemTimer.html" class="protected">
+										<code>scheduleSystemTimer</code>
+									</a>
+								</td>
+								<td>schedule timer for interval in milliseconds - call window.onTimer when finished
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/sdl/sdlapp/SDLWindow.setCursorType.html" class="protected">
+										<code>setCursorType</code>
+									</a>
+								</td>
+								<td>sets cursor type for window
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.checkUpdateNeeded.html" class="protected inherited">
+										<code>checkUpdateNeeded</code>
+									</a>
+								</td>
+								<td>checks content widgets for necessary redraw and/or <a href="../../../../dlangui/platforms/common/platform/Window.layout.html"><code class="lang-d"><span class="pln">layout</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.clearMouseCapture.html" class="protected inherited">
+										<code>clearMouseCapture</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.dispatchCancel.html" class="protected inherited">
+										<code>dispatchCancel</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.dispatchKeyEvent.html" class="protected inherited">
+										<code>dispatchKeyEvent</code>
+									</a>
+								</td>
+								<td>dispatch key <a href="../../../../dlangui/platforms/common/platform/Window.dispatchKeyEvent.html#event"><code class="lang-d"><span class="pln">event</span></code></a> to widgets which have wantsKeyTracking == true
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.dispatchMouseEvent.html" class="protected inherited">
+										<code>dispatchMouseEvent</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.dispatchWidgetUpdateActionStateRecursive.html" class="protected inherited">
+										<code>dispatchWidgetUpdateActionStateRecursive</code>
+									</a>
+								</td>
+								<td>calls <a href="../../../../dlangui/platforms/common/platform/Window.update.html"><code class="lang-d"><span class="pln">update</span></code></a> actions recursively
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.dispatchWidgetUpdateActionStateRecursive.html" class="protected inherited">
+										<code>dispatchWidgetUpdateActionStateRecursive</code>
+									</a>
+								</td>
+								<td><a href="../../../../dlangui/platforms/common/platform/Window.update.html"><code class="lang-d"><span class="pln">update</span></code></a> action states
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.onTimer.html" class="protected inherited">
+										<code>onTimer</code>
+									</a>
+								</td>
+								<td>system timer interval expired - notify queue
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.sendAndCheckOverride.html" class="protected inherited">
+										<code>sendAndCheckOverride</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.setCaptureWidget.html" class="protected inherited">
+										<code>setCaptureWidget</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+						</table>
+					</section>
+					<section>
+						<h3>Inner structs</h3>
+						<table>
+							<col class="caption"/>
+							<tr>
+								<th>Name</th>
+								<th>Description</th>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../../dlangui/platforms/common/platform/Window.TooltipInfo.html" class="protected inherited">
+										<code>TooltipInfo</code>
+									</a>
+								</td>
+								<td></td>
+							</tr>
+						</table>
+					</section>
+
+			</section>
+			<section>
+				<h2>Authors</h2>
+<p>Vadim Lopatin, coolreader.org@gmail.com
+</p>
+
+			</section>
+			<section>
+				<h2>Copyright</h2>
+<p>Vadim Lopatin, 2014
+</p>
+
+			</section>
+			<section>
+				<h2>License</h2>
+<p>Boost License 1.0
+</p>
+
+			</section>
+		</div>
+	</body>
+</html>

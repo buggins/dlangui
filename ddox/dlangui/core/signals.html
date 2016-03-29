@@ -1,17 +1,15 @@
-
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta charset="UTF-8"/><!-- using block title in layout.dt--><!-- using block ddox.defs in ddox.layout.dt--><!-- using block ddox.title in ddox.layout.dt-->
+		<meta charset="UTF-8"/>
 		<title>Module dlangui.core.signals</title>
 		<link rel="stylesheet" type="text/css" href="../../styles/ddox.css"/>
 		<link rel="stylesheet" href="../../prettify/prettify.css" type="text/css"/>
 		<script type="text/javascript" src="../../scripts/jquery.js">/**/</script>
-		<script type="text/javascript" src="../../prettify/prettify.js">/**/</script>
 		<script type="text/javascript" src="../../scripts/ddox.js">/**/</script>
 	</head>
-	<body onload="prettyPrint(); setupDdox();">
-		<nav id="main-nav"><!-- using block navigation in layout.dt-->
+	<body onload="setupDdox();">
+		<nav id="main-nav">
 						<ul class="tree-view">
 							<li class=" tree-view">
 								<a href="#" class="package">dlangui</a>
@@ -20,7 +18,25 @@
 								<a href="#" class="package">core</a>
 						<ul class="tree-view">
 							<li>
+								<a href="../../dlangui/core/asyncsocket.html" class=" module">asyncsocket</a>
+							</li>
+							<li>
 								<a href="../../dlangui/core/collections.html" class=" module">collections</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/config.html" class=" module">config</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/css.html" class=" module">css</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/cssparser.html" class=" module">cssparser</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/dom.html" class=" module">dom</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/editable.html" class=" module">editable</a>
 							</li>
 							<li>
 								<a href="../../dlangui/core/events.html" class=" module">events</a>
@@ -38,10 +54,25 @@
 								<a href="../../dlangui/core/logger.html" class=" module">logger</a>
 							</li>
 							<li>
+								<a href="../../dlangui/core/math3d.html" class=" module">math3d</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/queue.html" class=" module">queue</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/settings.html" class=" module">settings</a>
+							</li>
+							<li>
 								<a href="../../dlangui/core/signals.html" class="selected module">signals</a>
 							</li>
 							<li>
 								<a href="../../dlangui/core/stdaction.html" class=" module">stdaction</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/streams.html" class=" module">streams</a>
+							</li>
+							<li>
+								<a href="../../dlangui/core/textsource.html" class=" module">textsource</a>
 							</li>
 							<li>
 								<a href="../../dlangui/core/types.html" class=" module">types</a>
@@ -58,15 +89,72 @@
 								<a href="../../dlangui/dialogs/filedlg.html" class=" module">filedlg</a>
 							</li>
 							<li>
+								<a href="../../dlangui/dialogs/inputbox.html" class=" module">inputbox</a>
+							</li>
+							<li>
 								<a href="../../dlangui/dialogs/msgbox.html" class=" module">msgbox</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dialogs/settingsdialog.html" class=" module">settingsdialog</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/dml/annotations.html" class=" module">annotations</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dml/dmlhighlight.html" class=" module">dmlhighlight</a>
+							</li>
+							<li>
+								<a href="../../dlangui/dml/parser.html" class=" module">parser</a>
 							</li>
 						</ul>
 							</li>
 							<li class="collapsed tree-view">
 								<a href="#" class="package">graphics</a>
 						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">scene</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/graphics/scene/camera.html" class=" module">camera</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/material.html" class=" module">material</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/mesh.html" class=" module">mesh</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/node.html" class=" module">node</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/scene3d.html" class=" module">scene3d</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/scene/transform.html" class=" module">transform</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">xpm</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/graphics/xpm/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/xpm/reader.html" class=" module">reader</a>
+							</li>
+						</ul>
+							</li>
 							<li>
 								<a href="../../dlangui/graphics/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../dlangui/graphics/domrender.html" class=" module">domrender</a>
 							</li>
 							<li>
 								<a href="../../dlangui/graphics/drawbuf.html" class=" module">drawbuf</a>
@@ -100,6 +188,17 @@
 							<li>
 								<a href="../../dlangui/platforms/common/platform.html" class=" module">platform</a>
 							</li>
+							<li>
+								<a href="../../dlangui/platforms/common/startup.html" class=" module">startup</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dsfml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/dsfml/dsfmlapp.html" class=" module">dsfmlapp</a>
+							</li>
 						</ul>
 							</li>
 							<li class="collapsed tree-view">
@@ -121,6 +220,14 @@
 							</li>
 							<li>
 								<a href="../../dlangui/platforms/windows/winapp.html" class=" module">winapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">x11</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../dlangui/platforms/x11/x11app.html" class=" module">x11app</a>
 							</li>
 						</ul>
 							</li>
@@ -157,6 +264,9 @@
 								<a href="../../dlangui/widgets/menu.html" class=" module">menu</a>
 							</li>
 							<li>
+								<a href="../../dlangui/widgets/metadata.html" class=" module">metadata</a>
+							</li>
+							<li>
 								<a href="../../dlangui/widgets/popup.html" class=" module">popup</a>
 							</li>
 							<li>
@@ -183,12 +293,15 @@
 							<li>
 								<a href="../../dlangui/widgets/widget.html" class=" module">widget</a>
 							</li>
+							<li>
+								<a href="../../dlangui/widgets/winframe.html" class=" module">winframe</a>
+							</li>
+						</ul>
+							</li>
 						</ul>
 							</li>
 							<li>
-								<a href="../../dlangui/all.html" class=" module">all</a>
-							</li>
-						</ul>
+								<a href="../../dlangui.html" class=" module">dlangui</a>
 							</li>
 						</ul>
 				<noscript>
@@ -205,22 +318,21 @@ var symbolSearchRootDir = "../../";
 $('#symbolSearchPane').show();
 	</script>
 				</div>
-				<script type="text/javascript" src="../../scripts/mousetrap.js"></script>
-				<script type="text/javascript">
+			<script type="text/javascript" src="../../scripts/mousetrap.js"></script>
+			<script type="text/javascript">
 $(document).ready(function() {
 	Mousetrap.bind('s', function(e) {
 		$("#symbolSearch").focus();
 		return false;
 	});
 });
-				</script>
+			</script>
 		</nav>
 		<div id="main-contents">
-			<h1>Module dlangui.core.signals</h1><!-- using block body in layout.dt--><!-- using block ddox.description in ddox.layout.dt-->
+			<h1>Module dlangui.core.signals</h1>
 			<p>This module contains definition of signals / listeners.
 </p>
-<section>
-<p>Similar to std.signals.
+<section><p>Similar to std.signals.
 </p>
 
 <p>Unlike std.signals, supports any types of delegates, and as well interfaces with single method.
@@ -229,99 +341,96 @@ $(document).ready(function() {
 <p>Unlike std.signals, can support return types for slots.
 </p>
 </section>
-<!-- using block ddox.sections in ddox.layout.dt-->
+
 			<section><section><h2>Caution</h2>
 <p>unlike std.signals, does not disconnect signal from slots belonging to destroyed objects.
 </p>
 
-<p><a href="../../dlangui/core/signals/Listener.html"><code class="prettyprint lang-d">Listener</code></a> here stand for holder of single delegate (slot).
+<p><a href="../../dlangui/core/signals/Listener.html"><code class="lang-d"><span class="typ">Listener</span></code></a> here stand for holder of single delegate (slot).
 </p>
 
-<p><a href="../../dlangui/core/signals/Signal.html"><code class="prettyprint lang-d">Signal</code></a> is the same but supports multiple slots.
+<p><a href="../../dlangui/core/signals/Signal.html"><code class="lang-d"><span class="typ">Signal</span></code></a> is the same but supports multiple slots.
 </p>
 
-<p><a href="../../dlangui/core/signals/Listener.html"><code class="prettyprint lang-d">Listener</code></a> has smaller memory footprint, but allows only single slot.
+<p><a href="../../dlangui/core/signals/Listener.html"><code class="lang-d"><span class="typ">Listener</span></code></a> has smaller memory footprint, but allows only single slot.
 </p>
 
 
 <p>Can be declared either using list of result value and argument types, or by interface name with single method.
 </p>
-
 </section>
 <section><h2>Synopsis</h2>
+<pre class="code"><code class="lang-d"><span class="kwd">import </span><span class="pln">dlangui<wbr/></span><span class="pun">.</span><span class="pln">core<wbr/></span><span class="pun">.</span><span class="pln">signals</span><span class="pun">;
 
-<pre class="code prettyprint lang-d">import dlangui.core.signals;
-
-interface SomeInterface {
-    bool someMethod(string s, int n);
+</span><span class="kwd">interface </span><span class="typ">SomeInterface </span><span class="pun">{
+    </span><span class="typ">bool </span><span class="pln">someMethod</span><span class="pun">(</span><span class="typ">string </span><span class="pln">s</span><span class="pun">, </span><span class="typ">int </span><span class="pln">n</span><span class="pun">);
 }
-class Foo : SomeInterface {
-	override bool someMethod(string s, int n) {
-		writeln("someMethod called ", s, ", ", n);
-		return n > 10; // can return value
-	}
+</span><span class="kwd">class </span><span class="typ">Foo </span><span class="pun">: </span><span class="typ">SomeInterface </span><span class="pun">{
+    </span><span class="kwd">override </span><span class="typ">bool </span><span class="pln">someMethod</span><span class="pun">(</span><span class="typ">string </span><span class="pln">s</span><span class="pun">, </span><span class="typ">int </span><span class="pln">n</span><span class="pun">) {
+        </span><span class="pln">writeln</span><span class="pun">(</span><span class="str">"someMethod called "</span><span class="pun">, </span><span class="pln">s</span><span class="pun">, </span><span class="str">", "</span><span class="pun">, </span><span class="pln">n</span><span class="pun">);
+        </span><span class="kwd">return </span><span class="pln">n </span><span class="pun">&gt; </span><span class="lit">10</span><span class="pun">; </span><span class="com">// can return value
+    </span><span class="pun">}
 }
 
-// <a href="../../dlangui/core/signals/Listener.html">Listener</a>! can hold arbitrary number of connected slots
+</span><span class="com">// Listener! can hold arbitrary number of connected slots
 
 // declare using list of return value and parameter types
-<a href="../../dlangui/core/signals/Listener.html">Listener</a>!(bool, string, n) signal1;
+<a href="../../dlangui/core/signals/Listener.html"></span><span class="typ">Listener</a></span><span class="pun">!(</span><span class="typ">bool</span><span class="pun">, </span><span class="typ">string</span><span class="pun">, </span><span class="pln">n</span><span class="pun">) </span><span class="pln">signal1</span><span class="pun">;
 
-Foo f = new Foo();
-// when signal is defined as type list, you can use delegate
-signal1 = bool delegate(string s, int n) { writeln("inside delegate - ", s, n); return false; }
-// or method reference
-signal1 = &f.someMethod;
+</span><span class="typ">Foo </span><span class="pln">f </span><span class="pun">= </span><span class="kwd">new </span><span class="typ">Foo</span><span class="pun">();
+</span><span class="com">// when signal is defined as type list, you can use delegate
+</span><span class="pln">signal1 </span><span class="pun">= </span><span class="typ">bool </span><span class="kwd">delegate</span><span class="pun">(</span><span class="typ">string </span><span class="pln">s</span><span class="pun">, </span><span class="typ">int </span><span class="pln">n</span><span class="pun">) { </span><span class="pln">writeln</span><span class="pun">(</span><span class="str">"inside delegate - "</span><span class="pun">, </span><span class="pln">s</span><span class="pun">, </span><span class="pln">n</span><span class="pun">); </span><span class="kwd">return false</span><span class="pun">; }
+</span><span class="com">// or method reference
+</span><span class="pln">signal1 </span><span class="pun">= &amp;</span><span class="pln">f<wbr/></span><span class="pun">.</span><span class="pln">someMethod</span><span class="pun">;
 
-// declare using interface with single method
-<a href="../../dlangui/core/signals/Listener.html">Listener</a>!SomeInterface signal2;
-// you still can use any delegate
-signal2 = bool delegate(string s, int n) { writeln("inside delegate - ", s, n); return false; }
-// but for class method which overrides interface method, you can use simple syntax
-signal2 = f; // it will automatically take &f.someMethod
+</span><span class="com">// declare using interface with single method
+<a href="../../dlangui/core/signals/Listener.html"></span><span class="typ">Listener</a></span><span class="pun">!</span><span class="typ">SomeInterface </span><span class="pln">signal2</span><span class="pun">;
+</span><span class="com">// you still can use any delegate
+</span><span class="pln">signal2 </span><span class="pun">= </span><span class="typ">bool </span><span class="kwd">delegate</span><span class="pun">(</span><span class="typ">string </span><span class="pln">s</span><span class="pun">, </span><span class="typ">int </span><span class="pln">n</span><span class="pun">) { </span><span class="pln">writeln</span><span class="pun">(</span><span class="str">"inside delegate - "</span><span class="pun">, </span><span class="pln">s</span><span class="pun">, </span><span class="pln">n</span><span class="pun">); </span><span class="kwd">return false</span><span class="pun">; }
+</span><span class="com">// but for class method which overrides interface method, you can use simple syntax
+</span><span class="pln">signal2 </span><span class="pun">= </span><span class="pln">f</span><span class="pun">; </span><span class="com">// it will automatically take &amp;f.someMethod
 
 
 // call listener(s) either by opcall or explicit emit
-signal1("text", 1);
-signal1.emit("text", 2);
-signal2.emit("text", 3);
+</span><span class="pln">signal1</span><span class="pun">(</span><span class="str">"text"</span><span class="pun">, </span><span class="lit">1</span><span class="pun">);
+</span><span class="pln">signal1<wbr/></span><span class="pun">.</span><span class="pln">emit</span><span class="pun">(</span><span class="str">"text"</span><span class="pun">, </span><span class="lit">2</span><span class="pun">);
+</span><span class="pln">signal2<wbr/></span><span class="pun">.</span><span class="pln">emit</span><span class="pun">(</span><span class="str">"text"</span><span class="pun">, </span><span class="lit">3</span><span class="pun">);
 
-// check if any slit is connected
-if (signal1.assigned)
-	writeln("has listeners");
+</span><span class="com">// check if any slit is connected
+</span><span class="kwd">if </span><span class="pun">(</span><span class="pln">signal1<wbr/></span><span class="pun">.</span><span class="pln">assigned</span><span class="pun">)
+    </span><span class="pln">writeln</span><span class="pun">(</span><span class="str">"has listeners"</span><span class="pun">);
 
-// <a href="../../dlangui/core/signals/Signal.html">Signal</a>! can hold arbitrary number of connected slots
+</span><span class="com">// Signal! can hold arbitrary number of connected slots
 
 // declare using list of return value and parameter types
-<a href="../../dlangui/core/signals/Signal.html">Signal</a>!(bool, string, n) signal3;
+<a href="../../dlangui/core/signals/Signal.html"></span><span class="typ">Signal</a></span><span class="pun">!(</span><span class="typ">bool</span><span class="pun">, </span><span class="typ">string</span><span class="pun">, </span><span class="pln">n</span><span class="pun">) </span><span class="pln">signal3</span><span class="pun">;
 
-// add listeners via connect call
-signal3.connect(bool delegate(string, int) { return false; });
-// or via ~= operator
-signal3 ~= bool delegate(string, int) { return false; };
+</span><span class="com">// add listeners via connect call
+</span><span class="pln">signal3<wbr/></span><span class="pun">.</span><span class="pln">connect</span><span class="pun">(</span><span class="typ">bool </span><span class="kwd">delegate</span><span class="pun">(</span><span class="typ">string</span><span class="pun">, </span><span class="typ">int</span><span class="pun">) { </span><span class="kwd">return false</span><span class="pun">; });
+</span><span class="com">// or via ~= operator
+</span><span class="pln">signal3 </span><span class="pun">~= </span><span class="typ">bool </span><span class="kwd">delegate</span><span class="pun">(</span><span class="typ">string</span><span class="pun">, </span><span class="typ">int</span><span class="pun">) { </span><span class="kwd">return false</span><span class="pun">; };
 
-// declare using interface with single method
-<a href="../../dlangui/core/signals/Signal.html">Signal</a>!SomeInterface signal4;
+</span><span class="com">// declare using interface with single method
+<a href="../../dlangui/core/signals/Signal.html"></span><span class="typ">Signal</a></span><span class="pun">!</span><span class="typ">SomeInterface </span><span class="pln">signal4</span><span class="pun">;
 
-// you can connect several slots to signal
-signal4 ~= f;
-signal4 ~= bool delegate(string, int) { return true; }
+</span><span class="com">// you can connect several slots to signal
+</span><span class="pln">signal4 </span><span class="pun">~= </span><span class="pln">f</span><span class="pun">;
+</span><span class="pln">signal4 </span><span class="pun">~= </span><span class="typ">bool </span><span class="kwd">delegate</span><span class="pun">(</span><span class="typ">string</span><span class="pun">, </span><span class="typ">int</span><span class="pun">) { </span><span class="kwd">return true</span><span class="pun">; }
 
-// calling of listeners of <a href="../../dlangui/core/signals/Signal.html">Signal</a>! is similar to <a href="../../dlangui/core/signals/Listener.html">Listener</a>!
+</span><span class="com">// calling of listeners of Signal! is similar to Listener!
 // using opCall
-bool res = signal4("blah", 5);
-// call listeners using emit
-bool res = signal4.emit("blah", 5);
+</span><span class="typ">bool </span><span class="pln">res </span><span class="pun">= </span><span class="pln">signal4</span><span class="pun">(</span><span class="str">"blah"</span><span class="pun">, </span><span class="lit">5</span><span class="pun">);
+</span><span class="com">// call listeners using emit
+</span><span class="typ">bool </span><span class="pln">res </span><span class="pun">= </span><span class="pln">signal4<wbr/></span><span class="pun">.</span><span class="pln">emit</span><span class="pun">(</span><span class="str">"blah"</span><span class="pun">, </span><span class="lit">5</span><span class="pun">);
 
-// you can disconnect individual slots
+</span><span class="com">// you can disconnect individual slots
 // using disconnect()
-signal4.disconnect(f);
-// or -= operator
-signal4 -= f;
-
-</pre>
+</span><span class="pln">signal4<wbr/></span><span class="pun">.</span><span class="pln">disconnect</span><span class="pun">(</span><span class="pln">f</span><span class="pun">);
+</span><span class="com">// or -= operator
+</span><span class="pln">signal4 </span><span class="pun">-= </span><span class="pln">f</span><span class="pun">;
+</span></code></pre>
 </section>
-</section><!-- using block ddox.members in ddox.layout.dt-->
+</section>
 			<section>
 				<h2>Structs</h2>
 				<table>
@@ -360,19 +469,19 @@ signal4 -= f;
 				</table>
 			</section>
 			<section>
-				<h2>Authors</h2><!-- using block ddox.authors in ddox.layout.dt-->
+				<h2>Authors</h2>
 <p>Vadim Lopatin, coolreader.org@gmail.com
 </p>
 
 			</section>
 			<section>
-				<h2>Copyright</h2><!-- using block ddox.copyright in ddox.layout.dt-->
+				<h2>Copyright</h2>
 <p>Vadim Lopatin, 2014
 </p>
 
 			</section>
 			<section>
-				<h2>License</h2><!-- using block ddox.license in ddox.layout.dt-->
+				<h2>License</h2>
 <p>Boost License 1.0
 </p>
 

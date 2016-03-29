@@ -2,6 +2,7 @@ function setupDdox()
 {
 	$(".tree-view").children(".package").click(toggleTree);
 	$(".tree-view.collapsed").children("ul").hide();
+	$("#symbolSearch").attr("tabindex", "1000");
 }
 
 function toggleTree()
@@ -22,7 +23,7 @@ var lastSearchString = "";
 function performSymbolSearch(maxlen)
 {
 	if (maxlen === 'undefined') maxlen = 26;
-	
+
 	var searchstring = $("#symbolSearch").val().toLowerCase();
 
 	if (searchstring == lastSearchString) return;
@@ -107,7 +108,7 @@ function performSymbolSearch(maxlen)
 			if (np > 0) shortname = ".." + shortname;
 			else shortname = shortname.substr(1);
 
-			el.append('<a href="'+symbolSearchRootDir+sym.path+'" title="'+name+'">'+shortname+'</a>');
+			el.append('<a href="'+symbolSearchRootDir+sym.path+'" title="'+name+'" tabindex="1001">'+shortname+'</a>');
 			$('#symbolSearchResults').append(el);
 		}
 

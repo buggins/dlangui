@@ -1,17 +1,15 @@
-
 <!DOCTYPE html>
 <html>
 	<head>
-		<meta charset="UTF-8"/><!-- using block title in layout.dt--><!-- using block ddox.defs in ddox.layout.dt--><!-- using block ddox.title in ddox.layout.dt-->
+		<meta charset="UTF-8"/>
 		<title>Class Action</title>
 		<link rel="stylesheet" type="text/css" href="../../../styles/ddox.css"/>
 		<link rel="stylesheet" href="../../../prettify/prettify.css" type="text/css"/>
 		<script type="text/javascript" src="../../../scripts/jquery.js">/**/</script>
-		<script type="text/javascript" src="../../../prettify/prettify.js">/**/</script>
 		<script type="text/javascript" src="../../../scripts/ddox.js">/**/</script>
 	</head>
-	<body onload="prettyPrint(); setupDdox();">
-		<nav id="main-nav"><!-- using block navigation in layout.dt-->
+	<body onload="setupDdox();">
+		<nav id="main-nav">
 						<ul class="tree-view">
 							<li class=" tree-view">
 								<a href="#" class="package">dlangui</a>
@@ -20,7 +18,25 @@
 								<a href="#" class="package">core</a>
 						<ul class="tree-view">
 							<li>
+								<a href="../../../dlangui/core/asyncsocket.html" class=" module">asyncsocket</a>
+							</li>
+							<li>
 								<a href="../../../dlangui/core/collections.html" class=" module">collections</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/config.html" class=" module">config</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/css.html" class=" module">css</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/cssparser.html" class=" module">cssparser</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/dom.html" class=" module">dom</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/editable.html" class=" module">editable</a>
 							</li>
 							<li>
 								<a href="../../../dlangui/core/events.html" class="selected module">events</a>
@@ -38,10 +54,25 @@
 								<a href="../../../dlangui/core/logger.html" class=" module">logger</a>
 							</li>
 							<li>
+								<a href="../../../dlangui/core/math3d.html" class=" module">math3d</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/queue.html" class=" module">queue</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/settings.html" class=" module">settings</a>
+							</li>
+							<li>
 								<a href="../../../dlangui/core/signals.html" class=" module">signals</a>
 							</li>
 							<li>
 								<a href="../../../dlangui/core/stdaction.html" class=" module">stdaction</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/streams.html" class=" module">streams</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/core/textsource.html" class=" module">textsource</a>
 							</li>
 							<li>
 								<a href="../../../dlangui/core/types.html" class=" module">types</a>
@@ -58,15 +89,72 @@
 								<a href="../../../dlangui/dialogs/filedlg.html" class=" module">filedlg</a>
 							</li>
 							<li>
+								<a href="../../../dlangui/dialogs/inputbox.html" class=" module">inputbox</a>
+							</li>
+							<li>
 								<a href="../../../dlangui/dialogs/msgbox.html" class=" module">msgbox</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/dialogs/settingsdialog.html" class=" module">settingsdialog</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/dml/annotations.html" class=" module">annotations</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/dml/dmlhighlight.html" class=" module">dmlhighlight</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/dml/parser.html" class=" module">parser</a>
 							</li>
 						</ul>
 							</li>
 							<li class="collapsed tree-view">
 								<a href="#" class="package">graphics</a>
 						<ul class="tree-view">
+							<li class="collapsed tree-view">
+								<a href="#" class="package">scene</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/graphics/scene/camera.html" class=" module">camera</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/scene/material.html" class=" module">material</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/scene/mesh.html" class=" module">mesh</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/scene/node.html" class=" module">node</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/scene/scene3d.html" class=" module">scene3d</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/scene/transform.html" class=" module">transform</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">xpm</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/graphics/xpm/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/xpm/reader.html" class=" module">reader</a>
+							</li>
+						</ul>
+							</li>
 							<li>
 								<a href="../../../dlangui/graphics/colors.html" class=" module">colors</a>
+							</li>
+							<li>
+								<a href="../../../dlangui/graphics/domrender.html" class=" module">domrender</a>
 							</li>
 							<li>
 								<a href="../../../dlangui/graphics/drawbuf.html" class=" module">drawbuf</a>
@@ -100,6 +188,17 @@
 							<li>
 								<a href="../../../dlangui/platforms/common/platform.html" class=" module">platform</a>
 							</li>
+							<li>
+								<a href="../../../dlangui/platforms/common/startup.html" class=" module">startup</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">dsfml</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/platforms/dsfml/dsfmlapp.html" class=" module">dsfmlapp</a>
+							</li>
 						</ul>
 							</li>
 							<li class="collapsed tree-view">
@@ -121,6 +220,14 @@
 							</li>
 							<li>
 								<a href="../../../dlangui/platforms/windows/winapp.html" class=" module">winapp</a>
+							</li>
+						</ul>
+							</li>
+							<li class="collapsed tree-view">
+								<a href="#" class="package">x11</a>
+						<ul class="tree-view">
+							<li>
+								<a href="../../../dlangui/platforms/x11/x11app.html" class=" module">x11app</a>
 							</li>
 						</ul>
 							</li>
@@ -157,6 +264,9 @@
 								<a href="../../../dlangui/widgets/menu.html" class=" module">menu</a>
 							</li>
 							<li>
+								<a href="../../../dlangui/widgets/metadata.html" class=" module">metadata</a>
+							</li>
+							<li>
 								<a href="../../../dlangui/widgets/popup.html" class=" module">popup</a>
 							</li>
 							<li>
@@ -183,12 +293,15 @@
 							<li>
 								<a href="../../../dlangui/widgets/widget.html" class=" module">widget</a>
 							</li>
+							<li>
+								<a href="../../../dlangui/widgets/winframe.html" class=" module">winframe</a>
+							</li>
+						</ul>
+							</li>
 						</ul>
 							</li>
 							<li>
-								<a href="../../../dlangui/all.html" class=" module">all</a>
-							</li>
-						</ul>
+								<a href="../../../dlangui.html" class=" module">dlangui</a>
 							</li>
 						</ul>
 				<noscript>
@@ -205,23 +318,22 @@ var symbolSearchRootDir = "../../../";
 $('#symbolSearchPane').show();
 	</script>
 				</div>
-				<script type="text/javascript" src="../../../scripts/mousetrap.js"></script>
-				<script type="text/javascript">
+			<script type="text/javascript" src="../../../scripts/mousetrap.js"></script>
+			<script type="text/javascript">
 $(document).ready(function() {
 	Mousetrap.bind('s', function(e) {
 		$("#symbolSearch").focus();
 		return false;
 	});
 });
-				</script>
+			</script>
 		</nav>
 		<div id="main-contents">
-			<h1>Class Action</h1><!-- using block body in layout.dt--><!-- Default block ddox.description in ddox.layout.dt--><!-- Default block ddox.sections in ddox.layout.dt--><!-- using block ddox.members in ddox.layout.dt-->
+			<h1>Class Action</h1>
 			<section>
-				<p>    UI action
+				<p>UI action
 </p>
-<section>
-<p>    For using in menus, toolbars, etc.
+<section><p>For using in menus, toolbars, etc.
 </p>
 </section>
 
@@ -229,7 +341,7 @@ $(document).ready(function() {
 						<h3>Inherits from</h3>
 						<ul>
 							<li>
-								<code class="prettyprint lang-d"><code class="prettyprint lang-d">Object</code></code>
+								<code class="prettyprint lang-d"><span class="typ">Object</span></code>
  (base class)
 							</li>
 						</ul>
@@ -257,15 +369,6 @@ $(document).ready(function() {
 										<code>this</code>
 									</a>
 								</td>
-								<td>create action with <a href="../../../dlangui/core/events/Action.this.html#id"><code class="prettyprint lang-d">id</code></a>, <a href="../../../dlangui/core/events/Action.this.html#labelResourceId"><code class="prettyprint lang-d">labelResourceId</code></a>, and optional icon and key accelerator.
-</td>
-							</tr>
-							<tr>
-								<td>
-									<a href="../../../dlangui/core/events/Action.this.html" class="public">
-										<code>this</code>
-									</a>
-								</td>
 								<td>create action only with ID
 </td>
 							</tr>
@@ -275,7 +378,7 @@ $(document).ready(function() {
 										<code>this</code>
 									</a>
 								</td>
-								<td>action with accelerator, w/o <a href="../../../dlangui/core/events/Action.label.html"><code class="prettyprint lang-d">label</code></a>
+								<td>create action with <a href="../../../dlangui/core/events/Action.this.html#id"><code class="lang-d"><span class="pln">id</span></code></a>, <a href="../../../dlangui/core/events/Action.this.html#labelResourceId"><code class="lang-d"><span class="pln">labelResourceId</span></code></a>, and optional icon and key accelerator.
 </td>
 							</tr>
 							<tr>
@@ -284,7 +387,16 @@ $(document).ready(function() {
 										<code>this</code>
 									</a>
 								</td>
-								<td>action with <a href="../../../dlangui/core/events/Action.this.html#label"><code class="prettyprint lang-d">label</code></a>, icon, and accelerator
+								<td>action with accelerator, w/o <a href="../../../dlangui/core/events/Action.label.html"><code class="lang-d"><span class="pln">label</span></code></a>
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/Action.this.html" class="public">
+										<code>this</code>
+									</a>
+								</td>
+								<td>action with <a href="../../../dlangui/core/events/Action.this.html#label"><code class="lang-d"><span class="pln">label</span></code></a>, icon, and accelerator
 </td>
 							</tr>
 						</table>
@@ -302,39 +414,46 @@ $(document).ready(function() {
 								<td>
 									<a href="../../../dlangui/core/events/Action._accelerators.html" class="protected"><code>_accelerators</code></a>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Accelerator.html">Accelerator</a>[]</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Accelerator.html"><span class="typ">Accelerator</span></a><span class="pun">[]</span></code></td>
 								<td>accelerator list
 </td>
 							</tr>
 							<tr>
 								<td>
+									<a href="../../../dlangui/core/events/Action._defaultState.html" class="protected"><code>_defaultState</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/ActionState.html"><span class="typ">ActionState</span></a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
 									<a href="../../../dlangui/core/events/Action._iconId.html" class="protected"><code>_iconId</code></a>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">string</code></td>
-								<td>icon resource <a href="../../../dlangui/core/events/Action.id.html"><code class="prettyprint lang-d">id</code></a>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td>
+								<td>icon resource <a href="../../../dlangui/core/events/Action.id.html"><code class="lang-d"><span class="pln">id</span></code></a>
 </td>
 							</tr>
 							<tr>
 								<td>
 									<a href="../../../dlangui/core/events/Action._id.html" class="protected"><code>_id</code></a>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
-								<td>numerical <a href="../../../dlangui/core/events/Action.id.html"><code class="prettyprint lang-d">id</code></a>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td>
+								<td>numerical <a href="../../../dlangui/core/events/Action.id.html"><code class="lang-d"><span class="pln">id</span></code></a>
 </td>
 							</tr>
 							<tr>
 								<td>
 									<a href="../../../dlangui/core/events/Action._label.html" class="protected"><code>_label</code></a>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/i18n/UIString.html">UIString</a></code></td>
-								<td><a href="../../../dlangui/core/events/Action.label.html"><code class="prettyprint lang-d">label</code></a> to show in UI
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/i18n/UIString.html"><span class="typ">UIString</span></a></code></td>
+								<td><a href="../../../dlangui/core/events/Action.label.html"><code class="lang-d"><span class="pln">label</span></code></a> to show in UI
 </td>
 							</tr>
 							<tr>
 								<td>
 									<a href="../../../dlangui/core/events/Action._longParam.html" class="protected"><code>_longParam</code></a>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">long</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">long</span></code></td>
 								<td>optional long parameter
 </td>
 							</tr>
@@ -342,15 +461,22 @@ $(document).ready(function() {
 								<td>
 									<a href="../../../dlangui/core/events/Action._objectParam.html" class="protected"><code>_objectParam</code></a>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">Object</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">Object</span></code></td>
 								<td>optional object parameter
 </td>
 							</tr>
 							<tr>
 								<td>
+									<a href="../../../dlangui/core/events/Action._state.html" class="protected"><code>_state</code></a>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/ActionState.html"><span class="typ">ActionState</span></a></code></td>
+								<td></td>
+							</tr>
+							<tr>
+								<td>
 									<a href="../../../dlangui/core/events/Action._stringParam.html" class="protected"><code>_stringParam</code></a>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">string</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td>
 								<td>optional string parameter
 </td>
 							</tr>
@@ -370,8 +496,8 @@ $(document).ready(function() {
 									<a href="../../../dlangui/core/events/Action.accelerators.html" class="public property"><code>accelerators</code></a>
 									<span class="tableEntryAnnotation">[get]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">const(<a href="../../../dlangui/core/events/Accelerator.html">Accelerator</a>)[]</code></td>
-								<td>returs const array of <code class="prettyprint lang-d">accelerators</code>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="kwd">const</span><span class="pun">(</span><a href="../../../dlangui/core/events/Accelerator.html"><span class="typ">Accelerator</span></a><span class="pun">)</span><span class="pun">[]</span></code></td>
+								<td>returs const array of <code class="lang-d"><span class="pln">accelerators</span></code>
 </td>
 							</tr>
 							<tr>
@@ -379,8 +505,8 @@ $(document).ready(function() {
 									<a href="../../../dlangui/core/events/Action.accelerators.html" class="public property"><code>accelerators</code></a>
 									<span class="tableEntryAnnotation">[get]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Accelerator.html">Accelerator</a>[]</code></td>
-								<td>returs array of <a href="../../../dlangui/core/events/Action.accelerators.html"><code class="prettyprint lang-d">accelerators</code></a>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Accelerator.html"><span class="typ">Accelerator</span></a><span class="pun">[]</span></code></td>
+								<td>returs array of <a href="../../../dlangui/core/events/Action.accelerators.html"><code class="lang-d"><span class="pln">accelerators</span></code></a>
 </td>
 							</tr>
 							<tr>
@@ -388,8 +514,8 @@ $(document).ready(function() {
 									<a href="../../../dlangui/core/events/Action.acceleratorText.html" class="public property"><code>acceleratorText</code></a>
 									<span class="tableEntryAnnotation">[get]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">dstring</code></td>
-								<td>returns text description for first accelerator of action; null if no <a href="../../../dlangui/core/events/Action.accelerators.html"><code class="prettyprint lang-d">accelerators</code></a>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dstring</span></code></td>
+								<td>returns text description for first accelerator of action; null if no <a href="../../../dlangui/core/events/Action.accelerators.html"><code class="lang-d"><span class="pln">accelerators</span></code></a>
 </td>
 							</tr>
 							<tr>
@@ -397,17 +523,26 @@ $(document).ready(function() {
 									<a href="../../../dlangui/core/events/Action.clone.html" class="public property"><code>clone</code></a>
 									<span class="tableEntryAnnotation">[get]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Action.html">Action</a></code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Action.html"><span class="typ">Action</span></a></code></td>
 								<td>deep copy
 </td>
 							</tr>
 							<tr>
 								<td>
+									<a href="../../../dlangui/core/events/Action.defaultState.html" class="public property"><code>defaultState</code></a>
+									<span class="tableEntryAnnotation">[get, set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="kwd">const</span><span class="pun">(</span><a href="../../../dlangui/core/events/ActionState.html"><span class="typ">ActionState</span></a><span class="pun">)</span></code></td>
+								<td>default <a href="../../../dlangui/core/events/Action.state.html"><code class="lang-d"><span class="pln">state</span></code></a> for action if action <a href="../../../dlangui/core/events/Action.state.html"><code class="lang-d"><span class="pln">state</span></code></a> lookup failed
+</td>
+							</tr>
+							<tr>
+								<td>
 									<a href="../../../dlangui/core/events/Action.iconId.html" class="public property"><code>iconId</code></a>
 									<span class="tableEntryAnnotation">[set]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Action.html">Action</a></code></td>
-								<td>sets icon resource <a href="../../../dlangui/core/events/Action.iconId.html#id"><code class="prettyprint lang-d">id</code></a>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Action.html"><span class="typ">Action</span></a></code></td>
+								<td>sets icon resource <a href="../../../dlangui/core/events/Action.iconId.html#id"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/events/Action.iconId.html#id"><span class="pln">id</span></a></span></code></a>
 </td>
 							</tr>
 							<tr>
@@ -415,8 +550,8 @@ $(document).ready(function() {
 									<a href="../../../dlangui/core/events/Action.iconId.html" class="public property"><code>iconId</code></a>
 									<span class="tableEntryAnnotation">[get]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">string</code></td>
-								<td>returns icon resource <a href="../../../dlangui/core/events/Action.id.html"><code class="prettyprint lang-d">id</code></a>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td>
+								<td>returns icon resource <a href="../../../dlangui/core/events/Action.id.html"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/events/Action.id.html"><span class="pln">id</span></a></span></code></a>
 </td>
 							</tr>
 							<tr>
@@ -424,8 +559,8 @@ $(document).ready(function() {
 									<a href="../../../dlangui/core/events/Action.id.html" class="public property"><code>id</code></a>
 									<span class="tableEntryAnnotation">[get]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">int</code></td>
-								<td>returns action <code class="prettyprint lang-d">id</code>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">int</span></code></td>
+								<td>returns action <code class="lang-d"><span class="pln">id</span></code>
 </td>
 							</tr>
 							<tr>
@@ -433,8 +568,8 @@ $(document).ready(function() {
 									<a href="../../../dlangui/core/events/Action.id.html" class="public property"><code>id</code></a>
 									<span class="tableEntryAnnotation">[set]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Action.html">Action</a></code></td>
-								<td>sets action <a href="../../../dlangui/core/events/Action.id.html"><code class="prettyprint lang-d">id</code></a>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Action.html"><span class="typ">Action</span></a></code></td>
+								<td>sets action <a href="../../../dlangui/core/events/Action.id.html"><code class="lang-d"><span class="pln">id</span></code></a>
 </td>
 							</tr>
 							<tr>
@@ -442,7 +577,7 @@ $(document).ready(function() {
 									<a href="../../../dlangui/core/events/Action.isSeparator.html" class="public property"><code>isSeparator</code></a>
 									<span class="tableEntryAnnotation">[get]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">bool</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">bool</span></code></td>
 								<td>returns true if it's dummy action to specify separator
 </td>
 							</tr>
@@ -451,8 +586,8 @@ $(document).ready(function() {
 									<a href="../../../dlangui/core/events/Action.label.html" class="public property"><code>label</code></a>
 									<span class="tableEntryAnnotation">[set]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Action.html">Action</a></code></td>
-								<td>sets <code class="prettyprint lang-d">label</code> string resource <a href="../../../dlangui/core/events/Action.id.html"><code class="prettyprint lang-d">id</code></a>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Action.html"><span class="typ">Action</span></a></code></td>
+								<td>sets <code class="lang-d"><span class="pln">label</span></code> string resource <a href="../../../dlangui/core/events/Action.id.html"><code class="lang-d"><span class="pln">id</span></code></a>
 </td>
 							</tr>
 							<tr>
@@ -460,8 +595,8 @@ $(document).ready(function() {
 									<a href="../../../dlangui/core/events/Action.label.html" class="public property"><code>label</code></a>
 									<span class="tableEntryAnnotation">[set]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Action.html">Action</a></code></td>
-								<td>sets <a href="../../../dlangui/core/events/Action.label.html"><code class="prettyprint lang-d">label</code></a> unicode string
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Action.html"><span class="typ">Action</span></a></code></td>
+								<td>sets <a href="../../../dlangui/core/events/Action.label.html"><code class="lang-d"><span class="pln">label</span></code></a> unicode string
 </td>
 							</tr>
 							<tr>
@@ -469,8 +604,8 @@ $(document).ready(function() {
 									<a href="../../../dlangui/core/events/Action.label.html" class="public property"><code>label</code></a>
 									<span class="tableEntryAnnotation">[get]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">dstring</code></td>
-								<td>returns <a href="../../../dlangui/core/events/Action.label.html"><code class="prettyprint lang-d">label</code></a> unicode string (translates if resource <a href="../../../dlangui/core/events/Action.id.html"><code class="prettyprint lang-d">id</code></a> is set)
+								<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dstring</span></code></td>
+								<td>returns <a href="../../../dlangui/core/events/Action.label.html"><code class="lang-d"><span class="pln">label</span></code></a> unicode string (translates if resource <a href="../../../dlangui/core/events/Action.id.html"><code class="lang-d"><span class="pln">id</span></code></a> is set)
 </td>
 							</tr>
 							<tr>
@@ -478,17 +613,8 @@ $(document).ready(function() {
 									<a href="../../../dlangui/core/events/Action.labelValue.html" class="public property"><code>labelValue</code></a>
 									<span class="tableEntryAnnotation">[get]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">const(<a href="../../../dlangui/core/i18n/UIString.html">UIString</a>)</code></td>
-								<td>access to <a href="../../../dlangui/core/events/Action.label.html"><code class="prettyprint lang-d">label</code></a> UIString
-</td>
-							</tr>
-							<tr>
-								<td>
-									<a href="../../../dlangui/core/events/Action.longParam.html" class="public property"><code>longParam</code></a>
-									<span class="tableEntryAnnotation">[set]</span>
-								</td>
-								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Action.html">Action</a></code></td>
-								<td>returns optional long parameter
+								<td class="typecol"><code class="prettyprint lang-d"><span class="kwd">const</span><span class="pun">(</span><a href="../../../dlangui/core/i18n/UIString.html"><span class="typ">UIString</span></a><span class="pun">)</span></code></td>
+								<td>access to <a href="../../../dlangui/core/events/Action.label.html"><code class="lang-d"><span class="pln">label</span></code></a> UIString
 </td>
 							</tr>
 							<tr>
@@ -496,17 +622,17 @@ $(document).ready(function() {
 									<a href="../../../dlangui/core/events/Action.longParam.html" class="public property"><code>longParam</code></a>
 									<span class="tableEntryAnnotation">[get]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">long</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">long</span></code></td>
 								<td>sets optional long parameter
 </td>
 							</tr>
 							<tr>
 								<td>
-									<a href="../../../dlangui/core/events/Action.objectParam.html" class="public property"><code>objectParam</code></a>
+									<a href="../../../dlangui/core/events/Action.longParam.html" class="public property"><code>longParam</code></a>
 									<span class="tableEntryAnnotation">[set]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Action.html">Action</a></code></td>
-								<td>sets additional custom (Object) parameter
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Action.html"><span class="typ">Action</span></a></code></td>
+								<td>returns optional long parameter
 </td>
 							</tr>
 							<tr>
@@ -514,17 +640,44 @@ $(document).ready(function() {
 									<a href="../../../dlangui/core/events/Action.objectParam.html" class="public property"><code>objectParam</code></a>
 									<span class="tableEntryAnnotation">[get]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">Object</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">Object</span></code></td>
 								<td>returns additional custom (Object) parameter
 </td>
 							</tr>
 							<tr>
 								<td>
-									<a href="../../../dlangui/core/events/Action.stringParam.html" class="public property"><code>stringParam</code></a>
+									<a href="../../../dlangui/core/events/Action.objectParam.html" class="public property"><code>objectParam</code></a>
 									<span class="tableEntryAnnotation">[set]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Action.html">Action</a></code></td>
-								<td>sets optional string parameter
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Action.html"><span class="typ">Action</span></a></code></td>
+								<td>sets additional custom (Object) parameter
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/Action.state.html" class="public property"><code>state</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="kwd">const</span><span class="pun">(</span><a href="../../../dlangui/core/events/Action.html"><span class="typ">Action</span></a><span class="pun">)</span></code></td>
+								<td>update action <code class="lang-d"><span class="pln"><span class="pln">state</span></span></code> (can be changed even for const objects)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/Action.state.html" class="public property"><code>state</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Action.html"><span class="typ">Action</span></a></code></td>
+								<td>update action <a href="../../../dlangui/core/events/Action.state.html"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/events/Action.state.html"><span class="pln">state</span></a></span></code></a> (for non-const action)
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/Action.state.html" class="public property"><code>state</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="kwd">const</span><span class="pun">(</span><a href="../../../dlangui/core/events/ActionState.html"><span class="typ">ActionState</span></a><span class="pun">)</span></code></td>
+								<td>action <a href="../../../dlangui/core/events/Action.state.html"><code class="lang-d"><span class="pln"><a href="../../../dlangui/core/events/Action.state.html"><span class="pln">state</span></a></span></code></a> (can be used to enable/disable, show/hide, check/uncheck control)
 </td>
 							</tr>
 							<tr>
@@ -532,8 +685,26 @@ $(document).ready(function() {
 									<a href="../../../dlangui/core/events/Action.stringParam.html" class="public property"><code>stringParam</code></a>
 									<span class="tableEntryAnnotation">[get]</span>
 								</td>
-								<td class="typecol"><code class="prettyprint lang-d">string</code></td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="typ">string</span></code></td>
 								<td>returns optional string parameter
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/Action.stringParam.html" class="public property"><code>stringParam</code></a>
+									<span class="tableEntryAnnotation">[set]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><a href="../../../dlangui/core/events/Action.html"><span class="typ">Action</span></a></code></td>
+								<td>sets optional string parameter
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/Action.tooltipText.html" class="public property"><code>tooltipText</code></a>
+									<span class="tableEntryAnnotation">[get]</span>
+								</td>
+								<td class="typecol"><code class="prettyprint lang-d"><span class="pln">dstring</span></code></td>
+								<td>returns tooltip text for action
 </td>
 							</tr>
 						</table>
@@ -557,11 +728,56 @@ $(document).ready(function() {
 							</tr>
 							<tr>
 								<td>
+									<a href="../../../dlangui/core/events/Action.addMacAccelerator.html" class="public">
+										<code>addMacAccelerator</code>
+									</a>
+								</td>
+								<td>adds one more accelerator only if platform is OSX
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/Action.addNonMacAccelerator.html" class="public">
+										<code>addNonMacAccelerator</code>
+									</a>
+								</td>
+								<td>adds one more accelerator only if platform is not OSX
+</td>
+							</tr>
+							<tr>
+								<td>
 									<a href="../../../dlangui/core/events/Action.checkAccelerator.html" class="public">
 										<code>checkAccelerator</code>
 									</a>
 								</td>
 								<td>returns true if accelerator matches provided key code and flags
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/Action.disableByDefault.html" class="public">
+										<code>disableByDefault</code>
+									</a>
+								</td>
+								<td>set default <a href="../../../dlangui/core/events/Action.state.html"><code class="lang-d"><span class="pln">state</span></code></a> to disabled, visible, not-checked
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/Action.hideByDefault.html" class="public">
+										<code>hideByDefault</code>
+									</a>
+								</td>
+								<td>set default <a href="../../../dlangui/core/events/Action.state.html"><code class="lang-d"><span class="pln">state</span></code></a> to disabled, invisible, not-checked
+</td>
+							</tr>
+							<tr>
+								<td>
+									<a href="../../../dlangui/core/events/Action.opEquals.html" class="public">
+										<code>opEquals</code>
+									</a>
+								</td>
+								<td>compares <a href="../../../dlangui/core/events/Action.id.html"><code class="lang-d"><span class="pln">id</span></code></a> of this <a href="../../../dlangui/core/events/Action.opEquals.html#action"><code class="lang-d"><span class="pln">action</span></code></a> with another <a href="../../../dlangui/core/events/Action.opEquals.html#action"><code class="lang-d"><span class="pln">action</span></code></a> <a href="../../../dlangui/core/events/Action.id.html"><code class="lang-d"><span class="pln">id</span></code></a>
 </td>
 							</tr>
 							<tr>
@@ -577,19 +793,19 @@ $(document).ready(function() {
 
 			</section>
 			<section>
-				<h2>Authors</h2><!-- using block ddox.authors in ddox.layout.dt-->
+				<h2>Authors</h2>
 <p>Vadim Lopatin, coolreader.org@gmail.com
 </p>
 
 			</section>
 			<section>
-				<h2>Copyright</h2><!-- using block ddox.copyright in ddox.layout.dt-->
+				<h2>Copyright</h2>
 <p>Vadim Lopatin, 2014
 </p>
 
 			</section>
 			<section>
-				<h2>License</h2><!-- using block ddox.license in ddox.layout.dt-->
+				<h2>License</h2>
 <p>Boost License 1.0
 </p>
 
