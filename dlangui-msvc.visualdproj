@@ -748,6 +748,7 @@
      <File path="src\dlangui\core\linestream.d" />
      <File path="src\dlangui\core\logger.d" />
      <File path="src\dlangui\core\math3d.d" />
+     <File path="src\dlangui\core\parseutils.d" />
      <File path="src\dlangui\core\queue.d" />
      <File path="src\dlangui\core\settings.d" />
      <File path="src\dlangui\core\signals.d" />
@@ -767,6 +768,7 @@
      <File path="src\dlangui\dml\annotations.d" />
      <File path="src\dlangui\dml\dmlhighlight.d" />
      <File path="src\dlangui\dml\parser.d" />
+     <File path="src\dlangui\dml\tokenizer.d" />
     </Folder>
     <Folder name="graphics">
      <Folder name="scene">
@@ -777,6 +779,7 @@
       <File path="src\dlangui\graphics\scene\mesh.d" />
       <File path="src\dlangui\graphics\scene\model.d" />
       <File path="src\dlangui\graphics\scene\node.d" />
+      <File path="src\dlangui\graphics\scene\objimport.d" />
       <File path="src\dlangui\graphics\scene\scene3d.d" />
       <File path="src\dlangui\graphics\scene\transform.d" />
      </Folder>

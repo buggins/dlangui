@@ -5,7 +5,7 @@
     "license": "Boost",
     "authors": ["Vadim Lopatin"],
 
-    "stringImportPaths": ["views", "views/res", "views/res/i18n", "views/res/mdpi", "views/res/shaders"],
+    "stringImportPaths": ["views", "views/res", "views/res/i18n", "views/res/mdpi", "views/res/shaders", "views/res/models"],
 
     "targetPath": "bin",
     "targetName": "d3d",

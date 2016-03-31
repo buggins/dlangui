@@ -256,6 +256,7 @@
     <Compile Include="src\dlangui\core\linestream.d" />
     <Compile Include="src\dlangui\core\logger.d" />
     <Compile Include="src\dlangui\core\math3d.d" />
+    <Compile Include="src\dlangui\core\parseutils.d" />
     <Compile Include="src\dlangui\core\settings.d" />
     <Compile Include="src\dlangui\core\signals.d" />
     <Compile Include="src\dlangui\core\stdaction.d" />
@@ -270,6 +271,7 @@
     <Compile Include="src\dlangui\dml\annotations.d" />
     <Compile Include="src\dlangui\dml\dmlhighlight.d" />
     <Compile Include="src\dlangui\dml\parser.d" />
+    <Compile Include="src\dlangui\dml\tokenizer.d" />
     <Compile Include="src\dlangui\graphics\colors.d" />
     <Compile Include="src\dlangui\graphics\drawbuf.d" />
     <Compile Include="src\dlangui\graphics\domrender.d" />
@@ -286,6 +288,7 @@
     <Compile Include="src\dlangui\graphics\scene\mesh.d" />
     <Compile Include="src\dlangui\graphics\scene\model.d" />
     <Compile Include="src\dlangui\graphics\scene\node.d" />
+    <Compile Include="src\dlangui\graphics\scene\objimport.d" />
     <Compile Include="src\dlangui\graphics\scene\scene3d.d" />
     <Compile Include="src\dlangui\graphics\scene\transform.d" />
     <Compile Include="src\dlangui\graphics\xpm\xpmcolors.d" />

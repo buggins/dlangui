@@ -8,6 +8,7 @@ import dlangui.graphics.scene.material;
 import dlangui.graphics.scene.effect;
 import dlangui.graphics.scene.model;
 import dlangui.graphics.scene.node;
+import dlangui.graphics.scene.objimport;
 import dlangui.graphics.glsupport;
 import dlangui.graphics.gldrawbuf;
 import derelict.opengl3.gl3;
@@ -132,6 +133,10 @@ class UiWidget : VerticalLayout, CellVisitor {
         Model cubeDrawable = new Model(cubeMaterial, _mesh);
         Node3d cubeNode = new Node3d("cubes", cubeDrawable);
         _scene.addChild(cubeNode);
+
+        ObjModelImport importer;
+        string src = loadTextResource("suzanne.obj");
+        importer.parse(src);
 
 
         _minerMesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, VertexElementType.COLOR, VertexElementType.TEXCOORD0));

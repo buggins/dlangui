@@ -6,3 +6,4 @@ res/mdpi/crate.png
 res/mdpi/blocks.png
 res/shaders/textured.vert
 res/shaders/textured.frag
+res/models/suzanne.obj

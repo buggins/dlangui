@@ -54,7 +54,7 @@
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
   <imppath>$(SolutionDir)/../dlangui/src $(SolutionDir)/../dlangui/3rdparty $(SolutionDir)/../dlangui/deps/DerelictGL3/source  $(SolutionDir)/../dlangui/deps/DerelictUtil/source  $(SolutionDir)/../dlangui/deps/DerelictFT/source $(SolutionDir)/../dlangui/deps/DerelictSDL2/source</imppath>
-  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi views/res/shaders</fileImppath>
+  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi views/res/shaders views/res/models</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
@@ -146,7 +146,7 @@
   <pic>0</pic>
   <cov>0</cov>
   <nofloat>0</nofloat>
-  <Dversion>2.043</Dversion>
+  <Dversion>2</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
   <allinst>0</allinst>
   <stackStomp>0</stackStomp>
@@ -156,7 +156,7 @@
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
   <imppath>$(SolutionDir)/../dlangui/src $(SolutionDir)/../dlangui/3rdparty $(SolutionDir)/../dlangui/deps/DerelictGL3/source  $(SolutionDir)/../dlangui/deps/DerelictUtil/source  $(SolutionDir)/../dlangui/deps/DerelictFT/source $(SolutionDir)/../dlangui/deps/DerelictSDL2/source</imppath>
-  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi views/res/shaders</fileImppath>
+  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi views/res/shaders views/res/models</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
@@ -258,7 +258,7 @@
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
   <imppath>$(SolutionDir)/../dlangui/src $(SolutionDir)/../dlangui/3rdparty $(SolutionDir)/../dlangui/deps/DerelictGL3/source  $(SolutionDir)/../dlangui/deps/DerelictUtil/source  $(SolutionDir)/../dlangui/deps/DerelictFT/source $(SolutionDir)/../dlangui/deps/DerelictSDL2/source</imppath>
-  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi views/res/shaders</fileImppath>
+  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi views/res/shaders views/res/models</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
