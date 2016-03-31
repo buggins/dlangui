@@ -771,9 +771,11 @@
     <Folder name="graphics">
      <Folder name="scene">
       <File path="src\dlangui\graphics\scene\camera.d" />
+      <File path="src\dlangui\graphics\scene\drawableobject.d" />
       <File path="src\dlangui\graphics\scene\effect.d" />
       <File path="src\dlangui\graphics\scene\material.d" />
       <File path="src\dlangui\graphics\scene\mesh.d" />
+      <File path="src\dlangui\graphics\scene\model.d" />
       <File path="src\dlangui\graphics\scene\node.d" />
       <File path="src\dlangui\graphics\scene\scene3d.d" />
       <File path="src\dlangui\graphics\scene\transform.d" />

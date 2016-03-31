@@ -1,9 +1,13 @@
 module dlangui.graphics.scene.scene3d;
 
+import dlangui.core.types;
 import dlangui.graphics.scene.node;
 import dlangui.graphics.scene.camera;
 
 public import dlangui.core.math3d;
+
+/// Reference counted Scene3d object
+alias Scene3dRef = Ref!Scene3d;
 
 /// 3D scene
 class Scene3d : Node3d {
@@ -47,6 +51,29 @@ class Scene3d : Node3d {
         static mat4 dummyIdentityMatrix;
         return dummyIdentityMatrix;
     }
+
+    protected bool _wireframe;
+    void drawScene(bool wireframe) {
+        _wireframe = wireframe;
+        visit(this, &sceneDrawVisitor);
+    }
+
+    protected bool sceneDrawVisitor(Node3d node) {
+        if (!node.drawable.isNull)
+            node.drawable.draw(node, _wireframe);
+        return false;
+    }
 }
 
-
+/// depth-first recursive node traversion, stops if visitor returns true
+bool visit(Node3d node, bool delegate(Node3d node) visitor) {
+    bool res = visitor(node);
+    if (res)
+        return true;
+    foreach(child; node.children) {
+        bool res = visit(child, visitor);
+        if (res)
+            return true;
+    }
+    return false;
+}

@@ -12,40 +12,6 @@ import dlangui.graphics.scene.mesh;
 /// Reference counted Effect object
 alias EffectRef = Ref!Effect;
 
-/// Effect ID
-struct EffectId {
-    string vertexShaderName;
-    string fragmentShaderName;
-    string definitions;
-    this(string vertexShader, string fragmentShader, string defs) {
-        vertexShaderName = vertexShader;
-        fragmentShaderName = fragmentShader;
-        definitions = defs;
-    }
-
-    size_t toHash() const @safe pure nothrow
-    {
-        size_t hash;
-        foreach (char c; vertexShaderName)
-            hash = (hash * 9) + c;
-        hash = (hash * 31) + 198237283;
-        foreach (char c; fragmentShaderName)
-            hash = (hash * 9) + c;
-        hash = (hash * 31) + 84574112;
-        foreach (char c; definitions)
-            hash = (hash * 9) + c;
-        return hash;
-    }
-
-    bool opEquals(ref const EffectId s) const @safe pure nothrow
-    {
-        return
-            std.string.cmp(this.vertexShaderName, s.vertexShaderName) == 0 &&
-            std.string.cmp(this.fragmentShaderName, s.fragmentShaderName) == 0 &&
-            std.string.cmp(this.definitions, s.definitions) == 0;
-    }
-}
-
 /// Effect (aka OpenGL program)
 class Effect : GLProgram {
     EffectId _id;
@@ -178,6 +144,46 @@ class EffectCache {
         Effect e = new Effect(id);
         _map[id] = e;
         return e;
+    }
+}
+
+
+/// Effect ID
+struct EffectId {
+    string vertexShaderName;
+    string fragmentShaderName;
+    string definitions;
+    this(string vertexShader, string fragmentShader, string defs) {
+        vertexShaderName = vertexShader;
+        fragmentShaderName = fragmentShader;
+        definitions = defs;
+    }
+
+    /// returns true if ID is not assigned
+    @property bool empty() {
+        return !vertexShaderName.length || !vertexShaderName.length;
+    }
+
+    size_t toHash() const @safe pure nothrow
+    {
+        size_t hash;
+        foreach (char c; vertexShaderName)
+            hash = (hash * 9) + c;
+        hash = (hash * 31) + 198237283;
+        foreach (char c; fragmentShaderName)
+            hash = (hash * 9) + c;
+        hash = (hash * 31) + 84574112;
+        foreach (char c; definitions)
+            hash = (hash * 9) + c;
+        return hash;
+    }
+
+    bool opEquals(ref const EffectId s) const @safe pure nothrow
+    {
+        return
+            std.string.cmp(this.vertexShaderName, s.vertexShaderName) == 0 &&
+            std.string.cmp(this.fragmentShaderName, s.fragmentShaderName) == 0 &&
+            std.string.cmp(this.definitions, s.definitions) == 0;
     }
 }
 

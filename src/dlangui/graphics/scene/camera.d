@@ -15,7 +15,8 @@ class Camera : Node3d {
 
     protected bool _enabled;
 
-    this() {
+    this(string ID = null) {
+        super(ID);
         _enabled = true;
         setPerspective(4.0f, 3.0f, 45.0f, 0.1f, 100.0f);
     }
@@ -28,6 +29,11 @@ class Camera : Node3d {
         if (scene)
             scene.activeCamera = null;
         _enabled = v; 
+    }
+
+    /// returns true if some changes occured in projection or view matrix since last matrix getter call
+    @property bool viewChanged() {
+        return _dirtyTransform || _dirtyViewProjection || _dirtyView;
     }
 
     /// get projection matrix

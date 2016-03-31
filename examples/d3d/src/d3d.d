@@ -6,6 +6,8 @@ import dlangui.graphics.scene.camera;
 import dlangui.graphics.scene.mesh;
 import dlangui.graphics.scene.material;
 import dlangui.graphics.scene.effect;
+import dlangui.graphics.scene.model;
+import dlangui.graphics.scene.node;
 import dlangui.graphics.glsupport;
 import dlangui.graphics.gldrawbuf;
 import derelict.opengl3.gl3;
@@ -114,7 +116,7 @@ class UiWidget : VerticalLayout, CellVisitor {
         int y0 = 0;
         int z0 = 0;
 
-        _mesh = Mesh.createCubeMesh(vec3(x0+ 0, y0 + 0, z0 + 0), 0.3f);
+        Mesh _mesh = Mesh.createCubeMesh(vec3(x0+ 0, y0 + 0, z0 + 0), 0.3f);
         for (int i = 0; i < 10; i++) {
             _mesh.addCubeMesh(vec3(x0+ 0, y0+0, z0+ i * 2 + 1.0f), 0.2f, vec4(i / 12, 1, 1, 1));
             _mesh.addCubeMesh(vec3(x0+ i * 2 + 1.0f, y0+0, z0+ 0), 0.2f, vec4(1, i / 12, 1, 1));
@@ -126,6 +128,11 @@ class UiWidget : VerticalLayout, CellVisitor {
             _mesh.addCubeMesh(vec3(x0+  i * 2 + 1.0f, y0+-i * 2 + 1.0f, z0+ i * 2 + 1.0f), 0.2f, vec4(i / 12, 1 - i / 12, i / 12, 1));
             _mesh.addCubeMesh(vec3(x0+ -i * 2 - 1.0f, y0+-i * 2 - 1.0f, z0+ -i * 2 - 1.0f), 0.2f, vec4(1 - i / 12, i / 12, i / 12, 1));
         }
+        Material cubeMaterial = new Material(EffectId("textured.vert", "textured.frag", null), "crate");
+        Model cubeDrawable = new Model(cubeMaterial, _mesh);
+        Node3d cubeNode = new Node3d("cubes", cubeDrawable);
+        _scene.addChild(cubeNode);
+
 
         _minerMesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, VertexElementType.COLOR, VertexElementType.TEXCOORD0));
         _world = new World();
@@ -146,6 +153,12 @@ class UiWidget : VerticalLayout, CellVisitor {
 
         _world.camPosition = Position(Vector3d(0, 3, 0), Vector3d(0, 0, 1));
         updateMinerMesh();
+
+        Material minerMaterial = new Material(EffectId("textured.vert", "textured.frag", null), "blocks");
+        Model minerDrawable = new Model(minerMaterial, _minerMesh);
+        Node3d minerNode = new Node3d("miner", minerDrawable);
+        _scene.addChild(minerNode);
+
         //CellVisitor visitor = new TestVisitor();
         //Log.d("Testing cell visitor");
         //long ts = currentTimeMillis;
@@ -229,28 +242,13 @@ class UiWidget : VerticalLayout, CellVisitor {
     }
     float angle = 0;
 
-    EffectRef _program;
-    Scene3d _scene;
+    Scene3dRef _scene;
     Camera _cam;
-    Mesh _mesh;
     Mesh _minerMesh;
-    GLTexture _tx;
-    GLTexture _blockstx;
 
 
     /// this is OpenGLDrawableDelegate implementation
     private void doDraw(Rect windowRect, Rect rc) {
-        if (_program.isNull) {
-            _program = EffectCache.instance.get("textured.vert", "textured.frag");
-        }
-        if (!_tx)
-            _tx = new GLTexture("crate");
-        if (!_blockstx)
-            _blockstx = new GLTexture("blocks");
-        if (!_tx.isValid || !_blockstx.isValid) {
-            Log.e("Invalid texture");
-            return;
-        }
         _cam.setPerspective(rc.width, rc.height, 45.0f, near, far);
         _cam.setIdentity();
         //_cam.translate(vec3(
@@ -329,33 +327,13 @@ class UiWidget : VerticalLayout, CellVisitor {
         checkgl!glEnable(GL_DEPTH_TEST);
         checkgl!glCullFace(GL_BACK);
 
-        _program.bind();
-        _program.setUniform("matrix", projectionViewModelMatrix);
-        _tx.texture.setup();
-        _tx.texture.setSamplerParams(true);
+        _scene.drawScene(false);
 
-        _program.draw(_mesh);
-
-        _tx.texture.unbind();
-
-        _blockstx.texture.setup();
-        _blockstx.texture.setSamplerParams(false);
-
-        _program.draw(_minerMesh);
-
-        _blockstx.texture.unbind();
-
-        _program.unbind();
         checkgl!glDisable(GL_DEPTH_TEST);
         checkgl!glDisable(GL_CULL_FACE);
     }
 
     ~this() {
-        destroy(_scene);
-        if (_program)
-            destroy(_program);
-        if (_tx)
-            destroy(_tx);
         destroy(_world);
     }
 }

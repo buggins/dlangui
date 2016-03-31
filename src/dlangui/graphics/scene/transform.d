@@ -1,9 +1,10 @@
 module dlangui.graphics.scene.transform;
 
 import dlangui.core.math3d;
+import dlangui.core.types;
 
 /// 3d transform: scale + translation + rotation
-class Transform {
+class Transform : RefCountedObject {
     // transform flags
     protected bool _dirtyTransform = true;
     protected bool _hasScale = false;
