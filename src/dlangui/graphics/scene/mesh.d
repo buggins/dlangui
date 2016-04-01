@@ -27,7 +27,7 @@ abstract class GraphicsEffect : RefCountedObject {
 
 /// vertex element type
 enum VertexElementType : ubyte {
-    POSITION = 1,
+    POSITION = 0,
     NORMAL,
     COLOR,
     TEXCOORD0,
@@ -39,6 +39,8 @@ enum VertexElementType : ubyte {
     TEXCOORD6,
     TEXCOORD7,
 }
+
+static assert(VertexElementType.max == VertexElementType.TEXCOORD7);
 
 /// Graphics primitive type
 enum PrimitiveType : int {
@@ -98,19 +100,59 @@ struct VertexElement {
 /// Vertex format elements list
 struct VertexFormat {
     private VertexElement[] _elements;
+    private byte[VertexElementType.max + 1] _elementOffset = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
     private int _vertexSize;
     /// make using element list
     this(inout VertexElement[] elems...) {
         _elements = elems.dup;
-        foreach(elem; elems)
+        foreach(elem; elems) {
+            _elementOffset[elem.type] = cast(byte)(_vertexSize / float.sizeof);
             _vertexSize += elem.size * float.sizeof;
+        }
     }
     /// init from vertex element types, using default sizes for types
     this(inout VertexElementType[] types...) {
         foreach(t; types) {
+            _elementOffset[t] = cast(byte)(_vertexSize / float.sizeof);
             VertexElement elem = VertexElement(t);
             _elements ~= elem;
             _vertexSize += elem.size;
+        }
+    }
+    int elementOffset(VertexElementType type) const {
+        return _elementOffset[type];
+    }
+    bool hasElement(VertexElementType type) const {
+        return _elementOffset[type] >= 0;
+    }
+    /// set vec2 component value of vertex
+    void set(float * vertex, VertexElementType type, vec2 value) const {
+        int start = _elementOffset[type];
+        if (start >= 0) {
+            vertex += start;
+            vertex[0] = value.vec[0];
+            vertex[1] = value.vec[1];
+        }
+    }
+    /// set vec3 component value of vertex
+    void set(float * vertex, VertexElementType type, vec3 value) const {
+        int start = _elementOffset[type];
+        if (start >= 0) {
+            vertex += start;
+            vertex[0] = value.vec[0];
+            vertex[1] = value.vec[1];
+            vertex[2] = value.vec[2];
+        }
+    }
+    /// set vec4 component value of vertex
+    void set(float * vertex, VertexElementType type, vec4 value) const {
+        int start = _elementOffset[type];
+        if (start >= 0) {
+            vertex += start;
+            vertex[0] = value.vec[0];
+            vertex[1] = value.vec[1];
+            vertex[2] = value.vec[2];
+            vertex[3] = value.vec[3];
         }
     }
     /// get number of elements
@@ -170,9 +212,10 @@ class Mesh : RefCountedObject {
     protected VertexBuffer _vertexBuffer;
     protected bool _dirtyVertexBuffer = true;
 
-    @property ref const(VertexFormat) vertexFormat() const { return _vertexFormat; }
+    @property ref VertexFormat vertexFormat() { return _vertexFormat; }
+    @property const(VertexFormat) * vertexFormatPtr() { return &_vertexFormat; }
 
-    @property VertexFormat vertexFormat() { return _vertexFormat; }
+    //@property ref VertexFormat vertexFormat() { return _vertexFormat; }
 
     @property void vertexFormat(VertexFormat format) {
         assert(_vertexCount == 0);

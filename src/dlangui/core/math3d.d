@@ -22,6 +22,12 @@ struct vec2 {
     this(float[2] v) {
         vec = v;
     }
+    this(float[] v) {
+        vec = v[0..2];
+    }
+    this(float * v) {
+        vec = v[0..2];
+    }
     this(const vec2 v) {
         vec = v.vec;
     }
@@ -257,6 +263,12 @@ struct vec3 {
     }
     this(float[3] v) {
         vec = v;
+    }
+    this(float[] v) {
+        vec = v[0..3];
+    }
+    this(float * v) {
+        vec = v[0..3];
     }
     this(const vec3 v) {
         vec = v.vec;
@@ -1580,4 +1592,14 @@ unittest {
     m.rotateX(10);
     m.rotateY(10);
     m.rotateZ(10);
+}
+
+/// calculate normal for triangle
+vec3 triangleNormal(vec3 p1, vec3 p2, vec3 p3) {
+    return vec3.crossProduct(p2 - p1, p3 - p2).normalized();
+}
+
+/// calculate normal for triangle
+vec3 triangleNormal(float[3] p1, float[3] p2, float[3] p3) {
+    return vec3.crossProduct(vec3(p2) - vec3(p1), vec3(p3) - vec3(p2)).normalized();
 }

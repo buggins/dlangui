@@ -1,7 +1,9 @@
 module dlangui.graphics.scene.objimport;
 
 import dlangui.core.logger;
+import dlangui.core.math3d;
 import dlangui.dml.tokenizer;
+import dlangui.graphics.scene.mesh;
 
 struct ObjModelImport {
     alias FaceIndex = int[3];
@@ -14,6 +16,9 @@ struct ObjModelImport {
     private int _triangleCount;
     private int _txCount;
     private float[8] _buf;
+
+    MeshRef mesh;
+
     protected float[] parseFloatList(Token[] tokens, int maxItems = 3, float padding = 0) {
         int i = 0;
         foreach(t; tokens) {
@@ -126,7 +131,85 @@ struct ObjModelImport {
         return true;
     }
 
+    vec3 vertexForIndex(int index) {
+        if (index < 0)
+            index = _vertexCount + 1 + index;
+        if (index >= 1 && index <= _vertexCount) {
+            index = (index - 1) * 3;
+            return vec3(&_vertexData[index]);
+        }
+        return vec3.init;
+    }
+
+    vec3 normalForIndex(int index) {
+        if (index < 0)
+            index = _normalCount + 1 + index;
+        if (index >= 1 && index <= _normalCount) {
+            index = (index - 1) * 3;
+            return vec3(&_normalData[index]);
+        }
+        return vec3(0, 0, 1);
+    }
+
+    vec2 txForIndex(int index) {
+        if (index < 0)
+            index = _txCount + 1 + index;
+        if (index >= 1 && index <= _txCount) {
+            index = (index - 1) * 2;
+            return vec2(&_txData[index]);
+        }
+        return vec2.init;
+    }
+
+    bool _meshHasTexture;
+    void createMeshIfNotExist() {
+        if (!mesh.isNull)
+            return;
+        if (_txCount) {
+            mesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, VertexElementType.COLOR, VertexElementType.TEXCOORD0));
+            _meshHasTexture = true;
+        } else {
+            mesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, VertexElementType.COLOR));
+            _meshHasTexture = false;
+        }
+    }
     protected bool addTriangle(FaceIndex v1, FaceIndex v2, FaceIndex v3) {
+        createMeshIfNotExist();
+        float[16 * 3] data;
+        const (VertexFormat) * fmt = mesh.vertexFormatPtr;
+        int vfloats = fmt.vertexFloats;
+        vec3 p1 = vertexForIndex(v1[0]);
+        vec3 p2 = vertexForIndex(v2[0]);
+        vec3 p3 = vertexForIndex(v3[0]);
+        fmt.set(data.ptr, VertexElementType.POSITION, p1);
+        fmt.set(data.ptr + vfloats, VertexElementType.POSITION, p2);
+        fmt.set(data.ptr + vfloats * 2, VertexElementType.POSITION, p3);
+        if (fmt.hasElement(VertexElementType.TEXCOORD0)) {
+            fmt.set(data.ptr, VertexElementType.TEXCOORD0, txForIndex(v1[1]));
+            fmt.set(data.ptr + vfloats, VertexElementType.TEXCOORD0, txForIndex(v2[1]));
+            fmt.set(data.ptr + vfloats * 2, VertexElementType.TEXCOORD0, txForIndex(v3[1]));
+        }
+        if (fmt.hasElement(VertexElementType.COLOR)) {
+            const vec4 white = vec4(1, 1, 1, 1);
+            fmt.set(data.ptr, VertexElementType.COLOR, white);
+            fmt.set(data.ptr + vfloats, VertexElementType.COLOR, white);
+            fmt.set(data.ptr + vfloats * 2, VertexElementType.COLOR, white);
+        }
+        if (fmt.hasElement(VertexElementType.NORMAL)) {
+            vec3 normal;
+            if (!v1[2] || !v2[2] || !v3[2]) {
+                // no normal specified, calculate it
+                normal = triangleNormal(p1, p2, p3);
+            }
+            fmt.set(data.ptr, VertexElementType.NORMAL, v1[2] ? normalForIndex(v1[2]) : normal);
+            fmt.set(data.ptr + vfloats, VertexElementType.NORMAL, v2[2] ? normalForIndex(v2[2]) : normal);
+            fmt.set(data.ptr + vfloats * 2, VertexElementType.NORMAL, v3[2] ? normalForIndex(v3[2]) : normal);
+        }
+        int startVertex = mesh.addVertexes(data.ptr[0 .. vfloats * 3]);
+        mesh.addPart(PrimitiveType.triangles, [
+            cast(ushort)(startVertex + 0), 
+            cast(ushort)(startVertex + 1), 
+            cast(ushort)(startVertex + 2)]);
         _triangleCount++;
         return true;
     }
