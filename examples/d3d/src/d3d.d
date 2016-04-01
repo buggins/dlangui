@@ -137,6 +137,12 @@ class UiWidget : VerticalLayout, CellVisitor {
         ObjModelImport importer;
         string src = loadTextResource("suzanne.obj");
         importer.parse(src);
+        Log.d("suzanne mesh:", importer.mesh.dumpVertexes(20));
+        Material suzanneMaterial = new Material(EffectId("colored.vert", "colored.frag", null), null);
+        Model suzanneDrawable = new Model(suzanneMaterial, importer.mesh);
+        Node3d suzanneNode = new Node3d("suzanne", suzanneDrawable);
+        //suzanneNode.translate(vec3(3, 4, 5));
+        _scene.addChild(suzanneNode);
 
 
         _minerMesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, VertexElementType.COLOR, VertexElementType.TEXCOORD0));
@@ -163,6 +169,10 @@ class UiWidget : VerticalLayout, CellVisitor {
         Model minerDrawable = new Model(minerMaterial, _minerMesh);
         Node3d minerNode = new Node3d("miner", minerDrawable);
         _scene.addChild(minerNode);
+
+
+        //minerNode.visible = false;
+        //cubeNode.visible = false;
 
         //CellVisitor visitor = new TestVisitor();
         //Log.d("Testing cell visitor");

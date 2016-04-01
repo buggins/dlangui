@@ -94,7 +94,7 @@ class Effect : GLProgram {
         vertexLocation = getAttribLocation("vertex");
         colAttrLocation = getAttribLocation("colAttr");
         texCoordLocation = getAttribLocation("texCoord");
-        return matrixLocation >= 0 && vertexLocation >= 0 && colAttrLocation >= 0 && texCoordLocation >= 0;
+        return matrixLocation >= 0 && vertexLocation >= 0; // && colAttrLocation >= 0 && texCoordLocation >= 0
     }
 
     /// get location for vertex attribute

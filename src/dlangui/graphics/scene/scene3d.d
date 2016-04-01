@@ -67,6 +67,8 @@ class Scene3d : Node3d {
 
 /// depth-first recursive node traversion, stops if visitor returns true
 bool visit(Node3d node, bool delegate(Node3d node) visitor) {
+    if (!node.visible)
+        return false;
     bool res = visitor(node);
     if (res)
         return true;

@@ -101,19 +101,19 @@ struct VertexElement {
 struct VertexFormat {
     private VertexElement[] _elements;
     private byte[VertexElementType.max + 1] _elementOffset = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
-    private int _vertexSize;
+    private int _vertexSize; // vertex size in floats
     /// make using element list
     this(inout VertexElement[] elems...) {
         _elements = elems.dup;
         foreach(elem; elems) {
-            _elementOffset[elem.type] = cast(byte)(_vertexSize / float.sizeof);
-            _vertexSize += elem.size * float.sizeof;
+            _elementOffset[elem.type] = cast(byte)_vertexSize;
+            _vertexSize += elem.size;
         }
     }
     /// init from vertex element types, using default sizes for types
     this(inout VertexElementType[] types...) {
         foreach(t; types) {
-            _elementOffset[t] = cast(byte)(_vertexSize / float.sizeof);
+            _elementOffset[t] = cast(byte)_vertexSize;
             VertexElement elem = VertexElement(t);
             _elements ~= elem;
             _vertexSize += elem.size;
@@ -190,6 +190,16 @@ struct VertexFormat {
                 return false;
         return true;
     }
+    string dump(float * data) {
+        import std.conv : to;
+        char[] buf;
+        int pos = 0;
+        foreach(VertexElement e; _elements) {
+            buf ~= data[pos .. pos + e.size].to!string;
+            pos += e.size;
+        }
+        return buf.dup;
+    }
 }
 
 struct IndexFragment {
@@ -237,6 +247,18 @@ class Mesh : RefCountedObject {
                 destroy(p);
             _parts.length = 0;
         }
+    }
+
+    string dumpVertexes(int maxCount = 30) {
+        char[] buf;
+        int count = 0;
+        for(int i = 0; i < _vertexData.length; i+= _vertexFormat.vertexFloats) {
+            buf ~= "\n";
+            buf ~= _vertexFormat.dump(_vertexData.ptr + i);
+            if (++count >= maxCount)
+                break;
+        }
+        return buf.dup;
     }
 
     /// returns vertex count

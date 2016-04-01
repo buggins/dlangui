@@ -12,6 +12,7 @@ class Node3d : Transform {
     protected Node3d _parent;
     protected Scene3d _scene;
     protected string _id;
+    protected bool _visible = true;
     protected DrawableObjectRef _drawable;
 
     protected mat4 _worldMatrix;
@@ -28,6 +29,9 @@ class Node3d : Transform {
         _id = id;
         _drawable = drawable;
     }
+
+    @property bool visible() { return _visible; }
+    @property Node3d visible(bool v) { _visible = v; return this; }
 
     /// drawable attached to node
     @property ref DrawableObjectRef drawable() { return _drawable; }
