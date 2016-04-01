@@ -138,7 +138,7 @@ class UiWidget : VerticalLayout, CellVisitor {
         string src = loadTextResource("suzanne.obj");
         importer.parse(src);
         Log.d("suzanne mesh:", importer.mesh.dumpVertexes(20));
-        Material suzanneMaterial = new Material(EffectId("colored.vert", "colored.frag", null), null);
+        Material suzanneMaterial = new Material(EffectId("colored.vert", "colored.frag", null), "DIRECTIONAL_LIGHT_COUNT 1");
         Model suzanneDrawable = new Model(suzanneMaterial, importer.mesh);
         Node3d suzanneNode = new Node3d("suzanne", suzanneDrawable);
         //suzanneNode.translate(vec3(3, 4, 5));

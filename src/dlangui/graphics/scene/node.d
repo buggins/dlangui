@@ -6,6 +6,7 @@ import dlangui.graphics.scene.transform;
 import dlangui.core.collections;
 import dlangui.graphics.scene.scene3d;
 import dlangui.graphics.scene.drawableobject;
+import dlangui.graphics.scene.light;
 
 /// 3D scene node
 class Node3d : Transform {
@@ -14,6 +15,7 @@ class Node3d : Transform {
     protected string _id;
     protected bool _visible = true;
     protected DrawableObjectRef _drawable;
+    protected LightRef _light;
 
     protected mat4 _worldMatrix;
 
@@ -35,6 +37,9 @@ class Node3d : Transform {
 
     /// drawable attached to node
     @property ref DrawableObjectRef drawable() { return _drawable; }
+
+    /// light attached to node
+    @property ref LightRef light() { return _light; }
 
     /// returns scene for node
     @property Scene3d scene() { 

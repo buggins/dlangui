@@ -16,6 +16,7 @@ alias EffectRef = Ref!Effect;
 class Effect : GLProgram {
     EffectId _id;
     string[string] _defs;
+    string _defText;
 
     @property ref const(EffectId) id() const { return _id; }
     this(EffectId id) {
@@ -35,13 +36,21 @@ class Effect : GLProgram {
         // parse defs
         import std.array : split;
         string[] defs = _id.definitions.split(";");
+        char[] buf;
         foreach(def; defs) {
             assert(def.length > 0);
             string[] items = def.split(" ");
             if (items.length > 0) {
-                _defs[items[0]] = items.length > 1 ? items[1] : "";
+                string value = items.length > 1 ? items[1] : "";
+                _defs[items[0]] = value;
+                buf ~= "#define ";
+                buf ~= items[0];
+                buf ~= " ";
+                buf ~= value;
+                buf ~= "\n";
             }
         }
+        _defText = buf.dup;
         // compile shaders
         if (!check()) {
             Log.e("Failed to compile shaders ", _id.vertexShaderName, " ", _id.fragmentShaderName, " ", _id.definitions);
@@ -50,8 +59,8 @@ class Effect : GLProgram {
     }
 
     protected string preProcessSource(string src) {
-        // TODO: preprocess source code
-        return src;
+        // prepend definitions
+        return _defText ~ src;
     }
 
     protected string loadVertexSource(string resourceId) {
