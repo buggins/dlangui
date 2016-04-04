@@ -18,6 +18,8 @@ class Material : RefCountedObject {
     // effect
     protected EffectRef _effect;
     protected EffectId _effectId;
+    protected string _autoEffectParams;
+    protected EffectId _autoEffectId;
 
     // textures
     protected TextureRef _texture;
@@ -36,6 +38,8 @@ class Material : RefCountedObject {
 
     this(EffectId effectId, string textureId) {
         _effectId = effectId;
+        _autoEffectParams = null;
+        _autoEffectId = effectId;
         _textureId = textureId;
     }
 
@@ -49,8 +53,8 @@ class Material : RefCountedObject {
     @property Material modulateColor(float a) { _modulateAlpha = a; return this; }
 
     @property EffectRef effect() {
-        if (_effect.isNull && !_effectId.empty)
-            _effect = EffectCache.instance.get(_effectId); 
+        if (_effect.isNull && !_autoEffectId.empty)
+            _effect = EffectCache.instance.get(_autoEffectId);
         return _effect;
     }
     /// set as effect instance
@@ -63,7 +67,17 @@ class Material : RefCountedObject {
         if (_effectId == effectId)
             return this; // no change
         _effectId = effectId; 
+        _autoEffectId = EffectId(_effectId, _autoEffectParams);
         _effect.clear();
+        return this;
+    }
+
+    protected @property Material autoEffectParams(string params) {
+        if (_autoEffectParams != params && !_effectId.empty) {
+            _autoEffectId = EffectId(_effectId, params);
+            _autoEffectParams = params;
+            _effect.clear();
+        }
         return this;
     }
 
@@ -87,7 +101,14 @@ class Material : RefCountedObject {
         return this;
     }
 
+    string calcAutoEffectParams(LightParams * lights) {
+        if (!lights || lights.empty)
+            return null;
+        return lights.defs;
+    }
+
     void bind(Node3d node, LightParams * lights = null) {
+        autoEffectParams = calcAutoEffectParams(lights);
         assert(!effect.isNull);
         effect.bind();
         if (!texture.isNull) {

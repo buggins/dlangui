@@ -126,7 +126,7 @@ struct Lights {
         point.length = 0;
         spot.length = 0;
     }
-    @property bool empty() const { return directional.length + point.length + spot.length > 0; }
+    @property bool empty() const { return directional.length + point.length + spot.length == 0; }
     /// returns point types by type
     @property LightCounts counts() const { return [cast(int)directional.length, cast(int)point.length, cast(int)spot.length]; }
     @property int directionalCount() const { return cast(int)directional.length; }
@@ -136,7 +136,8 @@ struct Lights {
     @property string defs() const {
         if (!directional.length && !point.length && !spot.length)
             return null;
-        char[] buf;
+        static __gshared char[] buf;
+        buf.length = 0; // reset buffer
         if (directional.length) {
             buf ~= "DIRECTIONAL_LIGHT_COUNT ";
             buf ~= directional.length.to!string;
@@ -153,7 +154,7 @@ struct Lights {
             buf ~= "SPOT_LIGHT_COUNT ";
             buf ~= spot.length.to!string;
         }
-        return cast(string)buf;
+        return buf.dup;
     }
     void remove(Light light) {
         import std.algorithm : remove;
@@ -227,6 +228,7 @@ struct LightParams {
     Lights _lights;
 
     @property bool empty() const { return _lights.empty; }
+    @property string defs() const { return _lights.defs; }
 
     void reset() {
         _lights.reset();

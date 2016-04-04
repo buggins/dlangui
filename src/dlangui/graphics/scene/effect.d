@@ -160,8 +160,10 @@ class EffectCache {
     }
 
     static private void onObjectDestroyed(EffectId id) {
-        if (id in _instance._map)
+        if (id in _instance._map) {
+            Log.d("Destroyed effect instance: ", id);
             _instance._map.remove(id);
+        }
     }
 
     /// get effect from cache or create new if not exist
@@ -175,6 +177,7 @@ class EffectCache {
             return *p;
         }
         Effect e = new Effect(id);
+        Log.d("New effect instance: ", id);
         _map[id] = e;
         return e;
     }
@@ -190,6 +193,21 @@ struct EffectId {
         vertexShaderName = vertexShader;
         fragmentShaderName = fragmentShader;
         definitions = defs;
+    }
+
+    this(ref EffectId v, string additionalParams) {
+        import std.string : empty;
+        vertexShaderName = v.vertexShaderName;
+        fragmentShaderName = v.fragmentShaderName;
+        definitions = v.definitions;
+        if (!additionalParams.empty) {
+            if (!definitions.empty) {
+                definitions ~= ";";
+                definitions ~= additionalParams;
+            } else {
+                definitions = additionalParams;
+            }
+        }
     }
 
     /// returns true if ID is not assigned

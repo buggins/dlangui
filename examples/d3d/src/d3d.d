@@ -9,6 +9,7 @@ import dlangui.graphics.scene.effect;
 import dlangui.graphics.scene.model;
 import dlangui.graphics.scene.node;
 import dlangui.graphics.scene.objimport;
+import dlangui.graphics.scene.light;
 import dlangui.graphics.glsupport;
 import dlangui.graphics.gldrawbuf;
 import derelict.opengl3.gl3;
@@ -112,6 +113,12 @@ class UiWidget : VerticalLayout, CellVisitor {
         _cam.translate(vec3(0, 14, -7));
 
         _scene.activeCamera = _cam;
+
+        Node3d dirLightNode = new Node3d();
+        dirLightNode.rotateY(-15);
+        dirLightNode.rotateX(20);
+        dirLightNode.light = Light.createDirectional(vec3(1, 0.5, 0.5));
+        _scene.addChild(dirLightNode);
 
         int x0 = 0;
         int y0 = 0;
