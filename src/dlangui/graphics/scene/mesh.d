@@ -19,7 +19,7 @@ abstract class GraphicsEffect : RefCountedObject {
 
     void setUniform(string uniformName, float v);
 
-    void setUniform(string uniformName, const float v[]);
+    void setUniform(string uniformName, const float[] v);
 
     void setUniform(string uniformName, vec2 vec);
 
