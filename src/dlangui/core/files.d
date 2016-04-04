@@ -115,6 +115,103 @@ struct RootEntry {
     return path;
 }
 
+version(OSX) {} else version(Posix)
+{
+    private bool isSpecialFileSystem(const(char)[] dir, const(char)[] type)
+    {
+        import std.string : startsWith;
+        if (dir.startsWith("/dev") || dir.startsWith("/proc") || dir.startsWith("/sys") || 
+            dir.startsWith("/var/run") || dir.startsWith("/var/lock"))
+        {
+            return true;
+        }
+        
+        if (type == "tmpfs" || type == "rootfs" || type == "rpc_pipefs") {
+            return true;
+        }
+        return false;
+    }
+}
+
+version(FreeBSD)
+{
+private:
+    import core.sys.posix.sys.types;
+    
+    enum MFSNAMELEN = 16;          /* length of type name including null */
+    enum MNAMELEN  = 88;          /* size of on/from name bufs */
+    enum STATFS_VERSION = 0x20030518;      /* current version number */
+    
+    struct fsid_t
+    {
+        int[2] val;
+    }
+    
+    struct statfs {
+        uint f_version;         /* structure version number */
+        uint f_type;            /* type of filesystem */
+        ulong f_flags;           /* copy of mount exported flags */
+        ulong f_bsize;           /* filesystem fragment size */
+        ulong f_iosize;          /* optimal transfer block size */
+        ulong f_blocks;          /* total data blocks in filesystem */
+        ulong f_bfree;           /* free blocks in filesystem */
+        long  f_bavail;          /* free blocks avail to non-superuser */
+        ulong f_files;           /* total file nodes in filesystem */
+        long  f_ffree;           /* free nodes avail to non-superuser */
+        ulong f_syncwrites;      /* count of sync writes since mount */
+        ulong f_asyncwrites;         /* count of async writes since mount */
+        ulong f_syncreads;       /* count of sync reads since mount */
+        ulong f_asyncreads;      /* count of async reads since mount */
+        ulong[10] f_spare;       /* unused spare */
+        uint f_namemax;         /* maximum filename length */
+        uid_t     f_owner;          /* user that mounted the filesystem */
+        fsid_t    f_fsid;           /* filesystem id */
+        char[80]      f_charspare;      /* spare string space */
+        char[MFSNAMELEN] f_fstypename; /* filesystem type name */
+        char[MNAMELEN] f_mntfromname;  /* mounted filesystem */
+        char[MNAMELEN] f_mntonname;    /* directory on which mounted */
+    };
+    
+    extern(C) @nogc nothrow 
+    {
+        int getmntinfo(statfs **mntbufp, int flags);
+    }
+}
+
+version(linux)
+{
+private:
+    import core.stdc.stdio : FILE;
+    struct mntent
+    {
+        char *mnt_fsname;   /* Device or server for filesystem.  */
+        char *mnt_dir;      /* Directory mounted on.  */
+        char *mnt_type;     /* Type of filesystem: ufs, nfs, etc.  */
+        char *mnt_opts;     /* Comma-separated options for fs.  */
+        int mnt_freq;       /* Dump frequency (in days).  */
+        int mnt_passno;     /* Pass number for `fsck'.  */
+    };
+    
+    extern(C) @nogc nothrow 
+    {
+        FILE *setmntent(const char *file, const char *mode);
+        mntent *getmntent(FILE *stream);
+        mntent *getmntent_r(FILE * stream, mntent *result, char * buffer, int bufsize);
+        int addmntent(FILE* stream, const mntent *mnt);
+        int endmntent(FILE * stream);
+        char *hasmntopt(const mntent *mnt, const char *opt);
+    }
+    
+    string unescapeLabel(string label)
+    {
+        import std.string : replace;
+        return label.replace("\\x20", " ")
+                    .replace("\\x9", " ") //actually tab
+                    .replace("\\x5c", "\\")
+                    .replace("\\xA", " "); //actually newline
+    }
+}
+
 /// returns array of system root entries
 @property RootEntry[] getRootPaths() {
     RootEntry[] res;
@@ -122,6 +219,77 @@ struct RootEntry {
     version (Posix) {
         res ~= RootEntry(RootEntryType.ROOT, "/", "File System"d);
     }
+    version(linux) {
+        import std.string : fromStringz;
+        import std.format : format;
+        
+        mntent ent;
+        char[1024] buf;
+        FILE* f = setmntent("/etc/mtab", "r");
+        
+        if (f) {
+            scope(exit) endmntent(f);
+            while(getmntent_r(f, &ent, buf.ptr, cast(int)buf.length) !is null) {
+                auto fsName = fromStringz(ent.mnt_fsname);
+                auto mountDir = fromStringz(ent.mnt_dir);
+                auto type = fromStringz(ent.mnt_type);
+                
+                if (mountDir == "/" || //root is already added
+                    isSpecialFileSystem(mountDir, type)) //don't list special file systems
+                {
+                    continue;
+                }
+                
+                string label;
+                enum byLabel = "/dev/disk/by-label";
+                try {
+                    foreach(entry; dirEntries(byLabel, SpanMode.shallow))
+                    {
+                        if (entry.isSymlink) {
+                            auto normalized = buildNormalizedPath(byLabel, entry.readLink);
+                            if (normalized == fsName) {
+                                label = entry.name.baseName.unescapeLabel();
+                            }
+                        }
+                    }
+                } catch(Exception e) {
+                    
+                }
+                
+                if (!label.length) {
+                    label = format("%s volume", type);
+                }
+                
+                auto entryType = (type == "vfat") ? RootEntryType.REMOVABLE : RootEntryType.FIXED; //just a guess
+                res ~= RootEntry(entryType, mountDir.idup, label.toUTF32);
+            }   
+        }
+    }
+    
+    version(FreeBSD) {
+        import std.string : fromStringz;
+        import std.format : format;
+        
+        statfs* mntbufsPtr;
+        int mntbufsLen = getmntinfo(&mntbufsPtr, 0);
+        if (mntbufsLen) {
+            auto mntbufs = mntbufsPtr[0..mntbufsLen];
+            
+            foreach(buf; mntbufs) {
+                auto type = fromStringz(buf.f_fstypename.ptr);
+                auto fsName = fromStringz(buf.f_mntfromname.ptr);
+                auto mountDir = fromStringz(buf.f_mntonname.ptr);
+                
+                if (mountDir == "/" || isSpecialFileSystem(mountDir, type)) {
+                    continue;
+                }
+                
+                string label = format("%s volume", type);
+                res ~= RootEntry(RootEntryType.FIXED, mountDir.idup, label.toUTF32);
+            }
+        }
+    }
+    
     version (Windows) {
         import win32.windows;
         uint mask = GetLogicalDrives();
