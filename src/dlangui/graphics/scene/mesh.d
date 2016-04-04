@@ -39,6 +39,7 @@ abstract class GraphicsEffect : RefCountedObject {
 }
 
 enum DefaultUniform : int {
+    // colors
     u_ambientColor, // vec3
     u_diffuseColor, // vec4
     u_lightmapTexture, // sampler2D
@@ -56,6 +57,7 @@ enum DefaultUniform : int {
     u_modulateColor, //uniform vec4 u_modulateColor;
     u_modulateAlpha, //uniform float u_modulateAlpha;
 
+    // matrix
     u_worldViewProjectionMatrix, //uniform mat4 u_worldViewProjectionMatrix;
     u_inverseTransposeWorldViewMatrix, //uniform mat4 u_inverseTransposeWorldViewMatrix;
     u_worldViewMatrix, //uniform mat4 u_worldViewMatrix;

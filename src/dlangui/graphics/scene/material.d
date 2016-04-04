@@ -14,10 +14,18 @@ import dlangui.graphics.scene.mesh;
 alias MaterialRef = Ref!Material;
 
 class Material : RefCountedObject {
+    // effect
     protected EffectRef _effect;
     protected EffectId _effectId;
+
+    // textures
     protected TextureRef _texture;
     protected string _textureId;
+
+    // colors
+    protected vec4 _diffuseColor = vec4(1, 1, 1, 1);
+    protected vec3 _ambientColor = vec3(1, 1, 1);
+
     // TODO: more material properties
 
     this() {
@@ -27,6 +35,11 @@ class Material : RefCountedObject {
         _effectId = effectId;
         _textureId = textureId;
     }
+
+    @property vec4 diffuseColor() { return _diffuseColor; }
+    @property Material diffuseColor(vec4 color) { _diffuseColor = color; return this; }
+    @property vec3 ambientColor() { return _ambientColor; }
+    @property Material ambientColor(vec3 color) { _ambientColor = color; return this; }
 
     @property EffectRef effect() {
         if (_effect.isNull && !_effectId.empty)
@@ -81,6 +94,10 @@ class Material : RefCountedObject {
             _effect.setUniform(DefaultUniform.u_cameraPosition, node.cameraPosition);
         if (_effect.hasUniform(DefaultUniform.u_worldViewMatrix))
             _effect.setUniform(DefaultUniform.u_worldViewMatrix, node.worldViewMatrix);
+        if (_effect.hasUniform(DefaultUniform.u_ambientColor))
+            _effect.setUniform(DefaultUniform.u_ambientColor, _ambientColor);
+        if (_effect.hasUniform(DefaultUniform.u_diffuseColor))
+            _effect.setUniform(DefaultUniform.u_diffuseColor, _diffuseColor);
     }
 
     void drawMesh(Mesh mesh) {
