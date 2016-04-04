@@ -22,7 +22,7 @@ class Scene3d : Node3d {
 
 
     /// active camera
-    @property Camera activeCamera() {
+    override @property Camera activeCamera() {
         if (_activeCamera)
             return _activeCamera;
         // TODO: find camera in child nodes
@@ -42,14 +42,6 @@ class Scene3d : Node3d {
 
     override @property void scene(Scene3d v) { 
         //ignore
-    }
-
-    /// get projection*view matrix
-    @property ref const(mat4) projectionViewMatrix() {
-        if (_activeCamera)
-            return _activeCamera.projectionViewMatrix;
-        static mat4 dummyIdentityMatrix;
-        return dummyIdentityMatrix;
     }
 
     protected bool _wireframe;

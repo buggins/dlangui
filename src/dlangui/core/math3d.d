@@ -1512,8 +1512,93 @@ struct mat4 {
         return res;
     }
 
+    /**
+    * Decomposes the scale, rotation and translation components of this matrix.
+    *
+    * @param scale The scale.
+    * @param rotation The rotation.
+    * @param translation The translation.
+    */
+    bool decompose(vec3 * scale, vec4 * rotation, vec3 * translation) const {
+        if (translation)
+        {
+            // Extract the translation.
+            translation.x = m[12];
+            translation.y = m[13];
+            translation.z = m[14];
+        }
 
+        // Nothing left to do.
+        if (!scale && !rotation)
+            return true;
+
+        // Extract the scale.
+        // This is simply the length of each axis (row/column) in the matrix.
+        vec3 xaxis = vec3(m[0], m[1], m[2]);
+        float scaleX = xaxis.length();
+
+        vec3 yaxis = vec3(m[4], m[5], m[6]);
+        float scaleY = yaxis.length();
+
+        vec3 zaxis = vec3(m[8], m[9], m[10]);
+        float scaleZ = zaxis.length();
+
+        // Determine if we have a negative scale (true if determinant is less than zero).
+        // In this case, we simply negate a single axis of the scale.
+        float det = determinant();
+        if (det < 0)
+            scaleZ = -scaleZ;
+
+        if (scale)
+        {
+            scale.x = scaleX;
+            scale.y = scaleY;
+            scale.z = scaleZ;
+        }
+
+        // Nothing left to do.
+        if (!rotation)
+            return true;
+
+        //// Scale too close to zero, can't decompose rotation.
+        //if (scaleX < MATH_TOLERANCE || scaleY < MATH_TOLERANCE || fabs(scaleZ) < MATH_TOLERANCE)
+        //    return false;
+        // TODO: support rotation
+        return false;
+    }
+
+    /**
+    * Gets the translational component of this matrix in the specified vector.
+    *
+    * @param translation A vector to receive the translation.
+    */
+    void getTranslation(ref vec3 translation) const
+    {
+        decompose(null, null, &translation);
+    }
+
+    @property float determinant() const
+    {
+        float a0 = m[0] * m[5] - m[1] * m[4];
+        float a1 = m[0] * m[6] - m[2] * m[4];
+        float a2 = m[0] * m[7] - m[3] * m[4];
+        float a3 = m[1] * m[6] - m[2] * m[5];
+        float a4 = m[1] * m[7] - m[3] * m[5];
+        float a5 = m[2] * m[7] - m[3] * m[6];
+        float b0 = m[8] * m[13] - m[9] * m[12];
+        float b1 = m[8] * m[14] - m[10] * m[12];
+        float b2 = m[8] * m[15] - m[11] * m[12];
+        float b3 = m[9] * m[14] - m[10] * m[13];
+        float b4 = m[9] * m[15] - m[11] * m[13];
+        float b5 = m[10] * m[15] - m[11] * m[14];
+        // Calculate the determinant.
+        return (a0 * b5 - a1 * b4 + a2 * b3 + a3 * b2 - a4 * b1 + a5 * b0);
+    }
+
+    static __gshared const mat4 IDENTITY;
 }
+
+
 
 unittest {
     vec3 a, b, c;

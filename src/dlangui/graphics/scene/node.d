@@ -7,6 +7,7 @@ import dlangui.core.collections;
 import dlangui.graphics.scene.scene3d;
 import dlangui.graphics.scene.drawableobject;
 import dlangui.graphics.scene.light;
+import dlangui.graphics.scene.camera;
 
 /// 3D scene node
 class Node3d : Transform {
@@ -97,10 +98,68 @@ class Node3d : Transform {
         return this;
     }
 
+    /// active camera or null of no camera
+    @property Camera activeCamera() {
+        if (!scene)
+            return null;
+        return scene.activeCamera;
+    }
+
+    @property vec3 cameraPosition() {
+        auto cam = activeCamera;
+        if (cam)
+            return cam.translationWorld;
+        return vec3(0, 0, 0);
+    }
+
+    /// get view matrix based on active camera
+    @property ref const(mat4) viewMatrix() {
+        auto cam = activeCamera;
+        if (cam)
+            return cam.viewMatrix;
+        return mat4.IDENTITY;
+    }
+
+    /// get projection*view matrix based on active camera
+    @property ref const(mat4) projectionViewMatrix() {
+        auto cam = activeCamera;
+        if (cam)
+            return cam.projectionViewMatrix;
+        return mat4.IDENTITY;
+    }
+
     protected mat4 _projectionViewModelMatrix;
+
     /// returns projectionMatrix * viewMatrix * modelMatrix
     @property ref const(mat4) projectionViewModelMatrix() {
+        // TODO: optimize
         _projectionViewModelMatrix = _scene.projectionViewMatrix * matrix;
         return _projectionViewModelMatrix;
+    }
+
+    /// returns world matrix
+    @property ref const(mat4) worldMatrix() {
+        if (!parent)
+            return matrix;
+        _worldMatrix = parent.worldMatrix * matrix;
+        return _worldMatrix;
+    }
+
+    /**
+    * Gets the world view matrix corresponding to this node.
+    *
+    * @return The world view matrix of this node.
+    */
+    @property ref const(mat4) worldViewMatrix() {
+        static mat4 worldView;
+        worldView = viewMatrix * worldMatrix;
+        return worldView;
+    }
+
+    /// returns translation vector (position) of this node in world space
+    @property vec3 translationWorld() {
+        vec3 translation;
+        worldMatrix.getTranslation(translation);
+        return translation;
     }
 }

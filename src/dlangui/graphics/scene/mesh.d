@@ -29,6 +29,12 @@ abstract class GraphicsEffect : RefCountedObject {
 
     void setUniform(DefaultUniform id, vec4 vec);
 
+    /// returns true if effect has uniform
+    bool hasUniform(DefaultUniform id);
+
+    /// returns true if effect has uniform
+    bool hasUniform(string uniformName);
+
     void draw(Mesh mesh);
 }
 
@@ -51,9 +57,9 @@ enum DefaultUniform : int {
     u_modulateAlpha, //uniform float u_modulateAlpha;
 
     u_worldViewProjectionMatrix, //uniform mat4 u_worldViewProjectionMatrix;
-    u_matrixPalette, //uniform vec4 u_matrixPalette[SKINNING_JOINT_COUNT * 3];
     u_inverseTransposeWorldViewMatrix, //uniform mat4 u_inverseTransposeWorldViewMatrix;
     u_worldViewMatrix, //uniform mat4 u_worldViewMatrix;
+    u_matrixPalette, //uniform vec4 u_matrixPalette[SKINNING_JOINT_COUNT * 3];
     u_cameraPosition, //uniform vec3 u_cameraPosition;
     u_worldMatrix, //uniform mat4 u_worldMatrix;
     u_clipPlane, //uniform vec4 u_clipPlane;

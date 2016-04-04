@@ -53,7 +53,7 @@ class Camera : Node3d {
         _dirtyView = true;
     }
 
-    @property ref const(mat4) viewMatrix() {
+    override @property ref const(mat4) viewMatrix() {
         if (_dirtyView) {
             _viewMatrix = matrix.invert();
             _dirtyView = false;
@@ -62,7 +62,7 @@ class Camera : Node3d {
     }
 
     /// get projection*view matrix
-    @property ref const(mat4) projectionViewMatrix() {
+    override @property ref const(mat4) projectionViewMatrix() {
         if (_dirtyTransform || _dirtyViewProjection) {
             _viewProjectionMatrix = _projectionMatrix * viewMatrix;
             _dirtyViewProjection = false;

@@ -351,6 +351,15 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
         checkgl!glUniformMatrix4fv(getUniformLocation(id), 1, false, matrix.m.ptr);
     }
 
+    /// returns true if effect has uniform
+    override bool hasUniform(DefaultUniform id) {
+        return getUniformLocation(id) >= 0;
+    }
+
+    /// returns true if effect has uniform
+    override bool hasUniform(string uniformName) {
+        return getUniformLocation(uniformName) >= 0;
+    }
 
     /// draw mesh using this program (program should be bound by this time and all uniforms should be set)
     override void draw(Mesh mesh) {
