@@ -97,8 +97,10 @@ class Node3d : Transform {
         return this;
     }
 
+    protected mat4 _projectionViewModelMatrix;
     /// returns projectionMatrix * viewMatrix * modelMatrix
-    @property mat4 projectionViewModelMatrix() {
-        return _scene.projectionViewMatrix * matrix;
+    @property ref const(mat4) projectionViewModelMatrix() {
+        _projectionViewModelMatrix = _scene.projectionViewMatrix * matrix;
+        return _projectionViewModelMatrix;
     }
 }

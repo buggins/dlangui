@@ -117,7 +117,6 @@ string glerrorToString(in GLenum err) pure nothrow {
     }
 }
 
-
 class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
     @property abstract string vertexSource();
     @property abstract string fragmentSource();
@@ -135,12 +134,10 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
         if (glslversionInt < 150)
             code = replace(code, " texture(", " texture2D(");
         if (glslversionInt < 140) {
-            if(type == GL_VERTEX_SHADER)
-            {
+            if(type == GL_VERTEX_SHADER) {
                 code = replace(code, "in ", "attribute ");
                 code = replace(code, "out ", "varying ");
-            } else
-            {
+            } else {
                 code = replace(code, "in ", "varying ");
                 code = replace(code, "out vec4 outColor;", "");
                 code = replace(code, "outColor", "gl_FragColor");
@@ -217,7 +214,8 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
             return false;
         }
         Log.d("Program linked successfully");
-        
+
+        initStandardLocations();
         if (!initLocations()) {
             Log.e("some of locations were not found");
             error = true;
@@ -225,6 +223,16 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
         initialized = true;
         Log.v("Program is initialized successfully");
         return !error;
+    }
+
+
+    void initStandardLocations() {
+        for(DefaultUniform id = DefaultUniform.min; id <= DefaultUniform.max; id++) {
+            _uniformIdLocations[id] = getUniformLocation(to!string(id));
+        }
+        for(DefaultAttribute id = DefaultAttribute.min; id <= DefaultAttribute.max; id++) {
+            _attribIdLocations[id] = getAttribLocation(to!string(id));
+        }
     }
 
     /// override to init shader code locations
@@ -270,10 +278,18 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
 
     protected int[string] _uniformLocations;
     protected int[string] _attribLocations;
+    protected int[DefaultUniform.max + 1] _uniformIdLocations;
+    protected int[DefaultAttribute.max + 1] _attribIdLocations;
 
     /// get location for vertex attribute
     override int getVertexElementLocation(VertexElementType type) {
         return VERTEX_ELEMENT_NOT_FOUND;
+    }
+
+
+    /// get uniform location from program by uniform id, returns -1 if location is not found
+    int getUniformLocation(DefaultUniform uniform) {
+        return _uniformIdLocations[uniform];
     }
 
     /// get uniform location from program, returns -1 if location is not found
@@ -281,10 +297,15 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
         if (auto p = variableName in _uniformLocations)
             return *p;
         int res = checkgl!glGetUniformLocation(program, variableName.toStringz);
-        if (res == -1)
-            Log.e("glGetUniformLocation failed for " ~ variableName);
+        //if (res == -1)
+        //    Log.e("glGetUniformLocation failed for " ~ variableName);
         _uniformLocations[variableName] = res;
         return res;
+    }
+
+    /// get attribute location from program by uniform id, returns -1 if location is not found
+    int getAttribLocation(DefaultAttribute id) {
+        return _attribIdLocations[id];
     }
 
     /// get attribute location from program, returns -1 if location is not found
@@ -292,27 +313,44 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
         if (auto p = variableName in _attribLocations)
             return *p;
         int res = checkgl!glGetAttribLocation(program, variableName.toStringz);
-        if (res == -1)
-            Log.e("glGetAttribLocation failed for " ~ variableName);
+        //if (res == -1)
+        //    Log.e("glGetAttribLocation failed for " ~ variableName);
         _attribLocations[variableName] = res;
         return res;
     }
 
-    override void setUniform(string uniformName, mat4 matrix) {
-        checkgl!glUniformMatrix4fv(getUniformLocation(uniformName), 1, false, matrix.m.ptr);
+    override void setUniform(string uniformName, vec2 vec) {
+        checkgl!glUniform2fv(getUniformLocation(uniformName), 1, vec.vec.ptr);
     }
 
-    override void setUniform(string uniformName, vec2 vec) {
-        checkgl!glUniform2fv(getAttribLocation(uniformName), 1, vec.vec.ptr);
+    override void setUniform(DefaultUniform id, vec2 vec) {
+        checkgl!glUniform2fv(getUniformLocation(id), 1, vec.vec.ptr);
     }
 
     override void setUniform(string uniformName, vec3 vec) {
-        checkgl!glUniform3fv(getAttribLocation(uniformName), 1, vec.vec.ptr);
+        checkgl!glUniform3fv(getUniformLocation(uniformName), 1, vec.vec.ptr);
+    }
+
+    override void setUniform(DefaultUniform id, vec3 vec) {
+        checkgl!glUniform3fv(getUniformLocation(id), 1, vec.vec.ptr);
     }
 
     override void setUniform(string uniformName, vec4 vec) {
-        checkgl!glUniform4fv(getAttribLocation(uniformName), 1, vec.vec.ptr);
+        checkgl!glUniform4fv(getUniformLocation(uniformName), 1, vec.vec.ptr);
     }
+
+    override void setUniform(DefaultUniform id, vec4 vec) {
+        checkgl!glUniform4fv(getUniformLocation(id), 1, vec.vec.ptr);
+    }
+
+    override void setUniform(string uniformName, ref const(mat4) matrix) {
+        checkgl!glUniformMatrix4fv(getUniformLocation(uniformName), 1, false, matrix.m.ptr);
+    }
+
+    override void setUniform(DefaultUniform id, ref const(mat4) matrix) {
+        checkgl!glUniformMatrix4fv(getUniformLocation(id), 1, false, matrix.m.ptr);
+    }
+
 
     /// draw mesh using this program (program should be bound by this time and all uniforms should be set)
     override void draw(Mesh mesh) {
@@ -328,14 +366,14 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
 class SolidFillProgram : GLProgram {
     @property override string vertexSource() {
         return q{
-            in vec3 vertex_position;
-            in vec4 vertex_color;
+            in vec3 a_position;
+            in vec4 a_color;
             out vec4 col;
-            uniform mat4 matrix;
+            uniform mat4 u_worldViewProjectionMatrix;
             void main(void)
             {
-                gl_Position = matrix * vec4(vertex_position, 1);
-                col = vertex_color;
+                gl_Position = u_worldViewProjectionMatrix * vec4(a_position, 1);
+                col = a_color;
             }
         };
     }
@@ -355,9 +393,9 @@ class SolidFillProgram : GLProgram {
     protected GLint vertexLocation;
     protected GLint colAttrLocation;
     override bool initLocations() {
-        matrixLocation = getUniformLocation("matrix");
-        vertexLocation = getAttribLocation("vertex_position");
-        colAttrLocation = getAttribLocation("vertex_color");
+        matrixLocation = getUniformLocation(DefaultUniform.u_worldViewProjectionMatrix);
+        vertexLocation = getAttribLocation(DefaultAttribute.a_position);
+        colAttrLocation = getAttribLocation(DefaultAttribute.a_color);
         return matrixLocation >= 0 && vertexLocation >= 0 && colAttrLocation >= 0;
     }
     /// get location for vertex attribute
@@ -393,7 +431,8 @@ class SolidFillProgram : GLProgram {
         checkgl!glDisable(GL_CULL_FACE);
         checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         bind();
-        checkgl!glUniformMatrix4fv(matrixLocation, 1, false, glSupport.projectionMatrix.m.ptr);
+        setUniform(DefaultUniform.u_worldViewProjectionMatrix, glSupport.projectionMatrix);
+        //checkgl!glUniformMatrix4fv(matrixLocation, 1, false, glSupport.projectionMatrix.m.ptr);
     }
 
     bool execute(float[] vertices, float[] colors) {
@@ -444,17 +483,17 @@ class LineProgram : SolidFillProgram {
 class TextureProgram : SolidFillProgram {
     @property override string vertexSource() {
         return q{
-            in vec3 vertex_position;
-            in vec4 vertex_color;
-            in vec2 vertex_UV;
+            in vec3 a_position;
+            in vec4 a_color;
+            in vec2 a_texCoord;
             out vec4 col;
             out vec2 UV;
-            uniform mat4 matrix;
+            uniform mat4 u_worldViewProjectionMatrix;
             void main(void)
             {
-                gl_Position = matrix * vec4(vertex_position, 1);
-                col = vertex_color;
-                UV = vertex_UV;
+                gl_Position = u_worldViewProjectionMatrix * vec4(a_position, 1);
+                col = a_color;
+                UV = a_texCoord;
             }
         };
     }
@@ -474,7 +513,7 @@ class TextureProgram : SolidFillProgram {
     GLint texCoordLocation;
     override bool initLocations() {
         bool res = super.initLocations();
-        texCoordLocation = getAttribLocation("vertex_UV");
+        texCoordLocation = getAttribLocation(DefaultAttribute.a_texCoord);
         return res && texCoordLocation >= 0;
     }
     /// get location for vertex attribute

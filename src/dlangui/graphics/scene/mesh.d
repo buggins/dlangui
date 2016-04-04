@@ -13,7 +13,7 @@ abstract class GraphicsEffect : RefCountedObject {
     /// get location for vertex attribute
     int getVertexElementLocation(VertexElementType type);
 
-    void setUniform(string uniformName, mat4 matrix);
+    void setUniform(string uniformName, ref const(mat4) matrix);
 
     void setUniform(string uniformName, vec2 vec);
 
@@ -21,9 +21,57 @@ abstract class GraphicsEffect : RefCountedObject {
 
     void setUniform(string uniformName, vec4 vec);
 
+    void setUniform(DefaultUniform id, ref const(mat4) matrix);
+
+    void setUniform(DefaultUniform id, vec2 vec);
+
+    void setUniform(DefaultUniform id, vec3 vec);
+
+    void setUniform(DefaultUniform id, vec4 vec);
+
     void draw(Mesh mesh);
 }
 
+enum DefaultUniform : int {
+    u_ambientColor, // vec3
+    u_diffuseColor, // vec4
+    u_lightmapTexture, // sampler2D
+    u_directionalLightColor, //uniform vec3 u_directionalLightColor[DIRECTIONAL_LIGHT_COUNT];
+    u_directionalLightDirection, //uniform vec3 u_directionalLightDirection[DIRECTIONAL_LIGHT_COUNT];
+    u_pointLightColor, //uniform vec3 u_pointLightColor[POINT_LIGHT_COUNT];
+    u_pointLightPosition, //uniform vec3 u_pointLightPosition[POINT_LIGHT_COUNT];
+    u_pointLightRangeInverse, //uniform float u_pointLightRangeInverse[POINT_LIGHT_COUNT];
+    u_spotLightColor, //uniform vec3 u_spotLightColor[SPOT_LIGHT_COUNT];
+    u_spotLightRangeInverse, //uniform float u_spotLightRangeInverse[SPOT_LIGHT_COUNT];
+    u_spotLightInnerAngleCos, //uniform float u_spotLightInnerAngleCos[SPOT_LIGHT_COUNT];
+    u_spotLightOuterAngleCos, //uniform float u_spotLightOuterAngleCos[SPOT_LIGHT_COUNT];
+    u_spotLightDirection, //uniform vec3 u_spotLightDirection[SPOT_LIGHT_COUNT];
+    u_specularExponent, //uniform float u_specularExponent;
+    u_modulateColor, //uniform vec4 u_modulateColor;
+    u_modulateAlpha, //uniform float u_modulateAlpha;
+
+    u_worldViewProjectionMatrix, //uniform mat4 u_worldViewProjectionMatrix;
+    u_matrixPalette, //uniform vec4 u_matrixPalette[SKINNING_JOINT_COUNT * 3];
+    u_inverseTransposeWorldViewMatrix, //uniform mat4 u_inverseTransposeWorldViewMatrix;
+    u_worldViewMatrix, //uniform mat4 u_worldViewMatrix;
+    u_cameraPosition, //uniform vec3 u_cameraPosition;
+    u_worldMatrix, //uniform mat4 u_worldMatrix;
+    u_clipPlane, //uniform vec4 u_clipPlane;
+}
+
+enum DefaultAttribute : int {
+    a_position, //attribute vec4 a_position;
+
+    a_blendWeights, //attribute vec4 a_blendWeights;
+    a_blendIndices, //attribute vec4 a_blendIndices;
+
+    a_texCoord, //attribute vec2 a_texCoord;
+    a_texCoord1, //attribute vec2 a_texCoord1;
+    a_normal, //attribute vec3 a_normal;
+    a_color, //attribute vec3 a_color;
+    a_tangent, //attribute vec3 a_tangent;
+    a_binormal, //attribute vec3 a_binormal;
+}
 
 /// vertex element type
 enum VertexElementType : ubyte {

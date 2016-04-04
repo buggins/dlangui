@@ -75,7 +75,7 @@ class Material : RefCountedObject {
             texture.texture.setSamplerParams(true);
         }
         // TODO: more uniforms
-        _effect.setUniform("matrix", node.projectionViewModelMatrix);
+        _effect.setUniform(DefaultUniform.u_worldViewProjectionMatrix, node.projectionViewModelMatrix);
     }
 
     void drawMesh(Mesh mesh) {

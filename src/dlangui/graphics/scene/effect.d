@@ -58,9 +58,37 @@ class Effect : GLProgram {
         }
     }
 
+    protected bool[string] _visitedIncludes;
+    protected void preProcessIncludes(ref char[] buf, string src) {
+        import std.string : strip, startsWith, endsWith;
+        import dlangui.graphics.resources : splitLines;
+        foreach(line; src.splitLines) {
+            string s = line.strip;
+            if (s.startsWith("#include ")) {
+                s = s[9 .. $].strip; // remove #include
+                if (s.startsWith("\"") && s.endsWith("\"")) {
+                    s = s[1 .. $-1]; // remove ""
+                    if (!(s in _visitedIncludes)) { // protect from duplicate include
+                        _visitedIncludes[s] = true; // mark as included
+                        string includedSrc = loadVertexSource(s);
+                        preProcessIncludes(buf, includedSrc);
+                    }
+                }
+            } else {
+                buf ~= line;
+                buf ~= "\n";
+            }
+        }
+    }
+
     protected string preProcessSource(string src) {
-        // prepend definitions
-        return _defText ~ src;
+        char[] buf;
+        buf.assumeSafeAppend;
+        // append definitions
+        buf ~= _defText;
+        // append source body
+        preProcessIncludes(buf, src);
+        return buf.dup;
     }
 
     protected string loadVertexSource(string resourceId) {
@@ -85,36 +113,30 @@ class Effect : GLProgram {
     }
 
     @property override string vertexSource() {
+        _visitedIncludes = null;
+        _visitedIncludes[_id.vertexShaderName] = true; // mark as included
         return preProcessSource(loadVertexSource(_id.vertexShaderName));
     }
 
     @property override string fragmentSource() {
+        _visitedIncludes = null;
+        _visitedIncludes[_id.fragmentShaderName] = true; // mark as included
         return preProcessSource(loadVertexSource(_id.fragmentShaderName));
     }
 
-    // attribute locations
-    protected int matrixLocation;
-    protected int vertexLocation;
-    protected int colAttrLocation;
-    protected int texCoordLocation;
-
     override bool initLocations() {
-        matrixLocation = getUniformLocation("matrix");
-        vertexLocation = getAttribLocation("vertex");
-        colAttrLocation = getAttribLocation("colAttr");
-        texCoordLocation = getAttribLocation("texCoord");
-        return matrixLocation >= 0 && vertexLocation >= 0; // && colAttrLocation >= 0 && texCoordLocation >= 0
+        return getUniformLocation(DefaultUniform.u_worldViewProjectionMatrix) >= 0 && getAttribLocation(DefaultAttribute.a_position) >= 0; // && colAttrLocation >= 0 && texCoordLocation >= 0
     }
 
     /// get location for vertex attribute
     override int getVertexElementLocation(VertexElementType type) {
         switch(type) with(VertexElementType) {
             case POSITION: 
-                return vertexLocation;
+                return getAttribLocation(DefaultAttribute.a_position);
             case COLOR: 
-                return colAttrLocation;
+                return getAttribLocation(DefaultAttribute.a_color);
             case TEXCOORD0: 
-                return texCoordLocation;
+                return getAttribLocation(DefaultAttribute.a_texCoord);
             default:
                 return super.getVertexElementLocation(type);
         }
