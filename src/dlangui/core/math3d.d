@@ -1595,6 +1595,17 @@ struct mat4 {
         return (a0 * b5 - a1 * b4 + a2 * b3 + a3 * b2 - a4 * b1 + a5 * b0);
     }
 
+    @property vec3 forwardVector() const
+    {
+        return vec3(-m[8], -m[9], -m[10]);
+    }
+
+    @property vec3 backVector() const
+    {
+        return vec3(m[8], m[9], m[10]);
+    }
+
+
     static __gshared const mat4 IDENTITY;
 }
 

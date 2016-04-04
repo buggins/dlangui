@@ -15,19 +15,43 @@ abstract class GraphicsEffect : RefCountedObject {
 
     void setUniform(string uniformName, ref const(mat4) matrix);
 
+    void setUniform(string uniformName, const(mat4)[] matrix);
+
+    void setUniform(string uniformName, float v);
+
+    void setUniform(string uniformName, const float v[]);
+
     void setUniform(string uniformName, vec2 vec);
+
+    void setUniform(string uniformName, const vec2[] vec);
 
     void setUniform(string uniformName, vec3 vec);
 
+    void setUniform(string uniformName, const vec3[] vec);
+
     void setUniform(string uniformName, vec4 vec);
+
+    void setUniform(string uniformName, const vec4[] vec);
 
     void setUniform(DefaultUniform id, ref const(mat4) matrix);
 
+    void setUniform(DefaultUniform id, const(mat4)[] matrix);
+
+    void setUniform(DefaultUniform id, float v);
+
+    void setUniform(DefaultUniform id, const float[] v);
+
     void setUniform(DefaultUniform id, vec2 vec);
+
+    void setUniform(DefaultUniform id, const vec2[] vec);
 
     void setUniform(DefaultUniform id, vec3 vec);
 
+    void setUniform(DefaultUniform id, const vec3[] vec);
+
     void setUniform(DefaultUniform id, vec4 vec);
+
+    void setUniform(DefaultUniform id, const vec4[] vec);
 
     /// returns true if effect has uniform
     bool hasUniform(DefaultUniform id);
@@ -42,7 +66,13 @@ enum DefaultUniform : int {
     // colors
     u_ambientColor, // vec3
     u_diffuseColor, // vec4
-    u_lightmapTexture, // sampler2D
+
+    // textures
+    u_diffuseTexture, //uniform sampler2D u_diffuseTexture;
+    u_lightmapTexture, //uniform sampler2D u_lightmapTexture;
+    u_normalmapTexture, //uniform sampler2D u_normalmapTexture;
+
+    // lights
     u_directionalLightColor, //uniform vec3 u_directionalLightColor[DIRECTIONAL_LIGHT_COUNT];
     u_directionalLightDirection, //uniform vec3 u_directionalLightDirection[DIRECTIONAL_LIGHT_COUNT];
     u_pointLightColor, //uniform vec3 u_pointLightColor[POINT_LIGHT_COUNT];
@@ -52,7 +82,9 @@ enum DefaultUniform : int {
     u_spotLightRangeInverse, //uniform float u_spotLightRangeInverse[SPOT_LIGHT_COUNT];
     u_spotLightInnerAngleCos, //uniform float u_spotLightInnerAngleCos[SPOT_LIGHT_COUNT];
     u_spotLightOuterAngleCos, //uniform float u_spotLightOuterAngleCos[SPOT_LIGHT_COUNT];
+    u_spotLightPosition, //uniform vec3 u_spotLightPosition[SPOT_LIGHT_COUNT];
     u_spotLightDirection, //uniform vec3 u_spotLightDirection[SPOT_LIGHT_COUNT];
+
     u_specularExponent, //uniform float u_specularExponent;
     u_modulateColor, //uniform vec4 u_modulateColor;
     u_modulateAlpha, //uniform float u_modulateAlpha;
@@ -60,10 +92,11 @@ enum DefaultUniform : int {
     // matrix
     u_worldViewProjectionMatrix, //uniform mat4 u_worldViewProjectionMatrix;
     u_inverseTransposeWorldViewMatrix, //uniform mat4 u_inverseTransposeWorldViewMatrix;
-    u_worldViewMatrix, //uniform mat4 u_worldViewMatrix;
-    u_matrixPalette, //uniform vec4 u_matrixPalette[SKINNING_JOINT_COUNT * 3];
-    u_cameraPosition, //uniform vec3 u_cameraPosition;
     u_worldMatrix, //uniform mat4 u_worldMatrix;
+    u_worldViewMatrix, //uniform mat4 u_worldViewMatrix;
+    u_cameraPosition, //uniform vec3 u_cameraPosition;
+
+    u_matrixPalette, //uniform vec4 u_matrixPalette[SKINNING_JOINT_COUNT * 3];
     u_clipPlane, //uniform vec4 u_clipPlane;
 }
 

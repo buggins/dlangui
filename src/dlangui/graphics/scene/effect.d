@@ -137,6 +137,8 @@ class Effect : GLProgram {
                 return getAttribLocation(DefaultAttribute.a_color);
             case TEXCOORD0: 
                 return getAttribLocation(DefaultAttribute.a_texCoord);
+            case NORMAL: 
+                return getAttribLocation(DefaultAttribute.a_normal);
             default:
                 return super.getVertexElementLocation(type);
         }

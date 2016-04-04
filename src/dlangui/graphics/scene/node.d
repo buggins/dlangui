@@ -42,6 +42,18 @@ class Node3d : Transform {
     /// light attached to node
     @property ref LightRef light() { return _light; }
 
+    /// attach light to node
+    @property Node3d light(Light v) {
+        if (_light.get is v)
+            return this;
+        Node3d oldNode = v.node;
+        v.node = this;
+        _light = v;
+        if (oldNode)
+            oldNode._light = null;
+        return this;
+    }
+
     /// returns scene for node
     @property Scene3d scene() { 
         if (_scene)
@@ -161,5 +173,14 @@ class Node3d : Transform {
         vec3 translation;
         worldMatrix.getTranslation(translation);
         return translation;
+    }
+
+    /**
+    * Returns the forward vector of the Node in world space.
+    *
+    * @return The forward vector in world space.
+    */
+    @property vec3 forwardVectorWorld() {
+        return worldMatrix.forwardVector;
     }
 }

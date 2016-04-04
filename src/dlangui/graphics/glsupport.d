@@ -319,6 +319,14 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
         return res;
     }
 
+    override void setUniform(string uniformName, const vec2[] vec) {
+        checkgl!glUniform2fv(getUniformLocation(uniformName), cast(int)vec.length, vec[0].vec.ptr);
+    }
+
+    override void setUniform(DefaultUniform id, const vec2[] vec) {
+        checkgl!glUniform2fv(getUniformLocation(id), cast(int)vec.length, vec[0].vec.ptr);
+    }
+
     override void setUniform(string uniformName, vec2 vec) {
         checkgl!glUniform2fv(getUniformLocation(uniformName), 1, vec.vec.ptr);
     }
@@ -335,6 +343,14 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
         checkgl!glUniform3fv(getUniformLocation(id), 1, vec.vec.ptr);
     }
 
+    override void setUniform(string uniformName, const vec3[] vec) {
+        checkgl!glUniform3fv(getUniformLocation(uniformName), cast(int)vec.length, vec[0].vec.ptr);
+    }
+
+    override void setUniform(DefaultUniform id, const vec3[] vec) {
+        checkgl!glUniform3fv(getUniformLocation(id), cast(int)vec.length, vec[0].vec.ptr);
+    }
+
     override void setUniform(string uniformName, vec4 vec) {
         checkgl!glUniform4fv(getUniformLocation(uniformName), 1, vec.vec.ptr);
     }
@@ -343,12 +359,44 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
         checkgl!glUniform4fv(getUniformLocation(id), 1, vec.vec.ptr);
     }
 
+    override void setUniform(string uniformName, const vec4[] vec) {
+        checkgl!glUniform4fv(getUniformLocation(uniformName), cast(int)vec.length, vec[0].vec.ptr);
+    }
+
+    override void setUniform(DefaultUniform id, const vec4[] vec) {
+        checkgl!glUniform4fv(getUniformLocation(id), cast(int)vec.length, vec[0].vec.ptr);
+    }
+
     override void setUniform(string uniformName, ref const(mat4) matrix) {
         checkgl!glUniformMatrix4fv(getUniformLocation(uniformName), 1, false, matrix.m.ptr);
     }
 
     override void setUniform(DefaultUniform id, ref const(mat4) matrix) {
         checkgl!glUniformMatrix4fv(getUniformLocation(id), 1, false, matrix.m.ptr);
+    }
+
+    override void setUniform(string uniformName, const(mat4)[] matrix) {
+        checkgl!glUniformMatrix4fv(getUniformLocation(uniformName), cast(int)matrix.length, false, matrix[0].m.ptr);
+    }
+
+    override void setUniform(DefaultUniform id, const(mat4)[] matrix) {
+        checkgl!glUniformMatrix4fv(getUniformLocation(id), cast(int)matrix.length, false, matrix[0].m.ptr);
+    }
+
+    override void setUniform(string uniformName, float v) {
+        checkgl!glUniform1f(getUniformLocation(uniformName), v);
+    }
+
+    override void setUniform(DefaultUniform id, float v) {
+        checkgl!glUniform1f(getUniformLocation(id), v);
+    }
+
+    override void setUniform(string uniformName, const float[] v) {
+        checkgl!glUniform1fv(getUniformLocation(uniformName), cast(int)v.length, v.ptr);
+    }
+
+    override void setUniform(DefaultUniform id, const float[] v) {
+        checkgl!glUniform1fv(getUniformLocation(id), cast(int)v.length, v.ptr);
     }
 
     /// returns true if effect has uniform

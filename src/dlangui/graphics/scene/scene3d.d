@@ -3,6 +3,7 @@ module dlangui.graphics.scene.scene3d;
 import dlangui.core.types;
 import dlangui.graphics.scene.node;
 import dlangui.graphics.scene.camera;
+import dlangui.graphics.scene.light;
 
 public import dlangui.core.math3d;
 
@@ -47,6 +48,7 @@ class Scene3d : Node3d {
     protected bool _wireframe;
     void drawScene(bool wireframe) {
         _wireframe = wireframe;
+        updateAutoboundLights();
         visit(this, &sceneDrawVisitor);
     }
 
@@ -54,6 +56,23 @@ class Scene3d : Node3d {
         if (!node.drawable.isNull)
             node.drawable.draw(node, _wireframe);
         return false;
+    }
+
+    void updateAutoboundLights() {
+        _lights.reset();
+        visit(this, &lightBindingVisitor);
+    }
+
+    protected bool lightBindingVisitor(Node3d node) {
+        if (!node.light.isNull && node.light.enabled && node.light.autobind)
+            _lights.add(node.light);
+        return false;
+    }
+
+    protected Lights _lights;
+
+    @property ref const(Lights) boundLights() {
+        return _lights;
     }
 }
 

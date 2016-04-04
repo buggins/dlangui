@@ -166,10 +166,10 @@ struct ObjModelImport {
         if (!mesh.isNull)
             return;
         if (_txCount) {
-            mesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, VertexElementType.COLOR, VertexElementType.TEXCOORD0));
+            mesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, /*VertexElementType.COLOR, */ VertexElementType.TEXCOORD0));
             _meshHasTexture = true;
         } else {
-            mesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, VertexElementType.COLOR));
+            mesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL /*, VertexElementType.COLOR*/));
             _meshHasTexture = false;
         }
     }
