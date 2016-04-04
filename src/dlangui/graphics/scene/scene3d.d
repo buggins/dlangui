@@ -69,10 +69,14 @@ class Scene3d : Node3d {
         return false;
     }
 
-    protected Lights _lights;
+    protected LightParams _lights;
 
-    @property ref const(Lights) boundLights() {
+    @property ref LightParams boundLights() {
         return _lights;
+    }
+
+    @property LightParams * boundLightsPtr() {
+        return _lights.empty ? null : &_lights;
     }
 }
 

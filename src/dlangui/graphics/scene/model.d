@@ -35,9 +35,28 @@ class Model : DrawableObject {
         return this;
     }
 
+    protected static __gshared LightParams _lightParamsBuffer;
+    @property protected LightParams * lights(Node3d node) {
+        if (!node.scene)
+            return null;
+        if (_lights.empty) {
+            if (node.scene.boundLights.empty)
+                return null;
+            return node.scene.boundLightsPtr;
+        }
+        if (node.scene.boundLights.empty) {
+            _lightParamsBuffer.reset();
+            _lightParamsBuffer.add(_lights);
+        } else {
+            _lightParamsBuffer.reset(node.scene.boundLights);
+            _lightParamsBuffer.add(_lights);
+        }
+        return &_lightParamsBuffer;
+    }
+
     override void draw(Node3d node, bool wireframe) {
         /// override it
-        _material.bind(node);
+        _material.bind(node, lights(node));
         _material.drawMesh(_mesh);
         _material.unbind();
     }

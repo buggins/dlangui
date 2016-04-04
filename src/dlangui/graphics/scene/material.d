@@ -87,7 +87,7 @@ class Material : RefCountedObject {
         return this;
     }
 
-    void bind(Node3d node) {
+    void bind(Node3d node, LightParams * lights = null) {
         assert(!effect.isNull);
         effect.bind();
         if (!texture.isNull) {
@@ -109,6 +109,36 @@ class Material : RefCountedObject {
             _effect.setUniform(DefaultUniform.u_modulateColor, _modulateColor);
         if (_effect.hasUniform(DefaultUniform.u_modulateAlpha))
             _effect.setUniform(DefaultUniform.u_modulateAlpha, _modulateAlpha);
+        if (lights && !lights.empty) {
+            if (lights.u_directionalLightDirection.length) {
+                if (_effect.hasUniform(DefaultUniform.u_directionalLightDirection))
+                    _effect.setUniform(DefaultUniform.u_directionalLightDirection, lights.u_directionalLightDirection);
+                if (_effect.hasUniform(DefaultUniform.u_directionalLightColor))
+                    _effect.setUniform(DefaultUniform.u_directionalLightColor, lights.u_directionalLightColor);
+            }
+            if (lights.u_pointLightPosition.length) {
+                if (_effect.hasUniform(DefaultUniform.u_pointLightPosition))
+                    _effect.setUniform(DefaultUniform.u_pointLightPosition, lights.u_pointLightPosition);
+                if (_effect.hasUniform(DefaultUniform.u_pointLightColor))
+                    _effect.setUniform(DefaultUniform.u_pointLightColor, lights.u_pointLightColor);
+                if (_effect.hasUniform(DefaultUniform.u_pointLightRangeInverse))
+                    _effect.setUniform(DefaultUniform.u_pointLightRangeInverse, lights.u_pointLightRangeInverse);
+            }
+            if (lights.u_spotLightPosition.length) {
+                if (_effect.hasUniform(DefaultUniform.u_spotLightPosition))
+                    _effect.setUniform(DefaultUniform.u_spotLightPosition, lights.u_spotLightPosition);
+                if (_effect.hasUniform(DefaultUniform.u_spotLightDirection))
+                    _effect.setUniform(DefaultUniform.u_spotLightDirection, lights.u_spotLightDirection);
+                if (_effect.hasUniform(DefaultUniform.u_spotLightColor))
+                    _effect.setUniform(DefaultUniform.u_spotLightColor, lights.u_spotLightColor);
+                if (_effect.hasUniform(DefaultUniform.u_spotLightRangeInverse))
+                    _effect.setUniform(DefaultUniform.u_spotLightRangeInverse, lights.u_spotLightRangeInverse);
+                if (_effect.hasUniform(DefaultUniform.u_spotLightInnerAngleCos))
+                    _effect.setUniform(DefaultUniform.u_spotLightInnerAngleCos, lights.u_spotLightInnerAngleCos);
+                if (_effect.hasUniform(DefaultUniform.u_spotLightOuterAngleCos))
+                    _effect.setUniform(DefaultUniform.u_spotLightOuterAngleCos, lights.u_spotLightOuterAngleCos);
+            }
+        }
     }
 
     void drawMesh(Mesh mesh) {
