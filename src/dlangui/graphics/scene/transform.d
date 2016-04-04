@@ -116,4 +116,14 @@ class Transform : RefCountedObject {
         }
         return _matrix;
     }
+
+    @property void matrix(ref const(mat4) m) {
+        _matrix = m;
+        _dirtyTransform = false;
+    }
+
+    void lookAt(const vec3 eye, const vec3 center, const vec3 up) {
+        _matrix.lookAt(eye, center, up);
+        _dirtyTransform = false;
+    }
 }

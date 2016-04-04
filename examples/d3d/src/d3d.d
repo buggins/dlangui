@@ -115,8 +115,9 @@ class UiWidget : VerticalLayout, CellVisitor {
         _scene.activeCamera = _cam;
 
         Node3d dirLightNode = new Node3d();
-        dirLightNode.rotateY(-15);
-        dirLightNode.rotateX(20);
+        dirLightNode.lookAt(vec3(-5, -5, -5), vec3(0, 0, 0), vec3(0, 1, 0));
+        //dirLightNode.rotateY(-15);
+        //dirLightNode.rotateX(20);
         dirLightNode.light = Light.createDirectional(vec3(1, 0.5, 0.5));
         _scene.addChild(dirLightNode);
 
