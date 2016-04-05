@@ -21,13 +21,19 @@ struct ObjModelImport {
 
     protected float[] parseFloatList(Token[] tokens, int maxItems = 3, float padding = 0) {
         int i = 0;
+        int sgn = 1;
         foreach(t; tokens) {
             if (i >= maxItems)
                 break;
-            if (t.type == TokenType.floating)
-                _buf[i++] = cast(float)t.floatvalue;
-            else if (t.type == TokenType.integer)
-                _buf[i++] = cast(float)t.intvalue;
+            if (t.type == TokenType.floating) {
+                _buf[i++] = cast(float)(t.floatvalue * sgn);
+                sgn = 1;
+            } else if (t.type == TokenType.integer) {
+                _buf[i++] = cast(float)(t.intvalue * sgn);
+                sgn = 1;
+            } else if (t.type == TokenType.minus) {
+                sgn = -1;
+            }
         }
         while(i < maxItems)
             _buf[i++] = padding;

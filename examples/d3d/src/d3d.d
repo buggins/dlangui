@@ -121,8 +121,8 @@ class UiWidget : VerticalLayout, CellVisitor {
         dirLightNode.translateX(2);
         dirLightNode.translateY(3);
         dirLightNode.translateZ(3);
-        dirLightNode.light = Light.createPoint(vec3(1, 0.5, 0.5), 15); //Light.createDirectional(vec3(1, 0.5, 0.5));
-        //dirLightNode.light = Light.createDirectional(vec3(11, 10.5, 10.5));
+        //dirLightNode.light = Light.createPoint(vec3(1, 0.5, 0.5), 15); //Light.createDirectional(vec3(1, 0.5, 0.5));
+        dirLightNode.light = Light.createDirectional(vec3(1, 0.5, 0.8));
         dirLightNode.light.enabled = true;
         _scene.addChild(dirLightNode);
 
@@ -364,8 +364,8 @@ class UiWidget : VerticalLayout, CellVisitor {
         //projectionViewModelMatrix.setIdentity();
         //Log.d("matrix uniform: ", projectionViewModelMatrix.m);
 
-        checkgl!glEnable(GL_CULL_FACE);
-        //checkgl!glDisable(GL_CULL_FACE);
+        //checkgl!glEnable(GL_CULL_FACE);
+        checkgl!glDisable(GL_CULL_FACE);
         checkgl!glEnable(GL_DEPTH_TEST);
         checkgl!glCullFace(GL_BACK);
 
