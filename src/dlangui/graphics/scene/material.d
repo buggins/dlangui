@@ -27,7 +27,7 @@ class Material : RefCountedObject {
 
     // colors
     protected vec4 _diffuseColor = vec4(1, 1, 1, 1);
-    protected vec3 _ambientColor = vec3(1, 1, 1);
+    protected vec3 _ambientColor = vec3(0, 0, 0);
     protected vec4 _modulateColor = vec4(1, 1, 1, 1);
     protected float _modulateAlpha = 1;
 
@@ -101,14 +101,19 @@ class Material : RefCountedObject {
         return this;
     }
 
-    string calcAutoEffectParams(LightParams * lights) {
-        if (!lights || lights.empty)
-            return null;
-        return lights.defs;
+    private AutoParams _lastParams;
+    private string _lastDefs;
+    string calcAutoEffectParams(Mesh mesh, LightParams * lights) {
+        AutoParams newParams = AutoParams(mesh, lights, false);
+        if (newParams != _lastParams) {
+            _lastParams = newParams;
+            _lastDefs = _lastParams.defs;
+        }
+        return _lastDefs;
     }
 
-    void bind(Node3d node, LightParams * lights = null) {
-        autoEffectParams = calcAutoEffectParams(lights);
+    void bind(Node3d node, Mesh mesh, LightParams * lights = null) {
+        autoEffectParams = calcAutoEffectParams(mesh, lights);
         assert(!effect.isNull);
         effect.bind();
         if (!texture.isNull) {
@@ -171,5 +176,53 @@ class Material : RefCountedObject {
             texture.texture.unbind();
         }
         effect.unbind();
+    }
+}
+
+struct AutoParams {
+    ubyte directionalLightCount = 0;
+    ubyte pointLightCount = 0;
+    ubyte spotLightCount = 0;
+    bool vertexColor = false;
+    bool specular = false;
+    this(Mesh mesh, LightParams * lights, bool specular) {
+        if (mesh)
+            vertexColor = mesh.hasElement(VertexElementType.COLOR);
+        if (lights) {
+            directionalLightCount = cast(ubyte)lights.u_directionalLightDirection.length;
+            pointLightCount = cast(ubyte)lights.u_pointLightPosition.length;
+            spotLightCount = cast(ubyte)lights.u_spotLightPosition.length;
+        }
+        this.specular = specular;
+    }
+    string defs() {
+        char buf[];
+        if (directionalLightCount) {
+            buf ~= "DIRECTIONAL_LIGHT_COUNT ";
+            buf ~= directionalLightCount.to!string;
+        }
+        if (pointLightCount) {
+            if (buf.length)
+                buf ~= ";";
+            buf ~= "POINT_LIGHT_COUNT ";
+            buf ~= pointLightCount.to!string;
+        }
+        if (spotLightCount) {
+            if (buf.length)
+                buf ~= ";";
+            buf ~= "SPOT_LIGHT_COUNT ";
+            buf ~= spotLightCount.to!string;
+        }
+        if (vertexColor) {
+            if (buf.length)
+                buf ~= ";";
+            buf ~= "VERTEX_COLOR";
+        }
+        if (specular) {
+            if (buf.length)
+                buf ~= ";";
+            buf ~= "SPECULAR";
+        }
+        return buf.dup;
     }
 }

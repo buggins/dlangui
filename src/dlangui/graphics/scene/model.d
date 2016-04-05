@@ -56,7 +56,7 @@ class Model : DrawableObject {
 
     override void draw(Node3d node, bool wireframe) {
         /// override it
-        _material.bind(node, lights(node));
+        _material.bind(node, _mesh, lights(node));
         _material.drawMesh(_mesh);
         _material.unbind();
     }

@@ -132,30 +132,30 @@ struct Lights {
     @property int directionalCount() const { return cast(int)directional.length; }
     @property int pointCount() const { return cast(int)point.length; }
     @property int spotCount() const { return cast(int)spot.length; }
-    /// return light count definition for shaders, e.g. "DIRECTIONAL_LIGHT_COUNT 2;POINT_LIGHT_COUNT 1"
-    @property string defs() const {
-        if (!directional.length && !point.length && !spot.length)
-            return null;
-        static __gshared char[] buf;
-        buf.length = 0; // reset buffer
-        if (directional.length) {
-            buf ~= "DIRECTIONAL_LIGHT_COUNT ";
-            buf ~= directional.length.to!string;
-        }
-        if (point.length) {
-            if (buf)
-                buf ~= ";";
-            buf ~= "POINT_LIGHT_COUNT ";
-            buf ~= point.length.to!string;
-        }
-        if (spot.length) {
-            if (buf)
-                buf ~= ";";
-            buf ~= "SPOT_LIGHT_COUNT ";
-            buf ~= spot.length.to!string;
-        }
-        return buf.dup;
-    }
+    ///// return light count definition for shaders, e.g. "DIRECTIONAL_LIGHT_COUNT 2;POINT_LIGHT_COUNT 1"
+    //@property string defs() const {
+    //    if (!directional.length && !point.length && !spot.length)
+    //        return null;
+    //    static __gshared char[] buf;
+    //    buf.length = 0; // reset buffer
+    //    if (directional.length) {
+    //        buf ~= "DIRECTIONAL_LIGHT_COUNT ";
+    //        buf ~= directional.length.to!string;
+    //    }
+    //    if (point.length) {
+    //        if (buf.length)
+    //            buf ~= ";";
+    //        buf ~= "POINT_LIGHT_COUNT ";
+    //        buf ~= point.length.to!string;
+    //    }
+    //    if (spot.length) {
+    //        if (buf.length)
+    //            buf ~= ";";
+    //        buf ~= "SPOT_LIGHT_COUNT ";
+    //        buf ~= spot.length.to!string;
+    //    }
+    //    return buf.dup;
+    //}
     void remove(Light light) {
         import std.algorithm : remove;
         switch(light.type) {
@@ -228,7 +228,7 @@ struct LightParams {
     Lights _lights;
 
     @property bool empty() const { return _lights.empty; }
-    @property string defs() const { return _lights.defs; }
+    //@property string defs() const { return _lights.defs; }
 
     void reset() {
         _lights.reset();

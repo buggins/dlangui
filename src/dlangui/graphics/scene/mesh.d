@@ -314,6 +314,11 @@ class Mesh : RefCountedObject {
     @property ref VertexFormat vertexFormat() { return _vertexFormat; }
     @property const(VertexFormat) * vertexFormatPtr() { return &_vertexFormat; }
 
+    /// returns true if vertex format contains specified element
+    bool hasElement(VertexElementType type) const {
+        return _vertexFormat.hasElement(type);
+    }
+
     //@property ref VertexFormat vertexFormat() { return _vertexFormat; }
 
     @property void vertexFormat(VertexFormat format) {
