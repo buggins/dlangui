@@ -115,13 +115,17 @@ class Effect : GLProgram {
     @property override string vertexSource() {
         _visitedIncludes = null;
         _visitedIncludes[_id.vertexShaderName] = true; // mark as included
-        return preProcessSource(loadVertexSource(_id.vertexShaderName));
+        string res = preProcessSource(loadVertexSource(_id.vertexShaderName));
+        //Log.v("vertexSource:", res);
+        return res;
     }
 
     @property override string fragmentSource() {
         _visitedIncludes = null;
         _visitedIncludes[_id.fragmentShaderName] = true; // mark as included
-        return preProcessSource(loadVertexSource(_id.fragmentShaderName));
+        string res = preProcessSource(loadVertexSource(_id.fragmentShaderName));
+        //Log.v("fragmentSource:", res);
+        return res;
     }
 
     override bool initLocations() {

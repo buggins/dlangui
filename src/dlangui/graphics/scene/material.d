@@ -27,9 +27,11 @@ class Material : RefCountedObject {
 
     // colors
     protected vec4 _diffuseColor = vec4(1, 1, 1, 1);
-    protected vec3 _ambientColor = vec3(0, 0, 0);
+    protected vec3 _ambientColor = vec3(0.2, 0.2, 0.2);
     protected vec4 _modulateColor = vec4(1, 1, 1, 1);
     protected float _modulateAlpha = 1;
+
+    protected bool _specular = false;
 
     // TODO: more material properties
 
@@ -51,6 +53,8 @@ class Material : RefCountedObject {
     @property Material modulateColor(vec4 color) { _modulateColor = color; return this; }
     @property float modulateAlpha() { return _modulateAlpha; }
     @property Material modulateColor(float a) { _modulateAlpha = a; return this; }
+    @property bool specular() { return _specular; }
+    @property Material specular(bool a) { _specular = a; return this; }
 
     @property EffectRef effect() {
         if (_effect.isNull && !_autoEffectId.empty)
@@ -104,7 +108,7 @@ class Material : RefCountedObject {
     private AutoParams _lastParams;
     private string _lastDefs;
     string calcAutoEffectParams(Mesh mesh, LightParams * lights) {
-        AutoParams newParams = AutoParams(mesh, lights, false);
+        AutoParams newParams = AutoParams(mesh, lights, _specular);
         if (newParams != _lastParams) {
             _lastParams = newParams;
             _lastDefs = _lastParams.defs;
@@ -125,8 +129,11 @@ class Material : RefCountedObject {
             _effect.setUniform(DefaultUniform.u_worldViewProjectionMatrix, node.projectionViewModelMatrix);
         if (_effect.hasUniform(DefaultUniform.u_cameraPosition))
             _effect.setUniform(DefaultUniform.u_cameraPosition, node.cameraPosition);
-        if (_effect.hasUniform(DefaultUniform.u_worldViewMatrix))
+        if (_effect.hasUniform(DefaultUniform.u_worldViewMatrix)) {
             _effect.setUniform(DefaultUniform.u_worldViewMatrix, node.worldViewMatrix);
+            //Log.d("DefaultUniform.u_worldViewMatrix: ", node.worldViewMatrix);
+            //Log.d("DefaultUniform.u_worldViewMatrix * 3,3,3: ", node.worldViewMatrix * vec3(3,3,3));
+        }
         if (_effect.hasUniform(DefaultUniform.u_ambientColor))
             _effect.setUniform(DefaultUniform.u_ambientColor, _ambientColor);
         if (_effect.hasUniform(DefaultUniform.u_diffuseColor))
@@ -137,8 +144,10 @@ class Material : RefCountedObject {
             _effect.setUniform(DefaultUniform.u_modulateAlpha, _modulateAlpha);
         if (lights && !lights.empty) {
             if (lights.u_directionalLightDirection.length) {
-                if (_effect.hasUniform(DefaultUniform.u_directionalLightDirection))
+                if (_effect.hasUniform(DefaultUniform.u_directionalLightDirection)) {
                     _effect.setUniform(DefaultUniform.u_directionalLightDirection, lights.u_directionalLightDirection);
+                    //Log.d("DefaultUniform.u_directionalLightDirection: ", lights.u_directionalLightDirection);
+                }
                 if (_effect.hasUniform(DefaultUniform.u_directionalLightColor))
                     _effect.setUniform(DefaultUniform.u_directionalLightColor, lights.u_directionalLightColor);
             }

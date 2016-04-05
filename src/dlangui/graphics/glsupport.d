@@ -156,6 +156,7 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
         compatibilityFixes(sourceCode, type);
 
         Log.d("compileShader: glsl = ", glslversion, ", type: ", (type == GL_VERTEX_SHADER ? "GL_VERTEX_SHADER" : (type == GL_FRAGMENT_SHADER ? "GL_FRAGMENT_SHADER" : "UNKNOWN")));
+        //Log.v("Shader code:\n", sourceCode);
         GLuint shader = glCreateShader(type);
         const char * psrc = sourceCode.toStringz;
         glShaderSource(shader, 1, &psrc, null);
@@ -320,11 +321,11 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
     }
 
     override void setUniform(string uniformName, const vec2[] vec) {
-        checkgl!glUniform2fv(getUniformLocation(uniformName), cast(int)vec.length, vec[0].vec.ptr);
+        checkgl!glUniform2fv(getUniformLocation(uniformName), cast(int)vec.length, cast(const(float)*)vec.ptr);
     }
 
     override void setUniform(DefaultUniform id, const vec2[] vec) {
-        checkgl!glUniform2fv(getUniformLocation(id), cast(int)vec.length, vec[0].vec.ptr);
+        checkgl!glUniform2fv(getUniformLocation(id), cast(int)vec.length, cast(const(float)*)vec.ptr);
     }
 
     override void setUniform(string uniformName, vec2 vec) {
@@ -344,11 +345,11 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
     }
 
     override void setUniform(string uniformName, const vec3[] vec) {
-        checkgl!glUniform3fv(getUniformLocation(uniformName), cast(int)vec.length, vec[0].vec.ptr);
+        checkgl!glUniform3fv(getUniformLocation(uniformName), cast(int)vec.length, cast(const(float)*)vec.ptr);
     }
 
     override void setUniform(DefaultUniform id, const vec3[] vec) {
-        checkgl!glUniform3fv(getUniformLocation(id), cast(int)vec.length, vec[0].vec.ptr);
+        checkgl!glUniform3fv(getUniformLocation(id), cast(int)vec.length, cast(const(float)*)vec.ptr);
     }
 
     override void setUniform(string uniformName, vec4 vec) {
@@ -360,11 +361,11 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
     }
 
     override void setUniform(string uniformName, const vec4[] vec) {
-        checkgl!glUniform4fv(getUniformLocation(uniformName), cast(int)vec.length, vec[0].vec.ptr);
+        checkgl!glUniform4fv(getUniformLocation(uniformName), cast(int)vec.length, cast(const(float)*)vec.ptr);
     }
 
     override void setUniform(DefaultUniform id, const vec4[] vec) {
-        checkgl!glUniform4fv(getUniformLocation(id), cast(int)vec.length, vec[0].vec.ptr);
+        checkgl!glUniform4fv(getUniformLocation(id), cast(int)vec.length, cast(const(float)*)vec.ptr);
     }
 
     override void setUniform(string uniformName, ref const(mat4) matrix) {
@@ -376,11 +377,11 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
     }
 
     override void setUniform(string uniformName, const(mat4)[] matrix) {
-        checkgl!glUniformMatrix4fv(getUniformLocation(uniformName), cast(int)matrix.length, false, matrix[0].m.ptr);
+        checkgl!glUniformMatrix4fv(getUniformLocation(uniformName), cast(int)matrix.length, false, cast(const(float)*)matrix.ptr);
     }
 
     override void setUniform(DefaultUniform id, const(mat4)[] matrix) {
-        checkgl!glUniformMatrix4fv(getUniformLocation(id), cast(int)matrix.length, false, matrix[0].m.ptr);
+        checkgl!glUniformMatrix4fv(getUniformLocation(id), cast(int)matrix.length, false, cast(const(float)*)matrix.ptr);
     }
 
     override void setUniform(string uniformName, float v) {
@@ -392,11 +393,11 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
     }
 
     override void setUniform(string uniformName, const float[] v) {
-        checkgl!glUniform1fv(getUniformLocation(uniformName), cast(int)v.length, v.ptr);
+        checkgl!glUniform1fv(getUniformLocation(uniformName), cast(int)v.length, cast(const(float)*)v.ptr);
     }
 
     override void setUniform(DefaultUniform id, const float[] v) {
-        checkgl!glUniform1fv(getUniformLocation(id), cast(int)v.length, v.ptr);
+        checkgl!glUniform1fv(getUniformLocation(id), cast(int)v.length, cast(const(float)*)v.ptr);
     }
 
     /// returns true if effect has uniform

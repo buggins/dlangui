@@ -114,12 +114,16 @@ class UiWidget : VerticalLayout, CellVisitor {
 
         _scene.activeCamera = _cam;
 
-        Node3d dirLightNode = new Node3d();
+        dirLightNode = new Node3d();
         //dirLightNode.lookAt(vec3(-5, -5, -5), vec3(0, 0, 0), vec3(0, 1, 0));
-        //dirLightNode.rotateY(-15);
+        dirLightNode.rotateY(-15);
         //dirLightNode.rotateX(20);
-        dirLightNode.light = Light.createPoint(vec3(1, 0.5, 0.5), 5); //Light.createDirectional(vec3(1, 0.5, 0.5));
-        dirLightNode.light.enabled = false;
+        dirLightNode.translateX(2);
+        dirLightNode.translateY(3);
+        dirLightNode.translateZ(3);
+        dirLightNode.light = Light.createPoint(vec3(110, 110.5, 110.5), 15); //Light.createDirectional(vec3(1, 0.5, 0.5));
+        //dirLightNode.light = Light.createDirectional(vec3(11, 10.5, 10.5));
+        dirLightNode.light.enabled = true;
         _scene.addChild(dirLightNode);
 
         int x0 = 0;
@@ -138,7 +142,7 @@ class UiWidget : VerticalLayout, CellVisitor {
             _mesh.addCubeMesh(vec3(x0+  i * 2 + 1.0f, y0+-i * 2 + 1.0f, z0+ i * 2 + 1.0f), 0.2f, vec4(i / 12, 1 - i / 12, i / 12, 1));
             _mesh.addCubeMesh(vec3(x0+ -i * 2 - 1.0f, y0+-i * 2 - 1.0f, z0+ -i * 2 - 1.0f), 0.2f, vec4(1 - i / 12, i / 12, i / 12, 1));
         }
-        Material cubeMaterial = new Material(EffectId("textured.vert", "textured.frag", "SPECULAR"), "crate");
+        Material cubeMaterial = new Material(EffectId("textured.vert", "textured.frag", null), "crate");
         Model cubeDrawable = new Model(cubeMaterial, _mesh);
         Node3d cubeNode = new Node3d("cubes", cubeDrawable);
         _scene.addChild(cubeNode);
@@ -147,9 +151,10 @@ class UiWidget : VerticalLayout, CellVisitor {
         string src = loadTextResource("suzanne.obj");
         importer.parse(src);
         Log.d("suzanne mesh:", importer.mesh.dumpVertexes(20));
-        Material suzanneMaterial = new Material(EffectId("colored.vert", "colored.frag", "SPECULAR"), null); //"SPECULAR"
-        suzanneMaterial.ambientColor = vec3(0.0, 0.0, 0.0);
-        suzanneMaterial.diffuseColor = vec4(1.0, 0.7, 0.7, 1.0);
+        Material suzanneMaterial = new Material(EffectId("colored.vert", "colored.frag", null), null); //"SPECULAR"
+        //suzanneMaterial.ambientColor = vec3(0.5, 0.5, 0.5);
+        suzanneMaterial.diffuseColor = vec4(1.0, 0.7, 0.5, 1.0);
+        //suzanneMaterial.specular = true;
         Model suzanneDrawable = new Model(suzanneMaterial, importer.mesh);
         Node3d suzanneNode = new Node3d("suzanne", suzanneDrawable);
         //suzanneNode.translate(vec3(3, 4, 5));
@@ -193,6 +198,8 @@ class UiWidget : VerticalLayout, CellVisitor {
         //Log.d("DiamondVisitor finished in ", duration, " ms");
         //destroy(w);
     }
+
+    Node3d dirLightNode;
 
     float rotationX;
     float rotationY;
@@ -287,6 +294,13 @@ class UiWidget : VerticalLayout, CellVisitor {
         _cam.rotateX(rotationX);
         _cam.rotateY(rotationY);
         _cam.rotateZ(rotationZ);
+
+        //Log.d("camPosition: ", _scene.cameraPosition);
+        //Log.d("camDirection: ", _scene.forwardVectorWorld);
+        //Log.d("lightPosition: ", dirLightNode.light.position);
+        //Log.d("lightDirection: ", dirLightNode.light.direction);
+        //Log.d("lightColor: ", dirLightNode.light.color);
+
         //_cam.translate(vec3(-1, -1.5, -1)); // - angle/1000
         //_cam.translate(vec3(0, 0, -1.1)); // - angle/1000
         //_cam.translate(vec3(0, 3,  - angle/1000)); //
