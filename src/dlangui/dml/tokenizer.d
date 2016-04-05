@@ -477,13 +477,19 @@ class Tokenizer {
 }
 
 /// tokenize source into array of tokens (excluding EOF)
-public Token[] tokenize(string code, string[] _singleLineCommentPrefixes = ["//"]) {
+public Token[] tokenize(string code, string[] _singleLineCommentPrefixes = ["//"], bool skipSpace = false, bool skipEols = false, bool skipComments = false) {
     Token[] res;
-    auto tokenizer = new Tokenizer(code, "");
+    auto tokenizer = new Tokenizer(code, "", _singleLineCommentPrefixes);
     for (;;) {
         auto token = tokenizer.nextToken();
         if (token.type == TokenType.eof)
             break;
+        if (skipSpace && token.type == TokenType.whitespace)
+            continue;
+        if (skipEols &&  token.type == TokenType.eol)
+            continue;
+        if (skipComments &&  token.type == TokenType.comment)
+            continue;
         res ~= token;
     }
     return res;

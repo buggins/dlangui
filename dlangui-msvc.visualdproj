@@ -775,6 +775,7 @@
       <File path="src\dlangui\graphics\scene\camera.d" />
       <File path="src\dlangui\graphics\scene\drawableobject.d" />
       <File path="src\dlangui\graphics\scene\effect.d" />
+      <File path="src\dlangui\graphics\scene\fbximport.d" />
       <File path="src\dlangui\graphics\scene\light.d" />
       <File path="src\dlangui\graphics\scene\material.d" />
       <File path="src\dlangui\graphics\scene\mesh.d" />

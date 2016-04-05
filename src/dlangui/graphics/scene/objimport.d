@@ -264,20 +264,3 @@ struct ObjModelImport {
 
 }
 
-// load text resource
-string loadTextResource(string resourceId) {
-    import dlangui.graphics.resources;
-    import std.string : endsWith;
-    string filename;
-    filename = drawableCache.findResource(resourceId);
-    if (!filename) {
-        Log.e("Object resource file not found for resourceId ", resourceId);
-        assert(false);
-    }
-    string s = cast(string)loadResourceBytes(filename);
-    if (!s) {
-        Log.e("Cannot read shader source resource ", resourceId, " from file ", filename);
-        assert(false);
-    }
-    return s;
-}

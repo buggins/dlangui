@@ -8,8 +8,9 @@ import dlangui.graphics.scene.material;
 import dlangui.graphics.scene.effect;
 import dlangui.graphics.scene.model;
 import dlangui.graphics.scene.node;
-import dlangui.graphics.scene.objimport;
 import dlangui.graphics.scene.light;
+import dlangui.graphics.scene.objimport;
+import dlangui.graphics.scene.fbximport;
 import dlangui.graphics.glsupport;
 import dlangui.graphics.gldrawbuf;
 import derelict.opengl3.gl3;
@@ -121,8 +122,8 @@ class UiWidget : VerticalLayout, CellVisitor {
         dirLightNode.translateX(2);
         dirLightNode.translateY(3);
         dirLightNode.translateZ(3);
-        //dirLightNode.light = Light.createPoint(vec3(1, 0.5, 0.5), 15); //Light.createDirectional(vec3(1, 0.5, 0.5));
-        dirLightNode.light = Light.createDirectional(vec3(1, 0.5, 0.8));
+        dirLightNode.light = Light.createPoint(vec3(1, 0.5, 0.5), 15); //Light.createDirectional(vec3(1, 0.5, 0.5));
+        //dirLightNode.light = Light.createDirectional(vec3(1, 0.5, 0.8));
         dirLightNode.light.enabled = true;
         _scene.addChild(dirLightNode);
 
@@ -147,13 +148,21 @@ class UiWidget : VerticalLayout, CellVisitor {
         Node3d cubeNode = new Node3d("cubes", cubeDrawable);
         _scene.addChild(cubeNode);
 
+        {
+            // test FBX import
+            FbxModelImport importer;
+            string src = loadTextResource("suzanne.fbx");
+            importer.filename = "suzanne.fbx";
+            importer.parse(src);
+        }
+
         ObjModelImport importer;
         string src = loadTextResource("suzanne.obj");
         importer.parse(src);
         Log.d("suzanne mesh:", importer.mesh.dumpVertexes(20));
         Material suzanneMaterial = new Material(EffectId("colored.vert", "colored.frag", null), null); //"SPECULAR"
         //suzanneMaterial.ambientColor = vec3(0.5, 0.5, 0.5);
-        suzanneMaterial.diffuseColor = vec4(1.0, 0.7, 0.5, 1.0);
+        suzanneMaterial.diffuseColor = vec4(0.7, 0.7, 0.5, 1.0);
         //suzanneMaterial.specular = true;
         Model suzanneDrawable = new Model(suzanneMaterial, importer.mesh);
         suzanneNode = new Node3d("suzanne", suzanneDrawable);
@@ -364,8 +373,8 @@ class UiWidget : VerticalLayout, CellVisitor {
         //projectionViewModelMatrix.setIdentity();
         //Log.d("matrix uniform: ", projectionViewModelMatrix.m);
 
-        //checkgl!glEnable(GL_CULL_FACE);
-        checkgl!glDisable(GL_CULL_FACE);
+        checkgl!glEnable(GL_CULL_FACE);
+        //checkgl!glDisable(GL_CULL_FACE);
         checkgl!glEnable(GL_DEPTH_TEST);
         checkgl!glCullFace(GL_BACK);
 

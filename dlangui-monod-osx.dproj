@@ -143,6 +143,7 @@
     <Compile Include="src\dlangui\graphics\scene\camera.d" />
     <Compile Include="src\dlangui\graphics\scene\drawableobject.d" />
     <Compile Include="src\dlangui\graphics\scene\effect.d" />
+    <Compile Include="src\dlangui\graphics\scene\fbximport.d" />
     <Compile Include="src\dlangui\graphics\scene\light.d" />
     <Compile Include="src\dlangui\graphics\scene\material.d" />
     <Compile Include="src\dlangui\graphics\scene\mesh.d" />
