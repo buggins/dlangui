@@ -124,16 +124,17 @@ class Material : RefCountedObject {
             texture.texture.setup();
             texture.texture.setSamplerParams(true);
         }
-        // TODO: more uniforms
+        // matrixes, positions uniforms
         if (_effect.hasUniform(DefaultUniform.u_worldViewProjectionMatrix))
             _effect.setUniform(DefaultUniform.u_worldViewProjectionMatrix, node.projectionViewModelMatrix);
         if (_effect.hasUniform(DefaultUniform.u_cameraPosition))
             _effect.setUniform(DefaultUniform.u_cameraPosition, node.cameraPosition);
-        if (_effect.hasUniform(DefaultUniform.u_worldViewMatrix)) {
+        if (_effect.hasUniform(DefaultUniform.u_worldViewMatrix))
             _effect.setUniform(DefaultUniform.u_worldViewMatrix, node.worldViewMatrix);
-            //Log.d("DefaultUniform.u_worldViewMatrix: ", node.worldViewMatrix);
-            //Log.d("DefaultUniform.u_worldViewMatrix * 3,3,3: ", node.worldViewMatrix * vec3(3,3,3));
-        }
+        if (_effect.hasUniform(DefaultUniform.u_inverseTransposeWorldViewMatrix))
+            _effect.setUniform(DefaultUniform.u_inverseTransposeWorldViewMatrix, node.inverseTransposeWorldViewMatrix);
+
+        // color uniforms
         if (_effect.hasUniform(DefaultUniform.u_ambientColor))
             _effect.setUniform(DefaultUniform.u_ambientColor, _ambientColor);
         if (_effect.hasUniform(DefaultUniform.u_diffuseColor))
@@ -142,6 +143,8 @@ class Material : RefCountedObject {
             _effect.setUniform(DefaultUniform.u_modulateColor, _modulateColor);
         if (_effect.hasUniform(DefaultUniform.u_modulateAlpha))
             _effect.setUniform(DefaultUniform.u_modulateAlpha, _modulateAlpha);
+
+        // lighting uniforms
         if (lights && !lights.empty) {
             if (lights.u_directionalLightDirection.length) {
                 if (_effect.hasUniform(DefaultUniform.u_directionalLightDirection)) {

@@ -176,6 +176,37 @@ class Node3d : Transform {
     }
 
     /**
+    * Gets the inverse transpose world matrix corresponding to this node.
+    *
+    * This matrix is typically used to transform normal vectors into world space.
+    *
+    * @return The inverse world matrix of this node.
+    */
+    @property ref const(mat4) inverseTransposeWorldMatrix() {
+        static __gshared mat4 invTransWorld;
+        invTransWorld = worldMatrix;
+        invTransWorld.invert();
+        invTransWorld.transpose();
+        return invTransWorld;
+    }
+
+    /**
+    * Gets the inverse transpose world view matrix corresponding to this node.
+    *
+    * This matrix is typically used to transform normal vectors into view space.
+    *
+    * @return The inverse world view matrix of this node.
+    */
+    @property ref const(mat4) inverseTransposeWorldViewMatrix() {
+        static __gshared mat4 invTransWorldView;
+        invTransWorldView = viewMatrix * worldMatrix;
+        invTransWorldView.invert();
+        invTransWorldView.transpose();
+        return invTransWorldView;
+    }
+
+
+    /**
     * Returns the forward vector of the Node in world space.
     *
     * @return The forward vector in world space.

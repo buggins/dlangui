@@ -121,7 +121,7 @@ class UiWidget : VerticalLayout, CellVisitor {
         dirLightNode.translateX(2);
         dirLightNode.translateY(3);
         dirLightNode.translateZ(3);
-        dirLightNode.light = Light.createPoint(vec3(110, 110.5, 110.5), 15); //Light.createDirectional(vec3(1, 0.5, 0.5));
+        dirLightNode.light = Light.createPoint(vec3(1, 0.5, 0.5), 15); //Light.createDirectional(vec3(1, 0.5, 0.5));
         //dirLightNode.light = Light.createDirectional(vec3(11, 10.5, 10.5));
         dirLightNode.light.enabled = true;
         _scene.addChild(dirLightNode);
@@ -156,7 +156,7 @@ class UiWidget : VerticalLayout, CellVisitor {
         suzanneMaterial.diffuseColor = vec4(1.0, 0.7, 0.5, 1.0);
         //suzanneMaterial.specular = true;
         Model suzanneDrawable = new Model(suzanneMaterial, importer.mesh);
-        Node3d suzanneNode = new Node3d("suzanne", suzanneDrawable);
+        suzanneNode = new Node3d("suzanne", suzanneDrawable);
         //suzanneNode.translate(vec3(3, 4, 5));
         _scene.addChild(suzanneNode);
 
@@ -174,7 +174,7 @@ class UiWidget : VerticalLayout, CellVisitor {
             int bx = rnd.next(6)-32;
             int by = rnd.next(4); 
             int bz = rnd.next(6)-32;
-            Log.fd("Setting cell %d,%d,%d", bx, by, bz);
+            //Log.fd("Setting cell %d,%d,%d", bx, by, bz);
             _world.setCell(bx, by, bz, 3);
         }
 
@@ -200,6 +200,7 @@ class UiWidget : VerticalLayout, CellVisitor {
     }
 
     Node3d dirLightNode;
+    Node3d suzanneNode;
 
     float rotationX;
     float rotationY;
@@ -272,6 +273,7 @@ class UiWidget : VerticalLayout, CellVisitor {
         _cam.rotateY(0.02);
         angle += interval * 0.000002f;
         invalidate();
+        suzanneNode.rotateY(interval * 0.000002f);
     }
     float angle = 0;
 
