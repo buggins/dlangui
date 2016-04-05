@@ -4,6 +4,7 @@ import dlangui.core.logger;
 import dlangui.core.math3d;
 import dlangui.dml.tokenizer;
 import dlangui.graphics.scene.mesh;
+import std.string : startsWith;
 
 struct FbxModelImport {
     Token[] tokens;
@@ -11,8 +12,10 @@ struct FbxModelImport {
     ParseState state;
     string filename;
     static class ParseState {
+        ParseState parent;
         string paramName;
         Token[] literalParams;
+        ParseState[] children;
         Token[] additionalLiteralParams;
         this(string name) {
             paramName = name;
@@ -21,7 +24,22 @@ struct FbxModelImport {
             literalParams ~= token;
         }
     }
+    static class FBXProperties {
+        FBXProperty[string] map;
+        void add(FBXProperty p) {
+            map[p.name] = p;
+        }
+    }
+    static class FBXProperty {
+        string name;
+        string type;
+        Token[] params;
+    }
     protected void pushState(ParseState state) {
+        state.parent = this.state;
+        if (this.state) {
+            this.state.children ~= state;
+        }
         stateStack ~= state;
         this.state = state;
         Log.d("pushState:[", stateStack.length, "] name=", state.paramName);
@@ -111,7 +129,15 @@ struct FbxModelImport {
         }
         return res;
     }
+    protected FBXProperties parseProperties(string name) {
+        FBXProperties res = new FBXProperties();
+        return res;
+    }
     protected void parseParam(string name) {
+        //if (name.startsWith("Properties")) {
+        //    parseProperties(name);
+        //    return;
+        //}
         pushState(new ParseState(name));
         if (!tokens.length)
             error("unexpected eof");
