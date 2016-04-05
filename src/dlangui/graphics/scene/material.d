@@ -205,7 +205,7 @@ struct AutoParams {
         this.specular = specular;
     }
     string defs() {
-        char buf[];
+        char[] buf;
         if (directionalLightCount) {
             buf ~= "DIRECTIONAL_LIGHT_COUNT ";
             buf ~= directionalLightCount.to!string;
