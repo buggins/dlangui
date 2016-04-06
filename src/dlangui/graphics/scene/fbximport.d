@@ -201,7 +201,6 @@ struct FbxModelImport {
             Log.d("failed to tokenize OBJ source", e);
             return false;
         }
-        return true;
     }
 }
 
