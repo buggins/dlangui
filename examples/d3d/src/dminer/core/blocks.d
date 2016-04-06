@@ -8,9 +8,9 @@ immutable string BLOCK_TEXTURE_FILENAME = "blocks";
 immutable int BLOCK_TEXTURE_DX = 1024;
 immutable int BLOCK_TEXTURE_DY = 1024;
 immutable int BLOCK_SPRITE_SIZE = 16;
-immutable int BLOCK_SPRITE_STEP = 20;
-immutable int BLOCK_SPRITE_OFFSET = 21;
-immutable int BLOCK_TEXTURE_SPRITES_PER_LINE = 50;
+immutable int BLOCK_SPRITE_STEP = 16;
+immutable int BLOCK_SPRITE_OFFSET = 0;
+immutable int BLOCK_TEXTURE_SPRITES_PER_LINE = 1024/16;
 immutable int VERTEX_COMPONENTS = 12;
 
 enum BlockVisibility {
@@ -232,6 +232,24 @@ void registerBlockType(BlockDef def) {
     BLOCK_TERRAIN_SMOOTHING[def.id] = def.terrainSmoothing;
 }
 
+enum BlockImage : int {
+    stone,
+    grass_top,
+    grass_side,
+    grass_top_footsteps,
+    dirt,
+    bedrock,
+    sand,
+    gravel,
+    sandstone,
+    clay,
+    cobblestone,
+    cobblestone_mossy,
+    brick,
+    stonebrick,
+    red_sand,
+}
+
 /// init block types array
 __gshared static this() {
     import std.string;
@@ -248,14 +266,14 @@ __gshared static this() {
     // empty cell
     registerBlockType(new BlockDef(0, "empty", BlockVisibility.INVISIBLE, 0));
     // standard block types
-    registerBlockType(new BlockDef(1, "gray_brick", BlockVisibility.OPAQUE, 0));
-    registerBlockType(new BlockDef(2, "brick", BlockVisibility.OPAQUE, 1));
-    registerBlockType(new BlockDef(3, "bedrock", BlockVisibility.OPAQUE, 2));
-    registerBlockType(new BlockDef(4, "clay", BlockVisibility.OPAQUE, 3));
-    registerBlockType(new BlockDef(5, "cobblestone", BlockVisibility.OPAQUE, 4));
-    registerBlockType(new BlockDef(6, "gravel", BlockVisibility.OPAQUE, 5));
-    registerBlockType(new BlockDef(7, "red_sand", BlockVisibility.OPAQUE, 6));
-    registerBlockType(new BlockDef(8, "sand", BlockVisibility.OPAQUE, 7));
+    registerBlockType(new BlockDef(1, "gray_brick", BlockVisibility.OPAQUE, BlockImage.stonebrick));
+    registerBlockType(new BlockDef(2, "brick", BlockVisibility.OPAQUE, BlockImage.brick));
+    registerBlockType(new BlockDef(3, "bedrock", BlockVisibility.OPAQUE, BlockImage.bedrock));
+    registerBlockType(new BlockDef(4, "clay", BlockVisibility.OPAQUE, BlockImage.clay));
+    registerBlockType(new BlockDef(5, "cobblestone", BlockVisibility.OPAQUE, BlockImage.cobblestone));
+    registerBlockType(new BlockDef(6, "gravel", BlockVisibility.OPAQUE, BlockImage.gravel));
+    registerBlockType(new BlockDef(7, "red_sand", BlockVisibility.OPAQUE, BlockImage.red_sand));
+    registerBlockType(new BlockDef(8, "sand", BlockVisibility.OPAQUE, BlockImage.sand));
 
     registerBlockType(new BlockDef(50, "box", BlockVisibility.HALF_OPAQUE, 50));
 

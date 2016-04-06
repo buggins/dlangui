@@ -833,14 +833,14 @@ static class GLTexture : RefCountedObject {
         return uv(_dx, _dy);
     }
 
-    this(string resourceId) {
+    this(string resourceId, int mipmapLevels = 0) {
         import dlangui.graphics.resources;
         _resourceId = resourceId;
         string path = drawableCache.findResource(resourceId);
-        this(cast(ColorDrawBuf)imageCache.get(path));
+        this(cast(ColorDrawBuf)imageCache.get(path), mipmapLevels);
     }
 
-    this(ColorDrawBuf buf) {
+    this(ColorDrawBuf buf, int mipmapLevels = 0) {
         if (buf) {
             _dx = buf.width;
             _dy = buf.height;
@@ -853,7 +853,7 @@ static class GLTexture : RefCountedObject {
             }
             uint * pixels = buf.scanLine(0);
             buf.invertAlpha();
-            if (!glSupport.setTextureImage(_texture, buf.width, buf.height, cast(ubyte*)pixels, 10)) {
+            if (!glSupport.setTextureImage(_texture, buf.width, buf.height, cast(ubyte*)pixels, mipmapLevels)) {
                 destroy(_texture);
                 _texture = null;
                 buf.invertAlpha();
@@ -896,7 +896,7 @@ class GLTextureCache {
         if (auto p = resourceId in _map) {
             return *p;
         }
-        GLTexture tx = new GLTexture(resourceId);
+        GLTexture tx = new GLTexture(resourceId, 6);
         _map[resourceId] = tx;
         return tx;
     }

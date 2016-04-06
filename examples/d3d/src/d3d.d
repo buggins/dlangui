@@ -198,6 +198,7 @@ class UiWidget : VerticalLayout, CellVisitor {
         updateMinerMesh();
 
         Material minerMaterial = new Material(EffectId("textured.vert", "textured.frag", null), "blocks");
+        minerMaterial.textureLinear = false;
         Model minerDrawable = new Model(minerMaterial, _minerMesh);
         Node3d minerNode = new Node3d("miner", minerDrawable);
         _scene.addChild(minerNode);

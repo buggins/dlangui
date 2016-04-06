@@ -973,7 +973,7 @@ final class GLSupport {
             }
             srcptr += srcstride; // skip srcline
         }
-        glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, newdx, newdy, 0, GL_RGBA, GL_UNSIGNED_BYTE, dst.ptr);
+        checkgl!glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, newdx, newdy, 0, GL_RGBA, GL_UNSIGNED_BYTE, dst.ptr);
         return true;
     }
 
@@ -983,8 +983,10 @@ final class GLSupport {
         checkgl!glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
         texture.setSamplerParams(true, true);
 
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmapLevels > 0 ? mipmapLevels - 1 : 0);
         // ORIGINAL: glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dx, dy, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dx, dy, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+        checkgl!glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, dx, dy, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
         if (checkError("updateTexture - glTexImage2D")) {
             Log.e("Cannot set image for texture");
             return false;
@@ -1185,8 +1187,10 @@ class GLObject(GLObjectTypes type, GLuint target = 0) {
     static if(type == GLObjectTypes.Texture)
     {
         void setSamplerParams(bool linear, bool clamp = false, bool mipmap = false) {
-            glTexParameteri(target, GL_TEXTURE_MAG_FILTER, linear ? (!mipmap ? GL_LINEAR : GL_LINEAR_MIPMAP_LINEAR) : (!mipmap ? GL_NEAREST : GL_NEAREST_MIPMAP_NEAREST));
-            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, linear ? (!mipmap ? GL_LINEAR : GL_LINEAR_MIPMAP_LINEAR) : (!mipmap ? GL_NEAREST : GL_NEAREST_MIPMAP_NEAREST));
+            glTexParameteri(target, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, linear ? 
+                            (!mipmap ? GL_LINEAR : GL_LINEAR_MIPMAP_LINEAR) : 
+                            (!mipmap ? GL_NEAREST : GL_LINEAR_MIPMAP_LINEAR)); //GL_NEAREST_MIPMAP_NEAREST
             checkError("filtering - glTexParameteri");
             if(clamp) {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);

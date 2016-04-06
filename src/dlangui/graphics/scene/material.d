@@ -24,6 +24,7 @@ class Material : RefCountedObject {
     // textures
     protected TextureRef _texture;
     protected string _textureId;
+    protected bool _textureLinear = true;
 
     protected TextureRef _bumpTexture;
     protected string _bumpTextureId;
@@ -109,6 +110,8 @@ class Material : RefCountedObject {
         _textureId = resourceId;
         return this;
     }
+    @property bool textureLinear() { return _textureLinear; }
+    @property Material textureLinear(bool v) { _textureLinear = v; return this; }
 
 
     @property TextureRef bumpTexture() { 
@@ -150,11 +153,11 @@ class Material : RefCountedObject {
         effect.bind();
         if (!texture.isNull) {
             texture.texture.setup();
-            texture.texture.setSamplerParams(true, true, true);
+            texture.texture.setSamplerParams(_textureLinear, true, true);
         }
         if (!bumpTexture.isNull) {
             bumpTexture.texture.setup(1);
-            bumpTexture.texture.setSamplerParams(true, true, true);
+            bumpTexture.texture.setSamplerParams(true, true, false);
         }
         // matrixes, positions uniforms
         if (_effect.hasUniform(DefaultUniform.u_worldViewProjectionMatrix))
@@ -220,6 +223,9 @@ class Material : RefCountedObject {
     void unbind() {
         if (!texture.isNull) {
             texture.texture.unbind();
+        }
+        if (!bumpTexture.isNull) {
+            bumpTexture.texture.unbind();
         }
         effect.unbind();
     }
