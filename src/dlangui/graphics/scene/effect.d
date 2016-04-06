@@ -143,6 +143,10 @@ class Effect : GLProgram {
                 return getAttribLocation(DefaultAttribute.a_texCoord);
             case NORMAL: 
                 return getAttribLocation(DefaultAttribute.a_normal);
+            case TANGENT: 
+                return getAttribLocation(DefaultAttribute.a_tangent);
+            case BINORMAL: 
+                return getAttribLocation(DefaultAttribute.a_binormal);
             default:
                 return super.getVertexElementLocation(type);
         }

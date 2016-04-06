@@ -119,6 +119,10 @@ enum VertexElementType : ubyte {
     POSITION = 0,
     NORMAL,
     COLOR,
+    TANGENT,
+    BINORMAL,
+    BLENDWEIGHTS,
+    BLENDINDICES,
     TEXCOORD0,
     TEXCOORD1,
     TEXCOORD2,
@@ -168,11 +172,16 @@ struct VertexElement {
 
     this(VertexElementType type, ubyte size = 0) {
         if (size == 0) {
+            // autoassign default size
             switch(type) with (VertexElementType) {
                 case POSITION:
                 case NORMAL:
+                case TANGENT:
+                case BINORMAL:
                     size = 3;
                     break;
+                case BLENDWEIGHTS:
+                case BLENDINDICES:
                 case COLOR:
                     size = 4;
                     break;
@@ -503,7 +512,9 @@ class Mesh : RefCountedObject {
     }
 
     static Mesh createCubeMesh(vec3 pos, float d=1, vec4 color = vec4(1,1,1,1)) {
-        Mesh mesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.COLOR, VertexElementType.TEXCOORD0));
+        Mesh mesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.COLOR, VertexElementType.TEXCOORD0
+                                          //, VertexElementType.TANGENT, VertexElementType.BINORMAL
+                                          ));
         mesh.addCubeMesh(pos, d, color);
         return mesh;
     }
