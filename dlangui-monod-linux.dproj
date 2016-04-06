@@ -30,6 +30,7 @@
     <ExtraCompilerArguments>-Jviews
 -Jviews/res
 -Jviews/res/i18n
+-Jviews/res/shaders
 -Jviews/res/mdpi
 -Jviews/res/hdpi</ExtraCompilerArguments>
   </PropertyGroup>
@@ -49,6 +50,7 @@
 -Jviews/res
 -Jviews/res/i18n
 -Jviews/res/mdpi
+-Jviews/res/shaders
 -Jviews/res/hdpi</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
     <OutputName>libdlangui-monod-linux</OutputName>
@@ -73,6 +75,7 @@
 -Jviews/res
 -Jviews/res/i18n
 -Jviews/res/mdpi
+-Jviews/res/shaders
 -Jviews/res/hdpi</ExtraCompilerArguments>
     <UnittestMode>true</UnittestMode>
     <OutputName>libdlangui-monod-linux</OutputName>
@@ -95,6 +98,7 @@
 -Jviews/res
 -Jviews/res/i18n
 -Jviews/res/mdpi
+-Jviews/res/shaders
 -Jviews/res/hdpi</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
     <OutputName>libdlangui-monod-linux</OutputName>
@@ -117,6 +121,7 @@
 -Jviews/res
 -Jviews/res/i18n
 -Jviews/res/mdpi
+-Jviews/res/shaders
 -Jviews/res/hdpi</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
     <OutputName>libdlangui-monod-linux</OutputName>
@@ -139,6 +144,7 @@
 -Jviews/res
 -Jviews/res/i18n
 -Jviews/res/mdpi
+-Jviews/res/shaders
 -Jviews/res/hdpi</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
     <OutputName>libdlangui-monod-linux</OutputName>
@@ -168,6 +174,7 @@
 -Jviews/res
 -Jviews/res/i18n
 -Jviews/res/mdpi
+-Jviews/res/shaders
 -Jviews/res/hdpi</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
     <OutputName>libdlangui-monod-linux</OutputName>
@@ -191,6 +198,7 @@
 -Jviews/res
 -Jviews/res/i18n
 -Jviews/res/mdpi
+-Jviews/res/shaders
 -Jviews/res/hdpi</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
     <OutputName>libdlangui-monod-linux</OutputName>
@@ -214,6 +222,7 @@
 -Jviews/res
 -Jviews/res/i18n
 -Jviews/res/mdpi
+-Jviews/res/shaders
 -Jviews/res/hdpi</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
     <OutputName>libdlangui-monod-linux</OutputName>
@@ -237,6 +246,7 @@
 -Jviews/res
 -Jviews/res/i18n
 -Jviews/res/mdpi
+-Jviews/res/shaders
 -Jviews/res/hdpi</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
     <OutputName>libdlangui-monod-linux</OutputName>

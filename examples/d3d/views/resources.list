@@ -8,11 +8,3 @@ res/mdpi/brick.png
 res/mdpi/brickn.png
 res/models/suzanne.obj
 res/models/suzanne.fbx
-res/shaders/colored.vert
-res/shaders/colored.frag
-res/shaders/lighting.vert
-res/shaders/lighting.frag
-res/shaders/skinning.vert
-res/shaders/skinning-none.vert
-res/shaders/textured.vert
-res/shaders/textured.frag

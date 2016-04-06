@@ -27,7 +27,7 @@
     </VersionIds>
     <ObjectsDirectory>obj/Debug</ObjectsDirectory>
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
-    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi</ExtraCompilerArguments>
+    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi -Jviews/res/shaders</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
     <OutputName>libdlangui-monod-osx</OutputName>
     <Target>StaticLibrary</Target>
@@ -43,7 +43,7 @@
     <Target>StaticLibrary</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
-    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi</ExtraCompilerArguments>
+    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi -Jviews/res/shaders</ExtraCompilerArguments>
     <VersionIds>
       <VersionIds>
         <String>USE_SDL</String>
@@ -63,7 +63,7 @@
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
-    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi</ExtraCompilerArguments>
+    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi -Jviews/res/shaders</ExtraCompilerArguments>
     <VersionIds>
       <VersionIds>
         <String>USE_SDL</String>
@@ -84,7 +84,7 @@
     </VersionIds>
     <ObjectsDirectory>obj/DebugX11</ObjectsDirectory>
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
-    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi</ExtraCompilerArguments>
+    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi -Jviews/res/shaders</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
     <OutputName>libdlangui-monod-osx</OutputName>
     <Target>StaticLibrary</Target>
@@ -95,7 +95,7 @@
     <OutputPath>bin\DebugX11</OutputPath>
     <ObjectsDirectory>obj/DebugX11</ObjectsDirectory>
     <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
-    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi</ExtraCompilerArguments>
+    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/mdpi -Jviews/res/hdpi -Jviews/res/shaders</ExtraCompilerArguments>
     <UnittestMode>false</UnittestMode>
     <OutputName>libdlangui-monod-osx</OutputName>
     <Target>StaticLibrary</Target>

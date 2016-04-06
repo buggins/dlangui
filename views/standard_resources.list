@@ -275,3 +275,11 @@ res/toolbar_control_background.xml
 res/toolbar_control_background_dark.xml
 res/transparent_button_background.xml
 res/transparent_button_background_dark.xml
+res/shaders/colored.vert
+res/shaders/colored.frag
+res/shaders/lighting.vert
+res/shaders/lighting.frag
+res/shaders/skinning.vert
+res/shaders/skinning-none.vert
+res/shaders/textured.vert
+res/shaders/textured.frag

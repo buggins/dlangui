@@ -22,6 +22,7 @@
         "views/res",
         "views/res/mdpi",
         "views/res/hdpi",
+        "views/res/shaders",
         "views/res/i18n"
     ],
 
