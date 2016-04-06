@@ -54,7 +54,7 @@
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
   <imppath />
-  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi</fileImppath>
+  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi views/res/shaders</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
@@ -156,7 +156,7 @@
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
   <imppath />
-  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi</fileImppath>
+  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi views/res/shaders</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
@@ -258,7 +258,7 @@
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
   <imppath />
-  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi</fileImppath>
+  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi views/res/shaders</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
@@ -360,7 +360,7 @@
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
   <imppath />
-  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi</fileImppath>
+  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi views/res/shaders</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
@@ -462,7 +462,7 @@
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
   <imppath />
-  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi</fileImppath>
+  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi views/res/shaders</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
@@ -564,7 +564,7 @@
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
   <imppath />
-  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi</fileImppath>
+  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi views/res/shaders</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
