@@ -148,7 +148,7 @@ class UiWidget : VerticalLayout, CellVisitor {
         Node3d cubeNode = new Node3d("cubes", cubeDrawable);
         _scene.addChild(cubeNode);
 
-        {
+        debug(fbximport) {
             // test FBX import
             FbxModelImport importer;
             string src = loadTextResource("suzanne.fbx");
@@ -166,9 +166,16 @@ class UiWidget : VerticalLayout, CellVisitor {
         //suzanneMaterial.specular = true;
         Model suzanneDrawable = new Model(suzanneMaterial, importer.mesh);
         suzanneNode = new Node3d("suzanne", suzanneDrawable);
-        //suzanneNode.translate(vec3(3, 4, 5));
+        suzanneNode.translate(vec3(2, 3, -5));
         _scene.addChild(suzanneNode);
 
+
+        brickNode = new Node3d("brick");
+        brickNode.translate(vec3(-2, 3, -3));
+        Mesh brickMesh = Mesh.createCubeMesh(vec3(0, 0, 0), 0.8, vec4(0.8, 0.8, 0.8, 1));
+        Material brickMaterial = new Material(EffectId("textured.vert", "textured.frag", null), "brick", "brickn"); // with bump mapping
+        brickNode.drawable = new Model(brickMaterial, brickMesh);
+        _scene.addChild(brickNode);
 
         _minerMesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, VertexElementType.COLOR, VertexElementType.TEXCOORD0));
         _world = new World();
@@ -210,6 +217,7 @@ class UiWidget : VerticalLayout, CellVisitor {
 
     Node3d dirLightNode;
     Node3d suzanneNode;
+    Node3d brickNode;
 
     float rotationX;
     float rotationY;

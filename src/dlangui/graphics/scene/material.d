@@ -25,24 +25,29 @@ class Material : RefCountedObject {
     protected TextureRef _texture;
     protected string _textureId;
 
+    protected TextureRef _bumpTexture;
+    protected string _bumpTextureId;
+
     // colors
     protected vec4 _diffuseColor = vec4(1, 1, 1, 1);
     protected vec3 _ambientColor = vec3(0.2, 0.2, 0.2);
     protected vec4 _modulateColor = vec4(1, 1, 1, 1);
     protected float _modulateAlpha = 1;
 
-    protected bool _specular = false;
+    /// 0 - specular is disabled, 1 .. 256 - specular exponent
+    protected float _specular = 0;
 
     // TODO: more material properties
 
     this() {
     }
 
-    this(EffectId effectId, string textureId) {
+    this(EffectId effectId, string textureId, string bumpTextureId = null) {
         _effectId = effectId;
         _autoEffectParams = null;
         _autoEffectId = effectId;
         _textureId = textureId;
+        _bumpTextureId = bumpTextureId;
     }
 
     @property vec4 diffuseColor() { return _diffuseColor; }
@@ -53,8 +58,8 @@ class Material : RefCountedObject {
     @property Material modulateColor(vec4 color) { _modulateColor = color; return this; }
     @property float modulateAlpha() { return _modulateAlpha; }
     @property Material modulateColor(float a) { _modulateAlpha = a; return this; }
-    @property bool specular() { return _specular; }
-    @property Material specular(bool a) { _specular = a; return this; }
+    @property float specular() { return _specular; }
+    @property Material specular(float a) { _specular = a; return this; }
 
     @property EffectRef effect() {
         if (_effect.isNull && !_autoEffectId.empty)
@@ -105,10 +110,33 @@ class Material : RefCountedObject {
         return this;
     }
 
+
+    @property TextureRef bumpTexture() { 
+        if (_bumpTexture.isNull && _bumpTextureId.length) {
+            _bumpTexture = GLTextureCache.instance.get(_bumpTextureId);
+        }
+        return _bumpTexture;
+    }
+    /// set texture
+    @property Material bumpTexture(TextureRef e) { 
+        _bumpTexture = e; 
+        return this;
+    }
+    /// set texture from resourceId
+    @property Material bumpTexture(string resourceId) { 
+        if (_bumpTextureId == resourceId)
+            return this; // no change
+        _bumpTexture.clear();
+        _bumpTextureId = resourceId;
+        return this;
+    }
+
+
+
     private AutoParams _lastParams;
     private string _lastDefs;
     string calcAutoEffectParams(Mesh mesh, LightParams * lights) {
-        AutoParams newParams = AutoParams(mesh, lights, _specular);
+        AutoParams newParams = AutoParams(mesh, lights, _specular, !bumpTexture.isNull);
         if (newParams != _lastParams) {
             _lastParams = newParams;
             _lastDefs = _lastParams.defs;
@@ -123,6 +151,10 @@ class Material : RefCountedObject {
         if (!texture.isNull) {
             texture.texture.setup();
             texture.texture.setSamplerParams(true);
+        }
+        if (!bumpTexture.isNull) {
+            bumpTexture.texture.setup(1);
+            bumpTexture.texture.setSamplerParams(true);
         }
         // matrixes, positions uniforms
         if (_effect.hasUniform(DefaultUniform.u_worldViewProjectionMatrix))
@@ -143,6 +175,8 @@ class Material : RefCountedObject {
             _effect.setUniform(DefaultUniform.u_modulateColor, _modulateColor);
         if (_effect.hasUniform(DefaultUniform.u_modulateAlpha))
             _effect.setUniform(DefaultUniform.u_modulateAlpha, _modulateAlpha);
+        if (_effect.hasUniform(DefaultUniform.u_specularExponent))
+            _effect.setUniform(DefaultUniform.u_specularExponent, _specular);
 
         // lighting uniforms
         if (lights && !lights.empty) {
@@ -197,7 +231,8 @@ struct AutoParams {
     ubyte spotLightCount = 0;
     bool vertexColor = false;
     bool specular = false;
-    this(Mesh mesh, LightParams * lights, bool specular) {
+    bool bumpMapping = false;
+    this(Mesh mesh, LightParams * lights, float specular, bool bumpMapping) {
         if (mesh)
             vertexColor = mesh.hasElement(VertexElementType.COLOR);
         if (lights) {
@@ -205,7 +240,8 @@ struct AutoParams {
             pointLightCount = cast(ubyte)lights.u_pointLightPosition.length;
             spotLightCount = cast(ubyte)lights.u_spotLightPosition.length;
         }
-        this.specular = specular;
+        this.specular = specular > 0.01;
+        this.bumpMapping = bumpMapping;
     }
     string defs() {
         char[] buf;
@@ -234,6 +270,11 @@ struct AutoParams {
             if (buf.length)
                 buf ~= ";";
             buf ~= "SPECULAR";
+        }
+        if (bumpMapping) {
+            if (buf.length)
+                buf ~= ";";
+            buf ~= "BUMPED";
         }
         return buf.dup;
     }

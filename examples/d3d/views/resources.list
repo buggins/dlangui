@@ -4,6 +4,8 @@ res/mdpi/cr3_logo.png
 res/mdpi/tx_fabric.jpg
 res/mdpi/crate.png
 res/mdpi/blocks.png
+res/mdpi/brick.png
+res/mdpi/brickn.png
 res/models/suzanne.obj
 res/models/suzanne.fbx
 res/shaders/colored.vert
