@@ -150,11 +150,11 @@ class Material : RefCountedObject {
         effect.bind();
         if (!texture.isNull) {
             texture.texture.setup();
-            texture.texture.setSamplerParams(true);
+            texture.texture.setSamplerParams(true, true, true);
         }
         if (!bumpTexture.isNull) {
             bumpTexture.texture.setup(1);
-            bumpTexture.texture.setSamplerParams(true);
+            bumpTexture.texture.setSamplerParams(true, true, true);
         }
         // matrixes, positions uniforms
         if (_effect.hasUniform(DefaultUniform.u_worldViewProjectionMatrix))

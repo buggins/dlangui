@@ -853,7 +853,7 @@ static class GLTexture : RefCountedObject {
             }
             uint * pixels = buf.scanLine(0);
             buf.invertAlpha();
-            if (!glSupport.setTextureImage(_texture, buf.width, buf.height, cast(ubyte*)pixels)) {
+            if (!glSupport.setTextureImage(_texture, buf.width, buf.height, cast(ubyte*)pixels, 10)) {
                 destroy(_texture);
                 _texture = null;
                 buf.invertAlpha();

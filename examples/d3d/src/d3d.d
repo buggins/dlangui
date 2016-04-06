@@ -122,7 +122,7 @@ class UiWidget : VerticalLayout, CellVisitor {
         dirLightNode.translateX(2);
         dirLightNode.translateY(3);
         dirLightNode.translateZ(0);
-        dirLightNode.light = Light.createPoint(vec3(3, 3, 3), 15); //Light.createDirectional(vec3(1, 0.5, 0.5));
+        dirLightNode.light = Light.createPoint(vec3(2, 2, 2), 15); //Light.createDirectional(vec3(1, 0.5, 0.5));
         //dirLightNode.light = Light.createDirectional(vec3(1, 0.5, 0.8));
         dirLightNode.light.enabled = true;
         _scene.addChild(dirLightNode);

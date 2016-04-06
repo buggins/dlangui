@@ -951,7 +951,33 @@ final class GLSupport {
         checkgl!glFlush();
     }
 
-    bool setTextureImage(Tex2D texture, int dx, int dy, ubyte * pixels) {
+    bool generateMipmap(int dx, int dy, ubyte * pixels, int level, ref ubyte[] dst) {
+        if ((dx & 1) || (dy & 1) || dx < 2 || dy < 2)
+            return false; // size is not even
+        int newdx = dx / 2;
+        int newdy = dy / 2;
+        int newlen = newdx * newdy * 4;
+        if (newlen > dst.length)
+            dst.length = newlen;
+        ubyte * dstptr = dst.ptr;
+        ubyte * srcptr = pixels;
+        int srcstride = dx * 4;
+        for (int y = 0; y < newdy; y++) {
+            for (int x = 0; x < newdx; x++) {
+                dstptr[0] = cast(ubyte)((srcptr[0+0] + srcptr[0+4] + srcptr[0+srcstride] + srcptr[0+srcstride + 4])>>2);
+                dstptr[1] = cast(ubyte)((srcptr[1+0] + srcptr[1+4] + srcptr[1+srcstride] + srcptr[1+srcstride + 4])>>2);
+                dstptr[2] = cast(ubyte)((srcptr[2+0] + srcptr[2+4] + srcptr[2+srcstride] + srcptr[2+srcstride + 4])>>2);
+                dstptr[3] = cast(ubyte)((srcptr[3+0] + srcptr[3+4] + srcptr[3+srcstride] + srcptr[3+srcstride + 4])>>2);
+                dstptr += 4;
+                srcptr += 8;
+            }
+            srcptr += srcstride; // skip srcline
+        }
+        glTexImage2D(GL_TEXTURE_2D, level, GL_RGBA, newdx, newdy, 0, GL_RGBA, GL_UNSIGNED_BYTE, dst.ptr);
+        return true;
+    }
+
+    bool setTextureImage(Tex2D texture, int dx, int dy, ubyte * pixels, int mipmapLevels = 0) {
         checkError("before setTextureImage");
         texture.bind();
         checkgl!glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
@@ -962,6 +988,19 @@ final class GLSupport {
         if (checkError("updateTexture - glTexImage2D")) {
             Log.e("Cannot set image for texture");
             return false;
+        }
+        if (mipmapLevels > 1) {
+            ubyte[] buffer;
+            ubyte * src = pixels;
+            int ndx = dx;
+            int ndy = dy;
+            for (int i = 1; i < mipmapLevels; i++) {
+                if (!generateMipmap(ndx, ndy, src, i, buffer))
+                    break;
+                ndx /= 2;
+                ndy /= 2;
+                src = buffer.ptr;
+            }
         }
         texture.unbind();
         return true;
@@ -1145,9 +1184,9 @@ class GLObject(GLObjectTypes type, GLuint target = 0) {
 
     static if(type == GLObjectTypes.Texture)
     {
-        void setSamplerParams(bool linear, bool clamp = false) {
-            glTexParameteri(target, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
-            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, linear ? GL_LINEAR : GL_NEAREST);
+        void setSamplerParams(bool linear, bool clamp = false, bool mipmap = false) {
+            glTexParameteri(target, GL_TEXTURE_MAG_FILTER, linear ? (!mipmap ? GL_LINEAR : GL_LINEAR_MIPMAP_LINEAR) : (!mipmap ? GL_NEAREST : GL_NEAREST_MIPMAP_NEAREST));
+            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, linear ? (!mipmap ? GL_LINEAR : GL_LINEAR_MIPMAP_LINEAR) : (!mipmap ? GL_NEAREST : GL_NEAREST_MIPMAP_NEAREST));
             checkError("filtering - glTexParameteri");
             if(clamp) {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
