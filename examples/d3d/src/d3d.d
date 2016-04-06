@@ -121,8 +121,8 @@ class UiWidget : VerticalLayout, CellVisitor {
         //dirLightNode.rotateX(20);
         dirLightNode.translateX(2);
         dirLightNode.translateY(3);
-        dirLightNode.translateZ(3);
-        dirLightNode.light = Light.createPoint(vec3(1, 0.5, 0.5), 15); //Light.createDirectional(vec3(1, 0.5, 0.5));
+        dirLightNode.translateZ(0);
+        dirLightNode.light = Light.createPoint(vec3(3, 3, 3), 15); //Light.createDirectional(vec3(1, 0.5, 0.5));
         //dirLightNode.light = Light.createDirectional(vec3(1, 0.5, 0.8));
         dirLightNode.light.enabled = true;
         _scene.addChild(dirLightNode);
@@ -166,12 +166,12 @@ class UiWidget : VerticalLayout, CellVisitor {
         //suzanneMaterial.specular = true;
         Model suzanneDrawable = new Model(suzanneMaterial, importer.mesh);
         suzanneNode = new Node3d("suzanne", suzanneDrawable);
-        suzanneNode.translate(vec3(2, 3, -5));
+        suzanneNode.translate(vec3(2, 2, -5));
         _scene.addChild(suzanneNode);
 
 
         brickNode = new Node3d("brick");
-        brickNode.translate(vec3(-2, 3, -3));
+        brickNode.translate(vec3(-2, 2, -3));
         Mesh brickMesh = Mesh.createCubeMesh(vec3(0, 0, 0), 0.8, vec4(0.8, 0.8, 0.8, 1));
         Material brickMaterial = new Material(EffectId("textured.vert", "textured.frag", null), "brick", "brickn"); // with bump mapping
         brickNode.drawable = new Model(brickMaterial, brickMesh);
@@ -291,6 +291,9 @@ class UiWidget : VerticalLayout, CellVisitor {
         angle += interval * 0.000002f;
         invalidate();
         suzanneNode.rotateY(interval * 0.000002f);
+        brickNode.rotateY(interval * 0.00000123f);
+        brickNode.rotateZ(interval * 0.0000004123f);
+        brickNode.rotateX(interval * 0.0000007543f);
     }
     float angle = 0;
 

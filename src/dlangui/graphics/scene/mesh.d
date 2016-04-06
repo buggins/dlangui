@@ -481,10 +481,27 @@ class Mesh : RefCountedObject {
 
     private void addQuad(ref vec3 v0, ref vec3 v1, ref vec3 v2, ref vec3 v3, ref vec4 color) {
         ushort startVertex = cast(ushort)vertexCount;
-        addVertex([v0.x, v0.y, v0.z, color.r, color.g, color.b, color.a, 0, 0]);
-        addVertex([v1.x, v1.y, v1.z, color.r, color.g, color.b, color.a, 1, 0]);
-        addVertex([v2.x, v2.y, v2.z, color.r, color.g, color.b, color.a, 1, 1]);
-        addVertex([v3.x, v3.y, v3.z, color.r, color.g, color.b, color.a, 0, 1]);
+        if (hasElement(VertexElementType.NORMAL)) {
+            vec3 normal = vec3.crossProduct((v1 - v0), (v3 - v0)).normalized;
+            if (hasElement(VertexElementType.TANGENT)) {
+                vec3 tangent = (v1 - v0).normalized;
+                vec3 binormal = (v3 - v0).normalized;
+                addVertex([v0.x, v0.y, v0.z, color.r, color.g, color.b, color.a, 0, 0, normal.x, normal.y, normal.z, tangent.x, tangent.y, tangent.z, binormal.x, binormal.y, binormal.z]);
+                addVertex([v1.x, v1.y, v1.z, color.r, color.g, color.b, color.a, 1, 0, normal.x, normal.y, normal.z, tangent.x, tangent.y, tangent.z, binormal.x, binormal.y, binormal.z]);
+                addVertex([v2.x, v2.y, v2.z, color.r, color.g, color.b, color.a, 1, 1, normal.x, normal.y, normal.z, tangent.x, tangent.y, tangent.z, binormal.x, binormal.y, binormal.z]);
+                addVertex([v3.x, v3.y, v3.z, color.r, color.g, color.b, color.a, 0, 1, normal.x, normal.y, normal.z, tangent.x, tangent.y, tangent.z, binormal.x, binormal.y, binormal.z]);
+            } else {
+                addVertex([v0.x, v0.y, v0.z, color.r, color.g, color.b, color.a, 0, 0, normal.x, normal.y, normal.z]);
+                addVertex([v1.x, v1.y, v1.z, color.r, color.g, color.b, color.a, 1, 0, normal.x, normal.y, normal.z]);
+                addVertex([v2.x, v2.y, v2.z, color.r, color.g, color.b, color.a, 1, 1, normal.x, normal.y, normal.z]);
+                addVertex([v3.x, v3.y, v3.z, color.r, color.g, color.b, color.a, 0, 1, normal.x, normal.y, normal.z]);
+            }
+        } else {
+            addVertex([v0.x, v0.y, v0.z, color.r, color.g, color.b, color.a, 0, 0]);
+            addVertex([v1.x, v1.y, v1.z, color.r, color.g, color.b, color.a, 1, 0]);
+            addVertex([v2.x, v2.y, v2.z, color.r, color.g, color.b, color.a, 1, 1]);
+            addVertex([v3.x, v3.y, v3.z, color.r, color.g, color.b, color.a, 0, 1]);
+        }
         addPart(PrimitiveType.triangles, [
             cast(ushort)(startVertex + 0), 
             cast(ushort)(startVertex + 1), 
@@ -513,7 +530,7 @@ class Mesh : RefCountedObject {
 
     static Mesh createCubeMesh(vec3 pos, float d=1, vec4 color = vec4(1,1,1,1)) {
         Mesh mesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.COLOR, VertexElementType.TEXCOORD0
-                                          //, VertexElementType.TANGENT, VertexElementType.BINORMAL
+                                          , VertexElementType.NORMAL, VertexElementType.TANGENT, VertexElementType.BINORMAL
                                           ));
         mesh.addCubeMesh(pos, d, color);
         return mesh;
