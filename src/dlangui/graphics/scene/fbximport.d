@@ -1,5 +1,8 @@
 module dlangui.graphics.scene.fbximport;
 
+public import dlangui.core.config;
+static if (ENABLE_OPENGL):
+
 import dlangui.core.logger;
 import dlangui.core.math3d;
 import dlangui.dml.tokenizer;

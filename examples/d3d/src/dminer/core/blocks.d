@@ -1,5 +1,8 @@
 module dminer.core.blocks;
 
+public import dlangui.core.config;
+static if (ENABLE_OPENGL):
+
 import dminer.core.minetypes;
 import dminer.core.world;
 import dlangui.graphics.scene.mesh;

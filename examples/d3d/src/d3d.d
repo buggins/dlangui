@@ -29,7 +29,11 @@ extern (C) int UIAppMain(string[] args) {
 
     // create window
     Window window = Platform.instance.createWindow("DlangUI example - 3D Application", null, WindowFlag.Resizable, 600, 500);
-    window.mainWidget = new UiWidget();
+    static if (ENABLE_OPENGL) {
+        window.mainWidget = new UiWidget();
+    } else {
+        window.mainWidget = new TextWidget("error", "Please build with OpenGL enabled"d);
+    }
 
     //MeshPart part = new MeshPart();
 
@@ -39,6 +43,8 @@ extern (C) int UIAppMain(string[] args) {
     // run message loop
     return Platform.instance.enterMessageLoop();
 }
+
+static if (ENABLE_OPENGL):
 
 class UiWidget : VerticalLayout, CellVisitor {
     this() {

@@ -1,8 +1,10 @@
 module dlangui.graphics.scene.light;
 
+public import dlangui.core.config;
+static if (ENABLE_OPENGL):
+
 import dlangui.core.math3d;
 import dlangui.core.types;
-import dlangui.graphics.scene.node;
 
 import std.conv : to;
 
@@ -16,6 +18,8 @@ enum LightType : ubyte {
 alias LightRef = Ref!Light;
 
 class Light : RefCountedObject {
+
+    import dlangui.graphics.scene.node;
 
     protected Node3d _node;
 

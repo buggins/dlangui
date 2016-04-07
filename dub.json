@@ -65,8 +65,8 @@
         {
             "name": "minimal",
             "versions": ["EmbedStandardResources", "ForceLogs"],
-            "versions-posix": ["USE_SDL", "USE_FREETYPE", "USE_OPENGL"],
-            "versions-windows": ["Unicode"],
+            "versions-posix": ["USE_SDL", "USE_FREETYPE", "NO_OPENGL"],
+            "versions-windows": ["Unicode" ,"NO_OPENGL"],
             "dependencies-posix": {
                 "derelict-gl3": "~>1.0.18",
                 "derelict-sdl2": "~>1.9.7",

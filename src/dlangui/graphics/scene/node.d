@@ -1,16 +1,20 @@
 module dlangui.graphics.scene.node;
 
+public import dlangui.core.config;
+static if (ENABLE_OPENGL):
+
 import dlangui.core.math3d;
 
 import dlangui.graphics.scene.transform;
-import dlangui.core.collections;
-import dlangui.graphics.scene.scene3d;
-import dlangui.graphics.scene.drawableobject;
-import dlangui.graphics.scene.light;
-import dlangui.graphics.scene.camera;
 
 /// 3D scene node
 class Node3d : Transform {
+    import dlangui.core.collections;
+    import dlangui.graphics.scene.scene3d;
+    import dlangui.graphics.scene.drawableobject;
+    import dlangui.graphics.scene.light;
+    import dlangui.graphics.scene.camera;
+
     protected Node3d _parent;
     protected Scene3d _scene;
     protected string _id;

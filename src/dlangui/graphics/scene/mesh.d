@@ -1,5 +1,8 @@
 module dlangui.graphics.scene.mesh;
 
+public import dlangui.core.config;
+static if (ENABLE_OPENGL):
+
 import dlangui.core.math3d;
 import dlangui.core.types;
 //import dlangui.graphics.scene.material;

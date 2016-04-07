@@ -1,5 +1,8 @@
 module dminer.core.minetypes;
 
+public import dlangui.core.config;
+static if (ENABLE_OPENGL):
+
 alias cell_t = ubyte;
 
 immutable cell_t NO_CELL = 0;

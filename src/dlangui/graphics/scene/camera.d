@@ -1,5 +1,8 @@
 module dlangui.graphics.scene.camera;
 
+public import dlangui.core.config;
+static if (ENABLE_OPENGL):
+
 import dlangui.graphics.scene.node;
 
 import dlangui.core.math3d;

@@ -1,5 +1,8 @@
 module dminer.core.world;
 
+public import dlangui.core.config;
+static if (ENABLE_OPENGL):
+
 import dminer.core.minetypes;
 import dminer.core.blocks;
 
@@ -225,8 +228,8 @@ struct DiamondVisitor {
         //int index = diamondIndex(v, maxDistBits);
         if (visited_ptr[index] == visitedOccupied)// || cell == visitedEmpty)
             return;
-        if (v * position.direction.forward < dist / 3)
-            return;
+        //if (v * position.direction.forward < dist / 3)
+        //    return;
         Vector3d pos = pos0 + v;
         cell_t cell = world.getCell(pos);
 

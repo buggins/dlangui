@@ -47,6 +47,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 module dlangui;
 
 public {
+    import dlangui.core.config;
     import dlangui.core.logger;
     import dlangui.core.types;
     import dlangui.core.i18n;

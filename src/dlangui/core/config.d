@@ -59,28 +59,44 @@ version (USE_SDL) {
     // no backend selected: set default based on platform
     version (Windows) {
         // For Windows
-        enum ENABLE_OPENGL = true;
+        version (NO_OPENGL) {
+            enum ENABLE_OPENGL = false;
+        } else {
+            enum ENABLE_OPENGL = true;
+        }
         enum BACKEND_SDL = false;
         enum BACKEND_X11 = false;
         enum BACKEND_DSFML = false;
         enum BACKEND_WIN32 = true;
     } else version(linux) {
         // Default for Linux: use SDL and OpenGL
-        enum ENABLE_OPENGL = true;
+        version (NO_OPENGL) {
+            enum ENABLE_OPENGL = false;
+        } else {
+            enum ENABLE_OPENGL = true;
+        }
         enum BACKEND_SDL = true;
         enum BACKEND_X11 = false;
         enum BACKEND_DSFML = false;
         enum BACKEND_WIN32 = false;
     } else version(OSX) {
         // Default: use SDL and OpenGL
-        enum ENABLE_OPENGL = true;
+        version (NO_OPENGL) {
+            enum ENABLE_OPENGL = false;
+        } else {
+            enum ENABLE_OPENGL = true;
+        }
         enum BACKEND_SDL = true;
         enum BACKEND_X11 = false;
         enum BACKEND_DSFML = false;
         enum BACKEND_WIN32 = false;
     } else {
         // Unknown platform: use SDL and OpenGL
-        enum ENABLE_OPENGL = true;
+        version (NO_OPENGL) {
+            enum ENABLE_OPENGL = false;
+        } else {
+            enum ENABLE_OPENGL = true;
+        }
         enum BACKEND_SDL = true;
         enum BACKEND_X11 = false;
         enum BACKEND_DSFML = false;

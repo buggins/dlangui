@@ -1,17 +1,21 @@
 module dlangui.graphics.scene.scene3d;
 
-import dlangui.core.types;
-import dlangui.graphics.scene.node;
-import dlangui.graphics.scene.camera;
-import dlangui.graphics.scene.light;
+public import dlangui.core.config;
+static if (ENABLE_OPENGL):
 
-public import dlangui.core.math3d;
+import dlangui.core.types;
+
+import dlangui.core.math3d;
+import dlangui.graphics.scene.node;
 
 /// Reference counted Scene3d object
 alias Scene3dRef = Ref!Scene3d;
 
+
 /// 3D scene
 class Scene3d : Node3d {
+    import dlangui.graphics.scene.camera;
+    import dlangui.graphics.scene.light;
 
     protected vec3 _ambientColor;
     protected Camera _activeCamera;

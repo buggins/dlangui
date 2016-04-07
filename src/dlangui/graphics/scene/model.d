@@ -1,5 +1,8 @@
 module dlangui.graphics.scene.model;
 
+public import dlangui.core.config;
+static if (ENABLE_OPENGL):
+
 import dlangui.graphics.scene.drawableobject;
 import dlangui.graphics.scene.mesh;
 import dlangui.graphics.scene.material;
