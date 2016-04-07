@@ -7,6 +7,7 @@ import dlangui.graphics.scene.drawableobject;
 
 class Model : DrawableObject {
     import dlangui.graphics.scene.mesh;
+    import dlangui.graphics.scene.node;
     import dlangui.graphics.scene.material;
     import dlangui.graphics.scene.light;
 
