@@ -131,6 +131,30 @@ version(OSX) {} else version(Posix)
         }
         return false;
     }
+    
+    private string getDeviceLabelFallback(in char[] type, in char[] fsName)
+    {
+        import std.format : format;
+        import std.string : startsWith;
+        if (type == "vboxsf") {
+            return "VirtualBox shared folder";
+        }
+        if (fsName.startsWith("gvfsd")) {
+            return "GNOME virtual file system";
+        }
+        return format("%s volume", type);
+    }
+    
+    private RootEntryType getDeviceRootEntryType(in char[] type)
+    {
+        if (type == "iso9660") {
+            return RootEntryType.CDROM;
+        }
+        if (type == "vfat") {
+            return RootEntryType.REMOVABLE;
+        }
+        return RootEntryType.FIXED;
+    }
 }
 
 version(FreeBSD)
@@ -221,7 +245,6 @@ private:
     }
     version(linux) {
         import std.string : fromStringz;
-        import std.format : format;
         
         mntent ent;
         char[1024] buf;
@@ -257,10 +280,9 @@ private:
                 }
                 
                 if (!label.length) {
-                    label = format("%s volume", type);
+                    label = getDeviceLabelFallback(type, fsName);
                 }
-                
-                auto entryType = (type == "vfat") ? RootEntryType.REMOVABLE : RootEntryType.FIXED; //just a guess
+                auto entryType = getDeviceRootEntryType(type);
                 res ~= RootEntry(entryType, mountDir.idup, label.toUTF32);
             }   
         }
@@ -268,7 +290,6 @@ private:
     
     version(FreeBSD) {
         import std.string : fromStringz;
-        import std.format : format;
         
         statfs* mntbufsPtr;
         int mntbufsLen = getmntinfo(&mntbufsPtr, 0);
@@ -284,8 +305,8 @@ private:
                     continue;
                 }
                 
-                string label = format("%s volume", type);
-                res ~= RootEntry(RootEntryType.FIXED, mountDir.idup, label.toUTF32);
+                string label = getDeviceLabelFallback(type, fsName);
+                res ~= RootEntry(getDeviceRootEntryType(type), mountDir.idup, label.toUTF32);
             }
         }
     }
@@ -318,6 +339,140 @@ private:
                 }
                 res ~= RootEntry(type, path, display);
             }
+        }
+    }
+    return res;
+}
+
+version(Windows)
+{
+private:
+    import core.sys.windows.windows;
+    import core.sys.windows.shlobj;
+    import core.sys.windows.wtypes;
+    import core.sys.windows.objbase;
+    import core.sys.windows.objidl;
+    
+    pragma(lib, "Ole32");
+
+    alias GUID KNOWNFOLDERID;
+    
+    extern(Windows) @nogc @system HRESULT _dummy_SHGetKnownFolderPath(const(KNOWNFOLDERID)* rfid, DWORD dwFlags, HANDLE hToken, wchar** ppszPath) nothrow;
+    
+    enum KNOWNFOLDERID FOLDERID_Links = {0xbfb9d5e0, 0xc6a9, 0x404c, [0xb2,0xb2,0xae,0x6d,0xb6,0xaf,0x49,0x68]};
+}
+
+/// returns array of user bookmarked directories
+RootEntry[] getBookmarkPaths() nothrow
+{
+    RootEntry[] res;
+    version(OSX) {
+        
+    } else version(Android) {
+        
+    } else version(Posix) {
+        /*
+         * Probably we should follow https://www.freedesktop.org/wiki/Specifications/desktop-bookmark-spec/ but it requires XML library.
+         * So for now just try to read GTK3 bookmarks. Should be compatible with GTK file dialogs, Nautilus and other GTK file managers.
+         */
+        
+        import std.string : startsWith;
+        import std.stdio : File;
+        import std.exception : collectException;
+        try {
+            enum fileProtocol = "file://";
+            auto configPath = environment.get("XDG_CONFIG_HOME");
+            if (!configPath.length) {
+                configPath = buildPath(homePath(), ".config");
+            }
+            auto bookmarksFile = buildPath(configPath, "gtk-3.0/bookmarks");
+            foreach(line; File(bookmarksFile, "r").byLineCopy()) {
+                if (line.startsWith(fileProtocol)) {
+                    auto path = line[fileProtocol.length..$];
+                    if (path.isAbsolute) {
+                        
+                        // Note: GTK supports regular files in bookmarks too, but we allow directories only.
+                        bool dirExists;
+                        collectException(path.isDir, dirExists);
+                        if (dirExists) {
+                            res ~= RootEntry(RootEntryType.BOOKMARK, path, path.baseName.toUTF32);
+                        }
+                    }
+                }
+            }
+        } catch(Exception e) {
+            
+        }
+    } else version(Windows) {
+        /*
+         * This will not include bookmarks of special items and virtual folders like Recent Files or Recycle bin.
+         */
+        
+        import core.stdc.wchar_ : wcslen;
+        import std.exception : enforce;
+        import std.utf : toUTF8, toUTF16z;
+        import std.file : dirEntries, SpanMode;
+        import std.string : endsWith;
+        
+        try {
+            auto shell = enforce(LoadLibraryA("Shell32"));
+            scope(exit) FreeLibrary(shell);
+            
+            auto ptrSHGetKnownFolderPath = cast(typeof(&_dummy_SHGetKnownFolderPath))enforce(GetProcAddress(shell, "SHGetKnownFolderPath"));
+            
+            wchar* linksFolderZ;
+            const linksGuid = FOLDERID_Links;
+            enforce(ptrSHGetKnownFolderPath(&linksGuid, 0, null, &linksFolderZ) == S_OK);
+            scope(exit) CoTaskMemFree(linksFolderZ);
+            
+            string linksFolder = linksFolderZ[0..wcslen(linksFolderZ)].toUTF8;
+            
+            CoInitialize(null);
+            scope(exit) CoUninitialize();
+
+            HRESULT hres; 
+            IShellLink psl; 
+            
+            auto clsidShellLink = CLSID_ShellLink;
+            auto iidShellLink = IID_IShellLinkW;
+            hres = CoCreateInstance(&clsidShellLink, null, CLSCTX_INPROC, &iidShellLink, cast(LPVOID*)&psl);
+            enforce(SUCCEEDED(hres), "Failed to create IShellLink instance");
+            scope(exit) psl.Release();
+            
+            IPersistFile ppf;
+            auto iidPersistFile = IID_IPersistFile;
+            hres = psl.QueryInterface(&iidPersistFile, cast(void**)&ppf); 
+            enforce(SUCCEEDED(hres), "Failed to query IPersistFile interface");
+            scope(exit) ppf.Release();
+            
+            foreach(linkFile; dirEntries(linksFolder, SpanMode.shallow)) {
+                if (!linkFile.name.endsWith(".lnk")) {
+                    continue;
+                }
+                try {
+                    wchar[MAX_PATH] szGotPath;
+                    WIN32_FIND_DATA wfd;
+                    
+                    hres = ppf.Load(linkFile.name.toUTF16z, STGM_READ); 
+                    enforce(SUCCEEDED(hres), "Failed to load link file");
+                    
+                    hres = psl.Resolve(null, 0);
+                    enforce(SUCCEEDED(hres), "Failed to resolve link");
+                    
+                    hres = psl.GetPath(szGotPath.ptr, szGotPath.length, &wfd, 0);
+                    enforce(SUCCEEDED(hres), "Failed to get path of link target");
+                    
+                    auto path = szGotPath[0..wcslen(szGotPath.ptr)];
+                    
+                    if (path.length) {
+                        res ~= RootEntry(RootEntryType.BOOKMARK, path.toUTF8, linkFile.name.baseName.stripExtension.toUTF32);
+                    }
+                } catch(Exception e) {
+                    
+                }
+            }
+        } catch(Exception e) {
+            
         }
     }
     return res;
