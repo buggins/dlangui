@@ -36,7 +36,7 @@ Main features:
 * Fallback to pure Win32 API / SDL / X11 when OpenGL is not available (e.g. opengl dynamic library cannot be loaded)
 * Actually it's a port (with major refactoring) of GUI library for cross platform OpenGL based implementation of Cool Reader app project from C++.
 * Non thread safe - all UI operations should be preformed in single thread
-
+* Simple 3d engine - allows to embed 3D scenes within GUI
 
 Widgets
 -------
