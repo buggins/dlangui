@@ -423,7 +423,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
     /// override to implement creation of dialog controls
     override void initialize() {
-        _roots = getRootPaths;
+        _roots = getRootPaths() ~ getBookmarkPaths();
 
         layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).minWidth(600);
         //minHeight = 400;

@@ -131,6 +131,30 @@ version(OSX) {} else version(Posix)
         }
         return false;
     }
+    
+    private string getDeviceLabelFallback(in char[] type, in char[] fsName)
+    {
+        import std.format : format;
+        import std.string : startsWith;
+        if (type == "vboxsf") {
+            return "VirtualBox shared folder";
+        }
+        if (fsName.startsWith("gvfsd")) {
+            return "GNOME virtual file system";
+        }
+        return format("%s volume", type);
+    }
+    
+    private RootEntryType getDeviceRootEntryType(in char[] type)
+    {
+        if (type == "iso9660") {
+            return RootEntryType.CDROM;
+        }
+        if (type == "vfat") {
+            return RootEntryType.REMOVABLE;
+        }
+        return RootEntryType.FIXED;
+    }
 }
 
 version(FreeBSD)
@@ -221,7 +245,6 @@ private:
     }
     version(linux) {
         import std.string : fromStringz;
-        import std.format : format;
         
         mntent ent;
         char[1024] buf;
@@ -257,10 +280,9 @@ private:
                 }
                 
                 if (!label.length) {
-                    label = format("%s volume", type);
+                    label = getDeviceLabelFallback(type, fsName);
                 }
-                
-                auto entryType = (type == "vfat") ? RootEntryType.REMOVABLE : RootEntryType.FIXED; //just a guess
+                auto entryType = getDeviceRootEntryType(type);
                 res ~= RootEntry(entryType, mountDir.idup, label.toUTF32);
             }   
         }
@@ -268,7 +290,6 @@ private:
     
     version(FreeBSD) {
         import std.string : fromStringz;
-        import std.format : format;
         
         statfs* mntbufsPtr;
         int mntbufsLen = getmntinfo(&mntbufsPtr, 0);
@@ -284,8 +305,8 @@ private:
                     continue;
                 }
                 
-                string label = format("%s volume", type);
-                res ~= RootEntry(RootEntryType.FIXED, mountDir.idup, label.toUTF32);
+                string label = getDeviceLabelFallback(type, fsName);
+                res ~= RootEntry(getDeviceRootEntryType(type), mountDir.idup, label.toUTF32);
             }
         }
     }
@@ -319,6 +340,53 @@ private:
                 res ~= RootEntry(type, path, display);
             }
         }
+    }
+    return res;
+}
+
+/// returns array of user bookmarked directories
+RootEntry[] getBookmarkPaths() nothrow
+{
+    RootEntry[] res;
+    version(OSX) {
+        
+    } else version(Android) {
+        
+    } else version(Posix) {
+        /*
+         * Probably we should follow https://www.freedesktop.org/wiki/Specifications/desktop-bookmark-spec/ but it requires XML library.
+         * So for now just try to read GTK3 bookmarks. Should be compatible with GTK file dialogs, Nautilus and other GTK file managers.
+         */
+        
+        import std.string : startsWith;
+        import std.stdio : File;
+        import std.exception : collectException;
+        try {
+            enum fileProtocol = "file://";
+            auto configPath = environment.get("XDG_CONFIG_HOME");
+            if (!configPath.length) {
+                configPath = buildPath(homePath(), ".config");
+            }
+            auto bookmarksFile = buildPath(configPath, "gtk-3.0/bookmarks");
+            foreach(line; File(bookmarksFile, "r").byLineCopy()) {
+                if (line.startsWith(fileProtocol)) {
+                    auto path = line[fileProtocol.length..$];
+                    if (path.isAbsolute) {
+                        
+                        // Note: GTK supports regular files in bookmarks too, but we allow directories only.
+                        bool dirExists;
+                        collectException(path.isDir, dirExists);
+                        if (dirExists) {
+                            res ~= RootEntry(RootEntryType.BOOKMARK, path, path.baseName.toUTF32);
+                        }
+                    }
+                }
+            }
+        } catch(Exception e) {
+            
+        }
+    } else version(Windows) {
+        
     }
     return res;
 }
