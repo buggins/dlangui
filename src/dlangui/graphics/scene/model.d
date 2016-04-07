@@ -4,11 +4,14 @@ public import dlangui.core.config;
 static if (ENABLE_OPENGL):
 
 import dlangui.graphics.scene.drawableobject;
-import dlangui.graphics.scene.mesh;
-import dlangui.graphics.scene.material;
-import dlangui.graphics.scene.light;
 
 class Model : DrawableObject {
+    import dlangui.graphics.scene.mesh;
+    import dlangui.graphics.scene.material;
+    import dlangui.graphics.scene.light;
+
+
+
     protected MaterialRef _material;
     protected MeshRef _mesh;
     protected bool _autobindLights = true;
