@@ -427,7 +427,7 @@ RootEntry[] getBookmarkPaths() nothrow
             
             string linksFolder = linksFolderZ[0..wcslen(linksFolderZ)].toUTF8;
             
-            CoInitialize(null);
+            enforce(SUCCEEDED(CoInitialize(null)));
             scope(exit) CoUninitialize();
 
             HRESULT hres; 
@@ -435,7 +435,7 @@ RootEntry[] getBookmarkPaths() nothrow
             
             auto clsidShellLink = CLSID_ShellLink;
             auto iidShellLink = IID_IShellLinkW;
-            hres = CoCreateInstance(&clsidShellLink, null, CLSCTX_INPROC, &iidShellLink, cast(LPVOID*)&psl);
+            hres = CoCreateInstance(&clsidShellLink, null, CLSCTX.CLSCTX_INPROC_SERVER, &iidShellLink, cast(LPVOID*)&psl);
             enforce(SUCCEEDED(hres), "Failed to create IShellLink instance");
             scope(exit) psl.Release();
             
@@ -456,7 +456,7 @@ RootEntry[] getBookmarkPaths() nothrow
                     hres = ppf.Load(linkFile.name.toUTF16z, STGM_READ); 
                     enforce(SUCCEEDED(hres), "Failed to load link file");
                     
-                    hres = psl.Resolve(null, 0);
+                    hres = psl.Resolve(null, SLR_FLAGS.SLR_NO_UI);
                     enforce(SUCCEEDED(hres), "Failed to resolve link");
                     
                     hres = psl.GetPath(szGotPath.ptr, szGotPath.length, &wfd, 0);
@@ -464,7 +464,7 @@ RootEntry[] getBookmarkPaths() nothrow
                     
                     auto path = szGotPath[0..wcslen(szGotPath.ptr)];
                     
-                    if (path.length) {
+                    if (path.length && path.isDir) {
                         res ~= RootEntry(RootEntryType.BOOKMARK, path.toUTF8, linkFile.name.baseName.stripExtension.toUTF32);
                     }
                 } catch(Exception e) {
