@@ -1277,14 +1277,14 @@ class SDLPlatform : Platform {
                     return toReturn.data;
                 }
 
-                static auto unescapeExecArgument(string arg) nothrow pure
+                static auto unescapeValue(string arg) nothrow pure
                 {
                     static immutable Tuple!(char, char)[] pairs = [
-                    tuple('s', ' '),     tuple('n', '\n'),   tuple('r', '\r'),   tuple('t', '\t'),
-                    tuple('"', '"'),     tuple('\'', '\''),  tuple('\\', '\\'),  tuple('>', '>'), 
-                    tuple('<', '<'),     tuple('~', '~'),    tuple('|', '|'),    tuple('&', '&'), 
-                    tuple(';', ';'),     tuple('$', '$'),    tuple('*', '*'),    tuple('?', '?'), 
-                    tuple('#', '#'),     tuple('(', '('),    tuple(')', ')'),    tuple('`', '`')
+                        tuple('s', ' '),
+                        tuple('n', '\n'),
+                        tuple('r', '\r'),
+                        tuple('t', '\t'),
+                        tuple('\\', '\\')
                     ];
                     return doUnescape(arg, pairs);
                 }
@@ -1292,7 +1292,10 @@ class SDLPlatform : Platform {
                 static string unescapeQuotedArgument(string value) nothrow pure
                 {
                     static immutable Tuple!(char, char)[] pairs = [
-                    tuple('`', '`'), tuple('$', '$'), tuple('"', '"'), tuple('\\', '\\')
+                        tuple('`', '`'), 
+                        tuple('$', '$'), 
+                        tuple('"', '"'), 
+                        tuple('\\', '\\')
                     ];
                     return doUnescape(value, pairs);
                 }
@@ -1345,7 +1348,7 @@ class SDLPlatform : Platform {
 
                 static string[] parseExecString(string execString) pure
                 {
-                    return unquoteExecString(execString).map!(unescapeExecArgument).array;
+                    return unquoteExecString(execString).map!(unescapeValue).array;
                 }
 
                 static string[] expandExecArgs(in string[] execArgs, in string[] urls = null, string iconName = null, string name = null, string fileName = null) pure
@@ -1411,6 +1414,39 @@ class SDLPlatform : Platform {
                     }
                     return null;
                 }
+                
+                static void parseConfigFile(string fileName, string wantedGroup, bool delegate (in char[], in char[]) onKeyValue)
+                {
+                    bool inNeededGroup;
+                    foreach(line; File(fileName).byLine()) {
+                        if (!line.length || line[0] == '#') {
+                            continue;
+                        } else if (line[0] == '[') {
+                            if (line.equal(wantedGroup)) {
+                                inNeededGroup = true;
+                            } else {
+                                if (inNeededGroup) {
+                                    break;
+                                }
+                                inNeededGroup = false;
+                            }
+                        } else if (line[0].isAlpha) {
+                            if (inNeededGroup) {
+                                auto splitted = findSplit(line, "=");
+                                if (splitted[1].length) {
+                                    auto key = splitted[0];
+                                    auto value = splitted[2];
+                                    if (!onKeyValue(key, value)) {
+                                        return;
+                                    }
+                                }
+                            }
+                        } else {
+                            //unexpected line content
+                            break;
+                        }
+                    }
+                }
 
                 static string[] findFileManagerCommand(string app, const(string)[] appDirs, const(string)[] binPaths) nothrow
                 {
@@ -1429,54 +1465,28 @@ class SDLPlatform : Platform {
                         
                         if (fileExists) {
                             try {
-                                bool inDesktopEntry;
                                 bool canOpenDirectory; //not used for now. Some file managers does not have MimeType in their .desktop file.
                                 string exec;
                                 string tryExec;
                                 
-                                foreach(line; File(appPath).byLine()) {
-                                    if (exec.length || tryExec.length) {
-                                        break;
+                                parseConfigFile(appPath, "[Desktop Entry]", delegate bool(in char[] key, in char[] value) {
+                                    if (key.equal("MimeType")) {
+                                        canOpenDirectory = value.splitter(';').canFind("inode/directory");
+                                    } else if (key.equal("Exec")) {
+                                        exec = value.idup;
+                                    } else if (key.equal("TryExec")) {
+                                        tryExec = value.idup;
                                     }
-                                    if (!line.length || line[0] == '#') {
-                                        continue;
-                                    } else if (line[0] == '[') {
-                                        if (line.equal("[Desktop Entry]")) {
-                                            inDesktopEntry = true;
-                                        } else {
-                                            if (inDesktopEntry) {
-                                                break;
-                                            }
-                                            inDesktopEntry = false;
-                                        }
-                                    } else if (line[0].isAlpha) {
-                                        if (inDesktopEntry) {
-                                            auto splitted = findSplit(line, "=");
-                                            if (splitted[1].length) {
-                                                auto key = splitted[0];
-                                                auto value = splitted[2];
-                                                if (key.equal("MimeType")) {
-                                                    canOpenDirectory = value.splitter(';').canFind("inode/directory");
-                                                } else if (key.equal("Exec")) {
-                                                    exec = value.idup;
-                                                } else if (key.equal("TryExec")) {
-                                                    tryExec = value.idup;
-                                                }
-                                            }
-                                        }
-                                    } else {
-                                        //unexpected line content
-                                        break;
-                                    }
-                                }
+                                    return true;
+                                });
                                 
-                                if (tryExec.length) {
-                                    auto program = findExecutable(tryExec, binPaths);
-                                    if (program.length) {
-                                        return [program];
-                                    }
-                                }
                                 if (exec.length) {
+                                    if (tryExec.length) {
+                                        auto program = findExecutable(tryExec, binPaths);
+                                        if (!program.length) {
+                                            continue;
+                                        }
+                                    }
                                     return expandExecArgs(parseExecString(exec));
                                 }
                                 
@@ -1544,95 +1554,60 @@ class SDLPlatform : Platform {
                 string appHome = environment.get("XDG_DATA_HOME", buildPath(environment.get("HOME"), ".local/share")).buildPath("applications");
                 
                 auto configDirs = environment.get("XDG_CONFIG_DIRS", "/etc/xdg").splitter(':').find!(p => p.length > 0);
-                auto appDirs = environment.get("XDG_DATA_DIRS", "/usr/local/share:/usr/share").splitter(':').find!(p => p.length > 0).map!(p => buildPath(p, "applications"));
+                auto appDirs = environment.get("XDG_DATA_DIRS", "/usr/local/share:/usr/share").splitter(':').filter!(p => p.length > 0).map!(p => buildPath(p, "applications"));
                 
                 auto allAppDirs = chain(only(appHome), appDirs).array;
-                auto binPaths = environment.get("PATH").splitter(':').find!(p => p.length > 0).array;
+                auto binPaths = environment.get("PATH").splitter(':').filter!(p => p.length > 0).array;
                 
+                string[] fileManagerArgs;
                 foreach(mimeappsList; chain(only(configHome), only(appHome), configDirs, appDirs).map!(p => buildPath(p, "mimeapps.list"))) {
                     try {
-                        bool inDefaultApps;
-                        foreach(line; File(mimeappsList).byLine()) {
-                            if (!line.length || line[0] == '#') {
-                                continue;
-                            } else if (line[0] == '[') {
-                                if (line.equal("[Default Applications]")) {
-                                    inDefaultApps = true;
-                                } else {
-                                    if (inDefaultApps) {
-                                        break;
-                                    }
-                                    inDefaultApps = false;
-                                }
-                            } else if (line[0].isAlpha) {
-                                if (inDefaultApps) {
-                                    auto keyValue = findSplit(line, "=");
-                                    auto key = keyValue[0];
-                                    auto value = keyValue[2];
-                                    if (keyValue[1].length && key.equal("inode/directory") && value.length) {
-                                        auto app = value.idup;
-                                        auto fileManagerArgs = findFileManagerCommand(app, allAppDirs, binPaths);
-                                        
-                                        if (fileManagerArgs.length) {
-                                            execShowInFileManager(fileManagerArgs, toOpen);
-                                            return true;
-                                        } else {
-                                            break;
-                                        }
-                                    }
-                                }
-                            } else {
-                                //unexpected line content
-                                break;
+                        parseConfigFile(mimeappsList, "[Default Applications]", delegate bool(in char[] key, in char[] value) {
+                            if (key.equal("inode/directory") && value.length) {
+                                auto app = value.idup;
+                                fileManagerArgs = findFileManagerCommand(app, allAppDirs, binPaths);
+                                return false;
                             }
-                        }
+                            return true;
+                        });
                     } catch(Exception e) {
                         
+                    }
+                    
+                    if (fileManagerArgs.length) {
+                        execShowInFileManager(fileManagerArgs, toOpen);
+                        return true;
                     }
                 }
                 
                 foreach(mimeinfoCache; allAppDirs.map!(p => buildPath(p, "mimeinfo.cache"))) {
                     try {
-                        bool inMimeCache;
-                        foreach(line; File(mimeinfoCache).byLine()) {
-                            if (!line.length || line[0] == '#') {
-                                continue;
-                            } else if (line[0] == '[') {
-                                if (line.equal("[MIME Cache]")) {
-                                    inMimeCache = true;
-                                } else {
-                                    if (inMimeCache) {
-                                        break;
-                                    }
-                                    inMimeCache = false;
-                                }
-                            } else if (line[0].isAlpha) {
-                                if (inMimeCache) {
-                                    auto keyValue = findSplit(line, "=");
-                                    auto key = keyValue[0];
-                                    auto value = keyValue[2];
-                                    if (keyValue[1].length && key.equal("inode/directory") && value.length) {
-                                        auto alternatives = value.splitter(';').filter!(p => p.length > 0);
-                                        foreach(alternative; alternatives) {
-                                            auto fileManagerArgs = findFileManagerCommand(alternative.idup, allAppDirs, binPaths);
-                                            if (fileManagerArgs.length) {
-                                                execShowInFileManager(fileManagerArgs, toOpen);
-                                                return true;
-                                            }
-                                        }
-                                        break;
-                                    }
-                                }
-                            } else {
-                                //unexpected line content
-                                break;
+                        parseConfigFile(mimeinfoCache, "[MIME Cache]", delegate bool(in char[] key, in char[] value) {
+                            if (key > "inode/directory") { //no need to proceed, since MIME types are sorted in alphabetical order.
+                                return false;
                             }
-                        }
-                        
+                            if (key.equal("inode/directory") && value.length) {
+                                auto alternatives = value.splitter(';').filter!(p => p.length > 0);
+                                foreach(alternative; alternatives) {
+                                    fileManagerArgs = findFileManagerCommand(alternative.idup, allAppDirs, binPaths);
+                                    if (fileManagerArgs.length) {
+                                        break;
+                                    }
+                                }
+                                return false;
+                            }
+                            return true;
+                        });
                     } catch(Exception e) {
                         
                     }
+                    
+                    if (fileManagerArgs.length) {
+                        execShowInFileManager(fileManagerArgs, toOpen);
+                        return true;
+                    }
                 }
+                
                 Log.e("showInFileManager -- could not find application to open directory");
                 return false;
             }

@@ -27,6 +27,12 @@
             "subConfigurations" : {
                 "dlangui" : "sdl"
             }
+        },
+        {
+            "name" : "minimal",
+            "subConfigurations" : {
+                "dlangui" : "minimal"
+            }
         }
     ]
 }
