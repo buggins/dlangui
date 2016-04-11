@@ -103,6 +103,7 @@ class Transform : RefCountedObject {
         _scale = vec3(1.0f, 1.0f, 1.0f);
         _translation = vec3(0.0f, 0.0f, 0.0f);
         _rotation = mat4.identity;
+        _matrix.setIdentity();
     }
 
     /// get transform matrix, recalculates if needed
@@ -126,6 +127,7 @@ class Transform : RefCountedObject {
     }
 
     void lookAt(const vec3 eye, const vec3 center, const vec3 up) {
+        _matrix.setIdentity();
         _matrix.lookAt(eye, center, up);
         _dirtyTransform = false;
     }
