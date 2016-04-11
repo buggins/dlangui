@@ -50,6 +50,7 @@ static if (ENABLE_OPENGL) {
 
 private derelict.util.exception.ShouldThrow missingSymFunc( string symName ) {
     import std.algorithm : equal;
+    static import derelict.util.exception;
     foreach(s; ["SDL_DestroyRenderer", "SDL_GL_DeleteContext", "SDL_DestroyWindow", "SDL_PushEvent", 
                 "SDL_GL_SetAttribute", "SDL_GL_CreateContext", "SDL_GetError", 
                 "SDL_CreateWindow", "SDL_CreateRenderer", "SDL_GetWindowSize",

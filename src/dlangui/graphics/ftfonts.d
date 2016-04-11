@@ -471,6 +471,7 @@ class FreeTypeFont : Font {
 
 private derelict.util.exception.ShouldThrow missingSymFunc( string symName ) {
     import std.algorithm : equal;
+    static import derelict.util.exception;
     foreach(s; ["FT_New_Face", "FT_Attach_File", "FT_Set_Pixel_Sizes", 
             "FT_Get_Char_Index", "FT_Load_Glyph", "FT_Done_Face", 
             "FT_Init_FreeType", "FT_Done_FreeType"]) {
