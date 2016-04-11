@@ -14,5 +14,3 @@ matrix:
     - os: osx
       env: ARCH=x86
 
-script:
-  - dub test --arch=$ARCH
