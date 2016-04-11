@@ -852,14 +852,14 @@ static class GLTexture : RefCountedObject {
                 return;
             }
             uint * pixels = buf.scanLine(0);
-            buf.invertAlpha();
+            buf.invertAlphaAndByteOrder();
             if (!glSupport.setTextureImage(_texture, buf.width, buf.height, cast(ubyte*)pixels, mipmapLevels)) {
                 destroy(_texture);
                 _texture = null;
-                buf.invertAlpha();
+                buf.invertAlphaAndByteOrder();
                 return;
             }
-            buf.invertAlpha();
+            buf.invertAlphaAndByteOrder();
         }
     }
 

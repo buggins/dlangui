@@ -970,15 +970,27 @@ class ColorDrawBuf : ColorDrawBufBase {
         fill(0xFFFFFFFF);
         drawRescaled(Rect(0, 0, dx, dy), v, Rect(0, 0, v.width, v.height));
     }
+
     void invertAlpha() {
         foreach(ref pixel; _buf)
             pixel ^= 0xFF000000;
     }
+
     void invertByteOrder() {
-        foreach(pixel; _buf) {
+        foreach(ref pixel; _buf) {
             pixel = (pixel & 0xFF00FF00) |
                 ((pixel & 0xFF0000) >> 16) |
                 ((pixel & 0xFF) << 16);
+        }
+    }
+
+    // for passing of image to OpenGL texture
+    void invertAlphaAndByteOrder() {
+        foreach(ref pixel; _buf) {
+            pixel = ((pixel & 0xFF00FF00) |
+                ((pixel & 0xFF0000) >> 16) |
+                ((pixel & 0xFF) << 16));
+            pixel ^= 0xFF000000;
         }
     }
     override uint * scanLine(int y) {
