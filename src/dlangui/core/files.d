@@ -499,6 +499,35 @@ bool isRoot(in string path) pure nothrow {
     return false;
 }
 
+/**
+ * Check if path is hidden.
+ */
+bool isHidden(in string path) nothrow {
+    version(Windows) {
+        import core.sys.windows.winnt : FILE_ATTRIBUTE_HIDDEN;
+        import std.exception : collectException;
+        uint attrs;
+        if (collectException(path.getAttributes(), attrs) is null) {
+            return (attrs & FILE_ATTRIBUTE_HIDDEN) != 0;
+        } else {
+            return false;
+        }
+    } else version(Posix) {
+        return path.baseName.startsWith(".");
+    } else {
+        return false;
+    }
+}
+
+///
+unittest
+{
+    version(Posix) {
+        assert(!"path/to/normal_file".isHidden());
+        assert("path/to/.hidden_file".isHidden());
+    }
+}
+
 /// returns parent directory for specified path
 string parentDir(in string path) pure nothrow {
     return buildNormalizedPath(path, "..");
@@ -545,8 +574,7 @@ bool listDirectory(in string dir, in bool includeDirs, in bool includeFiles, in 
         DirEntry[] dirs;
         DirEntry[] files;
         foreach (DirEntry e; dirEntries(dir, SpanMode.shallow)) {
-            string fn = baseName(e.name);
-            if (!showHiddenFiles && fn.startsWith("."))
+            if (!showHiddenFiles && e.name.isHidden())
                 continue;
             if (e.isDir) {
                 dirs ~= e;
