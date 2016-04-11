@@ -1138,12 +1138,15 @@ class EditableContent {
 
     static alias isDigit = std.uni.isNumber;
     static bool isAlpha(dchar ch) pure nothrow {
+        static import std.uni;
         return std.uni.isAlpha(ch) || ch == '_';
     }
     static bool isAlNum(dchar ch) pure nothrow {
+        static import std.uni;
         return isDigit(ch) || isAlpha(ch);
     }
     static bool isLowerAlpha(dchar ch) pure nothrow {
+        static import std.uni;
         return std.uni.isLower(ch) || ch == '_';
     }
     static alias isUpperAlpha = std.uni.isUpper;

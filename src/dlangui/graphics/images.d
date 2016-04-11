@@ -53,6 +53,7 @@ import std.conv : to;
 
 /// load and decode image from file to ColorDrawBuf, returns null if loading or decoding is failed
 ColorDrawBuf loadImage(string filename) {
+    static import std.file;
     try {
         immutable ubyte[] data = cast(immutable ubyte[])std.file.read(filename);
         return loadImage(data, filename);

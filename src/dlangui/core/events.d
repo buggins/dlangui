@@ -592,6 +592,7 @@ struct ButtonDetails {
 
     /// update for button down
     void down(short x, short y, ushort flags) {
+        static import std.datetime;
         //Log.d("Button down ", x, ",", y, " _downTs=", _downTs, " _upTs=", _upTs);
         long oldDownTs = _downTs;
         _downX = x;
@@ -605,6 +606,7 @@ struct ButtonDetails {
     }
     /// update for button up
     void up(short x, short y, ushort flags) {
+        static import std.datetime;
         //Log.d("Button up ", x, ",", y, " _downTs=", _downTs, " _upTs=", _upTs);
         _doubleClick = false;
         _upTs = std.datetime.Clock.currStdTime;
@@ -613,6 +615,7 @@ struct ButtonDetails {
     @property bool isDown() { return _downTs != 0 && _upTs == 0; }
     /// returns button down state duration in hnsecs (1/10000 of second).
     @property int downDuration() {
+        static import std.datetime;
         if (_downTs == 0)
             return 0;
         if (_downTs != 0 && _upTs != 0)
@@ -724,6 +727,7 @@ class MouseEvent {
     }
     /// construct mouse event from data
     this (MouseAction a, MouseButton b, ushort f, short x, short y, short wheelDelta = 0) {
+        static import std.datetime;
         _eventTimestamp = std.datetime.Clock.currStdTime;
         _action = a;
         _button = b;

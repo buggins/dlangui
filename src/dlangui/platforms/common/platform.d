@@ -445,6 +445,7 @@ class Window : CustomEventTarget {
     static immutable int PERFORMANCE_LOGGING_THRESHOLD_MS = 20;
 
     void onDraw(DrawBuf buf) {
+        static import std.datetime;
         try {
             bool needDraw = false;
             bool needLayout = false;

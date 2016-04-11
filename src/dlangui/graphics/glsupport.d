@@ -39,6 +39,7 @@ import dlangui.graphics.scene.effect;
 
 derelict.util.exception.ShouldThrow gl3MissingSymFunc( string symName ) {
     import std.algorithm : equal;
+    static import derelict.util.exception;
     foreach(s; ["glGetError", "glShaderSource", "glCompileShader",
             "glGetShaderiv", "glGetShaderInfoLog", "glGetString",
             "glCreateProgram", "glUseProgram", "glDeleteProgram",

@@ -184,6 +184,7 @@ version (Windows) {
 
 /// initialize logging (for win32 - to file ui.log, for other platforms - stderr; log level is TRACE for debug builds, and WARN for release builds)
 extern (C) void initLogs() {
+    static import std.stdio;
     version (Windows) {
         debug {
             Log.setFileLogger(new std.stdio.File("ui.log", "w"));

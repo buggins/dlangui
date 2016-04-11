@@ -473,6 +473,7 @@ wstring fromWStringz(const(wchar) * s) {
     Uppercase unicode character.
 */
 deprecated dchar dcharToUpper(dchar ch) {
+    static import std.uni;
     return std.uni.toUpper(ch);
 }
 

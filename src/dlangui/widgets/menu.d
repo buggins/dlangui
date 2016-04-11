@@ -147,6 +147,7 @@ class MenuItem {
     
     /// get hotkey character from label (e.g. 'F' for item labeled "&File"), 0 if no hotkey
     dchar getHotkey() {
+        static import std.uni;
         dstring s = label;
         dchar ch = 0;
         for (int i = 0; i < s.length - 1; i++) {
@@ -160,6 +161,7 @@ class MenuItem {
 
     /// find subitem by hotkey character, returns subitem index, -1 if not found
     int findSubitemByHotkey(dchar ch) {
+        static import std.uni;
         if (!ch)
             return -1;
         ch = std.uni.toUpper(ch);

@@ -1630,12 +1630,15 @@ final class Setting {
             throw new Exception("JSON parsing error in (" ~ to!string(line) ~ ":" ~ to!string(col) ~ ") " ~ context ~ ": " ~ msg);
         }
         static bool isAlpha(char ch) {
+            static import std.ascii;
             return std.ascii.isAlpha(ch) || ch == '_';
         }
         static bool isAlNum(char ch) {
+            static import std.ascii;
             return std.ascii.isAlphaNum(ch) || ch == '_';
         }
         @property char skipSpaces() {
+            static import std.ascii;
             for(;pos < json.length;pos++) {
                 char ch = json[pos];
                 if (!std.ascii.isWhite(ch))
@@ -1866,6 +1869,7 @@ final class Setting {
     }
 
     private Setting parseJSON(ref JsonParser parser) {
+        static import std.ascii;
         char ch = parser.skipSpaces;
         if (ch == '\"') {
             this = parser.parseString;

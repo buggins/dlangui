@@ -251,6 +251,7 @@ struct AutoParams {
         this.bumpMapping = bumpMapping;
     }
     string defs() {
+        import std.conv : to;
         char[] buf;
         if (directionalLightCount) {
             buf ~= "DIRECTIONAL_LIGHT_COUNT ";

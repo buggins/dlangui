@@ -306,6 +306,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     /// override to add custom items on left panel
     protected void updateLeftPaneWidth() {
+        import std.conv : to;
         _iconsWidth = _showIcons ? _iconsPaneWidth : 0;
         _foldingWidth = _showFolding ? _foldingPaneWidth : 0;
         _modificationMarksWidth = _showModificationMarks ? _modificationMarksPaneWidth : 0;
@@ -369,6 +370,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     }
 
     protected void drawLeftPaneLineNumbers(DrawBuf buf, Rect rc, int line) {
+        import std.conv : to;
         buf.fillRect(rc, _leftPaneLineNumberBackgroundColor);
         if (line < 0)
             return;
@@ -2842,6 +2844,7 @@ class LogWidget : EditBox {
 
     /// append lines to the end of text
     void appendText(dstring text) {
+        import std.array : split;
         if (text.length == 0)
             return;
         dstring[] lines = text.split("\n");
