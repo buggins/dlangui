@@ -1,1 +1,48 @@
 language: d
+
+os:
+  - linux
+  - osx
+
+env:
+  - ARCH=x86
+  - ARCH=x86_64
+
+# No-one cares about OS X x86
+matrix:
+  exclude:
+    - os: osx
+      env: ARCH=x86
+
+# Sort out packages
+install:
+  - |
+    if [ $TRAVIS_OS_NAME == osx ]
+    then
+      brew update
+      brew install sdl2
+    elif [ $TRAVIS_OS_NAME == linux ]
+    then
+      if [ $ARCH == x86 ]
+      then
+        sudo dpkg --add-architecture i386
+        sudo apt-get update
+        sudo apt-get install -y gcc-multilib libgl1-mesa-glx:i386 libfreetype6:i386 libsdl2-2.0-0:i386
+      else
+        sudo apt-get update
+        sudo apt-get install -y libfreetype6 libsdl2-2.0-0
+      fi
+    fi
+
+# Start a virtual x-server.
+before_script:
+  - |
+    if [ $TRAVIS_OS_NAME == linux ]
+    then
+      export DISPLAY=:99.0
+      sh -e /etc/init.d/xvfb start
+      sleep 3
+    fi
+
+script:
+  - dub test --arch=$ARCH
