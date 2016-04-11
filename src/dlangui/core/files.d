@@ -379,6 +379,7 @@ RootEntry[] getBookmarkPaths() nothrow
         import std.string : startsWith;
         import std.stdio : File;
         import std.exception : collectException;
+        import std.uri : decode;
         try {
             enum fileProtocol = "file://";
             auto configPath = environment.get("XDG_CONFIG_HOME");
@@ -388,14 +389,26 @@ RootEntry[] getBookmarkPaths() nothrow
             auto bookmarksFile = buildPath(configPath, "gtk-3.0/bookmarks");
             foreach(line; File(bookmarksFile, "r").byLineCopy()) {
                 if (line.startsWith(fileProtocol)) {
-                    auto path = line[fileProtocol.length..$];
+                    auto splitted = line.findSplit(" ");
+                    string path;
+                    if (splitted[1].length) {
+                        path = splitted[0][fileProtocol.length..$];
+                    } else {
+                        path = line[fileProtocol.length..$];
+                    }
+                    path = decode(path);
                     if (path.isAbsolute) {
-                        
                         // Note: GTK supports regular files in bookmarks too, but we allow directories only.
                         bool dirExists;
                         collectException(path.isDir, dirExists);
                         if (dirExists) {
-                            res ~= RootEntry(RootEntryType.BOOKMARK, path, path.baseName.toUTF32);
+                            dstring label;
+                            if (splitted[1].length) {
+                                label = splitted[2].toUTF32;
+                            } else {
+                                label = path.baseName.toUTF32;
+                            }
+                            res ~= RootEntry(RootEntryType.BOOKMARK, path, label);
                         }
                     }
                 }
