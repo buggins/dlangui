@@ -26,11 +26,13 @@ install:
       if [ $ARCH == x86 ]
       then
         sudo dpkg --add-architecture i386
-        sudo apt-get update
-        sudo apt-get install -y gcc-multilib libgl1-mesa-glx:i386 libfreetype6:i386 libsdl2-2.0-0:i386
+        sudo add-apt-repository -y ppa:zoogie/sdl2-snapshots
+        sudo apt-get update -qq
+        sudo apt-get install -qq gcc-multilib libgl1-mesa-glx:i386 libfreetype6:i386 libsdl2:i386
       else
-        sudo apt-get update
-        sudo apt-get install -y libfreetype6 libsdl2-2.0-0
+        sudo add-apt-repository -y ppa:zoogie/sdl2-snapshots
+        sudo apt-get update -qq
+        sudo apt-get install -qq libfreetype6 libsdl2
       fi
     fi
 
