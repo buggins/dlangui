@@ -1,8 +1,5 @@
 module dminer.core.minetypes;
 
-public import dlangui.core.config;
-static if (ENABLE_OPENGL):
-
 alias cell_t = ubyte;
 
 immutable cell_t NO_CELL = 0;
@@ -13,125 +10,45 @@ immutable cell_t VISITED_OCCUPIED = 254;
 immutable cell_t BOUND_BOTTOM = 253;
 immutable cell_t BOUND_SKY =    252;
 
-enum : ubyte {
+enum Dir : ubyte {
     NORTH = 0,
     SOUTH,
-    WEST,
     EAST,
+    WEST,
     UP,
     DOWN,
 }
 
-alias Dir = ubyte;
-
-/// Extended Dir simple Dir directions can be combined; first 6 items of DirEx match items of Dir - 26 directions (3*3*3-1) 
-enum : ubyte {
-    // main directions
-    DIR_NORTH = 0,
-    DIR_SOUTH,
-    DIR_WEST,
-    DIR_EAST,
-    DIR_UP,
-    DIR_DOWN,
-    // combined directions
-    DIR_WEST_UP,
-    DIR_EAST_UP,
-    DIR_WEST_DOWN,
-    DIR_EAST_DOWN,
-    DIR_NORTH_WEST,
-    DIR_NORTH_EAST,
-    DIR_NORTH_UP,
-    DIR_NORTH_DOWN,
-    DIR_NORTH_WEST_UP,
-    DIR_NORTH_EAST_UP,
-    DIR_NORTH_WEST_DOWN,
-    DIR_NORTH_EAST_DOWN,
-    DIR_SOUTH_WEST,
-    DIR_SOUTH_EAST,
-    DIR_SOUTH_UP,
-    DIR_SOUTH_DOWN,
-    DIR_SOUTH_WEST_UP,
-    DIR_SOUTH_EAST_UP,
-    DIR_SOUTH_WEST_DOWN,
-    DIR_SOUTH_EAST_DOWN,
-    DIR_MAX,
-    DIR_MIN = DIR_NORTH,
-}
-alias DirEx = ubyte;
-
 // 26 direction masks based on Dir
-enum : uint {
-    MASK_NORTH = (1 << NORTH),
-    MASK_SOUTH = (1 << SOUTH),
-    MASK_WEST = (1 << WEST),
-    MASK_EAST = (1 << EAST),
-    MASK_UP = (1 << UP),
-    MASK_DOWN = (1 << DOWN),
-    MASK_WEST_UP = (1 << WEST) | MASK_UP,
-    MASK_EAST_UP = (1 << EAST) | MASK_UP,
-    MASK_WEST_DOWN = (1 << WEST) | MASK_DOWN,
-    MASK_EAST_DOWN = (1 << EAST) | MASK_DOWN,
-    MASK_NORTH_WEST = MASK_NORTH | MASK_WEST,
-    MASK_NORTH_EAST = MASK_NORTH | MASK_EAST,
-    MASK_NORTH_UP = MASK_NORTH | MASK_UP,
-    MASK_NORTH_DOWN = MASK_NORTH | MASK_DOWN,
-    MASK_NORTH_WEST_UP = MASK_NORTH | MASK_WEST | MASK_UP,
-    MASK_NORTH_EAST_UP = MASK_NORTH | MASK_EAST | MASK_UP,
-    MASK_NORTH_WEST_DOWN = MASK_NORTH | MASK_WEST | MASK_DOWN,
-    MASK_NORTH_EAST_DOWN = MASK_NORTH | MASK_EAST | MASK_DOWN,
-    MASK_SOUTH_WEST = MASK_SOUTH | MASK_WEST,
-    MASK_SOUTH_EAST = MASK_SOUTH | MASK_EAST,
-    MASK_SOUTH_UP = MASK_SOUTH | MASK_UP,
-    MASK_SOUTH_DOWN = MASK_SOUTH | MASK_DOWN,
-    MASK_SOUTH_WEST_UP = MASK_SOUTH | MASK_WEST | MASK_UP,
-    MASK_SOUTH_EAST_UP = MASK_SOUTH | MASK_EAST | MASK_UP,
-    MASK_SOUTH_WEST_DOWN = MASK_SOUTH | MASK_WEST | MASK_DOWN,
-    MASK_SOUTH_EAST_DOWN = MASK_SOUTH | MASK_EAST | MASK_DOWN,
+enum DirMask : ubyte {
+    MASK_NORTH = (1 << Dir.NORTH),
+    MASK_SOUTH = (1 << Dir.SOUTH),
+    MASK_EAST = (1 << Dir.EAST),
+    MASK_WEST = (1 << Dir.WEST),
+    MASK_UP = (1 << Dir.UP),
+    MASK_DOWN = (1 << Dir.DOWN),
+    MASK_ALL = 0x3F,
+    //MASK_WEST_UP = (1 << Dir.WEST) | MASK_UP,
+    //MASK_EAST_UP = (1 << Dir.EAST) | MASK_UP,
+    //MASK_WEST_DOWN = (1 << Dir.WEST) | MASK_DOWN,
+    //MASK_EAST_DOWN = (1 << Dir.EAST) | MASK_DOWN,
+    //MASK_NORTH_WEST = MASK_NORTH | MASK_WEST,
+    //MASK_NORTH_EAST = MASK_NORTH | MASK_EAST,
+    //MASK_NORTH_UP = MASK_NORTH | MASK_UP,
+    //MASK_NORTH_DOWN = MASK_NORTH | MASK_DOWN,
+    //MASK_NORTH_WEST_UP = MASK_NORTH | MASK_WEST | MASK_UP,
+    //MASK_NORTH_EAST_UP = MASK_NORTH | MASK_EAST | MASK_UP,
+    //MASK_NORTH_WEST_DOWN = MASK_NORTH | MASK_WEST | MASK_DOWN,
+    //MASK_NORTH_EAST_DOWN = MASK_NORTH | MASK_EAST | MASK_DOWN,
+    //MASK_SOUTH_WEST = MASK_SOUTH | MASK_WEST,
+    //MASK_SOUTH_EAST = MASK_SOUTH | MASK_EAST,
+    //MASK_SOUTH_UP = MASK_SOUTH | MASK_UP,
+    //MASK_SOUTH_DOWN = MASK_SOUTH | MASK_DOWN,
+    //MASK_SOUTH_WEST_UP = MASK_SOUTH | MASK_WEST | MASK_UP,
+    //MASK_SOUTH_EAST_UP = MASK_SOUTH | MASK_EAST | MASK_UP,
+    //MASK_SOUTH_WEST_DOWN = MASK_SOUTH | MASK_WEST | MASK_DOWN,
+    //MASK_SOUTH_EAST_DOWN = MASK_SOUTH | MASK_EAST | MASK_DOWN,
 }
-
-alias DirMask = uint;
-
-/+
-struct SymmetricMatrix (T, T initValue) {
-private:
-    int _size;
-    int dx;
-    int dx2;
-    T * data;
-public:
-    this(int sz = 1) {
-        _size = sz;
-        reset(sz);
-    }
-    ~this() {
-        if (data)
-            delete[] data;
-    }
-    T get(int x, int y) {
-        return data[(x + dx2) * dx + (y + dx2)];
-    }
-    void set(int x, int y, T value) {
-        data[(x + dx2) * dx + (y + dx2)] = value;
-    }
-    int size() {
-        return _size;
-    }
-    void reset(int sz) {
-        if (_size != sz || !data) {
-            _size = sz;
-            dx = _size + _size - 1;
-            dx2 = dx / 2;
-            if (data)
-                delete[] data;
-            data = new T[dx * dx];
-        }
-        for (int i = dx * dx - 1; i >= 0; i--)
-            data[i] = initValue;
-    }
-}
-
-alias BoolSymmetricMatrix = SymmetricMatrix!(bool, false);
-+/
 
 struct Vector2d {
     int x;
@@ -140,9 +57,9 @@ struct Vector2d {
         x = xx;
         y = yy;
     }
-    bool opEqual(Vector2d v) const {
-        return x == v.x && y == v.y;
-    }
+    //bool opEqual(Vector2d v) const {
+    //    return x == v.x && y == v.y;
+    //}
 }
 
 immutable Vector2d ZERO2 = Vector2d(0, 0);
@@ -156,9 +73,9 @@ struct Vector3d {
         y = yy;
         z = zz;
     }
-    bool opEqual(const Vector3d v) const {
-        return x == v.x && y == v.y && z == v.z;
-    }
+    //bool opEqual(const Vector3d v) const {
+    //    return x == v.x && y == v.y && z == v.z;
+    //}
     
     /// returns vector with all components which are negative of components for this vector
     Vector3d opUnary(string op : "-")() const {
@@ -214,25 +131,25 @@ struct Vector3d {
     Vector3d turnDown() {
         return Vector3d(x, z, -y);
     }
-    Vector3d move(DirEx dir) {
+    Vector3d move(Dir dir) {
         Vector3d res = this;
-        switch (dir) {
-        case DIR_NORTH:
+        switch (dir) with(Dir) {
+        case NORTH:
             res.z--;
             break;
-        case DIR_SOUTH:
+        case SOUTH:
             res.z++;
             break;
-        case DIR_WEST:
+        case WEST:
             res.x--;
             break;
-        case DIR_EAST:
+        case EAST:
             res.x++;
             break;
-        case DIR_UP:
+        case UP:
             res.y++;
             break;
-        case DIR_DOWN:
+        case DOWN:
             res.y--;
             break;
         default:
@@ -406,12 +323,11 @@ public:
 
 struct InfiniteMatrix(T) {
 private:
-    int _minx = 0;
-    int _maxx = 0;
-    int _miny = 0;
-    int _maxy = 0;
     int _size = 0;
     int _sizeShift = 0;
+    int _sizeShiftMul2 = 0;
+    int _sizeMask = 0;
+    int _invSizeMask = 0;
     T[] _data;
     void resize(int newSizeShift) {
         int newSize = (1<<newSizeShift);
@@ -433,16 +349,24 @@ private:
         _data = newdata;
         _size = newSize;
         _sizeShift = newSizeShift;
+        _sizeShiftMul2 = _sizeShift + 1;
+        _sizeMask = (1 << _sizeShiftMul2) - 1;
+        _invSizeMask = ~_sizeMask;
     }
     int calcIndex(int x, int y) {
-        return ((y + _size) << (_sizeShift + 1)) + (x + _size);
+        return (y << _sizeShiftMul2) + x;
     }
 public:
     @property int size() { return _size; }
     T get(int x, int y) {
-        if (x < -_size || x >= _size || y < -_size || y >= _size)
+        if (!_data)
             return null;
-        return _data.ptr[calcIndex(x, y)];
+        x += _size;
+        y += _size;
+        if (!((x | y) & ~_sizeMask)) {
+            return _data.ptr[(y << _sizeShiftMul2) + x]; //calcIndex(x, y)
+        }
+        return null;
     }
     void set(int x, int y, T v) {
         if (x < -_size || x >= _size || y < -_size || y >= _size) {
@@ -455,6 +379,8 @@ public:
             }
             resize(newSizeShift);
         }
+        x += _size;
+        y += _size;
         int index = calcIndex(x, y);
         if (_data.ptr[index])
             destroy(_data.ptr[index]);
@@ -480,7 +406,7 @@ struct Position {
     }
     Vector2d calcPlaneCoords(Vector3d v) {
         v = v - pos;
-        switch (direction.dir) {
+        switch (direction.dir) with(Dir) {
             default:
             case NORTH:
                 return Vector2d(v.x, v.y);
@@ -502,6 +428,12 @@ struct Position {
     void turnRight() {
         direction.turnRight();
     }
+    void shiftLeft(int step = 1) {
+        pos += direction.left * step;
+    }
+    void shiftRight(int step = 1) {
+        pos += direction.right * step;
+    }
     void turnUp() {
         direction.turnUp();
     }
@@ -514,6 +446,18 @@ struct Position {
     void backward(int step = 1) {
         pos -= direction.forward * step;
     }
+    void moveUp(int step = 1) {
+        pos += direction.up * step;
+    }
+    void moveDown(int step = 1) {
+        pos += direction.down * step;
+    }
+    void moveLeft(int step = 1) {
+        pos += direction.left * step;
+    }
+    void moveRight(int step = 1) {
+        pos += direction.right * step;
+    }
 }
 
 
@@ -523,7 +467,7 @@ Dir opposite(Dir d) {
 }
 
 Dir turnLeft(Dir d) {
-    switch (d) {
+    switch (d) with (Dir) {
         case WEST:
             return SOUTH;
         case EAST:
@@ -541,7 +485,7 @@ Dir turnLeft(Dir d) {
 }
 
 Dir turnRight(Dir d) {
-    switch (d) {
+    switch (d) with (Dir) {
         case WEST:
             return NORTH;
         case EAST:
@@ -559,7 +503,7 @@ Dir turnRight(Dir d) {
 }
 
 Dir turnUp(Dir d) {
-    switch (d) {
+    switch (d) with (Dir) {
         case WEST:
             return UP;
         case EAST:
@@ -577,7 +521,7 @@ Dir turnUp(Dir d) {
 }
 
 Dir turnDown(Dir d) {
-    switch (d) {
+    switch (d) with (Dir) {
         case WEST:
             return DOWN;
         case EAST:
@@ -605,9 +549,26 @@ struct Direction {
     this(Dir d) {
         set(d);
     }
+    /// returns Y axis rotation angle in degrees (0, 90, 180, 270)
+    @property float angle() {
+        switch (dir) with (Dir) {
+            default:
+            case NORTH:
+                return 0;
+            case SOUTH:
+                return 180;
+            case WEST:
+                return 90;
+            case EAST:
+                return 270;
+            case UP:
+            case DOWN:
+                return 0;
+        }
+    }
     /// set by direction code
     void set(Dir d) {
-        switch (d) {
+        switch (d) with (Dir) {
             default:
             case NORTH:
                 set(0, 0, -1);
@@ -635,15 +596,15 @@ struct Direction {
     void set(int x, int y, int z) {
         forward = Vector3d(x, y, z);
         if (x) {
-            dir = (x > 0) ? EAST : WEST;
+            dir = (x > 0) ? Dir.EAST : Dir.WEST;
         }
         else if (y) {
-            dir = (y > 0) ? UP : DOWN;
+            dir = (y > 0) ? Dir.UP : Dir.DOWN;
         }
         else {
-            dir = (z > 0) ? SOUTH : NORTH;
+            dir = (z > 0) ? Dir.SOUTH : Dir.NORTH;
         }
-        switch (dir) {
+        switch (dir) with (Dir) {
             case UP:
                 up = Vector3d(1, 0, 0);
                 left = Vector3d(0, 0, 1);
@@ -748,7 +709,16 @@ struct Random {
     int nextInt() {
         return next(31);
     }
-    int nextInt(int n);
+    int nextInt(int n) {
+        if ((n & -n) == n)  // i.e., n is a power of 2
+            return cast(int)((n * cast(long)next(31)) >> 31);
+        int bits, val;
+        do {
+            bits = next(31);
+            val = bits % n;
+        } while (bits - val + (n - 1) < 0);
+        return val;
+    }
 }
 
 const Vector3d[6] DIRECTION_VECTORS = [

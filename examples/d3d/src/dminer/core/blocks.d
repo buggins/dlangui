@@ -1,8 +1,5 @@
 module dminer.core.blocks;
 
-public import dlangui.core.config;
-static if (ENABLE_OPENGL):
-
 import dminer.core.minetypes;
 import dminer.core.world;
 import dlangui.graphics.scene.mesh;
@@ -184,7 +181,7 @@ static void createFaceMesh(float * data, Dir face, float x0, float y0, float z0,
     int tileX = (tileIndex % BLOCK_TEXTURE_SPRITES_PER_LINE) * BLOCK_SPRITE_STEP + BLOCK_SPRITE_OFFSET;
     int tileY = (tileIndex / BLOCK_TEXTURE_SPRITES_PER_LINE) * BLOCK_SPRITE_STEP + BLOCK_SPRITE_OFFSET;
     // data is 11 comp * 4 vert floats
-    switch (face) {
+    switch (face) with(Dir) {
         default:
         case NORTH:
             fillFaceMesh(data, face_vertices_north.ptr, x0, y0, z0, tileX, tileY);

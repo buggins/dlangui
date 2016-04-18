@@ -102,7 +102,7 @@ class Transform : RefCountedObject {
         _hasTranslation = _hasRotation = _hasScale = _dirtyTransform = false;
         _scale = vec3(1.0f, 1.0f, 1.0f);
         _translation = vec3(0.0f, 0.0f, 0.0f);
-        _rotation = mat4.identity;
+        _rotation.setIdentity();
         _matrix.setIdentity();
     }
 

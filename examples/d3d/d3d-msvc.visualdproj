@@ -413,6 +413,7 @@
    <Folder name="core">
     <File path="src\dminer\core\blocks.d" />
     <File path="src\dminer\core\minetypes.d" />
+    <File path="src\dminer\core\terrain.d" />
     <File path="src\dminer\core\world.d" />
    </Folder>
   </Folder>
