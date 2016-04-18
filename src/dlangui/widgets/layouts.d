@@ -663,6 +663,8 @@ class TableLayout : WidgetGroupDefaultDrawing {
         int col;
         int row;
         Widget widget;
+        @property bool layoutWidthFill() { return widget ? widget.layoutWidth == FILL_PARENT : false; }
+        @property bool layoutHeightFill() { return widget ? widget.layoutHeight == FILL_PARENT : false; }
         @property int measuredWidth() { return widget ? widget.measuredWidth : 0; }
         @property int measuredHeight() { return widget ? widget.measuredHeight : 0; }
         @property int layoutWidth() { return widget ? widget.layoutWidth : 0; }
@@ -690,11 +692,15 @@ class TableLayout : WidgetGroupDefaultDrawing {
         int minSize;
         int maxSize;
         int size;
+        bool fill;
         void initialize(int index) {
             measuredSize = minSize = maxSize = layoutSize = size = 0;
+            fill = false;
             this.index = index;
         }
         void rowCellMeasured(ref TableLayoutCell cell) {
+            if (cell.layoutHeightFill)
+                fill = true;
             if (measuredSize < cell.measuredHeight)
                 measuredSize = cell.measuredHeight;
             if (minSize < cell.minHeight)
@@ -704,6 +710,8 @@ class TableLayout : WidgetGroupDefaultDrawing {
             size = measuredSize;
         }
         void colCellMeasured(ref TableLayoutCell cell) {
+            if (cell.layoutWidthFill)
+                fill = true;
             if (measuredSize < cell.measuredWidth)
                 measuredSize = cell.measuredWidth;
             if (minSize < cell.minWidth)
@@ -720,10 +728,14 @@ class TableLayout : WidgetGroupDefaultDrawing {
         protected TableLayoutCell[] _cells;
         protected int colCount;
         protected int rowCount;
+        protected bool layoutWidthFill;
+        protected bool layoutHeightFill;
 
-        void initialize(int cols, int rows) {
+        void initialize(int cols, int rows, bool layoutWidthFill, bool layoutHeightFill) {
             colCount = cols;
             rowCount = rows;
+            this.layoutWidthFill = layoutWidthFill;
+            this.layoutHeightFill = layoutHeightFill;
             _cells.length = cols * rows;
             _rows.length = rows;
             _cols.length = cols;
@@ -750,8 +762,8 @@ class TableLayout : WidgetGroupDefaultDrawing {
             return _rows[r];
         }
 
-        Point measure(Widget parent, int cc, int rc, int pwidth, int pheight) {
-            initialize(cc, rc);
+        Point measure(Widget parent, int cc, int rc, int pwidth, int pheight, bool layoutWidthFill, bool layoutHeightFill) {
+            initialize(cc, rc, layoutWidthFill, layoutHeightFill);
             for (int y = 0; y < rc; y++) {
                 for (int x = 0; x < cc; x++) {
                     int index = y * cc + x;
@@ -778,14 +790,58 @@ class TableLayout : WidgetGroupDefaultDrawing {
             return Point(totalWidth, totalHeight);
         }
 
-        void layoutRows() {
+        void layoutRows(int parentSize) {
+            if (layoutHeightFill && rowCount) {
+                int totalSize = 0;
+                int fillCount = 0;
+                for (int y = 0; y < rowCount; y++) {
+                    totalSize += row(y).size;
+                    if (row(y).fill)
+                        fillCount++;
+                }
+                int extraSize = parentSize - totalSize;
+                int resizeCount = fillCount > 0 ? fillCount : rowCount;
+                int delta = extraSize / resizeCount;
+                int delta0 = extraSize % resizeCount;
+
+                if (extraSize > 0) {
+                    for (int y = 0; y < rowCount; y++) {
+                        if (fillCount == 0 || row(y).fill) {
+                            row(y).size += delta + delta0;
+                            delta0 = 0;
+                        }
+                    }
+                }
+            }
         }
-        void layoutCols() {
+        void layoutCols(int parentSize) {
+            if (layoutWidthFill) {
+                int totalSize = 0;
+                int fillCount = 0;
+                for (int x = 0; x < colCount; x++) {
+                    totalSize += col(x).size;
+                    if (col(x).fill)
+                        fillCount++;
+                }
+                int extraSize = parentSize - totalSize;
+                int resizeCount = fillCount > 0 ? fillCount : colCount;
+                int delta = extraSize / resizeCount;
+                int delta0 = extraSize % resizeCount;
+
+                if (extraSize > 0) {
+                    for (int x = 0; x < colCount; x++) {
+                        if (fillCount == 0 || col(x).fill) {
+                            col(x).size += delta + delta0;
+                            delta0 = 0;
+                        }
+                    }
+                }
+            }
         }
 
         void layout(Rect rc) {
-            layoutRows();
-            layoutCols();
+            layoutRows(rc.height);
+            layoutCols(rc.width);
             int y0 = 0;
             for (int y = 0; y < rowCount; y++) {
                 int x0 = 0;
@@ -831,7 +887,7 @@ class TableLayout : WidgetGroupDefaultDrawing {
             pheight -= m.top + m.bottom + p.top + p.bottom;
 
         int rc = rowCount;
-        Point sz = _cells.measure(this, colCount, rc, pwidth, pheight);
+        Point sz = _cells.measure(this, colCount, rc, pwidth, pheight, layoutWidth == FILL_PARENT, layoutHeight == FILL_PARENT);
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }
 

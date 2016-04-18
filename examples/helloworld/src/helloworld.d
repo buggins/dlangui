@@ -20,19 +20,22 @@ extern (C) int UIAppMain(string[] args) {
         VerticalLayout {
             margins: 10
             padding: 10
+            layoutWidth: fill
             backgroundColor: "#C0E0E070" // semitransparent yellow background
             // red bold text with size = 150% of base style size and font face Arial
             TextWidget { text: "Hello World example for DlangUI"; textColor: "red"; fontSize: 150%; fontWeight: 800; fontFace: "Arial" }
             // arrange controls as form - table with two columns
             TableLayout {
                 colCount: 2
+                layoutWidth: fill
                 TextWidget { text: "param 1" }
-                EditLine { id: edit1; text: "some text" }
+                EditLine { id: edit1; text: "some text"; layoutWidth: fill }
                 TextWidget { text: "param 2" }
-                EditLine { id: edit2; text: "some text for param2" }
+                EditLine { id: edit2; text: "some text for param2"; layoutWidth: fill }
                 TextWidget { text: "some radio buttons" }
                 // arrange some radio buttons vertically
                 VerticalLayout {
+                    layoutWidth: fill
                     RadioButton { id: rb1; text: "Item 1" }
                     RadioButton { id: rb2; text: "Item 2" }
                     RadioButton { id: rb3; text: "Item 3" }
@@ -40,6 +43,7 @@ extern (C) int UIAppMain(string[] args) {
                 TextWidget { text: "and checkboxes" }
                 // arrange some checkboxes horizontally
                 HorizontalLayout {
+                    layoutWidth: fill
                     CheckBox { id: cb1; text: "checkbox 1" }
                     CheckBox { id: cb2; text: "checkbox 2" }
                 }
