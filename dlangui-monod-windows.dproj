@@ -26,7 +26,12 @@
     <Target>StaticLibrary</Target>
     <OutputName>libdlangui-monod-windows</OutputName>
     <UnittestMode>false</UnittestMode>
-    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/hdpi -Jviews/res/mdpi</ExtraCompilerArguments>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/i18n
+-Jviews/res/shaders
+-Jviews/res/mdpi
+-Jviews/res/hdpi</ExtraCompilerArguments>
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
     <ObjectsDirectory>obj\Debug</ObjectsDirectory>
     <VersionIds>
@@ -45,7 +50,12 @@
     <Target>StaticLibrary</Target>
     <OutputName>libdlangui-monod-windows</OutputName>
     <UnittestMode>false</UnittestMode>
-    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/hdpi -Jviews/res/mdpi</ExtraCompilerArguments>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/i18n
+-Jviews/res/shaders
+-Jviews/res/mdpi
+-Jviews/res/hdpi</ExtraCompilerArguments>
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
     <ObjectsDirectory>obj\Release</ObjectsDirectory>
     <VersionIds>
@@ -65,7 +75,12 @@
     <Target>Executable</Target>
     <OutputName>libdlangui-monod-windows</OutputName>
     <UnittestMode>true</UnittestMode>
-    <ExtraCompilerArguments>-Jviews -Jviews/res -Jviews/res/i18n -Jviews/res/hdpi -Jviews/res/mdpi</ExtraCompilerArguments>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/i18n
+-Jviews/res/shaders
+-Jviews/res/mdpi
+-Jviews/res/hdpi</ExtraCompilerArguments>
     <LinkinThirdPartyLibraries>true</LinkinThirdPartyLibraries>
     <ObjectsDirectory>obj\Unittest</ObjectsDirectory>
     <VersionIds>
@@ -79,7 +94,6 @@
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="src\dlangui\package.d" />
     <Compile Include="src\dlangui\core\collections.d" />
     <Compile Include="src\dlangui\core\css.d" />
     <Compile Include="src\dlangui\core\cssparser.d" />
@@ -91,6 +105,7 @@
     <Compile Include="src\dlangui\core\linestream.d" />
     <Compile Include="src\dlangui\core\logger.d" />
     <Compile Include="src\dlangui\core\math3d.d" />
+    <Compile Include="src\dlangui\core\parseutils.d" />
     <Compile Include="src\dlangui\core\settings.d" />
     <Compile Include="src\dlangui\core\signals.d" />
     <Compile Include="src\dlangui\core\stdaction.d" />
@@ -99,11 +114,13 @@
     <Compile Include="src\dlangui\core\types.d" />
     <Compile Include="src\dlangui\dialogs\dialog.d" />
     <Compile Include="src\dlangui\dialogs\filedlg.d" />
+    <Compile Include="src\dlangui\dialogs\inputbox.d" />
     <Compile Include="src\dlangui\dialogs\msgbox.d" />
     <Compile Include="src\dlangui\dialogs\settingsdialog.d" />
     <Compile Include="src\dlangui\dml\annotations.d" />
     <Compile Include="src\dlangui\dml\dmlhighlight.d" />
     <Compile Include="src\dlangui\dml\parser.d" />
+    <Compile Include="src\dlangui\dml\tokenizer.d" />
     <Compile Include="src\dlangui\graphics\colors.d" />
     <Compile Include="src\dlangui\graphics\drawbuf.d" />
     <Compile Include="src\dlangui\graphics\domrender.d" />
@@ -114,17 +131,21 @@
     <Compile Include="src\dlangui\graphics\images.d" />
     <Compile Include="src\dlangui\graphics\resources.d" />
     <Compile Include="src\dlangui\graphics\scene\camera.d" />
+    <Compile Include="src\dlangui\graphics\scene\drawableobject.d" />
+    <Compile Include="src\dlangui\graphics\scene\effect.d" />
+    <Compile Include="src\dlangui\graphics\scene\fbximport.d" />
+    <Compile Include="src\dlangui\graphics\scene\light.d" />
+    <Compile Include="src\dlangui\graphics\scene\material.d" />
+    <Compile Include="src\dlangui\graphics\scene\mesh.d" />
+    <Compile Include="src\dlangui\graphics\scene\model.d" />
     <Compile Include="src\dlangui\graphics\scene\node.d" />
+    <Compile Include="src\dlangui\graphics\scene\objimport.d" />
     <Compile Include="src\dlangui\graphics\scene\scene3d.d" />
     <Compile Include="src\dlangui\graphics\scene\transform.d" />
     <Compile Include="src\dlangui\graphics\xpm\xpmcolors.d" />
     <Compile Include="src\dlangui\graphics\xpm\reader.d" />
     <Compile Include="src\dlangui\platforms\common\platform.d" />
-    <Compile Include="src\dlangui\platforms\common\startup.d" />
     <Compile Include="src\dlangui\platforms\sdl\sdlapp.d" />
-    <Compile Include="src\dlangui\platforms\windows\win32drawbuf.d" />
-    <Compile Include="src\dlangui\platforms\windows\win32fonts.d" />
-    <Compile Include="src\dlangui\platforms\windows\winapp.d" />
     <Compile Include="src\dlangui\widgets\appframe.d" />
     <Compile Include="src\dlangui\widgets\combobox.d" />
     <Compile Include="src\dlangui\widgets\controls.d" />
@@ -204,6 +225,7 @@
     <Compile Include="3rdparty\fontconfig\functions.d" />
     <Compile Include="3rdparty\fontconfig\package.d" />
     <Compile Include="3rdparty\fontconfig\types.d" />
+    <Compile Include="src\dlangui\package.d" />
     <Compile Include="deps\DerelictFT\source\derelict\freetype\ft.d" />
     <Compile Include="deps\DerelictFT\source\derelict\freetype\functions.d" />
     <Compile Include="deps\DerelictFT\source\derelict\freetype\types.d" />
@@ -235,6 +257,22 @@
     <Compile Include="deps\DerelictUtil\source\derelict\util\system.d" />
     <Compile Include="deps\DerelictUtil\source\derelict\util\wintypes.d" />
     <Compile Include="deps\DerelictUtil\source\derelict\util\xtypes.d" />
+    <Compile Include="src\dlangui\platforms\x11\x11app.d" />
+    <Compile Include="src\dlangui\platforms\common\startup.d" />
+    <Compile Include="src\dlangui\core\config.d" />
+    <Compile Include="3rdparty\dimage\array.d" />
+    <Compile Include="3rdparty\dimage\bitio.d" />
+    <Compile Include="3rdparty\dimage\compound.d" />
+    <Compile Include="3rdparty\dimage\huffman.d" />
+    <Compile Include="3rdparty\dimage\idct.d" />
+    <Compile Include="3rdparty\dimage\image.d" />
+    <Compile Include="3rdparty\dimage\jpeg.d" />
+    <Compile Include="3rdparty\dimage\memory.d" />
+    <Compile Include="3rdparty\dimage\png.d" />
+    <Compile Include="3rdparty\dimage\stream.d" />
+    <Compile Include="3rdparty\dimage\zlib.d" />
+    <Compile Include="src\dlangui\core\asyncsocket.d" />
+    <Compile Include="src\dlangui\core\queue.d" />
   </ItemGroup>
   <ItemGroup>
     <None Include="3rdparty\win32\makefile" />

@@ -299,6 +299,7 @@ Following settings are to be applied to all configurations of your new project (
   * In your project options Build/Includes put list of import directories of DlangUI library and its dependencies, like
   
         ../dlangui/src
+        ../dlangui/3rdparty
         ../dlangui/deps/DerelictSDL2/source
         ../dlangui/deps/DerelictFT/source
         ../dlangui/deps/DerelictGL3/source

@@ -11,11 +11,11 @@
     <Includes>
       <Includes>
         <Path>..\..\src</Path>
-        <Path>..\..\deps\DerelictFT\source</Path>
+        <Path>..\..\3rdparty</Path>
         <Path>..\..\deps\DerelictSDL2\source</Path>
+        <Path>..\..\deps\DerelictFT\source</Path>
         <Path>..\..\deps\DerelictGL3\source</Path>
         <Path>..\..\deps\DerelictUtil\source</Path>
-        <Path>..\..\deps\gl3n</Path>
       </Includes>
     </Includes>
     <DependentProjectIds>
@@ -85,6 +85,7 @@
         <String>windows</String>
       </VersionIds>
     </VersionIds>
+    <ConsolePause>false</ConsolePause>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\dmledit.d" />

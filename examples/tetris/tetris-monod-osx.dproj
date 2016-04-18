@@ -17,7 +17,6 @@
       <Includes>
         <Path>../../src</Path>
         <Path>../../3rdparty</Path>
-        <Path>../../deps/gl3n</Path>
         <Path>../../deps/DerelictGL3/source</Path>
         <Path>../../deps/DerelictSDL2/source</Path>
         <Path>../../deps/DerelictFT/source</Path>
