@@ -174,9 +174,11 @@ class Window : CustomEventTarget {
     @property uint keyboardModifiers() const { return _keyboardModifiers; }
     @property Widget mainWidget() { return _mainWidget; }
     @property void mainWidget(Widget widget) { 
-        if (_mainWidget !is null)
+        if (_mainWidget !is null) {
             _mainWidget.window = null;
-        _mainWidget = widget; 
+            destroy(_mainWidget);
+        }
+        _mainWidget = widget;
         if (_mainWidget !is null)
             _mainWidget.window = this;
     }
