@@ -379,6 +379,7 @@ RootEntry[] getBookmarkPaths() nothrow
         import std.string : startsWith;
         import std.stdio : File;
         import std.exception : collectException;
+        import std.uri : decode;
         try {
             enum fileProtocol = "file://";
             auto configPath = environment.get("XDG_CONFIG_HOME");
@@ -388,14 +389,26 @@ RootEntry[] getBookmarkPaths() nothrow
             auto bookmarksFile = buildPath(configPath, "gtk-3.0/bookmarks");
             foreach(line; File(bookmarksFile, "r").byLineCopy()) {
                 if (line.startsWith(fileProtocol)) {
-                    auto path = line[fileProtocol.length..$];
+                    auto splitted = line.findSplit(" ");
+                    string path;
+                    if (splitted[1].length) {
+                        path = splitted[0][fileProtocol.length..$];
+                    } else {
+                        path = line[fileProtocol.length..$];
+                    }
+                    path = decode(path);
                     if (path.isAbsolute) {
-                        
                         // Note: GTK supports regular files in bookmarks too, but we allow directories only.
                         bool dirExists;
                         collectException(path.isDir, dirExists);
                         if (dirExists) {
-                            res ~= RootEntry(RootEntryType.BOOKMARK, path, path.baseName.toUTF32);
+                            dstring label;
+                            if (splitted[1].length) {
+                                label = splitted[2].toUTF32;
+                            } else {
+                                label = path.baseName.toUTF32;
+                            }
+                            res ~= RootEntry(RootEntryType.BOOKMARK, path, label);
                         }
                     }
                 }
@@ -486,6 +499,35 @@ bool isRoot(in string path) pure nothrow {
     return false;
 }
 
+/**
+ * Check if path is hidden.
+ */
+bool isHidden(in string path) nothrow {
+    version(Windows) {
+        import core.sys.windows.winnt : FILE_ATTRIBUTE_HIDDEN;
+        import std.exception : collectException;
+        uint attrs;
+        if (collectException(path.getAttributes(), attrs) is null) {
+            return (attrs & FILE_ATTRIBUTE_HIDDEN) != 0;
+        } else {
+            return false;
+        }
+    } else version(Posix) {
+        return path.baseName.startsWith(".");
+    } else {
+        return false;
+    }
+}
+
+///
+unittest
+{
+    version(Posix) {
+        assert(!"path/to/normal_file".isHidden());
+        assert("path/to/.hidden_file".isHidden());
+    }
+}
+
 /// returns parent directory for specified path
 string parentDir(in string path) pure nothrow {
     return buildNormalizedPath(path, "..");
@@ -532,8 +574,7 @@ bool listDirectory(in string dir, in bool includeDirs, in bool includeFiles, in 
         DirEntry[] dirs;
         DirEntry[] files;
         foreach (DirEntry e; dirEntries(dir, SpanMode.shallow)) {
-            string fn = baseName(e.name);
-            if (!showHiddenFiles && fn.startsWith("."))
+            if (!showHiddenFiles && e.name.isHidden())
                 continue;
             if (e.isDir) {
                 dirs ~= e;
