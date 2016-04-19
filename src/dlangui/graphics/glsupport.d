@@ -30,12 +30,19 @@ import std.conv;
 import std.string;
 import std.array;
 
-public import derelict.opengl3.types;
-public import derelict.opengl3.gl3;
-public import derelict.opengl3.gl;
+version (Android) {
+    public import EGL.eglplatform : EGLint;
+    public import EGL.egl, GLES3.gl3;
+    public import GLES.gl : glEnableClientState, glLightfv, glColor4f, GL_ALPHA_TEST, GL_VERTEX_ARRAY, 
+		GL_COLOR_ARRAY, glVertexPointer, glColorPointer, glDisableClientState, 
+		GL_TEXTURE_COORD_ARRAY, glTexCoordPointer, glColorPointer, glMatrixMode, 
+		glLoadMatrixf, glLoadIdentity, GL_PROJECTION, GL_MODELVIEW;
 
-import dlangui.graphics.scene.mesh;
-import dlangui.graphics.scene.effect;
+
+} else {
+    public import derelict.opengl3.types;
+    public import derelict.opengl3.gl3;
+    public import derelict.opengl3.gl;
 
 derelict.util.exception.ShouldThrow gl3MissingSymFunc( string symName ) {
     import std.algorithm : equal;
@@ -53,6 +60,12 @@ derelict.util.exception.ShouldThrow gl3MissingSymFunc( string symName ) {
     // Don't throw for unused symbol
     return derelict.util.exception.ShouldThrow.No;
 }
+
+
+}
+
+import dlangui.graphics.scene.mesh;
+import dlangui.graphics.scene.effect;
 
 
 /**
@@ -182,7 +195,7 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
     }
 
     bool compile() {
-        glslversion = std.string.fromStringz(glGetString(GL_SHADING_LANGUAGE_VERSION)).dup;
+        glslversion = std.string.fromStringz(cast(const char *)glGetString(GL_SHADING_LANGUAGE_VERSION)).dup;
 
         glslversionString.length = 0;
         glslversionInt = 0;
@@ -660,38 +673,42 @@ bool initGLSupport(bool legacy = false) {
     import dlangui.platforms.common.platform : setOpenglEnabled;
     if (_glSupport && _glSupport.valid)
         return true;
-    static bool DERELICT_GL3_RELOADED;
-    static bool gl3ReloadedOk;
-    static bool glReloadedOk;
-    if (!DERELICT_GL3_RELOADED) {
-        DERELICT_GL3_RELOADED = true;
-        try {
-            Log.v("Reloading DerelictGL3");
-            import derelict.opengl3.gl3;
-            DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
-            DerelictGL3.reload();
-            gl3ReloadedOk = true;
-        } catch (Exception e) {
-            Log.e("Derelict exception while reloading DerelictGL3", e);
+    version(Android) {
+
+    } else {
+        static bool DERELICT_GL3_RELOADED;
+	static bool gl3ReloadedOk;
+        static bool glReloadedOk;
+	if (!DERELICT_GL3_RELOADED) {
+    	    DERELICT_GL3_RELOADED = true;
+            try {
+                Log.v("Reloading DerelictGL3");
+                import derelict.opengl3.gl3;
+                DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
+                DerelictGL3.reload();
+                gl3ReloadedOk = true;
+            } catch (Exception e) {
+                Log.e("Derelict exception while reloading DerelictGL3", e);
+            }
+            try {
+                Log.v("Reloading DerelictGL");
+                import derelict.opengl3.gl;
+                DerelictGL.missingSymbolCallback = &gl3MissingSymFunc;
+                DerelictGL.reload();
+                glReloadedOk = true;
+            } catch (Exception e) {
+                Log.e("Derelict exception while reloading DerelictGL", e);
+            }
         }
-        try {
-            Log.v("Reloading DerelictGL");
-            import derelict.opengl3.gl;
-            DerelictGL.missingSymbolCallback = &gl3MissingSymFunc;
-            DerelictGL.reload();
-            glReloadedOk = true;
-        } catch (Exception e) {
-            Log.e("Derelict exception while reloading DerelictGL", e);
+        if (!gl3ReloadedOk && !glReloadedOk) {
+            Log.e("Neither DerelictGL3 nor DerelictGL were reloaded successfully");
+            return false;
         }
+        if (!gl3ReloadedOk)
+            legacy = true;
+        else if (!glReloadedOk)
+            legacy = false;
     }
-    if (!gl3ReloadedOk && !glReloadedOk) {
-        Log.e("Neither DerelictGL3 nor DerelictGL were reloaded successfully");
-        return false;
-    }
-    if (!gl3ReloadedOk)
-        legacy = true;
-    else if (!glReloadedOk)
-        legacy = false;
     if (!_glSupport) {
         _glSupport = new GLSupport(legacy);
         if (_glSupport.valid || _glSupport.initShaders()) {
@@ -731,10 +748,13 @@ final class GLSupport {
     @property bool legacyMode() { return _legacyMode; }
 
     this(bool legacy = false) {
-        if (legacy && !glLightfv) {
-            Log.w("GLSupport legacy API is not supported");
-            legacy = false;
-        }
+	version (Android) {
+	} else {
+	    if (legacy && !glLightfv) {
+		Log.w("GLSupport legacy API is not supported");
+		legacy = false;
+	    }
+	}
         _legacyMode = legacy;
     }
 
@@ -1222,9 +1242,15 @@ class GLVertexBuffer : VertexBuffer {
     protected GLuint _vao;
 
     this() {
-        assertgl!glGenBuffers(1, &_vertexBuffer);
-        assertgl!glGenBuffers(1, &_indexBuffer);
-        assertgl!glGenVertexArrays(1, &_vao);
+	version (Android) {
+    	    checkgl!glGenBuffers(1, &_vertexBuffer);
+    	    checkgl!glGenBuffers(1, &_indexBuffer);
+    	    checkgl!glGenVertexArrays(1, &_vao);
+	} else {
+    	    assertgl!glGenBuffers(1, &_vertexBuffer);
+    	    assertgl!glGenBuffers(1, &_indexBuffer);
+    	    assertgl!glGenVertexArrays(1, &_vao);
+	}
     }
 
     ~this() {

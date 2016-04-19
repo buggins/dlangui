@@ -1,9 +1,8 @@
-MY_DIR=$(dirname $(readlink -f $0))
-DLANGUI_DIR=$(dirname $MY_DIR)
-echo $DLANGUI_DIR
+#MY_DIR=$(dirname $(readlink -f $0))
+#DLANGUI_DIR=$(dirname $MY_DIR)
+#echo "DLANGUI DIR: $DLANGUI_DIR"
 
 DLANGUI_SOURCES="\
-$DLANGUI_DIR/src/dlangui/core/logger.d \
 $DLANGUI_DIR/src/dlangui/platforms/common/startup.d \
 $DLANGUI_DIR/src/dlangui/platforms/common/platform.d \
 $DLANGUI_DIR/src/dlangui/dialogs/filedlg.d \
@@ -113,25 +112,9 @@ $DLANGUI_DIR/3rdparty/dimage/png.d \
 $DLANGUI_DIR/3rdparty/dimage/huffman.d \
 $DLANGUI_DIR/3rdparty/dimage/compound.d \
 $DLANGUI_DIR/3rdparty/GLES2/gl2.d \
-$DLANGUI_DIR/3rdparty/android_native_app_glue.d \
 $DLANGUI_DIR/3rdparty/GLES/gl.d \
 $DLANGUI_DIR/3rdparty/EGL/eglplatform.d \
 $DLANGUI_DIR/3rdparty/EGL/egl.d \
-$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/ext.d \
-$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/functions.d \
-$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/glx.d \
-$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/cgl.d \
-$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/deprecatedConstants.d \
-$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/gl3.d \
-$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/types.d \
-$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/internal.d \
-$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/wglext.d \
-$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/wgl.d \
-$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/glxext.d \
-$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/arb.d \
-$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/deprecatedFunctions.d \
-$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/constants.d \
-$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/gl.d \
 $DLANGUI_DIR/deps/DerelictFT/source/derelict/freetype/functions.d \
 $DLANGUI_DIR/deps/DerelictFT/source/derelict/freetype/ft.d \
 $DLANGUI_DIR/deps/DerelictFT/source/derelict/freetype/types.d \
@@ -143,7 +126,7 @@ $DLANGUI_DIR/deps/DerelictUtil/source/derelict/util/loader.d \
 $DLANGUI_DIR/deps/DerelictUtil/source/derelict/util/xtypes.d \
 "
 
-echo $DLANGUI_SOURCES
+#echo $DLANGUI_SOURCES
 
 DLANGUI_SOURCE_PATHS="\
 -I$DLANGUI_DIR/src \
@@ -162,5 +145,21 @@ DLANGUI_IMPORT_PATHS="\
 -J$DLANGUI_DIR/views/res/shaders \
 "
 
-echo "Import paths: $DLANGUI_IMPORT_PATHS"
-echo "Source paths: $DLANGUI_SOURCE_PATHS"
+#echo "Import paths: $DLANGUI_IMPORT_PATHS"
+#echo "Source paths: $DLANGUI_SOURCE_PATHS"
+
+#$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/ext.d \
+#$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/functions.d \
+#$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/glx.d \
+#$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/cgl.d \
+#$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/deprecatedConstants.d \
+#$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/gl3.d \
+#$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/types.d \
+#$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/internal.d \
+#$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/wglext.d \
+#$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/wgl.d \
+#$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/glxext.d \
+#$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/arb.d \
+#$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/deprecatedFunctions.d \
+#$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/constants.d \
+#$DLANGUI_DIR/deps/DerelictGL3/source/derelict/opengl3/gl.d \

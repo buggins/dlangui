@@ -243,7 +243,9 @@ private:
     version (Posix) {
         res ~= RootEntry(RootEntryType.ROOT, "/", "File System"d);
     }
-    version(linux) {
+    version(Android) {
+        // do nothing
+    } else version(linux) {
         import std.string : fromStringz;
         
         mntent ent;
@@ -582,8 +584,8 @@ bool listDirectory(in string dir, in bool includeDirs, in bool includeFiles, in 
                 files ~= e;
             }
         }
-        dirs.sort!((a,b) => filenameCmp!(std.path.CaseSensitive.no)(a,b) < 0);
-        files.sort!((a,b) => filenameCmp!(std.path.CaseSensitive.no)(a,b) < 0);
+        dirs.sort!((a,b) => filenameCmp!(std.path.CaseSensitive.no)(a.name,b.name) < 0);
+        files.sort!((a,b) => filenameCmp!(std.path.CaseSensitive.no)(a.name,b.name) < 0);
         if (includeDirs)
             foreach(DirEntry e; dirs)
                 entries ~= e;

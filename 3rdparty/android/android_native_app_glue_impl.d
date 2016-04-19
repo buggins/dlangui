@@ -32,7 +32,7 @@ import core.stdc.errno;
 import core.sys.posix.sys.resource;
 import core.sys.posix.unistd;
 
-import android_native_app_glue;
+import android.android_native_app_glue;
 import android.log;
 
 void LOGI(S...)(string fmt, S args) {
