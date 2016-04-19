@@ -15,6 +15,9 @@ echo "LDC: $LDC"
 # application sources
 . ./android_app.mk
 
+#PLATFORM_DIR=arm
+PLATFORM_DIR=armeabi-v7a
+
 echo "\nLOCAL_MODULE: $LOCAL_MODULE"
 #echo "DLANGUI SOURCES: $DLANGUI_SOURCES"
 
@@ -25,20 +28,27 @@ export CC=$NDK/toolchains/llvm/prebuilt/linux-$NDK_ARCH/bin/clang
 SOURCES="$LOCAL_SRC_FILES $DLANGUI_SOURCES"
 SOURCE_PATHS="-I./jni $DLANGUI_SOURCE_PATHS $DLANGUI_IMPORT_PATHS"
 
-TARGET="libs/armeabi-v7a/lib$LOCAL_MODULE.so"
-OBJFILE="build/armeabi-v7a/lib$LOCAL_MODULE.o"
+TARGET="libs/$PLATFORM_DIR/lib$LOCAL_MODULE.so"
+OBJFILE="build/$PLATFORM_DIR/lib$LOCAL_MODULE.o"
 
 LIBS="\
 -L$NDK/platforms/android-19/arch-arm/usr/lib \
 $LDC/lib/libphobos2-ldc.a $LDC/lib/libdruntime-ldc.a \
 -lgcc \
--llog -landroid -lEGL -lGLESv3 -lGLESv1_CM -lc -lm \
+-llog \
+-landroid \
+-lEGL \
+-lGLESv3 \
+-lGLESv1_CM \
+-lc -lm \
 $LOCAL_LDLIBS \
 "
 
+#-lGLESv1_CM \
+
 LINK_OPTIONS="\
 -Wl,-soname,libnative-activity.so \
---sysroot=$NDK/platforms/android-9/arch-arm \
+--sysroot=$NDK/platforms/android-19/arch-arm \
 -gcc-toolchain $NDK/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-$NDK_ARCH \
 -no-canonical-prefixes \
 -target armv7-none-linux-androideabi \
@@ -51,8 +61,8 @@ LINK_OPTIONS="\
 -mthumb \
 "
 
-mkdir -p libs/armeabi-v7a/
-mkdir -p build/armeabi-v7a/
+mkdir -p libs/$PLATFORM_DIR/
+mkdir -p build/$PLATFORM_DIR/
 
 #=========================================================
 echo "\nCompiling $OBJFILE\n"

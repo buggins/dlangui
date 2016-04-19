@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- BEGIN_INCLUDE(manifest) -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-        package="com.example.native_activity"
+        package="org.dlangui.native_activity"
         android:versionCode="1"
         android:versionName="1.0">
 
@@ -20,7 +20,7 @@
                 android:configChanges="orientation|keyboardHidden">
             <!-- Tell NativeActivity the name of or .so -->
             <meta-data android:name="android.app.lib_name"
-                    android:value="native-activity" />
+                    android:value="dlangui-activity" />
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />

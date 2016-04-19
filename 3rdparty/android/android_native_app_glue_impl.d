@@ -188,7 +188,7 @@ void app_dummy() {
 
 }
 
-extern(C) static void android_app_destroy(android_app* android_app) {
+static void android_app_destroy(android_app* android_app) {
     LOGV("android_app_destroy!");
     free_saved_state(android_app);
     pthread_mutex_lock(&android_app.mutex);
@@ -202,7 +202,7 @@ extern(C) static void android_app_destroy(android_app* android_app) {
     // Can't touch android_app object after this.
 }
 
-extern(C) static void process_input(android_app* app, android_poll_source* source) {
+static void process_input(android_app* app, android_poll_source* source) {
     AInputEvent* event = null;
     while (AInputQueue_getEvent(app.inputQueue, &event) >= 0) {
         LOGV("New input event: type=%d\n", AInputEvent_getType(event));
@@ -215,14 +215,14 @@ extern(C) static void process_input(android_app* app, android_poll_source* sourc
     }
 }
 
-extern(C) static void process_cmd(android_app* app, android_poll_source* source) {
+static void process_cmd(android_app* app, android_poll_source* source) {
     byte cmd = android_app_read_cmd(app);
     android_app_pre_exec_cmd(app, cmd);
     if (app.onAppCmd != null) app.onAppCmd(app, cmd);
     android_app_post_exec_cmd(app, cmd);
 }
 
-extern(C) static void* android_app_entry(void* param) {
+void* android_app_entry(void* param) {
     android_app* android_app = cast(android_app*)param;
 
     android_app.config = AConfiguration_new();
@@ -247,7 +247,11 @@ extern(C) static void* android_app_entry(void* param) {
     pthread_cond_broadcast(&android_app.cond);
     pthread_mutex_unlock(&android_app.mutex);
 
+
+    //import core.runtime;
+    //rt_init();
     android_main(android_app);
+    //rt_term();
 
     android_app_destroy(android_app);
     return null;
