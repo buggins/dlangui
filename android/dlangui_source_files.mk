@@ -94,6 +94,9 @@ $DLANGUI_DIR/3rdparty/android/rect.d \
 $DLANGUI_DIR/3rdparty/android/configuration.d \
 $DLANGUI_DIR/3rdparty/android/sensor.d \
 $DLANGUI_DIR/3rdparty/android/native_activity.d \
+$DLANGUI_DIR/3rdparty/android/android_native_app_glue.d \
+$DLANGUI_DIR/3rdparty/android/android_native_app_glue_impl.d \
+$DLANGUI_DIR/3rdparty/jni.d \
 $DLANGUI_DIR/3rdparty/fontconfig/functions.d \
 $DLANGUI_DIR/3rdparty/fontconfig/types.d \
 $DLANGUI_DIR/3rdparty/fontconfig/package.d \
