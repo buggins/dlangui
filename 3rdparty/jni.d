@@ -1,14 +1,14 @@
 /* dstep -I/path/to/ndk-r9d/platforms/android-9/arch-x86/usr/include -I/path/to/ndk-r9d/toolchains/llvm-3.4/prebuilt/linux-x86/lib/clang/3.4/include /path/to/ndk-r9d/platforms/android-9/arch-x86/usr/include/jni.h -o jni.d*/
 
-module android.jni;
-
-import core.stdc.stdarg;
+module jni;
 
 version (Android):
 extern (C):
 @system:
 nothrow:
 @nogc:
+
+import core.stdc.stdarg;
 
 alias ubyte jboolean;
 alias byte jbyte;
