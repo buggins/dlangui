@@ -20,6 +20,7 @@ import core.stdc.string : memset;
 import dlangui.core.logger;
 
 import dlangui.widgets.styles;
+import dlangui.graphics.drawbuf;
 //import dlangui.widgets.widget;
 import dlangui.platforms.common.platform;
 
@@ -29,6 +30,140 @@ import EGL.egl, GLES.gl;
 import android.input, android.looper : ALooper_pollAll;
 import android.native_window : ANativeWindow_setBuffersGeometry;
 import android.sensor, android.log, android.android_native_app_glue;
+
+
+/**
+ * Window abstraction layer. Widgets can be shown only inside window.
+ * 
+ */
+class AndroidWindow : Window {
+	// Abstract methods : override in platform implementatino
+	
+	/// show window
+	override void show() {
+		// TODO
+	}
+
+	protected dstring _caption;
+	/// returns window caption
+	override @property dstring windowCaption() {
+		return _caption;
+	}
+	/// sets window caption
+	override @property void windowCaption(dstring caption) {
+		_caption = caption;
+	}
+	/// sets window icon
+	override @property void windowIcon(DrawBufRef icon) {
+		// not supported
+	}
+	/// request window redraw
+	override void invalidate() {
+	}
+	/// close window
+	override void close() {
+	}
+
+	protected AndroidPlatform _platform;
+	this(AndroidPlatform platform) {
+		super();
+		_platform = platform;
+	}
+	~this() {
+	}
+	
+	/// after drawing, call to schedule redraw if animation is active
+	override void scheduleAnimation() {
+		// override if necessary
+		// TODO
+	}
+
+}
+
+/**
+ * Platform abstraction layer.
+ * 
+ * Represents application.
+ * 
+ * 
+ * 
+ */
+class AndroidPlatform : Platform {
+
+	protected AndroidWindow[] _windows;
+	protected AndroidWindow _activeWindow;
+
+	protected android_app* _appstate;
+	this(android_app* state) {
+		_appstate = state;
+	}
+
+	/**
+     * create window
+     * Args:
+     *         windowCaption = window caption text
+     *         parent = parent Window, or null if no parent
+     *         flags = WindowFlag bit set, combination of Resizable, Modal, Fullscreen
+     *      width = window width 
+     *      height = window height
+     * 
+     * Window w/o Resizable nor Fullscreen will be created with size based on measurement of its content widget
+     */
+	override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0) {
+		AndroidWindow w = new AndroidWindow(this);
+		_windows ~= w;
+		_activeWindow = w;
+		return w;
+	}
+	
+	/**
+     * close window
+     * 
+     * Closes window earlier created with createWindow()
+     */
+	override  void closeWindow(Window w) {
+		import std.algorithm : remove;
+		for (int i = 0; i < _windows.length; i++) {
+			if (_windows[i] is w) {
+				_windows = _windows.remove(i);
+				break;
+			}
+		}
+		_activeWindow = (_windows.length > 0 ? _windows[$ - 1] : null);
+	}
+
+	/**
+     * Starts application message loop.
+     * 
+     * When returned from this method, application is shutting down.
+     */
+	override int enterMessageLoop() {
+		// TODO:
+		return 0;
+	}
+
+	protected dstring _clipboardText;
+	/// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
+	override dstring getClipboardText(bool mouseBuffer = false) {
+		return _clipboardText;
+	}
+
+	/// sets text to clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
+	override void setClipboardText(dstring text, bool mouseBuffer = false) {
+		_clipboardText = text;
+	}
+	
+	/// calls request layout for all windows
+	override void requestLayout() {
+	}
+	
+	/// handle theme change: e.g. reload some themed resources
+	override void onThemeChanged() {
+		// override and call dispatchThemeChange for all windows
+	}
+	
+}
+
 
 
 /**
@@ -228,6 +363,9 @@ extern(C) void engine_handle_cmd(android_app* app, int cmd) {
 }
 
 void main(){}
+
+__gshared AndroidPlatform _platform;
+
 /**
  * This is the main entry point of a native application that is using
  * android_native_app_glue.  It runs in its own thread, with its own
@@ -244,14 +382,15 @@ extern (C) void android_main(android_app* state) {
         Log.e("******************************************************************");
         Log.e("No font files found!!!");
         Log.e("Currently, only hardcoded font paths implemented.");
-        Log.e("Probably you can modify sdlapp.d to add some fonts for your system.");
-        Log.e("TODO: use fontconfig");
         Log.e("******************************************************************");
         assert(false);
     }
     initResourceManagers();
 
     currentTheme = createDefaultTheme();
+
+	_platform = new AndroidPlatform(state);
+	Platform.setInstance(_platform);
 
 
     engine engine;

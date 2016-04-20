@@ -135,4 +135,12 @@ Global
 		{A38BEF21-AAFE-4115-A978-63B7C8C2FBD1}.UnittestX11|Any CPU.ActiveCfg = UnittestX11|x64
 		{A38BEF21-AAFE-4115-A978-63B7C8C2FBD1}.UnittestX11|Any CPU.Build.0 = UnittestX11|x64
 	EndGlobalSection
+	GlobalSection(MonoDevelopProperties) = preSolution
+		Policies = $0
+		$0.TextStylePolicy = $1
+		$1.FileWidth = 120
+		$1.inheritsSet = VisualStudio
+		$1.inheritsScope = text/plain
+		$1.scope = text/plain
+	EndGlobalSection
 EndGlobal
