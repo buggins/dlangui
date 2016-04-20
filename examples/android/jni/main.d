@@ -92,10 +92,34 @@ class AndroidPlatform : Platform {
 
 	protected AndroidWindow[] _windows;
 	protected AndroidWindow _activeWindow;
+	engine _engine;
+	
 
 	protected android_app* _appstate;
 	this(android_app* state) {
 		_appstate = state;
+		memset(&_engine, 0, engine.sizeof);
+		state.userData = &_engine;
+		state.onAppCmd = &engine_handle_cmd;
+		state.onInputEvent = &engine_handle_input;
+		_engine.app = state;
+		
+		// Prepare to monitor accelerometer
+		_engine.sensorManager = ASensorManager_getInstance();
+		_engine.accelerometerSensor = ASensorManager_getDefaultSensor(_engine.sensorManager,
+			ASENSOR_TYPE_ACCELEROMETER);
+		_engine.sensorEventQueue = ASensorManager_createEventQueue(_engine.sensorManager,
+			state.looper, LOOPER_ID_USER, null, null);
+		
+		if (state.savedState != null) {
+			// We are starting with a previous saved state; restore from it.
+			_engine.state = *cast(saved_state*)state.savedState;
+		}
+		
+	}
+
+	~this() {
+		engine_term_display(&_engine);
 	}
 
 	/**
@@ -138,8 +162,54 @@ class AndroidPlatform : Platform {
      * When returned from this method, application is shutting down.
      */
 	override int enterMessageLoop() {
-		// TODO:
-		return 0;
+		while (1) {
+			// Read all pending events.
+			int ident;
+			int events;
+			android_poll_source* source;
+			
+			// If not animating, we will block forever waiting for events.
+			// If animating, we loop until all events are read, then continue
+			// to draw the next frame of animation.
+			while ((ident=ALooper_pollAll(_engine.animating ? 0 : -1, null, &events,
+						cast(void**)&source)) >= 0) {
+				
+				// Process this event.
+				if (source != null) {
+					source.process(_appstate, source);
+				}
+				
+				// If a sensor has data, process it now.
+				if (ident == LOOPER_ID_USER) {
+					if (_engine.accelerometerSensor != null) {
+						ASensorEvent event;
+						while (ASensorEventQueue_getEvents(_engine.sensorEventQueue,
+								&event, 1) > 0) {
+							LOGI("accelerometer: x=%f y=%f z=%f",
+								event.acceleration.x, event.acceleration.y,
+								event.acceleration.z);
+						}
+					}
+				}
+				
+				// Check if we are exiting.
+				if (_appstate.destroyRequested != 0) {
+					return 0;
+				}
+			}
+			
+			if (_engine.animating) {
+				// Done with events; draw next animation frame.
+				_engine.state.angle += .01f;
+				if (_engine.state.angle > 1) {
+					_engine.state.angle = 0;
+				}
+				
+				// Drawing is throttled to the screen update rate, so there
+				// is no need to do timing here.
+				engine_draw_frame(&_engine);
+			}
+		}
 	}
 
 	protected dstring _clipboardText;
@@ -393,86 +463,24 @@ extern (C) void android_main(android_app* state) {
 	Platform.setInstance(_platform);
 
 
-    engine engine;
-
     // Make sure glue isn't stripped.
     app_dummy();
 
-    memset(&engine, 0, engine.sizeof);
-    state.userData = &engine;
-    state.onAppCmd = &engine_handle_cmd;
-    state.onInputEvent = &engine_handle_input;
-    engine.app = state;
-
-    // Prepare to monitor accelerometer
-    engine.sensorManager = ASensorManager_getInstance();
-    engine.accelerometerSensor = ASensorManager_getDefaultSensor(engine.sensorManager,
-            ASENSOR_TYPE_ACCELEROMETER);
-    engine.sensorEventQueue = ASensorManager_createEventQueue(engine.sensorManager,
-            state.looper, LOOPER_ID_USER, null, null);
-
-    if (state.savedState != null) {
-        // We are starting with a previous saved state; restore from it.
-        engine.state = *cast(saved_state*)state.savedState;
-    }
+	int res = 0;
+	
+	version (unittest) {
+	} else {
+		res = UIAppMain([]);
+	}
 
     // loop waiting for stuff to do.
+	Log.d("Destroying Android platform");
+	Platform.setInstance(null);
+	
+	releaseResourcesOnAppExit();
+	
+	Log.d("Exiting main");
+	
 
-    while (1) {
-        // Read all pending events.
-        int ident;
-        int events;
-        android_poll_source* source;
-
-        // If not animating, we will block forever waiting for events.
-        // If animating, we loop until all events are read, then continue
-        // to draw the next frame of animation.
-        while ((ident=ALooper_pollAll(engine.animating ? 0 : -1, null, &events,
-                cast(void**)&source)) >= 0) {
-
-            // Process this event.
-            if (source != null) {
-                source.process(state, source);
-            }
-
-            // If a sensor has data, process it now.
-            if (ident == LOOPER_ID_USER) {
-                if (engine.accelerometerSensor != null) {
-                    ASensorEvent event;
-                    while (ASensorEventQueue_getEvents(engine.sensorEventQueue,
-                            &event, 1) > 0) {
-                        LOGI("accelerometer: x=%f y=%f z=%f",
-                                event.acceleration.x, event.acceleration.y,
-                                event.acceleration.z);
-                    }
-                }
-            }
-
-            // Check if we are exiting.
-            if (state.destroyRequested != 0) {
-                Log.d("Destroying Android platform");
-                Platform.setInstance(null);
-
-                releaseResourcesOnAppExit();
-
-                Log.d("Exiting main");
-                
-                engine_term_display(&engine);
-                return;
-            }
-        }
-
-        if (engine.animating) {
-            // Done with events; draw next animation frame.
-            engine.state.angle += .01f;
-            if (engine.state.angle > 1) {
-                engine.state.angle = 0;
-            }
-
-            // Drawing is throttled to the screen update rate, so there
-            // is no need to do timing here.
-            engine_draw_frame(&engine);
-        }
-    }
 }
 
