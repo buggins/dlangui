@@ -31,15 +31,21 @@ import std.string;
 import std.array;
 
 version (Android) {
+    enum SUPPORT_LEGACY_OPENGL = false;
     public import EGL.eglplatform : EGLint;
-    public import EGL.egl, GLES3.gl3;
-    public import GLES.gl : glEnableClientState, glLightfv, glColor4f, GL_ALPHA_TEST, GL_VERTEX_ARRAY, 
-		GL_COLOR_ARRAY, glVertexPointer, glColorPointer, glDisableClientState, 
-		GL_TEXTURE_COORD_ARRAY, glTexCoordPointer, glColorPointer, glMatrixMode, 
-		glLoadMatrixf, glLoadIdentity, GL_PROJECTION, GL_MODELVIEW;
-
+    public import EGL.egl;
+    //public import GLES2.gl2;
+    public import GLES3.gl3;
+    
+    static if (SUPPORT_LEGACY_OPENGL) {
+        public import GLES.gl : glEnableClientState, glLightfv, glColor4f, GL_ALPHA_TEST, GL_VERTEX_ARRAY, 
+		    GL_COLOR_ARRAY, glVertexPointer, glColorPointer, glDisableClientState, 
+		    GL_TEXTURE_COORD_ARRAY, glTexCoordPointer, glColorPointer, glMatrixMode, 
+		    glLoadMatrixf, glLoadIdentity, GL_PROJECTION, GL_MODELVIEW;
+	}
 
 } else {
+    enum SUPPORT_LEGACY_OPENGL = true;
     public import derelict.opengl3.types;
     public import derelict.opengl3.gl3;
     public import derelict.opengl3.gl;
@@ -882,22 +888,24 @@ final class GLSupport {
             x1,y1,Z_2D];
 
         if (_legacyMode) {
-            glColor4f(1,1,1,1);
-            glDisable(GL_CULL_FACE);
-            glEnable(GL_BLEND);
-            glDisable(GL_ALPHA_TEST);
-            checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            checkgl!glEnableClientState(GL_VERTEX_ARRAY);
-            checkgl!glEnableClientState(GL_COLOR_ARRAY);
-            checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
-            checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors);
+            static if (SUPPORT_LEGACY_OPENGL) {
+                glColor4f(1,1,1,1);
+                glDisable(GL_CULL_FACE);
+                glEnable(GL_BLEND);
+                glDisable(GL_ALPHA_TEST);
+                checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                checkgl!glEnableClientState(GL_VERTEX_ARRAY);
+                checkgl!glEnableClientState(GL_COLOR_ARRAY);
+                checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
+                checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors);
 
-            checkgl!glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+                checkgl!glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-            glDisableClientState(GL_COLOR_ARRAY);
-            glDisableClientState(GL_VERTEX_ARRAY);
-            glDisable(GL_ALPHA_TEST);
-            glDisable(GL_BLEND);
+                glDisableClientState(GL_COLOR_ARRAY);
+                glDisableClientState(GL_VERTEX_ARRAY);
+                glDisable(GL_ALPHA_TEST);
+                glDisable(GL_BLEND);
+            }
         } else {
             if (_solidFillProgram !is null) {
                 _solidFillProgram.execute(vertices, cast(float[])colors);
@@ -936,32 +944,34 @@ final class GLSupport {
         float[2 * 4] texcoords = [srcx0,srcy0, srcx0,srcy1, srcx1,srcy0, srcx1,srcy1];
 
         if (_legacyMode) {
-            glDisable(GL_CULL_FACE);
-            glEnable(GL_TEXTURE_2D);
-            texture.setup();
-            texture.setSamplerParams(linear);
+            static if (SUPPORT_LEGACY_OPENGL) {
+                glDisable(GL_CULL_FACE);
+                glEnable(GL_TEXTURE_2D);
+                texture.setup();
+                texture.setSamplerParams(linear);
 
-            glColor4f(1,1,1,1);
-            glDisable(GL_ALPHA_TEST);
+                glColor4f(1,1,1,1);
+                glDisable(GL_ALPHA_TEST);
 
-            glEnable(GL_BLEND);
-            checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                glEnable(GL_BLEND);
+                checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-            checkgl!glEnableClientState(GL_COLOR_ARRAY);
-            checkgl!glEnableClientState(GL_VERTEX_ARRAY);
-            checkgl!glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-            checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
-            checkgl!glTexCoordPointer(2, GL_FLOAT, 0, cast(void*)texcoords.ptr);
-            checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
+                checkgl!glEnableClientState(GL_COLOR_ARRAY);
+                checkgl!glEnableClientState(GL_VERTEX_ARRAY);
+                checkgl!glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+                checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
+                checkgl!glTexCoordPointer(2, GL_FLOAT, 0, cast(void*)texcoords.ptr);
+                checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
 
-            checkgl!glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+                checkgl!glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
 
-            glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-            glDisableClientState(GL_VERTEX_ARRAY);
-            glDisableClientState(GL_COLOR_ARRAY);
-            glDisable(GL_BLEND);
-            glDisable(GL_ALPHA_TEST);
-            glDisable(GL_TEXTURE_2D);
+                glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+                glDisableClientState(GL_VERTEX_ARRAY);
+                glDisableClientState(GL_COLOR_ARRAY);
+                glDisable(GL_BLEND);
+                glDisable(GL_ALPHA_TEST);
+                glDisable(GL_TEXTURE_2D);
+            }
         } else {
             _textureProgram.execute(vertices, cast(float[])colors, texcoords, texture, linear);
         }
@@ -1115,14 +1125,16 @@ final class GLSupport {
         _projectionMatrix.setOrtho(view.left, view.right, view.top, view.bottom, 0.5f, 50.0f);
 
         if (_legacyMode) {
-            glMatrixMode(GL_PROJECTION);
-            //checkgl!glPushMatrix();
-            //glLoadIdentity();
-            glLoadMatrixf(_projectionMatrix.m.ptr);
-            //glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
-            glMatrixMode(GL_MODELVIEW);
-            //checkgl!glPushMatrix();
-            glLoadIdentity();
+            static if (SUPPORT_LEGACY_OPENGL) {
+                glMatrixMode(GL_PROJECTION);
+                //checkgl!glPushMatrix();
+                //glLoadIdentity();
+                glLoadMatrixf(_projectionMatrix.m.ptr);
+                //glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
+                glMatrixMode(GL_MODELVIEW);
+                //checkgl!glPushMatrix();
+                glLoadIdentity();
+            }
         }
         checkgl!glViewport(view.left, currentFBO ? view.top : windowRect.height - view.bottom, view.width, view.height);
     }
@@ -1134,14 +1146,16 @@ final class GLSupport {
         float aspectRatio = cast(float)view.width / cast(float)view.height;
         _projectionMatrix.setPerspective(fieldOfView, aspectRatio, nearPlane, farPlane);
         if (_legacyMode) {
-            glMatrixMode(GL_PROJECTION);
-            //checkgl!glPushMatrix();
-            //glLoadIdentity();
-            glLoadMatrixf(_projectionMatrix.m.ptr);
-            //glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
-            glMatrixMode(GL_MODELVIEW);
-            //checkgl!glPushMatrix();
-            glLoadIdentity();
+            static if (SUPPORT_LEGACY_OPENGL) {
+                glMatrixMode(GL_PROJECTION);
+                //checkgl!glPushMatrix();
+                //glLoadIdentity();
+                glLoadMatrixf(_projectionMatrix.m.ptr);
+                //glOrthof(0, _dx, 0, _dy, -1.0f, 1.0f);
+                glMatrixMode(GL_MODELVIEW);
+                //checkgl!glPushMatrix();
+                glLoadIdentity();
+            }
         }
         checkgl!glViewport(view.left, currentFBO ? view.top : windowRect.height - view.bottom, view.width, view.height);
     }

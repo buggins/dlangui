@@ -151,10 +151,11 @@ DLANGUI_LDLIBS="\
 -landroid \
 -lEGL \
 -lGLESv3 \
--lGLESv1_CM \
 -lc \
 -lm \
 "
+
+#-lGLESv1_CM \
 
 #echo "Import paths: $DLANGUI_IMPORT_PATHS"
 #echo "Source paths: $DLANGUI_SOURCE_PATHS"
