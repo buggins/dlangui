@@ -19,6 +19,10 @@ import core.stdc.stdlib : malloc;
 import core.stdc.string : memset;
 import dlangui.core.logger;
 
+import dlangui.widgets.styles;
+//import dlangui.widgets.widget;
+import dlangui.platforms.common.platform;
+
 import EGL.eglplatform : EGLint;
 import EGL.egl, GLES.gl;
 
@@ -26,8 +30,6 @@ import android.input, android.looper : ALooper_pollAll;
 import android.native_window : ANativeWindow_setBuffersGeometry;
 import android.sensor, android.log, android.android_native_app_glue;
 
-//int LOGI(const(char)* fmt, float x, float y, float z) { return __android_log_print(android_LogPriority.ANDROID_LOG_INFO, "native-activity", fmt, x, y, z); }
-//int LOGW(const(char)* warning) { return __android_log_print(android_LogPriority.ANDROID_LOG_WARN, "native-activity", warning); }
 
 /**
  * Our saved state data.
@@ -232,11 +234,25 @@ void main(){}
  * event loop for receiving input events and doing other things.
  */
 extern (C) void android_main(android_app* state) {
-    LOGI("Inside android_main");
-    Log.setLogTag("myApp");
-    Log.setLogLevel(LogLevel.Trace);
+	//import dlangui.platforms.common.startup : initLogs, initFontManager, initResourceManagers, ;
+	LOGI("Inside android_main");
+    initLogs();
     Log.i("Testing logger - Log.i");
     Log.fi("Testing logger - Log.fi %d %s", 12345, "asdfgh");
+
+    if (!initFontManager()) {
+        Log.e("******************************************************************");
+        Log.e("No font files found!!!");
+        Log.e("Currently, only hardcoded font paths implemented.");
+        Log.e("Probably you can modify sdlapp.d to add some fonts for your system.");
+        Log.e("TODO: use fontconfig");
+        Log.e("******************************************************************");
+        assert(false);
+    }
+    initResourceManagers();
+
+    currentTheme = createDefaultTheme();
+
 
     engine engine;
 
@@ -295,6 +311,13 @@ extern (C) void android_main(android_app* state) {
 
             // Check if we are exiting.
             if (state.destroyRequested != 0) {
+                Log.d("Destroying Android platform");
+                Platform.setInstance(null);
+
+                releaseResourcesOnAppExit();
+
+                Log.d("Exiting main");
+                
                 engine_term_display(&engine);
                 return;
             }
@@ -313,3 +336,4 @@ extern (C) void android_main(android_app* state) {
         }
     }
 }
+

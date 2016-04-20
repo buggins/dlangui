@@ -107,6 +107,27 @@ version (Windows) {
         ft.registerFont(path ~ "DejaVuSansMono-BoldOblique.ttf", FontFamily.MonoSpace, "DejaVuSansMono", true, FontWeight.Bold);
         return true;
     }
+
+	string[] findFontsInDirectory(string dir) {
+		import dlangui.core.files;
+		import std.file : DirEntry;
+		DirEntry[] entries;
+		if (!listDirectory(dir, false, true, true, ["*.ttf"], entries))
+			return null;
+
+		string[] res;
+		foreach(entry; entries) {
+			res ~= entry.name;
+		}
+		return res;
+	}
+
+	void registerFontsFromDirectory(FreeTypeFontManager ft, string dir) {
+		string[] fontFiles = findFontsInDirectory(dir);
+		Log.d("Fonts in ", dir, " : ", fontFiles);
+		foreach(file; fontFiles)
+			ft.registerFont(file);
+	}
     
     /// initialize font manager - default implementation
     /// On win32 - first it tries to init freetype, and falls back to win32 fonts.
@@ -117,10 +138,14 @@ version (Windows) {
         if (!registerFontConfigFonts(ft)) {
             // TODO: use FontConfig
             Log.w("No fonts found using FontConfig. Trying hardcoded paths.");
-            ft.registerFonts("/usr/share/fonts/truetype/dejavu/");
-            ft.registerFonts("/usr/share/fonts/TTF/");
-            ft.registerFonts("/usr/share/fonts/dejavu/");
-            ft.registerFonts("/usr/share/fonts/truetype/ttf-dejavu/"); // let it compile on Debian Wheezy
+			version (Android) {
+				ft.registerFontsFromDirectory("/system/fonts");
+			} else {
+	            ft.registerFonts("/usr/share/fonts/truetype/dejavu/");
+	            ft.registerFonts("/usr/share/fonts/TTF/");
+	            ft.registerFonts("/usr/share/fonts/dejavu/");
+	            ft.registerFonts("/usr/share/fonts/truetype/ttf-dejavu/"); // let it compile on Debian Wheezy
+			}
             version(OSX) {
                 ft.registerFont("/Library/Fonts/Arial.ttf", FontFamily.SansSerif, "Arial", false, FontWeight.Normal, true);
                 ft.registerFont("/Library/Fonts/Arial Bold.ttf", FontFamily.SansSerif, "Arial", false, FontWeight.Bold, true);
@@ -195,6 +220,8 @@ extern (C) void initLogs() {
                 Log.i("Logging to file ui.log");
             }
         }
+    } else version(Android) {
+        Log.setLogTag("dlangui");
     } else {
         Log.setStderrLogger();
     }

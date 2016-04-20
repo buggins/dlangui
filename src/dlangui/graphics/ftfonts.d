@@ -558,7 +558,12 @@ class FreeTypeFontManager : FontManager {
             Log.v("DerelictFT: Loading FreeType library");
             if (!DerelictFT) {
                 Log.w("DerelictFT is null. Compiler bug? Applying workaround to fix it.");
-                DerelictFT = new DerelictFTLoader;
+				version(Android) {
+					//DerelictFT = new DerelictFTLoader("libft2.so");
+					DerelictFT = new DerelictFTLoader;
+				} else {
+					DerelictFT = new DerelictFTLoader;
+				}
             }
             DerelictFT.missingSymbolCallback = &missingSymFunc;
             Log.v("DerelictFT: Missing symbols callback is registered");
@@ -621,9 +626,30 @@ class FreeTypeFontManager : FontManager {
         }
     }
 
+	bool registerFont(string filename, bool skipUnknown = false) {
+		import std.path : baseName;
+		FontFamily family = FontFamily.SansSerif;
+		string face = null;
+		bool italic = false;
+		int weight = 0;
+		string name = filename.baseName;
+		switch(name) {
+			case "DroidSans.ttf": face="Droid Sans"; weight = FontWeight.Normal; break;
+			case "DroidSans-Bold.ttf": face="Droid Sans"; weight = FontWeight.Bold; break;
+			case "DroidSansMono.ttf": face="Droid Sans Mono"; weight = FontWeight.Normal; family = FontFamily.MonoSpace; break;
+			case "Roboto-Light.ttf": face="Roboto"; weight = FontWeight.Normal; break;
+			case "Roboto-LightItalic.ttf": face="Roboto"; weight = FontWeight.Normal; italic = true; break;
+			case "Roboto-Bold.ttf": face="Roboto"; weight = FontWeight.Bold; break;
+			case "Roboto-BoldItalic.ttf": face="Roboto"; weight = FontWeight.Bold; italic = true; break;
+			default:
+				if (skipUnknown)
+					return false;
+		}
+		return registerFont(filename, FontFamily.SansSerif, face, italic, weight);
+	}
 
     /// register freetype font by filename - optinally font properties can be passed if known (e.g. from libfontconfig).
-    bool registerFont(string filename, FontFamily family = FontFamily.SansSerif, string face = null, bool italic = false, int weight = 0, bool dontLoadFile = false) {
+    bool registerFont(string filename, FontFamily family, string face = null, bool italic = false, int weight = 0, bool dontLoadFile = false) {
         if (_library is null)
             return false;
         //Log.v("FreeTypeFontManager.registerFont ", filename, " ", family, " ", face, " italic=", italic, " weight=", weight);
