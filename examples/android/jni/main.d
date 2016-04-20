@@ -15,17 +15,21 @@
  *
  */
 
+version(Android):
+
 import core.stdc.stdlib : malloc;
 import core.stdc.string : memset;
 import dlangui.core.logger;
 
 import dlangui.widgets.styles;
 import dlangui.graphics.drawbuf;
+import dlangui.graphics.gldrawbuf;
+import dlangui.graphics.glsupport;
 //import dlangui.widgets.widget;
 import dlangui.platforms.common.platform;
 
-import EGL.eglplatform : EGLint;
-import EGL.egl, GLES.gl;
+//import EGL.eglplatform : EGLint;
+//import EGL.egl, GLES.gl;
 
 import android.input, android.looper : ALooper_pollAll;
 import android.native_window : ANativeWindow_setBuffersGeometry;
@@ -42,7 +46,10 @@ class AndroidWindow : Window {
 	/// show window
 	override void show() {
 		// TODO
+		_visible = true;
+		_platform.drawWindow(this);
 	}
+	bool _visible;
 
 	protected dstring _caption;
 	/// returns window caption
@@ -99,6 +106,9 @@ class AndroidPlatform : Platform {
 	protected EGLContext _context;
 	protected int _width;
 	protected int _height;
+	protected ASensorManager* _sensorManager;
+	protected const(ASensor)* _accelerometerSensor;
+	protected ASensorEventQueue* _sensorEventQueue;
 
 
 	this(android_app* state) {
@@ -109,10 +119,10 @@ class AndroidPlatform : Platform {
 		state.onInputEvent = &engine_handle_input;
 
 		// Prepare to monitor accelerometer
-		_engine.sensorManager = ASensorManager_getInstance();
-		_engine.accelerometerSensor = ASensorManager_getDefaultSensor(_engine.sensorManager,
+		_sensorManager = ASensorManager_getInstance();
+		_accelerometerSensor = ASensorManager_getDefaultSensor(_sensorManager,
 			ASENSOR_TYPE_ACCELEROMETER);
-		_engine.sensorEventQueue = ASensorManager_createEventQueue(_engine.sensorManager,
+		_sensorEventQueue = ASensorManager_createEventQueue(_sensorManager,
 			state.looper, LOOPER_ID_USER, null, null);
 		
 		if (state.savedState != null) {
@@ -178,7 +188,9 @@ class AndroidPlatform : Platform {
 		
 		eglQuerySurface(display, surface, EGL_WIDTH, &w);
 		eglQuerySurface(display, surface, EGL_HEIGHT, &h);
-		
+
+		Log.i("surface created: ", _width, "x", _height);
+
 		_display = display;
 		_context = context;
 		_surface = surface;
@@ -187,31 +199,17 @@ class AndroidPlatform : Platform {
 		_engine.state.angle = 0;
 		
 		// Initialize GL state.
-		glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+		//glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
 		glEnable(GL_CULL_FACE);
 		//glShadeModel(GL_SMOOTH);
 		glDisable(GL_DEPTH_TEST);
+
+		Log.i("calling initGLSupport");
+		initGLSupport(false);
 		
 		return 0;
 	}
-	
-	/**
- 	* Just the current frame in the display.
- 	*/
-	void engine_draw_frame() {
-		if (_display == null) {
-			// No display.
-			return;
-		}
-		
-		// Just fill the screen with a color.
-		glClearColor(_engine.state.x/_width, _engine.state.angle,
-			_engine.state.y/_height, 1);
-		glClear(GL_COLOR_BUFFER_BIT);
-		
-		eglSwapBuffers(_display, _surface);
-	}
-	
+
 	/**
 	 * Tear down the EGL context currently associated with the display.
 	 */
@@ -260,7 +258,7 @@ class AndroidPlatform : Platform {
 				// The window is being shown, get it ready.
 				if (_appstate.window != null) {
 					engine_init_display();
-					engine_draw_frame();
+					drawWindow();
 				}
 				break;
 			case APP_CMD_TERM_WINDOW:
@@ -269,24 +267,24 @@ class AndroidPlatform : Platform {
 				break;
 			case APP_CMD_GAINED_FOCUS:
 				// When our app gains focus, we start monitoring the accelerometer.
-				if (_engine.accelerometerSensor != null) {
-					ASensorEventQueue_enableSensor(_engine.sensorEventQueue,
-						_engine.accelerometerSensor);
+				if (_accelerometerSensor != null) {
+					ASensorEventQueue_enableSensor(_sensorEventQueue,
+						_accelerometerSensor);
 					// We'd like to get 60 events per second (in us).
-					ASensorEventQueue_setEventRate(_engine.sensorEventQueue,
-						_engine.accelerometerSensor, (1000L/60)*1000);
+					ASensorEventQueue_setEventRate(_sensorEventQueue,
+						_accelerometerSensor, (1000L/60)*1000);
 				}
 				break;
 			case APP_CMD_LOST_FOCUS:
 				// When our app loses focus, we stop monitoring the accelerometer.
 				// This is to avoid consuming battery while not being used.
-				if (_engine.accelerometerSensor != null) {
-					ASensorEventQueue_disableSensor(_engine.sensorEventQueue,
-						_engine.accelerometerSensor);
+				if (_accelerometerSensor != null) {
+					ASensorEventQueue_disableSensor(_sensorEventQueue,
+						_accelerometerSensor);
 				}
 				// Also stop animating.
 				_engine.animating = 0;
-				engine_draw_frame();
+				drawWindow();
 				break;
 			default:
 				break;
@@ -307,7 +305,6 @@ class AndroidPlatform : Platform {
 	override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0) {
 		AndroidWindow w = new AndroidWindow(this);
 		_windows ~= w;
-		_activeWindow = w;
 		return w;
 	}
 	
@@ -324,7 +321,49 @@ class AndroidPlatform : Platform {
 				break;
 			}
 		}
-		_activeWindow = (_windows.length > 0 ? _windows[$ - 1] : null);
+	}
+
+	@property AndroidWindow activeWindow() {
+		for (int i = cast(int)_windows.length - 1; i >= 0; i++)
+			if (_windows[i]._visible)
+				return _windows[i];
+		return null;
+	}
+
+	GLDrawBuf _drawbuf;
+	void drawWindow(AndroidWindow w = null) {
+		if (w is null)
+			w = activeWindow;
+		else if (!(activeWindow is w))
+			return;
+		if (_display == null) {
+			// No display.
+			return;
+		}
+		
+		// Just fill the screen with a color.
+		if (!w) {
+			glClearColor(0, 0, 0, 1);
+			glClear(GL_COLOR_BUFFER_BIT);
+		} else {
+			w.onResize(_width, _height);
+			glDisable(GL_DEPTH_TEST);
+			glViewport(0, 0, _width, _height);
+			float a = 1.0f;
+			float r = ((w.backgroundColor >> 16) & 255) / 255.0f;
+			float g = ((w.backgroundColor >> 8) & 255) / 255.0f;
+			float b = ((w.backgroundColor >> 0) & 255) / 255.0f;
+			glClearColor(r, g, b, a);
+			glClear(GL_COLOR_BUFFER_BIT);
+			if (!_drawbuf)
+				_drawbuf = new GLDrawBuf(_width, _height);
+			_drawbuf.resize(_width, _height);
+			_drawbuf.beforeDrawing();
+			w.onDraw(_drawbuf);
+			_drawbuf.afterDrawing();
+		}
+
+		eglSwapBuffers(_display, _surface);
 	}
 
 	/**
@@ -352,9 +391,9 @@ class AndroidPlatform : Platform {
 				
 				// If a sensor has data, process it now.
 				if (ident == LOOPER_ID_USER) {
-					if (_engine.accelerometerSensor != null) {
+					if (_accelerometerSensor != null) {
 						ASensorEvent event;
-						while (ASensorEventQueue_getEvents(_engine.sensorEventQueue,
+						while (ASensorEventQueue_getEvents(_sensorEventQueue,
 								&event, 1) > 0) {
 							LOGI("accelerometer: x=%f y=%f z=%f",
 								event.acceleration.x, event.acceleration.y,
@@ -378,7 +417,7 @@ class AndroidPlatform : Platform {
 				
 				// Drawing is throttled to the screen update rate, so there
 				// is no need to do timing here.
-				engine_draw_frame();
+				drawWindow();
 			}
 		}
 	}
@@ -422,9 +461,9 @@ struct saved_state {
 struct engine {
     //android_app* app;
 
-    ASensorManager* sensorManager;
-    const(ASensor)* accelerometerSensor;
-    ASensorEventQueue* sensorEventQueue;
+    //ASensorManager* sensorManager;
+    //const(ASensor)* accelerometerSensor;
+    //ASensorEventQueue* sensorEventQueue;
 
     int animating;
     //EGLDisplay display;

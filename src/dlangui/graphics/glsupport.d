@@ -680,12 +680,12 @@ bool initGLSupport(bool legacy = false) {
     if (_glSupport && _glSupport.valid)
         return true;
     version(Android) {
-
+        Log.d("initGLSupport");
     } else {
         static bool DERELICT_GL3_RELOADED;
-	static bool gl3ReloadedOk;
+	    static bool gl3ReloadedOk;
         static bool glReloadedOk;
-	if (!DERELICT_GL3_RELOADED) {
+	    if (!DERELICT_GL3_RELOADED) {
     	    DERELICT_GL3_RELOADED = true;
             try {
                 Log.v("Reloading DerelictGL3");
@@ -716,6 +716,7 @@ bool initGLSupport(bool legacy = false) {
             legacy = false;
     }
     if (!_glSupport) {
+        Log.d("glSupport not initialized: trying to create");
         _glSupport = new GLSupport(legacy);
         if (_glSupport.valid || _glSupport.initShaders()) {
             Log.v("shaders are ok");
@@ -724,15 +725,19 @@ bool initGLSupport(bool legacy = false) {
             return true;
         } else {
             Log.e("Failed to compile shaders");
-            // try opposite legacy flag
-            if (_glSupport.legacyMode == legacy) {
-                Log.i("Trying to reinit GLSupport with legacy flag ", !legacy);
-                _glSupport = new GLSupport(!legacy);
-                if (_glSupport.valid || _glSupport.initShaders()) {
-                    Log.v("shaders are ok");
-                    setOpenglEnabled();
-                    Log.v("OpenGL is initialized ok");
-                    return true;
+            version (Android) {
+                // do not recreate legacy mode
+            } else {
+                // try opposite legacy flag
+                if (_glSupport.legacyMode == legacy) {
+                    Log.i("Trying to reinit GLSupport with legacy flag ", !legacy);
+                    _glSupport = new GLSupport(!legacy);
+                    if (_glSupport.valid || _glSupport.initShaders()) {
+                        Log.v("shaders are ok");
+                        setOpenglEnabled();
+                        Log.v("OpenGL is initialized ok");
+                        return true;
+                    }
                 }
             }
         }
@@ -754,13 +759,14 @@ final class GLSupport {
     @property bool legacyMode() { return _legacyMode; }
 
     this(bool legacy = false) {
-	version (Android) {
-	} else {
-	    if (legacy && !glLightfv) {
-		Log.w("GLSupport legacy API is not supported");
-		legacy = false;
-	    }
-	}
+    	version (Android) {
+            Log.d("creating GLSupport");
+    	} else {
+    	    if (legacy && !glLightfv) {
+    		    Log.w("GLSupport legacy API is not supported");
+    		    legacy = false;
+    	    }
+    	}
         _legacyMode = legacy;
     }
 
@@ -773,6 +779,7 @@ final class GLSupport {
     }
 
     bool initShaders() {
+        Log.i("initShaders() is called");
         if (_solidFillProgram is null) {
             Log.v("Compiling solid fill program");
             _solidFillProgram = new SolidFillProgram();
