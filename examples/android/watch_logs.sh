@@ -1,6 +1,4 @@
 #!/bin/sh
-export SDK=$HOME/android-sdk-linux
+. ./android_build_config.mk
 
 $SDK/platform-tools/adb logcat | less
-#$SDK/platform-tools/adb logcat | grep "native"
-

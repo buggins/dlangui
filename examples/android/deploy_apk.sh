@@ -1,5 +1,4 @@
 #!/bin/sh
-export SDK=$HOME/android-sdk-linux
+. ./android_build_config.mk
 
 $SDK/platform-tools/adb install -r bin/NativeActivity-debug.apk
-

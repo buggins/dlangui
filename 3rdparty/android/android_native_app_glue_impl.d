@@ -248,10 +248,10 @@ void* android_app_entry(void* param) {
     pthread_mutex_unlock(&android_app.mutex);
 
 
-    //import core.runtime;
-    //rt_init();
+    import core.runtime;
+    rt_init();
     android_main(android_app);
-    //rt_term();
+    rt_term();
 
     android_app_destroy(android_app);
     return null;
