@@ -93,17 +93,21 @@ class AndroidPlatform : Platform {
 	protected AndroidWindow[] _windows;
 	protected AndroidWindow _activeWindow;
 	engine _engine;
-	
-
 	protected android_app* _appstate;
+	protected EGLDisplay _display;
+	protected EGLSurface _surface;
+	protected EGLContext _context;
+	protected int _width;
+	protected int _height;
+
+
 	this(android_app* state) {
 		_appstate = state;
 		memset(&_engine, 0, engine.sizeof);
 		state.userData = cast(void*)this;
 		state.onAppCmd = &engine_handle_cmd;
 		state.onInputEvent = &engine_handle_input;
-		_engine.app = state;
-		
+
 		// Prepare to monitor accelerometer
 		_engine.sensorManager = ASensorManager_getInstance();
 		_engine.accelerometerSensor = ASensorManager_getDefaultSensor(_engine.sensorManager,
@@ -162,9 +166,9 @@ class AndroidPlatform : Platform {
     	 * ANativeWindow buffers to match, using EGL_NATIVE_VISUAL_ID. */
 		eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &format);
 		
-		ANativeWindow_setBuffersGeometry(_engine.app.window, 0, 0, format);
+		ANativeWindow_setBuffersGeometry(_appstate.window, 0, 0, format);
 		
-		surface = eglCreateWindowSurface(display, config, _engine.app.window, null);
+		surface = eglCreateWindowSurface(display, config, _appstate.window, null);
 		context = eglCreateContext(display, config, null, null);
 		
 		if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE) {
@@ -175,11 +179,11 @@ class AndroidPlatform : Platform {
 		eglQuerySurface(display, surface, EGL_WIDTH, &w);
 		eglQuerySurface(display, surface, EGL_HEIGHT, &h);
 		
-		_engine.display = display;
-		_engine.context = context;
-		_engine.surface = surface;
-		_engine.width = w;
-		_engine.height = h;
+		_display = display;
+		_context = context;
+		_surface = surface;
+		_width = w;
+		_height = h;
 		_engine.state.angle = 0;
 		
 		// Initialize GL state.
@@ -195,37 +199,37 @@ class AndroidPlatform : Platform {
  	* Just the current frame in the display.
  	*/
 	void engine_draw_frame() {
-		if (_engine.display == null) {
+		if (_display == null) {
 			// No display.
 			return;
 		}
 		
 		// Just fill the screen with a color.
-		glClearColor(_engine.state.x/_engine.width, _engine.state.angle,
-			_engine.state.y/_engine.height, 1);
+		glClearColor(_engine.state.x/_width, _engine.state.angle,
+			_engine.state.y/_height, 1);
 		glClear(GL_COLOR_BUFFER_BIT);
 		
-		eglSwapBuffers(_engine.display, _engine.surface);
+		eglSwapBuffers(_display, _surface);
 	}
 	
 	/**
 	 * Tear down the EGL context currently associated with the display.
 	 */
 	void engine_term_display() {
-		if (_engine.display != EGL_NO_DISPLAY) {
-			eglMakeCurrent(_engine.display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-			if (_engine.context != EGL_NO_CONTEXT) {
-				eglDestroyContext(_engine.display, _engine.context);
+		if (_display != EGL_NO_DISPLAY) {
+			eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
+			if (_context != EGL_NO_CONTEXT) {
+				eglDestroyContext(_display, _context);
 			}
-			if (_engine.surface != EGL_NO_SURFACE) {
-				eglDestroySurface(_engine.display, _engine.surface);
+			if (_surface != EGL_NO_SURFACE) {
+				eglDestroySurface(_display, _surface);
 			}
-			eglTerminate(_engine.display);
+			eglTerminate(_display);
 		}
 		_engine.animating = 0;
-		_engine.display = EGL_NO_DISPLAY;
-		_engine.context = EGL_NO_CONTEXT;
-		_engine.surface = EGL_NO_SURFACE;
+		_display = EGL_NO_DISPLAY;
+		_context = EGL_NO_CONTEXT;
+		_surface = EGL_NO_SURFACE;
 	}
 
 	/**
@@ -248,13 +252,13 @@ class AndroidPlatform : Platform {
 		switch (cmd) {
 			case APP_CMD_SAVE_STATE:
 				// The system has asked us to save our current state.  Do so.
-				_engine.app.savedState = malloc(saved_state.sizeof);
-				*(cast(saved_state*)_engine.app.savedState) = _engine.state;
-				_engine.app.savedStateSize = saved_state.sizeof;
+				_appstate.savedState = malloc(saved_state.sizeof);
+				*(cast(saved_state*)_appstate.savedState) = _engine.state;
+				_appstate.savedStateSize = saved_state.sizeof;
 				break;
 			case APP_CMD_INIT_WINDOW:
 				// The window is being shown, get it ready.
-				if (_engine.app.window != null) {
+				if (_appstate.window != null) {
 					engine_init_display();
 					engine_draw_frame();
 				}
@@ -416,18 +420,18 @@ struct saved_state {
  * Shared state for our app.
  */
 struct engine {
-    android_app* app;
+    //android_app* app;
 
     ASensorManager* sensorManager;
     const(ASensor)* accelerometerSensor;
     ASensorEventQueue* sensorEventQueue;
 
     int animating;
-    EGLDisplay display;
-    EGLSurface surface;
-    EGLContext context;
-    int width;
-    int height;
+    //EGLDisplay display;
+    //EGLSurface surface;
+    //EGLContext context;
+    //int width;
+    //int height;
     saved_state state;
 }
 
