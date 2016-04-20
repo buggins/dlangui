@@ -17,6 +17,7 @@
 
 import core.stdc.stdlib : malloc;
 import core.stdc.string : memset;
+import dlangui.core.logger;
 
 import EGL.eglplatform : EGLint;
 import EGL.egl, GLES.gl;
@@ -25,8 +26,8 @@ import android.input, android.looper : ALooper_pollAll;
 import android.native_window : ANativeWindow_setBuffersGeometry;
 import android.sensor, android.log, android.android_native_app_glue;
 
-int LOGI(const(char)* fmt, float x, float y, float z) { return __android_log_print(android_LogPriority.ANDROID_LOG_INFO, "native-activity", fmt, x, y, z); }
-int LOGW(const(char)* warning) { return __android_log_print(android_LogPriority.ANDROID_LOG_WARN, "native-activity", warning); }
+//int LOGI(const(char)* fmt, float x, float y, float z) { return __android_log_print(android_LogPriority.ANDROID_LOG_INFO, "native-activity", fmt, x, y, z); }
+//int LOGW(const(char)* warning) { return __android_log_print(android_LogPriority.ANDROID_LOG_WARN, "native-activity", warning); }
 
 /**
  * Our saved state data.
@@ -231,6 +232,12 @@ void main(){}
  * event loop for receiving input events and doing other things.
  */
 extern (C) void android_main(android_app* state) {
+    LOGI("Inside android_main");
+    Log.setLogTag("myApp");
+    Log.setLogLevel(LogLevel.Trace);
+    Log.i("Testing logger - Log.i");
+    Log.fi("Testing logger - Log.fi %d %s", 12345, "asdfgh");
+
     engine engine;
 
     // Make sure glue isn't stripped.

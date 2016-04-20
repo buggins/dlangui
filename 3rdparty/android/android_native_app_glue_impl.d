@@ -35,16 +35,6 @@ import core.sys.posix.unistd;
 import android.android_native_app_glue;
 import android.log;
 
-void LOGI(S...)(string fmt, S args) {
-    __android_log_print(android_LogPriority.ANDROID_LOG_INFO, "threaded_app", fmt.ptr, args);
-}
-void LOGE(S...)(string fmt, S args) {
-    __android_log_print(android_LogPriority.ANDROID_LOG_ERROR, "threaded_app", fmt.ptr, args);
-}
-void LOGV(S...)(string fmt, S args) {
-    debug __android_log_print(android_LogPriority.ANDROID_LOG_VERBOSE, "threaded_app", fmt.ptr, args);
-}
-
 static void free_saved_state(android_app* android_app) {
     pthread_mutex_lock(&android_app.mutex);
     if (android_app.savedState != null) {

@@ -27,3 +27,18 @@ int __android_log_write(int prio, const(char)* tag, const(char)* text);
 int __android_log_print(int prio, const(char)* tag, const(char)* fmt, ...);
 int __android_log_vprint(int prio, const(char)* tag, const(char)* fmt, va_list ap);
 void __android_log_assert(const(char)* cond, const(char)* tag, const(char)* fmt, ...);
+
+__gshared const(char) * ANDROID_LOG_TAG = "dlangui_app";
+
+void LOGI(S...)(const(char) * fmt, S args) {
+    __android_log_print(android_LogPriority.ANDROID_LOG_INFO, ANDROID_LOG_TAG, fmt, args);
+}
+void LOGE(S...)(const(char) * fmt, S args) {
+    __android_log_print(android_LogPriority.ANDROID_LOG_ERROR, ANDROID_LOG_TAG, fmt, args);
+}
+void LOGW(S...)(const(char) * fmt, S args) {
+    __android_log_print(android_LogPriority.ANDROID_LOG_WARN, ANDROID_LOG_TAG, fmt, args);
+}
+void LOGV(S...)(const(char) * fmt, S args) {
+    debug __android_log_print(android_LogPriority.ANDROID_LOG_VERBOSE, ANDROID_LOG_TAG, fmt, args);
+}

@@ -27,6 +27,13 @@ Log.fd("mouse clicked at %d,%d", x, y);
 Log.e("exception while reading file", e);
 ----
 
+
+For Android, set log tag instead of setXXXLogger:
+
+----
+Log.setLogTag("myApp");
+----
+
 Copyright: Vadim Lopatin, 2014
 License:   Boost License 1.0
 Authors:   Vadim Lopatin, coolreader.org@gmail.com
@@ -36,6 +43,10 @@ module dlangui.core.logger;
 import std.stdio;
 import std.datetime : SysTime, Clock;
 import core.sync.mutex;
+
+version (Android) {
+    import android.log;
+}
 
 /// Log levels
 enum LogLevel : int {
@@ -141,106 +152,161 @@ class Log {
             default: return "?";
         }
     }
+    version (Android) {
+        static android_LogPriority toAndroidLogPriority(LogLevel level) {
+            switch (level) with (LogLevel) {
+                /// Fatal error, cannot resume
+                case Fatal:
+                    return android_LogPriority.ANDROID_LOG_FATAL;
+                /// Error
+                case Error:
+                    return android_LogPriority.ANDROID_LOG_ERROR;
+                /// Warning
+                case Warn:
+                    return android_LogPriority.ANDROID_LOG_WARN;
+                /// Informational message
+                case Info:
+                    return android_LogPriority.ANDROID_LOG_INFO;
+                /// Debug message
+                case Debug:
+                    return android_LogPriority.ANDROID_LOG_DEBUG;
+                /// Tracing message
+                case Trace:
+                default:
+                    return android_LogPriority.ANDROID_LOG_VERBOSE;
+            }
+        }
+    }
     /// Log message with arbitrary log level
     static public void log(S...)(LogLevel level, S args) {
-        if (logLevel >= level && logFile !is null && logFile.isOpen) {
-            SysTime ts = Clock.currTime();
-            logFile.writef("%04d-%02d-%02d %02d:%02d:%02d.%03d %s  ", ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second, ts.fracSecs.split!("msecs").msecs, logLevelName(level));
-            logFile.writeln(args);
-            logFile.flush();
+        if (logLevel >= level) {
+            version (Android) {
+                import std.format;
+                import std.string : toStringz;
+                import std.format;
+                import std.conv : to;
+                char[] msg;
+                foreach(arg; args) {
+                    msg ~= to!string(arg);
+                }
+                msg ~= cast(char)0;
+                __android_log_write(toAndroidLogPriority(level), ANDROID_LOG_TAG, msg.ptr);
+            } else {
+                if (logFile !is null && logFile.isOpen) {
+                    SysTime ts = Clock.currTime();
+                    logFile.writef("%04d-%02d-%02d %02d:%02d:%02d.%03d %s  ", ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second, ts.fracSecs.split!("msecs").msecs, logLevelName(level));
+                    logFile.writeln(args);
+                    logFile.flush();
+                }
+            }
         }
     }
     /// Log message with arbitrary log level with format string
-    static public void logf(S...)(LogLevel level, S args) {
-        if (logLevel >= level && logFile !is null && logFile.isOpen) {
-            SysTime ts = Clock.currTime();
-            logFile.writef("%04d-%02d-%02d %02d:%02d:%02d.%03d %s  ", ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second, ts.fracSecs.split!("msecs").msecs, logLevelName(level));
-            logFile.writefln(args);
-            logFile.flush();
+    static public void logf(S...)(LogLevel level, string fmt, S args) {
+        if (logLevel >= level) {
+            version (Android) {
+                import std.string : toStringz;
+                import std.format;
+                string msg = fmt.format(args);
+                __android_log_write(toAndroidLogPriority(level), ANDROID_LOG_TAG, msg.toStringz);
+            } else {
+                if (logFile !is null && logFile.isOpen) {
+                    SysTime ts = Clock.currTime();
+                    logFile.writef("%04d-%02d-%02d %02d:%02d:%02d.%03d %s  ", ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second, ts.fracSecs.split!("msecs").msecs, logLevelName(level));
+                    logFile.writefln(fmt, args);
+                    logFile.flush();
+                }
+            }
         }
     }
     /// Log verbose / trace message
     static public void v(S...)(S args) {
         synchronized(mutex) {
-            if (logLevel >= LogLevel.Trace && logFile !is null && logFile.isOpen)
+            if (logLevel >= LogLevel.Trace)
                 log(LogLevel.Trace, args);
         }
     }
     /// Log verbose / trace message with format string
     static public void fv(S...)(S args) {
         synchronized(mutex) {
-            if (logLevel >= LogLevel.Trace && logFile !is null && logFile.isOpen)
+            if (logLevel >= LogLevel.Trace)
                 logf(LogLevel.Trace, args);
         }
     }
     /// Log debug message
     static public void d(S...)(S args) {
         synchronized(mutex) {
-            if (logLevel >= LogLevel.Debug && logFile !is null && logFile.isOpen)
+            if (logLevel >= LogLevel.Debug)
                 log(LogLevel.Debug, args);
         }
     }
     /// Log debug message with format string
     static public void fd(S...)(S args) {
         synchronized(mutex) {
-            if (logLevel >= LogLevel.Debug && logFile !is null && logFile.isOpen)
+            if (logLevel >= LogLevel.Debug)
                 logf(LogLevel.Debug, args);
         }
     }
     /// Log info message
     static public void i(S...)(S args) {
         synchronized(mutex) {
-            if (logLevel >= LogLevel.Info && logFile !is null && logFile.isOpen)
+            if (logLevel >= LogLevel.Info)
                 log(LogLevel.Info, args);
         }
     }
     /// Log info message
     static public void fi(S...)(S args) {
         synchronized(mutex) {
-            if (logLevel >= LogLevel.Info && logFile !is null && logFile.isOpen)
+            if (logLevel >= LogLevel.Info)
                 logf(LogLevel.Info, args);
         }
     }
     /// Log warn message
     static public void w(S...)(S args) {
         synchronized(mutex) {
-            if (logLevel >= LogLevel.Warn && logFile !is null && logFile.isOpen)
+            if (logLevel >= LogLevel.Warn)
                 log(LogLevel.Warn, args);
         }
     }
     /// Log warn message
     static public void fw(S...)(S args) {
         synchronized(mutex) {
-            if (logLevel >= LogLevel.Warn && logFile !is null && logFile.isOpen)
+            if (logLevel >= LogLevel.Warn)
                 logf(LogLevel.Warn, args);
         }
     }
     /// Log error message
     static public void e(S...)(S args) {
         synchronized(mutex) {
-            if (logLevel >= LogLevel.Error && logFile !is null && logFile.isOpen)
+            if (logLevel >= LogLevel.Error)
                 log(LogLevel.Error, args);
         }
     }
     /// Log error message
     static public void fe(S...)(S args) {
         synchronized(mutex) {
-            if (logLevel >= LogLevel.Error && logFile !is null && logFile.isOpen)
+            if (logLevel >= LogLevel.Error)
                 logf(LogLevel.Error, args);
         }
     }
     /// Log fatal error message
     static public void f(S...)(S args) {
         synchronized(mutex) {
-            if (logLevel >= LogLevel.Fatal && logFile !is null && logFile.isOpen)
+            if (logLevel >= LogLevel.Fatal)
                 log(LogLevel.Fatal, args);
         }
     }
     /// Log fatal error message
     static public void ff(S...)(S args) {
         synchronized(mutex) {
-            if (logLevel >= LogLevel.Fatal && logFile !is null && logFile.isOpen)
+            if (logLevel >= LogLevel.Fatal)
                 logf(LogLevel.Fatal, args);
+        }
+    }
+    
+    version (Android) {
+        static public void setLogTag(const char * tag) {
+            ANDROID_LOG_TAG = tag;
         }
     }
 }
