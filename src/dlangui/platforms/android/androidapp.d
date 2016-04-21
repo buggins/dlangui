@@ -45,11 +45,19 @@ class AndroidWindow : Window {
 	override @property void windowIcon(DrawBufRef icon) {
 		// not supported
 	}
+	uint _lastRedrawEventCode;
 	/// request window redraw
 	override void invalidate() {
+		_platform.sendRedrawEvent(this, ++_lastRedrawEventCode);
+	}
+	
+	void processRedrawEvent(uint code) {
+		//if (code == _lastRedrawEventCode)
+		//	redraw();
 	}
 	/// close window
 	override void close() {
+		_platform.closeWindow(this);
 	}
 
 	protected AndroidPlatform _platform;
@@ -149,7 +157,8 @@ class AndroidWindow : Window {
 			}
 			return 1;
 		} else if (et == AINPUT_EVENT_TYPE_KEY) {
-			return 1;
+			Log.d("AINPUT_EVENT_TYPE_KEY");
+			return 0;
 		}
 		return 0;
 	}
@@ -276,6 +285,7 @@ class AndroidPlatform : Platform {
 		return 0;
 	}
 
+
 	/**
 	 * Tear down the EGL context currently associated with the display.
 	 */
@@ -386,6 +396,18 @@ class AndroidPlatform : Platform {
 			default:
 				Log.i("unknown APP_CMD_XXX=", cmd);
 				break;
+		}
+	}
+
+	void sendRedrawEvent(AndroidWindow w, uint redrawEventCode) {
+		import core.stdc.stdio;
+		import core.sys.posix.unistd;
+		if (w && w is activeWindow) {
+			// request update
+			_appstate.redrawNeeded = true;
+			Log.d("sending APP_CMD_WINDOW_REDRAW_NEEDED");
+			ubyte cmd = APP_CMD_WINDOW_REDRAW_NEEDED;
+			write(_appstate.msgwrite, &cmd, cmd.sizeof);
 		}
 	}
 
