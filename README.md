@@ -28,7 +28,7 @@ WARNING: dependencies in dlangui/deps now are git submodules (if you previously 
 
 Main features:
 
-* Crossplatform (Win32, OSX, and Linux are supported in current version); can use SDL2 as a backend.
+* Crossplatform (Win32, OSX, Linux and Android are supported in current version)
 * Mostly inspired by Android UI API (layouts, styles, two phase layout, ...)
 * Supports highly customizable UI themes and styles
 * Supports internationalization

@@ -30,7 +30,22 @@ export LDC=$HOME/ldc2-android-arm-0.17.0-alpha2-linux-x86_64
 export NDK_ARCH=x86_64
 
 
-Use LDC cross compiler for armv7a build according instructions 
+Use LDC cross compiler for armv7a build according instructions
 
 https://wiki.dlang.org/Build_LDC_for_Android#Build_a_sample_OpenGL_Android_app_ported_to_D
 
+
+Building
+========
+
+Run ./build_apk.sh
+
+bin/NativeActivity-debug.apk
+
+
+Deploy APK on device
+====================
+
+Run ./deploy_apk.sh
+
+It will run `adb install bin/NativeActivity-debug.apk`

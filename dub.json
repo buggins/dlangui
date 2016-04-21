@@ -1,6 +1,6 @@
 {
     "name": "dlangui",
-    "description": "Cross platform GUI for D. Layouts, styles, themes, unicode, i18n, OpenGL, widget set.",
+    "description": "Cross platform GUI for D. Layouts, styles, themes, unicode, i18n, OpenGL, widgets. Android support.",
     "homepage": "https://github.com/buggins/dlangui",
     "license": "Boost",
     "authors": ["Vadim Lopatin"],
