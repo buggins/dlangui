@@ -40,10 +40,12 @@ extern (C) int UIAppMain(string[] args) {
 						RadioButton { id: rb2; text: "Item 2" }
 						RadioButton { id: rb3; text: "Item 3" }
 					}
+					TextWidget { text: "Switch:" }
+					SwitchWidget { checked: true }
 					TextWidget { text: "and checkboxes" }
 					// arrange some checkboxes horizontally
 					HorizontalLayout {
-					layoutWidth: fill
+						layoutWidth: fill
 						CheckBox { id: cb1; text: "checkbox 1" }
 						CheckBox { id: cb2; text: "checkbox 2" }
 					}

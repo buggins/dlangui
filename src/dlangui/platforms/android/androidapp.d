@@ -106,6 +106,10 @@ class AndroidPlatform : Platform {
 	}
 
 	~this() {
+		foreach_reverse(w; _windows) {
+			destroy(w);
+		}
+		_windows.length = 0;
 		termDisplay();
 	}
 
@@ -268,9 +272,11 @@ class AndroidPlatform : Platform {
 				break;
 			case APP_CMD_WINDOW_REDRAW_NEEDED:
 				Log.d("APP_CMD_WINDOW_REDRAW_NEEDED");
+				drawWindow();
 				break;
 			case APP_CMD_CONTENT_RECT_CHANGED:
 				Log.d("APP_CMD_CONTENT_RECT_CHANGED");
+				drawWindow();
 				break;
 			case APP_CMD_CONFIG_CHANGED:
 				Log.d("APP_CMD_CONFIG_CHANGED");
@@ -524,12 +530,15 @@ extern (C) void android_main(android_app* state) {
     }
     initResourceManagers();
 	SCREEN_DPI = getDensityDpi(state);
+	Log.i("SCREEN_DPI=", SCREEN_DPI);
 
-    currentTheme = createDefaultTheme();
+    //currentTheme = createDefaultTheme();
+
 
 	_platform = new AndroidPlatform(state);
 	Platform.setInstance(_platform);
 
+	_platform.uiTheme = "theme_default";
 
     // Make sure glue isn't stripped.
     app_dummy();

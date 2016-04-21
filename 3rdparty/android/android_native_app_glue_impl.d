@@ -253,9 +253,9 @@ void* android_app_entry(void* param) {
 
 static android_app* android_app_create(ANativeActivity* activity,
         void* savedState, size_t savedStateSize) {
-	size_t sz = android_app.sizeof;
-	android_app* android_app = cast(android_app*)malloc(sz);
-	memset(android_app, 0, sz);
+    size_t sz = android_app.sizeof;
+    android_app* android_app = cast(android_app*)malloc(sz);
+    memset(android_app, 0, sz);
     android_app.activity = activity;
 
     pthread_mutex_init(&android_app.mutex, null);

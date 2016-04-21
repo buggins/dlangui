@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <theme id="theme_default" 
         fontSize="10pt" 
-        fontFace="Helvetica Neue,Verdana,Arial,DejaVu Sans,Liberation Sans,Helvetica"
+        fontFace="Helvetica Neue,Verdana,Arial,DejaVu Sans,Liberation Sans,Helvetica,Roboto,Droid Sans"
         fontFamily="SansSerif"
-	>
+        >
     <color id="window_background" value="#FFFFFF"/>
     <color id="dialog_background" value="#EEEEEE"/>
     <color id="edit_background" value="#FFFFFF"/>
