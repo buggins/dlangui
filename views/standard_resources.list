@@ -86,6 +86,10 @@ res/hdpi/hdpi_dialog-ok-apply.png
 res/hdpi/hdpi_dialog-ok.png
 res/hdpi/hdpi_folder.png
 res/hdpi/hdpi_text-plain.png
+res/hdpi/hdpi_switch_off.png
+res/hdpi/hdpi_switch_off_disabled.png
+res/hdpi/hdpi_switch_on.png
+res/hdpi/hdpi_switch_on_disabled.png
 res/mdpi/applications-internet.png
 res/mdpi/arrow_right_down_black.png
 res/mdpi/arrow_right_down_black_dark.png
