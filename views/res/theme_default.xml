@@ -32,8 +32,8 @@
     <style id="BUTTON"
         backgroundImageId="btn_background"
         align="Center"
-        margins="5,5,5,5"
-	focusRectColors="#000"
+        margins="3pt,3pt,3pt,3pt"
+        focusRectColors="#000"
         textFlags="UnderlineHotKeys"
         >
         <state state_enabled="true" state_hovered="true" textColor="#006080"/>
@@ -49,7 +49,7 @@
         />
     <style id="BUTTON_LABEL"
         layoutWidth="FILL_PARENT"
-        margins="2,2,2,2"
+        margins="2pt,2pt,2pt,2pt"
         align="Left|VCenter"
         textFlags="UnderlineHotKeys"
         >
@@ -57,7 +57,7 @@
         <state state_enabled="true" state_hovered="true" textColor="#006080"/>
     </style>
     <style id="BUTTON_LABEL_LINK" parent="BUTTON_LABEL"
-	textColor="#0000C0"
+        textColor="#0000C0"
         >
         <state state_enabled="false" textColor="#60C0C0FF"/>
         <state state_enabled="true" state_hovered="true" textColor="#8080FF" textFlags="Underline"/>

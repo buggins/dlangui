@@ -66,6 +66,93 @@ class AndroidWindow : Window {
 		// TODO
 	}
 
+	ushort lastFlags;
+	short lastx;
+	short lasty;
+	protected ButtonDetails _lbutton;
+	protected ButtonDetails _mbutton;
+	protected ButtonDetails _rbutton;
+	void processMouseEvent(MouseAction action, uint button, uint state, int x, int y) {
+		MouseEvent event = null;
+		lastFlags = 0; //convertMouseFlags(state);
+		if (_keyFlags & KeyFlag.Shift)
+			lastFlags |= MouseFlag.Shift;
+		if (_keyFlags & KeyFlag.Control)
+			lastFlags |= MouseFlag.Control;
+		if (_keyFlags & KeyFlag.Alt)
+			lastFlags |= MouseFlag.Alt;
+		lastx = cast(short)x;
+		lasty = cast(short)y;
+		MouseButton btn = MouseButton.Left; // convertMouseButton(button);
+		event = new MouseEvent(action, btn, lastFlags, lastx, lasty);
+		if (event) {
+			ButtonDetails * pbuttonDetails = null;
+			if (button == MouseButton.Left)
+				pbuttonDetails = &_lbutton;
+			else if (button == MouseButton.Right)
+				pbuttonDetails = &_rbutton;
+			else if (button == MouseButton.Middle)
+				pbuttonDetails = &_mbutton;
+			if (pbuttonDetails) {
+				if (action == MouseAction.ButtonDown) {
+					pbuttonDetails.down(cast(short)x, cast(short)y, lastFlags);
+				} else if (action == MouseAction.ButtonUp) {
+					pbuttonDetails.up(cast(short)x, cast(short)y, lastFlags);
+				}
+			}
+			event.lbutton = _lbutton;
+			event.rbutton = _rbutton;
+			event.mbutton = _mbutton;
+			bool res = dispatchMouseEvent(event);
+			if (res) {
+				debug(mouse) Log.d("Calling update() after mouse event");
+				invalidate();
+			}
+		}
+	}
+	uint _keyFlags;
+	
+	/**
+ 	* Process the next input event.
+ 	*/
+	int handle_input(AInputEvent* event) {
+		Log.i("handle input, event=", AInputEvent_getType(event));
+		auto et = AInputEvent_getType(event);
+		if (et == AINPUT_EVENT_TYPE_MOTION) {
+			auto action = AMotionEvent_getAction(event);
+			int x = cast(int)AMotionEvent_getX(event, 0);
+			int y = cast(int)AMotionEvent_getY(event, 0);
+			switch(action) {
+				case AMOTION_EVENT_ACTION_DOWN:
+					processMouseEvent(MouseAction.ButtonDown, 0, 0, x, y);
+					break;
+				case AMOTION_EVENT_ACTION_UP:
+					processMouseEvent(MouseAction.ButtonUp, 0, 0, x, y);
+					break;
+				case AMOTION_EVENT_ACTION_MOVE:
+					processMouseEvent(MouseAction.Move, 0, 0, x, y);
+					break;
+				case AMOTION_EVENT_ACTION_CANCEL:
+					processMouseEvent(MouseAction.Cancel, 0, 0, x, y);
+					break;
+				case AMOTION_EVENT_ACTION_OUTSIDE:
+					//processMouseEvent(MouseAction.Down, 0, 0, x, y);
+					break;
+				case AMOTION_EVENT_ACTION_POINTER_DOWN:
+					processMouseEvent(MouseAction.ButtonDown, 0, 0, x, y);
+					break;
+				case AMOTION_EVENT_ACTION_POINTER_UP:
+					processMouseEvent(MouseAction.ButtonUp, 0, 0, x, y);
+					break;
+				default:
+					break;
+			}
+			return 1;
+		} else if (et == AINPUT_EVENT_TYPE_KEY) {
+			return 1;
+		}
+		return 0;
+	}
 }
 
 /**
@@ -215,13 +302,10 @@ class AndroidPlatform : Platform {
  	*/
 	int handle_input(AInputEvent* event) {
 		Log.i("handle input, event=", AInputEvent_getType(event));
-		if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
-			_engine.animating = 1;
-			_engine.state.x = AMotionEvent_getX(event, 0);
-			_engine.state.y = AMotionEvent_getY(event, 0);
-			return 1;
-		}
-		return 0;
+		auto w = activeWindow;
+		if (!w)
+			return 0;
+		return w.handle_input(event);
 	}
 	
 	/**
