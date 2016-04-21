@@ -28,7 +28,7 @@ int __android_log_print(int prio, const(char)* tag, const(char)* fmt, ...);
 int __android_log_vprint(int prio, const(char)* tag, const(char)* fmt, va_list ap);
 void __android_log_assert(const(char)* cond, const(char)* tag, const(char)* fmt, ...);
 
-__gshared const(char) * ANDROID_LOG_TAG = "dlangui_app";
+__gshared const(char) * ANDROID_LOG_TAG = "dlangui";
 
 void LOGI(S...)(const(char) * fmt, S args) {
     __android_log_print(android_LogPriority.ANDROID_LOG_INFO, ANDROID_LOG_TAG, fmt, args);

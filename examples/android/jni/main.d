@@ -15,7 +15,7 @@
  *
  */
 
-version(Android):
+//version(Android):
 
 import core.stdc.stdlib : malloc;
 import core.stdc.string : memset;
@@ -142,12 +142,13 @@ class AndroidPlatform : Platform {
  	*/
 	int engine_init_display() {
 		// initialize OpenGL ES and EGL
+		Log.i("engine_init_display");
 		
 		/*
-     * Here specify the attributes of the desired configuration.
-     * Below, we select an EGLConfig with at least 8 bits per color
-     * component compatible with on-screen windows
-     */
+	     * Here specify the attributes of the desired configuration.
+    	 * Below, we select an EGLConfig with at least 8 bits per color
+	     * component compatible with on-screen windows
+     	*/
 		const(EGLint)[9] attribs = [
 			EGL_SURFACE_TYPE, EGL_WINDOW_BIT,
 			EGL_BLUE_SIZE, 8,
@@ -179,7 +180,8 @@ class AndroidPlatform : Platform {
 		ANativeWindow_setBuffersGeometry(_appstate.window, 0, 0, format);
 		
 		surface = eglCreateWindowSurface(display, config, _appstate.window, null);
-		context = eglCreateContext(display, config, null, null);
+		EGLint[3] contextAttrs = [EGL_CONTEXT_CLIENT_VERSION, 3, EGL_NONE];
+		context = eglCreateContext(display, config, null, contextAttrs.ptr);
 		
 		if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE) {
 			LOGW("Unable to eglMakeCurrent");
@@ -214,6 +216,7 @@ class AndroidPlatform : Platform {
 	 * Tear down the EGL context currently associated with the display.
 	 */
 	void engine_term_display() {
+		Log.i("engine_term_display");
 		if (_display != EGL_NO_DISPLAY) {
 			eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 			if (_context != EGL_NO_CONTEXT) {
@@ -234,6 +237,7 @@ class AndroidPlatform : Platform {
  	* Process the next input event.
  	*/
 	int handle_input(AInputEvent* event) {
+		Log.i("handle input, event=", AInputEvent_getType(event));
 		if (AInputEvent_getType(event) == AINPUT_EVENT_TYPE_MOTION) {
 			_engine.animating = 1;
 			_engine.state.x = AMotionEvent_getX(event, 0);
@@ -247,6 +251,7 @@ class AndroidPlatform : Platform {
 	 * Process the next main command.
 	 */
 	void handle_cmd(int cmd) {
+		Log.i("handle cmd=", cmd);
 		switch (cmd) {
 			case APP_CMD_SAVE_STATE:
 				// The system has asked us to save our current state.  Do so.
@@ -332,6 +337,7 @@ class AndroidPlatform : Platform {
 
 	GLDrawBuf _drawbuf;
 	void drawWindow(AndroidWindow w = null) {
+		Log.i("drawWindow");
 		if (w is null)
 			w = activeWindow;
 		else if (!(activeWindow is w))
@@ -528,7 +534,9 @@ extern (C) void android_main(android_app* state) {
 	
 	version (unittest) {
 	} else {
+		Log.i("Calling UIAppMain");
 		res = UIAppMain([]);
+		Log.i("UIAppMain returned with resultCode=", res);
 	}
 
     // loop waiting for stuff to do.

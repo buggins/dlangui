@@ -222,6 +222,7 @@ extern (C) void initLogs() {
         }
     } else version(Android) {
         Log.setLogTag("dlangui");
+        Log.setLogLevel(LogLevel.Trace);
     } else {
         Log.setStderrLogger();
     }

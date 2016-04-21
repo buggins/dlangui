@@ -74,7 +74,7 @@ mkdir -p build/$PLATFORM_DIR/
 
 echo "\nCompiling $OBJFILE...\n"
 #=========================================================
-$LDC/bin/ldc2 $LDC_PARAMS $SOURCE_PATHS $SOURCES -c -singleobj -of=$OBJFILE || die 2 "ldc2 build for $OBJFILE is failed"
+$LDC/bin/ldc2 $LDC_PARAMS $SOURCE_PATHS $SOURCES -d-debug -d-version=EmbedStandardResources -c -singleobj -of=$OBJFILE || die 2 "ldc2 build for $OBJFILE is failed"
 
 echo "\n\nLinking $TARGET...\n"
 #=========================================================

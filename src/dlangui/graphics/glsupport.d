@@ -74,6 +74,9 @@ import dlangui.graphics.scene.mesh;
 import dlangui.graphics.scene.effect;
 
 
+//extern (C) void func(int n);
+//pragma(msg, __traits(identifier, func));
+
 /**
  * Convenient wrapper around glGetError()
  * Using: checkgl!glFunction(funcParams);
@@ -83,7 +86,11 @@ template checkgl(alias func)
 {
     debug auto checkgl(string functionName=__FUNCTION__, int line=__LINE__, Args...)(Args args)
     {
-        scope(success) checkError(func.stringof, functionName, line);
+        version (Android) {
+            scope(success) checkError(__traits(identifier, func), functionName, line);
+        } else {
+            scope(success) checkError(func.stringof, functionName, line);
+        }
         return func(args);
     } else
         alias checkgl = func;
@@ -169,40 +176,42 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
         import std.string : toStringz, fromStringz;
 
         char[] sourceCode;
-        sourceCode ~= "#version ";
-        sourceCode ~= glslversionString;
-        sourceCode ~= "\n";
+        if (glslversionString.length) {
+            sourceCode ~= "#version ";
+            sourceCode ~= glslversionString;
+            sourceCode ~= "\n";
+        }
         sourceCode ~= src;
         compatibilityFixes(sourceCode, type);
 
-        Log.d("compileShader: glsl = ", glslversion, ", type: ", (type == GL_VERTEX_SHADER ? "GL_VERTEX_SHADER" : (type == GL_FRAGMENT_SHADER ? "GL_FRAGMENT_SHADER" : "UNKNOWN")));
+        Log.d("compileShader: glslVersion = ", glslversion, ", type: ", (type == GL_VERTEX_SHADER ? "GL_VERTEX_SHADER" : (type == GL_FRAGMENT_SHADER ? "GL_FRAGMENT_SHADER" : "UNKNOWN")));
         //Log.v("Shader code:\n", sourceCode);
-        GLuint shader = glCreateShader(type);
+        GLuint shader = checkgl!glCreateShader(type);
         const char * psrc = sourceCode.toStringz;
-        glShaderSource(shader, 1, &psrc, null);
-        glCompileShader(shader);
+        checkgl!glShaderSource(shader, 1, &psrc, null);
+        checkgl!glCompileShader(shader);
         GLint compiled;
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+        checkgl!glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
         if (compiled) {
             // compiled successfully
             return shader;
         } else {
+            Log.e("Failed to compile shader source:\n", sourceCode);
             GLint blen = 0;
             GLsizei slen = 0;
-            glGetShaderiv(shader, GL_INFO_LOG_LENGTH , &blen);
+            checkgl!glGetShaderiv(shader, GL_INFO_LOG_LENGTH , &blen);
             if (blen > 1)
             {
                 GLchar[] msg = new GLchar[blen + 1];
-                glGetShaderInfoLog(shader, blen, &slen, msg.ptr);
-                Log.d("Shader compilation error: ", fromStringz(msg.ptr));
+                checkgl!glGetShaderInfoLog(shader, blen, &slen, msg.ptr);
+                Log.e("Shader compilation error: ", fromStringz(msg.ptr));
             }
             return 0;
         }
     }
 
     bool compile() {
-        glslversion = std.string.fromStringz(cast(const char *)glGetString(GL_SHADING_LANGUAGE_VERSION)).dup;
-
+        glslversion = checkgl!fromStringz(cast(const char *)glGetString(GL_SHADING_LANGUAGE_VERSION)).dup;
         glslversionString.length = 0;
         glslversionInt = 0;
         foreach(ch; glslversion) {
@@ -212,6 +221,9 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
             } else if (ch != '.')
                 break;
         }
+        version (Android) {
+            glslversionInt = 130;
+        }
 
         vertexShader = compileShader(vertexSource, GL_VERTEX_SHADER);
         fragmentShader = compileShader(fragmentSource, GL_FRAGMENT_SHADER);
@@ -219,17 +231,17 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
             error = true;
             return false;
         }
-        program = glCreateProgram();
-        glAttachShader(program, vertexShader);
-        glAttachShader(program, fragmentShader);
-        glLinkProgram(program);
+        program = checkgl!glCreateProgram();
+        checkgl!glAttachShader(program, vertexShader);
+        checkgl!glAttachShader(program, fragmentShader);
+        checkgl!glLinkProgram(program);
         GLint isLinked = 0;
-        glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
+        checkgl!glGetProgramiv(program, GL_LINK_STATUS, &isLinked);
         if (!isLinked) {
             GLint maxLength = 0;
-            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
+            checkgl!glGetProgramiv(program, GL_INFO_LOG_LENGTH, &maxLength);
             GLchar[] msg = new GLchar[maxLength + 1];
-            glGetProgramInfoLog(program, maxLength, &maxLength, msg.ptr);
+            checkgl!glGetProgramInfoLog(program, maxLength, &maxLength, msg.ptr);
             Log.e("Error while linking program: ", fromStringz(msg.ptr));
             error = true;
             return false;
@@ -1309,7 +1321,7 @@ class GLVertexBuffer : VertexBuffer {
         for(int i = 0; i < _format.length; i++) {
             int loc = effect.getVertexElementLocation(_format[i].type);
             if (loc >= 0) {
-                checkgl!glVertexAttribPointer(loc, _format[i].size, GL_FLOAT, GL_FALSE, _format.vertexSize, cast(char*)(offset));
+                checkgl!glVertexAttribPointer(loc, _format[i].size, GL_FLOAT, cast(ubyte)GL_FALSE, _format.vertexSize, cast(char*)(offset));
                 checkgl!glEnableVertexAttribArray(loc);
             } else {
                 //Log.d("Attribute location not found for ", _format[i].type);
@@ -1402,7 +1414,7 @@ class DummyVertexBuffer : VertexBuffer {
         for(int i = 0; i < _format.length; i++) {
             int loc = effect.getVertexElementLocation(_format[i].type);
             if (loc >= 0) {
-                checkgl!glVertexAttribPointer(loc, _format[i].size, GL_FLOAT, GL_FALSE, _format.vertexSize, cast(char*)(offset));
+                checkgl!glVertexAttribPointer(loc, _format[i].size, GL_FLOAT, cast(ubyte)GL_FALSE, _format.vertexSize, cast(char*)(offset));
                 checkgl!glEnableVertexAttribArray(loc);
             } else {
                 //Log.d("Attribute location not found for ", _format[i].type);
