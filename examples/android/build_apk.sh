@@ -33,7 +33,7 @@ die () {
 
 echo "Updating ant project..."
 #=========================================================
-$SDK/tools/android update project -p . -s --target 1 || die 3 "Android Project update is failed"
+$SDK/tools/android update project -p . -s --target $ANDROID_TARGET || die 3 "Android Project update is failed"
 
 echo "Building APK..."
 #=========================================================

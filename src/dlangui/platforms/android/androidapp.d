@@ -89,17 +89,20 @@ class AndroidPlatform : Platform {
 	protected int _height;
 
 	this(android_app* state) {
+		Log.d("AndroidPlatform.this()");
 		_appstate = state;
 		memset(&_engine, 0, engine.sizeof);
+		Log.d("AndroidPlatform.this() - setting handlers");
 		state.userData = cast(void*)this;
 		state.onAppCmd = &engine_handle_cmd;
 		state.onInputEvent = &engine_handle_input;
 
-		if (state.savedState != null) {
-			// We are starting with a previous saved state; restore from it.
-			_engine.state = *cast(saved_state*)state.savedState;
-		}
-		
+		//Log.d("AndroidPlatform.this() - restoring saved state");
+		//if (state.savedState != null) {
+		//	// We are starting with a previous saved state; restore from it.
+		//	_engine.state = *cast(saved_state*)state.savedState;
+		//}
+		Log.d("AndroidPlatform.this() - done");
 	}
 
 	~this() {
@@ -221,15 +224,19 @@ class AndroidPlatform : Platform {
 	 * Process the next main command.
 	 */
 	void handle_cmd(int cmd) {
-		Log.i("handle cmd=", cmd);
+		if (_appstate.destroyRequested != 0) {
+			Log.w("handle_cmd: destroyRequested is set!!!");
+		}
 		switch (cmd) {
 			case APP_CMD_SAVE_STATE:
+				Log.d("APP_CMD_SAVE_STATE");
 				// The system has asked us to save our current state.  Do so.
 				_appstate.savedState = malloc(saved_state.sizeof);
 				*(cast(saved_state*)_appstate.savedState) = _engine.state;
 				_appstate.savedStateSize = saved_state.sizeof;
 				break;
 			case APP_CMD_INIT_WINDOW:
+				Log.d("APP_CMD_INIT_WINDOW");
 				// The window is being shown, get it ready.
 				if (_appstate.window != null) {
 					initDisplay();
@@ -237,20 +244,57 @@ class AndroidPlatform : Platform {
 				}
 				break;
 			case APP_CMD_TERM_WINDOW:
+				Log.d("APP_CMD_TERM_WINDOW");
 				// The window is being hidden or closed, clean it up.
 				termDisplay();
 				break;
 			case APP_CMD_GAINED_FOCUS:
+				Log.d("APP_CMD_GAINED_FOCUS");
 				// When our app gains focus
 				break;
 			case APP_CMD_LOST_FOCUS:
+				Log.d("APP_CMD_LOST_FOCUS");
 				// When our app loses focus
 				// This is to avoid consuming battery while not being used.
 				// Also stop animating.
 				_engine.animating = 0;
 				drawWindow();
 				break;
+			case APP_CMD_INPUT_CHANGED:
+				Log.d("APP_CMD_INPUT_CHANGED");
+				break;
+			case APP_CMD_WINDOW_RESIZED:
+				Log.d("APP_CMD_WINDOW_RESIZED");
+				break;
+			case APP_CMD_WINDOW_REDRAW_NEEDED:
+				Log.d("APP_CMD_WINDOW_REDRAW_NEEDED");
+				break;
+			case APP_CMD_CONTENT_RECT_CHANGED:
+				Log.d("APP_CMD_CONTENT_RECT_CHANGED");
+				break;
+			case APP_CMD_CONFIG_CHANGED:
+				Log.d("APP_CMD_CONFIG_CHANGED");
+				break;
+			case APP_CMD_LOW_MEMORY:
+				Log.d("APP_CMD_LOW_MEMORY");
+				break;
+			case APP_CMD_START:
+				Log.d("APP_CMD_START");
+				break;
+			case APP_CMD_RESUME:
+				Log.d("APP_CMD_RESUME");
+				break;
+			case APP_CMD_PAUSE:
+				Log.d("APP_CMD_PAUSE");
+				break;
+			case APP_CMD_STOP:
+				Log.d("APP_CMD_STOP");
+				break;
+			case APP_CMD_DESTROY:
+				Log.d("APP_CMD_DESTROY");
+				break;
 			default:
+				Log.i("unknown APP_CMD_XXX=", cmd);
 				break;
 		}
 	}
@@ -330,7 +374,7 @@ class AndroidPlatform : Platform {
 
 		eglSwapBuffers(_display, _surface);
 	}
-
+	
 	/**
      * Starts application message loop.
      * 
@@ -371,6 +415,7 @@ class AndroidPlatform : Platform {
 				
 				// Check if we are exiting.
 				if (_appstate.destroyRequested != 0) {
+					Log.w("destroyRequested is set: exiting message loop");
 					return 0;
 				}
 			}

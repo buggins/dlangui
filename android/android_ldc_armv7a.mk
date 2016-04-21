@@ -13,7 +13,7 @@ TARGET="libs/$PLATFORM_DIR/lib$LOCAL_MODULE.so"
 OBJFILE="build/$PLATFORM_DIR/lib$LOCAL_MODULE.o"
 
 LIBS="\
--L$NDK/platforms/android-19/arch-arm/usr/lib \
+-L$NDK/platforms/$ANDROID_TARGET/arch-arm/usr/lib \
 $LDC/lib/libphobos2-ldc.a \
 $LDC/lib/libdruntime-ldc.a \
 $LOCAL_LDLIBS \
@@ -23,7 +23,7 @@ $DLANGUI_LDLIBS \
 LINK_OPTIONS="\
 -Wl,-soname,libnative-activity.so \
 -shared \
---sysroot=$NDK/platforms/android-19/arch-arm \
+--sysroot=$NDK/platforms/$ANDROID_TARGET/arch-arm \
 -gcc-toolchain $NDK/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-$NDK_ARCH \
 -no-canonical-prefixes \
 -target armv7-none-linux-androideabi \

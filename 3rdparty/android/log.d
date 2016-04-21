@@ -39,6 +39,9 @@ void LOGE(S...)(const(char) * fmt, S args) {
 void LOGW(S...)(const(char) * fmt, S args) {
     __android_log_print(android_LogPriority.ANDROID_LOG_WARN, ANDROID_LOG_TAG, fmt, args);
 }
+void LOGD(S...)(const(char) * fmt, S args) {
+	__android_log_print(android_LogPriority.ANDROID_LOG_DEBUG, ANDROID_LOG_TAG, fmt, args);
+}
 void LOGV(S...)(const(char) * fmt, S args) {
     debug __android_log_print(android_LogPriority.ANDROID_LOG_VERBOSE, ANDROID_LOG_TAG, fmt, args);
 }

@@ -10,3 +10,6 @@ jni/app.d \
 
 # Additional libraries to link
 LOCAL_LDLIBS=""
+
+# Android SDK target
+ANDROID_TARGET="android-19"
