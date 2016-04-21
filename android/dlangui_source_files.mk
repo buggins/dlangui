@@ -3,6 +3,7 @@
 #echo "DLANGUI DIR: $DLANGUI_DIR"
 
 DLANGUI_SOURCES="\
+$DLANGUI_DIR/src/dlangui/platforms/android/androidapp.d \
 $DLANGUI_DIR/src/dlangui/platforms/common/startup.d \
 $DLANGUI_DIR/src/dlangui/platforms/common/platform.d \
 $DLANGUI_DIR/src/dlangui/dialogs/filedlg.d \

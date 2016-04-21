@@ -86,11 +86,7 @@ template checkgl(alias func)
 {
     debug auto checkgl(string functionName=__FUNCTION__, int line=__LINE__, Args...)(Args args)
     {
-        version (Android) {
-            scope(success) checkError(__traits(identifier, func), functionName, line);
-        } else {
-            scope(success) checkError(func.stringof, functionName, line);
-        }
+        scope(success) checkError(__traits(identifier, func), functionName, line);
         return func(args);
     } else
         alias checkgl = func;

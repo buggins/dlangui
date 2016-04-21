@@ -14,8 +14,8 @@ import dlangui.platforms.common.platform;
 
 import android.input, android.looper : ALooper_pollAll;
 import android.native_window : ANativeWindow_setBuffersGeometry;
-import android.sensor, android.log, android.android_native_app_glue;
-
+import android.configuration;
+import android.log, android.android_native_app_glue;
 
 /**
  * Window abstraction layer. Widgets can be shown only inside window.
@@ -87,10 +87,6 @@ class AndroidPlatform : Platform {
 	protected EGLContext _context;
 	protected int _width;
 	protected int _height;
-	protected ASensorManager* _sensorManager;
-	protected const(ASensor)* _accelerometerSensor;
-	protected ASensorEventQueue* _sensorEventQueue;
-
 
 	this(android_app* state) {
 		_appstate = state;
@@ -99,13 +95,6 @@ class AndroidPlatform : Platform {
 		state.onAppCmd = &engine_handle_cmd;
 		state.onInputEvent = &engine_handle_input;
 
-		// Prepare to monitor accelerometer
-		_sensorManager = ASensorManager_getInstance();
-		_accelerometerSensor = ASensorManager_getDefaultSensor(_sensorManager,
-			ASENSOR_TYPE_ACCELEROMETER);
-		_sensorEventQueue = ASensorManager_createEventQueue(_sensorManager,
-			state.looper, LOOPER_ID_USER, null, null);
-		
 		if (state.savedState != null) {
 			// We are starting with a previous saved state; restore from it.
 			_engine.state = *cast(saved_state*)state.savedState;
@@ -114,16 +103,16 @@ class AndroidPlatform : Platform {
 	}
 
 	~this() {
-		engine_term_display();
+		termDisplay();
 	}
 
 
 	/**
  	* Initialize an EGL context for the current display.
  	*/
-	int engine_init_display() {
+	int initDisplay() {
 		// initialize OpenGL ES and EGL
-		Log.i("engine_init_display");
+		Log.i("initDisplay");
 		
 		/*
 	     * Here specify the attributes of the desired configuration.
@@ -196,8 +185,8 @@ class AndroidPlatform : Platform {
 	/**
 	 * Tear down the EGL context currently associated with the display.
 	 */
-	void engine_term_display() {
-		Log.i("engine_term_display");
+	void termDisplay() {
+		Log.i("termDisplay");
 		if (_display != EGL_NO_DISPLAY) {
 			eglMakeCurrent(_display, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 			if (_context != EGL_NO_CONTEXT) {
@@ -243,31 +232,20 @@ class AndroidPlatform : Platform {
 			case APP_CMD_INIT_WINDOW:
 				// The window is being shown, get it ready.
 				if (_appstate.window != null) {
-					engine_init_display();
+					initDisplay();
 					drawWindow();
 				}
 				break;
 			case APP_CMD_TERM_WINDOW:
 				// The window is being hidden or closed, clean it up.
-				engine_term_display();
+				termDisplay();
 				break;
 			case APP_CMD_GAINED_FOCUS:
-				// When our app gains focus, we start monitoring the accelerometer.
-				if (_accelerometerSensor != null) {
-					ASensorEventQueue_enableSensor(_sensorEventQueue,
-						_accelerometerSensor);
-					// We'd like to get 60 events per second (in us).
-					ASensorEventQueue_setEventRate(_sensorEventQueue,
-						_accelerometerSensor, (1000L/60)*1000);
-				}
+				// When our app gains focus
 				break;
 			case APP_CMD_LOST_FOCUS:
-				// When our app loses focus, we stop monitoring the accelerometer.
+				// When our app loses focus
 				// This is to avoid consuming battery while not being used.
-				if (_accelerometerSensor != null) {
-					ASensorEventQueue_disableSensor(_sensorEventQueue,
-						_accelerometerSensor);
-				}
 				// Also stop animating.
 				_engine.animating = 0;
 				drawWindow();
@@ -378,6 +356,7 @@ class AndroidPlatform : Platform {
 				
 				// If a sensor has data, process it now.
 				if (ident == LOOPER_ID_USER) {
+					/*
 					if (_accelerometerSensor != null) {
 						ASensorEvent event;
 						while (ASensorEventQueue_getEvents(_sensorEventQueue,
@@ -387,6 +366,7 @@ class AndroidPlatform : Platform {
 								event.acceleration.z);
 						}
 					}
+					*/
 				}
 				
 				// Check if we are exiting.
@@ -446,18 +426,7 @@ struct saved_state {
  * Shared state for our app.
  */
 struct engine {
-    //android_app* app;
-
-    //ASensorManager* sensorManager;
-    //const(ASensor)* accelerometerSensor;
-    //ASensorEventQueue* sensorEventQueue;
-
     int animating;
-    //EGLDisplay display;
-    //EGLSurface surface;
-    //EGLContext context;
-    //int width;
-    //int height;
     saved_state state;
 }
 
@@ -478,6 +447,14 @@ extern(C) void engine_handle_cmd(android_app* app, int cmd) {
 }
 
 void main(){}
+
+int getDensityDpi(android_app * app) {
+	AConfiguration * config = AConfiguration_new();
+	AConfiguration_fromAssetManager(config, app.activity.assetManager);
+	int res = AConfiguration_getDensity(config);
+	AConfiguration_delete(config);
+	return res;
+}
 
 __gshared AndroidPlatform _platform;
 
@@ -501,6 +478,7 @@ extern (C) void android_main(android_app* state) {
         assert(false);
     }
     initResourceManagers();
+	SCREEN_DPI = getDensityDpi(state);
 
     currentTheme = createDefaultTheme();
 
