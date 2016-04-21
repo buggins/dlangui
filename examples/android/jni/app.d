@@ -29,10 +29,10 @@ extern (C) int UIAppMain(string[] args) {
 				colCount: 2
 						layoutWidth: fill
 					TextWidget { text: "param 1" }
-					EditLine { id: edit1; text: "some text"; layoutWidth: fill }
+					EditLine { id: edit1; text: "some text"; layoutWidth: fill; margins: 3pt }
 					TextWidget { text: "param 2" }
-					EditLine { id: edit2; text: "some text for param2"; layoutWidth: fill }
-					TextWidget { text: "some radio buttons" }
+					EditLine { id: edit2; text: "some text for param2"; layoutWidth: fill; margins: 3pt }
+					TextWidget { text: "Radio buttons" }
 					// arrange some radio buttons vertically
 					VerticalLayout {
 					layoutWidth: fill
@@ -40,11 +40,15 @@ extern (C) int UIAppMain(string[] args) {
 						RadioButton { id: rb2; text: "Item 2" }
 						RadioButton { id: rb3; text: "Item 3" }
 					}
-					TextWidget { text: "Switch:" }
-					SwitchWidget { checked: true }
-					TextWidget { text: "and checkboxes" }
+					TextWidget { text: "Switches:" }
+					VerticalLayout {
+						SwitchWidget { checked: true }
+						SwitchWidget { checked: false }
+						SwitchWidget { checked: true; enabled: false }
+					}
+					TextWidget { text: "Checkboxes:" }
 					// arrange some checkboxes horizontally
-					HorizontalLayout {
+					VerticalLayout {
 						layoutWidth: fill
 						CheckBox { id: cb1; text: "checkbox 1" }
 						CheckBox { id: cb2; text: "checkbox 2" }

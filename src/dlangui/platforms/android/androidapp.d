@@ -441,6 +441,9 @@ class AndroidPlatform : Platform {
 				break;
 			}
 		}
+		if (_windows.length == 0) {
+			_appstate.destroyRequested = true;
+		}
 	}
 
 	@property AndroidWindow activeWindow() {
