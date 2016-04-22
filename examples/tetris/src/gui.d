@@ -493,12 +493,14 @@ class StatusWidget : VerticalLayout {
     private TextWidget _rowsDestroyed;
     private TextWidget _score;
     private CupWidget _cup;
+    private TextWidget[] _labels;
     void setCup(CupWidget cup) {
         _cup = cup;
     }
     TextWidget createTextWidget(dstring str, uint color) {
         TextWidget res = new TextWidget(null, str);
-        res.layoutWidth(FILL_PARENT).alignment(Align.Center).fontSize(25).textColor(color);
+        res.layoutWidth(FILL_PARENT).alignment(Align.Center).fontSize(18.pointsToPixels).textColor(color);
+        _labels ~= res;
         return res;
     }
 
@@ -507,10 +509,12 @@ class StatusWidget : VerticalLayout {
         res.colCount = 3;
         foreach(const Action a; CUP_ACTIONS) {
             ImageButton btn = new ImageButton(a);
+            btn.padding = 5.pointsToPixels;
             btn.focusable = false;
             res.addChild(btn);
         }
-        res.layoutWidth(WRAP_CONTENT).layoutHeight(WRAP_CONTENT).margins(Rect(10, 10, 10, 10)).alignment(Align.Center);
+        res.alignment = Align.Center;
+        res.layoutWidth(WRAP_CONTENT).layoutHeight(WRAP_CONTENT).margins(Rect(10.pointsToPixels, 10.pointsToPixels, 10.pointsToPixels, 10.pointsToPixels)).alignment(Align.Center);
         return res;
     }
 
@@ -541,12 +545,27 @@ class StatusWidget : VerticalLayout {
         addChild(createTextWidget("Score:"d, 0x800000));
         addChild((_score = createTextWidget(""d, 0x800000)));
         addChild(new VSpacer());
-        addChild(createControls());
+        HorizontalLayout h = new HorizontalLayout();
+        h.layoutWidth = FILL_PARENT;
+        h.layoutHeight = FILL_PARENT;
+        h.addChild(new HSpacer());
+        h.addChild(createControls());
+        h.addChild(new HSpacer());
+        addChild(h);
         addChild(new VSpacer());
 
-        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).layoutWeight(2).padding(Rect(10, 10, 10, 10));
+        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).layoutWeight(2).padding(Rect(5.pointsToPixels, 5.pointsToPixels, 5.pointsToPixels, 5.pointsToPixels));
     }
 
+    /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
+    override void measure(int parentWidth, int parentHeight) {
+        int minw = min(parentWidth, parentHeight);
+        foreach(lbl; _labels) {
+            lbl.fontSize = minw / 20;
+        }
+        super.measure(parentWidth, parentHeight);
+    }
+    
     void setLevel(int level) {
         _level.text = toUTF32(to!string(level));
     }
@@ -574,6 +593,8 @@ class CupPage : HorizontalLayout {
         _status = new StatusWidget();
         _cup = new CupWidget(_status);
         _status.setCup(_cup);
+        _cup.layoutWidth = 50.makePercentSize;
+        _status.layoutWidth = 50.makePercentSize;
         addChild(_cup);
         addChild(_status);
     }

@@ -33,6 +33,8 @@ extern (C) int UIAppMain(string[] args) {
     // load theme from file "theme_default.xml"
     Platform.instance.uiTheme = "theme_default";
 
+    //SCREEN_DPI = 150;
+
     // create window
     Window window = Platform.instance.createWindow("DLangUI: Tetris game example"d, null, WindowFlag.Modal, 600, 400);
 
