@@ -177,7 +177,7 @@ protected:
 
 public:
     /// mouse movement processing flag (when true, widget will change Hover state while mouse is moving)
-    @property bool trackHover() const { return _trackHover; }
+    @property bool trackHover() const { return _trackHover && !TOUCH_MODE; }
     /// set new trackHover flag value (when true, widget will change Hover state while mouse is moving)
     @property Widget trackHover(bool v) { _trackHover = v; return this; }
 
@@ -1212,7 +1212,8 @@ public:
             if (event.action == MouseAction.Move) {
                 if (!(state & State.Hovered)) {
                     debug(mouse) Log.d("Hover ", id);
-                    setState(State.Hovered);
+                    if (!TOUCH_MODE)
+                        setState(State.Hovered);
                 }
                 return true;
             }
@@ -1820,3 +1821,4 @@ string generatePropertySettersMethodOverride(string methodName, string typeName,
 }
 
 
+__gshared bool TOUCH_MODE = false;

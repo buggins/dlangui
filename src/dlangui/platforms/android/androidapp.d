@@ -7,6 +7,7 @@ import core.stdc.string : memset;
 import dlangui.core.logger;
 
 import dlangui.widgets.styles;
+import dlangui.widgets.widget;
 import dlangui.graphics.drawbuf;
 import dlangui.graphics.gldrawbuf;
 import dlangui.graphics.glsupport;
@@ -650,6 +651,7 @@ extern (C) void android_main(android_app* state) {
     }
     initResourceManagers();
 	SCREEN_DPI = getDensityDpi(state);
+	TOUCH_MODE = true;
 	Log.i("SCREEN_DPI=", SCREEN_DPI);
 
     //currentTheme = createDefaultTheme();
