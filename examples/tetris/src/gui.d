@@ -514,7 +514,7 @@ class StatusWidget : VerticalLayout {
             res.addChild(btn);
         }
         res.alignment = Align.Center;
-        res.layoutWidth(WRAP_CONTENT).layoutHeight(WRAP_CONTENT).margins(Rect(10.pointsToPixels, 10.pointsToPixels, 10.pointsToPixels, 10.pointsToPixels)).alignment(Align.Center);
+        res.layoutWidth(WRAP_CONTENT).layoutHeight(WRAP_CONTENT).margins(Rect(5.pointsToPixels, 5.pointsToPixels, 5.pointsToPixels, 5.pointsToPixels)).alignment(Align.Center);
         return res;
     }
 
