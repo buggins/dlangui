@@ -177,43 +177,6 @@ class WidgetListAdapter : ListAdapterBase {
     }
 }
 
-/// string values string list adapter - each item can have optional string or integer id, and optional icon resource id
-struct StringListValue {
-    /// integer id for item
-    int intId;
-    /// string id for item
-    string stringId;
-    /// icon resource id
-    string iconId;
-    /// label to show for item
-    UIString label;
-
-    this(string id, dstring name, string iconId = null) {
-        this.stringId = id;
-        this.label = name;
-        this.iconId = iconId;
-    }
-    this(string id, string nameResourceId, string iconId = null) {
-        this.stringId = id;
-        this.label = nameResourceId;
-        this.iconId = iconId;
-    }
-    this(int id, dstring name, string iconId = null) {
-        this.intId = id;
-        this.label = name;
-        this.iconId = iconId;
-    }
-    this(int id, string nameResourceId, string iconId = null) {
-        this.intId = id;
-        this.label = nameResourceId;
-        this.iconId = iconId;
-    }
-    this(dstring name, string iconId = null) {
-        this.label = name;
-        this.iconId = iconId;
-    }
-}
-
 /** List adapter providing strings only. */
 class StringListAdapterBase : ListAdapterBase {
     protected UIStringCollection _items;
@@ -334,6 +297,40 @@ class StringListAdapterBase : ListAdapterBase {
             _intIds[i] = 0;
             _stringIds[i] = null;
             _iconIds[i] = null;
+            _states[i] = State.Enabled;
+        }
+        updateViews();
+        return this;
+    }
+
+    /** Replace items collection. */
+    @property StringListAdapterBase items(UIString[] values) { 
+        _items = values;
+        _intIds.length = items.length;
+        _states.length = _items.length;
+        _stringIds.length = items.length;
+        _iconIds.length = items.length;
+        for (int i = 0; i < _items.length; i++) {
+            _intIds[i] = 0;
+            _stringIds[i] = null;
+            _iconIds[i] = null;
+            _states[i] = State.Enabled;
+        }
+        updateViews();
+        return this;
+    }
+
+    /** Replace items collection. */
+    @property StringListAdapterBase items(StringListValue[] values) { 
+        _items = values;
+        _intIds.length = items.length;
+        _states.length = _items.length;
+        _stringIds.length = items.length;
+        _iconIds.length = items.length;
+        for (int i = 0; i < _items.length; i++) {
+            _intIds[i] = values[i].intId;
+            _stringIds[i] = values[i].stringId;
+            _iconIds[i] = values[i].iconId;
             _states[i] = State.Enabled;
         }
         updateViews();
@@ -1355,6 +1352,15 @@ class StringListWidget : ListWidget {
         requestLayout();
     }
     
+    /// StringListValue list values
+    override bool setStringListValueListProperty(string propName, StringListValue[] values) {
+        if (propName == "items") {
+            items = values;
+            return true;
+        }
+        return false;
+    }
+
     /// get selected item as text
     @property dstring selectedItem() {
         if (_selectedItemIndex < 0 || _selectedItemIndex >= _adapter.itemCount)

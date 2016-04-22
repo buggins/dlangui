@@ -41,9 +41,9 @@ enum TokenType : ushort {
     minus,
     /// + operator
     plus,
-    /// [
+    /// {
     curlyOpen,
-    /// ]
+    /// }
     curlyClose,
     /// (
     open,

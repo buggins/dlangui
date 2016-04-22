@@ -1570,6 +1570,16 @@ public:
         return false;
     }
 
+    /// StringListValue list values
+    bool setStringListValueListProperty(string propName, StringListValue[] values) {
+        return false;
+    }
+
+    /// UIString list values
+    bool setUIStringListProperty(string propName, UIString[] values) {
+        return false;
+    }
+
     /// set string property value, for ML loaders
     bool setBoolProperty(string name, bool value) {
         mixin(generatePropertySetters("enabled", "clickable", "checkable", "focusable", "checked", "fontItalic"));
@@ -1808,4 +1818,5 @@ string generatePropertySettersMethodOverride(string methodName, string typeName,
            "    }\n";
     return res;
 }
+
 

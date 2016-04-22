@@ -119,6 +119,8 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
     }
 
     protected void showPopup() {
+        if (!_adapter || !_adapter.itemCount)
+            return; // don't show empty popup
         _popupList = createPopup();
         _popup = window.showPopup(_popupList, this, PopupAlign.Below | PopupAlign.FitAnchorSize);
         _popup.flags = PopupFlags.CloseOnClickOutside;
@@ -233,11 +235,23 @@ class ComboBox : ComboBoxBase {
     }
 
     @property void items(StringListValue[] items) {
-        setAdapter(new StringListAdapter(items));
+        if (auto a = cast(StringListAdapter)_adapter)
+            a.items = items;
+        else
+            setAdapter(new StringListAdapter(items));
         if(items.length > 0) {
            selectedItemIndex = 0;
         }
         requestLayout();
+    }
+
+    /// StringListValue list values
+    override bool setStringListValueListProperty(string propName, StringListValue[] values) {
+        if (propName == "items") {
+            items = values;
+            return true;
+        }
+        return false;
     }
 
     /// get selected item as text
@@ -348,7 +362,10 @@ class IconTextComboBox : ComboBoxBase {
     }
 
     @property void items(StringListValue[] items) {
-        setAdapter(new IconStringListAdapter(items));
+        if (auto a = cast(IconStringListAdapter)_adapter)
+            a.items = items;
+        else
+            setAdapter(new IconStringListAdapter(items));
         if(items.length > 0) {
             selectedItemIndex = 0;
         }
@@ -451,18 +468,42 @@ class ComboEdit : ComboBox {
     /// empty parameter list constructor - for usage by factory
     this() {
         this(null);
+        postInit();
     }
     /// create with ID parameter
     this(string ID) {
         super(ID);
+        postInit();
     }
 
     this(string ID, string[] items) {
         super(ID, items);
+        postInit();
     }
 
     this(string ID, dstring[] items) {
         super(ID, items);
+        postInit();
+    }
+
+    protected void postInit() {
+        focusable = false;
+        clickable = false;
+        _edit.focusable = true;
+        keyEvent = delegate(Widget source, KeyEvent event) {
+            if (event.keyCode == KeyCode.DOWN) {
+                if (event.action == KeyAction.KeyDown) {
+                    showPopup();
+                }
+            }
+            return _edit.onKeyEvent(event);
+        };
+    }
+
+    // called to process click and notify listeners
+    override protected bool handleClick() {
+        _edit.setFocus();
+        return true;
     }
 
     @property bool readOnly() {
@@ -484,6 +525,8 @@ class ComboEdit : ComboBox {
         res.layoutHeight = WRAP_CONTENT;
         res.readOnly = false;
         _edit = res;
+        postInit();
+        //_edit.focusable = true;
         return res;
     }
 

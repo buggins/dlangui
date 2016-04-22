@@ -46,7 +46,7 @@ extern (C) int UIAppMain(string[] args) {
                     layoutWidth: fill
                     CheckBox { id: cb1; text: "checkbox 1" }
                     CheckBox { id: cb2; text: "checkbox 2" }
-                    ComboEdit { id: ce1; text: "some text"; }
+                    ComboEdit { id: ce1; text: "some text"; minWidth: 100; items: ["Item 1", "Item 2", "Additional item"] }
                 }
             }
             HorizontalLayout {

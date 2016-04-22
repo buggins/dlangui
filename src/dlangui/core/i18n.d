@@ -192,20 +192,42 @@ struct UIStringCollection {
         clear();
         addAll(items);
     }
-    /** Append array of string resource IDs */
-    void addAll(string[] items) {
-        foreach (string item; items) {
-            add(item);
-        }
-    }
     /** Assign array of unicode strings */
     void opAssign(dstring[] items) {
         clear();
         addAll(items);
     }
+    /** Assign array of UIString */
+    void opAssign(UIString[] items) {
+        clear();
+        addAll(items);
+    }
+    /** Assign array of StringListValue */
+    void opAssign(StringListValue[] items) {
+        clear();
+        addAll(items);
+    }
     /** Append array of unicode strings */
     void addAll(dstring[] items) {
-        foreach (dstring item; items) {
+        foreach (item; items) {
+            add(item);
+        }
+    }
+    /** Append array of unicode strings */
+    void addAll(string[] items) {
+        foreach (item; items) {
+            add(item);
+        }
+    }
+    /** Append array of unicode strings */
+    void addAll(UIString[] items) {
+        foreach (item; items) {
+            add(item);
+        }
+    }
+    /** Append array of unicode strings */
+    void addAll(StringListValue[] items) {
+        foreach (item; items) {
             add(item);
         }
     }
@@ -225,6 +247,10 @@ struct UIStringCollection {
         UIString s;
         s = item;
         add(s, index);
+    }
+    /** Insert StringListValue.label item into specified position */
+    void add(StringListValue item, int index = -1) {
+        add(item.label, index);
     }
     /** Insert UIString item into specified position */
     void add(UIString item, int index = -1) {
@@ -271,6 +297,43 @@ struct UIStringCollection {
         if (str.id !is null)
             return indexOf(str.id);
         return indexOf(str.value);
+    }
+}
+
+/// string values string list adapter - each item can have optional string or integer id, and optional icon resource id
+struct StringListValue {
+    /// integer id for item
+    int intId;
+    /// string id for item
+    string stringId;
+    /// icon resource id
+    string iconId;
+    /// label to show for item
+    UIString label;
+
+    this(string id, dstring name, string iconId = null) {
+        this.stringId = id;
+        this.label = name;
+        this.iconId = iconId;
+    }
+    this(string id, string nameResourceId, string iconId = null) {
+        this.stringId = id;
+        this.label = nameResourceId;
+        this.iconId = iconId;
+    }
+    this(int id, dstring name, string iconId = null) {
+        this.intId = id;
+        this.label = name;
+        this.iconId = iconId;
+    }
+    this(int id, string nameResourceId, string iconId = null) {
+        this.intId = id;
+        this.label = nameResourceId;
+        this.iconId = iconId;
+    }
+    this(dstring name, string iconId = null) {
+        this.label = name;
+        this.iconId = iconId;
     }
 }
 

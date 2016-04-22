@@ -181,6 +181,18 @@ class MLParser {
             error("unknown double property " ~ propName);
     }
 
+    protected void setStringListValueProperty(string propName, StringListValue[] values) {
+        if (!_currentWidget.setStringListValueListProperty(propName, values)) {
+            UIString[] strings;
+            foreach(value; values)
+                strings ~= value.label;
+            if (!_currentWidget.setUIStringListProperty(propName, strings)) {
+                error("unknown string list property " ~ propName);
+            }
+        }
+    }
+
+
     protected void setRectProperty(string propName, Rect value) {
         if (!_currentWidget.setRectProperty(propName, value))
             error("unknown Rect property " ~ propName);
@@ -300,6 +312,66 @@ class MLParser {
         setRectProperty(propName, Rect(values[0], values[1], values[2], values[3]));
     }
 
+    // something in []
+    protected void parseArrayProperty(string propName) {
+        // current token is Rect
+        nextToken();
+        skipWhitespaceAndEolsNoEof();
+        StringListValue[] values;
+        for (;;) {
+            if (_token.type == TokenType.squareClose)
+                break;
+            if (_token.type == TokenType.integer) {
+                if (_token.text.length)
+                    error("Integer literal suffixes not allowed for [] items");
+                StringListValue value;
+                value.intId = _token.intvalue;
+                value.label = UIString(to!dstring(_token.intvalue));
+                values ~= value;
+                nextToken();
+                skipWhitespaceAndEolsNoEof();
+                if (_token.type == TokenType.comma || _token.type == TokenType.semicolon) {
+                    nextToken();
+                    skipWhitespaceAndEolsNoEof();
+                }
+            } else if (_token.type == TokenType.ident) {
+                string name = _token.text;
+
+                StringListValue value;
+                value.stringId = name;
+                value.label = UIString(name);
+                values ~= value;
+
+                nextToken();
+                skipWhitespaceAndEolsNoEof();
+
+                if (_token.type == TokenType.comma || _token.type == TokenType.semicolon) {
+                    nextToken();
+                    skipWhitespaceAndEolsNoEof();
+                }
+            } else if (_token.type == TokenType.str) {
+                string name = _token.text;
+
+                StringListValue value;
+                value.stringId = name;
+                value.label = UIString(name.toUTF32);
+                values ~= value;
+
+                nextToken();
+                skipWhitespaceAndEolsNoEof();
+
+                if (_token.type == TokenType.comma || _token.type == TokenType.semicolon) {
+                    nextToken();
+                    skipWhitespaceAndEolsNoEof();
+                }
+            } else {
+                error("invalid [] item");
+            }
+
+        }
+        setStringListValueProperty(propName, values);
+    }
+
     protected void parseProperty() {
         if (_token.type != TokenType.ident)
             error("identifier expected");
@@ -323,6 +395,8 @@ class MLParser {
                     error("number expected after + and -");
             } else if (_token.type == TokenType.floating)
                 setFloatProperty(propName, _token.floatvalue);
+            else if (_token.type == TokenType.squareOpen)
+                parseArrayProperty(propName);
             else if (_token.type == TokenType.str)
                 setStringProperty(propName, _token.text);
             else if (_token.type == TokenType.ident) {
