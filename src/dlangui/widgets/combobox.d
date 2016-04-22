@@ -118,6 +118,9 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         _button.layout(rc);
     }
 
+    protected void popupClosed() {
+    }
+
     protected void showPopup() {
         if (!_adapter || !_adapter.itemCount)
             return; // don't show empty popup
@@ -138,6 +141,7 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
             if (_popup !is null) {
                 _popup.close();
                 _popup = null;
+                popupClosed();
             }
             return true;
         };
@@ -490,14 +494,29 @@ class ComboEdit : ComboBox {
         focusable = false;
         clickable = false;
         _edit.focusable = true;
-        keyEvent = delegate(Widget source, KeyEvent event) {
-            if (event.keyCode == KeyCode.DOWN) {
-                if (event.action == KeyAction.KeyDown) {
-                    showPopup();
-                }
+    }
+
+    /// process key event, return true if event is processed.
+    override bool onKeyEvent(KeyEvent event) {
+        if (event.keyCode == KeyCode.DOWN && enabled) {
+            if (event.action == KeyAction.KeyDown) {
+                showPopup();
             }
-            return _edit.onKeyEvent(event);
-        };
+            return true;
+        }
+        if ((event.keyCode == KeyCode.SPACE || event.keyCode == KeyCode.RETURN) && readOnly && enabled) {
+            if (event.action == KeyAction.KeyDown) {
+                showPopup();
+            }
+            return true;
+        }
+        if (_edit.onKeyEvent(event))
+            return true;
+        return super.onKeyEvent(event);
+    }
+
+    override protected void popupClosed() {
+        _edit.setFocus();
     }
 
     // called to process click and notify listeners

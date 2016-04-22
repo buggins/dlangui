@@ -49,6 +49,7 @@ extern (C) int UIAppMain(string[] args) {
                     ComboEdit { id: ce1; text: "some text"; minWidth: 100; items: ["Item 1", "Item 2", "Additional item"] }
                 }
             }
+            EditBox { layoutWidth: 300; layoutHeight: 80 }
             HorizontalLayout {
                 Button { id: btnOk; text: "Ok" }
                 Button { id: btnCancel; text: "Cancel" }
