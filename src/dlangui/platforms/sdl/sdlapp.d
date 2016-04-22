@@ -1749,7 +1749,7 @@ int sdlmain(string[] args) {
 
     SDL_DisplayMode displayMode;
     if (SDL_Init(SDL_INIT_VIDEO|SDL_INIT_TIMER|SDL_INIT_EVENTS|SDL_INIT_NOPARACHUTE) != 0) {
-        Log.e("Cannot init SDL2");    
+        Log.e("Cannot init SDL2: ", SDL_GetError().to!string());
         return 2;
     }
     scope(exit)SDL_Quit();
