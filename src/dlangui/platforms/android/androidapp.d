@@ -301,7 +301,7 @@ class AndroidPlatform : Platform {
 			}
 			eglTerminate(_display);
 		}
-		_engine.animating = 0;
+		//_engine.animating = 0;
 		_display = EGL_NO_DISPLAY;
 		_context = EGL_NO_CONTEXT;
 		_surface = EGL_NO_SURFACE;
@@ -317,7 +317,9 @@ class AndroidPlatform : Platform {
 			return 0;
 		return w.handle_input(event);
 	}
-	
+
+
+	bool _appFocused;
 	/**
 	 * Process the next main command.
 	 */
@@ -349,13 +351,15 @@ class AndroidPlatform : Platform {
 			case APP_CMD_GAINED_FOCUS:
 				Log.d("APP_CMD_GAINED_FOCUS");
 				// When our app gains focus
+				_appFocused = true;
 				break;
 			case APP_CMD_LOST_FOCUS:
 				Log.d("APP_CMD_LOST_FOCUS");
 				// When our app loses focus
 				// This is to avoid consuming battery while not being used.
 				// Also stop animating.
-				_engine.animating = 0;
+				//_engine.animating = 0;
+				_appFocused = false;
 				drawWindow();
 				break;
 			case APP_CMD_INPUT_CHANGED:
@@ -398,6 +402,13 @@ class AndroidPlatform : Platform {
 				break;
 		}
 	}
+
+	@property bool isAnimationActive() {
+		auto w = activeWindow;
+		return (w && w.isAnimationActive && _appFocused);
+	}
+	
+
 
 	void sendRedrawEvent(AndroidWindow w, uint redrawEventCode) {
 		import core.stdc.stdio;
@@ -505,7 +516,7 @@ class AndroidPlatform : Platform {
 			// If not animating, we will block forever waiting for events.
 			// If animating, we loop until all events are read, then continue
 			// to draw the next frame of animation.
-			while ((ident=ALooper_pollAll(_engine.animating ? 0 : -1, null, &events,
+			while ((ident=ALooper_pollAll(isAnimationActive ? 0 : -1, null, &events,
 						cast(void**)&source)) >= 0) {
 				
 				// Process this event.
@@ -535,7 +546,7 @@ class AndroidPlatform : Platform {
 				}
 			}
 			
-			if (_engine.animating) {
+			if (isAnimationActive) {
 				// Done with events; draw next animation frame.
 				_engine.state.angle += .01f;
 				if (_engine.state.angle > 1) {
@@ -586,7 +597,7 @@ struct saved_state {
  * Shared state for our app.
  */
 struct engine {
-    int animating;
+    //int animating;
     saved_state state;
 }
 

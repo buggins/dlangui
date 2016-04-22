@@ -1048,14 +1048,21 @@ class Window : CustomEventTarget {
             checkUpdateNeeded(_tooltip.popup, needDraw, needLayout, animationActive);
         return needDraw || needLayout || animationActive;
     }
+
+    protected bool _animationActive;
+
+    @property bool isAnimationActive() {
+        return _animationActive;
+    }
+
     /// requests update for window (unless force is true, update will be performed only if layout, redraw or animation is required).
     void update(bool force = false) {
         if (_mainWidget is null)
             return;
         bool needDraw = false;
         bool needLayout = false;
-        bool animationActive = false;
-        if (checkUpdateNeeded(needDraw, needLayout, animationActive) || force) {
+        _animationActive = false;
+        if (checkUpdateNeeded(needDraw, needLayout, _animationActive) || force) {
             debug(DebugRedraw) Log.d("Requesting update");
             invalidate();
         }
