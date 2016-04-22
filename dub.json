@@ -50,10 +50,10 @@
             "versions-windows": ["Unicode"],
             "dependencies": {
                 "derelict-gl3": "~>1.0.18",
-                "derelict-ft": "~>1.0.2"
+                "derelict-ft": "~>1.1.2"
             },
             "dependencies-posix": {
-                "derelict-sdl2": "~>1.9.7"
+                "derelict-sdl2": "~>2.0.0"
             },
             "copyFiles-windows-x86_64": [
                 "libs/windows/x86_64/libfreetype-6.dll"
@@ -69,8 +69,8 @@
             "versions-windows": ["Unicode" ,"NO_OPENGL"],
             "dependencies-posix": {
                 "derelict-gl3": "~>1.0.18",
-                "derelict-sdl2": "~>1.9.7",
-                "derelict-ft": "~>1.0.2"
+                "derelict-sdl2": "~>2.0.0",
+                "derelict-ft": "~>1.1.2"
             }
         },
         {
@@ -79,7 +79,7 @@
             "versions-windows": ["Unicode"],
             "dependencies": {
                 "derelict-gl3": "~>1.0.18",
-                "derelict-ft": "~>1.1.0",
+                "derelict-ft": "~>1.1.2",
                 "derelict-sdl2": "~>2.0.0"
             },
             "copyFiles-windows-x86_64": [
@@ -97,7 +97,7 @@
             "versions-windows": ["Unicode"],
             "dependencies": {
                 "derelict-gl3": "~>1.0.18",
-                "derelict-ft": "~>1.0.2",
+                "derelict-ft": "~>1.1.2",
                 "x11": "~>1.0.13"
             }
         },
@@ -107,7 +107,7 @@
             "versions-windows": ["Unicode"],
             "dependencies": {
                 "derelict-gl3": "~>1.0.18",
-                "derelict-ft": "~>1.0.2",
+                "derelict-ft": "~>1.1.2",
                 "dsfml": "~>2.1.0"
             },
             "copyFiles-windows-x86_64": [
