@@ -474,11 +474,15 @@ class ComboEdit : ComboBox {
         return this;
     }
 
+    /// set bool property value, for ML loaders
+    mixin(generatePropertySettersMethodOverride("setBoolProperty", "bool",
+                                                "readOnly"));
+
     override protected Widget createSelectedItemWidget() {
         EditLine res = new EditLine("COMBOBOX_BODY");
         res.layoutWidth = FILL_PARENT;
         res.layoutHeight = WRAP_CONTENT;
-        res.readOnly = true;
+        res.readOnly = false;
         _edit = res;
         return res;
     }
