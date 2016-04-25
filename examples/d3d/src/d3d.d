@@ -16,10 +16,6 @@ import dlangui.graphics.gldrawbuf;
 import derelict.opengl3.gl3;
 import derelict.opengl3.gl;
 
-import dminer.core.world;
-import dminer.core.minetypes;
-import dminer.core.blocks;
-
 mixin APP_ENTRY_POINT;
 
 /// entry point for dlangui based application
@@ -46,7 +42,7 @@ extern (C) int UIAppMain(string[] args) {
 
 static if (ENABLE_OPENGL):
 
-class UiWidget : VerticalLayout, CellVisitor {
+class UiWidget : VerticalLayout {
     this() {
         super("OpenGLView");
         layoutWidth = FILL_PARENT;
@@ -184,43 +180,6 @@ class UiWidget : VerticalLayout, CellVisitor {
         brickNode.drawable = new Model(brickMaterial, brickMesh);
         _scene.addChild(brickNode);
 
-        _minerMesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, VertexElementType.COLOR, VertexElementType.TEXCOORD0));
-        _world = new World();
-        _world.setCell(0, 11, 10, 2);
-        _world.setCell(5, 11, 15, 2);
-        for (int x = -100; x < 100; x++)
-            for (int z = -100; z < 100; z++)
-                _world.setCell(x, 0, z, 2);
-        Random rnd;
-        rnd.setSeed(12345);
-        for(int i = 0; i < 1000; i++) {
-            int bx = rnd.next(6)-32;
-            int by = rnd.next(4); 
-            int bz = rnd.next(6)-32;
-            //Log.fd("Setting cell %d,%d,%d", bx, by, bz);
-            _world.setCell(bx, by, bz, 3);
-        }
-
-        _world.camPosition = Position(Vector3d(0, 3, 0), Vector3d(0, 0, 1));
-        updateMinerMesh();
-
-        Material minerMaterial = new Material(EffectId("textured.vert", "textured.frag", null), "blocks");
-        //minerMaterial.textureLinear = false;
-        Model minerDrawable = new Model(minerMaterial, _minerMesh);
-        Node3d minerNode = new Node3d("miner", minerDrawable);
-        _scene.addChild(minerNode);
-
-
-        //minerNode.visible = false;
-        //cubeNode.visible = false;
-
-        //CellVisitor visitor = new TestVisitor();
-        //Log.d("Testing cell visitor");
-        //long ts = currentTimeMillis;
-        //_world.visitVisibleCells(_world.camPosition, visitor);
-        //long duration = currentTimeMillis - ts;
-        //Log.d("DiamondVisitor finished in ", duration, " ms");
-        //destroy(w);
     }
 
     Node3d dirLightNode;
@@ -272,23 +231,6 @@ class UiWidget : VerticalLayout, CellVisitor {
         childById("lblRotationZ").text = to!dstring(rotationZ);
     }
 
-    void visit(World world, ref Position camPosition, Vector3d pos, cell_t cell, int visibleFaces) {
-        BlockDef def = BLOCK_DEFS[cell];
-        def.createFaces(world, world.camPosition, pos, visibleFaces, _minerMesh);
-    }
-    
-    void updateMinerMesh() {
-        _minerMesh.reset();
-        long ts = currentTimeMillis;
-        _world.visitVisibleCells(_world.camPosition, this);
-        long duration = currentTimeMillis - ts;
-        Log.d("DiamondVisitor finished in ", duration, " ms  ", "Vertex count: ", _minerMesh.vertexCount);
-        for (int i = 0; i < 20; i++)
-            Log.d("vertex: ", _minerMesh.vertex(i));
-    }
-
-    World _world;
-
     /// returns true is widget is being animated - need to call animate() and redraw
     @property override bool animating() { return true; }
     /// animates window; interval is time left from previous draw, in hnsecs (1/10000000 of second)
@@ -307,90 +249,17 @@ class UiWidget : VerticalLayout, CellVisitor {
 
     Scene3dRef _scene;
     Camera _cam;
-    Mesh _minerMesh;
-
 
     /// this is OpenGLDrawableDelegate implementation
     private void doDraw(Rect windowRect, Rect rc) {
         _cam.setPerspective(rc.width, rc.height, 45.0f, near, far);
         _cam.setIdentity();
-        //_cam.translate(vec3(
-        //     childById!ScrollBar("sbTranslationX").position / 10.0f,
-        //     childById!ScrollBar("sbTranslationY").position / 10.0f,
-        //     childById!ScrollBar("sbTranslationZ").position / 10.0f));
         _cam.translateX(translationX);
         _cam.translateY(translationY);
         _cam.translateZ(translationZ);
         _cam.rotateX(rotationX);
         _cam.rotateY(rotationY);
         _cam.rotateZ(rotationZ);
-
-        //Log.d("camPosition: ", _scene.cameraPosition);
-        //Log.d("camDirection: ", _scene.forwardVectorWorld);
-        //Log.d("lightPosition: ", dirLightNode.light.position);
-        //Log.d("lightDirection: ", dirLightNode.light.direction);
-        //Log.d("lightColor: ", dirLightNode.light.color);
-
-        //_cam.translate(vec3(-1, -1.5, -1)); // - angle/1000
-        //_cam.translate(vec3(0, 0, -1.1)); // - angle/1000
-        //_cam.translate(vec3(0, 3,  - angle/1000)); //
-        //_cam.rotateZ(30.0f + angle * 0.3456778);
-
-        mat4 projectionViewMatrix = _cam.projectionViewMatrix;
-
-        // ======== Model Matrix ==================
-        mat4 modelMatrix;
-        //modelMatrix.scale(0.1f);
-        //modelMatrix.rotatez(30.0f + angle * 0.3456778);
-        //modelMatrix.rotatey(25);
-        //modelMatrix.rotatex(15);
-        //modelMatrix.rotatey(angle);
-        //modelMatrix.rotatex(angle * 1.98765f);
-
-        mat4 projectionViewModelMatrix = projectionViewMatrix * modelMatrix;
-        //Log.d("projectionViewModelMatrix: ", projectionViewModelMatrix.dump);
-
-        //{
-        //    mat4 projection;
-        //    projection.setPerspective(45.0f, cast(float)rc.width / rc.height, near, far);
-        //    mat4 view;
-        //    view.translate(translationX, translationY, translationZ);
-        //    Log.d("    .viewMatrix.trans       ", view.dump);
-        //    view.rotateX(rotationX);
-        //    Log.d("    .viewMatrix.rx          ", view.dump);
-        //    view.rotateY(rotationY);
-        //    Log.d("    .viewMatrix.ry          ", view.dump);
-        //    view.rotateZ(rotationZ);
-        //    Log.d("    .viewMatrix.rz          ", view.dump);
-        //    mat4 projectionView = projection * view;
-        //    Log.d("    .projectionMatrix:      ", projection.dump);
-        //    Log.d("    .viewMatrix:            ", view.dump);
-        //    Log.d("    .projectionViewMatrix:  ", projectionView.dump);
-        //    Log.d("    .projectionViewMMatrix: ", (projectionView * modelMatrix).dump);
-        //}
-
-        //{
-        //    import gl3n.linalg;
-        //    static string dump(mat4 m) {
-        //        m.transpose;
-        //        return to!string(m[0]) ~ to!string(m[1]) ~ to!string(m[2]) ~ to!string(m[3]);
-        //    }
-        //    static float toRad(float angle) { return angle * 2 * PI / 360; }
-        //    mat4 projection = mat4.perspective(rc.width, rc.height, 45.0f, near, far);
-        //    mat4 view = mat4.identity.translate(translationX, translationY, translationZ).rotatex(toRad(rotationX)).rotatey(toRad(rotationY)).rotatez(toRad(rotationZ));
-        //    Log.d("gl3n.viewMatrix: tr         ", dump(mat4.identity.translate(translationX, translationY, translationZ)));
-        //    Log.d("gl3n.viewMatrix: rx         ", dump(mat4.identity.translate(translationX, translationY, translationZ).rotatex(toRad(rotationX))));
-        //    Log.d("gl3n.viewMatrix: ry         ", dump(mat4.identity.translate(translationX, translationY, translationZ).rotatex(toRad(rotationX)).rotatey(toRad(rotationY))));
-        //    Log.d("gl3n.viewMatrix: rz         ", dump(mat4.identity.translate(translationX, translationY, translationZ).rotatex(toRad(rotationX)).rotatey(toRad(rotationY)).rotatez(toRad(rotationZ))));
-        //    mat4 projectionView = projection * view;
-        //    Log.d("gl3n.projectionMatrix:      ", dump(projection));
-        //    Log.d("gl3n.viewMatrix:            ", dump(view));
-        //    Log.d("gl3n.projectionViewMatrix:  ", dump(projectionView));
-        //    Log.d("gl3n.projectionViewMMatrix: ", dump(projectionView * mat4.identity));
-        //}
-
-        //projectionViewModelMatrix.setIdentity();
-        //Log.d("matrix uniform: ", projectionViewModelMatrix.m);
 
         checkgl!glEnable(GL_CULL_FACE);
         //checkgl!glDisable(GL_CULL_FACE);
@@ -404,19 +273,5 @@ class UiWidget : VerticalLayout, CellVisitor {
     }
 
     ~this() {
-        destroy(_world);
     }
 }
-
-class TestVisitor : CellVisitor {
-    //void newDirection(ref Position camPosition) {
-    //    Log.d("TestVisitor.newDirection");
-    //}
-    //void visitFace(World world, ref Position camPosition, Vector3d pos, cell_t cell, Dir face) {
-    //    Log.d("TestVisitor.visitFace ", pos, " cell=", cell, " face=", face);
-    //}
-    void visit(World world, ref Position camPosition, Vector3d pos, cell_t cell, int visibleFaces) {
-        //Log.d("TestVisitor.visit ", pos, " cell=", cell);
-    }
-}
-
