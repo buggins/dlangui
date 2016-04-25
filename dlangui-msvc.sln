@@ -50,6 +50,11 @@ Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "ircclient", "examples\irccl
 		{52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5} = {52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5}
 	EndProjectSection
 EndProject
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dminer", "examples\dminer\dminer.visualdproj", "{5F443F6A-6612-4404-B89E-D0D0205DC8E5}"
+	ProjectSection(ProjectDependencies) = postProject
+		{52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5} = {52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Win32 = Debug|Win32
@@ -173,6 +178,16 @@ Global
 		{20722E6B-CA27-467F-8BB8-07F80106B478}.Unittest|Win32.Build.0 = Release|Win32
 		{20722E6B-CA27-467F-8BB8-07F80106B478}.Unittest|x64.ActiveCfg = Release|Win32
 		{20722E6B-CA27-467F-8BB8-07F80106B478}.Unittest|x64.Build.0 = Release|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC8E5}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC8E5}.Debug|Win32.Build.0 = Debug|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC8E5}.Debug|x64.ActiveCfg = Debug|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC8E5}.Release|Win32.ActiveCfg = Release|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC8E5}.Release|Win32.Build.0 = Release|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC8E5}.Release|x64.ActiveCfg = Release|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC8E5}.Unittest|Win32.ActiveCfg = Release|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC8E5}.Unittest|Win32.Build.0 = Release|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC8E5}.Unittest|x64.ActiveCfg = Release|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC8E5}.Unittest|x64.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

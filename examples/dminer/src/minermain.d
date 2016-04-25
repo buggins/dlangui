@@ -1,0 +1,380 @@
+module minermain;
+
+import dlangui;
+import dlangui.graphics.scene.scene3d;
+import dlangui.graphics.scene.camera;
+import dlangui.graphics.scene.mesh;
+import dlangui.graphics.scene.material;
+import dlangui.graphics.scene.effect;
+import dlangui.graphics.scene.model;
+import dlangui.graphics.scene.node;
+import dlangui.graphics.scene.light;
+import dlangui.graphics.glsupport;
+import dlangui.graphics.gldrawbuf;
+import dlangui.graphics.scene.effect;
+import derelict.opengl3.gl3;
+import derelict.opengl3.gl;
+
+import dminer.core.world;
+import dminer.core.minetypes;
+import dminer.core.blocks;
+
+mixin APP_ENTRY_POINT;
+
+/// entry point for dlangui based application
+extern (C) int UIAppMain(string[] args) {
+    // embed resources listed in views/resources.list into executable
+    embeddedResourceList.addResources(embedResourcesFromList!("resources.list")());
+    //embeddedResourceList.dumpEmbeddedResources();
+
+    // create window
+    Window window = Platform.instance.createWindow("DlangUI Voxel RPG", null, WindowFlag.Resizable, 600, 500);
+    window.mainWidget = new UiWidget();
+
+    //MeshPart part = new MeshPart();
+
+    // show window
+    window.show();
+
+    // run message loop
+    return Platform.instance.enterMessageLoop();
+}
+
+class UiWidget : VerticalLayout, CellVisitor {
+    this() {
+        super("OpenGLView");
+        layoutWidth = FILL_PARENT;
+        layoutHeight = FILL_PARENT;
+        alignment = Align.Center;
+        try {
+            parseML(q{
+                {
+                  margins: 0
+                  padding: 0
+                  //backgroundImageId: "tx_fabric.tiled"
+                  backgroundColor: 0x000000;
+                  layoutWidth: fill
+                  layoutHeight: fill
+
+                  VerticalLayout {
+                    id: glView
+                    margins: 0
+                    padding: 0
+                    layoutWidth: fill
+                    layoutHeight: fill
+                    TextWidget { text: "MinerD example"; textColor: "red"; fontSize: 150%; fontWeight: 800; fontFace: "Arial" }
+                    VSpacer { layoutWeight: 30 }
+                    TextWidget { id: lblPosition; text: ""; backgroundColor: 0x80202020; textColor: 0xFFE0E0 }
+                  }
+                }
+            }, "", this);
+        } catch (Exception e) {
+            Log.e("Failed to parse dml", e);
+        }
+        // assign OpenGL drawable to child widget background
+        childById("glView").backgroundDrawable = DrawableRef(new OpenGLDrawable(&doDraw));
+
+        _scene = new Scene3d();
+
+        _cam = new Camera();
+        _cam.translate(vec3(0, 14, -7));
+
+        _scene.activeCamera = _cam;
+
+        dirLightNode = new Node3d();
+        dirLightNode.rotateY(-15);
+        dirLightNode.translateX(2);
+        dirLightNode.translateY(3);
+        dirLightNode.translateZ(0);
+        dirLightNode.light = Light.createPoint(vec3(2, 2, 2), 15); //Light.createDirectional(vec3(1, 0.5, 0.5));
+        dirLightNode.light.enabled = true;
+        _scene.addChild(dirLightNode);
+
+
+        int x0 = 0;
+        int y0 = 0;
+        int z0 = 0;
+
+
+        _minerMesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, VertexElementType.COLOR, VertexElementType.TEXCOORD0));
+        _world = new World();
+
+        initWorldTerrain(_world);
+
+        int cy0 = 3;
+        for (int y = CHUNK_DY - 1; y > 0; y--)
+            if (!_world.canPass(Vector3d(0, y, 0))) {
+                cy0 = y;
+                break;
+            }
+        _world.camPosition = Position(Vector3d(0, cy0, 0), Vector3d(0, 0, 1));
+
+        _world.setCellRange(Vector3d(3, 11, 5), Vector3d(1, 100, 1), 1);
+        _world.setCellRange(Vector3d(13, 11, -5), Vector3d(1, 100, 1), 3);
+        _world.setCellRange(Vector3d(-6, 11, 10), Vector3d(1, 100, 1), 4);
+        _world.setCellRange(Vector3d(-8, 11, 15), Vector3d(1, 100, 1), 5);
+        _world.setCellRange(Vector3d(12, 11, -7), Vector3d(1, 100, 1), 6);
+        _world.setCellRange(Vector3d(5, 11, 9), Vector3d(1, 100, 1), 7);
+        _world.setCellRange(Vector3d(9, 11, 5), Vector3d(1, 100, 1), 7);
+        _world.setCellRange(Vector3d(-5, 11, 9), Vector3d(1, 100, 1), 7);
+        _world.setCellRange(Vector3d(9, 11, -5), Vector3d(1, 100, 1), 7);
+        _world.setCellRange(Vector3d(5, 11, -9), Vector3d(1, 100, 1), 7);
+        _world.setCellRange(Vector3d(-9, 11, 5), Vector3d(1, 100, 1), 7);
+        _world.setCellRange(Vector3d(7, 11, 3), Vector3d(1, 100, 1), 8);
+        _world.setCellRange(Vector3d(-7, 11, 3), Vector3d(1, 100, 1), 8);
+        _world.setCellRange(Vector3d(7, 11, -3), Vector3d(1, 100, 1), 8);
+        _world.setCellRange(Vector3d(-7, 11, 3), Vector3d(1, 100, 1), 8);
+
+        updateCamPosition(false);
+        updateMinerMesh();
+
+        Material minerMaterial = new Material(EffectId("textured.vert", "textured.frag", null), "blocks");
+        minerMaterial.ambientColor = vec3(0.2,0.2,0.2);
+        minerMaterial.textureLinear = false;
+        Model minerDrawable = new Model(minerMaterial, _minerMesh);
+        Node3d minerNode = new Node3d("miner", minerDrawable);
+        _scene.addChild(minerNode);
+
+
+        focusable = true;
+    }
+
+    /// process key event, return true if event is processed.
+    override bool onKeyEvent(KeyEvent event) {
+        if (event.action == KeyAction.KeyDown) {
+            switch(event.keyCode) with(KeyCode) {
+                case KEY_W:
+                case UP:
+                    _world.camPosition.forward(1);
+                    updateCamPosition();
+                    return true;
+                case DOWN:
+                case KEY_S:
+                    _world.camPosition.backward(1);
+                    updateCamPosition();
+                    return true;
+                case KEY_A:
+                case LEFT:
+                    _world.camPosition.turnLeft();
+                    updateCamPosition();
+                    return true;
+                case KEY_D:
+                case RIGHT:
+                    _world.camPosition.turnRight();
+                    updateCamPosition();
+                    return true;
+                case HOME:
+                case KEY_E:
+                    _world.camPosition.moveUp();
+                    updateCamPosition();
+                    return true;
+                case END:
+                case KEY_Q:
+                    _world.camPosition.moveDown();
+                    updateCamPosition();
+                    return true;
+                case KEY_Z:
+                    _world.camPosition.moveLeft();
+                    updateCamPosition();
+                    return true;
+                case KEY_C:
+                    _world.camPosition.moveRight();
+                    updateCamPosition();
+                    return true;
+                case KEY_F:
+                    flying = !flying;
+                    if (!flying)
+                        _world.camPosition.pos.y = CHUNK_DY - 3;
+                    updateCamPosition();
+                    return true;
+                case KEY_U:
+                    enableMeshUpdate = !enableMeshUpdate;
+                    updateCamPosition();
+                    return true;
+                default:
+                    return false;
+            }
+        }
+        return false;
+    }
+
+    Node3d dirLightNode;
+
+    void visit(World world, ref Position camPosition, Vector3d pos, cell_t cell, int visibleFaces) {
+        BlockDef def = BLOCK_DEFS[cell];
+        def.createFaces(world, world.camPosition, pos, visibleFaces, _minerMesh);
+    }
+    
+    bool flying = false;
+    bool enableMeshUpdate = true;
+
+    void updateCamPosition(bool animateIt = true) {
+        import std.string;
+        import std.conv : to;
+        import std.utf : toUTF32;
+        import std.format;
+
+        if (!flying) {
+            while(_world.canPass(_world.camPosition.pos + Vector3d(0, -1, 0)))
+                _world.camPosition.pos += Vector3d(0, -1, 0);
+            if(!_world.canPass(_world.camPosition.pos + Vector3d(0, -1, 0))) {
+                if (_world.canPass(_world.camPosition.pos + Vector3d(0, 1, 0)))
+                    _world.camPosition.pos += Vector3d(0, 1, 0);
+                else if (_world.canPass(_world.camPosition.pos + Vector3d(1, 0, 0)))
+                    _world.camPosition.pos += Vector3d(1, 0, 0);
+                else if (_world.canPass(_world.camPosition.pos + Vector3d(-1, 0, 0)))
+                    _world.camPosition.pos += Vector3d(-1, 0, 0);
+                else if (_world.canPass(_world.camPosition.pos + Vector3d(0, 0, 1)))
+                    _world.camPosition.pos += Vector3d(0, 0, 1);
+                else if (_world.canPass(_world.camPosition.pos + Vector3d(0, 0, -1)))
+                    _world.camPosition.pos += Vector3d(0, 0, -1);
+                while(_world.canPass(_world.camPosition.pos + Vector3d(0, -1, 0)))
+                    _world.camPosition.pos += Vector3d(0, -1, 0);
+            }
+        }
+
+        setPos(vec3(_world.camPosition.pos.x + 0.5f, _world.camPosition.pos.y + 0.5f, _world.camPosition.pos.z + 0.5f), animateIt);
+        setAngle(_world.camPosition.direction.angle, animateIt);
+        Widget w = childById("lblPosition");
+        string dir = _world.camPosition.direction.dir.to!string;
+        dstring s = format("pos(%d,%d) h=%d  %s    [F]lying: %s   [U]pdateMesh: %s", _world.camPosition.pos.x, _world.camPosition.pos.z, _world.camPosition.pos.y, dir,
+                           flying, enableMeshUpdate).toUTF32;
+        w.text = s;
+        if (enableMeshUpdate)
+            updateMinerMesh();
+    }
+
+    void updateMinerMesh() {
+        _minerMesh.reset();
+        long ts = currentTimeMillis;
+        _world.visitVisibleCells(_world.camPosition, this);
+        long duration = currentTimeMillis - ts;
+        Log.d("DiamondVisitor finished in ", duration, " ms  ", "Vertex count: ", _minerMesh.vertexCount);
+
+        invalidate();
+        //for (int i = 0; i < 20; i++)
+        //    Log.d("vertex: ", _minerMesh.vertex(i));
+    }
+
+    World _world;
+    vec3 _position;
+    float _angle;
+    vec3 _animatingPosition;
+    float _animatingAngle;
+
+    void setPos(vec3 newPos, bool animateIt = false) {
+        if (animateIt) {
+            _position = newPos;
+        } else {
+            _animatingPosition = newPos;
+            _position = newPos;
+        }
+    }
+
+    void setAngle(float newAngle, bool animateIt = false) {
+        if (animateIt) {
+            _angle = newAngle;
+        } else {
+            _animatingAngle = newAngle;
+            _angle = newAngle;
+        }
+    }
+
+    /// returns true is widget is being animated - need to call animate() and redraw
+    @property override bool animating() { return true; }
+    /// animates window; interval is time left from previous draw, in hnsecs (1/10000000 of second)
+    override void animate(long interval) {
+        //Log.d("animating");
+        if (_animatingAngle != _angle) {
+            float delta = _angle - _animatingAngle;
+            if (delta > 180)
+                delta -= 360;
+            else if (delta < -180)
+                delta += 360;
+            float dist = delta < 0 ? -delta : delta;
+            if (dist < 5) {
+                _animatingAngle = _angle;
+            } else {
+                float speed = 360;
+                float step = speed * interval / 10000000.0f;
+                //Log.d("Rotate animation delta=", delta, " dist=", dist, " elapsed=", interval, " step=", step);
+                if (step > dist)
+                    step = dist;
+                delta = delta * (step /dist);
+                _animatingAngle += delta;
+            }
+        }
+        if (_animatingPosition != _position) {
+            vec3 delta = _position - _animatingPosition;
+            float dist = delta.length;
+            if (dist < 0.01) {
+                _animatingPosition = _position;
+                // done
+            } else {
+                float speed = 8;
+                if (dist > 2)
+                    speed = (dist - 2) * 3 + speed;
+                float step = speed * interval / 10000000.0f;
+                //Log.d("Move animation delta=", delta, " dist=", dist, " elapsed=", interval, " step=", step);
+                if (step > dist)
+                    step = dist;
+                delta = delta * (step / dist);
+                _animatingPosition += delta;
+            }
+        }
+        invalidate();
+    }
+    float angle = 0;
+
+    Scene3d _scene;
+    Camera _cam;
+    Mesh _minerMesh;
+
+
+    /// this is OpenGLDrawableDelegate implementation
+    private void doDraw(Rect windowRect, Rect rc) {
+        _cam.setPerspective(rc.width, rc.height, 45.0f, 0.1, 100);
+        //_cam.translate(vec3(
+        //     childById!ScrollBar("sbTranslationX").position / 10.0f,
+        //     childById!ScrollBar("sbTranslationY").position / 10.0f,
+        //     childById!ScrollBar("sbTranslationZ").position / 10.0f));
+        //_world.camPosition.pos.x;
+        _cam.setIdentity();
+        _cam.translate(_animatingPosition);
+        _cam.rotateY(_animatingAngle);
+        //_cam.rotateX(-15);
+        //_cam.lookAt(vec3(dir.x, dir.y, dir.z), vec3(pos.x, pos.y, pos.z), vec3(0,1,0));
+        //_cam.translateX(_world.camPosition.pos.x);
+        //_cam.translateY(_world.camPosition.pos.y);
+        //_cam.translateZ(_world.camPosition.pos.z);
+        dirLightNode.setIdentity();
+        dirLightNode.translate(_animatingPosition);
+        dirLightNode.rotateY(_animatingAngle);
+        //dirLightNode.setIdentity();
+        //dirLightNode.translateX(_world.camPosition.pos.x);
+        //dirLightNode.translateY(_world.camPosition.pos.y);
+        //dirLightNode.translateZ(_world.camPosition.pos.z);
+        //_cam.rotateX(rotationX);
+        //_cam.rotateY(rotationY);
+        //_cam.rotateZ(rotationZ);
+        //_cam.translate(vec3(-1, -1.5, -1)); // - angle/1000
+        //_cam.translate(vec3(0, 0, -1.1)); // - angle/1000
+        //_cam.translate(vec3(0, 3,  - angle/1000)); //
+        //_cam.rotateZ(30.0f + angle * 0.3456778);
+
+        checkgl!glEnable(GL_CULL_FACE);
+        //checkgl!glDisable(GL_CULL_FACE);
+        checkgl!glEnable(GL_DEPTH_TEST);
+        checkgl!glCullFace(GL_BACK);
+
+        _scene.drawScene(false);
+
+        checkgl!glDisable(GL_DEPTH_TEST);
+        checkgl!glDisable(GL_CULL_FACE);
+    }
+
+    ~this() {
+        destroy(_scene);
+        destroy(_world);
+    }
+}
