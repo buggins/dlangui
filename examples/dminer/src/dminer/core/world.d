@@ -479,8 +479,11 @@ void initWorldTerrain(World world, int terrSizeBits = 10, int x0 = 0, int z0 = 0
     terr.filter(1);
     for (int x = 0; x < terrSize; x++) {
         for (int z = 0; z < terrSize; z++) {
+            int cellx = x0 + x - terrSize / 2;
+            int cellz = z0 + z - terrSize / 2;
             int h = terr.get(x, z);
-            cell_t cell = 1;
+            //cell_t cell = BlockId.bedrock;
+            cell_t cell = BlockId.grass;
             //if (h < CHUNK_DY / 10)
             //    cell = 100;
             //else if (h < CHUNK_DY / 5)
@@ -494,7 +497,7 @@ void initWorldTerrain(World world, int terrSizeBits = 10, int x0 = 0, int z0 = 0
             //else
             //    cell = 105;
             for (int y = 0; y < h; y++) {
-                world.setCell(x0 + x - terrSize / 2, y, z0 + z - terrSize / 2, cell);
+                world.setCell(cellx, y, cellz, cell);
             }
         }
     }

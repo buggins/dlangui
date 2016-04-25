@@ -59,24 +59,21 @@ public:
         return false;
     }
 
-    /// create cube face
-    void createFace(World world, ref Position camPosition, Vector3d pos, Dir face, Mesh mesh) {
-        // default implementation
+    /// add cube face
+    protected void addFace(Vector3d pos, Dir face, Mesh mesh, int textureIndex) {
         ushort startVertexIndex = cast(ushort)mesh.vertexCount;
         float[VERTEX_COMPONENTS * 4] vptr;
         ushort[6] iptr;
-        createFaceMesh(vptr.ptr, face, pos.x, pos.y, pos.z, txIndex);
+        createFaceMesh(vptr.ptr, face, pos.x, pos.y, pos.z, textureIndex);
         for (int i = 0; i < 6; i++)
             iptr[i] = cast(ushort)(startVertexIndex + face_indexes[i]);
-        //if (HIGHLIGHT_GRID && ((pos.x & 7) == 0 || (pos.z & 7) == 0)) {
-        //    for (int i = 0; i < 4; i++) {
-        //        vptr[11 * i + 6 + 0] = 1.4f;
-        //        vptr[11 * i + 6 + 1] = 1.4f;
-        //        vptr[11 * i + 6 + 2] = 1.4f;
-        //    }
-        //}
         mesh.addVertexes(vptr);
         mesh.addPart(PrimitiveType.triangles, iptr);
+    }
+
+    /// create cube face
+    void createFace(World world, ref Position camPosition, Vector3d pos, Dir face, Mesh mesh) {
+        addFace(pos, face, mesh, txIndex);
     }
     /// create faces
     void createFaces(World world, ref Position camPosition, Vector3d pos, int visibleFaces, Mesh mesh) {
@@ -250,6 +247,20 @@ enum BlockImage : int {
     red_sand,
 }
 
+enum BlockId : cell_t {
+    air, // 0
+    gray_brick,
+    brick,
+    bedrock,
+    clay,
+    cobblestone,
+    gravel,
+    red_sand,
+    sand,
+    dirt,
+    grass
+}
+
 /// init block types array
 __gshared static this() {
     import std.string;
@@ -264,18 +275,20 @@ __gshared static this() {
     BLOCK_TYPE_VISIBLE[BOUND_BOTTOM] = true;
 
     // empty cell
-    registerBlockType(new BlockDef(0, "empty", BlockVisibility.INVISIBLE, 0));
+    registerBlockType(new BlockDef(BlockId.air, "air", BlockVisibility.INVISIBLE, 0));
     // standard block types
-    registerBlockType(new BlockDef(1, "gray_brick", BlockVisibility.OPAQUE, BlockImage.stonebrick));
-    registerBlockType(new BlockDef(2, "brick", BlockVisibility.OPAQUE, BlockImage.brick));
-    registerBlockType(new BlockDef(3, "bedrock", BlockVisibility.OPAQUE, BlockImage.bedrock));
-    registerBlockType(new BlockDef(4, "clay", BlockVisibility.OPAQUE, BlockImage.clay));
-    registerBlockType(new BlockDef(5, "cobblestone", BlockVisibility.OPAQUE, BlockImage.cobblestone));
-    registerBlockType(new BlockDef(6, "gravel", BlockVisibility.OPAQUE, BlockImage.gravel));
-    registerBlockType(new BlockDef(7, "red_sand", BlockVisibility.OPAQUE, BlockImage.red_sand));
-    registerBlockType(new BlockDef(8, "sand", BlockVisibility.OPAQUE, BlockImage.sand));
+    registerBlockType(new BlockDef(BlockId.gray_brick, "gray_brick", BlockVisibility.OPAQUE, BlockImage.stonebrick));
+    registerBlockType(new BlockDef(BlockId.brick, "brick", BlockVisibility.OPAQUE, BlockImage.brick));
+    registerBlockType(new BlockDef(BlockId.bedrock, "bedrock", BlockVisibility.OPAQUE, BlockImage.bedrock));
+    registerBlockType(new BlockDef(BlockId.clay, "clay", BlockVisibility.OPAQUE, BlockImage.clay));
+    registerBlockType(new BlockDef(BlockId.cobblestone, "cobblestone", BlockVisibility.OPAQUE, BlockImage.cobblestone));
+    registerBlockType(new BlockDef(BlockId.gravel, "gravel", BlockVisibility.OPAQUE, BlockImage.gravel));
+    registerBlockType(new BlockDef(BlockId.red_sand, "red_sand", BlockVisibility.OPAQUE, BlockImage.red_sand));
+    registerBlockType(new BlockDef(BlockId.sand, "sand", BlockVisibility.OPAQUE, BlockImage.sand));
+    registerBlockType(new BlockDef(BlockId.dirt, "dirt", BlockVisibility.OPAQUE, BlockImage.dirt));
+    registerBlockType(new CustomTopBlock(BlockId.grass, "grass", BlockVisibility.OPAQUE, BlockImage.dirt, BlockImage.grass_top, BlockImage.grass_side));
 
-    registerBlockType(new BlockDef(50, "box", BlockVisibility.HALF_OPAQUE, 50));
+    //registerBlockType(new BlockDef(50, "box", BlockVisibility.HALF_OPAQUE, 50));
 
     //registerBlockType(new TerrainBlock(100, "terrain_bedrock", 2));
     //registerBlockType(new TerrainBlock(101, "terrain_clay", 3));
@@ -285,3 +298,32 @@ __gshared static this() {
     //registerBlockType(new TerrainBlock(105, "terrain_sand", 7));
 
 }
+
+class CustomTopBlock : BlockDef {
+public:
+    int topTxIndex;
+    int sideTxIndex;
+    this(cell_t blockId, string blockName, BlockVisibility v, int tx, int topTx, int sideTx) {
+        super(blockId, blockName, BlockVisibility.OPAQUE, tx);
+        topTxIndex = topTx;
+        sideTxIndex = sideTx;
+    }
+    ~this() {
+    }
+
+    /// create cube face
+    override void createFace(World world, ref Position camPosition, Vector3d pos, Dir face, Mesh mesh) {
+        // checking cell above
+        cell_t blockAbove = world.getCell(pos.x, pos.y + 1, pos.z);
+        int tx = txIndex;
+        if (BLOCK_TYPE_CAN_PASS[blockAbove]) {
+            if (face == Dir.UP) {
+                tx = topTxIndex;
+            } else if (face != Dir.DOWN) {
+                tx = sideTxIndex;
+            }
+        }
+        addFace(pos, face, mesh, tx);
+    }
+}
+
