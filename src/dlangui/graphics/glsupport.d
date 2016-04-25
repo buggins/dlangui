@@ -1240,7 +1240,7 @@ class GLObject(GLObjectTypes type, GLuint target = 0) {
             glTexParameteri(target, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
             glTexParameteri(target, GL_TEXTURE_MIN_FILTER, linear ? 
                             (!mipmap ? GL_LINEAR : GL_LINEAR_MIPMAP_LINEAR) : 
-                            (!mipmap ? GL_NEAREST : GL_LINEAR_MIPMAP_LINEAR)); //GL_NEAREST_MIPMAP_NEAREST
+                            (!mipmap ? GL_NEAREST : GL_NEAREST_MIPMAP_NEAREST)); //GL_NEAREST_MIPMAP_NEAREST
             checkError("filtering - glTexParameteri");
             if(clamp) {
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
