@@ -115,21 +115,25 @@ class UiWidget : VerticalLayout, CellVisitor {
         _world.setCell(5, cy0 + 5, -7, BlockId.face_test);
         _world.setCell(3, cy0 + 5, 13, BlockId.face_test);
 
-        _world.setCellRange(Vector3d(3, 11, 5), Vector3d(1, 100, 1), 1);
-        _world.setCellRange(Vector3d(13, 11, -5), Vector3d(1, 100, 1), 3);
-        _world.setCellRange(Vector3d(-6, 11, 10), Vector3d(1, 100, 1), 4);
-        _world.setCellRange(Vector3d(-8, 11, 15), Vector3d(1, 100, 1), 5);
-        _world.setCellRange(Vector3d(12, 11, -7), Vector3d(1, 100, 1), 6);
-        _world.setCellRange(Vector3d(5, 11, 9), Vector3d(1, 100, 1), 7);
-        _world.setCellRange(Vector3d(9, 11, 5), Vector3d(1, 100, 1), 7);
-        _world.setCellRange(Vector3d(-5, 11, 9), Vector3d(1, 100, 1), 7);
-        _world.setCellRange(Vector3d(9, 11, -5), Vector3d(1, 100, 1), 7);
-        _world.setCellRange(Vector3d(5, 11, -9), Vector3d(1, 100, 1), 7);
-        _world.setCellRange(Vector3d(-9, 11, 5), Vector3d(1, 100, 1), 7);
-        _world.setCellRange(Vector3d(7, 11, 3), Vector3d(1, 100, 1), 8);
-        _world.setCellRange(Vector3d(-7, 11, 3), Vector3d(1, 100, 1), 8);
-        _world.setCellRange(Vector3d(7, 11, -3), Vector3d(1, 100, 1), 8);
-        _world.setCellRange(Vector3d(-7, 11, 3), Vector3d(1, 100, 1), 8);
+
+        //_world.makeCastleWall(Vector3d(25, cy0 - 5, 12), Vector3d(1, 0, 0), 12, 30, 4, BlockId.brick);
+        _world.makeCastle(Vector3d(0, cy0 - 5, 50), 20, 16);
+
+        //_world.setCellRange(Vector3d(3, 11, 5), Vector3d(1, 100, 1), 1);
+        //_world.setCellRange(Vector3d(13, 11, -5), Vector3d(1, 100, 1), 3);
+        //_world.setCellRange(Vector3d(-6, 11, 10), Vector3d(1, 100, 1), 4);
+        //_world.setCellRange(Vector3d(-8, 11, 15), Vector3d(1, 100, 1), 5);
+        //_world.setCellRange(Vector3d(12, 11, -7), Vector3d(1, 100, 1), 6);
+        //_world.setCellRange(Vector3d(5, 11, 9), Vector3d(1, 100, 1), 7);
+        //_world.setCellRange(Vector3d(9, 11, 5), Vector3d(1, 100, 1), 7);
+        //_world.setCellRange(Vector3d(-5, 11, 9), Vector3d(1, 100, 1), 7);
+        //_world.setCellRange(Vector3d(9, 11, -5), Vector3d(1, 100, 1), 7);
+        //_world.setCellRange(Vector3d(5, 11, -9), Vector3d(1, 100, 1), 7);
+        //_world.setCellRange(Vector3d(-9, 11, 5), Vector3d(1, 100, 1), 7);
+        //_world.setCellRange(Vector3d(7, 11, 3), Vector3d(1, 100, 1), 8);
+        //_world.setCellRange(Vector3d(-7, 11, 3), Vector3d(1, 100, 1), 8);
+        //_world.setCellRange(Vector3d(7, 11, -3), Vector3d(1, 100, 1), 8);
+        //_world.setCellRange(Vector3d(-7, 11, 3), Vector3d(1, 100, 1), 8);
 
         updateCamPosition(false);
         updateMinerMesh();

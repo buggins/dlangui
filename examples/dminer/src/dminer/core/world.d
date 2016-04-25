@@ -512,3 +512,48 @@ void initWorldTerrain(World world, int terrSizeBits = 10, int x0 = 0, int z0 = 0
         }
     }
 }
+
+
+void makeCastleWall(World world, Vector3d start, Vector3d direction, int height, int length, int width, cell_t material) {
+    Vector3d normal = direction.turnLeft;
+    for (int x = 0; x < length; x++) {
+        Vector3d x0 = start + direction * x;
+        for (int y = 0; y < height; y++) {
+            Vector3d y0 = x0;
+            y0.y += y;
+            for (int z = -width / 2; z <= width / 2; z++) {
+                Vector3d z0 = y0 + normal * z;
+                bool side = (z == -width/2 || z == width/2);
+                cell_t cell = material;
+                if (y >= height - 2) {
+                    if (!side)
+                        cell = BlockId.air;
+                    else if ((x & 1) && (y >= height - 1)) {
+                        cell = BlockId.air;
+                    }
+                }
+                if (cell != BlockId.air)
+                    world.setCell(z0.x, z0.y, z0.z, cell);
+            }
+        }
+    }
+}
+
+void makeCastleWalls(World world, Vector3d start, int size, int height, cell_t material) {
+    world.makeCastleWall(Vector3d(start.x - size - 2, start.y, start.z - size), Vector3d(1, 0, 0), height, size * 2 + 5, 4, material);
+    world.makeCastleWall(Vector3d(start.x - size, start.y, start.z - size - 2), Vector3d(0, 0, 1), height, size * 2 + 5, 4, material);
+    world.makeCastleWall(Vector3d(start.x + size, start.y, start.z - size - 2), Vector3d(0, 0, 1), height, size * 2 + 5, 4, material);
+    world.makeCastleWall(Vector3d(start.x - size - 2, start.y, start.z + size), Vector3d(1, 0, 0), height, size * 2 + 5, 4, material);
+}
+
+void makeCastle(World world, Vector3d start, int size, int height) {
+    // main walls
+    world.makeCastleWalls(start, size, height / 2, BlockId.brick);
+    // corner towers
+    //world.makeCastleWalls(start + Vector3d(-size, 0, -size), 5, height + 4, BlockId.brick);
+    //world.makeCastleWalls(start + Vector3d(size, 0, -size), 5, height + 4, BlockId.brick);
+    //world.makeCastleWalls(start + Vector3d(-size, 0, size), 5, height + 4, BlockId.brick);
+    //world.makeCastleWalls(start + Vector3d(size, 0, size), 5, height + 4, BlockId.brick);
+    // dungeon
+    //wwwwworld.makeCastleWalls(start, size / 2, height * 2, BlockId.cobblestone);
+}
