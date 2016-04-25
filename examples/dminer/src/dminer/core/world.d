@@ -483,7 +483,8 @@ void initWorldTerrain(World world, int terrSizeBits = 10, int x0 = 0, int z0 = 0
             int cellz = z0 + z - terrSize / 2;
             int h = terr.get(x, z);
             //cell_t cell = BlockId.bedrock;
-            cell_t cell = BlockId.grass;
+            //cell_t cell = BlockId.grass;
+            cell_t cell = BlockId.face_test;
             //if (h < CHUNK_DY / 10)
             //    cell = 100;
             //else if (h < CHUNK_DY / 5)

@@ -109,6 +109,11 @@ class UiWidget : VerticalLayout, CellVisitor {
             }
         _world.camPosition = Position(Vector3d(0, cy0, 0), Vector3d(0, 0, 1));
 
+        _world.setCell(5, cy0 + 5, 7, BlockId.face_test);
+        _world.setCell(-5, cy0 + 5, 7, BlockId.face_test);
+        _world.setCell(5, cy0 + 5, -7, BlockId.face_test);
+        _world.setCell(3, cy0 + 5, 13, BlockId.face_test);
+
         _world.setCellRange(Vector3d(3, 11, 5), Vector3d(1, 100, 1), 1);
         _world.setCellRange(Vector3d(13, 11, -5), Vector3d(1, 100, 1), 3);
         _world.setCellRange(Vector3d(-6, 11, 10), Vector3d(1, 100, 1), 4);
