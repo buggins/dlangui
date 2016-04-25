@@ -232,7 +232,6 @@ class Node3d : Transform {
     * @return The forward vector in view space.
     */
     @property vec3 forwardVectorView() {
-        return worldMatrix.forwardVector;
         vec3 vector = worldMatrix.forwardVector;
         viewMatrix.transformVector(vector);
         return vector;
