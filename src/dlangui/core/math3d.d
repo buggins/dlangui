@@ -1616,6 +1616,19 @@ struct mat4 {
         return vec3(m[8], m[9], m[10]);
     }
 
+    void transformVector(ref vec3 v) const {
+        transformVector(v.x, v.y, v.z, 0, v);
+    }
+
+    void transformPoint(ref vec3 v) const {
+        transformVector(v.x, v.y, v.z, 1, v);
+    }
+
+    void transformVector(float x, float y, float z, float w, ref vec3 dst) const {
+        dst.x = x * m[0] + y * m[4] + z * m[8] + w * m[12];
+        dst.y = x * m[1] + y * m[5] + z * m[9] + w * m[13];
+        dst.z = x * m[2] + y * m[6] + z * m[10] + w * m[14];
+    }
 
     static __gshared const mat4 IDENTITY;
 }

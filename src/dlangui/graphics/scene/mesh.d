@@ -201,7 +201,7 @@ struct VertexElement {
 /// Vertex format elements list
 struct VertexFormat {
     private VertexElement[] _elements;
-    private byte[VertexElementType.max + 1] _elementOffset = [-1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1];
+    private byte[16] _elementOffset = [-1, -1, -1, -1,  -1, -1, -1, -1,  -1, -1, -1, -1,  -1, -1, -1, -1];
     private int _vertexSize; // vertex size in floats
     /// make using element list
     this(inout VertexElement[] elems...) {

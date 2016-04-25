@@ -44,9 +44,9 @@ class Light : RefCountedObject {
     @property Light node(Node3d n) { _node = n; return this; }
 
     /// direction in world coordinates
-    @property vec3 direction() { return _node ? _node.forwardVectorWorld : vec3(0, 0, 1); }
+    @property vec3 direction() { return _node ? _node.forwardVectorView : vec3(0, 0, 1); }
     /// position in world coordinates
-    @property vec3 position() { return _node ? _node.translationWorld : vec3(0, 0, 0); }
+    @property vec3 position() { return _node ? _node.translationView : vec3(0, 0, 0); }
 
     @property float range() const { return 1.0; }
     @property void range(float v) { assert(false); }

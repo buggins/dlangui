@@ -404,24 +404,24 @@ struct Position {
         pos = position;
         direction = dir;
     }
-    Vector2d calcPlaneCoords(Vector3d v) {
-        v = v - pos;
-        switch (direction.dir) with(Dir) {
-            default:
-            case NORTH:
-                return Vector2d(v.x, v.y);
-            case SOUTH:
-                return Vector2d(-v.x, v.y);
-            case EAST:
-                return Vector2d(v.z, v.y);
-            case WEST:
-                return Vector2d(-v.z, v.y);
-            case UP:
-                return Vector2d(-v.z, v.x);
-            case DOWN:
-                return Vector2d(v.z, v.x);
-        }
-    }
+    //Vector2d calcPlaneCoords(Vector3d v) {
+    //    v = v - pos;
+    //    switch (direction.dir) with(Dir) {
+    //        default:
+    //        case NORTH:
+    //            return Vector2d(v.x, v.y);
+    //        case SOUTH:
+    //            return Vector2d(-v.x, v.y);
+    //        case EAST:
+    //            return Vector2d(v.z, v.y);
+    //        case WEST:
+    //            return Vector2d(-v.z, v.y);
+    //        case UP:
+    //            return Vector2d(-v.z, v.x);
+    //        case DOWN:
+    //            return Vector2d(v.z, v.x);
+    //    }
+    //}
     void turnLeft() {
         direction.turnLeft();
     }

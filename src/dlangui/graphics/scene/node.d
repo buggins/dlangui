@@ -179,6 +179,14 @@ class Node3d : Transform {
         return translation;
     }
 
+    /// returns translation vector (position) of this node in view space
+    @property vec3 translationView() {
+        vec3 translation;
+        worldMatrix.getTranslation(translation);
+        viewMatrix.transformPoint(translation);
+        return translation;
+    }
+
     /**
     * Gets the inverse transpose world matrix corresponding to this node.
     *
@@ -217,5 +225,16 @@ class Node3d : Transform {
     */
     @property vec3 forwardVectorWorld() {
         return worldMatrix.forwardVector;
+    }
+    /**
+    * Returns the forward vector of the Node in view space.
+    *
+    * @return The forward vector in view space.
+    */
+    @property vec3 forwardVectorView() {
+        return worldMatrix.forwardVector;
+        vec3 vector = worldMatrix.forwardVector;
+        viewMatrix.transformVector(vector);
+        return vector;
     }
 }

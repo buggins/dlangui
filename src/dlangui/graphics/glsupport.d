@@ -487,9 +487,9 @@ class SolidFillProgram : GLProgram {
     /// get location for vertex attribute
     override int getVertexElementLocation(VertexElementType type) {
         switch(type) with(VertexElementType) {
-            case POSITION: 
+            case POSITION:
                 return vertexLocation;
-            case COLOR: 
+            case COLOR:
                 return colAttrLocation;
             default:
                 return VERTEX_ELEMENT_NOT_FOUND;
@@ -1314,13 +1314,15 @@ class GLVertexBuffer : VertexBuffer {
         // specify index buffer
         checkgl!glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _indexBuffer);
         int offset = 0;
+        //Log.v("=== enableAttributes for ", _format);
         for(int i = 0; i < _format.length; i++) {
             int loc = effect.getVertexElementLocation(_format[i].type);
             if (loc >= 0) {
+                //Log.v("setting attrib pointer for type ", _format[i].type, " offset=", offset, " location=", loc);
                 checkgl!glVertexAttribPointer(loc, _format[i].size, GL_FLOAT, cast(ubyte)GL_FALSE, _format.vertexSize, cast(char*)(offset));
                 checkgl!glEnableVertexAttribArray(loc);
             } else {
-                //Log.d("Attribute location not found for ", _format[i].type);
+                //Log.v("Attribute location not found for ", _format[i].type);
             }
             offset += _format[i].byteSize;
         }

@@ -180,6 +180,7 @@ class UiWidget : VerticalLayout, CellVisitor {
         brickNode.translate(vec3(-2, 2, -3));
         Mesh brickMesh = Mesh.createCubeMesh(vec3(0, 0, 0), 0.8, vec4(0.8, 0.8, 0.8, 1));
         Material brickMaterial = new Material(EffectId("textured.vert", "textured.frag", null), "brick", "brickn"); // with bump mapping
+        //brickMaterial.specular = true;
         brickNode.drawable = new Model(brickMaterial, brickMesh);
         _scene.addChild(brickNode);
 
@@ -204,7 +205,7 @@ class UiWidget : VerticalLayout, CellVisitor {
         updateMinerMesh();
 
         Material minerMaterial = new Material(EffectId("textured.vert", "textured.frag", null), "blocks");
-        minerMaterial.textureLinear = false;
+        //minerMaterial.textureLinear = false;
         Model minerDrawable = new Model(minerMaterial, _minerMesh);
         Node3d minerNode = new Node3d("miner", minerDrawable);
         _scene.addChild(minerNode);
