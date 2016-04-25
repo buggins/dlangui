@@ -117,6 +117,17 @@ struct TerrainGen {
             return 0;
         return data[(y << ypow) + y + x];
     }
+    int getHeightDiff(int x, int y) {
+        import std.algorithm;
+        int h0 = get(x, y);
+        int h1 = get(x+1, y)-h0;
+        int h2 = get(x-1, y)-h0;
+        int h3 = get(x, y+1)-h0;
+        int h4 = get(x, y-1)-h0;
+        int mindh = min(h1, h2, h3, h4);
+        int maxdh = max(h1, h2, h3, h4);
+        return max(-mindh, maxdh);
+    }
     void set(int x, int y, int value) {
         if (x < 0 || y < 0 || x >= dx || y >= dy)
             return;

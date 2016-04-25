@@ -147,6 +147,64 @@ class UiWidget : VerticalLayout, CellVisitor {
     }
 
     /// process key event, return true if event is processed.
+    override bool onMouseEvent(MouseEvent event) {
+        if (event.action == MouseAction.ButtonDown) {
+            if (event.button == MouseButton.Left) {
+                int x = event.x;
+                int y = event.y;
+                int xindex = 0;
+                if (x > width * 2 / 3)
+                    xindex = 2;
+                else if (x > width * 1 / 3)
+                    xindex = 1;
+                int yindex = 0;
+                if (y > height * 2 / 3)
+                    yindex = 2;
+                else if (y > height * 1 / 3)
+                    yindex = 1;
+                int index = yindex * 3 + xindex;
+                /*
+                   index:
+                     0  1  2
+                     3  4  5
+                     6  7  8
+                */
+                switch(index) {
+                    default:
+                    case 1:
+                    case 4:
+                        _world.camPosition.forward(1);
+                        updateCamPosition();
+                        break;
+                    case 0:
+                    case 3:
+                        _world.camPosition.turnLeft();
+                        updateCamPosition();
+                        break;
+                    case 2:
+                    case 5:
+                        _world.camPosition.turnRight();
+                        updateCamPosition();
+                        break;
+                    case 7:
+                        _world.camPosition.backward(1);
+                        updateCamPosition();
+                        break;
+                    case 6:
+                        _world.camPosition.moveLeft();
+                        updateCamPosition();
+                        break;
+                    case 8:
+                        _world.camPosition.moveRight();
+                        updateCamPosition();
+                        break;
+                }
+            }
+        }
+        return true;
+    }
+
+    /// process key event, return true if event is processed.
     override bool onKeyEvent(KeyEvent event) {
         if (event.action == KeyAction.KeyDown) {
             switch(event.keyCode) with(KeyCode) {
@@ -341,33 +399,13 @@ class UiWidget : VerticalLayout, CellVisitor {
     /// this is OpenGLDrawableDelegate implementation
     private void doDraw(Rect windowRect, Rect rc) {
         _cam.setPerspective(rc.width, rc.height, 45.0f, 0.1, 100);
-        //_cam.translate(vec3(
-        //     childById!ScrollBar("sbTranslationX").position / 10.0f,
-        //     childById!ScrollBar("sbTranslationY").position / 10.0f,
-        //     childById!ScrollBar("sbTranslationZ").position / 10.0f));
-        //_world.camPosition.pos.x;
         _cam.setIdentity();
         _cam.translate(_animatingPosition);
         _cam.rotateY(_animatingAngle);
-        //_cam.rotateX(-15);
-        //_cam.lookAt(vec3(dir.x, dir.y, dir.z), vec3(pos.x, pos.y, pos.z), vec3(0,1,0));
-        //_cam.translateX(_world.camPosition.pos.x);
-        //_cam.translateY(_world.camPosition.pos.y);
-        //_cam.translateZ(_world.camPosition.pos.z);
+
         dirLightNode.setIdentity();
         dirLightNode.translate(_animatingPosition);
         dirLightNode.rotateY(_animatingAngle);
-        //dirLightNode.setIdentity();
-        //dirLightNode.translateX(_world.camPosition.pos.x);
-        //dirLightNode.translateY(_world.camPosition.pos.y);
-        //dirLightNode.translateZ(_world.camPosition.pos.z);
-        //_cam.rotateX(rotationX);
-        //_cam.rotateY(rotationY);
-        //_cam.rotateZ(rotationZ);
-        //_cam.translate(vec3(-1, -1.5, -1)); // - angle/1000
-        //_cam.translate(vec3(0, 0, -1.1)); // - angle/1000
-        //_cam.translate(vec3(0, 3,  - angle/1000)); //
-        //_cam.rotateZ(30.0f + angle * 0.3456778);
 
         checkgl!glEnable(GL_CULL_FACE);
         //checkgl!glDisable(GL_CULL_FACE);
