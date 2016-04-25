@@ -173,8 +173,9 @@ class UiWidget : VerticalLayout, CellVisitor {
                     default:
                     case 1:
                     case 4:
-                        _world.camPosition.forward(1);
-                        updateCamPosition();
+                        //_world.camPosition.forward(1);
+                        //updateCamPosition();
+                        startMoveAnimation(_world.camPosition.direction.forward);
                         break;
                     case 0:
                     case 3:
@@ -187,19 +188,24 @@ class UiWidget : VerticalLayout, CellVisitor {
                         updateCamPosition();
                         break;
                     case 7:
-                        _world.camPosition.backward(1);
-                        updateCamPosition();
+                        //_world.camPosition.backward(1);
+                        //updateCamPosition();
+                        startMoveAnimation(-_world.camPosition.direction.forward);
                         break;
                     case 6:
-                        _world.camPosition.moveLeft();
-                        updateCamPosition();
+                        //_world.camPosition.moveLeft();
+                        //updateCamPosition();
+                        startMoveAnimation(_world.camPosition.direction.left);
                         break;
                     case 8:
-                        _world.camPosition.moveRight();
-                        updateCamPosition();
+                        //_world.camPosition.moveRight();
+                        //updateCamPosition();
+                        startMoveAnimation(_world.camPosition.direction.right);
                         break;
                 }
             }
+        } else if (event.action == MouseAction.ButtonUp || event.action == MouseAction.Cancel) {
+            stopMoveAnimation();
         }
         return true;
     }
@@ -272,6 +278,19 @@ class UiWidget : VerticalLayout, CellVisitor {
     
     bool flying = false;
     bool enableMeshUpdate = true;
+    Vector3d _moveAnimationDirection;
+
+
+    void animateMoving() {
+        if (_moveAnimationDirection != Vector3d(0,0,0)) {
+            Vector3d animPos = _world.camPosition.pos + _moveAnimationDirection;
+            vec3 p = vec3(animPos.x + 0.5f, animPos.y + 0.5f, animPos.z + 0.5f);
+            if ((_animatingPosition - p).length < 2) {
+                _world.camPosition.pos += _moveAnimationDirection;
+                updateCamPosition(true);
+            }
+        }
+    }
 
     void updateCamPosition(bool animateIt = true) {
         import std.string;
@@ -280,6 +299,7 @@ class UiWidget : VerticalLayout, CellVisitor {
         import std.format;
 
         if (!flying) {
+            animateMoving();
             while(_world.canPass(_world.camPosition.pos + Vector3d(0, -1, 0)))
                 _world.camPosition.pos += Vector3d(0, -1, 0);
             if(!_world.canPass(_world.camPosition.pos + Vector3d(0, -1, 0))) {
@@ -307,6 +327,16 @@ class UiWidget : VerticalLayout, CellVisitor {
         w.text = s;
         if (enableMeshUpdate)
             updateMinerMesh();
+    }
+
+    void startMoveAnimation(Vector3d direction) {
+        _moveAnimationDirection = direction;
+        updateCamPosition();
+    }
+
+    void stopMoveAnimation() {
+        _moveAnimationDirection = Vector3d(0, 0, 0);
+        updateCamPosition();
     }
 
     void updateMinerMesh() {
@@ -350,6 +380,7 @@ class UiWidget : VerticalLayout, CellVisitor {
     /// animates window; interval is time left from previous draw, in hnsecs (1/10000000 of second)
     override void animate(long interval) {
         //Log.d("animating");
+        animateMoving();
         if (_animatingAngle != _angle) {
             float delta = _angle - _animatingAngle;
             if (delta > 180)
