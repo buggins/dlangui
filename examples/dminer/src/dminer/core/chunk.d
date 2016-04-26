@@ -3,20 +3,11 @@ module dminer.core.chunk;
 import dminer.core.minetypes;
 import dminer.core.blocks;
 
-enum USE_NEW_WORLD_IMPL = true;
-
-
 // Y range: 0..CHUNK_DY-1
-immutable int CHUNK_DY_SHIFT = 7;
-immutable int CHUNK_DY = (1<<CHUNK_DY_SHIFT);
-immutable int CHUNK_DY_MASK = (CHUNK_DY - 1);
-immutable int CHUNK_DY_INV_MASK = ~CHUNK_DY_MASK;
+immutable int CHUNK_DY = 128;
 
+//immutable int CHUNKS_Y = CHUNK_DY >> 3; // actually, it's not limited
 
-
-
-
-immutable int CHUNKS_Y = 128 / 8;
 immutable int CHUNKS_BITS_X = 9;
 immutable int CHUNKS_BITS_Z = 9;
 immutable int CHUNKS_X = (1 << CHUNKS_BITS_X); // X range: -CHUNKS_X*8 .. CHUNKS_X*8

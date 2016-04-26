@@ -12,328 +12,186 @@ version (Android) {
 const int MAX_VIEW_DISTANCE = (1 << MAX_VIEW_DISTANCE_BITS);
 
 
-static if (USE_NEW_WORLD_IMPL) {
+class World {
 
-    class World {
-
-        this() {
-            _camPosition = Position(Vector3d(0, 13, 0), Vector3d(0, 0, 1));
-        }
-        ~this() {
-        }
-        @property final ref Position camPosition() { return _camPosition; }
+    this() {
+        _camPosition = Position(Vector3d(0, 13, 0), Vector3d(0, 0, 1));
+    }
+    ~this() {
+    }
+    @property final ref Position camPosition() { return _camPosition; }
 
 
-        protected ChunkStack*[CHUNKS_X * 2 * CHUNKS_Z * 2] _chunkStacks;
-        //pragma(msg, "stack pointers array size, Kb:");
-        //pragma(msg, _chunkStacks.sizeof / 1024);
-        final cell_t getCell(int x, int y, int z) {
-            int chunkx = (x >> 3) + CHUNKS_X;
-            int chunkz = (z >> 3) + CHUNKS_Z;
-            if ((chunkx & (~CHUNKS_X_MASK)) || (chunkz & (~CHUNKS_Z_MASK)))
-                return 0; // out of bounds x,z
-            int index = chunkx + (chunkz << (CHUNKS_BITS_X + 1));
-            if (ChunkStack * stack = _chunkStacks[index]) {
-                int chunkY = (y >> 3);
-                if (SmallChunk * chunk = stack.get(chunkY))
-                    return chunk.getCell(x, y, z);
-            }
-            return 0;
+    protected ChunkStack*[CHUNKS_X * 2 * CHUNKS_Z * 2] _chunkStacks;
+    //pragma(msg, "stack pointers array size, Kb:");
+    //pragma(msg, _chunkStacks.sizeof / 1024);
+    final cell_t getCell(int x, int y, int z) {
+        int chunkx = (x >> 3) + CHUNKS_X;
+        int chunkz = (z >> 3) + CHUNKS_Z;
+        if ((chunkx & (~CHUNKS_X_MASK)) || (chunkz & (~CHUNKS_Z_MASK)))
+            return 0; // out of bounds x,z
+        int index = chunkx + (chunkz << (CHUNKS_BITS_X + 1));
+        if (ChunkStack * stack = _chunkStacks[index]) {
+            int chunkY = (y >> 3);
+            if (SmallChunk * chunk = stack.get(chunkY))
+                return chunk.getCell(x, y, z);
         }
-        /// get chunk stack for cell by world cell coordinates x, z
-        ChunkStack * getCellChunkStack(int x, int z) {
-            int chunkx = (x >> 3) + CHUNKS_X;
-            int chunkz = (z >> 3) + CHUNKS_Z;
-            if ((chunkx & (~CHUNKS_X_MASK)) || (chunkz & (~CHUNKS_Z_MASK)))
-                return null; // out of bounds x,z
-            int index = chunkx + (chunkz << (CHUNKS_BITS_X + 1));
-            return _chunkStacks[index];
-        }
-        /// get chunk by chunkx = x / 8 + CHUNKS_X, chunky = y / 8, chunkz = z / 8 + CHUNKS_Z
-        SmallChunk * getChunk(int chunkx, int chunky, int chunkz) {
-            if ((chunkx & (~CHUNKS_X_MASK)) || (chunkz & (~CHUNKS_Z_MASK)))
-                return null; // out of bounds x,z
-            int index = chunkx + (chunkz << (CHUNKS_BITS_X + 1));
-            if (ChunkStack * stack = _chunkStacks[index])
-                return stack.get(chunky);
-            return null;
-        }
-        /// get chunk for cell by world cell coordinates x, y, z
-        SmallChunk * getCellChunk(int x, int y, int z) {
-            int chunkx = (x >> 3) + CHUNKS_X;
-            int chunkz = (z >> 3) + CHUNKS_Z;
-            if ((chunkx & (~CHUNKS_X_MASK)) || (chunkz & (~CHUNKS_Z_MASK)))
-                return null; // out of bounds x,z
-            int index = chunkx + (chunkz << (CHUNKS_BITS_X + 1));
-            int chunky = (y >> 3);
-            if (ChunkStack * stack = _chunkStacks[index])
-                return stack.get(chunky);
-            return null;
-        }
-        final void setCell(int x, int y, int z, cell_t value) {
-            int chunkx = (x >> 3) + CHUNKS_X;
-            int chunkz = (z >> 3) + CHUNKS_Z;
-            if ((chunkx & (~CHUNKS_X_MASK)) || (chunkz & (~CHUNKS_Z_MASK)))
-                return; // out of bounds x,z
-            int index = chunkx + (chunkz << (CHUNKS_BITS_X + 1));
-            ChunkStack * stack = _chunkStacks[index];
-            SmallChunk * chunk;
-            if (stack) {
-                int chunkY = (y >> 3);
-                chunk = stack.get(chunkY);
-                if (chunk)
-                    chunk.setCell(x, y, z, value);
-                else {
-                    // create chunk
-                    if (!value)
-                        return; // don't create chunk for 0
-                    chunk = SmallChunk.alloc();
-                    stack.set(chunkY, chunk);
-                    chunk.setCell(x, y, z, value);
-                }
-            } else {
+        return 0;
+    }
+    /// get chunk stack for cell by world cell coordinates x, z
+    ChunkStack * getCellChunkStack(int x, int z) {
+        int chunkx = (x >> 3) + CHUNKS_X;
+        int chunkz = (z >> 3) + CHUNKS_Z;
+        if ((chunkx & (~CHUNKS_X_MASK)) || (chunkz & (~CHUNKS_Z_MASK)))
+            return null; // out of bounds x,z
+        int index = chunkx + (chunkz << (CHUNKS_BITS_X + 1));
+        return _chunkStacks[index];
+    }
+    /// get chunk by chunkx = x / 8 + CHUNKS_X, chunky = y / 8, chunkz = z / 8 + CHUNKS_Z
+    SmallChunk * getChunk(int chunkx, int chunky, int chunkz) {
+        if ((chunkx & (~CHUNKS_X_MASK)) || (chunkz & (~CHUNKS_Z_MASK)))
+            return null; // out of bounds x,z
+        int index = chunkx + (chunkz << (CHUNKS_BITS_X + 1));
+        if (ChunkStack * stack = _chunkStacks[index])
+            return stack.get(chunky);
+        return null;
+    }
+    /// get chunk for cell by world cell coordinates x, y, z
+    SmallChunk * getCellChunk(int x, int y, int z) {
+        int chunkx = (x >> 3) + CHUNKS_X;
+        int chunkz = (z >> 3) + CHUNKS_Z;
+        if ((chunkx & (~CHUNKS_X_MASK)) || (chunkz & (~CHUNKS_Z_MASK)))
+            return null; // out of bounds x,z
+        int index = chunkx + (chunkz << (CHUNKS_BITS_X + 1));
+        int chunky = (y >> 3);
+        if (ChunkStack * stack = _chunkStacks[index])
+            return stack.get(chunky);
+        return null;
+    }
+
+    private void updateNearChunks(SmallChunk * thisChunk, int x, int y, int z) {
+        // UP
+        SmallChunk * chunkAbove = getCellChunk(x, y + 8, z);
+        thisChunk.nearChunks[Dir.UP] = chunkAbove;
+        if (chunkAbove)
+            chunkAbove.nearChunks[Dir.DOWN] = thisChunk;
+        // DOWN
+        SmallChunk * chunkBelow = getCellChunk(x, y - 8, z);
+        thisChunk.nearChunks[Dir.DOWN] = chunkBelow;
+        if (chunkBelow)
+            chunkBelow.nearChunks[Dir.UP] = thisChunk;
+        // WEST
+        SmallChunk * chunkWest = getCellChunk(x - 8, y, z);
+        thisChunk.nearChunks[Dir.WEST] = chunkWest;
+        if (chunkWest)
+            chunkWest.nearChunks[Dir.EAST] = thisChunk;
+        // EAST
+        SmallChunk * chunkEast = getCellChunk(x + 8, y, z);
+        thisChunk.nearChunks[Dir.EAST] = chunkEast;
+        if (chunkEast)
+            chunkEast.nearChunks[Dir.WEST] = thisChunk;
+        // NORTH
+        SmallChunk * chunkNorth = getCellChunk(x, y, z - 8);
+        thisChunk.nearChunks[Dir.NORTH] = chunkNorth;
+        if (chunkNorth)
+            chunkNorth.nearChunks[Dir.SOUTH] = thisChunk;
+        // SOUTH
+        SmallChunk * chunkSouth = getCellChunk(x, y, z + 8);
+        thisChunk.nearChunks[Dir.SOUTH] = chunkSouth;
+        if (chunkSouth)
+            chunkSouth.nearChunks[Dir.NORTH] = thisChunk;
+    }
+
+    final void setCell(int x, int y, int z, cell_t value) {
+        int chunkx = (x >> 3) + CHUNKS_X;
+        int chunkz = (z >> 3) + CHUNKS_Z;
+        if ((chunkx & (~CHUNKS_X_MASK)) || (chunkz & (~CHUNKS_Z_MASK)))
+            return; // out of bounds x,z
+        int index = chunkx + (chunkz << (CHUNKS_BITS_X + 1));
+        ChunkStack * stack = _chunkStacks[index];
+        SmallChunk * chunk;
+        if (stack) {
+            int chunkY = (y >> 3);
+            chunk = stack.get(chunkY);
+            if (chunk)
+                chunk.setCell(x, y, z, value);
+            else {
+                // create chunk
                 if (!value)
                     return; // don't create chunk for 0
-                stack = new ChunkStack();
-                _chunkStacks[index] = stack;
-                int chunkY = (y >> 3);
                 chunk = SmallChunk.alloc();
                 stack.set(chunkY, chunk);
                 chunk.setCell(x, y, z, value);
+                updateNearChunks(chunk, x, y, z);
             }
+        } else {
+            if (!value)
+                return; // don't create chunk for 0
+            stack = new ChunkStack();
+            _chunkStacks[index] = stack;
+            int chunkY = (y >> 3);
+            chunk = SmallChunk.alloc();
+            stack.set(chunkY, chunk);
+            chunk.setCell(x, y, z, value);
+            updateNearChunks(chunk, x, y, z);
         }
+    }
 
 
 
 
-        void setCellRange(Vector3d pos, Vector3d sz, cell_t value) {
-            for (int x = 0; x < sz.x; x++)
-                for (int y = 0; y < sz.y; y++)
-                    for (int z = 0; z < sz.z; z++)
-                        setCell(pos.x + x, pos.y + y, pos.z + z, value);
-        }
+    void setCellRange(Vector3d pos, Vector3d sz, cell_t value) {
+        for (int x = 0; x < sz.x; x++)
+            for (int y = 0; y < sz.y; y++)
+                for (int z = 0; z < sz.z; z++)
+                    setCell(pos.x + x, pos.y + y, pos.z + z, value);
+    }
 
-        final bool isOpaque(int x, int y, int z) {
-            cell_t cell = getCell(x, y, z);
-            return BLOCK_TYPE_OPAQUE.ptr[cell] && cell != BOUND_SKY;
-        }
+    final bool isOpaque(int x, int y, int z) {
+        cell_t cell = getCell(x, y, z);
+        return BLOCK_TYPE_OPAQUE.ptr[cell] && cell != BOUND_SKY;
+    }
 
-        bool canPass(Vector3d pos) {
-            return canPass(Vector3d(pos.x - 2, pos.y - 3, pos.z - 2), Vector3d(4, 5, 4));
-        }
+    bool canPass(Vector3d pos) {
+        return canPass(Vector3d(pos.x - 2, pos.y - 3, pos.z - 2), Vector3d(4, 5, 4));
+    }
 
-        bool canPass(Vector3d pos, Vector3d size) {
-            for (int x = 0; x <= size.x; x++)
-                for (int z = 0; z <= size.z; z++)
-                    for (int y = 0; y < size.y; y++) {
-                        if (isOpaque(pos.x + x, pos.y + y, pos.z + z))
-                            return false;
-                    }
-            return true;
-        }
-        final void visitVisibleCells(ref Position position, CellVisitor visitor) {
-            visitorHelper.init(this, 
-                               &position,
-                               visitor);
-            visitorHelper.visitAll(maxVisibleRange);
-        }
+    bool canPass(Vector3d pos, Vector3d size) {
+        for (int x = 0; x <= size.x; x++)
+            for (int z = 0; z <= size.z; z++)
+                for (int y = 0; y < size.y; y++) {
+                    if (isOpaque(pos.x + x, pos.y + y, pos.z + z))
+                        return false;
+                }
+        return true;
+    }
+    final void visitVisibleCells(ref Position position, CellVisitor visitor) {
+        visitorHelper.init(this, 
+                            &position,
+                            visitor);
+        visitorHelper.visitAll(maxVisibleRange);
+    }
 
-        /// get max Y position of non-empty cell in region (x +- size, z +- size)
-        int regionHeight(int x, int z, int size) {
-            int top = -1;
-            int delta = size / 8 + 1;
-            for (int dx = x - delta; dx <= x + delta; dx += 8) {
-                for (int dz = z - delta; dz <= z + delta; dz += 8) {
-                    if (ChunkStack * stack = getCellChunkStack(x, z)) {
-                        if (top < stack.topNonEmptyY)
-                            top = stack.topNonEmptyY;
-                    }
+    /// get max Y position of non-empty cell in region (x +- size, z +- size)
+    int regionHeight(int x, int z, int size) {
+        int top = -1;
+        int delta = size / 8 + 1;
+        for (int dx = x - delta; dx <= x + delta; dx += 8) {
+            for (int dz = z - delta; dz <= z + delta; dz += 8) {
+                if (ChunkStack * stack = getCellChunkStack(x, z)) {
+                    if (top < stack.topNonEmptyY)
+                        top = stack.topNonEmptyY;
                 }
             }
-            return top;
         }
-
-    private:
-
-        Position _camPosition;
-        int maxVisibleRange = MAX_VIEW_DISTANCE;
-        DiamondVisitor visitorHelper;
+        return top;
     }
 
-} else {
+private:
 
-
-    // Layer is 16x16 (CHUNK_DX_SHIFT x CHUNK_DX_SHIFT) cells
-    immutable int CHUNK_DX_SHIFT = 4;
-    immutable int CHUNK_DX = (1<<CHUNK_DX_SHIFT);
-    immutable int CHUNK_DX_MASK = (CHUNK_DX - 1);
-
-    //extern bool HIGHLIGHT_GRID;
-
-    // Layer is 256x16x16 CHUNK_DY layers = CHUNK_DY * (CHUNK_DX_SHIFT x CHUNK_DX_SHIFT) cells
-    struct ChunkLayer {
-
-        cell_t[CHUNK_DX * CHUNK_DX] cells;
-
-        cell_t* ptr(int x, int z) {
-            return &cells.ptr[(z << CHUNK_DX_SHIFT) + x];
-        }
-        cell_t get(int x, int z) {
-            return cells.ptr[(z << CHUNK_DX_SHIFT) + x];
-        }
-        void set(int x, int z, cell_t cell) {
-            cells.ptr[(z << CHUNK_DX_SHIFT) + x] = cell;
-        }
-    }
-
-    struct Chunk {
-    private:
-        ChunkLayer*[CHUNK_DY] layers;
-        int bottomLayer = - 1;
-        int topLayer = -1;
-        int topNonEmpty = -1;
-    public:
-
-        ~this() {
-            for (int i = 0; i < CHUNK_DY; i++)
-                if (layers[i])
-                    destroy(layers[i]);
-        }
-        int getMinLayer() { return bottomLayer; }
-        int getMaxLayer() { return topLayer; }
-        int getTopNonEmpty() { return topNonEmpty; }
-        void updateMinMaxLayer(ref int minLayer, ref int maxLayer) {
-            if (minLayer == -1 || minLayer > bottomLayer)
-                minLayer = bottomLayer;
-            if (maxLayer == -1 || maxLayer < topLayer)
-                maxLayer = topLayer;
-        }
-        cell_t get(int x, int y, int z) {
-            //if (!this)
-            //    return NO_CELL;
-            ChunkLayer * layer = layers[y & CHUNK_DY_MASK];
-            if (!layer)
-                return NO_CELL;
-            return layer.get(x & CHUNK_DX_MASK, z & CHUNK_DY_MASK);
-        }
-
-        /// get, x, y, z are already checked for bounds
-        cell_t getNoCheck(int x, int y, int z) {
-            ChunkLayer * layer = layers.ptr[y];
-            if (!layer) // likely
-                return NO_CELL;
-            return layer.cells.ptr[(z << CHUNK_DX_SHIFT) + x]; // inlined return layer.get(x, z);
-        }
-
-        void set(int x, int y, int z, cell_t cell) {
-            int layerIndex = y & CHUNK_DY_MASK;
-            ChunkLayer * layer = layers.ptr[layerIndex];
-            if (!layer) {
-                layer = new ChunkLayer();
-                layers.ptr[layerIndex] = layer;
-                if (topLayer == -1 || topLayer < layerIndex)
-                    topLayer = layerIndex;
-                if (bottomLayer == -1 || bottomLayer > layerIndex)
-                    bottomLayer = layerIndex;
-            }
-            layer.set(x & CHUNK_DX_MASK, z & CHUNK_DY_MASK, cell);
-            if (cell != BlockId.air && topNonEmpty < y)
-                topNonEmpty = y;
-        }
-
-        /// srcpos coords x, z are in chunk bounds
-        //void getCells(Vector3d srcpos, Vector3d dstpos, Vector3d size, VolumeData & buf);
-    }
-
-    alias ChunkMatrix = InfiniteMatrix!(Chunk *);
-
-
-    /// Voxel World
-    class World {
-    private:
-        Position _camPosition;
-        int maxVisibleRange = MAX_VIEW_DISTANCE;
-        ChunkMatrix chunks;
-        DiamondVisitor visitorHelper;
-    public:
-        this() {
-            _camPosition = Position(Vector3d(0, 13, 0), Vector3d(0, 0, 1));
-        }
-        ~this() {
-        }
-        @property final ref Position camPosition() { return _camPosition; }
-
-        final cell_t getCell(int x, int y, int z) {
-            if (!(y & CHUNK_DY_INV_MASK)) {
-                if (Chunk * p = chunks.get(x >> CHUNK_DX_SHIFT, z >> CHUNK_DX_SHIFT))
-                    return p.getNoCheck(x & CHUNK_DX_MASK, y, z & CHUNK_DX_MASK);
-                return NO_CELL;
-            }
-            // y out of bounds
-            if (y < 0)
-                return BOUND_BOTTOM;
-            //if (y >= CHUNK_DY)
-            else
-                return BOUND_SKY;
-        }
-
-        final bool isOpaque(int x, int y, int z) {
-            cell_t cell = getCell(x, y, z);
-            return BLOCK_TYPE_OPAQUE.ptr[cell] && cell != BOUND_SKY;
-        }
-
-        final void setCell(int x, int y, int z, cell_t value) {
-            int chunkx = x >> CHUNK_DX_SHIFT;
-            int chunkz = z >> CHUNK_DX_SHIFT;
-            Chunk * p = chunks.get(chunkx, chunkz);
-            if (!p) {
-                p = new Chunk();
-                chunks.set(chunkx, chunkz, p);
-            }
-            p.set(x & CHUNK_DX_MASK, y, z & CHUNK_DX_MASK, value);
-        }
-
-        void setCellRange(Vector3d pos, Vector3d sz, cell_t value) {
-            for (int x = 0; x < sz.x; x++)
-                for (int y = 0; y < sz.y; y++)
-                    for (int z = 0; z < sz.z; z++)
-                        setCell(pos.x + x, pos.y + y, pos.z + z, value);
-        }
-
-        /// get max Y position of non-empty cell in region (x +- size, z +- size)
-        int regionHeight(int x, int z, int size) {
-            int top = -1;
-            int delta = size / CHUNK_DX + 1;
-            for (int dx = x - delta; dx <= x + delta; dx += CHUNK_DX) {
-                for (int dz = z - delta; dz <= z + delta; dz += CHUNK_DX) {
-                    if (Chunk * p = chunks.get(dx >> CHUNK_DX_SHIFT, dz >> CHUNK_DX_SHIFT))
-                        if (top < p.getTopNonEmpty)
-                            top = p.getTopNonEmpty;
-                }
-            }
-            return top;
-        }
-
-        bool canPass(Vector3d pos) {
-            return canPass(Vector3d(pos.x - 2, pos.y - 3, pos.z - 2), Vector3d(4, 5, 4));
-        }
-
-        bool canPass(Vector3d pos, Vector3d size) {
-            for (int x = 0; x <= size.x; x++)
-                for (int z = 0; z <= size.z; z++)
-                    for (int y = 0; y < size.y; y++) {
-                        if (isOpaque(pos.x + x, pos.y + y, pos.z + z))
-                            return false;
-                    }
-            return true;
-        }
-        final void visitVisibleCells(ref Position position, CellVisitor visitor) {
-            visitorHelper.init(this, 
-                               &position,
-                               visitor);
-            visitorHelper.visitAll(maxVisibleRange);
-        }
-    }
+    Position _camPosition;
+    int maxVisibleRange = MAX_VIEW_DISTANCE;
+    DiamondVisitor visitorHelper;
 }
 
 interface CellVisitor {

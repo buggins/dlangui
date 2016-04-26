@@ -454,8 +454,8 @@ class UiWidget : VerticalLayout, CellVisitor {
         dirLightNode.translate(_animatingPosition);
         dirLightNode.rotateY(_animatingAngle);
 
-        //checkgl!glEnable(GL_CULL_FACE);
-        checkgl!glDisable(GL_CULL_FACE);
+        checkgl!glEnable(GL_CULL_FACE);
+        //checkgl!glDisable(GL_CULL_FACE);
         checkgl!glEnable(GL_DEPTH_TEST);
         checkgl!glCullFace(GL_BACK);
 
