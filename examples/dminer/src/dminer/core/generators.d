@@ -10,18 +10,18 @@ static short[] TERRAIN_INIT_DATA = [
     //                                      V
     10,  10,  10,  10,  30,  30,  30,  30,  30,  30,  30,  30,  10,  10,  10,  10,  10,
     10,  10,  20,  50,  50,  50,  50,  50,  50,  50,  50,  50,  20,  20,  20,  20,  10,
-    10,  20,  20,  50,  50,  50,  50,  50,  50,  50, 250,  50,  50,  50,  20,  20,  10,
-    10,  20,  50,  50,  50,  50,  50, 150,  50,  50,  50,  50,  50,  50,  50,  20,  10,
-    10,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50, 150,  50,  20,  30,
-    30,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  30,
-    30,  50,  50,  50,  50,  50,  50,  50, 120,  50,  50,  50,  80,  50, 250,  50,  30,
-    30,  50,  50,  50,  50,  50,  50, 110,  80, 130,  50,  50,  50,  50,  50,  50,  30,
+    10,  20,  20,  50,  50, 150,  50,  50,  50,  50, 250,  50,  50,  50,  20,  20,  10,
+    10,  20,  50,  50,  50,  50,  50, 150,  50,  50,  50, 150,  50,  50,  50,  20,  10,
+    10,  50, 250,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50, 150,  50,  20,  30,
+    30,  50,  50,  50,  50,  50, 150,  50,  50,  50, 250,  50,  50,  50,  50,  50,  30,
+    30,  50,  50,  50,  50,  50,  50,  50, 100,  50,  50,  50,  80,  50, 250,  50,  30,
+    30,  50,  50,  50,  50,  50,  50, 110,  80, 130,  50,  50, 250,  50,  50,  50,  30,
     30,  50,  50,  50,  50,  50, 150, 100,  50, 140,  50,  50,  50,  50,  50,  50,  30, // <==
-    30,  50,  50,  50,  50,  50,  50, 110,  40, 120,  50,  90,  50,  50,  50,  50,  30,
+    30,  50,  50,  50,  50,  50,  50, 110,  40, 120,  50,  90,  50, 250,  50,  50,  30,
     30,  50,  50,  50,  50, 150,  50,  50, 110,  50,  50,  50,  50,  50,  50,  50,  30,
-    30,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50, 150,  50,  50,  50,  10,
-    30,  50,  50,  50,  50,  50,  80,  50,  50,  50,  50,  50,  50,  50,  50,  50,  10,
-    30,  50,  50,  80,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  40,  50,  10,
+    30,  50,  50,  50,  50,  50, 150,  50,  50,  50, 150,  50, 150,  50,  50,  50,  10,
+    30,  50,  50,  50,  50,  50,  80,  50,  50, 150,  50,  50,  50,  50,  50,  50,  10,
+    30,  50, 250,  80,  50,  50, 250,  50,  50,  50, 250,  50,  50,  50,  40,  50,  10,
     30,  20,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  40,  20,  20,  10,
     30,  20,  20,  50,  50,  50,  50,  50,  50,  50,  40,  20,  20,  20,  20,  20,  10,
     30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  10,  10,  10,  10,  10,
@@ -36,13 +36,13 @@ static short[] TERRAIN_SCALE_DATA = [
     20,  20,  20,  20,  20,  20,  20,  20,  40,  60,  50,  20,  20,  30,  20,  20,  20,
     20,  20, 120,  20,  20,  20,  20,  20,  20,  50,  20,  20,  20,  45,  20,  20,  20,
     20,  20,  20,  20,  20,  20,  20,  20,  80,  20,  50,  20,  40,  50,  40,  20,  20,
-    20,  20,  20,  20,  20,  20,  90,  20,  80,  20,  30,  20,  20,  30,  20,  20,  20,
+    20,  20,  20,  20,  20,  20,  90,  20,  80,  20,  80,  20,  20,  30,  20,  20,  20,
     20,  20,  20,  20,  20,  90,  20,  80,  30,  20,  40,  20,  20,  20,  20,  20,  20,
     20,  20,  20,  20,  20,  20,  90,  30,  20,  30,  50, 120,  20,  20,  20,  20,  20, // <==
     20,  20,  20,  20,  20,  20,  50,  20,  30,  20,  20,  20,  20,  20,  20,  20,  20,
     20,  20,  20,  20,  20,  20,  40,  70,  40,  90,  20,  40,  20,  20,  20,  20,  20,
-    20,  20,  20,  20,  20,  20,  20,  20,  80,  20,  50,  70,  50,  20,  20,  20,  20,
-    20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  60,  20,  20,  20,  20,  20,
+    20,  20,  20,  20,  20,  20,  80,  20,  80,  20,  50,  70,  50,  20,  20,  20,  20,
+    20,  20,  20,  20,  20,  20,  80,  20,  20,  20,  20,  60,  20,  20,  20,  20,  20,
     20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,
     20,  20,  20, 120,  20,  20,  20,  20,  20,  20,  20,  20,  20, 120,  20,  20,  20,
     20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,
@@ -55,12 +55,12 @@ void initWorldTerrain(World world, int terrSizeBits = 10, int x0 = 0, int z0 = 0
     int terrSize = 1 << terrSizeBits;
     TerrainGen scaleterr = TerrainGen(terrSizeBits, terrSizeBits); // 512x512
     scaleterr.generate(4321, TERRAIN_SCALE_DATA, terrSizeBits - 4); // init grid is 16x16 (1 << (9-7))
-    scaleterr.filter(1);
+    //scaleterr.filter(1);
     //scaleterr.filter(2);
     scaleterr.limit(0, 90);
     TerrainGen terr = TerrainGen(terrSizeBits, terrSizeBits); // 512x512
     terr.generateWithScale(123456, TERRAIN_INIT_DATA, terrSizeBits - 4, scaleterr); // init grid is 16x16 (1 << (9-7))
-    terr.filter(1);
+    //terr.filter(1);
     terr.limit(5, CHUNK_DY * 3 / 4);
     terr.filter(1);
     for (int x = 0; x < terrSize; x++) {
@@ -125,21 +125,41 @@ void makeCastleWall(World world, Vector3d start, Vector3d direction, int height,
     }
 }
 
-void makeCastleWalls(World world, Vector3d start, int size, int height, cell_t material) {
-    world.makeCastleWall(Vector3d(start.x - size - 2, start.y, start.z - size), Vector3d(1, 0, 0), height, size * 2 + 5, 4, material);
-    world.makeCastleWall(Vector3d(start.x - size, start.y, start.z - size - 2), Vector3d(0, 0, 1), height, size * 2 + 5, 4, material);
-    world.makeCastleWall(Vector3d(start.x + size, start.y, start.z - size - 2), Vector3d(0, 0, 1), height, size * 2 + 5, 4, material);
-    world.makeCastleWall(Vector3d(start.x - size - 2, start.y, start.z + size), Vector3d(1, 0, 0), height, size * 2 + 5, 4, material);
+void makeCastleWalls(World world, Vector3d start, int size, int height, int width, cell_t material) {
+    world.makeCastleWall(Vector3d(start.x - size - width/2, start.y, start.z - size), Vector3d(1, 0, 0), height, size * 2 + width, width, material);
+    world.makeCastleWall(Vector3d(start.x - size, start.y, start.z - size - width/2), Vector3d(0, 0, 1), height, size * 2 + width, width, material);
+    world.makeCastleWall(Vector3d(start.x + size, start.y, start.z - size - width/2), Vector3d(0, 0, 1), height, size * 2 + width, width, material);
+    world.makeCastleWall(Vector3d(start.x - size - width/2, start.y, start.z + size), Vector3d(1, 0, 0), height, size * 2 + width, width, material);
+}
+
+void prepareCastleBase(World world, Vector3d start, int size) {
+    // basement - bedrock
+    world.setCellRange(Vector3d(start.x - size - 3, start.y - 10, start.z - size - 3), Vector3d(size*2 + 6, 10, size*2 + 6), BlockId.bedrock);
+    world.setCellRange(Vector3d(start.x - size - 4, start.y - 11, start.z - size - 4), Vector3d(size*2 + 8, 10, size*2 + 8), BlockId.bedrock);
+    // empty
+    world.setCellRange(Vector3d(start.x - size - 5, start.y, start.z - size - 5), Vector3d(size*2 + 10, 10, size*2 + 10), BlockId.air);
+    world.setCellRange(Vector3d(start.x - size - 6, start.y + 1, start.z - size - 6), Vector3d(size*2 + 12, 10, size*2 + 12), BlockId.air);
+    world.setCellRange(Vector3d(start.x - size - 7, start.y + 2, start.z - size - 7), Vector3d(size*2 + 14, 10, size*2 + 14), BlockId.air);
+    // floor
+    world.setCellRange(Vector3d(start.x - size, start.y - 10, start.z - size), Vector3d(size*2, 10, size*2), BlockId.red_sand);//cobblestone
 }
 
 void makeCastle(World world, Vector3d start, int size, int height) {
+    world.prepareCastleBase(start, size);
     // main walls
-    world.makeCastleWalls(start, size, height / 2, BlockId.brick);
+    world.makeCastleWalls(start, size, height, 4, BlockId.brick);
+    // gates
+    world.setCellRange(Vector3d(start.x - 3, start.y - 1, start.z - size - 7), Vector3d(7, 1, 10), BlockId.cobblestone);
+    world.setCellRange(Vector3d(start.x - 3, start.y - 2, start.z - size - 8), Vector3d(7, 1, 10), BlockId.cobblestone);
+    world.setCellRange(Vector3d(start.x - 3, start.y - 3, start.z - size - 9), Vector3d(7, 1, 10), BlockId.cobblestone);
+    world.setCellRange(Vector3d(start.x - 3, start.y, start.z - size - 4), Vector3d(7, height * 7 / 10, 7), BlockId.air);
+    world.setCellRange(Vector3d(start.x - 4, start.y, start.z - size), Vector3d(9, height * 7 / 10 + 1, 1), BlockId.air);
     // corner towers
-    //world.makeCastleWalls(start + Vector3d(-size, 0, -size), 5, height + 4, BlockId.brick);
-    //world.makeCastleWalls(start + Vector3d(size, 0, -size), 5, height + 4, BlockId.brick);
-    //world.makeCastleWalls(start + Vector3d(-size, 0, size), 5, height + 4, BlockId.brick);
-    //world.makeCastleWalls(start + Vector3d(size, 0, size), 5, height + 4, BlockId.brick);
+    world.makeCastleWalls(start + Vector3d(-size + 1, -5, -size + 1), 5, height + 2 + 5, 3, BlockId.gray_brick);
+    world.makeCastleWalls(start + Vector3d(size - 1, -5, -size + 1), 5, height + 2 + 5, 3, BlockId.gray_brick);
+    world.makeCastleWalls(start + Vector3d(-size + 1, -5, size - 1), 5, height + 2 + 5, 3, BlockId.gray_brick);
+    world.makeCastleWalls(start + Vector3d(size - 1, -5, size - 1), 5, height + 2 + 5, 3, BlockId.gray_brick);
     // dungeon
-    //wwwwworld.makeCastleWalls(start, size / 2, height * 2, BlockId.cobblestone);
+    world.makeCastleWalls(start, size / 3, height * 15 / 10, 2, BlockId.gray_brick);
+    world.setCellRange(Vector3d(start.x - 2, start.y, start.z - size - 4), Vector3d(5, height * 6 / 10, size), BlockId.air);
 }

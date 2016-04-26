@@ -12,7 +12,7 @@ immutable int CHUNK_DX = (1<<CHUNK_DX_SHIFT);
 immutable int CHUNK_DX_MASK = (CHUNK_DX - 1);
 
 // Y range: 0..CHUNK_DY-1
-immutable int CHUNK_DY_SHIFT = 6;
+immutable int CHUNK_DY_SHIFT = 7;
 immutable int CHUNK_DY = (1<<CHUNK_DY_SHIFT);
 immutable int CHUNK_DY_MASK = (CHUNK_DY - 1);
 immutable int CHUNK_DY_INV_MASK = ~CHUNK_DY_MASK;
@@ -275,6 +275,8 @@ struct DiamondVisitor {
     void visitAll(int maxDistance) {
 
         maxY = world.regionHeight(pos0.x, pos0.z, maxDistance);
+        if (maxY < pos0.y + 1)
+            maxY = pos0.y + 1;
 
         maxDist = maxDistance;
         maxDistance *= 2;
@@ -311,8 +313,8 @@ struct DiamondVisitor {
             }
             newcells.clear();
             visitedId++;
-            int maxUp = (((dist + 1) * 7) / 8) + 1;
-            int maxDown = - (dist < 3 ? 3 : (((dist + 1) * 7) / 8)) - 1;
+            //int maxUp = (((dist + 1) * 7) / 8) + 1;
+            //int maxDown = - (dist < 3 ? 3 : (((dist + 1) * 7) / 8)) - 1;
             //CRLog::trace("dist: %d cells: %d", dist, oldcells.length());
             for (int i = 0; i < oldcells.length(); i++) {
                 Vector3d pt = oldcells[i];
@@ -321,7 +323,9 @@ struct DiamondVisitor {
                     continue;
                 if (dist > 2) {
                     // skip some directions
-                    if (pt.y > maxUp || pt.y < maxDown || pt.y > maxY)
+                    //if (pt.y > maxUp || pt.y < maxDown)
+                    //    continue;
+                    if (pt.y > maxY)
                         continue;
                     if (dir == Dir.SOUTH) {
                         if (pt.z < -1)

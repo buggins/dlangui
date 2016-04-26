@@ -87,7 +87,7 @@ class UiWidget : VerticalLayout, CellVisitor {
         dirLightNode.translateX(2);
         dirLightNode.translateY(3);
         dirLightNode.translateZ(0);
-        dirLightNode.light = Light.createPoint(vec3(1.5, 1.5, 1.5), 25); //Light.createDirectional(vec3(1, 0.5, 0.5));
+        dirLightNode.light = Light.createPoint(vec3(1.0, 1.0, 1.0), 35); //Light.createDirectional(vec3(1, 0.5, 0.5));
         //dirLightNode.light = Light.createDirectional(vec3(1, 0.5, 0.5));
         dirLightNode.light.enabled = true;
         _scene.addChild(dirLightNode);
@@ -118,7 +118,7 @@ class UiWidget : VerticalLayout, CellVisitor {
 
 
         //_world.makeCastleWall(Vector3d(25, cy0 - 5, 12), Vector3d(1, 0, 0), 12, 30, 4, BlockId.brick);
-        _world.makeCastle(Vector3d(0, cy0 - 5, 50), 20, 16);
+        _world.makeCastle(Vector3d(0, cy0, 60), 30, 12);
 
         //_world.setCellRange(Vector3d(3, 11, 5), Vector3d(1, 100, 1), 1);
         //_world.setCellRange(Vector3d(13, 11, -5), Vector3d(1, 100, 1), 3);
@@ -142,7 +142,7 @@ class UiWidget : VerticalLayout, CellVisitor {
         Material minerMaterial = new Material(EffectId("textured.vert", "textured.frag", null), "blocks");
         minerMaterial.ambientColor = vec3(0.1,0.1,0.1);
         minerMaterial.textureLinear = false;
-        minerMaterial.specular = 10;
+        //minerMaterial.specular = 10;
         Model minerDrawable = new Model(minerMaterial, _minerMesh);
         Node3d minerNode = new Node3d("miner", minerDrawable);
         _scene.addChild(minerNode);
