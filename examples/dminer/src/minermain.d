@@ -29,6 +29,7 @@ import dminer.core.minetypes;
 import dminer.core.blocks;
 import dminer.core.world;
 import dminer.core.generators;
+import dminer.core.chunk;
 
 mixin APP_ENTRY_POINT;
 

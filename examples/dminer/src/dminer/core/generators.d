@@ -4,6 +4,7 @@ import dminer.core.minetypes;
 import dminer.core.blocks;
 import dminer.core.world;
 import dminer.core.terrain;
+import dminer.core.chunk;
 
 
 __gshared static short[] TERRAIN_INIT_DATA = [
