@@ -1,6 +1,7 @@
 module dminer.core.terrain;
 
 import dminer.core.minetypes;
+import dlangui.core.logger;
 
 
 struct TerrainGen {
@@ -48,6 +49,7 @@ struct TerrainGen {
     }
 
     void generate(int seed, short[] initData, int stepBits) {
+        Log.d("TerrainGen.generate(initData.length=", initData.length, " stepBits=", stepBits, ")");
         rnd.setSeed(seed);
         int step = 1 << stepBits;
         int index = 0;
@@ -56,8 +58,10 @@ struct TerrainGen {
                 set(x, y, initData[index++]);
             }
         }
+        Log.f("last index = ", index);
         int half = step >> 1;
         while (half > 0) {
+            Log.f("halfstep=", half);
             int scale = step;
             for (int y = half; y < dy; y += step) {
                 for (int x = half; x < dx; x++) {
@@ -74,6 +78,7 @@ struct TerrainGen {
         }
     }
     void generateWithScale(int seed, short[] initData, int stepBits, TerrainGen scaleMap) {
+        Log.d("TerrainGen.generateWithScale(initData.length=", initData.length, " stepBits=", stepBits, ")");
         rnd.setSeed(seed);
         int step = 1 << stepBits;
         int index = 0;
@@ -82,8 +87,10 @@ struct TerrainGen {
                 set(x, y, initData[index++]);
             }
         }
+        Log.f("last index = ", index);
         int half = step >> 1;
         while (half > 0) {
+            Log.f("halfstep=", half);
             for (int y = half; y < dy; y += step) {
                 for (int x = half; x < dx; x++) {
                     int scale = (scaleMap.get(x, y) * step) >> 8;
