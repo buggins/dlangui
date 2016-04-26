@@ -176,6 +176,14 @@ struct SmallChunk {
             return 0xFFFFFFFFFFFFFFFF; // can pass ALL
         return chunk.getSideCanPassToMask(opposite(dir));
     }
+    private void findVisibleFacesNorth(ref ulong[8] dst) {
+        ulong canPass = getSideCanPassFromMask(Dir.NORTH);
+        for (int i = 0; i < 8; i++) {
+            ulong isVisible = visiblePlanesZ[i];
+            dst[i] = isVisible & canPass;
+            canPass = canPassPlanesZ[i];
+        }
+    }
     private void generateMasks() {
         // x planes: z,y
         for(int x = 0; x < 8; x++) {
