@@ -194,12 +194,6 @@ private:
     DiamondVisitor visitorHelper;
 }
 
-interface CellVisitor {
-    //void newDirection(ref Position camPosition);
-    //void visitFace(World world, ref Position camPosition, Vector3d pos, cell_t cell, Dir face);
-    void visit(World world, ref Position camPosition, Vector3d pos, cell_t cell, int visibleFaces);
-}
-
 struct DiamondVisitor {
     int maxDist;
     int maxDistBits;

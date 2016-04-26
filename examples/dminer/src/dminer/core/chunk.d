@@ -15,6 +15,13 @@ immutable int CHUNKS_Z = (1 << CHUNKS_BITS_Z); // Z range: -CHUNKS_Z*8 .. CHUNKS
 immutable int CHUNKS_X_MASK = (CHUNKS_X << 1) - 1;
 immutable int CHUNKS_Z_MASK = (CHUNKS_Z << 1) - 1;
 
+interface CellVisitor {
+    import dminer.core.world;
+    //void newDirection(ref Position camPosition);
+    //void visitFace(World world, ref Position camPosition, Vector3d pos, cell_t cell, Dir face);
+    void visit(World world, ref Position camPosition, Vector3d pos, cell_t cell, int visibleFaces);
+}
+
 // vertical stack of chunks with same X, Z, and different Y
 struct ChunkStack {
     protected int _minChunkY;
@@ -109,10 +116,13 @@ struct SmallChunk {
     ulong[8] opaquePlanesX; // 64 bytes
     ulong[8] opaquePlanesY; // 64 bytes
     ulong[8] opaquePlanesZ; // 64 bytes
+    ulong[8] visiblePlanesX; // 64 bytes
+    ulong[8] visiblePlanesY; // 64 bytes
+    ulong[8] visiblePlanesZ; // 64 bytes
     ulong[8] canPassPlanesX; // 64 bytes
     ulong[8] canPassPlanesY; // 64 bytes
     ulong[8] canPassPlanesZ; // 64 bytes
-    ulong[6][6] canPassFromTo; // 288 bytes
+    //ulong[6][6] canPassFromTo; // 288 bytes
     SmallChunk * [6] nearChunks;
     bool dirty;
 
@@ -140,11 +150,38 @@ struct SmallChunk {
     cell_t getCellNoCheck(int x, int y, int z) const {
         return cells[(((y << 3) | z) << 3) | x];
     }
-    void generateMasks() {
+    /// get can pass mask for direction
+    ulong getSideCanPassToMask(Dir dir) {
+        if (dirty)
+            generateMasks();
+        final switch (dir) with (Dir) {
+            case NORTH:
+                return canPassPlanesZ[0];
+            case SOUTH:
+                return canPassPlanesZ[7];
+            case WEST:
+                return canPassPlanesX[0];
+            case EAST:
+                return canPassPlanesX[7];
+            case UP:
+                return canPassPlanesY[7];
+            case DOWN:
+                return canPassPlanesY[0];
+        }
+    }
+    /// to this chunk for nearby chunk
+    ulong getSideCanPassFromMask(Dir dir) {
+        SmallChunk * chunk = nearChunks[dir];
+        if (!chunk)
+            return 0xFFFFFFFFFFFFFFFF; // can pass ALL
+        return chunk.getSideCanPassToMask(opposite(dir));
+    }
+    private void generateMasks() {
         // x planes: z,y
         for(int x = 0; x < 8; x++) {
             ulong opaqueFlags = 0;
             ulong canPassFlags = 0;
+            ulong visibleFlags = 0;
             ulong mask = 1;
             for (int y = 0; y < 8; y++) {
                 for (int z = 0; z < 8; z++) {
@@ -153,16 +190,20 @@ struct SmallChunk {
                         opaqueFlags |= mask;
                     if (BLOCK_TYPE_CAN_PASS.ptr[cell])
                         canPassFlags |= mask;
+                    if (BLOCK_TYPE_VISIBLE.ptr[cell])
+                        visibleFlags |= mask;
                     mask = mask << 1;
                 }
             }
             opaquePlanesX[x] = opaqueFlags;
             canPassPlanesX[x] = canPassFlags;
+            visiblePlanesX[x] = visibleFlags;
         }
         // y planes : x,z
         for(int y = 0; y < 8; y++) {
             ulong opaqueFlags = 0;
             ulong canPassFlags = 0;
+            ulong visibleFlags = 0;
             ulong mask = 1;
             for (int z = 0; z < 8; z++) {
                 for (int x = 0; x < 8; x++) {
@@ -171,16 +212,20 @@ struct SmallChunk {
                         opaqueFlags |= mask;
                     if (BLOCK_TYPE_CAN_PASS.ptr[cell])
                         canPassFlags |= mask;
+                    if (BLOCK_TYPE_VISIBLE.ptr[cell])
+                        visibleFlags |= mask;
                     mask = mask << 1;
                 }
             }
             opaquePlanesY[y] = opaqueFlags;
             canPassPlanesY[y] = canPassFlags;
+            visiblePlanesY[y] = visibleFlags;
         }
         // z planes: x,y
         for(int z = 0; z < 8; z++) {
             ulong opaqueFlags = 0;
             ulong canPassFlags = 0;
+            ulong visibleFlags = 0;
             ulong mask = 1;
             for (int y = 0; y < 8; y++) {
                 for (int x = 0; x < 8; x++) {
@@ -189,17 +234,20 @@ struct SmallChunk {
                         opaqueFlags |= mask;
                     if (BLOCK_TYPE_CAN_PASS.ptr[cell])
                         canPassFlags |= mask;
+                    if (BLOCK_TYPE_VISIBLE.ptr[cell])
+                        visibleFlags |= mask;
                     mask = mask << 1;
                 }
             }
             opaquePlanesZ[z] = opaqueFlags;
             canPassPlanesZ[z] = canPassFlags;
+            visiblePlanesZ[z] = visibleFlags;
         }
         // can pass from to
-        for (Dir from = Dir.min; from <= Dir.max; ++from) {
-            for (Dir to = Dir.min; to <= Dir.max; ++to) {
-            }
-        }
+        //for (Dir from = Dir.min; from <= Dir.max; ++from) {
+        //    for (Dir to = Dir.min; to <= Dir.max; ++to) {
+        //    }
+        //}
         dirty = false;
     }
     static void spreadFlags(ulong src, ref ulong[8] planes, ref ulong[8] dst, int start, int end, ubyte spreadMask) {

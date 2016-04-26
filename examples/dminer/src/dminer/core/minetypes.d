@@ -161,6 +161,7 @@ struct Vector3d {
 
 __gshared const Vector3d ZERO3 = Vector3d(0, 0, 0);
 
+
 struct Array(T) {
 private:
     int _length;
@@ -248,6 +249,7 @@ alias CellArray = Array!(cell_t);
 alias Vector2dArray = Array!(Vector2d);
 alias Vector3dArray = Array!(Vector3d);
 
+/*
 /// array with support of both positive and negative indexes
 struct InfiniteArray(T) {
 private:
@@ -392,6 +394,8 @@ public:
                 destroy(v);
     }
 }
+*/
+
 
 struct Position {
     Vector3d pos;
