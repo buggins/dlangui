@@ -3,7 +3,11 @@ module dminer.core.world;
 import dminer.core.minetypes;
 import dminer.core.blocks;
 
-const int MAX_VIEW_DISTANCE_BITS = 6;
+version (Android) {
+    const int MAX_VIEW_DISTANCE_BITS = 6;
+} else {
+    const int MAX_VIEW_DISTANCE_BITS = 5;
+}
 const int MAX_VIEW_DISTANCE = (1 << MAX_VIEW_DISTANCE_BITS);
 
 // Layer is 16x16 (CHUNK_DX_SHIFT x CHUNK_DX_SHIFT) cells

@@ -94,7 +94,7 @@ X<-----x-----
      3 | 2
 */
 
-static const float[VERTEX_COMPONENTS * 4] face_vertices_north =
+__gshared static const float[VERTEX_COMPONENTS * 4] face_vertices_north =
 [
      0.5,  0.5, -0.5,	0.0, 0.0, -1.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
     -0.5,  0.5, -0.5,	0.0, 0.0, -1.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
@@ -109,7 +109,7 @@ static const float[VERTEX_COMPONENTS * 4] face_vertices_north =
      3 | 2
 */
 
-static const float[VERTEX_COMPONENTS * 4] face_vertices_south =
+__gshared static const float[VERTEX_COMPONENTS * 4] face_vertices_south =
 [
    -0.5,  0.5, 0.5,    0.0, 0.0, 1.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
     0.5,  0.5, 0.5,    0.0, 0.0, 1.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
@@ -124,7 +124,7 @@ static const float[VERTEX_COMPONENTS * 4] face_vertices_south =
      3 | 2
 */
 
-static const float[VERTEX_COMPONENTS * 4] face_vertices_west =
+__gshared static const float[VERTEX_COMPONENTS * 4] face_vertices_west =
 [
     -0.5,  0.5, -0.5,	1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
     -0.5,  0.5,  0.5,	1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
@@ -139,7 +139,7 @@ Z<-----x-----
      3 | 2
 */
 
-static const float[VERTEX_COMPONENTS * 4] face_vertices_east =
+__gshared static const float[VERTEX_COMPONENTS * 4] face_vertices_east =
 [
     0.5,  0.5,  0.5,	-1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
     0.5,  0.5, -0.5,	-1.0, 0.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
@@ -155,7 +155,7 @@ static const float[VERTEX_COMPONENTS * 4] face_vertices_east =
       Zv
 */
 
-static const float[VERTEX_COMPONENTS * 4] face_vertices_up =
+__gshared static const float[VERTEX_COMPONENTS * 4] face_vertices_up =
 [
     -0.5, 0.5, -0.5,	0.0, 1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
      0.5, 0.5, -0.5,	0.0, 1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
@@ -170,7 +170,7 @@ X<-----x-----
       Zv
 */
 
-static const float[VERTEX_COMPONENTS * 4] face_vertices_down =
+__gshared static const float[VERTEX_COMPONENTS * 4] face_vertices_down =
 [
      0.5, -0.5,-0.5,	0.0, -1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 0.0,
     -0.5, -0.5,-0.5,	0.0, -1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		1.0, 0.0,
@@ -178,12 +178,12 @@ static const float[VERTEX_COMPONENTS * 4] face_vertices_down =
      0.5, -0.5, 0.5,	0.0, -1.0, 0.0,		1.0, 1.0, 1.0, 1.0,		0.0, 1.0,
 ];
 
-static const ushort[6] face_indexes =
+__gshared static const ushort[6] face_indexes =
 [
       2, 1, 0, 0, 3, 2 // CCW
 ];
 
-static const ushort[6] face_indexes_back =
+__gshared static const ushort[6] face_indexes_back =
 [
     0, 2, 1, 2, 3, 1
 ];

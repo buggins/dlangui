@@ -159,7 +159,7 @@ struct Vector3d {
     }
 }
 
-const Vector3d ZERO3 = Vector3d(0, 0, 0);
+__gshared const Vector3d ZERO3 = Vector3d(0, 0, 0);
 
 struct Array(T) {
 private:
@@ -721,7 +721,7 @@ struct Random {
     }
 }
 
-const Vector3d[6] DIRECTION_VECTORS = [
+__gshared const Vector3d[6] DIRECTION_VECTORS = [
     Vector3d(0, 0, -1),
     Vector3d(0, 0, 1),
     Vector3d(-1, 0, 0),

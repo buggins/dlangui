@@ -444,7 +444,7 @@ class UiWidget : VerticalLayout, CellVisitor {
 
     /// this is OpenGLDrawableDelegate implementation
     private void doDraw(Rect windowRect, Rect rc) {
-        _cam.setPerspective(rc.width, rc.height, 45.0f, 0.1, 100);
+        _cam.setPerspective(rc.width, rc.height, 45.0f, 0.3, MAX_VIEW_DISTANCE);
         _cam.setIdentity();
         _cam.translate(_animatingPosition);
         _cam.rotateY(_animatingAngle);
@@ -453,8 +453,8 @@ class UiWidget : VerticalLayout, CellVisitor {
         dirLightNode.translate(_animatingPosition);
         dirLightNode.rotateY(_animatingAngle);
 
-        checkgl!glEnable(GL_CULL_FACE);
-        //checkgl!glDisable(GL_CULL_FACE);
+        //checkgl!glEnable(GL_CULL_FACE);
+        checkgl!glDisable(GL_CULL_FACE);
         checkgl!glEnable(GL_DEPTH_TEST);
         checkgl!glCullFace(GL_BACK);
 
