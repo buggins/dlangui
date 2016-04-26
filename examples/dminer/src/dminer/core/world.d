@@ -40,7 +40,9 @@ private:
     ChunkLayer*[CHUNK_DY] layers;
     int bottomLayer = - 1;
     int topLayer = -1;
+    int topNonEmpty = -1;
 public:
+    
     ~this() {
         for (int i = 0; i < CHUNK_DY; i++)
             if (layers[i])
@@ -48,6 +50,7 @@ public:
     }
     int getMinLayer() { return bottomLayer; }
     int getMaxLayer() { return topLayer; }
+    int getTopNonEmpty() { return topNonEmpty; }
     void updateMinMaxLayer(ref int minLayer, ref int maxLayer) {
         if (minLayer == -1 || minLayer > bottomLayer)
             minLayer = bottomLayer;
@@ -83,6 +86,8 @@ public:
                 bottomLayer = layerIndex;
         }
         layer.set(x & CHUNK_DX_MASK, z & CHUNK_DY_MASK, cell);
+        if (cell != BlockId.air && topNonEmpty < y)
+            topNonEmpty = y;
     }
 
     /// srcpos coords x, z are in chunk bounds
@@ -123,6 +128,20 @@ public:
     final bool isOpaque(int x, int y, int z) {
         cell_t cell = getCell(x, y, z);
         return BLOCK_TYPE_OPAQUE.ptr[cell] && cell != BOUND_SKY;
+    }
+
+    /// get max Y position of non-empty cell in region (x +- size, z +- size)
+    int regionHeight(int x, int z, int size) {
+        int top = -1;
+        int delta = size / CHUNK_DX + 1;
+        for (int dx = x - delta; dx <= x + delta; dx += CHUNK_DX) {
+            for (int dz = z - delta; dz <= z + delta; dz += CHUNK_DX) {
+                if (Chunk * p = chunks.get(dx >> CHUNK_DX_SHIFT, dz >> CHUNK_DX_SHIFT))
+                    if (top < p.getTopNonEmpty)
+                        top = p.getTopNonEmpty;
+            }
+        }
+        return top;
     }
 
     final void setCell(int x, int y, int z, cell_t value) {
@@ -186,6 +205,7 @@ struct DiamondVisitor {
     //ubyte visitedEmpty;
     int m0;
     int m0mask;
+    int maxY;
     void init(World w, Position * pos, CellVisitor v) {
         world = w;
         position = pos;
@@ -253,6 +273,9 @@ struct DiamondVisitor {
     }
 
     void visitAll(int maxDistance) {
+
+        maxY = world.regionHeight(pos0.x, pos0.z, maxDistance);
+
         maxDist = maxDistance;
         maxDistance *= 2;
         maxDistBits = bitsFor(maxDist);
@@ -298,7 +321,7 @@ struct DiamondVisitor {
                     continue;
                 if (dist > 2) {
                     // skip some directions
-                    if (pt.y > maxUp || pt.y < maxDown)
+                    if (pt.y > maxUp || pt.y < maxDown || pt.y > maxY)
                         continue;
                     if (dir == Dir.SOUTH) {
                         if (pt.z < -1)
@@ -420,140 +443,3 @@ struct DiamondVisitor {
     }
 }
 
-static short[] TERRAIN_INIT_DATA = [
-    //                                      V
-    10,  10,  10,  10,  30,  30,  30,  30,  30,  30,  30,  30,  10,  10,  10,  10,  10,
-    10,  10,  20,  50,  50,  50,  50,  50,  50,  50,  50,  50,  20,  20,  20,  20,  10,
-    10,  20,  20,  50,  50,  50,  50,  50,  50,  50, 250,  50,  50,  50,  20,  20,  10,
-    10,  20,  50,  50,  50,  50,  50, 150,  50,  50,  50,  50,  50,  50,  50,  20,  10,
-    10,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50, 150,  50,  20,  30,
-    30,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  30,
-    30,  50,  50,  50,  50,  50,  50,  50, 120,  50,  50,  50,  80,  50, 250,  50,  30,
-    30,  50,  50,  50,  50,  50,  50, 110,  80, 130,  50,  50,  50,  50,  50,  50,  30,
-    30,  50,  50,  50,  50,  50, 150, 100,  50, 140,  50,  50,  50,  50,  50,  50,  30, // <==
-    30,  50,  50,  50,  50,  50,  50, 110,  40, 120,  50,  90,  50,  50,  50,  50,  30,
-    30,  50,  50,  50,  50, 150,  50,  50, 110,  50,  50,  50,  50,  50,  50,  50,  30,
-    30,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50, 150,  50,  50,  50,  10,
-    30,  50,  50,  50,  50,  50,  80,  50,  50,  50,  50,  50,  50,  50,  50,  50,  10,
-    30,  50,  50,  80,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  40,  50,  10,
-    30,  20,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  50,  40,  20,  20,  10,
-    30,  20,  20,  50,  50,  50,  50,  50,  50,  50,  40,  20,  20,  20,  20,  20,  10,
-    30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  30,  10,  10,  10,  10,  10,
-    //                                      ^
-];
-
-static short[] TERRAIN_SCALE_DATA = [
-    //                                      V
-    20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,
-    20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,
-    20,  20,  20,  20, 120,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,
-    20,  20,  20,  20,  20,  20,  20,  20,  40,  60,  50,  20,  20,  30,  20,  20,  20,
-    20,  20, 120,  20,  20,  20,  20,  20,  20,  50,  20,  20,  20,  45,  20,  20,  20,
-    20,  20,  20,  20,  20,  20,  20,  20,  80,  20,  50,  20,  40,  50,  40,  20,  20,
-    20,  20,  20,  20,  20,  20,  90,  20,  80,  20,  30,  20,  20,  30,  20,  20,  20,
-    20,  20,  20,  20,  20,  90,  20,  80,  30,  20,  40,  20,  20,  20,  20,  20,  20,
-    20,  20,  20,  20,  20,  20,  90,  30,  20,  30,  50, 120,  20,  20,  20,  20,  20, // <==
-    20,  20,  20,  20,  20,  20,  50,  20,  30,  20,  20,  20,  20,  20,  20,  20,  20,
-    20,  20,  20,  20,  20,  20,  40,  70,  40,  90,  20,  40,  20,  20,  20,  20,  20,
-    20,  20,  20,  20,  20,  20,  20,  20,  80,  20,  50,  70,  50,  20,  20,  20,  20,
-    20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  60,  20,  20,  20,  20,  20,
-    20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,
-    20,  20,  20, 120,  20,  20,  20,  20,  20,  20,  20,  20,  20, 120,  20,  20,  20,
-    20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,
-    20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,
-    //                                      ^
-];
-
-void initWorldTerrain(World world, int terrSizeBits = 10, int x0 = 0, int z0 = 0) {
-    import dminer.core.terrain;
-    int terrSize = 1 << terrSizeBits;
-    TerrainGen scaleterr = TerrainGen(terrSizeBits, terrSizeBits); // 512x512
-    scaleterr.generate(4321, TERRAIN_SCALE_DATA, terrSizeBits - 4); // init grid is 16x16 (1 << (9-7))
-    scaleterr.filter(1);
-    //scaleterr.filter(2);
-    scaleterr.limit(0, 90);
-    TerrainGen terr = TerrainGen(terrSizeBits, terrSizeBits); // 512x512
-    terr.generateWithScale(123456, TERRAIN_INIT_DATA, terrSizeBits - 4, scaleterr); // init grid is 16x16 (1 << (9-7))
-    terr.filter(1);
-    terr.limit(5, CHUNK_DY * 3 / 4);
-    terr.filter(1);
-    for (int x = 0; x < terrSize; x++) {
-        for (int z = 0; z < terrSize; z++) {
-            int cellx = x0 + x - terrSize / 2;
-            int cellz = z0 + z - terrSize / 2;
-            int h = terr.get(x, z);
-            int dh = terr.getHeightDiff(x, z);
-
-
-            cell_t cell = BlockId.bedrock;
-            //cell_t cell = BlockId.grass;
-            //cell_t cell = BlockId.face_test;
-            //if (h < CHUNK_DY / 10)
-            //    cell = 100;
-            //else if (h < CHUNK_DY / 5)
-            //    cell = 101;
-            //else if (h < CHUNK_DY / 4)
-            //    cell = 102;
-            //else if (h < CHUNK_DY / 3)
-            //    cell = 103;
-            //else if (h < CHUNK_DY / 2)
-            //    cell = 104;
-            //else
-            //    cell = 105;
-
-            cell_t topcell = BlockId.bedrock;
-            if (dh <= 1)
-                topcell = BlockId.grass;
-
-            for (int y = 0; y < h; y++) {
-                world.setCell(cellx, y, cellz, cell);
-            }
-            world.setCell(cellx, h, cellz, topcell);
-        }
-    }
-}
-
-
-void makeCastleWall(World world, Vector3d start, Vector3d direction, int height, int length, int width, cell_t material) {
-    Vector3d normal = direction.turnLeft;
-    for (int x = 0; x < length; x++) {
-        Vector3d x0 = start + direction * x;
-        for (int y = 0; y < height; y++) {
-            Vector3d y0 = x0;
-            y0.y += y;
-            for (int z = -width / 2; z <= width / 2; z++) {
-                Vector3d z0 = y0 + normal * z;
-                bool side = (z == -width/2 || z == width/2);
-                cell_t cell = material;
-                if (y >= height - 2) {
-                    if (!side)
-                        cell = BlockId.air;
-                    else if ((x & 1) && (y >= height - 1)) {
-                        cell = BlockId.air;
-                    }
-                }
-                if (cell != BlockId.air)
-                    world.setCell(z0.x, z0.y, z0.z, cell);
-            }
-        }
-    }
-}
-
-void makeCastleWalls(World world, Vector3d start, int size, int height, cell_t material) {
-    world.makeCastleWall(Vector3d(start.x - size - 2, start.y, start.z - size), Vector3d(1, 0, 0), height, size * 2 + 5, 4, material);
-    world.makeCastleWall(Vector3d(start.x - size, start.y, start.z - size - 2), Vector3d(0, 0, 1), height, size * 2 + 5, 4, material);
-    world.makeCastleWall(Vector3d(start.x + size, start.y, start.z - size - 2), Vector3d(0, 0, 1), height, size * 2 + 5, 4, material);
-    world.makeCastleWall(Vector3d(start.x - size - 2, start.y, start.z + size), Vector3d(1, 0, 0), height, size * 2 + 5, 4, material);
-}
-
-void makeCastle(World world, Vector3d start, int size, int height) {
-    // main walls
-    world.makeCastleWalls(start, size, height / 2, BlockId.brick);
-    // corner towers
-    //world.makeCastleWalls(start + Vector3d(-size, 0, -size), 5, height + 4, BlockId.brick);
-    //world.makeCastleWalls(start + Vector3d(size, 0, -size), 5, height + 4, BlockId.brick);
-    //world.makeCastleWalls(start + Vector3d(-size, 0, size), 5, height + 4, BlockId.brick);
-    //world.makeCastleWalls(start + Vector3d(size, 0, size), 5, height + 4, BlockId.brick);
-    // dungeon
-    //wwwwworld.makeCastleWalls(start, size / 2, height * 2, BlockId.cobblestone);
-}

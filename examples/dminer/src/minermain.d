@@ -15,9 +15,10 @@ import dlangui.graphics.scene.effect;
 import derelict.opengl3.gl3;
 import derelict.opengl3.gl;
 
-import dminer.core.world;
 import dminer.core.minetypes;
 import dminer.core.blocks;
+import dminer.core.world;
+import dminer.core.generators;
 
 mixin APP_ENTRY_POINT;
 
