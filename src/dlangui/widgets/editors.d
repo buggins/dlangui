@@ -1627,9 +1627,9 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         if (event.keyCode == KeyCode.SPACE && !readOnly) {
             return true;
         }
-        if (event.keyCode == KeyCode.RETURN && !readOnly && !_content.multiline) {
-            return true;
-        }
+        //if (event.keyCode == KeyCode.RETURN && !readOnly && !_content.multiline) {
+        //    return true;
+        //}
         return super.onKeyEvent(event);
     }
 
