@@ -12,8 +12,18 @@ import dlangui.graphics.scene.light;
 import dlangui.graphics.glsupport;
 import dlangui.graphics.gldrawbuf;
 import dlangui.graphics.scene.effect;
-import derelict.opengl3.gl3;
-import derelict.opengl3.gl;
+
+version (Android) {
+    //enum SUPPORT_LEGACY_OPENGL = false;
+    public import EGL.eglplatform : EGLint;
+    public import EGL.egl;
+    //public import GLES2.gl2;
+    public import GLES3.gl3;
+} else {
+    //enum SUPPORT_LEGACY_OPENGL = true;
+    import derelict.opengl3.gl3;
+    import derelict.opengl3.gl;
+}
 
 import dminer.core.minetypes;
 import dminer.core.blocks;
