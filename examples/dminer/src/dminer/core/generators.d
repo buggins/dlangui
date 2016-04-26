@@ -6,7 +6,7 @@ import dminer.core.world;
 import dminer.core.terrain;
 
 
-static short[] TERRAIN_INIT_DATA = [
+__gshared static short[] TERRAIN_INIT_DATA = [
     //                                      V
     10,  10,  10,  10,  30,  30,  30,  30,  30,  30,  30,  30,  10,  10,  10,  10,  10,
     10,  10,  20,  50,  50,  50,  50,  50,  50,  50,  50,  50,  20,  20,  20,  20,  10,
@@ -28,7 +28,7 @@ static short[] TERRAIN_INIT_DATA = [
     //                                      ^
 ];
 
-static short[] TERRAIN_SCALE_DATA = [
+__gshared static short[] TERRAIN_SCALE_DATA = [
     //                                      V
     20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,
     20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,  20,
