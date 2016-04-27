@@ -344,7 +344,7 @@ private abstract class GLCache
                 if (!_texture.ID)
                     return;
             }
-            Log.d("updateTexture for cache page - setting image ", _drawbuf.width, "x", _drawbuf.height, " tx=", _texture.ID);
+            Log.d("updateTexture for cache page - setting image ", _drawbuf.width, "x", _drawbuf.height, " tx=", _texture ? _texture.ID : 0);
             uint * pixels = _drawbuf.scanLine(0);
             if (!glSupport.setTextureImage(_texture, _drawbuf.width, _drawbuf.height, cast(ubyte*)pixels)) {
                 destroy(_texture);
@@ -527,7 +527,7 @@ private class GLImageCache : GLCache
         void drawItem(GLCacheItem item, Rect dstrc, Rect srcrc, uint color, uint options, Rect * clip, int rotationAngle) {
             if (_needUpdateTexture)
                 updateTexture();
-            if (_texture.ID != 0) {
+            if (_texture && _texture.ID != 0) {
                 //rotationAngle = 0;
                 int rx = dstrc.middlex;
                 int ry = dstrc.middley;
@@ -628,7 +628,7 @@ private class GLGlyphCache : GLCache
         void drawItem(GLCacheItem item, Rect dstrc, Rect srcrc, uint color, Rect * clip) {
             if (_needUpdateTexture)
                 updateTexture();
-            if (_texture.ID != 0) {
+            if (_texture && _texture.ID != 0) {
                 // convert coordinates to cached texture
                 srcrc.offset(item._rc.left, item._rc.top);
                 if (clip) {

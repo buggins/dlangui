@@ -167,8 +167,15 @@ static if (ENABLE_OPENGL) {
         bool _error;
         /// Init OpenGL context, if not yet initialized
         bool init(HDC hDC) {
-            if (_hGLRC)
+            if (_hGLRC) {
+                // just setup pixel format
+                if (setupPixelFormat(hDC)) {
+                    Log.i("OpenGL context already exists. Setting pixel format.");
+                } else {
+                    Log.e("Cannot setup pixel format");
+                }
                 return true;
+            }
             if (_error)
                 return false;
             if (setupPixelFormat(hDC)) {
@@ -203,11 +210,15 @@ static if (ENABLE_OPENGL) {
         }
         /// make this context current for DC
         void bind(HDC hDC) {
-            wglMakeCurrent(hDC, _hGLRC);
+            if (!wglMakeCurrent(hDC, _hGLRC)) {
+                import std.string : format;
+                Log.e("wglMakeCurrent is failed. GetLastError=%x".format(GetLastError()));
+            }
         }
         /// make null context current for DC
         void unbind(HDC hDC) {
-            wglMakeCurrent(hDC, null);
+            //wglMakeCurrent(hDC, null);
+            wglMakeCurrent(null, null);
         }
         void swapBuffers(HDC hDC) {
             SwapBuffers(hDC);
@@ -312,7 +323,7 @@ class Win32Window : Window {
             }
             buf.afterDrawing();
             sharedGLContext.swapBuffers(hdc);
-            sharedGLContext.unbind(hdc);
+            //sharedGLContext.unbind(hdc);
             destroy(buf);
         }
     }
