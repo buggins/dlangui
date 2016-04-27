@@ -22,6 +22,10 @@ interface CellVisitor {
     void visit(World world, ref Position camPosition, Vector3d pos, cell_t cell, int visibleFaces);
 }
 
+interface ChunkCellVisitor {
+    void visit(int x, int y, int z, cell_t cell, int visibleFaces);
+}
+
 // vertical stack of chunks with same X, Z, and different Y
 struct ChunkStack {
     protected int _minChunkY;
@@ -43,7 +47,7 @@ struct ChunkStack {
             if (_chunks[idx]) {
                 if (_chunks[idx] is item)
                     return;
-                SmallChunk.free(_chunks[idx]);
+                SmallChunk.release(_chunks[idx]);
             }
             _chunks[idx] = item;
             return;
@@ -96,7 +100,7 @@ struct ChunkStack {
     void clear() {
         if (_chunkCount) {
             for(int i = 0; i < _chunkCount; i++) {
-                SmallChunk.free(_chunks[i]);
+                SmallChunk.release(_chunks[i]);
             }
             freeChunks(_chunks);
         }
@@ -125,15 +129,20 @@ struct SmallChunk {
     //ulong[6][6] canPassFromTo; // 288 bytes
     SmallChunk * [6] nearChunks;
     bool dirty;
+    bool empty;
+    Vector3d pos;
 
-    static SmallChunk * alloc() nothrow @nogc {
+    static SmallChunk * alloc(int x, int y, int z) nothrow @nogc {
         import core.stdc.stdlib : malloc;
         SmallChunk * res = cast(SmallChunk *)malloc(SmallChunk.sizeof);
         *res = SmallChunk.init;
+        res.pos.x = x & (~7);
+        res.pos.y = y & (~7);
+        res.pos.z = z & (~7);
         return res;
     }
 
-    static void free(SmallChunk * obj) {
+    static void release(SmallChunk * obj) {
         if (!obj)
             return;
         import core.stdc.stdlib : free;
@@ -176,12 +185,72 @@ struct SmallChunk {
             return 0xFFFFFFFFFFFFFFFF; // can pass ALL
         return chunk.getSideCanPassToMask(opposite(dir));
     }
-    private void findVisibleFacesNorth(ref ulong[8] dst) {
+
+    private void findVisibleFaces(ChunkCellVisitor visitor) {
+        ulong[8] visibleFacesNorth;
         ulong canPass = getSideCanPassFromMask(Dir.NORTH);
         for (int i = 0; i < 8; i++) {
-            ulong isVisible = visiblePlanesZ[i];
-            dst[i] = isVisible & canPass;
+            visibleFacesNorth[i] = visiblePlanesZ[i] & canPass;
             canPass = canPassPlanesZ[i];
+        }
+        ulong[8] visibleFacesSouth;
+        canPass = getSideCanPassFromMask(Dir.SOUTH);
+        for (int i = 7; i >= 0; i--) {
+            visibleFacesSouth[i] = visiblePlanesZ[i] & canPass;
+            canPass = canPassPlanesZ[i];
+        }
+        ulong[8] visibleFacesWest;
+        canPass = getSideCanPassFromMask(Dir.WEST);
+        for (int i = 0; i < 8; i++) {
+            visibleFacesWest[i] = visiblePlanesX[i] & canPass;
+            canPass = canPassPlanesX[i];
+        }
+        //xPlanesToZplanes(visibleFacesWest);
+        ulong[8] visibleFacesEast;
+        canPass = getSideCanPassFromMask(Dir.EAST);
+        for (int i = 7; i >= 0; i--) {
+            visibleFacesEast[i] = visiblePlanesX[i] & canPass;
+            canPass = canPassPlanesX[i];
+        }
+        ulong[8] visibleFacesUp;
+        canPass = getSideCanPassFromMask(Dir.UP);
+        for (int i = 7; i >= 0; i--) {
+            visibleFacesUp[i] = visiblePlanesY[i] & canPass;
+            canPass = canPassPlanesY[i];
+        }
+        ulong[8] visibleFacesDown;
+        canPass = getSideCanPassFromMask(Dir.DOWN);
+        for (int i = 0; i < 8; i++) {
+            visibleFacesDown[i] = visiblePlanesY[i] & canPass;
+            canPass = canPassPlanesY[i];
+        }
+        ulong xplanemask;
+        ulong yplanemask;
+        ulong zplanemask;
+        for (int x = 0; x < 8; x++) {
+            for (int y = 0; y < 8; y++) {
+                for (int z = 0; z < 8; z++) {
+                    xplanemask = cast(ulong)1 << ((y << 3) | z);
+                    yplanemask = cast(ulong)1 << ((z << 3) | x);
+                    zplanemask = cast(ulong)1 << ((y << 3) | x);
+                    int visibleFaces = 0;
+                    if (visibleFacesNorth[z] & zplanemask)
+                        visibleFaces |= DirMask.MASK_NORTH;
+                    if (visibleFacesSouth[z] & zplanemask)
+                        visibleFaces |= DirMask.MASK_SOUTH;
+                    if (visibleFacesWest[x] & xplanemask)
+                        visibleFaces |= DirMask.MASK_WEST;
+                    if (visibleFacesEast[x] & xplanemask)
+                        visibleFaces |= DirMask.MASK_EAST;
+                    if (visibleFacesUp[y] & yplanemask)
+                        visibleFaces |= DirMask.MASK_UP;
+                    if (visibleFacesDown[y] & yplanemask)
+                        visibleFaces |= DirMask.MASK_DOWN;
+                    if (visibleFaces) {
+                        visitor.visit(x, y, z, getCell(x, y, z), visibleFaces);
+                    }
+                }
+            }
         }
     }
     private void generateMasks() {
@@ -257,6 +326,8 @@ struct SmallChunk {
         //    }
         //}
         dirty = false;
+        empty = (visiblePlanesZ[0]|visiblePlanesZ[1]|visiblePlanesZ[2]|visiblePlanesZ[3]|
+                 visiblePlanesZ[4]|visiblePlanesZ[5]|visiblePlanesZ[6]|visiblePlanesZ[7]) == 0;
     }
     static void spreadFlags(ulong src, ref ulong[8] planes, ref ulong[8] dst, int start, int end, ubyte spreadMask) {
         if (start < end) {

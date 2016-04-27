@@ -119,7 +119,7 @@ class World {
                 // create chunk
                 if (!value)
                     return; // don't create chunk for 0
-                chunk = SmallChunk.alloc();
+                chunk = SmallChunk.alloc(x, y, z);
                 stack.set(chunkY, chunk);
                 chunk.setCell(x, y, z, value);
                 updateNearChunks(chunk, x, y, z);
@@ -130,7 +130,7 @@ class World {
             stack = new ChunkStack();
             _chunkStacks[index] = stack;
             int chunkY = (y >> 3);
-            chunk = SmallChunk.alloc();
+            chunk = SmallChunk.alloc(x, y, z);
             stack.set(chunkY, chunk);
             chunk.setCell(x, y, z, value);
             updateNearChunks(chunk, x, y, z);
