@@ -18,11 +18,21 @@ class World {
         _camPosition = Position(Vector3d(0, 13, 0), Vector3d(0, 0, 1));
     }
     ~this() {
+        clear();
+    }
+    void clear() {
+        for(int index = 0; index < _chunkStacks.length; index++) {
+            if (_chunkStacks[index]) {
+                destroy(_chunkStacks[index]);
+                _chunkStacks[index] = null;
+            }
+        }
     }
     @property final ref Position camPosition() { return _camPosition; }
 
 
     protected ChunkStack*[CHUNKS_X * 2 * CHUNKS_Z * 2] _chunkStacks;
+
     //pragma(msg, "stack pointers array size, Kb:");
     //pragma(msg, _chunkStacks.sizeof / 1024);
     final cell_t getCell(int x, int y, int z) {
