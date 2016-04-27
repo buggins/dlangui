@@ -197,11 +197,38 @@ class World {
         return top;
     }
 
+    private void visitChunk(ChunkVisitor visitor, Vector3d pos) {
+        SmallChunk * chunk = getCellChunk(pos.x, pos.y, pos.z);
+        if (chunk && chunk.hasVisibleFaces)
+            visitor.visit(this, chunk);
+    }
+
+    /// visit visible chunks, starting from specified position
+    void visitVisibleChunks(ChunkVisitor visitor, Vector3d pos, int maxDistance) {
+        int chunkDist = (maxDistance + 7) >> 3;
+        visitChunk(visitor, pos);
+        for (int dist = 1; dist <= chunkDist; dist++) {
+            int d = dist << 3;
+            visitChunk(visitor, Vector3d(pos.x - d, pos.y, pos.z));
+            visitChunk(visitor, Vector3d(pos.x + d, pos.y, pos.z));
+            visitChunk(visitor, Vector3d(pos.x, pos.y - d, pos.z));
+            visitChunk(visitor, Vector3d(pos.x, pos.y + d, pos.z));
+            visitChunk(visitor, Vector3d(pos.x, pos.y, pos.z - d));
+            visitChunk(visitor, Vector3d(pos.x, pos.y, pos.z + d));
+            for (int i = 1; i <= dist; i++) {
+            }
+        }
+    }
+
 private:
 
     Position _camPosition;
     int maxVisibleRange = MAX_VIEW_DISTANCE;
     DiamondVisitor visitorHelper;
+}
+
+interface ChunkVisitor {
+    void visit(World world, SmallChunk * chunk);
 }
 
 struct DiamondVisitor {

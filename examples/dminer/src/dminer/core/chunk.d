@@ -125,20 +125,41 @@ struct SmallChunk {
     protected ulong[8] canPassPlanesZ; // 64 bytes
     //ulong[6][6] canPassFromTo; // 288 bytes
     SmallChunk * [6] nearChunks;
-    protected Vector3d pos;
+    protected Vector3d _pos;
     private Mesh _minerMesh;
     protected bool dirty;
     protected bool dirtyMesh;
     protected bool empty;
+    protected bool visible;
+    protected bool dirtyVisible;
+
+
 
     static SmallChunk * alloc(int x, int y, int z) nothrow @nogc {
         import core.stdc.stdlib : malloc;
         SmallChunk * res = cast(SmallChunk *)malloc(SmallChunk.sizeof);
         *res = SmallChunk.init;
-        res.pos.x = x & (~7);
-        res.pos.y = y & (~7);
-        res.pos.z = z & (~7);
+        res._pos.x = x & (~7);
+        res._pos.y = y & (~7);
+        res._pos.z = z & (~7);
         return res;
+    }
+
+    /// return chunk position in world (aligned to chunk origin)
+    @property ref const(Vector3d) position() {
+        return _pos;
+    }
+
+    /// returns true if chunk contains any visible faces
+    @property bool hasVisibleFaces() {
+        if (dirty)
+            generateMasks();
+        if (dirtyVisible) {
+            dirtyVisible = false;
+            ubyte[64] visibleFaceFlags;
+            visible = findVisibleFaces(visibleFaceFlags) > 0;
+        }
+        return visible;
     }
 
     void release() {
@@ -211,7 +232,7 @@ struct SmallChunk {
                 for (int x = 0; x < 8; x++) {
                     int visibleFaces = visibleFaceFlags[index];
                     if (visibleFaces) {
-                        visitor.visit(world, world.camPosition, Vector3d(pos.x + x, pos.y + y, pos.z + z), cells[index], visibleFaces);
+                        visitor.visit(world, world.camPosition, Vector3d(_pos.x + x, _pos.y + y, _pos.z + z), cells[index], visibleFaces);
                     }
                     index++;
                 }
@@ -240,7 +261,7 @@ struct SmallChunk {
                         int visibleFaces = visibleFaceFlags[index];
                         if (visibleFaces) {
                             BlockDef def = BLOCK_DEFS[cells[index]];
-                            def.createFaces(world, world.camPosition, Vector3d(pos.x + x, pos.y + y, pos.z + z), visibleFaces, _minerMesh);
+                            def.createFaces(world, world.camPosition, Vector3d(_pos.x + x, _pos.y + y, _pos.z + z), visibleFaces, _minerMesh);
                         }
                         index++;
                     }
@@ -252,7 +273,8 @@ struct SmallChunk {
         return _minerMesh;
     }
 
-    private void findVisibleFaces(ref ubyte[64] visibleFaceFlags) {
+    private int findVisibleFaces(ref ubyte[64] visibleFaceFlags) {
+        int count = 0;
         ulong[8] visibleFacesNorth;
         ulong canPass = getSideCanPassFromMask(Dir.NORTH);
         for (int i = 0; i < 8; i++) {
@@ -313,12 +335,15 @@ struct SmallChunk {
                     if (visibleFacesDown[y] & yplanemask)
                         visibleFaces |= DirMask.MASK_DOWN;
                     visibleFaceFlags[calcIndex(x, y, z)] = cast(ubyte)visibleFaces;
+                    if (visibleFaces)
+                        count++;
                     //if (visibleFaces) {
                     //    visitor.visit(pos.x + x, pos.y + y, pos.z + z, getCell(x, y, z), visibleFaces);
                     //}
                 }
             }
         }
+        return count;
     }
     private void generateMasks() {
         // x planes: z,y
@@ -395,6 +420,7 @@ struct SmallChunk {
         dirty = false;
         empty = (visiblePlanesZ[0]|visiblePlanesZ[1]|visiblePlanesZ[2]|visiblePlanesZ[3]|
                  visiblePlanesZ[4]|visiblePlanesZ[5]|visiblePlanesZ[6]|visiblePlanesZ[7]) == 0;
+        dirtyVisible = !empty;
         dirtyMesh = true;
     }
 
