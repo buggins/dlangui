@@ -349,12 +349,17 @@ private:
 version(Windows)
 {
 private:
-    import core.sys.windows.windows;
-    import core.sys.windows.shlobj;
-    import core.sys.windows.wtypes;
-    import core.sys.windows.objbase;
-    import core.sys.windows.objidl;
-    
+    //import core.sys.windows.windows;
+    //import core.sys.windows.shlobj;
+    //import core.sys.windows.wtypes;
+    //import core.sys.windows.objbase;
+    //import core.sys.windows.objidl;
+    import win32.windows;
+    import win32.shlobj;
+    import win32.wtypes;
+    import win32.objbase;
+    import win32.objidl;
+
     pragma(lib, "Ole32");
 
     alias GUID KNOWNFOLDERID;
@@ -456,7 +461,7 @@ RootEntry[] getBookmarkPaths() nothrow
             
             IPersistFile ppf;
             auto iidPersistFile = IID_IPersistFile;
-            hres = psl.QueryInterface(&iidPersistFile, cast(void**)&ppf); 
+            hres = psl.QueryInterface(cast(GUID*)&iidPersistFile, cast(void**)&ppf); 
             enforce(SUCCEEDED(hres), "Failed to query IPersistFile interface");
             scope(exit) ppf.Release();
             
@@ -479,7 +484,7 @@ RootEntry[] getBookmarkPaths() nothrow
                     
                     auto path = szGotPath[0..wcslen(szGotPath.ptr)];
                     
-                    if (path.length && path.isDir) {
+                    if (path.length && path.toUTF8.isDir) {
                         res ~= RootEntry(RootEntryType.BOOKMARK, path.toUTF8, linkFile.name.baseName.stripExtension.toUTF32);
                     }
                 } catch(Exception e) {
@@ -506,7 +511,8 @@ bool isRoot(in string path) pure nothrow {
  */
 bool isHidden(in string path) nothrow {
     version(Windows) {
-        import core.sys.windows.winnt : FILE_ATTRIBUTE_HIDDEN;
+        //import core.sys.windows.winnt : FILE_ATTRIBUTE_HIDDEN;
+        import win32.winnt : FILE_ATTRIBUTE_HIDDEN;
         import std.exception : collectException;
         uint attrs;
         if (collectException(path.getAttributes(), attrs) is null) {
