@@ -211,7 +211,7 @@ class MenuItem {
     }
     /// returns item label
     @property UIString label() {
-        return _action.labelValue;
+        return _action !is null ? _action.labelValue : UIString("");
     }
     /// returns item action
     @property const(Action) action() const { return _action; }
@@ -372,7 +372,7 @@ class MenuItemWidget : WidgetGroupDefaultDrawing {
         _item = item;
         styleId = STYLE_MENU_ITEM;
         updateState();
-        string iconId = _item.action.iconId;
+        string iconId = _item.action !is null ? _item.action.iconId : "";
         if (_item.type == MenuItemType.Check)
             iconId = "btn_check";
         else if (_item.type == MenuItemType.Radio)
