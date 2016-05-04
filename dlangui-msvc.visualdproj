@@ -314,7 +314,7 @@
   <multiobj>0</multiobj>
   <singleFileCompilation>0</singleFileCompilation>
   <oneobj>0</oneobj>
-  <mscoff>0</mscoff>
+  <mscoff>1</mscoff>
   <trace>0</trace>
   <quiet>0</quiet>
   <verbose>0</verbose>
@@ -669,7 +669,7 @@
    <Folder name="fontconfig">
     <File path="3rdparty\fontconfig\functions.d" />
     <File path="3rdparty\fontconfig\package.d" />
-    <File path="3rdparty\fontconfig\types.d" />
+    <File path="3rdparty\fontconfig\fctypes.d" />
    </Folder>
    <Folder name="win32">
     <File path="3rdparty\win32\basetsd.d" />

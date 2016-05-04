@@ -209,7 +209,7 @@
     <Compile Include="src\dlangui\graphics\xpm\xpmcolors.d" />
     <Compile Include="3rdparty\fontconfig\functions.d" />
     <Compile Include="3rdparty\fontconfig\package.d" />
-    <Compile Include="3rdparty\fontconfig\types.d" />
+    <Compile Include="3rdparty\fontconfig\fctypes.d" />
     <Compile Include="src\dlangui\package.d" />
     <Compile Include="deps\DerelictCocoa\source\derelict\cocoa\appkit.d" />
     <Compile Include="deps\DerelictCocoa\source\derelict\cocoa\cocoa.d" />

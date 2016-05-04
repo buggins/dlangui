@@ -1,4 +1,4 @@
-module fontconfig.types;
+module fontconfig.fctypes;
 
 import std.string : toStringz, fromStringz, toLower;
 import std.algorithm : endsWith;

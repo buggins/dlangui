@@ -1,6 +1,6 @@
 module fontconfig;
 
-public import fontconfig.types;
+public import fontconfig.fctypes;
 public import fontconfig.functions;
 
 private {

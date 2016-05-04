@@ -1,6 +1,6 @@
 module fontconfig.functions;
 
-public import fontconfig.types;
+public import fontconfig.fctypes;
 
 
 extern( C ) @nogc nothrow {

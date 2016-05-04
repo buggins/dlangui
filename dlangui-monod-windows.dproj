@@ -224,7 +224,7 @@
     <Compile Include="3rdparty\win32\wtypes.d" />
     <Compile Include="3rdparty\fontconfig\functions.d" />
     <Compile Include="3rdparty\fontconfig\package.d" />
-    <Compile Include="3rdparty\fontconfig\types.d" />
+    <Compile Include="3rdparty\fontconfig\fctypes.d" />
     <Compile Include="src\dlangui\package.d" />
     <Compile Include="deps\DerelictFT\source\derelict\freetype\ft.d" />
     <Compile Include="deps\DerelictFT\source\derelict\freetype\functions.d" />
