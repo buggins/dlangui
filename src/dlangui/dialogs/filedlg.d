@@ -115,6 +115,8 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
     protected bool _isOpenDialog;
 
+    protected bool _showHiddenFiles;
+
     protected string[string] _filetypeIcons;
 
     this(UIString caption, Window parent, Action action = null, uint fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable | FileDialogFlag.FileMustExist) {
@@ -175,6 +177,14 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _filename = s;
     }
 
+    @property bool showHiddenFiles() {
+        return _showHiddenFiles;
+    }
+
+    @property void showHiddenFiles(bool b) {
+        _showHiddenFiles = b;
+    }
+
     /// return currently selected filter value - array of patterns like ["*.txt", "*.rtf"]
     @property string[] selectedFilter() {
         if (_filterIndex >= 0 && _filterIndex < _filters.length)
@@ -200,7 +210,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         dir = buildNormalizedPath(dir);
         Log.d("FileDialog.openDirectory(", dir, ")");
         _fileList.rows = 0;
-        if (!listDirectory(dir, true, true, false, selectedFilter, _entries, executableFilterSelected))
+        if (!listDirectory(dir, true, true, _showHiddenFiles, selectedFilter, _entries, executableFilterSelected))
             return false;
         _path = dir;
         _isRoot = isRoot(dir);
