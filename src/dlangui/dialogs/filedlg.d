@@ -161,6 +161,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _filterIndex = index;
     }
 
+    /// the path to the directory whose files should be displayed
     @property string path() {
         return _path;
     }
@@ -169,6 +170,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _path = s;
     }
 
+    /// the name of the file or directory that is currently selected
     @property string filename() {
         return _filename;
     }
@@ -348,11 +350,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         DirEntry e = _entries[index];
         string fname = e.name;
         _edFilename.text = toUTF32(baseName(fname));
-        if (e.isDir) {
-            _filename = "";
-        } else if (e.isFile) {
-            _filename = fname;
-        }
+        _filename = fname;
     }
 
     protected void createAndEnterDirectory(string name) {
@@ -384,14 +382,14 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             return true;
         }
         if (action.id == StandardAction.Open || action.id == StandardAction.OpenDirectory || action.id == StandardAction.Save) {
-            if (_filename.length > 0 || action.id == StandardAction.OpenDirectory) {
+            if (_filename.length > 0) {
                 Action result = _action;
-                if (action.id == StandardAction.OpenDirectory)
-                    result.stringParam = _path;
-                else
-                    result.stringParam = _filename;
-                close(result);
-                return true;
+                result.stringParam = _filename;
+                // success if either selected dir & has to open dir or if selected file
+                if (action.id == StandardAction.OpenDirectory && isDir(_filename) || isFile(_filename)) {
+                    close(result);
+                    return true;
+                }
             } else if (_filename.length == 0){
                  auto row = _fileList.row();
                  onItemActivated(row);
