@@ -115,6 +115,8 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
     protected bool _isOpenDialog;
 
+    protected bool _showHiddenFiles;
+
     protected string[string] _filetypeIcons;
 
     this(UIString caption, Window parent, Action action = null, uint fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable | FileDialogFlag.FileMustExist) {
@@ -159,6 +161,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _filterIndex = index;
     }
 
+    /// the path to the directory whose files should be displayed
     @property string path() {
         return _path;
     }
@@ -167,12 +170,21 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _path = s;
     }
 
+    /// the name of the file or directory that is currently selected
     @property string filename() {
         return _filename;
     }
 
     @property void filename(string s) {
         _filename = s;
+    }
+
+    @property bool showHiddenFiles() {
+        return _showHiddenFiles;
+    }
+
+    @property void showHiddenFiles(bool b) {
+        _showHiddenFiles = b;
     }
 
     /// return currently selected filter value - array of patterns like ["*.txt", "*.rtf"]
@@ -200,7 +212,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         dir = buildNormalizedPath(dir);
         Log.d("FileDialog.openDirectory(", dir, ")");
         _fileList.rows = 0;
-        if (!listDirectory(dir, true, true, false, selectedFilter, _entries, executableFilterSelected))
+        if (!listDirectory(dir, true, true, _showHiddenFiles, selectedFilter, _entries, executableFilterSelected))
             return false;
         _path = dir;
         _isRoot = isRoot(dir);
@@ -338,11 +350,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         DirEntry e = _entries[index];
         string fname = e.name;
         _edFilename.text = toUTF32(baseName(fname));
-        if (e.isDir) {
-            _filename = "";
-        } else if (e.isFile) {
-            _filename = fname;
-        }
+        _filename = fname;
     }
 
     protected void createAndEnterDirectory(string name) {
@@ -374,14 +382,14 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             return true;
         }
         if (action.id == StandardAction.Open || action.id == StandardAction.OpenDirectory || action.id == StandardAction.Save) {
-            if (_filename.length > 0 || action.id == StandardAction.OpenDirectory) {
+            if (_filename.length > 0) {
                 Action result = _action;
-                if (action.id == StandardAction.OpenDirectory)
-                    result.stringParam = _path;
-                else
-                    result.stringParam = _filename;
-                close(result);
-                return true;
+                result.stringParam = _filename;
+                // success if either selected dir & has to open dir or if selected file
+                if (action.id == StandardAction.OpenDirectory && isDir(_filename) || isFile(_filename)) {
+                    close(result);
+                    return true;
+                }
             } else if (_filename.length == 0){
                  auto row = _fileList.row();
                  onItemActivated(row);
