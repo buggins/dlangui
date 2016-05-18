@@ -765,7 +765,7 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
 
     override bool onKey(Widget source, KeyEvent event) {
         if (event.action == KeyAction.KeyDown) {
-            Action action = findKeyAction(event.keyCode, event.flags & (KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Control));
+            Action action = findKeyAction(event.keyCode, event.flags); // & (KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Control)
             if (action !is null) {
                 return handleAction(action);
             }

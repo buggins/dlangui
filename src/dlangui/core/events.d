@@ -55,26 +55,81 @@ struct Accelerator {
             }
             buf ~= toUTF32(keyName(keyCode));
         } else {
-            if (keyFlags & KeyFlag.Control)
+            if ((keyFlags & KeyFlag.LControl) == KeyFlag.LControl && (keyFlags & KeyFlag.RControl) == KeyFlag.RControl)
+                buf ~= "LCtrl+RCtrl+";
+            else if ((keyFlags & KeyFlag.LControl) == KeyFlag.LControl)
+                buf ~= "LCtrl+";
+            else if ((keyFlags & KeyFlag.RControl) == KeyFlag.RControl)
+                buf ~= "RCtrl+";
+            else if (keyFlags & KeyFlag.Control)
                 buf ~= "Ctrl+";
-            if (keyFlags & KeyFlag.Alt)
+            if ((keyFlags & KeyFlag.LAlt) == KeyFlag.LAlt && (keyFlags & KeyFlag.RAlt) == KeyFlag.RAlt)
+                buf ~= "LAlt+RAlt+";
+            else if ((keyFlags & KeyFlag.LAlt) == KeyFlag.LAlt)
+                buf ~= "LAlt+";
+            else if ((keyFlags & KeyFlag.RAlt) == KeyFlag.RAlt)
+                buf ~= "RAlt+";
+            else if (keyFlags & KeyFlag.Alt)
                 buf ~= "Alt+";
-            if (keyFlags & KeyFlag.Shift)
+            if ((keyFlags & KeyFlag.LShift) == KeyFlag.LShift && (keyFlags & KeyFlag.RShift) == KeyFlag.RShift)
+                buf ~= "LShift+RShift+";
+            else if ((keyFlags & KeyFlag.LShift) == KeyFlag.LShift)
+                buf ~= "LShift+";
+            else if ((keyFlags & KeyFlag.RShift) == KeyFlag.RShift)
+                buf ~= "RShift+";
+            else if (keyFlags & KeyFlag.Shift)
                 buf ~= "Shift+";
+            if ((keyFlags & KeyFlag.LMenu) == KeyFlag.LMenu && (keyFlags & KeyFlag.RMenu) == KeyFlag.RMenu)
+                buf ~= "LMenu+RMenu+";
+            else if ((keyFlags & KeyFlag.LMenu) == KeyFlag.LMenu)
+                buf ~= "LMenu+";
+            else if ((keyFlags & KeyFlag.RMenu) == KeyFlag.RMenu)
+                buf ~= "RMenu+";
+            else if (keyFlags & KeyFlag.Menu)
+                buf ~= "Menu+";
             buf ~= toUTF32(keyName(keyCode));
         }
         return cast(dstring)buf;
     }
+
     /// Serializes accelerator text description
     @property string toString() const {
         char[] buf;
-        if (keyFlags & KeyFlag.Control)
+        // ctrl
+        if ((keyFlags & KeyFlag.LControl) == KeyFlag.LControl && (keyFlags & KeyFlag.RControl) == KeyFlag.RControl)
+            buf ~= "LCtrl+RCtrl+";
+        else if ((keyFlags & KeyFlag.LControl) == KeyFlag.LControl)
+            buf ~= "LCtrl+";
+        else if ((keyFlags & KeyFlag.RControl) == KeyFlag.RControl)
+            buf ~= "RCtrl+";
+        else if (keyFlags & KeyFlag.Control)
             buf ~= "Ctrl+";
-        if (keyFlags & KeyFlag.Alt)
+        // alt
+        if ((keyFlags & KeyFlag.LAlt) == KeyFlag.LAlt && (keyFlags & KeyFlag.RAlt) == KeyFlag.RAlt)
+            buf ~= "LAlt+RAlt+";
+        else if ((keyFlags & KeyFlag.LAlt) == KeyFlag.LAlt)
+            buf ~= "LAlt+";
+        else if ((keyFlags & KeyFlag.RAlt) == KeyFlag.RAlt)
+            buf ~= "RAlt+";
+        else if (keyFlags & KeyFlag.Alt)
             buf ~= "Alt+";
-        if (keyFlags & KeyFlag.Shift)
+        // shift
+        if ((keyFlags & KeyFlag.LShift) == KeyFlag.LShift && (keyFlags & KeyFlag.RShift) == KeyFlag.RShift)
+            buf ~= "LShift+RShift+";
+        else if ((keyFlags & KeyFlag.LShift) == KeyFlag.LShift)
+            buf ~= "LShift+";
+        else if ((keyFlags & KeyFlag.RShift) == KeyFlag.RShift)
+            buf ~= "RShift+";
+        else if (keyFlags & KeyFlag.Shift)
             buf ~= "Shift+";
-        if (keyFlags & KeyFlag.Menu)
+        // menu
+        if ((keyFlags & KeyFlag.LMenu) == KeyFlag.LMenu && (keyFlags & KeyFlag.RMenu) == KeyFlag.RMenu)
+            buf ~= "LMenu+RMenu+";
+        else if ((keyFlags & KeyFlag.LMenu) == KeyFlag.LMenu)
+            buf ~= "LMenu+";
+        else if ((keyFlags & KeyFlag.RMenu) == KeyFlag.RMenu)
+            buf ~= "RMenu+";
+        else if (keyFlags & KeyFlag.Menu)
             buf ~= "Menu+";
         buf ~= keyName(keyCode);
         return cast(string)buf;
@@ -91,8 +146,28 @@ struct Accelerator {
                 s = s[5 .. $];
                 flagFound = true;
             }
+            if (s.startsWith("LCtrl+")) {
+                keyFlags |= KeyFlag.LControl;
+                s = s[5 .. $];
+                flagFound = true;
+            }
+            if (s.startsWith("RCtrl+")) {
+                keyFlags |= KeyFlag.RControl;
+                s = s[5 .. $];
+                flagFound = true;
+            }
             if (s.startsWith("Alt+")) {
                 keyFlags |= KeyFlag.Alt;
+                s = s[4 .. $];
+                flagFound = true;
+            }
+            if (s.startsWith("LAlt+")) {
+                keyFlags |= KeyFlag.LAlt;
+                s = s[4 .. $];
+                flagFound = true;
+            }
+            if (s.startsWith("RAlt+")) {
+                keyFlags |= KeyFlag.RAlt;
                 s = s[4 .. $];
                 flagFound = true;
             }
@@ -101,8 +176,28 @@ struct Accelerator {
                 s = s[6 .. $];
                 flagFound = true;
             }
+            if (s.startsWith("LShift+")) {
+                keyFlags |= KeyFlag.LShift;
+                s = s[6 .. $];
+                flagFound = true;
+            }
+            if (s.startsWith("RShift+")) {
+                keyFlags |= KeyFlag.RShift;
+                s = s[6 .. $];
+                flagFound = true;
+            }
             if (s.startsWith("Menu+")) {
                 keyFlags |= KeyFlag.Menu;
+                s = s[5 .. $];
+                flagFound = true;
+            }
+            if (s.startsWith("LMenu+")) {
+                keyFlags |= KeyFlag.LMenu;
+                s = s[5 .. $];
+                flagFound = true;
+            }
+            if (s.startsWith("RMenu+")) {
+                keyFlags |= KeyFlag.RMenu;
                 s = s[5 .. $];
                 flagFound = true;
             }

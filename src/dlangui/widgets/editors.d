@@ -215,7 +215,8 @@ const Action ACTION_EDITOR_REPLACE = (new Action(EditorActions.Replace, KeyCode.
 const Action[] STD_EDITOR_ACTIONS = [ACTION_EDITOR_INSERT_NEW_LINE, ACTION_EDITOR_PREPEND_NEW_LINE, 
         ACTION_EDITOR_APPEND_NEW_LINE, ACTION_EDITOR_DELETE_LINE, ACTION_EDITOR_TOGGLE_REPLACE_MODE, 
         ACTION_EDITOR_SELECT_ALL, ACTION_EDITOR_TOGGLE_LINE_COMMENT, ACTION_EDITOR_TOGGLE_BLOCK_COMMENT,
-        ACTION_EDITOR_TOGGLE_BOOKMARK, ACTION_EDITOR_GOTO_NEXT_BOOKMARK, ACTION_EDITOR_GOTO_PREVIOUS_BOOKMARK
+        ACTION_EDITOR_TOGGLE_BOOKMARK, ACTION_EDITOR_GOTO_NEXT_BOOKMARK, ACTION_EDITOR_GOTO_PREVIOUS_BOOKMARK,
+
 ];
 
 /// base for all editor widgets
@@ -483,8 +484,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         acceleratorMap.add( [
             new Action(EditorActions.Up, KeyCode.UP, 0),
             new Action(EditorActions.SelectUp, KeyCode.UP, KeyFlag.Shift),
+            new Action(EditorActions.SelectUp, KeyCode.UP, KeyFlag.Control | KeyFlag.Shift),
             new Action(EditorActions.Down, KeyCode.DOWN, 0),
             new Action(EditorActions.SelectDown, KeyCode.DOWN, KeyFlag.Shift),
+            new Action(EditorActions.SelectDown, KeyCode.DOWN, KeyFlag.Control | KeyFlag.Shift),
             new Action(EditorActions.Left, KeyCode.LEFT, 0),
             new Action(EditorActions.SelectLeft, KeyCode.LEFT, KeyFlag.Shift),
             new Action(EditorActions.Right, KeyCode.RIGHT, 0),
