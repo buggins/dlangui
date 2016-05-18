@@ -146,6 +146,36 @@ const ACTION_STATE_ENABLED = ActionState(true, true, false);
 const ACTION_STATE_DISABLE = ActionState(false, true, false);
 const ACTION_STATE_INVISIBLE = ActionState(false, false, false);
 
+/// Match key flags
+static bool matchKeyFlags(uint eventFlags, uint requestedFlags) {
+    if (eventFlags == requestedFlags)
+        return true;
+    if ((requestedFlags & KeyFlag.RControl) == KeyFlag.RControl && (eventFlags & KeyFlag.RControl) != KeyFlag.RControl)
+        return false;
+    if ((requestedFlags & KeyFlag.LControl) == KeyFlag.LControl && (eventFlags & KeyFlag.LControl) != KeyFlag.LControl)
+        return false;
+    if ((requestedFlags & KeyFlag.RShift) == KeyFlag.RShift && (eventFlags & KeyFlag.RShift) != KeyFlag.RShift)
+        return false;
+    if ((requestedFlags & KeyFlag.LShift) == KeyFlag.LShift && (eventFlags & KeyFlag.LShift) != KeyFlag.LShift)
+        return false;
+    if ((requestedFlags & KeyFlag.RAlt) == KeyFlag.RAlt && (eventFlags & KeyFlag.RAlt) != KeyFlag.RAlt)
+        return false;
+    if ((requestedFlags & KeyFlag.LAlt) == KeyFlag.LAlt && (eventFlags & KeyFlag.LAlt) != KeyFlag.LAlt)
+        return false;
+    if ((requestedFlags & KeyFlag.RMenu) == KeyFlag.RMenu && (eventFlags & KeyFlag.RMenu) != KeyFlag.RMenu)
+        return false;
+    if ((requestedFlags & KeyFlag.LMenu) == KeyFlag.LMenu && (eventFlags & KeyFlag.LMenu) != KeyFlag.LMenu)
+        return false;
+    if ((requestedFlags & KeyFlag.Control) == KeyFlag.Control && (eventFlags & KeyFlag.Control) != KeyFlag.Control)
+        return false;
+    if ((requestedFlags & KeyFlag.Shift) == KeyFlag.Shift && (eventFlags & KeyFlag.Shift) != KeyFlag.Shift)
+        return false;
+    if ((requestedFlags & KeyFlag.Alt) == KeyFlag.Alt && (eventFlags & KeyFlag.Alt) != KeyFlag.Alt)
+        return false;
+    if ((requestedFlags & KeyFlag.Menu) == KeyFlag.Menu && (eventFlags & KeyFlag.Menu) != KeyFlag.Menu)
+        return false;
+    return true;
+}
 
 /** 
     UI action
@@ -354,9 +384,10 @@ class Action {
     }
     /// returns true if accelerator matches provided key code and flags
     bool checkAccelerator(uint keyCode, uint keyFlags) {
-        foreach(a; _accelerators)
-            if (a.keyCode == keyCode && a.keyFlags == keyFlags)
+        foreach(a; _accelerators) {
+            if (a.keyCode == keyCode && matchKeyFlags(keyFlags, a.keyFlags))
                 return true;
+        }
         return false;
     }
     /// returns action id
