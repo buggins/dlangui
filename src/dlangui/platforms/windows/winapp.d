@@ -1126,6 +1126,7 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
     }
     Platform.setInstance(w32platform);
 
+    DOUBLE_CLICK_THRESHOLD_MS = GetDoubleClickTime();
 
     Log.v("Initializing font manager");
     if (!initFontManager()) {

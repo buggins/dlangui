@@ -1723,6 +1723,10 @@ int sdlmain(string[] args) {
     }
     initResourceManagers();
 
+    version (Windows) {
+        DOUBLE_CLICK_THRESHOLD_MS = GetDoubleClickTime();
+    }
+
     currentTheme = createDefaultTheme();
 
     try {

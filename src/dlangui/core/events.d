@@ -717,6 +717,9 @@ ushort mouseButtonToFlag(MouseButton btn) {
     }
 }
 
+/// double click max interval, milliseconds; may be changed by platform
+__gshared long DOUBLE_CLICK_THRESHOLD_MS = 300;
+
 /// Mouse button state details for MouseEvent
 struct ButtonDetails {
     /// Clock.currStdTime() for down event of this button (0 if button is up).
@@ -737,7 +740,6 @@ struct ButtonDetails {
         return _doubleClick;
     }
 
-    static long DOUBLE_CLICK_THRESHOLD_MS = 200;
 
 
     void reset() {

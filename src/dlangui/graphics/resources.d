@@ -162,9 +162,9 @@ struct EmbeddedResourceList {
 
 __gshared EmbeddedResourceList embeddedResourceList;
 
-// immutable string test_res = import("res/background.xml");
+//immutable string test_res = import("res/background.xml");
 // Unfortunately, import with full pathes does not work on Windows
-// version = USE_FULL_PATH_FOR_RESOURCES;
+//version = USE_FULL_PATH_FOR_RESOURCES;
 
 EmbeddedResource[] embedResource(string resourceName)() {
     version (USE_FULL_PATH_FOR_RESOURCES) {
