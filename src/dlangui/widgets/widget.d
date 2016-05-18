@@ -1113,10 +1113,10 @@ public:
         if (keyEvent.assigned && keyEvent(this, event))
             return true; // processed by external handler
         if (event.action == KeyAction.KeyDown) {
-            Log.d("Find key action for key = ", event.keyCode, " flags=", event.flags);
+            //Log.d("Find key action for key = ", event.keyCode, " flags=", event.flags);
             Action action = findKeyAction(event.keyCode, event.flags); // & (KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Control | KeyFlag.Menu)
             if (action !is null) {
-                Log.d("Action found: ", action.id, " ", action.labelValue.id);
+                //Log.d("Action found: ", action.id, " ", action.labelValue.id);
                 return dispatchAction(action);
             }
         }
