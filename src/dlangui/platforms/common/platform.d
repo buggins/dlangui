@@ -166,7 +166,9 @@ class Window : CustomEventTarget {
     protected uint _backgroundColor;
     protected Widget _mainWidget;
     protected EventList _eventList;
+    protected uint _flags;
 
+    @property uint flags() { return _flags; }
     @property uint backgroundColor() const { return _backgroundColor; }
     @property void backgroundColor(uint color) { _backgroundColor = color; }
     @property int width() const { return _dx; }
@@ -304,8 +306,15 @@ class Window : CustomEventTarget {
     /// set handler for closing of window
     @property Window onClose(void delegate() handler) { _onClose = handler; return this; }
 
+    /// returns true if there is some modal window opened above this window, and this window should not process mouse/key input and should not allow closing
+    bool hasModalWindowsAbove() {
+        return platform.hasModalWindowsAbove(this);
+    }
+
     /// calls onCanClose handler if set to check if system may close window
     bool handleCanClose() {
+        if (hasModalWindowsAbove())
+            return false;
         if (!_onCanClose)
             return true;
         bool res = _onCanClose();
@@ -446,7 +455,10 @@ class Window : CustomEventTarget {
 
     static immutable int PERFORMANCE_LOGGING_THRESHOLD_MS = 20;
 
+    /// set when first draw is called: don't handle mouse/key input until draw (layout) is called
+    protected bool _firstDrawCalled = false;
     void onDraw(DrawBuf buf) {
+        _firstDrawCalled = true;
         static import std.datetime;
         try {
             bool needDraw = false;
@@ -569,6 +581,8 @@ class Window : CustomEventTarget {
 
     /// dispatch keyboard event
     bool dispatchKeyEvent(KeyEvent event) {
+        if (hasModalWindowsAbove() || !_firstDrawCalled)
+            return false;
         bool res = false;
         hideTooltip();
         PopupWidget modal = modalPopup();
@@ -874,6 +888,8 @@ class Window : CustomEventTarget {
     private int _lastMouseY;
     /// dispatch mouse event to window content widgets
     bool dispatchMouseEvent(MouseEvent event) {
+        if (hasModalWindowsAbove() || !_firstDrawCalled)
+            return false;
         // ignore events if there is no root
         if (_mainWidget is null)
             return false;
@@ -1307,6 +1323,13 @@ class Platform {
 
     /// calls request layout for all windows
     abstract void requestLayout();
+
+    /// returns true if there is some modal window opened above this window, and this window should not process mouse/key input and should not allow closing
+    bool hasModalWindowsAbove(Window w) {
+        // override in platform specific class
+        return false;
+    }
+
 
     protected string _uiLanguage;
     /// returns currently selected UI language code

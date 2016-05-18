@@ -237,7 +237,6 @@ class Win32Window : Window {
     dstring _caption;
     Win32ColorDrawBuf _drawbuf;
     bool useOpengl;
-    uint _flags;
     this(Win32Platform platform, dstring windowCaption, Window parent, uint flags, uint width = 0, uint height = 0) {
         Win32Window w32parent = cast(Win32Window)parent;
         HWND parenthwnd = w32parent ? w32parent._hwnd : null;
@@ -833,11 +832,15 @@ class Win32Platform : Platform {
         }
         return cast(int)msg.wParam;
     }
+
     private Win32Window[ulong] _windowMap;
+    private Win32Window[] _windowList;
+
     /// add window to window map
     void onWindowCreated(HWND hwnd, Win32Window window) {
         Log.v("created window, adding to map");
         _windowMap[cast(ulong)hwnd] = window;
+        _windowList ~= window;
     }
     /// remove window from window map, returns true if there are some more windows left in map
     bool onWindowDestroyed(HWND hwnd, Win32Window window) {
@@ -847,6 +850,15 @@ class Win32Platform : Platform {
             _windowMap.remove(cast(ulong)hwnd);
             _windowsToDestroy ~= window;
             //destroy(window);
+        }
+        for (uint i = 0; i < _windowList.length; i++) {
+            if (window is _windowList[i]) {
+                for (uint j = i; j + 1 < _windowList.length; j++)
+                    _windowList[j] = _windowList[j + 1];
+                _windowList[$ - 1] = null;
+                _windowList.length--;
+                break;
+            }
         }
         return _windowMap.length > 0;
     }
@@ -876,6 +888,21 @@ class Win32Platform : Platform {
             w.requestLayout();
             w.invalidate();
         }
+    }
+
+    /// returns true if there is some modal window opened above this window, and this window should not process mouse/key input and should not allow closing
+    override bool hasModalWindowsAbove(Window w) {
+        // override in platform specific class
+        for (uint i = 0; i + 1 < _windowList.length; i++) {
+            if (_windowList[i] is w) {
+                for (uint j = i + 1; j < _windowList.length; j++) {
+                    if (_windowList[j].flags & WindowFlag.Modal)
+                        return true;
+                }
+                return false;
+            }
+        }
+        return false;
     }
 
     /// handle theme change: e.g. reload some themed resources

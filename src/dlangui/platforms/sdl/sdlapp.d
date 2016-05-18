@@ -137,7 +137,6 @@ class SDLWindow : Window {
         }
     }
 
-    protected uint _flags;
     bool create(uint flags) {
         if (!_dx)
             _dx = 600;
