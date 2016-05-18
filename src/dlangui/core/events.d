@@ -573,13 +573,39 @@ struct ActionMap {
         foreach(acc; a.accelerators)
             _map[acc] = a;
     }
+    private static __gshared immutable uint[] flagMasks = [
+        KeyFlag.LRControl | KeyFlag.LRAlt | KeyFlag.LRShift | KeyFlag.LRMenu,
+
+        KeyFlag.LRControl | KeyFlag.LRAlt | KeyFlag.LRShift | KeyFlag.LRMenu,
+        KeyFlag.LRControl | KeyFlag.Alt | KeyFlag.LRShift | KeyFlag.LRMenu,
+        KeyFlag.LRControl | KeyFlag.LRAlt | KeyFlag.Shift | KeyFlag.LRMenu,
+        KeyFlag.LRControl | KeyFlag.LRAlt | KeyFlag.LRShift | KeyFlag.Menu,
+
+        KeyFlag.Control | KeyFlag.Alt | KeyFlag.LRShift | KeyFlag.LRMenu,
+        KeyFlag.Control | KeyFlag.LRAlt | KeyFlag.Shift | KeyFlag.LRMenu,
+        KeyFlag.Control | KeyFlag.LRAlt | KeyFlag.LRShift | KeyFlag.Menu,
+        KeyFlag.LRControl | KeyFlag.Alt | KeyFlag.Shift | KeyFlag.LRMenu,
+        KeyFlag.LRControl | KeyFlag.Alt | KeyFlag.LRShift | KeyFlag.Menu,
+        KeyFlag.LRControl | KeyFlag.LRAlt | KeyFlag.Shift | KeyFlag.Menu,
+
+        KeyFlag.Control | KeyFlag.Alt | KeyFlag.Shift | KeyFlag.LRMenu,
+        KeyFlag.Control | KeyFlag.Alt | KeyFlag.LRShift | KeyFlag.Menu,
+        KeyFlag.Control | KeyFlag.LRAlt | KeyFlag.Shift | KeyFlag.Menu,
+        KeyFlag.LRControl | KeyFlag.Alt | KeyFlag.Shift | KeyFlag.Menu,
+
+        KeyFlag.Control | KeyFlag.Alt | KeyFlag.Shift | KeyFlag.Menu
+    ];
     /// Aind action by key, return null if not found
     Action findByKey(uint keyCode, uint flags) {
         Accelerator acc;
         acc.keyCode = keyCode;
-        acc.keyFlags = flags;
-        if (acc in _map)
-            return _map[acc];
+        foreach(mask; flagMasks) {
+            acc.keyFlags = flags & mask;
+            if (auto p = acc in _map) {
+                if (p.checkAccelerator(keyCode, flags))
+                    return *p;
+            }
+        }
         return null;
     }
 }
@@ -903,7 +929,12 @@ enum KeyFlag : uint {
     /// Left Menu/Win key is down
     LMenu    = 0x0240,
     /// Right Menu/Win key is down
-    RMenu    = 0x0140
+    RMenu    = 0x0140,
+
+    LRControl = LControl | RControl, // both left and right
+    LRAlt = LAlt | RAlt, // both left and right
+    LRShift = LShift | RShift, // both left and right
+    LRMenu = LMenu | RMenu, // both left and right
 }
 
 /// Key code constants for KeyEvent
