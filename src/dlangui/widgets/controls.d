@@ -160,7 +160,7 @@ class MultilineTextWidget : TextWidget {
 }
 
 /// Switch (on/off) widget
-class SwitchWidget : Widget {
+class SwitchButton : Widget {
     this(string ID = null) {
         super(ID);
         styleId = STYLE_SWITCH;
