@@ -1273,6 +1273,8 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
         }
         if (event.action == MouseAction.ButtonDown && (event.flags & (MouseFlag.LButton || MouseFlag.RButton)))
             setFocus();
+        if (itemCount > _itemRects.length)
+            return true; // layout not yet called
         for (int i = 0; i < itemCount; i++) {
             Rect itemrc = _itemRects[i];
             itemrc.left += rc.left - scrollOffset.x;
