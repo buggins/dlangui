@@ -765,7 +765,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
                 }
                 layoutButtons(rc);
                 //_pos = rc;
-                int position = space > 0 ? _minValue + offset * (_maxValue - _minValue - _pageSize) / space : 0;
+                int position = cast(int)(space > 0 ? _minValue + cast(long)offset * (_maxValue - _minValue - _pageSize) / space : 0);
                 invalidate();
                 onIndicatorDragging(_dragStartPosition, position);
                 return true;
@@ -840,7 +840,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         if (bottomv > dv)
             bottomv = dv;
         bottomv = dv - bottomv;
-        spaceBackSize = spaceLeft * topv / (topv + bottomv);
+        spaceBackSize = cast(int)(cast(long)spaceLeft * topv / (topv + bottomv));
         spaceForwardSize = spaceLeft - spaceBackSize;
         return true;
     }
