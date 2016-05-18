@@ -319,6 +319,10 @@ class Action {
         }
         return this; 
     }
+    @property const(Action) checked(bool newValue) const {
+        state = ActionState(_state.enabled, _state.visible, newValue);
+        return this;
+    }
 
     /// returns optional string parameter
     @property string stringParam() const {

@@ -114,6 +114,10 @@ class MenuItem {
 
     /// get check for checkbox or radio button item
     @property bool checked() {
+        //if (_checked) {
+        //    Log.d("Menu item is checked");
+        //    return true;
+        //}
         return _checked;
     }
     /// check radio button with specified index, uncheck other radio buttons in group (group consists of sequence of radio button items; other item type - end of group)
@@ -135,6 +139,8 @@ class MenuItem {
     @property MenuItem checked(bool flg) {
         if (_checked == flg)
             return this;
+        if (_action)
+            _action.checked = flg;
         _checked = flg;
         if (flg && _parent && type == MenuItemType.Radio) {
             int index = _parent.subitemIndex(this);
@@ -238,9 +244,10 @@ class MenuItem {
             //if (_action.id == EditorActions.Copy) {
             //    Log.d("Requesting Copy action. Old state: ", _action.state);
             //}
-            w.updateActionState(_action, true);
+            bool actionStateProcessed = w.updateActionState(_action, true, false);
             _enabled = _action.state.enabled;
-            _checked = _action.state.checked;
+            if (actionStateProcessed)
+                _checked = _action.state.checked;
         }
         for (int i = 0; i < _subitems.length; i++) {
             _subitems[i].updateActionState(w);
@@ -620,7 +627,7 @@ class MenuWidgetBase : ListWidget {
             _parentMenu.onMenuItem(item);
         else {
             // top level handling
-            Log.d("onMenuItem ", item.id);
+            debug(DebugMenus) Log.d("onMenuItem ", item.id);
             selectItem(-1);
             setHoverItem(-1);
             selectOnHover = false;
@@ -691,9 +698,9 @@ class MenuWidgetBase : ListWidget {
     /// override to handle specific actions state (e.g. change enabled state for supported actions)
     override bool handleActionStateRequest(const Action a) {
         if (_menuTogglePreviousFocus) {
-            Log.d("Menu.handleActionStateRequest forwarding to ", _menuTogglePreviousFocus);
+            debug(DebugMenus) Log.d("Menu.handleActionStateRequest forwarding to ", _menuTogglePreviousFocus);
             bool res = _menuTogglePreviousFocus.handleActionStateRequest(a);
-            Log.d("Menu.handleActionStateRequest forwarding handled successful: ", a.state.toString);
+            debug(DebugMenus) Log.d("Menu.handleActionStateRequest forwarding handled successful: ", a.state.toString);
             return res;
         }
         return false;
@@ -916,7 +923,7 @@ class MainMenu : MenuWidgetBase {
             // activating!
             _menuTogglePreviousFocus = window.focusedWidget;
             //updateActionState(true);
-            Log.d("MainMenu: updateActionState");
+            debug(DebugMenus) Log.d("MainMenu: updateActionState");
             _item.updateActionState(this);
         }
         super.handleFocusChange(focused);

@@ -691,7 +691,7 @@ public:
     /// action to emit on click
     @property void action(Action action) { _action = action; handleActionStateChanged(); }
     /// ask for update state of some action (unles force=true, checks window flag actionsUpdateRequested), returns true if action state is changed
-    bool updateActionState(Action a, bool force = false) {
+    bool updateActionState(Action a, bool force = false, bool allowDefault = true) {
         if (Window w = window) {
             if (!force && !w.actionsUpdateRequested())
                 return false;
@@ -703,7 +703,11 @@ public:
             if (w.dispatchActionStateRequest(a, this)) {
                 // state is updated
                 //Log.d("updateActionState ", a.label, " found state: ", a.state.toString);
+                if (allowDefault)
+                    return true; // return 'request dispatched' flag instead of 'changed'
             } else {
+                if (!allowDefault)
+                    return false;
                 a.state = a.defaultState;
                 //Log.d("updateActionState ", a.label, " using default state: ", a.state.toString);
             }
