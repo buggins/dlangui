@@ -691,11 +691,17 @@ class Win32Window : Window {
 
     protected uint _keyFlags;
 
-    protected void updateKeyFlags(KeyAction action, KeyFlag flag) {
+    protected void updateKeyFlags(KeyAction action, KeyFlag flag, uint preserveFlag) {
         if (action == KeyAction.KeyDown)
             _keyFlags |= flag;
-        else
-            _keyFlags &= ~flag;
+        else {
+            if (preserveFlag && (_keyFlags & preserveFlag) == preserveFlag) {
+                // e.g. when both lctrl and rctrl are pressed, and lctrl is up, preserve rctrl flag
+                _keyFlags = (_keyFlags & ~flag) | preserveFlag;
+            } else {
+                _keyFlags &= ~flag;
+            }
+        }
     }
 
     bool onKey(KeyAction action, uint keyCode, int repeatCount, dchar character = 0, bool syskey = false) {
@@ -706,19 +712,47 @@ class Win32Window : Window {
         //    _keyFlags &= ~KeyFlag.Alt;
         if (action == KeyAction.KeyDown || action == KeyAction.KeyUp) {
             switch(keyCode) {
-                case KeyCode.SHIFT:
-                    updateKeyFlags(action, KeyFlag.Shift);
+                case KeyCode.LSHIFT:
+                    updateKeyFlags(action, KeyFlag.LShift, KeyFlag.RShift);
                     break;
+                case KeyCode.RSHIFT:
+                    updateKeyFlags(action, KeyFlag.RShift, KeyFlag.LShift);
+                    break;
+                case KeyCode.LCONTROL:
+                    updateKeyFlags(action, KeyFlag.LControl, KeyFlag.RControl);
+                    break;
+                case KeyCode.RCONTROL:
+                    updateKeyFlags(action, KeyFlag.RControl, KeyFlag.LControl);
+                    break;
+                case KeyCode.LALT:
+                    updateKeyFlags(action, KeyFlag.LAlt, KeyFlag.RAlt);
+                    break;
+                case KeyCode.RALT:
+                    updateKeyFlags(action, KeyFlag.RAlt, KeyFlag.LAlt);
+                    break;
+                case KeyCode.LWIN:
+                    updateKeyFlags(action, KeyFlag.LMenu, KeyFlag.RMenu);
+                    break;
+                case KeyCode.RWIN:
+                    updateKeyFlags(action, KeyFlag.RMenu, KeyFlag.LMenu);
+                    break;
+                //case KeyCode.WIN:
                 case KeyCode.CONTROL:
-                    updateKeyFlags(action, KeyFlag.Control);
-                    break;
+                case KeyCode.SHIFT:
                 case KeyCode.ALT:
-                    updateKeyFlags(action, KeyFlag.Alt);
+                //case KeyCode.WIN:
                     break;
                 default:
-                    updateKeyFlags((GetKeyState(VK_CONTROL) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.Control);
-                    updateKeyFlags((GetKeyState(VK_SHIFT) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.Shift);
-                    updateKeyFlags((GetKeyState(VK_MENU) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.Alt);
+                    updateKeyFlags((GetKeyState(VK_LCONTROL) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.LControl, KeyFlag.RControl);
+                    updateKeyFlags((GetKeyState(VK_RCONTROL) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.RControl, KeyFlag.LControl);
+                    updateKeyFlags((GetKeyState(VK_LSHIFT) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.LShift, KeyFlag.RShift);
+                    updateKeyFlags((GetKeyState(VK_RSHIFT) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.RShift, KeyFlag.LShift);
+                    updateKeyFlags((GetKeyState(VK_LWIN) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.LMenu, KeyFlag.RMenu);
+                    updateKeyFlags((GetKeyState(VK_RWIN) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.RMenu, KeyFlag.LMenu);
+                    updateKeyFlags((GetKeyState(VK_LMENU) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.LAlt, KeyFlag.RAlt);
+                    updateKeyFlags((GetKeyState(VK_RMENU) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.RAlt, KeyFlag.LAlt);
+                    if (action == KeyAction.KeyDown)
+                        Log.d("keydown, keyFlags=", _keyFlags);
                     break;
             }
             //updateKeyFlags((GetKeyState(VK_CONTROL) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.Control);
@@ -1200,7 +1234,28 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_SYSKEYUP:
             if (window !is null) {
                 int repeatCount = lParam & 0xFFFF;
-                if (window.onKey(message == WM_KEYDOWN || message == WM_SYSKEYDOWN ? KeyAction.KeyDown : KeyAction.KeyUp, cast(uint)wParam, repeatCount, 0, message == WM_SYSKEYUP || message == WM_SYSKEYDOWN))
+                WPARAM vk = wParam;
+                WPARAM new_vk = vk;
+                UINT scancode = (lParam & 0x00ff0000) >> 16;
+                int extended  = (lParam & 0x01000000) != 0;
+                switch (vk) {
+                    case VK_SHIFT:
+                        new_vk = MapVirtualKey(scancode, 3); //MAPVK_VSC_TO_VK_EX
+                        break;
+                    case VK_CONTROL:
+                        new_vk = extended ? VK_RCONTROL : VK_LCONTROL;
+                        break;
+                    case VK_MENU:
+                        new_vk = extended ? VK_RMENU : VK_LMENU;
+                        break;
+                    default:
+                        // not a key we map from generic to left/right specialized
+                        //  just return it.
+                        new_vk = vk;
+                        break;    
+                }
+
+                if (window.onKey(message == WM_KEYDOWN || message == WM_SYSKEYDOWN ? KeyAction.KeyDown : KeyAction.KeyUp, cast(uint)new_vk, repeatCount, 0, message == WM_SYSKEYUP || message == WM_SYSKEYDOWN))
                     return 0; // processed
             }
             break;
