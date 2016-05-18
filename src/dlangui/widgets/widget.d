@@ -854,7 +854,7 @@ public:
         }
     }
 
-    private void findFocusableChildren(ref TabOrderInfo[] results, Rect clipRect) {
+    private void findFocusableChildren(ref TabOrderInfo[] results, Rect clipRect, Widget currentWidget) {
         if (visibility != Visibility.Visible)
             return;
         Rect rc = _pos;
@@ -862,23 +862,23 @@ public:
         applyPadding(rc);
         if (!rc.intersects(clipRect))
             return; // out of clip rectangle
-        if (canFocus) {
+        if (canFocus || this is currentWidget) {
             TabOrderInfo item = new TabOrderInfo(this, rc);
             results ~= item;
             return;
         }
         rc.intersect(clipRect);
         for (int i = 0; i < childCount(); i++) {
-            child(i).findFocusableChildren(results, rc);
+            child(i).findFocusableChildren(results, rc, currentWidget);
         }
     }
 
     /// find all focusables belonging to the same focusGroup as this widget (does not include current widget).
     /// usually to be called for focused widget to get possible alternatives to navigate to
-    private TabOrderInfo[] findFocusables() {
+    private TabOrderInfo[] findFocusables(Widget currentWidget) {
         TabOrderInfo[] result;
         Widget group = focusGroupWidget();
-        group.findFocusableChildren(result, group.pos);
+        group.findFocusableChildren(result, group.pos, currentWidget);
         for (ushort i = 0; i < result.length; i++)
             result[i].childOrder = i + 1;
         sort(result);
@@ -901,7 +901,7 @@ public:
     private Widget findNextFocusWidget(FocusMovement direction) {
         if (direction == FocusMovement.None)
             return this;
-        TabOrderInfo[] focusables = findFocusables();
+        TabOrderInfo[] focusables = findFocusables(this);
         if (!focusables.length)
             return null;
         int myIndex = -1;
