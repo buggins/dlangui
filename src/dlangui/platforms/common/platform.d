@@ -53,8 +53,8 @@ enum WindowFlag : uint {
 
 /// Window states
 enum WindowState : int {
-    /// state is unknown (not supported by platform?)
-    unknown,
+    /// state is unknown (not supported by platform?), as well for using in setWindowState when only want to activate window or change its size/position
+    unspecified,
     /// normal state
     normal,
     /// window is maximized
@@ -65,6 +65,8 @@ enum WindowState : int {
     fullscreen,
     /// application is paused (e.g. on Android)
     paused,
+    /// window is hidden
+    hidden,
     /// closed
     closed,
 }
@@ -240,18 +242,36 @@ class Window : CustomEventTarget {
     }
     /// window state change signal
     Signal!OnWindowStateHandler windowStateChanged;
-    protected void handleWindowStateChange(WindowState newState, Rect newWindowRect) {
+    /// update and signal window state changes - for using in platform inplementations
+    protected void handleWindowStateChange(WindowState newState, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
         _windowState = newState;
-        _windowRect = newWindowRect;
+        if (newWindowRect != RECT_VALUE_IS_NOT_SET)
+            _windowRect = newWindowRect;
         if (windowStateChanged.assigned)
             windowStateChanged(this, newState, newWindowRect);
     }
 
     /// change window state, position, or size; returns true if successful, false if not supported by platform
-    bool setWindowState(WindowState newState, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
+    bool setWindowState(WindowState newState, bool activate = false, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
+        // override for particular platforms
         return false;
     }
-
+    /// maximize window
+    bool maximizeWindow(bool activate = false) { return setWindowState(WindowState.maximized, activate); }
+    /// minimize window
+    bool minimizeWindow() { return setWindowState(WindowState.minimized); }
+    /// restore window if maximized/minimized/hidden
+    bool restoreWindow(bool activate = false) { return setWindowState(WindowState.normal, activate); }
+    /// restore window if maximized/minimized/hidden
+    bool hideWindow() { return setWindowState(WindowState.hidden); }
+    /// just activate window
+    bool activateWindow() { return setWindowState(WindowState.unspecified, true); }
+    /// change window position only
+    bool moveWindow(Point topLeft, bool activate = false) { return setWindowState(WindowState.unspecified, activate, Rect(topLeft.x, topLeft.y, int.min, int.min)); }
+    /// change window size only
+    bool resizeWindow(Point sz, bool activate = false) { return setWindowState(WindowState.unspecified, activate, Rect(int.min, int.min, sz.x, sz.y)); }
+    /// set window rectangle
+    bool moveAndResizeWindow(Rect rc, bool activate = false) { return setWindowState(WindowState.unspecified, activate, rc); }
 
     /// requests layout for main widget and popups
     void requestLayout() {

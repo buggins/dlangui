@@ -431,6 +431,87 @@ class Win32Window : Window {
             SetWindowTextW(_hwnd, toUTF16z(_caption));
         }
     }
+
+    /// change window state, position, or size; returns true if successful, false if not supported by platform
+    override bool setWindowState(WindowState newState, bool activate = false, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
+        if (!_hwnd)
+            return false;
+        bool res = false;
+        // change state and activate support
+        switch(newState) {
+            case WindowState.unspecified:
+                if (activate) {
+                    switch (_windowState) {
+                        case WindowState.hidden:
+                            // show hidden window
+                            ShowWindow(_hwnd, SW_SHOW);
+                            res = true;
+                            break;
+                        case WindowState.normal:
+                            ShowWindow(_hwnd, SW_SHOWNORMAL);
+                            res = true;
+                            break;
+                        case WindowState.minimized:
+                            ShowWindow(_hwnd, SW_SHOWMINIMIZED);
+                            res = true;
+                            break;
+                        case WindowState.maximized:
+                            ShowWindow(_hwnd, SW_SHOWMAXIMIZED);
+                            res = true;
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                return true;
+            case WindowState.maximized:
+                if (_windowState != WindowState.maximized || activate)
+                    ShowWindow(_hwnd, activate ? SW_SHOWMAXIMIZED : SW_MAXIMIZE);
+                return true;
+            case WindowState.minimized:
+                if (_windowState != WindowState.minimized || activate)
+                    ShowWindow(_hwnd, activate ? SW_SHOWMINIMIZED : SW_MINIMIZE);
+                return true;
+            case WindowState.hidden:
+                if (_windowState != WindowState.hidden)
+                    ShowWindow(_hwnd, SW_HIDE);
+                return true;
+            case WindowState.normal:
+                if (_windowState != WindowState.normal || activate) {
+                    ShowWindow(_hwnd, activate ? SW_SHOWNORMAL : SW_SHOWNA); // SW_RESTORE
+                }
+                res = true;
+                break;
+            default:
+                break;
+        }
+        // change size and/or position
+        if (newWindowRect != RECT_VALUE_IS_NOT_SET && (newState == WindowState.normal || newState == WindowState.unspecified)) {
+            UINT flags = SWP_NOOWNERZORDER | SWP_NOZORDER;
+            if (!activate)
+                flags |= SWP_NOACTIVATE;
+            if (newWindowRect.top == int.min || newWindowRect.left == int.min) {
+                // no position specified
+                if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
+                    // change size only
+                    SetWindowPos(_hwnd, NULL, 0, 0, newWindowRect.right, newWindowRect.bottom, flags | SWP_NOMOVE);
+                    return true;
+                }
+            } else {
+                if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
+                    // change size and position
+                    SetWindowPos(_hwnd, NULL, newWindowRect.left, newWindowRect.top, newWindowRect.width, newWindowRect.height, flags);
+                    return true;
+                } else {
+                    // change position only
+                    SetWindowPos(_hwnd, NULL, newWindowRect.left, newWindowRect.top, 0, 0, flags | SWP_NOSIZE);
+                    return true;
+                }
+            }
+        }
+        return res;
+    }
+
     void onCreate() {
         Log.d("Window onCreate");
         _platform.onWindowCreated(_hwnd, this);
