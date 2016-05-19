@@ -51,6 +51,30 @@ enum WindowFlag : uint {
     Modal = 4,
 }
 
+/// Window states
+enum WindowState : int {
+    /// state is unknown (not supported by platform?)
+    unknown,
+    /// normal state
+    normal,
+    /// window is maximized
+    maximized,
+    /// window is maximized
+    minimized,
+    /// fullscreen mode (supported not on all platforms)
+    fullscreen,
+    /// application is paused (e.g. on Android)
+    paused,
+    /// closed
+    closed,
+}
+
+/// Window state signal listener
+interface OnWindowStateHandler {
+    /// signal listener - called when state of window is changed
+    bool onWindowStateChange(Window window, WindowState winState, Rect rect);
+}
+
 /// protected event list
 /// references to posted messages can be stored here at least to keep live reference and avoid GC
 /// as well, on some platforms it's easy to send id to message queue, but not pointer
@@ -199,6 +223,35 @@ class Window : CustomEventTarget {
     abstract void invalidate();
     /// close window
     abstract void close();
+
+    protected WindowState _windowState = WindowState.normal;
+    /// returns current window state
+    @property WindowState windowState() {
+        return _windowState;
+    }
+
+    protected Rect _windowRect = RECT_VALUE_IS_NOT_SET;
+    /// returns window rectangle on screen (includes window frame and title)
+    @property Rect windowRect() {
+        if (_windowRect != RECT_VALUE_IS_NOT_SET)
+            return _windowRect;
+        // fake window rectangle -- at position 0,0 and 
+        return Rect(0, 0, _dx, _dy);
+    }
+    /// window state change signal
+    Signal!OnWindowStateHandler windowStateChanged;
+    protected void handleWindowStateChange(WindowState newState, Rect newWindowRect) {
+        _windowState = newState;
+        _windowRect = newWindowRect;
+        if (windowStateChanged.assigned)
+            windowStateChanged(this, newState, newWindowRect);
+    }
+
+    /// change window state, position, or size; returns true if successful, false if not supported by platform
+    bool setWindowState(WindowState newState, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
+        return false;
+    }
+
 
     /// requests layout for main widget and popups
     void requestLayout() {

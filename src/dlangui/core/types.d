@@ -170,6 +170,8 @@ struct Rect {
     }
 }
 
+/// constant acting as "rectangle not set" value
+immutable Rect RECT_VALUE_IS_NOT_SET = Rect(int.min, int.min, int.min, int.min);
 
 /// widget state bit flags
 enum State : uint {
