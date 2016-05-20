@@ -242,9 +242,10 @@ class Window : CustomEventTarget {
     }
     /// window state change signal
     Signal!OnWindowStateHandler windowStateChanged;
-    /// update and signal window state changes - for using in platform inplementations
+    /// update and signal window state and/or size/positon changes - for using in platform inplementations
     protected void handleWindowStateChange(WindowState newState, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
-        _windowState = newState;
+        if (newState != WindowState.unspecified)
+            _windowState = newState;
         if (newWindowRect != RECT_VALUE_IS_NOT_SET)
             _windowRect = newWindowRect;
         if (windowStateChanged.assigned)
