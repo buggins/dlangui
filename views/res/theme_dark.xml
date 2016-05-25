@@ -211,16 +211,16 @@
         backgroundImageId="editbox_background_dark"
         />
     <style id="DOCK_HOST"
-        backgroundColor="#091925"
+        backgroundColor="#515658"
         />
     <style id="DOCK_WINDOW"
-        backgroundColor="#8E9BBC"
+        backgroundImageId="dock_window_background_dark"
         />
     <style id="FLOATING_WINDOW"
         backgroundImageId="popup_window_background_dark"
         />
     <style id="DOCK_WINDOW_CAPTION"
-        backgroundColor="#3d5072"
+        backgroundImageId="dock_window_caption_background_dark"
         />
     <style id="DOCK_WINDOW_CAPTION_LABEL"
         textColor="#E0E0E0"
