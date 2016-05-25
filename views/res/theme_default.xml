@@ -164,7 +164,7 @@
     </style>
 
     <style id="TAB_DOWN_DARK"
-        backgroundImageId="tab_down_background_dark"
+        backgroundImageId="dock_window_caption_background_down"
         layoutWidth="FILL_PARENT"
         >
     </style>
@@ -173,24 +173,21 @@
         backgroundImageId="tab_btn_dark_down"
         />
     <style id="TAB_UP_DARK"
-        backgroundImageId="tab_up_background_dark"
+        backgroundImageId="dock_window_caption_background"
         layoutWidth="FILL_PARENT"
         >
     </style>
     <style id="TAB_UP_BUTTON_DARK"
         padding="5,1,1,1"
         backgroundImageId="tab_btn_dark_up"
-        />
+        >
+        <length id="overlap" value="2"/>
+    </style>
     <style id="TAB_UP_BUTTON_DARK_TEXT"
-        textColor="#E0E0E0"
+        textColor="#000000"
         align="Center"
         >
-        <state state_selected="true" state_window_focused="true" state_hovered="true" textColor="#800000"/>
-        <state state_selected="true" state_window_focused="true" textColor="#000000"/>
-        <state state_selected="true" textColor="#E0E0E0"/>
-        <state state_window_focused="true" state_hovered="true" textColor="#FFE0E0"/>
-        <state state_window_focused="true" textColor="#FFFFFF"/>
-        <state state_hovered="true" textColor="#808000"/>
+        <state state_selected="false" state_window_focused="false" state_hovered="false" textColor="#9c9c9c"/>
     </style>
     <style id="TAB_UP"
         backgroundImageId="tab_up_background"
@@ -221,7 +218,7 @@
 
     <style id="MAIN_MENU"
         layoutWidth="FILL_PARENT"
-        backgroundColor="#d6dbe9"
+        backgroundImageId="main_menu_background"
 	layoutWeight="0"
         />
     <style id="MAIN_MENU_ITEM"
@@ -305,6 +302,16 @@
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         />
+    <style id="EDIT_BOX_NO_FRAME"
+        fontFace="Menlo,Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console"
+        backgroundColor="#FFFFFF"
+        padding="2,2,2,2"
+        margins="2,2,2,2"
+        minWidth="100"
+        minHeight="60"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        />
     <style id="STRING_GRID"
         backgroundImageId="editbox_background"
         padding="2,2,2,2"
@@ -322,7 +329,7 @@
 	layoutWeight="0"
         />
     <style id="DOCK_HOST"
-        backgroundColor="#293955"
+        backgroundColor="#eceffa"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         padding="2,2,2,2"
@@ -330,15 +337,15 @@
     <style id="DOCK_HOST_BODY"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
-        padding="1,1,1,1"
-        margins="4,4,4,4"
+        padding="0,0,0,0"
+        margins="3,3,3,3"
         />
     <style id="DOCK_WINDOW"
-        backgroundColor="#8E9BBC"
+        backgroundImageId="dock_window_background"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
-        padding="1,1,1,1"
-        margins="4,4,4,4"
+        padding="0,0,0,0"
+        margins="2,2,2,2"
         />
     <style id="FLOATING_WINDOW"
         backgroundImageId="popup_window_background"
@@ -348,27 +355,26 @@
         margins="4,4,4,4"
         />
     <style id="DOCK_WINDOW_CAPTION"
-        backgroundColor="#4d6082"
+        backgroundImageId="dock_window_caption_background"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
         padding="1,1,1,1"
         />
     <style id="DOCK_WINDOW_CAPTION_LABEL"
-        textColor="#FFFFFF"
+        textColor="#000000"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
         padding="3,3,3,3"
         align="Left|VCenter"
         />
     <style id="DOCK_WINDOW_BODY"
-        backgroundColor="#FFFFFF"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
-        padding="1,1,1,1"
+        padding="3,3,3,3"
         />
 
     <style id="TOOLBAR_HOST"
-        backgroundColor="#d6dbe9"
+        backgroundImageId="toolbar_host_background"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
         padding="1,1,1,1"

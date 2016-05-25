@@ -26,6 +26,15 @@ res/combobox_background_dark.xml
 res/editbox_background.xml
 res/editbox_background_dark.xml
 res/exit.png
+res/dock_window_background.xml
+res/dock_window_background_focused.9.png
+res/dock_window_background_normal.9.png
+res/dock_window_caption_background.xml
+res/dock_window_caption_background_focused.9.png
+res/dock_window_caption_background_normal.9.png
+res/dock_window_caption_background_down.xml
+res/dock_window_caption_background_focused_down.9.png
+res/dock_window_caption_background_normal_down.9.png
 res/fileclose.png
 res/fileopen.png
 res/frame_blue.9.png
@@ -35,6 +44,7 @@ res/list_item_background.xml
 res/list_item_background_dark.xml
 res/list_item_background_solid.xml
 res/list_item_background_solid_dark.xml
+res/main_menu_background.9.png
 res/main_menu_item_background.xml
 res/main_menu_item_background_dark.xml
 res/main_menu_item_background_hover.9.png
@@ -190,6 +200,7 @@ res/mdpi/tab_btn_dark_down_selected_dark.9.png
 res/mdpi/tab_btn_dark_up_focused.9.png
 res/mdpi/tab_btn_dark_up_focused_dark.9.png
 res/mdpi/tab_btn_dark_up_focused_selected.9.png
+res/mdpi/tab_btn_dark_up_focused_hover.9.png
 res/mdpi/tab_btn_dark_up_focused_selected_dark.9.png
 res/mdpi/tab_btn_dark_up_hover.9.png
 res/mdpi/tab_btn_dark_up_hover_dark.9.png
@@ -206,6 +217,7 @@ res/mdpi/tab_up_background_dark_focused_dark.9.png
 res/mdpi/tab_up_background_dark_normal.9.png
 res/mdpi/tab_up_background_dark_normal_dark.9.png
 res/mdpi/text-plain.png
+res/mdpi/toolbar_host_background.9.png
 res/mdpi/toolbar_background.9.png
 res/mdpi/toolbar_background_dark.9.png
 res/mdpi/toolbar_button_hover.9.png

@@ -282,7 +282,9 @@ public:
     @property uint state() const {
         if ((_state & State.Parent) != 0 && _parent !is null)
             return _parent.state;
-        return _state | State.WindowFocused; // TODO:
+        if (focusGroupFocused)
+            return _state | State.WindowFocused; // TODO:
+        return _state;
     }
     /// override to handle focus changes
     protected void handleFocusChange(bool focused, bool receivedFocusFromKeyboard = false) {
@@ -296,6 +298,8 @@ public:
     }
     /// set new widget state (set of flags from State enum)
     @property Widget state(uint newState) {
+        if ((_state & State.Parent) != 0 && _parent !is null)
+            return _parent.state(newState);
         if (newState != _state) {
             uint oldState = _state;
             _state = newState;
@@ -791,10 +795,41 @@ public:
     @property bool focusGroup() { return _focusGroup; }
     /// set focus group flag for container widget
     @property Widget focusGroup(bool flg) { _focusGroup = flg; return this; }
+    @property bool focusGroupFocused() const {
+        Widget w = focusGroupWidget();
+        return (w._state & State.WindowFocused) != 0;
+    }
+    protected bool setWindowFocusedFlag(bool flg) {
+        if (flg) {
+            if ((_state & State.WindowFocused) == 0) {
+                _state |= State.WindowFocused;
+                invalidate();
+                return true;
+            }
+        } else {
+            if ((_state & State.WindowFocused) != 0) {
+                _state &= ~State.WindowFocused;
+                invalidate();
+                return true;
+            }
+        }
+        return false;
+    }
+    @property Widget focusGroupFocused(bool flg) {
+        Widget w = focusGroupWidget();
+        w.setWindowFocusedFlag(flg);
+        while (w.parent) {
+            w = w.parent;
+            if (w.parent is null || w.focusGroup) {
+                w.setWindowFocusedFlag(flg);
+            }
+        }
+        return this;
+    }
 
     /// find nearest parent of this widget with focusGroup flag, returns topmost parent if no focusGroup flag set to any of parents.
-    Widget focusGroupWidget() {
-        Widget p = this;
+    Widget focusGroupWidget() inout {
+        Widget p = cast(Widget)this;
         while (p) {
             if (!p.parent || p.focusGroup)
                 break;
@@ -1692,6 +1727,11 @@ class WidgetGroup : Widget {
 
 	override void removeAllChildren(bool destroyObj = true) {
         _children.clear(destroyObj);
+    }
+
+    /// replace child with other child
+    void replaceChild(Widget newChild, Widget oldChild) {
+        _children.replace(newChild, oldChild);
     }
 
 }

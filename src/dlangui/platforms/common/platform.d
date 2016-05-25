@@ -622,8 +622,11 @@ class Window : CustomEventTarget {
             targetState = State.Focused | State.KeyboardFocused;
         if (oldFocus is newFocus)
             return oldFocus;
-        if (oldFocus !is null)
+        if (oldFocus !is null) {
             oldFocus.resetState(targetState);
+            if (oldFocus)
+                oldFocus.focusGroupFocused(false);
+        }
         if (newFocus is null || isChild(newFocus)) {
             if (newFocus !is null) {
                 // when calling, setState(focused), window.focusedWidget is still previously focused widget
@@ -631,6 +634,8 @@ class Window : CustomEventTarget {
                 newFocus.setState(targetState);
             }
             _focusedWidget = newFocus;
+            if (_focusedWidget)
+                _focusedWidget.focusGroupFocused(true);
             // after focus change, ask for actions update automatically
             //requestActionsUpdate();
         }

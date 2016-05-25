@@ -321,6 +321,7 @@ class DockWindow : WindowFrame {
 
     this(string ID) {
         super(ID);
+        focusGroup = true;
     }
 
     override protected void initialize() {

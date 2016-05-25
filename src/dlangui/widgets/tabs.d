@@ -120,6 +120,7 @@ class TabItemWidget : HorizontalLayout {
         setItem(item);
         clickable = true;
         trackHover = true;
+        _label.trackHover = true;
     }
     void setStyles(string tabButtonStyle, string tabButtonTextStyle) {
         styleId = tabButtonStyle;
@@ -814,9 +815,10 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
     }
 
     /// change style ids
-    void setStyles(string tabWidgetStyle, string tabStyle, string tabButtonStyle, string tabButtonTextStyle) {
+    void setStyles(string tabWidgetStyle, string tabStyle, string tabButtonStyle, string tabButtonTextStyle, string tabHostStyle = null) {
         styleId = tabWidgetStyle;
         _tabControl.setStyles(tabStyle, tabButtonStyle, tabButtonTextStyle);
+        _tabHost.styleId = tabHostStyle;
     }
 
     private bool _tabNavigationInProgress;

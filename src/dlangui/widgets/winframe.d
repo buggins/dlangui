@@ -27,7 +27,7 @@ class WindowFrame : VerticalLayout {
     protected Widget _bodyWidget;
     @property Widget bodyWidget() { return _bodyWidget; }
     @property void bodyWidget(Widget widget) { 
-        _children.replace(widget, _bodyWidget);
+        _bodyLayout.replaceChild(widget, _bodyWidget);
         _bodyWidget = widget;
         _bodyWidget.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
         _bodyWidget.parent = this;
@@ -38,6 +38,7 @@ class WindowFrame : VerticalLayout {
     protected TextWidget _caption;
     protected ImageButton _closeButton;
     protected bool _showCloseButton;
+    protected HorizontalLayout _bodyLayout;
 
     @property TextWidget caption() { return _caption; }
 
@@ -76,11 +77,16 @@ class WindowFrame : VerticalLayout {
         _captionLayout.addChild(_caption);
         _captionLayout.addChild(_closeButton);
 
+        _bodyLayout = new HorizontalLayout();
+        _bodyLayout.styleId = STYLE_DOCK_WINDOW_BODY;
+
         _bodyWidget = createBodyWidget();
-        _bodyWidget.styleId = STYLE_DOCK_WINDOW_BODY;
+        _bodyLayout.addChild(_bodyWidget);
+        _bodyWidget.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+        //_bodyWidget.styleId = STYLE_DOCK_WINDOW_BODY;
 
         addChild(_captionLayout);
-        addChild(_bodyWidget);
+        addChild(_bodyLayout);
     }
 
     protected Widget createBodyWidget() {

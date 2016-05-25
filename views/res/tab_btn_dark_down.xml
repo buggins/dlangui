@@ -4,6 +4,9 @@
     android:drawable="tab_btn_dark_down_focused_selected"
     android:state_selected="true" android:state_window_focused="true" />
   <item
+    android:drawable="tab_btn_dark_down_focused_hover"
+    android:state_hovered="true" android:state_window_focused="true" />
+  <item
     android:drawable="tab_btn_dark_down_focused"
     android:state_window_focused="true" />
   <item
