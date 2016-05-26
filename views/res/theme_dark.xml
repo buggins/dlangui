@@ -106,7 +106,7 @@
     </style>
 
     <style id="TAB_DOWN_DARK"
-        backgroundImageId="tab_down_background_theme_dark"
+        backgroundImageId="dock_window_caption_background_down_dark"
         >
     </style>
     <style id="TAB_DOWN_BUTTON_DARK"
@@ -208,7 +208,7 @@
         backgroundColor="#292929"
         />
     <style id="STATUS_LINE"
-        backgroundColor="#101010"
+        backgroundColor="#515658"
         />
     <style id="STRING_GRID"
         backgroundImageId="editbox_background_dark"
@@ -229,7 +229,7 @@
         textColor="#E0E0E0"
         />
     <style id="DOCK_WINDOW_BODY"
-        backgroundColor="#000000"
+        padding="3,3,3,3"
         />
 
     <style id="TOOLBAR_HOST"
