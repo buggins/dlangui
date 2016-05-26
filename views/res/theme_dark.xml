@@ -113,7 +113,7 @@
         backgroundImageId="tab_btn_dark_down_dark"
         />
     <style id="TAB_UP_DARK"
-        backgroundImageId="tab_up_background_theme_dark"
+        backgroundImageId="dock_window_caption_background_dark"
         >
     </style>
     <style id="TAB_UP_BUTTON_DARK"
@@ -204,6 +204,9 @@
     <style id="EDIT_BOX"
         backgroundImageId="editbox_background_dark"
         />
+    <style id="EDIT_BOX_NO_FRAME"
+        backgroundColor="#292929"
+        />
     <style id="STATUS_LINE"
         backgroundColor="#101010"
         />
@@ -230,7 +233,7 @@
         />
 
     <style id="TOOLBAR_HOST"
-        backgroundColor="#202325"
+        backgroundImageId="toolbar_host_background_dark"
         />
     <style id="TOOLTIP"
         backgroundImageId="tooltip_background_dark"

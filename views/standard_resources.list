@@ -209,8 +209,9 @@ res/mdpi/tab_btn_dark_down_selected_dark.9.png
 res/mdpi/tab_btn_dark_up_focused.9.png
 res/mdpi/tab_btn_dark_up_focused_dark.9.png
 res/mdpi/tab_btn_dark_up_focused_selected.9.png
-res/mdpi/tab_btn_dark_up_focused_hover.9.png
 res/mdpi/tab_btn_dark_up_focused_selected_dark.9.png
+res/mdpi/tab_btn_dark_up_focused_hover.9.png
+res/mdpi/tab_btn_dark_up_focused_hover_dark.9.png
 res/mdpi/tab_btn_dark_up_hover.9.png
 res/mdpi/tab_btn_dark_up_hover_dark.9.png
 res/mdpi/tab_btn_dark_up_normal.9.png
@@ -227,6 +228,7 @@ res/mdpi/tab_up_background_dark_normal.9.png
 res/mdpi/tab_up_background_dark_normal_dark.9.png
 res/mdpi/text-plain.png
 res/mdpi/toolbar_host_background.9.png
+res/mdpi/toolbar_host_background_dark.9.png
 res/mdpi/toolbar_background.9.png
 res/mdpi/toolbar_background_dark.9.png
 res/mdpi/toolbar_button_hover.9.png
