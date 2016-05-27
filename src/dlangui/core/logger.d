@@ -139,6 +139,26 @@ class Log {
         }
     }
 
+    /// returns true if messages for level are enabled
+    static public bool isLogLevelEnabled(LogLevel level) {
+        return logLevel >= level;
+    }
+
+    /// returns true if debug log level is enabled
+    @property static public bool debugEnabled() {
+        return logLevel >= LogLevel.Debug;
+    }
+
+    /// returns true if trace log level is enabled
+    @property static public bool traceEnabled() {
+        return logLevel >= LogLevel.Trace;
+    }
+
+    /// returns true if warn log level is enabled
+    @property static public bool warnEnabled() {
+        return logLevel >= LogLevel.Warn;
+    }
+
     /// Log level to name helper function
     static public string logLevelName(LogLevel level) {
         switch (level) with(LogLevel)
