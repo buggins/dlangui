@@ -173,6 +173,7 @@ class IRCFrame : AppFrame, IRCClientCallback {
     /// create app body widget
     override protected Widget createBody() {
         _tabs = new TabWidget("TABS");
+        _tabs.setStyles(STYLE_DOCK_WINDOW, STYLE_TAB_UP_DARK, STYLE_TAB_UP_BUTTON_DARK, STYLE_TAB_UP_BUTTON_DARK_TEXT, STYLE_DOCK_HOST_BODY);
         _tabs.layoutWidth = FILL_PARENT;
         _tabs.layoutHeight = FILL_PARENT;
         //tabs.addTab(new IRCWindow("sample"), "Sample"d);
