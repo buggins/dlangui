@@ -920,6 +920,8 @@ enum KeyFlag : uint {
     /// Menu key
     Menu    = 0x0040,
     Command = Menu,
+    // Flags not counting left or right difference
+    MainFlags = 0xFF,
     /// Right Ctrl key is down
     RControl = 0x0108,
     /// Right Shift key is down
