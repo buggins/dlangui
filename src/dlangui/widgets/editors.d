@@ -268,11 +268,26 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     /// when true, call measureVisibileText on next layout
     protected bool _contentChanged = true;
 
+    protected bool _copyCurrentLineWhenNoSelection = true;
+    /// when true allows copy / cut whole current line if there is no selection
+    @property bool copyCurrentLineWhenNoSelection() { return _copyCurrentLineWhenNoSelection; }
+    @property EditWidgetBase copyCurrentLineWhenNoSelection(bool flg) { _copyCurrentLineWhenNoSelection = flg; return this; }
+
+    protected bool _showTabPositionMarks = true;
+    /// when true shows mark on tab positions in beginning of line
+    @property bool showTabPositionMarks() { return _showTabPositionMarks; }
+    @property EditWidgetBase showTabPositionMarks(bool flg) {
+        if (flg != _showTabPositionMarks) {
+            _showTabPositionMarks = flg; 
+            invalidate();
+        }
+        return this;
+    }
 
     /// Modified state change listener (e.g. content has been saved, or first time modified after save)
     Signal!ModifiedStateListener modifiedStateChange;
 
-    /// editor content is changed
+    /// Signal to emit when editor content is changed
     Signal!EditableContentChangeListener contentChange;
 
     /// override to support modification of client rect after change, e.g. apply offset
@@ -575,7 +590,6 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return focusable && visible;
     }
 
-
     /// override to change popup menu items state
     override bool isActionEnabled(const Action action) {
         switch (action.id) with(EditorActions)
@@ -586,9 +600,9 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             case Unindent:
                 return enabled;
             case Copy:
-                return !_selectionRange.empty;
+                return _copyCurrentLineWhenNoSelection || !_selectionRange.empty;
             case Cut:
-                return enabled && !_selectionRange.empty;
+                return enabled && (_copyCurrentLineWhenNoSelection || !_selectionRange.empty);
             case Paste:
                 return enabled && Platform.instance.getClipboardText().length > 0;
             case Undo:
@@ -634,7 +648,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     /// set bool property value, for ML loaders
     mixin(generatePropertySettersMethodOverride("setBoolProperty", "bool",
-          "wantTabs", "showIcons", "showFolding", "showModificationMarks", "showLineNumbers", "readOnly", "replaceMode", "useSpacesForTabs"));
+          "wantTabs", "showIcons", "showFolding", "showModificationMarks", "showLineNumbers", "readOnly", "replaceMode", "useSpacesForTabs", "copyCurrentLineWhenNoSelection", "showTabPositionMarks"));
 
     /// set int property value, for ML loaders
     mixin(generatePropertySettersMethodOverride("setIntProperty", "int",
@@ -1135,11 +1149,22 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return true;
     }
 
-    public dstring getSelectedText(){
-        dstring selectionText = concatDStrings(_content.rangeText(_selectionRange));
-        return selectionText;
+    /// returns current selection text (joined with LF when span over multiple lines)
+    public dstring getSelectedText() {
+        return getRangeText(_selectionRange);
     }
     
+    /// returns text for specified range (joined with LF when span over multiple lines)
+    public dstring getRangeText(TextRange range) {
+        dstring selectionText = concatDStrings(_content.rangeText(range));
+        return selectionText;
+    }
+
+    /// returns range for line with cursor
+    @property public TextRange currentLineRange() {
+        return _content.lineRange(_caretPos.line);
+    }
+
     protected bool removeRangeText(TextRange range) {
         if (range.empty)
             return false;
@@ -1338,19 +1363,18 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 }
                 return true;
             case Copy:
-                if (!_selectionRange.empty) {
-                    dstring selectionText = getSelectedText();
-                    platform.setClipboardText(selectionText);
-                }
-                return true;
             case Cut:
-                if (!_selectionRange.empty) {
-                    dstring selectionText = getSelectedText();
+                TextRange range = _selectionRange;
+                if (range.empty && _copyCurrentLineWhenNoSelection) {
+                    range = currentLineRange;
+                }
+                if (!range.empty) {
+                    dstring selectionText = getRangeText(range);
                     platform.setClipboardText(selectionText);
-                    if (readOnly)
-                        return true;
-                    EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [""d]);
-                    _content.performOperation(op, this);
+                    if (!readOnly && a.id == Cut) {
+                        EditOperation op = new EditOperation(EditAction.Replace, range, [""d]);
+                        _content.performOperation(op, this);
+                    }
                 }
                 return true;
             case Paste:
