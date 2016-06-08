@@ -273,7 +273,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     @property bool copyCurrentLineWhenNoSelection() { return _copyCurrentLineWhenNoSelection; }
     @property EditWidgetBase copyCurrentLineWhenNoSelection(bool flg) { _copyCurrentLineWhenNoSelection = flg; return this; }
 
-    protected bool _showTabPositionMarks = true;
+    protected bool _showTabPositionMarks = false;
     /// when true shows mark on tab positions in beginning of line
     @property bool showTabPositionMarks() { return _showTabPositionMarks; }
     @property EditWidgetBase showTabPositionMarks(bool flg) {
@@ -2681,6 +2681,8 @@ class EditBox : EditWidgetBase {
     }
 
     void drawWhiteSpaceMarks(DrawBuf buf, ref FontRef font, dstring txt, int tabSize, Rect lineRect, Rect visibleRect) {
+        // _showTabPositionMarks
+        // _showWhiteSpaceMarks
         int firstNonSpace = -1;
         int lastNonSpace = -1;
         bool hasTabs = false;
@@ -2698,7 +2700,12 @@ class EditBox : EditWidgetBase {
         uint color = addAlpha(textColor, 0xC0);
         static int[] textSizeBuffer;
         int charsMeasured = font.measureText(txt, textSizeBuffer, MAX_WIDTH_UNSPECIFIED, tabSize, 0, 0);
-
+        int ts = tabSize;
+        if (ts < 1)
+            ts = 1;
+        if (ts > 8)
+            ts = 8;
+        int spaceIndex = 0;
         for (int i = 0; i < txt.length && i < charsMeasured; i++) {
             dchar ch = txt[i];
             bool outsideText = (i < firstNonSpace || i >= lastNonSpace);
@@ -2708,30 +2715,42 @@ class EditBox : EditWidgetBase {
                 rc.right = lineRect.left + textSizeBuffer[i];
                 int h = rc.height;
                 if (rc.intersects(visibleRect)) {
-                    // draw space mark
-                    if (ch == ' ') {
-                        // space
-                        int sz = h / 6;
-                        if (sz < 1)
-                            sz = 1;
-                        rc.top += h / 2 - sz / 2;
-                        rc.bottom = rc.top + sz;
-                        rc.left += rc.width / 2 - sz / 2;
-                        rc.right = rc.left + sz;
-                        buf.fillRect(rc, color);
-                    } else if (ch == '\t') {
-                        // tab
-                        Point p1 = Point(rc.left + 1, rc.top + h / 2);
-                        Point p2 = p1;
-                        p2.x = rc.right - 1;
-                        int sz = h / 4;
-                        if (sz < 2)
-                            sz = 2;
-                        if (sz > p2.x - p1.x)
-                            sz = p2.x - p1.x;
-                        buf.drawLine(p1, p2, color);
-                        buf.drawLine(p2, Point(p2.x - sz, p2.y - sz), color);
-                        buf.drawLine(p2, Point(p2.x - sz, p2.y + sz), color);
+                    if (_showTabPositionMarks && i < firstNonSpace) {
+                        if (spaceIndex % ts == 0) {
+                            // draw mark
+                            buf.fillRect(Rect(rc.left, rc.top, rc.left + 1, rc.bottom), color);
+                        }
+                        if (ch == ' ')
+                            spaceIndex++;
+                        else if (ch == '\t')
+                            spaceIndex = (spaceIndex + ts) / ts * ts;
+                    }
+                    if (_showWhiteSpaceMarks) {
+                        // draw space mark
+                        if (ch == ' ') {
+                            // space
+                            int sz = h / 6;
+                            if (sz < 1)
+                                sz = 1;
+                            rc.top += h / 2 - sz / 2;
+                            rc.bottom = rc.top + sz;
+                            rc.left += rc.width / 2 - sz / 2;
+                            rc.right = rc.left + sz;
+                            buf.fillRect(rc, color);
+                        } else if (ch == '\t') {
+                            // tab
+                            Point p1 = Point(rc.left + 1, rc.top + h / 2);
+                            Point p2 = p1;
+                            p2.x = rc.right - 1;
+                            int sz = h / 4;
+                            if (sz < 2)
+                                sz = 2;
+                            if (sz > p2.x - p1.x)
+                                sz = p2.x - p1.x;
+                            buf.drawLine(p1, p2, color);
+                            buf.drawLine(p2, Point(p2.x - sz, p2.y - sz), color);
+                            buf.drawLine(p2, Point(p2.x - sz, p2.y + sz), color);
+                        }
                     }
                 }
             }
@@ -2761,7 +2780,7 @@ class EditBox : EditWidgetBase {
             drawLineBackground(buf, _firstVisibleLine + i, lineRect, visibleRect);
             if (!txt.length)
                 continue;
-            if (_showWhiteSpaceMarks)
+            if (_showWhiteSpaceMarks || _showTabPositionMarks)
                 drawWhiteSpaceMarks(buf, font, txt, tabSize, lineRect, visibleRect);
             if (_leftPaneWidth > 0) {
                 Rect leftPaneRect = visibleRect;
