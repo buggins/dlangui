@@ -112,6 +112,19 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
         if (!isFullyTransparentColor(color) && applyClipping(rc))
             _scene.add(new SolidRectSceneItem(rc, color));
     }
+
+    /// fill rectangle with solid color and pattern (clipping is applied) 0=solid fill, 1 = dotted
+    override void fillRectPattern(Rect rc, uint color, int pattern) {
+        if (pattern == PatternType.solid)
+            fillRect(rc, color);
+        else {
+            assert(_scene !is null);
+            color = applyAlpha(color);
+            if (!isFullyTransparentColor(color) && applyClipping(rc))
+                _scene.add(new PatternRectSceneItem(rc, color, pattern));
+        }
+    }
+
     /// draw pixel at (x, y) with specified color
     override void drawPixel(int x, int y, uint color) {
         assert(_scene !is null);
@@ -715,6 +728,30 @@ public:
     }
     override void draw() {
         glSupport.drawSolidFillRect(_rc, _color, _color, _color, _color);
+    }
+}
+
+private class PatternRectSceneItem : SceneItem {
+private:
+    Rect _rc;
+    uint _color;
+    int _pattern;
+
+public:
+    this(Rect rc, uint color, int pattern) {
+        _rc = rc;
+        _color = color;
+        _pattern = pattern;
+    }
+    override void draw() {
+        // TODO: support patterns
+        // TODO: optimize
+        for (int y = _rc.top; y < _rc.bottom; y++) {
+            for (int x = _rc.left; x < _rc.right; x++)
+                if ((x ^ y) & 1) {
+                    glSupport.drawSolidFillRect(Rect(x, y, x + 1, y + 1), _color, _color, _color, _color);
+                }
+        }
     }
 }
 

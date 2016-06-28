@@ -868,6 +868,40 @@ class EditableContent {
         return (pos + tabSize) / tabSize * tabSize;
     }
 
+    /// to return information about line space positions
+    static struct LineWhiteSpace {
+        int firstNonSpaceIndex = -1;
+        int firstNonSpaceColumn = -1;
+        int lastNonSpaceIndex = -1;
+        int lastNonSpaceColumn = -1;
+        @property bool empty() { return firstNonSpaceColumn < 0; }
+    }
+
+    LineWhiteSpace getLineWhiteSpace(int lineIndex) {
+        LineWhiteSpace res;
+        if (lineIndex < 0 || lineIndex >= _lines.length)
+            return res;
+        dstring s = _lines[lineIndex];
+        int x = 0;
+        for (int i = 0; i < s.length; i++) {
+            dchar ch = s[i];
+            if (ch == '\t') {
+                x = (x + _tabSize) / _tabSize * _tabSize;
+            } else if (ch == ' ') {
+                x++;
+            } else {
+                if (res.firstNonSpaceIndex < 0) {
+                    res.firstNonSpaceIndex = i;
+                    res.firstNonSpaceColumn = x;
+                }
+                res.lastNonSpaceIndex = i;
+                res.lastNonSpaceColumn = x;
+                x++;
+            }
+        }
+        return res;
+    }
+
     /// returns spaces/tabs for filling from the beginning of line to specified position
     dstring fillSpace(int pos) {
         dchar[] buf;

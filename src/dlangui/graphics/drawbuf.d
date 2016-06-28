@@ -34,6 +34,11 @@ struct NinePatch {
     Rect padding;
 }
 
+enum PatternType : int {
+    solid,
+    dotted,
+}
+
 static if (ENABLE_OPENGL) {
     /// non thread safe
     private __gshared uint drawBufIdGenerator = 0;
@@ -278,6 +283,11 @@ class DrawBuf : RefCountedObject {
     abstract void fill(uint color);
     /// fill rectangle with solid color (clipping is applied)
     abstract void fillRect(Rect rc, uint color);
+    /// fill rectangle with solid color and pattern (clipping is applied) 0=solid fill, 1 = dotted
+    void fillRectPattern(Rect rc, uint color, int pattern) {
+        // default implementation: does not support patterns
+        fillRect(rc, color);
+    }
     /// draw pixel at (x, y) with specified color 
     abstract void drawPixel(int x, int y, uint color);
     /// draw 8bit alpha image - usually font glyph using specified color (clipping is applied)
@@ -701,16 +711,44 @@ class ColorDrawBufBase : DrawBuf {
     }
 
     override void fillRect(Rect rc, uint color) {
+        uint alpha = color >> 24;
         if (applyClipping(rc)) {
             foreach(y; rc.top .. rc.bottom) {
                 uint * row = scanLine(y);
-                uint alpha = color >> 24;
                 if (!alpha) {
                     row[rc.left .. rc.right] = color;
                 } else if (alpha < 254) {
                     foreach(x; rc.left .. rc.right) {
                         // apply blending
                         row[x] = blendARGB(row[x], color, alpha);
+                    }
+                }
+            }
+        }
+    }
+
+    /// fill rectangle with solid color and pattern (clipping is applied) 0=solid fill, 1 = dotted
+    override void fillRectPattern(Rect rc, uint color, int pattern) {
+        uint alpha = color >> 24;
+        if (alpha == 255) // fully transparent
+            return;
+        if (applyClipping(rc)) {
+            foreach(y; rc.top .. rc.bottom) {
+                uint * row = scanLine(y);
+                if (!alpha) {
+                    if (pattern == 1) {
+                        foreach(x; rc.left .. rc.right) {
+                            if ((x ^ y) & 1)
+                                row[x] = color;
+                        }
+                    } else {
+                        row[rc.left .. rc.right] = color;
+                    }
+                } else if (alpha < 254) {
+                    foreach(x; rc.left .. rc.right) {
+                        // apply blending
+                        if (pattern != 1 || ((x ^ y) & 1) != 0)
+                            row[x] = blendARGB(row[x], color, alpha);
                     }
                 }
             }

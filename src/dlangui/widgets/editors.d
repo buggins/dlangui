@@ -252,9 +252,9 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected uint _selectionColorNormal = 0xD060A0FF;
     protected uint _leftPaneBackgroundColor = 0xF4F4F4;
     protected uint _leftPaneBackgroundColor2 = 0xFFFFFF;
-    protected uint _leftPaneBackgroundColor3 = 0xE0E0E0;
+    protected uint _leftPaneBackgroundColor3 = 0xF8F8F8;
     protected uint _leftPaneLineNumberColor = 0x4060D0;
-    protected uint _leftPaneLineNumberBackgroundColor = 0xF0F0F0;
+    protected uint _leftPaneLineNumberBackgroundColor = 0xF4F4F4;
     protected uint _colorIconBreakpoint = 0xFF0000;
     protected uint _colorIconBookmark = 0x0000FF;
     protected uint _colorIconError = 0x80FF0000;
@@ -278,7 +278,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     @property bool showTabPositionMarks() { return _showTabPositionMarks; }
     @property EditWidgetBase showTabPositionMarks(bool flg) {
         if (flg != _showTabPositionMarks) {
-            _showTabPositionMarks = flg; 
+            _showTabPositionMarks = flg;
             invalidate();
         }
         return this;
@@ -2680,6 +2680,47 @@ class EditBox : EditWidgetBase {
         }
     }
 
+    /// find max tab mark column position for line
+    protected int findMaxTabMarkColumn(int lineIndex) {
+        if (lineIndex < 0 || lineIndex >= content.length)
+            return -1;
+        int maxSpace = -1;
+        auto space = content.getLineWhiteSpace(lineIndex);
+        maxSpace = space.firstNonSpaceColumn;
+        if (maxSpace >= 0)
+            return maxSpace;
+        for(int i = lineIndex - 1; i >= 0; i--) {
+            space = content.getLineWhiteSpace(i);
+            if (!space.empty) {
+                maxSpace = space.firstNonSpaceColumn;
+                break;
+            }
+        }
+        for(int i = lineIndex + 1; i < content.length; i++) {
+            space = content.getLineWhiteSpace(i);
+            if (!space.empty) {
+                if (maxSpace < 0 || maxSpace < space.firstNonSpaceColumn)
+                    maxSpace = space.firstNonSpaceColumn;
+                break;
+            }
+        }
+        return maxSpace;
+    }
+
+    void drawTabPositionMarks(DrawBuf buf, ref FontRef font, int lineIndex, Rect lineRect) {
+        int maxCol = findMaxTabMarkColumn(lineIndex);
+        if (maxCol > 0) {
+            int spaceWidth = font.charWidth(' ');
+            Rect rc = lineRect;
+            uint color = addAlpha(textColor, 0xC0);
+            for (int i = 0; i < maxCol; i += tabSize) {
+                rc.left = lineRect.left + i * spaceWidth;
+                rc.right = rc.left + 1;
+                buf.fillRectPattern(rc, color, PatternType.dotted);
+            }
+        }
+    }
+
     void drawWhiteSpaceMarks(DrawBuf buf, ref FontRef font, dstring txt, int tabSize, Rect lineRect, Rect visibleRect) {
         // _showTabPositionMarks
         // _showWhiteSpaceMarks
@@ -2715,42 +2756,30 @@ class EditBox : EditWidgetBase {
                 rc.right = lineRect.left + textSizeBuffer[i];
                 int h = rc.height;
                 if (rc.intersects(visibleRect)) {
-                    if (_showTabPositionMarks && i < firstNonSpace) {
-                        if (spaceIndex % ts == 0) {
-                            // draw mark
-                            buf.fillRect(Rect(rc.left, rc.top, rc.left + 1, rc.bottom), color);
-                        }
-                        if (ch == ' ')
-                            spaceIndex++;
-                        else if (ch == '\t')
-                            spaceIndex = (spaceIndex + ts) / ts * ts;
-                    }
-                    if (_showWhiteSpaceMarks) {
-                        // draw space mark
-                        if (ch == ' ') {
-                            // space
-                            int sz = h / 6;
-                            if (sz < 1)
-                                sz = 1;
-                            rc.top += h / 2 - sz / 2;
-                            rc.bottom = rc.top + sz;
-                            rc.left += rc.width / 2 - sz / 2;
-                            rc.right = rc.left + sz;
-                            buf.fillRect(rc, color);
-                        } else if (ch == '\t') {
-                            // tab
-                            Point p1 = Point(rc.left + 1, rc.top + h / 2);
-                            Point p2 = p1;
-                            p2.x = rc.right - 1;
-                            int sz = h / 4;
-                            if (sz < 2)
-                                sz = 2;
-                            if (sz > p2.x - p1.x)
-                                sz = p2.x - p1.x;
-                            buf.drawLine(p1, p2, color);
-                            buf.drawLine(p2, Point(p2.x - sz, p2.y - sz), color);
-                            buf.drawLine(p2, Point(p2.x - sz, p2.y + sz), color);
-                        }
+                    // draw space mark
+                    if (ch == ' ') {
+                        // space
+                        int sz = h / 6;
+                        if (sz < 1)
+                            sz = 1;
+                        rc.top += h / 2 - sz / 2;
+                        rc.bottom = rc.top + sz;
+                        rc.left += rc.width / 2 - sz / 2;
+                        rc.right = rc.left + sz;
+                        buf.fillRect(rc, color);
+                    } else if (ch == '\t') {
+                        // tab
+                        Point p1 = Point(rc.left + 1, rc.top + h / 2);
+                        Point p2 = p1;
+                        p2.x = rc.right - 1;
+                        int sz = h / 4;
+                        if (sz < 2)
+                            sz = 2;
+                        if (sz > p2.x - p1.x)
+                            sz = p2.x - p1.x;
+                        buf.drawLine(p1, p2, color);
+                        buf.drawLine(p2, Point(p2.x - sz, p2.y - sz), color);
+                        buf.drawLine(p2, Point(p2.x - sz, p2.y + sz), color);
                     }
                 }
             }
@@ -2778,9 +2807,11 @@ class EditBox : EditWidgetBase {
             visibleRect.left = _clientRect.left;
             visibleRect.right = _clientRect.right;
             drawLineBackground(buf, _firstVisibleLine + i, lineRect, visibleRect);
+            if (_showTabPositionMarks)
+                drawTabPositionMarks(buf, font, _firstVisibleLine + i, lineRect);
             if (!txt.length)
                 continue;
-            if (_showWhiteSpaceMarks || _showTabPositionMarks)
+            if (_showWhiteSpaceMarks)
                 drawWhiteSpaceMarks(buf, font, txt, tabSize, lineRect, visibleRect);
             if (_leftPaneWidth > 0) {
                 Rect leftPaneRect = visibleRect;
