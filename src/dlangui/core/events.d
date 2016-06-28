@@ -722,6 +722,8 @@ __gshared long DOUBLE_CLICK_THRESHOLD_MS = 400;
 
 /// Mouse button state details for MouseEvent
 struct ButtonDetails {
+    /// Clock.currStdTime() for down event of this button (0 if button is up) set after double click to time when first click occured.
+    protected long  _prevDownTs;
     /// Clock.currStdTime() for down event of this button (0 if button is up).
     protected long  _downTs;
     /// Clock.currStdTime() for up event of this button (0 if button is still down).
@@ -734,10 +736,17 @@ struct ButtonDetails {
     protected ushort _downFlags;
     /// true if button is made down shortly after up - valid if button is down
     protected bool _doubleClick;
+    /// true if button is made down twice shortly after up - valid if button is down
+    protected bool _tripleClick;
 
     /// Returns true if button is made down shortly after up
     @property bool doubleClick() {
         return _doubleClick;
+    }
+
+    /// Returns true if button is made down twice shortly after up
+    @property bool tripleClick() {
+        return _tripleClick;
     }
 
 
@@ -759,14 +768,18 @@ struct ButtonDetails {
         _upTs = 0;
         _downTs = std.datetime.Clock.currStdTime;
         long downIntervalMs = (_downTs - oldDownTs) / 10000;
+        long prevDownIntervalMs = (_downTs - _prevDownTs) / 10000;
         //Log.d("Button down ", x, ",", y, " _downTs=", _downTs, " _upTs=", _upTs, " downInterval=", downIntervalMs);
-        _doubleClick = (oldDownTs && downIntervalMs < DOUBLE_CLICK_THRESHOLD_MS);
+        _tripleClick = (prevDownIntervalMs && prevDownIntervalMs < DOUBLE_CLICK_THRESHOLD_MS * 2);
+        _doubleClick = !_tripleClick && (oldDownTs && downIntervalMs < DOUBLE_CLICK_THRESHOLD_MS);
+        _prevDownTs = _doubleClick ? oldDownTs : 0;
     }
     /// update for button up
     void up(short x, short y, ushort flags) {
         static import std.datetime;
         //Log.d("Button up ", x, ",", y, " _downTs=", _downTs, " _upTs=", _upTs);
         _doubleClick = false;
+        _tripleClick = false;
         _upTs = std.datetime.Clock.currStdTime;
     }
     /// returns true if button is currently pressed
@@ -858,6 +871,13 @@ class MouseEvent {
         if (_action != MouseAction.ButtonDown)
             return false;
         return buttonDetails.doubleClick;
+    }
+
+    /// Returns true for ButtonDown event when button is pressed third time in short interval after pressing first time
+    @property bool tripleClick() {
+        if (_action != MouseAction.ButtonDown)
+            return false;
+        return buttonDetails.tripleClick;
     }
 
     /// get event tracking widget to override

@@ -1116,6 +1116,23 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         }
     }
 
+    protected void selectLineByMouse(int x, int y, bool onSameLineOnly = true) {
+        TextPosition oldCaretPos = _caretPos;
+        TextPosition newPos = clientToTextPos(Point(x,y));
+        if (onSameLineOnly && newPos.line != oldCaretPos.line)
+            return; // different lines
+        TextRange r = content.lineRange(newPos.line);
+        if (r.start < r.end) {
+            _selectionRange = r;
+            _caretPos = r.end;
+            invalidate();
+            requestActionsUpdate();
+        } else {
+            _caretPos = newPos;
+            updateSelectionAfterCursorMovement(oldCaretPos, false);
+        }
+    }
+
     protected void updateCaretPositionByMouse(int x, int y, bool selecting) {
         TextPosition oldCaretPos = _caretPos;
         TextPosition newPos = clientToTextPos(Point(x,y));
@@ -1709,7 +1726,9 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             setFocus();
             startCaretBlinking();
             cancelHoverTimer();
-            if (event.doubleClick) {
+            if (event.tripleClick) {
+                selectLineByMouse(event.x - _clientRect.left, event.y - _clientRect.top);
+            } else if (event.doubleClick) {
                 selectWordByMouse(event.x - _clientRect.left, event.y - _clientRect.top);
             } else {
                 auto doSelect = cast(bool)(event.keyFlags & MouseFlag.Shift);
