@@ -245,6 +245,9 @@ extern (C) int UIAppMain(string[] args) {
         VerticalLayout contentLayout = new VerticalLayout();
 
         TabWidget tabs = new TabWidget("TABS");
+        tabs.tabClose = delegate(string tabId) {
+            tabs.removeTab(tabId);
+        };
 
         //=========================================================================
         // create main menu
