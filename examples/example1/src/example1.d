@@ -341,31 +341,33 @@ extern (C) int UIAppMain(string[] args) {
         mainMenuItems.add(windowItem);
         mainMenuItems.add(helpItem);
         MainMenu mainMenu = new MainMenu(mainMenuItems);
-        mainMenu.menuItemClick = delegate(MenuItem item) {
-            Log.d("mainMenu.onMenuItemListener", item.label);
-            const Action a = item.action;
-            if (a) {
-                if (a.id == ACTION_FILE_EXIT) {
-                    window.close();
-                    return true;
-                } else if (a.id == 41) {
-                    window.showMessageBox(UIString("About"d), UIString("DLangUI demo app\n(C) Vadim Lopatin, 2014\nhttp://github.com/buggins/dlangui"d));
-                    return true;
-                } else if (a.id == ACTION_FILE_OPEN) {
-                    UIString caption;
-                    caption = "Open Text File"d;
-                    FileDialog dlg = new FileDialog(caption, window, null);
-                    dlg.addFilter(FileFilterEntry(UIString("FILTER_ALL_FILES", "All files (*)"d), "*"));
-                    dlg.addFilter(FileFilterEntry(UIString("FILTER_TEXT_FILES", "Text files (*.txt)"d), "*.txt"));
-                    dlg.addFilter(FileFilterEntry(UIString("FILTER_SOURCE_FILES", "Source files"d), "*.d;*.dd;*.c;*.cc;*.cpp;*.h;*.hpp"));
-                    dlg.addFilter(FileFilterEntry(UIString("FILTER_EXECUTABLE_FILES", "Executable files"d), "*", true));
-                    //dlg.filterIndex = 2;
-                    dlg.dialogResult = delegate(Dialog dlg, const Action result) {
-                        if (result.id == ACTION_OPEN.id) {
-                            string filename = result.stringParam;
-                            if (filename.endsWith(".d") || filename.endsWith(".txt") || filename.endsWith(".cpp") || filename.endsWith(".h") || filename.endsWith(".c")
-                                 || filename.endsWith(".json") || filename.endsWith(".dd") || filename.endsWith(".ddoc") || filename.endsWith(".xml") || filename.endsWith(".html")
-                                 || filename.endsWith(".html") || filename.endsWith(".css") || filename.endsWith(".log") || filename.endsWith(".hpp")) {
+        contentLayout.addChild(mainMenu);
+        // to let main menu handle keyboard shortcuts
+        contentLayout.keyToAction = delegate(Widget source, uint keyCode, uint flags) {
+            return mainMenu.findKeyAction(keyCode, flags);
+        };
+        contentLayout.onAction = delegate(Widget source, const Action a) {
+            if (a.id == ACTION_FILE_EXIT) {
+                window.close();
+                return true;
+            } else if (a.id == 41) {
+                window.showMessageBox(UIString("About"d), UIString("DLangUI demo app\n(C) Vadim Lopatin, 2014\nhttp://github.com/buggins/dlangui"d));
+                return true;
+            } else if (a.id == ACTION_FILE_OPEN) {
+                UIString caption;
+                caption = "Open Text File"d;
+                FileDialog dlg = new FileDialog(caption, window, null);
+                dlg.addFilter(FileFilterEntry(UIString("FILTER_ALL_FILES", "All files (*)"d), "*"));
+                dlg.addFilter(FileFilterEntry(UIString("FILTER_TEXT_FILES", "Text files (*.txt)"d), "*.txt"));
+                dlg.addFilter(FileFilterEntry(UIString("FILTER_SOURCE_FILES", "Source files"d), "*.d;*.dd;*.c;*.cc;*.cpp;*.h;*.hpp"));
+                dlg.addFilter(FileFilterEntry(UIString("FILTER_EXECUTABLE_FILES", "Executable files"d), "*", true));
+                //dlg.filterIndex = 2;
+                dlg.dialogResult = delegate(Dialog dlg, const Action result) {
+                    if (result.id == ACTION_OPEN.id) {
+                        string filename = result.stringParam;
+                        if (filename.endsWith(".d") || filename.endsWith(".txt") || filename.endsWith(".cpp") || filename.endsWith(".h") || filename.endsWith(".c")
+                            || filename.endsWith(".json") || filename.endsWith(".dd") || filename.endsWith(".ddoc") || filename.endsWith(".xml") || filename.endsWith(".html")
+                            || filename.endsWith(".html") || filename.endsWith(".css") || filename.endsWith(".log") || filename.endsWith(".hpp")) {
                                 // open source file in tab
                                 int index = tabs.tabIndex(filename);
                                 if (index >= 0) {
@@ -385,17 +387,22 @@ extern (C) int UIAppMain(string[] args) {
                                 Log.d("FileDialog.onDialogResult: ", result, " param=", result.stringParam);
                                 window.showMessageBox(UIString("FileOpen result"d), UIString("Filename: "d ~ toUTF32(filename)));
                             }
-                        }
+                    }
 
-                    };
-                    dlg.show();
-                    return true;
-                } else
-                    return contentLayout.dispatchAction(a);
+                };
+                dlg.show();
+                return true;
+            } else
+                return contentLayout.dispatchAction(a);
+        };
+        mainMenu.menuItemClick = delegate(MenuItem item) {
+            Log.d("mainMenu.onMenuItemListener", item.label);
+            const Action a = item.action;
+            if (a) {
+                return contentLayout.dispatchAction(a);
             }
             return false;
         };
-        contentLayout.addChild(mainMenu);
 
         // ========= create tabs ===================
 

@@ -96,6 +96,16 @@ interface OnKeyHandler {
     bool onKey(Widget source, KeyEvent event);
 }
 
+/// interface - slot for keyToAction
+interface OnKeyActionHandler {
+    Action findKeyAction(Widget source, uint keyCode, uint keyFlags);
+}
+
+/// interface - slot for onAction
+interface OnActionHandler {
+    bool onAction(Widget source, const Action action);
+}
+
 /// interface - slot for onMouse
 interface OnMouseHandler {
     bool onMouse(Widget source, MouseEvent event);
@@ -1093,6 +1103,9 @@ public:
 
     /// override to handle specific actions
     bool handleAction(const Action a) {
+        if (onAction.assigned)
+            if (onAction(this, a))
+                return true;
         return false;
     }
     /// override to handle specific actions state (e.g. change enabled state for supported actions)
@@ -1144,6 +1157,10 @@ public:
     /// map key to action
     Action findKeyAction(uint keyCode, uint flags) {
         Action action = _acceleratorMap.findByKey(keyCode, flags);
+        if (action)
+            return action;
+        if (keyToAction.assigned)
+            action = keyToAction(this, keyCode, flags);
         return action;
     }
 
@@ -1281,6 +1298,12 @@ public:
 
     /// key event listener (bool delegate(Widget, KeyEvent)) - return true if event is processed by handler
     Signal!OnKeyHandler keyEvent;
+
+    /// action by key lookup handler
+    Listener!OnKeyActionHandler keyToAction;
+
+    /// action handlers
+    Signal!OnActionHandler onAction;
 
     /// mouse event listener (bool delegate(Widget, MouseEvent)) - return true if event is processed by handler
     Signal!OnMouseHandler mouseEvent;
