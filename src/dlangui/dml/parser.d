@@ -492,7 +492,7 @@ class MLParser {
 
 
 /// Parse DlangUI ML code
-public Widget parseML(T = Widget)(string code, string filename = "", Widget context = null) {
+public T parseML(T = Widget)(string code, string filename = "", Widget context = null) {
     MLParser parser = new MLParser(code, filename, context);
     scope(exit) destroy(parser);
     Widget w = parser.parse();
