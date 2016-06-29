@@ -784,6 +784,7 @@ public:
     }
 }
 
+/// character glyph
 private class GlyphSceneItem : SceneItem {
 private:
     uint objectId;

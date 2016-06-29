@@ -765,8 +765,10 @@ final class GLSupport {
 
     private bool _legacyMode;
     @property bool legacyMode() { return _legacyMode; }
+    @property batch() { return _batch; }
 
     this(bool legacy = false) {
+        _batch = new OpenGLBatch();
     	version (Android) {
             Log.d("creating GLSupport");
     	} else {
@@ -777,6 +779,8 @@ final class GLSupport {
     	}
         _legacyMode = legacy;
     }
+
+    OpenGLBatch _batch;
 
     SolidFillProgram _solidFillProgram;
     LineProgram _lineProgram;
@@ -1469,3 +1473,73 @@ GLenum primitiveTypeToGL(PrimitiveType type) {
             return GL_POINTS;
     }
 }
+
+
+/// OpenGL batch buffer - to draw several triangles in single OpenGL call
+class OpenGLBatch {
+    private Tex2D _currentTexture;
+    private int _currentTextureDx;
+    private int _currentTextureDy;
+    private bool _currentTextureLinear;
+    private Rect[] _srcRects;
+    private Rect[] _dstRects;
+    private uint[] _colors;
+    /// clear buffers
+    void reset() {
+        _colors.length = 0;
+        _colors.assumeSafeAppend();
+        _srcRects.length = 0;
+        _srcRects.assumeSafeAppend();
+        _dstRects.length = 0;
+        _dstRects.assumeSafeAppend();
+        _currentTexture = null;
+        _currentTextureDx = 0;
+        _currentTextureDy = 0;
+        _currentTextureLinear = false;
+    }
+    /// draw buffered items
+    void flush() {
+        if (_dstRects.length == 0)
+            return; // nothing to draw
+        if (_currentTexture) {
+            // draw with texture
+        } else {
+            // draw solid fill
+        }
+        reset();
+    }
+    /// add textured rect
+    void add(Tex2D texture, int textureDx, int textureDy, uint color1, uint color2, uint color3, uint color4, Rect srcRect, Rect dstRect, bool linear) {
+        if ( ((texture is null) && !(_currentTexture is null))
+             || (!(texture is null) && (_currentTexture is null))
+            || (!(texture is null) && (_currentTexture is null))
+            || (!(texture is null) && !(_currentTexture is texture)) 
+            || (textureDx != _currentTextureDx) 
+            || (textureDy != _currentTextureDy) 
+            ) 
+        {
+            flush();
+            _currentTexture = texture;
+            _currentTextureDx = textureDx;
+            _currentTextureDy = textureDy;
+            _currentTextureLinear = linear;
+        }
+        if (_currentTexture) {
+            _srcRects ~= srcRect;
+        }
+        _dstRects ~= dstRect;
+        _colors ~= color1;
+        _colors ~= color2;
+        _colors ~= color3;
+        _colors ~= color4;
+    }
+    /// add solid rect
+    void add(uint color, Rect dstRect) {
+        add(null, 0, 0, color, color, color, color, Rect(), dstRect, false);
+    }
+    /// add gradient rect
+    void add(uint color1, uint color2, uint color3, uint color4, Rect dstRect) {
+        add(null, 0, 0, color1, color2, color3, color4, Rect(), dstRect, false);
+    }
+}
+
