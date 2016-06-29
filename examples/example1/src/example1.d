@@ -392,8 +392,10 @@ extern (C) int UIAppMain(string[] args) {
                 };
                 dlg.show();
                 return true;
-            } else
-                return contentLayout.dispatchAction(a);
+            }
+            //else
+            //return contentLayout.dispatchAction(a);
+            return false;
         };
         mainMenu.menuItemClick = delegate(MenuItem item) {
             Log.d("mainMenu.onMenuItemListener", item.label);
