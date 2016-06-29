@@ -883,6 +883,7 @@ final class GLSupport {
     }
 
     static immutable float Z_2D = -2.0f;
+
     void drawSolidFillRect(Rect rc, uint color1, uint color2, uint color3, uint color4) {
         Color[4] colors;
         FillColor(color1, colors[0..1]);
@@ -928,6 +929,76 @@ final class GLSupport {
         } else {
             if (_solidFillProgram !is null) {
                 _solidFillProgram.execute(vertices, cast(float[])colors);
+            } else
+                Log.e("No program");
+        }
+    }
+
+    void drawSolidFillRects(Rect[] rects, uint[] vertexColors) {
+        Color[] colors;
+        colors.length = vertexColors.length;
+        for (uint i = 0; i < vertexColors.length; i++)
+            FillColor(vertexColors[i], colors[i .. i + 1]);
+
+        float[] vertexArray;
+        vertexArray.assumeSafeAppend();
+
+        for (uint i = 0; i < rects.length; i++) {
+            Rect rc = rects[i];
+
+            float x0 = cast(float)(rc.left);
+            float y0 = cast(float)(bufferDy-rc.top);
+            float x1 = cast(float)(rc.right);
+            float y1 = cast(float)(bufferDy-rc.bottom);
+
+            // don't flip for framebuffer
+            if (currentFBO) {
+                y0 = cast(float)(rc.top);
+                y1 = cast(float)(rc.bottom);
+            }
+
+            float[3 * 4] vertices = [
+                x0,y0,Z_2D,
+                x0,y1,Z_2D,
+                x1,y0,Z_2D,
+                x1,y1,Z_2D];
+
+            vertexArray ~= vertices;
+        }
+
+        if (_legacyMode) {
+            static if (SUPPORT_LEGACY_OPENGL) {
+                int[] indexes;
+                indexes.assumeSafeAppend();
+                for (uint i = 0; i < rects.length; i++) {
+                    indexes ~= i * 6 + 0;
+                    indexes ~= i * 6 + 1;
+                    indexes ~= i * 6 + 2;
+                    indexes ~= i * 6 + 1;
+                    indexes ~= i * 6 + 2;
+                    indexes ~= i * 6 + 3;
+                }
+                glColor4f(1,1,1,1);
+                glDisable(GL_CULL_FACE);
+                glEnable(GL_BLEND);
+                glDisable(GL_ALPHA_TEST);
+                checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                checkgl!glEnableClientState(GL_VERTEX_ARRAY);
+                checkgl!glEnableClientState(GL_COLOR_ARRAY);
+                checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertexArray.ptr);
+                checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
+                checkgl!glIndexPointer(GL_INT, 0, cast(void*)indexes.ptr);
+
+                checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)indexes.length);
+
+                glDisableClientState(GL_COLOR_ARRAY);
+                glDisableClientState(GL_VERTEX_ARRAY);
+                glDisable(GL_ALPHA_TEST);
+                glDisable(GL_BLEND);
+            }
+        } else {
+            if (_solidFillProgram !is null) {
+                _solidFillProgram.execute(vertexArray, cast(float[])colors);
             } else
                 Log.e("No program");
         }
