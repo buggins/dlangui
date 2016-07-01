@@ -240,9 +240,9 @@ struct EffectId {
     bool opEquals(ref const EffectId s) const @safe pure nothrow
     {
         return
-            std.string.cmp(this.vertexShaderName, s.vertexShaderName) == 0 &&
-            std.string.cmp(this.fragmentShaderName, s.fragmentShaderName) == 0 &&
-            std.string.cmp(this.definitions, s.definitions) == 0;
+            this.vertexShaderName == s.vertexShaderName &&
+            this.fragmentShaderName == s.fragmentShaderName &&
+            this.definitions == s.definitions;
     }
 }
 
