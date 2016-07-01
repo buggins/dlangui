@@ -900,29 +900,64 @@ final class GLSupport {
         */
     }
 
-    void drawLine(Point p1, Point p2, uint color1, uint color2) {
-        Color[2] colors;
-        FillColor(color1, colors[0..1]);
-        FillColor(color2, colors[1..2]);
-        float x0 = cast(float)(p1.x);
-        float y0 = cast(float)(bufferDy-p1.y);
-        float x1 = cast(float)(p2.x);
-        float y1 = cast(float)(bufferDy-p2.y);
+    /// one rect is one line (left, top) - (right, bottom); for one line there are two color items
+    void drawLines(Rect[] lines, uint[] vertexColors) {
+        Color[] colors;
+        colors.length = vertexColors.length;
+        for (uint i = 0; i < vertexColors.length; i++)
+            FillColor(vertexColors[i], colors[i .. i + 1]);
 
-        // don't flip for framebuffer
-        if (currentFBO) {
-            y0 = cast(float)(p1.y);
-            y1 = cast(float)(p2.y);
+        float[] vertexArray;
+        vertexArray.assumeSafeAppend();
+        for (uint i = 0; i < lines.length; i++) {
+            Rect rc = lines[i];
+
+            float x0 = cast(float)(rc.left);
+            float y0 = cast(float)(bufferDy-rc.top);
+            float x1 = cast(float)(rc.right);
+            float y1 = cast(float)(bufferDy-rc.bottom);
+
+            // don't flip for framebuffer
+            if (currentFBO) {
+                y0 = cast(float)(rc.top);
+                y1 = cast(float)(rc.bottom);
+            }
+
+            vertexArray ~= x0;
+            vertexArray ~= y0;
+            vertexArray ~= Z_2D;
+            vertexArray ~= x1;
+            vertexArray ~= y1;
+            vertexArray ~= Z_2D;
         }
 
-        float[3 * 2] vertices = [
-            x0,y0,Z_2D,
-            x1,y1,Z_2D
-        ];
-        if (_lineProgram !is null) {
-            _lineProgram.execute(vertices, cast(float[])colors);
-        } else
-            Log.e("No program");
+        int[] indexes = makeLineIndexesArray(lines.length);
+
+        if (_legacyMode) {
+            static if (SUPPORT_LEGACY_OPENGL) {
+                glColor4f(1,1,1,1);
+                glDisable(GL_CULL_FACE);
+                glEnable(GL_BLEND);
+                glDisable(GL_ALPHA_TEST);
+                checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                checkgl!glEnableClientState(GL_VERTEX_ARRAY);
+                checkgl!glEnableClientState(GL_COLOR_ARRAY);
+                checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertexArray.ptr);
+                checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
+
+                checkgl!glDrawElements(GL_LINES, cast(int)indexes.length, GL_UNSIGNED_INT, cast(void*)indexes.ptr);
+
+                glDisableClientState(GL_COLOR_ARRAY);
+                glDisableClientState(GL_VERTEX_ARRAY);
+                glDisable(GL_ALPHA_TEST);
+                glDisable(GL_BLEND);
+            }
+        } else {
+            if (_lineProgram !is null) {
+                _lineProgram.execute(vertexArray, cast(float[])colors, indexes);
+            } else
+                Log.e("No program");
+        }
     }
 
     static immutable float Z_2D = -2.0f;
@@ -938,6 +973,17 @@ final class GLSupport {
             indexes ~= i * 6 + 1;
             indexes ~= i * 6 + 2;
             indexes ~= i * 6 + 3;
+        }
+        return indexes;
+    }
+
+    /// make indexes for LINES
+    protected int[] makeLineIndexesArray(size_t lineCount) {
+        int[] indexes;
+        indexes.assumeSafeAppend();
+        for (uint i = 0; i < lineCount; i++) {
+            indexes ~= i * 2 + 0;
+            indexes ~= i * 2 + 1;
         }
         return indexes;
     }
@@ -985,16 +1031,11 @@ final class GLSupport {
                 checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 checkgl!glEnableClientState(GL_VERTEX_ARRAY);
                 checkgl!glEnableClientState(GL_COLOR_ARRAY);
-                //checkgl!glEnableClientState(GL_INDEX_ARRAY);
                 checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertexArray.ptr);
                 checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
-                //checkgl!glIndexPointer(GL_INT, 0, cast(void*)indexes.ptr);
 
-                //checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)indexes.length);
-                //checkgl!glDrawElements(GL_TRIANGLES, cast(int)indexes.length, GL_UNSIGNED_INT, cast(void*)null);
                 checkgl!glDrawElements(GL_TRIANGLES, cast(int)indexes.length, GL_UNSIGNED_INT, cast(void*)indexes.ptr);
 
-                //glDisableClientState(GL_INDEX_ARRAY);
                 glDisableClientState(GL_COLOR_ARRAY);
                 glDisableClientState(GL_VERTEX_ARRAY);
                 glDisable(GL_ALPHA_TEST);
@@ -1066,17 +1107,12 @@ final class GLSupport {
                 checkgl!glEnableClientState(GL_COLOR_ARRAY);
                 checkgl!glEnableClientState(GL_VERTEX_ARRAY);
                 checkgl!glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-                //checkgl!glEnableClientState(GL_INDEX_ARRAY);
                 checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertexArray.ptr);
                 checkgl!glTexCoordPointer(2, GL_FLOAT, 0, cast(void*)txcoordArray.ptr);
                 checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
-                //checkgl!glIndexPointer(GL_INT, 0, cast(void*)indexes.ptr);
 
-                //checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)indexes.length);
-                //checkgl!glDrawElements(GL_TRIANGLES, cast(int)indexes.length, GL_UNSIGNED_INT, cast(void*)null);
                 checkgl!glDrawElements(GL_TRIANGLES, cast(int)indexes.length, GL_UNSIGNED_INT, cast(void*)indexes.ptr);
 
-                //glDisableClientState(GL_INDEX_ARRAY);
                 glDisableClientState(GL_TEXTURE_COORD_ARRAY);
                 glDisableClientState(GL_VERTEX_ARRAY);
                 glDisableClientState(GL_COLOR_ARRAY);

@@ -713,7 +713,7 @@ public:
         _color = color;
     }
     override void draw() {
-        glSupport.drawLine(_p1, _p2, _color, _color);
+        glSupport.drawLines([Rect(_p1, _p2)], [_color, _color]);
     }
 }
 

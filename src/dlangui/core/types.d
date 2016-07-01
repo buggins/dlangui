@@ -116,6 +116,13 @@ struct Rect {
         right = x1;
         bottom = y1;
     }
+    /// constructs rectangle using two points - (left, top), (right, bottom) coordinates
+    this(Point pt0, Point pt1) {
+        left = pt0.x;
+        top = pt0.y;
+        right = pt1.x;
+        bottom = pt1.y;
+    }
     /// returns true if rectangle is empty (right <= left || bottom <= top)
     @property bool empty() {
         return right <= left || bottom <= top;
