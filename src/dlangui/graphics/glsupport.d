@@ -499,19 +499,22 @@ class SolidFillProgram : GLProgram {
     VAO vao;
     VBO vbo;
     EBO ebo;
-    bool needToCreateVAO = true;
+
     protected void createVAO(float[] vertices, float[] colors) {
-        vao = new VAO;
-        vbo = new VBO;
-        ebo = new EBO;
+        if (!vao) {
+            vao = new VAO;
+            vbo = new VBO;
+            ebo = new EBO;
+        }
+        vbo.bind();
+        ebo.bind();
+        vao.bind();
 
         glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
         glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * float.sizeof));
 
         glEnableVertexAttribArray(vertexLocation);
         glEnableVertexAttribArray(colAttrLocation);
-
-        needToCreateVAO = false;
     }
 
     protected void beforeExecute() {
@@ -523,31 +526,26 @@ class SolidFillProgram : GLProgram {
         //checkgl!glUniformMatrix4fv(matrixLocation, 1, false, glSupport.projectionMatrix.m.ptr);
     }
 
-    bool execute(float[] vertices, float[] colors, int[] indexes = null) {
+    bool execute(float[] vertices, float[] colors, int[] indexes) {
         if(!check())
             return false;
         beforeExecute();
 
-        if(needToCreateVAO)
-            createVAO(vertices, colors);
+        createVAO(vertices, colors);
 
         vbo.bind();
         vbo.fill([vertices, colors]);
 
-        if (indexes) {
-            ebo.bind();
-            ebo.fill(indexes);
-        }
+        ebo.bind();
+        ebo.fill(indexes);
 
         vao.bind();
-        if (indexes) {
-            checkgl!glDrawElements(GL_TRIANGLES, indexes.length, GL_UNSIGNED_INT, cast(void*)null);
-        } else {
-            checkgl!glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        }
-        //if (indexes)
-        //    ebo.unbind();
+        checkgl!glDrawElements(GL_TRIANGLES, cast(int)indexes.length, GL_UNSIGNED_INT, cast(void*)null);
+
         vao.unbind();
+        vbo.unbind();
+        ebo.unbind();
+
         return true;
     }
 
@@ -558,36 +556,29 @@ class SolidFillProgram : GLProgram {
         vao = null;
         vbo = null;
         ebo = null;
-        needToCreateVAO = true;
     }
 }
 
 class LineProgram : SolidFillProgram {
-    override bool execute(float[] vertices, float[] colors, int[] indexes = null) {
+    override bool execute(float[] vertices, float[] colors, int[] indexes) {
         if(!check())
             return false;
         beforeExecute();
 
-        if(needToCreateVAO)
-            createVAO(vertices, colors);
+        createVAO(vertices, colors);
 
         vbo.bind();
         vbo.fill([vertices, colors]);
 
-        if (indexes) {
-            ebo.bind();
-            ebo.fill(indexes);
-        }
+        ebo.bind();
+        ebo.fill(indexes);
 
         vao.bind();
-        if (indexes) {
-            checkgl!glDrawElements(GL_LINES, indexes.length, GL_UNSIGNED_INT, cast(void*)null);
-        } else {
-            checkgl!glDrawArrays(GL_LINES, 0, 2);
-        }
-        if (indexes)
-            ebo.unbind();
+        checkgl!glDrawElements(GL_LINES, cast(int)indexes.length, GL_UNSIGNED_INT, cast(void*)null);
+
         vao.unbind();
+        vbo.unbind();
+        ebo.unbind();
         return true;
     }
 }
@@ -639,9 +630,14 @@ class TextureProgram : SolidFillProgram {
     }
 
     protected void createVAO(float[] vertices, float[] colors, float[] texcoords) {
-        vao = new VAO;
-        vbo = new VBO;
-        ebo = new EBO;
+        if (!vao) {
+            vao = new VAO;
+            vbo = new VBO;
+            ebo = new EBO;
+        }
+        vbo.bind();
+        ebo.bind();
+        vao.bind();
 
         glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
         glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * float.sizeof));
@@ -650,11 +646,9 @@ class TextureProgram : SolidFillProgram {
         glEnableVertexAttribArray(vertexLocation);
         glEnableVertexAttribArray(colAttrLocation);
         glEnableVertexAttribArray(texCoordLocation);
-
-        needToCreateVAO = false;
     }
 
-    bool execute(float[] vertices, float[] colors, float[] texcoords, Tex2D texture, bool linear, int[] indexes = null) {
+    bool execute(float[] vertices, float[] colors, float[] texcoords, Tex2D texture, bool linear, int[] indexes) {
         if(!check())
             return false;
         beforeExecute();
@@ -662,28 +656,21 @@ class TextureProgram : SolidFillProgram {
         texture.setup();
         texture.setSamplerParams(linear);
 
-        if(needToCreateVAO)
-            createVAO(vertices, colors, texcoords);
+        createVAO(vertices, colors, texcoords);
 
         vbo.bind();
         vbo.fill([vertices, colors, texcoords]);
 
-        if (indexes) {
-            ebo.bind();
-            ebo.fill(indexes);
-        }
+        ebo.bind();
+        ebo.fill(indexes);
 
         vao.bind();
 
-        if (indexes) {
-            checkgl!glDrawElements(GL_TRIANGLES, indexes.length, GL_UNSIGNED_INT, cast(void*)null);
-        } else {
-            checkgl!glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-        }
-        //if (indexes)
-        //    ebo.unbind();
+        checkgl!glDrawElements(GL_TRIANGLES, cast(int)indexes.length, GL_UNSIGNED_INT, cast(void*)null);
 
         vao.unbind();
+        vbo.unbind();
+        ebo.unbind();
 
         texture.unbind();
         return true;
@@ -967,12 +954,12 @@ final class GLSupport {
         int[] indexes;
         indexes.assumeSafeAppend();
         for (uint i = 0; i < rectCount; i++) {
-            indexes ~= i * 6 + 0;
-            indexes ~= i * 6 + 1;
-            indexes ~= i * 6 + 2;
-            indexes ~= i * 6 + 1;
-            indexes ~= i * 6 + 2;
-            indexes ~= i * 6 + 3;
+            indexes ~= i * 4 + 0;
+            indexes ~= i * 4 + 1;
+            indexes ~= i * 4 + 2;
+            indexes ~= i * 4 + 1;
+            indexes ~= i * 4 + 2;
+            indexes ~= i * 4 + 3;
         }
         return indexes;
     }
@@ -989,10 +976,8 @@ final class GLSupport {
     }
 
     void drawSolidFillRects(Rect[] rects, uint[] vertexColors) {
-        Color[] colors;
-        colors.length = vertexColors.length;
-        for (uint i = 0; i < vertexColors.length; i++)
-            FillColor(vertexColors[i], colors[i .. i + 1]);
+        //Log.v("drawSolidFillRects rects:", rects.length, " colors:", vertexColors.length);
+        float[] colors = convertColors(vertexColors);
 
         float[] vertexArray;
         vertexArray.assumeSafeAppend();
@@ -1043,17 +1028,32 @@ final class GLSupport {
             }
         } else {
             if (_solidFillProgram !is null) {
-                _solidFillProgram.execute(vertexArray, cast(float[])colors, indexes);
+                _solidFillProgram.execute(vertexArray, colors, indexes);
             } else
                 Log.e("No program");
         }
     }
 
+    float[] convertColors(uint[] cols) {
+        float[] colors;
+        colors.assumeSafeAppend();
+        colors.length = cols.length * 4;
+        for (uint i = 0; i < cols.length; i++) {
+            uint color = cols[i];
+            float r = ((color >> 16) & 255) / 255.0;
+            float g = ((color >> 8) & 255) / 255.0;
+            float b = ((color >> 0) & 255) / 255.0;
+            float a = (((color >> 24) & 255) ^ 255) / 255.0;
+            colors[i * 4 + 0] = r;
+            colors[i * 4 + 1] = g;
+            colors[i * 4 + 2] = b;
+            colors[i * 4 + 3] = a;
+        }
+        return colors;
+    }
+
     void drawColorAndTextureRects(Tex2D texture, int tdx, int tdy, Rect[] srcRects, Rect[] dstRects, uint[] vertexColors, bool linear) {
-        Color[] colors;
-        colors.length = vertexColors.length;
-        for (uint i = 0; i < vertexColors.length; i++)
-            FillColor(vertexColors[i], colors[i .. i + 1]);
+        float[] colors = convertColors(vertexColors);
 
         float[] vertexArray;
         vertexArray.assumeSafeAppend();
@@ -1090,6 +1090,7 @@ final class GLSupport {
         }
 
         int[] indexes = makeRectangleIndexesArray(srcRects.length);
+        //Log.v("drawColorAndTextureRects srcrects:", srcRects.length, " dstrects:", dstRects.length, " colors:", vertexColors.length, " indexes: ", indexes);
 
         if (_legacyMode) {
             static if (SUPPORT_LEGACY_OPENGL) {
@@ -1121,7 +1122,7 @@ final class GLSupport {
                 glDisable(GL_TEXTURE_2D);
             }
         } else {
-            _textureProgram.execute(vertexArray, cast(float[])colors, txcoordArray, texture, linear, indexes);
+            _textureProgram.execute(vertexArray, colors, txcoordArray, texture, linear, indexes);
         }
     }
 
@@ -1352,13 +1353,13 @@ class GLObject(GLObjectTypes type, GLuint target = 0) {
             int length;
             foreach(b; buffs)
                 length += b.length;
-            glBufferData(target,
+            checkgl!glBufferData(target,
                          length * float.sizeof,
                          null,
                          GL_STREAM_DRAW);
             int offset;
             foreach(b; buffs) {
-                glBufferSubData(target,
+                checkgl!glBufferSubData(target,
                                 offset,
                                 b.length * float.sizeof,
                                 b.ptr);
@@ -1368,7 +1369,7 @@ class GLObject(GLObjectTypes type, GLuint target = 0) {
 
         static if (target == GL_ELEMENT_ARRAY_BUFFER) {
             void fill(int[] indexes) {
-                glBufferData(target, cast(int)(indexes.length * int.sizeof), indexes.ptr, GL_STATIC_DRAW);
+                checkgl!glBufferData(target, cast(int)(indexes.length * int.sizeof), indexes.ptr, GL_STREAM_DRAW);
             }
         }
     }
@@ -1639,21 +1640,23 @@ class OpenGLBatch {
             return; // nothing to draw
         if (_currentTexture) {
             // draw with texture
+            //Log.v("flush ", _dstRects.length, " texture rectangles");
             glSupport.drawColorAndTextureRects(_currentTexture, _currentTextureDx, _currentTextureDy, _srcRects, _dstRects, _colors, _currentTextureLinear);
         } else {
             // draw solid fill
+            //Log.v("flush ", _dstRects.length, " solid rectangles");
             glSupport.drawSolidFillRects(_dstRects, _colors);
         }
         reset();
     }
     /// add textured rect
-    void add(Tex2D texture, int textureDx, int textureDy, uint color1, uint color2, uint color3, uint color4, Rect srcRect, Rect dstRect, bool linear) {
-        if ( ((texture is null) && !(_currentTexture is null))
-             || (!(texture is null) && (_currentTexture is null))
-            || (!(texture is null) && (_currentTexture is null))
-            || (!(texture is null) && !(_currentTexture is texture)) 
-            || (textureDx != _currentTextureDx) 
-            || (textureDy != _currentTextureDy) 
+    void addTexturedRect(Tex2D texture, int textureDx, int textureDy, uint color1, uint color2, uint color3, uint color4, Rect srcRect, Rect dstRect, bool linear) {
+        if (!_currentTexture 
+            || _currentTexture.ID != texture.ID
+            || _currentTextureLinear != linear
+            //|| (textureDx != _currentTextureDx) 
+            //|| (textureDy != _currentTextureDy) 
+            //|| true
             ) 
         {
             flush();
@@ -1672,12 +1675,26 @@ class OpenGLBatch {
         _colors ~= color4;
     }
     /// add solid rect
-    void add(uint color, Rect dstRect) {
-        add(null, 0, 0, color, color, color, color, Rect(), dstRect, false);
+    void addSolidRect(Rect dstRect, uint color) {
+        addGradientRect(dstRect, color, color, color, color);
     }
+
     /// add gradient rect
-    void add(uint color1, uint color2, uint color3, uint color4, Rect dstRect) {
-        add(null, 0, 0, color1, color2, color3, color4, Rect(), dstRect, false);
+    void addGradientRect(Rect dstRect, uint color1, uint color2, uint color3, uint color4) {
+        if (_currentTexture)
+            flush();
+        _dstRects ~= dstRect;
+        _colors ~= color1;
+        _colors ~= color2;
+        _colors ~= color3;
+        _colors ~= color4;
+    }
+
+    /// add gradient rect
+    void addLine(Rect dstRect, uint color1, uint color2) {
+        flush();
+        // TODO: batch lines, too
+        glSupport.drawLines([dstRect], [color1, color2]);
     }
 }
 

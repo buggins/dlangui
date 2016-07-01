@@ -77,6 +77,7 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
     override void afterDrawing() {
         glSupport.setOrthoProjection(Rect(0, 0, _dx, _dy), Rect(0, 0, _dx, _dy));
         _scene.draw();
+        glSupport.batch.flush();
         GLProgram.unbind();
         glSupport.destroyBuffers();
         glSupport.flushGL();
@@ -569,7 +570,8 @@ private class GLImageCache : GLCache
                     dstrc.bottom -= clip.bottom;
                 }
                 if (!dstrc.empty)
-                    glSupport.drawColorAndTextureRects(_texture, _tdx, _tdy, [srcrc], [dstrc], [color, color, color, color], srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height());
+                    glSupport.batch.addTexturedRect(_texture, _tdx, _tdy, color, color, color, color, srcrc, dstrc, srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height());
+                //glSupport.drawColorAndTextureRects(_texture, _tdx, _tdy, [srcrc], [dstrc], [color, color, color, color], srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height());
                 //drawColorAndTextureRect(vertices, texcoords, color, _texture);
 
                 if (rotationAngle) {
@@ -665,7 +667,8 @@ private class GLGlyphCache : GLCache
                 if (!dstrc.empty) {
                     //Log.d("drawing glyph with color ", color);
                     //glSupport.drawColorAndTextureRect(_texture, _tdx, _tdy, srcrc, dstrc, color, false);
-                    glSupport.drawColorAndTextureRects(_texture, _tdx, _tdy, [srcrc], [dstrc], [color, color, color, color], false);
+                    //glSupport.drawColorAndTextureRects(_texture, _tdx, _tdy, [srcrc], [dstrc], [color, color, color, color], false);
+                    glSupport.batch.addTexturedRect(_texture, _tdx, _tdy, color, color, color, color, srcrc, dstrc, false);
                 }
             }
         }
@@ -713,7 +716,8 @@ public:
         _color = color;
     }
     override void draw() {
-        glSupport.drawLines([Rect(_p1, _p2)], [_color, _color]);
+        //glSupport.drawLines([Rect(_p1, _p2)], [_color, _color]);
+        glSupport.batch.addLine(Rect(_p1, _p2), _color, _color);
     }
 }
 
@@ -728,7 +732,8 @@ public:
         _color = color;
     }
     override void draw() {
-        glSupport.drawSolidFillRects([_rc], [_color, _color, _color, _color]);
+        glSupport.batch.addSolidRect(_rc, _color);
+        //glSupport.drawSolidFillRects([_rc], [_color, _color, _color, _color]);
     }
 }
 
@@ -751,7 +756,8 @@ public:
             for (int x = _rc.left; x < _rc.right; x++)
                 if ((x ^ y) & 1) {
                     //glSupport.drawSolidFillRect(Rect(x, y, x + 1, y + 1), _color, _color, _color, _color);
-                    glSupport.drawSolidFillRects([Rect(x, y, x + 1, y + 1)], [_color, _color, _color, _color]);
+                    //glSupport.drawSolidFillRects([Rect(x, y, x + 1, y + 1)], [_color, _color, _color, _color]);
+                    glSupport.batch.addSolidRect(Rect(x, y, x + 1, y + 1), _color);
                 }
         }
     }
