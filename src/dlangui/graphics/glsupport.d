@@ -545,8 +545,8 @@ class SolidFillProgram : GLProgram {
         } else {
             checkgl!glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         }
-        if (indexes)
-            ebo.unbind();
+        //if (indexes)
+        //    ebo.unbind();
         vao.unbind();
         return true;
     }
@@ -641,6 +641,7 @@ class TextureProgram : SolidFillProgram {
     protected void createVAO(float[] vertices, float[] colors, float[] texcoords) {
         vao = new VAO;
         vbo = new VBO;
+        ebo = new EBO;
 
         glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
         glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * float.sizeof));
@@ -679,8 +680,8 @@ class TextureProgram : SolidFillProgram {
         } else {
             checkgl!glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
         }
-        if (indexes)
-            ebo.unbind();
+        //if (indexes)
+        //    ebo.unbind();
 
         vao.unbind();
 
@@ -871,9 +872,12 @@ final class GLSupport {
     }
 
     void destroyBuffers() {
-        _solidFillProgram.destroyBuffers();
-        _lineProgram.destroyBuffers();
-        _textureProgram.destroyBuffers();
+        if (_solidFillProgram)
+            _solidFillProgram.destroyBuffers();
+        if (_lineProgram)
+            _lineProgram.destroyBuffers();
+        if (_textureProgram)
+            _textureProgram.destroyBuffers();
     }
 
     void setRotation(int x, int y, int rotationAngle) {
@@ -922,56 +926,6 @@ final class GLSupport {
     }
 
     static immutable float Z_2D = -2.0f;
-
-    void drawSolidFillRect(Rect rc, uint color1, uint color2, uint color3, uint color4) {
-        Color[4] colors;
-        FillColor(color1, colors[0..1]);
-        FillColor(color2, colors[1..2]);
-        FillColor(color3, colors[2..3]);
-        FillColor(color4, colors[3..4]);
-        float x0 = cast(float)(rc.left);
-        float y0 = cast(float)(bufferDy-rc.top);
-        float x1 = cast(float)(rc.right);
-        float y1 = cast(float)(bufferDy-rc.bottom);
-
-        // don't flip for framebuffer
-        if (currentFBO) {
-            y0 = cast(float)(rc.top);
-            y1 = cast(float)(rc.bottom);
-        }
-
-        float[3 * 4] vertices = [
-            x0,y0,Z_2D,
-            x0,y1,Z_2D,
-            x1,y0,Z_2D,
-            x1,y1,Z_2D];
-
-        if (_legacyMode) {
-            static if (SUPPORT_LEGACY_OPENGL) {
-                glColor4f(1,1,1,1);
-                glDisable(GL_CULL_FACE);
-                glEnable(GL_BLEND);
-                glDisable(GL_ALPHA_TEST);
-                checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                checkgl!glEnableClientState(GL_VERTEX_ARRAY);
-                checkgl!glEnableClientState(GL_COLOR_ARRAY);
-                checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
-                checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors);
-
-                checkgl!glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-                glDisableClientState(GL_COLOR_ARRAY);
-                glDisableClientState(GL_VERTEX_ARRAY);
-                glDisable(GL_ALPHA_TEST);
-                glDisable(GL_BLEND);
-            }
-        } else {
-            if (_solidFillProgram !is null) {
-                _solidFillProgram.execute(vertices, cast(float[])colors);
-            } else
-                Log.e("No program");
-        }
-    }
 
     /// make indexes for rectangle TRIANGLES (2 triangles == 6 vertexes per rect)
     protected int[] makeRectangleIndexesArray(size_t rectCount) {
@@ -1031,16 +985,18 @@ final class GLSupport {
                 checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 checkgl!glEnableClientState(GL_VERTEX_ARRAY);
                 checkgl!glEnableClientState(GL_COLOR_ARRAY);
-                checkgl!glEnableClientState(GL_INDEX_ARRAY);
+                //checkgl!glEnableClientState(GL_INDEX_ARRAY);
                 checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertexArray.ptr);
                 checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
-                checkgl!glIndexPointer(GL_INT, 0, cast(void*)indexes.ptr);
+                //checkgl!glIndexPointer(GL_INT, 0, cast(void*)indexes.ptr);
 
-                checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)indexes.length);
+                //checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)indexes.length);
+                //checkgl!glDrawElements(GL_TRIANGLES, cast(int)indexes.length, GL_UNSIGNED_INT, cast(void*)null);
+                checkgl!glDrawElements(GL_TRIANGLES, cast(int)indexes.length, GL_UNSIGNED_INT, cast(void*)indexes.ptr);
 
+                //glDisableClientState(GL_INDEX_ARRAY);
                 glDisableClientState(GL_COLOR_ARRAY);
                 glDisableClientState(GL_VERTEX_ARRAY);
-                glDisableClientState(GL_INDEX_ARRAY);
                 glDisable(GL_ALPHA_TEST);
                 glDisable(GL_BLEND);
             }
@@ -1052,11 +1008,7 @@ final class GLSupport {
         }
     }
 
-    void drawColorAndTextureRect(Tex2D texture, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color, bool linear) {
-        drawColorAndTextureRect(texture, tdx, tdy, srcrc.left, srcrc.top, srcrc.width(), srcrc.height(), dstrc.left, dstrc.top, dstrc.width(), dstrc.height(), color, linear);
-    }
-
-    private void drawColorAndTextureRects(Tex2D texture, int tdx, int tdy, Rect[] srcRects, Rect[] dstRects, uint[] vertexColors, bool linear) {
+    void drawColorAndTextureRects(Tex2D texture, int tdx, int tdy, Rect[] srcRects, Rect[] dstRects, uint[] vertexColors, bool linear) {
         Color[] colors;
         colors.length = vertexColors.length;
         for (uint i = 0; i < vertexColors.length; i++)
@@ -1093,7 +1045,7 @@ final class GLSupport {
                 dstx1,dsty1,Z_2D];
             float[2 * 4] texcoords = [srcx0,srcy0, srcx0,srcy1, srcx1,srcy0, srcx1,srcy1];
             vertexArray ~= vertices;
-            txcoordArray ~= txcoordArray;
+            txcoordArray ~= texcoords;
         }
 
         int[] indexes = makeRectangleIndexesArray(srcRects.length);
@@ -1114,83 +1066,26 @@ final class GLSupport {
                 checkgl!glEnableClientState(GL_COLOR_ARRAY);
                 checkgl!glEnableClientState(GL_VERTEX_ARRAY);
                 checkgl!glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-                checkgl!glEnableClientState(GL_INDEX_ARRAY);
+                //checkgl!glEnableClientState(GL_INDEX_ARRAY);
                 checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertexArray.ptr);
                 checkgl!glTexCoordPointer(2, GL_FLOAT, 0, cast(void*)txcoordArray.ptr);
                 checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
-                checkgl!glIndexPointer(GL_INT, 0, cast(void*)indexes.ptr);
+                //checkgl!glIndexPointer(GL_INT, 0, cast(void*)indexes.ptr);
 
-                checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)indexes.length);
+                //checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)indexes.length);
+                //checkgl!glDrawElements(GL_TRIANGLES, cast(int)indexes.length, GL_UNSIGNED_INT, cast(void*)null);
+                checkgl!glDrawElements(GL_TRIANGLES, cast(int)indexes.length, GL_UNSIGNED_INT, cast(void*)indexes.ptr);
 
+                //glDisableClientState(GL_INDEX_ARRAY);
                 glDisableClientState(GL_TEXTURE_COORD_ARRAY);
                 glDisableClientState(GL_VERTEX_ARRAY);
                 glDisableClientState(GL_COLOR_ARRAY);
-                glDisableClientState(GL_INDEX_ARRAY);
                 glDisable(GL_BLEND);
                 glDisable(GL_ALPHA_TEST);
                 glDisable(GL_TEXTURE_2D);
             }
         } else {
             _textureProgram.execute(vertexArray, cast(float[])colors, txcoordArray, texture, linear, indexes);
-        }
-    }
-
-    private void drawColorAndTextureRect(Tex2D texture, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, uint color, bool linear) {
-        Color[4] colors;
-        FillColor(color, colors);
-        float dstx0 = cast(float)xx;
-        float dsty0 = cast(float)(bufferDy - (yy));
-        float dstx1 = cast(float)(xx + dx);
-        float dsty1 = cast(float)(bufferDy - (yy + dy));
-
-        // don't flip for framebuffer
-        if (currentFBO) {
-            dsty0 = cast(float)(yy);
-            dsty1 = cast(float)(yy + dy);
-        }
-
-        float srcx0 = srcx / cast(float)tdx;
-        float srcy0 = srcy / cast(float)tdy;
-        float srcx1 = (srcx + srcdx) / cast(float)tdx;
-        float srcy1 = (srcy + srcdy) / cast(float)tdy;
-        float[3 * 4] vertices = [
-            dstx0,dsty0,Z_2D,
-            dstx0,dsty1,Z_2D,
-            dstx1,dsty0,Z_2D,
-            dstx1,dsty1,Z_2D];
-        float[2 * 4] texcoords = [srcx0,srcy0, srcx0,srcy1, srcx1,srcy0, srcx1,srcy1];
-
-        if (_legacyMode) {
-            static if (SUPPORT_LEGACY_OPENGL) {
-                glDisable(GL_CULL_FACE);
-                glEnable(GL_TEXTURE_2D);
-                texture.setup();
-                texture.setSamplerParams(linear);
-
-                glColor4f(1,1,1,1);
-                glDisable(GL_ALPHA_TEST);
-
-                glEnable(GL_BLEND);
-                checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-                checkgl!glEnableClientState(GL_COLOR_ARRAY);
-                checkgl!glEnableClientState(GL_VERTEX_ARRAY);
-                checkgl!glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-                checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertices.ptr);
-                checkgl!glTexCoordPointer(2, GL_FLOAT, 0, cast(void*)texcoords.ptr);
-                checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
-
-                checkgl!glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-
-                glDisableClientState(GL_TEXTURE_COORD_ARRAY);
-                glDisableClientState(GL_VERTEX_ARRAY);
-                glDisableClientState(GL_COLOR_ARRAY);
-                glDisable(GL_BLEND);
-                glDisable(GL_ALPHA_TEST);
-                glDisable(GL_TEXTURE_2D);
-            }
-        } else {
-            _textureProgram.execute(vertices, cast(float[])colors, texcoords, texture, linear);
         }
     }
 
@@ -1708,6 +1603,7 @@ class OpenGLBatch {
             return; // nothing to draw
         if (_currentTexture) {
             // draw with texture
+            glSupport.drawColorAndTextureRects(_currentTexture, _currentTextureDx, _currentTextureDy, _srcRects, _dstRects, _colors, _currentTextureLinear);
         } else {
             // draw solid fill
             glSupport.drawSolidFillRects(_dstRects, _colors);

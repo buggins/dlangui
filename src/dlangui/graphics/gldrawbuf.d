@@ -569,7 +569,7 @@ private class GLImageCache : GLCache
                     dstrc.bottom -= clip.bottom;
                 }
                 if (!dstrc.empty)
-                    glSupport.drawColorAndTextureRect(_texture, _tdx, _tdy, srcrc, dstrc, color, srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height());
+                    glSupport.drawColorAndTextureRects(_texture, _tdx, _tdy, [srcrc], [dstrc], [color, color, color, color], srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height());
                 //drawColorAndTextureRect(vertices, texcoords, color, _texture);
 
                 if (rotationAngle) {
@@ -664,7 +664,8 @@ private class GLGlyphCache : GLCache
                 }
                 if (!dstrc.empty) {
                     //Log.d("drawing glyph with color ", color);
-                    glSupport.drawColorAndTextureRect(_texture, _tdx, _tdy, srcrc, dstrc, color, false);
+                    //glSupport.drawColorAndTextureRect(_texture, _tdx, _tdy, srcrc, dstrc, color, false);
+                    glSupport.drawColorAndTextureRects(_texture, _tdx, _tdy, [srcrc], [dstrc], [color, color, color, color], false);
                 }
             }
         }
@@ -727,7 +728,7 @@ public:
         _color = color;
     }
     override void draw() {
-        glSupport.drawSolidFillRect(_rc, _color, _color, _color, _color);
+        glSupport.drawSolidFillRects([_rc], [_color, _color, _color, _color]);
     }
 }
 
@@ -749,7 +750,8 @@ public:
         for (int y = _rc.top; y < _rc.bottom; y++) {
             for (int x = _rc.left; x < _rc.right; x++)
                 if ((x ^ y) & 1) {
-                    glSupport.drawSolidFillRect(Rect(x, y, x + 1, y + 1), _color, _color, _color, _color);
+                    //glSupport.drawSolidFillRect(Rect(x, y, x + 1, y + 1), _color, _color, _color, _color);
+                    glSupport.drawSolidFillRects([Rect(x, y, x + 1, y + 1)], [_color, _color, _color, _color]);
                 }
         }
     }
@@ -822,11 +824,13 @@ public:
     }
     override void draw() {
         if (_handler) {
+            glSupport.batch.flush();
             glSupport.setOrthoProjection(_windowRect, _rc);
             glSupport.clearDepthBuffer();
             //glEnable(GL_BLEND);
             //checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             _handler(_windowRect, _rc);
+            glSupport.batch.flush();
             glSupport.setOrthoProjection(_windowRect, _windowRect);
         }
     }
