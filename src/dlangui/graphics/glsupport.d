@@ -498,10 +498,12 @@ class SolidFillProgram : GLProgram {
 
     VAO vao;
     VBO vbo;
+    EBO ebo;
     bool needToCreateVAO = true;
     protected void createVAO(float[] vertices, float[] colors) {
         vao = new VAO;
         vbo = new VBO;
+        ebo = new EBO;
 
         glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
         glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * float.sizeof));
@@ -521,7 +523,7 @@ class SolidFillProgram : GLProgram {
         //checkgl!glUniformMatrix4fv(matrixLocation, 1, false, glSupport.projectionMatrix.m.ptr);
     }
 
-    bool execute(float[] vertices, float[] colors) {
+    bool execute(float[] vertices, float[] colors, int[] indexes = null) {
         if(!check())
             return false;
         beforeExecute();
@@ -532,8 +534,19 @@ class SolidFillProgram : GLProgram {
         vbo.bind();
         vbo.fill([vertices, colors]);
 
+        if (indexes) {
+            ebo.bind();
+            ebo.fill(indexes);
+        }
+
         vao.bind();
-        checkgl!glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        if (indexes) {
+            checkgl!glDrawElements(GL_TRIANGLES, indexes.length, GL_UNSIGNED_INT, cast(void*)null);
+        } else {
+            checkgl!glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        }
+        if (indexes)
+            ebo.unbind();
         vao.unbind();
         return true;
     }
@@ -541,14 +554,16 @@ class SolidFillProgram : GLProgram {
     void destroyBuffers() {
         destroy(vao);
         destroy(vbo);
+        destroy(ebo);
         vao = null;
         vbo = null;
+        ebo = null;
         needToCreateVAO = true;
     }
 }
 
 class LineProgram : SolidFillProgram {
-    override bool execute(float[] vertices, float[] colors) {
+    override bool execute(float[] vertices, float[] colors, int[] indexes = null) {
         if(!check())
             return false;
         beforeExecute();
@@ -559,8 +574,19 @@ class LineProgram : SolidFillProgram {
         vbo.bind();
         vbo.fill([vertices, colors]);
 
+        if (indexes) {
+            ebo.bind();
+            ebo.fill(indexes);
+        }
+
         vao.bind();
-        checkgl!glDrawArrays(GL_LINES, 0, 2);
+        if (indexes) {
+            checkgl!glDrawElements(GL_LINES, indexes.length, GL_UNSIGNED_INT, cast(void*)null);
+        } else {
+            checkgl!glDrawArrays(GL_LINES, 0, 2);
+        }
+        if (indexes)
+            ebo.unbind();
         vao.unbind();
         return true;
     }
@@ -627,7 +653,7 @@ class TextureProgram : SolidFillProgram {
         needToCreateVAO = false;
     }
 
-    bool execute(float[] vertices, float[] colors, float[] texcoords, Tex2D texture, bool linear) {
+    bool execute(float[] vertices, float[] colors, float[] texcoords, Tex2D texture, bool linear, int[] indexes = null) {
         if(!check())
             return false;
         beforeExecute();
@@ -641,8 +667,21 @@ class TextureProgram : SolidFillProgram {
         vbo.bind();
         vbo.fill([vertices, colors, texcoords]);
 
+        if (indexes) {
+            ebo.bind();
+            ebo.fill(indexes);
+        }
+
         vao.bind();
-        checkgl!glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+
+        if (indexes) {
+            checkgl!glDrawElements(GL_TRIANGLES, indexes.length, GL_UNSIGNED_INT, cast(void*)null);
+        } else {
+            checkgl!glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+        }
+        if (indexes)
+            ebo.unbind();
+
         vao.unbind();
 
         texture.unbind();
@@ -934,6 +973,21 @@ final class GLSupport {
         }
     }
 
+    /// make indexes for rectangle TRIANGLES (2 triangles == 6 vertexes per rect)
+    protected int[] makeRectangleIndexesArray(size_t rectCount) {
+        int[] indexes;
+        indexes.assumeSafeAppend();
+        for (uint i = 0; i < rectCount; i++) {
+            indexes ~= i * 6 + 0;
+            indexes ~= i * 6 + 1;
+            indexes ~= i * 6 + 2;
+            indexes ~= i * 6 + 1;
+            indexes ~= i * 6 + 2;
+            indexes ~= i * 6 + 3;
+        }
+        return indexes;
+    }
+
     void drawSolidFillRects(Rect[] rects, uint[] vertexColors) {
         Color[] colors;
         colors.length = vertexColors.length;
@@ -966,18 +1020,10 @@ final class GLSupport {
             vertexArray ~= vertices;
         }
 
+        int[] indexes = makeRectangleIndexesArray(rects.length);
+
         if (_legacyMode) {
             static if (SUPPORT_LEGACY_OPENGL) {
-                int[] indexes;
-                indexes.assumeSafeAppend();
-                for (uint i = 0; i < rects.length; i++) {
-                    indexes ~= i * 6 + 0;
-                    indexes ~= i * 6 + 1;
-                    indexes ~= i * 6 + 2;
-                    indexes ~= i * 6 + 1;
-                    indexes ~= i * 6 + 2;
-                    indexes ~= i * 6 + 3;
-                }
                 glColor4f(1,1,1,1);
                 glDisable(GL_CULL_FACE);
                 glEnable(GL_BLEND);
@@ -985,6 +1031,7 @@ final class GLSupport {
                 checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 checkgl!glEnableClientState(GL_VERTEX_ARRAY);
                 checkgl!glEnableClientState(GL_COLOR_ARRAY);
+                checkgl!glEnableClientState(GL_INDEX_ARRAY);
                 checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertexArray.ptr);
                 checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
                 checkgl!glIndexPointer(GL_INT, 0, cast(void*)indexes.ptr);
@@ -993,12 +1040,13 @@ final class GLSupport {
 
                 glDisableClientState(GL_COLOR_ARRAY);
                 glDisableClientState(GL_VERTEX_ARRAY);
+                glDisableClientState(GL_INDEX_ARRAY);
                 glDisable(GL_ALPHA_TEST);
                 glDisable(GL_BLEND);
             }
         } else {
             if (_solidFillProgram !is null) {
-                _solidFillProgram.execute(vertexArray, cast(float[])colors);
+                _solidFillProgram.execute(vertexArray, cast(float[])colors, indexes);
             } else
                 Log.e("No program");
         }
@@ -1006,6 +1054,85 @@ final class GLSupport {
 
     void drawColorAndTextureRect(Tex2D texture, int tdx, int tdy, Rect srcrc, Rect dstrc, uint color, bool linear) {
         drawColorAndTextureRect(texture, tdx, tdy, srcrc.left, srcrc.top, srcrc.width(), srcrc.height(), dstrc.left, dstrc.top, dstrc.width(), dstrc.height(), color, linear);
+    }
+
+    private void drawColorAndTextureRects(Tex2D texture, int tdx, int tdy, Rect[] srcRects, Rect[] dstRects, uint[] vertexColors, bool linear) {
+        Color[] colors;
+        colors.length = vertexColors.length;
+        for (uint i = 0; i < vertexColors.length; i++)
+            FillColor(vertexColors[i], colors[i .. i + 1]);
+
+        float[] vertexArray;
+        vertexArray.assumeSafeAppend();
+        float[] txcoordArray;
+        txcoordArray.assumeSafeAppend();
+
+        for (uint i = 0; i < srcRects.length; i++) {
+            Rect srcrc = srcRects[i];
+            Rect dstrc = dstRects[i];
+
+            float dstx0 = cast(float)dstrc.left;
+            float dsty0 = cast(float)(bufferDy - (dstrc.top));
+            float dstx1 = cast(float)dstrc.right;
+            float dsty1 = cast(float)(bufferDy - (dstrc.bottom));
+
+            // don't flip for framebuffer
+            if (currentFBO) {
+                dsty0 = cast(float)(dstrc.top);
+                dsty1 = cast(float)(dstrc.bottom);
+            }
+
+            float srcx0 = srcrc.left / cast(float)tdx;
+            float srcy0 = srcrc.top / cast(float)tdy;
+            float srcx1 = srcrc.right / cast(float)tdx;
+            float srcy1 = srcrc.bottom / cast(float)tdy;
+            float[3 * 4] vertices = [
+                dstx0,dsty0,Z_2D,
+                dstx0,dsty1,Z_2D,
+                dstx1,dsty0,Z_2D,
+                dstx1,dsty1,Z_2D];
+            float[2 * 4] texcoords = [srcx0,srcy0, srcx0,srcy1, srcx1,srcy0, srcx1,srcy1];
+            vertexArray ~= vertices;
+            txcoordArray ~= txcoordArray;
+        }
+
+        int[] indexes = makeRectangleIndexesArray(srcRects.length);
+
+        if (_legacyMode) {
+            static if (SUPPORT_LEGACY_OPENGL) {
+                glDisable(GL_CULL_FACE);
+                glEnable(GL_TEXTURE_2D);
+                texture.setup();
+                texture.setSamplerParams(linear);
+
+                glColor4f(1,1,1,1);
+                glDisable(GL_ALPHA_TEST);
+
+                glEnable(GL_BLEND);
+                checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+                checkgl!glEnableClientState(GL_COLOR_ARRAY);
+                checkgl!glEnableClientState(GL_VERTEX_ARRAY);
+                checkgl!glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+                checkgl!glEnableClientState(GL_INDEX_ARRAY);
+                checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertexArray.ptr);
+                checkgl!glTexCoordPointer(2, GL_FLOAT, 0, cast(void*)txcoordArray.ptr);
+                checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
+                checkgl!glIndexPointer(GL_INT, 0, cast(void*)indexes.ptr);
+
+                checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)indexes.length);
+
+                glDisableClientState(GL_TEXTURE_COORD_ARRAY);
+                glDisableClientState(GL_VERTEX_ARRAY);
+                glDisableClientState(GL_COLOR_ARRAY);
+                glDisableClientState(GL_INDEX_ARRAY);
+                glDisable(GL_BLEND);
+                glDisable(GL_ALPHA_TEST);
+                glDisable(GL_TEXTURE_2D);
+            }
+        } else {
+            _textureProgram.execute(vertexArray, cast(float[])colors, txcoordArray, texture, linear, indexes);
+        }
     }
 
     private void drawColorAndTextureRect(Tex2D texture, int tdx, int tdy, int srcx, int srcy, int srcdx, int srcdy, int xx, int yy, int dx, int dy, uint color, bool linear) {
@@ -1307,6 +1434,12 @@ class GLObject(GLObjectTypes type, GLuint target = 0) {
                 offset += b.length * float.sizeof;
             }
         }
+
+        static if (target == GL_ELEMENT_ARRAY_BUFFER) {
+            void fill(int[] indexes) {
+                glBufferData(target, cast(int)(indexes.length * int.sizeof), indexes.ptr, GL_STATIC_DRAW);
+            }
+        }
     }
 
     static if(type == GLObjectTypes.Texture)
@@ -1334,6 +1467,7 @@ class GLObject(GLObjectTypes type, GLuint target = 0) {
 
 alias VAO = GLObject!(GLObjectTypes.VertexArray);
 alias VBO = GLObject!(GLObjectTypes.Buffer, GL_ARRAY_BUFFER);
+alias EBO = GLObject!(GLObjectTypes.Buffer, GL_ELEMENT_ARRAY_BUFFER);
 alias Tex2D = GLObject!(GLObjectTypes.Texture, GL_TEXTURE_2D);
 alias FBO = GLObject!(GLObjectTypes.Framebuffer, GL_FRAMEBUFFER);
 
@@ -1576,6 +1710,7 @@ class OpenGLBatch {
             // draw with texture
         } else {
             // draw solid fill
+            glSupport.drawSolidFillRects(_dstRects, _colors);
         }
         reset();
     }
