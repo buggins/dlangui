@@ -15,4 +15,4 @@ Copyright: Vadim Lopatin, 2015
 License:   Boost License 1.0
 Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
-module dlangui.graphics.domrender;
+module dlangui.graphics.domrender.domrender;

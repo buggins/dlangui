@@ -773,6 +773,7 @@
     <Folder name="graphics">
      <Folder name="domrender">
       <File path="src\dlangui\graphics\domrender\renderblock.d" />
+      <File path="src\dlangui\graphics\domrender\domrender.d" />
      </Folder>
      <Folder name="scene">
       <File path="src\dlangui\graphics\scene\camera.d" />
@@ -793,7 +794,6 @@
       <File path="src\dlangui\graphics\xpm\xpmcolors.d" />
      </Folder>
      <File path="src\dlangui\graphics\colors.d" />
-     <File path="src\dlangui\graphics\domrender.d" />
      <File path="src\dlangui\graphics\drawbuf.d" />
      <File path="src\dlangui\graphics\fonts.d" />
      <File path="src\dlangui\graphics\ftfonts.d" />
