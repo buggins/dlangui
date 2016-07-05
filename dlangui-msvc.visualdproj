@@ -667,9 +667,9 @@
     <File path="3rdparty\dimage\zlib.d" />
    </Folder>
    <Folder name="fontconfig">
+    <File path="3rdparty\fontconfig\fctypes.d" />
     <File path="3rdparty\fontconfig\functions.d" />
     <File path="3rdparty\fontconfig\package.d" />
-    <File path="3rdparty\fontconfig\fctypes.d" />
    </Folder>
    <Folder name="win32">
     <File path="3rdparty\win32\basetsd.d" />
@@ -771,6 +771,9 @@
      <File path="src\dlangui\dml\tokenizer.d" />
     </Folder>
     <Folder name="graphics">
+     <Folder name="domrender">
+      <File path="src\dlangui\graphics\domrender\renderblock.d" />
+     </Folder>
      <Folder name="scene">
       <File path="src\dlangui\graphics\scene\camera.d" />
       <File path="src\dlangui\graphics\scene\drawableobject.d" />
