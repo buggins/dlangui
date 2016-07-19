@@ -1087,7 +1087,7 @@ enum KeyCode : uint {
     KEY_DIVIDE = 0x6F,
     /// key +
     KEY_ADD = 0x6B,
-    /// key -
+    /// key *
     KEY_MULTIPLY = 0x6A,
     /// key ,
     KEY_COMMA = 0xBC,
