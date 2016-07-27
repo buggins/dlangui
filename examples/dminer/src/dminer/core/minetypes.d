@@ -733,3 +733,35 @@ __gshared const Vector3d[6] DIRECTION_VECTORS = [
     Vector3d(0, 1, 0),
     Vector3d(0, -1, 0)
 ];
+
+/// 3d array[+-size, +-size, +-size] of T
+struct Array3d(T) {
+    int _size;
+    int _sizeBits;
+    T[] _cells;
+    void reset(int size) {
+        if (size == 0) {
+            // just clear storage
+            _cells = null;
+            _size = 0;
+            _sizeBits = 0;
+            return;
+        }
+        _size = size;
+        _sizeBits = bitsFor(size) + 1;
+        int arraySize = 1 << (_sizeBits * 3);
+        if (_cells.length < arraySize)
+            _cells.length = arraySize;
+        foreach(ref cell; _cells)
+            cell = T.init;
+    }
+    ref T opIndex(int x, int y, int z) {
+        int index = (x + _size) + ((y + _size) << _sizeBits) + ((z + _size) << (_sizeBits + _sizeBits));
+        return _cells[index];
+    }
+    T * ptr(int x, int y, int z) {
+        int index = (x + _size) + ((y + _size) << _sizeBits) + ((z + _size) << (_sizeBits + _sizeBits));
+        return &_cells[index];
+    }
+}
+

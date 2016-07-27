@@ -662,3 +662,4 @@ void testDirMaskToSpreadMask() {
     }
     Log.d("Source: \n", generateDirMaskSource());
 }
+

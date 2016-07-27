@@ -7,7 +7,7 @@ import dminer.core.chunk;
 version (Android) {
     const int MAX_VIEW_DISTANCE_BITS = 6;
 } else {
-    const int MAX_VIEW_DISTANCE_BITS = 5;
+    const int MAX_VIEW_DISTANCE_BITS = 8;
 }
 const int MAX_VIEW_DISTANCE = (1 << MAX_VIEW_DISTANCE_BITS);
 
@@ -485,6 +485,83 @@ struct DiamondVisitor {
                 }
             }
             newcells.swap(oldcells);
+        }
+    }
+}
+
+
+struct VisitorCell {
+    SmallChunk * chunk;
+    ulong[6] accessible;
+    bool visited;
+    int dirFlags;
+}
+
+struct ChunkDiamondVisitor {
+    World world;
+    Vector3d pos;
+    Array3d!VisitorCell cells;
+    int maxDist;
+    Vector3dArray oldcells;
+    Vector3dArray newcells;
+    void visitCell(VisitorCell * oldCell, int x, int y, int z, Dir direction) {
+        if (x < -maxDist || x > maxDist || y < -maxDist || y > maxDist || z < -maxDist || z > maxDist)
+            return; // out of bounds
+        auto cell = cells.ptr(x, y, z);
+        if (!cell.visited) {
+            cell.chunk = world.getCellChunk(pos.x + (x << 3), pos.y + (y << 3), pos.z + (z << 3));
+            cell.visited = true;
+            newcells.append(Vector3d(x, y, z));
+        }
+        cell.dirFlags |= (1 << direction);
+    }
+    void visitChunks(World world, Vector3d pos, int distance) {
+        this.world = world;
+        this.pos = pos;
+        this.maxDist = (distance + 7) / 8;
+        cells.reset(distance);
+        cells[1,2,3] = VisitorCell.init;
+        oldcells.clear();
+        oldcells.append(Vector3d(0, 0, 0));
+        for (int dist = 0; dist < maxDist * 2; dist++) {
+            if (oldcells.length == 0)
+                break;
+            newcells.clear();
+            for (int i = 0; i < oldcells.length; i++) {
+                Vector3d pt = oldcells[i];
+                auto oldcell = cells.ptr(pt.x, pt.y, pt.z);
+                if (pt.x < 0) {
+                    visitCell(oldcell, pt.x - 1, pt.y, pt.z, Dir.WEST);
+                } else if (pt.x > 0) {
+                    visitCell(oldcell, pt.x + 1, pt.y, pt.z, Dir.EAST);
+                } else {
+                    visitCell(oldcell, pt.x - 1, pt.y, pt.z, Dir.WEST);
+                    visitCell(oldcell, pt.x + 1, pt.y, pt.z, Dir.EAST);
+                }
+                if (pt.y < 0) {
+                    visitCell(oldcell, pt.x, pt.y - 1, pt.z, Dir.DOWN);
+                } else if (pt.y > 0) {
+                    visitCell(oldcell, pt.x, pt.y + 1, pt.z, Dir.UP);
+                } else {
+                    visitCell(oldcell, pt.x, pt.y - 1, pt.z, Dir.DOWN);
+                    visitCell(oldcell, pt.x, pt.y + 1, pt.z, Dir.UP);
+                }
+                if (pt.z < 0) {
+                    visitCell(oldcell, pt.x, pt.y, pt.z - 1, Dir.WEST);
+                } else if (pt.z > 0) {
+                    visitCell(oldcell, pt.x, pt.y, pt.z + 1, Dir.EAST);
+                } else {
+                    visitCell(oldcell, pt.x, pt.y, pt.z - 1, Dir.WEST);
+                    visitCell(oldcell, pt.x, pt.y, pt.z + 1, Dir.EAST);
+                }
+            }
+            newcells.swap(oldcells);
+            // call visitor for this newly visited cells
+            for (int i = 0; i < oldcells.length; i++) {
+                Vector3d pt = oldcells[i];
+                auto cell = cells.ptr(pt.x, pt.y, pt.z);
+                // TODO: call visitor
+            }
         }
     }
 }
