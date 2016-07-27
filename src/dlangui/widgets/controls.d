@@ -823,7 +823,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         }
         if (dv < 0)
             dv = 0;
-        indicatorSize = _pageSize * availableSize / dv;
+        indicatorSize = dv ? _pageSize * availableSize / dv : _minIndicatorSize;
         if (indicatorSize < _minIndicatorSize)
             indicatorSize = _minIndicatorSize;
         if (indicatorSize >= availableSize) {
