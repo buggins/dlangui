@@ -1832,6 +1832,17 @@ class EditLine : EditWidgetBase {
     protected int[] _measuredTextWidths;
     protected Point _measuredTextSize;
 
+    protected dchar _passwordChar = 0;
+    /// password character - 0 for normal editor, some character, e.g. '*' to hide text by replacing all characters with this char
+    @property dchar passwordChar() { return _passwordChar; }
+    @property EditLine passwordChar(dchar ch) { 
+        if (_passwordChar != ch) {
+            _passwordChar = ch;
+            requestLayout();
+        }
+        return this;
+    }
+
     override protected Rect textPosToClient(TextPosition p) {
         Rect res;
         res.bottom = _clientRect.height;
@@ -1879,10 +1890,19 @@ class EditLine : EditWidgetBase {
         updateScrollBars();
     }
 
+    protected dstring applyPasswordChar(dstring s) {
+        if (!_passwordChar || s.length == 0)
+            return s;
+        dchar[] ss = s.dup;
+        foreach(ref ch; ss)
+            ch = _passwordChar;
+        return cast(dstring)ss;
+    }
+
     override protected Point measureVisibleText() {
         FontRef font = font();
         //Point sz = font.textSize(text);
-        _measuredText = text;
+        _measuredText = applyPasswordChar(text);
         _measuredTextWidths.length = _measuredText.length;
         int charsMeasured = font.measureText(_measuredText, _measuredTextWidths, int.max, tabSize);
         _measuredTextSize.x = charsMeasured > 0 ? _measuredTextWidths[charsMeasured - 1]: 0;
@@ -1985,7 +2005,7 @@ class EditLine : EditWidgetBase {
         applyPadding(rc);
         auto saver = ClipRectSaver(buf, rc, alpha);
         FontRef font = font();
-        dstring txt = text;
+        dstring txt = applyPasswordChar(text);
         Point sz = font.textSize(txt);
         //applyAlign(rc, sz);
         Rect lineRect = _clientRect;

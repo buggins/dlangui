@@ -433,6 +433,7 @@ extern (C) int UIAppMain(string[] args) {
         hlayout.addChild((new TextWidget()).text("in horizontal layout"));
         hlayout.addChild((new ImageWidget()).drawableId("exit").padding(Rect(5,5,5,5)).alignment(Align.Center));
         hlayout.addChild((new EditLine("editline", "Some text to edit"d)).popupMenu(editPopupItem).alignment(Align.Center).layoutWidth(FILL_PARENT));
+        hlayout.addChild((new EditLine("passwd", "Password"d)).passwordChar('*').popupMenu(editPopupItem).alignment(Align.Center).layoutWidth(FILL_PARENT));
         //hlayout.addChild((new Button()).text(">>")); //.textColor(0x40FF4000)
         hlayout.backgroundColor = 0x8080C0;
         layout.addChild(hlayout);
