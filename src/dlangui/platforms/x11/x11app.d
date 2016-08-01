@@ -14,6 +14,7 @@ import dlangui.widgets.styles;
 import dlangui.widgets.widget;
 import dlangui.platforms.common.platform;
 
+import core.stdc.string;
 import std.stdio;
 import std.string;
 import std.utf;
@@ -372,7 +373,7 @@ class X11Window : DWindow {
 	override void invalidate() {
 		Log.d("Window.invalidate()");
 		XEvent ev;
-		core.stdc.string.memset(&ev, 0, ev.sizeof);
+		memset(&ev, 0, ev.sizeof);
 		ev.type = Expose;
 		ev.xexpose.window = _win;
 
@@ -889,7 +890,7 @@ class X11Window : DWindow {
 	override protected void scheduleSystemTimer(long intervalMillis) {
 		if (!timer) {
 			timer = new TimerThread(delegate() {
-				core.stdc.string.memset(&ev, 0, ev.sizeof);
+				memset(&ev, 0, ev.sizeof);
 				//ev.xclient = XClientMessageEvent.init;
 				ev.xclient.type = ClientMessage;
 				ev.xclient.message_type = atom_DLANGUI_TIMER_EVENT;
@@ -928,7 +929,7 @@ class X11Window : DWindow {
 	override void postEvent(CustomEvent event) {
 		super.postEvent(event);
 		XEvent ev;
-		core.stdc.string.memset(&ev, 0, ev.sizeof);
+		memset(&ev, 0, ev.sizeof);
 		ev.xclient.type = ClientMessage;
 		ev.xclient.window = _win;
 		ev.xclient.display = x11display2;
