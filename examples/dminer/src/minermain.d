@@ -9,6 +9,7 @@ import dlangui.graphics.scene.effect;
 import dlangui.graphics.scene.model;
 import dlangui.graphics.scene.node;
 import dlangui.graphics.scene.light;
+import dlangui.graphics.scene.drawableobject;
 import dlangui.graphics.glsupport;
 import dlangui.graphics.gldrawbuf;
 import dlangui.graphics.scene.effect;
@@ -50,6 +51,35 @@ extern (C) int UIAppMain(string[] args) {
 
     // run message loop
     return Platform.instance.enterMessageLoop();
+}
+
+class MinerDrawable : MaterialDrawableObject, ChunkVisitor {
+
+    import dlangui.graphics.scene.node;
+    World _world;
+    ChunkDiamondVisitor _chunkVisitor;
+    Vector3d _pos;
+    private Node3d _node;
+
+    this(World world) {
+        _world = world;
+    }
+    override void draw(Node3d node, bool wireframe) {
+        /// override it
+        _node = node;
+        _chunkVisitor.init(_world, 128, this);
+        _chunkVisitor.visitChunks(_pos);
+    }
+    void visit(World world, SmallChunk * chunk) {
+        if (chunk) {
+            Mesh mesh = chunk.getMesh(world);
+            if (mesh) {
+                _material.bind(_node, mesh, lights(_node));
+                _material.drawMesh(mesh);
+                _material.unbind();
+            }
+        }
+    }
 }
 
 class UiWidget : VerticalLayout, CellVisitor {

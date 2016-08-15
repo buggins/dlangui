@@ -5,7 +5,7 @@ static if (ENABLE_OPENGL):
 
 import dlangui.graphics.scene.drawableobject;
 
-class Model : DrawableObject {
+class Model : MaterialDrawableObject {
     import dlangui.graphics.scene.mesh;
     import dlangui.graphics.scene.node;
     import dlangui.graphics.scene.material;
@@ -13,53 +13,17 @@ class Model : DrawableObject {
 
 
 
-    protected MaterialRef _material;
     protected MeshRef _mesh;
-    protected bool _autobindLights = true;
-    protected Lights _lights;
 
     this() {
     }
 
     this(Material material, Mesh mesh) {
-        _material = material;
+        super(material);
         _mesh = mesh;
     }
 
-    @property ref MaterialRef material() { return _material; }
     @property ref MeshRef mesh() { return _mesh; }
-
-    @property bool autobindLights() { return _autobindLights; }
-    @property Model autobindLights(bool flg) { _autobindLights = flg; return this; }
-
-    Model bindLight(Light light) {
-        _lights.add(light);
-        return this;
-    }
-
-    Model unbindLight(Light light) {
-        _lights.remove(light);
-        return this;
-    }
-
-    protected static __gshared LightParams _lightParamsBuffer;
-    @property protected LightParams * lights(Node3d node) {
-        if (!node.scene)
-            return null;
-        if (_lights.empty) {
-            if (node.scene.boundLights.empty)
-                return null;
-            return node.scene.boundLightsPtr;
-        }
-        if (node.scene.boundLights.empty) {
-            _lightParamsBuffer.reset();
-            _lightParamsBuffer.add(_lights);
-        } else {
-            _lightParamsBuffer.reset(node.scene.boundLights);
-            _lightParamsBuffer.add(_lights);
-        }
-        return &_lightParamsBuffer;
-    }
 
     override void draw(Node3d node, bool wireframe) {
         /// override it

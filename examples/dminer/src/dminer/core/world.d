@@ -227,10 +227,6 @@ private:
     DiamondVisitor visitorHelper;
 }
 
-interface ChunkVisitor {
-    void visit(World world, SmallChunk * chunk);
-}
-
 struct DiamondVisitor {
     int maxDist;
     int maxDistBits;
@@ -489,6 +485,9 @@ struct DiamondVisitor {
     }
 }
 
+interface ChunkVisitor {
+    void visit(World world, SmallChunk * chunk);
+}
 
 struct VisitorCell {
     SmallChunk * chunk;
@@ -499,11 +498,18 @@ struct VisitorCell {
 
 struct ChunkDiamondVisitor {
     World world;
+    ChunkVisitor visitor;
     Vector3d pos;
     Array3d!VisitorCell cells;
     int maxDist;
     Vector3dArray oldcells;
     Vector3dArray newcells;
+    void init(World world, int distance, ChunkVisitor visitor) {
+        this.world = world;
+        this.maxDist = (distance + 7) / 8;
+        cells.reset(maxDist);
+        this.visitor = visitor;
+    }
     void visitCell(VisitorCell * oldCell, int x, int y, int z, Dir direction) {
         if (x < -maxDist || x > maxDist || y < -maxDist || y > maxDist || z < -maxDist || z > maxDist)
             return; // out of bounds
@@ -515,12 +521,10 @@ struct ChunkDiamondVisitor {
         }
         cell.dirFlags |= (1 << direction);
     }
-    void visitChunks(World world, Vector3d pos, int distance) {
-        this.world = world;
+    void visitChunks(Vector3d pos) {
         this.pos = pos;
-        this.maxDist = (distance + 7) / 8;
-        cells.reset(distance);
-        cells[1,2,3] = VisitorCell.init;
+        cells.reset(maxDist);
+        //cells[1,2,3] = VisitorCell.init;
         oldcells.clear();
         oldcells.append(Vector3d(0, 0, 0));
         for (int dist = 0; dist < maxDist * 2; dist++) {
@@ -561,6 +565,8 @@ struct ChunkDiamondVisitor {
                 Vector3d pt = oldcells[i];
                 auto cell = cells.ptr(pt.x, pt.y, pt.z);
                 // TODO: call visitor
+                if (cell.chunk)
+                    visitor.visit(world, cell.chunk);
             }
         }
     }
