@@ -72,6 +72,12 @@ uniform vec4 u_modulateColor;
 uniform float u_modulateAlpha;
 #endif
 
+#if defined(FOG)
+uniform vec4 u_fogColor;
+uniform float u_fogMinDistance;
+uniform float u_fogMaxDistance;
+#endif
+
 ///////////////////////////////////////////////////////////
 // Variables
 vec4 _baseColor;
@@ -117,14 +123,28 @@ varying vec3 v_cameraDirection;
 varying float v_clipDistance;
 #endif
 
+#if defined(FOG)
+varying vec4 viewSpace;
+#endif
 
 void main()
 {
     #if defined(CLIP_PLANE)
     if(v_clipDistance < 0.0) discard;
     #endif
- 
+
     _baseColor = texture2D(u_diffuseTexture, v_texCoord);
+
+#if defined(FOG)
+    float dist = 0;
+    float fogFactor = 0;
+    //range based
+    dist = length(viewSpace);
+    // linear fog: u_fogMinDistance .. u_fogMaxDistance
+    fogFactor = (u_fogMaxDistance - dist) / (u_fogMaxDistance - u_fogMinDistance);
+    fogFactor = clamp( fogFactor, 0.0, 1.0 );
+    _baseColor = mix(u_fogColor, _baseColor, fogFactor);
+#endif
  
     gl_FragColor.a = _baseColor.a;
 

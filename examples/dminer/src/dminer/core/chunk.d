@@ -299,8 +299,6 @@ struct SmallChunk {
 
                             if (!_minerMesh) {
                                 _minerMesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, VertexElementType.COLOR, VertexElementType.TEXCOORD0));
-                                import dlangui.core.logger;
-                                //Log.d("Created mesh: ", cast(void*)_minerMesh);
                             }
 
                             BlockDef def = BLOCK_DEFS[cells[index]];
@@ -312,17 +310,9 @@ struct SmallChunk {
             }
             dirtyMesh = false;
         }
-        if (_minerMesh) {
-            if (_minerMesh.vertexFormat.length > 10) {
-                import dlangui.core.logger;
-                Log.d("Corrupted mesh: ", oldMesh);
-            }
-            if (oldMesh && (oldMesh !is _minerMesh)) {
-                import dlangui.core.logger;
-                Log.d("Corrupted mesh: ", oldMesh);
-            }
-            if (!_minerMesh.vertexCount)
-                return null;
+        if (_minerMesh && !_minerMesh.vertexCount) {
+            destroy(_minerMesh);
+            _minerMesh = null;
         }
         return _minerMesh;
     }

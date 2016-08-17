@@ -135,12 +135,14 @@ class Material : RefCountedObject {
         return this;
     }
 
-
+    FogParams _fogParams;
+    @property FogParams fogParams() { return _fogParams; }
+    @property Material fogParams(FogParams fogParams) { _fogParams = fogParams; return this; }
 
     private AutoParams _lastParams;
     private string _lastDefs;
     string calcAutoEffectParams(Mesh mesh, LightParams * lights) {
-        AutoParams newParams = AutoParams(mesh, lights, _specular, !bumpTexture.isNull);
+        AutoParams newParams = AutoParams(mesh, lights, _specular, !bumpTexture.isNull, _fogParams);
         if (newParams != _lastParams) {
             _lastParams = newParams;
             _lastDefs = _lastParams.defs;
@@ -181,6 +183,16 @@ class Material : RefCountedObject {
             _effect.setUniform(DefaultUniform.u_modulateAlpha, _modulateAlpha);
         if (_effect.hasUniform(DefaultUniform.u_specularExponent))
             _effect.setUniform(DefaultUniform.u_specularExponent, _specular);
+
+        // fog uniforms
+        if (_fogParams) {
+            if (_effect.hasUniform(DefaultUniform.u_fogColor))
+                _effect.setUniform(DefaultUniform.u_fogColor, _fogParams.fogColor);
+            if (_effect.hasUniform(DefaultUniform.u_fogMinDistance))
+                _effect.setUniform(DefaultUniform.u_fogMinDistance, _fogParams.fogMinDistance);
+            if (_effect.hasUniform(DefaultUniform.u_fogMaxDistance))
+                _effect.setUniform(DefaultUniform.u_fogMaxDistance, _fogParams.fogMaxDistance);
+        }
 
         // lighting uniforms
         if (lights && !lights.empty) {
@@ -239,7 +251,8 @@ struct AutoParams {
     bool vertexColor = false;
     bool specular = false;
     bool bumpMapping = false;
-    this(Mesh mesh, LightParams * lights, float specular, bool bumpMapping) {
+    FogParams fogParams;
+    this(Mesh mesh, LightParams * lights, float specular, bool bumpMapping, FogParams fogParams) {
         if (mesh)
             vertexColor = mesh.hasElement(VertexElementType.COLOR);
         if (lights) {
@@ -249,11 +262,17 @@ struct AutoParams {
         }
         this.specular = specular > 0.01;
         this.bumpMapping = bumpMapping;
+        this.fogParams = fogParams;
     }
     string defs() {
         import std.conv : to;
         char[] buf;
+        if (fogParams) {
+            buf ~= "FOG";
+        }
         if (directionalLightCount) {
+            if (buf.length)
+                buf ~= ";";
             buf ~= "DIRECTIONAL_LIGHT_COUNT ";
             buf ~= directionalLightCount.to!string;
         }
@@ -285,5 +304,16 @@ struct AutoParams {
             buf ~= "BUMPED";
         }
         return buf.dup;
+    }
+}
+
+class FogParams {
+    immutable vec4 fogColor;
+    immutable float fogMinDistance;
+    immutable float fogMaxDistance;
+    this(vec4 fogColor, float fogMinDistance, float fogMaxDistance) {
+        this.fogColor = fogColor;
+        this.fogMinDistance = fogMinDistance;
+        this.fogMaxDistance = fogMaxDistance;
     }
 }

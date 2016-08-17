@@ -92,6 +92,11 @@ enum DefaultUniform : int {
     u_modulateColor, //uniform vec4 u_modulateColor;
     u_modulateAlpha, //uniform float u_modulateAlpha;
 
+    // fog
+    u_fogColor, // uniform vec4 u_fogColor
+    u_fogMinDistance, // uniform float u_fogMinDistance
+    u_fogMaxDistance, // uniform float u_fogMaxDistance
+
     // matrix
     u_worldViewProjectionMatrix, //uniform mat4 u_worldViewProjectionMatrix;
     u_inverseTransposeWorldViewMatrix, //uniform mat4 u_inverseTransposeWorldViewMatrix;

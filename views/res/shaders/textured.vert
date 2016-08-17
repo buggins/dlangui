@@ -46,7 +46,7 @@ uniform vec4 u_matrixPalette[SKINNING_JOINT_COUNT * 3];
 #if defined(LIGHTING)
 uniform mat4 u_inverseTransposeWorldViewMatrix;
 
-#if defined(SPECULAR) || (POINT_LIGHT_COUNT > 0) || (SPOT_LIGHT_COUNT > 0)
+#if defined(FOG) || defined(SPECULAR) || (POINT_LIGHT_COUNT > 0) || (SPOT_LIGHT_COUNT > 0)
 uniform mat4 u_worldViewMatrix;
 #endif
 
@@ -67,6 +67,12 @@ uniform vec3 u_spotLightDirection[SPOT_LIGHT_COUNT];
 
 #if defined(SPECULAR)
 uniform vec3 u_cameraPosition;
+#endif
+
+#else
+
+#if defined(FOG)
+uniform mat4 u_worldViewMatrix;
 #endif
 
 #endif
@@ -131,9 +137,16 @@ varying vec3 v_cameraDirection;
 varying float v_clipDistance;
 #endif
 
+#if defined(FOG)
+varying vec4 viewSpace;
+#endif
+
 void main()
 {
     vec4 position = getPosition();
+#if defined(FOG)
+    viewSpace = u_worldViewMatrix * position;
+#endif
     gl_Position = u_worldViewProjectionMatrix * position;
 
     #if defined(LIGHTING)
