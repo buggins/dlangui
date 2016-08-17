@@ -17,6 +17,8 @@ immutable int CHUNKS_Z = (1 << CHUNKS_BITS_Z); // Z range: -CHUNKS_Z*8 .. CHUNKS
 immutable int CHUNKS_X_MASK = (CHUNKS_X << 1) - 1;
 immutable int CHUNKS_Z_MASK = (CHUNKS_Z << 1) - 1;
 
+version = SmallChunksGC;
+
 interface CellVisitor {
     //void newDirection(ref Position camPosition);
     //void visitFace(World world, ref Position camPosition, Vector3d pos, cell_t cell, Dir face);
@@ -27,7 +29,11 @@ interface CellVisitor {
 struct ChunkStack {
     protected int _minChunkY;
     protected int _chunkCount;
-    protected SmallChunk ** _chunks;
+    version (SmallChunksGC) {
+        protected SmallChunk * [] _chunks;
+    } else {
+        protected SmallChunk ** _chunks;
+    }
     /// get chunk from stack by chunk Y index
     SmallChunk * get(int chunkY) {
         int idx = chunkY - _minChunkY;
@@ -67,7 +73,7 @@ struct ChunkStack {
                 newMinY = _minChunkY;
                 newChunkCount = chunkY - _minChunkY + 1;
             }
-            SmallChunk ** newChunks = allocChunks(newChunkCount);
+            SmallChunk *[] newChunks = allocChunks(newChunkCount);
             // copy old data
             for(int i = 0; i < _chunkCount; i++)
                 newChunks[i + _minChunkY - newMinY] = _chunks[i];
@@ -78,20 +84,35 @@ struct ChunkStack {
             _chunks = newChunks;
         }
     }
-    private SmallChunk ** allocChunks(int len) {
-        if (len <= 0)
-            return null;
-        import core.stdc.stdlib : malloc;
-        SmallChunk ** res = cast(SmallChunk **) malloc(len * (SmallChunk *).sizeof);
-        for(int i = 0; i < len; i++)
-            res[i] = null;
-        return res;
-    }
-    private void freeChunks(ref SmallChunk ** chunks) {
-        if (chunks) {
-            import core.stdc.stdlib : free;
-            free(chunks);
-            chunks = null;
+    version (SmallChunksGC) {
+        private SmallChunk* [] allocChunks(int len) {
+            if (len <= 0)
+                return null;
+            SmallChunk* [] res = new SmallChunk* [len];
+            return res;
+        }
+        private void freeChunks(ref SmallChunk *[] chunks) {
+            if (chunks) {
+                destroy(chunks);
+                chunks = null;
+            }
+        }
+    } else {
+        private SmallChunk ** allocChunks(int len) {
+            if (len <= 0)
+                return null;
+            import core.stdc.stdlib : malloc;
+            SmallChunk ** res = cast(SmallChunk **) malloc(len * (SmallChunk *).sizeof);
+            for(int i = 0; i < len; i++)
+                res[i] = null;
+            return res;
+        }
+        private void freeChunks(ref SmallChunk ** chunks) {
+            if (chunks) {
+                import core.stdc.stdlib : free;
+                free(chunks);
+                chunks = null;
+            }
         }
     }
     void clear() {
@@ -128,21 +149,42 @@ struct SmallChunk {
     protected Vector3d _pos;
     private Mesh _minerMesh;
     protected bool dirty;
-    protected bool dirtyMesh;
+    protected bool dirtyMesh = true;
     protected bool empty;
     protected bool visible;
     protected bool dirtyVisible;
 
 
+    version (SmallChunksGC) {
+        static SmallChunk * alloc(int x, int y, int z) {
+            SmallChunk * res = new SmallChunk();
+            res._pos.x = x & (~7);
+            res._pos.y = y & (~7);
+            res._pos.z = z & (~7);
+            return res;
+        }
+        void release() {
+            destroy(this);
+        }
 
-    static SmallChunk * alloc(int x, int y, int z) nothrow @nogc {
-        import core.stdc.stdlib : malloc;
-        SmallChunk * res = cast(SmallChunk *)malloc(SmallChunk.sizeof);
-        *res = SmallChunk.init;
-        res._pos.x = x & (~7);
-        res._pos.y = y & (~7);
-        res._pos.z = z & (~7);
-        return res;
+    } else {
+        static SmallChunk * alloc(int x, int y, int z) nothrow @nogc {
+            import core.stdc.stdlib : malloc;
+            SmallChunk * res = cast(SmallChunk *)malloc(SmallChunk.sizeof);
+            *res = SmallChunk.init;
+            res._pos.x = x & (~7);
+            res._pos.y = y & (~7);
+            res._pos.z = z & (~7);
+            return res;
+        }
+        void release() {
+            if (!(&this))
+                return;
+            compact();
+            import core.stdc.stdlib : free;
+            free(&this);
+        }
+
     }
 
     /// return chunk position in world (aligned to chunk origin)
@@ -156,18 +198,10 @@ struct SmallChunk {
             generateMasks();
         if (dirtyVisible) {
             dirtyVisible = false;
-            ubyte[64] visibleFaceFlags;
+            ubyte[64*8] visibleFaceFlags;
             visible = findVisibleFaces(visibleFaceFlags) > 0;
         }
         return visible;
-    }
-
-    void release() {
-        if (!(&this))
-            return;
-        compact();
-        import core.stdc.stdlib : free;
-        free(&this);
     }
 
     /// destroys mesh
@@ -224,7 +258,7 @@ struct SmallChunk {
             generateMasks();
         if (empty)
             return;
-        ubyte[64] visibleFaceFlags;
+        ubyte[64*8] visibleFaceFlags;
         findVisibleFaces(visibleFaceFlags);
         int index = 0;
         for (int y = 0; y < 8; y++) {
@@ -246,13 +280,15 @@ struct SmallChunk {
             generateMasks();
         if (empty)
             return null;
-        if (!_minerMesh) {
-            _minerMesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, VertexElementType.COLOR, VertexElementType.TEXCOORD0));
-            dirtyMesh = true;
-        }
+        //if (!_minerMesh) {
+        //    _minerMesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, VertexElementType.COLOR, VertexElementType.TEXCOORD0));
+        //    dirtyMesh = true;
+        //}
+        Mesh oldMesh = _minerMesh;
         if (dirtyMesh) {
-            _minerMesh.reset();
-            ubyte[64] visibleFaceFlags;
+            if (_minerMesh)
+                _minerMesh.reset();
+            ubyte[64*8] visibleFaceFlags;
             findVisibleFaces(visibleFaceFlags);
             int index = 0;
             for (int y = 0; y < 8; y++) {
@@ -260,6 +296,13 @@ struct SmallChunk {
                     for (int x = 0; x < 8; x++) {
                         int visibleFaces = visibleFaceFlags[index];
                         if (visibleFaces) {
+
+                            if (!_minerMesh) {
+                                _minerMesh = new Mesh(VertexFormat(VertexElementType.POSITION, VertexElementType.NORMAL, VertexElementType.COLOR, VertexElementType.TEXCOORD0));
+                                import dlangui.core.logger;
+                                //Log.d("Created mesh: ", cast(void*)_minerMesh);
+                            }
+
                             BlockDef def = BLOCK_DEFS[cells[index]];
                             def.createFaces(world, world.camPosition, Vector3d(_pos.x + x, _pos.y + y, _pos.z + z), visibleFaces, _minerMesh);
                         }
@@ -267,13 +310,24 @@ struct SmallChunk {
                     }
                 }
             }
+            dirtyMesh = false;
         }
-        if (!_minerMesh.vertexCount)
-            return null;
+        if (_minerMesh) {
+            if (_minerMesh.vertexFormat.length > 10) {
+                import dlangui.core.logger;
+                Log.d("Corrupted mesh: ", oldMesh);
+            }
+            if (oldMesh && (oldMesh !is _minerMesh)) {
+                import dlangui.core.logger;
+                Log.d("Corrupted mesh: ", oldMesh);
+            }
+            if (!_minerMesh.vertexCount)
+                return null;
+        }
         return _minerMesh;
     }
 
-    private int findVisibleFaces(ref ubyte[64] visibleFaceFlags) {
+    private int findVisibleFaces(ref ubyte[64*8] visibleFaceFlags) {
         int count = 0;
         ulong[8] visibleFacesNorth;
         ulong canPass = getSideCanPassFromMask(Dir.NORTH);

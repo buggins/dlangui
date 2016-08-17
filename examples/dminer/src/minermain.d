@@ -61,14 +61,20 @@ class MinerDrawable : MaterialDrawableObject, ChunkVisitor {
     Vector3d _pos;
     private Node3d _node;
 
-    this(World world) {
+    this(World world, Material material) {
+        super(material);
         _world = world;
     }
     override void draw(Node3d node, bool wireframe) {
         /// override it
         _node = node;
+        //Log.d("drawing Miner scene");
         _chunkVisitor.init(_world, 128, this);
+        _pos = _world.camPosition.pos;
+        long ts = currentTimeMillis();
         _chunkVisitor.visitChunks(_pos);
+        long duration = currentTimeMillis() - ts;
+        Log.d("drawing of Miner scene finished in ", duration, " ms");
     }
     void visit(World world, SmallChunk * chunk) {
         if (chunk) {
@@ -82,7 +88,7 @@ class MinerDrawable : MaterialDrawableObject, ChunkVisitor {
     }
 }
 
-class UiWidget : VerticalLayout, CellVisitor {
+class UiWidget : VerticalLayout { //, CellVisitor
     this() {
         super("OpenGLView");
         layoutWidth = FILL_PARENT;
@@ -178,19 +184,22 @@ class UiWidget : VerticalLayout, CellVisitor {
         //_world.setCellRange(Vector3d(-7, 11, 3), Vector3d(1, 100, 1), 8);
 
         updateCamPosition(false);
-        updateMinerMesh();
+        //updateMinerMesh();
 
         Material minerMaterial = new Material(EffectId("textured.vert", "textured.frag", null), "blocks");
         minerMaterial.ambientColor = vec3(0.1,0.1,0.1);
         minerMaterial.textureLinear = false;
         //minerMaterial.specular = 10;
-        Model minerDrawable = new Model(minerMaterial, _minerMesh);
-        Node3d minerNode = new Node3d("miner", minerDrawable);
+        _minerDrawable = new MinerDrawable(_world, minerMaterial);
+        //Model minerDrawable = new Model(minerMaterial, _minerMesh);
+        Node3d minerNode = new Node3d("miner", _minerDrawable);
         _scene.addChild(minerNode);
 
 
         focusable = true;
     }
+
+    MinerDrawable _minerDrawable;
 
     /// process key event, return true if event is processed.
     override bool onMouseEvent(MouseEvent event) {
@@ -317,10 +326,10 @@ class UiWidget : VerticalLayout, CellVisitor {
 
     Node3d dirLightNode;
 
-    void visit(World world, ref Position camPosition, Vector3d pos, cell_t cell, int visibleFaces) {
-        BlockDef def = BLOCK_DEFS[cell];
-        def.createFaces(world, world.camPosition, pos, visibleFaces, _minerMesh);
-    }
+    //void visit(World world, ref Position camPosition, Vector3d pos, cell_t cell, int visibleFaces) {
+    //    BlockDef def = BLOCK_DEFS[cell];
+    //    def.createFaces(world, world.camPosition, pos, visibleFaces, _minerMesh);
+    //}
     
     bool flying = false;
     bool enableMeshUpdate = true;
@@ -371,8 +380,8 @@ class UiWidget : VerticalLayout, CellVisitor {
         dstring s = format("pos(%d,%d) h=%d  %s    [F]lying: %s   [U]pdateMesh: %s", _world.camPosition.pos.x, _world.camPosition.pos.z, _world.camPosition.pos.y, dir,
                            flying, enableMeshUpdate).toUTF32;
         w.text = s;
-        if (enableMeshUpdate)
-            updateMinerMesh();
+        //if (enableMeshUpdate)
+        //    updateMinerMesh();
     }
 
     void startMoveAnimation(Vector3d direction) {
@@ -385,17 +394,17 @@ class UiWidget : VerticalLayout, CellVisitor {
         updateCamPosition();
     }
 
-    void updateMinerMesh() {
-        _minerMesh.reset();
-        long ts = currentTimeMillis;
-        _world.visitVisibleCells(_world.camPosition, this);
-        long duration = currentTimeMillis - ts;
-        Log.d("DiamondVisitor finished in ", duration, " ms  ", "Vertex count: ", _minerMesh.vertexCount);
-
-        invalidate();
-        //for (int i = 0; i < 20; i++)
-        //    Log.d("vertex: ", _minerMesh.vertex(i));
-    }
+    //void updateMinerMesh() {
+    //    _minerMesh.reset();
+    //    long ts = currentTimeMillis;
+    //    _world.visitVisibleCells(_world.camPosition, this);
+    //    long duration = currentTimeMillis - ts;
+    //    Log.d("DiamondVisitor finished in ", duration, " ms  ", "Vertex count: ", _minerMesh.vertexCount);
+    //
+    //    invalidate();
+    //    //for (int i = 0; i < 20; i++)
+    //    //    Log.d("vertex: ", _minerMesh.vertex(i));
+    //}
 
     World _world;
     vec3 _position;
@@ -488,6 +497,8 @@ class UiWidget : VerticalLayout, CellVisitor {
         //checkgl!glDisable(GL_CULL_FACE);
         checkgl!glEnable(GL_DEPTH_TEST);
         checkgl!glCullFace(GL_BACK);
+        
+        Log.d("Drawing position ", _animatingPosition, " angle ", _animatingAngle);
 
         _scene.drawScene(false);
 

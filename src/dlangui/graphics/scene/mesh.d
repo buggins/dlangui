@@ -348,6 +348,10 @@ class Mesh : RefCountedObject {
         _vertexCount = 0;
         _vertexData.length = 0;
         _dirtyVertexBuffer = true;
+        if (_vertexBuffer) {
+            destroy(_vertexBuffer);
+            _vertexBuffer = null;
+        }
         if (_parts.length) {
             foreach(p; _parts)
                 destroy(p);
