@@ -154,9 +154,9 @@ class UiWidget : VerticalLayout { //, CellVisitor
         dirLightNode.translateX(2);
         dirLightNode.translateY(3);
         dirLightNode.translateZ(0);
-        dirLightNode.light = Light.createPoint(vec3(1.0, 1.0, 1.0), 35); //Light.createDirectional(vec3(1, 0.5, 0.5));
+        dirLightNode.light = Light.createPoint(vec3(1.0, 1.0, 1.0), 55); //Light.createDirectional(vec3(1, 0.5, 0.5));
         //dirLightNode.light = Light.createDirectional(vec3(1, 0.5, 0.5));
-        dirLightNode.light.enabled = false;
+        dirLightNode.light.enabled = true;
         _scene.addChild(dirLightNode);
 
 
@@ -207,9 +207,9 @@ class UiWidget : VerticalLayout { //, CellVisitor
         //updateMinerMesh();
 
         Material minerMaterial = new Material(EffectId("textured.vert", "textured.frag", null), "blocks");
-        minerMaterial.ambientColor = vec3(0.1,0.1,0.1);
+        minerMaterial.ambientColor = vec3(0.05,0.05,0.05);
         minerMaterial.textureLinear = false;
-        minerMaterial.fogParams = new FogParams(vec4(0.1, 0.1, 0.1, 1), 12, 60);
+        minerMaterial.fogParams = new FogParams(vec4(0.01, 0.01, 0.01, 1), 12, 80);
         //minerMaterial.specular = 10;
         _minerDrawable = new MinerDrawable(_world, minerMaterial, _cam);
         //Model minerDrawable = new Model(minerMaterial, _minerMesh);
