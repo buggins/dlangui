@@ -56,33 +56,53 @@ extern (C) int UIAppMain(string[] args) {
 class MinerDrawable : MaterialDrawableObject, ChunkVisitor {
 
     import dlangui.graphics.scene.node;
-    World _world;
-    ChunkDiamondVisitor _chunkVisitor;
-    Vector3d _pos;
+    private World _world;
+    private ChunkDiamondVisitor _chunkVisitor;
+    private Vector3d _pos;
     private Node3d _node;
+    private Camera _cam;
+    private vec3 _camPosition;
+    private vec3 _camForwardVector;
 
-    this(World world, Material material) {
+    this(World world, Material material, Camera cam) {
         super(material);
         _world = world;
+        _cam = cam;
     }
+    int _skippedCount;
+    int _drawnCount;
     override void draw(Node3d node, bool wireframe) {
         /// override it
         _node = node;
         //Log.d("drawing Miner scene");
-        _chunkVisitor.init(_world, 128, this);
+        _chunkVisitor.init(_world, MAX_VIEW_DISTANCE, this);
         _pos = _world.camPosition.pos;
+        _camPosition = _cam.translation;
+        _camForwardVector = _cam.forwardVectorWorld;
+        _camPosition -= _camForwardVector * 8;
+        _skippedCount = _drawnCount = 0;
         long ts = currentTimeMillis();
         _chunkVisitor.visitChunks(_pos);
         long duration = currentTimeMillis() - ts;
-        Log.d("drawing of Miner scene finished in ", duration, " ms");
+        Log.d("drawing of Miner scene finished in ", duration, " ms  skipped:", _skippedCount, " drawn:", _drawnCount);
     }
     void visit(World world, SmallChunk * chunk) {
         if (chunk) {
+            Vector3d p = chunk.position;
+            vec3 chunkPos = vec3(p.x + 4, p.y + 4, p.z + 4);
+            vec3 chunkDirection = (chunkPos - _camPosition).normalized;
+            float dot = _camForwardVector.dot(chunkDirection);
+            //Log.d("chunkPos ", chunkPos, " chunkDir ", chunkDirection, " camDir ");
+            if (dot < 0.7) { // cos(45)
+                _skippedCount++;
+                return;
+            }
             Mesh mesh = chunk.getMesh(world);
             if (mesh) {
                 _material.bind(_node, mesh, lights(_node));
                 _material.drawMesh(mesh);
                 _material.unbind();
+                _drawnCount++;
             }
         }
     }
@@ -190,7 +210,7 @@ class UiWidget : VerticalLayout { //, CellVisitor
         minerMaterial.ambientColor = vec3(0.1,0.1,0.1);
         minerMaterial.textureLinear = false;
         //minerMaterial.specular = 10;
-        _minerDrawable = new MinerDrawable(_world, minerMaterial);
+        _minerDrawable = new MinerDrawable(_world, minerMaterial, _cam);
         //Model minerDrawable = new Model(minerMaterial, _minerMesh);
         Node3d minerNode = new Node3d("miner", _minerDrawable);
         _scene.addChild(minerNode);

@@ -7,7 +7,7 @@ import dminer.core.chunk;
 version (Android) {
     const int MAX_VIEW_DISTANCE_BITS = 6;
 } else {
-    const int MAX_VIEW_DISTANCE_BITS = 8;
+    const int MAX_VIEW_DISTANCE_BITS = 7;
 }
 const int MAX_VIEW_DISTANCE = (1 << MAX_VIEW_DISTANCE_BITS);
 
@@ -175,12 +175,6 @@ class World {
                 }
         return true;
     }
-    final void visitVisibleCells(ref Position position, CellVisitor visitor) {
-        visitorHelper.init(this, 
-                            &position,
-                            visitor);
-        visitorHelper.visitAll(maxVisibleRange);
-    }
 
     /// get max Y position of non-empty cell in region (x +- size, z +- size)
     int regionHeight(int x, int z, int size) {
@@ -224,265 +218,6 @@ private:
 
     Position _camPosition;
     int maxVisibleRange = MAX_VIEW_DISTANCE;
-    DiamondVisitor visitorHelper;
-}
-
-struct DiamondVisitor {
-    int maxDist;
-    int maxDistBits;
-    int dist;
-    World world;
-    Position * position;
-    Vector3d pos0;
-    CellVisitor visitor;
-    CellArray visited;
-    cell_t * visited_ptr;
-    Vector3dArray oldcells;
-    Vector3dArray newcells;
-    ubyte visitedId;
-    //ubyte visitedEmpty;
-    int m0;
-    int m0mask;
-    int maxY;
-    void init(World w, Position * pos, CellVisitor v) {
-        world = w;
-        position = pos;
-        visitor = v;
-        pos0 = position.pos;
-    }
-    void visitCell(int vx, int vy, int vz) {
-        //CRLog::trace("visitCell(%d %d %d) dist=%d", v.x, v.y, v.z, myAbs(v.x) + myAbs(v.y) + myAbs(v.z));
-
-        //int occupied = visitedOccupied;
-        int index = (vx + m0) + ((vz + m0) << (maxDistBits + 1));
-        if (vy < 0) {
-            // inverse index for lower half
-            index ^= m0mask;
-        }
-        //int index = diamondIndex(v, maxDistBits);
-        if (visited_ptr[index] == visitedId)// || cell == visitedEmpty)
-            return;
-        visitCellNoCheck(vx, vy, vz);
-        visited_ptr[index] = visitedId; // cell;
-    }
-
-    void visitCellNoCheck(int vx, int vy, int vz) {
-            //if (v * position.direction.forward < dist / 3) // limit by visible from cam
-        //    return;
-        //Vector3d pos = pos0 + v;
-        int posx = pos0.x + vx;
-        int posy = pos0.y + vy;
-        int posz = pos0.z + vz;
-        cell_t cell = world.getCell(posx, posy, posz);
-
-        // read cell from world
-        if (BLOCK_TYPE_VISIBLE.ptr[cell]) {
-            int visibleFaces = 0;
-            if (vy <= 0 && !world.isOpaque(posx, posy + 1, posz))
-                visibleFaces |= DirMask.MASK_UP;
-            if (vy >= 0 && !world.isOpaque(posx, posy - 1, posz))
-                visibleFaces |= DirMask.MASK_DOWN;
-            if (vx <= 0 && !world.isOpaque(posx + 1, posy, posz))
-                visibleFaces |= DirMask.MASK_EAST;
-            if (vx >= 0 && !world.isOpaque(posx - 1, posy, posz))
-                visibleFaces |= DirMask.MASK_WEST;
-            if (vz <= 0 && !world.isOpaque(posx, posy, posz + 1))
-                visibleFaces |= DirMask.MASK_SOUTH;
-            if (vz >= 0 && !world.isOpaque(posx, posy, posz - 1))
-                visibleFaces |= DirMask.MASK_NORTH;
-            visitor.visit(world, *position, Vector3d(posx, posy, posz), cell, visibleFaces);
-        }
-        // mark as visited
-        if (BLOCK_TYPE_CAN_PASS.ptr[cell])
-            newcells.append(Vector3d(vx, vy, vz));
-        //cell = BLOCK_TYPE_CAN_PASS[cell] ? visitedEmpty : visitedOccupied;
-    }
-
-    bool needVisit(int index) {
-        if (visited_ptr[index] != visitedId) {
-            visited_ptr[index] = visitedId;
-            return true;
-        }
-        return false;
-    }
-
-    static int myAbs(int n) {
-        return n < 0 ? -n : n;
-    }
-
-    void visitAll(int maxDistance) {
-
-        maxY = world.regionHeight(pos0.x, pos0.z, maxDistance);
-        if (maxY < pos0.y + 1)
-            maxY = pos0.y + 1;
-
-        maxDist = maxDistance;
-        maxDistance *= 2;
-        maxDistBits = bitsFor(maxDist);
-        int maxDistMask = ~((1 << maxDistBits) - 1);
-        maxDistBits++;
-
-        m0 = 1 << maxDistBits;
-        m0mask = (m0 - 1) + ((m0 - 1) << (maxDistBits + 1));
-
-        oldcells.clear();
-        newcells.clear();
-        oldcells.reserve(maxDist * 4 * 4);
-        newcells.reserve(maxDist * 4 * 4);
-
-        dist = 1;
-
-        int vsize = ((1 << maxDistBits) * (1 << maxDistBits)) << 2;
-        visited.clear();
-        visited.append(cast(ubyte)0, vsize);
-        visited_ptr = visited.ptr();
-        visitedId = 2;
-        oldcells.clear();
-        oldcells.append(Vector3d(0, 0, 0));
-        Dir dir = position.direction.dir;
-
-        int zstep = 1 << (maxDistBits + 1);
-        for (; dist < maxDistance; dist++) {
-            // for each distance
-            if (oldcells.length() == 0) { // no cells to pass through
-                import dlangui.core.logger;
-                Log.d("No more cells at distance ", dist);
-                break;
-            }
-            newcells.clear();
-            visitedId++;
-            //int maxUp = (((dist + 1) * 7) / 8) + 1;
-            //int maxDown = - (dist < 3 ? 3 : (((dist + 1) * 7) / 8)) - 1;
-            //CRLog::trace("dist: %d cells: %d", dist, oldcells.length());
-            for (int i = 0; i < oldcells.length(); i++) {
-                Vector3d pt = oldcells[i];
-                assert(myAbs(pt.x) + myAbs(pt.y) + myAbs(pt.z) == dist - 1);
-                if (((pt.x + maxDist) | (pt.y + maxDist) | (pt.z + maxDist)) & maxDistMask)
-                    continue;
-                if (dist > 2) {
-                    // skip some directions
-                    //if (pt.y > maxUp || pt.y < maxDown)
-                    //    continue;
-                    if (pt.y > maxY)
-                        continue;
-                    if (dir == Dir.SOUTH) {
-                        if (pt.z < -1)
-                            continue;
-                    } else if (dir == Dir.NORTH) {
-                        if (pt.z > 1)
-                            continue;
-                    } else if (dir == Dir.EAST) {
-                        if (pt.x < -1)
-                            continue;
-                    } else { // WEST
-                        if (pt.x > 1)
-                            continue;
-                    }
-                }
-                int mx = pt.x;
-                int my = pt.y;
-                int mz = pt.z;
-                int sx = mx > 0 ? 1 : 0;
-                int sy = my > 0 ? 1 : 0;
-                int sz = mz > 0 ? 1 : 0;
-                if (mx < 0) {
-                    mx = -mx;
-                    sx = -1;
-                }
-                if (my < 0) {
-                    my = -my;
-                    sy = -1;
-                }
-                if (mz < 0) {
-                    mz = -mz;
-                    sz = -1;
-                }
-                int ymask = sy < 0 ? m0mask : 0;
-                int index = ((pt.x + m0) + ((pt.z + m0) << (maxDistBits + 1))) ^ ymask;
-                if (sx && sy && sz) {
-                    //bool noStepZ = (mx > mz) || (my > mz);
-                    // 1, 1, 1
-                    int xindex = index + (sy < 0 ? -sx : sx);
-                    if (visited_ptr[xindex] != visitedId) {
-                        visitCellNoCheck(pt.x + sx, pt.y, pt.z);
-                        visited_ptr[xindex] = visitedId;
-                    }
-                    int zindex = index + (sz * sy > 0 ? zstep : -zstep);
-                    if (visited_ptr[zindex] != visitedId) {
-                        visitCellNoCheck(pt.x, pt.y, pt.z + sz);
-                        visited_ptr[zindex] = visitedId;
-                    }
-                    if (!ymask && sy < 0)
-                        index ^= m0mask;
-                    if (visited_ptr[index] != visitedId) {
-                        visitCellNoCheck(pt.x, pt.y + sy, pt.z);
-                        visited_ptr[index] = visitedId;
-                    }
-                } else {
-                    // has 0 in one of coords
-                    if (!sx) {
-                        if (!sy) {
-                            if (!sz) {
-                                // 0, 0, 0
-                                visitCell(pt.x + 1, pt.y, pt.z);
-                                visitCell(pt.x - 1, pt.y, pt.z);
-                                visitCell(pt.x, pt.y + 1, pt.z);
-                                visitCell(pt.x, pt.y - 1, pt.z);
-                                visitCell(pt.x, pt.y, pt.z + 1);
-                                visitCell(pt.x, pt.y, pt.z - 1);
-                            } else {
-                                // 0, 0, 1
-                                visitCell(pt.x, pt.y, pt.z + sz);
-                                visitCell(pt.x + 1, pt.y, pt.z);
-                                visitCell(pt.x - 1, pt.y, pt.z);
-                                visitCell(pt.x, pt.y + 1, pt.z);
-                                visitCell(pt.x, pt.y - 1, pt.z);
-                            }
-                        } else {
-                            if (!sz) {
-                                // 0, 1, 0
-                                visitCell(pt.x, pt.y + sy, pt.z);
-                                visitCell(pt.x + 1, pt.y, pt.z);
-                                visitCell(pt.x - 1, pt.y, pt.z);
-                                visitCell(pt.x, pt.y, pt.z + 1);
-                                visitCell(pt.x, pt.y, pt.z - 1);
-                            } else {
-                                // 0, 1, 1
-                                visitCell(pt.x, pt.y + sy, pt.z);
-                                visitCell(pt.x, pt.y, pt.z + sz);
-                                visitCell(pt.x + 1, pt.y, pt.z);
-                                visitCell(pt.x - 1, pt.y, pt.z);
-                            }
-                        }
-                    } else {
-                        if (!sy) {
-                            if (!sz) {
-                                // 1, 0, 0
-                                visitCell(pt.x + sx, pt.y, pt.z);
-                                visitCell(pt.x, pt.y + 1, pt.z);
-                                visitCell(pt.x, pt.y - 1, pt.z);
-                                visitCell(pt.x, pt.y, pt.z + 1);
-                                visitCell(pt.x, pt.y, pt.z - 1);
-                            } else {
-                                // 1, 0, 1
-                                visitCell(pt.x + sx, pt.y, pt.z);
-                                visitCell(pt.x, pt.y, pt.z + sz);
-                                visitCell(pt.x, pt.y + 1, pt.z);
-                                visitCell(pt.x, pt.y - 1, pt.z);
-                            }
-                        } else {
-                            // 1, 1, 0
-                            visitCell(pt.x + sx, pt.y, pt.z);
-                            visitCell(pt.x, pt.y + sy, pt.z);
-                            visitCell(pt.x, pt.y, pt.z + 1);
-                            visitCell(pt.x, pt.y, pt.z - 1);
-                        }
-                    }
-                }
-            }
-            newcells.swap(oldcells);
-        }
-    }
 }
 
 interface ChunkVisitor {
@@ -525,8 +260,22 @@ struct ChunkDiamondVisitor {
         this.pos = pos;
         cells.reset(maxDist);
         //cells[1,2,3] = VisitorCell.init;
-        oldcells.clear();
-        oldcells.append(Vector3d(0, 0, 0));
+        newcells.clear();
+        //oldcells.append(Vector3d(0, 0, 0));
+        visitCell(null, 0,0,0, Dir.NORTH);
+        visitCell(null, 0,0,0, Dir.SOUTH);
+        visitCell(null, 0,0,0, Dir.WEST);
+        visitCell(null, 0,0,0, Dir.EAST);
+        visitCell(null, 0,0,0, Dir.UP);
+        visitCell(null, 0,0,0, Dir.DOWN);
+        newcells.swap(oldcells);
+        // call visitor for this newly visited cells
+        for (int i = 0; i < oldcells.length; i++) {
+            Vector3d pt = oldcells[i];
+            auto cell = cells.ptr(pt.x, pt.y, pt.z);
+            if (cell.chunk)
+                visitor.visit(world, cell.chunk);
+        }
         for (int dist = 0; dist < maxDist * 2; dist++) {
             if (oldcells.length == 0)
                 break;
@@ -564,7 +313,6 @@ struct ChunkDiamondVisitor {
             for (int i = 0; i < oldcells.length; i++) {
                 Vector3d pt = oldcells[i];
                 auto cell = cells.ptr(pt.x, pt.y, pt.z);
-                // TODO: call visitor
                 if (cell.chunk)
                     visitor.visit(world, cell.chunk);
             }
