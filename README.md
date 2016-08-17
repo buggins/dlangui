@@ -52,7 +52,7 @@ Currently implemented widgets:
 * TextImageButton - button with icon and label
 * CheckBox - check button with label
 * RadioButton - radio button with label
-* SwitchWidget - switch button
+* SwitchButton - a toggle switch button
 * EditLine - single line edit
 * EditBox - multiline editor
 * VSpacer - vertical spacer - just an empty widget with layoutHeight == FILL_PARENT, to fill vertical space in layouts
