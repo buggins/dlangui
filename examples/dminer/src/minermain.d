@@ -206,22 +206,6 @@ class UiWidget : VerticalLayout { //, CellVisitor
         //_world.makeCastleWall(Vector3d(25, cy0 - 5, 12), Vector3d(1, 0, 0), 12, 30, 4, BlockId.brick);
         _world.makeCastle(Vector3d(0, cy0, 60), 30, 12);
 
-        //_world.setCellRange(Vector3d(3, 11, 5), Vector3d(1, 100, 1), 1);
-        //_world.setCellRange(Vector3d(13, 11, -5), Vector3d(1, 100, 1), 3);
-        //_world.setCellRange(Vector3d(-6, 11, 10), Vector3d(1, 100, 1), 4);
-        //_world.setCellRange(Vector3d(-8, 11, 15), Vector3d(1, 100, 1), 5);
-        //_world.setCellRange(Vector3d(12, 11, -7), Vector3d(1, 100, 1), 6);
-        //_world.setCellRange(Vector3d(5, 11, 9), Vector3d(1, 100, 1), 7);
-        //_world.setCellRange(Vector3d(9, 11, 5), Vector3d(1, 100, 1), 7);
-        //_world.setCellRange(Vector3d(-5, 11, 9), Vector3d(1, 100, 1), 7);
-        //_world.setCellRange(Vector3d(9, 11, -5), Vector3d(1, 100, 1), 7);
-        //_world.setCellRange(Vector3d(5, 11, -9), Vector3d(1, 100, 1), 7);
-        //_world.setCellRange(Vector3d(-9, 11, 5), Vector3d(1, 100, 1), 7);
-        //_world.setCellRange(Vector3d(7, 11, 3), Vector3d(1, 100, 1), 8);
-        //_world.setCellRange(Vector3d(-7, 11, 3), Vector3d(1, 100, 1), 8);
-        //_world.setCellRange(Vector3d(7, 11, -3), Vector3d(1, 100, 1), 8);
-        //_world.setCellRange(Vector3d(-7, 11, 3), Vector3d(1, 100, 1), 8);
-
         updateCamPosition(false);
         //updateMinerMesh();
 
@@ -402,7 +386,6 @@ class UiWidget : VerticalLayout { //, CellVisitor
     bool enableMeshUpdate = true;
     Vector3d _moveAnimationDirection;
 
-
     void animateMoving() {
         if (_moveAnimationDirection != Vector3d(0,0,0)) {
             Vector3d animPos = _world.camPosition.pos + _moveAnimationDirection;
@@ -442,14 +425,22 @@ class UiWidget : VerticalLayout { //, CellVisitor
 
         setPos(vec3(_world.camPosition.pos.x + 0.5f, _world.camPosition.pos.y + 0.5f, _world.camPosition.pos.z + 0.5f), animateIt);
         setAngle(_world.camPosition.direction.angle, animateIt);
+
+        updatePositionMessage();
+    }
+
+    void updatePositionMessage() {
         Widget w = childById("lblPosition");
         string dir = _world.camPosition.direction.dir.to!string;
-        dstring s = format("pos(%d,%d) h=%d  %s    [F]lying: %s   [U]pdateMesh: %s", _world.camPosition.pos.x, _world.camPosition.pos.z, _world.camPosition.pos.y, dir,
-                           flying, enableMeshUpdate).toUTF32;
+        dstring s = format("pos(%d,%d) h=%d fps:%d %s    [F]lying: %s   [U]pdateMesh: %s", _world.camPosition.pos.x, _world.camPosition.pos.z, _world.camPosition.pos.y, 
+                           _fps,
+                           dir,
+                           flying, 
+                           enableMeshUpdate).toUTF32;
         w.text = s;
-        //if (enableMeshUpdate)
-        //    updateMinerMesh();
     }
+
+    int _fps = 0;
 
     void startMoveAnimation(Vector3d direction) {
         _moveAnimationDirection = direction;
@@ -514,6 +505,13 @@ class UiWidget : VerticalLayout { //, CellVisitor
     /// animates window; interval is time left from previous draw, in hnsecs (1/10000000 of second)
     override void animate(long interval) {
         //Log.d("animating");
+        if (interval > 0) {
+            int newfps = cast(int)(10000000.0 / interval);
+            if (newfps < _fps - 3 || newfps > _fps + 3) {
+                _fps = newfps;
+                updatePositionMessage();
+            }
+        }
         animateMoving();
         if (_animatingAngle != _angle) {
             float delta = _angle - _animatingAngle;
@@ -525,13 +523,32 @@ class UiWidget : VerticalLayout { //, CellVisitor
             if (dist < 5) {
                 _animatingAngle = _angle;
             } else {
-                float speed = 360;
+                float speed = 360 / 2;
                 float step = speed * interval / 10000000.0f;
                 //Log.d("Rotate animation delta=", delta, " dist=", dist, " elapsed=", interval, " step=", step);
                 if (step > dist)
                     step = dist;
                 delta = delta * (step /dist);
                 _animatingAngle += delta;
+            }
+        }
+        if (_animatingYAngle != _yAngle) {
+            float delta = _yAngle - _animatingYAngle;
+            if (delta > 180)
+                delta -= 360;
+            else if (delta < -180)
+                delta += 360;
+            float dist = delta < 0 ? -delta : delta;
+            if (dist < 5) {
+                _animatingYAngle = _yAngle;
+            } else {
+                float speed = 360 / 2;
+                float step = speed * interval / 10000000.0f;
+                //Log.d("Rotate animation delta=", delta, " dist=", dist, " elapsed=", interval, " step=", step);
+                if (step > dist)
+                    step = dist;
+                delta = delta * (step /dist);
+                _animatingYAngle += delta;
             }
         }
         if (_animatingPosition != _position) {
