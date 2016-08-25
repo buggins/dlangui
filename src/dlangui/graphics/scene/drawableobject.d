@@ -56,6 +56,8 @@ class MaterialDrawableObject : DrawableObject {
     @property protected LightParams * lights(Node3d node) {
         if (!node.scene)
             return null;
+        if (!_autobindLights)
+            return null; // TODO: allow manually bound lights
         if (_lights.empty) {
             if (node.scene.boundLights.empty)
                 return null;

@@ -66,11 +66,17 @@ class Scene3d : Node3d {
         _wireframe = wireframe;
         updateAutoboundLights();
         if (_skyBox.visible) {
+            import dlangui.graphics.glsupport;
+            checkgl!glDisable(GL_DEPTH_TEST);
+            checkgl!glDisable(GL_CULL_FACE);
             if (_activeCamera) {
                 _skyBox.translation = _activeCamera.translation;
-                _skyBox.scaling = _activeCamera.farRange * 0.8;
+                _skyBox.scaling = _activeCamera.farRange * 0.9;
             }
-            sceneDrawVisitor(_skyBox);
+            visit(_skyBox, &sceneDrawVisitor);
+            checkgl!glEnable(GL_DEPTH_TEST);
+            checkgl!glEnable(GL_CULL_FACE);
+            checkgl!glClear(GL_DEPTH_BUFFER_BIT);
         }
         visit(this, &sceneDrawVisitor);
     }

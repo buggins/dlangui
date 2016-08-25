@@ -10,10 +10,12 @@ import dlangui.graphics.scene.model;
 import dlangui.graphics.scene.node;
 import dlangui.graphics.scene.light;
 import dlangui.graphics.scene.drawableobject;
+import dlangui.graphics.scene.skybox;
+import dlangui.graphics.scene.effect;
 import dlangui.graphics.glsupport;
 import dlangui.graphics.gldrawbuf;
-import dlangui.graphics.scene.effect;
 
+/*
 version (Android) {
     //enum SUPPORT_LEGACY_OPENGL = false;
     public import EGL.eglplatform : EGLint;
@@ -25,6 +27,7 @@ version (Android) {
     import derelict.opengl3.gl3;
     import derelict.opengl3.gl;
 }
+*/
 
 import dminer.core.minetypes;
 import dminer.core.blocks;
@@ -149,6 +152,13 @@ class UiWidget : VerticalLayout { //, CellVisitor
 
         _scene.activeCamera = _cam;
 
+        _scene.skyBox.setFaceTexture(SkyBox.Face.Right, "skybox_night_right1");
+        _scene.skyBox.setFaceTexture(SkyBox.Face.Left, "skybox_night_left2");
+        _scene.skyBox.setFaceTexture(SkyBox.Face.Top, "skybox_night_top3");
+        _scene.skyBox.setFaceTexture(SkyBox.Face.Bottom, "skybox_night_bottom4");
+        _scene.skyBox.setFaceTexture(SkyBox.Face.Front, "skybox_night_front5");
+        _scene.skyBox.setFaceTexture(SkyBox.Face.Back, "skybox_night_back6");
+
         dirLightNode = new Node3d();
         dirLightNode.rotateY(-15);
         dirLightNode.translateX(2);
@@ -212,6 +222,7 @@ class UiWidget : VerticalLayout { //, CellVisitor
         minerMaterial.fogParams = new FogParams(vec4(0.01, 0.01, 0.01, 1), 12, 80);
         //minerMaterial.specular = 10;
         _minerDrawable = new MinerDrawable(_world, minerMaterial, _cam);
+        //_minerDrawable.autobindLights = false;
         //Model minerDrawable = new Model(minerMaterial, _minerMesh);
         Node3d minerNode = new Node3d("miner", _minerDrawable);
         _scene.addChild(minerNode);

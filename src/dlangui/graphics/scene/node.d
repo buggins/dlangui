@@ -170,7 +170,10 @@ class Node3d : Transform {
     /// returns projectionMatrix * viewMatrix * modelMatrix
     @property ref const(mat4) projectionViewModelMatrix() {
         // TODO: optimize
-        _projectionViewModelMatrix = _scene.projectionViewMatrix * matrix;
+        if (_parent)
+            _projectionViewModelMatrix = _scene.projectionViewMatrix * _parent.matrix * matrix;
+        else
+            _projectionViewModelMatrix = _scene.projectionViewMatrix * matrix;
         return _projectionViewModelMatrix;
     }
 
