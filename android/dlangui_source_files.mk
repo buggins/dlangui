@@ -49,12 +49,14 @@ $DLANGUI_DIR/src/dlangui/graphics/scene/scene3d.d \
 $DLANGUI_DIR/src/dlangui/graphics/scene/transform.d \
 $DLANGUI_DIR/src/dlangui/graphics/scene/mesh.d \
 $DLANGUI_DIR/src/dlangui/graphics/scene/fbximport.d \
+$DLANGUI_DIR/src/dlangui/graphics/scene/skybox.d \
 $DLANGUI_DIR/src/dlangui/graphics/resources.d \
 $DLANGUI_DIR/src/dlangui/graphics/glsupport.d \
 $DLANGUI_DIR/src/dlangui/graphics/colors.d \
 $DLANGUI_DIR/src/dlangui/graphics/gldrawbuf.d \
 $DLANGUI_DIR/src/dlangui/graphics/fonts.d \
-$DLANGUI_DIR/src/dlangui/graphics/domrender.d \
+$DLANGUI_DIR/src/dlangui/graphics/domrender/domrender.d \
+$DLANGUI_DIR/src/dlangui/graphics/domrender/renderblock.d \
 $DLANGUI_DIR/src/dlangui/package.d \
 $DLANGUI_DIR/src/dlangui/dml/dmlhighlight.d \
 $DLANGUI_DIR/src/dlangui/dml/annotations.d \
@@ -98,7 +100,7 @@ $DLANGUI_DIR/3rdparty/android/android_native_app_glue.d \
 $DLANGUI_DIR/3rdparty/android/android_native_app_glue_impl.d \
 $DLANGUI_DIR/3rdparty/jni.d \
 $DLANGUI_DIR/3rdparty/fontconfig/functions.d \
-$DLANGUI_DIR/3rdparty/fontconfig/types.d \
+$DLANGUI_DIR/3rdparty/fontconfig/fctypes.d \
 $DLANGUI_DIR/3rdparty/fontconfig/package.d \
 $DLANGUI_DIR/3rdparty/GLES3/gl3.d \
 $DLANGUI_DIR/3rdparty/dimage/image.d \

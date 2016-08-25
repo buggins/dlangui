@@ -167,19 +167,23 @@ __gshared EmbeddedResourceList embeddedResourceList;
 //version = USE_FULL_PATH_FOR_RESOURCES;
 
 EmbeddedResource[] embedResource(string resourceName)() {
-    version (USE_FULL_PATH_FOR_RESOURCES) {
-        immutable string name = resourceName;
-    } else {
-        immutable string name = baseName(resourceName);
-    }
-    static if (name.length > 0 && !name.startsWith("#")) {
-        immutable ubyte[] data = cast(immutable ubyte[])import(name);
-        static if (data.length > 0)
-            return [EmbeddedResource(name, data)];
-        else
-            return [];
-    } else
+    static if (resourceName.startsWith("#")) {
         return [];
+    } else {
+        version (USE_FULL_PATH_FOR_RESOURCES) {
+            immutable string name = resourceName;
+        } else {
+            immutable string name = baseName(resourceName);
+        }
+        static if (name.length > 0) {
+            immutable ubyte[] data = cast(immutable ubyte[])import(name);
+            static if (data.length > 0)
+                return [EmbeddedResource(name, data)];
+            else
+                return [];
+        } else
+            return [];
+    }
 }
 
 /// embed all resources from list

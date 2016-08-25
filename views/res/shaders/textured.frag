@@ -136,8 +136,8 @@ void main()
     _baseColor = texture2D(u_diffuseTexture, v_texCoord);
 
 #if defined(FOG)
-    float dist = 0;
-    float fogFactor = 0;
+    float dist = 0.0;
+    float fogFactor = 0.0;
     //range based
     dist = length(viewSpace);
     // linear fog: u_fogMinDistance .. u_fogMaxDistance
