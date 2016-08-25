@@ -152,12 +152,21 @@ class UiWidget : VerticalLayout { //, CellVisitor
 
         _scene.activeCamera = _cam;
 
-        _scene.skyBox.setFaceTexture(SkyBox.Face.Right, "skybox_night_right1");
-        _scene.skyBox.setFaceTexture(SkyBox.Face.Left, "skybox_night_left2");
-        _scene.skyBox.setFaceTexture(SkyBox.Face.Top, "skybox_night_top3");
-        _scene.skyBox.setFaceTexture(SkyBox.Face.Bottom, "skybox_night_bottom4");
-        _scene.skyBox.setFaceTexture(SkyBox.Face.Front, "skybox_night_front5");
-        _scene.skyBox.setFaceTexture(SkyBox.Face.Back, "skybox_night_back6");
+        static if (true) {
+            _scene.skyBox.setFaceTexture(SkyBox.Face.Right, "skybox_night_right1");
+            _scene.skyBox.setFaceTexture(SkyBox.Face.Left, "skybox_night_left2");
+            _scene.skyBox.setFaceTexture(SkyBox.Face.Top, "skybox_night_top3");
+            _scene.skyBox.setFaceTexture(SkyBox.Face.Bottom, "skybox_night_bottom4");
+            _scene.skyBox.setFaceTexture(SkyBox.Face.Front, "skybox_night_front5");
+            _scene.skyBox.setFaceTexture(SkyBox.Face.Back, "skybox_night_back6");
+        } else {
+            _scene.skyBox.setFaceTexture(SkyBox.Face.Right, "debug_right");
+            _scene.skyBox.setFaceTexture(SkyBox.Face.Left, "debug_left");
+            _scene.skyBox.setFaceTexture(SkyBox.Face.Top, "debug_top");
+            _scene.skyBox.setFaceTexture(SkyBox.Face.Bottom, "debug_bottom");
+            _scene.skyBox.setFaceTexture(SkyBox.Face.Front, "debug_front");
+            _scene.skyBox.setFaceTexture(SkyBox.Face.Back, "debug_back");
+        }
 
         dirLightNode = new Node3d();
         dirLightNode.rotateY(-15);
@@ -233,10 +242,14 @@ class UiWidget : VerticalLayout { //, CellVisitor
 
     MinerDrawable _minerDrawable;
 
+    int lastMouseX;
+    int lastMouseY;
     /// process key event, return true if event is processed.
     override bool onMouseEvent(MouseEvent event) {
         if (event.action == MouseAction.ButtonDown) {
-            if (event.button == MouseButton.Left) {
+            lastMouseX = event.x;
+            lastMouseY = event.y;
+            if (event.button == MouseButton.Left && false) {
                 int x = event.x;
                 int y = event.y;
                 int xindex = 0;
@@ -290,6 +303,28 @@ class UiWidget : VerticalLayout { //, CellVisitor
                         startMoveAnimation(_world.camPosition.direction.right);
                         break;
                 }
+            }
+        } else if (event.action == MouseAction.Move) {
+            if (event.lbutton.isDown) {
+                int deltaX = event.x - lastMouseX;
+                int deltaY = event.y - lastMouseY;
+                int maxshift = width > 100 ? width : 100;
+                float deltaAngleX = deltaX * 45.0f / maxshift;
+                float deltaAngleY = deltaY * 45.0f / maxshift;
+                lastMouseX = event.x;
+                lastMouseY = event.y;
+                float newAngle = _angle + deltaAngleX;
+                if (newAngle < -180)
+                    newAngle += 360;
+                else if (newAngle > 180)
+                    newAngle -= 360;
+                setAngle(newAngle, true);
+                float newAngleY = _yAngle + deltaAngleY;
+                if (newAngleY < -65)
+                    newAngleY = -65;
+                else if (newAngleY > 65)
+                    newAngleY = 65;
+                setYAngle(newAngleY, true);
             }
         } else if (event.action == MouseAction.ButtonUp || event.action == MouseAction.Cancel) {
             stopMoveAnimation();
@@ -440,9 +475,12 @@ class UiWidget : VerticalLayout { //, CellVisitor
 
     World _world;
     vec3 _position;
+    float _directionAngle = 0;
+    float _yAngle = -15;
     float _angle;
     vec3 _animatingPosition;
     float _animatingAngle;
+    float _animatingYAngle;
 
     void setPos(vec3 newPos, bool animateIt = false) {
         if (animateIt) {
@@ -459,6 +497,15 @@ class UiWidget : VerticalLayout { //, CellVisitor
         } else {
             _animatingAngle = newAngle;
             _angle = newAngle;
+        }
+    }
+
+    void setYAngle(float newAngle, bool animateIt = false) {
+        if (animateIt) {
+            _yAngle = newAngle;
+        } else {
+            _animatingYAngle = newAngle;
+            _yAngle = newAngle;
         }
     }
 
@@ -520,6 +567,8 @@ class UiWidget : VerticalLayout { //, CellVisitor
         _cam.setIdentity();
         _cam.translate(_animatingPosition);
         _cam.rotateY(_animatingAngle);
+        _cam.rotateX(_yAngle);
+        
 
         dirLightNode.setIdentity();
         dirLightNode.translate(_animatingPosition);

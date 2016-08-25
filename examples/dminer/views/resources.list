@@ -1,3 +1,4 @@
+#list embedded resources here
 res/i18n/en.ini
 res/i18n/ru.ini
 res/mdpi/cr3_logo.png
@@ -8,3 +9,9 @@ res/skybox_night_top3.png
 res/skybox_night_bottom4.png
 res/skybox_night_front5.png
 res/skybox_night_back6.png
+#res/debug_right.png
+#res/debug_left.png
+#res/debug_top.png
+#res/debug_bottom.png
+#res/debug_front.png
+#res/debug_back.png
