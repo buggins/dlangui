@@ -787,6 +787,7 @@
       <File path="src\dlangui\graphics\scene\node.d" />
       <File path="src\dlangui\graphics\scene\objimport.d" />
       <File path="src\dlangui\graphics\scene\scene3d.d" />
+      <File path="src\dlangui\graphics\scene\skybox.d" />
       <File path="src\dlangui\graphics\scene\transform.d" />
      </Folder>
      <Folder name="xpm">

@@ -92,6 +92,27 @@ class Node3d : Transform {
         destroy(_children.remove(index));
     }
 
+    /// remove and destroy child node (returns true if child is found and removed)
+    bool removeChild(Node3d child) {
+        int index = findChild(child);
+        if (index >= 0) {
+            removeChild(index);
+            return true;
+        }
+        return false;
+    }
+
+    /// find node index, returns -1 if not found
+    int findChild(Node3d node) {
+        if (node is null)
+            return -1;
+        for (int i = 0; i < childCount; i++) {
+            if (child(i) is node)
+                return i;
+        }
+        return -1;
+    }
+
     @property ref ObjectList!Node3d children() { return _children; }
 
     /// parent node

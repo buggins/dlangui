@@ -491,7 +491,7 @@ class Mesh : RefCountedObject {
     }
 
 
-    private void addQuad(ref vec3 v0, ref vec3 v1, ref vec3 v2, ref vec3 v3, ref vec4 color) {
+    void addQuad(ref vec3 v0, ref vec3 v1, ref vec3 v2, ref vec3 v3, ref vec4 color) {
         ushort startVertex = cast(ushort)vertexCount;
         if (hasElement(VertexElementType.NORMAL)) {
             vec3 normal = vec3.crossProduct((v1 - v0), (v3 - v0)).normalized;

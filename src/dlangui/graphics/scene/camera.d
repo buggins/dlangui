@@ -18,11 +18,16 @@ class Camera : Node3d {
 
     protected bool _enabled;
 
+    protected float _far = 100;
+
     this(string ID = null) {
         super(ID);
         _enabled = true;
         setPerspective(4.0f, 3.0f, 45.0f, 0.1f, 100.0f);
     }
+
+    /// returns FAR range of camera
+    @property float farRange() { return _far; }
 
     /// returns true if camera is active (enabled)
     @property bool enabled() { return _enabled; }
@@ -75,12 +80,14 @@ class Camera : Node3d {
 
     /// set orthographic projection
     void setOrtho(float left, float right, float bottom, float top, float near, float far) {
+        _far = far;
         _projectionMatrix.setOrtho(left, right, bottom, top, near, far);
         _dirtyViewProjection = true;
     }
 
     /// set perspective projection
     void setPerspective(float width, float height, float fov, float near, float far) {
+        _far = far;
         _projectionMatrix.setPerspective(fov, width / height, near, far);
         _dirtyViewProjection = true;
     }

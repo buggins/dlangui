@@ -7,6 +7,7 @@ import dlangui.core.types;
 
 import dlangui.core.math3d;
 import dlangui.graphics.scene.node;
+import dlangui.graphics.scene.skybox;
 
 /// Reference counted Scene3d object
 alias Scene3dRef = Ref!Scene3d;
@@ -19,12 +20,23 @@ class Scene3d : Node3d {
 
     protected vec3 _ambientColor;
     protected Camera _activeCamera;
+    protected SkyBox _skyBox;
 
     /// ambient light color
     @property vec3 ambientColor() { return _ambientColor; }
     /// set ambient light color
     @property void ambientColor(const ref vec3 v) { _ambientColor = v; }
 
+    this(string id = null) {
+        super(id);
+        _skyBox = new SkyBox(this);
+    }
+
+    ~this() {
+        destroy(_skyBox);
+    }
+
+    @property SkyBox skyBox() { return _skyBox; }
 
     /// active camera
     override @property Camera activeCamera() {
@@ -53,10 +65,19 @@ class Scene3d : Node3d {
     void drawScene(bool wireframe) {
         _wireframe = wireframe;
         updateAutoboundLights();
+        if (_skyBox.visible) {
+            if (_activeCamera) {
+                _skyBox.translation = _activeCamera.translation;
+                _skyBox.scaling = _activeCamera.farRange * 0.8;
+            }
+            sceneDrawVisitor(_skyBox);
+        }
         visit(this, &sceneDrawVisitor);
     }
 
     protected bool sceneDrawVisitor(Node3d node) {
+        if (!node.visible)
+            return false;
         if (!node.drawable.isNull)
             node.drawable.draw(node, _wireframe);
         return false;
