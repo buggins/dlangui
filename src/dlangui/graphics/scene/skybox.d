@@ -1,5 +1,8 @@
 module dlangui.graphics.scene.skybox;
 
+public import dlangui.core.config;
+static if (ENABLE_OPENGL):
+
 import dlangui.core.math3d;
 import dlangui.graphics.scene.node;
 import dlangui.graphics.scene.model;
