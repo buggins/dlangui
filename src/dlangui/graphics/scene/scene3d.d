@@ -71,7 +71,7 @@ class Scene3d : Node3d {
             checkgl!glDisable(GL_CULL_FACE);
             if (_activeCamera) {
                 _skyBox.translation = _activeCamera.translation;
-                _skyBox.scaling = _activeCamera.farRange * 0.9;
+                _skyBox.scaling = _activeCamera.farRange * 0.3;
             }
             visit(_skyBox, &sceneDrawVisitor);
             checkgl!glEnable(GL_DEPTH_TEST);

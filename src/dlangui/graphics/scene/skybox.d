@@ -57,23 +57,23 @@ class SkyBox : Node3d {
         auto p111 = vec3(pos.x+d, pos.y+d, pos.z+d);
 
         final switch(face) with(Face) {
-            case Front:
-                mesh.addQuad(p000, p010, p110, p100, color); // front face
-                break;
             case Back:
-                mesh.addQuad(p101, p111, p011, p001, color); // back face
+                mesh.addQuad(p111, p011, p001, p101, color); // back face
+                break;
+            case Front:
+                mesh.addQuad(p010, p110, p100, p000, color); // front face
                 break;
             case Right:
-                mesh.addQuad(p100, p110, p111, p101, color); // right face
+                mesh.addQuad(p110, p111, p101, p100, color); // right face
                 break;
             case Left:
-                mesh.addQuad(p001, p011, p010, p000, color); // left face
+                mesh.addQuad(p011, p010, p000, p001, color); // left face
                 break;
             case Top:
-                mesh.addQuad(p010, p011, p111, p110, color); // top face
+                mesh.addQuad(p011, p111, p110, p010, color); // top face
                 break;
             case Bottom:
-                mesh.addQuad(p001, p000, p100, p101, color); // bottom face
+                mesh.addQuad(p000, p100, p101, p001, color); // bottom face
                 break;
         }
         Model model = new Model(material, mesh);
