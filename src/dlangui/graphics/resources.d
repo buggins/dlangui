@@ -172,7 +172,7 @@ EmbeddedResource[] embedResource(string resourceName)() {
     } else {
         immutable string name = baseName(resourceName);
     }
-    static if (name.length > 0) {
+    static if (name.length > 0 && !name.startsWith("#")) {
         immutable ubyte[] data = cast(immutable ubyte[])import(name);
         static if (data.length > 0)
             return [EmbeddedResource(name, data)];
