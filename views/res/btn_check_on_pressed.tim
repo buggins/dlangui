@@ -1,0 +1,5 @@
+{
+  text: [ "[X]" ],
+  textColor: [0x808080],
+  backgroundColor: [0x808000]
+}

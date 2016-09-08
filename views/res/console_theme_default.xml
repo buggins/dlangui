@@ -74,8 +74,7 @@
     <style id="CHECKBOX"
         backgroundImageId="@null"
         margins="0,0,0,0"
-        padding="0,0,0,0"
-	focusRectColors="@null"
+        padding="1,0,1,0"
         />
     <style id="CHECKBOX_IMAGE" parent="BUTTON_IMAGE"
         align="Center"
@@ -83,13 +82,13 @@
         />
     <style id="CHECKBOX_LABEL" parent="BUTTON_LABEL"
         align="Left|VCenter"
-	focusRectColors="#000"
+        margins="1,0,0,0"
         >
         <state state_enabled="true" state_hovered="true" textColor="#006080"/>
     </style>
     <style id="RADIOBUTTON" parent="CHECKBOX"
         margins="0,0,0,0"
-        padding="0,0,0,0"
+        padding="1,0,1,0"
         />
     <style id="RADIOBUTTON_IMAGE" parent="CHECKBOX_IMAGE"
         align="Center"
@@ -97,7 +96,7 @@
         />
     <style id="RADIOBUTTON_LABEL" parent="CHECKBOX_LABEL"
         align="Left|VCenter"
-	focusRectColors="#000"
+        margins="1,0,0,0"
         >
         <state state_enabled="true" state_hovered="true" textColor="#006080"/>
     </style>
@@ -191,31 +190,27 @@
         <state state_selected="false" state_window_focused="false" state_hovered="false" textColor="#9c9c9c"/>
     </style>
     <style id="TAB_UP"
-        backgroundColor="#000080"
         layoutWidth="FILL_PARENT"
+        margins="2,0,2,0"
         >
-        <state state_selected="true" backgroundImageId="{' ' 0x000000 stretch}"/>
     </style>
     <style id="TAB_UP_BUTTON_TEXT"
         textColor="#808080"
         align="Center"
         margins="1,0,1,0"
         >
-        <state state_selected="true" state_focused="true" textColor="#000000"/>
-        <state state_selected="true" textColor="#000000"/>
-        <state state_focused="true" textColor="#FFFFFF"/>
+        <state state_selected="true" textColor="#FFFFFF"/>
         <state state_hovered="true" textColor="#808000"/>
     </style>
     <style id="TAB_UP_BUTTON"
-        backgroundImageId="{' ' 0x000000 stretch}"
+        backgroundColor="#000000"
         >
-        <state state_selected="true" backgroundColor="#008000"/>
-        <state state_focused="true" backgroundColor="#800000"/>
+        <state state_selected="true" backgroundColor="#000080"/>
     </style>
     <style id="TAB_HOST"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
-        backgroundColor="#000000"
+        backgroundImageId="{'╔═╗' '║ ║' '╚═╝' bc 0x000080 tc 0xC0C0C0 ninepatch 1 1 1 1 padding 1 1 1 1}"
         />
     <style id="TAB_WIDGET"
         backgroundColor="#000000"

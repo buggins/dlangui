@@ -595,8 +595,8 @@ static if (BACKEND_CONSOLE) {
                     nine ~= 0;
                 if (pad.length < k)
                     pad ~= 0;
-                if (pad[k-1] < nine[k-1])
-                    pad[k-1] = nine[k-1];
+                //if (pad[k-1] < nine[k-1])
+                //    pad[k-1] = nine[k-1];
             }
             _padding = Rect(pad[0], pad[1], pad[2], pad[3]);
             _ninePatch = Rect(nine[0], nine[1], nine[2], nine[3]);
