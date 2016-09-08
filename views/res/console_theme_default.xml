@@ -191,7 +191,7 @@
         <state state_selected="false" state_window_focused="false" state_hovered="false" textColor="#9c9c9c"/>
     </style>
     <style id="TAB_UP"
-        backgroundColor="#000000"
+        backgroundColor="#000080"
         layoutWidth="FILL_PARENT"
         >
         <state state_selected="true" backgroundImageId="{' ' 0x000000 stretch}"/>
@@ -199,6 +199,7 @@
     <style id="TAB_UP_BUTTON_TEXT"
         textColor="#808080"
         align="Center"
+        margins="1,0,1,0"
         >
         <state state_selected="true" state_focused="true" textColor="#000000"/>
         <state state_selected="true" textColor="#000000"/>
@@ -208,7 +209,8 @@
     <style id="TAB_UP_BUTTON"
         backgroundImageId="{' ' 0x000000 stretch}"
         >
-        <state state_selected="true" backgroundImageId="{' ' 0x808080 stretch}"/>
+        <state state_selected="true" backgroundColor="#008000"/>
+        <state state_focused="true" backgroundColor="#800000"/>
     </style>
     <style id="TAB_HOST"
         layoutWidth="FILL_PARENT"
