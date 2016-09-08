@@ -149,17 +149,14 @@ class ConsolePlatform : Platform {
         _needRedraw = false;
     }
     protected bool onInputIdle() {
+        checkClosedWindows();
         redraw();
         _console.flush();
         return false;
     }
 
-    /**
-    * close window
-    * 
-    * Closes window earlier created with createWindow()
-    */
-    override void closeWindow(Window w) {
+    protected Window[] _windowsToClose;
+    protected void handleCloseWindow(Window w) {
         for (int i = 0; i < _windowList.length; i++) {
             if (_windowList[i] is w) {
                 for (int j = i; j + 1 < _windowList.length; j++)
@@ -170,6 +167,21 @@ class ConsolePlatform : Platform {
                 return;
             }
         }
+    }
+
+    protected void checkClosedWindows() {
+        for (int i = 0; i < _windowsToClose.length; i++) {
+            handleCloseWindow(_windowsToClose[i]);
+        }
+        _windowsToClose.length = 0;
+    }
+    /**
+    * close window
+    * 
+    * Closes window earlier created with createWindow()
+    */
+    override void closeWindow(Window w) {
+        _windowsToClose ~= w;
     }
     /**
     * Starts application message loop.
@@ -268,8 +280,8 @@ class ConsoleDrawBuf : DrawBuf {
         RGB(128,0,0),
         RGB(128,0,128),
         RGB(128,128,0),
-        RGB(128,128,128),
         RGB(192,192,192),
+        RGB(0x7c,0x7c,0x7c), // ligth gray
         RGB(0,0,255),
         RGB(0,255,0),
         RGB(0,255,255),
