@@ -73,13 +73,13 @@
         />
     <style id="CHECKBOX"
         backgroundImageId="@null"
-        margins="2,2,2,2"
-        padding="2,2,2,2"
+        margins="0,0,0,0"
+        padding="0,0,0,0"
 	focusRectColors="@null"
         />
     <style id="CHECKBOX_IMAGE" parent="BUTTON_IMAGE"
         align="Center"
-        margins="2,2,2,2"
+        margins="0,0,0,0"
         />
     <style id="CHECKBOX_LABEL" parent="BUTTON_LABEL"
         align="Left|VCenter"
@@ -88,12 +88,12 @@
         <state state_enabled="true" state_hovered="true" textColor="#006080"/>
     </style>
     <style id="RADIOBUTTON" parent="CHECKBOX"
-        margins="2,2,2,2"
-        padding="2,2,2,2"
+        margins="0,0,0,0"
+        padding="0,0,0,0"
         />
     <style id="RADIOBUTTON_IMAGE" parent="CHECKBOX_IMAGE"
         align="Center"
-        margins="2,2,2,2"
+        margins="0,0,0,0"
         />
     <style id="RADIOBUTTON_LABEL" parent="CHECKBOX_LABEL"
         align="Left|VCenter"
@@ -119,12 +119,12 @@
     <style id="HSPACER"
         layoutWidth="FILL_PARENT"
         layoutWeight="100"
-        minWidth="5"
+        minWidth="1"
         />
     <style id="VSPACER"
         layoutHeight="FILL_PARENT"
         layoutWeight="100"
-        minHeight="5"
+        minHeight="1"
         />
     <style id="BUTTON_NOMARGINS"
         backgroundImageId="btn_background"
@@ -327,8 +327,8 @@
         />
     <style id="STRING_GRID"
         backgroundImageId="editbox_background"
-        padding="2,2,2,2"
-        margins="2,2,2,2"
+        padding="0,0,0,0"
+        margins="0,0,0,0"
         minWidth="100"
         minHeight="60"
         layoutWidth="FILL_PARENT"
@@ -338,87 +338,87 @@
         backgroundColor="#D0D0D0"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
-        padding="1,1,1,1"
+        padding="0,0,0,0"
 	layoutWeight="0"
         />
     <style id="DOCK_HOST"
         backgroundColor="#eceffa"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
-        padding="2,2,2,2"
+        padding="0,0,0,0"
         />
     <style id="DOCK_HOST_BODY"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         padding="0,0,0,0"
-        margins="3,3,3,3"
+        margins="0,0,0,0"
         />
     <style id="DOCK_WINDOW"
         backgroundImageId="dock_window_background"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         padding="0,0,0,0"
-        margins="2,2,2,2"
+        margins="0,0,0,0"
         />
     <style id="FLOATING_WINDOW"
         backgroundImageId="popup_window_background"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
-        padding="1,1,1,1"
-        margins="4,4,4,4"
+        padding="0,0,0,0"
+        margins="0,0,0,0"
         />
     <style id="DOCK_WINDOW_CAPTION"
         backgroundImageId="dock_window_caption_background"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
-        padding="1,1,1,1"
+        padding="0,0,0,0"
         />
     <style id="DOCK_WINDOW_CAPTION_LABEL"
         textColor="#000000"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
-        padding="3,3,3,3"
+        padding="0,0,0,0"
         align="Left|VCenter"
         />
     <style id="DOCK_WINDOW_BODY"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
-        padding="3,3,3,3"
+        padding="0,0,0,0"
         />
 
     <style id="TOOLBAR_HOST"
         backgroundImageId="toolbar_host_background"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
-        padding="1,1,1,1"
+        padding="0,0,0,0"
         />
     <style id="TOOLTIP"
         backgroundImageId="tooltip_background"
         layoutWidth="WRAP_CONTENT"
         layoutHeight="WRAP_CONTENT"
-        margins="2,7,2,1"
-        padding="3,3,3,3"
+        margins="0,0,0,0"
+        padding="1,0,1,0"
 	textColor="#404040"
         />
     <style id="TOOLBAR"
         backgroundImageId="toolbar_background"
         layoutWidth="WRAP_CONTENT"
         layoutHeight="WRAP_CONTENT"
-        margins="2,1,2,1"
+        margins="1,0,1,0"
         />
     <style id="TOOLBAR_BUTTON"
         backgroundImageId="toolbar_button_background"
         align="Center"
-        margins="1,1,1,1"
-        padding="2,2,2,2"
+        margins="0,0,0,0"
+        padding="0,0,0,0"
         >
         <state state_enabled="false" alpha="160" backgroundImageId="@null"/>
     </style>
     <style id="TOOLBAR_CONTROL"
         backgroundImageId="toolbar_control_background"
         align="Center"
-        margins="1,1,1,1"
-        padding="2,2,2,2"
+        margins="0,0,0,0"
+        padding="0,0,0,0"
         >
         <state state_enabled="false" alpha="160" backgroundImageId="@null"/>
     </style>
@@ -427,8 +427,8 @@
         />
 
     <style id="TREE_ITEM"
-        minWidth="100"
-        minHeight="14"
+        minWidth="8"
+        minHeight="1"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
         >
@@ -456,20 +456,20 @@
     </style>
 
     <style id="SETTINGS_TREE"
-        margins="8,8,8,8"
+        margins="0,0,0,0"
         backgroundColor="#FFFFFF"
         layoutWeight="3"
     />
 
     <style id="SETTINGS_PAGES"
-        margins="0,8,8,8"
-        padding="4,4,4,4"
+        margins="0,1,1,1"
+        padding="1,1,1,1"
         layoutWidth="FILL_PARENT"
         layoutWeight="5"
     />
 
     <style id="SETTINGS_PAGE_TITLE"
-        margins="4,4,4,14"
+        margins="1,1,1,2"
 	fontSize="120%"
 	layoutWeight="0"
         layoutWidth="FILL_PARENT"
@@ -478,8 +478,8 @@
     <style id="RESIZER_VERTICAL"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
-	minHeight="7"
-	maxHeight="7"
+	minHeight="1"
+	maxHeight="1"
 	backgroundColor="#E0E0E0">
         <state state_focused="true" backgroundColor="#40C0C000"/>
         <state state_pressed="true" backgroundColor="#4080C000"/>
@@ -489,8 +489,8 @@
     <style id="RESIZER_HORIZONTAL"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
-	minWidth="7"
-	maxWidth="7"
+	minWidth="1"
+	maxWidth="1"
 	backgroundColor="#E0E0E0">
         <state state_focused="true" backgroundColor="#40C0C000"/>
         <state state_pressed="true" backgroundColor="#4080C000"/>
