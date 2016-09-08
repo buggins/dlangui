@@ -298,6 +298,26 @@ class Console {
                 }
                 //printf( "GetConsoleScreenBufferInfo failed: %lu\n", GetLastError());
             }
+            // update console modes
+            immutable DWORD ENABLE_QUICK_EDIT_MODE = 0x0040;
+            immutable DWORD ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004;
+            immutable DWORD ENABLE_LVB_GRID_WORLDWIDE = 0x0010;
+            DWORD mode = 0;
+            GetConsoleMode(_hstdin, &mode);
+            mode = mode & ~ENABLE_ECHO_INPUT;
+            mode = mode & ~ENABLE_LINE_INPUT;
+            mode = mode & ~ENABLE_QUICK_EDIT_MODE;
+            mode |= ENABLE_PROCESSED_INPUT;
+            mode |= ENABLE_MOUSE_INPUT;
+            mode |= ENABLE_WINDOW_INPUT;
+            SetConsoleMode(_hstdin, mode);
+            GetConsoleMode(_hstdout, &mode);
+            mode = mode & ~ENABLE_PROCESSED_OUTPUT;
+            mode = mode & ~ENABLE_WRAP_AT_EOL_OUTPUT;
+            mode = mode & ~ENABLE_VIRTUAL_TERMINAL_PROCESSING;
+            mode |= ENABLE_LVB_GRID_WORLDWIDE;
+            SetConsoleMode(_hstdout, mode);
+
             _cursorX = csbi.dwCursorPosition.X;
             _cursorY = csbi.dwCursorPosition.Y;
             _width = csbi.srWindow.Right - csbi.srWindow.Left + 1; // csbi.dwSize.X;

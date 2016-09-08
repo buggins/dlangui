@@ -3,7 +3,7 @@
         fontSize="1" 
         fontFace="Arial"
         fontFamily="SansSerif"
-        textColor="#808080"
+        textColor="#C0C0C0"
         >
     <color id="window_background" value="#000000"/>
     <color id="dialog_background" value="#EEEEEE"/>
@@ -34,13 +34,14 @@
         backgroundImageId="{' ' bc 0x808080 stretch}"
         align="Center"
         textFlags="UnderlineHotKeys"
-	textColor="#000000"
+	textColor="#FFFFFF"
         margins="0,0,1,0"
+        padding="1,0,1,0"
         >
-        <state state_pressed="true" textColor="#FFFFFF" backgroundImageId="{' ' bc 0xC0C0C0 stretch}"/>
-        <state state_enabled="true" state_focused="true" backgroundImageId="{' ' bc 0xFFFF00 stretch}"/>
-        <state state_enabled="true" state_hovered="true" textColor="#006080"/>
-        <state state_enabled="false" textColor="#80000000"/>
+        <state state_enabled="false" textColor="#C0C0C0" backgroundImageId="{' ' bc 0x808080 stretch}"/>
+        <state state_pressed="true" textColor="#000000" backgroundImageId="{' ' bc 0xC0C0C0 stretch}"/>
+        <state state_focused="true" textColor="#FFFF00" backgroundImageId="{' ' bc 0x808080 stretch}"/>
+        <state state_enabled="true" state_hovered="true" textColor="#FF0000"/>
     </style>
     <style id="BUTTON_TRANSPARENT"
         align="Center"
@@ -54,9 +55,12 @@
         layoutWidth="FILL_PARENT"
         align="Left|VCenter"
         textFlags="UnderlineHotKeys"
+	textColor="#FFFFFF"
         >
         <state state_enabled="false" textColor="#C0C0C0"/>
-        <state state_enabled="true" state_hovered="true" textColor="#006080"/>
+        <state state_pressed="true" textColor="#000000"/>
+        <state state_focused="true" textColor="#FFFF00"/>
+        <state state_enabled="true" state_hovered="true" textColor="#FF0000"/>
     </style>
     <style id="BUTTON_LABEL_LINK" parent="BUTTON_LABEL"
         textColor="#0000C0"
@@ -80,11 +84,14 @@
         align="Center"
         margins="0,0,0,0"
         />
-    <style id="CHECKBOX_LABEL" parent="BUTTON_LABEL"
+    <style id="CHECKBOX_LABEL"
         align="Left|VCenter"
         margins="1,0,0,0"
+	textColor="#C0C0C0"
         >
-        <state state_enabled="true" state_hovered="true" textColor="#006080"/>
+        <state state_enabled="false" textColor="#808080"/>
+        <state state_focused="true" textColor="#FFFF00"/>
+        <state state_enabled="true" state_hovered="true" textColor="#FF0000"/>
     </style>
     <style id="RADIOBUTTON" parent="CHECKBOX"
         margins="0,0,0,0"
@@ -97,8 +104,11 @@
     <style id="RADIOBUTTON_LABEL" parent="CHECKBOX_LABEL"
         align="Left|VCenter"
         margins="1,0,0,0"
+	textColor="#C0C0C0"
         >
-        <state state_enabled="true" state_hovered="true" textColor="#006080"/>
+        <state state_enabled="false" textColor="#808080"/>
+        <state state_focused="true" textColor="#FFFF00"/>
+        <state state_enabled="true" state_hovered="true" textColor="#FF0000"/>
     </style>
     <style id="TEXT"
         margins="0,0,1,0"
