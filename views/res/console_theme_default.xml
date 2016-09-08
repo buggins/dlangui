@@ -43,12 +43,12 @@
         <state state_enabled="false" textColor="#80000000"/>
     </style>
     <style id="BUTTON_TRANSPARENT"
-        backgroundImageId="btn_background_transparent"
         align="Center"
+        margins="0,0,0,0"
         />
     <style id="BUTTON_CHECK_TRANSPARENT"
-        backgroundImageId="btn_background_check_transparent"
         align="Center"
+        margins="0,0,0,0"
         />
     <style id="BUTTON_LABEL"
         layoutWidth="FILL_PARENT"
@@ -170,7 +170,7 @@
         >
     </style>
     <style id="TAB_DOWN_BUTTON_DARK"
-        padding="5,1,1,1"
+        padding="1,0,1,0"
         backgroundImageId="tab_btn_dark_down"
         />
     <style id="TAB_UP_DARK"
@@ -179,7 +179,7 @@
         >
     </style>
     <style id="TAB_UP_BUTTON_DARK"
-        padding="5,1,1,1"
+        padding="1,0,1,0"
         backgroundImageId="tab_btn_dark_up"
         >
         <length id="overlap" value="2"/>
@@ -191,30 +191,32 @@
         <state state_selected="false" state_window_focused="false" state_hovered="false" textColor="#9c9c9c"/>
     </style>
     <style id="TAB_UP"
-        backgroundImageId="tab_up_background"
+        backgroundColor="#000000"
         layoutWidth="FILL_PARENT"
         >
-        <state state_selected="true" backgroundImageId="tab_up_backgrond_selected"/>
+        <state state_selected="true" backgroundImageId="{' ' 0x000000 stretch}"/>
     </style>
     <style id="TAB_UP_BUTTON_TEXT"
-        textColor="#000000"
+        textColor="#808080"
         align="Center"
         >
         <state state_selected="true" state_focused="true" textColor="#000000"/>
         <state state_selected="true" textColor="#000000"/>
-        <state state_focused="true" textColor="#000000"/>
+        <state state_focused="true" textColor="#FFFFFF"/>
         <state state_hovered="true" textColor="#808000"/>
     </style>
     <style id="TAB_UP_BUTTON"
-        backgroundImageId="tab_btn_up"
-        />
+        backgroundImageId="{' ' 0x000000 stretch}"
+        >
+        <state state_selected="true" backgroundImageId="{' ' 0x808080 stretch}"/>
+    </style>
     <style id="TAB_HOST"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
-        backgroundColor="#F0F0F0"
+        backgroundColor="#000000"
         />
     <style id="TAB_WIDGET"
-        backgroundColor="#EEEEEE"
+        backgroundColor="#000000"
         />
 
     <style id="MAIN_MENU"
@@ -283,18 +285,18 @@
 
     <style id="COMBO_BOX"
         backgroundImageId="combobox_background"
-        padding="2,2,2,2"
-        margins="2,2,2,2"
-        minWidth="40"
+        padding="0,0,0,0"
+        margins="0,0,0,0"
+        minWidth="8"
         />
     <style id="COMBO_BOX_BODY"
-        padding="2,2,2,2"
-        minWidth="40"
+        padding="0,0,0,0"
+        minWidth="8"
         align="Left|VCenter"
 	focusRectColors="#000"
         />
     <style id="COMBO_BOX_BUTTON"
-        padding="2,2,2,2"
+        padding="0,0,0,0"
         backgroundImageId="btn_background_transparent"
         align="Center"
         />
@@ -329,8 +331,8 @@
         backgroundImageId="editbox_background"
         padding="0,0,0,0"
         margins="0,0,0,0"
-        minWidth="100"
-        minHeight="60"
+        minWidth="20"
+        minHeight="10"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         />

@@ -266,7 +266,7 @@ class TabControl : WidgetGroupDefaultDrawing {
         _moreButton = new ImageButton("MORE", "tab_more");
         _moreButton.styleId = STYLE_BUTTON_TRANSPARENT;
         _moreButton.mouseEvent = &onMouse;
-        _moreButton.margins(Rect(3,3,3,6));
+        _moreButton.margins(Rect(0,0,0,0));
         _enableCloseButton = true;
         styleId = _tabStyle;
         addChild(_moreButton); // first child is always MORE button, the rest corresponds to tab list

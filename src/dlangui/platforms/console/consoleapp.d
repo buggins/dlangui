@@ -15,11 +15,11 @@ class ConsoleWindow : Window {
     ConsolePlatform _platform;
     ConsoleWindow _parent;
     this(ConsolePlatform platform, dstring caption, Window parent, uint flags) {
+        super();
         _platform = platform;
         _parent = cast(ConsoleWindow)parent;
         _dx = _platform.console.width;
         _dy = _platform.console.height;
-        backgroundColor = 0x808080;
     }
     /// show window
     override void show() {
