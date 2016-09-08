@@ -532,7 +532,7 @@ static if (BACKEND_CONSOLE) {
                 TextColor,
                 Padding,
                 NinePatch,
-            };
+            }
             Mode mode = Mode.Text;
             uint[] bg;
             uint[] col;

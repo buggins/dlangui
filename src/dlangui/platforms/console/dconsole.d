@@ -451,7 +451,7 @@ class Console {
         } else {
             import core.stdc.stdio;
             import core.stdc.string;
-            char buf[50];
+            char[50] buf;
             sprintf(buf.ptr, "\x1b[%d;%dH", y + 1, x + 1);
             rawWrite(cast(string)(buf[0 .. strlen(buf.ptr)]));
         }
@@ -528,7 +528,7 @@ class Console {
                 return;
             import core.stdc.stdio;
             import core.stdc.string;
-            char buf[50];
+            char[50] buf;
             if (textCol != lastTextColor && bgCol != lastBackgroundColor)
                 sprintf(buf.ptr, "\x1b[%d;%dm", textCol, bgCol);
             else if (textCol != lastTextColor && bgCol == lastBackgroundColor)

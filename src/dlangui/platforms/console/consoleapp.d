@@ -260,7 +260,7 @@ class ConsoleDrawBuf : DrawBuf {
             return dr + dg + db;
         }
     }
-    static immutable RGB CONSOLE_COLORS_RGB[16] = [
+    static immutable RGB[16] CONSOLE_COLORS_RGB = [
         RGB(0,0,0),
         RGB(0,0,128),
         RGB(0,128,0),
