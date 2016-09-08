@@ -85,14 +85,18 @@ struct FileFilterEntry {
     }
 }
 
-version (Windows) {
-    static if (BACKEND_SDL) {
-        __gshared bool SHOW_FILE_DIALOG_IN_POPUP = false;
+static if (BACKEND_CONSOLE) {
+    __gshared bool SHOW_FILE_DIALOG_IN_POPUP = true;
+} else {
+    version (Windows) {
+        static if (BACKEND_SDL) {
+            __gshared bool SHOW_FILE_DIALOG_IN_POPUP = false;
+        } else {
+            __gshared bool SHOW_FILE_DIALOG_IN_POPUP = false;
+        }
     } else {
         __gshared bool SHOW_FILE_DIALOG_IN_POPUP = false;
     }
-} else {
-    __gshared bool SHOW_FILE_DIALOG_IN_POPUP = false;
 }
 
 /// File open / save dialog
@@ -314,6 +318,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         WidgetListAdapter adapter = new WidgetListAdapter();
         foreach(ref RootEntry root; _roots) {
             ImageTextButton btn = new ImageTextButton(null, root.icon, root.label);
+            static if (BACKEND_CONSOLE) btn.margins = Rect(1, 1, 0, 0);
             btn.orientation = Orientation.Vertical;
             btn.styleId = STYLE_TRANSPARENT_BUTTON_BACKGROUND;
             btn.focusable = false;
@@ -433,7 +438,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     override void initialize() {
         _roots = getRootPaths() ~ getBookmarkPaths();
 
-        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).minWidth(600);
+        layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).minWidth(BACKEND_CONSOLE ? 50 : 600);
         //minHeight = 400;
 
         LinearLayout content = new HorizontalLayout("dlgcontent");
@@ -442,7 +447,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
         leftPanel = new VerticalLayout("places");
         leftPanel.addChild(createRootsList());
-        leftPanel.layoutHeight(FILL_PARENT).minWidth(40);
+        leftPanel.layoutHeight(FILL_PARENT).minWidth(BACKEND_CONSOLE ? 7 : 40);
 
         rightPanel = new VerticalLayout("main");
         rightPanel.layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT);
@@ -659,6 +664,8 @@ class FilePathPanelButtons : WidgetGroupDefaultDrawing {
         int reservedForEmptySpace = parentWidth / 20;
         if (reservedForEmptySpace > 40)
             reservedForEmptySpace = 40;
+        if (reservedForEmptySpace < 4)
+            reservedForEmptySpace = 4;
 
         Point sz;
         sz.x += reservedForEmptySpace;
@@ -694,6 +701,8 @@ class FilePathPanelButtons : WidgetGroupDefaultDrawing {
         int reservedForEmptySpace = rc.width / 20;
         if (reservedForEmptySpace > 40)
             reservedForEmptySpace = 40;
+        if (reservedForEmptySpace < 4)
+            reservedForEmptySpace = 4;
         int maxw = rc.width - reservedForEmptySpace;
         int totalw = 0;
         int visibleItems = 0;
@@ -813,7 +822,7 @@ class FileNameEditLine : HorizontalLayout {
     this(string ID = null) {
         super(ID);
         _edFileName = new EditLine("FileNameEditLine_edFileName");
-        _edFileName.minWidth(200);
+        _edFileName.minWidth(BACKEND_CONSOLE ? 16 : 200);
         _btn = new Button("FileNameEditLine_btnFile", "..."d);
         _btn.styleId = STYLE_BUTTON_NOMARGINS;
         _btn.layoutWeight = 0;

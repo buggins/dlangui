@@ -370,7 +370,7 @@
         margins="0,0,0,0"
         />
     <style id="FLOATING_WINDOW"
-        backgroundImageId="popup_window_background"
+        backgroundImageId="{'╔═╗' '║ ║' '╚═╝' bc 0x000000 tc 0xC0C0C0 ninepatch 1 1 1 1 padding 2 2 2 2}"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         padding="0,0,0,0"

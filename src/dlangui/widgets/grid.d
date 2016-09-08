@@ -1155,7 +1155,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     protected Point measureCell(int x, int y) {
         // override it!
-        return Point(80, 20);
+        return Point(BACKEND_CONSOLE ? 5 : 80, BACKEND_CONSOLE ? 1 : 20);
     }
 
     protected int measureColWidth(int x) {
@@ -1165,8 +1165,10 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             if (m < sz.x)
                 m = sz.x;
         }
-        if (m < 10)
-            m = 10; // TODO: use min size
+        static if (BACKEND_GUI) {
+            if (m < 10)
+                m = 10; // TODO: use min size
+        }
         return m;
     }
 
@@ -1177,13 +1179,15 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             if (m < sz.y)
                 m = sz.y;
         }
-        if (m < 12)
-            m = 12; // TODO: use min size
+        static if (BACKEND_GUI) {
+            if (m < 12)
+                m = 12; // TODO: use min size
+        }
         return m;
     }
 
     void autoFitColumnWidth(int i) {
-        _colWidths[i] = (i < _headerCols && !_showRowHeaders) ? 0 : measureColWidth(i) + 5;
+        _colWidths[i] = (i < _headerCols && !_showRowHeaders) ? 0 : measureColWidth(i) + (BACKEND_CONSOLE ? 1 : 5);
     }
 
     /// extend specified column width to fit client area if grid width
@@ -1204,7 +1208,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     }
 
     void autoFitRowHeight(int i) {
-        _rowHeights[i] = (i < _headerRows && !_showColHeaders) ? 0 : measureRowHeight(i) + 2;
+        _rowHeights[i] = (i < _headerRows && !_showColHeaders) ? 0 : measureRowHeight(i) + (BACKEND_CONSOLE ? 0 : 2);
     }
 
     void autoFitRowHeights() {
@@ -1221,8 +1225,9 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         super(ID, hscrollbarMode, vscrollbarMode);
         _headerCols = 1;
         _headerRows = 1;
-        _defRowHeight = pointsToPixels(16);
-        _defColumnWidth = 100;
+        _defRowHeight = BACKEND_CONSOLE ? 1 : pointsToPixels(16);
+        _defColumnWidth = BACKEND_CONSOLE ? 5 : 100;
+
         _showColHeaders = true;
         _showRowHeaders = true;
         acceleratorMap.add( [
@@ -1375,19 +1380,26 @@ class StringGridWidget : StringGridWidgetBase {
         if (_customCellAdapter && _customCellAdapter.isCustomCell(col, row)) {
             return _customCellAdapter.drawCell(buf, rc, col, row);
         }
-        rc.shrink(2, 1);
+        if (BACKEND_GUI) 
+            rc.shrink(2, 1);
+        else 
+            rc.right--;
         FontRef fnt = font;
         dstring txt = cellText(col, row);
         Point sz = fnt.textSize(txt);
         Align ha = Align.Left;
         //if (sz.y < rc.height)
         //    applyAlign(rc, sz, ha, Align.VCenter);
-        fnt.drawText(buf, rc.left + 1, rc.top + 1, txt, textColor);
+        int offset = BACKEND_CONSOLE ? 0 : 1;
+        fnt.drawText(buf, rc.left + offset, rc.top + offset, txt, textColor);
     }
 
     /// draw cell content
     protected override void drawHeaderCell(DrawBuf buf, Rect rc, int col, int row) {
-        rc.shrink(2, 1);
+        if (BACKEND_GUI) 
+            rc.shrink(2, 1);
+        else 
+            rc.right--;
         FontRef fnt = font;
         dstring txt;
         if (row < 0 && col >= 0)
@@ -1403,7 +1415,8 @@ class StringGridWidget : StringGridWidgetBase {
         if (row < 0)
             ha = Align.HCenter;
         applyAlign(rc, sz, ha, Align.VCenter);
-        fnt.drawText(buf, rc.left + 1, rc.top + 1, txt, textColor);
+        int offset = BACKEND_CONSOLE ? 0 : 1;
+        fnt.drawText(buf, rc.left + offset, rc.top + offset, txt, textColor);
     }
 
     /// draw cell background

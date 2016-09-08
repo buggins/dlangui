@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+VisualStudioVersion = 14.0.25420.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dlangui", "dlangui-msvc.visualdproj", "{52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5}"
 EndProject
@@ -163,10 +163,10 @@ Global
 		{954B6A84-1EEC-42B0-B215-2A17842B1101}.Unittest|Win32.Build.0 = Release|Win32
 		{954B6A84-1EEC-42B0-B215-2A17842B1101}.Unittest|x64.ActiveCfg = Release|x64
 		{954B6A84-1EEC-42B0-B215-2A17842B1101}.Unittest|x64.Build.0 = Release|x64
-		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.ConsoleDebug|Win32.ActiveCfg = ConsoleDebug|Win32
-		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.ConsoleDebug|Win32.Build.0 = ConsoleDebug|Win32
-		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.ConsoleDebug|x64.ActiveCfg = ConsoleDebug|x64
-		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.ConsoleDebug|x64.Build.0 = ConsoleDebug|x64
+		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.ConsoleDebug|Win32.ActiveCfg = Debug|Win32
+		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.ConsoleDebug|Win32.Build.0 = Debug|Win32
+		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.ConsoleDebug|x64.ActiveCfg = Debug|x64
+		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.ConsoleDebug|x64.Build.0 = Debug|x64
 		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.Debug|Win32.ActiveCfg = Debug|Win32
 		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.Debug|Win32.Build.0 = Debug|Win32
 		{DA4E9F22-21EB-4A71-AF1F-3B5BC370CBA0}.Debug|x64.ActiveCfg = Debug|x64
