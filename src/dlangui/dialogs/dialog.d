@@ -87,8 +87,10 @@ class Dialog : VerticalLayout {
     /// set icon resource id
     @property Dialog windowIcon(string iconResourceId) {
         _icon = iconResourceId;
-        if (_window && _icon)
-            _window.windowIcon = drawableCache.getImage(_icon);
+        static if (BACKEND_GUI) {
+            if (_window && _icon)
+                _window.windowIcon = drawableCache.getImage(_icon);
+        }
         return this;
     }
 
@@ -198,8 +200,10 @@ class Dialog : VerticalLayout {
             _popup.flags(PopupFlags.Modal);
         } else {
             _window = Platform.instance.createWindow(_caption, _parentWindow, wflags, _initialWidth, _initialHeight);
-            if (_window && _icon)
-                _window.windowIcon = drawableCache.getImage(_icon);
+            static if (BACKEND_GUI) {
+                if (_window && _icon)
+                    _window.windowIcon = drawableCache.getImage(_icon);
+            }
             _window.backgroundColor = currentTheme.customColor("dialog_background");
             _window.mainWidget = this;
             _window.show();

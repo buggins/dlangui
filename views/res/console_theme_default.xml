@@ -1,0 +1,501 @@
+<?xml version="1.0" encoding="utf-8"?>
+<theme id="theme_default" 
+        fontSize="1" 
+        fontFace="Arial"
+        fontFamily="SansSerif"
+        textColor="#808080"
+        >
+    <color id="window_background" value="#000000"/>
+    <color id="dialog_background" value="#EEEEEE"/>
+    <color id="edit_background" value="#FFFFFF"/>
+    <color id="edit_caret" value="#000000"/>
+    <color id="edit_caret_replace" value="#808080FF"/>
+    <color id="editor_matching_bracket_highlight" value="#60FFE0B0"/>
+    <color id="editor_selection_focused" value="#B060A0FF"/>
+    <color id="editor_selection_normal" value="#D060A0FF"/>
+    <color id="editor_left_pane_background" value="#F4F4F4"/>
+    <color id="editor_left_pane_background2" value="#FFFFFF"/>
+    <color id="editor_left_pane_background3" value="#F0F0F0"/>
+    <color id="editor_left_pane_line_number_text" value="#4060D0"/>
+    <color id="editor_left_pane_line_number_background" value="#F8F8F8"/>
+    <color id="editor_left_pane_line_icon_color_breakpoint" value="#FF0000"/>
+    <color id="editor_left_pane_line_icon_color_bookmark" value="#0000FF"/>
+    <color id="editor_left_pane_line_icon_color_error" value="#80FF0000"/>
+
+    <color id="grid_selection_color" value="#804040FF"/>
+    <color id="grid_selection_color_row" value="#C0A0B0FF"/>
+    <color id="grid_cell_background_fixed" value="#C0E0E0E0"/>
+    <color id="grid_cell_border_color" value="#C0C0C0C0"/>
+    <color id="grid_cell_border_color_header" value="#C0202020"/>
+    <color id="grid_cell_background_header" value="#C0909090"/>
+    <color id="grid_cell_background_header_selected" value="#80FFC040"/>
+
+    <style id="BUTTON"
+        backgroundImageId="{' ' bc 0x808080 stretch}"
+        align="Center"
+        textFlags="UnderlineHotKeys"
+	textColor="#000000"
+        margins="0,0,1,0"
+        >
+        <state state_pressed="true" textColor="#FFFFFF" backgroundImageId="{' ' bc 0xC0C0C0 stretch}"/>
+        <state state_enabled="true" state_focused="true" backgroundImageId="{' ' bc 0xFFFF00 stretch}"/>
+        <state state_enabled="true" state_hovered="true" textColor="#006080"/>
+        <state state_enabled="false" textColor="#80000000"/>
+    </style>
+    <style id="BUTTON_TRANSPARENT"
+        backgroundImageId="btn_background_transparent"
+        align="Center"
+        />
+    <style id="BUTTON_CHECK_TRANSPARENT"
+        backgroundImageId="btn_background_check_transparent"
+        align="Center"
+        />
+    <style id="BUTTON_LABEL"
+        layoutWidth="FILL_PARENT"
+        align="Left|VCenter"
+        textFlags="UnderlineHotKeys"
+        >
+        <state state_enabled="false" textColor="#C0C0C0"/>
+        <state state_enabled="true" state_hovered="true" textColor="#006080"/>
+    </style>
+    <style id="BUTTON_LABEL_LINK" parent="BUTTON_LABEL"
+        textColor="#0000C0"
+        >
+        <state state_enabled="false" textColor="#60C0C0FF"/>
+        <state state_enabled="true" state_hovered="true" textColor="#8080FF" textFlags="Underline"/>
+    </style>
+    <style id="BUTTON_IMAGE"
+        align="Center"
+        />
+    <style id="SWITCH"
+        align="Center"
+        backgroundImageId="switch"
+        />
+    <style id="CHECKBOX"
+        backgroundImageId="@null"
+        margins="2,2,2,2"
+        padding="2,2,2,2"
+	focusRectColors="@null"
+        />
+    <style id="CHECKBOX_IMAGE" parent="BUTTON_IMAGE"
+        align="Center"
+        margins="2,2,2,2"
+        />
+    <style id="CHECKBOX_LABEL" parent="BUTTON_LABEL"
+        align="Left|VCenter"
+	focusRectColors="#000"
+        >
+        <state state_enabled="true" state_hovered="true" textColor="#006080"/>
+    </style>
+    <style id="RADIOBUTTON" parent="CHECKBOX"
+        margins="2,2,2,2"
+        padding="2,2,2,2"
+        />
+    <style id="RADIOBUTTON_IMAGE" parent="CHECKBOX_IMAGE"
+        align="Center"
+        margins="2,2,2,2"
+        />
+    <style id="RADIOBUTTON_LABEL" parent="CHECKBOX_LABEL"
+        align="Left|VCenter"
+	focusRectColors="#000"
+        >
+        <state state_enabled="true" state_hovered="true" textColor="#006080"/>
+    </style>
+    <style id="TEXT"
+        margins="0,0,1,0"
+        padding="1,0,1,0"
+        align="Left|VCenter"
+        >
+        <state state_enabled="false" textColor="#A0000000"/>
+    </style>
+    <style id="MULTILINE_TEXT"
+        margins="0,0,0,0"
+        padding="0,0,0,0"
+        align="Left|VCenter"
+        maxLines = "0"
+        >
+        <state state_enabled="false" textColor="#A0000000"/>
+    </style>
+    <style id="HSPACER"
+        layoutWidth="FILL_PARENT"
+        layoutWeight="100"
+        minWidth="5"
+        />
+    <style id="VSPACER"
+        layoutHeight="FILL_PARENT"
+        layoutWeight="100"
+        minHeight="5"
+        />
+    <style id="BUTTON_NOMARGINS"
+        backgroundImageId="btn_background"
+        align="Center"
+        />
+    <color id="sample_color_rgb" value="#8CF"/>
+    <color id="sample_color_argb" value="#48CF"/>
+    <color id="sample_color_rrggbb" value="#80C0F0"/>
+    <color id="sample_color_aarrggbb" value="#4080C0F0"/>
+    <drawable id="btn_check" value="btn_check"/>
+    <drawable id="btn_radio" value="btn_radio"/>
+    <drawable id="scrollbar_button_up" value="scrollbar_btn_up"/>
+    <drawable id="scrollbar_button_down" value="scrollbar_btn_down"/>
+    <drawable id="scrollbar_button_left" value="scrollbar_btn_left"/>
+    <drawable id="scrollbar_button_right" value="scrollbar_btn_right"/>
+    <drawable id="scrollbar_indicator_vertical" value="scrollbar_indicator_vertical"/>
+    <drawable id="scrollbar_indicator_horizontal" value="scrollbar_indicator_horizontal"/>
+    <style id="SCROLLBAR"
+        align="Center"
+        />
+    <style id="SCROLLBAR_BUTTON"
+        backgroundImageId="{' ' bc 0x808000 stretch}"
+        align="Center"
+        >
+        <state state_pressed="true" backgroundImageId="{' ' bc 0x808080 stretch}"/>
+    </style>
+    <style id="SCROLLBAR_BUTTON_TRANSPARENT"
+        backgroundImageId="{' ' stretch}"
+        align="Center"
+        />
+    <style id="SLIDER"
+        />
+    <style id="PAGE_SCROLL"
+        backgroundImageId="{'░' 0x808000 stretch}"
+        >
+        <state state_pressed="true" backgroundImageId="{'░' 0x808080 stretch}"/>
+        <state state_hovered="true" backgroundImageId="{'░' 0x808000 stretch}"/>
+    </style>
+
+    <style id="TAB_DOWN_DARK"
+        backgroundImageId="dock_window_caption_background_down"
+        layoutWidth="FILL_PARENT"
+        >
+    </style>
+    <style id="TAB_DOWN_BUTTON_DARK"
+        padding="5,1,1,1"
+        backgroundImageId="tab_btn_dark_down"
+        />
+    <style id="TAB_UP_DARK"
+        backgroundImageId="dock_window_caption_background"
+        layoutWidth="FILL_PARENT"
+        >
+    </style>
+    <style id="TAB_UP_BUTTON_DARK"
+        padding="5,1,1,1"
+        backgroundImageId="tab_btn_dark_up"
+        >
+        <length id="overlap" value="2"/>
+    </style>
+    <style id="TAB_UP_BUTTON_DARK_TEXT"
+        textColor="#000000"
+        align="Center"
+        >
+        <state state_selected="false" state_window_focused="false" state_hovered="false" textColor="#9c9c9c"/>
+    </style>
+    <style id="TAB_UP"
+        backgroundImageId="tab_up_background"
+        layoutWidth="FILL_PARENT"
+        >
+        <state state_selected="true" backgroundImageId="tab_up_backgrond_selected"/>
+    </style>
+    <style id="TAB_UP_BUTTON_TEXT"
+        textColor="#000000"
+        align="Center"
+        >
+        <state state_selected="true" state_focused="true" textColor="#000000"/>
+        <state state_selected="true" textColor="#000000"/>
+        <state state_focused="true" textColor="#000000"/>
+        <state state_hovered="true" textColor="#808000"/>
+    </style>
+    <style id="TAB_UP_BUTTON"
+        backgroundImageId="tab_btn_up"
+        />
+    <style id="TAB_HOST"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        backgroundColor="#F0F0F0"
+        />
+    <style id="TAB_WIDGET"
+        backgroundColor="#EEEEEE"
+        />
+
+    <style id="MAIN_MENU"
+        layoutWidth="FILL_PARENT"
+        backgroundImageId="{' ' bc 0x808080 stretch}"
+	layoutWeight="0"
+	textColor="#000000"
+        />
+    <style id="MAIN_MENU_ITEM"
+        padding="0,0,0,0"
+        backgroundImageId="{' ' bc 0x808080 stretch}"
+        textFlags="Parent"
+        >
+        <state state_selected="true" backgroundImageId="{' ' bc 0xFFFFFF stretch}"/>
+    </style>
+    <style id="MENU_ITEM"
+	textColor="#000000"
+        backgroundImageId="{' ' bc 0x808080 stretch}"
+        padding="0,0,0,0"
+        >
+        <state state_selected="true" backgroundImageId="{' ' bc 0xFFFFFF stretch}"/>
+    </style>
+    <style id="MENU_ICON"
+        margins="0,0,0,0"
+        align="Left|VCenter"
+        >
+        <state state_enabled="false" alpha="160"/>
+    </style>
+    <style id="MENU_LABEL"
+	textColor="#000000"
+        margins="1,0,1,0"
+        align="Left|VCenter"
+        textFlags="UnderlineHotKeys"
+        >
+        <state state_enabled="false" textColor="#C0C0C0"/>
+    </style>
+    <style id="MAIN_MENU_LABEL"
+	textColor="#000000"
+        margins="1,0,1,0"
+        align="Left|VCenter"
+        textFlags="Parent"
+        >
+        <state state_enabled="false" textColor="#C0C0C0"/>
+    </style>
+    <style id="MENU_ACCEL"
+        margins="1,0,1,0"
+        align="Left|VCenter"
+        textColor="#000000"
+        >
+        <state state_enabled="false" textColor="#C0C0C0"/>
+    </style>
+    <style id="TRANSPARENT_BUTTON_BACKGROUND"
+        backgroundImageId="btn_background_transparent"
+        padding="0,0,0,0"
+        />
+    <style id="POPUP_MENU"
+        backgroundImageId="{'╔═╗' '║ ║' '╚═╝' bc 0x808080 tc 0xC0C0C0 ninepatch 1 1 1 1 padding 1 1 1 1}"
+        />
+    <style id="LIST_ITEM"
+        >
+        <state state_pressed="true" backgroundImageId="{'░' 0x808000 stretch}" textColor="#000000"/>
+        <state state_selected="true" state_focused="true" backgroundImageId="{' ' bc 0xFFFF00 stretch}" textColor="#000000"/>
+        <state state_selected="true" backgroundImageId="{' ' bc 0x808080 stretch}" textColor="#000000"/>
+        <state state_hovered="true" textColor="#800080"/>
+    </style>
+
+    <style id="COMBO_BOX"
+        backgroundImageId="combobox_background"
+        padding="2,2,2,2"
+        margins="2,2,2,2"
+        minWidth="40"
+        />
+    <style id="COMBO_BOX_BODY"
+        padding="2,2,2,2"
+        minWidth="40"
+        align="Left|VCenter"
+	focusRectColors="#000"
+        />
+    <style id="COMBO_BOX_BUTTON"
+        padding="2,2,2,2"
+        backgroundImageId="btn_background_transparent"
+        align="Center"
+        />
+
+    <style id="EDIT_LINE"
+        backgroundImageId="{text:[' '], textColor:[0xC0C0C0], backgroundColor:[0xFFFFFFFF], stretch: true}"
+        padding="0,0,0,0"
+        margins="0,0,0,0"
+        minWidth="5"
+        />
+    <style id="EDIT_BOX"
+        fontFace="Menlo,Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console"
+        backgroundImageId="editbox_background"
+        padding="0,0,0,0"
+        margins="0,0,0,0"
+        minWidth="8"
+        minHeight="3"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        />
+    <style id="EDIT_BOX_NO_FRAME"
+        fontFace="Menlo,Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console"
+        backgroundColor="#FFFFFF"
+        padding="0,0,0,0"
+        margins="0,0,0,0"
+        minWidth="8"
+        minHeight="3"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        />
+    <style id="STRING_GRID"
+        backgroundImageId="editbox_background"
+        padding="2,2,2,2"
+        margins="2,2,2,2"
+        minWidth="100"
+        minHeight="60"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        />
+    <style id="STATUS_LINE"
+        backgroundColor="#D0D0D0"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="WRAP_CONTENT"
+        padding="1,1,1,1"
+	layoutWeight="0"
+        />
+    <style id="DOCK_HOST"
+        backgroundColor="#eceffa"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        padding="2,2,2,2"
+        />
+    <style id="DOCK_HOST_BODY"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        padding="0,0,0,0"
+        margins="3,3,3,3"
+        />
+    <style id="DOCK_WINDOW"
+        backgroundImageId="dock_window_background"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        padding="0,0,0,0"
+        margins="2,2,2,2"
+        />
+    <style id="FLOATING_WINDOW"
+        backgroundImageId="popup_window_background"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        padding="1,1,1,1"
+        margins="4,4,4,4"
+        />
+    <style id="DOCK_WINDOW_CAPTION"
+        backgroundImageId="dock_window_caption_background"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="WRAP_CONTENT"
+        padding="1,1,1,1"
+        />
+    <style id="DOCK_WINDOW_CAPTION_LABEL"
+        textColor="#000000"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="WRAP_CONTENT"
+        padding="3,3,3,3"
+        align="Left|VCenter"
+        />
+    <style id="DOCK_WINDOW_BODY"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        padding="3,3,3,3"
+        />
+
+    <style id="TOOLBAR_HOST"
+        backgroundImageId="toolbar_host_background"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="WRAP_CONTENT"
+        padding="1,1,1,1"
+        />
+    <style id="TOOLTIP"
+        backgroundImageId="tooltip_background"
+        layoutWidth="WRAP_CONTENT"
+        layoutHeight="WRAP_CONTENT"
+        margins="2,7,2,1"
+        padding="3,3,3,3"
+	textColor="#404040"
+        />
+    <style id="TOOLBAR"
+        backgroundImageId="toolbar_background"
+        layoutWidth="WRAP_CONTENT"
+        layoutHeight="WRAP_CONTENT"
+        margins="2,1,2,1"
+        />
+    <style id="TOOLBAR_BUTTON"
+        backgroundImageId="toolbar_button_background"
+        align="Center"
+        margins="1,1,1,1"
+        padding="2,2,2,2"
+        >
+        <state state_enabled="false" alpha="160" backgroundImageId="@null"/>
+    </style>
+    <style id="TOOLBAR_CONTROL"
+        backgroundImageId="toolbar_control_background"
+        align="Center"
+        margins="1,1,1,1"
+        padding="2,2,2,2"
+        >
+        <state state_enabled="false" alpha="160" backgroundImageId="@null"/>
+    </style>
+    <style id="TOOLBAR_SEPARATOR"
+        align="Center"
+        />
+
+    <style id="TREE_ITEM"
+        minWidth="100"
+        minHeight="14"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="WRAP_CONTENT"
+        >
+    </style>
+    <style id="TREE_ITEM_EXPAND_ICON"
+        align="Left|VCenter"
+        textFlags="Parent"
+    />
+    <style id="TREE_ITEM_BODY"
+        align="Left|VCenter"
+        textFlags="Parent"
+        backgroundImageId="list_item_background"
+    />
+    <style id="TREE_ITEM_ICON"
+        align="Left|VCenter"
+        textFlags="Parent"
+    />
+    <style id="TREE_ITEM_LABEL"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="WRAP_CONTENT"
+        align="Left|VCenter"
+        textFlags="Parent"
+        >
+        <state state_default="true" fontWeight="bold"/>
+    </style>
+
+    <style id="SETTINGS_TREE"
+        margins="8,8,8,8"
+        backgroundColor="#FFFFFF"
+        layoutWeight="3"
+    />
+
+    <style id="SETTINGS_PAGES"
+        margins="0,8,8,8"
+        padding="4,4,4,4"
+        layoutWidth="FILL_PARENT"
+        layoutWeight="5"
+    />
+
+    <style id="SETTINGS_PAGE_TITLE"
+        margins="4,4,4,14"
+	fontSize="120%"
+	layoutWeight="0"
+        layoutWidth="FILL_PARENT"
+    />
+
+    <style id="RESIZER_VERTICAL"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="WRAP_CONTENT"
+	minHeight="7"
+	maxHeight="7"
+	backgroundColor="#E0E0E0">
+        <state state_focused="true" backgroundColor="#40C0C000"/>
+        <state state_pressed="true" backgroundColor="#4080C000"/>
+        <state state_selected="true" backgroundColor="#00F8F9Fa"/>
+        <state state_hovered="true" backgroundColor="#C0FFFF00"/>
+    </style>
+    <style id="RESIZER_HORIZONTAL"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="WRAP_CONTENT"
+	minWidth="7"
+	maxWidth="7"
+	backgroundColor="#E0E0E0">
+        <state state_focused="true" backgroundColor="#40C0C000"/>
+        <state state_pressed="true" backgroundColor="#4080C000"/>
+        <state state_selected="true" backgroundColor="#00F8F9Fa"/>
+        <state state_hovered="true" backgroundColor="#C0FFFF00"/>
+    </style>
+</theme>
+

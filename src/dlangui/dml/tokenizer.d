@@ -214,9 +214,10 @@ class Tokenizer {
         //skipChar(); // skip "
         bool lastBackslash = false;
         _stringbuf.length = 0;
+        dchar quoteChar = peekChar();
         for(;;) {
             dchar ch = skipChar();
-            if (ch == '\"') {
+            if (ch == quoteChar) { // '\"'
                 if (lastBackslash) {
                     _stringbuf ~= ch;
                     lastBackslash = false;
@@ -411,7 +412,7 @@ class Tokenizer {
             return parseEol();
         if (ch == ' ' || ch == '\t')
             return parseWhiteSpace();
-        if (ch == '\"')
+        if (ch == '\"' || ch == '\'' || ch == '`')
             return parseString();
         if (isAlpha(ch))
             return parseIdent();

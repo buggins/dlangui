@@ -64,56 +64,58 @@ class TimerTest : HorizontalLayout {
     }
 }
 
-class AnimatedDrawable : Drawable {
-    DrawableRef background;
-    this() {
-        background = drawableCache.get("tx_fabric.tiled");
-    }
-    void drawAnimatedRect(DrawBuf buf, uint p, Rect rc, int speedx, int speedy, int sz) {
-        int x = (p * speedx % rc.width);
-        int y = (p * speedy % rc.height);
-        if (x < 0)
-            x += rc.width;
-        if (y < 0)
-            y += rc.height;
-        uint a = 64 + ((p / 2) & 0x7F);
-        uint r = 128 + ((p / 7) & 0x7F);
-        uint g = 128 + ((p / 5) & 0x7F);
-        uint b = 128 + ((p / 3) & 0x7F);
-        uint color = (a << 24) | (r << 16) | (g << 8) | b;
-        buf.fillRect(Rect(rc.left + x, rc.top + y, rc.left + x + sz, rc.top + y + sz), color);
-    }
-    void drawAnimatedIcon(DrawBuf buf, uint p, Rect rc, int speedx, int speedy, string resourceId) {
-        int x = (p * speedx % rc.width);
-        int y = (p * speedy % rc.height);
-        if (x < 0)
-            x += rc.width;
-        if (y < 0)
-            y += rc.height;
-        DrawBufRef image = drawableCache.getImage(resourceId);
-        buf.drawImage(x, y, image.get);
-    }
-    override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
-        background.drawTo(buf, rc, state, cast(int)(animationProgress / 695430), cast(int)(animationProgress / 1500000));
-        drawAnimatedRect(buf, cast(uint)(animationProgress / 295430), rc, 2, 3, 100);
-        drawAnimatedRect(buf, cast(uint)(animationProgress / 312400) + 100, rc, 3, 2, 130);
-        drawAnimatedIcon(buf, cast(uint)(animationProgress / 212400) + 200, rc, -2, 1, "dlangui-logo1");
-        drawAnimatedRect(buf, cast(uint)(animationProgress / 512400) + 300, rc, 2, -2, 200);
-        drawAnimatedRect(buf, cast(uint)(animationProgress / 214230) + 800, rc, 1, 2, 390);
-        drawAnimatedIcon(buf, cast(uint)(animationProgress / 123320) + 900, rc, 1, 2, "cr3_logo");
-        drawAnimatedRect(buf, cast(uint)(animationProgress / 100000) + 100, rc, -1, -1, 120);
-    }
-    @property override int width() {
-        return 1;
-    }
-    @property override int height() {
-        return 1;
-    }
-    ulong animationProgress;
-    void animate(long interval) {
-        animationProgress += interval;
-    }
+static if (BACKEND_GUI) {
+    class AnimatedDrawable : Drawable {
+        DrawableRef background;
+        this() {
+            background = drawableCache.get("tx_fabric.tiled");
+        }
+        void drawAnimatedRect(DrawBuf buf, uint p, Rect rc, int speedx, int speedy, int sz) {
+            int x = (p * speedx % rc.width);
+            int y = (p * speedy % rc.height);
+            if (x < 0)
+                x += rc.width;
+            if (y < 0)
+                y += rc.height;
+            uint a = 64 + ((p / 2) & 0x7F);
+            uint r = 128 + ((p / 7) & 0x7F);
+            uint g = 128 + ((p / 5) & 0x7F);
+            uint b = 128 + ((p / 3) & 0x7F);
+            uint color = (a << 24) | (r << 16) | (g << 8) | b;
+            buf.fillRect(Rect(rc.left + x, rc.top + y, rc.left + x + sz, rc.top + y + sz), color);
+        }
+        void drawAnimatedIcon(DrawBuf buf, uint p, Rect rc, int speedx, int speedy, string resourceId) {
+            int x = (p * speedx % rc.width);
+            int y = (p * speedy % rc.height);
+            if (x < 0)
+                x += rc.width;
+            if (y < 0)
+                y += rc.height;
+            DrawBufRef image = drawableCache.getImage(resourceId);
+            buf.drawImage(x, y, image.get);
+        }
+        override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
+            background.drawTo(buf, rc, state, cast(int)(animationProgress / 695430), cast(int)(animationProgress / 1500000));
+            drawAnimatedRect(buf, cast(uint)(animationProgress / 295430), rc, 2, 3, 100);
+            drawAnimatedRect(buf, cast(uint)(animationProgress / 312400) + 100, rc, 3, 2, 130);
+            drawAnimatedIcon(buf, cast(uint)(animationProgress / 212400) + 200, rc, -2, 1, "dlangui-logo1");
+            drawAnimatedRect(buf, cast(uint)(animationProgress / 512400) + 300, rc, 2, -2, 200);
+            drawAnimatedRect(buf, cast(uint)(animationProgress / 214230) + 800, rc, 1, 2, 390);
+            drawAnimatedIcon(buf, cast(uint)(animationProgress / 123320) + 900, rc, 1, 2, "cr3_logo");
+            drawAnimatedRect(buf, cast(uint)(animationProgress / 100000) + 100, rc, -1, -1, 120);
+        }
+        @property override int width() {
+            return 1;
+        }
+        @property override int height() {
+            return 1;
+        }
+        ulong animationProgress;
+        void animate(long interval) {
+            animationProgress += interval;
+        }
 
+    }
 }
 
 class TextEditorWidget : VerticalLayout {
@@ -127,31 +129,33 @@ class TextEditorWidget : VerticalLayout {
     }
 }
 
-class SampleAnimationWidget : VerticalLayout {
-    AnimatedDrawable drawable;
-    DrawableRef drawableRef;
-    this(string ID) {
-        super(ID);
-        drawable = new AnimatedDrawable();
-        drawableRef = drawable;
-        padding = Rect(20, 20, 20, 20);
-        addChild(new TextWidget(null, "This is TextWidget on top of animated background"d));
-        addChild(new EditLine(null, "This is EditLine on top of animated background"d));
-        addChild(new Button(null, "This is Button on top of animated background"d));
-        addChild(new VSpacer());
-    }
+static if (BACKEND_GUI) {
+    class SampleAnimationWidget : VerticalLayout {
+        AnimatedDrawable drawable;
+        DrawableRef drawableRef;
+        this(string ID) {
+            super(ID);
+            drawable = new AnimatedDrawable();
+            drawableRef = drawable;
+            padding = Rect(20, 20, 20, 20);
+            addChild(new TextWidget(null, "This is TextWidget on top of animated background"d));
+            addChild(new EditLine(null, "This is EditLine on top of animated background"d));
+            addChild(new Button(null, "This is Button on top of animated background"d));
+            addChild(new VSpacer());
+        }
 
-    /// background drawable
-    @property override DrawableRef backgroundDrawable() const {
-        return (cast(SampleAnimationWidget)this).drawableRef;
-    }
+        /// background drawable
+        @property override DrawableRef backgroundDrawable() const {
+            return (cast(SampleAnimationWidget)this).drawableRef;
+        }
     
-    /// returns true is widget is being animated - need to call animate() and redraw
-    @property override bool animating() { return true; }
-    /// animates window; interval is time left from previous draw, in hnsecs (1/10000000 of second)
-    override void animate(long interval) {
-        drawable.animate(interval);
-        invalidate();
+        /// returns true is widget is being animated - need to call animate() and redraw
+        @property override bool animating() { return true; }
+        /// animates window; interval is time left from previous draw, in hnsecs (1/10000000 of second)
+        override void animate(long interval) {
+            drawable.animate(interval);
+            invalidate();
+        }
     }
 }
 
@@ -890,32 +894,34 @@ void main()
         tabs.addTab(treeLayout, "Tree"d);
 
 
-        tabs.addTab((new SampleAnimationWidget("tab6")).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT), "TAB_ANIMATION"c);
+        static if (BACKEND_GUI) {
+            tabs.addTab((new SampleAnimationWidget("tab6")).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT), "TAB_ANIMATION"c);
 
-        CanvasWidget canvas = new CanvasWidget("canvas");
-        canvas.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
-        canvas.onDrawListener = delegate(CanvasWidget canvas, DrawBuf buf, Rect rc) {
-            //Log.w("canvas.onDrawListener clipRect=" ~ to!string(buf.clipRect));
-            buf.fill(0xFFFFFF);
-            int x = rc.left;
-            int y = rc.top;
-            buf.fillRect(Rect(x+20, y+20, x+150, y+200), 0x80FF80);
-            buf.fillRect(Rect(x+90, y+80, x+250, y+250), 0x80FF80FF);
-            canvas.font.drawText(buf, x + 40, y + 50, "fillRect()"d, 0xC080C0);
-            buf.drawFrame(Rect(x + 400, y + 30, x + 550, y + 150), 0x204060, Rect(2,3,4,5), 0x80704020);
-            canvas.font.drawText(buf, x + 400, y + 5, "drawFrame()"d, 0x208020);
-            canvas.font.drawText(buf, x + 300, y + 100, "drawPixel()"d, 0x000080);
-            for (int i = 0; i < 80; i++)
-                buf.drawPixel(x+300 + i * 4, y+140 + i * 3 % 100, 0xFF0000 + i * 2);
-            canvas.font.drawText(buf, x + 200, y + 250, "drawLine()"d, 0x800020);
-            for (int i = 0; i < 40; i+=3)
-                buf.drawLine(Point(x+200 + i * 4, y+290), Point(x+150 + i * 7, y+420 + i * 2), 0x008000 + i * 5);
-        };
-        tabs.addTab(canvas, "TAB_CANVAS"c);
+            CanvasWidget canvas = new CanvasWidget("canvas");
+            canvas.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+            canvas.onDrawListener = delegate(CanvasWidget canvas, DrawBuf buf, Rect rc) {
+                //Log.w("canvas.onDrawListener clipRect=" ~ to!string(buf.clipRect));
+                buf.fill(0xFFFFFF);
+                int x = rc.left;
+                int y = rc.top;
+                buf.fillRect(Rect(x+20, y+20, x+150, y+200), 0x80FF80);
+                buf.fillRect(Rect(x+90, y+80, x+250, y+250), 0x80FF80FF);
+                canvas.font.drawText(buf, x + 40, y + 50, "fillRect()"d, 0xC080C0);
+                buf.drawFrame(Rect(x + 400, y + 30, x + 550, y + 150), 0x204060, Rect(2,3,4,5), 0x80704020);
+                canvas.font.drawText(buf, x + 400, y + 5, "drawFrame()"d, 0x208020);
+                canvas.font.drawText(buf, x + 300, y + 100, "drawPixel()"d, 0x000080);
+                for (int i = 0; i < 80; i++)
+                    buf.drawPixel(x+300 + i * 4, y+140 + i * 3 % 100, 0xFF0000 + i * 2);
+                canvas.font.drawText(buf, x + 200, y + 250, "drawLine()"d, 0x800020);
+                for (int i = 0; i < 40; i+=3)
+                    buf.drawLine(Point(x+200 + i * 4, y+290), Point(x+150 + i * 7, y+420 + i * 2), 0x008000 + i * 5);
+            };
+            tabs.addTab(canvas, "TAB_CANVAS"c);
 
-        static if (ENABLE_OPENGL) {
-            //
-            tabs.addTab(new MyOpenglWidget(), "OpenGL"d);
+            static if (ENABLE_OPENGL) {
+                //
+                tabs.addTab(new MyOpenglWidget(), "OpenGL"d);
+            }
         }
 
         //==========================================================================
@@ -927,7 +933,9 @@ void main()
     } else {
         window.mainWidget = (new Button()).text("sample button");
     }
-    window.windowIcon = drawableCache.getImage("dlangui-logo1");
+    static if (BACKEND_GUI) {
+        window.windowIcon = drawableCache.getImage("dlangui-logo1");
+    }
     window.show();
     //window.windowCaption = "New Window Caption";
     // run message loop

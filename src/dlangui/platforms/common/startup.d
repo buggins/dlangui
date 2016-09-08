@@ -7,6 +7,7 @@ import dlangui.graphics.fonts;
 import dlangui.graphics.resources;
 import dlangui.widgets.widget;
 
+static if (BACKEND_GUI) {
 import dlangui.graphics.ftfonts;
 
 version (Windows) {
@@ -205,12 +206,12 @@ version (Windows) {
         return true;
     }
 }
-
+}
 
 /// initialize logging (for win32 - to file ui.log, for other platforms - stderr; log level is TRACE for debug builds, and WARN for release builds)
 extern (C) void initLogs() {
-    static import std.stdio;
-    version (Windows) {
+    static if (BACKEND_CONSOLE) {
+        static import std.stdio;
         debug {
             Log.setFileLogger(new std.stdio.File("ui.log", "w"));
         } else {
@@ -220,21 +221,34 @@ extern (C) void initLogs() {
                 Log.i("Logging to file ui.log");
             }
         }
-    } else version(Android) {
-        Log.setLogTag("dlangui");
-        Log.setLogLevel(LogLevel.Trace);
     } else {
-        Log.setStderrLogger();
-    }
-    debug {
-        Log.setLogLevel(LogLevel.Trace);
-    } else {
-        version(ForceLogs) {
+        static import std.stdio;
+        version (Windows) {
+            debug {
+                Log.setFileLogger(new std.stdio.File("ui.log", "w"));
+            } else {
+                // no logging unless version ForceLogs is set
+                version(ForceLogs) {
+                    Log.setFileLogger(new std.stdio.File("ui.log", "w"));
+                    Log.i("Logging to file ui.log");
+                }
+            }
+        } else version(Android) {
+            Log.setLogTag("dlangui");
             Log.setLogLevel(LogLevel.Trace);
-            Log.i("Log level: trace");
         } else {
-            Log.setLogLevel(LogLevel.Warn);
-            Log.i("Log level: warn");
+            Log.setStderrLogger();
+        }
+        debug {
+            Log.setLogLevel(LogLevel.Trace);
+        } else {
+            version(ForceLogs) {
+                Log.setLogLevel(LogLevel.Trace);
+                Log.i("Log level: trace");
+            } else {
+                Log.setLogLevel(LogLevel.Warn);
+                Log.i("Log level: warn");
+            }
         }
     }
     Log.i("Logger is initialized");
@@ -275,11 +289,15 @@ extern (C) void initResourceManagers() {
     }
     import dlangui.graphics.resources;
     embedStandardDlangUIResources();
-    _imageCache = new ImageCache();
+    static if (BACKEND_GUI) {
+        _imageCache = new ImageCache();
+    }
     _drawableCache = new DrawableCache();
-    version (Windows) {
-        import dlangui.platforms.windows.win32fonts;
-        initWin32FontsTables();
+    static if (BACKEND_GUI) {
+        version (Windows) {
+            import dlangui.platforms.windows.win32fonts;
+            initWin32FontsTables();
+        }
     }
 
     Log.d("Calling initSharedResourceManagers()");
@@ -291,6 +309,7 @@ extern (C) void initResourceManagers() {
 
     Log.d("Calling registerStandardWidgets()");
     registerStandardWidgets();
+
 
     Log.d("initResourceManagers() -- finished");
 }
@@ -349,7 +368,9 @@ extern (C) void releaseResourcesOnAppExit() {
     
     currentTheme = null;
     drawableCache = null;
-    imageCache = null;
+    static if (BACKEND_GUI) {
+        imageCache = null;
+    }
     FontManager.instance = null;
     
     debug {

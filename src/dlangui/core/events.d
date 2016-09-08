@@ -18,6 +18,8 @@ module dlangui.core.events;
 import dlangui.core.i18n;
 import dlangui.core.collections;
 
+//static if (DLANGUI_GUI) {
+//}
 private import dlangui.widgets.widget;
 
 private import std.string;
@@ -914,6 +916,12 @@ class MouseEvent {
         _y = y;
         _wheelDelta = wheelDelta;
     }
+
+	override @property string toString() {
+		import std.conv;
+		return "MouseEvent(" ~ to!string(_action) ~ ", " ~ to!string(cast(MouseButton)_button) ~ ", " ~ "%04x".format(_flags) ~ ", (" ~ to!string(_x) ~ "," ~ to!string(y) ~ "))";
+	}
+
 }
 
 /// Keyboard actions for KeyEvent
@@ -967,6 +975,7 @@ enum KeyFlag : uint {
 
 /// Key code constants for KeyEvent
 enum KeyCode : uint {
+    NONE = 0,
     /// backspace
     BACK = 8,
     /// tab
@@ -1234,6 +1243,10 @@ class KeyEvent {
         _flags = flags;
         _text = text;
     }
+	override @property string toString() {
+		import std.conv;
+		return "KeyEvent(" ~ to!string(_action) ~ ", " ~ to!string(cast(KeyCode)_keyCode) ~ ", " ~ "%04x".format(_flags) ~ ", \"" ~ toUTF8(_text) ~ "\")";
+	}
 }
 
 /// Scroll bar / slider action codes for ScrollEvent.

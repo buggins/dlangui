@@ -921,24 +921,32 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     protected void startCaretBlinking() {
         if (window) {
-            long ts = currentTimeMillis;
-            if (_caretTimerId) {
-                if (_lastBlinkStartTs + _caretBlingingInterval / 4 > ts)
-                    return; // don't update timer too frequently
-                cancelTimer(_caretTimerId);
+            static if (BACKEND_CONSOLE) {
+                window.caretRect = caretRect;
+            } else {
+                long ts = currentTimeMillis;
+                if (_caretTimerId) {
+                    if (_lastBlinkStartTs + _caretBlingingInterval / 4 > ts)
+                        return; // don't update timer too frequently
+                    cancelTimer(_caretTimerId);
+                }
+                _caretTimerId = setTimer(_caretBlingingInterval / 2);
+                _lastBlinkStartTs = ts;
+                _caretBlinkingPhase = false;
+                invalidate();
             }
-            _caretTimerId = setTimer(_caretBlingingInterval / 2);
-            _lastBlinkStartTs = ts;
-            _caretBlinkingPhase = false;
-            invalidate();
         }
     }
 
     protected void stopCaretBlinking() {
         if (window) {
-            if (_caretTimerId) {
-                cancelTimer(_caretTimerId);
-                _caretTimerId = 0;
+            static if (BACKEND_CONSOLE) {
+                window.caretRect = Rect.init;
+            } else {
+                if (_caretTimerId) {
+                    cancelTimer(_caretTimerId);
+                    _caretTimerId = 0;
+                }
             }
         }
     }
@@ -1666,6 +1674,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [event.text]);
                 _content.performOperation(op, this);
             }
+            if (focused) startCaretBlinking();
             return true;
         }
         if (event.keyCode == KeyCode.SPACE && !readOnly) {
@@ -1674,7 +1683,9 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         //if (event.keyCode == KeyCode.RETURN && !readOnly && !_content.multiline) {
         //    return true;
         //}
-        return super.onKeyEvent(event);
+        bool res = super.onKeyEvent(event);
+        if (focused) startCaretBlinking();
+        return res;
     }
 
     /// Handle Ctrl + Left mouse click on text
@@ -1724,7 +1735,6 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         }
         if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
             setFocus();
-            startCaretBlinking();
             cancelHoverTimer();
             if (event.tripleClick) {
                 selectLineByMouse(event.x - _clientRect.left, event.y - _clientRect.top);
@@ -1737,6 +1747,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 if (event.keyFlags == MouseFlag.Control)
                     onControlClick();
             }
+            startCaretBlinking();
             invalidate();
             return true;
         }

@@ -5,11 +5,10 @@ import dminer.core.blocks;
 import dminer.core.chunk;
 
 version (Android) {
-    const int MAX_VIEW_DISTANCE_BITS = 6;
+    const int MAX_VIEW_DISTANCE = 60;
 } else {
-    const int MAX_VIEW_DISTANCE_BITS = 7;
+    const int MAX_VIEW_DISTANCE = 90;
 }
-const int MAX_VIEW_DISTANCE = (1 << MAX_VIEW_DISTANCE_BITS);
 
 
 class World {

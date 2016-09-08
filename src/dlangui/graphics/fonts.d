@@ -169,7 +169,7 @@ class Font : RefCountedObject {
         return _fixedFontDetection == 1;
     }
 
-    private int _spaceWidth = -1;
+    protected int _spaceWidth = -1;
 
     /// returns true if font is fixed
     @property int spaceWidth() {
@@ -257,7 +257,7 @@ class Font : RefCountedObject {
         return charsMeasured;
     }
 
-    private int[] _textSizeBuffer; // buffer to reuse while measuring strings - to avoid GC
+    protected int[] _textSizeBuffer; // buffer to reuse while measuring strings - to avoid GC
 
     /*************************************************************************
      * Measure text string as single line, returns width and height

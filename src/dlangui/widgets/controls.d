@@ -921,8 +921,10 @@ class ScrollBar : AbstractSlider, OnClickHandler {
             _btnSize = _btnForward.measuredHeight;
         if (_btnSize < _btnBack.measuredHeight)
             _btnSize = _btnBack.measuredHeight;
-        if (_btnSize < 16)
-            _btnSize = 16;
+        static if (BACKEND_GUI) {
+            if (_btnSize < 16)
+                _btnSize = 16;
+        }
         if (_orientation == Orientation.Vertical) {
             // vertical
             sz.x = _btnSize;

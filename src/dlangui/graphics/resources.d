@@ -91,10 +91,14 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 module dlangui.graphics.resources;
 
 import dlangui.core.config;
-import dlangui.graphics.images;
-import dlangui.graphics.drawbuf;
-import dlangui.graphics.colors;
+
 import dlangui.core.logger;
+import dlangui.core.types;
+static if (BACKEND_GUI) {
+    import dlangui.graphics.images;
+}
+import dlangui.graphics.colors;
+import dlangui.graphics.drawbuf;
 import std.file;
 import std.algorithm;
 import std.xml;
@@ -149,11 +153,12 @@ struct EmbeddedResourceList {
         string jpgname = name ~ ".jpg";
         string jpegname = name ~ ".jpeg";
         string xpmname = name ~ ".xpm";
+        string timname = name ~ ".tim";
         // search backwards to allow overriding standard resources (which are added first)
         for (int i = cast(int)list.length - 1; i >= 0; i--) {
             string s = list[i].name;
             if (s.equal(name) || s.equal(xmlname) || s.equal(pngname) || s.equal(png9name) 
-                    || s.equal(jpgname) || s.equal(jpegname) || s.equal(xpmname))
+                    || s.equal(jpgname) || s.equal(jpegname) || s.equal(xpmname) || s.equal(timname))
                 return &list[i];
         }
         return null;
@@ -210,7 +215,11 @@ string[] splitLines(string s) {
 
 /// embed all resources from list
 EmbeddedResource[] embedResourcesFromList(string resourceList)() {
-    return embedResources!(splitLines(import(resourceList)))();
+    static if (BACKEND_CONSOLE) {
+        return embedResources!(splitLines(import("console_" ~ resourceList)))();
+    } else {
+        return embedResources!(splitLines(import(resourceList)))();
+    }
 }
 
 
@@ -257,34 +266,36 @@ class Drawable : RefCountedObject {
     @property Rect padding() { return Rect(0,0,0,0); }
 }
 
-/// Custom drawing inside openGL
-class OpenGLDrawable : Drawable {
+static if (ENABLE_OPENGL) {
+    /// Custom drawing inside openGL
+    class OpenGLDrawable : Drawable {
     
-    private OpenGLDrawableDelegate _drawHandler;
+        private OpenGLDrawableDelegate _drawHandler;
 
-    @property OpenGLDrawableDelegate drawHandler() { return _drawHandler; }
-    @property OpenGLDrawable drawHandler(OpenGLDrawableDelegate handler) { _drawHandler = handler; return this; }
+        @property OpenGLDrawableDelegate drawHandler() { return _drawHandler; }
+        @property OpenGLDrawable drawHandler(OpenGLDrawableDelegate handler) { _drawHandler = handler; return this; }
 
-    this(OpenGLDrawableDelegate drawHandler = null) {
-        _drawHandler = drawHandler;
-    }
-
-    void onDraw(Rect windowRect, Rect rc) {
-        // either override this method or assign draw handler
-        if (_drawHandler) {
-            _drawHandler(windowRect, rc);
+        this(OpenGLDrawableDelegate drawHandler = null) {
+            _drawHandler = drawHandler;
         }
-    }
 
-    override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
-        buf.drawCustomOpenGLScene(rc, &onDraw);
-    }
+        void onDraw(Rect windowRect, Rect rc) {
+            // either override this method or assign draw handler
+            if (_drawHandler) {
+                _drawHandler(windowRect, rc);
+            }
+        }
 
-    override @property int width() {
-        return 20; // dummy size
-    }
-    override @property int height() {
-        return 20; // dummy size
+        override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
+            buf.drawCustomOpenGLScene(rc, &onDraw);
+        }
+
+        override @property int width() {
+            return 20; // dummy size
+        }
+        override @property int height() {
+            return 20; // dummy size
+        }
     }
 }
 
@@ -378,6 +389,26 @@ static uint decodeDimension(string s) {
     return value;
 }
 
+static if (BACKEND_CONSOLE) {
+    /**
+    Sample format:
+    {
+        text: [
+            "╔═╗",
+            "║ ║",
+            "╚═╝"],
+        backgroundColor: [0x000080], // put more values for individual colors of cells
+        textColor: [0xFF0000], // put more values for individual colors of cells
+        ninepatch: [1,1,1,1]
+    }
+    */
+    static Drawable createTextDrawable(string s) {
+        TextDrawable drawable = new TextDrawable(s);
+        if (drawable.width == 0 || drawable.height == 0)
+            return null;
+        return drawable;
+    }
+}
 
 /// decode solid color / gradient / frame drawable from string like #AARRGGBB, e.g. #5599AA
 /// 
@@ -417,6 +448,215 @@ static Drawable createColorDrawable(string s) {
         return new FrameDrawable(values[0], Rect(values[1], values[2], values[3], values[4]), values[5]);
     Log.e("Invalid drawable string format: ", s);
     return new EmptyDrawable(); // invalid format - just return empty drawable
+}
+
+static if (BACKEND_CONSOLE) {
+    /**
+        Text image drawable.
+        Resource file extension: .tim
+        Image format is JSON based. Sample:
+                {
+                    text: [
+                       "╔═╗",
+                       "║ ║",
+                       "╚═╝"],
+                    backgroundColor: [0x000080],
+                    textColor: [0xFF0000],
+                    ninepatch: [1,1,1,1]
+                }
+        
+        Short form:
+
+    {'╔═╗' '║ ║' '╚═╝' bc 0x000080 tc 0xFF0000 ninepatch 1 1 1 1}
+
+    */
+    class TextDrawable : Drawable {
+        import dlangui.platforms.console.consoleapp : ConsoleDrawBuf;
+        private int _width;
+        private int _height;
+        private dchar[] _text;
+        private uint[] _bgColors;
+        private uint[] _textColors;
+        private Rect _padding;
+        private Rect _ninePatch;
+        private bool _tiled;
+        private bool _stretched;
+        private bool _hasNinePatch;
+        this(int dx, int dy, dstring text, uint textColor, uint bgColor) {
+            _width = dx;
+            _height = dy;
+            _text.assumeSafeAppend;
+            for (int i = 0; i < text.length && i < dx * dy; i++)
+                _text ~= text[i];
+            for (int i = cast(int)_text.length; i < dx * dy; i++)
+                _text ~= ' ';
+            _textColors.assumeSafeAppend;
+            _bgColors.assumeSafeAppend;
+            for (int i = 0; i < dx * dy; i++) {
+                _textColors ~= textColor;
+                _bgColors ~= bgColor;
+            }
+        }
+        this(string src) {
+            import std.utf;
+            this(toUTF32(src));
+        }
+        /**
+           Create from text drawable source file format:
+           { 
+            text: 
+           "text line 1"
+           "text line 2"
+           "text line 3"
+           backgroundColor: 0xFFFFFF [,0xFFFFFF]*
+           textColor: 0x000000, [,0x000000]*
+           ninepatch: left,top,right,bottom
+           padding: left,top,right,bottom
+            }
+           
+           Text lines may be in "" or '' or `` quotes.
+           bc can be used instead of backgroundColor, tc instead of textColor
+
+           Sample short form:
+           { 'line1' 'line2' 'line3' bc 0xFFFFFFFF tc 0x808080 stretch }
+        */
+        this(dstring src) {
+            import dlangui.dml.tokenizer;
+            import std.utf;
+            Token[] tokens = tokenize(toUTF8(src), ["//"], true, true, true);
+            dstring[] lines;
+            enum Mode {
+                None,
+                Text,
+                BackgroundColor,
+                TextColor,
+                Padding,
+                NinePatch,
+            };
+            Mode mode = Mode.Text;
+            uint[] bg;
+            uint[] col;
+            uint[] pad;
+            uint[] nine;
+            for (int i; i < tokens.length; i++) {
+                if (tokens[i].type == TokenType.ident) {
+                    if (tokens[i].text == "backgroundColor" || tokens[i].text == "bc")
+                        mode = Mode.BackgroundColor;
+                    else if (tokens[i].text == "textColor" || tokens[i].text == "tc")
+                        mode = Mode.TextColor;
+                    else if (tokens[i].text == "text")
+                        mode = Mode.Text;
+                    else if (tokens[i].text == "stretch")
+                        _stretched = true;
+                    else if (tokens[i].text == "tile")
+                        _tiled = true;
+                    else if (tokens[i].text == "padding") {
+                        mode = Mode.Padding;
+                    } else if (tokens[i].text == "ninepatch") {
+                        _hasNinePatch = true;
+                        mode = Mode.NinePatch;
+                    } else
+                        mode = Mode.None;
+                } else if (tokens[i].type == TokenType.integer) {
+                    switch(mode) {
+                        case Mode.BackgroundColor: _bgColors ~= tokens[i].intvalue; break;
+                        case Mode.TextColor: 
+                        case Mode.Text: 
+                            _textColors ~= tokens[i].intvalue; break;
+                        case Mode.Padding: pad ~= tokens[i].intvalue; break;
+                        case Mode.NinePatch: nine ~= tokens[i].intvalue; break;
+                        default:
+                            break;
+                    }
+                } else if (tokens[i].type == TokenType.str && mode == Mode.Text) {
+                    dstring line = toUTF32(tokens[i].text);
+                    lines ~= line;
+                    if (_width < line.length)
+                        _width = cast(int)line.length;
+                }
+            }
+            // pad and convert text
+            _height = lines.length;
+            if (!_height) {
+                _width = 0;
+                return;
+            }
+            for (int y = 0; y < _height; y++) {
+                for (int x = 0; x < _width; x++) {
+                    if (x < lines[y].length)
+                        _text ~= lines[y][x];
+                    else
+                        _text ~= ' ';
+                }
+            }
+            // pad padding and ninepatch
+            for (int k = 1; k <= 4; k++) {
+                if (nine.length < k)
+                    nine ~= 0;
+                if (pad.length < k)
+                    pad ~= 0;
+                if (pad[k-1] < nine[k-1])
+                    pad[k-1] = nine[k-1];
+            }
+            _padding = Rect(pad[0], pad[1], pad[2], pad[3]);
+            _ninePatch = Rect(nine[0], nine[1], nine[2], nine[3]);
+            // pad colors
+            for (int k = 1; k <= _width * _height; k++) {
+                if (_textColors.length < k)
+                    _textColors ~= _textColors.length ? _textColors[$ - 1] : 0;
+                if (_bgColors.length < k)
+                    _bgColors ~= _bgColors.length ? _bgColors[$ - 1] : 0xFFFFFFFF;
+            }
+        }
+        @property override int width() { 
+            return _width;
+        }
+        @property override int height() { 
+            return _height;
+        }
+        @property override Rect padding() { 
+            return _padding;
+        }
+
+        protected void drawChar(ConsoleDrawBuf buf, int srcx, int srcy, int dstx, int dsty) {
+            if (srcx < 0 || srcx >= _width || srcy < 0 || srcy >= _height)
+                return;
+            int index = srcy * _width + srcx;
+            buf.drawChar(dstx, dsty, _text[index], _textColors[index], _bgColors[index]);
+        }
+
+        private static int wrapNinePatch(int v, int width, int ninewidth, int left, int right) {
+            if (v < left)
+                return v;
+            if (v >= width - right)
+                return v - (width - right) + (ninewidth - right);
+            return left + (ninewidth - left - right) * (v - left) / (width - left - right);
+        }
+
+        override void drawTo(DrawBuf drawbuf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
+            if (!_width || !_height)
+                return; // empty image
+            ConsoleDrawBuf buf = cast(ConsoleDrawBuf)drawbuf;
+            if (!buf) // wrong draw buffer
+                return;
+            if (_hasNinePatch || _tiled || _stretched) {
+                for (int y = 0; y < rc.height; y++) {
+                    for (int x = 0; x < rc.width; x++) {
+                        int srcx = wrapNinePatch(x, rc.width, _width, _ninePatch.left, _ninePatch.right);
+                        int srcy = wrapNinePatch(y, rc.height, _height, _ninePatch.top, _ninePatch.bottom);
+                        drawChar(buf, srcx, srcy, rc.left + x, rc.top + y);
+                    }
+                }
+            } else {
+                for (int y = 0; y < rc.height && y < _height; y++) {
+                    for (int x = 0; x < rc.width && x < _width; x++) {
+                        drawChar(buf, x, y, rc.left + x, rc.top + y);
+                    }
+                }
+            }
+            //buf.drawImage(rc.left, rc.top, _image);
+        }
+    }
 }
 
 class ImageDrawable : Drawable {
@@ -799,7 +1039,7 @@ alias DrawableRef = Ref!Drawable;
 
 
 
-
+static if (BACKEND_GUI) {
 /// decoded raster images cache (png, jpeg) -- access by filenames
 class ImageCache {
 
@@ -916,6 +1156,7 @@ __gshared ImageCache _imageCache;
         destroy(_imageCache);
     _imageCache = cache; 
 }
+}
 
 __gshared DrawableCache _drawableCache;
 /// drawable cache singleton
@@ -982,24 +1223,50 @@ class DrawableCache {
                 // reload from file
                 if (_filename.endsWith(".xml")) {
                     // XML drawables support
-                    StateDrawable d = new StateDrawable();
-                    if (!d.load(_filename)) {
-                        destroy(d);
-                        _error = true;
-                    } else {
-                        _drawable = d;
+                        StateDrawable d = new StateDrawable();
+                        if (!d.load(_filename)) {
+                            destroy(d);
+                            _error = true;
+                        } else {
+                            _drawable = d;
+                        }
+                } else if (_filename.endsWith(".tim")) {
+                    static if (BACKEND_CONSOLE) {
+                        try {
+                            // .tim (text image) drawables support
+                            string s = cast(string)loadResourceBytes(_filename);
+                            if (s.length) {
+                                TextDrawable d = new TextDrawable(s);
+                                if (d.width && d.height) {
+                                    _drawable = d;
+                                }
+                            }
+                        } catch (Exception e) {
+                            // cannot find drawable file
+                        }
                     }
+                    if (!_drawable)
+                        _error = true;
                 } else if (_filename.startsWith("#")) {
                     // color reference #AARRGGBB, e.g. #5599AA, or FrameDrawable description string #frameColor,frameSize,#innerColor
                     _drawable = createColorDrawable(_filename);
+                } else if (_filename.startsWith("{")) {
+                    // json in {} with text drawable description
+                    static if (BACKEND_CONSOLE) {
+                        _drawable = createTextDrawable(_filename);
+                    }
                 } else {
-                    // PNG/JPEG drawables support
-                    DrawBufRef image = imageCache.get(_filename);
-                    if (!image.isNull) {
-                        bool ninePatch = _filename.endsWith(".9.png");
-                        _drawable = new ImageDrawable(image, _tiled, ninePatch);
-                    } else
+                    static if (BACKEND_GUI) {
+                        // PNG/JPEG drawables support
+                        DrawBufRef image = imageCache.get(_filename);
+                        if (!image.isNull) {
+                            bool ninePatch = _filename.endsWith(".9.png");
+                            _drawable = new ImageDrawable(image, _tiled, ninePatch);
+                        } else
+                            _error = true;
+                    } else {
                         _error = true;
+                    }
                 }
             }
             return _drawable;
@@ -1026,18 +1293,41 @@ class DrawableCache {
                         Log.d("loaded .xml drawable from ", _filename);
                         _drawable = d;
                     }
-                } else if (_filename.startsWith("#")) {
-                    // color reference #AARRGGBB, e.g. #5599AA, or FrameDrawable description string #frameColor,frameSize,#innerColor
-                    _drawable = createColorDrawable(_filename);
+                } else if (_filename.endsWith(".tim") || _filename.endsWith(".TIM")) {
+                    static if (BACKEND_CONSOLE) {
+                        try {
+                            // .tim (text image) drawables support
+                            string s = cast(string)loadResourceBytes(_filename);
+                            if (s.length) {
+                                TextDrawable d = new TextDrawable(s);
+                                if (d.width && d.height) {
+                                    _drawable = d;
+                                }
+                            }
+                        } catch (Exception e) {
+                            // cannot find drawable file
+                        }
+                    }
+                    if (!_drawable)
+                        _error = true;
+                } else if (_filename.startsWith("{")) {
+                    // json in {} with text drawable description
+                    static if (BACKEND_CONSOLE) {
+                        _drawable = createTextDrawable(_filename);
+                    }
                 } else {
-                    // PNG/JPEG drawables support
-                    DrawBufRef image = imageCache.get(_filename, transform);
-                    if (!image.isNull) {
-                        bool ninePatch = _filename.endsWith(".9.png") ||  _filename.endsWith(".9.PNG");
-                        _transformed[transform] = new ImageDrawable(image, _tiled, ninePatch);
-                        return _transformed[transform];
+                    static if (BACKEND_GUI) {
+                        // PNG/JPEG drawables support
+                        DrawBufRef image = imageCache.get(_filename, transform);
+                        if (!image.isNull) {
+                            bool ninePatch = _filename.endsWith(".9.png") ||  _filename.endsWith(".9.PNG");
+                            _transformed[transform] = new ImageDrawable(image, _tiled, ninePatch);
+                            return _transformed[transform];
+                        } else {
+                            Log.e("failed to load image from ", _filename);
+                            _error = true;
+                        }
                     } else {
-                        Log.e("failed to load image from ", _filename);
                         _error = true;
                     }
                 }
@@ -1067,6 +1357,8 @@ class DrawableCache {
     DrawableCacheItem[string] _idToDrawableMap;
     DrawableRef _nullDrawable;
     ref DrawableRef get(string id) {
+        while (id.length && (id[0] == ' ' || id[0] == '\t' || id[0] == '\r' || id[0] == '\n'))
+               id = id[1 .. $];
         if (id.equal("@null"))
             return _nullDrawable;
         if (id in _idToDrawableMap)
@@ -1132,7 +1424,7 @@ class DrawableCache {
     }
     /// get resource file full pathname by resource id, null if not found
     string findResource(string id) {
-        if (id.startsWith("#"))
+        if (id.startsWith("#") || id.startsWith("{"))
             return id; // it's not a file name, just a color #AARRGGBB
         if (id in _idToFileMap)
             return _idToFileMap[id];
@@ -1159,13 +1451,15 @@ class DrawableCache {
         Log.w("resource ", id, " is not found");
         return null;
     }
-    /// get image (DrawBuf) from imageCache by resource id
-    DrawBufRef getImage(string id) {
-        DrawBufRef res;
-        string fname = findResource(id);
-        if (fname.endsWith(".png") || fname.endsWith(".jpg"))
-            return imageCache.get(fname);
-        return res;
+    static if (BACKEND_GUI) {
+        /// get image (DrawBuf) from imageCache by resource id
+        DrawBufRef getImage(string id) {
+            DrawBufRef res;
+            string fname = findResource(id);
+            if (fname.endsWith(".png") || fname.endsWith(".jpg"))
+                return imageCache.get(fname);
+            return res;
+        }
     }
     this() {
         debug Log.i("Creating DrawableCache");

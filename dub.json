@@ -64,6 +64,11 @@
             ]
         },
         {
+            "name": "console",
+            "versions": ["USE_CONSOLE", "EmbedStandardResources"],
+            "versions-windows": ["Unicode"]
+        },
+        {
             "name": "minimal",
             "versions": ["EmbedStandardResources", "ForceLogs"],
             "versions-posix": ["USE_SDL", "USE_FREETYPE", "NO_OPENGL"],
