@@ -390,6 +390,7 @@
         margins="0,0,0,0"
         />
     <style id="DOCK_WINDOW_CAPTION"
+        backgroundColor="#008000"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
         padding="0,0,0,1"
