@@ -1876,7 +1876,7 @@ class EditLine : EditWidgetBase {
             int x0 = i > 0 ? _measuredTextWidths[i - 1] : 0;
             int x1 = _measuredTextWidths[i];
             int mx = (x0 + x1) >> 1;
-            if (pt.x < mx) {
+            if (pt.x <= mx) {
                 res.pos = i;
                 return res;
             }
