@@ -9,18 +9,18 @@
     <color id="dialog_background" value="#EEEEEE"/>
     <color id="edit_background" value="#FFFFFF"/>
     <color id="edit_caret" value="#000000"/>
-    <color id="edit_caret_replace" value="#808080FF"/>
-    <color id="editor_matching_bracket_highlight" value="#60FFE0B0"/>
-    <color id="editor_selection_focused" value="#B060A0FF"/>
-    <color id="editor_selection_normal" value="#D060A0FF"/>
-    <color id="editor_left_pane_background" value="#F4F4F4"/>
-    <color id="editor_left_pane_background2" value="#FFFFFF"/>
-    <color id="editor_left_pane_background3" value="#F0F0F0"/>
-    <color id="editor_left_pane_line_number_text" value="#4060D0"/>
-    <color id="editor_left_pane_line_number_background" value="#F8F8F8"/>
-    <color id="editor_left_pane_line_icon_color_breakpoint" value="#FF0000"/>
-    <color id="editor_left_pane_line_icon_color_bookmark" value="#0000FF"/>
-    <color id="editor_left_pane_line_icon_color_error" value="#80FF0000"/>
+    <color id="edit_caret_replace" value="#000000"/>
+    <color id="editor_matching_bracket_highlight" value="#800000"/>
+    <color id="editor_selection_focused" value="#008080"/>
+    <color id="editor_selection_normal" value="#800080"/>
+    <color id="editor_left_pane_background" value="#FFFFFFFF"/>
+    <color id="editor_left_pane_background2" value="#FFFFFFFF"/>
+    <color id="editor_left_pane_background3" value="FFFFFFFF"/>
+    <color id="editor_left_pane_line_number_text" value="#808080"/>
+    <color id="editor_left_pane_line_number_background" value="#FFFFFFFF"/>
+    <color id="editor_left_pane_line_icon_color_breakpoint" value="#0000FF"/>
+    <color id="editor_left_pane_line_icon_color_bookmark" value="#00FF00"/>
+    <color id="editor_left_pane_line_icon_color_error" value="#FF0000"/>
 
     <color id="grid_selection_color" value="#808000"/>
     <color id="grid_selection_color_row" value="#808000"/>
@@ -31,16 +31,16 @@
     <color id="grid_cell_background_header_selected" value="#008000"/>
 
     <style id="BUTTON"
-        backgroundImageId="{' ' bc 0x808080 stretch}"
+        backgroundImageId="{'▄' ' ' '▀' tc 0x808080 bc 0xFFFFFFFF 0x808080 0xFFFFFFFF ninepatch 0 1 0 1 padding 1 1 1 1}"
         align="Center"
         textFlags="UnderlineHotKeys"
 	textColor="#FFFFFF"
         margins="0,0,1,0"
         padding="1,0,1,0"
         >
-        <state state_enabled="false" textColor="#C0C0C0" backgroundImageId="{' ' bc 0x808080 stretch}"/>
-        <state state_pressed="true" textColor="#000000" backgroundImageId="{' ' bc 0xC0C0C0 stretch}"/>
-        <state state_focused="true" textColor="#FFFF00" backgroundImageId="{' ' bc 0x808080 stretch}"/>
+        <state state_enabled="false" textColor="#C0C0C0" backgroundImageId="{'▄' ' ' '▀' tc 0x808080 bc 0xFFFFFFFF 0x808080 0xFFFFFFFF ninepatch 0 1 0 1 padding 1 1 1 1}"/>
+        <state state_pressed="true" textColor="#000000" backgroundImageId="{'▄' ' ' '▀' tc 0xC0C0C0 bc 0xFFFFFFFF 0xC0C0C0 0xFFFFFFFF ninepatch 0 1 0 1 padding 1 1 1 1}"/>
+        <state state_focused="true" textColor="#000000" backgroundImageId="{'▄' ' ' '▀' tc 0xFFFF00 bc 0xFFFFFFFF 0xFFFF00 0xFFFFFFFF ninepatch 0 1 0 1 padding 1 1 1 1}"/>
         <state state_enabled="true" state_hovered="true" textColor="#FF0000"/>
     </style>
     <style id="BUTTON_TRANSPARENT"
@@ -59,7 +59,7 @@
         >
         <state state_enabled="false" textColor="#C0C0C0"/>
         <state state_pressed="true" textColor="#000000"/>
-        <state state_focused="true" textColor="#FFFF00"/>
+        <state state_focused="true" textColor="#000000"/>
         <state state_enabled="true" state_hovered="true" textColor="#FF0000"/>
     </style>
     <style id="BUTTON_LABEL_LINK" parent="BUTTON_LABEL"
