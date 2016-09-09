@@ -958,6 +958,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             if (!_caretBlinkingPhase)
                 _lastBlinkStartTs = currentTimeMillis;
             invalidate();
+            //window.update(true);
             return focused;
         }
         if (id == _hoverTimer) {
@@ -1031,7 +1032,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             // draw caret
             Rect caretRc = caretRect();
             if (caretRc.intersects(_clientRect)) {
-                caretRc.left++;
+                //caretRc.left++;
                 if (_replaceMode)
                     buf.fillRect(caretRc, _caretColorReplace);
                 buf.drawLine(Point(caretRc.left, caretRc.bottom), Point(caretRc.left, caretRc.top), _caretColor);
