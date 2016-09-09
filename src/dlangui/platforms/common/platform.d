@@ -1445,7 +1445,6 @@ class Platform {
     }
     /// sets application UI theme - will relayout content of all windows if theme has been changed
     @property Platform uiTheme(string themeResourceId) {
-        themeResourceId = "console_" ~ themeResourceId;
         if (_themeId.equal(themeResourceId))
             return this;
         Log.v("uiTheme setting new theme ", themeResourceId);

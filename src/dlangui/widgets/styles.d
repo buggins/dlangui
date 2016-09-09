@@ -1567,7 +1567,7 @@ bool loadTheme(Theme theme, string resourceId, int level = 0) {
 /// load theme from XML file (null if failed)
 Theme loadTheme(string resourceId) {
     Theme res = new Theme(resourceId);
-    if (loadTheme(res, resourceId)) {
+    if (loadTheme(res, BACKEND_CONSOLE ? "console_" ~ resourceId : resourceId)) {
         res.id = resourceId;
         return res;
     }
