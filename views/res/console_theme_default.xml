@@ -22,13 +22,13 @@
     <color id="editor_left_pane_line_icon_color_bookmark" value="#0000FF"/>
     <color id="editor_left_pane_line_icon_color_error" value="#80FF0000"/>
 
-    <color id="grid_selection_color" value="#804040FF"/>
-    <color id="grid_selection_color_row" value="#C0A0B0FF"/>
-    <color id="grid_cell_background_fixed" value="#C0E0E0E0"/>
+    <color id="grid_selection_color" value="#808000"/>
+    <color id="grid_selection_color_row" value="#808000"/>
+    <color id="grid_cell_background_fixed" value="#808080"/>
     <color id="grid_cell_border_color" value="#C0C0C0C0"/>
     <color id="grid_cell_border_color_header" value="#C0202020"/>
-    <color id="grid_cell_background_header" value="#C0909090"/>
-    <color id="grid_cell_background_header_selected" value="#80FFC040"/>
+    <color id="grid_cell_background_header" value="#808080"/>
+    <color id="grid_cell_background_header_selected" value="#008000"/>
 
     <style id="BUTTON"
         backgroundImageId="{' ' bc 0x808080 stretch}"

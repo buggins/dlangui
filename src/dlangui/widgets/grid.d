@@ -1435,8 +1435,10 @@ class StringGridWidget : StringGridWidgetBase {
                 cl = _cellHeaderSelectedBackgroundColor;
         }
         buf.fillRect(rc, cl);
-        buf.drawLine(Point(rc.right, rc.bottom), Point(rc.right, rc.top), _cellHeaderBorderColor); // vertical
-        buf.drawLine(Point(rc.left, rc.bottom), Point(rc.right - 1, rc.bottom), _cellHeaderBorderColor); // horizontal
+        static if (BACKEND_GUI) {
+            buf.drawLine(Point(rc.right, rc.bottom), Point(rc.right, rc.top), _cellHeaderBorderColor); // vertical
+            buf.drawLine(Point(rc.left, rc.bottom), Point(rc.right - 1, rc.bottom), _cellHeaderBorderColor); // horizontal
+        }
     }
 
     /// draw cell background
@@ -1451,13 +1453,22 @@ class StringGridWidget : StringGridWidgetBase {
             // fixed cell background
             buf.fillRect(rc, _fixedCellBackgroundColor);
         }
-        buf.drawLine(Point(rc.left, rc.bottom + 1), Point(rc.left, rc.top), _cellBorderColor); // vertical
-        buf.drawLine(Point(rc.left, rc.bottom), Point(rc.right - 1, rc.bottom), _cellBorderColor); // horizontal
+        static if (BACKEND_GUI) {
+            buf.drawLine(Point(rc.left, rc.bottom + 1), Point(rc.left, rc.top), _cellBorderColor); // vertical
+            buf.drawLine(Point(rc.left, rc.bottom), Point(rc.right - 1, rc.bottom), _cellBorderColor); // horizontal
+        }
         if (selectedCell) {
-            if (_rowSelect)
-                buf.drawFrame(rc, _selectionColorRowSelect, Rect(0,1,0,1), _cellBorderColor);
-            else
-                buf.drawFrame(rc, _selectionColor, Rect(1,1,1,1), _cellBorderColor);
+            static if (BACKEND_GUI) {
+                if (_rowSelect)
+                    buf.drawFrame(rc, _selectionColorRowSelect, Rect(0,1,0,1), _cellBorderColor);
+                else
+                    buf.drawFrame(rc, _selectionColor, Rect(1,1,1,1), _cellBorderColor);
+            } else {
+                if (_rowSelect)
+                    buf.fillRect(rc, _selectionColorRowSelect);
+                else
+                    buf.fillRect(rc, _selectionColor);
+            }
         }
     }
 
