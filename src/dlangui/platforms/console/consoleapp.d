@@ -380,6 +380,7 @@ class ConsoleDrawBuf : DrawBuf {
 // entry point for console app
 extern(C) int DLANGUImain(string[] args) {
     initLogs();
+    SCREEN_DPI = 10;
     Platform.setInstance(new ConsolePlatform());
     FontManager.instance = new ConsoleFontManager();
     initResourceManagers();

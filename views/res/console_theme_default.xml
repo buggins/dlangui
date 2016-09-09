@@ -17,14 +17,18 @@
     <color id="editor_left_pane_background2" value="#FFFFFFFF"/>
     <color id="editor_left_pane_background3" value="FFFFFFFF"/>
     <color id="editor_left_pane_line_number_text" value="#808080"/>
+    <color id="editor_left_pane_line_number_text_edited" value="#FFFF00"/>
+    <color id="editor_left_pane_line_number_text_saved" value="#00FF00"/>
+    <color id="editor_left_pane_line_number_text_current_line" value="#FFFFFF"/>
     <color id="editor_left_pane_line_number_background" value="#FFFFFFFF"/>
+    <color id="editor_left_pane_line_number_background_current_line" value="#808080"/>
     <color id="editor_left_pane_line_icon_color_breakpoint" value="#0000FF"/>
     <color id="editor_left_pane_line_icon_color_bookmark" value="#00FF00"/>
     <color id="editor_left_pane_line_icon_color_error" value="#FF0000"/>
 
-    <color id="grid_selection_color" value="#808000"/>
-    <color id="grid_selection_color_row" value="#808000"/>
-    <color id="grid_cell_background_fixed" value="#808080"/>
+    <color id="grid_selection_color" value="#008000"/>
+    <color id="grid_selection_color_row" value="#008000"/>
+    <color id="grid_cell_background_fixed" value="#FFFFFFFF"/>
     <color id="grid_cell_border_color" value="#C0C0C0C0"/>
     <color id="grid_cell_border_color_header" value="#C0202020"/>
     <color id="grid_cell_background_header" value="#808080"/>
@@ -153,6 +157,7 @@
     <drawable id="scrollbar_indicator_horizontal" value="scrollbar_indicator_horizontal"/>
     <style id="SCROLLBAR"
         align="Center"
+        backgroundImageId="{'░' bc 0x808000 stretch}"
         />
     <style id="SCROLLBAR_BUTTON"
         backgroundImageId="{' ' bc 0x808000 stretch}"
@@ -220,7 +225,7 @@
     <style id="TAB_HOST"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
-        backgroundImageId="{'╔═╗' '║ ║' '╚═╝' bc 0x000080 tc 0xC0C0C0 ninepatch 1 1 1 1 padding 1 1 1 1}"
+        backgroundColor="#000080"
         />
     <style id="TAB_WIDGET"
         backgroundColor="#000000"
@@ -291,11 +296,13 @@
     </style>
 
     <style id="COMBO_BOX"
-        backgroundImageId="combobox_background"
+        backgroundImageId="{'┌─┐' '│ │' '└─┘' 0x808080 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 1 1}"
         padding="0,0,0,0"
         margins="0,0,0,0"
         minWidth="8"
-        />
+        >
+        <state state_focused="true" backgroundImageId="{'┌─┐' '│ │' '└─┘' 0xFFFF00 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 1 1}"/>
+    </style>
     <style id="COMBO_BOX_BODY"
         padding="0,0,0,0"
         minWidth="8"
@@ -309,21 +316,25 @@
         />
 
     <style id="EDIT_LINE"
-        backgroundImageId="{text:[' '], textColor:[0xC0C0C0], backgroundColor:[0xFFFFFFFF], stretch: true}"
+        backgroundImageId="{'┌─┐' '│ │' '└─┘' 0x808080 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 1 1}"
         padding="0,0,0,0"
         margins="0,0,0,0"
         minWidth="5"
-        />
+        >
+        <state state_focused="true" backgroundImageId="{'┌─┐' '│ │' '└─┘' 0xFFFF00 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 1 1}"/>
+    </style>
     <style id="EDIT_BOX"
         fontFace="Menlo,Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console"
-        backgroundImageId="editbox_background"
+        backgroundImageId="{'┌─┐' '│ │' '└─┘' 0x808080 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}"
         padding="0,0,0,0"
         margins="0,0,0,0"
         minWidth="8"
         minHeight="3"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
-        />
+        >
+        <state state_focused="true" backgroundImageId="{'┌─┐' '│ │' '└─┘' 0xFFFF00 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}"/>
+    </style>
     <style id="EDIT_BOX_NO_FRAME"
         fontFace="Menlo,Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console"
         backgroundColor="#FFFFFF"
@@ -335,14 +346,16 @@
         layoutHeight="FILL_PARENT"
         />
     <style id="STRING_GRID"
-        backgroundImageId="editbox_background"
         padding="0,0,0,0"
         margins="0,0,0,0"
         minWidth="20"
         minHeight="10"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
-        />
+        backgroundImageId="{'┌─┐' '│ │' '└─┘' 0x808080 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}"
+        >
+        <state state_focused="true" backgroundImageId="{'┌─┐' '│ │' '└─┘' 0xFFFF00 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}"/>
+    </style>
     <style id="STATUS_LINE"
         backgroundColor="#D0D0D0"
         layoutWidth="FILL_PARENT"

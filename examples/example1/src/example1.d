@@ -715,7 +715,7 @@ extern (C) int UIAppMain(string[] args) {
         combo2.selectedItemIndex = 0;
         table.addChild(combo2).layoutWidth(FILL_PARENT);
 
-        table.margins(Rect(10,10,10,10)).layoutWidth(FILL_PARENT);
+        table.margins(Rect(2,2,2,2)).layoutWidth(FILL_PARENT);
         tabs.addTab(table, "TAB_TABLE_LAYOUT"c);
 
         //tabs.addTab((new TextWidget()).id("tab5").textColor(0x00802000).text("Tab 5 contents"), "Tab 5"d);

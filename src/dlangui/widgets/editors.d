@@ -254,6 +254,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected uint _leftPaneBackgroundColor2 = 0xFFFFFF;
     protected uint _leftPaneBackgroundColor3 = 0xF8F8F8;
     protected uint _leftPaneLineNumberColor = 0x4060D0;
+    protected uint _leftPaneLineNumberColorEdited = 0xC0C000;
+    protected uint _leftPaneLineNumberColorSaved = 0x00C000;
+    protected uint _leftPaneLineNumberColorCurrentLine = 0xFFFFFFFF;
+    protected uint _leftPaneLineNumberBackgroundColorCurrentLine = 0xC08080FF;
     protected uint _leftPaneLineNumberBackgroundColor = 0xF4F4F4;
     protected uint _colorIconBreakpoint = 0xFF0000;
     protected uint _colorIconBookmark = 0x0000FF;
@@ -262,9 +266,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected uint _caretColor = 0x000000;
     protected uint _caretColorReplace = 0x808080FF;
     protected uint _matchingBracketHightlightColor = 0x60FFE0B0;
-    protected uint _iconsPaneWidth = 16;
-    protected uint _foldingPaneWidth = 12;
-    protected uint _modificationMarksPaneWidth = 4;
+
+    protected uint _iconsPaneWidth = BACKEND_CONSOLE ? 1 : 16;
+    protected uint _foldingPaneWidth = BACKEND_CONSOLE ? 1 : 12;
+    protected uint _modificationMarksPaneWidth = BACKEND_CONSOLE ? 1 : 4;
     /// when true, call measureVisibileText on next layout
     protected bool _contentChanged = true;
 
@@ -325,7 +330,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         import std.conv : to;
         _iconsWidth = _showIcons ? _iconsPaneWidth : 0;
         _foldingWidth = _showFolding ? _foldingPaneWidth : 0;
-        _modificationMarksWidth = _showModificationMarks ? _modificationMarksPaneWidth : 0;
+        _modificationMarksWidth = _showModificationMarks && (BACKEND_GUI || !_showLineNumbers) ? _modificationMarksPaneWidth : 0;
         _lineNumbersWidth = 0;
         if (_showLineNumbers) {
             dchar[] s = to!(dchar[])(lineCount + 1);
@@ -337,7 +342,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         }
         _leftPaneWidth = _lineNumbersWidth + _modificationMarksWidth + _foldingWidth + _iconsWidth;
         if (_leftPaneWidth)
-            _leftPaneWidth += 3;
+            _leftPaneWidth += BACKEND_CONSOLE ? 1 : 3;
     }
 
     protected void drawLeftPaneFolding(DrawBuf buf, Rect rc, int line) {
@@ -387,7 +392,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     protected void drawLeftPaneLineNumbers(DrawBuf buf, Rect rc, int line) {
         import std.conv : to;
-        buf.fillRect(rc, _leftPaneLineNumberBackgroundColor);
+        uint bgcolor = _leftPaneLineNumberBackgroundColor;
+        if (line == _caretPos.line && !isFullyTransparentColor(_leftPaneLineNumberBackgroundColorCurrentLine))
+            bgcolor = _leftPaneLineNumberBackgroundColorCurrentLine;
+        buf.fillRect(rc, bgcolor);
         if (line < 0)
             return;
         dstring s = to!dstring(line + 1);
@@ -395,7 +403,20 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         Point sz = fnt.textSize(s);
         int x = rc.right - sz.x;
         int y = rc.top + (rc.height - sz.y) / 2;
-        fnt.drawText(buf, x, y, s, _leftPaneLineNumberColor);
+        uint color = _leftPaneLineNumberColor;
+        if (line == _caretPos.line && !isFullyTransparentColor(_leftPaneLineNumberColorCurrentLine))
+            color = _leftPaneLineNumberColorCurrentLine;
+        if (line >= 0 && line < content.length) {
+            EditStateMark m = content.editMark(line);
+            if (m == EditStateMark.changed) {
+                // modified, not saved
+                color = _leftPaneLineNumberColorEdited;
+            } else if (m == EditStateMark.saved) {
+                // modified, saved
+                color = _leftPaneLineNumberColorSaved;
+            }
+        }
+        fnt.drawText(buf, x, y, s, color);
     }
 
     protected bool onLeftPaneMouseClick(MouseEvent event) {
@@ -470,7 +491,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         buf.fillRect(rc, _leftPaneBackgroundColor);
         //buf.fillRect(Rect(rc.right - 2, rc.top, rc.right - 1, rc.bottom), _leftPaneBackgroundColor2);
         //buf.fillRect(Rect(rc.right - 1, rc.top, rc.right - 0, rc.bottom), _leftPaneBackgroundColor3);
-        rc.right -= 3;
+        rc.right -= BACKEND_CONSOLE ? 1 : 3;
         if (_foldingWidth) {
             Rect rc2 = rc;
             rc.right = rc2.left = rc2.right - _foldingWidth;
@@ -1016,6 +1037,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         _leftPaneBackgroundColor2 = style.customColor("editor_left_pane_background2");
         _leftPaneBackgroundColor3 = style.customColor("editor_left_pane_background3");
         _leftPaneLineNumberColor = style.customColor("editor_left_pane_line_number_text");
+        _leftPaneLineNumberColorEdited = style.customColor("editor_left_pane_line_number_text_edited", 0xC0C000);
+        _leftPaneLineNumberColorSaved = style.customColor("editor_left_pane_line_number_text_saved", 0x00C000);
+        _leftPaneLineNumberColorCurrentLine = style.customColor("editor_left_pane_line_number_text_current_line", 0xFFFFFFFF);
+        _leftPaneLineNumberBackgroundColorCurrentLine = style.customColor("editor_left_pane_line_number_background_current_line", 0xC08080FF);
         _leftPaneLineNumberBackgroundColor = style.customColor("editor_left_pane_line_number_background");
         _colorIconBreakpoint = style.customColor("editor_left_pane_line_icon_color_breakpoint", 0xFF0000);
         _colorIconBookmark = style.customColor("editor_left_pane_line_icon_color_bookmark", 0x0000FF);
@@ -2324,7 +2349,7 @@ class EditBox : EditWidgetBase {
                 int x0 = i > 0 ? _visibleLinesMeasurement[lineIndex][i - 1] : 0;
                 int x1 = _visibleLinesMeasurement[lineIndex][i];
                 int mx = (x0 + x1) >> 1;
-                if (pt.x < mx) {
+                if (pt.x <= mx) {
                     res.pos = i;
                     return res;
                 }
