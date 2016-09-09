@@ -23,6 +23,12 @@
             "name" : "default",
         }, 
         {
+            "name" : "console",
+            "subConfigurations" : {
+                "dlangui" : "console"
+            }
+        },
+        {
             "name" : "sdl",
             "subConfigurations" : {
                 "dlangui" : "sdl"

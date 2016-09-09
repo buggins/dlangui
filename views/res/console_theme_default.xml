@@ -383,20 +383,19 @@
         margins="0,0,0,0"
         />
     <style id="FLOATING_WINDOW"
-        backgroundImageId="{'╔═╗' '║ ║' '╚═╝' bc 0x000000 tc 0xC0C0C0 ninepatch 1 1 1 1 padding 2 2 2 2}"
+        backgroundImageId="{'╔═╗' '║ ║' '╚═╝' bc 0x000000 tc 0xC0C0C0 ninepatch 1 1 1 1 padding 2 1 2 1}"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         padding="0,0,0,0"
         margins="0,0,0,0"
         />
     <style id="DOCK_WINDOW_CAPTION"
-        backgroundImageId="dock_window_caption_background"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
-        padding="0,0,0,0"
+        padding="0,0,0,1"
         />
     <style id="DOCK_WINDOW_CAPTION_LABEL"
-        textColor="#000000"
+        textColor="#FFFFFF"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
         padding="0,0,0,0"
