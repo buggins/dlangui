@@ -257,7 +257,7 @@ extern (C) int UIAppMain(string[] args) {
         // create main menu
 
         MenuItem mainMenuItems = new MenuItem();
-        MenuItem fileItem = new MenuItem(new Action(1, "MENU_FILE"));
+        MenuItem fileItem = new MenuItem(new Action(1, "MENU_FILE"c));
         fileItem.add(new Action(ACTION_FILE_OPEN, "MENU_FILE_OPEN"c, "document-open", KeyCode.KEY_O, KeyFlag.Control));
         fileItem.add(new Action(ACTION_FILE_SAVE, "MENU_FILE_SAVE"c, "document-save", KeyCode.KEY_S, KeyFlag.Control));
         MenuItem openRecentItem = new MenuItem(new Action(13, "MENU_FILE_OPEN_RECENT", "document-open-recent"));

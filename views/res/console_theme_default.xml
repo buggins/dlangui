@@ -188,21 +188,24 @@
         backgroundImageId="tab_btn_dark_down"
         />
     <style id="TAB_UP_DARK"
-        backgroundImageId="dock_window_caption_background"
         layoutWidth="FILL_PARENT"
+        margins="1,0,1,0"
+        backgroundColor="#000000"
         >
     </style>
     <style id="TAB_UP_BUTTON_DARK"
+        backgroundColor="#000000"
         padding="1,0,1,0"
-        backgroundImageId="tab_btn_dark_up"
         >
-        <length id="overlap" value="2"/>
+        <state state_selected="true" backgroundColor="#000080"/>
     </style>
-    <style id="TAB_UP_BUTTON_DARK_TEXT"
-        textColor="#000000"
+    <style id="TAB_UP_BUTTON_TEXT_DARK"
+        textColor="#808080"
         align="Center"
+        margins="1,0,1,0"
         >
-        <state state_selected="false" state_window_focused="false" state_hovered="false" textColor="#9c9c9c"/>
+        <state state_selected="true" textColor="#FFFFFF"/>
+        <state state_hovered="true" textColor="#808000"/>
     </style>
     <style id="TAB_UP"
         layoutWidth="FILL_PARENT"
@@ -225,7 +228,7 @@
     <style id="TAB_HOST"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
-        backgroundColor="#000080"
+        backgroundColor="#000000"
         />
     <style id="TAB_WIDGET"
         backgroundColor="#000000"
@@ -376,7 +379,7 @@
         margins="0,0,0,0"
         />
     <style id="DOCK_WINDOW"
-        backgroundImageId="dock_window_background"
+        backgroundColor="#000000"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         padding="0,0,0,0"
@@ -409,7 +412,7 @@
         />
 
     <style id="TOOLBAR_HOST"
-        backgroundImageId="toolbar_host_background"
+        backgroundColor="#000000"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
         padding="0,0,0,0"
@@ -427,9 +430,10 @@
         layoutWidth="WRAP_CONTENT"
         layoutHeight="WRAP_CONTENT"
         margins="1,0,1,0"
+        minHeight="3"
         />
     <style id="TOOLBAR_BUTTON"
-        backgroundImageId="toolbar_button_background"
+        backgroundImageId="btn_background"
         align="Center"
         margins="0,0,0,0"
         padding="0,0,0,0"
@@ -437,7 +441,7 @@
         <state state_enabled="false" alpha="160" backgroundImageId="@null"/>
     </style>
     <style id="TOOLBAR_CONTROL"
-        backgroundImageId="toolbar_control_background"
+        backgroundColor="#000000"
         align="Center"
         margins="0,0,0,0"
         padding="0,0,0,0"
