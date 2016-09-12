@@ -157,6 +157,9 @@ class MLParser {
                 // do nothing, value is in px by default
             } else if (suffix.equal("pt")) {
                 value = makePointSize(value);
+            } else if (suffix.equal("m") || suffix.equal("em")) {
+                // todo: implement EMs
+                value = makePointSize(value);
             } else if (suffix.equal("%")) {
                 value = makePercentSize(value);
             } else

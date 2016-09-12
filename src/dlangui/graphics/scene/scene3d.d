@@ -2,6 +2,7 @@ module dlangui.graphics.scene.scene3d;
 
 public import dlangui.core.config;
 static if (ENABLE_OPENGL):
+static if (BACKEND_GUI):
 
 import dlangui.core.types;
 

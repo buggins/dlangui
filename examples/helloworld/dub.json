@@ -17,7 +17,18 @@
         "dlangui": {"path": "../../"}
     },
 
-    "subConfigurations": {
-        "dlangui": "minimal"
-    }
+    "configurations" : [
+        {
+            "name" : "default",
+            "subConfigurations" : {
+                "dlangui" : "minimal"
+            }
+        }, 
+        {
+            "name" : "console",
+            "subConfigurations" : {
+                "dlangui" : "console"
+            }
+        }
+    ]
 }

@@ -19,6 +19,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 module dlangui.graphics.glsupport;
 
 public import dlangui.core.config;
+static if (BACKEND_GUI):
 static if (ENABLE_OPENGL):
 
 public import dlangui.core.math3d;

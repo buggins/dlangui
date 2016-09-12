@@ -6,11 +6,12 @@ mixin APP_ENTRY_POINT;
 
 /// entry point for dlangui based application
 extern (C) int UIAppMain(string[] args) {
+
+    // load theme from file "theme_default.xml"
+    Platform.instance.uiTheme = "theme_default";
+
     // create window
     Log.d("Creating window");
-    if (!Platform.instance) {
-        Log.e("Platform.instance is null!!!");
-    }
     Window window = Platform.instance.createWindow("DlangUI example - HelloWorld", null);
     Log.d("Window created");
 
@@ -18,10 +19,9 @@ extern (C) int UIAppMain(string[] args) {
     //window.mainWidget = (new Button()).text("Hello, world!"d).margins(Rect(20,20,20,20));
     window.mainWidget = parseML(q{
         VerticalLayout {
-            margins: 10
-            padding: 10
+            margins: 10pt
+            padding: 10pt
             layoutWidth: fill
-            backgroundColor: "#C0E0E070" // semitransparent yellow background
             // red bold text with size = 150% of base style size and font face Arial
             TextWidget { text: "Hello World example for DlangUI"; textColor: "red"; fontSize: 150%; fontWeight: 800; fontFace: "Arial" }
             // arrange controls as form - table with two columns
@@ -46,10 +46,10 @@ extern (C) int UIAppMain(string[] args) {
                     layoutWidth: fill
                     CheckBox { id: cb1; text: "checkbox 1" }
                     CheckBox { id: cb2; text: "checkbox 2" }
-                    ComboEdit { id: ce1; text: "some text"; minWidth: 100; items: ["Item 1", "Item 2", "Additional item"] }
+                    ComboEdit { id: ce1; text: "some text"; minWidth: 20pt; items: ["Item 1", "Item 2", "Additional item"] }
                 }
             }
-            EditBox { layoutWidth: 300; layoutHeight: 80 }
+            EditBox { layoutWidth: 20pt; layoutHeight: 10pt }
             HorizontalLayout {
                 Button { id: btnOk; text: "Ok" }
                 Button { id: btnCancel; text: "Cancel" }

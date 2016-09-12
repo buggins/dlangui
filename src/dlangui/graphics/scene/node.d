@@ -2,6 +2,7 @@ module dlangui.graphics.scene.node;
 
 public import dlangui.core.config;
 static if (ENABLE_OPENGL):
+static if (BACKEND_GUI):
 
 import dlangui.core.math3d;
 

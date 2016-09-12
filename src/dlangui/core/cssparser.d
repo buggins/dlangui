@@ -273,7 +273,9 @@ private bool parseLength(ref string src, ref CssValue value)
         ident = parseIdent(src);
         if (!ident.empty) {
             switch(ident) {
-                case "em": value.type = CssValueType.em; break;
+                case "em": 
+                case "m": // for DML - cannot add suffix which starts from 'e'
+                    value.type = CssValueType.em; break;
                 case "pt": value.type = CssValueType.pt; break;
                 case "ex": value.type = CssValueType.ex; break;
                 case "px": value.type = CssValueType.px; break;

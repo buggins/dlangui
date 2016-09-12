@@ -30,6 +30,7 @@
         "--ex", "dimage.", "--ex", "fontconfig", "--ex", "src.dlangui"],
 
     "sourceFiles-windows": ["$PACKAGE_DIR/src/win_app.def"],
+    "excludedSourceFiles-windows": ["3rdparty/fontconfig/*"],
 
     "subPackages": [
         "./examples/helloworld/",
@@ -66,7 +67,7 @@
         {
             "name": "console",
             "versions": ["USE_CONSOLE", "EmbedStandardResources"],
-            "versions-windows": ["Unicode"]
+            "excludedSourceFiles": ["3rdparty/*"]
         },
         {
             "name": "minimal",
