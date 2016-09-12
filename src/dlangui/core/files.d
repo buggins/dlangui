@@ -314,11 +314,7 @@ private:
     }
     
     version (Windows) {
-        version(dlangui) {
-            import win32.windows;
-        } else {
-            import core.sys.windows.windows;
-        }
+        import core.sys.windows.windows;
         uint mask = GetLogicalDrives();
         foreach(int i; 0 .. 26) {
             if (mask & (1 << i)) {
@@ -353,24 +349,11 @@ private:
 version(Windows)
 {
 private:
-    //import core.sys.windows.windows;
-    //import core.sys.windows.shlobj;
-    //import core.sys.windows.wtypes;
-    //import core.sys.windows.objbase;
-    //import core.sys.windows.objidl;
-    version(dlangui) {
-        import win32.windows;
-        import win32.shlobj;
-        import win32.wtypes;
-        import win32.objbase;
-        import win32.objidl;
-    } else {
-        import core.sys.windows.windows;
-        import core.sys.windows.shlobj;
-        import core.sys.windows.wtypes;
-        import core.sys.windows.objbase;
-        import core.sys.windows.objidl;
-    }
+    import core.sys.windows.windows;
+    import core.sys.windows.shlobj;
+    import core.sys.windows.wtypes;
+    import core.sys.windows.objbase;
+    import core.sys.windows.objidl;
 
     pragma(lib, "Ole32");
 
@@ -523,12 +506,7 @@ bool isRoot(in string path) pure nothrow {
  */
 bool isHidden(in string path) nothrow {
     version(Windows) {
-        //import core.sys.windows.winnt : FILE_ATTRIBUTE_HIDDEN;
-        version(dlangui) {
-            import win32.winnt : FILE_ATTRIBUTE_HIDDEN;
-        } else {
-            import core.sys.windows.winnt : FILE_ATTRIBUTE_HIDDEN;
-        }
+        import core.sys.windows.winnt : FILE_ATTRIBUTE_HIDDEN;
         import std.exception : collectException;
         uint attrs;
         if (collectException(path.getAttributes(), attrs) is null) {

@@ -24,7 +24,7 @@ module dlangui.platforms.windows.win32drawbuf;
 version(Windows):
 public import dlangui.core.config;
 
-import win32.windows;
+import core.sys.windows.windows;
 import dlangui.core.logger;
 import dlangui.graphics.drawbuf;
 

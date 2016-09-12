@@ -16,7 +16,7 @@ version (Windows) {
     /// On win32 - first it tries to init freetype, and falls back to win32 fonts.
     /// On linux/mac - tries to init freetype with some hardcoded font paths
     extern(C) bool initFontManager() {
-        import win32.windows;
+        import core.sys.windows.windows;
         import std.utf;
         import dlangui.platforms.windows.win32fonts;
         try {
@@ -29,7 +29,7 @@ version (Windows) {
                 Log.v("Creating FreeTypeFontManager");
                 FreeTypeFontManager ftfontMan = new FreeTypeFontManager();
                 
-                import win32.shlobj;
+                import core.sys.windows.shlobj;
                 string fontsPath = "c:\\Windows\\Fonts\\";
                 static if (true) { // SHGetFolderPathW not found in shell32.lib
                     WCHAR[MAX_PATH] szPath;

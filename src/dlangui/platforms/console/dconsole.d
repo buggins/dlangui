@@ -515,7 +515,7 @@ class Console {
             import std.utf;
             wstring s16 = toUTF16(str);
             DWORD charsWritten;
-            WriteConsole(_hstdout, s16.ptr, s16.length, &charsWritten, null);
+            WriteConsole(_hstdout, cast(const(void)*)s16.ptr, cast(uint)s16.length, &charsWritten, cast(void*)null);
         } else {
             import std.utf;
             string s8 = toUTF8(str);

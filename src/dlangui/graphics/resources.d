@@ -576,7 +576,7 @@ static if (BACKEND_CONSOLE) {
                 }
             }
             // pad and convert text
-            _height = lines.length;
+            _height = cast(int)lines.length;
             if (!_height) {
                 _width = 0;
                 return;

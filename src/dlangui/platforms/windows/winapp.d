@@ -26,7 +26,7 @@ public import dlangui.core.config;
 static if (BACKEND_WIN32):
 
 import core.runtime;
-import win32.windows;
+import core.sys.windows.windows;
 import std.string;
 import std.utf;
 import std.stdio;
@@ -883,7 +883,7 @@ class Win32Platform : Platform {
         WNDCLASSW wndclass;
 
         wndclass.style         = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
-        wndclass.lpfnWndProc   = &WndProc;
+        wndclass.lpfnWndProc   = cast(WNDPROC)&WndProc;
         wndclass.cbClsExtra    = 0;
         wndclass.cbWndExtra    = 0;
         wndclass.hInstance     = _hInstance;

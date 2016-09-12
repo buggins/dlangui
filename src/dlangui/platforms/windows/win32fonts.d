@@ -24,7 +24,7 @@ module dlangui.platforms.windows.win32fonts;
 version(Windows):
 public import dlangui.core.config;
 
-import win32.windows;
+import core.sys.windows.windows;
 import dlangui.graphics.fonts;
 import dlangui.platforms.windows.win32drawbuf;
 import std.string;
@@ -655,7 +655,7 @@ FontFamily pitchAndFamilyToFontFamily(ubyte flags) {
 }
 
 // definition
-extern(Windows) {
+//extern(Windows) {
     int LVWin32FontEnumFontFamExProc(
                                      const (LOGFONTA) *lf,    // logical-font data
                                      const (TEXTMETRICA) *lpntme,  // physical-font data
@@ -680,4 +680,4 @@ extern(Windows) {
         }
         return 1;
     }
-}
+//}

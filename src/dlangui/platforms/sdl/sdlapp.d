@@ -1207,7 +1207,7 @@ class SDLPlatform : Platform {
         try {
             version (Windows) {
                 Log.i("showInFileManager(", pathName, ")");
-                import win32.windows;
+                import core.sys.windows.windows;
                 import dlangui.core.files;
 
                 string explorerPath = findExecutablePath("explorer.exe");
@@ -1619,7 +1619,7 @@ class SDLPlatform : Platform {
 }
 
 version (Windows) {
-    import win32.windows;
+    import core.sys.windows.windows;
     import dlangui.platforms.windows.win32fonts;
     pragma(lib, "gdi32.lib");
     pragma(lib, "user32.lib");
