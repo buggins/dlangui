@@ -23,6 +23,7 @@ module dlangui.platforms.windows.win32drawbuf;
 
 version(Windows):
 public import dlangui.core.config;
+static if (BACKEND_GUI):
 
 import core.sys.windows.windows;
 import dlangui.core.logger;

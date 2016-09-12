@@ -23,6 +23,7 @@ module dlangui.platforms.windows.win32fonts;
 
 version(Windows):
 public import dlangui.core.config;
+static if (BACKEND_GUI):
 
 import core.sys.windows.windows;
 import dlangui.graphics.fonts;
