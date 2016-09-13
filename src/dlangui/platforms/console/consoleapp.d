@@ -142,8 +142,14 @@ class ConsolePlatform : Platform {
                 _drawBuf.fillRect(Rect(0, 0, w.width, w.height), w.backgroundColor);
                 w.onDraw(_drawBuf);
                 auto caretRect = w.caretRect;
-                if ((w is activeWindow) && !caretRect.empty)
-                    _drawBuf.console.setCursor(caretRect.left, caretRect.top);
+                if ((w is activeWindow) && !caretRect.empty) {
+                    if (!caretRect.empty) {
+                        _drawBuf.console.setCursor(caretRect.left, caretRect.top);
+                        _drawBuf.console.setCursorType(w.caretReplace ? ConsoleCursorType.Replace : ConsoleCursorType.Insert);
+                    } else {
+                        _drawBuf.console.setCursorType(ConsoleCursorType.Invisible);
+                    }
+                }
             }
         }
         _needRedraw = false;

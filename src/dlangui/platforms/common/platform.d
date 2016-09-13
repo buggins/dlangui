@@ -214,8 +214,14 @@ class Window : CustomEventTarget {
     }
 
     protected Rect _caretRect;
+    /// blinking caret position (empty rect if no blinking caret)
     @property void caretRect(Rect rc) { _caretRect = rc; }
     @property Rect caretRect() { return _caretRect; }
+
+    protected bool _caretReplace;
+    /// blinking caret is in Replace mode if true, insert mode if false
+    @property void caretReplace(bool flg) { _caretReplace = flg; }
+    @property bool caretReplace() { return _caretReplace; }
 
     // Abstract methods : override in platform implementatino
 

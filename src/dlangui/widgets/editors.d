@@ -944,6 +944,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         if (window) {
             static if (BACKEND_CONSOLE) {
                 window.caretRect = caretRect;
+                window.caretReplace = _replaceMode;
             } else {
                 long ts = currentTimeMillis;
                 if (_caretTimerId) {
@@ -1058,7 +1059,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             Rect caretRc = caretRect();
             if (caretRc.intersects(_clientRect)) {
                 //caretRc.left++;
-                if (_replaceMode)
+                if (_replaceMode && BACKEND_GUI)
                     buf.fillRect(caretRc, _caretColorReplace);
                 buf.drawLine(Point(caretRc.left, caretRc.bottom), Point(caretRc.left, caretRc.top), _caretColor);
             }

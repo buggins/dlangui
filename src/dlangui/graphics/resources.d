@@ -1437,6 +1437,8 @@ class DrawableCache {
         foreach(string path; _resourcePaths) {
             string fn;
             fn = checkFileName(path, id, ".xml");
+            if (fn is null && BACKEND_CONSOLE)
+                fn = checkFileName(path, id, ".tim");
             if (fn is null)
                 fn = checkFileName(path, id, ".png");
             if (fn is null)

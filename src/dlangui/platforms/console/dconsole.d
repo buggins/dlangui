@@ -15,6 +15,13 @@ version(Windows) {
 import dlangui.core.signals;
 import dlangui.core.events;
 
+/// console cursor type
+enum ConsoleCursorType {
+    Invisible, /// hidden
+    Insert,    /// insert (usually underscore)
+    Replace,   /// replace (usually square)
+}
+
 enum TextColor : ubyte {
     BLACK,          // 0
     BLUE,
@@ -441,6 +448,7 @@ class Console {
                 _cursorX = _batchBuf.cursorX;
                 _cursorY = _batchBuf.cursorY;
                 rawSetCursor(_cursorX, _cursorY);
+                rawSetCursorType(_cursorType);
             }
             _batchBuf.clear(ConsoleChar.init);
         }
@@ -475,6 +483,52 @@ class Console {
             sprintf(buf.ptr, "\x1b[%d;%dH", y + 1, x + 1);
             rawWrite(cast(string)(buf[0 .. strlen(buf.ptr)]));
         }
+    }
+
+    private ConsoleCursorType _rawCursorType = ConsoleCursorType.Insert;
+    protected void rawSetCursorType(ConsoleCursorType type) {
+        if (_rawCursorType == type)
+            return;
+        version(Windows) {
+            CONSOLE_CURSOR_INFO ci;
+            switch(type) {
+                default:
+                case ConsoleCursorType.Insert:
+                    ci.dwSize = 10;
+                    ci.bVisible = TRUE;
+                    break;
+                case ConsoleCursorType.Replace:
+                    ci.dwSize = 100;
+                    ci.bVisible = TRUE;
+                    break;
+                case ConsoleCursorType.Invisible:
+                    ci.dwSize = 10;
+                    ci.bVisible = FALSE;
+                    break;
+            }
+            SetConsoleCursorInfo(_hstdout, &ci);
+        } else {
+            switch(type) {
+                default:
+                case ConsoleCursorType.Insert:
+                    rawWrite("\x1b[?25h");
+                    break;
+                case ConsoleCursorType.Replace:
+                    rawWrite("\x1b[?25h");
+                    break;
+                case ConsoleCursorType.Invisible:
+                    rawWrite("\x1b[?25l");
+                    break;
+            }
+        }
+        _rawCursorType = type;
+    }
+
+    private ConsoleCursorType _cursorType = ConsoleCursorType.Insert;
+    void setCursorType(ConsoleCursorType type) {
+        _cursorType = type;
+        if (!_batchMode)
+            rawSetCursorType(_cursorType);
     }
 
     protected void rawWriteTextAt(int x, int y, uint attr, dstring str) {
