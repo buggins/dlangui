@@ -201,6 +201,7 @@
         >
     </style>
     <style id="TAB_DOWN_BUTTON_DARK" parent="TAB_UP_BUTTON_DARK"
+        padding="1,0,1,0"
         />
 
     <style id="TAB_UP"
