@@ -1222,6 +1222,14 @@ class Window : CustomEventTarget {
         Log.d("override scheduleSystemTimer to support timers");
     }
 
+    /// poll expired timers; returns true if update is needed
+    bool pollTimers() {
+        bool res = _timerQueue.notify();
+        if (res)
+            update(false);
+        return res;
+    }
+
     /// system timer interval expired - notify queue
     protected void onTimer() {
         //Log.d("window.onTimer");

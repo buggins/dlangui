@@ -68,6 +68,7 @@ class ConsolePlatform : Platform {
         _console.resizeEvent = &onConsoleResize;
         _console.inputIdleEvent = &onInputIdle;
         _console.init();
+        _console.setCursorType(ConsoleCursorType.Invisible);
         _drawBuf = new ConsoleDrawBuf(_console);
     }
 
@@ -154,7 +155,13 @@ class ConsolePlatform : Platform {
         }
         _needRedraw = false;
     }
+
     protected bool onInputIdle() {
+        checkClosedWindows();
+        foreach(w; _windowList) {
+            w.pollTimers();
+            w.handlePostedEvents();
+        }
         checkClosedWindows();
         redraw();
         _console.flush();

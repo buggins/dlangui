@@ -423,12 +423,12 @@
         padding="0,0,0,0"
         />
     <style id="TOOLTIP"
-        backgroundImageId="tooltip_background"
+        backgroundColor="#808080"
         layoutWidth="WRAP_CONTENT"
         layoutHeight="WRAP_CONTENT"
         margins="0,0,0,0"
         padding="1,0,1,0"
-	textColor="#404040"
+	textColor="#00FFFF"
         />
     <style id="TOOLBAR"
         backgroundColor="#000000"
@@ -443,6 +443,7 @@
         padding="0,0,0,0"
         backgroundImageId="{'┌─┐' '│ │' '└─┘' 0x808000 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 1 1}"
         >
+        <state state_enabled="false" backgroundImageId="{'┌─┐' '│ │' '└─┘' 0x808080 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 1 1}"/>
         <state state_enabled="true" state_hover="true" backgroundImageId="{'┌─┐' '│ │' '└─┘' 0xFFFF00 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 1 1}"/>
     </style>
     <style id="TOOLBAR_CONTROL"
