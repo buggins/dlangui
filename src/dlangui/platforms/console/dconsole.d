@@ -485,6 +485,20 @@ class Console {
         }
     }
 
+
+    private dstring _windowCaption;
+    void setWindowCaption(dstring str) {
+        if (_windowCaption == str)
+            return;
+        _windowCaption = str;
+        version(Windows) {
+            import std.utf;
+            SetConsoleTitle(toUTF16z(str));
+        } else {
+            // TODO: ANSI terminal caption
+        }
+    }
+
     private ConsoleCursorType _rawCursorType = ConsoleCursorType.Insert;
     protected void rawSetCursorType(ConsoleCursorType type) {
         if (_rawCursorType == type)
