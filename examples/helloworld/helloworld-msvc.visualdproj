@@ -412,7 +412,7 @@
   <obj>0</obj>
   <link>0</link>
   <lib>0</lib>
-  <subsystem>2</subsystem>
+  <subsystem>1</subsystem>
   <multiobj>0</multiobj>
   <singleFileCompilation>0</singleFileCompilation>
   <oneobj>0</oneobj>
@@ -441,7 +441,7 @@
   <useArrayBounds>0</useArrayBounds>
   <noboundscheck>0</noboundscheck>
   <useSwitchError>0</useSwitchError>
-  <useUnitTests>1</useUnitTests>
+  <useUnitTests>0</useUnitTests>
   <useInline>0</useInline>
   <release>0</release>
   <preservePaths>0</preservePaths>
@@ -452,7 +452,7 @@
   <pic>0</pic>
   <cov>0</cov>
   <nofloat>0</nofloat>
-  <Dversion>2.043</Dversion>
+  <Dversion>2</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
   <allinst>0</allinst>
   <stackStomp>0</stackStomp>
@@ -480,7 +480,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>EmbedStandardResources</versionids>
+  <versionids>USE_CONSOLE EmbedStandardResources ForceLogs</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -514,7 +514,7 @@
   <obj>0</obj>
   <link>0</link>
   <lib>0</lib>
-  <subsystem>2</subsystem>
+  <subsystem>1</subsystem>
   <multiobj>0</multiobj>
   <singleFileCompilation>0</singleFileCompilation>
   <oneobj>0</oneobj>
@@ -554,7 +554,7 @@
   <pic>0</pic>
   <cov>0</cov>
   <nofloat>0</nofloat>
-  <Dversion>2.043</Dversion>
+  <Dversion>2</Dversion>
   <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
   <allinst>0</allinst>
   <stackStomp>0</stackStomp>
@@ -582,7 +582,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>EmbedStandardResources</versionids>
+  <versionids>USE_CONSOLE</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>

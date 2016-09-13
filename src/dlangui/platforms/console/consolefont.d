@@ -147,7 +147,7 @@ class ConsoleFont : Font {
         int underlineY = y + _baseline + underlineHeight * 2;
         buf.console.textColor = ConsoleDrawBuf.toConsoleColor(color);
         buf.console.backgroundColor = CONSOLE_TRANSPARENT_BACKGROUND;
-        Log.d("drawText: (", x, ',', y, ") '", text, "', color=", buf.console.textColor);
+        //Log.d("drawText: (", x, ',', y, ") '", text, "', color=", buf.console.textColor);
         foreach(int i; 0 .. charsMeasured) {
             dchar ch = text[i];
             if (ch == '&' && (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.HotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))) {
@@ -156,17 +156,14 @@ class ConsoleFont : Font {
                 continue; // skip '&' in hot key when measuring
             }
             int xx = (i > 0) ? _textSizeBuffer[i - 1] : 0;
-            if (x + xx > clip.right)
+            if (x + xx >= clip.right)
                 break;
-            if (x + xx + 255 < clip.left)
+            if (x + xx < clip.left)
                 continue; // far at left of clipping region
 
             if (underline) {
-                //int xx2 = _textSizeBuffer[i];
                 // draw underline
                 buf.console.underline = true;
-                //if (xx2 > xx)
-                //    buf.fillRect(Rect(x + xx, underlineY, x + xx2, underlineY + underlineHeight), color);
                 // turn off underline after hot key
                 if (!(textFlags & TextFlag.Underline)) {
                     underline = false;
@@ -177,7 +174,7 @@ class ConsoleFont : Font {
             if (ch == ' ' || ch == '\t')
                 continue;
             int gx = x + xx;
-            if (gx + 1 < clip.left)
+            if (gx < clip.left)
                 continue;
             buf.console.setCursor(gx, y);
             buf.console.writeText(cast(dstring)(text[i .. i + 1]));
@@ -198,9 +195,14 @@ class ConsoleFont : Font {
     *      tabOffset = when string is drawn not from left position, use to move tab stops left/right
     *      textFlags = set of TextFlag bit fields
     ****************************************************************************************/
-    override void drawColoredText(DrawBuf buf, int x, int y, const dchar[] text, const CustomCharProps[] charProps, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
+    override void drawColoredText(DrawBuf drawBuf, int x, int y, const dchar[] text, const CustomCharProps[] charProps, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
         if (text.length == 0)
             return; // nothing to draw - empty text
+
+        import dlangui.platforms.console.consoleapp;
+        import dlangui.platforms.console.dconsole;
+        ConsoleDrawBuf buf = cast(ConsoleDrawBuf)drawBuf;
+
         if (_textSizeBuffer.length < text.length)
             _textSizeBuffer.length = text.length;
         int charsMeasured = measureText(text, _textSizeBuffer, MAX_WIDTH_UNSPECIFIED, tabSize, tabOffset, textFlags);
@@ -214,47 +216,48 @@ class ConsoleFont : Font {
         bool underline = (customizedTextFlags & TextFlag.Underline) != 0;
         int underlineHeight = 1;
         int underlineY = y + _baseline + underlineHeight * 2;
+        buf.console.backgroundColor = CONSOLE_TRANSPARENT_BACKGROUND;
         foreach(int i; 0 .. charsMeasured) {
             dchar ch = text[i];
             uint color = i < charProps.length ? charProps[i].color : charProps[$ - 1].color;
+            buf.console.textColor = ConsoleDrawBuf.toConsoleColor(color);
             customizedTextFlags = (i < charProps.length ? charProps[i].textFlags : charProps[$ - 1].textFlags) | textFlags;
             underline = (customizedTextFlags & TextFlag.Underline) != 0;
             // turn off underline after hot key
             if (ch == '&' && (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.HotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))) {
-                if (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))
-                    underline = true; // turn ON underline for hot key
+                // draw underline
+                buf.console.underline = true;
+                // turn off underline after hot key
+                if (!(textFlags & TextFlag.Underline)) {
+                    underline = false;
+                    buf.console.underline = false;
+                }
                 continue; // skip '&' in hot key when measuring
             }
             int xx = (i > 0) ? _textSizeBuffer[i - 1] : 0;
-            if (x + xx > clip.right)
+            if (x + xx >= clip.right)
                 break;
-            if (x + xx + 255 < clip.left)
+            if (x + xx < clip.left)
                 continue; // far at left of clipping region
 
             if (underline) {
-                int xx2 = _textSizeBuffer[i];
                 // draw underline
-                if (xx2 > xx)
-                    buf.fillRect(Rect(x + xx, underlineY, x + xx2, underlineY + underlineHeight), color);
+                buf.console.underline = true;
                 // turn off underline after hot key
-                if (!(customizedTextFlags & TextFlag.Underline))
+                if (!(customizedTextFlags & TextFlag.Underline)) {
                     underline = false;
+                    buf.console.underline = false;
+                }
             }
 
             if (ch == ' ' || ch == '\t')
                 continue;
-            Glyph * glyph = getCharGlyph(ch);
-            if (glyph is null)
+
+            int gx = x + xx;
+            if (gx < clip.left)
                 continue;
-            if ( glyph.blackBoxX && glyph.blackBoxY ) {
-                int gx = x + xx + glyph.originX;
-                if (gx + glyph.correctedBlackBoxX < clip.left)
-                    continue;
-                buf.drawGlyph( gx,
-                               y + _baseline - glyph.originY,
-                              glyph,
-                              color);
-            }
+            buf.console.setCursor(gx, y);
+            buf.console.writeText(cast(dstring)(text[i .. i + 1]));
         }
     }
 

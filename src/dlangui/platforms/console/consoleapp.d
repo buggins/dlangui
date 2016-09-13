@@ -386,6 +386,8 @@ extern(C) int DLANGUImain(string[] args) {
     initResourceManagers();
 
     currentTheme = createDefaultTheme();
+    Platform.instance.uiTheme = "theme_default";
+
     Log.i("Entering UIAppMain: ", args);
     int result = -1;
     try {

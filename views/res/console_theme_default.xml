@@ -6,8 +6,8 @@
         textColor="#C0C0C0"
         >
     <color id="window_background" value="#000000"/>
-    <color id="dialog_background" value="#EEEEEE"/>
-    <color id="edit_background" value="#FFFFFF"/>
+    <color id="dialog_background" value="#000000"/>
+    <color id="edit_background" value="#000000"/>
     <color id="edit_caret" value="#000000"/>
     <color id="edit_caret_replace" value="#000000"/>
     <color id="editor_matching_bracket_highlight" value="#800000"/>
@@ -22,9 +22,9 @@
     <color id="editor_left_pane_line_number_text_current_line" value="#FFFFFF"/>
     <color id="editor_left_pane_line_number_background" value="#FFFFFFFF"/>
     <color id="editor_left_pane_line_number_background_current_line" value="#808080"/>
-    <color id="editor_left_pane_line_icon_color_breakpoint" value="#0000FF"/>
+    <color id="editor_left_pane_line_icon_color_breakpoint" value="#FF0000"/>
     <color id="editor_left_pane_line_icon_color_bookmark" value="#00FF00"/>
-    <color id="editor_left_pane_line_icon_color_error" value="#FF0000"/>
+    <color id="editor_left_pane_line_icon_color_error" value="#800000"/>
 
     <color id="grid_selection_color" value="#008000"/>
     <color id="grid_selection_color_row" value="#008000"/>
@@ -33,6 +33,17 @@
     <color id="grid_cell_border_color_header" value="#C0202020"/>
     <color id="grid_cell_background_header" value="#808080"/>
     <color id="grid_cell_background_header_selected" value="#008000"/>
+
+    <drawable id="arrow_right_down_black" value="{'▼ ' #008000}"/>
+    <drawable id="arrow_right_hollow" value="{'► ' #008000}"/>
+    <drawable id="btn_check" value="btn_check"/>
+    <drawable id="btn_radio" value="btn_radio"/>
+    <drawable id="scrollbar_button_up" value="{'▲' #FFFF00}"/>
+    <drawable id="scrollbar_button_down" value="{'▼' #FFFF00}"/>
+    <drawable id="scrollbar_button_left" value="{'◄' #FFFF00}"/>
+    <drawable id="scrollbar_button_right" value="{'►' #FFFF00}"/>
+    <drawable id="scrollbar_indicator_vertical" value="{'' #FFFF00}"/>
+    <drawable id="scrollbar_indicator_horizontal" value="{'' #FFFF00}"/>
 
     <style id="BUTTON"
         backgroundImageId="{'▄' ' ' '▀' tc 0x808080 bc 0xFFFFFFFF 0x808080 0xFFFFFFFF ninepatch 0 1 0 1 padding 1 1 1 1}"
@@ -143,30 +154,19 @@
         backgroundImageId="btn_background"
         align="Center"
         />
-    <color id="sample_color_rgb" value="#8CF"/>
-    <color id="sample_color_argb" value="#48CF"/>
-    <color id="sample_color_rrggbb" value="#80C0F0"/>
-    <color id="sample_color_aarrggbb" value="#4080C0F0"/>
-    <drawable id="btn_check" value="btn_check"/>
-    <drawable id="btn_radio" value="btn_radio"/>
-    <drawable id="scrollbar_button_up" value="scrollbar_btn_up"/>
-    <drawable id="scrollbar_button_down" value="scrollbar_btn_down"/>
-    <drawable id="scrollbar_button_left" value="scrollbar_btn_left"/>
-    <drawable id="scrollbar_button_right" value="scrollbar_btn_right"/>
-    <drawable id="scrollbar_indicator_vertical" value="scrollbar_indicator_vertical"/>
-    <drawable id="scrollbar_indicator_horizontal" value="scrollbar_indicator_horizontal"/>
+
     <style id="SCROLLBAR"
         align="Center"
-        backgroundImageId="{'░' bc 0x808000 stretch}"
+        backgroundImageId="{'░' 0x808000 stretch}"
         />
     <style id="SCROLLBAR_BUTTON"
         backgroundImageId="{' ' bc 0x808000 stretch}"
         align="Center"
         >
-        <state state_pressed="true" backgroundImageId="{' ' bc 0x808080 stretch}"/>
+        <state state_pressed="true" backgroundImageId="{' ' bc 0xFFFF00 stretch}"/>
     </style>
     <style id="SCROLLBAR_BUTTON_TRANSPARENT"
-        backgroundImageId="{' ' stretch}"
+        backgroundImageId="{'░' 0x808000 stretch}"
         align="Center"
         />
     <style id="SLIDER"
@@ -177,19 +177,8 @@
         <state state_pressed="true" backgroundImageId="{'░' 0x808080 stretch}"/>
         <state state_hovered="true" backgroundImageId="{'░' 0x808000 stretch}"/>
     </style>
-
-    <style id="TAB_DOWN_DARK"
-        backgroundImageId="dock_window_caption_background_down"
-        layoutWidth="FILL_PARENT"
-        >
-    </style>
-    <style id="TAB_DOWN_BUTTON_DARK"
-        padding="1,0,1,0"
-        backgroundImageId="tab_btn_dark_down"
-        />
     <style id="TAB_UP_DARK"
         layoutWidth="FILL_PARENT"
-        margins="1,0,1,0"
         backgroundColor="#000000"
         >
     </style>
@@ -202,11 +191,18 @@
     <style id="TAB_UP_BUTTON_TEXT_DARK"
         textColor="#808080"
         align="Center"
-        margins="1,0,1,0"
+        padding="1,0,1,0"
         >
         <state state_selected="true" textColor="#FFFFFF"/>
         <state state_hovered="true" textColor="#808000"/>
     </style>
+
+    <style id="TAB_DOWN_DARK" parent="TAB_UP_DARK"
+        >
+    </style>
+    <style id="TAB_DOWN_BUTTON_DARK" parent="TAB_UP_BUTTON_DARK"
+        />
+
     <style id="TAB_UP"
         layoutWidth="FILL_PARENT"
         margins="2,0,2,0"
@@ -220,6 +216,7 @@
         <state state_selected="true" textColor="#FFFFFF"/>
         <state state_hovered="true" textColor="#808000"/>
     </style>
+
     <style id="TAB_UP_BUTTON"
         backgroundColor="#000000"
         >
@@ -320,7 +317,7 @@
 
     <style id="EDIT_LINE"
         backgroundImageId="{'┌─┐' '│ │' '└─┘' 0x808080 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 1 1}"
-        padding="0,0,0,0"
+        padding="1,1,1,1"
         margins="0,0,0,0"
         minWidth="5"
         >
@@ -329,18 +326,20 @@
     <style id="EDIT_BOX"
         fontFace="Menlo,Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console"
         backgroundImageId="{'┌─┐' '│ │' '└─┘' 0x808080 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}"
-        padding="0,0,0,0"
+        padding="1,1,0,0"
         margins="0,0,0,0"
         minWidth="8"
         minHeight="3"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         >
+        <state state_focused="true" state_window_focused="true" backgroundImageId="{'┌─┐' '│ │' '└─┘' 0xFFFF00 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}"/>
         <state state_focused="true" backgroundImageId="{'┌─┐' '│ │' '└─┘' 0xFFFF00 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}"/>
+        <state state_enabled="true" backgroundImageId="{'┌─┐' '│ │' '└─┘' 0x808080 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}"/>
     </style>
     <style id="EDIT_BOX_NO_FRAME"
         fontFace="Menlo,Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console"
-        backgroundColor="#FFFFFF"
+        backgroundColor="#000000"
         padding="0,0,0,0"
         margins="0,0,0,0"
         minWidth="8"
@@ -367,19 +366,12 @@
 	layoutWeight="0"
         />
     <style id="DOCK_HOST"
-        backgroundColor="#eceffa"
+        backgroundColor="#000000"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         padding="0,0,0,0"
         />
     <style id="DOCK_HOST_BODY"
-        layoutWidth="FILL_PARENT"
-        layoutHeight="FILL_PARENT"
-        padding="0,0,0,0"
-        margins="0,0,0,0"
-        />
-    <style id="DOCK_WINDOW"
-        backgroundColor="#000000"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         padding="0,0,0,0"
@@ -392,23 +384,36 @@
         padding="0,0,0,0"
         margins="0,0,0,0"
         />
+    <style id="DOCK_WINDOW"
+        backgroundColor="#000000"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        padding="0,0,0,0"
+        margins="0,0,0,0"
+        />
     <style id="DOCK_WINDOW_CAPTION"
         backgroundColor="#008000"
+        textColor="#000080"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
-        padding="0,0,0,1"
-        />
+        padding="0,0,0,0"
+        >
+        <state state_window_focused="true" backgroundColor="#0000FF"/>
+    </style>
     <style id="DOCK_WINDOW_CAPTION_LABEL"
         textColor="#FFFFFF"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
         padding="0,0,0,0"
         align="Left|VCenter"
-        />
+        >
+        <state state_window_focused="true" textColor="#FFFFFF"/>
+    </style>
     <style id="DOCK_WINDOW_BODY"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         padding="0,0,0,0"
+        backgroundColor="#000000"
         />
 
     <style id="TOOLBAR_HOST"
@@ -426,29 +431,30 @@
 	textColor="#404040"
         />
     <style id="TOOLBAR"
-        backgroundImageId="toolbar_background"
+        backgroundColor="#000000"
         layoutWidth="WRAP_CONTENT"
         layoutHeight="WRAP_CONTENT"
         margins="1,0,1,0"
         minHeight="3"
         />
     <style id="TOOLBAR_BUTTON"
-        backgroundImageId="btn_background"
         align="Center"
         margins="0,0,0,0"
         padding="0,0,0,0"
+        backgroundImageId="{'┌─┐' '│ │' '└─┘' 0x808000 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 1 1}"
         >
-        <state state_enabled="false" alpha="160" backgroundImageId="@null"/>
+        <state state_enabled="true" state_hover="true" backgroundImageId="{'┌─┐' '│ │' '└─┘' 0xFFFF00 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 1 1}"/>
     </style>
     <style id="TOOLBAR_CONTROL"
-        backgroundColor="#000000"
         align="Center"
         margins="0,0,0,0"
         padding="0,0,0,0"
+        backgroundImageId="{'┌─┐' '│ │' '└─┘' 0x808000 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 1 1}"
         >
-        <state state_enabled="false" alpha="160" backgroundImageId="@null"/>
+        <state state_enabled="true" state_hover="true" backgroundImageId="{'┌─┐' '│ │' '└─┘' 0xFFFF00 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 1 1}"/>
     </style>
     <style id="TOOLBAR_SEPARATOR"
+        backgroundImageId="{' ' 0x808080 padding 1 1 1 1}"
         align="Center"
         />
 
@@ -466,8 +472,9 @@
     <style id="TREE_ITEM_BODY"
         align="Left|VCenter"
         textFlags="Parent"
-        backgroundImageId="list_item_background"
-    />
+        >
+        <state state_selected="true" backgroundColor="#808080"/>
+    </style>
     <style id="TREE_ITEM_ICON"
         align="Left|VCenter"
         textFlags="Parent"
@@ -478,6 +485,8 @@
         align="Left|VCenter"
         textFlags="Parent"
         >
+        <state state_selected="true" textColor="#FFFFFF"/>
+        <state state_hover="true" textColor="#FFFF00"/>
         <state state_default="true" fontWeight="bold"/>
     </style>
 
@@ -496,7 +505,6 @@
 
     <style id="SETTINGS_PAGE_TITLE"
         margins="1,1,1,2"
-	fontSize="120%"
 	layoutWeight="0"
         layoutWidth="FILL_PARENT"
     />
@@ -506,22 +514,22 @@
         layoutHeight="WRAP_CONTENT"
 	minHeight="1"
 	maxHeight="1"
-	backgroundColor="#E0E0E0">
-        <state state_focused="true" backgroundColor="#40C0C000"/>
-        <state state_pressed="true" backgroundColor="#4080C000"/>
-        <state state_selected="true" backgroundColor="#00F8F9Fa"/>
-        <state state_hovered="true" backgroundColor="#C0FFFF00"/>
+	backgroundColor="#FFFFFFFF">
+        <state state_focused="true" backgroundColor="#FF00FF"/>
+        <state state_pressed="true" backgroundColor="#FFFF00"/>
+        <state state_selected="true" backgroundColor="#808080"/>
+        <state state_hovered="true" backgroundColor="#808000"/>
     </style>
     <style id="RESIZER_HORIZONTAL"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
 	minWidth="1"
 	maxWidth="1"
-	backgroundColor="#E0E0E0">
-        <state state_focused="true" backgroundColor="#40C0C000"/>
-        <state state_pressed="true" backgroundColor="#4080C000"/>
-        <state state_selected="true" backgroundColor="#00F8F9Fa"/>
-        <state state_hovered="true" backgroundColor="#C0FFFF00"/>
+	backgroundColor="#FFFFFFFF">
+        <state state_focused="true" backgroundColor="#FF00FF"/>
+        <state state_pressed="true" backgroundColor="#FFFF00"/>
+        <state state_selected="true" backgroundColor="#808080"/>
+        <state state_hovered="true" backgroundColor="#808000"/>
     </style>
 </theme>
 

@@ -8,7 +8,7 @@ mixin APP_ENTRY_POINT;
 extern (C) int UIAppMain(string[] args) {
 
     // load theme from file "theme_default.xml"
-    Platform.instance.uiTheme = "theme_default";
+    //Platform.instance.uiTheme = "theme_default";
 
     // create window
     Log.d("Creating window");

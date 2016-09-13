@@ -90,7 +90,7 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
     }
 
     protected ImageButton createButton() {
-        ImageButton res = new ImageButton("COMBOBOX_BUTTON", "scrollbar_btn_down");
+        ImageButton res = new ImageButton("COMBOBOX_BUTTON", ATTR_SCROLLBAR_BUTTON_DOWN);
         res.styleId = STYLE_COMBO_BOX_BUTTON;
         res.layoutWeight = 0;
         res.click = this;

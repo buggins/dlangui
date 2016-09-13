@@ -1,12 +1,6 @@
 res/i18n/std_en.ini
 res/i18n/std_ru.ini
 res/console_theme_default.xml
-res/scrollbar_btn_left.tim
-res/scrollbar_btn_right.tim
-res/scrollbar_btn_up.tim
-res/scrollbar_btn_down.tim
-res/scrollbar_indicator_horizontal.tim
-res/scrollbar_indicator_vertical.tim
 res/btn_check.xml
 res/btn_check_on.tim
 res/btn_check_on_pressed.tim
