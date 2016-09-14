@@ -286,24 +286,47 @@ class ConsoleDrawBuf : DrawBuf {
             return dr + dg + db;
         }
     }
-    static immutable RGB[16] CONSOLE_COLORS_RGB = [
-        RGB(0,0,0),
-        RGB(0,0,128),
-        RGB(0,128,0),
-        RGB(0,128,128),
-        RGB(128,0,0),
-        RGB(128,0,128),
-        RGB(128,128,0),
-        RGB(192,192,192),
-        RGB(0x7c,0x7c,0x7c), // ligth gray
-        RGB(0,0,255),
-        RGB(0,255,0),
-        RGB(0,255,255),
-        RGB(255,0,0),
-        RGB(255,0,255),
-        RGB(255,255,0),
-        RGB(255,255,255),
-    ];
+    static if (Windows) {
+        // windows color table
+        static immutable RGB[16] CONSOLE_COLORS_RGB = [
+            RGB(0,0,0),
+            RGB(0,0,128),
+            RGB(0,128,0),
+            RGB(0,128,128),
+            RGB(128,0,0),
+            RGB(128,0,128),
+            RGB(128,128,0),
+            RGB(192,192,192),
+            RGB(0x7c,0x7c,0x7c), // ligth gray
+            RGB(0,0,255),
+            RGB(0,255,0),
+            RGB(0,255,255),
+            RGB(255,0,0),
+            RGB(255,0,255),
+            RGB(255,255,0),
+            RGB(255,255,255),
+        ];
+    } else {
+        // linux color table
+        static immutable RGB[16] CONSOLE_COLORS_RGB = [
+            RGB(0,0,0),
+            RGB(128,0,0),
+            RGB(0,128,0),
+            RGB(128,128,0),
+            RGB(0,0,128),
+            RGB(128,0,128),
+            RGB(0,128,128),
+            RGB(192,192,192),
+            RGB(0x7c,0x7c,0x7c), // ligth gray
+            RGB(255,0,0),
+            RGB(0,255,0),
+            RGB(255,255,0),
+            RGB(0,0,255),
+            RGB(255,0,255),
+            RGB(0,255,255),
+            RGB(255,255,255),
+        ];
+    }
 
     static ubyte toConsoleColor(uint color, bool forBackground = false) {
         if (forBackground && ((color >> 24) & 0xFF) >= 0x80)
