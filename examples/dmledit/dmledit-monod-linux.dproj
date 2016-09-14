@@ -244,7 +244,7 @@
     <DebugLevel>0</DebugLevel>
     <ExtraLinkerArguments>-lX11</ExtraLinkerArguments>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugConsole|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugConsole|x64' ">
     <OutputPath>bin\DebugConsole</OutputPath>
     <ObjectsDirectory>obj/DebugConsole</ObjectsDirectory>
     <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
@@ -259,6 +259,11 @@
     <Target>Executable</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_CONSOLE</String>
+      </VersionIds>
+    </VersionIds>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\dmledit.d" />

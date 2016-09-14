@@ -187,8 +187,13 @@
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugConsole|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugConsole|x64' ">
     <OutputPath>bin\DebugConsole</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_CONSOLE</String>
+      </VersionIds>
+    </VersionIds>
     <ObjectsDirectory>obj/DebugConsole</ObjectsDirectory>
     <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
     <UnittestMode>false</UnittestMode>

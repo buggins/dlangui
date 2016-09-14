@@ -254,8 +254,13 @@
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugConsole|AnyCPU' ">
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugConsole|x64' ">
     <OutputPath>bin\DebugConsole</OutputPath>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_CONSOLE</String>
+      </VersionIds>
+    </VersionIds>
     <ObjectsDirectory>obj/DebugConsole</ObjectsDirectory>
     <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
     <ExtraCompilerArguments>-Jviews
@@ -269,11 +274,6 @@
     <Target>StaticLibrary</Target>
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
-    <VersionIds>
-      <VersionIds>
-        <String>USE_CONSOLE</String>
-      </VersionIds>
-    </VersionIds>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\dlangui\core\collections.d" />
