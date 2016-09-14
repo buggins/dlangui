@@ -244,6 +244,27 @@
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugConsole|AnyCPU' ">
+    <OutputPath>bin\DebugConsole</OutputPath>
+    <ObjectsDirectory>obj/DebugConsole</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/hdpi
+-Jviews/res/mdpi
+-Jviews/res/i18n
+</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>example1-monod-linux</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_CONSOLE</String>
+      </VersionIds>
+    </VersionIds>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\example1.d" />
   </ItemGroup>

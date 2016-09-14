@@ -254,6 +254,27 @@
     <Externalconsole>true</Externalconsole>
     <DebugLevel>0</DebugLevel>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugConsole|AnyCPU' ">
+    <OutputPath>bin\DebugConsole</OutputPath>
+    <ObjectsDirectory>obj/DebugConsole</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/i18n
+-Jviews/res/shaders
+-Jviews/res/mdpi
+-Jviews/res/hdpi</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>libdlangui-monod-linux</OutputName>
+    <Target>StaticLibrary</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+    <VersionIds>
+      <VersionIds>
+        <String>USE_CONSOLE</String>
+      </VersionIds>
+    </VersionIds>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\dlangui\core\collections.d" />
     <Compile Include="src\dlangui\core\css.d" />
@@ -284,7 +305,6 @@
     <Compile Include="src\dlangui\dml\tokenizer.d" />
     <Compile Include="src\dlangui\graphics\colors.d" />
     <Compile Include="src\dlangui\graphics\drawbuf.d" />
-    <Compile Include="src\dlangui\graphics\domrender.d" />
     <Compile Include="src\dlangui\graphics\fonts.d" />
     <Compile Include="src\dlangui\graphics\ftfonts.d" />
     <Compile Include="src\dlangui\graphics\gldrawbuf.d" />
@@ -406,6 +426,11 @@
     <Compile Include="3rdparty\dimage\zlib.d" />
     <Compile Include="src\dlangui\core\asyncsocket.d" />
     <Compile Include="src\dlangui\core\queue.d" />
+    <Compile Include="src\dlangui\graphics\domrender\domrender.d" />
+    <Compile Include="src\dlangui\graphics\domrender\renderblock.d" />
+    <Compile Include="src\dlangui\platforms\console\consoleapp.d" />
+    <Compile Include="src\dlangui\platforms\console\consolefont.d" />
+    <Compile Include="src\dlangui\platforms\console\dconsole.d" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="src\dlangui\platforms\x11\" />
