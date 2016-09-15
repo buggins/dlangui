@@ -480,7 +480,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>USE_OPENGL EmbedStandardResources ForceLogs</versionids>
+  <versionids>USE_CONSOLE ForceLogs</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>

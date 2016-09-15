@@ -17,5 +17,20 @@
 
     "dependencies": {
         "dlangui": {"path": "../../"}
-    }
+    },
+
+    "configurations" : [
+        {
+            "name" : "default",
+            "subConfigurations" : {
+                "dlangui" : "default"
+            }
+        }, 
+        {
+            "name" : "console",
+            "subConfigurations" : {
+                "dlangui" : "console"
+            }
+        }
+    ]
 }

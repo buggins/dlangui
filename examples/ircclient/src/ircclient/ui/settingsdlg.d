@@ -6,6 +6,8 @@ import dlangui.widgets.widget;
 import dlangui.dml.parser;
 import ircclient.ui.frame;
 import ircclient.ui.settings;
+import std.utf;
+import std.conv : to;
 
 class SettingsDialog : Dialog {
     IRCFrame _frame;

@@ -10,7 +10,7 @@ import ircclient.net.client;
 import ircclient.ui.settingsdlg;
 import ircclient.ui.settings;
 
-import std.string : startsWith, indexOf;
+import std.string : startsWith, indexOf, empty;
 import std.path;
 
 // action codes
@@ -317,8 +317,8 @@ public:
             _listBox = new StringListWidget();
             _listBox.layoutHeight = FILL_PARENT;
             _listBox.layoutWidth = WRAP_CONTENT;
-            _listBox.minWidth = 100;
-            _listBox.maxWidth = 200;
+            _listBox.minWidth = pointsToPixels(100);
+            _listBox.maxWidth = pointsToPixels(200);
             _listBox.orientation = Orientation.Vertical;
             //_listBox.items = ["Nick1"d, "Nick2"d];
             hlayout.addChild(new ResizerWidget(null, Orientation.Horizontal));

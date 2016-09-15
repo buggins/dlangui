@@ -188,7 +188,7 @@
         >
         <state state_selected="true" backgroundColor="#000080"/>
     </style>
-    <style id="TAB_UP_BUTTON_TEXT_DARK"
+    <style id="TAB_UP_BUTTON_DARK_TEXT"
         textColor="#808080"
         align="Center"
         padding="1,0,1,0"
