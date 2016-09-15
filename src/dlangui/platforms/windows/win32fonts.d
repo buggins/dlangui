@@ -519,7 +519,7 @@ class Win32FontManager : FontManager {
             EnumFontFamiliesExA(
                                 dc,                  // handle to DC
                                 &lf,                              // font information
-                                &LVWin32FontEnumFontFamExProc, // callback function (FONTENUMPROC)
+                                cast(FONTENUMPROCA)&LVWin32FontEnumFontFamExProc, // callback function (FONTENUMPROC)
                                 cast(LPARAM)(cast(void*)this),                    // additional data
                                 0U                     // not used; must be 0
                                     );
@@ -656,7 +656,7 @@ FontFamily pitchAndFamilyToFontFamily(ubyte flags) {
 }
 
 // definition
-//extern(Windows) {
+extern(Windows) {
     int LVWin32FontEnumFontFamExProc(
                                      const (LOGFONTA) *lf,    // logical-font data
                                      const (TEXTMETRICA) *lpntme,  // physical-font data
@@ -681,4 +681,4 @@ FontFamily pitchAndFamilyToFontFamily(ubyte flags) {
         }
         return 1;
     }
-//}
+}
