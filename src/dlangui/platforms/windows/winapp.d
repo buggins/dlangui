@@ -229,6 +229,10 @@ static if (ENABLE_OPENGL) {
     __gshared SharedGLContext sharedGLContext;
 }
 
+interface UnknownWindowMessageHandler {
+    /// return true if message is handled, put return value into result
+    bool onUnknownWindowMessage(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam, ref LRESULT result);
+}
 
 class Win32Window : Window {
     Win32Platform _platform;
@@ -237,6 +241,12 @@ class Win32Window : Window {
     dstring _caption;
     Win32ColorDrawBuf _drawbuf;
     bool useOpengl;
+
+    /// win32 only - return window handle
+    @property HWND windowHandle() {
+        return _hwnd;
+    }
+
     this(Win32Platform platform, dstring windowCaption, Window parent, uint flags, uint width = 0, uint height = 0) {
         Win32Window w32parent = cast(Win32Window)parent;
         HWND parenthwnd = w32parent ? w32parent._hwnd : null;
@@ -388,6 +398,16 @@ class Win32Window : Window {
         }
     }
 
+    /// custom window message handler
+    Signal!UnknownWindowMessageHandler onUnknownWindowMessage;
+    private uint handleUnknownWindowMessage(UINT message, WPARAM wParam, LPARAM lParam) {
+        if (onUnknownWindowMessage.assigned) {
+            LRESULT res;
+            if (onUnknownWindowMessage(_hwnd, message, wParam, lParam, res))
+                return res;
+        }
+        return DefWindowProc(_hwnd, message, wParam, lParam);
+    }
 
     Win32ColorDrawBuf getDrawBuf() {
         //RECT rect;
@@ -1272,11 +1292,14 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 SetWindowLongPtr(hwnd, GWLP_USERDATA, cast(LONG_PTR)ptr);
                 window._hwnd = hwnd;
                 window.onCreate();
+                //window.handleUnknownWindowMessage(message, wParam, lParam);
             }
             return 0;
         case WM_DESTROY:
-            if (window !is null)
+            if (window !is null) {
+                //window.handleUnknownWindowMessage(message, wParam, lParam);
                 window.onDestroy();
+            }
             if (w32platform.windowCount == 0)
                 PostQuitMessage(0);
             return 0;
@@ -1426,6 +1449,8 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             //Log.d("Unhandled message ", message);
             break;
     }
+    if (window)
+        return window.handleUnknownWindowMessage(message, wParam, lParam);
     return DefWindowProc(hwnd, message, wParam, lParam);
 }
 
