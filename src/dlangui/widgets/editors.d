@@ -2390,7 +2390,7 @@ class EditBox : EditWidgetBase {
             case SelectUp:
                 if (_caretPos.line > 0) {
                     _caretPos.line--;
-					correctCaretPos();
+                    correctCaretPos();
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                     ensureCaretVisible();
                 }
@@ -2399,7 +2399,7 @@ class EditBox : EditWidgetBase {
             case SelectDown:
                 if (_caretPos.line < _content.length - 1) {
                     _caretPos.line++;
-					correctCaretPos();
+                    correctCaretPos();
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                     ensureCaretVisible();
                 }
@@ -2409,7 +2409,7 @@ class EditBox : EditWidgetBase {
                 {
                     ensureCaretVisible();
                     _caretPos.line = _firstVisibleLine;
-					correctCaretPos();
+                    correctCaretPos();
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                 }
                 return true;
@@ -2422,7 +2422,7 @@ class EditBox : EditWidgetBase {
                     if (newpos >= _content.length)
                         newpos = _content.length - 1;
                     _caretPos.line = newpos;
-					correctCaretPos();
+                    correctCaretPos();
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                 }
                 return true;
@@ -2440,7 +2440,7 @@ class EditBox : EditWidgetBase {
                         _firstVisibleLine = newpos;
                         _caretPos.line -= delta;
                     }
-					correctCaretPos();
+                    correctCaretPos();
                     measureVisibleText();
                     updateScrollBars();
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
@@ -2459,7 +2459,7 @@ class EditBox : EditWidgetBase {
                         _firstVisibleLine = newpos;
                         _caretPos.line += delta;
                     }
-					correctCaretPos();
+                    correctCaretPos();
                     measureVisibleText();
                     updateScrollBars();
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
