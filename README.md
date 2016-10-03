@@ -145,12 +145,8 @@ Win32 builds
 Build and run demo app using DUB:
 
         git clone --recursive https://github.com/buggins/dlangui.git
-        cd dlangui
-        dub run dlangui:example1 --build=release
-
-Run Tetris game example
-
-        dub run dlangui:tetris --build=release
+        cd dlangui/examples/example1
+        dub run --build=release
 
 To develop using Visual-D or MonoD, open dlangui.sln using Visual D (or dlangui-monod.sln for MonoD)
 
@@ -395,6 +391,7 @@ In runtime, .so for following libraries are being loaded (binary packages requir
 
 Build and run on Linux using DUB:
 
+	cd examples/example1
         dub run dlangui:example1
 
 
