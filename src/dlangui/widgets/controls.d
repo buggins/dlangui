@@ -15,7 +15,11 @@ ImageTextButton - button with text and image
 
 ScrollBar - scrollbar control
 
+SliderWidget - slider control
+
 UrlImageTextButton - URL link button
+
+CanvasWidget - for drawing arbitrary graphics
 
 Synopsis:
 
@@ -1118,6 +1122,393 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         _indicator.onDraw(buf);
     }
 }
+
+/// scroll bar - either vertical or horizontal
+class SliderWidget : AbstractSlider, OnClickHandler {
+    protected SliderButton _indicator;
+    protected PageScrollButton _pageUp;
+    protected PageScrollButton _pageDown;
+    protected Rect _scrollArea;
+    protected int _btnSize;
+    protected int _minIndicatorSize;
+
+    class PageScrollButton : Widget {
+        this(string ID) {
+            super(ID);
+            styleId = STYLE_PAGE_SCROLL;
+            trackHover = true;
+            clickable = true;
+        }
+    }
+
+    class SliderButton : ImageButton {
+        Point _dragStart;
+        int _dragStartPosition;
+        bool _dragging;
+        Rect _dragStartRect;
+
+        this(string resourceId) {
+            super("SLIDER", resourceId);
+            styleId = STYLE_SCROLLBAR_BUTTON;
+            trackHover = true;
+        }
+
+        /// process mouse event; return true if event is processed by widget.
+        override bool onMouseEvent(MouseEvent event) {
+            // support onClick
+            if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
+                setState(State.Pressed);
+                _dragging = true;
+                _dragStart.x = event.x;
+                _dragStart.y = event.y;
+                _dragStartPosition = _position;
+                _dragStartRect = _pos;
+                sendScrollEvent(ScrollAction.SliderPressed, _position);
+                return true;
+            }
+            if (event.action == MouseAction.FocusOut && _dragging) {
+                debug(scrollbar) Log.d("ScrollBar slider dragging - FocusOut");
+                return true;
+            }
+            if (event.action == MouseAction.FocusIn && _dragging) {
+                debug(scrollbar) Log.d("ScrollBar slider dragging - FocusIn");
+                return true;
+            }
+            if (event.action == MouseAction.Move && _dragging) {
+                int delta = _orientation == Orientation.Vertical ? event.y - _dragStart.y : event.x - _dragStart.x;
+                debug(scrollbar) Log.d("ScrollBar slider dragging - Move delta=", delta);
+                Rect rc = _dragStartRect;
+                int offset;
+                int space;
+                if (_orientation == Orientation.Vertical) {
+                    rc.top += delta;
+                    rc.bottom += delta;
+                    if (rc.top < _scrollArea.top) {
+                        rc.top = _scrollArea.top;
+                        rc.bottom = _scrollArea.top + _dragStartRect.height;
+                    } else if (rc.bottom > _scrollArea.bottom) {
+                        rc.top = _scrollArea.bottom - _dragStartRect.height;
+                        rc.bottom = _scrollArea.bottom;
+                    }
+                    offset = rc.top - _scrollArea.top;
+                    space = _scrollArea.height - rc.height;
+                } else {
+                    rc.left += delta;
+                    rc.right += delta;
+                    if (rc.left < _scrollArea.left) {
+                        rc.left = _scrollArea.left;
+                        rc.right = _scrollArea.left + _dragStartRect.width;
+                    } else if (rc.right > _scrollArea.right) {
+                        rc.left = _scrollArea.right - _dragStartRect.width;
+                        rc.right = _scrollArea.right;
+                    }
+                    offset = rc.left - _scrollArea.left;
+                    space = _scrollArea.width - rc.width;
+                }
+                layoutButtons(rc);
+                //_pos = rc;
+                int position = cast(int)(space > 0 ? _minValue + cast(long)offset * (_maxValue - _minValue - _pageSize) / space : 0);
+                invalidate();
+                onIndicatorDragging(_dragStartPosition, position);
+                return true;
+            }
+            if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
+                resetState(State.Pressed);
+                if (_dragging) {
+                    sendScrollEvent(ScrollAction.SliderReleased, _position);
+                    _dragging = false;
+                }
+                return true;
+            }
+            if (event.action == MouseAction.Move && trackHover) {
+                if (!(state & State.Hovered)) {
+                    debug(scrollbar) Log.d("Hover ", id);
+                    setState(State.Hovered);
+                }
+                return true;
+            }
+            if (event.action == MouseAction.Leave && trackHover) {
+                debug(scrollbar) Log.d("Leave ", id);
+                resetState(State.Hovered);
+                return true;
+            }
+            if (event.action == MouseAction.Cancel && trackHover) {
+                debug(scrollbar) Log.d("Cancel ? trackHover", id);
+                resetState(State.Hovered);
+                resetState(State.Pressed);
+                _dragging = false;
+                return true;
+            }
+            if (event.action == MouseAction.Cancel) {
+                debug(scrollbar) Log.d("SliderButton.onMouseEvent event.action == MouseAction.Cancel");
+                resetState(State.Pressed);
+                _dragging = false;
+                return true;
+            }
+            return false;
+        }
+
+    }
+
+    protected bool onIndicatorDragging(int initialPosition, int currentPosition) {
+        _position = currentPosition;
+        return sendScrollEvent(ScrollAction.SliderMoved, currentPosition);
+    }
+
+    private bool calcButtonSizes(int availableSize, ref int spaceBackSize, ref int spaceForwardSize, ref int indicatorSize) {
+        int dv = _maxValue - _minValue;
+        if (_pageSize >= dv) {
+            // full size
+            spaceBackSize = spaceForwardSize = 0;
+            indicatorSize = availableSize;
+            return false;
+        }
+        if (dv < 0)
+            dv = 0;
+        indicatorSize = dv ? _pageSize * availableSize / dv : _minIndicatorSize;
+        if (indicatorSize < _minIndicatorSize)
+            indicatorSize = _minIndicatorSize;
+        if (indicatorSize >= availableSize) {
+            // full size
+            spaceBackSize = spaceForwardSize = 0;
+            indicatorSize = availableSize;
+            return false;
+        }
+        int spaceLeft = availableSize - indicatorSize;
+        int topv = _position - _minValue;
+        int bottomv = _position + _pageSize - _minValue;
+        if (topv < 0)
+            topv = 0;
+        if (bottomv > dv)
+            bottomv = dv;
+        bottomv = dv - bottomv;
+        spaceBackSize = cast(int)(cast(long)spaceLeft * topv / (topv + bottomv));
+        spaceForwardSize = spaceLeft - spaceBackSize;
+        return true;
+    }
+
+    /// returns scrollbar orientation (Vertical, Horizontal)
+    override @property Orientation orientation() { return _orientation; }
+    /// sets scrollbar orientation
+    override @property AbstractSlider orientation(Orientation value) { 
+        if (_orientation != value) {
+            _orientation = value; 
+            _indicator.drawableId = style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_INDICATOR_VERTICAL : ATTR_SCROLLBAR_INDICATOR_HORIZONTAL);
+            requestLayout(); 
+        }
+        return this; 
+    }
+
+    /// set string property value, for ML loaders
+    override bool setStringProperty(string name, string value) {
+        if (name.equal("orientation")) {
+            if (value.equal("Vertical") || value.equal("vertical"))
+                orientation = Orientation.Vertical;
+            else
+                orientation = Orientation.Horizontal;
+            return true;
+        }
+        return super.setStringProperty(name, value);
+    }
+
+
+    /// empty parameter list constructor - for usage by factory
+    this() {
+        this(null, Orientation.Horizontal);
+    }
+    /// create with ID parameter
+    this(string ID, Orientation orient = Orientation.Horizontal) {
+        super(ID);
+        styleId = STYLE_SCROLLBAR;
+        _orientation = orient;
+        _pageUp = new PageScrollButton("PAGE_UP");
+        _pageDown = new PageScrollButton("PAGE_DOWN");
+        _indicator = new SliderButton(style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_INDICATOR_VERTICAL : ATTR_SCROLLBAR_INDICATOR_HORIZONTAL));
+        addChild(_indicator);
+        addChild(_pageUp);
+        addChild(_pageDown);
+        _indicator.focusable = false;
+        _pageUp.focusable = false;
+        _pageDown.focusable = false;
+        _pageUp.click = &onClick;
+        _pageDown.click = &onClick;
+    }
+
+    override void measure(int parentWidth, int parentHeight) { 
+        Point sz;
+        _indicator.measure(parentWidth, parentHeight);
+        _pageUp.measure(parentWidth, parentHeight);
+        _pageDown.measure(parentWidth, parentHeight);
+        _minIndicatorSize = _orientation == Orientation.Vertical ? _indicator.measuredHeight : _indicator.measuredWidth;
+        _btnSize = _minIndicatorSize;
+        if (_btnSize < _minIndicatorSize)
+            _btnSize = _minIndicatorSize;
+        static if (BACKEND_GUI) {
+            if (_btnSize < 16)
+                _btnSize = 16;
+        }
+        if (_orientation == Orientation.Vertical) {
+            // vertical
+            sz.x = _btnSize;
+            sz.y = _btnSize * 5; // min height
+        } else {
+            // horizontal
+            sz.y = _btnSize;
+            sz.x = _btnSize * 5; // min height
+        }
+        measuredContent(parentWidth, parentHeight, sz.x, sz.y);
+    }
+
+    override protected void onPositionChanged() {
+        if (!needLayout)
+            layoutButtons();
+    }
+
+    /// hide controls when scroll is not possible
+    protected void updateState() {
+        bool canScroll = _maxValue - _minValue > _pageSize;
+        if (canScroll) {
+            _indicator.visibility = Visibility.Visible;
+            _pageUp.visibility = Visibility.Visible;
+            _pageDown.visibility = Visibility.Visible;
+        } else {
+            _indicator.visibility = Visibility.Gone;
+            _pageUp.visibility = Visibility.Gone;
+            _pageDown.visibility = Visibility.Gone;
+        }
+        cancelLayout();
+    }
+
+    override void cancelLayout() {
+        _indicator.cancelLayout();
+        _pageUp.cancelLayout();
+        _pageDown.cancelLayout();
+        super.cancelLayout();
+    }
+
+    protected void layoutButtons() {
+        Rect irc = _scrollArea;
+        if (_orientation == Orientation.Vertical) {
+            // vertical
+            int spaceBackSize, spaceForwardSize, indicatorSize;
+            bool indicatorVisible = calcButtonSizes(_scrollArea.height, spaceBackSize, spaceForwardSize, indicatorSize);
+            irc.top += spaceBackSize;
+            irc.bottom -= spaceForwardSize;
+            layoutButtons(irc);
+        } else {
+            // horizontal
+            int spaceBackSize, spaceForwardSize, indicatorSize;
+            bool indicatorVisible = calcButtonSizes(_scrollArea.width, spaceBackSize, spaceForwardSize, indicatorSize);
+            irc.left += spaceBackSize;
+            irc.right -= spaceForwardSize;
+            layoutButtons(irc);
+        }
+        updateState();
+        cancelLayout();
+    }
+
+    protected void layoutButtons(Rect irc) {
+        Rect r;
+        _indicator.visibility = Visibility.Visible;
+        if (_orientation == Orientation.Vertical) {
+            _indicator.layout(irc);
+            if (_scrollArea.top < irc.top) {
+                r = _scrollArea;
+                r.bottom = irc.top;
+                _pageUp.layout(r);
+                _pageUp.visibility = Visibility.Visible;
+            } else {
+                _pageUp.visibility = Visibility.Invisible;
+            }
+            if (_scrollArea.bottom > irc.bottom) {
+                r = _scrollArea;
+                r.top = irc.bottom;
+                _pageDown.layout(r);
+                _pageDown.visibility = Visibility.Visible;
+            } else {
+                _pageDown.visibility = Visibility.Invisible;
+            }
+        } else {
+            _indicator.layout(irc);
+            if (_scrollArea.left < irc.left) {
+                r = _scrollArea;
+                r.right = irc.left;
+                _pageUp.layout(r);
+                _pageUp.visibility = Visibility.Visible;
+            } else {
+                _pageUp.visibility = Visibility.Invisible;
+            }
+            if (_scrollArea.right > irc.right) {
+                r = _scrollArea;
+                r.left = irc.right;
+                _pageDown.layout(r);
+                _pageDown.visibility = Visibility.Visible;
+            } else {
+                _pageDown.visibility = Visibility.Invisible;
+            }
+        }
+    }
+
+    override void layout(Rect rc) {
+        _needLayout = false;
+        applyMargins(rc);
+        applyPadding(rc);
+        Rect r;
+        if (_orientation == Orientation.Vertical) {
+            // vertical
+            // buttons
+            // indicator
+            r = rc;
+            _scrollArea = r;
+        } else {
+            // horizontal
+            // indicator
+            r = rc;
+            _scrollArea = r;
+        }
+        layoutButtons();
+        _pos = rc;
+    }
+
+    override bool onClick(Widget source) {
+        Log.d("Scrollbar.onClick ", source.id);
+        if (source.compareId("PAGE_UP"))
+            return sendScrollEvent(ScrollAction.PageUp, position);
+        if (source.compareId("PAGE_DOWN"))
+            return sendScrollEvent(ScrollAction.PageDown, position);
+        return true;
+    }
+
+    /// handle mouse wheel events
+    override bool onMouseEvent(MouseEvent event) {
+        if (visibility != Visibility.Visible)
+            return false;
+        if (event.action == MouseAction.Wheel) {
+            int delta = event.wheelDelta;
+            if (delta > 0)
+                sendScrollEvent(ScrollAction.LineUp, position);
+            else if (delta < 0)
+                sendScrollEvent(ScrollAction.LineDown, position);
+            return true;
+        }
+        return super.onMouseEvent(event);
+    }
+
+    /// Draw widget at its position to buffer
+    override void onDraw(DrawBuf buf) {
+        if (visibility != Visibility.Visible && !buf.isClippedOut(_pos))
+            return;
+        super.onDraw(buf);
+        Rect rc = _pos;
+        applyMargins(rc);
+        applyPadding(rc);
+        auto saver = ClipRectSaver(buf, rc, alpha);
+        _pageUp.onDraw(buf);
+        _pageDown.onDraw(buf);
+        _indicator.onDraw(buf);
+    }
+}
+
 
 /// interface - slot for onClick
 interface OnDrawHandler {
