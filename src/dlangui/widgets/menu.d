@@ -952,18 +952,21 @@ class MainMenu : MenuWidgetBase {
             }
         }
 
-        if (event.action == KeyAction.KeyDown && isAlt && noOtherModifiers) {
-            _menuToggleState = 1;
-        } else if (event.action == KeyAction.KeyUp && isAlt && noOtherModifiers) {
-            if (_menuToggleState == 1)
-                toggleMenu = true;
-            _menuToggleState = 0;
-        } else {
-            _menuToggleState = 0;
-        }
-        if (toggleMenu) {
-            toggle();
-            return true;
+        // toggle menu by single Alt press - for Windows only!
+        version (Windows) {
+            if (event.action == KeyAction.KeyDown && isAlt && noOtherModifiers) {
+                _menuToggleState = 1;
+            } else if (event.action == KeyAction.KeyUp && isAlt && noOtherModifiers) {
+                if (_menuToggleState == 1)
+                    toggleMenu = true;
+                _menuToggleState = 0;
+            } else {
+                _menuToggleState = 0;
+            }
+            if (toggleMenu) {
+                toggle();
+                return true;
+            }
         }
         if (!focused)
             return false;

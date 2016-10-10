@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <theme id="theme_default" 
-        fontSize="10pt" 
+        fontSize="11pt" 
         fontFace="Helvetica Neue,Verdana,Arial,DejaVu Sans,Liberation Sans,Helvetica,Roboto,Droid Sans"
         fontFamily="SansSerif"
         >
@@ -202,7 +202,7 @@
         <state state_selected="true" state_focused="true" textColor="#000000"/>
         <state state_selected="true" textColor="#000000"/>
         <state state_focused="true" textColor="#000000"/>
-        <state state_hovered="true" textColor="#808000"/>
+        <state state_hovered="true" textColor="#0000C0"/>
     </style>
     <style id="TAB_UP_BUTTON"
         backgroundImageId="tab_btn_up"
