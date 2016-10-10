@@ -265,6 +265,22 @@
       </VersionIds>
     </VersionIds>
   </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugConsole|AnyCPU' ">
+    <OutputPath>bin\DebugConsole</OutputPath>
+    <ObjectsDirectory>obj/DebugConsole</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/hdpi
+-Jviews/res/mdpi
+-Jviews/res/i18n
+</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>dmledit-monod-linux</OutputName>
+    <Target>Executable</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
   <ItemGroup>
     <Compile Include="src\dmledit.d" />
   </ItemGroup>

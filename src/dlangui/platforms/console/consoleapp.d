@@ -71,6 +71,9 @@ class ConsolePlatform : Platform {
         _console.setCursorType(ConsoleCursorType.Invisible);
         _drawBuf = new ConsoleDrawBuf(_console);
     }
+    ~this() {
+        destroy(_drawBuf);
+    }
 
     ConsoleWindow[] _windowList;
 
@@ -238,6 +241,8 @@ class ConsoleDrawBuf : DrawBuf {
     }
 
     ~this() {
+        Log.d("Calling console.uninit");
+        _console.uninit();
     }
 
     /// returns current width
@@ -434,6 +439,8 @@ extern(C) int DLANGUImain(string[] args) {
         Log.e("Abnormal UIAppMain termination");
         Log.e("UIAppMain exception: ", e);
     }
+
+    Platform.setInstance(null);
 
     releaseResourcesOnAppExit();
 

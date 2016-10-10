@@ -259,8 +259,25 @@
     <VersionIds>
       <VersionIds>
         <String>USE_CONSOLE</String>
+        <String>EmbedStandardResources</String>
       </VersionIds>
     </VersionIds>
+    <ObjectsDirectory>obj/DebugConsole</ObjectsDirectory>
+    <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
+    <ExtraCompilerArguments>-Jviews
+-Jviews/res
+-Jviews/res/i18n
+-Jviews/res/shaders
+-Jviews/res/mdpi
+-Jviews/res/hdpi</ExtraCompilerArguments>
+    <UnittestMode>false</UnittestMode>
+    <OutputName>libdlangui-monod-linux</OutputName>
+    <Target>StaticLibrary</Target>
+    <Externalconsole>true</Externalconsole>
+    <DebugLevel>0</DebugLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'DebugConsole|AnyCPU' ">
+    <OutputPath>bin\DebugConsole</OutputPath>
     <ObjectsDirectory>obj/DebugConsole</ObjectsDirectory>
     <LinkinThirdPartyLibraries>false</LinkinThirdPartyLibraries>
     <ExtraCompilerArguments>-Jviews
