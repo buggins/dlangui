@@ -115,6 +115,10 @@ immutable string STYLE_EDIT_BOX = "EDIT_BOX";
 immutable string STYLE_STRING_GRID = "STRING_GRID";
 /// standard style id for background similar to transparent button
 immutable string STYLE_TRANSPARENT_BUTTON_BACKGROUND = "TRANSPARENT_BUTTON_BACKGROUND";
+/// standard style id for GroupBox
+immutable string STYLE_GROUP_BOX = "GROUP_BOX";
+/// standard style id for GroupBox caption
+immutable string STYLE_GROUP_BOX_CAPTION = "GROUP_BOX_CAPTION";
 
 /// standard style id for tree item
 immutable string STYLE_TREE_ITEM = "TREE_ITEM";
@@ -364,7 +368,7 @@ public:
     }
 
     /// get custom drawable attribute
-    ref DrawableRef customDrawable(string id) {
+    ref DrawableRef customDrawable(string id) const {
         if (id in _customDrawables)
             return _customDrawables[id].drawable;
         return parentStyle ? parentStyle.customDrawable(id) : currentTheme.customDrawable(id);

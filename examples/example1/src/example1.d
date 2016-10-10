@@ -417,6 +417,27 @@ extern (C) int UIAppMain(string[] args) {
         };
         tabs.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
 
+        // most of controls example
+        {
+            LinearLayout controls = new VerticalLayout("controls");
+            controls.padding = Rect(5,5,5,5);
+            HorizontalLayout line1 = new HorizontalLayout();
+            controls.addChild(line1);
+            GroupBox gb = new GroupBox("checkboxes", "Check boxes"d);
+            gb.addChild(new CheckBox("cb1", "Check Box 1"d));
+            gb.addChild(new CheckBox("cb2", "Check Box 2"d).checked(true));
+            gb.addChild(new CheckBox("cb3", "Check Box 3 (disabled)"d).enabled(false));
+            line1.addChild(gb);
+
+            GroupBox gb2 = new GroupBox("radiobuttons", "Radio buttons"d);
+            gb2.addChild(new RadioButton("rb1", "Radio button 1"d).checked(true));
+            gb2.addChild(new RadioButton("rb2", "Radio button 2"d));
+            gb2.addChild(new RadioButton("rb3", "Radio button (disabled)"d).enabled(false));
+            line1.addChild(gb2);
+
+            tabs.addTab(controls, "Controls"d);
+        }
+
         LinearLayout layout = new LinearLayout("tab1");
 
         layout.addChild((new TextWidget()).textColor(0x00802000).text("Text widget 0"));

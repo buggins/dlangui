@@ -976,6 +976,7 @@
      <File path="src\dlangui\widgets\docks.d" />
      <File path="src\dlangui\widgets\editors.d" />
      <File path="src\dlangui\widgets\grid.d" />
+     <File path="src\dlangui\widgets\groupbox.d" />
      <File path="src\dlangui\widgets\layouts.d" />
      <File path="src\dlangui\widgets\lists.d" />
      <File path="src\dlangui\widgets\menu.d" />

@@ -196,6 +196,7 @@
         <state state_selected="true" backgroundImageId="tab_up_backgrond_selected"/>
     </style>
     <style id="TAB_UP_BUTTON_TEXT"
+        padding="3pt,1pt,3pt,1pt"
         textColor="#000000"
         align="Center"
         >
@@ -484,5 +485,17 @@
         <state state_selected="true" backgroundColor="#00F8F9Fa"/>
         <state state_hovered="true" backgroundColor="#C0FFFF00"/>
     </style>
+
+    <style id="GROUP_BOX"
+        margins="2pt,4pt,2pt,2pt">
+        <drawable id="group_box_frame_up_left" value="group_box_frame_up_left"/>
+        <drawable id="group_box_frame_up_right" value="group_box_frame_up_right"/>
+        <drawable id="group_box_frame_bottom" value="group_box_frame_bottom"/>
+    </style>
+    <style id="GROUP_BOX_CAPTION"
+        align="Left|VCenter"
+        padding="1pt,1pt,1pt,1pt">
+    </style>
+    
 </theme>
 

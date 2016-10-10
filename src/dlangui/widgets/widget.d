@@ -407,14 +407,14 @@ public:
     @property Widget backgroundColor(uint color) { 
         ownStyle.backgroundColor = color; 
         invalidate();
-        return this; 
+        return this;
     }
     /// set background color for widget - from string like "#5599CC" or "white"
     @property Widget backgroundColor(string colorString) { 
         uint color = decodeHexColor(colorString, COLOR_TRANSPARENT);
         ownStyle.backgroundColor = color; 
         invalidate();
-        return this; 
+        return this;
     }
 
     /// background image id
