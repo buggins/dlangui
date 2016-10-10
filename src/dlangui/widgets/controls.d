@@ -1319,8 +1319,9 @@ class SliderWidget : AbstractSlider, OnClickHandler {
     /// create with ID parameter
     this(string ID, Orientation orient = Orientation.Horizontal) {
         super(ID);
-        styleId = STYLE_SCROLLBAR;
+        styleId = STYLE_SLIDER;
         _orientation = orient;
+        _pageSize = 1;
         _pageUp = new PageScrollButton("PAGE_UP");
         _pageDown = new PageScrollButton("PAGE_DOWN");
         _indicator = new SliderButton(style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_INDICATOR_VERTICAL : ATTR_SCROLLBAR_INDICATOR_HORIZONTAL));
@@ -1498,11 +1499,29 @@ class SliderWidget : AbstractSlider, OnClickHandler {
     override void onDraw(DrawBuf buf) {
         if (visibility != Visibility.Visible && !buf.isClippedOut(_pos))
             return;
-        super.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
-        applyPadding(rc);
         auto saver = ClipRectSaver(buf, rc, alpha);
+        DrawableRef bg = backgroundDrawable;
+        if (!bg.isNull) {
+            Rect r = rc;
+            if (_orientation == Orientation.Vertical) {
+                int dw = bg.width;
+                r.left += (rc.width - dw)/2;
+                r.right = left + dw;
+            } else {
+                int dw = bg.height;
+                r.top += (rc.height - dw)/2;
+                r.bottom = top + dw;
+            }
+            bg.drawTo(buf, r, state);
+        }
+        applyPadding(rc);
+        if (state & State.Focused) {
+            rc.expand(FOCUS_RECT_PADDING, FOCUS_RECT_PADDING);
+            drawFocusRect(buf, rc);
+        }
+        _needDraw = false;
         _pageUp.onDraw(buf);
         _pageDown.onDraw(buf);
         _indicator.onDraw(buf);

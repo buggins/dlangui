@@ -148,6 +148,10 @@
         backgroundColor="#dce2e8"
         align="Center"
         />
+    <style id="SLIDER"
+        backgroundImageId="slider_background"
+        align="Center"
+        />
     <style id="SCROLLBAR_BUTTON"
         backgroundImageId="scrollbar_btn_background"
         align="Center"

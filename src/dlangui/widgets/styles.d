@@ -71,14 +71,14 @@ immutable string STYLE_HSPACER = "HSPACER";
 immutable string STYLE_VSPACER = "VSPACER";
 /// standard style id for ScrollBar
 immutable string STYLE_SCROLLBAR = "SCROLLBAR";
+/// standard style id for SliderWidget
+immutable string STYLE_SLIDER = "SLIDER";
 /// standard style id for ScrollBar button
 immutable string STYLE_SCROLLBAR_BUTTON = "SCROLLBAR_BUTTON";
 /// standard style id for ScrollBar button
 immutable string STYLE_SCROLLBAR_BUTTON_TRANSPARENT = "SCROLLBAR_BUTTON_TRANSPARENT";
 /// standard style id for ScrollBar page control
 immutable string STYLE_PAGE_SCROLL = "PAGE_SCROLL";
-/// standard style id for Slider
-immutable string STYLE_SLIDER = "SLIDER";
 /// standard style id for TabWidget
 immutable string STYLE_TAB_WIDGET = "TAB_WIDGET";
 /// standard style id for Tab with Up alignment

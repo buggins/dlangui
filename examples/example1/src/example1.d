@@ -452,10 +452,10 @@ extern (C) int UIAppMain(string[] args) {
             HorizontalLayout line2 = new HorizontalLayout();
             controls.addChild(line2);
 
-            GroupBox gb5 = new GroupBox("scrollbar", "horizontal ScrollBar"d, Orientation.Horizontal);
+            GroupBox gb5 = new GroupBox("scrollbar", "horizontal ScrollBar"d);
             gb5.addChild(new ScrollBar("sb1", Orientation.Horizontal).layoutWidth(FILL_PARENT));
             line2.addChild(gb5);
-            GroupBox gb6 = new GroupBox("scrollbar", "horizontal SliderWidget"d, Orientation.Horizontal);
+            GroupBox gb6 = new GroupBox("scrollbar", "horizontal SliderWidget"d);
             gb6.addChild(new SliderWidget("sb2", Orientation.Horizontal).layoutWidth(FILL_PARENT));
             line2.addChild(gb6);
 
