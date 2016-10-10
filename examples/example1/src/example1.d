@@ -516,7 +516,7 @@ extern (C) int UIAppMain(string[] args) {
             grid.layoutWidth(FILL_PARENT);
             grid.layoutHeight(FILL_PARENT);
             foreach (index, month; ["January"d, "February"d, "March"d, "April"d, "May"d, "June"d, "July"d, "August"d, "September"d, "October"d, "November"d, "December"d])
-                grid.setColTitle(index, month);
+                grid.setColTitle(cast(int)index, month);
             for (int y = 0; y < 10; y++)
                 grid.setRowTitle(y, to!dstring(y+1));
             //grid.alignment = Align.Right;
