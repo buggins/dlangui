@@ -151,7 +151,10 @@ class GroupBox : LinearLayout {
     override protected void measuredContent(int parentWidth, int parentHeight, int contentWidth, int contentHeight) {
         _caption.measure(parentWidth, parentHeight);
         calcFrame();
-        int w = _caption.measuredWidth + _topFrameLeft + _topFrameRight;
+        int topPadding = _topFrameLeft + _topFrameRight;
+        int bottomPadding = _frameLeft + _frameRight;
+        int extraTop = topPadding - bottomPadding;
+        int w = _caption.measuredWidth + extraTop;
         if (contentWidth < w)
             contentWidth = w;
         super.measuredContent(parentWidth, parentHeight, contentWidth, contentHeight);

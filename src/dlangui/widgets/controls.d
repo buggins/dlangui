@@ -13,6 +13,12 @@ ImageButton - button with only image
 
 ImageTextButton - button with text and image
 
+SwitchButton - switch widget
+
+RadioButton - radio button
+
+CheckBox - button with check mark
+
 ScrollBar - scrollbar control
 
 SliderWidget - slider control
@@ -20,6 +26,8 @@ SliderWidget - slider control
 UrlImageTextButton - URL link button
 
 CanvasWidget - for drawing arbitrary graphics
+
+
 
 Synopsis:
 
@@ -83,7 +91,7 @@ class TextWidget : Widget {
     /// max lines to show
     @property int maxLines() { return style.maxLines; }
     /// set max lines to show
-    @property void maxLines(int n) { ownStyle.maxLines = n; }
+    @property TextWidget maxLines(int n) { ownStyle.maxLines = n; return this; }
 
     protected UIString _text;
     /// get widget text
@@ -1508,11 +1516,11 @@ class SliderWidget : AbstractSlider, OnClickHandler {
             if (_orientation == Orientation.Vertical) {
                 int dw = bg.width;
                 r.left += (rc.width - dw)/2;
-                r.right = left + dw;
+                r.right = r.left + dw;
             } else {
                 int dw = bg.height;
                 r.top += (rc.height - dw)/2;
-                r.bottom = top + dw;
+                r.bottom = r.top + dw;
             }
             bg.drawTo(buf, r, state);
         }
