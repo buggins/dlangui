@@ -421,19 +421,43 @@ extern (C) int UIAppMain(string[] args) {
         {
             LinearLayout controls = new VerticalLayout("controls");
             controls.padding = Rect(5,5,5,5);
+
             HorizontalLayout line1 = new HorizontalLayout();
             controls.addChild(line1);
+
             GroupBox gb = new GroupBox("checkboxes", "Check boxes"d);
-            gb.addChild(new CheckBox("cb1", "Check Box 1"d));
-            gb.addChild(new CheckBox("cb2", "Check Box 2"d).checked(true));
-            gb.addChild(new CheckBox("cb3", "Check Box 3 (disabled)"d).enabled(false));
+            gb.addChild(new CheckBox("cb1", "CheckBox 1"d));
+            gb.addChild(new CheckBox("cb2", "CheckBox 2"d).checked(true));
+            gb.addChild(new CheckBox("cb3", "CheckBox disabled"d).enabled(false));
             line1.addChild(gb);
 
             GroupBox gb2 = new GroupBox("radiobuttons", "Radio buttons"d);
-            gb2.addChild(new RadioButton("rb1", "Radio button 1"d).checked(true));
-            gb2.addChild(new RadioButton("rb2", "Radio button 2"d));
-            gb2.addChild(new RadioButton("rb3", "Radio button (disabled)"d).enabled(false));
+            gb2.addChild(new RadioButton("rb1", "RadioButton 1"d).checked(true));
+            gb2.addChild(new RadioButton("rb2", "RadioButton 2"d));
+            gb2.addChild(new RadioButton("rb3", "RadioButton disabled"d).enabled(false));
             line1.addChild(gb2);
+
+            VerticalLayout col1 = new VerticalLayout();
+            GroupBox gb3 = new GroupBox("textbuttons", "Text buttons"d, Orientation.Horizontal);
+            gb3.addChild(new Button("tb1", "Button"d));
+            gb3.addChild(new Button("tb2", "Button disabled"d).enabled(false));
+            col1.addChild(gb3);
+            GroupBox gb4 = new GroupBox("imagetextbuttons", "ImageTextButton"d, Orientation.Horizontal);
+            gb4.addChild(new ImageTextButton("itb1", "document-open", "Enabled"d));
+            gb4.addChild(new ImageTextButton("itb2", "document-save", "Disabled"d).enabled(false));
+            col1.addChild(gb4);
+
+            line1.addChild(col1);
+
+            HorizontalLayout line2 = new HorizontalLayout();
+            controls.addChild(line2);
+
+            GroupBox gb5 = new GroupBox("scrollbar", "horizontal ScrollBar"d, Orientation.Horizontal);
+            gb5.addChild(new ScrollBar("sb1", Orientation.Horizontal).layoutWidth(FILL_PARENT));
+            line2.addChild(gb5);
+            GroupBox gb6 = new GroupBox("scrollbar", "horizontal SliderWidget"d, Orientation.Horizontal);
+            gb6.addChild(new SliderWidget("sb2", Orientation.Horizontal).layoutWidth(FILL_PARENT));
+            line2.addChild(gb6);
 
             tabs.addTab(controls, "Controls"d);
         }

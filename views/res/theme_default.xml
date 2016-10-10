@@ -86,6 +86,7 @@
 	focusRectColors="#000"
         >
         <state state_enabled="true" state_hovered="true" textColor="#006080"/>
+        <state state_enabled="false" textColor="#909090"/>
     </style>
     <style id="RADIOBUTTON" parent="CHECKBOX"
         margins="2,2,2,2"
@@ -100,6 +101,7 @@
 	focusRectColors="#000"
         >
         <state state_enabled="true" state_hovered="true" textColor="#006080"/>
+        <state state_enabled="false" textColor="#909090"/>
     </style>
     <style id="TEXT"
         margins="2,2,2,2"
@@ -492,8 +494,10 @@
         <drawable id="group_box_frame_up_right" value="group_box_frame_up_right"/>
         <drawable id="group_box_frame_bottom" value="group_box_frame_bottom"/>
     </style>
+
     <style id="GROUP_BOX_CAPTION"
         align="Left|VCenter"
+	textColor="#504840"
         padding="1pt,1pt,1pt,1pt">
     </style>
     

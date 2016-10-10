@@ -514,6 +514,7 @@ class LinearLayout : WidgetGroupDefaultDrawing {
     this(string ID, Orientation orientation = Orientation.Vertical) {
         super(ID);
         _layoutItems = new LayoutItems();
+        _orientation = orientation;
     }
 
     LayoutItems _layoutItems;
