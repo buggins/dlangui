@@ -512,9 +512,24 @@ extern (C) int UIAppMain(string[] args) {
             line4.layoutWidth(FILL_PARENT);
             GroupBox gbgrid = new GroupBox("grid", "StringGridWidget"d, Orientation.Horizontal);
             StringGridWidget grid = new StringGridWidget("stringgrid");
-            grid.resize(10, 10);
+            grid.resize(12, 10);
             grid.layoutWidth(FILL_PARENT);
             grid.layoutHeight(FILL_PARENT);
+            foreach (index, month; ["January"d, "February"d, "March"d, "April"d, "May"d, "June"d, "July"d, "August"d, "September"d, "October"d, "November"d, "December"d])
+                grid.setColTitle(index, month);
+            for (int y = 0; y < 10; y++)
+                grid.setRowTitle(y, to!dstring(y+1));
+            //grid.alignment = Align.Right;
+            grid.setColWidth(0, 30.pointsToPixels);
+            import std.random;
+            import std.string;
+            for (int x = 0; x < 12; x++) {
+                for (int y = 0; y < 10; y++) {
+                    int n = uniform(0, 10000);
+                    grid.setCellText(x, y, to!dstring("%.2f".format(n / 100.0)));
+                }
+            }
+            //grid.autoFit();
             gbgrid.addChild(grid);
             line4.addChild(gbgrid);
 
