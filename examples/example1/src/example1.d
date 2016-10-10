@@ -228,6 +228,7 @@ extern (C) int UIAppMain(string[] args) {
     Platform.instance.uiLanguage = "en";
     // load theme from file "theme_default.xml"
     Platform.instance.uiTheme = "theme_default";
+    //Platform.instance.uiTheme = "theme_dark";
 
     // you can override default hinting mode here (Normal, AutoHint, Disabled)
     FontManager.hintingMode = HintingMode.Normal;

@@ -28,11 +28,7 @@ class GroupBox : LinearLayout {
     protected TextWidget _caption;
 
     this() {
-        super("GROUP_BOX", Orientation.Vertical);
-        styleId = STYLE_GROUP_BOX;
-        _caption = new TextWidget("GROUP_BOX_CAPTION");
-        _caption.styleId = STYLE_GROUP_BOX_CAPTION;
-
+        this(null, ""d, Orientation.Vertical);
     }
 
     this(string ID, UIString uitext, Orientation orientation = Orientation.Vertical) {
@@ -45,21 +41,11 @@ class GroupBox : LinearLayout {
     }
 
     this(string ID, string textResourceId, Orientation orientation = Orientation.Vertical) {
-        super(ID, orientation);
-        styleId = STYLE_GROUP_BOX;
-        _caption = new TextWidget("GROUP_BOX_CAPTION");
-        _caption.styleId = STYLE_GROUP_BOX_CAPTION;
-        _caption.parent = this;
-        textResource = textResourceId;
+        this(ID, UIString(textResourceId), orientation);
     }
 
     this(string ID, dstring rawText, Orientation orientation = Orientation.Vertical) {
-        super(ID, orientation);
-        _caption = new TextWidget("GROUP_BOX_CAPTION");
-        _caption.styleId = STYLE_GROUP_BOX_CAPTION;
-        _caption.parent = this;
-        styleId = STYLE_GROUP_BOX;
-        text = rawText;
+        this(ID, UIString(rawText), orientation);
     }
 
     ~this() {

@@ -51,6 +51,10 @@ res/group_box_frame_bottom.9.png
 res/group_box_frame_up_left.9.png
 res/group_box_frame_up_right.9.png
 res/slider_background.9.png
+res/group_box_frame_bottom_dark.9.png
+res/group_box_frame_up_left_dark.9.png
+res/group_box_frame_up_right_dark.9.png
+res/slider_background_dark.9.png
 res/i18n/std_en.ini
 res/i18n/std_ru.ini
 res/list_item_background.xml

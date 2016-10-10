@@ -303,6 +303,9 @@ public:
             s.onThemeChanged();
         foreach(s; _children)
             s.onThemeChanged();
+        foreach(d; _customDrawables)
+            d.clear();
+        destroy(_customDrawables);
     }
 
     @property const(Theme) theme() const {
@@ -1600,7 +1603,7 @@ public:
     @property ref DrawableRef drawable() const {
         if (!_drawable.isNull)
             return (cast(DrawableAttribute)this)._drawable;
-        (cast(DrawableAttribute)this)._drawable = drawableCache.get(_id);
+        (cast(DrawableAttribute)this)._drawable = drawableCache.get(_drawableId);
         (cast(DrawableAttribute)this)._initialized = true;
         return (cast(DrawableAttribute)this)._drawable;
     }
