@@ -130,6 +130,12 @@ class GroupBox : LinearLayout {
             _topHeight = _topFrameHeight;
     }
 
+    /// handle theme change: e.g. reload some themed resources
+    override void onThemeChanged() {
+        super.onThemeChanged();
+        _caption.onThemeChanged();
+    }
+
     /// get padding (between background bounds and content of widget)
     override @property Rect padding() const {
         // get default padding
