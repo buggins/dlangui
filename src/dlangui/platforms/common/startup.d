@@ -321,6 +321,7 @@ void registerStandardWidgets() {
     import dlangui.widgets.widget;
     import dlangui.widgets.layouts;
     import dlangui.widgets.controls;
+    import dlangui.widgets.scrollbar;
     import dlangui.widgets.lists;
     import dlangui.widgets.combobox;
     import dlangui.widgets.editors;

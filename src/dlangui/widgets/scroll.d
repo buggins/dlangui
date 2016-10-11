@@ -72,6 +72,7 @@ module dlangui.widgets.scroll;
 
 import dlangui.widgets.widget;
 import dlangui.widgets.controls;
+import dlangui.widgets.scrollbar;
 import std.conv;
 
 /** Scroll bar visibility mode. */
