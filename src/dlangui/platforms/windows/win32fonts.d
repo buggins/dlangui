@@ -496,7 +496,26 @@ class Win32FontManager : FontManager {
     private FontList _activeFonts;
     private FontDef[] _fontFaces;
     private FontDef*[string] _faceByName;
-    
+
+    /// override to return list of font faces available
+    override FontFaceProps[] getFaces() {
+        FontFaceProps[] res;
+        for (int i = 0; i < _fontFaces.length; i++) {
+            FontFaceProps item = FontFaceProps(_fontFaces[i].face, _fontFaces[i].family);
+            bool found = false;
+            for (int j = 0; j < res.length; j++) {
+                if (res[j].face == item.face) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                res ~= item;
+        }
+        return res;
+    }
+
+
     /// initialize in constructor
     this() {
         debug Log.i("Creating Win32FontManager");

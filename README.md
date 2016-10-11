@@ -53,11 +53,14 @@ Currently implemented widgets:
 * CheckBox - check button with label
 * RadioButton - radio button with label
 * SwitchButton - a toggle switch button
+* GroupBox - frame and caption for grouping other controls
 * EditLine - single line edit
 * EditBox - multiline editor
 * VSpacer - vertical spacer - just an empty widget with layoutHeight == FILL_PARENT, to fill vertical space in layouts
 * HSpacer - horizontal spacer - just an empty widget with layoutWidth == FILL_PARENT, to fill horizontal space in layouts
 * ScrollBar - scroll bar
+* SliderWidget - slider
+* ProgressBarWidget - progress bar
 * TabControl - tabs widget, allows to select one of tabs
 * TabHost - container for pages controlled by TabControl
 * TabWidget - combination of TabControl and TabHost

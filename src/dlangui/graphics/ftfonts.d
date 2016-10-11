@@ -495,6 +495,25 @@ class FreeTypeFontManager : FontManager {
         return null;
     }
 
+    /// override to return list of font faces available
+    override FontFaceProps[] getFaces() {
+        FontFaceProps[] res;
+        for (int i = 0; i < _fontFiles.length; i++) {
+            FontFaceProps item = FontFaceProps(_fontFiles[i].def.face, _fontFiles[i].def.family);
+            bool found = false;
+            for (int j = 0; j < res.length; j++) {
+                if (res[j].face == item.face) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found)
+                res ~= item;
+        }
+        return res;
+    }
+
+
     private static int faceMatch(string requested, string existing) {
         if (!requested.icmp("Arial")) {
             if (!existing.icmp("DejaVu Sans")) {
