@@ -11,6 +11,15 @@ Synopsis:
 ----
 import dlangui.widgets.progressbar;
 
+auto pb = new ProgressBarWidget();
+// set progress
+pb.progress = 300; // 0 .. 1000
+// set animation interval
+pb.animationInterval = 50; // 50 milliseconds
+
+// for indeterminate state: set progress to PROGRESS_INDETERMINATE (-1)
+pb.progress = PROGRESS_INDETERMINATE;
+
 ----
 
 Copyright: Vadim Lopatin, 2016
