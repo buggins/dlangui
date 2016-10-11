@@ -400,7 +400,7 @@ class Win32Window : Window {
 
     /// custom window message handler
     Signal!UnknownWindowMessageHandler onUnknownWindowMessage;
-    private uint handleUnknownWindowMessage(UINT message, WPARAM wParam, LPARAM lParam) {
+    private LRESULT handleUnknownWindowMessage(UINT message, WPARAM wParam, LPARAM lParam) {
         if (onUnknownWindowMessage.assigned) {
             LRESULT res;
             if (onUnknownWindowMessage(_hwnd, message, wParam, lParam, res))
