@@ -568,7 +568,8 @@ class ScrollBar : AbstractSlider, OnClickHandler {
                 sendScrollEvent(ScrollAction.LineDown, position);
             return true;
         }
-        return super.onMouseEvent(event);
+        return true;
+        //return super.onMouseEvent(event);
     }
 
     /// Draw widget at its position to buffer
