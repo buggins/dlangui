@@ -569,8 +569,11 @@ extern (C) int UIAppMain(string[] args) {
 
         LinearLayout layout = new LinearLayout("tab1");
 
+
         layout.addChild((new TextWidget()).textColor(0x00802000).text("Text widget 0"));
         layout.addChild((new TextWidget()).textColor(0x40FF4000).text("Text widget"));
+        layout.addChild(new ProgressBarWidget().progress(300).animationInterval(50));
+        layout.addChild(new ProgressBarWidget().progress(-1).animationInterval(50));
         layout.addChild((new Button("BTN1")).textResource("EXIT")); //.textColor(0x40FF4000)
         layout.addChild(new TimerTest());
         

@@ -119,6 +119,8 @@ immutable string STYLE_TRANSPARENT_BUTTON_BACKGROUND = "TRANSPARENT_BUTTON_BACKG
 immutable string STYLE_GROUP_BOX = "GROUP_BOX";
 /// standard style id for GroupBox caption
 immutable string STYLE_GROUP_BOX_CAPTION = "GROUP_BOX_CAPTION";
+/// standard style id for ProgressBarWidget caption
+immutable string STYLE_PROGRESS_BAR = "PROGRESS_BAR";
 
 /// standard style id for tree item
 immutable string STYLE_TREE_ITEM = "TREE_ITEM";

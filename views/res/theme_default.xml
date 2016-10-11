@@ -505,5 +505,17 @@
         padding="1pt,1pt,1pt,1pt">
     </style>
     
+    <style id="PROGRESS_BAR"
+        padding="2pt,2pt,2pt,2pt"
+        minWidth="50pt"
+        minHeight="10pt"
+        backgroundColor="#D0D0D0"
+        padding="1pt,1pt,1pt,1pt">
+        <drawable id="progress_bar_gauge" value="#0000FF"/>
+        <drawable id="progress_bar_gauge_animation" value="progress_bar_gauge_animation.tiled"/>
+        <drawable id="progress_bar_indeterminate" value="#8080C0"/>
+        <drawable id="progress_bar_indeterminate_animation" value="progress_bar_gauge_animation.tiled"/>
+    </style>
+    
 </theme>
 
