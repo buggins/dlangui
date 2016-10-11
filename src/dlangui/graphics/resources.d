@@ -791,8 +791,15 @@ class ImageDrawable : Drawable {
                 for (int xx = xx0; xx < rc.right; xx += imgdx) {
                     Rect dst = Rect(xx, yy, xx + imgdx, yy + imgdy);
                     Rect src = Rect(0, 0, imgdx, imgdy);
-                    if (dst.intersects(rc))
-                        buf.drawFragment(dst.left, dst.top, _image.get, src);
+                    if (dst.intersects(rc)) {
+                        Rect sr = src;
+                        if (dst.right > rc.right)
+                            sr.right -= dst.right - rc.right;
+                        if (dst.bottom > rc.bottom)
+                            sr.bottom -= dst.bottom - rc.bottom;
+                        if (!sr.empty)
+                            buf.drawFragment(dst.left, dst.top, _image.get, sr);
+                    }
                 }
             }
         } else {

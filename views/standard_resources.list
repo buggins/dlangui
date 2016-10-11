@@ -56,6 +56,7 @@ res/group_box_frame_up_left_dark.9.png
 res/group_box_frame_up_right_dark.9.png
 res/slider_background_dark.9.png
 res/progress_bar_gauge_animation.png
+res/progress_bar_background_frame.9.png
 res/i18n/std_en.ini
 res/i18n/std_ru.ini
 res/list_item_background.xml
