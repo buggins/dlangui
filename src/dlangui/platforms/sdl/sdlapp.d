@@ -796,10 +796,19 @@ class SDLWindow : Window {
         return res;
     }
 
+    static bool isNumLockEnabled()
+    {
+        version(Windows) {
+            return !!(GetKeyState( VK_NUMLOCK ) & 1);
+        } else {
+            return !!(SDL_GetModState() & KMOD_NUM);
+        }
+    }
+
     uint _keyFlags;
-    bool processKeyEvent(KeyAction action, uint keyCode, uint flags) {
-        debug(DebugSDL) Log.d("processKeyEvent ", action, " SDL key=0x", format("%08x", keyCode), " SDL flags=0x", format("%08x", flags));
-        keyCode = convertKeyCode(keyCode);
+    bool processKeyEvent(KeyAction action, uint keyCodeIn, uint flags) {
+        debug(DebugSDL) Log.d("processKeyEvent ", action, " SDL key=0x", format("%08x", keyCodeIn), " SDL flags=0x", format("%08x", flags));
+        uint keyCode = convertKeyCode(keyCodeIn);
         flags = convertKeyFlags(flags);
         if (action == KeyAction.KeyDown) {
             switch(keyCode) {
@@ -842,6 +851,13 @@ class SDLWindow : Window {
         _keyFlags = flags;
 
         debug(DebugSDL) Log.d("processKeyEvent ", action, " converted key=0x", format("%08x", keyCode), " converted flags=0x", format("%08x", flags));
+        if (action == KeyAction.KeyDown || action == KeyAction.KeyUp) {
+            if ((keyCodeIn >= SDLK_KP_1 && keyCodeIn <= SDLK_KP_0
+                 || keyCodeIn == SDLK_KP_PERIOD
+                 //|| keyCodeIn >= 0x40000059 && keyCodeIn 
+                 ) && isNumLockEnabled)
+                return false;
+        }
         bool res = dispatchKeyEvent(new KeyEvent(action, keyCode, flags));
 //            if ((keyCode & 0x10000) && (keyCode & 0xF000) != 0xF000) {
 //                dchar[1] text;

@@ -1688,7 +1688,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         cancelHoverTimer();
         bool ctrlOrAltPressed = false; //(event.flags & (KeyFlag.Control /* | KeyFlag.Alt */));
         if (event.action == KeyAction.Text && event.text.length && !ctrlOrAltPressed) {
-            Log.d("text entered: ", event.text);
+            //Log.d("text entered: ", event.text);
             if (readOnly)
                 return true;
             if (replaceMode && _selectionRange.empty && _content[_caretPos.line].length >= _caretPos.pos + event.text.length) {
