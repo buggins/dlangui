@@ -584,6 +584,20 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         updateCumulativeSizes();
     }
 
+    /// get column width, 0 is header column
+    int colWidth(int col) {
+        if (col < 0 || col >= _colWidths.length)
+            return 0;
+        return _colWidths[col];
+    }
+
+    /// get row height, 0 is header row
+    int rowHeight(int row) {
+        if (row < 0 || row >= _rowHeights.length)
+            return 0;
+        return _rowHeights[row];
+    }
+
     /// returns cell rectangle relative to client area; row 0 is col headers row; col 0 is row headers column
     Rect cellRect(int x, int y) {
         return cellRectScroll(x, y);
@@ -1278,7 +1292,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     }
 
     void autoFitColumnWidth(int i) {
-        _colWidths[i] = (i < _headerCols && !_showRowHeaders) ? 0 : measureColWidth(i) + (BACKEND_CONSOLE ? 1 : 5);
+        _colWidths[i] = (i < _headerCols && !_showRowHeaders) ? 0 : measureColWidth(i) + (BACKEND_CONSOLE ? 1 : 3.pointsToPixels);
     }
 
     /// extend specified column width to fit client area if grid width
