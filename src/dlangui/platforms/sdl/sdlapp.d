@@ -1666,7 +1666,7 @@ version (Windows) {
                 result = myWinMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
                 Log.i("calling Runtime.terminate()");
                 // commented out to fix hanging runtime.terminate when there are background threads
-                //Runtime.terminate();
+                Runtime.terminate();
             }
             catch (Throwable e) // catch any uncaught exceptions
             {
