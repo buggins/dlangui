@@ -834,7 +834,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
     }
 
     bool selectItem(int index, int disabledItemsSkipDirection) {
-        debug Log.d("selectItem ", index, " skipDirection=", disabledItemsSkipDirection);
+        //debug Log.d("selectItem ", index, " skipDirection=", disabledItemsSkipDirection);
         if (index == -1 || disabledItemsSkipDirection == 0)
             return selectItem(index);
         int maxAttempts = itemCount;
@@ -860,7 +860,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
     }
 
     bool selectItem(int index) {
-        debug Log.d("selectItem ", index);
+        //debug Log.d("selectItem ", index);
         if (_selectedItemIndex == index) {
             updateSelectedItemFocus();
             makeSelectionVisible();
