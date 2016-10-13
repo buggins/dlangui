@@ -1309,15 +1309,14 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                     WINDOWPOS * pos = cast(WINDOWPOS*)lParam;
                     Log.d("WM_WINDOWPOSCHANGED: ", *pos);
                     GetClientRect(hwnd, &rect);
-                    //window.onResize(pos.cx, pos.cy);
-                    //if (!(pos.flags & 0x8000)) { //SWP_NOACTIVATE)) {
-                    //if (pos.x > -30000) {
+                    if (pos.x > -30000) {// to ignore minimized state
                         int dx = rect.right - rect.left;
                         int dy = rect.bottom - rect.top;
-                        window.onResize(dx, dy);
-                        InvalidateRect(hwnd, null, FALSE);
-                    //}
-                    //}
+                        if (window.width != dx || window.height != dy) {
+                            window.onResize(dx, dy);
+                            InvalidateRect(hwnd, null, FALSE);
+                        }
+                    }
                 }
             }
             return 0;
