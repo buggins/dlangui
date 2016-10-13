@@ -977,15 +977,23 @@ class MainMenu : MenuWidgetBase {
         // handle MainMenu activation / deactivation (Alt, Esc...)
         bool toggleMenu = false;
         bool isAlt = event.keyCode == KeyCode.ALT || event.keyCode == KeyCode.LALT || event.keyCode == KeyCode.RALT;
+        bool altPressed = !!(event.flags & KeyFlag.Alt);
         bool noOtherModifiers = !(event.flags & (KeyFlag.Shift | KeyFlag.Control));
 
         if (event.action == KeyAction.KeyDown && event.keyCode == KeyCode.ESCAPE && event.flags == 0 && activated) {
             deactivate();
             return true;
         }
-        if (event.action == KeyAction.Text && (event.flags & KeyFlag.Alt) && !(event.flags & KeyFlag.Shift) && !(event.flags & KeyFlag.Shift)) {
-            dchar ch = event.text[0];
-            int index = _item.findSubitemByHotkey(ch);
+        dchar hotkey = 0;
+        if (event.action == KeyAction.KeyDown && event.keyCode >= KeyCode.KEY_A && event.keyCode <= KeyCode.KEY_Z && altPressed && noOtherModifiers) {
+//            Log.d("Alt + a..z");
+            hotkey = cast(dchar)((event.keyCode - KeyCode.KEY_A) + 'a');
+        }
+        if (event.action == KeyAction.Text && altPressed && noOtherModifiers) {
+            hotkey = event.text[0];
+        }
+        if (hotkey) {
+            int index = _item.findSubitemByHotkey(hotkey);
             if (index >= 0) {
                 activate();
                 itemClicked(index);
