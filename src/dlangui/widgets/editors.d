@@ -1692,32 +1692,41 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return super.findKeyAction(keyCode, flags);
     }
 
+    static bool isAZaz(dchar ch) {
+        return (ch >= 'a' && ch <='z') || (ch >= 'A' && ch <='Z');
+    }
+
     /// handle keys
     override bool onKeyEvent(KeyEvent event) {
         //Log.d("onKeyEvent ", event.action, " ", event.keyCode, " flags ", event.flags);
         if (focused) startCaretBlinking();
         cancelHoverTimer();
-        bool ctrlOrAltPressed = false; //(event.flags & (KeyFlag.Control /* | KeyFlag.Alt */));
+        bool ctrlOrAltPressed = !!(event.flags & KeyFlag.Control); //(event.flags & (KeyFlag.Control /* | KeyFlag.Alt */));
+        //if (event.action == KeyAction.KeyDown && event.keyCode == KeyCode.SPACE && (event.flags & KeyFlag.Control)) {
+        //    Log.d("Ctrl+Space pressed");
+        //}
         if (event.action == KeyAction.Text && event.text.length && !ctrlOrAltPressed) {
             //Log.d("text entered: ", event.text);
             if (readOnly)
                 return true;
-            if (replaceMode && _selectionRange.empty && _content[_caretPos.line].length >= _caretPos.pos + event.text.length) {
-                // replace next char(s)
-                TextRange range = _selectionRange;
-                range.end.pos += cast(int)event.text.length;
-                EditOperation op = new EditOperation(EditAction.Replace, range, [event.text]);
-                _content.performOperation(op, this);
-            } else {
-                EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [event.text]);
-                _content.performOperation(op, this);
+            if (!(!!(event.flags & KeyFlag.Alt) && event.text.length == 1 && isAZaz(event.text[0]))) { // filter out Alt+A..Z
+                if (replaceMode && _selectionRange.empty && _content[_caretPos.line].length >= _caretPos.pos + event.text.length) {
+                    // replace next char(s)
+                    TextRange range = _selectionRange;
+                    range.end.pos += cast(int)event.text.length;
+                    EditOperation op = new EditOperation(EditAction.Replace, range, [event.text]);
+                    _content.performOperation(op, this);
+                } else {
+                    EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [event.text]);
+                    _content.performOperation(op, this);
+                }
+                if (focused) startCaretBlinking();
+                return true;
             }
-            if (focused) startCaretBlinking();
-            return true;
         }
-        if (event.keyCode == KeyCode.SPACE && !readOnly) {
-            return true;
-        }
+        //if (event.keyCode == KeyCode.SPACE && !readOnly) {
+        //    return true;
+        //}
         //if (event.keyCode == KeyCode.RETURN && !readOnly && !_content.multiline) {
         //    return true;
         //}
