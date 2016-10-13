@@ -652,6 +652,14 @@ enum HintingMode : int {
     Light // 3
 }
 
+/// font face properties item
+struct FontFaceProps {
+    /// font face name
+    string face;
+    /// font family
+    FontFamily family;
+}
+
 /// Access points to fonts.
 class FontManager {
     protected static __gshared FontManager _instance;
@@ -675,6 +683,11 @@ class FontManager {
 
     /// get font instance best matched specified parameters
     abstract ref FontRef getFont(int size, int weight, bool italic, FontFamily family, string face);
+
+    /// override to return list of font faces available
+    FontFaceProps[] getFaces() {
+        return null;
+    }
 
     /// clear usage flags for all entries -- for cleanup of unused fonts
     abstract void checkpoint();

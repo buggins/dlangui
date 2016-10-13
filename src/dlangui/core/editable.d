@@ -1420,9 +1420,11 @@ class EditableContent {
     bool load(string filename) {
         clear();
         try {
-            InputStream f = new FileInputStream(filename);
+            InputStream f;
+            f = new FileInputStream(filename);
             scope(exit) { f.close(); }
-            return load(f, filename);
+            bool res = load(f, filename);
+            return res;
         } catch (Exception e) {
             Log.e("Exception while trying to read file ", filename, " ", e.toString);
             clear();

@@ -22,7 +22,8 @@ class FileInputStream : InputStream {
         _file = std.stdio.File(filename, "rb");
     }
     void close() {
-        _file.close();
+        if (isOpen)
+            _file.close();
     }
     size_t read(ubyte[] buffer) {
         ubyte[] res = _file.rawRead(buffer);

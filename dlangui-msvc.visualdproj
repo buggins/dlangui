@@ -976,12 +976,15 @@
      <File path="src\dlangui\widgets\docks.d" />
      <File path="src\dlangui\widgets\editors.d" />
      <File path="src\dlangui\widgets\grid.d" />
+     <File path="src\dlangui\widgets\groupbox.d" />
      <File path="src\dlangui\widgets\layouts.d" />
      <File path="src\dlangui\widgets\lists.d" />
      <File path="src\dlangui\widgets\menu.d" />
      <File path="src\dlangui\widgets\metadata.d" />
      <File path="src\dlangui\widgets\popup.d" />
+     <File path="src\dlangui\widgets\progressbar.d" />
      <File path="src\dlangui\widgets\scroll.d" />
+     <File path="src\dlangui\widgets\scrollbar.d" />
      <File path="src\dlangui\widgets\srcedit.d" />
      <File path="src\dlangui\widgets\statusline.d" />
      <File path="src\dlangui\widgets\styles.d" />

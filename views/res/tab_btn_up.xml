@@ -4,11 +4,11 @@
   android:dither="false"
   android:variablePadding="false" >
   <item
-    android:drawable="tab_btn_up_hover"
-    android:state_hovered="true" />
-  <item
     android:drawable="tab_btn_up_selected"
     android:state_selected="true" />
+  <item
+    android:drawable="tab_btn_up_hover"
+    android:state_hovered="true" />
   <item
     android:drawable="tab_btn_up_normal" />
 </selector>

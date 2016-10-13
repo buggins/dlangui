@@ -1061,7 +1061,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 //caretRc.left++;
                 if (_replaceMode && BACKEND_GUI)
                     buf.fillRect(caretRc, _caretColorReplace);
-                buf.drawLine(Point(caretRc.left, caretRc.bottom), Point(caretRc.left, caretRc.top), _caretColor);
+                //buf.drawLine(Point(caretRc.left, caretRc.bottom), Point(caretRc.left, caretRc.top), _caretColor);
+                buf.fillRect(Rect(caretRc.left, caretRc.top, caretRc.left + 1, caretRc.bottom), _caretColor);
             }
         }
     }
@@ -1334,8 +1335,18 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 return true;
             case LineBegin:
             case SelectLineBegin:
+                auto space = _content.getLineWhiteSpace(_caretPos.line);
                 if (_caretPos.pos > 0) {
-                    _caretPos.pos = 0;
+                    if (_caretPos.pos > space.firstNonSpaceIndex && space.firstNonSpaceIndex > 0)
+                        _caretPos.pos = space.firstNonSpaceIndex;
+                    else
+                        _caretPos.pos = 0;
+                    ensureCaretVisible();
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
+                } else {
+                    // caret pos is 0
+                    if (space.firstNonSpaceIndex > 0)
+                        _caretPos.pos = space.firstNonSpaceIndex;
                     ensureCaretVisible();
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                 }
@@ -1688,7 +1699,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         cancelHoverTimer();
         bool ctrlOrAltPressed = false; //(event.flags & (KeyFlag.Control /* | KeyFlag.Alt */));
         if (event.action == KeyAction.Text && event.text.length && !ctrlOrAltPressed) {
-            Log.d("text entered: ", event.text);
+            //Log.d("text entered: ", event.text);
             if (readOnly)
                 return true;
             if (replaceMode && _selectionRange.empty && _content[_caretPos.line].length >= _caretPos.pos + event.text.length) {

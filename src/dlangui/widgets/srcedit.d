@@ -22,10 +22,12 @@ import dlangui.graphics.fonts;
 import dlangui.widgets.editors;
 import dlangui.widgets.styles;
 
+enum DEFAULT_SOURCE_EDIT_FONT_FACES = "Menlo,Consolas,DejaVuSansMono,DejaVu Sans Mono,Liberation Mono,Lucida Sans Typewriter,Courier New,Lucida Console";
+
 class SourceEdit : EditBox {
     this(string ID) {
         super(ID);
-        fontFace = "Menlo,Consolas,DejaVuSansMono,DejaVu Sans Mono,Liberation Mono,Lucida Sans Typewriter,Courier New,Lucida Console";
+        fontFace = DEFAULT_SOURCE_EDIT_FONT_FACES;
         //fontFace = "Consolas,Lucida Console,Courier New";
         fontFamily = FontFamily.MonoSpace;
         fontSize = makePointSize(10);

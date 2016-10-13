@@ -86,6 +86,7 @@
 	focusRectColors="#000"
         >
         <state state_enabled="true" state_hovered="true" textColor="#006080"/>
+        <state state_enabled="false" textColor="#909090"/>
     </style>
     <style id="RADIOBUTTON" parent="CHECKBOX"
         margins="2,2,2,2"
@@ -100,6 +101,7 @@
 	focusRectColors="#000"
         >
         <state state_enabled="true" state_hovered="true" textColor="#006080"/>
+        <state state_enabled="false" textColor="#909090"/>
     </style>
     <style id="TEXT"
         margins="2,2,2,2"
@@ -144,6 +146,10 @@
     <drawable id="scrollbar_indicator_horizontal" value="scrollbar_indicator_horizontal"/>
     <style id="SCROLLBAR"
         backgroundColor="#dce2e8"
+        align="Center"
+        />
+    <style id="SLIDER"
+        backgroundImageId="slider_background"
         align="Center"
         />
     <style id="SCROLLBAR_BUTTON"
@@ -196,13 +202,14 @@
         <state state_selected="true" backgroundImageId="tab_up_backgrond_selected"/>
     </style>
     <style id="TAB_UP_BUTTON_TEXT"
+        padding="3pt,1pt,3pt,1pt"
         textColor="#000000"
         align="Center"
         >
         <state state_selected="true" state_focused="true" textColor="#000000"/>
         <state state_selected="true" textColor="#000000"/>
         <state state_focused="true" textColor="#000000"/>
-        <state state_hovered="true" textColor="#808000"/>
+        <state state_hovered="true" textColor="#0000C0"/>
     </style>
     <style id="TAB_UP_BUTTON"
         backgroundImageId="tab_btn_up"
@@ -484,5 +491,32 @@
         <state state_selected="true" backgroundColor="#00F8F9Fa"/>
         <state state_hovered="true" backgroundColor="#C0FFFF00"/>
     </style>
+
+    <style id="GROUP_BOX"
+        margins="2pt,4pt,2pt,2pt">
+        <drawable id="group_box_frame_up_left" value="group_box_frame_up_left"/>
+        <drawable id="group_box_frame_up_right" value="group_box_frame_up_right"/>
+        <drawable id="group_box_frame_bottom" value="group_box_frame_bottom"/>
+    </style>
+
+    <style id="GROUP_BOX_CAPTION"
+        align="Left|VCenter"
+	textColor="#504840"
+        padding="1pt,1pt,1pt,1pt">
+    </style>
+    
+    <style id="PROGRESS_BAR"
+        padding="2pt,2pt,2pt,2pt"
+        margins="2pt,2pt,2pt,2pt"
+        minWidth="50pt"
+        minHeight="16pt"
+        backgroundImageId="progress_bar_background_frame"
+        >
+        <drawable id="progress_bar_gauge" value="#4080FF"/>
+        <drawable id="progress_bar_gauge_animation" value="progress_bar_gauge_animation.tiled"/>
+        <drawable id="progress_bar_indeterminate" value="#80C080"/>
+        <drawable id="progress_bar_indeterminate_animation" value="progress_bar_gauge_animation.tiled"/>
+    </style>
+    
 </theme>
 

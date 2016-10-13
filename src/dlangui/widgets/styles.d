@@ -71,14 +71,14 @@ immutable string STYLE_HSPACER = "HSPACER";
 immutable string STYLE_VSPACER = "VSPACER";
 /// standard style id for ScrollBar
 immutable string STYLE_SCROLLBAR = "SCROLLBAR";
+/// standard style id for SliderWidget
+immutable string STYLE_SLIDER = "SLIDER";
 /// standard style id for ScrollBar button
 immutable string STYLE_SCROLLBAR_BUTTON = "SCROLLBAR_BUTTON";
 /// standard style id for ScrollBar button
 immutable string STYLE_SCROLLBAR_BUTTON_TRANSPARENT = "SCROLLBAR_BUTTON_TRANSPARENT";
 /// standard style id for ScrollBar page control
 immutable string STYLE_PAGE_SCROLL = "PAGE_SCROLL";
-/// standard style id for Slider
-immutable string STYLE_SLIDER = "SLIDER";
 /// standard style id for TabWidget
 immutable string STYLE_TAB_WIDGET = "TAB_WIDGET";
 /// standard style id for Tab with Up alignment
@@ -115,6 +115,12 @@ immutable string STYLE_EDIT_BOX = "EDIT_BOX";
 immutable string STYLE_STRING_GRID = "STRING_GRID";
 /// standard style id for background similar to transparent button
 immutable string STYLE_TRANSPARENT_BUTTON_BACKGROUND = "TRANSPARENT_BUTTON_BACKGROUND";
+/// standard style id for GroupBox
+immutable string STYLE_GROUP_BOX = "GROUP_BOX";
+/// standard style id for GroupBox caption
+immutable string STYLE_GROUP_BOX_CAPTION = "GROUP_BOX_CAPTION";
+/// standard style id for ProgressBarWidget caption
+immutable string STYLE_PROGRESS_BAR = "PROGRESS_BAR";
 
 /// standard style id for tree item
 immutable string STYLE_TREE_ITEM = "TREE_ITEM";
@@ -249,6 +255,46 @@ enum TextFlag : uint {
     StrikeThrough = 16 // TODO:
 }
 
+struct DrawableAttributeList {
+    DrawableAttribute[string] _customDrawables;
+    ~this() {
+        clear();
+    }
+    void clear() {
+        foreach(key, ref value; _customDrawables) {
+            if (value) {
+                destroy(value);
+                value = null;
+            }
+        }
+        destroy(_customDrawables);
+        _customDrawables = null;
+    }
+    bool hasKey(string key) const {
+        return (key in _customDrawables) !is null;
+    }
+    ref DrawableRef drawable(string id) const {
+        return _customDrawables[id].drawable;
+    }
+    /// get custom drawable attribute
+    string drawableId(string id) const {
+        return _customDrawables[id].drawableId;
+    }
+    void set(string id, string resourceId) {
+        if (id in _customDrawables) {
+            _customDrawables[id].drawableId = resourceId;
+        } else {
+            _customDrawables[id] = new DrawableAttribute(id, resourceId);
+        }
+    }
+    void copyFrom(ref DrawableAttributeList v) {
+        clear();
+        foreach(key, value; v._customDrawables) {
+            set(key, value.drawableId);
+        }
+    }
+}
+
 /// style properties
 class Style {
 protected:
@@ -285,7 +331,7 @@ protected:
     Style[] _substates;
     Style[] _children;
 
-    DrawableAttribute[string] _customDrawables;
+    DrawableAttributeList _customDrawables;
     uint[string] _customColors;
     uint[string] _customLength;
 
@@ -299,6 +345,7 @@ public:
             s.onThemeChanged();
         foreach(s; _children)
             s.onThemeChanged();
+        _customDrawables.clear();
     }
 
     @property const(Theme) theme() const {
@@ -364,25 +411,22 @@ public:
     }
 
     /// get custom drawable attribute
-    ref DrawableRef customDrawable(string id) {
-        if (id in _customDrawables)
-            return _customDrawables[id].drawable;
+    ref DrawableRef customDrawable(string id) const {
+        if (_customDrawables.hasKey(id))
+            return _customDrawables.drawable(id);
         return parentStyle ? parentStyle.customDrawable(id) : currentTheme.customDrawable(id);
     }
 
     /// get custom drawable attribute
     string customDrawableId(string id) const {
-        if (id in _customDrawables)
-            return _customDrawables[id].drawableId;
+        if (_customDrawables.hasKey(id))
+            return _customDrawables.drawableId(id);
         return parentStyle ? parentStyle.customDrawableId(id) : currentTheme.customDrawableId(id);
     }
 
     /// sets custom drawable attribute for style
     Style setCustomDrawable(string id, string resourceId) {
-        if (id in _customDrawables)
-            _customDrawables[id].drawableId = resourceId;
-        else
-            _customDrawables[id] = new DrawableAttribute(id, resourceId);
+        _customDrawables.set(id, resourceId);
         return this;
     }
 
@@ -785,6 +829,7 @@ public:
         _children.destroy();
         _backgroundDrawable.clear();
         _font.clear();
+        destroy(_customDrawables);
         debug _instanceCount--;
         //Log.d("Destroyed style ", _id, ", parentId=", _parentId, ", state=", _stateMask, ", count=", --_instanceCount);
     }
@@ -840,7 +885,7 @@ public:
 
         res._focusRectColors = _focusRectColors.dup;
 
-        res._customDrawables = _customDrawables.dup;
+        res._customDrawables.copyFrom(_customDrawables);
         res._customColors = _customColors.dup;
         res._customLength = _customLength.dup;
         return res;
@@ -968,14 +1013,14 @@ class Theme : Style {
 
     private DrawableRef _emptyDrawable;
     override ref DrawableRef customDrawable(string id) const {
-        if (id in _customDrawables)
-            return _customDrawables[id].drawable;
+        if (_customDrawables.hasKey(id))
+            return _customDrawables.drawable(id);
         return (cast(Theme)this)._emptyDrawable;
     }
 
     override string customDrawableId(string id) const {
-        if (id in _customDrawables)
-            return _customDrawables[id].drawableId;
+        if (_customDrawables.hasKey(id))
+            _customDrawables.drawableId(id);
         return null;
     }
 
@@ -1590,13 +1635,16 @@ public:
         _id = id;
         _drawableId = drawableId;
     }
+    ~this() {
+        clear();
+    }
     @property string id() const { return _id; }
     @property string drawableId() const { return _drawableId; }
     @property void drawableId(string newDrawable) { _drawableId = newDrawable; clear(); }
     @property ref DrawableRef drawable() const {
         if (!_drawable.isNull)
             return (cast(DrawableAttribute)this)._drawable;
-        (cast(DrawableAttribute)this)._drawable = drawableCache.get(_id);
+        (cast(DrawableAttribute)this)._drawable = drawableCache.get(_drawableId);
         (cast(DrawableAttribute)this)._initialized = true;
         return (cast(DrawableAttribute)this)._drawable;
     }

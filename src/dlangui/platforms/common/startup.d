@@ -321,17 +321,23 @@ void registerStandardWidgets() {
     import dlangui.widgets.widget;
     import dlangui.widgets.layouts;
     import dlangui.widgets.controls;
+    import dlangui.widgets.scrollbar;
     import dlangui.widgets.lists;
     import dlangui.widgets.combobox;
     import dlangui.widgets.editors;
     import dlangui.widgets.grid;
+    import dlangui.widgets.groupbox;
+    import dlangui.widgets.progressbar;
     import dlangui.dialogs.filedlg;
     import dlangui.widgets.menu;
     mixin(registerWidgets!(FileNameEditLine, DirEditLine, //dlangui.dialogs.filedlg
                            ComboBox, ComboEdit, //dlangui.widgets.combobox
                            Widget, TextWidget, MultilineTextWidget, Button, ImageWidget, ImageButton, ImageCheckButton, ImageTextButton, 
-                           SwitchButton, RadioButton, CheckBox, ScrollBar, SliderWidget, HSpacer, VSpacer, CanvasWidget, // dlangui.widgets.controls
+                           SwitchButton, RadioButton, CheckBox, HSpacer, VSpacer, CanvasWidget, // dlangui.widgets.controls
+                           ScrollBar, SliderWidget, // dlangui.widgets.scrollbar
                            EditLine, EditBox, LogWidget,//dlangui.widgets.editors
+                           GroupBox, // dlangui.widgets.groupbox
+                           ProgressBarWidget, // dlangui.widgets.progressbar
                            StringGridWidget, //dlangui.widgets.grid
                            VerticalLayout, HorizontalLayout, TableLayout, FrameLayout, // dlangui.widgets.layouts
                            ListWidget, StringListWidget,//dlangui.widgets.lists

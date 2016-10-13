@@ -3,7 +3,7 @@ Dlang UI
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/buggins/dlangui?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)  [![Build Status](https://travis-ci.org/buggins/dlangui.svg?branch=master)](https://travis-ci.org/buggins/dlangui) [![PayPayl donate button](https://img.shields.io/badge/paypal-donate-yellow.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KPSNU8TYF6M5N "Donate once-off to this project using Paypal")
 
-![screenshot](http://buggins.github.io/dlangui/screenshots/screenshot12.png "screenshot")
+![screenshot](http://buggins.github.io/dlangui/screenshots/screenshot-example1-windows.png "screenshot")
 
 Cross platform GUI for D. Widgets, layouts, styles, themes, unicode, i18n, OpenGL based acceleration.
 
@@ -53,11 +53,14 @@ Currently implemented widgets:
 * CheckBox - check button with label
 * RadioButton - radio button with label
 * SwitchButton - a toggle switch button
+* GroupBox - frame and caption for grouping other controls
 * EditLine - single line edit
 * EditBox - multiline editor
 * VSpacer - vertical spacer - just an empty widget with layoutHeight == FILL_PARENT, to fill vertical space in layouts
 * HSpacer - horizontal spacer - just an empty widget with layoutWidth == FILL_PARENT, to fill horizontal space in layouts
 * ScrollBar - scroll bar
+* SliderWidget - slider
+* ProgressBarWidget - progress bar
 * TabControl - tabs widget, allows to select one of tabs
 * TabHost - container for pages controlled by TabControl
 * TabWidget - combination of TabControl and TabHost

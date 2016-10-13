@@ -510,10 +510,11 @@ class LinearLayout : WidgetGroupDefaultDrawing {
     this() {
         this(null);
     }
-    /// create with ID parameter
-    this(string ID) {
+    /// create with ID parameter and orientation
+    this(string ID, Orientation orientation = Orientation.Vertical) {
         super(ID);
         _layoutItems = new LayoutItems();
+        _orientation = orientation;
     }
 
     LayoutItems _layoutItems;

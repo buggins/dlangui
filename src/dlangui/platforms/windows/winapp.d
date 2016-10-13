@@ -339,6 +339,11 @@ class Win32Window : Window {
 
     ~this() {
         debug Log.d("Window destructor");
+        if (_drawbuf) {
+            destroy(_drawbuf);
+            _drawbuf = null;
+        }
+            
         /*
         static if (ENABLE_OPENGL) {
             import derelict.opengl3.wgl;
@@ -1134,7 +1139,7 @@ int DLANGUIWinMain(void* hInstance, void* hPrevInstance,
 
         result = myWinMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
         // TODO: fix hanging on multithreading app
-        //Runtime.terminate();
+        Runtime.terminate();
     }
     catch (Throwable e) // catch any uncaught exceptions
     {
@@ -1262,6 +1267,11 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
     releaseResourcesOnAppExit();
 
     Log.d("Exiting main");
+    APP_IS_SHUTTING_DOWN = true;
+    import core.memory : GC;
+    Log.d("Calling GC.collect");
+    GC.collect();
+    Log.e("Non-zero DrawBuf instance count when exiting: ", DrawBuf.instanceCount);
 
     return result;
 }
@@ -1309,15 +1319,14 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                     WINDOWPOS * pos = cast(WINDOWPOS*)lParam;
                     Log.d("WM_WINDOWPOSCHANGED: ", *pos);
                     GetClientRect(hwnd, &rect);
-                    //window.onResize(pos.cx, pos.cy);
-                    //if (!(pos.flags & 0x8000)) { //SWP_NOACTIVATE)) {
-                    //if (pos.x > -30000) {
+                    if (pos.x > -30000) {// to ignore minimized state
                         int dx = rect.right - rect.left;
                         int dy = rect.bottom - rect.top;
-                        window.onResize(dx, dy);
-                        InvalidateRect(hwnd, null, FALSE);
-                    //}
-                    //}
+                        if (window.width != dx || window.height != dy) {
+                            window.onResize(dx, dy);
+                            InvalidateRect(hwnd, null, FALSE);
+                        }
+                    }
                 }
             }
             return 0;

@@ -126,6 +126,10 @@ class TabItemWidget : HorizontalLayout {
         styleId = tabButtonStyle;
         _label.styleId = tabButtonTextStyle;
     }
+    override void onDraw(DrawBuf buf) {
+        //debug Log.d("TabWidget.onDraw ", id);
+        super.onDraw(buf);
+    }
     protected bool onClick(Widget source) {
         if (source.compareId("CLOSE")) {
             Log.d("tab close button pressed");
@@ -522,6 +526,7 @@ class TabControl : WidgetGroupDefaultDrawing {
     override void onDraw(DrawBuf buf) {
         if (visibility != Visibility.Visible)
             return;
+        //debug Log.d("TabControl.onDraw enter");
         super.Widget.onDraw(buf);
         Rect rc = _pos;
         applyMargins(rc);
@@ -545,6 +550,7 @@ class TabControl : WidgetGroupDefaultDrawing {
                 continue;
             item.onDraw(buf);
         }
+        //debug Log.d("TabControl.onDraw exit");
     }
 
     protected string _selectedTabId;

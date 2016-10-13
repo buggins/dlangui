@@ -49,6 +49,13 @@ import std.algorithm;
 struct Point {
     int x;
     int y;
+
+    Point opBinary(string op)(Point v) if (op == "+") {
+        return Point(x + v.x, y + v.y);
+    }
+    Point opBinary(string op)(Point v) if (op == "-") {
+        return Point(x - v.x, y - v.y);
+    }
 }
 
 /// 2D rectangle
@@ -72,6 +79,9 @@ struct Rect {
     @property Point topLeft() { return Point(left, top); }
     /// returns bottom right point of rectangle
     @property Point bottomRight() { return Point(right, bottom); }
+
+    /// returns size (width, height) in Point
+    @property Point size() { return Point(right - left, bottom - top); }
 
     /// add offset to horizontal and vertical coordinates
     void offset(int dx, int dy) {

@@ -284,6 +284,36 @@ class Console {
         }
     }
 
+    version (Windows) {
+        DWORD savedStdinMode;
+        DWORD savedStdoutMode;
+    } else {
+        import core.sys.posix.termios;
+        import core.sys.posix.fcntl;
+        import core.sys.posix.sys.ioctl;
+        termios savedStdinState;
+    }
+    
+    void uninit() {
+        version (Windows) {
+            SetConsoleMode(_hstdin, savedStdinMode);
+            SetConsoleMode(_hstdout, savedStdoutMode);
+        } else {
+            import core.sys.posix.unistd;
+            tcsetattr(STDIN_FILENO, TCSANOW, &savedStdinState);
+            // reset terminal state
+            rawWrite("\033c");
+            // reset attributes
+            rawWrite("\x1b[0m");
+            // clear screen
+            rawWrite("\033[2J");
+            // normal cursor
+            rawWrite("\x1b[?25h");
+            // set auto wrapping mode
+            rawWrite("\x1b[?7h");
+        }
+    }
+
     bool init() {
         version(Windows) {
             _hstdin = GetStdHandle(STD_INPUT_HANDLE);
@@ -311,6 +341,7 @@ class Console {
             immutable DWORD ENABLE_LVB_GRID_WORLDWIDE = 0x0010;
             DWORD mode = 0;
             GetConsoleMode(_hstdin, &mode);
+            savedStdinMode = mode;
             mode = mode & ~ENABLE_ECHO_INPUT;
             mode = mode & ~ENABLE_LINE_INPUT;
             mode = mode & ~ENABLE_QUICK_EDIT_MODE;
@@ -319,6 +350,7 @@ class Console {
             mode |= ENABLE_WINDOW_INPUT;
             SetConsoleMode(_hstdin, mode);
             GetConsoleMode(_hstdout, &mode);
+            savedStdoutMode = mode;
             mode = mode & ~ENABLE_PROCESSED_OUTPUT;
             mode = mode & ~ENABLE_WRAP_AT_EOL_OUTPUT;
             mode = mode & ~ENABLE_VIRTUAL_TERMINAL_PROCESSING;
@@ -336,9 +368,6 @@ class Console {
             //writeln("csbi=", csbi);
         } else {
             import core.sys.posix.unistd;
-            import core.sys.posix.fcntl;
-            import core.sys.posix.termios;
-            import core.sys.posix.sys.ioctl;
             if (!isatty(1))
                 return false;
             setSignalHandlers();
@@ -346,6 +375,7 @@ class Console {
             termios ttystate;
             //get the terminal state
             tcgetattr(STDIN_FILENO, &ttystate);
+            savedStdinState = ttystate;
             //turn off canonical mode
             ttystate.c_lflag &= ~ICANON;
             ttystate.c_lflag &= ~ECHO;

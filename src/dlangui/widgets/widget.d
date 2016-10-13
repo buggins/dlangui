@@ -407,14 +407,14 @@ public:
     @property Widget backgroundColor(uint color) { 
         ownStyle.backgroundColor = color; 
         invalidate();
-        return this; 
+        return this;
     }
     /// set background color for widget - from string like "#5599CC" or "white"
     @property Widget backgroundColor(string colorString) { 
         uint color = decodeHexColor(colorString, COLOR_TRANSPARENT);
         ownStyle.backgroundColor = color; 
         invalidate();
-        return this; 
+        return this;
     }
 
     /// background image id
@@ -1143,12 +1143,15 @@ public:
 
     /// set new timer to call onTimer() after specified interval (for recurred notifications, return true from onTimer)
     ulong setTimer(long intervalMillis) {
-        return window.setTimer(this, intervalMillis);
+        if (auto w = window)
+            return w.setTimer(this, intervalMillis);
+        return 0; // no window - no timer
     }
 
     /// cancel timer - pass value returned from setTimer() as timerId parameter
     void cancelTimer(ulong timerId) {
-        window.cancelTimer(timerId);
+        if (auto w = window)
+            w.cancelTimer(timerId);
     }
 
     /// handle timer; return true to repeat timer event after next interval, false cancel timer

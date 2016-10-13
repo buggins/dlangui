@@ -178,6 +178,24 @@ class MenuItem {
         return -1;
     }
 
+    /// find subitem by hotkey character, returns subitem index, -1 if not found
+    MenuItem findSubitemByHotkeyRecursive(dchar ch) {
+        static import std.uni;
+        if (!ch)
+            return null;
+        ch = std.uni.toUpper(ch);
+        for (int i = 0; i < _subitems.length; i++) {
+            if (_subitems[i].getHotkey() == ch)
+                return _subitems[i];
+        }
+        for (int i = 0; i < _subitems.length; i++) {
+            MenuItem res = _subitems[i].findSubitemByHotkeyRecursive(ch);
+            if (res)
+                return res;
+        }
+        return null;
+    }
+
     /// Add separator item
     MenuItem addSeparator() {
         return add(new Action(SEPARATOR_ACTION_ID));
@@ -567,6 +585,43 @@ class MenuWidgetBase : ListWidget {
         }
     }
 
+    enum MENU_OPEN_DELAY_MS = 400;
+    ulong _submenuOpenTimer = 0;
+    int _submenuOpenItemIndex = -1;
+    protected void scheduleOpenSubmenu(int index) {
+        if (_submenuOpenTimer) {
+            cancelTimer(_submenuOpenTimer);
+            _submenuOpenTimer = 0;
+        }
+        _submenuOpenItemIndex = index;
+        _submenuOpenTimer = setTimer(MENU_OPEN_DELAY_MS);
+    }
+    protected void cancelOpenSubmenu() {
+        if (_submenuOpenTimer) {
+            cancelTimer(_submenuOpenTimer);
+            _submenuOpenTimer = 0;
+        }
+    }
+    /// handle timer; return true to repeat timer event after next interval, false cancel timer
+    override bool onTimer(ulong id) {
+        if (id == _submenuOpenTimer) {
+            _submenuOpenTimer = 0;
+            MenuItemWidget itemWidget = _submenuOpenItemIndex >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(_submenuOpenItemIndex) : null;
+            if (itemWidget !is null) {
+                if (itemWidget.item.isSubmenu()) {
+                    Log.d("Opening submenu by timer");
+                    openSubmenu(_submenuOpenItemIndex, itemWidget, _orientation == Orientation.Horizontal); // for main menu, select first item
+                } else {
+                    // normal item
+                }
+            }
+        }
+        // override to do something useful
+        // return true to repeat after the same interval, false to stop timer
+        return false;
+    }
+
+
     protected bool _selectionChangingInProgress;
     /// override to handle change of selection
     override protected void selectionChanged(int index, int previouslySelectedItem = -1) {
@@ -587,7 +642,12 @@ class MenuWidgetBase : ListWidget {
         if (itemWidget !is null) {
             if (itemWidget.item.isSubmenu()) {
                 if (_selectOnHover || popupWasOpen) {
-                    openSubmenu(index, itemWidget, _orientation == Orientation.Horizontal); // for main menu, select first item
+                    if (popupWasOpen && _orientation == Orientation.Horizontal) {
+                        // instantly open submenu in main menu if previous submenu was opened
+                        openSubmenu(index, itemWidget, false); // _orientation == Orientation.Horizontal for main menu, select first item
+                    } else {
+                        scheduleOpenSubmenu(index);
+                    }
                 }
             } else {
                 // normal item
@@ -775,6 +835,7 @@ class MenuWidgetBase : ListWidget {
     }
     /// closes this menu - handle ESC key
     void close() {
+        cancelOpenSubmenu();
         if (thisPopup !is null)
             thisPopup.close();
     }
@@ -934,36 +995,53 @@ class MainMenu : MenuWidgetBase {
         // handle MainMenu activation / deactivation (Alt, Esc...)
         bool toggleMenu = false;
         bool isAlt = event.keyCode == KeyCode.ALT || event.keyCode == KeyCode.LALT || event.keyCode == KeyCode.RALT;
+        bool altPressed = !!(event.flags & KeyFlag.Alt);
         bool noOtherModifiers = !(event.flags & (KeyFlag.Shift | KeyFlag.Control));
 
         if (event.action == KeyAction.KeyDown && event.keyCode == KeyCode.ESCAPE && event.flags == 0 && activated) {
             deactivate();
             return true;
         }
-        if (event.action == KeyAction.Text && (event.flags & KeyFlag.Alt) && !(event.flags & KeyFlag.Shift) && !(event.flags & KeyFlag.Shift)) {
-            dchar ch = event.text[0];
-            int index = _item.findSubitemByHotkey(ch);
+        dchar hotkey = 0;
+        if (event.action == KeyAction.KeyDown && event.keyCode >= KeyCode.KEY_A && event.keyCode <= KeyCode.KEY_Z && altPressed && noOtherModifiers) {
+//            Log.d("Alt + a..z");
+            hotkey = cast(dchar)((event.keyCode - KeyCode.KEY_A) + 'a');
+        }
+        if (event.action == KeyAction.Text && altPressed && noOtherModifiers) {
+            hotkey = event.text[0];
+        }
+        if (hotkey) {
+            int index = _item.findSubitemByHotkey(hotkey);
             if (index >= 0) {
                 activate();
                 itemClicked(index);
                 return true;
             } else {
+                MenuItem item = _item.findSubitemByHotkeyRecursive(hotkey);
+                if (item) {
+                    Log.d("found menu item recursive");
+                    onMenuItem(item);
+                    return true;
+                }
                 return false;
             }
         }
 
-        if (event.action == KeyAction.KeyDown && isAlt && noOtherModifiers) {
-            _menuToggleState = 1;
-        } else if (event.action == KeyAction.KeyUp && isAlt && noOtherModifiers) {
-            if (_menuToggleState == 1)
-                toggleMenu = true;
-            _menuToggleState = 0;
-        } else {
-            _menuToggleState = 0;
-        }
-        if (toggleMenu) {
-            toggle();
-            return true;
+        // toggle menu by single Alt press - for Windows only!
+        version (Windows) {
+            if (event.action == KeyAction.KeyDown && isAlt && noOtherModifiers) {
+                _menuToggleState = 1;
+            } else if (event.action == KeyAction.KeyUp && isAlt && noOtherModifiers) {
+                if (_menuToggleState == 1)
+                    toggleMenu = true;
+                _menuToggleState = 0;
+            } else {
+                _menuToggleState = 0;
+            }
+            if (toggleMenu) {
+                toggle();
+                return true;
+            }
         }
         if (!focused)
             return false;

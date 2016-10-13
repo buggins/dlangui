@@ -162,6 +162,9 @@
     <Compile Include="src\dlangui\widgets\docks.d" />
     <Compile Include="src\dlangui\widgets\editors.d" />
     <Compile Include="src\dlangui\widgets\grid.d" />
+    <Compile Include="src\dlangui\widgets\groupbox.d" />
+    <Compile Include="src\dlangui\widgets\scrollbar.d" />
+    <Compile Include="src\dlangui\widgets\progressbar.d" />
     <Compile Include="src\dlangui\widgets\layouts.d" />
     <Compile Include="src\dlangui\widgets\lists.d" />
     <Compile Include="src\dlangui\widgets\menu.d" />

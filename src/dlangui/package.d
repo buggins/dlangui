@@ -59,7 +59,10 @@ public {
     import dlangui.graphics.drawbuf;
     import dlangui.widgets.widget;
     import dlangui.widgets.controls;
+    import dlangui.widgets.scrollbar;
+    import dlangui.widgets.progressbar;
     import dlangui.widgets.layouts;
+    import dlangui.widgets.groupbox;
     import dlangui.widgets.lists;
     import dlangui.widgets.tabs;
     import dlangui.widgets.menu;
