@@ -567,6 +567,43 @@ class MenuWidgetBase : ListWidget {
         }
     }
 
+    enum MENU_OPEN_DELAY_MS = 400;
+    ulong _submenuOpenTimer = 0;
+    int _submenuOpenItemIndex = -1;
+    protected void scheduleOpenSubmenu(int index) {
+        if (_submenuOpenTimer) {
+            cancelTimer(_submenuOpenTimer);
+            _submenuOpenTimer = 0;
+        }
+        _submenuOpenItemIndex = index;
+        _submenuOpenTimer = setTimer(MENU_OPEN_DELAY_MS);
+    }
+    protected void cancelOpenSubmenu() {
+        if (_submenuOpenTimer) {
+            cancelTimer(_submenuOpenTimer);
+            _submenuOpenTimer = 0;
+        }
+    }
+    /// handle timer; return true to repeat timer event after next interval, false cancel timer
+    override bool onTimer(ulong id) {
+        if (id == _submenuOpenTimer) {
+            _submenuOpenTimer = 0;
+            MenuItemWidget itemWidget = _submenuOpenItemIndex >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(_submenuOpenItemIndex) : null;
+            if (itemWidget !is null) {
+                if (itemWidget.item.isSubmenu()) {
+                    Log.d("Opening submenu by timer");
+                    openSubmenu(_submenuOpenItemIndex, itemWidget, _orientation == Orientation.Horizontal); // for main menu, select first item
+                } else {
+                    // normal item
+                }
+            }
+        }
+        // override to do something useful
+        // return true to repeat after the same interval, false to stop timer
+        return false;
+    }
+
+
     protected bool _selectionChangingInProgress;
     /// override to handle change of selection
     override protected void selectionChanged(int index, int previouslySelectedItem = -1) {
@@ -587,7 +624,12 @@ class MenuWidgetBase : ListWidget {
         if (itemWidget !is null) {
             if (itemWidget.item.isSubmenu()) {
                 if (_selectOnHover || popupWasOpen) {
-                    openSubmenu(index, itemWidget, _orientation == Orientation.Horizontal); // for main menu, select first item
+                    if (popupWasOpen && _orientation == Orientation.Horizontal) {
+                        // instantly open submenu in main menu if previous submenu was opened
+                        openSubmenu(index, itemWidget, false); // _orientation == Orientation.Horizontal for main menu, select first item
+                    } else {
+                        scheduleOpenSubmenu(index);
+                    }
                 }
             } else {
                 // normal item
@@ -775,6 +817,7 @@ class MenuWidgetBase : ListWidget {
     }
     /// closes this menu - handle ESC key
     void close() {
+        cancelOpenSubmenu();
         if (thisPopup !is null)
             thisPopup.close();
     }
