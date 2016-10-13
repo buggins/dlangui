@@ -178,6 +178,24 @@ class MenuItem {
         return -1;
     }
 
+    /// find subitem by hotkey character, returns subitem index, -1 if not found
+    MenuItem findSubitemByHotkeyRecursive(dchar ch) {
+        static import std.uni;
+        if (!ch)
+            return null;
+        ch = std.uni.toUpper(ch);
+        for (int i = 0; i < _subitems.length; i++) {
+            if (_subitems[i].getHotkey() == ch)
+                return _subitems[i];
+        }
+        for (int i = 0; i < _subitems.length; i++) {
+            MenuItem res = _subitems[i].findSubitemByHotkeyRecursive(ch);
+            if (res)
+                return res;
+        }
+        return null;
+    }
+
     /// Add separator item
     MenuItem addSeparator() {
         return add(new Action(SEPARATOR_ACTION_ID));
@@ -999,6 +1017,12 @@ class MainMenu : MenuWidgetBase {
                 itemClicked(index);
                 return true;
             } else {
+                MenuItem item = _item.findSubitemByHotkeyRecursive(hotkey);
+                if (item) {
+                    Log.d("found menu item recursive");
+                    onMenuItem(item);
+                    return true;
+                }
                 return false;
             }
         }
