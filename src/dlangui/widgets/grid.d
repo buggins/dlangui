@@ -267,14 +267,44 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     /// Set adapter to hold grid model data
     @property GridWidgetBase gridModelAdapter(GridModelAdapter adapter) { _gridModelAdapter = adapter; return this; }
 
+    protected bool _smoothHScroll = true;
+    /// Get smooth horizontal scroll flag - when true - scrolling by pixels, when false - by cells
+    @property bool smoothHScroll() { return _smoothHScroll; }
+    /// Get smooth horizontal scroll flag - when true - scrolling by pixels, when false - by cells
+    @property GridWidgetBase smoothHScroll(bool flgSmoothScroll) { 
+        if (_smoothHScroll != flgSmoothScroll) {
+            _smoothHScroll = flgSmoothScroll;
+            // TODO: snap to grid if necessary
+            updateScrollBars();
+        }
+        return this;
+    }
+
+    protected bool _smoothVScroll = true;
+    /// Get smooth vertical scroll flag - when true - scrolling by pixels, when false - by cells
+    @property bool smoothVScroll() { return _smoothVScroll; }
+    /// Get smooth vertical scroll flag - when true - scrolling by pixels, when false - by cells
+    @property GridWidgetBase smoothVScroll(bool flgSmoothScroll) { 
+        if (_smoothVScroll != flgSmoothScroll) {
+            _smoothVScroll = flgSmoothScroll;
+            // TODO: snap to grid if necessary
+            updateScrollBars();
+        }
+        return this;
+    }
+
     /// column count (including header columns and fixed columns)
     protected int _cols;
     /// row count (including header rows and fixed rows)
     protected int _rows;
     /// column widths
     protected int[] _colWidths;
+    /// total width from first column to right of this
+    protected int[] _colCumulativeWidths;
     /// row heights
     protected int[] _rowHeights;
+    /// total height from first row to bottom of this
+    protected int[] _rowCumulativeHeights;
     /// when true, shows col headers row
     protected bool _showColHeaders;
     /// when true, shows row headers column
@@ -287,10 +317,12 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     protected int _fixedCols;
     /// number of fixed (non-scrollable) rows
     protected int _fixedRows;
-    /// column scroll offset, relative to last fixed col; 0 = not scrolled
-    protected int _scrollCol; 
-    /// row scroll offset, relative to last fixed row; 0 = not scrolled
-    protected int _scrollRow;
+
+    /// scroll X offset in pixels
+    protected int _scrollX;
+    /// scroll Y offset in pixels
+    protected int _scrollY;
+
     /// selected cell column
     protected int _col;
     /// selected cell row
@@ -388,7 +420,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     /// set bool property value, for ML loaders
     mixin(generatePropertySettersMethodOverride("setBoolProperty", "bool",
-          "showColHeaders", "showColHeaders", "rowSelect"));
+          "showColHeaders", "showColHeaders", "rowSelect", "smoothHScroll", "smoothVScroll"));
 
     /// set int property value, for ML loaders
     mixin(generatePropertySettersMethodOverride("setIntProperty", "int",
@@ -424,6 +456,24 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         return this;
     }
 
+    /// recalculate colCumulativeWidths, rowCumulativeHeights after resizes
+    protected void updateCumulativeSizes() {
+        _colCumulativeWidths.length = _colWidths.length;
+        _rowCumulativeHeights.length = _rowHeights.length;
+        for (int i = 0; i < _colCumulativeWidths.length; i++) {
+            if (i == 0)
+                _colCumulativeWidths[i] = _colWidths[i];
+            else
+                _colCumulativeWidths[i] = _colWidths[i] + _colCumulativeWidths[i - 1];
+        }
+        for (int i = 0; i < _rowCumulativeHeights.length; i++) {
+            if (i == 0)
+                _rowCumulativeHeights[i] = _rowHeights[i];
+            else
+                _rowCumulativeHeights[i] = _rowHeights[i] + _rowCumulativeHeights[i - 1];
+        }
+    }
+
     /// set new size
     void resize(int c, int r) {
         if (c == cols && r == rows)
@@ -438,164 +488,266 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         }
         _cols = c + _headerCols;
         _rows = r + _headerRows;
+        updateCumulativeSizes();
     }
 
-
-    /// returns column width (index includes col/row headers, if any); returns 0 for columns hidden by scroll at the left
-    int colWidth(int x) {
-        if (x >= _headerCols + fixedCols && x < _headerCols + fixedCols + _scrollCol)
-            return 0;
-        return _colWidths[x];
+    /// count of non-scrollable columns (header + fixed)
+    @property int nonScrollCols() { return _headerCols + fixedCols; }
+    /// count of non-scrollable rows (header + fixed)
+    @property int nonScrollRows() { return _headerRows + fixedRows; }
+    /// return all (fixed + scrollable) cells size in pixels
+    @property Point fullAreaPixels() {
+        return Point(_cols ? _colCumulativeWidths[_cols - 1] : 0, _rows ? _rowCumulativeHeights[_rows - 1] : 0);
+    }
+    /// non-scrollable area size in pixels
+    @property Point nonScrollAreaPixels() {
+        int nscols = nonScrollCols;
+        int nsrows = nonScrollRows;
+        return Point(nscols ? _colCumulativeWidths[nscols - 1] : 0, nsrows ? _rowCumulativeHeights[nsrows - 1] : 0);
+    }
+    /// scrollable area size in pixels
+    @property Point scrollAreaPixels() {
+        return fullAreaPixels - nonScrollAreaPixels;
+    }
+    /// get cell rectangle (relative to client area) not counting scroll position
+    Rect cellRectNoScroll(int x, int y) {
+        if (x < 0 || y < 0 || x >= _cols || y >= _rows)
+            return Rect(0,0,0,0);
+        return Rect(x ? _colCumulativeWidths[x - 1] : 0, y ? _rowCumulativeHeights[y - 1] : 0,
+                _colCumulativeWidths[x], _rowCumulativeHeights[y]);
+    }
+    /// get cell rectangle moved by scroll pixels (may overlap non-scroll cols!)
+    Rect cellRectScroll(int x, int y) {
+        Rect rc = cellRectNoScroll(x, y);
+        int nscols = nonScrollCols;
+        int nsrows = nonScrollRows;
+        if (x >= nscols) {
+            rc.left -= _scrollX;
+            rc.right -= _scrollX;
+        }
+        if (y >= nsrows) {
+            rc.top -= _scrollY;
+            rc.bottom -= _scrollY;
+        }
+        return rc;
+    }
+    /// returns true if column is inside client area and not overlapped outside scroll area
+    bool colVisible(int x) {
+        if (x < 0 || x >= _cols)
+            return false;
+        if (x == 0)
+            return true;
+        int nscols = nonScrollCols;
+        if (x < nscols) {
+            // non-scrollable
+            return _colCumulativeWidths[x - 1] < _clientRect.width;
+        } else {
+            // scrollable
+            int start = _colCumulativeWidths[x - 1] - _scrollX;
+            int end = _colCumulativeWidths[x] - _scrollX;
+            if (start >= _clientRect.width)
+                return false; // at right
+            if (end <= (nscols ? _colCumulativeWidths[nscols - 1] : 0))
+                return false; // at left
+            return true; // visible
+        }
+    }
+    /// returns true if row is inside client area and not overlapped outside scroll area
+    bool rowVisible(int y) {
+        if (y < 0 || y >= _rows)
+            return false;
+        if (y == 0)
+            return true; // first row always visible
+        int nsrows = nonScrollRows;
+        if (y < nsrows) {
+            // non-scrollable
+            return _rowCumulativeHeights[y - 1] < _clientRect.height;
+        } else {
+            // scrollable
+            int start = _rowCumulativeHeights[y - 1] - _scrollY;
+            int end = _rowCumulativeHeights[y] - _scrollY;
+            if (start >= _clientRect.height)
+                return false; // at right
+            if (end <= (nsrows ? _rowCumulativeHeights[nsrows - 1] : 0))
+                return false; // at left
+            return true; // visible
+        }
     }
 
     void setColWidth(int x, int w) {
         _colWidths[x] = w;
-    }
-
-    /// returns row height (index includes col/row headers, if any); returns 0 for riws hidden by scroll at the top
-    int rowHeight(int y) {
-        if (y >= _headerRows + fixedRows && y < _headerRows + fixedRows + _scrollRow)
-            return 0;
-        return _rowHeights[y];
+        updateCumulativeSizes();
     }
 
     void setRowHeight(int y, int w) {
         _rowHeights[y] = w;
+        updateCumulativeSizes();
     }
 
     /// returns cell rectangle relative to client area; row 0 is col headers row; col 0 is row headers column
     Rect cellRect(int x, int y) {
-        Rect rc;
-        int xx = 0;
-        for (int i = 0; i <= x; i++) {
-            if (i == x)
-                rc.left = xx;
-            xx += colWidth(i);
-            if (i == x) {
-                rc.right = xx;
-                break;
-            }
-        }
-        int yy = 0;
-        for (int i = 0; i <= y; i++) {
-            if (i == y)
-                rc.top = yy;
-            yy += rowHeight(i);
-            if (i == y) {
-                rc.bottom = yy;
-                break;
-            }
-        }
-        return rc;
+        return cellRectScroll(x, y);
     }
 
     /// converts client rect relative coordinates to cell coordinates
     bool pointToCell(int x, int y, ref int col, ref int row, ref Rect cellRect) {
-        col = row = -1;
-        cellRect = Rect();
-        Rect rc;
-        int xx = 0;
-        for (int i = 0; i < _cols; i++) {
-            rc.left = xx;
-            xx += colWidth(i);
-            rc.right = xx;
-            if (rc.left < rc.right && x >= rc.left && x < rc.right) {
-                col = i;
-                break;
-            }
-            if (xx > x)
-                break;
-        }
-        int yy = 0;
-        for (int i = 0; i < _rows; i++) {
-            rc.top = yy;
-            yy += rowHeight(i);
-            rc.bottom = yy;
-
-            if (rc.top < rc.bottom && y >= rc.top && y < rc.bottom) {
-                row = i;
-                break;
-            }
-            if (yy > y)
-                break;
-        }
-        if (col >= 0 && row >= 0) {
-            cellRect = rc;
-            return true;
-        }
-        return false;
+        int nscols = nonScrollCols;
+        int nsrows = nonScrollRows;
+        Point ns = nonScrollAreaPixels;
+        col = colByAbsoluteX(x < ns.x ? x : x + _scrollX);
+        row = rowByAbsoluteY(y < ns.y ? y : y + _scrollY);
+        cellRect = cellRectScroll(col, row);
+        return cellRect.isPointInside(x, y);
     }
 
     /// update scrollbar positions
     override protected void updateScrollBars() {
         calcScrollableAreaPos();
+        correctScrollPos();
         super.updateScrollBars();
+    }
+
+    /// search for index of position inside cumulative sizes array
+    protected static int findPosIndex(int[] cumulativeSizes, int pos) {
+        // binary search
+        if (pos < 0 || !cumulativeSizes.length)
+            return 0;
+        int a = 0; // inclusive lower bound
+        int b = cast(int)cumulativeSizes.length; // exclusive upper bound
+        if (pos >= cumulativeSizes[$ - 1])
+            return b - 1;
+        int * w = cumulativeSizes.ptr;
+        for(;;) {
+            if (a + 1 >= b)
+                return a; // single point
+            // middle point
+            // always inside range
+            int c = (a + b) >> 1;
+            int start = c ? w[c - 1] : 0;
+            int end = w[c];
+            if (pos < start) {
+                // left
+                b = c;
+            } else if (pos >= end) {
+                // right
+                a = c + 1;
+            } else {
+                // found
+                return c;
+            }
+        }
     }
 
     /// column by X, ignoring scroll position
     protected int colByAbsoluteX(int x) {
-        int xx = 0;
-        for (int i = 0; i < _cols; i++) {
-            int w = _colWidths[i];
-            if (x < xx + w || i == _cols - 1)
-                return i;
-            xx += w;
-        }
-        return 0;
+        return findPosIndex(_colCumulativeWidths, x);
     }
 
     /// row by Y, ignoring scroll position
     protected int rowByAbsoluteY(int y) {
-        int yy = 0;
-        for (int i = 0; i < _rows; i++) {
-            int w = _rowHeights[i];
-            if (y < yy + w || i == _rows - 1)
-                return i;
-            yy += w;
-        }
-        return 0;
+        return findPosIndex(_rowCumulativeHeights, y);
+    }
+
+    /// returns first fully visible column in scroll area
+    protected int scrollCol() {
+        int x = nonScrollAreaPixels.x + _scrollX;
+        int col = colByAbsoluteX(x);
+        int start = col ? _colCumulativeWidths[col - 1] : 0;
+        int end = _colCumulativeWidths[col];
+        if (x <= start)
+            return col;
+        // align to next col
+        return colByAbsoluteX(end);
+    }
+
+    /// returns last fully visible column in scroll area
+    protected int lastScrollCol() {
+        int x = nonScrollAreaPixels.x + _scrollX + _visibleScrollableArea.width - 1;
+        int col = colByAbsoluteX(x);
+        int start = col ? _colCumulativeWidths[col - 1] : 0;
+        int end = _colCumulativeWidths[col];
+        if (x >= end - 1) // fully visible
+            return col;
+        if (col > nonScrollCols && col > scrollCol)
+            col--;
+        return col;
+    }
+
+    /// returns first fully visible row in scroll area
+    protected int scrollRow() {
+        int y = nonScrollAreaPixels.y + _scrollY;
+        int row = rowByAbsoluteY(y);
+        int start = row ? _rowCumulativeHeights[row - 1] : 0;
+        int end = _rowCumulativeHeights[row];
+        if (y <= start)
+            return row;
+        // align to next col
+        return rowByAbsoluteY(end);
+    }
+
+    /// returns last fully visible row in scroll area
+    protected int lastScrollRow() {
+        int y = nonScrollAreaPixels.y + _scrollY + _visibleScrollableArea.height - 1;
+        int row = rowByAbsoluteY(y);
+        int start = row ? _rowCumulativeHeights[row - 1] : 0;
+        int end = _rowCumulativeHeights[row];
+        if (y >= end - 1) // fully visible
+            return row;
+        if (row > nonScrollRows && row > scrollRow)
+            row--;
+        return row;
     }
 
     /// move scroll position horizontally by dx, and vertically by dy; returns true if scrolled
     bool scrollBy(int dx, int dy) {
-        return scrollTo(_headerCols + fixedCols + _scrollCol + dx, _headerRows + fixedRows + _scrollRow + dy);
+        int col = scrollCol + dx;
+        int row = scrollRow + dy;
+        if (col >= _cols)
+            col = _cols - 1;
+        if (row >= _rows)
+            row = _rows - 1;
+        if (col < nonScrollCols)
+            col = nonScrollCols;
+        if (row < nonScrollCols)
+            row = nonScrollRows;
+        Rect rc = cellRectNoScroll(col, row);
+        Point ns = nonScrollAreaPixels;
+        return scrollTo(rc.left - ns.x, rc.top - ns.y);
+    }
+
+    /// override to support modification of client rect after change, e.g. apply offset
+    override protected void handleClientRectLayout(ref Rect rc) {
+        //correctScrollPos();
+    }
+
+    // ensure scroll position is inside min/max area
+    protected void correctScrollPos() {
+        int maxscrollx = _fullScrollableArea.width - _visibleScrollableArea.width;
+        int maxscrolly = _fullScrollableArea.height - _visibleScrollableArea.height;
+        if (_scrollX < 0)
+            _scrollX = 0;
+        if (_scrollY < 0)
+            _scrollY = 0;
+        if (_scrollX > maxscrollx)
+            _scrollX = maxscrollx;
+        if (_scrollY > maxscrolly)
+            _scrollY = maxscrolly;
     }
 
     /// set scroll position to show specified cell as top left in scrollable area; col or row -1 value means no change
-    bool scrollTo(int col, int row, GridWidgetBase source = null, bool doNotify = true) {
-        int oldx = _scrollCol;
-        int oldy = _scrollRow;
-        int newScrollCol = col == -1 ? _scrollCol : col - _headerCols - fixedCols;
-        int newScrollRow = row == -1 ? _scrollRow : row - _headerRows - fixedRows;
-        if (newScrollCol > _maxScrollCol)
-            newScrollCol = _maxScrollCol;
-        if (newScrollCol < 0)
-            newScrollCol = 0;
-        if (newScrollRow > _maxScrollRow)
-            newScrollRow = _maxScrollRow;
-        if (newScrollRow < 0)
-            newScrollRow = 0;
-        //bool changed = false;
-        if (newScrollCol >= 0 && newScrollCol + _headerCols + fixedCols < _cols) {
-            if (_scrollCol != newScrollCol) {
-                _scrollCol = newScrollCol;
-                //changed = true;
-            }
-        }
-        if (newScrollRow >= 0 && newScrollRow + _headerRows + fixedRows < _rows) {
-            if (_scrollRow != newScrollRow) {
-                _scrollRow = newScrollRow;
-                //changed = true;
-            }
-        }
-        //if (changed)
+    bool scrollTo(int x, int y, GridWidgetBase source = null, bool doNotify = true) {
+        int oldx = _scrollX;
+        int oldy = _scrollY;
+        _scrollX = x;
+        _scrollY = y;
+        correctScrollPos();
         updateScrollBars();
         invalidate();
-        bool changed = oldx != _scrollCol || oldy != _scrollRow;
+        bool changed = oldx != _scrollX || oldy != _scrollY;
         if (doNotify && changed && viewScrolled.assigned) {
             if (source is null)
                 source = this;
-            viewScrolled(source, col, row);
+            viewScrolled(source, x, y);
         }
         return changed;
     }
@@ -603,8 +755,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     /// process horizontal scrollbar event
     override bool onHScroll(ScrollEvent event) {
         if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased) {
-            int col = colByAbsoluteX(event.position + _fullScrollableArea.left);
-            scrollTo(col, _scrollRow + _headerRows + fixedRows);
+            scrollTo(event.position, _scrollY);
         } else if (event.action == ScrollAction.PageUp) {
             dispatchAction(new Action(GridActions.ScrollPageLeft));
         } else if (event.action == ScrollAction.PageDown) {
@@ -620,8 +771,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     /// process vertical scrollbar event
     override bool onVScroll(ScrollEvent event) {
         if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased) {
-            int row = rowByAbsoluteY(event.position + _fullScrollableArea.top);
-            scrollTo(_scrollCol + _headerCols + fixedCols, row);
+            scrollTo(_scrollX, event.position);
         } else if (event.action == ScrollAction.PageUp) {
             dispatchAction(new Action(GridActions.ScrollPageUp));
         } else if (event.action == ScrollAction.PageDown) {
@@ -637,39 +787,36 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     /// ensure that cell is visible (scroll if necessary)
     void makeCellVisible(int col, int row) {
         bool scrolled = false;
-        Rect rc = cellRect(col, row);
-        if (col >= _headerCols + fixedCols && col < _headerCols + fixedCols + _scrollCol) {
-            // scroll to the left
-            _scrollCol = col - _headerCols - fixedCols;
-            scrolled = true;
-        } else {
-            while (rc.right > _clientRect.width && _scrollCol < _cols - fixedCols - _headerCols - 1) {
-                if (_scrollCol == col - _headerCols - fixedCols)
-                    break;
-                _scrollCol++;
-                rc = cellRect(col, row);
-                scrolled = true;
+        int newx = _scrollX;
+        int newy = _scrollY;
+        Rect rc = cellRectNoScroll(col, row);
+        Rect visibleRc = _visibleScrollableArea;
+        if (col >= nonScrollCols) {
+            // can scroll X
+            if (rc.left < visibleRc.left) {
+                // scroll left
+                newx += rc.left - visibleRc.left;
+            } else if (rc.right > visibleRc.right) {
+                // scroll right
+                newx += rc.right - visibleRc.right;
             }
         }
-        if (row >= _headerRows + fixedRows && row < _headerRows + fixedRows + _scrollRow) {
-            // scroll to the left
-            _scrollRow = row - _headerRows - fixedRows;
-            scrolled = true;
-        } else {
-            while (rc.bottom > _clientRect.height && _scrollRow < _rows - fixedRows - _headerRows - 1) {
-                if (_scrollRow == row - _headerRows - fixedRows)
-                    break;
-                _scrollRow++;
-                rc = cellRect(col, row);
-                scrolled = true;
+        if (row >= nonScrollRows) {
+            // can scroll Y
+            if (rc.top < visibleRc.top) {
+                // scroll left
+                newy += rc.top - visibleRc.top;
+            } else if (rc.bottom > visibleRc.bottom) {
+                // scroll right
+                newy += rc.bottom - visibleRc.bottom;
             }
         }
-        if (scrolled) {
-            updateScrollBars();
-            invalidate();
-            if (viewScrolled.assigned) {
-                viewScrolled(this, _scrollCol + _headerCols + fixedCols, _scrollRow + _headerRows + fixedRows);
-            }
+        if (newy < 0)
+            newy = 0;
+        if (newx < 0)
+            newx = 0;
+        if (newx != _scrollX || newy != _scrollY) {
+            scrollTo(newx, newy);
         }
     }
 
@@ -800,108 +947,52 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     /// calculate scrollable area info
     protected void calcScrollableAreaPos() {
-        _maxScrollCol = _maxScrollRow = 0;
-        _fullyVisibleCells.left = _headerCols + fixedCols + _scrollCol;
-        _fullyVisibleCells.top = _headerRows + fixedRows + _scrollRow;
-        Rect rc;
-        int xx = 0;
-        for (int i = 0; i < _cols && xx < _clientRect.width; i++) {
-            if (i == _fullyVisibleCells.left) {
-                _fullyVisibleCellsRect.left = _fullyVisibleCellsRect.right = xx;
-            }
-            int w = colWidth(i);
-            if (i >= _fullyVisibleCells.left && xx + w <= _clientRect.width) {
-                _fullyVisibleCellsRect.right = xx + w;
-                _fullyVisibleCells.right = i;
-            }
-            xx += w;
-        }
-        int yy = 0;
-        for (int i = 0; i < _rows && yy < _clientRect.height; i++) {
-            if (i == _fullyVisibleCells.top)
-                _fullyVisibleCellsRect.top = _fullyVisibleCellsRect.bottom = yy;
-            int w = rowHeight(i);
-            if (i >= _fullyVisibleCells.top && yy + w <= _clientRect.height) {
-                _fullyVisibleCellsRect.bottom = yy + w;
-                _fullyVisibleCells.bottom = i;
-            }
-            yy += w;
+        if (_scrollX < 0)
+            _scrollX = 0;
+        if (_scrollY < 0)
+            _scrollY = 0;
+        // calculate _fullScrollableArea, _visibleScrollableArea relative to clientRect
+        Point nonscrollPixels = nonScrollAreaPixels;
+        Point scrollPixels = scrollAreaPixels;
+        Point fullPixels = fullAreaPixels;
+        Point clientPixels = _clientRect.size;
+        Point scrollableClient = clientPixels - nonscrollPixels;
+        if (scrollableClient.x < 0)
+            scrollableClient.x = 0;
+        if (scrollableClient.y < 0)
+            scrollableClient.y = 0;
+        _fullScrollableArea = Rect(nonscrollPixels.x, nonscrollPixels.y, fullPixels.x, fullPixels.y);
+        if (_fullScrollableArea.right < clientPixels.x)
+            _fullScrollableArea.right = clientPixels.x;
+        if (_fullScrollableArea.bottom < clientPixels.y)
+            _fullScrollableArea.bottom = clientPixels.y;
+
+        // extending scroll area if necessary
+        int maxscrollx = _fullScrollableArea.right - scrollableClient.x;
+        int col = colByAbsoluteX(maxscrollx);
+        int maxscrolly = _fullScrollableArea.bottom - scrollableClient.y;
+        int row = rowByAbsoluteY(maxscrolly);
+        Rect rc = cellRectNoScroll(col, row);
+
+        // extend scroll area to show full column at left when scrolled to rightmost column
+        if (maxscrollx >= nonscrollPixels.x && rc.left < maxscrollx) {
+            _fullScrollableArea.right += rc.right - maxscrollx;
         }
 
-        int maxVisibleScrollWidth = _clientRect.width - _fullyVisibleCellsRect.left;
-        int maxVisibleScrollHeight = _clientRect.height - _fullyVisibleCellsRect.top;
-        if (maxVisibleScrollWidth < 0)
-            maxVisibleScrollWidth = 0;
-        if (maxVisibleScrollHeight < 0)
-            maxVisibleScrollHeight = 0;
+        // extend scroll area to show full row at top when scrolled to end row
+        if (maxscrolly >= nonscrollPixels.y && rc.top < maxscrolly) {
+            _fullScrollableArea.bottom += rc.bottom - maxscrolly;
+        }
 
-
-        // calc scroll area in pixels
-        xx = 0;
-        for (int i = 0; i < _cols; i++) {
-            if (i == _headerCols + fixedCols) {
-                _fullScrollableArea.left = xx;
-            }
-            if (i == _fullyVisibleCells.left) {
-                _visibleScrollableArea.left = xx;
-            }
-            int w = _colWidths[i];
-            xx += w;
-            if (i >= _headerCols + fixedCols) {
-                _fullScrollableArea.right = xx;
-            }
-            if (i >= _fullyVisibleCells.left) {
-                _visibleScrollableArea.right = xx;
-            }
-        }
-        xx = 0;
-        for (int i = _cols - 1; i >= _headerCols + fixedCols; i--) {
-            int w = _colWidths[i];
-            if (xx + w > maxVisibleScrollWidth) {
-                _fullScrollableArea.right += maxVisibleScrollWidth - xx;
-                break;
-            }
-            _maxScrollCol = i - _headerCols - fixedCols;
-            xx += w;
-        }
-        yy = 0;
-        for (int i = 0; i < _rows; i++) {
-            if (i == _headerRows + fixedRows) {
-                _fullScrollableArea.top = yy;
-            }
-            if (i == _fullyVisibleCells.top) {
-                _visibleScrollableArea.top = yy;
-            }
-            int w = _rowHeights[i];
-            yy += w;
-            if (i >= _headerRows + fixedRows) {
-                _fullScrollableArea.bottom = yy;
-            }
-            if (i >= _fullyVisibleCells.top) {
-                _visibleScrollableArea.bottom = yy;
-            }
-        }
-        yy = 0;
-        for (int i = _rows - 1; i >= _headerRows + fixedRows; i--) {
-            int w = _rowHeights[i];
-            if (yy + w > maxVisibleScrollHeight) {
-                _fullScrollableArea.bottom += maxVisibleScrollHeight - yy;
-                break;
-            }
-            _maxScrollRow = i - _headerRows - fixedRows;
-            yy += w;
-        }
-        // crop scroll area by client rect
-        //if (visibleScrollableArea.width > maxVisibleScrollWidth)
-        _visibleScrollableArea.right = _visibleScrollableArea.left + maxVisibleScrollWidth;
-        //if (visibleScrollableArea.height > maxVisibleScrollHeight)
-        _visibleScrollableArea.bottom = _visibleScrollableArea.top + maxVisibleScrollHeight;
+        // scrollable area
+        Point scrollableClientAreaSize = scrollableClient; // size left for scrollable area
+        int scrollx = nonscrollPixels.x + _scrollX;
+        int scrolly = nonscrollPixels.y + _scrollY;
+        _visibleScrollableArea = Rect(scrollx, scrolly, scrollx + scrollableClientAreaSize.x, scrolly + scrollableClientAreaSize.y);
     }
 
     protected int _maxScrollCol;
     protected int _maxScrollRow;
-    protected Rect _fullyVisibleCells;
-    protected Rect _fullyVisibleCellsRect;
 
     override protected bool handleAction(const Action a) {
         calcScrollableAreaPos();
@@ -926,6 +1017,8 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             }
         }
 
+        int sc = scrollCol; // first fully visible column in scroll area
+        int sr = scrollRow; // first fully visible row in scroll area
         switch (actionId) with(GridActions)
         {
             case ActivateCell:
@@ -953,7 +1046,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
                 selectCell(_col, _row - 1);
                 return true;
             case ScrollDown:
-                if (_fullyVisibleCells.bottom < _rows - 1)
+                if (lastScrollRow < _rows - 1)
                     scrollBy(0, 1);
                 return true;
             case Down:
@@ -961,42 +1054,42 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
                 return true;
             case ScrollPageLeft:
                 // scroll left cell by cell
-                int prevCol = _headerCols + fixedCols + _scrollCol;
-                while (_scrollCol > 0) {
+                while (scrollCol > nonScrollCols) {
                     scrollBy(-1, 0);
-                    if (_fullyVisibleCells.right <= prevCol)
+                    if (lastScrollCol <= sc)
                         break;
                 }
                 return true;
             case ScrollPageRight:
-                int prevCol = _fullyVisibleCells.right;
-                while (_headerCols + fixedCols + _scrollCol < prevCol) {
+                int prevCol = lastScrollCol;
+                while (scrollCol < prevCol) {
                     if (!scrollBy(1, 0))
                         break;
                 }
                 return true;
             case ScrollPageUp:
                 // scroll up line by line
-                int prevRow = _headerRows + fixedRows + _scrollRow;
-                while (_scrollRow > 0) {
+                while (scrollRow > nonScrollRows) {
                     scrollBy(0, -1);
-                    if (_fullyVisibleCells.bottom <= prevRow)
+                    if (lastScrollRow <= sr)
                         break;
                 }
                 return true;
             case ScrollPageDown:
-                int prevRow = _fullyVisibleCells.bottom;
-                while (_headerRows + fixedRows + _scrollRow < prevRow) {
+                int prevRow = lastScrollRow;
+                while (scrollRow < prevRow) {
                     if (!scrollBy(0, 1))
                         break;
                 }
                 return true;
             case LineBegin:
-                if (_scrollCol > 0 && _col > _headerCols + fixedCols + _scrollCol && !_rowSelect)
-                    selectCell(_headerCols + fixedCols + _scrollCol, _row);
-                else {
-                    if (_scrollCol > 0) {
-                        _scrollCol = 0;
+                if (sc > nonScrollCols && _col > sc && !_rowSelect) {
+                    // move selection and don's scroll
+                    selectCell(sc, _row);
+                } else {
+                    // scroll
+                    if (sc > nonScrollCols) {
+                        _scrollX = 0;
                         updateScrollBars();
                         invalidate();
                     }
@@ -1004,11 +1097,16 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
                 }
                 return true;
             case LineEnd:
-                selectCell(_cols - 1, _row);
+                if (_col < lastScrollCol && !_rowSelect) {
+                    // move selection and don's scroll
+                    selectCell(lastScrollCol, _row);
+                } else {
+                    selectCell(_cols - 1, _row);
+                }
                 return true;
             case DocumentBegin:
-                if (_scrollRow > 0) {
-                    _scrollRow = 0;
+                if (_scrollY > 0) {
+                    _scrollY = 0;
                     updateScrollBars();
                     invalidate();
                 }
@@ -1018,35 +1116,26 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
                 selectCell(_col, _rows - 1);
                 return true;
             case PageBegin:
-                if (_scrollRow > 0)
-                    selectCell(_col, _headerRows + fixedRows + _scrollRow);
+                if (scrollRow > nonScrollRows)
+                    selectCell(_col, scrollRow);
                 else
                     selectCell(_col, _headerRows);
                 return true;
             case PageEnd:
-                int found = -1;
-                for (int i = fixedRows; i < _rows; i++) {
-                    Rect rc = cellRect(_col, i);
-                    if (rc.bottom <= _clientRect.height)
-                        found = i;
-                    else
-                        break;
-                }
-                if (found >= 0)
-                    selectCell(_col, found);
+                selectCell(_col, lastScrollRow);
                 return true;
             case PageUp:
-                if (_row > _fullyVisibleCells.top) {
+                if (_row > sr) {
                     // not at top scrollable cell
-                    selectCell(_col, _fullyVisibleCells.top);
+                    selectCell(_col, sr);
                 } else {
                     // at top of scrollable area
-                    if (_scrollRow > 0) {
+                    if (scrollRow > nonScrollRows) {
                         // scroll up line by line
                         int prevRow = _row;
                         for (int i = prevRow - 1; i >= _headerRows; i--) {
                             selectCell(_col, i);
-                            if (_fullyVisibleCells.bottom <= prevRow)
+                            if (lastScrollRow <= prevRow)
                                 break;
                         }
                     } else {
@@ -1055,18 +1144,19 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
                     }
                 }
                 return true;
-            case PageDown: 
-                if (_row < _rows) {
-                    if (_row < _fullyVisibleCells.bottom) {
-                        // not at top scrollable cell
-                        selectCell(_col, _fullyVisibleCells.bottom);
+            case PageDown:
+                if (_row < _rows - 1) {
+                    int lr = lastScrollRow;
+                    if (_row < lr) {
+                        // not at bottom scrollable cell
+                        selectCell(_col, lr);
                     } else {
                         // scroll down
                         int prevRow = _row;
                         for (int i = prevRow + 1; i < _rows; i++) {
                             selectCell(_col, i);
                             calcScrollableAreaPos();
-                            if (_fullyVisibleCells.top >= prevRow)
+                            if (scrollRow >= prevRow)
                                 break;
                         }
                     }
@@ -1088,45 +1178,46 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     }
 
     override protected void drawClient(DrawBuf buf) {
+        if (!_cols || !_rows)
+            return; // no cells
         auto saver = ClipRectSaver(buf, _clientRect, 0);
-        //buf.fillRect(_clientRect, 0x80A08080);
-        Rect rc;
-        for (int phase = 0; phase < 2; phase++) {
-            int yy = 0;
-            for (int y = 0; y < _rows; y++) {
-                int rh = rowHeight(y);
-                rc.top = yy;
-                rc.bottom = yy + rh;
-                if (rh == 0)
+
+        int nscols = nonScrollCols;
+        int nsrows = nonScrollRows;
+        Point nspixels = nonScrollAreaPixels;
+        int maxVisibleCol = colByAbsoluteX(_clientRect.width + _scrollX);
+        int maxVisibleRow = rowByAbsoluteY(_clientRect.height + _scrollY);
+        for (int phase = 0; phase < 2; phase++) { // phase0 == background, phase1 == foreground
+            for (int y = 0; y <= maxVisibleRow; y++) {
+                if (!rowVisible(y))
                     continue;
-                if (yy > _clientRect.height)
-                    break;
-                yy += rh;
-                int xx = 0;
-                for (int x = 0; x < _cols; x++) {
-                    int cw = colWidth(x);
-                    rc.left = xx;
-                    rc.right = xx + cw;
-                    if (cw == 0)
+                for (int x = 0; x <= maxVisibleCol; x++) {
+                    if (!colVisible(x))
                         continue;
-                    if (xx > _clientRect.width)
-                        break;
-                    xx += cw;
-                    // draw cell
-                    Rect cellRect = rc;
+                    Rect cellRect = cellRectScroll(x, y);
+                    Rect clippedCellRect = cellRect;
+                    if (x >= nscols && cellRect.left < nspixels.x)
+                        clippedCellRect.left = nspixels.x; // clip scrolled left
+                    if (y >= nsrows && cellRect.top < nspixels.y)
+                        clippedCellRect.top = nspixels.y; // clip scrolled left
+                    if (clippedCellRect.empty)
+                        continue; // completely clipped out
+
                     cellRect.moveBy(_clientRect.left, _clientRect.top);
-                    auto cellSaver = ClipRectSaver(buf, cellRect, 0);
+                    clippedCellRect.moveBy(_clientRect.left, _clientRect.top);
+
+                    auto cellSaver = ClipRectSaver(buf, clippedCellRect, 0);
                     bool isHeader = x < _headerCols || y < _headerRows;
                     if (phase == 0) {
                         if (isHeader)
-                            drawHeaderCellBackground(buf, buf.clipRect, x - _headerCols, y - _headerRows);
+                            drawHeaderCellBackground(buf, cellRect, x - _headerCols, y - _headerRows);
                         else
-                            drawCellBackground(buf, buf.clipRect, x - _headerCols, y - _headerRows);
+                            drawCellBackground(buf, cellRect, x - _headerCols, y - _headerRows);
                     } else {
                         if (isHeader)
-                            drawHeaderCell(buf, buf.clipRect, x - _headerCols, y - _headerRows);
+                            drawHeaderCell(buf, cellRect, x - _headerCols, y - _headerRows);
                         else
-                            drawCell(buf, buf.clipRect, x - _headerCols, y - _headerRows);
+                            drawCell(buf, cellRect, x - _headerCols, y - _headerRows);
                     }
                 }
             }
