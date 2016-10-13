@@ -346,3 +346,6 @@ void onResourceDestroyWhileShutdown(string resourceName, string objname = null) 
     Log.e("Resource leak: destroying resource while shutdown! ", resourceName, " ", objname);
 }
 
+/// set to true when exiting main - to detect destructor calls for resources by GC
+__gshared bool APP_IS_SHUTTING_DOWN = false;
+

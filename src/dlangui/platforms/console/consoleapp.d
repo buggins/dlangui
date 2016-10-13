@@ -445,6 +445,7 @@ extern(C) int DLANGUImain(string[] args) {
     releaseResourcesOnAppExit();
 
     Log.d("Exiting main");
+    APP_IS_SHUTTING_DOWN = true;
 
     return result;
 }

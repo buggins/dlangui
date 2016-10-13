@@ -1805,6 +1805,7 @@ int sdlmain(string[] args) {
     releaseResourcesOnAppExit();
 
     Log.d("Exiting main");
+    APP_IS_SHUTTING_DOWN = true;
 
     return res;
 }

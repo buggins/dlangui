@@ -1605,5 +1605,3 @@ extern(C) void initResourceManagers();
 extern (C) void initSharedResourceManagers();
 
 
-
-
