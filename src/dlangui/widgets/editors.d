@@ -1335,8 +1335,18 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 return true;
             case LineBegin:
             case SelectLineBegin:
+                auto space = _content.getLineWhiteSpace(_caretPos.line);
                 if (_caretPos.pos > 0) {
-                    _caretPos.pos = 0;
+                    if (_caretPos.pos > space.firstNonSpaceIndex && space.firstNonSpaceIndex > 0)
+                        _caretPos.pos = space.firstNonSpaceIndex;
+                    else
+                        _caretPos.pos = 0;
+                    ensureCaretVisible();
+                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
+                } else {
+                    // caret pos is 0
+                    if (space.firstNonSpaceIndex > 0)
+                        _caretPos.pos = space.firstNonSpaceIndex;
                     ensureCaretVisible();
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                 }
