@@ -1129,8 +1129,15 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     _selectionRange.end = _caretPos;
                 }
             } else {
-                _selectionRange.start = _caretPos;
-                _selectionRange.end = _caretPos;
+                if (oldCaretPos < _caretPos) {
+                    // start selection forward
+                    _selectionRange.start = oldCaretPos;
+                    _selectionRange.end = _caretPos;
+                } else {
+                    // start selection backward
+                    _selectionRange.start = _caretPos;
+                    _selectionRange.end = oldCaretPos;
+                }
             }
         } else {
             _selectionRange.start = _caretPos;
