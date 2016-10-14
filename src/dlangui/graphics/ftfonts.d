@@ -718,6 +718,8 @@ class FreeTypeFontManager : FontManager {
 private int myabs(int n) { return n >= 0 ? n : -n; }
 
 
+version(Windows) {
+} else {
 
 bool registerFontConfigFonts(FreeTypeFontManager fontMan) {
     import fontconfig;
@@ -939,4 +941,5 @@ bool registerFontConfigFonts(FreeTypeFontManager fontMan) {
     +/
 
     return facesFound > 0;
+}
 }

@@ -1240,7 +1240,6 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
         Log.e("No font files found!!!");
         Log.e("Currently, only hardcoded font paths implemented.");
         Log.e("Probably you can modify sdlapp.d to add some fonts for your system.");
-        Log.e("TODO: use fontconfig");
         Log.e("******************************************************************");
         assert(false);
     }
