@@ -1236,6 +1236,10 @@ class KeyEvent {
     @property uint flags() { return _flags; }
     /// entered text, for Text action
     @property dstring text() { return _text; }
+
+    /// returns true if no modifier flags are set
+    @property bool noModifiers() { return (_flags & (KeyFlag.Control | KeyFlag.Alt | KeyFlag.Menu | KeyFlag.Shift)) == 0; }
+
     /// create key event
     this(KeyAction action, uint keyCode, uint flags, dstring text = null) {
         _action = action;
