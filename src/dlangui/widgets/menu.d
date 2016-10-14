@@ -530,10 +530,25 @@ class MenuWidgetBase : ListWidget {
         setHoverItem(-1);
     }
 
+    protected long _lastClosedPopupTs;
+    protected MenuItem _lastClosedPopupMenu;
+    protected enum REOPEN_MENU_THRESHOLD_MS = 200;
+
+    protected bool isRecentlyClosedItem(MenuItem item) {
+        if (!isMainMenu)
+            return false;
+        long ts = currentTimeMillis;
+        if (ts - _lastClosedPopupTs < REOPEN_MENU_THRESHOLD_MS && item && item is _lastClosedPopupMenu)
+            return true;
+        return false;
+    }
+
     protected void onPopupClosed(PopupWidget p) {
         debug(DebugMenus) Log.d("menu ", id, " onPopupClosed selectionChanging=", _selectionChangingInProgress);
         if (_openedPopup) {
             if (_openedPopup is p) {
+                _lastClosedPopupTs = currentTimeMillis;
+                _lastClosedPopupMenu = _openedMenu ? _openedMenu._item : null;
                 _openedMenu.onPopupClosed(p);
                 //bool undoSelection = _openedPopupIndex == _selectedItemIndex;
                 _openedPopup = null;
@@ -554,6 +569,10 @@ class MenuWidgetBase : ListWidget {
         }
     }
 
+    void deactivate(bool force = false) {
+        // override in main menu
+    }
+
     protected void openSubmenu(int index, MenuItemWidget itemWidget, bool selectFirstItem) {
         debug(DebugMenus) Log.d("menu", id, " open submenu ", index);
         if (_openedPopup !is null) {
@@ -567,6 +586,14 @@ class MenuWidgetBase : ListWidget {
                 _openedPopup.close();
                 _openedPopup = null;
             }
+        }
+
+        if (isRecentlyClosedItem(itemWidget.item)) {
+            // don't reopen main menu item on duplicate click on the same menu item - deactivate instead
+            // deactivate main menu
+            deactivate();
+            _ignoreItemSelection = itemWidget.item;
+            return;
         }
 
         PopupMenu popupMenu = new PopupMenu(itemWidget.item, this);
@@ -622,15 +649,21 @@ class MenuWidgetBase : ListWidget {
     }
 
 
+    protected MenuItem _ignoreItemSelection;
     protected bool _selectionChangingInProgress;
     /// override to handle change of selection
     override protected void selectionChanged(int index, int previouslySelectedItem = -1) {
         debug(DebugMenus) Log.d("menu ", id, " selectionChanged ", index, ", ", previouslySelectedItem, " _selectedItemIndex=", _selectedItemIndex);
         _selectionChangingInProgress = true;
-        if (index >= 0)
-            setFocus();
         MenuItemWidget itemWidget = index >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(index) : null;
         MenuItemWidget prevWidget = previouslySelectedItem >= 0 ? cast(MenuItemWidget)_adapter.itemWidget(previouslySelectedItem) : null;
+        if (itemWidget._item is _ignoreItemSelection && isMainMenu) {
+            _ignoreItemSelection = null;
+            deactivate();
+            return;
+        }
+        if (index >= 0)
+            setFocus();
         bool popupWasOpen = false;
         if (prevWidget !is null) {
             if (_openedPopup !is null) {
@@ -646,7 +679,8 @@ class MenuWidgetBase : ListWidget {
                         // instantly open submenu in main menu if previous submenu was opened
                         openSubmenu(index, itemWidget, false); // _orientation == Orientation.Horizontal for main menu, select first item
                     } else {
-                        scheduleOpenSubmenu(index);
+                        if (!isMainMenu)
+                            scheduleOpenSubmenu(index);
                     }
                 }
             } else {
@@ -949,7 +983,7 @@ class MainMenu : MenuWidgetBase {
     }
 
     /// close and remove focus, if activated
-    void deactivate(bool force = false) {
+    override void deactivate(bool force = false) {
         debug(DebugMenus) Log.d("deactivating main menu");
         if (!activated && !force)
             return;
