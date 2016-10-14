@@ -981,7 +981,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 _lastBlinkStartTs = currentTimeMillis;
             invalidate();
             //window.update(true);
-            return focused;
+            bool res = focused;
+            if (!res)
+                _caretTimerId = 0;
+            return res;
         }
         if (id == _hoverTimer) {
             cancelHoverTimer();
