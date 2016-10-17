@@ -1580,7 +1580,7 @@ public:
     }
 
     /// returns parent widget, null for top level widget
-    @property Widget parent() const { return cast(Widget)_parent; }
+    @property Widget parent() const { return _parent ? cast(Widget)_parent : null; }
     /// sets parent for widget
     @property Widget parent(Widget parent) { _parent = parent; return this; }
     /// returns window (if widget or its parent is attached to window)
