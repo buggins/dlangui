@@ -1303,9 +1303,18 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
             itemrc.top += rc.top - scrollOffset.y;
             itemrc.bottom += rc.top - scrollOffset.y;
             if (itemrc.isPointInside(Point(event.x, event.y))) {
-                Widget itemWidget;
-                if (_adapter.wantMouseEvents)
-                    itemWidget = _adapter.itemWidget(i);
+                if (_adapter && _adapter.wantMouseEvents) {
+                    auto itemWidget = _adapter.itemWidget(i);
+                    if (itemWidget) {
+                        Widget oldParent = itemWidget.parent;
+                        itemWidget.parent = this;
+                        if (event.action == MouseAction.Move && event.noModifiers && itemWidget.hasTooltip) {
+                            itemWidget.scheduleTooltip(200);
+                        }
+                        //itemWidget.onMouseEvent(event);
+                        itemWidget.parent = oldParent;
+                    }
+                }
                 //Log.d("mouse event action=", event.action, " button=", event.button, " flags=", event.flags);
                 if ((event.flags & (MouseFlag.LButton || MouseFlag.RButton)) || _selectOnHover) {
                     if (_selectedItemIndex != i && itemEnabled(i)) {
@@ -1326,15 +1335,6 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
                                 event.doNotTrackButtonDown = true;
                         }
                     }
-                }
-                if (itemWidget) {
-                    Widget oldParent = itemWidget.parent;
-                    itemWidget.parent = this;
-                    if (event.action == MouseAction.Move && event.noModifiers && itemWidget.hasTooltip) {
-                        itemWidget.scheduleTooltip(200);
-                    }
-                    //itemWidget.onMouseEvent(event);
-                    itemWidget.parent = oldParent;
                 }
                 return true;
             }
