@@ -349,9 +349,16 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     /// set row count
     @property GridWidgetBase rows(int r) { resize(cols, r); return this; }
 
+    protected bool _allowColResizing = true;
+    /// get col resizing flag; when true, allow resizing of column with mouse
+    @property bool allowColResizing() { return _allowColResizing; }
+    /// set col resizing flag; when true, allow resizing of column with mouse
+    @property GridWidgetBase allowColResizing(bool flgAllowColResizing) { _allowColResizing = flgAllowColResizing; return this; }
+
     protected uint _selectionColor = 0x804040FF;
     protected uint _selectionColorRowSelect = 0xC0A0B0FF;
     protected uint _fixedCellBackgroundColor = 0xC0E0E0E0;
+    protected uint _fixedCellBorderColor = 0xC0C0C0C0;
     protected uint _cellBorderColor = 0xC0C0C0C0;
     protected uint _cellHeaderBorderColor = 0xC0202020;
     protected uint _cellHeaderBackgroundColor = 0xC0909090;
@@ -420,7 +427,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     /// set bool property value, for ML loaders
     mixin(generatePropertySettersMethodOverride("setBoolProperty", "bool",
-          "showColHeaders", "showColHeaders", "rowSelect", "smoothHScroll", "smoothVScroll"));
+          "showColHeaders", "showColHeaders", "rowSelect", "smoothHScroll", "smoothVScroll", "allowColResizing"));
 
     /// set int property value, for ML loaders
     mixin(generatePropertySettersMethodOverride("setIntProperty", "int",
@@ -912,6 +919,64 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         }
     }
 
+    /// returns mouse cursor type for widget
+    override uint getCursorType(int x, int y) {
+        if (_allowColResizing) {
+            if (_colResizingIndex >= 0) // resizing in progress
+                return CursorType.SizeWE;
+            int col = isColumnResizingPoint(x, y);
+            if (col >= 0)
+                return CursorType.SizeWE;
+        }
+        return CursorType.Arrow;
+    }
+
+    protected int _colResizingIndex = -1;
+    protected int _colResizingStartX = -1;
+    protected int _colResizingStartWidth = -1;
+
+    protected void startColResize(int col, int x) {
+        _colResizingIndex = col;
+        _colResizingStartX = x;
+        _colResizingStartWidth = _colWidths[col];
+    }
+    protected void processColResize(int x) {
+        if (_colResizingIndex < 0 || _colResizingIndex >= _cols)
+            return;
+        int newWidth = _colResizingStartWidth + x - _colResizingStartX;
+        if (newWidth < 0)
+            newWidth = 0;
+        _colWidths[_colResizingIndex] = newWidth;
+        updateCumulativeSizes();
+        updateScrollBars();
+        invalidate();
+    }
+    protected void endColResize() {
+        _colResizingIndex = -1;
+    }
+
+    /// return column index to resize if point is in column resize area in header row, -1 if outside resize area
+    int isColumnResizingPoint(int x, int y) {
+        x -= _clientRect.left;
+        y -= _clientRect.top;
+        if (!_headerRows)
+            return -1; // no header rows
+        if (y >= _rowCumulativeHeights[_headerRows - 1])
+            return -1; // not in header row
+        // point is somewhere in header row
+        int resizeRange = BACKEND_GUI ? 4.pointsToPixels : 1;
+        if (x >= nonScrollAreaPixels.x)
+            x += _scrollX;
+        int col = colByAbsoluteX(x);
+        int start = col > 0 ? _colCumulativeWidths[col - 1] : 0;
+        int end = col < _cols ? _colCumulativeWidths[col] : _colCumulativeWidths[$ - 1];
+        if (x >= end - resizeRange / 2)
+            return col; // resize this column
+        if (x <= start + resizeRange / 2)
+            return col - 1; // resize previous column
+        return -1;
+    }
+
     /// handle mouse wheel events
     override bool onMouseEvent(MouseEvent event) {
         if (visibility != Visibility.Visible)
@@ -920,18 +985,45 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         Rect rc;
         bool cellFound = false;
         bool normalCell = false;
+        bool insideHeaderRow = false;
+        bool insideHeaderCol = false;
+        if (_colResizingIndex >= 0) { 
+            if (event.action == MouseAction.Move) {
+                // column resize is active
+                processColResize(event.x);
+                return true;
+            }
+            if (event.action == MouseAction.ButtonUp || event.action == MouseAction.Cancel) {
+                // stop column resizing
+                if (event.action == MouseAction.ButtonUp)
+                    processColResize(event.x);
+                endColResize();
+                return true;
+            }
+        }
         // convert coordinates
         if (event.action == MouseAction.ButtonUp || event.action == MouseAction.ButtonDown || event.action == MouseAction.Move) {
             int x = event.x;
             int y = event.y;
             x -= _clientRect.left;
             y -= _clientRect.top;
+            if (_headerRows)
+                insideHeaderRow = y < _rowCumulativeHeights[_headerRows - 1];
+            if (_headerCols)
+                insideHeaderCol = y < _colCumulativeWidths[_headerCols - 1];
             cellFound = pointToCell(x, y, c, r, rc);
             normalCell = c >= _headerCols && r >= _headerRows;
         }
         if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
             if (canFocus && !focused)
                 setFocus();
+            int resizeCol = isColumnResizingPoint(event.x, event.y);
+            if (resizeCol >= 0) {
+                // start column resizing
+                startColResize(resizeCol, event.x);
+                event.track(this);
+                return true;
+            }
             if (cellFound && normalCell) {
                 if (c == _col && r == _row && event.doubleClick) {
                     activateCell(c, r);
@@ -1541,8 +1633,9 @@ class StringGridWidget : StringGridWidgetBase {
         }
         buf.fillRect(rc, cl);
         static if (BACKEND_GUI) {
-            buf.drawLine(Point(rc.right, rc.bottom), Point(rc.right, rc.top), _cellHeaderBorderColor); // vertical
-            buf.drawLine(Point(rc.left, rc.bottom), Point(rc.right - 1, rc.bottom), _cellHeaderBorderColor); // horizontal
+            uint borderColor = _cellHeaderBorderColor;
+            buf.drawLine(Point(rc.right - 1, rc.bottom), Point(rc.right - 1, rc.top), _cellHeaderBorderColor); // vertical
+            buf.drawLine(Point(rc.left, rc.bottom - 1), Point(rc.right - 1, rc.bottom - 1), _cellHeaderBorderColor); // horizontal
         }
     }
 
@@ -1553,14 +1646,15 @@ class StringGridWidget : StringGridWidgetBase {
         bool selectedCell = selectedCol && selectedRow;
         if (_rowSelect && selectedRow)
             selectedCell = true;
-        // normal cell background
+        uint borderColor = _cellBorderColor;
         if (c < fixedCols || r < fixedRows) {
             // fixed cell background
             buf.fillRect(rc, _fixedCellBackgroundColor);
+            borderColor = _fixedCellBorderColor;
         }
         static if (BACKEND_GUI) {
-            buf.drawLine(Point(rc.left, rc.bottom + 1), Point(rc.left, rc.top), _cellBorderColor); // vertical
-            buf.drawLine(Point(rc.left, rc.bottom), Point(rc.right - 1, rc.bottom), _cellBorderColor); // horizontal
+            buf.drawLine(Point(rc.left, rc.bottom + 1), Point(rc.left, rc.top), borderColor); // vertical
+            buf.drawLine(Point(rc.left, rc.bottom - 1), Point(rc.right - 1, rc.bottom - 1), borderColor); // horizontal
         }
         if (selectedCell) {
             static if (BACKEND_GUI) {
@@ -1585,6 +1679,7 @@ class StringGridWidget : StringGridWidgetBase {
         _selectionColorRowSelect = style.customColor("grid_selection_color_row", 0xC0A0B0FF);
         _fixedCellBackgroundColor = style.customColor("grid_cell_background_fixed", 0xC0E0E0E0);
         _cellBorderColor = style.customColor("grid_cell_border_color", 0xC0C0C0C0);
+        _fixedCellBorderColor = style.customColor("grid_cell_border_color_fixed", _cellBorderColor);
         _cellHeaderBorderColor = style.customColor("grid_cell_border_color_header", 0xC0202020);
         _cellHeaderBackgroundColor = style.customColor("grid_cell_background_header", 0xC0909090);
         _cellHeaderSelectedBackgroundColor = style.customColor("grid_cell_background_header_selected", 0x80FFC040);

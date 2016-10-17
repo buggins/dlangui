@@ -319,11 +319,11 @@ class ScrollBar : AbstractSlider, OnClickHandler {
     /// sets scrollbar orientation
     override @property AbstractSlider orientation(Orientation value) { 
         if (_orientation != value) {
-            _orientation = value; 
+            _orientation = value;
             _btnBack.drawableId = style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_BUTTON_UP : ATTR_SCROLLBAR_BUTTON_LEFT);
             _btnForward.drawableId = style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_BUTTON_DOWN : ATTR_SCROLLBAR_BUTTON_RIGHT);
             _indicator.drawableId = style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_INDICATOR_VERTICAL : ATTR_SCROLLBAR_INDICATOR_HORIZONTAL);
-            requestLayout(); 
+            requestLayout();
         }
         return this; 
     }
