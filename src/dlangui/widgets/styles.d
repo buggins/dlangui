@@ -1020,7 +1020,7 @@ class Theme : Style {
 
     override string customDrawableId(string id) const {
         if (_customDrawables.hasKey(id))
-            _customDrawables.drawableId(id);
+            return _customDrawables.drawableId(id);
         return null;
     }
 
