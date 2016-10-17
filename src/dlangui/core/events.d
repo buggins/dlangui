@@ -868,6 +868,12 @@ class MouseEvent {
     /// returns point for mouse cursor position
     @property Point pos() { return Point(_x, _y); }
 
+    /// returns true if no modifier flags are set
+    @property bool noModifiers() { return (_flags & (MouseFlag.Control | MouseFlag.Alt | MouseFlag.Shift)) == 0; }
+    /// returns true if any modifier flag is set
+    @property bool hasModifiers() { return !noModifiers; }
+
+
     /// Returns true for ButtonDown event when button is pressed second time in short interval after pressing first time
     @property bool doubleClick() {
         if (_action != MouseAction.ButtonDown)
@@ -1239,6 +1245,8 @@ class KeyEvent {
 
     /// returns true if no modifier flags are set
     @property bool noModifiers() { return (_flags & (KeyFlag.Control | KeyFlag.Alt | KeyFlag.Menu | KeyFlag.Shift)) == 0; }
+    /// returns true if any modifier flag is set
+    @property bool hasModifiers() { return !noModifiers; }
 
     /// create key event
     this(KeyAction action, uint keyCode, uint flags, dstring text = null) {

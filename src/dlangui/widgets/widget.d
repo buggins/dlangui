@@ -790,7 +790,7 @@ public:
     }
 
     /// schedule tooltip
-    protected void scheduleTooltip(long delay = 300, uint alignment = 2 /*PopupAlign.Below*/, int x = 0, int y = 0) {
+    void scheduleTooltip(long delay = 300, uint alignment = 2 /*PopupAlign.Below*/, int x = 0, int y = 0) {
         if (auto w = window)
             w.scheduleTooltip(this, delay, alignment, x, y);
     }
@@ -1253,7 +1253,7 @@ public:
                 return true;
             }
         }
-        if (event.action == MouseAction.Move && event.flags == 0 && hasTooltip) {
+        if (event.action == MouseAction.Move && !event.hasModifiers && hasTooltip) {
             scheduleTooltip(200);
         }
         if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Right) {

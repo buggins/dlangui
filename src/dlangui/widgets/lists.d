@@ -57,6 +57,11 @@ interface ListAdapter {
 
     /// called when theme is changed
     void onThemeChanged();
+
+    /// return true to receive mouse events
+    @property bool wantMouseEvents();
+    /// return true to receive keyboard events
+    @property bool wantKeyEvents();
 }
 
 /// List adapter for simple list of widget instances
@@ -122,6 +127,16 @@ class ListAdapterBase : ListAdapter {
     /// called when theme is changed
     void onThemeChanged() {
     }
+
+    /// return true to receive mouse events
+    override @property bool wantMouseEvents() {
+        return false;
+    }
+
+    /// return true to receive keyboard events
+    override  @property bool wantKeyEvents() {
+        return false;
+    }
 }
 
 /// List adapter for simple list of widget instances
@@ -175,6 +190,11 @@ class WidgetListAdapter : ListAdapterBase {
     }
     ~this() {
         //Log.d("Destroying WidgetListAdapter");
+    }
+
+    /// return true to receive mouse events
+    override @property bool wantMouseEvents() {
+        return true;
     }
 }
 
@@ -1283,6 +1303,9 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
             itemrc.top += rc.top - scrollOffset.y;
             itemrc.bottom += rc.top - scrollOffset.y;
             if (itemrc.isPointInside(Point(event.x, event.y))) {
+                Widget itemWidget;
+                if (_adapter.wantMouseEvents)
+                    itemWidget = _adapter.itemWidget(i);
                 //Log.d("mouse event action=", event.action, " button=", event.button, " flags=", event.flags);
                 if ((event.flags & (MouseFlag.LButton || MouseFlag.RButton)) || _selectOnHover) {
                     if (_selectedItemIndex != i && itemEnabled(i)) {
@@ -1304,12 +1327,31 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
                         }
                     }
                 }
+                if (itemWidget) {
+                    Widget oldParent = itemWidget.parent;
+                    itemWidget.parent = this;
+                    if (event.action == MouseAction.Move && event.noModifiers && itemWidget.hasTooltip) {
+                        itemWidget.scheduleTooltip(200);
+                    }
+                    //itemWidget.onMouseEvent(event);
+                    itemWidget.parent = oldParent;
+                }
                 return true;
             }
         }
         return true;
     }
-
+    /// returns true if item is child of this widget (when deepSearch == true - returns true if item is this widget or one of children inside children tree).
+    override bool isChild(Widget item, bool deepSearch = true) {
+        if (_adapter && _adapter.wantMouseEvents) {
+            for (int i = 0; i < itemCount; i++) {
+                auto itemWidget = _adapter.itemWidget(i);
+                if (itemWidget is item)
+                    return true;
+            }
+        }
+        return super.isChild(item, deepSearch);
+    }
 }
 
 class StringListWidget : ListWidget {

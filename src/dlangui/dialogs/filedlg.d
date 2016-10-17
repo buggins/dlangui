@@ -322,6 +322,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             btn.orientation = Orientation.Vertical;
             btn.styleId = STYLE_TRANSPARENT_BUTTON_BACKGROUND;
             btn.focusable = false;
+            btn.tooltipText = root.path.toUTF32;
             adapter.add(btn);
         }
         res.ownAdapter = adapter;
