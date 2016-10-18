@@ -1366,7 +1366,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             if (m < sz.x)
                 m = sz.x;
         }
-        Log.d("measureColWidth ", x, " = ", m);
+        //Log.d("measureColWidth ", x, " = ", m);
         static if (BACKEND_GUI) {
             if (m < 10)
                 m = 10; // TODO: use min size

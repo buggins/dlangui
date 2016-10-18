@@ -1122,7 +1122,7 @@ final class Setting {
     }
 
     /// returns setting by path like "editors/sourceEditor/tabSize", creates object tree "editors/sourceEditor" and object of specified type if part of path does not exist.
-    Setting settingByPath(string path, SettingType type) {
+    Setting settingByPath(string path, SettingType type, bool createIfNotExist = true) {
         if (_type != SettingType.OBJECT)
             clear(SettingType.OBJECT);
         string part1, part2;
@@ -1136,7 +1136,7 @@ final class Setting {
             return s.settingByPath(part2, type);
         } else {
             auto s = this[path];
-            if (!s) {
+            if (!s && createIfNotExist) {
                 s = new Setting();
                 s.clear(type);
                 this[path] = s;

@@ -1789,6 +1789,7 @@ int sdlmain(string[] args) {
     auto sdl = new SDLPlatform;
 
     Platform.setInstance(sdl);
+    Platform.instance.uiTheme = "theme_default";
 
     int res = 0;
 
