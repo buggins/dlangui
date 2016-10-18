@@ -214,11 +214,14 @@ extern (C) void initLogs() {
         static import std.stdio;
         debug {
             Log.setFileLogger(new std.stdio.File("ui.log", "w"));
+            Log.i("Debug build. Logging to file ui.log");
+            Log.setLogLevel(LogLevel.Trace);
         } else {
             // no logging unless version ForceLogs is set
             version(ForceLogs) {
                 Log.setFileLogger(new std.stdio.File("ui.log", "w"));
                 Log.i("Logging to file ui.log");
+                //Log.setLogLevel(LogLevel.Trace);
             }
         }
     } else {

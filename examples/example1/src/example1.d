@@ -421,7 +421,7 @@ extern (C) int UIAppMain(string[] args) {
         // most of controls example
         {
             LinearLayout controls = new VerticalLayout("controls");
-            controls.padding = Rect(5,5,5,5);
+            controls.padding = Rect(12.pointsToPixels,12.pointsToPixels,12.pointsToPixels,12.pointsToPixels);
 
             HorizontalLayout line1 = new HorizontalLayout();
             controls.addChild(line1);
@@ -522,6 +522,7 @@ extern (C) int UIAppMain(string[] args) {
                 grid.setRowTitle(y, to!dstring(y+1));
             //grid.alignment = Align.Right;
             grid.setColWidth(0, 30.pointsToPixels);
+            grid.autoFit();
             import std.random;
             import std.string;
             for (int x = 0; x < 12; x++) {

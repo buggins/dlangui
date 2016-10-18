@@ -87,9 +87,18 @@
         align="Center"
         />
     <style id="SWITCH"
+        backgroundImageId="{'▄▄▄▄▄ ' ' On   ' '▀▀▀▀▀ '  tc 0x808080 0x808080 0x808080 0x808080 0x808080 0x808080 0x00FF00 0x00FF00 0x00FF00 0x00FF00 0x00FF00 0x00FF00 0x808080 0x808080 0x808080 0x808080 0x808080 0x808080 bc 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0x808080 0x808080 0x808080 0x808080 0x808080 0x808080 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF ninepatch 5 1 0 1 padding 5 1 1 1}"
         align="Center"
-        backgroundImageId="switch"
-        />
+        textFlags="UnderlineHotKeys"
+	textColor="#FFFFFF"
+        margins="0,0,1,0"
+        padding="1,0,1,0"
+        >
+        <state state_enabled="false" state_checked="true" textColor="#C0C0C0"  backgroundImageId="{'▄▄▄▄▄ ' ' On   ' '▀▀▀▀▀ '  tc 0x808080 0x808080 0x808080 0x808080 0x808080 0x808080  0x008000 0x008000 0x008000 0x008000 0x008000 0x008000  0x808080 0x808080 0x808080 0x808080 0x808080 0x808080   bc 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF   0x808080 0x808080 0x808080 0x808080 0x808080 0xFFFFFFFF   0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF ninepatch 5 1 0 1 padding 5 1 1 1}"/>
+        <state state_enabled="false" state_checked="false" textColor="#C0C0C0" backgroundImageId="{'▄▄▄▄▄ ' ' Off  ' '▀▀▀▀▀ '  tc 0x808080 0x808080 0x808080 0x808080 0x808080 0x808080  0x800000 0x800000 0x800000 0x800000 0x800000 0x800000  0x808080 0x808080 0x808080 0x808080 0x808080 0x808080   bc 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF   0x808080 0x808080 0x808080 0x808080 0x808080 0xFFFFFFFF   0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF ninepatch 5 1 0 1 padding 5 1 1 1}"/>
+        <state state_enabled="true" state_checked="true" textColor="#C0C0C0"   backgroundImageId="{'▄▄▄▄▄ ' ' On   ' '▀▀▀▀▀ '  tc 0x808080 0x808080 0x808080 0x808080 0x808080 0x808080  0x00FF00 0x00FF00 0x00FF00 0x00FF00 0x00FF00 0x00FF00  0x808080 0x808080 0x808080 0x808080 0x808080 0x808080   bc 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF   0x808080 0x808080 0x808080 0x808080 0x808080 0xFFFFFFFF   0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF ninepatch 5 1 0 1 padding 5 1 1 1}"/>
+        <state state_enabled="true" state_checked="false" textColor="#C0C0C0"  backgroundImageId="{'▄▄▄▄▄ ' ' Off  ' '▀▀▀▀▀ '  tc 0x808080 0x808080 0x808080 0x808080 0x808080 0x808080  0xFF0000 0xFF0000 0xFF0000 0xFF0000 0xFF0000 0xFF0000  0x808080 0x808080 0x808080 0x808080 0x808080 0x808080   bc 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF   0x808080 0x808080 0x808080 0x808080 0x808080 0xFFFFFFFF   0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF 0xFFFFFFFF ninepatch 5 1 0 1 padding 5 1 1 1}"/>
+    </style>
     <style id="CHECKBOX"
         backgroundImageId="@null"
         margins="0,0,0,0"
@@ -169,13 +178,9 @@
         backgroundImageId="{'░' 0x808000 stretch}"
         align="Center"
         />
-    <style id="SLIDER"
-        />
     <style id="PAGE_SCROLL"
-        backgroundImageId="{'░' 0x808000 stretch}"
+        backgroundImageId="@null"
         >
-        <state state_pressed="true" backgroundImageId="{'░' 0x808080 stretch}"/>
-        <state state_hovered="true" backgroundImageId="{'░' 0x808000 stretch}"/>
     </style>
     <style id="TAB_UP_DARK"
         layoutWidth="FILL_PARENT"
@@ -532,6 +537,40 @@
         <state state_pressed="true" backgroundColor="#FFFF00"/>
         <state state_selected="true" backgroundColor="#808080"/>
         <state state_hovered="true" backgroundColor="#808000"/>
+    </style>
+
+
+    <style id="GROUP_BOX"
+        textColor="#C0C0C0"
+	minHeight="3"
+        >
+        <drawable id="group_box_frame_up_left" value="{'┌─' 0x808080 bc 0xFFFFFFFF ninepatch 1 0 0 0 padding 0 0 0 0}"/>
+        <drawable id="group_box_frame_up_right" value="{'─┐' 0x808080 bc 0xFFFFFFFF ninepatch 0 0 1 0 padding 0 0 0 0}"/>
+        <drawable id="group_box_frame_bottom" value="{'│ │' '└─┘' 0x808080 0xFFFFFFFF 0x808080 0x808080 0x808080 0x808080 bc 0xFFFFFFFF ninepatch 1 0 1 1 padding 1 0 1 1}"/>
+    </style>
+
+    <style id="GROUP_BOX_CAPTION"
+        align="Left|VCenter"
+	textColor="#C0C0C0"
+        padding="0,0,0,0">
+    </style>
+
+    <style id="PROGRESS_BAR"
+        minWidth="10"
+        minHeight="1"
+        backgroundImageId="{'░' 0x808000 stretch}"
+        >
+        <drawable id="progress_bar_gauge" value="{'■' 0x808080 bc 0x0000FF stretch}"/>
+        <drawable id="progress_bar_gauge_animation" value="@none"/>
+        <drawable id="progress_bar_indeterminate" value="{'░' 0x808000 stretch}"/>
+        <drawable id="progress_bar_indeterminate_animation" value="@none"/>
+    </style>
+
+    <style id="SLIDER"
+	        backgroundImageId="{'═' 0x808080 stretch}"
+        	align="Center">
+        <drawable id="scrollbar_indicator_vertical" value="{'■' #000000 bc #FFFF00}"/>
+        <drawable id="scrollbar_indicator_horizontal" value="{'■' #000000 bc #FFFF00}"/>
     </style>
 </theme>
 

@@ -622,6 +622,8 @@ static if (BACKEND_CONSOLE) {
             if (srcx < 0 || srcx >= _width || srcy < 0 || srcy >= _height)
                 return;
             int index = srcy * _width + srcx;
+            if (_textColors[index].isFullyTransparentColor && _bgColors[index].isFullyTransparentColor)
+                return; // do not draw
             buf.drawChar(dstx, dsty, _text[index], _textColors[index], _bgColors[index]);
         }
 

@@ -52,6 +52,7 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 */
 module dlangui.widgets.grid;
 
+import dlangui.core.config;
 import dlangui.widgets.widget;
 import dlangui.widgets.controls;
 import dlangui.widgets.scroll;
@@ -1301,6 +1302,9 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
                     if (!colVisible(x))
                         continue;
                     Rect cellRect = cellRectScroll(x, y);
+                    if (BACKEND_CONSOLE && phase == 1) {
+                        cellRect.right--;
+                    }
                     Rect clippedCellRect = cellRect;
                     if (x >= nscols && cellRect.left < nspixels.x)
                         clippedCellRect.left = nspixels.x; // clip scrolled left
@@ -1362,9 +1366,13 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             if (m < sz.x)
                 m = sz.x;
         }
+        Log.d("measureColWidth ", x, " = ", m);
         static if (BACKEND_GUI) {
             if (m < 10)
                 m = 10; // TODO: use min size
+        } else {
+            if (m < 3)
+                m = 3; // TODO: use min size
         }
         return m;
     }
@@ -1384,7 +1392,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     }
 
     void autoFitColumnWidth(int i) {
-        _colWidths[i] = (i < _headerCols && !_showRowHeaders) ? 0 : measureColWidth(i) + (BACKEND_CONSOLE ? 1 : 3.pointsToPixels);
+        _colWidths[i] = (i < _headerCols && !_showRowHeaders) ? 0 : measureColWidth(i) + (BACKEND_CONSOLE ? 3 : 3.pointsToPixels);
     }
 
     /// extend specified column width to fit client area if grid width
@@ -1416,6 +1424,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     void autoFit() {
         autoFitColumnWidths();
         autoFitRowHeights();
+        updateCumulativeSizes();
     }
 
     this(string ID = null, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
@@ -1423,7 +1432,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         _headerCols = 1;
         _headerRows = 1;
         _defRowHeight = BACKEND_CONSOLE ? 1 : pointsToPixels(16);
-        _defColumnWidth = BACKEND_CONSOLE ? 5 : 100;
+        _defColumnWidth = BACKEND_CONSOLE ? 7 : 100;
 
         _showColHeaders = true;
         _showRowHeaders = true;
