@@ -287,9 +287,9 @@ class SDLWindow : Window {
         int iconw = 32;
         int iconh = 32;
         ColorDrawBuf iconDraw = new ColorDrawBuf(iconw, iconh);
-        iconDraw.fill(0xE0E0E0);
+        iconDraw.fill(0xFF000000);
         iconDraw.drawRescaled(Rect(0, 0, iconw, iconh), icon, Rect(0, 0, icon.width, icon.height));
-        iconDraw.invertAlpha();
+        iconDraw.invertAndPreMultiplyAlpha();
         SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(iconDraw.scanLine(0), iconDraw.width, iconDraw.height, 32, iconDraw.width * 4, 0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
         if (surface) {
             // The icon is attached to the window pointer

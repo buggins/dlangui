@@ -1013,6 +1013,22 @@ class ColorDrawBuf : ColorDrawBufBase {
         drawRescaled(Rect(0, 0, dx, dy), v, Rect(0, 0, v.width, v.height));
     }
 
+    void invertAndPreMultiplyAlpha() {
+        foreach(ref pixel; _buf) {
+            uint a = (pixel >> 24) & 0xFF;
+            uint r = (pixel >> 16) & 0xFF;
+            uint g = (pixel >> 8) & 0xFF;
+            uint b = (pixel >> 0) & 0xFF;
+            a ^= 0xFF;
+            if (a > 0xFC) {
+                r = ((r * a) >> 8) & 0xFF;
+                g = ((g * a) >> 8) & 0xFF;
+                b = ((b * a) >> 8) & 0xFF;
+            }
+            pixel = (a << 24) | (r << 16) | (g << 8) | (b << 0);
+        }
+    }
+
     void invertAlpha() {
         foreach(ref pixel; _buf)
             pixel ^= 0xFF000000;
