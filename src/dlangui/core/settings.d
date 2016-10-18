@@ -63,6 +63,10 @@ class SettingsFile {
     @property Setting copySettings() { 
         return _setting.clone(); 
     }
+    /// replace setting object
+    void replaceSetting(Setting s) {
+        _setting = s;
+    }
     @property void applySettings(Setting settings) { 
         // TODO copy only changed settings
         _setting = settings;
