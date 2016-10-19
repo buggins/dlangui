@@ -560,7 +560,7 @@
         minHeight="1"
         backgroundImageId="{'░' 0x808000 stretch}"
         >
-        <drawable id="progress_bar_gauge" value="{'■' 0x808080 bc 0x0000FF stretch}"/>
+        <drawable id="progress_bar_gauge" value="{' ' 0x808080 bc 0x0000FF stretch}"/>
         <drawable id="progress_bar_gauge_animation" value="@none"/>
         <drawable id="progress_bar_indeterminate" value="{'░' 0x808000 stretch}"/>
         <drawable id="progress_bar_indeterminate_animation" value="@none"/>
