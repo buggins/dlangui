@@ -40,7 +40,7 @@ enum StandardAction : int {
 }
 
 const Action ACTION_OK = new Action(StandardAction.Ok, "ACTION_OK"c, "dialog-ok");
-const Action ACTION_CANCEL = new Action(StandardAction.Cancel, "ACTION_CANCEL"c, "dialog-cancel");
+const Action ACTION_CANCEL = new Action(StandardAction.Cancel, "ACTION_CANCEL"c, "dialog-cancel").addAccelerator(KeyCode.ESCAPE);
 const Action ACTION_APPLY = new Action(StandardAction.Apply, "ACTION_APPLY"c, null);
 const Action ACTION_YES = new Action(StandardAction.Yes, "ACTION_YES"c, "dialog-ok");
 const Action ACTION_NO = new Action(StandardAction.No, "ACTION_NO"c, "dialog-cancel");

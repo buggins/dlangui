@@ -142,6 +142,15 @@ class Dialog : VerticalLayout {
         return res;
     }
 
+    /// map key to action
+    override Action findKeyAction(uint keyCode, uint flags) {
+        foreach(a; _buttonActions) {
+            if (a.checkAccelerator(keyCode, flags))
+                return a.clone;
+        }
+        return super.findKeyAction(keyCode, flags);
+    }
+
     /// Custom handling of actions
     override bool handleAction(const Action action) {
         foreach(const Action a; _buttonActions)

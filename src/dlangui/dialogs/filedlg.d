@@ -273,7 +273,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
                 return true;
             }
         }
-        return false;
+        return super.onKeyEvent(event);
     }
 
     /// return true for custom drawn cell

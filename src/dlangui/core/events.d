@@ -364,9 +364,7 @@ class Action {
         _iconId = a._iconId;
         _state = a._state;
         _defaultState = a._defaultState;
-        _accelerators.length = a._accelerators.length;
-        foreach(i; 0 .. _accelerators.length)
-            _accelerators[i] = a._accelerators[i];
+        _accelerators = a._accelerators.dup;
         _stringParam = a._stringParam;
         _longParam = a._longParam;
         if (a._objectParam)
@@ -484,7 +482,7 @@ class Action {
         return this;
     }
     /// returns true if accelerator matches provided key code and flags
-    bool checkAccelerator(uint keyCode, uint keyFlags) {
+    bool checkAccelerator(uint keyCode, uint keyFlags) const {
         foreach(a; _accelerators) {
             if (a.keyCode == keyCode && matchKeyFlags(keyFlags, a.keyFlags))
                 return true;
