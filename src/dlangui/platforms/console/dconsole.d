@@ -774,6 +774,23 @@ class Console {
         return false;
     }
     protected bool handleMouseEvent(MouseEvent event) {
+        ButtonDetails * pbuttonDetails = null;
+        if (event.button == MouseButton.Left)
+            pbuttonDetails = &_lbutton;
+        else if (event.button == MouseButton.Right)
+            pbuttonDetails = &_rbutton;
+        else if (event.button == MouseButton.Middle)
+            pbuttonDetails = &_mbutton;
+        if (pbuttonDetails) {
+            if (event.action == MouseAction.ButtonDown) {
+                pbuttonDetails.down(event.x, event.y, event.flags);
+            } else if (event.action == MouseAction.ButtonUp) {
+                pbuttonDetails.up(event.x, event.y, event.flags);
+            }
+        }
+        event.lbutton = _lbutton;
+        event.rbutton = _rbutton;
+        event.mbutton = _mbutton;
         if (mouseEvent.assigned)
             return mouseEvent(event);
         return false;
@@ -792,6 +809,11 @@ class Console {
     }
     private ushort lastMouseFlags = 0;
     private MouseButton lastButtonDown = MouseButton.None;
+
+    protected ButtonDetails _lbutton;
+    protected ButtonDetails _mbutton;
+    protected ButtonDetails _rbutton;
+
     /// wait for input, handle input
     bool pollInput() {
         if (_stopped)

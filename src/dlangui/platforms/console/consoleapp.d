@@ -427,6 +427,11 @@ extern(C) int DLANGUImain(string[] args) {
     FontManager.instance = new ConsoleFontManager();
     initResourceManagers();
 
+    version (Windows) {
+        import core.sys.windows.winuser;
+        DOUBLE_CLICK_THRESHOLD_MS = GetDoubleClickTime();
+    }
+
     currentTheme = createDefaultTheme();
     Platform.instance.uiTheme = "theme_default";
 
