@@ -1593,9 +1593,18 @@ final class Setting {
         @property char peek() {
             return pos < json.length ? json[pos] : 0;
         }
+        /// return fragment of text in current position
+        @property string currentContext() {
+            if (pos >= json.length)
+                return "end of file";
+            string res = json[pos .. $];
+            if (res.length > 100)
+                res.length = 100;
+            return res;
+        }
         /// skips current char, returns next one (or null if eof)
         @property char nextChar() {
-            if (pos < json.length - 1) {
+            if (pos + 1 < json.length) {
                 return json[++pos];
             } else {
                 if (pos < json.length)
@@ -1640,6 +1649,8 @@ final class Setting {
                 contextEnd = contextStart + 10;
             if (contextEnd > contextStart && contextEnd < json.length)
                 context = "near `" ~ json[contextStart .. contextEnd] ~ "` ";
+            else if (pos >= json.length)
+                context = "at end of file";
             throw new Exception("JSON parsing error in (" ~ to!string(line) ~ ":" ~ to!string(col) ~ ") " ~ context ~ ": " ~ msg);
         }
         static bool isAlpha(char ch) {
@@ -1869,9 +1880,15 @@ final class Setting {
 
     private void parseMap(ref JsonParser parser) {
         clear(SettingType.OBJECT);
+        int startPos = parser.pos;
+        //Log.v("parseMap at context ", parser.currentContext);
+        char ch = parser.peek;
         parser.nextChar; // skip initial {
+        if (ch != '{') {
+            Log.e("expected { at ", parser.currentContext);
+        }
         for(;;) {
-            char ch = parser.skipSpaces;
+            ch = parser.skipSpaces;
             if (ch == '}') {
                 parser.nextChar;
                 break;
@@ -1882,12 +1899,14 @@ final class Setting {
                 parser.error("no : char after object field name");
             parser.nextChar;
             this[key] = (new Setting()).parseJSON(parser);
+            //Log.v("context before skipSpaces: ", parser.currentContext);
             ch = parser.skipSpaces;
+            //Log.v("context after skipSpaces: ", parser.currentContext);
             if (ch == ',') {
                 parser.nextChar;
                 parser.skipSpaces;
             } else if (ch != '}') {
-                parser.error("unexpected character when waiting for , or } while parsing object");
+                parser.error("unexpected character when waiting for , or } while parsing object; { position is "~ to!string(startPos));
             }
         }
     }
@@ -2091,6 +2110,8 @@ final class Setting {
             } else if (ch == '=') {
                 parser.nextChar;
                 continue;
+            } else {
+                break;
             }
         }
         parser.pos = oldpos; // restore position
@@ -2260,7 +2281,7 @@ final class Setting {
             char ch = src[i];
             if (ch == '\r' || ch == '\n') {
                 char nextch = i + 1 < src.length ? src[i + 1] : 0;
-                if (nextch != ch && (ch == '\r' || ch == '\n')) {
+                if (nextch != ch && (nextch == '\r' || nextch == '\n')) {
                     // pair \r\n or \n\r
                     res ~= '\n';
                     i++;
