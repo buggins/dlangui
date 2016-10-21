@@ -26,6 +26,7 @@
     <color id="grid_cell_border_color_header" value="#80000000"/>
     <color id="grid_cell_background_header" value="#C0808080"/>
     <color id="grid_cell_background_header_selected" value="#40B0B060"/>
+    <color id="file_dialog_dir_name_color" value="#FFFF00"/>
 
     <style id="BUTTON"
         backgroundImageId="btn_background_dark"
@@ -206,6 +207,9 @@
         backgroundImageId="editbox_background_dark"
         />
     <style id="EDIT_BOX"
+        backgroundImageId="editbox_background_dark"
+        />
+    <style id="LIST_BOX"
         backgroundImageId="editbox_background_dark"
         />
     <style id="EDIT_BOX_NO_FRAME"

@@ -105,7 +105,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     protected EditLine _edFilename;
     protected ComboBox _cbFilters;
     protected StringGridWidget _fileList;
-    protected VerticalLayout leftPanel;
+    protected Widget leftPanel;
     protected VerticalLayout rightPanel;
     protected Action _action;
 
@@ -282,7 +282,11 @@ class FileDialog : Dialog, CustomGridCellAdapter {
                     (size < 1024*1024 ? "%.1f".format(size/1024) ~ " KB" :
                     (size < 1024*1024*1024 ? "%.1f".format(size/(1024*1024)) ~ " MB" :
                     "%.1f".format(size/(1024*1024*1024)) ~ " GB"));
-                date = _entries[i].timeLastModified.toSimpleString();
+                import std.datetime;
+                SysTime ts = _entries[i].timeLastModified;
+                //string timeString = "%04d.%02d.%02d %02d:%02d:%02d".format(ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second);
+                string timeString = "%04d.%02d.%02d %02d:%02d".format(ts.year, ts.month, ts.day, ts.hour, ts.minute);
+                date = timeString;
             }
             _fileList.setCellText(2, i, toUTF32(sz));
             _fileList.setCellText(3, i, toUTF32(date));
@@ -290,13 +294,18 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         if(_fileList.height > 0)
             _fileList.scrollTo(0, 0);
 
-        _fileList.autoFitColumnWidths();
-        _fileList.fillColumnWidth(1);
+        autofitGrid();
         if (selectionIndex >= 0)
             _fileList.selectCell(1, selectionIndex + 1, true);
         else if (_entries.length > 0)
             _fileList.selectCell(1, 1, true);
         return true;
+    }
+
+    void autofitGrid() {
+        _fileList.autoFitColumnWidths();
+        _fileList.setColWidth(1, 0);
+        _fileList.fillColumnWidth(1);
     }
 
     override bool onKeyEvent(KeyEvent event) {
@@ -311,7 +320,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
     /// return true for custom drawn cell
     override bool isCustomCell(int col, int row) {
-        if (col == 0 && row >= 0)
+        if ((col == 0 || col == 1) && row >= 0)
             return true;
         return false;
     }
@@ -326,14 +335,40 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
     /// return cell size
     override Point measureCell(int col, int row) {
+        if (col == 1) {
+            FontRef fnt = _fileList.font;
+            dstring txt = _fileList.cellText(col, row);
+            Point sz = fnt.textSize(txt);
+            if (sz.y < fnt.height)
+                sz.y = fnt.height;
+            return sz;
+        }
         DrawableRef icon = rowIcon(row);
         if (icon.isNull)
             return Point(0, 0);
-        return Point(icon.width + 2, icon.height + 2);
+        return Point(icon.width + 2.pointsToPixels, icon.height + 2.pointsToPixels);
     }
 
     /// draw data cell content
     override void drawCell(DrawBuf buf, Rect rc, int col, int row) {
+        if (col == 1) {
+            if (BACKEND_GUI) 
+                rc.shrink(2, 1);
+            else 
+                rc.right--;
+            FontRef fnt = _fileList.font;
+            dstring txt = _fileList.cellText(col, row);
+            Point sz = fnt.textSize(txt);
+            Align ha = Align.Left;
+            //if (sz.y < rc.height)
+            //    applyAlign(rc, sz, ha, Align.VCenter);
+            int offset = BACKEND_CONSOLE ? 0 : 1;
+            uint cl = _fileList.textColor;
+            if (_entries[row].isDir)
+                cl = style.customColor("file_dialog_dir_name_color", cl);
+            fnt.drawText(buf, rc.left + offset, rc.top + offset, txt, cl);
+            return;
+        }
         DrawableRef img = rowIcon(row);
         if (!img.isNull) {
             Point sz;
@@ -347,7 +382,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
     protected ListWidget createRootsList() {
         ListWidget res = new ListWidget("ROOTS_LIST");
-        res.styleId = STYLE_EDIT_BOX;
+        res.styleId = STYLE_LIST_BOX;
         WidgetListAdapter adapter = new WidgetListAdapter();
         foreach(ref RootEntry root; _roots) {
             ImageTextButton btn = new ImageTextButton(null, root.icon, root.label);
@@ -479,9 +514,13 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
         content.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT); //.minWidth(400).minHeight(300);
 
-        leftPanel = new VerticalLayout("places");
-        leftPanel.addChild(createRootsList());
-        leftPanel.layoutHeight(FILL_PARENT).minWidth(BACKEND_CONSOLE ? 7 : 40);
+
+        //leftPanel = new VerticalLayout("places");
+        //leftPanel.addChild(createRootsList());
+        //leftPanel.layoutHeight(FILL_PARENT).minWidth(BACKEND_CONSOLE ? 7 : 40);
+
+        leftPanel = createRootsList();
+        leftPanel.minWidth(BACKEND_CONSOLE ? 7 : 40.pointsToPixels);
 
         rightPanel = new VerticalLayout("main");
         rightPanel.layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT);
@@ -574,8 +613,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     override void layout(Rect rc) {
         super.layout(rc);
-        _fileList.autoFitColumnWidths();
-        _fileList.fillColumnWidth(1);
+        autofitGrid();
     }
 
 
@@ -618,7 +656,7 @@ class FilePathPanelItem : HorizontalLayout {
         _text.click = &onTextClick;
         //_text.backgroundColor = 0xC0FFFF;
         _text.state = State.Parent;
-        _button = new ImageButton(null, "scrollbar_btn_right");
+        _button = new ImageButton(null, ATTR_SCROLLBAR_BUTTON_RIGHT);
         _button.styleId = STYLE_BUTTON_TRANSPARENT;
         _button.focusable = false;
         _button.click = &onButtonClick;
@@ -627,7 +665,7 @@ class FilePathPanelItem : HorizontalLayout {
         trackHover(true);
         addChild(_text);
         addChild(_button);
-        margins(Rect(2,0,2,0));
+        margins(Rect(2.pointsToPixels + 1, 0, 2.pointsToPixels + 1, 0));
     }
     private bool onTextClick(Widget src) {
         if (onPathSelectionListener.assigned)
@@ -704,10 +742,10 @@ class FilePathPanelButtons : WidgetGroupDefaultDrawing {
         if (parentHeight != SIZE_UNSPECIFIED)
             pheight -= m.top + m.bottom + p.top + p.bottom;
         int reservedForEmptySpace = parentWidth / 20;
-        if (reservedForEmptySpace > 40)
-            reservedForEmptySpace = 40;
-        if (reservedForEmptySpace < 4)
-            reservedForEmptySpace = 4;
+        if (reservedForEmptySpace > 40.pointsToPixels)
+            reservedForEmptySpace = 40.pointsToPixels;
+        if (reservedForEmptySpace < 4.pointsToPixels)
+            reservedForEmptySpace = 4.pointsToPixels;
 
         Point sz;
         sz.x += reservedForEmptySpace;

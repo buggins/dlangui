@@ -31,8 +31,10 @@
     <color id="grid_cell_background_fixed" value="#FFFFFFFF"/>
     <color id="grid_cell_border_color" value="#C0C0C0C0"/>
     <color id="grid_cell_border_color_header" value="#C0202020"/>
+    <color id="grid_cell_text_color_header" value="#FFFFFF"/>
     <color id="grid_cell_background_header" value="#808080"/>
     <color id="grid_cell_background_header_selected" value="#008000"/>
+    <color id="file_dialog_dir_name_color" value="#FFFF00"/>
 
     <drawable id="arrow_right_down_black" value="{'▼ ' #008000}"/>
     <drawable id="arrow_right_hollow" value="{'► ' #008000}"/>
@@ -330,9 +332,21 @@
         <state state_focused="true" backgroundImageId="{'┌─┐' '│ │' '└─┘' 0xFFFF00 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 1 1}"/>
     </style>
     <style id="EDIT_BOX"
-        fontFace="Menlo,Consolas,DejaVuSansMono,Lucida Sans Typewriter,Courier New,Lucida Console"
         backgroundImageId="{'┌─┐' '│ │' '└─┘' 0x808080 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}"
         padding="1,1,0,0"
+        margins="0,0,0,0"
+        minWidth="8"
+        minHeight="3"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        >
+        <state state_focused="true" state_window_focused="true" backgroundImageId="{'┌─┐' '│ │' '└─┘' 0xFFFF00 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}"/>
+        <state state_focused="true" backgroundImageId="{'┌─┐' '│ │' '└─┘' 0xFFFF00 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}"/>
+        <state state_enabled="true" backgroundImageId="{'┌─┐' '│ │' '└─┘' 0x808080 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}"/>
+    </style>
+    <style id="LIST_BOX"
+        backgroundImageId="{'┌─┐' '│ │' '└─┘' 0x808080 bc 0xFFFFFFFF ninepatch 1 1 1 1 padding 1 1 0 0}"
+        padding="1,1,1,1"
         margins="0,0,0,0"
         minWidth="8"
         minHeight="3"

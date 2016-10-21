@@ -1371,8 +1371,8 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             if (m < 10)
                 m = 10; // TODO: use min size
         } else {
-            if (m < 3)
-                m = 3; // TODO: use min size
+            if (m < 1)
+                m = 1; // TODO: use min size
         }
         return m;
     }
@@ -1403,12 +1403,14 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             totalw += _colWidths[i];
         if (w > totalw)
             _colWidths[colIndex + _headerCols] += w - totalw;
+        updateCumulativeSizes();
         invalidate();
     }
 
     void autoFitColumnWidths() {
         for (int i = 0; i < _cols; i++)
             autoFitColumnWidth(i);
+        updateCumulativeSizes();
         invalidate();
     }
 
@@ -1622,7 +1624,9 @@ class StringGridWidget : StringGridWidgetBase {
             ha = Align.HCenter;
         applyAlign(rc, sz, ha, Align.VCenter);
         int offset = BACKEND_CONSOLE ? 0 : 1;
-        fnt.drawText(buf, rc.left + offset, rc.top + offset, txt, textColor);
+        uint cl = textColor;
+        cl = style.customColor("grid_cell_text_color_header", cl);
+        fnt.drawText(buf, rc.left + offset, rc.top + offset, txt, cl);
     }
 
     /// draw cell background

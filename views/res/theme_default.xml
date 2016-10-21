@@ -28,6 +28,7 @@
     <color id="grid_cell_border_color_header" value="#C0202020"/>
     <color id="grid_cell_background_header" value="#C0909090"/>
     <color id="grid_cell_background_header_selected" value="#80FFC040"/>
+    <color id="file_dialog_dir_name_color" value="#808000"/>
 
     <style id="BUTTON"
         backgroundImageId="btn_background"
@@ -306,6 +307,13 @@
         margins="2,2,2,2"
         minWidth="100"
         minHeight="60"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        />
+    <style id="LIST_BOX"
+        backgroundImageId="editbox_background"
+        padding="2,2,2,2"
+        margins="2,2,2,2"
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         />
