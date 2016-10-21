@@ -1792,6 +1792,57 @@ class WidgetGroupDefaultDrawing : WidgetGroup {
     }
 }
 
+/// helper for locating items in list, tree, table or other controls by typing their name
+struct TextTypingShortcutHelper {
+    int timeoutMillis = 800; // expiration time for entered text; after timeout collected text will be cleared
+    private long _lastUpdateTimeStamp;
+    private dchar[] _text;
+    /// cancel text collection (next typed text will be collected from scratch)
+    void cancel() {
+        _text.length = 0;
+        _lastUpdateTimeStamp = 0;
+    }
+    /// returns collected text string - use it for lookup
+    @property dstring text() { return _text.dup; }
+    /// pass key event here; returns true if search text is updated and you can move selection using it
+    bool onKeyEvent(KeyEvent event) {
+        long ts = currentTimeMillis;
+        if (_lastUpdateTimeStamp && ts - _lastUpdateTimeStamp > timeoutMillis)
+            cancel();
+        if (event.action == KeyAction.Text) {
+            _text ~= event.text;
+            _lastUpdateTimeStamp = ts;
+            return _text.length > 0;
+        }
+        if (event.action == KeyAction.KeyDown || event.action == KeyAction.KeyUp) {
+            switch (event.keyCode) with (KeyCode) {
+                case LEFT:
+                case RIGHT:
+                case UP:
+                case DOWN:
+                case HOME:
+                case END:
+                case TAB:
+                case PAGEUP:
+                case PAGEDOWN:
+                case BACK:
+                    cancel();
+                    break;
+                default:
+                    break;
+            }
+        }
+        return false;
+    }
+
+    /// cancel text typing on some mouse events, if necessary
+    void onMouseEvent(MouseEvent event) {
+        if (event.action == MouseAction.ButtonUp || event.action == MouseAction.ButtonDown)
+            cancel();
+    }
+}
+
+
 enum ONE_SECOND = 10_000_000L;
 
 /// Helper to handle animation progress

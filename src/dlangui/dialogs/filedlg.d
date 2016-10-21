@@ -212,6 +212,39 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         return openDirectory(_path, null);
     }
 
+    protected void locateFileInList(dstring pattern) {
+        if (!pattern.length)
+            return;
+        int selection = _fileList.row;
+        if (selection < 0)
+            selection = 0;
+        int index = -1; // first matched item
+        string mask = pattern.toUTF8;
+        // search forward from current row to end of list
+        for(int i = selection; i < _entries.length; i++) {
+            string fname = baseName(_entries[i].name);
+            if (fname.startsWith(mask)) {
+                index = i;
+                break;
+            }
+        }
+        if (index < 0) {
+            // search from beginning of list to current position
+            for(int i = 0; i < selection && i < _entries.length; i++) {
+                string fname = baseName(_entries[i].name);
+                if (fname.startsWith(mask)) {
+                    index = i;
+                    break;
+                }
+            }
+        }
+        if (index >= 0) {
+            // move selection
+            _fileList.selectCell(1, index + 1);
+            window.update();
+        }
+    }
+
     protected bool openDirectory(string dir, string selectedItemPath) {
         dir = buildNormalizedPath(dir);
         Log.d("FileDialog.openDirectory(", dir, ")");
@@ -502,6 +535,12 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _fileList.cellPopupMenu = &getCellPopupMenu;
         _fileList.menuItemAction = &handleAction;
 
+        _fileList.keyEvent = delegate(Widget source, KeyEvent event) {
+            if (_shortcutHelper.onKeyEvent(event))
+                locateFileInList(_shortcutHelper.text);
+            return false;
+        };
+
         rightPanel.addChild(_edPath);
         rightPanel.addChild(_fileList);
         rightPanel.addChild(fnlayout);
@@ -529,6 +568,8 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _fileList.layoutHeight = FILL_PARENT;
 
     }
+
+    protected TextTypingShortcutHelper _shortcutHelper;
 
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     override void layout(Rect rc) {
