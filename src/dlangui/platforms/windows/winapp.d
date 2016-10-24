@@ -1266,11 +1266,13 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
     releaseResourcesOnAppExit();
 
     Log.d("Exiting main");
-    APP_IS_SHUTTING_DOWN = true;
-    import core.memory : GC;
-    Log.d("Calling GC.collect");
-    GC.collect();
-    Log.e("Non-zero DrawBuf instance count when exiting: ", DrawBuf.instanceCount);
+    debug {
+        APP_IS_SHUTTING_DOWN = true;
+        import core.memory : GC;
+        Log.d("Calling GC.collect");
+        GC.collect();
+        Log.e("Non-zero DrawBuf instance count when exiting: ", DrawBuf.instanceCount);
+    }
 
     return result;
 }
