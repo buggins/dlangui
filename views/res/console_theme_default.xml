@@ -46,6 +46,10 @@
     <drawable id="scrollbar_button_right" value="{'►' #FFFF00}"/>
     <drawable id="scrollbar_indicator_vertical" value="{'' #FFFF00}"/>
     <drawable id="scrollbar_indicator_horizontal" value="{'' #FFFF00}"/>
+    <drawable id="grid_cell_background_header" value="{' │' #000000 bc #808080 ninepatch 0 0 1 0 padding 0 0 1 0}"/>
+    <drawable id="grid_cell_background_row_header" value="{' ▐' #000000 bc #808080 ninepatch 0 0 1 0 padding 0 0 1 0}"/>
+    <drawable id="grid_cell_background_header_selected" value="{' │' #000000 bc #008000 #808080 ninepatch 0 0 1 0 padding 0 0 1 0}"/>
+    <drawable id="grid_cell_background_row_header_selected" value="{' ▐' #000000 bc #008000 ninepatch 0 0 1 0 padding 0 0 1 0}"/>
 
     <style id="BUTTON"
         backgroundImageId="{'▄' ' ' '▀' tc 0x808080 bc 0xFFFFFFFF 0x808080 0xFFFFFFFF ninepatch 0 1 0 1 padding 1 1 1 1}"

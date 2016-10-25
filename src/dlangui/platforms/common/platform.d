@@ -1119,7 +1119,7 @@ class Window : CustomEventTarget {
         if (!needLayout) {
             needLayout = root.needLayout || needLayout;
             if (needLayout) {
-                debug(DebugRedraw) Log.d("need layout: ", root.id);
+                debug(DebugRedraw) Log.d("need layout: ", root.classinfo.name, " id=", root.id);
             }
         }
         if (root.animating && root.visible)
@@ -1173,7 +1173,7 @@ class Window : CustomEventTarget {
             debug(DebugRedraw) Log.d("Requesting update");
             invalidate();
         }
-        debug(DebugRedraw) Log.d("checkUpdateNeeded returned needDraw=", needDraw, " needLayout=", needLayout, " animationActive=", animationActive);
+        debug(DebugRedraw) Log.d("checkUpdateNeeded returned needDraw=", needDraw, " needLayout=", needLayout, " animationActive=", _animationActive);
     }
 
     protected bool _actionsUpdateRequested = true;
@@ -1219,7 +1219,7 @@ class Window : CustomEventTarget {
 
     /// schedule timer for interval in milliseconds - call window.onTimer when finished
     protected void scheduleSystemTimer(long intervalMillis) {
-        Log.d("override scheduleSystemTimer to support timers");
+        //debug Log.d("override scheduleSystemTimer to support timers");
     }
 
     /// poll expired timers; returns true if update is needed

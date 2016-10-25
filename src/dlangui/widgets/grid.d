@@ -364,6 +364,10 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     protected uint _cellHeaderBorderColor = 0xC0202020;
     protected uint _cellHeaderBackgroundColor = 0xC0909090;
     protected uint _cellHeaderSelectedBackgroundColor = 0x80FFC040;
+    protected DrawableRef _cellHeaderBackgroundDrawable;
+    protected DrawableRef _cellHeaderSelectedBackgroundDrawable;
+    protected DrawableRef _cellRowHeaderBackgroundDrawable;
+    protected DrawableRef _cellRowHeaderSelectedBackgroundDrawable;
 
     /// row header column count
     @property int headerCols() { return _headerCols; }
@@ -405,6 +409,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     }
     @property GridWidgetBase defColumnWidth(int v) {
         _defColumnWidth = v;
+        _changedSize = true;
         return this;
     }
     /// default row height - for newly added rows
@@ -413,6 +418,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     }
     @property GridWidgetBase defRowHeight(int v) {
         _defRowHeight = v;
+        _changedSize = true;
         return this;
     }
 
@@ -445,6 +451,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             for (int i = 0; i < _headerRows; i++)
                 autoFitRowHeight(i);
             invalidate();
+            _changedSize = true;
         }
         return this;
     }
@@ -459,13 +466,18 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             _showRowHeaders = show;
             for (int i = 0; i < _headerCols; i++)
                 autoFitColumnWidth(i);
+            _changedSize = true;
             invalidate();
         }
         return this;
     }
 
+    protected bool _changedSize = true;
     /// recalculate colCumulativeWidths, rowCumulativeHeights after resizes
     protected void updateCumulativeSizes() {
+        if (!_changedSize)
+            return;
+        _changedSize = false;
         _colCumulativeWidths.length = _colWidths.length;
         _rowCumulativeHeights.length = _rowHeights.length;
         for (int i = 0; i < _colCumulativeWidths.length; i++) {
@@ -486,6 +498,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     void resize(int c, int r) {
         if (c == cols && r == rows)
             return;
+        _changedSize = true;
         _colWidths.length = c + _headerCols;
         for (int i = _cols; i < c + _headerCols; i++) {
             _colWidths[i] = _defColumnWidth;
@@ -505,10 +518,12 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     @property int nonScrollRows() { return _headerRows + fixedRows; }
     /// return all (fixed + scrollable) cells size in pixels
     @property Point fullAreaPixels() {
+        if (_changedSize) updateCumulativeSizes();
         return Point(_cols ? _colCumulativeWidths[_cols - 1] : 0, _rows ? _rowCumulativeHeights[_rows - 1] : 0);
     }
     /// non-scrollable area size in pixels
     @property Point nonScrollAreaPixels() {
+        if (_changedSize) updateCumulativeSizes();
         int nscols = nonScrollCols;
         int nsrows = nonScrollRows;
         return Point(nscols ? _colCumulativeWidths[nscols - 1] : 0, nsrows ? _rowCumulativeHeights[nsrows - 1] : 0);
@@ -519,6 +534,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     }
     /// get cell rectangle (relative to client area) not counting scroll position
     Rect cellRectNoScroll(int x, int y) {
+        if (_changedSize) updateCumulativeSizes();
         if (x < 0 || y < 0 || x >= _cols || y >= _rows)
             return Rect(0,0,0,0);
         return Rect(x ? _colCumulativeWidths[x - 1] : 0, y ? _rowCumulativeHeights[y - 1] : 0,
@@ -541,6 +557,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     }
     /// returns true if column is inside client area and not overlapped outside scroll area
     bool colVisible(int x) {
+        if (_changedSize) updateCumulativeSizes();
         if (x < 0 || x >= _cols)
             return false;
         if (x == 0)
@@ -564,6 +581,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     bool rowVisible(int y) {
         if (y < 0 || y >= _rows)
             return false;
+        if (_changedSize) updateCumulativeSizes();
         if (y == 0)
             return true; // first row always visible
         int nsrows = nonScrollRows;
@@ -584,12 +602,12 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     void setColWidth(int x, int w) {
         _colWidths[x] = w;
-        updateCumulativeSizes();
+        _changedSize = true;
     }
 
     void setRowHeight(int y, int w) {
         _rowHeights[y] = w;
-        updateCumulativeSizes();
+        _changedSize = true;
     }
 
     /// get column width, 0 is header column
@@ -613,6 +631,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     /// converts client rect relative coordinates to cell coordinates
     bool pointToCell(int x, int y, ref int col, ref int row, ref Rect cellRect) {
+        if (_changedSize) updateCumulativeSizes();
         int nscols = nonScrollCols;
         int nsrows = nonScrollRows;
         Point ns = nonScrollAreaPixels;
@@ -624,6 +643,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     /// update scrollbar positions
     override protected void updateScrollBars() {
+        if (_changedSize) updateCumulativeSizes();
         calcScrollableAreaPos();
         correctScrollPos();
         super.updateScrollBars();
@@ -662,16 +682,19 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     /// column by X, ignoring scroll position
     protected int colByAbsoluteX(int x) {
+        if (_changedSize) updateCumulativeSizes();
         return findPosIndex(_colCumulativeWidths, x);
     }
 
     /// row by Y, ignoring scroll position
     protected int rowByAbsoluteY(int y) {
+        if (_changedSize) updateCumulativeSizes();
         return findPosIndex(_rowCumulativeHeights, y);
     }
 
     /// returns first fully visible column in scroll area
     protected int scrollCol() {
+        if (_changedSize) updateCumulativeSizes();
         int x = nonScrollAreaPixels.x + _scrollX;
         int col = colByAbsoluteX(x);
         int start = col ? _colCumulativeWidths[col - 1] : 0;
@@ -684,6 +707,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     /// returns last fully visible column in scroll area
     protected int lastScrollCol() {
+        if (_changedSize) updateCumulativeSizes();
         int x = nonScrollAreaPixels.x + _scrollX + _visibleScrollableArea.width - 1;
         int col = colByAbsoluteX(x);
         int start = col ? _colCumulativeWidths[col - 1] : 0;
@@ -697,6 +721,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     /// returns first fully visible row in scroll area
     protected int scrollRow() {
+        if (_changedSize) updateCumulativeSizes();
         int y = nonScrollAreaPixels.y + _scrollY;
         int row = rowByAbsoluteY(y);
         int start = row ? _rowCumulativeHeights[row - 1] : 0;
@@ -709,6 +734,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     /// returns last fully visible row in scroll area
     protected int lastScrollRow() {
+        if (_changedSize) updateCumulativeSizes();
         int y = nonScrollAreaPixels.y + _scrollY + _visibleScrollableArea.height - 1;
         int row = rowByAbsoluteY(y);
         int start = row ? _rowCumulativeHeights[row - 1] : 0;
@@ -722,6 +748,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     /// move scroll position horizontally by dx, and vertically by dy; returns true if scrolled
     bool scrollBy(int dx, int dy) {
+        if (_changedSize) updateCumulativeSizes();
         int col = scrollCol + dx;
         int row = scrollRow + dy;
         if (col >= _cols)
@@ -744,6 +771,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     // ensure scroll position is inside min/max area
     protected void correctScrollPos() {
+        if (_changedSize) updateCumulativeSizes();
         int maxscrollx = _fullScrollableArea.width - _visibleScrollableArea.width;
         int maxscrolly = _fullScrollableArea.height - _visibleScrollableArea.height;
         if (_scrollX < 0)
@@ -758,6 +786,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     /// set scroll position to show specified cell as top left in scrollable area; col or row -1 value means no change
     bool scrollTo(int x, int y, GridWidgetBase source = null, bool doNotify = true) {
+        if (_changedSize) updateCumulativeSizes();
         int oldx = _scrollX;
         int oldy = _scrollY;
         _scrollX = x;
@@ -808,6 +837,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     /// ensure that cell is visible (scroll if necessary)
     void makeCellVisible(int col, int row) {
+        if (_changedSize) updateCumulativeSizes();
         bool scrolled = false;
         int newx = _scrollX;
         int newy = _scrollY;
@@ -850,6 +880,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             return false; // same position
         if (col < _headerCols || row < _headerRows || col >= _cols || row >= _rows)
             return false; // out of range
+        if (_changedSize) updateCumulativeSizes();
         _col = col;
         _row = row;
         invalidate();
@@ -863,6 +894,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     /// Select cell and call onCellActivated handler
     bool activateCell(int col, int row) {
+        if (_changedSize) updateCumulativeSizes();
         if (_col != col || _row != row) {
             selectCell(col, row, true);
         }
@@ -948,6 +980,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         if (newWidth < 0)
             newWidth = 0;
         _colWidths[_colResizingIndex] = newWidth;
+        _changedSize = true;
         updateCumulativeSizes();
         updateScrollBars();
         invalidate();
@@ -958,6 +991,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     /// return column index to resize if point is in column resize area in header row, -1 if outside resize area
     int isColumnResizingPoint(int x, int y) {
+        if (_changedSize) updateCumulativeSizes();
         x -= _clientRect.left;
         y -= _clientRect.top;
         if (!_headerRows)
@@ -970,7 +1004,8 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             x += _scrollX;
         int col = colByAbsoluteX(x);
         int start = col > 0 ? _colCumulativeWidths[col - 1] : 0;
-        int end = col < _cols ? _colCumulativeWidths[col] : _colCumulativeWidths[$ - 1];
+        int end = (col < _cols ? _colCumulativeWidths[col] : _colCumulativeWidths[$ - 1]) - 1;
+        //Log.d("column range ", start, "..", end, " x=", x);
         if (x >= end - resizeRange / 2)
             return col; // resize this column
         if (x <= start + resizeRange / 2)
@@ -1392,7 +1427,8 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     }
 
     void autoFitColumnWidth(int i) {
-        _colWidths[i] = (i < _headerCols && !_showRowHeaders) ? 0 : measureColWidth(i) + (BACKEND_CONSOLE ? 3 : 3.pointsToPixels);
+        _colWidths[i] = (i < _headerCols && !_showRowHeaders) ? 0 : measureColWidth(i) + (BACKEND_CONSOLE ? 1 : 3.pointsToPixels);
+        _changedSize = true;
     }
 
     /// extend specified column width to fit client area if grid width
@@ -1403,19 +1439,20 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             totalw += _colWidths[i];
         if (w > totalw)
             _colWidths[colIndex + _headerCols] += w - totalw;
-        updateCumulativeSizes();
+        _changedSize = true;
         invalidate();
     }
 
     void autoFitColumnWidths() {
         for (int i = 0; i < _cols; i++)
             autoFitColumnWidth(i);
-        updateCumulativeSizes();
+        _changedSize = true;
         invalidate();
     }
 
     void autoFitRowHeight(int i) {
         _rowHeights[i] = (i < _headerRows && !_showColHeaders) ? 0 : measureRowHeight(i) + (BACKEND_CONSOLE ? 0 : 2);
+        _changedSize = true;
     }
 
     void autoFitRowHeights() {
@@ -1620,8 +1657,8 @@ class StringGridWidget : StringGridWidgetBase {
         Align ha = Align.Left;
         if (col < 0)
             ha = Align.Right;
-        if (row < 0)
-            ha = Align.HCenter;
+        //if (row < 0)
+        //    ha = Align.HCenter;
         applyAlign(rc, sz, ha, Align.VCenter);
         int offset = BACKEND_CONSOLE ? 0 : 1;
         uint cl = textColor;
@@ -1637,14 +1674,21 @@ class StringGridWidget : StringGridWidgetBase {
         if (_rowSelect && selectedRow)
             selectedCell = true;
         // draw header cell background
+        DrawableRef dw = c < 0 ? _cellRowHeaderBackgroundDrawable : _cellHeaderBackgroundDrawable;
         uint cl = _cellHeaderBackgroundColor;
-        if (c >= _headerCols || r >= _headerRows) {
-            if (c < _headerCols && selectedRow)
+        if (c >= 0 || r >= 0) {
+            if (c < 0 && selectedRow) {
                 cl = _cellHeaderSelectedBackgroundColor;
-            if (r < _headerRows && selectedCol)
+                dw = _cellRowHeaderSelectedBackgroundDrawable;
+            } else if (r < 0 && selectedCol) {
                 cl = _cellHeaderSelectedBackgroundColor;
+                dw = _cellHeaderSelectedBackgroundDrawable;
+            }
         }
-        buf.fillRect(rc, cl);
+        if (!dw.isNull)
+            dw.drawTo(buf, rc);
+        else
+            buf.fillRect(rc, cl);
         static if (BACKEND_GUI) {
             uint borderColor = _cellHeaderBorderColor;
             buf.drawLine(Point(rc.right - 1, rc.bottom), Point(rc.right - 1, rc.top), _cellHeaderBorderColor); // vertical
@@ -1696,6 +1740,10 @@ class StringGridWidget : StringGridWidgetBase {
         _cellHeaderBorderColor = style.customColor("grid_cell_border_color_header", 0xC0202020);
         _cellHeaderBackgroundColor = style.customColor("grid_cell_background_header", 0xC0909090);
         _cellHeaderSelectedBackgroundColor = style.customColor("grid_cell_background_header_selected", 0x80FFC040);
+        _cellHeaderBackgroundDrawable = style.customDrawable("grid_cell_background_header");
+        _cellHeaderSelectedBackgroundDrawable = style.customDrawable("grid_cell_background_header_selected");
+        _cellRowHeaderBackgroundDrawable = style.customDrawable("grid_cell_background_row_header");
+        _cellRowHeaderSelectedBackgroundDrawable = style.customDrawable("grid_cell_background_row_header_selected");
     }
 }
 
