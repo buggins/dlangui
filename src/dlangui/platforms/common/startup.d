@@ -333,6 +333,7 @@ void registerStandardWidgets() {
     import dlangui.widgets.progressbar;
     import dlangui.dialogs.filedlg;
     import dlangui.widgets.menu;
+    import dlangui.widgets.tree;
     mixin(registerWidgets!(FileNameEditLine, DirEditLine, //dlangui.dialogs.filedlg
                            ComboBox, ComboEdit, //dlangui.widgets.combobox
                            Widget, TextWidget, MultilineTextWidget, Button, ImageWidget, ImageButton, ImageCheckButton, ImageTextButton, 
@@ -345,6 +346,7 @@ void registerStandardWidgets() {
                            VerticalLayout, HorizontalLayout, TableLayout, FrameLayout, // dlangui.widgets.layouts
                            ListWidget, StringListWidget,//dlangui.widgets.lists
                            MainMenu, //dlangui.widgets.menu
+                           TreeWidget, // dlangui.widgets.tree
                            )("void registerWidgets"));
     registerWidgets();
 }
