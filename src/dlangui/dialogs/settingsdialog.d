@@ -453,8 +453,8 @@ class SettingsDialog : Dialog {
     protected Setting _settings;
     protected SettingsPage _layout;
 
-    this(UIString caption, Window parent, Setting settings, SettingsPage layout) {
-        super(caption, parent, DialogFlag.Modal | DialogFlag.Resizable | DialogFlag.Popup);
+    this(UIString caption, Window parent, Setting settings, SettingsPage layout, bool popup = false) {
+        super(caption, parent, DialogFlag.Modal | DialogFlag.Resizable | (popup?DialogFlag.Popup:0));
         _settings = settings;
         _layout = layout;
     }
