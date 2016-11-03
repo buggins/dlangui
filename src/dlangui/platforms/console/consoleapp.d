@@ -354,10 +354,10 @@ class ConsoleDrawBuf : DrawBuf {
 
     static immutable dstring SPACE_STRING = 
         "                                                                                                    "
-        "                                                                                                    "
-        "                                                                                                    "
-        "                                                                                                    "
-        "                                                                                                    ";
+      ~ "                                                                                                    "
+      ~ "                                                                                                    "
+      ~ "                                                                                                    "
+      ~ "                                                                                                    ";
 
     /// fill rectangle with solid color (clipping is applied)
     override void fillRect(Rect rc, uint color) {
