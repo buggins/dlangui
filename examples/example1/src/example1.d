@@ -1097,15 +1097,18 @@ void main()
                 //Rect oldClip = buf.clipRect;
                 //buf.clipRect = newClipRect;
                 PointF[] poly = [vec2(x+130, y+150), vec2(x+240, y+80), vec2(x+170, y+170), vec2(x+380, y+270), vec2(x+220, y+400), vec2(x+180, y+330)];
-                buf.polyLineF(poly, 18.0f, 0x80804020, true);
+                buf.polyLineF(poly, 18.0f, 0x80804020, true, 0x80FFFF00);
                 //buf.fillTriangleF(vec2(x+230, y+50), vec2(x+400, y+250), vec2(x+130, y+200), 0xC0FF0000);
                 //buf.fillTriangleF(vec2(x+230, y+250), vec2(x+200, y+350), vec2(x+80, y+200), 0xC000FF00);
                 //buf.fillTriangleF(vec2(x+430, y+250), vec2(x+280, y+150), vec2(x+200, y+300), 0xC00000FF);
                 //buf.fillTriangleF(vec2(x+80, y+150), vec2(x+280, y+250), vec2(x+80, y+200), 0xC0008080);
                 //buf.clipRect = oldClip;
                 canvas.font.drawText(buf, x + 190, y + 260, "polyLineF()"d, 0x603010);
-                PointF[] poly2 = [vec2(x+330, y+250), vec2(x+440, y+180), vec2(x+370, y+270), vec2(x+480, y+300), vec2(x+520, y+200), vec2(x+420, y+450), vec2(x+380, y+430)];
+                PointF[] poly2 = [vec2(x+430, y+250), vec2(x+540, y+180), vec2(x+470, y+270), vec2(x+580, y+300), 
+                    vec2(x+620, y+400), vec2(x+480, y+350), vec2(x+520, y+450), vec2(x+480, y+430)];
                 buf.fillPolyF(poly2, 0x80203050);
+                //buf.polyLineF(poly2, 2.0f, 0x80000000, true);
+                canvas.font.drawText(buf, x + 500, y + 460, "fillPolyF()"d, 0x203050);
             };
             tabs.addTab(canvas, "TAB_CANVAS"c);
 

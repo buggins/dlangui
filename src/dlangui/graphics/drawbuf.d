@@ -582,8 +582,7 @@ class DrawBuf : RefCountedObject {
         return p1 + dir1 * a;
     }
 
-    /// draw line of arbitrary width in float coordinates p1..p2 with angle based on previous (p0..p1) and next (p2..p3) segments
-    void drawLineSegmentF(PointF p0, PointF p1, PointF p2, PointF p3, float width, uint colour) {
+    protected void calcLineSegmentQuad(PointF p0, PointF p1, PointF p2, PointF p3, float width, ref PointF[4] quad) {
         // direction vector
         PointF v = (p2 - p1).normalized;
         // calculate normal vector : rotate CCW 90 degrees
@@ -617,13 +616,35 @@ class DrawBuf : RefCountedObject {
             pp20 = intersect0;
             pp21 = intersect1;
         }
-        fillQuadF(pp10, pp20, pp21, pp11, colour);
+        quad[0] = pp10;
+        quad[1] = pp20;
+        quad[2] = pp21;
+        quad[3] = pp11;
+    }
+    /// draw line of arbitrary width in float coordinates p1..p2 with angle based on previous (p0..p1) and next (p2..p3) segments
+    void drawLineSegmentF(PointF p0, PointF p1, PointF p2, PointF p3, float width, uint colour) {
+        PointF[4] quad;
+        calcLineSegmentQuad(p0, p1, p2, p3, width, quad);
+        fillQuadF(quad[0], quad[1], quad[2], quad[3], colour);
     }
 
     /// draw poly line of arbitrary width in float coordinates; when cycled is true, connect first and last point
-    void polyLineF(PointF[] points, float width, uint colour, bool cycled, uint innerAreaColour = COLOR_TRANSPARENT) {
+    void polyLineF(PointF[] points, float width, uint colour, bool cycled = false, uint innerAreaColour = COLOR_TRANSPARENT) {
         if (points.length < 2)
             return;
+        bool hasInnerArea = !isFullyTransparentColor(innerAreaColour);
+        if (hasInnerArea) {
+            PointF[] innerArea;
+            innerArea.assumeSafeAppend;
+            for(int i = 0; i + 1 < points.length; i++) {
+                PointF[4] quad;
+                PointF prevPoint = (i > 0) ? points[i - 1] : (cycled ? points[$-1] : points[i]);
+                PointF nextPoint = (i + 2 < points.length) ? points[i + 2] : (cycled ? points[0] : points[$ - 1]);
+                calcLineSegmentQuad(prevPoint, points[i], points[i + 1], nextPoint, width, quad);
+                innerArea ~= quad[0];
+            }
+            fillPolyF(innerArea, innerAreaColour);
+        }
         for(int i = 0; i + 1 < points.length; i++) {
             PointF prevPoint = (i > 0) ? points[i - 1] : (cycled ? points[$-1] : points[i]);
             PointF nextPoint = (i + 2 < points.length) ? points[i + 2] : (cycled ? points[0] : points[$ - 1]);
@@ -652,7 +673,7 @@ class DrawBuf : RefCountedObject {
                 PointF p2 = list[(i + 1) % list.length];
                 PointF p3 = list[(i + 2) % list.length];
                 float cross = (p2 - p1).crossProduct(p3 - p2);
-                if (cross >= 0) {
+                if (cross > 0) {
                     // draw triangle
                     fillTriangleF(p1, p2, p3, colour);
                     int indexToRemove = (i + 1) % (cast(int)list.length);
@@ -660,7 +681,7 @@ class DrawBuf : RefCountedObject {
                     for (int j = indexToRemove; j + 1 < list.length; j++)
                         list[j] = list[j + 1];
                     list.length = list.length - 1;
-                    i += 1;
+                    i += 2;
                     moved = true;
                 }
             }
