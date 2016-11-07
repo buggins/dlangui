@@ -628,30 +628,52 @@ class DrawBuf : RefCountedObject {
         fillQuadF(quad[0], quad[1], quad[2], quad[3], colour);
     }
 
-    /// draw poly line of arbitrary width in float coordinates; when cycled is true, connect first and last point
+    /// draw poly line of arbitrary width in float coordinates; when cycled is true, connect first and last point (optionally fill inner area)
     void polyLineF(PointF[] points, float width, uint colour, bool cycled = false, uint innerAreaColour = COLOR_TRANSPARENT) {
         if (points.length < 2)
             return;
         bool hasInnerArea = !isFullyTransparentColor(innerAreaColour);
+        int len = cast(int)points.length;
         if (hasInnerArea) {
             PointF[] innerArea;
             innerArea.assumeSafeAppend;
-            for(int i = 0; i + 1 < points.length; i++) {
+            for(int i = 0; i < len; i++) {
                 PointF[4] quad;
-                PointF prevPoint = (i > 0) ? points[i - 1] : (cycled ? points[$-1] : points[i]);
-                PointF nextPoint = (i + 2 < points.length) ? points[i + 2] : (cycled ? points[0] : points[$ - 1]);
-                calcLineSegmentQuad(prevPoint, points[i], points[i + 1], nextPoint, width, quad);
-                innerArea ~= quad[0];
+                int index0 = i - 1;
+                int index1 = i;
+                int index2 = (i + 1) % len;
+                int index3 = (i + 2) % len;
+                if (index0 < 0)
+                    index0 = len - 1;
+                calcLineSegmentQuad(points[index0], points[index1], points[index2], points[index3], width, quad);
+                innerArea ~= quad[3];
             }
             fillPolyF(innerArea, innerAreaColour);
         }
-        for(int i = 0; i + 1 < points.length; i++) {
-            PointF prevPoint = (i > 0) ? points[i - 1] : (cycled ? points[$-1] : points[i]);
-            PointF nextPoint = (i + 2 < points.length) ? points[i + 2] : (cycled ? points[0] : points[$ - 1]);
-            drawLineSegmentF(prevPoint, points[i], points[i + 1], nextPoint, width, colour);
-        }
-        if (cycled && points.length > 2) {
-            drawLineSegmentF(points[$ - 2], points[$ - 1], points[0], points[1], width, colour);
+        if (!isFullyTransparentColor(colour)) {
+            for(int i = 0; i + (cycled ? 0 : 1) < len; i++) {
+                int index0 = i - 1;
+                int index1 = i;
+                int index2 = i + 1;
+                int index3 = i + 2;
+                if (index0 < 0)
+                    index0 = cycled ? len - 1 : 0;
+                if (index1 >= len)
+                    index1 %= len; // only can be if cycled
+                if (index2 >= len) {
+                    if (cycled)
+                        index2 %= len;
+                    else
+                        index2 = len - 1;
+                }
+                if (index3 >= len) {
+                    if (cycled)
+                        index3 %= len;
+                    else
+                        index3 = len - 1;
+                }
+                drawLineSegmentF(points[index0], points[index1], points[index2], points[index3], width, colour);
+            }
         }
     }
 
@@ -692,6 +714,29 @@ class DrawBuf : RefCountedObject {
             if (!moved)
                 break;
         }
+    }
+
+    /// draw ellipse or filled ellipse
+    void drawEllipseF(float centerX, float centerY, float xRadius, float yRadius, float lineWidth, uint lineColor, uint fillColor = COLOR_TRANSPARENT) {
+        import std.math : sin, cos, PI;
+        if (xRadius < 0)
+            xRadius = -xRadius;
+        if (yRadius < 0)
+            yRadius = -yRadius;
+        int numLines = cast(int)((xRadius + yRadius) / 5);
+        if (numLines < 4)
+            numLines = 4;
+        float step = PI * 2 / numLines;
+        float angle = 0;
+        PointF[] points;
+        points.assumeSafeAppend;
+        for (int i = 0; i < numLines; i++) {
+            float x = centerX + cos(angle) * xRadius;
+            float y = centerY + sin(angle) * yRadius;
+            angle += step;
+            points ~= PointF(x, y);
+        }
+        polyLineF(points, lineWidth, lineColor, true, fillColor);
     }
 
     /// draw poly line of width == 1px; when cycled is true, connect first and last point
