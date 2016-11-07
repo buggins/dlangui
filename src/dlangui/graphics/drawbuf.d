@@ -371,9 +371,170 @@ class DrawBuf : RefCountedObject {
         }
     }
 
+    /// draw filled triangle in float coordinates; clipping is already applied
+    protected void fillTriangleFClipped(PointF p1, PointF p2, PointF p3, uint colour) {
+        // override and implement it
+    }
+
+    /// find intersection of line p1..p2 with clip rectangle
+    protected bool intersectClipF(ref PointF p1, ref PointF p2, ref bool p1moved, ref bool p2moved) {
+        if (p1.x < _clipRect.left && p2.x < _clipRect.left)
+            return true;
+        if (p1.x >= _clipRect.right && p2.x >= _clipRect.right)
+            return true;
+        if (p1.y < _clipRect.top && p2.y < _clipRect.top)
+            return true;
+        if (p1.y >= _clipRect.bottom && p2.y >= _clipRect.bottom)
+            return true;
+        // horizontal clip
+        if (p1.x < _clipRect.left && p2.x >= _clipRect.left) {
+            // move p1 to clip left
+            p1 += (p2 - p1) * ((_clipRect.left - p1.x) / (p2.x - p1.x));
+            p1moved = true;
+        }
+        if (p2.x < _clipRect.left && p1.x >= _clipRect.left) {
+            // move p2 to clip left
+            p2 += (p1 - p2) * ((_clipRect.left - p2.x) / (p1.x - p2.x));
+            p2moved = true;
+        }
+        if (p1.x > _clipRect.right && p2.x < _clipRect.right) {
+            // move p1 to clip right
+            p1 += (p2 - p1) * ((_clipRect.right - p1.x) / (p2.x - p1.x));
+            p1moved = true;
+        }
+        if (p2.x > _clipRect.right && p1.x < _clipRect.right) {
+            // move p1 to clip right
+            p2 += (p1 - p2) * ((_clipRect.right - p2.x) / (p1.x - p2.x));
+            p2moved = true;
+        }
+        // vertical clip
+        if (p1.y < _clipRect.top && p2.y >= _clipRect.top) {
+            // move p1 to clip left
+            p1 += (p2 - p1) * ((_clipRect.top - p1.y) / (p2.y - p1.y));
+            p1moved = true;
+        }
+        if (p2.y < _clipRect.top && p1.y >= _clipRect.top) {
+            // move p2 to clip left
+            p2 += (p1 - p2) * ((_clipRect.top - p2.y) / (p1.y - p2.y));
+            p2moved = true;
+        }
+        if (p1.y > _clipRect.bottom && p2.y < _clipRect.bottom) {
+            // move p1 to clip right             <0              <0
+            p1 += (p2 - p1) * ((_clipRect.bottom - p1.y) / (p2.y - p1.y));
+            p1moved = true;
+        }
+        if (p2.y > _clipRect.bottom && p1.y < _clipRect.bottom) {
+            // move p1 to clip right
+            p2 += (p1 - p2) * ((_clipRect.bottom - p2.y) / (p1.y - p2.y));
+            p2moved = true;
+        }
+        return false;
+    }
+
     /// draw filled triangle in float coordinates
     void fillTriangleF(PointF p1, PointF p2, PointF p3, uint colour) {
-        // override and implement it
+        if (_clipRect.empty) // clip rectangle is empty - all drawables are clipped out
+            return;
+        // apply clipping
+        bool p1insideClip = (p1.x >= _clipRect.left && p1.x < _clipRect.right && p1.y >= _clipRect.top && p1.y < _clipRect.bottom);
+        bool p2insideClip = (p2.x >= _clipRect.left && p2.x < _clipRect.right && p2.y >= _clipRect.top && p2.y < _clipRect.bottom);
+        bool p3insideClip = (p3.x >= _clipRect.left && p3.x < _clipRect.right && p3.y >= _clipRect.top && p3.y < _clipRect.bottom);
+        if (p1insideClip && p2insideClip && p3insideClip) {
+            // all points inside clipping area - no clipping required
+            fillTriangleFClipped(p1, p2, p3, colour);
+            return;
+        }
+        // do triangle clipping
+        // check if all points outside the same bound
+        if ((p1.x < _clipRect.left && p2.x < _clipRect.left && p3.x < _clipRect.left)
+            || (p1.x >= _clipRect.right && p2.x >= _clipRect.right && p3.x >= _clipRect.bottom)
+            || (p1.y < _clipRect.top && p2.y < _clipRect.top && p3.y < _clipRect.top)
+            || (p1.y >= _clipRect.bottom && p2.y >= _clipRect.bottom && p3.y >= _clipRect.bottom))
+            return;
+        /++
+         +                   side 1
+         +  p1-------p11------------p21--------------p2
+         +   \                                       /
+         +    \                                     /
+         +     \                                   /
+         +      \                                 /
+         +    p13\                               /p22
+         +        \                             /
+         +         \                           /
+         +          \                         /
+         +           \                       /  side 2
+         +    side 3  \                     /
+         +             \                   /
+         +              \                 /
+         +               \               /p32
+         +             p33\             /
+         +                 \           /
+         +                  \         /
+         +                   \       /
+         +                    \     /
+         +                     \   /
+         +                      \ /
+         +                      p3
+         +/
+        PointF p11 = p1;
+        PointF p13 = p1;
+        PointF p21 = p2;
+        PointF p22 = p2;
+        PointF p32 = p3;
+        PointF p33 = p3;
+        bool p1moved = false;
+        bool p2moved = false;
+        bool p3moved = false;
+        bool side1clipped = intersectClipF(p11, p21, p1moved, p2moved);
+        bool side2clipped = intersectClipF(p22, p32, p2moved, p3moved);
+        bool side3clipped = intersectClipF(p33, p13, p3moved, p1moved);
+        if (!p1moved && !p2moved && !p3moved) {
+            // no moved - no clipping
+            fillTriangleFClipped(p1, p2, p3, colour);
+        } else if (p1moved && !p2moved && !p3moved) {
+            fillTriangleFClipped(p11, p2, p3, colour);
+            fillTriangleFClipped(p3, p13, p11, colour);
+        } else if (!p1moved && p2moved && !p3moved) {
+            fillTriangleFClipped(p22, p3, p1, colour);
+            fillTriangleFClipped(p1, p21, p22, colour);
+        } else if (!p1moved && !p2moved && p3moved) {
+            fillTriangleFClipped(p33, p1, p2, colour);
+            fillTriangleFClipped(p2, p32, p33, colour);
+        } else if (p1moved && p2moved && !p3moved) {
+            if (!side1clipped) {
+                fillTriangleFClipped(p13, p11, p21, colour);
+                fillTriangleFClipped(p21, p22, p13, colour);
+            }
+            fillTriangleFClipped(p22, p3, p13, colour);
+        } else if (!p1moved && p2moved && p3moved) {
+            if (!side2clipped) {
+                fillTriangleFClipped(p21, p22, p32, colour);
+                fillTriangleFClipped(p32, p33, p21, colour);
+            }
+            fillTriangleFClipped(p21, p33, p1, colour);
+        } else if (p1moved && !p2moved && p3moved) {
+            if (!side3clipped) {
+                fillTriangleFClipped(p13, p11, p32, colour);
+                fillTriangleFClipped(p32, p33, p13, colour);
+            }
+            fillTriangleFClipped(p11, p2, p32, colour);
+        } else if (p1moved && p2moved && p3moved) {
+            if (side1clipped) {
+                fillTriangleFClipped(p13, p22, p32, colour);
+                fillTriangleFClipped(p32, p33, p13, colour);
+            } else if (side2clipped) {
+                fillTriangleFClipped(p11, p21, p33, colour);
+                fillTriangleFClipped(p33, p13, p11, colour);
+            } else if (side3clipped) {
+                fillTriangleFClipped(p11, p21, p22, colour);
+                fillTriangleFClipped(p22, p32, p11, colour);
+            } else {
+                fillTriangleFClipped(p13, p11, p21, colour);
+                fillTriangleFClipped(p21, p22, p13, colour);
+                fillTriangleFClipped(p22, p32, p33, colour);
+                fillTriangleFClipped(p33, p13, p22, colour);
+            }
+        }
     }
 
     /// draw filled quad in float coordinates

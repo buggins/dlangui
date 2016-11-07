@@ -180,15 +180,11 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
         _scene.add(new LineSceneItem(p1, p2, colour));
     }
 
-    /// draw filled triangle in float coordinates
-    override void fillTriangleF(PointF p1, PointF p2, PointF p3, uint colour) {
+    /// draw filled triangle in float coordinates; clipping is already applied
+    override protected void fillTriangleFClipped(PointF p1, PointF p2, PointF p3, uint colour) {
         assert(_scene !is null);
-        //if (!clipLine(_clipRect, p1, p2))
-        //    return;
-        // TODO: clipping
         _scene.add(new TriangleSceneItem(p1, p2, p3, colour));
     }
-
 
     /// cleanup resources
     override void clear() {
