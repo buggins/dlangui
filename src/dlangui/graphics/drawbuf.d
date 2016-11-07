@@ -548,7 +548,8 @@ class DrawBuf : RefCountedObject {
         // direction vector
         PointF v = (p2 - p1).normalized;
         // calculate normal vector
-        PointF n;
+        // calculate normal vector : rotate CCW 90 degrees
+        PointF n = v.rotated90ccw();
         // rotate CCW 90 degrees
         n.y = v.x;
         n.x = -v.y;
@@ -558,15 +559,79 @@ class DrawBuf : RefCountedObject {
         fillQuadF(p1 - n, p2 - n, p2 + n, p1 + n, colour);
     }
 
+    // find intersection point for two vectors with start points p1, p2 and normalized directions dir1, dir2
+    protected static PointF intersectVectors(PointF p1, PointF dir1, PointF p2, PointF dir2) {
+        /*
+        L1 = P1 + a * V1
+        L2 = P2 + b * V2
+        P1 + a * V1 = P2 + b * V2
+        a * V1 = (P2 - P1) + b * V2
+        a * (V1 X V2) = (P2 - P1) X V2
+        a = (P2 - P1) * V2 / (V1*V2)
+        return P1 + a * V1
+        */
+        // just return middle point
+        PointF p2p1 = (p2 - p1); //.normalized;
+        float d1 = p2p1.crossProduct(dir2);
+        float d2 = dir1.crossProduct(dir2);
+        // a * d1 = d2
+        if (d2 >= -0.1f && d2 <= 0.1f) {
+            return p1; //PointF((p1.x + p2.x)/2, (p1.y + p2.y)/2);
+        }
+        float a = d1 / d2;
+        return p1 + dir1 * a;
+    }
+
+    /// draw line of arbitrary width in float coordinates p1..p2 with angle based on previous (p0..p1) and next (p2..p3) segments
+    void drawLineSegmentF(PointF p0, PointF p1, PointF p2, PointF p3, float width, uint colour) {
+        // direction vector
+        PointF v = (p2 - p1).normalized;
+        // calculate normal vector : rotate CCW 90 degrees
+        PointF n = v.rotated90ccw();
+        // offset by normal * half_width
+        n *= width / 2;
+        // draw line using quad
+        PointF pp10 = p1 - n;
+        PointF pp20 = p2 - n;
+        PointF pp11 = p1 + n;
+        PointF pp21 = p2 + n;
+        if ((p1 - p0).length > 0.1f) {
+            // has prev segment
+            PointF prevv = (p1 - p0).normalized;
+            PointF prevn = prevv.rotated90ccw();
+            PointF prev10 = p1 - prevn * width / 2;
+            PointF prev11 = p1 + prevn * width / 2;
+            PointF intersect0 = intersectVectors(pp10, -v, prev10, prevv);
+            PointF intersect1 = intersectVectors(pp11, -v, prev11, prevv);
+            pp10 = intersect0;
+            pp11 = intersect1;
+        }
+        if ((p3 - p2).length > 0.1f) {
+            // has next segment
+            PointF nextv = (p3 - p2).normalized;
+            PointF nextn = nextv.rotated90ccw();
+            PointF next20 = p2 - nextn * width / 2;
+            PointF next21 = p2 + nextn * width / 2;
+            PointF intersect0 = intersectVectors(pp20, v, next20, -nextv);
+            PointF intersect1 = intersectVectors(pp21, v, next21, -nextv);
+            pp20 = intersect0;
+            pp21 = intersect1;
+        }
+        fillQuadF(pp10, pp20, pp21, pp11, colour);
+    }
+
     /// draw poly line of arbitrary width in float coordinates; when cycled is true, connect first and last point
     void polyLineF(PointF[] points, float width, uint colour, bool cycled) {
         if (points.length < 2)
             return;
         for(int i = 0; i + 1 < points.length; i++) {
-            drawLineF(points[i], points[i + 1], width, colour);
+            PointF prevPoint = (i > 0) ? points[i - 1] : (cycled ? points[$-1] : points[i]);
+            PointF nextPoint = (i + 2 < points.length) ? points[i + 2] : (cycled ? points[0] : points[$ - 1]);
+            drawLineSegmentF(prevPoint, points[i], points[i + 1], nextPoint, width, colour);
         }
-        if (cycled && points.length > 2)
-            drawLineF(points[$ - 1], points[0], width, colour);
+        if (cycled && points.length > 2) {
+            drawLineSegmentF(points[$ - 2], points[$ - 1], points[0], points[1], width, colour);
+        }
     }
 
     /// draw poly line of width == 1px; when cycled is true, connect first and last point

@@ -97,6 +97,16 @@ struct vec2 {
         return this;
     }
 
+    /// returns vector rotated 90 degrees counter clockwise
+    vec2 rotated90ccw() const {
+        return vec2(-y, x);
+    }
+
+    /// returns vector rotated 90 degrees clockwise
+    vec2 rotated90cw() const {
+        return vec2(y, -x);
+    }
+
     /// add value to all components of vector
     vec2 opBinary(string op : "+")(float v) const {
         vec2 res = this;
@@ -119,11 +129,10 @@ struct vec2 {
         return res;
     }
     /// divide all components of vector by value
-    vec3 opBinary(string op : "/")(float v) const {
-        vec3 res = this;
+    vec2 opBinary(string op : "/")(float v) const {
+        vec2 res = this;
         res.vec[0] /= v;
         res.vec[1] /= v;
-        res.vec[2] /= v;
         return res;
     }
 
@@ -205,6 +214,11 @@ struct vec2 {
         res += vec[0] * v.vec[0];
         res += vec[1] * v.vec[1];
         return res;
+    }
+
+    /// cross product of 2 vec2 is scalar in Z axis
+    float crossProduct(const vec2 v2) const {
+        return x * v2.y - y * v2.x;
     }
 
     /// returns vector with all components which are negative of components for this vector

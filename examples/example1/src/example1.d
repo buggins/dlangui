@@ -1092,17 +1092,17 @@ void main()
                 for (int i = 0; i < 40; i+=3)
                     buf.drawLine(Point(x+200 + i * 4, y+290), Point(x+150 + i * 7, y+420 + i * 2), 0x008000 + i * 5);
                 // poly line test
-                Rect newClipRect = Rect(x + 110, y + 100, x + 350, y + 320);
-                buf.fillRect(newClipRect, 0xC08080FF);
-                Rect oldClip = buf.clipRect;
-                buf.clipRect = newClipRect;
+                //Rect newClipRect = Rect(x + 110, y + 100, x + 350, y + 320);
+                //buf.fillRect(newClipRect, 0xC08080FF);
+                //Rect oldClip = buf.clipRect;
+                //buf.clipRect = newClipRect;
                 PointF[] poly = [vec2(x+130, y+150), vec2(x+240, y+80), vec2(x+170, y+170), vec2(x+380, y+270), vec2(x+220, y+400), vec2(x+180, y+330)];
-                buf.polyLineF(poly, 8.0f, 0x804020, true);
-                buf.fillTriangleF(vec2(x+230, y+50), vec2(x+400, y+250), vec2(x+130, y+200), 0xC0FF0000);
-                buf.fillTriangleF(vec2(x+230, y+250), vec2(x+200, y+350), vec2(x+80, y+200), 0xC000FF00);
-                buf.fillTriangleF(vec2(x+430, y+250), vec2(x+280, y+150), vec2(x+200, y+300), 0xC00000FF);
-                buf.fillTriangleF(vec2(x+80, y+150), vec2(x+280, y+250), vec2(x+80, y+200), 0xC0008080);
-                buf.clipRect = oldClip;
+                buf.polyLineF(poly, 18.0f, 0x80804020, true);
+                //buf.fillTriangleF(vec2(x+230, y+50), vec2(x+400, y+250), vec2(x+130, y+200), 0xC0FF0000);
+                //buf.fillTriangleF(vec2(x+230, y+250), vec2(x+200, y+350), vec2(x+80, y+200), 0xC000FF00);
+                //buf.fillTriangleF(vec2(x+430, y+250), vec2(x+280, y+150), vec2(x+200, y+300), 0xC00000FF);
+                //buf.fillTriangleF(vec2(x+80, y+150), vec2(x+280, y+250), vec2(x+80, y+200), 0xC0008080);
+                //buf.clipRect = oldClip;
                 canvas.font.drawText(buf, x + 190, y + 260, "polyLineF()"d, 0x603010);
             };
             tabs.addTab(canvas, "TAB_CANVAS"c);
