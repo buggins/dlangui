@@ -189,7 +189,7 @@ struct vec2 {
         return res;
     }
     /// subtract value from all components of vector
-    vec3 opBinary(string op : "-")(const vec2 v) const {
+    vec2 opBinary(string op : "-")(const vec2 v) const {
         vec2 res = this;
         res.vec[0] -= v.vec[0];
         res.vec[1] -= v.vec[1];
@@ -1723,3 +1723,6 @@ vec3 triangleNormal(vec3 p1, vec3 p2, vec3 p3) {
 vec3 triangleNormal(float[3] p1, float[3] p2, float[3] p3) {
     return vec3.crossProduct(vec3(p2) - vec3(p1), vec3(p3) - vec3(p2)).normalized();
 }
+
+/// Alias for 2d float point
+alias PointF = vec2;

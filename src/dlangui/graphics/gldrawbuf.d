@@ -180,6 +180,16 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
         _scene.add(new LineSceneItem(p1, p2, colour));
     }
 
+    /// draw filled triangle in float coordinates
+    override void fillTriangleF(PointF p1, PointF p2, PointF p3, uint colour) {
+        assert(_scene !is null);
+        //if (!clipLine(_clipRect, p1, p2))
+        //    return;
+        // TODO: clipping
+        _scene.add(new TriangleSceneItem(p1, p2, p3, colour));
+    }
+
+
     /// cleanup resources
     override void clear() {
         if (_framebuffer) {
@@ -719,6 +729,25 @@ public:
     override void draw() {
         //glSupport.drawLines([Rect(_p1, _p2)], [_color, _color]);
         glSupport.batch.addLine(Rect(_p1, _p2), _color, _color);
+    }
+}
+
+private class TriangleSceneItem : SceneItem {
+private:
+    PointF _p1;
+    PointF _p2;
+    PointF _p3;
+    uint _color;
+
+public:
+    this(PointF p1, PointF p2, PointF p3, uint color) {
+        _p1 = p1;
+        _p2 = p2;
+        _p3 = p3;
+        _color = color;
+    }
+    override void draw() {
+        glSupport.batch.addTriangle(_p1, _p2, _p3, _color, _color, _color);
     }
 }
 

@@ -189,8 +189,30 @@ enum : int {
     ACTION_FILE_EXIT,
 }
 
+debug(SDLSettings) {
+    import dlangui.core.settings;
+    void testSDL(string fn) {
+        Log.d("Loading SDL from ", fn);
+        Setting s = new Setting();
+        if (s.load(fn)) {
+            Log.d("JSON:\n", s.toJSON(true));
+        } else {
+            Log.e("failed to read SDL from ", fn);
+        }
+    }
+    void testSDLSettings() {
+        testSDL(`C:\Users\vlopatin\AppData\Roaming\.dlangide\settings.json`);
+        testSDL("dub.json");
+        testSDL("test1.sdl");
+    }
+}
+
 /// entry point for dlangui based application
 extern (C) int UIAppMain(string[] args) {
+
+    debug(SDLSettings) {
+        testSDLSettings();
+    }
 
     // always use trace, even for release builds
     //Log.setLogLevel(LogLevel.Trace);
@@ -1069,6 +1091,8 @@ void main()
                 canvas.font.drawText(buf, x + 200, y + 250, "drawLine()"d, 0x800020);
                 for (int i = 0; i < 40; i+=3)
                     buf.drawLine(Point(x+200 + i * 4, y+290), Point(x+150 + i * 7, y+420 + i * 2), 0x008000 + i * 5);
+                PointF[] poly = [vec2(130, 150), vec2(240, 110), vec2(270, 170), vec2(300, 290), vec2(220, 400), vec2(180, 330)];
+                buf.polyLineF(poly, 3.5f, 0x804020, true);
             };
             tabs.addTab(canvas, "TAB_CANVAS"c);
 

@@ -19,6 +19,7 @@ module dlangui.graphics.drawbuf;
 
 public import dlangui.core.config;
 public import dlangui.core.types;
+public import dlangui.core.math3d;
 import dlangui.core.logger;
 import dlangui.graphics.colors;
 
@@ -368,6 +369,54 @@ class DrawBuf : RefCountedObject {
             if ((y ^ (rc.right - 1)) & 1)
                 fillRect(Rect(rc.right - 1, y, rc.right, y + 1), color);
         }
+    }
+
+    /// draw filled triangle in float coordinates
+    void fillTriangleF(PointF p1, PointF p2, PointF p3, uint colour) {
+        // override and implement it
+    }
+
+    /// draw filled quad in float coordinates
+    void fillQuadF(PointF p1, PointF p2, PointF p3, PointF p4, uint colour) {
+        fillTriangleF(p1, p2, p3, colour);
+        fillTriangleF(p3, p4, p1, colour);
+    }
+
+    /// draw line of arbitrary width in float coordinates
+    void drawLineF(PointF p1, PointF p2, float width, uint colour) {
+        // direction vector
+        PointF v = (p2 - p1).normalized;
+        // calculate normal vector
+        PointF n;
+        // rotate CCW 90 degrees
+        n.y = v.x;
+        n.x = -v.y;
+        // offset by normal * half_width
+        n *= width / 2;
+        // draw line using quad
+        fillQuadF(p1 - n, p2 - n, p2 + n, p1 + n, colour);
+    }
+
+    /// draw poly line of arbitrary width in float coordinates; when cycled is true, connect first and last point
+    void polyLineF(PointF[] points, float width, uint colour, bool cycled) {
+        if (points.length < 2)
+            return;
+        for(int i = 0; i + 1 < points.length; i++) {
+            drawLineF(points[i], points[i + 1], width, colour);
+        }
+        if (cycled && points.length > 2)
+            drawLineF(points[$ - 1], points[0], width, colour);
+    }
+
+    /// draw poly line of width == 1px; when cycled is true, connect first and last point
+    void polyLine(Point[] points, uint colour, bool cycled) {
+        if (points.length < 2)
+            return;
+        for(int i = 0; i + 1 < points.length; i++) {
+            drawLine(points[i], points[i + 1], colour);
+        }
+        if (cycled && points.length > 2)
+            drawLine(points[$ - 1], points[0], colour);
     }
 
     /// draw line from point p1 to p2 with specified color

@@ -26,6 +26,7 @@ public import dlangui.core.math3d;
 
 import dlangui.core.logger;
 import dlangui.core.types;
+import dlangui.core.math3d;
 
 import std.conv;
 import std.string;
@@ -965,6 +966,18 @@ final class GLSupport {
         return indexes;
     }
 
+    /// make indexes for rectangle TRIANGLES (2 triangles == 6 vertexes per rect)
+    protected int[] makeTriangleIndexesArray(size_t pointCount) {
+        int[] indexes;
+        indexes.assumeSafeAppend();
+        for (uint i = 0; i + 2 < pointCount; i += 3) {
+            indexes ~= i + 0;
+            indexes ~= i + 1;
+            indexes ~= i + 2;
+        }
+        return indexes;
+    }
+
     /// make indexes for LINES
     protected int[] makeLineIndexesArray(size_t lineCount) {
         int[] indexes;
@@ -1007,6 +1020,58 @@ final class GLSupport {
         }
 
         int[] indexes = makeRectangleIndexesArray(rects.length);
+
+        if (_legacyMode) {
+            static if (SUPPORT_LEGACY_OPENGL) {
+                glColor4f(1,1,1,1);
+                glDisable(GL_CULL_FACE);
+                glEnable(GL_BLEND);
+                glDisable(GL_ALPHA_TEST);
+                checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                checkgl!glEnableClientState(GL_VERTEX_ARRAY);
+                checkgl!glEnableClientState(GL_COLOR_ARRAY);
+                checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)vertexArray.ptr);
+                checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)colors.ptr);
+
+                checkgl!glDrawElements(GL_TRIANGLES, cast(int)indexes.length, GL_UNSIGNED_INT, cast(void*)indexes.ptr);
+
+                glDisableClientState(GL_COLOR_ARRAY);
+                glDisableClientState(GL_VERTEX_ARRAY);
+                glDisable(GL_ALPHA_TEST);
+                glDisable(GL_BLEND);
+            }
+        } else {
+            if (_solidFillProgram !is null) {
+                _solidFillProgram.execute(vertexArray, colors, indexes);
+            } else
+                Log.e("No program");
+        }
+    }
+
+    void drawSolidFillTriangles(PointF[] points, uint[] vertexColors) {
+        //Log.v("drawSolidFillRects rects:", rects.length, " colors:", vertexColors.length);
+        float[] colors = convertColors(vertexColors);
+
+        float[] vertexArray;
+        vertexArray.assumeSafeAppend();
+
+        for (uint i = 0; i + 2 < points.length; i += 3) {
+            float x0 = points[i+0].x;
+            float y0 = currentFBO ? points[i+0].y : (bufferDy - points[i+0].y);
+            float x1 = points[i+1].x;
+            float y1 = currentFBO ? points[i+1].y : (bufferDy - points[i+1].y);
+            float x2 = points[i+2].x;
+            float y2 = currentFBO ? points[i+2].y : (bufferDy - points[i+2].y);
+
+            float[3 * 3] vertices = [
+                x0,y0,Z_2D,
+                x1,y1,Z_2D,
+                x2,y2,Z_2D];
+
+            vertexArray ~= vertices;
+        }
+
+        int[] indexes = makeTriangleIndexesArray(points.length);
 
         if (_legacyMode) {
             static if (SUPPORT_LEGACY_OPENGL) {
@@ -1689,6 +1754,12 @@ class OpenGLBatch {
         _colors ~= color2;
         _colors ~= color3;
         _colors ~= color4;
+    }
+
+    void addTriangle(PointF p1, PointF p2, PointF p3, uint color1, uint color2, uint color3) {
+        flush();
+        // TODO: batch triangles
+        glSupport.drawSolidFillTriangles([p1, p2, p3], [color1, color2, color3]);
     }
 
     /// add gradient rect
