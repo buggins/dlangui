@@ -1112,6 +1112,9 @@ void main()
 
                 buf.drawEllipseF(x+300, y+600, 200, 150, 3, 0x80008000, 0x804040FF);
                 canvas.font.drawText(buf, x + 300, y + 600, "fillEllipseF()"d, 0x208050);
+
+                buf.drawEllipseArcF(x+540, y+600, 150, 180, 45, 130, 3, 0x40008000, 0x804040FF);
+                canvas.font.drawText(buf, x + 540, y + 580, "drawEllipseArcF()"d, 0x208050);
             };
             tabs.addTab(canvas, "TAB_CANVAS"c);
 

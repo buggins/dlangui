@@ -633,46 +633,65 @@ class DrawBuf : RefCountedObject {
         if (points.length < 2)
             return;
         bool hasInnerArea = !isFullyTransparentColor(innerAreaColour);
+        if (isFullyTransparentColor(colour)) {
+            if (hasInnerArea)
+                fillPolyF(points, innerAreaColour);
+            return;
+        }
         int len = cast(int)points.length;
         if (hasInnerArea) {
             PointF[] innerArea;
             innerArea.assumeSafeAppend;
+            //Log.d("fill poly inner: ", points);
             for(int i = 0; i < len; i++) {
                 PointF[4] quad;
-                int index0 = i - 1;
-                int index1 = i;
-                int index2 = (i + 1) % len;
-                int index3 = (i + 2) % len;
-                if (index0 < 0)
-                    index0 = len - 1;
-                calcLineSegmentQuad(points[index0], points[index1], points[index2], points[index3], width, quad);
-                innerArea ~= quad[3];
-            }
-            fillPolyF(innerArea, innerAreaColour);
-        }
-        if (!isFullyTransparentColor(colour)) {
-            for(int i = 0; i + (cycled ? 0 : 1) < len; i++) {
                 int index0 = i - 1;
                 int index1 = i;
                 int index2 = i + 1;
                 int index3 = i + 2;
                 if (index0 < 0)
                     index0 = cycled ? len - 1 : 0;
-                if (index1 >= len)
-                    index1 %= len; // only can be if cycled
-                if (index2 >= len) {
-                    if (cycled)
-                        index2 %= len;
-                    else
+                index2 %= len; // only can be if cycled
+                index3 %= len; // only can be if cycled
+                if (!cycled) {
+                    if (index1 == len - 1) {
+                        index0 = index1;
+                        index2 = 0;
+                        index3 = 0;
+                    } else if (index1 == len - 2) {
                         index2 = len - 1;
-                }
-                if (index3 >= len) {
-                    if (cycled)
-                        index3 %= len;
-                    else
                         index3 = len - 1;
+                    }
                 }
-                drawLineSegmentF(points[index0], points[index1], points[index2], points[index3], width, colour);
+                //Log.d("lineSegment - inner ", index0, ", ", index1, ", ", index2, ", ", index3);
+                calcLineSegmentQuad(points[index0], points[index1], points[index2], points[index3], width, quad);
+                innerArea ~= quad[3];
+            }
+            fillPolyF(innerArea, innerAreaColour);
+        }
+        if (!isFullyTransparentColor(colour)) {
+            for(int i = 0; i < len; i++) {
+                int index0 = i - 1;
+                int index1 = i;
+                int index2 = i + 1;
+                int index3 = i + 2;
+                if (index0 < 0)
+                    index0 = cycled ? len - 1 : 0;
+                index2 %= len; // only can be if cycled
+                index3 %= len; // only can be if cycled
+                if (!cycled) {
+                    if (index1 == len - 1) {
+                        index0 = index1;
+                        index2 = 0;
+                        index3 = 0;
+                    } else if (index1 == len - 2) {
+                        index2 = len - 1;
+                        index3 = len - 1;
+                    }
+                }
+                //Log.d("lineSegment - outer ", index0, ", ", index1, ", ", index2, ", ", index3);
+                if (cycled || i + 1 < len)
+                    drawLineSegmentF(points[index0], points[index1], points[index2], points[index3], width, colour);
             }
         }
     }
@@ -730,6 +749,37 @@ class DrawBuf : RefCountedObject {
         float angle = 0;
         PointF[] points;
         points.assumeSafeAppend;
+        for (int i = 0; i < numLines; i++) {
+            float x = centerX + cos(angle) * xRadius;
+            float y = centerY + sin(angle) * yRadius;
+            angle += step;
+            points ~= PointF(x, y);
+        }
+        polyLineF(points, lineWidth, lineColor, true, fillColor);
+    }
+
+    /// draw ellipse arc or filled ellipse arc
+    void drawEllipseArcF(float centerX, float centerY, float xRadius, float yRadius, float startAngle, float endAngle, float lineWidth, uint lineColor, uint fillColor = COLOR_TRANSPARENT) {
+        import std.math : sin, cos, PI;
+        if (xRadius < 0)
+            xRadius = -xRadius;
+        if (yRadius < 0)
+            yRadius = -yRadius;
+        startAngle = startAngle * 2 * PI / 360;
+        endAngle = endAngle * 2 * PI / 360;
+        if (endAngle < startAngle)
+            endAngle += 2 * PI;
+        float angleDiff = endAngle - startAngle;
+        if (angleDiff > 2*PI)
+            angleDiff %= 2*PI;
+        int numLines = cast(int)((xRadius + yRadius) / angleDiff);
+        if (numLines < 3)
+            numLines = 4;
+        float step = angleDiff / numLines;
+        float angle = startAngle;
+        PointF[] points;
+        points.assumeSafeAppend;
+        points ~= PointF(centerX, centerY);
         for (int i = 0; i < numLines; i++) {
             float x = centerX + cos(angle) * xRadius;
             float y = centerY + sin(angle) * yRadius;
