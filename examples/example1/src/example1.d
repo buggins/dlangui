@@ -1104,6 +1104,8 @@ void main()
                 //buf.fillTriangleF(vec2(x+80, y+150), vec2(x+280, y+250), vec2(x+80, y+200), 0xC0008080);
                 //buf.clipRect = oldClip;
                 canvas.font.drawText(buf, x + 190, y + 260, "polyLineF()"d, 0x603010);
+                PointF[] poly2 = [vec2(x+330, y+250), vec2(x+440, y+180), vec2(x+370, y+270), vec2(x+480, y+300), vec2(x+520, y+200), vec2(x+420, y+450), vec2(x+380, y+430)];
+                buf.fillPolyF(poly2, 0x80203050);
             };
             tabs.addTab(canvas, "TAB_CANVAS"c);
 

@@ -621,7 +621,7 @@ class DrawBuf : RefCountedObject {
     }
 
     /// draw poly line of arbitrary width in float coordinates; when cycled is true, connect first and last point
-    void polyLineF(PointF[] points, float width, uint colour, bool cycled) {
+    void polyLineF(PointF[] points, float width, uint colour, bool cycled, uint innerAreaColour = COLOR_TRANSPARENT) {
         if (points.length < 2)
             return;
         for(int i = 0; i + 1 < points.length; i++) {
@@ -631,6 +631,45 @@ class DrawBuf : RefCountedObject {
         }
         if (cycled && points.length > 2) {
             drawLineSegmentF(points[$ - 2], points[$ - 1], points[0], points[1], width, colour);
+        }
+    }
+
+    /// draw filled polyline (vertexes must be in clockwise order)
+    void fillPolyF(PointF[] points, uint colour) {
+        if (points.length < 3) {
+            return;
+        }
+        if (points.length == 3) {
+            fillTriangleF(points[0], points[1], points[2], colour);
+            return;
+        }
+        PointF[] list = points.dup;
+        bool moved;
+        while (list.length > 3) {
+            moved = false;
+            for (int i = 0; i < list.length; i++) {
+                PointF p1 = list[i + 0];
+                PointF p2 = list[(i + 1) % list.length];
+                PointF p3 = list[(i + 2) % list.length];
+                float cross = (p2 - p1).crossProduct(p3 - p2);
+                if (cross >= 0) {
+                    // draw triangle
+                    fillTriangleF(p1, p2, p3, colour);
+                    int indexToRemove = (i + 1) % (cast(int)list.length);
+                    // remove triangle from poly
+                    for (int j = indexToRemove; j + 1 < list.length; j++)
+                        list[j] = list[j + 1];
+                    list.length = list.length - 1;
+                    i += 1;
+                    moved = true;
+                }
+            }
+            if (list.length == 3) {
+                fillTriangleF(list[0], list[1], list[2], colour);
+                break;
+            }
+            if (!moved)
+                break;
         }
     }
 
