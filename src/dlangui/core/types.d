@@ -309,9 +309,14 @@ private __gshared int PRIVATE_SCREEN_DPI = 96;
 /// one point is 1/72 of inch
 enum POINTS_PER_INCH = 72;
 
-/// convert points (1/72in units) to pixels according to SCREEN_DPI
+/// convert length in points (1/72in units) to pixels according to SCREEN_DPI
 int pointsToPixels(int pt) {
     return pt * SCREEN_DPI / POINTS_PER_INCH;
+}
+
+/// rectangle coordinates in points (1/72in units) to pixels according to SCREEN_DPI
+Rect pointsToPixels(Rect rc) {
+    return Rect(rc.left.pointsToPixels, rc.top.pointsToPixels, rc.right.pointsToPixels, rc.bottom.pointsToPixels);
 }
 
 /// convert points (1/72in units) to pixels according to SCREEN_DPI
