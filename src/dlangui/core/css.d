@@ -630,9 +630,9 @@ unittest {
     CssTextAlign textAlignLast = CssTextAlign.inherit;
     CssTextDecoration textDecoration = CssTextDecoration.inherit;
     CssHyphenate hyphenate = CssHyphenate.inherit;
-    string src = "{ display: inline; text-decoration: underline; white-space: pre; text-align: right; text-align-last: left; "
-        "hyphenate: auto; width: 70%; height: 1.5pt; margin-left: 2.0em; "
-        "font-family: Arial, 'Times New Roman', sans-serif; font-size: 18pt; line-height: 120%; letter-spacing: 2px; font-weight: 300; "
+    string src = "{ display: inline; text-decoration: underline; white-space: pre; text-align: right; text-align-last: left; " ~
+        "hyphenate: auto; width: 70%; height: 1.5pt; margin-left: 2.0em; " ~
+        "font-family: Arial, 'Times New Roman', sans-serif; font-size: 18pt; line-height: 120%; letter-spacing: 2px; font-weight: 300; " ~
         " }tail";
     CssDeclaration decl = parseCssDeclaration(src, true);
     assert(decl !is null);
