@@ -460,7 +460,9 @@ class FileDialog : Dialog, CustomGridCellAdapter {
                 Action result = _action;
                 result.stringParam = _filename;
                 // success if either selected dir & has to open dir or if selected file
-                if (action.id == StandardAction.OpenDirectory && isDir(_filename) || isFile(_filename)) {
+                if (action.id == StandardAction.OpenDirectory && isDir(_filename) || 
+                    action.id == StandardAction.Save && !(_flags & FileDialogFlag.FileMustExist) || 
+                    isFile(_filename)) {
                     close(result);
                     return true;
                 }
@@ -539,6 +541,9 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _edFilename.layoutWidth(FILL_PARENT);
         if (_flags & FileDialogFlag.SelectDirectory) {
             _edFilename.visibility = Visibility.Gone;
+        }
+        if ((_flags & FileDialogFlag.Save) && !(_flags & FileDialogFlag.FileMustExist)) {
+            _edFilename.contentChange = &onFilenameTyped;
         }
 
 
@@ -634,6 +639,10 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     override void onShow() {
         _fileList.setFocus();
     }
+
+    void onFilenameTyped(EditableContent content) {
+        _filename = _path ~ dirSeparator ~ toUTF8(content.text);
+    } 
 }
 
 interface OnPathSelectionHandler {
