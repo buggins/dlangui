@@ -58,6 +58,16 @@ class ToolBarHost : HorizontalLayout {
         // route to focused control first, then to main widget
         return window.dispatchAction(a);
     }
+
+    /// map key to action
+    override Action findKeyAction(uint keyCode, uint flags) {
+        for (int i = 0; i < childCount; i++) {
+            auto a = child(i).findKeyAction(keyCode, flags);
+            if (a)
+                return a;
+        }
+        return null;
+    }
 }
 
 /// image button for toolbar
@@ -123,4 +133,13 @@ class ToolBar : HorizontalLayout {
         addChild(widget);
     }
 
+    /// map key to action
+    override Action findKeyAction(uint keyCode, uint flags) {
+        for (int i = 0; i < childCount; i++) {
+            auto a = child(i).findKeyAction(keyCode, flags);
+            if (a)
+                return a;
+        }
+        return null;
+    }
 }
