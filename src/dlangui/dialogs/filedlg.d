@@ -456,6 +456,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             return true;
         }
         if (action.id == StandardAction.Open || action.id == StandardAction.OpenDirectory || action.id == StandardAction.Save) {
+            _filename = _path ~ dirSeparator ~ toUTF8(_edFilename.text);
             if (_filename.length > 0) {
                 Action result = _action;
                 result.stringParam = _filename;
@@ -542,10 +543,6 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         if (_flags & FileDialogFlag.SelectDirectory) {
             _edFilename.visibility = Visibility.Gone;
         }
-        if ((_flags & FileDialogFlag.Save) && !(_flags & FileDialogFlag.FileMustExist)) {
-            _edFilename.contentChange = &onFilenameTyped;
-        }
-
 
         //_edFilename.layoutWeight = 0;
         fnlayout.addChild(_edFilename);
@@ -639,10 +636,6 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     override void onShow() {
         _fileList.setFocus();
     }
-
-    void onFilenameTyped(EditableContent content) {
-        _filename = _path ~ dirSeparator ~ toUTF8(content.text);
-    } 
 }
 
 interface OnPathSelectionHandler {
@@ -1007,3 +1000,4 @@ class DirEditLine : FileNameEditLine {
 }
 
 //import dlangui.widgets.metadata;
+//mixin(registerWidgets!(FileNameEditLine, DirEditLine)());
