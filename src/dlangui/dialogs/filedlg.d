@@ -456,8 +456,14 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             return true;
         }
         if (action.id == StandardAction.Open || action.id == StandardAction.OpenDirectory || action.id == StandardAction.Save) {
-            _filename = _path ~ dirSeparator ~ toUTF8(_edFilename.text);
-            if (_filename.length > 0) {
+            auto baseFilename = toUTF8(_edFilename.text);
+            _filename = _path ~ dirSeparator ~ baseFilename;
+            
+            if (action.id != StandardAction.OpenDirectory && isDir(_filename)) {
+                auto row = _fileList.row();
+                onItemActivated(row);
+                return true;
+            } else if (baseFilename.length > 0) {
                 Action result = _action;
                 result.stringParam = _filename;
                 // success if either selected dir & has to open dir or if selected file
@@ -467,10 +473,6 @@ class FileDialog : Dialog, CustomGridCellAdapter {
                     close(result);
                     return true;
                 }
-            } else if (_filename.length == 0){
-                 auto row = _fileList.row();
-                 onItemActivated(row);
-                 return true;
             }
         }
         return super.handleAction(action);
