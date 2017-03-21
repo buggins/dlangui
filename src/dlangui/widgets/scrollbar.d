@@ -84,7 +84,7 @@ class AbstractSlider : WidgetGroup {
     @property AbstractSlider pageSize(int size) {
         if (_pageSize != size) {
             _pageSize = size;
-            //requestLayout();
+            requestLayout();
         }
         return this;
     }
@@ -107,7 +107,7 @@ class AbstractSlider : WidgetGroup {
         if (_minValue != min || _maxValue != max) {
             _minValue = min;
             _maxValue = max;
-            //requestLayout();
+            requestLayout();
         }
         return this;
     }
