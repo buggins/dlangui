@@ -122,7 +122,7 @@ class TextWidget : Widget {
         if (maxLines == 1) {
             sz = font.textSize(text, MAX_WIDTH_UNSPECIFIED, 4, 0, textFlags);
         } else {
-            sz = font.measureMultilineText(text, maxLines, MAX_WIDTH_UNSPECIFIED, 4, 0, textFlags);
+            sz = font.measureMultilineText(text,maxLines,parentWidth-margins.left-margins.right-padding.left-padding.right, 4, 0, textFlags);
         }
         //auto measureEnd = std.datetime.Clock.currAppTick;
         //auto duration = measureEnd - measureStart;
