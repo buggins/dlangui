@@ -519,7 +519,13 @@ class Window : CustomEventTarget {
         destroy(_timerQueue);
         _eventList = null;
     }
-
+    /// safe destroy widget
+    void safeWidgetDestroy(Widget widgetToDestroy)
+    {
+        SafeDestroyEvent ev = new SafeDestroyEvent(widgetToDestroy);
+        postEvent(ev);
+    }
+    
     private void animate(Widget root, long interval) {
         if (root is null)
             return;

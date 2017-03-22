@@ -1649,6 +1649,20 @@ class RunnableEvent : CustomEvent {
     }
 }
 
+/// save destroy event
+class SafeDestroyEvent : RunnableEvent {
+    Widget _widgetToDestroy;
+    this (Widget widgetToDestroy)
+    {
+        _widgetToDestroy = widgetToDestroy;
+        super(1,null, delegate void () {
+            if (_widgetToDestroy.parent) 
+                _widgetToDestroy.parent.removeChild(_widgetToDestroy);
+            destroy(_widgetToDestroy);
+        });
+    }
+}
+
 interface CustomEventTarget {
     /// post event to handle in UI thread (this method can be used from background thread)
     void postEvent(CustomEvent event);
