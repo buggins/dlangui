@@ -498,14 +498,8 @@ class RadioButton : ImageTextButton {
             RadioButton rb = cast(RadioButton)child;
             if (rb) {
                 rb.blockUnchecking = true;
-                try
-                {
-                    rb.checked = false;
-                }
-                finally
-                {
-                    rb.blockUnchecking = false;
-                }
+                scope(exit) rb.blockUnchecking = false;
+                rb.checked = false;
             }
         }
     }
