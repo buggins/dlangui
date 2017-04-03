@@ -1516,6 +1516,8 @@ public:
         }
         return this;
     }
+    /// inserts child at given index, returns inserted item
+    Widget insertChild(Widget item, int index) {assert(false, "insertChild: children not suported for this widget type"); }
     /// removes child, returns removed item
     Widget removeChild(int index) { assert(false, "removeChild: children not suported for this widget type"); }
     /// removes child by ID, returns removed item
@@ -1723,6 +1725,8 @@ class WidgetGroup : Widget {
     override Widget child(int index) { return _children.get(index); }
     /// adds child, returns added item
     override Widget addChild(Widget item) { return _children.add(item).parent(this); }
+    /// inserts child at given index, returns inserted item
+    override Widget insertChild(Widget item, int index) { return _children.insert(item,index).parent(this); }
     /// removes child, returns removed item
     override Widget removeChild(int index) { 
         Widget res = _children.remove(index);
