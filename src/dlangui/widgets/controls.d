@@ -485,6 +485,8 @@ class RadioButton : ImageTextButton {
         checkable = true;
     }
 
+    private bool blockUnchecking = false;
+    
     void uncheckSiblings() {
         Widget p = parent;
         if (!p)
@@ -494,8 +496,11 @@ class RadioButton : ImageTextButton {
             if (child is this)
                 continue;
             RadioButton rb = cast(RadioButton)child;
-            if (rb)
+            if (rb) {
+                rb.blockUnchecking = true;
+                scope(exit) rb.blockUnchecking = false;
                 rb.checked = false;
+            }
         }
     }
 
@@ -506,7 +511,14 @@ class RadioButton : ImageTextButton {
 
         return super.handleClick();
     }
-
+    
+    override protected void handleCheckChange(bool checked) {
+        if (!blockUnchecking)
+            uncheckSiblings();
+        invalidate();
+        checkChange(this, checked);
+    }
+    
 }
 
 /// Text only button
