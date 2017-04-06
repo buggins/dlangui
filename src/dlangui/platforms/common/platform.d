@@ -519,10 +519,10 @@ class Window : CustomEventTarget {
         destroy(_timerQueue);
         _eventList = null;
     }
-    /// safe destroy widget
-    void safeWidgetDestroy(Widget widgetToDestroy)
+    /// queue destroy widget
+    void queueWidgetDestroy(Widget widgetToDestroy)
     {
-        SafeDestroyEvent ev = new SafeDestroyEvent(widgetToDestroy);
+        QueueDestroyEvent ev = new QueueDestroyEvent(widgetToDestroy);
         postEvent(ev);
     }
     

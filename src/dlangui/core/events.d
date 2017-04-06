@@ -1649,8 +1649,8 @@ class RunnableEvent : CustomEvent {
     }
 }
 
-/// save destroy event
-class SafeDestroyEvent : RunnableEvent {
+/// queue destroy event
+class QueueDestroyEvent : RunnableEvent {
     Widget _widgetToDestroy;
     this (Widget widgetToDestroy)
     {
