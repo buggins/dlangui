@@ -103,7 +103,7 @@ class SDLWindow : Window {
         debug Log.d("Destroying SDL window");
         
         if (_parent) {
-            long index = countUntil(_parent._children,this);
+            ptrdiff_t index = countUntil(_parent._children,this);
             if (index > -1 ) {
                 _parent._children=_parent._children.remove(index);
             }
