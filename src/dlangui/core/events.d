@@ -1649,9 +1649,14 @@ class RunnableEvent : CustomEvent {
     }
 }
 
-/// queue destroy event
+/**
+Queue destroy event.
+
+This event allows delayed widget destruction and is used internally by 
+$(LINK2 $(DDOX_ROOT_DIR)dlangui/platforms/common/platform/Window.queueWidgetDestroy.html, Window.queueWidgetDestroy()).
+*/
 class QueueDestroyEvent : RunnableEvent {
-    Widget _widgetToDestroy;
+    private Widget _widgetToDestroy;
     this (Widget widgetToDestroy)
     {
         _widgetToDestroy = widgetToDestroy;
