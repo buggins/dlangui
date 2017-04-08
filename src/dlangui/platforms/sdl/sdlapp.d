@@ -300,30 +300,21 @@ class SDLWindow : Window {
         }
         // change size and/or position
         if (newWindowRect != RECT_VALUE_IS_NOT_SET && (newState == WindowState.normal || newState == WindowState.unspecified)) {
-               
-            if (newWindowRect.top == int.min || newWindowRect.left == int.min) {
-                // no position specified
-                if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
-                    // change size only
-                    SDL_SetWindowSize(_win, newWindowRect.right, newWindowRect.bottom);
-                    res = true;
-                }
-            } else {
-                if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
-                    // change size and position
-                    SDL_SetWindowPosition(_win, newWindowRect.left, newWindowRect.top);
-                    SDL_SetWindowSize(_win, newWindowRect.right, newWindowRect.bottom);
-                    res = true;
-                } else {
-                    // change position only
-                    SDL_SetWindowPosition(_win, newWindowRect.left, newWindowRect.top);
-                    res = true;
-                }
+            
+            // change position
+            if (newWindowRect.top != int.min && newWindowRect.left != int.min) {
+                SDL_SetWindowPosition(_win, newWindowRect.left, newWindowRect.top);
+                res = true;
+            }
+                
+            // change size
+            if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
+                SDL_SetWindowSize(_win, newWindowRect.right, newWindowRect.bottom);
+                res = true;
             }
         }
         
-        if (activate)
-        {
+        if (activate) {
             SDL_RaiseWindow(_win);
             res = true;
         }
