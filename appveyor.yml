@@ -1,0 +1,94 @@
+platform:
+  - x86
+  - x64
+
+environment:
+  matrix:
+    - DC: dmd
+      DVersion: 2.074.0
+    - DC: ldc
+      DVersion: 1.1.0
+
+matrix:
+  allow_failures:
+    - DC: ldc
+
+install:
+  - ps: function SetUpDCompiler
+        {
+            if($env:DC -eq "dmd"){
+              if($env:platform -eq "x86"){
+                $env:DConf = "m32";
+              }
+              elseif($env:platform -eq "x64"){
+                $env:DConf = "m64";
+              }
+              echo "downloading ...";
+              $env:toolchain = "msvc";
+              $version = $env:DVersion;
+              Invoke-WebRequest "http://downloads.dlang.org/releases/2.x/$($version)/dmd.$($version).windows.7z" -OutFile "c:\dmd.7z";
+              echo "finished.";
+              pushd c:\\;
+              7z x dmd.7z > $null;
+              popd;
+            }
+            elseif($env:DC -eq "ldc"){
+              if($env:platform -eq "x86"){
+                $env:DConf = "m32";
+                $env:Dmodel = "32";
+              }
+              elseif($env:platform -eq "x64"){
+                $env:DConf = "m64";
+                $env:Dmodel = "64";
+              }
+              echo "downloading ...";
+              $env:toolchain = "msvc";
+              $version = $env:DVersion;
+              Invoke-WebRequest "https://github.com/ldc-developers/ldc/releases/download/v$($version)/ldc2-$($version)-win$($env:Dmodel)-msvc.zip" -OutFile "c:\ldc.zip";
+              echo "finished.";
+              pushd c:\\;
+              7z x ldc.zip > $null;
+              mv ldc2-$($version)-win$($env:Dmodel)-msvc ldc2;
+              popd;
+            }
+            Invoke-WebRequest "https://code.dlang.org/files/dub-1.1.1-windows-x86.zip" -OutFile "c:\dub.zip";
+            pushd c:\\;
+            7z x dub.zip -odub > $null;
+            popd;
+        }
+  - ps: SetUpDCompiler
+
+before_build:
+  - ps: if($env:platform -eq "x86"){
+            $env:compilersetupargs = "x86";
+            $env:Darch = "x86";
+            $env:Dmodel = "32";
+        }
+        elseif($env:platform -eq "x64"){
+            $env:compilersetupargs = "amd64";
+            $env:Darch = "x86_64";
+            $env:Dmodel = "64";
+        }
+  - ps : if($env:DC -eq "dmd"){
+           $env:PATH += ";C:\dmd2\windows\bin;";
+           $env:PATH += ";C:\dub";
+         }
+         elseif($env:DC -eq "ldc"){
+           $env:PATH += ";C:\ldc2\bin";
+           $env:PATH += ";C:\dub";
+           $env:DC = "ldc2";
+         }
+  - ps: $env:compilersetup = "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall";
+  - '"%compilersetup%" %compilersetupargs%'
+
+build_script:
+  - echo dummy build script - dont remove me
+
+test_script:
+  - echo %APPVEYOR_JOB_NAME%
+  - echo %PLATFORM%
+  - echo %DC%
+  - echo %PATH%
+  - '%DC% --version'
+  - dub --version
+  - dub test --arch=%Darch% --compiler=%DC%
