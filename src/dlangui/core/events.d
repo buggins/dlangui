@@ -1649,6 +1649,25 @@ class RunnableEvent : CustomEvent {
     }
 }
 
+/**
+Queue destroy event.
+
+This event allows delayed widget destruction and is used internally by 
+$(LINK2 $(DDOX_ROOT_DIR)dlangui/platforms/common/platform/Window.queueWidgetDestroy.html, Window.queueWidgetDestroy()).
+*/
+class QueueDestroyEvent : RunnableEvent {
+    private Widget _widgetToDestroy;
+    this (Widget widgetToDestroy)
+    {
+        _widgetToDestroy = widgetToDestroy;
+        super(1,null, delegate void () {
+            if (_widgetToDestroy.parent) 
+                _widgetToDestroy.parent.removeChild(_widgetToDestroy);
+            destroy(_widgetToDestroy);
+        });
+    }
+}
+
 interface CustomEventTarget {
     /// post event to handle in UI thread (this method can be used from background thread)
     void postEvent(CustomEvent event);

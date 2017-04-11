@@ -519,7 +519,24 @@ class Window : CustomEventTarget {
         destroy(_timerQueue);
         _eventList = null;
     }
-
+    
+    /**
+    Allows queue destroy of widget.
+    
+    Sometimes when you have very complicated UI with dynamic create/destroy lists of widgets calling simple destroy() 
+    on widget makes segmentation fault.
+    
+    Usually because you destroy widget that on some stage call another that tries to destroy widget that calls it.
+    When the control flow returns widget not exist and you have seg. fault.
+    
+    This function use internally $(LINK2 $(DDOX_ROOT_DIR)dlangui/core/events/QueueDestroyEvent.html, QueueDestroyEvent).
+    */
+    void queueWidgetDestroy(Widget widgetToDestroy)
+    {
+        QueueDestroyEvent ev = new QueueDestroyEvent(widgetToDestroy);
+        postEvent(ev);
+    }
+    
     private void animate(Widget root, long interval) {
         if (root is null)
             return;
