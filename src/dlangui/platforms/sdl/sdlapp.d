@@ -263,6 +263,64 @@ class SDLWindow : Window {
         Log.d("SDLWindow.close()");
         _platform.closeWindow(this);
     }
+    
+    override bool setWindowState(WindowState newState, bool activate = false, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
+        // override for particular platforms
+        
+        if (_win is null)
+            return false;
+        
+        bool res = false;
+        
+        // change state
+        switch(newState) {
+            case WindowState.maximized:
+                if (_windowState != WindowState.maximized)
+                    SDL_MaximizeWindow(_win);
+                res = true;
+                break;
+            case WindowState.minimized:
+                if (_windowState != WindowState.minimized)
+                    SDL_MinimizeWindow(_win);
+                res = true;
+                break;
+            case WindowState.hidden:
+                if (_windowState != WindowState.hidden)
+                    SDL_HideWindow(_win);
+                res = true;
+                break;
+            case WindowState.normal:
+                if (_windowState != WindowState.normal) {
+                    SDL_RestoreWindow(_win);
+                }
+                res = true;
+                break;
+            default:
+                break;
+        }
+        // change size and/or position
+        if (newWindowRect != RECT_VALUE_IS_NOT_SET && (newState == WindowState.normal || newState == WindowState.unspecified)) {
+            
+            // change position
+            if (newWindowRect.top != int.min && newWindowRect.left != int.min) {
+                SDL_SetWindowPosition(_win, newWindowRect.left, newWindowRect.top);
+                res = true;
+            }
+                
+            // change size
+            if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
+                SDL_SetWindowSize(_win, newWindowRect.right, newWindowRect.bottom);
+                res = true;
+            }
+        }
+        
+        if (activate) {
+            SDL_RaiseWindow(_win);
+            res = true;
+        }
+        
+        return res;
+    }
 
 
     protected dstring _caption;
