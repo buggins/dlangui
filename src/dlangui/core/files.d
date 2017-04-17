@@ -716,6 +716,19 @@ deprecated string[] splitPath(string path) {
     return res;
 }
 
+/** Creates all directories that are missing in the specified path, e.g. given /home/user/dir1/dir2 if dir1 does not exist, creates both dir1 and dir2. */
+void createMissingDirs(string path) {
+    auto parts = splitPath(path);
+    auto partialPath = "";
+    foreach(part; parts) {
+        partialPath = appendPath(partialPath, part);
+        if(exists(partialPath))
+            continue;
+        else
+            mkdir(partialPath);
+    }
+}
+
 /// for executable name w/o path, find absolute path to executable
 string findExecutablePath(string executableName) {
     import std.string : split;
