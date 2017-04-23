@@ -120,6 +120,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     protected bool _isOpenDialog;
 
     protected bool _showHiddenFiles;
+    protected bool _allowMultipleFiles;
 
     protected string[string] _filetypeIcons;
 
@@ -183,6 +184,18 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _filename = s;
     }
 
+    /// all the selected filenames
+    @property string[] filenames() {
+        string[] res;
+        res.reserve(_fileList.selection.length);
+        int i = 0;
+        foreach (val; _fileList.selection) {
+            res ~= _entries[val.y];
+            ++i;
+        }
+        return res;
+    }
+
     @property bool showHiddenFiles() {
         return _showHiddenFiles;
     }
@@ -191,6 +204,14 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _showHiddenFiles = b;
     }
 
+    @property bool allowMultipleFiles() {
+        return _allowMultipleFiles;
+    }
+
+    @property void allowMultipleFiles(bool b) {
+        _allowMultipleFiles = b;
+    }
+    
     /// return currently selected filter value - array of patterns like ["*.txt", "*.rtf"]
     @property string[] selectedFilter() {
         if (_filterIndex >= 0 && _filterIndex < _filters.length)
@@ -575,6 +596,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _fileList.setColTitle(3, "Modified"d);
         _fileList.showRowHeaders = false;
         _fileList.rowSelect = true;
+        _fileList.multiSelect = _allowMultipleFiles;
         _fileList.cellPopupMenu = &getCellPopupMenu;
         _fileList.menuItemAction = &handleAction;
 

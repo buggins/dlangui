@@ -58,6 +58,7 @@ import dlangui.widgets.controls;
 import dlangui.widgets.scroll;
 import dlangui.widgets.menu;
 import std.conv;
+import std.container.rbtree;
 import std.algorithm : equal;
 
 /// cellPopupMenu signal handler interface
@@ -151,12 +152,20 @@ enum GridActions : int {
     None = 0,
     /// move selection up
     Up = 2000,
+    /// expend selection up
+    SelectUp,
     /// move selection down
     Down,
+    /// expend selection down
+    SelectDown,
     /// move selection left
     Left,
+    /// expend selection left
+    SelectLeft,
     /// move selection right
     Right,
+    /// expend selection right
+    SelectRight,
 
     /// scroll up, w/o changing selection
     ScrollUp,
@@ -208,6 +217,8 @@ enum GridActions : int {
     DocumentEnd,
     /// move cursor to the end of document with selection
     SelectDocumentEnd,
+    /// select all entries without moving the cursor
+    SelectAll,
     /// Enter key pressed on cell
     ActivateCell,
 }
@@ -324,10 +335,15 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     /// scroll Y offset in pixels
     protected int _scrollY;
 
+    /// selected cells when multiselect is enabled
+    protected RedBlackTree!Point _selection;
     /// selected cell column
     protected int _col;
     /// selected cell row
     protected int _row;
+    /// when true, allows multi cell selection
+    protected bool _multiSelect;
+    private Point _lastSelectedCell;
     /// when true, allows to select only whole row
     protected bool _rowSelect;
     /// default column width - for newly added columns
@@ -337,6 +353,8 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     // properties
 
+    /// selected cells when multiselect is enabled
+    @property RedBlackTree!Point selection() { return _selection; }
     /// selected column
     @property int col() { return _col - _headerCols; }
     /// selected row
@@ -422,12 +440,29 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         return this;
     }
 
+    /// when true, allows multi cell selection
+    @property bool multiSelect() {
+        return _multiSelect;
+    }
+    @property GridWidgetBase multiSelect(bool flg) {
+        _multiSelect = flg;
+        if (!_multiSelect) {
+            _selection.clear();
+            _selection.insert(Point(_col - _headerCols, _row - _headerRows));
+        }
+        return this;
+    }
+
     /// when true, allows only select the whole row
     @property bool rowSelect() {
         return _rowSelect;
     }
     @property GridWidgetBase rowSelect(bool flg) {
         _rowSelect = flg;
+        if (_rowSelect) {
+            _selection.clear();
+            _selection.insert(Point(_col - _headerCols, _row - _headerRows));
+        }
         invalidate();
         return this;
     }
@@ -872,10 +907,51 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         }
     }
 
+	bool multiSelectCell(int col, int row, bool expandExisting = false) {
+        if (_col == col && _row == row && !expandExisting)
+            return false; // same position
+        if (col < _headerCols || row < _headerRows || col >= _cols || row >= _rows)
+            return false; // out of range
+        if (_changedSize) updateCumulativeSizes();
+        _lastSelectedCell.x = col;
+        _lastSelectedCell.y = row;
+        if (_rowSelect) col = _headerCols;
+        if (expandExisting) {
+            _selection.clear();
+            int startX = _col - _headerCols;
+            int startY = _row - headerRows;
+            int endX = col - _headerCols;
+            int endY = row - headerRows;
+            if (_rowSelect) startX = 0;
+            if (startX > endX) {
+                startX = endX;
+                endX = _col - _headerCols;
+            }
+            if (startY > endY) {
+                startY = endY;
+                endY = _row - _headerRows;
+            }
+            for (int x = startX; x <= endX; ++x) {
+                for (int y = startY; y <= endY; ++y) {
+                    _selection.insert(Point(x, y));
+                }
+            }
+        } else {
+            _selection.insert(Point(col - _headerCols, row - _headerRows));
+            _col = col;
+            _row = row;
+        }
+        invalidate();
+        calcScrollableAreaPos();
+        makeCellVisible(_lastSelectedCell.x, _lastSelectedCell.y);
+        return true;
+	}
+
     /// move selection to specified cell
     bool selectCell(int col, int row, bool makeVisible = true, GridWidgetBase source = null, bool needNotification = true) {
         if (source is null)
             source = this;
+        _selection.clear();
         if (_col == col && _row == row)
             return false; // same position
         if (col < _headerCols || row < _headerRows || col >= _cols || row >= _rows)
@@ -883,6 +959,12 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         if (_changedSize) updateCumulativeSizes();
         _col = col;
         _row = row;
+        _lastSelectedCell = Point(col, row);
+        if (_rowSelect) {
+            _selection.insert(Point(0, row - _headerRows));
+        } else {
+            _selection.insert(Point(col - _headerCols, row - _headerRows));
+        }
         invalidate();
         calcScrollableAreaPos();
         if (makeVisible)
@@ -1063,6 +1145,8 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             if (cellFound && normalCell) {
                 if (c == _col && r == _row && event.doubleClick) {
                     activateCell(c, r);
+                } else if (_multiSelect && (event.flags & (MouseFlag.Shift | MouseFlag.Control)) != 0) {
+                    multiSelectCell(c, r, (event.flags & MouseFlag.Shift) != 0);
                 } else {
                     selectCell(c, r);
                 }
@@ -1072,7 +1156,11 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         if (event.action == MouseAction.Move && (event.flags & MouseFlag.LButton)) {
             // TODO: selection
             if (cellFound && normalCell) {
-                selectCell(c, r);
+                if (_multiSelect) {
+                    multiSelectCell(c, r, true);
+                } else {
+                    selectCell(c, r);
+                }
             }
             return true;
         }
@@ -1175,11 +1263,25 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             case Left:
                 selectCell(_col - 1, _row);
                 return true;
+            case SelectLeft:
+                if (_multiSelect) {
+                    multiSelectCell(_lastSelectedCell.x - 1, _lastSelectedCell.y, true);
+                } else {
+                    selectCell(_col - 1, _row);
+                }
+                return true;
             case ScrollRight:
                 scrollBy(1, 0);
                 return true;
             case Right:
                 selectCell(_col + 1, _row);
+                return true;
+            case SelectRight:
+                if (_multiSelect) {
+                    multiSelectCell(_lastSelectedCell.x + 1, _lastSelectedCell.y, true);
+                } else {
+                    selectCell(_col + 1, _row);
+                }
                 return true;
             case ScrollUp:
                 scrollBy(0, -1);
@@ -1187,12 +1289,26 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             case Up:
                 selectCell(_col, _row - 1);
                 return true;
+            case SelectUp:
+                if (_multiSelect) {
+                    multiSelectCell(_lastSelectedCell.x, _lastSelectedCell.y - 1, true);
+                } else {
+                    selectCell(_col, _row - 1);
+                }
+                return true;
             case ScrollDown:
                 if (lastScrollRow < _rows - 1)
                     scrollBy(0, 1);
                 return true;
             case Down:
                 selectCell(_col, _row + 1);
+                return true;
+            case SelectDown:
+                if (_multiSelect) {
+                    multiSelectCell(_lastSelectedCell.x, _lastSelectedCell.y + 1, true);
+                } else {
+                    selectCell(_col, _row + 1);
+                }
                 return true;
             case ScrollPageLeft:
                 // scroll left cell by cell
@@ -1224,8 +1340,23 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
                         break;
                 }
                 return true;
+            case SelectLineBegin:
+                if (!_multiSelect) goto case LineBegin;
+                if (_rowSelect) goto case SelectDocumentBegin;
+                if (sc > nonScrollCols && _col > sc) {
+                    multiSelectCell(sc, _lastSelectedCell.y, true);
+                } else {
+                    if (sc > nonScrollCols) {
+                        _scrollX = 0;
+                        updateScrollBars();
+                        invalidate();
+                    }
+                    multiSelectCell(_headerCols, _lastSelectedCell.y, true);
+                }
+                return true;
             case LineBegin:
-                if (sc > nonScrollCols && _col > sc && !_rowSelect) {
+                if (_rowSelect) goto case DocumentBegin;
+                if (sc > nonScrollCols && _col > sc) {
                     // move selection and don's scroll
                     selectCell(sc, _row);
                 } else {
@@ -1238,13 +1369,33 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
                     selectCell(_headerCols, _row);
                 }
                 return true;
+            case SelectLineEnd:
+                if (!_multiSelect) goto case LineEnd;
+                if (_rowSelect) goto case SelectDocumentEnd;
+                if (_col < lastScrollCol) {
+                    // move selection and don's scroll
+                    multiSelectCell(lastScrollCol, _lastSelectedCell.y, true);
+                } else {
+                    multiSelectCell(_cols - 1, _lastSelectedCell.y, true);
+                }
+                return true;
             case LineEnd:
-                if (_col < lastScrollCol && !_rowSelect) {
+                if (_rowSelect) goto case DocumentEnd;
+                if (_col < lastScrollCol) {
                     // move selection and don's scroll
                     selectCell(lastScrollCol, _row);
                 } else {
                     selectCell(_cols - 1, _row);
                 }
+                return true;
+            case SelectDocumentBegin:
+                if (!_multiSelect) goto case DocumentBegin;
+                if (_scrollY > 0) {
+                    _scrollY = 0;
+                    updateScrollBars();
+                    invalidate();
+                }
+                multiSelectCell(_lastSelectedCell.x, _headerRows, true);
                 return true;
             case DocumentBegin:
                 if (_scrollY > 0) {
@@ -1254,8 +1405,30 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
                 }
                 selectCell(_col, _headerRows);
                 return true;
+            case SelectDocumentEnd:
+                if (!_multiSelect) goto case DocumentEnd;
+                multiSelectCell(_lastSelectedCell.x, _rows - 1, true);
+                return true;
             case DocumentEnd:
                 selectCell(_col, _rows - 1);
+                return true;
+            case SelectAll:
+                if (!_multiSelect) return true;
+                int endX = row;
+                if (_rowSelect) endX = 0;
+                for (int x = 0; x <= endX; ++x) {
+                    for (int y = 0; y < rows; ++y) {
+                        _selection.insert(Point(x, y));
+                    }
+                }
+                invalidate();
+                return true;
+            case SelectPageBegin:
+                if (!_multiSelect) goto case PageBegin;
+                if (scrollRow > nonScrollRows)
+                    multiSelectCell(_lastSelectedCell.x, scrollRow, true);
+                else
+                    multiSelectCell(_lastSelectedCell.x, _headerRows, true);
                 return true;
             case PageBegin:
                 if (scrollRow > nonScrollRows)
@@ -1263,8 +1436,32 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
                 else
                     selectCell(_col, _headerRows);
                 return true;
+            case SelectPageEnd:
+                if (!_multiSelect) goto case PageEnd;
+                multiSelectCell(_lastSelectedCell.x, lastScrollRow, true);
+                return true;
             case PageEnd:
                 selectCell(_col, lastScrollRow);
+                return true;
+            case SelectPageUp:
+                if (_row > sr) {
+                    // not at top scrollable cell
+                    multiSelectCell(_lastSelectedCell.x, sr, true);
+                } else {
+                    // at top of scrollable area
+                    if (scrollRow > nonScrollRows) {
+                        // scroll up line by line
+                        int prevRow = _row;
+                        for (int i = prevRow - 1; i >= _headerRows; i--) {
+                            multiSelectCell(_lastSelectedCell.x, i, true);
+                            if (lastScrollRow <= prevRow)
+                                break;
+                        }
+                    } else {
+                        // scrolled to top - move upper cell
+                        multiSelectCell(_lastSelectedCell.x, _headerRows, true);
+                    }
+                }
                 return true;
             case PageUp:
                 if (_row > sr) {
@@ -1283,6 +1480,24 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
                     } else {
                         // scrolled to top - move upper cell
                         selectCell(_col, _headerRows);
+                    }
+                }
+                return true;
+            case SelectPageDown:
+                if (_row < _rows - 1) {
+                    int lr = lastScrollRow;
+                    if (_row < lr) {
+                        // not at bottom scrollable cell
+                        multiSelectCell(_lastSelectedCell.x, lr, true);
+                    } else {
+                        // scroll down
+                        int prevRow = _row;
+                        for (int i = prevRow + 1; i < _rows; i++) {
+                            multiSelectCell(_lastSelectedCell.x, i, true);
+                            calcScrollableAreaPos();
+                            if (scrollRow >= prevRow)
+                                break;
+                        }
                     }
                 }
                 return true;
@@ -1470,6 +1685,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         super(ID, hscrollbarMode, vscrollbarMode);
         _headerCols = 1;
         _headerRows = 1;
+        _selection = new RedBlackTree!Point();
         _defRowHeight = BACKEND_CONSOLE ? 1 : pointsToPixels(16);
         _defColumnWidth = BACKEND_CONSOLE ? 7 : 100;
 
@@ -1488,6 +1704,19 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             new Action(GridActions.PageEnd, KeyCode.PAGEDOWN, KeyFlag.Control),
             new Action(GridActions.DocumentBegin, KeyCode.HOME, KeyFlag.Control),
             new Action(GridActions.DocumentEnd, KeyCode.END, KeyFlag.Control),
+            new Action(GridActions.SelectUp, KeyCode.UP, KeyFlag.Shift),
+            new Action(GridActions.SelectDown, KeyCode.DOWN, KeyFlag.Shift),
+            new Action(GridActions.SelectLeft, KeyCode.LEFT, KeyFlag.Shift),
+            new Action(GridActions.SelectRight, KeyCode.RIGHT, KeyFlag.Shift),
+            new Action(GridActions.SelectLineBegin, KeyCode.HOME, KeyFlag.Shift),
+            new Action(GridActions.SelectLineEnd, KeyCode.END, KeyFlag.Shift),
+            new Action(GridActions.SelectPageUp, KeyCode.PAGEUP, KeyFlag.Shift),
+            new Action(GridActions.SelectPageDown, KeyCode.PAGEDOWN, KeyFlag.Shift),
+            new Action(GridActions.SelectPageBegin, KeyCode.PAGEUP, KeyFlag.Control | KeyFlag.Shift),
+            new Action(GridActions.SelectPageEnd, KeyCode.PAGEDOWN, KeyFlag.Control | KeyFlag.Shift),
+            new Action(GridActions.SelectDocumentBegin, KeyCode.HOME, KeyFlag.Control | KeyFlag.Shift),
+            new Action(GridActions.SelectDocumentEnd, KeyCode.END, KeyFlag.Control | KeyFlag.Shift),
+            new Action(GridActions.SelectAll, KeyCode.KEY_A, KeyFlag.Control),
             new Action(GridActions.ActivateCell, KeyCode.RETURN, 0),
         ]);
         focusable = true;
@@ -1673,6 +1902,9 @@ class StringGridWidget : StringGridWidgetBase {
         bool selectedCell = selectedCol && selectedRow;
         if (_rowSelect && selectedRow)
             selectedCell = true;
+        if (!selectedCell && _multiSelect) {
+            selectedCell = Point(c, r) in _selection || (_rowSelect && Point(0, r) in _selection);
+        }
         // draw header cell background
         DrawableRef dw = c < 0 ? _cellRowHeaderBackgroundDrawable : _cellHeaderBackgroundDrawable;
         uint cl = _cellHeaderBackgroundColor;
@@ -1703,6 +1935,9 @@ class StringGridWidget : StringGridWidgetBase {
         bool selectedCell = selectedCol && selectedRow;
         if (_rowSelect && selectedRow)
             selectedCell = true;
+        if (!selectedCell && _multiSelect) {
+            selectedCell = Point(c, r) in _selection || (_rowSelect && Point(0, r) in _selection);
+        }
         uint borderColor = _cellBorderColor;
         if (c < fixedCols || r < fixedRows) {
             // fixed cell background

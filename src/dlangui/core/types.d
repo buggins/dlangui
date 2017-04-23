@@ -56,6 +56,10 @@ struct Point {
     Point opBinary(string op)(Point v) if (op == "-") {
         return Point(x - v.x, y - v.y);
     }
+    int opCmp(ref const Point b) const {
+        if (x == b.x) return y - b.y;
+        return x - b.x;
+    }
 }
 
 /// 2D rectangle

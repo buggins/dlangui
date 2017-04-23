@@ -384,6 +384,7 @@ extern (C) int UIAppMain(string[] args) {
                 UIString caption;
                 caption = "Open Text File"d;
                 FileDialog dlg = new FileDialog(caption, window, null);
+                dlg.allowMultipleFiles = true;
                 dlg.addFilter(FileFilterEntry(UIString("FILTER_ALL_FILES", "All files (*)"d), "*"));
                 dlg.addFilter(FileFilterEntry(UIString("FILTER_TEXT_FILES", "Text files (*.txt)"d), "*.txt"));
                 dlg.addFilter(FileFilterEntry(UIString("FILTER_SOURCE_FILES", "Source files"d), "*.d;*.dd;*.c;*.cc;*.cpp;*.h;*.hpp"));
@@ -391,29 +392,31 @@ extern (C) int UIAppMain(string[] args) {
                 //dlg.filterIndex = 2;
                 dlg.dialogResult = delegate(Dialog dlg, const Action result) {
                     if (result.id == ACTION_OPEN.id) {
-                        string filename = result.stringParam;
-                        if (filename.endsWith(".d") || filename.endsWith(".txt") || filename.endsWith(".cpp") || filename.endsWith(".h") || filename.endsWith(".c")
-                            || filename.endsWith(".json") || filename.endsWith(".dd") || filename.endsWith(".ddoc") || filename.endsWith(".xml") || filename.endsWith(".html")
-                            || filename.endsWith(".html") || filename.endsWith(".css") || filename.endsWith(".log") || filename.endsWith(".hpp")) {
-                                // open source file in tab
-                                int index = tabs.tabIndex(filename);
-                                if (index >= 0) {
-                                    // file is already opened in tab
-                                    tabs.selectTab(index, true);
-                                } else {
-                                    SourceEdit editor = new SourceEdit(filename);
-                                    if (editor.load(filename)) {
-                                        tabs.addTab(editor, toUTF32(baseName(filename)), null, true);
-                                        tabs.selectTab(filename);
+                        string[] filenames = (cast(FileDialog)dlg).filenames;
+                        foreach (filename; filenames) {
+                            if (filename.endsWith(".d") || filename.endsWith(".txt") || filename.endsWith(".cpp") || filename.endsWith(".h") || filename.endsWith(".c")
+                                || filename.endsWith(".json") || filename.endsWith(".dd") || filename.endsWith(".ddoc") || filename.endsWith(".xml") || filename.endsWith(".html")
+                                || filename.endsWith(".html") || filename.endsWith(".css") || filename.endsWith(".log") || filename.endsWith(".hpp")) {
+                                    // open source file in tab
+                                    int index = tabs.tabIndex(filename);
+                                    if (index >= 0) {
+                                        // file is already opened in tab
+                                        tabs.selectTab(index, true);
                                     } else {
-                                        destroy(editor);
-                                        window.showMessageBox(UIString("File open error"d), UIString("Cannot open file "d ~ toUTF32(filename)));
+                                        SourceEdit editor = new SourceEdit(filename);
+                                        if (editor.load(filename)) {
+                                            tabs.addTab(editor, toUTF32(baseName(filename)), null, true);
+                                            tabs.selectTab(filename);
+                                        } else {
+                                            destroy(editor);
+                                            window.showMessageBox(UIString("File open error"d), UIString("Cannot open file "d ~ toUTF32(filename)));
+                                        }
                                     }
+                                } else {
+                                    Log.d("FileDialog.onDialogResult: ", result, " param=", result.stringParam);
+                                    window.showMessageBox(UIString("FileOpen result"d), UIString("Filename: "d ~ toUTF32(filename)));
                                 }
-                            } else {
-                                Log.d("FileDialog.onDialogResult: ", result, " param=", result.stringParam);
-                                window.showMessageBox(UIString("FileOpen result"d), UIString("Filename: "d ~ toUTF32(filename)));
-                            }
+                        }
                     }
 
                 };
@@ -950,6 +953,7 @@ void main()
         grid.fixedCols = 3;
         grid.fixedRows = 2;
         //grid.rowSelect = true; // testing full row selection
+        grid.multiSelect = true;
         grid.selectCell(4, 6, false);
         // create sample grid content
         for (int y = 0; y < grid.rows; y++) {
