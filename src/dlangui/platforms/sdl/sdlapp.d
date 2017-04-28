@@ -1235,7 +1235,6 @@ class SDLPlatform : Platform {
                                 if (windowToClose.windowId in _windowMap) {
                                     Log.i("Platform.closeWindow()");
                                     _windowMap.remove(windowToClose.windowId);
-                                    SDL_DestroyWindow(windowToClose._win);
                                     Log.i("windowMap.length=", _windowMap.length);
                                     destroy(windowToClose);
                                 }
