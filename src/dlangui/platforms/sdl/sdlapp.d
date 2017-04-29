@@ -1264,9 +1264,7 @@ class SDLPlatform : Platform {
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_EXPOSED - ", w.windowCaption);
                                 if (!_windowsMinimized && w.hasModalChild())
                                     w.restoreModalChilds();
-                                version(linux) {
-                                    w.invalidate();
-                                }
+                                w.invalidate();
                                 break;
                             case SDL_WINDOWEVENT_MOVED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MOVED- ", w.windowCaption);
