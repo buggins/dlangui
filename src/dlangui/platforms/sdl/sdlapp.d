@@ -302,8 +302,11 @@ class SDLWindow : Window {
         if (!_enableOpengl) {
             _renderer = SDL_CreateRenderer(_win, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
             if (!_renderer) {
-                Log.e("SDL2: Failed to create renderer");
-                return false;
+                _renderer = SDL_CreateRenderer(_win, -1, SDL_RENDERER_SOFTWARE);
+                if (!_renderer) {
+                    Log.e("SDL2: Failed to create renderer");
+                    return false;
+                }
             }
             fixSize();
         }
