@@ -79,18 +79,37 @@ class SDLWindow : Window {
     SDLPlatform _platform;
     SDL_Window * _win;
     SDL_Renderer* _renderer;
+    
+    SDLWindow[] _children;
+    SDLWindow _parent;
+    
     this(SDLPlatform platform, dstring caption, Window parent, uint flags, uint width = 0, uint height = 0) {
         _platform = platform;
         _caption = caption;
+        
+        _parent = cast(SDLWindow) parent;
+        if (_parent)
+            _parent._children~=this;
+        
         debug Log.d("Creating SDL window");
         _dx = width;
         _dy = height;
         create(flags);
+        _children.reserve(20);
         Log.i(_enableOpengl ? "OpenGL is enabled" : "OpenGL is disabled");
     }
 
     ~this() {
         debug Log.d("Destroying SDL window");
+        
+        if (_parent) {
+            ptrdiff_t index = countUntil(_parent._children,this);
+            if (index > -1 ) {
+                _parent._children=_parent._children.remove(index);
+            }
+            _parent = null;
+        }
+        
         if (_renderer)
             SDL_DestroyRenderer(_renderer);
         static if (ENABLE_OPENGL) {
@@ -103,6 +122,83 @@ class SDLWindow : Window {
             destroy(_drawbuf);
     }
 
+    
+    private bool hasModalChild() {
+        foreach (SDLWindow w;_children) {
+            if (w.flags & WindowFlag.Modal)
+                return true;
+            
+            if (w.hasModalChild())
+                return true;
+        }
+        return false;
+    }
+    
+    
+    private void restoreModalChilds() {
+        foreach (SDLWindow w;_children) {
+            if (w.flags & WindowFlag.Modal) {
+                if (w._windowState == WindowState.maximized)
+                    w.activateWindow();
+                else    
+                    w.restoreWindow(true);
+            }
+            
+            w.restoreModalChilds();
+        }
+    }
+    
+    private void minimizeModalChilds() {
+        foreach (SDLWindow w;_children) {
+            if (w.flags & WindowFlag.Modal)
+            {
+                w.minimizeWindow();
+            }
+            
+            w.minimizeModalChilds();
+        }
+    }
+    
+    
+    private void restoreParentWindows() {
+        SDLWindow[] tempWin;
+        if (!_platform)
+            return;
+        
+        SDLWindow w = this;
+        
+        while (true) {
+            if (w is null)
+                break;
+            
+            tempWin~=w;
+            
+            w = w._parent;
+        }
+        
+        for (size_t i = tempWin.length ; i-- > 0 ; )
+            tempWin[i].restoreWindow(true);
+    }
+    
+    private void minimizeParentWindows() {
+        SDLWindow[] tempWin;
+        if (!_platform)
+            return;
+        
+        SDLWindow w = this;
+        
+        while (true) {
+            if (w is null)
+                break;
+            
+            tempWin~=w;
+            
+            w = w._parent;
+        }
+        
+        for (size_t i = tempWin.length ; i-- > 0 ; ) 
+            tempWin[i].minimizeWindow();
+    }
 
     /// post event to handle in UI thread (this method can be used from background thread)
     override void postEvent(CustomEvent event) {
@@ -243,7 +339,7 @@ class SDLWindow : Window {
     }
 
     override void show() {
-        Log.d("SDLWindow.show()");
+        Log.d("SDLWindow.show() - ", windowCaption);
         if (_mainWidget && !(_flags & WindowFlag.Resizable)) {
             _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
             SDL_SetWindowSize(_win, _mainWidget.measuredWidth, _mainWidget.measuredHeight);
@@ -271,27 +367,35 @@ class SDLWindow : Window {
             return false;
         
         bool res = false;
+        bool stateChanged = false;
         
         // change state
         switch(newState) {
             case WindowState.maximized:
-                if (_windowState != WindowState.maximized)
+                if (_windowState != WindowState.maximized) {
                     SDL_MaximizeWindow(_win);
+                    stateChanged = true;
+                }
                 res = true;
                 break;
             case WindowState.minimized:
-                if (_windowState != WindowState.minimized)
+                if (_windowState != WindowState.minimized) {
                     SDL_MinimizeWindow(_win);
+                    stateChanged = true;
+                }
                 res = true;
                 break;
             case WindowState.hidden:
-                if (_windowState != WindowState.hidden)
+                if (_windowState != WindowState.hidden) {
                     SDL_HideWindow(_win);
+                    stateChanged = true;
+                }
                 res = true;
                 break;
             case WindowState.normal:
                 if (_windowState != WindowState.normal) {
                     SDL_RestoreWindow(_win);
+                    stateChanged = true;
                 }
                 res = true;
                 break;
@@ -299,18 +403,23 @@ class SDLWindow : Window {
                 break;
         }
         // change size and/or position
+        
+        bool windowRectChanged = false;
+        
         if (newWindowRect != RECT_VALUE_IS_NOT_SET && (newState == WindowState.normal || newState == WindowState.unspecified)) {
             
             // change position
             if (newWindowRect.top != int.min && newWindowRect.left != int.min) {
                 SDL_SetWindowPosition(_win, newWindowRect.left, newWindowRect.top);
                 res = true;
+                windowRectChanged = true;
             }
                 
             // change size
             if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
                 SDL_SetWindowSize(_win, newWindowRect.right, newWindowRect.bottom);
                 res = true;
+                windowRectChanged = true;
             }
         }
         
@@ -318,6 +427,8 @@ class SDLWindow : Window {
             SDL_RaiseWindow(_win);
             res = true;
         }
+        
+        handleWindowStateChange(stateChanged ? newState : WindowState.unspecified, windowRectChanged ? newWindowRect : RECT_VALUE_IS_NOT_SET);
         
         return res;
     }
@@ -1057,11 +1168,22 @@ class SDLPlatform : Platform {
         }
         return res;
     }
+    
+    override bool hasModalWindowsAbove(Window w) {
+        SDLWindow sdlWin = cast (SDLWindow) w;
+        if (sdlWin) {
+            return sdlWin.hasModalChild();
+        }
+        return false;
+    }
+    
 
     //void redrawWindows() {
     //    foreach(w; _windowMap)
     //        w.redraw();
     //}
+    
+    private bool _windowsMinimized = false;
 
     override int enterMessageLoop() {
         Log.i("entering message loop");
@@ -1114,52 +1236,80 @@ class SDLPlatform : Platform {
                                 w.redraw();
                                 break;
                             case SDL_WINDOWEVENT_CLOSE:
-                                if (w.handleCanClose()) {
-                                    debug(DebugSDL) Log.d("SDL_WINDOWEVENT_CLOSE win=", event.window.windowID);
-                                    _windowMap.remove(windowID);
-                                    destroy(w);
-                                } else {
-                                    skipNextQuit = true;
+                                if (!w.hasModalChild()) {
+                                    if (w.handleCanClose()) {
+                                        debug(DebugSDL) Log.d("SDL_WINDOWEVENT_CLOSE win=", event.window.windowID);
+                                        _windowMap.remove(windowID);
+                                        destroy(w);
+                                    } else {
+                                        skipNextQuit = true;
+                                    }
                                 }
                                 break;
                             case SDL_WINDOWEVENT_SHOWN:
-                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_SHOWN");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_SHOWN - ", w.windowCaption);
+                                if (!_windowsMinimized && w.hasModalChild())
+                                    w.restoreModalChilds();
                                 break;
                             case SDL_WINDOWEVENT_HIDDEN:
-                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_HIDDEN");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_HIDDEN - ", w.windowCaption);
                                 break;
                             case SDL_WINDOWEVENT_EXPOSED:
-                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_EXPOSED");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_EXPOSED - ", w.windowCaption);
+                                if (!_windowsMinimized && w.hasModalChild())
+                                    w.restoreModalChilds();
                                 version(linux) {
                                     w.invalidate();
                                 }
                                 break;
                             case SDL_WINDOWEVENT_MOVED:
-                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MOVED");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MOVED- ", w.windowCaption);
+                                if (!_windowsMinimized && w.hasModalChild())
+                                    w.restoreModalChilds();
                                 break;
                             case SDL_WINDOWEVENT_MINIMIZED:
-                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MINIMIZED");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MINIMIZED - ", w.windowCaption);
+                                w.handleWindowStateChange(WindowState.minimized);
+                                
+                                if (!_windowsMinimized && w.hasModalChild()) 
+                                    w.minimizeModalChilds();
+                                if (!_windowsMinimized && w.flags & WindowFlag.Modal)
+                                    w.minimizeParentWindows();
+                                    
+                                _windowsMinimized = true;
                                 break;
                             case SDL_WINDOWEVENT_MAXIMIZED:
-                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MAXIMIZED");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MAXIMIZED - ", w.windowCaption);
+                                w.handleWindowStateChange(WindowState.maximized);
+                                _windowsMinimized = false;
                                 break;
                             case SDL_WINDOWEVENT_RESTORED:
-                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_RESTORED");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_RESTORED - ", w.windowCaption);
+                                _windowsMinimized = false;
+                                if (w.flags & WindowFlag.Modal) {
+                                    w.restoreParentWindows();
+                                    w.restoreWindow(true);
+                                }
+                                w.handleWindowStateChange(WindowState.normal);
+                                if (w.hasModalChild())
+                                    w.restoreModalChilds();
                                 version(linux) { //not sure if needed on Windows or OSX. Also need to check on FreeBSD
                                     w.invalidate(); 
                                 }
                                 break;
                             case SDL_WINDOWEVENT_ENTER:
-                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_ENTER");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_ENTER - ", w.windowCaption);
                                 break;
                             case SDL_WINDOWEVENT_LEAVE:
-                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_LEAVE");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_LEAVE - ", w.windowCaption);
                                 break;
                             case SDL_WINDOWEVENT_FOCUS_GAINED:
-                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_FOCUS_GAINED");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_FOCUS_GAINED - ", w.windowCaption);
+                                if (!_windowsMinimized)
+                                    w.restoreModalChilds();
                                 break;
                             case SDL_WINDOWEVENT_FOCUS_LOST:
-                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_FOCUS_LOST");
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_FOCUS_LOST - ", w.windowCaption);
                                 break;
                             default:
                                 break;
@@ -1168,7 +1318,7 @@ class SDLPlatform : Platform {
                     }
                     case SDL_KEYDOWN:
                         SDLWindow w = getWindow(event.key.windowID);
-                        if (w) {
+                        if (w && !w.hasModalChild()) {
                             w.processKeyEvent(KeyAction.KeyDown, event.key.keysym.sym, event.key.keysym.mod);
                             SDL_StartTextInput();
                         }
@@ -1176,7 +1326,10 @@ class SDLPlatform : Platform {
                     case SDL_KEYUP:
                         SDLWindow w = getWindow(event.key.windowID);
                         if (w) {
-                            w.processKeyEvent(KeyAction.KeyUp, event.key.keysym.sym, event.key.keysym.mod);
+                            if (w.hasModalChild())
+                                w.restoreModalChilds();
+                            else
+                                w.processKeyEvent(KeyAction.KeyUp, event.key.keysym.sym, event.key.keysym.mod);
                         }
                         break;
                     case SDL_TEXTEDITING:
@@ -1185,31 +1338,34 @@ class SDLPlatform : Platform {
                     case SDL_TEXTINPUT:
                         debug(DebugSDL) Log.d("SDL_TEXTINPUT");
                         SDLWindow w = getWindow(event.text.windowID);
-                        if (w) {
+                        if (w && !w.hasModalChild()) {
                             w.processTextInput(event.text.text.ptr);
                         }
                         break;
                     case SDL_MOUSEMOTION:
                         SDLWindow w = getWindow(event.motion.windowID);
-                        if (w) {
+                        if (w && !w.hasModalChild()) {
                             w.processMouseEvent(MouseAction.Move, 0, event.motion.state, event.motion.x, event.motion.y);
                         }
                         break;
                     case SDL_MOUSEBUTTONDOWN:
                         SDLWindow w = getWindow(event.button.windowID);
-                        if (w) {
+                        if (w && !w.hasModalChild()) {
                             w.processMouseEvent(MouseAction.ButtonDown, event.button.button, event.button.state, event.button.x, event.button.y);
                         }
                         break;
                     case SDL_MOUSEBUTTONUP:
                         SDLWindow w = getWindow(event.button.windowID);
                         if (w) {
-                            w.processMouseEvent(MouseAction.ButtonUp, event.button.button, event.button.state, event.button.x, event.button.y);
+                            if (w.hasModalChild())
+                                w.restoreModalChilds();
+                            else
+                                w.processMouseEvent(MouseAction.ButtonUp, event.button.button, event.button.state, event.button.x, event.button.y);
                         }
                         break;
                     case SDL_MOUSEWHEEL:
                         SDLWindow w = getWindow(event.wheel.windowID);
-                        if (w) {
+                        if (w && !w.hasModalChild()) {
                             debug(DebugSDL) Log.d("SDL_MOUSEWHEEL x=", event.wheel.x, " y=", event.wheel.y);
                             w.processMouseEvent(MouseAction.Wheel, 0, 0, event.wheel.x, event.wheel.y);
                         }
