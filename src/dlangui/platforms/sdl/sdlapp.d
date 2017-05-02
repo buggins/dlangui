@@ -74,6 +74,7 @@ private derelict.util.exception.ShouldThrow missingSymFunc( string symName ) {
 
 private __gshared uint USER_EVENT_ID;
 private __gshared uint TIMER_EVENT_ID;
+private __gshared uint WINDOW_CLOSE_EVENT_ID;
 
 class SDLWindow : Window {
     SDLPlatform _platform;
@@ -1112,12 +1113,14 @@ class SDLPlatform : Platform {
         return null;
     }
 
-    SDLWindow _windowToClose;
-
     /// close window
     override void closeWindow(Window w) {
         SDLWindow window = cast(SDLWindow)w;
-        _windowToClose = window;
+        SDL_Event sdlevent;
+        sdlevent.user.type = WINDOW_CLOSE_EVENT_ID;
+        sdlevent.user.code = 0;
+        sdlevent.user.windowID = window.windowId;
+        SDL_PushEvent(&sdlevent);
     }
 
     /// calls request layout for all windows
@@ -1381,19 +1384,19 @@ class SDLPlatform : Platform {
                             SDLWindow w = getWindow(event.user.windowID);
                             if (w) {
                                 w.handleTimer(cast(uint)event.user.code);
+                            } 
+                        } else if (event.type == WINDOW_CLOSE_EVENT_ID) {
+                            SDLWindow windowToClose = getWindow(event.user.windowID);
+                            if(windowToClose) {
+                                if (windowToClose.windowId in _windowMap) {
+                                    Log.i("Platform.closeWindow()");
+                                    _windowMap.remove(windowToClose.windowId);
+                                    Log.i("windowMap.length=", _windowMap.length);
+                                    destroy(windowToClose);
+                                }
                             }
                         }
                         break;
-                }
-                if (_windowToClose) {
-                    if (_windowToClose.windowId in _windowMap) {
-                        Log.i("Platform.closeWindow()");
-                        _windowMap.remove(_windowToClose.windowId);
-                        SDL_DestroyWindow(_windowToClose._win);
-                        Log.i("windowMap.length=", _windowMap.length);
-                        destroy(_windowToClose);
-                    }
-                    _windowToClose = null;
                 }
                 if (_windowMap.length == 0) {
                     SDL_Quit();
@@ -1989,6 +1992,7 @@ int sdlmain(string[] args) {
 
     USER_EVENT_ID = SDL_RegisterEvents(1);
     TIMER_EVENT_ID = SDL_RegisterEvents(1);
+    WINDOW_CLOSE_EVENT_ID = SDL_RegisterEvents(1);
 
     int request = SDL_GetDesktopDisplayMode(0, &displayMode);
 
