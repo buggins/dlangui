@@ -33,7 +33,7 @@
   <useArrayBounds>0</useArrayBounds>
   <noboundscheck>1</noboundscheck>
   <useSwitchError>0</useSwitchError>
-  <useUnitTests>1</useUnitTests>
+  <useUnitTests>0</useUnitTests>
   <useInline>1</useInline>
   <release>0</release>
   <preservePaths>0</preservePaths>
@@ -174,7 +174,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>EmbedStandardResources ForceLogs USE_OPENGL</versionids>
+  <versionids>EmbedStandardResources ForceLogs</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -237,7 +237,7 @@
   <useArrayBounds>0</useArrayBounds>
   <noboundscheck>1</noboundscheck>
   <useSwitchError>0</useSwitchError>
-  <useUnitTests>1</useUnitTests>
+  <useUnitTests>0</useUnitTests>
   <useInline>1</useInline>
   <release>0</release>
   <preservePaths>0</preservePaths>
@@ -276,7 +276,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids> EmbedStandardResources ForceLogs  USE_OPENGL</versionids>
+  <versionids>EmbedStandardResources ForceLogs</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -339,7 +339,7 @@
   <useArrayBounds>0</useArrayBounds>
   <noboundscheck>0</noboundscheck>
   <useSwitchError>0</useSwitchError>
-  <useUnitTests>1</useUnitTests>
+  <useUnitTests>0</useUnitTests>
   <useInline>0</useInline>
   <release>0</release>
   <preservePaths>0</preservePaths>
@@ -480,7 +480,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>EmbedStandardResources ForceLogs USE_OPENGL</versionids>
+  <versionids>EmbedStandardResources ForceLogs</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -543,7 +543,7 @@
   <useArrayBounds>0</useArrayBounds>
   <noboundscheck>1</noboundscheck>
   <useSwitchError>0</useSwitchError>
-  <useUnitTests>1</useUnitTests>
+  <useUnitTests>0</useUnitTests>
   <useInline>1</useInline>
   <release>1</release>
   <preservePaths>0</preservePaths>
@@ -582,7 +582,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids> EmbedStandardResources ForceLogs  USE_OPENGL</versionids>
+  <versionids>EmbedStandardResources ForceLogs</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -645,7 +645,7 @@
   <useArrayBounds>0</useArrayBounds>
   <noboundscheck>1</noboundscheck>
   <useSwitchError>0</useSwitchError>
-  <useUnitTests>1</useUnitTests>
+  <useUnitTests>0</useUnitTests>
   <useInline>1</useInline>
   <release>0</release>
   <preservePaths>0</preservePaths>
@@ -682,9 +682,9 @@
   <doXGeneration>1</doXGeneration>
   <xfilename>$(IntDir)\$(TargetName).json</xfilename>
   <debuglevel>0</debuglevel>
-  <debugids />
+  <debugids>DebugRedraw</debugids>
   <versionlevel>0</versionlevel>
-  <versionids>USE_CONSOLE EmbedStandardResources ForceLogs</versionids>
+  <versionids>USE_CONSOLE  EmbedStandardResources ForceLogs</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -747,7 +747,7 @@
   <useArrayBounds>0</useArrayBounds>
   <noboundscheck>0</noboundscheck>
   <useSwitchError>0</useSwitchError>
-  <useUnitTests>1</useUnitTests>
+  <useUnitTests>0</useUnitTests>
   <useInline>0</useInline>
   <release>0</release>
   <preservePaths>0</preservePaths>
@@ -784,9 +784,9 @@
   <doXGeneration>1</doXGeneration>
   <xfilename>$(IntDir)\$(TargetName).json</xfilename>
   <debuglevel>0</debuglevel>
-  <debugids />
+  <debugids>DebugRedraw</debugids>
   <versionlevel>0</versionlevel>
-  <versionids>USE_CONSOLE EmbedStandardResources ForceLogs</versionids>
+  <versionids>USE_CONSOLE  EmbedStandardResources ForceLogs</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -946,6 +946,10 @@
      <File path="src\dlangui\graphics\glsupport.d" />
      <File path="src\dlangui\graphics\images.d" />
      <File path="src\dlangui\graphics\resources.d" />
+    </Folder>
+    <Folder name="dom">
+     <File path="src\dlangui\dom\cssparser.d" />
+     <File path="src\dlangui\dom\encoding.d" />
     </Folder>
     <Folder name="platforms">
      <Folder name="common">

@@ -478,7 +478,7 @@
   <doXGeneration>1</doXGeneration>
   <xfilename>$(IntDir)\$(TargetName).json</xfilename>
   <debuglevel>0</debuglevel>
-  <debugids />
+  <debugids>SDLSettings DebugRedraw</debugids>
   <versionlevel>0</versionlevel>
   <versionids>USE_CONSOLE EmbedStandardResources ForceLogs</versionids>
   <dump_source>0</dump_source>
@@ -580,7 +580,7 @@
   <doXGeneration>1</doXGeneration>
   <xfilename>$(IntDir)\$(TargetName).json</xfilename>
   <debuglevel>0</debuglevel>
-  <debugids />
+  <debugids>SDLSettings DebugRedraw</debugids>
   <versionlevel>0</versionlevel>
   <versionids>USE_CONSOLE EmbedStandardResources ForceLogs</versionids>
   <dump_source>0</dump_source>
