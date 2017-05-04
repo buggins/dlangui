@@ -300,7 +300,7 @@ struct CSSTokenizer {
     }
 
     /** returns true if current tokenEnd position is identifier start */
-    bool isIdentStart(int p) {
+    bool isIdentStart(size_t p) {
         if (p >= src.length)
             return false;
         char ch = src.ptr[p];
@@ -527,7 +527,7 @@ struct CSSTokenizer {
     }
     /// current chars are /*
     CSSTokenType parseComment() {
-        int p = tokenEnd + 2; // skip /*
+        size_t p = tokenEnd + 2; // skip /*
         while (p < src.length) {
             char ch = src.ptr[p];
             char ch2 = p + 1 < src.length ? src.ptr[p + 1] : 0;
@@ -545,7 +545,7 @@ struct CSSTokenizer {
     CSSTokenType parseUnicodeRangeToken() {
         unicodeRangeStart = 0;
         unicodeRangeEnd = 0;
-        int p = tokenEnd + 2; // skip U+
+        size_t p = tokenEnd + 2; // skip U+
         // now we have hex digit or ?
         int hexCount = 0;
         uint hexNumber = 0;
