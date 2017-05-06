@@ -480,7 +480,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             auto baseFilename = toUTF8(_edFilename.text);
             _filename = _path ~ dirSeparator ~ baseFilename;
             
-            if (action.id != StandardAction.OpenDirectory && isDir(_filename)) {
+            if (action.id != StandardAction.OpenDirectory && exists(_filename) && isDir(_filename)) {
                 auto row = _fileList.row();
                 onItemActivated(row);
                 return true;
@@ -488,9 +488,9 @@ class FileDialog : Dialog, CustomGridCellAdapter {
                 Action result = _action;
                 result.stringParam = _filename;
                 // success if either selected dir & has to open dir or if selected file
-                if (action.id == StandardAction.OpenDirectory && isDir(_filename) || 
+                if (action.id == StandardAction.OpenDirectory && exists(_filename) && isDir(_filename) || 
                     action.id == StandardAction.Save && !(_flags & FileDialogFlag.FileMustExist) || 
-                    isFile(_filename)) {
+                    exists(_filename) && isFile(_filename)) {
                     close(result);
                     return true;
                 }
