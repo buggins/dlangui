@@ -371,59 +371,46 @@ class SDLWindow : Window {
             return false;
         
         bool res = false;
-        bool stateChanged = false;
         
         // change state
         switch(newState) {
             case WindowState.maximized:
-                if (_windowState != WindowState.maximized) {
+                if (_windowState != WindowState.maximized)
                     SDL_MaximizeWindow(_win);
-                    stateChanged = true;
-                }
                 res = true;
                 break;
             case WindowState.minimized:
-                if (_windowState != WindowState.minimized) {
+                if (_windowState != WindowState.minimized) 
                     SDL_MinimizeWindow(_win);
-                    stateChanged = true;
-                }
                 res = true;
                 break;
             case WindowState.hidden:
-                if (_windowState != WindowState.hidden) {
+                if (_windowState != WindowState.hidden)
                     SDL_HideWindow(_win);
-                    stateChanged = true;
-                }
                 res = true;
                 break;
             case WindowState.normal:
-                if (_windowState != WindowState.normal) {
+                if (_windowState != WindowState.normal) 
                     SDL_RestoreWindow(_win);
-                    stateChanged = true;
-                }
                 res = true;
                 break;
             default:
                 break;
         }
+        
         // change size and/or position
-        
-        bool windowRectChanged = false;
-        
         if (newWindowRect != RECT_VALUE_IS_NOT_SET && (newState == WindowState.normal || newState == WindowState.unspecified)) {
             
             // change position
             if (newWindowRect.top != int.min && newWindowRect.left != int.min) {
                 SDL_SetWindowPosition(_win, newWindowRect.left, newWindowRect.top);
                 res = true;
-                windowRectChanged = true;
             }
                 
             // change size
             if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
                 SDL_SetWindowSize(_win, newWindowRect.right, newWindowRect.bottom);
                 res = true;
-                windowRectChanged = true;
             }
         }
         
@@ -431,8 +418,6 @@ class SDLWindow : Window {
             SDL_RaiseWindow(_win);
             res = true;
         }
-        
-        handleWindowStateChange(stateChanged ? newState : WindowState.unspecified, windowRectChanged ? newWindowRect : RECT_VALUE_IS_NOT_SET);
         
         return res;
     }
@@ -1239,6 +1224,7 @@ class SDLPlatform : Platform {
                             case SDL_WINDOWEVENT_SIZE_CHANGED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_SIZE_CHANGED win=", event.window.windowID, " pos=", event.window.data1,
                                         ",", event.window.data2);
+                                w.handleWindowStateChange(WindowState.unspecified, Rect(int.min, int.min, event.window.data1, event.window.data2));
                                 w.redraw();
                                 break;
                             case SDL_WINDOWEVENT_CLOSE:
@@ -1254,11 +1240,13 @@ class SDLPlatform : Platform {
                                 break;
                             case SDL_WINDOWEVENT_SHOWN:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_SHOWN - ", w.windowCaption);
+                                w.handleWindowStateChange(WindowState.normal);
                                 if (!_windowsMinimized && w.hasModalChild())
                                     w.restoreModalChilds();
                                 break;
                             case SDL_WINDOWEVENT_HIDDEN:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_HIDDEN - ", w.windowCaption);
+                                w.handleWindowStateChange(WindowState.hidden);
                                 break;
                             case SDL_WINDOWEVENT_EXPOSED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_EXPOSED - ", w.windowCaption);
@@ -1267,7 +1255,8 @@ class SDLPlatform : Platform {
                                 w.invalidate();
                                 break;
                             case SDL_WINDOWEVENT_MOVED:
-                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MOVED- ", w.windowCaption);
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MOVED - ", w.windowCaption);
+                                w.handleWindowStateChange(WindowState.unspecified, Rect(event.window.data1, event.window.data2, int.min, int.min));
                                 if (!_windowsMinimized && w.hasModalChild())
                                     w.restoreModalChilds();
                                 break;
