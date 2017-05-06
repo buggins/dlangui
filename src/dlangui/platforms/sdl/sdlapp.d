@@ -87,7 +87,8 @@ class SDLWindow : Window {
     this(SDLPlatform platform, dstring caption, Window parent, uint flags, uint width = 0, uint height = 0) {
         _platform = platform;
         _caption = caption;
-        
+        _windowState = WindowState.hidden;
+       
         _parent = cast(SDLWindow) parent;
         if (_parent)
             _parent._children~=this;
