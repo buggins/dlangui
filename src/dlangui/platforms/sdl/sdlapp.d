@@ -362,6 +362,10 @@ class SDLWindow : Window {
         _platform.closeWindow(this);
     }
     
+    override protected void handleWindowStateChange(WindowState newState, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
+        super.handleWindowStateChange(newState, newWindowRect);
+    }
+    
     override bool setWindowState(WindowState newState, bool activate = false, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
         // override for particular platforms
         
