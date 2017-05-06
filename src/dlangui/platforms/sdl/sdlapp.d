@@ -1238,13 +1238,15 @@ class SDLPlatform : Platform {
                                 break;
                             case SDL_WINDOWEVENT_SHOWN:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_SHOWN - ", w.windowCaption);
-                                w.handleWindowStateChange(WindowState.normal);
+                                if (w.windowState()!=WindowState.normal)
+                                    w.handleWindowStateChange(WindowState.normal);
                                 if (!_windowsMinimized && w.hasVisibleModalChild())
                                     w.restoreModalChilds();
                                 break;
                             case SDL_WINDOWEVENT_HIDDEN:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_HIDDEN - ", w.windowCaption);
-                                w.handleWindowStateChange(WindowState.hidden);
+                                if (w.windowState()!=WindowState.hidden)
+                                    w.handleWindowStateChange(WindowState.hidden);
                                 break;
                             case SDL_WINDOWEVENT_EXPOSED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_EXPOSED - ", w.windowCaption);
@@ -1260,18 +1262,18 @@ class SDLPlatform : Platform {
                                 break;
                             case SDL_WINDOWEVENT_MINIMIZED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MINIMIZED - ", w.windowCaption);
-                                w.handleWindowStateChange(WindowState.minimized);
-                                
+                                if (w.windowState()!=WindowState.minimized)
+                                    w.handleWindowStateChange(WindowState.minimized);
                                 if (!_windowsMinimized && w.hasVisibleModalChild()) 
                                     w.minimizeModalChilds();
                                 if (!_windowsMinimized && w.flags & WindowFlag.Modal)
                                     w.minimizeParentWindows();
-                                    
                                 _windowsMinimized = true;
                                 break;
                             case SDL_WINDOWEVENT_MAXIMIZED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MAXIMIZED - ", w.windowCaption);
-                                w.handleWindowStateChange(WindowState.maximized);
+                                if (w.windowState()!=WindowState.maximized)    
+                                    w.handleWindowStateChange(WindowState.maximized);
                                 _windowsMinimized = false;
                                 break;
                             case SDL_WINDOWEVENT_RESTORED:
@@ -1281,7 +1283,10 @@ class SDLPlatform : Platform {
                                     w.restoreParentWindows();
                                     w.restoreWindow(true);
                                 }
-                                w.handleWindowStateChange(WindowState.normal);
+
+                                if (w.windowState()!=WindowState.normal)
+                                    w.handleWindowStateChange(WindowState.normal);
+                                    
                                 if (w.hasVisibleModalChild())
                                     w.restoreModalChilds();
                                 version(linux) { //not sure if needed on Windows or OSX. Also need to check on FreeBSD
