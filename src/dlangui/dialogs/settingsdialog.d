@@ -453,7 +453,7 @@ class SettingsDialog : Dialog {
     protected Setting _settings;
     protected SettingsPage _layout;
 
-    this(UIString caption, Window parent, Setting settings, SettingsPage layout, bool popup = false) {
+    this(UIString caption, Window parent, Setting settings, SettingsPage layout, bool popup = ((Platform.instance.uiDialogDisplayMode() & DialogDisplayMode.settingsDialogInPopup) == DialogDisplayMode.settingsDialogInPopup)) {
         super(caption, parent, DialogFlag.Modal | DialogFlag.Resizable | (popup?DialogFlag.Popup:0));
         _settings = settings;
         _layout = layout;

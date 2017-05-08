@@ -16,7 +16,7 @@ class InputBox : Dialog {
     protected int _defaultButtonIndex;
     protected dstring _text;
     this(UIString caption, UIString message, Window parentWindow, dstring initialText, void delegate(dstring result) handler) {
-        super(caption, parentWindow, DialogFlag.Modal | DialogFlag.Popup);
+        super(caption, parentWindow, DialogFlag.Modal | (Platform.instance.uiDialogDisplayMode & DialogDisplayMode.inputBoxInPopup ? DialogFlag.Popup : 0));
         _message = message;
         _actions = [ACTION_OK, ACTION_CANCEL];
         _defaultButtonIndex = 0;
