@@ -87,7 +87,8 @@ class SDLWindow : Window {
     this(SDLPlatform platform, dstring caption, Window parent, uint flags, uint width = 0, uint height = 0) {
         _platform = platform;
         _caption = caption;
-        
+        _windowState = WindowState.hidden;
+       
         _parent = cast(SDLWindow) parent;
         if (_parent)
             _parent._children~=this;
@@ -124,12 +125,12 @@ class SDLWindow : Window {
     }
 
     
-    private bool hasModalChild() {
+    private bool hasVisibleModalChild() {
         foreach (SDLWindow w;_children) {
-            if (w.flags & WindowFlag.Modal)
+            if (w.flags & WindowFlag.Modal && w._windowState != WindowState.hidden)
                 return true;
             
-            if (w.hasModalChild())
+            if (w.hasVisibleModalChild())
                 return true;
         }
         return false;
@@ -138,7 +139,7 @@ class SDLWindow : Window {
     
     private void restoreModalChilds() {
         foreach (SDLWindow w;_children) {
-            if (w.flags & WindowFlag.Modal) {
+            if (w.flags & WindowFlag.Modal && w._windowState != WindowState.hidden) {
                 if (w._windowState == WindowState.maximized)
                     w.activateWindow();
                 else    
@@ -151,7 +152,7 @@ class SDLWindow : Window {
     
     private void minimizeModalChilds() {
         foreach (SDLWindow w;_children) {
-            if (w.flags & WindowFlag.Modal)
+            if (w.flags & WindowFlag.Modal && w._windowState != WindowState.hidden)
             {
                 w.minimizeWindow();
             }
@@ -245,9 +246,6 @@ class SDLWindow : Window {
             windowFlags |= SDL_WINDOW_RESIZABLE;
         if (flags & WindowFlag.Fullscreen)
             windowFlags |= SDL_WINDOW_FULLSCREEN;
-        // TODO: implement modal behavior
-        //if (flags & WindowFlag.Modal)
-        //    windowFlags |= SDL_WINDOW_INPUT_GRABBED;
         windowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
         static if (ENABLE_OPENGL) {
             if (_enableOpengl)
@@ -364,6 +362,10 @@ class SDLWindow : Window {
         _platform.closeWindow(this);
     }
     
+    override protected void handleWindowStateChange(WindowState newState, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
+        super.handleWindowStateChange(newState, newWindowRect);
+    }
+    
     override bool setWindowState(WindowState newState, bool activate = false, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
         // override for particular platforms
         
@@ -371,59 +373,46 @@ class SDLWindow : Window {
             return false;
         
         bool res = false;
-        bool stateChanged = false;
         
         // change state
         switch(newState) {
             case WindowState.maximized:
-                if (_windowState != WindowState.maximized) {
+                if (_windowState != WindowState.maximized)
                     SDL_MaximizeWindow(_win);
-                    stateChanged = true;
-                }
                 res = true;
                 break;
             case WindowState.minimized:
-                if (_windowState != WindowState.minimized) {
+                if (_windowState != WindowState.minimized) 
                     SDL_MinimizeWindow(_win);
-                    stateChanged = true;
-                }
                 res = true;
                 break;
             case WindowState.hidden:
-                if (_windowState != WindowState.hidden) {
+                if (_windowState != WindowState.hidden)
                     SDL_HideWindow(_win);
-                    stateChanged = true;
-                }
                 res = true;
                 break;
             case WindowState.normal:
-                if (_windowState != WindowState.normal) {
+                if (_windowState != WindowState.normal) 
                     SDL_RestoreWindow(_win);
-                    stateChanged = true;
-                }
                 res = true;
                 break;
             default:
                 break;
         }
+        
         // change size and/or position
-        
-        bool windowRectChanged = false;
-        
         if (newWindowRect != RECT_VALUE_IS_NOT_SET && (newState == WindowState.normal || newState == WindowState.unspecified)) {
             
             // change position
             if (newWindowRect.top != int.min && newWindowRect.left != int.min) {
                 SDL_SetWindowPosition(_win, newWindowRect.left, newWindowRect.top);
                 res = true;
-                windowRectChanged = true;
             }
                 
             // change size
             if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
                 SDL_SetWindowSize(_win, newWindowRect.right, newWindowRect.bottom);
                 res = true;
-                windowRectChanged = true;
             }
         }
         
@@ -431,8 +420,6 @@ class SDLWindow : Window {
             SDL_RaiseWindow(_win);
             res = true;
         }
-        
-        handleWindowStateChange(stateChanged ? newState : WindowState.unspecified, windowRectChanged ? newWindowRect : RECT_VALUE_IS_NOT_SET);
         
         return res;
     }
@@ -1178,7 +1165,7 @@ class SDLPlatform : Platform {
     override bool hasModalWindowsAbove(Window w) {
         SDLWindow sdlWin = cast (SDLWindow) w;
         if (sdlWin) {
-            return sdlWin.hasModalChild();
+            return sdlWin.hasVisibleModalChild();
         }
         return false;
     }
@@ -1239,10 +1226,11 @@ class SDLPlatform : Platform {
                             case SDL_WINDOWEVENT_SIZE_CHANGED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_SIZE_CHANGED win=", event.window.windowID, " pos=", event.window.data1,
                                         ",", event.window.data2);
+                                w.handleWindowStateChange(WindowState.unspecified, Rect(int.min, int.min, event.window.data1, event.window.data2));
                                 w.redraw();
                                 break;
                             case SDL_WINDOWEVENT_CLOSE:
-                                if (!w.hasModalChild()) {
+                                if (!w.hasVisibleModalChild()) {
                                     if (w.handleCanClose()) {
                                         debug(DebugSDL) Log.d("SDL_WINDOWEVENT_CLOSE win=", event.window.windowID);
                                         _windowMap.remove(windowID);
@@ -1254,37 +1242,42 @@ class SDLPlatform : Platform {
                                 break;
                             case SDL_WINDOWEVENT_SHOWN:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_SHOWN - ", w.windowCaption);
-                                if (!_windowsMinimized && w.hasModalChild())
+                                if (w.windowState()!=WindowState.normal)
+                                    w.handleWindowStateChange(WindowState.normal);
+                                if (!_windowsMinimized && w.hasVisibleModalChild())
                                     w.restoreModalChilds();
                                 break;
                             case SDL_WINDOWEVENT_HIDDEN:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_HIDDEN - ", w.windowCaption);
+                                if (w.windowState()!=WindowState.hidden)
+                                    w.handleWindowStateChange(WindowState.hidden);
                                 break;
                             case SDL_WINDOWEVENT_EXPOSED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_EXPOSED - ", w.windowCaption);
-                                if (!_windowsMinimized && w.hasModalChild())
+                                if (!_windowsMinimized && w.hasVisibleModalChild())
                                     w.restoreModalChilds();
                                 w.invalidate();
                                 break;
                             case SDL_WINDOWEVENT_MOVED:
-                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MOVED- ", w.windowCaption);
-                                if (!_windowsMinimized && w.hasModalChild())
+                                debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MOVED - ", w.windowCaption);
+                                w.handleWindowStateChange(WindowState.unspecified, Rect(event.window.data1, event.window.data2, int.min, int.min));
+                                if (!_windowsMinimized && w.hasVisibleModalChild())
                                     w.restoreModalChilds();
                                 break;
                             case SDL_WINDOWEVENT_MINIMIZED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MINIMIZED - ", w.windowCaption);
-                                w.handleWindowStateChange(WindowState.minimized);
-                                
-                                if (!_windowsMinimized && w.hasModalChild()) 
+                                if (w.windowState()!=WindowState.minimized)
+                                    w.handleWindowStateChange(WindowState.minimized);
+                                if (!_windowsMinimized && w.hasVisibleModalChild()) 
                                     w.minimizeModalChilds();
                                 if (!_windowsMinimized && w.flags & WindowFlag.Modal)
                                     w.minimizeParentWindows();
-                                    
                                 _windowsMinimized = true;
                                 break;
                             case SDL_WINDOWEVENT_MAXIMIZED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MAXIMIZED - ", w.windowCaption);
-                                w.handleWindowStateChange(WindowState.maximized);
+                                if (w.windowState()!=WindowState.maximized)    
+                                    w.handleWindowStateChange(WindowState.maximized);
                                 _windowsMinimized = false;
                                 break;
                             case SDL_WINDOWEVENT_RESTORED:
@@ -1294,8 +1287,11 @@ class SDLPlatform : Platform {
                                     w.restoreParentWindows();
                                     w.restoreWindow(true);
                                 }
-                                w.handleWindowStateChange(WindowState.normal);
-                                if (w.hasModalChild())
+
+                                if (w.windowState()!=WindowState.normal)
+                                    w.handleWindowStateChange(WindowState.normal);
+                                    
+                                if (w.hasVisibleModalChild())
                                     w.restoreModalChilds();
                                 version(linux) { //not sure if needed on Windows or OSX. Also need to check on FreeBSD
                                     w.invalidate(); 
@@ -1322,7 +1318,7 @@ class SDLPlatform : Platform {
                     }
                     case SDL_KEYDOWN:
                         SDLWindow w = getWindow(event.key.windowID);
-                        if (w && !w.hasModalChild()) {
+                        if (w && !w.hasVisibleModalChild()) {
                             w.processKeyEvent(KeyAction.KeyDown, event.key.keysym.sym, event.key.keysym.mod);
                             SDL_StartTextInput();
                         }
@@ -1330,7 +1326,7 @@ class SDLPlatform : Platform {
                     case SDL_KEYUP:
                         SDLWindow w = getWindow(event.key.windowID);
                         if (w) {
-                            if (w.hasModalChild())
+                            if (w.hasVisibleModalChild())
                                 w.restoreModalChilds();
                             else
                                 w.processKeyEvent(KeyAction.KeyUp, event.key.keysym.sym, event.key.keysym.mod);
@@ -1342,26 +1338,26 @@ class SDLPlatform : Platform {
                     case SDL_TEXTINPUT:
                         debug(DebugSDL) Log.d("SDL_TEXTINPUT");
                         SDLWindow w = getWindow(event.text.windowID);
-                        if (w && !w.hasModalChild()) {
+                        if (w && !w.hasVisibleModalChild()) {
                             w.processTextInput(event.text.text.ptr);
                         }
                         break;
                     case SDL_MOUSEMOTION:
                         SDLWindow w = getWindow(event.motion.windowID);
-                        if (w && !w.hasModalChild()) {
+                        if (w && !w.hasVisibleModalChild()) {
                             w.processMouseEvent(MouseAction.Move, 0, event.motion.state, event.motion.x, event.motion.y);
                         }
                         break;
                     case SDL_MOUSEBUTTONDOWN:
                         SDLWindow w = getWindow(event.button.windowID);
-                        if (w && !w.hasModalChild()) {
+                        if (w && !w.hasVisibleModalChild()) {
                             w.processMouseEvent(MouseAction.ButtonDown, event.button.button, event.button.state, event.button.x, event.button.y);
                         }
                         break;
                     case SDL_MOUSEBUTTONUP:
                         SDLWindow w = getWindow(event.button.windowID);
                         if (w) {
-                            if (w.hasModalChild())
+                            if (w.hasVisibleModalChild())
                                 w.restoreModalChilds();
                             else
                                 w.processMouseEvent(MouseAction.ButtonUp, event.button.button, event.button.state, event.button.x, event.button.y);
@@ -1369,7 +1365,7 @@ class SDLPlatform : Platform {
                         break;
                     case SDL_MOUSEWHEEL:
                         SDLWindow w = getWindow(event.wheel.windowID);
-                        if (w && !w.hasModalChild()) {
+                        if (w && !w.hasVisibleModalChild()) {
                             debug(DebugSDL) Log.d("SDL_MOUSEWHEEL x=", event.wheel.x, " y=", event.wheel.y);
                             w.processMouseEvent(MouseAction.Wheel, 0, 0, event.wheel.x, event.wheel.y);
                         }
