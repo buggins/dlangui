@@ -73,6 +73,24 @@ enum WindowState : int {
     closed,
 }
 
+/// Dialog display modes - used to configure dialogs should be showed as a popup or window
+enum DialogDisplayMode : ulong {
+    /// show all types of dialogs in windows
+    allTypesOfDialogsInWindow = 0,
+    /// show file dialogs in popups
+    fileDialogInPopup = 1,
+    /// show message boxes in popups
+    messageBoxInPopup = 2,
+    /// show input boxes in popups
+    inputBoxInPopup = 4,
+    /// show settings dialogs in popups
+    settingsDialogInPopup = 8,
+    /// show user dialogs in popups - flag for user dialogs
+    userDialogInPopup = 16,
+    /// show all types of dialogs in popups
+    allTypesOfDialogsInPopup = fileDialogInPopup | messageBoxInPopup | inputBoxInPopup | settingsDialogInPopup | userDialogInPopup
+}
+
 /// Window state signal listener
 interface OnWindowStateHandler {
     /// signal listener - called when state of window is changed
@@ -1505,6 +1523,18 @@ class Platform {
         }
     }
 
+    protected ulong _uiDialogDisplayMode = DialogDisplayMode.messageBoxInPopup | DialogDisplayMode.inputBoxInPopup;
+    /// returns how dialogs should be displayed - as popup or window
+    @property ulong uiDialogDisplayMode() {
+        return _uiDialogDisplayMode;
+    }
+    
+    // sets how dialogs should be displayed - as popup or window - use DialogDisplayMode enumeration
+    @property Platform uiDialogDisplayMode(ulong newDialogDisplayMode) {
+        _uiDialogDisplayMode = newDialogDisplayMode;
+        return this;
+    }
+    
     protected string[] _resourceDirs;
     /// returns list of resource directories
     @property string[] resourceDirs() { return _resourceDirs; }

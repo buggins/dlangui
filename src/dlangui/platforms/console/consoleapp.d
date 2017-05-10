@@ -69,6 +69,7 @@ class ConsolePlatform : Platform {
         _console.inputIdleEvent = &onInputIdle;
         _console.init();
         _console.setCursorType(ConsoleCursorType.Invisible);
+        _uiDialogDisplayMode = DialogDisplayMode.allTypesOfDialogsInPopup;
         _drawBuf = new ConsoleDrawBuf(_console);
     }
     ~this() {

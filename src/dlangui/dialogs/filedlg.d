@@ -85,19 +85,6 @@ struct FileFilterEntry {
     }
 }
 
-static if (BACKEND_CONSOLE) {
-    __gshared bool SHOW_FILE_DIALOG_IN_POPUP = true;
-} else {
-    version (Windows) {
-        static if (BACKEND_SDL) {
-            __gshared bool SHOW_FILE_DIALOG_IN_POPUP = false;
-        } else {
-            __gshared bool SHOW_FILE_DIALOG_IN_POPUP = false;
-        }
-    } else {
-        __gshared bool SHOW_FILE_DIALOG_IN_POPUP = false;
-    }
-}
 
 /// File open / save dialog
 class FileDialog : Dialog, CustomGridCellAdapter {
@@ -125,7 +112,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     protected string[string] _filetypeIcons;
 
     this(UIString caption, Window parent, Action action = null, uint fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable | FileDialogFlag.FileMustExist) {
-        super(caption, parent, fileDialogFlags | (SHOW_FILE_DIALOG_IN_POPUP ? DialogFlag.Popup : 0));
+        super(caption, parent, fileDialogFlags | (Platform.instance.uiDialogDisplayMode & DialogDisplayMode.fileDialogInPopup ? DialogFlag.Popup : 0));
         _isOpenDialog = !(_flags & FileDialogFlag.ConfirmOverwrite);
         if (action is null) {
             if (fileDialogFlags & FileDialogFlag.SelectDirectory)
