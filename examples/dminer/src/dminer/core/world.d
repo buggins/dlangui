@@ -219,10 +219,6 @@ private:
     int maxVisibleRange = MAX_VIEW_DISTANCE;
 }
 
-interface ChunkVisitor {
-    void visit(World world, SmallChunk * chunk);
-}
-
 struct VisitorCell {
     SmallChunk * chunk;
     ulong[6] accessible;

@@ -10,13 +10,31 @@ immutable cell_t VISITED_OCCUPIED = 254;
 immutable cell_t BOUND_BOTTOM = 253;
 immutable cell_t BOUND_SKY =    252;
 
+
+/*
+    World coordinates
+
+              A UP
+              |
+              |  / NORTH
+              | /
+ WEST         |/
+   -----------|-----------> EAST
+             /|
+            / |
+      SOUTH/  |
+          L   |
+              | DOWN
+*/
+
+/// World direction
 enum Dir : ubyte {
-    NORTH = 0,
-    SOUTH,
-    EAST,
-    WEST,
-    UP,
-    DOWN,
+    NORTH = 0, /// z--
+    SOUTH,     /// z++
+    EAST,      /// x++
+    WEST,      /// x--
+    UP,        /// y++
+    DOWN,      /// y--
 }
 
 // 26 direction masks based on Dir
@@ -64,10 +82,15 @@ struct Vector2d {
 
 immutable Vector2d ZERO2 = Vector2d(0, 0);
 
+/// Integer 3d vector: x,y,z
 struct Vector3d {
+    /// WEST-EAST
     int x;
+    /// DOWN-UP
     int y;
+    /// NORTH-SOUTH
     int z;
+
     this(int xx, int yy, int zz) {
         x = xx;
         y = yy;
@@ -249,152 +272,6 @@ alias CellArray = Array!(cell_t);
 alias Vector2dArray = Array!(Vector2d);
 alias Vector3dArray = Array!(Vector3d);
 
-/*
-/// array with support of both positive and negative indexes
-struct InfiniteArray(T) {
-private:
-    T[] dataPlus;
-    T[] dataMinus;
-    int minIdx;
-    int maxIdx;
-public:
-    @property int minIndex() { return minIdx; }
-    @property int maxIndex() { return maxIdx; }
-    void disposeFunction(T p) {
-        destroy(p);
-    }
-    ~this() {
-        foreach(p; dataPlus)
-            if (p !is T.init)
-                disposeFunction(p);
-        foreach(p; dataMinus)
-            if (p !is T.init)
-                disposeFunction(p);
-    }
-    T get(int index) {
-        if (index >= 0) {
-            if (index >= maxIdx)
-                return T.init;
-            return dataPlus[index];
-        } else {
-            if (index <= minIdx)
-                return T.init;
-            return dataMinus[-index];
-        }
-    }
-    void set(int index, T value) {
-        if (index >= 0) {
-            if (index >= maxIdx) {
-                // extend array
-                if (index <= dataPlus.length) {
-                    int oldsize = dataPlus.length;
-                    int newsize = 1024;
-                    while (newsize <= index)
-                        newsize <<= 1;
-                    dataPlus.length = newsize;
-                    dataPlus.assumeSafeAppend;
-                    for(int i = oldsize; i < newsize; i++)
-                        dataPlus[i] = T.init;
-                }
-                maxIdx = index + 1;
-            }
-            if (dataPlus[index] !is T.init && dataPlus[index] !is value)
-                disposeFunction(dataPlus[index]);
-            dataPlus[index] = value;
-        } else {
-            if (index <= minIdx) {
-                // extend array
-                if (-index <= dataMinus.length) {
-                    int oldsize = dataMinus.length;
-                    int newsize = 1024;
-                    while (newsize <= -index)
-                        newsize <<= 1;
-                    dataMinus.length = newsize;
-                    dataMinus.assumeSafeAppend;
-                    for(int i = oldsize; i < newsize; i++)
-                        dataMinus[i] = T.init;
-                }
-                maxIdx = index - 1;
-            }
-            if (dataMinus[-index] !is T.init && dataMinus[-index] !is value)
-                disposeFunction(dataMinus[-index]);
-            dataMinus[-index] = value;
-        }
-    }
-}
-
-struct InfiniteMatrix(T) {
-private:
-    int _size = 0;
-    int _sizeShift = 0;
-    int _sizeShiftMul2 = 0;
-    int _sizeMask = 0;
-    int _invSizeMask = 0;
-    T[] _data;
-    void resize(int newSizeShift) {
-        int newSize = (1<<newSizeShift);
-        T[] newdata;
-        newdata.length = newSize * 2 * newSize * 2;
-        newdata[0 .. $] = null;
-        for (int y = -_size; y < _size; y++) {
-            for (int x = -_size; x < _size; x++) {
-                T v = get(x, y);
-                if (x < -newSize || x >= newSize || y < -newSize || y >= newSize) {
-                    // destory: // outside new size
-                    destroy(v);
-                } else {
-                    // move
-                    newdata[((y + newSize) << (newSizeShift + 1)) | (x + newSize)] = v;
-                }
-            }
-        }
-        _data = newdata;
-        _size = newSize;
-        _sizeShift = newSizeShift;
-        _sizeShiftMul2 = _sizeShift + 1;
-        _sizeMask = (1 << _sizeShiftMul2) - 1;
-        _invSizeMask = ~_sizeMask;
-    }
-    int calcIndex(int x, int y) {
-        return (y << _sizeShiftMul2) + x;
-    }
-public:
-    @property int size() { return _size; }
-    T get(int x, int y) {
-        if (!_data)
-            return null;
-        x += _size;
-        y += _size;
-        if (!((x | y) & ~_sizeMask)) {
-            return _data.ptr[(y << _sizeShiftMul2) + x]; //calcIndex(x, y)
-        }
-        return null;
-    }
-    void set(int x, int y, T v) {
-        if (x < -_size || x >= _size || y < -_size || y >= _size) {
-            int newSizeShift = _sizeShift < 6 ? 6 : _sizeShift + 1;
-            for (; ;newSizeShift++) {
-                int sz = 1 << newSizeShift;
-                if (x < -sz || x >= sz || y < -sz || y >= sz)
-                    continue;
-                break;
-            }
-            resize(newSizeShift);
-        }
-        x += _size;
-        y += _size;
-        int index = calcIndex(x, y);
-        if (_data.ptr[index])
-            destroy(_data.ptr[index]);
-        _data.ptr[index] = v;
-    }
-    ~this() {
-        foreach(ref v; _data)
-            if (v)
-                destroy(v);
-    }
-}
-*/
 
 
 struct Position {

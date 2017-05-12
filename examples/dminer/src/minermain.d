@@ -430,6 +430,7 @@ class UiWidget : VerticalLayout { //, CellVisitor
     }
 
     void updatePositionMessage() {
+        import std.string : format;
         Widget w = childById("lblPosition");
         string dir = _world.camPosition.direction.dir.to!string;
         dstring s = format("pos(%d,%d) h=%d fps:%d %s    [F]lying: %s   [U]pdateMesh: %s", _world.camPosition.pos.x, _world.camPosition.pos.z, _world.camPosition.pos.y, 
