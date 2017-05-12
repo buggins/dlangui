@@ -41,7 +41,7 @@ import dlangui.dialogs.dialog;
 private import std.algorithm;
 private import std.file;
 private import std.path;
-private import std.utf;
+private import std.utf : toUTF32;
 private import std.string;
 private import std.array;
 private import std.conv : to;

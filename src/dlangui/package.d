@@ -83,5 +83,5 @@ public {
     // some useful imports from Phobos
     import std.algorithm : equal;
     import std.conv : to;
-    import std.utf : toUTF32, toUTF8;
+    import std.utf : toUTF32;
 }

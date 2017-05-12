@@ -31,7 +31,7 @@ import dlangui.widgets.widget;
 import dlangui.widgets.metadata;
 import std.conv : to;
 import std.algorithm : equal, min, max;
-import std.utf : toUTF32, toUTF8;
+import std.utf : toUTF32;
 import std.array : join;
 public import dlangui.dml.annotations;
 public import dlangui.dml.tokenizer;

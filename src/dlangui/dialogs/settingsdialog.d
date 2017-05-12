@@ -19,7 +19,7 @@ import dlangui.dialogs.dialog;
 private import std.algorithm;
 private import std.file;
 private import std.path;
-private import std.utf;
+private import std.utf : toUTF32;
 private import std.conv : to;
 private import std.array : split;
 

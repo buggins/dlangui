@@ -519,3 +519,15 @@ uint parseHexDigit(T)(T ch) pure nothrow {
         return ch - 'A' + 10;
     return uint.max;
 }
+
+/// replacement of deprecated std.utf.toUTF8
+string toUTF8(dstring str) {
+    import std.utf : encode, codeLength, byUTF;
+    char[] buf;
+    buf.length = codeLength!char(str);
+    int pos = 0;
+    foreach(ch; str.byUTF!char) {
+        buf.ptr[pos++] = ch;
+    }
+    return cast(string)buf;
+}

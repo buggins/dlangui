@@ -24,7 +24,7 @@ private import dlangui.widgets.widget;
 
 private import std.string;
 private import std.conv;
-private import std.utf;
+private import std.utf : toUTF32;
 
 /// Keyboard accelerator (key + modifiers)
 struct Accelerator {

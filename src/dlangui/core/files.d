@@ -425,7 +425,7 @@ RootEntry[] getBookmarkPaths() nothrow
         
         import core.stdc.wchar_ : wcslen;
         import std.exception : enforce;
-        import std.utf : toUTF8, toUTF16z;
+        import std.utf : toUTF16z;
         import std.file : dirEntries, SpanMode;
         import std.string : endsWith;
         

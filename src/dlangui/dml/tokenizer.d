@@ -4,7 +4,7 @@ import dlangui.core.types;
 import dlangui.core.linestream;
 
 import std.conv : to;
-import std.utf : toUTF32, toUTF8;
+import std.utf : toUTF32;
 import std.algorithm : equal, min, max;
 
 enum TokenType : ushort {
@@ -450,7 +450,7 @@ class Tokenizer {
     }
 
     string getContextSource() {
-        string s = toUTF8(_lineText);
+        string s = toUTF8(cast(dstring)_lineText);
         if (_pos == 0)
             return " near `^^^" ~ s[0..min($,30)] ~ "`";
         if (_pos >= _len)

@@ -65,7 +65,7 @@ import dlangui.core.logger;
 import dlangui.core.files;
 import dlangui.graphics.resources;
 private import dlangui.core.linestream;
-private import std.utf;
+private import std.utf : toUTF32;
 private import std.algorithm;
 private import std.string;
 private import std.file;
