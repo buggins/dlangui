@@ -43,6 +43,10 @@ extern (C) int UIAppMain(string[] args) {
     embeddedResourceList.addResources(embedResourcesFromList!("resources.list")());
     //embeddedResourceList.dumpEmbeddedResources();
 
+    debug { 
+        testPlanes();
+    }
+
     // create window
     Window window = Platform.instance.createWindow("DlangUI Voxel RPG", null, WindowFlag.Resizable, 600, 500);
     window.mainWidget = new UiWidget();

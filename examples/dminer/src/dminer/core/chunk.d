@@ -933,12 +933,277 @@ ulong yPlaneFromZplanes(ref ulong[8] planes, int y) {
     ulong res = 0;
     for (int z = 0; z < 8; z++) {
         ulong n = planes[z]; // one plane == z
-        n = n >> (y * 3); // move to low byte
+        n = n >> (y * 8); // move to low byte
         n &= 0xFF;
-        n = n << (z * 3); // move to Z position
+        n = n << (z * 8); // move to Z position
         res |= n;
     }
     return res;
+}
+
+/*
+X planes (WEST EAST): z, y
+    z=0  z=1  z=2  z=3  z=4  z=5  z=6  z=7
+y=0   0    1    2    3    4    5    6    7
+y=1   8    9   10   11   12   13   14   15
+y=2  16   17   18   19   29   21   22   23
+y=3  24   25   26   27   28   29   30   31
+y=4  32   33   34   35   36   37   38   39
+y=5  40   41   42   43   44   45   46   47
+y=6  48   49   50   51   52   53   54   55
+y=7  56   57   58   59   60   61   62   63
+
+Z planes (NORTH SOUTH): x, y
+    x=0  x=1  x=2  x=3  x=4  x=5  x=6  x=7
+y=0   0    1    2    3    4    5    6    7
+y=1   8    9   10   11   12   13   14   15
+y=2  16   17   18   19   29   21   22   23
+y=3  24   25   26   27   28   29   30   31
+y=4  32   33   34   35   36   37   38   39
+y=5  40   41   42   43   44   45   46   47
+y=6  48   49   50   51   52   53   54   55
+y=7  56   57   58   59   60   61   62   63
+
+*/
+ulong zPlaneFromXplanes(ref ulong[8] planes, int z) {
+    ulong res = 0;
+    for (int x = 0; x < 8; x++) {
+        ulong n = planes[x]; // one plane == z
+        n = n >> z; // move to low bit
+        n &=  0x0101010101010101L;
+        n = n << x; // move to X bit
+        res |= n;
+    }
+    return res;
+}
+
+/*
+X planes (WEST EAST): z, y
+    z=0  z=1  z=2  z=3  z=4  z=5  z=6  z=7
+y=0   0    1    2    3    4    5    6    7
+y=1   8    9   10   11   12   13   14   15
+y=2  16   17   18   19   29   21   22   23
+y=3  24   25   26   27   28   29   30   31
+y=4  32   33   34   35   36   37   38   39
+y=5  40   41   42   43   44   45   46   47
+y=6  48   49   50   51   52   53   54   55
+y=7  56   57   58   59   60   61   62   63
+
+Y planes (DOWN UP): x, z
+    x=0  x=1  x=2  x=3  x=4  x=5  x=6  x=7
+z=0   0    1    2    3    4    5    6    7
+z=1   8    9   10   11   12   13   14   15
+z=2  16   17   18   19   29   21   22   23
+z=3  24   25   26   27   28   29   30   31
+z=4  32   33   34   35   36   37   38   39
+z=5  40   41   42   43   44   45   46   47
+z=6  48   49   50   51   52   53   54   55
+z=7  56   57   58   59   60   61   62   63
+*/
+// move bit 0 -> 0, 1->8, 2->16, 3->24, .. 7->56
+ulong flipBitsLeft(ulong n) {
+    n &=  0xFFL; // 
+    return ((n&1) | ((n&2) << 7) | ((n&4) << 14) | ((n&8) << 21) | ((n&16) << 28) | ((n&32) << 35) | ((n&64) << 42) | ((n&128)<< 49)) & 0x0101010101010101L;
+}
+ulong yPlaneFromXplanes(ref ulong[8] planes, int y) {
+    ulong res = 0;
+    for (int x = 0; x < 8; x++) {
+        ulong n = planes[x]; // one plane == z
+        n = n >> (y * 8); // move to low byte
+        n = flipBitsLeft(n);
+        n = n << (x); // move to x position
+        res |= n;
+    }
+    return res;
+}
+
+/*
+   Y planes (DOWN UP): x, z
+    x=0  x=1  x=2  x=3  x=4  x=5  x=6  x=7
+z=0   0    1    2    3    4    5    6    7
+z=1   8    9   10   11   12   13   14   15
+z=2  16   17   18   19   29   21   22   23
+z=3  24   25   26   27   28   29   30   31
+z=4  32   33   34   35   36   37   38   39
+z=5  40   41   42   43   44   45   46   47
+z=6  48   49   50   51   52   53   54   55
+z=7  56   57   58   59   60   61   62   63
+
+Z planes (NORTH SOUTH): x, y
+    x=0  x=1  x=2  x=3  x=4  x=5  x=6  x=7
+y=0   0    1    2    3    4    5    6    7
+y=1   8    9   10   11   12   13   14   15
+y=2  16   17   18   19   29   21   22   23
+y=3  24   25   26   27   28   29   30   31
+y=4  32   33   34   35   36   37   38   39
+y=5  40   41   42   43   44   45   46   47
+y=6  48   49   50   51   52   53   54   55
+y=7  56   57   58   59   60   61   62   63
+
+*/
+ulong zPlaneFromYplanes(ref ulong[8] planes, int z) {
+    ulong res = 0;
+    for (int y = 0; y < 8; y++) {
+        ulong n = planes[y]; // one plane == z
+        n = n >> (z * 8); // move to low byte
+        n &= 0xFF;
+        n = n << (y * 8); // move to Z position
+        res |= n;
+    }
+    return res;
+}
+
+/*
+Y planes (DOWN UP): x, z
+    x=0  x=1  x=2  x=3  x=4  x=5  x=6  x=7
+z=0   0    1    2    3    4    5    6    7
+z=1   8    9   10   11   12   13   14   15
+z=2  16   17   18   19   29   21   22   23
+z=3  24   25   26   27   28   29   30   31
+z=4  32   33   34   35   36   37   38   39
+z=5  40   41   42   43   44   45   46   47
+z=6  48   49   50   51   52   53   54   55
+z=7  56   57   58   59   60   61   62   63
+
+X planes (WEST EAST): z, y
+    z=0  z=1  z=2  z=3  z=4  z=5  z=6  z=7
+y=0   0    1    2    3    4    5    6    7
+y=1   8    9   10   11   12   13   14   15
+y=2  16   17   18   19   29   21   22   23
+y=3  24   25   26   27   28   29   30   31
+y=4  32   33   34   35   36   37   38   39
+y=5  40   41   42   43   44   45   46   47
+y=6  48   49   50   51   52   53   54   55
+y=7  56   57   58   59   60   61   62   63
+*/
+// move bit 0 -> 0, 8->1, 16->2, 24->3, .. 56->7
+ulong flipBitsRight(ulong n) {
+    n &=  0x0101010101010101L; // 
+    return (n | (n >> 7) | (n >> 14) | (n >> 21) | (n >> 28) | (n >> 35) | (n >> 42) | (n >> 49)) & 255;
+}
+ulong xPlaneFromYplanes(ref ulong[8] planes, int x) {
+    ulong res = 0;
+    for (int y = 0; y < 8; y++) {
+        ulong n = planes[y]; // one plane == y
+        n = n >> x; // move to low bit
+        n = flipBitsRight(n);
+        n = n << (y * 8); // move to y byte
+        res |= n;
+    }
+    return res;
+}
+
+struct Planes(immutable Dir dir) {
+    ulong[8] planes;
+    alias planes this;
+    bool opIndex(int x, int y, int z) {
+        static if (dir == Dir.NORTH || dir == Dir.SOUTH) {
+            // Z planes
+            ulong zplanemask = cast(ulong)1 << ((y << 3) | x);
+            return (planes[z] & zplanemask) != 0;
+        } else static if (dir == Dir.WEST || dir == Dir.EAST) {
+            // X planes
+            ulong xplanemask = cast(ulong)1 << ((y << 3) | z);
+            return (planes[x] & xplanemask) != 0;
+        } else {
+            // Y planes
+            ulong yplanemask = cast(ulong)1 << ((z << 3) | x);
+            return (planes[y] & yplanemask) != 0;
+        }
+    }
+    void opIndexAssign(bool value, int x, int y, int z) {
+        static if (dir == Dir.NORTH || dir == Dir.SOUTH) {
+            // Z planes
+            ulong zplanemask = cast(ulong)1 << ((y << 3) | x);
+            if (value)
+                planes[z] |= zplanemask;
+            else
+                planes[z] &= ~zplanemask;
+        } else static if (dir == Dir.WEST || dir == Dir.EAST) {
+            // X planes
+            ulong xplanemask = cast(ulong)1 << ((y << 3) | z);
+            if (value)
+                planes[x] |= xplanemask;
+            else
+                planes[x] &= ~xplanemask;
+        } else {
+            // Y planes
+            ulong yplanemask = cast(ulong)1 << ((z << 3) | x);
+            if (value)
+                planes[y] |= yplanemask;
+            else
+                planes[y] &= ~yplanemask;
+        }
+    }
+}
+
+struct AllPlanes {
+    Planes!(Dir.NORTH) zplanes;
+    Planes!(Dir.WEST) xplanes;
+    Planes!(Dir.DOWN) yplanes;
+    bool opIndex(int x, int y, int z) {
+        bool vx = xplanes[x, y, z];
+        bool vy = yplanes[x, y, z];
+        bool vz = zplanes[x, y, z];
+        assert(vx == vy && vx == vz);
+        return vx;
+    }
+    void opIndexAssign(bool value, int x, int y, int z) {
+        xplanes[x, y, z] = value;
+        yplanes[x, y, z] = value;
+        zplanes[x, y, z] = value;
+    }
+    void testAllPlanesEqual() {
+        for (int x = 0; x < 8; x++)
+            for (int y = 0; y < 8; y++)
+                for (int z = 0; z < 8; z++)
+                    opIndex(x, y, z);
+    }
+    void testPlanesExtract() {
+
+        testAllPlanesEqual();
+
+        ulong n, m;
+
+        n = xPlaneFromYplanes(yplanes, 0);
+        m = xplanes.planes[0];
+        assert(n == m);
+
+        for (int i = 0; i < 8; i++) {
+            n = xPlaneFromYplanes(yplanes, i);
+            assert(n == xplanes.planes[i]);
+            n = zPlaneFromYplanes(yplanes, i);
+            assert(n == zplanes.planes[i]);
+            n = xPlaneFromZplanes(zplanes, i);
+            assert(n == xplanes.planes[i]);
+            n = yPlaneFromZplanes(zplanes, i);
+            assert(n == yplanes.planes[i]);
+            n = zPlaneFromXplanes(xplanes, i);
+            assert(n == zplanes.planes[i]);
+            n = yPlaneFromXplanes(xplanes, i);
+            assert(n == yplanes.planes[i]);
+        }
+    }
+}
+
+void testPlanes() {
+    AllPlanes v;
+    v[0, 1, 2] = true;
+    v.testPlanesExtract();
+    v[5, 0, 6] = true;
+    v[7, 2, 0] = true;
+    v[6, 7, 7] = true;
+    v[3, 3, 7] = true;
+    v[6, 5, 3] = true;
+    v.testPlanesExtract();
+    v[5, 0, 6] = true;
+    v[3, 4, 5] = true;
+    v[6, 2, 3] = true;
+    v[1, 7, 6] = true;
+    v.testPlanesExtract();
+    v[3, 4, 5] = false;
+    v[6, 2, 3] = false;
+    v.testPlanesExtract();
 }
 
 struct VisibilityCheckChunk {
@@ -985,38 +1250,38 @@ struct VisibilityCheckChunk {
     void applyYPlanesTrace(ref ulong[8] planes) {
         if (spreadToDirMask & DirMask.MASK_WEST) { // x--
             // X planes (WEST EAST): z, y
-            //maskTo[Dir.WEST] |= xPlaneFromZplanes(planes, 0);
+            maskTo[Dir.WEST] |= xPlaneFromYplanes(planes, 0);
         }
         if (spreadToDirMask & DirMask.MASK_EAST) { // x++
             // X planes (WEST EAST): z, y
-            //maskTo[Dir.EAST] |= xPlaneFromZplanes(planes, 7);
+            maskTo[Dir.EAST] |= xPlaneFromYplanes(planes, 7);
         }
         if (spreadToDirMask & DirMask.MASK_NORTH) { // z--
-            // Y planes (DOWN UP): x, z
-            //maskTo[Dir.DOWN] |= yPlaneFromZplanes(planes, 0);
+            // Z planes (NORTH SOUTH): x, y
+            maskTo[Dir.NORTH] |= zPlaneFromYplanes(planes, 0);
         }
         if (spreadToDirMask & DirMask.MASK_SOUTH) { // z++
-            // Y planes (DOWN UP): x, z
-            //maskTo[Dir.UP] |= yPlaneFromZplanes(planes, 7);
+            // Z planes (NORTH SOUTH): x, y
+            maskTo[Dir.SOUTH] |= zPlaneFromYplanes(planes, 7);
         }
     }
 
     void applyXPlanesTrace(ref ulong[8] planes) {
         if (spreadToDirMask & DirMask.MASK_NORTH) { // z--
-            // X planes (WEST EAST): z, y
-            //maskTo[Dir.WEST] |= xPlaneFromZplanes(planes, 0);
+            // Z planes (NORTH SOUTH): x, y
+            maskTo[Dir.NORTH] |= zPlaneFromXplanes(planes, 0);
         }
         if (spreadToDirMask & DirMask.MASK_SOUTH) { // z++
-            // X planes (WEST EAST): z, y
-            //maskTo[Dir.EAST] |= xPlaneFromZplanes(planes, 7);
+            // Z planes (NORTH SOUTH): x, y
+            maskTo[Dir.SOUTH] |= zPlaneFromXplanes(planes, 7);
         }
         if (spreadToDirMask & DirMask.MASK_DOWN) { // y--
             // Y planes (DOWN UP): x, z
-            //maskTo[Dir.DOWN] |= yPlaneFromZplanes(planes, 0);
+            maskTo[Dir.DOWN] |= yPlaneFromXplanes(planes, 0);
         }
         if (spreadToDirMask & DirMask.MASK_UP) { // y++
             // Y planes (DOWN UP): x, z
-            //maskTo[Dir.UP] |= yPlaneFromZplanes(planes, 7);
+            maskTo[Dir.UP] |= yPlaneFromXplanes(planes, 7);
         }
     }
 
@@ -1107,7 +1372,7 @@ struct VisibilityCheckIterator {
         return &plannedChunks[$ - 1];
     }
     // step 1: plan visiting chunk
-    void planVisitChunk(int x, int y, int z, Dir fromDir, ulong mask) {
+    void planVisitingChunk(int x, int y, int z, Dir fromDir, ulong mask) {
         if (!mask)
             return;
         SmallChunk * newChunk = world.getCellChunk(x, y, z);
@@ -1125,7 +1390,28 @@ struct VisibilityCheckIterator {
             visitor.visit(world, p.chunk);
             /// set mask of spread directions
             p.spreadToDirMask = calcSpreadMask(p.chunk.position, startPos);
-            p.tracePaths;
+            p.tracePaths();
+            ubyte mask = p.spreadToDirMask;
+            Vector3d pos = p.chunk.position;
+
+            if ((mask & DirMask.MASK_NORTH) && p.maskTo[Dir.NORTH]) { // z--
+                planVisitingChunk(pos.x, pos.y, pos.z - 8, Dir.NORTH, p.maskTo[Dir.NORTH]);
+            }
+            if ((mask & DirMask.MASK_SOUTH) && p.maskTo[Dir.SOUTH]) { // z++
+                planVisitingChunk(pos.x, pos.y, pos.z + 8, Dir.SOUTH, p.maskTo[Dir.SOUTH]);
+            }
+            if ((mask & DirMask.MASK_WEST) && p.maskTo[Dir.WEST]) { // x--
+                planVisitingChunk(pos.x - 8, pos.y, pos.z, Dir.WEST, p.maskTo[Dir.WEST]);
+            }
+            if ((mask & DirMask.MASK_EAST) && p.maskTo[Dir.EAST]) { // x++
+                planVisitingChunk(pos.x + 8, pos.y, pos.z, Dir.EAST, p.maskTo[Dir.EAST]);
+            }
+            if ((mask & DirMask.MASK_DOWN) && p.maskTo[Dir.DOWN]) { // y--
+                planVisitingChunk(pos.x, pos.y - 8, pos.z, Dir.DOWN, p.maskTo[Dir.DOWN]);
+            }
+            if ((mask & DirMask.MASK_UP) && p.maskTo[Dir.UP]) { // y++
+                planVisitingChunk(pos.x, pos.y + 8, pos.z, Dir.UP, p.maskTo[Dir.UP]);
+            }
         }
     }
     void start(World world, Vector3d startPos) {
@@ -1141,16 +1427,16 @@ struct VisibilityCheckIterator {
         this.visitor = visitor;
         visitor.visit(world, startChunk);
         if (auto mask = startChunk.getSideCanPassToMask(Dir.NORTH))
-            planVisitChunk(startPos.x, startPos.y, startPos.z, Dir.NORTH, mask);
+            planVisitingChunk(startPos.x, startPos.y, startPos.z - 8, Dir.NORTH, mask);
         if (auto mask = startChunk.getSideCanPassToMask(Dir.SOUTH))
-            planVisitChunk(startPos.x, startPos.y, startPos.z, Dir.SOUTH, mask);
+            planVisitingChunk(startPos.x, startPos.y, startPos.z + 8, Dir.SOUTH, mask);
         if (auto mask = startChunk.getSideCanPassToMask(Dir.WEST))
-            planVisitChunk(startPos.x, startPos.y, startPos.z, Dir.WEST, mask);
+            planVisitingChunk(startPos.x - 8, startPos.y, startPos.z, Dir.WEST, mask);
         if (auto mask = startChunk.getSideCanPassToMask(Dir.EAST))
-            planVisitChunk(startPos.x, startPos.y, startPos.z, Dir.EAST, mask);
-        if (auto mask = startChunk.getSideCanPassToMask(Dir.UP))
-            planVisitChunk(startPos.x, startPos.y, startPos.z, Dir.UP, mask);
+            planVisitingChunk(startPos.x + 8, startPos.y, startPos.z, Dir.EAST, mask);
         if (auto mask = startChunk.getSideCanPassToMask(Dir.DOWN))
-            planVisitChunk(startPos.x, startPos.y, startPos.z, Dir.DOWN, mask);
+            planVisitingChunk(startPos.x, startPos.y - 8, startPos.z, Dir.DOWN, mask);
+        if (auto mask = startChunk.getSideCanPassToMask(Dir.UP))
+            planVisitingChunk(startPos.x, startPos.y + 8, startPos.z, Dir.UP, mask);
     }
 }
