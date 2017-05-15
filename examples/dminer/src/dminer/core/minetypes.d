@@ -180,6 +180,14 @@ struct Vector3d {
         }
         return res;
     }
+
+    int dot(ref Vector3d v) {
+        return x * v.x + y * v.y + z * v.z;
+    }
+
+    int squaredLength() {
+        return x*x + y*y + z*z;
+    }
 }
 
 __gshared const Vector3d ZERO3 = Vector3d(0, 0, 0);

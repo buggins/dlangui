@@ -65,6 +65,7 @@ class MinerDrawable : MaterialDrawableObject, ChunkVisitor {
     import dlangui.graphics.scene.node;
     private World _world;
     private ChunkDiamondVisitor _chunkVisitor;
+    private VisibilityCheckIterator _chunkIterator;
     private Vector3d _pos;
     private Node3d _node;
     private Camera _cam;
@@ -82,14 +83,20 @@ class MinerDrawable : MaterialDrawableObject, ChunkVisitor {
         /// override it
         _node = node;
         //Log.d("drawing Miner scene");
-        _chunkVisitor.init(_world, MAX_VIEW_DISTANCE, this);
+        _chunkIterator.start(_world, _world.camPosition.pos, MAX_VIEW_DISTANCE);
+        //_chunkVisitor.init(_world, MAX_VIEW_DISTANCE, this);
         _pos = _world.camPosition.pos;
         _camPosition = _cam.translation;
         _camForwardVector = _cam.forwardVectorWorld;
         _camPosition -= _camForwardVector * 8;
         _skippedCount = _drawnCount = 0;
         long ts = currentTimeMillis();
-        _chunkVisitor.visitChunks(_pos);
+        //_chunkVisitor.visitChunks(_pos);
+        Vector3d camVector;
+        camVector.x = cast(int)(_camForwardVector.x * 256);
+        camVector.y = cast(int)(_camForwardVector.y * 256);
+        camVector.z = cast(int)(_camForwardVector.z * 256);
+        _chunkIterator.visitVisibleChunks(this, camVector);
         long duration = currentTimeMillis() - ts;
         Log.d("drawing of Miner scene finished in ", duration, " ms  skipped:", _skippedCount, " drawn:", _drawnCount);
     }
@@ -99,7 +106,7 @@ class MinerDrawable : MaterialDrawableObject, ChunkVisitor {
             vec3 chunkPos = vec3(p.x + 4, p.y + 4, p.z + 4);
             vec3 chunkDirection = (chunkPos - _camPosition).normalized;
             float dot = _camForwardVector.dot(chunkDirection);
-            //Log.d("chunkPos ", chunkPos, " chunkDir ", chunkDirection, " camDir ");
+            //Log.d("visit() chunkPos ", chunkPos, " chunkDir ", chunkDirection, " camDir ");
             if (dot < 0.7) { // cos(45)
                 _skippedCount++;
                 return;
