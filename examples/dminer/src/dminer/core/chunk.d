@@ -981,6 +981,46 @@ struct VisibilityCheckChunk {
             maskTo[Dir.UP] |= yPlaneFromZplanes(planes, 7);
         }
     }
+
+    void applyYPlanesTrace(ref ulong[8] planes) {
+        if (spreadToDirMask & DirMask.MASK_WEST) { // x--
+            // X planes (WEST EAST): z, y
+            //maskTo[Dir.WEST] |= xPlaneFromZplanes(planes, 0);
+        }
+        if (spreadToDirMask & DirMask.MASK_EAST) { // x++
+            // X planes (WEST EAST): z, y
+            //maskTo[Dir.EAST] |= xPlaneFromZplanes(planes, 7);
+        }
+        if (spreadToDirMask & DirMask.MASK_NORTH) { // z--
+            // Y planes (DOWN UP): x, z
+            //maskTo[Dir.DOWN] |= yPlaneFromZplanes(planes, 0);
+        }
+        if (spreadToDirMask & DirMask.MASK_SOUTH) { // z++
+            // Y planes (DOWN UP): x, z
+            //maskTo[Dir.UP] |= yPlaneFromZplanes(planes, 7);
+        }
+    }
+
+    void applyXPlanesTrace(ref ulong[8] planes) {
+        if (spreadToDirMask & DirMask.MASK_NORTH) { // z--
+            // X planes (WEST EAST): z, y
+            //maskTo[Dir.WEST] |= xPlaneFromZplanes(planes, 0);
+        }
+        if (spreadToDirMask & DirMask.MASK_SOUTH) { // z++
+            // X planes (WEST EAST): z, y
+            //maskTo[Dir.EAST] |= xPlaneFromZplanes(planes, 7);
+        }
+        if (spreadToDirMask & DirMask.MASK_DOWN) { // y--
+            // Y planes (DOWN UP): x, z
+            //maskTo[Dir.DOWN] |= yPlaneFromZplanes(planes, 0);
+        }
+        if (spreadToDirMask & DirMask.MASK_UP) { // y++
+            // Y planes (DOWN UP): x, z
+            //maskTo[Dir.UP] |= yPlaneFromZplanes(planes, 7);
+        }
+    }
+
+
     void tracePaths() {
         if (auto mask = maskFrom[Dir.NORTH]) {
             ulong[8] planes;
@@ -1001,13 +1041,49 @@ struct VisibilityCheckChunk {
                 planes[i] = mask;
             }
             maskTo[Dir.SOUTH] |= planes[7];
-            applyZPlanesTrace(planes);
+            applyYPlanesTrace(planes);
         }
         if (auto mask = maskFrom[Dir.DOWN]) {
+            ulong[8] planes;
+            for (int i = 7; i >= 0; i--) {
+                mask = spreadYPlane(mask, chunk.canPassPlanesY[i], spreadToDirMask);
+                if (!mask)
+                    break;
+                planes[i] = mask;
+            }
+            maskTo[Dir.DOWN] |= planes[0];
+            applyYPlanesTrace(planes);
         } else if (auto mask = maskFrom[Dir.UP]) {
+            ulong[8] planes;
+            for (int i = 0; i <= 7; i++) {
+                mask = spreadYPlane(mask, chunk.canPassPlanesY[i], spreadToDirMask);
+                if (!mask)
+                    break;
+                planes[i] = mask;
+            }
+            maskTo[Dir.UP] |= planes[7];
+            applyYPlanesTrace(planes);
         }
         if (auto mask = maskFrom[Dir.WEST]) {
+            ulong[8] planes;
+            for (int i = 7; i >= 0; i--) {
+                mask = spreadXPlane(mask, chunk.canPassPlanesX[i], spreadToDirMask);
+                if (!mask)
+                    break;
+                planes[i] = mask;
+            }
+            maskTo[Dir.WEST] |= planes[0];
+            applyXPlanesTrace(planes);
         } else if (auto mask = maskFrom[Dir.EAST]) {
+            ulong[8] planes;
+            for (int i = 0; i <= 7; i++) {
+                mask = spreadXPlane(mask, chunk.canPassPlanesX[i], spreadToDirMask);
+                if (!mask)
+                    break;
+                planes[i] = mask;
+            }
+            maskTo[Dir.EAST] |= planes[7];
+            applyXPlanesTrace(planes);
         }
     }
 }
