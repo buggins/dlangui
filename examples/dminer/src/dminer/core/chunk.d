@@ -151,6 +151,7 @@ struct SmallChunk {
     protected ulong[8] canPassPlanesX; // 64 bytes WEST to EAST
     protected ulong[8] canPassPlanesY; // 64 bytes DOWN to UP
     protected ulong[8] canPassPlanesZ; // 64 bytes NORTH to SOUTH
+
     protected ubyte[6] canPassFromTo; // index is FROM direction, ubyte is DirMask of TO direction; 1 means can pass FROM .. TO
     //ulong[6][6] canPassFromTo; // 288 bytes
     SmallChunk * [6] nearChunks;
@@ -1554,7 +1555,7 @@ struct VisibilityCheckIterator {
             return;
         // direction test (TODO)
         int dot = diff.dot(cameraDirection);
-        if (dot < 3000)
+        if (dot < 8000)
             return;
         //....
         // plan visiting
@@ -1618,9 +1619,9 @@ struct VisibilityCheckIterator {
         this.visitor = visitor;
         this.cameraDirection = cameraDirection;
         Vector3d cameraOffset = cameraDirection;
-        cameraOffset.x /= 16;
-        cameraOffset.y /= 16;
-        cameraOffset.z /= 16;
+        cameraOffset.x /= 7;
+        cameraOffset.y /= 7;
+        cameraOffset.z /= 7;
         this.camPos = startPos - cameraOffset;
         //if (!startChunk)
         //    return;

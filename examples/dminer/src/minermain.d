@@ -60,6 +60,13 @@ extern (C) int UIAppMain(string[] args) {
     return Platform.instance.enterMessageLoop();
 }
 
+class ChunkVisitCounter : ChunkVisitor {
+    int count;
+    void visit(World world, SmallChunk * chunk) {
+        count++;
+    }
+}
+
 class MinerDrawable : MaterialDrawableObject, ChunkVisitor {
 
     import dlangui.graphics.scene.node;
@@ -83,7 +90,6 @@ class MinerDrawable : MaterialDrawableObject, ChunkVisitor {
         /// override it
         _node = node;
         //Log.d("drawing Miner scene");
-        _chunkIterator.start(_world, _world.camPosition.pos, MAX_VIEW_DISTANCE);
         //_chunkVisitor.init(_world, MAX_VIEW_DISTANCE, this);
         _pos = _world.camPosition.pos;
         _camPosition = _cam.translation;
@@ -96,9 +102,14 @@ class MinerDrawable : MaterialDrawableObject, ChunkVisitor {
         camVector.x = cast(int)(_camForwardVector.x * 256);
         camVector.y = cast(int)(_camForwardVector.y * 256);
         camVector.z = cast(int)(_camForwardVector.z * 256);
+        ChunkVisitCounter countVisitor = new ChunkVisitCounter();
+        _chunkIterator.start(_world, _world.camPosition.pos, MAX_VIEW_DISTANCE);
+        _chunkIterator.visitVisibleChunks(countVisitor, camVector);
+        long durationNoDraw = currentTimeMillis() - ts;
+        _chunkIterator.start(_world, _world.camPosition.pos, MAX_VIEW_DISTANCE);
         _chunkIterator.visitVisibleChunks(this, camVector);
         long duration = currentTimeMillis() - ts;
-        Log.d("drawing of Miner scene finished in ", duration, " ms  skipped:", _skippedCount, " drawn:", _drawnCount);
+        Log.d("drawing of Miner scene finished in ", duration, " ms  skipped:", _skippedCount, " drawn:", _drawnCount, " duration(noDraw)=", durationNoDraw);
     }
     void visit(World world, SmallChunk * chunk) {
         if (chunk) {
