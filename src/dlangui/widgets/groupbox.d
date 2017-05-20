@@ -156,8 +156,9 @@ class GroupBox : LinearLayout {
     override void layout(Rect rc) {
         super.layout(rc);
         Rect r = rc;
+        r.top += margins.top;
         r.bottom = r.top + _topHeight;
-        r.left += _topFrameLeft;
+        r.left += _topFrameLeft + margins.left;
         r.right -= _topFrameRight;
         _caption.measure(r.width, r.height);
         if (r.width > _caption.measuredWidth)
