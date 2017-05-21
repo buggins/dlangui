@@ -211,6 +211,7 @@ class SwitchButton : Widget {
             uint st = state;
             img.drawTo(buf, rc, st);
         }
+        _needDraw = false;
     }
 }
 
