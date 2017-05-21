@@ -1188,7 +1188,6 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
                 Widget w = itemWidget(i);
                 if (w is null || w.visibility != Visibility.Visible)
                     continue;
-                w.measure(itemrc.width, itemrc.height);
                 w.layout(itemrc);
                 w.onDraw(buf);
             }
