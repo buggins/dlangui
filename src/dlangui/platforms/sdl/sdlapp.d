@@ -722,7 +722,7 @@ class SDLWindow : Window {
             bool res = dispatchMouseEvent(event);
             if (res) {
                 debug(mouse) Log.d("Calling update() after mouse event");
-                invalidate();
+                update();
             }
         }
     }
@@ -951,7 +951,7 @@ class SDLWindow : Window {
         bool res = dispatchKeyEvent(new KeyEvent(KeyAction.Text, 0, flags, ds));
         if (res) {
             debug(DebugSDL) Log.d("Calling update() after text event");
-            invalidate();
+            update();
         }
         return res;
     }
@@ -1026,7 +1026,7 @@ class SDLWindow : Window {
 //            }
         if (res) {
             debug(DebugSDL) Log.d("Calling update() after key event");
-            invalidate();
+            update();
         }
         return res;
     }
