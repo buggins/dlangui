@@ -23,7 +23,7 @@ static if (BACKEND_SDL):
 import core.runtime;
 import std.conv;
 import std.string;
-import std.utf : toUTF32;
+import std.utf : toUTF32, toUTF16z;
 import std.stdio;
 import std.algorithm;
 import std.file;
