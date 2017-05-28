@@ -81,18 +81,18 @@ class SettingsDialog : Dialog {
     }
 
     void controlsToSettings() {
-        _settings.host = toUTF8(childById("edHost").text);
+        _settings.host = std.utf.toUTF8(childById("edHost").text);
         try {
             _settings.port = cast(ushort)to!ulong(childById("edPort").text);
         } catch (Exception e) {
             // ignore
             _settings.port = 6667;
         }
-        _settings.nick = toUTF8(childById("edNick").text);
-        _settings.alternateNick = toUTF8(childById("edAlternateNick").text);
-        _settings.userName = toUTF8(childById("edUsername").text);
-        _settings.userRealName = toUTF8(childById("edRealName").text);
-        _settings.defChannel = toUTF8(childById("edChannel").text);
+        _settings.nick = std.utf.toUTF8(childById("edNick").text);
+        _settings.alternateNick = std.utf.toUTF8(childById("edAlternateNick").text);
+        _settings.userName = std.utf.toUTF8(childById("edUsername").text);
+        _settings.userRealName = std.utf.toUTF8(childById("edRealName").text);
+        _settings.defChannel = std.utf.toUTF8(childById("edChannel").text);
     }
 
     override void close(const Action action) {
