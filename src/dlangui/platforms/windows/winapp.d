@@ -427,6 +427,10 @@ class Win32Window : Window {
         return _drawbuf;
     }
     override void show() {
+        if (!_mainWidget) {
+            Log.e("Window is shown without main widget");
+            _mainWidget = new Widget();
+        }
         ReleaseCapture();
         if (!(_flags & WindowFlag.Resizable) && _mainWidget) {
             _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);

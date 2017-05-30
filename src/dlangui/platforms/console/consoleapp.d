@@ -23,6 +23,10 @@ class ConsoleWindow : Window {
     }
     /// show window
     override void show() {
+        if (!_mainWidget) {
+            Log.e("Window is shown without main widget");
+            _mainWidget = new Widget();
+        }
         _visible = true;
     }
     private dstring _windowCaption;

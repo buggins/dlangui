@@ -342,6 +342,10 @@ class SDLWindow : Window {
 
     override void show() {
         Log.d("SDLWindow.show() - ", windowCaption);
+        if (!_mainWidget) {
+            Log.e("Window is shown without main widget");
+            _mainWidget = new Widget();
+        }
         if (_mainWidget && !(_flags & WindowFlag.Resizable)) {
             _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
             SDL_SetWindowSize(_win, _mainWidget.measuredWidth, _mainWidget.measuredHeight);
