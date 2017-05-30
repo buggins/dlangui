@@ -8,6 +8,7 @@ import dlangui.widgets.controls;
 import dlangui.widgets.tabs;
 import dlangui.widgets.editors;
 import dlangui.widgets.grid;
+import dlangui.widgets.scrollbar;
 
 import std.algorithm : min;
 
