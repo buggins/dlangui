@@ -65,7 +65,7 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
         glSupport.setOrthoProjection(Rect(0, 0, _dx, _dy), Rect(0, 0, _dx, _dy));
     }
 
-    /// reserved for hardware-accelerated drawing - begins drawing batch
+    /// reserved for hardware-accelerated drawing - begins drawing queue
     override void beforeDrawing() {
         _alpha = 0;
         if (_scene !is null) {
@@ -74,11 +74,12 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
         _scene = new Scene(this);
     }
 
-    /// reserved for hardware-accelerated drawing - ends drawing batch
+    /// reserved for hardware-accelerated drawing - ends drawing queue
     override void afterDrawing() {
         glSupport.setOrthoProjection(Rect(0, 0, _dx, _dy), Rect(0, 0, _dx, _dy));
+        glSupport.beforeRenderGUI();
         _scene.draw();
-        glSupport.batch.flush();
+        glSupport.queue.flush();
         GLProgram.unbind();
         glSupport.destroyBuffers();
         glSupport.flushGL();
@@ -142,7 +143,6 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
         assert(_scene !is null);
         Rect dstrect = Rect(x,y, x + glyph.correctedBlackBoxX, y + glyph.blackBoxY);
         Rect srcrect = Rect(0, 0, glyph.correctedBlackBoxX, glyph.blackBoxY);
-        //Log.v("GLDrawBuf.drawGlyph dst=", dstrect, " src=", srcrect, " color=", color);
         color = applyAlpha(color);
         if (!isFullyTransparentColor(color) && applyClipping(dstrect, srcrect)) {
             if (!glGlyphCache.isInCache(glyph.id))
@@ -158,7 +158,7 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
         if (applyClipping(dstrect, srcrect)) {
             if (!glImageCache.isInCache(src.id))
                 glImageCache.put(src);
-            _scene.add(new TextureSceneItem(src.id, dstrect, srcrect, applyAlpha(0xFFFFFF), 0, null, 0));
+            _scene.add(new TextureSceneItem(src.id, dstrect, srcrect, applyAlpha(0xFFFFFF), 0, null));
         }
     }
     /// draw source buffer rectangle contents to destination buffer rectangle applying rescaling
@@ -168,7 +168,7 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
         if (applyClipping(dstrect, srcrect)) {
             if (!glImageCache.isInCache(src.id))
                 glImageCache.put(src);
-            _scene.add(new TextureSceneItem(src.id, dstrect, srcrect, applyAlpha(0xFFFFFF), 0, null, 0));
+            _scene.add(new TextureSceneItem(src.id, dstrect, srcrect, applyAlpha(0xFFFFFF), 0, null));
         }
     }
 
@@ -545,17 +545,12 @@ private class GLImageCache : GLCache
             _needUpdateTexture = true;
             return cacheItem;
         }
-        void drawItem(GLCacheItem item, Rect dstrc, Rect srcrc, uint color, uint options, Rect * clip, int rotationAngle) {
+        void drawItem(GLCacheItem item, Rect dstrc, Rect srcrc, uint color, uint options, Rect * clip) {
             if (_needUpdateTexture)
                 updateTexture();
             if (_texture && _texture.ID != 0) {
-                //rotationAngle = 0;
                 int rx = dstrc.middlex;
                 int ry = dstrc.middley;
-                if (rotationAngle) {
-                    //rotationAngle = 0;
-                    //setRotation(rx, ry, rotationAngle);
-                }
                 // convert coordinates to cached texture
                 srcrc.offset(item._rc.left, item._rc.top);
                 if (clip) {
@@ -577,17 +572,7 @@ private class GLImageCache : GLCache
                     dstrc.bottom -= clip.bottom;
                 }
                 if (!dstrc.empty)
-                    glSupport.batch.addTexturedRect(_texture, _tdx, _tdy, color, color, color, color, srcrc, dstrc, srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height());
-                //glSupport.drawColorAndTextureRects(_texture, _tdx, _tdy, [srcrc], [dstrc], [color, color, color, color], srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height());
-                //drawColorAndTextureRect(vertices, texcoords, color, _texture);
-
-                if (rotationAngle) {
-                    // unset rotation
-                    glSupport.setRotation(rx, ry, 0);
-                    //                glMatrixMode(GL_PROJECTION);
-                    //                checkgl!glPopMatrix();
-                }
-
+                    glSupport.queue.addTexturedRect(_texture, _tdx, _tdy, color, color, color, color, srcrc, dstrc, srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height());
             }
         }
     }
@@ -619,11 +604,11 @@ private class GLImageCache : GLCache
         _map[img.id] = res;
     }
     /// draw cached item
-    void drawItem(uint objectId, Rect dstrc, Rect srcrc, uint color, int options, Rect * clip, int rotationAngle) {
+    void drawItem(uint objectId, Rect dstrc, Rect srcrc, uint color, int options, Rect * clip) {
         GLCacheItem* item = objectId in _map;
         if (item) {
             auto page = (cast(GLImageCachePage)item.page);
-            page.drawItem(*item, dstrc, srcrc, color, options, clip, rotationAngle);
+            page.drawItem(*item, dstrc, srcrc, color, options, clip);
         }
     }
 }
@@ -673,9 +658,7 @@ private class GLGlyphCache : GLCache
                 }
                 if (!dstrc.empty) {
                     //Log.d("drawing glyph with color ", color);
-                    //glSupport.drawColorAndTextureRect(_texture, _tdx, _tdy, srcrc, dstrc, color, false);
-                    //glSupport.drawColorAndTextureRects(_texture, _tdx, _tdy, [srcrc], [dstrc], [color, color, color, color], false);
-                    glSupport.batch.addTexturedRect(_texture, _tdx, _tdy, color, color, color, color, srcrc, dstrc, false);
+                    glSupport.queue.addTexturedRect(_texture, _tdx, _tdy, color, color, color, color, srcrc, dstrc, false);
                 }
             }
         }
@@ -723,8 +706,7 @@ public:
         _color = color;
     }
     override void draw() {
-        //glSupport.drawLines([Rect(_p1, _p2)], [_color, _color]);
-        glSupport.batch.addLine(Rect(_p1, _p2), _color, _color);
+        glSupport.queue.addLine(Rect(_p1, _p2), _color, _color);
     }
 }
 
@@ -743,7 +725,7 @@ public:
         _color = color;
     }
     override void draw() {
-        glSupport.batch.addTriangle(_p1, _p2, _p3, _color, _color, _color);
+        glSupport.queue.addTriangle(_p1, _p2, _p3, _color, _color, _color);
     }
 }
 
@@ -758,8 +740,7 @@ public:
         _color = color;
     }
     override void draw() {
-        glSupport.batch.addSolidRect(_rc, _color);
-        //glSupport.drawSolidFillRects([_rc], [_color, _color, _color, _color]);
+        glSupport.queue.addSolidRect(_rc, _color);
     }
 }
 
@@ -781,9 +762,7 @@ public:
         for (int y = _rc.top; y < _rc.bottom; y++) {
             for (int x = _rc.left; x < _rc.right; x++)
                 if ((x ^ y) & 1) {
-                    //glSupport.drawSolidFillRect(Rect(x, y, x + 1, y + 1), _color, _color, _color, _color);
-                    //glSupport.drawSolidFillRects([Rect(x, y, x + 1, y + 1)], [_color, _color, _color, _color]);
-                    glSupport.batch.addSolidRect(Rect(x, y, x + 1, y + 1), _color);
+                    glSupport.queue.addSolidRect(Rect(x, y, x + 1, y + 1), _color);
                 }
         }
     }
@@ -798,15 +777,14 @@ private:
     uint color;
     uint options;
     Rect * clip;
-    int rotationAngle;
 
 public:
     override void draw() {
         if (glImageCache)
-            glImageCache.drawItem(objectId, dstrc, srcrc, color, options, clip, rotationAngle);
+            glImageCache.drawItem(objectId, dstrc, srcrc, color, options, clip);
     }
 
-    this(uint _objectId, Rect _dstrc, Rect _srcrc, uint _color, uint _options, Rect * _clip, int _rotationAngle)
+    this(uint _objectId, Rect _dstrc, Rect _srcrc, uint _color, uint _options, Rect * _clip)
     {
         objectId = _objectId;
         dstrc = _dstrc;
@@ -814,7 +792,6 @@ public:
         color = _color;
         options = _options;
         clip = _clip;
-        rotationAngle = _rotationAngle;
     }
 }
 
@@ -856,13 +833,12 @@ public:
     }
     override void draw() {
         if (_handler) {
-            glSupport.batch.flush();
+            glSupport.queue.flush();
             glSupport.setOrthoProjection(_windowRect, _rc);
             glSupport.clearDepthBuffer();
             //glEnable(GL_BLEND);
             //checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             _handler(_windowRect, _rc);
-            glSupport.batch.flush();
             glSupport.setOrthoProjection(_windowRect, _windowRect);
         }
     }
