@@ -642,11 +642,10 @@ private void FillColor(uint color, Color[] buf_slice) {
     }
 }
 
-private float[] convertColors(uint[] cols) {
+private float[] convertColors(uint[] cols) pure nothrow {
     float[] colors;
-    colors.assumeSafeAppend();
     colors.length = cols.length * 4;
-    for (uint i = 0; i < cols.length; i++) {
+    foreach(i; 0 .. cols.length) {
         uint color = cols[i];
         float r = ((color >> 16) & 255) / 255.0;
         float g = ((color >> 8) & 255) / 255.0;
@@ -1453,6 +1452,7 @@ private final class OpenGLQueue {
 
         enum BatchType { Line = 0, Rect, Triangle, TexturedRect }
         BatchType type;
+
         Tex2D texture;
         int textureDx;
         int textureDy;
@@ -1643,7 +1643,7 @@ private final class OpenGLQueue {
     };
 
     /// make indices for rectangle (2 triangles == 6 vertexes per rect)
-    int[6] makeRectangleIndicesArray(int offset) {
+    int[6] makeRectangleIndicesArray(int offset) pure nothrow {
         int[6] indices;
         indices[0] = offset + 0;
         indices[1] = offset + 1;
@@ -1656,7 +1656,7 @@ private final class OpenGLQueue {
     }
 
     /// make indices for triangles
-    int[3] makeTriangleIndicesArray(int offset) {
+    int[3] makeTriangleIndicesArray(int offset) pure nothrow {
         int[3] indices;
         indices[0] = offset + 0;
         indices[1] = offset + 1;
@@ -1665,7 +1665,7 @@ private final class OpenGLQueue {
     }
 
     /// make indices for lines
-    int[2] makeLineIndicesArray(int offset) {
+    int[2] makeLineIndicesArray(int offset) pure nothrow {
         int[2] indices;
         indices[0] = offset + 0;
         indices[1] = offset + 1;
