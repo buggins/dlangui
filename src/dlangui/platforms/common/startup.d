@@ -113,8 +113,11 @@ version (Windows) {
 		import dlangui.core.files;
 		import std.file : DirEntry;
 		DirEntry[] entries;
-		if (!listDirectory(dir, false, true, true, ["*.ttf"], entries))
-			return null;
+        try {
+            entries = listDirectory(dir, AttrFilter.files, ["*.ttf"]);
+        } catch(Exception e) {
+            return null;
+        }
 
 		string[] res;
 		foreach(entry; entries) {
