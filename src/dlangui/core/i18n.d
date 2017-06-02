@@ -26,6 +26,14 @@ from DLangUI framework with resources of application.
 Set interface language using Platform.instance.uiLanguage in UIAppMain during initialization of application settings:
 ---
 Platform.instance.uiLanguage = "en";
+
+/// create by id - string STR_MENU_HELP="Help" must be added to translation resources
+UIString help1 = UIString.fromId("STR_MENU_HELP");
+/// create by id and fallback string
+UIString help2 = UIString.fromId("STR_MENU_HELP", "Help"d);
+/// create from raw string
+UIString help3 = UIString.fromRaw("Help"d);
+
 ---
 
 
@@ -130,6 +138,16 @@ struct UIString {
     /// returns true if string is empty: neither resource nor string is assigned
     bool empty() const {
         return _value.length == 0 && _id.length == 0;
+    }
+
+    /// create UIString from id - will be translated; fallback value can be provided for cases if translation is not found
+    static UIString fromId(string ID, dstring fallback = null) {
+        return UIString(ID, fallback);
+    }
+
+    /// Create UIString from raw string value - will not be translated
+    static UIString fromRaw(dstring rawValue) {
+        return UIString(null, rawValue);
     }
 
     /** Default conversion to dstring */
