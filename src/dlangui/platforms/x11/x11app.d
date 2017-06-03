@@ -6,6 +6,7 @@ static if (BACKEND_X11):
 import dlangui.core.logger;
 import dlangui.core.events;
 import dlangui.core.files;
+import dlangui.core.types : toUTF8;
 import dlangui.graphics.drawbuf;
 import dlangui.graphics.fonts;
 import dlangui.graphics.ftfonts;
@@ -22,6 +23,7 @@ import std.utf;
 import x11.Xlib;
 import x11.Xutil;
 import x11.Xtos;
+import x11.Xatom;
 import x11.X;
 
 static if (ENABLE_OPENGL) {
@@ -50,6 +52,11 @@ private __gshared string localClipboardContent;
 private __gshared Atom   atom_UTF8_STRING;
 private __gshared Atom   atom_CLIPBOARD;
 private __gshared Atom   atom_TARGETS;
+
+private __gshared Atom   atom_WM_PROTOCOLS;
+private __gshared Atom   atom_WM_DELETE_WINDOW;
+
+private __gshared Atom   atom_NET_WM_ICON;
 
 private __gshared Atom   atom_DLANGUI_TIMER_EVENT;
 private __gshared Atom   atom_DLANGUI_TASK_EVENT;
@@ -269,7 +276,7 @@ class X11Window : DWindow {
 		*/
 		char* caption8 = cast(char*)toUTF8(_caption).toStringz;
 		XSetStandardProperties(x11display, _win, caption8, caption8, None, cast(char**)null, 0, cast(XSizeHints*)null);
-
+		XChangeProperty(x11display, _win, atom_WM_PROTOCOLS, XA_ATOM, 32, PropModeReplace, cast(ubyte*)&atom_WM_DELETE_WINDOW, 1);
 		/* this routine determines which types of input are allowed in
 	   		the input.  see the appropriate section for details...
 		*/
@@ -362,16 +369,35 @@ class X11Window : DWindow {
 		_caption = caption;
 		//if (_win)
 		//	SDL_SetWindowTitle(_win, toUTF8(_caption).toStringz);
-		import std.utf : toUTF8;
 		XSetStandardProperties(x11display, _win, cast(char*)_caption.toUTF8.toStringz, cast(char*)_caption.toUTF8.toStringz, None, cast(char**)null, 0, cast(XSizeHints*)null);
 	}
 
 	/// sets window icon
-	override @property void windowIcon(DrawBufRef icon) {
+	override @property void windowIcon(DrawBufRef buf) {
+		import core.stdc.config;
+		ColorDrawBuf icon = cast(ColorDrawBuf)buf.get;
+		if (!icon) {
+			Log.e("Trying to set null icon for window");
+			return;
+		}
+		immutable int iconw = 32;
+		immutable int iconh = 32;
+		ColorDrawBuf iconDraw = new ColorDrawBuf(iconw, iconh);
+		iconDraw.fill(0xFF000000);
+		iconDraw.drawRescaled(Rect(0, 0, iconw, iconh), icon, Rect(0, 0, icon.width, icon.height));
+		iconDraw.invertAndPreMultiplyAlpha();
+		c_long[] propData = new c_long[2 + iconw * iconh];
+		propData[0] = iconw;
+		propData[1] = iconh;
+		auto iconData = iconDraw.scanLine(0);
+		foreach(i; 0..iconw*iconh) {
+			propData[i+2] = iconData[i];
+		}
+		XChangeProperty(x11display, _win, atom_NET_WM_ICON, XA_CARDINAL, 32, PropModeReplace, cast(ubyte*)propData.ptr, cast(int)propData.length);
 	}
 	/// request window redraw
 	override void invalidate() {
-		Log.d("Window.invalidate()");
+		debug(x11) Log.d("Window.invalidate()");
 		XEvent ev;
 		memset(&ev, 0, ev.sizeof);
 		ev.type = Expose;
@@ -466,7 +492,7 @@ class X11Window : DWindow {
 		int height = window_attributes_return.height;
 		if (width > 0 && height > 0)
 			onResize(width, height);
-		Log.d(format("processExpose(%d, %d)", width, height));
+		debug(x11) Log.d(format("processExpose(%d, %d)", width, height));
 		if (_enableOpengl)
 			drawUsingOpengl();
 		else
@@ -1029,6 +1055,12 @@ class X11Platform : Platform {
 		/* look for events forever... */
 		bool finished = false;
 		XComposeStatus compose;
+
+		import core.sys.posix.sys.select;
+		int x11displayFd = ConnectionNumber(x11display);
+		fd_set fdSet;
+		FD_ZERO(&fdSet);
+		FD_SET(x11displayFd, &fdSet);
 		while(!finished) {		
 			/* get the next event and stuff it into our event variable.
 		   		Note:  only events we set the mask for are detected!
@@ -1037,6 +1069,23 @@ class X11Platform : Platform {
 			//if (timersHandled)
 			//XFlush(x11display);
 			//while (XEventsQueued(x11display, QueuedAfterFlush)) {//QueuedAfterFlush
+			XFlush(x11display);
+			int eventsInQueue = XEventsQueued(x11display, QueuedAlready);
+			if (!eventsInQueue) {
+				timeval zeroTime;
+				auto selectResult = select(x11displayFd + 1, &fdSet, null, null, &zeroTime);
+				if (selectResult < 0) {
+					Log.e("select error");
+				} else if (selectResult == 1) {
+					Log.d("Pending");
+					eventsInQueue = XPending(x11display);
+				}
+			}
+			if (!eventsInQueue) {
+				debug(x11) Log.d("X11: Sleeping");
+				Thread.sleep(dur!("msecs")(10));
+			}
+			foreach(eventIndex; 0..eventsInQueue)
 			{
 				//Thread.sleep(dur!("msecs")(10));
 				//continue;
@@ -1229,6 +1278,13 @@ class X11Platform : Platform {
 								w.handlePostedEvent(cast(uint)event.xclient.data.l[0]);
 							} else if (event.xclient.message_type == atom_DLANGUI_TIMER_EVENT) {
 								w.handleTimer();
+							} else if (event.xclient.message_type == atom_WM_PROTOCOLS) {
+								Log.d("Handling WM_PROTOCOLS");
+								if ((event.xclient.format == 32) && (event.xclient.data.l[0]) == atom_WM_DELETE_WINDOW) {
+									Log.d("Handling WM_DELETE_WINDOW");
+									closeWindow(w);
+									destroy(w);
+								}
 							}
 						} else {
 							Log.e("Window not found");
@@ -1237,6 +1293,9 @@ class X11Platform : Platform {
 					default:
 						break;
 				}
+			}
+			if (_windowMap.length == 0) {
+				finished = true;
 			}
 			//Thread.sleep(dur!("msecs")(10));
 			//XFlush(x11display);
@@ -1402,6 +1461,9 @@ extern(C) int DLANGUImain(string[] args)
 	atom_UTF8_STRING = XInternAtom(x11display, "UTF8_STRING", False);
 	atom_CLIPBOARD   = XInternAtom(x11display, "CLIPBOARD", False);
 	atom_TARGETS     = XInternAtom(x11display, "TARGETS", False);
+	atom_WM_PROTOCOLS = XInternAtom(x11display, "WM_PROTOCOLS", False);
+	atom_WM_DELETE_WINDOW = XInternAtom(x11display, "WM_DELETE_WINDOW", False);
+	atom_NET_WM_ICON = XInternAtom(x11display, "_NET_WM_ICON", False);
 	atom_DLANGUI_TIMER_EVENT     = XInternAtom(x11display, "DLANGUI_TIMER_EVENT", False);
 	atom_DLANGUI_TASK_EVENT     = XInternAtom(x11display, "DLANGUI_TASK_EVENT", False);
 
