@@ -887,6 +887,7 @@
      <File path="src\dlangui\core\dom.d" />
      <File path="src\dlangui\core\editable.d" />
      <File path="src\dlangui\core\events.d" />
+     <File path="src\dlangui\core\filemanager.d" />
      <File path="src\dlangui\core\files.d" />
      <File path="src\dlangui\core\i18n.d" />
      <File path="src\dlangui\core\linestream.d" />
@@ -913,6 +914,10 @@
      <File path="src\dlangui\dml\dmlhighlight.d" />
      <File path="src\dlangui\dml\parser.d" />
      <File path="src\dlangui\dml\tokenizer.d" />
+    </Folder>
+    <Folder name="dom">
+     <File path="src\dlangui\dom\cssparser.d" />
+     <File path="src\dlangui\dom\encoding.d" />
     </Folder>
     <Folder name="graphics">
      <Folder name="domrender">
@@ -946,10 +951,6 @@
      <File path="src\dlangui\graphics\glsupport.d" />
      <File path="src\dlangui\graphics\images.d" />
      <File path="src\dlangui\graphics\resources.d" />
-    </Folder>
-    <Folder name="dom">
-     <File path="src\dlangui\dom\cssparser.d" />
-     <File path="src\dlangui\dom\encoding.d" />
     </Folder>
     <Folder name="platforms">
      <Folder name="common">

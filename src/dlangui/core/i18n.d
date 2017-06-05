@@ -145,9 +145,14 @@ struct UIString {
         return UIString(ID, fallback);
     }
 
-    /// Create UIString from raw string value - will not be translated
+    /// Create UIString from raw utf32 string value - will not be translated
     static UIString fromRaw(dstring rawValue) {
         return UIString(null, rawValue);
+    }
+
+    /// Create UIString from raw utf8 string value - will not be translated
+    static UIString fromRaw(string rawValue) {
+        return UIString(null, toUTF32(rawValue));
     }
 
     /** Default conversion to dstring */
