@@ -572,7 +572,7 @@ private class GLImageCache : GLCache
                     dstrc.bottom -= clip.bottom;
                 }
                 if (!dstrc.empty)
-                    glSupport.queue.addTexturedRect(_texture, _tdx, _tdy, color, color, color, color, srcrc, dstrc, srcrc.width() != dstrc.width() || srcrc.height() != dstrc.height());
+                    glSupport.queue.addTexturedRect(_texture, _tdx, _tdy, color, color, color, color, srcrc, dstrc, true);
             }
         }
     }
