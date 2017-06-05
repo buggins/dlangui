@@ -1557,8 +1557,8 @@ class Platform {
 
     /// show directory or file in OS file manager (explorer, finder, etc...)
     bool showInFileManager(string pathName) {
-        Log.w("showInFileManager is not implemented for current platform");
-        return false;
+        static import dlangui.core.filemanager;
+        return dlangui.core.filemanager.showInFileManager(pathName);
     }
 
     /// handle theme change: e.g. reload some themed resources
