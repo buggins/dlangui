@@ -515,14 +515,14 @@ class SolidFillProgram : GLProgram {
         glEnableVertexAttribArray(colAttrLocation);
     }
 
-    bool drawBatch(int length, int start) {
+    bool drawBatch(int length, int start, bool areLines = false) {
         if(!check())
             return false;
         beforeExecute();
 
         vao.bind();
 
-        checkgl!glDrawElements(GL_TRIANGLES, cast(int)length, GL_UNSIGNED_INT, cast(void*)(start * 4));
+        checkgl!glDrawElements(areLines ? GL_LINES : GL_TRIANGLES, cast(int)length, GL_UNSIGNED_INT, cast(void*)(start * 4));
 
         return true;
     }
@@ -530,20 +530,6 @@ class SolidFillProgram : GLProgram {
     void destroyBuffers() {
         destroy(vao);
         vao = null;
-    }
-}
-
-class LineProgram : SolidFillProgram {
-    override bool drawBatch(int length, int start) {
-        if(!check())
-            return false;
-        beforeExecute();
-
-        vao.bind();
-
-        checkgl!glDrawElements(GL_LINES, cast(int)length, GL_UNSIGNED_INT, cast(void*)(start * 4));
-
-        return true;
     }
 }
 
@@ -772,11 +758,10 @@ final class GLSupport {
     OpenGLQueue _queue;
 
     SolidFillProgram _solidFillProgram;
-    LineProgram _lineProgram;
     TextureProgram _textureProgram;
 
     @property bool valid() {
-        return _legacyMode || _textureProgram && _solidFillProgram && _lineProgram;
+        return _legacyMode || _textureProgram && _solidFillProgram;
     }
 
     bool initShaders() {
@@ -785,12 +770,6 @@ final class GLSupport {
             Log.v("Compiling solid fill program");
             _solidFillProgram = new SolidFillProgram();
             if (!_solidFillProgram.compile())
-                return false;
-        }
-        if (_lineProgram is null) {
-            Log.v("Compiling line program");
-            _lineProgram = new LineProgram();
-            if (!_lineProgram.compile())
                 return false;
         }
         if (_textureProgram is null) {
@@ -808,10 +787,6 @@ final class GLSupport {
         if (_solidFillProgram !is null) {
             destroy(_solidFillProgram);
             _solidFillProgram = null;
-        }
-        if (_lineProgram !is null) {
-            destroy(_lineProgram);
-            _lineProgram = null;
         }
         if (_textureProgram !is null) {
             destroy(_textureProgram);
@@ -843,7 +818,6 @@ final class GLSupport {
         _solidFillProgram.createVAO(vertices.length);
         vbo.bind();
         ebo.bind();
-        _lineProgram.vao = _solidFillProgram.vao;
         _textureProgram.createVAO(vertices.length, colors.length);
         vbo.bind();
         ebo.bind();
@@ -883,8 +857,8 @@ final class GLSupport {
                 glDisable(GL_BLEND);
             }
         } else {
-            if (_lineProgram !is null) {
-                _lineProgram.drawBatch(length, start);
+            if (_solidFillProgram !is null) {
+                _solidFillProgram.drawBatch(length, start, true);
             } else
                 Log.e("No program");
         }
