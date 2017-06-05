@@ -256,9 +256,21 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     protected bool openDirectory(string dir, string selectedItemPath) {
         dir = buildNormalizedPath(dir);
         Log.d("FileDialog.openDirectory(", dir, ")");
-        _fileList.rows = 0;
-        if (!listDirectory(dir, true, true, _showHiddenFiles, selectedFilter, _entries, executableFilterSelected))
+        DirEntry[] entries;
+
+        auto attrFilter = (showHiddenFiles ? AttrFilter.all : AttrFilter.allVisible) | AttrFilter.special | AttrFilter.parent;
+        if (executableFilterSelected()) {
+            attrFilter |= AttrFilter.executable;
+        }
+        try {
+            _entries = listDirectory(dir, attrFilter, selectedFilter());
+        } catch(Exception e) {
+            import dlangui.dialogs.msgbox;
+            auto msgBox = new MessageBox(UIString("Error"d), UIString(e.msg.toUTF32), window());
+            msgBox.show();
             return false;
+        }
+        _fileList.rows = 0;
         _path = dir;
         _isRoot = isRoot(dir);
         _edPath.path = _path; //toUTF32(_path);
@@ -689,8 +701,12 @@ class FilePathPanelItem : HorizontalLayout {
         // show popup menu with subdirs
         string[] filters;
         DirEntry[] entries;
-        if (!listDirectory(_path, true, false, false, filters, entries))
+        try {
+            AttrFilter attrFilter = AttrFilter.dirs | AttrFilter.parent;
+            entries = listDirectory(_path, attrFilter);
+        } catch(Exception e) {
             return false;
+        }
         if (entries.length == 0)
             return false;
         MenuItem dirs = new MenuItem();
@@ -699,10 +715,11 @@ class FilePathPanelItem : HorizontalLayout {
             string fullPath = e.name;
             string d = baseName(fullPath);
             Action a = new Action(itemId++, toUTF32(d));
+            a.stringParam = fullPath;
             MenuItem item = new MenuItem(a);
-            item.menuItemClick = delegate(MenuItem item) { 
+            item.menuItemAction = delegate(const Action action) {
                 if (onPathSelectionListener.assigned)
-                    return onPathSelectionListener(fullPath);
+                    return onPathSelectionListener(action.stringParam);
                 return false;
             };
             dirs.add(item);

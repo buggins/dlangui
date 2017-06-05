@@ -131,29 +131,36 @@ version(OSX) {} else version(Posix)
         }
         return false;
     }
-    
-    private string getDeviceLabelFallback(in char[] type, in char[] fsName)
+
+    private string getDeviceLabelFallback(in char[] type, in char[] fsName, in char[] mountDir)
     {
         import std.format : format;
-        import std.string : startsWith;
         if (type == "vboxsf") {
             return "VirtualBox shared folder";
         }
-        if (fsName.startsWith("gvfsd")) {
-            return "GNOME virtual file system";
+        if (type == "fuse.gvfsd-fuse") {
+            return "GNOME Virtual file system";
         }
-        return format("%s volume", type);
+        return format("%s (%s)", mountDir.baseName, type);
     }
-    
+ 
     private RootEntryType getDeviceRootEntryType(in char[] type)
     {
-        if (type == "iso9660") {
-            return RootEntryType.CDROM;
-        }
-        if (type == "vfat") {
-            return RootEntryType.REMOVABLE;
-        }
-        return RootEntryType.FIXED;
+        switch(type)
+        {
+            case "iso9660":
+                return RootEntryType.CDROM;
+            case "vfat":
+                return RootEntryType.REMOVABLE;
+            case "cifs":
+            case "davfs":
+            case "fuse.sshfs":
+            case "nfs":
+            case "nfs4":
+                return RootEntryType.NETWORK;
+            default:
+                return RootEntryType.FIXED;
+         }
     }
 }
 
@@ -247,6 +254,7 @@ private:
         // do nothing
     } else version(linux) {
         import std.string : fromStringz;
+        import std.exception : collectException;
         
         mntent ent;
         char[1024] buf;
@@ -267,22 +275,25 @@ private:
                 
                 string label;
                 enum byLabel = "/dev/disk/by-label";
-                try {
-                    foreach(entry; dirEntries(byLabel, SpanMode.shallow))
-                    {
-                        if (entry.isSymlink) {
-                            auto normalized = buildNormalizedPath(byLabel, entry.readLink);
-                            if (normalized == fsName) {
-                                label = entry.name.baseName.unescapeLabel();
+                if (fsName.isAbsolute) {
+                    try {
+                        foreach(entry; dirEntries(byLabel, SpanMode.shallow))
+                        {
+                                string resolvedLink;
+                                if (entry.isSymlink && collectException(entry.readLink, resolvedLink) is null) {
+                                    auto normalized = buildNormalizedPath(byLabel, resolvedLink);
+                                if (normalized == fsName) {
+                                    label = entry.name.baseName.unescapeLabel();
+                                }
                             }
                         }
+                    } catch(Exception e) {
+
                     }
-                } catch(Exception e) {
-                    
                 }
                 
                 if (!label.length) {
-                    label = getDeviceLabelFallback(type, fsName);
+                    label = getDeviceLabelFallback(type, fsName, mountDir);
                 }
                 auto entryType = getDeviceRootEntryType(type);
                 res ~= RootEntry(entryType, mountDir.idup, label.toUTF32);
@@ -307,7 +318,7 @@ private:
                     continue;
                 }
                 
-                string label = getDeviceLabelFallback(type, fsName);
+                string label = getDeviceLabelFallback(type, fsName, mountDir);
                 res ~= RootEntry(getDeviceRootEntryType(type), mountDir.idup, label.toUTF32);
             }
         }
@@ -515,6 +526,7 @@ bool isHidden(in string path) nothrow {
             return false;
         }
     } else version(Posix) {
+        //TODO: check for hidden attribute on macOS
         return path.baseName.startsWith(".");
     } else {
         return false;
@@ -527,6 +539,49 @@ unittest
     version(Posix) {
         assert(!"path/to/normal_file".isHidden());
         assert("path/to/.hidden_file".isHidden());
+    }
+}
+
+private bool isReadable(in string filePath) nothrow
+{
+    version(Posix) {
+        import core.sys.posix.unistd : access, R_OK;
+        import std.string : toStringz;
+        return access(toStringz(filePath), R_OK) == 0;
+    } else {
+        // TODO: Windows version
+        return true;
+    }
+}
+
+private bool isWritable(in string filePath) nothrow
+{
+    version(Posix) {
+        import core.sys.posix.unistd : access, W_OK;
+        import std.string : toStringz;
+        return access(toStringz(filePath), W_OK) == 0;
+    } else {
+        // TODO: Windows version
+        return true;
+    }
+}
+
+private bool isExecutable(in string filePath) nothrow
+{
+    version(Windows) {
+        //TODO: Use GetEffectiveRightsFromAclW? For now just check extension
+        string extension = filePath.extension;
+        foreach(ext; [".exe", ".com", ".bat", ".cmd"]) {
+            if (filenameCmp(extension, ext) == 0)
+                return true;
+        }
+        return false;
+    } else version(Posix) {
+        import core.sys.posix.unistd : access, X_OK;
+        import std.string : toStringz;
+        return access(toStringz(filePath), X_OK) == 0;
+    } else {
+        return false;
     }
 }
 
@@ -550,71 +605,92 @@ bool filterFilename(in string filename, in string[] filters) pure nothrow {
     return false;
 }
 
-/** List directory content 
-    
-    Optionally filters file names by filter.
+enum AttrFilter
+{
+    none = 0,
+    files      = 1 << 0, /// Include regular files that match the filters.
+    dirs       = 1 << 1, /// Include directories.
+    hidden     = 1 << 2, /// Include hidden files and directoroies.
+    parent     = 1 << 3, /// Include parent directory (..). Takes effect only with includeDirs.
+    thisDir    = 1 << 4, /// Include this directory (.). Takes effect only with  includeDirs.
+    special    = 1 << 5, /// Include special files (On Unix: socket and device files, FIFO) that match the filters.
+    readable   = 1 << 6, /// Listing only readable files and directories.
+    writable   = 1 << 7, /// Listing only writable files and directories.
+    executable = 1 << 8, /// Include only executable files. This filter does not affect directories.
+    allVisible = AttrFilter.files | AttrFilter.dirs, /// Include all non-hidden files and directories without parent directory, this directory and special files.
+    all        = AttrFilter.allVisible | AttrFilter.hidden /// Include all files and directories including hidden ones but without parent directory, this directory and special files.
+}
+
+/** List directory content
+
+    Optionally filters file names by filter (not applied to directories).
+
+    Returns true if directory exists and listed successfully, false otherwise.
+    Throws: Exception if $(D dir) is not directory or some error occured during directory listing.
+ */
+DirEntry[] listDirectory(in string dir, AttrFilter attrFilter = AttrFilter.all, in string[] filters = [])
+{
+    DirEntry[] entries;
+
+    DirEntry[] dirs;
+    DirEntry[] files;
+    foreach (DirEntry e; dirEntries(dir, SpanMode.shallow)) {
+        if (!(attrFilter & AttrFilter.hidden) && e.name.isHidden())
+            continue;
+        if ((attrFilter & AttrFilter.readable) && !e.name.isReadable())
+            continue;
+        if ((attrFilter & AttrFilter.writable) && !e.name.isWritable())
+            continue;
+        if (!e.isDir && (attrFilter & AttrFilter.executable) && !e.name.isExecutable())
+            continue;
+        if (e.isDir && (attrFilter & AttrFilter.dirs)) {
+            dirs ~= e;
+        } else if ((attrFilter & AttrFilter.files) && filterFilename(e.name, filters)) {
+            if (e.isFile) {
+                files ~= e;
+            } else if (attrFilter & AttrFilter.special) {
+                files ~= e;
+            }
+        }
+    }
+    if ((attrFilter & AttrFilter.dirs) && (attrFilter & AttrFilter.thisDir) ) {
+        entries ~= DirEntry(appendPath(dir, ".")) ~ entries;
+    }
+    if (!isRoot(dir) && (attrFilter & AttrFilter.dirs) && (attrFilter & AttrFilter.parent)) {
+        entries ~= DirEntry(appendPath(dir, ".."));
+    }
+    dirs.sort!((a,b) => filenameCmp!(std.path.CaseSensitive.no)(a.name,b.name) < 0);
+    files.sort!((a,b) => filenameCmp!(std.path.CaseSensitive.no)(a.name,b.name) < 0);
+    entries ~= dirs;
+    entries ~= files;
+    return entries;
+}
+
+/** List directory content
+
+    Optionally filters file names by filter (not applied to directories).
 
     Result will be placed into entries array.
 
     Returns true if directory exists and listed successfully, false otherwise.
 */
-bool listDirectory(in string dir, in bool includeDirs, in bool includeFiles, in bool showHiddenFiles, in string[] filters, ref DirEntry[] entries, in bool showExecutables = false) {
+deprecated bool listDirectory(in string dir, in bool includeDirs, in bool includeFiles, in bool showHiddenFiles, in string[] filters, ref DirEntry[] entries, in bool showExecutables = false) {
     entries.length = 0;
-    
+
+    AttrFilter attrFilter;
+    if (includeDirs) {
+        attrFilter |= AttrFilter.dirs;
+        attrFilter |= AttrFilter.parent;
+    }
+    if (includeFiles)
+        attrFilter |= AttrFilter.files;
+    if (showHiddenFiles)
+        attrFilter |= AttrFilter.hidden;
+    if (showExecutables)
+        attrFilter |= AttrFilter.executable;
+
     import std.exception : collectException;
-    bool dirExists;
-    collectException(dir.isDir, dirExists);
-    if (!dirExists) {
-        return false;
-    }
-
-    if (!isRoot(dir) && includeDirs) {
-        entries ~= DirEntry(appendPath(dir, ".."));
-    }
-
-    try {
-        DirEntry[] dirs;
-        DirEntry[] files;
-        foreach (DirEntry e; dirEntries(dir, SpanMode.shallow)) {
-            if (!showHiddenFiles && e.name.isHidden())
-                continue;
-            if (e.isDir) {
-                dirs ~= e;
-            } else if (e.isFile) {
-                files ~= e;
-            }
-        }
-        dirs.sort!((a,b) => filenameCmp!(std.path.CaseSensitive.no)(a.name,b.name) < 0);
-        files.sort!((a,b) => filenameCmp!(std.path.CaseSensitive.no)(a.name,b.name) < 0);
-        if (includeDirs)
-            foreach(DirEntry e; dirs)
-                entries ~= e;
-        if (includeFiles)
-            foreach(DirEntry e; files) {
-                bool passed = false;
-                if (showExecutables) {
-                    uint attr_mask = (1 << 0) | (1 << 3) | (1 << 6);
-                    version(Windows) {
-                        passed = e.name.endsWith(".exe") || e.name.endsWith(".EXE") 
-                            || e.name.endsWith(".cmd") || e.name.endsWith(".CMD") 
-                            || e.name.endsWith(".bat") || e.name.endsWith(".BAT");
-                    } else version (Posix) {
-                        // execute permission for others
-                        passed = (e.attributes & attr_mask) != 0;
-                    } else version(OSX) {
-                        passed = (e.attributes & attr_mask) != 0;
-                    }
-                } else {
-                    passed = filterFilename(e.name, filters);
-                }
-                if (passed)
-                    entries ~= e;
-            }
-        return true;
-    } catch (FileException e) {
-        return false;
-    }
-
+    return collectException(listDirectory(dir, attrFilter, filters), entries) is null;
 }
 
 /// Returns true if char ch is / or \ slash
