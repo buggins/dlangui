@@ -100,7 +100,7 @@
         },
         {
             "name": "x11",
-            "versions": ["USE_X11", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources"],
+            "versions": ["USE_X11", "USE_FREETYPE", "EmbedStandardResources"],
             "versions-windows": ["Unicode"],
             "dependencies": {
                 "derelict-gl3": "~>1.0.18",

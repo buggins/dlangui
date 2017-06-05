@@ -35,6 +35,12 @@
             }
         },
         {
+            "name" : "x11",
+            "subConfigurations" : {
+                "dlangui" : "x11"
+            }
+        },
+        {
             "name" : "minimal",
             "subConfigurations" : {
                 "dlangui" : "minimal"
