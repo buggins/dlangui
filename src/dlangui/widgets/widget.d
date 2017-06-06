@@ -1608,11 +1608,11 @@ public:
     bool setStringProperty(string name, string value) {
         mixin(generatePropertySetters("id", "styleId", "backgroundImageId", "backgroundColor", "textColor", "fontFace"));
         if (name.equal("text")) {
-            text = UIString(value);
+            text = UIString.fromId(value);
             return true;
         }
         if (name.equal("tooltipText")) {
-            tooltipText = UIString(value);
+            tooltipText = UIString.fromId(value);
             return true;
         }
         return false;
@@ -1621,11 +1621,11 @@ public:
     /// set string property value, for ML loaders
     bool setDstringProperty(string name, dstring value) {
         if (name.equal("text")) {
-            text = UIString(value);
+            text = UIString.fromRaw(value);
             return true;
         }
         if (name.equal("tooltipText")) {
-            tooltipText = UIString(value);
+            tooltipText = UIString.fromRaw(value);
             return true;
         }
         return false;

@@ -90,11 +90,14 @@ struct UIString {
     /** id to find value in translator */
     private string _id;
 
+    deprecated("use UIString.fromId() instead")
     /** create string with i18n resource id */
     this(string id) {
         _id = id;
     }
-    /** create string with raw value */
+
+    /** create string with raw value; deprecated, use fromRaw() instead */
+    deprecated("use UIString.fromRaw() instead")
     this(dstring value) {
         _value = value;
     }
@@ -336,26 +339,26 @@ struct StringListValue {
 
     this(string id, dstring name, string iconId = null) {
         this.stringId = id;
-        this.label = name;
+        this.label.value = name;
         this.iconId = iconId;
     }
     this(string id, string nameResourceId, string iconId = null) {
         this.stringId = id;
-        this.label = nameResourceId;
+        this.label.id = nameResourceId;
         this.iconId = iconId;
     }
     this(int id, dstring name, string iconId = null) {
         this.intId = id;
-        this.label = name;
+        this.label.value = name;
         this.iconId = iconId;
     }
     this(int id, string nameResourceId, string iconId = null) {
         this.intId = id;
-        this.label = nameResourceId;
+        this.label.id = nameResourceId;
         this.iconId = iconId;
     }
     this(dstring name, string iconId = null) {
-        this.label = name;
+        this.label.value = name;
         this.iconId = iconId;
     }
 }

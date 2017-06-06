@@ -75,12 +75,12 @@ class TextWidget : Widget {
     this(string ID = null, string textResourceId = null) {
         super(ID);
         styleId = STYLE_TEXT;
-        _text = textResourceId;
+        _text.id = textResourceId;
     }
     this(string ID, dstring rawText) {
         super(ID);
         styleId = STYLE_TEXT;
-        _text = rawText;
+        _text.value = rawText;
     }
     this(string ID, UIString uitext) {
         super(ID);
@@ -394,14 +394,12 @@ class ImageTextButton : HorizontalLayout {
 
     this(string ID = null, string drawableId = null, string textResourceId = null) {
         super(ID);
-        UIString caption = textResourceId;
-        initialize(drawableId, caption);
+        initialize(drawableId, UIString.fromId(textResourceId));
     }
 
     this(string ID, string drawableId, dstring rawText) {
         super(ID);
-        UIString caption = rawText;
-        initialize(drawableId, caption);
+        initialize(drawableId, UIString.fromRaw(rawText));
     }
 
     /// constructor from action
@@ -554,11 +552,11 @@ class Button : Widget {
     }
     this(string ID, dstring label) {
         super(ID);
-        initialize(UIString(label));
+        initialize(UIString.fromRaw(label));
     }
     this(string ID, string labelResourceId) {
         super(ID);
-        initialize(UIString(labelResourceId));
+        initialize(UIString.fromId(labelResourceId));
     }
     /// constructor from action
     this(const Action a) {

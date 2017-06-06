@@ -96,7 +96,7 @@ class TreeItem {
         _id = id;
         _expanded = true;
         _iconRes = iconRes;
-        _text = label;
+        _text.value = label;
     }
     this(string id, UIString label, string iconRes = null) {
         _id = id;
@@ -108,7 +108,7 @@ class TreeItem {
         _id = id;
         _expanded = true;
         _iconRes = iconRes;
-        _text = labelRes;
+        _text.id = labelRes;
     }
     /// create and add new child item
     TreeItem newChild(string id, dstring label, string iconRes = null) {

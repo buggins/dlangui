@@ -266,7 +266,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             _entries = listDirectory(dir, attrFilter, selectedFilter());
         } catch(Exception e) {
             import dlangui.dialogs.msgbox;
-            auto msgBox = new MessageBox(UIString("Error"d), UIString(e.msg.toUTF32), window());
+            auto msgBox = new MessageBox(UIString.fromRaw("Error"d), UIString.fromRaw(e.msg.toUTF32), window());
             msgBox.show();
             return false;
         }
@@ -453,7 +453,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             mkdirRecurse(newdir);
             openDirectory(newdir, null);
         } catch (Exception e) {
-            window.showMessageBox(UIString("CREATE_FOLDER_ERROR_TITLE"c), UIString("CREATE_FOLDER_ERROR_MESSAGE"c));
+            window.showMessageBox(UIString.fromId("CREATE_FOLDER_ERROR_TITLE"c), UIString.fromId("CREATE_FOLDER_ERROR_MESSAGE"c));
         }
     }
 
@@ -469,7 +469,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         }
         if (action.id == StandardAction.CreateDirectory) {
             // show editor popup
-            window.showInputBox(UIString("CREATE_NEW_FOLDER"c), UIString("INPUT_NAME_FOR_FOLDER"c), ""d, delegate(dstring s) {
+            window.showInputBox(UIString.fromId("CREATE_NEW_FOLDER"c), UIString.fromId("INPUT_NAME_FOR_FOLDER"c), ""d, delegate(dstring s) {
                 if (!s.empty)
                     createAndEnterDirectory(toUTF8(s));
             });
@@ -937,7 +937,7 @@ class FileNameEditLine : HorizontalLayout {
         _btn.styleId = STYLE_BUTTON_NOMARGINS;
         _btn.layoutWeight = 0;
         _btn.click = delegate(Widget src) {
-            FileDialog dlg = new FileDialog(UIString(_caption), window, null, _fileDialogFlags);
+            FileDialog dlg = new FileDialog(UIString.fromRaw(_caption), window, null, _fileDialogFlags);
             foreach(key, value; _filetypeIcons)
                 dlg.filetypeIcons[key] = value;
             dlg.filters = _filters;

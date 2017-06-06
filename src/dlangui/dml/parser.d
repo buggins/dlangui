@@ -329,7 +329,7 @@ class MLParser {
                     error("Integer literal suffixes not allowed for [] items");
                 StringListValue value;
                 value.intId = _token.intvalue;
-                value.label = UIString(to!dstring(_token.intvalue));
+                value.label = UIString.fromRaw(to!dstring(_token.intvalue));
                 values ~= value;
                 nextToken();
                 skipWhitespaceAndEolsNoEof();
@@ -342,7 +342,7 @@ class MLParser {
 
                 StringListValue value;
                 value.stringId = name;
-                value.label = UIString(name);
+                value.label = UIString.fromRaw(name);
                 values ~= value;
 
                 nextToken();
@@ -357,7 +357,7 @@ class MLParser {
 
                 StringListValue value;
                 value.stringId = name;
-                value.label = UIString(name.toUTF32);
+                value.label = UIString.fromRaw(name.toUTF32);
                 values ~= value;
 
                 nextToken();

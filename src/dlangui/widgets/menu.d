@@ -235,7 +235,7 @@ class MenuItem {
     }
     /// returns item label
     @property UIString label() {
-        return _action !is null ? _action.labelValue : UIString("");
+        return _action !is null ? _action.labelValue : UIString("", null);
     }
     /// returns item action
     @property const(Action) action() const { return _action; }

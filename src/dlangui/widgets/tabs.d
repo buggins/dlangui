@@ -48,12 +48,12 @@ class TabItem {
     private long _lastAccessTs;
     this(string id, string labelRes, string iconRes = null) {
         _id = id;
-        _label = labelRes;
+        _label.id = labelRes;
         _iconRes = iconRes;
     }
     this(string id, dstring labelRes, string iconRes = null) {
         _id = id;
-        _label = labelRes;
+        _label.value = labelRes;
         _iconRes = iconRes;
         _lastAccessTs = _lastAccessCounter++;
     }

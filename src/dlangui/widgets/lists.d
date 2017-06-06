@@ -297,11 +297,11 @@ class StringListAdapterBase : ListAdapterBase {
     }
     /// add new string resource item
     StringListAdapterBase add(string item, int index = -1) {
-        return add(UIString(item), index);
+        return add(UIString.fromId(item), index);
     }
     /// add new raw dstring item
     StringListAdapterBase add(dstring item, int index = -1) {
-        return add(UIString(item), index);
+        return add(UIString.fromRaw(item), index);
     }
 
     /** Access to items collection. */

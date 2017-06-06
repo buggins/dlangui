@@ -383,7 +383,7 @@ class Action {
     /// create action with id, labelResourceId, and optional icon and key accelerator.
     this(int id, string labelResourceId, string iconResourceId = null, uint keyCode = 0, uint keyFlags = 0) {
         _id = id;
-        _label = labelResourceId;
+        _label.id = labelResourceId;
         _iconId = iconResourceId;
         if (keyCode) {
             version (OSX) {
@@ -407,7 +407,7 @@ class Action {
     /// action with label, icon, and accelerator
     this(int id, dstring label, string iconResourceId = null, uint keyCode = 0, uint keyFlags = 0) {
         _id = id;
-        _label = label;
+        _label.value = label;
         _iconId = iconResourceId;
         if (keyCode) {
             version (OSX) {

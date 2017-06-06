@@ -41,11 +41,11 @@ class GroupBox : LinearLayout {
     }
 
     this(string ID, string textResourceId, Orientation orientation = Orientation.Vertical) {
-        this(ID, UIString(textResourceId), orientation);
+        this(ID, UIString.fromId(textResourceId), orientation);
     }
 
     this(string ID, dstring rawText, Orientation orientation = Orientation.Vertical) {
-        this(ID, UIString(rawText), orientation);
+        this(ID, UIString.fromRaw(rawText), orientation);
     }
 
     ~this() {
