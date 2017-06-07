@@ -305,6 +305,13 @@ void initGLCaches() {
         glGlyphCache = new GLGlyphCache;
 }
 
+void destroyGLCaches() {
+    if (glImageCache)
+        destroy(glImageCache);
+    if (glGlyphCache)
+        destroy(glGlyphCache);
+}
+
 private abstract class GLCache
 {
     static class GLCacheItem
