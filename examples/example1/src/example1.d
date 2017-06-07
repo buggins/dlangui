@@ -378,7 +378,7 @@ extern (C) int UIAppMain(string[] args) {
                 window.close();
                 return true;
             } else if (a.id == 41) {
-                window.showMessageBox(UIString("About"d), UIString("DLangUI demo app\n(C) Vadim Lopatin, 2014\nhttp://github.com/buggins/dlangui"d));
+                window.showMessageBox(UIString.fromRaw("About"d), UIString.fromRaw("DLangUI demo app\n(C) Vadim Lopatin, 2014\nhttp://github.com/buggins/dlangui"d));
                 return true;
             } else if (a.id == ACTION_FILE_OPEN) {
                 UIString caption;
@@ -409,12 +409,12 @@ extern (C) int UIAppMain(string[] args) {
                                             tabs.selectTab(filename);
                                         } else {
                                             destroy(editor);
-                                            window.showMessageBox(UIString("File open error"d), UIString("Cannot open file "d ~ toUTF32(filename)));
+                                            window.showMessageBox(UIString.fromRaw("File open error"d), UIString.fromRaw("Cannot open file "d ~ toUTF32(filename)));
                                         }
                                     }
                                 } else {
                                     Log.d("FileDialog.onDialogResult: ", result, " param=", result.stringParam);
-                                    window.showMessageBox(UIString("FileOpen result"d), UIString("Filename: "d ~ toUTF32(filename)));
+                                    window.showMessageBox(UIString.fromRaw("FileOpen result"d), UIString.fromRaw("Filename: "d ~ toUTF32(filename)));
                                 }
                         }
                     }
