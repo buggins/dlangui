@@ -76,17 +76,6 @@ class DSFMLWindow : dlangui.platforms.common.platform.Window {
 
     private void paintUsingOpenGL() {
         import derelict.opengl3.gl3;
-        import dlangui.graphics.gldrawbuf;
-        import dlangui.graphics.glsupport;
-        if (!_gl3Reloaded) {
-            DerelictGL3.reload();
-            _gl3Reloaded = true;
-            if (!glSupport.valid && !glSupport.initShaders()) {
-                Log.d("Cannot init opengl");
-                assert(0);
-            }
-        }
-
 
         glDisable(GL_DEPTH_TEST);
         glViewport(0, 0, _dx, _dy);
@@ -422,11 +411,8 @@ void initDSFMLApp() {
 
     currentTheme = createDefaultTheme();
 
-    import derelict.opengl3.gl3;
     import dlangui.graphics.glsupport;
-    DerelictGL3.load();
-    if (!_glSupport)
-        _glSupport = new GLSupport();
+    initGLSupport(false);
 
     Platform.instance.uiTheme = "theme_dark";
 }

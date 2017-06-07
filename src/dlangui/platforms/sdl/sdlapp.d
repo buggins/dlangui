@@ -291,8 +291,8 @@ class SDLWindow : Window {
                         Log.w("OpenGL support is disabled");
                     }
                 }
-                if (success && !_glSupport) {
-                    _enableOpengl = initGLSupport(false);
+                if (success) {
+                    _enableOpengl = initGLSupport(_platform.GLVersionMajor < 3);
                     fixSize();
                 }
             }

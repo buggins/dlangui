@@ -8,6 +8,7 @@ import dlangui.platforms.common.platform;
 import dlangui.graphics.drawbuf;
 import dlangui.graphics.fonts;
 import dlangui.widgets.styles;
+import dlangui.widgets.widget;
 import dlangui.platforms.console.consolefont;
 private import dlangui.platforms.console.dconsole;
 
