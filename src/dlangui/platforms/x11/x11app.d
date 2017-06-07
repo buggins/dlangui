@@ -57,9 +57,28 @@ private __gshared Atom   atom_WM_PROTOCOLS;
 private __gshared Atom   atom_WM_DELETE_WINDOW;
 
 private __gshared Atom   atom_NET_WM_ICON;
+private __gshared Atom   atom_NET_WM_NAME;
+private __gshared Atom   atom_NET_WM_ICON_NAME;
 
 private __gshared Atom   atom_DLANGUI_TIMER_EVENT;
 private __gshared Atom   atom_DLANGUI_TASK_EVENT;
+
+static void setupX11Atoms()
+{
+	assert(x11display !is null, "X Connection must be established before getting atoms");
+	//TODO: not sure which atoms should be taken with or without onlyIfExists flag
+	atom_UTF8_STRING = XInternAtom(x11display, "UTF8_STRING", True);
+	atom_CLIPBOARD   = XInternAtom(x11display, "CLIPBOARD", True);
+	atom_TARGETS     = XInternAtom(x11display, "TARGETS", True);
+	atom_WM_PROTOCOLS = XInternAtom(x11display, "WM_PROTOCOLS", False);
+	atom_WM_DELETE_WINDOW = XInternAtom(x11display, "WM_DELETE_WINDOW", False);
+	atom_NET_WM_ICON = XInternAtom(x11display, "_NET_WM_ICON", True);
+	atom_NET_WM_NAME = XInternAtom(x11display, "_NET_WM_NAME", True);
+	atom_NET_WM_ICON_NAME = XInternAtom(x11display, "_NET_WM_ICON_NAME", True);
+
+	atom_DLANGUI_TIMER_EVENT     = XInternAtom(x11display, "DLANGUI_TIMER_EVENT", False);
+	atom_DLANGUI_TASK_EVENT     = XInternAtom(x11display, "DLANGUI_TASK_EVENT", False);
+}
 
 private __gshared bool _enableOpengl = false;
 
@@ -192,7 +211,6 @@ class X11Window : DWindow {
 
 	this(X11Platform platform, dstring caption, DWindow parent, uint flags, uint width = 0, uint height = 0) {
 		_platform = platform;
-		_caption = caption;
 		//backgroundColor = 0xFFFFFF;
 		debug Log.d("X11Window: Creating window");
 		if (width == 0)
@@ -274,9 +292,8 @@ class X11Window : DWindow {
 	   		at the top of the window and the name of the minimized window
 	   		respectively.
 		*/
-		char* caption8 = cast(char*)toUTF8(_caption).toStringz;
-		XSetStandardProperties(x11display, _win, caption8, caption8, None, cast(char**)null, 0, cast(XSizeHints*)null);
-		XChangeProperty(x11display, _win, atom_WM_PROTOCOLS, XA_ATOM, 32, PropModeReplace, cast(ubyte*)&atom_WM_DELETE_WINDOW, 1);
+		windowCaption = caption;
+		XSetWMProtocols(x11display, _win, &atom_WM_DELETE_WINDOW, 1);
 		/* this routine determines which types of input are allowed in
 	   		the input.  see the appropriate section for details...
 		*/
@@ -367,9 +384,17 @@ class X11Window : DWindow {
 	
 	override @property void windowCaption(dstring caption) {
 		_caption = caption;
-		//if (_win)
-		//	SDL_SetWindowTitle(_win, toUTF8(_caption).toStringz);
-		XSetStandardProperties(x11display, _win, cast(char*)_caption.toUTF8.toStringz, cast(char*)_caption.toUTF8.toStringz, None, cast(char**)null, 0, cast(XSizeHints*)null);
+		auto captionc = _caption.toUTF8;
+		auto captionz = cast(ubyte*)captionc.toStringz;
+		XTextProperty nameProperty;
+		nameProperty.value = captionz;
+		nameProperty.encoding = atom_UTF8_STRING;
+		nameProperty.format = 8;
+		nameProperty.nitems = cast(uint)captionc.length;
+		XStoreName(x11display, _win, cast(char*)captionz); // this may not support unicode
+		XSetWMName(x11display, _win, &nameProperty);
+		XChangeProperty(x11display, _win, atom_NET_WM_NAME, atom_UTF8_STRING, 8, PropModeReplace, captionz, cast(int)captionc.length);
+		//XFlush(x11display); //TODO: not sure if XFlush is required
 	}
 
 	/// sets window icon
@@ -1458,14 +1483,7 @@ extern(C) int DLANGUImain(string[] args)
 	}
 	
 
-	atom_UTF8_STRING = XInternAtom(x11display, "UTF8_STRING", False);
-	atom_CLIPBOARD   = XInternAtom(x11display, "CLIPBOARD", False);
-	atom_TARGETS     = XInternAtom(x11display, "TARGETS", False);
-	atom_WM_PROTOCOLS = XInternAtom(x11display, "WM_PROTOCOLS", False);
-	atom_WM_DELETE_WINDOW = XInternAtom(x11display, "WM_DELETE_WINDOW", False);
-	atom_NET_WM_ICON = XInternAtom(x11display, "_NET_WM_ICON", False);
-	atom_DLANGUI_TIMER_EVENT     = XInternAtom(x11display, "DLANGUI_TIMER_EVENT", False);
-	atom_DLANGUI_TASK_EVENT     = XInternAtom(x11display, "DLANGUI_TASK_EVENT", False);
+	setupX11Atoms();
 
 	x11cursors[CursorType.None] = XCreateFontCursor(x11display, XC_arrow);
 	x11cursors[CursorType.Parent] = XCreateFontCursor(x11display, XC_arrow);
