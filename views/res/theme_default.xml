@@ -28,7 +28,7 @@
     <color id="grid_cell_border_color_header" value="#C0202020"/>
     <color id="grid_cell_background_header" value="#C0909090"/>
     <color id="grid_cell_background_header_selected" value="#80FFC040"/>
-    <color id="file_dialog_dir_name_color" value="#808000"/>
+    <color id="file_dialog_dir_name_color" value="#000080"/>
 
     <style id="BUTTON"
         backgroundImageId="btn_background"

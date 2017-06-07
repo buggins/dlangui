@@ -324,7 +324,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
     void autofitGrid() {
         _fileList.autoFitColumnWidths();
-        _fileList.setColWidth(1, 0);
+        //_fileList.setColWidth(1, 0);
         _fileList.fillColumnWidth(1);
     }
 
@@ -363,6 +363,8 @@ class FileDialog : Dialog, CustomGridCellAdapter {
                 sz.y = fnt.height;
             return sz;
         }
+        if (BACKEND_CONSOLE)
+            return Point(0, 0);
         DrawableRef icon = rowIcon(row);
         if (icon.isNull)
             return Point(0, 0);
