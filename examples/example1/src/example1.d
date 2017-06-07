@@ -1217,12 +1217,12 @@ static if (ENABLE_OPENGL) {
 
         /// this is OpenGLDrawableDelegate implementation
         private void doDraw(Rect windowRect, Rect rc) {
-            Log.v("GlGears: MyOpenglWidget.doDraw() draw gears");
             if (!openglEnabled) {
                 Log.v("GlGears: OpenGL is disabled");
                 return;
             }
-            _oldApi = !!glLightfv;
+            import dlangui.graphics.glsupport : glSupport;
+            _oldApi = glSupport.legacyMode;
             if (_oldApi) {
                 drawUsingOldAPI(rc);
             } else {
@@ -1238,9 +1238,7 @@ static if (ENABLE_OPENGL) {
                 _initCalled = true;
                 glxgears_init();
             }
-            Log.v("GlGears: calling reshape()");
             glxgears_reshape(rc);
-            Log.v("GlGears: calling draw()");
             glEnable(GL_LIGHTING);
             glEnable(GL_LIGHT0);
             glEnable(GL_DEPTH_TEST);
@@ -1469,14 +1467,12 @@ static if (ENABLE_OPENGL) {
         static GLfloat[4] green = [ 0.0, 0.8, 0.2, 1.0 ];
         static GLfloat[4] blue = [ 0.2, 0.2, 1.0, 1.0 ];
         
-        Log.d("GlGears: init - calling glLightfv");
         glLightfv(GL_LIGHT0, GL_POSITION, pos.ptr);
         glEnable(GL_CULL_FACE);
         glEnable(GL_LIGHTING);
         glEnable(GL_LIGHT0);
         glEnable(GL_DEPTH_TEST);
         
-        Log.d("GlGears: init - calling genlists");
         /* make the gears */
         gear1 = glGenLists(1);
         glNewList(gear1, GL_COMPILE);

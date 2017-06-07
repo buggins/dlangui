@@ -80,8 +80,6 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
         glSupport.beforeRenderGUI();
         _scene.draw();
         glSupport.queue.flush();
-        GLProgram.unbind();
-        glSupport.destroyBuffers();
         glSupport.flushGL();
         destroy(_scene);
         _scene = null;
@@ -836,8 +834,6 @@ public:
             glSupport.queue.flush();
             glSupport.setOrthoProjection(_windowRect, _rc);
             glSupport.clearDepthBuffer();
-            //glEnable(GL_BLEND);
-            //checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
             _handler(_windowRect, _rc);
             glSupport.setOrthoProjection(_windowRect, _windowRect);
         }

@@ -281,15 +281,9 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
         initialized = false;
     }
 
-    /// returns true if program is ready for use (compiles program if not yet compiled)
-    bool check()
-    {
-        if (error)
-            return false;
-        if (!initialized)
-            if (!compile())
-                return false;
-        return true;
+    /// returns true if program is ready for use
+    bool check() {
+        return !error && initialized;
     }
 
     static GLuint currentProgram;
@@ -645,7 +639,7 @@ private float[] convertColors(uint[] cols) pure nothrow {
     return colors;
 }
 
-__gshared GLSupport _glSupport;
+private __gshared GLSupport _glSupport;
 @property GLSupport glSupport() {
     if (!_glSupport) {
         Log.f("GLSupport is not initialized");
@@ -657,7 +651,7 @@ __gshared GLSupport _glSupport;
     return _glSupport;
 }
 
-/// initialize OpenGL suport helper (call when current OpenGL context is initialized)
+/// initialize OpenGL support helper (call when current OpenGL context is initialized)
 bool initGLSupport(bool legacy = false) {
     import dlangui.platforms.common.platform : setOpenglEnabled;
     if (_glSupport && _glSupport.valid)
@@ -701,12 +695,7 @@ bool initGLSupport(bool legacy = false) {
     if (!_glSupport) {
         Log.d("glSupport not initialized: trying to create");
         _glSupport = new GLSupport(legacy);
-        if (_glSupport.valid || _glSupport.initShaders()) {
-            Log.v("shaders are ok");
-            setOpenglEnabled();
-            Log.v("OpenGL is initialized ok");
-            return true;
-        } else {
+        if (!_glSupport.valid) {
             Log.e("Failed to compile shaders");
             version (Android) {
                 // do not recreate legacy mode
@@ -715,19 +704,21 @@ bool initGLSupport(bool legacy = false) {
                 if (_glSupport.legacyMode == legacy) {
                     Log.i("Trying to reinit GLSupport with legacy flag ", !legacy);
                     _glSupport = new GLSupport(!legacy);
-                    if (_glSupport.valid || _glSupport.initShaders()) {
-                        Log.v("shaders are ok");
-                        setOpenglEnabled();
-                        Log.v("OpenGL is initialized ok");
-                        return true;
+                }
+                // Situation when opposite legacy flag is true and context version is 3.1+
+                if (_glSupport.legacyMode) {
+                    int major = to!int(glGetString(GL_VERSION)[0]);
+                    if (major >= 3) {
+                        Log.e("Try to create OpenGL context with <= 3.1 version");
+                        return false;
                     }
                 }
             }
         }
-        return false;
     }
-    if (_glSupport.valid || _glSupport.initShaders()) {
+    if (_glSupport.valid) {
         setOpenglEnabled();
+        Log.v("OpenGL is initialized ok");
         return true;
     } else {
         Log.e("Failed to compile shaders");
@@ -742,6 +733,10 @@ final class GLSupport {
     @property bool legacyMode() { return _legacyMode; }
     @property queue() { return _queue; }
 
+    @property bool valid() {
+        return _legacyMode || _shadersAreInitialized;
+    }
+
     this(bool legacy = false) {
         _queue = new OpenGLQueue;
     	version (Android) {
@@ -753,36 +748,40 @@ final class GLSupport {
     	    }
     	}
         _legacyMode = legacy;
+        if (!_legacyMode)
+            _shadersAreInitialized = initShaders();
     }
 
-    OpenGLQueue _queue;
-
-    SolidFillProgram _solidFillProgram;
-    TextureProgram _textureProgram;
-
-    @property bool valid() {
-        return _legacyMode || _textureProgram && _solidFillProgram;
+    ~this() {
+        uninitShaders();
     }
 
-    bool initShaders() {
-        Log.i("initShaders() is called");
+    private OpenGLQueue _queue;
+
+    private SolidFillProgram _solidFillProgram;
+    private TextureProgram _textureProgram;
+
+    private bool _shadersAreInitialized;
+    private bool initShaders() {
         if (_solidFillProgram is null) {
             Log.v("Compiling solid fill program");
             _solidFillProgram = new SolidFillProgram();
-            if (!_solidFillProgram.compile())
+            _solidFillProgram.compile();
+            if (!_solidFillProgram.check())
                 return false;
         }
         if (_textureProgram is null) {
             Log.v("Compiling texture program");
             _textureProgram = new TextureProgram();
-            if (!_textureProgram.compile())
+            _textureProgram.compile();
+            if (!_textureProgram.check())
                 return false;
         }
         Log.d("Shaders compiled successfully");
         return true;
     }
 
-    bool uninitShaders() {
+    private void uninitShaders() {
         Log.d("Uniniting shaders");
         if (_solidFillProgram !is null) {
             destroy(_solidFillProgram);
@@ -792,7 +791,6 @@ final class GLSupport {
             destroy(_textureProgram);
             _textureProgram = null;
         }
-        return true;
     }
 
     void beforeRenderGUI() {
@@ -801,10 +799,15 @@ final class GLSupport {
         checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     }
 
-    VBO vbo;
-    EBO ebo;
+    private VBO vbo;
+    private EBO ebo;
 
-    void fillBuffers(float[] vertices, float[] colors, float[] texcoords, int[] indices) {
+    private void fillBuffers(float[] vertices, float[] colors, float[] texcoords, int[] indices) {
+        resetBindings();
+
+        if(_legacyMode)
+            return;
+
         vbo = new VBO;
         ebo = new EBO;
 
@@ -823,7 +826,20 @@ final class GLSupport {
         ebo.bind();
     }
 
-    void destroyBuffers() {
+    /// This function is needed to draw custom OpenGL scene correctly (especially on legacy API)
+    private void resetBindings() {
+        // TODO: check if there is a very old driver with no such functions
+        GLProgram.unbind();
+        VAO.unbind();
+        VBO.unbind();
+    }
+
+    private void destroyBuffers() {
+        resetBindings();
+
+        if(_legacyMode)
+            return;
+
         if (_solidFillProgram)
             _solidFillProgram.destroyBuffers();
         if (_textureProgram)
@@ -835,26 +851,18 @@ final class GLSupport {
         ebo = null;
     }
 
-    void drawLines(int length, int start) {
-
+    private void drawLines(int length, int start) {
         if (_legacyMode) {
             static if (SUPPORT_LEGACY_OPENGL) {
-                glColor4f(1,1,1,1);
-                glDisable(GL_CULL_FACE);
-                glEnable(GL_BLEND);
-                glDisable(GL_ALPHA_TEST);
-                checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                checkgl!glEnableClientState(GL_VERTEX_ARRAY);
-                checkgl!glEnableClientState(GL_COLOR_ARRAY);
-                checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)_queue._vertices.ptr);
-                checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)_queue._colors.ptr);
+                glEnableClientState(GL_VERTEX_ARRAY);
+                glEnableClientState(GL_COLOR_ARRAY);
+                glVertexPointer(3, GL_FLOAT, 0, cast(void*)_queue._vertices.ptr);
+                glColorPointer(4, GL_FLOAT, 0, cast(void*)_queue._colors.ptr);
 
-                checkgl!glDrawElements(GL_LINES, cast(int)length, GL_UNSIGNED_INT, cast(void*)(_queue._indices.ptr + start * 4));
+                checkgl!glDrawElements(GL_LINES, cast(int)length, GL_UNSIGNED_INT, cast(void*)(_queue._indices[start .. start + length].ptr));
 
                 glDisableClientState(GL_COLOR_ARRAY);
                 glDisableClientState(GL_VERTEX_ARRAY);
-                glDisable(GL_ALPHA_TEST);
-                glDisable(GL_BLEND);
             }
         } else {
             if (_solidFillProgram !is null) {
@@ -864,26 +872,18 @@ final class GLSupport {
         }
     }
 
-    void drawSolidFillTriangles(int length, int start) {
-
+    private void drawSolidFillTriangles(int length, int start) {
         if (_legacyMode) {
             static if (SUPPORT_LEGACY_OPENGL) {
-                glColor4f(1,1,1,1);
-                glDisable(GL_CULL_FACE);
-                glEnable(GL_BLEND);
-                glDisable(GL_ALPHA_TEST);
-                checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                checkgl!glEnableClientState(GL_VERTEX_ARRAY);
-                checkgl!glEnableClientState(GL_COLOR_ARRAY);
-                checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)_queue._vertices.ptr);
-                checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)_queue._colors.ptr);
+                glEnableClientState(GL_VERTEX_ARRAY);
+                glEnableClientState(GL_COLOR_ARRAY);
+                glVertexPointer(3, GL_FLOAT, 0, cast(void*)_queue._vertices.ptr);
+                glColorPointer(4, GL_FLOAT, 0, cast(void*)_queue._colors.ptr);
 
-                checkgl!glDrawElements(GL_TRIANGLES, cast(int)length, GL_UNSIGNED_INT, cast(void*)(_queue._indices.ptr + start * 4));
+                checkgl!glDrawElements(GL_TRIANGLES, cast(int)length, GL_UNSIGNED_INT, cast(void*)(_queue._indices[start .. start + length].ptr));
 
                 glDisableClientState(GL_COLOR_ARRAY);
                 glDisableClientState(GL_VERTEX_ARRAY);
-                glDisable(GL_ALPHA_TEST);
-                glDisable(GL_BLEND);
             }
         } else {
             if (_solidFillProgram !is null) {
@@ -893,35 +893,25 @@ final class GLSupport {
         }
     }
 
-    void drawColorAndTextureTriangles(Tex2D texture, bool linear, int length, int start) {
-
+    private void drawColorAndTextureTriangles(Tex2D texture, bool linear, int length, int start) {
         if (_legacyMode) {
             static if (SUPPORT_LEGACY_OPENGL) {
-                glDisable(GL_CULL_FACE);
                 glEnable(GL_TEXTURE_2D);
                 texture.setup();
                 texture.setSamplerParams(linear);
 
-                glColor4f(1,1,1,1);
-                glDisable(GL_ALPHA_TEST);
+                glEnableClientState(GL_COLOR_ARRAY);
+                glEnableClientState(GL_VERTEX_ARRAY);
+                glEnableClientState(GL_TEXTURE_COORD_ARRAY);
+                glVertexPointer(3, GL_FLOAT, 0, cast(void*)_queue._vertices.ptr);
+                glTexCoordPointer(2, GL_FLOAT, 0, cast(void*)_queue._texCoords.ptr);
+                glColorPointer(4, GL_FLOAT, 0, cast(void*)_queue._colors.ptr);
 
-                glEnable(GL_BLEND);
-                checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-                checkgl!glEnableClientState(GL_COLOR_ARRAY);
-                checkgl!glEnableClientState(GL_VERTEX_ARRAY);
-                checkgl!glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-                checkgl!glVertexPointer(3, GL_FLOAT, 0, cast(void*)_queue._vertices.ptr);
-                checkgl!glTexCoordPointer(2, GL_FLOAT, 0, cast(void*)_queue._texCoords.ptr);
-                checkgl!glColorPointer(4, GL_FLOAT, 0, cast(void*)_queue._colors.ptr);
-
-                checkgl!glDrawElements(GL_TRIANGLES, cast(int)length, GL_UNSIGNED_INT, cast(void*)(_queue._indices.ptr + start * 4));
+                checkgl!glDrawElements(GL_TRIANGLES, cast(int)length, GL_UNSIGNED_INT, cast(void*)(_queue._indices[start .. start + length].ptr));
 
                 glDisableClientState(GL_TEXTURE_COORD_ARRAY);
                 glDisableClientState(GL_VERTEX_ARRAY);
                 glDisableClientState(GL_COLOR_ARRAY);
-                glDisable(GL_BLEND);
-                glDisable(GL_ALPHA_TEST);
                 glDisable(GL_TEXTURE_2D);
             }
         } else {
@@ -1459,6 +1449,7 @@ private final class OpenGLQueue {
             }
         }
         //Log.d(batches.length, " ", _vertices.length, " ", _colors.length, " ", _texCoords.length, " ", _indices.length);
+        glSupport.destroyBuffers();
         destroy(batches);
         destroy(_vertices);
         destroy(_colors);

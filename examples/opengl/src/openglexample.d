@@ -9,10 +9,14 @@ extern (C) int UIAppMain(string[] args) {
     // embed resources listed in views/resources.list into executable
     embeddedResourceList.addResources(embedResourcesFromList!("resources.list")());
 
+    // the old API example works on old context because of OpenGL deprecation model
+    // otherwise there will be GL_INVALID_OPERATION error
+    // new API functions on a modern graphics card will work even if you set context version to 1.0
+    Platform.instance.GLVersionMajor = 2;
+    Platform.instance.GLVersionMinor = 1;
+
     // create window
     Window window = Platform.instance.createWindow("DlangUI OpenGL Example", null, WindowFlag.Resizable, 800, 700);
-
-    VerticalLayout contentLayout = new VerticalLayout();
 
     static if (ENABLE_OPENGL) {
         window.mainWidget = new MyOpenglWidget();
@@ -147,9 +151,7 @@ class MyOpenglWidget : VerticalLayout {
             _initCalled = true;
             glxgears_init();
         }
-        Log.v("GlGears: calling reshape()");
         glxgears_reshape(rc);
-        Log.v("GlGears: calling draw()");
         glEnable(GL_LIGHTING);
         glEnable(GL_LIGHT0);
         glEnable(GL_DEPTH_TEST);
@@ -162,22 +164,31 @@ class MyOpenglWidget : VerticalLayout {
     ~this() {
         if (_program)
             destroy(_program);
+        if (_vao)
+            destroy(_vao);
+        if (_vbo)
+            destroy(_vbo);
         if (_tx)
             destroy(_tx);
     }
 
     MyGLProgram _program;
     GLTexture _tx;
+    VAO _vao;
+    VBO _vbo;
 
     /// New API example (OpenGL3+, shaders)
     void drawUsingNewAPI(Rect windowRect, Rect rc) {
         if (!_program) {
-            _program = new MyGLProgram();
+            _program = new MyGLProgram;
+            _program.compile();
             createMesh();
+            auto buf = _program.createBuffers(vertices, colors, texcoords);
+            _vao = buf[0];
+            _vbo = buf[1];
         }
         if (!_program.check())
             return;
-
         if (!_tx.isValid) {
             Log.e("Invalid texture");
             return;
@@ -208,7 +219,7 @@ class MyOpenglWidget : VerticalLayout {
         // ======= PMV matrix =====================
         mat4 projectionViewModelMatrix = projectionMatrix * viewMatrix * modelMatrix;
 
-        _program.execute(vertices, colors, texcoords, _tx.texture, true, projectionViewModelMatrix.m);
+        _program.execute(_vao, cast(int)vertices.length / 3, _tx.texture, true, projectionViewModelMatrix.m);
 
         checkgl!glDisable(GL_CULL_FACE);
         checkgl!glDisable(GL_DEPTH_TEST);
@@ -306,23 +317,13 @@ class MyGLProgram : GLProgram {
         return matrixLocation >= 0 && vertexLocation >= 0 && colAttrLocation >= 0 && texCoordLocation >= 0;
     }
 
-    bool execute(float[] vertices, float[] colors, float[] texcoords, Tex2D texture, bool linear, float[16] matrix) {
-        if(!check())
-            return false;
+    import std.typecons : Tuple, tuple;
+    Tuple!(VAO, VBO) createBuffers(float[] vertices, float[] colors, float[] texcoords) {
 
-        glEnable(GL_BLEND);
-        checkgl!glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        bind();
-        checkgl!glUniformMatrix4fv(matrixLocation, 1, false, matrix.ptr);
-
-        texture.setup();
-        texture.setSamplerParams(linear);
-
-        VAO vao = new VAO();
-
-        VBO vbo = new VBO();
+        VBO vbo = new VBO;
         vbo.fill([vertices, colors, texcoords]);
 
+        VAO vao = new VAO;
         glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, 0, cast(void*) 0);
         glVertexAttribPointer(colAttrLocation, 4, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * vertices[0].sizeof));
         glVertexAttribPointer(texCoordLocation, 2, GL_FLOAT, GL_FALSE, 0, cast(void*) (vertices.length * vertices[0].sizeof + colors.length * colors[0].sizeof));
@@ -331,19 +332,22 @@ class MyGLProgram : GLProgram {
         glEnableVertexAttribArray(colAttrLocation);
         glEnableVertexAttribArray(texCoordLocation);
 
-        checkgl!glDrawArrays(GL_TRIANGLES, 0, cast(int)vertices.length / 3);
+        return tuple(vao, vbo);
+    }
 
-        glDisableVertexAttribArray(vertexLocation);
-        glDisableVertexAttribArray(colAttrLocation);
-        glDisableVertexAttribArray(texCoordLocation);
+    void execute(VAO vao, int vertsCount, Tex2D texture, bool linear, float[16] matrix) {
 
-        unbind();
+        bind();
+        checkgl!glUniformMatrix4fv(matrixLocation, 1, false, matrix.ptr);
 
-        destroy(vbo);
-        destroy(vao);
+        texture.setup();
+        texture.setSamplerParams(linear);
+
+        vao.bind();
+        checkgl!glDrawArrays(GL_TRIANGLES, 0, vertsCount);
 
         texture.unbind();
-        return true;
+        unbind();
     }
 }
 
@@ -550,14 +554,12 @@ static void glxgears_init()
     static GLfloat[4] green = [ 0.0, 0.8, 0.2, 1.0 ];
     static GLfloat[4] blue = [ 0.2, 0.2, 1.0, 1.0 ];
 
-    Log.d("GlGears: init - calling glLightfv");
     glLightfv(GL_LIGHT0, GL_POSITION, pos.ptr);
     glEnable(GL_CULL_FACE);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     glEnable(GL_DEPTH_TEST);
 
-    Log.d("GlGears: init - calling genlists");
     /* make the gears */
     gear1 = glGenLists(1);
     glNewList(gear1, GL_COMPILE);
