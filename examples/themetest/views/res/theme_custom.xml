@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<theme 
+    id="theme_custom" 
+    parent="theme_default"
+    >
+    <style id="BUTTON"
+        align="Center"
+        margins="5pt,5pt,5pt,5pt"
+        padding="5pt,5pt,5pt,5pt"
+        fontSize="200%"
+        fontWeight="bold"
+        backgroundColor="#C0D8FF"
+        >
+        <state state_enabled="false" textColor="#C0000000"/>
+        <state state_pressed="true" backgroundColor="#8080FF"/>
+        <state state_focused="true" state_hovered="true" backgroundColor="#C0E0FF" textColor="#FF8000"/>
+        <state state_focused="true" backgroundColor="#C0E0FF"/>
+        <state state_focused="false" state_hovered="true" textColor="#FF8000"/>
+    </style>
+</theme>

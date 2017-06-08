@@ -1,0 +1,13 @@
+{
+    "name": "themetest",
+    "targetPath": "bin",
+    "targetType": "executable",
+
+    "stringImportPaths": ["views", "views/res"],
+
+    "sourceFiles-windows": ["$PACKAGE_DIR/src/win_app.def"],
+
+    "dependencies": {
+        "dlangui": {"path": "../../"}
+    }
+}
