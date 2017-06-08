@@ -651,6 +651,8 @@ private __gshared GLSupport _glSupport;
     return _glSupport;
 }
 
+__gshared bool glNoContext;
+
 /// initialize OpenGL support helper (call when current OpenGL context is initialized)
 bool initGLSupport(bool legacy = false) {
     import dlangui.platforms.common.platform : setOpenglEnabled;
@@ -1125,8 +1127,10 @@ class GLObject(GLObjectTypes type, GLuint target = 0) {
     }
 
     ~this() {
-        unbind();
-        mixin("checkgl!glDelete" ~ to!string(type) ~ "s(1, &ID);");
+        if (!glNoContext) {
+            unbind();
+            mixin("checkgl!glDelete" ~ to!string(type) ~ "s(1, &ID);");
+        }
     }
 
     void bind() {
