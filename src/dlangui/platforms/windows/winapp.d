@@ -183,7 +183,7 @@ static if (ENABLE_OPENGL) {
                 _hGLRC = wglCreateContext(hDC);
                 if (_hGLRC) {
                     bind(hDC);
-                    bool initialized = initGLSupport(false);
+                    bool initialized = initGLSupport(Platform.instance.GLVersionMajor < 3);
                     unbind(hDC);
                     if (!initialized) {
                         uninit();
@@ -281,7 +281,7 @@ class Win32Window : Window {
             /* initialize OpenGL rendering */
             HDC hDC = GetDC(_hwnd);
 
-            if (openglEnabled || !_glSupport) {
+            if (openglEnabled) {
                 useOpengl = sharedGLContext.init(hDC);
             }
         }

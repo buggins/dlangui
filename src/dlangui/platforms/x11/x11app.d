@@ -352,20 +352,11 @@ class X11Window : DWindow {
 					_enableOpengl = false;
 				} else {
 					glXMakeCurrent(x11display, cast(uint)_win, _glc);
-					if (!_gl3Reloaded) {
-						DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
-						DerelictGL3.reload(GLVersion.GL21, GLVersion.GL40);
-						_gl3Reloaded = true;
-						if (!_glSupport)
-							_glSupport = new GLSupport(true);
-						if (!glSupport.valid && !glSupport.initShaders())
-							_enableOpengl = false;
-						glXMakeCurrent(x11display, cast(uint)_win, null);
-						if (!_enableOpengl && _glc) {
-							glXDestroyContext(x11display, _glc);
-							_glc = null;
-						}
-					}
+                    _enableOpengl = initGLSupport(_platform.GLVersionMajor < 3);
+                    if (!_enableOpengl && _glc) {
+                        glXDestroyContext(x11display, _glc);
+                        _glc = null;
+                    }
 				}
 			}
 			if (_enableOpengl) {

@@ -386,6 +386,10 @@ extern (C) void releaseResourcesOnAppExit() {
         imageCache = null;
     }
     FontManager.instance = null;
+    static if (ENABLE_OPENGL) {
+        import dlangui.graphics.gldrawbuf;
+        destroyGLCaches();
+    }
     
     debug {
         if (DrawBuf.instanceCount > 0) {

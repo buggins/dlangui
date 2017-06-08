@@ -18,7 +18,7 @@ class Effect : GLProgram {
     EffectId _id;
     string[string] _defs;
     string _defText;
-
+    
     @property ref const(EffectId) id() const { return _id; }
     this(EffectId id) {
         _id = id;
@@ -53,6 +53,7 @@ class Effect : GLProgram {
         }
         _defText = buf.dup;
         // compile shaders
+        compile();
         if (!check()) {
             Log.e("Failed to compile shaders ", _id.vertexShaderName, " ", _id.fragmentShaderName, " ", _id.definitions);
             assert(false);
