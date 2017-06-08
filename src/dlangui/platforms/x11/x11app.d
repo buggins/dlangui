@@ -19,6 +19,7 @@ import core.stdc.string;
 import std.stdio;
 import std.string;
 import std.utf;
+private import core.stdc.config : c_ulong, c_long;
 
 import x11.Xlib;
 import x11.Xutil;
@@ -76,6 +77,7 @@ private __gshared
 	Atom   atom_DLANGUI_TIMER_EVENT;
 	Atom   atom_DLANGUI_TASK_EVENT;
 	Atom   atom_DLANGUI_CLOSE_WINDOW_EVENT;
+	Atom   atom_DLANGUI_CLIPBOARD_BUFFER;
 }
 
 static void setupX11Atoms()
@@ -100,6 +102,7 @@ static void setupX11Atoms()
 	atom_DLANGUI_TIMER_EVENT     = XInternAtom(x11display, "DLANGUI_TIMER_EVENT", False);
 	atom_DLANGUI_TASK_EVENT     = XInternAtom(x11display, "DLANGUI_TASK_EVENT", False);
 	atom_DLANGUI_CLOSE_WINDOW_EVENT = XInternAtom(x11display, "DLANGUI_CLOSE_WINDOW_EVENT", False);
+	atom_DLANGUI_CLIPBOARD_BUFFER = XInternAtom(x11display, "DLANGUI_CLIPBOARD_BUFFER", False);
 }
 
 // Cursor font constants
@@ -523,7 +526,6 @@ class X11Window : DWindow {
 
 	/// sets window icon
 	override @property void windowIcon(DrawBufRef buf) {
-		import core.stdc.config;
 		ColorDrawBuf icon = cast(ColorDrawBuf)buf.get;
 		if (!icon) {
 			Log.e("Trying to set null icon for window");
@@ -1409,6 +1411,59 @@ class X11Platform : Platform {
 						Log.d("X11: KeymapNotify event");
 						X11Window w = findWindow(event.xkeymap.window);
 						break;
+					case SelectionClear:
+						Log.d("X11: SelectionClear event");
+						break;
+					case SelectionRequest:
+						debug(x11) Log.d("X11: SelectionRequest event");
+						if (event.xselectionrequest.owner in _windowMap) {
+							XSelectionRequestEvent *selectionRequest = &event.xselectionrequest;
+
+							XEvent selectionEvent;
+							memset(&selectionEvent, 0, selectionEvent.sizeof);
+							selectionEvent.xany.type = SelectionNotify;
+							selectionEvent.xselection.selection = selectionRequest.selection;
+							selectionEvent.xselection.target = selectionRequest.target;
+							selectionEvent.xselection.property = None;
+							selectionEvent.xselection.requestor = selectionRequest.requestor;
+							selectionEvent.xselection.time = selectionRequest.time;
+
+							if (selectionRequest.target == XA_STRING || selectionRequest.target == atom_UTF8_STRING) {
+								static if (false) {
+									int currentSelectionFormat;
+									Atom currentSelectionType;
+									c_ulong selectionDataLength, overflow;
+									ubyte* selectionDataPtr;
+									if (XGetWindowProperty(x11display, DefaultRootWindow(x11display), atom_DLANGUI_CLIPBOARD_BUFFER, 
+										0, int.max/4, False, selectionRequest.target,
+										&currentSelectionType, &currentSelectionFormat, &selectionDataLength,
+										&overflow, &selectionDataPtr) == 0)
+									{
+										scope(exit) XFree(selectionDataPtr);
+										XChangeProperty(x11display, selectionRequest.requestor, selectionRequest.property,
+											selectionRequest.target, 8, PropModeReplace,
+											selectionDataPtr, cast(int)selectionDataLength);
+									}
+								} else {
+									XChangeProperty(x11display, selectionRequest.requestor, selectionRequest.property,
+											selectionRequest.target, 8, PropModeReplace,
+											cast(ubyte*)localClipboardContent, cast(int)localClipboardContent.length);
+								}
+								selectionEvent.xselection.property = selectionRequest.property;
+							} else if (selectionRequest.target == atom_TARGETS) {
+								Atom[3] supportedFormats = [atom_UTF8_STRING, XA_STRING, atom_TARGETS];
+								XChangeProperty(x11display, selectionRequest.requestor, selectionRequest.property,
+									XA_ATOM, 32, PropModeReplace,
+									cast(ubyte*)supportedFormats.ptr, cast(int)supportedFormats.length);
+								selectionEvent.xselection.property = selectionRequest.property;
+							}
+							XSendEvent(x11display, selectionRequest.requestor, False, 0, &selectionEvent);
+						}
+						break;
+					case SelectionNotify:
+						Log.d("X11: SelectionNotify event");
+						X11Window w = findWindow(event.xselection.requestor);
+						break;
 					case ClientMessage:
 						debug(x11) Log.d("X11: ClientMessage event");
 						X11Window w = findWindow(event.xclient.window);
@@ -1448,8 +1503,32 @@ class X11Platform : Platform {
 	/// sets text to clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
 	override void setClipboardText(dstring text, bool mouseBuffer = false) {
 		localClipboardContent = toUTF8(text);
-		//XSetSelectionOwner(display, XA_PRIMARY, juce_messageWindowHandle, CurrentTime);
-		//XSetSelectionOwner(display, atom_CLIPBOARD, juce_messageWindowHandle, CurrentTime);
+		if (!mouseBuffer && atom_CLIPBOARD == None) {
+			Log.e("No CLIPBOARD atom available");
+			return;
+		}
+		XWindow xwindow = None;
+		// Find any top-level window
+		foreach(w; _windowMap) {
+			if (w._parent is null && w._win != None) {
+				xwindow = w._win;
+			}
+		}
+		if (xwindow == None) {
+			Log.e("Could not find window to save clipboard text");
+			return;
+		}
+		static if (false) {
+			// This is example of how setting clipboard contents can be implemented without global variable
+			auto textc = text.toUTF8;
+			XChangeProperty(x11display, DefaultRootWindow(x11display), atom_DLANGUI_CLIPBOARD_BUFFER, XA_STRING, 8, PropModeReplace, cast(ubyte*)textc.ptr, cast(int)textc.length);
+		}
+
+		if (mouseBuffer && XGetSelectionOwner(x11display, XA_PRIMARY) != xwindow) {
+			XSetSelectionOwner(x11display, XA_PRIMARY, xwindow, CurrentTime);
+		} else if (XGetSelectionOwner(x11display, atom_CLIPBOARD != xwindow)) {
+			XSetSelectionOwner(x11display, atom_CLIPBOARD, xwindow, CurrentTime);
+		}
 	}
 	
 	/// calls request layout for all windows
