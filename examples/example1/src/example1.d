@@ -358,6 +358,9 @@ extern (C) int UIAppMain(string[] args) {
 
         MenuItem windowItem = new MenuItem(new Action(3, "MENU_WINDOW"c));
         windowItem.add(new Action(30, "MENU_WINDOW_PREFERENCES"));
+        windowItem.add(new Action(31, UIString.fromId("MENU_WINDOW_MINIMIZE")));
+        windowItem.add(new Action(32, UIString.fromId("MENU_WINDOW_MAXIMIZE")));
+        windowItem.add(new Action(33, UIString.fromId("MENU_WINDOW_RESTORE")));
         MenuItem helpItem = new MenuItem(new Action(4, "MENU_HELP"c));
         helpItem.add(new Action(40, "MENU_HELP_VIEW_HELP"));
         MenuItem aboutItem = new MenuItem(new Action(41, "MENU_HELP_ABOUT"));
@@ -376,6 +379,15 @@ extern (C) int UIAppMain(string[] args) {
         contentLayout.onAction = delegate(Widget source, const Action a) {
             if (a.id == ACTION_FILE_EXIT) {
                 window.close();
+                return true;
+            } else if (a.id == 31) {
+                window.minimizeWindow();
+                return true;
+            } else if (a.id == 32) {
+                window.maximizeWindow();
+                return true;
+            } else if (a.id == 33) {
+                window.restoreWindow();
                 return true;
             } else if (a.id == 41) {
                 window.showMessageBox(UIString.fromRaw("About"d), UIString.fromRaw("DLangUI demo app\n(C) Vadim Lopatin, 2014\nhttp://github.com/buggins/dlangui"d));
