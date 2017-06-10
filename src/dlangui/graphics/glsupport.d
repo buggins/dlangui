@@ -651,6 +651,8 @@ private __gshared GLSupport _glSupport;
     return _glSupport;
 }
 
+__gshared bool glNoContext;
+
 /// initialize OpenGL support helper (call when current OpenGL context is initialized)
 bool initGLSupport(bool legacy = false) {
     import dlangui.platforms.common.platform : setOpenglEnabled;
@@ -694,6 +696,8 @@ bool initGLSupport(bool legacy = false) {
     }
     if (!_glSupport) {
         Log.d("glSupport not initialized: trying to create");
+        int major = to!int(glGetString(GL_VERSION)[0 .. 1]);
+        legacy = legacy || (major < 3);
         _glSupport = new GLSupport(legacy);
         if (!_glSupport.valid) {
             Log.e("Failed to compile shaders");
@@ -705,9 +709,8 @@ bool initGLSupport(bool legacy = false) {
                     Log.i("Trying to reinit GLSupport with legacy flag ", !legacy);
                     _glSupport = new GLSupport(!legacy);
                 }
-                // Situation when opposite legacy flag is true and context version is 3.1+
+                // Situation when opposite legacy flag is true and GL version is 3+ with no old functions
                 if (_glSupport.legacyMode) {
-                    int major = to!int(glGetString(GL_VERSION)[0]);
                     if (major >= 3) {
                         Log.e("Try to create OpenGL context with <= 3.1 version");
                         return false;
@@ -828,10 +831,12 @@ final class GLSupport {
 
     /// This function is needed to draw custom OpenGL scene correctly (especially on legacy API)
     private void resetBindings() {
-        // TODO: check if there is a very old driver with no such functions
-        GLProgram.unbind();
-        VAO.unbind();
-        VBO.unbind();
+        if (glUseProgram)
+            GLProgram.unbind();
+        if (glBindVertexArray)
+            VAO.unbind();
+        if (glBindBuffer)
+            VBO.unbind();
     }
 
     private void destroyBuffers() {
@@ -1122,8 +1127,10 @@ class GLObject(GLObjectTypes type, GLuint target = 0) {
     }
 
     ~this() {
-        unbind();
-        mixin("checkgl!glDelete" ~ to!string(type) ~ "s(1, &ID);");
+        if (!glNoContext) {
+            unbind();
+            mixin("checkgl!glDelete" ~ to!string(type) ~ "s(1, &ID);");
+        }
     }
 
     void bind() {

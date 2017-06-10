@@ -1595,6 +1595,8 @@ int sdlmain(string[] args) {
 
     Log.d("Destroying SDL platform");
     Platform.setInstance(null);
+    static if (ENABLE_OPENGL)
+        glNoContext = true;
 
     releaseResourcesOnAppExit();
 
