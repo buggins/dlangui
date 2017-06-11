@@ -310,6 +310,10 @@ class SDLWindow : Window {
         }
         setOpenglEnabled(_enableOpengl);
         windowCaption = _caption;
+        int x = 0;
+        int y = 0;
+        SDL_GetWindowPosition(_win, &x, &y);
+        handleWindowStateChange(WindowState.unspecified, Rect(x, y, _dx, _dy));
         return true;
     }
     
@@ -1225,12 +1229,12 @@ class SDLPlatform : Platform {
                             case SDL_WINDOWEVENT_RESIZED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_RESIZED win=", event.window.windowID, " pos=", event.window.data1,
                                         ",", event.window.data2);
-                                w.redraw();
+                                //redraw not needed here: SDL_WINDOWEVENT_RESIZED is following SDL_WINDOWEVENT_SIZE_CHANGED if the size was changed by an external event (window manager, user)
                                 break;
                             case SDL_WINDOWEVENT_SIZE_CHANGED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_SIZE_CHANGED win=", event.window.windowID, " pos=", event.window.data1,
                                         ",", event.window.data2);
-                                w.handleWindowStateChange(WindowState.unspecified, Rect(int.min, int.min, event.window.data1, event.window.data2));
+                                w.handleWindowStateChange(WindowState.unspecified, Rect(w.windowRect().left, w.windowRect().top, event.window.data1, event.window.data2));
                                 w.redraw();
                                 break;
                             case SDL_WINDOWEVENT_CLOSE:
@@ -1262,7 +1266,7 @@ class SDLPlatform : Platform {
                                 break;
                             case SDL_WINDOWEVENT_MOVED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MOVED - ", w.windowCaption);
-                                w.handleWindowStateChange(WindowState.unspecified, Rect(event.window.data1, event.window.data2, int.min, int.min));
+                                w.handleWindowStateChange(WindowState.unspecified, Rect(event.window.data1, event.window.data2, w.windowRect().right, w.windowRect().bottom));
                                 if (!_windowsMinimized && w.hasVisibleModalChild())
                                     w.restoreModalChilds();
                                 break;
