@@ -88,8 +88,8 @@ struct CSSToken {
             bool typeFlagInteger; // for number and dimension - true if number is integer, false if double
         }
         struct {
-            uint unicodeRangeStart = 0; // for unicodeRange
-            uint unicodeRangeEnd = 0; // for unicodeRange
+            uint unicodeRangeStart; // for unicodeRange (initialized to 0 via intValue=0)
+            uint unicodeRangeEnd; // for unicodeRange (initialized to 0 via intValue=0)
         }
     }
 }
