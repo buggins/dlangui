@@ -250,7 +250,7 @@ class X11Window : DWindow {
 		_flags = flags;
 
 		/* get the colors black and white (see section for details) */
-		uint black, white;
+		c_ulong black, white;
 		black = BlackPixel(x11display, x11screen);	/* get color black */
 		white = WhitePixel(x11display, x11screen);  /* get color white */
 
