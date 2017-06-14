@@ -62,15 +62,17 @@ struct Point {
     }
 }
 
-/// 2D rectangle
+/** 2D rectangle
+    Note: Rect(0,0,20,10) size is 20x10 -- right and bottom sides are non-inclusive -- if you draw such rect, rightmost drawn pixel will be x=19 and bottom pixel y=9
+*/
 struct Rect {
     /// x coordinate of top left corner
     int left;
     /// y coordinate of top left corner
     int top;
-    /// x coordinate of bottom right corner
+    /// x coordinate of bottom right corner (non-inclusive)
     int right;
-    /// y coordinate of bottom right corner
+    /// y coordinate of bottom right corner (non-inclusive)
     int bottom;
     /// returns average of left, right
     @property int middlex() { return (left + right) / 2; }
