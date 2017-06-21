@@ -68,7 +68,7 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
     @property ComboBoxBase selectedItemIndex(int index) {
         if (_selectedItemIndex == index)
             return this;
-        if (_selectedItemIndex != -1) {
+        if (_selectedItemIndex != -1 && _adapter.itemCount > _selectedItemIndex) {
             _adapter.resetItemState(_selectedItemIndex, State.Selected | State.Focused | State.Hovered);
         }
         _selectedItemIndex = index;
