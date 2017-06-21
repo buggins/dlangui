@@ -225,6 +225,7 @@ class ComboBox : ComboBoxBase {
     }
 
     @property void items(string[] itemResourceIds) {
+        _selectedItemIndex = -1;
         setAdapter(new StringListAdapter(itemResourceIds));
         if(itemResourceIds.length > 0) {
            selectedItemIndex = 0;
@@ -233,6 +234,7 @@ class ComboBox : ComboBoxBase {
     }
 
     @property void items(dstring[] items) {
+        _selectedItemIndex = -1;
         setAdapter(new StringListAdapter(items));
         if(items.length > 0) {
             if (selectedItemIndex == -1 || selectedItemIndex > items.length)
@@ -242,6 +244,7 @@ class ComboBox : ComboBoxBase {
     }
 
     @property void items(StringListValue[] items) {
+        _selectedItemIndex = -1;
         if (auto a = cast(StringListAdapter)_adapter)
             a.items = items;
         else
@@ -369,6 +372,7 @@ class IconTextComboBox : ComboBoxBase {
     }
 
     @property void items(StringListValue[] items) {
+        _selectedItemIndex = -1;
         if (auto a = cast(IconStringListAdapter)_adapter)
             a.items = items;
         else
