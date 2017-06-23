@@ -257,8 +257,8 @@
   <cccmd>$(CC) -c</cccmd>
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath />
-  <fileImppath />
+  <imppath>$(SolutionDir)/src $(SolutionDir)/3rdparty $(SolutionDir)/deps/DerelictGL3/source  $(SolutionDir)/deps/DerelictUtil/source  $(SolutionDir)/deps/DerelictFT/source $(SolutionDir)/deps/DerelictSDL2/source</imppath>
+  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
@@ -276,7 +276,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids />
+  <versionids>USE_OPENGL EmbedStandardResources</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -359,8 +359,8 @@
   <cccmd>$(CC) -c</cccmd>
   <ccTransOpt>1</ccTransOpt>
   <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
-  <imppath />
-  <fileImppath />
+  <imppath>$(SolutionDir)/src $(SolutionDir)/3rdparty $(SolutionDir)/deps/DerelictGL3/source  $(SolutionDir)/deps/DerelictUtil/source  $(SolutionDir)/deps/DerelictFT/source $(SolutionDir)/deps/DerelictSDL2/source</imppath>
+  <fileImppath>views views/res views/res/i18n views/res/mdpi views/res/hdpi</fileImppath>
   <outdir>$(ConfigurationName)</outdir>
   <objdir>$(OutDir)</objdir>
   <objname />
@@ -378,7 +378,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids />
+  <versionids>USE_OPENGL EmbedStandardResources</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
