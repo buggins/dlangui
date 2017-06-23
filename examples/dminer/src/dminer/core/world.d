@@ -178,7 +178,7 @@ class World {
     /// get max Y position of non-empty cell in region (x +- size, z +- size)
     int regionHeight(int x, int z, int size) {
         int top = -1;
-        int delta = size / 8 + 1;
+        int delta = size + 1;
         for (int dx = x - delta; dx <= x + delta; dx += 8) {
             for (int dz = z - delta; dz <= z + delta; dz += 8) {
                 if (ChunkStack * stack = getCellChunkStack(x, z)) {

@@ -132,9 +132,9 @@ class MinerDrawable : MaterialDrawableObject, ChunkVisitor {
             float camDist = (_camPosition - chunkPos).length;
             vec3 chunkDirection = (chunkPos - (_camPosition - (_camForwardVector * 12))).normalized;
             float dot = _camForwardVector.dot(chunkDirection);
-            float threshold = 0.87;
-            if (camDist < 12)
-                threshold = 0.5;
+            float threshold = 0.80;
+            if (camDist < 16)
+                threshold = 0.2;
             //Log.d("visit() chunkPos ", chunkPos, " chunkDir ", chunkDirection, " camDir ", " dot ", dot, " threshold ", threshold);
 
             if (dot < threshold) { // cos(45)
