@@ -96,7 +96,7 @@ X<-----x-----
 
 private immutable float CCC = 0.5; // cell cube coordinates
 private immutable float TC0 = 0.0;
-private immutable float TC1 = 1.0;
+private immutable float TC1 = 0.99;
 
 __gshared static const float[VERTEX_COMPONENTS * 4] face_vertices_north =
 [
@@ -184,7 +184,7 @@ __gshared static const float[VERTEX_COMPONENTS * 4] face_vertices_down =
 
 __gshared static const ushort[6] face_indexes =
 [
-      2, 1, 0, 0, 3, 2 // CCW
+    2, 1, 0, 0, 3, 2 // CCW
 ];
 
 __gshared static const ushort[6] face_indexes_back =

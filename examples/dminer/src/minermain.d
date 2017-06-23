@@ -15,6 +15,8 @@ import dlangui.graphics.scene.effect;
 import dlangui.graphics.glsupport;
 import dlangui.graphics.gldrawbuf;
 
+//version = TEST_VISITOR_PERFORMANCE;
+
 /*
 version (Android) {
     //enum SUPPORT_LEGACY_OPENGL = false;
@@ -62,8 +64,9 @@ extern (C) int UIAppMain(string[] args) {
 
 class ChunkVisitCounter : ChunkVisitor {
     int count;
-    void visit(World world, SmallChunk * chunk) {
+    bool visit(World world, SmallChunk * chunk) {
         count++;
+        return true;
     }
 }
 
@@ -78,6 +81,10 @@ class MinerDrawable : MaterialDrawableObject, ChunkVisitor {
     private Camera _cam;
     private vec3 _camPosition;
     private vec3 _camForwardVector;
+    private bool _wireframe;
+
+    @property bool wireframe() { return _wireframe; }
+    @property void wireframe(bool flgWireframe) { _wireframe = flgWireframe; }
 
     this(World world, Material material, Camera cam) {
         super(material);
@@ -94,7 +101,7 @@ class MinerDrawable : MaterialDrawableObject, ChunkVisitor {
         _pos = _world.camPosition.pos;
         _camPosition = _cam.translation;
         _camForwardVector = _cam.forwardVectorWorld;
-        _camPosition -= _camForwardVector * 8;
+        //_camPosition -= _camForwardVector * 8;
         _skippedCount = _drawnCount = 0;
         long ts = currentTimeMillis();
         //_chunkVisitor.visitChunks(_pos);
@@ -102,34 +109,48 @@ class MinerDrawable : MaterialDrawableObject, ChunkVisitor {
         camVector.x = cast(int)(_camForwardVector.x * 256);
         camVector.y = cast(int)(_camForwardVector.y * 256);
         camVector.z = cast(int)(_camForwardVector.z * 256);
-        ChunkVisitCounter countVisitor = new ChunkVisitCounter();
-        _chunkIterator.start(_world, _world.camPosition.pos, MAX_VIEW_DISTANCE);
-        _chunkIterator.visitVisibleChunks(countVisitor, camVector);
-        long durationNoDraw = currentTimeMillis() - ts;
-        _chunkIterator.start(_world, _world.camPosition.pos, MAX_VIEW_DISTANCE);
-        _chunkIterator.visitVisibleChunks(this, camVector);
-        long duration = currentTimeMillis() - ts;
-        Log.d("drawing of Miner scene finished in ", duration, " ms  skipped:", _skippedCount, " drawn:", _drawnCount, " duration(noDraw)=", durationNoDraw);
+        version (TEST_VISITOR_PERFORMANCE) {
+            ChunkVisitCounter countVisitor = new ChunkVisitCounter();
+            _chunkIterator.start(_world, _world.camPosition.pos, MAX_VIEW_DISTANCE);
+            _chunkIterator.visitVisibleChunks(countVisitor, camVector);
+            long durationNoDraw = currentTimeMillis() - ts;
+            _chunkIterator.start(_world, _world.camPosition.pos, MAX_VIEW_DISTANCE);
+            _chunkIterator.visitVisibleChunks(this, camVector);
+            long duration = currentTimeMillis() - ts;
+            Log.d("drawing of Miner scene finished in ", duration, " ms  skipped:", _skippedCount, " drawn:", _drawnCount, " duration(noDraw)=", durationNoDraw);
+        } else {
+            _chunkIterator.start(_world, _world.camPosition.pos, MAX_VIEW_DISTANCE);
+            _chunkIterator.visitVisibleChunks(this, camVector);
+            long duration = currentTimeMillis() - ts;
+            Log.d("drawing of Miner scene finished in ", duration, " ms  skipped:", _skippedCount, " drawn:", _drawnCount);
+        }
     }
-    void visit(World world, SmallChunk * chunk) {
+    bool visit(World world, SmallChunk * chunk) {
         if (chunk) {
             Vector3d p = chunk.position;
             vec3 chunkPos = vec3(p.x + 4, p.y + 4, p.z + 4);
-            vec3 chunkDirection = (chunkPos - _camPosition).normalized;
+            float camDist = (_camPosition - chunkPos).length;
+            vec3 chunkDirection = (chunkPos - (_camPosition - (_camForwardVector * 12))).normalized;
             float dot = _camForwardVector.dot(chunkDirection);
-            //Log.d("visit() chunkPos ", chunkPos, " chunkDir ", chunkDirection, " camDir ");
-            if (dot < 0.7) { // cos(45)
+            float threshold = 0.87;
+            if (camDist < 12)
+                threshold = 0.5;
+            //Log.d("visit() chunkPos ", chunkPos, " chunkDir ", chunkDirection, " camDir ", " dot ", dot, " threshold ", threshold);
+
+            if (dot < threshold) { // cos(45)
                 _skippedCount++;
-                return;
+                return false;
             }
             Mesh mesh = chunk.getMesh(world);
             if (mesh) {
                 _material.bind(_node, mesh, lights(_node));
-                _material.drawMesh(mesh);
+                _material.drawMesh(mesh, _wireframe);
                 _material.unbind();
                 _drawnCount++;
             }
+            return true;
         }
+        return true;
     }
 }
 
@@ -232,7 +253,8 @@ class UiWidget : VerticalLayout { //, CellVisitor
         //updateMinerMesh();
 
         Material minerMaterial = new Material(EffectId("textured.vert", "textured.frag", null), "blocks");
-        minerMaterial.ambientColor = vec3(0.05,0.05,0.05);
+        //Material minerMaterial = new Material(EffectId("colored.vert", "colored.frag", null), "blocks");
+        minerMaterial.ambientColor = vec3(0.25,0.25,0.25);
         minerMaterial.textureLinear = false;
         minerMaterial.fogParams = new FogParams(vec4(0.01, 0.01, 0.01, 1), 12, 80);
         //minerMaterial.specular = 10;
@@ -240,6 +262,7 @@ class UiWidget : VerticalLayout { //, CellVisitor
         //_minerDrawable.autobindLights = false;
         //Model minerDrawable = new Model(minerMaterial, _minerMesh);
         Node3d minerNode = new Node3d("miner", _minerDrawable);
+        //_minerDrawable.wireframe = true;
         _scene.addChild(minerNode);
 
 
@@ -342,6 +365,9 @@ class UiWidget : VerticalLayout { //, CellVisitor
     override bool onKeyEvent(KeyEvent event) {
         if (event.action == KeyAction.KeyDown) {
             switch(event.keyCode) with(KeyCode) {
+                case F1:
+                    _minerDrawable.wireframe = !_minerDrawable.wireframe;
+                    return true;
                 case KEY_W:
                 case UP:
                     _world.camPosition.forward(1);
@@ -455,11 +481,13 @@ class UiWidget : VerticalLayout { //, CellVisitor
         import std.string : format;
         Widget w = childById("lblPosition");
         string dir = _world.camPosition.direction.dir.to!string;
-        dstring s = format("pos(%d,%d) h=%d fps:%d %s    [F]lying: %s   [U]pdateMesh: %s", _world.camPosition.pos.x, _world.camPosition.pos.z, _world.camPosition.pos.y, 
+        dstring s = format("pos(%d,%d) h=%d fps:%d %s    [F]lying: %s   [U]pdateMesh: %s  [F1] wireframe: %s", _world.camPosition.pos.x, _world.camPosition.pos.z, _world.camPosition.pos.y, 
                            _fps,
                            dir,
                            flying, 
-                           enableMeshUpdate).toUTF32;
+                           enableMeshUpdate,
+                           _minerDrawable ? _minerDrawable.wireframe : false
+                           ).toUTF32;
         w.text = s;
     }
 

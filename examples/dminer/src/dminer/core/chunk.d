@@ -6,7 +6,7 @@ import dminer.core.world;
 import dlangui.graphics.scene.mesh;
 
 
-version = FAST_VISIBILITY_PATH;
+//version = FAST_VISIBILITY_PATH;
 
 // Y range: 0..CHUNK_DY-1
 immutable int CHUNK_DY = 128;
@@ -29,7 +29,7 @@ interface CellVisitor {
 }
 
 interface ChunkVisitor {
-    void visit(World world, SmallChunk * chunk);
+    bool visit(World world, SmallChunk * chunk);
 }
 
 // vertical stack of chunks with same X, Z, and different Y
@@ -1550,13 +1550,18 @@ struct VisibilityCheckIterator {
         if (!mask)
             return;
         // distance test
-        Vector3d diff = p - camPos;
+        Vector3d diff = (p + Vector3d(4,4,4)) - camPos;
         if (diff.squaredLength() > maxDistanceSquared)
             return;
-        // direction test (TODO)
-        int dot = diff.dot(cameraDirection);
-        if (dot < 8000)
-            return;
+        int distance = diff.squaredLength;
+        if (distance > 10*10) {
+            diff = (diff * 256 + cameraDirection * 16) / 256;
+            //diff += cameraDirection;
+            // direction test (TODO)
+            int dot = diff.dot(cameraDirection);
+            if (dot < 12000)
+                return;
+        }
         //....
         // plan visiting
         VisibilityCheckChunk * plan = getOrAddPlannedChunk(p);
@@ -1571,7 +1576,8 @@ struct VisibilityCheckIterator {
         swap(visitedChunks, plannedChunks);
         plannedChunks.length = 0;
         foreach (ref p; visitedChunks) {
-            visitor.visit(world, p.chunk);
+            if (!visitor.visit(world, p.chunk))
+                continue;
             /// set mask of spread directions
             p.spreadToDirMask = calcSpreadMask(p.pos, startPos);
             p.tracePaths();

@@ -435,13 +435,13 @@ class GLProgram : dlangui.graphics.scene.mesh.GraphicsEffect {
     }
 
     /// draw mesh using this program (program should be bound by this time and all uniforms should be set)
-    override void draw(Mesh mesh) {
+    override void draw(Mesh mesh, bool wireframe) {
         VertexBuffer vb = mesh.vertexBuffer;
         if (!vb) {
             vb = new GLVertexBuffer();
             mesh.vertexBuffer = vb;
         }
-        vb.draw(this);
+        vb.draw(this, wireframe);
     }
 }
 
@@ -1310,16 +1310,39 @@ class GLVertexBuffer : VertexBuffer {
     }
 
     /// draw mesh using specified effect
-    override void draw(GraphicsEffect effect) {
+    override void draw(GraphicsEffect effect, bool wireframe) {
         //bind();
         enableAttributes(effect);
         foreach (fragment; _indexFragments) {
-            checkgl!glDrawRangeElements(primitiveTypeToGL(fragment.type), 
-                                0, _vertexCount - 1, // The first to last vertex
-                                fragment.end - fragment.start, // count of indexes used to draw elements
-                                GL_UNSIGNED_SHORT, 
-                                cast(char*)(fragment.start * short.sizeof) // offset from index buffer beginning to fragment start
-            );
+            if (wireframe && fragment.type == PrimitiveType.triangles) {
+                // TODO: support wireframe not only for triangles
+                int triangleCount = fragment.end - fragment.start;
+                //triangleCount /= 3;
+                //checkgl!glDisable(GL_CULL_FACE);
+                for (int i = 0; i < triangleCount; i += 3) {
+                    // GL line loop works strange; use GL_LINES instead
+                    checkgl!glDrawRangeElements(GL_LINE_LOOP, //GL_TRIANGLES, 
+                                0, _vertexCount - 1, // The first to last vertex  start, end
+                                3, // count of indexes used to draw elements
+                                GL_UNSIGNED_SHORT,
+                                cast(char*)((fragment.start + i) * short.sizeof) // offset from index buffer beginning to fragment start
+                                    );
+                    //checkgl!glDrawRangeElements(GL_LINES, //GL_TRIANGLES, 
+                    //            0, _vertexCount - 1, // The first to last vertex  start, end
+                    //            2, // count of indexes used to draw elements
+                    //            GL_UNSIGNED_SHORT,
+                    //            cast(char*)((fragment.start + i + 1) * short.sizeof) // offset from index buffer beginning to fragment start
+                    //                );
+                }
+                //checkgl!glEnable(GL_CULL_FACE);
+            } else {
+                checkgl!glDrawRangeElements(primitiveTypeToGL(fragment.type), 
+                        0, _vertexCount - 1, // The first to last vertex
+                        fragment.end - fragment.start, // count of indexes used to draw elements
+                        GL_UNSIGNED_SHORT, 
+                        cast(char*)(fragment.start * short.sizeof) // offset from index buffer beginning to fragment start
+                );
+            }
         }
         disableAttributes(effect);
         //unbind();
@@ -1381,10 +1404,11 @@ class DummyVertexBuffer : VertexBuffer {
     }
 
     /// draw mesh using specified effect
-    override void draw(GraphicsEffect effect) {
+    override void draw(GraphicsEffect effect, bool wireframe) {
         //bind();
         enableAttributes(effect);
         foreach (fragment; _indexFragments) {
+            // TODO: support wireframe
             checkgl!glDrawRangeElements(primitiveTypeToGL(fragment.type), 
                                         0, _vertexCount, 
                                         fragment.end - fragment.start, 

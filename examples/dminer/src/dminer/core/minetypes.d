@@ -120,6 +120,10 @@ struct Vector3d {
     Vector3d opBinary(string op : "*")(int n) const {
         return Vector3d(x * n, y * n, z * n);
     }
+    /// divide vector elements by constant
+    Vector3d opBinary(string op : "/")(int n) const {
+        return Vector3d(x / n, y / n, z / n);
+    }
 
     /// 
     ref Vector3d opOpAssign(string op : "+")(const Vector3d v) {

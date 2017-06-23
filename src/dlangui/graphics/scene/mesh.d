@@ -63,7 +63,7 @@ abstract class GraphicsEffect : RefCountedObject {
     /// returns true if effect has uniform
     bool hasUniform(string uniformName);
 
-    void draw(Mesh mesh);
+    void draw(Mesh mesh, bool wireframe);
 }
 
 enum DefaultUniform : int {
@@ -162,7 +162,7 @@ class VertexBuffer {
     /// set or change data
     void setData(Mesh mesh) { }
     /// draw mesh using specified effect
-    void draw(GraphicsEffect effect) { }
+    void draw(GraphicsEffect effect, bool wireframe) { }
 }
 
 /// location for element is not found

@@ -7,7 +7,7 @@ import dminer.core.chunk;
 version (Android) {
     const int MAX_VIEW_DISTANCE = 60;
 } else {
-    const int MAX_VIEW_DISTANCE = 120;
+    const int MAX_VIEW_DISTANCE = 180;
 }
 
 

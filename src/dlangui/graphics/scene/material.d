@@ -230,8 +230,8 @@ class Material : RefCountedObject {
         }
     }
 
-    void drawMesh(Mesh mesh) {
-        effect.draw(mesh);
+    void drawMesh(Mesh mesh, bool wireframe) {
+        effect.draw(mesh, wireframe);
     }
 
     void unbind() {
