@@ -942,6 +942,11 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
         if (_adapter)
             _adapter.onThemeChanged();
     }
+    
+    /// sets minimum size for the list, override to change
+    Point minimumVisibleContentSize() {
+        return Point(100, 100);
+    }
 
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
     override void measure(int parentWidth, int parentHeight) {
@@ -953,6 +958,15 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
             _itemSizes.length = itemCount;
         Rect m = margins;
         Rect p = padding;
+        
+        // set widget area to small when first measure
+        if (parentWidth == SIZE_UNSPECIFIED && parentHeight == SIZE_UNSPECIFIED)
+        {
+            Point sz = minimumVisibleContentSize;
+            measuredContent(parentWidth, parentHeight, sz.x, sz.y);
+            return;
+        }
+        
         // calc size constraints for children
         int pwidth = parentWidth;
         int pheight = parentHeight;
@@ -1041,6 +1055,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
             }
         }
         measuredContent(parentWidth, parentHeight, sz.x + _sbsz.x, sz.y + _sbsz.y);
+
         if (_scrollbar.visibility == oldScrollbarVisibility) {
             _needLayout = oldNeedLayout;
             _scrollbar.cancelLayout();

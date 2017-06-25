@@ -1533,6 +1533,29 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             sz.y += _rowHeights[i];
         return sz;
     }
+    
+    /// calculate minimum size of widget
+    override Point minimumVisibleContentSize() {
+        Point sz;
+        if (_cols == 0 || _rows == 0) {
+             sz.x = 100;
+             sz.y = 100;
+             return sz;
+        }
+        // width:
+        if (_cols < 2)
+            sz.x = _colWidths[0];
+        else
+            sz.x = _colWidths[0] + _colWidths[1];
+        
+        // height
+        if (_rows < 2)
+            sz.y = _rowHeights[0];
+        else
+            sz.y = _rowHeights[0] + _rowHeights[1];
+                
+        return sz;
+    }
 
     override protected void drawClient(DrawBuf buf) {
         if (!_cols || !_rows)
