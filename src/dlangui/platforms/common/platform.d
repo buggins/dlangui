@@ -24,6 +24,7 @@ public import dlangui.core.events;
 import dlangui.core.collections;
 import dlangui.widgets.widget;
 import dlangui.widgets.popup;
+import dlangui.widgets.scrollbar;
 import dlangui.graphics.drawbuf;
 import dlangui.core.stdaction;
 import dlangui.core.asyncsocket;
@@ -89,6 +90,16 @@ enum DialogDisplayMode : ulong {
     userDialogInPopup = 16,
     /// show all types of dialogs in popups
     allTypesOfDialogsInPopup = fileDialogInPopup | messageBoxInPopup | inputBoxInPopup | settingsDialogInPopup | userDialogInPopup
+}
+
+/// Sets what's should be done when window content is too big
+enum WindowOrContentResizeMode {
+    /// widgets are shrink to fit in window
+    shrinkWidgets, 
+    /// resize window when window is too small
+    resizeWindow,
+    /// add scrollbars to window
+    scrollWindow
 }
 
 /// Window state signal listener
@@ -213,7 +224,16 @@ class Window : CustomEventTarget {
     protected Widget _mainWidget;
     protected EventList _eventList;
     protected uint _flags;
-
+    /// minimal good looking content width
+    protected int _minContentWidth;
+    /// minimal good looking content height
+    protected int _minContentHeight;
+    
+    // current content width calculated using _windowOrContentResizeMode flag, usually used in measure()
+    protected int _currentContentWidth;
+    // current content height calculated using _windowOrContentResizeMode flag, usually used in measure()
+    protected int _currentContentHeight;
+    
     @property uint flags() { return _flags; }
     @property uint backgroundColor() const { return _backgroundColor; }
     @property void backgroundColor(uint color) { _backgroundColor = color; }
@@ -241,7 +261,21 @@ class Window : CustomEventTarget {
     @property void caretReplace(bool flg) { _caretReplace = flg; }
     @property bool caretReplace() { return _caretReplace; }
 
-    // Abstract methods : override in platform implementatino
+    // window content resize mode
+    //protected WindowOrContentResizeMode _windowOrContentResizeMode = WindowOrContentResizeMode.resizeWindow;
+    //protected WindowOrContentResizeMode _windowOrContentResizeMode = WindowOrContentResizeMode.shrinkWidgets;
+    protected WindowOrContentResizeMode _windowOrContentResizeMode = WindowOrContentResizeMode.scrollWindow;
+
+    @property WindowOrContentResizeMode windowOrContentResizeMode() {return _windowOrContentResizeMode; }
+    @property void windowOrContentResizeMode(WindowOrContentResizeMode newMode) {
+        _windowOrContentResizeMode = newMode;
+        if (_mainWidget) {
+            _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+            adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
+        }
+    }
+    
+    // Abstract methods : override in platform implementation
 
     /// show window
     abstract void show();
@@ -304,26 +338,142 @@ class Window : CustomEventTarget {
     /// set window rectangle
     bool moveAndResizeWindow(Rect rc, bool activate = false) { return setWindowState(WindowState.unspecified, activate, rc); }
 
+    // things needed for WindowOrContentResizeMode.scrollWindow:
+    /// vertical scrollbar control
+    protected ScrollBar _vScrollBar = null;
+    /// horizontal scrollbar control
+    protected ScrollBar _hScrollBar = null;
+
+    /// Sets the minimal content size and adjust window or content should be called from window show
+    void adjustWindowOrContentSize(int minContentWidth, int minContentHeight) {
+        _minContentWidth = minContentWidth;
+        _minContentHeight = minContentHeight;
+        if (_windowOrContentResizeMode == WindowOrContentResizeMode.resizeWindow)
+            resizeWindow(Point(minContentWidth, minContentHeight));
+        updateWindowOrContentSize();
+    }
+    
+    /// update current content size based on windowOrContentResizeMode flag, usually used when window is resized
+    void updateWindowOrContentSize() {
+        final switch (_windowOrContentResizeMode) {
+            case WindowOrContentResizeMode.shrinkWidgets: {
+                _currentContentWidth = _windowRect.right;
+                _currentContentHeight = _windowRect.bottom;
+                return;
+            }
+            case WindowOrContentResizeMode.resizeWindow: {
+                    //maybe should not permit to resize when new window size is smaller than content size, now do nothing
+                _currentContentWidth = _windowRect.right;
+                _currentContentHeight = _windowRect.bottom;
+                break;
+            }
+            case WindowOrContentResizeMode.scrollWindow: {
+                if (_windowRect.right < _minContentWidth) {
+                    // create scrollbar
+                    _currentContentWidth = _minContentWidth;
+                    if (!_hScrollBar) {
+                        _hScrollBar = new ScrollBar(null,Orientation.Horizontal);
+                        _hScrollBar.scrollEvent = delegate bool (AbstractSlider source, ScrollEvent event) {
+                            if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased)
+                                requestLayout();
+                            return true;
+                        };
+                    }
+                    _hScrollBar.measure(_windowRect.right, _windowRect.bottom);
+                    if (windowRect().bottom < _minContentHeight)
+                        _hScrollBar.setRange(0, _minContentWidth + _hScrollBar.measuredHeight);
+                    else
+                        _hScrollBar.setRange(0, _minContentWidth);
+                    _hScrollBar.pageSize(_windowRect.right);
+                    _hScrollBar.position(0);
+                }
+                else {
+                    if (_hScrollBar) {
+                        destroy(_hScrollBar);
+                        _hScrollBar = null;
+                    }
+                    _currentContentWidth = _windowRect.right;
+                }
+                    
+                if (windowRect().bottom < _minContentHeight) {
+                    // create scrollbar
+                    _currentContentHeight = _minContentHeight;
+                    if (!_vScrollBar) {
+                        _vScrollBar = new ScrollBar(null,Orientation.Vertical);
+                        _vScrollBar.scrollEvent = delegate bool (AbstractSlider source, ScrollEvent event) {
+                            if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased)
+                                requestLayout();
+                            return true;
+                        };
+                    }
+                    _vScrollBar.measure(_windowRect.right, _windowRect.bottom);
+                    if (_hScrollBar)
+                        _vScrollBar.setRange(0, _minContentHeight+_hScrollBar.measuredHeight);
+                    else
+                        _vScrollBar.setRange(0, _minContentHeight);
+                    _vScrollBar.pageSize(windowRect().bottom);
+                    _vScrollBar.position(0);
+                    
+                    if (!_hScrollBar)
+                        _currentContentWidth = _windowRect.right - _vScrollBar.measuredWidth;
+                }
+                else {
+                    if (_vScrollBar) {
+                        destroy(_vScrollBar);
+                        _vScrollBar = null;
+                    }
+                    _currentContentHeight = _hScrollBar ? _windowRect.bottom - _hScrollBar.measuredHeight : _windowRect.bottom;
+                }
+                return;
+            }
+        }
+    }
+    
+    
     /// requests layout for main widget and popups
     void requestLayout() {
         if (_mainWidget)
             _mainWidget.requestLayout();
+        if (_hScrollBar)
+            _hScrollBar.requestLayout();
+        if (_vScrollBar)
+            _vScrollBar.requestLayout();
         foreach(p; _popups)
             p.requestLayout();
         if (_tooltip.popup)
             _tooltip.popup.requestLayout();
     }
     void measure() {
+        if (_hScrollBar)
+            _hScrollBar.measure(_dx, _dy);
+            
+        if (_vScrollBar)
+            _vScrollBar.measure(_dx, _dy);
+        
         if (_mainWidget !is null) {
-            _mainWidget.measure(_dx, _dy);
+            _mainWidget.measure(_currentContentWidth, _currentContentHeight);
         }
         foreach(p; _popups)
-            p.measure(_dx, _dy);
+            p.measure(_currentContentWidth, _currentContentHeight);
         if (_tooltip.popup)
-            _tooltip.popup.measure(_dx, _dy);
+            _tooltip.popup.measure(_currentContentWidth, _currentContentHeight);
     }
     void layout() {
-        Rect rc = Rect(0, 0, _dx, _dy);
+        if (_hScrollBar)
+            _hScrollBar.layout(Rect(0, _dy - _hScrollBar.measuredHeight, _vScrollBar ? _dx - _vScrollBar.measuredWidth : _dx, _dy));
+            
+        if (_vScrollBar)
+            _vScrollBar.layout(Rect(_dx - _vScrollBar.measuredWidth, 0, _dx, _hScrollBar ? _dy - _hScrollBar.measuredHeight : _dy));
+        
+        int deltaX = 0;
+        if (_hScrollBar)
+            deltaX = -_hScrollBar.position;
+            
+        int deltaY = 0;
+        if (_vScrollBar)
+            deltaY = -_vScrollBar.position;
+            
+        Rect rc = Rect(deltaX, deltaY, _currentContentWidth + deltaX, _currentContentHeight + deltaY);
         if (_mainWidget !is null) {
             _mainWidget.layout(rc);
         }
@@ -337,9 +487,13 @@ class Window : CustomEventTarget {
             return;
         _dx = width;
         _dy = height;
+        // fix window rect for platforms that don't set it yet
+        _windowRect.right = width;
+        _windowRect.bottom = height;
         if (_mainWidget !is null) {
             Log.d("onResize ", _dx, "x", _dy);
             long measureStart = currentTimeMillis;
+            updateWindowOrContentSize();
             measure();
             //Log.d("measured size: ", _mainWidget.measuredWidth, "x", _mainWidget.measuredHeight);
             long measureEnd = currentTimeMillis;
@@ -496,7 +650,7 @@ class Window : CustomEventTarget {
         return null;
     }
 
-    /// returns true if widget is child of either main widget or one of popups
+    /// returns true if widget is child of either main widget, one of popups or window scrollbar
     bool isChild(Widget w) {
         if (_mainWidget !is null && _mainWidget.isChild(w))
             return true;
@@ -506,6 +660,10 @@ class Window : CustomEventTarget {
         if (_tooltip.popup)
             if (_tooltip.popup.isChild(w))
                 return true;
+        if (_hScrollBar !is null && _hScrollBar.isChild(w))
+            return true;
+        if (_vScrollBar !is null && _vScrollBar.isChild(w))
+            return true;
         return false;
     }
 
@@ -532,6 +690,14 @@ class Window : CustomEventTarget {
         if (_mainWidget !is null) {
             destroy(_mainWidget);
             _mainWidget = null;
+        }
+        if (_hScrollBar) {
+            destroy(_hScrollBar);
+            _hScrollBar = null;
+        }
+        if (_vScrollBar) {
+            destroy(_vScrollBar);
+            _vScrollBar = null;
         }
         destroy(_eventList);
         destroy(_timerQueue);
@@ -627,6 +793,13 @@ class Window : CustomEventTarget {
             if (_tooltip.popup)
                 _tooltip.popup.onDraw(buf);
 
+            if (_hScrollBar)
+                _hScrollBar.onDraw(buf);
+            if (_vScrollBar)
+                _vScrollBar.onDraw(buf);
+            if (_hScrollBar && _vScrollBar)
+                buf.fillRect(Rect(_vScrollBar.left, _hScrollBar.top, buf.width, buf.height), _backgroundColor);
+                
             long drawEnd = currentTimeMillis;
             debug(DebugRedraw) {
                 if (drawEnd - drawStart > PERFORMANCE_LOGGING_THRESHOLD_MS)
@@ -1128,10 +1301,23 @@ class Window : CustomEventTarget {
                         return true;
                 }
             }
-            if (!modal)
-                res = dispatchMouseEvent(_mainWidget, event, cursorIsSet);
-            else
-                res = dispatchMouseEvent(modal, event, cursorIsSet);
+            if (!modal) {
+                res = false;
+                if (_hScrollBar) 
+                    res = dispatchMouseEvent(_hScrollBar, event, cursorIsSet);
+                if (!res && _vScrollBar)
+                    res = dispatchMouseEvent(_vScrollBar, event, cursorIsSet);
+                if (!res)
+                    res = dispatchMouseEvent(_mainWidget, event, cursorIsSet);
+            }
+            else {
+                if (_hScrollBar) 
+                    res = dispatchMouseEvent(_hScrollBar, event, cursorIsSet);
+                if (!res && _vScrollBar)
+                    res = dispatchMouseEvent(_vScrollBar, event, cursorIsSet);
+                if (!res)
+                        res = dispatchMouseEvent(modal, event, cursorIsSet);
+            }
         }
         return res || processed || _mainWidget.needDraw;
     }
@@ -1184,6 +1370,10 @@ class Window : CustomEventTarget {
         if (_mainWidget is null)
             return false;
         checkUpdateNeeded(_mainWidget, needDraw, needLayout, animationActive);
+        if (_hScrollBar)
+            checkUpdateNeeded(_hScrollBar, needDraw, needLayout, animationActive);
+        if (_vScrollBar)
+            checkUpdateNeeded(_vScrollBar, needDraw, needLayout, animationActive);
         foreach(p; _popups)
             checkUpdateNeeded(p, needDraw, needLayout, animationActive);
         if (_tooltip.popup)
@@ -1574,7 +1764,7 @@ class Platform {
 }
 
 static if (ENABLE_OPENGL) {
-    private __gshared bool _OPENGL_ENABLED = true;
+    private __gshared bool _OPENGL_ENABLED = false;
     /// check if hardware acceleration is enabled
     @property bool openglEnabled() { return _OPENGL_ENABLED; }
     /// call on app initialization if OpenGL support is detected

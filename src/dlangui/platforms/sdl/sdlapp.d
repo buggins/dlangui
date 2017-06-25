@@ -350,16 +350,15 @@ class SDLWindow : Window {
             Log.e("Window is shown without main widget");
             _mainWidget = new Widget();
         }
-        if (_mainWidget && !(_flags & WindowFlag.Resizable)) {
+        if (_mainWidget) {
             _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
-            SDL_SetWindowSize(_win, _mainWidget.measuredWidth, _mainWidget.measuredHeight);
+            adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
         }
+            
         SDL_ShowWindow(_win);
         if (_mainWidget)
             _mainWidget.setFocus();
         fixSize();
-        //update(true);
-        //redraw();
         SDL_RaiseWindow(_win);
         invalidate();
     }
