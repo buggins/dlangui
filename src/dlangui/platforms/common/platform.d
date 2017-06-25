@@ -1104,9 +1104,13 @@ class Window : CustomEventTarget {
 
     /// handle theme change: e.g. reload some themed resources
     void dispatchThemeChanged() {
+        if (_hScrollBar)
+            _hScrollBar.onThemeChanged();
+        if (_vScrollBar)
+            _vScrollBar.onThemeChanged();
         if (_mainWidget)
             _mainWidget.onThemeChanged();
-            // draw popups
+        // draw popups
         foreach(p; _popups) {
             p.onThemeChanged();
         }
