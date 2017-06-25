@@ -1542,6 +1542,13 @@ class X11Platform : Platform {
 			w.requestLayout();
 		}
 	}
+    
+    /// handle theme change: e.g. reload some themed resources
+    override void onThemeChanged() {
+        foreach(w; _windowMap)
+            w.dispatchThemeChanged();
+    }
+    
 }
 
 import core.thread;
