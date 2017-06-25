@@ -432,17 +432,13 @@ class Win32Window : Window {
             _mainWidget = new Widget();
         }
         ReleaseCapture();
-        if (!(_flags & WindowFlag.Resizable) && _mainWidget) {
+        
+        if (_mainWidget) {
             _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
-            int dx = _mainWidget.measuredWidth;
-            int dy = _mainWidget.measuredHeight;
-            dx += 2 * GetSystemMetrics(SM_CXDLGFRAME);
-            dy += GetSystemMetrics(SM_CYCAPTION) + 2 * GetSystemMetrics(SM_CYDLGFRAME);
-            // TODO: ensure size less than screen size
-            SetWindowPos(_hwnd, HWND_TOP, 0, 0, dx, dy, SWP_NOMOVE| SWP_SHOWWINDOW);
-        } else {
-            ShowWindow(_hwnd, SW_SHOWNORMAL);
+            adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
         }
+        
+        ShowWindow(_hwnd, SW_SHOWNORMAL);
         if (_mainWidget)
             _mainWidget.setFocus();
         SetFocus(_hwnd);
