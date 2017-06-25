@@ -376,6 +376,19 @@ class Window : CustomEventTarget {
                         _hScrollBar.scrollEvent = delegate bool (AbstractSlider source, ScrollEvent event) {
                             if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased)
                                 requestLayout();
+                            else if (event.action == ScrollAction.PageUp) {
+                                source.position = max(0, source.position - _windowRect.right * 3 / 4);
+                                requestLayout();
+                            } else if (event.action == ScrollAction.PageDown) {
+                                source.position = min(source.maxValue - _windowRect.right, source.position + _windowRect.right *3 / 4);
+                                requestLayout();
+                            } else if (event.action == ScrollAction.LineUp) {
+                                source.position = max(0, source.position - _windowRect.right / 10);
+                                requestLayout();
+                            } else if (event.action == ScrollAction.LineDown) {
+                                source.position = min(source.maxValue - _windowRect.right, source.position + _windowRect.right / 10);
+                                requestLayout();
+                            }
                             return true;
                         };
                     }
@@ -403,6 +416,19 @@ class Window : CustomEventTarget {
                         _vScrollBar.scrollEvent = delegate bool (AbstractSlider source, ScrollEvent event) {
                             if (event.action == ScrollAction.SliderMoved || event.action == ScrollAction.SliderReleased)
                                 requestLayout();
+                            else if (event.action == ScrollAction.PageUp) {
+                                source.position = max(0, source.position - _windowRect.bottom * 3 / 4);
+                                requestLayout();
+                            } else if (event.action == ScrollAction.PageDown) {
+                                source.position = min(source.maxValue - _windowRect.bottom, source.position + _windowRect.bottom *3 / 4);
+                                requestLayout();
+                            } else if (event.action == ScrollAction.LineUp) {
+                                source.position = max(0, source.position - _windowRect.bottom / 10);
+                                requestLayout();
+                            } else if (event.action == ScrollAction.LineDown) {
+                                source.position = min(source.maxValue - _windowRect.bottom, source.position + _windowRect.bottom / 10);
+                                requestLayout();
+                            }
                             return true;
                         };
                     }
