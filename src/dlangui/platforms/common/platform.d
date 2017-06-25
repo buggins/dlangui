@@ -1794,7 +1794,7 @@ class Platform {
 }
 
 static if (ENABLE_OPENGL) {
-    private __gshared bool _OPENGL_ENABLED = false;
+    private __gshared bool _OPENGL_ENABLED = true;
     /// check if hardware acceleration is enabled
     @property bool openglEnabled() { return _OPENGL_ENABLED; }
     /// call on app initialization if OpenGL support is detected
