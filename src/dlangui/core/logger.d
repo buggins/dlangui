@@ -70,8 +70,8 @@ enum LogLevel : int {
     return std.datetime.Clock.currStdTime / 10000;
 }
 
-/** 
-    
+/**
+
     Logging utilities
 
 Setup example:
@@ -92,6 +92,14 @@ Log.e("exception while reading file", e);
 
 */
 
+private auto std_io_err_helper(alias v)()
+{
+    static if (__VERSION__ < 2075)
+        return &v;
+    else
+        return &v();
+}
+
 class Log {
     static __gshared private LogLevel logLevel = LogLevel.Info;
     static __gshared private std.stdio.File * logFile = null;
@@ -102,25 +110,25 @@ class Log {
             _mutex = new Mutex();
         return _mutex;
     }
-        
+
     /// Redirects output to stdout
     static public void setStdoutLogger() {
         synchronized(mutex) {
-            logFile = &stdout;
+            logFile = std_io_err_helper!stdout;
         }
     }
 
     /// Redirects output to stderr
     static public void setStderrLogger() {
         synchronized(mutex) {
-            logFile = &stderr;
+            logFile = std_io_err_helper!stderr;
         }
     }
 
     /// Redirects output to file
     static public void setFileLogger(File * file) {
         synchronized(mutex) {
-            if (logFile !is null && logFile != &stdout && logFile != &stderr) {
+            if (logFile !is null && *logFile != stdout && *logFile != stderr) {
                 logFile.close();
                 destroy(logFile);
                 logFile = null;
@@ -323,7 +331,7 @@ class Log {
                 logf(LogLevel.Fatal, args);
         }
     }
-    
+
     version (Android) {
         static public void setLogTag(const char * tag) {
             ANDROID_LOG_TAG = tag;
@@ -348,4 +356,3 @@ void onResourceDestroyWhileShutdown(string resourceName, string objname = null) 
 
 /// set to true when exiting main - to detect destructor calls for resources by GC
 __gshared bool APP_IS_SHUTTING_DOWN = false;
-
