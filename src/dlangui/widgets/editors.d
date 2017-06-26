@@ -1899,6 +1899,10 @@ class EditLine : EditWidgetBase {
     protected dstring _measuredText;
     protected int[] _measuredTextWidths;
     protected Point _measuredTextSize;
+    
+    protected Point _measuredTextToSetWidgetSize;
+    protected dstring _textToSetWidgetSize = "aaaaa"d;
+    protected int[] _measuredTextToSetWidgetSizeWidths;
 
     protected dchar _passwordChar = 0;
     /// password character - 0 for normal editor, some character, e.g. '*' to hide text by replacing all characters with this char
@@ -1972,17 +1976,27 @@ class EditLine : EditWidgetBase {
         //Point sz = font.textSize(text);
         _measuredText = applyPasswordChar(text);
         _measuredTextWidths.length = _measuredText.length;
-        int charsMeasured = font.measureText(_measuredText, _measuredTextWidths, int.max, tabSize);
+        int charsMeasured = font.measureText(_measuredText, _measuredTextWidths, MAX_WIDTH_UNSPECIFIED, tabSize);
         _measuredTextSize.x = charsMeasured > 0 ? _measuredTextWidths[charsMeasured - 1]: 0;
         _measuredTextSize.y = font.height;
         return _measuredTextSize;
+    }
+    
+    protected Point measureTextToSetWidgetSize() {
+        FontRef font = font();
+        _measuredTextToSetWidgetSizeWidths.length = _textToSetWidgetSize.length;
+        int charsMeasured = font.measureText(_textToSetWidgetSize, _measuredTextToSetWidgetSizeWidths, MAX_WIDTH_UNSPECIFIED, tabSize);
+        _measuredTextToSetWidgetSize.x = charsMeasured > 0 ? _measuredTextToSetWidgetSizeWidths[charsMeasured - 1]: 0;
+        _measuredTextToSetWidgetSize.y = font.height;
+        return _measuredTextToSetWidgetSize;
     }
 
     /// measure
     override void measure(int parentWidth, int parentHeight) { 
         updateFontProps();
         measureVisibleText();
-        measuredContent(parentWidth, parentHeight, _measuredTextSize.x + _leftPaneWidth, _measuredTextSize.y);
+        measureTextToSetWidgetSize();
+        measuredContent(parentWidth, parentHeight, _measuredTextToSetWidgetSize.x + _leftPaneWidth, _measuredTextToSetWidgetSize.y);
     }
 
     override bool handleAction(const Action a) {
@@ -2128,6 +2142,10 @@ class EditBox : EditWidgetBase {
     protected int[] _visibleLinesWidths; // width (in pixels) of visible lines
     protected CustomCharProps[][] _visibleLinesHighlights;
     protected CustomCharProps[][] _visibleLinesHighlightsBuf;
+    
+    protected Point _measuredTextToSetWidgetSize; 
+    protected dstring _textToSetWidgetSize = "aaaaa/naaaaa"d;
+    protected int[] _measuredTextToSetWidgetSizeWidths;
 
     override protected int lineCount() {
         return _content.length;
@@ -2641,6 +2659,16 @@ class EditBox : EditWidgetBase {
         return textSz;
     }
 
+    // override to set minimum scrollwidget size - default 100x100
+    override protected Point minimumVisibleContentSize() {
+        FontRef font = font();
+        _measuredTextToSetWidgetSizeWidths.length = _textToSetWidgetSize.length;
+        int charsMeasured = font.measureText(_textToSetWidgetSize, _measuredTextToSetWidgetSizeWidths, MAX_WIDTH_UNSPECIFIED, tabSize);
+        _measuredTextToSetWidgetSize.x = charsMeasured > 0 ? _measuredTextToSetWidgetSizeWidths[charsMeasured - 1]: 0;
+        _measuredTextToSetWidgetSize.y = font.height;
+        return _measuredTextToSetWidgetSize;
+    }
+    
     /// measure
     override void measure(int parentWidth, int parentHeight) { 
         if (visibility == Visibility.Gone) {
@@ -2657,8 +2685,6 @@ class EditBox : EditWidgetBase {
         }
 
         super.measure(parentWidth, parentHeight);
-        // do we need to add vsbwidth, hsbheight ???
-        //measuredContent(parentWidth, parentHeight, textSz.x + vsbwidth, textSz.y + hsbheight);
     }
 
 

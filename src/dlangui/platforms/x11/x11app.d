@@ -428,8 +428,13 @@ class X11Window : DWindow {
 				Log.d("Open GL support is disabled");
 			}
 		}
-		if (_mainWidget)
-			_mainWidget.setFocus();
+        if (_mainWidget) {
+            _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+            _windowRect.right = _dx;// hack to set windowRect, remove when _windowRect will be full supported on X11
+            _windowRect.bottom = _dy;
+            adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
+            _mainWidget.setFocus();
+        }
 	}
 
 	protected final void changeWindowState(int action, Atom firstProperty, Atom secondProperty = None) nothrow
@@ -1537,6 +1542,13 @@ class X11Platform : Platform {
 			w.requestLayout();
 		}
 	}
+    
+    /// handle theme change: e.g. reload some themed resources
+    override void onThemeChanged() {
+        foreach(w; _windowMap)
+            w.dispatchThemeChanged();
+    }
+    
 }
 
 import core.thread;

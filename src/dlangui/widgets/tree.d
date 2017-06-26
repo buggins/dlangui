@@ -813,6 +813,10 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         super.layout(rc);
     }
 
+    override Point minimumVisibleContentSize() {
+        return Point(200,200);
+    }
+
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
     override void measure(int parentWidth, int parentHeight) { 
         if (visibility == Visibility.Gone) {

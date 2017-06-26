@@ -267,7 +267,11 @@ extern (C) int UIAppMain(string[] args) {
 
     // create window
     Window window = Platform.instance.createWindow("DlangUI Example 1", null, WindowFlag.Resizable, 800, 700);
-    
+    // here you can see window or content resize mode
+    //Window window = Platform.instance.createWindow("DlangUI Example 1", null, WindowFlag.Resizable, 400, 400);
+    //window.windowOrContentResizeMode = WindowOrContentResizeMode.resizeWindow;
+    //window.windowOrContentResizeMode = WindowOrContentResizeMode.scrollWindow;
+    //window.windowOrContentResizeMode = WindowOrContentResizeMode.shrinkWidgets;
     static if (true) {
         VerticalLayout contentLayout = new VerticalLayout();
 
@@ -458,6 +462,7 @@ extern (C) int UIAppMain(string[] args) {
         // most of controls example
         {
             LinearLayout controls = new VerticalLayout("controls");
+            controls.layoutHeight(FILL_PARENT);
             controls.padding = Rect(12.pointsToPixels,12.pointsToPixels,12.pointsToPixels,12.pointsToPixels);
 
             HorizontalLayout line1 = new HorizontalLayout();
@@ -548,9 +553,12 @@ extern (C) int UIAppMain(string[] args) {
 
             HorizontalLayout line4 = new HorizontalLayout();
             line4.layoutWidth(FILL_PARENT);
+            line4.layoutHeight(FILL_PARENT);
             GroupBox gbgrid = new GroupBox("grid", "StringGridWidget"d, Orientation.Horizontal);
             StringGridWidget grid = new StringGridWidget("stringgrid");
             grid.resize(12, 10);
+            gbgrid.layoutWidth(FILL_PARENT);
+            gbgrid.layoutHeight(FILL_PARENT);
             grid.layoutWidth(FILL_PARENT);
             grid.layoutHeight(FILL_PARENT);
             foreach (index, month; ["January"d, "February"d, "March"d, "April"d, "May"d, "June"d, "July"d, "August"d, "September"d, "October"d, "November"d, "December"d])

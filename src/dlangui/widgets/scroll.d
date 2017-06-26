@@ -273,6 +273,11 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         return sz;
     }
 
+    // override to set minimum scrollwidget size - default 100x100
+    Point minimumVisibleContentSize() {
+        return Point(100,100);
+    }
+
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
     override void measure(int parentWidth, int parentHeight) { 
         if (visibility == Visibility.Gone) {
@@ -280,6 +285,7 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         }
         Rect m = margins;
         Rect p = padding;
+        
         // calc size constraints for children
         int pwidth = parentWidth;
         int pheight = parentHeight;
@@ -293,13 +299,14 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         if (_vscrollbar && _vscrollbarMode == ScrollBarMode.Visible) {
             _vscrollbar.measure(pwidth, pheight);
         }
-        Point sz = fullContentSize();
+        Point sz = minimumVisibleContentSize();
         if (_hscrollbar && _hscrollbarMode == ScrollBarMode.Visible) {
             sz.y += _hscrollbar.measuredHeight;
         }
         if (_vscrollbar && _vscrollbarMode == ScrollBarMode.Visible) {
             sz.x += _vscrollbar.measuredWidth;
         }
+
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }
 
