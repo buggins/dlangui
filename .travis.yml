@@ -4,6 +4,13 @@ os:
   - linux
   - osx
 
+d:
+  - dmd
+  - dmd-beta
+  - ldc
+  - ldc-beta
+  - gdc
+
 env:
   - ARCH=x86_64 CONFIG=default
   - ARCH=x86_64 CONFIG=minimal
@@ -11,7 +18,7 @@ env:
   - ARCH=x86 CONFIG=default
   - ARCH=x86 CONFIG=minimal
   - ARCH=x86 CONFIG=x11
-  
+
 # No-one cares about OS X x86 and X11 on OSX
 matrix:
   exclude:
