@@ -9,7 +9,7 @@ d:
   - dmd-beta
   - ldc
   - ldc-beta
-  - gdc
+  - gdc-6.3.0
 
 env:
   - ARCH=x86_64 CONFIG=default
