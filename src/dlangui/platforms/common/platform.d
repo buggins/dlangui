@@ -645,6 +645,7 @@ class Window : CustomEventTarget {
         if (_mainWidget !is null) {
             _mainWidget.requestLayout();
         }
+        update(false);
         return res;
     }
     /// remove popup
