@@ -30,6 +30,8 @@ matrix:
       env: ARCH=x86 CONFIG=x11
     - os: osx
       env: ARCH=x86_64 CONFIG=x11
+    - os: osx
+      d: gdc-6.3.0
 
 sudo: true
 before_script:
