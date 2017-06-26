@@ -30,11 +30,12 @@ matrix:
     - os: osx
       env: ARCH=x86_64 CONFIG=x11
 
-sudo: true
-before_script:
-  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$ARCH" == "x86" ]]; then sudo apt-get install gcc-multilib; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$CONFIG" == "x11" && "$ARCH" == "x86_64" ]]; then sudo apt-get install libx11-dev; fi
-  - if [[ "$TRAVIS_OS_NAME" == "linux" && "$CONFIG" == "x11" && "$ARCH" == "x86" ]]; then sudo apt-get install libx11-dev:i386; fi
+addons:
+  apt:
+    packages:
+      - gcc-multilib
+      - libx11-dev
+      - libx11-dev:i386
 
 script:
   - dub test --compiler=${DC} --arch=${ARCH} --config=${CONFIG}
