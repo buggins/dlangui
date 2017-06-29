@@ -432,9 +432,10 @@ class Win32Window : Window {
             _mainWidget = new Widget();
         }
         ReleaseCapture();
-        
         if (_mainWidget) {
             _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+            if (flags & WindowFlag.MeasureSize)
+                resizeWindow(Point(_mainWidget.measuredWidth, _mainWidget.measuredHeight));
             adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
         }
         

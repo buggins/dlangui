@@ -430,6 +430,8 @@ class X11Window : DWindow {
 		}
         if (_mainWidget) {
             _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+            if (flags & WindowFlag.MeasureSize)
+                resizeWindow(Point(_mainWidget.measuredWidth, _mainWidget.measuredHeight));
             _windowRect.right = _dx;// hack to set windowRect, remove when _windowRect will be full supported on X11
             _windowRect.bottom = _dy;
             adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
