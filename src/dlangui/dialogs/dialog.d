@@ -208,6 +208,8 @@ class Dialog : VerticalLayout {
             _popup = _parentWindow.showPopup(_frame);
             _popup.flags(PopupFlags.Modal);
         } else {
+            if (_initialWidth == 0 && _initialHeight == 0)
+                wflags |= WindowFlag.MeasureSize;
             _window = Platform.instance.createWindow(_caption, _parentWindow, wflags, _initialWidth, _initialHeight);
             static if (BACKEND_GUI) {
                 if (_window && _icon)
