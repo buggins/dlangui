@@ -399,8 +399,17 @@ class SDLWindow : Window {
                 res = true;
                 break;
             case WindowState.normal:
-                if (_windowState != WindowState.normal) 
+                if (_windowState != WindowState.normal) {
                     SDL_RestoreWindow(_win);
+                    version(linux) {
+                        // some SDL versions, reset windows size and position to values from create window (SDL 2.0.4) on linux (don't know how it works on macOS)
+                        if (newWindowRect.bottom == int.min && newWindowRect.right == int.min)
+                            SDL_SetWindowSize(_win, _windowRect.right, _windowRect.bottom);
+                        
+                        if (newWindowRect.top == int.min && newWindowRect.left == int.min)
+                            SDL_SetWindowPosition(_win, _windowRect.left, _windowRect.top);
+                    }
+                }
                 res = true;
                 break;
             default:
