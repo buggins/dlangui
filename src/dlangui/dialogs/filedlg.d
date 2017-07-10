@@ -600,6 +600,8 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _fileList.multiSelect = _allowMultipleFiles;
         _fileList.cellPopupMenu = &getCellPopupMenu;
         _fileList.menuItemAction = &handleAction;
+        _fileList.minVisibleRows = 10;
+        _fileList.minVisibleCols = 4;
 
         _fileList.keyEvent = delegate(Widget source, KeyEvent event) {
             if (_shortcutHelper.onKeyEvent(event))
@@ -766,13 +768,15 @@ class FilePathPanelButtons : WidgetGroupDefaultDrawing {
     override void measure(int parentWidth, int parentHeight) { 
         Rect m = margins;
         Rect p = padding;
+        
         // calc size constraints for children
-        int pwidth = parentWidth;
-        int pheight = parentHeight;
+        int pwidth = 0;
+        int pheight = 0;
         if (parentWidth != SIZE_UNSPECIFIED)
-            pwidth -= m.left + m.right + p.left + p.right;
+            pwidth = parentWidth - (m.left + m.right + p.left + p.right);
+            
         if (parentHeight != SIZE_UNSPECIFIED)
-            pheight -= m.top + m.bottom + p.top + p.bottom;
+            pheight = parentHeight - (m.top + m.bottom + p.top + p.bottom);
         int reservedForEmptySpace = parentWidth / 20;
         if (reservedForEmptySpace > 40.pointsToPixels)
             reservedForEmptySpace = 40.pointsToPixels;
@@ -785,17 +789,14 @@ class FilePathPanelButtons : WidgetGroupDefaultDrawing {
         bool exceeded = false;
         for (int i = 0; i < _children.count; i++) {
             Widget item = _children.get(i);
-            item.visibility = Visibility.Visible;
             item.measure(pwidth, pheight);
             if (sz.y < item.measuredHeight)
                 sz.y = item.measuredHeight;
             if (sz.x + item.measuredWidth > pwidth) {
                 exceeded = true;
             }
-            if (!exceeded || i == 0) // at least one item must be visible
+            if (!exceeded || i == 0) // at least one item must be measured
                 sz.x += item.measuredWidth;
-            else
-                item.visibility = Visibility.Gone;
         }
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }

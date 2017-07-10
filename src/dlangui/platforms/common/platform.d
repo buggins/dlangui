@@ -52,6 +52,8 @@ enum WindowFlag : uint {
     Fullscreen = 2,
     /// modal window - grabs input focus
     Modal = 4,
+    /// measure window size on window.show() - helps if you want scrollWindow but on show() you want to set window to mainWidget measured size
+    MeasureSize = 8,
 }
 
 /// Window states

@@ -432,9 +432,10 @@ class Win32Window : Window {
             _mainWidget = new Widget();
         }
         ReleaseCapture();
-        
         if (_mainWidget) {
             _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+            if (flags & WindowFlag.MeasureSize)
+                resizeWindow(Point(_mainWidget.measuredWidth, _mainWidget.measuredHeight));
             adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
         }
         
@@ -487,26 +488,34 @@ class Win32Window : Window {
                         default:
                             break;
                     }
+                    res = true;
                 }
-                return true;
+                break;
             case WindowState.maximized:
-                if (_windowState != WindowState.maximized || activate)
+                if (_windowState != WindowState.maximized || activate) {
                     ShowWindow(_hwnd, activate ? SW_SHOWMAXIMIZED : SW_MAXIMIZE);
-                return true;
+                    res = true;
+                }
+                break;
             case WindowState.minimized:
-                if (_windowState != WindowState.minimized || activate)
+                if (_windowState != WindowState.minimized || activate) {
                     ShowWindow(_hwnd, activate ? SW_SHOWMINIMIZED : SW_MINIMIZE);
-                return true;
+                    res = true;
+                }
+                break;
             case WindowState.hidden:
-                if (_windowState != WindowState.hidden)
+                if (_windowState != WindowState.hidden) {
                     ShowWindow(_hwnd, SW_HIDE);
-                return true;
-            case WindowState.normal:
+                    res = true;
+                }
+                break;
+            case WindowState.normal: 
                 if (_windowState != WindowState.normal || activate) {
                     ShowWindow(_hwnd, activate ? SW_SHOWNORMAL : SW_SHOWNA); // SW_RESTORE
+                    res = true;
                 }
-                res = true;
                 break;
+
             default:
                 break;
         }
@@ -519,13 +528,13 @@ class Win32Window : Window {
                 // no position specified
                 if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
                     // change size only
-                    SetWindowPos(_hwnd, NULL, 0, 0, newWindowRect.right, newWindowRect.bottom, flags | SWP_NOMOVE);
+                    SetWindowPos(_hwnd, NULL, 0, 0, newWindowRect.right + 2 * GetSystemMetrics(SM_CXDLGFRAME), newWindowRect.bottom + GetSystemMetrics(SM_CYCAPTION) + 2 * GetSystemMetrics(SM_CYDLGFRAME), flags | SWP_NOMOVE);
                     return true;
                 }
             } else {
                 if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
                     // change size and position
-                    SetWindowPos(_hwnd, NULL, newWindowRect.left, newWindowRect.top, newWindowRect.width, newWindowRect.height, flags);
+                    SetWindowPos(_hwnd, NULL, newWindowRect.left, newWindowRect.top, newWindowRect.right + 2 * GetSystemMetrics(SM_CXDLGFRAME), newWindowRect.bottom + GetSystemMetrics(SM_CYCAPTION) + 2 * GetSystemMetrics(SM_CYDLGFRAME), flags);
                     return true;
                 } else {
                     // change position only
