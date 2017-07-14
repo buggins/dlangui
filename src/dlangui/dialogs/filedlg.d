@@ -364,11 +364,16 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             return sz;
         }
         if (BACKEND_CONSOLE)
+        {
             return Point(0, 0);
-        DrawableRef icon = rowIcon(row);
-        if (icon.isNull)
-            return Point(0, 0);
-        return Point(icon.width + 2.pointsToPixels, icon.height + 2.pointsToPixels);
+        }
+        else
+        {
+            DrawableRef icon = rowIcon(row);
+            if (icon.isNull)
+                return Point(0, 0);
+            return Point(icon.width + 2.pointsToPixels, icon.height + 2.pointsToPixels);
+        }
     }
 
     /// draw data cell content

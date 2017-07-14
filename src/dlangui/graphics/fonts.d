@@ -196,7 +196,7 @@ class Font : RefCountedObject {
      *
      * Params:
      *          text = text string to measure
-     *          widths = output buffer to put measured widths (widths[i] will be set to cumulative widths text[0..i])
+     *          widths = output buffer to put measured widths (widths[i] will be set to cumulative widths text[0..i], see also _textSizeBuffer description)
      *          maxWidth = maximum width to measure - measure is stopping if max width is reached (pass MAX_WIDTH_UNSPECIFIED to measure all characters)
      *          tabSize = tabulation size, in number of spaces
      *          tabOffset = when string is drawn not from left position, use to move tab stops left/right
@@ -257,7 +257,15 @@ class Font : RefCountedObject {
         return charsMeasured;
     }
 
-    protected int[] _textSizeBuffer; // buffer to reuse while measuring strings - to avoid GC
+    /*************************************************************************
+     * Buffer to reuse while measuring strings to avoid GC
+     *
+     * This array store character widths cumulatively.
+     * For example, after measure of monospaced 10-pixel-width font line
+     * "abc def" _textSizeBuffer should contain something like:
+     * [10, 20, 30, 40, 50, 60, 70]
+     ************************************************************************/
+    protected int[] _textSizeBuffer;
 
     /*************************************************************************
      * Measure text string as single line, returns width and height
