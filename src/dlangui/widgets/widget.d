@@ -498,6 +498,7 @@ public:
         ownStyle.textFlags = value;
         bool oldHotkeys = (ownStyle.textFlags & (TextFlag.HotKeys | TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed)) != 0;
         bool newHotkeys = (value & (TextFlag.HotKeys | TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed)) != 0;
+        handleFontChanged();
         if (oldHotkeys != newHotkeys)
             requestLayout();
         else
@@ -509,6 +510,7 @@ public:
     /// set font face for widget - override one from style
     @property Widget fontFace(string face) { 
         ownStyle.fontFace = face; 
+        handleFontChanged();
         requestLayout();
         return this; 
     }
@@ -517,6 +519,7 @@ public:
     /// set font style (italic/normal) for widget - override one from style
     @property Widget fontItalic(bool italic) { 
         ownStyle.fontStyle = italic ? FONT_STYLE_ITALIC : FONT_STYLE_NORMAL; 
+        handleFontChanged();
         requestLayout();
         return this; 
     }
@@ -529,6 +532,7 @@ public:
         else if (weight > 900)
             weight = 900;
         ownStyle.fontWeight = cast(ushort)weight;
+        handleFontChanged();
         requestLayout();
         return this; 
     }
@@ -537,6 +541,7 @@ public:
     /// set font size for widget - override one from style
     @property Widget fontSize(int size) {
         ownStyle.fontSize = size; 
+        handleFontChanged();
         requestLayout();
         return this; 
     }
@@ -545,6 +550,7 @@ public:
     /// set font family for widget - override one from style
     @property Widget fontFamily(FontFamily family) { 
         ownStyle.fontFamily = family; 
+        handleFontChanged();
         requestLayout();
         return this; 
     }
@@ -569,6 +575,9 @@ public:
     @property Widget text(dstring s) { return this; }
     /// sets widget content text (override to support this)
     @property Widget text(UIString s) { return this; }
+    
+    /// override to handle font changes
+    protected void handleFontChanged() {}
 
     //==================================================================
     // Layout and drawing related methods
