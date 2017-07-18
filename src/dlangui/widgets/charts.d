@@ -351,7 +351,6 @@ class SimpleBarChart : Widget {
             _barWidth = cast (int) ((_axisX.lengthFromZeroToArrow - (_barDistance * barCount)) / barCount);
                 
         // compute X axis max description height
-        Log.d("barW ",_barWidth);
         _axisX.maxDescriptionSize = measureAxisXDesc();
         
         // compute chart size
