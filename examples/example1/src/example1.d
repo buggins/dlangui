@@ -1092,9 +1092,53 @@ void main()
         tree.items.selectItem(tree.items.child(0));
 
         tabs.addTab(treeLayout, "Tree"d);
+        //==========================================================================
+        // charts example
+        SimpleBarChart barChart1 = new SimpleBarChart("barChart1","SimpleBarChart Example"d);
+        barChart1.addBar(12.0, makeRGBA(255,0,0,0), "Red bar"d);
+        barChart1.addBar(24.0, makeRGBA(0,255,0,0), "Green bar"d);
+        barChart1.addBar(5.0, makeRGBA(0,0,255,0), "Blue bar"d);
+        barChart1.addBar(12.0, makeRGBA(230,126,34,0), "Orange bar"d);
+        //barChart1.layoutWidth = FILL_PARENT;
+        //barChart1.layoutHeight = FILL_PARENT;
+        
+        SimpleBarChart barChart2 = new SimpleBarChart("barChart2","SimpleBarChart Example - long descriptions"d);
+        barChart2.addBar(12.0, makeRGBA(255,0,0,0), "Red bar\n(12.0)"d);
+        barChart2.addBar(24.0, makeRGBA(0,255,0,0), "Green bar\n(24.0)"d);
+        barChart2.addBar(5.0, makeRGBA(0,0,255,0), "Blue bar\n(5.0)"d);
+        barChart2.addBar(12.0, makeRGBA(230,126,34,0), "Orange bar\n(12.0)\nlong long long description added here"d);
 
-
+        SimpleBarChart barChart3 = new SimpleBarChart("barChart3","SimpleBarChart Example with axis ratio 0.3"d);
+        barChart3.addBar(12.0, makeRGBA(255,0,0,0), "Red bar"d);
+        barChart3.addBar(24.0, makeRGBA(0,255,0,0), "Green bar"d);
+        barChart3.addBar(5.0, makeRGBA(0,0,255,0), "Blue bar"d);
+        barChart3.addBar(12.0, makeRGBA(230,126,34,0), "Orange bar"d);
+        barChart3.axisRatio = 0.3;
+        
+        SimpleBarChart barChart4 = new SimpleBarChart("barChart4","SimpleBarChart Example with axis ratio 1.3"d);
+        barChart4.addBar(12.0, makeRGBA(255,0,0,0), "Red bar"d);
+        barChart4.addBar(24.0, makeRGBA(0,255,0,0), "Green bar"d);
+        barChart4.addBar(5.0, makeRGBA(0,0,255,0), "Blue bar"d);
+        barChart4.addBar(12.0, makeRGBA(230,126,34,0), "Orange bar"d);
+        barChart4.axisRatio = 1.3;
+                
+        HorizontalLayout chartsLayout = new HorizontalLayout("CHARTS");
+        chartsLayout.layoutWidth = FILL_PARENT;
+        chartsLayout.layoutHeight = FILL_PARENT;
+        
+        VerticalLayout chartColumn1 = new VerticalLayout();
+        VerticalLayout chartColumn2 = new VerticalLayout();
+        
+        chartColumn1.addChild(barChart1);
+        chartColumn1.addChild(barChart2);
+        chartsLayout.addChild(chartColumn1);
+        chartColumn2.addChild(barChart3);
+        chartColumn2.addChild(barChart4);
+        chartsLayout.addChild(chartColumn2);
+        tabs.addTab(chartsLayout, "Charts"d);
+        
         static if (BACKEND_GUI) {
+         
             tabs.addTab((new SampleAnimationWidget("tab6")).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT), "TAB_ANIMATION"c);
 
             CanvasWidget canvas = new CanvasWidget("canvas");
