@@ -149,6 +149,7 @@
     <Compile Include="src\dlangui\platforms\common\platform.d" />
     <Compile Include="src\dlangui\platforms\sdl\sdlapp.d" />
     <Compile Include="src\dlangui\widgets\appframe.d" />
+    <Compile Include="src\dlangui\widgets\charts.d" />
     <Compile Include="src\dlangui\widgets\combobox.d" />
     <Compile Include="src\dlangui\widgets\controls.d" />
     <Compile Include="src\dlangui\widgets\docks.d" />

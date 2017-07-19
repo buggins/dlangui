@@ -976,6 +976,7 @@
     </Folder>
     <Folder name="widgets">
      <File path="src\dlangui\widgets\appframe.d" />
+     <File path="src\dlangui\widgets\charts.d" />
      <File path="src\dlangui\widgets\combobox.d" />
      <File path="src\dlangui\widgets\controls.d" />
      <File path="src\dlangui\widgets\docks.d" />
