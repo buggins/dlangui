@@ -525,6 +525,16 @@
         <drawable id="progress_bar_indeterminate" value="#80C080"/>
         <drawable id="progress_bar_indeterminate_animation" value="progress_bar_gauge_animation.tiled"/>
     </style>
+
+   <style id="SIMPLE_BAR_CHART"
+        padding="2pt,2pt,2pt,2pt"
+        margins="2pt,2pt,2pt,2pt"
+        minWidth="250pt"
+        >
+        <color id="chart_background_color" value="#FFFFFF"/>
+        <color id="chart_axis_color" value="#C0C0C0"/>
+        <color id="chart_segment_tag_color" value="#C0C0C0"/>
+   </style>
     
 </theme>
 

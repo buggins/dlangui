@@ -77,6 +77,7 @@ public {
     import dlangui.widgets.statusline;
     import dlangui.widgets.docks;
     import dlangui.widgets.toolbars;
+    import dlangui.widgets.charts;
     import dlangui.platforms.common.platform;
     import dlangui.dml.parser;
 

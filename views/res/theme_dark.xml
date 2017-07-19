@@ -299,6 +299,15 @@
         padding="1pt,1pt,1pt,1pt">
     </style>
     
+   <style id="SIMPLE_BAR_CHART"
+        padding="2pt,2pt,2pt,2pt"
+        margins="2pt,2pt,2pt,2pt"
+        minWidth="250pt"
+        >
+        <color id="chart_background_color" value="#262626"/>
+        <color id="chart_axis_color" value="#505255"/>
+        <color id="chart_segment_tag_color" value="#505255"/>
+   </style>
 
 </theme>
 

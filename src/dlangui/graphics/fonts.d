@@ -462,6 +462,8 @@ alias FontRef = Ref!Font;
 /// helper to split text into several lines and draw it
 struct SimpleTextFormatter {
     dstring[] _lines;
+    int[] _linesWidths;
+    int _maxLineWidth;
     int _tabSize;
     int _tabOffset;
     uint _textFlags;
@@ -472,6 +474,7 @@ struct SimpleTextFormatter {
         _textFlags = textFlags;
         Point sz;
         _lines.length = 0;
+        _linesWidths.length = 0;
         int lineHeight = fnt.height;
         if (text.length == 0) {
             sz.y = lineHeight;
@@ -495,6 +498,7 @@ struct SimpleTextFormatter {
                 if (sz.x < lineWidth)
                     sz.x = lineWidth;
                 _lines ~= line;
+                _linesWidths ~= lineWidth;
                 if (i == charsMeasured) // end of text reached
                     break;
 
@@ -532,6 +536,7 @@ struct SimpleTextFormatter {
                     if (sz.x < lineWidth)
                         sz.x = lineWidth;
                     _lines ~= line;
+                    _linesWidths ~= lineWidth;
 
                     // check max lines constraint
                     if (maxLines && _lines.length >= maxLines) // max lines reached
@@ -548,6 +553,7 @@ struct SimpleTextFormatter {
             }
             prevChar = ch;
         }
+        _maxLineWidth = sz.x;
         return sz;
     }
     /// draw formatted text
@@ -555,6 +561,27 @@ struct SimpleTextFormatter {
         int lineHeight = fnt.height;
         foreach(line; _lines) {
             fnt.drawText(buf, x, y, line, color, _tabSize, _tabOffset, _textFlags);
+            y += lineHeight;
+        }
+    }
+    
+    /// draw horizontaly aligned formatted text
+    void draw(DrawBuf buf, int x, int y, FontRef fnt, uint color, ubyte alignment) {
+        int lineHeight = fnt.height;
+        dstring line;
+        int lineWidth;
+        for (int i = 0 ; i < _lines.length ; i++) {
+            line = _lines[i];
+            lineWidth = _linesWidths[i];
+            if ((alignment & Align.HCenter) == Align.HCenter) {
+                fnt.drawText(buf, x + (_maxLineWidth - lineWidth) / 2, y, line, color, _tabSize, _tabOffset, _textFlags);
+            }
+            else if (alignment & Align.Left) {
+                fnt.drawText(buf, x, y, line, color, _tabSize, _tabOffset, _textFlags);
+            }
+            else if (alignment & Align.Right) {
+                fnt.drawText(buf, x + _maxLineWidth - lineWidth, y, line, color, _tabSize, _tabOffset, _textFlags);
+            }
             y += lineHeight;
         }
     }
