@@ -364,11 +364,8 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             return sz;
         }
         if (BACKEND_CONSOLE)
-        {
             return Point(0, 0);
-        }
-        else
-        {
+        else {
             DrawableRef icon = rowIcon(row);
             if (icon.isNull)
                 return Point(0, 0);
@@ -439,11 +436,16 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             openDirectory(e.name, _path);
         } else if (e.isFile) {
             string fname = e.name;
-            Action result = _action;
-            result.stringParam = fname;
-            close(result);
+            if ((_flags & FileDialogFlag.ConfirmOverwrite) && exists(fname) && isFile(fname)) {
+                showConfirmOverwriteQuestion(fname);
+                return;
+            }
+            else {
+                Action result = _action;
+                result.stringParam = fname;
+                close(result);
+            }
         }
-
     }
 
     /// file list item selected
@@ -487,6 +489,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             _filename = _path ~ dirSeparator ~ baseFilename;
             
             if (action.id != StandardAction.OpenDirectory && exists(_filename) && isDir(_filename)) {
+                // directory selected but we need file so open directory
                 auto row = _fileList.row();
                 onItemActivated(row);
                 return true;
@@ -494,9 +497,23 @@ class FileDialog : Dialog, CustomGridCellAdapter {
                 Action result = _action;
                 result.stringParam = _filename;
                 // success if either selected dir & has to open dir or if selected file
-                if (action.id == StandardAction.OpenDirectory && exists(_filename) && isDir(_filename) || 
-                    action.id == StandardAction.Save && !(_flags & FileDialogFlag.FileMustExist) || 
-                    exists(_filename) && isFile(_filename)) {
+                if (action.id == StandardAction.OpenDirectory && exists(_filename) && isDir(_filename)) {
+                    close(result);
+                    return true;
+                } 
+                else if (action.id == StandardAction.Save && !(_flags & FileDialogFlag.FileMustExist)) {
+                    // save dialog
+                    if ((_flags & FileDialogFlag.ConfirmOverwrite) && exists(_filename) && isFile(_filename)) {
+                        showConfirmOverwriteQuestion(_filename);
+                        return true;
+                    }
+                    else {
+                        close(result);
+                        return true;
+                    }
+                }
+                else if (exists(_filename) && isFile(_filename)) {
+                    // open dialog
                     close(result);
                     return true;
                 }
@@ -505,6 +522,18 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         return super.handleAction(action);
     }
 
+    /// shows question "override file?"
+    protected void showConfirmOverwriteQuestion(string fileName) {
+        window.showMessageBox(UIString.fromId("CONFIRM_OVERWRITE_TITLE"c).value, format(UIString.fromId("CONFIRM_OVERWRITE_FILE_NAMED_%s_QUESTION"c).value, baseName(fileName)), [ACTION_YES, ACTION_NO], 1, delegate bool(const Action a) {
+            if (a.id == StandardAction.Yes) {
+                Action result = _action;
+                result.stringParam = fileName;
+                close(result);
+            }
+            return true;
+        });
+    }
+    
     bool onPathSelected(string path) {
         //
         return openDirectory(path, null);
