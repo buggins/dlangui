@@ -13,7 +13,7 @@ import dlangui.dialogs.msgbox;
 window.showMessageBox(UIString("Dialog title"d), UIString("Some message"d));
 
 // show message box with OK and CANCEL buttons, cancel by default, and handle its result
-window.showMessageBox(UIString("Dialog title"d), UIString("Some message"d), [ACTION_OK, ACTION_CANCEL], 1, delegate(const Action a) {
+window.showMessageBox(UIString("Dialog title"d), UIString("Some message"d), [ACTION_OK, ACTION_CANCEL], 1, delegate bool(const Action a) {
     if (a.id == StandardAction.Ok)
         Log.d("OK pressed");
     else if (a.id == StandardAction.Cancel)
