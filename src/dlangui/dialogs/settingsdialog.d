@@ -256,7 +256,7 @@ class ExecutableFileNameEditItem : SettingsItem {
         import dlangui.dialogs.filedlg;
         TextWidget lbl = new TextWidget(_id ~ "-label", _label);
         FileNameEditLine ed = new FileNameEditLine(_id ~ "-filename-edit");
-        ed.addFilter(FileFilterEntry(UIString.fromRaw("Executable files"d), "*.exe", true));
+        ed.addFilter(FileFilterEntry(UIString.fromRaw("MESSAGE_EXECUTABLES"d), "*.exe", true));
         ed.minWidth = 200;
         Setting setting = settings.settingByPath(_id, SettingType.STRING);
         string value = setting.strDef(_defaultValue);
@@ -281,7 +281,7 @@ class PathNameEditItem : SettingsItem {
         import dlangui.dialogs.filedlg;
         TextWidget lbl = new TextWidget(_id ~ "-label", _label);
         DirEditLine ed = new DirEditLine(_id ~ "-path-edit");
-        ed.addFilter(FileFilterEntry(UIString.fromRaw("All files"d), "*.*"));
+        ed.addFilter(FileFilterEntry(UIString.fromRaw("MESSAGE_ALL_FILES"d), "*.*"));
         ed.minWidth = 200;
         Setting setting = settings.settingByPath(_id, SettingType.STRING);
         string value = setting.strDef(_defaultValue);
