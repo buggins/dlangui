@@ -45,6 +45,7 @@ private import std.utf : toUTF32;
 private import std.string;
 private import std.array;
 private import std.conv : to;
+private import std.conv : dtext;
 private import std.array : split;
 
 
@@ -597,9 +598,9 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _fileList.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
         _fileList.resize(4, 3);
         _fileList.setColTitle(0, " "d);
-        _fileList.setColTitle(1, "COL_NAME"d);
-        _fileList.setColTitle(2, "COL_SIZE"d);
-        _fileList.setColTitle(3, "COL_MODIFIED"d);
+        _fileList.setColTitle(1, dtext("COL_NAME"c));
+        _fileList.setColTitle(2, dtext("COL_SIZE"c));
+        _fileList.setColTitle(3, dtext("COL_MODIFIED"c));
         _fileList.showRowHeaders = false;
         _fileList.rowSelect = true;
         _fileList.multiSelect = _allowMultipleFiles;
@@ -927,7 +928,7 @@ class FileNameEditLine : HorizontalLayout {
     protected EditLine _edFileName;
     protected Button _btn;
     protected string[string] _filetypeIcons;
-    protected dstring _caption = "TITLE_OPEN_FILE"d;
+    protected dstring _caption = dtext("TITLE_OPEN_FILE"c);
     protected uint _fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable | FileDialogFlag.FileMustExist | FileDialogFlag.EnableCreateDirectory;
     protected FileFilterEntry[] _filters;
     protected int _filterIndex;
@@ -1031,7 +1032,7 @@ class DirEditLine : FileNameEditLine {
         super(ID);
         _fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable 
             | FileDialogFlag.FileMustExist | FileDialogFlag.SelectDirectory | FileDialogFlag.EnableCreateDirectory;
-        _caption = "ACTION_SELECT_DIRECTORY"d;
+        _caption = dtext("ACTION_SELECT_DIRECTORY"c);
     }
 }
 

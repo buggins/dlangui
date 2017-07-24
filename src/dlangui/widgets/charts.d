@@ -53,7 +53,7 @@ class SimpleBarChart : Widget {
         trackHover = false;
         styleId = "SIMPLE_BAR_CHART";
         _axisX.arrowSize = 1;
-        title =  "TITLE_NEW_CHART"d;
+        title =  "TITLE_NEW_CHART"c;
         measureTextToSetWidgetSize();
     }
     
