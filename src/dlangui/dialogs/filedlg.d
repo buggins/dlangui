@@ -45,6 +45,7 @@ private import std.utf : toUTF32;
 private import std.string;
 private import std.array;
 private import std.conv : to;
+private import std.conv : dtext;
 private import std.array : split;
 
 
@@ -266,7 +267,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             _entries = listDirectory(dir, attrFilter, selectedFilter());
         } catch(Exception e) {
             import dlangui.dialogs.msgbox;
-            auto msgBox = new MessageBox(UIString.fromRaw("Error"d), UIString.fromRaw(e.msg.toUTF32), window());
+            auto msgBox = new MessageBox(UIString.fromId("MESSAGE_ERROR"c), UIString.fromRaw(e.msg.toUTF32), window());
             msgBox.show();
             return false;
         }
@@ -585,7 +586,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
         rightPanel = new VerticalLayout("main");
         rightPanel.layoutHeight(FILL_PARENT).layoutWidth(FILL_PARENT);
-        rightPanel.addChild(new TextWidget(null, "Path:"d));
+        rightPanel.addChild(new TextWidget(null, UIString.fromId("MESSAGE_PATH"c) ~ ":"));
 
         content.addChild(leftPanel);
         content.addChild(rightPanel);
@@ -626,9 +627,9 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _fileList.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
         _fileList.resize(4, 3);
         _fileList.setColTitle(0, " "d);
-        _fileList.setColTitle(1, "Name"d);
-        _fileList.setColTitle(2, "Size"d);
-        _fileList.setColTitle(3, "Modified"d);
+        _fileList.setColTitle(1, UIString.fromId("COL_NAME"c).value);
+        _fileList.setColTitle(2, UIString.fromId("COL_SIZE"c).value);
+        _fileList.setColTitle(3, UIString.fromId("COL_MODIFIED"c).value);
         _fileList.showRowHeaders = false;
         _fileList.rowSelect = true;
         _fileList.multiSelect = _allowMultipleFiles;
@@ -956,7 +957,7 @@ class FileNameEditLine : HorizontalLayout {
     protected EditLine _edFileName;
     protected Button _btn;
     protected string[string] _filetypeIcons;
-    protected dstring _caption = "Open File"d;
+    protected dstring _caption;
     protected uint _fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable | FileDialogFlag.FileMustExist | FileDialogFlag.EnableCreateDirectory;
     protected FileFilterEntry[] _filters;
     protected int _filterIndex;
@@ -968,6 +969,7 @@ class FileNameEditLine : HorizontalLayout {
 
     this(string ID = null) {
         super(ID);
+        _caption = UIString.fromId("TITLE_OPEN_FILE"c).value;
         _edFileName = new EditLine("FileNameEditLine_edFileName");
         _edFileName.minWidth(BACKEND_CONSOLE ? 16 : 200);
         _btn = new Button("FileNameEditLine_btnFile", "..."d);
@@ -1060,7 +1062,7 @@ class DirEditLine : FileNameEditLine {
         super(ID);
         _fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable 
             | FileDialogFlag.FileMustExist | FileDialogFlag.SelectDirectory | FileDialogFlag.EnableCreateDirectory;
-        _caption = "Select directory"d;
+        _caption = UIString.fromId("ACTION_SELECT_DIRECTORY"c);
     }
 }
 
