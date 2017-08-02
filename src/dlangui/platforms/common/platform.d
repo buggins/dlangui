@@ -76,6 +76,14 @@ enum WindowState : int {
     closed,
 }
 
+///  Flags to set start window position on show
+enum ShowPosition {
+    /// do nothing just show
+    dontCare, 
+    /// window will be centered on parent window
+    parentWindowCenter
+}
+
 /// Dialog display modes - used to configure dialogs should be showed as a popup or window
 enum DialogDisplayMode : ulong {
     /// show all types of dialogs in windows
@@ -277,6 +285,18 @@ class Window : CustomEventTarget {
         }
     }
     
+    protected ShowPosition _showPosition = ShowPosition.parentWindowCenter;
+    
+    ///returns current window show position (don't care or parent center)
+    @property ShowPosition showPosition() {
+        return _showPosition;
+    }
+    
+    /// sets window position after show (don't care or parent center)
+    @property void showPosition(ShowPosition newPosition) {
+        _showPosition = newPosition;
+    }
+    
     // Abstract methods : override in platform implementation
 
     /// show window
@@ -291,7 +311,9 @@ class Window : CustomEventTarget {
     abstract void invalidate();
     /// close window
     abstract void close();
-
+    /// returns parent window
+    abstract @property Window parentWindow();
+    
     protected WindowState _windowState = WindowState.normal;
     /// returns current window state
     @property WindowState windowState() {
@@ -310,11 +332,19 @@ class Window : CustomEventTarget {
     Signal!OnWindowStateHandler windowStateChanged;
     /// update and signal window state and/or size/positon changes - for using in platform inplementations
     protected void handleWindowStateChange(WindowState newState, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
-        if (newState != WindowState.unspecified)
+        bool signalWindow = false;
+        if (newState != WindowState.unspecified && newState != _windowState) {
             _windowState = newState;
-        if (newWindowRect != RECT_VALUE_IS_NOT_SET)
+            //Log.d("Window ", windowCaption, " has new state - ", newState);
+            signalWindow = true;
+        }
+        if (newWindowRect != RECT_VALUE_IS_NOT_SET && newWindowRect != _windowRect) {
             _windowRect = newWindowRect;
-        if (windowStateChanged.assigned)
+            //Log.d("Window ", windowCaption, " rect changed - ", newWindowRect);
+            signalWindow = true;
+        }
+        
+        if (signalWindow && windowStateChanged.assigned)
             windowStateChanged(this, newState, newWindowRect);
     }
 
@@ -340,6 +370,29 @@ class Window : CustomEventTarget {
     /// set window rectangle
     bool moveAndResizeWindow(Rect rc, bool activate = false) { return setWindowState(WindowState.unspecified, activate, rc); }
 
+    /// centers window on parent window, do nothing if there is no parent window
+    void centerOnParentWindow() {
+        if (parentWindow) {
+            Rect parentRect = parentWindow.windowRect();
+            Point newPos;
+            newPos.x = parentRect.left + (parentRect.right - _windowRect.right) / 2;
+            newPos.y = parentRect.top + (parentRect.bottom - _windowRect.bottom) / 2;
+            moveWindow(newPos);
+        }
+    }
+    
+    ///adjust window position during show()
+    protected void adjustPositionDuringShow() {
+        final switch (_showPosition) {
+            case ShowPosition.dontCare:
+                return;
+            case ShowPosition.parentWindowCenter: {
+                centerOnParentWindow();
+                break;
+            }
+        }
+    }
+    
     // things needed for WindowOrContentResizeMode.scrollWindow:
     /// vertical scrollbar control
     protected ScrollBar _vScrollBar = null;
