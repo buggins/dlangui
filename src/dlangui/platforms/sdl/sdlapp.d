@@ -352,11 +352,13 @@ class SDLWindow : Window {
         }
         if (_mainWidget) {
             _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
-            if (flags & WindowFlag.MeasureSize) {
+            if (flags & WindowFlag.MeasureSize)
                 resizeWindow(Point(_mainWidget.measuredWidth, _mainWidget.measuredHeight));
-            }
-            adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
+            else
+                adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
         }
+
+        adjustPositionDuringShow();
             
         SDL_ShowWindow(_win);
         if (_mainWidget)
@@ -420,19 +422,22 @@ class SDLWindow : Window {
         }
         
         // change size and/or position
+        bool rectChanged = false;
         if (newWindowRect != RECT_VALUE_IS_NOT_SET && (newState == WindowState.normal || newState == WindowState.unspecified)) {
-            
             // change position
             if (newWindowRect.top != int.min && newWindowRect.left != int.min) {
                 SDL_SetWindowPosition(_win, newWindowRect.left, newWindowRect.top);
+                rectChanged = true;
                 res = true;
             }
                 
             // change size
             if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
                 SDL_SetWindowSize(_win, newWindowRect.right, newWindowRect.bottom);
+                rectChanged = true;
                 res = true;
             }
+            
         }
         
         if (activate) {
@@ -440,10 +445,25 @@ class SDLWindow : Window {
             res = true;
         }
         
+        //needed here to make _windowRect and _windowState valid before SDL_WINDOWEVENT_RESIZED/SDL_WINDOWEVENT_MOVED/SDL_WINDOWEVENT_MINIMIZED/SDL_WINDOWEVENT_MAXIMIZED etc handled
+        //example: change size by resizeWindow() and make some calculations using windowRect
+        if (rectChanged) {
+            handleWindowStateChange(newState, Rect(newWindowRect.left == int.min ? _windowRect.left : newWindowRect.left, 
+                newWindowRect.top == int.min ? _windowRect.top : newWindowRect.top, newWindowRect.right == int.min ? _windowRect.right : newWindowRect.right, 
+                newWindowRect.bottom == int.min ? _windowRect.bottom : newWindowRect.bottom));
+        }
+        else
+            handleWindowStateChange(newState, RECT_VALUE_IS_NOT_SET);
+        
+        
         return res;
     }
 
-
+    
+    override @property Window parentWindow() {
+        return _parent;
+    }
+    
     protected dstring _caption;
 
     override @property dstring windowCaption() {
