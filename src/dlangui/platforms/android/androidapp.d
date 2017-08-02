@@ -33,6 +33,10 @@ class AndroidWindow : Window {
 	}
 	bool _visible;
 
+    override @property Window parentWindow() {
+        return null;
+    }
+    
 	protected dstring _caption;
 	/// returns window caption
 	override @property dstring windowCaption() {

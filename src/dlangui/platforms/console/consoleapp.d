@@ -52,6 +52,11 @@ class ConsoleWindow : Window {
         Log.d("ConsoleWindow.close()");
         _platform.closeWindow(this);
     }
+    
+    override @property Window parentWindow() {
+        return _parent;
+    }
+
     protected bool _visible;
     /// returns true if window is shown
     @property bool visible() {
