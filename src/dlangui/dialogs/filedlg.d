@@ -45,8 +45,6 @@ private import std.utf : toUTF32;
 private import std.string;
 private import std.array;
 private import std.conv : to;
-private import std.conv : dtext;
-private import std.array : split;
 
 
 /// flags for file dialog options
