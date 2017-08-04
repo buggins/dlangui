@@ -266,7 +266,7 @@ class X11Window : DWindow {
 			swa.background_pixel = white;
 			swa.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | 
 				EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonMotionMask | ExposureMask | VisibilityChangeMask |
-					FocusChangeMask | KeymapStateMask | StructureNotifyMask;
+					FocusChangeMask | KeymapStateMask | StructureNotifyMask | PropertyChangeMask;
 			Visual * visual = DefaultVisual(x11display, x11screen);
             int depth = DefaultDepth(x11display, x11screen);
 			static if (ENABLE_OPENGL) {
@@ -312,6 +312,7 @@ class X11Window : DWindow {
 		}
 		windowCaption = caption;
 		XSetWMProtocols(x11display, _win, &atom_WM_DELETE_WINDOW, 1);
+        _windowState = WindowState.hidden;
 
 		_children.reserve(20);
 		_parent = cast(X11Window) parent;
@@ -370,6 +371,8 @@ class X11Window : DWindow {
 		/* clear the window and bring it on top of the other windows */
 		//XClearWindow(x11display, _win);
 		//XFlush(x11display);
+        
+        handleWindowStateChange(WindowState.unspecified, Rect(0, 0, _dx, _dy));
 	}
 
 	~this() {
@@ -432,9 +435,11 @@ class X11Window : DWindow {
             _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
             if (flags & WindowFlag.MeasureSize)
                 resizeWindow(Point(_mainWidget.measuredWidth, _mainWidget.measuredHeight));
-            _windowRect.right = _dx;// hack to set windowRect, remove when _windowRect will be full supported on X11
-            _windowRect.bottom = _dy;
-            adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
+            else    
+                adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
+            
+            adjustPositionDuringShow();
+                
             _mainWidget.setFocus();
         }
 	}
@@ -504,11 +509,51 @@ class X11Window : DWindow {
 			default:
 				break;
 		}
+        
+        // change size and/or position
+        bool rectChanged = false;
+        if (newWindowRect != RECT_VALUE_IS_NOT_SET && (newState == WindowState.normal || newState == WindowState.unspecified)) {
+            // change position
+            if (newWindowRect.top != int.min && newWindowRect.left != int.min) {
+                XMoveWindow(x11display, _win, newWindowRect.left, newWindowRect.top);
+                rectChanged = true;
+                result = true;
+            }
+                
+            // change size
+            if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
+        		if (!(flags & WindowFlag.Resizable)) {
+        			XSizeHints sizeHints;
+        			sizeHints.min_width = newWindowRect.right;
+        			sizeHints.min_height = newWindowRect.bottom;
+        			sizeHints.max_width = newWindowRect.right;
+        			sizeHints.max_height = newWindowRect.bottom;
+        			sizeHints.flags = PMaxSize | PMinSize;
+        			XSetWMNormalHints(x11display, _win, &sizeHints);
+        		}
+                XResizeWindow(x11display, _win, newWindowRect.right, newWindowRect.bottom);
+                rectChanged = true;
+                result = true;
+            }
+        }
+        
 		if (activate) {
 			XMapRaised(x11display, _win);
 			result = true;
 		}
 		XFlush(x11display);
+        
+        //needed here to make _windowRect and _windowState valid
+        //example: change size by resizeWindow() and make some calculations using windowRect
+        if (rectChanged) {
+            handleWindowStateChange(newState, Rect(newWindowRect.left == int.min ? _windowRect.left : newWindowRect.left, 
+                newWindowRect.top == int.min ? _windowRect.top : newWindowRect.top, newWindowRect.right == int.min ? _windowRect.right : newWindowRect.right, 
+                newWindowRect.bottom == int.min ? _windowRect.bottom : newWindowRect.bottom));
+        }
+        else
+            handleWindowStateChange(newState, RECT_VALUE_IS_NOT_SET);
+        
+        
 		return result;
 	}
 
@@ -572,6 +617,10 @@ class X11Window : DWindow {
 		Log.d("X11Window.close()");
 		_platform.closeWindow(this);
 	}
+    
+    override protected void handleWindowStateChange(WindowState newState, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
+        super.handleWindowStateChange(newState, newWindowRect);
+    }
 
 	ColorDrawBuf _drawbuf;
 	protected void drawUsingBitmap() {
@@ -1073,7 +1122,7 @@ class X11Window : DWindow {
 				ev.xclient.window = _win;
 				ev.xclient.display = x11display2;
 				ev.xclient.format = 32;
-				Log.d("Sending timer event");
+				//Log.d("Sending timer event");
 				XLockDisplay(x11display2);
 				XSendEvent(x11display2, _win, false, StructureNotifyMask, &ev);
 				XFlush(x11display2);
@@ -1264,10 +1313,62 @@ class X11Platform : Platform {
 						if (w) {
 							w._cachedWidth = event.xconfigure.width;
 							w._cachedHeight = event.xconfigure.height;
+                            w.handleWindowStateChange(WindowState.unspecified, Rect(event.xconfigure.x, event.xconfigure.y, event.xconfigure.width, event.xconfigure.height));
 						} else {
 							Log.e("ConfigureNotify: Window not found");
 						}
 						break;
+                    case PropertyNotify:
+                        if (event.xproperty.atom == atom_NET_WM_STATE && event.xproperty.state == PropertyNewValue) {
+                            X11Window w = findWindow(event.xproperty.window);
+                            if (w) {
+                                Atom type;
+                                int format;
+                                ubyte* properties;
+                                c_ulong dataLength, overflow;
+                                if (XGetWindowProperty(x11display, event.xproperty.window, atom_NET_WM_STATE, 
+                                    0, int.max/4, False, AnyPropertyType, &type, &format, &dataLength, &overflow, &properties) == 0) {
+                                    scope(exit) XFree(properties);
+                                    // check for minimized
+                                    bool minimized = false;
+                                    for (int i=0; i < dataLength ; i++) {
+                                        if (((cast(c_ulong*)properties)[i]) == atom_NET_WM_STATE_HIDDEN) {
+                                            w.handleWindowStateChange(WindowState.minimized);
+                                            minimized = true;
+                                        }
+                                    }
+                                    if (!minimized) {
+                                        bool maximizedH = false;
+                                        bool maximizedV = false;
+                                        for (int i=0; i < dataLength ; i++) {
+                                            if (((cast(c_ulong*)properties)[i]) == atom_NET_WM_STATE_MAXIMIZED_VERT)
+                                                maximizedV = true;
+                                            if (((cast(c_ulong*)properties)[i]) == atom_NET_WM_STATE_MAXIMIZED_HORZ)
+                                                maximizedH = true;
+                                        }
+                                        
+                                        if (maximizedV && maximizedH)
+                                            w.handleWindowStateChange(WindowState.maximized);
+                                        else
+                                            w.handleWindowStateChange(WindowState.normal);
+                                    
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                    case MapNotify:
+                        X11Window w = findWindow(event.xmap.window);
+                        if (w) {
+                            w.handleWindowStateChange(WindowState.normal);
+                        }
+                        break;
+                    case UnmapNotify:
+                        X11Window w = findWindow(event.xunmap.window);
+                        if (w) {
+                            w.handleWindowStateChange(WindowState.hidden);
+                        }
+                        break;
 					case Expose:
 						if (event.xexpose.count == 0) {
 							X11Window w = findWindow(event.xexpose.window);
@@ -1372,9 +1473,7 @@ class X11Platform : Platform {
 					case EnterNotify:
 						Log.d("X11: EnterNotify event");
 						X11Window w = findWindow(event.xcrossing.window);
-						if (w) {
-							w.processMouseEvent(MouseAction.FocusIn, 0, event.xcrossing.state, event.xcrossing.x, event.xcrossing.y);
-						} else {
+						if (!w) {
 							Log.e("Window not found");
 						}
 						break;
