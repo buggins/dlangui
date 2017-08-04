@@ -512,6 +512,10 @@ class X11Window : DWindow {
 		return result;
 	}
 
+    override @property DWindow parentWindow() {
+        return _parent;
+    }
+    
 	override @property dstring windowCaption() {
 		return _caption;
 	}

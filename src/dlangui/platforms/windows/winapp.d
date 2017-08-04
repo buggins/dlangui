@@ -240,6 +240,7 @@ class Win32Window : Window {
     HWND _hwnd;
     dstring _caption;
     Win32ColorDrawBuf _drawbuf;
+    private Win32Window _w32parent;
     bool useOpengl;
 
     /// win32 only - return window handle
@@ -248,8 +249,8 @@ class Win32Window : Window {
     }
 
     this(Win32Platform platform, dstring windowCaption, Window parent, uint flags, uint width = 0, uint height = 0) {
-        Win32Window w32parent = cast(Win32Window)parent;
-        HWND parenthwnd = w32parent ? w32parent._hwnd : null;
+        _w32parent = cast(Win32Window)parent;
+        HWND parenthwnd = _w32parent ? _w32parent._hwnd : null;
         _dx = width;
         _dy = height;
         if (!_dx)
@@ -258,6 +259,7 @@ class Win32Window : Window {
             _dy = 400;
         _platform = platform;
         _caption = windowCaption;
+        _windowState = WindowState.hidden;
         _flags = flags;
         uint ws = WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
         if (flags & WindowFlag.Resizable)
@@ -285,6 +287,10 @@ class Win32Window : Window {
                 useOpengl = sharedGLContext.init(hDC);
             }
         }
+        
+        RECT rect;
+        GetWindowRect(_hwnd, &rect);
+        handleWindowStateChange(WindowState.unspecified, Rect(rect.left, rect.top, _dx, _dy));
     }
 
     static if (ENABLE_OPENGL) {
@@ -436,8 +442,11 @@ class Win32Window : Window {
             _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
             if (flags & WindowFlag.MeasureSize)
                 resizeWindow(Point(_mainWidget.measuredWidth, _mainWidget.measuredHeight));
-            adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
+            else
+                adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
         }
+        
+        adjustPositionDuringShow();
         
         ShowWindow(_hwnd, SW_SHOWNORMAL);
         if (_mainWidget)
@@ -446,6 +455,10 @@ class Win32Window : Window {
         //UpdateWindow(_hwnd);
     }
 
+    override @property Window parentWindow() {
+        return _w32parent;
+    }
+    
     override @property dstring windowCaption() {
         return _caption;
     }
@@ -520,6 +533,7 @@ class Win32Window : Window {
                 break;
         }
         // change size and/or position
+        bool rectChanged = false;
         if (newWindowRect != RECT_VALUE_IS_NOT_SET && (newState == WindowState.normal || newState == WindowState.unspecified)) {
             UINT flags = SWP_NOOWNERZORDER | SWP_NOZORDER;
             if (!activate)
@@ -529,20 +543,32 @@ class Win32Window : Window {
                 if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
                     // change size only
                     SetWindowPos(_hwnd, NULL, 0, 0, newWindowRect.right + 2 * GetSystemMetrics(SM_CXDLGFRAME), newWindowRect.bottom + GetSystemMetrics(SM_CYCAPTION) + 2 * GetSystemMetrics(SM_CYDLGFRAME), flags | SWP_NOMOVE);
-                    return true;
+                    rectChanged = true;
+                    res = true;
                 }
             } else {
                 if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
                     // change size and position
                     SetWindowPos(_hwnd, NULL, newWindowRect.left, newWindowRect.top, newWindowRect.right + 2 * GetSystemMetrics(SM_CXDLGFRAME), newWindowRect.bottom + GetSystemMetrics(SM_CYCAPTION) + 2 * GetSystemMetrics(SM_CYDLGFRAME), flags);
-                    return true;
+                    rectChanged = true;
+                    res = true;
                 } else {
                     // change position only
                     SetWindowPos(_hwnd, NULL, newWindowRect.left, newWindowRect.top, 0, 0, flags | SWP_NOSIZE);
-                    return true;
+                    rectChanged = true;
+                    res = true;
                 }
             }
         }
+        
+        if (rectChanged) {
+            handleWindowStateChange(newState, Rect(newWindowRect.left == int.min ? _windowRect.left : newWindowRect.left, 
+                newWindowRect.top == int.min ? _windowRect.top : newWindowRect.top, newWindowRect.right == int.min ? _windowRect.right : newWindowRect.right, 
+                newWindowRect.bottom == int.min ? _windowRect.bottom : newWindowRect.bottom));
+        }
+        else
+            handleWindowStateChange(newState, RECT_VALUE_IS_NOT_SET);
+        
         return res;
     }
 
@@ -559,6 +585,10 @@ class Win32Window : Window {
     override void close() {
         Log.d("Window.close()");
         _platform.closeWindow(this);
+    }
+    
+    override protected void handleWindowStateChange(WindowState newState, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
+        super.handleWindowStateChange(newState, newWindowRect);
     }
 
     HICON _icon;
@@ -1295,12 +1325,19 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_WINDOWPOSCHANGED:
             {
                 if (window !is null) {
-                    WINDOWPOS * pos = cast(WINDOWPOS*)lParam;
-                    Log.d("WM_WINDOWPOSCHANGED: ", *pos);
-                    GetClientRect(hwnd, &rect);
-                    if (pos.x > -30000) {// to ignore minimized state
+                    
+                    if (IsIconic(hwnd)) {
+                        window.handleWindowStateChange(WindowState.minimized);
+                    }
+                    else {
+                        WINDOWPOS * pos = cast(WINDOWPOS*)lParam;
+                        //Log.d("WM_WINDOWPOSCHANGED: ", *pos);
+
+                        GetClientRect(hwnd, &rect);
                         int dx = rect.right - rect.left;
                         int dy = rect.bottom - rect.top;
+                        window.handleWindowStateChange( IsZoomed(hwnd) ? WindowState.maximized : IsWindowVisible(hwnd) ? WindowState.normal : WindowState.hidden,
+                            Rect(pos.x, pos.y, dx, dy));
                         if (window.width != dx || window.height != dy) {
                             window.onResize(dx, dy);
                             InvalidateRect(hwnd, null, FALSE);
