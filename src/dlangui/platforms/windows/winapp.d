@@ -268,11 +268,27 @@ class Win32Window : Window {
             ws |= WS_OVERLAPPED | WS_CAPTION | WS_CAPTION | WS_BORDER | WS_SYSMENU;
         //if (flags & WindowFlag.Fullscreen)
         //    ws |= SDL_WINDOW_FULLSCREEN;
+        Rect screenRc = getScreenDimensions();
+        Log.d("Screen dimensions: ", screenRc);
+
+        int x = CW_USEDEFAULT;
+        int y = CW_USEDEFAULT;
+
+        if (flags & WindowFlag.Fullscreen) {
+            // fullscreen
+            x = screenRc.left;
+            y = screenRc.top;
+            _dx = screenRc.width;
+            _dy = screenRc.height;
+            ws = WS_POPUP;
+        }
+
+
         _hwnd = CreateWindowW(toUTF16z(WIN_CLASS_NAME),      // window class name
                             toUTF16z(windowCaption),  // window caption
                             ws,  // window style
-                            CW_USEDEFAULT,        // initial x position
-                            CW_USEDEFAULT,        // initial y position
+                            x,        // initial x position
+                            y,        // initial y position
                             _dx,        // initial x size
                             _dy,        // initial y size
                             parenthwnd,                 // parent window handle
@@ -341,6 +357,25 @@ class Win32Window : Window {
             //sharedGLContext.unbind(hdc);
             destroy(buf);
         }
+    }
+
+    protected Rect getScreenDimensions() {
+        MONITORINFO monitor_info;
+        monitor_info.cbSize = monitor_info.sizeof;
+        HMONITOR hMonitor;
+        if (_hwnd) {
+            hMonitor = MonitorFromWindow(_hwnd, MONITOR_DEFAULTTONEAREST);
+        } else {
+            hMonitor = MonitorFromPoint(POINT(0,0), MONITOR_DEFAULTTOPRIMARY);
+        }
+        GetMonitorInfo(hMonitor,
+                       &monitor_info);
+        Rect res;
+        res.left = monitor_info.rcMonitor.left;
+        res.top = monitor_info.rcMonitor.top;
+        res.right = monitor_info.rcMonitor.right;
+        res.bottom = monitor_info.rcMonitor.bottom;
+        return res;
     }
 
     ~this() {
@@ -448,7 +483,14 @@ class Win32Window : Window {
         
         adjustPositionDuringShow();
         
-        ShowWindow(_hwnd, SW_SHOWNORMAL);
+        if (_flags & WindowFlag.Fullscreen) {
+            Rect rc = getScreenDimensions();
+            SetWindowPos(_hwnd, HWND_TOPMOST, 0, 0, rc.width, rc.height, SWP_SHOWWINDOW);
+            _windowState = WindowState.fullscreen;
+        } else {
+            ShowWindow(_hwnd, SW_SHOWNORMAL);
+            _windowState = WindowState.normal;
+        }
         if (_mainWidget)
             _mainWidget.setFocus();
         SetFocus(_hwnd);
@@ -487,6 +529,10 @@ class Win32Window : Window {
                             res = true;
                             break;
                         case WindowState.normal:
+                            ShowWindow(_hwnd, SW_SHOWNORMAL);
+                            res = true;
+                            break;
+                        case WindowState.fullscreen:
                             ShowWindow(_hwnd, SW_SHOWNORMAL);
                             res = true;
                             break;
