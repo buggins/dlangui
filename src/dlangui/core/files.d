@@ -792,6 +792,14 @@ deprecated string[] splitPath(string path) {
     return res;
 }
 
+/// if pathName is not absolute path, convert it to absolute (assuming it is relative to current directory)
+string toAbsolutePath(string pathName) {
+    import std.path : isAbsolute, absolutePath, buildNormalizedPath;
+    if (pathName.isAbsolute)
+        return pathName;
+    return pathName.absolutePath.buildNormalizedPath;
+}
+
 /// for executable name w/o path, find absolute path to executable
 string findExecutablePath(string executableName) {
     import std.string : split;

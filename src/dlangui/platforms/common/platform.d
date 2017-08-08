@@ -1887,6 +1887,10 @@ mixin template APP_ENTRY_POINT() {
     static if (BACKEND_CONSOLE) {
         int main(string[] args)
         {
+            if (args.length > 1)
+                args = args[1 .. $];
+            else
+                args = null;
             return DLANGUImain(args);
         }
     } else {
@@ -1909,6 +1913,10 @@ mixin template APP_ENTRY_POINT() {
             } else {
                 int main(string[] args)
                 {
+                    if (args.length > 1)
+                        args = args[1 .. $];
+                    else
+                        args = null;
                     return DLANGUImain(args);
                 }
             }
