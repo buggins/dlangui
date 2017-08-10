@@ -1087,7 +1087,7 @@ class Win32Platform : Platform {
         for (uint i = 0; i + 1 < _windowList.length; i++) {
             if (_windowList[i] is w) {
                 for (uint j = i + 1; j < _windowList.length; j++) {
-                    if (_windowList[j].flags & WindowFlag.Modal)
+                    if (_windowList[j].flags & WindowFlag.Modal && _windowList[j]._windowState != WindowState.hidden)
                         return true;
                 }
                 return false;
