@@ -1325,7 +1325,8 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
         import core.memory : GC;
         Log.d("Calling GC.collect");
         GC.collect();
-        Log.e("Non-zero DrawBuf instance count when exiting: ", DrawBuf.instanceCount);
+        if (DrawBuf.instanceCount)
+            Log.d("Non-zero DrawBuf instance count when exiting: ", DrawBuf.instanceCount);
     }
 
     return result;
