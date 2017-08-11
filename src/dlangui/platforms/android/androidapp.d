@@ -37,6 +37,15 @@ class AndroidWindow : Window {
         return null;
     }
     
+    override protected void handleWindowActivityChange(bool isWindowActive) {
+        super.handleWindowActivityChange(isWindowActive);
+    }
+    
+    override @property bool isActive() {
+        //todo:
+        return true;
+    }
+    
 	protected dstring _caption;
 	/// returns window caption
 	override @property dstring windowCaption() {

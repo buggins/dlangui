@@ -501,6 +501,14 @@ class Win32Window : Window {
         return _w32parent;
     }
     
+    override protected void handleWindowActivityChange(bool isWindowActive) {
+        super.handleWindowActivityChange(isWindowActive);
+    }
+    
+    override @property bool isActive() {
+        return _hwnd == GetForegroundWindow();
+    }
+    
     override @property dstring windowCaption() {
         return _caption;
     }
@@ -1087,7 +1095,7 @@ class Win32Platform : Platform {
         for (uint i = 0; i + 1 < _windowList.length; i++) {
             if (_windowList[i] is w) {
                 for (uint j = i + 1; j < _windowList.length; j++) {
-                    if (_windowList[j].flags & WindowFlag.Modal && _windowList[j]._windowState != WindowState.hidden)
+                    if (_windowList[j].flags & WindowFlag.Modal && _windowList[j].windowState != WindowState.hidden)
                         return true;
                 }
                 return false;
@@ -1390,6 +1398,16 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                             InvalidateRect(hwnd, null, FALSE);
                         }
                     }
+                }
+            }
+            return 0;
+        case WM_ACTIVATE:
+            {
+                if (window) {
+                    if (wParam == WA_INACTIVE) 
+                        window.handleWindowActivityChange(false);
+                    else if (wParam == WA_ACTIVE || wParam == WA_CLICKACTIVE)
+                        window.handleWindowActivityChange(true);
                 }
             }
             return 0;

@@ -455,13 +455,20 @@ class SDLWindow : Window {
         else
             handleWindowStateChange(newState, RECT_VALUE_IS_NOT_SET);
         
-        
         return res;
     }
 
-    
     override @property Window parentWindow() {
         return _parent;
+    }
+    
+    override protected void handleWindowActivityChange(bool isWindowActive) {
+        super.handleWindowActivityChange(isWindowActive);
+    }
+    
+    override @property bool isActive() {
+        uint flags = SDL_GetWindowFlags(_win);
+        return (flags & SDL_WINDOW_INPUT_FOCUS) == SDL_WINDOW_INPUT_FOCUS;
     }
     
     protected dstring _caption;
@@ -1344,9 +1351,11 @@ class SDLPlatform : Platform {
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_FOCUS_GAINED - ", w.windowCaption);
                                 if (!_windowsMinimized)
                                     w.restoreModalChilds();
+                                w.handleWindowActivityChange(true);
                                 break;
                             case SDL_WINDOWEVENT_FOCUS_LOST:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_FOCUS_LOST - ", w.windowCaption);
+                                w.handleWindowActivityChange(false);
                                 break;
                             default:
                                 break;

@@ -56,6 +56,16 @@ class ConsoleWindow : Window {
     override @property Window parentWindow() {
         return _parent;
     }
+    
+    override protected void handleWindowActivityChange(bool isWindowActive) {
+        super.handleWindowActivityChange(isWindowActive);
+    }
+    
+    override @property bool isActive() {
+        // todo
+        return true;
+    }
+    
 
     protected bool _visible;
     /// returns true if window is shown
