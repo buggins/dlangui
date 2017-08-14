@@ -1625,10 +1625,6 @@ int sdlmain(string[] args) {
 
     version (unittest) {
     } else {
-        if (args.length > 1)
-            args = args[1 .. $];
-        else
-            args = null;
         res = UIAppMain(args);
     }
     
