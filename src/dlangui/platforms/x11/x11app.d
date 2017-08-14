@@ -444,6 +444,10 @@ class X11Window : DWindow {
         }
     }
 
+    override protected void handleWindowStateChange(WindowState newState, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
+        super.handleWindowStateChange(newState, newWindowRect);
+    }
+    
     protected final void changeWindowState(int action, Atom firstProperty, Atom secondProperty = None) nothrow
     {
         XEvent ev;
@@ -561,6 +565,16 @@ class X11Window : DWindow {
         return _parent;
     }
     
+    private bool _isActive;
+    override protected void handleWindowActivityChange(bool isWindowActive) {
+        _isActive = isWindowActive;
+        super.handleWindowActivityChange(isWindowActive);
+    }
+    
+    override @property bool isActive() {
+        return _isActive;
+    }
+    
     override @property dstring windowCaption() {
         return _caption;
     }
@@ -618,10 +632,6 @@ class X11Window : DWindow {
         _platform.closeWindow(this);
     }
     
-    override protected void handleWindowStateChange(WindowState newState, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
-        super.handleWindowStateChange(newState, newWindowRect);
-    }
-
     ColorDrawBuf _drawbuf;
     protected void drawUsingBitmap() {
         if (_dx > 0 && _dy > 0) {
@@ -1519,16 +1529,18 @@ class X11Platform : Platform {
                     case FocusIn:
                         Log.d("X11: FocusIn event");
                         X11Window w = findWindow(event.xfocus.window);
-                        if (!w) {
+                        if (w) 
+                            w.handleWindowActivityChange(true);
+                        else
                             Log.e("Window not found");
-                        }
                         break;
                     case FocusOut:
                         Log.d("X11: FocusOut event");
                         X11Window w = findWindow(event.xfocus.window);
-                        if (!w) {
+                        if (w) 
+                            w.handleWindowActivityChange(false);
+                        else
                             Log.e("Window not found");
-                        }
                         break;
                     case KeymapNotify:
                         Log.d("X11: KeymapNotify event");
@@ -1667,7 +1679,7 @@ class X11Platform : Platform {
         for (uint i = 0; i + 1 < _windowList.length; i++) {
             if (_windowList[i] is w) {
                 for (uint j = i + 1; j < _windowList.length; j++) {
-                    if (_windowList[j].flags & WindowFlag.Modal && _windowList[j]._windowState != WindowState.hidden)
+                    if (_windowList[j].flags & WindowFlag.Modal && _windowList[j].windowState != WindowState.hidden)
                         return true;
                 }
                 return false;

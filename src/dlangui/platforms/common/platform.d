@@ -118,6 +118,12 @@ interface OnWindowStateHandler {
     bool onWindowStateChange(Window window, WindowState winState, Rect rect);
 }
 
+/// Window activate/deactivate signal listener
+interface OnWindowActivityHandler {
+    /// signal listener - called when window activity is changed
+    bool onWindowActivityChange(Window window, bool isWindowActive);
+}
+
 /// protected event list
 /// references to posted messages can be stored here at least to keep live reference and avoid GC
 /// as well, on some platforms it's easy to send id to message queue, but not pointer
@@ -907,6 +913,7 @@ class Window : CustomEventTarget {
     }
 
     protected Widget _focusedWidget;
+    protected auto _focusStateToApply = State.Focused;
     /// returns current focused widget
     @property Widget focusedWidget() { 
         if (!isChild(_focusedWidget))
@@ -922,6 +929,7 @@ class Window : CustomEventTarget {
         auto targetState = State.Focused;
         if(reason == FocusReason.TabFocus)
             targetState = State.Focused | State.KeyboardFocused;
+        _focusStateToApply = targetState;
         if (oldFocus is newFocus)
             return oldFocus;
         if (oldFocus !is null) {
@@ -942,6 +950,40 @@ class Window : CustomEventTarget {
             //requestActionsUpdate();
         }
         return _focusedWidget;
+    }
+    
+    protected Widget removeFocus() {
+        if (!isChild(_focusedWidget))
+            _focusedWidget = null;
+        if (_focusedWidget) {
+            _focusedWidget.resetState(_focusStateToApply);
+            update();
+        }
+        return _focusedWidget;
+    }
+    
+    protected Widget applyFocus() {
+        if (!isChild(_focusedWidget))
+            _focusedWidget = null;
+        if (_focusedWidget) {
+            _focusedWidget.setState(_focusStateToApply);
+            update();
+        }
+        return _focusedWidget;
+    }
+    
+    abstract @property bool isActive();
+    
+    /// window state change signal
+    Signal!OnWindowActivityHandler windowActivityChanged;
+    
+    protected void handleWindowActivityChange(bool isWindowActive) {
+        if (isWindowActive)
+            applyFocus();
+        else
+            removeFocus();
+        if (windowActivityChanged.assigned)
+            windowActivityChanged(this, isWindowActive);
     }
 
     /// dispatch key event to widgets which have wantsKeyTracking == true
