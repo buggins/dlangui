@@ -713,6 +713,11 @@ alias currentDir = std.file.getcwd;
     return path[0 .. lastSlash + 1];
 }
 
+/// Returns current executable path and file name
+@property string exeFilename() {
+    return thisExePath();
+}
+
 /** 
     Returns application data directory
 

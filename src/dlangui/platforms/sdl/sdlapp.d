@@ -1505,8 +1505,10 @@ version (Windows) {
             return result;
         }
 
+    /// split command line arg list; prepend with executable file name
     string[] splitCmdLine(string line) {
         string[] res;
+        res ~= exeFilename();
         int start = 0;
         bool insideQuotes = false;
         for (int i = 0; i <= line.length; i++) {
