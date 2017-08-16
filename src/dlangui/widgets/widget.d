@@ -623,9 +623,9 @@ public:
     /// set max height constraint (0 for no constraint)
     @property Widget minHeight(int value) { ownStyle.minHeight = value; return this; }
 
-    /// returns layout width options (WRAP_CONTENT, FILL_PARENT, or some constant value)
+    /// returns layout width options (WRAP_CONTENT, FILL_PARENT, some constant value or percent but only for one widget in layout)
     @property int layoutWidth() { return style.layoutWidth; }
-    /// returns layout height options (WRAP_CONTENT, FILL_PARENT, or some constant value)
+    /// returns layout height options (WRAP_CONTENT, FILL_PARENT, some constant value or percent but only for one widget in layout)
     @property int layoutHeight() { return style.layoutHeight; }
     /// returns layout weight (while resizing to fill parent, widget will be resized proportionally to this value)
     @property int layoutWeight() { return style.layoutWeight; }
@@ -1371,13 +1371,10 @@ public:
         // check for fixed size set in layoutWidth, layoutHeight
         int lh = layoutHeight;
         int lw = layoutWidth;
-        if (isPercentSize(lh) && parentHeight != SIZE_UNSPECIFIED)
-            dy = fromPercentSize(lh, parentHeight);
-        else if (!isSpecialSize(lh))
+        // constant value support
+        if (!(isPercentSize(lh) || isSpecialSize(lh)))
             dy = lh;
-        if (isPercentSize(lw) && parentWidth != SIZE_UNSPECIFIED)
-            dx = fromPercentSize(lw, parentWidth);
-        else if (!isSpecialSize(lw))
+        if (!(isPercentSize(lw) || isSpecialSize(lw)))
             dx = lw;
         // apply min/max width and height constraints
         int minw = minWidth;
