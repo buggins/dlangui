@@ -402,6 +402,20 @@ class TabControl : WidgetGroupDefaultDrawing {
         }
     }
 
+    /// change name and id of tab
+    void renameTab(int index, string id, dstring name) {
+        _items[index].text = name;
+        _items[index].id = id;
+        for (int i = 0; i < _children.count; i++) {
+            TabItemWidget widget = cast (TabItemWidget)_children[i];
+            if (widget && widget.item is _items[index]) {
+                widget.setItem(_items[index]);
+                requestLayout();
+                break;
+            }
+        }
+    }
+
     protected void onTabClose(string tabId) {
         if (tabClose.assigned)
             tabClose(tabId);
@@ -777,6 +791,11 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
     /// change name of tab
     void renameTab(int index, dstring name) {
         _tabControl.renameTab(index, name);
+    }
+
+    /// change name of tab
+    void renameTab(int index, string id, dstring name) {
+        _tabControl.renameTab(index, id, name);
     }
 
     @property Visibility hiddenTabsVisibility() { return _tabHost.hiddenTabsVisibility; }
