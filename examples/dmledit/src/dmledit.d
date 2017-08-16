@@ -4,6 +4,7 @@ import dlangui;
 import dlangui.dialogs.filedlg;
 import dlangui.dialogs.dialog;
 import dlangui.dml.dmlhighlight;
+import dlangui.widgets.metadata;
 import std.array : replaceFirst;
 
 mixin APP_ENTRY_POINT;
@@ -91,6 +92,8 @@ q{VerticalLayout {
 }
 };
 
+// used to generate property lists once, then simply swap
+StringListAdapter[string] propListsAdapters;
 
 class EditFrame : AppFrame {
 
@@ -181,15 +184,15 @@ class EditFrame : AppFrame {
                         window.close();
                     return true;
                 case IDEActions.HelpAbout:
-                    window.showMessageBox(UIString("About DlangUI ML Editor"d), 
-                                          UIString("DLangIDE\n(C) Vadim Lopatin, 2015\nhttp://github.com/buggins/dlangui\nSimple editor for DML code"d));
+                    window.showMessageBox(UIString.fromRaw("About DlangUI ML Editor"d), 
+                                          UIString.fromRaw("DLangIDE\n(C) Vadim Lopatin, 2015\nhttp://github.com/buggins/dlangui\nSimple editor for DML code"d));
                     return true;
                 case IDEActions.FileNew:
                     UIString caption;
                     caption = "Create new DML file"d;
                     FileDialog dlg = createFileDialog(caption, false);
-                    dlg.addFilter(FileFilterEntry(UIString("DML files"d), "*.dml"));
-                    dlg.addFilter(FileFilterEntry(UIString("All files"d), "*.*"));
+                    dlg.addFilter(FileFilterEntry(UIString.fromRaw("DML files"d), "*.dml"));
+                    dlg.addFilter(FileFilterEntry(UIString.fromRaw("All files"d), "*.*"));
                     dlg.dialogResult = delegate(Dialog dlg, const Action result) {
                         if (result.id == ACTION_OPEN.id) {
                             string filename = result.stringParam;
@@ -207,8 +210,8 @@ class EditFrame : AppFrame {
                     UIString caption;
                     caption = "Save DML File as"d;
                     FileDialog dlg = createFileDialog(caption, false);
-                    dlg.addFilter(FileFilterEntry(UIString("DML files"d), "*.dml"));
-                    dlg.addFilter(FileFilterEntry(UIString("All files"d), "*.*"));
+                    dlg.addFilter(FileFilterEntry(UIString.fromRaw("DML files"d), "*.dml"));
+                    dlg.addFilter(FileFilterEntry(UIString.fromRaw("All files"d), "*.*"));
                     dlg.dialogResult = delegate(Dialog dlg, const Action result) {
                         if (result.id == ACTION_OPEN.id) {
                             string filename = result.stringParam;
@@ -221,8 +224,8 @@ class EditFrame : AppFrame {
                     UIString caption;
                     caption = "Open DML File"d;
                     FileDialog dlg = createFileDialog(caption);
-                    dlg.addFilter(FileFilterEntry(UIString("DML files"d), "*.dml"));
-                    dlg.addFilter(FileFilterEntry(UIString("All files"d), "*.*"));
+                    dlg.addFilter(FileFilterEntry(UIString.fromRaw("DML files"d), "*.dml"));
+                    dlg.addFilter(FileFilterEntry(UIString.fromRaw("All files"d), "*.*"));
                     dlg.dialogResult = delegate(Dialog dlg, const Action result) {
                         if (result.id == ACTION_OPEN.id) {
                             string filename = result.stringParam;
@@ -302,6 +305,29 @@ class EditFrame : AppFrame {
         HorizontalLayout hlayout = new HorizontalLayout();
         hlayout.layoutWidth = FILL_PARENT;
         hlayout.layoutHeight = FILL_PARENT;
+        WidgetsList widgetsList = new WidgetsList();
+        StringListWidget propList = new StringListWidget();
+        auto sla = new StringListAdapter();
+        foreach(const ref widget; getRegisteredWidgetsList())
+        {
+            auto propertyListAdapter = new StringListAdapter();
+            if ( auto meta = findWidgetMetadata(widget) )
+            {
+                foreach(prop; meta.properties)
+                {
+                    propertyListAdapter.add(UIString.fromRaw(prop.name ~ "   [" ~ to!string(prop.type) ~ "]" ));
+                    propListsAdapters[widget] = propertyListAdapter;
+                }
+            }
+            sla.add(UIString.fromRaw(widget));
+        }
+        widgetsList.adapter = sla;
+        auto leftPanel = new VerticalLayout();
+        leftPanel.addChild(new TextWidget().text("Widgets").backgroundColor(0x7F7F7F) );
+        leftPanel.addChild(widgetsList);
+        leftPanel.addChild(new TextWidget().text("Widget properties").backgroundColor(0x7F7F7F));
+        leftPanel.addChild(propList);
+        hlayout.addChild(leftPanel);
         _editor = new DMLSourceEdit();
         hlayout.addChild(_editor);
         _editor.text = SAMPLE_SOURCE_CODE;
@@ -327,6 +353,17 @@ class EditFrame : AppFrame {
             updatePreview();
             return true;
         };
+        widgetsList.itemClick = delegate (Widget source, int itemIndex){
+            propList.adapter = propListsAdapters[to!string(widgetsList.selectedItem)];
+            return true;
+        };
+        widgetsList.onItemDoubleClick = delegate (Widget source, int itemIndex) {
+            auto caret = _editor.caretPos;
+            auto widgetClassName = widgetsList.selectedItem;
+            EditOperation op = new EditOperation(EditAction.Replace, caret, widgetClassName);
+            _editor.content.performOperation(op, this);
+        };
+
         previewControls.addChild(cbFillHorizontal);
         previewControls.addChild(cbFillVertical);
         previewControls.addChild(cbHighlightBackground);
@@ -342,6 +379,22 @@ class EditFrame : AppFrame {
         return bodyWidget;
     }
 
+}
+
+alias onItemDoubleClickHandler = void delegate (Widget source, int itemIndex);
+
+class WidgetsList : StringListWidget
+{
+    onItemDoubleClickHandler onItemDoubleClick;
+
+    override bool onMouseEvent(MouseEvent event) {
+        bool result = super.onMouseEvent(event);
+        if (event.doubleClick) {
+            if (onItemDoubleClick !is null)
+                onItemDoubleClick(this, selectedItemIndex);
+        }
+        return result;
+    }
 }
 
 /// entry point for dlangui based application
