@@ -1373,9 +1373,9 @@ public:
         int lw = layoutWidth;
         // constant value support
         if (!(isPercentSize(lh) || isSpecialSize(lh)))
-            dy = lh;
+            dy = lh.toPixels();
         if (!(isPercentSize(lw) || isSpecialSize(lw)))
-            dx = lw;
+            dx = lw.toPixels();
         // apply min/max width and height constraints
         int minw = minWidth;
         int maxw = maxWidth;
