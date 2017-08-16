@@ -110,7 +110,6 @@ class LayoutItems {
         _maxSecondarySize = 0;
         _measureParentSize.x = parentWidth;
         _measureParentSize.y = parentHeight;
-        // bool
         bool hasPercentSizeWidget = false;
         size_t percenSizeWidgetIndex;
         // measure
@@ -133,8 +132,8 @@ class LayoutItems {
         }
         if (hasPercentSizeWidget) {
             LayoutItem * item = &_list[percenSizeWidgetIndex];
-            
-            item._measuredSize = to!int(_totalSize * ((1 / (1 - cast (double) (fromPercentSize(item._layoutSize, 100))/100)) - 1));
+            if (_totalSize > 0) 
+                item._measuredSize = to!int(_totalSize * ((1 / (1 - cast (double) (fromPercentSize(item._layoutSize, 100))/100)) - 1));
             _totalSize += item._measuredSize;
         }
         return _orientation == Orientation.Horizontal ? Point(_totalSize, _maxSecondarySize) : Point(_maxSecondarySize, _totalSize);
