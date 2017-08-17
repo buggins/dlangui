@@ -5,7 +5,7 @@ import dlangui.core.logger;
 import dlangui.core.collections;
 import std.string : empty, format, startsWith;
 import std.conv : to;
-import std.utf : toUTF32, toUTF8;
+import std.utf : toUTF32;
 
 interface IRCClientCallback {
     void onIRCConnect(IRCClient client);

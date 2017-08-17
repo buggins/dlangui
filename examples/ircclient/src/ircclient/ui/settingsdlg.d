@@ -6,7 +6,7 @@ import dlangui.widgets.widget;
 import dlangui.dml.parser;
 import ircclient.ui.frame;
 import ircclient.ui.settings;
-import std.utf;
+import std.utf : toUTF32;
 import std.conv : to;
 
 class SettingsDialog : Dialog {
@@ -14,7 +14,7 @@ class SettingsDialog : Dialog {
     IRCSettings _settings;
     bool _allowConnect;
     this(IRCFrame parent, IRCSettings settings, bool allowConnect) {
-        super(UIString("IRC Client Settings"d), parent.window, 
+        super(UIString.fromRaw("IRC Client Settings"d), parent.window, 
               DialogFlag.Modal | DialogFlag.Resizable | DialogFlag.Popup, 500, 400);
         _icon = "dlangui-logo1";
         _frame = parent;
@@ -81,18 +81,18 @@ class SettingsDialog : Dialog {
     }
 
     void controlsToSettings() {
-        _settings.host = std.utf.toUTF8(childById("edHost").text);
+        _settings.host = toUTF8(childById("edHost").text);
         try {
             _settings.port = cast(ushort)to!ulong(childById("edPort").text);
         } catch (Exception e) {
             // ignore
             _settings.port = 6667;
         }
-        _settings.nick = std.utf.toUTF8(childById("edNick").text);
-        _settings.alternateNick = std.utf.toUTF8(childById("edAlternateNick").text);
-        _settings.userName = std.utf.toUTF8(childById("edUsername").text);
-        _settings.userRealName = std.utf.toUTF8(childById("edRealName").text);
-        _settings.defChannel = std.utf.toUTF8(childById("edChannel").text);
+        _settings.nick = toUTF8(childById("edNick").text);
+        _settings.alternateNick = toUTF8(childById("edAlternateNick").text);
+        _settings.userName = toUTF8(childById("edUsername").text);
+        _settings.userRealName = toUTF8(childById("edRealName").text);
+        _settings.defChannel = toUTF8(childById("edChannel").text);
     }
 
     override void close(const Action action) {

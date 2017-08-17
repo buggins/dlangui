@@ -116,8 +116,8 @@ class IRCFrame : AppFrame, IRCClientCallback {
                         window.close();
                     return true;
                 case IRCActions.HelpAbout:
-                    window.showMessageBox(UIString("About DlangUI IRC Client"d), 
-                                          UIString("DLangUI IRC Client\n(C) Vadim Lopatin, 2015\nhttp://github.com/buggins/dlangui\nSimple IRC client"d));
+                    window.showMessageBox(UIString.fromRaw("About DlangUI IRC Client"d), 
+                                          UIString.fromRaw("DLangUI IRC Client\n(C) Vadim Lopatin, 2015\nhttp://github.com/buggins/dlangui\nSimple IRC client"d));
                     return true;
                 case IRCActions.EditPreferences:
                     showPreferences();
