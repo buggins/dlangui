@@ -24,6 +24,7 @@ import dlangui.widgets.scrollbar;
 import dlangui.widgets.layouts;
 import dlangui.core.signals;
 
+
 /** interface - slot for onAdapterChangeListener */
 interface OnAdapterChangeHandler {
     void onAdapterChange(ListAdapter source);
@@ -1369,6 +1370,11 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
 }
 
 class StringListWidget : ListWidget {
+    import std.conv : to;
+    import std.datetime : dto = to, StopWatch;
+    private dstring _searchString;
+    private StopWatch _stopWatch;
+
     this(string ID = null) {
         super(ID);
         styleId = STYLE_EDIT_BOX;
@@ -1434,6 +1440,73 @@ class StringListWidget : ListWidget {
             return "";
         return (cast(StringListAdapter)adapter).items.get(_selectedItemIndex);
     }
+
+    override bool onKeyEvent(KeyEvent event) {
+        if (itemCount == 0) return false;
+
+        // Accept user input and try to find a match in the list.
+        if (event.action == KeyAction.Text) {
+            if ( !_stopWatch.running) { _stopWatch.start; }
+
+            auto timePassed = _stopWatch.peek.dto!("seconds", float)(); // dtop is std.datetime.to
+
+            if (timePassed > 0.5) _searchString = ""d;
+            _searchString ~= to!dchar(event.text.toUTF8);
+
+            if ( selectClosestMatch(_searchString) ) {
+                invalidate();
+                return true;
+            }
+        }
+
+        return super.onKeyEvent(event);
+    }
+
+
+    private bool selectClosestMatch(dstring term) {
+        import std.uni : toLower;
+        if (term.length == 0) return false;
+        auto myItems = (cast(StringListAdapter)adapter).items;
+
+        // Perfect match or best match
+        int[] indexes;
+        foreach(int itemIndex; 0 .. myItems.length) {
+            dstring item = myItems.get(itemIndex);
+
+            if (item == term) {
+                // Perfect match
+                indexes ~= itemIndex;
+                break;
+            } else {
+                // Term approximate to something
+                bool addItem = true;
+                foreach(int termIndex; 0 .. cast(int)term.length) {
+                    if (termIndex < item.length) {
+                        if ( toLower(term[termIndex]) != toLower(item[termIndex]) ) {
+                            addItem = false;
+                            break;
+                        }
+                    }
+                }
+
+                if (addItem) { indexes ~= itemIndex; }
+
+            }
+        }
+
+        // Return best match
+        if (indexes.length > 0) {
+            selectItem(indexes[0]);
+            itemSelected(this, indexes[0]);
+            return true;
+        }
+
+        return false; // Did not find term
+
+    }
+
+
+
 }
 
 //import dlangui.widgets.metadata;
