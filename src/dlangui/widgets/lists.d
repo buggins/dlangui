@@ -1452,6 +1452,7 @@ class StringListWidget : ListWidget {
 
             if (timePassed > 0.5) _searchString = ""d;
             _searchString ~= to!dchar(event.text.toUTF8);
+            _stopWatch.reset;
 
             if ( selectClosestMatch(_searchString) ) {
                 invalidate();
