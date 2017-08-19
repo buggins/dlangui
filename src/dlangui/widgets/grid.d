@@ -1804,6 +1804,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             new Action(GridActions.ActivateCell, KeyCode.RETURN, 0),
         ]);
         focusable = true;
+        resize(1,1);
     }
 }
 
