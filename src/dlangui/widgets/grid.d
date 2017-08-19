@@ -1601,16 +1601,18 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         }
         
         // width:
-        for (int i = 0 ; i < min(_cols, _minVisibleCols) ; i++)
+        int firstVisibleCol = (showRowHeaders) ? 0 : _headerCols;
+        for (int i = firstVisibleCol ; i < min(_cols, _minVisibleCols + firstVisibleCol) ; i++)
             sz.x += _colWidths[i];
-        
+
         // height
-        for (int i = 0 ; i < min(_rows, _minVisibleRows) ; i++)
+        int firstVisibleRow = (showColHeaders) ? 0 : _headerRows;
+        for (int i = firstVisibleRow ; i < min(_rows, _minVisibleRows + firstVisibleRow) ; i++)
             sz.y += _rowHeights[i];
             
         if (_rows<_minVisibleRows)
             sz.y += (_minVisibleRows - _rows) * _rowHeights[_rows-1];
-                                
+
         return sz;
     }
 
