@@ -623,6 +623,8 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
         _fileList = new StringGridWidget("files");
         _fileList.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+        _fileList.fullColumnOnLeft(false);
+        _fileList.fullRowOnTop(false);
         _fileList.resize(4, 3);
         _fileList.setColTitle(0, " "d);
         _fileList.setColTitle(1, UIString.fromId("COL_NAME"c).value);
