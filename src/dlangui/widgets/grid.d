@@ -1174,9 +1174,39 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         return super.onMouseEvent(event);
     }
 
+    protected bool _fullColumnOnLeft = true;
+    /// Extends scroll area to show full column at left when scrolled to rightmost column
+    @property bool fullColumnOnLeft() { return _fullColumnOnLeft; }
+    /// Extends scroll area to show full column at left when scrolled to rightmost column
+    @property GridWidgetBase fullColumnOnLeft(bool newFullColumnOnLeft) { 
+        if (_fullColumnOnLeft != newFullColumnOnLeft) {
+            _fullColumnOnLeft = newFullColumnOnLeft;
+            updateScrollBars();
+        }
+        return this;
+    }
+    
+    protected bool _fullRowOnTop = true;
+    /// Extends scroll area to show full row at top when scrolled to end row
+    @property bool fullRowOnTop() { return _fullColumnOnLeft; }
+    /// Extends scroll area to show full row at top when scrolled to end row
+    @property GridWidgetBase fullRowOnTop(bool newFullRowOnTop) { 
+        if (_fullRowOnTop != newFullRowOnTop) {
+            _fullRowOnTop = newFullRowOnTop;
+            updateScrollBars();
+        }
+        return this;
+    }
 
     /// calculate scrollable area info
     protected void calcScrollableAreaPos() {
+        // don't calc if client rect was not set
+        if (_clientRect.size.x == 0 && _clientRect.size.y == 0) {
+            _scrollX = 0;
+            _scrollY = 0;
+            return;
+        }
+        
         if (_scrollX < 0)
             _scrollX = 0;
         if (_scrollY < 0)
@@ -1196,22 +1226,23 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             _fullScrollableArea.right = clientPixels.x;
         if (_fullScrollableArea.bottom < clientPixels.y)
             _fullScrollableArea.bottom = clientPixels.y;
-
+        
         // extending scroll area if necessary
-        int maxscrollx = _fullScrollableArea.right - scrollableClient.x;
-        int col = colByAbsoluteX(maxscrollx);
-        int maxscrolly = _fullScrollableArea.bottom - scrollableClient.y;
-        int row = rowByAbsoluteY(maxscrolly);
-        Rect rc = cellRectNoScroll(col, row);
+        if (_fullRowOnTop || _fullColumnOnLeft) {
+            int maxscrollx = _fullScrollableArea.right - scrollableClient.x;
+            int col = colByAbsoluteX(maxscrollx);
+            int maxscrolly = _fullScrollableArea.bottom - scrollableClient.y;
+            int row = rowByAbsoluteY(maxscrolly);
+            Rect rc = cellRectNoScroll(col, row);
 
-        // extend scroll area to show full column at left when scrolled to rightmost column
-        if (maxscrollx >= nonscrollPixels.x && rc.left < maxscrollx) {
-            _fullScrollableArea.right += rc.right - maxscrollx;
-        }
+            // extend scroll area to show full column at left when scrolled to rightmost column
+            if (_fullColumnOnLeft && maxscrollx >= nonscrollPixels.x && rc.left < maxscrollx)
+                _fullScrollableArea.right += rc.right - maxscrollx;
 
-        // extend scroll area to show full row at top when scrolled to end row
-        if (maxscrolly >= nonscrollPixels.y && rc.top < maxscrolly) {
-            _fullScrollableArea.bottom += rc.bottom - maxscrolly;
+
+            // extend scroll area to show full row at top when scrolled to end row
+            if (_fullRowOnTop && maxscrolly >= nonscrollPixels.y && rc.top < maxscrolly)
+                _fullScrollableArea.bottom += rc.bottom - maxscrolly;
         }
 
         // scrollable area
@@ -1659,6 +1690,8 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     }
 
     protected int measureColWidth(int x) {
+        if (!showRowHeaders && x < _headerCols)
+            return 0;
         int m = 0;
         for (int i = 0; i < _rows; i++) {
             Point sz = measureCell(x - _headerCols, i - _headerRows);
