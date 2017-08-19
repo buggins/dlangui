@@ -418,8 +418,10 @@ class ScrollBar : AbstractSlider, OnClickHandler {
             _btnBack.setState(State.Enabled);
             _btnForward.setState(State.Enabled);
             _indicator.visibility = Visibility.Visible;
-            _pageUp.visibility = Visibility.Visible;
-            _pageDown.visibility = Visibility.Visible;
+            if (_position > _minValue)
+                _pageUp.visibility = Visibility.Visible;
+            if (_position < _maxValue)
+                _pageDown.visibility = Visibility.Visible;
         } else {
             _btnBack.resetState(State.Enabled);
             _btnForward.resetState(State.Enabled);
