@@ -945,7 +945,34 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
     
     /// sets minimum size for the list, override to change
     Point minimumVisibleContentSize() {
-        return Point(100, 100);
+        if (_orientation == Orientation.Vertical)
+            return Point(measureMinChildrenSize().x, 100);
+        else
+            return Point(100, measureMinChildrenSize().y);
+    }
+    
+    protected Point measureMinChildrenSize() {
+        // measure children
+        Point sz;
+        for (int i = 0; i < itemCount; i++) {
+            Widget w = itemWidget(i);
+            if (w is null || w.visibility == Visibility.Gone) 
+                continue;
+
+            w.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+            if (_orientation == Orientation.Vertical) {
+                // Vertical
+                if (sz.x < w.measuredWidth)
+                    sz.x = w.measuredWidth;
+                sz.y += w.measuredHeight;
+            } else {
+                // Horizontal
+                if (sz.y < w.measuredHeight)
+                    sz.y = w.measuredHeight;
+                sz.x += w.measuredWidth;
+            }
+        }
+        return sz;
     }
 
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
