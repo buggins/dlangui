@@ -965,7 +965,15 @@ void main()
 
         //==========================================================================
 
+        VerticalLayout gridContent = new VerticalLayout("GRID_CONTENT");
+        gridContent.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+        HorizontalLayout gridSettings = new HorizontalLayout();
         StringGridWidget grid = new StringGridWidget("GRID1");
+        
+        gridSettings.addChild((new CheckBox("fullColumnOnLeft", "fullColumnOnLeft"d)).checked(grid.fullColumnOnLeft).tooltipText("Extends scroll area to show full column at left when scrolled to rightmost column"d).addOnCheckChangeListener(delegate(Widget, bool checked) { grid.fullColumnOnLeft = checked; return true;}));
+        gridSettings.addChild((new CheckBox("fullRowOnTop", "fullRowOnTop"d)).checked(grid.fullRowOnTop).tooltipText("Extends scroll area to show full row at top when scrolled to end row"d).addOnCheckChangeListener(delegate(Widget, bool checked) { grid.fullRowOnTop = checked; return true;}));
+        gridContent.addChild(gridSettings);
+       
         grid.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
         grid.showColHeaders = true;
         grid.showRowHeaders = true;
@@ -993,7 +1001,8 @@ void main()
             grid.setColTitle(x, res);
         }
         grid.autoFit();
-        tabs.addTab(grid, "Grid"d);
+        gridContent.addChild(grid);
+        tabs.addTab(gridContent, "Grid"d);
 
         //==========================================================================
         // Scroll view example
