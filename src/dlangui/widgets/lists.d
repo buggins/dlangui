@@ -1031,7 +1031,6 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
                 sz.y += w.measuredHeight;
             } else {
                 // Horizontal
-                w.measure(pwidth, pheight);
                 if (sz.y < w.measuredHeight)
                     sz.y = w.measuredHeight;
                 sz.x += w.measuredWidth;
@@ -1172,15 +1171,9 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
         if (_lastMeasureWidth != rc.width || _lastMeasureHeight != rc.height)
             measure(parentrc.width, parentrc.height);
 
-        // layout scrollbar
+        // hide scrollbar or update rc for scrollbar
+        Rect sbrect = rc;
         if (_needScrollbar) {
-            _scrollbar.visibility = Visibility.Visible;
-            Rect sbrect = rc;
-            if (_orientation == Orientation.Vertical)
-                sbrect.left = sbrect.right - _sbsz.x;
-            else
-                sbrect.top = sbrect.bottom - _sbsz.y;
-            _scrollbar.layout(sbrect);
             rc.right -= _sbsz.x;
             rc.bottom -= _sbsz.y;
         } else {
@@ -1191,6 +1184,16 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
 
         // calc item rectangles
         updateItemPositions();
+        
+        // layout scrollbar - must be under updateItemPositions()
+        if (_needScrollbar) {
+            _scrollbar.visibility = Visibility.Visible;
+            if (_orientation == Orientation.Vertical)
+                sbrect.left = sbrect.right - _sbsz.x;
+            else
+                sbrect.top = sbrect.bottom - _sbsz.y;
+            _scrollbar.layout(sbrect);
+        }
 
         if (_makeSelectionVisibleOnNextLayout) {
             makeSelectionVisible();
