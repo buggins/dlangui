@@ -470,16 +470,16 @@ class ScrollBar : AbstractSlider, OnClickHandler {
             if (_scrollArea.top < irc.top) {
                 r = _scrollArea;
                 r.bottom = irc.top;
-                _pageUp.layout(r);
                 _pageUp.visibility = Visibility.Visible;
+                _pageUp.layout(r);
             } else {
                 _pageUp.visibility = Visibility.Invisible;
             }
             if (_scrollArea.bottom > irc.bottom) {
                 r = _scrollArea;
                 r.top = irc.bottom;
-                _pageDown.layout(r);
                 _pageDown.visibility = Visibility.Visible;
+                _pageDown.layout(r);
             } else {
                 _pageDown.visibility = Visibility.Invisible;
             }
@@ -488,16 +488,16 @@ class ScrollBar : AbstractSlider, OnClickHandler {
             if (_scrollArea.left < irc.left) {
                 r = _scrollArea;
                 r.right = irc.left;
-                _pageUp.layout(r);
                 _pageUp.visibility = Visibility.Visible;
+                _pageUp.layout(r);
             } else {
                 _pageUp.visibility = Visibility.Invisible;
             }
             if (_scrollArea.right > irc.right) {
                 r = _scrollArea;
                 r.left = irc.right;
-                _pageDown.layout(r);
                 _pageDown.visibility = Visibility.Visible;
+                _pageDown.layout(r);
             } else {
                 _pageDown.visibility = Visibility.Invisible;
             }
