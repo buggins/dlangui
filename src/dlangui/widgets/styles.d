@@ -342,6 +342,7 @@ protected:
 
 public:
     void onThemeChanged() {
+        _font.clear();
         _backgroundDrawable.clear();
         foreach(s; _substates)
             s.onThemeChanged();
@@ -458,6 +459,9 @@ public:
         return this;
     }
 
+    void clearCachedObjects() {
+        onThemeChanged();
+    }
 
     //===================================================
     // font properties
@@ -701,32 +705,37 @@ public:
     }
 
     @property Style fontFace(string face) {
+        if (_fontFace != face)
+            clearCachedObjects();
         _fontFace = face;
-        _font.clear();
         return this;
     }
 
     @property Style fontFamily(FontFamily family) {
+        if (_fontFamily != family)
+            clearCachedObjects();
         _fontFamily = family;
-        _font.clear();
         return this;
     }
 
     @property Style fontStyle(ubyte style) {
+        if (_fontStyle != style)
+            clearCachedObjects();
         _fontStyle = style;
-        _font.clear();
         return this;
     }
 
     @property Style fontWeight(ushort weight) {
+        if (_fontWeight != weight)
+            clearCachedObjects();
         _fontWeight = weight;
-        _font.clear();
         return this;
     }
 
     @property Style fontSize(int size) {
+        if (_fontSize != size)
+            clearCachedObjects();
         _fontSize = size;
-        _font.clear();
         return this;
     }
 
