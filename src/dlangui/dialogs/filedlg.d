@@ -264,9 +264,10 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         try {
             _entries = listDirectory(dir, attrFilter, selectedFilter());
         } catch(Exception e) {
-            import dlangui.dialogs.msgbox;
-            auto msgBox = new MessageBox(UIString.fromId("MESSAGE_ERROR"c), UIString.fromRaw(e.msg.toUTF32), window());
-            msgBox.show();
+            Log.e("Cannot list directory " ~ dir, e);
+            //import dlangui.dialogs.msgbox;
+            //auto msgBox = new MessageBox(UIString.fromId("MESSAGE_ERROR"c), UIString.fromRaw(e.msg.toUTF32), window());
+            //msgBox.show();
             return false;
         }
         _fileList.rows = 0;
@@ -664,8 +665,10 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             onItemSelected(row);
         };
 
-        if (_path.empty) {
+        if (_path.empty || !_path.isDir) {
             _path = currentDir;
+            if (!_path.isDir)
+                _path = homePath;
         }
         openDirectory(_path, _filename);
         _fileList.layoutHeight = FILL_PARENT;
