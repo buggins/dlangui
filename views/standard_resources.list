@@ -200,6 +200,9 @@ res/mdpi/folder-blue.png
 res/mdpi/folder-bookmark.png
 res/mdpi/folder-network.png
 res/mdpi/folder.png
+res/mdpi/list_item_focused.9.png
+res/mdpi/list_item_hovered.9.png
+res/mdpi/list_item_selected.9.png
 res/mdpi/media-flash-sd-mmc.png
 res/mdpi/popup_window_background.9.png
 res/mdpi/popup_window_background_dark.9.png
