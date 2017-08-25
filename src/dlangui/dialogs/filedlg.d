@@ -268,7 +268,8 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             //import dlangui.dialogs.msgbox;
             //auto msgBox = new MessageBox(UIString.fromId("MESSAGE_ERROR"c), UIString.fromRaw(e.msg.toUTF32), window());
             //msgBox.show();
-            return false;
+            //return false;
+            // show empty dir if failed to read
         }
         _fileList.rows = 0;
         _path = dir;
@@ -665,9 +666,9 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             onItemSelected(row);
         };
 
-        if (_path.empty || !_path.isDir) {
+        if (_path.empty || !_path.exists || !_path.isDir) {
             _path = currentDir;
-            if (!_path.isDir)
+            if (!_path.exists || !_path.isDir)
                 _path = homePath;
         }
         openDirectory(_path, _filename);
