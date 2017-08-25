@@ -603,12 +603,12 @@ class TreeItemWidget : HorizontalLayout {
             _icon = new ImageWidget("icon", _item.iconRes);
             _icon.styleId = STYLE_TREE_ITEM_ICON;
             _icon.setState(State.Parent);
+            _icon.padding(Rect(0, 0, BACKEND_GUI ? 5 : 0, 0));
             _body.addChild(_icon);
         }
         _label = new TextWidget("label", _item.text);
         _label.styleId = STYLE_TREE_ITEM_LABEL;
         _label.setState(State.Parent);
-        _label.padding(Rect(BACKEND_GUI ? 5 : 0, 0, 0, 0));
         _body.addChild(_label);
         // append children
         addChild(_tab);
