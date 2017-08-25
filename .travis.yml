@@ -39,6 +39,8 @@ addons:
       - gcc-multilib
       - libx11-dev
       - libx11-dev:i386
+      - zlib1g-dev
+      - zlib1g-dev:i386
 
 script:
   - dub test --compiler=${DC} --arch=${ARCH} --config=${CONFIG}
