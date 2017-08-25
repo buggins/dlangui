@@ -201,8 +201,11 @@ res/mdpi/folder-bookmark.png
 res/mdpi/folder-network.png
 res/mdpi/folder.png
 res/mdpi/list_item_focused.9.png
+res/mdpi/list_item_focused_dark.9.png
 res/mdpi/list_item_hovered.9.png
+res/mdpi/list_item_hovered_dark.9.png
 res/mdpi/list_item_selected.9.png
+res/mdpi/list_item_selected_dark.9.png
 res/mdpi/media-flash-sd-mmc.png
 res/mdpi/popup_window_background.9.png
 res/mdpi/popup_window_background_dark.9.png
@@ -267,9 +270,13 @@ res/popup_menu_background_normal_dark.9.png
 res/scrollbar_btn_background.xml
 res/scrollbar_btn_background_dark.xml
 res/scrollbar_btn_background_disabled.9.png
+res/scrollbar_btn_background_disabled_dark.9.png
 res/scrollbar_btn_background_hover.9.png
+res/scrollbar_btn_background_hover_dark.9.png
 res/scrollbar_btn_background_normal.9.png
+res/scrollbar_btn_background_normal_dark.9.png
 res/scrollbar_btn_background_pressed.9.png
+res/scrollbar_btn_background_pressed_dark.9.png
 res/scrollbar_btn_down.png
 res/scrollbar_btn_down_dark.png
 res/scrollbar_btn_left.png

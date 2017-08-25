@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android" >
   <item
-    android:drawable="btn_disabled_dark"
+    android:drawable="list_item_selected_dark"
     android:state_enabled="false"
     android:state_focused="true" />
   <item
-    android:drawable="btn_hover_dark"
+    android:drawable="list_item_focused_dark"
     android:state_focused="true" />
   <item
-    android:drawable="btn_normal_dark"
+    android:drawable="list_item_selected_dark"
     android:state_selected="true" />
   <item
-    android:drawable="#E04040FF"
+    android:drawable="list_item_hovered_dark"
     android:state_hovered="true" />
   <item
     android:drawable="@null" />
