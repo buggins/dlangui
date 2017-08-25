@@ -99,6 +99,10 @@
     <style id="SCROLLBAR"
         backgroundColor="#C0808080"
         />
+    <style id="SCROLLBAR_BUTTON"
+        backgroundImageId="scrollbar_btn_background_dark"
+        align="Center"
+        />
     <style id="SLIDER"
         backgroundImageId="slider_background_dark"
         align="Center"
