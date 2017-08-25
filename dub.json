@@ -16,6 +16,8 @@
     "importPaths": [
         "3rdparty", "src"
     ],
+
+    "libs-linux": ["z"],
  
     "stringImportPaths": [
         "views",
