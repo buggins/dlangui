@@ -460,6 +460,15 @@ class MenuWidgetBase : ListWidget {
         menuItems = item;
     }
 
+    /// handle theme change: e.g. reload some themed resources
+    override void onThemeChanged() {
+        super.onThemeChanged();
+        if (_openedMenu)
+            _openedMenu.onThemeChanged();
+        if (_openedPopup)
+            _openedPopup.onThemeChanged();
+    }
+
     @property void menuItems(MenuItem item) {
         if (_item) {
             destroy(_item);

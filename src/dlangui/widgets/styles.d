@@ -986,6 +986,13 @@ class Theme : Style {
         _byId.destroy();
     }
 
+    override void onThemeChanged() {
+        super.onThemeChanged();
+        foreach(key, value; _byId) {
+            value.onThemeChanged();
+        }
+    }
+
     /// create wrapper style which will have currentTheme.get(id) as parent instead of fixed parent - to modify some base style properties in widget
     Style modifyStyle(string id) {
         Style style = new Style(null, null);
