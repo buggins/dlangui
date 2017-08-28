@@ -320,12 +320,22 @@ class ScrollBar : AbstractSlider, OnClickHandler {
     override @property AbstractSlider orientation(Orientation value) { 
         if (_orientation != value) {
             _orientation = value;
-            _btnBack.drawableId = style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_BUTTON_UP : ATTR_SCROLLBAR_BUTTON_LEFT);
-            _btnForward.drawableId = style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_BUTTON_DOWN : ATTR_SCROLLBAR_BUTTON_RIGHT);
-            _indicator.drawableId = style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_INDICATOR_VERTICAL : ATTR_SCROLLBAR_INDICATOR_HORIZONTAL);
+            updateDrawableIds();
             requestLayout();
         }
         return this; 
+    }
+
+    void updateDrawableIds() {
+        _btnBack.drawableId = style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_BUTTON_UP : ATTR_SCROLLBAR_BUTTON_LEFT);
+        _btnForward.drawableId = style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_BUTTON_DOWN : ATTR_SCROLLBAR_BUTTON_RIGHT);
+        _indicator.drawableId = style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_INDICATOR_VERTICAL : ATTR_SCROLLBAR_INDICATOR_HORIZONTAL);
+    }
+
+    /// handle theme change: e.g. reload some themed resources
+    override void onThemeChanged() {
+        super.onThemeChanged();
+        updateDrawableIds();
     }
 
     /// set string property value, for ML loaders

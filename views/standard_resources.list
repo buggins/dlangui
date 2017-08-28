@@ -21,6 +21,7 @@ res/btn_radio_dark.xml
 res/btn_radio_background.xml
 res/btn_radio_background_dark.xml
 res/close.png
+res/close_dark.png
 res/combobox_background.xml
 res/combobox_background_dark.xml
 res/editbox_background.xml
@@ -284,6 +285,7 @@ res/scrollbar_btn_left_dark.png
 res/scrollbar_btn_right.png
 res/scrollbar_btn_right_dark.png
 res/scrollbar_btn_transparent_background.xml
+res/scrollbar_btn_transparent_background_dark.xml
 res/scrollbar_btn_up.png
 res/scrollbar_btn_up_dark.png
 res/scrollbar_indicator_horizontal.png
@@ -308,6 +310,7 @@ res/tab_btn_up_normal_dark.9.png
 res/tab_btn_up_selected.9.png
 res/tab_btn_up_selected_dark.9.png
 res/tab_more.png
+res/tab_more_dark.png
 res/tab_down_background_dark.xml
 res/tab_down_background_theme_dark.xml
 res/tab_up_background.9.png

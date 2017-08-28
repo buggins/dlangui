@@ -295,6 +295,13 @@ struct DrawableAttributeList {
             set(key, value.drawableId);
         }
     }
+    void onThemeChanged() {
+        foreach(key, ref value; _customDrawables) {
+            if (value) {
+                value.onThemeChanged();
+            }
+        }
+    }
 }
 
 /// style properties
@@ -348,7 +355,7 @@ public:
             s.onThemeChanged();
         foreach(s; _children)
             s.onThemeChanged();
-        _customDrawables.clear();
+        _customDrawables.onThemeChanged();
     }
 
     @property const(Theme) theme() const {
@@ -1662,6 +1669,12 @@ public:
     void clear() {
         _drawable.clear();
         _initialized = false;
+    }
+    void onThemeChanged() {
+        if (!_drawableId) {
+            _drawable.clear();
+            _initialized = false;
+        }
     }
 }
 
