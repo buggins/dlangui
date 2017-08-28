@@ -566,7 +566,7 @@ class TreeItemWidget : HorizontalLayout {
             level--;
         if (level < 0)
             level = 0;
-        int w = level * style.font.size * 2;
+        int w = level * style.font.size * 3 / 4;
         _tab.minWidth = w;
         _tab.maxWidth = w;
         if (_item.canCollapse()) {
