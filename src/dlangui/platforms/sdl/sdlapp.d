@@ -64,7 +64,7 @@ private derelict.util.exception.ShouldThrow missingSymFunc( string symName ) {
                 "SDL_RemoveTimer", "SDL_RemoveTimer", "SDL_PushEvent", 
                 "SDL_RegisterEvents", "SDL_WaitEvent", "SDL_StartTextInput", 
                 "SDL_Quit", "SDL_HasClipboardText", "SDL_GetClipboardText", 
-                "SDL_free", "SDL_SetClipboardText", "SDL_Init"]) {
+                "SDL_free", "SDL_SetClipboardText", "SDL_Init", "SDL_GetNumVideoDisplays"]) {//"SDL_GetDisplayDPI"
         if (symName.equal(s)) // Symbol is used
             return derelict.util.exception.ShouldThrow.Yes;
     }
@@ -1198,7 +1198,7 @@ class SDLPlatform : Platform {
         }
         SDLWindow res = new SDLWindow(this, windowCaption, parent, flags, newwidth, newheight);
         _windowMap[res.windowId] = res;
-        if (oldDPI != SCREEN_DPI) {
+        if (sdlUpdateScreenDpi() || oldDPI != SCREEN_DPI) {
             version(Windows) {
                 newwidth = pointsToPixels(width);
                 newheight = pointsToPixels(height);
@@ -1499,6 +1499,8 @@ version (Windows) {
                 SCREEN_DPI = GetDeviceCaps(dc, LOGPIXELSY);
                 DeleteObject(dc);
 
+                Log.i("Win32 API SCREEN_DPI detected as ", SCREEN_DPI);
+
                 //SCREEN_DPI = 96 * 3 / 2;
 
                 result = myWinMain(hInstance, hPrevInstance, lpCmdLine, nCmdShow);
@@ -1564,6 +1566,30 @@ version (Windows) {
     }
 }
 
+/// try to get screen resolution and update SCREEN_DPI; returns true if SCREEN_DPI is changed by this check
+bool sdlUpdateScreenDpi(int displayIndex = 0) {
+    if (SDL_GetDisplayDPI is null) {
+        Log.w("SDL_GetDisplayDPI is not found: cannot detect screen DPI");
+        return false;
+    }
+    int numDisplays = SDL_GetNumVideoDisplays();
+    if (numDisplays < displayIndex + 1)
+        return false;
+    float hdpi = 0;
+    if (SDL_GetDisplayDPI(0, null, &hdpi, null))
+        return false;
+    int idpi = cast(int)hdpi;
+    if (idpi < 32 || idpi > 2000)
+        return false;
+    Log.i("sdlUpdateScreenDpi: SCREEN_DPI=", idpi);
+    if (SCREEN_DPI != idpi) {
+        Log.i("sdlUpdateScreenDpi: SCREEN_DPI is changed from ", SCREEN_DPI, " to ", idpi);
+        SCREEN_DPI = idpi;
+        return true;
+    }
+    return false;
+}
+
 int sdlmain(string[] args) {
 
     initLogs();
@@ -1582,8 +1608,6 @@ int sdlmain(string[] args) {
     version (Windows) {
         DOUBLE_CLICK_THRESHOLD_MS = GetDoubleClickTime();
     }
-
-    currentTheme = createDefaultTheme();
 
     try {
         DerelictSDL2.missingSymbolCallback = &missingSymFunc;
@@ -1630,6 +1654,11 @@ int sdlmain(string[] args) {
     auto sdl = new SDLPlatform;
 
     Platform.setInstance(sdl);
+
+    currentTheme = createDefaultTheme();
+
+    sdlUpdateScreenDpi(0);
+
     Platform.instance.uiTheme = "theme_default";
 
     int res = 0;
