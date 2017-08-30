@@ -273,6 +273,16 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         return sz;
     }
 
+    /// calculate full content size in pixels including widget borders / margins
+    Point fullContentSizeWithBorders() {
+        Point sz = fullContentSize;
+        Rect paddingrc = padding;
+        Rect marginsrc = margins;
+        sz.x += paddingrc.left + paddingrc.right + marginsrc.left + marginsrc.right;
+        sz.y += paddingrc.top + paddingrc.bottom + marginsrc.top + marginsrc.bottom;
+        return sz;
+    }
+
     // override to set minimum scrollwidget size - default 100x100
     Point minimumVisibleContentSize() {
         return Point(100,100);
