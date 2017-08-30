@@ -58,8 +58,8 @@ enum JNI_OK = 0;
 enum JNI_ERR = -1;
 enum JNI_EDETACHED = -2;
 enum JNI_EVERSION = -3;
-enum JNI_COMMIT = 1; 
-enum JNI_ABORT = 2; 
+enum JNI_COMMIT = 1;
+enum JNI_ABORT = 2;
 
 struct JNINativeMethod
 {

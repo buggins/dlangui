@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2015 Timur Gafarov 
+Copyright (c) 2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -60,7 +60,7 @@ struct DynamicArray(T, size_t chunkSize = 32)
         else
         {
             reallocateArray(
-                dynamicStorage, 
+                dynamicStorage,
                 dynamicStorage.length + chunkSize);
         }
         numChunks++;
@@ -103,10 +103,10 @@ struct DynamicArray(T, size_t chunkSize = 32)
         else
         {
             if (pos == dynamicStorage.length)
-                addChunk(); 
+                addChunk();
 
             dynamicStorage[pos] = c;
-            pos++;          
+            pos++;
         }
     }
 
@@ -152,12 +152,12 @@ struct DynamicArray(T, size_t chunkSize = 32)
             pos -= n;
             return n;
         }
-        else 
+        else
         {
             n = pos;
             pos = 0;
             return n;
-        }   
+        }
     }
 
     uint removeLeft(uint n)

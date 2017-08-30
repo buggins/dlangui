@@ -71,14 +71,14 @@ class Material : RefCountedObject {
     }
     /// set as effect instance
     @property Material effect(EffectRef e) {
-        _effect = e; 
+        _effect = e;
         return this;
     }
     /// set as effect id
     @property Material effect(EffectId effectId) {
         if (_effectId == effectId)
             return this; // no change
-        _effectId = effectId; 
+        _effectId = effectId;
         _autoEffectId = EffectId(_effectId, _autoEffectParams);
         _effect.clear();
         return this;
@@ -93,19 +93,19 @@ class Material : RefCountedObject {
         return this;
     }
 
-    @property TextureRef texture() { 
+    @property TextureRef texture() {
         if (_texture.isNull && _textureId.length) {
             _texture = GLTextureCache.instance.get(_textureId);
         }
         return _texture;
     }
     /// set texture
-    @property Material texture(TextureRef e) { 
-        _texture = e; 
+    @property Material texture(TextureRef e) {
+        _texture = e;
         return this;
     }
     /// set texture from resourceId
-    @property Material texture(string resourceId) { 
+    @property Material texture(string resourceId) {
         if (_textureId == resourceId)
             return this; // no change
         _texture.clear();
@@ -116,19 +116,19 @@ class Material : RefCountedObject {
     @property Material textureLinear(bool v) { _textureLinear = v; return this; }
 
 
-    @property TextureRef bumpTexture() { 
+    @property TextureRef bumpTexture() {
         if (_bumpTexture.isNull && _bumpTextureId.length) {
             _bumpTexture = GLTextureCache.instance.get(_bumpTextureId);
         }
         return _bumpTexture;
     }
     /// set texture
-    @property Material bumpTexture(TextureRef e) { 
-        _bumpTexture = e; 
+    @property Material bumpTexture(TextureRef e) {
+        _bumpTexture = e;
         return this;
     }
     /// set texture from resourceId
-    @property Material bumpTexture(string resourceId) { 
+    @property Material bumpTexture(string resourceId) {
         if (_bumpTextureId == resourceId)
             return this; // no change
         _bumpTexture.clear();

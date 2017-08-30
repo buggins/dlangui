@@ -39,7 +39,7 @@ string[] getRegisteredWidgetsList()
 }
 
 WidgetMetadataDef findWidgetMetadata(string name) {
-    if (auto p = name in _registeredWidgets) 
+    if (auto p = name in _registeredWidgets)
         return *p;
     return null;
 }
@@ -56,7 +56,7 @@ WidgetSignalMetadata[] getSignalList(alias T)() {
             static if (__traits(getProtection, __traits(getMember, T, m)) == "public") {
                 static if (__traits(compiles, __traits(getMember, T, m).params_t ) && __traits(compiles, __traits(getMember, T, m).return_t)) {
                     alias ti = typeof(__traits(getMember, T, m));
-                    res ~= WidgetSignalMetadata(m, 
+                    res ~= WidgetSignalMetadata(m,
                                                 __traits(getMember, T, m).return_t.stringof ~ __traits(getMember, T, m).params_t.stringof,
                                                 typeid(__traits(getMember, T, m).return_t),
                                                 typeid(__traits(getMember, T, m).params_t));
@@ -93,7 +93,7 @@ string generatePropertiesMetadata(alias T)() {
             static if (__traits(getProtection, __traits(getMember, T, m)) == "public") {
                 static if (isFunction!(__traits(getMember, T, m))) {
                     immutable int fnArity = arity!(__traits(getMember, T, m));
-                    static if (fnArity == 0 || fnArity == 1) { 
+                    static if (fnArity == 0 || fnArity == 1) {
                         // TODO: filter out templates, signals and such
                         static if ([__traits(getFunctionAttributes, __traits(getMember, T, m))[]].canFind("@property")) {
                             alias ret = ReturnType!(__traits(getMember, T, m));
@@ -136,7 +136,7 @@ string generateMetadataClass(alias t)() {
         "        return \"" ~ moduleName!t ~ "." ~ t.stringof ~ "\";\n" ~
         "    }\n" ~
         "    override WidgetPropertyMetadata[] properties() {" ~
-        "        return " ~ generatePropertiesMetadata!t ~ ";\n" ~ 
+        "        return " ~ generatePropertiesMetadata!t ~ ";\n" ~
         "    }\n" ~
         "}\n";
 }

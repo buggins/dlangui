@@ -68,7 +68,7 @@ ColorDrawBuf loadImage(string filename) {
 /// load and decode image from input stream to ColorDrawBuf, returns null if loading or decoding is failed
 ColorDrawBuf loadImage(immutable ubyte[] data, string filename) {
     Log.d("Loading image from file " ~ filename);
-    
+
     import std.algorithm : endsWith;
     if (filename.endsWith(".xpm")) {
         import dlangui.graphics.xpm.reader : parseXPM;
@@ -81,7 +81,7 @@ ColorDrawBuf loadImage(immutable ubyte[] data, string filename) {
             return null;
         }
     }
-    
+
     version (USE_DEIMAGE) {
         try {
             Image image = imageFromData(extension(filename)[1 ..$], cast(ubyte[])data); //imageFromFile(filename);

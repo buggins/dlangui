@@ -17,7 +17,7 @@ import std.c.linux.X11.xcb.xcb;
 
 const int XCB_XEVIE_MAJOR_VERSION =1;
 const int XCB_XEVIE_MINOR_VERSION =0;
-  
+
 extern(C) extern xcb_extension_t xcb_xevie_id;
 
 /**
@@ -205,14 +205,14 @@ struct xcb_xevie_select_input_reply_t {
 /*****************************************************************************
  **
  ** xcb_xevie_query_version_cookie_t xcb_xevie_query_version
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param ushort            client_major_version
  ** @param ushort            client_minor_version
  ** @returns xcb_xevie_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xevie_query_version_cookie_t
 xcb_xevie_query_version (xcb_connection_t *c  /**< */,
                          ushort            client_major_version  /**< */,
@@ -222,14 +222,14 @@ xcb_xevie_query_version (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xevie_query_version_cookie_t xcb_xevie_query_version_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param ushort            client_major_version
  ** @param ushort            client_minor_version
  ** @returns xcb_xevie_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xevie_query_version_cookie_t
 xcb_xevie_query_version_unchecked (xcb_connection_t *c  /**< */,
                                    ushort            client_major_version  /**< */,
@@ -239,14 +239,14 @@ xcb_xevie_query_version_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xevie_query_version_reply_t * xcb_xevie_query_version_reply
- ** 
+ **
  ** @param xcb_connection_t                  *c
  ** @param xcb_xevie_query_version_cookie_t   cookie
  ** @param xcb_generic_error_t              **e
  ** @returns xcb_xevie_query_version_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xevie_query_version_reply_t *
 xcb_xevie_query_version_reply (xcb_connection_t                  *c  /**< */,
                                xcb_xevie_query_version_cookie_t   cookie  /**< */,
@@ -256,13 +256,13 @@ xcb_xevie_query_version_reply (xcb_connection_t                  *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xevie_start_cookie_t xcb_xevie_start
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @returns xcb_xevie_start_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xevie_start_cookie_t
 xcb_xevie_start (xcb_connection_t *c  /**< */,
                  uint              screen  /**< */);
@@ -271,13 +271,13 @@ xcb_xevie_start (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xevie_start_cookie_t xcb_xevie_start_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @returns xcb_xevie_start_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xevie_start_cookie_t
 xcb_xevie_start_unchecked (xcb_connection_t *c  /**< */,
                            uint              screen  /**< */);
@@ -286,14 +286,14 @@ xcb_xevie_start_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xevie_start_reply_t * xcb_xevie_start_reply
- ** 
+ **
  ** @param xcb_connection_t          *c
  ** @param xcb_xevie_start_cookie_t   cookie
  ** @param xcb_generic_error_t      **e
  ** @returns xcb_xevie_start_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xevie_start_reply_t *
 xcb_xevie_start_reply (xcb_connection_t          *c  /**< */,
                        xcb_xevie_start_cookie_t   cookie  /**< */,
@@ -303,13 +303,13 @@ xcb_xevie_start_reply (xcb_connection_t          *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xevie_end_cookie_t xcb_xevie_end
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              cmap
  ** @returns xcb_xevie_end_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xevie_end_cookie_t
 xcb_xevie_end (xcb_connection_t *c  /**< */,
                uint              cmap  /**< */);
@@ -318,13 +318,13 @@ xcb_xevie_end (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xevie_end_cookie_t xcb_xevie_end_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              cmap
  ** @returns xcb_xevie_end_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xevie_end_cookie_t
 xcb_xevie_end_unchecked (xcb_connection_t *c  /**< */,
                          uint              cmap  /**< */);
@@ -333,14 +333,14 @@ xcb_xevie_end_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xevie_end_reply_t * xcb_xevie_end_reply
- ** 
+ **
  ** @param xcb_connection_t        *c
  ** @param xcb_xevie_end_cookie_t   cookie
  ** @param xcb_generic_error_t    **e
  ** @returns xcb_xevie_end_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xevie_end_reply_t *
 xcb_xevie_end_reply (xcb_connection_t        *c  /**< */,
                      xcb_xevie_end_cookie_t   cookie  /**< */,
@@ -350,12 +350,12 @@ xcb_xevie_end_reply (xcb_connection_t        *c  /**< */,
 /*****************************************************************************
  **
  ** void xcb_xevie_event_next
- ** 
+ **
  ** @param xcb_xevie_event_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_xevie_event_next (xcb_xevie_event_iterator_t *i  /**< */);
 
@@ -363,12 +363,12 @@ xcb_xevie_event_next (xcb_xevie_event_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xevie_event_end
- ** 
+ **
  ** @param xcb_xevie_event_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xevie_event_end (xcb_xevie_event_iterator_t i  /**< */);
 
@@ -376,14 +376,14 @@ xcb_xevie_event_end (xcb_xevie_event_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** xcb_xevie_send_cookie_t xcb_xevie_send
- ** 
+ **
  ** @param xcb_connection_t  *c
  ** @param xcb_xevie_event_t  event
  ** @param uint               data_type
  ** @returns xcb_xevie_send_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xevie_send_cookie_t
 xcb_xevie_send (xcb_connection_t  *c  /**< */,
                 xcb_xevie_event_t  event  /**< */,
@@ -393,14 +393,14 @@ xcb_xevie_send (xcb_connection_t  *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xevie_send_cookie_t xcb_xevie_send_unchecked
- ** 
+ **
  ** @param xcb_connection_t  *c
  ** @param xcb_xevie_event_t  event
  ** @param uint               data_type
  ** @returns xcb_xevie_send_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xevie_send_cookie_t
 xcb_xevie_send_unchecked (xcb_connection_t  *c  /**< */,
                           xcb_xevie_event_t  event  /**< */,
@@ -410,14 +410,14 @@ xcb_xevie_send_unchecked (xcb_connection_t  *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xevie_send_reply_t * xcb_xevie_send_reply
- ** 
+ **
  ** @param xcb_connection_t         *c
  ** @param xcb_xevie_send_cookie_t   cookie
  ** @param xcb_generic_error_t     **e
  ** @returns xcb_xevie_send_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xevie_send_reply_t *
 xcb_xevie_send_reply (xcb_connection_t         *c  /**< */,
                       xcb_xevie_send_cookie_t   cookie  /**< */,
@@ -427,13 +427,13 @@ xcb_xevie_send_reply (xcb_connection_t         *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xevie_select_input_cookie_t xcb_xevie_select_input
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              event_mask
  ** @returns xcb_xevie_select_input_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xevie_select_input_cookie_t
 xcb_xevie_select_input (xcb_connection_t *c  /**< */,
                         uint              event_mask  /**< */);
@@ -442,13 +442,13 @@ xcb_xevie_select_input (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xevie_select_input_cookie_t xcb_xevie_select_input_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              event_mask
  ** @returns xcb_xevie_select_input_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xevie_select_input_cookie_t
 xcb_xevie_select_input_unchecked (xcb_connection_t *c  /**< */,
                                   uint              event_mask  /**< */);
@@ -457,14 +457,14 @@ xcb_xevie_select_input_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xevie_select_input_reply_t * xcb_xevie_select_input_reply
- ** 
+ **
  ** @param xcb_connection_t                 *c
  ** @param xcb_xevie_select_input_cookie_t   cookie
  ** @param xcb_generic_error_t             **e
  ** @returns xcb_xevie_select_input_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xevie_select_input_reply_t *
 xcb_xevie_select_input_reply (xcb_connection_t                 *c  /**< */,
                               xcb_xevie_select_input_cookie_t   cookie  /**< */,

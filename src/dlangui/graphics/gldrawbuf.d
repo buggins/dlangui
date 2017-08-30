@@ -933,10 +933,10 @@ class GLTextureCache {
 
     static __gshared GLTextureCache _instance;
 
-    static @property GLTextureCache instance() { 
+    static @property GLTextureCache instance() {
         if (!_instance)
             _instance = new GLTextureCache();
-        return _instance; 
+        return _instance;
     }
 
     private void onItemRemoved(string resourceId) {

@@ -40,9 +40,9 @@ enum : int {
 alias FcType = int;
 
 enum : int {
-    FcResultMatch, 
-    FcResultNoMatch, 
-    FcResultTypeMismatch, 
+    FcResultMatch,
+    FcResultNoMatch,
+    FcResultTypeMismatch,
     FcResultNoId,
     FcResultOutOfMemory
 }
@@ -65,8 +65,8 @@ struct FcValue {
 }
 
 enum FcMatchKind {
-    FcMatchPattern, 
-    FcMatchFont, 
+    FcMatchPattern,
+    FcMatchFont,
     FcMatchScan
 }
 
@@ -82,9 +82,9 @@ enum FcSetName {
     FcSetApplication = 1
 }
 
-enum FcEndian { 
-    FcEndianBig, 
-    FcEndianLittle 
+enum FcEndian {
+    FcEndianBig,
+    FcEndianLittle
 }
 
 struct FcFontSet {

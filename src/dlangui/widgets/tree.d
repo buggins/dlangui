@@ -137,7 +137,7 @@ class TreeItem {
     @property bool isRoot() {
         return false;
     }
-    
+
     void clear() {
         _children.clear();
     }
@@ -149,11 +149,11 @@ class TreeItem {
     @property string iconRes() { return _iconRes; }
     @property TreeItem iconRes(string res) { _iconRes = res; return this; }
     @property int level() { return _level; }
-    @property protected TreeItem level(int level) { 
+    @property protected TreeItem level(int level) {
         _level = level;
         for (int i = 0; i < childCount; i++)
             child(i).level = _level + 1;
-        return this; 
+        return this;
     }
     @property bool expanded() { return _expanded; }
     @property protected TreeItem expanded(bool expanded) { _expanded = expanded; return this; }
@@ -200,17 +200,17 @@ class TreeItem {
     @property dstring text() { return _text; }
     /// set text to show
     @property TreeItem text(dstring s) {
-        _text = s; 
+        _text = s;
         return this;
     }
     /// set text to show
-    @property TreeItem text(UIString s) { 
+    @property TreeItem text(UIString s) {
         _text = s;
         return this;
     }
     /// set text resource ID to show
     @property TreeItem textResource(string s) {
-        _text = s; 
+        _text = s;
         return this;
     }
 
@@ -253,11 +253,11 @@ class TreeItem {
     /// returns child by index
     TreeItem child(int index) { return _children.get(index); }
     /// adds child, returns added item
-    TreeItem addChild(TreeItem item) { 
+    TreeItem addChild(TreeItem item) {
         return _children.add(item).parent(this).level(_level + 1);
     }
     /// removes child, returns removed item
-    TreeItem removeChild(int index) { 
+    TreeItem removeChild(int index) {
         TreeItem res = _children.remove(index);
         if (res !is null)
             res.parent = null;
@@ -269,7 +269,7 @@ class TreeItem {
         int index = _children.indexOf(ID);
         if (index < 0)
             return null;
-        res = _children.remove(index); 
+        res = _children.remove(index);
         if (res !is null)
             res.parent = null;
         return res;
@@ -362,7 +362,7 @@ class TreeItems : TreeItem {
     override @property bool isRoot() {
         return true;
     }
-    
+
     /// notify listeners
     override protected void onUpdate(TreeItem item) {
         if (contentListener.assigned)
@@ -499,13 +499,13 @@ enum TreeActions : int {
     /// move cursor one page down with selection
     SelectPageDown,
     /// move cursor to the beginning of page
-    PageBegin, 
+    PageBegin,
     /// move cursor to the beginning of page with selection
-    SelectPageBegin, 
+    SelectPageBegin,
     /// move cursor to the end of page
-    PageEnd,   
+    PageEnd,
     /// move cursor to the end of page with selection
-    SelectPageEnd,   
+    SelectPageEnd,
     /// move cursor to the beginning of line
     LineBegin,
     /// move cursor to the beginning of line with selection
@@ -694,7 +694,7 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
     @property bool noCollapseForSingleTopLevelItem() {
         return _noCollapseForSingleTopLevelItem;
     }
-    @property TreeWidgetBase noCollapseForSingleTopLevelItem(bool flg) { 
+    @property TreeWidgetBase noCollapseForSingleTopLevelItem(bool flg) {
         _noCollapseForSingleTopLevelItem = flg;
         if (_tree)
             _tree.noCollapseForSingleTopLevelItem = flg;
@@ -818,7 +818,7 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
     }
 
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         if (visibility == Visibility.Gone) {
             return;
         }

@@ -66,7 +66,7 @@ version (BigEndian)
     }
 }
 
-version (LittleEndian) 
+version (LittleEndian)
 {
     uint bigEndian(uint value) nothrow
     {

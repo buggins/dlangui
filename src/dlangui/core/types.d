@@ -10,7 +10,7 @@ Synopsis:
 ----
 import dlangui.core.types;
 
-// points 
+// points
 Point p(5, 10);
 
 // rectangles
@@ -340,9 +340,9 @@ enum SubpixelRenderingMode : ubyte {
     RGB,
 }
 
-/** 
+/**
     Character glyph.
-    
+
     Holder for glyph metrics as well as image.
 */
 align(1)
@@ -372,10 +372,10 @@ struct Glyph
     }
 
     ///< 12: glyph data, arbitrary size (blackBoxX * blackBoxY)
-    ubyte[] glyph;       
+    ubyte[] glyph;
 }
 
-/** 
+/**
     Base class for reference counted objects, maintains reference counter inplace.
 
     If some class is not inherited from RefCountedObject, additional object will be required to hold counters.
@@ -386,18 +386,18 @@ class RefCountedObject {
     /// returns current value of reference counter
     @property int refCount() const { return _refCount; }
     /// increments reference counter
-    void addRef() { 
-        _refCount++; 
+    void addRef() {
+        _refCount++;
     }
     /// decrement reference counter, destroy object if no more references left
-    void releaseRef() { 
-        if (--_refCount == 0) 
-            destroy(this); 
+    void releaseRef() {
+        if (--_refCount == 0)
+            destroy(this);
     }
     ~this() {}
 }
 
-/** 
+/**
     Reference counting support.
 
     Implemented for case when T is RefCountedObject.
@@ -458,7 +458,7 @@ struct Ref(T) { // if (T is RefCountedObject)
         return this;
     }
     /// clears reference
-    void clear() { 
+    void clear() {
         if (_data !is null) {
             _data.releaseRef();
             _data = null;

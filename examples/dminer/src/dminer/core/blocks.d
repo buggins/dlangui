@@ -39,11 +39,11 @@ public:
     ~this() {
     }
     // blocks behind this block can be visible
-    @property bool canPass() { 
-        return visibility == BlockVisibility.INVISIBLE 
-            || visibility == BlockVisibility.HALF_OPAQUE 
-            || visibility == BlockVisibility.HALF_OPAQUE_SEPARATE_TX 
-            || visibility == BlockVisibility.HALF_TRANSPARENT; 
+    @property bool canPass() {
+        return visibility == BlockVisibility.INVISIBLE
+            || visibility == BlockVisibility.HALF_OPAQUE
+            || visibility == BlockVisibility.HALF_OPAQUE_SEPARATE_TX
+            || visibility == BlockVisibility.HALF_TRANSPARENT;
     }
     // block is fully opaque (all blocks behind are invisible)
     @property bool isOpaque() {

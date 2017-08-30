@@ -120,12 +120,12 @@ version(OSX) {} else version(Posix)
     private bool isSpecialFileSystem(const(char)[] dir, const(char)[] type)
     {
         import std.string : startsWith;
-        if (dir.startsWith("/dev") || dir.startsWith("/proc") || dir.startsWith("/sys") || 
+        if (dir.startsWith("/dev") || dir.startsWith("/proc") || dir.startsWith("/sys") ||
             dir.startsWith("/var/run") || dir.startsWith("/var/lock"))
         {
             return true;
         }
-        
+
         if (type == "tmpfs" || type == "rootfs" || type == "rpc_pipefs") {
             return true;
         }
@@ -143,7 +143,7 @@ version(OSX) {} else version(Posix)
         }
         return format("%s (%s)", mountDir.baseName, type);
     }
- 
+
     private RootEntryType getDeviceRootEntryType(in char[] type)
     {
         switch(type)
@@ -168,16 +168,16 @@ version(FreeBSD)
 {
 private:
     import core.sys.posix.sys.types;
-    
+
     enum MFSNAMELEN = 16;          /* length of type name including null */
     enum MNAMELEN  = 88;          /* size of on/from name bufs */
     enum STATFS_VERSION = 0x20030518;      /* current version number */
-    
+
     struct fsid_t
     {
         int[2] val;
     }
-    
+
     struct statfs {
         uint f_version;         /* structure version number */
         uint f_type;            /* type of filesystem */
@@ -202,8 +202,8 @@ private:
         char[MNAMELEN] f_mntfromname;  /* mounted filesystem */
         char[MNAMELEN] f_mntonname;    /* directory on which mounted */
     };
-    
-    extern(C) @nogc nothrow 
+
+    extern(C) @nogc nothrow
     {
         int getmntinfo(statfs **mntbufp, int flags);
     }
@@ -222,8 +222,8 @@ private:
         int mnt_freq;       /* Dump frequency (in days).  */
         int mnt_passno;     /* Pass number for `fsck'.  */
     };
-    
-    extern(C) @nogc nothrow 
+
+    extern(C) @nogc nothrow
     {
         FILE *setmntent(const char *file, const char *mode);
         mntent *getmntent(FILE *stream);
@@ -232,7 +232,7 @@ private:
         int endmntent(FILE * stream);
         char *hasmntopt(const mntent *mnt, const char *opt);
     }
-    
+
     string unescapeLabel(string label)
     {
         import std.string : replace;
@@ -255,24 +255,24 @@ private:
     } else version(linux) {
         import std.string : fromStringz;
         import std.exception : collectException;
-        
+
         mntent ent;
         char[1024] buf;
         FILE* f = setmntent("/etc/mtab", "r");
-        
+
         if (f) {
             scope(exit) endmntent(f);
             while(getmntent_r(f, &ent, buf.ptr, cast(int)buf.length) !is null) {
                 auto fsName = fromStringz(ent.mnt_fsname);
                 auto mountDir = fromStringz(ent.mnt_dir);
                 auto type = fromStringz(ent.mnt_type);
-                
+
                 if (mountDir == "/" || //root is already added
                     isSpecialFileSystem(mountDir, type)) //don't list special file systems
                 {
                     continue;
                 }
-                
+
                 string label;
                 enum byLabel = "/dev/disk/by-label";
                 if (fsName.isAbsolute) {
@@ -291,39 +291,39 @@ private:
 
                     }
                 }
-                
+
                 if (!label.length) {
                     label = getDeviceLabelFallback(type, fsName, mountDir);
                 }
                 auto entryType = getDeviceRootEntryType(type);
                 res ~= RootEntry(entryType, mountDir.idup, label.toUTF32);
-            }   
+            }
         }
     }
-    
+
     version(FreeBSD) {
         import std.string : fromStringz;
-        
+
         statfs* mntbufsPtr;
         int mntbufsLen = getmntinfo(&mntbufsPtr, 0);
         if (mntbufsLen) {
             auto mntbufs = mntbufsPtr[0..mntbufsLen];
-            
+
             foreach(buf; mntbufs) {
                 auto type = fromStringz(buf.f_fstypename.ptr);
                 auto fsName = fromStringz(buf.f_mntfromname.ptr);
                 auto mountDir = fromStringz(buf.f_mntonname.ptr);
-                
+
                 if (mountDir == "/" || isSpecialFileSystem(mountDir, type)) {
                     continue;
                 }
-                
+
                 string label = getDeviceLabelFallback(type, fsName, mountDir);
                 res ~= RootEntry(getDeviceRootEntryType(type), mountDir.idup, label.toUTF32);
             }
         }
     }
-    
+
     version (Windows) {
         import core.sys.windows.windows;
         uint mask = GetLogicalDrives();
@@ -369,9 +369,9 @@ private:
     pragma(lib, "Ole32");
 
     alias GUID KNOWNFOLDERID;
-    
+
     extern(Windows) @nogc @system HRESULT _dummy_SHGetKnownFolderPath(const(KNOWNFOLDERID)* rfid, DWORD dwFlags, HANDLE hToken, wchar** ppszPath) nothrow;
-    
+
     enum KNOWNFOLDERID FOLDERID_Links = {0xbfb9d5e0, 0xc6a9, 0x404c, [0xb2,0xb2,0xae,0x6d,0xb6,0xaf,0x49,0x68]};
 }
 
@@ -380,15 +380,15 @@ RootEntry[] getBookmarkPaths() nothrow
 {
     RootEntry[] res;
     version(OSX) {
-        
+
     } else version(Android) {
-        
+
     } else version(Posix) {
         /*
          * Probably we should follow https://www.freedesktop.org/wiki/Specifications/desktop-bookmark-spec/ but it requires XML library.
          * So for now just try to read GTK3 bookmarks. Should be compatible with GTK file dialogs, Nautilus and other GTK file managers.
          */
-        
+
         import std.string : startsWith;
         import std.stdio : File;
         import std.exception : collectException;
@@ -427,50 +427,50 @@ RootEntry[] getBookmarkPaths() nothrow
                 }
             }
         } catch(Exception e) {
-            
+
         }
     } else version(Windows) {
         /*
          * This will not include bookmarks of special items and virtual folders like Recent Files or Recycle bin.
          */
-        
+
         import core.stdc.wchar_ : wcslen;
         import std.exception : enforce;
         import std.utf : toUTF16z;
         import std.file : dirEntries, SpanMode;
         import std.string : endsWith;
-        
+
         try {
             auto shell = enforce(LoadLibraryA("Shell32"));
             scope(exit) FreeLibrary(shell);
-            
+
             auto ptrSHGetKnownFolderPath = cast(typeof(&_dummy_SHGetKnownFolderPath))enforce(GetProcAddress(shell, "SHGetKnownFolderPath"));
-            
+
             wchar* linksFolderZ;
             const linksGuid = FOLDERID_Links;
             enforce(ptrSHGetKnownFolderPath(&linksGuid, 0, null, &linksFolderZ) == S_OK);
             scope(exit) CoTaskMemFree(linksFolderZ);
-            
+
             string linksFolder = linksFolderZ[0..wcslen(linksFolderZ)].toUTF8;
-            
+
             enforce(SUCCEEDED(CoInitialize(null)));
             scope(exit) CoUninitialize();
 
-            HRESULT hres; 
-            IShellLink psl; 
-            
+            HRESULT hres;
+            IShellLink psl;
+
             auto clsidShellLink = CLSID_ShellLink;
             auto iidShellLink = IID_IShellLinkW;
             hres = CoCreateInstance(&clsidShellLink, null, CLSCTX.CLSCTX_INPROC_SERVER, &iidShellLink, cast(LPVOID*)&psl);
             enforce(SUCCEEDED(hres), "Failed to create IShellLink instance");
             scope(exit) psl.Release();
-            
+
             IPersistFile ppf;
             auto iidPersistFile = IID_IPersistFile;
-            hres = psl.QueryInterface(cast(GUID*)&iidPersistFile, cast(void**)&ppf); 
+            hres = psl.QueryInterface(cast(GUID*)&iidPersistFile, cast(void**)&ppf);
             enforce(SUCCEEDED(hres), "Failed to query IPersistFile interface");
             scope(exit) ppf.Release();
-            
+
             foreach(linkFile; dirEntries(linksFolder, SpanMode.shallow)) {
                 if (!linkFile.name.endsWith(".lnk")) {
                     continue;
@@ -478,27 +478,27 @@ RootEntry[] getBookmarkPaths() nothrow
                 try {
                     wchar[MAX_PATH] szGotPath;
                     WIN32_FIND_DATA wfd;
-                    
-                    hres = ppf.Load(linkFile.name.toUTF16z, STGM_READ); 
+
+                    hres = ppf.Load(linkFile.name.toUTF16z, STGM_READ);
                     enforce(SUCCEEDED(hres), "Failed to load link file");
-                    
+
                     hres = psl.Resolve(null, SLR_FLAGS.SLR_NO_UI);
                     enforce(SUCCEEDED(hres), "Failed to resolve link");
-                    
+
                     hres = psl.GetPath(szGotPath.ptr, szGotPath.length, &wfd, 0);
                     enforce(SUCCEEDED(hres), "Failed to get path of link target");
-                    
+
                     auto path = szGotPath[0..wcslen(szGotPath.ptr)];
-                    
+
                     if (path.length && path.toUTF8.isDir) {
                         res ~= RootEntry(RootEntryType.BOOKMARK, path.toUTF8, linkFile.name.baseName.stripExtension.toUTF32);
                     }
                 } catch(Exception e) {
-                    
+
                 }
             }
         } catch(Exception e) {
-            
+
         }
     }
     return res;
@@ -718,7 +718,7 @@ alias currentDir = std.file.getcwd;
     return thisExePath();
 }
 
-/** 
+/**
     Returns application data directory
 
     On unix, it will return path to subdirectory in home directory - e.g. /home/user/.subdir if ".subdir" is passed as a paramter.

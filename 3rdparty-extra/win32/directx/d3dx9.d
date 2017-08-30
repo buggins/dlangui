@@ -1015,7 +1015,7 @@ extern(Windows)
 	        D3DFORMAT                 Format,
 	        D3DPOOL                   Pool,
 	        IDirect3DCubeTexture9*   ppCubeTexture);
-			
+
 	HRESULT D3DXCreateTextureFromFileA(
 			LPDIRECT3DDEVICE9 pDevice,
 			LPCTSTR pSrcFile,

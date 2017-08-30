@@ -621,8 +621,8 @@ class TabHost : FrameLayout, TabHandler {
     /// get currently set control widget
     @property TabControl tabControl() { return _tabControl; }
     /// set new control widget
-    @property TabHost tabControl(TabControl newWidget) { 
-        _tabControl = newWidget; 
+    @property TabHost tabControl(TabControl newWidget) {
+        _tabControl = newWidget;
         if (_tabControl !is null)
             _tabControl.tabChanged = &onTabChanged;
         return this;
@@ -694,7 +694,7 @@ class TabHost : FrameLayout, TabHandler {
             widget.visibility = Visibility.Invisible;
         }
     }
-    
+
     /// select tab
     void selectTab(string ID, bool updateAccess) {
         int index = _tabControl.tabIndex(ID);

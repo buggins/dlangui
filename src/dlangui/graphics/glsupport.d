@@ -40,9 +40,9 @@ version (Android) {
     public import GLES3.gl3;
 
     static if (SUPPORT_LEGACY_OPENGL) {
-        public import GLES.gl : glEnableClientState, glLightfv, glColor4f, GL_ALPHA_TEST, GL_VERTEX_ARRAY, 
-		    GL_COLOR_ARRAY, glVertexPointer, glColorPointer, glDisableClientState, 
-		    GL_TEXTURE_COORD_ARRAY, glTexCoordPointer, glColorPointer, glMatrixMode, 
+        public import GLES.gl : glEnableClientState, glLightfv, glColor4f, GL_ALPHA_TEST, GL_VERTEX_ARRAY,
+		    GL_COLOR_ARRAY, glVertexPointer, glColorPointer, glDisableClientState,
+		    GL_TEXTURE_COORD_ARRAY, glTexCoordPointer, glColorPointer, glMatrixMode,
 		    glLoadMatrixf, glLoadIdentity, GL_PROJECTION, GL_MODELVIEW;
 	}
 
@@ -1178,8 +1178,8 @@ class GLObject(GLObjectTypes type, GLuint target = 0) {
     {
         void setSamplerParams(bool linear, bool clamp = false, bool mipmap = false) {
             glTexParameteri(target, GL_TEXTURE_MAG_FILTER, linear ? GL_LINEAR : GL_NEAREST);
-            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, linear ? 
-                            (!mipmap ? GL_LINEAR : GL_LINEAR_MIPMAP_LINEAR) : 
+            glTexParameteri(target, GL_TEXTURE_MIN_FILTER, linear ?
+                            (!mipmap ? GL_LINEAR : GL_LINEAR_MIPMAP_LINEAR) :
                             (!mipmap ? GL_NEAREST : GL_NEAREST_MIPMAP_NEAREST)); //GL_NEAREST_MIPMAP_NEAREST
             checkError("filtering - glTexParameteri");
             if(clamp) {
@@ -1321,13 +1321,13 @@ class GLVertexBuffer : VertexBuffer {
                 //checkgl!glDisable(GL_CULL_FACE);
                 for (int i = 0; i < triangleCount; i += 3) {
                     // GL line loop works strange; use GL_LINES instead
-                    checkgl!glDrawRangeElements(GL_LINE_LOOP, //GL_TRIANGLES, 
+                    checkgl!glDrawRangeElements(GL_LINE_LOOP, //GL_TRIANGLES,
                                 0, _vertexCount - 1, // The first to last vertex  start, end
                                 3, // count of indexes used to draw elements
                                 GL_UNSIGNED_SHORT,
                                 cast(char*)((fragment.start + i) * short.sizeof) // offset from index buffer beginning to fragment start
                                     );
-                    //checkgl!glDrawRangeElements(GL_LINES, //GL_TRIANGLES, 
+                    //checkgl!glDrawRangeElements(GL_LINES, //GL_TRIANGLES,
                     //            0, _vertexCount - 1, // The first to last vertex  start, end
                     //            2, // count of indexes used to draw elements
                     //            GL_UNSIGNED_SHORT,
@@ -1336,10 +1336,10 @@ class GLVertexBuffer : VertexBuffer {
                 }
                 //checkgl!glEnable(GL_CULL_FACE);
             } else {
-                checkgl!glDrawRangeElements(primitiveTypeToGL(fragment.type), 
+                checkgl!glDrawRangeElements(primitiveTypeToGL(fragment.type),
                         0, _vertexCount - 1, // The first to last vertex
                         fragment.end - fragment.start, // count of indexes used to draw elements
-                        GL_UNSIGNED_SHORT, 
+                        GL_UNSIGNED_SHORT,
                         cast(char*)(fragment.start * short.sizeof) // offset from index buffer beginning to fragment start
                 );
             }
@@ -1409,9 +1409,9 @@ class DummyVertexBuffer : VertexBuffer {
         enableAttributes(effect);
         foreach (fragment; _indexFragments) {
             // TODO: support wireframe
-            checkgl!glDrawRangeElements(primitiveTypeToGL(fragment.type), 
-                                        0, _vertexCount, 
-                                        fragment.end - fragment.start, 
+            checkgl!glDrawRangeElements(primitiveTypeToGL(fragment.type),
+                                        0, _vertexCount,
+                                        fragment.end - fragment.start,
                                         GL_UNSIGNED_SHORT, cast(char*)(fragment.start * short.sizeof));
         }
         disableAttributes(effect);

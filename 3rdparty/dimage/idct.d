@@ -203,7 +203,7 @@ void idct(float* inMat, float* outMat)
         for (u = 0; u < 8; u++)
         for (v = 0; v < 8; v++)
         {
-            s += inMat[u * 8 + v] 
+            s += inMat[u * 8 + v]
                 * cos((2 * i + 1) * u * PI / 16.0f)
                 * cos((2 * j + 1) * v * PI / 16.0f)
                 * ((u == 0) ? 1 / sqrt(2.0f) : 1.0f)

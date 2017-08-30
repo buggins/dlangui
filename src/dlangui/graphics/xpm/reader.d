@@ -2,11 +2,11 @@ module dlangui.graphics.xpm.reader;
 
 /**
  * Reading .xpm files.
- * 
+ *
  * Copyright: Roman Chistokhodov, 2015
  * License:   Boost License 1.0
  * Authors:   Roman Chistokhodov, freeslave93@gmail.com
- * 
+ *
  */
 
 import dlangui.graphics.xpm.xpmcolors;
@@ -43,7 +43,7 @@ private uint parseRGB(in char[] rgbStr)
     ubyte red = parsePrimaryColor(rgbStr[0..2]);
     ubyte green = parsePrimaryColor(rgbStr[2..4]);
     ubyte blue = parsePrimaryColor(rgbStr[4..6]);
-    
+
     return makeRGBA(red, green, blue, 0);
 }
 
@@ -61,19 +61,19 @@ ColorDrawBuf parseXPM(const(ubyte)[] data)
 {
     auto buf = cast(const(char)[])(data);
     auto lines = buf.splitter('\n');
-    
+
     enforce(!lines.empty, "No data");
-    
+
     //Read magic
     auto firstLine = lines.front;
     enforce(firstLine.startsWith("/* XPM"), "No magic");
     lines.popFront();
-    
+
     //Read values
     int w, h, ncols, cpp;
     while(!lines.empty) {
         auto str = extractXPMString(lines.front);
-        
+
         if (str.length) {
             enforce(formattedRead(str, " %d %d %d %d", &w, &h, &ncols, &cpp) == 4, "Could not read values");
             enforce(cpp > 0, "Bad character per pixel value");
@@ -83,31 +83,31 @@ ColorDrawBuf parseXPM(const(ubyte)[] data)
         }
         lines.popFront();
     }
-    
+
     //Read color map
     size_t colorsRead = 0;
     auto sortedColors = assumeSorted(predefinedColors);
     uint[ulong] colorMap;
-    
+
     while(!lines.empty && colorsRead != ncols) {
         auto str = extractXPMString(lines.front);
         if (str.length) {
             auto key = str[0..cpp];
-            
-            
+
+
             auto tokens = str[cpp..$].strip.splitter(' ');
             auto prefixRange = tokens.find("c");
-            
+
             enforce(!prefixRange.empty, "Could not find color visual prefix");
-            
+
             auto colorRange = prefixRange.drop(1);
             enforce(!colorRange.empty, "Could not get color value for " ~ key);
-            
+
             auto colorStr = colorRange.front;
             auto hash = xpmHash(key);
-            
+
             enforce(hash !in colorMap, key ~ " : same key is defined twice");
-            
+
             if (colorStr[0] == '#') {
                 colorMap[hash] = parseRGB(colorStr[1..$]);
             } else if (colorStr == "None") {
@@ -116,20 +116,20 @@ ColorDrawBuf parseXPM(const(ubyte)[] data)
                 auto t = sortedColors.equalRange(colorStr);
                 enforce(!t.empty, "Could not find color named " ~ colorStr);
                 auto c = t.front;
-                
+
                 colorMap[hash] = makeRGBA(c.red, c.green, c.blue, 0);
             }
-            
+
             colorsRead++;
         }
         lines.popFront();
     }
-    
+
     enforce(colorsRead == ncols, "Could not load color table");
-    
+
     //Read pixels
     ColorDrawBuf colorBuf = new ColorDrawBuf(w, h);
-    
+
     for (int y = 0; y<h && !lines.empty; y++) {
         auto str = extractXPMString(lines.front);
         uint* dstLine = colorBuf.scanLine(y);
@@ -144,6 +144,6 @@ ColorDrawBuf parseXPM(const(ubyte)[] data)
         }
         lines.popFront();
     }
-   
+
     return colorBuf;
 }

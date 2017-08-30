@@ -41,7 +41,7 @@ Bit mask:
 cccc ssss
 |    |
 |    \ ssss = token subcategory
-|     
+|
 \ cccc = token category
 
 */
@@ -436,7 +436,7 @@ interface EditableContentMarksChangeListener {
     void onMarksChange(EditableContent content, LineIcon[] movedMarks, LineIcon[] removedMarks);
 }
 
-/// TokenCategory holder 
+/// TokenCategory holder
 alias TokenProp = ubyte;
 /// TokenCategory string
 alias TokenPropString = TokenProp[];
@@ -1274,7 +1274,7 @@ class EditableContent {
                     dchar nextchar = i < linelen - 1 ? txt[i + 1] : ' ';
                     if (nextchar == '\t')
                         nextchar = ' ';
-                    if (isWordBound(thischar, nextchar) 
+                    if (isWordBound(thischar, nextchar)
                         || (camelCasePartsAsWords && isLowerAlpha(thischar) && isUpperAlpha(nextchar))) {
                             found = i + 1;
                             break;

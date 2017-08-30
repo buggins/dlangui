@@ -144,11 +144,11 @@ class ProgressBarWidget : AbstractProgressBar {
         styleId = STYLE_PROGRESS_BAR;
     }
 
-    /** 
-    Measure widget according to desired width and height constraints. (Step 1 of two phase layout). 
+    /**
+    Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
 
     */
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         int h = 0;
         int w = 0;
         DrawableRef gaugeDrawable = style.customDrawable("progress_bar_gauge");

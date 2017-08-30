@@ -115,24 +115,24 @@ class LayoutItems {
         // measure
         for (int i = 0; i < _count; i++) {
             LayoutItem * item = &_list[i];
-            
+
             item.measure(parentWidth, parentHeight);
-            
+
             if (isPercentSize(item._layoutSize)) {
                 if (!hasPercentSizeWidget) {
                     percenSizeWidgetIndex = i;
                     hasPercentSizeWidget = true;
                 }
-            } 
+            }
             else
                 _totalSize += item._measuredSize;
-            
+
             if (_maxSecondarySize < item._secondarySize)
                 _maxSecondarySize = item._secondarySize;
         }
         if (hasPercentSizeWidget) {
             LayoutItem * item = &_list[percenSizeWidgetIndex];
-            if (_totalSize > 0) 
+            if (_totalSize > 0)
                 item._measuredSize = to!int(_totalSize * ((1 / (1 - cast (double) (fromPercentSize(item._layoutSize, 100))/100)) - 1));
             _totalSize += item._measuredSize;
         }
@@ -363,11 +363,11 @@ class ResizerWidget : Widget {
         }
     }
 
-    /** 
-       Measure widget according to desired width and height constraints. (Step 1 of two phase layout). 
+    /**
+       Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
 
     */
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         updateProps();
         if (_orientation == Orientation.Vertical) {
 
@@ -538,7 +538,7 @@ class LinearLayout : WidgetGroupDefaultDrawing {
 
     LayoutItems _layoutItems;
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         Rect m = margins;
         Rect p = padding;
         // calc size constraints for children
@@ -606,7 +606,7 @@ class FrameLayout : WidgetGroupDefaultDrawing {
         super(ID);
     }
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         Rect m = margins;
         Rect p = padding;
         // calc size constraints for children
@@ -895,7 +895,7 @@ class TableLayout : WidgetGroupDefaultDrawing {
           "colCount"));
 
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         Rect m = margins;
         Rect p = padding;
         // calc size constraints for children
@@ -922,7 +922,7 @@ class TableLayout : WidgetGroupDefaultDrawing {
         applyPadding(rc);
         _cells.layout(rc);
     }
-    
+
 }
 
 //import dlangui.widgets.metadata;

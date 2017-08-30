@@ -14,7 +14,7 @@ class SettingsDialog : Dialog {
     IRCSettings _settings;
     bool _allowConnect;
     this(IRCFrame parent, IRCSettings settings, bool allowConnect) {
-        super(UIString.fromRaw("IRC Client Settings"d), parent.window, 
+        super(UIString.fromRaw("IRC Client Settings"d), parent.window,
               DialogFlag.Modal | DialogFlag.Resizable | DialogFlag.Popup, 500, 400);
         _icon = "dlangui-logo1";
         _frame = parent;

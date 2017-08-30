@@ -18,7 +18,7 @@ import std.c.linux.X11.xcb.xproto;
 
 const int XCB_RANDR_MAJOR_VERSION =1;
 const int XCB_RANDR_MINOR_VERSION =1;
-  
+
 extern(C) extern xcb_extension_t xcb_randr_id;
 
 enum :int{
@@ -231,12 +231,12 @@ struct xcb_randr_screen_change_notify_event_t {
 /*****************************************************************************
  **
  ** void xcb_randr_screen_size_next
- ** 
+ **
  ** @param xcb_randr_screen_size_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_randr_screen_size_next (xcb_randr_screen_size_iterator_t *i  /**< */);
 
@@ -244,12 +244,12 @@ xcb_randr_screen_size_next (xcb_randr_screen_size_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_randr_screen_size_end
- ** 
+ **
  ** @param xcb_randr_screen_size_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_randr_screen_size_end (xcb_randr_screen_size_iterator_t i  /**< */);
 
@@ -257,12 +257,12 @@ xcb_randr_screen_size_end (xcb_randr_screen_size_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** ushort * xcb_randr_refresh_rates_rates
- ** 
+ **
  ** @param /+const+/ xcb_randr_refresh_rates_t *R
  ** @returns ushort *
  **
  *****************************************************************************/
- 
+
 extern(C) ushort *
 xcb_randr_refresh_rates_rates (/+const+/ xcb_randr_refresh_rates_t *R  /**< */);
 
@@ -270,12 +270,12 @@ xcb_randr_refresh_rates_rates (/+const+/ xcb_randr_refresh_rates_t *R  /**< */);
 /*****************************************************************************
  **
  ** int xcb_randr_refresh_rates_rates_length
- ** 
+ **
  ** @param /+const+/ xcb_randr_refresh_rates_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_randr_refresh_rates_rates_length (/+const+/ xcb_randr_refresh_rates_t *R  /**< */);
 
@@ -283,12 +283,12 @@ xcb_randr_refresh_rates_rates_length (/+const+/ xcb_randr_refresh_rates_t *R  /*
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_randr_refresh_rates_rates_end
- ** 
+ **
  ** @param /+const+/ xcb_randr_refresh_rates_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_randr_refresh_rates_rates_end (/+const+/ xcb_randr_refresh_rates_t *R  /**< */);
 
@@ -296,12 +296,12 @@ xcb_randr_refresh_rates_rates_end (/+const+/ xcb_randr_refresh_rates_t *R  /**< 
 /*****************************************************************************
  **
  ** void xcb_randr_refresh_rates_next
- ** 
+ **
  ** @param xcb_randr_refresh_rates_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_randr_refresh_rates_next (xcb_randr_refresh_rates_iterator_t *i  /**< */);
 
@@ -309,12 +309,12 @@ xcb_randr_refresh_rates_next (xcb_randr_refresh_rates_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_randr_refresh_rates_end
- ** 
+ **
  ** @param xcb_randr_refresh_rates_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_randr_refresh_rates_end (xcb_randr_refresh_rates_iterator_t i  /**< */);
 
@@ -322,14 +322,14 @@ xcb_randr_refresh_rates_end (xcb_randr_refresh_rates_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** xcb_randr_query_version_cookie_t xcb_randr_query_version
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              major_version
  ** @param uint              minor_version
  ** @returns xcb_randr_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_randr_query_version_cookie_t
 xcb_randr_query_version (xcb_connection_t *c  /**< */,
                          uint              major_version  /**< */,
@@ -339,14 +339,14 @@ xcb_randr_query_version (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_randr_query_version_cookie_t xcb_randr_query_version_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              major_version
  ** @param uint              minor_version
  ** @returns xcb_randr_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_randr_query_version_cookie_t
 xcb_randr_query_version_unchecked (xcb_connection_t *c  /**< */,
                                    uint              major_version  /**< */,
@@ -356,14 +356,14 @@ xcb_randr_query_version_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_randr_query_version_reply_t * xcb_randr_query_version_reply
- ** 
+ **
  ** @param xcb_connection_t                  *c
  ** @param xcb_randr_query_version_cookie_t   cookie
  ** @param xcb_generic_error_t              **e
  ** @returns xcb_randr_query_version_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_randr_query_version_reply_t *
 xcb_randr_query_version_reply (xcb_connection_t                  *c  /**< */,
                                xcb_randr_query_version_cookie_t   cookie  /**< */,
@@ -373,7 +373,7 @@ xcb_randr_query_version_reply (xcb_connection_t                  *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_randr_set_screen_config_cookie_t xcb_randr_set_screen_config
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_drawable_t    drawable
  ** @param xcb_timestamp_t   timestamp
@@ -384,7 +384,7 @@ xcb_randr_query_version_reply (xcb_connection_t                  *c  /**< */,
  ** @returns xcb_randr_set_screen_config_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_randr_set_screen_config_cookie_t
 xcb_randr_set_screen_config (xcb_connection_t *c  /**< */,
                              xcb_drawable_t    drawable  /**< */,
@@ -398,7 +398,7 @@ xcb_randr_set_screen_config (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_randr_set_screen_config_cookie_t xcb_randr_set_screen_config_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_drawable_t    drawable
  ** @param xcb_timestamp_t   timestamp
@@ -409,7 +409,7 @@ xcb_randr_set_screen_config (xcb_connection_t *c  /**< */,
  ** @returns xcb_randr_set_screen_config_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_randr_set_screen_config_cookie_t
 xcb_randr_set_screen_config_unchecked (xcb_connection_t *c  /**< */,
                                        xcb_drawable_t    drawable  /**< */,
@@ -423,14 +423,14 @@ xcb_randr_set_screen_config_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_randr_set_screen_config_reply_t * xcb_randr_set_screen_config_reply
- ** 
+ **
  ** @param xcb_connection_t                      *c
  ** @param xcb_randr_set_screen_config_cookie_t   cookie
  ** @param xcb_generic_error_t                  **e
  ** @returns xcb_randr_set_screen_config_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_randr_set_screen_config_reply_t *
 xcb_randr_set_screen_config_reply (xcb_connection_t                      *c  /**< */,
                                    xcb_randr_set_screen_config_cookie_t   cookie  /**< */,
@@ -440,14 +440,14 @@ xcb_randr_set_screen_config_reply (xcb_connection_t                      *c  /**
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_randr_select_input_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param ushort            enable
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_randr_select_input_checked (xcb_connection_t *c  /**< */,
                                 xcb_window_t      window  /**< */,
@@ -457,14 +457,14 @@ xcb_randr_select_input_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_randr_select_input
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param ushort            enable
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_randr_select_input (xcb_connection_t *c  /**< */,
                         xcb_window_t      window  /**< */,
@@ -474,13 +474,13 @@ xcb_randr_select_input (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_randr_get_screen_info_cookie_t xcb_randr_get_screen_info
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @returns xcb_randr_get_screen_info_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_randr_get_screen_info_cookie_t
 xcb_randr_get_screen_info (xcb_connection_t *c  /**< */,
                            xcb_window_t      window  /**< */);
@@ -489,13 +489,13 @@ xcb_randr_get_screen_info (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_randr_get_screen_info_cookie_t xcb_randr_get_screen_info_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @returns xcb_randr_get_screen_info_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_randr_get_screen_info_cookie_t
 xcb_randr_get_screen_info_unchecked (xcb_connection_t *c  /**< */,
                                      xcb_window_t      window  /**< */);
@@ -504,12 +504,12 @@ xcb_randr_get_screen_info_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_randr_screen_size_t * xcb_randr_get_screen_info_sizes
- ** 
+ **
  ** @param /+const+/ xcb_randr_get_screen_info_reply_t *R
  ** @returns xcb_randr_screen_size_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_randr_screen_size_t *
 xcb_randr_get_screen_info_sizes (/+const+/ xcb_randr_get_screen_info_reply_t *R  /**< */);
 
@@ -517,12 +517,12 @@ xcb_randr_get_screen_info_sizes (/+const+/ xcb_randr_get_screen_info_reply_t *R 
 /*****************************************************************************
  **
  ** int xcb_randr_get_screen_info_sizes_length
- ** 
+ **
  ** @param /+const+/ xcb_randr_get_screen_info_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_randr_get_screen_info_sizes_length (/+const+/ xcb_randr_get_screen_info_reply_t *R  /**< */);
 
@@ -530,12 +530,12 @@ xcb_randr_get_screen_info_sizes_length (/+const+/ xcb_randr_get_screen_info_repl
 /*****************************************************************************
  **
  ** xcb_randr_screen_size_iterator_t xcb_randr_get_screen_info_sizes_iterator
- ** 
+ **
  ** @param /+const+/ xcb_randr_get_screen_info_reply_t *R
  ** @returns xcb_randr_screen_size_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_randr_screen_size_iterator_t
 xcb_randr_get_screen_info_sizes_iterator (/+const+/ xcb_randr_get_screen_info_reply_t *R  /**< */);
 
@@ -543,12 +543,12 @@ xcb_randr_get_screen_info_sizes_iterator (/+const+/ xcb_randr_get_screen_info_re
 /*****************************************************************************
  **
  ** int xcb_randr_get_screen_info_rates_length
- ** 
+ **
  ** @param /+const+/ xcb_randr_get_screen_info_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_randr_get_screen_info_rates_length (/+const+/ xcb_randr_get_screen_info_reply_t *R  /**< */);
 
@@ -556,12 +556,12 @@ xcb_randr_get_screen_info_rates_length (/+const+/ xcb_randr_get_screen_info_repl
 /*****************************************************************************
  **
  ** xcb_randr_refresh_rates_iterator_t xcb_randr_get_screen_info_rates_iterator
- ** 
+ **
  ** @param /+const+/ xcb_randr_get_screen_info_reply_t *R
  ** @returns xcb_randr_refresh_rates_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_randr_refresh_rates_iterator_t
 xcb_randr_get_screen_info_rates_iterator (/+const+/ xcb_randr_get_screen_info_reply_t *R  /**< */);
 
@@ -569,14 +569,14 @@ xcb_randr_get_screen_info_rates_iterator (/+const+/ xcb_randr_get_screen_info_re
 /*****************************************************************************
  **
  ** xcb_randr_get_screen_info_reply_t * xcb_randr_get_screen_info_reply
- ** 
+ **
  ** @param xcb_connection_t                    *c
  ** @param xcb_randr_get_screen_info_cookie_t   cookie
  ** @param xcb_generic_error_t                **e
  ** @returns xcb_randr_get_screen_info_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_randr_get_screen_info_reply_t *
 xcb_randr_get_screen_info_reply (xcb_connection_t                    *c  /**< */,
                                  xcb_randr_get_screen_info_cookie_t   cookie  /**< */,
