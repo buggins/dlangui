@@ -145,7 +145,7 @@ class SpreadSheetWidget : WidgetGroupDefaultDrawing, OnScrollHandler, CellSelect
     }
 
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         if (visibility == Visibility.Gone) {
             return;
         }

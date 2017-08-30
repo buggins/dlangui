@@ -34,10 +34,10 @@ class Camera : Node3d {
     @property bool enabled() { return _enabled; }
 
     /// activates / deactivates camera
-    @property void enabled(bool v) { 
+    @property void enabled(bool v) {
         if (scene)
             scene.activeCamera = null;
-        _enabled = v; 
+        _enabled = v;
     }
 
     /// returns true if some changes occured in projection or view matrix since last matrix getter call

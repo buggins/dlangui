@@ -35,19 +35,19 @@ enum CssDisplay : ubyte {
     inherit,
     inline,
     block,
-    list_item, 
-    run_in, 
-    compact, 
-    marker, 
-    table, 
-    inline_table, 
-    table_row_group, 
-    table_header_group, 
-    table_footer_group, 
-    table_row, 
-    table_column_group, 
-    table_column, 
-    table_cell, 
+    list_item,
+    run_in,
+    compact,
+    marker,
+    table,
+    inline_table,
+    table_row_group,
+    table_header_group,
+    table_footer_group,
+    table_row,
+    table_column_group,
+    table_column,
+    table_cell,
     table_caption,
     none
 }
@@ -198,7 +198,7 @@ struct CssValue {
     }
     bool opEqual(CssValue v) const
     {
-        return type == v.type 
+        return type == v.type
             && value == v.value;
     }
 
@@ -306,7 +306,7 @@ private:
     CssSelectorRule _next;
     string _value;
 public:
-    this(CssSelectorRuleType type) { 
+    this(CssSelectorRuleType type) {
         _type = type;
     }
     this(const CssSelectorRule v) {
@@ -315,9 +315,9 @@ public:
         _attrid = v._attrid;
         _value = v._value;
     }
-    ~this() { 
-        //if (_next) 
-        //    destroy(_next); 
+    ~this() {
+        //if (_next)
+        //    destroy(_next);
     }
 
     @property elem_id id() { return _id; }
@@ -373,7 +373,7 @@ public:
                 int p = cast(int)val.indexOf(_value);
                 if (p < 0)
                     return false;
-                if ( (p > 0 && val[p - 1] != ' ') 
+                if ( (p > 0 && val[p - 1] != ' ')
                         || ( p + _value.length < val.length && val[p + _value.length] != ' '))
                     return false;
                 return true;
@@ -463,7 +463,7 @@ public:
     }
 
     void setDeclaration(CssDeclaration decl) {
-        _decl = decl; 
+        _decl = decl;
     }
 }
 

@@ -67,17 +67,17 @@ class SettingsFile {
     protected SettingsFileFormat _format = SettingsFileFormat.JSON;
 
     @property Setting setting() { return _setting; }
-    @property Setting copySettings() { 
-        return _setting.clone(); 
+    @property Setting copySettings() {
+        return _setting.clone();
     }
     /// replace setting object
     void replaceSetting(Setting s) {
         _setting = s;
     }
-    @property void applySettings(Setting settings) { 
+    @property void applySettings(Setting settings) {
         // TODO copy only changed settings
         _setting = settings;
-        //_setting.apply(settings); 
+        //_setting.apply(settings);
     }
     alias setting this;
 
@@ -489,7 +489,7 @@ final class Setting {
 
 
     /// read as string value
-    @property inout(string) str() inout { 
+    @property inout(string) str() inout {
         final switch(_type) with(SettingType) {
             case STRING:
                 return _store.str;
@@ -510,7 +510,7 @@ final class Setting {
         }
     }
     /// read as string value
-    inout(string) strDef(string defValue) inout { 
+    inout(string) strDef(string defValue) inout {
         final switch(_type) with(SettingType) {
             case STRING:
                 return _store.str;
@@ -676,7 +676,7 @@ final class Setting {
                 return null;
             case OBJECT:
                 int[string] res;
-                foreach(key, value; _store.map.map) 
+                foreach(key, value; _store.map.map)
                     res[key] = cast(int)this[value].integer;
                 return res;
         }
@@ -704,7 +704,7 @@ final class Setting {
                 return null;
             case OBJECT:
                 Setting[string] res;
-                foreach(key, value; _store.map.map) 
+                foreach(key, value; _store.map.map)
                     res[key] = this[value];
                 return res;
         }
@@ -771,7 +771,7 @@ final class Setting {
     }
 
     /// read as long value
-    @property inout(long) integer() inout { 
+    @property inout(long) integer() inout {
         final switch(_type) with(SettingType) {
             case STRING:
                 return parseLong(_store.str);
@@ -792,7 +792,7 @@ final class Setting {
     }
 
     /// read as long value
-    inout(long) integerDef(long defValue) inout { 
+    inout(long) integerDef(long defValue) inout {
         final switch(_type) with(SettingType) {
             case STRING:
                 return parseLong(_store.str, defValue);
@@ -821,7 +821,7 @@ final class Setting {
     }
 
     /// read as ulong value
-    @property inout(long) uinteger() inout { 
+    @property inout(long) uinteger() inout {
         final switch(_type) with(SettingType) {
             case STRING:
                 return parseULong(_store.str);
@@ -841,7 +841,7 @@ final class Setting {
         }
     }
     /// read as ulong value
-    inout(long) uintegerDef(ulong defValue) inout { 
+    inout(long) uintegerDef(ulong defValue) inout {
         final switch(_type) with(SettingType) {
             case STRING:
                 return parseULong(_store.str, defValue);

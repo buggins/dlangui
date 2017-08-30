@@ -17,7 +17,7 @@ import std.c.linux.X11.xcb.xcb;
 
 const int XCB_RECORD_MAJOR_VERSION =1;
 const int XCB_RECORD_MINOR_VERSION =13;
-  
+
 extern(C) extern xcb_extension_t xcb_record_id;
 
 alias uint xcb_record_context_t;
@@ -352,12 +352,12 @@ struct xcb_record_free_context_request_t {
 /*****************************************************************************
  **
  ** void xcb_record_context_next
- ** 
+ **
  ** @param xcb_record_context_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_record_context_next (xcb_record_context_iterator_t *i  /**< */);
 
@@ -365,12 +365,12 @@ xcb_record_context_next (xcb_record_context_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_record_context_end
- ** 
+ **
  ** @param xcb_record_context_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_record_context_end (xcb_record_context_iterator_t i  /**< */);
 
@@ -378,12 +378,12 @@ xcb_record_context_end (xcb_record_context_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** void xcb_record_range_8_next
- ** 
+ **
  ** @param xcb_record_range_8_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_record_range_8_next (xcb_record_range_8_iterator_t *i  /**< */);
 
@@ -391,12 +391,12 @@ xcb_record_range_8_next (xcb_record_range_8_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_record_range_8_end
- ** 
+ **
  ** @param xcb_record_range_8_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_record_range_8_end (xcb_record_range_8_iterator_t i  /**< */);
 
@@ -404,12 +404,12 @@ xcb_record_range_8_end (xcb_record_range_8_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** void xcb_record_range_16_next
- ** 
+ **
  ** @param xcb_record_range_16_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_record_range_16_next (xcb_record_range_16_iterator_t *i  /**< */);
 
@@ -417,12 +417,12 @@ xcb_record_range_16_next (xcb_record_range_16_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_record_range_16_end
- ** 
+ **
  ** @param xcb_record_range_16_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_record_range_16_end (xcb_record_range_16_iterator_t i  /**< */);
 
@@ -430,12 +430,12 @@ xcb_record_range_16_end (xcb_record_range_16_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** void xcb_record_ext_range_next
- ** 
+ **
  ** @param xcb_record_ext_range_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_record_ext_range_next (xcb_record_ext_range_iterator_t *i  /**< */);
 
@@ -443,12 +443,12 @@ xcb_record_ext_range_next (xcb_record_ext_range_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_record_ext_range_end
- ** 
+ **
  ** @param xcb_record_ext_range_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_record_ext_range_end (xcb_record_ext_range_iterator_t i  /**< */);
 
@@ -456,12 +456,12 @@ xcb_record_ext_range_end (xcb_record_ext_range_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** void xcb_record_range_next
- ** 
+ **
  ** @param xcb_record_range_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_record_range_next (xcb_record_range_iterator_t *i  /**< */);
 
@@ -469,12 +469,12 @@ xcb_record_range_next (xcb_record_range_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_record_range_end
- ** 
+ **
  ** @param xcb_record_range_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_record_range_end (xcb_record_range_iterator_t i  /**< */);
 
@@ -482,12 +482,12 @@ xcb_record_range_end (xcb_record_range_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** void xcb_record_element_header_next
- ** 
+ **
  ** @param xcb_record_element_header_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_record_element_header_next (xcb_record_element_header_iterator_t *i  /**< */);
 
@@ -495,12 +495,12 @@ xcb_record_element_header_next (xcb_record_element_header_iterator_t *i  /**< */
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_record_element_header_end
- ** 
+ **
  ** @param xcb_record_element_header_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_record_element_header_end (xcb_record_element_header_iterator_t i  /**< */);
 
@@ -508,12 +508,12 @@ xcb_record_element_header_end (xcb_record_element_header_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** void xcb_record_client_spec_next
- ** 
+ **
  ** @param xcb_record_client_spec_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_record_client_spec_next (xcb_record_client_spec_iterator_t *i  /**< */);
 
@@ -521,12 +521,12 @@ xcb_record_client_spec_next (xcb_record_client_spec_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_record_client_spec_end
- ** 
+ **
  ** @param xcb_record_client_spec_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_record_client_spec_end (xcb_record_client_spec_iterator_t i  /**< */);
 
@@ -534,12 +534,12 @@ xcb_record_client_spec_end (xcb_record_client_spec_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** xcb_record_range_t * xcb_record_client_info_ranges
- ** 
+ **
  ** @param /+const+/ xcb_record_client_info_t *R
  ** @returns xcb_record_range_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_record_range_t *
 xcb_record_client_info_ranges (/+const+/ xcb_record_client_info_t *R  /**< */);
 
@@ -547,12 +547,12 @@ xcb_record_client_info_ranges (/+const+/ xcb_record_client_info_t *R  /**< */);
 /*****************************************************************************
  **
  ** int xcb_record_client_info_ranges_length
- ** 
+ **
  ** @param /+const+/ xcb_record_client_info_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_record_client_info_ranges_length (/+const+/ xcb_record_client_info_t *R  /**< */);
 
@@ -560,12 +560,12 @@ xcb_record_client_info_ranges_length (/+const+/ xcb_record_client_info_t *R  /**
 /*****************************************************************************
  **
  ** xcb_record_range_iterator_t xcb_record_client_info_ranges_iterator
- ** 
+ **
  ** @param /+const+/ xcb_record_client_info_t *R
  ** @returns xcb_record_range_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_record_range_iterator_t
 xcb_record_client_info_ranges_iterator (/+const+/ xcb_record_client_info_t *R  /**< */);
 
@@ -573,12 +573,12 @@ xcb_record_client_info_ranges_iterator (/+const+/ xcb_record_client_info_t *R  /
 /*****************************************************************************
  **
  ** void xcb_record_client_info_next
- ** 
+ **
  ** @param xcb_record_client_info_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_record_client_info_next (xcb_record_client_info_iterator_t *i  /**< */);
 
@@ -586,12 +586,12 @@ xcb_record_client_info_next (xcb_record_client_info_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_record_client_info_end
- ** 
+ **
  ** @param xcb_record_client_info_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_record_client_info_end (xcb_record_client_info_iterator_t i  /**< */);
 
@@ -599,14 +599,14 @@ xcb_record_client_info_end (xcb_record_client_info_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** xcb_record_query_version_cookie_t xcb_record_query_version
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param ushort            major_version
  ** @param ushort            minor_version
  ** @returns xcb_record_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_record_query_version_cookie_t
 xcb_record_query_version (xcb_connection_t *c  /**< */,
                           ushort            major_version  /**< */,
@@ -616,14 +616,14 @@ xcb_record_query_version (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_record_query_version_cookie_t xcb_record_query_version_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param ushort            major_version
  ** @param ushort            minor_version
  ** @returns xcb_record_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_record_query_version_cookie_t
 xcb_record_query_version_unchecked (xcb_connection_t *c  /**< */,
                                     ushort            major_version  /**< */,
@@ -633,14 +633,14 @@ xcb_record_query_version_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_record_query_version_reply_t * xcb_record_query_version_reply
- ** 
+ **
  ** @param xcb_connection_t                   *c
  ** @param xcb_record_query_version_cookie_t   cookie
  ** @param xcb_generic_error_t               **e
  ** @returns xcb_record_query_version_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_record_query_version_reply_t *
 xcb_record_query_version_reply (xcb_connection_t                   *c  /**< */,
                                 xcb_record_query_version_cookie_t   cookie  /**< */,
@@ -650,7 +650,7 @@ xcb_record_query_version_reply (xcb_connection_t                   *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_record_create_context_checked
- ** 
+ **
  ** @param xcb_connection_t                   *c
  ** @param xcb_record_context_t                context
  ** @param xcb_record_element_header_t         element_header
@@ -661,7 +661,7 @@ xcb_record_query_version_reply (xcb_connection_t                   *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_record_create_context_checked (xcb_connection_t                   *c  /**< */,
                                    xcb_record_context_t                context  /**< */,
@@ -675,7 +675,7 @@ xcb_record_create_context_checked (xcb_connection_t                   *c  /**< *
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_record_create_context
- ** 
+ **
  ** @param xcb_connection_t                   *c
  ** @param xcb_record_context_t                context
  ** @param xcb_record_element_header_t         element_header
@@ -686,7 +686,7 @@ xcb_record_create_context_checked (xcb_connection_t                   *c  /**< *
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_record_create_context (xcb_connection_t                   *c  /**< */,
                            xcb_record_context_t                context  /**< */,
@@ -700,7 +700,7 @@ xcb_record_create_context (xcb_connection_t                   *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_record_register_clients_checked
- ** 
+ **
  ** @param xcb_connection_t                   *c
  ** @param xcb_record_context_t                context
  ** @param xcb_record_element_header_t         element_header
@@ -711,7 +711,7 @@ xcb_record_create_context (xcb_connection_t                   *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_record_register_clients_checked (xcb_connection_t                   *c  /**< */,
                                      xcb_record_context_t                context  /**< */,
@@ -725,7 +725,7 @@ xcb_record_register_clients_checked (xcb_connection_t                   *c  /**<
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_record_register_clients
- ** 
+ **
  ** @param xcb_connection_t                   *c
  ** @param xcb_record_context_t                context
  ** @param xcb_record_element_header_t         element_header
@@ -736,7 +736,7 @@ xcb_record_register_clients_checked (xcb_connection_t                   *c  /**<
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_record_register_clients (xcb_connection_t                   *c  /**< */,
                              xcb_record_context_t                context  /**< */,
@@ -750,7 +750,7 @@ xcb_record_register_clients (xcb_connection_t                   *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_record_unregister_clients_checked
- ** 
+ **
  ** @param xcb_connection_t                   *c
  ** @param xcb_record_context_t                context
  ** @param uint                                num_client_specs
@@ -758,7 +758,7 @@ xcb_record_register_clients (xcb_connection_t                   *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_record_unregister_clients_checked (xcb_connection_t                   *c  /**< */,
                                        xcb_record_context_t                context  /**< */,
@@ -769,7 +769,7 @@ xcb_record_unregister_clients_checked (xcb_connection_t                   *c  /*
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_record_unregister_clients
- ** 
+ **
  ** @param xcb_connection_t                   *c
  ** @param xcb_record_context_t                context
  ** @param uint                                num_client_specs
@@ -777,7 +777,7 @@ xcb_record_unregister_clients_checked (xcb_connection_t                   *c  /*
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_record_unregister_clients (xcb_connection_t                   *c  /**< */,
                                xcb_record_context_t                context  /**< */,
@@ -788,13 +788,13 @@ xcb_record_unregister_clients (xcb_connection_t                   *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_record_get_context_cookie_t xcb_record_get_context
- ** 
+ **
  ** @param xcb_connection_t     *c
  ** @param xcb_record_context_t  context
  ** @returns xcb_record_get_context_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_record_get_context_cookie_t
 xcb_record_get_context (xcb_connection_t     *c  /**< */,
                         xcb_record_context_t  context  /**< */);
@@ -803,13 +803,13 @@ xcb_record_get_context (xcb_connection_t     *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_record_get_context_cookie_t xcb_record_get_context_unchecked
- ** 
+ **
  ** @param xcb_connection_t     *c
  ** @param xcb_record_context_t  context
  ** @returns xcb_record_get_context_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_record_get_context_cookie_t
 xcb_record_get_context_unchecked (xcb_connection_t     *c  /**< */,
                                   xcb_record_context_t  context  /**< */);
@@ -818,12 +818,12 @@ xcb_record_get_context_unchecked (xcb_connection_t     *c  /**< */,
 /*****************************************************************************
  **
  ** int xcb_record_get_context_intercepted_clients_length
- ** 
+ **
  ** @param /+const+/ xcb_record_get_context_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_record_get_context_intercepted_clients_length (/+const+/ xcb_record_get_context_reply_t *R  /**< */);
 
@@ -831,12 +831,12 @@ xcb_record_get_context_intercepted_clients_length (/+const+/ xcb_record_get_cont
 /*****************************************************************************
  **
  ** xcb_record_client_info_iterator_t xcb_record_get_context_intercepted_clients_iterator
- ** 
+ **
  ** @param /+const+/ xcb_record_get_context_reply_t *R
  ** @returns xcb_record_client_info_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_record_client_info_iterator_t
 xcb_record_get_context_intercepted_clients_iterator (/+const+/ xcb_record_get_context_reply_t *R  /**< */);
 
@@ -844,14 +844,14 @@ xcb_record_get_context_intercepted_clients_iterator (/+const+/ xcb_record_get_co
 /*****************************************************************************
  **
  ** xcb_record_get_context_reply_t * xcb_record_get_context_reply
- ** 
+ **
  ** @param xcb_connection_t                 *c
  ** @param xcb_record_get_context_cookie_t   cookie
  ** @param xcb_generic_error_t             **e
  ** @returns xcb_record_get_context_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_record_get_context_reply_t *
 xcb_record_get_context_reply (xcb_connection_t                 *c  /**< */,
                               xcb_record_get_context_cookie_t   cookie  /**< */,
@@ -861,13 +861,13 @@ xcb_record_get_context_reply (xcb_connection_t                 *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_record_enable_context_cookie_t xcb_record_enable_context
- ** 
+ **
  ** @param xcb_connection_t     *c
  ** @param xcb_record_context_t  context
  ** @returns xcb_record_enable_context_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_record_enable_context_cookie_t
 xcb_record_enable_context (xcb_connection_t     *c  /**< */,
                            xcb_record_context_t  context  /**< */);
@@ -876,13 +876,13 @@ xcb_record_enable_context (xcb_connection_t     *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_record_enable_context_cookie_t xcb_record_enable_context_unchecked
- ** 
+ **
  ** @param xcb_connection_t     *c
  ** @param xcb_record_context_t  context
  ** @returns xcb_record_enable_context_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_record_enable_context_cookie_t
 xcb_record_enable_context_unchecked (xcb_connection_t     *c  /**< */,
                                      xcb_record_context_t  context  /**< */);
@@ -891,12 +891,12 @@ xcb_record_enable_context_unchecked (xcb_connection_t     *c  /**< */,
 /*****************************************************************************
  **
  ** ubyte * xcb_record_enable_context_data
- ** 
+ **
  ** @param /+const+/ xcb_record_enable_context_reply_t *R
  ** @returns ubyte *
  **
  *****************************************************************************/
- 
+
 extern(C) ubyte *
 xcb_record_enable_context_data (/+const+/ xcb_record_enable_context_reply_t *R  /**< */);
 
@@ -904,12 +904,12 @@ xcb_record_enable_context_data (/+const+/ xcb_record_enable_context_reply_t *R  
 /*****************************************************************************
  **
  ** int xcb_record_enable_context_data_length
- ** 
+ **
  ** @param /+const+/ xcb_record_enable_context_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_record_enable_context_data_length (/+const+/ xcb_record_enable_context_reply_t *R  /**< */);
 
@@ -917,12 +917,12 @@ xcb_record_enable_context_data_length (/+const+/ xcb_record_enable_context_reply
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_record_enable_context_data_end
- ** 
+ **
  ** @param /+const+/ xcb_record_enable_context_reply_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_record_enable_context_data_end (/+const+/ xcb_record_enable_context_reply_t *R  /**< */);
 
@@ -930,14 +930,14 @@ xcb_record_enable_context_data_end (/+const+/ xcb_record_enable_context_reply_t 
 /*****************************************************************************
  **
  ** xcb_record_enable_context_reply_t * xcb_record_enable_context_reply
- ** 
+ **
  ** @param xcb_connection_t                    *c
  ** @param xcb_record_enable_context_cookie_t   cookie
  ** @param xcb_generic_error_t                **e
  ** @returns xcb_record_enable_context_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_record_enable_context_reply_t *
 xcb_record_enable_context_reply (xcb_connection_t                    *c  /**< */,
                                  xcb_record_enable_context_cookie_t   cookie  /**< */,
@@ -947,13 +947,13 @@ xcb_record_enable_context_reply (xcb_connection_t                    *c  /**< */
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_record_disable_context_checked
- ** 
+ **
  ** @param xcb_connection_t     *c
  ** @param xcb_record_context_t  context
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_record_disable_context_checked (xcb_connection_t     *c  /**< */,
                                     xcb_record_context_t  context  /**< */);
@@ -962,13 +962,13 @@ xcb_record_disable_context_checked (xcb_connection_t     *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_record_disable_context
- ** 
+ **
  ** @param xcb_connection_t     *c
  ** @param xcb_record_context_t  context
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_record_disable_context (xcb_connection_t     *c  /**< */,
                             xcb_record_context_t  context  /**< */);
@@ -977,13 +977,13 @@ xcb_record_disable_context (xcb_connection_t     *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_record_free_context_checked
- ** 
+ **
  ** @param xcb_connection_t     *c
  ** @param xcb_record_context_t  context
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_record_free_context_checked (xcb_connection_t     *c  /**< */,
                                  xcb_record_context_t  context  /**< */);
@@ -992,13 +992,13 @@ xcb_record_free_context_checked (xcb_connection_t     *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_record_free_context
- ** 
+ **
  ** @param xcb_connection_t     *c
  ** @param xcb_record_context_t  context
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_record_free_context (xcb_connection_t     *c  /**< */,
                          xcb_record_context_t  context  /**< */);

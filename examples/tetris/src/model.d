@@ -39,7 +39,7 @@ struct FigureCell {
 /// Single figure shape for some particular orientation - 4 cells
 struct FigureShape {
     /// by cell index 0..3
-    FigureCell[4] cells; 
+    FigureCell[4] cells;
     /// lowest y coordinate - to show next figure above cup
     int extent;
     /// upper y coordinate - initial Y offset to place figure to cup
@@ -77,7 +77,7 @@ __gshared static this() {
         // FIGURE1 ===========================================
         //   ##     ####
         // 00##       00##
-        // ##       
+        // ##
         Figure([FigureShape([1, 0], [ 1, 1], [0,-1]),
                 FigureShape([0, 1], [-1, 1], [1, 0]),
                 FigureShape([1, 0], [ 1, 1], [0,-1]),
@@ -85,7 +85,7 @@ __gshared static this() {
         // FIGURE2 ===========================================
         // ##         ####
         // 00##     ##00
-        //   ##     
+        //   ##
         Figure([FigureShape([1, 0], [0, 1], [ 1,-1]),
                 FigureShape([0, 1], [1, 1], [-1, 0]),
                 FigureShape([1, 0], [0, 1], [ 1,-1]),
@@ -109,7 +109,7 @@ __gshared static this() {
         // FIGURE5 ===========================================
         //   ####
         //   00##
-        //       
+        //
         Figure([FigureShape([1, 0], [0, 1], [ 1, 1]),
                 FigureShape([1, 0], [0, 1], [ 1, 1]),
                 FigureShape([1, 0], [0, 1], [ 1, 1]),
@@ -118,7 +118,7 @@ __gshared static this() {
         //   ##
         //   ##
         //   00     ##00####
-        //   ##    
+        //   ##
         Figure([FigureShape([0, 1], [0, 2], [ 0,-1]),
                 FigureShape([1, 0], [2, 0], [-1, 0]),
                 FigureShape([0, 1], [0, 2], [ 0,-1]),
@@ -176,7 +176,7 @@ struct FigurePosition {
     }
 }
 
-/** 
+/**
 Cup content
 
 Coordinates are relative to bottom left corner.

@@ -18,7 +18,7 @@ import std.c.linux.X11.xcb.xproto;
 
 const int XCB_TEST_MAJOR_VERSION =2;
 const int XCB_TEST_MINOR_VERSION =1;
-  
+
 extern(C) extern xcb_extension_t xcb_test_id;
 
 /**
@@ -130,14 +130,14 @@ struct xcb_test_grab_control_request_t {
 /*****************************************************************************
  **
  ** xcb_test_get_version_cookie_t xcb_test_get_version
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param ubyte             major_version
  ** @param ushort            minor_version
  ** @returns xcb_test_get_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_test_get_version_cookie_t
 xcb_test_get_version (xcb_connection_t *c  /**< */,
                       ubyte             major_version  /**< */,
@@ -147,14 +147,14 @@ xcb_test_get_version (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_test_get_version_cookie_t xcb_test_get_version_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param ubyte             major_version
  ** @param ushort            minor_version
  ** @returns xcb_test_get_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_test_get_version_cookie_t
 xcb_test_get_version_unchecked (xcb_connection_t *c  /**< */,
                                 ubyte             major_version  /**< */,
@@ -164,14 +164,14 @@ xcb_test_get_version_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_test_get_version_reply_t * xcb_test_get_version_reply
- ** 
+ **
  ** @param xcb_connection_t               *c
  ** @param xcb_test_get_version_cookie_t   cookie
  ** @param xcb_generic_error_t           **e
  ** @returns xcb_test_get_version_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_test_get_version_reply_t *
 xcb_test_get_version_reply (xcb_connection_t               *c  /**< */,
                             xcb_test_get_version_cookie_t   cookie  /**< */,
@@ -181,14 +181,14 @@ xcb_test_get_version_reply (xcb_connection_t               *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_test_compare_cursor_cookie_t xcb_test_compare_cursor
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param xcb_cursor_t      cursor
  ** @returns xcb_test_compare_cursor_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_test_compare_cursor_cookie_t
 xcb_test_compare_cursor (xcb_connection_t *c  /**< */,
                          xcb_window_t      window  /**< */,
@@ -198,14 +198,14 @@ xcb_test_compare_cursor (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_test_compare_cursor_cookie_t xcb_test_compare_cursor_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param xcb_cursor_t      cursor
  ** @returns xcb_test_compare_cursor_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_test_compare_cursor_cookie_t
 xcb_test_compare_cursor_unchecked (xcb_connection_t *c  /**< */,
                                    xcb_window_t      window  /**< */,
@@ -215,14 +215,14 @@ xcb_test_compare_cursor_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_test_compare_cursor_reply_t * xcb_test_compare_cursor_reply
- ** 
+ **
  ** @param xcb_connection_t                  *c
  ** @param xcb_test_compare_cursor_cookie_t   cookie
  ** @param xcb_generic_error_t              **e
  ** @returns xcb_test_compare_cursor_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_test_compare_cursor_reply_t *
 xcb_test_compare_cursor_reply (xcb_connection_t                  *c  /**< */,
                                xcb_test_compare_cursor_cookie_t   cookie  /**< */,
@@ -232,7 +232,7 @@ xcb_test_compare_cursor_reply (xcb_connection_t                  *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_test_fake_input_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param ubyte             type
  ** @param ubyte             detail
@@ -244,7 +244,7 @@ xcb_test_compare_cursor_reply (xcb_connection_t                  *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_test_fake_input_checked (xcb_connection_t *c  /**< */,
                              ubyte             type  /**< */,
@@ -259,7 +259,7 @@ xcb_test_fake_input_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_test_fake_input
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param ubyte             type
  ** @param ubyte             detail
@@ -271,7 +271,7 @@ xcb_test_fake_input_checked (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_test_fake_input (xcb_connection_t *c  /**< */,
                      ubyte             type  /**< */,
@@ -286,13 +286,13 @@ xcb_test_fake_input (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_test_grab_control_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param bool              impervious
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_test_grab_control_checked (xcb_connection_t *c  /**< */,
                                bool              impervious  /**< */);
@@ -301,13 +301,13 @@ xcb_test_grab_control_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_test_grab_control
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param bool              impervious
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_test_grab_control (xcb_connection_t *c  /**< */,
                        bool              impervious  /**< */);

@@ -29,7 +29,7 @@ version(Windows):
  */
 
  import win32.basetsd;
- 
+
 /* Opaque structure
  *	http://msdn.microsoft.com/library/en-us/ldap/ldap/berelement.asp
  */

@@ -9,7 +9,7 @@ struct XPMPredefinedColor
     ubyte green; ///Green value
     ubyte blue; ///Blue value
     string name; ///Color name
-    
+
     ///Compare operator to ease using this struct in search algorithms
     int opCmp(ref const XPMPredefinedColor other) const {
         return cmp(name, other.name);

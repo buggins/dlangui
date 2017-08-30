@@ -18,7 +18,7 @@ import std.c.linux.X11.xcb.xproto;
 
 const int XCB_SHM_MAJOR_VERSION =1;
 const int XCB_SHM_MINOR_VERSION =1;
-  
+
 extern(C) extern xcb_extension_t xcb_shm_id;
 
 alias uint xcb_shm_seg_t;
@@ -210,12 +210,12 @@ struct xcb_shm_create_pixmap_request_t {
 /*****************************************************************************
  **
  ** void xcb_shm_seg_next
- ** 
+ **
  ** @param xcb_shm_seg_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_shm_seg_next (xcb_shm_seg_iterator_t *i  /**< */);
 
@@ -223,12 +223,12 @@ xcb_shm_seg_next (xcb_shm_seg_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_shm_seg_end
- ** 
+ **
  ** @param xcb_shm_seg_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_shm_seg_end (xcb_shm_seg_iterator_t i  /**< */);
 
@@ -236,12 +236,12 @@ xcb_shm_seg_end (xcb_shm_seg_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** xcb_shm_query_version_cookie_t xcb_shm_query_version
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_shm_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_shm_query_version_cookie_t
 xcb_shm_query_version (xcb_connection_t *c  /**< */);
 
@@ -249,12 +249,12 @@ xcb_shm_query_version (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_shm_query_version_cookie_t xcb_shm_query_version_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_shm_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_shm_query_version_cookie_t
 xcb_shm_query_version_unchecked (xcb_connection_t *c  /**< */);
 
@@ -262,14 +262,14 @@ xcb_shm_query_version_unchecked (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_shm_query_version_reply_t * xcb_shm_query_version_reply
- ** 
+ **
  ** @param xcb_connection_t                *c
  ** @param xcb_shm_query_version_cookie_t   cookie
  ** @param xcb_generic_error_t            **e
  ** @returns xcb_shm_query_version_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_shm_query_version_reply_t *
 xcb_shm_query_version_reply (xcb_connection_t                *c  /**< */,
                              xcb_shm_query_version_cookie_t   cookie  /**< */,
@@ -279,7 +279,7 @@ xcb_shm_query_version_reply (xcb_connection_t                *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_shm_attach_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_shm_seg_t     shmseg
  ** @param uint              shmid
@@ -287,7 +287,7 @@ xcb_shm_query_version_reply (xcb_connection_t                *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_shm_attach_checked (xcb_connection_t *c  /**< */,
                         xcb_shm_seg_t     shmseg  /**< */,
@@ -298,7 +298,7 @@ xcb_shm_attach_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_shm_attach
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_shm_seg_t     shmseg
  ** @param uint              shmid
@@ -306,7 +306,7 @@ xcb_shm_attach_checked (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_shm_attach (xcb_connection_t *c  /**< */,
                 xcb_shm_seg_t     shmseg  /**< */,
@@ -317,13 +317,13 @@ xcb_shm_attach (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_shm_detach_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_shm_seg_t     shmseg
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_shm_detach_checked (xcb_connection_t *c  /**< */,
                         xcb_shm_seg_t     shmseg  /**< */);
@@ -332,13 +332,13 @@ xcb_shm_detach_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_shm_detach
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_shm_seg_t     shmseg
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_shm_detach (xcb_connection_t *c  /**< */,
                 xcb_shm_seg_t     shmseg  /**< */);
@@ -347,7 +347,7 @@ xcb_shm_detach (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_shm_put_image_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_drawable_t    drawable
  ** @param xcb_gcontext_t    gc
@@ -367,7 +367,7 @@ xcb_shm_detach (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_shm_put_image_checked (xcb_connection_t *c  /**< */,
                            xcb_drawable_t    drawable  /**< */,
@@ -390,7 +390,7 @@ xcb_shm_put_image_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_shm_put_image
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_drawable_t    drawable
  ** @param xcb_gcontext_t    gc
@@ -410,7 +410,7 @@ xcb_shm_put_image_checked (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_shm_put_image (xcb_connection_t *c  /**< */,
                    xcb_drawable_t    drawable  /**< */,
@@ -433,7 +433,7 @@ xcb_shm_put_image (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_shm_get_image_cookie_t xcb_shm_get_image
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_drawable_t    drawable
  ** @param short             x
@@ -447,7 +447,7 @@ xcb_shm_put_image (xcb_connection_t *c  /**< */,
  ** @returns xcb_shm_get_image_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_shm_get_image_cookie_t
 xcb_shm_get_image (xcb_connection_t *c  /**< */,
                    xcb_drawable_t    drawable  /**< */,
@@ -464,7 +464,7 @@ xcb_shm_get_image (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_shm_get_image_cookie_t xcb_shm_get_image_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_drawable_t    drawable
  ** @param short             x
@@ -478,7 +478,7 @@ xcb_shm_get_image (xcb_connection_t *c  /**< */,
  ** @returns xcb_shm_get_image_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_shm_get_image_cookie_t
 xcb_shm_get_image_unchecked (xcb_connection_t *c  /**< */,
                              xcb_drawable_t    drawable  /**< */,
@@ -495,14 +495,14 @@ xcb_shm_get_image_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_shm_get_image_reply_t * xcb_shm_get_image_reply
- ** 
+ **
  ** @param xcb_connection_t            *c
  ** @param xcb_shm_get_image_cookie_t   cookie
  ** @param xcb_generic_error_t        **e
  ** @returns xcb_shm_get_image_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_shm_get_image_reply_t *
 xcb_shm_get_image_reply (xcb_connection_t            *c  /**< */,
                          xcb_shm_get_image_cookie_t   cookie  /**< */,
@@ -512,7 +512,7 @@ xcb_shm_get_image_reply (xcb_connection_t            *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_shm_create_pixmap_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_pixmap_t      pid
  ** @param xcb_drawable_t    drawable
@@ -524,7 +524,7 @@ xcb_shm_get_image_reply (xcb_connection_t            *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_shm_create_pixmap_checked (xcb_connection_t *c  /**< */,
                                xcb_pixmap_t      pid  /**< */,
@@ -539,7 +539,7 @@ xcb_shm_create_pixmap_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_shm_create_pixmap
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_pixmap_t      pid
  ** @param xcb_drawable_t    drawable
@@ -551,7 +551,7 @@ xcb_shm_create_pixmap_checked (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_shm_create_pixmap (xcb_connection_t *c  /**< */,
                        xcb_pixmap_t      pid  /**< */,

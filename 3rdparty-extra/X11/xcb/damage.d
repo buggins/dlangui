@@ -19,7 +19,7 @@ import std.c.linux.X11.xcb.xfixes;
 
 const int XCB_DAMAGE_MAJOR_VERSION =1;
 const int XCB_DAMAGE_MINOR_VERSION =0;
-  
+
 extern(C) extern xcb_extension_t xcb_damage_id;
 
 alias uint xcb_damage_damage_t;
@@ -151,12 +151,12 @@ struct xcb_damage_notify_event_t {
 /*****************************************************************************
  **
  ** void xcb_damage_damage_next
- ** 
+ **
  ** @param xcb_damage_damage_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_damage_damage_next (xcb_damage_damage_iterator_t *i  /**< */);
 
@@ -164,12 +164,12 @@ xcb_damage_damage_next (xcb_damage_damage_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_damage_damage_end
- ** 
+ **
  ** @param xcb_damage_damage_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_damage_damage_end (xcb_damage_damage_iterator_t i  /**< */);
 
@@ -177,14 +177,14 @@ xcb_damage_damage_end (xcb_damage_damage_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** xcb_damage_query_version_cookie_t xcb_damage_query_version
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              client_major_version
  ** @param uint              client_minor_version
  ** @returns xcb_damage_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_damage_query_version_cookie_t
 xcb_damage_query_version (xcb_connection_t *c  /**< */,
                           uint              client_major_version  /**< */,
@@ -194,14 +194,14 @@ xcb_damage_query_version (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_damage_query_version_cookie_t xcb_damage_query_version_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              client_major_version
  ** @param uint              client_minor_version
  ** @returns xcb_damage_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_damage_query_version_cookie_t
 xcb_damage_query_version_unchecked (xcb_connection_t *c  /**< */,
                                     uint              client_major_version  /**< */,
@@ -211,14 +211,14 @@ xcb_damage_query_version_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_damage_query_version_reply_t * xcb_damage_query_version_reply
- ** 
+ **
  ** @param xcb_connection_t                   *c
  ** @param xcb_damage_query_version_cookie_t   cookie
  ** @param xcb_generic_error_t               **e
  ** @returns xcb_damage_query_version_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_damage_query_version_reply_t *
 xcb_damage_query_version_reply (xcb_connection_t                   *c  /**< */,
                                 xcb_damage_query_version_cookie_t   cookie  /**< */,
@@ -228,7 +228,7 @@ xcb_damage_query_version_reply (xcb_connection_t                   *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_damage_create_checked
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_damage_damage_t  damage
  ** @param xcb_drawable_t       drawable
@@ -236,7 +236,7 @@ xcb_damage_query_version_reply (xcb_connection_t                   *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_damage_create_checked (xcb_connection_t    *c  /**< */,
                            xcb_damage_damage_t  damage  /**< */,
@@ -247,7 +247,7 @@ xcb_damage_create_checked (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_damage_create
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_damage_damage_t  damage
  ** @param xcb_drawable_t       drawable
@@ -255,7 +255,7 @@ xcb_damage_create_checked (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_damage_create (xcb_connection_t    *c  /**< */,
                    xcb_damage_damage_t  damage  /**< */,
@@ -266,13 +266,13 @@ xcb_damage_create (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_damage_destroy_checked
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_damage_damage_t  damage
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_damage_destroy_checked (xcb_connection_t    *c  /**< */,
                             xcb_damage_damage_t  damage  /**< */);
@@ -281,13 +281,13 @@ xcb_damage_destroy_checked (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_damage_destroy
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_damage_damage_t  damage
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_damage_destroy (xcb_connection_t    *c  /**< */,
                     xcb_damage_damage_t  damage  /**< */);
@@ -296,7 +296,7 @@ xcb_damage_destroy (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_damage_subtract_checked
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_damage_damage_t  damage
  ** @param xcb_xfixes_region_t  repair
@@ -304,7 +304,7 @@ xcb_damage_destroy (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_damage_subtract_checked (xcb_connection_t    *c  /**< */,
                              xcb_damage_damage_t  damage  /**< */,
@@ -315,7 +315,7 @@ xcb_damage_subtract_checked (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_damage_subtract
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_damage_damage_t  damage
  ** @param xcb_xfixes_region_t  repair
@@ -323,7 +323,7 @@ xcb_damage_subtract_checked (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_damage_subtract (xcb_connection_t    *c  /**< */,
                      xcb_damage_damage_t  damage  /**< */,

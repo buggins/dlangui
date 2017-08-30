@@ -45,7 +45,7 @@ extern (C) int UIAppMain(string[] args) {
     embeddedResourceList.addResources(embedResourcesFromList!("resources.list")());
     //embeddedResourceList.dumpEmbeddedResources();
 
-    debug { 
+    debug {
         testPlanes();
     }
 
@@ -429,7 +429,7 @@ class UiWidget : VerticalLayout { //, CellVisitor
     //    BlockDef def = BLOCK_DEFS[cell];
     //    def.createFaces(world, world.camPosition, pos, visibleFaces, _minerMesh);
     //}
-    
+
     bool flying = false;
     bool enableMeshUpdate = true;
     Vector3d _moveAnimationDirection;
@@ -481,10 +481,10 @@ class UiWidget : VerticalLayout { //, CellVisitor
         import std.string : format;
         Widget w = childById("lblPosition");
         string dir = _world.camPosition.direction.dir.to!string;
-        dstring s = format("pos(%d,%d) h=%d fps:%d %s    [F]lying: %s   [U]pdateMesh: %s  [F1] wireframe: %s", _world.camPosition.pos.x, _world.camPosition.pos.z, _world.camPosition.pos.y, 
+        dstring s = format("pos(%d,%d) h=%d fps:%d %s    [F]lying: %s   [U]pdateMesh: %s  [F1] wireframe: %s", _world.camPosition.pos.x, _world.camPosition.pos.z, _world.camPosition.pos.y,
                            _fps,
                            dir,
-                           flying, 
+                           flying,
                            enableMeshUpdate,
                            _minerDrawable ? _minerDrawable.wireframe : false
                            ).toUTF32;
@@ -636,7 +636,7 @@ class UiWidget : VerticalLayout { //, CellVisitor
         _cam.translate(_animatingPosition);
         _cam.rotateY(_animatingAngle);
         _cam.rotateX(_yAngle);
-        
+
 
         dirLightNode.setIdentity();
         dirLightNode.translate(_animatingPosition);
@@ -646,7 +646,7 @@ class UiWidget : VerticalLayout { //, CellVisitor
         //checkgl!glDisable(GL_CULL_FACE);
         checkgl!glEnable(GL_DEPTH_TEST);
         checkgl!glCullFace(GL_BACK);
-        
+
         Log.d("Drawing position ", _animatingPosition, " angle ", _animatingAngle);
 
         _scene.drawScene(false);

@@ -197,7 +197,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     @property void allowMultipleFiles(bool b) {
         _allowMultipleFiles = b;
     }
-    
+
     /// return currently selected filter value - array of patterns like ["*.txt", "*.rtf"]
     @property string[] selectedFilter() {
         if (_filterIndex >= 0 && _filterIndex < _filters.length)
@@ -377,9 +377,9 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     /// draw data cell content
     override void drawCell(DrawBuf buf, Rect rc, int col, int row) {
         if (col == 1) {
-            if (BACKEND_GUI) 
+            if (BACKEND_GUI)
                 rc.shrink(2, 1);
-            else 
+            else
                 rc.right--;
             FontRef fnt = _fileList.font;
             dstring txt = _fileList.cellText(col, row);
@@ -488,7 +488,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         if (action.id == StandardAction.Open || action.id == StandardAction.OpenDirectory || action.id == StandardAction.Save) {
             auto baseFilename = toUTF8(_edFilename.text);
             _filename = _path ~ dirSeparator ~ baseFilename;
-            
+
             if (action.id != StandardAction.OpenDirectory && exists(_filename) && isDir(_filename)) {
                 // directory selected but we need file so open directory
                 auto row = _fileList.row();
@@ -501,7 +501,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
                 if (action.id == StandardAction.OpenDirectory && exists(_filename) && isDir(_filename)) {
                     close(result);
                     return true;
-                } 
+                }
                 else if (action.id == StandardAction.Save && !(_flags & FileDialogFlag.FileMustExist)) {
                     // save dialog
                     if ((_flags & FileDialogFlag.ConfirmOverwrite) && exists(_filename) && isFile(_filename)) {
@@ -534,7 +534,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             return true;
         });
     }
-    
+
     bool onPathSelected(string path) {
         //
         return openDirectory(path, null);
@@ -686,7 +686,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
 
     ///// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-    //override void measure(int parentWidth, int parentHeight) { 
+    //override void measure(int parentWidth, int parentHeight) {
     //    super.measure(parentWidth, parentHeight);
     //    for(int i = 0; i < childCount; i++) {
     //        Widget w = child(i);
@@ -804,16 +804,16 @@ class FilePathPanelButtons : WidgetGroupDefaultDrawing {
         }
     }
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         Rect m = margins;
         Rect p = padding;
-        
+
         // calc size constraints for children
         int pwidth = 0;
         int pheight = 0;
         if (parentWidth != SIZE_UNSPECIFIED)
             pwidth = parentWidth - (m.left + m.right + p.left + p.right);
-            
+
         if (parentHeight != SIZE_UNSPECIFIED)
             pheight = parentHeight - (m.top + m.bottom + p.top + p.bottom);
         int reservedForEmptySpace = parentWidth / 20;
@@ -1064,7 +1064,7 @@ class FileNameEditLine : HorizontalLayout {
 class DirEditLine : FileNameEditLine {
     this(string ID = null) {
         super(ID);
-        _fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable 
+        _fileDialogFlags = DialogFlag.Modal | DialogFlag.Resizable
             | FileDialogFlag.FileMustExist | FileDialogFlag.SelectDirectory | FileDialogFlag.EnableCreateDirectory;
         _caption = UIString.fromId("ACTION_SELECT_DIRECTORY"c);
     }

@@ -150,7 +150,7 @@ struct D3DCAPS9
     DWORD   VertexTextureFilterCaps;    // D3DPTFILTERCAPS for IDirect3DTexture9's for texture, used in vertex shaders
     DWORD   MaxVShaderInstructionsExecuted; // maximum number of vertex shader instructions that can be executed
     DWORD   MaxPShaderInstructionsExecuted; // maximum number of pixel shader instructions that can be executed
-    DWORD   MaxVertexShader30InstructionSlots; 
+    DWORD   MaxVertexShader30InstructionSlots;
     DWORD   MaxPixelShader30InstructionSlots;
 }
 
@@ -185,7 +185,7 @@ const D3DCAPS3_RESERVED = 0x8000001fL;
 // COPY and COPYVSYNC swap effects work whether or not this flag is set.
 const D3DCAPS3_ALPHA_FULLSCREEN_FLIP_OR_DISCARD = 0x00000020L;
 
-// Indicates that the device can perform a gamma correction from 
+// Indicates that the device can perform a gamma correction from
 // a windowed back buffer containing linear content to the sRGB desktop.
 const D3DCAPS3_LINEAR_TO_SRGB_PRESENTATION = 0x00000080L;
 
@@ -286,7 +286,7 @@ const D3DPRASTERCAPS_ZFOG = 0x00200000L;
 const D3DPRASTERCAPS_COLORPERSPECTIVE = 0x00400000L; /* Device iterates colors perspective correct */
 const D3DPRASTERCAPS_SCISSORTEST = 0x01000000L;
 const D3DPRASTERCAPS_SLOPESCALEDEPTHBIAS = 0x02000000L;
-const D3DPRASTERCAPS_DEPTHBIAS = 0x04000000L; 
+const D3DPRASTERCAPS_DEPTHBIAS = 0x04000000L;
 const D3DPRASTERCAPS_MULTISAMPLE_TOGGLE = 0x08000000L;
 
 //
@@ -352,7 +352,7 @@ const D3DPTEXTURECAPS_MIPVOLUMEMAP = 0x00008000L; /* Device can do mipmapped vol
 const D3DPTEXTURECAPS_MIPCUBEMAP = 0x00010000L; /* Device can do mipmapped cube maps */
 const D3DPTEXTURECAPS_CUBEMAP_POW2 = 0x00020000L; /* Device requires that cubemaps be power-of-2 dimension */
 const D3DPTEXTURECAPS_VOLUMEMAP_POW2 = 0x00040000L; /* Device requires that volume maps be power-of-2 dimension */
-const D3DPTEXTURECAPS_NOPROJECTEDBUMPENV = 0x00200000L; /* Device does not support projected bump env lookup operation 
+const D3DPTEXTURECAPS_NOPROJECTEDBUMPENV = 0x00200000L; /* Device does not support projected bump env lookup operation
                                                            in programmable and fixed function pixel shaders */
 
 //

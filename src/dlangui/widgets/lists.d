@@ -309,7 +309,7 @@ class StringListAdapterBase : ListAdapterBase {
     @property ref const(UIStringCollection) items() { return _items; }
 
     /** Replace items collection. */
-    @property StringListAdapterBase items(dstring[] values) { 
+    @property StringListAdapterBase items(dstring[] values) {
         _items = values;
         _intIds.length = items.length;
         _states.length = _items.length;
@@ -326,7 +326,7 @@ class StringListAdapterBase : ListAdapterBase {
     }
 
     /** Replace items collection. */
-    @property StringListAdapterBase items(UIString[] values) { 
+    @property StringListAdapterBase items(UIString[] values) {
         _items = values;
         _intIds.length = items.length;
         _states.length = _items.length;
@@ -343,7 +343,7 @@ class StringListAdapterBase : ListAdapterBase {
     }
 
     /** Replace items collection. */
-    @property StringListAdapterBase items(StringListValue[] values) { 
+    @property StringListAdapterBase items(StringListValue[] values) {
         _items = values;
         _intIds.length = items.length;
         _states.length = _items.length;
@@ -584,7 +584,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
     /// returns linear layout orientation (Vertical, Horizontal)
     @property Orientation orientation() { return _orientation; }
     /// sets linear layout orientation
-    @property ListWidget orientation(Orientation value) { 
+    @property ListWidget orientation(Orientation value) {
         _orientation = value;
         _scrollbar.orientation = value;
         requestLayout();
@@ -667,27 +667,27 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
             _adapter.disconnect(this);
         if (_adapter !is null && _ownAdapter)
             destroy(_adapter);
-        _adapter = adapter; 
+        _adapter = adapter;
         if (_adapter)
             _adapter.connect(this);
         _ownAdapter = false;
         onAdapterChange(_adapter);
-        return this; 
+        return this;
     }
     /// set adapter, which will be owned by list (destroy will be called for adapter on widget destroy)
-    @property ListWidget ownAdapter(ListAdapter adapter) { 
+    @property ListWidget ownAdapter(ListAdapter adapter) {
         if (_adapter is adapter)
             return this; // no changes
         if (_adapter)
             _adapter.disconnect(this);
         if (_adapter !is null && _ownAdapter)
             destroy(_adapter);
-        _adapter = adapter; 
+        _adapter = adapter;
         if (_adapter)
             _adapter.connect(this);
         _ownAdapter = true;
         onAdapterChange(_adapter);
-        return this; 
+        return this;
     }
 
     /// returns number of widgets in list
@@ -943,7 +943,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
         if (_adapter)
             _adapter.onThemeChanged();
     }
-    
+
     /// sets minimum size for the list, override to change
     Point minimumVisibleContentSize() {
         if (_orientation == Orientation.Vertical)
@@ -951,13 +951,13 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
         else
             return Point(100, measureMinChildrenSize().y);
     }
-    
+
     protected Point measureMinChildrenSize() {
         // measure children
         Point sz;
         for (int i = 0; i < itemCount; i++) {
             Widget w = itemWidget(i);
-            if (w is null || w.visibility == Visibility.Gone) 
+            if (w is null || w.visibility == Visibility.Gone)
                 continue;
 
             w.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
@@ -986,7 +986,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
             _itemSizes.length = itemCount;
         Rect m = margins;
         Rect p = padding;
-        
+
         // set widget area to small when first measure
         if (parentWidth == SIZE_UNSPECIFIED && parentHeight == SIZE_UNSPECIFIED)
         {
@@ -994,7 +994,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
             measuredContent(parentWidth, parentHeight, sz.x, sz.y);
             return;
         }
-        
+
         // calc size constraints for children
         int pwidth = parentWidth;
         int pheight = parentHeight;
@@ -1186,9 +1186,9 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
 
         // calc item rectangles
         updateItemPositions();
-        
+
         // layout scrollbar - must be under updateItemPositions()
-        if (_needScrollbar) { 
+        if (_needScrollbar) {
             _scrollbar.visibility = Visibility.Visible;
             if (_orientation == Orientation.Vertical)
                 sbrect.left = sbrect.right - _sbsz.x;
@@ -1196,7 +1196,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
                 sbrect.top = sbrect.bottom - _sbsz.y;
             _scrollbar.layout(sbrect);
         }
-        
+
         if (_makeSelectionVisibleOnNextLayout) {
             makeSelectionVisible();
             _makeSelectionVisibleOnNextLayout = false;
@@ -1416,13 +1416,13 @@ class StringListWidget : ListWidget {
         styleId = STYLE_EDIT_BOX;
         ownAdapter = new StringListAdapter(items);
     }
-    
+
     this(string ID, dstring[] items) {
         super(ID);
         styleId = STYLE_EDIT_BOX;
         ownAdapter = new StringListAdapter(items);
     }
-    
+
     this(string ID, StringListValue[] items) {
         super(ID);
         styleId = STYLE_EDIT_BOX;
@@ -1437,7 +1437,7 @@ class StringListWidget : ListWidget {
         }
         requestLayout();
     }
-    
+
     @property void items(dstring[] items) {
         _selectedItemIndex = -1;
         ownAdapter = new StringListAdapter(items);
@@ -1446,7 +1446,7 @@ class StringListWidget : ListWidget {
         }
         requestLayout();
     }
-    
+
     @property void items(StringListValue[] items) {
         _selectedItemIndex = -1;
         ownAdapter = new StringListAdapter(items);
@@ -1455,7 +1455,7 @@ class StringListWidget : ListWidget {
         }
         requestLayout();
     }
-    
+
     /// StringListValue list values
     override bool setStringListValueListProperty(string propName, StringListValue[] values) {
         if (propName == "items") {

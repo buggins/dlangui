@@ -18,7 +18,7 @@ class Effect : GLProgram {
     EffectId _id;
     string[string] _defs;
     string _defText;
-    
+
     @property ref const(EffectId) id() const { return _id; }
     this(EffectId id) {
         _id = id;
@@ -137,17 +137,17 @@ class Effect : GLProgram {
     /// get location for vertex attribute
     override int getVertexElementLocation(VertexElementType type) {
         switch(type) with(VertexElementType) {
-            case POSITION: 
+            case POSITION:
                 return getAttribLocation(DefaultAttribute.a_position);
-            case COLOR: 
+            case COLOR:
                 return getAttribLocation(DefaultAttribute.a_color);
-            case TEXCOORD0: 
+            case TEXCOORD0:
                 return getAttribLocation(DefaultAttribute.a_texCoord);
-            case NORMAL: 
+            case NORMAL:
                 return getAttribLocation(DefaultAttribute.a_normal);
-            case TANGENT: 
+            case TANGENT:
                 return getAttribLocation(DefaultAttribute.a_tangent);
-            case BINORMAL: 
+            case BINORMAL:
                 return getAttribLocation(DefaultAttribute.a_binormal);
             default:
                 return super.getVertexElementLocation(type);

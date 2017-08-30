@@ -10,25 +10,25 @@ import std.conv;
 
 struct xcb_image_t
 {
-	ushort           width;   
-	ushort           height;   
-	xcb_image_format_t format;   
-	ubyte            scanline_pad;   
-	ubyte            depth;   
-	ubyte            bpp;   
-	ubyte          unit;  
-	uint           plane_mask;   
-	xcb_image_order_t  byte_order;   
-	xcb_image_order_t  bit_order;    
-	uint           stride;   
-	uint           size;   
-	void *             base;   
-	ubyte *          data;   
+	ushort           width;
+	ushort           height;
+	xcb_image_format_t format;
+	ubyte            scanline_pad;
+	ubyte            depth;
+	ubyte            bpp;
+	ubyte          unit;
+	uint           plane_mask;
+	xcb_image_order_t  byte_order;
+	xcb_image_order_t  bit_order;
+	uint           stride;
+	uint           size;
+	void *             base;
+	ubyte *          data;
 }
-	
+
 xcb_format_t *
 find_format_by_depth (xcb_setup_t *setup, ubyte depth)
-{ 
+{
   xcb_format_t *fmt = xcb_setup_pixmap_formats(setup);
   xcb_format_t *fmtend = fmt + xcb_setup_pixmap_formats_length(setup);
   for(; fmt != fmtend; ++fmt)
@@ -109,7 +109,7 @@ image_format_valid (xcb_image_t *image) {
 }
 
 uint xcb_roundup(uint  	base,
-		uint	pad 
+		uint	pad
 )
 {
     uint b = base + pad - 1;
@@ -152,7 +152,7 @@ xcb_image_create_native (xcb_connection_t *  c,
   xcb_setup_t *  setup = xcb_get_setup(c);
   xcb_format_t *       fmt;
   xcb_image_format_t   ef = format;
-  
+
   if (ef == XCB_IMAGE_FORMAT_Z_PIXMAP && depth == 1)
       ef = XCB_IMAGE_FORMAT_XY_PIXMAP;
   switch (ef) {
@@ -229,7 +229,7 @@ xcb_image_create (ushort           width,
 			  break;
 		default:
 			break;
-						
+
       }
   }
   if (!format_valid(depth, bpp, unit, format, xpad))
@@ -265,7 +265,7 @@ xcb_image_create (ushort           width,
    * points at sufficient storage that may have been
    * supplied, and base is set iff it should be
    * auto-freed when the image is destroyed.
-   * 
+   *
    * Except as a special case when base = 0 && data == 0 &&
    * bytes == ~0 we just return the image structure and let
    * the caller deal with getting the allocation right.
@@ -303,7 +303,7 @@ xcb_image_destroy (xcb_image_t *image)
       free (image.base);
   free (image);
 }
-	
+
 ubyte
 xcb_aux_get_depth(xcb_connection_t *c,
                    xcb_screen_t     *screen)
@@ -319,7 +319,7 @@ xcb_aux_get_depth(xcb_connection_t *c,
 	  //Log.e("GetGeometry(root) failed");
     	exit (0);
   }
-  
+
   depth = geom.depth;
   free (geom);
 
@@ -334,7 +334,7 @@ extern (C) int xcb_image_shm_get(xcb_connection_t * conn,
 	       ushort                 y,
 	       uint                plane_mask);
 const XCB_ALL_PLANES = ~0;
-	
+
 extern (C) xcb_image_t *
 xcb_image_shm_put (xcb_connection_t *      conn,
 		   xcb_drawable_t          draw,

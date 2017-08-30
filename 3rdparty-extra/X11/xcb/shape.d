@@ -18,7 +18,7 @@ import std.c.linux.X11.xcb.xproto;
 
 const int XCB_SHAPE_MAJOR_VERSION =1;
 const int XCB_SHAPE_MINOR_VERSION =1;
-  
+
 extern(C) extern xcb_extension_t xcb_shape_id;
 
 alias ubyte xcb_shape_op_t;
@@ -303,12 +303,12 @@ struct xcb_shape_get_rectangles_reply_t {
 /*****************************************************************************
  **
  ** void xcb_shape_op_next
- ** 
+ **
  ** @param xcb_shape_op_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_shape_op_next (xcb_shape_op_iterator_t *i  /**< */);
 
@@ -316,12 +316,12 @@ xcb_shape_op_next (xcb_shape_op_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_shape_op_end
- ** 
+ **
  ** @param xcb_shape_op_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_shape_op_end (xcb_shape_op_iterator_t i  /**< */);
 
@@ -329,12 +329,12 @@ xcb_shape_op_end (xcb_shape_op_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** void xcb_shape_kind_next
- ** 
+ **
  ** @param xcb_shape_kind_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_shape_kind_next (xcb_shape_kind_iterator_t *i  /**< */);
 
@@ -342,12 +342,12 @@ xcb_shape_kind_next (xcb_shape_kind_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_shape_kind_end
- ** 
+ **
  ** @param xcb_shape_kind_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_shape_kind_end (xcb_shape_kind_iterator_t i  /**< */);
 
@@ -355,12 +355,12 @@ xcb_shape_kind_end (xcb_shape_kind_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** xcb_shape_query_version_cookie_t xcb_shape_query_version
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_shape_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_shape_query_version_cookie_t
 xcb_shape_query_version (xcb_connection_t *c  /**< */);
 
@@ -368,12 +368,12 @@ xcb_shape_query_version (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_shape_query_version_cookie_t xcb_shape_query_version_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_shape_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_shape_query_version_cookie_t
 xcb_shape_query_version_unchecked (xcb_connection_t *c  /**< */);
 
@@ -381,14 +381,14 @@ xcb_shape_query_version_unchecked (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_shape_query_version_reply_t * xcb_shape_query_version_reply
- ** 
+ **
  ** @param xcb_connection_t                  *c
  ** @param xcb_shape_query_version_cookie_t   cookie
  ** @param xcb_generic_error_t              **e
  ** @returns xcb_shape_query_version_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_shape_query_version_reply_t *
 xcb_shape_query_version_reply (xcb_connection_t                  *c  /**< */,
                                xcb_shape_query_version_cookie_t   cookie  /**< */,
@@ -398,7 +398,7 @@ xcb_shape_query_version_reply (xcb_connection_t                  *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_shape_rectangles_checked
- ** 
+ **
  ** @param xcb_connection_t          *c
  ** @param xcb_shape_op_t             operation
  ** @param xcb_shape_kind_t           destination_kind
@@ -411,7 +411,7 @@ xcb_shape_query_version_reply (xcb_connection_t                  *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_shape_rectangles_checked (xcb_connection_t          *c  /**< */,
                               xcb_shape_op_t             operation  /**< */,
@@ -427,7 +427,7 @@ xcb_shape_rectangles_checked (xcb_connection_t          *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_shape_rectangles
- ** 
+ **
  ** @param xcb_connection_t          *c
  ** @param xcb_shape_op_t             operation
  ** @param xcb_shape_kind_t           destination_kind
@@ -440,7 +440,7 @@ xcb_shape_rectangles_checked (xcb_connection_t          *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_shape_rectangles (xcb_connection_t          *c  /**< */,
                       xcb_shape_op_t             operation  /**< */,
@@ -456,7 +456,7 @@ xcb_shape_rectangles (xcb_connection_t          *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_shape_mask_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_shape_op_t    operation
  ** @param xcb_shape_kind_t  destination_kind
@@ -467,7 +467,7 @@ xcb_shape_rectangles (xcb_connection_t          *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_shape_mask_checked (xcb_connection_t *c  /**< */,
                         xcb_shape_op_t    operation  /**< */,
@@ -481,7 +481,7 @@ xcb_shape_mask_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_shape_mask
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_shape_op_t    operation
  ** @param xcb_shape_kind_t  destination_kind
@@ -492,7 +492,7 @@ xcb_shape_mask_checked (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_shape_mask (xcb_connection_t *c  /**< */,
                 xcb_shape_op_t    operation  /**< */,
@@ -506,7 +506,7 @@ xcb_shape_mask (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_shape_combine_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_shape_op_t    operation
  ** @param xcb_shape_kind_t  destination_kind
@@ -518,7 +518,7 @@ xcb_shape_mask (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_shape_combine_checked (xcb_connection_t *c  /**< */,
                            xcb_shape_op_t    operation  /**< */,
@@ -533,7 +533,7 @@ xcb_shape_combine_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_shape_combine
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_shape_op_t    operation
  ** @param xcb_shape_kind_t  destination_kind
@@ -545,7 +545,7 @@ xcb_shape_combine_checked (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_shape_combine (xcb_connection_t *c  /**< */,
                    xcb_shape_op_t    operation  /**< */,
@@ -560,7 +560,7 @@ xcb_shape_combine (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_shape_offset_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_shape_kind_t  destination_kind
  ** @param xcb_window_t      destination_window
@@ -569,7 +569,7 @@ xcb_shape_combine (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_shape_offset_checked (xcb_connection_t *c  /**< */,
                           xcb_shape_kind_t  destination_kind  /**< */,
@@ -581,7 +581,7 @@ xcb_shape_offset_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_shape_offset
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_shape_kind_t  destination_kind
  ** @param xcb_window_t      destination_window
@@ -590,7 +590,7 @@ xcb_shape_offset_checked (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_shape_offset (xcb_connection_t *c  /**< */,
                   xcb_shape_kind_t  destination_kind  /**< */,
@@ -602,13 +602,13 @@ xcb_shape_offset (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_shape_query_extents_cookie_t xcb_shape_query_extents
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      destination_window
  ** @returns xcb_shape_query_extents_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_shape_query_extents_cookie_t
 xcb_shape_query_extents (xcb_connection_t *c  /**< */,
                          xcb_window_t      destination_window  /**< */);
@@ -617,13 +617,13 @@ xcb_shape_query_extents (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_shape_query_extents_cookie_t xcb_shape_query_extents_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      destination_window
  ** @returns xcb_shape_query_extents_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_shape_query_extents_cookie_t
 xcb_shape_query_extents_unchecked (xcb_connection_t *c  /**< */,
                                    xcb_window_t      destination_window  /**< */);
@@ -632,14 +632,14 @@ xcb_shape_query_extents_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_shape_query_extents_reply_t * xcb_shape_query_extents_reply
- ** 
+ **
  ** @param xcb_connection_t                  *c
  ** @param xcb_shape_query_extents_cookie_t   cookie
  ** @param xcb_generic_error_t              **e
  ** @returns xcb_shape_query_extents_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_shape_query_extents_reply_t *
 xcb_shape_query_extents_reply (xcb_connection_t                  *c  /**< */,
                                xcb_shape_query_extents_cookie_t   cookie  /**< */,
@@ -649,14 +649,14 @@ xcb_shape_query_extents_reply (xcb_connection_t                  *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_shape_select_input_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      destination_window
  ** @param bool              enable
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_shape_select_input_checked (xcb_connection_t *c  /**< */,
                                 xcb_window_t      destination_window  /**< */,
@@ -666,14 +666,14 @@ xcb_shape_select_input_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_shape_select_input
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      destination_window
  ** @param bool              enable
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_shape_select_input (xcb_connection_t *c  /**< */,
                         xcb_window_t      destination_window  /**< */,
@@ -683,13 +683,13 @@ xcb_shape_select_input (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_shape_input_selected_cookie_t xcb_shape_input_selected
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      destination_window
  ** @returns xcb_shape_input_selected_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_shape_input_selected_cookie_t
 xcb_shape_input_selected (xcb_connection_t *c  /**< */,
                           xcb_window_t      destination_window  /**< */);
@@ -698,13 +698,13 @@ xcb_shape_input_selected (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_shape_input_selected_cookie_t xcb_shape_input_selected_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      destination_window
  ** @returns xcb_shape_input_selected_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_shape_input_selected_cookie_t
 xcb_shape_input_selected_unchecked (xcb_connection_t *c  /**< */,
                                     xcb_window_t      destination_window  /**< */);
@@ -713,14 +713,14 @@ xcb_shape_input_selected_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_shape_input_selected_reply_t * xcb_shape_input_selected_reply
- ** 
+ **
  ** @param xcb_connection_t                   *c
  ** @param xcb_shape_input_selected_cookie_t   cookie
  ** @param xcb_generic_error_t               **e
  ** @returns xcb_shape_input_selected_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_shape_input_selected_reply_t *
 xcb_shape_input_selected_reply (xcb_connection_t                   *c  /**< */,
                                 xcb_shape_input_selected_cookie_t   cookie  /**< */,
@@ -730,14 +730,14 @@ xcb_shape_input_selected_reply (xcb_connection_t                   *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_shape_get_rectangles_cookie_t xcb_shape_get_rectangles
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param xcb_shape_kind_t  source_kind
  ** @returns xcb_shape_get_rectangles_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_shape_get_rectangles_cookie_t
 xcb_shape_get_rectangles (xcb_connection_t *c  /**< */,
                           xcb_window_t      window  /**< */,
@@ -747,14 +747,14 @@ xcb_shape_get_rectangles (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_shape_get_rectangles_cookie_t xcb_shape_get_rectangles_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param xcb_shape_kind_t  source_kind
  ** @returns xcb_shape_get_rectangles_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_shape_get_rectangles_cookie_t
 xcb_shape_get_rectangles_unchecked (xcb_connection_t *c  /**< */,
                                     xcb_window_t      window  /**< */,
@@ -764,12 +764,12 @@ xcb_shape_get_rectangles_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_rectangle_t * xcb_shape_get_rectangles_rectangles
- ** 
+ **
  ** @param /+const+/ xcb_shape_get_rectangles_reply_t *R
  ** @returns xcb_rectangle_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_rectangle_t *
 xcb_shape_get_rectangles_rectangles (/+const+/ xcb_shape_get_rectangles_reply_t *R  /**< */);
 
@@ -777,12 +777,12 @@ xcb_shape_get_rectangles_rectangles (/+const+/ xcb_shape_get_rectangles_reply_t 
 /*****************************************************************************
  **
  ** int xcb_shape_get_rectangles_rectangles_length
- ** 
+ **
  ** @param /+const+/ xcb_shape_get_rectangles_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_shape_get_rectangles_rectangles_length (/+const+/ xcb_shape_get_rectangles_reply_t *R  /**< */);
 
@@ -790,12 +790,12 @@ xcb_shape_get_rectangles_rectangles_length (/+const+/ xcb_shape_get_rectangles_r
 /*****************************************************************************
  **
  ** xcb_rectangle_iterator_t xcb_shape_get_rectangles_rectangles_iterator
- ** 
+ **
  ** @param /+const+/ xcb_shape_get_rectangles_reply_t *R
  ** @returns xcb_rectangle_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_rectangle_iterator_t
 xcb_shape_get_rectangles_rectangles_iterator (/+const+/ xcb_shape_get_rectangles_reply_t *R  /**< */);
 
@@ -803,14 +803,14 @@ xcb_shape_get_rectangles_rectangles_iterator (/+const+/ xcb_shape_get_rectangles
 /*****************************************************************************
  **
  ** xcb_shape_get_rectangles_reply_t * xcb_shape_get_rectangles_reply
- ** 
+ **
  ** @param xcb_connection_t                   *c
  ** @param xcb_shape_get_rectangles_cookie_t   cookie
  ** @param xcb_generic_error_t               **e
  ** @returns xcb_shape_get_rectangles_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_shape_get_rectangles_reply_t *
 xcb_shape_get_rectangles_reply (xcb_connection_t                   *c  /**< */,
                                 xcb_shape_get_rectangles_cookie_t   cookie  /**< */,

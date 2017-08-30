@@ -20,11 +20,11 @@ import android.log, android.android_native_app_glue;
 
 /**
  * Window abstraction layer. Widgets can be shown only inside window.
- * 
+ *
  */
 class AndroidWindow : Window {
 	// Abstract methods : override in platform implementatino
-	
+
 	/// show window
 	override void show() {
 		// TODO
@@ -36,16 +36,16 @@ class AndroidWindow : Window {
     override @property Window parentWindow() {
         return null;
     }
-    
+
     override protected void handleWindowActivityChange(bool isWindowActive) {
         super.handleWindowActivityChange(isWindowActive);
     }
-    
+
     override @property bool isActive() {
         //todo:
         return true;
     }
-    
+
 	protected dstring _caption;
 	/// returns window caption
 	override @property dstring windowCaption() {
@@ -64,7 +64,7 @@ class AndroidWindow : Window {
 	override void invalidate() {
 		_platform.sendRedrawEvent(this, ++_lastRedrawEventCode);
 	}
-	
+
 	void processRedrawEvent(uint code) {
 		//if (code == _lastRedrawEventCode)
 		//	redraw();
@@ -81,7 +81,7 @@ class AndroidWindow : Window {
 	}
 	~this() {
 	}
-	
+
 	/// after drawing, call to schedule redraw if animation is active
 	override void scheduleAnimation() {
 		// override if necessary
@@ -133,7 +133,7 @@ class AndroidWindow : Window {
 		}
 	}
 	uint _keyFlags;
-	
+
 	/**
  	* Process the next input event.
  	*/
@@ -180,11 +180,11 @@ class AndroidWindow : Window {
 
 /**
  * Platform abstraction layer.
- * 
+ *
  * Represents application.
- * 
- * 
- * 
+ *
+ *
+ *
  */
 class AndroidPlatform : Platform {
 
@@ -230,7 +230,7 @@ class AndroidPlatform : Platform {
 	int initDisplay() {
 		// initialize OpenGL ES and EGL
 		Log.i("initDisplay");
-		
+
 		/*
 	     * Here specify the attributes of the desired configuration.
     	 * Below, we select an EGLConfig with at least 8 bits per color
@@ -248,33 +248,33 @@ class AndroidPlatform : Platform {
 		EGLConfig config;
 		EGLSurface surface;
 		EGLContext context;
-		
+
 		EGLDisplay display = eglGetDisplay(EGL_DEFAULT_DISPLAY);
-		
+
 		eglInitialize(display, null, null);
-		
+
 		/* Here, the application chooses the configuration it desires. In this
     	 * sample, we have a very simplified selection process, where we pick
      	 * the first EGLConfig that matches our criteria */
 		eglChooseConfig(display, attribs.ptr, &config, 1, &numConfigs);
-		
+
 		/* EGL_NATIVE_VISUAL_ID is an attribute of the EGLConfig that is
     	 * guaranteed to be accepted by ANativeWindow_setBuffersGeometry().
      	 * As soon as we picked a EGLConfig, we can safely reconfigure the
     	 * ANativeWindow buffers to match, using EGL_NATIVE_VISUAL_ID. */
 		eglGetConfigAttrib(display, config, EGL_NATIVE_VISUAL_ID, &format);
-		
+
 		ANativeWindow_setBuffersGeometry(_appstate.window, 0, 0, format);
-		
+
 		surface = eglCreateWindowSurface(display, config, _appstate.window, null);
 		EGLint[3] contextAttrs = [EGL_CONTEXT_CLIENT_VERSION, 3, EGL_NONE];
 		context = eglCreateContext(display, config, null, contextAttrs.ptr);
-		
+
 		if (eglMakeCurrent(display, surface, surface, context) == EGL_FALSE) {
 			LOGW("Unable to eglMakeCurrent");
 			return -1;
 		}
-		
+
 		eglQuerySurface(display, surface, EGL_WIDTH, &w);
 		eglQuerySurface(display, surface, EGL_HEIGHT, &h);
 
@@ -286,7 +286,7 @@ class AndroidPlatform : Platform {
 		_width = w;
 		_height = h;
 		_engine.state.angle = 0;
-		
+
 		// Initialize GL state.
 		//glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
 		glEnable(GL_CULL_FACE);
@@ -295,7 +295,7 @@ class AndroidPlatform : Platform {
 
 		Log.i("calling initGLSupport");
 		initGLSupport(false);
-		
+
 		return 0;
 	}
 
@@ -421,7 +421,7 @@ class AndroidPlatform : Platform {
 		auto w = activeWindow;
 		return (w && w.isAnimationActive && _appFocused);
 	}
-	
+
 
 
 	void sendRedrawEvent(AndroidWindow w, uint redrawEventCode) {
@@ -442,9 +442,9 @@ class AndroidPlatform : Platform {
      *         windowCaption = window caption text
      *         parent = parent Window, or null if no parent
      *         flags = WindowFlag bit set, combination of Resizable, Modal, Fullscreen
-     *      width = window width 
+     *      width = window width
      *      height = window height
-     * 
+     *
      * Window w/o Resizable nor Fullscreen will be created with size based on measurement of its content widget
      */
 	override Window createWindow(dstring windowCaption, Window parent, uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0) {
@@ -452,10 +452,10 @@ class AndroidPlatform : Platform {
 		_windows ~= w;
 		return w;
 	}
-	
+
 	/**
      * close window
-     * 
+     *
      * Closes window earlier created with createWindow()
      */
 	override  void closeWindow(Window w) {
@@ -489,7 +489,7 @@ class AndroidPlatform : Platform {
 			// No display.
 			return;
 		}
-		
+
 		// Just fill the screen with a color.
 		if (!w) {
 			glClearColor(0, 0, 0, 1);
@@ -514,10 +514,10 @@ class AndroidPlatform : Platform {
 
 		eglSwapBuffers(_display, _surface);
 	}
-	
+
 	/**
      * Starts application message loop.
-     * 
+     *
      * When returned from this method, application is shutting down.
      */
 	override int enterMessageLoop() {
@@ -526,18 +526,18 @@ class AndroidPlatform : Platform {
 			int ident;
 			int events;
 			android_poll_source* source;
-			
+
 			// If not animating, we will block forever waiting for events.
 			// If animating, we loop until all events are read, then continue
 			// to draw the next frame of animation.
 			while ((ident=ALooper_pollAll(isAnimationActive ? 0 : -1, null, &events,
 						cast(void**)&source)) >= 0) {
-				
+
 				// Process this event.
 				if (source != null) {
 					source.process(_appstate, source);
 				}
-				
+
 				// If a sensor has data, process it now.
 				if (ident == LOOPER_ID_USER) {
 					/*
@@ -552,21 +552,21 @@ class AndroidPlatform : Platform {
 					}
 					*/
 				}
-				
+
 				// Check if we are exiting.
 				if (_appstate.destroyRequested != 0) {
 					Log.w("destroyRequested is set: exiting message loop");
 					return 0;
 				}
 			}
-			
+
 			if (isAnimationActive) {
 				// Done with events; draw next animation frame.
 				_engine.state.angle += .01f;
 				if (_engine.state.angle > 1) {
 					_engine.state.angle = 0;
 				}
-				
+
 				// Drawing is throttled to the screen update rate, so there
 				// is no need to do timing here.
 				drawWindow();
@@ -584,16 +584,16 @@ class AndroidPlatform : Platform {
 	override void setClipboardText(dstring text, bool mouseBuffer = false) {
 		_clipboardText = text;
 	}
-	
+
 	/// calls request layout for all windows
 	override void requestLayout() {
 	}
-	
+
 	/// handle theme change: e.g. reload some themed resources
 	override void onThemeChanged() {
 		// override and call dispatchThemeChange for all windows
 	}
-	
+
 }
 
 
@@ -679,7 +679,7 @@ extern (C) void android_main(android_app* state) {
     app_dummy();
 
 	int res = 0;
-	
+
 	version (unittest) {
 	} else {
 		Log.i("Calling UIAppMain");
@@ -690,11 +690,11 @@ extern (C) void android_main(android_app* state) {
     // loop waiting for stuff to do.
 	Log.d("Destroying Android platform");
 	Platform.setInstance(null);
-	
+
 	releaseResourcesOnAppExit();
-	
+
 	Log.d("Exiting main");
-	
+
 
 }
 

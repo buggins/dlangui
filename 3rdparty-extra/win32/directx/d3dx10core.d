@@ -29,7 +29,7 @@ extern(Windows) {
 	HRESULT D3DX10CreateDevice(IDXGIAdapter pAdapter, D3D10_DRIVER_TYPE DriverType,
 		HMODULE Software, UINT Flags, ID3D10Device* ppDevice);
 	HRESULT D3DX10CreateDeviceAndSwapChain(IDXGIAdapter pAdapter, D3D10_DRIVER_TYPE DriverType,
-		HMODULE Software, UINT Flags, DXGI_SWAP_CHAIN_DESC* pSwapChainDesc, IDXGISwapChain* ppSwapChain,    
+		HMODULE Software, UINT Flags, DXGI_SWAP_CHAIN_DESC* pSwapChainDesc, IDXGISwapChain* ppSwapChain,
 		ID3D10Device* ppDevice);
 //TODO	HRESULT D3DX10GetFeatureLevel1(ID3D10Device pDevice, ID3D10Device1* ppDevice1);
 

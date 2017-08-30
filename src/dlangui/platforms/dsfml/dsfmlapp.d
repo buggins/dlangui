@@ -20,7 +20,7 @@ private import dlangui.graphics.gldrawbuf;
 
 /**
  * Window abstraction layer. Widgets can be shown only inside window.
- * 
+ *
  */
 class DSFMLWindow : dlangui.platforms.common.platform.Window {
 
@@ -271,7 +271,7 @@ class DSFMLWindow : dlangui.platforms.common.platform.Window {
                 KeyEvent ev = new KeyEvent(KeyAction.Text, 0, 0, [event.text.unicode]);
                 return dispatchKeyEvent(ev);
             }
-            case KeyReleased: 
+            case KeyReleased:
             case KeyPressed: {
                 keyFlags = 0;
                 if (event.key.alt)
@@ -293,9 +293,9 @@ class DSFMLWindow : dlangui.platforms.common.platform.Window {
 
 /**
  * Platform abstraction layer.
- * 
+ *
  * Represents application.
- * 
+ *
  */
 class DSFMLPlatform : Platform {
 
@@ -314,11 +314,11 @@ class DSFMLPlatform : Platform {
      *         windowCaption = window caption text
      *         parent = parent Window, or null if no parent
      *         flags = WindowFlag bit set, combination of Resizable, Modal, Fullscreen
-     * 
+     *
      * Window w/o Resizable nor Fullscreen will be created with size based on measurement of its content widget
      */
-    override dlangui.platforms.common.platform.Window createWindow(dstring windowCaption, 
-                                                                   dlangui.platforms.common.platform.Window parent, 
+    override dlangui.platforms.common.platform.Window createWindow(dstring windowCaption,
+                                                                   dlangui.platforms.common.platform.Window parent,
                                                                    uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0) {
         auto window = new RenderWindow(VideoMode(800, 600, 32), "Hello DSFML!", dsfml.window.window.Window.Style.Titlebar | dsfml.window.window.Window.Style.Close | dsfml.window.window.Window.Style.Resize);
         window.setFramerateLimit(60);
@@ -329,7 +329,7 @@ class DSFMLPlatform : Platform {
 
     /**
      * close window
-     * 
+     *
      * Closes window earlier created with createWindow()
      */
     override void closeWindow(dlangui.platforms.common.platform.Window w) {
@@ -341,7 +341,7 @@ class DSFMLPlatform : Platform {
     }
     /**
      * Starts application message loop.
-     * 
+     *
      * When returned from this method, application is shutting down.
      */
     override int enterMessageLoop() {
@@ -354,7 +354,7 @@ class DSFMLPlatform : Platform {
         while (window.isOpen())
         {
             Event event;
-        
+
             while(window.pollEvent(event))
             {
                 if(event.type == event.EventType.Closed)
@@ -363,15 +363,15 @@ class DSFMLPlatform : Platform {
                     //window.close();
                 }
             }
-        
+
             window.clear();
-        
+
             //window.draw(head);
             //window.draw(leftEye);
             //window.draw(rightEye);
             //window.draw(smile);
             //window.draw(smileCover);
-        
+
             window.display();
         }
         return 0;

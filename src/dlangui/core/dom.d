@@ -189,7 +189,7 @@ public:
     override Attribute attr(string nsname, string attrname) { return attr(_document.nsId(nsname), _document.attrId(attrname)); }
 
     /// set attribute value by namespace and attribute ids
-    override Attribute setAttr(ns_id nsid, attr_id attrid, string value) { 
+    override Attribute setAttr(ns_id nsid, attr_id attrid, string value) {
         Attribute a = attr(nsid, attrid);
         if (!a) {
             a = new Attribute(this, nsid, attrid, value);
@@ -197,15 +197,15 @@ public:
         } else {
             a.value = value;
         }
-        return a; 
+        return a;
     }
     /// set attribute value by namespace and attribute names
     override Attribute setAttr(string nsname, string attrname, string value) { return setAttr(_document.nsId(nsname), _document.attrId(attrname), value); }
     /// get attribute value by namespace and attribute ids
-    override string attrValue(ns_id nsid, attr_id attrid) { 
+    override string attrValue(ns_id nsid, attr_id attrid) {
         if (Attribute a = attr(nsid, attrid))
             return a.value;
-        return null; 
+        return null;
     }
     /// get attribute value by namespace and attribute ids
     override string attrValue(string nsname, string attrname) { return attrValue(_document.nsId(nsname), _document.attrId(attrname)); }
@@ -221,7 +221,7 @@ public:
     /// returns last child node
     override @property Node lastChild() { return _children.length > 0 ? _children[_children.length - 1] : null; }
     /// find child node, return its index if found, -1 if not found or not child of this node
-    override int childIndex(Node child) { 
+    override int childIndex(Node child) {
         for (int i = 0; i < _children.length; i++)
             if (child is _children[i])
                 return i;
@@ -235,7 +235,7 @@ public:
         return item;
     }
     /// append element child - by namespace and tag ids
-    override Node appendElement(ns_id ns, elem_id tag, int index = -1) { 
+    override Node appendElement(ns_id ns, elem_id tag, int index = -1) {
         Node item = document.createElement(ns, tag);
         _children.add(item, index >= 0 ? index : size_t.max);
         return item;

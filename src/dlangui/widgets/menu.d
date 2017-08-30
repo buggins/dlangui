@@ -103,13 +103,13 @@ class MenuItem {
             return MenuItemType.Separator;
         if (_subitems.length > 0) // if there are children, force type to Submenu
             return MenuItemType.Submenu;
-        return _type; 
+        return _type;
     }
 
     /// set new MenuItemType
     @property MenuItem type(MenuItemType type) {
         _type = type;
-        return this; 
+        return this;
     }
 
     /// get check for checkbox or radio button item
@@ -150,7 +150,7 @@ class MenuItem {
         }
         return this;
     }
-    
+
     /// get hotkey character from label (e.g. 'F' for item labeled "&File"), 0 if no hotkey
     dchar getHotkey() {
         static import std.uni;
@@ -328,7 +328,7 @@ class MenuItemWidget : WidgetGroupDefaultDrawing {
         }
     }
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         updateState();
         Rect m = margins;
         Rect p = padding;
@@ -943,7 +943,7 @@ class MainMenu : MenuWidgetBase {
         Signal!MenuItemClickHandler onMenuItemClickListenerCopy = menuItemClick;
         // copy item action listeners
         Signal!MenuItemActionHandler onMenuItemActionListenerCopy = menuItemAction;
-        
+
         deactivate();
 
         handleMenuItemClick(item);

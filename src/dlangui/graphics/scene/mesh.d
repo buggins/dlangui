@@ -341,7 +341,7 @@ class Mesh : RefCountedObject {
 
     @property void vertexFormat(VertexFormat format) {
         assert(_vertexCount == 0);
-        _vertexFormat = format; 
+        _vertexFormat = format;
         _dirtyVertexBuffer = true;
     }
 
@@ -516,11 +516,11 @@ class Mesh : RefCountedObject {
             addVertex([v3.x, v3.y, v3.z, color.r, color.g, color.b, color.a, 0, 1]);
         }
         addPart(PrimitiveType.triangles, [
-            cast(ushort)(startVertex + 0), 
-            cast(ushort)(startVertex + 1), 
-            cast(ushort)(startVertex + 2), 
-            cast(ushort)(startVertex + 2), 
-            cast(ushort)(startVertex + 3), 
+            cast(ushort)(startVertex + 0),
+            cast(ushort)(startVertex + 1),
+            cast(ushort)(startVertex + 2),
+            cast(ushort)(startVertex + 2),
+            cast(ushort)(startVertex + 3),
             cast(ushort)(startVertex + 0)]);
     }
 

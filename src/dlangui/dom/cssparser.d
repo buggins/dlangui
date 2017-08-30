@@ -95,11 +95,11 @@ struct CSSToken {
 }
 
 int decodeHexDigit(char ch) {
-    if (ch >= 'a' && ch <= 'f') 
+    if (ch >= 'a' && ch <= 'f')
         return (ch - 'a') + 10;
-    if (ch >= 'A' && ch <= 'F') 
+    if (ch >= 'A' && ch <= 'F')
         return (ch - 'A') + 10;
-    if (ch >= '0' && ch <= '9') 
+    if (ch >= '0' && ch <= '9')
         return (ch - '0');
     return -1;
 }
@@ -124,7 +124,7 @@ bool isCSSNonPrintable(char ch) {
 }
 // This section describes how to check if two code points are a valid escape
 bool isCSSValidEscSequence(char ch, char ch2) {
-    //If the first code point is not U+005D REVERSE SOLIDUS (\), return false. 
+    //If the first code point is not U+005D REVERSE SOLIDUS (\), return false.
     if (ch != '\\')
         return false;
     if (ch2 == '\r' || ch2 == '\n')
@@ -160,7 +160,7 @@ struct CSSTokenizer {
     bool eof() {
         return tokenEnd >= src.length;
     }
-    /** 
+    /**
       Skip whitespace; return true if at least one whitespace char is skipped; move tokenEnd position
       tokenType will be set to newline if any newline character found, otherwise - to whitespace
     */
@@ -307,7 +307,7 @@ struct CSSTokenizer {
         if (isCSSNameStart(ch))
             return true;
         if (ch == '-') {
-            //If the second code point is a name-start code point or the second and third code points are a valid escape, return true. Otherwise, return false. 
+            //If the second code point is a name-start code point or the second and third code points are a valid escape, return true. Otherwise, return false.
             p++;
             if (p >= src.length)
                 return false;
@@ -633,7 +633,7 @@ struct CSSTokenizer {
         }
         tokenType = CSSTokenType.badUrl;
     }
-    // Current position is after url( 
+    // Current position is after url(
     void parseUrlToken() {
         tokenText.length = 0;
         skipWhiteSpace();

@@ -283,7 +283,7 @@ class Tokenizer {
         if (ch == '%') {
             suffix ~= ch;
             ch = skipChar();
-        } else { 
+        } else {
             while (ch >= 'a' && ch <= 'z') {
                 suffix ~= ch;
                 ch = skipChar();
