@@ -112,9 +112,11 @@ immutable string EMBEDDED_RESOURCE_PREFIX = "@embedded@/";
 struct EmbeddedResource {
     immutable string name;
     immutable ubyte[] data;
-    this(immutable string name, immutable ubyte[] data) {
+    immutable string dir;
+    this(immutable string name, immutable ubyte[] data, immutable string dir = null) {
         this.name = name;
         this.data = data;
+        this.dir = dir;
     }
 }
 
@@ -169,7 +171,13 @@ __gshared EmbeddedResourceList embeddedResourceList;
 
 //immutable string test_res = import("res/background.xml");
 // Unfortunately, import with full pathes does not work on Windows
-//version = USE_FULL_PATH_FOR_RESOURCES;
+version = USE_FULL_PATH_FOR_RESOURCES;
+
+string resDirName(string fullname) {
+    immutable string step0 = fullname.dirName;
+    immutable string step1 = step0.startsWith("res/") ? step0[4 .. $] : step0;
+    return step1 == "." ? null : step1;
+}
 
 EmbeddedResource[] embedResource(string resourceName)() {
     static if (resourceName.startsWith("#")) {
@@ -182,8 +190,10 @@ EmbeddedResource[] embedResource(string resourceName)() {
         }
         static if (name.length > 0) {
             immutable ubyte[] data = cast(immutable ubyte[])import(name);
+            immutable string resname = baseName(name);
+            immutable string resdir = resDirName(name);
             static if (data.length > 0)
-                return [EmbeddedResource(name, data)];
+                return [EmbeddedResource(resname, data, resdir)];
             else
                 return [];
         } else
