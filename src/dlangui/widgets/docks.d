@@ -174,14 +174,14 @@ struct DockSpace {
 /// Layout for docking support - contains body widget and optional docked windows
 class DockHost : WidgetGroupDefaultDrawing {
 
-    
+
     protected DockSpace _topSpace;
     protected DockSpace _bottomSpace;
     protected DockSpace _rightSpace;
     protected DockSpace _leftSpace;
     protected Widget _bodyWidget;
     @property Widget bodyWidget() { return _bodyWidget; }
-    @property void bodyWidget(Widget widget) { 
+    @property void bodyWidget(Widget widget) {
         _children.replace(widget, _bodyWidget);
         _bodyWidget = widget;
         _bodyWidget.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
@@ -228,7 +228,7 @@ class DockHost : WidgetGroupDefaultDrawing {
 
     protected DockAlignment[4] _layoutPriority = [DockAlignment.Top, DockAlignment.Left, DockAlignment.Right, DockAlignment.Bottom];
     @property DockAlignment[4] layoutPriority() { return _layoutPriority; }
-    @property void layoutPriority(DockAlignment[4] p) { 
+    @property void layoutPriority(DockAlignment[4] p) {
         _layoutPriority = p;
         requestLayout();
     }
@@ -272,7 +272,7 @@ class DockHost : WidgetGroupDefaultDrawing {
     }
 
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         Rect m = margins;
         Rect p = padding;
         // calc size constraints for children
@@ -311,12 +311,12 @@ class DockWindow : WindowFrame {
     protected DockAlignment _dockAlignment;
 
     @property DockAlignment dockAlignment() { return _dockAlignment; }
-    @property DockWindow dockAlignment(DockAlignment a) { 
+    @property DockWindow dockAlignment(DockAlignment a) {
         if (_dockAlignment != a) {
             _dockAlignment = a;
             requestLayout();
         }
-        return this; 
+        return this;
     }
 
     this(string ID) {

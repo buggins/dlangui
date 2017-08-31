@@ -273,7 +273,7 @@ private bool parseLength(ref string src, ref CssValue value)
         ident = parseIdent(src);
         if (!ident.empty) {
             switch(ident) {
-                case "em": 
+                case "em":
                 case "m": // for DML - cannot add suffix which starts from 'e'
                     value.type = CssValueType.em; break;
                 case "pt": value.type = CssValueType.pt; break;
@@ -537,7 +537,7 @@ CssDeclaration parseCssDeclaration(ref string src, bool mustBeInBrackets = true)
                 case _webkit_hyphens: // -webkit-hyphens
                 case adobe_hyphenate: // adobe-hyphenate
                 case adobe_text_layout: // adobe-text-layout
-                    n = parseEnumItem!CssHyphenate(src, -1); 
+                    n = parseEnumItem!CssHyphenate(src, -1);
                     break; // hyphenate
                 case color:
                 case background_color:
@@ -553,7 +553,7 @@ CssDeclaration parseCssDeclaration(ref string src, bool mustBeInBrackets = true)
                     if (splitPropertyValueList(src, list)) {
                         foreach(item; list) {
                             string name = item;
-                            int family = parseEnumItem!CssFontFamily(name, -1); 
+                            int family = parseEnumItem!CssFontFamily(name, -1);
                             if (family != -1) {
                                 // family name, e.g. sans-serif
                                 n = family;
@@ -563,7 +563,7 @@ CssDeclaration parseCssDeclaration(ref string src, bool mustBeInBrackets = true)
                         }
                     }
                     s = joinPropertyValueList(faceList);
-                    break; 
+                    break;
                 case font_style: n = parseEnumItem!CssFontStyle(src, -1); break;
                 case font_weight:
                     n = parseEnumItem!CssFontWeight(src, -1);
@@ -593,9 +593,9 @@ CssDeclaration parseCssDeclaration(ref string src, bool mustBeInBrackets = true)
                         }
                     }
 
-                    //n = parseEnumItem!Css(src, -1); 
+                    //n = parseEnumItem!Css(src, -1);
                     break;
-                case text_indent: 
+                case text_indent:
                     {
                         // read length
                         CssValue len;
@@ -632,9 +632,9 @@ CssDeclaration parseCssDeclaration(ref string src, bool mustBeInBrackets = true)
                     if (parseLength(src, value))
                         res.addLengthDecl(propId, value);
                     break;
-                case margin: 
-                case padding: 
-                    //n = parseEnumItem!Css(src, -1); 
+                case margin:
+                case padding:
+                    //n = parseEnumItem!Css(src, -1);
                     CssValue[4] len;
                     int i;
                     for (i = 0; i < 4; ++i)
@@ -642,13 +642,13 @@ CssDeclaration parseCssDeclaration(ref string src, bool mustBeInBrackets = true)
                             break;
                     if (i) {
                         switch (i) {
-                            case 1: 
+                            case 1:
                                 len[1] = len[0];
                                 goto case; /* fall through */
-                            case 2: 
+                            case 2:
                                 len[2] = len[0];
                                 goto case; /* fall through */
-                            case 3: 
+                            case 3:
                                 len[3] = len[1];
                                 break;
                             default:
@@ -670,15 +670,15 @@ CssDeclaration parseCssDeclaration(ref string src, bool mustBeInBrackets = true)
                 case page_break_before:
                 case page_break_inside:
                 case page_break_after:
-                    n = parseEnumItem!CssPageBreak(src, -1); 
+                    n = parseEnumItem!CssPageBreak(src, -1);
                     break;
                 case list_style:
-                    //n = parseEnumItem!Css(src, -1); 
+                    //n = parseEnumItem!Css(src, -1);
                     break;
                 case list_style_type: n = parseEnumItem!CssListStyleType(src, -1); break;
                 case list_style_position: n = parseEnumItem!CssListStylePosition(src, -1); break;
-                case list_style_image: 
-                    //n = parseEnumItem!CssListStyleImage(src, -1); 
+                case list_style_image:
+                    //n = parseEnumItem!CssListStyleImage(src, -1);
                     break;
                 default:
                     break;
@@ -823,7 +823,7 @@ unittest {
     string src = q{
         body { width: 50%; color: blue }
         body > div, body > section {
-            /* some comment 
+            /* some comment
                goes here */
             font-family: serif;
             background-color: yellow;

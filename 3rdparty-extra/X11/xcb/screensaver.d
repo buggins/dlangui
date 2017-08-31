@@ -18,7 +18,7 @@ import std.c.linux.X11.xcb.xproto;
 
 const int XCB_SCREENSAVER_MAJOR_VERSION =1;
 const int XCB_SCREENSAVER_MINOR_VERSION =1;
-  
+
 extern(C) extern xcb_extension_t xcb_screensaver_id;
 
 enum :int{
@@ -197,14 +197,14 @@ struct xcb_screensaver_notify_event_t {
 /*****************************************************************************
  **
  ** xcb_screensaver_query_version_cookie_t xcb_screensaver_query_version
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param ubyte             client_major_version
  ** @param ubyte             client_minor_version
  ** @returns xcb_screensaver_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_screensaver_query_version_cookie_t
 xcb_screensaver_query_version (xcb_connection_t *c  /**< */,
                                ubyte             client_major_version  /**< */,
@@ -214,14 +214,14 @@ xcb_screensaver_query_version (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_screensaver_query_version_cookie_t xcb_screensaver_query_version_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param ubyte             client_major_version
  ** @param ubyte             client_minor_version
  ** @returns xcb_screensaver_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_screensaver_query_version_cookie_t
 xcb_screensaver_query_version_unchecked (xcb_connection_t *c  /**< */,
                                          ubyte             client_major_version  /**< */,
@@ -231,14 +231,14 @@ xcb_screensaver_query_version_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_screensaver_query_version_reply_t * xcb_screensaver_query_version_reply
- ** 
+ **
  ** @param xcb_connection_t                        *c
  ** @param xcb_screensaver_query_version_cookie_t   cookie
  ** @param xcb_generic_error_t                    **e
  ** @returns xcb_screensaver_query_version_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_screensaver_query_version_reply_t *
 xcb_screensaver_query_version_reply (xcb_connection_t                        *c  /**< */,
                                      xcb_screensaver_query_version_cookie_t   cookie  /**< */,
@@ -248,13 +248,13 @@ xcb_screensaver_query_version_reply (xcb_connection_t                        *c 
 /*****************************************************************************
  **
  ** xcb_screensaver_query_info_cookie_t xcb_screensaver_query_info
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_drawable_t    drawable
  ** @returns xcb_screensaver_query_info_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_screensaver_query_info_cookie_t
 xcb_screensaver_query_info (xcb_connection_t *c  /**< */,
                             xcb_drawable_t    drawable  /**< */);
@@ -263,13 +263,13 @@ xcb_screensaver_query_info (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_screensaver_query_info_cookie_t xcb_screensaver_query_info_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_drawable_t    drawable
  ** @returns xcb_screensaver_query_info_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_screensaver_query_info_cookie_t
 xcb_screensaver_query_info_unchecked (xcb_connection_t *c  /**< */,
                                       xcb_drawable_t    drawable  /**< */);
@@ -278,14 +278,14 @@ xcb_screensaver_query_info_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_screensaver_query_info_reply_t * xcb_screensaver_query_info_reply
- ** 
+ **
  ** @param xcb_connection_t                     *c
  ** @param xcb_screensaver_query_info_cookie_t   cookie
  ** @param xcb_generic_error_t                 **e
  ** @returns xcb_screensaver_query_info_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_screensaver_query_info_reply_t *
 xcb_screensaver_query_info_reply (xcb_connection_t                     *c  /**< */,
                                   xcb_screensaver_query_info_cookie_t   cookie  /**< */,
@@ -295,14 +295,14 @@ xcb_screensaver_query_info_reply (xcb_connection_t                     *c  /**< 
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_screensaver_select_input_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_drawable_t    drawable
  ** @param uint              event_mask
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_screensaver_select_input_checked (xcb_connection_t *c  /**< */,
                                       xcb_drawable_t    drawable  /**< */,
@@ -312,14 +312,14 @@ xcb_screensaver_select_input_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_screensaver_select_input
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_drawable_t    drawable
  ** @param uint              event_mask
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_screensaver_select_input (xcb_connection_t *c  /**< */,
                               xcb_drawable_t    drawable  /**< */,
@@ -329,7 +329,7 @@ xcb_screensaver_select_input (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_screensaver_set_attributes_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_drawable_t    drawable
  ** @param short             x
@@ -345,7 +345,7 @@ xcb_screensaver_select_input (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_screensaver_set_attributes_checked (xcb_connection_t *c  /**< */,
                                         xcb_drawable_t    drawable  /**< */,
@@ -364,7 +364,7 @@ xcb_screensaver_set_attributes_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_screensaver_set_attributes
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_drawable_t    drawable
  ** @param short             x
@@ -380,7 +380,7 @@ xcb_screensaver_set_attributes_checked (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_screensaver_set_attributes (xcb_connection_t *c  /**< */,
                                 xcb_drawable_t    drawable  /**< */,
@@ -399,13 +399,13 @@ xcb_screensaver_set_attributes (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_screensaver_unset_attributes_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_drawable_t    drawable
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_screensaver_unset_attributes_checked (xcb_connection_t *c  /**< */,
                                           xcb_drawable_t    drawable  /**< */);
@@ -414,13 +414,13 @@ xcb_screensaver_unset_attributes_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_screensaver_unset_attributes
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_drawable_t    drawable
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_screensaver_unset_attributes (xcb_connection_t *c  /**< */,
                                   xcb_drawable_t    drawable  /**< */);
@@ -429,13 +429,13 @@ xcb_screensaver_unset_attributes (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_screensaver_suspend_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param bool              suspend
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_screensaver_suspend_checked (xcb_connection_t *c  /**< */,
                                  bool              suspend  /**< */);
@@ -444,13 +444,13 @@ xcb_screensaver_suspend_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_screensaver_suspend
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param bool              suspend
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_screensaver_suspend (xcb_connection_t *c  /**< */,
                          bool              suspend  /**< */);

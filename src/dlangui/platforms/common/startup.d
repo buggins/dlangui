@@ -11,7 +11,7 @@ static if (BACKEND_GUI) {
 import dlangui.graphics.ftfonts;
 
 version (Windows) {
-    
+
     /// initialize font manager - default implementation
     /// On win32 - first it tries to init freetype, and falls back to win32 fonts.
     /// On linux/mac - tries to init freetype with some hardcoded font paths
@@ -23,12 +23,12 @@ version (Windows) {
             /// testing freetype font manager
             static if (ENABLE_FREETYPE) {
                 Log.v("Trying to init FreeType font manager");
-                
+
                 import dlangui.graphics.ftfonts;
                 // trying to create font manager
                 Log.v("Creating FreeTypeFontManager");
                 FreeTypeFontManager ftfontMan = new FreeTypeFontManager();
-                
+
                 import core.sys.windows.shlobj;
                 string fontsPath = "c:\\Windows\\Fonts\\";
                 static if (true) { // SHGetFolderPathW not found in shell32.lib
@@ -84,14 +84,14 @@ version (Windows) {
         } catch (Exception e) {
             Log.e("Cannot create FreeTypeFontManager - falling back to win32");
         }
-        
+
         // use Win32 font manager
         if (FontManager.instance is null) {
             FontManager.instance = new Win32FontManager();
         }
         return true;
     }
-    
+
 } else {
     import dlangui.graphics.ftfonts;
     bool registerFonts(FreeTypeFontManager ft, string path) {
@@ -132,13 +132,13 @@ version (Windows) {
 		foreach(file; fontFiles)
 			ft.registerFont(file);
 	}
-    
+
     /// initialize font manager - default implementation
     /// On win32 - first it tries to init freetype, and falls back to win32 fonts.
     /// On linux/mac - tries to init freetype with some hardcoded font paths
     extern(C) bool initFontManager() {
         FreeTypeFontManager ft = new FreeTypeFontManager();
-        
+
         if (!registerFontConfigFonts(ft)) {
             // TODO: use FontConfig
             Log.w("No fonts found using FontConfig. Trying hardcoded paths.");
@@ -201,10 +201,10 @@ version (Windows) {
                 ft.registerFont("/System/Library/Fonts/Menlo.ttc", FontFamily.MonoSpace, "Menlo", false, FontWeight.Normal, true);
             }
         }
-        
+
         if (!ft.registeredFontCount)
             return false;
-        
+
         FontManager.instance = ft;
         return true;
     }
@@ -339,7 +339,7 @@ void registerStandardWidgets() {
     import dlangui.widgets.tree;
     mixin(registerWidgets!(FileNameEditLine, DirEditLine, //dlangui.dialogs.filedlg
                            ComboBox, ComboEdit, //dlangui.widgets.combobox
-                           Widget, TextWidget, MultilineTextWidget, Button, ImageWidget, ImageButton, ImageCheckButton, ImageTextButton, 
+                           Widget, TextWidget, MultilineTextWidget, Button, ImageWidget, ImageButton, ImageCheckButton, ImageTextButton,
                            SwitchButton, RadioButton, CheckBox, HSpacer, VSpacer, CanvasWidget, // dlangui.widgets.controls
                            ScrollBar, SliderWidget, // dlangui.widgets.scrollbar
                            EditLine, EditBox, LogWidget,//dlangui.widgets.editors
@@ -370,16 +370,16 @@ shared static this() {
 
 /// call this when all resources are supposed to be freed to report counts of non-freed resources by type
 extern (C) void releaseResourcesOnAppExit() {
-    
+
     //
     debug setAppShuttingDownFlag();
-    
+
     debug {
         if (Widget.instanceCount() > 0) {
             Log.e("Non-zero Widget instance count when exiting: ", Widget.instanceCount);
         }
     }
-    
+
     currentTheme = null;
     drawableCache = null;
     static if (BACKEND_GUI) {
@@ -390,7 +390,7 @@ extern (C) void releaseResourcesOnAppExit() {
         import dlangui.graphics.gldrawbuf;
         destroyGLCaches();
     }
-    
+
     debug {
         if (DrawBuf.instanceCount > 0) {
             Log.e("Non-zero DrawBuf instance count when exiting: ", DrawBuf.instanceCount);

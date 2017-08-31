@@ -59,8 +59,8 @@ class BackgroundOperationWatcher {
         _cancelRequested = true;
     }
     /// return true when task is done - to remove it from AppFrame
-    @property bool finished() { 
-        return _finished; 
+    @property bool finished() {
+        return _finished;
     }
     /// will be called by app frame when BackgroundOperationWatcher is to be removed
     void removing() {

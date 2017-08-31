@@ -15,12 +15,12 @@ Supports fallback to another translation file (e.g. default language).
 
 If string resource is not found neither in main nor fallback translation files, UNTRANSLATED: RESOURCE_ID will be returned.
 
-String resources must be placed in i18n subdirectory inside one or more resource directories (set using Platform.instance.resourceDirs 
+String resources must be placed in i18n subdirectory inside one or more resource directories (set using Platform.instance.resourceDirs
 property on application initialization).
 
 File names must be language code with extension .ini (e.g. en.ini, fr.ini, es.ini)
 
-If several files for the same language are found in (different directories) their content will be merged. It's useful to merge string resources 
+If several files for the same language are found in (different directories) their content will be merged. It's useful to merge string resources
 from DLangUI framework with resources of application.
 
 Set interface language using Platform.instance.uiLanguage in UIAppMain during initialization of application settings:
@@ -78,8 +78,8 @@ private import std.algorithm;
 private import std.string;
 private import std.file;
 
-/** 
-   Container for UI string - either raw value or string resource ID 
+/**
+   Container for UI string - either raw value or string resource ID
 
    Set resource id (string) or plain unicode text (dstring) to it, and get dstring.
 
@@ -116,7 +116,7 @@ struct UIString {
         _value = null;
     }
     /** Get value (either raw or translated by id) */
-    @property dstring value() const { 
+    @property dstring value() const {
         if (_id !is null) // translate ID to dstring
             return i18n.get(_id, _value); // get from resource, use _value as fallback
         return _value;
@@ -162,8 +162,8 @@ struct UIString {
     alias value this;
 }
 
-/** 
-    UIString item collection 
+/**
+    UIString item collection
 
     Based on array.
 */

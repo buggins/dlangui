@@ -13,7 +13,7 @@ extern (C) int UIAppMain(string[] args) {
 	}
 	Window window = Platform.instance.createWindow("DlangUI example - HelloWorld", null);
 	Log.d("Window created");
-	
+
 	// create some widget to show in window
 	//window.mainWidget = (new Button()).text("Hello, world!"d).margins(Rect(20,20,20,20));
 	window.mainWidget = parseML(q{
@@ -70,14 +70,14 @@ extern (C) int UIAppMain(string[] args) {
 	};
 	// show message box with content of editors
 	window.mainWidget.childById!Button("btnOk").click = delegate(Widget w) {
-		window.showMessageBox(UIString("Ok button pressed"d), 
+		window.showMessageBox(UIString("Ok button pressed"d),
 			UIString("Editors content\nEdit1: "d ~ edit1.text ~ "\nEdit2: "d ~ edit2.text));
 		return true;
 	};
-	
+
 	// show window
 	window.show();
-	
+
 	// run message loop
 	return Platform.instance.enterMessageLoop();
 }

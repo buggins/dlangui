@@ -222,7 +222,7 @@ class OutputLineStream {
 }
 
 
-/** 
+/**
     Support reading of file (or string in memory) by lines
 
     Support utf8, utf16, utf32 be and le encodings, and line endings - according to D language source file specification.
@@ -246,7 +246,7 @@ class LineStream {
     private uint _len; // number of bytes in stream buffer
     private bool _streamEof; // true if input stream is in EOF state
     private uint _line; // current line number
-    
+
     private uint _textPos; // start of text line in text buffer
     private uint _textLen; // position of last filled char in text buffer + 1
     private dchar[] _textBuf; // text buffer
@@ -290,7 +290,7 @@ class LineStream {
     @property int errorLine() { return _errorLine; }
     /// Returns line position (number of character in line) where error is found
     @property int errorPos() { return _errorPos; }
-    
+
     private immutable EncodingType _encoding;
 
     private int _errorCode;
@@ -313,7 +313,7 @@ class LineStream {
     protected this(){
         _encoding = EncodingType.UTF8;
     }
-    
+
     /// returns slice of bytes available in buffer
     protected uint readBytes() {
         uint bytesLeft = _len - _pos;
@@ -367,19 +367,19 @@ class LineStream {
         }
         return _textBuf.ptr + _textLen;
     }
-    
+
     protected void appendedText(uint len) {
         //writeln("appended ", len, " chars of text"); //:", _textBuf[_textLen .. _textLen + len]);
         _textLen += len;
     }
-    
+
     protected void setError(int code, string message, uint errorLine, uint errorPos) {
         _errorCode = code;
         _errorMessage = message;
         _errorLine = errorLine;
         _errorPos = errorPos;
     }
-    
+
     // override to decode text
     protected abstract uint decodeText();
 
@@ -418,7 +418,7 @@ class LineStream {
                     eof = charsLeft;
                     lastchar = charsLeft;
                     break;
-                } 
+                }
             }
             for (; p < charsLeft; p++) {
                 dchar ch = _textBuf[_textPos + p];
@@ -475,11 +475,11 @@ class LineStream {
         // return slice with decoded line
         return _textBuf[lineStart .. lineEnd];
     }
-    
+
     protected immutable static int TEXT_BUFFER_SIZE = 1024;
     protected immutable static int BYTE_BUFFER_SIZE = 512;
     protected immutable static int QUARTER_BYTE_BUFFER_SIZE = BYTE_BUFFER_SIZE / 4;
-    
+
     /// Factory method for string parser
     public static LineStream create(string code, string filename = "") {
         uint len = cast(uint)code.length;
@@ -493,7 +493,7 @@ class LineStream {
         InputStream stream = new MemoryInputStream(data); //new MemoryStream(data);
         return create(stream, filename);
     }
-    
+
     /// Factory for InputStream parser
     public static LineStream create(InputStream stream, string filename, bool autodetectUTFIfNoBOM = true) {
         ubyte[] buf = new ubyte[BYTE_BUFFER_SIZE];
@@ -524,7 +524,7 @@ class LineStream {
         }
         return res;
     }
-    
+
     protected bool invalidCharFlag;
     protected void invalidCharError() {
         uint pos = _textLen - _textPos + 1;
@@ -536,7 +536,7 @@ class LineStream {
 private class AsciiLineStream : LineStream {
     this(InputStream stream, string filename, ubyte[] buf, uint len) {
         super(stream, filename, EncodingType.ASCII, buf, 0, len);
-    }    
+    }
     override uint decodeText() {
         if (invalidCharFlag) {
             invalidCharError();
@@ -563,7 +563,7 @@ private class AsciiLineStream : LineStream {
         appendedText(i);
         return len;
     }
-    
+
 }
 
 private class Utf8LineStream : LineStream {
@@ -660,7 +660,7 @@ private class Utf8LineStream : LineStream {
 
     /// this constructor was created for unittests only
     protected this(){
-       
+
     }
 
     unittest {
@@ -678,8 +678,8 @@ private class Utf8LineStream : LineStream {
         assert(bread == 1);
         assert(ch == '/');
         //writefln("/ as hex: 0x%32x,0x%32x", ch,'/');
-        
-        
+
+
         //convert 2byte character
         buffer[0] = 0xc3;
         buffer[1] = 0x84;
@@ -691,7 +691,7 @@ private class Utf8LineStream : LineStream {
         assert(bread == 2);
         assert(ch == 'Ä');
         //writefln("Ä as hex: 0x%32x,0x%32x", ch,'Ä');
-        
+
         //convert 3byte character
         buffer[0] = 0xe0;
         buffer[1] = 0xa4;
@@ -715,7 +715,7 @@ private class Utf8LineStream : LineStream {
         //writefln("블 as hex: 0x%32x,0x%32x", ch,'블');
         assert(ch == '블');
     }
-    
+
     override uint decodeText() {
         //number of bytesAvailable
         uint len = readBytes();
@@ -732,7 +732,7 @@ private class Utf8LineStream : LineStream {
         uint maxResultingBytes = len*2; //len*2 because worst case is if all input chars are singelbyte and resulting in two bytes
         dchar* text = reserveTextBuf(maxResultingBytes);
         uint i = 0;
-        
+
         bool needMoreFlag = false;
         for (; i < len; i++) {
             uint ch = 0;
@@ -806,7 +806,7 @@ private class Utf16beLineStream : LineStream {
 private class Utf16leLineStream : LineStream {
     this(InputStream stream, string filename, ubyte[] buf, uint len) {
         super(stream, filename, EncodingType.UTF16LE, buf, 2, len);
-    }    
+    }
     override uint decodeText() {
         if (invalidCharFlag) {
             invalidCharError();
@@ -840,7 +840,7 @@ private class Utf16leLineStream : LineStream {
 private class Utf32beLineStream : LineStream {
     this(InputStream stream, string filename, ubyte[] buf, uint len) {
         super(stream, filename, EncodingType.UTF32BE, buf, 4, len);
-    }    
+    }
     override uint decodeText() {
         if (invalidCharFlag) {
             invalidCharError();
@@ -879,7 +879,7 @@ private class Utf32beLineStream : LineStream {
 private class Utf32leLineStream : LineStream {
     this(InputStream stream, string filename, ubyte[] buf, uint len) {
         super(stream, filename, EncodingType.UTF32LE, buf, 4, len);
-    }    
+    }
     override uint decodeText() {
         if (invalidCharFlag) {
             invalidCharError();

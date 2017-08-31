@@ -15,7 +15,7 @@ struct Bar // must be struct to reproduce
     //  0xC000 - 15 seconds
     //  0xE000 - 20 seconds
     //  0x10000 - 25 seconds
-    //  0x20000 - 1:45 
+    //  0x20000 - 1:45
 }
 
 int main(string[] argv)

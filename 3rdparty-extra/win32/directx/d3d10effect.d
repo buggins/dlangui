@@ -194,7 +194,7 @@ interface ID3D10EffectScalarVariable : ID3D10EffectVariable {
 	HRESULT SetRawValue(void* pData, UINT ByteOffset, UINT ByteCount);
 	HRESULT GetRawValue(void* pData, UINT ByteOffset, UINT ByteCount);
 	HRESULT SetFloat(float Value);
-	HRESULT GetFloat(float* pValue);    
+	HRESULT GetFloat(float* pValue);
 	HRESULT SetFloatArray(float* pData, UINT Offset, UINT Count);
 	HRESULT GetFloatArray(float* pData, UINT Offset, UINT Count);
 	HRESULT SetInt(int Value);
@@ -226,7 +226,7 @@ interface ID3D10EffectVectorVariable : ID3D10EffectVariable {
 	ID3D10EffectScalarVariable AsScalar();
 	ID3D10EffectVectorVariable AsVector();
 	ID3D10EffectMatrixVariable AsMatrix();
-	ID3D10EffectStringVariable AsString(); 
+	ID3D10EffectStringVariable AsString();
 	ID3D10EffectShaderResourceVariable AsShaderResource();
 	ID3D10EffectRenderTargetViewVariable AsRenderTargetView();
 	ID3D10EffectDepthStencilViewVariable AsDepthStencilView();
@@ -700,7 +700,7 @@ extern (C) const GUID IID_ID3D10EffectPass = {0x5cfbeb89, 0x1a06, 0x46e0, [0xb2,
  * http://www.digitalmars.com/d/cpp_interface.html
  * http://d.puremagic.com/issues/show_bug.cgi?id=1687
  */
-struct ID3D10EffectPassVtbl { 
+struct ID3D10EffectPassVtbl {
 	extern(Windows) :
 	BOOL function(ID3D10EffectPass) IsValid;
 	HRESULT function(ID3D10EffectPass, D3D10_PASS_DESC* pDesc) GetDesc;

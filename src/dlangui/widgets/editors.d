@@ -85,13 +85,13 @@ enum EditorActions : int {
     /// move cursor one page down with selection
     SelectPageDown,
     /// move cursor to the beginning of page
-    PageBegin, 
+    PageBegin,
     /// move cursor to the beginning of page with selection
-    SelectPageBegin, 
+    SelectPageBegin,
     /// move cursor to the end of page
-    PageEnd,   
+    PageEnd,
     /// move cursor to the end of page with selection
-    SelectPageEnd,   
+    SelectPageEnd,
     /// move cursor to the beginning of line
     LineBegin,
     /// move cursor to the beginning of line with selection
@@ -109,14 +109,14 @@ enum EditorActions : int {
     /// move cursor to the end of document with selection
     SelectDocumentEnd,
     /// delete char before cursor (backspace)
-    DelPrevChar, 
+    DelPrevChar,
     /// delete char after cursor (del key)
-    DelNextChar, 
+    DelNextChar,
     /// delete word before cursor (ctrl + backspace)
-    DelPrevWord, 
+    DelPrevWord,
     /// delete char after cursor (ctrl + del key)
-    DelNextWord, 
-    
+    DelNextWord,
+
     /// insert new line (Enter)
     InsertNewLine,
     /// insert new line before current position (Ctrl+Enter)
@@ -125,19 +125,19 @@ enum EditorActions : int {
     AppendNewLine,
 
     /// Turn On/Off replace mode
-    ToggleReplaceMode, 
-    
+    ToggleReplaceMode,
+
     /// Copy selection to clipboard
-    Copy, 
+    Copy,
     /// Cut selection to clipboard
-    Cut, 
+    Cut,
     /// Paste selection from clipboard
-    Paste, 
+    Paste,
     /// Undo last change
     Undo,
     /// Redo last undoed change
     Redo,
-    
+
     /// Tab (e.g., Tab key to insert tab character or indent text)
     Tab,
     /// Tab (unindent text, or remove whitespace before cursor, usually Shift+Tab)
@@ -149,9 +149,9 @@ enum EditorActions : int {
 
     /// Select whole content (usually, Ctrl+A)
     SelectAll,
-    
+
     // Scroll operations
-    
+
     /// Scroll one line up (not changing cursor)
     ScrollLineUp,
     /// Scroll one line down (not changing cursor)
@@ -164,12 +164,12 @@ enum EditorActions : int {
     ScrollLeft,
     /// Scroll window right
     ScrollRight,
-    
+
     /// Zoom in editor font
     ZoomIn,
     /// Zoom out editor font
     ZoomOut,
-    
+
     /// Togle line comment
     ToggleLineComment,
     /// Toggle block comment
@@ -212,8 +212,8 @@ const Action ACTION_EDITOR_GOTO_PREVIOUS_BOOKMARK = (new Action(EditorActions.Go
 const Action ACTION_EDITOR_FIND = (new Action(EditorActions.Find, KeyCode.KEY_F, KeyFlag.Control));
 const Action ACTION_EDITOR_REPLACE = (new Action(EditorActions.Replace, KeyCode.KEY_H, KeyFlag.Control));
 
-const Action[] STD_EDITOR_ACTIONS = [ACTION_EDITOR_INSERT_NEW_LINE, ACTION_EDITOR_PREPEND_NEW_LINE, 
-        ACTION_EDITOR_APPEND_NEW_LINE, ACTION_EDITOR_DELETE_LINE, ACTION_EDITOR_TOGGLE_REPLACE_MODE, 
+const Action[] STD_EDITOR_ACTIONS = [ACTION_EDITOR_INSERT_NEW_LINE, ACTION_EDITOR_PREPEND_NEW_LINE,
+        ACTION_EDITOR_APPEND_NEW_LINE, ACTION_EDITOR_DELETE_LINE, ACTION_EDITOR_TOGGLE_REPLACE_MODE,
         ACTION_EDITOR_SELECT_ALL, ACTION_EDITOR_TOGGLE_LINE_COMMENT, ACTION_EDITOR_TOGGLE_BLOCK_COMMENT,
         ACTION_EDITOR_TOGGLE_BOOKMARK, ACTION_EDITOR_GOTO_NEXT_BOOKMARK, ACTION_EDITOR_GOTO_PREVIOUS_BOOKMARK,
 
@@ -319,7 +319,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     }
 
     void wrapLine(dstring line, int maxWidth) {
-        
+
     }
 
     /// information about line span into several lines - in word wrap mode
@@ -590,7 +590,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return this;
     }
 
-    /// 
+    ///
     override bool onMenuItemAction(const Action action) {
         return dispatchAction(action);
     }
@@ -745,7 +745,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         }
         return this;
     }
-    
+
     /// readonly flag (when true, user cannot change content of editor)
     @property bool readOnly() {
         return !enabled || _content.readOnly;
@@ -911,14 +911,14 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     override @property dstring text() { return _content.text; }
 
     /// set text
-    override @property Widget text(dstring s) { 
+    override @property Widget text(dstring s) {
         _content.text = s;
         requestLayout();
         return this;
     }
 
     /// set text
-    override @property Widget text(UIString s) { 
+    override @property Widget text(UIString s) {
         _content.text = s;
         requestLayout();
         return this;
@@ -1216,7 +1216,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     public dstring getSelectedText() {
         return getRangeText(_selectionRange);
     }
-    
+
     /// returns text for specified range (joined with LF when span over multiple lines)
     public dstring getRangeText(TextRange range) {
         dstring selectionText = concatDStrings(_content.rangeText(range));
@@ -1491,7 +1491,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                         return true;
                     if (_selectionRange.empty) {
                         if (useSpacesForTabs) {
-                            // insert one or more spaces to 
+                            // insert one or more spaces to
                             EditOperation op = new EditOperation(EditAction.Replace, TextRange(_caretPos, _caretPos), [spacesForTab(_caretPos.pos)]);
                             _content.performOperation(op, this);
                         } else {
@@ -1506,7 +1506,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                         } else {
                             // insert tab
                             if (useSpacesForTabs) {
-                                // insert one or more spaces to 
+                                // insert one or more spaces to
                                 EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [spacesForTab(_selectionRange.start.pos)]);
                                 _content.performOperation(op, this);
                             } else {
@@ -1899,7 +1899,7 @@ class EditLine : EditWidgetBase {
     protected dstring _measuredText;
     protected int[] _measuredTextWidths;
     protected Point _measuredTextSize;
-    
+
     protected Point _measuredTextToSetWidgetSize;
     protected dstring _textToSetWidgetSize = "aaaaa"d;
     protected int[] _measuredTextToSetWidgetSizeWidths;
@@ -1907,7 +1907,7 @@ class EditLine : EditWidgetBase {
     protected dchar _passwordChar = 0;
     /// password character - 0 for normal editor, some character, e.g. '*' to hide text by replacing all characters with this char
     @property dchar passwordChar() { return _passwordChar; }
-    @property EditLine passwordChar(dchar ch) { 
+    @property EditLine passwordChar(dchar ch) {
         if (_passwordChar != ch) {
             _passwordChar = ch;
             requestLayout();
@@ -1981,7 +1981,7 @@ class EditLine : EditWidgetBase {
         _measuredTextSize.y = font.height;
         return _measuredTextSize;
     }
-    
+
     protected Point measureTextToSetWidgetSize() {
         FontRef font = font();
         _measuredTextToSetWidgetSizeWidths.length = _textToSetWidgetSize.length;
@@ -1992,7 +1992,7 @@ class EditLine : EditWidgetBase {
     }
 
     /// measure
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         updateFontProps();
         measureVisibleText();
         measureTextToSetWidgetSize();
@@ -2142,8 +2142,8 @@ class EditBox : EditWidgetBase {
     protected int[] _visibleLinesWidths; // width (in pixels) of visible lines
     protected CustomCharProps[][] _visibleLinesHighlights;
     protected CustomCharProps[][] _visibleLinesHighlightsBuf;
-    
-    protected Point _measuredTextToSetWidgetSize; 
+
+    protected Point _measuredTextToSetWidgetSize;
     protected dstring _textToSetWidgetSize = "aaaaa/naaaaa"d;
     protected int[] _measuredTextToSetWidgetSizeWidths;
 
@@ -2196,7 +2196,7 @@ class EditBox : EditWidgetBase {
             _findPanel.layout(Rect(rc.left, rc.bottom - findPanelHeight, rc.right, rc.bottom));
             contentRc.bottom -= findPanelHeight;
         }
-        
+
         super.layout(contentRc);
         if (_contentChanged) {
             measureVisibleText();
@@ -2668,9 +2668,9 @@ class EditBox : EditWidgetBase {
         _measuredTextToSetWidgetSize.y = font.height;
         return _measuredTextToSetWidgetSize;
     }
-    
+
     /// measure
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         if (visibility == Visibility.Gone) {
             return;
         }
@@ -2770,7 +2770,7 @@ class EditBox : EditWidgetBase {
         destroy(_tokenHighlightColors);
     }
 
-    /** 
+    /**
         Custom text color and style highlight (using text highlight) support.
 
         Return null if no syntax highlight required for line.
@@ -2812,9 +2812,9 @@ class EditBox : EditWidgetBase {
     bool _showWhiteSpaceMarks;
     /// when true, show marks for tabs and spaces at beginning and end of line, and tabs inside line
     @property bool showWhiteSpaceMarks() const { return _showWhiteSpaceMarks; }
-    @property void showWhiteSpaceMarks(bool show) { 
+    @property void showWhiteSpaceMarks(bool show) {
         if (_showWhiteSpaceMarks != show) {
-            _showWhiteSpaceMarks = show; 
+            _showWhiteSpaceMarks = show;
             invalidate();
         }
     }

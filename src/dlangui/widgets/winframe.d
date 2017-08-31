@@ -26,7 +26,7 @@ class WindowFrame : VerticalLayout {
 
     protected Widget _bodyWidget;
     @property Widget bodyWidget() { return _bodyWidget; }
-    @property void bodyWidget(Widget widget) { 
+    @property void bodyWidget(Widget widget) {
         _bodyLayout.replaceChild(widget, _bodyWidget);
         _bodyWidget = widget;
         _bodyWidget.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);

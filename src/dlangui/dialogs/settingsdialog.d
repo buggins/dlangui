@@ -365,28 +365,28 @@ class SettingsPage {
         addItem(res);
         return res;
     }
-    
+
     /// add EditLine to edit filename
     FileNameEditItem addFileNameEdit(string id, UIString label, string defaultValue = "") {
         FileNameEditItem res = new FileNameEditItem(id, label, defaultValue);
         addItem(res);
         return res;
     }
-    
+
     /// add EditLine to edit filename
     PathNameEditItem addDirNameEdit(string id, UIString label, string defaultValue = "") {
         PathNameEditItem res = new PathNameEditItem(id, label, defaultValue);
         addItem(res);
         return res;
     }
-    
+
     /// add EditLine to edit executable file name
     ExecutableFileNameEditItem addExecutableFileNameEdit(string id, UIString label, string defaultValue = "") {
         ExecutableFileNameEditItem res = new ExecutableFileNameEditItem(id, label, defaultValue);
         addItem(res);
         return res;
     }
-    
+
     StringComboBoxItem addStringComboBox(string id, UIString label, StringListValue[] items) {
         StringComboBoxItem res = new StringComboBoxItem(id, label, items);
         addItem(res);
@@ -430,7 +430,7 @@ class SettingsPage {
                     tbl.addChild(w[0]);
                     tbl.addChild(w[1]);
                 }
-                    
+
             }
         }
         return res;

@@ -67,7 +67,7 @@ class MLParser {
     protected Widget _currentWidget;
     protected Tokenizer _tokenizer;
     protected Collection!Widget _treeStack;
-    
+
     protected this(string code, string filename = "", Widget context = null) {
         _code = code;
         _filename = filename;
@@ -289,7 +289,7 @@ class MLParser {
                 if (_token.type != TokenType.integer)
                     error("integer expected as Rect property value");
                 int n = applySuffix(_token.intvalue, _token.text);
-                
+
                 if (name.equal("left"))
                     values[0] = n;
                 else if (name.equal("top"))
@@ -410,7 +410,7 @@ class MLParser {
                 }
             } else
                 error("int, float, string or identifier are expected as property value");
-            nextTokenNoEof();            
+            nextTokenNoEof();
             skipWhitespaceNoEof();
             if (_token.type == TokenType.semicolon) {
                 // separated by ;
@@ -472,7 +472,7 @@ class MLParser {
             if (!_context)
                 error("No context widget is specified!");
             parseWidgetProperties(_context);
-        
+
             skipWhitespaceAndEols();
             if (_token.type != TokenType.eof) // {
                 error("end of file expected");

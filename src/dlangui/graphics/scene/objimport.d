@@ -217,8 +217,8 @@ struct ObjModelImport {
         }
         int startVertex = mesh.addVertexes(data.ptr[0 .. vfloats * 3]);
         mesh.addPart(PrimitiveType.triangles, [
-            cast(ushort)(startVertex + 0), 
-            cast(ushort)(startVertex + 1), 
+            cast(ushort)(startVertex + 0),
+            cast(ushort)(startVertex + 1),
             cast(ushort)(startVertex + 2)]);
         _triangleCount++;
         return true;

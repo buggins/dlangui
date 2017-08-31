@@ -18,7 +18,7 @@ import std.c.linux.X11.xcb.xproto;
 
 const int XCB_XPRINT_MAJOR_VERSION =1;
 const int XCB_XPRINT_MINOR_VERSION =0;
-  
+
 extern(C) extern xcb_extension_t xcb_x_print_id;
 
 /**
@@ -715,12 +715,12 @@ struct xcb_x_print_bad_sequence_error_t {
 /*****************************************************************************
  **
  ** xcb_x_print_string8_t * xcb_x_print_printer_name
- ** 
+ **
  ** @param /+const+/ xcb_x_print_printer_t *R
  ** @returns xcb_x_print_string8_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_string8_t *
 xcb_x_print_printer_name (/+const+/ xcb_x_print_printer_t *R  /**< */);
 
@@ -728,12 +728,12 @@ xcb_x_print_printer_name (/+const+/ xcb_x_print_printer_t *R  /**< */);
 /*****************************************************************************
  **
  ** int xcb_x_print_printer_name_length
- ** 
+ **
  ** @param /+const+/ xcb_x_print_printer_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_x_print_printer_name_length (/+const+/ xcb_x_print_printer_t *R  /**< */);
 
@@ -741,12 +741,12 @@ xcb_x_print_printer_name_length (/+const+/ xcb_x_print_printer_t *R  /**< */);
 /*****************************************************************************
  **
  ** xcb_x_print_string8_iterator_t xcb_x_print_printer_name_iterator
- ** 
+ **
  ** @param /+const+/ xcb_x_print_printer_t *R
  ** @returns xcb_x_print_string8_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_string8_iterator_t
 xcb_x_print_printer_name_iterator (/+const+/ xcb_x_print_printer_t *R  /**< */);
 
@@ -754,12 +754,12 @@ xcb_x_print_printer_name_iterator (/+const+/ xcb_x_print_printer_t *R  /**< */);
 /*****************************************************************************
  **
  ** xcb_x_print_string8_t * xcb_x_print_printer_description
- ** 
+ **
  ** @param /+const+/ xcb_x_print_printer_t *R
  ** @returns xcb_x_print_string8_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_string8_t *
 xcb_x_print_printer_description (/+const+/ xcb_x_print_printer_t *R  /**< */);
 
@@ -767,12 +767,12 @@ xcb_x_print_printer_description (/+const+/ xcb_x_print_printer_t *R  /**< */);
 /*****************************************************************************
  **
  ** int xcb_x_print_printer_description_length
- ** 
+ **
  ** @param /+const+/ xcb_x_print_printer_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_x_print_printer_description_length (/+const+/ xcb_x_print_printer_t *R  /**< */);
 
@@ -780,12 +780,12 @@ xcb_x_print_printer_description_length (/+const+/ xcb_x_print_printer_t *R  /**<
 /*****************************************************************************
  **
  ** xcb_x_print_string8_iterator_t xcb_x_print_printer_description_iterator
- ** 
+ **
  ** @param /+const+/ xcb_x_print_printer_t *R
  ** @returns xcb_x_print_string8_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_string8_iterator_t
 xcb_x_print_printer_description_iterator (/+const+/ xcb_x_print_printer_t *R  /**< */);
 
@@ -793,12 +793,12 @@ xcb_x_print_printer_description_iterator (/+const+/ xcb_x_print_printer_t *R  /*
 /*****************************************************************************
  **
  ** void xcb_x_print_printer_next
- ** 
+ **
  ** @param xcb_x_print_printer_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_x_print_printer_next (xcb_x_print_printer_iterator_t *i  /**< */);
 
@@ -806,12 +806,12 @@ xcb_x_print_printer_next (xcb_x_print_printer_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_x_print_printer_end
- ** 
+ **
  ** @param xcb_x_print_printer_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_x_print_printer_end (xcb_x_print_printer_iterator_t i  /**< */);
 
@@ -819,12 +819,12 @@ xcb_x_print_printer_end (xcb_x_print_printer_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** void xcb_x_print_pcontext_next
- ** 
+ **
  ** @param xcb_x_print_pcontext_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_x_print_pcontext_next (xcb_x_print_pcontext_iterator_t *i  /**< */);
 
@@ -832,12 +832,12 @@ xcb_x_print_pcontext_next (xcb_x_print_pcontext_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_x_print_pcontext_end
- ** 
+ **
  ** @param xcb_x_print_pcontext_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_x_print_pcontext_end (xcb_x_print_pcontext_iterator_t i  /**< */);
 
@@ -845,12 +845,12 @@ xcb_x_print_pcontext_end (xcb_x_print_pcontext_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** void xcb_x_print_string8_next
- ** 
+ **
  ** @param xcb_x_print_string8_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_x_print_string8_next (xcb_x_print_string8_iterator_t *i  /**< */);
 
@@ -858,12 +858,12 @@ xcb_x_print_string8_next (xcb_x_print_string8_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_x_print_string8_end
- ** 
+ **
  ** @param xcb_x_print_string8_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_x_print_string8_end (xcb_x_print_string8_iterator_t i  /**< */);
 
@@ -871,12 +871,12 @@ xcb_x_print_string8_end (xcb_x_print_string8_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** xcb_x_print_print_query_version_cookie_t xcb_x_print_print_query_version
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_x_print_print_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_query_version_cookie_t
 xcb_x_print_print_query_version (xcb_connection_t *c  /**< */);
 
@@ -884,12 +884,12 @@ xcb_x_print_print_query_version (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_x_print_print_query_version_cookie_t xcb_x_print_print_query_version_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_x_print_print_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_query_version_cookie_t
 xcb_x_print_print_query_version_unchecked (xcb_connection_t *c  /**< */);
 
@@ -897,14 +897,14 @@ xcb_x_print_print_query_version_unchecked (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_x_print_print_query_version_reply_t * xcb_x_print_print_query_version_reply
- ** 
+ **
  ** @param xcb_connection_t                          *c
  ** @param xcb_x_print_print_query_version_cookie_t   cookie
  ** @param xcb_generic_error_t                      **e
  ** @returns xcb_x_print_print_query_version_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_query_version_reply_t *
 xcb_x_print_print_query_version_reply (xcb_connection_t                          *c  /**< */,
                                        xcb_x_print_print_query_version_cookie_t   cookie  /**< */,
@@ -914,7 +914,7 @@ xcb_x_print_print_query_version_reply (xcb_connection_t                         
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_printer_list_cookie_t xcb_x_print_print_get_printer_list
- ** 
+ **
  ** @param xcb_connection_t                *c
  ** @param uint                             printerNameLen
  ** @param uint                             localeLen
@@ -923,7 +923,7 @@ xcb_x_print_print_query_version_reply (xcb_connection_t                         
  ** @returns xcb_x_print_print_get_printer_list_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_printer_list_cookie_t
 xcb_x_print_print_get_printer_list (xcb_connection_t                *c  /**< */,
                                     uint                             printerNameLen  /**< */,
@@ -935,7 +935,7 @@ xcb_x_print_print_get_printer_list (xcb_connection_t                *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_printer_list_cookie_t xcb_x_print_print_get_printer_list_unchecked
- ** 
+ **
  ** @param xcb_connection_t                *c
  ** @param uint                             printerNameLen
  ** @param uint                             localeLen
@@ -944,7 +944,7 @@ xcb_x_print_print_get_printer_list (xcb_connection_t                *c  /**< */,
  ** @returns xcb_x_print_print_get_printer_list_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_printer_list_cookie_t
 xcb_x_print_print_get_printer_list_unchecked (xcb_connection_t                *c  /**< */,
                                               uint                             printerNameLen  /**< */,
@@ -956,12 +956,12 @@ xcb_x_print_print_get_printer_list_unchecked (xcb_connection_t                *c
 /*****************************************************************************
  **
  ** int xcb_x_print_print_get_printer_list_printers_length
- ** 
+ **
  ** @param /+const+/ xcb_x_print_print_get_printer_list_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_x_print_print_get_printer_list_printers_length (/+const+/ xcb_x_print_print_get_printer_list_reply_t *R  /**< */);
 
@@ -969,12 +969,12 @@ xcb_x_print_print_get_printer_list_printers_length (/+const+/ xcb_x_print_print_
 /*****************************************************************************
  **
  ** xcb_x_print_printer_iterator_t xcb_x_print_print_get_printer_list_printers_iterator
- ** 
+ **
  ** @param /+const+/ xcb_x_print_print_get_printer_list_reply_t *R
  ** @returns xcb_x_print_printer_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_printer_iterator_t
 xcb_x_print_print_get_printer_list_printers_iterator (/+const+/ xcb_x_print_print_get_printer_list_reply_t *R  /**< */);
 
@@ -982,14 +982,14 @@ xcb_x_print_print_get_printer_list_printers_iterator (/+const+/ xcb_x_print_prin
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_printer_list_reply_t * xcb_x_print_print_get_printer_list_reply
- ** 
+ **
  ** @param xcb_connection_t                             *c
  ** @param xcb_x_print_print_get_printer_list_cookie_t   cookie
  ** @param xcb_generic_error_t                         **e
  ** @returns xcb_x_print_print_get_printer_list_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_printer_list_reply_t *
 xcb_x_print_print_get_printer_list_reply (xcb_connection_t                             *c  /**< */,
                                           xcb_x_print_print_get_printer_list_cookie_t   cookie  /**< */,
@@ -999,12 +999,12 @@ xcb_x_print_print_get_printer_list_reply (xcb_connection_t                      
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_rehash_printer_list_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_rehash_printer_list_checked (xcb_connection_t *c  /**< */);
 
@@ -1012,12 +1012,12 @@ xcb_x_print_print_rehash_printer_list_checked (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_rehash_printer_list
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_rehash_printer_list (xcb_connection_t *c  /**< */);
 
@@ -1025,7 +1025,7 @@ xcb_x_print_print_rehash_printer_list (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_create_context_checked
- ** 
+ **
  ** @param xcb_connection_t                *c
  ** @param uint                             context_id
  ** @param uint                             printerNameLen
@@ -1035,7 +1035,7 @@ xcb_x_print_print_rehash_printer_list (xcb_connection_t *c  /**< */);
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_create_context_checked (xcb_connection_t                *c  /**< */,
                                     uint                             context_id  /**< */,
@@ -1048,7 +1048,7 @@ xcb_x_print_create_context_checked (xcb_connection_t                *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_create_context
- ** 
+ **
  ** @param xcb_connection_t                *c
  ** @param uint                             context_id
  ** @param uint                             printerNameLen
@@ -1058,7 +1058,7 @@ xcb_x_print_create_context_checked (xcb_connection_t                *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_create_context (xcb_connection_t                *c  /**< */,
                             uint                             context_id  /**< */,
@@ -1071,13 +1071,13 @@ xcb_x_print_create_context (xcb_connection_t                *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_set_context_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              context
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_set_context_checked (xcb_connection_t *c  /**< */,
                                        uint              context  /**< */);
@@ -1086,13 +1086,13 @@ xcb_x_print_print_set_context_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_set_context
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              context
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_set_context (xcb_connection_t *c  /**< */,
                                uint              context  /**< */);
@@ -1101,12 +1101,12 @@ xcb_x_print_print_set_context (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_context_cookie_t xcb_x_print_print_get_context
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_x_print_print_get_context_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_context_cookie_t
 xcb_x_print_print_get_context (xcb_connection_t *c  /**< */);
 
@@ -1114,12 +1114,12 @@ xcb_x_print_print_get_context (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_context_cookie_t xcb_x_print_print_get_context_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_x_print_print_get_context_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_context_cookie_t
 xcb_x_print_print_get_context_unchecked (xcb_connection_t *c  /**< */);
 
@@ -1127,14 +1127,14 @@ xcb_x_print_print_get_context_unchecked (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_context_reply_t * xcb_x_print_print_get_context_reply
- ** 
+ **
  ** @param xcb_connection_t                        *c
  ** @param xcb_x_print_print_get_context_cookie_t   cookie
  ** @param xcb_generic_error_t                    **e
  ** @returns xcb_x_print_print_get_context_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_context_reply_t *
 xcb_x_print_print_get_context_reply (xcb_connection_t                        *c  /**< */,
                                      xcb_x_print_print_get_context_cookie_t   cookie  /**< */,
@@ -1144,13 +1144,13 @@ xcb_x_print_print_get_context_reply (xcb_connection_t                        *c 
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_destroy_context_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              context
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_destroy_context_checked (xcb_connection_t *c  /**< */,
                                            uint              context  /**< */);
@@ -1159,13 +1159,13 @@ xcb_x_print_print_destroy_context_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_destroy_context
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              context
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_destroy_context (xcb_connection_t *c  /**< */,
                                    uint              context  /**< */);
@@ -1174,12 +1174,12 @@ xcb_x_print_print_destroy_context (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_screen_of_context_cookie_t xcb_x_print_print_get_screen_of_context
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_x_print_print_get_screen_of_context_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_screen_of_context_cookie_t
 xcb_x_print_print_get_screen_of_context (xcb_connection_t *c  /**< */);
 
@@ -1187,12 +1187,12 @@ xcb_x_print_print_get_screen_of_context (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_screen_of_context_cookie_t xcb_x_print_print_get_screen_of_context_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_x_print_print_get_screen_of_context_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_screen_of_context_cookie_t
 xcb_x_print_print_get_screen_of_context_unchecked (xcb_connection_t *c  /**< */);
 
@@ -1200,14 +1200,14 @@ xcb_x_print_print_get_screen_of_context_unchecked (xcb_connection_t *c  /**< */)
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_screen_of_context_reply_t * xcb_x_print_print_get_screen_of_context_reply
- ** 
+ **
  ** @param xcb_connection_t                                  *c
  ** @param xcb_x_print_print_get_screen_of_context_cookie_t   cookie
  ** @param xcb_generic_error_t                              **e
  ** @returns xcb_x_print_print_get_screen_of_context_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_screen_of_context_reply_t *
 xcb_x_print_print_get_screen_of_context_reply (xcb_connection_t                                  *c  /**< */,
                                                xcb_x_print_print_get_screen_of_context_cookie_t   cookie  /**< */,
@@ -1217,13 +1217,13 @@ xcb_x_print_print_get_screen_of_context_reply (xcb_connection_t                 
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_start_job_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param ubyte             output_mode
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_start_job_checked (xcb_connection_t *c  /**< */,
                                      ubyte             output_mode  /**< */);
@@ -1232,13 +1232,13 @@ xcb_x_print_print_start_job_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_start_job
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param ubyte             output_mode
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_start_job (xcb_connection_t *c  /**< */,
                              ubyte             output_mode  /**< */);
@@ -1247,13 +1247,13 @@ xcb_x_print_print_start_job (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_end_job_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param bool              cancel
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_end_job_checked (xcb_connection_t *c  /**< */,
                                    bool              cancel  /**< */);
@@ -1262,13 +1262,13 @@ xcb_x_print_print_end_job_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_end_job
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param bool              cancel
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_end_job (xcb_connection_t *c  /**< */,
                            bool              cancel  /**< */);
@@ -1277,13 +1277,13 @@ xcb_x_print_print_end_job (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_start_doc_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param ubyte             driver_mode
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_start_doc_checked (xcb_connection_t *c  /**< */,
                                      ubyte             driver_mode  /**< */);
@@ -1292,13 +1292,13 @@ xcb_x_print_print_start_doc_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_start_doc
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param ubyte             driver_mode
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_start_doc (xcb_connection_t *c  /**< */,
                              ubyte             driver_mode  /**< */);
@@ -1307,13 +1307,13 @@ xcb_x_print_print_start_doc (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_end_doc_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param bool              cancel
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_end_doc_checked (xcb_connection_t *c  /**< */,
                                    bool              cancel  /**< */);
@@ -1322,13 +1322,13 @@ xcb_x_print_print_end_doc_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_end_doc
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param bool              cancel
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_end_doc (xcb_connection_t *c  /**< */,
                            bool              cancel  /**< */);
@@ -1337,7 +1337,7 @@ xcb_x_print_print_end_doc (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_put_document_data_checked
- ** 
+ **
  ** @param xcb_connection_t                *c
  ** @param xcb_drawable_t                   drawable
  ** @param uint                             len_data
@@ -1351,7 +1351,7 @@ xcb_x_print_print_end_doc (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_put_document_data_checked (xcb_connection_t                *c  /**< */,
                                              xcb_drawable_t                   drawable  /**< */,
@@ -1368,7 +1368,7 @@ xcb_x_print_print_put_document_data_checked (xcb_connection_t                *c 
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_put_document_data
- ** 
+ **
  ** @param xcb_connection_t                *c
  ** @param xcb_drawable_t                   drawable
  ** @param uint                             len_data
@@ -1382,7 +1382,7 @@ xcb_x_print_print_put_document_data_checked (xcb_connection_t                *c 
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_put_document_data (xcb_connection_t                *c  /**< */,
                                      xcb_drawable_t                   drawable  /**< */,
@@ -1399,14 +1399,14 @@ xcb_x_print_print_put_document_data (xcb_connection_t                *c  /**< */
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_document_data_cookie_t xcb_x_print_print_get_document_data
- ** 
+ **
  ** @param xcb_connection_t       *c
  ** @param xcb_x_print_pcontext_t  context
  ** @param uint                    max_bytes
  ** @returns xcb_x_print_print_get_document_data_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_document_data_cookie_t
 xcb_x_print_print_get_document_data (xcb_connection_t       *c  /**< */,
                                      xcb_x_print_pcontext_t  context  /**< */,
@@ -1416,14 +1416,14 @@ xcb_x_print_print_get_document_data (xcb_connection_t       *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_document_data_cookie_t xcb_x_print_print_get_document_data_unchecked
- ** 
+ **
  ** @param xcb_connection_t       *c
  ** @param xcb_x_print_pcontext_t  context
  ** @param uint                    max_bytes
  ** @returns xcb_x_print_print_get_document_data_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_document_data_cookie_t
 xcb_x_print_print_get_document_data_unchecked (xcb_connection_t       *c  /**< */,
                                                xcb_x_print_pcontext_t  context  /**< */,
@@ -1433,12 +1433,12 @@ xcb_x_print_print_get_document_data_unchecked (xcb_connection_t       *c  /**< *
 /*****************************************************************************
  **
  ** ubyte * xcb_x_print_print_get_document_data_data
- ** 
+ **
  ** @param /+const+/ xcb_x_print_print_get_document_data_reply_t *R
  ** @returns ubyte *
  **
  *****************************************************************************/
- 
+
 extern(C) ubyte *
 xcb_x_print_print_get_document_data_data (/+const+/ xcb_x_print_print_get_document_data_reply_t *R  /**< */);
 
@@ -1446,12 +1446,12 @@ xcb_x_print_print_get_document_data_data (/+const+/ xcb_x_print_print_get_docume
 /*****************************************************************************
  **
  ** int xcb_x_print_print_get_document_data_data_length
- ** 
+ **
  ** @param /+const+/ xcb_x_print_print_get_document_data_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_x_print_print_get_document_data_data_length (/+const+/ xcb_x_print_print_get_document_data_reply_t *R  /**< */);
 
@@ -1459,12 +1459,12 @@ xcb_x_print_print_get_document_data_data_length (/+const+/ xcb_x_print_print_get
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_x_print_print_get_document_data_data_end
- ** 
+ **
  ** @param /+const+/ xcb_x_print_print_get_document_data_reply_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_x_print_print_get_document_data_data_end (/+const+/ xcb_x_print_print_get_document_data_reply_t *R  /**< */);
 
@@ -1472,14 +1472,14 @@ xcb_x_print_print_get_document_data_data_end (/+const+/ xcb_x_print_print_get_do
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_document_data_reply_t * xcb_x_print_print_get_document_data_reply
- ** 
+ **
  ** @param xcb_connection_t                              *c
  ** @param xcb_x_print_print_get_document_data_cookie_t   cookie
  ** @param xcb_generic_error_t                          **e
  ** @returns xcb_x_print_print_get_document_data_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_document_data_reply_t *
 xcb_x_print_print_get_document_data_reply (xcb_connection_t                              *c  /**< */,
                                            xcb_x_print_print_get_document_data_cookie_t   cookie  /**< */,
@@ -1489,13 +1489,13 @@ xcb_x_print_print_get_document_data_reply (xcb_connection_t                     
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_start_page_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_start_page_checked (xcb_connection_t *c  /**< */,
                                       xcb_window_t      window  /**< */);
@@ -1504,13 +1504,13 @@ xcb_x_print_print_start_page_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_start_page
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_start_page (xcb_connection_t *c  /**< */,
                               xcb_window_t      window  /**< */);
@@ -1519,13 +1519,13 @@ xcb_x_print_print_start_page (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_end_page_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param bool              cancel
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_end_page_checked (xcb_connection_t *c  /**< */,
                                     bool              cancel  /**< */);
@@ -1534,13 +1534,13 @@ xcb_x_print_print_end_page_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_end_page
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param bool              cancel
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_end_page (xcb_connection_t *c  /**< */,
                             bool              cancel  /**< */);
@@ -1549,7 +1549,7 @@ xcb_x_print_print_end_page (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_select_input_checked
- ** 
+ **
  ** @param xcb_connection_t       *c
  ** @param xcb_x_print_pcontext_t  context
  ** @param uint                    event_mask
@@ -1557,7 +1557,7 @@ xcb_x_print_print_end_page (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_select_input_checked (xcb_connection_t       *c  /**< */,
                                         xcb_x_print_pcontext_t  context  /**< */,
@@ -1568,7 +1568,7 @@ xcb_x_print_print_select_input_checked (xcb_connection_t       *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_select_input
- ** 
+ **
  ** @param xcb_connection_t       *c
  ** @param xcb_x_print_pcontext_t  context
  ** @param uint                    event_mask
@@ -1576,7 +1576,7 @@ xcb_x_print_print_select_input_checked (xcb_connection_t       *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_select_input (xcb_connection_t       *c  /**< */,
                                 xcb_x_print_pcontext_t  context  /**< */,
@@ -1587,13 +1587,13 @@ xcb_x_print_print_select_input (xcb_connection_t       *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_x_print_print_input_selected_cookie_t xcb_x_print_print_input_selected
- ** 
+ **
  ** @param xcb_connection_t       *c
  ** @param xcb_x_print_pcontext_t  context
  ** @returns xcb_x_print_print_input_selected_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_input_selected_cookie_t
 xcb_x_print_print_input_selected (xcb_connection_t       *c  /**< */,
                                   xcb_x_print_pcontext_t  context  /**< */);
@@ -1602,13 +1602,13 @@ xcb_x_print_print_input_selected (xcb_connection_t       *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_x_print_print_input_selected_cookie_t xcb_x_print_print_input_selected_unchecked
- ** 
+ **
  ** @param xcb_connection_t       *c
  ** @param xcb_x_print_pcontext_t  context
  ** @returns xcb_x_print_print_input_selected_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_input_selected_cookie_t
 xcb_x_print_print_input_selected_unchecked (xcb_connection_t       *c  /**< */,
                                             xcb_x_print_pcontext_t  context  /**< */);
@@ -1617,12 +1617,12 @@ xcb_x_print_print_input_selected_unchecked (xcb_connection_t       *c  /**< */,
 /*****************************************************************************
  **
  ** uint * xcb_x_print_print_input_selected_event_list
- ** 
+ **
  ** @param /+const+/ xcb_x_print_print_input_selected_reply_t *R
  ** @returns uint *
  **
  *****************************************************************************/
- 
+
 extern(C) uint *
 xcb_x_print_print_input_selected_event_list (/+const+/ xcb_x_print_print_input_selected_reply_t *R  /**< */);
 
@@ -1630,12 +1630,12 @@ xcb_x_print_print_input_selected_event_list (/+const+/ xcb_x_print_print_input_s
 /*****************************************************************************
  **
  ** int xcb_x_print_print_input_selected_event_list_length
- ** 
+ **
  ** @param /+const+/ xcb_x_print_print_input_selected_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_x_print_print_input_selected_event_list_length (/+const+/ xcb_x_print_print_input_selected_reply_t *R  /**< */);
 
@@ -1643,12 +1643,12 @@ xcb_x_print_print_input_selected_event_list_length (/+const+/ xcb_x_print_print_
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_x_print_print_input_selected_event_list_end
- ** 
+ **
  ** @param /+const+/ xcb_x_print_print_input_selected_reply_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_x_print_print_input_selected_event_list_end (/+const+/ xcb_x_print_print_input_selected_reply_t *R  /**< */);
 
@@ -1656,12 +1656,12 @@ xcb_x_print_print_input_selected_event_list_end (/+const+/ xcb_x_print_print_inp
 /*****************************************************************************
  **
  ** uint * xcb_x_print_print_input_selected_all_events_list
- ** 
+ **
  ** @param /+const+/ xcb_x_print_print_input_selected_reply_t *R
  ** @returns uint *
  **
  *****************************************************************************/
- 
+
 extern(C) uint *
 xcb_x_print_print_input_selected_all_events_list (/+const+/ xcb_x_print_print_input_selected_reply_t *R  /**< */);
 
@@ -1669,12 +1669,12 @@ xcb_x_print_print_input_selected_all_events_list (/+const+/ xcb_x_print_print_in
 /*****************************************************************************
  **
  ** int xcb_x_print_print_input_selected_all_events_list_length
- ** 
+ **
  ** @param /+const+/ xcb_x_print_print_input_selected_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_x_print_print_input_selected_all_events_list_length (/+const+/ xcb_x_print_print_input_selected_reply_t *R  /**< */);
 
@@ -1682,12 +1682,12 @@ xcb_x_print_print_input_selected_all_events_list_length (/+const+/ xcb_x_print_p
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_x_print_print_input_selected_all_events_list_end
- ** 
+ **
  ** @param /+const+/ xcb_x_print_print_input_selected_reply_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_x_print_print_input_selected_all_events_list_end (/+const+/ xcb_x_print_print_input_selected_reply_t *R  /**< */);
 
@@ -1695,14 +1695,14 @@ xcb_x_print_print_input_selected_all_events_list_end (/+const+/ xcb_x_print_prin
 /*****************************************************************************
  **
  ** xcb_x_print_print_input_selected_reply_t * xcb_x_print_print_input_selected_reply
- ** 
+ **
  ** @param xcb_connection_t                           *c
  ** @param xcb_x_print_print_input_selected_cookie_t   cookie
  ** @param xcb_generic_error_t                       **e
  ** @returns xcb_x_print_print_input_selected_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_input_selected_reply_t *
 xcb_x_print_print_input_selected_reply (xcb_connection_t                           *c  /**< */,
                                         xcb_x_print_print_input_selected_cookie_t   cookie  /**< */,
@@ -1712,14 +1712,14 @@ xcb_x_print_print_input_selected_reply (xcb_connection_t                        
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_attributes_cookie_t xcb_x_print_print_get_attributes
- ** 
+ **
  ** @param xcb_connection_t       *c
  ** @param xcb_x_print_pcontext_t  context
  ** @param ubyte                   pool
  ** @returns xcb_x_print_print_get_attributes_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_attributes_cookie_t
 xcb_x_print_print_get_attributes (xcb_connection_t       *c  /**< */,
                                   xcb_x_print_pcontext_t  context  /**< */,
@@ -1729,14 +1729,14 @@ xcb_x_print_print_get_attributes (xcb_connection_t       *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_attributes_cookie_t xcb_x_print_print_get_attributes_unchecked
- ** 
+ **
  ** @param xcb_connection_t       *c
  ** @param xcb_x_print_pcontext_t  context
  ** @param ubyte                   pool
  ** @returns xcb_x_print_print_get_attributes_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_attributes_cookie_t
 xcb_x_print_print_get_attributes_unchecked (xcb_connection_t       *c  /**< */,
                                             xcb_x_print_pcontext_t  context  /**< */,
@@ -1746,14 +1746,14 @@ xcb_x_print_print_get_attributes_unchecked (xcb_connection_t       *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_attributes_reply_t * xcb_x_print_print_get_attributes_reply
- ** 
+ **
  ** @param xcb_connection_t                           *c
  ** @param xcb_x_print_print_get_attributes_cookie_t   cookie
  ** @param xcb_generic_error_t                       **e
  ** @returns xcb_x_print_print_get_attributes_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_attributes_reply_t *
 xcb_x_print_print_get_attributes_reply (xcb_connection_t                           *c  /**< */,
                                         xcb_x_print_print_get_attributes_cookie_t   cookie  /**< */,
@@ -1763,7 +1763,7 @@ xcb_x_print_print_get_attributes_reply (xcb_connection_t                        
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_one_attributes_cookie_t xcb_x_print_print_get_one_attributes
- ** 
+ **
  ** @param xcb_connection_t                *c
  ** @param xcb_x_print_pcontext_t           context
  ** @param uint                             nameLen
@@ -1772,7 +1772,7 @@ xcb_x_print_print_get_attributes_reply (xcb_connection_t                        
  ** @returns xcb_x_print_print_get_one_attributes_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_one_attributes_cookie_t
 xcb_x_print_print_get_one_attributes (xcb_connection_t                *c  /**< */,
                                       xcb_x_print_pcontext_t           context  /**< */,
@@ -1784,7 +1784,7 @@ xcb_x_print_print_get_one_attributes (xcb_connection_t                *c  /**< *
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_one_attributes_cookie_t xcb_x_print_print_get_one_attributes_unchecked
- ** 
+ **
  ** @param xcb_connection_t                *c
  ** @param xcb_x_print_pcontext_t           context
  ** @param uint                             nameLen
@@ -1793,7 +1793,7 @@ xcb_x_print_print_get_one_attributes (xcb_connection_t                *c  /**< *
  ** @returns xcb_x_print_print_get_one_attributes_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_one_attributes_cookie_t
 xcb_x_print_print_get_one_attributes_unchecked (xcb_connection_t                *c  /**< */,
                                                 xcb_x_print_pcontext_t           context  /**< */,
@@ -1805,12 +1805,12 @@ xcb_x_print_print_get_one_attributes_unchecked (xcb_connection_t                
 /*****************************************************************************
  **
  ** xcb_x_print_string8_t * xcb_x_print_print_get_one_attributes_value
- ** 
+ **
  ** @param /+const+/ xcb_x_print_print_get_one_attributes_reply_t *R
  ** @returns xcb_x_print_string8_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_string8_t *
 xcb_x_print_print_get_one_attributes_value (/+const+/ xcb_x_print_print_get_one_attributes_reply_t *R  /**< */);
 
@@ -1818,12 +1818,12 @@ xcb_x_print_print_get_one_attributes_value (/+const+/ xcb_x_print_print_get_one_
 /*****************************************************************************
  **
  ** int xcb_x_print_print_get_one_attributes_value_length
- ** 
+ **
  ** @param /+const+/ xcb_x_print_print_get_one_attributes_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_x_print_print_get_one_attributes_value_length (/+const+/ xcb_x_print_print_get_one_attributes_reply_t *R  /**< */);
 
@@ -1831,12 +1831,12 @@ xcb_x_print_print_get_one_attributes_value_length (/+const+/ xcb_x_print_print_g
 /*****************************************************************************
  **
  ** xcb_x_print_string8_iterator_t xcb_x_print_print_get_one_attributes_value_iterator
- ** 
+ **
  ** @param /+const+/ xcb_x_print_print_get_one_attributes_reply_t *R
  ** @returns xcb_x_print_string8_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_string8_iterator_t
 xcb_x_print_print_get_one_attributes_value_iterator (/+const+/ xcb_x_print_print_get_one_attributes_reply_t *R  /**< */);
 
@@ -1844,14 +1844,14 @@ xcb_x_print_print_get_one_attributes_value_iterator (/+const+/ xcb_x_print_print
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_one_attributes_reply_t * xcb_x_print_print_get_one_attributes_reply
- ** 
+ **
  ** @param xcb_connection_t                               *c
  ** @param xcb_x_print_print_get_one_attributes_cookie_t   cookie
  ** @param xcb_generic_error_t                           **e
  ** @returns xcb_x_print_print_get_one_attributes_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_one_attributes_reply_t *
 xcb_x_print_print_get_one_attributes_reply (xcb_connection_t                               *c  /**< */,
                                             xcb_x_print_print_get_one_attributes_cookie_t   cookie  /**< */,
@@ -1861,7 +1861,7 @@ xcb_x_print_print_get_one_attributes_reply (xcb_connection_t                    
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_set_attributes_checked
- ** 
+ **
  ** @param xcb_connection_t                *c
  ** @param xcb_x_print_pcontext_t           context
  ** @param uint                             stringLen
@@ -1872,7 +1872,7 @@ xcb_x_print_print_get_one_attributes_reply (xcb_connection_t                    
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_set_attributes_checked (xcb_connection_t                *c  /**< */,
                                           xcb_x_print_pcontext_t           context  /**< */,
@@ -1886,7 +1886,7 @@ xcb_x_print_print_set_attributes_checked (xcb_connection_t                *c  /*
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_x_print_print_set_attributes
- ** 
+ **
  ** @param xcb_connection_t                *c
  ** @param xcb_x_print_pcontext_t           context
  ** @param uint                             stringLen
@@ -1897,7 +1897,7 @@ xcb_x_print_print_set_attributes_checked (xcb_connection_t                *c  /*
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_x_print_print_set_attributes (xcb_connection_t                *c  /**< */,
                                   xcb_x_print_pcontext_t           context  /**< */,
@@ -1911,13 +1911,13 @@ xcb_x_print_print_set_attributes (xcb_connection_t                *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_page_dimensions_cookie_t xcb_x_print_print_get_page_dimensions
- ** 
+ **
  ** @param xcb_connection_t       *c
  ** @param xcb_x_print_pcontext_t  context
  ** @returns xcb_x_print_print_get_page_dimensions_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_page_dimensions_cookie_t
 xcb_x_print_print_get_page_dimensions (xcb_connection_t       *c  /**< */,
                                        xcb_x_print_pcontext_t  context  /**< */);
@@ -1926,13 +1926,13 @@ xcb_x_print_print_get_page_dimensions (xcb_connection_t       *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_page_dimensions_cookie_t xcb_x_print_print_get_page_dimensions_unchecked
- ** 
+ **
  ** @param xcb_connection_t       *c
  ** @param xcb_x_print_pcontext_t  context
  ** @returns xcb_x_print_print_get_page_dimensions_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_page_dimensions_cookie_t
 xcb_x_print_print_get_page_dimensions_unchecked (xcb_connection_t       *c  /**< */,
                                                  xcb_x_print_pcontext_t  context  /**< */);
@@ -1941,14 +1941,14 @@ xcb_x_print_print_get_page_dimensions_unchecked (xcb_connection_t       *c  /**<
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_page_dimensions_reply_t * xcb_x_print_print_get_page_dimensions_reply
- ** 
+ **
  ** @param xcb_connection_t                                *c
  ** @param xcb_x_print_print_get_page_dimensions_cookie_t   cookie
  ** @param xcb_generic_error_t                            **e
  ** @returns xcb_x_print_print_get_page_dimensions_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_page_dimensions_reply_t *
 xcb_x_print_print_get_page_dimensions_reply (xcb_connection_t                                *c  /**< */,
                                              xcb_x_print_print_get_page_dimensions_cookie_t   cookie  /**< */,
@@ -1958,12 +1958,12 @@ xcb_x_print_print_get_page_dimensions_reply (xcb_connection_t                   
 /*****************************************************************************
  **
  ** xcb_x_print_print_query_screens_cookie_t xcb_x_print_print_query_screens
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_x_print_print_query_screens_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_query_screens_cookie_t
 xcb_x_print_print_query_screens (xcb_connection_t *c  /**< */);
 
@@ -1971,12 +1971,12 @@ xcb_x_print_print_query_screens (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_x_print_print_query_screens_cookie_t xcb_x_print_print_query_screens_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_x_print_print_query_screens_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_query_screens_cookie_t
 xcb_x_print_print_query_screens_unchecked (xcb_connection_t *c  /**< */);
 
@@ -1984,12 +1984,12 @@ xcb_x_print_print_query_screens_unchecked (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_window_t * xcb_x_print_print_query_screens_roots
- ** 
+ **
  ** @param /+const+/ xcb_x_print_print_query_screens_reply_t *R
  ** @returns xcb_window_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_window_t *
 xcb_x_print_print_query_screens_roots (/+const+/ xcb_x_print_print_query_screens_reply_t *R  /**< */);
 
@@ -1997,12 +1997,12 @@ xcb_x_print_print_query_screens_roots (/+const+/ xcb_x_print_print_query_screens
 /*****************************************************************************
  **
  ** int xcb_x_print_print_query_screens_roots_length
- ** 
+ **
  ** @param /+const+/ xcb_x_print_print_query_screens_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_x_print_print_query_screens_roots_length (/+const+/ xcb_x_print_print_query_screens_reply_t *R  /**< */);
 
@@ -2010,12 +2010,12 @@ xcb_x_print_print_query_screens_roots_length (/+const+/ xcb_x_print_print_query_
 /*****************************************************************************
  **
  ** xcb_window_iterator_t xcb_x_print_print_query_screens_roots_iterator
- ** 
+ **
  ** @param /+const+/ xcb_x_print_print_query_screens_reply_t *R
  ** @returns xcb_window_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_window_iterator_t
 xcb_x_print_print_query_screens_roots_iterator (/+const+/ xcb_x_print_print_query_screens_reply_t *R  /**< */);
 
@@ -2023,14 +2023,14 @@ xcb_x_print_print_query_screens_roots_iterator (/+const+/ xcb_x_print_print_quer
 /*****************************************************************************
  **
  ** xcb_x_print_print_query_screens_reply_t * xcb_x_print_print_query_screens_reply
- ** 
+ **
  ** @param xcb_connection_t                          *c
  ** @param xcb_x_print_print_query_screens_cookie_t   cookie
  ** @param xcb_generic_error_t                      **e
  ** @returns xcb_x_print_print_query_screens_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_query_screens_reply_t *
 xcb_x_print_print_query_screens_reply (xcb_connection_t                          *c  /**< */,
                                        xcb_x_print_print_query_screens_cookie_t   cookie  /**< */,
@@ -2040,14 +2040,14 @@ xcb_x_print_print_query_screens_reply (xcb_connection_t                         
 /*****************************************************************************
  **
  ** xcb_x_print_print_set_image_resolution_cookie_t xcb_x_print_print_set_image_resolution
- ** 
+ **
  ** @param xcb_connection_t       *c
  ** @param xcb_x_print_pcontext_t  context
  ** @param ushort                  image_resolution
  ** @returns xcb_x_print_print_set_image_resolution_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_set_image_resolution_cookie_t
 xcb_x_print_print_set_image_resolution (xcb_connection_t       *c  /**< */,
                                         xcb_x_print_pcontext_t  context  /**< */,
@@ -2057,14 +2057,14 @@ xcb_x_print_print_set_image_resolution (xcb_connection_t       *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_x_print_print_set_image_resolution_cookie_t xcb_x_print_print_set_image_resolution_unchecked
- ** 
+ **
  ** @param xcb_connection_t       *c
  ** @param xcb_x_print_pcontext_t  context
  ** @param ushort                  image_resolution
  ** @returns xcb_x_print_print_set_image_resolution_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_set_image_resolution_cookie_t
 xcb_x_print_print_set_image_resolution_unchecked (xcb_connection_t       *c  /**< */,
                                                   xcb_x_print_pcontext_t  context  /**< */,
@@ -2074,14 +2074,14 @@ xcb_x_print_print_set_image_resolution_unchecked (xcb_connection_t       *c  /**
 /*****************************************************************************
  **
  ** xcb_x_print_print_set_image_resolution_reply_t * xcb_x_print_print_set_image_resolution_reply
- ** 
+ **
  ** @param xcb_connection_t                                 *c
  ** @param xcb_x_print_print_set_image_resolution_cookie_t   cookie
  ** @param xcb_generic_error_t                             **e
  ** @returns xcb_x_print_print_set_image_resolution_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_set_image_resolution_reply_t *
 xcb_x_print_print_set_image_resolution_reply (xcb_connection_t                                 *c  /**< */,
                                               xcb_x_print_print_set_image_resolution_cookie_t   cookie  /**< */,
@@ -2091,13 +2091,13 @@ xcb_x_print_print_set_image_resolution_reply (xcb_connection_t                  
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_image_resolution_cookie_t xcb_x_print_print_get_image_resolution
- ** 
+ **
  ** @param xcb_connection_t       *c
  ** @param xcb_x_print_pcontext_t  context
  ** @returns xcb_x_print_print_get_image_resolution_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_image_resolution_cookie_t
 xcb_x_print_print_get_image_resolution (xcb_connection_t       *c  /**< */,
                                         xcb_x_print_pcontext_t  context  /**< */);
@@ -2106,13 +2106,13 @@ xcb_x_print_print_get_image_resolution (xcb_connection_t       *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_image_resolution_cookie_t xcb_x_print_print_get_image_resolution_unchecked
- ** 
+ **
  ** @param xcb_connection_t       *c
  ** @param xcb_x_print_pcontext_t  context
  ** @returns xcb_x_print_print_get_image_resolution_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_image_resolution_cookie_t
 xcb_x_print_print_get_image_resolution_unchecked (xcb_connection_t       *c  /**< */,
                                                   xcb_x_print_pcontext_t  context  /**< */);
@@ -2121,14 +2121,14 @@ xcb_x_print_print_get_image_resolution_unchecked (xcb_connection_t       *c  /**
 /*****************************************************************************
  **
  ** xcb_x_print_print_get_image_resolution_reply_t * xcb_x_print_print_get_image_resolution_reply
- ** 
+ **
  ** @param xcb_connection_t                                 *c
  ** @param xcb_x_print_print_get_image_resolution_cookie_t   cookie
  ** @param xcb_generic_error_t                             **e
  ** @returns xcb_x_print_print_get_image_resolution_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_x_print_print_get_image_resolution_reply_t *
 xcb_x_print_print_get_image_resolution_reply (xcb_connection_t                                 *c  /**< */,
                                               xcb_x_print_print_get_image_resolution_cookie_t   cookie  /**< */,

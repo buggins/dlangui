@@ -667,7 +667,7 @@ D3DXCOLOR* D3DXColorLerp(D3DXCOLOR* pOut, D3DXCOLOR* pC1, D3DXCOLOR* pC2, float 
 extern(Windows) {
 	D3DXCOLOR* D3DXColorAdjustSaturation(D3DXCOLOR* pOut, D3DXCOLOR* pC, float s);
 	D3DXCOLOR* D3DXColorAdjustContrast(D3DXCOLOR* pOut, D3DXCOLOR* pC, float c);
-	FLOAT D3DXFresnelTerm(float CosTheta, float RefractionIndex);     
+	FLOAT D3DXFresnelTerm(float CosTheta, float RefractionIndex);
 }
 
 extern (C) const GUID IID_ID3DXMatrixStack = {0xc7885ba7, 0xf990, 0x4fe7, [0x92, 0x2d, 0x85, 0x15, 0xe4, 0x77, 0xdd, 0x85]};

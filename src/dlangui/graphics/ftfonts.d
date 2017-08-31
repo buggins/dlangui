@@ -373,7 +373,7 @@ class FreeTypeFont : Font {
         debug --_instanceCount;
         debug(resalloc) Log.d("Destroyed font, count=", _instanceCount);
     }
-    
+
     private int _size;
     private int _height;
 
@@ -472,8 +472,8 @@ class FreeTypeFont : Font {
 private derelict.util.exception.ShouldThrow missingSymFunc( string symName ) {
     import std.algorithm : equal;
     static import derelict.util.exception;
-    foreach(s; ["FT_New_Face", "FT_Attach_File", "FT_Set_Pixel_Sizes", 
-            "FT_Get_Char_Index", "FT_Load_Glyph", "FT_Done_Face", 
+    foreach(s; ["FT_New_Face", "FT_Attach_File", "FT_Set_Pixel_Sizes",
+            "FT_Get_Char_Index", "FT_Load_Glyph", "FT_Done_Face",
             "FT_Init_FreeType", "FT_Done_FreeType"]) {
         if (symName.equal(s)) // Symbol is used
             return derelict.util.exception.ShouldThrow.Yes;
@@ -684,7 +684,7 @@ class FreeTypeFontManager : FontManager {
                 destroy(font);
                 return false;
             }
-        
+
             if (face == null || weight == 0) {
                 // properties are not set by caller
                 // get properties from loaded font
@@ -736,8 +736,8 @@ bool registerFontConfigFonts(FreeTypeFontManager fontMan) {
 
     FcFontSet *fontset;
 
-    FcObjectSet *os = FcObjectSetBuild(FC_FILE.toStringz, FC_WEIGHT.toStringz, FC_FAMILY.toStringz, 
-                                        FC_SLANT.toStringz, FC_SPACING.toStringz, FC_INDEX.toStringz, 
+    FcObjectSet *os = FcObjectSetBuild(FC_FILE.toStringz, FC_WEIGHT.toStringz, FC_FAMILY.toStringz,
+                                        FC_SLANT.toStringz, FC_SPACING.toStringz, FC_INDEX.toStringz,
                                         FC_STYLE.toStringz, null);
     FcPattern *pat = FcPatternCreate();
     //FcBool b = 1;
@@ -867,7 +867,7 @@ bool registerFontConfigFonts(FreeTypeFontManager fontMan) {
             fontFamily = FontFamily.SansSerif;
         else if (face16.indexOf("serif") >= 0)
             fontFamily = FontFamily.Serif;
-                
+
         //css_ff_inherit,
         //css_ff_serif,
         //css_ff_sans_serif,
@@ -875,7 +875,7 @@ bool registerFontConfigFonts(FreeTypeFontManager fontMan) {
         //css_ff_fantasy,
         //css_ff_monospace,
         bool italic = (slant!=FC_SLANT_ROMAN);
-                
+
         string face = family.fromStringz.dup;
         string style16 = style.fromStringz.toLower.dup;
         if (style16.indexOf("condensed") >= 0)
@@ -909,11 +909,11 @@ bool registerFontConfigFonts(FreeTypeFontManager fontMan) {
             if ( !_cache.findDuplicate( &newDef ) )
                 _cache.update( &newDef, LVFontRef(NULL) );
         }
-                
+
         */
         facesFound++;
-                
-                
+
+
     }
 
     FcFontSetDestroy(fontset);

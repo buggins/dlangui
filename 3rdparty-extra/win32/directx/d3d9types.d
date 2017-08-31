@@ -167,7 +167,7 @@ enum : D3DSHADEMODE {
     D3DSHADE_FLAT               = 1,
     D3DSHADE_GOURAUD            = 2,
     D3DSHADE_PHONG              = 3
-} 
+}
 alias TypeDef!(uint) D3DSHADEMODE;
 
 enum : D3DFILLMODE {
@@ -937,7 +937,7 @@ const D3DSPDM_MSAMPCENTROID = (4<<D3DSP_DSTMOD_SHIFT); // Relevant to multisampl
                                                                 //      "Centroid" is some location within the covered
                                                                 //      region of the pixel.
 
-// destination parameter 
+// destination parameter
 const D3DSP_DSTSHIFT_SHIFT = 24;
 const D3DSP_DSTSHIFT_MASK = 0x0F000000;
 
@@ -1511,7 +1511,7 @@ const D3DLOCK_READONLY = 0x00000010L;
 const D3DLOCK_DISCARD = 0x00002000L;
 const D3DLOCK_NOOVERWRITE = 0x00001000L;
 const D3DLOCK_NOSYSLOCK = 0x00000800L;
-const D3DLOCK_DONOTWAIT = 0x00004000L;                  
+const D3DLOCK_DONOTWAIT = 0x00004000L;
 const D3DLOCK_NO_DIRTY_UPDATE = 0x00008000L;
 
 /* Vertex Buffer Description */
@@ -1805,7 +1805,7 @@ struct D3DPRESENTSTATS {
 
 enum : D3DSCANLINEORDERING
 {
-    D3DSCANLINEORDERING_UNKNOWN                    = 0, 
+    D3DSCANLINEORDERING_UNKNOWN                    = 0,
     D3DSCANLINEORDERING_PROGRESSIVE                = 1,
     D3DSCANLINEORDERING_INTERLACED                 = 2
 }
@@ -1832,7 +1832,7 @@ struct D3DDISPLAYMODEFILTER
 
 enum : D3DDISPLAYROTATION
 {
-    D3DDISPLAYROTATION_IDENTITY = 1, // No rotation.           
+    D3DDISPLAYROTATION_IDENTITY = 1, // No rotation.
     D3DDISPLAYROTATION_90       = 2, // Rotated 90 degrees.
     D3DDISPLAYROTATION_180      = 3, // Rotated 180 degrees.
     D3DDISPLAYROTATION_270      = 4  // Rotated 270 degrees.

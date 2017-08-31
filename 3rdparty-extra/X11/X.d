@@ -2,7 +2,7 @@
 	Copyright 2007 TEISSIER Sylvere sligor(at)free.fr
 	version 0.1 2007/08/29
 	This binding is an alpha release and need to be more tested
-	
+
 	This file is free software, please read licence.txt for more informations
 */
 
@@ -44,18 +44,18 @@ const XID AllTemporary=0;		/* special Resource ID passed to KillClient */
 const Time CurrentTime=0;		/* special Time */
 const KeySym NoSymbol=0;		/* special KeySym */
 
-/***************************************************************** 
- * EVENT DEFINITIONS 
+/*****************************************************************
+ * EVENT DEFINITIONS
  *****************************************************************/
- 
+
  /* Input Event Masks. Used as event-mask window attribute and as arguments
    to Grab requests.  Not to be confused with event names.  */
- 
+
 enum EventMask:long
-{ 
+{
 	NoEventMask				=0,
 	KeyPressMask			=1<<0,
-	KeyReleaseMask			=1<<1, 
+	KeyReleaseMask			=1<<1,
 	ButtonPressMask			=1<<2,
 	ButtonReleaseMask		=1<<3,
 	EnterWindowMask			=1<<4,
@@ -204,7 +204,7 @@ enum NotifyModes:int
 	NotifyWhileGrabbed	=3
 };
 const int NotifyHint	=1;	/* for MotionNotify events */
-		       
+
 /* Notify detail */
 enum NotifyDetail:int
 {
@@ -298,7 +298,7 @@ RevertToParent		=2
 };
 
 /*****************************************************************
- * ERROR CODES 
+ * ERROR CODES
  *****************************************************************/
 
 enum XErrorCode:int
@@ -315,9 +315,9 @@ enum XErrorCode:int
 	BadDrawable	   	=9,		/* parameter not a Pixmap or Window */
 	BadAccess	  	=10,	/* depending on context:
 				 			- key/button already grabbed
-				 			- attempt to free an illegal 
-				   				cmap entry 
-							- attempt to store into a read-only 
+				 			- attempt to free an illegal
+				   				cmap entry
+							- attempt to store into a read-only
 				   				color map entry.
  							- attempt to modify the access control
 				   				list from other than the local host.
@@ -335,7 +335,7 @@ enum XErrorCode:int
 };
 
 /*****************************************************************
- * WINDOW DEFINITIONS 
+ * WINDOW DEFINITIONS
  *****************************************************************/
 
 /* Window classes used by CreateWindow */
@@ -577,7 +577,7 @@ enum GCMask:ulong
 };
 const uint GCLastBit=22;
 /*****************************************************************
- * FONTS 
+ * FONTS
  *****************************************************************/
 
 /* used in QueryFont -- draw direction */
@@ -588,7 +588,7 @@ enum FontDrawDirection:int
 	FontChange			=255
 }
 /*****************************************************************
- *  IMAGING 
+ *  IMAGING
  *****************************************************************/
 
 /* ImageFormat -- PutImage, GetImage */
@@ -600,7 +600,7 @@ enum ImageFormat:int
 };
 
 /*****************************************************************
- *  COLOR MAP STUFF 
+ *  COLOR MAP STUFF
  *****************************************************************/
 
 /* For CreateColormap */
@@ -630,7 +630,7 @@ enum QueryBestSizeClass:int
 	StippleShape	=2	/* size stippled fastest */
 };
 
-/***************************************************************** 
+/*****************************************************************
  * KEYBOARD/POINTER STUFF
  *****************************************************************/
 
@@ -675,7 +675,7 @@ enum MappingType:int
 };
 
 /*****************************************************************
- * SCREEN SAVER STUFF 
+ * SCREEN SAVER STUFF
  *****************************************************************/
 
 enum ScreenSaverBlancking:int
@@ -722,11 +722,11 @@ enum HostChange:int
 
 enum HostAccess:int
 {
-	EnableAccess	=1,     
+	EnableAccess	=1,
 	DisableAccess	=0
 };
 
-/* Display classes  used in opening the connection 
+/* Display classes  used in opening the connection
  * Note that the statically allocated ones are even numbered and the
  * dynamically changeable ones are odd numbered */
 

@@ -282,7 +282,7 @@ extern (C)
 }
 
 
-/* Uniscribe Functions 
+/* Uniscribe Functions
  * http://msdn2.microsoft.com/library/ms776469 */
 extern (Windows)
 {

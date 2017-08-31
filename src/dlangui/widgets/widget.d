@@ -150,7 +150,7 @@ enum CursorType {
 
 /**
  * Base class for all widgets.
- * 
+ *
  */
 @dmlwidget
 class Widget {
@@ -345,32 +345,32 @@ public:
     /// returns widget style id, null if not set
     @property string styleId() const { return _styleId; }
     /// set widget style id
-    @property Widget styleId(string id) { 
+    @property Widget styleId(string id) {
         _styleId = id;
         if (_ownStyle)
             _ownStyle.parentStyleId = id;
         _cachedStyle = currentTheme.get(id);
-        return this; 
+        return this;
     }
     /// get margins (between widget bounds and its background)
     @property Rect margins() const { return style.margins; }
     /// set margins for widget - override one from style
-    @property Widget margins(Rect rc) { 
-        ownStyle.margins = rc; 
+    @property Widget margins(Rect rc) {
+        ownStyle.margins = rc;
         requestLayout();
-        return this; 
+        return this;
     }
     /// set margins for widget with the same value for left, top, right, bottom - override one from style
-    @property Widget margins(int v) { 
-        ownStyle.margins = Rect(v, v, v, v); 
+    @property Widget margins(int v) {
+        ownStyle.margins = Rect(v, v, v, v);
         requestLayout();
-        return this; 
+        return this;
     }
     immutable static int FOCUS_RECT_PADDING = 2;
     /// get padding (between background bounds and content of widget)
     @property Rect padding() const {
         // get max padding from style padding and background drawable padding
-        Rect p = style.padding; 
+        Rect p = style.padding;
         DrawableRef d = backgroundDrawable;
         if (!d.isNull) {
             Rect dp = d.padding;
@@ -390,29 +390,29 @@ public:
         return p;
     }
     /// set padding for widget - override one from style
-    @property Widget padding(Rect rc) { 
-        ownStyle.padding = rc; 
+    @property Widget padding(Rect rc) {
+        ownStyle.padding = rc;
         requestLayout();
-        return this; 
+        return this;
     }
     /// set padding for widget to the same value for left, top, right, bottom - override one from style
-    @property Widget padding(int v) { 
-        ownStyle.padding = Rect(v, v, v, v); 
+    @property Widget padding(int v) {
+        ownStyle.padding = Rect(v, v, v, v);
         requestLayout();
-        return this; 
+        return this;
     }
     /// returns background color
     @property uint backgroundColor() const { return stateStyle.backgroundColor; }
     /// set background color for widget - override one from style
-    @property Widget backgroundColor(uint color) { 
-        ownStyle.backgroundColor = color; 
+    @property Widget backgroundColor(uint color) {
+        ownStyle.backgroundColor = color;
         invalidate();
         return this;
     }
     /// set background color for widget - from string like "#5599CC" or "white"
-    @property Widget backgroundColor(string colorString) { 
+    @property Widget backgroundColor(string colorString) {
         uint color = decodeHexColor(colorString, COLOR_TRANSPARENT);
-        ownStyle.backgroundColor = color; 
+        ownStyle.backgroundColor = color;
         invalidate();
         return this;
     }
@@ -448,30 +448,30 @@ public:
     /// widget drawing alpha value (0=opaque .. 255=transparent)
     @property uint alpha() const { return stateStyle.alpha; }
     /// set widget drawing alpha value (0=opaque .. 255=transparent)
-    @property Widget alpha(uint value) { 
-        ownStyle.alpha = value; 
+    @property Widget alpha(uint value) {
+        ownStyle.alpha = value;
         invalidate();
-        return this; 
+        return this;
     }
     /// get text color (ARGB 32 bit value)
     @property uint textColor() const { return stateStyle.textColor; }
     /// set text color (ARGB 32 bit value)
-    @property Widget textColor(uint value) { 
-        ownStyle.textColor = value; 
+    @property Widget textColor(uint value) {
+        ownStyle.textColor = value;
         invalidate();
         return this;
     }
     /// set text color for widget - from string like "#5599CC" or "white"
-    @property Widget textColor(string colorString) { 
+    @property Widget textColor(string colorString) {
         uint color = decodeHexColor(colorString, 0x000000);
-        ownStyle.textColor = color; 
+        ownStyle.textColor = color;
         invalidate();
-        return this; 
+        return this;
     }
 
 
     /// get text flags (bit set of TextFlag enum values)
-    @property uint textFlags() { 
+    @property uint textFlags() {
         uint res = stateStyle.textFlags;
         if (res == TEXT_FLAGS_USE_PARENT) {
             if (parent)
@@ -491,10 +491,10 @@ public:
             }
         }
 
-        return res; 
+        return res;
     }
     /// set text flags (bit set of TextFlag enum values)
-    @property Widget textFlags(uint value) { 
+    @property Widget textFlags(uint value) {
         ownStyle.textFlags = value;
         bool oldHotkeys = (ownStyle.textFlags & (TextFlag.HotKeys | TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed)) != 0;
         bool newHotkeys = (value & (TextFlag.HotKeys | TextFlag.UnderlineHotKeys | TextFlag.UnderlineHotKeysWhenAltPressed)) != 0;
@@ -503,25 +503,25 @@ public:
             requestLayout();
         else
             invalidate();
-        return this; 
+        return this;
     }
     /// returns font face
     @property string fontFace() const { return stateStyle.fontFace; }
     /// set font face for widget - override one from style
-    @property Widget fontFace(string face) { 
-        ownStyle.fontFace = face; 
+    @property Widget fontFace(string face) {
+        ownStyle.fontFace = face;
         handleFontChanged();
         requestLayout();
-        return this; 
+        return this;
     }
     /// returns font style (italic/normal)
     @property bool fontItalic() const { return stateStyle.fontItalic; }
     /// set font style (italic/normal) for widget - override one from style
-    @property Widget fontItalic(bool italic) { 
-        ownStyle.fontStyle = italic ? FONT_STYLE_ITALIC : FONT_STYLE_NORMAL; 
+    @property Widget fontItalic(bool italic) {
+        ownStyle.fontStyle = italic ? FONT_STYLE_ITALIC : FONT_STYLE_NORMAL;
         handleFontChanged();
         requestLayout();
-        return this; 
+        return this;
     }
     /// returns font weight
     @property ushort fontWeight() const { return stateStyle.fontWeight; }
@@ -534,33 +534,33 @@ public:
         ownStyle.fontWeight = cast(ushort)weight;
         handleFontChanged();
         requestLayout();
-        return this; 
+        return this;
     }
     /// returns font size in pixels
     @property int fontSize() const { return stateStyle.fontSize; }
     /// set font size for widget - override one from style
     @property Widget fontSize(int size) {
-        ownStyle.fontSize = size; 
+        ownStyle.fontSize = size;
         handleFontChanged();
         requestLayout();
-        return this; 
+        return this;
     }
     /// returns font family
     @property FontFamily fontFamily() const { return stateStyle.fontFamily; }
     /// set font family for widget - override one from style
-    @property Widget fontFamily(FontFamily family) { 
-        ownStyle.fontFamily = family; 
+    @property Widget fontFamily(FontFamily family) {
+        ownStyle.fontFamily = family;
         handleFontChanged();
         requestLayout();
-        return this; 
+        return this;
     }
     /// returns alignment (combined vertical and horizontal)
     @property ubyte alignment() const { return style.alignment; }
     /// sets alignment (combined vertical and horizontal)
-    @property Widget alignment(ubyte value) { 
-        ownStyle.alignment = value; 
+    @property Widget alignment(ubyte value) {
+        ownStyle.alignment = value;
         requestLayout();
-        return this; 
+        return this;
     }
     /// returns horizontal alignment
     @property Align valign() { return cast(Align)(alignment & Align.VCenter); }
@@ -575,7 +575,7 @@ public:
     @property Widget text(dstring s) { return this; }
     /// sets widget content text (override to support this)
     @property Widget text(UIString s) { return this; }
-    
+
     /// override to handle font changes
     protected void handleFontChanged() {}
 
@@ -681,15 +681,15 @@ public:
     /// get checked state
     @property bool checked() { return (state & State.Checked) != 0; }
     /// set checked state
-    @property Widget checked(bool flg) { 
+    @property Widget checked(bool flg) {
         if (flg != checked) {
-            if (flg) 
-                setState(State.Checked); 
-            else 
-                resetState(State.Checked); 
-            invalidate(); 
+            if (flg)
+                setState(State.Checked);
+            else
+                resetState(State.Checked);
+            invalidate();
         }
-        return this; 
+        return this;
     }
 
     protected bool _focusable;
@@ -807,7 +807,7 @@ public:
     protected bool _focusGroup;
     /*****************************************
      * When focus group is set for some parent widget, focus from one of containing widgets can be moved using keyboard only to one of other widgets containing in it and cannot bypass bounds of focusGroup.
-     * 
+     *
      * If focused widget doesn't have any parent with focusGroup == true, focus may be moved to any focusable within window.
      *
      */
@@ -959,7 +959,7 @@ public:
         return parent.thisOrParentTabOrder;
     }
 
-    /// call on focused widget, to find best 
+    /// call on focused widget, to find best
     private Widget findNextFocusWidget(FocusMovement direction) {
         if (direction == FocusMovement.None)
             return this;
@@ -1403,11 +1403,11 @@ public:
         _measuredHeight = dy;
     }
 
-    /** 
-        Measure widget according to desired width and height constraints. (Step 1 of two phase layout). 
+    /**
+        Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
 
     */
-    void measure(int parentWidth, int parentHeight) { 
+    void measure(int parentWidth, int parentHeight) {
         measuredContent(parentWidth, parentHeight, 0, 0);
     }
 
@@ -1516,9 +1516,9 @@ public:
     /// adds child, returns added item
     Widget addChild(Widget item) { assert(false, "addChild: children not suported for this widget type"); }
     /// adds child, returns added item
-    Widget addChildren(Widget[] items) { 
+    Widget addChildren(Widget[] items) {
         foreach(item; items) {
-            addChild(item); 
+            addChild(item);
         }
         return this;
     }
@@ -1555,7 +1555,7 @@ public:
     }
 
     /// find child of specified type T by id, returns null if not found or cannot be converted to type T
-    T childById(T = typeof(this))(string id, bool deepSearch = true) { 
+    T childById(T = typeof(this))(string id, bool deepSearch = true) {
         if (deepSearch) {
             // search everywhere inside child tree
             if (compareId(id)) {
@@ -1584,7 +1584,7 @@ public:
             }
         }
         // not found
-        return null; 
+        return null;
     }
 
     /// returns parent widget, null for top level widget
@@ -1602,8 +1602,8 @@ public:
         return null;
     }
     /// sets window (to be used for top level widget from Window implementation). TODO: hide it from API?
-    @property void window(Window window) { 
-        _window = window; 
+    @property void window(Window window) {
+        _window = window;
     }
 
     void removeAllChildren(bool destroyObj = true) {
@@ -1734,7 +1734,7 @@ class WidgetGroup : Widget {
     /// inserts child at given index, returns inserted item
     override Widget insertChild(Widget item, int index) { return _children.insert(item,index).parent(this); }
     /// removes child, returns removed item
-    override Widget removeChild(int index) { 
+    override Widget removeChild(int index) {
         Widget res = _children.remove(index);
         if (res !is null)
             res.parent = null;
@@ -1746,7 +1746,7 @@ class WidgetGroup : Widget {
         int index = _children.indexOf(ID);
         if (index < 0)
             return null;
-        res = _children.remove(index); 
+        res = _children.remove(index);
         if (res !is null)
             res.parent = null;
         return res;
@@ -1757,7 +1757,7 @@ class WidgetGroup : Widget {
         int index = _children.indexOf(child);
         if (index < 0)
             return null;
-        res = _children.remove(index); 
+        res = _children.remove(index);
         if (res !is null)
             res.parent = null;
         return res;
@@ -1909,7 +1909,7 @@ struct AnimationHelper {
     }
     /// Returns true if animation is finished
     @property bool finished() {
-        return _timeElapsed >= _maxInterval; 
+        return _timeElapsed >= _maxInterval;
     }
 }
 
