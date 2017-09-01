@@ -297,17 +297,36 @@ class FileDialog : Dialog, CustomGridCellAdapter {
                 else
                     resname = "text-plain";
                 _fileList.setCellText(0, i, toUTF32(resname));
-                double size = _entries[i].size;
-                import std.format : format;
-                sz = size < 1024 ? to!string(size) ~ " B" :
-                    (size < 1024*1024 ? "%.1f".format(size/1024) ~ " KB" :
-                    (size < 1024*1024*1024 ? "%.1f".format(size/(1024*1024)) ~ " MB" :
-                    "%.1f".format(size/(1024*1024*1024)) ~ " GB"));
-                import std.datetime;
-                SysTime ts = _entries[i].timeLastModified;
-                //string timeString = "%04d.%02d.%02d %02d:%02d:%02d".format(ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second);
-                string timeString = "%04d.%02d.%02d %02d:%02d".format(ts.year, ts.month, ts.day, ts.hour, ts.minute);
-                date = timeString;
+                double size = double.nan;
+                try {
+                    size = _entries[i].size;
+                } catch (Exception e) {
+                    Log.w(e.msg);
+                }
+                import std.math : isNaN;
+                if (size.isNaN)
+                    sz = "--";
+                else {
+                    import std.format : format;
+                    sz = size < 1024 ? to!string(size) ~ " B" :
+                        (size < 1024*1024 ? "%.1f".format(size/1024) ~ " KB" :
+                        (size < 1024*1024*1024 ? "%.1f".format(size/(1024*1024)) ~ " MB" :
+                        "%.1f".format(size/(1024*1024*1024)) ~ " GB"));
+                }
+                import std.datetime : SysTime;
+                import std.typecons : Nullable;
+                Nullable!SysTime ts;
+                try {
+                    ts = _entries[i].timeLastModified;
+                } catch (Exception e) {
+                    Log.w(e.msg);
+                }
+                if (ts.isNull)
+                    date = "----.--.-- --:--";
+                else {
+                    //date = "%04d.%02d.%02d %02d:%02d:%02d".format(ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second);
+                    date = "%04d.%02d.%02d %02d:%02d".format(ts.year, ts.month, ts.day, ts.hour, ts.minute);
+                }
             }
             _fileList.setCellText(2, i, toUTF32(sz));
             _fileList.setCellText(3, i, toUTF32(date));
