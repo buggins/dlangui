@@ -3005,10 +3005,34 @@ class EditBox : EditWidgetBase {
 
     protected FindPanel _findPanel;
 
+    dstring selectionText(bool singleLineOnly = false) {
+        TextRange range = _selectionRange;
+        if (range.empty) {
+            return null;
+        }
+        dstring res = getRangeText(range);
+        if (singleLineOnly) {
+            for (int i = 0; i < res.length; i++) {
+                if (res[i] == '\n') {
+                    res = res[0 .. i];
+                    break;
+                }
+            }
+        }
+        return res;
+    }
+
     /// create find panel
     protected void createFindPanel(bool selectionOnly, bool replaceMode) {
-        _findPanel = new FindPanel(selectionOnly, replaceMode);
+        if (_findPanel) {
+            closeFindPanel();
+        }
+        dstring txt = selectionText(true);
+        _findPanel = new FindPanel(this, selectionOnly, replaceMode, txt);
         addChild(_findPanel);
+        if (!pos.empty)
+            layout(pos);
+        _findPanel.activate();
         requestLayout();
     }
 
@@ -3114,6 +3138,7 @@ class LogWidget : EditBox {
 }
 
 class FindPanel : HorizontalLayout {
+    protected EditBox _editor;
     protected EditLine _edFind;
     protected EditLine _edReplace;
     protected ImageCheckButton _cbCaseSensitive;
@@ -3123,7 +3148,8 @@ class FindPanel : HorizontalLayout {
     protected Button _btnFindPrev;
     protected Button _btnReplace;
     protected Button _btnReplaceAll;
-    this(bool selectionOnly, bool replace) {
+    protected ImageButton _btnClose;
+    this(EditBox editor, bool selectionOnly, bool replace, dstring initialText = ""d) {
         import dlangui.dml.parser;
         try {
             parseML(q{
@@ -3146,6 +3172,7 @@ class FindPanel : HorizontalLayout {
                         }
                     }
                     VerticalLayout {
+                        VSpacer {}
                         HorizontalLayout {
                             ImageCheckButton { id: cbCaseSensitive; drawableId: "find_case_sensitive"; tooltipText: EDIT_FIND_CASE_SENSITIVE; styleId: TOOLBAR_BUTTON; alignment: vcenter }
                             ImageCheckButton { id: cbWholeWords; drawableId: "find_whole_words"; tooltipText: EDIT_FIND_WHOLE_WORDS; styleId: TOOLBAR_BUTTON; alignment: vcenter }
@@ -3154,7 +3181,8 @@ class FindPanel : HorizontalLayout {
                         VSpacer {}
                     }
                     VerticalLayout {
-                        ImageButton { id: btnClose; drawableId: "close"; styleId: BUTTON_TRANSPARENT }
+                        VSpacer {}
+                        ImageButton { id: btnClose; drawableId: close; styleId: BUTTON_TRANSPARENT }
                         VSpacer {}
                     }
                 }
@@ -3162,18 +3190,112 @@ class FindPanel : HorizontalLayout {
         } catch (Exception e) {
             Log.e("Exception while parsing DML: ", e);
         }
+        _editor = editor;
         _edFind = childById!EditLine("edFind");
         _edReplace = childById!EditLine("edReplace");
+
+        if (initialText.length) {
+            _edFind.text = initialText;
+            _edReplace.text = initialText;
+        }
+
+        _edFind.editorAction.connect(&onFindEditorAction);
+        _edFind.contentChange.connect(&onFindTextChange);
+
+        _edFind.keyEvent = &onEditorKeyEvent;
+        _edReplaceFind.keyEvent = &onEditorKeyEvent;
+
         _btnFindNext = childById!Button("btnFindNext");
+        _btnFindNext.click = &onButtonClick;
         _btnFindPrev = childById!Button("btnFindPrev");
+        _btnFindPrev.click = &onButtonClick;
         _btnReplace = childById!Button("btnReplace");
+        _btnReplace.click = &onButtonClick;
         _btnReplaceAll = childById!Button("btnReplaceAll");
+        _btnReplaceAll.click = &onButtonClick;
+        _btnClose = childById!ImageButton("btnClose");
+        _btnClose.click = &onButtonClick;
         _cbCaseSensitive = childById!ImageCheckButton("cbCaseSensitive");
         _cbWholeWords = childById!ImageCheckButton("cbWholeWords");
         _cbSelection =  childById!CheckBox("cbSelection");
         if (!replace)
             childById("replace").visibility = Visibility.Gone;
         //_edFind = new EditLine("edFind"
+        dstring currentText = _edFind.text;
+        Log.d("currentText=", currentText);
+        setDirection(false);
+    }
+    void activate() {
+        _edFind.setFocus();
+        dstring currentText = _edFind.text;
+        Log.d("activate.currentText=", currentText);
+        _edFind.setCaretPos(0, cast(int)currentText.length, true);
+    }
+
+    bool onButtonClick(Widget source) {
+        switch (source.id) {
+            case "btnFindNext":
+                findNext(false);
+                return true;
+            case "btnFindPrev":
+                findNext(true);
+                return true;
+            case "btnClose":
+                close();
+                return true;
+            case "btnReplace":
+                // TODO
+                return true;
+            case "btnReplaceAll":
+                // TODO
+                return true;
+            default:
+                return true;
+        }
+    }
+
+    void close() {
+        _editor.closeFindPanel();
+    }
+
+    bool onEditorKeyEvent(KeyEvent event) {
+        if (event.action == KeyAction.KeyDown && event.keyCode == KeyCode.ESCAPE) {
+            close();
+            return true;
+        }
+        return false;
+    }
+
+    protected bool _backDirection;
+    void setDirection(bool back) {
+        _backDirection = back;
+        if (back) {
+            _btnFindNext.resetState(State.Default);
+            _btnFindPrev.setState(State.Default);
+        } else {
+            _btnFindNext.setState(State.Default);
+            _btnFindPrev.resetState(State.Default);
+        }
+    }
+
+    void findNext(bool back) {
+        setDirection(back);
+        dstring currentText = _edFind.text;
+        Log.d("findNext text=", currentText, " back=", back);
+    }
+
+    void onFindTextChange(EditableContent source) {
+        Log.d("onFindTextChange");
+        dstring currentText = _edFind.text;
+        Log.d("onFindTextChange.currentText=", currentText);
+    }
+    bool onFindEditorAction(const Action action) {
+        Log.d("onFindEditorAction ", action);
+        if (action.id == EditorActions.InsertNewLine) {
+            findNext(_backDirection);
+            return true;
+        }
+        return false;
     }
 }
 
