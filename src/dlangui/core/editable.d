@@ -829,11 +829,11 @@ class EditableContent {
 
     /// returns previous character position
     TextPosition prevCharPos(TextPosition p) {
-        if (p.line <= 0)
+        if (p.line < 0)
             return TextPosition(0, 0);
         p.pos--;
         for (;;) {
-            if (p.line <= 0)
+            if (p.line < 0)
                 return TextPosition(0, 0);
             if (p.pos >= 0 && p.pos < lineLength(p.line))
                 return p;
