@@ -506,7 +506,10 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         }
         if (action.id == StandardAction.Open || action.id == StandardAction.OpenDirectory || action.id == StandardAction.Save) {
             auto baseFilename = toUTF8(_edFilename.text);
-            _filename = _path ~ dirSeparator ~ baseFilename;
+            if (action.id == StandardAction.OpenDirectory)
+                _filename = _path ~ dirSeparator;
+            else
+                _filename = _path ~ dirSeparator ~ baseFilename;
 
             if (action.id != StandardAction.OpenDirectory && exists(_filename) && isDir(_filename)) {
                 // directory selected but we need file so open directory
