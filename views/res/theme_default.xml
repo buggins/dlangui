@@ -12,8 +12,8 @@
     <color id="editor_matching_bracket_highlight" value="#60FFE0B0"/>
     <color id="editor_selection_focused" value="#B060A0FF"/>
     <color id="editor_selection_normal" value="#D060A0FF"/>
-    <color id="editor_search_highlight_current" value="#808080FF"/>
-    <color id="editor_search_highlight_other" value="#C08080FF"/>
+    <color id="editor_search_highlight_current" value="#60FFC040"/>
+    <color id="editor_search_highlight_other" value="#90F0D080"/>
     <color id="editor_left_pane_background" value="#F4F4F4"/>
     <color id="editor_left_pane_background2" value="#FFFFFF"/>
     <color id="editor_left_pane_background3" value="#F0F0F0"/>

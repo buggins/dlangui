@@ -3130,7 +3130,7 @@ class EditBox : EditWidgetBase {
     /// create find panel
     protected void createFindPanel(bool selectionOnly, bool replaceMode) {
         if (_findPanel) {
-            closeFindPanel();
+            closeFindPanel(false);
         }
         dstring txt = selectionText(true);
         _findPanel = new FindPanel(this, selectionOnly, replaceMode, txt);
@@ -3142,12 +3142,17 @@ class EditBox : EditWidgetBase {
     }
 
     /// close find panel
-    protected void closeFindPanel() {
+    protected void closeFindPanel(bool hideOnly = true) {
         if (_findPanel) {
-            removeChild(_findPanel);
-            destroy(_findPanel);
-            _findPanel = null;
-            requestLayout();
+            setFocus();
+            if (hideOnly) {
+                _findPanel.visibility = Visibility.Gone;
+            } else {
+                removeChild(_findPanel);
+                destroy(_findPanel);
+                _findPanel = null;
+                requestLayout();
+            }
         }
     }
 
@@ -3323,12 +3328,14 @@ class FindPanel : HorizontalLayout {
         _cbCaseSensitive = childById!ImageCheckButton("cbCaseSensitive");
         _cbWholeWords = childById!ImageCheckButton("cbWholeWords");
         _cbSelection =  childById!CheckBox("cbSelection");
+        _cbCaseSensitive.checkChange = &onCaseSensitiveCheckChange;
         if (!replace)
             childById("replace").visibility = Visibility.Gone;
         //_edFind = new EditLine("edFind"
         dstring currentText = _edFind.text;
         Log.d("currentText=", currentText);
         setDirection(false);
+        updateHighlight();
     }
     void activate() {
         _edFind.setFocus();
@@ -3389,13 +3396,29 @@ class FindPanel : HorizontalLayout {
         dstring currentText = _edFind.text;
         Log.d("findNext text=", currentText, " back=", back);
         _editor.setTextToHighlight(currentText, _cbCaseSensitive.checked);
+        TextPosition pos = _editor.caretPos;
+        bool res = _editor.findNextPattern(pos, currentText, _cbCaseSensitive.checked, back ? -1 : 1);
+        if (res) {
+            _editor.setCaretPos(pos.line, pos.pos, true);
+        }
+    }
+
+    void updateHighlight() {
+        dstring currentText = _edFind.text;
+        Log.d("onFindTextChange.currentText=", currentText);
+        _editor.setTextToHighlight(currentText, _cbCaseSensitive.checked);
     }
 
     void onFindTextChange(EditableContent source) {
         Log.d("onFindTextChange");
-        dstring currentText = _edFind.text;
-        Log.d("onFindTextChange.currentText=", currentText);
+        updateHighlight();
     }
+
+    bool onCaseSensitiveCheckChange(Widget source, bool checkValue) {
+        updateHighlight();
+        return true;
+    }
+
     bool onFindEditorAction(const Action action) {
         Log.d("onFindEditorAction ", action);
         if (action.id == EditorActions.InsertNewLine) {
