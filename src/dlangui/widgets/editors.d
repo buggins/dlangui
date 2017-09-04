@@ -3203,7 +3203,7 @@ class FindPanel : HorizontalLayout {
         _edFind.contentChange.connect(&onFindTextChange);
 
         _edFind.keyEvent = &onEditorKeyEvent;
-        _edReplaceFind.keyEvent = &onEditorKeyEvent;
+        _edReplace.keyEvent = &onEditorKeyEvent;
 
         _btnFindNext = childById!Button("btnFindNext");
         _btnFindNext.click = &onButtonClick;
@@ -3258,7 +3258,7 @@ class FindPanel : HorizontalLayout {
         _editor.closeFindPanel();
     }
 
-    bool onEditorKeyEvent(KeyEvent event) {
+    bool onEditorKeyEvent(Widget source, KeyEvent event) {
         if (event.action == KeyAction.KeyDown && event.keyCode == KeyCode.ESCAPE) {
             close();
             return true;
