@@ -51,19 +51,19 @@ static if (ENABLE_OPENGL) {
 private derelict.util.exception.ShouldThrow missingSymFunc( string symName ) {
     import std.algorithm : equal;
     static import derelict.util.exception;
-    foreach(s; ["SDL_DestroyRenderer", "SDL_GL_DeleteContext", "SDL_DestroyWindow", "SDL_PushEvent", 
-                "SDL_GL_SetAttribute", "SDL_GL_CreateContext", "SDL_GetError", 
+    foreach(s; ["SDL_DestroyRenderer", "SDL_GL_DeleteContext", "SDL_DestroyWindow", "SDL_PushEvent",
+                "SDL_GL_SetAttribute", "SDL_GL_CreateContext", "SDL_GetError",
                 "SDL_CreateWindow", "SDL_CreateRenderer", "SDL_GetWindowSize",
-                "SDL_GL_GetDrawableSize", "SDL_GetWindowID", "SDL_SetWindowSize", 
-                "SDL_ShowWindow", "SDL_SetWindowTitle", "SDL_CreateRGBSurfaceFrom", 
-                "SDL_SetWindowIcon", "SDL_FreeSurface", "SDL_ShowCursor", 
-                "SDL_SetCursor", "SDL_CreateSystemCursor", "SDL_DestroyTexture", 
-                "SDL_CreateTexture", "SDL_UpdateTexture", "SDL_RenderCopy", 
-                "SDL_GL_SwapWindow", "SDL_GL_MakeCurrent", "SDL_SetRenderDrawColor", 
-                "SDL_RenderClear", "SDL_RenderPresent", "SDL_GetModState", 
-                "SDL_RemoveTimer", "SDL_RemoveTimer", "SDL_PushEvent", 
-                "SDL_RegisterEvents", "SDL_WaitEvent", "SDL_StartTextInput", 
-                "SDL_Quit", "SDL_HasClipboardText", "SDL_GetClipboardText", 
+                "SDL_GL_GetDrawableSize", "SDL_GetWindowID", "SDL_SetWindowSize",
+                "SDL_ShowWindow", "SDL_SetWindowTitle", "SDL_CreateRGBSurfaceFrom",
+                "SDL_SetWindowIcon", "SDL_FreeSurface", "SDL_ShowCursor",
+                "SDL_SetCursor", "SDL_CreateSystemCursor", "SDL_DestroyTexture",
+                "SDL_CreateTexture", "SDL_UpdateTexture", "SDL_RenderCopy",
+                "SDL_GL_SwapWindow", "SDL_GL_MakeCurrent", "SDL_SetRenderDrawColor",
+                "SDL_RenderClear", "SDL_RenderPresent", "SDL_GetModState",
+                "SDL_RemoveTimer", "SDL_RemoveTimer", "SDL_PushEvent",
+                "SDL_RegisterEvents", "SDL_WaitEvent", "SDL_StartTextInput",
+                "SDL_Quit", "SDL_HasClipboardText", "SDL_GetClipboardText",
                 "SDL_free", "SDL_SetClipboardText", "SDL_Init", "SDL_GetNumVideoDisplays"]) {//"SDL_GetDisplayDPI"
         if (symName.equal(s)) // Symbol is used
             return derelict.util.exception.ShouldThrow.Yes;
@@ -80,19 +80,19 @@ class SDLWindow : Window {
     SDLPlatform _platform;
     SDL_Window * _win;
     SDL_Renderer* _renderer;
-    
+
     SDLWindow[] _children;
     SDLWindow _parent;
-    
+
     this(SDLPlatform platform, dstring caption, Window parent, uint flags, uint width = 0, uint height = 0) {
         _platform = platform;
         _caption = caption;
         _windowState = WindowState.hidden;
-       
+
         _parent = cast(SDLWindow) parent;
         if (_parent)
             _parent._children~=this;
-        
+
         debug Log.d("Creating SDL window");
         _dx = width;
         _dy = height;
@@ -103,7 +103,7 @@ class SDLWindow : Window {
 
     ~this() {
         debug Log.d("Destroying SDL window");
-        
+
         if (_parent) {
             ptrdiff_t index = countUntil(_parent._children,this);
             if (index > -1 ) {
@@ -111,7 +111,7 @@ class SDLWindow : Window {
             }
             _parent = null;
         }
-        
+
         if (_renderer)
             SDL_DestroyRenderer(_renderer);
         static if (ENABLE_OPENGL) {
@@ -124,81 +124,81 @@ class SDLWindow : Window {
             destroy(_drawbuf);
     }
 
-    
+
     private bool hasVisibleModalChild() {
         foreach (SDLWindow w;_children) {
             if (w.flags & WindowFlag.Modal && w._windowState != WindowState.hidden)
                 return true;
-            
+
             if (w.hasVisibleModalChild())
                 return true;
         }
         return false;
     }
-    
-    
+
+
     private void restoreModalChilds() {
         foreach (SDLWindow w;_children) {
             if (w.flags & WindowFlag.Modal && w._windowState != WindowState.hidden) {
                 if (w._windowState == WindowState.maximized)
                     w.activateWindow();
-                else    
+                else
                     w.restoreWindow(true);
             }
-            
+
             w.restoreModalChilds();
         }
     }
-    
+
     private void minimizeModalChilds() {
         foreach (SDLWindow w;_children) {
             if (w.flags & WindowFlag.Modal && w._windowState != WindowState.hidden)
             {
                 w.minimizeWindow();
             }
-            
+
             w.minimizeModalChilds();
         }
     }
-    
-    
+
+
     private void restoreParentWindows() {
         SDLWindow[] tempWin;
         if (!_platform)
             return;
-        
+
         SDLWindow w = this;
-        
+
         while (true) {
             if (w is null)
                 break;
-            
+
             tempWin~=w;
-            
+
             w = w._parent;
         }
-        
+
         for (size_t i = tempWin.length ; i-- > 0 ; )
             tempWin[i].restoreWindow(true);
     }
-    
+
     private void minimizeParentWindows() {
         SDLWindow[] tempWin;
         if (!_platform)
             return;
-        
+
         SDLWindow w = this;
-        
+
         while (true) {
             if (w is null)
                 break;
-            
+
             tempWin~=w;
-            
+
             w = w._parent;
         }
-        
-        for (size_t i = tempWin.length ; i-- > 0 ; ) 
+
+        for (size_t i = tempWin.length ; i-- > 0 ; )
             tempWin[i].minimizeWindow();
     }
 
@@ -251,8 +251,8 @@ class SDLWindow : Window {
             if (_enableOpengl)
                 windowFlags |= SDL_WINDOW_OPENGL;
         }
-        _win = SDL_CreateWindow(toUTF8(_caption).toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
-                                _dx, _dy, 
+        _win = SDL_CreateWindow(toUTF8(_caption).toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                                _dx, _dy,
                                 windowFlags);
         static if (ENABLE_OPENGL) {
             if (!_win) {
@@ -261,8 +261,8 @@ class SDLWindow : Window {
                     _enableOpengl = false;
                     // recreate w/o OpenGL
                     windowFlags &= ~SDL_WINDOW_OPENGL;
-                    _win = SDL_CreateWindow(toUTF8(_caption).toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED, 
-                                            _dx, _dy, 
+                    _win = SDL_CreateWindow(toUTF8(_caption).toStringz, SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
+                                            _dx, _dy,
                                             windowFlags);
                 }
             }
@@ -271,7 +271,7 @@ class SDLWindow : Window {
             Log.e("SDL2: Failed to create window");
             return false;
         }
-        
+
         static if (ENABLE_OPENGL) {
             if (_enableOpengl) {
                 bool success = createContext(_platform.GLVersionMajor, _platform.GLVersionMinor);
@@ -316,7 +316,7 @@ class SDLWindow : Window {
         handleWindowStateChange(WindowState.unspecified, Rect(x, y, _dx, _dy));
         return true;
     }
-    
+
     void fixSize() {
         int w = 0;
         int h = 0;
@@ -359,7 +359,7 @@ class SDLWindow : Window {
         }
 
         adjustPositionDuringShow();
-            
+
         SDL_ShowWindow(_win);
         if (_mainWidget)
             _mainWidget.setFocus();
@@ -373,19 +373,19 @@ class SDLWindow : Window {
         Log.d("SDLWindow.close()");
         _platform.closeWindow(this);
     }
-    
+
     override protected void handleWindowStateChange(WindowState newState, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
         super.handleWindowStateChange(newState, newWindowRect);
     }
-    
+
     override bool setWindowState(WindowState newState, bool activate = false, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
         // override for particular platforms
-        
+
         if (_win is null)
             return false;
-        
+
         bool res = false;
-        
+
         // change state
         switch(newState) {
             case WindowState.maximized:
@@ -394,7 +394,7 @@ class SDLWindow : Window {
                 res = true;
                 break;
             case WindowState.minimized:
-                if (_windowState != WindowState.minimized) 
+                if (_windowState != WindowState.minimized)
                     SDL_MinimizeWindow(_win);
                 res = true;
                 break;
@@ -410,7 +410,7 @@ class SDLWindow : Window {
                         // some SDL versions, reset windows size and position to values from create window (SDL 2.0.4) on linux (don't know how it works on macOS)
                         if (newWindowRect.bottom == int.min && newWindowRect.right == int.min)
                             SDL_SetWindowSize(_win, _windowRect.right, _windowRect.bottom);
-                        
+
                         if (newWindowRect.top == int.min && newWindowRect.left == int.min)
                             SDL_SetWindowPosition(_win, _windowRect.left, _windowRect.top);
                     }
@@ -420,7 +420,7 @@ class SDLWindow : Window {
             default:
                 break;
         }
-        
+
         // change size and/or position
         bool rectChanged = false;
         if (newWindowRect != RECT_VALUE_IS_NOT_SET && (newState == WindowState.normal || newState == WindowState.unspecified)) {
@@ -430,47 +430,47 @@ class SDLWindow : Window {
                 rectChanged = true;
                 res = true;
             }
-                
+
             // change size
             if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
                 SDL_SetWindowSize(_win, newWindowRect.right, newWindowRect.bottom);
                 rectChanged = true;
                 res = true;
             }
-            
+
         }
-        
+
         if (activate) {
             SDL_RaiseWindow(_win);
             res = true;
         }
-        
+
         //needed here to make _windowRect and _windowState valid before SDL_WINDOWEVENT_RESIZED/SDL_WINDOWEVENT_MOVED/SDL_WINDOWEVENT_MINIMIZED/SDL_WINDOWEVENT_MAXIMIZED etc handled
         //example: change size by resizeWindow() and make some calculations using windowRect
         if (rectChanged) {
-            handleWindowStateChange(newState, Rect(newWindowRect.left == int.min ? _windowRect.left : newWindowRect.left, 
-                newWindowRect.top == int.min ? _windowRect.top : newWindowRect.top, newWindowRect.right == int.min ? _windowRect.right : newWindowRect.right, 
+            handleWindowStateChange(newState, Rect(newWindowRect.left == int.min ? _windowRect.left : newWindowRect.left,
+                newWindowRect.top == int.min ? _windowRect.top : newWindowRect.top, newWindowRect.right == int.min ? _windowRect.right : newWindowRect.right,
                 newWindowRect.bottom == int.min ? _windowRect.bottom : newWindowRect.bottom));
         }
         else
             handleWindowStateChange(newState, RECT_VALUE_IS_NOT_SET);
-        
+
         return res;
     }
 
     override @property Window parentWindow() {
         return _parent;
     }
-    
+
     override protected void handleWindowActivityChange(bool isWindowActive) {
         super.handleWindowActivityChange(isWindowActive);
     }
-    
+
     override @property bool isActive() {
         uint flags = SDL_GetWindowFlags(_win);
         return (flags & SDL_WINDOW_INPUT_FOCUS) == SDL_WINDOW_INPUT_FOCUS;
     }
-    
+
     protected dstring _caption;
 
     override @property dstring windowCaption() {
@@ -499,7 +499,7 @@ class SDLWindow : Window {
         SDL_Surface *surface = SDL_CreateRGBSurfaceFrom(iconDraw.scanLine(0), iconDraw.width, iconDraw.height, 32, iconDraw.width * 4, 0x00ff0000,0x0000ff00,0x000000ff,0xff000000);
         if (surface) {
             // The icon is attached to the window pointer
-            SDL_SetWindowIcon(_win, surface); 
+            SDL_SetWindowIcon(_win, surface);
             // ...and the surface containing the icon pixel data is no longer required.
             SDL_FreeSurface(surface);
         } else {
@@ -1055,7 +1055,7 @@ class SDLWindow : Window {
                 case KeyCode.LSHIFT:
                     flags |= KeyFlag.Shift | KeyFlag.LShift;
                     break;
-                
+
                 default:
                     break;
             }
@@ -1066,7 +1066,7 @@ class SDLWindow : Window {
         if (action == KeyAction.KeyDown || action == KeyAction.KeyUp) {
             if ((keyCodeIn >= SDLK_KP_1 && keyCodeIn <= SDLK_KP_0
                  || keyCodeIn == SDLK_KP_PERIOD
-                 //|| keyCodeIn >= 0x40000059 && keyCodeIn 
+                 //|| keyCodeIn >= 0x40000059 && keyCodeIn
                  ) && isNumLockEnabled)
                 return false;
         }
@@ -1215,7 +1215,7 @@ class SDLPlatform : Platform {
         }
         return res;
     }
-    
+
     override bool hasModalWindowsAbove(Window w) {
         SDLWindow sdlWin = cast (SDLWindow) w;
         if (sdlWin) {
@@ -1223,13 +1223,13 @@ class SDLPlatform : Platform {
         }
         return false;
     }
-    
+
 
     //void redrawWindows() {
     //    foreach(w; _windowMap)
     //        w.redraw();
     //}
-    
+
     private bool _windowsMinimized = false;
 
     override int enterMessageLoop() {
@@ -1250,7 +1250,7 @@ class SDLPlatform : Platform {
                         break;
                     }
                     skipNextQuit = false;
-                } 
+                }
                 if (_redrawEventId && event.type == _redrawEventId) {
                     // user defined redraw event
                     uint windowID = event.user.windowID;
@@ -1320,7 +1320,7 @@ class SDLPlatform : Platform {
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MINIMIZED - ", w.windowCaption);
                                 if (w.windowState()!=WindowState.minimized)
                                     w.handleWindowStateChange(WindowState.minimized);
-                                if (!_windowsMinimized && w.hasVisibleModalChild()) 
+                                if (!_windowsMinimized && w.hasVisibleModalChild())
                                     w.minimizeModalChilds();
                                 if (!_windowsMinimized && w.flags & WindowFlag.Modal)
                                     w.minimizeParentWindows();
@@ -1328,7 +1328,7 @@ class SDLPlatform : Platform {
                                 break;
                             case SDL_WINDOWEVENT_MAXIMIZED:
                                 debug(DebugSDL) Log.d("SDL_WINDOWEVENT_MAXIMIZED - ", w.windowCaption);
-                                if (w.windowState()!=WindowState.maximized)    
+                                if (w.windowState()!=WindowState.maximized)
                                     w.handleWindowStateChange(WindowState.maximized);
                                 _windowsMinimized = false;
                                 break;
@@ -1342,11 +1342,11 @@ class SDLPlatform : Platform {
 
                                 if (w.windowState()!=WindowState.normal)
                                     w.handleWindowStateChange(WindowState.normal);
-                                    
+
                                 if (w.hasVisibleModalChild())
                                     w.restoreModalChilds();
                                 version(linux) { //not sure if needed on Windows or OSX. Also need to check on FreeBSD
-                                    w.invalidate(); 
+                                    w.invalidate();
                                 }
                                 break;
                             case SDL_WINDOWEVENT_ENTER:
@@ -1435,7 +1435,7 @@ class SDLPlatform : Platform {
                             SDLWindow w = getWindow(event.user.windowID);
                             if (w) {
                                 w.handleTimer(cast(uint)event.user.code);
-                            } 
+                            }
                         } else if (event.type == WINDOW_CLOSE_EVENT_ID) {
                             SDLWindow windowToClose = getWindow(event.user.windowID);
                             if(windowToClose) {
@@ -1485,7 +1485,7 @@ version (Windows) {
     pragma(lib, "user32.lib");
     extern(Windows)
         int DLANGUIWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
-                LPSTR lpCmdLine, int nCmdShow) 
+                LPSTR lpCmdLine, int nCmdShow)
         {
             int result;
 
@@ -1673,7 +1673,7 @@ int sdlmain(string[] args) {
     } else {
         res = UIAppMain(args);
     }
-    
+
     //Log.e("Widget instance count after UIAppMain: ", Widget.instanceCount());
 
     Log.d("Destroying SDL platform");

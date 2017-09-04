@@ -194,13 +194,13 @@ enum GridActions : int {
     /// move cursor one page down with selection
     SelectPageDown,
     /// move cursor to the beginning of page
-    PageBegin, 
+    PageBegin,
     /// move cursor to the beginning of page with selection
-    SelectPageBegin, 
+    SelectPageBegin,
     /// move cursor to the end of page
-    PageEnd,   
+    PageEnd,
     /// move cursor to the end of page with selection
-    SelectPageEnd,   
+    SelectPageEnd,
     /// move cursor to the beginning of line
     LineBegin,
     /// move cursor to the beginning of line with selection
@@ -283,7 +283,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     /// Get smooth horizontal scroll flag - when true - scrolling by pixels, when false - by cells
     @property bool smoothHScroll() { return _smoothHScroll; }
     /// Get smooth horizontal scroll flag - when true - scrolling by pixels, when false - by cells
-    @property GridWidgetBase smoothHScroll(bool flgSmoothScroll) { 
+    @property GridWidgetBase smoothHScroll(bool flgSmoothScroll) {
         if (_smoothHScroll != flgSmoothScroll) {
             _smoothHScroll = flgSmoothScroll;
             // TODO: snap to grid if necessary
@@ -296,7 +296,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     /// Get smooth vertical scroll flag - when true - scrolling by pixels, when false - by cells
     @property bool smoothVScroll() { return _smoothVScroll; }
     /// Get smooth vertical scroll flag - when true - scrolling by pixels, when false - by cells
-    @property GridWidgetBase smoothVScroll(bool flgSmoothScroll) { 
+    @property GridWidgetBase smoothVScroll(bool flgSmoothScroll) {
         if (_smoothVScroll != flgSmoothScroll) {
             _smoothVScroll = flgSmoothScroll;
             // TODO: snap to grid if necessary
@@ -389,36 +389,36 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     /// row header column count
     @property int headerCols() { return _headerCols; }
-    @property GridWidgetBase headerCols(int c) { 
-        _headerCols = c; 
-        invalidate(); 
-        return this; 
+    @property GridWidgetBase headerCols(int c) {
+        _headerCols = c;
+        invalidate();
+        return this;
     }
     /// col header row count
     @property int headerRows() { return _headerRows; }
-    @property GridWidgetBase headerRows(int r) { 
-        _headerRows = r; 
-        invalidate(); 
-        return this; 
+    @property GridWidgetBase headerRows(int r) {
+        _headerRows = r;
+        invalidate();
+        return this;
     }
 
     /// fixed (non-scrollable) data column count
     @property int fixedCols() { return _gridModelAdapter is null ? _fixedCols : _gridModelAdapter.fixedCols; }
-    @property void fixedCols(int c) { 
+    @property void fixedCols(int c) {
         if (_gridModelAdapter is null)
             _fixedCols = c;
         else
             _gridModelAdapter.fixedCols = c;
-        invalidate(); 
+        invalidate();
     }
     /// fixed (non-scrollable) data row count
     @property int fixedRows() { return _gridModelAdapter is null ? _fixedRows : _gridModelAdapter.fixedCols; }
     @property void fixedRows(int r) {
         if (_gridModelAdapter is null)
-            _fixedRows = r; 
+            _fixedRows = r;
         else
             _gridModelAdapter.fixedCols = r;
-        invalidate(); 
+        invalidate();
     }
 
     /// default column width - for newly added columns
@@ -1105,7 +1105,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         bool normalCell = false;
         bool insideHeaderRow = false;
         bool insideHeaderCol = false;
-        if (_colResizingIndex >= 0) { 
+        if (_colResizingIndex >= 0) {
             if (event.action == MouseAction.Move) {
                 // column resize is active
                 processColResize(event.x);
@@ -1178,19 +1178,19 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     /// Extends scroll area to show full column at left when scrolled to rightmost column
     @property bool fullColumnOnLeft() { return _fullColumnOnLeft; }
     /// Extends scroll area to show full column at left when scrolled to rightmost column
-    @property GridWidgetBase fullColumnOnLeft(bool newFullColumnOnLeft) { 
+    @property GridWidgetBase fullColumnOnLeft(bool newFullColumnOnLeft) {
         if (_fullColumnOnLeft != newFullColumnOnLeft) {
             _fullColumnOnLeft = newFullColumnOnLeft;
             updateScrollBars();
         }
         return this;
     }
-    
+
     protected bool _fullRowOnTop = true;
     /// Extends scroll area to show full row at top when scrolled to end row
     @property bool fullRowOnTop() { return _fullColumnOnLeft; }
     /// Extends scroll area to show full row at top when scrolled to end row
-    @property GridWidgetBase fullRowOnTop(bool newFullRowOnTop) { 
+    @property GridWidgetBase fullRowOnTop(bool newFullRowOnTop) {
         if (_fullRowOnTop != newFullRowOnTop) {
             _fullRowOnTop = newFullRowOnTop;
             updateScrollBars();
@@ -1206,7 +1206,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             _scrollY = 0;
             return;
         }
-        
+
         if (_scrollX < 0)
             _scrollX = 0;
         if (_scrollY < 0)
@@ -1226,7 +1226,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             _fullScrollableArea.right = clientPixels.x;
         if (_fullScrollableArea.bottom < clientPixels.y)
             _fullScrollableArea.bottom = clientPixels.y;
-        
+
         // extending scroll area if necessary
         if (_fullRowOnTop || _fullColumnOnLeft) {
             int maxscrollx = _fullScrollableArea.right - scrollableClient.x;
@@ -1564,7 +1564,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
             sz.y += _rowHeights[i];
         return sz;
     }
-    
+
     protected int _minVisibleCols = 2;
     protected int _minVisibleRows = 2;
 
@@ -1578,7 +1578,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         _minVisibleCols = newMinVisibleCols;
         requestLayout();
     }
-    
+
     /// returns number of rows from 0 that are taken to measure minimum visible height
     @property int minVisibleRows() {
         return _minVisibleRows;
@@ -1589,8 +1589,8 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         _minVisibleRows = newMinVisibleRows;
         requestLayout();
     }
-        
-    
+
+
     /// calculate minimum size of widget
     override Point minimumVisibleContentSize() {
         Point sz;
@@ -1599,7 +1599,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
              sz.y = 100;
              return sz;
         }
-        
+
         // width:
         int firstVisibleCol = (showRowHeaders) ? 0 : _headerCols;
         for (int i = firstVisibleCol ; i < min(_cols, _minVisibleCols + firstVisibleCol) ; i++)
@@ -1609,7 +1609,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         int firstVisibleRow = (showColHeaders) ? 0 : _headerRows;
         for (int i = firstVisibleRow ; i < min(_rows, _minVisibleRows + firstVisibleRow) ; i++)
             sz.y += _rowHeights[i];
-            
+
         if (_rows<_minVisibleRows)
             sz.y += (_minVisibleRows - _rows) * _rowHeights[_rows-1];
 
@@ -1939,9 +1939,9 @@ class StringGridWidget : StringGridWidgetBase {
         if (_customCellAdapter && _customCellAdapter.isCustomCell(col, row)) {
             return _customCellAdapter.drawCell(buf, rc, col, row);
         }
-        if (BACKEND_GUI) 
+        if (BACKEND_GUI)
             rc.shrink(2, 1);
-        else 
+        else
             rc.right--;
         FontRef fnt = font;
         dstring txt = cellText(col, row);
@@ -1955,9 +1955,9 @@ class StringGridWidget : StringGridWidgetBase {
 
     /// draw cell content
     protected override void drawHeaderCell(DrawBuf buf, Rect rc, int col, int row) {
-        if (BACKEND_GUI) 
+        if (BACKEND_GUI)
             rc.shrink(2, 1);
-        else 
+        else
             rc.right--;
         FontRef fnt = font;
         dstring txt;

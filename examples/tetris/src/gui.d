@@ -531,7 +531,7 @@ class StatusWidget : VerticalLayout {
             Window wnd = Platform.instance.createWindow("About...", window, WindowFlag.Modal);
             wnd.mainWidget = createAboutWidget();
             wnd.show();
-            return true; 
+            return true;
         };
         addChild(image);
 
@@ -565,7 +565,7 @@ class StatusWidget : VerticalLayout {
         }
         super.measure(parentWidth, parentHeight);
     }
-    
+
     void setLevel(int level) {
         _level.text = toUTF32(to!string(level));
     }
@@ -599,7 +599,7 @@ class CupPage : HorizontalLayout {
         addChild(_status);
     }
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         super.measure(parentWidth, parentHeight);
         /// fixed size
         measuredContent(parentWidth, parentHeight, 600, 550);

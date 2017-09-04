@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2015 Timur Gafarov 
+Copyright (c) 2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -45,21 +45,21 @@ struct HuffmanTreeNode
     bool blank = true;
 
     this(
-        HuffmanTreeNode* leftNode, 
-        HuffmanTreeNode* rightNode, 
-        ubyte symbol, 
+        HuffmanTreeNode* leftNode,
+        HuffmanTreeNode* rightNode,
+        ubyte symbol,
         uint frequency,
         bool isBlank)
     {
         parent = null;
         left = leftNode;
         right = rightNode;
-        
+
         if (left !is null)
             left.parent = &this;
         if (right !is null)
             right.parent = &this;
-            
+
         ch = symbol;
         freq = frequency;
         blank = isBlank;
@@ -84,7 +84,7 @@ struct HuffmanTreeNode
             Delete(right);
         }
     }
-    
+
 /*
     // TODO: implement this without GC
 
@@ -102,7 +102,7 @@ struct HuffmanTreeNode
                 right.getCodes(table, code ~ '1');
         }
     }
-    
+
     void print(string indent = "")
     {
         writefln("%s<%s>%x", indent, freq, ch);
@@ -111,7 +111,7 @@ struct HuffmanTreeNode
             left.print(indent);
         if (right !is null)
             right.print(indent);
-    } 
+    }
 */
 }
 
@@ -129,16 +129,16 @@ HuffmanTreeNode* buildHuffmanTree(ubyte[] data)
         else
             freqs[s] = 1;
     }
-    
+
     // Sort in descending order
     ubyte[] symbols = freqs.keys;
     sort!((a, b) => freqs[a] > freqs[b])(symbols);
-    
+
     // Create node list
     auto nodeList = new HuffmanTreeNode*[symbols.length];
     foreach(i, s; symbols)
         nodeList[i] = new HuffmanTreeNode(null, null, s, freqs[s], false);
-    
+
     // Build tree
     while (nodeList.length > 1)
     {
@@ -147,7 +147,7 @@ HuffmanTreeNode* buildHuffmanTree(ubyte[] data)
         auto n2 = nodeList[$-2];
         nodeList.popBack;
         nodeList.popBack;
-        
+
         // Insert a new parent node
         uint fsum = n1.freq + n2.freq;
         auto parent = new HuffmanTreeNode(n1, n2, 0, fsum, false);
@@ -196,14 +196,14 @@ HuffmanTreeNode* unpackHuffmanTree(BitReader* br)
 }
 
 ubyte[] encodeHuffman(ubyte[] data, out HuffmanTreeNode* tree)
-{   
+{
     // Build Huffman tree
     tree = buildHuffmanTree(data);
-    
+
     // Generate binary codes
     string[ubyte] huffTable;
     tree.getCodes(huffTable);
-    
+
     // Encode data
     string bitStr;
     foreach(s; data)
@@ -228,14 +228,14 @@ ubyte[] encodeHuffman(ubyte[] data, out HuffmanTreeNode* tree)
         octetsLen = 1;
         lastBits = cast(ubyte)(bitStr.length);
     }
-    
+
     octetsLen++;
     auto octets = new ubyte[octetsLen];
     octets[0] = lastBits;
-    
-    uint bitPos = 0;  
+
+    uint bitPos = 0;
     uint bytePos = 1;
-    
+
     foreach(bit; bitStr)
     {
         bool state;
@@ -243,17 +243,17 @@ ubyte[] encodeHuffman(ubyte[] data, out HuffmanTreeNode* tree)
             state = false;
         else
             state = true;
-            
+
         octets[bytePos] = setBit(octets[bytePos], bitPos, state);
         bitPos++;
-        
+
         if (bitPos == 8)
         {
             bitPos = 0;
             bytePos++;
         }
     }
-    
+
     return octets;
 }
 
@@ -262,7 +262,7 @@ ubyte[] decodeHuffman(ubyte[] data, HuffmanTreeNode* tree)
     // Generate binary codes
     string[ubyte] huffTable;
     tree.getCodes(huffTable);
-    
+
     //Unpack bits from array
     ubyte[] result;
     bool appendNext = true;
@@ -300,7 +300,7 @@ ubyte[] decodeHuffman(ubyte[] data, HuffmanTreeNode* tree)
             }
         }
     }
-    
+
     return result;
 }
 

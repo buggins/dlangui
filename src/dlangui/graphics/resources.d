@@ -69,7 +69,7 @@ extern (C) int UIAppMain(string[] args) {
 
 ----
 
-When same file exists in both embedded and external resources, one from external resource directory will be used - it's useful for developing 
+When same file exists in both embedded and external resources, one from external resource directory will be used - it's useful for developing
 and testing of resources.
 
 
@@ -159,7 +159,7 @@ struct EmbeddedResourceList {
         // search backwards to allow overriding standard resources (which are added first)
         for (int i = cast(int)list.length - 1; i >= 0; i--) {
             string s = list[i].name;
-            if (s.equal(name) || s.equal(xmlname) || s.equal(pngname) || s.equal(png9name) 
+            if (s.equal(name) || s.equal(xmlname) || s.equal(pngname) || s.equal(png9name)
                     || s.equal(jpgname) || s.equal(jpegname) || s.equal(xpmname) || s.equal(timname))
                 return &list[i];
         }
@@ -279,7 +279,7 @@ class Drawable : RefCountedObject {
 static if (ENABLE_OPENGL) {
     /// Custom drawing inside openGL
     class OpenGLDrawable : Drawable {
-    
+
         private OpenGLDrawableDelegate _drawHandler;
 
         @property OpenGLDrawableDelegate drawHandler() { return _drawHandler; }
@@ -421,7 +421,7 @@ static if (BACKEND_CONSOLE) {
 }
 
 /// decode solid color / gradient / frame drawable from string like #AARRGGBB, e.g. #5599AA
-/// 
+///
 /// SolidFillDrawable: #AARRGGBB  - e.g. #8090A0 or #80ffffff
 /// FrameDrawable: #frameColor,frameWidth[,#middleColor]
 ///             or #frameColor,leftBorderWidth,topBorderWidth,rightBorderWidth,bottomBorderWidth[,#middleColor]
@@ -474,7 +474,7 @@ static if (BACKEND_CONSOLE) {
                     textColor: [0xFF0000],
                     ninepatch: [1,1,1,1]
                 }
-        
+
         Short form:
 
     {'╔═╗' '║ ║' '╚═╝' bc 0x000080 tc 0xFF0000 ninepatch 1 1 1 1}
@@ -513,8 +513,8 @@ static if (BACKEND_CONSOLE) {
         }
         /**
            Create from text drawable source file format:
-           { 
-            text: 
+           {
+            text:
            "text line 1"
            "text line 2"
            "text line 3"
@@ -523,7 +523,7 @@ static if (BACKEND_CONSOLE) {
            ninepatch: left,top,right,bottom
            padding: left,top,right,bottom
             }
-           
+
            Text lines may be in "" or '' or `` quotes.
            bc can be used instead of backgroundColor, tc instead of textColor
 
@@ -570,8 +570,8 @@ static if (BACKEND_CONSOLE) {
                 } else if (tokens[i].type == TokenType.integer) {
                     switch(mode) {
                         case Mode.BackgroundColor: _bgColors ~= tokens[i].intvalue; break;
-                        case Mode.TextColor: 
-                        case Mode.Text: 
+                        case Mode.TextColor:
+                        case Mode.Text:
                             _textColors ~= tokens[i].intvalue; break;
                         case Mode.Padding: pad ~= tokens[i].intvalue; break;
                         case Mode.NinePatch: nine ~= tokens[i].intvalue; break;
@@ -618,13 +618,13 @@ static if (BACKEND_CONSOLE) {
                     _bgColors ~= _bgColors.length ? _bgColors[$ - 1] : 0xFFFFFFFF;
             }
         }
-        @property override int width() { 
+        @property override int width() {
             return _width;
         }
-        @property override int height() { 
+        @property override int height() {
             return _height;
         }
-        @property override Rect padding() { 
+        @property override Rect padding() {
             return _padding;
         }
 
@@ -691,24 +691,24 @@ class ImageDrawable : Drawable {
         debug _instanceCount--;
         debug(resalloc) Log.d("Destroyed ImageDrawable, count=", _instanceCount);
     }
-    @property override int width() { 
+    @property override int width() {
         if (_image.isNull)
             return 0;
         if (_image.hasNinePatch)
             return _image.width - 2;
         return _image.width;
     }
-    @property override int height() { 
+    @property override int height() {
         if (_image.isNull)
             return 0;
         if (_image.hasNinePatch)
             return _image.height - 2;
         return _image.height;
     }
-    @property override Rect padding() { 
+    @property override Rect padding() {
         if (!_image.isNull && _image.hasNinePatch)
             return _image.ninePatch.padding;
-        return Rect(0,0,0,0); 
+        return Rect(0,0,0,0);
     }
     private static void correctFrameBounds(ref int n1, ref int n2, ref int n3, ref int n4) {
         if (n1 > n2) {
@@ -1048,7 +1048,7 @@ class StateDrawable : Drawable {
     @property override int height() {
         return _size.y;
     }
-    @property override Rect padding() { 
+    @property override Rect padding() {
         return _paddings;
     }
 }
@@ -1098,7 +1098,7 @@ class ImageCache {
             DrawBufRef src = get();
             if (src.isNull)
                 _transformMap[transform] = src;
-            else {            
+            else {
                 DrawBufRef t = src.transformColors(transform);
                 _transformMap[transform] = t;
             }
@@ -1170,10 +1170,10 @@ __gshared ImageCache _imageCache;
 /// image cache singleton
 @property ImageCache imageCache() { return _imageCache; }
 /// image cache singleton
-@property void imageCache(ImageCache cache) { 
+@property void imageCache(ImageCache cache) {
     if (_imageCache !is null)
         destroy(_imageCache);
-    _imageCache = cache; 
+    _imageCache = cache;
 }
 }
 
@@ -1181,7 +1181,7 @@ __gshared DrawableCache _drawableCache;
 /// drawable cache singleton
 @property DrawableCache drawableCache() { return _drawableCache; }
 /// drawable cache singleton
-@property void drawableCache(DrawableCache cache) { 
+@property void drawableCache(DrawableCache cache) {
     if (_drawableCache !is null)
         destroy(_drawableCache);
     _drawableCache = cache;

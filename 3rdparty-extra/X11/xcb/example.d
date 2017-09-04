@@ -48,11 +48,11 @@ int main()
 
                        /* map (show) the window */
   xcb_map_window(c, w);
-  
+
   xcb_flush(c);
 
                        /* event loop */
-                       
+
   do{
   	e = xcb_wait_for_event(c);
   	if(!e)break;

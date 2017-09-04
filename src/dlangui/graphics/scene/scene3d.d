@@ -54,11 +54,11 @@ class Scene3d : Node3d {
     }
 
     /// returns scene for node
-    override @property Scene3d scene() { 
-        return this; 
+    override @property Scene3d scene() {
+        return this;
     }
 
-    override @property void scene(Scene3d v) { 
+    override @property void scene(Scene3d v) {
         //ignore
     }
 

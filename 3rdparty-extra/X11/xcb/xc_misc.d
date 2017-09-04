@@ -17,7 +17,7 @@ import std.c.linux.X11.xcb.xcb;
 
 const int XCB_XCMISC_MAJOR_VERSION =1;
 const int XCB_XCMISC_MINOR_VERSION =1;
-  
+
 extern(C) extern xcb_extension_t xcb_xc_misc_id;
 
 /**
@@ -120,14 +120,14 @@ struct xcb_xc_misc_get_xid_list_reply_t {
 /*****************************************************************************
  **
  ** xcb_xc_misc_get_version_cookie_t xcb_xc_misc_get_version
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param ushort            client_major_version
  ** @param ushort            client_minor_version
  ** @returns xcb_xc_misc_get_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xc_misc_get_version_cookie_t
 xcb_xc_misc_get_version (xcb_connection_t *c  /**< */,
                          ushort            client_major_version  /**< */,
@@ -137,14 +137,14 @@ xcb_xc_misc_get_version (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xc_misc_get_version_cookie_t xcb_xc_misc_get_version_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param ushort            client_major_version
  ** @param ushort            client_minor_version
  ** @returns xcb_xc_misc_get_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xc_misc_get_version_cookie_t
 xcb_xc_misc_get_version_unchecked (xcb_connection_t *c  /**< */,
                                    ushort            client_major_version  /**< */,
@@ -154,14 +154,14 @@ xcb_xc_misc_get_version_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xc_misc_get_version_reply_t * xcb_xc_misc_get_version_reply
- ** 
+ **
  ** @param xcb_connection_t                  *c
  ** @param xcb_xc_misc_get_version_cookie_t   cookie
  ** @param xcb_generic_error_t              **e
  ** @returns xcb_xc_misc_get_version_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xc_misc_get_version_reply_t *
 xcb_xc_misc_get_version_reply (xcb_connection_t                  *c  /**< */,
                                xcb_xc_misc_get_version_cookie_t   cookie  /**< */,
@@ -171,12 +171,12 @@ xcb_xc_misc_get_version_reply (xcb_connection_t                  *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xc_misc_get_xid_range_cookie_t xcb_xc_misc_get_xid_range
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_xc_misc_get_xid_range_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xc_misc_get_xid_range_cookie_t
 xcb_xc_misc_get_xid_range (xcb_connection_t *c  /**< */);
 
@@ -184,12 +184,12 @@ xcb_xc_misc_get_xid_range (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_xc_misc_get_xid_range_cookie_t xcb_xc_misc_get_xid_range_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_xc_misc_get_xid_range_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xc_misc_get_xid_range_cookie_t
 xcb_xc_misc_get_xid_range_unchecked (xcb_connection_t *c  /**< */);
 
@@ -197,14 +197,14 @@ xcb_xc_misc_get_xid_range_unchecked (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_xc_misc_get_xid_range_reply_t * xcb_xc_misc_get_xid_range_reply
- ** 
+ **
  ** @param xcb_connection_t                    *c
  ** @param xcb_xc_misc_get_xid_range_cookie_t   cookie
  ** @param xcb_generic_error_t                **e
  ** @returns xcb_xc_misc_get_xid_range_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xc_misc_get_xid_range_reply_t *
 xcb_xc_misc_get_xid_range_reply (xcb_connection_t                    *c  /**< */,
                                  xcb_xc_misc_get_xid_range_cookie_t   cookie  /**< */,
@@ -214,13 +214,13 @@ xcb_xc_misc_get_xid_range_reply (xcb_connection_t                    *c  /**< */
 /*****************************************************************************
  **
  ** xcb_xc_misc_get_xid_list_cookie_t xcb_xc_misc_get_xid_list
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              count
  ** @returns xcb_xc_misc_get_xid_list_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xc_misc_get_xid_list_cookie_t
 xcb_xc_misc_get_xid_list (xcb_connection_t *c  /**< */,
                           uint              count  /**< */);
@@ -229,13 +229,13 @@ xcb_xc_misc_get_xid_list (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xc_misc_get_xid_list_cookie_t xcb_xc_misc_get_xid_list_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              count
  ** @returns xcb_xc_misc_get_xid_list_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xc_misc_get_xid_list_cookie_t
 xcb_xc_misc_get_xid_list_unchecked (xcb_connection_t *c  /**< */,
                                     uint              count  /**< */);
@@ -244,12 +244,12 @@ xcb_xc_misc_get_xid_list_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** uint * xcb_xc_misc_get_xid_list_ids
- ** 
+ **
  ** @param /+const+/ xcb_xc_misc_get_xid_list_reply_t *R
  ** @returns uint *
  **
  *****************************************************************************/
- 
+
 extern(C) uint *
 xcb_xc_misc_get_xid_list_ids (/+const+/ xcb_xc_misc_get_xid_list_reply_t *R  /**< */);
 
@@ -257,12 +257,12 @@ xcb_xc_misc_get_xid_list_ids (/+const+/ xcb_xc_misc_get_xid_list_reply_t *R  /**
 /*****************************************************************************
  **
  ** int xcb_xc_misc_get_xid_list_ids_length
- ** 
+ **
  ** @param /+const+/ xcb_xc_misc_get_xid_list_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xc_misc_get_xid_list_ids_length (/+const+/ xcb_xc_misc_get_xid_list_reply_t *R  /**< */);
 
@@ -270,12 +270,12 @@ xcb_xc_misc_get_xid_list_ids_length (/+const+/ xcb_xc_misc_get_xid_list_reply_t 
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xc_misc_get_xid_list_ids_end
- ** 
+ **
  ** @param /+const+/ xcb_xc_misc_get_xid_list_reply_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xc_misc_get_xid_list_ids_end (/+const+/ xcb_xc_misc_get_xid_list_reply_t *R  /**< */);
 
@@ -283,14 +283,14 @@ xcb_xc_misc_get_xid_list_ids_end (/+const+/ xcb_xc_misc_get_xid_list_reply_t *R 
 /*****************************************************************************
  **
  ** xcb_xc_misc_get_xid_list_reply_t * xcb_xc_misc_get_xid_list_reply
- ** 
+ **
  ** @param xcb_connection_t                   *c
  ** @param xcb_xc_misc_get_xid_list_cookie_t   cookie
  ** @param xcb_generic_error_t               **e
  ** @returns xcb_xc_misc_get_xid_list_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xc_misc_get_xid_list_reply_t *
 xcb_xc_misc_get_xid_list_reply (xcb_connection_t                   *c  /**< */,
                                 xcb_xc_misc_get_xid_list_cookie_t   cookie  /**< */,

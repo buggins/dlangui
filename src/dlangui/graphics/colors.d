@@ -291,7 +291,7 @@ struct ColorTransform {
     uint multiply = COLOR_TRANSFORM_MULTIPLY_NONE;
     uint addAfter = COLOR_TRANSFORM_OFFSET_NONE;
     @property bool empty() const {
-        return addBefore == COLOR_TRANSFORM_OFFSET_NONE 
+        return addBefore == COLOR_TRANSFORM_OFFSET_NONE
             && multiply == COLOR_TRANSFORM_MULTIPLY_NONE
             && addAfter == COLOR_TRANSFORM_OFFSET_NONE;
     }

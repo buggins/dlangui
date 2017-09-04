@@ -84,21 +84,21 @@ struct lcd_distribution_lut(int maxv = 65)
             Log.e("pixel value returned from font engine > 64: ", v);
             v = maxv - 1;
         }
-        return m_primary[v];   
+        return m_primary[v];
     }
-    uint secondary(int v) const { 
+    uint secondary(int v) const {
         if (v >= maxv) {
             Log.e("pixel value returned from font engine > 64: ", v);
             v = maxv - 1;
         }
-        return m_secondary[v]; 
+        return m_secondary[v];
     }
-    uint tertiary(int v)  const { 
+    uint tertiary(int v)  const {
         if (v >= maxv) {
             Log.e("pixel value returned from font engine > 64: ", v);
             v = maxv - 1;
         }
-        return m_tertiary[v];  
+        return m_tertiary[v];
     }
 
 private:
@@ -130,17 +130,17 @@ private int minIndex(int n0, int n1, int n2) {
     return n2;
 }
 
-// This function prepares the alpha-channel information 
-// for the glyph averaging the values in accordance with 
+// This function prepares the alpha-channel information
+// for the glyph averaging the values in accordance with
 // the method suggested by Steve Gibson. The function
-// extends the width by 4 extra pixels, 2 at the beginning 
-// and 2 at the end. Also, it doesn't align the new width 
-// to 4 bytes, that is, the output gm.gmBlackBoxX is the 
+// extends the width by 4 extra pixels, 2 at the beginning
+// and 2 at the end. Also, it doesn't align the new width
+// to 4 bytes, that is, the output gm.gmBlackBoxX is the
 // actual width of the array.
 // returns dst glyph width
 //---------------------------------
-ushort prepare_lcd_glyph(ubyte * gbuf1, 
-                       ref GLYPHMETRICS gm, 
+ushort prepare_lcd_glyph(ubyte * gbuf1,
+                       ref GLYPHMETRICS gm,
                        ref ubyte[] gbuf2,
                        ref int shiftedBy)
 {
@@ -365,7 +365,7 @@ class Win32Font : Font {
                         ubyte[] newglyph;
                         int shiftedBy = 0;
                         g.blackBoxX = prepare_lcd_glyph(glyph.ptr,
-                                                 metrics, 
+                                                 metrics,
                                                  newglyph,
                                                  shiftedBy);
                         g.glyph = newglyph;
@@ -534,7 +534,7 @@ class Win32FontManager : FontManager {
         lf.lfCharSet = ANSI_CHARSET; //DEFAULT_CHARSET;
         lf.lfFaceName[0] = 0;
         HDC dc = drawbuf.dc;
-        int res = 
+        int res =
             EnumFontFamiliesExA(
                                 dc,                  // handle to DC
                                 &lf,                              // font information

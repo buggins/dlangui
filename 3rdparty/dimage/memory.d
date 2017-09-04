@@ -47,7 +47,7 @@ version(MemoryDebug)
 {
     import std.datetime;
     import std.algorithm;
-    
+
     struct AllocationRecord
     {
         string type;
@@ -55,17 +55,17 @@ version(MemoryDebug)
         ulong id;
         bool deleted;
     }
-    
+
     AllocationRecord[ulong] records;
     ulong counter = 0;
-    
+
     void addRecord(void* p, string type, size_t size)
     {
         records[cast(ulong)p] = AllocationRecord(type, size, counter, false);
         counter++;
         //writefln("Allocated %s (%s bytes)", type, size);
     }
-    
+
     void markDeleted(void* p)
     {
         ulong k = cast(ulong)p - psize;
@@ -74,7 +74,7 @@ version(MemoryDebug)
         records[k].deleted = true;
         //writefln("Dellocated %s (%s bytes)", type, size);
     }
-    
+
     void printMemoryLog()
     {
         writeln("----------------------------------------------------");

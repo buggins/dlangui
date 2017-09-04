@@ -87,7 +87,7 @@ enum ScrollBarMode {
     External,
 }
 
-/** 
+/**
     Abstract scrollable widget
 
     Provides scroll bars and basic scrolling functionality.
@@ -181,8 +181,8 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
 
     public @property ScrollBar hscrollbar() { return _hscrollbar; }
     public @property ScrollBar vscrollbar() { return _vscrollbar; }
-    
-    public @property void hscrollbar(ScrollBar hscroll) { 
+
+    public @property void hscrollbar(ScrollBar hscroll) {
         if (_hscrollbar) {
             removeChild(_hscrollbar);
             destroy(_hscrollbar);
@@ -194,8 +194,8 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
             _hscrollbarMode = ScrollBarMode.External;
         }
     }
-    
-    public @property void vscrollbar(ScrollBar vscroll) { 
+
+    public @property void vscrollbar(ScrollBar vscroll) {
         if (_vscrollbar) {
             removeChild(_vscrollbar);
             destroy(_vscrollbar);
@@ -289,13 +289,13 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
     }
 
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         if (visibility == Visibility.Gone) {
             return;
         }
         Rect m = margins;
         Rect p = padding;
-        
+
         // calc size constraints for children
         int pwidth = parentWidth;
         int pheight = parentHeight;
@@ -394,7 +394,7 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
 class ScrollWidget :  ScrollWidgetBase {
     protected Widget _contentWidget;
     @property Widget contentWidget() { return _contentWidget; }
-    @property ScrollWidget contentWidget(Widget newContent) { 
+    @property ScrollWidget contentWidget(Widget newContent) {
         if (_contentWidget) {
             removeChild(childIndex(_contentWidget));
             destroy(_contentWidget);

@@ -90,7 +90,7 @@ class PopupWidget : LinearLayout {
     PopupWidget modal(bool modal) { _modal = modal; return this; }
 
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         super.measure(parentWidth, parentHeight);
     }
     /// close and destroy popup

@@ -17,7 +17,7 @@ import std.c.linux.X11.xcb.xcb;
 
 const int XCB_XF86DRI_MAJOR_VERSION =4;
 const int XCB_XF86DRI_MINOR_VERSION =1;
-  
+
 extern(C) extern xcb_extension_t xcb_xf86dri_id;
 
 /**
@@ -390,12 +390,12 @@ struct xcb_xf86dri_auth_connection_reply_t {
 /*****************************************************************************
  **
  ** void xcb_xf86dri_drm_clip_rect_next
- ** 
+ **
  ** @param xcb_xf86dri_drm_clip_rect_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_xf86dri_drm_clip_rect_next (xcb_xf86dri_drm_clip_rect_iterator_t *i  /**< */);
 
@@ -403,12 +403,12 @@ xcb_xf86dri_drm_clip_rect_next (xcb_xf86dri_drm_clip_rect_iterator_t *i  /**< */
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xf86dri_drm_clip_rect_end
- ** 
+ **
  ** @param xcb_xf86dri_drm_clip_rect_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xf86dri_drm_clip_rect_end (xcb_xf86dri_drm_clip_rect_iterator_t i  /**< */);
 
@@ -416,12 +416,12 @@ xcb_xf86dri_drm_clip_rect_end (xcb_xf86dri_drm_clip_rect_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** xcb_xf86dri_query_version_cookie_t xcb_xf86dri_query_version
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_xf86dri_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_query_version_cookie_t
 xcb_xf86dri_query_version (xcb_connection_t *c  /**< */);
 
@@ -429,12 +429,12 @@ xcb_xf86dri_query_version (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_xf86dri_query_version_cookie_t xcb_xf86dri_query_version_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_xf86dri_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_query_version_cookie_t
 xcb_xf86dri_query_version_unchecked (xcb_connection_t *c  /**< */);
 
@@ -442,14 +442,14 @@ xcb_xf86dri_query_version_unchecked (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_xf86dri_query_version_reply_t * xcb_xf86dri_query_version_reply
- ** 
+ **
  ** @param xcb_connection_t                    *c
  ** @param xcb_xf86dri_query_version_cookie_t   cookie
  ** @param xcb_generic_error_t                **e
  ** @returns xcb_xf86dri_query_version_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_query_version_reply_t *
 xcb_xf86dri_query_version_reply (xcb_connection_t                    *c  /**< */,
                                  xcb_xf86dri_query_version_cookie_t   cookie  /**< */,
@@ -459,13 +459,13 @@ xcb_xf86dri_query_version_reply (xcb_connection_t                    *c  /**< */
 /*****************************************************************************
  **
  ** xcb_xf86dri_query_direct_rendering_capable_cookie_t xcb_xf86dri_query_direct_rendering_capable
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @returns xcb_xf86dri_query_direct_rendering_capable_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_query_direct_rendering_capable_cookie_t
 xcb_xf86dri_query_direct_rendering_capable (xcb_connection_t *c  /**< */,
                                             uint              screen  /**< */);
@@ -474,13 +474,13 @@ xcb_xf86dri_query_direct_rendering_capable (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xf86dri_query_direct_rendering_capable_cookie_t xcb_xf86dri_query_direct_rendering_capable_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @returns xcb_xf86dri_query_direct_rendering_capable_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_query_direct_rendering_capable_cookie_t
 xcb_xf86dri_query_direct_rendering_capable_unchecked (xcb_connection_t *c  /**< */,
                                                       uint              screen  /**< */);
@@ -489,14 +489,14 @@ xcb_xf86dri_query_direct_rendering_capable_unchecked (xcb_connection_t *c  /**< 
 /*****************************************************************************
  **
  ** xcb_xf86dri_query_direct_rendering_capable_reply_t * xcb_xf86dri_query_direct_rendering_capable_reply
- ** 
+ **
  ** @param xcb_connection_t                                     *c
  ** @param xcb_xf86dri_query_direct_rendering_capable_cookie_t   cookie
  ** @param xcb_generic_error_t                                 **e
  ** @returns xcb_xf86dri_query_direct_rendering_capable_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_query_direct_rendering_capable_reply_t *
 xcb_xf86dri_query_direct_rendering_capable_reply (xcb_connection_t                                     *c  /**< */,
                                                   xcb_xf86dri_query_direct_rendering_capable_cookie_t   cookie  /**< */,
@@ -506,13 +506,13 @@ xcb_xf86dri_query_direct_rendering_capable_reply (xcb_connection_t              
 /*****************************************************************************
  **
  ** xcb_xf86dri_open_connection_cookie_t xcb_xf86dri_open_connection
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @returns xcb_xf86dri_open_connection_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_open_connection_cookie_t
 xcb_xf86dri_open_connection (xcb_connection_t *c  /**< */,
                              uint              screen  /**< */);
@@ -521,13 +521,13 @@ xcb_xf86dri_open_connection (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xf86dri_open_connection_cookie_t xcb_xf86dri_open_connection_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @returns xcb_xf86dri_open_connection_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_open_connection_cookie_t
 xcb_xf86dri_open_connection_unchecked (xcb_connection_t *c  /**< */,
                                        uint              screen  /**< */);
@@ -536,12 +536,12 @@ xcb_xf86dri_open_connection_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** ubyte * xcb_xf86dri_open_connection_bus_id
- ** 
+ **
  ** @param /+const+/ xcb_xf86dri_open_connection_reply_t *R
  ** @returns ubyte *
  **
  *****************************************************************************/
- 
+
 extern(C) ubyte *
 xcb_xf86dri_open_connection_bus_id (/+const+/ xcb_xf86dri_open_connection_reply_t *R  /**< */);
 
@@ -549,12 +549,12 @@ xcb_xf86dri_open_connection_bus_id (/+const+/ xcb_xf86dri_open_connection_reply_
 /*****************************************************************************
  **
  ** int xcb_xf86dri_open_connection_bus_id_length
- ** 
+ **
  ** @param /+const+/ xcb_xf86dri_open_connection_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xf86dri_open_connection_bus_id_length (/+const+/ xcb_xf86dri_open_connection_reply_t *R  /**< */);
 
@@ -562,12 +562,12 @@ xcb_xf86dri_open_connection_bus_id_length (/+const+/ xcb_xf86dri_open_connection
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xf86dri_open_connection_bus_id_end
- ** 
+ **
  ** @param /+const+/ xcb_xf86dri_open_connection_reply_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xf86dri_open_connection_bus_id_end (/+const+/ xcb_xf86dri_open_connection_reply_t *R  /**< */);
 
@@ -575,14 +575,14 @@ xcb_xf86dri_open_connection_bus_id_end (/+const+/ xcb_xf86dri_open_connection_re
 /*****************************************************************************
  **
  ** xcb_xf86dri_open_connection_reply_t * xcb_xf86dri_open_connection_reply
- ** 
+ **
  ** @param xcb_connection_t                      *c
  ** @param xcb_xf86dri_open_connection_cookie_t   cookie
  ** @param xcb_generic_error_t                  **e
  ** @returns xcb_xf86dri_open_connection_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_open_connection_reply_t *
 xcb_xf86dri_open_connection_reply (xcb_connection_t                      *c  /**< */,
                                    xcb_xf86dri_open_connection_cookie_t   cookie  /**< */,
@@ -592,13 +592,13 @@ xcb_xf86dri_open_connection_reply (xcb_connection_t                      *c  /**
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xf86dri_close_connection_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xf86dri_close_connection_checked (xcb_connection_t *c  /**< */,
                                       uint              screen  /**< */);
@@ -607,13 +607,13 @@ xcb_xf86dri_close_connection_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xf86dri_close_connection
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xf86dri_close_connection (xcb_connection_t *c  /**< */,
                               uint              screen  /**< */);
@@ -622,13 +622,13 @@ xcb_xf86dri_close_connection (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xf86dri_get_client_driver_name_cookie_t xcb_xf86dri_get_client_driver_name
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @returns xcb_xf86dri_get_client_driver_name_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_get_client_driver_name_cookie_t
 xcb_xf86dri_get_client_driver_name (xcb_connection_t *c  /**< */,
                                     uint              screen  /**< */);
@@ -637,13 +637,13 @@ xcb_xf86dri_get_client_driver_name (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xf86dri_get_client_driver_name_cookie_t xcb_xf86dri_get_client_driver_name_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @returns xcb_xf86dri_get_client_driver_name_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_get_client_driver_name_cookie_t
 xcb_xf86dri_get_client_driver_name_unchecked (xcb_connection_t *c  /**< */,
                                               uint              screen  /**< */);
@@ -652,12 +652,12 @@ xcb_xf86dri_get_client_driver_name_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** ubyte * xcb_xf86dri_get_client_driver_name_client_driver_name
- ** 
+ **
  ** @param /+const+/ xcb_xf86dri_get_client_driver_name_reply_t *R
  ** @returns ubyte *
  **
  *****************************************************************************/
- 
+
 extern(C) ubyte *
 xcb_xf86dri_get_client_driver_name_client_driver_name (/+const+/ xcb_xf86dri_get_client_driver_name_reply_t *R  /**< */);
 
@@ -665,12 +665,12 @@ xcb_xf86dri_get_client_driver_name_client_driver_name (/+const+/ xcb_xf86dri_get
 /*****************************************************************************
  **
  ** int xcb_xf86dri_get_client_driver_name_client_driver_name_length
- ** 
+ **
  ** @param /+const+/ xcb_xf86dri_get_client_driver_name_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xf86dri_get_client_driver_name_client_driver_name_length (/+const+/ xcb_xf86dri_get_client_driver_name_reply_t *R  /**< */);
 
@@ -678,12 +678,12 @@ xcb_xf86dri_get_client_driver_name_client_driver_name_length (/+const+/ xcb_xf86
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xf86dri_get_client_driver_name_client_driver_name_end
- ** 
+ **
  ** @param /+const+/ xcb_xf86dri_get_client_driver_name_reply_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xf86dri_get_client_driver_name_client_driver_name_end (/+const+/ xcb_xf86dri_get_client_driver_name_reply_t *R  /**< */);
 
@@ -691,14 +691,14 @@ xcb_xf86dri_get_client_driver_name_client_driver_name_end (/+const+/ xcb_xf86dri
 /*****************************************************************************
  **
  ** xcb_xf86dri_get_client_driver_name_reply_t * xcb_xf86dri_get_client_driver_name_reply
- ** 
+ **
  ** @param xcb_connection_t                             *c
  ** @param xcb_xf86dri_get_client_driver_name_cookie_t   cookie
  ** @param xcb_generic_error_t                         **e
  ** @returns xcb_xf86dri_get_client_driver_name_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_get_client_driver_name_reply_t *
 xcb_xf86dri_get_client_driver_name_reply (xcb_connection_t                             *c  /**< */,
                                           xcb_xf86dri_get_client_driver_name_cookie_t   cookie  /**< */,
@@ -708,7 +708,7 @@ xcb_xf86dri_get_client_driver_name_reply (xcb_connection_t                      
 /*****************************************************************************
  **
  ** xcb_xf86dri_create_context_cookie_t xcb_xf86dri_create_context
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              visual
  ** @param uint              screen
@@ -716,7 +716,7 @@ xcb_xf86dri_get_client_driver_name_reply (xcb_connection_t                      
  ** @returns xcb_xf86dri_create_context_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_create_context_cookie_t
 xcb_xf86dri_create_context (xcb_connection_t *c  /**< */,
                             uint              visual  /**< */,
@@ -727,7 +727,7 @@ xcb_xf86dri_create_context (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xf86dri_create_context_cookie_t xcb_xf86dri_create_context_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              visual
  ** @param uint              screen
@@ -735,7 +735,7 @@ xcb_xf86dri_create_context (xcb_connection_t *c  /**< */,
  ** @returns xcb_xf86dri_create_context_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_create_context_cookie_t
 xcb_xf86dri_create_context_unchecked (xcb_connection_t *c  /**< */,
                                       uint              visual  /**< */,
@@ -746,14 +746,14 @@ xcb_xf86dri_create_context_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xf86dri_create_context_reply_t * xcb_xf86dri_create_context_reply
- ** 
+ **
  ** @param xcb_connection_t                     *c
  ** @param xcb_xf86dri_create_context_cookie_t   cookie
  ** @param xcb_generic_error_t                 **e
  ** @returns xcb_xf86dri_create_context_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_create_context_reply_t *
 xcb_xf86dri_create_context_reply (xcb_connection_t                     *c  /**< */,
                                   xcb_xf86dri_create_context_cookie_t   cookie  /**< */,
@@ -763,14 +763,14 @@ xcb_xf86dri_create_context_reply (xcb_connection_t                     *c  /**< 
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xf86dri_destroy_context_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @param uint              context
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xf86dri_destroy_context_checked (xcb_connection_t *c  /**< */,
                                      uint              screen  /**< */,
@@ -780,14 +780,14 @@ xcb_xf86dri_destroy_context_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xf86dri_destroy_context
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @param uint              context
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xf86dri_destroy_context (xcb_connection_t *c  /**< */,
                              uint              screen  /**< */,
@@ -797,14 +797,14 @@ xcb_xf86dri_destroy_context (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xf86dri_create_drawable_cookie_t xcb_xf86dri_create_drawable
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @param uint              drawable
  ** @returns xcb_xf86dri_create_drawable_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_create_drawable_cookie_t
 xcb_xf86dri_create_drawable (xcb_connection_t *c  /**< */,
                              uint              screen  /**< */,
@@ -814,14 +814,14 @@ xcb_xf86dri_create_drawable (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xf86dri_create_drawable_cookie_t xcb_xf86dri_create_drawable_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @param uint              drawable
  ** @returns xcb_xf86dri_create_drawable_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_create_drawable_cookie_t
 xcb_xf86dri_create_drawable_unchecked (xcb_connection_t *c  /**< */,
                                        uint              screen  /**< */,
@@ -831,14 +831,14 @@ xcb_xf86dri_create_drawable_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xf86dri_create_drawable_reply_t * xcb_xf86dri_create_drawable_reply
- ** 
+ **
  ** @param xcb_connection_t                      *c
  ** @param xcb_xf86dri_create_drawable_cookie_t   cookie
  ** @param xcb_generic_error_t                  **e
  ** @returns xcb_xf86dri_create_drawable_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_create_drawable_reply_t *
 xcb_xf86dri_create_drawable_reply (xcb_connection_t                      *c  /**< */,
                                    xcb_xf86dri_create_drawable_cookie_t   cookie  /**< */,
@@ -848,14 +848,14 @@ xcb_xf86dri_create_drawable_reply (xcb_connection_t                      *c  /**
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xf86dri_destroy_drawable_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @param uint              drawable
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xf86dri_destroy_drawable_checked (xcb_connection_t *c  /**< */,
                                       uint              screen  /**< */,
@@ -865,14 +865,14 @@ xcb_xf86dri_destroy_drawable_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xf86dri_destroy_drawable
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @param uint              drawable
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xf86dri_destroy_drawable (xcb_connection_t *c  /**< */,
                               uint              screen  /**< */,
@@ -882,14 +882,14 @@ xcb_xf86dri_destroy_drawable (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xf86dri_get_drawable_info_cookie_t xcb_xf86dri_get_drawable_info
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @param uint              drawable
  ** @returns xcb_xf86dri_get_drawable_info_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_get_drawable_info_cookie_t
 xcb_xf86dri_get_drawable_info (xcb_connection_t *c  /**< */,
                                uint              screen  /**< */,
@@ -899,14 +899,14 @@ xcb_xf86dri_get_drawable_info (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xf86dri_get_drawable_info_cookie_t xcb_xf86dri_get_drawable_info_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @param uint              drawable
  ** @returns xcb_xf86dri_get_drawable_info_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_get_drawable_info_cookie_t
 xcb_xf86dri_get_drawable_info_unchecked (xcb_connection_t *c  /**< */,
                                          uint              screen  /**< */,
@@ -916,12 +916,12 @@ xcb_xf86dri_get_drawable_info_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xf86dri_drm_clip_rect_t * xcb_xf86dri_get_drawable_info_clip_rects
- ** 
+ **
  ** @param /+const+/ xcb_xf86dri_get_drawable_info_reply_t *R
  ** @returns xcb_xf86dri_drm_clip_rect_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_drm_clip_rect_t *
 xcb_xf86dri_get_drawable_info_clip_rects (/+const+/ xcb_xf86dri_get_drawable_info_reply_t *R  /**< */);
 
@@ -929,12 +929,12 @@ xcb_xf86dri_get_drawable_info_clip_rects (/+const+/ xcb_xf86dri_get_drawable_inf
 /*****************************************************************************
  **
  ** int xcb_xf86dri_get_drawable_info_clip_rects_length
- ** 
+ **
  ** @param /+const+/ xcb_xf86dri_get_drawable_info_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xf86dri_get_drawable_info_clip_rects_length (/+const+/ xcb_xf86dri_get_drawable_info_reply_t *R  /**< */);
 
@@ -942,12 +942,12 @@ xcb_xf86dri_get_drawable_info_clip_rects_length (/+const+/ xcb_xf86dri_get_drawa
 /*****************************************************************************
  **
  ** xcb_xf86dri_drm_clip_rect_iterator_t xcb_xf86dri_get_drawable_info_clip_rects_iterator
- ** 
+ **
  ** @param /+const+/ xcb_xf86dri_get_drawable_info_reply_t *R
  ** @returns xcb_xf86dri_drm_clip_rect_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_drm_clip_rect_iterator_t
 xcb_xf86dri_get_drawable_info_clip_rects_iterator (/+const+/ xcb_xf86dri_get_drawable_info_reply_t *R  /**< */);
 
@@ -955,14 +955,14 @@ xcb_xf86dri_get_drawable_info_clip_rects_iterator (/+const+/ xcb_xf86dri_get_dra
 /*****************************************************************************
  **
  ** xcb_xf86dri_get_drawable_info_reply_t * xcb_xf86dri_get_drawable_info_reply
- ** 
+ **
  ** @param xcb_connection_t                        *c
  ** @param xcb_xf86dri_get_drawable_info_cookie_t   cookie
  ** @param xcb_generic_error_t                    **e
  ** @returns xcb_xf86dri_get_drawable_info_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_get_drawable_info_reply_t *
 xcb_xf86dri_get_drawable_info_reply (xcb_connection_t                        *c  /**< */,
                                      xcb_xf86dri_get_drawable_info_cookie_t   cookie  /**< */,
@@ -972,13 +972,13 @@ xcb_xf86dri_get_drawable_info_reply (xcb_connection_t                        *c 
 /*****************************************************************************
  **
  ** xcb_xf86dri_get_device_info_cookie_t xcb_xf86dri_get_device_info
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @returns xcb_xf86dri_get_device_info_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_get_device_info_cookie_t
 xcb_xf86dri_get_device_info (xcb_connection_t *c  /**< */,
                              uint              screen  /**< */);
@@ -987,13 +987,13 @@ xcb_xf86dri_get_device_info (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xf86dri_get_device_info_cookie_t xcb_xf86dri_get_device_info_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @returns xcb_xf86dri_get_device_info_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_get_device_info_cookie_t
 xcb_xf86dri_get_device_info_unchecked (xcb_connection_t *c  /**< */,
                                        uint              screen  /**< */);
@@ -1002,12 +1002,12 @@ xcb_xf86dri_get_device_info_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** uint * xcb_xf86dri_get_device_info_device_private
- ** 
+ **
  ** @param /+const+/ xcb_xf86dri_get_device_info_reply_t *R
  ** @returns uint *
  **
  *****************************************************************************/
- 
+
 extern(C) uint *
 xcb_xf86dri_get_device_info_device_private (/+const+/ xcb_xf86dri_get_device_info_reply_t *R  /**< */);
 
@@ -1015,12 +1015,12 @@ xcb_xf86dri_get_device_info_device_private (/+const+/ xcb_xf86dri_get_device_inf
 /*****************************************************************************
  **
  ** int xcb_xf86dri_get_device_info_device_private_length
- ** 
+ **
  ** @param /+const+/ xcb_xf86dri_get_device_info_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xf86dri_get_device_info_device_private_length (/+const+/ xcb_xf86dri_get_device_info_reply_t *R  /**< */);
 
@@ -1028,12 +1028,12 @@ xcb_xf86dri_get_device_info_device_private_length (/+const+/ xcb_xf86dri_get_dev
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xf86dri_get_device_info_device_private_end
- ** 
+ **
  ** @param /+const+/ xcb_xf86dri_get_device_info_reply_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xf86dri_get_device_info_device_private_end (/+const+/ xcb_xf86dri_get_device_info_reply_t *R  /**< */);
 
@@ -1041,14 +1041,14 @@ xcb_xf86dri_get_device_info_device_private_end (/+const+/ xcb_xf86dri_get_device
 /*****************************************************************************
  **
  ** xcb_xf86dri_get_device_info_reply_t * xcb_xf86dri_get_device_info_reply
- ** 
+ **
  ** @param xcb_connection_t                      *c
  ** @param xcb_xf86dri_get_device_info_cookie_t   cookie
  ** @param xcb_generic_error_t                  **e
  ** @returns xcb_xf86dri_get_device_info_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_get_device_info_reply_t *
 xcb_xf86dri_get_device_info_reply (xcb_connection_t                      *c  /**< */,
                                    xcb_xf86dri_get_device_info_cookie_t   cookie  /**< */,
@@ -1058,14 +1058,14 @@ xcb_xf86dri_get_device_info_reply (xcb_connection_t                      *c  /**
 /*****************************************************************************
  **
  ** xcb_xf86dri_auth_connection_cookie_t xcb_xf86dri_auth_connection
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @param uint              magic
  ** @returns xcb_xf86dri_auth_connection_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_auth_connection_cookie_t
 xcb_xf86dri_auth_connection (xcb_connection_t *c  /**< */,
                              uint              screen  /**< */,
@@ -1075,14 +1075,14 @@ xcb_xf86dri_auth_connection (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xf86dri_auth_connection_cookie_t xcb_xf86dri_auth_connection_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              screen
  ** @param uint              magic
  ** @returns xcb_xf86dri_auth_connection_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_auth_connection_cookie_t
 xcb_xf86dri_auth_connection_unchecked (xcb_connection_t *c  /**< */,
                                        uint              screen  /**< */,
@@ -1092,14 +1092,14 @@ xcb_xf86dri_auth_connection_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xf86dri_auth_connection_reply_t * xcb_xf86dri_auth_connection_reply
- ** 
+ **
  ** @param xcb_connection_t                      *c
  ** @param xcb_xf86dri_auth_connection_cookie_t   cookie
  ** @param xcb_generic_error_t                  **e
  ** @returns xcb_xf86dri_auth_connection_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xf86dri_auth_connection_reply_t *
 xcb_xf86dri_auth_connection_reply (xcb_connection_t                      *c  /**< */,
                                    xcb_xf86dri_auth_connection_cookie_t   cookie  /**< */,

@@ -99,7 +99,7 @@ struct Vector3d {
     //bool opEqual(const Vector3d v) const {
     //    return x == v.x && y == v.y && z == v.z;
     //}
-    
+
     /// returns vector with all components which are negative of components for this vector
     Vector3d opUnary(string op : "-")() const {
         return Vector3d(-x, -y, -z);
@@ -112,7 +112,7 @@ struct Vector3d {
     Vector3d opBinary(string op : "+")(const Vector3d v) const {
         return Vector3d(x + v.x, y + v.y, z + v.z);
     }
-    /// 
+    ///
     int opBinary(string op : "*")(const Vector3d v) const {
         return x*v.x + y*v.y + z*v.z;
     }
@@ -125,21 +125,21 @@ struct Vector3d {
         return Vector3d(x / n, y / n, z / n);
     }
 
-    /// 
+    ///
     ref Vector3d opOpAssign(string op : "+")(const Vector3d v) {
         x += v.x;
         y += v.y;
         z += v.z;
         return this;
     }
-    /// 
+    ///
     ref Vector3d opOpAssign(string op : "-")(const Vector3d v) {
         x -= v.x;
         y -= v.y;
         z -= v.z;
         return this;
     }
-    /// 
+    ///
     ref Vector3d opOpAssign(string op : "*")(int n) {
         x *= n;
         y *= n;

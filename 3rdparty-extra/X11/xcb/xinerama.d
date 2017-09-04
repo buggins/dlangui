@@ -18,7 +18,7 @@ import std.c.linux.X11.xcb.xproto;
 
 const int XCB_XINERAMA_MAJOR_VERSION =1;
 const int XCB_XINERAMA_MINOR_VERSION =1;
-  
+
 extern(C) extern xcb_extension_t xcb_xinerama_id;
 
 /**
@@ -235,12 +235,12 @@ struct xcb_xinerama_query_screens_reply_t {
 /*****************************************************************************
  **
  ** void xcb_xinerama_screen_info_next
- ** 
+ **
  ** @param xcb_xinerama_screen_info_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_xinerama_screen_info_next (xcb_xinerama_screen_info_iterator_t *i  /**< */);
 
@@ -248,12 +248,12 @@ xcb_xinerama_screen_info_next (xcb_xinerama_screen_info_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xinerama_screen_info_end
- ** 
+ **
  ** @param xcb_xinerama_screen_info_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xinerama_screen_info_end (xcb_xinerama_screen_info_iterator_t i  /**< */);
 
@@ -261,14 +261,14 @@ xcb_xinerama_screen_info_end (xcb_xinerama_screen_info_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** xcb_xinerama_query_version_cookie_t xcb_xinerama_query_version
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param ubyte             major
  ** @param ubyte             minor
  ** @returns xcb_xinerama_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xinerama_query_version_cookie_t
 xcb_xinerama_query_version (xcb_connection_t *c  /**< */,
                             ubyte             major  /**< */,
@@ -278,14 +278,14 @@ xcb_xinerama_query_version (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xinerama_query_version_cookie_t xcb_xinerama_query_version_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param ubyte             major
  ** @param ubyte             minor
  ** @returns xcb_xinerama_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xinerama_query_version_cookie_t
 xcb_xinerama_query_version_unchecked (xcb_connection_t *c  /**< */,
                                       ubyte             major  /**< */,
@@ -295,14 +295,14 @@ xcb_xinerama_query_version_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xinerama_query_version_reply_t * xcb_xinerama_query_version_reply
- ** 
+ **
  ** @param xcb_connection_t                     *c
  ** @param xcb_xinerama_query_version_cookie_t   cookie
  ** @param xcb_generic_error_t                 **e
  ** @returns xcb_xinerama_query_version_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xinerama_query_version_reply_t *
 xcb_xinerama_query_version_reply (xcb_connection_t                     *c  /**< */,
                                   xcb_xinerama_query_version_cookie_t   cookie  /**< */,
@@ -312,13 +312,13 @@ xcb_xinerama_query_version_reply (xcb_connection_t                     *c  /**< 
 /*****************************************************************************
  **
  ** xcb_xinerama_get_state_cookie_t xcb_xinerama_get_state
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @returns xcb_xinerama_get_state_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xinerama_get_state_cookie_t
 xcb_xinerama_get_state (xcb_connection_t *c  /**< */,
                         xcb_window_t      window  /**< */);
@@ -327,13 +327,13 @@ xcb_xinerama_get_state (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xinerama_get_state_cookie_t xcb_xinerama_get_state_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @returns xcb_xinerama_get_state_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xinerama_get_state_cookie_t
 xcb_xinerama_get_state_unchecked (xcb_connection_t *c  /**< */,
                                   xcb_window_t      window  /**< */);
@@ -342,14 +342,14 @@ xcb_xinerama_get_state_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xinerama_get_state_reply_t * xcb_xinerama_get_state_reply
- ** 
+ **
  ** @param xcb_connection_t                 *c
  ** @param xcb_xinerama_get_state_cookie_t   cookie
  ** @param xcb_generic_error_t             **e
  ** @returns xcb_xinerama_get_state_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xinerama_get_state_reply_t *
 xcb_xinerama_get_state_reply (xcb_connection_t                 *c  /**< */,
                               xcb_xinerama_get_state_cookie_t   cookie  /**< */,
@@ -359,13 +359,13 @@ xcb_xinerama_get_state_reply (xcb_connection_t                 *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xinerama_get_screen_count_cookie_t xcb_xinerama_get_screen_count
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @returns xcb_xinerama_get_screen_count_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xinerama_get_screen_count_cookie_t
 xcb_xinerama_get_screen_count (xcb_connection_t *c  /**< */,
                                xcb_window_t      window  /**< */);
@@ -374,13 +374,13 @@ xcb_xinerama_get_screen_count (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xinerama_get_screen_count_cookie_t xcb_xinerama_get_screen_count_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @returns xcb_xinerama_get_screen_count_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xinerama_get_screen_count_cookie_t
 xcb_xinerama_get_screen_count_unchecked (xcb_connection_t *c  /**< */,
                                          xcb_window_t      window  /**< */);
@@ -389,14 +389,14 @@ xcb_xinerama_get_screen_count_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xinerama_get_screen_count_reply_t * xcb_xinerama_get_screen_count_reply
- ** 
+ **
  ** @param xcb_connection_t                        *c
  ** @param xcb_xinerama_get_screen_count_cookie_t   cookie
  ** @param xcb_generic_error_t                    **e
  ** @returns xcb_xinerama_get_screen_count_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xinerama_get_screen_count_reply_t *
 xcb_xinerama_get_screen_count_reply (xcb_connection_t                        *c  /**< */,
                                      xcb_xinerama_get_screen_count_cookie_t   cookie  /**< */,
@@ -406,14 +406,14 @@ xcb_xinerama_get_screen_count_reply (xcb_connection_t                        *c 
 /*****************************************************************************
  **
  ** xcb_xinerama_get_screen_size_cookie_t xcb_xinerama_get_screen_size
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param xcb_screen_t      screen
  ** @returns xcb_xinerama_get_screen_size_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xinerama_get_screen_size_cookie_t
 xcb_xinerama_get_screen_size (xcb_connection_t *c  /**< */,
                               xcb_window_t      window  /**< */,
@@ -423,14 +423,14 @@ xcb_xinerama_get_screen_size (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xinerama_get_screen_size_cookie_t xcb_xinerama_get_screen_size_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param xcb_screen_t      screen
  ** @returns xcb_xinerama_get_screen_size_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xinerama_get_screen_size_cookie_t
 xcb_xinerama_get_screen_size_unchecked (xcb_connection_t *c  /**< */,
                                         xcb_window_t      window  /**< */,
@@ -440,14 +440,14 @@ xcb_xinerama_get_screen_size_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xinerama_get_screen_size_reply_t * xcb_xinerama_get_screen_size_reply
- ** 
+ **
  ** @param xcb_connection_t                       *c
  ** @param xcb_xinerama_get_screen_size_cookie_t   cookie
  ** @param xcb_generic_error_t                   **e
  ** @returns xcb_xinerama_get_screen_size_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xinerama_get_screen_size_reply_t *
 xcb_xinerama_get_screen_size_reply (xcb_connection_t                       *c  /**< */,
                                     xcb_xinerama_get_screen_size_cookie_t   cookie  /**< */,
@@ -457,12 +457,12 @@ xcb_xinerama_get_screen_size_reply (xcb_connection_t                       *c  /
 /*****************************************************************************
  **
  ** xcb_xinerama_is_active_cookie_t xcb_xinerama_is_active
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_xinerama_is_active_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xinerama_is_active_cookie_t
 xcb_xinerama_is_active (xcb_connection_t *c  /**< */);
 
@@ -470,12 +470,12 @@ xcb_xinerama_is_active (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_xinerama_is_active_cookie_t xcb_xinerama_is_active_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_xinerama_is_active_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xinerama_is_active_cookie_t
 xcb_xinerama_is_active_unchecked (xcb_connection_t *c  /**< */);
 
@@ -483,14 +483,14 @@ xcb_xinerama_is_active_unchecked (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_xinerama_is_active_reply_t * xcb_xinerama_is_active_reply
- ** 
+ **
  ** @param xcb_connection_t                 *c
  ** @param xcb_xinerama_is_active_cookie_t   cookie
  ** @param xcb_generic_error_t             **e
  ** @returns xcb_xinerama_is_active_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xinerama_is_active_reply_t *
 xcb_xinerama_is_active_reply (xcb_connection_t                 *c  /**< */,
                               xcb_xinerama_is_active_cookie_t   cookie  /**< */,
@@ -500,12 +500,12 @@ xcb_xinerama_is_active_reply (xcb_connection_t                 *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xinerama_query_screens_cookie_t xcb_xinerama_query_screens
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_xinerama_query_screens_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xinerama_query_screens_cookie_t
 xcb_xinerama_query_screens (xcb_connection_t *c  /**< */);
 
@@ -513,12 +513,12 @@ xcb_xinerama_query_screens (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_xinerama_query_screens_cookie_t xcb_xinerama_query_screens_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_xinerama_query_screens_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xinerama_query_screens_cookie_t
 xcb_xinerama_query_screens_unchecked (xcb_connection_t *c  /**< */);
 
@@ -526,12 +526,12 @@ xcb_xinerama_query_screens_unchecked (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_xinerama_screen_info_t * xcb_xinerama_query_screens_screen_info
- ** 
+ **
  ** @param /+const+/ xcb_xinerama_query_screens_reply_t *R
  ** @returns xcb_xinerama_screen_info_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xinerama_screen_info_t *
 xcb_xinerama_query_screens_screen_info (/+const+/ xcb_xinerama_query_screens_reply_t *R  /**< */);
 
@@ -539,12 +539,12 @@ xcb_xinerama_query_screens_screen_info (/+const+/ xcb_xinerama_query_screens_rep
 /*****************************************************************************
  **
  ** int xcb_xinerama_query_screens_screen_info_length
- ** 
+ **
  ** @param /+const+/ xcb_xinerama_query_screens_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xinerama_query_screens_screen_info_length (/+const+/ xcb_xinerama_query_screens_reply_t *R  /**< */);
 
@@ -552,12 +552,12 @@ xcb_xinerama_query_screens_screen_info_length (/+const+/ xcb_xinerama_query_scre
 /*****************************************************************************
  **
  ** xcb_xinerama_screen_info_iterator_t xcb_xinerama_query_screens_screen_info_iterator
- ** 
+ **
  ** @param /+const+/ xcb_xinerama_query_screens_reply_t *R
  ** @returns xcb_xinerama_screen_info_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xinerama_screen_info_iterator_t
 xcb_xinerama_query_screens_screen_info_iterator (/+const+/ xcb_xinerama_query_screens_reply_t *R  /**< */);
 
@@ -565,14 +565,14 @@ xcb_xinerama_query_screens_screen_info_iterator (/+const+/ xcb_xinerama_query_sc
 /*****************************************************************************
  **
  ** xcb_xinerama_query_screens_reply_t * xcb_xinerama_query_screens_reply
- ** 
+ **
  ** @param xcb_connection_t                     *c
  ** @param xcb_xinerama_query_screens_cookie_t   cookie
  ** @param xcb_generic_error_t                 **e
  ** @returns xcb_xinerama_query_screens_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xinerama_query_screens_reply_t *
 xcb_xinerama_query_screens_reply (xcb_connection_t                     *c  /**< */,
                                   xcb_xinerama_query_screens_cookie_t   cookie  /**< */,

@@ -54,8 +54,8 @@ class DMLSourceEdit : SourceEdit {
         setTokenHightlightColor(TokenCategory.Comment, 0x008000); // green
         setTokenHightlightColor(TokenCategory.Keyword, 0x0000FF); // blue
         setTokenHightlightColor(TokenCategory.String, 0xa31515);  // brown
-        setTokenHightlightColor(TokenCategory.Integer, 0xa315C0);  // 
-        setTokenHightlightColor(TokenCategory.Float, 0xa315C0);  // 
+        setTokenHightlightColor(TokenCategory.Integer, 0xa315C0);  //
+        setTokenHightlightColor(TokenCategory.Float, 0xa315C0);  //
         setTokenHightlightColor(TokenCategory.Error, 0xFF0000);  // red
         setTokenHightlightColor(TokenCategory.Op, 0x503000);
         setTokenHightlightColor(TokenCategory.Identifier_Class, 0x000080);  // blue
@@ -66,14 +66,14 @@ class DMLSourceEdit : SourceEdit {
     }
 }
 
-immutable dstring SAMPLE_SOURCE_CODE = 
+immutable dstring SAMPLE_SOURCE_CODE =
 q{VerticalLayout {
     id: vlayout
     margins: Rect { left: 5; right: 3; top: 2; bottom: 4 }
     padding: Rect { 5, 4, 3, 2 } // same as Rect { left: 5; top: 4; right: 3; bottom: 2 }
     TextWidget {
-        /* this widget can be accessed via id myLabel1 
-            e.g. w.childById!TextWidget("myLabel1") 
+        /* this widget can be accessed via id myLabel1
+            e.g. w.childById!TextWidget("myLabel1")
         */
         id: myLabel1
         text: "Some text"; padding: 5
@@ -109,11 +109,11 @@ class EditFrame : AppFrame {
     override protected MainMenu createMainMenu() {
         mainMenuItems = new MenuItem();
         MenuItem fileItem = new MenuItem(new Action(1, "MENU_FILE"));
-        fileItem.add(ACTION_FILE_NEW, ACTION_FILE_OPEN, 
+        fileItem.add(ACTION_FILE_NEW, ACTION_FILE_OPEN,
                      ACTION_FILE_EXIT);
         mainMenuItems.add(fileItem);
         MenuItem editItem = new MenuItem(new Action(2, "MENU_EDIT"));
-        editItem.add(ACTION_EDIT_COPY, ACTION_EDIT_PASTE, 
+        editItem.add(ACTION_EDIT_COPY, ACTION_EDIT_PASTE,
                      ACTION_EDIT_CUT, ACTION_EDIT_UNDO, ACTION_EDIT_REDO,
                      ACTION_EDIT_INDENT, ACTION_EDIT_UNINDENT, ACTION_EDIT_TOGGLE_LINE_COMMENT, ACTION_EDIT_TOGGLE_BLOCK_COMMENT, ACTION_DEBUG_START);
 
@@ -184,7 +184,7 @@ class EditFrame : AppFrame {
                         window.close();
                     return true;
                 case IDEActions.HelpAbout:
-                    window.showMessageBox(UIString.fromRaw("About DlangUI ML Editor"d), 
+                    window.showMessageBox(UIString.fromRaw("About DlangUI ML Editor"d),
                                           UIString.fromRaw("DLangIDE\n(C) Vadim Lopatin, 2015\nhttp://github.com/buggins/dlangui\nSimple editor for DML code"d));
                     return true;
                 case IDEActions.FileNew:

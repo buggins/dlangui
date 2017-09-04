@@ -1127,7 +1127,7 @@ z=7  56   57   58   59   60   61   62   63
 */
 // move bit 0 -> 0, 1->8, 2->16, 3->24, .. 7->56
 ulong flipBitsLeft(ulong n) {
-    n &=  0xFFL; // 
+    n &=  0xFFL; //
     return ((n&1) | ((n&2) << 7) | ((n&4) << 14) | ((n&8) << 21) | ((n&16) << 28) | ((n&32) << 35) | ((n&64) << 42) | ((n&128)<< 49)) & 0x0101010101010101L;
 }
 ulong yPlaneFromXplanes(ref ulong[8] planes, int y) {
@@ -1203,7 +1203,7 @@ y=7  56   57   58   59   60   61   62   63
 */
 // move bit 0 -> 0, 8->1, 16->2, 24->3, .. 56->7
 ulong flipBitsRight(ulong n) {
-    n &=  0x0101010101010101L; // 
+    n &=  0x0101010101010101L; //
     return (n | (n >> 7) | (n >> 14) | (n >> 21) | (n >> 28) | (n >> 35) | (n >> 42) | (n >> 49)) & 255;
 }
 ulong xPlaneFromYplanes(ref ulong[8] planes, int x) {
