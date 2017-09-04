@@ -943,33 +943,33 @@ enum KeyAction : uint {
 /// Keyboard flags for KeyEvent
 enum KeyFlag : uint {
     /// Ctrl key is down
-    Control = 0x0008,
+    Control = 0x0001,
     /// Shift key is down
-    Shift   = 0x0004,
+    Shift   = 0x0002,
     /// Alt key is down
-    Alt     = 0x0080,
+    Alt     = 0x0004,
     Option  = Alt,
     /// Menu key
-    Menu    = 0x0040,
+    Menu    = 0x0008,
     Command = Menu,
     // Flags not counting left or right difference
     MainFlags = 0xFF,
     /// Right Ctrl key is down
-    RControl = 0x0108,
+    RControl = 0x0101,
     /// Right Shift key is down
-    RShift   = 0x0104,
+    RShift   = 0x0202,
     /// Right Alt key is down
-    RAlt     = 0x0180,
-    /// Left Ctrl key is down
-    LControl = 0x0208,
-    /// Left Shift key is down
-    LShift   = 0x0204,
-    /// Left Alt key is down
-    LAlt     = 0x0280,
-    /// Left Menu/Win key is down
-    LMenu    = 0x0240,
+    RAlt     = 0x0404,
     /// Right Menu/Win key is down
-    RMenu    = 0x0140,
+    RMenu    = 0x0808,
+    /// Left Ctrl key is down
+    LControl = 0x1001,
+    /// Left Shift key is down
+    LShift   = 0x2002,
+    /// Left Alt key is down
+    LAlt     = 0x4004,
+    /// Left Menu/Win key is down
+    LMenu    = 0x8008,
 
     LRControl = LControl | RControl, // both left and right
     LRAlt = LAlt | RAlt, // both left and right

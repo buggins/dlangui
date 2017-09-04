@@ -903,11 +903,13 @@ class Win32Window : Window {
     }
 
     bool onKey(KeyAction action, uint keyCode, int repeatCount, dchar character = 0, bool syskey = false) {
+        debug(KeyInput) Log.d("enter onKey action=", action, " keyCode=", keyCode, " char=", character, "(", cast(int)character, ")", " syskey=", syskey, "    _keyFlags=", "%04x"d.format(_keyFlags));
         KeyEvent event;
         if (syskey)
             _keyFlags |= KeyFlag.Alt;
         //else
         //    _keyFlags &= ~KeyFlag.Alt;
+        uint oldFlags = _keyFlags;
         if (action == KeyAction.KeyDown || action == KeyAction.KeyUp) {
             switch(keyCode) {
                 case KeyCode.LSHIFT:
@@ -949,8 +951,8 @@ class Win32Window : Window {
                     updateKeyFlags((GetKeyState(VK_RWIN) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.RMenu, KeyFlag.LMenu);
                     updateKeyFlags((GetKeyState(VK_LMENU) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.LAlt, KeyFlag.RAlt);
                     updateKeyFlags((GetKeyState(VK_RMENU) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.RAlt, KeyFlag.LAlt);
-                    if (action == KeyAction.KeyDown)
-                        Log.d("keydown, keyFlags=", _keyFlags);
+                    //updateKeyFlags((GetKeyState(VK_LALT) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.LAlt, KeyFlag.RAlt);
+                    //updateKeyFlags((GetKeyState(VK_RALT) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.RAlt, KeyFlag.LAlt);
                     break;
             }
             //updateKeyFlags((GetKeyState(VK_CONTROL) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.Control);
@@ -958,6 +960,15 @@ class Win32Window : Window {
             //updateKeyFlags((GetKeyState(VK_MENU) & 0x8000) != 0 ? KeyAction.KeyDown : KeyAction.KeyUp, KeyFlag.Alt);
             if (keyCode == 0xBF)
                 keyCode = KeyCode.KEY_DIVIDE;
+
+            debug(KeyInput) {
+                if (oldFlags != _keyFlags) {
+                    debug(KeyInput) Log.d(" flags updated: onKey action=", action, " keyCode=", keyCode, " char=", character, "(", cast(int)character, ")", " syskey=", syskey, "    _keyFlags=", "%04x"d.format(_keyFlags));
+                }
+                //if (action == KeyAction.KeyDown)
+                //    Log.d("keydown, keyFlags=", _keyFlags);
+            }
+
             event = new KeyEvent(action, keyCode, _keyFlags);
         } else if (action == KeyAction.Text && character != 0) {
             bool ctrlAZKeyCode = (character >= 1 && character <= 26);
@@ -966,7 +977,12 @@ class Win32Window : Window {
             } else {
                 dchar[] text;
                 text ~= character;
-                event = new KeyEvent(action, 0, _keyFlags, cast(dstring)text);
+                uint newFlags = _keyFlags;
+                if ((newFlags & KeyFlag.Alt) && (newFlags & KeyFlag.Control)) {
+                    newFlags &= (~(KeyFlag.LRAlt)) & (~(KeyFlag.LRControl));
+                    debug(KeyInput) Log.d(" flags updated for text: onKey action=", action, " keyCode=", keyCode, " char=", character, "(", cast(int)character, ")", " syskey=", syskey, "    _keyFlags=", "%04x"d.format(_keyFlags));
+                }
+                event = new KeyEvent(action, 0, newFlags, cast(dstring)text);
             }
         }
         bool res = false;
@@ -1488,7 +1504,9 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_UNICHAR:
             if (window !is null) {
                 int repeatCount = lParam & 0xFFFF;
-                if (window.onKey(KeyAction.Text, cast(uint)wParam, repeatCount, wParam == UNICODE_NOCHAR ? 0 : cast(uint)wParam))
+                dchar ch = wParam == UNICODE_NOCHAR ? 0 : cast(uint)wParam;
+                debug(KeyInput) Log.d("WM_UNICHAR ", ch, " (", cast(int)ch, ")");
+                if (window.onKey(KeyAction.Text, cast(uint)wParam, repeatCount, ch))
                     return 1; // processed
                 return 1;
             }
@@ -1496,7 +1514,9 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_CHAR:
             if (window !is null) {
                 int repeatCount = lParam & 0xFFFF;
-                if (window.onKey(KeyAction.Text, cast(uint)wParam, repeatCount, wParam == UNICODE_NOCHAR ? 0 : cast(uint)wParam))
+                dchar ch = wParam == UNICODE_NOCHAR ? 0 : cast(uint)wParam;
+                debug(KeyInput) Log.d("WM_CHAR ", ch, " (", cast(int)ch, ")");
+                if (window.onKey(KeyAction.Text, cast(uint)wParam, repeatCount, ch))
                     return 1; // processed
                 return 1;
             }
