@@ -999,7 +999,7 @@ class SDLWindow : Window {
 
         if (flags & KeyFlag.Control || (flags & KeyFlag.LAlt) == KeyFlag.LAlt || flags & KeyFlag.Menu)
                 return true;
-       
+
         bool res = dispatchKeyEvent(new KeyEvent(KeyAction.Text, 0, flags, ds));
         if (res) {
             debug(DebugSDL) Log.d("Calling update() after text event");

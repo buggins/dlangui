@@ -2875,7 +2875,8 @@ class EditBox : EditWidgetBase {
                 lastNonSpace = i + 1;
             }
         }
-        if (firstNonSpace <= 0 && lastNonSpace >= txt.length && !hasTabs)
+        bool spacesOnly = txt.length > 0 && firstNonSpace < 0;
+        if (firstNonSpace <= 0 && lastNonSpace >= txt.length && !hasTabs && !spacesOnly)
             return;
         uint color = addAlpha(textColor, 0xC0);
         static int[] textSizeBuffer;
@@ -2888,7 +2889,7 @@ class EditBox : EditWidgetBase {
         int spaceIndex = 0;
         for (int i = 0; i < txt.length && i < charsMeasured; i++) {
             dchar ch = txt[i];
-            bool outsideText = (i < firstNonSpace || i >= lastNonSpace);
+            bool outsideText = (i < firstNonSpace || i >= lastNonSpace || spacesOnly);
             if ((ch == ' ' && outsideText) || ch == '\t') {
                 Rect rc = lineRect;
                 rc.left = lineRect.left + (i > 0 ? textSizeBuffer[i - 1] : 0);
