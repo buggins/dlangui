@@ -199,6 +199,10 @@ struct TextRange {
     bool isInside(TextPosition p) const {
         return start <= p && end > p;
     }
+    /// returns true if position is inside this range or right after this range
+    bool isInsideOrNext(TextPosition p) const {
+        return start <= p && end >= p;
+    }
     /// returns true if range is empty
     @property bool empty() const {
         return end <= start;
@@ -768,7 +772,7 @@ class EditableContent {
     }
 
 
-    /// returns line text
+    /// returns line count
     @property int length() { return cast(int)_lines.length; }
     dstring opIndex(int index) {
         return line(index);

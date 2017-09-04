@@ -247,9 +247,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     protected bool _replaceMode;
 
-    // TODO: move to styles
     protected uint _selectionColorFocused = 0xB060A0FF;
     protected uint _selectionColorNormal = 0xD060A0FF;
+    protected uint _searchHighlightColorCurrent = 0x808080FF;
+    protected uint _searchHighlightColorOther = 0xC08080FF;
     protected uint _leftPaneBackgroundColor = 0xF4F4F4;
     protected uint _leftPaneBackgroundColor2 = 0xFFFFFF;
     protected uint _leftPaneBackgroundColor3 = 0xF8F8F8;
@@ -1037,6 +1038,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         _caretColorReplace = style.customColor("edit_caret_replace");
         _selectionColorFocused = style.customColor("editor_selection_focused");
         _selectionColorNormal = style.customColor("editor_selection_normal");
+        _searchHighlightColorCurrent = style.customColor("editor_search_highlight_current");
+        _searchHighlightColorOther = style.customColor("editor_search_highlight_other");
         _leftPaneBackgroundColor = style.customColor("editor_left_pane_background");
         _leftPaneBackgroundColor2 = style.customColor("editor_left_pane_background2");
         _leftPaneBackgroundColor3 = style.customColor("editor_left_pane_background3");
@@ -2687,6 +2690,106 @@ class EditBox : EditWidgetBase {
         super.measure(parentWidth, parentHeight);
     }
 
+    protected dstring _textToHighlight;
+    protected bool _textToHighlightCaseSensitive;
+    /// text pattern to highlight - e.g. for search
+    @property dstring textToHighlight() {
+        return _textToHighlight;
+    }
+    /// set text to highlight -- e.g. for search
+    void setTextToHighlight(dstring pattern, bool caseSensitive) {
+        _textToHighlight = pattern;
+        _textToHighlightCaseSensitive = caseSensitive;
+        invalidate();
+    }
+
+    protected void highlightTextPattern(DrawBuf buf, int lineIndex, Rect lineRect, Rect visibleRect) {
+        if (!_textToHighlight.length)
+            return;
+        dstring lineText = _content.line(lineIndex);
+        if (lineText.length < _textToHighlight.length)
+            return;
+        ptrdiff_t start = 0;
+        import std.string : indexOf, CaseSensitive, Yes, No;
+        for (;;) {
+            ptrdiff_t pos = lineText[start .. $].indexOf(_textToHighlight, _textToHighlightCaseSensitive ? Yes.caseSensitive : No.caseSensitive);
+            if (pos < 0)
+                break;
+            // found text to highlight
+            start += pos;
+            TextRange r = TextRange(TextPosition(lineIndex, cast(int)start), TextPosition(lineIndex, cast(int)(start + _textToHighlight.length)));
+            start += _textToHighlight.length;
+            uint color = r.isInsideOrNext(caretPos) ? _searchHighlightColorCurrent : _searchHighlightColorOther;
+            highlightLineRange(buf, lineRect, color, r);
+        }
+    }
+
+    /// find all occurences of text pattern in content
+    TextRange[] findAll(dstring pattern, bool caseSensitive) {
+        TextRange[] res;
+        res.assumeSafeAppend();
+        if (!pattern.length)
+            return res;
+        import std.string : indexOf, CaseSensitive, Yes, No;
+        for (int i = 0; i < _content.length; i++) {
+            dstring lineText = _content.line(i);
+            if (lineText.length < pattern.length)
+                continue;
+            ptrdiff_t start = 0;
+            for (;;) {
+                ptrdiff_t pos = lineText[start .. $].indexOf(_textToHighlight, _textToHighlightCaseSensitive ? Yes.caseSensitive : No.caseSensitive);
+                if (pos < 0)
+                    break;
+                // found text to highlight
+                start += pos;
+                TextRange r = TextRange(TextPosition(i, cast(int)start), TextPosition(i, cast(int)(start + _textToHighlight.length)));
+                res ~= r;
+                start += _textToHighlight.length;
+            }
+        }
+        return res;
+    }
+
+    /// find next occurence of text pattern in content, returns true if found
+    bool findNextPattern(ref TextPosition pos, dstring pattern, bool caseSensitive, int direction) {
+        TextRange[] all = findAll(pattern, caseSensitive);
+        if (!all.length)
+            return false;
+        int currentIndex = -1;
+        int nearestIndex = -1;
+        for (int i = 0; i < all.length; i++) {
+            if (all[i].isInsideOrNext(pos)) {
+                currentIndex = i;
+                break;
+            }
+        }
+        for (int i = 0; i < all.length; i++) {
+            if (pos < all[i].start) {
+                nearestIndex = i;
+                break;
+            }
+            if (pos > all[i].end) {
+                nearestIndex = i + 1;
+            }
+        }
+        if (currentIndex >= 0) {
+            if (all.length < 2 && direction != 0)
+                return false;
+            currentIndex += direction;
+            if (currentIndex < 0)
+                currentIndex = cast(int)all.length - 1;
+            else if (currentIndex >= all.length)
+                currentIndex = 0;
+            pos = all[currentIndex].start;
+            return true;
+        }
+        if (direction >= 0)
+            nearestIndex++;
+        if (nearestIndex >= all.length)
+            nearestIndex = 0;
+        pos = all[nearestIndex].start;
+        return true;
+    }
 
     protected void highlightLineRange(DrawBuf buf, Rect lineRect, uint color, TextRange r) {
         Rect startrc = textPosToClient(r.start);
@@ -2720,6 +2823,8 @@ class EditBox : EditWidgetBase {
                 buf.fillRect(rc, focused ? _selectionColorFocused : _selectionColorNormal);
             }
         }
+
+        highlightTextPattern(buf, lineIndex, lineRect, visibleRect);
 
         if (_matchingBraces.start.line == lineIndex)  {
             TextRange r = TextRange(_matchingBraces.start, _matchingBraces.start.offset(1));
@@ -3255,6 +3360,7 @@ class FindPanel : HorizontalLayout {
     }
 
     void close() {
+        _editor.setTextToHighlight(null, false);
         _editor.closeFindPanel();
     }
 
@@ -3282,6 +3388,7 @@ class FindPanel : HorizontalLayout {
         setDirection(back);
         dstring currentText = _edFind.text;
         Log.d("findNext text=", currentText, " back=", back);
+        _editor.setTextToHighlight(currentText, _cbCaseSensitive.checked);
     }
 
     void onFindTextChange(EditableContent source) {
