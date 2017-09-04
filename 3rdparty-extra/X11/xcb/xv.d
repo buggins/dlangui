@@ -19,7 +19,7 @@ import std.c.linux.X11.xcb.shm;
 
 const int XCB_XV_MAJOR_VERSION =2;
 const int XCB_XV_MINOR_VERSION =2;
-  
+
 extern(C) extern xcb_extension_t xcb_xv_id;
 
 alias uint xcb_xv_port_t;
@@ -815,12 +815,12 @@ struct xcb_xv_shm_put_image_request_t {
 /*****************************************************************************
  **
  ** void xcb_xv_port_next
- ** 
+ **
  ** @param xcb_xv_port_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_xv_port_next (xcb_xv_port_iterator_t *i  /**< */);
 
@@ -828,12 +828,12 @@ xcb_xv_port_next (xcb_xv_port_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xv_port_end
- ** 
+ **
  ** @param xcb_xv_port_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xv_port_end (xcb_xv_port_iterator_t i  /**< */);
 
@@ -841,12 +841,12 @@ xcb_xv_port_end (xcb_xv_port_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** void xcb_xv_encoding_next
- ** 
+ **
  ** @param xcb_xv_encoding_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_xv_encoding_next (xcb_xv_encoding_iterator_t *i  /**< */);
 
@@ -854,12 +854,12 @@ xcb_xv_encoding_next (xcb_xv_encoding_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xv_encoding_end
- ** 
+ **
  ** @param xcb_xv_encoding_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xv_encoding_end (xcb_xv_encoding_iterator_t i  /**< */);
 
@@ -867,12 +867,12 @@ xcb_xv_encoding_end (xcb_xv_encoding_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** void xcb_xv_rational_next
- ** 
+ **
  ** @param xcb_xv_rational_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_xv_rational_next (xcb_xv_rational_iterator_t *i  /**< */);
 
@@ -880,12 +880,12 @@ xcb_xv_rational_next (xcb_xv_rational_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xv_rational_end
- ** 
+ **
  ** @param xcb_xv_rational_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xv_rational_end (xcb_xv_rational_iterator_t i  /**< */);
 
@@ -893,12 +893,12 @@ xcb_xv_rational_end (xcb_xv_rational_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** char * xcb_xv_adaptor_info_name
- ** 
+ **
  ** @param /+const+/ xcb_xv_adaptor_info_t *R
  ** @returns char *
  **
  *****************************************************************************/
- 
+
 extern(C) char *
 xcb_xv_adaptor_info_name (/+const+/ xcb_xv_adaptor_info_t *R  /**< */);
 
@@ -906,12 +906,12 @@ xcb_xv_adaptor_info_name (/+const+/ xcb_xv_adaptor_info_t *R  /**< */);
 /*****************************************************************************
  **
  ** int xcb_xv_adaptor_info_name_length
- ** 
+ **
  ** @param /+const+/ xcb_xv_adaptor_info_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xv_adaptor_info_name_length (/+const+/ xcb_xv_adaptor_info_t *R  /**< */);
 
@@ -919,12 +919,12 @@ xcb_xv_adaptor_info_name_length (/+const+/ xcb_xv_adaptor_info_t *R  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xv_adaptor_info_name_end
- ** 
+ **
  ** @param /+const+/ xcb_xv_adaptor_info_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xv_adaptor_info_name_end (/+const+/ xcb_xv_adaptor_info_t *R  /**< */);
 
@@ -932,12 +932,12 @@ xcb_xv_adaptor_info_name_end (/+const+/ xcb_xv_adaptor_info_t *R  /**< */);
 /*****************************************************************************
  **
  ** xcb_xv_format_t * xcb_xv_adaptor_info_formats
- ** 
+ **
  ** @param /+const+/ xcb_xv_adaptor_info_t *R
  ** @returns xcb_xv_format_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_format_t *
 xcb_xv_adaptor_info_formats (/+const+/ xcb_xv_adaptor_info_t *R  /**< */);
 
@@ -945,12 +945,12 @@ xcb_xv_adaptor_info_formats (/+const+/ xcb_xv_adaptor_info_t *R  /**< */);
 /*****************************************************************************
  **
  ** int xcb_xv_adaptor_info_formats_length
- ** 
+ **
  ** @param /+const+/ xcb_xv_adaptor_info_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xv_adaptor_info_formats_length (/+const+/ xcb_xv_adaptor_info_t *R  /**< */);
 
@@ -958,12 +958,12 @@ xcb_xv_adaptor_info_formats_length (/+const+/ xcb_xv_adaptor_info_t *R  /**< */)
 /*****************************************************************************
  **
  ** xcb_xv_format_iterator_t xcb_xv_adaptor_info_formats_iterator
- ** 
+ **
  ** @param /+const+/ xcb_xv_adaptor_info_t *R
  ** @returns xcb_xv_format_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_format_iterator_t
 xcb_xv_adaptor_info_formats_iterator (/+const+/ xcb_xv_adaptor_info_t *R  /**< */);
 
@@ -971,12 +971,12 @@ xcb_xv_adaptor_info_formats_iterator (/+const+/ xcb_xv_adaptor_info_t *R  /**< *
 /*****************************************************************************
  **
  ** void xcb_xv_adaptor_info_next
- ** 
+ **
  ** @param xcb_xv_adaptor_info_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_xv_adaptor_info_next (xcb_xv_adaptor_info_iterator_t *i  /**< */);
 
@@ -984,12 +984,12 @@ xcb_xv_adaptor_info_next (xcb_xv_adaptor_info_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xv_adaptor_info_end
- ** 
+ **
  ** @param xcb_xv_adaptor_info_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xv_adaptor_info_end (xcb_xv_adaptor_info_iterator_t i  /**< */);
 
@@ -997,12 +997,12 @@ xcb_xv_adaptor_info_end (xcb_xv_adaptor_info_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** char * xcb_xv_encoding_info_name
- ** 
+ **
  ** @param /+const+/ xcb_xv_encoding_info_t *R
  ** @returns char *
  **
  *****************************************************************************/
- 
+
 extern(C) char *
 xcb_xv_encoding_info_name (/+const+/ xcb_xv_encoding_info_t *R  /**< */);
 
@@ -1010,12 +1010,12 @@ xcb_xv_encoding_info_name (/+const+/ xcb_xv_encoding_info_t *R  /**< */);
 /*****************************************************************************
  **
  ** int xcb_xv_encoding_info_name_length
- ** 
+ **
  ** @param /+const+/ xcb_xv_encoding_info_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xv_encoding_info_name_length (/+const+/ xcb_xv_encoding_info_t *R  /**< */);
 
@@ -1023,12 +1023,12 @@ xcb_xv_encoding_info_name_length (/+const+/ xcb_xv_encoding_info_t *R  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xv_encoding_info_name_end
- ** 
+ **
  ** @param /+const+/ xcb_xv_encoding_info_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xv_encoding_info_name_end (/+const+/ xcb_xv_encoding_info_t *R  /**< */);
 
@@ -1036,12 +1036,12 @@ xcb_xv_encoding_info_name_end (/+const+/ xcb_xv_encoding_info_t *R  /**< */);
 /*****************************************************************************
  **
  ** void xcb_xv_encoding_info_next
- ** 
+ **
  ** @param xcb_xv_encoding_info_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_xv_encoding_info_next (xcb_xv_encoding_info_iterator_t *i  /**< */);
 
@@ -1049,12 +1049,12 @@ xcb_xv_encoding_info_next (xcb_xv_encoding_info_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xv_encoding_info_end
- ** 
+ **
  ** @param xcb_xv_encoding_info_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xv_encoding_info_end (xcb_xv_encoding_info_iterator_t i  /**< */);
 
@@ -1062,12 +1062,12 @@ xcb_xv_encoding_info_end (xcb_xv_encoding_info_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** void xcb_xv_format_next
- ** 
+ **
  ** @param xcb_xv_format_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_xv_format_next (xcb_xv_format_iterator_t *i  /**< */);
 
@@ -1075,12 +1075,12 @@ xcb_xv_format_next (xcb_xv_format_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xv_format_end
- ** 
+ **
  ** @param xcb_xv_format_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xv_format_end (xcb_xv_format_iterator_t i  /**< */);
 
@@ -1088,12 +1088,12 @@ xcb_xv_format_end (xcb_xv_format_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** uint * xcb_xv_image_pitches
- ** 
+ **
  ** @param /+const+/ xcb_xv_image_t *R
  ** @returns uint *
  **
  *****************************************************************************/
- 
+
 extern(C) uint *
 xcb_xv_image_pitches (/+const+/ xcb_xv_image_t *R  /**< */);
 
@@ -1101,12 +1101,12 @@ xcb_xv_image_pitches (/+const+/ xcb_xv_image_t *R  /**< */);
 /*****************************************************************************
  **
  ** int xcb_xv_image_pitches_length
- ** 
+ **
  ** @param /+const+/ xcb_xv_image_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xv_image_pitches_length (/+const+/ xcb_xv_image_t *R  /**< */);
 
@@ -1114,12 +1114,12 @@ xcb_xv_image_pitches_length (/+const+/ xcb_xv_image_t *R  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xv_image_pitches_end
- ** 
+ **
  ** @param /+const+/ xcb_xv_image_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xv_image_pitches_end (/+const+/ xcb_xv_image_t *R  /**< */);
 
@@ -1127,12 +1127,12 @@ xcb_xv_image_pitches_end (/+const+/ xcb_xv_image_t *R  /**< */);
 /*****************************************************************************
  **
  ** uint * xcb_xv_image_offsets
- ** 
+ **
  ** @param /+const+/ xcb_xv_image_t *R
  ** @returns uint *
  **
  *****************************************************************************/
- 
+
 extern(C) uint *
 xcb_xv_image_offsets (/+const+/ xcb_xv_image_t *R  /**< */);
 
@@ -1140,12 +1140,12 @@ xcb_xv_image_offsets (/+const+/ xcb_xv_image_t *R  /**< */);
 /*****************************************************************************
  **
  ** int xcb_xv_image_offsets_length
- ** 
+ **
  ** @param /+const+/ xcb_xv_image_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xv_image_offsets_length (/+const+/ xcb_xv_image_t *R  /**< */);
 
@@ -1153,12 +1153,12 @@ xcb_xv_image_offsets_length (/+const+/ xcb_xv_image_t *R  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xv_image_offsets_end
- ** 
+ **
  ** @param /+const+/ xcb_xv_image_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xv_image_offsets_end (/+const+/ xcb_xv_image_t *R  /**< */);
 
@@ -1166,12 +1166,12 @@ xcb_xv_image_offsets_end (/+const+/ xcb_xv_image_t *R  /**< */);
 /*****************************************************************************
  **
  ** ubyte * xcb_xv_image_data
- ** 
+ **
  ** @param /+const+/ xcb_xv_image_t *R
  ** @returns ubyte *
  **
  *****************************************************************************/
- 
+
 extern(C) ubyte *
 xcb_xv_image_data (/+const+/ xcb_xv_image_t *R  /**< */);
 
@@ -1179,12 +1179,12 @@ xcb_xv_image_data (/+const+/ xcb_xv_image_t *R  /**< */);
 /*****************************************************************************
  **
  ** int xcb_xv_image_data_length
- ** 
+ **
  ** @param /+const+/ xcb_xv_image_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xv_image_data_length (/+const+/ xcb_xv_image_t *R  /**< */);
 
@@ -1192,12 +1192,12 @@ xcb_xv_image_data_length (/+const+/ xcb_xv_image_t *R  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xv_image_data_end
- ** 
+ **
  ** @param /+const+/ xcb_xv_image_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xv_image_data_end (/+const+/ xcb_xv_image_t *R  /**< */);
 
@@ -1205,12 +1205,12 @@ xcb_xv_image_data_end (/+const+/ xcb_xv_image_t *R  /**< */);
 /*****************************************************************************
  **
  ** void xcb_xv_image_next
- ** 
+ **
  ** @param xcb_xv_image_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_xv_image_next (xcb_xv_image_iterator_t *i  /**< */);
 
@@ -1218,12 +1218,12 @@ xcb_xv_image_next (xcb_xv_image_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xv_image_end
- ** 
+ **
  ** @param xcb_xv_image_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xv_image_end (xcb_xv_image_iterator_t i  /**< */);
 
@@ -1231,12 +1231,12 @@ xcb_xv_image_end (xcb_xv_image_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** char * xcb_xv_attribute_info_name
- ** 
+ **
  ** @param /+const+/ xcb_xv_attribute_info_t *R
  ** @returns char *
  **
  *****************************************************************************/
- 
+
 extern(C) char *
 xcb_xv_attribute_info_name (/+const+/ xcb_xv_attribute_info_t *R  /**< */);
 
@@ -1244,12 +1244,12 @@ xcb_xv_attribute_info_name (/+const+/ xcb_xv_attribute_info_t *R  /**< */);
 /*****************************************************************************
  **
  ** int xcb_xv_attribute_info_name_length
- ** 
+ **
  ** @param /+const+/ xcb_xv_attribute_info_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xv_attribute_info_name_length (/+const+/ xcb_xv_attribute_info_t *R  /**< */);
 
@@ -1257,12 +1257,12 @@ xcb_xv_attribute_info_name_length (/+const+/ xcb_xv_attribute_info_t *R  /**< */
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xv_attribute_info_name_end
- ** 
+ **
  ** @param /+const+/ xcb_xv_attribute_info_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xv_attribute_info_name_end (/+const+/ xcb_xv_attribute_info_t *R  /**< */);
 
@@ -1270,12 +1270,12 @@ xcb_xv_attribute_info_name_end (/+const+/ xcb_xv_attribute_info_t *R  /**< */);
 /*****************************************************************************
  **
  ** void xcb_xv_attribute_info_next
- ** 
+ **
  ** @param xcb_xv_attribute_info_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_xv_attribute_info_next (xcb_xv_attribute_info_iterator_t *i  /**< */);
 
@@ -1283,12 +1283,12 @@ xcb_xv_attribute_info_next (xcb_xv_attribute_info_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xv_attribute_info_end
- ** 
+ **
  ** @param xcb_xv_attribute_info_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xv_attribute_info_end (xcb_xv_attribute_info_iterator_t i  /**< */);
 
@@ -1296,12 +1296,12 @@ xcb_xv_attribute_info_end (xcb_xv_attribute_info_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** void xcb_xv_image_format_info_next
- ** 
+ **
  ** @param xcb_xv_image_format_info_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_xv_image_format_info_next (xcb_xv_image_format_info_iterator_t *i  /**< */);
 
@@ -1309,12 +1309,12 @@ xcb_xv_image_format_info_next (xcb_xv_image_format_info_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xv_image_format_info_end
- ** 
+ **
  ** @param xcb_xv_image_format_info_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xv_image_format_info_end (xcb_xv_image_format_info_iterator_t i  /**< */);
 
@@ -1322,12 +1322,12 @@ xcb_xv_image_format_info_end (xcb_xv_image_format_info_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** xcb_xv_query_extension_cookie_t xcb_xv_query_extension
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_xv_query_extension_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_query_extension_cookie_t
 xcb_xv_query_extension (xcb_connection_t *c  /**< */);
 
@@ -1335,12 +1335,12 @@ xcb_xv_query_extension (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_xv_query_extension_cookie_t xcb_xv_query_extension_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_xv_query_extension_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_query_extension_cookie_t
 xcb_xv_query_extension_unchecked (xcb_connection_t *c  /**< */);
 
@@ -1348,14 +1348,14 @@ xcb_xv_query_extension_unchecked (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_xv_query_extension_reply_t * xcb_xv_query_extension_reply
- ** 
+ **
  ** @param xcb_connection_t                 *c
  ** @param xcb_xv_query_extension_cookie_t   cookie
  ** @param xcb_generic_error_t             **e
  ** @returns xcb_xv_query_extension_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_query_extension_reply_t *
 xcb_xv_query_extension_reply (xcb_connection_t                 *c  /**< */,
                               xcb_xv_query_extension_cookie_t   cookie  /**< */,
@@ -1365,13 +1365,13 @@ xcb_xv_query_extension_reply (xcb_connection_t                 *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xv_query_adaptors_cookie_t xcb_xv_query_adaptors
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @returns xcb_xv_query_adaptors_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_query_adaptors_cookie_t
 xcb_xv_query_adaptors (xcb_connection_t *c  /**< */,
                        xcb_window_t      window  /**< */);
@@ -1380,13 +1380,13 @@ xcb_xv_query_adaptors (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xv_query_adaptors_cookie_t xcb_xv_query_adaptors_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @returns xcb_xv_query_adaptors_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_query_adaptors_cookie_t
 xcb_xv_query_adaptors_unchecked (xcb_connection_t *c  /**< */,
                                  xcb_window_t      window  /**< */);
@@ -1395,12 +1395,12 @@ xcb_xv_query_adaptors_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** int xcb_xv_query_adaptors_info_length
- ** 
+ **
  ** @param /+const+/ xcb_xv_query_adaptors_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xv_query_adaptors_info_length (/+const+/ xcb_xv_query_adaptors_reply_t *R  /**< */);
 
@@ -1408,12 +1408,12 @@ xcb_xv_query_adaptors_info_length (/+const+/ xcb_xv_query_adaptors_reply_t *R  /
 /*****************************************************************************
  **
  ** xcb_xv_adaptor_info_iterator_t xcb_xv_query_adaptors_info_iterator
- ** 
+ **
  ** @param /+const+/ xcb_xv_query_adaptors_reply_t *R
  ** @returns xcb_xv_adaptor_info_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_adaptor_info_iterator_t
 xcb_xv_query_adaptors_info_iterator (/+const+/ xcb_xv_query_adaptors_reply_t *R  /**< */);
 
@@ -1421,14 +1421,14 @@ xcb_xv_query_adaptors_info_iterator (/+const+/ xcb_xv_query_adaptors_reply_t *R 
 /*****************************************************************************
  **
  ** xcb_xv_query_adaptors_reply_t * xcb_xv_query_adaptors_reply
- ** 
+ **
  ** @param xcb_connection_t                *c
  ** @param xcb_xv_query_adaptors_cookie_t   cookie
  ** @param xcb_generic_error_t            **e
  ** @returns xcb_xv_query_adaptors_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_query_adaptors_reply_t *
 xcb_xv_query_adaptors_reply (xcb_connection_t                *c  /**< */,
                              xcb_xv_query_adaptors_cookie_t   cookie  /**< */,
@@ -1438,13 +1438,13 @@ xcb_xv_query_adaptors_reply (xcb_connection_t                *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xv_query_encodings_cookie_t xcb_xv_query_encodings
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @returns xcb_xv_query_encodings_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_query_encodings_cookie_t
 xcb_xv_query_encodings (xcb_connection_t *c  /**< */,
                         xcb_xv_port_t     port  /**< */);
@@ -1453,13 +1453,13 @@ xcb_xv_query_encodings (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xv_query_encodings_cookie_t xcb_xv_query_encodings_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @returns xcb_xv_query_encodings_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_query_encodings_cookie_t
 xcb_xv_query_encodings_unchecked (xcb_connection_t *c  /**< */,
                                   xcb_xv_port_t     port  /**< */);
@@ -1468,12 +1468,12 @@ xcb_xv_query_encodings_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** int xcb_xv_query_encodings_info_length
- ** 
+ **
  ** @param /+const+/ xcb_xv_query_encodings_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xv_query_encodings_info_length (/+const+/ xcb_xv_query_encodings_reply_t *R  /**< */);
 
@@ -1481,12 +1481,12 @@ xcb_xv_query_encodings_info_length (/+const+/ xcb_xv_query_encodings_reply_t *R 
 /*****************************************************************************
  **
  ** xcb_xv_encoding_info_iterator_t xcb_xv_query_encodings_info_iterator
- ** 
+ **
  ** @param /+const+/ xcb_xv_query_encodings_reply_t *R
  ** @returns xcb_xv_encoding_info_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_encoding_info_iterator_t
 xcb_xv_query_encodings_info_iterator (/+const+/ xcb_xv_query_encodings_reply_t *R  /**< */);
 
@@ -1494,14 +1494,14 @@ xcb_xv_query_encodings_info_iterator (/+const+/ xcb_xv_query_encodings_reply_t *
 /*****************************************************************************
  **
  ** xcb_xv_query_encodings_reply_t * xcb_xv_query_encodings_reply
- ** 
+ **
  ** @param xcb_connection_t                 *c
  ** @param xcb_xv_query_encodings_cookie_t   cookie
  ** @param xcb_generic_error_t             **e
  ** @returns xcb_xv_query_encodings_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_query_encodings_reply_t *
 xcb_xv_query_encodings_reply (xcb_connection_t                 *c  /**< */,
                               xcb_xv_query_encodings_cookie_t   cookie  /**< */,
@@ -1511,14 +1511,14 @@ xcb_xv_query_encodings_reply (xcb_connection_t                 *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xv_grab_port_cookie_t xcb_xv_grab_port
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_timestamp_t   time
  ** @returns xcb_xv_grab_port_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_grab_port_cookie_t
 xcb_xv_grab_port (xcb_connection_t *c  /**< */,
                   xcb_xv_port_t     port  /**< */,
@@ -1528,14 +1528,14 @@ xcb_xv_grab_port (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xv_grab_port_cookie_t xcb_xv_grab_port_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_timestamp_t   time
  ** @returns xcb_xv_grab_port_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_grab_port_cookie_t
 xcb_xv_grab_port_unchecked (xcb_connection_t *c  /**< */,
                             xcb_xv_port_t     port  /**< */,
@@ -1545,14 +1545,14 @@ xcb_xv_grab_port_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xv_grab_port_reply_t * xcb_xv_grab_port_reply
- ** 
+ **
  ** @param xcb_connection_t           *c
  ** @param xcb_xv_grab_port_cookie_t   cookie
  ** @param xcb_generic_error_t       **e
  ** @returns xcb_xv_grab_port_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_grab_port_reply_t *
 xcb_xv_grab_port_reply (xcb_connection_t           *c  /**< */,
                         xcb_xv_grab_port_cookie_t   cookie  /**< */,
@@ -1562,14 +1562,14 @@ xcb_xv_grab_port_reply (xcb_connection_t           *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_ungrab_port_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_timestamp_t   time
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_ungrab_port_checked (xcb_connection_t *c  /**< */,
                             xcb_xv_port_t     port  /**< */,
@@ -1579,14 +1579,14 @@ xcb_xv_ungrab_port_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_ungrab_port
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_timestamp_t   time
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_ungrab_port (xcb_connection_t *c  /**< */,
                     xcb_xv_port_t     port  /**< */,
@@ -1596,7 +1596,7 @@ xcb_xv_ungrab_port (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_put_video_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_drawable_t    drawable
@@ -1612,7 +1612,7 @@ xcb_xv_ungrab_port (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_put_video_checked (xcb_connection_t *c  /**< */,
                           xcb_xv_port_t     port  /**< */,
@@ -1631,7 +1631,7 @@ xcb_xv_put_video_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_put_video
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_drawable_t    drawable
@@ -1647,7 +1647,7 @@ xcb_xv_put_video_checked (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_put_video (xcb_connection_t *c  /**< */,
                   xcb_xv_port_t     port  /**< */,
@@ -1666,7 +1666,7 @@ xcb_xv_put_video (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_put_still_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_drawable_t    drawable
@@ -1682,7 +1682,7 @@ xcb_xv_put_video (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_put_still_checked (xcb_connection_t *c  /**< */,
                           xcb_xv_port_t     port  /**< */,
@@ -1701,7 +1701,7 @@ xcb_xv_put_still_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_put_still
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_drawable_t    drawable
@@ -1717,7 +1717,7 @@ xcb_xv_put_still_checked (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_put_still (xcb_connection_t *c  /**< */,
                   xcb_xv_port_t     port  /**< */,
@@ -1736,7 +1736,7 @@ xcb_xv_put_still (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_get_video_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_drawable_t    drawable
@@ -1752,7 +1752,7 @@ xcb_xv_put_still (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_get_video_checked (xcb_connection_t *c  /**< */,
                           xcb_xv_port_t     port  /**< */,
@@ -1771,7 +1771,7 @@ xcb_xv_get_video_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_get_video
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_drawable_t    drawable
@@ -1787,7 +1787,7 @@ xcb_xv_get_video_checked (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_get_video (xcb_connection_t *c  /**< */,
                   xcb_xv_port_t     port  /**< */,
@@ -1806,7 +1806,7 @@ xcb_xv_get_video (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_get_still_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_drawable_t    drawable
@@ -1822,7 +1822,7 @@ xcb_xv_get_video (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_get_still_checked (xcb_connection_t *c  /**< */,
                           xcb_xv_port_t     port  /**< */,
@@ -1841,7 +1841,7 @@ xcb_xv_get_still_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_get_still
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_drawable_t    drawable
@@ -1857,7 +1857,7 @@ xcb_xv_get_still_checked (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_get_still (xcb_connection_t *c  /**< */,
                   xcb_xv_port_t     port  /**< */,
@@ -1876,14 +1876,14 @@ xcb_xv_get_still (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_stop_video_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_drawable_t    drawable
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_stop_video_checked (xcb_connection_t *c  /**< */,
                            xcb_xv_port_t     port  /**< */,
@@ -1893,14 +1893,14 @@ xcb_xv_stop_video_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_stop_video
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_drawable_t    drawable
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_stop_video (xcb_connection_t *c  /**< */,
                    xcb_xv_port_t     port  /**< */,
@@ -1910,14 +1910,14 @@ xcb_xv_stop_video (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_select_video_notify_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_drawable_t    drawable
  ** @param bool              onoff
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_select_video_notify_checked (xcb_connection_t *c  /**< */,
                                     xcb_drawable_t    drawable  /**< */,
@@ -1927,14 +1927,14 @@ xcb_xv_select_video_notify_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_select_video_notify
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_drawable_t    drawable
  ** @param bool              onoff
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_select_video_notify (xcb_connection_t *c  /**< */,
                             xcb_drawable_t    drawable  /**< */,
@@ -1944,14 +1944,14 @@ xcb_xv_select_video_notify (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_select_port_notify_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_drawable_t    drawable
  ** @param bool              onoff
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_select_port_notify_checked (xcb_connection_t *c  /**< */,
                                    xcb_drawable_t    drawable  /**< */,
@@ -1961,14 +1961,14 @@ xcb_xv_select_port_notify_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_select_port_notify
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_drawable_t    drawable
  ** @param bool              onoff
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_select_port_notify (xcb_connection_t *c  /**< */,
                            xcb_drawable_t    drawable  /**< */,
@@ -1978,7 +1978,7 @@ xcb_xv_select_port_notify (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xv_query_best_size_cookie_t xcb_xv_query_best_size
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param ushort            vid_w
@@ -1989,7 +1989,7 @@ xcb_xv_select_port_notify (xcb_connection_t *c  /**< */,
  ** @returns xcb_xv_query_best_size_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_query_best_size_cookie_t
 xcb_xv_query_best_size (xcb_connection_t *c  /**< */,
                         xcb_xv_port_t     port  /**< */,
@@ -2003,7 +2003,7 @@ xcb_xv_query_best_size (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xv_query_best_size_cookie_t xcb_xv_query_best_size_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param ushort            vid_w
@@ -2014,7 +2014,7 @@ xcb_xv_query_best_size (xcb_connection_t *c  /**< */,
  ** @returns xcb_xv_query_best_size_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_query_best_size_cookie_t
 xcb_xv_query_best_size_unchecked (xcb_connection_t *c  /**< */,
                                   xcb_xv_port_t     port  /**< */,
@@ -2028,14 +2028,14 @@ xcb_xv_query_best_size_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xv_query_best_size_reply_t * xcb_xv_query_best_size_reply
- ** 
+ **
  ** @param xcb_connection_t                 *c
  ** @param xcb_xv_query_best_size_cookie_t   cookie
  ** @param xcb_generic_error_t             **e
  ** @returns xcb_xv_query_best_size_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_query_best_size_reply_t *
 xcb_xv_query_best_size_reply (xcb_connection_t                 *c  /**< */,
                               xcb_xv_query_best_size_cookie_t   cookie  /**< */,
@@ -2045,7 +2045,7 @@ xcb_xv_query_best_size_reply (xcb_connection_t                 *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_set_port_attribute_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_atom_t        attribute
@@ -2053,7 +2053,7 @@ xcb_xv_query_best_size_reply (xcb_connection_t                 *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_set_port_attribute_checked (xcb_connection_t *c  /**< */,
                                    xcb_xv_port_t     port  /**< */,
@@ -2064,7 +2064,7 @@ xcb_xv_set_port_attribute_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_set_port_attribute
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_atom_t        attribute
@@ -2072,7 +2072,7 @@ xcb_xv_set_port_attribute_checked (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_set_port_attribute (xcb_connection_t *c  /**< */,
                            xcb_xv_port_t     port  /**< */,
@@ -2083,14 +2083,14 @@ xcb_xv_set_port_attribute (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xv_get_port_attribute_cookie_t xcb_xv_get_port_attribute
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_atom_t        attribute
  ** @returns xcb_xv_get_port_attribute_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_get_port_attribute_cookie_t
 xcb_xv_get_port_attribute (xcb_connection_t *c  /**< */,
                            xcb_xv_port_t     port  /**< */,
@@ -2100,14 +2100,14 @@ xcb_xv_get_port_attribute (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xv_get_port_attribute_cookie_t xcb_xv_get_port_attribute_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_atom_t        attribute
  ** @returns xcb_xv_get_port_attribute_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_get_port_attribute_cookie_t
 xcb_xv_get_port_attribute_unchecked (xcb_connection_t *c  /**< */,
                                      xcb_xv_port_t     port  /**< */,
@@ -2117,14 +2117,14 @@ xcb_xv_get_port_attribute_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xv_get_port_attribute_reply_t * xcb_xv_get_port_attribute_reply
- ** 
+ **
  ** @param xcb_connection_t                    *c
  ** @param xcb_xv_get_port_attribute_cookie_t   cookie
  ** @param xcb_generic_error_t                **e
  ** @returns xcb_xv_get_port_attribute_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_get_port_attribute_reply_t *
 xcb_xv_get_port_attribute_reply (xcb_connection_t                    *c  /**< */,
                                  xcb_xv_get_port_attribute_cookie_t   cookie  /**< */,
@@ -2134,13 +2134,13 @@ xcb_xv_get_port_attribute_reply (xcb_connection_t                    *c  /**< */
 /*****************************************************************************
  **
  ** xcb_xv_query_port_attributes_cookie_t xcb_xv_query_port_attributes
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @returns xcb_xv_query_port_attributes_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_query_port_attributes_cookie_t
 xcb_xv_query_port_attributes (xcb_connection_t *c  /**< */,
                               xcb_xv_port_t     port  /**< */);
@@ -2149,13 +2149,13 @@ xcb_xv_query_port_attributes (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xv_query_port_attributes_cookie_t xcb_xv_query_port_attributes_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @returns xcb_xv_query_port_attributes_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_query_port_attributes_cookie_t
 xcb_xv_query_port_attributes_unchecked (xcb_connection_t *c  /**< */,
                                         xcb_xv_port_t     port  /**< */);
@@ -2164,12 +2164,12 @@ xcb_xv_query_port_attributes_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** int xcb_xv_query_port_attributes_attributes_length
- ** 
+ **
  ** @param /+const+/ xcb_xv_query_port_attributes_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xv_query_port_attributes_attributes_length (/+const+/ xcb_xv_query_port_attributes_reply_t *R  /**< */);
 
@@ -2177,12 +2177,12 @@ xcb_xv_query_port_attributes_attributes_length (/+const+/ xcb_xv_query_port_attr
 /*****************************************************************************
  **
  ** xcb_xv_attribute_info_iterator_t xcb_xv_query_port_attributes_attributes_iterator
- ** 
+ **
  ** @param /+const+/ xcb_xv_query_port_attributes_reply_t *R
  ** @returns xcb_xv_attribute_info_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_attribute_info_iterator_t
 xcb_xv_query_port_attributes_attributes_iterator (/+const+/ xcb_xv_query_port_attributes_reply_t *R  /**< */);
 
@@ -2190,14 +2190,14 @@ xcb_xv_query_port_attributes_attributes_iterator (/+const+/ xcb_xv_query_port_at
 /*****************************************************************************
  **
  ** xcb_xv_query_port_attributes_reply_t * xcb_xv_query_port_attributes_reply
- ** 
+ **
  ** @param xcb_connection_t                       *c
  ** @param xcb_xv_query_port_attributes_cookie_t   cookie
  ** @param xcb_generic_error_t                   **e
  ** @returns xcb_xv_query_port_attributes_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_query_port_attributes_reply_t *
 xcb_xv_query_port_attributes_reply (xcb_connection_t                       *c  /**< */,
                                     xcb_xv_query_port_attributes_cookie_t   cookie  /**< */,
@@ -2207,13 +2207,13 @@ xcb_xv_query_port_attributes_reply (xcb_connection_t                       *c  /
 /*****************************************************************************
  **
  ** xcb_xv_list_image_formats_cookie_t xcb_xv_list_image_formats
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @returns xcb_xv_list_image_formats_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_list_image_formats_cookie_t
 xcb_xv_list_image_formats (xcb_connection_t *c  /**< */,
                            xcb_xv_port_t     port  /**< */);
@@ -2222,13 +2222,13 @@ xcb_xv_list_image_formats (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xv_list_image_formats_cookie_t xcb_xv_list_image_formats_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @returns xcb_xv_list_image_formats_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_list_image_formats_cookie_t
 xcb_xv_list_image_formats_unchecked (xcb_connection_t *c  /**< */,
                                      xcb_xv_port_t     port  /**< */);
@@ -2237,12 +2237,12 @@ xcb_xv_list_image_formats_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** int xcb_xv_list_image_formats_format_length
- ** 
+ **
  ** @param /+const+/ xcb_xv_list_image_formats_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xv_list_image_formats_format_length (/+const+/ xcb_xv_list_image_formats_reply_t *R  /**< */);
 
@@ -2250,12 +2250,12 @@ xcb_xv_list_image_formats_format_length (/+const+/ xcb_xv_list_image_formats_rep
 /*****************************************************************************
  **
  ** xcb_xv_image_format_info_iterator_t xcb_xv_list_image_formats_format_iterator
- ** 
+ **
  ** @param /+const+/ xcb_xv_list_image_formats_reply_t *R
  ** @returns xcb_xv_image_format_info_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_image_format_info_iterator_t
 xcb_xv_list_image_formats_format_iterator (/+const+/ xcb_xv_list_image_formats_reply_t *R  /**< */);
 
@@ -2263,14 +2263,14 @@ xcb_xv_list_image_formats_format_iterator (/+const+/ xcb_xv_list_image_formats_r
 /*****************************************************************************
  **
  ** xcb_xv_list_image_formats_reply_t * xcb_xv_list_image_formats_reply
- ** 
+ **
  ** @param xcb_connection_t                    *c
  ** @param xcb_xv_list_image_formats_cookie_t   cookie
  ** @param xcb_generic_error_t                **e
  ** @returns xcb_xv_list_image_formats_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_list_image_formats_reply_t *
 xcb_xv_list_image_formats_reply (xcb_connection_t                    *c  /**< */,
                                  xcb_xv_list_image_formats_cookie_t   cookie  /**< */,
@@ -2280,7 +2280,7 @@ xcb_xv_list_image_formats_reply (xcb_connection_t                    *c  /**< */
 /*****************************************************************************
  **
  ** xcb_xv_query_image_attributes_cookie_t xcb_xv_query_image_attributes
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param uint              id
@@ -2289,7 +2289,7 @@ xcb_xv_list_image_formats_reply (xcb_connection_t                    *c  /**< */
  ** @returns xcb_xv_query_image_attributes_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_query_image_attributes_cookie_t
 xcb_xv_query_image_attributes (xcb_connection_t *c  /**< */,
                                xcb_xv_port_t     port  /**< */,
@@ -2301,7 +2301,7 @@ xcb_xv_query_image_attributes (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xv_query_image_attributes_cookie_t xcb_xv_query_image_attributes_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param uint              id
@@ -2310,7 +2310,7 @@ xcb_xv_query_image_attributes (xcb_connection_t *c  /**< */,
  ** @returns xcb_xv_query_image_attributes_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_query_image_attributes_cookie_t
 xcb_xv_query_image_attributes_unchecked (xcb_connection_t *c  /**< */,
                                          xcb_xv_port_t     port  /**< */,
@@ -2322,12 +2322,12 @@ xcb_xv_query_image_attributes_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** uint * xcb_xv_query_image_attributes_pitches
- ** 
+ **
  ** @param /+const+/ xcb_xv_query_image_attributes_reply_t *R
  ** @returns uint *
  **
  *****************************************************************************/
- 
+
 extern(C) uint *
 xcb_xv_query_image_attributes_pitches (/+const+/ xcb_xv_query_image_attributes_reply_t *R  /**< */);
 
@@ -2335,12 +2335,12 @@ xcb_xv_query_image_attributes_pitches (/+const+/ xcb_xv_query_image_attributes_r
 /*****************************************************************************
  **
  ** int xcb_xv_query_image_attributes_pitches_length
- ** 
+ **
  ** @param /+const+/ xcb_xv_query_image_attributes_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xv_query_image_attributes_pitches_length (/+const+/ xcb_xv_query_image_attributes_reply_t *R  /**< */);
 
@@ -2348,12 +2348,12 @@ xcb_xv_query_image_attributes_pitches_length (/+const+/ xcb_xv_query_image_attri
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xv_query_image_attributes_pitches_end
- ** 
+ **
  ** @param /+const+/ xcb_xv_query_image_attributes_reply_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xv_query_image_attributes_pitches_end (/+const+/ xcb_xv_query_image_attributes_reply_t *R  /**< */);
 
@@ -2361,12 +2361,12 @@ xcb_xv_query_image_attributes_pitches_end (/+const+/ xcb_xv_query_image_attribut
 /*****************************************************************************
  **
  ** uint * xcb_xv_query_image_attributes_offsets
- ** 
+ **
  ** @param /+const+/ xcb_xv_query_image_attributes_reply_t *R
  ** @returns uint *
  **
  *****************************************************************************/
- 
+
 extern(C) uint *
 xcb_xv_query_image_attributes_offsets (/+const+/ xcb_xv_query_image_attributes_reply_t *R  /**< */);
 
@@ -2374,12 +2374,12 @@ xcb_xv_query_image_attributes_offsets (/+const+/ xcb_xv_query_image_attributes_r
 /*****************************************************************************
  **
  ** int xcb_xv_query_image_attributes_offsets_length
- ** 
+ **
  ** @param /+const+/ xcb_xv_query_image_attributes_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xv_query_image_attributes_offsets_length (/+const+/ xcb_xv_query_image_attributes_reply_t *R  /**< */);
 
@@ -2387,12 +2387,12 @@ xcb_xv_query_image_attributes_offsets_length (/+const+/ xcb_xv_query_image_attri
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xv_query_image_attributes_offsets_end
- ** 
+ **
  ** @param /+const+/ xcb_xv_query_image_attributes_reply_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xv_query_image_attributes_offsets_end (/+const+/ xcb_xv_query_image_attributes_reply_t *R  /**< */);
 
@@ -2400,14 +2400,14 @@ xcb_xv_query_image_attributes_offsets_end (/+const+/ xcb_xv_query_image_attribut
 /*****************************************************************************
  **
  ** xcb_xv_query_image_attributes_reply_t * xcb_xv_query_image_attributes_reply
- ** 
+ **
  ** @param xcb_connection_t                        *c
  ** @param xcb_xv_query_image_attributes_cookie_t   cookie
  ** @param xcb_generic_error_t                    **e
  ** @returns xcb_xv_query_image_attributes_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xv_query_image_attributes_reply_t *
 xcb_xv_query_image_attributes_reply (xcb_connection_t                        *c  /**< */,
                                      xcb_xv_query_image_attributes_cookie_t   cookie  /**< */,
@@ -2417,7 +2417,7 @@ xcb_xv_query_image_attributes_reply (xcb_connection_t                        *c 
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_put_image_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_drawable_t    drawable
@@ -2438,7 +2438,7 @@ xcb_xv_query_image_attributes_reply (xcb_connection_t                        *c 
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_put_image_checked (xcb_connection_t *c  /**< */,
                           xcb_xv_port_t     port  /**< */,
@@ -2462,7 +2462,7 @@ xcb_xv_put_image_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_put_image
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_drawable_t    drawable
@@ -2483,7 +2483,7 @@ xcb_xv_put_image_checked (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_put_image (xcb_connection_t *c  /**< */,
                   xcb_xv_port_t     port  /**< */,
@@ -2507,7 +2507,7 @@ xcb_xv_put_image (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_shm_put_image_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_drawable_t    drawable
@@ -2529,7 +2529,7 @@ xcb_xv_put_image (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_shm_put_image_checked (xcb_connection_t *c  /**< */,
                               xcb_xv_port_t     port  /**< */,
@@ -2554,7 +2554,7 @@ xcb_xv_shm_put_image_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xv_shm_put_image
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_xv_port_t     port
  ** @param xcb_drawable_t    drawable
@@ -2576,7 +2576,7 @@ xcb_xv_shm_put_image_checked (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xv_shm_put_image (xcb_connection_t *c  /**< */,
                       xcb_xv_port_t     port  /**< */,

@@ -55,20 +55,20 @@ class GroupBox : LinearLayout {
     /// get widget text
     override @property dstring text() { return _caption.text; }
     /// set text to show
-    override @property Widget text(dstring s) { 
-        _caption.text = s; 
+    override @property Widget text(dstring s) {
+        _caption.text = s;
         requestLayout();
         return this;
     }
     /// set text to show
-    override @property Widget text(UIString s) { 
+    override @property Widget text(UIString s) {
         _caption.text = s;
         requestLayout();
         return this;
     }
     /// set text resource ID to show
-    @property Widget textResource(string s) { 
-        _caption.textResource = s; 
+    @property Widget textResource(string s) {
+        _caption.textResource = s;
         requestLayout();
         return this;
     }
@@ -167,7 +167,7 @@ class GroupBox : LinearLayout {
     }
 
     /// set padding for widget - override one from style
-    override @property Widget padding(Rect rc) { 
+    override @property Widget padding(Rect rc) {
         return super.padding(rc);
     }
 

@@ -19,7 +19,7 @@ import std.c.linux.X11.xcb.xfixes;
 
 const int XCB_COMPOSITE_MAJOR_VERSION =0;
 const int XCB_COMPOSITE_MINOR_VERSION =3;
-  
+
 extern(C) extern xcb_extension_t xcb_composite_id;
 
 enum :int{
@@ -198,14 +198,14 @@ struct xcb_composite_release_overlay_window_request_t {
 /*****************************************************************************
  **
  ** xcb_composite_query_version_cookie_t xcb_composite_query_version
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              client_major_version
  ** @param uint              client_minor_version
  ** @returns xcb_composite_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_composite_query_version_cookie_t
 xcb_composite_query_version (xcb_connection_t *c  /**< */,
                              uint              client_major_version  /**< */,
@@ -215,14 +215,14 @@ xcb_composite_query_version (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_composite_query_version_cookie_t xcb_composite_query_version_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              client_major_version
  ** @param uint              client_minor_version
  ** @returns xcb_composite_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_composite_query_version_cookie_t
 xcb_composite_query_version_unchecked (xcb_connection_t *c  /**< */,
                                        uint              client_major_version  /**< */,
@@ -232,14 +232,14 @@ xcb_composite_query_version_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_composite_query_version_reply_t * xcb_composite_query_version_reply
- ** 
+ **
  ** @param xcb_connection_t                      *c
  ** @param xcb_composite_query_version_cookie_t   cookie
  ** @param xcb_generic_error_t                  **e
  ** @returns xcb_composite_query_version_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_composite_query_version_reply_t *
 xcb_composite_query_version_reply (xcb_connection_t                      *c  /**< */,
                                    xcb_composite_query_version_cookie_t   cookie  /**< */,
@@ -249,14 +249,14 @@ xcb_composite_query_version_reply (xcb_connection_t                      *c  /**
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_composite_redirect_window_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param ubyte             update
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_composite_redirect_window_checked (xcb_connection_t *c  /**< */,
                                        xcb_window_t      window  /**< */,
@@ -266,14 +266,14 @@ xcb_composite_redirect_window_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_composite_redirect_window
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param ubyte             update
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_composite_redirect_window (xcb_connection_t *c  /**< */,
                                xcb_window_t      window  /**< */,
@@ -283,14 +283,14 @@ xcb_composite_redirect_window (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_composite_redirect_subwindows_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param ubyte             update
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_composite_redirect_subwindows_checked (xcb_connection_t *c  /**< */,
                                            xcb_window_t      window  /**< */,
@@ -300,14 +300,14 @@ xcb_composite_redirect_subwindows_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_composite_redirect_subwindows
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param ubyte             update
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_composite_redirect_subwindows (xcb_connection_t *c  /**< */,
                                    xcb_window_t      window  /**< */,
@@ -317,14 +317,14 @@ xcb_composite_redirect_subwindows (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_composite_unredirect_window_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param ubyte             update
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_composite_unredirect_window_checked (xcb_connection_t *c  /**< */,
                                          xcb_window_t      window  /**< */,
@@ -334,14 +334,14 @@ xcb_composite_unredirect_window_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_composite_unredirect_window
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param ubyte             update
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_composite_unredirect_window (xcb_connection_t *c  /**< */,
                                  xcb_window_t      window  /**< */,
@@ -351,14 +351,14 @@ xcb_composite_unredirect_window (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_composite_unredirect_subwindows_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param ubyte             update
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_composite_unredirect_subwindows_checked (xcb_connection_t *c  /**< */,
                                              xcb_window_t      window  /**< */,
@@ -368,14 +368,14 @@ xcb_composite_unredirect_subwindows_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_composite_unredirect_subwindows
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param ubyte             update
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_composite_unredirect_subwindows (xcb_connection_t *c  /**< */,
                                      xcb_window_t      window  /**< */,
@@ -385,14 +385,14 @@ xcb_composite_unredirect_subwindows (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_composite_create_region_from_border_clip_checked
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  region
  ** @param xcb_window_t         window
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_composite_create_region_from_border_clip_checked (xcb_connection_t    *c  /**< */,
                                                       xcb_xfixes_region_t  region  /**< */,
@@ -402,14 +402,14 @@ xcb_composite_create_region_from_border_clip_checked (xcb_connection_t    *c  /*
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_composite_create_region_from_border_clip
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  region
  ** @param xcb_window_t         window
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_composite_create_region_from_border_clip (xcb_connection_t    *c  /**< */,
                                               xcb_xfixes_region_t  region  /**< */,
@@ -419,14 +419,14 @@ xcb_composite_create_region_from_border_clip (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_composite_name_window_pixmap_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param xcb_pixmap_t      pixmap
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_composite_name_window_pixmap_checked (xcb_connection_t *c  /**< */,
                                           xcb_window_t      window  /**< */,
@@ -436,14 +436,14 @@ xcb_composite_name_window_pixmap_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_composite_name_window_pixmap
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param xcb_pixmap_t      pixmap
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_composite_name_window_pixmap (xcb_connection_t *c  /**< */,
                                   xcb_window_t      window  /**< */,
@@ -453,13 +453,13 @@ xcb_composite_name_window_pixmap (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_composite_get_overlay_window_cookie_t xcb_composite_get_overlay_window
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @returns xcb_composite_get_overlay_window_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_composite_get_overlay_window_cookie_t
 xcb_composite_get_overlay_window (xcb_connection_t *c  /**< */,
                                   xcb_window_t      window  /**< */);
@@ -468,13 +468,13 @@ xcb_composite_get_overlay_window (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_composite_get_overlay_window_cookie_t xcb_composite_get_overlay_window_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @returns xcb_composite_get_overlay_window_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_composite_get_overlay_window_cookie_t
 xcb_composite_get_overlay_window_unchecked (xcb_connection_t *c  /**< */,
                                             xcb_window_t      window  /**< */);
@@ -483,14 +483,14 @@ xcb_composite_get_overlay_window_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_composite_get_overlay_window_reply_t * xcb_composite_get_overlay_window_reply
- ** 
+ **
  ** @param xcb_connection_t                           *c
  ** @param xcb_composite_get_overlay_window_cookie_t   cookie
  ** @param xcb_generic_error_t                       **e
  ** @returns xcb_composite_get_overlay_window_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_composite_get_overlay_window_reply_t *
 xcb_composite_get_overlay_window_reply (xcb_connection_t                           *c  /**< */,
                                         xcb_composite_get_overlay_window_cookie_t   cookie  /**< */,
@@ -500,13 +500,13 @@ xcb_composite_get_overlay_window_reply (xcb_connection_t                        
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_composite_release_overlay_window_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_composite_release_overlay_window_checked (xcb_connection_t *c  /**< */,
                                               xcb_window_t      window  /**< */);
@@ -515,13 +515,13 @@ xcb_composite_release_overlay_window_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_composite_release_overlay_window
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_composite_release_overlay_window (xcb_connection_t *c  /**< */,
                                       xcb_window_t      window  /**< */);

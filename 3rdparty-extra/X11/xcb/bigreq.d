@@ -17,7 +17,7 @@ import std.c.linux.X11.xcb.xcb;
 
 const int XCB_BIGREQUESTS_MAJOR_VERSION =0;
 const int XCB_BIGREQUESTS_MINOR_VERSION =0;
-  
+
 extern(C) extern xcb_extension_t xcb_big_requests_id;
 
 /**
@@ -54,12 +54,12 @@ struct xcb_big_requests_enable_reply_t {
 /*****************************************************************************
  **
  ** xcb_big_requests_enable_cookie_t xcb_big_requests_enable
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_big_requests_enable_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_big_requests_enable_cookie_t
 xcb_big_requests_enable (xcb_connection_t *c  /**< */);
 
@@ -67,12 +67,12 @@ xcb_big_requests_enable (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_big_requests_enable_cookie_t xcb_big_requests_enable_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_big_requests_enable_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_big_requests_enable_cookie_t
 xcb_big_requests_enable_unchecked (xcb_connection_t *c  /**< */);
 
@@ -80,14 +80,14 @@ xcb_big_requests_enable_unchecked (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_big_requests_enable_reply_t * xcb_big_requests_enable_reply
- ** 
+ **
  ** @param xcb_connection_t                  *c
  ** @param xcb_big_requests_enable_cookie_t   cookie
  ** @param xcb_generic_error_t              **e
  ** @returns xcb_big_requests_enable_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_big_requests_enable_reply_t *
 xcb_big_requests_enable_reply (xcb_connection_t                  *c  /**< */,
                                xcb_big_requests_enable_cookie_t   cookie  /**< */,

@@ -90,9 +90,9 @@ protected class PointLight : Light {
     override @property LightType type() const { return LightType.point; }
 
     override @property float range() const { return _range; }
-    override @property void range(float v) { 
-        _range = v; 
-        _rangeInverse = 1 / v; 
+    override @property void range(float v) {
+        _range = v;
+        _rangeInverse = 1 / v;
     }
     override @property float rangeInverse() const { return _rangeInverse; }
 }

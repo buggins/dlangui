@@ -1,5 +1,5 @@
 /*
-Copyright (c) 2015 Timur Gafarov 
+Copyright (c) 2015 Timur Gafarov
 
 Boost Software License - Version 1.0 - August 17th, 2003
 
@@ -41,7 +41,7 @@ enum Endian
 
 T hiNibble(T)(T b)
 {
-    return ((b >> 4) & 0x0F); 
+    return ((b >> 4) & 0x0F);
 }
 
 T loNibble(T)(T b)
@@ -49,7 +49,7 @@ T loNibble(T)(T b)
     return (b & 0x0F);
 }
 
-T swapEndian16(T)(T n) 
+T swapEndian16(T)(T n)
 {
     return cast(T)((n >> 8) | (n << 8));
 }

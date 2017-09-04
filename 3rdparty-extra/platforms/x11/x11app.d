@@ -43,11 +43,11 @@ import dlangui.graphics.ftfonts;
 import dlangui.graphics.resources;
 import dlangui.widgets.styles;
 import dlangui.platforms.common.platform;
-	
+
 version (USE_OPENGL) {
 	import dlangui.graphics.glsupport;
 }
-	
+
 import derelict.opengl3.gl3;
 import derelict.opengl3.glx;
 
@@ -56,14 +56,14 @@ import derelict.opengl3.glx;
 //	pragma(lib, "xcb-image");
 //	pragma(lib, "X11-xcb");
 //	pragma(lib, "X11");
-//	pragma(lib, "dl");	
-		
+//	pragma(lib, "dl");
+
 extern (System)
-xcb_connection_t *XGetXCBConnection(std.c.linux.X11.Xlib.Display *dpy); 
+xcb_connection_t *XGetXCBConnection(std.c.linux.X11.Xlib.Display *dpy);
 enum XEventQueueOwner { XlibOwnsEventQueue = 0, XCBOwnsEventQueue };
 extern (System)
 void XSetEventQueueOwner(std.c.linux.X11.Xlib.Display *dpy, XEventQueueOwner owner);
-	
+
 struct xcb_key_symbols_t {};
 /* enumeration for col parameter? */
 enum xcb_lookup_t {
@@ -72,7 +72,7 @@ enum xcb_lookup_t {
 	xcb_lookup_key_sym_t = 3,
 	xcb_lookup_both_t   = 4
 };
-	
+
 extern(C) xcb_key_symbols_t *xcb_key_symbols_alloc        (xcb_connection_t         *c);
 
 extern(C) void xcb_key_symbols_free         (xcb_key_symbols_t         *syms);
@@ -80,14 +80,14 @@ extern(C) void xcb_key_symbols_free         (xcb_key_symbols_t         *syms);
 extern(C) xcb_keysym_t xcb_key_symbols_get_keysym    (xcb_key_symbols_t         *syms,
 					xcb_keycode_t             keycode,
 					int                    col);
-	
+
 extern(C) xcb_keysym_t xcb_key_press_lookup_keysym   (xcb_key_symbols_t         *syms,
 						xcb_key_press_event_t      *event,
 						int                    col);
 
 extern(C) xcb_keysym_t xcb_key_release_lookup_keysym (xcb_key_symbols_t         *syms,
 						xcb_key_release_event_t    *event,
-						int                    col);	
+						int                    col);
 class XCBWindow : Window {
 	xcb_window_t         _w;
 	xcb_gcontext_t       _g;
@@ -101,9 +101,9 @@ class XCBWindow : Window {
     	private GLXFBConfig _fb_config;
     }
 	private int _visualID = 0;
-	private xcb_colormap_t _colormap;		
-		
-		
+	private xcb_colormap_t _colormap;
+
+
 	@property xcb_window_t windowId() { return _w; }
 	this(string caption, Window parent) {
 		_caption = caption;
@@ -113,10 +113,10 @@ class XCBWindow : Window {
 	~this() {
 		Log.d("Destroying window");
 	}
-			
+
 	bool create() {
 		import std.c.linux.X11.Xlib;
-			
+
 		uint mask;
 		uint[3] values;
 
@@ -135,9 +135,9 @@ class XCBWindow : Window {
 		ubyte depth = _xcbscreen.root_depth;
 		/* create window */
 		_w = xcb_generate_id(_xcbconnection);
-			
+
 		Log.d("window=", _w, " gc=", _g);
-        version (USE_OPENGL) {			
+        version (USE_OPENGL) {
 			if (_enableOpengl) {
 				int[] visual_attribs = [
 					        GLX_RENDER_TYPE, GLX_RGBA_BIT,
@@ -147,7 +147,7 @@ class XCBWindow : Window {
 					        GLX_GREEN_SIZE, 8,
 					        GLX_BLUE_SIZE, 8,
 							std.c.linux.X11.Xlib.None];
-				
+
 			    Log.d("Getting framebuffer config");
 			    int fbcount;
 			    GLXFBConfig *fbc = glXChooseFBConfig(_display, DefaultScreen(_display), visual_attribs.ptr, &fbcount);
@@ -156,14 +156,14 @@ class XCBWindow : Window {
 			        Log.d("Failed to retrieve a framebuffer config");
 			        //return 1;
 			    }
-			     
+
 			    Log.d("Getting XVisualInfo");
 				_fb_config = fbc[0];
-			    auto vi = glXGetVisualFromFBConfig(_display, _fb_config);			
-				
+			    auto vi = glXGetVisualFromFBConfig(_display, _fb_config);
+
 				//auto vi = glXChooseVisual(_display, std.c.linux.X11.Xlib.DefaultScreen(_display), attributeList.ptr);
-				_visualID = vi.visualid;		
-				//swa.colormap = std.c.linux.X11.Xlib.XCreateColormap(_display, std.c.linux.X11.Xlib.RootWindow(_display, vi.screen), vi.visual, 0); // AllocNone			
+				_visualID = vi.visualid;
+				//swa.colormap = std.c.linux.X11.Xlib.XCreateColormap(_display, std.c.linux.X11.Xlib.RootWindow(_display, vi.screen), vi.visual, 0); // AllocNone
 
 				Log.d("Creating color map");
 				_colormap = xcb_generate_id(_xcbconnection);
@@ -174,7 +174,7 @@ class XCBWindow : Window {
 		            _colormap,
 		            _xcbscreen.root,
 		            _visualID
-		        );				
+		        );
 				depth = cast(ubyte)vi.depth;
 			}
         }
@@ -182,9 +182,9 @@ class XCBWindow : Window {
 		//values[0] = _xcbscreen.white_pixel;
 
 		int visualId;
-		uint eventmask = 
-				XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE 
-			| XCB_EVENT_MASK_POINTER_MOTION | XCB_EVENT_MASK_BUTTON_MOTION 
+		uint eventmask =
+				XCB_EVENT_MASK_EXPOSURE | XCB_EVENT_MASK_KEY_PRESS | XCB_EVENT_MASK_BUTTON_PRESS | XCB_EVENT_MASK_BUTTON_RELEASE
+			| XCB_EVENT_MASK_POINTER_MOTION | XCB_EVENT_MASK_BUTTON_MOTION
 			| XCB_EVENT_MASK_ENTER_WINDOW   | XCB_EVENT_MASK_LEAVE_WINDOW
 			| XCB_EVENT_MASK_KEY_PRESS      | XCB_EVENT_MASK_KEY_RELEASE
 			| XCB_EVENT_MASK_STRUCTURE_NOTIFY | XCB_EVENT_MASK_VISIBILITY_CHANGE;
@@ -202,22 +202,22 @@ class XCBWindow : Window {
 			visualId = _xcbscreen.root_visual;
 		}
 		Log.d("xcb_create_window - window=", _w, " VisualID=", _visualID);
-		auto res = xcb_create_window(_xcbconnection, 
-			depth, //_xcbscreen.root_depth, 
-			//XCB_COPY_FROM_PARENT,//_xcbscreen.root_depth, 
-			_w, 
+		auto res = xcb_create_window(_xcbconnection,
+			depth, //_xcbscreen.root_depth,
+			//XCB_COPY_FROM_PARENT,//_xcbscreen.root_depth,
+			_w,
 			_xcbscreen.root,
-		    30, 30, 800, 650, 
+		    30, 30, 800, 650,
 			1,
-		    XCB_WINDOW_CLASS_INPUT_OUTPUT, 
+		    XCB_WINDOW_CLASS_INPUT_OUTPUT,
 			visualId,
-		    mask, 
+		    mask,
 			&values[0]);
 		xcb_flush(_xcbconnection);
 		windowCaption = _caption;
 		return true;
 	}
-		
+
 	private int _imageDx;
 	private int _imageDy;
 	void createImage() {
@@ -270,7 +270,7 @@ class XCBWindow : Window {
 	        Log.e("Can't get shms");
 	    }
 	}
-		
+
 	void draw(ColorDrawBuf buf) {
 	    int i;
 	    i = xcb_image_shm_get(_xcbconnection, _w,
@@ -306,7 +306,7 @@ class XCBWindow : Window {
 	            cast(short)rc.left, cast(short)rc.top, cast(short)rc.left, cast(short)rc.top, cast(ushort)rc.width(), cast(ushort)rc.height(), 0);
 	    xcb_flush(_xcbconnection);
 	}
-		
+
 	bool _derelictgl3Reloaded;
 	override void show() {
 		Log.d("XCBWindow.show()");
@@ -321,18 +321,18 @@ class XCBWindow : Window {
 			                _display,
 			                _fb_config,
 			                _w,
-			                null);			
+			                null);
 				if (!_glxwindow) {
 					Log.e("Failed to create GLX window: disabling OpenGL");
 					_enableOpengl = false;
 				} else {
 					import derelict.opengl3.glxext;
 					import std.c.linux.X11.Xlib;
-					
+
 					_drawable = _glxwindow;
-					
+
 					if (!_derelictgl3Reloaded) {
-						
+
 						int count;
                     	glGetIntegerv( GL_NUM_EXTENSIONS, &count );
 						Log.d("Number of extensions: ", count);
@@ -341,7 +341,7 @@ class XCBWindow : Window {
 							Log.d("Extension: ", fromStringz(e));
                     	}
 
-						
+
 						Log.e("Reloading DerelictGL3");
 						_derelictgl3Reloaded = true;
 			            _context = glXCreateNewContext(_display, _fb_config, GLX_RGBA_TYPE, null, true);
@@ -359,26 +359,26 @@ class XCBWindow : Window {
 						Log.e("DerelictGL3 initialized");
 						_context = null;
 					}
-					
-	     
+
+
 					// Get the default screen's GLX extension list
       				const char *glxExts = glXQueryExtensionsString( _display,
                                                     DefaultScreen( _display ) );
 					Log.d("GLX Extensions: ", fromStringz(glxExts));
 					const char * exts = glGetString( GL_EXTENSIONS );
 					Log.d("Extensions: ", fromStringz(exts));
-					
-					
+
+
 					Log.d("GLX_ARB_get_proc_address=", GLX_ARB_get_proc_address);
 					Log.d("GLX_ARB_create_context=", GLX_ARB_create_context);
-						
+
 					//da_glXCreateContextAttribsARB glXCreateContextAttribsARB;
 					//Log.d("getting address of glXCreateContextAttribsARB");
       				//glXCreateContextAttribsARB = cast(da_glXCreateContextAttribsARB)
                		//		glXGetProcAddressARB( cast(const GLubyte *)("glXCreateContextAttribsARB".toStringz));
-					
+
 					//Log.d("glXCreateContextAttribsARB = ", &glXCreateContextAttribsARB);
-					
+
         			Log.d("Creating context");
 			        //_context = glXCreateNewContext(_display, _fb_config, GLX_RGBA_TYPE, null, true);
 					if (!GLX_ARB_create_context) {
@@ -395,7 +395,7 @@ class XCBWindow : Window {
 			        	_context = glXCreateContextAttribsARB(_display, _fb_config, null, true, context_attribs.ptr);
 					}
         			Log.d("Created context: ", _context);
-					
+
 			        /* Create OpenGL context */
 			        //auto context = glXCreateNewContext(_display, _fb_config, GLX_RGBA_TYPE, null, true);
 			        if (!_context) {
@@ -404,7 +404,7 @@ class XCBWindow : Window {
 					} else {
 
 					}
-					
+
 			        /* make OpenGL context current */
 			        if(!glXMakeContextCurrent(_display, _drawable, _drawable, _context) || !initShaders()) {
 						Log.e("Failed to make GL context current");
@@ -412,7 +412,7 @@ class XCBWindow : Window {
 			            glXDestroyContext(_display, _context);
 						_context = null;
 					} else {
-						
+
 					}
 				}
 			}
@@ -439,7 +439,7 @@ class XCBWindow : Window {
 	}
 
 	void redraw() {
-			
+
 		if (_enableOpengl) {
             version(USE_OPENGL) {
 				import std.c.linux.X11.Xlib;
@@ -455,7 +455,7 @@ class XCBWindow : Window {
 				glClearColor(0.2f, 0.4f, 0.9f, 1.0f);
 				Log.d("glClear");
             	glClear(GL_COLOR_BUFFER_BIT);
-				
+
 				import dlangui.graphics.gldrawbuf;
 				GLDrawBuf buf = new GLDrawBuf(_dx, _dy);
 				buf.beforeDrawing();
@@ -489,7 +489,7 @@ class XCBWindow : Window {
 			xcb_flush(_xcbconnection);
 		}
 	}
-		
+
 	ColorDrawBuf _drawbuf;
 	bool _exposeSent;
 	void processExpose(xcb_expose_event_t * event) {
@@ -516,7 +516,7 @@ class XCBWindow : Window {
 		xcb_void_cookie_t res = xcb_send_event(_xcbconnection, false, _w, XCB_EVENT_MASK_EXPOSURE, cast(char *)event);
 		xcb_flush(_xcbconnection);
 	}
-				
+
 	protected ButtonDetails _lbutton;
 	protected ButtonDetails _mbutton;
 	protected ButtonDetails _rbutton;
@@ -618,7 +618,7 @@ class XCBWindow : Window {
 				return KeyCode.LALT;
 			case XK_Alt_R:
 				return KeyCode.RALT;
-			case XK_Pause:					
+			case XK_Pause:
 				return KeyCode.PAUSE;
 			case XK_Caps_Lock:
 				return KeyCode.CAPS;
@@ -792,11 +792,11 @@ class XCBWindow : Window {
 				return 0x10000 | keyCode;
 		}
 	}
-		
+
 	uint convertKeyFlags(uint flags) {
 		return 0;
 	}
-				
+
 	bool processKeyEvent(KeyAction action, uint keyCode, uint flags) {
 		Log.d("processKeyEvent ", action, " x11 key=", keyCode, " x11 flags=", flags);
 		keyCode = convertKeyCode(keyCode);
@@ -824,7 +824,7 @@ private __gshared std.c.linux.X11.Xlib.Display * _display;
 
 class XCBPlatform : Platform {
 	this() {
-			
+
 	}
 	~this() {
 		foreach(ref XCBWindow wnd; _windowMap) {
@@ -848,7 +848,7 @@ class XCBPlatform : Platform {
 		}
 	}
 	bool connect() {
-			
+
 		try {
 			DerelictGL3.load();
 			_enableOpengl = true;
@@ -859,10 +859,10 @@ class XCBPlatform : Platform {
 		// X
 		import std.c.linux.X11.Xlib;
         int default_screen;
-			
+
 		if (_enableOpengl) {
 			Log.d("Opening display via XLib");
-	        /* Open Xlib Display */ 
+	        /* Open Xlib Display */
 	        _display = XOpenDisplay(null);
 			if (!_display)
 	        {
@@ -900,24 +900,24 @@ class XCBPlatform : Platform {
 		//XSetEventQueueOwner(display, XCBOwnsEventQueue);
 		Log.d("Getting first screen");
 		/* get the first screen */
-			
+
 		if (_enableOpengl) {
 		    /* Find XCB screen */
 		    //xcb_screen_t *screen = null;
-		    xcb_screen_iterator_t screen_iter = 
+		    xcb_screen_iterator_t screen_iter =
 		        xcb_setup_roots_iterator(xcb_get_setup(_xcbconnection));
 		    for(int screen_num = default_screen;
 			        screen_iter.rem && screen_num > 0;
 					--screen_num, xcb_screen_next(&screen_iter)) {
 			}
-		    _xcbscreen = screen_iter.data;			
+		    _xcbscreen = screen_iter.data;
 		} else {
 			_xcbscreen = xcb_setup_roots_iterator( xcb_get_setup(_xcbconnection) ).data;
 		}
 		_xcbscreendepth = xcb_aux_get_depth(_xcbconnection, _xcbscreen);
 
 		if (_enableOpengl) {
-				
+
 			int versionMajor;
 			int versionMinor;
 			if (!glXQueryVersion(_display,
@@ -927,10 +927,10 @@ class XCBPlatform : Platform {
 			} else {
 				Log.e("GLX version: ", versionMajor, ".", versionMinor);
 			}
-				
+
 		}
-			
-			
+
+
 		return true;
 	}
 	XCBWindow getWindow(xcb_window_t w) {
@@ -1122,9 +1122,9 @@ class XCBPlatform : Platform {
 							window.processKeyEvent(KeyAction.KeyUp, keysym, kr.state);
 						}
 			            break;
-			        }			
+			        }
 				default:
-					Log.v("unknown event: ", e.response_type & ~0x80);	
+					Log.v("unknown event: ", e.response_type & ~0x80);
 					break;
 		    }
 		    free(e);
@@ -1134,25 +1134,25 @@ class XCBPlatform : Platform {
 		Log.i("exiting message loop");
 		return 0;
 	}
-		
+
     /// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
 	override dstring getClipboardText(bool mouseBuffer = false) {
 		return ""d;
 	}
-		
+
     /// sets text to clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
 	override void setClipboardText(dstring text, bool mouseBuffer = false) {
 	}
-		
+
 	protected XCBWindow[xcb_window_t] _windowMap;
 }
 
 // entry point
 extern(C) int UIAppMain(string[] args);
-		
+
 int main(string[] args)
 {
-		
+
 	setStderrLogger();
 	Log.setLogLevel(LogLevel.Trace);
 
@@ -1161,7 +1161,7 @@ int main(string[] args)
 	FontManager.instance = ft;
 
 	currentTheme = createDefaultTheme();
-				
+
 	XCBPlatform xcb = new XCBPlatform();
 	if (!xcb.connect()) {
 		return 1;
@@ -1169,25 +1169,25 @@ int main(string[] args)
 	Platform.setInstance(xcb);
 
 	int res = 0;
-			
+
 		static if (true) {
 			res = UIAppMain(args);
 		} else {
 			Window window = xcb.createWindow("Window Caption", null);
 			window.show();
-					
+
 			res = xcb.enterMessageLoop();
 		}
-		
+
 	Platform.setInstance(null);
 	Log.d("Destroying XCB platform");
 	destroy(xcb);
-		
+
 	currentTheme = null;
 	drawableCache = null;
 	imageCache = null;
 	FontManager.instance = null;
-		
+
 	Log.d("Exiting main");
 
 	return res;

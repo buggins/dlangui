@@ -20,7 +20,7 @@ import std.c.linux.X11.xcb.shape;
 
 const int XCB_XFIXES_MAJOR_VERSION =4;
 const int XCB_XFIXES_MINOR_VERSION =0;
-  
+
 extern(C) extern xcb_extension_t xcb_xfixes_id;
 
 /**
@@ -679,14 +679,14 @@ struct xcb_xfixes_show_cursor_request_t {
 /*****************************************************************************
  **
  ** xcb_xfixes_query_version_cookie_t xcb_xfixes_query_version
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              client_major_version
  ** @param uint              client_minor_version
  ** @returns xcb_xfixes_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xfixes_query_version_cookie_t
 xcb_xfixes_query_version (xcb_connection_t *c  /**< */,
                           uint              client_major_version  /**< */,
@@ -696,14 +696,14 @@ xcb_xfixes_query_version (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xfixes_query_version_cookie_t xcb_xfixes_query_version_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param uint              client_major_version
  ** @param uint              client_minor_version
  ** @returns xcb_xfixes_query_version_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xfixes_query_version_cookie_t
 xcb_xfixes_query_version_unchecked (xcb_connection_t *c  /**< */,
                                     uint              client_major_version  /**< */,
@@ -713,14 +713,14 @@ xcb_xfixes_query_version_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xfixes_query_version_reply_t * xcb_xfixes_query_version_reply
- ** 
+ **
  ** @param xcb_connection_t                   *c
  ** @param xcb_xfixes_query_version_cookie_t   cookie
  ** @param xcb_generic_error_t               **e
  ** @returns xcb_xfixes_query_version_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xfixes_query_version_reply_t *
 xcb_xfixes_query_version_reply (xcb_connection_t                   *c  /**< */,
                                 xcb_xfixes_query_version_cookie_t   cookie  /**< */,
@@ -730,7 +730,7 @@ xcb_xfixes_query_version_reply (xcb_connection_t                   *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_change_save_set_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param ubyte             mode
  ** @param ubyte             target
@@ -739,7 +739,7 @@ xcb_xfixes_query_version_reply (xcb_connection_t                   *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_change_save_set_checked (xcb_connection_t *c  /**< */,
                                     ubyte             mode  /**< */,
@@ -751,7 +751,7 @@ xcb_xfixes_change_save_set_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_change_save_set
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param ubyte             mode
  ** @param ubyte             target
@@ -760,7 +760,7 @@ xcb_xfixes_change_save_set_checked (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_change_save_set (xcb_connection_t *c  /**< */,
                             ubyte             mode  /**< */,
@@ -772,7 +772,7 @@ xcb_xfixes_change_save_set (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_select_selection_input_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param xcb_atom_t        selection
@@ -780,7 +780,7 @@ xcb_xfixes_change_save_set (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_select_selection_input_checked (xcb_connection_t *c  /**< */,
                                            xcb_window_t      window  /**< */,
@@ -791,7 +791,7 @@ xcb_xfixes_select_selection_input_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_select_selection_input
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param xcb_atom_t        selection
@@ -799,7 +799,7 @@ xcb_xfixes_select_selection_input_checked (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_select_selection_input (xcb_connection_t *c  /**< */,
                                    xcb_window_t      window  /**< */,
@@ -810,14 +810,14 @@ xcb_xfixes_select_selection_input (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_select_cursor_input_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param uint              event_mask
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_select_cursor_input_checked (xcb_connection_t *c  /**< */,
                                         xcb_window_t      window  /**< */,
@@ -827,14 +827,14 @@ xcb_xfixes_select_cursor_input_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_select_cursor_input
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @param uint              event_mask
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_select_cursor_input (xcb_connection_t *c  /**< */,
                                 xcb_window_t      window  /**< */,
@@ -844,12 +844,12 @@ xcb_xfixes_select_cursor_input (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xfixes_get_cursor_image_cookie_t xcb_xfixes_get_cursor_image
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_xfixes_get_cursor_image_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xfixes_get_cursor_image_cookie_t
 xcb_xfixes_get_cursor_image (xcb_connection_t *c  /**< */);
 
@@ -857,12 +857,12 @@ xcb_xfixes_get_cursor_image (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_xfixes_get_cursor_image_cookie_t xcb_xfixes_get_cursor_image_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_xfixes_get_cursor_image_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xfixes_get_cursor_image_cookie_t
 xcb_xfixes_get_cursor_image_unchecked (xcb_connection_t *c  /**< */);
 
@@ -870,12 +870,12 @@ xcb_xfixes_get_cursor_image_unchecked (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** uint * xcb_xfixes_get_cursor_image_cursor_image
- ** 
+ **
  ** @param /+const+/ xcb_xfixes_get_cursor_image_reply_t *R
  ** @returns uint *
  **
  *****************************************************************************/
- 
+
 extern(C) uint *
 xcb_xfixes_get_cursor_image_cursor_image (/+const+/ xcb_xfixes_get_cursor_image_reply_t *R  /**< */);
 
@@ -883,12 +883,12 @@ xcb_xfixes_get_cursor_image_cursor_image (/+const+/ xcb_xfixes_get_cursor_image_
 /*****************************************************************************
  **
  ** int xcb_xfixes_get_cursor_image_cursor_image_length
- ** 
+ **
  ** @param /+const+/ xcb_xfixes_get_cursor_image_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xfixes_get_cursor_image_cursor_image_length (/+const+/ xcb_xfixes_get_cursor_image_reply_t *R  /**< */);
 
@@ -896,12 +896,12 @@ xcb_xfixes_get_cursor_image_cursor_image_length (/+const+/ xcb_xfixes_get_cursor
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xfixes_get_cursor_image_cursor_image_end
- ** 
+ **
  ** @param /+const+/ xcb_xfixes_get_cursor_image_reply_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xfixes_get_cursor_image_cursor_image_end (/+const+/ xcb_xfixes_get_cursor_image_reply_t *R  /**< */);
 
@@ -909,14 +909,14 @@ xcb_xfixes_get_cursor_image_cursor_image_end (/+const+/ xcb_xfixes_get_cursor_im
 /*****************************************************************************
  **
  ** xcb_xfixes_get_cursor_image_reply_t * xcb_xfixes_get_cursor_image_reply
- ** 
+ **
  ** @param xcb_connection_t                      *c
  ** @param xcb_xfixes_get_cursor_image_cookie_t   cookie
  ** @param xcb_generic_error_t                  **e
  ** @returns xcb_xfixes_get_cursor_image_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xfixes_get_cursor_image_reply_t *
 xcb_xfixes_get_cursor_image_reply (xcb_connection_t                      *c  /**< */,
                                    xcb_xfixes_get_cursor_image_cookie_t   cookie  /**< */,
@@ -926,12 +926,12 @@ xcb_xfixes_get_cursor_image_reply (xcb_connection_t                      *c  /**
 /*****************************************************************************
  **
  ** void xcb_xfixes_region_next
- ** 
+ **
  ** @param xcb_xfixes_region_iterator_t *i
  ** @returns void
  **
  *****************************************************************************/
- 
+
 extern(C) void
 xcb_xfixes_region_next (xcb_xfixes_region_iterator_t *i  /**< */);
 
@@ -939,12 +939,12 @@ xcb_xfixes_region_next (xcb_xfixes_region_iterator_t *i  /**< */);
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xfixes_region_end
- ** 
+ **
  ** @param xcb_xfixes_region_iterator_t i
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xfixes_region_end (xcb_xfixes_region_iterator_t i  /**< */);
 
@@ -952,7 +952,7 @@ xcb_xfixes_region_end (xcb_xfixes_region_iterator_t i  /**< */);
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_create_region_checked
- ** 
+ **
  ** @param xcb_connection_t          *c
  ** @param xcb_xfixes_region_t        region
  ** @param uint                       rectangles_len
@@ -960,7 +960,7 @@ xcb_xfixes_region_end (xcb_xfixes_region_iterator_t i  /**< */);
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_create_region_checked (xcb_connection_t          *c  /**< */,
                                   xcb_xfixes_region_t        region  /**< */,
@@ -971,7 +971,7 @@ xcb_xfixes_create_region_checked (xcb_connection_t          *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_create_region
- ** 
+ **
  ** @param xcb_connection_t          *c
  ** @param xcb_xfixes_region_t        region
  ** @param uint                       rectangles_len
@@ -979,7 +979,7 @@ xcb_xfixes_create_region_checked (xcb_connection_t          *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_create_region (xcb_connection_t          *c  /**< */,
                           xcb_xfixes_region_t        region  /**< */,
@@ -990,14 +990,14 @@ xcb_xfixes_create_region (xcb_connection_t          *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_create_region_from_bitmap_checked
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  region
  ** @param xcb_pixmap_t         bitmap
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_create_region_from_bitmap_checked (xcb_connection_t    *c  /**< */,
                                               xcb_xfixes_region_t  region  /**< */,
@@ -1007,14 +1007,14 @@ xcb_xfixes_create_region_from_bitmap_checked (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_create_region_from_bitmap
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  region
  ** @param xcb_pixmap_t         bitmap
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_create_region_from_bitmap (xcb_connection_t    *c  /**< */,
                                       xcb_xfixes_region_t  region  /**< */,
@@ -1024,7 +1024,7 @@ xcb_xfixes_create_region_from_bitmap (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_create_region_from_window_checked
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  region
  ** @param xcb_window_t         window
@@ -1032,7 +1032,7 @@ xcb_xfixes_create_region_from_bitmap (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_create_region_from_window_checked (xcb_connection_t    *c  /**< */,
                                               xcb_xfixes_region_t  region  /**< */,
@@ -1043,7 +1043,7 @@ xcb_xfixes_create_region_from_window_checked (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_create_region_from_window
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  region
  ** @param xcb_window_t         window
@@ -1051,7 +1051,7 @@ xcb_xfixes_create_region_from_window_checked (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_create_region_from_window (xcb_connection_t    *c  /**< */,
                                       xcb_xfixes_region_t  region  /**< */,
@@ -1062,14 +1062,14 @@ xcb_xfixes_create_region_from_window (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_create_region_from_gc_checked
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  region
  ** @param xcb_gcontext_t       gc
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_create_region_from_gc_checked (xcb_connection_t    *c  /**< */,
                                           xcb_xfixes_region_t  region  /**< */,
@@ -1079,14 +1079,14 @@ xcb_xfixes_create_region_from_gc_checked (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_create_region_from_gc
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  region
  ** @param xcb_gcontext_t       gc
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_create_region_from_gc (xcb_connection_t    *c  /**< */,
                                   xcb_xfixes_region_t  region  /**< */,
@@ -1096,14 +1096,14 @@ xcb_xfixes_create_region_from_gc (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_create_region_from_picture_checked
- ** 
+ **
  ** @param xcb_connection_t     *c
  ** @param xcb_xfixes_region_t   region
  ** @param xcb_render_picture_t  picture
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_create_region_from_picture_checked (xcb_connection_t     *c  /**< */,
                                                xcb_xfixes_region_t   region  /**< */,
@@ -1113,14 +1113,14 @@ xcb_xfixes_create_region_from_picture_checked (xcb_connection_t     *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_create_region_from_picture
- ** 
+ **
  ** @param xcb_connection_t     *c
  ** @param xcb_xfixes_region_t   region
  ** @param xcb_render_picture_t  picture
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_create_region_from_picture (xcb_connection_t     *c  /**< */,
                                        xcb_xfixes_region_t   region  /**< */,
@@ -1130,13 +1130,13 @@ xcb_xfixes_create_region_from_picture (xcb_connection_t     *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_destroy_region_checked
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  region
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_destroy_region_checked (xcb_connection_t    *c  /**< */,
                                    xcb_xfixes_region_t  region  /**< */);
@@ -1145,13 +1145,13 @@ xcb_xfixes_destroy_region_checked (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_destroy_region
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  region
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_destroy_region (xcb_connection_t    *c  /**< */,
                            xcb_xfixes_region_t  region  /**< */);
@@ -1160,7 +1160,7 @@ xcb_xfixes_destroy_region (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_set_region_checked
- ** 
+ **
  ** @param xcb_connection_t          *c
  ** @param xcb_xfixes_region_t        region
  ** @param uint                       rectangles_len
@@ -1168,7 +1168,7 @@ xcb_xfixes_destroy_region (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_set_region_checked (xcb_connection_t          *c  /**< */,
                                xcb_xfixes_region_t        region  /**< */,
@@ -1179,7 +1179,7 @@ xcb_xfixes_set_region_checked (xcb_connection_t          *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_set_region
- ** 
+ **
  ** @param xcb_connection_t          *c
  ** @param xcb_xfixes_region_t        region
  ** @param uint                       rectangles_len
@@ -1187,7 +1187,7 @@ xcb_xfixes_set_region_checked (xcb_connection_t          *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_set_region (xcb_connection_t          *c  /**< */,
                        xcb_xfixes_region_t        region  /**< */,
@@ -1198,14 +1198,14 @@ xcb_xfixes_set_region (xcb_connection_t          *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_copy_region_checked
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  source
  ** @param xcb_xfixes_region_t  destination
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_copy_region_checked (xcb_connection_t    *c  /**< */,
                                 xcb_xfixes_region_t  source  /**< */,
@@ -1215,14 +1215,14 @@ xcb_xfixes_copy_region_checked (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_copy_region
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  source
  ** @param xcb_xfixes_region_t  destination
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_copy_region (xcb_connection_t    *c  /**< */,
                         xcb_xfixes_region_t  source  /**< */,
@@ -1232,7 +1232,7 @@ xcb_xfixes_copy_region (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_union_region_checked
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  source1
  ** @param xcb_xfixes_region_t  source2
@@ -1240,7 +1240,7 @@ xcb_xfixes_copy_region (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_union_region_checked (xcb_connection_t    *c  /**< */,
                                  xcb_xfixes_region_t  source1  /**< */,
@@ -1251,7 +1251,7 @@ xcb_xfixes_union_region_checked (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_union_region
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  source1
  ** @param xcb_xfixes_region_t  source2
@@ -1259,7 +1259,7 @@ xcb_xfixes_union_region_checked (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_union_region (xcb_connection_t    *c  /**< */,
                          xcb_xfixes_region_t  source1  /**< */,
@@ -1270,7 +1270,7 @@ xcb_xfixes_union_region (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_intersect_region_checked
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  source1
  ** @param xcb_xfixes_region_t  source2
@@ -1278,7 +1278,7 @@ xcb_xfixes_union_region (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_intersect_region_checked (xcb_connection_t    *c  /**< */,
                                      xcb_xfixes_region_t  source1  /**< */,
@@ -1289,7 +1289,7 @@ xcb_xfixes_intersect_region_checked (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_intersect_region
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  source1
  ** @param xcb_xfixes_region_t  source2
@@ -1297,7 +1297,7 @@ xcb_xfixes_intersect_region_checked (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_intersect_region (xcb_connection_t    *c  /**< */,
                              xcb_xfixes_region_t  source1  /**< */,
@@ -1308,7 +1308,7 @@ xcb_xfixes_intersect_region (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_subtract_region_checked
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  source1
  ** @param xcb_xfixes_region_t  source2
@@ -1316,7 +1316,7 @@ xcb_xfixes_intersect_region (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_subtract_region_checked (xcb_connection_t    *c  /**< */,
                                     xcb_xfixes_region_t  source1  /**< */,
@@ -1327,7 +1327,7 @@ xcb_xfixes_subtract_region_checked (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_subtract_region
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  source1
  ** @param xcb_xfixes_region_t  source2
@@ -1335,7 +1335,7 @@ xcb_xfixes_subtract_region_checked (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_subtract_region (xcb_connection_t    *c  /**< */,
                             xcb_xfixes_region_t  source1  /**< */,
@@ -1346,7 +1346,7 @@ xcb_xfixes_subtract_region (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_invert_region_checked
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  source
  ** @param xcb_rectangle_t      bounds
@@ -1354,7 +1354,7 @@ xcb_xfixes_subtract_region (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_invert_region_checked (xcb_connection_t    *c  /**< */,
                                   xcb_xfixes_region_t  source  /**< */,
@@ -1365,7 +1365,7 @@ xcb_xfixes_invert_region_checked (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_invert_region
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  source
  ** @param xcb_rectangle_t      bounds
@@ -1373,7 +1373,7 @@ xcb_xfixes_invert_region_checked (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_invert_region (xcb_connection_t    *c  /**< */,
                           xcb_xfixes_region_t  source  /**< */,
@@ -1384,7 +1384,7 @@ xcb_xfixes_invert_region (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_translate_region_checked
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  region
  ** @param short                dx
@@ -1392,7 +1392,7 @@ xcb_xfixes_invert_region (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_translate_region_checked (xcb_connection_t    *c  /**< */,
                                      xcb_xfixes_region_t  region  /**< */,
@@ -1403,7 +1403,7 @@ xcb_xfixes_translate_region_checked (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_translate_region
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  region
  ** @param short                dx
@@ -1411,7 +1411,7 @@ xcb_xfixes_translate_region_checked (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_translate_region (xcb_connection_t    *c  /**< */,
                              xcb_xfixes_region_t  region  /**< */,
@@ -1422,14 +1422,14 @@ xcb_xfixes_translate_region (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_region_extents_checked
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  source
  ** @param xcb_xfixes_region_t  destination
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_region_extents_checked (xcb_connection_t    *c  /**< */,
                                    xcb_xfixes_region_t  source  /**< */,
@@ -1439,14 +1439,14 @@ xcb_xfixes_region_extents_checked (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_region_extents
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  source
  ** @param xcb_xfixes_region_t  destination
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_region_extents (xcb_connection_t    *c  /**< */,
                            xcb_xfixes_region_t  source  /**< */,
@@ -1456,13 +1456,13 @@ xcb_xfixes_region_extents (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xfixes_fetch_region_cookie_t xcb_xfixes_fetch_region
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  region
  ** @returns xcb_xfixes_fetch_region_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xfixes_fetch_region_cookie_t
 xcb_xfixes_fetch_region (xcb_connection_t    *c  /**< */,
                          xcb_xfixes_region_t  region  /**< */);
@@ -1471,13 +1471,13 @@ xcb_xfixes_fetch_region (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xfixes_fetch_region_cookie_t xcb_xfixes_fetch_region_unchecked
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  region
  ** @returns xcb_xfixes_fetch_region_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xfixes_fetch_region_cookie_t
 xcb_xfixes_fetch_region_unchecked (xcb_connection_t    *c  /**< */,
                                    xcb_xfixes_region_t  region  /**< */);
@@ -1486,12 +1486,12 @@ xcb_xfixes_fetch_region_unchecked (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_rectangle_t * xcb_xfixes_fetch_region_rectangles
- ** 
+ **
  ** @param /+const+/ xcb_xfixes_fetch_region_reply_t *R
  ** @returns xcb_rectangle_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_rectangle_t *
 xcb_xfixes_fetch_region_rectangles (/+const+/ xcb_xfixes_fetch_region_reply_t *R  /**< */);
 
@@ -1499,12 +1499,12 @@ xcb_xfixes_fetch_region_rectangles (/+const+/ xcb_xfixes_fetch_region_reply_t *R
 /*****************************************************************************
  **
  ** int xcb_xfixes_fetch_region_rectangles_length
- ** 
+ **
  ** @param /+const+/ xcb_xfixes_fetch_region_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xfixes_fetch_region_rectangles_length (/+const+/ xcb_xfixes_fetch_region_reply_t *R  /**< */);
 
@@ -1512,12 +1512,12 @@ xcb_xfixes_fetch_region_rectangles_length (/+const+/ xcb_xfixes_fetch_region_rep
 /*****************************************************************************
  **
  ** xcb_rectangle_iterator_t xcb_xfixes_fetch_region_rectangles_iterator
- ** 
+ **
  ** @param /+const+/ xcb_xfixes_fetch_region_reply_t *R
  ** @returns xcb_rectangle_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_rectangle_iterator_t
 xcb_xfixes_fetch_region_rectangles_iterator (/+const+/ xcb_xfixes_fetch_region_reply_t *R  /**< */);
 
@@ -1525,14 +1525,14 @@ xcb_xfixes_fetch_region_rectangles_iterator (/+const+/ xcb_xfixes_fetch_region_r
 /*****************************************************************************
  **
  ** xcb_xfixes_fetch_region_reply_t * xcb_xfixes_fetch_region_reply
- ** 
+ **
  ** @param xcb_connection_t                  *c
  ** @param xcb_xfixes_fetch_region_cookie_t   cookie
  ** @param xcb_generic_error_t              **e
  ** @returns xcb_xfixes_fetch_region_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xfixes_fetch_region_reply_t *
 xcb_xfixes_fetch_region_reply (xcb_connection_t                  *c  /**< */,
                                xcb_xfixes_fetch_region_cookie_t   cookie  /**< */,
@@ -1542,7 +1542,7 @@ xcb_xfixes_fetch_region_reply (xcb_connection_t                  *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_set_gc_clip_region_checked
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_gcontext_t       gc
  ** @param xcb_xfixes_region_t  region
@@ -1551,7 +1551,7 @@ xcb_xfixes_fetch_region_reply (xcb_connection_t                  *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_set_gc_clip_region_checked (xcb_connection_t    *c  /**< */,
                                        xcb_gcontext_t       gc  /**< */,
@@ -1563,7 +1563,7 @@ xcb_xfixes_set_gc_clip_region_checked (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_set_gc_clip_region
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_gcontext_t       gc
  ** @param xcb_xfixes_region_t  region
@@ -1572,7 +1572,7 @@ xcb_xfixes_set_gc_clip_region_checked (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_set_gc_clip_region (xcb_connection_t    *c  /**< */,
                                xcb_gcontext_t       gc  /**< */,
@@ -1584,7 +1584,7 @@ xcb_xfixes_set_gc_clip_region (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_set_window_shape_region_checked
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_window_t         dest
  ** @param xcb_shape_kind_t     dest_kind
@@ -1594,7 +1594,7 @@ xcb_xfixes_set_gc_clip_region (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_set_window_shape_region_checked (xcb_connection_t    *c  /**< */,
                                             xcb_window_t         dest  /**< */,
@@ -1607,7 +1607,7 @@ xcb_xfixes_set_window_shape_region_checked (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_set_window_shape_region
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_window_t         dest
  ** @param xcb_shape_kind_t     dest_kind
@@ -1617,7 +1617,7 @@ xcb_xfixes_set_window_shape_region_checked (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_set_window_shape_region (xcb_connection_t    *c  /**< */,
                                     xcb_window_t         dest  /**< */,
@@ -1630,7 +1630,7 @@ xcb_xfixes_set_window_shape_region (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_set_picture_clip_region_checked
- ** 
+ **
  ** @param xcb_connection_t     *c
  ** @param xcb_render_picture_t  picture
  ** @param xcb_xfixes_region_t   region
@@ -1639,7 +1639,7 @@ xcb_xfixes_set_window_shape_region (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_set_picture_clip_region_checked (xcb_connection_t     *c  /**< */,
                                             xcb_render_picture_t  picture  /**< */,
@@ -1651,7 +1651,7 @@ xcb_xfixes_set_picture_clip_region_checked (xcb_connection_t     *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_set_picture_clip_region
- ** 
+ **
  ** @param xcb_connection_t     *c
  ** @param xcb_render_picture_t  picture
  ** @param xcb_xfixes_region_t   region
@@ -1660,7 +1660,7 @@ xcb_xfixes_set_picture_clip_region_checked (xcb_connection_t     *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_set_picture_clip_region (xcb_connection_t     *c  /**< */,
                                     xcb_render_picture_t  picture  /**< */,
@@ -1672,7 +1672,7 @@ xcb_xfixes_set_picture_clip_region (xcb_connection_t     *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_set_cursor_name_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_cursor_t      cursor
  ** @param ushort            nbytes
@@ -1680,7 +1680,7 @@ xcb_xfixes_set_picture_clip_region (xcb_connection_t     *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_set_cursor_name_checked (xcb_connection_t *c  /**< */,
                                     xcb_cursor_t      cursor  /**< */,
@@ -1691,7 +1691,7 @@ xcb_xfixes_set_cursor_name_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_set_cursor_name
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_cursor_t      cursor
  ** @param ushort            nbytes
@@ -1699,7 +1699,7 @@ xcb_xfixes_set_cursor_name_checked (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_set_cursor_name (xcb_connection_t *c  /**< */,
                             xcb_cursor_t      cursor  /**< */,
@@ -1710,13 +1710,13 @@ xcb_xfixes_set_cursor_name (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xfixes_get_cursor_name_cookie_t xcb_xfixes_get_cursor_name
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_cursor_t      cursor
  ** @returns xcb_xfixes_get_cursor_name_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xfixes_get_cursor_name_cookie_t
 xcb_xfixes_get_cursor_name (xcb_connection_t *c  /**< */,
                             xcb_cursor_t      cursor  /**< */);
@@ -1725,13 +1725,13 @@ xcb_xfixes_get_cursor_name (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_xfixes_get_cursor_name_cookie_t xcb_xfixes_get_cursor_name_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_cursor_t      cursor
  ** @returns xcb_xfixes_get_cursor_name_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xfixes_get_cursor_name_cookie_t
 xcb_xfixes_get_cursor_name_unchecked (xcb_connection_t *c  /**< */,
                                       xcb_cursor_t      cursor  /**< */);
@@ -1740,12 +1740,12 @@ xcb_xfixes_get_cursor_name_unchecked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** ubyte * xcb_xfixes_get_cursor_name_name
- ** 
+ **
  ** @param /+const+/ xcb_xfixes_get_cursor_name_reply_t *R
  ** @returns ubyte *
  **
  *****************************************************************************/
- 
+
 extern(C) ubyte *
 xcb_xfixes_get_cursor_name_name (/+const+/ xcb_xfixes_get_cursor_name_reply_t *R  /**< */);
 
@@ -1753,12 +1753,12 @@ xcb_xfixes_get_cursor_name_name (/+const+/ xcb_xfixes_get_cursor_name_reply_t *R
 /*****************************************************************************
  **
  ** int xcb_xfixes_get_cursor_name_name_length
- ** 
+ **
  ** @param /+const+/ xcb_xfixes_get_cursor_name_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xfixes_get_cursor_name_name_length (/+const+/ xcb_xfixes_get_cursor_name_reply_t *R  /**< */);
 
@@ -1766,12 +1766,12 @@ xcb_xfixes_get_cursor_name_name_length (/+const+/ xcb_xfixes_get_cursor_name_rep
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xfixes_get_cursor_name_name_end
- ** 
+ **
  ** @param /+const+/ xcb_xfixes_get_cursor_name_reply_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xfixes_get_cursor_name_name_end (/+const+/ xcb_xfixes_get_cursor_name_reply_t *R  /**< */);
 
@@ -1779,14 +1779,14 @@ xcb_xfixes_get_cursor_name_name_end (/+const+/ xcb_xfixes_get_cursor_name_reply_
 /*****************************************************************************
  **
  ** xcb_xfixes_get_cursor_name_reply_t * xcb_xfixes_get_cursor_name_reply
- ** 
+ **
  ** @param xcb_connection_t                     *c
  ** @param xcb_xfixes_get_cursor_name_cookie_t   cookie
  ** @param xcb_generic_error_t                 **e
  ** @returns xcb_xfixes_get_cursor_name_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xfixes_get_cursor_name_reply_t *
 xcb_xfixes_get_cursor_name_reply (xcb_connection_t                     *c  /**< */,
                                   xcb_xfixes_get_cursor_name_cookie_t   cookie  /**< */,
@@ -1796,12 +1796,12 @@ xcb_xfixes_get_cursor_name_reply (xcb_connection_t                     *c  /**< 
 /*****************************************************************************
  **
  ** xcb_xfixes_get_cursor_image_and_name_cookie_t xcb_xfixes_get_cursor_image_and_name
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_xfixes_get_cursor_image_and_name_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xfixes_get_cursor_image_and_name_cookie_t
 xcb_xfixes_get_cursor_image_and_name (xcb_connection_t *c  /**< */);
 
@@ -1809,12 +1809,12 @@ xcb_xfixes_get_cursor_image_and_name (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** xcb_xfixes_get_cursor_image_and_name_cookie_t xcb_xfixes_get_cursor_image_and_name_unchecked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @returns xcb_xfixes_get_cursor_image_and_name_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xfixes_get_cursor_image_and_name_cookie_t
 xcb_xfixes_get_cursor_image_and_name_unchecked (xcb_connection_t *c  /**< */);
 
@@ -1822,12 +1822,12 @@ xcb_xfixes_get_cursor_image_and_name_unchecked (xcb_connection_t *c  /**< */);
 /*****************************************************************************
  **
  ** ubyte * xcb_xfixes_get_cursor_image_and_name_name
- ** 
+ **
  ** @param /+const+/ xcb_xfixes_get_cursor_image_and_name_reply_t *R
  ** @returns ubyte *
  **
  *****************************************************************************/
- 
+
 extern(C) ubyte *
 xcb_xfixes_get_cursor_image_and_name_name (/+const+/ xcb_xfixes_get_cursor_image_and_name_reply_t *R  /**< */);
 
@@ -1835,12 +1835,12 @@ xcb_xfixes_get_cursor_image_and_name_name (/+const+/ xcb_xfixes_get_cursor_image
 /*****************************************************************************
  **
  ** int xcb_xfixes_get_cursor_image_and_name_name_length
- ** 
+ **
  ** @param /+const+/ xcb_xfixes_get_cursor_image_and_name_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xfixes_get_cursor_image_and_name_name_length (/+const+/ xcb_xfixes_get_cursor_image_and_name_reply_t *R  /**< */);
 
@@ -1848,12 +1848,12 @@ xcb_xfixes_get_cursor_image_and_name_name_length (/+const+/ xcb_xfixes_get_curso
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xfixes_get_cursor_image_and_name_name_end
- ** 
+ **
  ** @param /+const+/ xcb_xfixes_get_cursor_image_and_name_reply_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xfixes_get_cursor_image_and_name_name_end (/+const+/ xcb_xfixes_get_cursor_image_and_name_reply_t *R  /**< */);
 
@@ -1861,12 +1861,12 @@ xcb_xfixes_get_cursor_image_and_name_name_end (/+const+/ xcb_xfixes_get_cursor_i
 /*****************************************************************************
  **
  ** uint * xcb_xfixes_get_cursor_image_and_name_cursor_image
- ** 
+ **
  ** @param /+const+/ xcb_xfixes_get_cursor_image_and_name_reply_t *R
  ** @returns uint *
  **
  *****************************************************************************/
- 
+
 extern(C) uint *
 xcb_xfixes_get_cursor_image_and_name_cursor_image (/+const+/ xcb_xfixes_get_cursor_image_and_name_reply_t *R  /**< */);
 
@@ -1874,12 +1874,12 @@ xcb_xfixes_get_cursor_image_and_name_cursor_image (/+const+/ xcb_xfixes_get_curs
 /*****************************************************************************
  **
  ** int xcb_xfixes_get_cursor_image_and_name_cursor_image_length
- ** 
+ **
  ** @param /+const+/ xcb_xfixes_get_cursor_image_and_name_reply_t *R
  ** @returns int
  **
  *****************************************************************************/
- 
+
 extern(C) int
 xcb_xfixes_get_cursor_image_and_name_cursor_image_length (/+const+/ xcb_xfixes_get_cursor_image_and_name_reply_t *R  /**< */);
 
@@ -1887,12 +1887,12 @@ xcb_xfixes_get_cursor_image_and_name_cursor_image_length (/+const+/ xcb_xfixes_g
 /*****************************************************************************
  **
  ** xcb_generic_iterator_t xcb_xfixes_get_cursor_image_and_name_cursor_image_end
- ** 
+ **
  ** @param /+const+/ xcb_xfixes_get_cursor_image_and_name_reply_t *R
  ** @returns xcb_generic_iterator_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_generic_iterator_t
 xcb_xfixes_get_cursor_image_and_name_cursor_image_end (/+const+/ xcb_xfixes_get_cursor_image_and_name_reply_t *R  /**< */);
 
@@ -1900,14 +1900,14 @@ xcb_xfixes_get_cursor_image_and_name_cursor_image_end (/+const+/ xcb_xfixes_get_
 /*****************************************************************************
  **
  ** xcb_xfixes_get_cursor_image_and_name_reply_t * xcb_xfixes_get_cursor_image_and_name_reply
- ** 
+ **
  ** @param xcb_connection_t                               *c
  ** @param xcb_xfixes_get_cursor_image_and_name_cookie_t   cookie
  ** @param xcb_generic_error_t                           **e
  ** @returns xcb_xfixes_get_cursor_image_and_name_reply_t *
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_xfixes_get_cursor_image_and_name_reply_t *
 xcb_xfixes_get_cursor_image_and_name_reply (xcb_connection_t                               *c  /**< */,
                                             xcb_xfixes_get_cursor_image_and_name_cookie_t   cookie  /**< */,
@@ -1917,14 +1917,14 @@ xcb_xfixes_get_cursor_image_and_name_reply (xcb_connection_t                    
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_change_cursor_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_cursor_t      source
  ** @param xcb_cursor_t      destination
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_change_cursor_checked (xcb_connection_t *c  /**< */,
                                   xcb_cursor_t      source  /**< */,
@@ -1934,14 +1934,14 @@ xcb_xfixes_change_cursor_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_change_cursor
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_cursor_t      source
  ** @param xcb_cursor_t      destination
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_change_cursor (xcb_connection_t *c  /**< */,
                           xcb_cursor_t      source  /**< */,
@@ -1951,7 +1951,7 @@ xcb_xfixes_change_cursor (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_change_cursor_by_name_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_cursor_t      src
  ** @param ushort            nbytes
@@ -1959,7 +1959,7 @@ xcb_xfixes_change_cursor (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_change_cursor_by_name_checked (xcb_connection_t *c  /**< */,
                                           xcb_cursor_t      src  /**< */,
@@ -1970,7 +1970,7 @@ xcb_xfixes_change_cursor_by_name_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_change_cursor_by_name
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_cursor_t      src
  ** @param ushort            nbytes
@@ -1978,7 +1978,7 @@ xcb_xfixes_change_cursor_by_name_checked (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_change_cursor_by_name (xcb_connection_t *c  /**< */,
                                   xcb_cursor_t      src  /**< */,
@@ -1989,7 +1989,7 @@ xcb_xfixes_change_cursor_by_name (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_expand_region_checked
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  source
  ** @param xcb_xfixes_region_t  destination
@@ -2000,7 +2000,7 @@ xcb_xfixes_change_cursor_by_name (xcb_connection_t *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_expand_region_checked (xcb_connection_t    *c  /**< */,
                                   xcb_xfixes_region_t  source  /**< */,
@@ -2014,7 +2014,7 @@ xcb_xfixes_expand_region_checked (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_expand_region
- ** 
+ **
  ** @param xcb_connection_t    *c
  ** @param xcb_xfixes_region_t  source
  ** @param xcb_xfixes_region_t  destination
@@ -2025,7 +2025,7 @@ xcb_xfixes_expand_region_checked (xcb_connection_t    *c  /**< */,
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_expand_region (xcb_connection_t    *c  /**< */,
                           xcb_xfixes_region_t  source  /**< */,
@@ -2039,13 +2039,13 @@ xcb_xfixes_expand_region (xcb_connection_t    *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_hide_cursor_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_hide_cursor_checked (xcb_connection_t *c  /**< */,
                                 xcb_window_t      window  /**< */);
@@ -2054,13 +2054,13 @@ xcb_xfixes_hide_cursor_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_hide_cursor
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_hide_cursor (xcb_connection_t *c  /**< */,
                         xcb_window_t      window  /**< */);
@@ -2069,13 +2069,13 @@ xcb_xfixes_hide_cursor (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_show_cursor_checked
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_show_cursor_checked (xcb_connection_t *c  /**< */,
                                 xcb_window_t      window  /**< */);
@@ -2084,13 +2084,13 @@ xcb_xfixes_show_cursor_checked (xcb_connection_t *c  /**< */,
 /*****************************************************************************
  **
  ** xcb_void_cookie_t xcb_xfixes_show_cursor
- ** 
+ **
  ** @param xcb_connection_t *c
  ** @param xcb_window_t      window
  ** @returns xcb_void_cookie_t
  **
  *****************************************************************************/
- 
+
 extern(C) xcb_void_cookie_t
 xcb_xfixes_show_cursor (xcb_connection_t *c  /**< */,
                         xcb_window_t      window  /**< */);

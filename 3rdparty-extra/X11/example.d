@@ -24,16 +24,16 @@ int main(char[][] args)
         DefaultRootWindow(display),        		// parent window
         0, 0, 200, 100,                    		// x, y, w, h
         0,0x0,0x000000FF                   		// border_width,boder_color,back_color
-        );                                       
+        );
     XMapWindow(display, window); //map the window
     XRaiseWindow(display, window); //show the window
     XStoreName(display,window,"Hello Window\0"); //set window name , don't forget /0 term char !
     XFlush(display); // flush X server
-    
+
     //wait for a enter pressed (in fact you need to wait for MapNotify event before drawing...)
-    printf("press enter to show window content\0"); 
+    printf("press enter to show window content\0");
     getchar();
-    
+
     XGCValues values;
     values.foreground=0xFFFFFF;
     values.background=0x00FF00;

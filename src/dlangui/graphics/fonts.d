@@ -100,14 +100,14 @@ static if (ENABLE_OPENGL) {
     private __gshared void function(uint id) _glyphDestroyCallback;
     /**
      * get glyph destroy callback (to cleanup OpenGL caches)
-     * 
+     *
      * Used for resource management. Usually you don't have to call it manually.
      */
     @property void function(uint id) glyphDestroyCallback() { return _glyphDestroyCallback; }
     /**
      * Set glyph destroy callback (to cleanup OpenGL caches)
      * This callback is used to tell OpenGL glyph cache that glyph is not more used - to let OpenGL glyph cache delete texture if all glyphs in it are no longer used.
-     * 
+     *
      * Used for resource management. Usually you don't have to call it manually.
      */
     @property void glyphDestroyCallback(void function(uint id) callback) { _glyphDestroyCallback = callback; }
@@ -115,9 +115,9 @@ static if (ENABLE_OPENGL) {
     private __gshared uint _nextGlyphId;
     /**
      * ID generator for glyphs
-     * 
+     *
      * Generates next glyph ID. Unique IDs are being used to control OpenGL glyph cache items lifetime.
-     * 
+     *
      * Used for resource management. Usually you don't have to call it manually.
      */
     uint nextGlyphId() { return _nextGlyphId++; }
@@ -269,7 +269,7 @@ class Font : RefCountedObject {
 
     /*************************************************************************
      * Measure text string as single line, returns width and height
-     * 
+     *
      * Params:
      *          text = text string to measure
      *          maxWidth = maximum width - measure is stopping if max width is reached
@@ -334,7 +334,7 @@ class Font : RefCountedObject {
                     buf.fillRect(Rect(x + xx, underlineY, x + xx2, underlineY + underlineHeight), color);
                 // turn off underline after hot key
                 if (!(textFlags & TextFlag.Underline))
-                    underline = false; 
+                    underline = false;
             }
 
             if (ch == ' ' || ch == '\t')
@@ -515,7 +515,7 @@ struct SimpleTextFormatter {
                     // track last word end
                     if (prevChar != '\t' && prevChar != ' ' && prevChar != 0) {
                         lastWordEnd = i;
-                        lastWordEndX = widths[i]; 
+                        lastWordEndX = widths[i];
                     }
                     prevChar = ch;
                     continue;
@@ -564,7 +564,7 @@ struct SimpleTextFormatter {
             y += lineHeight;
         }
     }
-    
+
     /// draw horizontaly aligned formatted text
     void draw(DrawBuf buf, int x, int y, FontRef fnt, uint color, ubyte alignment) {
         int lineHeight = fnt.height;
@@ -595,11 +595,11 @@ struct FontList {
     ~this() {
         clear();
     }
-    
+
     @property uint length() {
         return _len;
     }
-    
+
     void clear() {
         foreach(i; 0 .. _len) {
             _list[i].clear();
@@ -798,7 +798,7 @@ class FontManager {
  *
  *
  * Recently used glyphs are marked with glyph.lastUsage = 1
- * 
+ *
  * checkpoint() call clears usage marks
  *
  * cleanup() removes all items not accessed since last checkpoint()
@@ -808,7 +808,7 @@ struct GlyphCache
 {
     alias glyph_ptr = Glyph*;
     private glyph_ptr[][1024] _glyphs;
-    
+
     /// try to find glyph for character in cache, returns null if not found
     glyph_ptr find(dchar ch) {
         ch = ch & 0xF_FFFF;
@@ -825,7 +825,7 @@ struct GlyphCache
         res.lastUsage = 1;
         return res;
     }
-    
+
     /// put character glyph to cache
     glyph_ptr put(dchar ch, glyph_ptr glyph) {
         ch = ch & 0xF_FFFF;
@@ -837,7 +837,7 @@ struct GlyphCache
         glyph.lastUsage = 1;
         return glyph;
     }
-    
+
     /// removes entries not used after last call of checkpoint() or cleanup()
     void cleanup() {
         foreach(part; _glyphs) {
@@ -856,7 +856,7 @@ struct GlyphCache
             }
         }
     }
-    
+
     /// clear usage flags for all entries
     void checkpoint() {
         foreach(part; _glyphs) {
@@ -867,7 +867,7 @@ struct GlyphCache
             }
         }
     }
-    
+
     /// removes all entries (when built with USE_OPENGL version, notify OpenGL cache about removed glyphs)
     void clear() {
         foreach(part; _glyphs) {

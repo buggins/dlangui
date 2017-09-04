@@ -26,7 +26,7 @@ import dlangui.graphics.colors;
 /**
  * 9-patch image scaling information (see Android documentation).
  *
- * 
+ *
  */
 struct NinePatch {
     /// frame (non-scalable) part size for left, top, right, bottom edges.
@@ -153,7 +153,7 @@ class DrawBuf : RefCountedObject {
     /// returns clipping rectangle, or (0,0,dx,dy) when no clipping.
     //@property Rect clipOrFullRect() { return _clipRect.empty ? Rect(0,0,width,height) : _clipRect; }
     /// sets new clipping rectangle, when clipRect.isEmpty == true -- means no clipping.
-    @property void clipRect(const ref Rect rect) { 
+    @property void clipRect(const ref Rect rect) {
         _clipRect = rect;
         _clipRect.intersect(Rect(0, 0, width, height));
     }
@@ -293,7 +293,7 @@ class DrawBuf : RefCountedObject {
         // default implementation: does not support patterns
         fillRect(rc, color);
     }
-    /// draw pixel at (x, y) with specified color 
+    /// draw pixel at (x, y) with specified color
     abstract void drawPixel(int x, int y, uint color);
     /// draw 8bit alpha image - usually font glyph using specified color (clipping is applied)
     abstract void drawGlyph(int x, int y, Glyph * glyph, uint color);
@@ -861,7 +861,7 @@ struct ClipRectSaver {
     private DrawBuf _buf;
     private Rect _oldClipRect;
     private uint _oldAlpha;
-    /// apply (intersect) new clip rectangle and alpha to draw buf; restore 
+    /// apply (intersect) new clip rectangle and alpha to draw buf; restore
     this(DrawBuf buf, ref Rect newClipRect, uint newAlpha = 0) {
         _buf = buf;
         _oldClipRect = buf.clipRect;
@@ -1026,7 +1026,7 @@ class ColorDrawBufBase : DrawBuf {
             return false;
         return true;
     }
-    
+
     /// detect position of black pixels in column for 9-patch markup
     private bool detectVLine(int x, ref int y0, ref int y1) {
         bool foundUsed = false;
@@ -1189,7 +1189,7 @@ class ColorDrawBufBase : DrawBuf {
         }
     }
 
-    /// draw pixel at (x, y) with specified color 
+    /// draw pixel at (x, y) with specified color
     override void drawPixel(int x, int y, uint color) {
         if (!_clipRect.isPointInside(x, y))
             return;
@@ -1406,7 +1406,7 @@ class GrayDrawBuf : DrawBuf {
         }
     }
 
-    /// draw pixel at (x, y) with specified color 
+    /// draw pixel at (x, y) with specified color
     override void drawPixel(int x, int y, uint color) {
         if (!_clipRect.isPointInside(x, y))
             return;
@@ -1579,7 +1579,7 @@ package bool clipLine(ref Rect clipRect, ref Point p1, ref Point p2) {
 }
 
 // Cohen–Sutherland clipping algorithm clips a line from
-// P0 = (x0, y0) to P1 = (x1, y1) against a rectangle with 
+// P0 = (x0, y0) to P1 = (x1, y1) against a rectangle with
 // diagonal from (xmin, ymin) to (xmax, ymax).
 private bool CohenSutherlandLineClipAndDraw(ref Rect clipRect, ref double x0, ref double y0, ref double x1, ref double y1)
 {

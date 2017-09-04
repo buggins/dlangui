@@ -37,7 +37,7 @@ class Transform : RefCountedObject {
     public @property float scalingY() const { return _scale.y; }
     /// get scale Z
     public @property float scalingZ() const { return _scale.z; }
-    
+
     /// set scale vector
     public @property void scaling(const ref vec3 value) { _scale = value; _hasScale = true; invalidateTransform(); }
     /// set scale vector x, y, z to the same value

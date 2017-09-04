@@ -55,11 +55,11 @@ class EditFrame : AppFrame {
     override protected MainMenu createMainMenu() {
         mainMenuItems = new MenuItem();
         MenuItem fileItem = new MenuItem(new Action(1, "MENU_FILE"));
-        fileItem.add(ACTION_FILE_NEW, ACTION_FILE_OPEN, 
+        fileItem.add(ACTION_FILE_NEW, ACTION_FILE_OPEN,
                      ACTION_FILE_EXIT);
         mainMenuItems.add(fileItem);
         MenuItem editItem = new MenuItem(new Action(2, "MENU_EDIT"));
-        editItem.add(ACTION_EDIT_COPY, ACTION_EDIT_PASTE, 
+        editItem.add(ACTION_EDIT_COPY, ACTION_EDIT_PASTE,
                      ACTION_EDIT_CUT, ACTION_EDIT_UNDO, ACTION_EDIT_REDO,
                      ACTION_EDIT_INDENT, ACTION_EDIT_UNINDENT, ACTION_EDIT_TOGGLE_LINE_COMMENT, ACTION_EDIT_TOGGLE_BLOCK_COMMENT, ACTION_DEBUG_START);
 
@@ -130,7 +130,7 @@ class EditFrame : AppFrame {
                         window.close();
                     return true;
                 case IDEActions.HelpAbout:
-                    window.showMessageBox(UIString("About DlangUI ML Editor"d), 
+                    window.showMessageBox(UIString("About DlangUI ML Editor"d),
                                           UIString("DLangIDE\n(C) Vadim Lopatin, 2015\nhttp://github.com/buggins/dlangui\nSimple editor for DML code"d));
                     return true;
                 case IDEActions.FileNew:

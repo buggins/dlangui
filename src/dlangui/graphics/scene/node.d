@@ -60,12 +60,12 @@ class Node3d : Transform {
     }
 
     /// returns scene for node
-    @property Scene3d scene() { 
+    @property Scene3d scene() {
         if (_scene)
             return _scene;
         if (_parent)
             return _parent.scene;
-        return cast(Scene3d) this; 
+        return cast(Scene3d) this;
     }
 
     @property void scene(Scene3d v) { _scene = v; }

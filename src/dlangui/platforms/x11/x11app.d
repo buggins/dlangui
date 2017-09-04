@@ -204,19 +204,19 @@ private GC createGC(Display* display, XWindow win)
         return null;
         //fprintf(stderr, "XCreateGC: \n");
     }
-    
+
     uint line_width = 2;        /* line width for the GC.       */
     int line_style = LineSolid;        /* style for lines drawing and  */
     int cap_style = CapButt;        /* style of the line's edje and */
     int join_style = JoinBevel;        /*  joined lines.        */
-    
+
     /* define the style of lines that will be drawn using this GC. */
     XSetLineAttributes(display, gc,
         line_width, line_style, cap_style, join_style);
-    
+
     /* define the fill style for the GC. to be 'solid filling'. */
     XSetFillStyle(display, gc, FillSolid);
-    
+
     return gc;
 }
 
@@ -264,7 +264,7 @@ class X11Window : DWindow {
             XSetWindowAttributes swa;
             uint swamask = CWEventMask | CWBackPixel;
             swa.background_pixel = white;
-            swa.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | 
+            swa.event_mask = KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask |
                 EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonMotionMask | ExposureMask | VisibilityChangeMask |
                     FocusChangeMask | KeymapStateMask | StructureNotifyMask | PropertyChangeMask;
             Visual * visual = DefaultVisual(x11display, x11screen);
@@ -278,16 +278,16 @@ class X11Window : DWindow {
                 }
             }
 
-            _win = XCreateWindow(x11display, DefaultRootWindow(x11display), 
-                0, 0, 
-                _dx, _dy, 0, 
-                depth, 
-                InputOutput, 
+            _win = XCreateWindow(x11display, DefaultRootWindow(x11display),
+                0, 0,
+                _dx, _dy, 0,
+                depth,
+                InputOutput,
                 visual,
-                swamask, 
+                swamask,
                 &swa);
-//            _win = XCreateSimpleWindow(x11display, DefaultRootWindow(x11display), 
-//                0, 0,    
+//            _win = XCreateSimpleWindow(x11display, DefaultRootWindow(x11display),
+//                0, 0,
 //                _dx, _dy, 5, black, white);
         } else {
             XSetWindowAttributes attr;
@@ -297,8 +297,8 @@ class X11Window : DWindow {
             attr.event_mask = ExposureMask | KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask;
             attr.background_pixel = white;
 
-            _win = XCreateWindow(x11display, DefaultRootWindow(x11display), 
-                0, 0,    
+            _win = XCreateWindow(x11display, DefaultRootWindow(x11display),
+                0, 0,
                 _dx, _dy, 5,
                 CopyFromParent, // depth
                 CopyFromParent, // class
@@ -350,7 +350,7 @@ class X11Window : DWindow {
         /* this routine determines which types of input are allowed in
                the input.  see the appropriate section for details...
         */
-//        XSelectInput(x11display, _win, KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask | 
+//        XSelectInput(x11display, _win, KeyPressMask | KeyReleaseMask | ButtonPressMask | ButtonReleaseMask |
 //            EnterWindowMask | LeaveWindowMask | PointerMotionMask | ButtonMotionMask | ExposureMask | VisibilityChangeMask |
 //            FocusChangeMask | KeymapStateMask | StructureNotifyMask);
 
@@ -361,17 +361,17 @@ class X11Window : DWindow {
 
 
 
-        
+
         /* here is another routine to set the foreground and background
                colors _currently_ in use in the window.
         */
         //XSetBackground(x11display, _gc, white);
         //XSetForeground(x11display, _gc, black);
-        
+
         /* clear the window and bring it on top of the other windows */
         //XClearWindow(x11display, _win);
         //XFlush(x11display);
-        
+
         handleWindowStateChange(WindowState.unspecified, Rect(0, 0, _dx, _dy));
     }
 
@@ -435,11 +435,11 @@ class X11Window : DWindow {
             _mainWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
             if (flags & WindowFlag.MeasureSize)
                 resizeWindow(Point(_mainWidget.measuredWidth, _mainWidget.measuredHeight));
-            else    
+            else
                 adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
-            
+
             adjustPositionDuringShow();
-                
+
             _mainWidget.setFocus();
         }
     }
@@ -447,7 +447,7 @@ class X11Window : DWindow {
     override protected void handleWindowStateChange(WindowState newState, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
         super.handleWindowStateChange(newState, newWindowRect);
     }
-    
+
     protected final void changeWindowState(int action, Atom firstProperty, Atom secondProperty = None) nothrow
     {
         XEvent ev;
@@ -493,9 +493,9 @@ class X11Window : DWindow {
                 result = true;
                 break;
             case WindowState.normal:
-                if (atom_NET_WM_STATE != None && 
-                    atom_NET_WM_STATE_MAXIMIZED_HORZ != None && 
-                    atom_NET_WM_STATE_MAXIMIZED_VERT != None && 
+                if (atom_NET_WM_STATE != None &&
+                    atom_NET_WM_STATE_MAXIMIZED_HORZ != None &&
+                    atom_NET_WM_STATE_MAXIMIZED_VERT != None &&
                     atom_NET_WM_STATE_HIDDEN != None)
                 {
                     changeWindowState(_NET_WM_STATE_REMOVE, atom_NET_WM_STATE_MAXIMIZED_HORZ, atom_NET_WM_STATE_MAXIMIZED_VERT);
@@ -513,7 +513,7 @@ class X11Window : DWindow {
             default:
                 break;
         }
-        
+
         // change size and/or position
         bool rectChanged = false;
         if (newWindowRect != RECT_VALUE_IS_NOT_SET && (newState == WindowState.normal || newState == WindowState.unspecified)) {
@@ -523,7 +523,7 @@ class X11Window : DWindow {
                 rectChanged = true;
                 result = true;
             }
-                
+
             // change size
             if (newWindowRect.bottom != int.min && newWindowRect.right != int.min) {
                 if (!(flags & WindowFlag.Resizable)) {
@@ -540,45 +540,45 @@ class X11Window : DWindow {
                 result = true;
             }
         }
-        
+
         if (activate) {
             XMapRaised(x11display, _win);
             result = true;
         }
         XFlush(x11display);
-        
+
         //needed here to make _windowRect and _windowState valid
         //example: change size by resizeWindow() and make some calculations using windowRect
         if (rectChanged) {
-            handleWindowStateChange(newState, Rect(newWindowRect.left == int.min ? _windowRect.left : newWindowRect.left, 
-                newWindowRect.top == int.min ? _windowRect.top : newWindowRect.top, newWindowRect.right == int.min ? _windowRect.right : newWindowRect.right, 
+            handleWindowStateChange(newState, Rect(newWindowRect.left == int.min ? _windowRect.left : newWindowRect.left,
+                newWindowRect.top == int.min ? _windowRect.top : newWindowRect.top, newWindowRect.right == int.min ? _windowRect.right : newWindowRect.right,
                 newWindowRect.bottom == int.min ? _windowRect.bottom : newWindowRect.bottom));
         }
         else
             handleWindowStateChange(newState, RECT_VALUE_IS_NOT_SET);
-        
-        
+
+
         return result;
     }
 
     override @property DWindow parentWindow() {
         return _parent;
     }
-    
+
     private bool _isActive;
     override protected void handleWindowActivityChange(bool isWindowActive) {
         _isActive = isWindowActive;
         super.handleWindowActivityChange(isWindowActive);
     }
-    
+
     override @property bool isActive() {
         return _isActive;
     }
-    
+
     override @property dstring windowCaption() {
         return _caption;
     }
-    
+
     override @property void windowCaption(dstring caption) {
         _caption = caption;
         auto captionc = _caption.toUTF8;
@@ -631,7 +631,7 @@ class X11Window : DWindow {
         Log.d("X11Window.close()");
         _platform.closeWindow(this);
     }
-    
+
     ColorDrawBuf _drawbuf;
     protected void drawUsingBitmap() {
         if (_dx > 0 && _dy > 0) {
@@ -663,8 +663,8 @@ class X11Window : DWindow {
             img.blue_mask = 0x0000FF;
             XInitImage(&img);
             //XSetClipOrigin(x11display, _gc, 0, 0);
-            XPutImage(x11display, _win, 
-                _gc, //DefaultGC(x11display, DefaultScreen(x11display)), 
+            XPutImage(x11display, _win,
+                _gc, //DefaultGC(x11display, DefaultScreen(x11display)),
                 &img,
                 0, 0, 0, 0,
                 _drawbuf.width,
@@ -725,7 +725,7 @@ class X11Window : DWindow {
             res |= MouseFlag.MButton;
         return res;
     }
-    
+
     MouseButton convertMouseButton(uint button) {
         if (button == Button1)
             return MouseButton.Left;
@@ -1019,7 +1019,7 @@ class X11Window : DWindow {
                 return 0x10000 | keyCode;
         }
     }
-    
+
     uint convertKeyFlags(uint flags) {
         uint res;
         if (flags & ControlMask)
@@ -1042,10 +1042,10 @@ class X11Window : DWindow {
 //            res |= KeyFlag.LAlt | KeyFlag.Alt;
         return res;
     }
-    
+
 
     bool processKeyEvent(KeyAction action, uint keyCode, uint flags) {
-        //debug(DebugSDL) 
+        //debug(DebugSDL)
         Log.d("processKeyEvent ", action, " X11 key=0x", format("%08x", keyCode), " X11 flags=0x", format("%08x", flags));
         keyCode = convertKeyCode(keyCode);
         flags = convertKeyFlags(flags);
@@ -1086,7 +1086,7 @@ class X11Window : DWindow {
             }
         }
         _keyFlags = flags;
-        
+
         debug(DebugSDL) Log.d("processKeyEvent ", action, " converted key=0x", format("%08x", keyCode), " converted flags=0x", format("%08x", flags));
         bool res = dispatchKeyEvent(new KeyEvent(action, keyCode, flags));
         //            if ((keyCode & 0x10000) && (keyCode & 0xF000) != 0xF000) {
@@ -1147,7 +1147,7 @@ class X11Window : DWindow {
             timer.set(nextts);
         }
     }
-    
+
     bool handleTimer() {
         if (!_nextExpectedTimerTs)
             return false;
@@ -1211,9 +1211,9 @@ class X11Platform : Platform {
      *         windowCaption = window caption text
      *         parent = parent Window, or null if no parent
      *         flags = WindowFlag bit set, combination of Resizable, Modal, Fullscreen
-     *      width = window width 
+     *      width = window width
      *      height = window height
-     * 
+     *
      * Window w/o Resizable nor Fullscreen will be created with size based on measurement of its content widget
      */
     override DWindow createWindow(dstring windowCaption, DWindow parent, uint flags = WindowFlag.Resizable, uint width = 0, uint height = 0) {
@@ -1233,7 +1233,7 @@ class X11Platform : Platform {
 
     /**
      * close window
-     * 
+     *
      * Closes window earlier created with createWindow()
      */
     override void closeWindow(DWindow w) {
@@ -1250,7 +1250,7 @@ class X11Platform : Platform {
         XSendEvent(x11display2, window._win, false, StructureNotifyMask, &ev);
         XFlush(x11display2);
         XUnlockDisplay(x11display2);
-        
+
         for (uint i = 0; i < _windowList.length; i++) {
             if (w is _windowList[i]) {
                 for (uint j = i; j + 1 < _windowList.length; j++)
@@ -1260,7 +1260,7 @@ class X11Platform : Platform {
                 break;
             }
         }
-        
+
     }
 
     bool handleTimers() {
@@ -1280,13 +1280,13 @@ class X11Platform : Platform {
 
     /**
      * Starts application message loop.
-     * 
+     *
      * When returned from this method, application is shutting down.
      */
     override int enterMessageLoop() {
         import core.thread;
         XEvent event;        /* the XEvent declaration !!! */
-        KeySym key;        /* a dealie-bob to handle KeyPress Events */    
+        KeySym key;        /* a dealie-bob to handle KeyPress Events */
         char[255] text;        /* a char buffer for KeyPress Events */
 
         Log.d("enterMessageLoop()");
@@ -1349,7 +1349,7 @@ class X11Platform : Platform {
                                 int format;
                                 ubyte* properties;
                                 c_ulong dataLength, overflow;
-                                if (XGetWindowProperty(x11display, event.xproperty.window, atom_NET_WM_STATE, 
+                                if (XGetWindowProperty(x11display, event.xproperty.window, atom_NET_WM_STATE,
                                     0, int.max/4, False, AnyPropertyType, &type, &format, &dataLength, &overflow, &properties) == 0) {
                                     scope(exit) XFree(properties);
                                     // check for minimized
@@ -1369,12 +1369,12 @@ class X11Platform : Platform {
                                             if (((cast(c_ulong*)properties)[i]) == atom_NET_WM_STATE_MAXIMIZED_HORZ)
                                                 maximizedH = true;
                                         }
-                                        
+
                                         if (maximizedV && maximizedH)
                                             w.handleWindowStateChange(WindowState.maximized);
                                         else
                                             w.handleWindowStateChange(WindowState.normal);
-                                    
+
                                     }
                                 }
                             }
@@ -1445,7 +1445,7 @@ class X11Platform : Platform {
                                 w.processTextInput(dtext, event.xkey.state);
                             } else {
                                 w.processKeyEvent(KeyAction.KeyDown, cast(uint)ks,
-                                    //event.xkey.keycode, 
+                                    //event.xkey.keycode,
                                     event.xkey.state);
                             }
                         } else {
@@ -1460,7 +1460,7 @@ class X11Platform : Platform {
                             KeySym ks;
                             XLookupString(&event.xkey, buf.ptr, buf.length - 1, &ks, &compose);
                             w.processKeyEvent(KeyAction.KeyUp, cast(uint)ks,
-                                //event.xkey.keycode, 
+                                //event.xkey.keycode,
                                 event.xkey.state);
                         } else {
                             Log.e("Window not found");
@@ -1529,7 +1529,7 @@ class X11Platform : Platform {
                     case FocusIn:
                         Log.d("X11: FocusIn event");
                         X11Window w = findWindow(event.xfocus.window);
-                        if (w) 
+                        if (w)
                             w.handleWindowActivityChange(true);
                         else
                             Log.e("Window not found");
@@ -1537,7 +1537,7 @@ class X11Platform : Platform {
                     case FocusOut:
                         Log.d("X11: FocusOut event");
                         X11Window w = findWindow(event.xfocus.window);
-                        if (w) 
+                        if (w)
                             w.handleWindowActivityChange(false);
                         else
                             Log.e("Window not found");
@@ -1569,7 +1569,7 @@ class X11Platform : Platform {
                                     Atom currentSelectionType;
                                     c_ulong selectionDataLength, overflow;
                                     ubyte* selectionDataPtr;
-                                    if (XGetWindowProperty(x11display, DefaultRootWindow(x11display), atom_DLANGUI_CLIPBOARD_BUFFER, 
+                                    if (XGetWindowProperty(x11display, DefaultRootWindow(x11display), atom_DLANGUI_CLIPBOARD_BUFFER,
                                         0, int.max/4, False, selectionRequest.target,
                                         &currentSelectionType, &currentSelectionFormat, &selectionDataLength,
                                         &overflow, &selectionDataPtr) == 0)
@@ -1665,14 +1665,14 @@ class X11Platform : Platform {
             XSetSelectionOwner(x11display, atom_CLIPBOARD, xwindow, CurrentTime);
         }
     }
-    
+
     /// calls request layout for all windows
     override void requestLayout() {
         foreach(w; _windowMap) {
             w.requestLayout();
         }
     }
-    
+
     /// returns true if there is some modal window opened above this window, and this window should not process mouse/key input and should not allow closing
     override bool hasModalWindowsAbove(DWindow w) {
         // override in platform specific class
@@ -1687,13 +1687,13 @@ class X11Platform : Platform {
         }
         return false;
     }
-    
+
     /// handle theme change: e.g. reload some themed resources
     override void onThemeChanged() {
         foreach(w; _windowMap)
             w.dispatchThemeChanged();
     }
-    
+
 }
 
 import core.thread;
@@ -1792,9 +1792,9 @@ extern(C) int DLANGUImain(string[] args)
 
     XInitThreads();
 
-    /* use the information from the environment variable DISPLAY 
+    /* use the information from the environment variable DISPLAY
        to create the X connection:
-    */    
+    */
     x11display = XOpenDisplay(null);
     if (!x11display) {
         Log.e("Cannot open X11 display");
@@ -1829,7 +1829,7 @@ extern(C) int DLANGUImain(string[] args)
             Log.e("Cannot load OpenGL library", e);
         }
     }
-    
+
 
     setupX11Atoms();
 
@@ -1860,26 +1860,26 @@ extern(C) int DLANGUImain(string[] args)
     X11Platform x11platform = new X11Platform();
 
     Platform.setInstance(x11platform);
-    
+
     int res = 0;
-    
+
     version (unittest) {
     } else {
         res = UIAppMain(args);
     }
-    
+
     //Log.e("Widget instance count after UIAppMain: ", Widget.instanceCount());
-    
+
     Log.d("Destroying X11 platform");
     Platform.setInstance(null);
-    
+
     releaseResourcesOnAppExit();
 
 
-    XCloseDisplay(x11display);    
-    XCloseDisplay(x11display2);    
+    XCloseDisplay(x11display);
+    XCloseDisplay(x11display2);
 
     Log.d("Exiting main width result=", res);
-    
+
     return res;
 }

@@ -57,7 +57,7 @@ class AbstractSlider : WidgetGroup {
     /// returns slider position
     @property int position() const { return _position; }
     /// sets new slider position
-    @property AbstractSlider position(int newPosition) { 
+    @property AbstractSlider position(int newPosition) {
         if (_position != newPosition) {
             _position = newPosition;
             onPositionChanged();
@@ -136,12 +136,12 @@ class AbstractSlider : WidgetGroup {
     /// returns scrollbar orientation (Vertical, Horizontal)
     @property Orientation orientation() { return _orientation; }
     /// sets scrollbar orientation
-    @property AbstractSlider orientation(Orientation value) { 
+    @property AbstractSlider orientation(Orientation value) {
         if (_orientation != value) {
-            _orientation = value; 
-            requestLayout(); 
+            _orientation = value;
+            requestLayout();
         }
-        return this; 
+        return this;
     }
 
 }
@@ -317,13 +317,13 @@ class ScrollBar : AbstractSlider, OnClickHandler {
     /// returns scrollbar orientation (Vertical, Horizontal)
     override @property Orientation orientation() { return _orientation; }
     /// sets scrollbar orientation
-    override @property AbstractSlider orientation(Orientation value) { 
+    override @property AbstractSlider orientation(Orientation value) {
         if (_orientation != value) {
             _orientation = value;
             updateDrawableIds();
             requestLayout();
         }
-        return this; 
+        return this;
     }
 
     void updateDrawableIds() {
@@ -383,7 +383,7 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         _pageDown.click = &onClick;
     }
 
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         Point sz;
         _btnBack.measure(parentWidth, parentHeight);
         _btnForward.measure(parentWidth, parentHeight);
@@ -768,13 +768,13 @@ class SliderWidget : AbstractSlider, OnClickHandler {
     /// returns scrollbar orientation (Vertical, Horizontal)
     override @property Orientation orientation() { return _orientation; }
     /// sets scrollbar orientation
-    override @property AbstractSlider orientation(Orientation value) { 
+    override @property AbstractSlider orientation(Orientation value) {
         if (_orientation != value) {
-            _orientation = value; 
+            _orientation = value;
             _indicator.drawableId = style.customDrawableId(_orientation == Orientation.Vertical ? ATTR_SCROLLBAR_INDICATOR_VERTICAL : ATTR_SCROLLBAR_INDICATOR_HORIZONTAL);
-            requestLayout(); 
+            requestLayout();
         }
-        return this; 
+        return this;
     }
 
     /// set string property value, for ML loaders
@@ -813,7 +813,7 @@ class SliderWidget : AbstractSlider, OnClickHandler {
         _pageDown.click = &onClick;
     }
 
-    override void measure(int parentWidth, int parentHeight) { 
+    override void measure(int parentWidth, int parentHeight) {
         Point sz;
         _indicator.measure(parentWidth, parentHeight);
         _pageUp.measure(parentWidth, parentHeight);

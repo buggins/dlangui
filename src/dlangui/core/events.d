@@ -230,11 +230,11 @@ struct ActionState {
     @property bool checked() const { return (_flags & StateFlag.checked) != 0; }
     @property void checked(bool f) { _flags = f ? (_flags | StateFlag.checked) : (_flags & ~StateFlag.checked); }
     this(bool en, bool vis, bool check) {
-        _flags = (en ? StateFlag.enabled : 0) 
-            | (vis ? StateFlag.visible : 0) 
+        _flags = (en ? StateFlag.enabled : 0)
+            | (vis ? StateFlag.visible : 0)
             | (check ? StateFlag.checked : 0);
     }
-    string toString() const { 
+    string toString() const {
         return (enabled ? "enabled" : "disabled") ~ (visible ? "_visible" : "_invisible") ~ (checked ? "_checked" : "");
     }
 }
@@ -274,7 +274,7 @@ static bool matchKeyFlags(uint eventFlags, uint requestedFlags) {
     return true;
 }
 
-/** 
+/**
     UI action
 
     For using in menus, toolbars, etc.
@@ -319,7 +319,7 @@ class Action {
             Action nonConstThis = cast(Action) this;
             nonConstThis._state = s;
         }
-        return this; 
+        return this;
     }
     @property const(Action) checked(bool newValue) const {
         state = ActionState(_state.enabled, _state.visible, newValue);
@@ -643,22 +643,22 @@ struct ActionList {
 /// Mouse action codes for MouseEvent
 enum MouseAction : ubyte {
     /// button down handling is cancelled
-    Cancel,   
+    Cancel,
     /// button is down
-    ButtonDown, 
+    ButtonDown,
     /// button is up
-    ButtonUp, 
+    ButtonUp,
     /// mouse pointer is moving
-    Move,     
+    Move,
     /// pointer is back inside widget while button is down after FocusOut
-    FocusIn,  
+    FocusIn,
     /// pointer moved outside of widget while button was down (if handler returns true, Move events will be sent even while pointer is outside widget)
-    FocusOut, 
+    FocusOut,
     /// scroll wheel movement
-    Wheel,    
+    Wheel,
     //Hover,    // pointer entered widget which while button was not down (return true to track Hover state)
     /// pointer left widget which has before processed Move message, while button was not down
-    Leave     
+    Leave
 }
 
 /// Mouse flag bits (mouse buttons and keyboard modifiers) for MouseEvent
@@ -802,7 +802,7 @@ struct ButtonDetails {
     @property ushort downFlags() { return _downFlags; }
 }
 
-/** 
+/**
     Mouse event
  */
 class MouseEvent {
@@ -837,11 +837,11 @@ class MouseEvent {
     /// middle button state details
     @property ref ButtonDetails mbutton() { return _mbutton; }
     /// button state details for event's button
-    @property ref ButtonDetails buttonDetails() { 
+    @property ref ButtonDetails buttonDetails() {
         if (_button == MouseButton.Right)
-            return _rbutton; 
+            return _rbutton;
         if (_button == MouseButton.Middle)
-            return _mbutton; 
+            return _mbutton;
         return _lbutton;
     }
     /// button which caused ButtonUp or ButtonDown action
@@ -1209,7 +1209,7 @@ enum KeyCode : uint {
     //LMENU = 0xA4, //VK_LMENU
     //RMENU = 0xA5,
     /// ;
-    SEMICOLON = 0x201, 
+    SEMICOLON = 0x201,
     /// ~
     TILDE = 0x202,
     /// '
@@ -1264,7 +1264,7 @@ enum ScrollAction : ubyte {
     /// space above indicator pressed
     PageUp,
     /// space below indicator pressed
-    PageDown, 
+    PageDown,
     /// up/left button pressed
     LineUp,
     /// down/right button pressed
@@ -1348,7 +1348,7 @@ class ScrollEvent {
     }
 }
 
-/** 
+/**
 Converts key name to KeyCode enum value
 For unknown key code, returns 0
 */
@@ -1429,8 +1429,8 @@ uint parseKeyName(string name) {
     }
 }
 
-/** 
-    Converts KeyCode enum value to human readable key name 
+/**
+    Converts KeyCode enum value to human readable key name
 
     For unknown key code, prints its hex value.
 */
@@ -1652,7 +1652,7 @@ class RunnableEvent : CustomEvent {
 /**
 Queue destroy event.
 
-This event allows delayed widget destruction and is used internally by 
+This event allows delayed widget destruction and is used internally by
 $(LINK2 $(DDOX_ROOT_DIR)dlangui/platforms/common/platform/Window.queueWidgetDestroy.html, Window.queueWidgetDestroy()).
 */
 class QueueDestroyEvent : RunnableEvent {
@@ -1661,7 +1661,7 @@ class QueueDestroyEvent : RunnableEvent {
     {
         _widgetToDestroy = widgetToDestroy;
         super(1,null, delegate void () {
-            if (_widgetToDestroy.parent) 
+            if (_widgetToDestroy.parent)
                 _widgetToDestroy.parent.removeChild(_widgetToDestroy);
             destroy(_widgetToDestroy);
         });

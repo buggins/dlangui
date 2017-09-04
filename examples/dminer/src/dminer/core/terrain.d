@@ -88,7 +88,7 @@ struct TerrainGen {
             }
         }
         Log.f("last index = ", index);
-        int half = step >> 1;   
+        int half = step >> 1;
         while (half > 0) {
             Log.f("halfstep=", half);
             for (int y = half; y < dy; y += step) {
