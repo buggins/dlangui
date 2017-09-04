@@ -991,6 +991,12 @@ class SDLWindow : Window {
         uint flags = convertKeyFlags(SDL_GetModState());
         //do not handle Ctrl+Space as text https://github.com/buggins/dlangui/issues/160
         //but do hanlde RAlt https://github.com/buggins/dlangide/issues/129
+        debug(KeyInput) Log.d(" processTextInput  char=", ds, "(", cast(int)ds[0], ") flags=", "%04x"d.format(flags));
+        if ((flags & KeyFlag.Alt) && (flags & KeyFlag.Control)) {
+            flags &= (~(KeyFlag.LRAlt)) & (~(KeyFlag.LRControl));
+            debug(KeyInput) Log.d(" processTextInput removed Ctrl+Alt flags char=", ds, "(", cast(int)ds[0], ") flags=", "%04x"d.format(flags));
+        }
+
         if (flags & KeyFlag.Control || (flags & KeyFlag.LAlt) == KeyFlag.LAlt || flags & KeyFlag.Menu)
                 return true;
        
