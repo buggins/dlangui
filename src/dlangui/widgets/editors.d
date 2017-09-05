@@ -1254,6 +1254,18 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return true;
     }
 
+    /// returns current selection range
+    @property TextRange selectionRange() {
+        return _selectionRange;
+    }
+    /// sets current selection range
+    @property void selectionRange(TextRange range) {
+        if (range.empty)
+            return;
+        _selectionRange = range;
+        _caretPos = range.end;
+    }
+
     /// override to handle specific actions state (e.g. change enabled state for supported actions)
     override bool handleActionStateRequest(const Action a) {
         switch (a.id) with(EditorActions)
@@ -3462,7 +3474,9 @@ class FindPanel : HorizontalLayout {
         TextPosition pos = _editor.caretPos;
         bool res = _editor.findNextPattern(pos, currentText, _cbCaseSensitive.checked, back ? -1 : 1);
         if (res) {
-            _editor.setCaretPos(pos.line, pos.pos, true);
+            _editor.selectionRange = TextRange(pos, TextPosition(pos.line, pos.pos + cast(int)currentText.length));
+            _editor.ensureCaretVisible();
+            //_editor.setCaretPos(pos.line, pos.pos, true);
         }
     }
 
