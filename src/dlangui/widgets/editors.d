@@ -3460,6 +3460,8 @@ class FindPanel : HorizontalLayout {
     }
 
     bool onEditorKeyEvent(Widget source, KeyEvent event) {
+        if (event.keyCode == KeyCode.TAB)
+            return true;
         if (event.action == KeyAction.KeyDown && event.keyCode == KeyCode.ESCAPE) {
             close();
             return true;
