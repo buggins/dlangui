@@ -1215,6 +1215,12 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     protected bool _camelCasePartsAsWords = true;
 
+    void replaceSelectionText(dstring newText) {
+        EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [newText]);
+        _content.performOperation(op, this);
+        ensureCaretVisible();
+    }
+
     protected bool removeSelectionTextIfSelected() {
         if (_selectionRange.empty)
             return false;
@@ -2784,7 +2790,7 @@ class EditBox : EditWidgetBase {
         if (!all.length)
             return false;
         int currentIndex = -1;
-        int nearestIndex = -1;
+        int nearestIndex = cast(int)all.length;
         for (int i = 0; i < all.length; i++) {
             if (all[i].isInsideOrNext(pos)) {
                 currentIndex = i;
@@ -2811,9 +2817,11 @@ class EditBox : EditWidgetBase {
             pos = all[currentIndex].start;
             return true;
         }
-        if (direction >= 0)
-            nearestIndex++;
-        if (nearestIndex >= all.length)
+        if (direction < 0)
+            nearestIndex--;
+        if (nearestIndex < 0)
+            nearestIndex = cast(int)all.length - 1;
+        else if (nearestIndex >= all.length)
             nearestIndex = 0;
         pos = all[nearestIndex].start;
         return true;
@@ -3176,9 +3184,6 @@ class EditBox : EditWidgetBase {
     /// create find panel; returns true if panel was not yet visible
     protected bool createFindPanel(bool selectionOnly, bool replaceMode) {
         bool res = false;
-        if (_findPanel) {
-            closeFindPanel(false);
-        }
         dstring txt = selectionText(true);
         if (!_findPanel) {
             _findPanel = new FindPanel(this, selectionOnly, replaceMode, txt);
@@ -3314,6 +3319,7 @@ class FindPanel : HorizontalLayout {
     protected Button _btnFindNext;
     protected Button _btnFindPrev;
     protected Button _btnReplace;
+    protected Button _btnReplaceAndFind;
     protected Button _btnReplaceAll;
     protected ImageButton _btnClose;
     protected bool _replaceMode;
@@ -3347,23 +3353,24 @@ class FindPanel : HorizontalLayout {
                             EditLine { id: edFind; layoutWidth: fill; alignment: vcenter }
                             Button { id: btnFindNext; text: EDIT_FIND_NEXT }
                             Button { id: btnFindPrev; text: EDIT_FIND_PREV }
+                            VerticalLayout {
+                                VSpacer {}
+                                HorizontalLayout {
+                                    ImageCheckButton { id: cbCaseSensitive; drawableId: "find_case_sensitive"; tooltipText: EDIT_FIND_CASE_SENSITIVE; styleId: TOOLBAR_BUTTON; alignment: vcenter }
+                                    ImageCheckButton { id: cbWholeWords; drawableId: "find_whole_words"; tooltipText: EDIT_FIND_WHOLE_WORDS; styleId: TOOLBAR_BUTTON; alignment: vcenter }
+                                    CheckBox { id: cbSelection; text: "Sel" }
+                                }
+                                VSpacer {}
+                            }
                         }
                         HorizontalLayout {
                             id: replace
                             layoutWidth: fill;
                             EditLine { id: edReplace; layoutWidth: fill; alignment: vcenter }
                             Button { id: btnReplace; text: EDIT_REPLACE_NEXT }
+                            Button { id: btnReplaceAndFind; text: EDIT_REPLACE_AND_FIND }
                             Button { id: btnReplaceAll; text: EDIT_REPLACE_ALL }
                         }
-                    }
-                    VerticalLayout {
-                        VSpacer {}
-                        HorizontalLayout {
-                            ImageCheckButton { id: cbCaseSensitive; drawableId: "find_case_sensitive"; tooltipText: EDIT_FIND_CASE_SENSITIVE; styleId: TOOLBAR_BUTTON; alignment: vcenter }
-                            ImageCheckButton { id: cbWholeWords; drawableId: "find_whole_words"; tooltipText: EDIT_FIND_WHOLE_WORDS; styleId: TOOLBAR_BUTTON; alignment: vcenter }
-                            CheckBox { id: cbSelection; text: "Sel" }
-                        }
-                        VSpacer {}
                     }
                     VerticalLayout {
                         VSpacer {}
@@ -3396,6 +3403,8 @@ class FindPanel : HorizontalLayout {
         _btnFindPrev.click = &onButtonClick;
         _btnReplace = childById!Button("btnReplace");
         _btnReplace.click = &onButtonClick;
+        _btnReplaceAndFind = childById!Button("btnReplaceAndFind");
+        _btnReplaceAndFind.click = &onButtonClick;
         _btnReplaceAll = childById!Button("btnReplaceAll");
         _btnReplaceAll.click = &onButtonClick;
         _btnClose = childById!ImageButton("btnClose");
@@ -3431,10 +3440,14 @@ class FindPanel : HorizontalLayout {
                 close();
                 return true;
             case "btnReplace":
-                // TODO
+                replaceOne();
+                return true;
+            case "btnReplaceAndFind":
+                replaceOne();
+                findNext(_backDirection);
                 return true;
             case "btnReplaceAll":
-                // TODO
+                replaceAll();
                 return true;
             default:
                 return true;
@@ -3466,10 +3479,12 @@ class FindPanel : HorizontalLayout {
         }
     }
 
-    void findNext(bool back) {
+    bool findNext(bool back) {
         setDirection(back);
         dstring currentText = _edFind.text;
         Log.d("findNext text=", currentText, " back=", back);
+        if (!currentText.length)
+            return false;
         _editor.setTextToHighlight(currentText, _cbCaseSensitive.checked);
         TextPosition pos = _editor.caretPos;
         bool res = _editor.findNextPattern(pos, currentText, _cbCaseSensitive.checked, back ? -1 : 1);
@@ -3478,6 +3493,49 @@ class FindPanel : HorizontalLayout {
             _editor.ensureCaretVisible();
             //_editor.setCaretPos(pos.line, pos.pos, true);
         }
+        return res;
+    }
+
+    bool replaceOne() {
+        dstring currentText = _edFind.text;
+        dstring newText = _edReplace.text;
+        Log.d("replaceOne text=", currentText, " back=", _backDirection, " newText=", newText);
+        if (!currentText.length)
+            return false;
+        _editor.setTextToHighlight(currentText, _cbCaseSensitive.checked);
+        TextPosition pos = _editor.caretPos;
+        bool res = _editor.findNextPattern(pos, currentText, _cbCaseSensitive.checked, 0);
+        if (res) {
+            _editor.selectionRange = TextRange(pos, TextPosition(pos.line, pos.pos + cast(int)currentText.length));
+            _editor.replaceSelectionText(newText);
+            _editor.selectionRange = TextRange(pos, TextPosition(pos.line, pos.pos + cast(int)newText.length));
+            _editor.ensureCaretVisible();
+            //_editor.setCaretPos(pos.line, pos.pos, true);
+        }
+        return res;
+    }
+
+    int replaceAll() {
+        int count = 0;
+        for(int i = 0; ; i++) {
+            debug Log.d("replaceAll - calling replaceOne, iteration ", i);
+            if (!replaceOne())
+                break;
+            count++;
+            TextPosition initialPosition = _editor.caretPos;
+            debug Log.d("replaceAll - position is ", initialPosition);
+            if (!findNext(_backDirection))
+                break;
+            TextPosition newPosition = _editor.caretPos;
+            debug Log.d("replaceAll - next position is ", newPosition);
+            if (_backDirection && newPosition >= initialPosition)
+                break;
+            if (!_backDirection && newPosition <= initialPosition)
+                break;
+        }
+        debug Log.d("replaceAll - done, replace count = ", count);
+        _editor.ensureCaretVisible();
+        return count;
     }
 
     void updateHighlight() {
