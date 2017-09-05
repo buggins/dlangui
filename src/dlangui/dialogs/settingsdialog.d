@@ -141,7 +141,7 @@ class FloatComboBoxItem : SettingsItem {
         ComboBox cb = new ComboBox(_id, _items);
         cb.minWidth = 100;
         Setting setting = settings.settingByPath(_id, SettingType.FLOAT);
-        long itemId = cast(long)(setting.floating * _divider);
+        long itemId = cast(long)(setting.floating * _divider + 0.5f);
         int index = -1;
         for (int i = 0; i < _items.length; i++) {
             if (_items[i].intId == itemId) {
@@ -151,6 +151,9 @@ class FloatComboBoxItem : SettingsItem {
         }
         if (index >= 0)
             cb.selectedItemIndex = index;
+        if (index < 0) {
+            debug Log.d("FloatComboBoxItem : item ", itemId, " is not found for value ", setting.floating);
+        }
         cb.itemClick = delegate(Widget source, int itemIndex) {
             if (itemIndex >= 0 && itemIndex < _items.length)
                 setting.floating = _items[itemIndex].intId / cast(double)_divider;
