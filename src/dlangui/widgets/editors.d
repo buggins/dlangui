@@ -189,7 +189,12 @@ enum EditorActions : int {
     /// Find text
     Find,
     /// Replace text
-    Replace
+    Replace,
+
+    /// Find next occurence - continue search forward
+    FindNext,
+    /// Find previous occurence - continue search backward
+    FindPrev,
 }
 
 
@@ -210,6 +215,8 @@ const Action ACTION_EDITOR_TOGGLE_BOOKMARK = (new Action(EditorActions.ToggleBoo
 const Action ACTION_EDITOR_GOTO_NEXT_BOOKMARK = (new Action(EditorActions.GoToNextBookmark, "ACTION_EDITOR_GOTO_NEXT_BOOKMARK"c, null, KeyCode.DOWN, KeyFlag.Control | KeyFlag.Shift | KeyFlag.Alt));
 const Action ACTION_EDITOR_GOTO_PREVIOUS_BOOKMARK = (new Action(EditorActions.GoToPreviousBookmark, "ACTION_EDITOR_GOTO_PREVIOUS_BOOKMARK"c, null, KeyCode.UP, KeyFlag.Control | KeyFlag.Shift | KeyFlag.Alt));
 const Action ACTION_EDITOR_FIND = (new Action(EditorActions.Find, KeyCode.KEY_F, KeyFlag.Control));
+const Action ACTION_EDITOR_FIND_NEXT = (new Action(EditorActions.FindNext, KeyCode.F3, 0));
+const Action ACTION_EDITOR_FIND_PREV = (new Action(EditorActions.FindPrev, KeyCode.F3, KeyFlag.Shift));
 const Action ACTION_EDITOR_REPLACE = (new Action(EditorActions.Replace, KeyCode.KEY_H, KeyFlag.Control));
 
 const Action[] STD_EDITOR_ACTIONS = [ACTION_EDITOR_INSERT_NEW_LINE, ACTION_EDITOR_PREPEND_NEW_LINE,
@@ -582,6 +589,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             new Action(EditorActions.Replace, KeyCode.KEY_H, KeyFlag.Control),
         ]);
         acceleratorMap.add(STD_EDITOR_ACTIONS);
+        acceleratorMap.add([ACTION_EDITOR_FIND_NEXT, ACTION_EDITOR_FIND_PREV]);
     }
 
     protected MenuItem _popupMenu;
@@ -640,6 +648,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             case Replace:
                 return _content.multiline && !readOnly;
             case Find:
+            case FindNext:
+            case FindPrev:
                 return true;
             default:
                 return super.isActionEnabled(action);
@@ -2642,10 +2652,16 @@ class EditBox : EditWidgetBase {
                 }
                 return true;
             case Find:
-                createFindPanel(false, false);
+                openFindPanel();
+                return true;
+            case FindNext:
+                findNext(false);
+                return true;
+            case FindPrev:
+                findNext(true);
                 return true;
             case Replace:
-                createFindPanel(false, true);
+                openReplacePanel();
                 return true;
             default:
                 break;
@@ -3127,18 +3143,47 @@ class EditBox : EditWidgetBase {
         return res;
     }
 
-    /// create find panel
-    protected void createFindPanel(bool selectionOnly, bool replaceMode) {
+    protected void findNext(bool backward) {
+        createFindPanel(false, false);
+        _findPanel.findNext(backward);
+        // don't change replace mode
+    }
+
+    protected void openFindPanel() {
+        createFindPanel(false, false);
+        _findPanel.replaceMode = false;
+        _findPanel.activate();
+    }
+
+    protected void openReplacePanel() {
+        createFindPanel(false, true);
+        _findPanel.replaceMode = true;
+        _findPanel.activate();
+    }
+
+    /// create find panel; returns true if panel was not yet visible
+    protected bool createFindPanel(bool selectionOnly, bool replaceMode) {
+        bool res = false;
         if (_findPanel) {
             closeFindPanel(false);
         }
         dstring txt = selectionText(true);
-        _findPanel = new FindPanel(this, selectionOnly, replaceMode, txt);
-        addChild(_findPanel);
+        if (!_findPanel) {
+            _findPanel = new FindPanel(this, selectionOnly, replaceMode, txt);
+            addChild(_findPanel);
+            res = true;
+        } else {
+            if (_findPanel.visibility != Visibility.Visible) {
+                _findPanel.visibility = Visibility.Visible;
+                if (txt.length)
+                    _findPanel.searchText = txt;
+                res = true;
+            }
+        }
         if (!pos.empty)
             layout(pos);
-        _findPanel.activate();
         requestLayout();
+        return res;
     }
 
     /// close find panel
@@ -3259,7 +3304,25 @@ class FindPanel : HorizontalLayout {
     protected Button _btnReplace;
     protected Button _btnReplaceAll;
     protected ImageButton _btnClose;
+    protected bool _replaceMode;
+    /// returns true if panel is working in replace mode
+    @property bool replaceMode() { return _replaceMode; }
+    @property FindPanel replaceMode(bool newMode) { 
+        if (newMode != _replaceMode) {
+            _replaceMode = newMode;
+            childById("replace").visibility = newMode ? Visibility.Visible : Visibility.Gone;
+        }
+        return this;
+    }
+    @property dstring searchText() {
+        return _edFind.text;
+    }
+    @property FindPanel searchText(dstring newText) {
+        _edFind.text = newText;
+        return this;
+    }
     this(EditBox editor, bool selectionOnly, bool replace, dstring initialText = ""d) {
+        _replaceMode = replace;
         import dlangui.dml.parser;
         try {
             parseML(q{
