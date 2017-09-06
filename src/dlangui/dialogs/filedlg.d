@@ -998,6 +998,7 @@ class FileNameEditLine : HorizontalLayout {
         _caption = UIString.fromId("TITLE_OPEN_FILE"c).value;
         _edFileName = new EditLine("FileNameEditLine_edFileName");
         _edFileName.minWidth(BACKEND_CONSOLE ? 16 : 200);
+        _edFileName.layoutWidth = FILL_PARENT;
         _btn = new Button("FileNameEditLine_btnFile", "..."d);
         _btn.styleId = STYLE_BUTTON_NOMARGINS;
         _btn.layoutWeight = 0;
