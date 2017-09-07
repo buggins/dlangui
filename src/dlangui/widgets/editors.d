@@ -1247,6 +1247,12 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return _content.lineRange(_caretPos.line);
     }
 
+    /// clears selection (don't change text, just unselect)
+    void clearSelection() {
+        _selectionRange = TextRange(_caretPos, _caretPos);
+        invalidate();
+    }
+
     protected bool removeRangeText(TextRange range) {
         if (range.empty)
             return false;
@@ -1390,6 +1396,9 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                         _caretPos.pos = space.firstNonSpaceIndex;
                     ensureCaretVisible();
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
+                    if (a.id == EditorActions.LineBegin && _caretPos == oldCaretPos) {
+                        clearSelection();
+                    }
                 }
                 return true;
             case DocumentEnd:
@@ -1407,6 +1416,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     _caretPos.pos = cast(int)currentLine.length;
                     ensureCaretVisible();
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
+                } else if (a.id == EditorActions.LineEnd) {
+                        clearSelection();
                 }
                 return true;
             case DelPrevWord:
