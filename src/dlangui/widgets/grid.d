@@ -255,6 +255,11 @@ interface ViewScrolledHandler {
     void onViewScrolled(GridWidgetBase source, int col, int row);
 }
 
+/// Callback for handling of grid header cell click
+interface HeaderCellClickHandler {
+    void onHeaderCellClick(GridWidgetBase source, int col, int row);
+}
+
 /// Abstract grid widget
 class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler {
     /// Callback to handle selection change
@@ -265,6 +270,9 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     /// Callback for handling of view scroll (top left visible cell change)
     Listener!ViewScrolledHandler viewScrolled;
+
+    /// Callback for handling header cell click
+    Listener!HeaderCellClickHandler headerCellClicked;
 
     protected CustomGridCellAdapter _customCellAdapter;
 
@@ -1152,6 +1160,13 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
                 }
             }
             return true;
+        }
+        if (event.action == MouseAction.ButtonUp && event.button == MouseButton.Left) {
+            if (cellFound && !normalCell) {
+                if (headerCellClicked.assigned) {
+                    headerCellClicked(this, c, r);
+                }
+            }
         }
         if (event.action == MouseAction.Move && (event.flags & MouseFlag.LButton)) {
             // TODO: selection

@@ -84,6 +84,15 @@ struct FileFilterEntry {
     }
 }
 
+/// sorting orders for file dialog items
+enum FileListSortOrder {
+    NAME,
+    NAME_DESC,
+    SIZE_DESC,
+    SIZE,
+    TIMESTAMP_DESC,
+    TIMESTAMP,
+}
 
 /// File open / save dialog
 class FileDialog : Dialog, CustomGridCellAdapter {
@@ -91,6 +100,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
     protected EditLine _edFilename;
     protected ComboBox _cbFilters;
     protected StringGridWidget _fileList;
+    protected FileListSortOrder _sortOrder = FileListSortOrder.NAME;
     protected Widget leftPanel;
     protected VerticalLayout rightPanel;
     protected Action _action;
@@ -252,6 +262,178 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         }
     }
 
+    /// change sort order after clicking on column col
+    protected void changeSortOrder(int col) {
+        assert(col >= 2 && col <= 4);
+        // 2=NAME, 3=SIZE, 4=MODIFIED
+        col -= 2;
+        int n = col * 2;
+        if ((n & 0xFE) == ((cast(int)_sortOrder) & 0xFE)) {
+            // invert DESC / ASC if clicked same column as in current sorting order
+            _sortOrder = cast(FileListSortOrder)(_sortOrder ^ 1);
+        } else {
+            _sortOrder = cast(FileListSortOrder)n;
+        }
+        string selectedItemPath;
+        int currentRow = _fileList.row;
+        if (currentRow >= 0 && currentRow < _entries.length) {
+            selectedItemPath = _entries[currentRow].name;
+        }
+        sortEntries();
+        entriesToCells(selectedItemPath);
+        requestLayout();
+        if (window)
+            window.update();
+    }
+
+    /// predicate for sorting items - NAME
+    static bool compareItemsByName(ref DirEntry item1, ref DirEntry item2) {
+        return ((item1.isDir && !item2.isDir) || ((item1.isDir == item2.isDir) && (item1.name < item2.name)));
+    }
+    /// predicate for sorting items - NAME DESC
+    static bool compareItemsByNameDesc(ref DirEntry item1, ref DirEntry item2) {
+        return ((item1.isDir && !item2.isDir) || ((item1.isDir == item2.isDir) && (item1.name > item2.name)));
+    }
+    /// predicate for sorting items - SIZE
+    static bool compareItemsBySize(ref DirEntry item1, ref DirEntry item2) {
+        return ((item1.isDir && !item2.isDir) 
+                || ((item1.isDir && item2.isDir) && (item1.name < item2.name))
+                || ((!item1.isDir && !item2.isDir) && (item1.size < item2.size))
+                );
+    }
+    /// predicate for sorting items - SIZE DESC
+    static bool compareItemsBySizeDesc(ref DirEntry item1, ref DirEntry item2) {
+        return ((item1.isDir && !item2.isDir) 
+                || ((item1.isDir && item2.isDir) && (item1.name < item2.name))
+                || ((!item1.isDir && !item2.isDir) && (item1.size > item2.size))
+                );
+    }
+    /// predicate for sorting items - TIMESTAMP
+    static bool compareItemsByTimestamp(ref DirEntry item1, ref DirEntry item2) {
+        try {
+            return item1.timeLastModified < item2.timeLastModified;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+    /// predicate for sorting items - TIMESTAMP DESC
+    static bool compareItemsByTimestampDesc(ref DirEntry item1, ref DirEntry item2) {
+        try {
+            return item1.timeLastModified > item2.timeLastModified;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /// sort entries according to _sortOrder
+    protected void sortEntries() {
+        if (_entries.length < 1)
+            return;
+        DirEntry[] entriesToSort = _entries[0..$];
+        if (_entries.length > 0) {
+            string fname = baseName(_entries[0].name);
+            if (fname == "..") {
+                entriesToSort = _entries[1..$];
+            }
+        }
+        import std.algorithm.sorting : sort;
+        switch(_sortOrder) with(FileListSortOrder) {
+            default:
+            case NAME:
+                sort!compareItemsByName(entriesToSort);
+                break;
+            case NAME_DESC:
+                sort!compareItemsByNameDesc(entriesToSort);
+                break;
+            case SIZE:
+                sort!compareItemsBySize(entriesToSort);
+                break;
+            case SIZE_DESC:
+                sort!compareItemsBySizeDesc(entriesToSort);
+                break;
+            case TIMESTAMP:
+                sort!compareItemsByTimestamp(entriesToSort);
+                break;
+            case TIMESTAMP_DESC:
+                sort!compareItemsByTimestampDesc(entriesToSort);
+                break;
+        }
+    }
+
+    protected string formatTimestamp(ref DirEntry f) {
+        import std.datetime : SysTime;
+        import std.typecons : Nullable;
+        Nullable!SysTime ts;
+        try {
+            ts = f.timeLastModified;
+        } catch (Exception e) {
+            Log.w(e.msg);
+        }
+        if (ts.isNull) {
+            return "----.--.-- --:--";
+        } else {
+            //date = "%04d.%02d.%02d %02d:%02d:%02d".format(ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second);
+            return "%04d.%02d.%02d %02d:%02d".format(ts.year, ts.month, ts.day, ts.hour, ts.minute);
+        }
+    }
+
+    protected int entriesToCells(string selectedItemPath) {
+        _fileList.rows = cast(int)_entries.length;
+        int selectionIndex = -1;
+        for (int i = 0; i < _entries.length; i++) {
+            if (_entries[i].name.equal(selectedItemPath))
+                selectionIndex = i;
+            string fname = baseName(_entries[i].name);
+            string sz;
+            string date;
+            bool d = _entries[i].isDir;
+            _fileList.setCellText(1, i, toUTF32(fname));
+            if (d) {
+                _fileList.setCellText(0, i, "folder");
+                if (fname != "..")
+                    date = formatTimestamp(_entries[i]);
+            } else {
+                string ext = extension(fname);
+                string resname;
+                if (ext in _filetypeIcons)
+                    resname = _filetypeIcons[ext];
+                else if (baseName(fname) in _filetypeIcons)
+                    resname = _filetypeIcons[baseName(fname)];
+                else
+                    resname = "text-plain";
+                _fileList.setCellText(0, i, toUTF32(resname));
+                double size = double.nan;
+                try {
+                    size = _entries[i].size;
+                } catch (Exception e) {
+                    Log.w(e.msg);
+                }
+                import std.math : isNaN;
+                if (size.isNaN)
+                    sz = "--";
+                else {
+                    import std.format : format;
+                    sz = size < 1024 ? to!string(size) ~ " B" :
+                    (size < 1024*1024 ? "%.1f".format(size/1024) ~ " KB" :
+                     (size < 1024*1024*1024 ? "%.1f".format(size/(1024*1024)) ~ " MB" :
+                      "%.1f".format(size/(1024*1024*1024)) ~ " GB"));
+                }
+                date = formatTimestamp(_entries[i]);
+            }
+            _fileList.setCellText(2, i, toUTF32(sz));
+            _fileList.setCellText(3, i, toUTF32(date));
+        }
+        if(_fileList.height > 0)
+            _fileList.scrollTo(0, 0);
+
+        autofitGrid();
+        if (selectionIndex >= 0)
+            _fileList.selectCell(1, selectionIndex + 1, true);
+        else if (_entries.length > 0)
+            _fileList.selectCell(1, 1, true);
+        return selectionIndex;
+    }
+
     protected bool openDirectory(string dir, string selectedItemPath) {
         dir = buildNormalizedPath(dir);
         Log.d("FileDialog.openDirectory(", dir, ")");
@@ -275,70 +457,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _path = dir;
         _isRoot = isRoot(dir);
         _edPath.path = _path; //toUTF32(_path);
-        _fileList.rows = cast(int)_entries.length;
-        int selectionIndex = -1;
-        for (int i = 0; i < _entries.length; i++) {
-            if (_entries[i].name.equal(selectedItemPath))
-                selectionIndex = i;
-            string fname = baseName(_entries[i].name);
-            string sz;
-            string date;
-            bool d = _entries[i].isDir;
-            _fileList.setCellText(1, i, toUTF32(fname));
-            if (d) {
-                _fileList.setCellText(0, i, "folder");
-            } else {
-                string ext = extension(fname);
-                string resname;
-                if (ext in _filetypeIcons)
-                    resname = _filetypeIcons[ext];
-                else if (baseName(fname) in _filetypeIcons)
-                    resname = _filetypeIcons[baseName(fname)];
-                else
-                    resname = "text-plain";
-                _fileList.setCellText(0, i, toUTF32(resname));
-                double size = double.nan;
-                try {
-                    size = _entries[i].size;
-                } catch (Exception e) {
-                    Log.w(e.msg);
-                }
-                import std.math : isNaN;
-                if (size.isNaN)
-                    sz = "--";
-                else {
-                    import std.format : format;
-                    sz = size < 1024 ? to!string(size) ~ " B" :
-                        (size < 1024*1024 ? "%.1f".format(size/1024) ~ " KB" :
-                        (size < 1024*1024*1024 ? "%.1f".format(size/(1024*1024)) ~ " MB" :
-                        "%.1f".format(size/(1024*1024*1024)) ~ " GB"));
-                }
-                import std.datetime : SysTime;
-                import std.typecons : Nullable;
-                Nullable!SysTime ts;
-                try {
-                    ts = _entries[i].timeLastModified;
-                } catch (Exception e) {
-                    Log.w(e.msg);
-                }
-                if (ts.isNull)
-                    date = "----.--.-- --:--";
-                else {
-                    //date = "%04d.%02d.%02d %02d:%02d:%02d".format(ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second);
-                    date = "%04d.%02d.%02d %02d:%02d".format(ts.year, ts.month, ts.day, ts.hour, ts.minute);
-                }
-            }
-            _fileList.setCellText(2, i, toUTF32(sz));
-            _fileList.setCellText(3, i, toUTF32(date));
-        }
-        if(_fileList.height > 0)
-            _fileList.scrollTo(0, 0);
-
-        autofitGrid();
-        if (selectionIndex >= 0)
-            _fileList.selectCell(1, selectionIndex + 1, true);
-        else if (_entries.length > 0)
-            _fileList.selectCell(1, 1, true);
+        int selectionIndex = entriesToCells(selectedItemPath);
         return true;
     }
 
@@ -661,6 +780,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _fileList.menuItemAction = &handleAction;
         _fileList.minVisibleRows = 10;
         _fileList.minVisibleCols = 4;
+        _fileList.headerCellClicked = &onHeaderCellClicked;
 
         _fileList.keyEvent = delegate(Widget source, KeyEvent event) {
             if (_shortcutHelper.onKeyEvent(event))
@@ -696,6 +816,14 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         openDirectory(_path, _filename);
         _fileList.layoutHeight = FILL_PARENT;
 
+    }
+
+    protected void onHeaderCellClicked(GridWidgetBase source, int col, int row) {
+        debug Log.d("onHeaderCellClicked col=", col, " row=", row);
+        if (row == 0 && col >= 2 && col <= 4) {
+            // 2=NAME, 3=SIZE, 4=MODIFIED
+            changeSortOrder(col);
+        }
     }
 
     protected TextTypingShortcutHelper _shortcutHelper;
