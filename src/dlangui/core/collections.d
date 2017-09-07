@@ -324,10 +324,10 @@ struct ObjectList(T) {
         }
     }
     /** remove and destroy all items */
-	void clear(bool destroyObj = true) {
+    void clear(bool destroyObj = true) {
         for (int i = 0; i < _count; i++) {
-			if(destroyObj) {
-				destroy(_list[i]);
+            if(destroyObj) {
+                destroy(_list[i]);
             }
             _list[i] = null;
         }
@@ -343,6 +343,13 @@ struct ObjectList(T) {
         }
         return res;
     }
+    /// Get items array slice. Don't try to resize it!
+    T[] asArray() {
+        if (!_count)
+            return null;
+        return _list[0.._count];
+    }
+    /// destructor destroys all items
     ~this() {
         clear();
     }
