@@ -631,9 +631,8 @@ class FileDialog : Dialog, CustomGridCellAdapter {
                 _filename = _path ~ dirSeparator ~ baseFilename;
 
             if (action.id != StandardAction.OpenDirectory && exists(_filename) && isDir(_filename)) {
-                // directory selected but we need file so open directory
-                auto row = _fileList.row();
-                onItemActivated(row);
+                // directory name in _edFileName.text but we need file so open directory
+                openDirectory(_filename, null);
                 return true;
             } else if (baseFilename.length > 0) {
                 Action result = _action;
