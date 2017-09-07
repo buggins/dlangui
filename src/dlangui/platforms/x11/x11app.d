@@ -373,6 +373,9 @@ class X11Window : DWindow {
         //XFlush(x11display);
 
         handleWindowStateChange(WindowState.unspecified, Rect(0, 0, _dx, _dy));
+
+        if (platform.defaultWindowIcon.length != 0)
+            windowIcon = drawableCache.getImage(platform.defaultWindowIcon);
     }
 
     ~this() {

@@ -303,10 +303,13 @@ class Win32Window : Window {
                 useOpengl = sharedGLContext.init(hDC);
             }
         }
-        
+
         RECT rect;
         GetWindowRect(_hwnd, &rect);
         handleWindowStateChange(WindowState.unspecified, Rect(rect.left, rect.top, _dx, _dy));
+
+        if (platform.defaultWindowIcon.length != 0)
+            windowIcon = drawableCache.getImage(platform.defaultWindowIcon);
     }
 
     static if (ENABLE_OPENGL) {

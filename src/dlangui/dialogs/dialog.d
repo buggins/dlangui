@@ -65,7 +65,7 @@ class Dialog : VerticalLayout {
         _caption = caption;
         _parentWindow = parentWindow;
         _flags = flags;
-        _icon = "dlangui-logo1";
+        _icon = "";
     }
 
     /**
@@ -88,8 +88,12 @@ class Dialog : VerticalLayout {
     @property Dialog windowIcon(string iconResourceId) {
         _icon = iconResourceId;
         static if (BACKEND_GUI) {
-            if (_window && _icon)
-                _window.windowIcon = drawableCache.getImage(_icon);
+            if (_window) {
+                if (_icon.length == 0)
+                    _window.windowIcon = drawableCache.getImage(Platform.instance.defaultWindowIcon);
+                else
+                    _window.windowIcon = drawableCache.getImage(_icon);
+            }
         }
         return this;
     }
@@ -211,10 +215,7 @@ class Dialog : VerticalLayout {
             if (_initialWidth == 0 && _initialHeight == 0)
                 wflags |= WindowFlag.MeasureSize;
             _window = Platform.instance.createWindow(_caption, _parentWindow, wflags, _initialWidth, _initialHeight);
-            static if (BACKEND_GUI) {
-                if (_window && _icon)
-                    _window.windowIcon = drawableCache.getImage(_icon);
-            }
+            windowIcon = _icon;
             _window.backgroundColor = currentTheme.customColor("dialog_background");
             _window.mainWidget = this;
             _window.show();

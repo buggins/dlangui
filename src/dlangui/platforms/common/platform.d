@@ -1884,6 +1884,20 @@ class Platform {
         // override and call dispatchThemeChange for all windows
     }
 
+    /// default icon for new created windows
+    private string _defaultWindowIcon = "dlangui-logo1";
+
+    /// sets default icon for new created windows
+    @property void defaultWindowIcon(string newIcon) {
+        _defaultWindowIcon = newIcon;
+    }
+
+    /// gets default icon for new created windows
+    @property string defaultWindowIcon() {
+        return _defaultWindowIcon;
+    }
+
+
 }
 
 /// get current platform object instance

@@ -99,6 +99,9 @@ class SDLWindow : Window {
         create(flags);
         _children.reserve(20);
         Log.i(_enableOpengl ? "OpenGL is enabled" : "OpenGL is disabled");
+        
+        if (platform.defaultWindowIcon.length != 0)
+            windowIcon = drawableCache.getImage(platform.defaultWindowIcon);
     }
 
     ~this() {
