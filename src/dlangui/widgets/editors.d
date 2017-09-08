@@ -49,6 +49,13 @@ interface EditableContentChangeListener {
     void onEditableContentChanged(EditableContent source);
 }
 
+/// Flags used for search / replace / text highlight
+enum TextSearchFlag {
+    CaseSensitive = 1,
+    WholeWords = 2,
+    SelectionOnly = 4,
+}
+
 /// Editor action codes
 enum EditorActions : int {
     None = 0,
@@ -2736,15 +2743,16 @@ class EditBox : EditWidgetBase {
     }
 
     protected dstring _textToHighlight;
-    protected bool _textToHighlightCaseSensitive;
+    protected uint _textToHighlightOptions;
+
     /// text pattern to highlight - e.g. for search
     @property dstring textToHighlight() {
         return _textToHighlight;
     }
     /// set text to highlight -- e.g. for search
-    void setTextToHighlight(dstring pattern, bool caseSensitive) {
+    void setTextToHighlight(dstring pattern, uint textToHighlightOptions) {
         _textToHighlight = pattern;
-        _textToHighlightCaseSensitive = caseSensitive;
+        _textToHighlightOptions = textToHighlightOptions;
         invalidate();
     }
 
@@ -2756,39 +2764,72 @@ class EditBox : EditWidgetBase {
             return;
         ptrdiff_t start = 0;
         import std.string : indexOf, CaseSensitive, Yes, No;
+        bool caseSensitive = (_textToHighlightOptions & TextSearchFlag.CaseSensitive) != 0;
+        bool wholeWords = (_textToHighlightOptions & TextSearchFlag.WholeWords) != 0;
+        bool selectionOnly = (_textToHighlightOptions & TextSearchFlag.SelectionOnly) != 0;
         for (;;) {
-            ptrdiff_t pos = lineText[start .. $].indexOf(_textToHighlight, _textToHighlightCaseSensitive ? Yes.caseSensitive : No.caseSensitive);
+            ptrdiff_t pos = lineText[start .. $].indexOf(_textToHighlight, caseSensitive ? Yes.caseSensitive : No.caseSensitive);
             if (pos < 0)
                 break;
             // found text to highlight
             start += pos;
-            TextRange r = TextRange(TextPosition(lineIndex, cast(int)start), TextPosition(lineIndex, cast(int)(start + _textToHighlight.length)));
+            if (!wholeWords || isWholeWord(lineText, start, start + _textToHighlight.length)) {
+                TextRange r = TextRange(TextPosition(lineIndex, cast(int)start), TextPosition(lineIndex, cast(int)(start + _textToHighlight.length)));
+                uint color = r.isInsideOrNext(caretPos) ? _searchHighlightColorCurrent : _searchHighlightColorOther;
+                highlightLineRange(buf, lineRect, color, r);
+            }
             start += _textToHighlight.length;
-            uint color = r.isInsideOrNext(caretPos) ? _searchHighlightColorCurrent : _searchHighlightColorOther;
-            highlightLineRange(buf, lineRect, color, r);
         }
     }
 
-    /// find all occurences of text pattern in content
-    TextRange[] findAll(dstring pattern, bool caseSensitive) {
+    static bool isWordChar(dchar ch) {
+        if (ch >= 'a' && ch <= 'z')
+            return false;
+        if (ch >= 'A' && ch <= 'Z')
+            return false;
+        if (ch == '_')
+            return false;
+        return true;
+    }
+    static bool isValidWordBound(dchar innerChar, dchar outerChar) {
+        return isWordChar(innerChar) || isWordChar(outerChar);
+    }
+    /// returns true if selected range of string is whole word
+    static bool isWholeWord(dstring lineText, size_t start, size_t end) {
+        if (start >= lineText.length || start >= end)
+            return false;
+        if (start > 0 && !isValidWordBound(lineText[start], lineText[start - 1]))
+            return false;
+        if (end > 0 && end < lineText.length && !isValidWordBound(lineText[end - 1], lineText[end]))
+            return false;
+        return true;
+    }
+
+    /// find all occurences of text pattern in content; options = bitset of TextSearchFlag
+    TextRange[] findAll(dstring pattern, uint options) {
         TextRange[] res;
         res.assumeSafeAppend();
         if (!pattern.length)
             return res;
         import std.string : indexOf, CaseSensitive, Yes, No;
+        bool caseSensitive = (options & TextSearchFlag.CaseSensitive) != 0;
+        bool wholeWords = (options & TextSearchFlag.WholeWords) != 0;
+        bool selectionOnly = (options & TextSearchFlag.SelectionOnly) != 0;
         for (int i = 0; i < _content.length; i++) {
             dstring lineText = _content.line(i);
             if (lineText.length < pattern.length)
                 continue;
             ptrdiff_t start = 0;
             for (;;) {
-                ptrdiff_t pos = lineText[start .. $].indexOf(_textToHighlight, _textToHighlightCaseSensitive ? Yes.caseSensitive : No.caseSensitive);
+                ptrdiff_t pos = lineText[start .. $].indexOf(pattern, caseSensitive ? Yes.caseSensitive : No.caseSensitive);
                 if (pos < 0)
                     break;
                 // found text to highlight
                 start += pos;
-                TextRange r = TextRange(TextPosition(i, cast(int)start), TextPosition(i, cast(int)(start + _textToHighlight.length)));
-                res ~= r;
+                if (!wholeWords || isWholeWord(lineText, start, start + pattern.length)) {
+                    TextRange r = TextRange(TextPosition(i, cast(int)start), TextPosition(i, cast(int)(start + pattern.length)));
+                    res ~= r;
+                }
                 start += _textToHighlight.length;
             }
         }
@@ -2796,8 +2837,8 @@ class EditBox : EditWidgetBase {
     }
 
     /// find next occurence of text pattern in content, returns true if found
-    bool findNextPattern(ref TextPosition pos, dstring pattern, bool caseSensitive, int direction) {
-        TextRange[] all = findAll(pattern, caseSensitive);
+    bool findNextPattern(ref TextPosition pos, dstring pattern, uint searchOptions, int direction) {
+        TextRange[] all = findAll(pattern, searchOptions);
         if (!all.length)
             return false;
         int currentIndex = -1;
@@ -3424,6 +3465,8 @@ class FindPanel : HorizontalLayout {
         _cbWholeWords = childById!ImageCheckButton("cbWholeWords");
         _cbSelection =  childById!CheckBox("cbSelection");
         _cbCaseSensitive.checkChange = &onCaseSensitiveCheckChange;
+        _cbWholeWords.checkChange = &onCaseSensitiveCheckChange;
+        _cbSelection.checkChange = &onCaseSensitiveCheckChange;
         if (!replace)
             childById("replace").visibility = Visibility.Gone;
         //_edFind = new EditLine("edFind"
@@ -3492,15 +3535,25 @@ class FindPanel : HorizontalLayout {
         }
     }
 
+    uint makeSearchFlags() {
+        uint res = 0;
+        if (_cbCaseSensitive.checked)
+            res |= TextSearchFlag.CaseSensitive;
+        if (_cbWholeWords.checked)
+            res |= TextSearchFlag.WholeWords;
+        if (_cbSelection.checked)
+            res |= TextSearchFlag.SelectionOnly;
+        return res;
+    }
     bool findNext(bool back) {
         setDirection(back);
         dstring currentText = _edFind.text;
         Log.d("findNext text=", currentText, " back=", back);
         if (!currentText.length)
             return false;
-        _editor.setTextToHighlight(currentText, _cbCaseSensitive.checked);
+        _editor.setTextToHighlight(currentText, makeSearchFlags);
         TextPosition pos = _editor.caretPos;
-        bool res = _editor.findNextPattern(pos, currentText, _cbCaseSensitive.checked, back ? -1 : 1);
+        bool res = _editor.findNextPattern(pos, currentText, makeSearchFlags, back ? -1 : 1);
         if (res) {
             _editor.selectionRange = TextRange(pos, TextPosition(pos.line, pos.pos + cast(int)currentText.length));
             _editor.ensureCaretVisible();
@@ -3515,9 +3568,9 @@ class FindPanel : HorizontalLayout {
         Log.d("replaceOne text=", currentText, " back=", _backDirection, " newText=", newText);
         if (!currentText.length)
             return false;
-        _editor.setTextToHighlight(currentText, _cbCaseSensitive.checked);
+        _editor.setTextToHighlight(currentText, makeSearchFlags);
         TextPosition pos = _editor.caretPos;
-        bool res = _editor.findNextPattern(pos, currentText, _cbCaseSensitive.checked, 0);
+        bool res = _editor.findNextPattern(pos, currentText, makeSearchFlags, 0);
         if (res) {
             _editor.selectionRange = TextRange(pos, TextPosition(pos.line, pos.pos + cast(int)currentText.length));
             _editor.replaceSelectionText(newText);
@@ -3554,7 +3607,7 @@ class FindPanel : HorizontalLayout {
     void updateHighlight() {
         dstring currentText = _edFind.text;
         Log.d("onFindTextChange.currentText=", currentText);
-        _editor.setTextToHighlight(currentText, _cbCaseSensitive.checked);
+        _editor.setTextToHighlight(currentText, makeSearchFlags);
     }
 
     void onFindTextChange(EditableContent source) {
