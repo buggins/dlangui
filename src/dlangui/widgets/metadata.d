@@ -2,6 +2,8 @@ module dlangui.widgets.metadata;
 
 import dlangui.widgets.widget;
 
+version = GENERATE_PROPERTY_METADATA;
+
 interface WidgetMetadataDef {
     Widget create();
     /// short class name, e.g. "EditLine"
@@ -82,38 +84,43 @@ template isMarkupType(T)
 }
 
 string generatePropertiesMetadata(alias T)() {
-    import std.algorithm.searching;
-    import std.traits;
-    import std.meta;
-    string str = "[";
-    WidgetPropertyMetadata[] res;
-    foreach(m; __traits(allMembers, T)) {
-        static if (__traits(compiles, (typeof(__traits(getMember, T, m))))){
-            // skip non-public members, only functions that takes 0 or 1 arguments, add only types that parseable in markup
-            static if (__traits(getProtection, __traits(getMember, T, m)) == "public") {
-                static if (isFunction!(__traits(getMember, T, m))) {
-                    immutable int fnArity = arity!(__traits(getMember, T, m));
-                    static if (fnArity == 0 || fnArity == 1) {
-                        // TODO: filter out templates, signals and such
-                        static if ([__traits(getFunctionAttributes, __traits(getMember, T, m))[]].canFind("@property")) {
-                            alias ret = ReturnType!(__traits(getMember, T, m));
-                            alias params = Parameters!(__traits(getMember, T, m));
-                            string typestring;
-                            static if (fnArity == 0 && !__traits(isTemplate,ret) && isMarkupType!ret)
-                                typestring = ret.stringof;
-                            else static if (fnArity == 1 && !__traits(isTemplate,params[0]) && isMarkupType!(params[0]))
-                                typestring = params[0].stringof;
-                            if (typestring is null)
-                                continue;
-                            str ~= "WidgetPropertyMetadata( typeid(" ~ typestring ~ "), " ~ m.stringof ~ " ), ";
+    version (GENERATE_PROPERTY_METADATA) {
+        import std.algorithm.searching;
+        import std.traits;
+        import std.meta;
+        char[] str;
+        str ~= "[";
+        WidgetPropertyMetadata[] res;
+        foreach(m; __traits(allMembers, T)) {
+            static if (__traits(compiles, (typeof(__traits(getMember, T, m))))){
+                // skip non-public members, only functions that takes 0 or 1 arguments, add only types that parseable in markup
+                static if (__traits(getProtection, __traits(getMember, T, m)) == "public") {
+                    static if (isFunction!(__traits(getMember, T, m))) {
+                        immutable int fnArity = arity!(__traits(getMember, T, m));
+                        static if (fnArity == 0 || fnArity == 1) {
+                            // TODO: filter out templates, signals and such
+                            static if ([__traits(getFunctionAttributes, __traits(getMember, T, m))[]].canFind("@property")) {
+                                alias ret = ReturnType!(__traits(getMember, T, m));
+                                alias params = Parameters!(__traits(getMember, T, m));
+                                string typestring;
+                                static if (fnArity == 0 && !__traits(isTemplate,ret) && isMarkupType!ret)
+                                    typestring = ret.stringof;
+                                else static if (fnArity == 1 && !__traits(isTemplate,params[0]) && isMarkupType!(params[0]))
+                                    typestring = params[0].stringof;
+                                if (typestring is null)
+                                    continue;
+                                str ~= "WidgetPropertyMetadata( typeid(" ~ typestring ~ "), " ~ m.stringof ~ " ), ";
+                            }
                         }
                     }
                 }
             }
         }
+        str ~= "]";
+        return cast(string)str;
+    } else {
+        return "[]";
     }
-    str ~= "]";
-    return str;
 }
 
 string generateMetadataClass(alias t)() {
