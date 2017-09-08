@@ -1167,6 +1167,20 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         requestActionsUpdate();
     }
 
+    protected dstring _textToHighlight;
+    protected uint _textToHighlightOptions;
+
+    /// text pattern to highlight - e.g. for search
+    @property dstring textToHighlight() {
+        return _textToHighlight;
+    }
+    /// set text to highlight -- e.g. for search
+    void setTextToHighlight(dstring pattern, uint textToHighlightOptions) {
+        _textToHighlight = pattern;
+        _textToHighlightOptions = textToHighlightOptions;
+        invalidate();
+    }
+
     protected void selectWordByMouse(int x, int y) {
         TextPosition oldCaretPos = _caretPos;
         TextPosition newPos = clientToTextPos(Point(x,y));
@@ -2742,57 +2756,65 @@ class EditBox : EditWidgetBase {
         super.measure(parentWidth, parentHeight);
     }
 
-    protected dstring _textToHighlight;
-    protected uint _textToHighlightOptions;
-
-    /// text pattern to highlight - e.g. for search
-    @property dstring textToHighlight() {
-        return _textToHighlight;
-    }
-    /// set text to highlight -- e.g. for search
-    void setTextToHighlight(dstring pattern, uint textToHighlightOptions) {
-        _textToHighlight = pattern;
-        _textToHighlightOptions = textToHighlightOptions;
-        invalidate();
-    }
 
     protected void highlightTextPattern(DrawBuf buf, int lineIndex, Rect lineRect, Rect visibleRect) {
-        if (!_textToHighlight.length)
+        dstring pattern = _textToHighlight;
+        uint options = _textToHighlightOptions;
+        if (!pattern.length) {
+            // support highlighting selection text - if whole word is selected
+            if (_selectionRange.empty || !_selectionRange.singleLine)
+                return;
+            if (_selectionRange.start.line >= _content.length)
+                return;
+            dstring selLine = _content.line(_selectionRange.start.line);
+            int start = _selectionRange.start.pos;
+            int end = _selectionRange.end.pos;
+            if (start >= selLine.length)
+                return;
+            pattern = selLine[start .. end];
+            if (!isWordChar(pattern[0]) || !isWordChar(pattern[$-1]))
+                return;
+            if (!isWholeWord(selLine, start, end))
+                return;
+            // whole word is selected - enable highlight for it
+            options = TextSearchFlag.CaseSensitive | TextSearchFlag.WholeWords;
+        }
+        if (!pattern.length)
             return;
         dstring lineText = _content.line(lineIndex);
-        if (lineText.length < _textToHighlight.length)
+        if (lineText.length < pattern.length)
             return;
         ptrdiff_t start = 0;
         import std.string : indexOf, CaseSensitive, Yes, No;
-        bool caseSensitive = (_textToHighlightOptions & TextSearchFlag.CaseSensitive) != 0;
-        bool wholeWords = (_textToHighlightOptions & TextSearchFlag.WholeWords) != 0;
-        bool selectionOnly = (_textToHighlightOptions & TextSearchFlag.SelectionOnly) != 0;
+        bool caseSensitive = (options & TextSearchFlag.CaseSensitive) != 0;
+        bool wholeWords = (options & TextSearchFlag.WholeWords) != 0;
+        bool selectionOnly = (options & TextSearchFlag.SelectionOnly) != 0;
         for (;;) {
-            ptrdiff_t pos = lineText[start .. $].indexOf(_textToHighlight, caseSensitive ? Yes.caseSensitive : No.caseSensitive);
+            ptrdiff_t pos = lineText[start .. $].indexOf(pattern, caseSensitive ? Yes.caseSensitive : No.caseSensitive);
             if (pos < 0)
                 break;
             // found text to highlight
             start += pos;
-            if (!wholeWords || isWholeWord(lineText, start, start + _textToHighlight.length)) {
-                TextRange r = TextRange(TextPosition(lineIndex, cast(int)start), TextPosition(lineIndex, cast(int)(start + _textToHighlight.length)));
+            if (!wholeWords || isWholeWord(lineText, start, start + pattern.length)) {
+                TextRange r = TextRange(TextPosition(lineIndex, cast(int)start), TextPosition(lineIndex, cast(int)(start + pattern.length)));
                 uint color = r.isInsideOrNext(caretPos) ? _searchHighlightColorCurrent : _searchHighlightColorOther;
                 highlightLineRange(buf, lineRect, color, r);
             }
-            start += _textToHighlight.length;
+            start += pattern.length;
         }
     }
 
     static bool isWordChar(dchar ch) {
         if (ch >= 'a' && ch <= 'z')
-            return false;
+            return true;
         if (ch >= 'A' && ch <= 'Z')
-            return false;
+            return true;
         if (ch == '_')
-            return false;
-        return true;
+            return true;
+        return false;
     }
     static bool isValidWordBound(dchar innerChar, dchar outerChar) {
-        return isWordChar(innerChar) || isWordChar(outerChar);
+        return !isWordChar(innerChar) || !isWordChar(outerChar);
     }
     /// returns true if selected range of string is whole word
     static bool isWholeWord(dstring lineText, size_t start, size_t end) {
@@ -3509,7 +3531,7 @@ class FindPanel : HorizontalLayout {
     }
 
     void close() {
-        _editor.setTextToHighlight(null, false);
+        _editor.setTextToHighlight(null, 0);
         _editor.closeFindPanel();
     }
 
