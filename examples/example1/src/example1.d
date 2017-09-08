@@ -726,6 +726,10 @@ extern (C) int UIAppMain(string[] args) {
             WidgetListAdapter listAdapter = new WidgetListAdapter();
             listAdapter.add((new TextWidget()).text("This is a list of widgets"d).styleId("LIST_ITEM"));
             stringList.add("This is a list of strings from StringListAdapter"d);
+            stringList.add("If you type with your keyboard,"d);
+            stringList.add("then you can find the"d);
+            stringList.add("item in the list"d);
+            stringList.add("neat!"d);
             for (int i = 1; i < 1000; i++) {
                 dstring label = "List item "d ~ to!dstring(i);
                 listAdapter.add((new TextWidget()).text("Widget list - "d ~ label).styleId("LIST_ITEM"));
@@ -743,7 +747,7 @@ extern (C) int UIAppMain(string[] args) {
 
             longLists.addChild(list);
 
-            ListWidget list2 = new ListWidget("list2");
+            ListWidget list2 = new StringListWidget("list2");
             list2.ownAdapter = stringList;
             list2.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
             list2.selectItem(0);
