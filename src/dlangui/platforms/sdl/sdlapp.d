@@ -1585,7 +1585,7 @@ bool sdlUpdateScreenDpi(int displayIndex = 0) {
     if (numDisplays < displayIndex + 1)
         return false;
     float hdpi = 0;
-    if (SDL_GetDisplayDPI(0, null, &hdpi, null))
+    if (SDL_GetDisplayDPI(displayIndex, null, &hdpi, null))
         return false;
     int idpi = cast(int)hdpi;
     if (idpi < 32 || idpi > 2000)
