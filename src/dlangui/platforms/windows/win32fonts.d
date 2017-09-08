@@ -270,6 +270,18 @@ class Win32Font : Font {
         if (found !is null)
             return found;
         uint glyphIndex = getGlyphIndex(ch);
+        if (!glyphIndex) {
+            ch = getReplacementChar(ch);
+            if (!ch)
+                return null;
+            glyphIndex = getGlyphIndex(ch);
+            if (!glyphIndex) {
+                ch = getReplacementChar(ch);
+                if (!ch)
+                    return null;
+                glyphIndex = getGlyphIndex(ch);
+            }
+        }
         if (!glyphIndex)
             return null;
         if (glyphIndex >= 0xFFFF)

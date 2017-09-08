@@ -926,5 +926,66 @@ private:
     double _gamma = 1.0;
 }
 
+/// find some suitable replacement for important characters missing in font
+dchar getReplacementChar(dchar code) {
+    switch (code) {
+        case UNICODE_SOFT_HYPHEN_CODE:
+            return '-';
+        case 0x0401: // CYRILLIC CAPITAL LETTER IO
+            return 0x0415; //CYRILLIC CAPITAL LETTER IE
+        case 0x0451: // CYRILLIC SMALL LETTER IO
+            return 0x0435; // CYRILLIC SMALL LETTER IE
+        case UNICODE_NO_BREAK_SPACE:
+            return ' ';
+        case 0x2010:
+        case 0x2011:
+        case 0x2012:
+        case 0x2013:
+        case 0x2014:
+        case 0x2015:
+            return '-';
+        case 0x2018:
+        case 0x2019:
+        case 0x201a:
+        case 0x201b:
+            return '\'';
+        case 0x201c:
+        case 0x201d:
+        case 0x201e:
+        case 0x201f:
+        case 0x00ab:
+        case 0x00bb:
+            return '\"';
+        case 0x2039:
+            return '<';
+        case 0x203A:
+        case '‣':
+        case '►':
+            return '>';
+        case 0x2044:
+            return '/';
+        case 0x2022: // css_lst_disc:
+            return '*';
+        case 0x26AA: // css_lst_disc:
+        case 0x25E6: // css_lst_disc:
+        case 0x25CF: // css_lst_disc:
+            return 'o';
+        case 0x25CB: // css_lst_circle:
+            return '*';
+        case 0x25A0: // css_lst_square:
+            return '-';
+        case '↑': //
+            return '▲';
+        case '↓': //
+            return '▼';
+        case '▲': //
+            return '^';
+        case '▼': //
+            return 'v';
+        default:
+            return 0;
+    }
+}
+
 __gshared glyph_gamma_table!65 _gamma65;
 __gshared glyph_gamma_table!256 _gamma256;

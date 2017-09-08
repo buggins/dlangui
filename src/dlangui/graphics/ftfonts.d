@@ -195,58 +195,6 @@ class FreeTypeFontFile {
         return true; // successfully opened
     }
 
-    /// find some suitable replacement for important characters missing in font
-    static dchar getReplacementChar(dchar code) {
-        switch (code) {
-            case UNICODE_SOFT_HYPHEN_CODE:
-                return '-';
-            case 0x0401: // CYRILLIC CAPITAL LETTER IO
-                return 0x0415; //CYRILLIC CAPITAL LETTER IE
-            case 0x0451: // CYRILLIC SMALL LETTER IO
-                return 0x0435; // CYRILLIC SMALL LETTER IE
-            case UNICODE_NO_BREAK_SPACE:
-                return ' ';
-            case 0x2010:
-            case 0x2011:
-            case 0x2012:
-            case 0x2013:
-            case 0x2014:
-            case 0x2015:
-                return '-';
-            case 0x2018:
-            case 0x2019:
-            case 0x201a:
-            case 0x201b:
-                return '\'';
-            case 0x201c:
-            case 0x201d:
-            case 0x201e:
-            case 0x201f:
-            case 0x00ab:
-            case 0x00bb:
-                return '\"';
-            case 0x2039:
-                return '<';
-            case 0x203A:
-            case '‣':
-            case '►':
-                return '>';
-            case 0x2044:
-                return '/';
-            case 0x2022: // css_lst_disc:
-                return '*';
-            case 0x26AA: // css_lst_disc:
-            case 0x25E6: // css_lst_disc:
-            case 0x25CF: // css_lst_disc:
-                return 'o';
-            case 0x25CB: // css_lst_circle:
-                return '*';
-            case 0x25A0: // css_lst_square:
-                return '-';
-            default:
-                return 0;
-        }
-    }
 
     /// find glyph index for character
     FT_UInt getCharIndex(dchar code, dchar def_char = 0) {
@@ -255,8 +203,15 @@ class FreeTypeFontFile {
         FT_UInt ch_glyph_index = FT_Get_Char_Index(_face, code);
         if (ch_glyph_index == 0) {
             dchar replacement = getReplacementChar(code);
-            if (replacement)
+            if (replacement) {
                 ch_glyph_index = FT_Get_Char_Index(_face, replacement);
+                if (ch_glyph_index == 0) {
+                    dchar replacement = getReplacementChar(replacement);
+                    if (replacement) {
+                        ch_glyph_index = FT_Get_Char_Index(_face, replacement);
+                    }
+                }
+            }
             if (ch_glyph_index == 0 && def_char)
                 ch_glyph_index = FT_Get_Char_Index( _face, def_char );
         }

@@ -279,6 +279,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         if (currentRow >= 0 && currentRow < _entries.length) {
             selectedItemPath = _entries[currentRow].name;
         }
+        updateColumnHeaders();
         sortEntries();
         entriesToCells(selectedItemPath);
         requestLayout();
@@ -769,9 +770,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         _fileList.fullRowOnTop(false);
         _fileList.resize(4, 3);
         _fileList.setColTitle(0, " "d);
-        _fileList.setColTitle(1, UIString.fromId("COL_NAME"c).value);
-        _fileList.setColTitle(2, UIString.fromId("COL_SIZE"c).value);
-        _fileList.setColTitle(3, UIString.fromId("COL_MODIFIED"c).value);
+        updateColumnHeaders();
         _fileList.showRowHeaders = false;
         _fileList.rowSelect = true;
         _fileList.multiSelect = _allowMultipleFiles;
@@ -815,6 +814,21 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         openDirectory(_path, _filename);
         _fileList.layoutHeight = FILL_PARENT;
 
+    }
+
+    /// get sort order suffix for column title
+    protected dstring appendSortOrderSuffix(dstring columnName, FileListSortOrder arrowUp, FileListSortOrder arrowDown) {
+        if (_sortOrder == arrowUp)
+            return columnName ~ " ▲";
+        if (_sortOrder == arrowDown)
+            return columnName ~ " ▼";
+        return columnName;
+    }
+
+    protected void updateColumnHeaders() {
+        _fileList.setColTitle(1, appendSortOrderSuffix(UIString.fromId("COL_NAME"c).value, FileListSortOrder.NAME_DESC, FileListSortOrder.NAME));
+        _fileList.setColTitle(2, appendSortOrderSuffix(UIString.fromId("COL_SIZE"c).value, FileListSortOrder.SIZE_DESC, FileListSortOrder.SIZE));
+        _fileList.setColTitle(3, appendSortOrderSuffix(UIString.fromId("COL_MODIFIED"c).value, FileListSortOrder.TIMESTAMP_DESC, FileListSortOrder.TIMESTAMP));
     }
 
     protected void onHeaderCellClicked(GridWidgetBase source, int col, int row) {
