@@ -898,6 +898,7 @@ class FilePathPanelItem : HorizontalLayout {
         addChild(_button);
         margins(Rect(2.pointsToPixels + 1, 0, 2.pointsToPixels + 1, 0));
     }
+
     private bool onTextClick(Widget src) {
         if (onPathSelectionListener.assigned)
             return onPathSelectionListener(_path);
@@ -1133,6 +1134,10 @@ class FileNameEditLine : HorizontalLayout {
     Signal!ModifiedStateListener modifiedStateChange;
     /// editor content is changed
     Signal!EditableContentChangeListener contentChange;
+
+    @property ref Signal!EditorActionHandler editorAction() {
+        return _edFileName.editorAction;
+    }
 
     this(string ID = null) {
         super(ID);

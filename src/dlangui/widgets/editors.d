@@ -1624,6 +1624,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 return true;
             case SelectAll:
                 selectAll();
+                ensureCaretVisible();
                 return true;
             case ToggleBookmark:
                 if (_content.multiline) {
@@ -1654,7 +1655,6 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         _selectionRange.start.pos = 0;
         _selectionRange.end = _content.lineEnd(_content.length - 1);
         _caretPos = _selectionRange.end;
-        ensureCaretVisible();
         requestActionsUpdate();
     }
 
@@ -1809,7 +1809,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         //    return true;
         //}
         bool res = super.onKeyEvent(event);
-        if (focused) startCaretBlinking();
+        //if (focused) startCaretBlinking();
         return res;
     }
 
