@@ -3468,8 +3468,8 @@ class FindPanel : HorizontalLayout {
         _edFind.editorAction.connect(&onFindEditorAction);
         _edFind.contentChange.connect(&onFindTextChange);
 
-        _edFind.keyEvent = &onEditorKeyEvent;
-        _edReplace.keyEvent = &onEditorKeyEvent;
+        //_edFind.keyEvent = &onEditorKeyEvent;
+        //_edReplace.keyEvent = &onEditorKeyEvent;
 
         _btnFindNext = childById!Button("btnFindNext");
         _btnFindNext.click = &onButtonClick;
@@ -3489,6 +3489,7 @@ class FindPanel : HorizontalLayout {
         _cbCaseSensitive.checkChange = &onCaseSensitiveCheckChange;
         _cbWholeWords.checkChange = &onCaseSensitiveCheckChange;
         _cbSelection.checkChange = &onCaseSensitiveCheckChange;
+        focusGroup = true;
         if (!replace)
             childById("replace").visibility = Visibility.Gone;
         //_edFind = new EditLine("edFind"
@@ -3535,14 +3536,28 @@ class FindPanel : HorizontalLayout {
         _editor.closeFindPanel();
     }
 
-    bool onEditorKeyEvent(Widget source, KeyEvent event) {
+    override bool onKeyEvent(KeyEvent event) {
         if (event.keyCode == KeyCode.TAB)
-            return true;
+            return super.onKeyEvent(event);
         if (event.action == KeyAction.KeyDown && event.keyCode == KeyCode.ESCAPE) {
             close();
             return true;
         }
-        return false;
+        return true;
+    }
+
+    /// override to handle specific actions
+    override bool handleAction(const Action a) {
+        switch (a.id) {
+            case EditorActions.FindNext:
+                findNext(false);
+                return true;
+            case EditorActions.FindPrev:
+                findNext(true);
+                return true;
+            default:
+                return false;
+        }
     }
 
     protected bool _backDirection;
