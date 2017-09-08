@@ -87,8 +87,10 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
     override @property bool enabled() { return super.enabled; }
 
     override bool onClick(Widget source) {
-        if (enabled)
-            showPopup();
+        if (enabled) {
+            if (!_popup && _lastPopupCloseTimestamp + 200 < currentTimeMillis)
+                showPopup();
+        }
         return true;
     }
 
@@ -121,6 +123,7 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         _button.layout(rc);
     }
 
+    protected long _lastPopupCloseTimestamp;
     protected void popupClosed() {
     }
 
@@ -132,6 +135,7 @@ class ComboBoxBase : HorizontalLayout, OnClickHandler {
         _popup.flags = PopupFlags.CloseOnClickOutside;
         _popup.styleId = STYLE_POPUP_MENU;
         _popup.popupClosed = delegate (PopupWidget source) {
+            _lastPopupCloseTimestamp = currentTimeMillis;
             _popup = null;
             _popupList = null;
         };
