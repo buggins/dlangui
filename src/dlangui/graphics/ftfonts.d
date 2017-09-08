@@ -206,7 +206,7 @@ class FreeTypeFontFile {
             if (replacement) {
                 ch_glyph_index = FT_Get_Char_Index(_face, replacement);
                 if (ch_glyph_index == 0) {
-                    dchar replacement = getReplacementChar(replacement);
+                    replacement = getReplacementChar(replacement);
                     if (replacement) {
                         ch_glyph_index = FT_Get_Char_Index(_face, replacement);
                     }
