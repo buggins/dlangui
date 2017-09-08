@@ -1623,12 +1623,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 replaceMode = !replaceMode;
                 return true;
             case SelectAll:
-                _selectionRange.start.line = 0;
-                _selectionRange.start.pos = 0;
-                _selectionRange.end = _content.lineEnd(_content.length - 1);
-                _caretPos = _selectionRange.end;
-                ensureCaretVisible();
-                requestActionsUpdate();
+                selectAll();
                 return true;
             case ToggleBookmark:
                 if (_content.multiline) {
@@ -1651,6 +1646,16 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 break;
         }
         return super.handleAction(a);
+    }
+
+    /// Select whole text
+    void selectAll() {
+        _selectionRange.start.line = 0;
+        _selectionRange.start.pos = 0;
+        _selectionRange.end = _content.lineEnd(_content.length - 1);
+        _caretPos = _selectionRange.end;
+        ensureCaretVisible();
+        requestActionsUpdate();
     }
 
     protected TextRange spaceBefore(TextPosition pos) {
