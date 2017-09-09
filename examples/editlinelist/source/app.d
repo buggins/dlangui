@@ -32,12 +32,12 @@ class View {
 		
 		// Add some EditLineForList objects
 		import std.conv : to;
-		listAdapter.add(new EditLineForList("editLine2", "Double click me! You can select a word."d));
+		listAdapter.add(new EditLineForList("editLine0", "Double click me! You can select a word."d));
 		listAdapter.add(new EditLineForList("editLine1", "Use left/right keys to move cursor left/right of selection."d));
-		listAdapter.add(new EditLineForList("editLine0", "Use up/down keys to move to the next edit line."d));
+		listAdapter.add(new EditLineForList("editLine2", "Use up/down keys to move to the next edit line."d));
 		listAdapter.add(new EditLineForList("editLine3", "You can also do select all via keys, and do other edit line features."d));
-		listAdapter.add(new EditLineForList("editLine3", "The edit line list could be used to edit data rapidly."d));
-		for (int i=4; i<64; ++i) {
+		listAdapter.add(new EditLineForList("editLine4", "The edit line list could be used to edit data rapidly."d));
+		for (int i=5; i<64; ++i) {
 			listAdapter.add(new EditLineForList("editLine" ~ to!string(i), "editLine "d ~ to!dstring(i)));
 		}
 
