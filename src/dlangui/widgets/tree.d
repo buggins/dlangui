@@ -253,32 +253,50 @@ class TreeItem {
     /// returns child by index
     TreeItem child(int index) { return _children.get(index); }
     /// adds child, returns added item
-    TreeItem addChild(TreeItem item) {
-        return _children.add(item).parent(this).level(_level + 1);
+    TreeItem addChild(TreeItem item, int index = -1) {
+        TreeItem res = _children.insert(item, index).parent(this).level(_level + 1);
+        root.onUpdate(res);
+        return res;
     }
     /// removes child, returns removed item
     TreeItem removeChild(int index) {
+        if (index < 0 || index >= _children.count)
+            return null;
         TreeItem res = _children.remove(index);
-        if (res !is null)
+        TreeItem newSelection = null;
+        if (res !is null) {
             res.parent = null;
+            if (root && root.selectedItem is res) {
+                if (index < _children.count)
+                    newSelection = _children[index];
+                else if (index > 0)
+                    newSelection = _children[index - 1];
+                else
+                    newSelection = this;
+            }
+        }
+        root.selectItem(newSelection);
+        root.onUpdate(this);
         return res;
+    }
+    /// removes child by reference, returns removed item
+    TreeItem removeChild(TreeItem child) {
+        TreeItem res = null;
+        int index = _children.indexOf(child);
+        return removeChild(index);
     }
     /// removes child by ID, returns removed item
     TreeItem removeChild(string ID) {
         TreeItem res = null;
         int index = _children.indexOf(ID);
-        if (index < 0)
-            return null;
-        res = _children.remove(index);
-        if (res !is null)
-            res.parent = null;
-        return res;
+        return removeChild(index);
     }
     /// returns index of widget in child list, -1 if passed widget is not a child of this widget
     int childIndex(TreeItem item) { return _children.indexOf(item); }
     /// notify listeners
     protected void onUpdate(TreeItem item) {
-        root.onUpdate(item);
+        if (root)
+            root.onUpdate(item);
     }
     protected void toggleExpand(TreeItem item) {
         root.toggleExpand(item);

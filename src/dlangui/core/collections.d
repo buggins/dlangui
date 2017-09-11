@@ -242,6 +242,7 @@ struct ObjectList(T) {
     protected int _count;
     /** returns count of items */
     @property int count() const { return _count; }
+    alias length = count;
     /** get item by index */
     T get(int index) {
         assert(index >= 0 && index < _count, "child index out of range");
@@ -280,7 +281,7 @@ struct ObjectList(T) {
         if (item is null)
             return -1;
         for (int i = 0; i < _count; i++)
-            if (_list[i] == item)
+            if (_list[i] is item)
                 return i;
         return -1;
     }

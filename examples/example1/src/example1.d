@@ -580,7 +580,7 @@ extern (C) int UIAppMain(string[] args) {
             gbgrid.addChild(grid);
             line4.addChild(gbgrid);
 
-            GroupBox gbtree = new GroupBox("tree", "TreeWidget"d, Orientation.Horizontal);
+            GroupBox gbtree = new GroupBox("tree", "TreeWidget"d, Orientation.Vertical);
             auto tree = new TreeWidget("gbtree");
             //tree.layoutWidth(WRAP_CONTENT).layoutHeight(FILL_PARENT);
             tree.maxHeight(200.pointsToPixels);
@@ -606,6 +606,38 @@ extern (C) int UIAppMain(string[] args) {
             tree3.newChild("g3_5", "Group 3 item 5"d);
             tree3.newChild("g3_6", "Group 3 item 6"d);
             gbtree.addChild(tree);
+            tree.items.selectItem(tree1);
+            // test adding new tree items
+            HorizontalLayout newTreeItem = new HorizontalLayout();
+            newTreeItem.layoutWidth = FILL_PARENT;
+            EditLine edNewTreeItem = new EditLine("newTreeItem", "new item"d);
+            edNewTreeItem.layoutWidth = FILL_PARENT;
+            Button btnAddItem = new Button("btnAddTreeItem", "Add"d);
+            Button btnRemoveItem = new Button("btnRemoveTreeItem", "Remove"d);
+            newTreeItem.addChild(edNewTreeItem);
+            newTreeItem.addChild(btnAddItem);
+            newTreeItem.addChild(btnRemoveItem);
+            btnAddItem.click = delegate(Widget source) {
+                import std.random;
+                dstring label = edNewTreeItem.text;
+                string id = "item%d".format(uniform(1000000, 9999999, rndGen));
+                TreeItem item = tree.items.selectedItem;
+                if (item) {
+                    Log.d("Creating new tree item ", id, " ", label);
+                    TreeItem newItem = new TreeItem(id, label);
+                    item.addChild(newItem);
+                }
+                return true;
+            };
+            btnRemoveItem.click = delegate(Widget source) {
+                TreeItem item = tree.items.selectedItem;
+                if (item) {
+                    Log.d("Removing tree item ", item.id, " ", item.text);
+                    item.parent.removeChild(item);
+                }
+                return true;
+            };
+            gbtree.addChild(newTreeItem);
             line4.addChild(gbtree);
 
             controls.addChild(line4);
