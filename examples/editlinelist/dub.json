@@ -1,0 +1,51 @@
+{
+	"name": "editlinelist",
+	"authors": [
+		"http://lemming.life"
+	],
+	"description": "example of an edit line list in dlangui",
+	"license": "Boost",
+
+	"targetPath": "bin",
+    "targetType": "executable",
+    "targetName": "editlinelist",
+
+    "stringImportPaths": ["views", "views/res", "views/res/i18n", "views/res/mdpi"],
+
+    "sourceFiles-windows": ["$PACKAGE_DIR/src/win_app.def"],
+
+    "versions": ["ForceLogs"],
+
+    "dependencies": {
+        "dlangui": {"path": "../../"}
+    },
+    "configurations" : [
+        {
+            "name" : "default",
+        }, 
+        {
+            "name" : "console",
+            "subConfigurations" : {
+                "dlangui" : "console"
+            }
+        },
+        {
+            "name" : "sdl",
+            "subConfigurations" : {
+                "dlangui" : "sdl"
+            }
+        },
+        {
+            "name" : "x11",
+            "subConfigurations" : {
+                "dlangui" : "x11"
+            }
+        },
+        {
+            "name" : "minimal",
+            "subConfigurations" : {
+                "dlangui" : "minimal"
+            }
+        }
+    ]
+}
