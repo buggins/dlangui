@@ -253,6 +253,7 @@ res/mdpi/toolbar_background.9.png
 res/mdpi/toolbar_background_dark.9.png
 res/mdpi/toolbar_button_hover.9.png
 res/mdpi/toolbar_button_hover_dark.9.png
+res/mdpi/toolbar_button_null.9.png
 res/mdpi/toolbar_button_pressed.9.png
 res/mdpi/toolbar_button_pressed_dark.9.png
 res/mdpi/toolbar_control_disabled.9.png
