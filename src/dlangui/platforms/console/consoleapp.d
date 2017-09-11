@@ -21,6 +21,9 @@ class ConsoleWindow : Window {
         _parent = cast(ConsoleWindow)parent;
         _dx = _platform.console.width;
         _dy = _platform.console.height;
+        _currentContentWidth = _dx;
+        _currentContentHeight = _dy;
+        _windowRect = Rect(0, 0, _dx, _dy);
     }
     /// show window
     override void show() {
@@ -29,6 +32,8 @@ class ConsoleWindow : Window {
             _mainWidget = new Widget();
         }
         _visible = true;
+        handleWindowStateChange(WindowState.normal, Rect(0, 0, _platform.console.width, _platform.console.height));
+        invalidate();
     }
     private dstring _windowCaption;
     /// returns window caption
