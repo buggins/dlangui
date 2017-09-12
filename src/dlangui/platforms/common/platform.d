@@ -1949,6 +1949,7 @@ mixin template APP_ENTRY_POINT() {
         /// workaround for link issue when WinMain is located in library
         version(Windows) {
             version (unittest) {
+                // no main in unit tests
             } else {
                 extern (Windows) int WinMain(void* hInstance, void* hPrevInstance,
                                              char* lpCmdLine, int nCmdShow)
@@ -1966,9 +1967,13 @@ mixin template APP_ENTRY_POINT() {
         } else {
             version (Android) {
             } else {
-                int main(string[] args)
-                {
-                    return DLANGUImain(args);
+                version (unittest) {
+                    // no main in unit tests
+                } else {
+                    int main(string[] args)
+                    {
+                        return DLANGUImain(args);
+                    }
                 }
             }
         }
