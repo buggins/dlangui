@@ -13,7 +13,7 @@ import dlangui.dialogs.dialog;
 class InputBox : Dialog {
     protected UIString _message;
     protected const(Action)[] _actions;
-    protected int _defaultButtonIndex;
+    protected EditLine _editor;
     protected dstring _text;
     this(UIString caption, UIString message, Window parentWindow, dstring initialText, void delegate(dstring result) handler) {
         super(caption, parentWindow, DialogFlag.Modal | (Platform.instance.uiDialogDisplayMode & DialogDisplayMode.inputBoxInPopup ? DialogFlag.Popup : 0));
@@ -34,15 +34,30 @@ class InputBox : Dialog {
         TextWidget msg = new MultilineTextWidget("msg", _message);
         padding(Rect(10, 10, 10, 10));
         msg.padding(Rect(10, 10, 10, 10));
-        EditLine editor = new EditLine("inputbox_editor");
-        editor.layoutWidth = FILL_PARENT;
-        editor.text = _text;
-        editor.contentChange = delegate(EditableContent content) {
+        _editor = new EditLine("inputbox_editor");
+        _editor.layoutWidth = FILL_PARENT;
+        _editor.text = _text;
+        _editor.editorAction.connect(&onEditorAction);
+        _editor.contentChange = delegate(EditableContent content) {
             _text = content.text;
         };
         addChild(msg);
-        addChild(editor);
+        addChild(_editor);
         addChild(createButtonsPanel(_actions, _defaultButtonIndex, 0));
     }
 
+    protected bool onEditorAction(const Action action) {
+        if (action.id == EditorActions.InsertNewLine) {
+            close(_buttonActions[_defaultButtonIndex]);
+            return true;
+        }
+        return false;
+    }
+
+    /// called after window with dialog is shown
+    override void onShow() {
+        super.onShow();
+        _editor.selectAll();
+        _editor.setFocus();
+    }
 }

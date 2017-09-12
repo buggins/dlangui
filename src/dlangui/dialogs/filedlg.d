@@ -606,6 +606,11 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         }
     }
 
+    /// calls close with default action; returns true if default action is found and invoked
+    override protected bool closeWithDefaultAction() {
+        return handleAction(_action);
+    }
+
     /// Custom handling of actions
     override bool handleAction(const Action action) {
         if (action.id == StandardAction.Cancel) {

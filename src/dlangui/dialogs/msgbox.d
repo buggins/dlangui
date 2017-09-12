@@ -41,7 +41,6 @@ import dlangui.dialogs.dialog;
 class MessageBox : Dialog {
     protected UIString _message;
     protected const(Action)[] _actions;
-    protected int _defaultButtonIndex;
     this(UIString caption, UIString message, Window parentWindow = null, const(Action) [] buttons = [ACTION_OK], int defaultButtonIndex = 0, bool delegate(const Action result) handler = null) {
         super(caption, parentWindow, DialogFlag.Modal | (Platform.instance.uiDialogDisplayMode & DialogDisplayMode.messageBoxInPopup ? DialogFlag.Popup : 0));
         _message = message;

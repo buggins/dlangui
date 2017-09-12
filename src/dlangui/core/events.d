@@ -1242,9 +1242,11 @@ class KeyEvent {
     @property dstring text() { return _text; }
 
     /// returns true if no modifier flags are set
-    @property bool noModifiers() { return (_flags & (KeyFlag.Control | KeyFlag.Alt | KeyFlag.Menu | KeyFlag.Shift)) == 0; }
+    @property bool noModifiers() { return modifiers == 0; }
     /// returns true if any modifier flag is set
     @property bool hasModifiers() { return !noModifiers; }
+    /// returns modifier flags filtered for KeyFlag.Control | KeyFlag.Alt | KeyFlag.Menu | KeyFlag.Shift only
+    @property uint modifiers() { return (_flags & (KeyFlag.Control | KeyFlag.Alt | KeyFlag.Menu | KeyFlag.Shift)); }
 
     /// create key event
     this(KeyAction action, uint keyCode, uint flags, dstring text = null) {

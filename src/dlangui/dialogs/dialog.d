@@ -55,6 +55,7 @@ class Dialog : VerticalLayout {
     protected string _icon;
     protected int _initialWidth;
     protected int _initialHeight;
+    protected int _defaultButtonIndex = -1;
 
     Signal!DialogResultHandler dialogResult;
 
@@ -124,6 +125,7 @@ class Dialog : VerticalLayout {
     protected ImageTextButton _cancelButton;
     /// create panel with buttons based on list of actions
     Widget createButtonsPanel(const(Action) [] actions, int defaultActionIndex, int splitBeforeIndex) {
+        _defaultButtonIndex = defaultActionIndex;
         _buttonActions = actions;
         LinearLayout res = new HorizontalLayout("buttons");
         res.layoutWidth(FILL_PARENT);
@@ -228,6 +230,41 @@ class Dialog : VerticalLayout {
         // override to do something useful
         if (_defaultButton)
             _defaultButton.setFocus();
+    }
+
+    /// calls close with default action; returns true if default action is found and invoked
+    protected bool closeWithDefaultAction() {
+        if (_defaultButtonIndex >= 0 && _defaultButtonIndex < _buttonActions.length) {
+            close(_buttonActions[_defaultButtonIndex]);
+            return true;
+        }
+        return false;
+    }
+
+    /// calls close with cancel action (if found); returns true if cancel action is found and invoked
+    protected bool closeWithCancelAction() {
+        for (int i = 0; i < _buttonActions.length; i++) {
+            if (_buttonActions[i].id == StandardAction.Cancel || _buttonActions[i].id == StandardAction.No) {
+                close(_buttonActions[_defaultButtonIndex]);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /// pass key event here; returns true if search text is updated and you can move selection using it
+    override bool onKeyEvent(KeyEvent event) {
+        if (event.action == KeyAction.KeyUp) {
+            if (event.keyCode == KeyCode.RETURN && event.modifiers == KeyFlag.Control) {
+                // Ctrl+Enter: default action
+                return closeWithDefaultAction();
+            }
+            if (event.keyCode == KeyCode.ESCAPE && event.noModifiers) {
+                // ESC: cancel/no action
+                return closeWithCancelAction();
+            }
+        }
+        return super.onKeyEvent(event);
     }
 }
 
