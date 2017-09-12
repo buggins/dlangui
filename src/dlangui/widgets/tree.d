@@ -355,6 +355,10 @@ interface OnTreeStateChangeListener {
     void onTreeStateChange(TreeItems source);
 }
 
+interface OnTreeExpandedStateListener {
+    void onTreeExpandedStateChange(TreeItems source, TreeItem item);
+}
+
 interface OnTreeSelectionChangeListener {
     void onTreeItemSelected(TreeItems source, TreeItem selectedItem, bool activated);
 }
@@ -364,6 +368,7 @@ class TreeItems : TreeItem {
     Listener!OnTreeContentChangeListener contentListener;
     Listener!OnTreeStateChangeListener stateListener;
     Listener!OnTreeSelectionChangeListener selectionListener;
+    Listener!OnTreeExpandedStateListener expandListener;
 
     protected bool _noCollapseForSingleTopLevelItem;
     @property bool noCollapseForSingleTopLevelItem() { return _noCollapseForSingleTopLevelItem; }
@@ -408,13 +413,20 @@ class TreeItems : TreeItem {
     }
 
     override void toggleExpand(TreeItem item) {
+        bool expandChanged = false;
         if (item.expanded) {
-            if (item.canCollapse())
+            if (item.canCollapse()) {
                 item.collapse();
-        } else
+                expandChanged = true;
+            }
+        } else {
             item.expand();
+            expandChanged = true;
+        }
         if (stateListener.assigned)
             stateListener(this);
+        if (expandChanged && expandListener.assigned)
+            expandListener(this, item);
     }
 
     override void selectItem(TreeItem item) {
@@ -695,13 +707,14 @@ class TreeItemWidget : HorizontalLayout {
 
 
 /// Abstract tree widget
-class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateChangeListener, OnTreeSelectionChangeListener, OnKeyHandler {
+class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateChangeListener, OnTreeSelectionChangeListener, OnTreeExpandedStateListener, OnKeyHandler {
 
     protected TreeItems _tree;
 
     @property ref TreeItems items() { return _tree; }
 
     Signal!OnTreeSelectionChangeListener selectionChange;
+    Signal!OnTreeExpandedStateListener expandedChange;
     /// allows to provide individual popup menu for items
     Listener!OnTreePopupMenuListener popupMenu;
 
@@ -737,6 +750,8 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
         _tree.contentListener = this;
         _tree.stateListener = this;
         _tree.selectionListener = this;
+        _tree.expandListener = this;
+
         _needUpdateWidgets = true;
         _needUpdateWidgetStates = true;
         acceleratorMap.add( [
@@ -856,6 +871,11 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
     override void onTreeStateChange(TreeItems source) {
         _needUpdateWidgetStates = true;
         requestLayout();
+    }
+
+    override void onTreeExpandedStateChange(TreeItems source, TreeItem item) {
+        if (expandedChange.assigned)
+            expandedChange(source, item);
     }
 
     TreeItemWidget findItemWidget(TreeItem item) {

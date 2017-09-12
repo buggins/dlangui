@@ -112,7 +112,7 @@ class StatusLine : HorizontalLayout {
     void initialize() {
         _defStatus = new TextWidget("STATUS_LINE_TEXT");
         _defStatus.layoutWidth(FILL_PARENT);
-        _defStatus.text = "DLANGUI"d;
+        _defStatus.text = " "d;
         addChild(_defStatus);
         _backgroundOperationPanel = new StatusLineBackgroundOperationPanel("BACKGROUND_OP_STATUS");
         addChild(_backgroundOperationPanel);
