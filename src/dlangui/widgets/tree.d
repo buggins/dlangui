@@ -847,7 +847,18 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
     }
 
     override Point minimumVisibleContentSize() {
-        return Point(200,200);
+        return Point(100.pointsToPixels, 100.pointsToPixels);
+    }
+
+    /// calculate full content size in pixels
+    override Point fullContentSize() {
+        if (_needUpdateWidgets)
+            updateWidgets();
+        if (_needUpdateWidgetStates)
+            updateWidgetStates();
+        return super.fullContentSize();
+        //_contentWidget.measure(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED);
+        //return Point(_contentWidget.measuredWidth,_contentWidget.measuredHeight);
     }
 
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
@@ -866,16 +877,21 @@ class TreeWidgetBase :  ScrollWidget, OnTreeContentChangeListener, OnTreeStateCh
     override void onTreeContentChange(TreeItems source) {
         _needUpdateWidgets = true;
         requestLayout();
+        //updateScrollBars();
     }
 
     override void onTreeStateChange(TreeItems source) {
         _needUpdateWidgetStates = true;
         requestLayout();
+        //updateScrollBars();
     }
 
     override void onTreeExpandedStateChange(TreeItems source, TreeItem item) {
         if (expandedChange.assigned)
             expandedChange(source, item);
+        layout(pos);
+        //requestLayout();
+        //updateScrollBars();
     }
 
     TreeItemWidget findItemWidget(TreeItem item) {
@@ -979,7 +995,7 @@ class TreeWidget :  TreeWidgetBase {
         this(null);
     }
     /// create with ID parameter
-    this(string ID) {
-        super(ID);
+    this(string ID, ScrollBarMode hscrollbarMode = ScrollBarMode.Visible, ScrollBarMode vscrollbarMode = ScrollBarMode.Visible) {
+        super(ID, hscrollbarMode, vscrollbarMode);
     }
 }

@@ -52,6 +52,8 @@ class CheckboxItem : SettingsItem {
     /// create setting widget
     override Widget[] createWidgets(Setting settings) {
         CheckBox res = new CheckBox(_id, _label);
+        res.minWidth = 60.pointsToPixels;
+        res.layoutWidth = FILL_PARENT;
         Setting setting = settings.settingByPath(_id, SettingType.FALSE);
         res.checked = setting.boolean ^ _inverse;
         res.checkChange = delegate(Widget source, bool checked) {
@@ -73,7 +75,8 @@ class StringComboBoxItem : SettingsItem {
     override Widget[] createWidgets(Setting settings) {
         TextWidget lbl = new TextWidget(_id ~ "-label", _label);
         ComboBox cb = new ComboBox(_id, _items);
-        cb.minWidth = 200;
+        cb.minWidth = 60.pointsToPixels;
+        cb.layoutWidth = FILL_PARENT;
         Setting setting = settings.settingByPath(_id, SettingType.STRING);
         string itemId = setting.str;
         int index = -1;
@@ -105,7 +108,8 @@ class IntComboBoxItem : SettingsItem {
     override Widget[] createWidgets(Setting settings) {
         TextWidget lbl = new TextWidget(_id ~ "-label", _label);
         ComboBox cb = new ComboBox(_id, _items);
-        cb.minWidth = 100;
+        cb.minWidth = 60.pointsToPixels;
+        cb.layoutWidth = FILL_PARENT;
         Setting setting = settings.settingByPath(_id, SettingType.INTEGER);
         long itemId = setting.integer;
         int index = -1;
@@ -139,7 +143,8 @@ class FloatComboBoxItem : SettingsItem {
     override Widget[] createWidgets(Setting settings) {
         TextWidget lbl = new TextWidget(_id ~ "-label", _label);
         ComboBox cb = new ComboBox(_id, _items);
-        cb.minWidth = 100;
+        cb.minWidth = 60.pointsToPixels;
+        cb.layoutWidth = FILL_PARENT;
         Setting setting = settings.settingByPath(_id, SettingType.FLOAT);
         long itemId = cast(long)(setting.floating * _divider + 0.5f);
         int index = -1;
@@ -177,7 +182,8 @@ class NumberEditItem : SettingsItem {
     override Widget[] createWidgets(Setting settings) {
         TextWidget lbl = new TextWidget(_id ~ "-label", _label);
         EditLine ed = new EditLine(_id ~ "-edit", _label);
-        ed.minWidth = 100;
+        ed.minWidth = 60.pointsToPixels;
+        ed.layoutWidth = FILL_PARENT;
         Setting setting = settings.settingByPath(_id, SettingType.INTEGER);
         int n = cast(int)setting.integerDef(_defaultValue);
         if (_minValue != int.max && n < _minValue)
@@ -211,7 +217,8 @@ class StringEditItem : SettingsItem {
     override Widget[] createWidgets(Setting settings) {
         TextWidget lbl = new TextWidget(_id ~ "-label", _label);
         EditLine ed = new EditLine(_id ~ "-edit");
-        ed.minWidth = 200;
+        ed.minWidth = 60.pointsToPixels;
+        ed.layoutWidth = FILL_PARENT;
         Setting setting = settings.settingByPath(_id, SettingType.STRING);
         string value = setting.strDef(_defaultValue);
         setting.str = value;
@@ -235,7 +242,7 @@ class FileNameEditItem : SettingsItem {
         import dlangui.dialogs.filedlg;
         TextWidget lbl = new TextWidget(_id ~ "-label", _label);
         FileNameEditLine ed = new FileNameEditLine(_id ~ "-filename-edit");
-        ed.minWidth = 200;
+        ed.minWidth = 60.pointsToPixels;
         Setting setting = settings.settingByPath(_id, SettingType.STRING);
         string value = setting.strDef(_defaultValue);
         setting.str = value;
@@ -260,7 +267,8 @@ class ExecutableFileNameEditItem : SettingsItem {
         TextWidget lbl = new TextWidget(_id ~ "-label", _label);
         FileNameEditLine ed = new FileNameEditLine(_id ~ "-filename-edit");
         ed.addFilter(FileFilterEntry(UIString.fromId("MESSAGE_EXECUTABLES"c), "*.exe", true));
-        ed.minWidth = 200;
+        ed.minWidth = 60.pointsToPixels;
+        ed.layoutWidth = FILL_PARENT;
         Setting setting = settings.settingByPath(_id, SettingType.STRING);
         string value = setting.strDef(_defaultValue);
         setting.str = value;
@@ -285,7 +293,8 @@ class PathNameEditItem : SettingsItem {
         TextWidget lbl = new TextWidget(_id ~ "-label", _label);
         DirEditLine ed = new DirEditLine(_id ~ "-path-edit");
         ed.addFilter(FileFilterEntry(UIString.fromId("MESSAGE_ALL_FILES"c), "*.*"));
-        ed.minWidth = 200;
+        ed.minWidth = 60.pointsToPixels;
+        ed.layoutWidth = FILL_PARENT;
         Setting setting = settings.settingByPath(_id, SettingType.STRING);
         string value = setting.strDef(_defaultValue);
         setting.str = value;
@@ -411,7 +420,7 @@ class SettingsPage {
     /// create page widget (default implementation creates empty page)
     Widget createWidget(Setting settings) {
         VerticalLayout res = new VerticalLayout(_id);
-        res.minWidth(200).minHeight(200).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
+        res.minWidth(80.pointsToPixels).minHeight(200.pointsToPixels).layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
         if (itemCount > 0) {
             TextWidget caption = new TextWidget("prop-body-caption-" ~ _id, _label);
             caption.styleId = STYLE_SETTINGS_PAGE_TITLE;
@@ -427,6 +436,7 @@ class SettingsPage {
                 } else if (w.length == 2) {
                     if (!tbl) {
                         tbl = new TableLayout();
+                        tbl.layoutWidth = FILL_PARENT;
                         tbl.colCount = 2;
                         res.addChild(tbl);
                     }
@@ -485,20 +495,22 @@ class SettingsDialog : Dialog {
 
     /// override to implement creation of dialog controls
     override void initialize() {
-        minWidth(600).minHeight(400);
-        _tree = new TreeWidget("prop_tree");
+        import dlangui.widgets.scroll;
+        minWidth(150.pointsToPixels).minHeight(150.pointsToPixels);
+        layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT);
+        _tree = new TreeWidget("prop_tree", ScrollBarMode.Auto, ScrollBarMode.Auto);
         _tree.styleId = STYLE_SETTINGS_TREE;
-        _tree.layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT).minHeight(200).minWidth(100);
+        _tree.layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT).minHeight(200.pointsToPixels).minWidth(50.pointsToPixels);
         _tree.selectionChange = &onTreeItemSelected;
         _tree.fontSize = 16;
         _frame = new FrameLayout("prop_pages");
         _frame.styleId = STYLE_SETTINGS_PAGES;
-        _frame.layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT).minHeight(200).minWidth(100);
+        _frame.layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT).minHeight(200.pointsToPixels).minWidth(100.pointsToPixels);
         createControls(_layout, _tree.items);
         HorizontalLayout content = new HorizontalLayout("settings_dlg_content");
         content.addChild(_tree);
         content.addChild(_frame);
-        content.layoutHeight(FILL_PARENT).layoutHeight(FILL_PARENT);
+        content.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
         addChild(content);
         addChild(createButtonsPanel([ACTION_APPLY, ACTION_CANCEL], 0, 0));
         if (_layout.childCount > 0)

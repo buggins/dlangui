@@ -303,19 +303,24 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
             pwidth -= m.left + m.right + p.left + p.right;
         if (parentHeight != SIZE_UNSPECIFIED)
             pheight -= m.top + m.bottom + p.top + p.bottom;
-        if (_hscrollbar && _hscrollbarMode == ScrollBarMode.Visible) {
+        int vsbw = 0;
+        int hsbh = 0;
+        if (_hscrollbar && (_hscrollbarMode == ScrollBarMode.Visible || _hscrollbarMode == ScrollBarMode.Auto)) {
             _hscrollbar.measure(pwidth, pheight);
+            hsbh = _hscrollbar.measuredHeight;
         }
-        if (_vscrollbar && _vscrollbarMode == ScrollBarMode.Visible) {
+        if (_vscrollbar && (_vscrollbarMode == ScrollBarMode.Visible || _vscrollbarMode == ScrollBarMode.Auto)) {
             _vscrollbar.measure(pwidth, pheight);
+            vsbw = _vscrollbar.measuredWidth;
         }
         Point sz = minimumVisibleContentSize();
-        if (_hscrollbar && _hscrollbarMode == ScrollBarMode.Visible) {
-            sz.y += _hscrollbar.measuredHeight;
-        }
-        if (_vscrollbar && _vscrollbarMode == ScrollBarMode.Visible) {
-            sz.x += _vscrollbar.measuredWidth;
-        }
+        
+        //if (_hscrollbar && _hscrollbarMode == ScrollBarMode.Visible) {
+            sz.y += hsbh;
+        //}
+        //if (_vscrollbar && _vscrollbarMode == ScrollBarMode.Visible) {
+            sz.x += vsbw;
+        //}
 
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }

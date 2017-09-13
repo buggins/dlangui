@@ -203,7 +203,7 @@ class LayoutItems {
                 contentSecondarySize = maxItem;
             else
                 contentSecondarySize = rc.height;
-            if ((_layoutWidth == FILL_PARENT || isPercentSize(_layoutHeight)) && totalSize < rc.width && resizableSize > 0)
+            if ((_layoutWidth == FILL_PARENT || isPercentSize(_layoutWidth)) && totalSize < rc.width && resizableSize > 0)
                 delta = rc.width - totalSize; // total space to add to fit
             else if (totalSize > rc.width)
                 delta = rc.width - totalSize; // total space to reduce to fit
@@ -491,18 +491,18 @@ class ResizerWidget : Widget {
         }
         if (event.action == MouseAction.Move && trackHover) {
             if (!(state & State.Hovered)) {
-                Log.d("Hover ", id);
+                //Log.d("Hover ", id);
                 setState(State.Hovered);
             }
             return true;
         }
         if ((event.action == MouseAction.Leave || event.action == MouseAction.Cancel) && trackHover) {
-            Log.d("Leave ", id);
+            //Log.d("Leave ", id);
             resetState(State.Hovered);
             return true;
         }
         if (event.action == MouseAction.Cancel) {
-            Log.d("SliderButton.onMouseEvent event.action == MouseAction.Cancel");
+            //Log.d("SliderButton.onMouseEvent event.action == MouseAction.Cancel");
             if (_dragging) {
                 resetState(State.Pressed);
                 _dragging = false;
@@ -564,6 +564,7 @@ class LinearLayout : WidgetGroupDefaultDrawing {
         _pos = rc;
         applyMargins(rc);
         applyPadding(rc);
+        //debug Log.d("LinearLayout.layout id=", _id, " rc=", rc, " fillHoriz=", layoutWidth == FILL_PARENT);
         _layoutItems.layout(rc);
     }
 
@@ -783,12 +784,15 @@ class TableLayout : WidgetGroupDefaultDrawing {
         }
 
         Point measure(Widget parent, int cc, int rc, int pwidth, int pheight, bool layoutWidthFill, bool layoutHeightFill) {
+            //Log.d("grid measure ", parent.id, " pw=", pwidth, " ph=", pheight);
             initialize(cc, rc, layoutWidthFill, layoutHeightFill);
             for (int y = 0; y < rc; y++) {
                 for (int x = 0; x < cc; x++) {
                     int index = y * cc + x;
                     Widget child = index < parent.childCount ? parent.child(index) : null;
                     cell(x, y).measure(child, pwidth, pheight);
+                    //if (child)
+                    //    Log.d("cell ", x, ",", y, " child=", child.id, " measuredWidth=", child.measuredWidth, " minWidth=", child.minWidth);
                 }
             }
             // calc total row size
@@ -807,6 +811,7 @@ class TableLayout : WidgetGroupDefaultDrawing {
                 }
                 totalWidth += col(x).measuredSize;
             }
+            //Log.d("             ", parent.id, " w=", totalWidth, " h=", totalHeight);
             return Point(totalWidth, totalHeight);
         }
 
@@ -849,6 +854,13 @@ class TableLayout : WidgetGroupDefaultDrawing {
                 int delta0 = extraSize % resizeCount;
 
                 if (extraSize > 0) {
+                    for (int x = 0; x < colCount; x++) {
+                        if (fillCount == 0 || col(x).fill) {
+                            col(x).size += delta + delta0;
+                            delta0 = 0;
+                        }
+                    }
+                } else if (extraSize < 0) {
                     for (int x = 0; x < colCount; x++) {
                         if (fillCount == 0 || col(x).fill) {
                             col(x).size += delta + delta0;
