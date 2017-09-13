@@ -640,8 +640,12 @@ class Win32Window : Window {
         _platform.onWindowDestroyed(_hwnd, this);
     }
 
+    protected bool _closeCalled;
     /// close window
     override void close() {
+        if (_closeCalled)
+            return;
+        _closeCalled = true;
         Log.d("Window.close()");
         _platform.closeWindow(this);
     }
