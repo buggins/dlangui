@@ -275,16 +275,18 @@ class Window : CustomEventTarget {
             return;
         WindowState state = windowState;
         Rect rect = windowRect;
-        if (!rect.empty && 
-            (state == WindowState.fullscreen 
+        if (state == WindowState.fullscreen 
             || state == WindowState.minimized 
             || state == WindowState.maximized
-            || state == WindowState.normal)) {
+            || state == WindowState.normal) {
             //
-            setting.setInteger("windowPositionLeft", rect.left);
-            setting.setInteger("windowPositionTop", rect.top);
-            setting.setInteger("windowWidth", rect.width);
-            setting.setInteger("windowHeight", rect.height);
+            setting.setInteger("windowState", state);
+            if (rect.right > 0 && rect.bottom > 0) {
+                setting.setInteger("windowPositionLeft", rect.left);
+                setting.setInteger("windowPositionTop", rect.top);
+                setting.setInteger("windowWidth", rect.right);
+                setting.setInteger("windowHeight", rect.bottom);
+            }
         }
     }
 
@@ -296,12 +298,12 @@ class Window : CustomEventTarget {
         Rect rect;
         rect.left = cast(int)setting.getInteger("windowPositionLeft", WindowState.unspecified);
         rect.top = cast(int)setting.getInteger("windowPositionTop", 0);
-        int w = cast(int)setting.getInteger("windowPositionWidth", 0);
-        int h = cast(int)setting.getInteger("windowPositionHeight", 0);
+        int w = cast(int)setting.getInteger("windowWidth", 0);
+        int h = cast(int)setting.getInteger("windowHeight", 0);
         if (w <= 0 || h <= 0)
             return false;
-        rect.right = rect.left + w;
-        rect.bottom = rect.top + h;
+        rect.right = w;
+        rect.bottom = h;
         if (correctWindowPositionOnScreen(rect) && (state == WindowState.fullscreen
              || state == WindowState.minimized 
              || state == WindowState.maximized

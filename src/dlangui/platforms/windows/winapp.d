@@ -381,8 +381,10 @@ class Win32Window : Window {
         return res;
     }
 
+    protected bool _destroying;
     ~this() {
         debug Log.d("Window destructor");
+        _destroying = true;
         if (_drawbuf) {
             destroy(_drawbuf);
             _drawbuf = null;
@@ -645,6 +647,8 @@ class Win32Window : Window {
     }
     
     override protected void handleWindowStateChange(WindowState newState, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
+        if (_destroying)
+            return;
         super.handleWindowStateChange(newState, newWindowRect);
     }
 
@@ -1414,7 +1418,16 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                         GetClientRect(hwnd, &rect);
                         int dx = rect.right - rect.left;
                         int dy = rect.bottom - rect.top;
-                        window.handleWindowStateChange( IsZoomed(hwnd) ? WindowState.maximized : IsWindowVisible(hwnd) ? WindowState.normal : WindowState.hidden,
+                        WindowState state = WindowState.unspecified;
+                        if (IsZoomed(hwnd))
+                            state = WindowState.maximized;
+                        else if (IsIconic(hwnd))
+                            state = WindowState.minimized;
+                        else if (IsWindowVisible(hwnd))
+                            state = WindowState.normal;
+                        else
+                            state = WindowState.hidden;
+                        window.handleWindowStateChange(state,
                             Rect(pos.x, pos.y, dx, dy));
                         if (window.width != dx || window.height != dy) {
                             window.onResize(dx, dy);
