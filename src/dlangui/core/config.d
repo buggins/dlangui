@@ -1,5 +1,7 @@
 module dlangui.core.config;
 
+extern(C) @property dstring DLANGUI_VERSION();
+
 //version = USE_CONSOLE;
 
 version(USE_CONSOLE) {

@@ -6,6 +6,12 @@ import dlangui.widgets.styles;
 import dlangui.graphics.fonts;
 import dlangui.graphics.resources;
 import dlangui.widgets.widget;
+import std.utf : toUTF32;
+
+private immutable dstring DLANGUI_VERSION_VALUE = toUTF32(import("DLANGUI_VERSION"));
+extern(C) @property dstring DLANGUI_VERSION() {
+    return DLANGUI_VERSION_VALUE;
+}
 
 static if (BACKEND_GUI) {
 import dlangui.graphics.ftfonts;

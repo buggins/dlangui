@@ -20,12 +20,7 @@
     "libs-linux": ["z"],
  
     "stringImportPaths": [
-        "views",
-        "views/res",
-        "views/res/mdpi",
-        "views/res/hdpi",
-        "views/res/shaders",
-        "views/res/i18n"
+        "views"
     ],
 
     "-ddoxFilterArgs": ["--unittest-examples", "--min-protection=Protected", "--ex", "win32.",
