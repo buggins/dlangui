@@ -233,6 +233,8 @@ class TimerInfo {
  *
  */
 class Window : CustomEventTarget {
+    import dlangui.core.settings;
+
     protected int _dx;
     protected int _dy;
     protected uint _keyboardModifiers;
@@ -265,6 +267,55 @@ class Window : CustomEventTarget {
         _mainWidget = widget;
         if (_mainWidget !is null)
             _mainWidget.window = this;
+    }
+
+    /// save window state to setting object
+    void saveWindowState(Setting setting) {
+        if (!setting)
+            return;
+        WindowState state = windowState;
+        Rect rect = windowRect;
+        if (!rect.empty && 
+            (state == WindowState.fullscreen 
+            || state == WindowState.minimized 
+            || state == WindowState.maximized
+            || state == WindowState.normal)) {
+            //
+            setting.setInteger("windowPositionLeft", rect.left);
+            setting.setInteger("windowPositionTop", rect.top);
+            setting.setInteger("windowWidth", rect.width);
+            setting.setInteger("windowHeight", rect.height);
+        }
+    }
+
+    /// restore window state from setting object
+    bool restoreWindowState(Setting setting) {
+        if (!setting)
+            return false;
+        WindowState state = cast(WindowState)setting.getInteger("windowState", WindowState.unspecified);
+        Rect rect;
+        rect.left = cast(int)setting.getInteger("windowPositionLeft", WindowState.unspecified);
+        rect.top = cast(int)setting.getInteger("windowPositionTop", 0);
+        int w = cast(int)setting.getInteger("windowPositionWidth", 0);
+        int h = cast(int)setting.getInteger("windowPositionHeight", 0);
+        if (w <= 0 || h <= 0)
+            return false;
+        rect.right = rect.left + w;
+        rect.bottom = rect.top + h;
+        if (correctWindowPositionOnScreen(rect) && (state == WindowState.fullscreen
+             || state == WindowState.minimized 
+             || state == WindowState.maximized
+             || state == WindowState.normal)) {
+             setWindowState(state, false, rect);
+             return true;
+        }
+        return false;
+    }
+
+    /// check if window position inside screen bounds; try to correct if needed; returns true if position is ok.
+    bool correctWindowPositionOnScreen(ref Rect rect) {
+        // override to apply screen size bounds
+        return true;
     }
 
     protected Rect _caretRect;
