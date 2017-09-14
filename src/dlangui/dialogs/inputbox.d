@@ -37,21 +37,16 @@ class InputBox : Dialog {
         _editor = new EditLine("inputbox_editor");
         _editor.layoutWidth = FILL_PARENT;
         _editor.text = _text;
-        _editor.editorAction.connect(&onEditorAction);
+        _editor.enterKey = delegate (EditWidgetBase editor) {
+            close(_buttonActions[_defaultButtonIndex]);
+            return true;
+        };
         _editor.contentChange = delegate(EditableContent content) {
             _text = content.text;
         };
         addChild(msg);
         addChild(_editor);
         addChild(createButtonsPanel(_actions, _defaultButtonIndex, 0));
-    }
-
-    protected bool onEditorAction(const Action action) {
-        if (action.id == EditorActions.InsertNewLine) {
-            close(_buttonActions[_defaultButtonIndex]);
-            return true;
-        }
-        return false;
     }
 
     /// called after window with dialog is shown

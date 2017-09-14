@@ -1942,10 +1942,16 @@ interface EditorActionHandler {
     bool onEditorAction(const Action action);
 }
 
+interface EnterKeyHandler {
+    bool onEnterKey(EditWidgetBase editor);
+}
+
 /// single line editor
 class EditLine : EditWidgetBase {
 
     Signal!EditorActionHandler editorAction;
+    /// handle Enter key press inside line editor
+    Signal!EnterKeyHandler enterKey;
 
     /// empty parameter list constructor - for usage by factory
     this() {
@@ -2094,6 +2100,16 @@ class EditLine : EditWidgetBase {
 
     /// handle keys
     override bool onKeyEvent(KeyEvent event) {
+        if (enterKey.assigned) {
+            if (event.keyCode == KeyCode.RETURN && event.modifiers == 0) {
+                if (event.action == KeyAction.KeyDown)
+                    return true;
+                if (event.action == KeyAction.KeyUp) {
+                    if (enterKey(this))
+                       return true;
+                }
+            }
+        }
         return super.onKeyEvent(event);
     }
 

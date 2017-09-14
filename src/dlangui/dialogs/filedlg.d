@@ -1078,7 +1078,7 @@ class FilePathPanel : FrameLayout {
         _segments = new FilePathPanelButtons(ID_SEGMENTS);
         _edPath = new EditLine(ID_EDITOR);
         _edPath.layoutWidth = FILL_PARENT;
-        _edPath.editorAction = &onEditorAction;
+        _edPath.enterKey = &onEnterKey;
         _edPath.focusChange = &onEditorFocusChanged;
         _segments.click = &onSegmentsClickOutside;
         _segments.onPathSelectionListener = &onPathSelected;
@@ -1106,13 +1106,11 @@ class FilePathPanel : FrameLayout {
         _edPath.setFocus();
         return true;
     }
-    protected bool onEditorAction(const Action action) {
-        if (action.id == EditorActions.InsertNewLine) {
-            string fn = buildNormalizedPath(toUTF8(_edPath.text));
-            if (exists(fn) && isDir(fn))
-                return onPathSelected(fn);
-        }
-        return false;
+    protected bool onEnterKey(EditWidgetBase editor) {
+        string fn = buildNormalizedPath(toUTF8(_edPath.text));
+        if (exists(fn) && isDir(fn))
+            onPathSelected(fn);
+        return true;
     }
 
     @property void path(string value) {
@@ -1142,6 +1140,11 @@ class FileNameEditLine : HorizontalLayout {
 
     @property ref Signal!EditorActionHandler editorAction() {
         return _edFileName.editorAction;
+    }
+
+    /// handle Enter key press inside line editor
+    @property ref Signal!EnterKeyHandler enterKey() {
+        return _edFileName.enterKey;
     }
 
     this(string ID = null) {
