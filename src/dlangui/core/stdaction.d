@@ -37,6 +37,7 @@ enum StandardAction : int {
     Apply,
     OpenDirectory,
     CreateDirectory,
+    TabSelectItem,
 }
 
 const Action ACTION_OK = new Action(StandardAction.Ok, "ACTION_OK"c, "dialog-ok");

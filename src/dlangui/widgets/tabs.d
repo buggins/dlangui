@@ -23,8 +23,11 @@ Authors:   Vadim Lopatin, coolreader.org@gmail.com
 module dlangui.widgets.tabs;
 
 import dlangui.core.signals;
+import dlangui.core.stdaction;
 import dlangui.widgets.layouts;
 import dlangui.widgets.controls;
+import dlangui.widgets.menu;
+import dlangui.widgets.popup;
 
 import std.algorithm;
 
@@ -38,6 +41,9 @@ interface TabCloseHandler {
     void onTabClose(string tabId);
 }
 
+interface PopupMenuHandler {
+    MenuItem getPopupMenu(Widget source);
+}
 
 /// tab item metadata
 class TabItem {
@@ -240,6 +246,7 @@ class TabControl : WidgetGroupDefaultDrawing {
     protected TabItemList _items;
     protected ImageButton _moreButton;
     protected bool _enableCloseButton;
+    protected bool _autoMoreButtonMenu = true;
     protected TabItemWidget[] _sortedItems;
     protected int _buttonOverlap;
 
@@ -252,6 +259,10 @@ class TabControl : WidgetGroupDefaultDrawing {
 
     /// signal on tab close button
     Signal!TabCloseHandler tabClose;
+    /// on more button click (bool delegate(Widget))
+    Signal!OnClickHandler moreButtonClick;
+    /// handler for more button popup menu
+    Signal!PopupMenuHandler moreButtonPopupMenu;
 
     protected Align _tabAlignment;
     @property Align tabAlignment() { return _tabAlignment; }
@@ -294,6 +305,31 @@ class TabControl : WidgetGroupDefaultDrawing {
     /// ditto
     @property void enableCloseButton(bool enabled) {
         _enableCloseButton = enabled;
+    }
+    /// when true, more button is visible
+    @property bool enableMoreButton() {
+        return _moreButton.visibility == Visibility.Visible;
+    }
+    /// ditto
+    @property void enableMoreButton(bool flgVisible) {
+        _moreButton.visibility = flgVisible ? Visibility.Visible : Visibility.Gone;
+    }
+    /// when true, automatically generate popup menu for more button - allowing to select tab from list
+    @property bool autoMoreButtonMenu() {
+        return _autoMoreButtonMenu;
+    }
+    /// ditto
+    @property void autoMoreButtonMenu(bool enableAutoMenu) {
+        _autoMoreButtonMenu = enableAutoMenu;
+    }
+
+    /// more button custom icon
+    @property string moreButtonIcon() {
+        return _moreButton.drawableId;
+    }
+    /// ditto
+    @property void moreButtonIcon(string resourceId) {
+        _moreButton.drawableId = resourceId;
     }
 
     /// returns tab count
@@ -444,10 +480,57 @@ class TabControl : WidgetGroupDefaultDrawing {
         TabItem item = new TabItem(id, labelResourceId, iconId);
         return addTab(item, -1, enableCloseButton);
     }
+    protected MenuItem getMoreButtonPopupMenu() {
+        if (moreButtonPopupMenu.assigned) {
+            if (auto menu = moreButtonPopupMenu(this)) {
+                return menu;
+            }
+        }
+        if (_autoMoreButtonMenu) {
+            if (!tabCount)
+                return null;
+            MenuItem res = new MenuItem();
+            for (int i = 0; i < tabCount; i++) {
+                TabItem item = _items[i];
+                Action action = new Action(StandardAction.TabSelectItem, item.text);
+                action.longParam = i;
+                res.add(action);
+            }
+            return res;
+        }
+        return null;
+    }
+    /// try to invoke popup menu, return true if popup menu is shown
+    protected bool handleMorePopupMenu() {
+        if (auto menu = getMoreButtonPopupMenu()) {
+            PopupMenu popupMenu = new PopupMenu(menu);
+            popupMenu.menuItemAction = &handleAction;
+            //popupMenu.menuItemAction = this;
+            PopupWidget popup = window.showPopup(popupMenu, this, PopupAlign.Point | (_tabAlignment == Align.Top ? PopupAlign.Below : PopupAlign.Above) | PopupAlign.Right, _moreButton.pos.right, _moreButton.pos.bottom);
+            popup.flags = PopupFlags.CloseOnClickOutside;
+            popupMenu.setFocus();
+            popupMenu.selectItem(0);
+            return true;
+        }
+        return false;
+    }
+    /// override to handle specific actions
+    override bool handleAction(const Action a) {
+        if (a.id == StandardAction.TabSelectItem) {
+            selectTab(cast(int)a.longParam, true);
+            return true;
+        }
+        return super.handleAction(a);
+    }
     protected bool onMouse(Widget source, MouseEvent event) {
         if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
             if (source.compareId("MORE")) {
                 Log.d("tab MORE button pressed");
+                if (handleMorePopupMenu())
+                    return true;
+                if (moreButtonClick.assigned) {
+                    moreButtonClick(this);
+                }
                 return true;
             }
             string id = source.id;
@@ -844,6 +927,15 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
         styleId = tabWidgetStyle;
         _tabControl.setStyles(tabStyle, tabButtonStyle, tabButtonTextStyle);
         _tabHost.styleId = tabHostStyle;
+    }
+
+    /// override to handle specific actions
+    override bool handleAction(const Action a) {
+        if (a.id == StandardAction.TabSelectItem) {
+            selectTab(cast(int)a.longParam);
+            return true;
+        }
+        return super.handleAction(a);
     }
 
     private bool _tabNavigationInProgress;
