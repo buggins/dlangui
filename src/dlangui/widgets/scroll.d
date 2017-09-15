@@ -169,6 +169,27 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         }
     }
 
+    protected bool _insideChangeScrollbarVisibility;
+    protected void checkIfNeededToChangeScrollbarVisibility() {
+        if (_insideChangeScrollbarVisibility)
+            return;
+        bool needHScroll = false;
+        bool needVScroll = false;
+        checkIfScrollbarsNeeded(needHScroll, needVScroll);
+        bool hscrollVisible = _hscrollbar && _hscrollbar.visibility == Visibility.Visible;
+        bool vscrollVisible = _vscrollbar && _vscrollbar.visibility == Visibility.Visible;
+        bool needChange = false;
+        if (_hscrollbar && hscrollVisible != needHScroll)
+            needChange = true;
+        if (_vscrollbar && vscrollVisible != needVScroll)
+            needChange = true;
+        if (needChange) {
+            _insideChangeScrollbarVisibility = true;
+            layout(_pos);
+            _insideChangeScrollbarVisibility = false;
+        }
+    }
+
     /// update scrollbar positions
     protected void updateScrollBars() {
         if (_hscrollbar) {
@@ -177,6 +198,7 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         if (_vscrollbar) {
             updateVScrollBar();
         }
+        checkIfNeededToChangeScrollbarVisibility();
     }
 
     public @property ScrollBar hscrollbar() { return _hscrollbar; }
@@ -306,12 +328,18 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         int vsbw = 0;
         int hsbh = 0;
         if (_hscrollbar && (_hscrollbarMode == ScrollBarMode.Visible || _hscrollbarMode == ScrollBarMode.Auto)) {
+            Visibility oldVisibility = _hscrollbar.visibility;
+            _hscrollbar.visibility = Visibility.Visible;
             _hscrollbar.measure(pwidth, pheight);
             hsbh = _hscrollbar.measuredHeight;
+            _hscrollbar.visibility = oldVisibility;
         }
         if (_vscrollbar && (_vscrollbarMode == ScrollBarMode.Visible || _vscrollbarMode == ScrollBarMode.Auto)) {
+            Visibility oldVisibility = _vscrollbar.visibility;
+            _vscrollbar.visibility = Visibility.Visible;
             _vscrollbar.measure(pwidth, pheight);
             vsbw = _vscrollbar.measuredWidth;
+            _vscrollbar.visibility = oldVisibility;
         }
         Point sz = minimumVisibleContentSize();
         
@@ -329,6 +357,59 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
     protected void handleClientRectLayout(ref Rect rc) {
     }
 
+    /// override to determine if scrollbars are needed or not
+    protected void checkIfScrollbarsNeeded(ref bool needHScroll, ref bool needVScroll) {
+        needHScroll = _hscrollbar && (_hscrollbarMode == ScrollBarMode.Visible || _hscrollbarMode == ScrollBarMode.Auto);
+        needVScroll = _vscrollbar && (_vscrollbarMode == ScrollBarMode.Visible || _vscrollbarMode == ScrollBarMode.Auto);
+        if (!needHScroll && !needVScroll)
+            return; // not needed
+        if (_hscrollbarMode != ScrollBarMode.Auto && _vscrollbarMode != ScrollBarMode.Auto)
+            return; // no auto scrollbars
+        // either h or v scrollbar is in auto mode
+        Point contentSize = fullContentSize();
+        int contentWidth = contentSize.x;
+        int contentHeight = contentSize.y;
+        int clientWidth = _clientRect.width;
+        int clientHeight = _clientRect.height;
+
+        int hsbHeight = _hscrollbar.measuredHeight;
+        int vsbWidth = _hscrollbar.measuredWidth;
+
+        int clientWidthWithScrollbar = clientWidth - vsbWidth;
+        int clientHeightWithScrollbar = clientHeight - hsbHeight;
+
+        if (_hscrollbarMode == ScrollBarMode.Auto && _vscrollbarMode == ScrollBarMode.Auto) {
+            // both scrollbars in auto mode
+            bool xFits = contentWidth <= clientWidth;
+            bool yFits = contentHeight <= clientHeight;
+            if (!xFits && !yFits) {
+                // none fits, need both scrollbars
+            } else if (xFits && yFits) {
+                // everything fits!
+                needHScroll = false;
+                needVScroll = false;
+            } else if (xFits) {
+                // only X fits
+                if (contentWidth <= clientWidthWithScrollbar)
+                    needHScroll = false; // disable hscroll
+            } else { // yFits
+                // only Y fits
+                if (contentHeight <= clientHeightWithScrollbar)
+                    needVScroll = false; // disable vscroll
+            }
+        } else if (_hscrollbarMode == ScrollBarMode.Auto) {
+            // only hscroll is in auto mode
+            if (needVScroll)
+                clientWidth = clientWidthWithScrollbar;
+            needHScroll = contentWidth > clientWidth;
+        } else {
+            // only vscroll is in auto mode
+            if (needHScroll)
+                clientHeight = clientHeightWithScrollbar;
+            needVScroll = contentHeight > clientHeight;
+        }
+    }
+
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     override void layout(Rect rc) {
         if (visibility == Visibility.Gone) {
@@ -338,17 +419,16 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
         _needLayout = false;
         applyMargins(rc);
         applyPadding(rc);
-        Point sz = fullContentSize();
-        bool needHscroll = _hscrollbarMode != ScrollBarMode.External && _hscrollbarMode != ScrollBarMode.Invisible && sz.x > rc.width;
-        bool needVscroll = _vscrollbarMode != ScrollBarMode.External && _vscrollbarMode != ScrollBarMode.Invisible && sz.y > rc.height;
-        if (needVscroll && _vscrollbarMode != ScrollBarMode.Invisible)
-            needHscroll = sz.x > rc.width - _vscrollbar.measuredWidth;
-        if (needHscroll && _hscrollbarMode != ScrollBarMode.Invisible)
-            needVscroll = sz.y > rc.height - _hscrollbar.measuredHeight;
-        if (needVscroll && _vscrollbarMode != ScrollBarMode.Invisible)
-            needHscroll = sz.x > rc.width - _vscrollbar.measuredWidth;
-        needVscroll = needVscroll || (_vscrollbarMode == ScrollBarMode.Visible);
-        needHscroll = needHscroll || (_hscrollbarMode == ScrollBarMode.Visible);
+
+        // client area - initial setup w/o scrollbars
+        _clientRect = rc;
+        handleClientRectLayout(_clientRect);
+
+        bool needHscroll;
+        bool needVscroll;
+
+        checkIfScrollbarsNeeded(needHscroll, needVscroll);
+
         // scrollbars
         Rect vsbrc = rc;
         vsbrc.left = vsbrc.right - (needVscroll ? _vscrollbar.measuredWidth : 0);
@@ -364,13 +444,13 @@ class ScrollWidgetBase :  WidgetGroup, OnScrollHandler {
             _hscrollbar.visibility = needHscroll ? Visibility.Visible : Visibility.Gone;
             _hscrollbar.layout(hsbrc);
         }
-        // client area
+
         _clientRect = rc;
-        handleClientRectLayout(_clientRect);
         if (needVscroll)
             _clientRect.right = vsbrc.left;
         if (needHscroll)
             _clientRect.bottom = hsbrc.top;
+        handleClientRectLayout(_clientRect);
         updateScrollBars();
     }
 

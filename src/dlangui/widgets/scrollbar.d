@@ -282,6 +282,11 @@ class ScrollBar : AbstractSlider, OnClickHandler {
         return sendScrollEvent(ScrollAction.SliderMoved, currentPosition);
     }
 
+    /// true if full scroll range is visible, and no need of scrolling at all
+    @property bool fullRangeVisible() {
+        return _pageSize >= _maxValue - _minValue;
+    }
+
     private bool calcButtonSizes(int availableSize, ref int spaceBackSize, ref int spaceForwardSize, ref int indicatorSize) {
         int dv = _maxValue - _minValue;
         if (_pageSize >= dv) {

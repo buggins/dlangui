@@ -27,6 +27,7 @@ enum DEFAULT_SOURCE_EDIT_FONT_FACES = "Menlo,Consolas,DejaVuSansMono,DejaVu Sans
 class SourceEdit : EditBox {
     this(string ID) {
         super(ID);
+        _extendRightScrollBound = true;
         fontFace = DEFAULT_SOURCE_EDIT_FONT_FACES;
         //fontFace = "Consolas,Lucida Console,Courier New";
         fontFamily = FontFamily.MonoSpace;
