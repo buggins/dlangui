@@ -238,7 +238,12 @@
         />
     <style id="MENU_ITEM"
         backgroundImageId="menu_item_background"
-        padding="4,2,4,2"
+        padding="4pt,2pt,4pt,2pt"
+        >
+    </style>
+    <style id="MENU_SEPARATOR"
+        backgroundImageId="menu_separator"
+        padding="4pt,2pt,4pt,2pt"
         >
     </style>
     <style id="MENU_ICON"
