@@ -139,7 +139,13 @@ class TreeItem {
     }
     
     void clear() {
+        foreach(c; _children) {
+            c.parent = null;
+            if(c is root.selectedItem)
+                root.selectItem(null);
+        }
         _children.clear();
+        root.onUpdate(this);
     }
 
     @property TreeItem parent() { return _parent; }
