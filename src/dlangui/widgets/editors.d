@@ -221,16 +221,17 @@ const Action ACTION_EDITOR_TOGGLE_BLOCK_COMMENT = (new Action(EditorActions.Togg
 const Action ACTION_EDITOR_TOGGLE_BOOKMARK = (new Action(EditorActions.ToggleBookmark, "ACTION_EDITOR_TOGGLE_BOOKMARK"c, null, KeyCode.KEY_B, KeyFlag.Control | KeyFlag.Shift));
 const Action ACTION_EDITOR_GOTO_NEXT_BOOKMARK = (new Action(EditorActions.GoToNextBookmark, "ACTION_EDITOR_GOTO_NEXT_BOOKMARK"c, null, KeyCode.DOWN, KeyFlag.Control | KeyFlag.Shift | KeyFlag.Alt));
 const Action ACTION_EDITOR_GOTO_PREVIOUS_BOOKMARK = (new Action(EditorActions.GoToPreviousBookmark, "ACTION_EDITOR_GOTO_PREVIOUS_BOOKMARK"c, null, KeyCode.UP, KeyFlag.Control | KeyFlag.Shift | KeyFlag.Alt));
-const Action ACTION_EDITOR_FIND = (new Action(EditorActions.Find, KeyCode.KEY_F, KeyFlag.Control));
-const Action ACTION_EDITOR_FIND_NEXT = (new Action(EditorActions.FindNext, KeyCode.F3, 0));
-const Action ACTION_EDITOR_FIND_PREV = (new Action(EditorActions.FindPrev, KeyCode.F3, KeyFlag.Shift));
-const Action ACTION_EDITOR_REPLACE = (new Action(EditorActions.Replace, KeyCode.KEY_H, KeyFlag.Control));
+const Action ACTION_EDITOR_FIND = (new Action(EditorActions.Find, "ACTION_EDITOR_FIND"c, null, KeyCode.KEY_F, KeyFlag.Control));
+const Action ACTION_EDITOR_FIND_NEXT = (new Action(EditorActions.FindNext, "ACTION_EDITOR_FIND_NEXT"c, null, KeyCode.F3, 0));
+const Action ACTION_EDITOR_FIND_PREV = (new Action(EditorActions.FindPrev, "ACTION_EDITOR_FIND_PREV"c, null, KeyCode.F3, KeyFlag.Shift));
+const Action ACTION_EDITOR_REPLACE = (new Action(EditorActions.Replace, "ACTION_EDITOR_REPLACE"c, null, KeyCode.KEY_H, KeyFlag.Control));
 
 const Action[] STD_EDITOR_ACTIONS = [ACTION_EDITOR_INSERT_NEW_LINE, ACTION_EDITOR_PREPEND_NEW_LINE,
         ACTION_EDITOR_APPEND_NEW_LINE, ACTION_EDITOR_DELETE_LINE, ACTION_EDITOR_TOGGLE_REPLACE_MODE,
         ACTION_EDITOR_SELECT_ALL, ACTION_EDITOR_TOGGLE_LINE_COMMENT, ACTION_EDITOR_TOGGLE_BLOCK_COMMENT,
         ACTION_EDITOR_TOGGLE_BOOKMARK, ACTION_EDITOR_GOTO_NEXT_BOOKMARK, ACTION_EDITOR_GOTO_PREVIOUS_BOOKMARK,
-
+        ACTION_EDITOR_FIND, ACTION_EDITOR_REPLACE, ACTION_EDITOR_FIND_NEXT, ACTION_EDITOR_FIND_PREV,
+        ACTION_EDITOR_FIND_NEXT, ACTION_EDITOR_FIND_PREV
 ];
 
 /// base for all editor widgets
@@ -657,7 +658,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             case Find:
             case FindNext:
             case FindPrev:
-                return true;
+                return _content.multiline;
             default:
                 return super.isActionEnabled(action);
         }
