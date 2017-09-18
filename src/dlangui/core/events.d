@@ -242,6 +242,7 @@ struct ActionState {
 const ACTION_STATE_ENABLED = ActionState(true, true, false);
 const ACTION_STATE_DISABLE = ActionState(false, true, false);
 const ACTION_STATE_INVISIBLE = ActionState(false, false, false);
+const ACTION_STATE_CHECKED = ActionState(true, true, true);
 
 /// Match key flags
 static bool matchKeyFlags(uint eventFlags, uint requestedFlags) {

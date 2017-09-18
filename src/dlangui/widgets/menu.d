@@ -207,6 +207,13 @@ class MenuItem {
         subitem._parent = this;
         return this;
     }
+    /// adds submenu checkbox item
+    MenuItem addCheck(const Action a) {
+        MenuItem res = new MenuItem(a);
+        res.type = MenuItemType.Check;
+        add(res);
+        return this;
+    }
     /// adds submenu item(s) from one or more actions (will return item for last action)
     MenuItem add(Action[] subitemActions...) {
         MenuItem res = null;
