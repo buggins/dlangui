@@ -185,6 +185,24 @@ class TreeItem {
     void collapse() {
         _expanded = false;
     }
+    /// expand this node and all children
+    void expandAll() {
+        foreach(c; _children) {
+            if (!c._expanded && c.canCollapse) //?
+                c.expandAll();
+        }
+        if (!expanded)
+            toggleExpand(this);
+    }
+    /// expand this node and all children
+    void collapseAll() {
+        foreach(c; _children) {
+            if (c._expanded && c.canCollapse)
+                c.collapseAll();
+        }
+        if (expanded)
+            toggleExpand(this);
+    }
 
     @property TreeItem selectedItem() {
         return root.selectedItem();
