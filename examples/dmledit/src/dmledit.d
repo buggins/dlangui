@@ -252,11 +252,17 @@ class EditFrame : AppFrame {
         switch (a.id) {
             case IDEActions.HelpAbout:
             case IDEActions.FileNew:
-            case IDEActions.FileSave:
             case IDEActions.FileOpen:
             case IDEActions.DebugStart:
             case IDEActions.EditPreferences:
+            case IDEActions.FileSaveAs:
                 a.state = ACTION_STATE_ENABLED;
+                return true;
+            case IDEActions.FileSave:
+                if (_content.modified)
+                    a.state = ACTION_STATE_ENABLED;
+                else
+                    a.state = ACTION_STATE_DISABLED;
                 return true;
             default:
                 return super.handleActionStateRequest(a);
