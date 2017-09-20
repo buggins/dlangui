@@ -51,17 +51,27 @@ class TabItem {
     private string _iconRes;
     private string _id;
     private UIString _label;
+    private UIString _tooltipText;
     private long _lastAccessTs;
-    this(string id, string labelRes, string iconRes = null) {
+    this(string id, string labelRes, string iconRes = null, dstring tooltipText = null) {
         _id = id;
         _label.id = labelRes;
         _iconRes = iconRes;
+        _tooltipText = UIString.fromRaw(tooltipText);
     }
-    this(string id, dstring labelRes, string iconRes = null) {
+    this(string id, dstring labelText, string iconRes = null, dstring tooltipText = null) {
         _id = id;
-        _label.value = labelRes;
+        _label.value = labelText;
         _iconRes = iconRes;
         _lastAccessTs = _lastAccessCounter++;
+        _tooltipText = UIString.fromRaw(tooltipText);
+    }
+    this(string id, UIString labelText, string iconRes = null, dstring tooltipText = null) {
+        _id = id;
+        _label = labelText;
+        _iconRes = iconRes;
+        _lastAccessTs = _lastAccessCounter++;
+        _tooltipText = UIString.fromRaw(tooltipText);
     }
     @property string iconId() const { return _iconRes; }
     @property string id() const { return _id; }
@@ -73,6 +83,16 @@ class TabItem {
     void updateAccessTs() {
         _lastAccessTs = _lastAccessCounter++; //std.datetime.Clock.currStdTime;
     }
+    /// tooltip text
+    @property dstring tooltipText() {
+        if (_tooltipText.empty)
+            return null;
+        return _tooltipText.value;
+    }
+    /// tooltip text
+    @property void tooltipText(dstring text) { _tooltipText = UIString.fromRaw(text); }
+    /// tooltip text
+    @property void tooltipText(UIString text) { _tooltipText = text; }
 
     protected Object _objectParam;
     @property Object objectParam() {
@@ -127,7 +147,35 @@ class TabItemWidget : HorizontalLayout {
         clickable = true;
         trackHover = true;
         _label.trackHover = true;
+        _label.tooltipText = _item.tooltipText;
+        if (_icon)
+            _icon.tooltipText = _item.tooltipText;
+        if (_closeButton)
+            _closeButton.tooltipText = _item.tooltipText;
     }
+    /// tooltip text - when not empty, widget will show tooltips automatically; for advanced tooltips - override hasTooltip and createTooltip
+    override @property dstring tooltipText() { return _item.tooltipText; }
+    /// tooltip text - when not empty, widget will show tooltips automatically; for advanced tooltips - override hasTooltip and createTooltip
+    override @property Widget tooltipText(dstring text) { 
+        _label.tooltipText = text;
+        if (_icon)
+            _icon.tooltipText = text;
+        if (_closeButton)
+            _closeButton.tooltipText = text;
+        _item.tooltipText = text;
+        return this; 
+    }
+    /// tooltip text - when not empty, widget will show tooltips automatically; for advanced tooltips - override hasTooltip and createTooltip
+    override @property Widget tooltipText(UIString text) {
+        _label.tooltipText = text;
+        if (_icon)
+            _icon.tooltipText = text;
+        if (_closeButton)
+            _closeButton.tooltipText = text;
+        _item.tooltipText = text;
+        return this;
+    }
+
     void setStyles(string tabButtonStyle, string tabButtonTextStyle) {
         styleId = tabButtonStyle;
         _label.styleId = tabButtonTextStyle;
@@ -471,13 +519,18 @@ class TabControl : WidgetGroupDefaultDrawing {
         return this;
     }
     /// add new tab by id and label string
-    TabControl addTab(string id, dstring label, string iconId = null, bool enableCloseButton = false) {
-        TabItem item = new TabItem(id, label, iconId);
+    TabControl addTab(string id, dstring label, string iconId = null, bool enableCloseButton = false, dstring tooltipText = null) {
+        TabItem item = new TabItem(id, label, iconId, tooltipText);
         return addTab(item, -1, enableCloseButton);
     }
     /// add new tab by id and label string resource id
-    TabControl addTab(string id, string labelResourceId, string iconId = null, bool enableCloseButton = false) {
-        TabItem item = new TabItem(id, labelResourceId, iconId);
+    TabControl addTab(string id, string labelResourceId, string iconId = null, bool enableCloseButton = false, dstring tooltipText = null) {
+        TabItem item = new TabItem(id, labelResourceId, iconId, tooltipText);
+        return addTab(item, -1, enableCloseButton);
+    }
+    /// add new tab by id and label UIString
+    TabControl addTab(string id, UIString label, string iconId = null, bool enableCloseButton = false, dstring tooltipText = null) {
+        TabItem item = new TabItem(id, label, iconId, tooltipText);
         return addTab(item, -1, enableCloseButton);
     }
     protected MenuItem getMoreButtonPopupMenu() {
@@ -747,22 +800,33 @@ class TabHost : FrameLayout, TabHandler {
         return this;
     }
     /// add new tab by id and label string
-    TabHost addTab(Widget widget, dstring label, string iconId = null, bool enableCloseButton = false) {
+    TabHost addTab(Widget widget, dstring label, string iconId = null, bool enableCloseButton = false, dstring tooltipText = null) {
         assert(_tabControl !is null, "No TabControl set for TabHost");
         assert(widget.id !is null, "ID for tab host page is mandatory");
         assert(_children.indexOf(id) == -1, "duplicate ID for tab host page");
-        _tabControl.addTab(widget.id, label, iconId, enableCloseButton);
+        _tabControl.addTab(widget.id, label, iconId, enableCloseButton, tooltipText);
         tabInitialization(widget);
         //widget.focusGroup = true; // doesn't allow move focus outside of tab content
         addChild(widget);
         return this;
     }
     /// add new tab by id and label string resource id
-    TabHost addTab(Widget widget, string labelResourceId, string iconId = null, bool enableCloseButton = false) {
+    TabHost addTab(Widget widget, string labelResourceId, string iconId = null, bool enableCloseButton = false, dstring tooltipText = null) {
         assert(_tabControl !is null, "No TabControl set for TabHost");
         assert(widget.id !is null, "ID for tab host page is mandatory");
         assert(_children.indexOf(id) == -1, "duplicate ID for tab host page");
-        _tabControl.addTab(widget.id, labelResourceId, iconId, enableCloseButton);
+        _tabControl.addTab(widget.id, labelResourceId, iconId, enableCloseButton, tooltipText);
+        tabInitialization(widget);
+        addChild(widget);
+        return this;
+    }
+
+    /// add new tab by id and label UIString
+    TabHost addTab(Widget widget, UIString label, string iconId = null, bool enableCloseButton = false, dstring tooltipText = null) {
+        assert(_tabControl !is null, "No TabControl set for TabHost");
+        assert(widget.id !is null, "ID for tab host page is mandatory");
+        assert(_children.indexOf(id) == -1, "duplicate ID for tab host page");
+        _tabControl.addTab(widget.id, label, iconId, enableCloseButton, tooltipText);
         tabInitialization(widget);
         addChild(widget);
         return this;
@@ -848,14 +912,14 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
     }
 
     /// add new tab by id and label string resource id
-    TabWidget addTab(Widget widget, string labelResourceId, string iconId = null, bool enableCloseButton = false) {
-        _tabHost.addTab(widget, labelResourceId, iconId, enableCloseButton);
+    TabWidget addTab(Widget widget, string labelResourceId, string iconId = null, bool enableCloseButton = false, dstring tooltipText = null) {
+        _tabHost.addTab(widget, labelResourceId, iconId, enableCloseButton, tooltipText);
         return this;
     }
 
     /// add new tab by id and label (raw value)
-    TabWidget addTab(Widget widget, dstring label, string iconId = null, bool enableCloseButton = false) {
-        _tabHost.addTab(widget, label, iconId, enableCloseButton);
+    TabWidget addTab(Widget widget, dstring label, string iconId = null, bool enableCloseButton = false, dstring tooltipText = null) {
+        _tabHost.addTab(widget, label, iconId, enableCloseButton, tooltipText);
         return this;
     }
 

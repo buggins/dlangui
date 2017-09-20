@@ -784,7 +784,7 @@ public:
 
     /// returns true if widget has tooltip to show
     @property bool hasTooltip() {
-        return !_tooltipText.empty;
+        return tooltipText.length > 0;
     }
     /// will be called from window once tooltip request timer expired; if null is returned, popup will not be shown; you can change alignment and position of popup here
     Widget createTooltip(int mouseX, int mouseY, ref uint alignment, ref int x, ref int y) {
