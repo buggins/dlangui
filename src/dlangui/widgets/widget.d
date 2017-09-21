@@ -1189,7 +1189,13 @@ public:
             Action action = findKeyAction(event.keyCode, event.flags); // & (KeyFlag.Shift | KeyFlag.Alt | KeyFlag.Control | KeyFlag.Menu)
             if (action !is null) {
                 //Log.d("Action found: ", action.id, " ", action.labelValue.id);
-                return dispatchAction(action);
+                // update action state
+                if (updateActionState(action, true) && action is _action)
+                    handleActionStateChanged();
+
+                //run only enabled actions
+                if (action.state.enabled)
+                    return dispatchAction(action);
             }
         }
         // handle focus navigation using keys
