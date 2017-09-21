@@ -1158,6 +1158,13 @@ class Win32Platform : Platform {
         _windowsToDestroy.length = 0;
     }
 
+    /// check has clipboard text
+    override bool hasClipboardText(bool mouseBuffer = false) {
+        if (mouseBuffer)
+            return false;
+        return IsClipboardFormatAvailable(CF_UNICODETEXT);
+    }
+
     /// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
     override dstring getClipboardText(bool mouseBuffer = false) {
         dstring res = null;

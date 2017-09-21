@@ -1633,6 +1633,11 @@ class X11Platform : Platform {
         return 0;
     }
 
+    /// check has clipboard text
+    override bool hasClipboardText(bool mouseBuffer = false) {
+        return (localClipboardContent.length != 0);
+    }
+
     /// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
     override dstring getClipboardText(bool mouseBuffer = false) {
         return toUTF32(localClipboardContent);

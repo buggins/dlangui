@@ -575,6 +575,12 @@ class AndroidPlatform : Platform {
 	}
 
 	protected dstring _clipboardText;
+
+    /// check has clipboard text
+    override bool hasClipboardText(bool mouseBuffer = false) {
+        return (_clipboardText.length > 0);
+    }
+
 	/// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
 	override dstring getClipboardText(bool mouseBuffer = false) {
 		return _clipboardText;

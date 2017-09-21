@@ -1823,6 +1823,8 @@ class Platform {
      * When returned from this method, application is shutting down.
      */
     abstract int enterMessageLoop();
+    /// check has clipboard text
+    abstract bool hasClipboardText(bool mouseBuffer = false);
     /// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
     abstract dstring getClipboardText(bool mouseBuffer = false);
     /// sets text to clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)

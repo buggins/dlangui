@@ -1462,10 +1462,13 @@ class SDLPlatform : Platform {
         return 0;
     }
 
+    /// check has clipboard text
+    override bool hasClipboardText(bool mouseBuffer = false) {
+        return (SDL_HasClipboardText() == SDL_TRUE);
+    }
+
     /// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
     override dstring getClipboardText(bool mouseBuffer = false) {
-        if (!SDL_HasClipboardText())
-            return ""d;
         char * txt = SDL_GetClipboardText();
         if (!txt)
             return ""d;
