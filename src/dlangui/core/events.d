@@ -613,6 +613,18 @@ struct ActionMap {
         }
         return null;
     }
+
+    int opApply(int delegate(ref Action) op) {
+        int result = 0;
+        foreach (ref Accelerator acc; _map.byKey) {
+            result = op(_map[acc]);
+
+            if (result)
+                break;
+        }
+        return result;
+    }
+
 }
 
 /// List of Actions, for looking up Action by key
