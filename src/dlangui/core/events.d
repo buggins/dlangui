@@ -1595,6 +1595,10 @@ string keyName(uint keyCode) {
             return "Space";
         case KeyCode.RETURN:
             return "Enter";
+        case KeyCode.KEY_ADD:
+            return ` "+"`;
+        case KeyCode.KEY_SUBTRACT:
+            return ` "-"`;
         default:
             return format("0x%08x", keyCode);
     }
