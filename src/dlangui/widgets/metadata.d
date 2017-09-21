@@ -90,7 +90,6 @@ string generatePropertiesMetadata(alias T)() {
         import std.meta;
         char[] str;
         str ~= "[";
-        WidgetPropertyMetadata[] res;
         foreach(m; __traits(allMembers, T)) {
             static if (__traits(compiles, (typeof(__traits(getMember, T, m))))){
                 // skip non-public members, only functions that takes 0 or 1 arguments, add only types that parseable in markup
@@ -99,7 +98,8 @@ string generatePropertiesMetadata(alias T)() {
                         immutable int fnArity = arity!(__traits(getMember, T, m));
                         static if (fnArity == 0 || fnArity == 1) {
                             // TODO: filter out templates, signals and such
-                            static if ([__traits(getFunctionAttributes, __traits(getMember, T, m))[]].canFind("@property")) {
+                            // iterates class members and process @property functions (note: foreach {if})
+                            foreach ( attr; __traits(getFunctionAttributes, __traits(getMember, T, m))) if (attr == "@property") {
                                 alias ret = ReturnType!(__traits(getMember, T, m));
                                 alias params = Parameters!(__traits(getMember, T, m));
                                 string typestring;
