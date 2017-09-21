@@ -642,7 +642,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             case Cut:
                 return enabled && (_copyCurrentLineWhenNoSelection || !_selectionRange.empty);
             case Paste:
-                return enabled && Platform.instance.getClipboardText().length > 0;
+                return enabled && Platform.instance.hasClipboardText();
             case Undo:
                 return enabled && _content.hasUndo;
             case Redo:
