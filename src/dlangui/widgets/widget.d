@@ -741,7 +741,7 @@ public:
     }
     /// call to update state for action (if action is assigned for widget)
     void updateActionState(bool force = false) {
-        if (!_action)
+        if (!_action || !(action.stateUpdateFlag & ActionStateUpdateFlag.inWidget))
             return;
         if (updateActionState(_action, force))
             handleActionStateChanged();
@@ -1190,7 +1190,7 @@ public:
             if (action !is null) {
                 //Log.d("Action found: ", action.id, " ", action.labelValue.id);
                 // update action state
-                if (updateActionState(action, true) && action is _action)
+                if ((action.stateUpdateFlag & ActionStateUpdateFlag.inAccelerator) && updateActionState(action, true) && action is _action)
                     handleActionStateChanged();
 
                 //run only enabled actions

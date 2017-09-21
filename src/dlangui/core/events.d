@@ -26,6 +26,20 @@ private import std.string;
 private import std.conv;
 private import std.utf : toUTF32;
 
+
+/// Define when action need state update - optimization for high frequently uses actions
+enum ActionStateUpdateFlag : uint {
+    /// action never change state so there is no need to search for dispatch action state request
+    never = 0,
+    /// dispatch action state change if action added to widget
+    inWidget = 1,
+    /// dispatch action state change if run from accelerator (keyboard)
+    inAccelerator = 2,
+    /// always dispatch action state change
+    always = inWidget | inAccelerator
+}
+
+
 /// Keyboard accelerator (key + modifiers)
 struct Accelerator {
     /// Key code, usually one of KeyCode enum items
@@ -301,6 +315,8 @@ class Action {
 
     protected ActionState _defaultState = ACTION_STATE_ENABLED;
 
+    protected uint _stateUpdateFlag = ActionStateUpdateFlag.always;
+
     /// set default state to disabled, visible, not-checked
     Action disableByDefault() { _defaultState = ACTION_STATE_DISABLE; return this; }
     /// set default state to disabled, invisible, not-checked
@@ -324,6 +340,15 @@ class Action {
     }
     @property const(Action) checked(bool newValue) const {
         state = ActionState(_state.enabled, _state.visible, newValue);
+        return this;
+    }
+
+    /// return action state update flag (see ActionStateUpdateFlag for details)
+    @property uint stateUpdateFlag() const { return _stateUpdateFlag; }
+
+    /// sets action state update flag (see ActionStateUpdateFlag for details)
+    @property Action stateUpdateFlag(uint newStateUpdateFlag) {
+        _stateUpdateFlag = newStateUpdateFlag;
         return this;
     }
 
@@ -358,6 +383,7 @@ class Action {
         _objectParam = v;
         return this;
     }
+
     /// deep copy constructor
     this(immutable Action a) {
         _id = a._id;
@@ -368,6 +394,7 @@ class Action {
         _accelerators = a._accelerators.dup;
         _stringParam = a._stringParam;
         _longParam = a._longParam;
+        _stateUpdateFlag = a._stateUpdateFlag;
         if (a._objectParam)
             _objectParam = cast(Object)a._objectParam;
     }
@@ -382,7 +409,8 @@ class Action {
         _id = id;
     }
     /// create action with id, labelResourceId, and optional icon and key accelerator.
-    this(int id, string labelResourceId, string iconResourceId = null, uint keyCode = 0, uint keyFlags = 0) {
+    this(int id, string labelResourceId, string iconResourceId = null, uint keyCode = 0, uint keyFlags = 0, 
+                uint stateUpdateFlag = ActionStateUpdateFlag.always ) {
         _id = id;
         _label.id = labelResourceId;
         _iconId = iconResourceId;
@@ -394,9 +422,10 @@ class Action {
             }
             _accelerators ~= Accelerator(keyCode, keyFlags);
         }
+        _stateUpdateFlag = stateUpdateFlag;
     }
     /// action with accelerator, w/o label
-    this(int id, uint keyCode, uint keyFlags = 0) {
+    this(int id, uint keyCode, uint keyFlags = 0, uint stateUpdateFlag = ActionStateUpdateFlag.always) {
         _id = id;
         version (OSX) {
             if (keyFlags & KeyFlag.Control) {
@@ -404,9 +433,11 @@ class Action {
             }
         }
         _accelerators ~= Accelerator(keyCode, keyFlags);
+        _stateUpdateFlag = stateUpdateFlag;
     }
     /// action with label, icon, and accelerator
-    this(int id, dstring label, string iconResourceId = null, uint keyCode = 0, uint keyFlags = 0) {
+    this(int id, dstring label, string iconResourceId = null, uint keyCode = 0, uint keyFlags = 0, 
+                uint stateUpdateFlag = ActionStateUpdateFlag.always) {
         _id = id;
         _label.value = label;
         _iconId = iconResourceId;
@@ -418,6 +449,7 @@ class Action {
             }
             _accelerators ~= Accelerator(keyCode, keyFlags);
         }
+        _stateUpdateFlag = stateUpdateFlag;
     }
     /// returs array of accelerators
     @property Accelerator[] accelerators() {
