@@ -1162,7 +1162,7 @@ class Win32Platform : Platform {
     override bool hasClipboardText(bool mouseBuffer = false) {
         if (mouseBuffer)
             return false;
-        return IsClipboardFormatAvailable(CF_UNICODETEXT);
+        return (IsClipboardFormatAvailable(CF_UNICODETEXT) != 0);
     }
 
     /// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
