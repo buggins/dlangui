@@ -958,6 +958,11 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected ulong _caretTimerId;
     protected bool _caretBlinkingPhase;
     protected long _lastBlinkStartTs;
+    protected bool _caretBlinks = true;
+
+    void showCaretBlinking(bool blinks) {
+      _caretBlinks = blinks;
+    }
 
     protected void startCaretBlinking() {
         if (window) {
@@ -1076,7 +1081,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     /// draws caret
     protected void drawCaret(DrawBuf buf) {
         if (focused) {
-            if (_caretBlinkingPhase) {
+            if (_caretBlinkingPhase && _caretBlinks) {
                 return;
             }
             // draw caret
