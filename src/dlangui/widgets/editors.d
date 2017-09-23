@@ -210,12 +210,12 @@ void initStandardEditorActions() {
     registerActionEnum!EditorActions();
 }
 
-const Action ACTION_EDITOR_INSERT_NEW_LINE = (new Action(EditorActions.InsertNewLine, KeyCode.RETURN, 0)).addAccelerator(KeyCode.RETURN, KeyFlag.Shift);
-const Action ACTION_EDITOR_PREPEND_NEW_LINE = (new Action(EditorActions.PrependNewLine, KeyCode.RETURN, KeyFlag.Control|KeyFlag.Shift));
-const Action ACTION_EDITOR_APPEND_NEW_LINE = (new Action(EditorActions.AppendNewLine, KeyCode.RETURN, KeyFlag.Control));
-const Action ACTION_EDITOR_DELETE_LINE = (new Action(EditorActions.DeleteLine, KeyCode.KEY_D, KeyFlag.Control)).addAccelerator(KeyCode.KEY_L, KeyFlag.Control);
-const Action ACTION_EDITOR_TOGGLE_REPLACE_MODE = (new Action(EditorActions.ToggleReplaceMode, KeyCode.INS, 0));
-const Action ACTION_EDITOR_SELECT_ALL = (new Action(EditorActions.SelectAll, KeyCode.KEY_A, KeyFlag.Control));
+const Action ACTION_EDITOR_INSERT_NEW_LINE = (new Action(EditorActions.InsertNewLine, KeyCode.RETURN, 0, ActionStateUpdateFlag.never)).addAccelerator(KeyCode.RETURN, KeyFlag.Shift);
+const Action ACTION_EDITOR_PREPEND_NEW_LINE = (new Action(EditorActions.PrependNewLine, KeyCode.RETURN, KeyFlag.Control | KeyFlag.Shift, ActionStateUpdateFlag.never));
+const Action ACTION_EDITOR_APPEND_NEW_LINE = (new Action(EditorActions.AppendNewLine, KeyCode.RETURN, KeyFlag.Control, ActionStateUpdateFlag.never));
+const Action ACTION_EDITOR_DELETE_LINE = (new Action(EditorActions.DeleteLine, KeyCode.KEY_D, KeyFlag.Control, ActionStateUpdateFlag.never)).addAccelerator(KeyCode.KEY_L, KeyFlag.Control);
+const Action ACTION_EDITOR_TOGGLE_REPLACE_MODE = (new Action(EditorActions.ToggleReplaceMode, KeyCode.INS, 0, ActionStateUpdateFlag.never));
+const Action ACTION_EDITOR_SELECT_ALL = (new Action(EditorActions.SelectAll, KeyCode.KEY_A, KeyFlag.Control, ActionStateUpdateFlag.never));
 const Action ACTION_EDITOR_TOGGLE_LINE_COMMENT = (new Action(EditorActions.ToggleLineComment, KeyCode.KEY_DIVIDE, KeyFlag.Control));
 const Action ACTION_EDITOR_TOGGLE_BLOCK_COMMENT = (new Action(EditorActions.ToggleBlockComment, KeyCode.KEY_DIVIDE, KeyFlag.Control | KeyFlag.Shift));
 const Action ACTION_EDITOR_TOGGLE_BOOKMARK = (new Action(EditorActions.ToggleBookmark, "ACTION_EDITOR_TOGGLE_BOOKMARK"c, null, KeyCode.KEY_B, KeyFlag.Control | KeyFlag.Shift));
@@ -565,33 +565,33 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             new Action(EditorActions.DocumentEnd, KeyCode.END, KeyFlag.Control, ActionStateUpdateFlag.never),
             new Action(EditorActions.SelectDocumentEnd, KeyCode.END, KeyFlag.Control | KeyFlag.Shift, ActionStateUpdateFlag.never),
 
-            new Action(EditorActions.ScrollLineUp, KeyCode.UP, KeyFlag.Control),
-            new Action(EditorActions.ScrollLineDown, KeyCode.DOWN, KeyFlag.Control),
+            new Action(EditorActions.ScrollLineUp, KeyCode.UP, KeyFlag.Control, ActionStateUpdateFlag.never),
+            new Action(EditorActions.ScrollLineDown, KeyCode.DOWN, KeyFlag.Control, ActionStateUpdateFlag.never),
 
             // Backspace/Del
-            new Action(EditorActions.DelPrevChar, KeyCode.BACK, 0),
-            new Action(EditorActions.DelNextChar, KeyCode.DEL, 0),
-            new Action(EditorActions.DelPrevWord, KeyCode.BACK, KeyFlag.Control),
-            new Action(EditorActions.DelNextWord, KeyCode.DEL, KeyFlag.Control),
+            new Action(EditorActions.DelPrevChar, KeyCode.BACK, 0, ActionStateUpdateFlag.never),
+            new Action(EditorActions.DelNextChar, KeyCode.DEL, 0, ActionStateUpdateFlag.never),
+            new Action(EditorActions.DelPrevWord, KeyCode.BACK, KeyFlag.Control, ActionStateUpdateFlag.never),
+            new Action(EditorActions.DelNextWord, KeyCode.DEL, KeyFlag.Control, ActionStateUpdateFlag.never),
 
             // Copy/Paste
             new Action(EditorActions.Copy, KeyCode.KEY_C, KeyFlag.Control),
-            new Action(EditorActions.Copy, KeyCode.KEY_C, KeyFlag.Control|KeyFlag.Shift),
+            new Action(EditorActions.Copy, KeyCode.KEY_C, KeyFlag.Control | KeyFlag.Shift),
             new Action(EditorActions.Copy, KeyCode.INS, KeyFlag.Control),
             new Action(EditorActions.Cut, KeyCode.KEY_X, KeyFlag.Control),
-            new Action(EditorActions.Cut, KeyCode.KEY_X, KeyFlag.Control|KeyFlag.Shift),
+            new Action(EditorActions.Cut, KeyCode.KEY_X, KeyFlag.Control | KeyFlag.Shift),
             new Action(EditorActions.Cut, KeyCode.DEL, KeyFlag.Shift),
             new Action(EditorActions.Paste, KeyCode.KEY_V, KeyFlag.Control),
-            new Action(EditorActions.Paste, KeyCode.KEY_V, KeyFlag.Control|KeyFlag.Shift),
+            new Action(EditorActions.Paste, KeyCode.KEY_V, KeyFlag.Control | KeyFlag.Shift),
             new Action(EditorActions.Paste, KeyCode.INS, KeyFlag.Shift),
 
             // Undo/Redo
             new Action(EditorActions.Undo, KeyCode.KEY_Z, KeyFlag.Control),
             new Action(EditorActions.Redo, KeyCode.KEY_Y, KeyFlag.Control),
-            new Action(EditorActions.Redo, KeyCode.KEY_Z, KeyFlag.Control|KeyFlag.Shift),
+            new Action(EditorActions.Redo, KeyCode.KEY_Z, KeyFlag.Control | KeyFlag.Shift),
 
-            new Action(EditorActions.Tab, KeyCode.TAB, 0),
-            new Action(EditorActions.BackTab, KeyCode.TAB, KeyFlag.Shift),
+            new Action(EditorActions.Tab, KeyCode.TAB, 0, ActionStateUpdateFlag.never),
+            new Action(EditorActions.BackTab, KeyCode.TAB, KeyFlag.Shift, ActionStateUpdateFlag.never),
 
             new Action(EditorActions.Find, KeyCode.KEY_F, KeyFlag.Control),
             new Action(EditorActions.Replace, KeyCode.KEY_H, KeyFlag.Control),
