@@ -960,8 +960,13 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected long _lastBlinkStartTs;
     protected bool _caretBlinks = true;
 
-    void showCaretBlinking(bool blinks) {
-      _caretBlinks = blinks;
+    /// when true, enables caret blinking, otherwise it's always visible
+    @property void showCaretBlinking(bool blinks) {
+        _caretBlinks = blinks;
+    }
+    /// when true, enables caret blinking, otherwise it's always visible
+    @property bool showCaretBlinking() {
+        return _caretBlinks;
     }
 
     protected void startCaretBlinking() {
