@@ -1422,6 +1422,8 @@ class EditableContent {
     }
     /// load content from file
     bool load(string filename) {
+        import std.file : exists, isFile;
+        import std.exception : ErrnoException;
         clear();
         if (!filename.exists || !filename.isFile) {
             Log.e("Editable.load: File not found ", filename);
