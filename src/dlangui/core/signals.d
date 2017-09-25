@@ -164,6 +164,10 @@ struct Listener(RETURN_T, T1...)
     final slot_t get() {
         return _listener;
     }
+    /// disconnect all listeners
+    final void clear() {
+        _listener = null;
+    }
     alias get this;
 }
 
@@ -235,6 +239,10 @@ struct Signal(T1) if (is(T1 == interface) && __traits(allMembers, T1).length == 
     final void disconnect(T1 listener) {
         disconnect(&__traits(getMember, listener, __traits(allMembers, T1)[0]));
     }
+    /// disconnect all listeners
+    final void clear() {
+        _listeners.clear();
+    }
 }
 
 /// Multiple listeners; implicitly specified return and parameter types
@@ -286,5 +294,9 @@ struct Signal(RETURN_T, T1...)
     /// remove listener
     final void disconnect(slot_t listener) {
         _listeners -= listener;
+    }
+    /// disconnect all listeners
+    final void clear() {
+        _listeners.clear();
     }
 }

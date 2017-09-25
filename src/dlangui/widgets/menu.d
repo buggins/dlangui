@@ -232,6 +232,12 @@ class MenuItem {
         }
         return res;
     }
+    /// removes all subitems
+    void clear() {
+        foreach(ref item; _subitems)
+            item = null;
+        _subitems.length = 0;
+    }
     /// returns text description for first accelerator of action; null if no accelerators
     @property dstring acceleratorText() {
         if (!_action)
