@@ -1848,7 +1848,9 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         _hoverMousePosition = pos;
         _hoverTextPosition = clientToTextPos(Point(x, y));
         cancelHoverTimer();
-        _hoverTimer = setTimer(_hoverTimeoutMillis);
+        Rect reversePos = textPosToClient(_hoverTextPosition);
+        if (x < reversePos.left + 10.pointsToPixels)
+            _hoverTimer = setTimer(_hoverTimeoutMillis);
     }
 
     protected void cancelHoverTimer() {
