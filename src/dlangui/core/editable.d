@@ -1423,14 +1423,22 @@ class EditableContent {
     /// load content from file
     bool load(string filename) {
         clear();
+        if (!filename.exists || !filename.isFile) {
+            Log.e("Editable.load: File not found ", filename);
+            return false;
+        }
         try {
             InputStream f;
             f = new FileInputStream(filename);
             scope(exit) { f.close(); }
             bool res = load(f, filename);
             return res;
+        } catch (ErrnoException e) {
+            Log.e("Editable.load: Exception while trying to read file ", filename, " ", e.toString);
+            clear();
+            return false;
         } catch (Exception e) {
-            Log.e("Exception while trying to read file ", filename, " ", e.toString);
+            Log.e("Editable.load: Exception while trying to read file ", filename, " ", e.toString);
             clear();
             return false;
         }
