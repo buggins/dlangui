@@ -155,6 +155,8 @@ class MenuItem {
     dchar getHotkey() {
         static import std.uni;
         dstring s = label;
+        if (s.length < 2)
+            return 0;
         dchar ch = 0;
         for (int i = 0; i < s.length - 1; i++) {
             if (s[i] == '&') {
@@ -1069,17 +1071,18 @@ class MainMenu : MenuWidgetBase {
         bool isAlt = event.keyCode == KeyCode.ALT || event.keyCode == KeyCode.LALT || event.keyCode == KeyCode.RALT;
         bool altPressed = !!(event.flags & KeyFlag.Alt);
         bool noOtherModifiers = !(event.flags & (KeyFlag.Shift | KeyFlag.Control));
+        bool noAltGrKey = !((event.flags & KeyFlag.RAlt) == KeyFlag.RAlt);
 
         if (event.action == KeyAction.KeyDown && event.keyCode == KeyCode.ESCAPE && event.flags == 0 && activated) {
             deactivate();
             return true;
         }
         dchar hotkey = 0;
-        if (event.action == KeyAction.KeyDown && event.keyCode >= KeyCode.KEY_A && event.keyCode <= KeyCode.KEY_Z && altPressed && noOtherModifiers) {
+        if (event.action == KeyAction.KeyDown && event.keyCode >= KeyCode.KEY_A && event.keyCode <= KeyCode.KEY_Z && altPressed && noOtherModifiers && noAltGrKey) {
 //            Log.d("Alt + a..z");
             hotkey = cast(dchar)((event.keyCode - KeyCode.KEY_A) + 'a');
         }
-        if (event.action == KeyAction.Text && altPressed && noOtherModifiers) {
+        if (event.action == KeyAction.Text && altPressed && noOtherModifiers && noAltGrKey) {
             hotkey = event.text[0];
         }
         if (hotkey) {
