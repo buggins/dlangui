@@ -22,6 +22,7 @@ module dlangui.widgets.statusline;
 
 import dlangui.widgets.layouts;
 import dlangui.widgets.controls;
+import dlangui.widgets.editors;
 
 class StatusLinePanelBase : HorizontalLayout {
     this(string ID) {
@@ -100,10 +101,52 @@ class StatusLineBackgroundOperationPanel : StatusLineTextAndIconPanel {
     }
 }
 
+class StatusLineEditorStatePanel : StatusLineTextPanel {
+    EditorStateInfo _editorState;
+
+    this(string ID = "statusLineEditorStateLabel") {
+        super(ID);
+        _text.alignment = Align.VCenter | Align.Right;
+        //_text.backgroundColor = 0x80FF0000;
+        //backgroundColor = 0x8000FF00;
+        updateSize();
+        visibility = Visibility.Gone;
+    }
+
+    dstring makeStateString() {
+        if (!_editorState.active)
+            return null;
+        import std.string : format;
+        return "%d : %d    ch=0x%05x    %s  "d.format(_editorState.line, _editorState.col, _editorState.character, _editorState.replaceMode ? "OVR"d : "INS"d);
+    }
+
+    private void updateSize() {
+        FontRef fnt = font;
+        Point sz = fnt.textSize("  ch=0x00000    000000 : 000    INS  "d);
+        _text.minWidth = sz.x;
+    }
+
+    /// handle theme change: e.g. reload some themed resources
+    override void onThemeChanged() {
+        updateSize();
+    }
+
+    void setState(Widget source, ref EditorStateInfo editorState) {
+        if (editorState != _editorState) {
+            _editorState = editorState;
+            text = makeStateString();
+            Visibility newVisibility = _editorState.active ? Visibility.Visible : Visibility.Gone;
+            if (newVisibility != visibility)
+                visibility = newVisibility;
+        }
+    }
+}
+
 /// Status line control
-class StatusLine : HorizontalLayout {
+class StatusLine : HorizontalLayout, EditorStateListener {
     protected TextWidget _defStatus;
     protected StatusLineBackgroundOperationPanel _backgroundOperationPanel;
+    protected StatusLineEditorStatePanel _editorStatePanel;
     this() {
         super("STATUS_LINE");
         styleId = STYLE_STATUS_LINE;
@@ -115,7 +158,9 @@ class StatusLine : HorizontalLayout {
         _defStatus.text = " "d;
         addChild(_defStatus);
         _backgroundOperationPanel = new StatusLineBackgroundOperationPanel("BACKGROUND_OP_STATUS");
+        _editorStatePanel = new StatusLineEditorStatePanel("EDITOR_STATE_PANEL");
         addChild(_backgroundOperationPanel);
+        addChild(_editorStatePanel);
     }
     /// set text to show in status line in specific panel
     void setStatusText(string itemId, dstring value) {
@@ -128,5 +173,15 @@ class StatusLine : HorizontalLayout {
     /// show / update / animate background operation status; when both parameters are nulls, hide background op status panel
     void setBackgroundOperationStatus(string icon, dstring statusText = null) {
         _backgroundOperationPanel.setBackgroundOperationStatus(icon, statusText);
+    }
+
+    /// EditorStateListener implementation
+    override void onEditorStateUpdate(Widget source, ref EditorStateInfo editorState) {
+        _editorStatePanel.setState(source, editorState);
+    }
+
+    void hideEditorState() {
+        EditorStateInfo editorState;
+        _editorStatePanel.setState(null, editorState);
     }
 }

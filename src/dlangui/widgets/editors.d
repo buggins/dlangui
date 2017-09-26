@@ -49,6 +49,24 @@ interface EditableContentChangeListener {
     void onEditableContentChanged(EditableContent source);
 }
 
+/// editor state to display in status line
+struct EditorStateInfo {
+    /// editor mode: true if replace mode, false if insert mode
+    bool replaceMode;
+    /// cursor position column (1-based)
+    int col;
+    /// cursor position line (1-based)
+    int line;
+    /// character under cursor
+    dchar character;
+    /// returns true if editor is in active state
+    @property bool active() { return col > 0 && line > 0; }
+}
+
+interface EditorStateListener {
+    void onEditorStateUpdate(Widget source, ref EditorStateInfo editorState);
+}
+
 /// Flags used for search / replace / text highlight
 enum TextSearchFlag {
     CaseSensitive = 1,
@@ -310,6 +328,37 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     /// Signal to emit when editor content is changed
     Signal!EditableContentChangeListener contentChange;
+
+    /// Signal to emit when editor cursor position or Insert/Replace mode is changed.
+    Signal!EditorStateListener editorStateChange;
+
+    /// sets focus to this widget or suitable focusable child, returns previously focused widget
+    override Widget setFocus(FocusReason reason = FocusReason.Unspecified) {
+        Widget res = super.setFocus(reason);
+        if (focused)
+            handleEditorStateChange();
+        return res;
+    }
+
+    /// updates editorStateChange with recent position
+    protected void handleEditorStateChange() {
+        if (!editorStateChange.assigned)
+            return;
+        EditorStateInfo info;
+        if (visible) {
+            info.replaceMode = _replaceMode;
+            info.line = _caretPos.line + 1;
+            info.col = _caretPos.pos + 1;
+            if (_caretPos.line >= 0 && _caretPos.line < _content.length) {
+                dstring line = _content.line(_caretPos.line);
+                if (_caretPos.pos >= 0 && _caretPos.pos < line.length)
+                    info.character = line[_caretPos.pos];
+                else
+                    info.character = '\n';
+            }
+        }
+        editorStateChange(this, info);
+    }
 
     /// override to support modification of client rect after change, e.g. apply offset
     override protected void handleClientRectLayout(ref Rect rc) {
@@ -785,6 +834,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     /// sets replace mode flag
     @property EditWidgetBase replaceMode(bool replaceMode) {
         _replaceMode = replaceMode;
+        handleEditorStateChange();
         invalidate();
         return this;
     }
@@ -922,6 +972,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         if (contentChange.assigned) {
             contentChange(_content);
         }
+        handleEditorStateChange();
         return;
     }
     protected bool _lastReportedModifiedState;
@@ -1115,6 +1166,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         _content.correctPosition(_selectionRange.end);
         if (_selectionRange.empty)
             _selectionRange = TextRange(_caretPos, _caretPos);
+        handleEditorStateChange();
     }
 
 
@@ -1176,6 +1228,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         }
         invalidate();
         requestActionsUpdate();
+        handleEditorStateChange();
     }
 
     protected dstring _textToHighlight;
@@ -1205,6 +1258,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             _caretPos = newPos;
             updateSelectionAfterCursorMovement(oldCaretPos, false);
         }
+        handleEditorStateChange();
     }
 
     protected void selectLineByMouse(int x, int y, bool onSameLineOnly = true) {
@@ -1222,6 +1276,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             _caretPos = newPos;
             updateSelectionAfterCursorMovement(oldCaretPos, false);
         }
+        handleEditorStateChange();
     }
 
     protected void updateCaretPositionByMouse(int x, int y, bool selecting) {
@@ -1232,6 +1287,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             updateSelectionAfterCursorMovement(oldCaretPos, selecting);
             invalidate();
         }
+        handleEditorStateChange();
     }
 
     /// generate string of spaces, to reach next tab position
@@ -1295,6 +1351,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         //_selectionRange.start = _caretPos;
         //_selectionRange.end = _caretPos;
         ensureCaretVisible();
+        handleEditorStateChange();
         return true;
     }
 
@@ -1308,6 +1365,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             return;
         _selectionRange = range;
         _caretPos = range.end;
+        handleEditorStateChange();
     }
 
     /// override to handle specific actions state (e.g. change enabled state for supported actions)
@@ -1948,6 +2006,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         invalidate();
         if (makeVisible)
             ensureCaretVisible(center);
+        handleEditorStateChange();
     }
 }
 
@@ -2047,6 +2106,7 @@ class EditLine : EditWidgetBase {
             invalidate();
         }
         updateScrollBars();
+        handleEditorStateChange();
     }
 
     protected dstring applyPasswordChar(dstring s) {
@@ -2525,6 +2585,7 @@ class EditBox : EditWidgetBase {
             invalidate();
         }
         updateScrollBars();
+        handleEditorStateChange();
     }
 
     override protected Rect textPosToClient(TextPosition p) {
@@ -2790,6 +2851,7 @@ class EditBox : EditWidgetBase {
                     EditOperation op = new EditOperation(EditAction.Replace, r, [""d, ""d]);
                     _content.performOperation(op, this);
                     _caretPos = oldCaretPos;
+                    handleEditorStateChange();
                 }
                 return true;
             case DeleteLine:
@@ -3499,20 +3561,23 @@ class FindPanel : HorizontalLayout {
     protected bool _replaceMode;
     /// returns true if panel is working in replace mode
     @property bool replaceMode() { return _replaceMode; }
-    @property FindPanel replaceMode(bool newMode) { 
+    @property FindPanel replaceMode(bool newMode) {
         if (newMode != _replaceMode) {
             _replaceMode = newMode;
             childById("replace").visibility = newMode ? Visibility.Visible : Visibility.Gone;
         }
         return this;
     }
+
     @property dstring searchText() {
         return _edFind.text;
     }
+
     @property FindPanel searchText(dstring newText) {
         _edFind.text = newText;
         return this;
     }
+
     this(EditBox editor, bool selectionOnly, bool replace, dstring initialText = ""d) {
         _replaceMode = replace;
         import dlangui.dml.parser;

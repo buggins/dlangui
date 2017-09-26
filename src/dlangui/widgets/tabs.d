@@ -1040,8 +1040,17 @@ class TabWidget : VerticalLayout, TabHandler, TabCloseHandler {
         return _tabControl._selectedTabId;
     }
 
+    /// focus selected tab body
+    void focusSelectedTab() {
+        if (!visible)
+            return;
+        Widget w = selectedTabBody;
+        if (w)
+            w.setFocus();
+    }
+
     /// get tab content widget by id
-    Widget selectedTabBody() {
+    @property Widget selectedTabBody() {
         return _tabHost.tabBody(_tabControl._selectedTabId);
     }
 
