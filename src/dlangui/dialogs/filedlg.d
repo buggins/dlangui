@@ -745,6 +745,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         fnlayout.layoutWidth(FILL_PARENT);
         _edFilename = new EditLine("filename");
         _edFilename.layoutWidth(FILL_PARENT);
+        _edFilename.setDefaultPopupMenu();
         if (_flags & FileDialogFlag.SelectDirectory) {
             _edFilename.visibility = Visibility.Gone;
         }
@@ -1085,6 +1086,11 @@ class FilePathPanel : FrameLayout {
         addChild(_segments);
         addChild(_edPath);
     }
+
+    void setDefaultPopupMenu() {
+        _edPath.setDefaultPopupMenu();
+    }
+
     protected bool onEditorFocusChanged(Widget source, bool focused) {
         if (!focused) {
             _edPath.text = toUTF32(_path);
@@ -1145,6 +1151,10 @@ class FileNameEditLine : HorizontalLayout {
     /// handle Enter key press inside line editor
     @property ref Signal!EnterKeyHandler enterKey() {
         return _edFileName.enterKey;
+    }
+
+    void setDefaultPopupMenu() {
+        _edFileName.setDefaultPopupMenu();
     }
 
     this(string ID = null) {

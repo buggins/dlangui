@@ -44,6 +44,7 @@ class InputBox : Dialog {
         _editor.contentChange = delegate(EditableContent content) {
             _text = content.text;
         };
+        _editor.setDefaultPopupMenu();
         addChild(msg);
         addChild(_editor);
         addChild(createButtonsPanel(_actions, _defaultButtonIndex, 0));

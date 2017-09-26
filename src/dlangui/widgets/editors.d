@@ -228,6 +228,12 @@ void initStandardEditorActions() {
     registerActionEnum!EditorActions();
 }
 
+const Action ACTION_EDITOR_COPY = (new Action(EditorActions.Copy, "MENU_EDIT_COPY"c, null, KeyCode.KEY_C, KeyFlag.Control)).addAccelerator(KeyCode.INS, KeyFlag.Control).disableByDefault();
+const Action ACTION_EDITOR_PASTE = (new Action(EditorActions.Paste, "MENU_EDIT_PASTE"c, null, KeyCode.KEY_V, KeyFlag.Control)).addAccelerator(KeyCode.INS, KeyFlag.Shift).disableByDefault();
+const Action ACTION_EDITOR_CUT = (new Action(EditorActions.Cut, "MENU_EDIT_CUT"c, null, KeyCode.KEY_X, KeyFlag.Control)).addAccelerator(KeyCode.DEL, KeyFlag.Shift).disableByDefault();
+const Action ACTION_EDITOR_UNDO = (new Action(EditorActions.Undo, "MENU_EDIT_UNDO"c, null, KeyCode.KEY_Z, KeyFlag.Control)).disableByDefault();
+const Action ACTION_EDITOR_REDO = (new Action(EditorActions.Redo, "MENU_EDIT_REDO"c, null, KeyCode.KEY_Y, KeyFlag.Control)).addAccelerator(KeyCode.KEY_Z, KeyFlag.Control|KeyFlag.Shift).disableByDefault();
+
 const Action ACTION_EDITOR_INSERT_NEW_LINE = (new Action(EditorActions.InsertNewLine, KeyCode.RETURN, 0, ActionStateUpdateFlag.never)).addAccelerator(KeyCode.RETURN, KeyFlag.Shift);
 const Action ACTION_EDITOR_PREPEND_NEW_LINE = (new Action(EditorActions.PrependNewLine, KeyCode.RETURN, KeyFlag.Control | KeyFlag.Shift, ActionStateUpdateFlag.never));
 const Action ACTION_EDITOR_APPEND_NEW_LINE = (new Action(EditorActions.AppendNewLine, KeyCode.RETURN, KeyFlag.Control, ActionStateUpdateFlag.never));
@@ -249,7 +255,9 @@ const Action[] STD_EDITOR_ACTIONS = [ACTION_EDITOR_INSERT_NEW_LINE, ACTION_EDITO
         ACTION_EDITOR_SELECT_ALL, ACTION_EDITOR_TOGGLE_LINE_COMMENT, ACTION_EDITOR_TOGGLE_BLOCK_COMMENT,
         ACTION_EDITOR_TOGGLE_BOOKMARK, ACTION_EDITOR_GOTO_NEXT_BOOKMARK, ACTION_EDITOR_GOTO_PREVIOUS_BOOKMARK,
         ACTION_EDITOR_FIND, ACTION_EDITOR_REPLACE,
-        ACTION_EDITOR_FIND_NEXT, ACTION_EDITOR_FIND_PREV
+        ACTION_EDITOR_FIND_NEXT, ACTION_EDITOR_FIND_PREV,
+        ACTION_EDITOR_COPY, ACTION_EDITOR_PASTE, ACTION_EDITOR_CUT,
+        ACTION_EDITOR_UNDO, ACTION_EDITOR_REDO
 ];
 
 /// base for all editor widgets
@@ -2040,6 +2048,15 @@ class EditLine : EditWidgetBase {
         styleId = STYLE_EDIT_LINE;
         text = initialContent;
         onThemeChanged();
+    }
+
+    /// sets default popup menu with copy/paste/cut/undo/redo
+    EditLine setDefaultPopupMenu() {
+        MenuItem items = new MenuItem();
+        items.add(ACTION_EDITOR_COPY, ACTION_EDITOR_PASTE, ACTION_EDITOR_CUT,
+                  ACTION_EDITOR_UNDO, ACTION_EDITOR_REDO);
+        popupMenu = items;
+        return this;
     }
 
     protected dstring _measuredText;
