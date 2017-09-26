@@ -47,7 +47,7 @@ struct Accelerator {
     /// Key flags bit set, usually one of KeyFlag enum items
     uint keyFlags;
     /// Returns accelerator text description
-    @property dstring label() {
+    @property dstring label() const {
         dstring buf;
         version (OSX) {
             static if (true) {
@@ -474,9 +474,10 @@ class Action {
     }
     /// returns text description for first accelerator of action; null if no accelerators
     @property dstring acceleratorText() {
-        if (_accelerators.length < 1)
+        Accelerator[] acc = accelerators;
+        if (acc.length < 1)
             return null;
-        return _accelerators[0].label;
+        return acc[0].label;
     }
     /// returns tooltip text for action
     @property dstring tooltipText() {
@@ -516,7 +517,7 @@ class Action {
     }
     /// returns true if accelerator matches provided key code and flags
     bool checkAccelerator(uint keyCode, uint keyFlags) const {
-        foreach(a; _accelerators) {
+        foreach(a; accelerators) {
             if (a.keyCode == keyCode && matchKeyFlags(keyFlags, a.keyFlags))
                 return true;
         }
@@ -1741,8 +1742,9 @@ void setActionAccelerators(int actionId, Accelerator[] accelerators) {
 }
 /// lookup accelerators override for action by id
 Accelerator[] findActionAccelerators(int actionId) {
-    if (auto found = actionId in actionAcceleratorsMap)
+    if (auto found = actionId in actionAcceleratorsMap) {
         return *found;
+    }
     return null;
 }
 /// lookup accelerators override for action by name (e.g. "EditorActions.ToggleLineComment")
