@@ -60,22 +60,112 @@ version (Windows) {
                     }
                 }
                 Log.v("Registering fonts");
+                // arial
                 ftfontMan.registerFont(fontsPath ~ "arial.ttf",     FontFamily.SansSerif, "Arial", false, FontWeight.Normal);
                 ftfontMan.registerFont(fontsPath ~ "arialbd.ttf",   FontFamily.SansSerif, "Arial", false, FontWeight.Bold);
                 ftfontMan.registerFont(fontsPath ~ "arialbi.ttf",   FontFamily.SansSerif, "Arial", true, FontWeight.Bold);
                 ftfontMan.registerFont(fontsPath ~ "ariali.ttf",    FontFamily.SansSerif, "Arial", true, FontWeight.Normal);
+                // arial unicode ms
+                ftfontMan.registerFont(fontsPath ~ "arialni.ttf",    FontFamily.SansSerif, "Arial Unicode MS", false, FontWeight.Normal);
+                // arial narrow
+                ftfontMan.registerFont(fontsPath ~ "arialn.ttf",     FontFamily.SansSerif, "Arial Narrow", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "arialnbd.ttf",   FontFamily.SansSerif, "Arial Narrow", false, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "arialnbi.ttf",   FontFamily.SansSerif, "Arial Narrow", true, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "arialni.ttf",    FontFamily.SansSerif, "Arial Narrow", true, FontWeight.Normal);
+                // calibri
+                ftfontMan.registerFont(fontsPath ~ "calibri.ttf",     FontFamily.SansSerif, "Calibri", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "calibrib.ttf",   FontFamily.SansSerif, "Calibri", false, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "calibriz.ttf",   FontFamily.SansSerif, "Calibri", true, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "calibrii.ttf",    FontFamily.SansSerif, "Calibri", true, FontWeight.Normal);
+                // cambria
+                ftfontMan.registerFont(fontsPath ~ "cambria.ttf",     FontFamily.SansSerif, "Cambria", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "cambriab.ttf",   FontFamily.SansSerif, "Cambria", false, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "cambriaz.ttf",   FontFamily.SansSerif, "Cambria", true, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "cambriai.ttf",    FontFamily.SansSerif, "Cambria", true, FontWeight.Normal);
+                // candara
+                ftfontMan.registerFont(fontsPath ~ "Candara.ttf",     FontFamily.SansSerif, "Candara", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "Candarab.ttf",   FontFamily.SansSerif, "Candara", false, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "Candaraz.ttf",   FontFamily.SansSerif, "Candara", true, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "Candarai.ttf",    FontFamily.SansSerif, "Candara", true, FontWeight.Normal);
+                // century
+                ftfontMan.registerFont(fontsPath ~ "CENTURY.TTF",     FontFamily.Serif, "Century", false, FontWeight.Normal);
+                // comic sans ms
+                ftfontMan.registerFont(fontsPath ~ "comic.ttf",     FontFamily.Serif, "Comic Sans MS", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "comicbd.ttf",     FontFamily.Serif, "Comic Sans MS", false, FontWeight.Bold);
+                // constantia
+                ftfontMan.registerFont(fontsPath ~ "constan.ttf",     FontFamily.Serif, "Constantia", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "constanb.ttf",   FontFamily.Serif, "Constantia", false, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "constanz.ttf",   FontFamily.Serif, "Constantia", true, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "constani.ttf",    FontFamily.Serif, "Constantia", true, FontWeight.Normal);
+                // corbel
+                ftfontMan.registerFont(fontsPath ~ "corbel.ttf",     FontFamily.SansSerif, "Corbel", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "corbelb.ttf",   FontFamily.SansSerif, "Corbel", false, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "corbelz.ttf",   FontFamily.SansSerif, "Corbel", true, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "corbeli.ttf",    FontFamily.SansSerif, "Corbel", true, FontWeight.Normal);
+                // courier new
                 ftfontMan.registerFont(fontsPath ~ "cour.ttf",      FontFamily.MonoSpace, "Courier New", false, FontWeight.Normal);
                 ftfontMan.registerFont(fontsPath ~ "courbd.ttf",    FontFamily.MonoSpace, "Courier New", false, FontWeight.Bold);
                 ftfontMan.registerFont(fontsPath ~ "courbi.ttf",    FontFamily.MonoSpace, "Courier New", true, FontWeight.Bold);
                 ftfontMan.registerFont(fontsPath ~ "couri.ttf",     FontFamily.MonoSpace, "Courier New", true, FontWeight.Normal);
+                // franklin gothic book
+                ftfontMan.registerFont(fontsPath ~ "frank.ttf",     FontFamily.SansSerif, "Franklin Gothic Book", false, FontWeight.Normal);
+                // times new roman
                 ftfontMan.registerFont(fontsPath ~ "times.ttf",     FontFamily.Serif, "Times New Roman", false, FontWeight.Normal);
                 ftfontMan.registerFont(fontsPath ~ "timesbd.ttf",   FontFamily.Serif, "Times New Roman", false, FontWeight.Bold);
                 ftfontMan.registerFont(fontsPath ~ "timesbi.ttf",   FontFamily.Serif, "Times New Roman", true, FontWeight.Bold);
                 ftfontMan.registerFont(fontsPath ~ "timesi.ttf",    FontFamily.Serif, "Times New Roman", true, FontWeight.Normal);
+                // consolas
                 ftfontMan.registerFont(fontsPath ~ "consola.ttf",   FontFamily.MonoSpace, "Consolas", false, FontWeight.Normal);
                 ftfontMan.registerFont(fontsPath ~ "consolab.ttf",  FontFamily.MonoSpace, "Consolas", false, FontWeight.Bold);
                 ftfontMan.registerFont(fontsPath ~ "consolai.ttf",  FontFamily.MonoSpace, "Consolas", true, FontWeight.Normal);
                 ftfontMan.registerFont(fontsPath ~ "consolaz.ttf",  FontFamily.MonoSpace, "Consolas", true, FontWeight.Bold);
+                // garamond
+                ftfontMan.registerFont(fontsPath ~ "GARA.TTF",     FontFamily.Serif, "Garamond", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "GARABD.TTF",   FontFamily.Serif, "Garamond", false, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "GARAIT.TTF",    FontFamily.Serif, "Garamond", true, FontWeight.Normal);
+                // georgia
+                ftfontMan.registerFont(fontsPath ~ "georgia.ttf",     FontFamily.SansSerif, "Georgia", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "georgiab.ttf",   FontFamily.SansSerif, "Georgia", false, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "georgiaz.ttf",   FontFamily.SansSerif, "Georgia", true, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "georgiai.ttf",    FontFamily.SansSerif, "Georgia", true, FontWeight.Normal);
+                // KaiTi
+                ftfontMan.registerFont(fontsPath ~ "kaiu.ttf",     FontFamily.SansSerif, "KaiTi", false, FontWeight.Normal);
+                // Lucida Console
+                ftfontMan.registerFont(fontsPath ~ "lucon.ttf",   FontFamily.MonoSpace, "Lucida Console", false, FontWeight.Normal);
+                // malgun gothic
+                ftfontMan.registerFont(fontsPath ~ "malgun.ttf",     FontFamily.Serif, "Malgun Gothic", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "malgunbd.ttf",     FontFamily.Serif, "Malgun Gothic", false, FontWeight.Bold);
+                // meiryo
+                ftfontMan.registerFont(fontsPath ~ "meiryo.ttf",     FontFamily.Serif, "Meiryo", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "meiryod.ttf",     FontFamily.Serif, "Meiryo", false, FontWeight.Bold);
+                // ms mhei
+                ftfontMan.registerFont(fontsPath ~ "MSMHei.ttf",     FontFamily.Serif, "Microsoft MHei", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "MSMHei-Bold.ttf",     FontFamily.Serif, "Microsoft MHei", false, FontWeight.Bold);
+                // ms neo gothic
+                ftfontMan.registerFont(fontsPath ~ "MSNeoGothic.ttf",     FontFamily.Serif, "Microsoft NeoGothic", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "MSNeoGothic-Bold.ttf",     FontFamily.Serif, "Microsoft NeoGothic", false, FontWeight.Bold);
+                // palatino linotype
+                ftfontMan.registerFont(fontsPath ~ "pala.ttf",     FontFamily.Serif, "Palatino Linotype", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "palab.ttf",   FontFamily.Serif, "Palatino Linotype", false, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "palabi.ttf",   FontFamily.Serif, "Palatino Linotype", true, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "palai.ttf",    FontFamily.Serif, "Palatino Linotype", true, FontWeight.Normal);
+                // segoeui
+                ftfontMan.registerFont(fontsPath ~ "segoeui.ttf",     FontFamily.SansSerif, "Segoe UI", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "segoeuib.ttf",   FontFamily.SansSerif, "Segoe UI", false, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "segoeuiz.ttf",   FontFamily.SansSerif, "Segoe UI", true, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "segoeuii.ttf",    FontFamily.SansSerif, "Segoe UI", true, FontWeight.Normal);
+                // SimSun
+                ftfontMan.registerFont(fontsPath ~ "simsun.ttc",     FontFamily.SansSerif, "SimSun", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "simsunb.ttf",     FontFamily.SansSerif, "SimSun", false, FontWeight.Bold);
+                // tahoma
+                ftfontMan.registerFont(fontsPath ~ "tahoma.ttf",     FontFamily.SansSerif, "Tahoma", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "tahomabd.ttf",     FontFamily.SansSerif, "Tahoma", false, FontWeight.Bold);
+                // trebuchet ms
+                ftfontMan.registerFont(fontsPath ~ "trebuc.ttf",     FontFamily.SansSerif, "Trebuchet MS", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "trebucbd.ttf",   FontFamily.SansSerif, "Trebuchet MS", false, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "trebucbi.ttf",   FontFamily.SansSerif, "Trebuchet MS", true, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "trebucit.ttf",    FontFamily.SansSerif, "Trebuchet MS", true, FontWeight.Normal);
+                // verdana
                 ftfontMan.registerFont(fontsPath ~ "verdana.ttf",   FontFamily.SansSerif, "Verdana", false, FontWeight.Normal);
                 ftfontMan.registerFont(fontsPath ~ "verdanab.ttf",  FontFamily.SansSerif, "Verdana", false, FontWeight.Bold);
                 ftfontMan.registerFont(fontsPath ~ "verdanai.ttf",  FontFamily.SansSerif, "Verdana", true, FontWeight.Normal);
