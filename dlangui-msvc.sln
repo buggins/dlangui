@@ -55,7 +55,15 @@ Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dminer", "examples\dminer\d
 		{52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5} = {52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5}
 	EndProjectSection
 EndProject
+Project("{002A2DE9-8BB6-484D-9802-7E4AD4084715}") = "dminer2", "examples\dminer2\dminer2.visualdproj", "{5F443F6A-6612-4404-B89E-D0D0205DC812}"
+	ProjectSection(ProjectDependencies) = postProject
+		{52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5} = {52A2ABB9-2CF7-4D5F-AE8C-75B21F8585A5}
+	EndProjectSection
+EndProject
 Global
+	GlobalSection(Performance) = preSolution
+		HasPerformanceSessions = true
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		ConsoleDebug|Win32 = ConsoleDebug|Win32
 		ConsoleDebug|x64 = ConsoleDebug|x64
@@ -234,6 +242,20 @@ Global
 		{5F443F6A-6612-4404-B89E-D0D0205DC8E5}.Unittest|Win32.Build.0 = Release|Win32
 		{5F443F6A-6612-4404-B89E-D0D0205DC8E5}.Unittest|x64.ActiveCfg = Release|Win32
 		{5F443F6A-6612-4404-B89E-D0D0205DC8E5}.Unittest|x64.Build.0 = Release|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC812}.ConsoleDebug|Win32.ActiveCfg = ConsoleDebug|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC812}.ConsoleDebug|Win32.Build.0 = ConsoleDebug|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC812}.ConsoleDebug|x64.ActiveCfg = ConsoleDebug|x64
+		{5F443F6A-6612-4404-B89E-D0D0205DC812}.ConsoleDebug|x64.Build.0 = ConsoleDebug|x64
+		{5F443F6A-6612-4404-B89E-D0D0205DC812}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC812}.Debug|Win32.Build.0 = Debug|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC812}.Debug|x64.ActiveCfg = Debug|x64
+		{5F443F6A-6612-4404-B89E-D0D0205DC812}.Release|Win32.ActiveCfg = Release|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC812}.Release|Win32.Build.0 = Release|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC812}.Release|x64.ActiveCfg = Release|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC812}.Unittest|Win32.ActiveCfg = Release|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC812}.Unittest|Win32.Build.0 = Release|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC812}.Unittest|x64.ActiveCfg = Release|Win32
+		{5F443F6A-6612-4404-B89E-D0D0205DC812}.Unittest|x64.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
