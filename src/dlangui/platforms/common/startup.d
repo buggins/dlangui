@@ -69,7 +69,7 @@ version (Windows) {
                 ftfontMan.registerFont(fontsPath ~ "arialni.ttf",    FontFamily.SansSerif, "Arial Unicode MS", false, FontWeight.Normal);
                 // arial narrow
                 ftfontMan.registerFont(fontsPath ~ "arialn.ttf",     FontFamily.SansSerif, "Arial Narrow", false, FontWeight.Normal);
-                ftfontMan.registerFont(fontsPath ~ "arialnbd.ttf",   FontFamily.SansSerif, "Arial Narrow", false, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "arialnb.ttf",   FontFamily.SansSerif, "Arial Narrow", false, FontWeight.Bold);
                 ftfontMan.registerFont(fontsPath ~ "arialnbi.ttf",   FontFamily.SansSerif, "Arial Narrow", true, FontWeight.Bold);
                 ftfontMan.registerFont(fontsPath ~ "arialni.ttf",    FontFamily.SansSerif, "Arial Narrow", true, FontWeight.Normal);
                 // calibri
@@ -78,7 +78,7 @@ version (Windows) {
                 ftfontMan.registerFont(fontsPath ~ "calibriz.ttf",   FontFamily.SansSerif, "Calibri", true, FontWeight.Bold);
                 ftfontMan.registerFont(fontsPath ~ "calibrii.ttf",    FontFamily.SansSerif, "Calibri", true, FontWeight.Normal);
                 // cambria
-                ftfontMan.registerFont(fontsPath ~ "cambria.ttf",     FontFamily.SansSerif, "Cambria", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "cambria.ttc",     FontFamily.SansSerif, "Cambria", false, FontWeight.Normal);
                 ftfontMan.registerFont(fontsPath ~ "cambriab.ttf",   FontFamily.SansSerif, "Cambria", false, FontWeight.Bold);
                 ftfontMan.registerFont(fontsPath ~ "cambriaz.ttf",   FontFamily.SansSerif, "Cambria", true, FontWeight.Bold);
                 ftfontMan.registerFont(fontsPath ~ "cambriai.ttf",    FontFamily.SansSerif, "Cambria", true, FontWeight.Normal);
@@ -136,8 +136,8 @@ version (Windows) {
                 ftfontMan.registerFont(fontsPath ~ "malgun.ttf",     FontFamily.Serif, "Malgun Gothic", false, FontWeight.Normal);
                 ftfontMan.registerFont(fontsPath ~ "malgunbd.ttf",     FontFamily.Serif, "Malgun Gothic", false, FontWeight.Bold);
                 // meiryo
-                ftfontMan.registerFont(fontsPath ~ "meiryo.ttf",     FontFamily.Serif, "Meiryo", false, FontWeight.Normal);
-                ftfontMan.registerFont(fontsPath ~ "meiryod.ttf",     FontFamily.Serif, "Meiryo", false, FontWeight.Bold);
+                ftfontMan.registerFont(fontsPath ~ "meiryo.ttc",     FontFamily.Serif, "Meiryo", false, FontWeight.Normal);
+                ftfontMan.registerFont(fontsPath ~ "meiryob.ttc",     FontFamily.Serif, "Meiryo", false, FontWeight.Bold);
                 // ms mhei
                 ftfontMan.registerFont(fontsPath ~ "MSMHei.ttf",     FontFamily.Serif, "Microsoft MHei", false, FontWeight.Normal);
                 ftfontMan.registerFont(fontsPath ~ "MSMHei-Bold.ttf",     FontFamily.Serif, "Microsoft MHei", false, FontWeight.Bold);
