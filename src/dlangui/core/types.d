@@ -348,10 +348,16 @@ enum SubpixelRenderingMode : ubyte {
 align(1)
 struct Glyph
 {
+    static if (ENABLE_OPENGL) {
+        /// 0: unique id of glyph (for drawing in hardware accelerated scenes)
+        uint    id;
+    }
+
     /// 0: width of glyph black box
     ushort   blackBoxX;
 
     @property ushort correctedBlackBoxX() { return subpixelMode ? blackBoxX / 3 : blackBoxX; }
+
 
     /// 2: height of glyph black box
     ubyte   blackBoxY;
@@ -361,17 +367,15 @@ struct Glyph
     byte    originY;
 
     /// 5: full width of glyph
-    ubyte   width;
-    /// 6: subpixel rendering mode - if !=SubpixelRenderingMode.None, glyph data contains 3 bytes per pixel instead of 1
+    ubyte   widthPixels;
+    /// 6: full width of glyph scaled * 64
+    ushort   widthScaled;
+    /// 8: subpixel rendering mode - if !=SubpixelRenderingMode.None, glyph data contains 3 bytes per pixel instead of 1
     SubpixelRenderingMode subpixelMode;
-    /// 7: usage flag, to handle cleanup of unused glyphs
+    /// 9: usage flag, to handle cleanup of unused glyphs
     ubyte   lastUsage;
-    static if (ENABLE_OPENGL) {
-        /// 8: unique id of glyph (for drawing in hardware accelerated scenes)
-        uint    id;
-    }
 
-    ///< 12: glyph data, arbitrary size (blackBoxX * blackBoxY)
+    ///< 10: glyph data, arbitrary size (blackBoxX * blackBoxY)
     ubyte[] glyph;
 }
 

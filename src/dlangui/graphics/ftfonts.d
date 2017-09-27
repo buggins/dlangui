@@ -118,6 +118,8 @@ class FreeTypeFontFile {
     private int _weight;
     private bool _italic;
 
+    private bool _allowKerning = true;
+
     /// filename
     @property string filename() { return _filename; }
     // properties as detected after opening of file
@@ -186,7 +188,7 @@ class FreeTypeFontFile {
             clear();
             return false;
         }
-        _height = cast(int)(_face.size.metrics.height >> 6);
+        _height = cast(int)((_face.size.metrics.height + 63) >> 6);
         _size = size;
         _baseline = _height + cast(int)(_face.size.metrics.descender >> 6);
         _weight = _face.style_flags & FT_STYLE_FLAG_BOLD ? FontWeight.Bold : FontWeight.Normal;
@@ -218,6 +220,11 @@ class FreeTypeFontFile {
         return ch_glyph_index;
     }
 
+    /// allow kerning
+    @property bool allowKerning() {
+        return FT_HAS_KERNING( _face );
+    }
+
     /// retrieve glyph information, filling glyph struct; returns false if glyph not found
     bool getGlyphInfo(dchar code, ref Glyph glyph, dchar def_char, bool withImage = true)
     {
@@ -240,11 +247,12 @@ class FreeTypeFontFile {
         if ( error )
             return false;
         glyph.lastUsage = 1;
-        glyph.blackBoxX = cast(ushort)(_slot.metrics.width >> 6);
-        glyph.blackBoxY = cast(ubyte)(_slot.metrics.height >> 6);
-        glyph.originX =   cast(byte)(_slot.metrics.horiBearingX >> 6);
-        glyph.originY =   cast(byte)(_slot.metrics.horiBearingY >> 6);
-        glyph.width =     cast(ubyte)(myabs(cast(int)(_slot.metrics.horiAdvance)) >> 6);
+        glyph.blackBoxX = cast(ushort)((_slot.metrics.width + 32) >> 6);
+        glyph.blackBoxY = cast(ubyte)((_slot.metrics.height + 32) >> 6);
+        glyph.originX =   cast(byte)((_slot.metrics.horiBearingX + 32) >> 6);
+        glyph.originY =   cast(byte)((_slot.metrics.horiBearingY + 32) >> 6);
+        glyph.widthScaled = cast(ushort)(myabs(cast(int)(_slot.metrics.horiAdvance)));
+        glyph.widthPixels =     cast(ubyte)(myabs(cast(int)(_slot.metrics.horiAdvance + 32)) >> 6);
         glyph.subpixelMode = subpixel;
         //glyph.glyphIndex = cast(ushort)code;
         if (withImage) {
@@ -301,6 +309,19 @@ class FreeTypeFontFile {
         _face = null;
     }
 
+    int getKerningOffset(FT_UInt prevCharIndex, FT_UInt nextCharIndex) {
+        const FT_KERNING_DEFAULT = 0;
+        FT_Vector delta;
+        int error = FT_Get_Kerning( _face,          /* handle to face object */
+                               prevCharIndex,      /* left glyph index      */
+                               nextCharIndex,       /* right glyph index     */
+                               FT_KERNING_DEFAULT,  /* kerning mode          */
+                               &delta);            /* target vector         */
+        const RSHIFT = 0;
+        if ( !error )
+            return (delta.x) >> RSHIFT;
+        return 0;
+    }
 }
 
 /**
@@ -318,6 +339,7 @@ class FreeTypeFont : Font {
         _fontItem = item;
         _size = size;
         _height = size;
+        _allowKerning = true;
         debug ++_instanceCount;
         debug(resalloc) Log.d("Created font, count=", _instanceCount);
     }
@@ -355,6 +377,28 @@ class FreeTypeFont : Font {
             }
         }
         return false;
+    }
+
+    /// override to allow kerning
+    override @property bool allowKerning() {
+        return _allowKerning;
+    }
+
+    /// override to implement kerning offset calculation
+    override int getKerningOffset(dchar prevChar, dchar currentChar) {
+        if (!_allowKerning || !prevChar || !currentChar)
+            return 0;
+        FT_UInt index1;
+        FreeTypeFontFile file1;
+        if (!findGlyph(prevChar, 0, index1, file1))
+            return 0;
+        FT_UInt index2;
+        FreeTypeFontFile file2;
+        if (!findGlyph(currentChar, 0, index2, file2))
+            return 0;
+        if (file1 !is file2)
+            return 0;
+        return file1.getKerningOffset(index1, index2);
     }
 
     override Glyph * getCharGlyph(dchar ch, bool withImage = true) {
@@ -429,7 +473,7 @@ private derelict.util.exception.ShouldThrow missingSymFunc( string symName ) {
     static import derelict.util.exception;
     foreach(s; ["FT_New_Face", "FT_Attach_File", "FT_Set_Pixel_Sizes",
             "FT_Get_Char_Index", "FT_Load_Glyph", "FT_Done_Face",
-            "FT_Init_FreeType", "FT_Done_FreeType"]) {
+            "FT_Init_FreeType", "FT_Done_FreeType", "FT_Get_Kerning"]) {
         if (symName.equal(s)) // Symbol is used
             return derelict.util.exception.ShouldThrow.Yes;
     }
@@ -532,12 +576,12 @@ class FreeTypeFontManager : FontManager {
             Log.v("DerelictFT: Loading FreeType library");
             if (!DerelictFT) {
                 Log.w("DerelictFT is null. Compiler bug? Applying workaround to fix it.");
-				version(Android) {
-					//DerelictFT = new DerelictFTLoader("libft2.so");
-					DerelictFT = new DerelictFTLoader;
-				} else {
-					DerelictFT = new DerelictFTLoader;
-				}
+                version(Android) {
+                    //DerelictFT = new DerelictFTLoader("libft2.so");
+                    DerelictFT = new DerelictFTLoader;
+                } else {
+                    DerelictFT = new DerelictFTLoader;
+                }
             }
             DerelictFT.missingSymbolCallback = &missingSymFunc;
             Log.v("DerelictFT: Missing symbols callback is registered");

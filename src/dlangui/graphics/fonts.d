@@ -186,7 +186,22 @@ class Font : RefCountedObject {
     /// returns character width
     int charWidth(dchar ch) {
         Glyph * g = getCharGlyph(ch);
-        return !g ? 0 : g.width;
+        return !g ? 0 : g.widthPixels;
+    }
+
+    protected bool _allowKerning;
+    /// override to enable kerning support
+    @property bool allowKerning() {
+        return false;
+    }
+    /// override to enable kerning support
+    @property void allowKerning(bool allow) {
+        _allowKerning = allow;
+    }
+
+    /// override to implement kerning offset calculation
+    int getKerningOffset(dchar prevChar, dchar currentChar) {
+        return 0;
     }
 
     /*******************************************************************************************
@@ -211,6 +226,7 @@ class Font : RefCountedObject {
         uint len = cast(uint)text.length;
         if (widths.length < len)
             widths.length = len + 1;
+        bool useKerning = allowKerning;
         int x = 0;
         int charsMeasured = 0;
         int * pwidths = widths.ptr;
@@ -218,6 +234,7 @@ class Font : RefCountedObject {
         tabOffset = tabOffset % tabWidth;
         if (tabOffset < 0)
             tabOffset += tabWidth;
+        dchar prevChar = 0;
         foreach(int i; 0 .. len) {
             //auto measureStart = std.datetime.Clock.currAppTick;
             dchar ch = pstr[i];
@@ -229,9 +246,11 @@ class Font : RefCountedObject {
                 pwidths[i] = tabPosition;
                 charsMeasured = i + 1;
                 x = tabPosition;
+                prevChar = 0;
                 continue;
             } else if (ch == '&' && (textFlags & (TextFlag.UnderlineHotKeys | TextFlag.HotKeys | TextFlag.UnderlineHotKeysWhenAltPressed))) {
                 pwidths[i] = x;
+                prevChar = 0;
                 continue; // skip '&' in hot key when measuring
             }
             Glyph * glyph = getCharGlyph(pstr[i], true); // TODO: what is better
@@ -242,17 +261,23 @@ class Font : RefCountedObject {
             if (glyph is null) {
                 // if no glyph, use previous width - treat as zero width
                 pwidths[i] = x;
+                prevChar = 0;
                 continue;
             }
-            int w = x + glyph.width; // using advance
-            int w2 = x + glyph.originX + glyph.correctedBlackBoxX; // using black box
-            if (w < w2) // choose bigger value
-                w = w2;
+            int kerningDelta = useKerning && prevChar ? getKerningOffset(ch, prevChar) : 0;
+            int width = ((glyph.widthScaled + kerningDelta + 63) >> 6);
+            if (width < glyph.originX + glyph.correctedBlackBoxX)
+                width = glyph.originX + glyph.correctedBlackBoxX;
+            int w = x + width; // using advance
+            //int w2 = x + glyph.originX + glyph.correctedBlackBoxX; // using black box
+            //if (w < w2) // choose bigger value
+            //    w = w2;
             pwidths[i] = w;
-            x += glyph.width;
+            x += width;
             charsMeasured = i + 1;
             if (x > maxWidth)
                 break;
+            prevChar = ch;
         }
         return charsMeasured;
     }

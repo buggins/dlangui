@@ -344,7 +344,8 @@ class Win32Font : Font {
             g.blackBoxY = cast(ubyte)metrics.gmBlackBoxY;
             g.originX = cast(byte)((metrics.gmptGlyphOrigin.x + 0) / 3);
             g.originY = cast(byte)metrics.gmptGlyphOrigin.y;
-            g.width = cast(ubyte)((metrics.gmCellIncX  + 2) / 3);
+            g.widthPixels = cast(ubyte)((metrics.gmCellIncX  + 2) / 3);
+            g.widthScaled = g.widthPixels << 6;
             g.subpixelMode = FontManager.subpixelRenderingMode;
             //Log.d(" *3   :  blackBoxX=", metrics.gmBlackBoxX, " \tblackBoxY=", metrics.gmBlackBoxY, " \torigin.x=", metrics.gmptGlyphOrigin.x, " \torigin.y=", metrics.gmptGlyphOrigin.y, " \tgmCellIncX=", metrics.gmCellIncX);
             //Log.d("  /3  :  blackBoxX=", g.blackBoxX, " \tblackBoxY=", g.blackBoxY, " \torigin.x=", g.originX, " \torigin.y=", g.originY, "\tgmCellIncX=", g.width);
@@ -353,7 +354,8 @@ class Win32Font : Font {
             g.blackBoxY = cast(ubyte)metrics.gmBlackBoxY;
             g.originX = cast(byte)metrics.gmptGlyphOrigin.x;
             g.originY = cast(byte)metrics.gmptGlyphOrigin.y;
-            g.width = cast(ubyte)metrics.gmCellIncX;
+            g.widthPixels = cast(ubyte)metrics.gmCellIncX;
+            g.widthScaled = g.widthPixels << 6;
         }
 
         if (g.blackBoxX > 0 && g.blackBoxY > 0)    {
