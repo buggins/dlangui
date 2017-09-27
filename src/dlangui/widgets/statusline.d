@@ -128,6 +128,7 @@ class StatusLineEditorStatePanel : StatusLineTextPanel {
 
     /// handle theme change: e.g. reload some themed resources
     override void onThemeChanged() {
+        super.onThemeChanged();
         updateSize();
     }
 
