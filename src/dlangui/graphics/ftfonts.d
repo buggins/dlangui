@@ -319,7 +319,7 @@ class FreeTypeFontFile {
                                &delta);            /* target vector         */
         const RSHIFT = 0;
         if ( !error )
-            return (delta.x) >> RSHIFT;
+            return cast(int)((delta.x) >> RSHIFT);
         return 0;
     }
 }
