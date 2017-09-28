@@ -331,9 +331,9 @@ class Window : CustomEventTarget {
     @property bool caretReplace() { return _caretReplace; }
 
     // window content resize mode
-    //protected WindowOrContentResizeMode _windowOrContentResizeMode = WindowOrContentResizeMode.resizeWindow;
+    protected WindowOrContentResizeMode _windowOrContentResizeMode = WindowOrContentResizeMode.resizeWindow;
     //protected WindowOrContentResizeMode _windowOrContentResizeMode = WindowOrContentResizeMode.shrinkWidgets;
-    protected WindowOrContentResizeMode _windowOrContentResizeMode = WindowOrContentResizeMode.scrollWindow;
+    //protected WindowOrContentResizeMode _windowOrContentResizeMode = WindowOrContentResizeMode.scrollWindow;
 
     @property WindowOrContentResizeMode windowOrContentResizeMode() {return _windowOrContentResizeMode; }
     @property void windowOrContentResizeMode(WindowOrContentResizeMode newMode) {

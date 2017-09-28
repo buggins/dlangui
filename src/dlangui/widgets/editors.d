@@ -433,10 +433,19 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             rc.bottom -= dh;
             buf.fillRect(rc, _colorIconBookmark);
         } else if (icon.type == LineIconType.breakpoint) {
-            int dh = rc.height / 8;
+            if (rc.height > rc.width) {
+                int delta = rc.height - rc.width;
+                rc.top += delta / 2;
+                rc.bottom -= (delta + 1) / 2;
+            } else {
+                int delta = rc.width - rc.height;
+                rc.left += delta / 2;
+                rc.right -= (delta + 1) / 2;
+            }
+            int dh = rc.height / 5;
             rc.top += dh;
             rc.bottom -= dh;
-            int dw = rc.width / 4;
+            int dw = rc.width / 5;
             rc.left += dw;
             rc.right -= dw;
             buf.fillRect(rc, _colorIconBreakpoint);
