@@ -52,10 +52,10 @@
         <state state_enabled="true" state_hovered="true" textColor="#E0E080"/>
     </style>
     <style id="BUTTON_LABEL_LINK" parent="BUTTON_LABEL"
-	textColor="#2020FF"
+	textColor="#6080FF"
 	focusRectColors="#FFF"
         >
-        <state state_enabled="false" textColor="#60FFFFFF"/>
+        <state state_enabled="false" textColor="#606080FF"/>
         <state state_enabled="true" state_hovered="true" textColor="#A0A0FF" textFlags="Underline"/>
     </style>
     <style id="CHECKBOX_LABEL" parent="BUTTON_LABEL"
