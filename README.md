@@ -3,9 +3,10 @@ Dlang UI
 
 [![Gitter](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/buggins/dlangui?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)  [![Build Status](https://travis-ci.org/buggins/dlangui.svg?branch=master)](https://travis-ci.org/buggins/dlangui) [![PayPayl donate button](https://img.shields.io/badge/paypal-donate-yellow.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KPSNU8TYF6M5N "Donate once-off to this project using Paypal")
 
-![screenshot](http://buggins.github.io/dlangui/screenshots/screenshot-example1-windows.png "screenshot")
-
 Cross platform GUI for D. Widgets, layouts, styles, themes, unicode, i18n, OpenGL based acceleration.
+
+![screenshot](http://buggins.github.io/dlangui/screenshots/screenshot-example1-windows.png "Screenshot of widgets demo app example1")
+
 
 GitHub page: [https://github.com/buggins/dlangui](https://github.com/buggins/dlangui)
 
@@ -22,7 +23,6 @@ Screenshots: [http://buggins.github.io/dlangui/screenshots.html](http://buggins.
 Coding style: [https://github.com/buggins/dlangui/blob/master/CODING_STYLE.md](https://github.com/buggins/dlangui/blob/master/CODING_STYLE.md)
 
 
-WARNING: recent breaking change: some event listeners were renamed, e.g. onClickListener -> click, onFocusChangeListener -> focusChange...
 WARNING: dependencies in dlangui/deps now are git submodules (if you previously cloned them into deps directory, remove deps dir before updating dlangui project)
 
 
