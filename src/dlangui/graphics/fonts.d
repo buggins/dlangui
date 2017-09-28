@@ -133,6 +133,14 @@ immutable int MAX_WIDTH_UNSPECIFIED = int.max;
  * Use FontManager.instance.getFont() to retrieve font instance.
  */
 class Font : RefCountedObject {
+
+    this() {
+        _textSizeBuffer.reserve(100);
+        _textSizeBuffer.assumeSafeAppend();
+    }
+    ~this() { clear(); }
+
+
     /// returns font size (as requested from font engine)
     abstract @property int size();
     /// returns actual font height including interline space
@@ -224,13 +232,18 @@ class Font : RefCountedObject {
             return 0;
         const dchar * pstr = text.ptr;
         uint len = cast(uint)text.length;
-        if (widths.length < len)
-            widths.length = len + 1;
-        bool useKerning = allowKerning && family != FontFamily.MonoSpace;
+        if (widths.length < len) {
+            widths.assumeSafeAppend;
+            widths.length = len + 16;
+        }
+        bool fixed = isFixed;
+        bool useKerning = allowKerning && !fixed;
+        int fixedCharWidth = charWidth('M');
         int x = 0;
         int charsMeasured = 0;
         int * pwidths = widths.ptr;
-        int tabWidth = spaceWidth * tabSize; // width of full tab in pixels
+        int spWidth = fixed ? fixedCharWidth : spaceWidth;
+        int tabWidth = spWidth * tabSize; // width of full tab in pixels
         tabOffset = tabOffset % tabWidth;
         if (tabOffset < 0)
             tabOffset += tabWidth;
@@ -241,7 +254,7 @@ class Font : RefCountedObject {
             if (ch == '\t') {
                 // measure tab
                 int tabPosition = (x + tabWidth - tabOffset) / tabWidth * tabWidth + tabOffset;
-                while (tabPosition < x + spaceWidth)
+                while (tabPosition < x + spWidth)
                     tabPosition += tabWidth;
                 pwidths[i] = tabPosition;
                 charsMeasured = i + 1;
@@ -253,28 +266,35 @@ class Font : RefCountedObject {
                 prevChar = 0;
                 continue; // skip '&' in hot key when measuring
             }
-            Glyph * glyph = getCharGlyph(pstr[i], true); // TODO: what is better
-            //auto measureEnd = std.datetime.Clock.currAppTick;
-            //auto duration = measureEnd - measureStart;
-            //if (duration.length > 10)
-            //    Log.d("ft measureText took ", duration.length, " ticks");
-            if (glyph is null) {
-                // if no glyph, use previous width - treat as zero width
+            if (fixed) {
+                // fast calculation for fixed pitch
+                x += fixedCharWidth;
                 pwidths[i] = x;
-                prevChar = 0;
-                continue;
+                charsMeasured = i + 1;
+            } else {
+                Glyph * glyph = getCharGlyph(pstr[i], true); // TODO: what is better
+                //auto measureEnd = std.datetime.Clock.currAppTick;
+                //auto duration = measureEnd - measureStart;
+                //if (duration.length > 10)
+                //    Log.d("ft measureText took ", duration.length, " ticks");
+                if (glyph is null) {
+                    // if no glyph, use previous width - treat as zero width
+                    pwidths[i] = x;
+                    prevChar = 0;
+                    continue;
+                }
+                int kerningDelta = useKerning && prevChar ? getKerningOffset(ch, prevChar) : 0;
+                int width = ((glyph.widthScaled + kerningDelta + 63) >> 6);
+                if (width < glyph.originX + glyph.correctedBlackBoxX)
+                    width = glyph.originX + glyph.correctedBlackBoxX;
+                int w = x + width; // using advance
+                //int w2 = x + glyph.originX + glyph.correctedBlackBoxX; // using black box
+                //if (w < w2) // choose bigger value
+                //    w = w2;
+                pwidths[i] = w;
+                x += width;
+                charsMeasured = i + 1;
             }
-            int kerningDelta = useKerning && prevChar ? getKerningOffset(ch, prevChar) : 0;
-            int width = ((glyph.widthScaled + kerningDelta + 63) >> 6);
-            if (width < glyph.originX + glyph.correctedBlackBoxX)
-                width = glyph.originX + glyph.correctedBlackBoxX;
-            int w = x + width; // using advance
-            //int w2 = x + glyph.originX + glyph.correctedBlackBoxX; // using black box
-            //if (w < w2) // choose bigger value
-            //    w = w2;
-            pwidths[i] = w;
-            x += width;
-            charsMeasured = i + 1;
             if (x > maxWidth)
                 break;
             prevChar = ch;
@@ -480,7 +500,6 @@ class Font : RefCountedObject {
 
     void clear() {}
 
-    ~this() { clear(); }
 }
 alias FontRef = Ref!Font;
 
