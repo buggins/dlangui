@@ -344,7 +344,7 @@
         layoutHeight="FILL_PARENT"
         />
     <style id="STATUS_LINE"
-        backgroundColor="#D0D0D0"
+        backgroundColor="#eceffa"
         layoutWidth="FILL_PARENT"
         layoutHeight="WRAP_CONTENT"
         padding="1,1,1,1"
