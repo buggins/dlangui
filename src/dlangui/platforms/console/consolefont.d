@@ -13,7 +13,8 @@ class ConsoleFont : Font {
         _spaceWidth = 1;
         _glyph.blackBoxX = 1;
         _glyph.blackBoxY = 1;
-        _glyph.width = 0;
+        _glyph.widthPixels = 1;
+        _glyph.widthScaled = 1 << 6;
         _glyph.originX = 0;
         _glyph.originY = 0;
         _glyph.subpixelMode = SubpixelRenderingMode.None;
