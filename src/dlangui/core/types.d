@@ -356,7 +356,7 @@ struct Glyph
     /// 0: width of glyph black box
     ushort   blackBoxX;
 
-    @property ushort correctedBlackBoxX() { return subpixelMode ? blackBoxX / 3 : blackBoxX; }
+    @property ushort correctedBlackBoxX() { return subpixelMode ? (blackBoxX + 2) / 3 : blackBoxX; }
 
 
     /// 2: height of glyph black box

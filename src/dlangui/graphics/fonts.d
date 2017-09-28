@@ -226,7 +226,7 @@ class Font : RefCountedObject {
         uint len = cast(uint)text.length;
         if (widths.length < len)
             widths.length = len + 1;
-        bool useKerning = allowKerning;
+        bool useKerning = allowKerning && family != FontFamily.MonoSpace;
         int x = 0;
         int charsMeasured = 0;
         int * pwidths = widths.ptr;

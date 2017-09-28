@@ -261,6 +261,8 @@ class FreeTypeFontFile {
             ubyte h = cast(ubyte)(bitmap.rows);
             glyph.blackBoxX = w;
             glyph.blackBoxY = h;
+            glyph.originX =   cast(byte)(_slot.bitmap_left);
+            glyph.originY =   cast(byte)(_slot.bitmap_top);
             int sz = w * cast(int)h;
             if (sz > 0) {
                 glyph.glyph = new ubyte[sz];
