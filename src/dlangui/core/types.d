@@ -294,11 +294,29 @@ int fromPercentSize(int size, int baseSize) {
 
 /// screen dots per inch
 private __gshared int PRIVATE_SCREEN_DPI = 96;
+/// value to override detected system DPI, 0 to disable overriding
+private __gshared int PRIVATE_SCREEN_DPI_OVERRIDE = 0;
 
+/// get current screen DPI used for scaling while drawing
 @property int SCREEN_DPI() {
-    return PRIVATE_SCREEN_DPI;
+    return PRIVATE_SCREEN_DPI_OVERRIDE ? PRIVATE_SCREEN_DPI_OVERRIDE : PRIVATE_SCREEN_DPI;
 }
 
+/// get screen DPI detection override value, if non 0 - this value is used instead of DPI detected by platform, if 0, value detected by platform will be used)
+@property int overrideScreenDPI() {
+    return PRIVATE_SCREEN_DPI_OVERRIDE;
+}
+
+/// call to disable automatic screen DPI detection, use provided one instead (pass 0 to disable override and use value detected by platform)
+@property void overrideScreenDPI(int dpi = 96) {
+    static if (BACKEND_CONSOLE) {
+    } else {
+        if ((dpi >= 72 && dpi <= 500) || dpi == 0)
+            PRIVATE_SCREEN_DPI_OVERRIDE = dpi;
+    }
+}
+
+/// set screen DPI detected by platform
 @property void SCREEN_DPI(int dpi) {
     static if (BACKEND_CONSOLE) {
         PRIVATE_SCREEN_DPI = dpi;
@@ -310,6 +328,11 @@ private __gshared int PRIVATE_SCREEN_DPI = 96;
             }
         }
     }
+}
+
+/// returns DPI detected by platform w/o override
+@property int systemScreenDPI() {
+    return PRIVATE_SCREEN_DPI;
 }
 
 /// one point is 1/72 of inch
