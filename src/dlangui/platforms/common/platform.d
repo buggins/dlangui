@@ -463,7 +463,7 @@ class Window : CustomEventTarget {
         _minContentWidth = minContentWidth;
         _minContentHeight = minContentHeight;
         if (_windowOrContentResizeMode == WindowOrContentResizeMode.resizeWindow)
-            resizeWindow(Point(minContentWidth, minContentHeight));
+            resizeWindow(Point(max(_windowRect.right, minContentWidth), max(_windowRect.bottom, minContentHeight)));
         updateWindowOrContentSize();
     }
 
