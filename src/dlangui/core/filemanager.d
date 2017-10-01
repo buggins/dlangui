@@ -431,8 +431,12 @@ import dlangui.core.logger;
                     errFile = std.stdio.stderr;
                 }
 
-                // TODO: process should start detached.
-                spawnProcess(fileManagerArgs, inFile, outFile, errFile);
+                auto processConfig = Config.none;
+                static if (is(typeof(Config.detached)))
+                {
+                    processConfig |= Config.detached;
+                }
+                spawnProcess(fileManagerArgs, inFile, outFile, errFile, null, processConfig);
             }
 
             string configHome = environment.get("XDG_CONFIG_HOME", buildPath(environment.get("HOME"), ".config"));
