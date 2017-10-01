@@ -249,6 +249,8 @@ class SDLWindow : Window {
             windowFlags |= SDL_WINDOW_RESIZABLE;
         if (flags & WindowFlag.Fullscreen)
             windowFlags |= SDL_WINDOW_FULLSCREEN;
+        if (flags & WindowFlag.Borderless)
+            windowFlags = SDL_WINDOW_BORDERLESS;
         windowFlags |= SDL_WINDOW_ALLOW_HIGHDPI;
         static if (ENABLE_OPENGL) {
             if (_enableOpengl)

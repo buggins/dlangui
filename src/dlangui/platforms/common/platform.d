@@ -54,6 +54,8 @@ enum WindowFlag : uint {
     Modal = 4,
     /// measure window size on window.show() - helps if you want scrollWindow but on show() you want to set window to mainWidget measured size
     MeasureSize = 8,
+    /// window without decorations
+    Borderless = 16,
 }
 
 /// Window states

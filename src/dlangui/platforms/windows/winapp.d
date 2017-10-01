@@ -282,6 +282,9 @@ class Win32Window : Window {
             _dy = screenRc.height;
             ws = WS_POPUP;
         }
+        if (flags & WindowFlag.Borderless) {
+            ws = WS_POPUP | WS_SYSMENU;
+        }
 
 
         _hwnd = CreateWindowW(toUTF16z(WIN_CLASS_NAME),      // window class name

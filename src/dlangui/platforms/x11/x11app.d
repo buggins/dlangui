@@ -44,6 +44,28 @@ static if (ENABLE_OPENGL) {
 alias XWindow = x11.Xlib.Window;
 alias DWindow = dlangui.platforms.common.platform.Window;
 
+private struct MwmHints
+{
+    int flags;
+    int functions;
+    int decorations;
+    int input_mode;
+    int status;
+}
+
+private enum
+{
+    MWM_HINTS_FUNCTIONS = (1L << 0),
+    MWM_HINTS_DECORATIONS =  (1L << 1),
+
+    MWM_FUNC_ALL = (1L << 0),
+    MWM_FUNC_RESIZE = (1L << 1),
+    MWM_FUNC_MOVE = (1L << 2),
+    MWM_FUNC_MINIMIZE = (1L << 3),
+    MWM_FUNC_MAXIMIZE = (1L << 4),
+    MWM_FUNC_CLOSE = (1L << 5)
+}
+
 private __gshared
 {
     Display * x11display;
@@ -74,6 +96,8 @@ private __gshared
     Atom   atom_NET_WM_STATE_HIDDEN;
     Atom   atom_NET_WM_STATE_FULLSCREEN;
 
+    Atom   atom_MOTIF_WM_HINTS;
+
     Atom   atom_DLANGUI_TIMER_EVENT;
     Atom   atom_DLANGUI_TASK_EVENT;
     Atom   atom_DLANGUI_CLOSE_WINDOW_EVENT;
@@ -98,6 +122,7 @@ static void setupX11Atoms()
     atom_NET_WM_STATE_MAXIMIZED_HORZ = XInternAtom(x11display, "_NET_WM_STATE_MAXIMIZED_HORZ", True);
     atom_NET_WM_STATE_HIDDEN = XInternAtom(x11display, "_NET_WM_STATE_HIDDEN", True);
     atom_NET_WM_STATE_FULLSCREEN = XInternAtom(x11display, "_NET_WM_STATE_FULLSCREEN", True);
+    atom_MOTIF_WM_HINTS = XInternAtom(x11display, "_MOTIF_WM_HINTS", True);
 
     atom_DLANGUI_TIMER_EVENT     = XInternAtom(x11display, "DLANGUI_TIMER_EVENT", False);
     atom_DLANGUI_TASK_EVENT     = XInternAtom(x11display, "DLANGUI_TASK_EVENT", False);
@@ -334,6 +359,13 @@ class X11Window : DWindow {
             }
             else
                 Log.w("Missing _NET_WM_STATE_FULLSCREEN atom");
+        }
+        if (flags & WindowFlag.Borderless) {
+            if (atom_MOTIF_WM_HINTS != None) {
+                MwmHints hints;
+                hints.flags = MWM_HINTS_DECORATIONS;
+                XChangeProperty(x11display, _win, atom_MOTIF_WM_HINTS, atom_MOTIF_WM_HINTS, 32, PropModeReplace, cast(ubyte*)&hints, hints.sizeof / 4);
+            }
         }
         if (flags & WindowFlag.Modal) {
             if (_parent) {
