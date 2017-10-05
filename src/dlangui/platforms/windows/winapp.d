@@ -1185,7 +1185,7 @@ class Win32Platform : Platform {
             if (lptstr != NULL) 
             { 
                 wstring w = fromWStringz(lptstr);
-                res = toUTF32(w);
+                res = normalizeEndOfLineCharacters(toUTF32(w));
 
                 GlobalUnlock(hglb); 
             } 

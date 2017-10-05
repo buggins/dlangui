@@ -560,3 +560,31 @@ string toUTF8(dstring str) {
     }
     return cast(string)buf;
 }
+
+/// normalize end of line style - convert to '\n'
+dstring normalizeEndOfLineCharacters(dstring s) {
+    bool crFound = false;
+    foreach(ch; s) {
+        if (ch == '\r') {
+            crFound = true;
+            break;
+        }
+    }
+    if (!crFound)
+        return s;
+    dchar[] res;
+    res.reserve(s.length);
+    dchar prevCh = 0;
+    foreach(ch; s) {
+        if (ch == '\r') {
+            res ~= '\n';
+        } else if (ch == '\n') {
+            if (prevCh != '\r')
+                res ~= '\n';
+        } else {
+            res ~= ch;
+        }
+        prevCh = ch;
+    }
+    return cast(dstring)res;
+}
