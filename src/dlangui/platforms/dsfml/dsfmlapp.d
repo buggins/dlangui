@@ -378,12 +378,17 @@ class DSFMLPlatform : Platform {
     }
     /// retrieves text from clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
     override dstring getClipboardText(bool mouseBuffer = false) {
-        // TODO:
+        // TODO: implement if necessary
         return ""d;
+    }
+    /// check has clipboard text
+    override bool hasClipboardText(bool mouseBuffer = false) {
+        // TODO: implement if necessary
+        return false;
     }
     /// sets text to clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
     override void setClipboardText(dstring text, bool mouseBuffer = false) {
-        // TODO:
+        // TODO: implement if necessary
     }
 
     /// calls request layout for all windows

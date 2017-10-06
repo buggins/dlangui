@@ -16,3 +16,6 @@
 [submodule "deps/DerelictCocoa"]
 	path = deps/DerelictCocoa
 	url = https://github.com/p0nce/DerelictCocoa.git
+[submodule "deps/DSFML"]
+	path = deps/DSFML
+	url = https://github.com/Jebbs/DSFML.git

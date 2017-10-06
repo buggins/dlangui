@@ -73,7 +73,7 @@
   <debuglevel>0</debuglevel>
   <debugids>KeyInput</debugids>
   <versionlevel>0</versionlevel>
-  <versionids>EmbedStandardResources ForceLogs NO_OPENGL USE_FREETYPE</versionids>
+  <versionids>EmbedStandardResources ForceLogs USE_FREETYPE NO_OPENGL</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -279,7 +279,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>EmbedStandardResources ForceLogs</versionids>
+  <versionids>EmbedStandardResources ForceLogs NO_OPENGL USE_FREETYPE</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -317,7 +317,7 @@
   <multiobj>0</multiobj>
   <singleFileCompilation>0</singleFileCompilation>
   <oneobj>0</oneobj>
-  <mscoff>1</mscoff>
+  <mscoff>0</mscoff>
   <trace>0</trace>
   <quiet>0</quiet>
   <verbose>0</verbose>
@@ -382,7 +382,7 @@
   <debuglevel>0</debuglevel>
   <debugids>KeyInput</debugids>
   <versionlevel>0</versionlevel>
-  <versionids>EmbedStandardResources ForceLogs NO_OPENGL USE_FREETYPE</versionids>
+  <versionids>EmbedStandardResources ForceLogs USE_FREETYPE NO_OPENGL</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -588,7 +588,7 @@
   <debuglevel>0</debuglevel>
   <debugids />
   <versionlevel>0</versionlevel>
-  <versionids>EmbedStandardResources ForceLogs</versionids>
+  <versionids>EmbedStandardResources ForceLogs NO_OPENGL USE_FREETYPE</versionids>
   <dump_source>0</dump_source>
   <mapverbosity>0</mapverbosity>
   <createImplib>0</createImplib>
@@ -877,6 +877,86 @@
     <File path="3rdparty\dimage\png.d" />
     <File path="3rdparty\dimage\stream.d" />
     <File path="3rdparty\dimage\zlib.d" />
+   </Folder>
+   <Folder name="DSFML">
+    <Folder name="audio">
+     <File path="deps\DSFML\src\dsfml\audio\listener.d" />
+     <File path="deps\DSFML\src\dsfml\audio\music.d" />
+     <File path="deps\DSFML\src\dsfml\audio\package.d" />
+     <File path="deps\DSFML\src\dsfml\audio\sound.d" />
+     <File path="deps\DSFML\src\dsfml\audio\soundbuffer.d" />
+     <File path="deps\DSFML\src\dsfml\audio\soundbufferrecorder.d" />
+     <File path="deps\DSFML\src\dsfml\audio\soundfile.d" />
+     <File path="deps\DSFML\src\dsfml\audio\soundrecorder.d" />
+     <File path="deps\DSFML\src\dsfml\audio\soundsource.d" />
+     <File path="deps\DSFML\src\dsfml\audio\soundstream.d" />
+    </Folder>
+    <Folder name="graphics">
+     <File path="deps\DSFML\src\dsfml\graphics\blendmode.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\circleshape.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\color.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\convexshape.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\drawable.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\font.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\glyph.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\image.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\package.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\primitivetype.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\rect.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\rectangleshape.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\renderstates.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\rendertarget.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\rendertexture.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\renderwindow.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\shader.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\shape.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\sprite.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\text.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\texture.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\transform.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\transformable.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\vertex.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\vertexarray.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\view.d" />
+    </Folder>
+    <Folder name="network">
+     <File path="deps\DSFML\src\dsfml\network\ftp.d" />
+     <File path="deps\DSFML\src\dsfml\network\http.d" />
+     <File path="deps\DSFML\src\dsfml\network\ipaddress.d" />
+     <File path="deps\DSFML\src\dsfml\network\package.d" />
+     <File path="deps\DSFML\src\dsfml\network\packet.d" />
+     <File path="deps\DSFML\src\dsfml\network\socket.d" />
+     <File path="deps\DSFML\src\dsfml\network\socketselector.d" />
+     <File path="deps\DSFML\src\dsfml\network\tcplistener.d" />
+     <File path="deps\DSFML\src\dsfml\network\tcpsocket.d" />
+     <File path="deps\DSFML\src\dsfml\network\udpsocket.d" />
+    </Folder>
+    <Folder name="system">
+     <File path="deps\DSFML\src\dsfml\system\clock.d" />
+     <File path="deps\DSFML\src\dsfml\system\config.d" />
+     <File path="deps\DSFML\src\dsfml\system\err.d" />
+     <File path="deps\DSFML\src\dsfml\system\inputstream.d" />
+     <File path="deps\DSFML\src\dsfml\system\lock.d" />
+     <File path="deps\DSFML\src\dsfml\system\mutex.d" />
+     <File path="deps\DSFML\src\dsfml\system\package.d" />
+     <File path="deps\DSFML\src\dsfml\system\sleep.d" />
+     <File path="deps\DSFML\src\dsfml\system\string.d" />
+     <File path="deps\DSFML\src\dsfml\system\thread.d" />
+     <File path="deps\DSFML\src\dsfml\system\vector2.d" />
+     <File path="deps\DSFML\src\dsfml\system\vector3.d" />
+    </Folder>
+    <Folder name="window">
+     <File path="deps\DSFML\src\dsfml\window\context.d" />
+     <File path="deps\DSFML\src\dsfml\window\contextsettings.d" />
+     <File path="deps\DSFML\src\dsfml\window\event.d" />
+     <File path="deps\DSFML\src\dsfml\window\joystick.d" />
+     <File path="deps\DSFML\src\dsfml\window\keyboard.d" />
+     <File path="deps\DSFML\src\dsfml\window\mouse.d" />
+     <File path="deps\DSFML\src\dsfml\window\package.d" />
+     <File path="deps\DSFML\src\dsfml\window\videomode.d" />
+     <File path="deps\DSFML\src\dsfml\window\window.d" />
+     <File path="deps\DSFML\src\dsfml\window\windowhandle.d" />
+    </Folder>
    </Folder>
    <Folder name="fontconfig">
     <File path="3rdparty\fontconfig\fctypes.d" />

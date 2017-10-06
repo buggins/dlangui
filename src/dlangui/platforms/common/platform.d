@@ -373,7 +373,9 @@ class Window : CustomEventTarget {
     /// close window
     abstract void close();
     /// returns parent window
-    abstract @property Window parentWindow();
+    @property Window parentWindow() {
+        return null;
+    }
 
     protected WindowState _windowState = WindowState.normal;
     /// returns current window state
@@ -1027,7 +1029,9 @@ class Window : CustomEventTarget {
         return _focusedWidget;
     }
 
-    abstract @property bool isActive();
+    @property bool isActive() {
+        return true;
+    }
 
     /// window state change signal
     Signal!OnWindowActivityHandler windowActivityChanged;

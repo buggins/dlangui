@@ -87,11 +87,11 @@ version(USE_CONSOLE) {
         enum BACKEND_CONSOLE = false;
     } else version (USE_DSFML) {
         // DSFML backend already selected using version identifier
-        version (USE_OPENGL) {
+        //version (USE_OPENGL) {
             enum ENABLE_OPENGL = true;
-        } else {
-            enum ENABLE_OPENGL = false;
-        }
+        //} else {
+        //    enum ENABLE_OPENGL = false;
+        //}
         enum BACKEND_SDL = false;
         enum BACKEND_X11 = false;
         enum BACKEND_DSFML = true;
