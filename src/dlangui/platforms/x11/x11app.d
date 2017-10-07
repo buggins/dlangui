@@ -452,7 +452,7 @@ class X11Window : DWindow {
     override void show() {
         Log.d("X11Window.show");
         XMapRaised(x11display, _win);
-        XFlush(x11display);
+
         static if (ENABLE_OPENGL) {
             if (_enableOpengl) {
                 _glc = glXCreateContext(x11display, x11visual, null, GL_TRUE);
@@ -484,6 +484,7 @@ class X11Window : DWindow {
 
             _mainWidget.setFocus();
         }
+        XFlush(x11display);
     }
 
     override protected void handleWindowStateChange(WindowState newState, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
