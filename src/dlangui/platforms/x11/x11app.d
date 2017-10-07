@@ -440,6 +440,14 @@ class X11Window : DWindow {
         }
     }
 
+    private bool hasVisibleModalChild() {
+        foreach (X11Window w;_children) {
+            if (w.flags & WindowFlag.Modal && w._windowState != WindowState.hidden)
+                return true;
+        }
+        return false;
+    }
+
     /// show window
     override void show() {
         Log.d("X11Window.show");
@@ -1237,7 +1245,6 @@ class X11Platform : Platform {
     }
 
     private X11Window[XWindow] _windowMap;
-    private X11Window[] _windowList;
 
     /**
      * create window
@@ -1255,7 +1262,6 @@ class X11Platform : Platform {
         int newheight = height;
         X11Window window = new X11Window(this, windowCaption, parent, flags, newwidth, newheight);
         _windowMap[window._win] = window;
-        _windowList ~= window;
         return window;
     }
 
@@ -1284,17 +1290,6 @@ class X11Platform : Platform {
         XSendEvent(x11display2, window._win, false, StructureNotifyMask, &ev);
         XFlush(x11display2);
         XUnlockDisplay(x11display2);
-
-        for (uint i = 0; i < _windowList.length; i++) {
-            if (w is _windowList[i]) {
-                for (uint j = i; j + 1 < _windowList.length; j++)
-                    _windowList[j] = _windowList[j + 1];
-                _windowList[$ - 1] = null;
-                _windowList.length--;
-                break;
-            }
-        }
-
     }
 
     bool handleTimers() {
@@ -1780,15 +1775,9 @@ class X11Platform : Platform {
 
     /// returns true if there is some modal window opened above this window, and this window should not process mouse/key input and should not allow closing
     override bool hasModalWindowsAbove(DWindow w) {
-        // override in platform specific class
-        for (uint i = 0; i + 1 < _windowList.length; i++) {
-            if (_windowList[i] is w) {
-                for (uint j = i + 1; j < _windowList.length; j++) {
-                    if (_windowList[j].flags & WindowFlag.Modal && _windowList[j].windowState != WindowState.hidden)
-                        return true;
-                }
-                return false;
-            }
+        X11Window x11Win = cast (X11Window) w;
+        if (x11Win) {
+            return x11Win.hasVisibleModalChild();
         }
         return false;
     }
