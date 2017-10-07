@@ -758,14 +758,39 @@ class X11Window : DWindow {
     protected ButtonDetails _mbutton;
     protected ButtonDetails _rbutton;
 
-    ushort convertMouseFlags(uint flags) {
+    // x11 gives flags from time prior event so if left button is pressed there is not Button1Mask
+    ushort convertMouseFlags(uint flags, MouseButton btn, bool pressed) {
         ushort res = 0;
-        if (flags & Button1Mask)
-            res |= MouseFlag.LButton;
-        if (flags & Button2Mask)
-            res |= MouseFlag.RButton;
-        if (flags & Button3Mask)
-            res |= MouseFlag.MButton;
+        if (btn == MouseButton.Left) {
+            if (pressed)
+                res |= MouseFlag.LButton;
+            else
+                res &= ~MouseFlag.LButton;
+        }
+        else
+            if (flags & Button1Mask)
+                res |= MouseFlag.LButton;
+
+        if (btn == MouseButton.Middle) {
+            if (pressed)
+                res |= MouseFlag.MButton;
+            else
+                res &= ~MouseFlag.MButton;
+        }
+        else
+            if (flags & Button2Mask)
+                res |= MouseFlag.MButton;
+
+        if (btn == MouseButton.Right) {
+            if (pressed)
+                res |= MouseFlag.RButton;
+            else
+                res &= ~MouseFlag.RButton;
+        }
+        else
+            if (flags & Button3Mask)
+                res |= MouseFlag.RButton;
+
         return res;
     }
 
@@ -803,7 +828,9 @@ class X11Window : DWindow {
             if (wheelDelta)
                 event = new MouseEvent(action, MouseButton.None, lastFlags, lastx, lasty, wheelDelta);
         } else {
-            lastFlags = convertMouseFlags(state);
+            MouseButton btn = convertMouseButton(button);
+            lastFlags = convertMouseFlags(state, btn, action == MouseAction.ButtonDown);
+
             if (_keyFlags & KeyFlag.Shift)
                 lastFlags |= MouseFlag.Shift;
             if (_keyFlags & KeyFlag.Control)
@@ -812,7 +839,6 @@ class X11Window : DWindow {
                 lastFlags |= MouseFlag.Alt;
             lastx = cast(short)x;
             lasty = cast(short)y;
-            MouseButton btn = convertMouseButton(button);
             event = new MouseEvent(action, btn, lastFlags, lastx, lasty);
         }
         if (event) {
@@ -833,6 +859,7 @@ class X11Window : DWindow {
             event.lbutton = _lbutton;
             event.rbutton = _rbutton;
             event.mbutton = _mbutton;
+
             bool res = dispatchMouseEvent(event);
             if (res) {
                 debug(mouse) Log.d("Calling update() after mouse event");
@@ -1655,7 +1682,7 @@ class X11Platform : Platform {
             XFlush(x11display);
             int eventsInQueue = numberOfPendingEvents();
             if (!eventsInQueue) {
-                debug(x11) Log.d("X11: Sleeping");
+                //debug(x11) Log.d("X11: Sleeping");
                 Thread.sleep(dur!("msecs")(10));
             }
             foreach(eventIndex; 0..eventsInQueue)
