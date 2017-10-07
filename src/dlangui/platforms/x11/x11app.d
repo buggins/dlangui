@@ -773,9 +773,9 @@ class X11Window : DWindow {
         if (button == Button1)
             return MouseButton.Left;
         if (button == Button2)
-            return MouseButton.Right;
-        if (button == Button3)
             return MouseButton.Middle;
+        if (button == Button3)
+            return MouseButton.Right;
         return MouseButton.None;
     }
 
