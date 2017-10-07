@@ -101,6 +101,7 @@ private __gshared
     Atom   atom_DLANGUI_TASK_EVENT;
     Atom   atom_DLANGUI_CLOSE_WINDOW_EVENT;
     Atom   atom_DLANGUI_CLIPBOARD_BUFFER;
+    Atom   atom_DLANGUI_REDRAW_EVENT;
 }
 
 static void setupX11Atoms()
@@ -127,6 +128,7 @@ static void setupX11Atoms()
     atom_DLANGUI_TASK_EVENT     = XInternAtom(x11display, "DLANGUI_TASK_EVENT", False);
     atom_DLANGUI_CLOSE_WINDOW_EVENT = XInternAtom(x11display, "DLANGUI_CLOSE_WINDOW_EVENT", False);
     atom_DLANGUI_CLIPBOARD_BUFFER = XInternAtom(x11display, "DLANGUI_CLIPBOARD_BUFFER", False);
+    atom_DLANGUI_REDRAW_EVENT = XInternAtom(x11display, "DLANGUI_REDRAW_EVENT", False);
 }
 
 // Cursor font constants
@@ -254,7 +256,6 @@ class X11Window : DWindow {
     X11Window[] _children;
     X11Window _parent;
 
-    bool _needRedraw;
     int _cachedWidth, _cachedHeight;
 
     static if (ENABLE_OPENGL) {
@@ -661,12 +662,18 @@ class X11Window : DWindow {
         XChangeProperty(x11display, _win, atom_NET_WM_ICON, XA_CARDINAL, 32, PropModeReplace, cast(ubyte*)propData.ptr, cast(int)propData.length);
     }
 
+    uint _lastRedrawEventCode;
     /// request window redraw
     override void invalidate() {
-        if (!_needRedraw) {
-            debug(x11) Log.d("Window.invalidate()");
-            _needRedraw = true;
-        }
+        XEvent ev;
+        ev.xclient.type = ClientMessage;
+        ev.xclient.message_type = atom_DLANGUI_REDRAW_EVENT;
+        ev.xclient.window = _win;
+        ev.xclient.display = x11display;
+        ev.xclient.format = 32;
+        ev.xclient.data.l[0] = ++_lastRedrawEventCode;
+        XSendEvent(x11display, _win, false, StructureNotifyMask, &ev);
+        XFlush(x11display);
     }
 
     /// close window
@@ -738,7 +745,7 @@ class X11Window : DWindow {
     }
 
     void redraw() {
-        _needRedraw = false;
+        _lastRedrawEventCode = 0;
         //Use values cached by ConfigureNotify to avoid XGetWindowAttributes call.
         //XWindowAttributes window_attributes_return;
         //XGetWindowAttributes(x11display, _win, &window_attributes_return);
@@ -1335,7 +1342,7 @@ class X11Platform : Platform {
         return _windowMap.length == 0;
     }
 
-    protected int numberOfPendingEvents()
+    protected int numberOfPendingEvents(int msecs = 10)
     {
         import core.sys.posix.sys.select;
         int x11displayFd = ConnectionNumber(x11display);
@@ -1349,13 +1356,14 @@ class X11Platform : Platform {
             import core.stdc.errno;
             int selectResult;
             do {
-                timeval zeroTime;
-                selectResult = select(x11displayFd + 1, &fdSet, null, null, &zeroTime);
+                timeval timeout;
+                timeout.tv_usec = msecs;
+                selectResult = select(x11displayFd + 1, &fdSet, null, null, &timeout);
             } while(selectResult == -1 && errno == EINTR);
             if (selectResult < 0) {
                 Log.e("X11: display fd select error");
             } else if (selectResult == 1) {
-                Log.d("X11: XPending");
+                //Log.d("X11: XPending");
                 eventsInQueue = XPending(x11display);
             }
         }
@@ -1531,7 +1539,9 @@ class X11Platform : Platform {
             case EnterNotify:
                 Log.d("X11: EnterNotify event");
                 X11Window w = findWindow(event.xcrossing.window);
-                if (!w) {
+                if (w) {
+                    w.processMouseEvent(MouseAction.Move, 0, event.xmotion.state, event.xcrossing.x, event.xcrossing.y);
+                } else {
                     Log.e("Window not found");
                 }
                 break;
@@ -1639,6 +1649,9 @@ class X11Platform : Platform {
                         w.handlePostedEvent(cast(uint)event.xclient.data.l[0]);
                     } else if (event.xclient.message_type == atom_DLANGUI_TIMER_EVENT) {
                         w.handleTimer();
+                    } else if (event.xclient.message_type == atom_DLANGUI_REDRAW_EVENT) {
+                        if (event.xclient.data.l[0] == w._lastRedrawEventCode)
+                            w.redraw();
                     } else if (event.xclient.message_type == atom_WM_PROTOCOLS) {
                         Log.d("Handling WM_PROTOCOLS");
                         if ((event.xclient.format == 32) && (event.xclient.data.l[0]) == atom_WM_DELETE_WINDOW) {
@@ -1659,41 +1672,30 @@ class X11Platform : Platform {
         }
     }
 
+    protected void pumpEvents()
+    {
+        XFlush(x11display);
+        // Note:  only events we set the mask for are detected!
+        while(numberOfPendingEvents())
+        {
+            if (allWindowsClosed())
+                break;
+            XEvent event;        /* the XEvent declaration !!! */
+            XNextEvent(x11display, &event);
+            processXEvent(event);
+        }
+    }
+
     /**
      * Starts application message loop.
      *
      * When returned from this method, application is shutting down.
      */
     override int enterMessageLoop() {
-        import core.thread;
-        XEvent event;        /* the XEvent declaration !!! */
-        KeySym key;        /* a dealie-bob to handle KeyPress Events */
-        char[255] text;        /* a char buffer for KeyPress Events */
-
         Log.d("enterMessageLoop()");
 
         while(!allWindowsClosed()) {
-            // Note:  only events we set the mask for are detected!
-            foreach(win; _windowMap) {
-                if (win._needRedraw) {
-                    win.redraw();
-                }
-            }
-            XFlush(x11display);
-            int eventsInQueue = numberOfPendingEvents();
-            if (!eventsInQueue) {
-                //debug(x11) Log.d("X11: Sleeping");
-                Thread.sleep(dur!("msecs")(10));
-            }
-            foreach(eventIndex; 0..eventsInQueue)
-            {
-                if (allWindowsClosed())
-                    break;
-                if (!numberOfPendingEvents())
-                    break;
-                XNextEvent(x11display, &event);
-                processXEvent(event);
-            }
+            pumpEvents();
         }
         return 0;
     }
@@ -1733,18 +1735,7 @@ class X11Platform : Platform {
                         Log.e("Waiting for clipboard contents timeout");
                         return ""d;
                     }
-                    XFlush(x11display);
-                    int eventsInQueue = numberOfPendingEvents();
-                    foreach(eventIndex; 0..eventsInQueue)
-                    {
-                        if (allWindowsClosed())
-                            break;
-                        if (!numberOfPendingEvents())
-                            break;
-                        XEvent event;
-                        XNextEvent(x11display, &event);
-                        processXEvent(event);
-                    }
+                    pumpEvents();
                 }
                 Atom selectionTarget;
                 int selectionFormat;
