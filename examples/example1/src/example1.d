@@ -266,7 +266,9 @@ extern (C) int UIAppMain(string[] args) {
     //}
 
     // create window
-    Window window = Platform.instance.createWindow("DlangUI Example 1", null, WindowFlag.Resizable, 800, 700);
+    //Window window = Platform.instance.createWindow("DlangUI Example 1", null, WindowFlag.Resizable, 800, 700);
+    // Expand window size if content is bigger than 800, 700 (change to above version if you want scrollbars and 800, 700 size)
+    Window window = Platform.instance.createWindow("DlangUI Example 1", null, WindowFlag.Resizable | WindowFlag.ExpandSize, 800, 700);
     // here you can see window or content resize mode
     //Window window = Platform.instance.createWindow("DlangUI Example 1", null, WindowFlag.Resizable, 400, 400);
     //window.windowOrContentResizeMode = WindowOrContentResizeMode.resizeWindow;
