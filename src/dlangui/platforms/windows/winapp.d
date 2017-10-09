@@ -1252,6 +1252,31 @@ int DLANGUIWinMain(void* hInstance, void* hPrevInstance,
     return result;
 }
 
+extern(Windows)
+int DLANGUIWinMainProfile(string[] args) 
+{
+    int result;
+
+    try {
+        // call SetProcessDPIAware to support HI DPI - fix by Kapps
+        auto ulib = LoadLibraryA("user32.dll");
+        alias SetProcessDPIAwareFunc = int function();
+        auto setDpiFunc = cast(SetProcessDPIAwareFunc)GetProcAddress(ulib, "SetProcessDPIAware");
+        if(setDpiFunc) // Should never fail, but just in case...
+            setDpiFunc();
+
+        result = myWinMainProfile(args);
+    }
+    catch (Throwable e) // catch any uncaught exceptions
+    {
+        MessageBoxW(null, toUTF16z(e.toString()), "Error",
+                    MB_OK | MB_ICONEXCLAMATION);
+        result = 0;     // failed
+    }
+
+    return result;
+}
+
 /// split command line arg list; prepend with executable file name
 string[] splitCmdLine(string line) {
     string[] res;
@@ -1325,6 +1350,73 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
 
     _cmdShow = iCmdShow;
     _hInstance = hInstance;
+
+    Log.v("Creating platform");
+    w32platform = new Win32Platform();
+    Log.v("Registering window class");
+    if (!w32platform.registerWndClass()) {
+        MessageBoxA(null, "This program requires Windows NT!", "DLANGUI App".toStringz, MB_ICONERROR);
+        return 0;
+    }
+    Platform.setInstance(w32platform);
+
+    DOUBLE_CLICK_THRESHOLD_MS = GetDoubleClickTime();
+
+    Log.v("Initializing font manager");
+    if (!initFontManager()) {
+        Log.e("******************************************************************");
+        Log.e("No font files found!!!");
+        Log.e("Currently, only hardcoded font paths implemented.");
+        Log.e("Probably you can modify sdlapp.d to add some fonts for your system.");
+        Log.e("******************************************************************");
+        assert(false);
+    }
+    initResourceManagers();
+
+    currentTheme = createDefaultTheme();
+
+    static if (ENABLE_OPENGL) {
+        initOpenGL();
+    }
+
+    // Load versions 1.2+ and all supported ARB and EXT extensions.
+
+    Log.i("Entering UIAppMain: ", args);
+    int result = -1;
+    try {
+        result = UIAppMain(args);
+        Log.i("UIAppMain returned ", result);
+    } catch (Exception e) {
+        Log.e("Abnormal UIAppMain termination");
+        Log.e("UIAppMain exception: ", e);
+    }
+
+    releaseResourcesOnAppExit();
+
+    Log.d("Exiting main");
+    debug {
+        APP_IS_SHUTTING_DOWN = true;
+        import core.memory : GC;
+        Log.d("Calling GC.collect");
+        GC.collect();
+        if (DrawBuf.instanceCount)
+            Log.d("Non-zero DrawBuf instance count when exiting: ", DrawBuf.instanceCount);
+    }
+
+    return result;
+}
+
+int myWinMainProfile(string[] args)
+{
+    initLogs();
+
+    Log.d("myWinMain()");
+    string basePath = exePath();
+    Log.i("Current executable: ", exePath());
+    Log.i("Command line params: ", args);
+
+    _cmdShow = SW_SHOW;
+    _hInstance = GetModuleHandle(NULL);
 
     Log.v("Creating platform");
     w32platform = new Win32Platform();
