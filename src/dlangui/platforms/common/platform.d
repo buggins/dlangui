@@ -1993,6 +1993,8 @@ static if (BACKEND_CONSOLE) {
         // to remove import
         extern(Windows) int DLANGUIWinMain(void* hInstance, void* hPrevInstance,
                                            char* lpCmdLine, int nCmdShow);
+        extern(Windows)
+            int DLANGUIWinMainProfile(string[] args);
     } else {
         // to remove import
         extern(C) int DLANGUImain(string[] args);
@@ -2012,16 +2014,23 @@ mixin template APP_ENTRY_POINT() {
         } else {
             /// workaround for link issue when WinMain is located in library
             version(Windows) {
-                extern (Windows) int WinMain(void* hInstance, void* hPrevInstance,
-                                                char* lpCmdLine, int nCmdShow)
-                {
-                    try {
-                        int res = DLANGUIWinMain(hInstance, hPrevInstance,
-                                                    lpCmdLine, nCmdShow);
-                        return res;
-                    } catch (Exception e) {
-                        Log.e("Exception: ", e);
-                        return 1;
+                version (ENABLE_PROFILING) {
+                    int main(string[] args)
+                    {
+                        return DLANGUIWinMainProfile(args);
+                    }
+                } else {
+                    extern (Windows) int WinMain(void* hInstance, void* hPrevInstance,
+                                                    char* lpCmdLine, int nCmdShow)
+                    {
+                        try {
+                            int res = DLANGUIWinMain(hInstance, hPrevInstance,
+                                                        lpCmdLine, nCmdShow);
+                            return res;
+                        } catch (Exception e) {
+                            Log.e("Exception: ", e);
+                            return 1;
+                        }
                     }
                 }
             } else {
