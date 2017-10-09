@@ -56,6 +56,8 @@ enum WindowFlag : uint {
     MeasureSize = 8,
     /// window without decorations
     Borderless = 16,
+    /// expand window size if main widget minimal size is greater than size defined in window constructor
+    ExpandSize = 32,
 }
 
 /// Window states
@@ -333,9 +335,9 @@ class Window : CustomEventTarget {
     @property bool caretReplace() { return _caretReplace; }
 
     // window content resize mode
-    protected WindowOrContentResizeMode _windowOrContentResizeMode = WindowOrContentResizeMode.resizeWindow;
+    //protected WindowOrContentResizeMode _windowOrContentResizeMode = WindowOrContentResizeMode.resizeWindow;
     //protected WindowOrContentResizeMode _windowOrContentResizeMode = WindowOrContentResizeMode.shrinkWidgets;
-    //protected WindowOrContentResizeMode _windowOrContentResizeMode = WindowOrContentResizeMode.scrollWindow;
+    protected WindowOrContentResizeMode _windowOrContentResizeMode = WindowOrContentResizeMode.scrollWindow;
 
     @property WindowOrContentResizeMode windowOrContentResizeMode() {return _windowOrContentResizeMode; }
     @property void windowOrContentResizeMode(WindowOrContentResizeMode newMode) {
@@ -466,7 +468,7 @@ class Window : CustomEventTarget {
     void adjustWindowOrContentSize(int minContentWidth, int minContentHeight) {
         _minContentWidth = minContentWidth;
         _minContentHeight = minContentHeight;
-        if (_windowOrContentResizeMode == WindowOrContentResizeMode.resizeWindow)
+        if (_windowOrContentResizeMode == WindowOrContentResizeMode.resizeWindow || flags & WindowFlag.ExpandSize)
             resizeWindow(Point(max(_windowRect.right, minContentWidth), max(_windowRect.bottom, minContentHeight)));
         updateWindowOrContentSize();
     }
