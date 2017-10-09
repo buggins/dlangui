@@ -1513,7 +1513,11 @@ class X11Platform : Platform {
                 Log.d("X11: ButtonPress event");
                 X11Window w = findWindow(event.xbutton.window);
                 if (w) {
-                    w.processMouseEvent(MouseAction.ButtonDown, event.xbutton.button, event.xbutton.state, event.xbutton.x, event.xbutton.y);
+                    if (event.xbutton.button == 4 || event.xbutton.button == 5) {
+                        w.processMouseEvent(MouseAction.Wheel, 0, 0, 0, event.xbutton.button == 4 ? 1 : -1);
+                    } else {
+                        w.processMouseEvent(MouseAction.ButtonDown, event.xbutton.button, event.xbutton.state, event.xbutton.x, event.xbutton.y);
+                    }
                 } else {
                     Log.e("Window not found");
                 }
