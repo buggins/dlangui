@@ -824,6 +824,212 @@
   <postBuildCommand />
   <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
  </Config>
+ <Config name="DSFMLDebug" platform="Win32">
+  <obj>0</obj>
+  <link>0</link>
+  <lib>1</lib>
+  <subsystem>0</subsystem>
+  <multiobj>0</multiobj>
+  <singleFileCompilation>0</singleFileCompilation>
+  <oneobj>0</oneobj>
+  <mscoff>0</mscoff>
+  <trace>1</trace>
+  <quiet>0</quiet>
+  <verbose>0</verbose>
+  <vtls>0</vtls>
+  <vgc>0</vgc>
+  <symdebug>1</symdebug>
+  <optimize>0</optimize>
+  <cpu>0</cpu>
+  <isX86_64>0</isX86_64>
+  <isLinux>0</isLinux>
+  <isOSX>0</isOSX>
+  <isWindows>0</isWindows>
+  <isFreeBSD>0</isFreeBSD>
+  <isSolaris>0</isSolaris>
+  <scheduler>0</scheduler>
+  <useDeprecated>0</useDeprecated>
+  <errDeprecated>0</errDeprecated>
+  <useAssert>0</useAssert>
+  <useInvariants>0</useInvariants>
+  <useIn>0</useIn>
+  <useOut>0</useOut>
+  <useArrayBounds>0</useArrayBounds>
+  <noboundscheck>0</noboundscheck>
+  <useSwitchError>0</useSwitchError>
+  <useUnitTests>0</useUnitTests>
+  <useInline>0</useInline>
+  <release>0</release>
+  <preservePaths>0</preservePaths>
+  <warnings>0</warnings>
+  <infowarnings>0</infowarnings>
+  <checkProperty>0</checkProperty>
+  <genStackFrame>0</genStackFrame>
+  <pic>0</pic>
+  <cov>0</cov>
+  <nofloat>0</nofloat>
+  <Dversion>2</Dversion>
+  <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
+  <allinst>0</allinst>
+  <stackStomp>0</stackStomp>
+  <compiler>0</compiler>
+  <otherDMD>0</otherDMD>
+  <cccmd>$(CC) -c</cccmd>
+  <ccTransOpt>1</ccTransOpt>
+  <addDepImp>0</addDepImp>
+  <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
+  <imppath />
+  <fileImppath>views</fileImppath>
+  <outdir>$(ConfigurationName)</outdir>
+  <objdir>$(OutDir)</objdir>
+  <objname />
+  <libname />
+  <doDocComments>0</doDocComments>
+  <docdir />
+  <docname />
+  <modules_ddoc />
+  <ddocfiles />
+  <doHdrGeneration>0</doHdrGeneration>
+  <hdrdir />
+  <hdrname />
+  <doXGeneration>1</doXGeneration>
+  <xfilename>$(IntDir)\$(TargetName).json</xfilename>
+  <debuglevel>0</debuglevel>
+  <debugids>KeyInput</debugids>
+  <versionlevel>0</versionlevel>
+  <versionids>EmbedStandardResources ForceLogs USE_FREETYPE NO_OPENGL</versionids>
+  <dump_source>0</dump_source>
+  <mapverbosity>0</mapverbosity>
+  <createImplib>0</createImplib>
+  <defaultlibname />
+  <debuglibname />
+  <moduleDepsFile />
+  <run>0</run>
+  <runargs />
+  <runCv2pdb>1</runCv2pdb>
+  <pathCv2pdb>$(VisualDInstallDir)cv2pdb\cv2pdb.exe</pathCv2pdb>
+  <cv2pdbPre2043>0</cv2pdbPre2043>
+  <cv2pdbNoDemangle>0</cv2pdbNoDemangle>
+  <cv2pdbEnumType>0</cv2pdbEnumType>
+  <cv2pdbOptions />
+  <objfiles />
+  <linkswitches />
+  <libfiles />
+  <libpaths />
+  <deffile />
+  <resfile />
+  <exefile>$(OutDir)\$(ProjectName).lib</exefile>
+  <useStdLibPath>1</useStdLibPath>
+  <cRuntime>2</cRuntime>
+  <privatePhobos>0</privatePhobos>
+  <additionalOptions />
+  <preBuildCommand />
+  <postBuildCommand />
+  <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
+ </Config>
+ <Config name="DSFMLDebug" platform="x64">
+  <obj>0</obj>
+  <link>0</link>
+  <lib>1</lib>
+  <subsystem>0</subsystem>
+  <multiobj>0</multiobj>
+  <singleFileCompilation>0</singleFileCompilation>
+  <oneobj>0</oneobj>
+  <mscoff>0</mscoff>
+  <trace>1</trace>
+  <quiet>0</quiet>
+  <verbose>0</verbose>
+  <vtls>0</vtls>
+  <vgc>0</vgc>
+  <symdebug>1</symdebug>
+  <optimize>0</optimize>
+  <cpu>0</cpu>
+  <isX86_64>1</isX86_64>
+  <isLinux>0</isLinux>
+  <isOSX>0</isOSX>
+  <isWindows>0</isWindows>
+  <isFreeBSD>0</isFreeBSD>
+  <isSolaris>0</isSolaris>
+  <scheduler>0</scheduler>
+  <useDeprecated>0</useDeprecated>
+  <errDeprecated>1</errDeprecated>
+  <useAssert>0</useAssert>
+  <useInvariants>0</useInvariants>
+  <useIn>0</useIn>
+  <useOut>0</useOut>
+  <useArrayBounds>0</useArrayBounds>
+  <noboundscheck>0</noboundscheck>
+  <useSwitchError>0</useSwitchError>
+  <useUnitTests>0</useUnitTests>
+  <useInline>0</useInline>
+  <release>0</release>
+  <preservePaths>0</preservePaths>
+  <warnings>1</warnings>
+  <infowarnings>0</infowarnings>
+  <checkProperty>0</checkProperty>
+  <genStackFrame>0</genStackFrame>
+  <pic>0</pic>
+  <cov>0</cov>
+  <nofloat>0</nofloat>
+  <Dversion>2</Dversion>
+  <ignoreUnsupportedPragmas>0</ignoreUnsupportedPragmas>
+  <allinst>0</allinst>
+  <stackStomp>0</stackStomp>
+  <compiler>0</compiler>
+  <otherDMD>0</otherDMD>
+  <cccmd>$(CC) -c</cccmd>
+  <ccTransOpt>1</ccTransOpt>
+  <addDepImp>0</addDepImp>
+  <program>$(DMDInstallDir)windows\bin\dmd.exe</program>
+  <imppath />
+  <fileImppath>views</fileImppath>
+  <outdir>$(ConfigurationName)</outdir>
+  <objdir>$(OutDir)</objdir>
+  <objname />
+  <libname />
+  <doDocComments>0</doDocComments>
+  <docdir />
+  <docname />
+  <modules_ddoc />
+  <ddocfiles />
+  <doHdrGeneration>0</doHdrGeneration>
+  <hdrdir />
+  <hdrname />
+  <doXGeneration>1</doXGeneration>
+  <xfilename>$(IntDir)\$(TargetName).json</xfilename>
+  <debuglevel>0</debuglevel>
+  <debugids>KeyInput</debugids>
+  <versionlevel>0</versionlevel>
+  <versionids>EmbedStandardResources ForceLogs USE_FREETYPE NO_OPENGL</versionids>
+  <dump_source>0</dump_source>
+  <mapverbosity>0</mapverbosity>
+  <createImplib>0</createImplib>
+  <defaultlibname />
+  <debuglibname />
+  <moduleDepsFile />
+  <run>0</run>
+  <runargs />
+  <runCv2pdb>1</runCv2pdb>
+  <pathCv2pdb>$(VisualDInstallDir)cv2pdb\cv2pdb.exe</pathCv2pdb>
+  <cv2pdbPre2043>0</cv2pdbPre2043>
+  <cv2pdbNoDemangle>0</cv2pdbNoDemangle>
+  <cv2pdbEnumType>0</cv2pdbEnumType>
+  <cv2pdbOptions />
+  <objfiles />
+  <linkswitches />
+  <libfiles />
+  <libpaths />
+  <deffile />
+  <resfile />
+  <exefile>$(OutDir)\$(ProjectName).lib</exefile>
+  <useStdLibPath>1</useStdLibPath>
+  <cRuntime>2</cRuntime>
+  <privatePhobos>0</privatePhobos>
+  <additionalOptions />
+  <preBuildCommand />
+  <postBuildCommand />
+  <filesToClean>*.obj;*.cmd;*.build;*.json;*.dep</filesToClean>
+ </Config>
  <Folder name="dlangui">
   <Folder name="3rdparty">
    <Folder name="DerelictFT">
@@ -880,82 +1086,82 @@
    </Folder>
    <Folder name="DSFML">
     <Folder name="audio">
-     <File path="deps\DSFML\src\dsfml\audio\listener.d" />
-     <File path="deps\DSFML\src\dsfml\audio\music.d" />
-     <File path="deps\DSFML\src\dsfml\audio\package.d" />
-     <File path="deps\DSFML\src\dsfml\audio\sound.d" />
-     <File path="deps\DSFML\src\dsfml\audio\soundbuffer.d" />
-     <File path="deps\DSFML\src\dsfml\audio\soundbufferrecorder.d" />
-     <File path="deps\DSFML\src\dsfml\audio\soundfile.d" />
-     <File path="deps\DSFML\src\dsfml\audio\soundrecorder.d" />
-     <File path="deps\DSFML\src\dsfml\audio\soundsource.d" />
-     <File path="deps\DSFML\src\dsfml\audio\soundstream.d" />
+     <File path="deps\DSFML\src\dsfml\audio\listener.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\audio\music.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\audio\package.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\audio\sound.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\audio\soundbuffer.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\audio\soundbufferrecorder.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\audio\soundfile.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\audio\soundrecorder.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\audio\soundsource.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\audio\soundstream.d" tool="None" />
     </Folder>
     <Folder name="graphics">
-     <File path="deps\DSFML\src\dsfml\graphics\blendmode.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\circleshape.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\color.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\convexshape.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\drawable.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\font.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\glyph.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\image.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\package.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\primitivetype.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\rect.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\rectangleshape.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\renderstates.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\rendertarget.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\rendertexture.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\renderwindow.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\shader.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\shape.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\sprite.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\text.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\texture.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\transform.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\transformable.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\vertex.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\vertexarray.d" />
-     <File path="deps\DSFML\src\dsfml\graphics\view.d" />
+     <File path="deps\DSFML\src\dsfml\graphics\blendmode.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\circleshape.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\color.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\convexshape.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\drawable.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\font.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\glyph.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\image.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\package.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\primitivetype.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\rect.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\rectangleshape.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\renderstates.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\rendertarget.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\rendertexture.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\renderwindow.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\shader.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\shape.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\sprite.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\text.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\texture.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\transform.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\transformable.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\vertex.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\vertexarray.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\graphics\view.d" tool="None" />
     </Folder>
     <Folder name="network">
-     <File path="deps\DSFML\src\dsfml\network\ftp.d" />
-     <File path="deps\DSFML\src\dsfml\network\http.d" />
-     <File path="deps\DSFML\src\dsfml\network\ipaddress.d" />
-     <File path="deps\DSFML\src\dsfml\network\package.d" />
-     <File path="deps\DSFML\src\dsfml\network\packet.d" />
-     <File path="deps\DSFML\src\dsfml\network\socket.d" />
-     <File path="deps\DSFML\src\dsfml\network\socketselector.d" />
-     <File path="deps\DSFML\src\dsfml\network\tcplistener.d" />
-     <File path="deps\DSFML\src\dsfml\network\tcpsocket.d" />
-     <File path="deps\DSFML\src\dsfml\network\udpsocket.d" />
+     <File path="deps\DSFML\src\dsfml\network\ftp.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\network\http.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\network\ipaddress.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\network\package.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\network\packet.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\network\socket.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\network\socketselector.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\network\tcplistener.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\network\tcpsocket.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\network\udpsocket.d" tool="None" />
     </Folder>
     <Folder name="system">
-     <File path="deps\DSFML\src\dsfml\system\clock.d" />
-     <File path="deps\DSFML\src\dsfml\system\config.d" />
-     <File path="deps\DSFML\src\dsfml\system\err.d" />
-     <File path="deps\DSFML\src\dsfml\system\inputstream.d" />
-     <File path="deps\DSFML\src\dsfml\system\lock.d" />
-     <File path="deps\DSFML\src\dsfml\system\mutex.d" />
-     <File path="deps\DSFML\src\dsfml\system\package.d" />
-     <File path="deps\DSFML\src\dsfml\system\sleep.d" />
-     <File path="deps\DSFML\src\dsfml\system\string.d" />
-     <File path="deps\DSFML\src\dsfml\system\thread.d" />
-     <File path="deps\DSFML\src\dsfml\system\vector2.d" />
-     <File path="deps\DSFML\src\dsfml\system\vector3.d" />
+     <File path="deps\DSFML\src\dsfml\system\clock.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\system\config.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\system\err.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\system\inputstream.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\system\lock.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\system\mutex.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\system\package.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\system\sleep.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\system\string.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\system\thread.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\system\vector2.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\system\vector3.d" tool="None" />
     </Folder>
     <Folder name="window">
-     <File path="deps\DSFML\src\dsfml\window\context.d" />
-     <File path="deps\DSFML\src\dsfml\window\contextsettings.d" />
-     <File path="deps\DSFML\src\dsfml\window\event.d" />
-     <File path="deps\DSFML\src\dsfml\window\joystick.d" />
-     <File path="deps\DSFML\src\dsfml\window\keyboard.d" />
-     <File path="deps\DSFML\src\dsfml\window\mouse.d" />
-     <File path="deps\DSFML\src\dsfml\window\package.d" />
-     <File path="deps\DSFML\src\dsfml\window\videomode.d" />
-     <File path="deps\DSFML\src\dsfml\window\window.d" />
-     <File path="deps\DSFML\src\dsfml\window\windowhandle.d" />
+     <File path="deps\DSFML\src\dsfml\window\context.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\window\contextsettings.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\window\event.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\window\joystick.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\window\keyboard.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\window\mouse.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\window\package.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\window\videomode.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\window\window.d" tool="None" />
+     <File path="deps\DSFML\src\dsfml\window\windowhandle.d" tool="None" />
     </Folder>
    </Folder>
    <Folder name="fontconfig">
