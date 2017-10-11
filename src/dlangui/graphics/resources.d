@@ -337,7 +337,7 @@ class GradientDrawable : Drawable {
         _color2 = color2;
     }
     override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
-        buf.fillRect(rc, _color1); // stub
+        buf.fillGradientRect(rc, _color1, _color2);
     }
     @property override int width() { return 1; }
     @property override int height() { return 1; }

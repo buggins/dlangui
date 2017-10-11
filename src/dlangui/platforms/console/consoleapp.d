@@ -406,6 +406,11 @@ class ConsoleDrawBuf : DrawBuf {
         }
     }
 
+    override void fillGradientRect(Rect rc, uint color1, uint color2) {
+        // TODO
+        fillRect(rc, color1);
+    }
+
     /// fill rectangle with solid color and pattern (clipping is applied) 0=solid fill, 1 = dotted
     override void fillRectPattern(Rect rc, uint color, int pattern) {
         // default implementation: does not support patterns
