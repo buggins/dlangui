@@ -322,8 +322,22 @@ class SolidFillDrawable : Drawable {
         _color = color;
     }
     override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
-        if ((_color >> 24) != 0xFF) // not fully transparent
+        if (!_color.isFullyTransparentColor)
             buf.fillRect(rc, _color);
+    }
+    @property override int width() { return 1; }
+    @property override int height() { return 1; }
+}
+
+class GradientDrawable : Drawable {
+    protected uint _color1;
+    protected uint _color2;
+    this(uint color1, uint color2) {
+        _color1 = color1;
+        _color2 = color2;
+    }
+    override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
+        buf.fillRect(rc, _color1); // stub
     }
     @property override int width() { return 1; }
     @property override int height() { return 1; }
@@ -423,39 +437,46 @@ static if (BACKEND_CONSOLE) {
 /// decode solid color / gradient / frame drawable from string like #AARRGGBB, e.g. #5599AA
 ///
 /// SolidFillDrawable: #AARRGGBB  - e.g. #8090A0 or #80ffffff
+/// GradientDrawable: #linear,#firstColor,#secondColor
 /// FrameDrawable: #frameColor,frameWidth[,#middleColor]
 ///             or #frameColor,leftBorderWidth,topBorderWidth,rightBorderWidth,bottomBorderWidth[,#middleColor]
 ///                e.g. #000000,2,#C0FFFFFF - black frame of width 2 with 75% transparent white middle
 ///                e.g. #0000FF,2,3,4,5,#FFFFFF - blue frame with left,top,right,bottom borders of width 2,3,4,5 and white inner area
 static Drawable createColorDrawable(string s) {
     Log.d("creating color drawable ", s);
-    uint[6] values;
-    int valueCount = 0;
-    int start = 0;
-    for (int i = 0; i <= s.length; i++) {
-        if (i == s.length || s[i] == ',') {
-            if (i > start) {
-                string item = s[start .. i];
-                if (item.startsWith("#"))
-                    values[valueCount++] = decodeHexColor(item);
-                else
-                    values[valueCount++] = decodeDimension(item);
-                if (valueCount >= 6)
-                    break;
-            }
-            start = i + 1;
+
+    enum DrawableType { SolidColor, LinearGradient, Frame }
+    auto type = DrawableType.SolidColor;
+
+    string[] items = s.split(',');
+    uint[] values;
+    foreach (i, item; items) {
+        if (item == "#linear")
+            type = DrawableType.LinearGradient;
+        else if (item.startsWith("#"))
+            values ~= decodeHexColor(item);
+        else {
+            values ~= decodeDimension(item);
+            type = DrawableType.Frame;
         }
+        if (i >= 6)
+            break;
     }
-    if (valueCount == 1) // only color #AARRGGBB
+
+    if (type == DrawableType.SolidColor && values.length == 1) // only color #AARRGGBB
         return new SolidFillDrawable(values[0]);
-    else if (valueCount == 2) // frame color and frame width, with transparent inner area - #AARRGGBB,NN
-        return new FrameDrawable(values[0], values[1]);
-    else if (valueCount == 3) // frame color, frame width, inner area color - #AARRGGBB,NN,#AARRGGBB
-        return new FrameDrawable(values[0], values[1], values[2]);
-    else if (valueCount == 5) // frame color, frame widths for left,top,right,bottom and transparent inner area - #AARRGGBB,NNleft,NNtop,NNright,NNbottom
-        return new FrameDrawable(values[0], Rect(values[1], values[2], values[3], values[4]));
-    else if (valueCount == 6) // frame color, frame widths for left,top,right,bottom, inner area color - #AARRGGBB,NNleft,NNtop,NNright,NNbottom,#AARRGGBB
-        return new FrameDrawable(values[0], Rect(values[1], values[2], values[3], values[4]), values[5]);
+    else if (type == DrawableType.LinearGradient && values.length == 2) // two gradient colors
+        return new GradientDrawable(values[0], values[1]);
+    else if (type == DrawableType.Frame) {
+        if (values.length == 2) // frame color and frame width, with transparent inner area - #AARRGGBB,NN
+            return new FrameDrawable(values[0], values[1]);
+        else if (values.length == 3) // frame color, frame width, inner area color - #AARRGGBB,NN,#AARRGGBB
+            return new FrameDrawable(values[0], values[1], values[2]);
+        else if (values.length == 5) // frame color, frame widths for left,top,right,bottom and transparent inner area - #AARRGGBB,NNleft,NNtop,NNright,NNbottom
+            return new FrameDrawable(values[0], Rect(values[1], values[2], values[3], values[4]));
+        else if (values.length == 6) // frame color, frame widths for left,top,right,bottom, inner area color - #AARRGGBB,NNleft,NNtop,NNright,NNbottom,#AARRGGBB
+            return new FrameDrawable(values[0], Rect(values[1], values[2], values[3], values[4]), values[5]);
+    }
     Log.e("Invalid drawable string format: ", s);
     return new EmptyDrawable(); // invalid format - just return empty drawable
 }
