@@ -98,6 +98,9 @@ class ConsolePlatform : Platform {
         _drawBuf = new ConsoleDrawBuf(_console);
     }
     ~this() {
+        //Log.d("Destroying console");
+        //destroy(_console);
+        Log.d("Destroying drawbuf");
         destroy(_drawBuf);
     }
 
@@ -240,6 +243,9 @@ class ConsolePlatform : Platform {
                 break;
             }
         }
+        Log.i("Message loop finished - closing windows");
+        _windowsToClose ~= _windowList;
+        checkClosedWindows();
         Log.i("Exiting from message loop");
         return 0;
     }
@@ -262,6 +268,13 @@ class ConsolePlatform : Platform {
     /// calls request layout for all windows
     override void requestLayout() {
         // TODO
+    }
+
+    private void onCtrlC() {
+        Log.w("Ctrl+C pressed - stopping application");
+        if (_console) {
+            _console.stop();
+        }
     }
 }
 
@@ -459,6 +472,15 @@ class ConsoleDrawBuf : DrawBuf {
     }
 }
 
+
+extern(C) void mySignalHandler(int value) {
+    Log.i("Signal handler - signal=", value);
+    ConsolePlatform platform = cast(ConsolePlatform)Platform.instance;
+    if (platform) {
+        platform.onCtrlC();
+    }
+}
+
 //version (none):
 // entry point for console app
 extern(C) int DLANGUImain(string[] args) {
@@ -471,6 +493,10 @@ extern(C) int DLANGUImain(string[] args) {
     version (Windows) {
         import core.sys.windows.winuser;
         DOUBLE_CLICK_THRESHOLD_MS = GetDoubleClickTime();
+    } else {
+        // set Ctrl+C handler
+        import core.sys.posix.signal;
+        sigset(SIGINT, &mySignalHandler);
     }
 
     currentTheme = createDefaultTheme();

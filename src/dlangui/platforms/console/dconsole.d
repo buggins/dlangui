@@ -292,7 +292,7 @@ class Console {
             if (res < 0) {
                 auto err = errno;
                 while (err == EAGAIN) {
-                    debug Log.d("rawWrite error EAGAIN - will retry");
+                    //debug Log.d("rawWrite error EAGAIN - will retry");
                     res = cast(int)write(STDOUT_FILENO, s.ptr, s.length);
                     if (res >= 0)
                         return (res > 0);
@@ -834,6 +834,11 @@ class Console {
     protected ButtonDetails _lbutton;
     protected ButtonDetails _mbutton;
     protected ButtonDetails _rbutton;
+
+    void stop() {
+        // set stopped flag
+        _stopped = true;
+    }
 
     /// wait for input, handle input
     bool pollInput() {
