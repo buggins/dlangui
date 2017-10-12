@@ -244,11 +244,22 @@ class Console {
                 char ch = 0;
                 int res = cast(int)read(STDIN_FILENO, &ch, 1);
                 if (res < 0) {
-                    switch (errno) {
+                    auto err = errno;
+                    switch (err) {
                         case EBADF:
+                            Log.e("rawRead stdin EINVAL - stopping terminal");
+                            _stopped = true;
+                            return null;
                         case EFAULT:
+                            Log.e("rawRead stdin EINVAL - stopping terminal");
+                            _stopped = true;
+                            return null;
                         case EINVAL:
+                            Log.e("rawRead stdin EINVAL - stopping terminal");
+                            _stopped = true;
+                            return null;
                         case EIO:
+                            Log.e("rawRead stdin EIO - stopping terminal");
                             _stopped = true;
                             return null;
                         default:
@@ -278,6 +289,7 @@ class Console {
             import core.sys.posix.unistd;
             int res = cast(int)write(STDOUT_FILENO, s.ptr, s.length);
             if (res < 0) {
+                Log.e("rawWrite error ", errno, " - stopping terminal");
                 _stopped = true;
             }
             return (res > 0);
@@ -816,8 +828,10 @@ class Console {
 
     /// wait for input, handle input
     bool pollInput() {
-        if (_stopped)
+        if (_stopped) {
+            debug Log.i("Console _stopped flag is set - returning false from pollInput");
             return false;
+        }
         version(Windows) {
             INPUT_RECORD record;
             DWORD eventsRead;
