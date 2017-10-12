@@ -406,7 +406,7 @@ class ConsoleDrawBuf : DrawBuf {
         }
     }
 
-    override void fillGradientRect(Rect rc, uint color1, uint color2) {
+    override void fillGradientRect(Rect rc, uint color1, uint color2, uint color3, uint color4) {
         // TODO
         fillRect(rc, color1);
     }

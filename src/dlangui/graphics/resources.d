@@ -330,14 +330,48 @@ class SolidFillDrawable : Drawable {
 }
 
 class GradientDrawable : Drawable {
-    protected uint _color1;
-    protected uint _color2;
-    this(uint color1, uint color2) {
-        _color1 = color1;
-        _color2 = color2;
+    protected uint _color1; // top left
+    protected uint _color2; // bottom left
+    protected uint _color3; // top right
+    protected uint _color4; // bottom right
+    this(uint angle, uint color1, uint color2) {
+        // rotate a gradient; angle goes clockwise
+        import std.math;
+        float radians = angle * PI / 180;
+        float c = cos(radians);
+        float s = sin(radians);
+        if (s >= 0) {
+            if (c >= 0) {
+                // 0-90 degrees
+                _color1 = blendARGB(color1, color2, cast(uint)(255 * c));
+                _color2 = color2;
+                _color3 = color1;
+                _color4 = blendARGB(color1, color2, cast(uint)(255 * s));
+            } else {
+                // 90-180 degrees
+                _color1 = color2;
+                _color2 = blendARGB(color1, color2, cast(uint)(255 * -c));
+                _color3 = blendARGB(color1, color2, cast(uint)(255 * s));
+                _color4 = color1;
+            }
+        } else {
+            if (c < 0) {
+                // 180-270 degrees
+                _color1 = blendARGB(color1, color2, cast(uint)(255 * -s));
+                _color2 = color1;
+                _color3 = color2;
+                _color4 = blendARGB(color1, color2, cast(uint)(255 * -c));
+            } else {
+                // 270-360 degrees
+                _color1 = color1;
+                _color2 = blendARGB(color1, color2, cast(uint)(255 * -s));
+                _color3 = blendARGB(color1, color2, cast(uint)(255 * c));
+                _color4 = color2;
+            }
+        }
     }
     override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
-        buf.fillGradientRect(rc, _color1, _color2);
+        buf.fillGradientRect(rc, _color1, _color2, _color3, _color4);
     }
     @property override int width() { return 1; }
     @property override int height() { return 1; }
@@ -413,6 +447,18 @@ static uint decodeDimension(string s) {
     return value;
 }
 
+/// decode angle; only Ndeg format for now
+static uint decodeAngle(string s) {
+    int angle;
+    if (s.endsWith("deg"))
+        angle = to!int(s[0 .. $ - 3]);
+    else
+        Log.e("Invalid angle format: ", s);
+
+    // transform the angle to [0, 360)
+    return ((angle % 360) + 360) % 360;
+}
+
 static if (BACKEND_CONSOLE) {
     /**
     Sample format:
@@ -437,7 +483,7 @@ static if (BACKEND_CONSOLE) {
 /// decode solid color / gradient / frame drawable from string like #AARRGGBB, e.g. #5599AA
 ///
 /// SolidFillDrawable: #AARRGGBB  - e.g. #8090A0 or #80ffffff
-/// GradientDrawable: #linear,#firstColor,#secondColor
+/// GradientDrawable: #linear,Ndeg,#firstColor,#secondColor
 /// FrameDrawable: #frameColor,frameWidth[,#middleColor]
 ///             or #frameColor,leftBorderWidth,topBorderWidth,rightBorderWidth,bottomBorderWidth[,#middleColor]
 ///                e.g. #000000,2,#C0FFFFFF - black frame of width 2 with 75% transparent white middle
@@ -455,6 +501,8 @@ static Drawable createColorDrawable(string s) {
             type = DrawableType.LinearGradient;
         else if (item.startsWith("#"))
             values ~= decodeHexColor(item);
+        else if (item.endsWith("deg"))
+            values ~= decodeAngle(item);
         else {
             values ~= decodeDimension(item);
             type = DrawableType.Frame;
@@ -465,8 +513,8 @@ static Drawable createColorDrawable(string s) {
 
     if (type == DrawableType.SolidColor && values.length == 1) // only color #AARRGGBB
         return new SolidFillDrawable(values[0]);
-    else if (type == DrawableType.LinearGradient && values.length == 2) // two gradient colors
-        return new GradientDrawable(values[0], values[1]);
+    else if (type == DrawableType.LinearGradient && values.length == 3) // angle and two gradient colors
+        return new GradientDrawable(values[0], values[1], values[2]);
     else if (type == DrawableType.Frame) {
         if (values.length == 2) // frame color and frame width, with transparent inner area - #AARRGGBB,NN
             return new FrameDrawable(values[0], values[1]);
