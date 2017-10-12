@@ -412,12 +412,12 @@ public:
         if (!(cast(Style)this)._backgroundDrawable.isNull)
             return (cast(Style)this)._backgroundDrawable;
         string image = backgroundImageId;
+        uint color = backgroundColor;
         if (border !is null) {
-            (cast(Style)this)._backgroundDrawable = new CombinedDrawable(image, border);
+            (cast(Style)this)._backgroundDrawable = new CombinedDrawable(color, image, border);
         } else if (image !is null) {
             (cast(Style)this)._backgroundDrawable = drawableCache.get(image);
         } else {
-            uint color = backgroundColor;
             (cast(Style)this)._backgroundDrawable = isFullyTransparentColor(color) ? new EmptyDrawable() : new SolidFillDrawable(color);
         }
         return (cast(Style)this)._backgroundDrawable;
