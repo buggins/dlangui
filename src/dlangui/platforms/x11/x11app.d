@@ -527,10 +527,8 @@ class X11Window : DWindow {
                 }
                 break;
             case WindowState.minimized:
-                if (atom_NET_WM_STATE != None && atom_NET_WM_STATE_HIDDEN != None) {
-                    changeWindowState(_NET_WM_STATE_ADD, atom_NET_WM_STATE_HIDDEN);
+                if (XIconifyWindow(x11display, _win, x11screen))
                     result = true;
-                }
                 break;
             case WindowState.hidden:
                 XUnmapWindow(x11display, _win);
