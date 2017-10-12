@@ -195,7 +195,7 @@ uint blendARGB(uint dst, uint src, uint alpha) pure nothrow {
     uint dstr = (dst >> 16) & 0xFF;
     uint dstg = (dst >> 8) & 0xFF;
     uint dstb = (dst >> 0) & 0xFF;
-    uint ialpha = 256 - alpha;
+    uint ialpha = 255 - alpha;
     uint r = ((srcr * ialpha + dstr * alpha) >> 8) & 0xFF;
     uint g = ((srcg * ialpha + dstg * alpha) >> 8) & 0xFF;
     uint b = ((srcb * ialpha + dstb * alpha) >> 8) & 0xFF;

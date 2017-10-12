@@ -114,6 +114,17 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
             _scene.add(new SolidRectSceneItem(rc, color));
     }
 
+    /// fill rectangle with a gradient (clipping is applied)
+    override void fillGradientRect(Rect rc, uint color1, uint color2, uint color3, uint color4) {
+        assert(_scene !is null);
+        color1 = applyAlpha(color1);
+        color2 = applyAlpha(color2);
+        color3 = applyAlpha(color3);
+        color4 = applyAlpha(color4);
+        if (!(isFullyTransparentColor(color1) && isFullyTransparentColor(color3)) && applyClipping(rc))
+            _scene.add(new GradientRectSceneItem(rc, color1, color2, color3, color4));
+    }
+
     /// fill rectangle with solid color and pattern (clipping is applied) 0=solid fill, 1 = dotted
     override void fillRectPattern(Rect rc, uint color, int pattern) {
         if (pattern == PatternType.solid)
@@ -746,6 +757,27 @@ public:
     }
     override void draw() {
         glSupport.queue.addSolidRect(_rc, _color);
+    }
+}
+
+private class GradientRectSceneItem : SceneItem {
+private:
+    Rect _rc;
+    uint _color1;
+    uint _color2;
+    uint _color3;
+    uint _color4;
+
+public:
+    this(Rect rc, uint color1, uint color2, uint color3, uint color4) {
+        _rc = rc;
+        _color1 = color1;
+        _color2 = color2;
+        _color3 = color3;
+        _color4 = color4;
+    }
+    override void draw() {
+        glSupport.queue.addGradientRect(_rc, _color1, _color2, _color3, _color4);
     }
 }
 

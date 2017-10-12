@@ -322,8 +322,56 @@ class SolidFillDrawable : Drawable {
         _color = color;
     }
     override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
-        if ((_color >> 24) != 0xFF) // not fully transparent
+        if (!_color.isFullyTransparentColor)
             buf.fillRect(rc, _color);
+    }
+    @property override int width() { return 1; }
+    @property override int height() { return 1; }
+}
+
+class GradientDrawable : Drawable {
+    protected uint _color1; // top left
+    protected uint _color2; // bottom left
+    protected uint _color3; // top right
+    protected uint _color4; // bottom right
+    this(uint angle, uint color1, uint color2) {
+        // rotate a gradient; angle goes clockwise
+        import std.math;
+        float radians = angle * PI / 180;
+        float c = cos(radians);
+        float s = sin(radians);
+        if (s >= 0) {
+            if (c >= 0) {
+                // 0-90 degrees
+                _color1 = blendARGB(color1, color2, cast(uint)(255 * c));
+                _color2 = color2;
+                _color3 = color1;
+                _color4 = blendARGB(color1, color2, cast(uint)(255 * s));
+            } else {
+                // 90-180 degrees
+                _color1 = color2;
+                _color2 = blendARGB(color1, color2, cast(uint)(255 * -c));
+                _color3 = blendARGB(color1, color2, cast(uint)(255 * s));
+                _color4 = color1;
+            }
+        } else {
+            if (c < 0) {
+                // 180-270 degrees
+                _color1 = blendARGB(color1, color2, cast(uint)(255 * -s));
+                _color2 = color1;
+                _color3 = color2;
+                _color4 = blendARGB(color1, color2, cast(uint)(255 * -c));
+            } else {
+                // 270-360 degrees
+                _color1 = color1;
+                _color2 = blendARGB(color1, color2, cast(uint)(255 * -s));
+                _color3 = blendARGB(color1, color2, cast(uint)(255 * c));
+                _color4 = color2;
+            }
+        }
+    }
+    override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
+        buf.fillGradientRect(rc, _color1, _color2, _color3, _color4);
     }
     @property override int width() { return 1; }
     @property override int height() { return 1; }
@@ -399,6 +447,18 @@ static uint decodeDimension(string s) {
     return value;
 }
 
+/// decode angle; only Ndeg format for now
+static uint decodeAngle(string s) {
+    int angle;
+    if (s.endsWith("deg"))
+        angle = to!int(s[0 .. $ - 3]);
+    else
+        Log.e("Invalid angle format: ", s);
+
+    // transform the angle to [0, 360)
+    return ((angle % 360) + 360) % 360;
+}
+
 static if (BACKEND_CONSOLE) {
     /**
     Sample format:
@@ -423,39 +483,48 @@ static if (BACKEND_CONSOLE) {
 /// decode solid color / gradient / frame drawable from string like #AARRGGBB, e.g. #5599AA
 ///
 /// SolidFillDrawable: #AARRGGBB  - e.g. #8090A0 or #80ffffff
+/// GradientDrawable: #linear,Ndeg,#firstColor,#secondColor
 /// FrameDrawable: #frameColor,frameWidth[,#middleColor]
 ///             or #frameColor,leftBorderWidth,topBorderWidth,rightBorderWidth,bottomBorderWidth[,#middleColor]
 ///                e.g. #000000,2,#C0FFFFFF - black frame of width 2 with 75% transparent white middle
 ///                e.g. #0000FF,2,3,4,5,#FFFFFF - blue frame with left,top,right,bottom borders of width 2,3,4,5 and white inner area
 static Drawable createColorDrawable(string s) {
     Log.d("creating color drawable ", s);
-    uint[6] values;
-    int valueCount = 0;
-    int start = 0;
-    for (int i = 0; i <= s.length; i++) {
-        if (i == s.length || s[i] == ',') {
-            if (i > start) {
-                string item = s[start .. i];
-                if (item.startsWith("#"))
-                    values[valueCount++] = decodeHexColor(item);
-                else
-                    values[valueCount++] = decodeDimension(item);
-                if (valueCount >= 6)
-                    break;
-            }
-            start = i + 1;
+
+    enum DrawableType { SolidColor, LinearGradient, Frame }
+    auto type = DrawableType.SolidColor;
+
+    string[] items = s.split(',');
+    uint[] values;
+    foreach (i, item; items) {
+        if (item == "#linear")
+            type = DrawableType.LinearGradient;
+        else if (item.startsWith("#"))
+            values ~= decodeHexColor(item);
+        else if (item.endsWith("deg"))
+            values ~= decodeAngle(item);
+        else {
+            values ~= decodeDimension(item);
+            type = DrawableType.Frame;
         }
+        if (i >= 6)
+            break;
     }
-    if (valueCount == 1) // only color #AARRGGBB
+
+    if (type == DrawableType.SolidColor && values.length == 1) // only color #AARRGGBB
         return new SolidFillDrawable(values[0]);
-    else if (valueCount == 2) // frame color and frame width, with transparent inner area - #AARRGGBB,NN
-        return new FrameDrawable(values[0], values[1]);
-    else if (valueCount == 3) // frame color, frame width, inner area color - #AARRGGBB,NN,#AARRGGBB
-        return new FrameDrawable(values[0], values[1], values[2]);
-    else if (valueCount == 5) // frame color, frame widths for left,top,right,bottom and transparent inner area - #AARRGGBB,NNleft,NNtop,NNright,NNbottom
-        return new FrameDrawable(values[0], Rect(values[1], values[2], values[3], values[4]));
-    else if (valueCount == 6) // frame color, frame widths for left,top,right,bottom, inner area color - #AARRGGBB,NNleft,NNtop,NNright,NNbottom,#AARRGGBB
-        return new FrameDrawable(values[0], Rect(values[1], values[2], values[3], values[4]), values[5]);
+    else if (type == DrawableType.LinearGradient && values.length == 3) // angle and two gradient colors
+        return new GradientDrawable(values[0], values[1], values[2]);
+    else if (type == DrawableType.Frame) {
+        if (values.length == 2) // frame color and frame width, with transparent inner area - #AARRGGBB,NN
+            return new FrameDrawable(values[0], values[1]);
+        else if (values.length == 3) // frame color, frame width, inner area color - #AARRGGBB,NN,#AARRGGBB
+            return new FrameDrawable(values[0], values[1], values[2]);
+        else if (values.length == 5) // frame color, frame widths for left,top,right,bottom and transparent inner area - #AARRGGBB,NNleft,NNtop,NNright,NNbottom
+            return new FrameDrawable(values[0], Rect(values[1], values[2], values[3], values[4]));
+        else if (values.length == 6) // frame color, frame widths for left,top,right,bottom, inner area color - #AARRGGBB,NNleft,NNtop,NNright,NNbottom,#AARRGGBB
+            return new FrameDrawable(values[0], Rect(values[1], values[2], values[3], values[4]), values[5]);
+    }
     Log.e("Invalid drawable string format: ", s);
     return new EmptyDrawable(); // invalid format - just return empty drawable
 }

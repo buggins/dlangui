@@ -288,6 +288,8 @@ class DrawBuf : RefCountedObject {
     abstract void fill(uint color);
     /// fill rectangle with solid color (clipping is applied)
     abstract void fillRect(Rect rc, uint color);
+    /// fill rectangle with a gradient (clipping is applied)
+    abstract void fillGradientRect(Rect rc, uint color1, uint color2, uint color3, uint color4);
     /// fill rectangle with solid color and pattern (clipping is applied) 0=solid fill, 1 = dotted
     void fillRectPattern(Rect rc, uint color, int pattern) {
         // default implementation: does not support patterns
@@ -1161,6 +1163,11 @@ class ColorDrawBufBase : DrawBuf {
         }
     }
 
+    override void fillGradientRect(Rect rc, uint color1, uint color2, uint color3, uint color4) {
+        // TODO
+        fillRect(rc, color1);
+    }
+
     /// fill rectangle with solid color and pattern (clipping is applied) 0=solid fill, 1 = dotted
     override void fillRectPattern(Rect rc, uint color, int pattern) {
         uint alpha = color >> 24;
@@ -1404,6 +1411,11 @@ class GrayDrawBuf : DrawBuf {
                 }
             }
         }
+    }
+
+    override void fillGradientRect(Rect rc, uint color1, uint color2, uint color3, uint color4) {
+        // TODO
+        fillRect(rc, color1);
     }
 
     /// draw pixel at (x, y) with specified color
