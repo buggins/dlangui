@@ -232,11 +232,15 @@ class ConsolePlatform : Platform {
     * When returned from this method, application is shutting down.
     */
     override int enterMessageLoop() {
+        Log.i("Entered message loop");
         while (_console.pollInput()) {
-            if (_windowList.length == 0)
+            if (_windowList.length == 0) {
+                Log.d("Window count is 0 - exiting message loop");
+
                 break;
+            }
         }
-        // TODO
+        Log.i("Exiting from message loop");
         return 0;
     }
     private dstring _clipboardText;

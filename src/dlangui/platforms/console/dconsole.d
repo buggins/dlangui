@@ -290,7 +290,15 @@ class Console {
             import core.stdc.errno;
             int res = cast(int)write(STDOUT_FILENO, s.ptr, s.length);
             if (res < 0) {
-                Log.e("rawWrite error ", errno, " - stopping terminal");
+                auto err = errno;
+                while (err == EAGAIN) {
+                    debug Log.d("rawWrite error EAGAIN - will retry");
+                    res = cast(int)write(STDOUT_FILENO, s.ptr, s.length);
+                    if (res >= 0)
+                        return (res > 0);
+                    err = errno;
+                }
+                Log.e("rawWrite error ", err, " - stopping terminal");
                 _stopped = true;
             }
             return (res > 0);
