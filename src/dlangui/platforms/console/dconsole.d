@@ -287,6 +287,7 @@ class Console {
         }
         bool rawWrite(string s) {
             import core.sys.posix.unistd;
+            import core.stdc.errno;
             int res = cast(int)write(STDOUT_FILENO, s.ptr, s.length);
             if (res < 0) {
                 Log.e("rawWrite error ", errno, " - stopping terminal");
