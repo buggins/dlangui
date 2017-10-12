@@ -1163,9 +1163,23 @@ class ColorDrawBufBase : DrawBuf {
         }
     }
 
+    /// fill rectangle with a gradient (clipping is applied)
     override void fillGradientRect(Rect rc, uint color1, uint color2, uint color3, uint color4) {
-        // TODO
-        fillRect(rc, color1);
+        if (applyClipping(rc)) {
+            foreach (y; rc.top .. rc.bottom) {
+                // interpolate vertically at the side edges
+                uint ay = (255 * (y - rc.top)) / (rc.bottom - rc.top);
+                uint cl = blendARGB(color2, color1, ay);
+                uint cr = blendARGB(color4, color3, ay);
+
+                uint * row = scanLine(y);
+                foreach (x; rc.left .. rc.right) {
+                    // interpolate horizontally
+                    uint ax = (255 * (x - rc.left)) / (rc.right - rc.left);
+                    row[x] = blendARGB(cr, cl, ax);
+                }
+            }
+        }
     }
 
     /// fill rectangle with solid color and pattern (clipping is applied) 0=solid fill, 1 = dotted
@@ -1413,9 +1427,27 @@ class GrayDrawBuf : DrawBuf {
         }
     }
 
+    /// fill rectangle with a gradient (clipping is applied)
     override void fillGradientRect(Rect rc, uint color1, uint color2, uint color3, uint color4) {
-        // TODO
-        fillRect(rc, color1);
+        if (applyClipping(rc)) {
+            ubyte c1 = rgbToGray(color1);
+            ubyte c2 = rgbToGray(color2);
+            ubyte c3 = rgbToGray(color3);
+            ubyte c4 = rgbToGray(color4);
+            foreach (y; rc.top .. rc.bottom) {
+                // interpolate vertically at the side edges
+                uint ay = (255 * (y - rc.top)) / (rc.bottom - rc.top);
+                ubyte cl = blendGray(c2, c1, ay);
+                ubyte cr = blendGray(c4, c3, ay);
+
+                ubyte * row = scanLine(y);
+                foreach (x; rc.left .. rc.right) {
+                    // interpolate horizontally
+                    uint ax = (255 * (x - rc.left)) / (rc.right - rc.left);
+                    row[x] = blendGray(cr, cl, ax);
+                }
+            }
+        }
     }
 
     /// draw pixel at (x, y) with specified color
