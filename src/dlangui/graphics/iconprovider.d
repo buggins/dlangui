@@ -254,7 +254,7 @@ version(Windows)
         {
             import std.windows.syserror;
             _shell = wenforce(LoadLibraryA("Shell32"), "Could not load Shell32 library");
-            _SHGetStockIconInfo = cast(typeof(&_dummy_SHGetStockIconInfo))enforce(GetProcAddress(_shell, "SHGetStockIconInfo"));
+            _SHGetStockIconInfo = cast(typeof(&_dummy_SHGetStockIconInfo))wenforce(GetProcAddress(_shell, "SHGetStockIconInfo"), "Could not load SHGetStockIconInfo");
         }
         ~this()
         {
@@ -284,7 +284,7 @@ version(Windows)
                     _cache[id] = DrawBufRef(null); // save the fact that the icon was not found
                 }
             }
-            return null;
+            return DrawBufRef(null);
         }
 
         override DrawBufRef getStandardIcon(StandardIcon icon)
@@ -307,7 +307,7 @@ version(Windows)
                     return SIID_APPLICATION;
                 case folder:
                     return SIID_FOLDER;
-                case openFolder:
+                case folderOpen:
                     return SIID_FOLDEROPEN;
                 case driveFloppy:
                     return SIID_DRIVE35;
@@ -319,7 +319,7 @@ version(Windows)
                     return SIID_DRIVECD;
                 case driveDVD:
                     return SIID_DRIVEDVD;
-                case derver:
+                case server:
                     return SIID_SERVER;
                 case printer:
                     return SIID_PRINTER;
@@ -351,7 +351,7 @@ version(Windows)
                     return SIID_VIDEOFILES;
                 case fileZip:
                     return SIID_ZIPFILE;
-                case documentUnknown:
+                case fileUnknown:
                     return SIID_DOCNOASSOC;
                 case warning:
                     return SIID_WARNING;
@@ -389,6 +389,7 @@ version(Windows)
             if (_SHGetStockIconInfo(id, SHGSI_ICON, &info) == S_OK) {
                 return info.hIcon;
             }
+            Log.d("Could not get icon from stock. Id: ", id);
             return null;
         }
 
@@ -423,6 +424,7 @@ version(Windows)
 
             if(!GetDIBits(hDC, iconInfo.hbmMask, 0,height,cast(LPVOID)alphaPixels.ptr, &infoheader, DIB_RGB_COLORS))
                 return null;
+
             const int lsSrc = width*3;
             auto colorDrawBuf = new ColorDrawBuf(width, height);
             for(int y=0; y<height; y++)
@@ -436,7 +438,7 @@ version(Windows)
                     const uint red = pixelsIconRGB[currentSrcPos+2];
                     const uint green = pixelsIconRGB[currentSrcPos+1];
                     const uint blue = pixelsIconRGB[currentSrcPos];
-                    const uint alpha = pixelsIconRGB[currentSrcPos] ? 0 : 255;
+                    const uint alpha = alphaPixels[currentSrcPos];
                     const uint color = (red << 16) | (green << 8) | blue | (alpha << 24);
                     pixelLine[x] = color;
                 }
