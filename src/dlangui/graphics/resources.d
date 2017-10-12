@@ -1134,21 +1134,14 @@ class StateDrawable : Drawable {
 class CombinedDrawable : Drawable {
 
     DrawableRef background;
-    Drawable border;
+    DrawableRef border;
 
     this(uint backgroundColor, string backgroundImageId, string borderDescription) {
         background = 
             (backgroundImageId !is null) ? drawableCache.get(backgroundImageId) : 
             (!backgroundColor.isFullyTransparentColor) ? new SolidFillDrawable(backgroundColor) : 
             new EmptyDrawable;
-        border = borderDescription !is null ? createColorDrawable(borderDescription) : new EmptyDrawable;
-    }
-
-    ~this() {
-        destroy(background);
-        destroy(border);
-        background = null;
-        border = null;
+        border = borderDescription !is null ? drawableCache.get(borderDescription) : new EmptyDrawable;
     }
 
     override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
