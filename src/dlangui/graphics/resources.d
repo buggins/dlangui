@@ -408,6 +408,46 @@ class BorderDrawable : Drawable {
 }
 deprecated alias FrameDrawable = BorderDrawable;
 
+/// box shadows, can be blurred
+class BoxShadowDrawable : Drawable {
+    protected int _offsetX;
+    protected int _offsetY;
+    protected int _blurSize;
+    protected uint _color;
+    protected Ref!ColorDrawBuf texture;
+
+    this(int offsetX, int offsetY, uint blurSize = 0, uint color = 0x0) {
+        _offsetX = offsetX;
+        _offsetY = offsetY;
+        _blurSize = blurSize;
+        _color = color;
+        // now create a texture which will contain the shadow
+        uint size = 2 * blurSize + 3;
+        texture = new ColorDrawBuf(size, size); // TODO: get from/put to cache
+        // clear
+        texture.fill(0xFFFFFFFF);
+        // draw a square in center of the texture
+        texture.fillRect(Rect(blurSize, blurSize, size - blurSize, size - blurSize), color);
+        // blur the square
+        texture.blur(blurSize);
+    }
+
+    override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
+        // move and expand the shadow
+        rc.left += _offsetX - _blurSize;
+        rc.right += _offsetX + _blurSize;
+        rc.top += _offsetY - _blurSize;
+        rc.bottom += _offsetY + _blurSize;
+        // apply new clipping to DrawBuf to draw outside of the widget
+        auto saver = ClipRectSaver(buf, rc, 0, false);
+        buf.drawRescaled(rc, texture, Rect(0, 0, texture.width, texture.height)); // TODO: nine-patch
+    }
+
+    @property override int width() { return 1; }
+    @property override int height() { return 1; }
+}
+
+
 enum DimensionUnits {
     pixels,
     points,
@@ -504,6 +544,7 @@ static Drawable createColorDrawable(string s) {
 
     string[] items = s.split(',');
     uint[] values;
+    int[] ivalues;
     if (items.length != 0) {
         if (items[0] == "#linear")
             type = DrawableType.LinearGradient;
@@ -519,6 +560,8 @@ static Drawable createColorDrawable(string s) {
                 values ~= decodeHexColor(item);
             else if (item.endsWith("deg"))
                 values ~= decodeAngle(item);
+            else if (type == DrawableType.BoxShadow) // offsets may be negative
+                ivalues ~= item.startsWith("-") ? -decodeDimension(item) : decodeDimension(item);
             else
                 values ~= decodeDimension(item);
             if (i >= 6)
@@ -539,6 +582,13 @@ static Drawable createColorDrawable(string s) {
             return new BorderDrawable(values[0], Rect(values[1], values[2], values[3], values[4]));
         else if (values.length == 6) // border color, border widths for left,top,right,bottom, inner area color - #AARRGGBB,NNleft,NNtop,NNright,NNbottom,#AARRGGBB
             return new BorderDrawable(values[0], Rect(values[1], values[2], values[3], values[4]), values[5]);
+    } else if (type == DrawableType.BoxShadow) {
+        if (ivalues.length == 2 && values.length == 0) // shadow X and Y offsets
+            return new BoxShadowDrawable(ivalues[0], ivalues[1]);
+        else if (ivalues.length == 3 && values.length == 0) // shadow offsets and blur size
+            return new BoxShadowDrawable(ivalues[0], ivalues[1], ivalues[2]);
+        else if (ivalues.length == 3 && values.length == 1) // shadow offsets, blur size and color
+            return new BoxShadowDrawable(ivalues[0], ivalues[1], ivalues[2], values[0]);
     }
     Log.e("Invalid drawable string format: ", s);
     return new EmptyDrawable(); // invalid format - just return empty drawable
@@ -1155,6 +1205,7 @@ class CombinedDrawable : Drawable {
     }
 
     override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
+        boxShadow.drawTo(buf, rc, state, tilex0, tiley0);
         // make background image smaller to fit borders
         Rect backrc = rc;
         backrc.left += border.padding.left;

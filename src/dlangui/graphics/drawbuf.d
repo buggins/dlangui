@@ -840,6 +840,11 @@ class DrawBuf : RefCountedObject {
         }
     }
 
+    /// Apply Gaussian blur on the image
+    void blur(uint blurSize) {
+        // TODO
+    }
+
     /// create drawbuf with copy of current buffer with changed colors (returns this if not supported)
     DrawBuf transformColors(ref ColorTransform transform) {
         return this;
@@ -858,20 +863,26 @@ class DrawBuf : RefCountedObject {
 
 alias DrawBufRef = Ref!DrawBuf;
 
-/// RAII setting/restoring of clip rectangle
+/// RAII setting/restoring of a DrawBuf clip rectangle
 struct ClipRectSaver {
     private DrawBuf _buf;
     private Rect _oldClipRect;
     private uint _oldAlpha;
-    /// apply (intersect) new clip rectangle and alpha to draw buf; restore
-    this(DrawBuf buf, ref Rect newClipRect, uint newAlpha = 0) {
+
+    /// apply (intersect) new clip rectangle and alpha to draw buf
+    /// set `intersect` parameter to `false`, if you want to draw something outside of the widget
+    this(DrawBuf buf, ref Rect newClipRect, uint newAlpha = 0, bool intersect = true) {
         _buf = buf;
         _oldClipRect = buf.clipRect;
         _oldAlpha = buf.alpha;
-        buf.intersectClipRect(newClipRect);
+        if (intersect)
+            buf.intersectClipRect(newClipRect);
+        else
+            buf.clipRect = newClipRect;
         if (newAlpha)
             buf.addAlpha(newAlpha);
     }
+    /// restore previous clip rectangle
     ~this() {
         _buf.clipRect = _oldClipRect;
         _buf.alpha = _oldAlpha;
