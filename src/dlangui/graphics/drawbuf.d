@@ -840,11 +840,6 @@ class DrawBuf : RefCountedObject {
         }
     }
 
-    /// Apply Gaussian blur on the image
-    void blur(uint blurSize) {
-        // TODO
-    }
-
     /// create drawbuf with copy of current buffer with changed colors (returns this if not supported)
     DrawBuf transformColors(ref ColorTransform transform) {
         return this;
@@ -1235,7 +1230,6 @@ class ColorDrawBufBase : DrawBuf {
             row[x] = blendARGB(row[x], color, alpha);
         }
     }
-
 }
 
 class GrayDrawBuf : DrawBuf {
@@ -1480,6 +1474,7 @@ class GrayDrawBuf : DrawBuf {
 
 class ColorDrawBuf : ColorDrawBufBase {
     uint[] _buf;
+
     /// create ARGB8888 draw buf of specified width and height
     this(int width, int height) {
         resize(width, height);
@@ -1536,11 +1531,13 @@ class ColorDrawBuf : ColorDrawBufBase {
             pixel ^= 0xFF000000;
         }
     }
+
     override uint * scanLine(int y) {
         if (y >= 0 && y < _dy)
             return _buf.ptr + _dx * y;
         return null;
     }
+
     override void resize(int width, int height) {
         if (_dx == width && _dy == height)
             return;
@@ -1549,6 +1546,7 @@ class ColorDrawBuf : ColorDrawBufBase {
         _buf.length = _dx * _dy;
         resetClipping();
     }
+
     override void fill(uint color) {
         if (hasClipping) {
             fillRect(_clipRect, color);
@@ -1559,6 +1557,7 @@ class ColorDrawBuf : ColorDrawBufBase {
         foreach(i; 0 .. len)
             p[i] = color;
     }
+
     override DrawBuf transformColors(ref ColorTransform transform) {
         if (transform.empty)
             return this;
@@ -1582,6 +1581,71 @@ class ColorDrawBuf : ColorDrawBufBase {
             }
         }
         return res;
+    }
+
+    /// Apply Gaussian blur on the image
+    void blur(uint blurSize) {
+        if (blurSize == 0)
+            return; // trivial case
+
+        // utility functions to get and set color
+        float[4] get(uint[] buf, uint x, uint y) {
+            uint c = buf[x + y * _dx];
+            float a = 255 - (c >> 24);
+            float r = (c >> 16) & 0xFF;
+            float g = (c >>  8) & 0xFF;
+            float b = (c >>  0) & 0xFF;
+            return [r, g, b, a];
+        }
+        void set(uint[] buf, uint x, uint y, float[4] c) {
+            buf[x + y * _dx] = makeRGBA(c[0], c[1], c[2], 255 - c[3]);
+        }
+
+
+        import std.algorithm : max, min;
+        import std.math;
+
+        // Gaussian function
+        float weight(in float x, in float sigma) pure nothrow {
+            enum inv_sqrt_2pi = 1 / sqrt(2 * PI);
+            return exp(- x ^^ 2 / (2 * sigma ^^ 2)) * inv_sqrt_2pi / sigma;
+        }
+
+        void blurOneDimension(uint[] bufIn, uint[] bufOut, uint blurSize, bool horizontally) {
+
+            float sigma = blurSize > 2 ? blurSize / 3.0 : blurSize / 2.0;
+
+            foreach (x; 0 .. _dx) {
+                foreach (y; 0 .. _dy) {
+                    float[4] c;
+                    c[] = 0;
+
+                    float sum = 0;
+                    foreach (int i; 1 .. blurSize + 1) {
+                        float[4] c1 = get(bufIn, 
+                            horizontally ? min(x + i, _dx - 1) : x, 
+                            horizontally ? y : min(y + i, _dy - 1)
+                        );
+                        float[4] c2 = get(bufIn, 
+                            horizontally ? max(x - i, 0) : x, 
+                            horizontally ? y : max(y - i, 0)
+                        );
+                        float w = weight(i, sigma);
+                        c[] += (c1[] + c2[]) * w;
+                        sum += 2 * w;
+                    }
+                    c[] += get(bufIn, x, y)[] * (1 - sum);
+                    set(bufOut, x, y, c);
+                }
+            }
+        }
+        // intermediate buffer for image
+        uint[] tmpbuf;
+        tmpbuf.length = _buf.length;
+        // do horizontal blur
+        blurOneDimension(_buf, tmpbuf, blurSize, true);
+        // then do vertical blur
+        blurOneDimension(tmpbuf, _buf, blurSize, false);
     }
 }
 
