@@ -491,32 +491,39 @@ static if (BACKEND_CONSOLE) {
 /// decode solid color / gradient / border drawable from string like #AARRGGBB, e.g. #5599AA
 ///
 /// SolidFillDrawable: #AARRGGBB  - e.g. #8090A0 or #80ffffff
-/// GradientDrawable: #linear,Ndeg,#firstColor,#secondColor
-/// BorderDrawable: #borderColor,borderWidth[,#middleColor]
-///             or #borderColor,leftBorderWidth,topBorderWidth,rightBorderWidth,bottomBorderWidth[,#middleColor]
-///                e.g. #000000,2,#C0FFFFFF - black border of width 2 with 75% transparent white middle
-///                e.g. #0000FF,2,3,4,5,#FFFFFF - blue border with left,top,right,bottom borders of width 2,3,4,5 and white inner area
+/// GradientDrawable: #linear,Ndeg,firstColor,secondColor
+/// BorderDrawable: #border,borderColor,borderWidth[,middleColor]
+///             or #border,borderColor,leftBorderWidth,topBorderWidth,rightBorderWidth,bottomBorderWidth[,middleColor]
+///                e.g. #border,#000000,2,#C0FFFFFF - black border of width 2 with 75% transparent white middle
+///                e.g. #border,#0000FF,2,3,4,5,#FFFFFF - blue border with left,top,right,bottom borders of width 2,3,4,5 and white inner area
 static Drawable createColorDrawable(string s) {
     Log.d("creating color drawable ", s);
 
-    enum DrawableType { SolidColor, LinearGradient, Border }
+    enum DrawableType { SolidColor, LinearGradient, Border, BoxShadow }
     auto type = DrawableType.SolidColor;
 
     string[] items = s.split(',');
     uint[] values;
-    foreach (i, item; items) {
-        if (item == "#linear")
+    if (items.length != 0) {
+        if (items[0] == "#linear")
             type = DrawableType.LinearGradient;
-        else if (item.startsWith("#"))
-            values ~= decodeHexColor(item);
-        else if (item.endsWith("deg"))
-            values ~= decodeAngle(item);
-        else {
-            values ~= decodeDimension(item);
+        else if (items[0] == "#border")
             type = DrawableType.Border;
+        else if (items[0] == "#box-shadow")
+            type = DrawableType.BoxShadow;
+        else if (items[0].startsWith("#"))
+            values ~= decodeHexColor(items[0]);
+
+        foreach (i, item; items[1 .. $]) {
+            if (item.startsWith("#"))
+                values ~= decodeHexColor(item);
+            else if (item.endsWith("deg"))
+                values ~= decodeAngle(item);
+            else
+                values ~= decodeDimension(item);
+            if (i >= 6)
+                break;
         }
-        if (i >= 6)
-            break;
     }
 
     if (type == DrawableType.SolidColor && values.length == 1) // only color #AARRGGBB
@@ -1133,16 +1140,18 @@ class StateDrawable : Drawable {
 /// Drawable which allows to combine together background image, gradient, borders, box shadows, etc.
 class CombinedDrawable : Drawable {
 
+    DrawableRef boxShadow;
     DrawableRef background;
     DrawableRef border;
 
     this(uint backgroundColor, string backgroundImageId, string borderDescription, string boxShadowDescription) {
+        boxShadow = boxShadowDescription !is null ? drawableCache.get("#box-shadow," ~ boxShadowDescription) : new EmptyDrawable;
         background = 
             (backgroundImageId !is null) ? drawableCache.get(backgroundImageId) : 
             (!backgroundColor.isFullyTransparentColor) ? new SolidFillDrawable(backgroundColor) : null;
         if (background is null)
             background = new EmptyDrawable;
-        border = borderDescription !is null ? drawableCache.get(borderDescription) : new EmptyDrawable;
+        border = borderDescription !is null ? drawableCache.get("#border," ~ borderDescription) : new EmptyDrawable;
     }
 
     override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
