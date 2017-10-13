@@ -1501,6 +1501,32 @@ int decodeLayoutDimension(string s) {
     return decodeDimension(s);
 }
 
+/// remove superfluous space characters from a border property
+string sanitizeBorderProperty(string s) pure {
+    string[] parts = s.split(',');
+    foreach (ref part; parts)
+        part = part.strip();
+    string joined = parts.join(',');
+
+    char[] res;
+    // replace repeating space characters with one space
+    import std.ascii : isWhite;
+    bool isSpace;
+    foreach (c; joined) {
+        if (isWhite(c)) {
+            if (!isSpace) {
+                res ~= ' ';
+                isSpace = true;
+            }
+        } else {
+            res ~= c;
+            isSpace = false;
+        }
+    }
+
+    return cast(string)res;
+}
+
 /// load style attributes from XML element
 bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
     //Log.d("Theme: loadStyleAttributes ", style.id, " ", elem.tag.attr);
@@ -1515,7 +1541,7 @@ bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
     if ("padding" in elem.tag.attr)
         style.padding = decodeRect(elem.tag.attr["padding"]);
     if ("border" in elem.tag.attr)
-        style.border = elem.tag.attr["border"];
+        style.border = sanitizeBorderProperty(elem.tag.attr["border"]);
     if ("align" in elem.tag.attr)
         style.alignment = decodeAlignment(elem.tag.attr["align"]);
     if ("minWidth" in elem.tag.attr)
@@ -1713,4 +1739,13 @@ string overrideCustomDrawableId(string id) {
 
 shared static ~this() {
     currentTheme = null;
+}
+
+
+
+
+unittest {
+    assert(sanitizeBorderProperty("   #aaa, 2  ") == "#aaa,2");
+    assert(sanitizeBorderProperty("   #aaa, 2, 2, 2, 4") == "#aaa,2,2,2,4");
+    assert(sanitizeBorderProperty("   #a aa  ,  2   4  ") == "#a aa,2 4");
 }
