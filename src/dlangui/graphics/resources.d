@@ -1136,7 +1136,7 @@ class CombinedDrawable : Drawable {
     DrawableRef background;
     DrawableRef border;
 
-    this(uint backgroundColor, string backgroundImageId, string borderDescription) {
+    this(uint backgroundColor, string backgroundImageId, string borderDescription, string boxShadowDescription) {
         background = 
             (backgroundImageId !is null) ? drawableCache.get(backgroundImageId) : 
             (!backgroundColor.isFullyTransparentColor) ? new SolidFillDrawable(backgroundColor) : null;

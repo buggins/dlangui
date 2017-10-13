@@ -324,6 +324,7 @@ protected:
     uint _alpha;
     string _fontFace;
     string _backgroundImageId;
+    string _boxShadow;
     string _border;
     Rect _padding;
     Rect _margins;
@@ -413,8 +414,10 @@ public:
             return (cast(Style)this)._backgroundDrawable;
         string image = backgroundImageId;
         uint color = backgroundColor;
-        if (border !is null) {
-            (cast(Style)this)._backgroundDrawable = new CombinedDrawable(color, image, border);
+        string borders = border;
+        string shadows = boxShadow;
+        if (borders !is null || shadows !is null) {
+            (cast(Style)this)._backgroundDrawable = new CombinedDrawable(color, image, borders, shadows);
         } else if (image !is null) {
             (cast(Style)this)._backgroundDrawable = drawableCache.get(image);
         } else {
@@ -528,6 +531,15 @@ public:
             return toPixels(_fontSize);
         } else
             return parentStyle.fontSize;
+    }
+
+    /// box shadow
+    @property string boxShadow() const {
+        if (_boxShadow !is null)
+            return _boxShadow;
+        else {
+            return parentStyle.boxShadow;
+        }
     }
 
     /// border
@@ -791,6 +803,12 @@ public:
         return this;
     }
 
+    @property Style boxShadow(string s) {
+        _boxShadow = s;
+        _backgroundDrawable.clear();
+        return this;
+    }
+
     @property Style border(string s) {
         _border = s;
         _backgroundDrawable.clear();
@@ -1037,6 +1055,10 @@ class Theme : Style {
     /// font size
     @property override string backgroundImageId() const {
         return _backgroundImageId;
+    }
+    /// box shadow
+    @property override string boxShadow() const {
+        return _boxShadow;
     }
     /// border
     @property override string border() const {
@@ -1527,6 +1549,11 @@ string sanitizeBorderProperty(string s) pure {
     return cast(string)res;
 }
 
+/// remove superfluous space characters from a box shadow property
+string sanitizeBoxShadowProperty(string s) pure {
+    return sanitizeBorderProperty(s);
+}
+
 /// load style attributes from XML element
 bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
     //Log.d("Theme: loadStyleAttributes ", style.id, " ", elem.tag.attr);
@@ -1542,6 +1569,8 @@ bool loadStyleAttributes(Style style, Element elem, bool allowStates) {
         style.padding = decodeRect(elem.tag.attr["padding"]);
     if ("border" in elem.tag.attr)
         style.border = sanitizeBorderProperty(elem.tag.attr["border"]);
+    if ("boxShadow" in elem.tag.attr)
+        style.boxShadow = sanitizeBoxShadowProperty(elem.tag.attr["boxShadow"]);
     if ("align" in elem.tag.attr)
         style.alignment = decodeAlignment(elem.tag.attr["align"]);
     if ("minWidth" in elem.tag.attr)
