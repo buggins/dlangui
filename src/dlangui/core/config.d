@@ -17,7 +17,10 @@ version(USE_CONSOLE) {
     enum BACKEND_WIN32 = false;
     enum BACKEND_ANDROID = false;
 } else {
-    version(USE_EXTERNAL) {}
+    version(USE_EXTERNAL) {
+        // Use this file for to define any enums that is need for the external backend
+        mixin(import("external_cfg.d"));
+    }
     else
         enum BACKEND_GUI = true;
 
