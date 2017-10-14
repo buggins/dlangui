@@ -53,6 +53,7 @@ class TabItem {
     private UIString _label;
     private UIString _tooltipText;
     private long _lastAccessTs;
+
     this(string id, string labelRes, string iconRes = null, dstring tooltipText = null) {
         _id = id;
         _label.id = labelRes;
@@ -73,6 +74,7 @@ class TabItem {
         _lastAccessTs = _lastAccessCounter++;
         _tooltipText = UIString.fromRaw(tooltipText);
     }
+
     @property string iconId() const { return _iconRes; }
     @property string id() const { return _id; }
     @property ref UIString text() { return _label; }
@@ -83,6 +85,7 @@ class TabItem {
     void updateAccessTs() {
         _lastAccessTs = _lastAccessCounter++; //std.datetime.Clock.currStdTime;
     }
+
     /// tooltip text
     @property dstring tooltipText() {
         if (_tooltipText.empty)
@@ -123,6 +126,7 @@ class TabItemWidget : HorizontalLayout {
     Signal!TabCloseHandler tabClose;
     @property TabItem tabItem() { return _item; }
     @property TabControl tabControl() { return cast(TabControl)parent; }
+
     this(TabItem item, bool enableCloseButton = true) {
         styleId = STYLE_TAB_UP_BUTTON;
         _enableCloseButton = enableCloseButton;
@@ -153,6 +157,7 @@ class TabItemWidget : HorizontalLayout {
         if (_closeButton)
             _closeButton.tooltipText = _item.tooltipText;
     }
+
     /// tooltip text - when not empty, widget will show tooltips automatically; for advanced tooltips - override hasTooltip and createTooltip
     override @property dstring tooltipText() { return _item.tooltipText; }
     /// tooltip text - when not empty, widget will show tooltips automatically; for advanced tooltips - override hasTooltip and createTooltip
@@ -180,10 +185,12 @@ class TabItemWidget : HorizontalLayout {
         styleId = tabButtonStyle;
         _label.styleId = tabButtonTextStyle;
     }
+
     override void onDraw(DrawBuf buf) {
         //debug Log.d("TabWidget.onDraw ", id);
         super.onDraw(buf);
     }
+
     protected bool onClick(Widget source) {
         if (source.compareId("CLOSE")) {
             Log.d("tab close button pressed");
@@ -192,6 +199,7 @@ class TabItemWidget : HorizontalLayout {
         }
         return true;
     }
+
     @property TabItem item() {
         return _item;
     }
@@ -334,6 +342,7 @@ class TabControl : WidgetGroupDefaultDrawing {
         styleId = _tabStyle;
         addChild(_moreButton); // first child is always MORE button, the rest corresponds to tab list
     }
+
     void setStyles(string tabStyle, string tabButtonStyle, string tabButtonTextStyle) {
         _tabStyle = tabStyle;
         _tabButtonStyle = tabButtonStyle;
@@ -533,6 +542,7 @@ class TabControl : WidgetGroupDefaultDrawing {
         TabItem item = new TabItem(id, label, iconId, tooltipText);
         return addTab(item, -1, enableCloseButton);
     }
+
     protected MenuItem getMoreButtonPopupMenu() {
         if (moreButtonPopupMenu.assigned) {
             if (auto menu = moreButtonPopupMenu(this)) {
@@ -553,6 +563,7 @@ class TabControl : WidgetGroupDefaultDrawing {
         }
         return null;
     }
+
     /// try to invoke popup menu, return true if popup menu is shown
     protected bool handleMorePopupMenu() {
         if (auto menu = getMoreButtonPopupMenu()) {
@@ -567,6 +578,7 @@ class TabControl : WidgetGroupDefaultDrawing {
         }
         return false;
     }
+
     /// override to handle specific actions
     override bool handleAction(const Action a) {
         if (a.id == StandardAction.TabSelectItem) {
@@ -575,6 +587,7 @@ class TabControl : WidgetGroupDefaultDrawing {
         }
         return super.handleAction(a);
     }
+
     protected bool onMouse(Widget source, MouseEvent event) {
         if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
             if (source.compareId("MORE")) {
@@ -594,6 +607,7 @@ class TabControl : WidgetGroupDefaultDrawing {
         }
         return true;
     }
+
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
     override void measure(int parentWidth, int parentHeight) {
         //Log.d("tabControl.measure enter");
@@ -627,6 +641,7 @@ class TabControl : WidgetGroupDefaultDrawing {
         measuredContent(parentWidth, parentHeight, sz.x, sz.y);
         //Log.d("tabControl.measure exit");
     }
+
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     override void layout(Rect rc) {
         //Log.d("tabControl.layout enter");
@@ -736,7 +751,6 @@ class TabControl : WidgetGroupDefaultDrawing {
         if (tabChanged.assigned)
             tabChanged(_selectedTabId, previousSelectedTab);
     }
-
 }
 
 /// container for widgets controlled by TabControl
@@ -799,6 +813,7 @@ class TabHost : FrameLayout, TabHandler {
         requestLayout();
         return this;
     }
+
     /// add new tab by id and label string
     TabHost addTab(Widget widget, dstring label, string iconId = null, bool enableCloseButton = false, dstring tooltipText = null) {
         assert(_tabControl !is null, "No TabControl set for TabHost");
@@ -810,6 +825,7 @@ class TabHost : FrameLayout, TabHandler {
         addChild(widget);
         return this;
     }
+
     /// add new tab by id and label string resource id
     TabHost addTab(Widget widget, string labelResourceId, string iconId = null, bool enableCloseButton = false, dstring tooltipText = null) {
         assert(_tabControl !is null, "No TabControl set for TabHost");

@@ -366,7 +366,7 @@ public:
         requestLayout();
         return this;
     }
-    immutable static int FOCUS_RECT_PADDING = 2;
+    static enum FOCUS_RECT_PADDING = 2;
     /// get padding (between background bounds and content of widget)
     @property Rect padding() const {
         // get max padding from style padding and background drawable padding
@@ -640,16 +640,16 @@ public:
     /// returns widget visibility (Visible, Invisible, Gone)
     @property Visibility visibility() { return _visibility; }
     /// sets widget visibility (Visible, Invisible, Gone)
-    @property Widget visibility(Visibility visible) {
-        if (_visibility != visible) {
-            if ((_visibility == Visibility.Gone) || (visible == Visibility.Gone)) {
+    @property Widget visibility(Visibility newVisibility) {
+        if (_visibility != newVisibility) {
+            if ((_visibility == Visibility.Gone) || (newVisibility == Visibility.Gone)) {
                 if (parent)
                     parent.requestLayout();
                 else
                     requestLayout();
             } else
                 invalidate();
-            _visibility = visible;
+            _visibility = newVisibility;
         }
         return this;
     }
@@ -868,9 +868,9 @@ public:
             this.rect = widget.pos;
         }
         static if (BACKEND_GUI) {
-            static immutable int NEAR_THRESHOLD = 10;
+            static enum NEAR_THRESHOLD = 10;
         } else {
-            static immutable int NEAR_THRESHOLD = 1;
+            static enum NEAR_THRESHOLD = 1;
         }
         bool nearX(TabOrderInfo v) {
             return v.rect.left >= rect.left - NEAR_THRESHOLD  && v.rect.left <= rect.left + NEAR_THRESHOLD;
