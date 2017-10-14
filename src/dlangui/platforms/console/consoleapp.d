@@ -504,15 +504,16 @@ extern(C) int DLANGUImain(string[] args) {
 
     Log.i("Entering UIAppMain: ", args);
     int result = -1;
-    try {
-        version (unittest) {
-        } else {
-            result = UIAppMain(args);
-            Log.i("UIAppMain returned ", result);
+    version (unittest) {
+        result = 0;
+    } else {
+        try {
+                result = UIAppMain(args);
+                Log.i("UIAppMain returned ", result);
+        } catch (Exception e) {
+            Log.e("Abnormal UIAppMain termination");
+            Log.e("UIAppMain exception: ", e);
         }
-    } catch (Exception e) {
-        Log.e("Abnormal UIAppMain termination");
-        Log.e("UIAppMain exception: ", e);
     }
 
     Platform.setInstance(null);
