@@ -17,9 +17,11 @@ env:
   - ARCH=x86_64 CONFIG=default
   - ARCH=x86_64 CONFIG=minimal
   - ARCH=x86_64 CONFIG=x11
+  - ARCH=x86_64 CONFIG=console
   - ARCH=x86 CONFIG=default
   - ARCH=x86 CONFIG=minimal
   - ARCH=x86 CONFIG=x11
+  - ARCH=x86 CONFIG=console
 
 # No-one cares about OS X x86 and X11 on OSX
 matrix:
