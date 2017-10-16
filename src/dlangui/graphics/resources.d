@@ -334,6 +334,7 @@ class GradientDrawable : Drawable {
     protected uint _color2; // bottom left
     protected uint _color3; // top right
     protected uint _color4; // bottom right
+
     this(uint angle, uint color1, uint color2) {
         // rotate a gradient; angle goes clockwise
         import std.math;
@@ -370,35 +371,42 @@ class GradientDrawable : Drawable {
             }
         }
     }
+
     override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
         buf.fillGradientRect(rc, _color1, _color2, _color3, _color4);
     }
+
     @property override int width() { return 1; }
     @property override int height() { return 1; }
 }
 
 /// solid borders (may be of different width) and, optionally, solid inner area
-class FrameDrawable : Drawable {
-    protected uint _frameColor;  // frame color
-    protected Rect _frameWidths; // left, top, right, bottom border widths, in pixels
+class BorderDrawable : Drawable {
+    protected uint _borderColor;
+    protected Rect _borderWidths; // left, top, right, bottom border widths, in pixels
     protected uint _middleColor; // middle area color (may be transparent)
-    this(uint frameColor, Rect borderWidths, uint innerAreaColor = 0xFFFFFFFF) {
-        _frameColor = frameColor;
-        _frameWidths = borderWidths;
+
+    this(uint borderColor, Rect borderWidths, uint innerAreaColor = 0xFFFFFFFF) {
+        _borderColor = borderColor;
+        _borderWidths = borderWidths;
         _middleColor = innerAreaColor;
     }
-    this(uint frameColor, int borderWidth, uint innerAreaColor = 0xFFFFFFFF) {
-        _frameColor = frameColor;
-        _frameWidths = Rect(borderWidth, borderWidth, borderWidth, borderWidth);
+
+    this(uint borderColor, int borderWidth, uint innerAreaColor = 0xFFFFFFFF) {
+        _borderColor = borderColor;
+        _borderWidths = Rect(borderWidth, borderWidth, borderWidth, borderWidth);
         _middleColor = innerAreaColor;
     }
+
     override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
-        buf.drawFrame(rc, _frameColor, _frameWidths, _middleColor);
+        buf.drawFrame(rc, _borderColor, _borderWidths, _middleColor);
     }
-    @property override int width() { return 1 + _frameWidths.left + _frameWidths.right; }
-    @property override int height() { return 1 + _frameWidths.top + _frameWidths.bottom; }
-    @property override Rect padding() { return _frameWidths; }
+
+    @property override int width() { return 1 + _borderWidths.left + _borderWidths.right; }
+    @property override int height() { return 1 + _borderWidths.top + _borderWidths.bottom; }
+    @property override Rect padding() { return _borderWidths; }
 }
+deprecated alias FrameDrawable = BorderDrawable;
 
 enum DimensionUnits {
     pixels,
@@ -480,18 +488,18 @@ static if (BACKEND_CONSOLE) {
     }
 }
 
-/// decode solid color / gradient / frame drawable from string like #AARRGGBB, e.g. #5599AA
+/// decode solid color / gradient / border drawable from string like #AARRGGBB, e.g. #5599AA
 ///
 /// SolidFillDrawable: #AARRGGBB  - e.g. #8090A0 or #80ffffff
 /// GradientDrawable: #linear,Ndeg,#firstColor,#secondColor
-/// FrameDrawable: #frameColor,frameWidth[,#middleColor]
-///             or #frameColor,leftBorderWidth,topBorderWidth,rightBorderWidth,bottomBorderWidth[,#middleColor]
-///                e.g. #000000,2,#C0FFFFFF - black frame of width 2 with 75% transparent white middle
-///                e.g. #0000FF,2,3,4,5,#FFFFFF - blue frame with left,top,right,bottom borders of width 2,3,4,5 and white inner area
+/// BorderDrawable: #borderColor,borderWidth[,#middleColor]
+///             or #borderColor,leftBorderWidth,topBorderWidth,rightBorderWidth,bottomBorderWidth[,#middleColor]
+///                e.g. #000000,2,#C0FFFFFF - black border of width 2 with 75% transparent white middle
+///                e.g. #0000FF,2,3,4,5,#FFFFFF - blue border with left,top,right,bottom borders of width 2,3,4,5 and white inner area
 static Drawable createColorDrawable(string s) {
     Log.d("creating color drawable ", s);
 
-    enum DrawableType { SolidColor, LinearGradient, Frame }
+    enum DrawableType { SolidColor, LinearGradient, Border }
     auto type = DrawableType.SolidColor;
 
     string[] items = s.split(',');
@@ -505,7 +513,7 @@ static Drawable createColorDrawable(string s) {
             values ~= decodeAngle(item);
         else {
             values ~= decodeDimension(item);
-            type = DrawableType.Frame;
+            type = DrawableType.Border;
         }
         if (i >= 6)
             break;
@@ -515,15 +523,15 @@ static Drawable createColorDrawable(string s) {
         return new SolidFillDrawable(values[0]);
     else if (type == DrawableType.LinearGradient && values.length == 3) // angle and two gradient colors
         return new GradientDrawable(values[0], values[1], values[2]);
-    else if (type == DrawableType.Frame) {
-        if (values.length == 2) // frame color and frame width, with transparent inner area - #AARRGGBB,NN
-            return new FrameDrawable(values[0], values[1]);
-        else if (values.length == 3) // frame color, frame width, inner area color - #AARRGGBB,NN,#AARRGGBB
-            return new FrameDrawable(values[0], values[1], values[2]);
-        else if (values.length == 5) // frame color, frame widths for left,top,right,bottom and transparent inner area - #AARRGGBB,NNleft,NNtop,NNright,NNbottom
-            return new FrameDrawable(values[0], Rect(values[1], values[2], values[3], values[4]));
-        else if (values.length == 6) // frame color, frame widths for left,top,right,bottom, inner area color - #AARRGGBB,NNleft,NNtop,NNright,NNbottom,#AARRGGBB
-            return new FrameDrawable(values[0], Rect(values[1], values[2], values[3], values[4]), values[5]);
+    else if (type == DrawableType.Border) {
+        if (values.length == 2) // border color and border width, with transparent inner area - #AARRGGBB,NN
+            return new BorderDrawable(values[0], values[1]);
+        else if (values.length == 3) // border color, border width, inner area color - #AARRGGBB,NN,#AARRGGBB
+            return new BorderDrawable(values[0], values[1], values[2]);
+        else if (values.length == 5) // border color, border widths for left,top,right,bottom and transparent inner area - #AARRGGBB,NNleft,NNtop,NNright,NNbottom
+            return new BorderDrawable(values[0], Rect(values[1], values[2], values[3], values[4]));
+        else if (values.length == 6) // border color, border widths for left,top,right,bottom, inner area color - #AARRGGBB,NNleft,NNtop,NNright,NNbottom,#AARRGGBB
+            return new BorderDrawable(values[0], Rect(values[1], values[2], values[3], values[4]), values[5]);
     }
     Log.e("Invalid drawable string format: ", s);
     return new EmptyDrawable(); // invalid format - just return empty drawable
@@ -1122,6 +1130,41 @@ class StateDrawable : Drawable {
     }
 }
 
+/// Drawable which allows to combine together background image, gradient, borders, box shadows, etc.
+class CombinedDrawable : Drawable {
+
+    DrawableRef background;
+    DrawableRef border;
+
+    this(uint backgroundColor, string backgroundImageId, string borderDescription) {
+        background = 
+            (backgroundImageId !is null) ? drawableCache.get(backgroundImageId) : 
+            (!backgroundColor.isFullyTransparentColor) ? new SolidFillDrawable(backgroundColor) : null;
+        if (background is null)
+            background = new EmptyDrawable;
+        border = borderDescription !is null ? drawableCache.get(borderDescription) : new EmptyDrawable;
+    }
+
+    override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
+        // make background image smaller to fit borders
+        Rect backrc = rc;
+        backrc.left += border.padding.left;
+        backrc.top += border.padding.top;
+        backrc.right -= border.padding.right;
+        backrc.bottom -= border.padding.bottom;
+        background.drawTo(buf, backrc, state, tilex0, tiley0);
+        border.drawTo(buf, rc, state, tilex0, tiley0);
+    }
+
+    @property override int width() { return background.width + border.padding.left + border.padding.right; }
+    @property override int height() { return background.height + border.padding.top + border.padding.bottom; }
+    @property override Rect padding() {
+        return Rect(background.padding.left + border.padding.left, background.padding.top + border.padding.top, 
+            background.padding.right + border.padding.right, background.padding.bottom + border.padding.bottom);
+    }
+}
+
+
 alias DrawableRef = Ref!Drawable;
 
 
@@ -1336,7 +1379,7 @@ class DrawableCache {
                     if (!_drawable)
                         _error = true;
                 } else if (_filename.startsWith("#")) {
-                    // color reference #AARRGGBB, e.g. #5599AA, or FrameDrawable description string #frameColor,frameSize,#innerColor
+                    // color reference #AARRGGBB, e.g. #5599AA, or a gradient, or BorderDrawable description
                     _drawable = createColorDrawable(_filename);
                 } else if (_filename.startsWith("{")) {
                     // json in {} with text drawable description
