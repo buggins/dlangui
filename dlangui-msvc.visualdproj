@@ -1169,6 +1169,8 @@
     <File path="3rdparty\fontconfig\functions.d" />
     <File path="3rdparty\fontconfig\package.d" />
    </Folder>
+   <File path="3rdparty\isfreedesktop.d" />
+   <File path="3rdparty\xdgpaths.d" />
   </Folder>
   <Folder name="src">
    <Folder name="dlangui">
@@ -1243,6 +1245,7 @@
      <File path="src\dlangui\graphics\ftfonts.d" />
      <File path="src\dlangui\graphics\gldrawbuf.d" />
      <File path="src\dlangui\graphics\glsupport.d" />
+     <File path="src\dlangui\graphics\iconprovider.d" />
      <File path="src\dlangui\graphics\images.d" />
      <File path="src\dlangui\graphics\resources.d" />
     </Folder>
