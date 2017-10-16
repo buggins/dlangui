@@ -598,6 +598,7 @@ class AndroidPlatform : Platform {
 
     /// handle theme change: e.g. reload some themed resources
     override void onThemeChanged() {
+        super.onThemeChanged();
         // override and call dispatchThemeChange for all windows
     }
 

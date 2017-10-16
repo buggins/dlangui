@@ -1946,6 +1946,11 @@ class Platform {
     /// handle theme change: e.g. reload some themed resources
     void onThemeChanged() {
         // override and call dispatchThemeChange for all windows
+        drawableCache.clear();
+        static if (!BACKEND_CONSOLE) {
+            imageCache.checkpoint();
+            imageCache.cleanup();
+        }
     }
 
     /// default icon for new created windows

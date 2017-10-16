@@ -5,6 +5,7 @@ public import dlangui.core.config;
 static if (BACKEND_CONSOLE):
 
 import std.stdio;
+import dlangui.core.logger;
 
 version(Windows) {
     import core.sys.windows.winbase;

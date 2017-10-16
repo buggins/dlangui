@@ -1817,6 +1817,7 @@ class X11Platform : Platform {
 
     /// handle theme change: e.g. reload some themed resources
     override void onThemeChanged() {
+        super.onThemeChanged();
         foreach(w; _windowMap)
             w.dispatchThemeChanged();
     }
