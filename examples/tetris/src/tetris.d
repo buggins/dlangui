@@ -36,7 +36,7 @@ extern (C) int UIAppMain(string[] args) {
     //SCREEN_DPI = 150;
 
     // create window
-    Window window = Platform.instance.createWindow("DLangUI: Tetris game example"d, null, WindowFlag.Modal, 600, 400);
+    Window window = Platform.instance.createWindow("DLangUI: Tetris game example"d, null, WindowFlag.Modal | WindowFlag.ExpandSize, 600, 400);
 
     window.mainWidget = new GameWidget();
 
