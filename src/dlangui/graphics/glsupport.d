@@ -622,7 +622,11 @@ private void FillColor(uint color, Color[] buf_slice) {
     }
 }
 
-private float[] convertColors(uint[] cols) pure nothrow {
+
+import std.functional;
+alias convertColors = memoize!(convertColorsImpl);
+
+float[] convertColorsImpl(uint[] cols) pure nothrow {
     float[] colors;
     colors.length = cols.length * 4;
     foreach(i; 0 .. cols.length) {
