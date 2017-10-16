@@ -410,7 +410,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             foreach(ref ch; s)
                 ch = '9';
             FontRef fnt = font;
-            Point sz = fnt.textSize(s);
+            Point sz = fnt.textSize(cast(immutable)s);
             _lineNumbersWidth = sz.x;
         }
         _leftPaneWidth = _lineNumbersWidth + _modificationMarksWidth + _foldingWidth + _iconsWidth;
@@ -765,7 +765,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return _wantTabs;
     }
 
-    /// sets tab size (in number of spaces)
+    /// ditto
     @property EditWidgetBase wantTabs(bool wantTabs) {
         _wantTabs = wantTabs;
         return this;
@@ -1884,7 +1884,6 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [event.text]);
                     _content.performOperation(op, this);
                 }
-                if (focused) startCaretBlinking();
                 return true;
             }
         }
@@ -1894,9 +1893,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         //if (event.keyCode == KeyCode.RETURN && !readOnly && !_content.multiline) {
         //    return true;
         //}
-        bool res = super.onKeyEvent(event);
-        //if (focused) startCaretBlinking();
-        return res;
+        return super.onKeyEvent(event);
     }
 
     /// Handle Ctrl + Left mouse click on text
@@ -2166,6 +2163,9 @@ class EditLine : EditWidgetBase {
 
     /// measure
     override void measure(int parentWidth, int parentHeight) {
+        if (visibility == Visibility.Gone)
+            return;
+
         updateFontProps();
         measureVisibleText();
         measureTextToSetWidgetSize();
@@ -2242,11 +2242,9 @@ class EditLine : EditWidgetBase {
             // line inside selection
             Rect startrc = textPosToClient(_selectionRange.start);
             Rect endrc = textPosToClient(_selectionRange.end);
-            int startx = startrc.left + _clientRect.left;
-            int endx = endrc.left + _clientRect.left;
             Rect rc = lineRect;
-            rc.left = startx;
-            rc.right = endx;
+            rc.left = startrc.left + _clientRect.left;
+            rc.right = endrc.left + _clientRect.left;
             if (!rc.empty) {
                 // draw selection rect for line
                 buf.fillRect(rc, focused ? _selectionColorFocused : _selectionColorNormal);
@@ -2269,17 +2267,11 @@ class EditLine : EditWidgetBase {
         applyMargins(rc);
         applyPadding(rc);
         auto saver = ClipRectSaver(buf, rc, alpha);
+
         FontRef font = font();
         dstring txt = applyPasswordChar(text);
-        Point sz = font.textSize(txt);
-        //applyAlign(rc, sz);
-        Rect lineRect = _clientRect;
-        lineRect.left = _clientRect.left - _scrollPos.x;
-        lineRect.right = lineRect.left + calcLineWidth(txt);
-        Rect visibleRect = lineRect;
-        visibleRect.left = _clientRect.left;
-        visibleRect.right = _clientRect.right;
-        drawLineBackground(buf, lineRect, visibleRect);
+
+        drawLineBackground(buf, _clientRect, _clientRect);
         font.drawText(buf, rc.left - _scrollPos.x, rc.top, txt, textColor, tabSize);
 
         drawCaret(buf);
@@ -2366,9 +2358,9 @@ class EditBox : EditWidgetBase {
 
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     override void layout(Rect rc) {
-        if (visibility == Visibility.Gone) {
+        if (visibility == Visibility.Gone)
             return;
-        }
+
         if (rc != _pos)
             _contentChanged = true;
         Rect contentRc = rc;
@@ -2928,9 +2920,9 @@ class EditBox : EditWidgetBase {
 
     /// measure
     override void measure(int parentWidth, int parentHeight) {
-        if (visibility == Visibility.Gone) {
+        if (visibility == Visibility.Gone)
             return;
-        }
+
         updateFontProps();
         updateMaxLineWidth();
         int findPanelHeight;
@@ -3341,7 +3333,7 @@ class EditBox : EditWidgetBase {
         FontRef font = font();
         for (int i = 0; i < _visibleLines.length; i++) {
             dstring txt = _visibleLines[i];
-            Rect lineRect = rc;
+            Rect lineRect;
             lineRect.left = _clientRect.left - _scrollPos.x;
             lineRect.right = lineRect.left + calcLineWidth(_content[_firstVisibleLine + i]);
             lineRect.top = _clientRect.top + i * _lineHeight;
@@ -3558,9 +3550,9 @@ class LogWidget : EditBox {
 
     /// Set widget rectangle to specified value and layout widget contents. (Step 2 of two phase layout).
     override void layout(Rect rc) {
-        if (visibility == Visibility.Gone) {
+        if (visibility == Visibility.Gone)
             return;
-        }
+
         super.layout(rc);
         if (_scrollLock) {
             measureVisibleText();

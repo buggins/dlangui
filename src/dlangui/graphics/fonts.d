@@ -74,11 +74,11 @@ enum FontWeight : int {
     Bold = 800
 }
 
-immutable dchar UNICODE_SOFT_HYPHEN_CODE = 0x00ad;
-immutable dchar UNICODE_ZERO_WIDTH_SPACE = 0x200b;
-immutable dchar UNICODE_NO_BREAK_SPACE = 0x00a0;
-immutable dchar UNICODE_HYPHEN = 0x2010;
-immutable dchar UNICODE_NB_HYPHEN = 0x2011;
+enum dchar UNICODE_SOFT_HYPHEN_CODE = 0x00ad;
+enum dchar UNICODE_ZERO_WIDTH_SPACE = 0x200b;
+enum dchar UNICODE_NO_BREAK_SPACE = 0x00a0;
+enum dchar UNICODE_HYPHEN = 0x2010;
+enum dchar UNICODE_NB_HYPHEN = 0x2011;
 
 /// custom character properties - for char-by-char drawing of text string with different character color and style
 struct CustomCharProps {
@@ -124,7 +124,7 @@ static if (ENABLE_OPENGL) {
 }
 
 /// constant for measureText maxWidth paramenter - to tell that all characters of text string should be measured.
-immutable int MAX_WIDTH_UNSPECIFIED = int.max;
+enum int MAX_WIDTH_UNSPECIFIED = int.max;
 
 /** Instance of font with specific size, weight, face, etc.
  *
@@ -322,13 +322,20 @@ class Font : RefCountedObject {
      *          tabOffset = when string is drawn not from left position, use to move tab stops left/right
      *          textFlags = TextFlag bit set - to control underline, hotkey label processing, etc...
      ************************************************************************/
-    Point textSize(const dchar[] text, int maxWidth = MAX_WIDTH_UNSPECIFIED, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
-        if (_textSizeBuffer.length < text.length + 1)
-            _textSizeBuffer.length = text.length + 1;
-        int charsMeasured = measureText(text, _textSizeBuffer, maxWidth, tabSize, tabOffset, textFlags);
+    Point textSize(dstring text, int maxWidth = MAX_WIDTH_UNSPECIFIED, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
+        return textSizeMemoized(this, text, maxWidth, tabSize, tabOffset, textFlags);
+    }
+
+    import std.functional;
+    alias textSizeMemoized = memoize!(Font.textSizeImpl);
+
+    static Point textSizeImpl(Font font, const dchar[] text, int maxWidth = MAX_WIDTH_UNSPECIFIED, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
+        if (font._textSizeBuffer.length < text.length + 1)
+            font._textSizeBuffer.length = text.length + 1;
+        int charsMeasured = font.measureText(text, font._textSizeBuffer, maxWidth, tabSize, tabOffset, textFlags);
         if (charsMeasured < 1)
             return Point(0,0);
-        return Point(_textSizeBuffer[charsMeasured - 1], height);
+        return Point(font._textSizeBuffer[charsMeasured - 1], font.height);
     }
 
     /*****************************************************************************************
