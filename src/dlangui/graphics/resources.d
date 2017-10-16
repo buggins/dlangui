@@ -422,10 +422,10 @@ class BoxShadowDrawable : Drawable {
         _blurSize = blurSize;
         _color = color;
         // now create a texture which will contain the shadow
-        uint size = 2 * blurSize + 3;
+        uint size = 4 * blurSize + 1;
         texture = new ColorDrawBuf(size, size); // TODO: get from/put to cache
         // clear
-        texture.fill(0xFFFFFFFF);
+        texture.fill(color | 0xFF000000);
         // draw a square in center of the texture
         texture.fillRect(Rect(blurSize, blurSize, size - blurSize, size - blurSize), color);
         // blur the square
@@ -433,14 +433,39 @@ class BoxShadowDrawable : Drawable {
     }
 
     override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
+        // this is a size of blurred part
+        uint b = _blurSize + _blurSize / 2 + 1;
         // move and expand the shadow
-        rc.left += _offsetX - _blurSize;
-        rc.right += _offsetX + _blurSize;
-        rc.top += _offsetY - _blurSize;
-        rc.bottom += _offsetY + _blurSize;
-        // apply new clipping to DrawBuf to draw outside of the widget
+        rc.left += _offsetX - b;
+        rc.top += _offsetY - b;
+        rc.right += _offsetX + b;
+        rc.bottom += _offsetY + b;
+
+        // apply new clipping to the DrawBuf to draw outside of the widget
         auto saver = ClipRectSaver(buf, rc, 0, false);
-        buf.drawRescaled(rc, texture, Rect(0, 0, texture.width, texture.height)); // TODO: nine-patch
+
+        if (_blurSize > 0) {
+            // Manual nine-patch
+            uint w = texture.width;
+            uint h = texture.height;
+
+            buf.drawFragment(rc.left, rc.top, texture, Rect(0, 0, b, b)); // top left
+            buf.drawRescaled(Rect(rc.left + b, rc.top, rc.right - b, rc.top + b), texture, Rect(b, 0, w - b, b)); // top center
+            buf.drawFragment(rc.right - b, rc.top, texture, Rect(w - b, 0, w, b)); // top right
+
+            buf.drawRescaled(Rect(rc.left, rc.top + b, rc.left + b, rc.bottom - b), texture, Rect(0, b, b, h - b)); // middle left
+            buf.drawRescaled(Rect(rc.left + b, rc.top + b, rc.right - b, rc.bottom - b), texture, Rect(b, b, w - b, h - b)); // middle center
+            buf.drawRescaled(Rect(rc.right - b, rc.top + b, rc.right, rc.bottom - b), texture, Rect(w - b, b, w, h - b)); // middle right
+
+            buf.drawFragment(rc.left, rc.bottom - b, texture, Rect(0, h - b, b, h)); // bottom left
+            buf.drawRescaled(Rect(rc.left + b, rc.bottom - b, rc.right - b, rc.bottom), texture, Rect(b, h - b, w - b, h)); // bottom center
+            buf.drawFragment(rc.right - b, rc.bottom - b, texture, Rect(w - b, h - b, w, h)); // bottom right
+
+            // debug
+            //~ buf.drawFragment(rc.left, rc.top, texture, Rect(0, 0, w, h));
+        } else {
+            buf.fillRect(rc, _color);
+        }
     }
 
     @property override int width() { return 1; }

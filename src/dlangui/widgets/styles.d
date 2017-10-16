@@ -926,6 +926,7 @@ public:
         res._alpha = _alpha;
         res._fontFace = _fontFace;
         res._backgroundImageId = _backgroundImageId;
+        res._boxShadow = _boxShadow;
         res._border = _border;
         res._padding = _padding;
         res._margins = _margins;
