@@ -1237,6 +1237,25 @@ void main()
                 //
                 tabs.addTab(new MyOpenglWidget(), "OpenGL"d);
             }
+
+            {
+                import dlangui.graphics.iconprovider;
+                TableLayout icons = new TableLayout("icons");
+                icons.colCount = 6;
+                for(StandardIcon icon = StandardIcon.init; icon <= StandardIcon.deviceCameraVideo; ++icon)
+                {
+                    icons.addChild(new TextWidget(to!string(icon), to!dstring(icon)).fontSize(12.pointsToPixels).alignment(Align.Right | Align.VCenter));
+                    auto imageBufRef = platform.iconProvider().getStandardIcon(icon);
+                    auto imageWidget = new ImageWidget();
+                    if (!imageBufRef.isNull()) {
+                        auto imageDrawable = new ImageDrawable(imageBufRef);
+                        imageWidget.drawable = imageDrawable;
+                    }
+                    icons.addChild(imageWidget).alignment(Align.Left | Align.VCenter);
+                }
+                icons.margins(Rect(10,10,10,10)).layoutWidth(FILL_PARENT);
+                tabs.addTab(icons, "Icons"d);
+            }
         }
 
         //==========================================================================

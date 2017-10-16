@@ -1,5 +1,6 @@
 module dlangui.core.filemanager;
 import dlangui.core.logger;
+import isfreedesktop;
 
 /**
  * Show and select directory or file in OS file manager.
@@ -65,60 +66,20 @@ import dlangui.core.logger;
             return true;
         } else version(Android) {
             Log.w("showInFileManager is not implemented for current platform");
-        } else version(Posix) {
+        } else static if (isFreedesktop) {
             import std.stdio : File;
-            import std.algorithm : map, filter, splitter, find, canFind, equal, findSplit;
-            import std.ascii : isAlpha;
+            import std.algorithm : map, filter, splitter, canFind, equal, findSplit;
             import std.exception : collectException, assumeUnique;
             import std.path : buildPath, absolutePath, isAbsolute, dirName, baseName;
             import std.range;
             import std.string : toStringz;
             import std.typecons : Tuple, tuple;
             static import std.stdio;
+            import inilike.common;
+            import inilike.range;
+            import xdgpaths;
 
             string toOpen = pathName;
-
-            static inout(char)[] doUnescape(inout(char)[] value, in Tuple!(char, char)[] pairs) nothrow pure {
-                //little optimization to avoid unneeded allocations.
-                size_t i = 0;
-                for (; i < value.length; i++) {
-                    if (value[i] == '\\') {
-                        break;
-                    }
-                }
-                if (i == value.length) {
-                    return value;
-                }
-
-                auto toReturn = appender!(typeof(value))();
-                toReturn.put(value[0..i]);
-
-                for (; i < value.length; i++) {
-                    if (value[i] == '\\' && i+1 < value.length) {
-                        const char c = value[i+1];
-                        auto t = pairs.find!"a[0] == b[0]"(tuple(c,c));
-                        if (!t.empty) {
-                            toReturn.put(t.front[1]);
-                            i++;
-                            continue;
-                        }
-                    }
-                    toReturn.put(value[i]);
-                }
-                return toReturn.data;
-            }
-
-            static auto unescapeValue(string arg) nothrow pure
-            {
-                static immutable Tuple!(char, char)[] pairs = [
-                    tuple('s', ' '),
-                    tuple('n', '\n'),
-                    tuple('r', '\r'),
-                    tuple('t', '\t'),
-                    tuple('\\', '\\')
-                ];
-                return doUnescape(arg, pairs);
-            }
 
             static string unescapeQuotedArgument(string value) nothrow pure
             {
@@ -302,35 +263,26 @@ import dlangui.core.logger;
                 return null;
             }
 
-            static void parseConfigFile(string fileName, string wantedGroup, bool delegate (in char[], in char[]) onKeyValue)
+            static void parseConfigFile(string fileName, string wantedGroup, bool delegate (string, string) onKeyValue)
             {
-                bool inNeededGroup;
-                foreach(line; File(fileName).byLine()) {
-                    if (!line.length || line[0] == '#') {
-                        continue;
-                    } else if (line[0] == '[') {
-                        if (line.equal(wantedGroup)) {
-                            inNeededGroup = true;
-                        } else {
-                            if (inNeededGroup) {
-                                break;
-                            }
-                            inNeededGroup = false;
-                        }
-                    } else if (line[0].isAlpha) {
-                        if (inNeededGroup) {
-                            auto splitted = findSplit(line, "=");
-                            if (splitted[1].length) {
-                                auto key = splitted[0];
-                                auto value = splitted[2];
-                                if (!onKeyValue(key, value)) {
+                auto r = iniLikeFileReader(fileName);
+                foreach(group; r.byGroup())
+                {
+                    if (group.groupName == wantedGroup)
+                    {
+                        foreach(entry; group.byEntry())
+                        {
+                            if (entry.length && !isComment(entry)) {
+                                auto pair = parseKeyValue(entry);
+                                if (!isValidKey(pair.key)) {
+                                    return;
+                                }
+                                if (!onKeyValue(pair.key, pair.value.unescapeValue)) {
                                     return;
                                 }
                             }
                         }
-                    } else {
-                        //unexpected line content
-                        break;
+                        return;
                     }
                 }
             }
@@ -355,17 +307,17 @@ import dlangui.core.logger;
                             bool canOpenDirectory; //not used for now. Some file managers does not have MimeType in their .desktop file.
                             string exec, tryExec, icon, displayName;
 
-                            parseConfigFile(appPath, "[Desktop Entry]", delegate bool(in char[] key, in char[] value) {
+                            parseConfigFile(appPath, "Desktop Entry", delegate bool(string key, string value) {
                                 if (key.equal("MimeType")) {
                                     canOpenDirectory = value.splitter(';').canFind("inode/directory");
                                 } else if (key.equal("Exec")) {
-                                    exec = value.idup;
+                                    exec = value;
                                 } else if (key.equal("TryExec")) {
-                                    tryExec = value.idup;
+                                    tryExec = value;
                                 } else if (key.equal("Icon")) {
-                                    icon = value.idup;
+                                    icon = value;
                                 } else if (key.equal("Name")) {
-                                    displayName = value.idup;
+                                    displayName = value;
                                 }
                                 return true;
                             });
@@ -377,7 +329,7 @@ import dlangui.core.logger;
                                         continue;
                                     }
                                 }
-                                return expandExecArgs(unquoteExec(unescapeValue(exec)), null, icon, displayName, appPath);
+                                return expandExecArgs(unquoteExec(exec), null, icon, displayName, appPath);
                             }
 
                         } catch(Exception e) {
@@ -393,7 +345,7 @@ import dlangui.core.logger;
             {
                 toOpen = toOpen.absolutePath();
                 switch(fileManagerArgs[0].baseName) {
-                    //nautilus and nemo selects item if it's file
+                    //nautilus and nemo select item if it's a file
                     case "nautilus":
                     case "nemo":
                         fileManagerArgs ~= toOpen;
@@ -439,21 +391,21 @@ import dlangui.core.logger;
                 spawnProcess(fileManagerArgs, inFile, outFile, errFile, null, processConfig);
             }
 
-            string configHome = environment.get("XDG_CONFIG_HOME", buildPath(environment.get("HOME"), ".config"));
-            string appHome = environment.get("XDG_DATA_HOME", buildPath(environment.get("HOME"), ".local/share")).buildPath("applications");
+            string configHome = xdgConfigHome();
+            string appHome = xdgDataHome("applications");
 
-            auto configDirs = environment.get("XDG_CONFIG_DIRS", "/etc/xdg").splitter(':').find!(p => p.length > 0);
-            auto appDirs = environment.get("XDG_DATA_DIRS", "/usr/local/share:/usr/share").splitter(':').filter!(p => p.length > 0).map!(p => buildPath(p, "applications"));
+            auto configDirs = xdgConfigDirs();
+            auto appDirs = xdgDataDirs("applications");
 
-            auto allAppDirs = chain(only(appHome), appDirs).array;
+            auto allAppDirs = xdgAllDataDirs("applications");
             auto binPaths = environment.get("PATH").splitter(':').filter!(p => p.length > 0).array;
 
             string[] fileManagerArgs;
             foreach(mimeappsList; chain(only(configHome), only(appHome), configDirs, appDirs).map!(p => buildPath(p, "mimeapps.list"))) {
                 try {
-                    parseConfigFile(mimeappsList, "[Default Applications]", delegate bool(in char[] key, in char[] value) {
+                    parseConfigFile(mimeappsList, "Default Applications", delegate bool(string key, string value) {
                         if (key.equal("inode/directory") && value.length) {
-                            auto app = value.idup;
+                            auto app = value;
                             fileManagerArgs = findFileManagerCommand(app, allAppDirs, binPaths);
                             return false;
                         }
@@ -471,14 +423,14 @@ import dlangui.core.logger;
 
             foreach(mimeinfoCache; allAppDirs.map!(p => buildPath(p, "mimeinfo.cache"))) {
                 try {
-                    parseConfigFile(mimeinfoCache, "[MIME Cache]", delegate bool(in char[] key, in char[] value) {
+                    parseConfigFile(mimeinfoCache, "MIME Cache", delegate bool(string key, string value) {
                         if (key > "inode/directory") { //no need to proceed, since MIME types are sorted in alphabetical order.
                             return false;
                         }
                         if (key.equal("inode/directory") && value.length) {
                             auto alternatives = value.splitter(';').filter!(p => p.length > 0);
                             foreach(alternative; alternatives) {
-                                fileManagerArgs = findFileManagerCommand(alternative.idup, allAppDirs, binPaths);
+                                fileManagerArgs = findFileManagerCommand(alternative, allAppDirs, binPaths);
                                 if (fileManagerArgs.length) {
                                     break;
                                 }
