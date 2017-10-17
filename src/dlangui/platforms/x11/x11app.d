@@ -339,6 +339,14 @@ class X11Window : DWindow {
         XSetWMProtocols(x11display, _win, &atom_WM_DELETE_WINDOW, 1);
         _windowState = WindowState.hidden;
 
+        auto classHint = XAllocClassHint();
+        if (classHint) {
+            classHint.res_name = platform._classname;
+            classHint.res_class = platform._classname;
+            XSetClassHint(x11display, _win, classHint);
+            XFree(classHint);
+        }
+
         _children.reserve(20);
         _parent = cast(X11Window) parent;
         if (_parent)
@@ -527,10 +535,8 @@ class X11Window : DWindow {
                 }
                 break;
             case WindowState.minimized:
-                if (atom_NET_WM_STATE != None && atom_NET_WM_STATE_HIDDEN != None) {
-                    changeWindowState(_NET_WM_STATE_ADD, atom_NET_WM_STATE_HIDDEN);
+                if (XIconifyWindow(x11display, _win, x11screen))
                     result = true;
-                }
                 break;
             case WindowState.hidden:
                 XUnmapWindow(x11display, _win);
@@ -1277,9 +1283,13 @@ private immutable int TIMER_EVENT = 8;
 class X11Platform : Platform {
 
     this() {
+        import std.file : thisExePath;
+        import std.path : baseName;
+        _classname = (baseName(thisExePath()) ~ "\0").dup.ptr;
     }
 
     private X11Window[XWindow] _windowMap;
+    private char* _classname;
 
     /**
      * create window
@@ -1807,6 +1817,7 @@ class X11Platform : Platform {
 
     /// handle theme change: e.g. reload some themed resources
     override void onThemeChanged() {
+        super.onThemeChanged();
         foreach(w; _windowMap)
             w.dispatchThemeChanged();
     }

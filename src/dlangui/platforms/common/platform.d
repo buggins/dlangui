@@ -28,6 +28,7 @@ import dlangui.widgets.scrollbar;
 import dlangui.graphics.drawbuf;
 import dlangui.core.stdaction;
 import dlangui.core.asyncsocket;
+import dlangui.graphics.iconprovider;
 
 static if (ENABLE_OPENGL) {
     private import dlangui.graphics.gldrawbuf;
@@ -1945,6 +1946,11 @@ class Platform {
     /// handle theme change: e.g. reload some themed resources
     void onThemeChanged() {
         // override and call dispatchThemeChange for all windows
+        drawableCache.clear();
+        static if (!BACKEND_CONSOLE) {
+            imageCache.checkpoint();
+            imageCache.cleanup();
+        }
     }
 
     /// default icon for new created windows
@@ -1960,7 +1966,32 @@ class Platform {
         return _defaultWindowIcon;
     }
 
+    private IconProviderBase _iconProvider;
+    @property IconProviderBase iconProvider() {
+        if (_iconProvider is null) {
+            try {
+                _iconProvider = new NativeIconProvider();
+            } catch(Exception e) {
+                Log.e("Error while creating icon provider.", e);
+                Log.d("Could not create native icon provider, fallbacking to the dummy one");
+                _iconProvider = new DummyIconProvider();
+            }
+        }
+        return _iconProvider;
+    }
 
+    @property IconProviderBase iconProvider(IconProviderBase provider)
+    {
+        _iconProvider = provider;
+        return _iconProvider;
+    }
+
+    ~this()
+    {
+        if(_iconProvider) {
+            destroy(_iconProvider);
+        }
+    }
 }
 
 /// get current platform object instance
