@@ -637,6 +637,13 @@ public:
     /// sets layout weight (while resizing to fill parent, widget will be resized proportionally to this value)
     @property Widget layoutWeight(int value) { ownStyle.layoutWeight = value; return this; }
 
+    /// sets layoutWidth=FILL_PARENT and layoutHeight=FILL_PARENT
+    Widget fillParent() { return layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT); }
+    /// sets layoutWidth=FILL_PARENT
+    Widget fillHorizontal() { return layoutWidth(FILL_PARENT); }
+    /// sets layoutHeight=FILL_PARENT
+    Widget fillVertical() { return layoutHeight(FILL_PARENT); }
+
     /// returns widget visibility (Visible, Invisible, Gone)
     @property Visibility visibility() { return _visibility; }
     /// sets widget visibility (Visible, Invisible, Gone)

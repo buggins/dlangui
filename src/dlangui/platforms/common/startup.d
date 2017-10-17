@@ -416,41 +416,7 @@ extern (C) void initResourceManagers() {
     Log.d("initResourceManagers() -- finished");
 }
 
-/// register standard widgets to use in DML
-void registerStandardWidgets() {
-    Log.d("Registering standard widgets for DML");
-    import dlangui.widgets.metadata;
-    import dlangui.widgets.widget;
-    import dlangui.widgets.layouts;
-    import dlangui.widgets.controls;
-    import dlangui.widgets.scrollbar;
-    import dlangui.widgets.lists;
-    import dlangui.widgets.combobox;
-    import dlangui.widgets.editors;
-    import dlangui.widgets.grid;
-    import dlangui.widgets.groupbox;
-    import dlangui.widgets.progressbar;
-    import dlangui.dialogs.filedlg;
-    import dlangui.widgets.menu;
-    import dlangui.widgets.tree;
-    import dlangui.widgets.tabs;
-    mixin(registerWidgets!(FileNameEditLine, DirEditLine, //dlangui.dialogs.filedlg
-                           ComboBox, ComboEdit, //dlangui.widgets.combobox
-                           Widget, TextWidget, MultilineTextWidget, Button, ImageWidget, ImageButton, ImageCheckButton, ImageTextButton,
-                           SwitchButton, RadioButton, CheckBox, HSpacer, VSpacer, CanvasWidget, // dlangui.widgets.controls
-                           ScrollBar, SliderWidget, // dlangui.widgets.scrollbar
-                           EditLine, EditBox, LogWidget,//dlangui.widgets.editors
-                           GroupBox, // dlangui.widgets.groupbox
-                           ProgressBarWidget, // dlangui.widgets.progressbar
-                           StringGridWidget, //dlangui.widgets.grid
-                           VerticalLayout, HorizontalLayout, TableLayout, FrameLayout, // dlangui.widgets.layouts
-                           ListWidget, StringListWidget,//dlangui.widgets.lists
-                           MainMenu, //dlangui.widgets.menu
-                           TreeWidget, // dlangui.widgets.tree
-                           TabWidget, // dlangui.widgets.tabs
-                           )("void registerWidgets"));
-    registerWidgets();
-}
+
 
 /// call this from shared static this()
 extern (C) void initSharedResourceManagers() {
@@ -465,6 +431,9 @@ extern (C) void initSharedResourceManagers() {
 shared static this() {
     //initSharedResourceManagers();
 }
+
+/// register standard widgets to use in DML
+extern(C) void registerStandardWidgets();
 
 /// call this when all resources are supposed to be freed to report counts of non-freed resources by type
 extern (C) void releaseResourcesOnAppExit() {
