@@ -69,7 +69,7 @@
         {
             "name": "external",
             "versions": ["USE_EXTERNAL"],
-            "excludedSourceFiles": ["3rdparty/*"]
+            "excludedSourceFiles": ["3rdparty/fontconfig/*"]
         },
         {
             "name": "minimal",
