@@ -125,11 +125,13 @@ struct EmbeddedResourceList {
     void addResources(EmbeddedResource[] resources) {
         list ~= resources;
     }
+
     void dumpEmbeddedResources() {
         foreach(r; list) {
             Log.d("EmbeddedResource: ", r.name);
         }
     }
+
     /// find by exact file name
     EmbeddedResource * find(string name) {
         // search backwards to allow overriding standard resources (which are added first)
@@ -147,6 +149,7 @@ struct EmbeddedResourceList {
                 return &list[i];
         return null;
     }
+
     /// find by name w/o extension
     EmbeddedResource * findAutoExtension(string name) {
         string xmlname = name ~ ".xml";
@@ -209,18 +212,6 @@ EmbeddedResource[] embedResources(string[] resourceNames)() {
         return embedResource!(resourceNames[0])();
     else
         return embedResources!(resourceNames[0 .. $/2])() ~ embedResources!(resourceNames[$/2 .. $])();
-}
-
-/// split string into lines, autodetect line endings
-string[] splitLines(string s) {
-    auto lines_crlf = split(s, "\r\n");
-    auto lines_cr = split(s, "\r");
-    auto lines_lf = split(s, "\n");
-    if (lines_crlf.length >= lines_cr.length && lines_crlf.length >= lines_lf.length)
-        return lines_crlf;
-    if (lines_cr.length > lines_lf.length)
-        return lines_cr;
-    return lines_lf;
 }
 
 /// embed all resources from list
@@ -850,6 +841,7 @@ class ImageDrawable : Drawable {
         debug _instanceCount--;
         debug(resalloc) Log.d("Destroyed ImageDrawable, count=", _instanceCount);
     }
+
     @property override int width() {
         if (_image.isNull)
             return 0;
@@ -857,6 +849,7 @@ class ImageDrawable : Drawable {
             return _image.width - 2;
         return _image.width;
     }
+
     @property override int height() {
         if (_image.isNull)
             return 0;
@@ -864,11 +857,13 @@ class ImageDrawable : Drawable {
             return _image.height - 2;
         return _image.height;
     }
+
     @property override Rect padding() {
         if (!_image.isNull && _image.hasNinePatch)
             return _image.ninePatch.padding;
         return Rect(0,0,0,0);
     }
+
     private static void correctFrameBounds(ref int n1, ref int n2, ref int n3, ref int n4) {
         if (n1 > n2) {
             //assert(n2 - n1 == n4 - n3);
@@ -877,6 +872,7 @@ class ImageDrawable : Drawable {
             n3 = n4 = n3 + middledist;
         }
     }
+
     override void drawTo(DrawBuf buf, Rect rc, uint state = 0, int tilex0 = 0, int tiley0 = 0) {
         if (_image.isNull)
             return;
@@ -1266,9 +1262,11 @@ class ImageCache {
 
         bool _error; // flag to avoid loading of file if it has been failed once
         bool _used;
+
         this(string filename) {
             _filename = filename;
         }
+
         /// get normal image
         @property ref DrawBufRef get() {
             if (!_drawbuf.isNull || _error) {
@@ -1301,6 +1299,7 @@ class ImageCache {
             }
             return _transformMap[transform];
         }
+
         /// remove from memory, will cause reload on next access
         void compact() {
             if (!_drawbuf.isNull)
@@ -1389,13 +1388,12 @@ class DrawableCache {
         string _id;
         string _filename;
         bool _tiled;
-        bool _error;
-        bool _used;
         DrawableRef _drawable;
         DrawableRef[ColorTransform] _transformed;
 
-        debug private static __gshared int _instanceCount;
-        debug @property static int instanceCount() { return _instanceCount; }
+        bool _error; // flag to avoid loading of file if it has been failed once
+        bool _used;
+
         this(string id, string filename, bool tiled) {
             _id = id;
             _filename = filename;
@@ -1404,6 +1402,9 @@ class DrawableCache {
             debug ++_instanceCount;
             debug(resalloc) Log.d("Created DrawableCacheItem, count=", _instanceCount);
         }
+        debug private static __gshared int _instanceCount;
+        debug @property static int instanceCount() { return _instanceCount; }
+
         ~this() {
             _drawable.clear();
             foreach(ref t; _transformed)
@@ -1431,126 +1432,26 @@ class DrawableCache {
         }
 
         /// returns drawable (loads from file if necessary)
-        @property ref DrawableRef drawable() {
+        @property ref DrawableRef drawable(in ColorTransform transform = ColorTransform()) {
             _used = true;
-            if (!_drawable.isNull || _error)
-                return _drawable;
-            if (_filename !is null) {
-                // reload from file
-                if (_filename.endsWith(".xml")) {
-                    // XML drawables support
-                        StateDrawable d = new StateDrawable();
-                        if (!d.load(_filename)) {
-                            destroy(d);
-                            _error = true;
-                        } else {
-                            _drawable = d;
-                        }
-                } else if (_filename.endsWith(".tim")) {
-                    static if (BACKEND_CONSOLE) {
-                        try {
-                            // .tim (text image) drawables support
-                            string s = cast(string)loadResourceBytes(_filename);
-                            if (s.length) {
-                                TextDrawable d = new TextDrawable(s);
-                                if (d.width && d.height) {
-                                    _drawable = d;
-                                }
-                            }
-                        } catch (Exception e) {
-                            // cannot find drawable file
-                        }
-                    }
-                    if (!_drawable)
-                        _error = true;
-                } else if (_filename.startsWith("#")) {
-                    // color reference #AARRGGBB, e.g. #5599AA, or a gradient, or BorderDrawable description
-                    _drawable = createColorDrawable(_filename);
-                } else if (_filename.startsWith("{")) {
-                    // json in {} with text drawable description
-                    static if (BACKEND_CONSOLE) {
-                        _drawable = createTextDrawable(_filename);
-                    }
-                } else {
-                    static if (BACKEND_GUI) {
-                        // PNG/JPEG drawables support
-                        DrawBufRef image = imageCache.get(_filename);
-                        if (!image.isNull) {
-                            bool ninePatch = _filename.endsWith(".9.png");
-                            _drawable = new ImageDrawable(image, _tiled, ninePatch);
-                        } else
-                            _error = true;
-                    } else {
-                        _error = true;
-                    }
-                }
-            }
-            return _drawable;
-        }
-        /// returns drawable (loads from file if necessary)
-        @property ref DrawableRef drawable(ref ColorTransform transform) {
-            if (transform.empty)
-                return drawable();
-            if (transform in _transformed)
+            if (!transform.empty && transform in _transformed)
                 return _transformed[transform];
-            _used = true;
             if (!_drawable.isNull || _error)
                 return _drawable;
-            if (_filename !is null) {
-                // reload from file
-                if (_filename.endsWith(".xml") || _filename.endsWith(".XML")) {
-                    // XML drawables support
-                    StateDrawable d = new StateDrawable();
-                    if (!d.load(_filename)) {
-                        Log.e("failed to load .xml drawable from ", _filename);
-                        destroy(d);
-                        _error = true;
-                    } else {
-                        Log.d("loaded .xml drawable from ", _filename);
-                        _drawable = d;
-                    }
-                } else if (_filename.endsWith(".tim") || _filename.endsWith(".TIM")) {
-                    static if (BACKEND_CONSOLE) {
-                        try {
-                            // .tim (text image) drawables support
-                            string s = cast(string)loadResourceBytes(_filename);
-                            if (s.length) {
-                                TextDrawable d = new TextDrawable(s);
-                                if (d.width && d.height) {
-                                    _drawable = d;
-                                }
-                            }
-                        } catch (Exception e) {
-                            // cannot find drawable file
-                        }
-                    }
-                    if (!_drawable)
-                        _error = true;
-                } else if (_filename.startsWith("{")) {
-                    // json in {} with text drawable description
-                    static if (BACKEND_CONSOLE) {
-                        _drawable = createTextDrawable(_filename);
-                    }
-                } else {
-                    static if (BACKEND_GUI) {
-                        // PNG/JPEG drawables support
-                        DrawBufRef image = imageCache.get(_filename, transform);
-                        if (!image.isNull) {
-                            bool ninePatch = _filename.endsWith(".9.png") ||  _filename.endsWith(".9.PNG");
-                            _transformed[transform] = new ImageDrawable(image, _tiled, ninePatch);
-                            return _transformed[transform];
-                        } else {
-                            Log.e("failed to load image from ", _filename);
-                            _error = true;
-                        }
-                    } else {
-                        _error = true;
-                    }
-                }
+
+            // not in cache - create it
+            Drawable dr = makeDrawableFromId(_filename, _tiled, transform);
+            _error = dr is null;
+            if (transform.empty) {
+                _drawable = dr;
+                return _drawable;
+            } else {
+                _transformed[transform] = dr;
+                return _transformed[transform];
             }
-            return _drawable;
         }
     }
+
     void clear() {
         Log.d("DrawableCache.clear()");
         _idToFileMap.destroy();
@@ -1568,35 +1469,19 @@ class DrawableCache {
         foreach (item; _idToDrawableMap)
             item.cleanup();
     }
+
     string[] _resourcePaths;
     string[string] _idToFileMap;
     DrawableCacheItem[string] _idToDrawableMap;
     DrawableRef _nullDrawable;
-    ref DrawableRef get(string id) {
-        while (id.length && (id[0] == ' ' || id[0] == '\t' || id[0] == '\r' || id[0] == '\n'))
-               id = id[1 .. $];
-        if (id.equal("@null"))
-            return _nullDrawable;
-        if (id in _idToDrawableMap)
-            return _idToDrawableMap[id].drawable;
-        string resourceId = id;
-        bool tiled = false;
-        if (id.endsWith(".tiled")) {
-            resourceId = id[0..$-6]; // remove .tiled
-            tiled = true;
-        }
-        string filename = findResource(resourceId);
-        DrawableCacheItem item = new DrawableCacheItem(id, filename, tiled);
-        _idToDrawableMap[id] = item;
-        return item.drawable;
-    }
-    ref DrawableRef get(string id, ref ColorTransform transform) {
-        if (transform.empty)
-            return get(id);
+
+    ref DrawableRef get(string id, in ColorTransform transform = ColorTransform()) {
+        id = id.strip;
         if (id.equal("@null"))
             return _nullDrawable;
         if (id in _idToDrawableMap)
             return _idToDrawableMap[id].drawable(transform);
+        // not found - create it
         string resourceId = id;
         bool tiled = false;
         if (id.endsWith(".tiled")) {
@@ -1604,10 +1489,11 @@ class DrawableCache {
             tiled = true;
         }
         string filename = findResource(resourceId);
-        DrawableCacheItem item = new DrawableCacheItem(id, filename, tiled);
+        auto item = new DrawableCacheItem(id, filename, tiled);
         _idToDrawableMap[id] = item;
         return item.drawable(transform);
     }
+
     @property string[] resourcePaths() {
         return _resourcePaths;
     }
@@ -1629,6 +1515,7 @@ class DrawableCache {
         _resourcePaths = existingPaths;
         clear();
     }
+
     /// concatenates path with resource id and extension, returns pathname if there is such file, null if file does not exist
     private string checkFileName(string path, string id, string extension) {
         char[] fn = path.dup;
@@ -1638,10 +1525,11 @@ class DrawableCache {
             return fn.dup;
         return null;
     }
+
     /// get resource file full pathname by resource id, null if not found
     string findResource(string id) {
         if (id.startsWith("#") || id.startsWith("{"))
-            return id; // it's not a file name, just a color #AARRGGBB
+            return id; // it's not a file name
         if (id in _idToFileMap)
             return _idToFileMap[id];
         EmbeddedResource * embedded = embeddedResourceList.findAutoExtension(id);
@@ -1697,12 +1585,63 @@ class DrawableCache {
 }
 
 
-// load text resource
+/// This function takes an id and creates a drawable
+/// id may be a name of file, #directive, color or json
+private Drawable makeDrawableFromId(in string id, in bool tiled, ColorTransform transform = ColorTransform()) {
+    if (id !is null) {
+        if (id.endsWith(".xml") || id.endsWith(".XML")) {
+            // XML drawables support
+            auto d = new StateDrawable;
+            if (!d.load(id)) {
+                Log.e("failed to load .xml drawable from ", id);
+                destroy(d);
+                return null;
+            } else {
+                Log.d("loaded .xml drawable from ", id);
+                return d;
+            }
+        } else if (id.endsWith(".tim") || id.endsWith(".TIM")) {
+            static if (BACKEND_CONSOLE) {
+                try {
+                    // .tim (text image) drawables support
+                    string s = cast(string)loadResourceBytes(id);
+                    if (s.length) {
+                        auto d = new TextDrawable(s);
+                        if (d.width && d.height) {
+                            return d;
+                        }
+                    }
+                } catch (Exception e) {
+                    // cannot find drawable file
+                }
+            }
+        } else if (id.startsWith("#")) {
+            // color reference #AARRGGBB, e.g. #5599AA, a gradient, border description, etc.
+            return createColorDrawable(id);
+        } else if (id.startsWith("{")) {
+            // json in {} with text drawable description
+            static if (BACKEND_CONSOLE) {
+               return createTextDrawable(id);
+            }
+        } else {
+            static if (BACKEND_GUI) {
+                // PNG/JPEG drawables support
+                DrawBufRef image = transform.empty ? imageCache.get(id) : imageCache.get(id, transform);
+                if (!image.isNull) {
+                    bool ninePatch = id.endsWith(".9.png") ||  id.endsWith(".9.PNG");
+                    return new ImageDrawable(image, tiled, ninePatch);
+                } else
+                    Log.e("Failed to load image from ", id);
+            }
+        }
+    }
+    return null;
+}
+
+
+/// load text resource
 string loadTextResource(string resourceId) {
-    import dlangui.graphics.resources;
-    import std.string : endsWith;
-    string filename;
-    filename = drawableCache.findResource(resourceId);
+    string filename = drawableCache.findResource(resourceId);
     if (!filename) {
         Log.e("Object resource file not found for resourceId ", resourceId);
         assert(false);
