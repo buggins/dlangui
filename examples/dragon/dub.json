@@ -1,0 +1,34 @@
+{
+    "name": "dragon",
+    "description": "dlangui library example Dragon Curve",
+    "homepage": "https://github.com/buggins/dlangui",
+    "license": "Boost",
+    "authors": ["Vadim Lopatin"],
+
+    "targetPath": "bin",
+    "targetName": "dragon",
+    "targetType": "executable",
+
+    "sourceFiles-windows": ["$PACKAGE_DIR/src/win_app.def"],
+
+    "versions": ["EmbedStandardResources"],
+
+    "dependencies": {
+        "dlangui": {"path": "../../"}
+    },
+
+    "configurations" : [
+        {
+            "name" : "default",
+            "subConfigurations" : {
+                "dlangui" : "minimal"
+            }
+        }, 
+        {
+            "name" : "console",
+            "subConfigurations" : {
+                "dlangui" : "console"
+            }
+        }
+    ]
+}

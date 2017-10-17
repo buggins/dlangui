@@ -83,53 +83,136 @@ template isMarkupType(T)
                     is(T==StringListValue[]);
 }
 
-string generatePropertiesMetadata(alias T)() {
-    version (GENERATE_PROPERTY_METADATA) {
-        import std.algorithm.searching;
+private bool hasPropertyAnnotation(alias ti)() {
+    bool res = false;
+    foreach ( attr; __traits(getFunctionAttributes, ti)) {
+        static if (attr == "@property") {
+            res = true;
+        }
+    }
+    return res;
+}
+/*
+string markupPropertyGetterType(alias overload)() {
+    static if (__traits(getProtection, overload) == "public") {
         import std.traits;
-        import std.meta;
-        char[] str;
-        str ~= "[";
-        foreach(m; __traits(allMembers, T)) {
-            static if (__traits(compiles, (typeof(__traits(getMember, T, m))))){
-                // skip non-public members, only functions that takes 0 or 1 arguments, add only types that parseable in markup
-                static if (__traits(getProtection, __traits(getMember, T, m)) == "public") {
-                    static if (isFunction!(__traits(getMember, T, m))) {
-                        immutable int fnArity = arity!(__traits(getMember, T, m));
-                        static if (fnArity == 0 || fnArity == 1) {
-                            // TODO: filter out templates, signals and such
-                            // iterates class members and process @property functions (note: foreach {if})
-                            foreach ( attr; __traits(getFunctionAttributes, __traits(getMember, T, m))) if (attr == "@property") {
-                                alias ret = ReturnType!(__traits(getMember, T, m));
-                                alias params = Parameters!(__traits(getMember, T, m));
-                                string typestring;
-                                static if (fnArity == 0 && !__traits(isTemplate,ret) && isMarkupType!ret)
-                                    typestring = ret.stringof;
-                                else static if (fnArity == 1 && !__traits(isTemplate,params[0]) && isMarkupType!(params[0]))
-                                    typestring = params[0].stringof;
-                                if (typestring is null)
-                                    continue;
-                                str ~= "WidgetPropertyMetadata( typeid(" ~ typestring ~ "), " ~ m.stringof ~ " ), ";
-                            }
+        static if (is(typeof(overload) == function) && hasPropertyAnnotation!overload) {
+            alias ret = ReturnType!overload;
+            //alias params = Parameters!overload;
+            alias params = ParameterTypeTuple!overload;
+            static if (params.length == 0 && isMarkupType!ret && !isTemplate!ret) {
+                return ret.stringof;
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+}
+
+string markupPropertySetterType(alias overload)() {
+    static if (__traits(getProtection, overload) == "public") {
+        import std.traits;
+        static if (is(typeof(overload) == function) && hasPropertyAnnotation!overload) {
+            //alias params = Parameters!overload;
+            alias params = ParameterTypeTuple!overload;
+            static if (params.length == 1 && isMarkupType!(params[0]) && !isTemplate!(params[0])) {
+                return params[0].stringof;
+            } else {
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+}
+*/
+
+private template isPublicPropertyFunction(alias overload) {
+    static if (__traits(getProtection, overload) == "public") {
+        static if (hasPropertyAnnotation!overload) {
+            enum isPublicPropertyFunction = true;
+        } else {
+            enum isPublicPropertyFunction = false;
+        }
+    } else {
+        enum isPublicPropertyFunction = false;
+    }
+    //pragma(msg, is(typeof(overload) == function).stringof);
+    //enum isPublicPropertyFunction = (__traits(getProtection, overload) == "public") && is(typeof(overload) == function);// && hasPropertyAnnotation!overload;
+}
+
+private template markupPropertyType(alias overload) {
+    import std.traits : ReturnType, ParameterTypeTuple;
+    alias ret = ReturnType!overload;
+    alias params = ParameterTypeTuple!overload;
+    static if (params.length == 0 && isMarkupType!ret /* && !isTemplate!ret*/) {
+        enum string markupPropertyType = ret.stringof;
+    } else static if (params.length == 1 && isMarkupType!(params[0]) /* && !isTemplate!(params[0])*/) {
+        enum string markupPropertyType = params[0].stringof;
+    } else {
+        enum string markupPropertyType = null;
+    }
+}
+
+private string[] generatePropertyTypeList(alias T)() {
+    import std.meta;
+    string[] properties;
+    properties ~= "[";
+    foreach(m; __traits(allMembers, T)) {
+        static if (__traits(compiles, (typeof(__traits(getMember, T, m))))){
+            //static if (is (typeof(__traits(getMember, T, m)) == function)) {
+            static if (__traits(isVirtualFunction, __traits(getMember, T, m))) {//
+                import std.traits : MemberFunctionsTuple;
+                alias overloads = typeof(__traits(getVirtualFunctions, T, m));
+                static if (overloads.length == 2) {
+                    static if (isPublicPropertyFunction!(__traits(getVirtualFunctions, T, m)[0]) && isPublicPropertyFunction!(__traits(getVirtualFunctions, T, m)[1])) {
+                        //pragma(msg, m ~ " isPublicPropertyFunction0=" ~ isPublicPropertyFunction!(__traits(getVirtualFunctions, T, m)[0]).stringof);
+                        //pragma(msg, m ~ " isPublicPropertyFunction1=" ~ isPublicPropertyFunction!(__traits(getVirtualFunctions, T, m)[1]).stringof);
+                        immutable getterType = markupPropertyType!(__traits(getVirtualFunctions, T, m)[0]);
+                        immutable setterType = markupPropertyType!(__traits(getVirtualFunctions, T, m)[1]);
+                        static if (getterType && setterType && getterType == setterType) {
+                            //pragma(msg, "markup property found: " ~ getterType ~ " " ~ m.stringof);
+                            properties ~= "WidgetPropertyMetadata( typeid(" ~ getterType ~ "), " ~ m.stringof ~ " ), ";
                         }
                     }
                 }
             }
         }
-        str ~= "]";
-        return cast(string)str;
+    }
+    properties ~= "]";
+    return properties;
+}
+
+string joinStrings(string[] lines) {
+    if (lines.length == 0)
+        return "";
+    if (lines.length == 1)
+        return lines[0];
+    else
+        return joinStrings(lines[0 .. $/2]) ~ joinStrings(lines[$/2 .. $]);
+}
+
+private string generatePropertiesMetadata(alias T)() if (is(T : Widget)) {
+    version (GENERATE_PROPERTY_METADATA) {
+        //import std.algorithm.searching;
+        //import std.traits : MemberFunctionsTuple;
+        //import std.meta;
+        auto properties = generatePropertyTypeList!T;
+        return joinStrings(properties);
     } else {
         return "[]";
     }
 }
 
-string generateMetadataClass(alias t)() {
+string generateMetadataClass(alias t)() if (is(t : Widget)) {
     //pragma(msg, moduleName!t);
     import std.traits;
     //pragma(msg, getSignalList!t);
     //pragma(msg, generatePropertiesMetadata!t);
     immutable string metadataClassName = t.stringof ~ "Metadata";
-    return "class " ~ metadataClassName ~ " : WidgetMetadataDef { \n" ~
+    return "static class " ~ metadataClassName ~ " : WidgetMetadataDef { \n" ~
         "    override Widget create() {\n" ~
         "        return new " ~ moduleName!t ~ "." ~ t.stringof ~ "();\n" ~
         "    }\n" ~
@@ -142,33 +225,73 @@ string generateMetadataClass(alias t)() {
         "    override string fullName() {\n" ~
         "        return \"" ~ moduleName!t ~ "." ~ t.stringof ~ "\";\n" ~
         "    }\n" ~
-        "    override WidgetPropertyMetadata[] properties() {" ~
+        "    override WidgetPropertyMetadata[] properties() {\n" ~
         "        return " ~ generatePropertiesMetadata!t ~ ";\n" ~
         "    }\n" ~
         "}\n";
 }
 
-string generateRegisterMetadataClass(alias t)() {
+string generateRegisterMetadataClass(alias t)() if (is(t : Widget)) {
     immutable string metadataClassName = t.stringof ~ "Metadata";
-    return "registerWidgetMetadata(\"" ~ t.stringof ~ "\", new " ~ metadataClassName ~ "());\n";
+    //pragma(msg, metadataClassName);
+    return "registerWidgetMetadata(\"" ~ t.stringof ~ "\", new " ~ t.stringof ~ "Metadata" ~ "());\n";
 }
 
-string registerWidgets(T...)(string registerFunctionName = "__gshared static this") {
-    string classDefs;
-    string registerDefs;
+template registerWidgetMetadataClass(alias t) if (is(t : Widget)) {
+    //pragma(msg, t.stringof);
+    //pragma(msg, generateMetadataClass!t);
+    immutable string classDef = generateMetadataClass!t;
+    immutable string registerDef = "registerWidgetMetadata(\"" ~ t.stringof ~ "\", new " ~ t.stringof ~ "Metadata" ~ "());\n";
+    enum registerWidgetMetadataClass = classDef ~ registerDef;
+    //mixin(classDef);
+
+    //pragma(msg, "registerWidgetMetadata(\"" ~ t.stringof ~ "\", new " ~ t.stringof ~ "Metadata" ~ "());\n");
+    //mixin("registerWidgetMetadata(\"" ~ t.stringof ~ "\", new " ~ t.stringof ~ "Metadata" ~ "());\n");
+}
+
+string registerWidgetsFunction(string registerFunctionName = "__gshared static this", T...)() {
+    pragma(msg, registerFunctionName);
+    pragma(msg, T);
+    string[] registerDefs;
     foreach(t; T) {
-        //pragma(msg, t.stringof);
+        pragma(msg, t.stringof);
         //pragma(msg, moduleName!t);
         //
-        immutable string classdef = generateMetadataClass!t;
-        //pragma(msg, classdef);
-        immutable string registerdef = generateRegisterMetadataClass!t;
-        //pragma(msg, registerdef);
-        classDefs ~= classdef;
-        registerDefs ~= registerdef;
+        static if (is(t : Widget)) {
+            //pragma(msg, classdef);
+            immutable string registerdef = generateRegisterMetadataClass!t;
+            pragma(msg, registerdef);
+            registerDefs ~= registerdef;
+        } else {
+            pragma(msg, "Skipping non-widget class: " ~ t.stringof);
+        }
         //registerWidgetMetadata(T.stringof, new Metadata());
     }
-    return classDefs ~ "\n" ~ registerFunctionName ~ "() {\n" ~ registerDefs ~ "}";
+    return registerFunctionName ~ "() {\n" ~ joinStrings(registerDefs) ~ "}\n";
+}
+
+string registerWidgets(string registerFunctionName = "__gshared static this", T...)() {
+    pragma(msg, registerFunctionName);
+    pragma(msg, T);
+    string[] classDefs;
+    string[] registerDefs;
+    foreach(t; T) {
+        pragma(msg, t.stringof);
+        //pragma(msg, moduleName!t);
+        //
+        static if (is(t : Widget)) {
+            immutable string classdef = generateMetadataClass!t;
+            //pragma(msg, classdef);
+            immutable string registerdef = generateRegisterMetadataClass!t;
+            pragma(msg, registerdef);
+            classDefs ~= classdef;
+            registerDefs ~= registerdef;
+        } else {
+            pragma(msg, "Skipping non-widget class: " ~ t.stringof);
+        }
+        //registerWidgetMetadata(T.stringof, new Metadata());
+    }
+    return joinStrings(classDefs) ~ "\n" ~ registerFunctionName ~ "() {\n" ~ joinStrings(registerDefs) ~ "}\n";
 }
 
 /// returns true if passed name is identifier of registered widget class

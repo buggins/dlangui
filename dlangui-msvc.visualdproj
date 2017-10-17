@@ -8,7 +8,7 @@
   <multiobj>0</multiobj>
   <singleFileCompilation>0</singleFileCompilation>
   <oneobj>0</oneobj>
-  <mscoff>0</mscoff>
+  <mscoff>1</mscoff>
   <trace>0</trace>
   <quiet>0</quiet>
   <verbose>0</verbose>
@@ -317,7 +317,7 @@
   <multiobj>0</multiobj>
   <singleFileCompilation>0</singleFileCompilation>
   <oneobj>0</oneobj>
-  <mscoff>0</mscoff>
+  <mscoff>1</mscoff>
   <trace>0</trace>
   <quiet>0</quiet>
   <verbose>0</verbose>
@@ -1276,6 +1276,7 @@
      <File path="src\dlangui\widgets\charts.d" />
      <File path="src\dlangui\widgets\combobox.d" />
      <File path="src\dlangui\widgets\controls.d" />
+     <File path="src\dlangui\widgets\dmlwidgets.d" />
      <File path="src\dlangui\widgets\docks.d" />
      <File path="src\dlangui\widgets\editors.d" />
      <File path="src\dlangui\widgets\grid.d" />
