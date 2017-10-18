@@ -1,4 +1,4 @@
-module dlangui.platforms.console.consolefont;
+module dlangui.platforms.ansi_console.consolefont;
 
 
 public import dlangui.core.config;
@@ -129,9 +129,9 @@ class ConsoleFont : Font {
     override void drawText(DrawBuf drawBuf, int x, int y, const dchar[] text, uint color, int tabSize = 4, int tabOffset = 0, uint textFlags = 0) {
         if (text.length == 0)
             return; // nothing to draw - empty text
-        import dlangui.platforms.console.consoleapp;
-        import dlangui.platforms.console.dconsole;
-        ConsoleDrawBuf buf = cast(ConsoleDrawBuf)drawBuf;
+        import dlangui.platforms.ansi_console.consoleapp;
+        import dlangui.platforms.ansi_console.dconsole;
+        ANSIConsoleDrawBuf buf = cast(ANSIConsoleDrawBuf)drawBuf;
         if (!buf)
             return;
         if (_textSizeBuffer.length < text.length)
@@ -146,7 +146,7 @@ class ConsoleFont : Font {
         bool underline = (textFlags & TextFlag.Underline) != 0;
         int underlineHeight = 1;
         int underlineY = y + _baseline + underlineHeight * 2;
-        buf.console.textColor = ConsoleDrawBuf.toConsoleColor(color);
+        buf.console.textColor = ANSIConsoleDrawBuf.toConsoleColor(color);
         buf.console.backgroundColor = CONSOLE_TRANSPARENT_BACKGROUND;
         //Log.d("drawText: (", x, ',', y, ") '", text, "', color=", buf.console.textColor);
         foreach(int i; 0 .. charsMeasured) {
@@ -200,9 +200,9 @@ class ConsoleFont : Font {
         if (text.length == 0)
             return; // nothing to draw - empty text
 
-        import dlangui.platforms.console.consoleapp;
-        import dlangui.platforms.console.dconsole;
-        ConsoleDrawBuf buf = cast(ConsoleDrawBuf)drawBuf;
+        import dlangui.platforms.ansi_console.consoleapp;
+        import dlangui.platforms.ansi_console.dconsole;
+        ANSIConsoleDrawBuf buf = cast(ANSIConsoleDrawBuf)drawBuf;
 
         if (_textSizeBuffer.length < text.length)
             _textSizeBuffer.length = text.length;
@@ -221,7 +221,7 @@ class ConsoleFont : Font {
         foreach(int i; 0 .. charsMeasured) {
             dchar ch = text[i];
             uint color = i < charProps.length ? charProps[i].color : charProps[$ - 1].color;
-            buf.console.textColor = ConsoleDrawBuf.toConsoleColor(color);
+            buf.console.textColor = ANSIConsoleDrawBuf.toConsoleColor(color);
             customizedTextFlags = (i < charProps.length ? charProps[i].textFlags : charProps[$ - 1].textFlags) | textFlags;
             underline = (customizedTextFlags & TextFlag.Underline) != 0;
             // turn off underline after hot key

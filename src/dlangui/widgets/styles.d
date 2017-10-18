@@ -1187,7 +1187,7 @@ Theme createDefaultTheme() {
         res.fontFace = "Verdana";
     }
     //res.fontFace = "Arial Narrow";
-    static if (BACKEND_CONSOLE) {
+    static if (WIDGET_STYLE_CONSOLE) {
         res.fontSize = 1;
         res.textColor = 0xFFFFFF;
         Style button = res.createSubstyle(STYLE_BUTTON).backgroundColor(0x808080).alignment(Align.Center).setMargins(0, 0, 0, 0).textColor(0x000000);
@@ -1690,7 +1690,7 @@ bool loadTheme(Theme theme, string resourceId, int level = 0) {
 
     string filename;
     try {
-        filename = drawableCache.findResource(BACKEND_CONSOLE ? "console_" ~ resourceId : resourceId);
+        filename = drawableCache.findResource(WIDGET_STYLE_CONSOLE ? "console_" ~ resourceId : resourceId);
         if (!filename || !filename.endsWith(".xml"))
             return false;
         string s = cast(string)loadResourceBytes(filename);

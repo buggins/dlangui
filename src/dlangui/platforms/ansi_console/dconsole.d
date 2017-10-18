@@ -1,4 +1,4 @@
-module dlangui.platforms.console.dconsole;
+module dlangui.platforms.ansi_console.dconsole;
 
 
 public import dlangui.core.config;

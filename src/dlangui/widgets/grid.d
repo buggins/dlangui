@@ -1649,7 +1649,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
                     if (!colVisible(x))
                         continue;
                     Rect cellRect = cellRectScroll(x, y);
-                    if (BACKEND_CONSOLE && phase == 1) {
+                    if (WIDGET_STYLE_CONSOLE && phase == 1) {
                         cellRect.right--;
                     }
                     Rect clippedCellRect = cellRect;
@@ -1703,7 +1703,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
 
     protected Point measureCell(int x, int y) {
         // override it!
-        return Point(BACKEND_CONSOLE ? 5 : 80, BACKEND_CONSOLE ? 1 : 20);
+        return Point(WIDGET_STYLE_CONSOLE ? 5 : 80, WIDGET_STYLE_CONSOLE ? 1 : 20);
     }
 
     protected int measureColWidth(int x) {
@@ -1741,7 +1741,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     }
 
     void autoFitColumnWidth(int i) {
-        _colWidths[i] = (i < _headerCols && !_showRowHeaders) ? 0 : measureColWidth(i) + (BACKEND_CONSOLE ? 1 : 3.pointsToPixels);
+        _colWidths[i] = (i < _headerCols && !_showRowHeaders) ? 0 : measureColWidth(i) + (WIDGET_STYLE_CONSOLE ? 1 : 3.pointsToPixels);
         _changedSize = true;
     }
 
@@ -1765,7 +1765,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     }
 
     void autoFitRowHeight(int i) {
-        _rowHeights[i] = (i < _headerRows && !_showColHeaders) ? 0 : measureRowHeight(i) + (BACKEND_CONSOLE ? 0 : 2);
+        _rowHeights[i] = (i < _headerRows && !_showColHeaders) ? 0 : measureRowHeight(i) + (WIDGET_STYLE_CONSOLE ? 0 : 2);
         _changedSize = true;
     }
 
@@ -1785,8 +1785,8 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         _headerCols = 1;
         _headerRows = 1;
         _selection = new RedBlackTree!Point();
-        _defRowHeight = BACKEND_CONSOLE ? 1 : pointsToPixels(16);
-        _defColumnWidth = BACKEND_CONSOLE ? 7 : 100;
+        _defRowHeight = WIDGET_STYLE_CONSOLE ? 1 : pointsToPixels(16);
+        _defColumnWidth = WIDGET_STYLE_CONSOLE ? 7 : 100;
 
         _showColHeaders = true;
         _showRowHeaders = true;
@@ -1964,7 +1964,7 @@ class StringGridWidget : StringGridWidgetBase {
         Align ha = Align.Left;
         //if (sz.y < rc.height)
         //    applyAlign(rc, sz, ha, Align.VCenter);
-        int offset = BACKEND_CONSOLE ? 0 : 1;
+        int offset = WIDGET_STYLE_CONSOLE ? 0 : 1;
         fnt.drawText(buf, rc.left + offset, rc.top + offset, txt, textColor);
     }
 
@@ -1989,7 +1989,7 @@ class StringGridWidget : StringGridWidgetBase {
         //if (row < 0)
         //    ha = Align.HCenter;
         applyAlign(rc, sz, ha, Align.VCenter);
-        int offset = BACKEND_CONSOLE ? 0 : 1;
+        int offset = WIDGET_STYLE_CONSOLE ? 0 : 1;
         uint cl = textColor;
         cl = style.customColor("grid_cell_text_color_header", cl);
         fnt.drawText(buf, rc.left + offset, rc.top + offset, txt, cl);
