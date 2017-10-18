@@ -50,11 +50,17 @@ struct Point {
     int x;
     int y;
 
-    Point opBinary(string op)(Point v) if (op == "+") {
+    Point opBinary(string op)(Point v) const if (op == "+") {
         return Point(x + v.x, y + v.y);
     }
-    Point opBinary(string op)(Point v) if (op == "-") {
+    Point opBinary(string op)(int n) const if (op == "*") {
+        return Point(x * n, y * n);
+    }
+    Point opBinary(string op)(Point v) const if (op == "-") {
         return Point(x - v.x, y - v.y);
+    }
+    Point opUnary(string op)() const if (op == "-") {
+        return Point(-x, -y);
     }
     int opCmp(ref const Point b) const {
         if (x == b.x) return y - b.y;
