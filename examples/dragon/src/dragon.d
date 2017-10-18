@@ -8,36 +8,33 @@ import dlangui.widgets.scroll;
 
 class DragonView : ScrollWidget {
 
-    int _scaleX;
-    int _scaleY;
-    int _middleX;
-    int _middleY;
-    int _dx;
-    int _dy;
-    int _x0;
-    int _y0;
-    int _length = 1000;
-    int _dir0 = 0; // either 0 or 1
-    int _straightLen = 10;
-    int _roundLen = 4;
-    uint _bgcolor = 0x101010;
-    uint _grid1color = 0x303030;
-    uint _grid2color = 0x202020;
-    uint _grid3color = 0x181818;
-    uint _curve1color = 0x4050FF;
-    uint _curve2color = 0xFF4040;
-    uint _curve3color = 0x30FF20;
-    uint _curve4color = 0xC000D0;
-    Point[8] _directionVectors = [
-        Point(4, 0),
-        Point(3, -3),
-        Point(0, -4),
-        Point(-3, -3),
-        Point(-4, 0),
-        Point(-3, 3),
-        Point(0, 4),
-        Point(3, 3),
-    ];
+    private {
+        int _scaleX;
+        int _scaleY;
+        int _middleX;
+        int _middleY;
+        int _dx;
+        int _dy;
+        int _x0;
+        int _y0;
+        int _length = 1000;
+        int _dir0 = 0; // either 0 or 1
+        int _straightLen = 10;
+        int _roundLen = 4;
+        uint _bgcolor = 0x101010;
+        uint _grid1color = 0x303030;
+        uint _grid2color = 0x202020;
+        uint _grid3color = 0x181818;
+        uint _curve1color = 0x4050FF;
+        uint _curve2color = 0xFF4040;
+        uint _curve3color = 0x30C020;
+        uint _curve4color = 0xC000D0;
+        bool[4] _partVisible = [true, true, true, true];
+
+        bool _needRepaint = true;
+        Point[8] _directionVectors;
+    }
+
 
     ColorDrawBuf _drawBuf;
 
@@ -55,7 +52,7 @@ class DragonView : ScrollWidget {
         _dy = dy;
         _fullScrollableArea.right = dx;
         _fullScrollableArea.bottom = dy;
-        _visibleScrollableArea.left = dx / 2 - 300;
+        _visibleScrollableArea.left = dx / 2 - 400;
         _visibleScrollableArea.top = dy / 2 - 300;
         _visibleScrollableArea.right = _visibleScrollableArea.left + 400;
         _visibleScrollableArea.bottom = _visibleScrollableArea.top + 400;
@@ -67,6 +64,7 @@ class DragonView : ScrollWidget {
         }
         _middleX = _fullScrollableArea.width / 2;
         _middleY = _fullScrollableArea.height / 2;
+        _needRepaint = true;
         drawCurve();
     }
 
@@ -111,6 +109,18 @@ class DragonView : ScrollWidget {
         }
         _x0 = vectors[1].x;
         _y0 = vectors[1].y;
+        repaint();
+    }
+
+    bool getPartVisible(int n) {
+        return _partVisible[n & 3];
+    }
+    void setPartVisible(int n, bool flgVisible) {
+        n = n & 3;
+        if (_partVisible[n] != flgVisible) {
+            _partVisible[n] = flgVisible;
+            repaint();
+        }
     }
 
     @property int straightLen() {
@@ -120,7 +130,6 @@ class DragonView : ScrollWidget {
         if (_straightLen != n) {
             _straightLen = n;
             setVectors();
-            drawCurve();
         }
         return this;
     }
@@ -131,7 +140,6 @@ class DragonView : ScrollWidget {
         if (_roundLen != n) {
             _roundLen = n;
             setVectors();
-            drawCurve();
         }
         return this;
     }
@@ -141,9 +149,13 @@ class DragonView : ScrollWidget {
     @property DragonView length(int n) {
         if (_length != n) {
             _length = n;
-            drawCurve();
+            repaint();
         }
         return this;
+    }
+    void repaint() {
+        _needRepaint = true;
+        invalidate();
     }
     @property int rotation() {
         return _dir0;
@@ -151,16 +163,24 @@ class DragonView : ScrollWidget {
     @property DragonView rotation(int angle) {
         if (_dir0 != (angle & 7)) {
             _dir0 = angle & 7;
-            drawCurve();
+            _needRepaint = true;
+            repaint();
         }
         return this;
+    }
+
+    /// Draw widget at its position to buffer
+    override void onDraw(DrawBuf buf) {
+        if (_needRepaint)
+            drawCurve();
+        super.onDraw(buf);
     }
 
     void drawLine(Point pt1, Point pt2, uint color) {
         pt1.x += _middleX;
         pt2.x += _middleX;
-        pt1.y += _middleY;
-        pt2.y += _middleY;
+        pt1.y = _middleY - pt1.y;
+        pt2.y = _middleY - pt2.y;
         _drawBuf.drawLine(pt1, pt2, color);
     }
 
@@ -214,56 +234,63 @@ class DragonView : ScrollWidget {
     }
 
     void drawSegment(ref Point currentPoint, ref int currentDir, int n, uint color, int mirror) {
+        int mx = _middleX + _scaleX * 2;
+        int my = _middleY + _scaleY * 2;
+        bool insideView = currentPoint.x >= -mx  && currentPoint.x <= mx && currentPoint.y >= -my && currentPoint.y <= my;
         int delta = getDirectionDelta(n) * mirror;
         Point nextPoint = currentPoint + _directionVectors[currentDir];
-        drawLine(currentPoint, nextPoint, color);
+        if (insideView)
+            drawLine(currentPoint, nextPoint, color);
         currentPoint = nextPoint;
         currentDir = (currentDir + delta) & 7;
         nextPoint = currentPoint + _directionVectors[currentDir];
-        drawLine(currentPoint, nextPoint, color);
+        if (insideView)
+            drawLine(currentPoint, nextPoint, color);
         currentPoint = nextPoint;
         currentDir = (currentDir + delta) & 7;
     }
 
-    void drawCurve() {
-        drawBackground();
-        // segment 1
+    void drawLines() {
         int dir;
         Point p0;
-        //Point p0 = Point(_directionVectors[_dir0].y, _directionVectors[_dir0 + 1].y );
+        Point pt;
         if (_dir0 == 0)
             p0 = Point(0, _directionVectors[_dir0 + 1].y);
         else
             p0 = Point(-_directionVectors[0].x / 2, _directionVectors[_dir0 + 1].y / 2);
-        //Point p0 = Point(-_directionVectors[0].x * 0, -_directionVectors[0].y / 2);
-        Point pt;
-        ///*
-        dir = 0 + _dir0;
-        //Point pt = Point(_directionVectors[dir + 1].x - _scaleX, _directionVectors[dir].y);
-        pt = p0 - (_directionVectors[dir] + _directionVectors[dir + 1]);
-        for(int i = 0; i < _length; i++)
-            drawSegment(pt, dir, i, _curve1color, 1);
+        // segment 1
+        if (_partVisible[0]) {
+            dir = 0 + _dir0;
+            pt = p0 - (_directionVectors[dir] + _directionVectors[dir + 1]);
+            for(int i = 0; i < _length; i++)
+                drawSegment(pt, dir, i, _curve1color, 1);
+        }
         // segment 2
-        ///*
-        dir = 4 + _dir0;
-        //pt = Point(-_directionVectors[dir + 1].x - _directionVectors[dir].x - _scaleX, _directionVectors[dir].y);
-        pt = p0 + _directionVectors[dir + 1];//_directionVectors[dir].y
-        for(int i = -1; i > -_length; i--)
-            drawSegment(pt, dir, i, _curve2color, -1);
-        //*/
-        ///*
+        if (_partVisible[1]) {
+            dir = 4 + _dir0;
+            pt = p0 + _directionVectors[dir + 1];
+            for(int i = -1; i > -_length; i--)
+                drawSegment(pt, dir, i, _curve2color, -1);
+        }
         // segment 3
-        dir = 4 + _dir0;
-        pt = p0 - (_directionVectors[dir - 1] + _directionVectors[dir]);
-        for(int i = 0; i < _length; i++)
-            drawSegment(pt, dir, i, _curve3color, 1);
+        if (_partVisible[2]) {
+            dir = 4 + _dir0;
+            pt = p0 - (_directionVectors[dir - 1] + _directionVectors[dir]);
+            for(int i = 0; i < _length; i++)
+                drawSegment(pt, dir, i, _curve3color, 1);
+        }
         // segment 4
-        dir = 0 + _dir0;
-        pt = p0 + _directionVectors[(dir - 1) & 7];
-        for(int i = -1; i > -_length; i--)
-            drawSegment(pt, dir, i, _curve4color, -1);
-        //*/
-        invalidate();
+        if (_partVisible[3]) {
+            dir = 0 + _dir0;
+            pt = p0 + _directionVectors[(dir - 1) & 7];
+            for(int i = -1; i > -_length; i--)
+                drawSegment(pt, dir, i, _curve4color, -1);
+        }
+    }
+    void drawCurve() {
+        drawBackground();
+        drawLines();
+        _needRepaint = false;
     }
 
     /// calculate full content size in pixels
@@ -289,13 +316,46 @@ class DragonView : ScrollWidget {
 
 }
 
+immutable SLIDER_ACCELERATION_STEP = 64;
+
+int sliderToSize(int n) {
+    int limit = 0;
+    int total = 0;
+    int factor = 1;
+    for(;;) {
+        int newlimit = limit + SLIDER_ACCELERATION_STEP;
+        if (n < newlimit) {
+            return total + (n - limit) * factor;
+        }
+        total += SLIDER_ACCELERATION_STEP * factor;
+        limit = newlimit;
+        factor *= 2;
+    }
+}
+
+int sizeToSlider(int n) {
+    int limit = 0;
+    int total = 0;
+    int factor = 1;
+    for(;;) {
+        int newlimit = limit + SLIDER_ACCELERATION_STEP;
+        int newtotal = total + SLIDER_ACCELERATION_STEP * factor;
+        if (n < newtotal) {
+            return limit + (n - total) / factor;
+        }
+        total = newtotal;
+        limit = newlimit;
+        factor *= 2;
+    }
+}
+
 /// entry point for dlangui based application
 extern (C) int UIAppMain(string[] args) {
 
     // create window
-    Log.d("Creating window");
-    Window window = Platform.instance.createWindow("DlangUI example - Dragon Curve", null);
-    Log.d("Window created");
+    Window window = Platform.instance.createWindow("DlangUI example : Dragon Curve"d, null, WindowFlag.Resizable, 800, 600);
+    int n = sliderToSize(1000);
+    int n2 = sizeToSlider(n);
 
     DragonView dragon = new DragonView("DRAGON_VIEW");
 
@@ -309,7 +369,7 @@ extern (C) int UIAppMain(string[] args) {
                     dragon.roundLen = event.position;
                     break;
                 case "size":
-                    dragon.length = event.position;
+                    dragon.length = sliderToSize(event.position);
                     break;
                 default:
                     break;
@@ -338,10 +398,30 @@ extern (C) int UIAppMain(string[] args) {
     cbRotate.checkChange = delegate(Widget w, bool check) { 
             dragon.rotation(check ? 1 : 0); return true; 
     };
+    auto cbPartVisible0 = new CheckBox(null, " A1"d);
+    controls1.addChild(cbPartVisible0).checked(dragon.getPartVisible(0));
+    cbPartVisible0.checkChange = delegate(Widget w, bool check) { 
+        dragon.setPartVisible(0, check); return true; 
+    };
+    auto cbPartVisible1 = new CheckBox(null, " A2"d);
+    controls1.addChild(cbPartVisible1).checked(dragon.getPartVisible(1));
+    cbPartVisible1.checkChange = delegate(Widget w, bool check) { 
+        dragon.setPartVisible(1, check); return true; 
+    };
+    auto cbPartVisible2 = new CheckBox(null, " B1"d);
+    controls1.addChild(cbPartVisible2).checked(dragon.getPartVisible(2));
+    cbPartVisible2.checkChange = delegate(Widget w, bool check) { 
+        dragon.setPartVisible(2, check); return true; 
+    };
+    auto cbPartVisible3 = new CheckBox(null, " B2"d);
+    controls1.addChild(cbPartVisible3).checked(dragon.getPartVisible(3));
+    cbPartVisible3.checkChange = delegate(Widget w, bool check) { 
+        dragon.setPartVisible(3, check); return true; 
+    };
 
     controls1.addChild(new TextWidget(null," Size"d));
     auto sliderSize = new SliderWidget("size");
-    sliderSize.setRange(2, 10000).position(dragon.length).layoutWeight(10).fillHorizontal;
+    sliderSize.setRange(2, 1000).position(sizeToSlider(dragon.length)).layoutWeight(10).fillHorizontal;
     sliderSize.scrollEvent = onScrollEvent;
     controls1.addChild(sliderSize);
 

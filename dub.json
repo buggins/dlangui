@@ -38,7 +38,8 @@
         "./examples/tetris/",
         "./examples/opengl/",
         "./examples/ircclient/",
-        "./examples/spreadsheet/"
+        "./examples/spreadsheet/",
+        "./examples/dragon/"
     ],
 
     "configurations": [
