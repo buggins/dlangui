@@ -633,7 +633,7 @@ static if (WIDGET_STYLE_CONSOLE) {
 
     abstract class ConsoleDrawBuf : DrawBuf
     {
-        void drawChar(int x, int y, dchar ch, uint color, uint bgcolor);
+        abstract void drawChar(int x, int y, dchar ch, uint color, uint bgcolor);
     }
 
     class TextDrawable : Drawable {
