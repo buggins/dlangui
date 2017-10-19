@@ -17,7 +17,7 @@ class DragonView : ScrollWidget {
         int _dy;
         int _x0;
         int _y0;
-        int _length = 1000;
+        int _length = 256;
         int _dir0 = 0; // either 0 or 1
         int _straightLen = 10;
         int _roundLen = 4;
