@@ -643,7 +643,7 @@ class FrameLayout : WidgetGroupDefaultDrawing {
         applyPadding(rc);
         for (int i = 0; i < _children.count; i++) {
             Widget item = _children.get(i);
-            if (item.visibility != Visibility.Gone) {
+            if (item.visibility == Visibility.Visible) {
                 item.layout(rc);
             }
         }
@@ -657,6 +657,7 @@ class FrameLayout : WidgetGroupDefaultDrawing {
             Widget item = _children.get(i);
             if (item.compareId(ID)) {
                 item.visibility = Visibility.Visible;
+                item.requestLayout();
                 foundWidget = item;
                 found = true;
             } else {

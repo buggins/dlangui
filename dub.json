@@ -38,7 +38,8 @@
         "./examples/tetris/",
         "./examples/opengl/",
         "./examples/ircclient/",
-        "./examples/spreadsheet/"
+        "./examples/spreadsheet/",
+        "./examples/dragon/"
     ],
 
     "configurations": [
@@ -64,7 +65,7 @@
         {
             "name": "console",
             "versions": ["USE_CONSOLE", "EmbedStandardResources"],
-            "excludedSourceFiles": ["3rdparty/*"]
+            "excludedSourceFiles": ["3rdparty/*GL*", "3rdparty/android", "3rdparty/dimage", "3rdparty/fontconfig/*", "3rdparty/icontheme", "3rdparty/jni.d"]
         },
         {
             "name": "external",

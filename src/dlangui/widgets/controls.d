@@ -115,20 +115,26 @@ class TextWidget : Widget {
         return this;
     }
 
-    override void measure(int parentWidth, int parentHeight) { 
+    private CalcSaver!(Font, dstring, uint, uint) _measureSaver;
+
+    override void measure(int parentWidth, int parentHeight) {
         FontRef font = font();
-        //auto measureStart = std.datetime.Clock.currAppTick;
-        Point sz;
-        if (maxLines == 1) {
-            sz = font.textSize(text, MAX_WIDTH_UNSPECIFIED, 4, 0, textFlags);
-        } else {
-            sz = font.measureMultilineText(text,maxLines,parentWidth-margins.left-margins.right-padding.left-padding.right, 4, 0, textFlags);
+        uint w = (maxLines == 1) ? MAX_WIDTH_UNSPECIFIED :
+                                   parentWidth - margins.left - margins.right - padding.left - padding.right;
+        uint flags = textFlags;
+
+        // optimization: do not measure if nothing changed
+        if (_measureSaver.check(font.get, text, w, flags) || _needLayout) {
+            Point sz;
+            if (maxLines == 1) {
+                sz = font.textSize(text, w, 4, 0, flags);
+            } else {
+                sz = font.measureMultilineText(text, maxLines, w, 4, 0, flags);
+            }
+            // it's not very correct, but in such simple widget it doesn't make issues
+            measuredContent(SIZE_UNSPECIFIED, SIZE_UNSPECIFIED, sz.x, sz.y);
+            _needLayout = false;
         }
-        //auto measureEnd = std.datetime.Clock.currAppTick;
-        //auto duration = measureEnd - measureStart;
-        //if (duration.length > 10)
-        //    Log.d("TextWidget measureText took ", duration.length, " ticks");
-        measuredContent(parentWidth, parentHeight, sz.x, sz.y);
     }
 
     override void onDraw(DrawBuf buf) {

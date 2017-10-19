@@ -1233,14 +1233,15 @@ class ColorDrawBufBase : DrawBuf {
 }
 
 class GrayDrawBuf : DrawBuf {
-    int _dx;
-    int _dy;
+    protected int _dx;
+    protected int _dy;
     /// returns buffer bits per pixel
     override @property int bpp() { return 8; }
     @property override int width() { return _dx; }
     @property override int height() { return _dy; }
 
-    ubyte[] _buf;
+    protected MallocBuf!ubyte _buf;
+
     this(int width, int height) {
         resize(width, height);
     }
@@ -1473,7 +1474,7 @@ class GrayDrawBuf : DrawBuf {
 }
 
 class ColorDrawBuf : ColorDrawBufBase {
-    uint[] _buf;
+    protected MallocBuf!uint _buf;
 
     /// create ARGB8888 draw buf of specified width and height
     this(int width, int height) {
@@ -1482,9 +1483,8 @@ class ColorDrawBuf : ColorDrawBufBase {
     /// create copy of ColorDrawBuf
     this(ColorDrawBuf v) {
         this(v.width, v.height);
-        //_buf.length = v._buf.length;
-        foreach(i; 0 .. _buf.length)
-            _buf[i] = v._buf[i];
+        if (auto len = _buf.length)
+            _buf.ptr[0 .. len] = v._buf.ptr[0 .. len];
     }
     /// create resized copy of ColorDrawBuf
     this(ColorDrawBuf v, int dx, int dy) {
@@ -1494,7 +1494,7 @@ class ColorDrawBuf : ColorDrawBufBase {
     }
 
     void invertAndPreMultiplyAlpha() {
-        foreach(ref pixel; _buf) {
+        foreach(ref pixel; _buf[]) {
             uint a = (pixel >> 24) & 0xFF;
             uint r = (pixel >> 16) & 0xFF;
             uint g = (pixel >> 8) & 0xFF;
@@ -1510,12 +1510,12 @@ class ColorDrawBuf : ColorDrawBufBase {
     }
 
     void invertAlpha() {
-        foreach(ref pixel; _buf)
+        foreach(ref pixel; _buf[])
             pixel ^= 0xFF000000;
     }
 
     void invertByteOrder() {
-        foreach(ref pixel; _buf) {
+        foreach(ref pixel; _buf[]) {
             pixel = (pixel & 0xFF00FF00) |
                 ((pixel & 0xFF0000) >> 16) |
                 ((pixel & 0xFF) << 16);
@@ -1524,7 +1524,7 @@ class ColorDrawBuf : ColorDrawBufBase {
 
     // for passing of image to OpenGL texture
     void invertAlphaAndByteOrder() {
-        foreach(ref pixel; _buf) {
+        foreach(ref pixel; _buf[]) {
             pixel = ((pixel & 0xFF00FF00) |
                 ((pixel & 0xFF0000) >> 16) |
                 ((pixel & 0xFF) << 16));
@@ -1643,9 +1643,9 @@ class ColorDrawBuf : ColorDrawBufBase {
         uint[] tmpbuf;
         tmpbuf.length = _buf.length;
         // do horizontal blur
-        blurOneDimension(_buf, tmpbuf, blurSize, true);
+        blurOneDimension(_buf[], tmpbuf, blurSize, true);
         // then do vertical blur
-        blurOneDimension(tmpbuf, _buf, blurSize, false);
+        blurOneDimension(tmpbuf, _buf[], blurSize, false);
     }
 }
 

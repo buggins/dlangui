@@ -513,6 +513,55 @@ struct Ref(T) { // if (T is RefCountedObject)
 }
 
 
+/**
+    This struct allows to not execute some code if some variables was not changed since the last check.
+    Used for optimizations.
+
+    Reference types, arrays and pointers are compared by reference.
+ */
+struct CalcSaver(Params...) {
+    import std.typecons : Tuple;
+    Tuple!Params values;
+
+    bool check(Params args) {
+        bool changed;
+        foreach (i, arg; args) {
+            if (values[i] !is arg) {
+                values[i] = arg;
+                changed = true;
+            }
+        }
+        return changed;
+    }
+}
+
+///
+unittest {
+
+    class A { }
+
+    CalcSaver!(uint, double[], A) saver;
+
+    uint x = 5;
+    double[] arr = [1, 2, 3];
+    A a = new A();
+
+    assert(saver.check(x, arr, a));
+    // values are not changing
+    assert(!saver.check(x, arr, a));
+    assert(!saver.check(x, arr, a));
+    assert(!saver.check(x, arr, a));
+    assert(!saver.check(x, arr, a));
+
+    x = 8;
+    arr ~= 25;
+    a = new A();
+    // values are changed
+    assert(saver.check(x, arr, a));
+    assert(!saver.check(x, arr, a));
+}
+
+
 //================================================================================
 // some utility functions
 
@@ -593,4 +642,77 @@ dstring normalizeEndOfLineCharacters(dstring s) {
         prevCh = ch;
     }
     return cast(dstring)res;
+}
+
+/// C malloc allocated array wrapper
+struct MallocBuf(T) {
+    import core.stdc.stdlib : realloc, free;
+    private T * _allocated;
+    private uint _allocatedSize;
+    private uint _length;
+    /// get pointer
+    @property T * ptr() { return _allocated; }
+    /// get length
+    @property uint length() { return _length; }
+    /// set new length
+    @property void length(uint len) {
+        if (len > _allocatedSize) {
+            reserve(_allocatedSize ? len * 2 : len);
+        }
+        _length = len;
+    }
+    /// const array[index];
+    T opIndex(uint index) const {
+        assert(index < _length);
+        return _allocated[index];
+    }
+    /// ref array[index];
+    ref T opIndex(uint index) {
+        assert(index < _length);
+        return _allocated[index];
+    }
+    /// array[index] = value;
+    void opIndexAssign(uint index, T value) {
+        assert(index < _length);
+        _allocated[index] = value;
+    }
+    /// array[index] = value;
+    void opIndexAssign(uint index, T[] values) {
+        assert(index + values.length < _length);
+        _allocated[index .. index + values.length] = values[];
+    }
+    /// array[a..b]
+    T[] opSlice(uint a, uint b) {
+        assert(a <= b && b <= _length);
+        return _allocated[a .. b];
+    }
+    /// array[]
+    T[] opSlice() {
+        return _allocated ? _allocated[0 .. _length] : null;
+    }
+    /// array[$]
+    uint opDollar() { return _length; }
+    ~this() {
+        clear();
+    }
+    /// free allocated memory, set length to 0
+    void clear() {
+        if (_allocated)
+            free(_allocated);
+        _allocatedSize = 0;
+        _length = 0;
+    }
+    /// make sure buffer capacity is at least (size) items
+    void reserve(uint size) {
+        if (_allocatedSize < size) {
+            _allocated = cast(T*)realloc(_allocated, T.sizeof * size);
+            _allocatedSize = size;
+        }
+    }
+    /// fill buffer with specified value
+    void fill(T value) {
+        if (_length) {
+            _allocated[0 .. _length] = value;
+        }
+    }
 }
