@@ -513,6 +513,55 @@ struct Ref(T) { // if (T is RefCountedObject)
 }
 
 
+/**
+    This struct allows to not execute some code if some variables was not changed since the last check.
+    Used for optimizations.
+
+    Reference types, arrays and pointers are compared by reference.
+ */
+struct CalcSaver(Params...) {
+    import std.typecons : Tuple;
+    Tuple!Params values;
+
+    bool check(Params args) {
+        bool changed;
+        foreach (i, arg; args) {
+            if (values[i] !is arg) {
+                values[i] = arg;
+                changed = true;
+            }
+        }
+        return changed;
+    }
+}
+
+///
+unittest {
+
+    class A { }
+
+    CalcSaver!(uint, double[], A) saver;
+
+    uint x = 5;
+    double[] arr = [1, 2, 3];
+    A a = new A();
+
+    assert(saver.check(x, arr, a));
+    // values are not changing
+    assert(!saver.check(x, arr, a));
+    assert(!saver.check(x, arr, a));
+    assert(!saver.check(x, arr, a));
+    assert(!saver.check(x, arr, a));
+
+    x = 8;
+    arr ~= 25;
+    a = new A();
+    // values are changed
+    assert(saver.check(x, arr, a));
+    assert(!saver.check(x, arr, a));
+}
+
+
 //================================================================================
 // some utility functions
 
