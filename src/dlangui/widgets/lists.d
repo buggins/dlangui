@@ -1402,7 +1402,12 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
 
 class StringListWidget : ListWidget {
     import std.conv : to;
-    import std.datetime.stopwatch : StopWatch;
+    // Will be errored after other compilers will overtake phobos version 2.076
+    version(DigitalMars) {
+        import std.datetime.stopwatch : StopWatch;
+    } else {
+        import std.datetime : StopWatch;
+    }
     import core.time : dur;
     private dstring _searchString;
     private StopWatch _stopWatch;
