@@ -1,4 +1,4 @@
-module dlangui.platforms.console.consoleapp;
+module dlangui.platforms.ansi_console.consoleapp;
 
 public import dlangui.core.config;
 static if (BACKEND_CONSOLE):
@@ -9,8 +9,8 @@ import dlangui.graphics.drawbuf;
 import dlangui.graphics.fonts;
 import dlangui.widgets.styles;
 import dlangui.widgets.widget;
-import dlangui.platforms.console.consolefont;
-private import dlangui.platforms.console.dconsole;
+import dlangui.platforms.ansi_console.consolefont;
+private import dlangui.platforms.ansi_console.dconsole;
 
 class ConsoleWindow : Window {
     ConsolePlatform _platform;
@@ -84,7 +84,7 @@ class ConsolePlatform : Platform {
 
     @property Console console() { return _console; }
 
-    protected ConsoleDrawBuf _drawBuf;
+    protected ANSIConsoleDrawBuf _drawBuf;
     this() {
         _console = new Console();
         _console.batchMode = true;
@@ -95,7 +95,7 @@ class ConsolePlatform : Platform {
         _console.init();
         _console.setCursorType(ConsoleCursorType.Invisible);
         _uiDialogDisplayMode = DialogDisplayMode.allTypesOfDialogsInPopup;
-        _drawBuf = new ConsoleDrawBuf(_console);
+        _drawBuf = new ANSIConsoleDrawBuf(_console);
     }
     ~this() {
         //Log.d("Destroying console");
@@ -279,7 +279,7 @@ class ConsolePlatform : Platform {
 }
 
 /// drawing buffer - image container which allows to perform some drawing operations
-class ConsoleDrawBuf : DrawBuf {
+class ANSIConsoleDrawBuf : ConsoleDrawBuf {
 
     protected Console _console;
     @property Console console() { return _console; }
@@ -439,7 +439,7 @@ class ConsoleDrawBuf : DrawBuf {
         // TODO
     }
 
-    void drawChar(int x, int y, dchar ch, uint color, uint bgcolor) {
+    override void drawChar(int x, int y, dchar ch, uint color, uint bgcolor) {
         if (x < _clipRect.left || x >= _clipRect.right || y < _clipRect.top || y >= _clipRect.bottom)
             return;
         ubyte tc = toConsoleColor(color, false);

@@ -139,7 +139,7 @@ class DummyIconProvider : IconProviderBase
     }
 }
 
-static if (!BACKEND_CONSOLE) {
+static if (!WIDGET_STYLE_CONSOLE) {
     version(Windows)
     {
         import core.sys.windows.windows;
@@ -484,28 +484,30 @@ static if (!BACKEND_CONSOLE) {
 
             DrawBufRef getIconFromTheme(string name, string context = null)
             {
-                auto found = name in _cache;
-                if (found) {
-                    return *found;
-                }
-                string iconPath;
-                try {
-                    if (context.length) {
-                        iconPath = findClosestIcon!(subdir => subdir.context == context)(name, 32, _iconThemes, _baseIconDirs);
-                    } else {
-                        iconPath = findClosestIcon(name, 32, _iconThemes, _baseIconDirs);
+                static if (!WIDGET_STYLE_CONSOLE) {
+                    auto found = name in _cache;
+                    if (found) {
+                        return *found;
                     }
-                } catch(Exception e) {
-                    Log.e("Error while searching for icon", name);
-                    Log.e(e);
-                }
+                    string iconPath;
+                    try {
+                        if (context.length) {
+                            iconPath = findClosestIcon!(subdir => subdir.context == context)(name, 32, _iconThemes, _baseIconDirs);
+                        } else {
+                            iconPath = findClosestIcon(name, 32, _iconThemes, _baseIconDirs);
+                        }
+                    } catch(Exception e) {
+                        Log.e("Error while searching for icon", name);
+                        Log.e(e);
+                    }
 
-                if (iconPath.length) {
-                    auto image = DrawBufRef(loadImage(iconPath));
-                    _cache[name] = image;
-                    return image;
-                } else {
-                    _cache[name] = DrawBufRef(null);
+                    if (iconPath.length) {
+                        auto image = DrawBufRef(loadImage(iconPath));
+                        _cache[name] = image;
+                        return image;
+                    } else {
+                        _cache[name] = DrawBufRef(null);
+                    }
                 }
                 return DrawBufRef(null);
             }

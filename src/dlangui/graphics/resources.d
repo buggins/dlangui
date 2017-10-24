@@ -216,7 +216,7 @@ EmbeddedResource[] embedResources(string[] resourceNames)() {
 
 /// embed all resources from list
 EmbeddedResource[] embedResourcesFromList(string resourceList)() {
-    static if (BACKEND_CONSOLE) {
+    static if (WIDGET_STYLE_CONSOLE) {
         return embedResources!(splitLines(import("console_" ~ resourceList)))();
     } else {
         return embedResources!(splitLines(import(resourceList)))();
@@ -523,7 +523,7 @@ static uint decodeAngle(string s) {
     return ((angle % 360) + 360) % 360;
 }
 
-static if (BACKEND_CONSOLE) {
+static if (WIDGET_STYLE_CONSOLE) {
     /**
     Sample format:
     {
@@ -610,7 +610,7 @@ static Drawable createColorDrawable(string s) {
     return new EmptyDrawable(); // invalid format - just return empty drawable
 }
 
-static if (BACKEND_CONSOLE) {
+static if (WIDGET_STYLE_CONSOLE) {
     /**
         Text image drawable.
         Resource file extension: .tim
@@ -630,8 +630,13 @@ static if (BACKEND_CONSOLE) {
     {'╔═╗' '║ ║' '╚═╝' bc 0x000080 tc 0xFF0000 ninepatch 1 1 1 1}
 
     */
+
+    abstract class ConsoleDrawBuf : DrawBuf
+    {
+        abstract void drawChar(int x, int y, dchar ch, uint color, uint bgcolor);
+    }
+
     class TextDrawable : Drawable {
-        import dlangui.platforms.console.consoleapp : ConsoleDrawBuf;
         private int _width;
         private int _height;
         private dchar[] _text;
@@ -1541,7 +1546,7 @@ class DrawableCache {
         foreach(string path; _resourcePaths) {
             string fn;
             fn = checkFileName(path, id, ".xml");
-            if (fn is null && BACKEND_CONSOLE)
+            if (fn is null && WIDGET_STYLE_CONSOLE)
                 fn = checkFileName(path, id, ".tim");
             if (fn is null)
                 fn = checkFileName(path, id, ".png");
@@ -1601,7 +1606,7 @@ private Drawable makeDrawableFromId(in string id, in bool tiled, ColorTransform 
                 return d;
             }
         } else if (id.endsWith(".tim") || id.endsWith(".TIM")) {
-            static if (BACKEND_CONSOLE) {
+            static if (WIDGET_STYLE_CONSOLE) {
                 try {
                     // .tim (text image) drawables support
                     string s = cast(string)loadResourceBytes(id);
@@ -1620,7 +1625,7 @@ private Drawable makeDrawableFromId(in string id, in bool tiled, ColorTransform 
             return createColorDrawable(id);
         } else if (id.startsWith("{")) {
             // json in {} with text drawable description
-            static if (BACKEND_CONSOLE) {
+            static if (WIDGET_STYLE_CONSOLE) {
                return createTextDrawable(id);
             }
         } else {
