@@ -95,7 +95,7 @@ class TextWidget : Widget {
 
     protected UIString _text;
     /// get widget text
-    override @property dstring text() { return _text; }
+    override @property dstring text() const { return _text; }
     /// set text to show
     override @property Widget text(dstring s) { 
         _text = s; 

@@ -1739,7 +1739,7 @@ class WidgetGroup : Widget {
     protected WidgetList _children;
 
     /// returns number of children of this widget
-    @property override int childCount() { return _children.count; }
+    @property override int childCount() const { return _children.count; }
     /// returns child by index
     override Widget child(int index) { return _children.get(index); }
     /// adds child, returns added item
