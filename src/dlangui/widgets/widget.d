@@ -1523,7 +1523,7 @@ public:
     // Widget hierarhy methods
 
     /// returns number of children of this widget
-    @property int childCount() { return 0; }
+    @property int childCount() const { return 0; }
     /// returns child by index
     inout(Widget) child(int index) inout { return null; }
     /// adds child, returns added item
