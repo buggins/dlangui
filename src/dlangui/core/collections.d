@@ -244,12 +244,7 @@ struct ObjectList(T) {
     @property int count() const { return _count; }
     alias length = count;
     /** get item by index */
-    T get(int index) {
-        assert(index >= 0 && index < _count, "child index out of range");
-        return _list[index];
-    }
-    /** get const item by index */
-    const(T) get(int index)  const {
+    inout(T) get(int index) inout {
         assert(index >= 0 && index < _count, "child index out of range");
         return _list[index];
     }
