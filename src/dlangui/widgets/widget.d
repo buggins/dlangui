@@ -1523,9 +1523,9 @@ public:
     // Widget hierarhy methods
 
     /// returns number of children of this widget
-    @property int childCount() { return 0; }
+    @property int childCount() const { return 0; }
     /// returns child by index
-    Widget child(int index) { return null; }
+    inout(Widget) child(int index) inout { return null; }
     /// adds child, returns added item
     Widget addChild(Widget item) { assert(false, "addChild: children not suported for this widget type"); }
     /// adds child, returns added item
@@ -1739,9 +1739,9 @@ class WidgetGroup : Widget {
     protected WidgetList _children;
 
     /// returns number of children of this widget
-    @property override int childCount() { return _children.count; }
+    @property override int childCount() const { return _children.count; }
     /// returns child by index
-    override Widget child(int index) { return _children.get(index); }
+    override inout(Widget) child(int index) inout { return _children.get(index); }
     /// adds child, returns added item
     override Widget addChild(Widget item) { return _children.add(item).parent(this); }
     /// inserts child at given index, returns inserted item
