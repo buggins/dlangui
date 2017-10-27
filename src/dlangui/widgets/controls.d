@@ -529,7 +529,7 @@ class RadioButton : ImageTextButton {
 /// Text only button
 class Button : Widget {
     protected UIString _text;
-    override @property dstring text() { return _text; }
+    override @property dstring text() const { return _text; }
     override @property Widget text(dstring s) { _text = s; requestLayout(); return this; }
     override @property Widget text(UIString s) { _text = s; requestLayout(); return this; }
     @property Widget textResource(string s) { _text = s; requestLayout(); return this; }
