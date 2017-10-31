@@ -343,6 +343,15 @@
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         />
+    <style id="FILE_DIALOG_GRID"
+        backgroundImageId="editbox_background"
+        padding="2,2,2,2"
+        margins="2,2,2,2"
+        minWidth="100"
+        minHeight="60"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        />
     <style id="STATUS_LINE"
         backgroundColor="#eceffa"
         layoutWidth="FILL_PARENT"

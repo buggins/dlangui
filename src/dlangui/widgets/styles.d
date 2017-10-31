@@ -115,6 +115,8 @@ immutable string STYLE_EDIT_BOX = "EDIT_BOX";
 immutable string STYLE_LIST_BOX = "LIST_BOX";
 /// standard style id for StringGrid
 immutable string STYLE_STRING_GRID = "STRING_GRID";
+/// standard style id for FileDialog StringGrid
+immutable string STYLE_FILE_DIALOG_GRID = "FILE_DIALOG_GRID";
 /// standard style id for background similar to transparent button
 immutable string STYLE_TRANSPARENT_BUTTON_BACKGROUND = "TRANSPARENT_BUTTON_BACKGROUND";
 /// standard style id for GroupBox
