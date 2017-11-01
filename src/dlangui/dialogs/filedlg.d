@@ -771,6 +771,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         }
 
         _fileList = new StringGridWidget("files");
+        _fileList.styleId = STYLE_FILE_DIALOG_GRID;
         _fileList.layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT);
         _fileList.fullColumnOnLeft(false);
         _fileList.fullRowOnTop(false);
