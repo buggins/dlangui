@@ -490,7 +490,7 @@ class SDLWindow : Window {
 
     protected dstring _caption;
 
-    override @property dstring windowCaption() {
+    override @property dstring windowCaption() const {
         return _caption;
     }
 

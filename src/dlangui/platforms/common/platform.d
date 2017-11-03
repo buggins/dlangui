@@ -366,7 +366,7 @@ class Window : CustomEventTarget {
     /// show window
     abstract void show();
     /// returns window caption
-    abstract @property dstring windowCaption();
+    abstract @property dstring windowCaption() const;
     /// sets window caption
     abstract @property void windowCaption(dstring caption);
     /// sets window icon

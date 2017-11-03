@@ -37,7 +37,7 @@ class ConsoleWindow : Window {
     }
     private dstring _windowCaption;
     /// returns window caption
-    override @property dstring windowCaption() {
+    override @property dstring windowCaption() const {
         return _windowCaption;
     }
     /// sets window caption

@@ -49,7 +49,7 @@ class DSFMLWindow : dlangui.platforms.common.platform.Window {
     }
 
     /// returns window caption
-    override @property dstring windowCaption() {
+    override @property dstring windowCaption() const {
         // TODO
         return ""d;
     }

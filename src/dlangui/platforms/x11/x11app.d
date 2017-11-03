@@ -625,7 +625,7 @@ class X11Window : DWindow {
         return _isActive;
     }
 
-    override @property dstring windowCaption() {
+    override @property dstring windowCaption() const {
         return _caption;
     }
 
