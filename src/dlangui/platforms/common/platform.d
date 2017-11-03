@@ -263,7 +263,7 @@ class Window : CustomEventTarget {
     @property int width() const { return _dx; }
     @property int height() const { return _dy; }
     @property uint keyboardModifiers() const { return _keyboardModifiers; }
-    @property Widget mainWidget() { return _mainWidget; }
+    @property inout(Widget) mainWidget() inout { return _mainWidget; }
     @property void mainWidget(Widget widget) {
         if (_mainWidget !is null) {
             _mainWidget.window = null;
