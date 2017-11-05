@@ -263,7 +263,7 @@ class Window : CustomEventTarget {
     @property int width() const { return _dx; }
     @property int height() const { return _dy; }
     @property uint keyboardModifiers() const { return _keyboardModifiers; }
-    @property Widget mainWidget() { return _mainWidget; }
+    @property inout(Widget) mainWidget() inout { return _mainWidget; }
     @property void mainWidget(Widget widget) {
         if (_mainWidget !is null) {
             _mainWidget.window = null;
@@ -366,7 +366,7 @@ class Window : CustomEventTarget {
     /// show window
     abstract void show();
     /// returns window caption
-    abstract @property dstring windowCaption();
+    abstract @property dstring windowCaption() const;
     /// sets window caption
     abstract @property void windowCaption(dstring caption);
     /// sets window icon

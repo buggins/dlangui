@@ -48,7 +48,7 @@ class AndroidWindow : Window {
 
     protected dstring _caption;
     /// returns window caption
-    override @property dstring windowCaption() {
+    override @property dstring windowCaption() const {
         return _caption;
     }
     /// sets window caption

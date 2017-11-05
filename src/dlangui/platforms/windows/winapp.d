@@ -517,7 +517,7 @@ class Win32Window : Window {
         return _hwnd == GetForegroundWindow();
     }
     
-    override @property dstring windowCaption() {
+    override @property dstring windowCaption() const {
         return _caption;
     }
 
