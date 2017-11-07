@@ -12,4 +12,4 @@ LOCAL_SRC_FILES="\
 LOCAL_LDLIBS=""
 
 # Android SDK target
-ANDROID_TARGET="android-19"
+ANDROID_TARGET="android-21"

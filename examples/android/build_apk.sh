@@ -31,12 +31,12 @@ die () {
 . $DLANGUI_DIR/android/android_ldc_armv7a.mk
 
 
-echo "Updating ant project..."
+#echo "Updating ant project..."
 #=========================================================
-$SDK/tools/android update project -p . -s --target $ANDROID_TARGET || die 3 "Android Project update is failed"
+#$SDK/tools/android update project -p . -s --target $ANDROID_TARGET || die 3 "Android Project update is failed"
 
 echo "Building APK..."
 #=========================================================
-ant debug || die 4 "Android APK creation is failed"
+./gradlew assembleDebug || die 4 "Android APK creation is failed"
 
 echo "Successful."

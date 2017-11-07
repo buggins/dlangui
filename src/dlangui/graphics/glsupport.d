@@ -700,7 +700,7 @@ bool initGLSupport(bool legacy = false) {
     }
     if (!_glSupport) {
         Log.d("glSupport not initialized: trying to create");
-        int major = to!int(glGetString(GL_VERSION)[0 .. 1]);
+        int major = *cast(int*)(glGetString(GL_VERSION)[0 .. 1].ptr);
         legacy = legacy || (major < 3);
         _glSupport = new GLSupport(legacy);
         if (!_glSupport.valid) {
@@ -835,11 +835,12 @@ final class GLSupport {
 
     /// This function is needed to draw custom OpenGL scene correctly (especially on legacy API)
     private void resetBindings() {
-        if (glUseProgram)
+		import std.traits : isFunction;
+        if (isFunction!glUseProgram)
             GLProgram.unbind();
-        if (glBindVertexArray)
+        if (isFunction!glBindVertexArray)
             VAO.unbind();
-        if (glBindBuffer)
+        if (isFunction!glBindBuffer)
             VBO.unbind();
     }
 

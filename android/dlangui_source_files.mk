@@ -15,6 +15,7 @@ $DLANGUI_DIR/src/dlangui/core/asyncsocket.d \
 $DLANGUI_DIR/src/dlangui/core/config.d \
 $DLANGUI_DIR/src/dlangui/core/textsource.d \
 $DLANGUI_DIR/src/dlangui/core/css.d \
+$DLANGUI_DIR/src/dlangui/core/filemanager.d \
 $DLANGUI_DIR/src/dlangui/core/files.d \
 $DLANGUI_DIR/src/dlangui/core/events.d \
 $DLANGUI_DIR/src/dlangui/core/collections.d \
@@ -52,6 +53,7 @@ $DLANGUI_DIR/src/dlangui/graphics/scene/fbximport.d \
 $DLANGUI_DIR/src/dlangui/graphics/scene/skybox.d \
 $DLANGUI_DIR/src/dlangui/graphics/resources.d \
 $DLANGUI_DIR/src/dlangui/graphics/glsupport.d \
+$DLANGUI_DIR/src/dlangui/graphics/iconprovider.d \
 $DLANGUI_DIR/src/dlangui/graphics/colors.d \
 $DLANGUI_DIR/src/dlangui/graphics/gldrawbuf.d \
 $DLANGUI_DIR/src/dlangui/graphics/fonts.d \
@@ -63,6 +65,7 @@ $DLANGUI_DIR/src/dlangui/dml/annotations.d \
 $DLANGUI_DIR/src/dlangui/dml/tokenizer.d \
 $DLANGUI_DIR/src/dlangui/dml/parser.d \
 $DLANGUI_DIR/src/dlangui/widgets/grid.d \
+$DLANGUI_DIR/src/dlangui/widgets/groupbox.d \
 $DLANGUI_DIR/src/dlangui/widgets/styles.d \
 $DLANGUI_DIR/src/dlangui/widgets/combobox.d \
 $DLANGUI_DIR/src/dlangui/widgets/lists.d \
@@ -72,13 +75,17 @@ $DLANGUI_DIR/src/dlangui/widgets/statusline.d \
 $DLANGUI_DIR/src/dlangui/widgets/toolbars.d \
 $DLANGUI_DIR/src/dlangui/widgets/tree.d \
 $DLANGUI_DIR/src/dlangui/widgets/controls.d \
+$DLANGUI_DIR/src/dlangui/widgets/dmlwidgets.d \
 $DLANGUI_DIR/src/dlangui/widgets/popup.d \
+$DLANGUI_DIR/src/dlangui/widgets/progressbar.d \
 $DLANGUI_DIR/src/dlangui/widgets/tabs.d \
 $DLANGUI_DIR/src/dlangui/widgets/editors.d \
 $DLANGUI_DIR/src/dlangui/widgets/appframe.d \
+$DLANGUI_DIR/src/dlangui/widgets/charts.d \
 $DLANGUI_DIR/src/dlangui/widgets/layouts.d \
 $DLANGUI_DIR/src/dlangui/widgets/winframe.d \
 $DLANGUI_DIR/src/dlangui/widgets/metadata.d \
+$DLANGUI_DIR/src/dlangui/widgets/scrollbar.d \
 $DLANGUI_DIR/src/dlangui/widgets/scroll.d \
 $DLANGUI_DIR/src/dlangui/widgets/docks.d \
 $DLANGUI_DIR/src/dlangui/widgets/menu.d \
