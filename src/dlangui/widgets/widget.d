@@ -570,7 +570,7 @@ public:
     @property FontRef font() const { return stateStyle.font; }
 
     /// returns widget content text (override to support this)
-    @property dstring text() { return ""; }
+    @property dstring text() const { return ""; }
     /// sets widget content text (override to support this)
     @property Widget text(dstring s) { return this; }
     /// sets widget content text (override to support this)

@@ -53,7 +53,7 @@ class GroupBox : LinearLayout {
     }
 
     /// get widget text
-    override @property dstring text() { return _caption.text; }
+    override @property dstring text() const { return _caption.text; }
     /// set text to show
     override @property Widget text(dstring s) {
         _caption.text = s;

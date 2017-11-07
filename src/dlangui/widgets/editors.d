@@ -995,7 +995,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected bool _lastReportedModifiedState;
 
     /// get widget text
-    override @property dstring text() { return _content.text; }
+    override @property dstring text() const { return _content.text; }
 
     /// set text
     override @property Widget text(dstring s) {

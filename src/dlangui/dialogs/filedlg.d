@@ -1210,7 +1210,7 @@ class FileNameEditLine : HorizontalLayout {
     @property void caption(dstring s) { _caption = s; }
 
     /// returns widget content text (override to support this)
-    override @property dstring text() { return _edFileName.text; }
+    override @property dstring text() const { return _edFileName.text; }
     /// sets widget content text (override to support this)
     override @property Widget text(dstring s) { _edFileName.text = s; return this; }
     /// sets widget content text (override to support this)
