@@ -17,7 +17,6 @@ cd freetype-2.6/
 ./configure --host=arm-linux-androideabi --without-zlib --prefix="$(pwd)/freetype" --with-png=no --with-harfbuzz=no
 make -j$(nproc)
 make install
-echo "ERNO ERNO ENOR"
 mkdir -p ../../libs/armeabi-v7a
 cp freetype/lib/libfreetype.so ../../libs/armeabi-v7a/libfreetype.so
 
