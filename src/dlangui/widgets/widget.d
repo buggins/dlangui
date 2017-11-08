@@ -570,11 +570,17 @@ public:
     @property FontRef font() const { return stateStyle.font; }
 
     /// returns widget content text (override to support this)
-    @property dstring text() { return ""; }
+    @property dstring text() const {
+        assert(false, __FUNCTION__~" isn't implemented");
+    }
     /// sets widget content text (override to support this)
-    @property Widget text(dstring s) { return this; }
+    @property Widget text(dstring s) {
+        assert(false, __FUNCTION__~" isn't implemented");
+    }
     /// sets widget content text (override to support this)
-    @property Widget text(UIString s) { return this; }
+    @property Widget text(UIString s) {
+        assert(false, __FUNCTION__~" isn't implemented");
+    }
 
     /// override to handle font changes
     protected void handleFontChanged() {}

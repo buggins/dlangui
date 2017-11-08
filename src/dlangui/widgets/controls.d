@@ -355,7 +355,7 @@ class ImageTextButton : HorizontalLayout {
     protected TextWidget _label;
 
     /// Get label text
-    override @property dstring text() { return _label.text; }
+    override @property dstring text() const { return _label.text; }
     /// Set label plain unicode string
     override @property Widget text(dstring s) { _label.text = s; requestLayout(); return this; }
     /// Set label string resource Id

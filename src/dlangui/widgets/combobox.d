@@ -284,7 +284,7 @@ class ComboBox : ComboBoxBase {
         return cast(StringListAdapter)_adapter;
     }
 
-    @property override dstring text() {
+    @property override dstring text() const {
         return _body.text;
     }
 
@@ -403,7 +403,7 @@ class IconTextComboBox : ComboBoxBase {
         return cast(StringListAdapter)_adapter;
     }
 
-    @property override dstring text() {
+    @property override dstring text() const {
         return _body.text;
     }
 

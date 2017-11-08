@@ -38,7 +38,7 @@ class StatusLineTextPanel : StatusLinePanelBase {
         addChild(_text);
     }
     /// returns widget content text (override to support this)
-    override @property dstring text() { return _text.text; }
+    override @property dstring text() const { return _text.text; }
     /// sets widget content text (override to support this)
     override @property Widget text(dstring s) { _text.text = s; return this; }
     /// sets widget content text (override to support this)

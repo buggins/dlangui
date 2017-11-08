@@ -56,4 +56,18 @@ class InputBox : Dialog {
         _editor.selectAll();
         _editor.setFocus();
     }
+
+    override dstring text() const {
+        return _text;
+    }
+
+    override Widget text(dstring t) {
+        _text = t;
+        return this;
+    }
+
+    override Widget text(UIString s) {
+        _text = s;
+        return this;
+    }
 }

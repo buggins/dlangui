@@ -614,7 +614,7 @@ class EditableContent {
     @property EditStateMark[] editMarks() { return _editMarks; }
 
     /// returns all lines concatenated delimited by '\n'
-    @property dstring text() {
+    @property dstring text() const {
         if (_lines.length == 0)
             return "";
         if (_lines.length == 1)
