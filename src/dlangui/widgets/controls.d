@@ -362,7 +362,7 @@ class ImageTextButton : HorizontalLayout {
     override @property Widget text(UIString s) { _label.text = s; requestLayout(); return this; }
     
     /// Returns orientation: Vertical - image top, Horizontal - image left"
-    override @property Orientation orientation() {
+    override @property Orientation orientation() const {
         return super.orientation();
     }
 

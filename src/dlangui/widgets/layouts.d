@@ -521,7 +521,7 @@ class ResizerWidget : Widget {
 class LinearLayout : WidgetGroupDefaultDrawing {
     protected Orientation _orientation = Orientation.Vertical;
     /// returns linear layout orientation (Vertical, Horizontal)
-    @property Orientation orientation() { return _orientation; }
+    @property Orientation orientation() const { return _orientation; }
     /// sets linear layout orientation
     @property LinearLayout orientation(Orientation value) { _orientation = value; requestLayout(); return this; }
 
