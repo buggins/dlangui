@@ -3504,13 +3504,10 @@ class LogWidget : EditBox {
 
     this(string ID) {
         super(ID);
+        styleId = STYLE_LOG_WIDGET;
         _scrollLock = true;
         _enableScrollAfterText = false;
         enabled = false;
-        fontSize = makePointSize(9);
-        //fontFace = "Consolas,Lucida Console,Courier New";
-        fontFace = "Menlo,Consolas,DejaVuSansMono,DejaVu Sans Mono,Lucida Sans Typewriter,Courier New,Lucida Console";
-        fontFamily = FontFamily.MonoSpace;
         minFontSize(pointsToPixels(6)).maxFontSize(pointsToPixels(32)); // allow font zoom with Ctrl + MouseWheel
         onThemeChanged();
     }

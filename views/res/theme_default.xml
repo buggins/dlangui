@@ -317,6 +317,18 @@
         layoutWidth="FILL_PARENT"
         layoutHeight="FILL_PARENT"
         />
+    <style id="LOG_WIDGET"
+        fontFace="Menlo,Consolas,DejaVuSansMono,DejaVu Sans Mono,Lucida Sans Typewriter,Courier New,Lucida Console"
+        fontSize="9pt"
+        fontFamily="MonoSpace"
+        backgroundImageId="editbox_background"
+        padding="2,2,2,2"
+        margins="2,2,2,2"
+        minWidth="100"
+        minHeight="60"
+        layoutWidth="FILL_PARENT"
+        layoutHeight="FILL_PARENT"
+        />
     <style id="LIST_BOX"
         backgroundImageId="editbox_background"
         padding="2,2,2,2"
