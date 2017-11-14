@@ -70,7 +70,10 @@
         {
             "name": "external",
             "versions": ["USE_EXTERNAL"],
-            "excludedSourceFiles": ["3rdparty/fontconfig/*"]
+            "dependencies": {
+                "derelict-gl3": "~>1.0.18",
+                "derelict-ft": "~>1.1.2"
+            }
         },
         {
             "name": "minimal",
