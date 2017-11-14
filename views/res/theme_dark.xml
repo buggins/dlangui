@@ -220,6 +220,9 @@
     <style id="EDIT_BOX"
         backgroundImageId="editbox_background_dark"
         />
+    <style id="LOG_WIDGET"
+        backgroundImageId="editbox_background_dark"
+        />
     <style id="LIST_BOX"
         backgroundImageId="editbox_background_dark"
         />
