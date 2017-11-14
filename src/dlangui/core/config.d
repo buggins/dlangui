@@ -108,17 +108,7 @@ version(USE_CONSOLE) {
         enum BACKEND_CONSOLE = false;
     } else version (USE_EXTERNAL) {
         // External backend already selected using version identifier
-        version (USE_OPENGL) {
-            enum ENABLE_OPENGL = true;
-        } else {
-            enum ENABLE_OPENGL = false;
-        }
-        enum BACKEND_GUI = false;
-        enum BACKEND_CONSOLE = false;
-        enum BACKEND_SDL = false;
-        enum BACKEND_X11 = false;
-        enum BACKEND_DSFML = false;
-        enum BACKEND_WIN32 = false;
+        // All config variables should be settled in external config file
     } else {
         // no backend selected: set default based on platform
         version (Windows) {
