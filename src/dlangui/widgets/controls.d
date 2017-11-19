@@ -360,7 +360,39 @@ class ImageTextButton : HorizontalLayout {
     override @property Widget text(dstring s) { _label.text = s; requestLayout(); return this; }
     /// Set label string resource Id
     override @property Widget text(UIString s) { _label.text = s; requestLayout(); return this; }
-    
+    /// get text color (ARGB 32 bit value)
+    override @property uint textColor() const { return _label.textColor; }
+    /// set text color for widget - from string like "#5599CC" or "white"
+    override @property Widget textColor(string colorString) { _label.textColor(colorString); return this; }
+    /// set text color (ARGB 32 bit value)
+    override @property Widget textColor(uint value) { _label.textColor(value); return this; }
+    /// get text flags (bit set of TextFlag enum values)
+    override @property uint textFlags() { return _label.textFlags(); }
+    /// set text flags (bit set of TextFlag enum values)
+    override @property Widget textFlags(uint value) { _label.textFlags(value); return this; }
+    /// returns font face
+    override @property string fontFace() const { return _label.fontFace(); }
+    /// set font face for widget - override one from style
+    override @property Widget fontFace(string face) { _label.fontFace(face); return this; }
+    /// returns font style (italic/normal)
+    override @property bool fontItalic() const { return _label.fontItalic; }
+    /// set font style (italic/normal) for widget - override one from style
+    override @property Widget fontItalic(bool italic) { _label.fontItalic(italic); return this; }
+    /// returns font weight
+    override @property ushort fontWeight() const { return _label.fontWeight; }
+    /// set font weight for widget - override one from style
+    override @property Widget fontWeight(int weight) { _label.fontWeight(weight); return this; }
+    /// returns font size in pixels
+    override @property int fontSize() const { return _label.fontSize; }
+    /// Set label font size 
+    override @property Widget fontSize(int size) { _label.fontSize(size); return this; }
+    /// returns font family
+    override @property FontFamily fontFamily() const { return _label.fontFamily; }
+    /// set font family for widget - override one from style
+    override @property Widget fontFamily(FontFamily family) { _label.fontFamily(family); return this; }
+    /// returns font set for widget using style or set manually
+    override @property FontRef font() const { return _label.font; }
+
     /// Returns orientation: Vertical - image top, Horizontal - image left"
     override @property Orientation orientation() const {
         return super.orientation();
