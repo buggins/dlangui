@@ -235,6 +235,9 @@
     <style id="STRING_GRID"
         backgroundImageId="editbox_background_dark"
         />
+    <style id="FILE_DIALOG_GRID"
+        backgroundImageId="editbox_background_dark"
+        />
     <style id="DOCK_HOST"
         backgroundColor="#515658"
         />
