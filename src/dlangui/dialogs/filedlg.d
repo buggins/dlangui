@@ -565,7 +565,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             return true;
         };
         res.focusable = true;
-        debug Log.d("root lisk styleId=", res.styleId);
+        debug Log.d("root list styleId=", res.styleId);
         return res;
     }
 
