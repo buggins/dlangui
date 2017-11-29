@@ -115,7 +115,7 @@ class TextWidget : Widget {
         return this;
     }
 
-    private CalcSaver!(Font, dstring, uint, uint) _measureSaver;
+    private CalcSaver!(Font, dstring, uint, uint, int) _measureSaver;
 
     override void measure(int parentWidth, int parentHeight) {
         FontRef font = font();
@@ -131,7 +131,7 @@ class TextWidget : Widget {
         uint flags = textFlags;
 
         // optimization: do not measure if nothing changed
-        if (_measureSaver.check(font.get, text, w, flags) || _needLayout) {
+        if (_measureSaver.check(font.get, text, w, flags, maxLines) || _needLayout) {
             Point sz;
             if (maxLines == 1) {
                 sz = font.textSize(text, w, 4, 0, flags);
