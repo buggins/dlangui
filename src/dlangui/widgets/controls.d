@@ -119,8 +119,15 @@ class TextWidget : Widget {
 
     override void measure(int parentWidth, int parentHeight) {
         FontRef font = font();
-        uint w = (maxLines == 1) ? MAX_WIDTH_UNSPECIFIED :
-                                   parentWidth - margins.left - margins.right - padding.left - padding.right;
+        
+        uint w;
+        if (maxLines == 1) 
+            w = MAX_WIDTH_UNSPECIFIED;
+        else {
+            w = parentWidth - margins.left - margins.right - padding.left - padding.right;
+            if (maxWidth > 0 && maxWidth < w)
+                w = maxWidth - padding.left - padding.right;
+        }
         uint flags = textFlags;
 
         // optimization: do not measure if nothing changed
