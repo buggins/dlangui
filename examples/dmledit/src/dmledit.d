@@ -259,10 +259,10 @@ class EditFrame : AppFrame {
                 a.state = ACTION_STATE_ENABLED;
                 return true;
             case IDEActions.FileSave:
-                if (_content.modified)
+                if (_editor.content.modified)
                     a.state = ACTION_STATE_ENABLED;
                 else
-                    a.state = ACTION_STATE_DISABLED;
+                    a.state = ACTION_STATE_DISABLE;
                 return true;
             default:
                 return super.handleActionStateRequest(a);
