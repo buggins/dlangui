@@ -89,7 +89,7 @@ class CupWidget : Widget {
 
     protected int _totalRowsDestroyed;
 
-    static const int[10] LEVEL_SPEED = [15000000, 10000000, 7000000, 6000000, 5000000, 4000000, 300000, 2000000, 1500000, 1000000];
+    static const int[10] LEVEL_SPEED = [15000000, 10000000, 7000000, 6000000, 5000000, 4000000, 3000000, 2000000, 1500000, 1000000];
 
     static const int RESERVED_ROWS = 5; // reserved for next figure
 
