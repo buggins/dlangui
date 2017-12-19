@@ -41,7 +41,7 @@ Main features:
 D compiler versions supported
 -----------------------------
 
-Needs DMD frontend 2.066.1 or newer to build
+Needs DMD frontend 2.077 or newer to build
 
 
 Widgets
