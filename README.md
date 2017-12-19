@@ -38,6 +38,12 @@ Main features:
 * Non thread safe - all UI operations should be preformed in single thread
 * Simple 3d engine - allows to embed 3D scenes within GUI
 
+D compiler versions supported
+-----------------------------
+
+Needs DMD frontend 2.066.1 or newer to build
+
+
 Widgets
 -------
 
