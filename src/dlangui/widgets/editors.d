@@ -2771,7 +2771,8 @@ class EditBox : EditWidgetBase {
             invalidate();
         } else if (rc.left >= _clientRect.width - 10) {
             // scroll right
-            _scrollPos.x += (rc.left - _clientRect.width) + _clientRect.width / 4;
+            if (!_wordWrap)
+                _scrollPos.x += (rc.left - _clientRect.width) + _clientRect.width / 4;
             invalidate();
         }
         updateScrollBars();
