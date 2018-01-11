@@ -1289,7 +1289,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             if (wrapLine > 0)
             {
                 LineSpan curSpan = getSpan(_caretPos.line);
-                xOffset = curSpan.widthAccumulation(wrapLine);
+                xOffset = curSpan.accumulation(wrapLine, LineSpan.WrapPointInfo.Width);
             }
             auto yOffset = -1 * _lineHeight * (wrapsUpTo(_caretPos.line) + wrapLine);
             caretRc.offset(_clientRect.left - xOffset, _clientRect.top - yOffset);
