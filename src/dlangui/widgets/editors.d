@@ -391,12 +391,120 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return this;
     }
 
-    dstring[] wrapLine(dstring line, int maxWidth) {
-        return [];
+    dchar[] splitChars = [' ', '-', '\t'];
+    
+    dstring[] wrapLine(dstring str, int lineNumber) {
+        FontRef font = font();
+        dstring[] words = explode(str, splitChars);
+        int curLineLength = 0;
+        dchar[] buildingStr;
+        dstring[] buildingStrArr;
+        WrapPoint[] wrapPoints;
+        int wrappedLineCount = 0;
+        int curLineWidth = 0;
+        int maxWidth = _clientRect.width;
+        for (int i = 0; i < words.length; i++)
+        {
+            dstring word = words[i];
+            if (curLineWidth + measureWrappedText(word) > maxWidth)
+            {
+                if (curLineWidth > 0)
+                {
+                    buildingStrArr ~= to!dstring(buildingStr);
+                    wrappedLineCount++;
+                    wrapPoints ~= WrapPoint(curLineLength, curLineWidth);
+                    curLineLength = 0;
+                    curLineWidth = 0;
+                    buildingStr = [];
+                }
+                while (measureWrappedText(word) > maxWidth)
+                {
+                    //For when string still too long
+                    int wrapPoint = findWrapPoint(word);
+                    wrapPoints ~= WrapPoint(wrapPoint, measureWrappedText(word[0..wrapPoint]));
+                    buildingStr ~= word[0 .. wrapPoint];
+                    word = word[wrapPoint .. $];
+                    buildingStrArr ~= to!dstring(buildingStr);
+                    buildingStr = [];
+                    wrappedLineCount++;
+                }
+            }
+            buildingStr ~= word;
+            curLineLength += to!int(word.length);
+            curLineWidth += measureWrappedText(word);
+        }
+        wrapPoints ~= WrapPoint(curLineLength, curLineWidth);
+        buildingStrArr ~= to!dstring(buildingStr);
+        _span ~= LineSpan(lineNumber, wrappedLineCount + 1, wrapPoints, buildingStrArr);
+        return buildingStrArr;
     }
 
+    dstring[] explode(dstring str, dchar[] splitChars)
+    {
+        dstring[] parts;
+        int startIndex = 0;
+        import std.string:indexOfAny;
+        while (true)
+        {
+            int index = to!int(str.indexOfAny(splitChars, startIndex));
+        
+            if (index == -1)
+            {
+                parts ~= str[startIndex .. $];
+                //Log.d("Explode output: ", parts);
+                return parts;
+            }
+        
+            dstring word = str[startIndex .. index];
+            dchar nextChar = (str[index .. index + 1])[0];
+        
+            import std.ascii:isWhite;
+            if (isWhite(nextChar))
+            {
+                parts ~= word;
+                parts ~= to!dstring(nextChar);
+            }
+            else
+            {
+                parts ~= word ~ nextChar;
+            }
+            startIndex = index + 1;
+        }
+    }
+    
     /// information about line span into several lines - in word wrap mode
     protected LineSpan[] _span;
+    
+    //Finds good visual wrapping point for string
+    int findWrapPoint(dstring text)
+    {
+        int maxWidth = _clientRect.width;
+        int wrapPoint = 0;
+        while (true)
+        {
+            if (measureWrappedText(text[0 .. wrapPoint]) < maxWidth)
+            {
+                wrapPoint++;
+            }
+            else
+            {
+                return wrapPoint;
+            }
+        }
+     }
+    
+    //Calls measureText for word wrap
+    int measureWrappedText(dstring text)
+    {
+        FontRef font = font();
+        int[] measuredWidths;
+        measuredWidths.length = text.length;
+        //DO NOT REMOVE THIS
+        int boggle = font.measureText(text, measuredWidths);
+        if (measuredWidths.length > 0)
+            return measuredWidths[$-1];
+        return 0;
+    }
     
     int wrapsUpTo(int line)
     {
