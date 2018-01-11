@@ -3336,7 +3336,23 @@ class EditBox : EditWidgetBase {
             Rect rc = lineRect;
             rc.left = startx;
             rc.right = endx;
-            if (!rc.empty) {
+            if (!rc.empty && _wordWrap)
+            {
+                auto limitNumber = (int num, int limit) => num > limit ? limit : num;
+                LineSpan curSpan = getSpan(lineIndex);
+                int yOffset = _lineHeight * (wrapsUpTo(lineIndex));
+                rc.offset(0, yOffset);
+                Rect[] wrappedSelection;
+                wrappedSelection.length = curSpan.len;
+                foreach (int i, wrapLineRect; wrappedSelection)
+                {
+                    wrapLineRect = rc;
+                    wrapLineRect.offset(-1 * curSpan.accumulation(i, LineSpan.WrapPointInfo.Width), i * _lineHeight);
+                    wrapLineRect.right = limitNumber(wrapLineRect.right,(rc.left + curSpan.wrapPoints[i].wrapWidth));
+                    buf.fillRect(wrapLineRect, focused ? _selectionColorFocused : _selectionColorNormal);
+                }
+            }
+            else if (!rc.empty) {
                 // draw selection rect for line
                 buf.fillRect(rc, focused ? _selectionColorFocused : _selectionColorNormal);
             }
