@@ -520,7 +520,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     
     LineSpan getSpan(int lineNumber)
     {
-        LineSpan lineSpan = LineSpan(lineNumber, 0, [], []);
+        LineSpan lineSpan = LineSpan(lineNumber, 0, [WrapPoint(0,0)], []);
         lineSpanIterate(delegate(LineSpan curSpan)
         {
             if (curSpan.start == lineNumber)
@@ -1291,7 +1291,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 LineSpan curSpan = getSpan(_caretPos.line);
                 xOffset = curSpan.widthAccumulation(wrapLine);
             }
-            auto yOffset = -1 * _lineHeight * (wrapsUpTo(_caretPos.line - _firstVisibleLine) + wrapLine);
+            auto yOffset = -1 * _lineHeight * (wrapsUpTo(_caretPos.line) + wrapLine);
             caretRc.offset(_clientRect.left - xOffset, _clientRect.top - yOffset);
         }
         else
