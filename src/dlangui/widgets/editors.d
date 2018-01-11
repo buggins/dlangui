@@ -2848,17 +2848,73 @@ class EditBox : EditWidgetBase {
                 return true;
             case Up:
             case SelectUp:
-                if (_caretPos.line > 0) {
-                    _caretPos.line--;
-                    correctCaretPos();
-                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
-                    ensureCaretVisible();
+                if ((_caretPos.line > 0) | wordWrap) {
+                    if (_wordWrap)
+                    {
+                        LineSpan curSpan = getSpan(_caretPos.line);
+                        int curWrap = findWrapLine(_caretPos);
+                        if (curWrap > 0)
+                        {
+                            _caretPos.pos-= curSpan.wrapPoints[curWrap - 1].wrapPos;
+                        }
+                        else
+                        {
+                            int previousPos = _caretPos.pos;
+                            curSpan = getSpan(_caretPos.line - 1);
+                            curWrap = curSpan.len - 1;
+                            if (curWrap > 0)
+                            {
+                                int accumulativePoint = curSpan.accumulation(curSpan.len - 1, LineSpan.WrapPointInfo.Position);
+                                _caretPos.line--;
+                                _caretPos.pos = accumulativePoint + previousPos;
+                            }
+                            else
+                            {
+                                _caretPos.line--;
+                            }
+                        }
+                    }
+                    else if(_caretPos.line > 0)
+                        _caretPos.line--;
+                     correctCaretPos();
+                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
+                     ensureCaretVisible();
                 }
                 return true;
             case Down:
             case SelectDown:
                 if (_caretPos.line < _content.length - 1) {
-                    _caretPos.line++;
+                    if (_wordWrap)
+                    {
+                        LineSpan curSpan = getSpan(_caretPos.line);
+                        int curWrap = findWrapLine(_caretPos);
+                        if (curWrap < curSpan.len - 1)
+                        {
+                            int previousPos = _caretPos.pos;
+                            _caretPos.pos+= curSpan.wrapPoints[curWrap].wrapPos;
+                            correctCaretPos();
+                            if (_caretPos.pos == previousPos)
+                            {
+                                _caretPos.pos = 0;
+                                _caretPos.line++;
+                            }
+                        }
+                        else if (curSpan.len > 1)
+                        {
+                            int previousPos = _caretPos.pos;
+                            int previousAccumulatedPosition = curSpan.accumulation(curSpan.len - 1, LineSpan.WrapPointInfo.Position);
+                            _caretPos.line++;
+                            _caretPos.pos = previousPos - previousAccumulatedPosition;
+                        }
+                        else
+                        {
+                            _caretPos.line++;
+                        }
+                    }
+                    else
+                    {
+                        _caretPos.line++;
+                    }
                     correctCaretPos();
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                     ensureCaretVisible();
