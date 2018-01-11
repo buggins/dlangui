@@ -3468,6 +3468,12 @@ class EditBox : EditWidgetBase {
         if (_contentChanged)
           needRewrap = true;
           
+        if (lastStartingLine != _firstVisibleLine)
+        {
+            needRewrap = true;
+            lastStartingLine = _firstVisibleLine;
+        }
+          
         if (rc.width <= 0 && _wordWrap)
         {
             return;
@@ -3520,7 +3526,7 @@ class EditBox : EditWidgetBase {
                     CustomCharProps[] wrapProps;
                     foreach (int q, curWrap; wrappedLine)
                     {
-                        auto lineOffset = q + i + wrapsUpTo(i);
+                        auto lineOffset = q + i + wrapsUpTo(i + _firstVisibleLine);
                         if (highlight)
                         {
                             wrapProps = highlight[accumulativeLength .. $];
