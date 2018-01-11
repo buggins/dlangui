@@ -510,35 +510,18 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     int wrapsUpTo(int line)
     {
         int sum;
-        lineSpanIterate(delegate(int wantedLine, int wantedWrap)
+        lineSpanIterate(delegate(LineSpan curSpan)
         {
-            if (wantedLine < line)
-                sum += _span[wantedLine].len - 1;
+            if (curSpan.start < line)
+                sum += curSpan.len - 1;
         });
         return sum;
-        /*if(line < _span.length)
-        {
-            
-            int sum;
-            for(int i = 0; i<line; i++)
-            {
-                sum += _span[i].len - 1;
-            }
-            //Log.d(sum);
-            return sum;
-        }*/
-        //return 0;
     }
     
-    void lineSpanIterate(void delegate(int wantedLine, int wantedWrap) iterator)
+    void lineSpanIterate(void delegate(LineSpan curSpan) iterator)
     {
-        for (int i; i<_span.length; i++)
-        {
-            for (int q; q<_span[i].wrapPoints.length; q++)
-            {
-                iterator(i, q);
-            }
-        }
+        foreach (currentSpan; _span)
+            iterator(currentSpan);
     }
 
     /// override to add custom items on left panel
