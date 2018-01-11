@@ -3315,7 +3315,24 @@ class EditBox : EditWidgetBase {
         Rect rc = lineRect;
         rc.left = _clientRect.left + startrc.left;
         rc.right = _clientRect.left + endrc.right;
-        if (!rc.empty) {
+        if (_wordWrap && !rc.empty)
+        {
+            auto limitNumber = (int num, int limit) => num > limit ? limit : num;
+            LineSpan curSpan = getSpan(r.start.line);
+            int yOffset = _lineHeight * (wrapsUpTo(r.start.line));
+            rc.offset(0, yOffset);
+            Rect[] wrappedSelection;
+            wrappedSelection.length = curSpan.len;
+            foreach (int i, wrapLineRect; wrappedSelection)
+            {
+                wrapLineRect = rc;
+                wrapLineRect.offset(-1 * curSpan.accumulation(i, LineSpan.WrapPointInfo.Width), i * _lineHeight);
+                wrapLineRect.right = limitNumber(wrapLineRect.right,(rc.left + curSpan.wrapPoints[i].wrapWidth));
+                //buf.fillRect(wrapLineRect, focused ? _selectionColorFocused : _selectionColorNormal);
+                buf.fillRect(wrapLineRect, color);
+            }
+        }
+        else if (!rc.empty) {
             // draw selection rect for matching bracket
             buf.fillRect(rc, color);
         }
