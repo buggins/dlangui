@@ -3320,8 +3320,28 @@ class EditBox : EditWidgetBase {
             if (lineRect.top >= _clientRect.bottom)
                 break;
             drawLeftPane(buf, lineRect, i < lc ? i : -1);
-            i++;
             rc.top += _lineHeight;
+            if (_wordWrap)
+            {
+                int currentWrap = 1;
+                for (;;)
+                {
+                    LineSpan curSpan = getSpan(i);
+                    if (currentWrap > curSpan.len - 1)
+                        break;
+                    Rect lineRect2 = rc;
+                    lineRect2.left = _clientRect.left - _leftPaneWidth;
+                    lineRect2.right = _clientRect.left;
+                    lineRect2.bottom = lineRect.top + _lineHeight;
+                    if (lineRect2.top >= _clientRect.bottom)
+                        break;
+                    drawLeftPane(buf, lineRect2, -1);
+                    rc.top += _lineHeight;
+
+                    currentWrap++;
+                }
+            }
+            i++;
         }
     }
 
