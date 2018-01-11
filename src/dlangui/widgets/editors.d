@@ -474,6 +474,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     
     /// information about line span into several lines - in word wrap mode
     protected LineSpan[] _span;
+    protected LineSpan[] _spanCache;
     
     //Finds good visual wrapping point for string
     int findWrapPoint(dstring text)
@@ -508,7 +509,14 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     
     int wrapsUpTo(int line)
     {
-        if(line < _span.length)
+        int sum;
+        lineSpanIterate(delegate(int wantedLine, int wantedWrap)
+        {
+            if (wantedLine < line)
+                sum += _span[wantedLine].len - 1;
+        });
+        return sum;
+        /*if(line < _span.length)
         {
             
             int sum;
@@ -518,8 +526,19 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             }
             //Log.d(sum);
             return sum;
+        }*/
+        //return 0;
+    }
+    
+    void lineSpanIterate(void delegate(int wantedLine, int wantedWrap) iterator)
+    {
+        for (int i; i<_span.length; i++)
+        {
+            for (int q; q<_span[i].wrapPoints.length; q++)
+            {
+                iterator(i, q);
+            }
         }
-        return 0;
     }
 
     /// override to add custom items on left panel
