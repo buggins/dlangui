@@ -3451,7 +3451,7 @@ class EditBox : EditWidgetBase {
         _span = [];
     }
     
-    private bool needRewrap;
+    private bool needRewrap = true;
     private int lastStartingLine;
     
     override protected void drawClient(DrawBuf buf) {
