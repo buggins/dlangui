@@ -391,12 +391,28 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return this;
     }
 
-    void wrapLine(dstring line, int maxWidth) {
-
+    dstring[] wrapLine(dstring line, int maxWidth) {
+        return [];
     }
 
     /// information about line span into several lines - in word wrap mode
     protected LineSpan[] _span;
+    
+    int wrapsUpTo(int line)
+    {
+        if(line < _span.length)
+        {
+            
+            int sum;
+            for(int i = 0; i<line; i++)
+            {
+                sum += _span[i].len - 1;
+            }
+            //Log.d(sum);
+            return sum;
+        }
+        return 0;
+    }
 
     /// override to add custom items on left panel
     protected void updateLeftPaneWidth() {
@@ -3321,6 +3337,15 @@ class EditBox : EditWidgetBase {
         }
     }
 
+    void resetVisibleSpans()
+    {
+        //TODO: Don't erase spans which have not been modified
+        _span = [];
+    }
+    
+    private bool needRewrap;
+    private int lastStartingLine;
+    
     override protected void drawClient(DrawBuf buf) {
         // update matched braces
         if (!content.findMatchedBraces(_caretPos, _matchingBraces)) {
@@ -3329,6 +3354,23 @@ class EditBox : EditWidgetBase {
         }
 
         Rect rc = _clientRect;
+        
+        if (_contentChanged)
+          needRewrap = true;
+          
+        if (rc.width <= 0 && _wordWrap)
+        {
+            return;
+        }
+        
+        bool doRewrap = false;
+        
+        if (needRewrap && _wordWrap)
+        {
+            resetVisibleSpans();
+            needRewrap = false;
+            doRewrap = true;
+        }
 
         FontRef font = font();
         for (int i = 0; i < _visibleLines.length; i++) {
@@ -3344,7 +3386,7 @@ class EditBox : EditWidgetBase {
             drawLineBackground(buf, _firstVisibleLine + i, lineRect, visibleRect);
             if (_showTabPositionMarks)
                 drawTabPositionMarks(buf, font, _firstVisibleLine + i, lineRect);
-            if (!txt.length)
+            if (!txt.length && !_wordWrap)
                 continue;
             if (_showWhiteSpaceMarks)
                 drawWhiteSpaceMarks(buf, font, txt, tabSize, lineRect, visibleRect);
@@ -3354,12 +3396,39 @@ class EditBox : EditWidgetBase {
                 leftPaneRect.left -= _leftPaneWidth;
                 drawLeftPane(buf, leftPaneRect, 0);
             }
-            if (txt.length > 0) {
+            if (txt.length > 0 || _wordWrap) {
                 CustomCharProps[] highlight = _visibleLinesHighlights[i];
-                if (highlight)
-                    font.drawColoredText(buf, rc.left - _scrollPos.x, rc.top + i * _lineHeight, txt, highlight, tabSize);
+                if (_wordWrap)
+                {
+                    dstring[] wrappedLine;
+                    if (doRewrap)
+                        wrappedLine = wrapLine(txt, _firstVisibleLine + i);
+                    else
+                        if (i < _span.length)
+                            wrappedLine = _span[i].wrappedContent;
+                    int accumulativeLength;
+                    CustomCharProps[] wrapProps;
+                    foreach (int q, curWrap; wrappedLine)
+                    {
+                        auto lineOffset = q + i + wrapsUpTo(i);
+                        if (highlight)
+                        {
+                            wrapProps = highlight[accumulativeLength .. $];
+                            accumulativeLength += curWrap.length;
+                            font.drawColoredText(buf, rc.left - _scrollPos.x, rc.top + lineOffset * _lineHeight, curWrap, wrapProps, tabSize);
+                        }
+                        else
+                            font.drawText(buf, rc.left - _scrollPos.x, rc.top + lineOffset * _lineHeight, curWrap, textColor, tabSize);
+
+                    }
+                }
                 else
-                    font.drawText(buf, rc.left - _scrollPos.x, rc.top + i * _lineHeight, txt, textColor, tabSize);
+                {
+                    if (highlight)
+                        font.drawColoredText(buf, rc.left - _scrollPos.x, rc.top + i * _lineHeight, txt, highlight, tabSize);
+                    else
+                        font.drawText(buf, rc.left - _scrollPos.x, rc.top + i * _lineHeight, txt, textColor, tabSize);
+                }
             }
         }
 
