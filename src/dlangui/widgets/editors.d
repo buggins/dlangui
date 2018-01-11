@@ -518,6 +518,36 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return sum;
     }
     
+    LineSpan getSpan(int lineNumber)
+    {
+        LineSpan lineSpan = LineSpan(lineNumber, 0, [], []);
+        lineSpanIterate(delegate(LineSpan curSpan)
+        {
+            if (curSpan.start == lineNumber)
+                lineSpan = curSpan;
+        });
+        return lineSpan;
+    }
+    
+    int findWrapLine(TextPosition textPos)
+    {
+        int curLine = 0;
+        int curPosition = textPos.pos;
+        int i = 0;
+        while (true)
+        {
+            if (i == getSpan(textPos.line).wrapPoints.length - 1)
+                return curLine;
+            curPosition -= getSpan(textPos.line).wrapPoints[i].wrapPos;
+            if (curPosition < 0)
+            {   
+                return curLine;
+            }
+            curLine++;
+            i++;
+        }
+    }
+    
     void lineSpanIterate(void delegate(LineSpan curSpan) iterator)
     {
         foreach (currentSpan; _span)
@@ -1249,7 +1279,13 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 caretRc.right += _spaceWidth;
             }
         }
-        caretRc.offset(_clientRect.left, _clientRect.top);
+        if (_wordWrap)
+            {
+                _scrollPos.x = 0;
+                caretRc.offset(_clientRect.left, _clientRect.top);
+            }
+        else
+            caretRc.offset(_clientRect.left, _clientRect.top);
         return caretRc;
     }
 
