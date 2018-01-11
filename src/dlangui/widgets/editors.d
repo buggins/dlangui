@@ -533,11 +533,12 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     {
         int curWrapLine = 0;
         int curPosition = textPos.pos;
+        LineSpan curSpan = getSpan(textPos.line);
         while (true)
         {
-            if (curWrapLine == getSpan(textPos.line).wrapPoints.length - 1)
+            if (curWrapLine == curSpan.wrapPoints.length - 1)
                 return curWrapLine;
-            curPosition -= getSpan(textPos.line).wrapPoints[curWrapLine].wrapPos;
+            curPosition -= curSpan.wrapPoints[curWrapLine].wrapPos;
             if (curPosition < 0)
             {   
                 return curWrapLine;
