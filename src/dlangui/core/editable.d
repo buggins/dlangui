@@ -452,8 +452,22 @@ struct LineSpan {
     int len;
     /// the wrapping points
     WrapPoint[] wrapPoints;
-    
+    /// the wrapped text
     dstring[] wrappedContent;
+    
+    int widthAccumulation(int wrapLine)
+    {
+        int widthTotal;
+        for (int i; i < wrapLine; i++)
+        {
+            if (i < this.wrapPoints.length - 1)
+            {
+                int curWidth = this.wrapPoints[i].wrapWidth;
+                widthTotal += curWidth;
+            }
+        }
+        return widthTotal;
+    }
 }
 
 struct WrapPoint {

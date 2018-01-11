@@ -1264,6 +1264,8 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             handleAction(ACTION_EDITOR_SELECT_ALL);
         super.handleFocusChange(focused);
     }
+    
+    protected int _firstVisibleLine;
 
     /// returns cursor rectangle
     protected Rect caretRect() {
@@ -1280,10 +1282,18 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             }
         }
         if (_wordWrap)
+        {
+            _scrollPos.x = 0;
+            int wrapLine = findWrapLine(_caretPos);
+            int xOffset;
+            if (wrapLine > 0)
             {
-                _scrollPos.x = 0;
-                caretRc.offset(_clientRect.left, _clientRect.top);
+                LineSpan curSpan = getSpan(_caretPos.line);
+                xOffset = curSpan.widthAccumulation(wrapLine);
             }
+            auto yOffset = -1 * _lineHeight * (wrapsUpTo(_caretPos.line - _firstVisibleLine) + wrapLine);
+            caretRc.offset(_clientRect.left - xOffset, _clientRect.top - yOffset);
+        }
         else
             caretRc.offset(_clientRect.left, _clientRect.top);
         return caretRc;
@@ -2470,7 +2480,7 @@ class EditBox : EditWidgetBase {
         }
     }
 
-    protected int _firstVisibleLine;
+    //protected int _firstVisibleLine;
 
     protected int _maxLineWidth;
     protected int _numVisibleLines;             // number of lines visible in client area
