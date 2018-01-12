@@ -1266,6 +1266,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     
     protected int _firstVisibleLine;
 
+    protected int caretHeightOffset;
     /// returns cursor rectangle
     protected Rect caretRect() {
         Rect caretRc = textPosToClient(_caretPos);
@@ -1291,6 +1292,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 xOffset = curSpan.accumulation(wrapLine, LineSpan.WrapPointInfo.Width);
             }
             auto yOffset = -1 * _lineHeight * (wrapsUpTo(_caretPos.line) + wrapLine);
+            caretHeightOffset = yOffset;
             caretRc.offset(_clientRect.left - xOffset, _clientRect.top - yOffset);
         }
         else
@@ -2743,6 +2745,22 @@ class EditBox : EditWidgetBase {
                 _firstVisibleLine = maxFirstVisibleLine;
             measureVisibleText();
             invalidate();
+        } else if(_wordWrap && !(_firstVisibleLine > maxFirstVisibleLine)) {
+            //For wordwrap mode, move down sooner
+            int offsetLines = -1 * caretHeightOffset / _lineHeight;
+            //Log.d("offsetLines: ", offsetLines);
+            if (_caretPos.line >= _firstVisibleLine + visibleLines - offsetLines)
+            {
+                _firstVisibleLine = _caretPos.line - visibleLines + 1 + offsetLines;
+                if (center)
+                    _firstVisibleLine += visibleLines / 2;
+                if (_firstVisibleLine > maxFirstVisibleLine)
+                    _firstVisibleLine = maxFirstVisibleLine;
+                if (_firstVisibleLine < 0)
+                    _firstVisibleLine = 0;
+                measureVisibleText();
+                invalidate();
+            }
         } else if (_caretPos.line >= _firstVisibleLine + visibleLines) {
             _firstVisibleLine = _caretPos.line - visibleLines + 1;
             if (center)
