@@ -1434,10 +1434,52 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         _textToHighlightOptions = textToHighlightOptions;
         invalidate();
     }
+    
+    protected TextPosition wordWrapMouseOffset(int x, int y)
+    {
+        if(_span.length == 0)
+            return clientToTextPos(Point(x,y));
+        int selectedVisibleLine = y / _lineHeight;
+            
+        LineSpan _curSpan;
+        
+        int wrapLine = 0;
+        int curLine = 0;
+        bool foundWrap = false;
+        int accumulativeWidths = 0;
+        int curWrapOfSpan = 0;
+        
+        lineSpanIterate(delegate(LineSpan curSpan){
+            while (!foundWrap)
+            {
+                if (wrapLine == selectedVisibleLine)
+                {
+                    foundWrap = true;
+                    break;
+                }
+                accumulativeWidths += curSpan.wrapPoints[curWrapOfSpan].wrapWidth;
+                wrapLine++;
+                curWrapOfSpan++;
+                if (curWrapOfSpan >= curSpan.len)
+                {
+                    break;
+                }
+            }
+            if (!foundWrap)
+            {
+                accumulativeWidths = 0;
+                curLine++;
+            }
+            curWrapOfSpan = 0;
+        });
+        
+        int fakeLineHeight = curLine * _lineHeight;
+        return clientToTextPos(Point(x + accumulativeWidths,fakeLineHeight));
+    }
 
     protected void selectWordByMouse(int x, int y) {
         TextPosition oldCaretPos = _caretPos;
-        TextPosition newPos = clientToTextPos(Point(x,y));
+        TextPosition newPos = _wordWrap ? wordWrapMouseOffset(x,y) : clientToTextPos(Point(x,y));
         TextRange r = content.wordBounds(newPos);
         if (r.start < r.end) {
             _selectionRange = r;
@@ -1453,7 +1495,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     protected void selectLineByMouse(int x, int y, bool onSameLineOnly = true) {
         TextPosition oldCaretPos = _caretPos;
-        TextPosition newPos = clientToTextPos(Point(x,y));
+        TextPosition newPos = _wordWrap ? wordWrapMouseOffset(x,y) : clientToTextPos(Point(x,y));
         if (onSameLineOnly && newPos.line != oldCaretPos.line)
             return; // different lines
         TextRange r = content.lineRange(newPos.line);
@@ -1471,7 +1513,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     protected void updateCaretPositionByMouse(int x, int y, bool selecting) {
         TextPosition oldCaretPos = _caretPos;
-        TextPosition newPos = clientToTextPos(Point(x,y));
+        TextPosition newPos = _wordWrap ? wordWrapMouseOffset(x,y) : clientToTextPos(Point(x,y));
         if (newPos != _caretPos) {
             _caretPos = newPos;
             updateSelectionAfterCursorMovement(oldCaretPos, selecting);
