@@ -379,10 +379,12 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return 1;
     }
 
-    //Override for EditBox
+    /// Override for EditBox
     void wordWrapRefresh(){return;}
     
+    /// To hold _scrollpos.x toggling between normal and word wrap mode
     int previousXScrollPos;
+    
     protected bool _wordWrap;
     /// true if word wrap mode is set
     @property bool wordWrap() {
@@ -408,8 +410,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return this;
     }
 
+    /// Characters at which content is split for word wrap mode
     dchar[] splitChars = [' ', '-', '\t'];
     
+    /// Divides up a string for word wrapping, sets info in _span
     dstring[] wrapLine(dstring str, int lineNumber) {
         FontRef font = font();
         dstring[] words = explode(str, splitChars);
@@ -456,6 +460,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return buildingStrArr;
     }
 
+    /// Divide (and conquer) text into words
     dstring[] explode(dstring str, dchar[] splitChars)
     {
         dstring[] parts;
@@ -493,7 +498,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     protected LineSpan[] _span;
     protected LineSpan[] _spanCache;
     
-    //Finds good visual wrapping point for string
+    /// Finds good visual wrapping point for string
     int findWrapPoint(dstring text)
     {
         int maxWidth = _clientRect.width;
@@ -511,7 +516,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         }
      }
     
-    //Calls measureText for word wrap
+    /// Calls measureText for word wrap
     int measureWrappedText(dstring text)
     {
         FontRef font = font();
@@ -524,6 +529,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return 0;
     }
     
+    /// Returns number of visible wraps up to a line (not including the first wrapLines themselves)
     int wrapsUpTo(int line)
     {
         int sum;
@@ -535,6 +541,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return sum;
     }
     
+    /// Returns LineSpan for line based on actual line number
     LineSpan getSpan(int lineNumber)
     {
         LineSpan lineSpan = LineSpan(lineNumber, 0, [WrapPoint(0,0)], []);
@@ -546,6 +553,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return lineSpan;
     }
     
+    /// Based on a TextPosition, finds which wrapLine it is on for its current line
     int findWrapLine(TextPosition textPos)
     {
         int curWrapLine = 0;
@@ -564,8 +572,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         }
     }
     
+    /// Simple way of iterating through _span
     void lineSpanIterate(void delegate(LineSpan curSpan) iterator)
     {
+        //TODO: Rename iterator to iteration?
         foreach (currentSpan; _span)
             iterator(currentSpan);
     }
@@ -1283,7 +1293,9 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     
     protected int _firstVisibleLine;
 
+    //In word wrap mode, set by caretRect so ensureCaretVisible will know when to scroll
     protected int caretHeightOffset;
+    
     /// returns cursor rectangle
     protected Rect caretRect() {
         Rect caretRc = textPosToClient(_caretPos);
@@ -1452,6 +1464,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         invalidate();
     }
     
+    /// Used instead of using clientToTextPos for mouse input when in word wrap mode
     protected TextPosition wordWrapMouseOffset(int x, int y)
     {
         if(_span.length == 0)
@@ -2554,14 +2567,16 @@ class EditBox : EditWidgetBase {
     protected dstring _textToSetWidgetSize = "aaaaa/naaaaa"d;
     protected int[] _measuredTextToSetWidgetSizeWidths;
 
+    /// Set _needRewrap to true;
     override void wordWrapRefresh()
     {
-        needRewrap = true;
+        _needRewrap = true;
     }
     
     override @property int fontSize() const { return super.fontSize(); }
     override @property Widget fontSize(int size) {
-        needRewrap = true;
+        // Need to rewrap if fontSize changed
+        _needRewrap = true;
         return super.fontSize(size);
     }
     
@@ -2618,7 +2633,7 @@ class EditBox : EditWidgetBase {
         super.layout(contentRc);
         if (_contentChanged) {
             measureVisibleText();
-            needRewrap = true;
+            _needRewrap = true;
             _contentChanged = false;
         }
 
@@ -3163,7 +3178,7 @@ class EditBox : EditWidgetBase {
                             Log.i("Font size in editor ", id, " zoomed to ", newFontSize);
                             fontSize = cast(ushort)newFontSize;
                             updateFontProps();
-                            needRewrap = true;
+                            _needRewrap = true;
                             measureVisibleText();
                             updateScrollBars();
                             invalidate();
@@ -3415,6 +3430,7 @@ class EditBox : EditWidgetBase {
         }
     }
     
+    /// Used in place of directly calling buf.fillRect in word wrap mode
     void wordWrapFillRect(DrawBuf buf, int line, Rect lineToDivide, uint color)
     {
         Rect rc = lineToDivide;
@@ -3689,13 +3705,14 @@ class EditBox : EditWidgetBase {
         }
     }
 
+    /// Clear _span
     void resetVisibleSpans()
     {
         //TODO: Don't erase spans which have not been modified, cache them
         _span = [];
     }
     
-    private bool needRewrap = true;
+    private bool _needRewrap = true;
     private int lastStartingLine;
     
     override protected void drawClient(DrawBuf buf) {
@@ -3708,25 +3725,22 @@ class EditBox : EditWidgetBase {
         Rect rc = _clientRect;
         
         if (_contentChanged)
-          needRewrap = true;
-          
+          _needRewrap = true;
         if (lastStartingLine != _firstVisibleLine)
         {
-            needRewrap = true;
+            _needRewrap = true;
             lastStartingLine = _firstVisibleLine;
         }
-          
         if (rc.width <= 0 && _wordWrap)
         {
+            //Prevent drawClient from getting stuck in loop
             return;
         }
-        
         bool doRewrap = false;
-        
-        if (needRewrap && _wordWrap)
+        if (_needRewrap && _wordWrap)
         {
             resetVisibleSpans();
-            needRewrap = false;
+            _needRewrap = false;
             doRewrap = true;
         }
 

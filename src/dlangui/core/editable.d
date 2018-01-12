@@ -460,6 +460,7 @@ struct LineSpan {
         Width,
     }
     
+    ///Adds up either positions or widths to a wrapLine
     int accumulation(int wrapLine, bool wrapPointInfo)
     {
         int total;
@@ -476,8 +477,11 @@ struct LineSpan {
     }
 }
 
+///Holds info about a word wrapping point
 struct WrapPoint {
+    ///The relative wrapping position (related to TextPosition.pos)
     int wrapPos;
+    ///The associated calculated width of the wrapLine
     int wrapWidth;
 }
 
