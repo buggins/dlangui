@@ -3731,6 +3731,7 @@ class EditBox : EditWidgetBase {
         }
 
         FontRef font = font();
+        int previousWraps;
         for (int i = 0; i < _visibleLines.length; i++) {
             dstring txt = _visibleLines[i];
             Rect lineRect;
@@ -3747,7 +3748,16 @@ class EditBox : EditWidgetBase {
             if (!txt.length && !_wordWrap)
                 continue;
             if (_showWhiteSpaceMarks)
-                drawWhiteSpaceMarks(buf, font, txt, tabSize, lineRect, visibleRect);
+            {
+                Rect whiteSpaceRc = lineRect;
+                Rect whiteSpaceRcVisible = visibleRect;
+                for(int z; z < previousWraps; z++)
+                {
+                    whiteSpaceRc.offset(0, _lineHeight);
+                    whiteSpaceRcVisible.offset(0, _lineHeight);
+                }
+                drawWhiteSpaceMarks(buf, font, txt, tabSize, whiteSpaceRc, whiteSpaceRcVisible);
+            }
             if (_leftPaneWidth > 0) {
                 Rect leftPaneRect = visibleRect;
                 leftPaneRect.right = leftPaneRect.left;
@@ -3779,6 +3789,7 @@ class EditBox : EditWidgetBase {
                             font.drawText(buf, rc.left - _scrollPos.x, rc.top + lineOffset * _lineHeight, curWrap, textColor, tabSize);
 
                     }
+                    previousWraps += to!int(wrappedLine.length - 1);
                 }
                 else
                 {
