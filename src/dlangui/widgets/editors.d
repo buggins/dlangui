@@ -1290,8 +1290,6 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             handleAction(ACTION_EDITOR_SELECT_ALL);
         super.handleFocusChange(focused);
     }
-    
-    protected int _firstVisibleLine;
 
     //In word wrap mode, set by caretRect so ensureCaretVisible will know when to scroll
     protected int caretHeightOffset;
@@ -2553,7 +2551,7 @@ class EditBox : EditWidgetBase {
         }
     }
 
-    //protected int _firstVisibleLine;
+    protected int _firstVisibleLine;
 
     protected int _maxLineWidth;
     protected int _numVisibleLines;             // number of lines visible in client area
