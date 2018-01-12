@@ -3317,24 +3317,29 @@ class EditBox : EditWidgetBase {
         rc.right = _clientRect.left + endrc.right;
         if (_wordWrap && !rc.empty)
         {
-            auto limitNumber = (int num, int limit) => num > limit ? limit : num;
-            LineSpan curSpan = getSpan(r.start.line);
-            int yOffset = _lineHeight * (wrapsUpTo(r.start.line));
-            rc.offset(0, yOffset);
-            Rect[] wrappedSelection;
-            wrappedSelection.length = curSpan.len;
-            foreach (int i, wrapLineRect; wrappedSelection)
-            {
-                wrapLineRect = rc;
-                wrapLineRect.offset(-1 * curSpan.accumulation(i, LineSpan.WrapPointInfo.Width), i * _lineHeight);
-                wrapLineRect.right = limitNumber(wrapLineRect.right,(rc.left + curSpan.wrapPoints[i].wrapWidth));
-                //buf.fillRect(wrapLineRect, focused ? _selectionColorFocused : _selectionColorNormal);
-                buf.fillRect(wrapLineRect, color);
-            }
+            wordWrapFillRect(buf, r.start.line, rc, color);
         }
         else if (!rc.empty) {
             // draw selection rect for matching bracket
             buf.fillRect(rc, color);
+        }
+    }
+    
+    void wordWrapFillRect(DrawBuf buf, int line, Rect lineToDivide, uint color)
+    {
+        Rect rc = lineToDivide;
+        auto limitNumber = (int num, int limit) => num > limit ? limit : num;
+        LineSpan curSpan = getSpan(line);
+        int yOffset = _lineHeight * (wrapsUpTo(line));
+        rc.offset(0, yOffset);
+        Rect[] wrappedSelection;
+        wrappedSelection.length = curSpan.len;
+        foreach (int i, wrapLineRect; wrappedSelection)
+        {
+            wrapLineRect = rc;
+            wrapLineRect.offset(-1 * curSpan.accumulation(i, LineSpan.WrapPointInfo.Width), i * _lineHeight);
+            wrapLineRect.right = limitNumber(wrapLineRect.right,(rc.left + curSpan.wrapPoints[i].wrapWidth));
+            buf.fillRect(wrapLineRect, color);
         }
     }
 
@@ -3355,19 +3360,7 @@ class EditBox : EditWidgetBase {
             rc.right = endx;
             if (!rc.empty && _wordWrap)
             {
-                auto limitNumber = (int num, int limit) => num > limit ? limit : num;
-                LineSpan curSpan = getSpan(lineIndex);
-                int yOffset = _lineHeight * (wrapsUpTo(lineIndex));
-                rc.offset(0, yOffset);
-                Rect[] wrappedSelection;
-                wrappedSelection.length = curSpan.len;
-                foreach (int i, wrapLineRect; wrappedSelection)
-                {
-                    wrapLineRect = rc;
-                    wrapLineRect.offset(-1 * curSpan.accumulation(i, LineSpan.WrapPointInfo.Width), i * _lineHeight);
-                    wrapLineRect.right = limitNumber(wrapLineRect.right,(rc.left + curSpan.wrapPoints[i].wrapWidth));
-                    buf.fillRect(wrapLineRect, focused ? _selectionColorFocused : _selectionColorNormal);
-                }
+                wordWrapFillRect(buf, lineIndex, rc, focused ? _selectionColorFocused : _selectionColorNormal);
             }
             else if (!rc.empty) {
                 // draw selection rect for line
