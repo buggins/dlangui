@@ -379,6 +379,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return 1;
     }
 
+    //Override for EditBox
+    void wordWrapRefresh(){return;}
+    
+    int previousXScrollPos;
     protected bool _wordWrap;
     /// true if word wrap mode is set
     @property bool wordWrap() {
@@ -387,6 +391,19 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     /// true if word wrap mode is set
     @property EditWidgetBase wordWrap(bool v) {
         _wordWrap = v;
+        //Horizontal scrollbar should not be visible in word wrap mode
+        if (v)
+        {
+            _hscrollbar.visibility(Visibility.Invisible);
+            previousXScrollPos = _scrollPos.x;
+            _scrollPos.x = 0;
+            wordWrapRefresh();
+        }
+        else
+        {
+            _hscrollbar.visibility(Visibility.Visible);
+            _scrollPos.x = previousXScrollPos;
+        }
         invalidate();
         return this;
     }
@@ -2537,6 +2554,17 @@ class EditBox : EditWidgetBase {
     protected dstring _textToSetWidgetSize = "aaaaa/naaaaa"d;
     protected int[] _measuredTextToSetWidgetSizeWidths;
 
+    override void wordWrapRefresh()
+    {
+        needRewrap = true;
+    }
+    
+    override @property int fontSize() const { return super.fontSize(); }
+    override @property Widget fontSize(int size) {
+        needRewrap = true;
+        return super.fontSize(size);
+    }
+    
     override protected int lineCount() {
         return _content.length;
     }
@@ -2590,6 +2618,7 @@ class EditBox : EditWidgetBase {
         super.layout(contentRc);
         if (_contentChanged) {
             measureVisibleText();
+            needRewrap = true;
             _contentChanged = false;
         }
 
@@ -3134,6 +3163,7 @@ class EditBox : EditWidgetBase {
                             Log.i("Font size in editor ", id, " zoomed to ", newFontSize);
                             fontSize = cast(ushort)newFontSize;
                             updateFontProps();
+                            needRewrap = true;
                             measureVisibleText();
                             updateScrollBars();
                             invalidate();
@@ -3396,9 +3426,10 @@ class EditBox : EditWidgetBase {
         wrappedSelection.length = curSpan.len;
         foreach (int i, wrapLineRect; wrappedSelection)
         {
+            int startingDifference = rc.left - _clientRect.left;
             wrapLineRect = rc;
             wrapLineRect.offset(-1 * curSpan.accumulation(i, LineSpan.WrapPointInfo.Width), i * _lineHeight);
-            wrapLineRect.right = limitNumber(wrapLineRect.right,(rc.left + curSpan.wrapPoints[i].wrapWidth));
+            wrapLineRect.right = limitNumber(wrapLineRect.right,(rc.left + curSpan.wrapPoints[i].wrapWidth) - startingDifference);
             buf.fillRect(wrapLineRect, color);
         }
     }
@@ -3441,6 +3472,9 @@ class EditBox : EditWidgetBase {
 
         // frame around current line
         if (focused && lineIndex == _caretPos.line && _selectionRange.singleLine && _selectionRange.start.line == _caretPos.line) {
+            //TODO: Figure out why a little slow to catch up
+            if (_wordWrap)
+                visibleRect.offset(0, -caretHeightOffset);
             buf.drawFrame(visibleRect, 0xA0808080, Rect(1,1,1,1));
         }
 
@@ -3657,7 +3691,7 @@ class EditBox : EditWidgetBase {
 
     void resetVisibleSpans()
     {
-        //TODO: Don't erase spans which have not been modified
+        //TODO: Don't erase spans which have not been modified, cache them
         _span = [];
     }
     
