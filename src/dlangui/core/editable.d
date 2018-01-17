@@ -450,6 +450,39 @@ struct LineSpan {
     int start;
     /// number of lines it spans
     int len;
+    /// the wrapping points
+    WrapPoint[] wrapPoints;
+    /// the wrapped text
+    dstring[] wrappedContent;
+    
+    enum WrapPointInfo : bool {
+        Position,
+        Width,
+    }
+    
+    ///Adds up either positions or widths to a wrapLine
+    int accumulation(int wrapLine, bool wrapPointInfo)
+    {
+        int total;
+        for (int i; i < wrapLine; i++)
+        {
+            if (i < this.wrapPoints.length - 1)
+            {
+                int curVal;
+                curVal = wrapPointInfo ? this.wrapPoints[i].wrapWidth : this.wrapPoints[i].wrapPos;
+                total += curVal;
+            }
+        }
+        return total;
+    }
+}
+
+///Holds info about a word wrapping point
+struct WrapPoint {
+    ///The relative wrapping position (related to TextPosition.pos)
+    int wrapPos;
+    ///The associated calculated width of the wrapLine
+    int wrapWidth;
 }
 
 /// interface for custom syntax highlight, comments toggling, smart indents, and other language dependent features for source code editors

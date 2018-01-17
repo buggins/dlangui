@@ -379,6 +379,12 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         return 1;
     }
 
+    /// Override for EditBox
+    void wordWrapRefresh(){return;}
+    
+    /// To hold _scrollpos.x toggling between normal and word wrap mode
+    int previousXScrollPos;
+    
     protected bool _wordWrap;
     /// true if word wrap mode is set
     @property bool wordWrap() {
@@ -387,16 +393,192 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     /// true if word wrap mode is set
     @property EditWidgetBase wordWrap(bool v) {
         _wordWrap = v;
+        //Horizontal scrollbar should not be visible in word wrap mode
+        if (v)
+        {
+            _hscrollbar.visibility(Visibility.Invisible);
+            previousXScrollPos = _scrollPos.x;
+            _scrollPos.x = 0;
+            wordWrapRefresh();
+        }
+        else
+        {
+            _hscrollbar.visibility(Visibility.Visible);
+            _scrollPos.x = previousXScrollPos;
+        }
         invalidate();
         return this;
     }
 
-    void wrapLine(dstring line, int maxWidth) {
-
+    /// Characters at which content is split for word wrap mode
+    dchar[] splitChars = [' ', '-', '\t'];
+    
+    /// Divides up a string for word wrapping, sets info in _span
+    dstring[] wrapLine(dstring str, int lineNumber) {
+        FontRef font = font();
+        dstring[] words = explode(str, splitChars);
+        int curLineLength = 0;
+        dchar[] buildingStr;
+        dstring[] buildingStrArr;
+        WrapPoint[] wrapPoints;
+        int wrappedLineCount = 0;
+        int curLineWidth = 0;
+        int maxWidth = _clientRect.width;
+        for (int i = 0; i < words.length; i++)
+        {
+            dstring word = words[i];
+            if (curLineWidth + measureWrappedText(word) > maxWidth)
+            {
+                if (curLineWidth > 0)
+                {
+                    buildingStrArr ~= to!dstring(buildingStr);
+                    wrappedLineCount++;
+                    wrapPoints ~= WrapPoint(curLineLength, curLineWidth);
+                    curLineLength = 0;
+                    curLineWidth = 0;
+                    buildingStr = [];
+                }
+                while (measureWrappedText(word) > maxWidth)
+                {
+                    //For when string still too long
+                    int wrapPoint = findWrapPoint(word);
+                    wrapPoints ~= WrapPoint(wrapPoint, measureWrappedText(word[0..wrapPoint]));
+                    buildingStr ~= word[0 .. wrapPoint];
+                    word = word[wrapPoint .. $];
+                    buildingStrArr ~= to!dstring(buildingStr);
+                    buildingStr = [];
+                    wrappedLineCount++;
+                }
+            }
+            buildingStr ~= word;
+            curLineLength += to!int(word.length);
+            curLineWidth += measureWrappedText(word);
+        }
+        wrapPoints ~= WrapPoint(curLineLength, curLineWidth);
+        buildingStrArr ~= to!dstring(buildingStr);
+        _span ~= LineSpan(lineNumber, wrappedLineCount + 1, wrapPoints, buildingStrArr);
+        return buildingStrArr;
     }
 
+    /// Divide (and conquer) text into words
+    dstring[] explode(dstring str, dchar[] splitChars)
+    {
+        dstring[] parts;
+        int startIndex = 0;
+        import std.string:indexOfAny;
+        while (true)
+        {
+            int index = to!int(str.indexOfAny(splitChars, startIndex));
+        
+            if (index == -1)
+            {
+                parts ~= str[startIndex .. $];
+                //Log.d("Explode output: ", parts);
+                return parts;
+            }
+        
+            dstring word = str[startIndex .. index];
+            dchar nextChar = (str[index .. index + 1])[0];
+        
+            import std.ascii:isWhite;
+            if (isWhite(nextChar))
+            {
+                parts ~= word;
+                parts ~= to!dstring(nextChar);
+            }
+            else
+            {
+                parts ~= word ~ nextChar;
+            }
+            startIndex = index + 1;
+        }
+    }
+    
     /// information about line span into several lines - in word wrap mode
     protected LineSpan[] _span;
+    protected LineSpan[] _spanCache;
+    
+    /// Finds good visual wrapping point for string
+    int findWrapPoint(dstring text)
+    {
+        int maxWidth = _clientRect.width;
+        int wrapPoint = 0;
+        while (true)
+        {
+            if (measureWrappedText(text[0 .. wrapPoint]) < maxWidth)
+            {
+                wrapPoint++;
+            }
+            else
+            {
+                return wrapPoint;
+            }
+        }
+     }
+    
+    /// Calls measureText for word wrap
+    int measureWrappedText(dstring text)
+    {
+        FontRef font = font();
+        int[] measuredWidths;
+        measuredWidths.length = text.length;
+        //DO NOT REMOVE THIS
+        int boggle = font.measureText(text, measuredWidths);
+        if (measuredWidths.length > 0)
+            return measuredWidths[$-1];
+        return 0;
+    }
+    
+    /// Returns number of visible wraps up to a line (not including the first wrapLines themselves)
+    int wrapsUpTo(int line)
+    {
+        int sum;
+        lineSpanIterate(delegate(LineSpan curSpan)
+        {
+            if (curSpan.start < line)
+                sum += curSpan.len - 1;
+        });
+        return sum;
+    }
+    
+    /// Returns LineSpan for line based on actual line number
+    LineSpan getSpan(int lineNumber)
+    {
+        LineSpan lineSpan = LineSpan(lineNumber, 0, [WrapPoint(0,0)], []);
+        lineSpanIterate(delegate(LineSpan curSpan)
+        {
+            if (curSpan.start == lineNumber)
+                lineSpan = curSpan;
+        });
+        return lineSpan;
+    }
+    
+    /// Based on a TextPosition, finds which wrapLine it is on for its current line
+    int findWrapLine(TextPosition textPos)
+    {
+        int curWrapLine = 0;
+        int curPosition = textPos.pos;
+        LineSpan curSpan = getSpan(textPos.line);
+        while (true)
+        {
+            if (curWrapLine == curSpan.wrapPoints.length - 1)
+                return curWrapLine;
+            curPosition -= curSpan.wrapPoints[curWrapLine].wrapPos;
+            if (curPosition < 0)
+            {   
+                return curWrapLine;
+            }
+            curWrapLine++;
+        }
+    }
+    
+    /// Simple way of iterating through _span
+    void lineSpanIterate(void delegate(LineSpan curSpan) iterator)
+    {
+        //TODO: Rename iterator to iteration?
+        foreach (currentSpan; _span)
+            iterator(currentSpan);
+    }
 
     /// override to add custom items on left panel
     protected void updateLeftPaneWidth() {
@@ -1109,6 +1291,9 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         super.handleFocusChange(focused);
     }
 
+    //In word wrap mode, set by caretRect so ensureCaretVisible will know when to scroll
+    protected int caretHeightOffset;
+    
     /// returns cursor rectangle
     protected Rect caretRect() {
         Rect caretRc = textPosToClient(_caretPos);
@@ -1123,7 +1308,22 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 caretRc.right += _spaceWidth;
             }
         }
-        caretRc.offset(_clientRect.left, _clientRect.top);
+        if (_wordWrap)
+        {
+            _scrollPos.x = 0;
+            int wrapLine = findWrapLine(_caretPos);
+            int xOffset;
+            if (wrapLine > 0)
+            {
+                LineSpan curSpan = getSpan(_caretPos.line);
+                xOffset = curSpan.accumulation(wrapLine, LineSpan.WrapPointInfo.Width);
+            }
+            auto yOffset = -1 * _lineHeight * (wrapsUpTo(_caretPos.line) + wrapLine);
+            caretHeightOffset = yOffset;
+            caretRc.offset(_clientRect.left - xOffset, _clientRect.top - yOffset);
+        }
+        else
+            caretRc.offset(_clientRect.left, _clientRect.top);
         return caretRc;
     }
 
@@ -1261,10 +1461,53 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         _textToHighlightOptions = textToHighlightOptions;
         invalidate();
     }
+    
+    /// Used instead of using clientToTextPos for mouse input when in word wrap mode
+    protected TextPosition wordWrapMouseOffset(int x, int y)
+    {
+        if(_span.length == 0)
+            return clientToTextPos(Point(x,y));
+        int selectedVisibleLine = y / _lineHeight;
+            
+        LineSpan _curSpan;
+        
+        int wrapLine = 0;
+        int curLine = 0;
+        bool foundWrap = false;
+        int accumulativeWidths = 0;
+        int curWrapOfSpan = 0;
+        
+        lineSpanIterate(delegate(LineSpan curSpan){
+            while (!foundWrap)
+            {
+                if (wrapLine == selectedVisibleLine)
+                {
+                    foundWrap = true;
+                    break;
+                }
+                accumulativeWidths += curSpan.wrapPoints[curWrapOfSpan].wrapWidth;
+                wrapLine++;
+                curWrapOfSpan++;
+                if (curWrapOfSpan >= curSpan.len)
+                {
+                    break;
+                }
+            }
+            if (!foundWrap)
+            {
+                accumulativeWidths = 0;
+                curLine++;
+            }
+            curWrapOfSpan = 0;
+        });
+        
+        int fakeLineHeight = curLine * _lineHeight;
+        return clientToTextPos(Point(x + accumulativeWidths,fakeLineHeight));
+    }
 
     protected void selectWordByMouse(int x, int y) {
         TextPosition oldCaretPos = _caretPos;
-        TextPosition newPos = clientToTextPos(Point(x,y));
+        TextPosition newPos = _wordWrap ? wordWrapMouseOffset(x,y) : clientToTextPos(Point(x,y));
         TextRange r = content.wordBounds(newPos);
         if (r.start < r.end) {
             _selectionRange = r;
@@ -1280,7 +1523,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     protected void selectLineByMouse(int x, int y, bool onSameLineOnly = true) {
         TextPosition oldCaretPos = _caretPos;
-        TextPosition newPos = clientToTextPos(Point(x,y));
+        TextPosition newPos = _wordWrap ? wordWrapMouseOffset(x,y) : clientToTextPos(Point(x,y));
         if (onSameLineOnly && newPos.line != oldCaretPos.line)
             return; // different lines
         TextRange r = content.lineRange(newPos.line);
@@ -1298,7 +1541,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     protected void updateCaretPositionByMouse(int x, int y, bool selecting) {
         TextPosition oldCaretPos = _caretPos;
-        TextPosition newPos = clientToTextPos(Point(x,y));
+        TextPosition newPos = _wordWrap ? wordWrapMouseOffset(x,y) : clientToTextPos(Point(x,y));
         if (newPos != _caretPos) {
             _caretPos = newPos;
             updateSelectionAfterCursorMovement(oldCaretPos, selecting);
@@ -2322,6 +2565,19 @@ class EditBox : EditWidgetBase {
     protected dstring _textToSetWidgetSize = "aaaaa/naaaaa"d;
     protected int[] _measuredTextToSetWidgetSizeWidths;
 
+    /// Set _needRewrap to true;
+    override void wordWrapRefresh()
+    {
+        _needRewrap = true;
+    }
+    
+    override @property int fontSize() const { return super.fontSize(); }
+    override @property Widget fontSize(int size) {
+        // Need to rewrap if fontSize changed
+        _needRewrap = true;
+        return super.fontSize(size);
+    }
+    
     override protected int lineCount() {
         return _content.length;
     }
@@ -2375,6 +2631,7 @@ class EditBox : EditWidgetBase {
         super.layout(contentRc);
         if (_contentChanged) {
             measureVisibleText();
+            _needRewrap = true;
             _contentChanged = false;
         }
 
@@ -2572,6 +2829,22 @@ class EditBox : EditWidgetBase {
                 _firstVisibleLine = maxFirstVisibleLine;
             measureVisibleText();
             invalidate();
+        } else if(_wordWrap && !(_firstVisibleLine > maxFirstVisibleLine)) {
+            //For wordwrap mode, move down sooner
+            int offsetLines = -1 * caretHeightOffset / _lineHeight;
+            //Log.d("offsetLines: ", offsetLines);
+            if (_caretPos.line >= _firstVisibleLine + visibleLines - offsetLines)
+            {
+                _firstVisibleLine = _caretPos.line - visibleLines + 1 + offsetLines;
+                if (center)
+                    _firstVisibleLine += visibleLines / 2;
+                if (_firstVisibleLine > maxFirstVisibleLine)
+                    _firstVisibleLine = maxFirstVisibleLine;
+                if (_firstVisibleLine < 0)
+                    _firstVisibleLine = 0;
+                measureVisibleText();
+                invalidate();
+            }
         } else if (_caretPos.line >= _firstVisibleLine + visibleLines) {
             _firstVisibleLine = _caretPos.line - visibleLines + 1;
             if (center)
@@ -2599,7 +2872,8 @@ class EditBox : EditWidgetBase {
             invalidate();
         } else if (rc.left >= _clientRect.width - 10) {
             // scroll right
-            _scrollPos.x += (rc.left - _clientRect.width) + _clientRect.width / 4;
+            if (!_wordWrap)
+                _scrollPos.x += (rc.left - _clientRect.width) + _clientRect.width / 4;
             invalidate();
         }
         updateScrollBars();
@@ -2676,17 +2950,73 @@ class EditBox : EditWidgetBase {
                 return true;
             case Up:
             case SelectUp:
-                if (_caretPos.line > 0) {
-                    _caretPos.line--;
-                    correctCaretPos();
-                    updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
-                    ensureCaretVisible();
+                if ((_caretPos.line > 0) | wordWrap) {
+                    if (_wordWrap)
+                    {
+                        LineSpan curSpan = getSpan(_caretPos.line);
+                        int curWrap = findWrapLine(_caretPos);
+                        if (curWrap > 0)
+                        {
+                            _caretPos.pos-= curSpan.wrapPoints[curWrap - 1].wrapPos;
+                        }
+                        else
+                        {
+                            int previousPos = _caretPos.pos;
+                            curSpan = getSpan(_caretPos.line - 1);
+                            curWrap = curSpan.len - 1;
+                            if (curWrap > 0)
+                            {
+                                int accumulativePoint = curSpan.accumulation(curSpan.len - 1, LineSpan.WrapPointInfo.Position);
+                                _caretPos.line--;
+                                _caretPos.pos = accumulativePoint + previousPos;
+                            }
+                            else
+                            {
+                                _caretPos.line--;
+                            }
+                        }
+                    }
+                    else if(_caretPos.line > 0)
+                        _caretPos.line--;
+                     correctCaretPos();
+                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
+                     ensureCaretVisible();
                 }
                 return true;
             case Down:
             case SelectDown:
                 if (_caretPos.line < _content.length - 1) {
-                    _caretPos.line++;
+                    if (_wordWrap)
+                    {
+                        LineSpan curSpan = getSpan(_caretPos.line);
+                        int curWrap = findWrapLine(_caretPos);
+                        if (curWrap < curSpan.len - 1)
+                        {
+                            int previousPos = _caretPos.pos;
+                            _caretPos.pos+= curSpan.wrapPoints[curWrap].wrapPos;
+                            correctCaretPos();
+                            if (_caretPos.pos == previousPos)
+                            {
+                                _caretPos.pos = 0;
+                                _caretPos.line++;
+                            }
+                        }
+                        else if (curSpan.len > 1)
+                        {
+                            int previousPos = _caretPos.pos;
+                            int previousAccumulatedPosition = curSpan.accumulation(curSpan.len - 1, LineSpan.WrapPointInfo.Position);
+                            _caretPos.line++;
+                            _caretPos.pos = previousPos - previousAccumulatedPosition;
+                        }
+                        else
+                        {
+                            _caretPos.line++;
+                        }
+                    }
+                    else
+                    {
+                        _caretPos.line++;
+                    }
                     correctCaretPos();
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                     ensureCaretVisible();
@@ -2846,6 +3176,7 @@ class EditBox : EditWidgetBase {
                             Log.i("Font size in editor ", id, " zoomed to ", newFontSize);
                             fontSize = cast(ushort)newFontSize;
                             updateFontProps();
+                            _needRewrap = true;
                             measureVisibleText();
                             updateScrollBars();
                             invalidate();
@@ -3087,9 +3418,33 @@ class EditBox : EditWidgetBase {
         Rect rc = lineRect;
         rc.left = _clientRect.left + startrc.left;
         rc.right = _clientRect.left + endrc.right;
-        if (!rc.empty) {
+        if (_wordWrap && !rc.empty)
+        {
+            wordWrapFillRect(buf, r.start.line, rc, color);
+        }
+        else if (!rc.empty) {
             // draw selection rect for matching bracket
             buf.fillRect(rc, color);
+        }
+    }
+    
+    /// Used in place of directly calling buf.fillRect in word wrap mode
+    void wordWrapFillRect(DrawBuf buf, int line, Rect lineToDivide, uint color)
+    {
+        Rect rc = lineToDivide;
+        auto limitNumber = (int num, int limit) => num > limit ? limit : num;
+        LineSpan curSpan = getSpan(line);
+        int yOffset = _lineHeight * (wrapsUpTo(line));
+        rc.offset(0, yOffset);
+        Rect[] wrappedSelection;
+        wrappedSelection.length = curSpan.len;
+        foreach (int i, wrapLineRect; wrappedSelection)
+        {
+            int startingDifference = rc.left - _clientRect.left;
+            wrapLineRect = rc;
+            wrapLineRect.offset(-1 * curSpan.accumulation(i, LineSpan.WrapPointInfo.Width), i * _lineHeight);
+            wrapLineRect.right = limitNumber(wrapLineRect.right,(rc.left + curSpan.wrapPoints[i].wrapWidth) - startingDifference);
+            buf.fillRect(wrapLineRect, color);
         }
     }
 
@@ -3108,7 +3463,11 @@ class EditBox : EditWidgetBase {
             Rect rc = lineRect;
             rc.left = startx;
             rc.right = endx;
-            if (!rc.empty) {
+            if (!rc.empty && _wordWrap)
+            {
+                wordWrapFillRect(buf, lineIndex, rc, focused ? _selectionColorFocused : _selectionColorNormal);
+            }
+            else if (!rc.empty) {
                 // draw selection rect for line
                 buf.fillRect(rc, focused ? _selectionColorFocused : _selectionColorNormal);
             }
@@ -3127,6 +3486,9 @@ class EditBox : EditWidgetBase {
 
         // frame around current line
         if (focused && lineIndex == _caretPos.line && _selectionRange.singleLine && _selectionRange.start.line == _caretPos.line) {
+            //TODO: Figure out why a little slow to catch up
+            if (_wordWrap)
+                visibleRect.offset(0, -caretHeightOffset);
             buf.drawFrame(visibleRect, 0xA0808080, Rect(1,1,1,1));
         }
 
@@ -3148,8 +3510,28 @@ class EditBox : EditWidgetBase {
             if (lineRect.top >= _clientRect.bottom)
                 break;
             drawLeftPane(buf, lineRect, i < lc ? i : -1);
-            i++;
             rc.top += _lineHeight;
+            if (_wordWrap)
+            {
+                int currentWrap = 1;
+                for (;;)
+                {
+                    LineSpan curSpan = getSpan(i);
+                    if (currentWrap > curSpan.len - 1)
+                        break;
+                    Rect lineRect2 = rc;
+                    lineRect2.left = _clientRect.left - _leftPaneWidth;
+                    lineRect2.right = _clientRect.left;
+                    lineRect2.bottom = lineRect.top + _lineHeight;
+                    if (lineRect2.top >= _clientRect.bottom)
+                        break;
+                    drawLeftPane(buf, lineRect2, -1);
+                    rc.top += _lineHeight;
+
+                    currentWrap++;
+                }
+            }
+            i++;
         }
     }
 
@@ -3321,6 +3703,16 @@ class EditBox : EditWidgetBase {
         }
     }
 
+    /// Clear _span
+    void resetVisibleSpans()
+    {
+        //TODO: Don't erase spans which have not been modified, cache them
+        _span = [];
+    }
+    
+    private bool _needRewrap = true;
+    private int lastStartingLine;
+    
     override protected void drawClient(DrawBuf buf) {
         // update matched braces
         if (!content.findMatchedBraces(_caretPos, _matchingBraces)) {
@@ -3329,8 +3721,29 @@ class EditBox : EditWidgetBase {
         }
 
         Rect rc = _clientRect;
+        
+        if (_contentChanged)
+          _needRewrap = true;
+        if (lastStartingLine != _firstVisibleLine)
+        {
+            _needRewrap = true;
+            lastStartingLine = _firstVisibleLine;
+        }
+        if (rc.width <= 0 && _wordWrap)
+        {
+            //Prevent drawClient from getting stuck in loop
+            return;
+        }
+        bool doRewrap = false;
+        if (_needRewrap && _wordWrap)
+        {
+            resetVisibleSpans();
+            _needRewrap = false;
+            doRewrap = true;
+        }
 
         FontRef font = font();
+        int previousWraps;
         for (int i = 0; i < _visibleLines.length; i++) {
             dstring txt = _visibleLines[i];
             Rect lineRect;
@@ -3344,22 +3757,59 @@ class EditBox : EditWidgetBase {
             drawLineBackground(buf, _firstVisibleLine + i, lineRect, visibleRect);
             if (_showTabPositionMarks)
                 drawTabPositionMarks(buf, font, _firstVisibleLine + i, lineRect);
-            if (!txt.length)
+            if (!txt.length && !_wordWrap)
                 continue;
             if (_showWhiteSpaceMarks)
-                drawWhiteSpaceMarks(buf, font, txt, tabSize, lineRect, visibleRect);
+            {
+                Rect whiteSpaceRc = lineRect;
+                Rect whiteSpaceRcVisible = visibleRect;
+                for(int z; z < previousWraps; z++)
+                {
+                    whiteSpaceRc.offset(0, _lineHeight);
+                    whiteSpaceRcVisible.offset(0, _lineHeight);
+                }
+                drawWhiteSpaceMarks(buf, font, txt, tabSize, whiteSpaceRc, whiteSpaceRcVisible);
+            }
             if (_leftPaneWidth > 0) {
                 Rect leftPaneRect = visibleRect;
                 leftPaneRect.right = leftPaneRect.left;
                 leftPaneRect.left -= _leftPaneWidth;
                 drawLeftPane(buf, leftPaneRect, 0);
             }
-            if (txt.length > 0) {
+            if (txt.length > 0 || _wordWrap) {
                 CustomCharProps[] highlight = _visibleLinesHighlights[i];
-                if (highlight)
-                    font.drawColoredText(buf, rc.left - _scrollPos.x, rc.top + i * _lineHeight, txt, highlight, tabSize);
+                if (_wordWrap)
+                {
+                    dstring[] wrappedLine;
+                    if (doRewrap)
+                        wrappedLine = wrapLine(txt, _firstVisibleLine + i);
+                    else
+                        if (i < _span.length)
+                            wrappedLine = _span[i].wrappedContent;
+                    int accumulativeLength;
+                    CustomCharProps[] wrapProps;
+                    foreach (int q, curWrap; wrappedLine)
+                    {
+                        auto lineOffset = q + i + wrapsUpTo(i + _firstVisibleLine);
+                        if (highlight)
+                        {
+                            wrapProps = highlight[accumulativeLength .. $];
+                            accumulativeLength += curWrap.length;
+                            font.drawColoredText(buf, rc.left - _scrollPos.x, rc.top + lineOffset * _lineHeight, curWrap, wrapProps, tabSize);
+                        }
+                        else
+                            font.drawText(buf, rc.left - _scrollPos.x, rc.top + lineOffset * _lineHeight, curWrap, textColor, tabSize);
+
+                    }
+                    previousWraps += to!int(wrappedLine.length - 1);
+                }
                 else
-                    font.drawText(buf, rc.left - _scrollPos.x, rc.top + i * _lineHeight, txt, textColor, tabSize);
+                {
+                    if (highlight)
+                        font.drawColoredText(buf, rc.left - _scrollPos.x, rc.top + i * _lineHeight, txt, highlight, tabSize);
+                    else
+                        font.drawText(buf, rc.left - _scrollPos.x, rc.top + i * _lineHeight, txt, textColor, tabSize);
+                }
             }
         }
 
