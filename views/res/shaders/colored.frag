@@ -66,7 +66,7 @@ uniform float u_modulateAlpha;
 ///////////////////////////////////////////////////////////
 // Variables
 vec4 _baseColor;
-
+out vec4 _fragColor;
 ///////////////////////////////////////////////////////////
 // Varyings
 #if defined(VERTEX_COLOR)
@@ -115,30 +115,30 @@ void main()
     _baseColor = u_diffuseColor;
 	#endif
     
-    gl_FragColor.a = _baseColor.a;
-    gl_FragColor.rgb = getLitPixel();
+    _fragColor.a = _baseColor.a;
+    _fragColor.rgb = getLitPixel();
     
     #else
     
     #if defined(VERTEX_COLOR)
-    gl_FragColor.rgb = v_color;
-    gl_FragColor.a = 1.0;
+    _fragColor.rgb = v_color;
+    _fragColor.a = 1.0;
     #else
-    gl_FragColor = u_diffuseColor;
+    _fragColor = u_diffuseColor;
     #endif
     
     #endif
 
 	#if defined(LIGHTMAP)
 	vec4 lightColor = texture2D(u_lightmapTexture, v_texCoord1);
-	gl_FragColor.rgb *= lightColor.rgb;
+	_fragColor.rgb *= lightColor.rgb;
 	#endif
 
 	#if defined(MODULATE_COLOR)
-    gl_FragColor *= u_modulateColor;
+    _fragColor *= u_modulateColor;
     #endif
 
 	#if defined(MODULATE_ALPHA)
-    gl_FragColor.a *= u_modulateAlpha;
+    _fragColor.a *= u_modulateAlpha;
     #endif
 }
