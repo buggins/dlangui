@@ -40,10 +40,10 @@ import dlangui.widgets.widget;
 import dlangui.platforms.common.platform;
 
 import derelict.sdl2.sdl;
-import derelict.opengl3.gl3;
-import derelict.opengl3.gl;
 
 static if (ENABLE_OPENGL) {
+    import derelict.opengl3.gl3;
+    import derelict.opengl3.gl;
     import dlangui.graphics.gldrawbuf;
     import dlangui.graphics.glsupport;
 }
