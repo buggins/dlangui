@@ -117,6 +117,14 @@ res/hdpi/hdpi_dialog-ok-apply.png
 res/hdpi/hdpi_dialog-ok.png
 res/hdpi/hdpi_folder.png
 res/hdpi/hdpi_text-plain.png
+res/hdpi/hdpi_scrollbar_btn_down.png
+res/hdpi/hdpi_scrollbar_btn_down_dark.png
+res/hdpi/hdpi_scrollbar_btn_left.png
+res/hdpi/hdpi_scrollbar_btn_left_dark.png
+res/hdpi/hdpi_scrollbar_btn_right.png
+res/hdpi/hdpi_scrollbar_btn_right_dark.png
+res/hdpi/hdpi_scrollbar_btn_up.png
+res/hdpi/hdpi_scrollbar_btn_up_dark.png
 res/hdpi/hdpi_switch_off.png
 res/hdpi/hdpi_switch_off_disabled.png
 res/hdpi/hdpi_switch_on.png
