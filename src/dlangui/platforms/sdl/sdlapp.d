@@ -1593,7 +1593,7 @@ version (Windows) {
     }
 }
 
-/// try to get screen resolution and update SCREEN_DPI; returns true if SCREEN_DPI is changed by this check
+/// try to get screen resolution and update SCREEN_DPI; returns true if SCREEN_DPI is changed (when custom override DPI value is not set) 
 bool sdlUpdateScreenDpi(int displayIndex = 0) {
     if (SDL_GetDisplayDPI is null) {
         Log.w("SDL_GetDisplayDPI is not found: cannot detect screen DPI");
@@ -1608,11 +1608,13 @@ bool sdlUpdateScreenDpi(int displayIndex = 0) {
     int idpi = cast(int)hdpi;
     if (idpi < 32 || idpi > 2000)
         return false;
-    Log.i("sdlUpdateScreenDpi: SCREEN_DPI=", idpi);
-    if (SCREEN_DPI != idpi) {
-        Log.i("sdlUpdateScreenDpi: SCREEN_DPI is changed from ", SCREEN_DPI, " to ", idpi);
+    Log.i("sdlUpdateScreenDpi: systemScreenDPI=", idpi);
+    if (overrideScreenDPI != 0)
+        Log.i("sdlUpdateScreenDpi: systemScreenDPI is overrided = ", overrideScreenDPI);
+    if (systemScreenDPI != idpi) {
+        Log.i("sdlUpdateScreenDpi: systemScreenDPI is changed from ", systemScreenDPI, " to ", idpi);
         SCREEN_DPI = idpi;
-        return true;
+        return (overrideScreenDPI == 0);
     }
     return false;
 }
