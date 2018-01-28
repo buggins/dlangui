@@ -1,0 +1,15 @@
+Icons8 Flat Color Icons:
+
+Free icons for personal and commercial use. No credits required.
+
+Good Boy License:
+
+We’ve released the icon pack either under MIT or the Good Boy License. We invented it. Please do whatever your mom would approve of:
+- Download
+- Change
+- Fork
+
+No tattoos!
+
+Full license: https://icons8.com/good-boy-license/
+Github page: https://github.com/icons8/flat-color-icons
