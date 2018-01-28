@@ -1445,8 +1445,6 @@ GLenum primitiveTypeToGL(PrimitiveType type) {
 /// OpenGL GUI rendering queue. It collects gui draw calls, fills a big buffer for vertex data and draws everything
 private final class OpenGLQueue {
 
-    OpenGLBatch[] batches;
-
     /// OpenGL batch structure - to draw several triangles in single OpenGL call
     private struct OpenGLBatch {
 
@@ -1465,6 +1463,7 @@ private final class OpenGLQueue {
     }
 
     import std.array: Appender;
+    Appender!(OpenGLBatch[]) batches;
     // a big buffer
     Appender!(float[]) _vertices;
     Appender!(float[]) _colors;
@@ -1474,7 +1473,7 @@ private final class OpenGLQueue {
     /// draw all
     void flush() {
         glSupport.fillBuffers(_vertices.data, _colors.data, _texCoords.data, _indices.data);
-        foreach(b; batches) {
+        foreach(b; batches.data) {
             switch(b.type) with(OpenGLBatch.BatchType)
             {
                 case Line:          glSupport.drawLines(b.length, b.start); break;
@@ -1486,8 +1485,7 @@ private final class OpenGLQueue {
         }
         //Log.d(batches.length, " ", _vertices.data.length, " ", _colors.data.length, " ", _texCoords.data.length, " ", _indices.data.length);
         glSupport.destroyBuffers();
-        destroy(batches);
-        batches = null;
+        batches.clear;
         _vertices.clear;
         _colors.clear;
         _texCoords.clear;
@@ -1498,22 +1496,23 @@ private final class OpenGLQueue {
 
     /// add textured rectangle to queue
     void addTexturedRect(Tex2D texture, int textureDx, int textureDy, uint color1, uint color2, uint color3, uint color4, Rect srcrc, Rect dstrc, bool linear) {
-        if (batches is null
-            || batches[$-1].type != OpenGLBatch.BatchType.TexturedRect
-            || batches[$-1].texture.ID != texture.ID
-            || batches[$-1].textureLinear != linear)
+        if (batches.data.length == 0
+            || batches.data[$-1].type != OpenGLBatch.BatchType.TexturedRect
+            || batches.data[$-1].texture.ID != texture.ID
+            || batches.data[$-1].textureLinear != linear)
         {
             batches ~= OpenGLBatch();
-            batches[$-1].type = OpenGLBatch.BatchType.TexturedRect;
-            batches[$-1].texture = texture;
-            batches[$-1].textureDx = textureDx;
-            batches[$-1].textureDy = textureDy;
-            batches[$-1].textureLinear = linear;
-            if(batches.length > 1)
-                batches[$-1].start = batches[$-2].start + batches[$-2].length;
+            batches.data[$-1].type = OpenGLBatch.BatchType.TexturedRect;
+            batches.data[$-1].texture = texture;
+            batches.data[$-1].textureDx = textureDx;
+            batches.data[$-1].textureDy = textureDy;
+            batches.data[$-1].textureLinear = linear;
+            if(batches.data.length > 1)
+                batches.data[$-1].start = batches.data[$-2].start + batches.data[$-2].length;
         }
 
-        float[] colors = convertColors([color1, color2, color3, color4]);
+        uint[4] colorsARGB = [color1, color2, color3, color4];
+        float[] colors = convertColors(colorsARGB);
 
         float dstx0 = cast(float)dstrc.left;
         float dsty0 = cast(float)(glSupport.currentFBO ? dstrc.top : (glSupport.bufferDy - dstrc.top));
@@ -1544,14 +1543,15 @@ private final class OpenGLQueue {
 
     /// add gradient rectangle to queue
     void addGradientRect(Rect rc, uint color1, uint color2, uint color3, uint color4) {
-        if (batches is null || batches[$-1].type != OpenGLBatch.BatchType.Rect) {
+        if (batches.data.length == 0 || batches.data[$-1].type != OpenGLBatch.BatchType.Rect) {
             batches ~= OpenGLBatch();
-            batches[$-1].type = OpenGLBatch.BatchType.Rect;
-            if(batches.length > 1)
-                batches[$-1].start = batches[$-2].start + batches[$-2].length;
+            batches.data[$-1].type = OpenGLBatch.BatchType.Rect;
+            if(batches.data.length > 1)
+                batches.data[$-1].start = batches.data[$-2].start + batches.data[$-2].length;
         }
 
-        float[] colors = convertColors([color1, color2, color3, color4]);
+        uint[4] colorsARGB = [color1, color2, color3, color4];
+        float[] colors = convertColors(colorsARGB);
 
         float x0 = cast(float)(rc.left);
         float y0 = cast(float)(glSupport.currentFBO ? rc.top : (glSupport.bufferDy - rc.top));
@@ -1572,14 +1572,15 @@ private final class OpenGLQueue {
 
     /// add triangle to queue
     void addTriangle(PointF p1, PointF p2, PointF p3, uint color1, uint color2, uint color3) {
-        if (batches is null || batches[$-1].type != OpenGLBatch.BatchType.Triangle) {
+        if (batches.data.length == 0 || batches.data[$-1].type != OpenGLBatch.BatchType.Triangle) {
             batches ~= OpenGLBatch();
-            batches[$-1].type = OpenGLBatch.BatchType.Triangle;
-            if(batches.length > 1)
-                batches[$-1].start = batches[$-2].start + batches[$-2].length;
+            batches.data[$-1].type = OpenGLBatch.BatchType.Triangle;
+            if(batches.data.length > 1)
+                batches.data[$-1].start = batches.data[$-2].start + batches.data[$-2].length;
         }
 
-        float[] colors = convertColors([color1, color2, color3]);
+        uint[3] colorsARGB = [color1, color2, color3];
+        float[] colors = convertColors(colorsARGB);
 
         float x0 = p1.x;
         float y0 = glSupport.currentFBO ? p1.y : (glSupport.bufferDy - p1.y);
@@ -1602,14 +1603,15 @@ private final class OpenGLQueue {
     /// add line to queue
     /// rc is a line (left, top) - (right, bottom)
     void addLine(Rect rc, uint color1, uint color2) {
-        if (batches is null || batches[$-1].type != OpenGLBatch.BatchType.Line) {
+        if (batches.data.length == 0 || batches.data[$-1].type != OpenGLBatch.BatchType.Line) {
             batches ~= OpenGLBatch();
-            batches[$-1].type = OpenGLBatch.BatchType.Line;
-            if(batches.length > 1)
-                batches[$-1].start = batches[$-2].start + batches[$-2].length;
+            batches.data[$-1].type = OpenGLBatch.BatchType.Line;
+            if(batches.data.length > 1)
+                batches.data[$-1].start = batches.data[$-2].start + batches.data[$-2].length;
         }
 
-        float[] colors = convertColors([color1, color2]);
+        uint[2] colorsARGB = [color1, color2];
+        float[] colors = convertColors(colorsARGB);
 
         float x0 = cast(float)(rc.left);
         float y0 = cast(float)(glSupport.currentFBO ? rc.top : (glSupport.bufferDy - rc.top));
@@ -1653,7 +1655,7 @@ private final class OpenGLQueue {
         } else
             static assert(0);
 
-        batches[$-1].length += cast(int)indices.length;
+        batches.data[$-1].length += cast(int)indices.length;
 
         _vertices ~= cast(float[])vertices;
         _colors ~= cast(float[])colors;
