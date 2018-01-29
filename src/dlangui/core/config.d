@@ -44,10 +44,14 @@ version(USE_CONSOLE) {
     // provide default configuratino definitions
     version (USE_SDL) {
         // SDL backend already selected using version identifier
-        version (USE_OPENGL) {
-            enum ENABLE_OPENGL = true;
-        } else {
+        version (NO_OPENGL) {
             enum ENABLE_OPENGL = false;
+        } else {
+            version (USE_OPENGL) {
+                enum ENABLE_OPENGL = true;
+            } else {
+                enum ENABLE_OPENGL = false;
+            }
         }
         enum BACKEND_SDL = true;
         enum BACKEND_X11 = false;
@@ -70,10 +74,14 @@ version(USE_CONSOLE) {
         enum BACKEND_CONSOLE = false;
     } else version (USE_X11) {
         // X11 backend already selected using version identifier
-        version (USE_OPENGL) {
-            enum ENABLE_OPENGL = true;
-        } else {
+        version (NO_OPENGL) {
             enum ENABLE_OPENGL = false;
+        } else {
+            version (USE_OPENGL) {
+                enum ENABLE_OPENGL = true;
+            } else {
+                enum ENABLE_OPENGL = false;
+            }
         }
         enum BACKEND_SDL = false;
         enum BACKEND_X11 = true;
@@ -82,10 +90,14 @@ version(USE_CONSOLE) {
         enum BACKEND_CONSOLE = false;
     } else version (USE_WIN32) {
         // Win32 backend already selected using version identifier
-        version (USE_OPENGL) {
-            enum ENABLE_OPENGL = true;
-        } else {
+        version (NO_OPENGL) {
             enum ENABLE_OPENGL = false;
+        } else {
+            version (USE_OPENGL) {
+                enum ENABLE_OPENGL = true;
+            } else {
+                enum ENABLE_OPENGL = false;
+            }
         }
         enum BACKEND_SDL = false;
         enum BACKEND_X11 = false;
