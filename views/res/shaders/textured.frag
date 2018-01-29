@@ -81,7 +81,7 @@ uniform float u_fogMaxDistance;
 ///////////////////////////////////////////////////////////
 // Variables
 vec4 _baseColor;
-
+out vec4 _fragColor;
 ///////////////////////////////////////////////////////////
 // Varyings
 varying vec2 v_texCoord;
@@ -146,30 +146,30 @@ void main()
     _baseColor = mix(u_fogColor, _baseColor, fogFactor);
 #endif
  
-    gl_FragColor.a = _baseColor.a;
+    _fragColor.a = _baseColor.a;
 
     #if defined(TEXTURE_DISCARD_ALPHA)
-    if (gl_FragColor.a < 0.5)
+    if (_fragColor.a < 0.5)
         discard;
     #endif
 
     #if defined(LIGHTING)
 
-    gl_FragColor.rgb = getLitPixel();
+    _fragColor.rgb = getLitPixel();
     #else
-    gl_FragColor.rgb = _baseColor.rgb;
+    _fragColor.rgb = _baseColor.rgb;
     #endif
 
 	#if defined(LIGHTMAP)
 	vec4 lightColor = texture2D(u_lightmapTexture, v_texCoord1);
-	gl_FragColor.rgb *= lightColor.rgb;
+	_fragColor.rgb *= lightColor.rgb;
 	#endif
 
     #if defined(MODULATE_COLOR)
-    gl_FragColor *= u_modulateColor;
+    _fragColor *= u_modulateColor;
     #endif
 
     #if defined(MODULATE_ALPHA)
-    gl_FragColor.a *= u_modulateAlpha;
+    _fragColor.a *= u_modulateAlpha;
     #endif
 }
