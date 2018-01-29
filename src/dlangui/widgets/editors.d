@@ -2314,6 +2314,16 @@ class EditLine : EditWidgetBase {
 
     protected Point _measuredTextToSetWidgetSize;
     protected dstring _textToSetWidgetSize = "aaaaa"d;
+    
+    @property void textToSetWidgetSize(dstring newText) {
+        _textToSetWidgetSize = newText;
+        requestLayout();
+    }
+
+    @property dstring textToSetWidgetSize() {
+        return _textToSetWidgetSize;
+    }
+    
     protected int[] _measuredTextToSetWidgetSizeWidths;
 
     protected dchar _passwordChar = 0;
