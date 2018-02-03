@@ -1489,7 +1489,7 @@ class SDLPlatform : Platform {
             return ""d;
         string s = fromStringz(txt).dup;
         SDL_free(txt);
-        return toUTF32(s);
+        return normalizeEndOfLineCharacters(toUTF32(s));
     }
 
     /// sets text to clipboard (when mouseBuffer == true, use mouse selection clipboard - under linux)
