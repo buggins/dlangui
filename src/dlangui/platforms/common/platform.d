@@ -1111,6 +1111,20 @@ class Window : CustomEventTarget {
         return res;
     }
 
+    /// Keep overrided cursor type or NotSet to get cursor from widget
+    protected CursorType _overrideCursorType = CursorType.NotSet;
+
+    /// Allow override cursor for entire window. Set to CursorType.NotSet to remove cursor type overriding.
+    @property void overrideCursorType(CursorType newCursorType) {
+        _overrideCursorType = newCursorType;
+        setCursorType(newCursorType);
+    }
+
+    /// Returns current window override cursor type or NotSet if not overriding.
+    @property CursorType overrideCursorType() {
+        return _overrideCursorType;
+    }
+    
     protected bool dispatchMouseEvent(Widget root, MouseEvent event, ref bool cursorIsSet) {
         // only route mouse events to visible widgets
         if (root.visibility != Visibility.Visible)
@@ -1123,9 +1137,10 @@ class Window : CustomEventTarget {
             if (dispatchMouseEvent(child, event, cursorIsSet))
                 return true;
         }
+
         if (event.action == MouseAction.Move && !cursorIsSet) {
             uint cursorType = root.getCursorType(event.x, event.y);
-            if (cursorType != CursorType.Parent) {
+            if (cursorType != CursorType.NotSet) {
                 setCursorType(cursorType);
                 cursorIsSet = true;
             }
@@ -1463,11 +1478,17 @@ class Window : CustomEventTarget {
             }
             return res;
         }
+
         bool processed = false;
         if (event.action == MouseAction.Move || event.action == MouseAction.Leave) {
             processed = checkRemoveTracking(event);
         }
+        
         bool cursorIsSet = false;
+        if (overrideCursorType != CursorType.NotSet) {
+            cursorIsSet = true;
+        }
+        
         if (!res) {
             bool insideOneOfPopups = false;
             for (int i = cast(int)_popups.length - 1; i >= 0; i--) {

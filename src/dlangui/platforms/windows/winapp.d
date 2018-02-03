@@ -680,7 +680,7 @@ class Win32Window : Window {
             case None:
                 winCursor = null;
                 break;
-            case Parent:
+            case NotSet:
                 break;
             case Arrow:
                 winCursor = loadCursor(IDC_ARROW);
