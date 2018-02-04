@@ -132,8 +132,8 @@ enum FocusMovement {
 /// standard mouse cursor types
 enum CursorType {
     None,
-    /// use parent's cursor
-    Parent,
+    /// When set in widget means to use parent's cursor, in Window.overrideCursorType() disable overriding.
+    NotSet,
     Arrow,
     IBeam,
     Wait,

@@ -1962,7 +1962,7 @@ extern(C) int DLANGUImain(string[] args)
     setupX11Atoms();
 
     x11cursors[CursorType.None] = XCreateFontCursor(x11display, XC_arrow);
-    x11cursors[CursorType.Parent] = XCreateFontCursor(x11display, XC_arrow);
+    x11cursors[CursorType.NotSet] = XCreateFontCursor(x11display, XC_arrow);
     x11cursors[CursorType.Arrow] = XCreateFontCursor(x11display, XC_left_ptr);
     x11cursors[CursorType.IBeam] = XCreateFontCursor(x11display, XC_xterm);
     x11cursors[CursorType.Wait] = XCreateFontCursor(x11display, XC_watch);
