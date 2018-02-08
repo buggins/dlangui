@@ -3019,7 +3019,8 @@ class EditBox : EditWidgetBase {
                 return true;
             case Down:
             case SelectDown:
-                if (_caretPos.line < _content.length - 1) {
+                const int lenOffset = _wordWrap ? 0 : -1;
+                if (_caretPos.line < _content.length + lenOffset) {
                     if (_wordWrap)
                     {
                         LineSpan curSpan = getSpan(_caretPos.line);
