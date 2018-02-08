@@ -713,6 +713,9 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
     /// override to implement creation of dialog controls
     override void initialize() {
+        // remember filename specified by user, file grid initialization can change it
+        string defaultFilename = _filename;
+        
         _roots = getRootPaths() ~ getBookmarkPaths();
 
         layoutWidth(FILL_PARENT).layoutHeight(FILL_PARENT).minWidth(WIDGET_STYLE_CONSOLE ? 50 : 600);
@@ -821,6 +824,9 @@ class FileDialog : Dialog, CustomGridCellAdapter {
         openDirectory(_path, _filename);
         _fileList.layoutHeight = FILL_PARENT;
 
+        // set default file name if specified by user
+        if (defaultFilename.length != 0)
+            _edFilename.text = toUTF32(baseName(defaultFilename));
     }
 
     /// get sort order suffix for column title
