@@ -1292,6 +1292,12 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         super.handleFocusChange(focused);
     }
 
+    /// override for wordwrap
+    protected int additionalYOffset()
+    {
+        return 0;
+    }
+
     //In word wrap mode, set by caretRect so ensureCaretVisible will know when to scroll
     protected int caretHeightOffset;
     
@@ -1321,6 +1327,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             }
             auto yOffset = -1 * _lineHeight * (wrapsUpTo(_caretPos.line) + wrapLine);
             caretHeightOffset = yOffset;
+            yOffset -= additionalYOffset();
             caretRc.offset(_clientRect.left - xOffset, _clientRect.top - yOffset);
         }
         else
@@ -1468,7 +1475,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     {
         if(_span.length == 0)
             return clientToTextPos(Point(x,y));
-        int selectedVisibleLine = y / _lineHeight;
+        int selectedVisibleLine = (y - additionalYOffset()) / _lineHeight;
             
         LineSpan _curSpan;
         
@@ -2589,6 +2596,14 @@ class EditBox : EditWidgetBase {
         return super.fontSize(size);
     }
     
+    ///How much the drawn text should be vertically offset
+    private int _wordWrapYOffset;
+
+    override protected int additionalYOffset()
+    {
+        return _wordWrapYOffset;
+    }
+
     override protected int lineCount() {
         return _content.length;
     }
@@ -2828,7 +2843,13 @@ class EditBox : EditWidgetBase {
             maxFirstVisibleLine = _content.length - visibleLines;
         if (maxFirstVisibleLine < 0)
             maxFirstVisibleLine = 0;
-
+        if (_wordWrap && _wordWrapYOffset != 0)
+        {
+            int currentWrapLine = findWrapLine(_caretPos);
+            int currentOffsetLine = -1 * _wordWrapYOffset / _lineHeight;
+            if (currentWrapLine < currentOffsetLine)
+                _wordWrapYOffset = -1 * _lineHeight * currentWrapLine;
+        }
         if (_caretPos.line < _firstVisibleLine) {
             _firstVisibleLine = _caretPos.line;
             if (center) {
@@ -2939,6 +2960,9 @@ class EditBox : EditWidgetBase {
         return res;
     }
 
+    ///When scrolling up with word wrap, set if _wordWrapYOffset needs to be adjusted when possible
+    private bool _moveToLastWrap;
+
     override protected bool handleAction(const Action a) {
         TextPosition oldCaretPos = _caretPos;
         dstring currentLine = _content[_caretPos.line];
@@ -2996,7 +3020,8 @@ class EditBox : EditWidgetBase {
                 return true;
             case Down:
             case SelectDown:
-                if (_caretPos.line < _content.length - 1) {
+                const int lenOffset = _wordWrap ? 0 : -1;
+                if (_caretPos.line < _content.length + lenOffset) {
                     if (_wordWrap)
                     {
                         LineSpan curSpan = getSpan(_caretPos.line);
@@ -3120,13 +3145,26 @@ class EditBox : EditWidgetBase {
                 return true;
             case ScrollLineUp:
                 {
-                    if (_firstVisibleLine > 0) {
-                        _firstVisibleLine -= 3;
+                    int currentWordWrapOffsetLine = -1 * _wordWrapYOffset / _lineHeight;
+                    Log.d("Beginning of ScrollLine Up\n------");
+                    if (_wordWrap)
+                    {
+                        bool previousIsWrap = currentWordWrapOffsetLine > 0;
+                        if (previousIsWrap)
+                        {
+                            _wordWrapYOffset += _lineHeight;
+                            Log.d("Went to previous wrap of line");
+                            invalidate();
+                        }
+                    }
+                    if (currentWordWrapOffsetLine == 0 && _firstVisibleLine > 0) {
+                        _firstVisibleLine -= _wordWrap ? 1 : 3;
                         if (_firstVisibleLine < 0)
                             _firstVisibleLine = 0;
                         measureVisibleText();
                         updateScrollBars();
                         invalidate();
+                        _moveToLastWrap = true;
                     }
                 }
                 return true;
@@ -3145,16 +3183,42 @@ class EditBox : EditWidgetBase {
                 return true;
             case ScrollLineDown:
                 {
-                    int fullLines = _clientRect.height / _lineHeight;
-                    if (_firstVisibleLine + fullLines < _content.length) {
-                        _firstVisibleLine += 3;
-                        if (_firstVisibleLine > _content.length - fullLines)
-                            _firstVisibleLine = _content.length - fullLines;
-                        if (_firstVisibleLine < 0)
-                            _firstVisibleLine = 0;
-                        measureVisibleText();
-                        updateScrollBars();
-                        invalidate();
+                    bool nextIsWrap;
+                    bool continueAsNormal;
+                    int currentWordWrapOffsetLine = -1 * _wordWrapYOffset / _lineHeight;
+                    Log.d("Beginning of ScrollLine Down\n------");
+                    Log.d("currentWordWrapOffsetLine: ", currentWordWrapOffsetLine);
+                    if (_wordWrap)
+                    {
+                        auto len = getSpan(_firstVisibleLine).len;
+                        Log.d("len for line: ", _firstVisibleLine, " is: ", len);
+                        nextIsWrap = (len > currentWordWrapOffsetLine + 1);
+                        if (nextIsWrap)
+                        {
+                            _wordWrapYOffset -= _lineHeight;
+                            Log.d("Went to next wrap");
+                            invalidate();
+                        }
+                        else
+                        {
+                            _wordWrapYOffset = 0;
+                            continueAsNormal = true;
+                            Log.d("continueAsNormal, ", " _firstVisibleLine: ", _firstVisibleLine);
+                        }
+                    }
+                    if (!_wordWrap | continueAsNormal)
+                    {
+                        int fullLines = _clientRect.height / _lineHeight;
+                        if (_firstVisibleLine + fullLines < _content.length) {
+                            _firstVisibleLine += _wordWrap ? 1 : 3;
+                            if (_firstVisibleLine > _content.length - fullLines)
+                                _firstVisibleLine = _content.length - fullLines;
+                            if (_firstVisibleLine < 0)
+                                _firstVisibleLine = 0;
+                            measureVisibleText();
+                            updateScrollBars();
+                            invalidate();
+                        }
                     }
                 }
                 return true;
@@ -3454,6 +3518,7 @@ class EditBox : EditWidgetBase {
             int startingDifference = rc.left - _clientRect.left;
             wrapLineRect = rc;
             wrapLineRect.offset(-1 * curSpan.accumulation(i, LineSpan.WrapPointInfo.Width), i * _lineHeight);
+            wrapLineRect.offset(0, _wordWrapYOffset);
             wrapLineRect.right = limitNumber(wrapLineRect.right,(rc.left + curSpan.wrapPoints[i].wrapWidth) - startingDifference);
             buf.fillRect(wrapLineRect, color);
         }
@@ -3499,7 +3564,7 @@ class EditBox : EditWidgetBase {
         if (focused && lineIndex == _caretPos.line && _selectionRange.singleLine && _selectionRange.start.line == _caretPos.line) {
             //TODO: Figure out why a little slow to catch up
             if (_wordWrap)
-                visibleRect.offset(0, -caretHeightOffset);
+                visibleRect.offset(0, -caretHeightOffset + _wordWrapYOffset);
             buf.drawFrame(visibleRect, 0xA0808080, Rect(1,1,1,1));
         }
 
@@ -3515,6 +3580,8 @@ class EditBox : EditWidgetBase {
         int lc = lineCount;
         for (;;) {
             Rect lineRect = rc;
+            if (_wordWrap)
+                lineRect.offset(0, _wordWrapYOffset);
             lineRect.left = _clientRect.left - _leftPaneWidth;
             lineRect.right = _clientRect.left;
             lineRect.bottom = lineRect.top + _lineHeight;
@@ -3531,6 +3598,7 @@ class EditBox : EditWidgetBase {
                     if (currentWrap > curSpan.len - 1)
                         break;
                     Rect lineRect2 = rc;
+                    lineRect2.offset(0, _wordWrapYOffset);
                     lineRect2.left = _clientRect.left - _leftPaneWidth;
                     lineRect2.right = _clientRect.left;
                     lineRect2.bottom = lineRect.top + _lineHeight;
@@ -3732,6 +3800,8 @@ class EditBox : EditWidgetBase {
         }
 
         Rect rc = _clientRect;
+        if (_wordWrap)
+            rc.offset(0, _wordWrapYOffset);
         
         if (_contentChanged)
           _needRewrap = true;
@@ -3797,6 +3867,12 @@ class EditBox : EditWidgetBase {
                     else
                         if (i < _span.length)
                             wrappedLine = _span[i].wrappedContent;
+                    if (i == 0 && _moveToLastWrap == true)
+                    {
+                        _wordWrapYOffset = -1 * to!int(wrappedLine.length - 1) * _lineHeight;
+                        rc.offset(0, _wordWrapYOffset);
+                        _moveToLastWrap = false;
+                    }
                     int accumulativeLength;
                     CustomCharProps[] wrapProps;
                     foreach (int q, curWrap; wrappedLine)
