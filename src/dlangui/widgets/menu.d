@@ -937,7 +937,7 @@ class MainMenu : MenuWidgetBase {
         super(null, null, Orientation.Horizontal);
         id = "MAIN_MENU";
         styleId = STYLE_MAIN_MENU;
-        _clickOnButtonDown = true;
+        _clickOnButtonDown = false;
         selectOnHover = false;
     }
 
@@ -945,7 +945,7 @@ class MainMenu : MenuWidgetBase {
         super(null, item, Orientation.Horizontal);
         id = "MAIN_MENU";
         styleId = STYLE_MAIN_MENU;
-        _clickOnButtonDown = true;
+        _clickOnButtonDown = false;
         selectOnHover = false;
     }
 
