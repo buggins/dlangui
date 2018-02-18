@@ -175,8 +175,8 @@ class GLDrawBuf : DrawBuf, GLConfigCallback {
         assert(_scene !is null);
         //Log.v("GLDrawBuf.frawRescaled dst=", dstrect, " src=", srcrect);
         if (applyClipping(dstrect, srcrect)) {
-            if (!glImageCache.isInCache(src.id))
-                glImageCache.put(src);
+            assert(!glImageCache.isInCache(src.id));
+            glImageCache.put(src);
             _scene.add(new TextureSceneItem(src.id, dstrect, srcrect, applyAlpha(0xFFFFFF), 0, null));
         }
     }
