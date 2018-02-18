@@ -1005,7 +1005,7 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
     }
 
     /// handle popup menu action
-    protected bool onMenuItemAction(const Action action) {
+    protected override bool onMenuItemAction(const Action action) {
         if (menuItemAction.assigned)
             return menuItemAction(action);
         return false;

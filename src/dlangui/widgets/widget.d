@@ -41,6 +41,7 @@ public {
     import dlangui.core.i18n;
     import dlangui.core.collections;
     import dlangui.widgets.styles;
+    import dlangui.widgets.menu;
 
     import dlangui.graphics.drawbuf;
     import dlangui.graphics.resources;
@@ -153,7 +154,7 @@ enum CursorType {
  *
  */
 @dmlwidget
-class Widget {
+class Widget : MenuItemActionHandler {
 protected:
     /// widget id
     string _id;
@@ -1506,13 +1507,38 @@ public:
 
     // ===========================================================
     // popup menu support
+    override bool onMenuItemAction(const Action action) {
+        return dispatchAction(action);
+    }
+
+    protected MenuItem _popupMenu;
+    @property MenuItem popupMenu() { return _popupMenu; }
+    @property Widget popupMenu(MenuItem popupMenu) {
+        _popupMenu = popupMenu;
+        return this;
+    }
+    
     /// returns true if widget can show popup menu (e.g. by mouse right click at point x,y)
     bool canShowPopupMenu(int x, int y) {
-        return false;
+        if (_popupMenu is null)
+            return false;
+        if (_popupMenu.openingSubmenu.assigned)
+            if (!_popupMenu.openingSubmenu(_popupMenu))
+                return false;
+        return true;
     }
     /// shows popup menu at (x,y)
     void showPopupMenu(int x, int y) {
-        // override to show popup
+        /// if preparation signal handler assigned, call it; don't show popup if false is returned from handler
+        if (_popupMenu.openingSubmenu.assigned)
+            if (!_popupMenu.openingSubmenu(_popupMenu))
+                return;
+        _popupMenu.updateActionState(this);
+        import dlangui.widgets.popup;
+        PopupMenu popupMenu = new PopupMenu(_popupMenu);
+        popupMenu.menuItemAction = this;
+        PopupWidget popup = window.showPopup(popupMenu, this, PopupAlign.Point | PopupAlign.Right, x, y);
+        popup.flags = PopupFlags.CloseOnClickOutside;
     }
     /// override to change popup menu items state
     bool isActionEnabled(const Action action) {

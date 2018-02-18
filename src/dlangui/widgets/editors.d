@@ -849,13 +849,6 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         acceleratorMap.add([ACTION_EDITOR_FIND_NEXT, ACTION_EDITOR_FIND_PREV]);
     }
 
-    protected MenuItem _popupMenu;
-    @property MenuItem popupMenu() { return _popupMenu; }
-    @property EditWidgetBase popupMenu(MenuItem popupMenu) {
-        _popupMenu = popupMenu;
-        return this;
-    }
-
     ///
     override bool onMenuItemAction(const Action action) {
         return dispatchAction(action);
