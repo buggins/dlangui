@@ -174,10 +174,10 @@ class PopupWidget : LinearLayout {
         if (visibility != Visibility.Visible)
             return false;
         if (_flags & PopupFlags.CloseOnClickOutside) {
-            if (event.action == MouseAction.ButtonDown) {
+            if (event.action == MouseAction.ButtonUp) {
                 // clicked outside - close popup
                 close();
-                return false;
+                return true;
             }
         }
         if (_flags & PopupFlags.CloseOnMouseMoveOutside) {
