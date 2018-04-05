@@ -205,7 +205,11 @@ class DockHost : WidgetGroupDefaultDrawing {
     }
 
     this() {
-        super("DOCK_HOST");
+        this("DOCK_HOST");
+    }
+
+    this(string ID) {
+        super(ID);
         styleId = STYLE_DOCK_HOST;
         addChild(_topSpace.initialize(this, DockAlignment.Top));
         addChild(_bottomSpace.initialize(this, DockAlignment.Bottom));
