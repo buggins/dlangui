@@ -382,10 +382,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     /// Override for EditBox
     void wordWrapRefresh(){return;}
-    
+
     /// To hold _scrollpos.x toggling between normal and word wrap mode
     int previousXScrollPos;
-    
+
     protected bool _wordWrap;
     /// true if word wrap mode is set
     @property bool wordWrap() {
@@ -413,7 +413,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     /// Characters at which content is split for word wrap mode
     dchar[] splitChars = [' ', '-', '\t'];
-    
+
     /// Divides up a string for word wrapping, sets info in _span
     dstring[] wrapLine(dstring str, int lineNumber) {
         FontRef font = font();
@@ -470,17 +470,17 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         while (true)
         {
             int index = to!int(str.indexOfAny(splitChars, startIndex));
-        
+
             if (index == -1)
             {
                 parts ~= str[startIndex .. $];
                 //Log.d("Explode output: ", parts);
                 return parts;
             }
-        
+
             dstring word = str[startIndex .. index];
             dchar nextChar = (str[index .. index + 1])[0];
-        
+
             import std.ascii:isWhite;
             if (isWhite(nextChar))
             {
@@ -494,11 +494,11 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             startIndex = index + 1;
         }
     }
-    
+
     /// information about line span into several lines - in word wrap mode
     protected LineSpan[] _span;
     protected LineSpan[] _spanCache;
-    
+
     /// Finds good visual wrapping point for string
     int findWrapPoint(dstring text)
     {
@@ -516,7 +516,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             }
         }
      }
-    
+
     /// Calls measureText for word wrap
     int measureWrappedText(dstring text)
     {
@@ -529,7 +529,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             return measuredWidths[$-1];
         return 0;
     }
-    
+
     /// Returns number of visible wraps up to a line (not including the first wrapLines themselves)
     int wrapsUpTo(int line)
     {
@@ -541,7 +541,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         });
         return sum;
     }
-    
+
     /// Returns LineSpan for line based on actual line number
     LineSpan getSpan(int lineNumber)
     {
@@ -553,7 +553,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         });
         return lineSpan;
     }
-    
+
     /// Based on a TextPosition, finds which wrapLine it is on for its current line
     int findWrapLine(TextPosition textPos)
     {
@@ -566,13 +566,13 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                 return curWrapLine;
             curPosition -= curSpan.wrapPoints[curWrapLine].wrapPos;
             if (curPosition < 0)
-            {   
+            {
                 return curWrapLine;
             }
             curWrapLine++;
         }
     }
-    
+
     /// Simple way of iterating through _span
     void lineSpanIterate(void delegate(LineSpan curSpan) iterator)
     {
@@ -1287,7 +1287,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
 
     //In word wrap mode, set by caretRect so ensureCaretVisible will know when to scroll
     protected int caretHeightOffset;
-    
+
     /// returns cursor rectangle
     protected Rect caretRect() {
         Rect caretRc = textPosToClient(_caretPos);
@@ -1455,22 +1455,22 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
         _textToHighlightOptions = textToHighlightOptions;
         invalidate();
     }
-    
+
     /// Used instead of using clientToTextPos for mouse input when in word wrap mode
     protected TextPosition wordWrapMouseOffset(int x, int y)
     {
         if(_span.length == 0)
             return clientToTextPos(Point(x,y));
         int selectedVisibleLine = y / _lineHeight;
-            
+
         LineSpan _curSpan;
-        
+
         int wrapLine = 0;
         int curLine = 0;
         bool foundWrap = false;
         int accumulativeWidths = 0;
         int curWrapOfSpan = 0;
-        
+
         lineSpanIterate(delegate(LineSpan curSpan){
             while (!foundWrap)
             {
@@ -1494,7 +1494,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
             }
             curWrapOfSpan = 0;
         });
-        
+
         int fakeLineHeight = curLine * _lineHeight;
         return clientToTextPos(Point(x + accumulativeWidths,fakeLineHeight));
     }
@@ -2315,7 +2315,7 @@ class EditLine : EditWidgetBase {
 
     protected Point _measuredTextToSetWidgetSize;
     protected dstring _textToSetWidgetSize = "aaaaa"d;
-    
+
     @property void textToSetWidgetSize(dstring newText) {
         _textToSetWidgetSize = newText;
         requestLayout();
@@ -2324,7 +2324,7 @@ class EditLine : EditWidgetBase {
     @property dstring textToSetWidgetSize() {
         return _textToSetWidgetSize;
     }
-    
+
     protected int[] _measuredTextToSetWidgetSizeWidths;
 
     protected dchar _passwordChar = 0;
@@ -2581,14 +2581,14 @@ class EditBox : EditWidgetBase {
     {
         _needRewrap = true;
     }
-    
+
     override @property int fontSize() const { return super.fontSize(); }
     override @property Widget fontSize(int size) {
         // Need to rewrap if fontSize changed
         _needRewrap = true;
         return super.fontSize(size);
     }
-    
+
     override protected int lineCount() {
         return _content.length;
     }
@@ -3438,7 +3438,7 @@ class EditBox : EditWidgetBase {
             buf.fillRect(rc, color);
         }
     }
-    
+
     /// Used in place of directly calling buf.fillRect in word wrap mode
     void wordWrapFillRect(DrawBuf buf, int line, Rect lineToDivide, uint color)
     {
@@ -3720,10 +3720,10 @@ class EditBox : EditWidgetBase {
         //TODO: Don't erase spans which have not been modified, cache them
         _span = [];
     }
-    
+
     private bool _needRewrap = true;
     private int lastStartingLine;
-    
+
     override protected void drawClient(DrawBuf buf) {
         // update matched braces
         if (!content.findMatchedBraces(_caretPos, _matchingBraces)) {
@@ -3732,7 +3732,7 @@ class EditBox : EditWidgetBase {
         }
 
         Rect rc = _clientRect;
-        
+
         if (_contentChanged)
           _needRewrap = true;
         if (lastStartingLine != _firstVisibleLine)
