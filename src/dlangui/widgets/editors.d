@@ -2119,10 +2119,11 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     _content.performOperation(op, this);
                 } else {
                     if(_selectionRange.start.line >= _content.length)
-                    {
                         _selectionRange.start.line--;
-                        if(_selectionRange.end.line >= _content.length)
-                            _selectionRange.end.line--;
+                    if(_selectionRange.end.line >= _content.length)
+                    {
+                        _selectionRange.end.line--;
+                        _selectionRange.start.pos = 0;
                     }
                     EditOperation op = new EditOperation(EditAction.Replace, _selectionRange, [event.text]);
                     _content.performOperation(op, this);
