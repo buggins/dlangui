@@ -1740,3 +1740,143 @@ vec3 triangleNormal(float[3] p1, float[3] p2, float[3] p3) {
 
 /// Alias for 2d float point
 alias PointF = vec2;
+
+
+
+
+// this form can be used within shaders
+/// cubic bezier curve
+PointF bezierCubic(const PointF[] cp, float t) pure @nogc @safe
+    in { assert(cp.length > 3); } do
+{
+    // control points
+    auto p0 = cp[0];
+    auto p1 = cp[1];
+    auto p2 = cp[2];
+    auto p3 = cp[3];
+
+    float u1 = (1.0 - t);
+    float u2 = t * t;
+    // the polynomials
+    float b3 = u2 * t;
+    float b2 = 3.0 * u2 * u1;
+    float b1 = 3.0 * t * u1 * u1;
+    float b0 = u1 * u1 * u1;
+    // cubic bezier interpolation
+    PointF p = p0 * b0 + p1 * b1 + p2 * b2 + p3 * b3;
+    return p;
+}
+
+/// quadratic bezier curve (not tested)
+PointF bezierQuadratic(const PointF[] cp, float t) pure @nogc @safe
+    in { assert(cp.length > 2); } do
+{
+    auto p0 = cp[0];
+    auto p1 = cp[1];
+    auto p2 = cp[2];
+
+    float u1 = (1.0 - t);
+    float u2 = u1 * u1;
+
+    float b2 = t * t;
+    float b1 = 2.0 * u1 * t;
+    float b0 = u2;
+
+    PointF p = p0 * b0 + p1 * b1 + p2 * b2;
+    return p;
+}
+
+/// cubic bezier (first) derivative
+PointF bezierCubicDerivative(const PointF[] cp, float t) pure @nogc @safe 
+    in { assert(cp.length > 3); } do 
+{
+    auto p0 = cp[0];
+    auto p1 = cp[1];
+    auto p2 = cp[2];
+    auto p3 = cp[3];
+
+    float u1 = (1.0 - t);
+    float u2 = t * t;
+    float u3 = 6*(u1)*t;
+    float d0 = 3 * u1 * u1;
+    // -3*P0*(1-t)^2 + P1*(3*(1-t)^2 - 6*(1-t)*t) + P2*(6*(1-t)*t - 3*t^2) + 3*P3*t^2
+    PointF d = p0*(-d0) + p1*(d0 - u3) + p2*(u3 - 3*u2) + (p3*3)*u2;
+    return d;
+}
+
+/// quadratic bezier (first) derivative
+PointF bezierQuadraticDerivative(const PointF[] cp, float t) pure @nogc @safe 
+    in { assert(cp.length > 2); } do 
+{
+    auto p0 = cp[0];
+    auto p1 = cp[1];
+    auto p2 = cp[2];
+
+    float u1 = (1.0 - t);
+    // -2*(1-t)*(p1-p0) + 2*t*(p2-p1);
+    PointF d = (p0-p1)*-2*u1 + (p2-p1)*2*t;
+    return d;
+}
+
+// can't be pure due to normalize & vec2 ctor
+/// evaluates cubic bezier direction(tangent) at point t
+PointF bezierCubicDirection(const PointF[] cp, float t) {
+    auto d = bezierCubicDerivative(cp,t);
+    d.normalize();
+    return PointF(tan(d.x), tan(d.y));
+}
+
+/// evaluates quadratic bezier direction(tangent) at point t
+PointF bezierQuadraticDirection(const PointF[] cp, float t) {
+    auto d = bezierQuadraticDerivative(cp,t);
+    d.normalize();
+    return PointF(tan(d.x), tan(d.y));
+}
+
+/// templated version of bezier flatten curve function, allocates temporary buffer
+PointF[] flattenBezier(alias BezierFunc)(const PointF[] cp, int segmentCountInclusive) 
+    if (is(typeof(BezierFunc)==function)) 
+{
+    if (segmentCountInclusive < 2)
+        return PointF[].init;
+    PointF[] coords = new PointF[segmentCountInclusive+1];
+    flattenBezier!BezierFunc(cp, segmentCountInclusive, coords);
+    return coords;
+}
+
+/// flatten bezier curve function, writes to provided buffer instead of allocation
+void flattenBezier(alias BezierFunc)(const PointF[] cp, int segmentCountInclusive, PointF[] outSegments)
+    if (is(typeof(BezierFunc)==function)) 
+{
+    if (segmentCountInclusive < 2)
+        return;
+    float step = 1f/segmentCountInclusive;
+    outSegments[0] = BezierFunc(cp, 0);
+    foreach(i; 1..segmentCountInclusive) {
+        outSegments[i] = BezierFunc(cp, i*step);
+    }
+    outSegments[segmentCountInclusive] = BezierFunc(cp, 1f);
+}
+
+
+/// flattens cubic bezier curve, returns PointF[segmentCount+1] array or empty array if <1 segments
+PointF[] flattenBezierCubic(const PointF[] cp, int segmentCount) {
+    return flattenBezier!bezierCubic(cp,segmentCount);
+}
+
+/// flattens quadratic bezier curve, returns PointF[segmentCount+1] array or empty array if <1 segments
+PointF[] flattenBezierQuadratic(const PointF[] cp, int segmentCount) {
+    return flattenBezier!bezierQuadratic(cp, segmentCount);
+}
+
+/// calculates normal vector at point t using direction
+PointF bezierCubicNormal(const PointF[] cp, float t) {
+    auto d = bezierCubicDirection(cp, t);
+    return d.rotated90ccw;
+}
+
+/// calculates normal vector at point t using direction
+PointF bezierQuadraticNormal(const PointF[] cp, float t) {
+    auto d = bezierQuadraticDerivative(cp, t);
+    return d.rotated90ccw;
+}
