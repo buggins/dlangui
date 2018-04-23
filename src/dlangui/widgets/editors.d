@@ -1686,7 +1686,7 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
                     _caretPos.pos++;
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
                     ensureCaretVisible();
-                } else if (_caretPos.line < _content.length && _content.multiline) {
+                } else if (_caretPos.line < _content.length - 1 && _content.multiline) {
                     _caretPos.pos = 0;
                     _caretPos.line++;
                     updateSelectionAfterCursorMovement(oldCaretPos, (a.id & 1) != 0);
