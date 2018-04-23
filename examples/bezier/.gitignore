@@ -1,0 +1,14 @@
+.dub
+docs.json
+__dummy.html
+docs/
+bezier.so
+bezier.dylib
+bezier.dll
+bezier.a
+bezier.lib
+bezier-test-*
+*.exe
+*.o
+*.obj
+*.lst

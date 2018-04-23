@@ -1,0 +1,32 @@
+{
+	"name": "bezier",
+	"description": "dlangui bezier curves samples",
+	"license": "Boost",
+
+	"targetPath": "bin",
+    "targetType": "executable",
+    "targetName": "bezier",
+
+    "sourceFiles-windows-x86-dmd": ["$PACKAGE_DIR/../../src/win_app.def"],
+
+    "dependencies": {
+        "dlangui": {"path": "../../"}
+    },
+    "configurations" : [
+        {
+            "name" : "default"
+        }, 
+        {
+            "name" : "sdl",
+            "subConfigurations" : {
+                "dlangui" : "sdl"
+            }
+        },
+        {
+            "name" : "x11",
+            "subConfigurations" : {
+                "dlangui" : "x11"
+            }
+        }
+    ]
+}
