@@ -840,6 +840,97 @@ class DrawBuf : RefCountedObject {
         }
     }
 
+    // basically a modified drawEllipseArcF that doesn't draw but gives you the lines instead!
+    static PointF[] makeArcPath(PointF center, float radiusX, float radiusY, float startAngle, float endAngle) {
+        import std.math : sin, cos, PI, abs, sqrt;
+        radiusX = abs(radiusX);
+        radiusY = abs(radiusY);
+        startAngle = startAngle * 2 * PI / 360;
+        endAngle = endAngle * 2 * PI / 360;
+        if (endAngle < startAngle) 
+            endAngle += 2 * PI;
+        float angleDiff = endAngle - startAngle;
+        if (angleDiff > 2*PI) 
+            angleDiff %= 2*PI;
+        int numLines = cast(int)(sqrt(radiusX*radiusX + radiusY*radiusY) / angleDiff);
+        if (numLines < 3) 
+            numLines = 4;
+        float step = angleDiff / numLines;
+        float angle = startAngle;
+        PointF[] points;
+        points.assumeSafeAppend;
+        if ( radiusX == 0 ) {
+            points ~= PointF(center.x, center.y);
+        }
+        else  for (int i; i < numLines+1; i++) {
+            float x = center.x + cos(angle) * radiusX;
+            float y = center.y + sin(angle) * radiusY;
+            angle += step;
+            points ~= PointF(x, y);
+        }
+        return points;
+    }
+
+    // calculates inwards XY offsets from rect corners
+    static PointF[4] calcRectRoundedCornerRadius(vec4 corners, float w, float h, bool keepSquareXY) {
+        import std.algorithm.comparison : min;
+        // clamps radius to corner
+        static float clampRadius(float r, float len) pure @safe @nogc {
+            if (len - 2*r < 0) return len/2; 
+            return r;
+        }
+        if (keepSquareXY) {
+            auto minSize = min(w, h);
+            w = h = minSize;
+        }
+        PointF[4] cornerRad;
+        cornerRad[0] = PointF( clampRadius(corners.x, w), clampRadius(corners.x, h) );
+        cornerRad[1] = PointF( -clampRadius(corners.y, w), clampRadius(corners.y, h) );
+        cornerRad[2] = PointF( clampRadius(corners.z, w), -clampRadius(corners.z, h) );
+        cornerRad[3] = PointF( -clampRadius(corners.w, w), -clampRadius(corners.w, h) );
+        return cornerRad;
+    }
+
+    /// builds outer rounded rect path
+    /// the last parameter optionally writes out indices of first segment of corners excluding top-left
+    static PointF[] makeRoundedRectPath(Rect rect, vec4 corners, bool keepSquareXY, size_t[] outCornerSegmentsStart = null) {
+        import std.range : chain;
+        import std.array : array;
+        PointF[4] cornerRad = calcRectRoundedCornerRadius(corners, rect.width, rect.height, keepSquareXY);
+        PointF topLeftC  = PointF(rect.left, rect.top) + cornerRad[0];
+        PointF topRightC = PointF(rect.left, rect.top) + cornerRad[1] + PointF(rect.width, 0);
+        PointF botLeftC  = PointF(rect.left, rect.top) + cornerRad[2] + PointF(0, rect.height);
+        PointF botRightC = PointF(rect.left, rect.top) + cornerRad[3] + PointF(rect.width, rect.height);
+        auto lt = makeArcPath(topLeftC, cornerRad[0].x, cornerRad[0].y, 180, 270);
+        auto rt = makeArcPath(topRightC, cornerRad[1].x, cornerRad[1].y, 270, 0);
+        auto lb = makeArcPath(botLeftC, cornerRad[2].x, cornerRad[2].y, 90, 180);
+        auto rb = makeArcPath(botRightC, cornerRad[3].x, cornerRad[3].y, 0, 90);
+        if ( outCornerSegmentsStart.length ) {
+            outCornerSegmentsStart[0] = lt.length;
+            outCornerSegmentsStart[1] = lt.length + rt.length;
+            outCornerSegmentsStart[2] = lt.length + rt.length + lb.length;
+        }
+        auto outerPath = chain( lt, rt, rb, lb, lt[0..1] );
+        return outerPath.array();
+    }
+
+    /// draws rect with rounded corners
+    void drawRoundedRectF(Rect rect, vec4 corners, bool keepSquareXY, float frameWidth, uint frameColor, uint fillColor = COLOR_TRANSPARENT) {
+        auto fullPath = makeRoundedRectPath(rect, corners, keepSquareXY);
+        // fill inner area, doing this manually by sectors to reduce flickering artifacts
+        if ( fillColor != COLOR_TRANSPARENT ) {
+            PointF center = PointF(rect.middlex, rect.middley);
+            for( int i = 0; i < fullPath.length-1; i++ ) {
+                fillTriangleF(center, fullPath[i], fullPath[i+1], fillColor);
+            }
+        }
+        if (frameColor != COLOR_TRANSPARENT && frameWidth > 0) {
+            for( int i = 0; i < fullPath.length-1; i++ ) {
+                drawLineF(fullPath[i], fullPath[i+1], frameWidth, frameColor);
+            }
+        }
+    }
+
     /// create drawbuf with copy of current buffer with changed colors (returns this if not supported)
     DrawBuf transformColors(ref ColorTransform transform) {
         return this;
