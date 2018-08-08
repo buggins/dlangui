@@ -223,7 +223,7 @@ class ArrayStream : InputStream {
     }
 
     override size_t readBytes(void* buffer, size_t count) {
-        import std.c.string;
+        import core.stdc.string;
 
         count = min(count, size_ - pos);
 
