@@ -119,6 +119,12 @@ class SimpleBarChart : Widget {
         }
         requestLayout();
     }
+    
+    void removeAllBars() {
+    	_bars = [];
+    	_maxY = 0;
+    	requestLayout();
+    }
 
     void updateBar(size_t index, double y, uint color, string barTitle) {
         updateBar(index, y, color, UIString.fromId(barTitle));
