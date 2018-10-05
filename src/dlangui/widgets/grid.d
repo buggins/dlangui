@@ -1181,9 +1181,9 @@ class GridWidgetBase : ScrollWidgetBase, GridModelAdapter, MenuItemActionHandler
         }
         if (event.action == MouseAction.Wheel) {
             if (event.flags & MouseFlag.Shift)
-                scrollBy(-event.wheelDelta, 0);
+                scrollBy(-cast(int)event.wheelDelta, 0);
             else
-                scrollBy(0, -event.wheelDelta);
+                scrollBy(0, -cast(int)event.wheelDelta);
             return true;
         }
         return super.onMouseEvent(event);

@@ -38,6 +38,7 @@ public import dlangui.core.editable;
 
 import std.algorithm;
 import std.conv : to;
+import std.typecons : Yes, No;
 import dlangui.core.streams;
 
 /// Modified state change listener
@@ -3300,7 +3301,8 @@ class EditBox : EditWidgetBase {
         if (lineText.length < pattern.length)
             return;
         ptrdiff_t start = 0;
-        import std.string : indexOf, CaseSensitive, Yes, No;
+        import std.string : indexOf, CaseSensitive;
+        import std.typecons : Flag;
         bool caseSensitive = (options & TextSearchFlag.CaseSensitive) != 0;
         bool wholeWords = (options & TextSearchFlag.WholeWords) != 0;
         bool selectionOnly = (options & TextSearchFlag.SelectionOnly) != 0;
@@ -3348,7 +3350,7 @@ class EditBox : EditWidgetBase {
         res.assumeSafeAppend();
         if (!pattern.length)
             return res;
-        import std.string : indexOf, CaseSensitive, Yes, No;
+        import std.string : indexOf, CaseSensitive;
         bool caseSensitive = (options & TextSearchFlag.CaseSensitive) != 0;
         bool wholeWords = (options & TextSearchFlag.WholeWords) != 0;
         bool selectionOnly = (options & TextSearchFlag.SelectionOnly) != 0;

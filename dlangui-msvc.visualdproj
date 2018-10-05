@@ -1254,10 +1254,10 @@
       <File path="src\dlangui\platforms\common\platform.d" />
       <File path="src\dlangui\platforms\common\startup.d" />
      </Folder>
-     <Folder name="console">
-      <File path="src\dlangui\platforms\console\consoleapp.d" />
-      <File path="src\dlangui\platforms\console\consolefont.d" />
-      <File path="src\dlangui\platforms\console\dconsole.d" />
+     <Folder name="ansi_console">
+      <File path="src\dlangui\platforms\ansi_console\consoleapp.d" />
+      <File path="src\dlangui\platforms\ansi_console\consolefont.d" />
+      <File path="src\dlangui\platforms\ansi_console\dconsole.d" />
      </Folder>
      <Folder name="dsfml">
       <File path="src\dlangui\platforms\dsfml\dsfmlapp.d" />
