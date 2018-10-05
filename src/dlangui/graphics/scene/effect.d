@@ -63,7 +63,8 @@ class Effect : GLProgram {
     protected bool[string] _visitedIncludes;
     protected void preProcessIncludes(ref char[] buf, string src) {
         import std.string : strip, startsWith, endsWith;
-        import dlangui.graphics.resources : splitLines;
+        //import dlangui.graphics.resources : splitLines;
+        import std.string : splitLines;
         foreach(line; src.splitLines) {
             string s = line.strip;
             if (s.startsWith("#include ")) {
