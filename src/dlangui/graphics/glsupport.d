@@ -47,10 +47,12 @@ version (Android) {
 	}
 
 } else {
-    enum SUPPORT_LEGACY_OPENGL = true;
-    public import derelict.opengl3.types;
-    public import derelict.opengl3.gl3;
-    public import derelict.opengl3.gl;
+    enum SUPPORT_LEGACY_OPENGL = false; //true;
+    public import derelict.opengl;
+    //public import derelict.opengl.types;
+    //public import derelict.opengl.versions.base;
+    //public import derelict.opengl.versions.gl3x;
+    //public import derelict.opengl.gl;
 
 derelict.util.exception.ShouldThrow gl3MissingSymFunc( string symName ) {
     import std.algorithm : equal;
@@ -672,7 +674,7 @@ bool initGLSupport(bool legacy = false) {
     	    DERELICT_GL3_RELOADED = true;
             try {
                 Log.v("Reloading DerelictGL3");
-                import derelict.opengl3.gl3;
+                import derelict.opengl; //.gl3;
                 DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
                 DerelictGL3.reload();
                 gl3ReloadedOk = true;
@@ -681,9 +683,9 @@ bool initGLSupport(bool legacy = false) {
             }
             try {
                 Log.v("Reloading DerelictGL");
-                import derelict.opengl3.gl;
-                DerelictGL.missingSymbolCallback = &gl3MissingSymFunc;
-                DerelictGL.reload();
+                import derelict.opengl; //.gl;
+                DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
+                DerelictGL3.reload();
                 glReloadedOk = true;
             } catch (Exception e) {
                 Log.e("Derelict exception while reloading DerelictGL", e);
@@ -749,7 +751,7 @@ final class GLSupport {
     	version (Android) {
             Log.d("creating GLSupport");
     	} else {
-    	    if (legacy && !glLightfv) {
+    	    if (legacy /*&& !glLightfv*/) {
     		    Log.w("GLSupport legacy API is not supported");
     		    legacy = false;
     	    }

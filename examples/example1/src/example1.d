@@ -1283,8 +1283,8 @@ void main()
 
 static if (ENABLE_OPENGL) {
 
-    import derelict.opengl3.gl3;
-    import derelict.opengl3.gl;
+    import derelict.opengl; //3.gl3;
+    //import derelict.opengl3.gl;
 
     class MyOpenglWidget : VerticalLayout {
         this() {
@@ -1362,6 +1362,7 @@ static if (ENABLE_OPENGL) {
 
         /// Legacy API example (glBegin/glEnd)
         void drawUsingOldAPI(Rect rc) {
+	/*
             static bool _initCalled;
             if (!_initCalled) {
                 Log.d("GlGears: calling init()");
@@ -1376,6 +1377,7 @@ static if (ENABLE_OPENGL) {
             glDisable(GL_LIGHTING);
             glDisable(GL_LIGHT0);
             glDisable(GL_DEPTH_TEST);
+	*/
         }
 
         /// New API example (OpenGL3+, shaders)
@@ -1397,13 +1399,15 @@ static if (ENABLE_OPENGL) {
         }
     }
 
+    static __gshared GLfloat angle = 0.0;
+
+version (GLLegacyAPI) {
 
     // Sample project for old API: GlxGears
 
     import std.math;
     static __gshared GLfloat view_rotx = 20.0, view_roty = 30.0, view_rotz = 0.0;
     static __gshared GLint gear1, gear2, gear3;
-    static __gshared GLfloat angle = 0.0;
     alias M_PI = std.math.PI;
 
     /*
@@ -1417,6 +1421,7 @@ static if (ENABLE_OPENGL) {
  *          teeth - number of teeth
  *          tooth_depth - depth of tooth
  */
+
     static void
         gear(GLfloat inner_radius, GLfloat outer_radius, GLfloat width,
             GLint teeth, GLfloat tooth_depth)
@@ -1625,5 +1630,5 @@ static if (ENABLE_OPENGL) {
         glEnable(GL_NORMALIZE);
     }
 
-
+}
 }

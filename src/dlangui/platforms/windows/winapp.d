@@ -160,7 +160,7 @@ static if (ENABLE_OPENGL) {
 
     /// Shared opengl context helper
     struct SharedGLContext {
-        import derelict.opengl3.wgl;
+        import derelict.opengl; //3.wgl;
 
         HGLRC _hGLRC; // opengl context
         HPALETTE _hPalette;
@@ -323,8 +323,8 @@ class Win32Window : Window {
             EndPaint(_hwnd, &ps);
 
 
-            import derelict.opengl3.gl3;
-            import derelict.opengl3.wgl;
+            import derelict.opengl; //3.gl3;
+            import derelict.opengl; //3.wgl;
             import dlangui.graphics.gldrawbuf;
             //Log.d("onPaint() start drawing opengl viewport: ", _dx, "x", _dy);
             //PAINTSTRUCT ps;
@@ -1309,13 +1309,13 @@ string[] splitCmdLine(string line) {
 private __gshared Win32Platform w32platform;
 
 static if (ENABLE_OPENGL) {
-    import derelict.opengl3.gl3;
-    import derelict.opengl3.gl;
+    import derelict.opengl; //3.gl3;
+    //import derelict.opengl3.gl;
 
     void initOpenGL() {
         try {
             Log.d("Loading Derelict GL");
-            DerelictGL.load();
+            //DerelictGL.load();
             DerelictGL3.load();
             Log.d("Derelict GL - loaded");
             //
