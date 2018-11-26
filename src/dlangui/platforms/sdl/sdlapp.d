@@ -42,8 +42,8 @@ import dlangui.platforms.common.platform;
 import derelict.sdl2.sdl;
 
 static if (ENABLE_OPENGL) {
-    import derelict.opengl3.gl3;
-    import derelict.opengl3.gl;
+    //import derelict.opengl3.gl3;
+    import derelict.opengl;
     import dlangui.graphics.gldrawbuf;
     import dlangui.graphics.glsupport;
 }
@@ -72,9 +72,9 @@ private derelict.util.exception.ShouldThrow missingSymFunc( string symName ) {
     return derelict.util.exception.ShouldThrow.No;
 }
 
-private __gshared uint USER_EVENT_ID;
-private __gshared uint TIMER_EVENT_ID;
-private __gshared uint WINDOW_CLOSE_EVENT_ID;
+private __gshared SDL_EventType USER_EVENT_ID;
+private __gshared SDL_EventType TIMER_EVENT_ID;
+private __gshared SDL_EventType WINDOW_CLOSE_EVENT_ID;
 
 class SDLWindow : Window {
     SDLPlatform _platform;
@@ -244,7 +244,7 @@ class SDLWindow : Window {
         if (!_dy)
             _dy = 400;
         _flags = flags;
-        uint windowFlags = SDL_WINDOW_HIDDEN;
+        SDL_WindowFlags windowFlags = SDL_WINDOW_HIDDEN;
         if (flags & WindowFlag.Resizable)
             windowFlags |= SDL_WINDOW_RESIZABLE;
         if (flags & WindowFlag.Fullscreen)
@@ -740,15 +740,15 @@ class SDLWindow : Window {
             if (_keyFlags & KeyFlag.Shift)
                 lastFlags |= MouseFlag.Shift;
             else
-                lastFlags &= ~MouseFlag.Shift;
+                lastFlags &= ~cast(uint)MouseFlag.Shift;
             if (_keyFlags & KeyFlag.Control)
                 lastFlags |= MouseFlag.Control;
             else
-                lastFlags &= ~MouseFlag.Control;
+                lastFlags &= ~cast(uint)MouseFlag.Control;
             if (_keyFlags & KeyFlag.Alt)
                 lastFlags |= MouseFlag.Alt;
             else
-                lastFlags &= ~MouseFlag.Alt;
+                lastFlags &= ~cast(uint)MouseFlag.Alt;
             if (wheelDelta)
                 event = new MouseEvent(action, MouseButton.None, lastFlags, lastx, lasty, wheelDelta);
         } else {
@@ -1199,11 +1199,11 @@ class SDLPlatform : Platform {
             w.dispatchThemeChanged();
     }
 
-    private uint _redrawEventId;
+    private SDL_EventType _redrawEventId;
 
     void sendRedrawEvent(uint windowId, uint code) {
         if (!_redrawEventId)
-            _redrawEventId = SDL_RegisterEvents(1);
+            _redrawEventId = cast(SDL_EventType)SDL_RegisterEvents(1);
         SDL_Event event;
         event.type = _redrawEventId;
         event.user.windowID = windowId;
@@ -1651,8 +1651,8 @@ int sdlmain(string[] args) {
         try {
             DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
             DerelictGL3.load();
-            DerelictGL.missingSymbolCallback = &gl3MissingSymFunc;
-            DerelictGL.load();
+            //DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
+            //DerelictGL3.load();
             _enableOpengl = true;
         } catch (Exception e) {
             Log.e("Cannot load opengl library", e);
@@ -1666,9 +1666,9 @@ int sdlmain(string[] args) {
     }
     scope(exit)SDL_Quit();
 
-    USER_EVENT_ID = SDL_RegisterEvents(1);
-    TIMER_EVENT_ID = SDL_RegisterEvents(1);
-    WINDOW_CLOSE_EVENT_ID = SDL_RegisterEvents(1);
+    USER_EVENT_ID = cast(SDL_EventType)SDL_RegisterEvents(1);
+    TIMER_EVENT_ID = cast(SDL_EventType)SDL_RegisterEvents(1);
+    WINDOW_CLOSE_EVENT_ID = cast(SDL_EventType)SDL_RegisterEvents(1);
 
     int request = SDL_GetDesktopDisplayMode(0, &displayMode);
 
