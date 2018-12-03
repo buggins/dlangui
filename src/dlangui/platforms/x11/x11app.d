@@ -817,12 +817,14 @@ class X11Window : DWindow {
         return MouseButton.None;
     }
 
-    ushort lastFlags;
     short lastx;
     short lasty;
     uint _keyFlags;
+
     void processMouseEvent(MouseAction action, uint button, uint state, int x, int y) {
         MouseEvent event = null;
+        ushort lastFlags;
+
         if (action == MouseAction.Wheel) {
             // handle wheel
             short wheelDelta = cast(short)y;
@@ -881,6 +883,7 @@ class X11Window : DWindow {
             }
         }
     }
+
 
     uint convertKeyCode(uint keyCode) {
         import x11.keysymdef;
@@ -1127,51 +1130,57 @@ class X11Window : DWindow {
     }
 
 
-    bool processKeyEvent(KeyAction action, uint keyCode, uint flags) {
+    bool processKeyEvent(KeyAction action, uint keyCode, uint flagsX11) {
         //debug(DebugSDL)
-        Log.d("processKeyEvent ", action, " X11 key=0x", format("%08x", keyCode), " X11 flags=0x", format("%08x", flags));
+        Log.d("processKeyEvent ", action, " X11 key=0x", format("%08x", keyCode), " X11 flags=0x", format("%08x", flagsX11));
         keyCode = convertKeyCode(keyCode);
-        flags = convertKeyFlags(flags);
-        Log.d("processKeyEvent ", action, " converted key=0x", format("%08x", keyCode), " flags=0x", format("%08x", flags));
+        uint flagsConverted = convertKeyFlags(flagsX11);
 
         alias KeyCode = dlangui.core.events.KeyCode;
-        if (action == KeyAction.KeyDown) {
-            switch(keyCode) {
-                case KeyCode.ALT:
-                    flags |= KeyFlag.Alt;
-                    break;
-                case KeyCode.RALT:
-                    flags |= KeyFlag.Alt | KeyFlag.RAlt;
-                    break;
-                case KeyCode.LALT:
-                    flags |= KeyFlag.Alt | KeyFlag.LAlt;
-                    break;
-                case KeyCode.CONTROL:
-                    flags |= KeyFlag.Control;
-                    break;
-                case KeyCode.RCONTROL:
-                    flags |= KeyFlag.Control | KeyFlag.RControl;
-                    break;
-                case KeyCode.LCONTROL:
-                    flags |= KeyFlag.Control | KeyFlag.LControl;
-                    break;
-                case KeyCode.SHIFT:
-                    flags |= KeyFlag.Shift;
-                    break;
-                case KeyCode.RSHIFT:
-                    flags |= KeyFlag.Shift | KeyFlag.RShift;
-                    break;
-                case KeyCode.LSHIFT:
-                    flags |= KeyFlag.Shift | KeyFlag.LShift;
-                    break;
-                default:
-                    break;
-            }
-        }
-        _keyFlags = flags;
 
-        debug(DebugSDL) Log.d("processKeyEvent ", action, " converted key=0x", format("%08x", keyCode), " converted flags=0x", format("%08x", flags));
-        bool res = dispatchKeyEvent(new KeyEvent(action, keyCode, flags));
+        {
+        	uint flags = 0;
+		    switch(keyCode) {
+		        case KeyCode.ALT:
+		            flags |= KeyFlag.Alt;
+		            break;
+		        case KeyCode.RALT:
+		            flags |= KeyFlag.Alt | KeyFlag.RAlt;
+		            break;
+		        case KeyCode.LALT:
+		            flags |= KeyFlag.Alt | KeyFlag.LAlt;
+		            break;
+		        case KeyCode.CONTROL:
+		            flags |= KeyFlag.Control;
+		            break;
+		        case KeyCode.RCONTROL:
+		            flags |= KeyFlag.Control | KeyFlag.RControl;
+		            break;
+		        case KeyCode.LCONTROL:
+		            flags |= KeyFlag.Control | KeyFlag.LControl;
+		            break;
+		        case KeyCode.SHIFT:
+		            flags |= KeyFlag.Shift;
+		            break;
+		        case KeyCode.RSHIFT:
+		            flags |= KeyFlag.Shift | KeyFlag.RShift;
+		            break;
+		        case KeyCode.LSHIFT:
+		            flags |= KeyFlag.Shift | KeyFlag.LShift;
+		            break;
+		        default:
+		            break;
+		    }
+		    if (action == KeyAction.KeyDown)
+		    	flagsConverted |= flags;
+		    else
+		    	flagsConverted &= ~flags;
+		}
+        Log.d("processKeyEvent ", action, " converted key=0x", format("%08x", keyCode), " flags=0x", format("%08x", flagsConverted));
+        _keyFlags = flagsConverted;
+
+        debug(DebugSDL) Log.d("processKeyEvent ", action, " converted key=0x", format("%08x", keyCode), " converted flags=0x", format("%08x", flagsConverted));
+        bool res = dispatchKeyEvent(new KeyEvent(action, keyCode, flagsConverted));
         //            if ((keyCode & 0x10000) && (keyCode & 0xF000) != 0xF000) {
         //                dchar[1] text;
         //                text[0] = keyCode & 0xFFFF;
