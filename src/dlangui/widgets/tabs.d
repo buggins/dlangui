@@ -589,20 +589,27 @@ class TabControl : WidgetGroupDefaultDrawing {
     }
 
     protected bool onMouse(Widget source, MouseEvent event) {
-        if (event.action == MouseAction.ButtonDown && event.button == MouseButton.Left) {
-            if (source.compareId("MORE")) {
-                Log.d("tab MORE button pressed");
-                if (handleMorePopupMenu())
+        if (event.action == MouseAction.ButtonDown ) {
+            if (event.button == MouseButton.Left) {
+                if (source.compareId("MORE")) {
+                    Log.d("tab MORE button pressed");
+                    if (handleMorePopupMenu())
+                        return true;
+                    if (moreButtonClick.assigned) {
+                        moreButtonClick(this);
+                    }
                     return true;
-                if (moreButtonClick.assigned) {
-                    moreButtonClick(this);
                 }
-                return true;
-            }
-            string id = source.id;
-            int index = tabIndex(id);
-            if (index >= 0) {
-                selectTab(index, true);
+                string id = source.id;
+                int index = tabIndex(id);
+                if (index >= 0) {
+                    selectTab(index, true);
+                }
+            } else if (event.button == MouseButton.Middle) {
+                bool closeButtonEnabled = (cast(TabItemWidget)source)._enableCloseButton;
+                if ( closeButtonEnabled ) {
+                    tabClose(source.id);
+                }
             }
         }
         return true;
