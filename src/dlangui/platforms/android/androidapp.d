@@ -16,6 +16,7 @@ import dlangui.platforms.common.platform;
 import android.input, android.looper : ALooper_pollAll;
 import android.native_window : ANativeWindow_setBuffersGeometry;
 import android.configuration;
+import android.keycodes;
 import android.log, android.android_native_app_glue;
 
 /**
@@ -139,6 +140,8 @@ class AndroidWindow : Window {
      * Process the next input event.
      */
     int handle_input(AInputEvent* event) {
+        import imm = dlangui.platforms.android.imm;
+        import std.conv : to;
         Log.i("handle input, event=", AInputEvent_getType(event));
         auto et = AInputEvent_getType(event);
         if (et == AINPUT_EVENT_TYPE_MOTION) {
@@ -173,7 +176,37 @@ class AndroidWindow : Window {
             return 1;
         } else if (et == AINPUT_EVENT_TYPE_KEY) {
             Log.d("AINPUT_EVENT_TYPE_KEY");
-            return 0;
+            KeyEvent evt;
+            auto app = (cast(AndroidPlatform)platform)._appstate;
+            int _keyFlags = AKeyEvent_getMetaState(event).toKeyFlag();
+            int sysKeyCode = AKeyEvent_getKeyCode(event);
+            int sysMeta = AKeyEvent_getMetaState(event);
+            int keyCode = androidKeyMap.get(sysKeyCode, KeyCode.init);
+            auto action = toKeyAction(AKeyEvent_getAction(event));
+            int char_ = imm.GetUnicodeChar(app, action, sysKeyCode, sysMeta);
+            dchar[] text;
+            if (!isTextEditControl(sysKeyCode)) {
+                if (AKeyEvent_getAction(event) == AKEY_EVENT_ACTION_MULTIPLE) {
+                    // it's a string from IME
+                    if (sysKeyCode == AKEYCODE_UNKNOWN) {
+                        text = cast(dchar[]) to!dstring(imm.GetUnicodeString(app, event));
+                        action = KeyAction.Text;
+                    }
+                    // else  repeat character AKeyEvent_getRepeatCount() times
+                }
+                else if (AKeyEvent_getAction(event) == AKEY_EVENT_ACTION_DOWN && (char_ || isASCIIChar(sysKeyCode))) {
+                    text ~= cast(dchar)(char_ == 0 ? sysKeyCode : char_);
+                    action = KeyAction.Text;
+                }
+            }
+            Log.d("ACTION: ", action, " syskeyCode: ", sysKeyCode, " sysMeta: ", sysMeta, "meta: ", _keyFlags, " char '", cast(dchar)char_, "' str:", cast(dstring)text);
+            if (action == KeyAction.Text)
+                evt = new KeyEvent(KeyAction.Text, 0, 0, cast(dstring)text);
+            else
+                evt = new KeyEvent(action, keyCode, _keyFlags);
+            if (evt && dispatchKeyEvent(evt))
+                update();
+            return 1;
         }
         return 0;
     }
@@ -222,6 +255,12 @@ class AndroidPlatform : Platform {
         }
         _windows.length = 0;
         termDisplay();
+    }
+
+
+    void showSoftKeyboard(bool shouldShow) {
+        import imm = dlangui.platforms.android.imm;
+        imm.showSoftKeyboard(_appstate, shouldShow);
     }
 
 
@@ -706,3 +745,82 @@ extern (C) void android_main(android_app* state) {
 
 }
 
+
+private KeyAction toKeyAction(int androidKeyAction) {
+    switch(androidKeyAction) {
+        case AKEY_EVENT_ACTION_DOWN: return KeyAction.KeyDown;
+        case AKEY_EVENT_ACTION_UP: return KeyAction.KeyUp;
+        case AKEY_EVENT_ACTION_MULTIPLE: return KeyAction.Repeat; // can also be text
+        default: 
+            assert(0, "should never reach this");
+    }
+}
+
+
+private bool isASCIIChar(int ch) {
+    return 31 < ch && ch < 127;
+}
+
+// Text editor controls such as move caret or (de)select
+private bool isTextEditControl(int keyCode) {
+    switch (keyCode){
+        case AKEYCODE_DEL: // backspace ("DEL" or "<x" arrow on soft keyboard)
+        case 112: // delete
+        case 59: // lshift
+        case 60: // rshift
+        case 113: // lcontrol
+        case 114: // rcontrol
+        case 57: // lalt
+        case 58: // ralt
+        case 19: // up arrow
+        case 20: // down arrow
+        case 21: // left arrow
+        case 22: // right arrow
+        case 92: // page up?
+        case 93: // page down?
+        case 122: // home
+        case 123: // end
+        case 124: // insert
+            return true;
+        static foreach(fn; 131..143) // f1-f12
+            case fn: return true;
+        default:
+            return false;
+    }
+}
+
+private int toKeyFlag(int keyMeta) {
+    int state;
+    if (keyMeta & AMETA_ALT_ON) state |= KeyFlag.Alt;
+    if (keyMeta & AMETA_SHIFT_ON) state |= KeyFlag.Shift;
+    return state;
+}
+
+
+    
+/// Android to dlangui key mapping
+private static immutable KeyCode[int] androidKeyMap; 
+
+static this() {
+    import std.conv : text;
+    androidKeyMap = [
+        AKEYCODE_DEL: KeyCode.BACK, // Delete(key code 67) on Android seems to work as backspace(key 112)
+        AKEYCODE_BACK: KeyCode.BACK,
+        AKEYCODE_SPACE: KeyCode.SPACE,
+        AKEYCODE_ENTER: KeyCode.RETURN,
+        AKEYCODE_TAB: KeyCode.TAB,
+        AKEYCODE_DPAD_LEFT: KeyCode.LEFT,
+        AKEYCODE_DPAD_RIGHT: KeyCode.RIGHT,
+        AKEYCODE_DPAD_UP: KeyCode.UP,
+        AKEYCODE_DPAD_DOWN: KeyCode.DOWN,
+        AKEYCODE_PAGE_UP: KeyCode.PAGEUP,
+        AKEYCODE_PAGE_DOWN: KeyCode.PAGEDOWN,
+        112: KeyCode.DEL,
+        122: KeyCode.HOME,
+        123: KeyCode.END,
+    ];
+    static foreach(n; 0..10) // keys 0-9
+        androidKeyMap[mixin("AKEYCODE_" ~ n.text)] = mixin("KeyCode.KEY_" ~ n.text);
+    static foreach(char n; 'A'..'Z'+1) // A-Z
+        androidKeyMap[mixin("AKEYCODE_" ~ n)] = mixin("KeyCode.KEY_" ~ n);
+}
