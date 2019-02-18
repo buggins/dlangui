@@ -35,8 +35,15 @@ die () {
 #=========================================================
 #$SDK/tools/android update project -p . -s --target $ANDROID_TARGET || die 3 "Android Project update is failed"
 
+# This is not necessary, even in the docs gradle recommend to build with wrapper but I find it annoying to
+# download all that versions for all projects, so that's what this check is for
+GRADLE=gradlew
+if gradle --version >/dev/null 2>&1; then
+    GRADLE=gradle
+fi
+
 echo "Building APK..."
 #=========================================================
-./gradlew assembleDebug || die 4 "Android APK creation is failed"
+GRADLE assembleDebug || die 4 "Android APK creation is failed"
 
 echo "Successful."
