@@ -1,5 +1,7 @@
 module dlangui.platforms.android.imm;
 
+version(Android):
+
 import jni;
 import android.android_native_app_glue;
 import android.input;
@@ -35,7 +37,6 @@ private enum : IMMFlags
 * JNI wrapper used with native actitiy to show/hide software keyboard
 * It relies on java reflection and it might be slow.
 */
-version(Android)
 void showSoftKeyboard(android_app* app, bool shouldShow)
 {
     // The code is based on https://stackoverflow.com/questions/5864790/how-to-show-the-soft-keyboard-on-native-activity
