@@ -2,9 +2,16 @@ PLATFORM_DIR=armeabi-v7a
 
 echo "\nLOCAL_MODULE: $LOCAL_MODULE"
 
+
+OS_TYPE="unknown"
+case "$OSTYPE" in
+    msys*|cygwin*)  OS_TYPE="windows" ;;
+    linux*)  OS_TYPE="linux" ;;
+esac
+
 LDC_PARAMS="-mtriple=armv7-none-linux-androideabi -relocation-model=pic "
-export LD=$NDK/toolchains/llvm/prebuilt/linux-$NDK_ARCH/bin/llvm-link
-export CC=$NDK/toolchains/llvm/prebuilt/linux-$NDK_ARCH/bin/clang
+export LD=$NDK/toolchains/llvm/prebuilt/$OS_TYPE-$NDK_ARCH/bin/llvm-link
+export CC=$NDK/toolchains/llvm/prebuilt/$OS_TYPE-$NDK_ARCH/bin/clang
 
 SOURCES="$LOCAL_SRC_FILES $DLANGUI_SOURCES"
 SOURCE_PATHS="-I./jni $DLANGUI_SOURCE_PATHS $DLANGUI_IMPORT_PATHS"
@@ -24,7 +31,7 @@ LINK_OPTIONS="\
 -Wl,-soname,libnative-activity.so \
 -shared \
 --sysroot=$NDK/platforms/$ANDROID_TARGET/arch-arm \
--gcc-toolchain $NDK/toolchains/arm-linux-androideabi-4.9/prebuilt/linux-$NDK_ARCH \
+-gcc-toolchain $NDK/toolchains/arm-linux-androideabi-4.9/prebuilt/$OS_TYPE-$NDK_ARCH \
 -no-canonical-prefixes \
 -target armv7-none-linux-androideabi \
 -Wl,--fix-cortex-a8 \

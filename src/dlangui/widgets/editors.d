@@ -345,8 +345,10 @@ class EditWidgetBase : ScrollWidgetBase, EditableContentListener, MenuItemAction
     /// sets focus to this widget or suitable focusable child, returns previously focused widget
     override Widget setFocus(FocusReason reason = FocusReason.Unspecified) {
         Widget res = super.setFocus(reason);
-        if (focused)
+        if (focused) {
+            showSoftKeyboard();
             handleEditorStateChange();
+        }
         return res;
     }
 
