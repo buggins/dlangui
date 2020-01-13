@@ -2547,6 +2547,14 @@ class SpinCtrl : HorizontalLayout {
     @property void value(int val) {
         linEdit.text = val.to!dstring;
     }
+    
+    override @property bool enabled() { return linEdit.enabled; }
+    alias enabled = Widget.enabled;
+    @property void enabled(bool status) {
+        linEdit.enabled = status;
+        butUp.enabled = status;
+        butDown.enabled = status;
+    }
 
     this(int min, int max, int initialVal = 0, string labelText = null){
         this.min = min;
@@ -2573,7 +2581,7 @@ class SpinCtrl : HorizontalLayout {
             }
 
             override bool onMouseEvent(MouseEvent event) {
-                if(event.action == MouseAction.Wheel){
+                if(enabled && event.action == MouseAction.Wheel){
                     if((event.wheelDelta == 1) && (value < max))
                         value = value + event.wheelDelta;
                     if((event.wheelDelta == -1) && (value > min))
@@ -2627,6 +2635,8 @@ class SpinCtrl : HorizontalLayout {
                 linEdit.text = (val - 1).to!string._ui;
             return true;
         };
+        
+        enabled = true;
     }
     
 }
