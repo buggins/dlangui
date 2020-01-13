@@ -2615,18 +2615,18 @@ class SpinCtrl : HorizontalLayout {
         addChild(butContainer);
 
         butUp.click = delegate(Widget w) {
-			immutable val = linEdit.text.to!int;
+            immutable val = linEdit.text.to!int;
             if(val < max )
                 linEdit.text = (val + 1).to!string._ui;
-			return true;
-		};
+            return true;
+        };
 
         butDown.click = delegate(Widget w) {
-			immutable val = linEdit.text.to!int;
+            immutable val = linEdit.text.to!int;
             if(val > min )
                 linEdit.text = (val - 1).to!string._ui;
-			return true;
-		};
+            return true;
+        };
     }
     
 }
