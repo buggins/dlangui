@@ -2531,7 +2531,6 @@ class EditLine : EditWidgetBase {
 // SpinCtrl
 private {
     import std.ascii;
-    alias _ui = UIString.fromRaw;
 }
 
 class SpinCtrl : HorizontalLayout {
@@ -2556,12 +2555,12 @@ class SpinCtrl : HorizontalLayout {
         butDown.enabled = status;
     }
 
-    this(int min, int max, int initialVal = 0, string labelText = null){
+    this(int min, int max, int initialVal = 0, dstring labelText = null){
         this.min = min;
         this.max = max;
 
         if(labelText !is null){
-            label = new TextWidget("label", _ui(labelText));
+            label = new TextWidget("label", labelText);
             addChild(label);
         }
 
@@ -2625,14 +2624,14 @@ class SpinCtrl : HorizontalLayout {
         butUp.click = delegate(Widget w) {
             immutable val = linEdit.text.to!int;
             if(val < max )
-                linEdit.text = (val + 1).to!string._ui;
+                linEdit.text = (val + 1).to!dstring;
             return true;
         };
 
         butDown.click = delegate(Widget w) {
             immutable val = linEdit.text.to!int;
             if(val > min )
-                linEdit.text = (val - 1).to!string._ui;
+                linEdit.text = (val - 1).to!dstring;
             return true;
         };
         
