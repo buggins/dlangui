@@ -538,7 +538,7 @@ class FreeTypeFontManager : FontManager {
         FontFileItem best = null;
         int bestScore = 0;
         string[] faces = face ? split(face, ",") : null;
-        foreach(int index, FontFileItem item; _fontFiles) {
+        foreach(size_t index, FontFileItem item; _fontFiles) {
             int score = 0;
             int bestFaceMatch = 0;
             if (faces && face.length) {

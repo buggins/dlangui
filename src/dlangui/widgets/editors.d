@@ -3446,8 +3446,9 @@ class EditBox : EditWidgetBase {
         rc.offset(0, yOffset);
         Rect[] wrappedSelection;
         wrappedSelection.length = curSpan.len;
-        foreach (int i, wrapLineRect; wrappedSelection)
+        foreach (size_t i_, wrapLineRect; wrappedSelection)
         {
+            int i = cast(int)i_;
             int startingDifference = rc.left - _clientRect.left;
             wrapLineRect = rc;
             wrapLineRect.offset(-1 * curSpan.accumulation(i, LineSpan.WrapPointInfo.Width), i * _lineHeight);
@@ -3796,8 +3797,9 @@ class EditBox : EditWidgetBase {
                             wrappedLine = _span[i].wrappedContent;
                     int accumulativeLength;
                     CustomCharProps[] wrapProps;
-                    foreach (int q, curWrap; wrappedLine)
+                    foreach (size_t q_, curWrap; wrappedLine)
                     {
+                        int q = cast(int)q_;
                         auto lineOffset = q + i + wrapsUpTo(i + _firstVisibleLine);
                         if (highlight)
                         {
