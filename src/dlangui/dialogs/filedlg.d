@@ -374,7 +374,7 @@ class FileDialog : Dialog, CustomGridCellAdapter {
             return "----.--.-- --:--";
         } else {
             //date = "%04d.%02d.%02d %02d:%02d:%02d".format(ts.year, ts.month, ts.day, ts.hour, ts.minute, ts.second);
-            return "%04d.%02d.%02d %02d:%02d".format(ts.year, ts.month, ts.day, ts.hour, ts.minute);
+            return "%04d.%02d.%02d %02d:%02d".format(ts.get.year, ts.get.month, ts.get.day, ts.get.hour, ts.get.minute);
         }
     }
 
