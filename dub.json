@@ -50,11 +50,11 @@
             "versions-windows": ["Unicode"],
             "libs-windows": ["opengl32"],
             "dependencies": {
-                "derelict-gl3": "~>2.0.0-beta.7",
-                "derelict-ft": "~>2.0.0-beta.4"
+                "derelict-gl3": "~>2.0.0-beta.8",
+                "derelict-ft": "~>2.0.0-beta.5"
             },
             "dependencies-posix": {
-                "derelict-sdl2": "~>3.0.0-beta.7"
+                "derelict-sdl2": "~>3.0.0-beta.8"
             },
             "copyFiles-windows-x86_64": [
                 "libs/windows/x86_64/libfreetype-6.dll"
@@ -73,8 +73,8 @@
             "versions": ["USE_EXTERNAL"],
             "libs-windows": ["opengl32"],
             "dependencies": {
-                "derelict-gl3": "~>2.0.0-beta.7",
-                "derelict-ft": "~>2.0.0-beta.4"
+                "derelict-gl3": "~>2.0.0-beta.8",
+                "derelict-ft": "~>2.0.0-beta.5"
             }
         },
         {
@@ -84,9 +84,9 @@
             "versions-windows": ["Unicode" ,"NO_OPENGL"],
             "libs-windows": ["opengl32"],
             "dependencies-posix": {
-                "derelict-gl3": "~>2.0.0-beta.7",
-                "derelict-sdl2": "~>3.0.0-beta.7",
-                "derelict-ft": "~>2.0.0-beta.4"
+                "derelict-gl3": "~>2.0.0-beta.8",
+                "derelict-sdl2": "~>3.0.0-beta.8",
+                "derelict-ft": "~>2.0.0-beta.5"
             }
         },
         {
@@ -94,9 +94,9 @@
             "versions": ["USE_SDL", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-                "derelict-gl3": "~>2.0.0-beta.7",
-                "derelict-ft": "~>2.0.0-beta.4",
-                "derelict-sdl2": "~>3.0.0-beta.7"
+                "derelict-gl3": "~>2.0.0-beta.8",
+                "derelict-ft": "~>2.0.0-beta.5",
+                "derelict-sdl2": "~>3.0.0-beta.8"
             },
             "copyFiles-windows-x86_64": [
                 "libs/windows/x86_64/libfreetype-6.dll", 
@@ -112,9 +112,9 @@
             "versions": ["USE_X11", "USE_FREETYPE", "EmbedStandardResources"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-                "derelict-gl3": "~>2.0.0-beta.7",
-                "derelict-ft": "~>2.0.0-beta.4",
-                "x11": "~>1.0.17"
+                "derelict-gl3": "~>2.0.0-beta.8",
+                "derelict-ft": "~>2.0.0-beta.5",
+                "x11": "~>1.0.21"
             }
         },
         {

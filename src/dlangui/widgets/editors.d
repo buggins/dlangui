@@ -3446,11 +3446,11 @@ class EditBox : EditWidgetBase {
         rc.offset(0, yOffset);
         Rect[] wrappedSelection;
         wrappedSelection.length = curSpan.len;
-        foreach (int i, wrapLineRect; wrappedSelection)
+        foreach (size_t i, wrapLineRect; wrappedSelection)
         {
             int startingDifference = rc.left - _clientRect.left;
             wrapLineRect = rc;
-            wrapLineRect.offset(-1 * curSpan.accumulation(i, LineSpan.WrapPointInfo.Width), i * _lineHeight);
+            wrapLineRect.offset(-1 * curSpan.accumulation(cast(int)i, LineSpan.WrapPointInfo.Width), cast(int)i * _lineHeight);
             wrapLineRect.right = limitNumber(wrapLineRect.right,(rc.left + curSpan.wrapPoints[i].wrapWidth) - startingDifference);
             buf.fillRect(wrapLineRect, color);
         }
@@ -3796,9 +3796,9 @@ class EditBox : EditWidgetBase {
                             wrappedLine = _span[i].wrappedContent;
                     int accumulativeLength;
                     CustomCharProps[] wrapProps;
-                    foreach (int q, curWrap; wrappedLine)
+                    foreach (size_t q, curWrap; wrappedLine)
                     {
-                        auto lineOffset = q + i + wrapsUpTo(i + _firstVisibleLine);
+                        int lineOffset = cast(int)q + i + wrapsUpTo(i + _firstVisibleLine);
                         if (highlight)
                         {
                             wrapProps = highlight[accumulativeLength .. $];

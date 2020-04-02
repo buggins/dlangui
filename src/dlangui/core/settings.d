@@ -489,7 +489,7 @@ final class Setting {
 
 
     /// read as string value
-    @property inout(string) str() inout {
+    @property string str() {
         final switch(_type) with(SettingType) {
             case STRING:
                 return _store.str;
@@ -510,7 +510,7 @@ final class Setting {
         }
     }
     /// read as string value
-    inout(string) strDef(string defValue) inout {
+    string strDef(string defValue) {
         final switch(_type) with(SettingType) {
             case STRING:
                 return _store.str;
