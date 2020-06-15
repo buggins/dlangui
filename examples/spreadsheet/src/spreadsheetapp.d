@@ -130,15 +130,15 @@ class EditFrame : AppFrame {
                         window.close();
                     return true;
                 case IDEActions.HelpAbout:
-                    window.showMessageBox(UIString("About DlangUI ML Editor"d),
-                                          UIString("DLangIDE\n(C) Vadim Lopatin, 2015\nhttp://github.com/buggins/dlangui\nSimple editor for DML code"d));
+                    window.showMessageBox(UIString.fromRaw("About DlangUI ML Editor"d),
+                                          UIString.fromRaw("DLangIDE\n(C) Vadim Lopatin, 2015\nhttp://github.com/buggins/dlangui\nSimple editor for DML code"d));
                     return true;
                 case IDEActions.FileNew:
                     UIString caption;
                     caption = "Create new DML file"d;
                     FileDialog dlg = createFileDialog(caption, false);
-                    dlg.addFilter(FileFilterEntry(UIString("DML files"d), "*.dml"));
-                    dlg.addFilter(FileFilterEntry(UIString("All files"d), "*.*"));
+                    dlg.addFilter(FileFilterEntry(UIString.fromRaw("DML files"d), "*.dml"));
+                    dlg.addFilter(FileFilterEntry(UIString.fromRaw("All files"d), "*.*"));
                     dlg.dialogResult = delegate(Dialog dlg, const Action result) {
                         if (result.id == ACTION_OPEN.id) {
                             string filename = result.stringParam;
@@ -156,8 +156,8 @@ class EditFrame : AppFrame {
                     UIString caption;
                     caption = "Save DML File as"d;
                     FileDialog dlg = createFileDialog(caption, false);
-                    dlg.addFilter(FileFilterEntry(UIString("DML files"d), "*.dml"));
-                    dlg.addFilter(FileFilterEntry(UIString("All files"d), "*.*"));
+                    dlg.addFilter(FileFilterEntry(UIString.fromRaw("DML files"d), "*.dml"));
+                    dlg.addFilter(FileFilterEntry(UIString.fromRaw("All files"d), "*.*"));
                     dlg.dialogResult = delegate(Dialog dlg, const Action result) {
                         if (result.id == ACTION_OPEN.id) {
                             string filename = result.stringParam;
@@ -170,8 +170,8 @@ class EditFrame : AppFrame {
                     UIString caption;
                     caption = "Open DML File"d;
                     FileDialog dlg = createFileDialog(caption);
-                    dlg.addFilter(FileFilterEntry(UIString("DML files"d), "*.dml"));
-                    dlg.addFilter(FileFilterEntry(UIString("All files"d), "*.*"));
+                    dlg.addFilter(FileFilterEntry(UIString.fromRaw("DML files"d), "*.dml"));
+                    dlg.addFilter(FileFilterEntry(UIString.fromRaw("All files"d), "*.*"));
                     dlg.dialogResult = delegate(Dialog dlg, const Action result) {
                         if (result.id == ACTION_OPEN.id) {
                             string filename = result.stringParam;
