@@ -23,7 +23,7 @@ struct ObjModelImport {
 
     MeshRef mesh;
 
-    protected float[] parseFloatList(Token[] tokens, int maxItems = 3, float padding = 0) {
+    protected float[] parseFloatList(Token[] tokens, int maxItems = 3, float padding = 0) return {
         int i = 0;
         int sgn = 1;
         foreach(t; tokens) {

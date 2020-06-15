@@ -126,13 +126,13 @@ struct UIString {
         _value = newValue;
     }
     /** Assign raw value */
-    ref UIString opAssign(dstring rawValue) {
+    ref UIString opAssign(dstring rawValue) return {
         _value = rawValue;
         _id = null;
         return this;
     }
     /** Assign string resource id */
-    ref UIString opAssign(string ID) {
+    ref UIString opAssign(string ID) return {
         _id = ID;
         _value = null;
         return this;

@@ -20,7 +20,7 @@
     },
     "configurations" : [
         {
-            "name" : "default",
+            "name" : "default"
         }, 
         {
             "name" : "console",
