@@ -3,6 +3,7 @@ module gui;
 import model;
 
 import dlangui;
+import std.algorithm;
 
 /// game action codes
 enum TetrisAction : int {
