@@ -120,7 +120,7 @@ bool visit(Node3d node, bool delegate(Node3d node) visitor) {
     if (res)
         return true;
     foreach(child; node.children) {
-        bool res = visit(child, visitor);
+        res = visit(child, visitor);
         if (res)
             return true;
     }

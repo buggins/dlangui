@@ -81,7 +81,6 @@ struct CSSToken {
     string text;
     string dimensionUnit;
     union {
-        bool typeFlagId; // true if identifier is valid ID
         struct {
             long intValue = 0; // for number and dimension
             double doubleValue = 0; // for number and dimension
@@ -91,6 +90,7 @@ struct CSSToken {
             uint unicodeRangeStart; // for unicodeRange (initialized to 0 via intValue=0)
             uint unicodeRangeEnd; // for unicodeRange (initialized to 0 via intValue=0)
         }
+        bool typeFlagId; // true if identifier is valid ID
     }
 }
 

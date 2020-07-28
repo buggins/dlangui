@@ -498,7 +498,7 @@ final class Setting {
             case UINTEGER:
                 return to!string(_store.uinteger);
             case FLOAT:
-                return to!string(_store.floating);
+                return to!string(cast(double)_store.floating);
             case TRUE:
                 return "true";
             case FALSE:
@@ -519,7 +519,7 @@ final class Setting {
             case UINTEGER:
                 return to!string(_store.uinteger);
             case FLOAT:
-                return to!string(_store.floating);
+                return to!string(cast(double)_store.floating);
             case TRUE:
                 return "true";
             case FALSE:
