@@ -11,8 +11,6 @@
 
     "stringImportPaths": ["views", "views/res", "views/res/i18n", "views/res/mdpi"],
 
-    "sourceFiles-windows": ["$PACKAGE_DIR/src/win_app.def"],
-
     "versions": ["ForceLogs"],
 
     "dependencies": {
@@ -20,7 +18,7 @@
     },
     "configurations" : [
         {
-            "name" : "default",
+            "name" : "default"
         }, 
         {
             "name" : "console",

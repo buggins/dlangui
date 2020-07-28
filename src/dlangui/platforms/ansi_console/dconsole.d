@@ -280,7 +280,7 @@ class Console {
                     break;
             }
             if (readBufPos > 0 && isSequenceCompleted()) {
-                string s = readBuf[0 .. readBufPos].dup;
+                string s = readBuf[0 .. readBufPos].idup;
                 readBufPos = 0;
                 return s;
             }

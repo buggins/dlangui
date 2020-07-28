@@ -498,7 +498,7 @@ final class Setting {
             case UINTEGER:
                 return to!string(_store.uinteger);
             case FLOAT:
-                return to!string(_store.floating);
+                return to!string(cast(double)_store.floating);
             case TRUE:
                 return "true";
             case FALSE:
@@ -510,7 +510,7 @@ final class Setting {
         }
     }
     /// read as string value
-    string strDef(string defValue) {
+    inout (string) strDef(inout (string) defValue) {
         final switch(_type) with(SettingType) {
             case STRING:
                 return _store.str;
@@ -519,7 +519,7 @@ final class Setting {
             case UINTEGER:
                 return to!string(_store.uinteger);
             case FLOAT:
-                return to!string(_store.floating);
+                return to!string(cast(double)_store.floating);
             case TRUE:
                 return "true";
             case FALSE:
@@ -2313,5 +2313,3 @@ final class Setting {
         }
     }
 }
-
-

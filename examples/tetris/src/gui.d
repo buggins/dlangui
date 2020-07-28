@@ -3,6 +3,7 @@ module gui;
 import model;
 
 import dlangui;
+import std.algorithm;
 
 /// game action codes
 enum TetrisAction : int {
@@ -559,6 +560,7 @@ class StatusWidget : VerticalLayout {
 
     /// Measure widget according to desired width and height constraints. (Step 1 of two phase layout).
     override void measure(int parentWidth, int parentHeight) {
+        import std.algorithm: min;
         int minw = min(parentWidth, parentHeight);
         foreach(lbl; _labels) {
             lbl.fontSize = minw / 20;

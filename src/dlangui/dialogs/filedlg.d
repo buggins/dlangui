@@ -363,8 +363,18 @@ class FileDialog : Dialog, CustomGridCellAdapter {
 
     protected string formatTimestamp(ref DirEntry f) {
         import std.datetime : SysTime;
-        SysTime ts = f.timeLastModified;
-        return "%04d.%02d.%02d %02d:%02d".format(ts.year, ts.month, ts.day, ts.hour, ts.minute);
+        import std.typecons : Nullable;
+        Nullable!SysTime ts;
+        try {
+            ts = f.timeLastModified;
+        } catch (Exception e) {
+            Log.w(e.msg);
+        }
+        if (ts.isNull) {
+            return "----.--.-- --:--";
+        } else {
+            return "%04d.%02d.%02d %02d:%02d".format(ts.get.year, ts.get.month, ts.get.day, ts.get.hour, ts.get.minute);
+        }
     }
 
     protected int entriesToCells(string selectedItemPath) {

@@ -771,7 +771,9 @@ bool registerFontConfigFonts(FreeTypeFontManager fontMan) {
         }
         string fn = fromStringz(s).dup;
         string fn16 = toLower(fn);
-        if (!fn16.endsWith(".ttf") && !fn16.endsWith(".odf") && !fn16.endsWith(".otf") && !fn16.endsWith(".pfb") && !fn16.endsWith(".pfa")  ) {
+        if (!fn16.endsWith(".ttf") && !fn16.endsWith(".odf") && !fn16.endsWith(".otf") &&
+            !fn16.endsWith(".ttc") && !fn16.endsWith(".pfb") && !fn16.endsWith(".pfa")  )
+        {
             continue;
         }
         int weight = FC_WEIGHT_MEDIUM;
@@ -912,9 +914,6 @@ bool registerFontConfigFonts(FreeTypeFontManager fontMan) {
         }
 
         */
-        facesFound++;
-
-
     }
 
     FcFontSetDestroy(fontset);
