@@ -82,13 +82,13 @@ struct CSSToken {
     string dimensionUnit;
     union {
         struct {
-            long intValue = 0; // for number and dimension
-            double doubleValue = 0; // for number and dimension
-            bool typeFlagInteger; // for number and dimension - true if number is integer, false if double
+            long intValue = 0; /// for number and dimension
+            double doubleValue = 0; /// for number and dimension
+            bool typeFlagInteger; /// for number and dimension - true if number is integer, false if double
         }
         struct {
-            uint unicodeRangeStart; // for unicodeRange (initialized to 0 via intValue=0)
-            uint unicodeRangeEnd; // for unicodeRange (initialized to 0 via intValue=0)
+            uint unicodeRangeStart; /// for unicodeRange (initialized to 0 via intValue=0)
+            uint unicodeRangeEnd; /// for unicodeRange (initialized to 0 via intValue=0)
         }
         bool typeFlagId; // true if identifier is valid ID
     }

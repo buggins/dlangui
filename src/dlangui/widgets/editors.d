@@ -3561,7 +3561,7 @@ class EditBox : EditWidgetBase {
             int i = cast(int)i_;
             int startingDifference = rc.left - _clientRect.left;
             wrapLineRect = rc;
-            wrapLineRect.offset(-1 * curSpan.accumulation(i, LineSpan.WrapPointInfo.Width), i * _lineHeight);
+            wrapLineRect.offset(-1 * curSpan.accumulation(cast(int)i, LineSpan.WrapPointInfo.Width), cast(int)i * _lineHeight);
             wrapLineRect.right = limitNumber(wrapLineRect.right,(rc.left + curSpan.wrapPoints[i].wrapWidth) - startingDifference);
             buf.fillRect(wrapLineRect, color);
         }
