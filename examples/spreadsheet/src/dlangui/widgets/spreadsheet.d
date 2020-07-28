@@ -43,6 +43,8 @@ class SheetEditControl : HorizontalLayout {
 }
 
 class SpreadSheetView : StringGridWidget {
+    import std.conv: to;
+
     this(string ID = null) {
         super(ID);
         layoutWidth = FILL_PARENT;
