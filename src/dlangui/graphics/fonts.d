@@ -239,6 +239,8 @@ class Font : RefCountedObject {
         bool fixed = isFixed;
         bool useKerning = allowKerning && !fixed;
         int fixedCharWidth = charWidth('M');
+        if (fixedCharWidth == 0)
+            fixedCharWidth = spaceWidth;
         int x = 0;
         int charsMeasured = 0;
         int * pwidths = widths.ptr;

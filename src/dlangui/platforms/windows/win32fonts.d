@@ -30,6 +30,7 @@ import dlangui.graphics.fonts;
 import dlangui.platforms.windows.win32drawbuf;
 import std.string;
 import std.utf;
+import std.windows.charset;
 
 /// define debug=FontResources for logging of font file resources creation/freeing
 //debug = FontResources;
@@ -446,9 +447,13 @@ class Win32Font : Font {
         if (!isNull())
             clear();
         LOGFONTA lf;
-        lf.lfCharSet = ANSI_CHARSET; //DEFAULT_CHARSET;
-        lf.lfFaceName[0..def.face.length] = def.face;
-        lf.lfFaceName[def.face.length] = 0;
+        // OEM charset face name
+        lf.lfCharSet = DEFAULT_CHARSET; //ANSI_CHARSET;
+        // lf.lfFaceName[0..def.face.length] = def.face;
+        // lf.lfFaceName[def.face.length] = 0;
+        string oemFace = fromStringz(toMBSz(def.face)).dup;
+        lf.lfFaceName[0..oemFace.length] = oemFace;
+        lf.lfFaceName[oemFace.length] = 0;
         lf.lfHeight = -size; //pixelsToPoints(size);
         lf.lfItalic = italic;
         lf.lfWeight = weight;
@@ -545,7 +550,7 @@ class Win32FontManager : FontManager {
         debug Log.i("Win32FontManager.initialize()");
         Win32ColorDrawBuf drawbuf = new Win32ColorDrawBuf(1,1);
         LOGFONTA lf;
-        lf.lfCharSet = ANSI_CHARSET; //DEFAULT_CHARSET;
+        lf.lfCharSet = DEFAULT_CHARSET; //ANSI_CHARSET;
         lf.lfFaceName[0] = 0;
         HDC dc = drawbuf.dc;
         int res =
@@ -705,7 +710,9 @@ extern(Windows) {
         {
             void * p = cast(void*)lParam;
             Win32FontManager fontman = cast(Win32FontManager)p;
-            string face = fromStringz(lf.lfFaceName.ptr).dup;
+            // OEM charset face name
+            // string face = fromStringz(lf.lfFaceName.ptr).dup;
+            string face = fromMBSz(cast(immutable)lf.lfFaceName.ptr).dup;
             FontFamily family = pitchAndFamilyToFontFamily(lf.lfPitchAndFamily);
             if (face.length < 2 || face[0] == '@')
                 return 1;
