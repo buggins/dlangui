@@ -2528,7 +2528,117 @@ class EditLine : EditWidgetBase {
     }
 }
 
+// SpinCtrl
+private {
+    import std.ascii;
+}
 
+class SpinCtrl : HorizontalLayout {
+
+    TextWidget label;
+    int min, max;
+    
+    private EditLine linEdit;
+    private Button butUp, butDown;
+    
+
+    @property int value() { return linEdit.text.to!int; }
+    @property void value(int val) {
+        linEdit.text = val.to!dstring;
+    }
+    
+    override @property bool enabled() { return linEdit.enabled; }
+    alias enabled = Widget.enabled;
+    @property void enabled(bool status) {
+        linEdit.enabled = status;
+        butUp.enabled = status;
+        butDown.enabled = status;
+    }
+
+    this(int min, int max, int initialVal = 0, dstring labelText = null){
+        this.min = min;
+        this.max = max;
+
+        if(labelText !is null){
+            label = new TextWidget("label", labelText);
+            addChild(label);
+        }
+
+        linEdit = new class EditLine {
+            this(){super("linEdit", "0"d);}
+            override bool onKeyEvent(KeyEvent event) {
+                if (( KeyAction.Text == event.action && event.text[0].isDigit)
+                    || event.keyCode == KeyCode.BACK
+                    || event.keyCode == KeyCode.DEL
+                    || event.keyCode == KeyCode.LEFT
+                    || event.keyCode == KeyCode.RIGHT
+                    || event.keyCode == KeyCode.TAB
+                    ){
+                        return super.onKeyEvent(event);
+                }
+                return false;
+            }
+
+            override bool onMouseEvent(MouseEvent event) {
+                if(enabled && event.action == MouseAction.Wheel){
+                    if((event.wheelDelta == 1) && (value < max))
+                        value = value + event.wheelDelta;
+                    if((event.wheelDelta == -1) && (value > min))
+                        value = value + event.wheelDelta;
+                    return true;
+                }
+                return super.onMouseEvent(event);
+            }
+        };
+
+        linEdit.addOnFocusChangeListener((w, t){
+            if(linEdit.text == "")
+                linEdit.text = "0";
+            if(linEdit.text.to!int > max)
+                value = max;
+            if(linEdit.text.to!int < min)
+                value = min;
+            return true;
+        });
+
+        linEdit.minHeight = 35;
+        if(initialVal != 0)
+            value = initialVal;
+        addChild(linEdit);
+
+
+        auto butContainer = new VerticalLayout();
+        butContainer.maxHeight = linEdit.minHeight;
+
+        butUp = new Button("butUp", "+"d);
+        butUp.margins(Rect(1.pointsToPixels, 1.pointsToPixels, 1.pointsToPixels, 1.pointsToPixels));
+
+        butDown = new Button("butDown", "-"d);
+        butDown.margins(Rect(1.pointsToPixels, 1.pointsToPixels, 1.pointsToPixels, 1.pointsToPixels));
+
+        butContainer.addChild(butUp);
+        butContainer.addChild(butDown);
+
+        addChild(butContainer);
+
+        butUp.click = delegate(Widget w) {
+            immutable val = linEdit.text.to!int;
+            if(val < max )
+                linEdit.text = (val + 1).to!dstring;
+            return true;
+        };
+
+        butDown.click = delegate(Widget w) {
+            immutable val = linEdit.text.to!int;
+            if(val > min )
+                linEdit.text = (val - 1).to!dstring;
+            return true;
+        };
+        
+        enabled = true;
+    }
+    
+}
 
 /// multiline editor
 class EditBox : EditWidgetBase {
