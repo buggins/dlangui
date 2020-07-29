@@ -23,6 +23,11 @@ Screenshots: [http://buggins.github.io/dlangui/screenshots.html](http://buggins.
 Coding style: [https://github.com/buggins/dlangui/blob/master/CODING_STYLE.md](https://github.com/buggins/dlangui/blob/master/CODING_STYLE.md)
 
 
+*BeamUI* - actual fork of DlangUI - in active development : [https://github.com/dayllenger/beamui](https://github.com/dayllenger/beamui)
+
+
+
+
 WARNING: dependencies in dlangui/deps now are git submodules (if you previously cloned them into deps directory, remove deps dir before updating dlangui project)
 
 
