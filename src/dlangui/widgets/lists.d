@@ -1402,7 +1402,13 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
 
 class StringListWidget : ListWidget {
     import std.conv : to;
-    import std.datetime.stopwatch : StopWatch;
+    version(DigitalMars) {
+        import std.datetime.stopwatch : StopWatch;
+    } else {
+        import std.datetime.stopwatch : StopWatch;
+        import std.datetime : dto = to;
+    }
+
     import core.time : dur;
     private dstring _searchString;
     private StopWatch _stopWatch;
