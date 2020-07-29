@@ -1402,12 +1402,7 @@ class ListWidget : WidgetGroup, OnScrollHandler, OnAdapterChangeHandler {
 
 class StringListWidget : ListWidget {
     import std.conv : to;
-    version(DigitalMars) {
-        import std.datetime.stopwatch : StopWatch;
-    } else {
-        import std.datetime.stopwatch : StopWatch;
-        import std.datetime : dto = to;
-    }
+    import std.datetime.stopwatch : StopWatch;
 
     import core.time : dur;
     private dstring _searchString;
@@ -1486,15 +1481,10 @@ class StringListWidget : ListWidget {
         if (event.action == KeyAction.Text) {
             if ( !_stopWatch.running) { _stopWatch.start; }
 
-            version(DigitalMars) {
-                auto timePassed = _stopWatch.peek; //.to!("seconds", float)(); // dtop is std.datetime.to
+            auto timePassed = _stopWatch.peek; //.to!("seconds", float)(); // dtop is std.datetime.to
 
-                if (timePassed > dur!"msecs"(500)) _searchString = ""d;
-            } else {
-                auto timePassed = _stopWatch.peek.dto!("seconds", float)(); // dtop is std.datetime.to
-
-                if (timePassed > 0.5) _searchString = ""d;
-            }
+            if (timePassed > dur!"msecs"(500)) 
+                _searchString = ""d;
             _searchString ~= to!dchar(event.text.toUTF8);
             _stopWatch.reset;
 
