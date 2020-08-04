@@ -1970,6 +1970,9 @@ class StringGridWidget : StringGridWidgetBase {
 
     /// draw cell content
     protected override void drawHeaderCell(DrawBuf buf, Rect rc, int col, int row) {
+        if (_customCellAdapter && _customCellAdapter.isCustomCell(col, row)) {
+            return _customCellAdapter.drawCell(buf, rc, col, row);
+        }
         if (BACKEND_GUI)
             rc.shrink(2, 1);
         else
