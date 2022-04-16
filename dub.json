@@ -51,7 +51,8 @@
             "libs-windows": ["opengl32"],
             "dependencies": {
                 "derelict-gl3": "~>2.0.0-beta.8",
-                "derelict-ft": "~>2.0.0-beta.5"
+                "derelict-ft": "~>2.0.0-beta.5",
+                "icontheme": "~>1.2.3"
             },
             "dependencies-posix": {
                 "derelict-sdl2": "~>3.0.0-beta.8"
@@ -74,7 +75,8 @@
             "libs-windows": ["opengl32"],
             "dependencies": {
                 "derelict-gl3": "~>2.0.0-beta.8",
-                "derelict-ft": "~>2.0.0-beta.5"
+                "derelict-ft": "~>2.0.0-beta.5",
+                "icontheme": "~>1.2.3"
             }
         },
         {
@@ -86,7 +88,8 @@
             "dependencies-posix": {
                 "derelict-gl3": "~>2.0.0-beta.8",
                 "derelict-sdl2": "~>3.0.0-beta.8",
-                "derelict-ft": "~>2.0.0-beta.5"
+                "derelict-ft": "~>2.0.0-beta.5",
+                "icontheme": "~>1.2.3"
             }
         },
         {
@@ -96,11 +99,12 @@
             "dependencies": {
                 "derelict-gl3": "~>2.0.0-beta.8",
                 "derelict-ft": "~>2.0.0-beta.5",
-                "derelict-sdl2": "~>3.0.0-beta.8"
+                "derelict-sdl2": "~>3.0.0-beta.8",
+                "icontheme": "~>1.2.3"
             },
             "copyFiles-windows-x86_64": [
                 "libs/windows/x86_64/libfreetype-6.dll", 
-                "libs/windows/x86_64/SDL2.dll"
+                "libs/windows/x86_64/SDL2.dll",
             ],
             "copyFiles-windows-x86": [
                 "libs/windows/x86/libfreetype-6.dll", 
@@ -114,7 +118,8 @@
             "dependencies": {
                 "derelict-gl3": "~>2.0.0-beta.8",
                 "derelict-ft": "~>2.0.0-beta.5",
-                "x11": "~>1.0.21"
+                "x11": "~>1.0.21",
+                "icontheme": "~>1.2.3"
             }
         },
         {
@@ -124,7 +129,8 @@
             "dependencies": {
                 "derelict-gl3": "~>2.0.0-beta.7",
                 "derelict-ft": "~>2.0.0-beta.4",
-                "dsfml": "~>2.1.0"
+                "dsfml": "~>2.1.0",
+                "icontheme": "~>1.2.3"
             },
             "copyFiles-windows-x86_64": [
                 "libs/windows/x86_64/libfreetype-6.dll"
