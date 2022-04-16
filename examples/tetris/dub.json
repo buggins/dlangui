@@ -11,8 +11,6 @@
 
     "stringImportPaths": ["views", "views/res"],
 
-    "sourceFiles-windows": ["$PACKAGE_DIR/src/win_app.def"],
-
     "versions": ["EmbedStandardResources", "ForceLogs"],
 
     "dependencies": {

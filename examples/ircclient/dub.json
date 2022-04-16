@@ -11,8 +11,6 @@
     "targetName": "ircclient",
     "targetType": "executable",
 
-    "sourceFiles-windows": ["$PACKAGE_DIR/src/win_app.def"],
-
     "versions": ["EmbedStandardResources"],
 
     "dependencies": {
@@ -25,7 +23,7 @@
             "subConfigurations" : {
                 "dlangui" : "default"
             }
-        }, 
+        },
         {
             "name" : "console",
             "subConfigurations" : {
