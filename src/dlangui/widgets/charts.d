@@ -384,7 +384,7 @@ class SimpleBarChart : Widget {
     protected Point measureAxisYDesc() {
         int maxDescWidth = _axisYMinDescWidth;
         double currentMaxValue = _maxY;
-        if (approxEqual(_maxY, 0, 0.0000001, 0.0000001))
+        if (isClose(_maxY, 0, 0.0000001, 0.0000001))
             currentMaxValue = 100;
 
         Point sz = font.textSize(to!dstring(currentMaxValue), MAX_WIDTH_UNSPECIFIED, 4, 0, textFlags);
@@ -400,7 +400,7 @@ class SimpleBarChart : Widget {
 
     protected int barYValueToPixels(int axisInPixels, double barYValue ) {
         double currentMaxValue = _maxY;
-        if (approxEqual(_maxY, 0, 0.0000001, 0.0000001))
+        if (isClose(_maxY, 0, 0.0000001, 0.0000001))
             currentMaxValue = 100;
 
         double pixValue = axisInPixels / currentMaxValue;
@@ -464,7 +464,7 @@ class SimpleBarChart : Widget {
 
         // segments on y axis and values (now only max and max/2)
         double currentMaxValue = _maxY;
-        if (approxEqual(_maxY, 0, 0.0000001, 0.0000001))
+        if (isClose(_maxY, 0, 0.0000001, 0.0000001))
             currentMaxValue = 100;
 
         int yZero = rc.bottom - _axisX.maxDescriptionSize.y - _axisX.segmentTagLength - _axisX.thickness - _axisY.zeroValueDist;

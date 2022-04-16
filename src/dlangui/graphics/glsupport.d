@@ -49,6 +49,7 @@ version (Android) {
 } else {
     enum SUPPORT_LEGACY_OPENGL = false; //true;
     public import derelict.opengl;
+    import derelict.util.exception;
     //public import derelict.opengl.types;
     //public import derelict.opengl.versions.base;
     //public import derelict.opengl.versions.gl3x;

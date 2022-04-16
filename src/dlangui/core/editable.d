@@ -24,6 +24,7 @@ import dlangui.core.linestream;
 import dlangui.core.streams;
 import std.algorithm;
 import std.conv : to;
+import std.uni;
 
 // uncomment FileFormats debug symbol to dump file formats for loaded/saved files.
 //debug = FileFormats;
@@ -1132,7 +1133,7 @@ class EditableContent {
     /// inserts count empty lines at specified position
     protected void insertLines(int start, int count)
     in { assert(count > 0); }
-    body {
+    do {
         _lines.length += count;
         _tokenProps.length = _lines.length;
         _editMarks.length = _lines.length;

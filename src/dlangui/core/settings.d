@@ -106,7 +106,7 @@ class SettingsFile {
 
     static string limitString(string value, const string[] values)
     in { assert(values.length > 0); }
-    body {
+    do {
         foreach(v; values)
             if (v.equal(value))
                 return value;

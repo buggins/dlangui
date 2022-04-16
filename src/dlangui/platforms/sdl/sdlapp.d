@@ -44,6 +44,7 @@ import derelict.sdl2.sdl;
 static if (ENABLE_OPENGL) {
     //import derelict.opengl3.gl3;
     import derelict.opengl;
+    import derelict.util.exception;
     import dlangui.graphics.gldrawbuf;
     import dlangui.graphics.glsupport;
 }

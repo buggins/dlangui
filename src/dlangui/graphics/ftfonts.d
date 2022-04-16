@@ -15,6 +15,7 @@ static if (ENABLE_FREETYPE):
 import dlangui.graphics.fonts;
 
 import derelict.freetype.ft;
+import derelict.util.exception;
 import dlangui.core.logger;
 import dlangui.core.collections;
 import std.algorithm;
