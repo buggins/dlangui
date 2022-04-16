@@ -42,9 +42,7 @@ import dlangui.platforms.common.platform;
 import derelict.sdl2.sdl;
 
 static if (ENABLE_OPENGL) {
-    //import derelict.opengl3.gl3;
-    import derelict.opengl;
-    import derelict.util.exception;
+    import bindbc.opengl;
     import dlangui.graphics.gldrawbuf;
     import dlangui.graphics.glsupport;
 }
@@ -1646,18 +1644,6 @@ int sdlmain(string[] args) {
     } catch (Exception e) {
         Log.e("Cannot load SDL2 library", e);
         return 1;
-    }
-
-    static if (ENABLE_OPENGL) {
-        try {
-            DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
-            DerelictGL3.load();
-            //DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
-            //DerelictGL3.load();
-            _enableOpengl = true;
-        } catch (Exception e) {
-            Log.e("Cannot load opengl library", e);
-        }
     }
 
     SDL_DisplayMode displayMode;
