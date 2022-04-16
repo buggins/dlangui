@@ -1485,9 +1485,9 @@ class StringListWidget : ListWidget {
 
                 if (timePassed > dur!"msecs"(500)) _searchString = ""d;
             } else {
-                auto timePassed = _stopWatch.peek.dto!("seconds", float)(); // dtop is std.datetime.to
+                auto timePassed = (cast(float)_stopWatch.peek.total!"msecs")/1000.0f;
 
-                if (timePassed > 0.5) _searchString = ""d;
+                if (timePassed > 0.5) _searchString = ""d; // TODO_GRIM: make everything look-alike
             }
             _searchString ~= to!dchar(event.text.toUTF8);
             _stopWatch.reset;
