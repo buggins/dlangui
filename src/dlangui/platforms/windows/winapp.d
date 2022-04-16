@@ -160,7 +160,7 @@ static if (ENABLE_OPENGL) {
 
     /// Shared opengl context helper
     struct SharedGLContext {
-        import derelict.opengl; //3.wgl;
+        import bindbc.opengl;
 
         HGLRC _hGLRC; // opengl context
         HPALETTE _hPalette;
@@ -323,8 +323,6 @@ class Win32Window : Window {
             EndPaint(_hwnd, &ps);
 
 
-            import derelict.opengl; //3.gl3;
-            import derelict.opengl; //3.wgl;
             import dlangui.graphics.gldrawbuf;
             //Log.d("onPaint() start drawing opengl viewport: ", _dx, "x", _dy);
             //PAINTSTRUCT ps;
@@ -392,7 +390,7 @@ class Win32Window : Window {
             destroy(_drawbuf);
             _drawbuf = null;
         }
-            
+
         /*
         static if (ENABLE_OPENGL) {
             import derelict.opengl3.wgl;
@@ -419,10 +417,10 @@ class Win32Window : Window {
     }
 
     /// set handler for files dropped to app window
-    override @property Window onFilesDropped(void delegate(string[]) handler) { 
+    override @property Window onFilesDropped(void delegate(string[]) handler) {
         super.onFilesDropped(handler);
         DragAcceptFiles(_hwnd, handler ? TRUE : FALSE);
-        return this; 
+        return this;
     }
 
     private long _nextExpectedTimerTs;
@@ -436,7 +434,7 @@ class Win32Window : Window {
         if (_timerId && _nextExpectedTimerTs && _nextExpectedTimerTs < nextts + 10)
             return; // don't reschedule timer, timer event will be received soon
         if (_hwnd) {
-            //_timerId = 
+            //_timerId =
             SetTimer(_hwnd, _timerId, cast(uint)intervalMillis, null);
             _nextExpectedTimerTs = nextts;
         }
@@ -488,9 +486,9 @@ class Win32Window : Window {
             else
                 adjustWindowOrContentSize(_mainWidget.measuredWidth, _mainWidget.measuredHeight);
         }
-        
+
         adjustPositionDuringShow();
-        
+
         if (_flags & WindowFlag.Fullscreen) {
             Rect rc = getScreenDimensions();
             SetWindowPos(_hwnd, HWND_TOPMOST, 0, 0, rc.width, rc.height, SWP_SHOWWINDOW);
@@ -508,15 +506,15 @@ class Win32Window : Window {
     override @property Window parentWindow() {
         return _w32parent;
     }
-    
+
     override protected void handleWindowActivityChange(bool isWindowActive) {
         super.handleWindowActivityChange(isWindowActive);
     }
-    
+
     override @property bool isActive() {
         return _hwnd == GetForegroundWindow();
     }
-    
+
     override @property dstring windowCaption() const {
         return _caption;
     }
@@ -584,7 +582,7 @@ class Win32Window : Window {
                     res = true;
                 }
                 break;
-            case WindowState.normal: 
+            case WindowState.normal:
                 if (_windowState != WindowState.normal || activate) {
                     ShowWindow(_hwnd, activate ? SW_SHOWNORMAL : SW_SHOWNA); // SW_RESTORE
                     res = true;
@@ -622,15 +620,15 @@ class Win32Window : Window {
                 }
             }
         }
-        
+
         if (rectChanged) {
-            handleWindowStateChange(newState, Rect(newWindowRect.left == int.min ? _windowRect.left : newWindowRect.left, 
-                newWindowRect.top == int.min ? _windowRect.top : newWindowRect.top, newWindowRect.right == int.min ? _windowRect.right : newWindowRect.right, 
+            handleWindowStateChange(newState, Rect(newWindowRect.left == int.min ? _windowRect.left : newWindowRect.left,
+                newWindowRect.top == int.min ? _windowRect.top : newWindowRect.top, newWindowRect.right == int.min ? _windowRect.right : newWindowRect.right,
                 newWindowRect.bottom == int.min ? _windowRect.bottom : newWindowRect.bottom));
         }
         else
             handleWindowStateChange(newState, RECT_VALUE_IS_NOT_SET);
-        
+
         return res;
     }
 
@@ -652,7 +650,7 @@ class Win32Window : Window {
         Log.d("Window.close()");
         _platform.closeWindow(this);
     }
-    
+
     override protected void handleWindowStateChange(WindowState newState, Rect newWindowRect = RECT_VALUE_IS_NOT_SET) {
         if (_destroying)
             return;
@@ -1175,22 +1173,22 @@ class Win32Platform : Platform {
         if (mouseBuffer)
             return res; // not supporetd under win32
         if (!IsClipboardFormatAvailable(CF_UNICODETEXT))
-            return res; 
-        if (!OpenClipboard(NULL)) 
-            return res; 
+            return res;
+        if (!OpenClipboard(NULL))
+            return res;
 
-        HGLOBAL hglb = GetClipboardData(CF_UNICODETEXT); 
-        if (hglb != NULL) 
-        { 
-            LPWSTR lptstr = cast(LPWSTR)GlobalLock(hglb); 
-            if (lptstr != NULL) 
-            { 
+        HGLOBAL hglb = GetClipboardData(CF_UNICODETEXT);
+        if (hglb != NULL)
+        {
+            LPWSTR lptstr = cast(LPWSTR)GlobalLock(hglb);
+            if (lptstr != NULL)
+            {
                 wstring w = fromWStringz(lptstr);
                 res = normalizeEndOfLineCharacters(toUTF32(w));
 
-                GlobalUnlock(hglb); 
-            } 
-        } 
+                GlobalUnlock(hglb);
+            }
+        }
 
         CloseClipboard();
         //Log.d("getClipboardText(", res, ")");
@@ -1203,14 +1201,14 @@ class Win32Platform : Platform {
         if (text.length < 1 || mouseBuffer)
             return;
         if (!OpenClipboard(NULL))
-            return; 
+            return;
         EmptyClipboard();
         wstring w = toUTF16(text);
-        HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE, 
-                           cast(uint)((w.length + 1) * TCHAR.sizeof)); 
-        if (hglbCopy == NULL) { 
-            CloseClipboard(); 
-            return; 
+        HGLOBAL hglbCopy = GlobalAlloc(GMEM_MOVEABLE,
+                           cast(uint)((w.length + 1) * TCHAR.sizeof));
+        if (hglbCopy == NULL) {
+            CloseClipboard();
+            return;
         }
         LPWSTR lptstrCopy = cast(LPWSTR)GlobalLock(hglbCopy);
         for (int i = 0; i < w.length; i++) {
@@ -1218,7 +1216,7 @@ class Win32Platform : Platform {
         }
         lptstrCopy[w.length] = 0;
         GlobalUnlock(hglbCopy);
-        SetClipboardData(CF_UNICODETEXT, hglbCopy); 
+        SetClipboardData(CF_UNICODETEXT, hglbCopy);
 
         CloseClipboard();
     }
@@ -1254,7 +1252,7 @@ int DLANGUIWinMain(void* hInstance, void* hPrevInstance,
 }
 
 extern(Windows)
-int DLANGUIWinMainProfile(string[] args) 
+int DLANGUIWinMainProfile(string[] args)
 {
     int result;
 
@@ -1308,35 +1306,6 @@ string[] splitCmdLine(string line) {
 
 private __gshared Win32Platform w32platform;
 
-static if (ENABLE_OPENGL) {
-    import derelict.opengl; //3.gl3;
-    //import derelict.opengl3.gl;
-
-    void initOpenGL() {
-        try {
-            Log.d("Loading Derelict GL");
-            //DerelictGL.load();
-            DerelictGL3.load();
-            Log.d("Derelict GL - loaded");
-            //
-            //// just to check OpenGL context
-            //Log.i("Trying to setup OpenGL context");
-            //Win32Window tmpWindow = new Win32Window(w32platform, ""d, null, 0);
-            //destroy(tmpWindow);
-            //if (openglEnabled)
-            //    Log.i("OpenGL support is enabled");
-            //else
-            //    Log.w("OpenGL support is disabled");
-            //// process messages
-            //platform.enterMessageLoop();
-        } catch (Exception e) {
-            Log.e("Exception while trying to init OpenGL", e);
-            setOpenglEnabled(false);
-        }
-    }
-}
-
-
 int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdShow)
 {
     initLogs();
@@ -1375,12 +1344,6 @@ int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdSho
     initResourceManagers();
 
     currentTheme = createDefaultTheme();
-
-    static if (ENABLE_OPENGL) {
-        initOpenGL();
-    }
-
-    // Load versions 1.2+ and all supported ARB and EXT extensions.
 
     Log.i("Entering UIAppMain: ", args);
     int result = -1;
@@ -1442,12 +1405,6 @@ int myWinMainProfile(string[] args)
     initResourceManagers();
 
     currentTheme = createDefaultTheme();
-
-    static if (ENABLE_OPENGL) {
-        initOpenGL();
-    }
-
-    // Load versions 1.2+ and all supported ARB and EXT extensions.
 
     Log.i("Entering UIAppMain: ", args);
     int result = -1;
@@ -1514,7 +1471,7 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_WINDOWPOSCHANGED:
             {
                 if (window !is null) {
-                    
+
                     if (IsIconic(hwnd)) {
                         window.handleWindowStateChange(WindowState.minimized);
                     }
@@ -1547,7 +1504,7 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
         case WM_ACTIVATE:
             {
                 if (window) {
-                    if (wParam == WA_INACTIVE) 
+                    if (wParam == WA_INACTIVE)
                         window.handleWindowActivityChange(false);
                     else if (wParam == WA_ACTIVE || wParam == WA_CLICKACTIVE)
                         window.handleWindowActivityChange(true);
@@ -1617,7 +1574,7 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                         // not a key we map from generic to left/right specialized
                         //  just return it.
                         new_vk = vk;
-                        break;    
+                        break;
                 }
 
                 if (window.onKey(message == WM_KEYDOWN || message == WM_SYSKEYDOWN ? KeyAction.KeyDown : KeyAction.KeyUp, cast(uint)new_vk, repeatCount, 0, message == WM_SYSKEYUP || message == WM_SYSKEYDOWN))
@@ -1657,9 +1614,9 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 wchar[] buf;
                 auto count = DragQueryFileW(hdrop, 0xFFFFFFFF, cast(wchar*)NULL, 0);
                 for (int i = 0; i < count; i++) {
-                    auto sz = DragQueryFileW(hdrop, i, cast(wchar*)NULL, 0); 
+                    auto sz = DragQueryFileW(hdrop, i, cast(wchar*)NULL, 0);
                     buf.length = sz + 2;
-                    sz = DragQueryFileW(hdrop, i, buf.ptr, sz + 1); 
+                    sz = DragQueryFileW(hdrop, i, buf.ptr, sz + 1);
                     files ~= toUTF8(buf[0..sz]);
                 }
                 if (files.length)

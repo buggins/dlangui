@@ -33,8 +33,6 @@ extern (C) int UIAppMain(string[] args) {
 
 static if (ENABLE_OPENGL):
 
-import derelict.opengl3.gl3;
-import derelict.opengl3.gl;
 import dlangui.graphics.glsupport;
 import dlangui.graphics.gldrawbuf;
 

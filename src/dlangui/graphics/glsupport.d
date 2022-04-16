@@ -48,31 +48,7 @@ version (Android) {
 
 } else {
     enum SUPPORT_LEGACY_OPENGL = false; //true;
-    public import derelict.opengl;
-    import derelict.util.exception;
-    //public import derelict.opengl.types;
-    //public import derelict.opengl.versions.base;
-    //public import derelict.opengl.versions.gl3x;
-    //public import derelict.opengl.gl;
-
-derelict.util.exception.ShouldThrow gl3MissingSymFunc( string symName ) {
-    import std.algorithm : equal;
-    static import derelict.util.exception;
-    foreach(s; ["glGetError", "glShaderSource", "glCompileShader",
-            "glGetShaderiv", "glGetShaderInfoLog", "glGetString",
-            "glCreateProgram", "glUseProgram", "glDeleteProgram",
-            "glDeleteShader", "glEnable", "glDisable", "glBlendFunc",
-            "glUniformMatrix4fv", "glGetAttribLocation", "glGetUniformLocation",
-            "glGenVertexArrays", "glBindVertexArray", "glBufferData",
-            "glBindBuffer", "glBufferSubData"]) {
-        if (symName.equal(s)) // Symbol is used
-            return derelict.util.exception.ShouldThrow.Yes;
-    }
-    // Don't throw for unused symbol
-    return derelict.util.exception.ShouldThrow.No;
-}
-
-
+    public import bindbc.opengl;
 }
 
 import dlangui.graphics.scene.mesh;
@@ -668,40 +644,16 @@ bool initGLSupport(bool legacy = false) {
     version(Android) {
         Log.d("initGLSupport");
     } else {
-        static bool DERELICT_GL3_RELOADED;
-	    static bool gl3ReloadedOk;
-        static bool glReloadedOk;
-	    if (!DERELICT_GL3_RELOADED) {
-    	    DERELICT_GL3_RELOADED = true;
-            try {
-                Log.v("Reloading DerelictGL3");
-                import derelict.opengl; //.gl3;
-                DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
-                DerelictGL3.reload();
-                gl3ReloadedOk = true;
-            } catch (Exception e) {
-                Log.e("Derelict exception while reloading DerelictGL3", e);
-            }
-            try {
-                Log.v("Reloading DerelictGL");
-                import derelict.opengl; //.gl;
-                DerelictGL3.missingSymbolCallback = &gl3MissingSymFunc;
-                DerelictGL3.reload();
-                glReloadedOk = true;
-            } catch (Exception e) {
-                Log.e("Derelict exception while reloading DerelictGL", e);
-            }
-        }
-        if (!gl3ReloadedOk && !glReloadedOk) {
-            Log.e("Neither DerelictGL3 nor DerelictGL were reloaded successfully");
+
+        auto support = loadOpenGL();
+        if(support < bindbc.opengl.GLSupport.gl11) // No context! Error!
+        {
+            Log.e("OpenGL wasn't loaded successfully");
             return false;
         }
-        if (!gl3ReloadedOk)
-            legacy = true;
-        else if (!glReloadedOk)
-            legacy = false;
+        legacy = false;
     }
-    if (!_glSupport) {
+    if (!_glSupport) { // TODO_GRIM: Legacy looks very broken to me.
         Log.d("glSupport not initialized: trying to create");
         int major = *cast(int*)(glGetString(GL_VERSION)[0 .. 1].ptr);
         legacy = legacy || (major < 3);

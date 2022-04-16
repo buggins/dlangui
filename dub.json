@@ -18,7 +18,7 @@
     ],
 
     "libs-linux": ["z"],
- 
+
     "stringImportPaths": [
         "views"
     ],
@@ -28,6 +28,12 @@
 
     "sourceFiles-windows-x86-dmd": ["$PACKAGE_DIR/src/win_app.def"],
     "excludedSourceFiles-windows": ["3rdparty/fontconfig/*"],
+
+    "dependencies": {
+        "bindbc-opengl": "~>1.0.0"
+    },
+
+    "versions": ["GL_AllowDeprecated", "GL_30"],
 
     "subPackages": [
         "./examples/helloworld/",
@@ -50,7 +56,6 @@
             "versions-windows": ["Unicode"],
             "libs-windows": ["opengl32"],
             "dependencies": {
-                "derelict-gl3": "~>2.0.0-beta.8",
                 "derelict-ft": "~>2.0.0-beta.5",
                 "icontheme": "~>1.2.3"
             },
@@ -74,7 +79,6 @@
             "versions": ["USE_EXTERNAL"],
             "libs-windows": ["opengl32"],
             "dependencies": {
-                "derelict-gl3": "~>2.0.0-beta.8",
                 "derelict-ft": "~>2.0.0-beta.5",
                 "icontheme": "~>1.2.3"
             }
@@ -86,7 +90,6 @@
             "versions-windows": ["Unicode" ,"NO_OPENGL"],
             "libs-windows": ["opengl32"],
             "dependencies-posix": {
-                "derelict-gl3": "~>2.0.0-beta.8",
                 "derelict-sdl2": "~>3.0.0-beta.8",
                 "derelict-ft": "~>2.0.0-beta.5",
                 "icontheme": "~>1.2.3"
@@ -97,17 +100,16 @@
             "versions": ["USE_SDL", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-                "derelict-gl3": "~>2.0.0-beta.8",
                 "derelict-ft": "~>2.0.0-beta.5",
                 "derelict-sdl2": "~>3.0.0-beta.8",
                 "icontheme": "~>1.2.3"
             },
             "copyFiles-windows-x86_64": [
-                "libs/windows/x86_64/libfreetype-6.dll", 
-                "libs/windows/x86_64/SDL2.dll",
+                "libs/windows/x86_64/libfreetype-6.dll",
+                "libs/windows/x86_64/SDL2.dll"
             ],
             "copyFiles-windows-x86": [
-                "libs/windows/x86/libfreetype-6.dll", 
+                "libs/windows/x86/libfreetype-6.dll",
                 "libs/windows/x86/SDL2.dll"
             ]
         },
@@ -116,7 +118,6 @@
             "versions": ["USE_X11", "USE_FREETYPE", "EmbedStandardResources"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-                "derelict-gl3": "~>2.0.0-beta.8",
                 "derelict-ft": "~>2.0.0-beta.5",
                 "x11": "~>1.0.21",
                 "icontheme": "~>1.2.3"
@@ -127,7 +128,6 @@
             "versions": ["USE_DSFML", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-                "derelict-gl3": "~>2.0.0-beta.7",
                 "derelict-ft": "~>2.0.0-beta.4",
                 "dsfml": "~>2.1.0",
                 "icontheme": "~>1.2.3"
