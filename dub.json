@@ -30,7 +30,8 @@
     "excludedSourceFiles-windows": ["3rdparty/fontconfig/*"],
 
     "dependencies": {
-        "bindbc-opengl": "~>1.0.0"
+        "bindbc-opengl": "~>1.0.0",
+        "inilike": "~>1.2.1"
     },
 
     "versions": ["GL_AllowDeprecated", "GL_30"],
