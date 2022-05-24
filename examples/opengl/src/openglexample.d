@@ -33,6 +33,7 @@ extern (C) int UIAppMain(string[] args) {
 
 static if (ENABLE_OPENGL):
 
+import bindbc.opengl;
 import dlangui.graphics.glsupport;
 import dlangui.graphics.gldrawbuf;
 
@@ -134,7 +135,7 @@ class MyOpenglWidget : VerticalLayout {
             return;
         }
         bool canUseOldApi = !!glLightfv;
-        bool canUseNewApi = !glSupport.legacyMode;
+        bool canUseNewApi = true;
         if (_exampleIndex == 0 || !canUseOldApi)
             drawUsingNewAPI(windowRect, rc);
         else if (_exampleIndex == 1 || !canUseNewApi)

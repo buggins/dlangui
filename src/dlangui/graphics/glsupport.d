@@ -41,14 +41,40 @@ version (Android) {
 
     static if (SUPPORT_LEGACY_OPENGL) {
         public import GLES.gl : glEnableClientState, glLightfv, glColor4f, GL_ALPHA_TEST, GL_VERTEX_ARRAY,
-		    GL_COLOR_ARRAY, glVertexPointer, glColorPointer, glDisableClientState,
-		    GL_TEXTURE_COORD_ARRAY, glTexCoordPointer, glColorPointer, glMatrixMode,
-		    glLoadMatrixf, glLoadIdentity, GL_PROJECTION, GL_MODELVIEW;
-	}
+            GL_COLOR_ARRAY, glVertexPointer, glColorPointer, glDisableClientState,
+            GL_TEXTURE_COORD_ARRAY, glTexCoordPointer, glColorPointer, glMatrixMode,
+            glLoadMatrixf, glLoadIdentity, GL_PROJECTION, GL_MODELVIEW;
+    }
 
 } else {
     enum SUPPORT_LEGACY_OPENGL = false; //true;
     public import bindbc.opengl;
+    public import bindbc.opengl.bind.arb.core_30;
+    import loader = bindbc.loader.sharedlib;
+
+
+private void gl3CheckMissingSymFunc(const(loader.ErrorInfo)[] errors)
+{
+    import std.algorithm : equal;
+    immutable names = ["glGetError", "glShaderSource", "glCompileShader",
+            "glGetShaderiv", "glGetShaderInfoLog", "glGetString",
+            "glCreateProgram", "glUseProgram", "glDeleteProgram",
+            "glDeleteShader", "glEnable", "glDisable", "glBlendFunc",
+            "glUniformMatrix4fv", "glGetAttribLocation", "glGetUniformLocation",
+            "glGenVertexArrays", "glBindVertexArray", "glBufferData",
+            "glBindBuffer", "glBufferSubData"];
+    foreach(info; errors)
+    {
+        import std.array;
+        import std.algorithm;
+        import std.exception;
+        import core.stdc.string;
+        // NOTE: this has crappy complexity as it was just updated as is
+        //     it also does not checks if the symbol was actually loaded
+        auto errMsg = cast(string) info.message[0 .. info.message.strlen];
+        bool found = names.any!(s => s.indexOf(errMsg) != -1);
+        enforce(!found, { return errMsg.idup; });
+    }
 }
 
 import dlangui.graphics.scene.mesh;
@@ -639,19 +665,44 @@ __gshared bool glNoContext;
 /// initialize OpenGL support helper (call when current OpenGL context is initialized)
 bool initGLSupport(bool legacy = false) {
     import dlangui.platforms.common.platform : setOpenglEnabled;
+    import loader = bindbc.loader.sharedlib;
     if (_glSupport && _glSupport.valid)
         return true;
     version(Android) {
         Log.d("initGLSupport");
     } else {
-
-        auto support = loadOpenGL();
-        if(support < bindbc.opengl.GLSupport.gl11) // No context! Error!
-        {
-            Log.e("OpenGL wasn't loaded successfully");
+            static bool BINDBC_GL3_RELOADED;
+            static bool gl3ReloadedOk;
+            static bool glReloadedOk;
+            if (!BINDBC_GL3_RELOADED) {
+                BINDBC_GL3_RELOADED = true;
+                try {
+                    Log.v("Reloading bindbc-opengl");
+                    import bindbc.opengl;
+                    loadOpenGL();
+                    gl3CheckMissingSymFunc(loader.errors);
+                    gl3ReloadedOk = true;
+                } catch (Exception e) {
+                    Log.e("bindbc-opengl exception while reloading opengl", e);
+                }
+                try {
+                    Log.v("Reloading bindbc-opengl");
+                    import bindbc.opengl;
+                    loadOpenGL();
+                    gl3CheckMissingSymFunc(loader.errors);
+                    glReloadedOk = true;
+                } catch (Exception e) {
+                    Log.e("bindbc-opengl exception while reloading opengl", e);
+                }
+            }
+            if (!gl3ReloadedOk && !glReloadedOk) {
+                Log.e("bindbc-opengl reloaded unsuccessfully");
             return false;
         }
-        legacy = false;
+        if (!gl3ReloadedOk)
+            legacy = true;
+        else if (!glReloadedOk)
+            legacy = false;
     }
     if (!_glSupport) { // TODO_GRIM: Legacy looks very broken to me.
         Log.d("glSupport not initialized: trying to create");
@@ -701,14 +752,14 @@ final class GLSupport {
 
     this(bool legacy = false) {
         _queue = new OpenGLQueue;
-    	version (Android) {
+        version (Android) {
             Log.d("creating GLSupport");
-    	} else {
-    	    if (legacy /*&& !glLightfv*/) {
-    		    Log.w("GLSupport legacy API is not supported");
-    		    legacy = false;
-    	    }
-    	}
+        } else {
+            if (legacy /*&& !glLightfv*/) {
+                Log.w("GLSupport legacy API is not supported");
+                legacy = false;
+            }
+        }
         _legacyMode = legacy;
         if (!_legacyMode)
             _shadersAreInitialized = initShaders();
@@ -790,7 +841,7 @@ final class GLSupport {
 
     /// This function is needed to draw custom OpenGL scene correctly (especially on legacy API)
     private void resetBindings() {
-		import std.traits : isFunction;
+        import std.traits : isFunction;
         if (isFunction!glUseProgram)
             GLProgram.unbind();
         if (isFunction!glBindVertexArray)
@@ -1172,15 +1223,15 @@ class GLVertexBuffer : VertexBuffer {
     protected GLuint _vao;
 
     this() {
-	version (Android) {
-    	    checkgl!glGenBuffers(1, &_vertexBuffer);
-    	    checkgl!glGenBuffers(1, &_indexBuffer);
-    	    checkgl!glGenVertexArrays(1, &_vao);
-	} else {
-    	    assertgl!glGenBuffers(1, &_vertexBuffer);
-    	    assertgl!glGenBuffers(1, &_indexBuffer);
-    	    assertgl!glGenVertexArrays(1, &_vao);
-	}
+    version (Android) {
+            checkgl!glGenBuffers(1, &_vertexBuffer);
+            checkgl!glGenBuffers(1, &_indexBuffer);
+            checkgl!glGenVertexArrays(1, &_vao);
+    } else {
+            assertgl!glGenBuffers(1, &_vertexBuffer);
+            assertgl!glGenBuffers(1, &_indexBuffer);
+            assertgl!glGenVertexArrays(1, &_vao);
+    }
     }
 
     ~this() {
@@ -1617,4 +1668,5 @@ private final class OpenGLQueue {
         _texCoords ~= cast(float[])texCoords;
         _indices ~= cast(int[])indices;
     };
+}
 }

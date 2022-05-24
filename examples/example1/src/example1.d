@@ -1283,8 +1283,7 @@ void main()
 
 static if (ENABLE_OPENGL) {
 
-    import derelict.opengl; //3.gl3;
-    //import derelict.opengl3.gl;
+    import bindbc.opengl;
 
     class MyOpenglWidget : VerticalLayout {
         this() {

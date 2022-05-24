@@ -13,7 +13,7 @@ import dlangui.graphics.scene.objimport;
 import dlangui.graphics.scene.fbximport;
 import dlangui.graphics.glsupport;
 import dlangui.graphics.gldrawbuf;
-import derelict.opengl.gl;
+import bindbc.opengl;
 
 mixin APP_ENTRY_POINT;
 

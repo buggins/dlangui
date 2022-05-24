@@ -5,48 +5,48 @@ public import fontconfig.fctypes;
 
 extern( C ) @nogc nothrow {
 
-    alias da_FC_FcObjectSetBuild = FcObjectSet * function(const char *first, ...);
+    alias pFcObjectSetBuild = FcObjectSet * function(const char *first, ...);
 
-    alias da_FC_FcPatternCreate = FcPattern * function();
+    alias pFcPatternCreate = FcPattern * function();
 
-    alias da_FC_FcPatternAddBool = FcBool function(FcPattern *p, const char *object, FcBool b);
+    alias pFcPatternAddBool = FcBool function(FcPattern *p, const char *object, FcBool b);
 
-    alias da_FC_FcFontList = FcFontSet * function(FcConfig    *config, FcPattern    *p, FcObjectSet *os);
+    alias pFcFontList = FcFontSet * function(FcConfig    *config, FcPattern    *p, FcObjectSet *os);
 
-    alias da_FC_FcPatternDestroy = void function(FcPattern *p);
+    alias pFcPatternDestroy = void function(FcPattern *p);
 
-    alias da_FC_FcObjectSetDestroy = void function(FcObjectSet *os);
+    alias pFcObjectSetDestroy = void function(FcObjectSet *os);
 
-    alias da_FC_FcPatternGetString = FcResult function(const FcPattern *p, const char *object, int n, FcChar8 ** s);
+    alias pFcPatternGetString = FcResult function(const FcPattern *p, const char *object, int n, FcChar8 ** s);
 
-    alias da_FC_FcPatternGetInteger = FcResult function(const FcPattern *p, const char *object, int n, int *i);
+    alias pFcPatternGetInteger = FcResult function(const FcPattern *p, const char *object, int n, int *i);
 
-    alias da_FC_FcPatternGetBool = FcResult function(const FcPattern *p, const char *object, int n, FcBool *b);
+    alias pFcPatternGetBool = FcResult function(const FcPattern *p, const char *object, int n, FcBool *b);
 
-    alias da_FC_FcFontSetDestroy = void  function(FcFontSet *s);
+    alias pFcFontSetDestroy = void  function(FcFontSet *s);
 }
 
 __gshared {
 
-    da_FC_FcObjectSetBuild FcObjectSetBuild;
+    pFcObjectSetBuild FcObjectSetBuild;
 
-    da_FC_FcPatternCreate FcPatternCreate;
+    pFcPatternCreate FcPatternCreate;
 
-    da_FC_FcPatternAddBool FcPatternAddBool;
+    pFcPatternAddBool FcPatternAddBool;
 
-    da_FC_FcFontList FcFontList;
+    pFcFontList FcFontList;
 
-    da_FC_FcPatternDestroy FcPatternDestroy;
+    pFcPatternDestroy FcPatternDestroy;
 
-    da_FC_FcObjectSetDestroy FcObjectSetDestroy;
+    pFcObjectSetDestroy FcObjectSetDestroy;
 
-    da_FC_FcPatternGetString FcPatternGetString;
+    pFcPatternGetString FcPatternGetString;
 
-    da_FC_FcPatternGetInteger FcPatternGetInteger;
+    pFcPatternGetInteger FcPatternGetInteger;
 
-    da_FC_FcPatternGetBool FcPatternGetBool;
+    pFcPatternGetBool FcPatternGetBool;
 
-    da_FC_FcFontSetDestroy FcFontSetDestroy;
+    pFcFontSetDestroy FcFontSetDestroy;
 }
 
 /+

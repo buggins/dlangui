@@ -14,14 +14,15 @@ static if (ENABLE_FREETYPE):
 
 import dlangui.graphics.fonts;
 
-import derelict.freetype.ft;
-import derelict.util.exception;
+import bindbc.freetype;
 import dlangui.core.logger;
 import dlangui.core.collections;
 import std.algorithm;
 import std.file;
 import std.string;
 import std.utf;
+
+import loader = bindbc.loader.sharedlib;
 
 __gshared int[string] STD_FONT_FACES;
 
@@ -471,17 +472,27 @@ class FreeTypeFont : Font {
     @property override bool isNull() { return _files.length == 0; }
 }
 
-private derelict.util.exception.ShouldThrow missingSymFunc( string symName ) {
+
+private void ftCheckMissingSymFunc(const(loader.ErrorInfo)[] errors) {
     import std.algorithm : equal;
-    static import derelict.util.exception;
-    foreach(s; ["FT_New_Face", "FT_Attach_File", "FT_Set_Pixel_Sizes",
+    immutable names = ["FT_New_Face", "FT_Attach_File", "FT_Set_Pixel_Sizes",
             "FT_Get_Char_Index", "FT_Load_Glyph", "FT_Done_Face",
-            "FT_Init_FreeType", "FT_Done_FreeType", "FT_Get_Kerning"]) {
-        if (symName.equal(s)) // Symbol is used
-            return derelict.util.exception.ShouldThrow.Yes;
+            "FT_Init_FreeType", "FT_Done_FreeType", "FT_Get_Kerning"];
+    foreach(info; errors)
+    {
+        import std.array;
+        import std.algorithm;
+        import std.exception;
+        import core.stdc.string;
+        // NOTE: this has crappy complexity as it was just updated as is
+        //     it also does not checks if the symbol was actually loaded
+        auto errMsg = cast(string) info.message[0 .. info.message.strlen];
+        bool found = names
+            .filter!(s => s.canFind(errMsg))
+            .array()
+            .length > 0;
+        enforce(!found, { return errMsg.idup; });
     }
-    // Don't throw for unused symbol
-    return derelict.util.exception.ShouldThrow.No;
 }
 
 /// FreeType based font manager.
@@ -576,22 +587,15 @@ class FreeTypeFontManager : FontManager {
     this() {
         // load dynaic library
         try {
-            Log.v("DerelictFT: Loading FreeType library");
-            if (!DerelictFT) {
-                Log.w("DerelictFT is null. Compiler bug? Applying workaround to fix it.");
-                version(Android) {
-                    //DerelictFT = new DerelictFTLoader("libft2.so");
-                    DerelictFT = new DerelictFTLoader;
-                } else {
-                    DerelictFT = new DerelictFTLoader;
-                }
-            }
-            DerelictFT.missingSymbolCallback = &missingSymFunc;
-            Log.v("DerelictFT: Missing symbols callback is registered");
-            DerelictFT.load();
-            Log.v("DerelictFT: Loaded");
+            import std.exception;
+            import std.format;
+            Log.v("bindbc-freetype: Loading FreeType library");
+            auto ftVer = loadFreeType();
+            enforce(ftVer != FTSupport.badLibrary && ftVer != FTSupport.noLibrary, format!"bindbc-freetype unable to find suitable library, %s minimum required"(ftSupport));
+            ftCheckMissingSymFunc(loader.errors);
+            Log.v("bindbc-freetype: Loaded");
         } catch (Exception e) {
-            Log.e("Derelict: cannot load freetype shared library: ", e.msg);
+            Log.e("bindbc-freetype: cannot load freetype shared library: ", e.msg);
             throw new Exception("Cannot load freetype library");
         }
         Log.v("Initializing FreeType library");
@@ -725,9 +729,11 @@ version(Windows) {
 
 bool registerFontConfigFonts(FreeTypeFontManager fontMan) {
     import fontconfig;
+    import std.exception;
 
     try {
-        DerelictFC.load();
+        auto fcVer = loadFC();
+        enforce(fcVer != FCSupport.badLibrary && fcVer != FCSupport.noLibrary);
     } catch (Exception e) {
         Log.w("Cannot load FontConfig shared library");
         return false;
