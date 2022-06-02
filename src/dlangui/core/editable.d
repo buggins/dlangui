@@ -24,7 +24,7 @@ import dlangui.core.linestream;
 import dlangui.core.streams;
 import std.algorithm;
 import std.conv : to;
-import std.uni;
+static import std.uni;
 
 // uncomment FileFormats debug symbol to dump file formats for loaded/saved files.
 //debug = FileFormats;

@@ -582,7 +582,7 @@ in
 {
     assert (img.data.length);
 }
-body
+do
 {
     Compound!(bool, string) error(string errorMsg)
     {

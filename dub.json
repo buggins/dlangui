@@ -30,11 +30,8 @@
     "excludedSourceFiles-windows": ["3rdparty/fontconfig/*"],
 
     "dependencies": {
-        "bindbc-opengl": "~>1.0.0",
         "inilike": "~>1.2.1"
     },
-
-    "versions": ["GL_AllowDeprecated", "GL_30"],
 
     "subPackages": [
         "./examples/helloworld/",
@@ -52,16 +49,17 @@
     "configurations": [
         {
             "name": "default",
-            "versions": ["USE_OPENGL", "EmbedStandardResources"],
-            "versions-posix": ["USE_SDL", "USE_FREETYPE"],
+            "versions": ["USE_OPENGL", "EmbedStandardResources", "GL_32"],
+            "versions-posix": ["USE_SDL", "USE_FREETYPE", "SDL_204"],
             "versions-windows": ["Unicode"],
             "libs-windows": ["opengl32"],
             "dependencies": {
-                "derelict-ft": "~>2.0.0-beta.5",
-                "icontheme": "~>1.2.3"
+                "bindbc-opengl": "~>1.0.0",
+                "bindbc-freetype": "~>1.0.0"
             },
             "dependencies-posix": {
-                "derelict-sdl2": "~>3.0.0-beta.8"
+                "bindbc-sdl": "~>1.0.0",
+                "icontheme": "~>1.2.3"
             },
             "copyFiles-windows-x86_64": [
                 "libs/windows/x86_64/libfreetype-6.dll"
@@ -73,6 +71,7 @@
         {
             "name": "console",
             "versions": ["USE_CONSOLE", "EmbedStandardResources"],
+            "libs-windows": ["user32"],
             "excludedSourceFiles": ["3rdparty/*GL*", "3rdparty/android", "3rdparty/dimage", "3rdparty/fontconfig/*", "3rdparty/icontheme", "3rdparty/jni.d"]
         },
         {
@@ -80,8 +79,8 @@
             "versions": ["USE_EXTERNAL"],
             "libs-windows": ["opengl32"],
             "dependencies": {
-                "derelict-ft": "~>2.0.0-beta.5",
-                "icontheme": "~>1.2.3"
+                "bindbc-opengl": "~>1.0.0",
+                "bindbc-freetype": "~>1.0.0"
             }
         },
         {
@@ -91,18 +90,21 @@
             "versions-windows": ["Unicode" ,"NO_OPENGL"],
             "libs-windows": ["opengl32"],
             "dependencies-posix": {
-                "derelict-sdl2": "~>3.0.0-beta.8",
-                "derelict-ft": "~>2.0.0-beta.5",
-                "icontheme": "~>1.2.3"
+                "bindbc-opengl": "~>1.0.0",
+                "bindbc-freetype": "~>1.0.0",
+                "bindbc-sdl": "~>1.0.0"
             }
         },
         {
             "name": "sdl",
-            "versions": ["USE_SDL", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources"],
+            "versions": ["USE_SDL", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources", "GL_32", "SDL_204"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-                "derelict-ft": "~>2.0.0-beta.5",
-                "derelict-sdl2": "~>3.0.0-beta.8",
+                "bindbc-opengl": "~>1.0.0",
+                "bindbc-freetype": "~>1.0.0",
+                "bindbc-sdl": "~>1.0.0"
+            },
+            "dependencies-posix": {
                 "icontheme": "~>1.2.3"
             },
             "copyFiles-windows-x86_64": [
@@ -116,20 +118,22 @@
         },
         {
             "name": "x11",
-            "versions": ["USE_X11", "USE_FREETYPE", "EmbedStandardResources"],
+            "versions": ["USE_X11", "USE_FREETYPE", "EmbedStandardResources", "GL_32"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-                "derelict-ft": "~>2.0.0-beta.5",
+                "bindbc-opengl": "~>1.0.0",
+                "bindbc-freetype": "~>1.0.0",
                 "x11": "~>1.0.21",
                 "icontheme": "~>1.2.3"
             }
         },
         {
             "name": "sfml",
-            "versions": ["USE_DSFML", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources"],
+            "versions": ["USE_DSFML", "USE_OPENGL", "USE_FREETYPE", "EmbedStandardResources", "GL_32"],
             "versions-windows": ["Unicode"],
             "dependencies": {
-                "derelict-ft": "~>2.0.0-beta.4",
+                "bindbc-opengl": "~>1.0.0",
+                "bindbc-freetype": "~>1.0.0",
                 "dsfml": "~>2.1.0",
                 "icontheme": "~>1.2.3"
             },

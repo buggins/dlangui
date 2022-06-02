@@ -151,7 +151,7 @@ static if (ENABLE_OPENGL) {
         return hPalette;
     }
 
-    private __gshared bool DERELICT_GL3_RELOADED = false;
+    private __gshared bool BINDBC_GL3_RELOADED = false; // is this even used?
 }
 
 const uint CUSTOM_MESSAGE_ID = WM_USER + 1;
@@ -323,6 +323,8 @@ class Win32Window : Window {
             EndPaint(_hwnd, &ps);
 
 
+            import bindbc.opengl; //3.gl3;
+            import bindbc.opengl; //3.wgl;
             import dlangui.graphics.gldrawbuf;
             //Log.d("onPaint() start drawing opengl viewport: ", _dx, "x", _dy);
             //PAINTSTRUCT ps;
@@ -1305,6 +1307,38 @@ string[] splitCmdLine(string line) {
 }
 
 private __gshared Win32Platform w32platform;
+
+static if (ENABLE_OPENGL) {
+    import bindbc.opengl;
+    import bindbc.opengl.config : GLSupportVersion = GLSupport;
+
+    void initOpenGL() {
+        try {
+            Log.d("Loading bindbc-opengl");
+            auto glVer = loadOpenGL();
+            if(glVer < GLSupportVersion.gl32) {
+                import std.format : format;
+                throw new Exception(format!"OpenGL 3.2 or higher is required, got: %s"(glVer));
+            }
+            Log.d("bindbc-opengl - loaded");
+            //
+            //// just to check OpenGL context
+            //Log.i("Trying to setup OpenGL context");
+            //Win32Window tmpWindow = new Win32Window(w32platform, ""d, null, 0);
+            //destroy(tmpWindow);
+            //if (openglEnabled)
+            //    Log.i("OpenGL support is enabled");
+            //else
+            //    Log.w("OpenGL support is disabled");
+            //// process messages
+            //platform.enterMessageLoop();
+        } catch (Exception e) {
+            Log.e("Exception while trying to init OpenGL", e);
+            setOpenglEnabled(false);
+        }
+    }
+}
+
 
 int myWinMain(void* hInstance, void* hPrevInstance, char* lpCmdLine, int iCmdShow)
 {

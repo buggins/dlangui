@@ -11,7 +11,7 @@
 
     "stringImportPaths": ["views", "views/res", "views/res/i18n", "views/res/mdpi"],
 
-    "versions": ["EmbedStandardResources"],
+    "versions": ["EmbedStandardResources", "GL_AllowDeprecated"],
 
     "dependencies": {
         "dlangui": {"path": "../../"}
