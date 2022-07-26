@@ -937,7 +937,8 @@ final class GLSupport {
 
     /// call glFlush
     void flushGL() {
-        checkgl!glFlush();
+        // TODO: Is this really needed?
+        // checkgl!glFlush();
     }
 
     bool generateMipmap(int dx, int dy, ubyte * pixels, int level, ref ubyte[] dst) {

@@ -59,11 +59,58 @@ extern (C) int UIAppMain(string[] args);
 
 immutable WIN_CLASS_NAME = "DLANGUI_APP";
 
+/* This is a pretty dirty hack to get multisampling to work */
+private __gshared bool isInitialized = false;
+
 __gshared HINSTANCE _hInstance;
 __gshared int _cmdShow;
 
 static if (ENABLE_OPENGL) {
-    bool setupPixelFormat(HDC hDC)
+
+  // WGL stuff
+
+  // WGL_ARB_pixel_format
+  enum WGL_DRAW_TO_WINDOW_ARB  = 0x2001;
+  enum WGL_DRAW_TO_BITMAP_ARB  = 0x2002;
+  enum WGL_ACCELERATION_ARB    = 0x2003;
+  enum WGL_SUPPORT_GDI_ARB     = 0x200F;
+  enum WGL_SUPPORT_OPENGL_ARB  = 0x2010;
+  enum WGL_DOUBLE_BUFFER_ARB   = 0x2011;
+  enum WGL_STEREO_ARB          = 0x2012;
+  enum WGL_PIXEL_TYPE_ARB      = 0x2013;
+  enum WGL_COLOR_BITS_ARB      = 0x2014;
+  enum WGL_DEPTH_BITS_ARB      = 0x2022;
+  enum WGL_STENCIL_BITS_ARB    = 0x2023;
+
+  enum WGL_NO_ACCELERATION_ARB      = 0x2025;
+  enum WGL_GENERIC_ACCELERATION_ARB = 0x2026;
+  enum WGL_FULL_ACCELERATION_ARB    = 0x2027;
+
+  enum WGL_TYPE_RGBA_ARB       = 0x202B;
+  enum WGL_TYPE_COLORINDEX_ARB = 0x202C;
+
+  // WGL_ARB_create_context_profile
+  enum WGL_CONTEXT_MAJOR_VERSION_ARB = 0x2091;
+  enum WGL_CONTEXT_MINOR_VERSION_ARB = 0x2092;
+  enum WGL_CONTEXT_FLAGS_ARB         = 0x2094;
+  enum WGL_CONTEXT_PROFILE_MASK_ARB  = 0x9126;
+
+  // WGL_CONTEXT_FLAGS bits
+  enum WGL_CONTEXT_DEBUG_BIT_ARB = 0x0001;
+  enum WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB = 0x0002;
+
+  // WGL_CONTEXT_PROFILE_MASK_ARB bits
+  enum WGL_CONTEXT_CORE_PROFILE_BIT_ARB = 0x00000001;
+  enum WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB = 0x00000002;
+
+  enum GL_NUM_EXTENSIONS = 0x821D;
+
+  enum WGL_ALPHA_BITS_ARB = 0x201B;
+
+  enum WGL_SAMPLE_BUFFERS_ARB = 0x2041;
+  enum WGL_SAMPLES_ARB = 0x2042;
+
+    bool setupPixelFormat(HDC hDC, int multisamples = 0)
     {
         PIXELFORMATDESCRIPTOR pfd = {
             PIXELFORMATDESCRIPTOR.sizeof,  /* size */
@@ -72,7 +119,7 @@ static if (ENABLE_OPENGL) {
                 PFD_DRAW_TO_WINDOW |
                 PFD_DOUBLEBUFFER,               /* support double-buffering */
             PFD_TYPE_RGBA,                  /* color type */
-            16,                             /* prefered color depth */
+            24,                             /* prefered color depth */
             0, 0, 0, 0, 0, 0,               /* color bits (ignored) */
             0,                              /* no alpha buffer */
             0,                              /* alpha bits (ignored) */
@@ -87,7 +134,7 @@ static if (ENABLE_OPENGL) {
         };
         int pixelFormat;
 
-        pixelFormat = ChoosePixelFormat(hDC, &pfd);
+        pixelFormat = multisamples > 0 ? sharedGLContext.multisampleFormat(hDC, multisamples) : ChoosePixelFormat(hDC, &pfd);
         if (pixelFormat == 0) {
             Log.e("ChoosePixelFormat failed.");
             return false;
@@ -158,6 +205,9 @@ const uint CUSTOM_MESSAGE_ID = WM_USER + 1;
 
 static if (ENABLE_OPENGL) {
 
+alias BOOL function(HDC hdc, const(int)* attributes, const(FLOAT)* fAttributes, UINT maxFormats, int* pixelFormat, UINT *numFormats) PFNWGLCHOOSEPIXELFORMATARBPROC;
+PFNWGLCHOOSEPIXELFORMATARBPROC wglChoosePixelFormatARB;
+
     /// Shared opengl context helper
     struct SharedGLContext {
         import bindbc.opengl;
@@ -183,14 +233,8 @@ static if (ENABLE_OPENGL) {
                 _hGLRC = wglCreateContext(hDC);
                 if (_hGLRC) {
                     bind(hDC);
-                    bool initialized = initGLSupport(Platform.instance.GLVersionMajor < 3);
+                    wglChoosePixelFormatARB = cast(PFNWGLCHOOSEPIXELFORMATARBPROC)wglGetProcAddress("wglChoosePixelFormatARB");
                     unbind(hDC);
-                    if (!initialized) {
-                        uninit();
-                        Log.e("Failed to init OpenGL shaders");
-                        _error = true;
-                        return false;
-                    }
                     return true;
                 } else {
                     _error = true;
@@ -202,6 +246,45 @@ static if (ENABLE_OPENGL) {
                 return false;
             }
         }
+
+        bool initGLBindings(HDC hDC)
+        {
+            bind(hDC);
+            scope(exit) unbind(hDC);
+            bool initialized = initGLSupport(Platform.instance.GLVersionMajor < 3);
+            if (!initialized) {
+                uninit();
+                Log.e("Failed to init OpenGL shaders");
+                _error = true;
+                return false;
+            }
+            return true;
+        }
+
+        /// A helper function to reinit a context to use multisampling
+        bool reinit(HDC hDC, int samples)
+        {
+            if(setupPixelFormat(hDC, samples))
+            {
+                _hPalette = setupPalette(hDC);
+                _hGLRC = wglCreateContext(hDC);
+                if (_hGLRC) {
+                    return true;
+                }
+                else
+                {
+                    _error = true;
+                    return false;
+                }
+            }
+            else
+            {
+                Log.e("Cannot reinit pixel format");
+                _error = true;
+                return false;
+            }
+        }
+
         void uninit() {
             if (_hGLRC) {
                 wglDeleteContext(_hGLRC);
@@ -222,6 +305,42 @@ static if (ENABLE_OPENGL) {
         }
         void swapBuffers(HDC hDC) {
             SwapBuffers(hDC);
+        }
+
+        int multisampleFormat(HDC hdc, int samples)
+        {
+            bind(hdc);
+            GLint pixelFormat;
+            BOOL valid;
+            GLuint numFormats;
+
+            float[] fattribs = [0.0f, 0.0f];
+
+            int[] attribs =
+            [
+                WGL_DRAW_TO_WINDOW_ARB,GL_TRUE,
+                WGL_SUPPORT_OPENGL_ARB,GL_TRUE,
+                WGL_ACCELERATION_ARB,WGL_FULL_ACCELERATION_ARB,
+                WGL_COLOR_BITS_ARB,24,
+                WGL_ALPHA_BITS_ARB,8,
+                WGL_DEPTH_BITS_ARB,16,
+                WGL_STENCIL_BITS_ARB,0,
+                WGL_DOUBLE_BUFFER_ARB,GL_TRUE,
+                WGL_SAMPLE_BUFFERS_ARB,GL_TRUE,
+                WGL_SAMPLES_ARB, samples,
+                WGL_CONTEXT_MAJOR_VERSION_ARB, Platform.instance.GLVersionMajor,
+                WGL_CONTEXT_MINOR_VERSION_ARB, Platform.instance.GLVersionMinor,
+                WGL_CONTEXT_FLAGS_ARB, WGL_CONTEXT_FORWARD_COMPATIBLE_BIT_ARB,
+                WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB, WGL_CONTEXT_COMPATIBILITY_PROFILE_BIT_ARB,
+                0
+            ];
+
+            valid = wglChoosePixelFormatARB(hdc, attribs.ptr, fattribs.ptr, 1, &pixelFormat, &numFormats);
+            if(!valid)
+                Log.e("wglMakeCurrent is failed. GetLastError=%x".format(GetLastError()));
+
+            unbind(hdc);
+            return valid;
         }
     }
 
@@ -297,7 +416,7 @@ class Win32Window : Window {
                             parenthwnd,                 // parent window handle
                             null,                 // window menu handle
                             _hInstance,           // program instance handle
-                            cast(void*)this);                // creation parameters
+                            platform.multisamples ? cast(void*)null : cast(void*)this); // creation parameters
         static if (ENABLE_OPENGL) {
             /* initialize OpenGL rendering */
             HDC hDC = GetDC(_hwnd);
@@ -305,7 +424,33 @@ class Win32Window : Window {
             if (openglEnabled) {
                 useOpengl = sharedGLContext.init(hDC);
             }
+
+            if(platform.multisamples != 0)
+            {
+                sharedGLContext.uninit();
+                ReleaseDC(_hwnd, hDC);
+
+                // Recreate window with multisampling (copy-paste from above)
+                DestroyWindow(_hwnd);
+                _hwnd = CreateWindowW(toUTF16z(WIN_CLASS_NAME),      // window class name
+                    toUTF16z(windowCaption),  // window caption
+                    ws,  // window style
+                    x,        // initial x position
+                    y,        // initial y position
+                    _dx,        // initial x size
+                    _dy,        // initial y size
+                    parenthwnd,                 // parent window handle
+                    null,                 // window menu handle
+                    _hInstance,           // program instance handle
+                    cast(void*)this);                // creation parameters
+
+                hDC = GetDC(_hwnd);
+                useOpengl = sharedGLContext.reinit(hDC, platform.multisamples);
+            }
         }
+
+        sharedGLContext.initGLBindings(hDC);
+        isInitialized = true;
 
         RECT rect;
         GetWindowRect(_hwnd, &rect);
@@ -321,7 +466,6 @@ class Win32Window : Window {
             PAINTSTRUCT ps;
             HDC hdc2 = BeginPaint(_hwnd, &ps);
             EndPaint(_hwnd, &ps);
-
 
             import bindbc.opengl; //3.gl3;
             import bindbc.opengl; //3.wgl;
@@ -360,7 +504,7 @@ class Win32Window : Window {
             }
             buf.afterDrawing();
             sharedGLContext.swapBuffers(hdc);
-            //sharedGLContext.unbind(hdc);
+            sharedGLContext.unbind(hdc);
             destroy(buf);
         }
     }
@@ -1487,10 +1631,13 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
             {
                 CREATESTRUCT * pcreateStruct = cast(CREATESTRUCT*)lParam;
                 window = cast(Win32Window)pcreateStruct.lpCreateParams;
-                void * ptr = cast(void*) window;
-                SetWindowLongPtr(hwnd, GWLP_USERDATA, cast(LONG_PTR)ptr);
-                window._hwnd = hwnd;
-                window.onCreate();
+                if(window !is null)
+                {
+                    void * ptr = cast(void*) window;
+                    SetWindowLongPtr(hwnd, GWLP_USERDATA, cast(LONG_PTR)ptr);
+                    window._hwnd = hwnd;
+                    window.onCreate();
+                }
                 //window.handleUnknownWindowMessage(message, wParam, lParam);
             }
             return 0;
@@ -1499,7 +1646,7 @@ LRESULT WndProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
                 //window.handleUnknownWindowMessage(message, wParam, lParam);
                 window.onDestroy();
             }
-            if (w32platform.windowCount == 0)
+            if (w32platform.windowCount == 0 && isInitialized)
                 PostQuitMessage(0);
             return 0;
         case WM_WINDOWPOSCHANGED:

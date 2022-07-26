@@ -280,8 +280,8 @@ class Window : CustomEventTarget {
             return;
         WindowState state = windowState;
         Rect rect = windowRect;
-        if (state == WindowState.fullscreen 
-            || state == WindowState.minimized 
+        if (state == WindowState.fullscreen
+            || state == WindowState.minimized
             || state == WindowState.maximized
             || state == WindowState.normal) {
             //
@@ -310,7 +310,7 @@ class Window : CustomEventTarget {
         rect.right = w;
         rect.bottom = h;
         if (correctWindowPositionOnScreen(rect) && (state == WindowState.fullscreen
-             || state == WindowState.minimized 
+             || state == WindowState.minimized
              || state == WindowState.maximized
              || state == WindowState.normal)) {
              setWindowState(state, false, rect);
@@ -1124,7 +1124,7 @@ class Window : CustomEventTarget {
     @property CursorType overrideCursorType() {
         return _overrideCursorType;
     }
-    
+
     protected bool dispatchMouseEvent(Widget root, MouseEvent event, ref bool cursorIsSet) {
         // only route mouse events to visible widgets
         if (root.visibility != Visibility.Visible)
@@ -1483,12 +1483,12 @@ class Window : CustomEventTarget {
         if (event.action == MouseAction.Move || event.action == MouseAction.Leave) {
             processed = checkRemoveTracking(event);
         }
-        
+
         bool cursorIsSet = false;
         if (overrideCursorType != CursorType.NotSet) {
             cursorIsSet = true;
         }
-        
+
         if (!res) {
             bool insideOneOfPopups = false;
             for (int i = cast(int)_popups.length - 1; i >= 0; i--) {
@@ -1843,6 +1843,13 @@ class Platform {
          * Note: if the version is invalid or not supported, this value will be set to supported one.
          */
         int GLVersionMinor = 2;
+
+        /**
+         * OpenGL multisamples amount.
+         * Note: 0, 2, 4, 8, or 16 are accepted.
+         * TODO: Not supported on Linux
+         */
+        int multisamples = 0;
     }
     /**
      * close window

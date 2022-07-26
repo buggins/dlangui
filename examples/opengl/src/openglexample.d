@@ -15,6 +15,9 @@ extern (C) int UIAppMain(string[] args) {
     Platform.instance.GLVersionMajor = 2;
     Platform.instance.GLVersionMinor = 1;
 
+    // Enable multisampling
+    Platform.instance.multisamples = 16;
+
     // create window
     Window window = Platform.instance.createWindow("DlangUI OpenGL Example", null, WindowFlag.Resizable, 800, 700);
 
@@ -192,6 +195,9 @@ class MyOpenglWidget : VerticalLayout {
             Log.e("Invalid texture");
             return;
         }
+
+        checkgl!glEnable(GL_MULTISAMPLE);
+        checkgl!glEnable(GL_POLYGON_SMOOTH);
 
         checkgl!glEnable(GL_CULL_FACE);
         checkgl!glEnable(GL_DEPTH_TEST);
