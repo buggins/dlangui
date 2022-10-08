@@ -101,7 +101,7 @@ import dlangui.graphics.colors;
 import dlangui.graphics.drawbuf;
 import std.file;
 import std.algorithm;
-import std.xml;
+import undead.xml;
 import std.conv;
 import std.string;
 import std.path;
@@ -1222,8 +1222,8 @@ class CombinedDrawable : Drawable {
 
     this(uint backgroundColor, string backgroundImageId, string borderDescription, string boxShadowDescription) {
         boxShadow = boxShadowDescription !is null ? drawableCache.get("#box-shadow," ~ boxShadowDescription) : new EmptyDrawable;
-        background = 
-            (backgroundImageId !is null) ? drawableCache.get(backgroundImageId) : 
+        background =
+            (backgroundImageId !is null) ? drawableCache.get(backgroundImageId) :
             (!backgroundColor.isFullyTransparentColor) ? new SolidFillDrawable(backgroundColor) : null;
         if (background is null)
             background = new EmptyDrawable;
@@ -1245,7 +1245,7 @@ class CombinedDrawable : Drawable {
     @property override int width() { return background.width + border.padding.left + border.padding.right; }
     @property override int height() { return background.height + border.padding.top + border.padding.bottom; }
     @property override Rect padding() {
-        return Rect(background.padding.left + border.padding.left, background.padding.top + border.padding.top, 
+        return Rect(background.padding.left + border.padding.left, background.padding.top + border.padding.top,
             background.padding.right + border.padding.right, background.padding.bottom + border.padding.bottom);
     }
 }

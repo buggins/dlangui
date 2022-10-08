@@ -25,9 +25,9 @@ module dlangui.widgets.styles;
 
 import dlangui.core.config;
 
-private import std.xml;
-private import std.string;
-private import std.algorithm;
+import undead.xml;
+import std.string;
+import std.algorithm;
 
 import dlangui.core.types;
 import dlangui.graphics.colors;
