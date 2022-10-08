@@ -663,9 +663,9 @@ public:
     }
 
     /// returns true if point is inside of this widget
-    bool isPointInside(int x, int y) {
-        return _pos.isPointInside(x, y);
-    }
+    bool isPointInside(int x, int y) { return _pos.isPointInside(x, y); }
+    ///
+    bool isPointInside(Point pt) { return isPointInside(pt.x, pt.y); }
 
     /// return true if state has State.Enabled flag set
     @property bool enabled() { return (state & State.Enabled) != 0; }
@@ -1536,7 +1536,7 @@ public:
         _popupMenu = popupMenu;
         return this;
     }
-    
+
     /// returns true if widget can show popup menu (e.g. by mouse right click at point x,y)
     bool canShowPopupMenu(int x, int y) {
         if (_popupMenu is null)

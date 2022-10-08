@@ -1129,12 +1129,12 @@ class Window : CustomEventTarget {
         // only route mouse events to visible widgets
         if (root.visibility != Visibility.Visible)
             return false;
-        if (!root.isPointInside(event.x, event.y))
+        if (!root.isPointInside(event.pos))
             return false;
         // offer event to children first
         for (int i = 0; i < root.childCount; i++) {
             Widget child = root.child(i);
-            if (dispatchMouseEvent(child, event, cursorIsSet))
+            if (child.isPointInside(event.pos) && dispatchMouseEvent(child, event, cursorIsSet))
                 return true;
         }
 
