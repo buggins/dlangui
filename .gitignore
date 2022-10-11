@@ -24,3 +24,6 @@ include
 lib/res
 .DS_Store
 *.userprefs
+*.lst
+*.a
+dlangui-test-default

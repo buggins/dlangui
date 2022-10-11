@@ -50,6 +50,7 @@ struct Point {
     int x;
     int y;
 
+@safe @nogc nothrow:
     Point opBinary(string op)(Point v) const if (op == "+") {
         return Point(x + v.x, y + v.y);
     }
@@ -66,6 +67,23 @@ struct Point {
         if (x == b.x) return y - b.y;
         return x - b.x;
     }
+    int opCmp(const Point b) const {
+        if (x == b.x) return y - b.y;
+        return x - b.x;
+    }
+}
+
+// Point unittest
+@safe @nogc unittest
+{
+    immutable testA = Point(100, 100);
+    immutable testB = Point(50, 50);
+    assert(testA + testA == Point(200, 200));
+    assert(testA * 2 == Point(200, 200));
+    assert(testA - testA == Point(0, 0));
+    assert(-testA == Point(-100, -100));
+    assert(testA > Point(50, 50));
+    assert(testA > testB);
 }
 
 /** 2D rectangle
@@ -80,20 +98,26 @@ struct Rect {
     int right;
     /// y coordinate of bottom right corner (non-inclusive)
     int bottom;
+
+@safe @nogc nothrow:
     /// returns average of left, right
-    @property int middlex() { return (left + right) / 2; }
+    @property int middlex() const { return (left + right) / 2; }
     /// returns average of top, bottom
-    @property int middley() { return (top + bottom) / 2; }
+    @property int middley() const { return (top + bottom) / 2; }
     /// returns middle point
-    @property Point middle() { return Point(middlex, middley); }
+    @property Point middle() const { return Point(middlex, middley); }
 
     /// returns top left point of rectangle
-    @property Point topLeft() { return Point(left, top); }
+    @property Point topLeft() const { return Point(left, top); }
     /// returns bottom right point of rectangle
-    @property Point bottomRight() { return Point(right, bottom); }
+    @property Point bottomRight() const { return Point(right, bottom); }
+    /// returns top right point of rectangel
+    @property Point topRight() const { return Point(right, top); }
+    /// returns bottom left point of rectangle
+    @property Point bottomLeft() const { return Point(left, bottom); }
 
     /// returns size (width, height) in Point
-    @property Point size() { return Point(right - left, bottom - top); }
+    @property Point size() const { return Point(right - left, bottom - top); }
 
     /// add offset to horizontal and vertical coordinates
     void offset(int dx, int dy) {
@@ -128,9 +152,9 @@ struct Rect {
             bottom = rc.bottom;
     }
     /// returns width of rectangle (right - left)
-    @property int width() { return right - left; }
+    @property int width() const { return right - left; }
     /// returns height of rectangle (bottom - top)
-    @property int height() { return bottom - top; }
+    @property int height() const { return bottom - top; }
     /// constructs rectangle using left, top, right, bottom coordinates
     this(int x0, int y0, int x1, int y1) {
         left = x0;
@@ -140,13 +164,10 @@ struct Rect {
     }
     /// constructs rectangle using two points - (left, top), (right, bottom) coordinates
     this(Point pt0, Point pt1) {
-        left = pt0.x;
-        top = pt0.y;
-        right = pt1.x;
-        bottom = pt1.y;
+        this(pt0.x, pt0.y, pt1.x, pt1.y);
     }
     /// returns true if rectangle is empty (right <= left || bottom <= top)
-    @property bool empty() {
+    @property bool empty() const {
         return right <= left || bottom <= top;
     }
     /// translate rectangle coordinates by (x,y) - add deltax to x coordinates, and deltay to y coordinates
@@ -176,27 +197,46 @@ struct Rect {
         return right > left && bottom > top;
     }
     /// returns true if this rect has nonempty intersection with rc
-    bool intersects(Rect rc) {
+    bool intersects(Rect rc) const {
         if (rc.left >= right || rc.top >= bottom || rc.right <= left || rc.bottom <= top)
             return false;
         return true;
     }
     /// returns true if point is inside of this rectangle
-    bool isPointInside(Point pt) {
+    bool isPointInside(Point pt) const {
         return pt.x >= left && pt.x < right && pt.y >= top && pt.y < bottom;
     }
     /// returns true if point is inside of this rectangle
-    bool isPointInside(int x, int y) {
+    bool isPointInside(int x, int y) const {
         return x >= left && x < right && y >= top && y < bottom;
     }
     /// this rectangle is completely inside rc
-    bool isInsideOf(Rect rc) {
+    bool isInsideOf(Rect rc) const {
         return left >= rc.left && right <= rc.right && top >= rc.top && bottom <= rc.bottom;
     }
 
     bool opEquals(Rect rc) const {
         return left == rc.left && right == rc.right && top == rc.top && bottom == rc.bottom;
     }
+}
+
+// Rect unittests
+@safe @nogc unittest
+{
+    immutable testA = Rect(0, 0, 100, 100);
+    assert(testA.width == 100);
+    assert(testA.height == 100);
+    assert(testA.middlex == 50);
+    assert(testA.middley == 50);
+    assert(testA.middle == Point(50, 50));
+    assert(testA == Rect(0, 0, 100, 100));
+    assert(testA == Rect(Point(0, 0), Point(100, 100)));
+    assert(testA.topLeft == Point(0, 0));
+    assert(testA.topRight == Point(100, 0));
+    assert(testA.bottomLeft == Point(0, 100));
+    assert(testA.bottomRight == Point(100, 100));
+    assert(testA.size == Point(100, 100));
+    assert(!testA.empty);
 }
 
 /// constant acting as "rectangle not set" value
